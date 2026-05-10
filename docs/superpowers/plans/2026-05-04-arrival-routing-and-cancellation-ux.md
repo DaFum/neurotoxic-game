@@ -23,24 +23,25 @@ Each can be reviewed and merged independently.
 
 ## File Map
 
-| File | Change |
-|---|---|
-| `src/utils/arrivalUtils.ts` | Return `ArrivalResult`; remove `changeScene` calls; add `assertUnhandledNodeType` helper |
-| `src/utils/gameStateUtils.ts` | Export `calcCancellationRisk(harmony, threshold, chance)` |
-| `src/hooks/useArrivalLogic.ts` | Consume `ArrivalResult`; call `changeScene` based on returned `scene` |
-| `src/hooks/useTravelLogic.ts` | Consume `ArrivalResult`; remove duplicate `changeScene(OVERWORLD)` fallback |
-| `src/components/MapNode.tsx` | Add `band` prop + cancellation badge inside `MapNodeTooltip` |
-| `src/components/overworld/OverworldMap.tsx` | Thread `band` prop down to `MapNode` |
-| `src/scenes/Overworld.tsx` | Pass `band` into `OverworldMap` |
-| `tests/node/arrivalUtils.test.js` | Verify `ArrivalResult` shapes for every node type |
-| `tests/ui/useArrivalLogic.test.jsx` | Update assertions to match new `ArrivalResult` contract |
-| `tests/ui/MapNode.test.jsx` | New — badge rendering tests |
+| File                                        | Change                                                                                   |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `src/utils/arrivalUtils.ts`                 | Return `ArrivalResult`; remove `changeScene` calls; add `assertUnhandledNodeType` helper |
+| `src/utils/gameStateUtils.ts`               | Export `calcCancellationRisk(harmony, threshold, chance)`                                |
+| `src/hooks/useArrivalLogic.ts`              | Consume `ArrivalResult`; call `changeScene` based on returned `scene`                    |
+| `src/hooks/useTravelLogic.ts`               | Consume `ArrivalResult`; remove duplicate `changeScene(OVERWORLD)` fallback              |
+| `src/components/MapNode.tsx`                | Add `band` prop + cancellation badge inside `MapNodeTooltip`                             |
+| `src/components/overworld/OverworldMap.tsx` | Thread `band` prop down to `MapNode`                                                     |
+| `src/scenes/Overworld.tsx`                  | Pass `band` into `OverworldMap`                                                          |
+| `tests/node/arrivalUtils.test.js`           | Verify `ArrivalResult` shapes for every node type                                        |
+| `tests/ui/useArrivalLogic.test.jsx`         | Update assertions to match new `ArrivalResult` contract                                  |
+| `tests/ui/MapNode.test.jsx`                 | New — badge rendering tests                                                              |
 
 ---
 
 ## Task 1: Define `ArrivalResult` type and `calcCancellationRisk`
 
 **Files:**
+
 - Modify: `src/utils/gameStateUtils.ts`
 - Modify: `src/utils/arrivalUtils.ts` (type import only)
 
@@ -53,7 +54,8 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 
 // Dynamically import after vi.mock isn't needed — pure function, no deps
-const { calcCancellationRisk } = await import('../../src/utils/gameStateUtils.ts')
+const { calcCancellationRisk } =
+  await import('../../src/utils/gameStateUtils.ts')
 
 describe('calcCancellationRisk', () => {
   it('returns 0 for harmony above threshold', () => {
@@ -145,6 +147,7 @@ git commit -m "feat(arrival): add calcCancellationRisk pure fn and ArrivalResult
 ## Task 2: Refactor `handleNodeArrival` to return `ArrivalResult`
 
 **Files:**
+
 - Modify: `src/utils/arrivalUtils.ts`
 - Modify: `tests/node/arrivalUtils.test.js`
 
@@ -156,19 +159,31 @@ Open `tests/node/arrivalUtils.test.js`. Add or update assertions for the return 
 
 ```js
 // Inside the REST_STOP test:
-const result = handleNodeArrival({ node: { type: 'REST_STOP' }, ...minimalParams })
+const result = handleNodeArrival({
+  node: { type: 'REST_STOP' },
+  ...minimalParams
+})
 assert.deepStrictEqual(result, { scene: 'OVERWORLD', gigStarted: false })
 
 // Inside a GIG/healthy-harmony test (harmony = 50):
-const result = handleNodeArrival({ node: { type: 'GIG', venue: { name: 'Club' } }, ...minimalParams })
+const result = handleNodeArrival({
+  node: { type: 'GIG', venue: { name: 'Club' } },
+  ...minimalParams
+})
 assert.deepStrictEqual(result, { scene: 'OVERWORLD', gigStarted: true })
 
 // Inside a GIG/low-harmony cancel test (harmony = 1):
-const result = handleNodeArrival({ node: { type: 'GIG', venue: {} }, ...params_harmony_1 })
+const result = handleNodeArrival({
+  node: { type: 'GIG', venue: {} },
+  ...params_harmony_1
+})
 assert.deepStrictEqual(result, { scene: 'OVERWORLD', gigStarted: false })
 
 // Inside a SPECIAL test:
-const result = handleNodeArrival({ node: { type: 'SPECIAL' }, ...minimalParams })
+const result = handleNodeArrival({
+  node: { type: 'SPECIAL' },
+  ...minimalParams
+})
 assert.deepStrictEqual(result, { scene: 'OVERWORLD', gigStarted: false })
 
 // Inside a START test:
@@ -187,8 +202,9 @@ Expected: failures on all new `result` assertions.
 - [ ] **Step 3: Rewrite `handleNodeArrival` to return `ArrivalResult`**
 
 Replace `src/utils/arrivalUtils.ts`'s `handleNodeArrival` function. Key rules:
+
 - Remove the `changeScene` parameter from `HandleNodeArrivalParams` (it's no longer needed inside the util).
-- Remove the `onShowHQ` param — this stays because it's a *display* side effect (opens HQ modal), not scene routing. Keep it.
+- Remove the `onShowHQ` param — this stays because it's a _display_ side effect (opens HQ modal), not scene routing. Keep it.
 - Each `case` returns an `ArrivalResult`. The function signature becomes `(params: HandleNodeArrivalParams): ArrivalResult`.
 - In the GIG/FESTIVAL/FINALE case, if `startGig` succeeds, return `{ scene: GAME_PHASES.OVERWORLD, gigStarted: true }`. If cancelled, return `{ scene: GAME_PHASES.OVERWORLD, gigStarted: false }`.
 - Add a default case with logging + explicit OVERWORLD fallback:
@@ -209,11 +225,21 @@ type HandleNodeArrivalParams = {
   rng?: () => number
 }
 
-export const handleNodeArrival = (params: HandleNodeArrivalParams): ArrivalResult => {
+export const handleNodeArrival = (
+  params: HandleNodeArrivalParams
+): ArrivalResult => {
   const {
-    node, band, player, updateBand, updatePlayer,
-    triggerEvent, startGig, addToast, onShowHQ,
-    eventAlreadyActive = false, rng = secureRandom
+    node,
+    band,
+    player,
+    updateBand,
+    updatePlayer,
+    triggerEvent,
+    startGig,
+    addToast,
+    onShowHQ,
+    eventAlreadyActive = false,
+    rng = secureRandom
   } = params
 
   switch (node.type) {
@@ -229,21 +255,36 @@ export const handleNodeArrival = (params: HandleNodeArrivalParams): ArrivalResul
         }
       }
       updateBand({ members: newMembers })
-      addToast(i18n.t('ui:arrival.restedAtStop', { defaultValue: 'Rested at stop. Band feels better.' }), 'success')
+      addToast(
+        i18n.t('ui:arrival.restedAtStop', {
+          defaultValue: 'Rested at stop. Band feels better.'
+        }),
+        'success'
+      )
       return { scene: GAME_PHASES.OVERWORLD, gigStarted: false }
     }
     case 'SPECIAL': {
       if (!eventAlreadyActive) {
         const specialEvent = triggerEvent('special')
         if (!specialEvent) {
-          addToast(i18n.t('ui:arrival.specialNothingHappened', { defaultValue: 'A mysterious place, but nothing happened.' }), 'info')
+          addToast(
+            i18n.t('ui:arrival.specialNothingHappened', {
+              defaultValue: 'A mysterious place, but nothing happened.'
+            }),
+            'info'
+          )
         }
       }
       return { scene: GAME_PHASES.OVERWORLD, gigStarted: false }
     }
     case 'START': {
       if (onShowHQ) onShowHQ()
-      addToast(i18n.t('ui:arrival.homeSweetHome', { defaultValue: 'Home Sweet Home.' }), 'success')
+      addToast(
+        i18n.t('ui:arrival.homeSweetHome', {
+          defaultValue: 'Home Sweet Home.'
+        }),
+        'success'
+      )
       return { scene: GAME_PHASES.OVERWORLD, gigStarted: false }
     }
     case 'FESTIVAL':
@@ -251,35 +292,53 @@ export const handleNodeArrival = (params: HandleNodeArrivalParams): ArrivalResul
     case 'GIG': {
       const harmony = clampBandHarmony(band?.harmony)
       const isLowHarmony = harmony < BALANCE_CONSTANTS.LOW_HARMONY_THRESHOLD
-      const luckCheck = rng() < BALANCE_CONSTANTS.LOW_HARMONY_CANCELLATION_CHANCE
+      const luckCheck =
+        rng() < BALANCE_CONSTANTS.LOW_HARMONY_CANCELLATION_CHANCE
       const shouldCancel = harmony <= 1 || (isLowHarmony && luckCheck)
 
       if (shouldCancel) {
-        addToast(i18n.t('ui:arrival.showCancelled', { defaultValue: 'Show cancelled! The band refused to go on stage due to low harmony.' }), 'error')
+        addToast(
+          i18n.t('ui:arrival.showCancelled', {
+            defaultValue:
+              'Show cancelled! The band refused to go on stage due to low harmony.'
+          }),
+          'error'
+        )
         if (player && updatePlayer) {
           const currentFame = player.fame || 0
           const loss = BALANCE_CONSTANTS.FAME_LOSS_BAD_GIG * 2
           const newFame = clampPlayerFame(currentFame - loss)
-          updatePlayer({ fame: newFame, fameLevel: calculateFameLevel(newFame) })
+          updatePlayer({
+            fame: newFame,
+            fameLevel: calculateFameLevel(newFame)
+          })
         }
         return { scene: GAME_PHASES.OVERWORLD, gigStarted: false }
       }
 
-      logger.info('ArrivalLogic', 'Starting Gig at destination', { venue: node.venue.name })
+      logger.info('ArrivalLogic', 'Starting Gig at destination', {
+        venue: node.venue.name
+      })
       try {
         startGig(node.venue)
         return { scene: GAME_PHASES.OVERWORLD, gigStarted: true }
       } catch (error) {
         handleError(error, {
           addToast,
-          fallbackMessage: i18n.t('ui:arrival.failedToStartGig', { defaultValue: 'Failed to start Gig.' })
+          fallbackMessage: i18n.t('ui:arrival.failedToStartGig', {
+            defaultValue: 'Failed to start Gig.'
+          })
         })
         return { scene: GAME_PHASES.OVERWORLD, gigStarted: false }
       }
     }
     default: {
       // Unhandled node type — log for analytics visibility instead of silent swallow
-      logger.warn('ArrivalLogic', 'Unhandled node type — routing to OVERWORLD', { type: (node as ArrivalNode).type })
+      logger.warn(
+        'ArrivalLogic',
+        'Unhandled node type — routing to OVERWORLD',
+        { type: (node as ArrivalNode).type }
+      )
       return { scene: GAME_PHASES.OVERWORLD, gigStarted: false }
     }
   }
@@ -306,6 +365,7 @@ git commit -m "refactor(arrival): handleNodeArrival returns ArrivalResult, remov
 ## Task 3: Update `useArrivalLogic` to consume `ArrivalResult`
 
 **Files:**
+
 - Modify: `src/hooks/useArrivalLogic.ts`
 - Modify: `tests/ui/useArrivalLogic.test.jsx`
 
@@ -331,6 +391,7 @@ pnpm run test:ui:file -- tests/ui/useArrivalLogic.test.jsx
 Replace the `handleArrivalSequence` callback body in `src/hooks/useArrivalLogic.ts`.
 
 Current logic (after the previous idempotency PR):
+
 ```ts
 // 5. Handle Node Arrival & Routing
 if (currentNode) {
@@ -368,6 +429,7 @@ if (!arrivalResult.gigStarted) {
 ```
 
 Also remove `isGigNode` from the import line at the top of `useArrivalLogic.ts`:
+
 ```ts
 import {
   handleNodeArrival,
@@ -377,6 +439,7 @@ import {
 ```
 
 Remove `GAME_PHASES` import since it's no longer used directly in the hook:
+
 ```ts
 // Remove: import { GAME_PHASES } from '../context/gameConstants'
 ```
@@ -405,9 +468,11 @@ git commit -m "refactor(arrival): useArrivalLogic consumes ArrivalResult, no fal
 ## Task 4: Update `useTravelLogic` to consume `ArrivalResult`
 
 **Files:**
+
 - Modify: `src/hooks/useTravelLogic.ts`
 
 `useTravelLogic` calls `handleNodeArrivalCallback` — an internal `useCallback` wrapping `handleNodeArrival`. The `handleNodeArrivalCallback` currently passes `changeScene` as a param. After Task 2, `changeScene` is no longer accepted by `handleNodeArrival`. We must:
+
 1. Remove `changeScene` from the `handleNodeArrival` call inside `handleNodeArrivalCallback`.
 2. `handleNodeArrivalCallback` must capture the `ArrivalResult` and call `changeScene` itself.
 
@@ -428,12 +493,20 @@ const handleNodeArrivalCallback = useCallback(
       triggerEvent,
       startGig,
       addToast,
-      changeScene,        // ← remove this
+      changeScene, // ← remove this
       onShowHQ,
       eventAlreadyActive
     })
   },
-  [updateBand, updatePlayer, triggerEvent, startGig, addToast, onShowHQ, changeScene]
+  [
+    updateBand,
+    updatePlayer,
+    triggerEvent,
+    startGig,
+    addToast,
+    onShowHQ,
+    changeScene
+  ]
 )
 
 // AFTER:
@@ -455,7 +528,15 @@ const handleNodeArrivalCallback = useCallback(
       changeScene(result.scene)
     }
   },
-  [updateBand, updatePlayer, triggerEvent, startGig, addToast, onShowHQ, changeScene]
+  [
+    updateBand,
+    updatePlayer,
+    triggerEvent,
+    startGig,
+    addToast,
+    onShowHQ,
+    changeScene
+  ]
 )
 ```
 
@@ -491,6 +572,7 @@ git commit -m "refactor(travel): useTravelLogic consumes ArrivalResult from hand
 The pure `calcCancellationRisk` function is already in `gameStateUtils.ts` from Task 1. This task wires it into `arrivalUtils.ts` to replace the inline `harmony <= 1 || (isLowHarmony && luckCheck)` check.
 
 **Files:**
+
 - Modify: `src/utils/arrivalUtils.ts`
 
 - [ ] **Step 1: Import and use `calcCancellationRisk` in the GIG/FESTIVAL/FINALE case**
@@ -535,6 +617,7 @@ git commit -m "refactor(arrival): use calcCancellationRisk in gig cancellation c
 ## Task 6: Cancellation risk badge in `MapNodeTooltip`
 
 **Files:**
+
 - Modify: `src/components/MapNode.tsx`
 - Modify: `src/components/overworld/OverworldMap.tsx`
 - Modify: `src/scenes/Overworld.tsx`
@@ -553,13 +636,13 @@ interface MapNodeTooltipProps {
   nodeLocationName: string
   ticketPrice?: number
   t: TranslationCallback
-  harmony?: number           // ← add
+  harmony?: number // ← add
 }
 
 // Add to MapNodeProps:
 interface MapNodeProps {
   // ... existing ...
-  harmony?: number           // ← add
+  harmony?: number // ← add
 }
 ```
 
@@ -568,36 +651,43 @@ interface MapNodeProps {
 Import `calcCancellationRisk` and `BALANCE_CONSTANTS`:
 
 ```ts
-import { calcCancellationRisk, BALANCE_CONSTANTS } from '../utils/gameStateUtils'
+import {
+  calcCancellationRisk,
+  BALANCE_CONSTANTS
+} from '../utils/gameStateUtils'
 ```
 
 Inside `MapNodeTooltip`, after the existing venue stats block for GIG/FESTIVAL/FINALE nodes, add:
 
 ```tsx
-{(node.type === 'GIG' || node.type === 'FESTIVAL' || node.type === 'FINALE') &&
-  harmony !== undefined &&
-  calcCancellationRisk(harmony) > 0 && (() => {
-    const risk = calcCancellationRisk(harmony)
-    const pct = (risk * 100).toFixed(1)
-    const freqDenom = Math.round(1 / risk)
-    const badgeClass =
-      risk >= 1
-        ? 'text-blood-red font-bold'
-        : risk > 0.3
-        ? 'text-blood-red'
-        : risk > 0.1
-        ? 'text-warning-yellow'
-        : 'text-toxic-green'
-    return (
-      <div className={`text-[10px] font-mono mt-1 ${badgeClass}`}>
-        {t('ui:map.cancellationRisk', {
-          defaultValue: '⚠ Cancel risk: {{pct}}% (1-in-{{freq}} chance)',
-          pct,
-          freq: freqDenom
-        })}
-      </div>
-    )
-  })()
+{
+  ;(node.type === 'GIG' ||
+    node.type === 'FESTIVAL' ||
+    node.type === 'FINALE') &&
+    harmony !== undefined &&
+    calcCancellationRisk(harmony) > 0 &&
+    (() => {
+      const risk = calcCancellationRisk(harmony)
+      const pct = (risk * 100).toFixed(1)
+      const freqDenom = Math.round(1 / risk)
+      const badgeClass =
+        risk >= 1
+          ? 'text-blood-red font-bold'
+          : risk > 0.3
+            ? 'text-blood-red'
+            : risk > 0.1
+              ? 'text-warning-yellow'
+              : 'text-toxic-green'
+      return (
+        <div className={`text-[10px] font-mono mt-1 ${badgeClass}`}>
+          {t('ui:map.cancellationRisk', {
+            defaultValue: '⚠ Cancel risk: {{pct}}% (1-in-{{freq}} chance)',
+            pct,
+            freq: freqDenom
+          })}
+        </div>
+      )
+    })()
 }
 ```
 
@@ -611,7 +701,7 @@ Pass `harmony` down through `MapNode` to `MapNodeTooltip`:
   nodeLocationName={nodeLocationName}
   ticketPrice={ticketPrice}
   t={t}
-  harmony={harmony}   // ← add
+  harmony={harmony} // ← add
 />
 ```
 
@@ -662,6 +752,7 @@ git commit -m "feat(ux): show colour-coded cancellation risk badge on gig map no
 ## Task 7: Test the cancellation badge
 
 **Files:**
+
 - Create: `tests/ui/MapNode.test.jsx` (new)
 
 - [ ] **Step 1: Write failing tests**
@@ -683,14 +774,19 @@ vi.mock('framer-motion', () => ({
     div: ({ children, ...props }) => <div {...props}>{children}</div>
   }
 }))
-vi.mock('../src/ui/shared', () => ({ HexNode: ({ children }) => <div>{children}</div> }))
+vi.mock('../src/ui/shared', () => ({
+  HexNode: ({ children }) => <div>{children}</div>
+}))
 vi.mock('../src/utils/locationI18n', () => ({ translateLocation: v => v }))
 
 // Import after mocks
 const { MapNode } = await import('../../src/components/MapNode.tsx')
 
 const baseProps = {
-  node: { type: 'GIG', venue: { name: 'Club', capacity: 100, pay: 50, price: 10, diff: 2 } },
+  node: {
+    type: 'GIG',
+    venue: { name: 'Club', capacity: 100, pay: 50, price: 10, diff: 2 }
+  },
   isCurrent: false,
   isTraveling: false,
   visibility: 'visible',
@@ -703,7 +799,10 @@ const baseProps = {
 
 describe('MapNode cancellation badge', () => {
   beforeEach(() => setupJSDOM())
-  afterEach(() => { cleanup(); teardownJSDOM() })
+  afterEach(() => {
+    cleanup()
+    teardownJSDOM()
+  })
 
   test('shows no badge when harmony is above threshold (20)', () => {
     render(<MapNode {...baseProps} harmony={20} />)
@@ -781,17 +880,17 @@ git push -u origin claude/add-arrival-reset-trigger-NZz13
 
 ### Spec coverage
 
-| Spec requirement | Task |
-|---|---|
-| `ArrivalResult = { scene, actions }` (adapted to `{ scene, gigStarted }` — no action list needed since side-effects are already applied in-place) | Task 1, 2 |
-| `handleNodeArrival` returns result; hook calls `changeScene` | Task 2, 3, 4 |
-| `nodeHandlers` map pattern for node types | ❌ Not implemented — the switch is already well-structured and adding a map adds indirection without removing complexity. YAGNI applies: the switch is the map. |
-| `assertNever`-equivalent for unhandled node types | Task 2 (default case with `logger.warn`) |
-| `calcCancellationRisk` pure function | Task 1, 5 |
-| Colour-coded badge `< 10% green / 10–30% amber / > 30% red` | Task 6 (uses `text-toxic-green`, `text-warning-yellow`, `text-blood-red`) |
-| Exact one-decimal percentage + "1-in-N" frequency text | Task 6, 7 |
-| Badge updates reactively as harmony changes | Task 6 — harmony flows from `band.harmony` via props, React re-renders automatically |
-| i18n key for badge text | Task 6 (`ui:map.cancellationRisk`) — note: add German translation separately if locale files are maintained |
+| Spec requirement                                                                                                                                  | Task                                                                                                                                                            |
+| ------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ArrivalResult = { scene, actions }` (adapted to `{ scene, gigStarted }` — no action list needed since side-effects are already applied in-place) | Task 1, 2                                                                                                                                                       |
+| `handleNodeArrival` returns result; hook calls `changeScene`                                                                                      | Task 2, 3, 4                                                                                                                                                    |
+| `nodeHandlers` map pattern for node types                                                                                                         | ❌ Not implemented — the switch is already well-structured and adding a map adds indirection without removing complexity. YAGNI applies: the switch is the map. |
+| `assertNever`-equivalent for unhandled node types                                                                                                 | Task 2 (default case with `logger.warn`)                                                                                                                        |
+| `calcCancellationRisk` pure function                                                                                                              | Task 1, 5                                                                                                                                                       |
+| Colour-coded badge `< 10% green / 10–30% amber / > 30% red`                                                                                       | Task 6 (uses `text-toxic-green`, `text-warning-yellow`, `text-blood-red`)                                                                                       |
+| Exact one-decimal percentage + "1-in-N" frequency text                                                                                            | Task 6, 7                                                                                                                                                       |
+| Badge updates reactively as harmony changes                                                                                                       | Task 6 — harmony flows from `band.harmony` via props, React re-renders automatically                                                                            |
+| i18n key for badge text                                                                                                                           | Task 6 (`ui:map.cancellationRisk`) — note: add German translation separately if locale files are maintained                                                     |
 
 ### Placeholder scan
 

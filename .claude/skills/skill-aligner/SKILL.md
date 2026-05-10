@@ -11,17 +11,17 @@ Detect and fix drift between skills and the repository. Drift happens when the r
 
 Each skill directory can contain any of these file types. All of them can carry drift.
 
-| File type | Location pattern | What drifts |
-|:---|:---|:---|
-| Entry point | `SKILL.md` | commands, versions, paths, terminology |
-| Reference docs | `references/*.md` | same as above; often the densest drift |
-| Shell scripts | `scripts/*.sh` | package manager, script names, env assumptions |
-| Node scripts | `scripts/*.mjs`, `scripts/*.js`, `scripts/*.cjs` | import paths, API calls, package manager |
-| Python scripts | `scripts/*.py` | CLI invocations, file paths |
-| Agent specs | `agents/openai.yaml` | model names, display text |
-| Asset configs | `assets/*.json` | tool versions, rule sets |
-| Validation | `validation/rubric.yaml` | criteria tied to repo conventions |
-| Loose docs | `*.md` at skill root | any of the above |
+| File type      | Location pattern                                 | What drifts                                    |
+| :------------- | :----------------------------------------------- | :--------------------------------------------- |
+| Entry point    | `SKILL.md`                                       | commands, versions, paths, terminology         |
+| Reference docs | `references/*.md`                                | same as above; often the densest drift         |
+| Shell scripts  | `scripts/*.sh`                                   | package manager, script names, env assumptions |
+| Node scripts   | `scripts/*.mjs`, `scripts/*.js`, `scripts/*.cjs` | import paths, API calls, package manager       |
+| Python scripts | `scripts/*.py`                                   | CLI invocations, file paths                    |
+| Agent specs    | `agents/openai.yaml`                             | model names, display text                      |
+| Asset configs  | `assets/*.json`                                  | tool versions, rule sets                       |
+| Validation     | `validation/rubric.yaml`                         | criteria tied to repo conventions              |
+| Loose docs     | `*.md` at skill root                             | any of the above                               |
 
 **Audit order**: start with `SKILL.md`, then `references/`, then `scripts/`, then the rest. Fix in the same order — later files often mirror conventions established in earlier ones.
 
@@ -34,6 +34,7 @@ Each skill directory can contain any of these file types. All of them can carry 
 **Applies to**: `SKILL.md`, `references/*.md`, `scripts/*.sh`, all script files.
 
 **What it looks like:**
+
 - File says: `npm run test` or `npm ci`
 - Repo requires: `pnpm run test` or `pnpm install --frozen-lockfile` (AGENTS.md: "Use `pnpm` only.")
 
@@ -56,6 +57,7 @@ grep -o 'pnpm run [a-z:_-]*' .claude/skills/<skill-name>/SKILL.md | sort -u | \
 ```
 
 **Decision tree:**
+
 - `npm` anywhere? → Replace with `pnpm`; `npm install` → `pnpm install`; `npm ci` → `pnpm install --frozen-lockfile`; `npm run X` → `pnpm run X`; `npm -v` → `pnpm -v`
 - Script name not in `package.json`? → Check if renamed; update to current name
 - Both names valid aliases? → Use the one listed in AGENTS.md critical commands
@@ -65,6 +67,7 @@ grep -o 'pnpm run [a-z:_-]*' .claude/skills/<skill-name>/SKILL.md | sort -u | \
 **Applies to**: sync lines in all `.md` files, inline version claims anywhere.
 
 **What it looks like:**
+
 - Sync line says: `React 19.2.4 / Vite 8.0.1`
 - Actual: `React 19.2.5 / Vite 8.0.10 / Tailwind 4.2.4`
 
@@ -79,6 +82,7 @@ jq '{react: .dependencies.react, vite: .devDependencies.vite, tailwindcss: .devD
 ```
 
 **Decision tree:**
+
 - Sync line only? → Bulk `sed` replace across all files in the skill
 - Version claim in instructional text? → Update and verify the guidance is still accurate for the new version
 - API break between versions? → Escalate to `skill-creator`
@@ -88,6 +92,7 @@ jq '{react: .dependencies.react, vite: .devDependencies.vite, tailwindcss: .devD
 **Applies to**: `SKILL.md`, all `references/*.md`, all `scripts/` that reference source paths.
 
 **What it looks like:**
+
 - File says: `src/context/gameReducer.js`
 - Repo has: `src/context/gameReducer.ts`
 
@@ -110,6 +115,7 @@ done
 ```
 
 **Decision tree:**
+
 - `.ts`/`.tsx` version exists on disk? → Update the reference
 - File is genuinely absent from repo? → Mark as aspirational; add a note
 - Reference is inside a `node:test` `import` statement? → Keep `.js` — `tsx` resolves `.js` imports to `.ts` at runtime; changing them would break tests
@@ -120,6 +126,7 @@ done
 **Applies to**: all files in the skill.
 
 **What it looks like:**
+
 - File says: `src/utils/AudioManager.js`
 - Repo moved it to: `src/utils/audio/AudioManager.ts`
 
@@ -135,6 +142,7 @@ grep -roh -E 'src/[a-zA-Z0-9/_/-]+/' .claude/skills/<skill-name>/ | sort -u | \
 ```
 
 **Decision tree:**
+
 - Path moved? → Update to new location in every file in the skill
 - Multiple skills share the stale path? → Fix in dependency order (leaf skills first); see Monorepo Strategy below
 - Path inside a code block showing an error message or generic example? → Keep if intentionally illustrative (e.g., `src/utils/missing.js` as a "file not found" example)
@@ -172,6 +180,7 @@ grep -n "src/" .claude/skills/<skill-name>/scripts/*.mjs .claude/skills/<skill-n
 ```
 
 **Decision tree:**
+
 - `npm` in `.sh`? → Replace with `pnpm`
 - Script references a `pnpm run X` that no longer exists? → Update to current script name
 - Script sources a path that moved? → Update path
@@ -181,6 +190,7 @@ grep -n "src/" .claude/skills/<skill-name>/scripts/*.mjs .claude/skills/<skill-n
 Skills reference other skills by name in their descriptions, workflows, or escalation guidance.
 
 **What it looks like:**
+
 - Skill says: "Escalate to `state-mutation-guard`"
 - Actual skill name: `state-safety-action-creator-guard`
 
@@ -199,6 +209,7 @@ grep -roh -E '`[a-z][a-z-]+`' .claude/skills/<skill-name>/ | sort -u | tr -d '`'
 ```
 
 **Decision tree:**
+
 - Name matches no skill directory? → Verify it was renamed, then update the reference
 - Skill was deleted? → Remove the reference or replace with the successor skill
 - Name is a generic term (not a skill)? → Ignore
@@ -208,6 +219,7 @@ grep -roh -E '`[a-z][a-z-]+`' .claude/skills/<skill-name>/ | sort -u | tr -d '`'
 **Applies to**: all `.md` files.
 
 **What it looks like:**
+
 - Reference doc says: "import from `npm`" or "yarn add"
 - AGENTS.md says: pnpm only
 
@@ -222,6 +234,7 @@ grep -rn -E '(yarn |Howler\.js|React\.forwardRef|import type .* from)' .claude/s
 ```
 
 **Decision tree:**
+
 - Skill guidance contradicts AGENTS.md? → Update skill to match AGENTS.md
 - Skill adds domain context AGENTS.md lacks? → Keep; add a pointer to AGENTS.md for the constraint
 - Terminology is just cosmetically different (e.g., "module" vs "file")? → Leave unless confusing
@@ -231,6 +244,7 @@ grep -rn -E '(yarn |Howler\.js|React\.forwardRef|import type .* from)' .claude/s
 **Applies to**: `SKILL.md` description front-matter and trigger conditions.
 
 **What it looks like:**
+
 - Skill description says it handles only Vite config
 - Repo now uses both Vite and Playwright — skill is silent on the latter
 
@@ -245,6 +259,7 @@ grep "pnpm run" AGENTS.md
 ```
 
 **Decision tree:**
+
 - New tooling is in scope of the skill's purpose? → Add guidance or note the gap
 - New tooling is genuinely out of scope? → Update description to be explicit
 - Gap requires a new skill? → Escalate to `skill-creator`
@@ -263,6 +278,7 @@ find .claude/skills/<skill-name> -type f | sort
 ```
 
 For each file, extract:
+
 - Package-manager commands (`npm`/`pnpm`/`yarn`)
 - `pnpm run <script>` names
 - File paths (`src/`, relative paths)
@@ -300,18 +316,19 @@ cat AGENTS.md CLAUDE.md
 
 For each drift item, classify risk:
 
-| Drift type | Risk | Typical fix |
-|:---|:---|:---|
-| `npm` → `pnpm` in script file | Low | `sed` replace |
-| `pnpm run X` not in package.json | Low–Medium | Update script name |
-| `.js` → `.ts` in narrative path | Low | `sed` replace |
-| Directory moved | Medium | Update all references in skill |
-| Version bump, no API change | Low | Update sync line |
-| Version bump with API change | High | Escalate to `skill-creator` |
-| Cross-skill name wrong | Low | Update reference |
-| Guidance contradicts AGENTS.md | High | Update to match AGENTS.md |
+| Drift type                       | Risk       | Typical fix                    |
+| :------------------------------- | :--------- | :----------------------------- |
+| `npm` → `pnpm` in script file    | Low        | `sed` replace                  |
+| `pnpm run X` not in package.json | Low–Medium | Update script name             |
+| `.js` → `.ts` in narrative path  | Low        | `sed` replace                  |
+| Directory moved                  | Medium     | Update all references in skill |
+| Version bump, no API change      | Low        | Update sync line               |
+| Version bump with API change     | High       | Escalate to `skill-creator`    |
+| Cross-skill name wrong           | Low        | Update reference               |
+| Guidance contradicts AGENTS.md   | High       | Update to match AGENTS.md      |
 
 Before acting:
+
 1. Will this fix break something else in the skill?
 2. Does this drift appear in multiple files of the same skill?
 3. Does fixing here require fixing sibling skills too?
@@ -469,6 +486,7 @@ fix: sync <skill-name> to React 19.2.5 / Vite 8.0.10 baseline
 ## Error Recovery
 
 **Can't find where something changed?**
+
 ```bash
 git log --oneline -S "old_value" -- package.json AGENTS.md | head -10
 ```
@@ -477,12 +495,14 @@ git log --oneline -S "old_value" -- package.json AGENTS.md | head -10
 Check if it's inside a `node:test` `import` statement. If yes, keep `.js` — tsx handles the resolution. If it's narrative text or a shell path, update to `.ts`.
 
 **Sync broke multiple skills?**
+
 ```bash
 git checkout -- .claude/skills/   # Undo all skill changes
 # Then escalate to skill-creator with a list of the affected files
 ```
 
 **Script change not working?**
+
 ```bash
 bash -n .claude/skills/<skill-name>/scripts/<script>.sh  # Syntax check only
 ```

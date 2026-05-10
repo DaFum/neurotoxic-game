@@ -17,11 +17,11 @@ describe('Social Engine Performance', () => {
       }
     }
     generateBrandOffers(gameState)
-    const t0 = performance.now();
+    const t0 = performance.now()
     for (let i = 0; i < 10000; i++) {
-      generateBrandOffers(gameState);
+      generateBrandOffers(gameState)
     }
-    const t1 = performance.now();
-    expect(t1 - t0).toBeLessThan(1000);
+    const t1 = performance.now()
+    expect(t1 - t0).toBeLessThan(1000)
   })
 })

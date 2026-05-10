@@ -904,7 +904,7 @@ test('calculateGigExpenses gracefully handles missing/undefined params', () => {
   assert.ok(result.total >= 0)
 })
 
-test('calculateFuelCost handles edge cases for distance', async (t) => {
+test('calculateFuelCost handles edge cases for distance', async t => {
   await t.test('returns zero for distance = 0', () => {
     const result = calculateFuelCost(0)
     assert.strictEqual(result.fuelLiters, 0)

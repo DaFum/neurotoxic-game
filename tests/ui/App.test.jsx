@@ -168,7 +168,7 @@ vi.mock('../../src/context/GameState.tsx', () => ({
   GameStateProvider: ({ children }) => (
     <div data-testid='game-state-provider'>{children}</div>
   ),
-  useGameSelector: (selector) => selector(mockGameState),
+  useGameSelector: selector => selector(mockGameState),
   useGameActions: () => ({ resolveEvent: mockResolveEvent })
 }))
 
@@ -293,7 +293,6 @@ describe('App', () => {
     crtOverlay = secondRender.container.querySelector('.crt-overlay')
     expect(crtOverlay).toBeTruthy()
   })
-
 
   test('passes the expected gameState slice to chatter overlay', () => {
     mockGameState.currentScene = GAME_PHASES.GIG

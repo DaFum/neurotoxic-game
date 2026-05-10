@@ -8,7 +8,10 @@ import {
   HazardTicker,
   VoidLoader
 } from '../../src/ui/shared/BrutalistUI.tsx'
-import { CorruptedText, SelloutContract } from '../../src/ui/prototypes/VisualPrototypes.tsx'
+import {
+  CorruptedText,
+  SelloutContract
+} from '../../src/ui/prototypes/VisualPrototypes.tsx'
 
 beforeEach(() => {
   vi.useFakeTimers()
@@ -120,5 +123,7 @@ test('SelloutContract handles sign action', () => {
   const btn = screen.getByRole('button', { name: /sign/i })
   expect(btn).toBeInTheDocument()
   fireEvent.click(btn)
-  expect(screen.queryByRole('button', { name: /sign/i })).not.toBeInTheDocument()
+  expect(
+    screen.queryByRole('button', { name: /sign/i })
+  ).not.toBeInTheDocument()
 })
