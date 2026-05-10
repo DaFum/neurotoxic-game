@@ -2,8 +2,8 @@
 set -euo pipefail
 
 node -v
-npm -v
-npm install
-npm run lint
-npm run test
-npm run build
+pnpm -v
+pnpm install
+pnpm run lint
+pnpm run test
+pnpm run build
