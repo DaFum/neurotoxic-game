@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { Modal } from '../../ui/shared'
 import { GlitchButton } from '../../ui/GlitchButton'
@@ -41,10 +40,4 @@ export const MainMenuExistingSavePrompt = ({
       </div>
     </Modal>
   )
-}
-
-MainMenuExistingSavePrompt.propTypes = {
-  onLoad: PropTypes.func.isRequired,
-  onStartNew: PropTypes.func.isRequired,
-  onClose: PropTypes.func.isRequired
 }

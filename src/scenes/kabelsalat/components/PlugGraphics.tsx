@@ -1,9 +1,7 @@
 /*
  * (#1) Actual Updates: Extracted plug graphics to sub-components, removed TODO.
 
-
  */
-import PropTypes from 'prop-types'
 import { CONNECTOR_TYPES } from '../kabelsalatConstants'
 import { XlrPlug } from './plugs/XlrPlug.tsx'
 import { JackPlug } from './plugs/JackPlug.tsx'
@@ -28,8 +26,4 @@ export const PlugGraphics = ({ type }: { type: ConnectorType | string }) => {
     default:
       return null
   }
-}
-
-PlugGraphics.propTypes = {
-  type: PropTypes.oneOf(CONNECTOR_TYPES).isRequired
 }

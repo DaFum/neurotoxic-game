@@ -1,5 +1,4 @@
 import { memo, useCallback } from 'react'
-import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { VolumeSlider } from '../shared/VolumeSlider'
 import { ToggleSwitch } from '../shared/ToggleSwitch'
@@ -78,12 +77,3 @@ export const AudioSettings = memo(function AudioSettings({
     </div>
   )
 })
-
-AudioSettings.propTypes = {
-  musicVol: PropTypes.number.isRequired,
-  sfxVol: PropTypes.number.isRequired,
-  isMuted: PropTypes.bool.isRequired,
-  onMusicChange: PropTypes.func.isRequired,
-  onSfxChange: PropTypes.func.isRequired,
-  onToggleMute: PropTypes.func.isRequired
-}

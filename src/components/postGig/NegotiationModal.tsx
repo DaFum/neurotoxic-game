@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { Modal } from '../../ui/shared'
 import type {
@@ -131,11 +130,4 @@ export const NegotiationModal = ({
       )}
     </Modal>
   )
-}
-
-NegotiationModal.propTypes = {
-  isOpen: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-  negotiationResult: PropTypes.object,
-  handleNegotiationSubmit: PropTypes.func.isRequired
 }

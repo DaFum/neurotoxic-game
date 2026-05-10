@@ -1,5 +1,4 @@
 import { memo } from 'react'
-import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { GlitchButton } from '../../../ui/GlitchButton'
 import type { AudioLockedOverlayProps } from '../../../types/components'
@@ -44,7 +43,3 @@ export const AudioLockedOverlay = memo(
 )
 
 AudioLockedOverlay.displayName = 'AudioLockedOverlay'
-
-AudioLockedOverlay.propTypes = {
-  onInitializeAudio: PropTypes.func.isRequired
-}

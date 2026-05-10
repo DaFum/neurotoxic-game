@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { formatNumber } from '../../utils/numberUtils'
@@ -36,18 +35,4 @@ export const FinancialList = ({ items, type }: FinancialListProps) => {
       })}
     </ul>
   )
-}
-
-FinancialList.propTypes = {
-  items: PropTypes.arrayOf(
-    PropTypes.shape({
-      label: PropTypes.string,
-      labelKey: PropTypes.string.isRequired,
-      value: PropTypes.number.isRequired,
-      detail: PropTypes.string,
-      detailKey: PropTypes.string,
-      detailParams: PropTypes.object
-    })
-  ).isRequired,
-  type: PropTypes.oneOf(['income', 'expense']).isRequired
 }

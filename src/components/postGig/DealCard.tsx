@@ -9,7 +9,6 @@
  * (#3) Found Errors + Solutions:
  * - Complexity was getting high due to multiple conditionals and inline rendering logic. Solution: Used `memo()` wrapper on new granular display components and moved their relevant prop types to themselves.
  */
-import PropTypes from 'prop-types'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../../ui/shared'
@@ -154,11 +153,6 @@ const DealImage = memo(({ alignment, name }: DealImageProps) => (
   </div>
 ))
 DealImage.displayName = 'DealImage'
-DealImage.propTypes = {
-  alignment: PropTypes.string,
-  name: PropTypes.string.isRequired
-}
-
 const DealInfo = memo(
   ({ displayDeal, isRevoked, brandReputation }: DealInfoProps) => {
     const { t } = useTranslation()
@@ -238,12 +232,6 @@ const DealInfo = memo(
   }
 )
 DealInfo.displayName = 'DealInfo'
-DealInfo.propTypes = {
-  displayDeal: PropTypes.object.isRequired,
-  isRevoked: PropTypes.bool,
-  brandReputation: PropTypes.object
-}
-
 const DealActions = memo(
   ({
     deal,
@@ -304,16 +292,6 @@ const DealActions = memo(
   }
 )
 DealActions.displayName = 'DealActions'
-DealActions.propTypes = {
-  deal: PropTypes.object.isRequired,
-  displayDeal: PropTypes.object.isRequired,
-  isRevoked: PropTypes.bool,
-  hasNegotiated: PropTypes.bool,
-  negotiationState: PropTypes.object,
-  handleAcceptDeal: PropTypes.func.isRequired,
-  handleNegotiationStart: PropTypes.func.isRequired
-}
-
 export const DealCard = memo(
   ({
     deal,
@@ -364,11 +342,3 @@ export const DealCard = memo(
   }
 )
 DealCard.displayName = 'DealCard'
-
-DealCard.propTypes = {
-  deal: PropTypes.object.isRequired,
-  negotiationState: PropTypes.object,
-  brandReputation: PropTypes.object,
-  handleAcceptDeal: PropTypes.func.isRequired,
-  handleNegotiationStart: PropTypes.func.isRequired
-}

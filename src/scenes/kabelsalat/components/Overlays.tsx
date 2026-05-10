@@ -1,9 +1,7 @@
 /*
  * (#1) Actual Updates: Refactored Overlays component to use sub-components.
 
-
  */
-import PropTypes from 'prop-types'
 import type { FC } from 'react'
 import type { TFunction } from 'i18next'
 import { ShockOverlay } from './overlays/ShockOverlay.tsx'
@@ -38,13 +36,4 @@ export const Overlays: FC<OverlaysProps> = ({
       )}
     </>
   )
-}
-
-Overlays.propTypes = {
-  t: PropTypes.func.isRequired,
-  isShocked: PropTypes.bool.isRequired,
-  isGameOver: PropTypes.bool.isRequired,
-  isPoweredOn: PropTypes.bool.isRequired,
-  faultReason: PropTypes.string,
-  onAdvance: PropTypes.func.isRequired
 }

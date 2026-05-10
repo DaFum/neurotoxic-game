@@ -1,10 +1,8 @@
 /*
  * (#1) Actual Updates: Created PoweredOnOverlay component.
 
-
  */
 import React from 'react'
-import PropTypes from 'prop-types'
 import type { FC } from 'react'
 import type { TFunction } from 'i18next'
 import { ActionButton } from '../../../../ui/shared'
@@ -32,8 +30,3 @@ export const PoweredOnOverlay: FC<PoweredOnOverlayProps> = React.memo(
   }
 )
 PoweredOnOverlay.displayName = 'PoweredOnOverlay'
-
-PoweredOnOverlay.propTypes = {
-  t: PropTypes.func.isRequired,
-  onAdvance: PropTypes.func.isRequired
-}

@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next'
-import PropTypes from 'prop-types'
 import { Modal } from '../../ui/shared'
 
 type FeatureSection = {
@@ -159,8 +158,4 @@ export const MainMenuFeatures = ({ onClose }: { onClose: () => void }) => {
       </div>
     </Modal>
   )
-}
-
-MainMenuFeatures.propTypes = {
-  onClose: PropTypes.func.isRequired
 }

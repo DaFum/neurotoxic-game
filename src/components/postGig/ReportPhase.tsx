@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../../ui/shared'
@@ -65,27 +64,4 @@ export const ReportPhase = ({ financials, onNext }: ReportPhaseProps) => {
       </motion.div>
     </div>
   )
-}
-
-const FINANCIAL_CATEGORY_SHAPE = PropTypes.shape({
-  total: PropTypes.number.isRequired,
-  breakdown: PropTypes.arrayOf(
-    PropTypes.shape({
-      label: PropTypes.string,
-      labelKey: PropTypes.string.isRequired,
-      value: PropTypes.number.isRequired,
-      detail: PropTypes.string,
-      detailKey: PropTypes.string,
-      detailParams: PropTypes.object
-    })
-  ).isRequired
-})
-
-ReportPhase.propTypes = {
-  financials: PropTypes.shape({
-    income: FINANCIAL_CATEGORY_SHAPE.isRequired,
-    expenses: FINANCIAL_CATEGORY_SHAPE.isRequired,
-    net: PropTypes.number.isRequired
-  }),
-  onNext: PropTypes.func.isRequired
 }

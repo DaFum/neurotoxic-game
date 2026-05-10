@@ -1,9 +1,7 @@
 /*
  * (#1) Actual Updates: Extracted socket graphics to sub-components, removed TODO.
 
-
  */
-import PropTypes from 'prop-types'
 import { CONNECTOR_TYPES } from '../kabelsalatConstants'
 import { XlrSocket } from './sockets/XlrSocket.tsx'
 import { JackSocket } from './sockets/JackSocket.tsx'
@@ -28,8 +26,4 @@ export const SocketGraphics = ({ type }: { type: ConnectorType | string }) => {
     default:
       return null
   }
-}
-
-SocketGraphics.propTypes = {
-  type: PropTypes.oneOf(CONNECTOR_TYPES).isRequired
 }

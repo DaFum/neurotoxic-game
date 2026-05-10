@@ -1,10 +1,8 @@
 /*
  * (#1) Actual Updates: Extracted HeaderTitle component.
 
-
  */
 import React from 'react'
-import PropTypes from 'prop-types'
 import type { FC } from 'react'
 import type { TFunction } from 'i18next'
 
@@ -45,10 +43,3 @@ export const HeaderTitle: FC<HeaderTitleProps> = React.memo(
   )
 )
 HeaderTitle.displayName = 'HeaderTitle'
-
-HeaderTitle.propTypes = {
-  t: PropTypes.func.isRequired,
-  isShocked: PropTypes.bool.isRequired,
-  isPoweredOn: PropTypes.bool.isRequired,
-  isGameOver: PropTypes.bool.isRequired
-}

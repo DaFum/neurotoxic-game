@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ProgressBar } from './shared/index.tsx'
 import { GlitchButton } from './GlitchButton.tsx'
@@ -369,10 +368,4 @@ export const QuestsModal = ({
       </motion.div>
     </AnimatePresence>
   )
-}
-
-QuestsModal.propTypes = {
-  onClose: PropTypes.func.isRequired,
-  activeQuests: PropTypes.array.isRequired,
-  player: PropTypes.object.isRequired
 }

@@ -1,9 +1,7 @@
 /*
  * (#1) Actual Updates: Extracted SocketItem component to improve maintainability.
 
-
  */
-import PropTypes from 'prop-types'
 import type { FC } from 'react'
 import { SocketItem } from './SocketItem.tsx'
 import type { CableId } from '../kabelsalatConstants'
@@ -45,14 +43,4 @@ export const SocketList: FC<SocketListProps> = ({
       ))}
     </>
   )
-}
-
-SocketList.propTypes = {
-  t: PropTypes.func.isRequired,
-  socketOrder: PropTypes.arrayOf(PropTypes.string).isRequired,
-  connections: PropTypes.objectOf(PropTypes.string).isRequired,
-  isPowerConnected: PropTypes.bool.isRequired,
-  selectedCable: PropTypes.string,
-  isGameOver: PropTypes.bool.isRequired,
-  handleSocketClick: PropTypes.func.isRequired
 }

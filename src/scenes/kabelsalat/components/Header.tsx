@@ -1,9 +1,7 @@
 /*
  * (#1) Actual Updates: Extracted complex UI sub-components into standalone files (HeaderTitle, HeaderTimer) for better maintainability.
 
-
  */
-import PropTypes from 'prop-types'
 import type { FC } from 'react'
 import type { TFunction } from 'i18next'
 import { HeaderTitle } from './HeaderTitle.tsx'
@@ -34,11 +32,3 @@ export const Header: FC<HeaderProps> = ({
     <HeaderTimer t={t} timeLeft={timeLeft} isPoweredOn={isPoweredOn} />
   </div>
 )
-
-Header.propTypes = {
-  t: PropTypes.func.isRequired,
-  isShocked: PropTypes.bool.isRequired,
-  isPoweredOn: PropTypes.bool.isRequired,
-  isGameOver: PropTypes.bool.isRequired,
-  timeLeft: PropTypes.number.isRequired
-}

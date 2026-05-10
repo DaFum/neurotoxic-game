@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion'
 import type { HTMLMotionProps, Transition } from 'framer-motion'
-import PropTypes from 'prop-types'
 import type { ReactNode } from 'react'
 
 export const AnimatedDivider = ({
@@ -19,13 +18,6 @@ export const AnimatedDivider = ({
     className={`h-[2px] ${className}`}
   />
 )
-
-AnimatedDivider.propTypes = {
-  width: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  transition: PropTypes.object,
-  className: PropTypes.string
-}
-
 type MotionTag = 'h1' | 'h2' | 'h3' | 'h4' | 'p' | 'span' | 'div'
 
 type AnimatedSubtitleProps = {
@@ -58,13 +50,4 @@ export const AnimatedSubtitle = ({
   if (as === 'span') return <motion.span {...props}>{children}</motion.span>
   if (as === 'div') return <motion.div {...props}>{children}</motion.div>
   return <motion.h2 {...props}>{children}</motion.h2>
-}
-
-AnimatedSubtitle.propTypes = {
-  as: PropTypes.oneOf(['h1', 'h2', 'h3', 'h4', 'p', 'span', 'div']),
-  initial: PropTypes.object,
-  animate: PropTypes.object,
-  transition: PropTypes.object,
-  className: PropTypes.string,
-  children: PropTypes.node.isRequired
 }

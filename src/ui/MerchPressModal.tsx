@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { GlitchButton } from './GlitchButton'
@@ -239,18 +238,4 @@ export const MerchPressModal = ({ onClose, onPress, canPress, config }) => {
       </motion.div>
     </AnimatePresence>
   )
-}
-
-MerchPressModal.propTypes = {
-  onClose: PropTypes.func.isRequired,
-  onPress: PropTypes.func.isRequired,
-  canPress: PropTypes.bool.isRequired,
-  config: PropTypes.shape({
-    cost: PropTypes.number.isRequired,
-    loyaltyGain: PropTypes.number.isRequired,
-    controversyGain: PropTypes.number.isRequired,
-    fameGain: PropTypes.number.isRequired,
-    failChance: PropTypes.number.isRequired,
-    harmonyCostOnFail: PropTypes.number.isRequired
-  }).isRequired
 }

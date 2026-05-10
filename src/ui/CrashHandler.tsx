@@ -1,6 +1,5 @@
 import React from 'react'
 import type { ErrorInfo, ReactNode } from 'react'
-import PropTypes from 'prop-types'
 import { withTranslation } from 'react-i18next'
 import { GlitchButton } from './GlitchButton'
 import { VoidSkullIcon } from './shared/Icons'
@@ -92,10 +91,4 @@ class ErrorBoundaryComponent extends React.Component<
     return this.props.children
   }
 }
-
-ErrorBoundaryComponent.propTypes = {
-  children: PropTypes.node.isRequired,
-  t: PropTypes.func.isRequired
-}
-
 export const ErrorBoundary = withTranslation()(ErrorBoundaryComponent)

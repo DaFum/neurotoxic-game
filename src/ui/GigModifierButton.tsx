@@ -1,5 +1,4 @@
 import { memo } from 'react'
-import PropTypes from 'prop-types'
 
 type GigModifierItem = {
   key: string
@@ -50,17 +49,4 @@ const GigModifierButton = memo(
 )
 
 GigModifierButton.displayName = 'GigModifierButton'
-
-GigModifierButton.propTypes = {
-  item: PropTypes.shape({
-    key: PropTypes.string.isRequired,
-    label: PropTypes.string.isRequired,
-    desc: PropTypes.string,
-    cost: PropTypes.number.isRequired
-  }).isRequired,
-  isActive: PropTypes.bool.isRequired,
-  onClick: PropTypes.func.isRequired,
-  disabled: PropTypes.bool
-}
-
 export default GigModifierButton

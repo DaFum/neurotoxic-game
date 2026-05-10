@@ -1,9 +1,7 @@
 /*
  * (#1) Actual Updates: Extracted ClinicHeader into a separate component.
 
-
  */
-import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import type { ClinicHeaderProps } from '../../types/components'
 
@@ -31,11 +29,4 @@ export const ClinicHeader = ({ player }: ClinicHeaderProps) => {
       </div>
     </header>
   )
-}
-
-ClinicHeader.propTypes = {
-  player: PropTypes.shape({
-    money: PropTypes.number.isRequired,
-    fame: PropTypes.number.isRequired
-  }).isRequired
 }

@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import { memo } from 'react'
 import { LanguageSettings } from './LanguageSettings'
 import { AudioSettings } from './AudioSettings'
@@ -69,20 +68,3 @@ export const SettingsPanel = memo(function SettingsPanel({
     </div>
   )
 })
-
-SettingsPanel.propTypes = {
-  settings: PropTypes.shape({
-    crtEnabled: PropTypes.bool,
-    logLevel: PropTypes.number
-  }),
-  musicVol: PropTypes.number,
-  sfxVol: PropTypes.number,
-  isMuted: PropTypes.bool,
-  onMusicChange: PropTypes.func,
-  onSfxChange: PropTypes.func,
-  onToggleMute: PropTypes.func,
-  onToggleCRT: PropTypes.func,
-  onLogLevelChange: PropTypes.func,
-  onDeleteSave: PropTypes.func.isRequired,
-  className: PropTypes.string
-}

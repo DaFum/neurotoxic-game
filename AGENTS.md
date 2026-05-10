@@ -56,6 +56,7 @@
 - Commits use Conventional Commits (`feat:`, `fix:`, etc.).
 - Tailwind v4 uses `@import "tailwindcss"`; non-color tokens use syntax such as `z-(--z-crt)` or `style={{ zIndex: 'var(--z-crt)' }}`.
 - Do not hardcode colors. Use CSS vars (`var(--color-toxic-green)`) or Pixi token helpers (`getPixiColorFromToken('--toxic-green')`).
+- Do not add `.propTypes` blocks. React 19 deprecates runtime propTypes validation. TypeScript interfaces in `src/types/components.d.ts` or inline prop types are the sole source of truth for prop contracts. The `prop-types` package has been removed from the project.
 
 ## Gotchas
 

@@ -7,7 +7,6 @@ import React, {
   useRef
 } from 'react'
 import { logger } from '../../utils/logger'
-import PropTypes from 'prop-types'
 import type { ReactElement, ReactNode, SyntheticEvent } from 'react'
 
 const getOwn = <T,>(
@@ -180,11 +179,4 @@ export const Tooltip = ({
       )}
     </div>
   )
-}
-
-Tooltip.propTypes = {
-  children: PropTypes.node.isRequired,
-  content: PropTypes.node.isRequired,
-  className: PropTypes.string,
-  position: PropTypes.oneOf(['top', 'bottom'])
 }

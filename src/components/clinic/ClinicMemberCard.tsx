@@ -1,10 +1,8 @@
 /*
  * (#1) Actual Updates: Extracted ClinicMemberCard into a separate component.
 
-
  */
 import React from 'react'
-import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { GlitchButton } from '../../ui/GlitchButton'
@@ -30,12 +28,6 @@ const ActionButtonWrapper = ({
     buttonWithDisabled
   )
 }
-
-ActionButtonWrapper.propTypes = {
-  disabledReason: PropTypes.string,
-  children: PropTypes.node.isRequired
-}
-
 export const ClinicMemberCard = ({
   member,
   player,
@@ -124,22 +116,4 @@ export const ClinicMemberCard = ({
       </div>
     </motion.div>
   )
-}
-
-ClinicMemberCard.propTypes = {
-  member: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-    stamina: PropTypes.number.isRequired,
-    mood: PropTypes.number.isRequired,
-    traits: PropTypes.object
-  }).isRequired,
-  player: PropTypes.shape({
-    money: PropTypes.number.isRequired,
-    fame: PropTypes.number.isRequired
-  }).isRequired,
-  healCostMoney: PropTypes.number.isRequired,
-  enhanceCostFame: PropTypes.number.isRequired,
-  healMember: PropTypes.func.isRequired,
-  enhanceMember: PropTypes.func.isRequired
 }

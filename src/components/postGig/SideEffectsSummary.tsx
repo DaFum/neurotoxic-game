@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { formatCurrency } from '../../utils/numberUtils'
 import type { TFunction } from 'i18next'
@@ -111,18 +110,4 @@ export const SideEffectsSummary = ({
       ) : null}
     </motion.div>
   )
-}
-
-SideEffectsSummary.propTypes = {
-  result: PropTypes.shape({
-    moneyChange: PropTypes.number,
-    harmonyChange: PropTypes.number,
-    controversyChange: PropTypes.number,
-    loyaltyChange: PropTypes.number,
-    staminaChange: PropTypes.number,
-    moodChange: PropTypes.number,
-    targetMember: PropTypes.string
-  }).isRequired,
-  i18n: PropTypes.object,
-  t: PropTypes.func.isRequired
 }

@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next'
-import PropTypes from 'prop-types'
 import { Panel } from '../../ui/shared'
 import { ZealotryGauge } from './ZealotryGauge'
 import { SocialOptionButton } from './SocialOptionButton'
@@ -56,17 +55,4 @@ export const SocialPhase = ({
       </div>
     </Panel>
   )
-}
-
-SocialPhase.propTypes = {
-  options: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-      name: PropTypes.string,
-      platform: PropTypes.string
-    })
-  ).isRequired,
-  onSelect: PropTypes.func.isRequired,
-  trend: PropTypes.string,
-  zealotryLevel: PropTypes.number
 }

@@ -1,5 +1,4 @@
 import { memo, useState, useRef, useEffect, useId, useCallback } from 'react'
-import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 
 /**
@@ -86,10 +85,3 @@ const ToggleSwitchComponent = ({
 
 export const ToggleSwitch = memo(ToggleSwitchComponent)
 ToggleSwitch.displayName = 'ToggleSwitch'
-
-ToggleSwitch.propTypes = {
-  isOn: PropTypes.bool.isRequired,
-  onToggle: PropTypes.func.isRequired,
-  ariaLabel: PropTypes.string.isRequired,
-  className: PropTypes.string
-}

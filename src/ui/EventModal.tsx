@@ -2,7 +2,6 @@ import { useEffect, useRef, useCallback, useState, useMemo } from 'react'
 import { logger } from '../utils/logger'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
-import PropTypes from 'prop-types'
 import { AlertIcon } from './shared/BrutalistUI'
 import { VoidSkullIcon } from './shared/Icons'
 import { generateEffectText } from '../utils/effectFormatter'
@@ -333,23 +332,4 @@ export const EventModal = ({
       </motion.div>
     </div>
   )
-}
-
-EventModal.propTypes = {
-  event: PropTypes.shape({
-    title: PropTypes.string,
-    titleKey: PropTypes.string,
-    description: PropTypes.string,
-    descriptionKey: PropTypes.string,
-    options: PropTypes.arrayOf(
-      PropTypes.shape({
-        label: PropTypes.string.isRequired,
-        effect: PropTypes.object,
-        skillCheck: PropTypes.object,
-        outcomeText: PropTypes.string
-      })
-    )
-  }),
-  onOptionSelect: PropTypes.func.isRequired,
-  className: PropTypes.string
 }

@@ -14,10 +14,6 @@ import {
   TikTokIcon,
   YouTubeIcon
 } from '../../src/ui/shared/Icons'
-import {
-  AudioStatePropType,
-  OnAudioChangePropType
-} from '../../src/ui/shared/propTypes'
 
 vi.mock('../../src/ui/shared', () => ({
   SettingsPanel: ({ onToggleCRT, onLogLevelChange, onDeleteSave }) => (
@@ -224,10 +220,5 @@ describe('UI missing-target smoke/branch tests', () => {
 
     expect(container.querySelectorAll('svg').length).toBeGreaterThanOrEqual(6)
     expect(screen.getByTitle('Bandcamp')).toBeInTheDocument()
-  })
-
-  it('shared PropTypes shapes expose expected keys', () => {
-    expect(AudioStatePropType).toBeTruthy()
-    expect(OnAudioChangePropType).toBeTruthy()
   })
 })

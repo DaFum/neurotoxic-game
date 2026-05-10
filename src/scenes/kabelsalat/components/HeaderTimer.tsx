@@ -1,10 +1,8 @@
 /*
  * (#1) Actual Updates: Extracted HeaderTimer component.
 
-
  */
 import React from 'react'
-import PropTypes from 'prop-types'
 import type { FC } from 'react'
 import type { TFunction } from 'i18next'
 
@@ -36,9 +34,3 @@ export const HeaderTimer: FC<HeaderTimerProps> = React.memo(
   )
 )
 HeaderTimer.displayName = 'HeaderTimer'
-
-HeaderTimer.propTypes = {
-  t: PropTypes.func.isRequired,
-  isPoweredOn: PropTypes.bool.isRequired,
-  timeLeft: PropTypes.number.isRequired
-}

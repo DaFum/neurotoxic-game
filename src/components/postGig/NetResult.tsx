@@ -1,5 +1,4 @@
 import React from 'react'
-import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { formatNumber } from '../../utils/numberUtils'
@@ -47,7 +46,3 @@ export const NetResult = React.memo(({ net }: NetResultProps) => {
 })
 
 NetResult.displayName = 'NetResult'
-
-NetResult.propTypes = {
-  net: PropTypes.number.isRequired
-}

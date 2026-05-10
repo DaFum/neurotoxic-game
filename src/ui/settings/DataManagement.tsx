@@ -1,5 +1,4 @@
 import { memo } from 'react'
-import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { DeadmanButton } from '../shared/BrutalistUI'
 
@@ -28,7 +27,3 @@ export const DataManagement = memo(function DataManagement({
     </div>
   )
 })
-
-DataManagement.propTypes = {
-  onDeleteSave: PropTypes.func.isRequired
-}

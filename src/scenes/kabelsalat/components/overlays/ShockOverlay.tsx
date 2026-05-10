@@ -1,10 +1,8 @@
 /*
  * (#1) Actual Updates: Created ShockOverlay component.
 
-
  */
 import React from 'react'
-import PropTypes from 'prop-types'
 import type { FC } from 'react'
 import type { TFunction } from 'i18next'
 
@@ -28,8 +26,3 @@ export const ShockOverlay: FC<ShockOverlayProps> = React.memo(
   }
 )
 ShockOverlay.displayName = 'ShockOverlay'
-
-ShockOverlay.propTypes = {
-  t: PropTypes.func.isRequired,
-  faultReason: PropTypes.string.isRequired
-}

@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../../ui/shared'
@@ -121,25 +120,4 @@ export const CompletePhase = ({
       </motion.div>
     </div>
   )
-}
-
-CompletePhase.propTypes = {
-  result: PropTypes.shape({
-    success: PropTypes.bool.isRequired,
-    message: PropTypes.string.isRequired,
-    totalFollowers: PropTypes.number.isRequired,
-    platform: PropTypes.string.isRequired,
-    moneyChange: PropTypes.number,
-    harmonyChange: PropTypes.number,
-    controversyChange: PropTypes.number,
-    loyaltyChange: PropTypes.number,
-    staminaChange: PropTypes.number,
-    moodChange: PropTypes.number,
-    targetMember: PropTypes.string
-  }).isRequired,
-  onContinue: PropTypes.func.isRequired,
-  onSpinStory: PropTypes.func,
-  player: PropTypes.object,
-  social: PropTypes.object,
-  isProcessingAction: PropTypes.bool
 }

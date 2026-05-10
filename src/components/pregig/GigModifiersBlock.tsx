@@ -4,7 +4,6 @@
 
  */
 import { motion } from 'framer-motion'
-import PropTypes from 'prop-types'
 import GigModifierButton from '../../ui/GigModifierButton'
 import type { TFunction } from 'i18next'
 import type { ModifierOption } from '../../hooks/usePreGigLogic'
@@ -122,25 +121,4 @@ export const GigModifiersBlock = ({
       </div>
     </motion.div>
   )
-}
-
-GigModifiersBlock.propTypes = {
-  t: PropTypes.func.isRequired,
-  gigModifierOptions: PropTypes.arrayOf(PropTypes.object).isRequired,
-  gigModifiers: PropTypes.object.isRequired,
-  toggleModifier: PropTypes.func.isRequired,
-  handleBandMeeting: PropTypes.func.isRequired,
-  bandMeetingCost: PropTypes.number.isRequired,
-  currentModifiers: PropTypes.shape({
-    activeEffects: PropTypes.arrayOf(
-      PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.shape({
-          key: PropTypes.string.isRequired,
-          fallback: PropTypes.string,
-          options: PropTypes.object
-        })
-      ])
-    ).isRequired
-  }).isRequired
 }
