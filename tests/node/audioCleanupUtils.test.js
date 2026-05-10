@@ -46,56 +46,70 @@ const {
   cleanupTransportEvents
 } = await import('../../src/utils/audio/cleanupUtils')
 
+const createMockSource = ({ stopThrows, disconnectThrows } = {}) => ({
+  stop: mock.fn(() => {
+    if (stopThrows) throw stopThrows
+  }),
+  disconnect: mock.fn(() => {
+    if (disconnectThrows) throw disconnectThrows
+  })
+})
+
 test('clearTransportEvent', async t => {
   t.beforeEach(() => {
     mockTone.getTransport().clear.mock.resetCalls()
     mockLogger.warn.mock.resetCalls()
   })
 
-  await t.test('returns early if id is null', () => {
-    clearTransportEvent(null, 'testEvent')
-    assert.strictEqual(mockTone.getTransport().clear.mock.calls.length, 0)
-    assert.strictEqual(mockLogger.warn.mock.calls.length, 0)
-  })
+  const clearEventCases = [
+    {
+      label: 'returns early if id is null',
+      id: null,
+      eventName: 'testEvent',
+      expectedCalls: 0
+    },
+    {
+      label: 'returns early if id is undefined',
+      id: undefined,
+      eventName: 'testEvent',
+      expectedCalls: 0
+    },
+    {
+      label: 'calls transport clear if id is 0',
+      id: 0,
+      eventName: 'zeroEvent',
+      expectedCalls: 1
+    },
+    {
+      label: 'calls transport clear if id is a string',
+      id: 'event-id-string',
+      eventName: 'stringEvent',
+      expectedCalls: 1
+    },
+    {
+      label: 'calls transport clear if id is provided',
+      id: 123,
+      eventName: 'testEvent',
+      expectedCalls: 1
+    }
+  ]
 
-  await t.test('calls transport clear if id is 0', () => {
-    const id = 0
-    clearTransportEvent(id, 'zeroEvent')
-    assert.strictEqual(mockTone.getTransport().clear.mock.calls.length, 1)
-    assert.strictEqual(
-      mockTone.getTransport().clear.mock.calls[0].arguments[0],
-      id
-    )
-    assert.strictEqual(mockLogger.warn.mock.calls.length, 0)
-  })
-
-  await t.test('calls transport clear if id is a string', () => {
-    const id = 'event-id-string'
-    clearTransportEvent(id, 'stringEvent')
-    assert.strictEqual(mockTone.getTransport().clear.mock.calls.length, 1)
-    assert.strictEqual(
-      mockTone.getTransport().clear.mock.calls[0].arguments[0],
-      id
-    )
-    assert.strictEqual(mockLogger.warn.mock.calls.length, 0)
-  })
-
-  await t.test('returns early if id is undefined', () => {
-    clearTransportEvent(undefined, 'testEvent')
-    assert.strictEqual(mockTone.getTransport().clear.mock.calls.length, 0)
-    assert.strictEqual(mockLogger.warn.mock.calls.length, 0)
-  })
-
-  await t.test('calls transport clear if id is provided', () => {
-    const id = 123
-    clearTransportEvent(id, 'testEvent')
-    assert.strictEqual(mockTone.getTransport().clear.mock.calls.length, 1)
-    assert.strictEqual(
-      mockTone.getTransport().clear.mock.calls[0].arguments[0],
-      id
-    )
-    assert.strictEqual(mockLogger.warn.mock.calls.length, 0)
-  })
+  for (const { label, id, eventName, expectedCalls } of clearEventCases) {
+    await t.test(label, () => {
+      clearTransportEvent(id, eventName)
+      assert.strictEqual(
+        mockTone.getTransport().clear.mock.calls.length,
+        expectedCalls
+      )
+      if (expectedCalls > 0) {
+        assert.strictEqual(
+          mockTone.getTransport().clear.mock.calls[0].arguments[0],
+          id
+        )
+      }
+      assert.strictEqual(mockLogger.warn.mock.calls.length, 0)
+    })
+  }
 
   await t.test('handles errors and logs warning', () => {
     const error = new Error('Tone error')
@@ -118,21 +132,18 @@ test('stopAndDisconnectSource', async t => {
     mockLogger.debug.mock.resetCalls()
   })
 
-  await t.test('returns early if source is null', () => {
-    stopAndDisconnectSource(null, 'testSource')
-    assert.strictEqual(mockLogger.debug.mock.calls.length, 0)
-  })
-
-  await t.test('returns early if source is undefined', () => {
-    stopAndDisconnectSource(undefined, 'testSource')
-    assert.strictEqual(mockLogger.debug.mock.calls.length, 0)
-  })
+  for (const invalidSource of [null, undefined, {}]) {
+    await t.test(
+      `handles non-callable source: ${String(invalidSource)}`,
+      () => {
+        stopAndDisconnectSource(invalidSource, 'testSource')
+        assert.strictEqual(mockLogger.debug.mock.calls.length, 0)
+      }
+    )
+  }
 
   await t.test('calls stop and disconnect on source', () => {
-    const mockSource = {
-      stop: mock.fn(),
-      disconnect: mock.fn()
-    }
+    const mockSource = createMockSource()
     stopAndDisconnectSource(mockSource, 'testSource')
     assert.strictEqual(mockSource.stop.mock.calls.length, 1)
     assert.strictEqual(mockSource.disconnect.mock.calls.length, 1)
@@ -141,12 +152,7 @@ test('stopAndDisconnectSource', async t => {
 
   await t.test('handles stop error and logs debug', () => {
     const error = new Error('Stop failed')
-    const mockSource = {
-      stop: mock.fn(() => {
-        throw error
-      }),
-      disconnect: mock.fn()
-    }
+    const mockSource = createMockSource({ stopThrows: error })
     stopAndDisconnectSource(mockSource, 'testSource')
     assert.strictEqual(mockLogger.debug.mock.calls.length, 1)
     assert.strictEqual(
@@ -160,12 +166,7 @@ test('stopAndDisconnectSource', async t => {
 
   await t.test('handles disconnect error and logs debug', () => {
     const error = new Error('Disconnect failed')
-    const mockSource = {
-      stop: mock.fn(),
-      disconnect: mock.fn(() => {
-        throw error
-      })
-    }
+    const mockSource = createMockSource({ disconnectThrows: error })
     stopAndDisconnectSource(mockSource, 'testSource')
     assert.strictEqual(mockLogger.debug.mock.calls.length, 1)
     assert.strictEqual(
@@ -178,14 +179,10 @@ test('stopAndDisconnectSource', async t => {
   await t.test('handles both stop and disconnect errors', () => {
     const stopError = new Error('Stop failed')
     const disconnectError = new Error('Disconnect failed')
-    const mockSource = {
-      stop: mock.fn(() => {
-        throw stopError
-      }),
-      disconnect: mock.fn(() => {
-        throw disconnectError
-      })
-    }
+    const mockSource = createMockSource({
+      stopThrows: stopError,
+      disconnectThrows: disconnectError
+    })
     stopAndDisconnectSource(mockSource, 'testSource')
 
     assert.strictEqual(mockLogger.debug.mock.calls.length, 2)
@@ -206,14 +203,6 @@ test('stopAndDisconnectSource', async t => {
       mockLogger.debug.mock.calls[1].arguments[2],
       disconnectError
     )
-  })
-
-  await t.test('handles invalid source object (no methods)', () => {
-    const mockSource = {} // No stop or disconnect methods
-    stopAndDisconnectSource(mockSource, 'testSource')
-
-    // Since we check typeof source.disconnect === 'function' and typeof source.stop === 'function', it will not fail
-    assert.strictEqual(mockLogger.debug.mock.calls.length, 0)
   })
 })
 
@@ -284,27 +273,30 @@ test('cleanupGigPlayback', async t => {
     mockAudioState.gigSource = null
   })
 
-  await t.test('cleans up gigSource if present', () => {
-    const mockSource = {
-      stop: mock.fn(),
-      disconnect: mock.fn()
+  const gigPlaybackCases = [
+    {
+      label: 'cleans up gigSource if present',
+      source: createMockSource(),
+      expectsSourceCleanup: true
+    },
+    {
+      label: 'calls resetGigState even if gigSource is null',
+      source: null,
+      expectsSourceCleanup: false
     }
-    mockAudioState.gigSource = mockSource
+  ]
 
-    cleanupGigPlayback()
-
-    assert.strictEqual(mockSource.stop.mock.calls.length, 1)
-    assert.strictEqual(mockSource.disconnect.mock.calls.length, 1)
-    assert.strictEqual(mockResetGigState.mock.calls.length, 1)
-  })
-
-  await t.test('calls resetGigState even if gigSource is null', () => {
-    mockAudioState.gigSource = null
-
-    cleanupGigPlayback()
-
-    assert.strictEqual(mockResetGigState.mock.calls.length, 1)
-  })
+  for (const { label, source, expectsSourceCleanup } of gigPlaybackCases) {
+    await t.test(label, () => {
+      mockAudioState.gigSource = source
+      cleanupGigPlayback()
+      if (expectsSourceCleanup && source) {
+        assert.strictEqual(source.stop.mock.calls.length, 1)
+        assert.strictEqual(source.disconnect.mock.calls.length, 1)
+      }
+      assert.strictEqual(mockResetGigState.mock.calls.length, 1)
+    })
+  }
 })
 
 test('cleanupAmbientPlayback', async t => {
@@ -312,27 +304,30 @@ test('cleanupAmbientPlayback', async t => {
     mockAudioState.ambientSource = null
   })
 
-  await t.test('cleans up ambientSource if present', () => {
-    const mockSource = {
-      stop: mock.fn(),
-      disconnect: mock.fn()
+  const ambientCases = [
+    {
+      label: 'cleans up ambientSource if present',
+      source: createMockSource(),
+      expectsCleanup: true
+    },
+    {
+      label: 'does nothing if ambientSource is null',
+      source: null,
+      expectsCleanup: false
     }
-    mockAudioState.ambientSource = mockSource
+  ]
 
-    cleanupAmbientPlayback()
-
-    assert.strictEqual(mockSource.stop.mock.calls.length, 1)
-    assert.strictEqual(mockSource.disconnect.mock.calls.length, 1)
-    assert.strictEqual(mockAudioState.ambientSource, null)
-  })
-
-  await t.test('does nothing if ambientSource is null', () => {
-    mockAudioState.ambientSource = null
-
-    cleanupAmbientPlayback()
-
-    assert.strictEqual(mockAudioState.ambientSource, null)
-  })
+  for (const { label, source, expectsCleanup } of ambientCases) {
+    await t.test(label, () => {
+      mockAudioState.ambientSource = source
+      cleanupAmbientPlayback()
+      if (expectsCleanup && source) {
+        assert.strictEqual(source.stop.mock.calls.length, 1)
+        assert.strictEqual(source.disconnect.mock.calls.length, 1)
+      }
+      assert.strictEqual(mockAudioState.ambientSource, null)
+    })
+  }
 })
 
 test('cleanupTransportEvents', async t => {
@@ -342,37 +337,46 @@ test('cleanupTransportEvents', async t => {
     mockAudioState.transportStopEventId = null
   })
 
-  await t.test('clears transport events and resets IDs', () => {
-    const endId = 123
-    const stopId = 456
-    mockAudioState.transportEndEventId = endId
-    mockAudioState.transportStopEventId = stopId
+  const transportEventCases = [
+    {
+      label: 'clears transport events and resets IDs',
+      endId: 123,
+      stopId: 456,
+      expectedClearCalls: 2
+    },
+    {
+      label: 'handles null IDs gracefully',
+      endId: null,
+      stopId: null,
+      expectedClearCalls: 0
+    }
+  ]
 
-    cleanupTransportEvents()
-
-    assert.strictEqual(mockTone.getTransport().clear.mock.calls.length, 2)
-    assert.ok(
-      mockTone
-        .getTransport()
-        .clear.mock.calls.some(c => c.arguments[0] === endId)
-    )
-    assert.ok(
-      mockTone
-        .getTransport()
-        .clear.mock.calls.some(c => c.arguments[0] === stopId)
-    )
-    assert.strictEqual(mockAudioState.transportEndEventId, null)
-    assert.strictEqual(mockAudioState.transportStopEventId, null)
-  })
-
-  await t.test('handles null IDs gracefully', () => {
-    mockAudioState.transportEndEventId = null
-    mockAudioState.transportStopEventId = null
-
-    cleanupTransportEvents()
-
-    assert.strictEqual(mockTone.getTransport().clear.mock.calls.length, 0)
-    assert.strictEqual(mockAudioState.transportEndEventId, null)
-    assert.strictEqual(mockAudioState.transportStopEventId, null)
-  })
+  for (const {
+    label,
+    endId,
+    stopId,
+    expectedClearCalls
+  } of transportEventCases) {
+    await t.test(label, () => {
+      mockAudioState.transportEndEventId = endId
+      mockAudioState.transportStopEventId = stopId
+      cleanupTransportEvents()
+      assert.strictEqual(
+        mockTone.getTransport().clear.mock.calls.length,
+        expectedClearCalls
+      )
+      for (const expectedId of [endId, stopId]) {
+        if (expectedId !== null) {
+          assert.ok(
+            mockTone
+              .getTransport()
+              .clear.mock.calls.some(c => c.arguments[0] === expectedId)
+          )
+        }
+      }
+      assert.strictEqual(mockAudioState.transportEndEventId, null)
+      assert.strictEqual(mockAudioState.transportStopEventId, null)
+    })
+  }
 })
