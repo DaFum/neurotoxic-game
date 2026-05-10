@@ -24,6 +24,7 @@ test('ChatterOverlay passes scene state to getRandomChatter', async () => {
   //  removed (handled by vitest env)
 
   vi.useFakeTimers({ apis: ['setTimeout', 'Date'] })
+
   // Dynamic import to apply mock
   const { ChatterOverlay } =
     await import('../../src/components/ChatterOverlay.tsx')

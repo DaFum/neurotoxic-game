@@ -8,7 +8,7 @@ import { DebugLogViewer } from './ui/DebugLogViewer'
 import { TutorialManager } from './components/TutorialManager'
 import { ChatterOverlay } from './components/ChatterOverlay'
 import ReloadPrompt from './components/ReloadPrompt'
-import { GameStateProvider, useGameState } from './context/GameState'
+import { GameStateProvider, useGameSelector, useGameActions } from './context/GameState'
 import { ErrorBoundary } from './ui/CrashHandler'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/react'
@@ -71,27 +71,50 @@ const SceneLoadingFallback = () => {
  * @returns {JSX.Element} Das gerenderte React-Element, das die aktive Szene und alle globalen Overlays/Hilfekomponenten enthält.
  */
 function GameContent() {
-  const gameState = useGameState()
-  const { currentScene, activeEvent, resolveEvent, settings } = gameState
+  const {
+    currentScene,
+    activeEvent,
+    settings,
+    minigameType,
+    band,
+    player,
+    gameMap,
+    social,
+    lastGigStats
+  } = useGameSelector((state) => ({
+    currentScene: state.currentScene,
+    activeEvent: state.activeEvent,
+    settings: state.settings,
+    minigameType: state.minigame?.type,
+    band: state.band,
+    player: state.player,
+    gameMap: state.gameMap,
+    social: state.social,
+    lastGigStats: state.lastGigStats
+  }))
+
+  const { resolveEvent } = useGameActions()
 
   // Construct a safe, read-only slice of state for ChatterOverlay
   // This avoids passing dispatch functions which violates the component's contract
+  // Memoizing this ensures ChatterOverlay, wrapped in React.memo, only re-renders
+  // when this specific slice of state changes, preventing global UI thrashing.
   const chatterState = useMemo(
     () => ({
       currentScene,
-      band: gameState.band,
-      player: gameState.player,
-      gameMap: gameState.gameMap,
-      social: gameState.social,
-      lastGigStats: gameState.lastGigStats
+      band,
+      player,
+      gameMap,
+      social,
+      lastGigStats
     }),
     [
       currentScene,
-      gameState.band,
-      gameState.player,
-      gameState.gameMap,
-      gameState.social,
-      gameState.lastGigStats
+      band,
+      player,
+      gameMap,
+      social,
+      lastGigStats
     ]
   )
 
@@ -131,7 +154,7 @@ function GameContent() {
             >
               <SceneRouter
                 currentScene={currentScene}
-                minigameType={gameState.minigame?.type}
+                minigameType={minigameType}
               />
             </motion.div>
           </AnimatePresence>

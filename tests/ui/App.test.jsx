@@ -144,8 +144,8 @@ const mockResolveEvent = vi.fn()
 const defaultMockGameState = {
   currentScene: GAME_PHASES.MENU,
   activeEvent: null,
-  resolveEvent: mockResolveEvent,
   settings: { crtEnabled: false },
+  minigame: { type: null },
   band: { members: [] },
   player: { currentNodeId: 'none' },
   gameMap: { nodes: {} },
@@ -155,6 +155,7 @@ const defaultMockGameState = {
 const mockGameState = {
   ...defaultMockGameState,
   settings: { ...defaultMockGameState.settings },
+  minigame: { ...defaultMockGameState.minigame },
   band: { ...defaultMockGameState.band },
   player: { ...defaultMockGameState.player },
   gameMap: { ...defaultMockGameState.gameMap },
@@ -167,14 +168,15 @@ vi.mock('../../src/context/GameState.tsx', () => ({
   GameStateProvider: ({ children }) => (
     <div data-testid='game-state-provider'>{children}</div>
   ),
-  useGameState: () => mockGameState
+  useGameSelector: (selector) => selector(mockGameState),
+  useGameActions: () => ({ resolveEvent: mockResolveEvent })
 }))
 
 const resetMockGameState = () => {
   mockGameState.currentScene = defaultMockGameState.currentScene
   mockGameState.activeEvent = defaultMockGameState.activeEvent
-  mockGameState.resolveEvent = defaultMockGameState.resolveEvent
   mockGameState.settings = { ...defaultMockGameState.settings }
+  mockGameState.minigame = { ...defaultMockGameState.minigame }
   mockGameState.band = { ...defaultMockGameState.band }
   mockGameState.player = { ...defaultMockGameState.player }
   mockGameState.gameMap = { ...defaultMockGameState.gameMap }
@@ -291,6 +293,7 @@ describe('App', () => {
     crtOverlay = secondRender.container.querySelector('.crt-overlay')
     expect(crtOverlay).toBeTruthy()
   })
+
 
   test('passes the expected gameState slice to chatter overlay', () => {
     mockGameState.currentScene = GAME_PHASES.GIG
