@@ -124,7 +124,7 @@ function triggerInstrumentNote(
       midiPitch,
       time,
       velocity,
-      audioState.midiDrumKit || undefined
+      audioState.midiDrumKit ?? undefined
     )
   }
 
