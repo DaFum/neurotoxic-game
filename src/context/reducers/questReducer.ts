@@ -1,9 +1,10 @@
 /**
  * Architecture (Quest System / Clean Architecture):
- * This reducer acts purely as an integration point. The actual quest lifecycle
- * logic (progress, completion, deadlines) is intentionally maintained independently
- * in `src/domain/questLifecycle.ts`. The domain layer must not depend on or act as a
- * facade for reducers to prevent dependency inversion.
+ * This reducer acts as the integration point for quest-related state changes.
+ * The actual quest lifecycle logic (progress, completion, deadlines) is
+ * maintained independently in src/domain/questLifecycle.ts. The domain
+ * layer must remain isolated from the reducer layer to maintain a clean
+ * unidirectional dependency flow.
  */
 import { QuestLifecycle } from '../../domain/questLifecycle'
 

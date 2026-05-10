@@ -128,12 +128,12 @@ export const handleConsumeItem = (
 }
 
 /**
- * Architecture (Redux Orchestration / State Mutations):
+ * Architecture (Redux Orchestration / State Transitions):
  * Pure helper function to handle adding contraband.
- * This is exposed as a direct state-mutation helper rather than an action
+ * This is exposed as a direct state-update helper rather than an action
  * to allow other reducers (like minigameReducer and tradeReducer) to perform atomic
  * state updates across domain boundaries without requiring complex multi-action orchestration
- * in the hook layer, avoiding potential Time-of-Check to Time-of-Use (TOCTOU) race conditions.
+ * in the hook layer, avoiding potential stale-state race conditions.
  */
 export const addContrabandHelper = (
   state: GameState,
