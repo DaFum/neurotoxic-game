@@ -90,8 +90,8 @@ jq '.dependencies, .devDependencies' package.json
 # Find file/directory references in SKILL.md
 grep -E '(src/|packages/|\.\./)' SKILL.md
 
-# Verify they exist
-for path in $(grep -o '[a-zA-Z0-9/_.-]*\.js[x]*' SKILL.md); do
+# Verify they exist (covers .js, .jsx, .ts, .tsx)
+for path in $(grep -oE '[a-zA-Z0-9/_.-]+\.(tsx?|jsx?)' SKILL.md | sort -u); do
   [ -f "$path" ] && echo "✓ $path exists" || echo "✗ $path MISSING"
 done
 ```
@@ -102,7 +102,37 @@ done
 - Do multiple skills reference this path? → Check for cascading drift (see Monorepo Strategy below)
 - Does the path change affect imports or tooling? → Escalate to skill-creator
 
-### 4. **Terminology/Doc Mismatch** (Subtle)
+### 4. **Extension Mismatch** (.js/.jsx vs .ts/.tsx)
+
+**What it looks like:**
+
+- Skill says: `src/context/gameReducer.js`
+- Repo says: `src/context/gameReducer.ts` (TypeScript codebase)
+
+**How to detect:**
+
+```bash
+# Find .js/.jsx src references in narrative text (skip code-block imports and test files)
+grep -n 'src/.*\.jsx\?\b' SKILL.md | grep -v '\.test\.\|\.spec\.\|\.config\.\|\.mjs\|vite\|setup'
+
+# Verify actual extension on disk
+for f in $(grep -o 'src/[a-zA-Z0-9/_.-]*\.jsx\?' SKILL.md | sort -u); do
+  base="${f%.*}"
+  found=false
+  for ext in .ts .tsx .js .jsx; do
+    [ -f "$base$ext" ] && echo "✓ exists as $base$ext" && found=true && break
+  done
+  $found || echo "✗ MISSING: $f"
+done
+```
+
+**Decision tree:**
+
+- Does the `.ts`/`.tsx` version exist? → Update extension in skill narrative text
+- File is genuinely missing from repo? → Note as aspirational/placeholder path
+- Reference is inside a `node:test` import statement? → Keep `.js` — ESM resolution requires it even for `.ts` sources
+
+### 5. **Terminology/Doc Mismatch** (Subtle)
 
 **What it looks like:**
 

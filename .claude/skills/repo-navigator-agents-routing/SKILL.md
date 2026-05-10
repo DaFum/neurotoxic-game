@@ -41,10 +41,10 @@ Direct questions to the correct domain and authoritative documentation.
 **Routing**:
 
 1.  **Money** is global state -> `src/context/`.
-2.  **Starting values** -> `src/context/initialState.js`.
+2.  **Starting values** -> `src/context/initialState.ts`.
 3.  **Rules** -> `src/context/AGENTS.md`.
 
 **Output**:
-"Modify `src/context/initialState.js`. Consult `src/context/AGENTS.md` for state constraints."
+"Modify `src/context/initialState.ts`. Consult `src/context/AGENTS.md` for state constraints."
 
 _Skill sync: compatible with React 19.2.5 / Vite 8.0.10 baseline as of 2026-05-10._

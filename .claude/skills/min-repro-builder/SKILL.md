@@ -12,8 +12,8 @@ Isolate bugs by creating a minimal, self-contained reproduction environment.
 1.  **Select the Canvas**
     Identify where to build the repro.
     - **Unit Test**: `tests/repro.test.js` (for logic/state).
-    - **Component**: `src/ui/Repro.jsx` (for UI/rendering).
-    - **Scene**: `src/scenes/ReproScene.jsx` (for game loop/audio).
+    - **Component**: `src/ui/Repro.tsx` (for UI/rendering).
+    - **Scene**: `src/scenes/ReproScene.tsx` (for game loop/audio).
 
 2.  **Minimize State**
     Start with `initialState` and strip everything not needed.

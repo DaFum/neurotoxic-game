@@ -11,7 +11,7 @@ Enhance the application with developer-facing diagnostic tools.
 
 1.  **Determine the Tooling Type**
     - **Visual Overlay**: Real-time stats (FPS, state). Add to `DebugLogViewer` or a new overlay.
-    - **Logging**: Structured events. Use `src/utils/logger.js`.
+    - **Logging**: Structured events. Use `src/utils/logger.ts`.
     - **Control**: Toggles/Actions. Add keyboard shortcuts or URL params.
 
 2.  **Integrate with Existing Systems**
