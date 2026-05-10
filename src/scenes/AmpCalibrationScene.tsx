@@ -26,7 +26,10 @@ export const AmpCalibrationScene = () => {
     voidResonance,
     isAnomalyActive,
     interference,
-    purgeInterference
+    purgeInterference,
+    isHijackActive,
+    hijacksOverridden,
+    overrideHijack
   } = useAmpLogic()
 
   const { changeScene } = useGameState()
@@ -89,6 +92,8 @@ export const AmpCalibrationScene = () => {
         voidResonance={voidResonance}
         isAnomalyActive={isAnomalyActive}
         interference={interference}
+        isHijackActive={isHijackActive}
+        hijacksOverridden={hijacksOverridden}
       />
       <AmpControls
         dialValue={dialValue}
@@ -96,7 +101,10 @@ export const AmpCalibrationScene = () => {
         setDialValue={setDialValue}
         isOverdriveActive={isOverdriveActive}
         setIsOverdriveActive={setIsOverdriveActive}
+        interference={interference}
         purgeInterference={purgeInterference}
+        isHijackActive={isHijackActive}
+        overrideHijack={overrideHijack}
       />
     </MinigameSceneFrame>
   )

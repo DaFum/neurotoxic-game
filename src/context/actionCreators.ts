@@ -491,7 +491,8 @@ export const createStartAmpCalibrationAction = (
 export const createCompleteAmpCalibrationAction = (
   score: number,
   voidResonance: number = 0,
-  purgesUsed: number = 0
+  purgesUsed: number = 0,
+  hijacksOverridden: number = 0
 ): Extract<
   GameAction,
   { type: typeof ActionTypes.COMPLETE_AMP_CALIBRATION }
@@ -499,13 +500,15 @@ export const createCompleteAmpCalibrationAction = (
   const safeScore = Math.max(0, Number(score) || 0)
   const safeResonance = Math.max(0, Number(voidResonance) || 0)
   const safePurgesUsed = Math.max(0, Number(purgesUsed) || 0)
+  const safeHijacksOverridden = Math.max(0, Number(hijacksOverridden) || 0)
 
   return {
     type: ActionTypes.COMPLETE_AMP_CALIBRATION,
     payload: {
       score: safeScore,
       voidResonance: safeResonance,
-      purgesUsed: safePurgesUsed
+      purgesUsed: safePurgesUsed,
+      hijacksOverridden: safeHijacksOverridden
     }
   }
 }

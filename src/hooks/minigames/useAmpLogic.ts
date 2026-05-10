@@ -26,6 +26,12 @@ export function useAmpLogic() {
   const [voidResonance, setVoidResonance] = useState(0)
   const [isAnomalyActive, setIsAnomalyActive] = useState(false)
 
+  // Kranker Schrank Signal Hijack
+  const [isHijackActive, setIsHijackActive] = useState(false)
+  const [hijacksOverridden, setHijacksOverridden] = useState(0)
+  const isHijackActiveRef = useRef(false)
+  const hijacksOverriddenRef = useRef(0)
+
   // Neurotoxic Signal Jamming
   const [interference, setInterference] = useState(0)
   const interferenceRef = useRef(0)
@@ -43,6 +49,10 @@ export function useAmpLogic() {
   const voidResonanceRef = useRef(voidResonance)
   const isAnomalyActiveRef = useRef(isAnomalyActive)
   const gameStateRef = useRef(null)
+
+  useEffect(() => {
+    isHijackActiveRef.current = isHijackActive
+  }, [isHijackActive])
 
   useEffect(() => {
     dialValueRef.current = dialValue
@@ -79,6 +89,15 @@ export function useAmpLogic() {
   const finishCalledRef = useRef(false)
   const fallbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  const overrideHijack = useCallback(() => {
+    if (isHijackActiveRef.current) {
+      isHijackActiveRef.current = false
+      setIsHijackActive(false)
+      hijacksOverriddenRef.current += 1
+      setHijacksOverridden(prev => prev + 1)
+    }
+  }, [])
+
   const finishMinigame = useCallback(() => {
     if (finishCalledRef.current) return
     finishCalledRef.current = true
@@ -90,7 +109,8 @@ export function useAmpLogic() {
     completeAmpCalibration(
       finalScore,
       voidResonanceRef.current,
-      purgesUsedRef.current
+      purgesUsedRef.current,
+      hijacksOverriddenRef.current
     )
   }, [completeAmpCalibration])
 
@@ -209,6 +229,12 @@ export function useAmpLogic() {
         setTargetValue(prev => Math.max(0, Math.min(1000, prev + shift)))
       }
 
+      // Kranker Schrank Hijack Logic
+      if (!isHijackActiveRef.current && getSafeRandom() < 0.02 * (deltaMS / 100)) {
+        isHijackActiveRef.current = true
+        setIsHijackActive(true)
+      }
+
       // Neurotoxic interference buildup (kept in ref to avoid frame-by-frame React renders)
       interferenceRef.current = Math.min(
         100,
@@ -223,6 +249,10 @@ export function useAmpLogic() {
         currentScore *= 1.5 // 50% bonus score for overdrive
       } else if (currentIsOverheat) {
         currentScore *= 0.5 // Penalty while overheated
+      }
+
+      if (isHijackActiveRef.current) {
+        currentScore *= 0.2 // Huge penalty during active hijack
       }
 
       accumulatedScoreRef.current += currentScore * deltaMS
@@ -263,18 +293,38 @@ export function useAmpLogic() {
 
   // Keep gameStateRef up to date for Stage Controller
   useEffect(() => {
-    gameStateRef.current = {
-      dialValue,
-      targetValue,
-      isOverdriveActive,
-      isOverheat,
-      heat,
-      isAnomalyActive,
-      voidResonance,
-      interference: interferenceRef.current
+    if (gameStateRef.current) {
+      gameStateRef.current = {
+        ...gameStateRef.current,
+        dialValue,
+        targetValue,
+        isOverdriveActive,
+        isOverheat,
+        heat,
+        isAnomalyActive,
+        voidResonance,
+        interference: interferenceRef.current,
+        isHijackActive,
+        hijacksOverridden
+      }
+    } else {
+      gameStateRef.current = {
+        dialValue,
+        targetValue,
+        isOverdriveActive,
+        isOverheat,
+        heat,
+        isAnomalyActive,
+        voidResonance,
+        interference: interferenceRef.current,
+        isHijackActive,
+        hijacksOverridden
+      }
     }
   }, [
     interference,
+    isHijackActive,
+    hijacksOverridden,
     dialValue,
     targetValue,
     isOverdriveActive,
@@ -301,6 +351,9 @@ export function useAmpLogic() {
     voidResonance,
     isAnomalyActive,
     interference,
-    purgeInterference
+    purgeInterference,
+    isHijackActive,
+    hijacksOverridden,
+    overrideHijack
   }
 }

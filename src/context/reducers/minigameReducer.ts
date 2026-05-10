@@ -268,7 +268,7 @@ export const handleCompleteAmpCalibration = (
   state: GameState,
   payload: Record<string, unknown>
 ): GameState => {
-  const { score, voidResonance, purgesUsed } = payload
+  const { score, voidResonance, purgesUsed, hijacksOverridden } = payload
   logger.info('GameState', 'Amp Calibration Minigame Complete', payload)
 
   // Apply Results
@@ -276,7 +276,8 @@ export const handleCompleteAmpCalibration = (
     score,
     state.band,
     typeof voidResonance === 'number' ? voidResonance : 0,
-    typeof purgesUsed === 'number' ? purgesUsed : 0
+    typeof purgesUsed === 'number' ? purgesUsed : 0,
+    typeof hijacksOverridden === 'number' ? hijacksOverridden : 0
   )
 
   const nextHarmony = clampBandHarmony(state.band.harmony - stress)

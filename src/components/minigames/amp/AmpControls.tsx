@@ -10,7 +10,9 @@ export const AmpControls = memo(function AmpControls({
   isOverdriveActive,
   setIsOverdriveActive,
   purgeInterference,
-  interference
+  interference,
+  isHijackActive,
+  overrideHijack
 }: AmpControlsProps) {
   const { t } = useTranslation(['ui'])
 
@@ -52,7 +54,23 @@ export const AmpControls = memo(function AmpControls({
   const isPerfect = distance < 20
 
   return (
-    <div className='absolute bottom-16 left-1/2 -translate-x-1/2 z-(--z-hud) flex flex-col items-center gap-4 w-full max-w-md px-4'>
+    <div className='absolute bottom-16 left-1/2 -translate-x-1/2 z-(--z-hud) flex flex-col items-center gap-4 w-full max-w-md px-4 flex-1 min-h-0'>
+      {/* Hijack Override */}
+      {isHijackActive && (
+        <button
+          type='button'
+          onClick={overrideHijack}
+          className='w-full py-4 bg-blood-red text-star-white font-black text-2xl uppercase tracking-widest animate-pulse border-4 border-warning-yellow shadow-[0_0_20px_var(--color-blood-red)] hover:bg-warning-yellow hover:text-void-black hover:border-blood-red transition-all focus-visible:ring-2 focus-visible:ring-toxic-green'
+          aria-label={t('ui:minigames.amp.controls.overrideHijack', {
+            defaultValue: 'OVERRIDE NEUROTOXIC HIJACK'
+          })}
+        >
+          {t('ui:minigames.amp.controls.overrideHijack', {
+            defaultValue: 'OVERRIDE NEUROTOXIC HIJACK'
+          })}
+        </button>
+      )}
+
       <div className='flex justify-between w-full text-toxic-green font-mono text-sm'>
         <span>
           {t('ui:minigames.amp.controls.min', { defaultValue: '0Hz' })}

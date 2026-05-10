@@ -17,6 +17,7 @@ export class AmpStageController extends BaseStageController {
   isOverheat: boolean
   isAnomalyActive: boolean
   interference: number
+  isHijackActive: boolean
 
   constructor(options: StageControllerOptions<AmpStageOptions>) {
     super(options)
@@ -30,6 +31,7 @@ export class AmpStageController extends BaseStageController {
     this.isOverheat = false
     this.isAnomalyActive = false
     this.interference = 0
+    this.isHijackActive = false
   }
 
   async setup() {
@@ -47,7 +49,8 @@ export class AmpStageController extends BaseStageController {
       this.isOverdriveActive,
       this.isOverheat,
       this.isAnomalyActive,
-      this.interference
+      this.interference,
+      this.isHijackActive
     )
   }
 
@@ -85,6 +88,9 @@ export class AmpStageController extends BaseStageController {
         if (Number.isFinite(sanitizedInterference)) {
           this.interference = Math.max(0, Math.min(100, sanitizedInterference))
         }
+      }
+      if (Object.hasOwn(state, 'isHijackActive')) {
+        this.isHijackActive = Boolean(state.isHijackActive)
       }
     }
   }
@@ -131,7 +137,8 @@ export class AmpStageController extends BaseStageController {
       this.isOverdriveActive,
       this.isOverheat,
       this.isAnomalyActive,
-      this.interference
+      this.interference,
+      this.isHijackActive
     )
   }
 
@@ -144,7 +151,8 @@ export class AmpStageController extends BaseStageController {
       this.isOverdriveActive,
       this.isOverheat,
       this.isAnomalyActive,
-      this.interference
+      this.interference,
+      this.isHijackActive
     )
   }
 
