@@ -1,5 +1,5 @@
 import { test, describe } from 'vitest'
-import assert from 'node:assert'
+import assert from 'node:assert/strict'
 import { validateCrisisEvent } from '../../src/utils/eventValidator'
 
 describe('validateCrisisEvent', () => {

@@ -170,7 +170,7 @@ describe('travelUtils', () => {
         test(label, () => {
           const result = checkTravelPrerequisites(node, visibility, isConnected)
           assert.strictEqual(result.allowed, allowed)
-          if (errorKey) assert.strictEqual(result.errorKey, errorKey)
+          assert.strictEqual(result.errorKey, errorKey)
         })
       }
     )
@@ -215,7 +215,7 @@ describe('travelUtils', () => {
             van: { fuel: vanFuel }
           })
           assert.strictEqual(result.allowed, allowed)
-          if (errorKey) assert.strictEqual(result.errorKey, errorKey)
+          assert.strictEqual(result.errorKey, errorKey)
         })
       }
     )

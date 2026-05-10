@@ -1,5 +1,5 @@
 import { describe, it, beforeEach, afterEach } from 'vitest'
-import assert from 'node:assert'
+import assert from 'node:assert/strict'
 import { handleError, StateError } from '../../src/utils/errorHandler'
 
 describe('errorHandler', () => {

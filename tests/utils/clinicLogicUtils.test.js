@@ -50,13 +50,7 @@ describe('clinicLogicUtils', () => {
       { label: 'member is null', member: null, trait: 'cool_trait' },
       {
         label: 'member already has the trait',
-        member: {
-          id: 'm1',
-          stamina: 50,
-          mood: 50,
-          traits: { cool_trait: true },
-          relationships: {}
-        },
+        member: { ...VALID_MEMBER, traits: { cool_trait: true } },
         trait: 'cool_trait'
       }
     ]
