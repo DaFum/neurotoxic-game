@@ -6,7 +6,7 @@
  * displayed expenses with no hidden deductions. These tests validate the display
  * logic is correct for positive, negative, and zero net values.
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, afterEach } from 'vitest'
 import { render, screen, cleanup } from '@testing-library/react'
 import { NetResult } from '../../src/components/postGig/NetResult'
 
@@ -83,8 +83,11 @@ describe('NetResult', () => {
     expect(NetResult.displayName).toBe('NetResult')
   })
 
-  it('is memoized (React.memo)', () => {
-    // React.memo wraps the component; the raw object exposes $$typeof
-    expect(NetResult.$$typeof?.toString()).toMatch(/memo/)
+  it('is memoized (React.memo) — displayName is preserved through the wrapper', () => {
+    // React.memo sets displayName on the wrapper; if it's set the wrapping succeeded.
+    // $$typeof is a React internal and must not be asserted on.
+    expect(NetResult.displayName).toBe('NetResult')
+    // The wrapped component exposes `type` which is the inner function
+    expect(typeof NetResult.type).toBe('function')
   })
 })

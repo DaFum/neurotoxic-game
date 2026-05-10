@@ -17,7 +17,6 @@ import {
   clampMemberMood,
   clampVanFuel,
   clampVanCondition,
-  clampPlayerFame,
   calcCancellationRisk,
   BALANCE_CONSTANTS
 } from '../../src/utils/gameStateUtils'
@@ -234,6 +233,18 @@ describe('handleUpdatePlayer invariants', () => {
     // isForbiddenKey check should reject '__proto__' — state unchanged
     const next = handleUpdatePlayer(state, payload)
     assert.strictEqual(next, state)
+    // Explicit prototype-pollution guard: hostile key must not appear on player
+    assert.strictEqual(
+      Object.hasOwn(next.player, '__proto__'),
+      false,
+      'hostile __proto__ key must not be written to player'
+    )
+    // Global Object.prototype must not have been poisoned
+    assert.strictEqual(
+      Object.hasOwn(Object.prototype, 'money'),
+      false,
+      'Object.prototype must not be polluted'
+    )
   })
 
   it('ignores NaN money', () => {

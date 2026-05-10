@@ -8,7 +8,7 @@
  * save-validator and systemReducer migration tests have a realistic source of truth.
  */
 import { test, expect } from '@playwright/test'
-import { skipToMenu, raceWithCrash } from './helpers.js'
+import { skipToMenu } from './helpers.js'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -32,7 +32,8 @@ async function openSettings(page) {
   const settingsTab = modal.getByRole('tab', { name: /settings/i })
   await settingsTab.click()
 
-  await page.waitForTimeout(300) // let tab transition settle
+  // Wait for the tab panel to become visible rather than a fixed delay.
+  await expect(modal.getByRole('tabpanel')).toBeVisible()
 }
 
 // ---------------------------------------------------------------------------
@@ -102,12 +103,12 @@ test.describe('Settings Persistence', () => {
     await skipToMenu(page)
     await openSettings(page)
 
-    // Close modal so any pending writes flush
+    // Close modal and wait until it's gone so any pending writes flush.
     await page.keyboard.press('Escape')
-    await page.waitForTimeout(500)
+    await expect(page.getByRole('dialog')).toBeHidden()
 
     const rawSettings = await page.evaluate(() =>
-      localStorage.getItem('neurotoxic_settings')
+      localStorage.getItem('neurotoxic_global_settings')
     )
 
     // Key must exist (the game may write on first launch)
@@ -117,7 +118,9 @@ test.describe('Settings Persistence', () => {
       try {
         parsed = JSON.parse(rawSettings)
       } catch {
-        throw new Error(`neurotoxic_settings is not valid JSON: ${rawSettings}`)
+        throw new Error(
+          `neurotoxic_global_settings is not valid JSON: ${rawSettings}`
+        )
       }
 
       // The settings object must not contain forbidden prototype-pollution keys
@@ -197,7 +200,7 @@ test.describe('localStorage Prototype-Pollution Guard', () => {
         __proto__: { money: -99999 },
         crtEnabled: true
       })
-      localStorage.setItem('neurotoxic_settings', hostile)
+      localStorage.setItem('neurotoxic_global_settings', hostile)
     })
 
     // Reload — the game must start without crashing

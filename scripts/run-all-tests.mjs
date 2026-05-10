@@ -73,42 +73,53 @@ const bail = result => {
 }
 
 // ---------------------------------------------------------------------------
-// Phase A — test:node + test:vitest:logic in parallel
+// Execution strategy
+//
+// Default (4-core): Phase A = test:node + test:vitest:logic in parallel.
+//                   Phase B = test:ui sequential after Phase A.
+//   Running test:node and test:ui simultaneously on 4 cores saturates both;
+//   keeping them sequential gives each suite full worker allotment.
+//
+// NODE_ALL_PARALLEL=1: all three suites run concurrently in one Promise.all.
+//   Intended for ≥8-core machines where the OS has headroom to schedule all
+//   three without degradation.
 // ---------------------------------------------------------------------------
-console.log(
-  `[run-all-tests] Phase A: test:node (${nodeWorkers} workers) + test:vitest:logic (${logicWorkers} vitest worker, overlapped)`
-)
+const fullyParallel = process.env.NODE_ALL_PARALLEL === '1'
 
-const [nodeResult, logicResult] = await Promise.all([
-  runScript('test:node', baseEnv),
-  runScript('test:vitest:logic', logicEnv)
-])
-
-if (bail(nodeResult) | bail(logicResult)) {
-  // bitwise OR intentional: report both failures before exiting
-  process.exit(process.exitCode ?? 1)
-}
-
-// ---------------------------------------------------------------------------
-// Phase B — test:ui (full workers, sequential after Phase A)
-// ---------------------------------------------------------------------------
-const parallel = process.env.NODE_ALL_PARALLEL === '1'
-
-if (parallel) {
-  // On high-core machines the caller can opt in to a fully-parallel run.
-  // This is NOT the default because on 4-core machines it degrades both suites.
+if (fullyParallel) {
   console.log(
-    `[run-all-tests] Phase B: test:ui (${uiWorkers} workers, NODE_ALL_PARALLEL=1)`
+    `[run-all-tests] Fully parallel (NODE_ALL_PARALLEL=1): test:node (${nodeWorkers}) + test:vitest:logic (${logicWorkers}) + test:ui (${uiWorkers})`
   )
+  const [nodeResult, logicResult, uiResult] = await Promise.all([
+    runScript('test:node', baseEnv),
+    runScript('test:vitest:logic', logicEnv),
+    runScript('test:ui', baseEnv)
+  ])
+  if (bail(nodeResult) | bail(logicResult) | bail(uiResult)) {
+    process.exit(process.exitCode ?? 1)
+  }
 } else {
+  // Phase A — test:node + test:vitest:logic
+  console.log(
+    `[run-all-tests] Phase A: test:node (${nodeWorkers} workers) + test:vitest:logic (${logicWorkers} vitest worker, overlapped)`
+  )
+  const [nodeResult, logicResult] = await Promise.all([
+    runScript('test:node', baseEnv),
+    runScript('test:vitest:logic', logicEnv)
+  ])
+  if (bail(nodeResult) | bail(logicResult)) {
+    // bitwise OR intentional: report both failures before exiting
+    process.exit(process.exitCode ?? 1)
+  }
+
+  // Phase B — test:ui (full workers, after Phase A completes)
   console.log(
     `[run-all-tests] Phase B: test:ui (${uiWorkers} workers, sequential)`
   )
-}
-
-const uiResult = await runScript('test:ui', baseEnv)
-if (bail(uiResult)) {
-  process.exit(process.exitCode ?? 1)
+  const uiResult = await runScript('test:ui', baseEnv)
+  if (bail(uiResult)) {
+    process.exit(process.exitCode ?? 1)
+  }
 }
 
 console.log('[run-all-tests] All suites passed.')
