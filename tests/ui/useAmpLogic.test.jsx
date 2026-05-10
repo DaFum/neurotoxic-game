@@ -55,17 +55,38 @@ describe('useAmpLogic', () => {
     expect(mockChangeScene).not.toHaveBeenCalled()
   })
 
-  it('allows overriding a hijack', () => {
-    const { result } = renderHook(() => useAmpLogic())
+  it('allows overriding a hijack', async () => {
+    // We mock crypto so we get a specific random number for the spawn threshold
+    vi.doMock('../../src/utils/crypto', () => ({
+      getSafeRandom: () => 0.0001
+    }))
 
-    // First we must force a hijack via an internal mock or just call the override when we mock the state
-    // But since it's an internal state, we can't easily force the random chance without mocking crypto.
-    // However, we can just call overrideHijack and see that it doesn't crash,
-    // and ideally mock getSafeRandom to force a hijack.
+    const { useAmpLogic: useMockedAmpLogic } =
+      await import('../../src/hooks/minigames/useAmpLogic')
+    const { result } = renderHook(() => useMockedAmpLogic())
 
-    // Since we just want a basic structural test for the hook's new function:
     expect(result.current.hijacksOverridden).toBe(0)
     expect(result.current.isHijackActive).toBe(false)
-    expect(typeof result.current.overrideHijack).toBe('function')
+
+    act(() => {
+      // 0.0001 < 0.02 * (5000 / 100) = 1.0 => guaranteed hijack trigger
+      result.current.update(5000, 5)
+    })
+
+    // Give state a moment to flush
+    act(() => {
+      vi.advanceTimersByTime(100)
+    })
+
+    expect(result.current.isHijackActive).toBe(true)
+
+    act(() => {
+      result.current.overrideHijack()
+    })
+
+    expect(result.current.isHijackActive).toBe(false)
+    expect(result.current.hijacksOverridden).toBe(1)
+
+    vi.doUnmock('../../src/utils/crypto')
   })
 })

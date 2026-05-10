@@ -65,9 +65,17 @@ export const AmpCalibrationScene = () => {
             })}
           </div>
         )}
+        {hijacksOverridden > 0 && (
+          <div className='text-warning-yellow font-bold'>
+            {t('ui:minigames.amp.completion.hijacks', {
+              defaultValue: `Hijacks Overridden: ${hijacksOverridden}`,
+              hijacksOverridden
+            })}
+          </div>
+        )}
       </div>
     ),
-    [t, score, voidResonance]
+    [t, score, voidResonance, hijacksOverridden]
   )
 
   return (

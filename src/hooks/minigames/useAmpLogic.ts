@@ -230,7 +230,10 @@ export function useAmpLogic() {
       }
 
       // Kranker Schrank Hijack Logic
-      if (!isHijackActiveRef.current && getSafeRandom() < 0.02 * (deltaMS / 100)) {
+      if (
+        !isHijackActiveRef.current &&
+        getSafeRandom() < 0.02 * (deltaMS / 100)
+      ) {
         isHijackActiveRef.current = true
         setIsHijackActive(true)
       }
@@ -293,33 +296,17 @@ export function useAmpLogic() {
 
   // Keep gameStateRef up to date for Stage Controller
   useEffect(() => {
-    if (gameStateRef.current) {
-      gameStateRef.current = {
-        ...gameStateRef.current,
-        dialValue,
-        targetValue,
-        isOverdriveActive,
-        isOverheat,
-        heat,
-        isAnomalyActive,
-        voidResonance,
-        interference: interferenceRef.current,
-        isHijackActive,
-        hijacksOverridden
-      }
-    } else {
-      gameStateRef.current = {
-        dialValue,
-        targetValue,
-        isOverdriveActive,
-        isOverheat,
-        heat,
-        isAnomalyActive,
-        voidResonance,
-        interference: interferenceRef.current,
-        isHijackActive,
-        hijacksOverridden
-      }
+    gameStateRef.current = {
+      dialValue,
+      targetValue,
+      isOverdriveActive,
+      isOverheat,
+      heat,
+      isAnomalyActive,
+      voidResonance,
+      interference: interferenceRef.current,
+      isHijackActive,
+      hijacksOverridden
     }
   }, [
     interference,

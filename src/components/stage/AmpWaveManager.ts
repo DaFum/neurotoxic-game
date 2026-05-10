@@ -93,7 +93,8 @@ export class AmpWaveManager {
 
     if (interference > 0 && Math.random() < interference / 200) {
       targetJitter += interference
-      if (!isHijackActive) finalTargetColor = getPixiColorFromToken('--warning-yellow')
+      if (!isHijackActive)
+        finalTargetColor = getPixiColorFromToken('--warning-yellow')
     }
 
     this.drawSineWave(
@@ -135,7 +136,7 @@ export class AmpWaveManager {
     }
 
     if (isHijackActive) {
-      currentColor = getPixiColorFromToken('--void-black')
+      currentColor = getPixiColorFromToken('--warning-yellow')
       currentAmplitude = 50
       currentJitter = 200
       currentWidth = 12

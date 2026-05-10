@@ -1537,8 +1537,11 @@
   "travel.rivalEncounter": "Your rival band, {{rivalName}}, is in town!",
   "minigames.amp.hud.anomaly": "VOID ANOMALY DETECTED",
   "minigames.amp.hud.hijack": "HIJACK:",
+  "minigames.amp.hud.hijackActive": "ACTIVE",
+  "minigames.amp.hud.hijackClear": "CLEAR",
   "minigames.amp.hud.overrides": "OVERRIDES:",
   "minigames.amp.hud.interference": "INTERFERENCE",
   "minigames.amp.hud.resonance": "VOID RESONANCE",
-  "minigames.amp.completion.resonance": "Void Resonance Captured: {{voidResonance}}%"
+  "minigames.amp.completion.resonance": "Void Resonance Captured: {{voidResonance}}%",
+  "minigames.amp.completion.hijacks": "Hijacks Overridden: {{hijacksOverridden}}"
 }
