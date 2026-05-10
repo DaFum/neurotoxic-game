@@ -38,10 +38,6 @@ export type ChatterGameState = Pick<
   'currentScene' | 'band' | 'player' | 'gameMap' | 'social' | 'lastGigStats'
 >
 
-export interface ChatterOverlayProps {
-  gameState: ChatterGameState
-}
-
 export interface GigHUDProps {
   stats: {
     score: number

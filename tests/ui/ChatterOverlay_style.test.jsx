@@ -16,20 +16,26 @@ vi.mock('../../src/hooks/useChatterLogic', () => ({
   })
 }))
 
+const gameStateMock = {
+  currentScene: GAME_PHASES.GIG,
+  band: { members: [] },
+  player: { currentNodeId: 'none' },
+  gameMap: { nodes: {} },
+  social: {},
+  lastGigStats: {}
+}
+
+vi.mock('../../src/context/GameState.tsx', () => ({
+  useGameSelector: (selector) => selector(gameStateMock)
+}))
+
 test('ChatterOverlay stays above chrome on desktop and below touch overlays on mobile', async () => {
   // Use a dynamic import to ensure mocks are applied if needed (though here we mock before import anyway)
   // But for consistency with existing tests:
   const { ChatterOverlay } =
     await import('../../src/components/ChatterOverlay.tsx')
 
-  const gameState = {
-    currentScene: GAME_PHASES.GIG,
-    band: { members: [] },
-    player: { currentNodeId: 'none' },
-    gameMap: { nodes: {} }
-  }
-
-  const { getByRole } = render(<ChatterOverlay gameState={gameState} />)
+  const { getByRole } = render(<ChatterOverlay />)
 
   const container = getByRole('status')
 

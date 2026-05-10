@@ -1,4 +1,4 @@
-import { Suspense, useMemo } from 'react'
+import { Suspense } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { HUD } from './ui/HUD'
@@ -8,7 +8,7 @@ import { DebugLogViewer } from './ui/DebugLogViewer'
 import { TutorialManager } from './components/TutorialManager'
 import { ChatterOverlay } from './components/ChatterOverlay'
 import ReloadPrompt from './components/ReloadPrompt'
-import { GameStateProvider, useGameState } from './context/GameState'
+import { GameStateProvider, useGameSelector, useGameActions } from './context/GameState'
 import { ErrorBoundary } from './ui/CrashHandler'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/react'
@@ -71,29 +71,19 @@ const SceneLoadingFallback = () => {
  * @returns {JSX.Element} Das gerenderte React-Element, das die aktive Szene und alle globalen Overlays/Hilfekomponenten enthält.
  */
 function GameContent() {
-  const gameState = useGameState()
-  const { currentScene, activeEvent, resolveEvent, settings } = gameState
+  const {
+    currentScene,
+    activeEvent,
+    settings,
+    minigameType
+  } = useGameSelector((state) => ({
+    currentScene: state.currentScene,
+    activeEvent: state.activeEvent,
+    settings: state.settings,
+    minigameType: state.minigame?.type
+  }))
 
-  // Construct a safe, read-only slice of state for ChatterOverlay
-  // This avoids passing dispatch functions which violates the component's contract
-  const chatterState = useMemo(
-    () => ({
-      currentScene,
-      band: gameState.band,
-      player: gameState.player,
-      gameMap: gameState.gameMap,
-      social: gameState.social,
-      lastGigStats: gameState.lastGigStats
-    }),
-    [
-      currentScene,
-      gameState.band,
-      gameState.player,
-      gameState.gameMap,
-      gameState.social,
-      gameState.lastGigStats
-    ]
-  )
+  const { resolveEvent } = useGameActions()
 
   return (
     <div className='game-container relative w-full h-full overflow-hidden bg-void-black text-toxic-green'>
@@ -107,8 +97,7 @@ function GameContent() {
       <ToastOverlay />
       <ReloadPrompt />
 
-      {/* ChatterOverlay receives read-only state slice */}
-      <ChatterOverlay gameState={chatterState} />
+      <ChatterOverlay />
 
       <TutorialManager />
       {import.meta.env.DEV && <DebugLogViewer />}
@@ -131,7 +120,7 @@ function GameContent() {
             >
               <SceneRouter
                 currentScene={currentScene}
-                minigameType={gameState.minigame?.type}
+                minigameType={minigameType}
               />
             </motion.div>
           </AnimatePresence>
