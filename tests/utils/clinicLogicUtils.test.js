@@ -5,27 +5,33 @@ import {
   validateEnhanceMember
 } from '../../src/utils/clinicLogicUtils'
 
+const VALID_MEMBER = {
+  id: 'm1',
+  stamina: 50,
+  mood: 50,
+  traits: {},
+  relationships: {}
+}
+const SILENT_INVALID = { isValid: false, silent: true }
+
 describe('clinicLogicUtils', () => {
   describe('validateHealMember', () => {
     it('returns valid when member exists and player has enough money', () => {
-      const member = { id: 'm1', stamina: 50, mood: 50, traits: {}, relationships: {} }
-      const result = validateHealMember(member, 100, 50)
-      assert.deepStrictEqual(result, { isValid: true })
+      assert.deepStrictEqual(validateHealMember(VALID_MEMBER, 100, 50), {
+        isValid: true
+      })
     })
-
-    it('returns silent invalid when member is null', () => {
-      const result = validateHealMember(null, 100, 50)
-      assert.deepStrictEqual(result, { isValid: false, silent: true })
-    })
-
-    it('returns silent invalid when member is undefined', () => {
-      const result = validateHealMember(undefined, 100, 50)
-      assert.deepStrictEqual(result, { isValid: false, silent: true })
+    ;[null, undefined].forEach(member => {
+      it(`returns silent invalid when member is ${member}`, () => {
+        assert.deepStrictEqual(
+          validateHealMember(member, 100, 50),
+          SILENT_INVALID
+        )
+      })
     })
 
     it('returns error when player does not have enough money', () => {
-      const member = { id: 'm1', stamina: 50, mood: 50, traits: {}, relationships: {} }
-      const result = validateHealMember(member, 40, 50)
+      const result = validateHealMember(VALID_MEMBER, 40, 50)
       assert.strictEqual(result.isValid, false)
       assert.strictEqual(result.errorKey, 'ui:clinic.not_enough_money')
       assert.strictEqual(result.defaultMessage, 'Not enough money.')
@@ -34,28 +40,44 @@ describe('clinicLogicUtils', () => {
 
   describe('validateEnhanceMember', () => {
     it('returns valid when member exists, no trait and player has enough fame', () => {
-      const member = { id: 'm1', stamina: 50, mood: 50, traits: {}, relationships: {} }
-      const result = validateEnhanceMember(member, 'cool_trait', 100, 50)
-      assert.deepStrictEqual(result, { isValid: true })
+      assert.deepStrictEqual(
+        validateEnhanceMember(VALID_MEMBER, 'cool_trait', 100, 50),
+        { isValid: true }
+      )
     })
 
-    it('returns silent invalid when member is null', () => {
-      const result = validateEnhanceMember(null, 'cool_trait', 100, 50)
-      assert.deepStrictEqual(result, { isValid: false, silent: true })
-    })
+    const silentCases = [
+      { label: 'member is null', member: null, trait: 'cool_trait' },
+      {
+        label: 'member already has the trait',
+        member: {
+          id: 'm1',
+          stamina: 50,
+          mood: 50,
+          traits: { cool_trait: true },
+          relationships: {}
+        },
+        trait: 'cool_trait'
+      }
+    ]
 
-    it('returns silent invalid when member already has the trait', () => {
-      const member = { id: 'm1', stamina: 50, mood: 50, traits: { cool_trait: true }, relationships: {} }
-      const result = validateEnhanceMember(member, 'cool_trait', 100, 50)
-      assert.deepStrictEqual(result, { isValid: false, silent: true })
+    silentCases.forEach(({ label, member, trait }) => {
+      it(`returns silent invalid when ${label}`, () => {
+        assert.deepStrictEqual(
+          validateEnhanceMember(member, trait, 100, 50),
+          SILENT_INVALID
+        )
+      })
     })
 
     it('returns error when player does not have enough fame', () => {
-      const member = { id: 'm1', stamina: 50, mood: 50, traits: {}, relationships: {} }
-      const result = validateEnhanceMember(member, 'cool_trait', 40, 50)
+      const result = validateEnhanceMember(VALID_MEMBER, 'cool_trait', 40, 50)
       assert.strictEqual(result.isValid, false)
       assert.strictEqual(result.errorKey, 'ui:clinic.not_enough_fame')
-      assert.strictEqual(result.defaultMessage, 'Not enough fame. The void demands sacrifice.')
+      assert.strictEqual(
+        result.defaultMessage,
+        'Not enough fame. The void demands sacrifice.'
+      )
     })
   })
 })
