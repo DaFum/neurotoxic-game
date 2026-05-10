@@ -11,15 +11,15 @@ Tune the game's economy, difficulty, and progression curves.
 
 1.  **Identify the Lever**
     Determine which system needs adjustment:
-    - **Economy**: `src/utils/economyEngine.js` (Payouts, Costs).
+    - **Economy**: `src/utils/economyEngine.ts` (Payouts, Costs).
     - **Events**: `src/data/events/` (Mood/Stamina impact).
-    - **Progression**: `src/data/venues.js` (Unlocks, Capacity).
-    - **Difficulty**: `src/data/songs.js` (BPM, Note Density).
+    - **Progression**: `src/data/venues.ts` (Unlocks, Capacity).
+    - **Difficulty**: `src/data/songs.ts` (BPM, Note Density).
 
 2.  **Analyze Current State**
     - Read the relevant data file.
     - Trace the calculation logic in utility files.
-    - Check for hard constraints (e.g., "Money cannot be negative" in `gameReducer.js`).
+    - Check for hard constraints (e.g., "Money cannot be negative" in `gameReducer.ts`).
 
 3.  **Propose Changes**
     Create a "Before vs. After" comparison.
@@ -27,7 +27,7 @@ Tune the game's economy, difficulty, and progression curves.
     - _Change_: Increase starting cash from 100 to 200. Reduce first venue fuel cost.
 
 4.  **Simulate Impact**
-    Use `src/utils/simulationUtils.js` (if available) or mental models to predict side effects.
+    Use `src/utils/simulationUtils.ts` (if available) or mental models to predict side effects.
     - _Risk_: "If we increase payouts, players unlock the van too fast."
 
 ## Tuning Guidelines
@@ -42,8 +42,8 @@ Tune the game's economy, difficulty, and progression curves.
 
 **Analysis**:
 
-1.  Check `src/data/venues.js`: First gig payout is $50.
-2.  Check `src/utils/economyEngine.js`: Travel cost is $10/node. Distance is 6 nodes.
+1.  Check `src/data/venues.ts`: First gig payout is $50.
+2.  Check `src/utils/economyEngine.ts`: Travel cost is $10/node. Distance is 6 nodes.
 3.  **Result**: Travel ($60) > Payout ($50).
 
 **Proposal**:
@@ -53,6 +53,6 @@ Tune the game's economy, difficulty, and progression curves.
 - **Decision**: Option A (Rewarding performance feels better than cheap travel).
 
 **Output**:
-"Adjusted `src/data/venues.js`: 'The Dive Bar' payout increased from 50 to 80 to cover travel costs."
+"Adjusted `src/data/venues.ts`: 'The Dive Bar' payout increased from 50 to 80 to cover travel costs."
 
-_Skill sync: compatible with React 19.2.4 / Vite 7.3.1 baseline as of 2026-02-17._
+_Skill sync: compatible with React 19.2.5 / Vite 8.0.10 baseline as of 2026-05-10._

@@ -76,9 +76,9 @@ Implement directly when scope is low-risk and well-bounded:
 
 Run before completion:
 
-1. `npm run lint`
-2. `npm run test`
-3. `npm run build`
+1. `pnpm run lint`
+2. `pnpm run test`
+3. `pnpm run build`
 4. Manual verification of affected flows.
 5. Review for lifecycle cleanup, state safety, and guardrails.
 

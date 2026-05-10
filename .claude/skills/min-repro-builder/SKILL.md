@@ -12,8 +12,8 @@ Isolate bugs by creating a minimal, self-contained reproduction environment.
 1.  **Select the Canvas**
     Identify where to build the repro.
     - **Unit Test**: `tests/repro.test.js` (for logic/state).
-    - **Component**: `src/ui/Repro.jsx` (for UI/rendering).
-    - **Scene**: `src/scenes/ReproScene.jsx` (for game loop/audio).
+    - **Component**: `src/ui/Repro.tsx` (for UI/rendering).
+    - **Scene**: `src/scenes/ReproScene.tsx` (for game loop/audio).
 
 2.  **Minimize State**
     Start with `initialState` and strip everything not needed.
@@ -47,4 +47,4 @@ Isolate bugs by creating a minimal, self-contained reproduction environment.
 **Output**:
 "Created `tests/repro_travel_crash.test.js`. Run with `node --test tests/repro_travel_crash.test.js`. Confirmed it throws an error."
 
-_Skill sync: compatible with React 19.2.4 / Vite 7.3.1 baseline as of 2026-02-17._
+_Skill sync: compatible with React 19.2.5 / Vite 8.0.10 baseline as of 2026-05-10._

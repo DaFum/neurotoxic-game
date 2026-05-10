@@ -5,148 +5,249 @@ description: Align skills with repository conventions and detect drift across th
 
 # Skill Aligner
 
-Detect and fix drift between skills and the repository. Drift happens when the repository changes (new versions, restructured paths, new commands) but skills still reference the old state. This skill helps you find drift systematically and fix it safely.
+Detect and fix drift between skills and the repository. Drift happens when the repository changes (new versions, restructured paths, new commands) but skills still reference the old state. This skill covers **every file inside a skill directory** — not just `SKILL.md`.
 
-## When to Use This Skill
+## Scope: What to Check
 
-**Single skill drift:**
+Each skill directory can contain any of these file types. All of them can carry drift.
 
-- A skill references `pnpm run lint:fix` but the repo only has `pnpm run lint`
-- A skill mentions "Vite 7" but you upgraded to "Vite 8.0.1"
-- A skill references `src/utils/` but you moved it to `packages/shared/src/utils/`
+| File type | Location pattern | What drifts |
+|:---|:---|:---|
+| Entry point | `SKILL.md` | commands, versions, paths, terminology |
+| Reference docs | `references/*.md` | same as above; often the densest drift |
+| Shell scripts | `scripts/*.sh` | package manager, script names, env assumptions |
+| Node scripts | `scripts/*.mjs`, `scripts/*.js`, `scripts/*.cjs` | import paths, API calls, package manager |
+| Python scripts | `scripts/*.py` | CLI invocations, file paths |
+| Agent specs | `agents/openai.yaml` | model names, display text |
+| Asset configs | `assets/*.json` | tool versions, rule sets |
+| Validation | `validation/rubric.yaml` | criteria tied to repo conventions |
+| Loose docs | `*.md` at skill root | any of the above |
 
-**Monorepo cascading drift:**
+**Audit order**: start with `SKILL.md`, then `references/`, then `scripts/`, then the rest. Fix in the same order — later files often mirror conventions established in earlier ones.
 
-- You restructured a monorepo from `frontend/src` to `packages/frontend/src`
-- This affects 3 skills at once — how do you sync in the right order?
-- What if syncing one skill breaks another?
-
-**Library-wide audits:**
-
-- You're maintaining 20+ skills — some may have stale references
-- You want to audit all skills for critical drift vs. cosmetic drift
-- You need a systematic approach to batch-update safely
+---
 
 ## Drift Detection Patterns
 
-These are the most common drift types. Learn to spot them quickly.
+### 1. Command Mismatch (Most Common)
 
-### 1. **Command Mismatch** (Most Common)
+**Applies to**: `SKILL.md`, `references/*.md`, `scripts/*.sh`, all script files.
 
 **What it looks like:**
-
-- Skill says: `npm run test:unit`
-- Repo says: `npm run test`
+- File says: `npm run test` or `npm ci`
+- Repo requires: `pnpm run test` or `pnpm install --frozen-lockfile` (AGENTS.md: "Use `pnpm` only.")
 
 **How to detect:**
 
 ```bash
-# Extract all pnpm run commands from SKILL.md
-grep -o 'pnpm run [a-z:]*' SKILL.md | sort -u
+# Scan every file in the skill for package-manager commands
+grep -rn "npm " .claude/skills/<skill-name>/
 
-# Compare to package.json scripts
+# Cross-reference scripts section of package.json
 jq '.scripts | keys' package.json
+
+# Check that pnpm run <name> actually exists
+grep -o 'pnpm run [a-z:_-]*' .claude/skills/<skill-name>/SKILL.md | sort -u | \
+  while read cmd; do
+    script="${cmd#pnpm run }"
+    jq -e --arg s "$script" '.scripts[$s]' package.json > /dev/null \
+      && echo "✓ $cmd" || echo "✗ MISSING in package.json: $cmd"
+  done
 ```
 
 **Decision tree:**
+- `npm` anywhere? → Replace with `pnpm`; `npm install` → `pnpm install`; `npm ci` → `pnpm install --frozen-lockfile`; `npm run X` → `pnpm run X`; `npm -v` → `pnpm -v`
+- Script name not in `package.json`? → Check if renamed; update to current name
+- Both names valid aliases? → Use the one listed in AGENTS.md critical commands
 
-- Is the script in package.json? → Update skill
-- Is the script missing? → Add to package.json, then update skill
-- Are both valid (e.g., `test` and `test:unit`)? → Ask: which does the skill actually use? Update to the correct one
+### 2. Version Mismatch (Critical)
 
-### 2. **Version Mismatch** (Critical)
+**Applies to**: sync lines in all `.md` files, inline version claims anywhere.
 
 **What it looks like:**
-
-- Skill says: "Vite 7 compatible"
-- Repo says: `"vite": "8.0.1"` in package.json
+- Sync line says: `React 19.2.4 / Vite 8.0.1`
+- Actual: `React 19.2.5 / Vite 8.0.10 / Tailwind 4.2.4`
 
 **How to detect:**
 
 ```bash
-# Find version references in SKILL.md
-grep -E '(v[0-9]+\.[0-9]+|React|Vite|Tailwind)' SKILL.md
+# Find all version references across the entire skill
+grep -rn -E '(React|Vite|Tailwind|Framer|Tone\.js|Node) [0-9]+\.[0-9]' .claude/skills/<skill-name>/
 
-# Compare to package.json
-jq '.dependencies, .devDependencies' package.json
+# Get ground truth
+jq '{react: .dependencies.react, vite: .devDependencies.vite, tailwindcss: .devDependencies.tailwindcss}' package.json
 ```
 
 **Decision tree:**
+- Sync line only? → Bulk `sed` replace across all files in the skill
+- Version claim in instructional text? → Update and verify the guidance is still accurate for the new version
+- API break between versions? → Escalate to `skill-creator`
 
-- Is the version mentioned just for context? → Update to current version
-- Is the version a constraint (e.g., "MUST use v8")? → Verify it's still a constraint, update if needed
-- Are there API changes between versions? → Escalate to skill-creator for deeper rewrite
+### 3. Extension Mismatch (.js/.jsx vs .ts/.tsx)
 
-### 3. **Path Mismatch** (Cascading Risk)
+**Applies to**: `SKILL.md`, all `references/*.md`, all `scripts/` that reference source paths.
 
 **What it looks like:**
-
-- Skill says: `src/components/Button.jsx`
-- Repo says: `packages/ui/src/components/Button.jsx` (after monorepo restructure)
+- File says: `src/context/gameReducer.js`
+- Repo has: `src/context/gameReducer.ts`
 
 **How to detect:**
 
 ```bash
-# Find file/directory references in SKILL.md
-grep -E '(src/|packages/|\.\./)' SKILL.md
+# Scan all markdown in the skill for .js/.jsx src/ references
+grep -rn 'src/.*\.jsx\?\b' .claude/skills/<skill-name>/ \
+  | grep -v '\.test\.\|\.spec\.\|config\.\|\.mjs\|setup\.'
 
-# Verify they exist
-for path in $(grep -o '[a-zA-Z0-9/_.-]*\.js[x]*' SKILL.md); do
-  [ -f "$path" ] && echo "✓ $path exists" || echo "✗ $path MISSING"
+# Verify actual extension on disk for each hit
+for f in $(grep -roh 'src/[a-zA-Z0-9/_.-]*\.jsx\?' .claude/skills/<skill-name>/ | sort -u); do
+  base="${f%.*}"
+  found=false
+  for ext in .ts .tsx .js .jsx; do
+    [ -f "$base$ext" ] && echo "✓ $base$ext" && found=true && break
+  done
+  $found || echo "✗ MISSING: $f"
 done
 ```
 
 **Decision tree:**
+- `.ts`/`.tsx` version exists on disk? → Update the reference
+- File is genuinely absent from repo? → Mark as aspirational; add a note
+- Reference is inside a `node:test` `import` statement? → Keep `.js` — `tsx` resolves `.js` imports to `.ts` at runtime; changing them would break tests
+- Reference is inside a shell `ls` or path description? → Update to `.ts`/`.tsx`
 
-- Is the path simply outdated? → Update to new location
-- Do multiple skills reference this path? → Check for cascading drift (see Monorepo Strategy below)
-- Does the path change affect imports or tooling? → Escalate to skill-creator
+### 4. Path Mismatch (Cascading Risk)
 
-### 4. **Terminology/Doc Mismatch** (Subtle)
+**Applies to**: all files in the skill.
 
 **What it looks like:**
-
-- Skill says: "Use Brutalist design" with custom CSS
-- AGENTS.md says: "Use Tailwind v4 @theme tokens"
+- File says: `src/utils/AudioManager.js`
+- Repo moved it to: `src/utils/audio/AudioManager.ts`
 
 **How to detect:**
 
 ```bash
-# Extract key terms from SKILL.md
-grep -i -E '(design|pattern|architecture|constraint)' SKILL.md
+# Find all src/ references across the skill
+grep -rn -oE 'src/[a-zA-Z0-9/_.-]+' .claude/skills/<skill-name>/ | sort -u
 
-# Compare to AGENTS.md and CLAUDE.md
-grep -i -E '(design|pattern|architecture|constraint)' AGENTS.md CLAUDE.md
+# Verify each directory still exists
+grep -roh -E 'src/[a-zA-Z0-9/_/-]+/' .claude/skills/<skill-name>/ | sort -u | \
+  while read dir; do [ -d "$dir" ] && echo "✓ $dir" || echo "✗ MISSING dir: $dir"; done
 ```
 
 **Decision tree:**
+- Path moved? → Update to new location in every file in the skill
+- Multiple skills share the stale path? → Fix in dependency order (leaf skills first); see Monorepo Strategy below
+- Path inside a code block showing an error message or generic example? → Keep if intentionally illustrative (e.g., `src/utils/missing.js` as a "file not found" example)
 
-- Is the skill's guidance aligned with AGENTS.md? → Update if not
-- Is the terminology outdated (e.g., "Brutalist" vs "Tailwind v4")? → Standardize language
-- Does the skill add domain-specific context missing from docs? → Keep and add reference to docs
+### 5. Script File Drift
 
-### 5. **Missing Feature/Capability**
+Shell scripts and Node scripts are executable artefacts — their bugs are silent until run.
+
+**What to check in `scripts/*.sh`:**
+
+```bash
+# Check shebang is present
+head -1 .claude/skills/<skill-name>/scripts/*.sh
+
+# Find npm commands
+grep -n "npm " .claude/skills/<skill-name>/scripts/*.sh
+
+# Find hardcoded script names and verify against package.json
+grep -oE 'pnpm run [a-z:_-]+' .claude/skills/<skill-name>/scripts/*.sh | sort -u | \
+  while read cmd; do
+    script="${cmd#pnpm run }"
+    jq -e --arg s "$script" '.scripts[$s]' package.json > /dev/null \
+      && echo "✓ $cmd" || echo "✗ script missing: $cmd"
+  done
+```
+
+**What to check in `scripts/*.mjs` / `scripts/*.js`:**
+
+```bash
+# Find npm references in Node scripts
+grep -n "npm " .claude/skills/<skill-name>/scripts/*.mjs .claude/skills/<skill-name>/scripts/*.js 2>/dev/null
+
+# Find src/ path references in scripts
+grep -n "src/" .claude/skills/<skill-name>/scripts/*.mjs .claude/skills/<skill-name>/scripts/*.js 2>/dev/null
+```
+
+**Decision tree:**
+- `npm` in `.sh`? → Replace with `pnpm`
+- Script references a `pnpm run X` that no longer exists? → Update to current script name
+- Script sources a path that moved? → Update path
+
+### 6. Cross-Skill Reference Drift
+
+Skills reference other skills by name in their descriptions, workflows, or escalation guidance.
 
 **What it looks like:**
-
-- Skill says: "Handles GitHub Actions"
-- Repo also uses: GitLab CI, but skill doesn't mention it
+- Skill says: "Escalate to `state-mutation-guard`"
+- Actual skill name: `state-safety-action-creator-guard`
 
 **How to detect:**
 
 ```bash
-# Find capability claims in SKILL.md
-grep -E '(supports?|handles?|works with)' SKILL.md
+# Extract skill name references from all files in the skill
+grep -roh -E '`[a-z][a-z-]+`' .claude/skills/<skill-name>/ | sort -u
 
-# Check actual repo setup
-ls -la | grep -E '(\.github|\.gitlab|\.circleci)'
+# Cross-reference against existing skill directories
+ls .claude/skills/ > /tmp/existing-skills.txt
+grep -roh -E '`[a-z][a-z-]+`' .claude/skills/<skill-name>/ | sort -u | tr -d '`' | \
+  while read name; do
+    grep -qx "$name" /tmp/existing-skills.txt && echo "✓ $name" || echo "? $name (not a skill dir)"
+  done
 ```
 
 **Decision tree:**
+- Name matches no skill directory? → Verify it was renamed, then update the reference
+- Skill was deleted? → Remove the reference or replace with the successor skill
+- Name is a generic term (not a skill)? → Ignore
 
-- Is the missing platform important? → Add guidance for it, or note it as out-of-scope
-- Would adding it require major rewrite? → Escalate to skill-creator
-- Is it a cosmetic gap? → Update description to be honest about scope
+### 7. Terminology / Doc Mismatch (Subtle)
+
+**Applies to**: all `.md` files.
+
+**What it looks like:**
+- Reference doc says: "import from `npm`" or "yarn add"
+- AGENTS.md says: pnpm only
+
+**How to detect:**
+
+```bash
+# Pull key constraints from AGENTS.md
+grep -E '(pnpm|npm|yarn|Howler|AudioContext|i18n|Tailwind|forwardRef)' AGENTS.md CLAUDE.md
+
+# Scan skill for contradictions
+grep -rn -E '(yarn |Howler\.js|React\.forwardRef|import type .* from)' .claude/skills/<skill-name>/
+```
+
+**Decision tree:**
+- Skill guidance contradicts AGENTS.md? → Update skill to match AGENTS.md
+- Skill adds domain context AGENTS.md lacks? → Keep; add a pointer to AGENTS.md for the constraint
+- Terminology is just cosmetically different (e.g., "module" vs "file")? → Leave unless confusing
+
+### 8. Missing Capability / Stale Scope
+
+**Applies to**: `SKILL.md` description front-matter and trigger conditions.
+
+**What it looks like:**
+- Skill description says it handles only Vite config
+- Repo now uses both Vite and Playwright — skill is silent on the latter
+
+**How to detect:**
+
+```bash
+# Check what the skill says it triggers on
+head -5 .claude/skills/<skill-name>/SKILL.md
+
+# Compare to AGENTS.md critical commands to see if new commands exist
+grep "pnpm run" AGENTS.md
+```
+
+**Decision tree:**
+- New tooling is in scope of the skill's purpose? → Add guidance or note the gap
+- New tooling is genuinely out of scope? → Update description to be explicit
+- Gap requires a new skill? → Escalate to `skill-creator`
 
 ---
 
@@ -154,183 +255,237 @@ ls -la | grep -E '(\.github|\.gitlab|\.circleci)'
 
 ### Phase 1: Audit (Detect Drift)
 
-**Step 1a: Skill Audit**
-Read the `SKILL.md` file. Extract:
+**Step 1a: Inventory all files**
 
-- All commands (`npm run ...`, `git`, `python`)
-- All file paths (`src/`, `packages/`, relative paths)
-- All version references (Vite, React, Node.js, etc.)
-- All terminology claims (what does it say it supports?)
+```bash
+# List every file in the skill
+find .claude/skills/<skill-name> -type f | sort
+```
 
-**Step 1b: Repository Audit**
-Cross-reference against current state:
+For each file, extract:
+- Package-manager commands (`npm`/`pnpm`/`yarn`)
+- `pnpm run <script>` names
+- File paths (`src/`, relative paths)
+- Version numbers (React, Vite, Tailwind, etc.)
+- Skill name references (backtick-wrapped identifiers)
 
-- `package.json` → scripts, versions, dependencies
-- `AGENTS.md` / `CLAUDE.md` → architecture, constraints, terminology
-- File system → does `src/utils/` still exist?
-- CI config (`.github/workflows/`, `.gitlab-ci.yml`) → what platforms are used?
+**Step 1b: Repository ground truth**
 
-**Step 1c: Dependency Mapping** (for monorepos)
+```bash
+# Scripts
+jq '.scripts | keys' package.json
 
-- Does this skill depend on other skills?
-- Do changes here affect other skills? (e.g., path changes in monorepo)
-- What's the dependency order? (e.g., sync shared-utils before frontend)
+# Versions
+jq '{react: .dependencies.react, vite: .devDependencies.vite, tailwindcss: .devDependencies.tailwindcss}' package.json
+
+# Constraints
+cat AGENTS.md CLAUDE.md
+```
+
+**Step 1c: Dependency mapping** (for multi-skill audits)
+
+- Which other skills does this one reference by name?
+- Which other skills reference _this_ one?
+- What's the safe sync order? (Fix foundational skills first)
 
 **Decision: Is there drift?**
 
-- No drift → Mark as clean, no action
-- Minor drift (1–2 items) → Handle inline in Phase 2
-- Major drift (3+ items, complex) → Consider escalating to skill-creator
+- No drift → Mark clean; update sync date only if it's stale
+- Minor (1–2 items) → Fix inline
+- Major (3+ items or structural) → Consider escalating to `skill-creator`
 
 ---
 
 ### Phase 2: Cross-Reference (Understand Impact)
 
-**Step 2a: Identify Drift Type**
-Classify each drift item:
+For each drift item, classify risk:
 
-- Command mismatch? → Low risk, easy fix
-- Version mismatch? → Medium risk, may need deep rewrite
-- Path mismatch? → High risk if monorepo, check for cascading effects
-- Terminology mismatch? → Low risk, update descriptions
-- Missing capability? → Medium risk, assess scope
+| Drift type | Risk | Typical fix |
+|:---|:---|:---|
+| `npm` → `pnpm` in script file | Low | `sed` replace |
+| `pnpm run X` not in package.json | Low–Medium | Update script name |
+| `.js` → `.ts` in narrative path | Low | `sed` replace |
+| Directory moved | Medium | Update all references in skill |
+| Version bump, no API change | Low | Update sync line |
+| Version bump with API change | High | Escalate to `skill-creator` |
+| Cross-skill name wrong | Low | Update reference |
+| Guidance contradicts AGENTS.md | High | Update to match AGENTS.md |
 
-**Step 2b: Risk Assessment**
-For each drift item, ask:
-
-1. Is this a simple find-replace? (Low risk)
-2. Does fixing this break other skills? (Check dependencies from 1c)
-3. Does this require domain expertise I lack? (Consider escalating)
-4. Is this a breaking change for users of this skill? (Document the update)
-
-**Step 2c: Update Decision**
-
-- **Update the skill**: Command mismatch, simple path changes, version bumps with no API changes
-- **Update the repo**: Rarely — only if the skill is right and repo config is wrong
-- **Escalate to skill-creator**: Complex rewrites, API changes, unclear scope, high-risk monorepo changes
-
-**Step 2d: Validation Plan**
-Before making changes:
-
-- How will I test that the fix worked? (e.g., "run the skill on a test prompt")
-- What could go wrong? (e.g., "if I change the path, does it break the skill logic?")
-- Do I need a rollback plan? (especially for monorepo changes)
+Before acting:
+1. Will this fix break something else in the skill?
+2. Does this drift appear in multiple files of the same skill?
+3. Does fixing here require fixing sibling skills too?
 
 ---
 
 ### Phase 3: Update (Fix Drift)
 
-**Step 3a: Apply Changes**
+**Step 3a: Apply changes — in file-type order**
 
-- Update commands to match `package.json`
-- Update paths to match current repo structure
-- Update version references
-- Update terminology to match AGENTS.md/CLAUDE.md
-- Add references to new capabilities (e.g., "This skill also works with GitLab CI — see `X` for setup")
+1. `SKILL.md` first (sets the canonical terms other files must match)
+2. `references/*.md` (densest content; most drift)
+3. `scripts/` (executable; highest impact if wrong)
+4. Everything else
 
-**Step 3b: Monorepo Safety** (if applicable)
+For bulk version/extension updates across an entire skill:
 
-- Sync in dependency order (shared → frontend/backend)
-- Verify each update with a test run
-- Watch for cascading breakage (if one skill update breaks another, stop and reassess)
+```bash
+# Bulk version replace across all files in a skill
+find .claude/skills/<skill-name> -type f \( -name "*.md" -o -name "*.sh" -o -name "*.mjs" \) \
+  -exec sed -i \
+    -e 's/React 19\.2\.4/React 19.2.5/g' \
+    -e 's/Vite 8\.0\.1\b/Vite 8.0.10/g' \
+    -e 's/Tailwind 4\.2\.2/Tailwind 4.2.4/g' \
+  {} \;
 
-**Step 3c: Verification**
+# Bulk npm → pnpm in shell scripts
+find .claude/skills/<skill-name>/scripts -name "*.sh" \
+  -exec sed -i \
+    -e 's/\bnpm -v\b/pnpm -v/g' \
+    -e 's/\bnpm install\b/pnpm install/g' \
+    -e 's/\bnpm ci\b/pnpm install --frozen-lockfile/g' \
+    -e 's/\bnpm run \([a-z:_-]*\)/pnpm run \1/g' \
+  {} \;
+```
 
-- Run the skill on a test prompt to confirm it still works
-- Check that referenced files exist and paths are correct
-- Verify commands actually run: `pnpm run <script>` without errors
-- Re-read AGENTS.md/CLAUDE.md to confirm alignment
+**Step 3b: Verify each change**
 
-**Step 3d: Document**
+```bash
+# No npm left in scripts
+grep -rn "npm " .claude/skills/<skill-name>/scripts/
 
-- Commit message should note what drifted and why (e.g., "sync to React 19.2.4 upgrade")
-- If changes affect multiple skills, note the dependency chain
-- If you escalated to skill-creator, document why
+# No stale .js src paths in narrative markdown
+grep -rn 'src/.*\.jsx\?\b' .claude/skills/<skill-name>/ \
+  | grep -v '\.test\.\|config\.\|\.mjs\|import '
+
+# All pnpm run commands valid
+grep -roh 'pnpm run [a-z:_-]*' .claude/skills/<skill-name>/ | sort -u | \
+  while read cmd; do
+    script="${cmd#pnpm run }"
+    jq -e --arg s "$script" '.scripts[$s]' package.json > /dev/null \
+      && echo "✓ $cmd" || echo "✗ NOT IN package.json: $cmd"
+  done
+```
+
+**Step 3c: Update sync line**
+
+Every `SKILL.md` should end with a sync line. Update it after fixing:
+
+```
+_Skill sync: compatible with React 19.2.5 / Vite 8.0.10 / Tailwind 4.2.4 baseline as of YYYY-MM-DD._
+```
+
+For reference files with their own sync lines, update those too.
+
+**Step 3d: Commit**
+
+Use Conventional Commits. Describe what drifted and why:
+
+```
+fix: sync <skill-name> to React 19.2.5 / Vite 8.0.10 baseline
+
+- references/improvement-patterns.md: .js → .ts for src/ paths
+- scripts/quality-gate.sh: npm run → pnpm run
+- SKILL.md: sync line date updated
+```
 
 ---
 
 ## Common Scenarios
 
-### Scenario 1: Single Skill, Simple Drift
+### Scenario 1: Single Skill, All File Types
 
-**Problem**: `ci-hardener` says `pnpm run lint:fix` but package.json only has `pnpm run lint`
-
-**Steps**:
-
-1. Audit: Extract commands from ci-hardener/SKILL.md → `["pnpm run lint:fix", "pnpm run test"]`
-2. Cross-reference: Check package.json → `["lint": "...", "test": "...", "format": "..."]`
-3. Drift found: `lint:fix` doesn't exist, `format` is new
-4. Decision: Is `lint:fix` a mistake, or should we add it to package.json?
-   - If repo intended `pnpm run format`, update skill
-   - If skill intended `pnpm run lint --fix`, add the script to package.json
-5. Update: Choose one path, verify with test run
-
----
-
-### Scenario 2: Monorepo Cascading Drift
-
-**Problem**: Restructured from `frontend/src/` to `packages/frontend/src/`. Now `frontend-linter`, `shared-utils`, and `web-config` skills all need updates.
+**Problem**: `game-improver` skill has npm in a reference doc and wrong extensions in scripts.
 
 **Steps**:
 
-1. Audit: Map all three skills to identify which paths they reference
-2. Dependency mapping:
-   - `shared-utils` is a dependency of `frontend` and `web-config`
-   - Sync order: `shared-utils` first, then `frontend-linter` and `web-config`
-3. Phase 1: Update `shared-utils` skill with new paths
-4. Test: Run the skill to confirm it works with new paths
-5. Phase 2: Update `frontend-linter`, verify no breakage
-6. Phase 3: Update `web-config`, verify cascading works
-7. Rollback plan: If phase 3 breaks, revert and escalate to skill-creator
+1. `find .claude/skills/game-improver -type f | sort` — inventory all 9 files
+2. Scan each for npm/extension/version drift
+3. Fix `SKILL.md` first (canonical), then `references/`, then `scripts/`
+4. Verify with the grep checks above
+5. Commit as one unit: "fix: sync game-improver across all skill files"
 
----
+### Scenario 2: Library-Wide Audit
 
-### Scenario 3: Version Mismatch Requiring Rewrite
-
-**Problem**: Skill references "Vite 7" and old file structure, but we're on Vite 8.0.1 with API changes
+**Problem**: Upgraded from React 19.2.4 → 19.2.5. 30 skills need sync-line updates.
 
 **Steps**:
 
-1. Audit: Extract version references → "Vite 7 compatible"
-2. Cross-reference: Package.json says `"vite": "8.0.1"`, CLAUDE.md says "Vite 8.0.1 required"
-3. Risk assessment:
-   - Is this a simple version bump in examples? → Update and test
-   - Are there API changes? (e.g., Vite 7 plugin API changed in v8) → Escalate to skill-creator
-4. Decision: If escalating, document why:
-   - "Vite 8 has breaking changes in X; this skill needs a deeper rewrite"
-   - Recommend skill-creator review the entire workflow
+1. Find all affected files:
+   ```bash
+   grep -rln "React 19\.2\.4" .claude/skills/ --include="*.md" --include="*.sh"
+   ```
+2. Bulk-replace across all of them:
+   ```bash
+   find .claude/skills -type f \( -name "*.md" -o -name "*.sh" \) \
+     -exec sed -i 's/React 19\.2\.4/React 19.2.5/g' {} \;
+   ```
+3. Scan for any remaining old references:
+   ```bash
+   grep -rln "React 19\.2\.4" .claude/skills/
+   ```
+4. One commit covering all skills
+
+### Scenario 3: Skill References Moved Source File
+
+**Problem**: `audio-debugger-ambient-vs-gig` points to `src/utils/AudioManager.js` but it moved to `src/utils/audio/AudioManager.ts`.
+
+**Steps**:
+
+1. Check every file in the skill:
+   ```bash
+   grep -rn "AudioManager" .claude/skills/audio-debugger-ambient-vs-gig/
+   ```
+2. Verify new path: `ls src/utils/audio/AudioManager.ts`
+3. Replace in all files:
+   ```bash
+   find .claude/skills/audio-debugger-ambient-vs-gig -type f \
+     -exec sed -i 's|src/utils/AudioManager\.js|src/utils/audio/AudioManager.ts|g' {} \;
+   ```
+4. Check other skills that may reference the same path:
+   ```bash
+   grep -rln "AudioManager" .claude/skills/ --include="*.md"
+   ```
+
+### Scenario 4: Cascading Cross-Skill Rename
+
+**Problem**: Skill `state-mutation-guard` was renamed to `state-safety-action-creator-guard`. Other skills reference the old name.
+
+**Steps**:
+
+1. Find all references to the old name:
+   ```bash
+   grep -rln "state-mutation-guard" .claude/skills/
+   ```
+2. Update each referencing skill
+3. Verify the new name exists:
+   ```bash
+   ls .claude/skills/state-safety-action-creator-guard/
+   ```
+4. Commit per referencing skill or as one batch
 
 ---
 
 ## Error Recovery
 
-**If you're stuck:**
+**Can't find where something changed?**
+```bash
+git log --oneline -S "old_value" -- package.json AGENTS.md | head -10
+```
 
-1. **Can't find where something changed?** → Search AGENTS.md and git history
+**Unsure if a `.js` import should be `.ts`?**
+Check if it's inside a `node:test` `import` statement. If yes, keep `.js` — tsx handles the resolution. If it's narrative text or a shell path, update to `.ts`.
 
-   ```bash
-   git log --oneline -S "old_command" -- package.json | head -5
-   ```
+**Sync broke multiple skills?**
+```bash
+git checkout -- .claude/skills/   # Undo all skill changes
+# Then escalate to skill-creator with a list of the affected files
+```
 
-2. **Don't know if a change is safe?** → Test it:
-
-   ```bash
-   # Copy skill to temp location, make change, run test
-   cp -r skill skill-test
-   # ... make changes ...
-   # Run skill-test on eval
-   ```
-
-3. **Sync broke multiple skills?** → Rollback and escalate:
-
-   ```bash
-   git checkout -- .  # Undo all changes
-   # Then escalate to skill-creator with details
-   ```
-
-4. **Unsure about scope?** → Ask: "Is this a find-replace (low complexity) or a rewrite (high complexity)?"
-   - Low: Update and move on
-   - High: Escalate to skill-creator for assessment
+**Script change not working?**
+```bash
+bash -n .claude/skills/<skill-name>/scripts/<script>.sh  # Syntax check only
+```
 
 ---
 
@@ -338,14 +493,14 @@ Before making changes:
 
 Stop and escalate if:
 
-- ✋ Skill requires major rewrite (changed architecture, removed steps, new workflows)
-- ✋ Version upgrade has breaking API changes
-- ✋ Monorepo change creates circular dependencies or unsolvable conflicts
-- ✋ You're not confident the change won't break the skill's functionality
-- ✋ Multiple skills have interdependencies you can't verify safely
+- ✋ Version upgrade has breaking API changes affecting the skill's core workflow
+- ✋ A skill directory structure itself needs to be reorganized (new reference files, new agents)
+- ✋ Guidance in a reference doc is wrong, not just stale (requires domain knowledge to fix correctly)
+- ✋ Fixing one skill requires simultaneously rewriting three or more others
+- ✋ A script's logic is wrong (not just the package manager command)
 
-Escalation example:
+Escalation message format:
 
-> "game-improver references Vite 7 and old structure. Vite 8 has plugin API changes. This needs skill-creator review before I proceed."
+> "`<skill-name>/references/<file>.md` gives wrong guidance for `<topic>` since `<change>`. This needs `skill-creator` review — I can fix the surface drift but not validate the domain correctness."
 
-_Skill sync: compatible with React 19.2.4 / Vite 8.0.1 baseline as of 2026-03-18._
+_Skill sync: compatible with React 19.2.5 / Vite 8.0.10 / Tailwind 4.2.4 baseline as of 2026-05-10._

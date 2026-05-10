@@ -20,8 +20,8 @@ Troubleshoot and resolve audio playback issues in the game, focusing on the dist
     - Ensure `audioManager.ensureAudioContext()` is called after a click/interaction.
 
 3.  **Trace the Execution**
-    - **Ambient**: Check `src/utils/AudioManager.js`. Look for `startAmbient()` call. Check if it falls back to MIDI.
-    - **Gig**: Check `src/utils/audioPlaybackUtils.js`. Verify `startPlayback` receives correct `songId` and `offset`.
+    - **Ambient**: Check `src/utils/audio/AudioManager.ts`. Look for `startAmbient()` call. Check if it falls back to MIDI.
+    - **Gig**: Check `src/utils/audioPlaybackUtils.ts`. Verify `startPlayback` receives correct `songId` and `offset`.
 
 4.  **Inspect Data Integrity**
     - Open `src/assets/rhythm_songs.json`.
@@ -46,7 +46,7 @@ Troubleshoot and resolve audio playback issues in the game, focusing on the dist
 ### Gig Audio is Out of Sync
 
 - **Cause**: `AudioContext.currentTime` drift or incorrect `offset` in song data.
-- **Fix**: Check `src/utils/rhythmUtils.js` timing logic. Verify `offset` in `rhythm_songs.json`.
+- **Fix**: Check `src/utils/rhythmUtils.ts` timing logic. Verify `offset` in `rhythm_songs.json`.
 
 ## Example
 
@@ -62,4 +62,4 @@ Troubleshoot and resolve audio playback issues in the game, focusing on the dist
 **Output**:
 "The MIDI file for 'Neon Highway' is missing from `src/assets/`, causing the synth to have no notes to play. Please add the file."
 
-_Skill sync: compatible with React 19.2.4 / Vite 7.3.1 baseline as of 2026-02-17._
+_Skill sync: compatible with React 19.2.5 / Vite 8.0.10 baseline as of 2026-05-10._

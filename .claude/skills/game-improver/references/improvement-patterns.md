@@ -11,9 +11,9 @@ Travel costs are calculated incorrectly — fuel is deducted twice (once at trav
 ### Analysis
 
 1. **Find source of truth**: Where is travel fuel cost calculated?
-   - `src/hooks/useOverworldLogic.js` → calls travel action
-   - `src/context/gameReducer.js` → `UPDATE_PLAYER` case handles fuel
-   - `src/utils/economyEngine.js` → calculates travel cost including fuel
+   - `src/hooks/useOverworldLogic.ts` → calls travel action
+   - `src/context/gameReducer.ts` → `UPDATE_PLAYER` case handles fuel
+   - `src/utils/economyEngine.ts` → calculates travel cost including fuel
 2. **Trace the bug**:
    - Travel action: `UPDATE_PLAYER({ van: { fuel: fuel - cost } })`
    - Day advance: `ADVANCE_DAY` → `UPDATE_BAND` (harmony) + `UPDATE_PLAYER` (daily costs)
@@ -24,7 +24,7 @@ Travel costs are calculated incorrectly — fuel is deducted twice (once at trav
 
 ### Implementation
 
-**File 1: `src/hooks/useOverworldLogic.js`**
+**File 1: `src/hooks/useOverworldLogic.ts`**
 
 ```javascript
 // ❌ WRONG: Deducting fuel in both action payload
@@ -56,7 +56,7 @@ const handleTravel = destination => {
 }
 ```
 
-**File 2: Check `src/context/gameReducer.js`**
+**File 2: Check `src/context/gameReducer.ts`**
 
 ```javascript
 // In ADVANCE_DAY case:
@@ -122,14 +122,14 @@ Add "Meditation Pod" upgrade: Costs 500, recovers +1 harmony daily (max 100).
 
 ### Analysis
 
-1. **Data structure**: Check `src/data/hqItems.js` for format
+1. **Data structure**: Check `src/data/hqItems.ts` for format
 2. **Economic impact**: Cost vs benefit. Daily harmony regeneration is strong.
 3. **State**: Harmony clamped [1, 100]. `ADVANCE_DAY` applies effects.
 4. **Tests**: Verify cost deduction, harmony recovery, clamping.
 
 ### Implementation
 
-**File 1: `src/data/hqItems.js`**
+**File 1: `src/data/hqItems.ts`**
 
 ```javascript
 export const HQ_ITEMS = [
@@ -148,7 +148,7 @@ export const HQ_ITEMS = [
 ]
 ```
 
-**File 2: `src/hooks/useGameLoop.js`** (or wherever daily effects are applied)
+**File 2: `src/hooks/useGameLoop.ts`** (or wherever daily effects are applied)
 
 ```javascript
 function applyDailyEffects(state, dispatch) {
@@ -171,7 +171,7 @@ function applyDailyEffects(state, dispatch) {
 }
 ```
 
-**File 3: `src/utils/economyEngine.js`** (add to modifier/item costs)
+**File 3: `src/utils/economyEngine.ts`** (add to modifier/item costs)
 
 ```javascript
 // If there's a central costs object, add it
@@ -289,7 +289,7 @@ Memory grows 50MB/min when switching gigs. Suspect: Pixi scene not destroying.
 
 ### Implementation
 
-**File: `src/components/PixiStageController.jsx`**
+**File: `src/components/PixiStageController.ts`**
 
 ```javascript
 // ❌ WRONG: No cleanup

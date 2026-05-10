@@ -6,9 +6,9 @@ Clear, proven patterns for managing game state correctly.
 
 Adding or modifying state always requires updating three files together:
 
-1. **`src/context/gameReducer.js`**: The reducer case
-2. **`src/context/actionCreators.js`**: Action creator function
-3. **`src/context/gameConstants.js`**: `ActionTypes` enum
+1. **`src/context/gameReducer.ts`**: The reducer case
+2. **`src/context/actionCreators.ts`**: Action creator function
+3. **`src/context/gameConstants.ts`**: `ActionTypes` enum
 
 **Never update just one**. Always update all three.
 
@@ -22,7 +22,7 @@ Add action `REPAIR_VAN` that costs money and restores van condition.
 
 ### Step 1: Add to ActionTypes
 
-**File: `src/context/gameConstants.js`**
+**File: `src/context/gameConstants.ts`**
 
 ```javascript
 export const ActionTypes = {
@@ -34,7 +34,7 @@ export const ActionTypes = {
 
 ### Step 2: Add Reducer Case
 
-**File: `src/context/gameReducer.js`**
+**File: `src/context/gameReducer.ts`**
 
 ```javascript
 function gameReducer(state, action) {
@@ -69,7 +69,7 @@ function gameReducer(state, action) {
 
 ### Step 3: Add Action Creator
 
-**File: `src/context/actionCreators.js`**
+**File: `src/context/actionCreators.ts`**
 
 ```javascript
 export function repairVan(cost, conditionRestored) {
@@ -82,7 +82,7 @@ export function repairVan(cost, conditionRestored) {
 
 ### Step 4: Use in Component/Hook
 
-**File: `src/hooks/useHQLogic.js` or similar**
+**File: `src/hooks/useHQLogic.ts` or similar**
 
 ```javascript
 function handleRepairVan() {

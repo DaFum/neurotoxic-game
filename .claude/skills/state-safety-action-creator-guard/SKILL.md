@@ -11,7 +11,7 @@ Ensure global state remains consistent, immutable, and valid.
 
 1.  **Use Action Creators**
     - **Rule**: Never dispatch raw objects (`dispatch({ type: 'FOO' })`).
-    - **Fix**: Import from `src/context/actionCreators.js`.
+    - **Fix**: Import from `src/context/actionCreators.ts`.
     - **Cross-check**: Verify reducer handling in `gameReducer.js`.
     - _Why_: Centralizes logic and ensures payload shape.
 
@@ -63,4 +63,4 @@ case 'UPDATE_PLAYER':
 **Output**:
 "Updated dispatch to use `createUpdatePlayerAction` with validation check `player.money >= 50`."
 
-_Skill sync: compatible with React 19.2.4 / Vite 7.3.1 baseline as of 2026-02-17._
+_Skill sync: compatible with React 19.2.5 / Vite 8.0.10 baseline as of 2026-05-10._
