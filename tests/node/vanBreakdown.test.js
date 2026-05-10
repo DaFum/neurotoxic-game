@@ -2,15 +2,22 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { calculateDailyUpdates } from '../../src/utils/simulationUtils'
 
+const BASE_VAN = {
+  fuel: 100,
+  condition: 100,
+  upgrades: [],
+  breakdownChance: 0.05
+}
+
 const BASE_STATE = {
-  player: { day: 1, money: 1000, van: { upgrades: [] } },
+  player: { day: 1, money: 1000, van: { ...BASE_VAN } },
   band: { members: [], harmony: 50 },
   social: {}
 }
 
 const makeState = (condition, upgrades = []) => ({
   ...BASE_STATE,
-  player: { ...BASE_STATE.player, van: { condition, upgrades } }
+  player: { ...BASE_STATE.player, van: { ...BASE_VAN, condition, upgrades } }
 })
 
 describe('Van Breakdown', () => {
