@@ -1,4 +1,4 @@
-import { Suspense } from 'react'
+import { Suspense, useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { HUD } from './ui/HUD'
@@ -75,15 +75,48 @@ function GameContent() {
     currentScene,
     activeEvent,
     settings,
-    minigameType
+    minigameType,
+    band,
+    player,
+    gameMap,
+    social,
+    lastGigStats
   } = useGameSelector((state) => ({
     currentScene: state.currentScene,
     activeEvent: state.activeEvent,
     settings: state.settings,
-    minigameType: state.minigame?.type
+    minigameType: state.minigame?.type,
+    band: state.band,
+    player: state.player,
+    gameMap: state.gameMap,
+    social: state.social,
+    lastGigStats: state.lastGigStats
   }))
 
   const { resolveEvent } = useGameActions()
+
+  // Construct a safe, read-only slice of state for ChatterOverlay
+  // This avoids passing dispatch functions which violates the component's contract
+  // Memoizing this ensures ChatterOverlay, wrapped in React.memo, only re-renders
+  // when this specific slice of state changes, preventing global UI thrashing.
+  const chatterState = useMemo(
+    () => ({
+      currentScene,
+      band,
+      player,
+      gameMap,
+      social,
+      lastGigStats
+    }),
+    [
+      currentScene,
+      band,
+      player,
+      gameMap,
+      social,
+      lastGigStats
+    ]
+  )
 
   return (
     <div className='game-container relative w-full h-full overflow-hidden bg-void-black text-toxic-green'>
@@ -97,7 +130,8 @@ function GameContent() {
       <ToastOverlay />
       <ReloadPrompt />
 
-      <ChatterOverlay />
+      {/* ChatterOverlay receives read-only state slice */}
+      <ChatterOverlay gameState={chatterState} />
 
       <TutorialManager />
       {import.meta.env.DEV && <DebugLogViewer />}

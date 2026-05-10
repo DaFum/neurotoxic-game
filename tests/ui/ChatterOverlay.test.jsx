@@ -7,19 +7,6 @@ const getRandomChatterMock = vi.hoisted(() =>
   vi.fn(() => ({ text: 'Test chatter', speaker: 'Test Speaker' }))
 )
 
-const gameStateMock = vi.hoisted(() => ({
-  currentScene: 'GIG', // Hardcoded here to avoid early dependency cycles, but it matches GAME_PHASES.GIG
-  band: { members: [] },
-  player: { currentNodeId: 'none' },
-  gameMap: { nodes: {} },
-  social: {},
-  lastGigStats: {}
-}))
-
-vi.mock('../../src/context/GameState.tsx', () => ({
-  useGameSelector: (selector) => selector(gameStateMock)
-}))
-
 vi.mock('../../src/data/chatter', async () => {
   const { GAME_PHASES } = await import('../../src/context/gameConstants')
   return {
@@ -42,8 +29,14 @@ test('ChatterOverlay passes scene state to getRandomChatter', async () => {
   const { ChatterOverlay } =
     await import('../../src/components/ChatterOverlay.tsx')
 
+  const gameState = {
+    currentScene: GAME_PHASES.GIG,
+    band: { members: [] },
+    player: { currentNodeId: 'none' },
+    gameMap: { nodes: {} }
+  }
   await act(async () => {
-    render(<ChatterOverlay />)
+    render(<ChatterOverlay gameState={gameState} />)
   })
 
   // Fast-forward time to trigger chatter generation

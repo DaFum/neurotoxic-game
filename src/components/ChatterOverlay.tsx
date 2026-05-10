@@ -2,12 +2,12 @@ import { useEffect, useMemo, memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
 import { GAME_PHASES } from '../context/gameConstants'
-import { useGameSelector } from '../context/GameState'
 import { useChatterLogic } from '../hooks/useChatterLogic'
 import type {
   ChatterMessageData,
   ChatterMessageProps,
-  ChatterMessageType
+  ChatterMessageType,
+  ChatterOverlayProps
 } from '../types/components'
 
 const MESSAGE_LIFETIME_MS = 10000
@@ -263,18 +263,8 @@ ChatterMessage.displayName = 'ChatterMessage'
  * @param {object} props
  * @param {object} props.gameState - Read-only game state slice.
  */
-export const ChatterOverlay = memo(() => {
+export const ChatterOverlay = memo(({ gameState }: ChatterOverlayProps) => {
   const { t } = useTranslation(['chatter', 'ui'])
-
-  const gameState = useGameSelector((state) => ({
-    currentScene: state.currentScene,
-    band: state.band,
-    player: state.player,
-    gameMap: state.gameMap,
-    social: state.social,
-    lastGigStats: state.lastGigStats
-  }))
-
   const { messages, removeMessage } = useChatterLogic(gameState, t)
 
   const currentScene = gameState.currentScene
