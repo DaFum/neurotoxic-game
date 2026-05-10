@@ -25,92 +25,120 @@ describe('validateCrisisEvent', () => {
   })
 
   test('throws if event is not an object', () => {
-    assert.throws(() => validateCrisisEvent(null), /Event must be an object/)
-    assert.throws(
-      () => validateCrisisEvent(undefined),
-      /Event must be an object/
-    )
-    assert.throws(
-      () => validateCrisisEvent('string'),
-      /Event must be an object/
-    )
-    assert.throws(() => validateCrisisEvent(123), /Event must be an object/)
-    assert.throws(() => validateCrisisEvent(true), /Event must be an object/)
+    ;[null, undefined, 'string', 123, true].forEach(input => {
+      assert.throws(() => validateCrisisEvent(input), /Event must be an object/)
+    })
   })
 
-  test('throws if id is invalid', () => {
-    const ev = getValidEvent()
-    delete ev.id
-    assert.throws(() => validateCrisisEvent(ev), /Invalid event id/)
+  // Field-level validation: each entry deletes the field, verifies the throw,
+  // then sets an invalid value and verifies again.
+  const fieldCases = [
+    {
+      field: 'id',
+      pattern: /Invalid event id/,
+      mutations: [
+        ev => {
+          delete ev.id
+        },
+        ev => {
+          ev.id = 123
+        },
+        ev => {
+          ev.id = 'not_crisis_test'
+        }
+      ]
+    },
+    {
+      field: 'category',
+      pattern: /Invalid category/,
+      mutations: [
+        ev => {
+          delete ev.category
+        },
+        ev => {
+          ev.category = 'invalid_category'
+        }
+      ]
+    },
+    {
+      field: 'tags',
+      pattern: /must have "crisis" tag/,
+      mutations: [
+        ev => {
+          delete ev.tags
+        },
+        ev => {
+          ev.tags = ['other_tag']
+        },
+        ev => {
+          ev.tags = 'crisis'
+        }
+      ]
+    },
+    {
+      field: 'title',
+      pattern: /Invalid title key/,
+      mutations: [
+        ev => {
+          delete ev.title
+        },
+        ev => {
+          ev.title = 'not_events_prefixed'
+        }
+      ]
+    },
+    {
+      field: 'description',
+      pattern: /Invalid description key/,
+      mutations: [
+        ev => {
+          delete ev.description
+        },
+        ev => {
+          ev.description = 'not_events_prefixed'
+        }
+      ]
+    },
+    {
+      field: 'trigger',
+      pattern: /Invalid trigger/,
+      mutations: [
+        ev => {
+          delete ev.trigger
+        },
+        ev => {
+          ev.trigger = 'invalid_trigger'
+        }
+      ]
+    },
+    {
+      field: 'chance',
+      pattern: /Invalid chance/,
+      mutations: [
+        ev => {
+          delete ev.chance
+        },
+        ev => {
+          ev.chance = -0.1
+        },
+        ev => {
+          ev.chance = 1.1
+        },
+        ev => {
+          ev.chance = '0.5'
+        }
+      ]
+    }
+  ]
 
-    ev.id = 123
-    assert.throws(() => validateCrisisEvent(ev), /Invalid event id/)
-
-    ev.id = 'not_crisis_test'
-    assert.throws(() => validateCrisisEvent(ev), /Invalid event id/)
-  })
-
-  test('throws if category is invalid', () => {
-    const ev = getValidEvent()
-    delete ev.category
-    assert.throws(() => validateCrisisEvent(ev), /Invalid category/)
-
-    ev.category = 'invalid_category'
-    assert.throws(() => validateCrisisEvent(ev), /Invalid category/)
-  })
-
-  test('throws if tags are invalid or missing "crisis"', () => {
-    const ev = getValidEvent()
-    delete ev.tags
-    assert.throws(() => validateCrisisEvent(ev), /must have "crisis" tag/)
-
-    ev.tags = ['other_tag']
-    assert.throws(() => validateCrisisEvent(ev), /must have "crisis" tag/)
-
-    ev.tags = 'crisis'
-    assert.throws(() => validateCrisisEvent(ev), /must have "crisis" tag/)
-  })
-
-  test('throws if title is invalid', () => {
-    const ev = getValidEvent()
-    delete ev.title
-    assert.throws(() => validateCrisisEvent(ev), /Invalid title key/)
-
-    ev.title = 'not_events_prefixed'
-    assert.throws(() => validateCrisisEvent(ev), /Invalid title key/)
-  })
-
-  test('throws if description is invalid', () => {
-    const ev = getValidEvent()
-    delete ev.description
-    assert.throws(() => validateCrisisEvent(ev), /Invalid description key/)
-
-    ev.description = 'not_events_prefixed'
-    assert.throws(() => validateCrisisEvent(ev), /Invalid description key/)
-  })
-
-  test('throws if trigger is invalid', () => {
-    const ev = getValidEvent()
-    delete ev.trigger
-    assert.throws(() => validateCrisisEvent(ev), /Invalid trigger/)
-
-    ev.trigger = 'invalid_trigger'
-    assert.throws(() => validateCrisisEvent(ev), /Invalid trigger/)
-  })
-
-  test('throws if chance is invalid', () => {
-    const ev = getValidEvent()
-    delete ev.chance
-    assert.throws(() => validateCrisisEvent(ev), /Invalid chance/)
-
-    ev.chance = -0.1
-    assert.throws(() => validateCrisisEvent(ev), /Invalid chance/)
-
-    ev.chance = 1.1
-    assert.throws(() => validateCrisisEvent(ev), /Invalid chance/)
-
-    ev.chance = '0.5'
-    assert.throws(() => validateCrisisEvent(ev), /Invalid chance/)
+  fieldCases.forEach(({ field, pattern, mutations }) => {
+    test(`throws if ${field} is invalid`, () => {
+      mutations.forEach(mutate => {
+        const ev = getValidEvent()
+        mutate(ev)
+        assert.throws(() => validateCrisisEvent(ev), pattern)
+      })
+    })
   })
 
   test('throws if condition is present but not a function', () => {
@@ -118,60 +146,45 @@ describe('validateCrisisEvent', () => {
     ev.condition = 'not_a_function'
     assert.throws(() => validateCrisisEvent(ev), /Condition must be a function/)
 
-    ev.condition = () => true // valid
+    ev.condition = () => true
     assert.strictEqual(validateCrisisEvent(ev), true)
   })
 
   test('throws if options are invalid or empty', () => {
-    const ev = getValidEvent()
-    delete ev.options
-    assert.throws(
-      () => validateCrisisEvent(ev),
-      /must have at least one option/
-    )
-
-    ev.options = []
-    assert.throws(
-      () => validateCrisisEvent(ev),
-      /must have at least one option/
-    )
-
-    ev.options = 'not_array'
-    assert.throws(
-      () => validateCrisisEvent(ev),
-      /must have at least one option/
-    )
+    ;[undefined, [], 'not_array'].forEach(value => {
+      const ev = getValidEvent()
+      if (value === undefined) delete ev.options
+      else ev.options = value
+      assert.throws(
+        () => validateCrisisEvent(ev),
+        /must have at least one option/
+      )
+    })
   })
 
   describe('option validation', () => {
     test('throws if option label is invalid', () => {
-      const ev = getValidEvent()
-      delete ev.options[0].label
-      assert.throws(
-        () => validateCrisisEvent(ev),
-        /Invalid option label at index 0/
-      )
-
-      ev.options[0].label = 'not_events_prefixed'
-      assert.throws(
-        () => validateCrisisEvent(ev),
-        /Invalid option label at index 0/
-      )
+      ;[undefined, 'not_events_prefixed'].forEach(value => {
+        const ev = getValidEvent()
+        if (value === undefined) delete ev.options[0].label
+        else ev.options[0].label = value
+        assert.throws(
+          () => validateCrisisEvent(ev),
+          /Invalid option label at index 0/
+        )
+      })
     })
 
     test('throws if outcomeText is invalid', () => {
-      const ev = getValidEvent()
-      delete ev.options[0].outcomeText
-      assert.throws(
-        () => validateCrisisEvent(ev),
-        /Invalid outcomeText at index 0/
-      )
-
-      ev.options[0].outcomeText = 'not_events_prefixed'
-      assert.throws(
-        () => validateCrisisEvent(ev),
-        /Invalid outcomeText at index 0/
-      )
+      ;[undefined, 'not_events_prefixed'].forEach(value => {
+        const ev = getValidEvent()
+        if (value === undefined) delete ev.options[0].outcomeText
+        else ev.options[0].outcomeText = value
+        assert.throws(
+          () => validateCrisisEvent(ev),
+          /Invalid outcomeText at index 0/
+        )
+      })
     })
 
     test('throws if neither effect nor skillCheck is present', () => {
@@ -210,10 +223,7 @@ describe('validateCrisisEvent', () => {
 
       test('validates composite effects', () => {
         const ev = getValidEvent()
-        ev.options[0].effect = {
-          type: 'composite'
-          // missing effects array
-        }
+        ev.options[0].effect = { type: 'composite' }
         assert.throws(
           () => validateCrisisEvent(ev),
           /Composite effect must have a non-empty effects array at index 0/
@@ -227,24 +237,20 @@ describe('validateCrisisEvent', () => {
 
         ev.options[0].effect.effects = [
           { type: 'modify', stat: 'money', value: 10 },
-          { stat: 'harmony', value: -5 } // missing type
+          { stat: 'harmony', value: -5 }
         ]
         assert.throws(
           () => validateCrisisEvent(ev),
           /Invalid child effect at composite index 1 for option index 0/
         )
 
-        // valid composite
         ev.options[0].effect.effects[1].type = 'modify'
         assert.strictEqual(validateCrisisEvent(ev), true)
       })
 
       test('validates skillCheck effects (as type in effect)', () => {
         const ev = getValidEvent()
-        ev.options[0].effect = {
-          type: 'skillCheck'
-          // missing success/failure
-        }
+        ev.options[0].effect = { type: 'skillCheck' }
         assert.throws(
           () => validateCrisisEvent(ev),
           /SkillCheck effect must have a success object at index 0/
@@ -259,8 +265,7 @@ describe('validateCrisisEvent', () => {
         ev.options[0].effect.failure = { type: 'modify' }
         assert.strictEqual(validateCrisisEvent(ev), true)
 
-        // Invalid nested effect
-        ev.options[0].effect.success = { stat: 'money' } // missing type
+        ev.options[0].effect.success = { stat: 'money' }
         assert.throws(
           () => validateCrisisEvent(ev),
           /Invalid success effect in skillCheck at option index 0/
@@ -272,10 +277,8 @@ describe('validateCrisisEvent', () => {
       test('validates option.skillCheck structure', () => {
         const ev = getValidEvent()
         delete ev.options[0].effect
+        ev.options[0].skillCheck = {}
 
-        ev.options[0].skillCheck = {
-          // missing stat, threshold, success, failure
-        }
         assert.throws(
           () => validateCrisisEvent(ev),
           /SkillCheck stat must be a string/
@@ -306,10 +309,9 @@ describe('validateCrisisEvent', () => {
         )
 
         ev.options[0].skillCheck.failure = { type: 'modify' }
-        assert.strictEqual(validateCrisisEvent(ev), true) // now valid
+        assert.strictEqual(validateCrisisEvent(ev), true)
 
-        // Invalid nested effect in success/failure of option.skillCheck
-        ev.options[0].skillCheck.success = { stat: 'money' } // missing type
+        ev.options[0].skillCheck.success = { stat: 'money' }
         assert.throws(
           () => validateCrisisEvent(ev),
           /Effect must have a type at index 0/
