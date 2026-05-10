@@ -23,7 +23,7 @@ export type EventCategory = (typeof EVENT_CATEGORIES)[number]
 const VALID_CATEGORIES = new Set<EventCategory>(EVENT_CATEGORIES)
 
 // Aggregate all raw event definitions from their domain files
-const ALL_RAW_EVENTS = [
+export const ALL_RAW_EVENTS = [
   ...TRANSPORT_EVENTS,
   ...BAND_EVENTS,
   ...GIG_EVENTS,
