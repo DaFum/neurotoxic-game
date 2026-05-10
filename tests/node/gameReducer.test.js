@@ -3,7 +3,7 @@
  */
 
 import { describe, it, beforeEach, mock } from 'node:test'
-import assert from 'node:assert'
+import assert from 'node:assert/strict'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 import {
   bandHasTrait,
@@ -100,33 +100,34 @@ describe('gameReducer', () => {
   })
 
   describe('UPDATE_PLAYER', () => {
-    it('should update player money', () => {
-      const action = {
-        type: ActionTypes.UPDATE_PLAYER,
-        payload: { money: 1000 }
+    const updatePlayerCases = [
+      {
+        label: 'updates player money',
+        payload: { money: 1000 },
+        check: s => assert.strictEqual(s.player.money, 1000)
+      },
+      {
+        label: 'updates player fame',
+        payload: { fame: 50 },
+        check: s => assert.strictEqual(s.player.fame, 50)
+      },
+      {
+        label: 'merges updates preserving untouched fields',
+        payload: { money: 1000 },
+        check: s => {
+          assert.strictEqual(s.player.money, 1000)
+          assert.strictEqual(s.player.day, testState.player.day)
+          assert.strictEqual(s.player.location, testState.player.location)
+        }
       }
-      const newState = gameReducer(testState, action)
+    ]
 
-      assert.strictEqual(newState.player.money, 1000)
-    })
-
-    it('should update player fame', () => {
-      const action = { type: ActionTypes.UPDATE_PLAYER, payload: { fame: 50 } }
-      const newState = gameReducer(testState, action)
-
-      assert.strictEqual(newState.player.fame, 50)
-    })
-
-    it('should merge player updates with existing state', () => {
-      const action = {
-        type: ActionTypes.UPDATE_PLAYER,
-        payload: { money: 1000 }
-      }
-      const newState = gameReducer(testState, action)
-
-      assert.strictEqual(newState.player.money, 1000)
-      assert.strictEqual(newState.player.day, testState.player.day)
-      assert.strictEqual(newState.player.location, testState.player.location)
+    updatePlayerCases.forEach(({ label, payload, check }) => {
+      it(`should ${label}`, () => {
+        check(
+          gameReducer(testState, { type: ActionTypes.UPDATE_PLAYER, payload })
+        )
+      })
     })
   })
 

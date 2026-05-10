@@ -1,5 +1,5 @@
 import { describe, it } from 'node:test'
-import assert from 'node:assert'
+import assert from 'node:assert/strict'
 import { RELATIONSHIP_EVENTS } from '../../src/data/events/relationshipEvents'
 
 describe('Relationship Events Data', () => {

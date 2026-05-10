@@ -1,5 +1,5 @@
 import { describe, it } from 'node:test'
-import assert from 'node:assert'
+import assert from 'node:assert/strict'
 import { CONSEQUENCE_EVENTS } from '../../src/data/events/consequences'
 
 describe('Consequences Event Pool', () => {

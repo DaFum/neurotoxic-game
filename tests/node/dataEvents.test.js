@@ -1,4 +1,4 @@
-import assert from 'node:assert'
+import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { EVENTS_DB } from '../../src/data/events/index'
 

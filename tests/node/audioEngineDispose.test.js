@@ -1,4 +1,4 @@
-import assert from 'node:assert'
+import assert from 'node:assert/strict'
 import { test, mock } from 'node:test'
 import { logger } from '../../src/utils/logger'
 import { MockPolySynth, createMockTone } from '../mockUtils'

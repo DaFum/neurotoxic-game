@@ -1,4 +1,4 @@
-import assert from 'node:assert'
+import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { importAudioEngine } from '../audioTestUtils'
 
@@ -136,4 +136,3 @@ test('getGigTimeMs', async t => {
     }
   )
 })
-

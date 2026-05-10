@@ -1,4 +1,4 @@
-import assert from 'node:assert'
+import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import {
   applyEventDelta,
@@ -299,11 +299,11 @@ test('calculateAppliedDelta emits empty applied delta for missing members', () =
 
   const applied = calculateAppliedDelta(state, delta)
 
-  assert.deepEqual(applied.band.membersDelta[0], Object.create(null))
-  assert.deepEqual(applied.band.membersDelta[1], {
-    moodChange: -10,
-    staminaChange: -10
-  })
+  assert.deepStrictEqual(applied.band.membersDelta[0], Object.create(null))
+  assert.deepStrictEqual(
+    applied.band.membersDelta[1],
+    Object.assign(Object.create(null), { moodChange: -10, staminaChange: -10 })
+  )
 })
 
 test('clampVanFuel edge cases', () => {

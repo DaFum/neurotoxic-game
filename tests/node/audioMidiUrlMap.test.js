@@ -1,4 +1,4 @@
-import assert from 'node:assert'
+import assert from 'node:assert/strict'
 import { test, mock } from 'node:test'
 import { buildAssetUrlMap } from '../../src/utils/audio/playbackUtils'
 
@@ -23,14 +23,17 @@ const mockBuildAssetUrlMap = mock.fn((glob, warn, label) => {
   return {}
 })
 
-mock.module(new URL('../../src/utils/audio/playbackUtils.ts', import.meta.url).href, {
-  namedExports: {
-    buildAssetUrlMap: mockBuildAssetUrlMap,
-    resolveAssetUrl: mock.fn(),
-    PATH_PREFIX_REGEX: /^\.?\//,
-    getBaseAssetPath: () => ({ baseUrl: './', publicBasePath: './assets' })
+mock.module(
+  new URL('../../src/utils/audio/playbackUtils.ts', import.meta.url).href,
+  {
+    namedExports: {
+      buildAssetUrlMap: mockBuildAssetUrlMap,
+      resolveAssetUrl: mock.fn(),
+      PATH_PREFIX_REGEX: /^\.?\//,
+      getBaseAssetPath: () => ({ baseUrl: './', publicBasePath: './assets' })
+    }
   }
-})
+)
 
 // Mock other dependencies to avoid side effects
 mock.module(new URL('../../src/utils/audio/context.ts', import.meta.url).href, {
@@ -39,14 +42,17 @@ mock.module(new URL('../../src/utils/audio/context.ts', import.meta.url).href, {
 mock.module(new URL('../../src/utils/audio/state.ts', import.meta.url).href, {
   namedExports: { audioState: { audioBufferCache: new Map() } }
 })
-mock.module(new URL('../../src/utils/audio/constants.ts', import.meta.url).href, {
-  namedExports: {
-    AUDIO_BUFFER_LOAD_TIMEOUT_MS: 1000,
-    AUDIO_BUFFER_DECODE_TIMEOUT_MS: 1000,
-    MAX_AUDIO_BUFFER_CACHE_SIZE: 10,
-    MAX_AUDIO_BUFFER_BYTE_SIZE: 1024
+mock.module(
+  new URL('../../src/utils/audio/constants.ts', import.meta.url).href,
+  {
+    namedExports: {
+      AUDIO_BUFFER_LOAD_TIMEOUT_MS: 1000,
+      AUDIO_BUFFER_DECODE_TIMEOUT_MS: 1000,
+      MAX_AUDIO_BUFFER_CACHE_SIZE: 10,
+      MAX_AUDIO_BUFFER_BYTE_SIZE: 1024
+    }
   }
-})
+)
 
 // Import the module under test AFTER mocking
 const { midiUrlMap } = await import('../../src/utils/audio/assets')

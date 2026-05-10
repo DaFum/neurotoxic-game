@@ -1,5 +1,5 @@
 import test from 'node:test'
-import assert from 'node:assert'
+import assert from 'node:assert/strict'
 import { handleDarkWebLeak } from '../../src/context/reducers/socialReducer.js'
 import { ActionTypes } from '../../src/context/actionTypes.js'
 

@@ -1,4 +1,4 @@
-import assert from 'node:assert'
+import assert from 'node:assert/strict'
 import { test, mock } from 'node:test'
 import { MockGain, createMockTone } from '../mockUtils'
 
@@ -14,9 +14,12 @@ const mockCleanup = {
   cleanupAmbientPlayback: mock.fn(),
   cleanupTransportEvents: mock.fn()
 }
-mock.module(new URL('../../src/utils/audio/cleanupUtils.ts', import.meta.url).href, {
-  namedExports: mockCleanup
-})
+mock.module(
+  new URL('../../src/utils/audio/cleanupUtils.ts', import.meta.url).href,
+  {
+    namedExports: mockCleanup
+  }
+)
 
 // Import SUT
 // We use dynamic import to ensure mocks are applied before module load

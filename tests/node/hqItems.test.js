@@ -1,5 +1,5 @@
 import { describe, it } from 'node:test'
-import assert from 'node:assert'
+import assert from 'node:assert/strict'
 import { HQ_ITEMS } from '../../src/data/hqItems'
 
 describe('HQ Items Data Integrity', () => {

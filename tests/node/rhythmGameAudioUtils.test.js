@@ -1,4 +1,4 @@
-import assert from 'node:assert'
+import assert from 'node:assert/strict'
 import { test, describe, beforeEach, afterEach } from 'node:test'
 import {
   resetGigStateTracking,

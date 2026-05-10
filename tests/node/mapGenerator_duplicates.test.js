@@ -1,4 +1,4 @@
-import assert from 'node:assert'
+import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { MapGenerator } from '../../src/utils/mapGenerator'
 

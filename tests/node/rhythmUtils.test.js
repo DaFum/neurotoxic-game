@@ -1,5 +1,5 @@
 import { test, describe } from 'node:test'
-import assert from 'node:assert'
+import assert from 'node:assert/strict'
 import {
   checkHit,
   calculateTimeFromTicks,

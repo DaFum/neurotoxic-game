@@ -1,5 +1,5 @@
 import { describe, it, beforeEach, mock } from 'node:test'
-import assert from 'node:assert'
+import assert from 'node:assert/strict'
 
 // We will mock checkTraitUnlocks using `mock.module` which works natively in newer Node versions
 let checkTraitUnlocksMock = mock.fn(() => [

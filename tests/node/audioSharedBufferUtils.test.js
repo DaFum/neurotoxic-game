@@ -1,4 +1,4 @@
-import assert from 'node:assert'
+import assert from 'node:assert/strict'
 import { test, mock } from 'node:test'
 
 // In order to properly mock the audio context for createAndConnectBufferSource,

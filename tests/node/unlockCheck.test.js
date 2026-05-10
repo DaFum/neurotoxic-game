@@ -1,5 +1,5 @@
 import { describe, it } from 'node:test'
-import assert from 'node:assert'
+import assert from 'node:assert/strict'
 import { checkTraitUnlocks } from '../../src/utils/unlockCheck'
 
 describe('checkTraitUnlocks', () => {
