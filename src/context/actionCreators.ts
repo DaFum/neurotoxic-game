@@ -488,6 +488,11 @@ export const createStartAmpCalibrationAction = (
  * @param {number} voidResonance
  * @returns {Object} Action object
  */
+const _toSafeInt = (v: unknown): number => {
+  const n = Number(v)
+  return Number.isFinite(n) ? Math.max(0, Math.floor(n)) : 0
+}
+
 export const createCompleteAmpCalibrationAction = (
   score: number,
   voidResonance: number = 0,
@@ -497,13 +502,10 @@ export const createCompleteAmpCalibrationAction = (
   GameAction,
   { type: typeof ActionTypes.COMPLETE_AMP_CALIBRATION }
 > => {
-  const safeScore = Math.max(0, Math.floor(Number(score) || 0))
-  const safeResonance = Math.max(0, Math.floor(Number(voidResonance) || 0))
-  const safePurgesUsed = Math.max(0, Math.floor(Number(purgesUsed) || 0))
-  const safeHijacksOverridden = Math.max(
-    0,
-    Math.floor(Number(hijacksOverridden) || 0)
-  )
+  const safeScore = _toSafeInt(score)
+  const safeResonance = _toSafeInt(voidResonance)
+  const safePurgesUsed = _toSafeInt(purgesUsed)
+  const safeHijacksOverridden = _toSafeInt(hijacksOverridden)
 
   return {
     type: ActionTypes.COMPLETE_AMP_CALIBRATION,

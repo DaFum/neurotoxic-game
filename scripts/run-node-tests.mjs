@@ -23,7 +23,9 @@ const hasExplicitConcurrency = normalizedArgs.some(arg =>
 )
 
 const testConcurrency = hasExplicitConcurrency
-  ? normalizedArgs.find(arg => arg.startsWith('--test-concurrency')).split('=')[1]
+  ? normalizedArgs
+      .find(arg => arg.startsWith('--test-concurrency'))
+      .split('=')[1]
   : computeWorkerCount('NODE_TEST_CONCURRENCY')
 
 const commandArgs = [
@@ -102,8 +104,7 @@ const getRemainingTestFiles = () => {
   return allFiles
 }
 
-const normalizeTestPath = testFile =>
-  path.resolve(testFile).replace(/\\/g, '/')
+const normalizeTestPath = testFile => path.resolve(testFile).replace(/\\/g, '/')
 
 const shouldOnlyHeavy =
   process.env.NODE_TEST_ONLY_HEAVY === '1' || flagOnlyHeavy
@@ -119,10 +120,14 @@ if (shouldOnlyHeavy && shouldSkipHeavy) {
 
 const filterByHeavyMode = testFiles => {
   if (shouldOnlyHeavy) {
-    return testFiles.filter(testFile => heavyTestSet.has(normalizeTestPath(testFile)))
+    return testFiles.filter(testFile =>
+      heavyTestSet.has(normalizeTestPath(testFile))
+    )
   }
   if (shouldSkipHeavy) {
-    return testFiles.filter(testFile => !heavyTestSet.has(normalizeTestPath(testFile)))
+    return testFiles.filter(
+      testFile => !heavyTestSet.has(normalizeTestPath(testFile))
+    )
   }
   return testFiles
 }
@@ -165,7 +170,11 @@ if (!isSpecificFile && shouldOnlyHeavy) {
 
 const finalArgs = isSpecificFile
   ? [...commandArgs, ...nodeTestArgs]
-  : [...commandArgs, ...filterByHeavyMode(getRemainingTestFiles()), ...nodeTestArgs]
+  : [
+      ...commandArgs,
+      ...filterByHeavyMode(getRemainingTestFiles()),
+      ...nodeTestArgs
+    ]
 
 const result = spawnSync('node', finalArgs, {
   stdio: 'inherit',

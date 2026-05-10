@@ -56,37 +56,48 @@ describe('useAmpLogic', () => {
   })
 
   it('allows overriding a hijack', async () => {
+    vi.resetModules()
     // We mock crypto so we get a specific random number for the spawn threshold
     vi.doMock('../../src/utils/crypto', () => ({
       getSafeRandom: () => 0.0001
     }))
 
-    const { useAmpLogic: useMockedAmpLogic } =
-      await import('../../src/hooks/minigames/useAmpLogic')
-    const { result } = renderHook(() => useMockedAmpLogic())
+    try {
+      const { useAmpLogic: useMockedAmpLogic } =
+        await import('../../src/hooks/minigames/useAmpLogic')
+      const { result } = renderHook(() => useMockedAmpLogic())
 
-    expect(result.current.hijacksOverridden).toBe(0)
-    expect(result.current.isHijackActive).toBe(false)
+      expect(result.current.hijacksOverridden).toBe(0)
+      expect(result.current.isHijackActive).toBe(false)
 
-    act(() => {
-      // 0.0001 < 0.02 * (5000 / 100) = 1.0 => guaranteed hijack trigger
-      result.current.update(5000, 5)
-    })
+      act(() => {
+        // 0.0001 < Math.min(1, 0.02 * (5000 / 100)) = 1.0 => guaranteed hijack trigger
+        result.current.update(5000)
+      })
 
-    // Give state a moment to flush
-    act(() => {
-      vi.advanceTimersByTime(100)
-    })
+      // Give state a moment to flush
+      act(() => {
+        vi.advanceTimersByTime(100)
+      })
 
-    expect(result.current.isHijackActive).toBe(true)
+      expect(result.current.isHijackActive).toBe(true)
 
-    act(() => {
-      result.current.overrideHijack()
-    })
+      act(() => {
+        result.current.overrideHijack()
+      })
 
-    expect(result.current.isHijackActive).toBe(false)
-    expect(result.current.hijacksOverridden).toBe(1)
+      expect(result.current.isHijackActive).toBe(false)
+      expect(result.current.hijacksOverridden).toBe(1)
 
-    vi.doUnmock('../../src/utils/crypto')
+      // Idempotency: calling overrideHijack when no hijack is active is a no-op
+      act(() => {
+        result.current.overrideHijack()
+      })
+
+      expect(result.current.isHijackActive).toBe(false)
+      expect(result.current.hijacksOverridden).toBe(1)
+    } finally {
+      vi.doUnmock('../../src/utils/crypto')
+    }
   })
 })

@@ -3,7 +3,8 @@ import assert from 'node:assert/strict'
 import { generateEffectText } from '../../src/utils/effectFormatter'
 
 describe('generateEffectText', () => {
-  const t = (key: string, options?: { defaultValue?: string }) => options?.defaultValue ?? key
+  const t = (key: string, options?: { defaultValue?: string }) =>
+    options?.defaultValue ?? key
 
   it('returns empty string if no delta is provided', () => {
     assert.equal(generateEffectText(undefined, t), '')
@@ -23,7 +24,10 @@ describe('generateEffectText', () => {
       }
     }
     const result = generateEffectText(delta, t)
-    assert.equal(result, 'Effects: Money: +100€, Fame: -10, Time: +2h, Fuel: -5, Van Condition: +10')
+    assert.equal(
+      result,
+      'Effects: Money: +100€, Fame: -10, Time: +2h, Fuel: -5, Van Condition: +10'
+    )
   })
 
   it('formats social stats', () => {
@@ -64,7 +68,7 @@ describe('generateEffectText', () => {
         membersDelta: [
           { moodChange: 5, staminaChange: -10 },
           { moodChange: -2, staminaChange: 5 },
-          { } // missing stats
+          {} // missing stats
         ]
       }
     }
@@ -86,16 +90,19 @@ describe('generateEffectText', () => {
     const delta = {
       band: {
         inventory: {
-          'guitar': 1,
-          'broken_strings': -2,
-          'vip_pass': true,
-          'fake_id': false,
-          'zero_item': 0
+          guitar: 1,
+          broken_strings: -2,
+          vip_pass: true,
+          fake_id: false,
+          zero_item: 0
         }
       }
     }
     const result = generateEffectText(delta, t)
-    assert.equal(result, 'Effects: guitar: +1, broken_strings: -2, +vip_pass, -fake_id')
+    assert.equal(
+      result,
+      'Effects: guitar: +1, broken_strings: -2, +vip_pass, -fake_id'
+    )
   })
 
   it('formats flags (addQuest as string)', () => {
@@ -119,7 +126,10 @@ describe('generateEffectText', () => {
       }
     }
     const result = generateEffectText(delta, t)
-    assert.equal(result, 'Effects: New Quest: Quest 1, New Quest: Quest 2, New Quest: Quest 3')
+    assert.equal(
+      result,
+      'Effects: New Quest: Quest 1, New Quest: Quest 2, New Quest: Quest 3'
+    )
   })
 
   it('formats flags (queueEvent and addStoryFlag)', () => {

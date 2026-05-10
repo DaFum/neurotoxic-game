@@ -198,7 +198,9 @@ export function useAmpLogic() {
         !isAnomalyActiveRef.current
       ) {
         // 2% chance per 100ms to spawn an anomaly during overdrive
-        if (getSafeRandom() < 0.02 * (deltaMS / 100)) {
+        if (
+          getSafeRandom() < Math.max(0, Math.min(1, 0.02 * (deltaMS / 100)))
+        ) {
           isAnomalyActiveRef.current = true
           setIsAnomalyActive(true)
           // Force an extreme target frequency
@@ -223,16 +225,20 @@ export function useAmpLogic() {
 
       if (
         !isAnomalyActiveRef.current &&
-        getSafeRandom() < chance * (deltaMS / 100)
+        getSafeRandom() < Math.max(0, Math.min(1, chance * (deltaMS / 100)))
       ) {
         const shift = (getSafeRandom() - 0.5) * shiftSize
         setTargetValue(prev => Math.max(0, Math.min(1000, prev + shift)))
       }
 
       // Kranker Schrank Hijack Logic
+      const clampedHijackProbability = Math.max(
+        0,
+        Math.min(1, 0.02 * (deltaMS / 100))
+      )
       if (
         !isHijackActiveRef.current &&
-        getSafeRandom() < 0.02 * (deltaMS / 100)
+        getSafeRandom() < clampedHijackProbability
       ) {
         isHijackActiveRef.current = true
         setIsHijackActive(true)

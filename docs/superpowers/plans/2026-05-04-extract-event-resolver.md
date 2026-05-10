@@ -12,17 +12,18 @@
 
 ## File Map
 
-| Path | Role | Status |
-|---|---|---|
-| `src/domain/eventResolver.ts` | **Create** — pure resolver + SideEffect types | new |
-| `src/context/useEventSystem.ts` | **Modify** — replace inline logic with resolver + runner | existing |
-| `tests/node/eventResolver.test.js` | **Create** — unit tests for pure resolver | new |
+| Path                               | Role                                                     | Status   |
+| ---------------------------------- | -------------------------------------------------------- | -------- |
+| `src/domain/eventResolver.ts`      | **Create** — pure resolver + SideEffect types            | new      |
+| `src/context/useEventSystem.ts`    | **Modify** — replace inline logic with resolver + runner | existing |
+| `tests/node/eventResolver.test.js` | **Create** — unit tests for pure resolver                | new      |
 
 ---
 
 ### Task 1: Write the failing tests
 
 **Files:**
+
 - Create: `tests/node/eventResolver.test.js`
 
 These tests import the resolver that does not exist yet; they must fail before Task 2.
@@ -39,23 +40,35 @@ import {
   createAddUnlockAction,
   createAddCooldownAction,
   createSetActiveEventAction,
-  createPopPendingEventAction,
+  createPopPendingEventAction
 } from '../../src/context/actionCreators.ts'
 
 const buildState = (overrides = {}) => ({
-  player: { money: 200, time: 10, fame: 2, day: 3, eventsTriggeredToday: 0, van: { fuel: 50, condition: 80 } },
-  band: { members: [{ id: 'alpha', stamina: 6, mood: 50 }], harmony: 60, inventory: {} },
+  player: {
+    money: 200,
+    time: 10,
+    fame: 2,
+    day: 3,
+    eventsTriggeredToday: 0,
+    van: { fuel: 50, condition: 80 }
+  },
+  band: {
+    members: [{ id: 'alpha', stamina: 6, mood: 50 }],
+    harmony: 60,
+    inventory: {}
+  },
   social: { instagram: 0, viral: 0 },
   activeEvent: { id: 'evt_test', titleKey: 'event:test' },
   pendingEvents: [],
   eventCooldowns: [],
   activeStoryFlags: [],
-  ...overrides,
+  ...overrides
 })
 
 // --- null choice ---
 test('resolveEvent: null choice clears active event, no other actions', () => {
-  const { actions, sideEffects, outcomeText, description, result } = resolveEvent(null, buildState())
+  const { actions, sideEffects, outcomeText, description, result } =
+    resolveEvent(null, buildState())
   assert.equal(actions.length, 1)
   assert.deepEqual(actions[0], createSetActiveEventAction(null))
   assert.equal(sideEffects.length, 0)
@@ -69,15 +82,21 @@ test('resolveEvent: choice with resource effect emits applyDelta + cooldown + cl
   const choice = {
     label: 'Pay fine',
     outcomeText: 'event:outcome_paid',
-    effect: { type: 'resource', resource: 'money', value: -40 },
+    effect: { type: 'resource', resource: 'money', value: -40 }
   }
   const state = buildState()
   const { actions, sideEffects } = resolveEvent(choice, state)
 
   const types = actions.map(a => a.type)
-  assert.ok(types.includes('APPLY_EVENT_DELTA'), 'must include APPLY_EVENT_DELTA')
+  assert.ok(
+    types.includes('APPLY_EVENT_DELTA'),
+    'must include APPLY_EVENT_DELTA'
+  )
   assert.ok(types.includes('ADD_COOLDOWN'), 'must include ADD_COOLDOWN')
-  assert.ok(types.includes('SET_ACTIVE_EVENT'), 'must include SET_ACTIVE_EVENT (clear)')
+  assert.ok(
+    types.includes('SET_ACTIVE_EVENT'),
+    'must include SET_ACTIVE_EVENT (clear)'
+  )
 
   // APPLY_EVENT_DELTA carries the money delta
   const deltaAction = actions.find(a => a.type === 'APPLY_EVENT_DELTA')
@@ -98,7 +117,11 @@ test('resolveEvent: choice with addQuest flag emits ADD_QUEST actions', () => {
   const choice = {
     label: 'Accept quest',
     outcomeText: '',
-    effect: { type: 'flag', flag: 'addQuest', value: [{ id: 'q1', deadlineOffset: 5 }] },
+    effect: {
+      type: 'flag',
+      flag: 'addQuest',
+      value: [{ id: 'q1', deadlineOffset: 5 }]
+    }
   }
   const state = buildState()
   const { actions } = resolveEvent(choice, state)
@@ -117,7 +140,7 @@ test('resolveEvent: choice with unlock flag emits ADD_UNLOCK + persistUnlock + u
   const choice = {
     label: 'Unlock something',
     outcomeText: '',
-    effect: { type: 'flag', flag: 'unlock', value: 'My Cool Unlock!' },
+    effect: { type: 'flag', flag: 'unlock', value: 'My Cool Unlock!' }
   }
   const state = buildState()
   const { actions, sideEffects } = resolveEvent(choice, state)
@@ -142,13 +165,16 @@ test('resolveEvent: choice with gameOver flag emits changeScene + saveGame + gam
     label: 'Die',
     outcomeText: '',
     description: 'event:death_desc',
-    effect: { type: 'flag', flag: 'gameOver', value: true },
+    effect: { type: 'flag', flag: 'gameOver', value: true }
   }
   const state = buildState()
   const { actions, sideEffects } = resolveEvent(choice, state)
 
   // no cooldown for game over
-  assert.ok(!actions.find(a => a.type === 'ADD_COOLDOWN'), 'no cooldown on game over')
+  assert.ok(
+    !actions.find(a => a.type === 'ADD_COOLDOWN'),
+    'no cooldown on game over'
+  )
 
   const changeScene = sideEffects.find(e => e.type === 'changeScene')
   assert.ok(changeScene)
@@ -171,12 +197,15 @@ test('resolveEvent: active event matching first pendingEvent emits POP_PENDING_E
   const choice = {
     label: 'OK',
     outcomeText: '',
-    effect: { type: 'resource', resource: 'money', value: 0 },
+    effect: { type: 'resource', resource: 'money', value: 0 }
   }
   const state = buildState({ pendingEvents: ['evt_test'] })
   const { actions } = resolveEvent(choice, state)
   const popAction = actions.find(a => a.type === 'POP_PENDING_EVENT')
-  assert.ok(!popAction, 'resolveEvent must not pop pending events (triggerEvent does that)')
+  assert.ok(
+    !popAction,
+    'resolveEvent must not pop pending events (triggerEvent does that)'
+  )
 })
 ```
 
@@ -193,6 +222,7 @@ Expected: `ERR_MODULE_NOT_FOUND` or similar — `src/domain/eventResolver.ts` do
 ### Task 2: Create the pure resolver
 
 **Files:**
+
 - Create: `src/domain/eventResolver.ts`
 
 - [ ] **Step 1: Write the file**
@@ -208,7 +238,7 @@ import {
   createAddQuestAction,
   createAddUnlockAction,
   createApplyEventDeltaAction,
-  createSetActiveEventAction,
+  createSetActiveEventAction
 } from '../context/actionCreators'
 import type { GameAction, GameState, QuestState } from '../types/game'
 import type { GamePhase } from '../types/game'
@@ -216,8 +246,17 @@ import type { GamePhase } from '../types/game'
 export type SideEffect =
   | { type: 'persistUnlock'; id: string }
   | { type: 'unlockToast'; id: string }
-  | { type: 'outcomeToast'; outcomeKey: string; descriptionKey: string; context: Record<string, unknown> }
-  | { type: 'gameOverToast'; descriptionKey: string; context: Record<string, unknown> }
+  | {
+      type: 'outcomeToast'
+      outcomeKey: string
+      descriptionKey: string
+      context: Record<string, unknown>
+    }
+  | {
+      type: 'gameOverToast'
+      descriptionKey: string
+      context: Record<string, unknown>
+    }
   | { type: 'changeScene'; scene: GamePhase }
   | { type: 'saveGame'; state: GameState }
 
@@ -230,12 +269,10 @@ export type EventResolution = {
 }
 
 const isQuestStateLike = (value: unknown): value is QuestState =>
-  isPlainObject(value) && typeof (value as Record<string, unknown>).id === 'string'
+  isPlainObject(value) &&
+  typeof (value as Record<string, unknown>).id === 'string'
 
-function buildQuestActions(
-  quests: unknown,
-  currentDay: number
-): GameAction[] {
+function buildQuestActions(quests: unknown, currentDay: number): GameAction[] {
   if (!Array.isArray(quests)) return []
   const actions: GameAction[] = []
   for (const q of quests) {
@@ -245,7 +282,8 @@ function buildQuestActions(
       const deadlineOffset =
         typeof rawOffset === 'number'
           ? rawOffset
-          : typeof rawOffset === 'string' && (rawOffset as string).trim().length > 0
+          : typeof rawOffset === 'string' &&
+              (rawOffset as string).trim().length > 0
             ? Number(rawOffset)
             : Number.NaN
       if (Number.isFinite(deadlineOffset)) {
@@ -253,13 +291,17 @@ function buildQuestActions(
       } else {
         logger.warn('eventResolver', 'Skipping invalid quest deadlineOffset', {
           questId: questToAdd.id,
-          deadlineOffset: rawOffset,
+          deadlineOffset: rawOffset
         })
       }
       delete questToAdd.deadlineOffset
     }
     if (!isQuestStateLike(questToAdd)) {
-      logger.warn('eventResolver', 'Skipping malformed quest payload', questToAdd)
+      logger.warn(
+        'eventResolver',
+        'Skipping malformed quest payload',
+        questToAdd
+      )
       continue
     }
     actions.push(createAddQuestAction(questToAdd))
@@ -277,7 +319,7 @@ export function resolveEvent(
       sideEffects: [],
       outcomeText: '',
       description: '',
-      result: null,
+      result: null
     }
   }
 
@@ -292,7 +334,9 @@ export function resolveEvent(
     _precomputedResult?: RawResolution
   }
 
-  const selectedChoice = choice as RawResolution & { _precomputedResult?: RawResolution }
+  const selectedChoice = choice as RawResolution & {
+    _precomputedResult?: RawResolution
+  }
 
   const resolution: RawResolution =
     selectedChoice._precomputedResult ??
@@ -332,7 +376,10 @@ export function resolveEvent(
 
     if (flags.unlock) {
       const rawUnlock = String(flags.unlock)
-      const safeUnlockId = rawUnlock.trim().replace(/[^a-zA-Z0-9_]/g, '').toLowerCase()
+      const safeUnlockId = rawUnlock
+        .trim()
+        .replace(/[^a-zA-Z0-9_]/g, '')
+        .toLowerCase()
       if (safeUnlockId) {
         const unlockAction = createAddUnlockAction(safeUnlockId)
         actions.push(unlockAction)
@@ -343,7 +390,11 @@ export function resolveEvent(
     }
 
     if (flags.gameOver) {
-      sideEffects.push({ type: 'gameOverToast', descriptionKey: description, context: activeEventContext })
+      sideEffects.push({
+        type: 'gameOverToast',
+        descriptionKey: description,
+        context: activeEventContext
+      })
       sideEffects.push({ type: 'saveGame', state: previewState })
       sideEffects.push({ type: 'changeScene', scene: GAME_PHASES.GAMEOVER })
       actions.push(createSetActiveEventAction(null))
@@ -360,7 +411,7 @@ export function resolveEvent(
       type: 'outcomeToast',
       outcomeKey: outcomeText,
       descriptionKey: description,
-      context: activeEventContext,
+      context: activeEventContext
     })
   }
 
@@ -390,6 +441,7 @@ git commit -m "feat: add pure resolveEvent domain service with SideEffect types"
 ### Task 3: Add side-effect runner and wire up useEventSystem
 
 **Files:**
+
 - Modify: `src/context/useEventSystem.ts`
 
 The runner translates `SideEffect[]` into real calls (`addToast`, `changeScene`, `saveGame`, `addUnlock`). It lives inside `useEventSystem.ts` (not exported) to keep the module boundary clean.
@@ -408,7 +460,7 @@ import { GAME_PHASES } from './gameConstants'
 import {
   createPopPendingEventAction,
   createSetActiveEventAction,
-  createUpdatePlayerAction,
+  createUpdatePlayerAction
 } from './actionCreators'
 import { resolveEvent, type SideEffect } from '../domain/eventResolver'
 import type { GameAction, GameState } from '../types/game'
@@ -446,21 +498,36 @@ function runSideEffects(effects: SideEffect[], ctx: SideEffectContext): void {
       }
       case 'unlockToast': {
         const unlockKey = `unlocks:${effect.id}`
-        const unlockLabel = t(unlockKey, { defaultValue: effect.id.toUpperCase() })
+        const unlockLabel = t(unlockKey, {
+          defaultValue: effect.id.toUpperCase()
+        })
         addToast(
           t('ui:unlocked', {
-            unlock: typeof unlockLabel === 'string' ? unlockLabel : String(unlockLabel),
+            unlock:
+              typeof unlockLabel === 'string'
+                ? unlockLabel
+                : String(unlockLabel)
           }),
           'success'
         )
         break
       }
       case 'outcomeToast': {
-        const msgOutcome = effect.outcomeKey ? t(effect.outcomeKey, effect.context) : ''
-        const msgDesc = effect.descriptionKey ? t(effect.descriptionKey, effect.context) : ''
-        const message = msgOutcome && msgDesc ? `${msgOutcome} ${msgDesc}` : msgOutcome || msgDesc
+        const msgOutcome = effect.outcomeKey
+          ? t(effect.outcomeKey, effect.context)
+          : ''
+        const msgDesc = effect.descriptionKey
+          ? t(effect.descriptionKey, effect.context)
+          : ''
+        const message =
+          msgOutcome && msgDesc
+            ? `${msgOutcome} ${msgDesc}`
+            : msgOutcome || msgDesc
         if (message) {
-          addToast(typeof message === 'string' ? message : String(message), 'info')
+          addToast(
+            typeof message === 'string' ? message : String(message),
+            'info'
+          )
         }
         break
       }
@@ -489,7 +556,7 @@ export function useEventSystem({
   addToast,
   changeScene,
   saveGame,
-  tRef,
+  tRef
 }: UseEventSystemParams) {
   const setActiveEvent = useCallback(
     (event: Parameters<typeof createSetActiveEventAction>[0]) =>
@@ -515,7 +582,8 @@ export function useEventSystem({
       setActiveEvent(processedEvent)
       dispatch(
         createUpdatePlayerAction({
-          eventsTriggeredToday: (currentState.player?.eventsTriggeredToday ?? 0) + 1,
+          eventsTriggeredToday:
+            (currentState.player?.eventsTriggeredToday ?? 0) + 1
         })
       )
 
@@ -537,23 +605,33 @@ export function useEventSystem({
       try {
         const resolution = resolveEvent(choice, stateRef.current)
         resolution.actions.forEach(dispatch)
-        runSideEffects(resolution.sideEffects, { addToast, changeScene, saveGame, tRef })
+        runSideEffects(resolution.sideEffects, {
+          addToast,
+          changeScene,
+          saveGame,
+          tRef
+        })
         return {
           outcomeText: resolution.outcomeText,
           description: resolution.description,
-          result: resolution.result,
+          result: resolution.result
         }
       } catch (error) {
         logger.error('Event', 'Failed to resolve event choice:', error)
         addToast(tRef.current('ui:event_error'), 'error')
         dispatch(createSetActiveEventAction(null))
         return {
-          outcomeText: (choice as Record<string, unknown> | null)?.outcomeText as string ?? '',
+          outcomeText:
+            ((choice as Record<string, unknown> | null)
+              ?.outcomeText as string) ?? '',
           description:
-            typeof (choice as Record<string, unknown> | null)?.description === 'string'
-              ? tRef.current((choice as Record<string, unknown>).description as string)
+            typeof (choice as Record<string, unknown> | null)?.description ===
+            'string'
+              ? tRef.current(
+                  (choice as Record<string, unknown>).description as string
+                )
               : '',
-          result: null,
+          result: null
         }
       }
     },
@@ -611,15 +689,15 @@ git push -u origin claude/extract-event-resolver-bO7vA
 
 ### Spec coverage
 
-| Requirement | Task |
-|---|---|
-| `resolveEvent(event, state, rng): EventResolution` signature | Task 2 — note: `rng` omitted from MVP since `resolveEventChoice` already has internal RNG; can be threaded later if needed |
-| `EventResolution = { actions: GameAction[], sideEffects: SideEffect[] }` | Task 2 |
-| No dispatch / React context in resolver | Task 2 — imports only pure utils |
-| Testable in Node without DOM | Task 1 — `node:test` tests |
-| `actions.forEach(dispatch)` in hook after pure resolver returns | Task 3 |
-| Side-effect runner stubbable in tests | Task 3 — `runSideEffects` is a plain function, injectable |
-| Batch-then-dispatch (rollback safety) | Task 3 — all actions collected before any dispatch |
+| Requirement                                                              | Task                                                                                                                       |
+| ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| `resolveEvent(event, state, rng): EventResolution` signature             | Task 2 — note: `rng` omitted from MVP since `resolveEventChoice` already has internal RNG; can be threaded later if needed |
+| `EventResolution = { actions: GameAction[], sideEffects: SideEffect[] }` | Task 2                                                                                                                     |
+| No dispatch / React context in resolver                                  | Task 2 — imports only pure utils                                                                                           |
+| Testable in Node without DOM                                             | Task 1 — `node:test` tests                                                                                                 |
+| `actions.forEach(dispatch)` in hook after pure resolver returns          | Task 3                                                                                                                     |
+| Side-effect runner stubbable in tests                                    | Task 3 — `runSideEffects` is a plain function, injectable                                                                  |
+| Batch-then-dispatch (rollback safety)                                    | Task 3 — all actions collected before any dispatch                                                                         |
 
 ### Placeholder scan
 

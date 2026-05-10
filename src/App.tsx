@@ -8,7 +8,11 @@ import { DebugLogViewer } from './ui/DebugLogViewer'
 import { TutorialManager } from './components/TutorialManager'
 import { ChatterOverlay } from './components/ChatterOverlay'
 import ReloadPrompt from './components/ReloadPrompt'
-import { GameStateProvider, useGameSelector, useGameActions } from './context/GameState'
+import {
+  GameStateProvider,
+  useGameSelector,
+  useGameActions
+} from './context/GameState'
 import { ErrorBoundary } from './ui/CrashHandler'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/react'
@@ -81,7 +85,7 @@ function GameContent() {
     gameMap,
     social,
     lastGigStats
-  } = useGameSelector((state) => ({
+  } = useGameSelector(state => ({
     currentScene: state.currentScene,
     activeEvent: state.activeEvent,
     settings: state.settings,
@@ -108,14 +112,7 @@ function GameContent() {
       social,
       lastGigStats
     }),
-    [
-      currentScene,
-      band,
-      player,
-      gameMap,
-      social,
-      lastGigStats
-    ]
+    [currentScene, band, player, gameMap, social, lastGigStats]
   )
 
   return (

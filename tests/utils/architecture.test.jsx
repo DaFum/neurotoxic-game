@@ -67,7 +67,11 @@ test('Events DB has global unique IDs across all categories', () => {
     }
   }
 
-  assert.strictEqual(duplicates.length, 0, `Found duplicate event IDs: ${duplicates.join(', ')}`)
+  assert.strictEqual(
+    duplicates.length,
+    0,
+    `Found duplicate event IDs: ${duplicates.join(', ')}`
+  )
 })
 
 test('Quests correctly trigger failure when deadlines exceed day advance', () => {
@@ -92,10 +96,25 @@ test('Quests correctly trigger failure when deadlines exceed day advance', () =>
   // Advancing to day 11 should fail the first quest
   const nextState = handleAdvanceDay(initialState, {})
 
-  assert.strictEqual(nextState.activeQuests.length, 1, 'Failed quest should be removed')
-  assert.strictEqual(nextState.activeQuests[0].id, 'test_safe_quest', 'Safe quest should remain')
-  assert.strictEqual(nextState.social.controversyLevel, 10, 'Penalty should be applied')
-  assert.ok(nextState.toasts.some(t => t.id === 'test_deadline_quest-fail'), 'Failure toast should be added')
+  assert.strictEqual(
+    nextState.activeQuests.length,
+    1,
+    'Failed quest should be removed'
+  )
+  assert.strictEqual(
+    nextState.activeQuests[0].id,
+    'test_safe_quest',
+    'Safe quest should remain'
+  )
+  assert.strictEqual(
+    nextState.social.controversyLevel,
+    10,
+    'Penalty should be applied'
+  )
+  assert.ok(
+    nextState.toasts.some(t => t.id === 'test_deadline_quest-fail'),
+    'Failure toast should be added'
+  )
 })
 
 test('Quest completion paths through quest reducer work correctly', () => {
@@ -110,11 +129,21 @@ test('Quest completion paths through quest reducer work correctly', () => {
     }
   ]
 
-  const nextState = handleAdvanceQuest(initialState, { questId: 'test_completion_quest', amount: 1 })
+  const nextState = handleAdvanceQuest(initialState, {
+    questId: 'test_completion_quest',
+    amount: 1
+  })
 
-  assert.strictEqual(nextState.activeQuests.length, 0, 'Completed quest should be removed')
+  assert.strictEqual(
+    nextState.activeQuests.length,
+    0,
+    'Completed quest should be removed'
+  )
   assert.strictEqual(nextState.player.money, 150, 'Reward should be applied')
-  assert.ok(nextState.toasts.some(t => t.id.includes('test_completion_quest-money')), 'Reward toast should be added')
+  assert.ok(
+    nextState.toasts.some(t => t.id.includes('test_completion_quest-money')),
+    'Reward toast should be added'
+  )
 })
 
 test('Quest completion paths through gig reducer work correctly', () => {
@@ -130,9 +159,20 @@ test('Quest completion paths through gig reducer work correctly', () => {
   ]
   initialState.currentGig = { id: 'test_gig', score: 100, capacity: 200 }
 
-  const nextState = handleSetLastGigStats(initialState, { score: 100, isGoodShow: true, venueId: 'test_venue' })
+  const nextState = handleSetLastGigStats(initialState, {
+    score: 100,
+    isGoodShow: true,
+    venueId: 'test_venue'
+  })
 
-  assert.strictEqual(nextState.activeQuests.length, 0, 'Completed quest should be removed')
+  assert.strictEqual(
+    nextState.activeQuests.length,
+    0,
+    'Completed quest should be removed'
+  )
   assert.strictEqual(nextState.player.money, 200, 'Reward should be applied')
-  assert.ok(nextState.toasts.some(t => t.id.includes(`${QUEST_APOLOGY_TOUR}-money`)), 'Reward toast should be added')
+  assert.ok(
+    nextState.toasts.some(t => t.id.includes(`${QUEST_APOLOGY_TOUR}-money`)),
+    'Reward toast should be added'
+  )
 })

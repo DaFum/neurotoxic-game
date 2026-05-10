@@ -46,10 +46,7 @@ import {
   handleClinicEnhance,
   handleBloodBankDonate
 } from './reducers/clinicReducer'
-import {
-  handleAddQuest,
-  handleAdvanceQuest
-} from './reducers/questReducer'
+import { handleAddQuest, handleAdvanceQuest } from './reducers/questReducer'
 import {
   handleLoadGame,
   handleResetState,

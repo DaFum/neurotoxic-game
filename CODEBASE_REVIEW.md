@@ -1,4 +1,5 @@
 # Comprehensive Codebase Review
+
 1. **Event-Dateien verteilt lassen, aber `src/data/events/index.ts` zur verbindlichen Registry machen.**
    Die aktuelle Richtung ist grundsätzlich gut: Die einzelnen Event-Dateien nach Themen oder Quellen zu trennen, hält die Daten wartbar. Das Problem ist nicht die Verteilung selbst, sondern dass die eigentliche Wahrheit darüber, welche Events am Ende in welchen Pool gelangen, erst in der Registry entschieden wird. Genau deshalb sollte [`/workspace/memory/snapshots/neurotoxic-game/src/data/events/index.ts`](sandbox:/workspace/memory/snapshots/neurotoxic-game/src/data/events/index.ts) bewusst als einzige Stelle definiert werden, die drei Dinge übernimmt: Import, Kategorisierung und Validierung. Praktisch heißt das: Neue Event-Dateien dürfen nur Rohdefinitionen liefern; sie sollten nicht implizit eigene Aggregationslogik mitbringen. Die Registry sollte außerdem stärker typisiert werden, damit schon beim Hinzufügen eines Events klar ist, welche Kategorien, Trigger und Pflichtfelder erlaubt sind. So bleibt die modulare Struktur erhalten, aber die Ownership ist eindeutig.
 
