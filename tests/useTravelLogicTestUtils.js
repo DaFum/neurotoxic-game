@@ -90,7 +90,8 @@ mock.module(new URL('../src/utils/simulationUtils.ts', import.meta.url).href, {
 mock.module(new URL('../src/utils/logger.ts', import.meta.url).href, {
   namedExports: {
     logger: mockLogger,
-    isValidLogLevel: mock.fn(() => true), LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, NONE: 4 }
+    isValidLogLevel: mock.fn(() => true),
+    LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, NONE: 4 }
   }
 })
 
@@ -113,7 +114,9 @@ export const resetTravelLogicMockState = () => {
   mockAudioManager.ensureAudioContext.mock.resetCalls()
   mockAudioManager.playSFX.mock.mockImplementation(playSFXDefault)
   mockAudioManager.playSFX.mock.resetCalls()
-  mockAudioManager.warnAudioNotAvailable.mock.mockImplementation(warnAudioNotAvailableDefault)
+  mockAudioManager.warnAudioNotAvailable.mock.mockImplementation(
+    warnAudioNotAvailableDefault
+  )
   mockAudioManager.warnAudioNotAvailable.mock.resetCalls()
 }
 

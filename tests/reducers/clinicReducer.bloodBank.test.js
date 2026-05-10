@@ -4,7 +4,8 @@ import assert from 'node:assert'
 mock.module('../../src/utils/logger', {
   namedExports: {
     logger: { warn: mock.fn(), info: mock.fn(), debug: mock.fn() },
-    isValidLogLevel: mock.fn(() => true), LOG_LEVELS: { ERROR: 0, WARN: 1, INFO: 2, DEBUG: 3 }
+    isValidLogLevel: mock.fn(() => true),
+    LOG_LEVELS: { ERROR: 0, WARN: 1, INFO: 2, DEBUG: 3 }
   }
 })
 
