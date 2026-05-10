@@ -190,14 +190,14 @@ async function fetchAudioArrayBuffer(
 /**
  * Decodes audio data into an AudioBuffer with a timeout.
  * @param {ArrayBuffer} arrayBuffer - The raw audio data.
- * @returns {Promise<AudioBuffer | null>} The decoded AudioBuffer, or null on failure.
+ * @returns {Promise<AudioBuffer>} The decoded AudioBuffer. Throws on failure.
  */
 async function decodeAudioDataWithTimeout(
   arrayBuffer: ArrayBuffer
-): Promise<AudioBuffer | null> {
+): Promise<AudioBuffer> {
   const rawContext = getRawAudioContext()
   let decodeTimeoutId: ReturnType<typeof setTimeout> | null = null
-  const decodeTimeoutPromise = new Promise((_, reject) => {
+  const decodeTimeoutPromise = new Promise<never>((_, reject) => {
     decodeTimeoutId = setTimeout(
       () => reject(new Error('AUDIO_DECODE_TIMEOUT')),
       AUDIO_BUFFER_DECODE_TIMEOUT_MS
@@ -205,10 +205,10 @@ async function decodeAudioDataWithTimeout(
   })
 
   try {
-    return (await Promise.race([
+    return await Promise.race([
       rawContext.decodeAudioData(arrayBuffer),
       decodeTimeoutPromise
-    ])) as AudioBuffer | null
+    ])
   } finally {
     if (decodeTimeoutId) clearTimeout(decodeTimeoutId)
   }
@@ -287,7 +287,6 @@ async function loadAudioBufferInternal(
     if (!arrayBuffer) return null
 
     const buffer = await decodeAudioDataWithTimeout(arrayBuffer)
-    if (!buffer) return null
 
     cacheAudioBuffer(cacheKey, buffer, filename)
     return buffer
