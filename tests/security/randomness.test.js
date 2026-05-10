@@ -12,6 +12,7 @@ vi.mock('../../src/utils/crypto', async importOriginal => {
 
 vi.mock('../../src/utils/logger', () => ({
   logger: { debug: vi.fn(), error: vi.fn() },
+  isValidLogLevel: vi.fn(() => true),
   LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, NONE: 4 }
 }))
 vi.mock('../../src/data/events/index', () => ({

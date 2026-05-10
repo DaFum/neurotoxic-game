@@ -42,7 +42,8 @@ vi.mock('../../src/utils/logger', () => {
   }
   return {
     logger,
-    LOG_LEVELS: { DEBUG: 10, INFO: 20, WARN: 30, ERROR: 40 }
+    isValidLogLevel: vi.fn(() => true),
+  LOG_LEVELS: { DEBUG: 10, INFO: 20, WARN: 30, ERROR: 40 }
   }
 })
 

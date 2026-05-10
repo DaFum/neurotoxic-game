@@ -70,11 +70,13 @@ vi.mock('../../src/utils/logger', () => {
     },
     clear: vi.fn(() => listeners.forEach(cb => cb({ type: 'clear' }))),
     dump: vi.fn(() => []),
-    LOG_LEVELS: undefined
+    isValidLogLevel: vi.fn(() => true),
+  LOG_LEVELS: undefined
   }
   return {
     logger,
-    LOG_LEVELS: { DEBUG: 10, INFO: 20, WARN: 30, ERROR: 40 }
+    isValidLogLevel: vi.fn(() => true),
+  LOG_LEVELS: { DEBUG: 10, INFO: 20, WARN: 30, ERROR: 40 }
   }
 })
 
