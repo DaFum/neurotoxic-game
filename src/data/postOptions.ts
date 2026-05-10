@@ -67,21 +67,17 @@ function getMemberWithTrait(
 }
 
 /**
- * O(N) over members array with O(1) check if any member has a specific trait (or one of two traits).
+ * O(N) over members array checking if any member has a specific trait.
  * @param {Array} members - The band.members array
- * @param {string} traitId1 - The ID of the primary trait
- * @param {string} [traitId2] - Optional ID of a secondary trait
- * @returns {boolean} True if any member has the trait(s)
+ * @param {...string} traitIds - The IDs of the traits to check
+ * @returns {boolean} True if any member has at least one of the traits
  */
 function hasMemberWithTrait(
   members: unknown,
-  traitId1: string,
-  traitId2?: string
+  ...traitIds: string[]
 ): boolean {
-  if (!Array.isArray(members) || members.length === 0) return false
-  return members.some(
-    m => hasTrait(m, traitId1) || (traitId2 && hasTrait(m, traitId2))
-  )
+  if (!Array.isArray(members) || members.length === 0 || traitIds.length === 0) return false
+  return members.some(m => traitIds.some(id => hasTrait(m, id)))
 }
 
 const requireBandMembers = (
