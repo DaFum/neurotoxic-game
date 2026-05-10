@@ -8,6 +8,7 @@ import { stopAudio, stopAudioInternal } from './playback'
 import { midiUrlMap } from './assets'
 import { calculateTimeFromTicks, preprocessTempoMap } from '../rhythmUtils'
 import type { ProcessedTempoMapEntry } from '../../types/rhythm'
+import type { DrumKitSynth } from '../../types/audio'
 import {
   resolveAssetUrl,
   normalizeMidiPlaybackOptions,
@@ -95,6 +96,19 @@ type MidiTransportParams = {
 /**
  * Internal helper to trigger instrument notes.
  */
+function triggerSynthNote(
+  synth: Tone.PolySynth | null | undefined,
+  midiPitch: number,
+  time: number,
+  velocity: number,
+  duration: string,
+  defaultFreq: string,
+  noteName: string | null
+): void {
+  const freq = noteName ?? getNoteName(midiPitch) ?? defaultFreq
+  synth?.triggerAttackRelease(freq, duration, time, velocity)
+}
+
 function triggerInstrumentNote(
   lane: string,
   midiPitch: number,
@@ -103,28 +117,32 @@ function triggerInstrumentNote(
   noteName: string | null = null
 ): void {
   if (lane === 'drums') {
-    playDrumNote(midiPitch, time, velocity)
-  } else if (lane === 'midiDrumKit') {
-    playDrumNote(midiPitch, time, velocity, audioState.midiDrumKit ?? undefined)
-  } else if (lane === 'bass') {
-    if (audioState.bass) {
-      const freq = noteName ?? getNoteName(midiPitch) ?? 'C3'
-      audioState.bass.triggerAttackRelease(freq, '8n', time, velocity)
-    }
-  } else if (lane === 'midiBass') {
-    if (audioState.midiBass) {
-      const freq = noteName ?? getNoteName(midiPitch) ?? 'C3'
-      audioState.midiBass.triggerAttackRelease(freq, '8n', time, velocity)
-    }
-  } else if (lane === 'midiLead') {
-    if (audioState.midiLead) {
-      const freq = noteName ?? getNoteName(midiPitch) ?? 'C4'
-      audioState.midiLead.triggerAttackRelease(freq, '16n', time, velocity)
-    }
-  } else if (audioState.guitar) {
-    const freq = noteName ?? getNoteName(midiPitch) ?? 'C4'
-    audioState.guitar.triggerAttackRelease(freq, '16n', time, velocity)
+    return playDrumNote(midiPitch, time, velocity)
   }
+  if (lane === 'midiDrumKit') {
+    return playDrumNote(
+      midiPitch,
+      time,
+      velocity,
+      audioState.midiDrumKit ?? undefined
+    )
+  }
+
+  const { synth, dur, freq } = getSynthConfigForLane(lane)
+  triggerSynthNote(synth, midiPitch, time, velocity, dur, freq, noteName)
+}
+
+function getSynthConfigForLane(lane: string): {
+  synth: Tone.PolySynth | null | undefined
+  dur: string
+  freq: string
+} {
+  if (lane === 'bass') return { synth: audioState.bass, dur: '8n', freq: 'C3' }
+  if (lane === 'midiBass')
+    return { synth: audioState.midiBass, dur: '8n', freq: 'C3' }
+  if (lane === 'midiLead')
+    return { synth: audioState.midiLead, dur: '16n', freq: 'C4' }
+  return { synth: audioState.guitar, dur: '16n', freq: 'C4' }
 }
 
 /**
@@ -170,6 +188,53 @@ function validateSongReady(song: unknown): boolean {
 /**
  * Processes song notes into schedulable events.
  */
+function isFiniteNumber(val: unknown): val is number {
+  return typeof val === 'number' && Number.isFinite(val)
+}
+
+function isValidSongNote(
+  n: SongLikeNote | undefined | null
+): n is SongLikeNote & { t: number; p: number; v: number } {
+  if (!n) return false
+  return isFiniteNumber(n.t) && isFiniteNumber(n.p) && isFiniteNumber(n.v)
+}
+
+function calculateNoteTime(
+  n: { t: number },
+  bpm: number,
+  tpb: number,
+  useTempoMap: boolean,
+  activeTempoMap: ProcessedTempoMapEntry[]
+): number {
+  const time = useTempoMap
+    ? calculateTimeFromTicks(n.t, tpb, activeTempoMap, 's')
+    : (n.t / tpb) * (60 / bpm)
+  return Number.isFinite(time) ? time : -1
+}
+
+function createSongEventFromNote(
+  n: SongLikeNote & { t: number; p: number; v: number },
+  bpm: number,
+  tpb: number,
+  useTempoMap: boolean,
+  activeTempoMap: ProcessedTempoMapEntry[]
+): ProcessedSongEvent | null {
+  const finalTime = calculateNoteTime(n, bpm, tpb, useTempoMap, activeTempoMap)
+  if (finalTime < 0) return null
+
+  const rawVelocity = Math.max(0, Math.min(127, n.v))
+  const noteName = n.lane !== 'drums' ? getNoteName(n.p) : null
+  const lane = typeof n.lane === 'string' ? n.lane : 'guitar'
+
+  return {
+    time: finalTime,
+    note: n.p,
+    noteName,
+    velocity: rawVelocity / 127,
+    lane
+  }
+}
+
 function processSongEvents(
   song: { notes?: unknown },
   bpm: number,
@@ -177,51 +242,25 @@ function processSongEvents(
   useTempoMap: boolean,
   activeTempoMap: ProcessedTempoMapEntry[]
 ): { events: ProcessedSongEvent[]; lastTime: number } | null {
-  const events: ProcessedSongEvent[] = []
   let lastTime = 0
 
   const notes = Array.isArray(song.notes) ? (song.notes as SongLikeNote[]) : []
-
-  for (let i = 0; i < notes.length; i++) {
-    const n = notes[i]
-    if (!n) continue
-
-    if (
-      typeof n.t !== 'number' ||
-      !Number.isFinite(n.t) ||
-      typeof n.p !== 'number' ||
-      !Number.isFinite(n.p) ||
-      typeof n.v !== 'number' ||
-      !Number.isFinite(n.v)
-    ) {
-      continue
-    }
-
-    const time = useTempoMap
-      ? calculateTimeFromTicks(n.t, tpb, activeTempoMap, 's')
-      : (n.t / tpb) * (60 / bpm)
-
-    const finalTime = Number.isFinite(time) ? time : -1
-
-    if (finalTime >= 0) {
-      const rawVelocity = Math.max(0, Math.min(127, n.v))
-
-      if (finalTime > lastTime) {
-        lastTime = finalTime
+  const events = notes.reduce<ProcessedSongEvent[]>((acc, n) => {
+    if (isValidSongNote(n)) {
+      const evt = createSongEventFromNote(
+        n,
+        bpm,
+        tpb,
+        useTempoMap,
+        activeTempoMap
+      )
+      if (evt) {
+        lastTime = Math.max(lastTime, evt.time)
+        acc.push(evt)
       }
-
-      const noteName = n.lane !== 'drums' ? getNoteName(n.p) : null
-      const lane = typeof n.lane === 'string' ? n.lane : 'guitar'
-
-      events.push({
-        time: finalTime,
-        note: n.p,
-        noteName,
-        velocity: rawVelocity / 127,
-        lane
-      })
     }
-  }
+    return acc
+  }, [])
 
   if (events.length === 0) {
     logger.warn(
@@ -237,27 +276,30 @@ function processSongEvents(
 /**
  * Creates the Tone.Part for the song events.
  */
+function resolveSongNoteName(value: ProcessedSongEvent): string | null {
+  if (value.noteName === null) return null
+  return value.noteName ?? getNoteName(value.note)
+}
+
+function handleSongPartEvent(time: number, value: ProcessedSongEvent) {
+  try {
+    if (!audioState.guitar || !audioState.bass || !audioState.drumKit) return
+
+    const noteName = resolveSongNoteName(value)
+    triggerInstrumentNote(
+      value.lane,
+      value.note,
+      time,
+      value.velocity,
+      noteName
+    )
+  } catch (err) {
+    logger.error('AudioEngine', 'Error in Song callback', err)
+  }
+}
+
 function createSongPart(events: ProcessedSongEvent[]) {
-  const part = new Tone.Part((time: number, value: ProcessedSongEvent) => {
-    try {
-      if (!audioState.guitar || !audioState.bass || !audioState.drumKit) return
-
-      const noteName =
-        value.noteName === null
-          ? null
-          : (value.noteName ?? getNoteName(value.note))
-
-      triggerInstrumentNote(
-        value.lane,
-        value.note,
-        time,
-        value.velocity,
-        noteName
-      )
-    } catch (err) {
-      logger.error('AudioEngine', 'Error in Song callback', err)
-    }
-  }, events).start(0)
+  const part = new Tone.Part(handleSongPartEvent, events).start(0)
   return part as unknown as Tone.Part<unknown>
 }
 
@@ -290,77 +332,119 @@ function scheduleSongPlayback(
  * @param {object} song - The song object containing `notes` and `bpm`.
  * @param {number} [delay=0] - Delay in seconds before starting.
  */
+function toFiniteNumber(v: unknown, fallback: number): number {
+  if (isFiniteNumber(v)) return v
+  if (typeof v === 'string' && v.trim() !== '') {
+    const num = Number(v)
+    if (!Number.isNaN(num)) return num
+  }
+  return fallback
+}
+
+function isTempoEvent(e: unknown): e is Record<string, unknown> {
+  return typeof e === 'object' && e !== null && 'tick' in e && 'usPerBeat' in e
+}
+
+function sanitizeTempoEvents(
+  rawTempo: unknown[]
+): { tick: number; usPerBeat: number }[] {
+  return rawTempo.reduce<{ tick: number; usPerBeat: number }[]>((acc, e) => {
+    if (isTempoEvent(e)) {
+      if (typeof e.tick === 'number' && typeof e.usPerBeat === 'number') {
+        acc.push({ tick: e.tick, usPerBeat: e.usPerBeat })
+      }
+    }
+    return acc
+  }, [])
+}
+
+function extractTempoMap(
+  sObj: Record<string, unknown>,
+  tpb: number
+): { useTempoMap: boolean; activeTempoMap: ProcessedTempoMapEntry[] } {
+  const isArray = Array.isArray(sObj.tempoMap)
+  if (!isArray || (sObj.tempoMap as unknown[]).length === 0) {
+    return { useTempoMap: false, activeTempoMap: [] }
+  }
+
+  const rawTempo = sObj.tempoMap as unknown[]
+  const sanitized = sanitizeTempoEvents(rawTempo)
+  return {
+    useTempoMap: true,
+    activeTempoMap: preprocessTempoMap(sanitized, tpb)
+  }
+}
+
+function getSongContext(song: unknown) {
+  if (song && typeof song === 'object') {
+    return song as Record<string, unknown>
+  }
+  return {}
+}
+
+function parseSongParameters(sObj: Record<string, unknown>) {
+  const bpm = Math.max(1, toFiniteNumber(sObj.bpm, 120))
+  const tpb = Math.max(1, toFiniteNumber(sObj.tpb, 480))
+  const notes = Array.isArray(sObj.notes)
+    ? (sObj.notes as SongLikeNote[])
+    : undefined
+  return { bpm, tpb, notes }
+}
+
+function executeSongPlayback(
+  res: { events: ProcessedSongEvent[]; lastTime: number },
+  bpm: number,
+  delay: number,
+  reqId: number,
+  onEnded: ((...args: unknown[]) => void) | null | undefined
+) {
+  Tone.getTransport().bpm.value = bpm
+  audioState.part = createSongPart(res.events)
+
+  const validDelay = isFiniteNumber(delay) ? Math.max(0, delay) : 0
+  scheduleSongPlayback(
+    res.lastTime,
+    validDelay,
+    reqId,
+    onEnded as (() => void) | null
+  )
+}
+
+async function prepareSongPlayback(song: unknown, options: unknown) {
+  if (!validateSongReady(song)) return null
+  const prep = await prepareTransportPlayback(options)
+  if (!prep.success) return null
+  return prep
+}
+
 export async function playSongFromData(
   song: unknown,
   delay = 0,
   options: unknown = {}
 ): Promise<boolean> {
-  const { success, reqId, normalizedOptions } =
-    await prepareTransportPlayback(options)
-  if (!success) return false
-  const { onEnded } = normalizedOptions
+  const prep = await prepareSongPlayback(song, options)
+  if (!prep) return false
 
-  // Narrow the incoming `song` shape safely from `unknown`.
-  const sObj =
-    song && typeof song === 'object' ? (song as Record<string, unknown>) : {}
-  const toFiniteNumber = (v: unknown, fallback: number): number => {
-    if (typeof v === 'number' && Number.isFinite(v)) return v
-    if (typeof v === 'string' && v.trim() !== '' && !Number.isNaN(Number(v)))
-      return Number(v)
-    return fallback
-  }
+  const sObj = getSongContext(song)
+  const p = parseSongParameters(sObj)
+  const t = extractTempoMap(sObj, p.tpb)
 
-  const bpm = Math.max(1, toFiniteNumber(sObj.bpm, 120))
-  const tpb = Math.max(1, toFiniteNumber(sObj.tpb, 480))
-
-  if (!validateSongReady(song)) return false
-
-  const useTempoMap =
-    Array.isArray(sObj.tempoMap) && (sObj.tempoMap as unknown[]).length > 0
-  let activeTempoMap: ProcessedTempoMapEntry[] = []
-  if (useTempoMap && Array.isArray(sObj.tempoMap)) {
-    const rawTempo = sObj.tempoMap as unknown[]
-    const sanitized: { tick: number; usPerBeat: number }[] = []
-    for (let i = 0; i < rawTempo.length; i++) {
-      const e = rawTempo[i]
-      if (
-        typeof e === 'object' &&
-        e !== null &&
-        'tick' in e &&
-        'usPerBeat' in e
-      ) {
-        const obj = e as Record<string, unknown>
-        const tickVal = obj['tick']
-        const usPerBeatVal = obj['usPerBeat']
-        if (typeof tickVal === 'number' && typeof usPerBeatVal === 'number') {
-          sanitized.push({ tick: tickVal, usPerBeat: usPerBeatVal })
-        }
-      }
-    }
-    activeTempoMap = preprocessTempoMap(sanitized, tpb)
-  }
-
-  const validDelay = Number.isFinite(delay) ? Math.max(0, delay) : 0
-
-  const processingResult = processSongEvents(
-    {
-      notes: Array.isArray(sObj.notes)
-        ? (sObj.notes as SongLikeNote[])
-        : undefined
-    },
-    bpm,
-    tpb,
-    useTempoMap,
-    activeTempoMap
+  const res = processSongEvents(
+    { notes: p.notes },
+    p.bpm,
+    p.tpb,
+    t.useTempoMap,
+    t.activeTempoMap
   )
-  if (!processingResult) return false
+  if (!res) return false
 
-  Tone.getTransport().bpm.value = bpm
-  const { events, lastTime } = processingResult
-
-  audioState.part = createSongPart(events)
-
-  scheduleSongPlayback(lastTime, validDelay, reqId, onEnded)
+  executeSongPlayback(
+    res,
+    p.bpm,
+    delay,
+    prep.reqId,
+    prep.normalizedOptions.onEnded
+  )
   return true
 }
 
@@ -419,35 +503,41 @@ function resolveMidiUrl(filename: string): string | null {
  * @param {string} filename - The filename for logging.
  * @returns {Promise<ArrayBuffer|null>} The MIDI data or null on failure.
  */
+async function fetchWithTimeout(url: string): Promise<Response> {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 10000)
+  try {
+    return await fetch(url, { signal: controller.signal })
+  } finally {
+    clearTimeout(timeoutId)
+  }
+}
+
+function handleFetchError(err: unknown, filename: string): null {
+  if (err instanceof Error && err.name === 'AbortError') {
+    logger.warn('AudioEngine', `MIDI fetch timed out for "${filename}"`)
+  } else {
+    logger.error('AudioEngine', 'Error playing MIDI:', err)
+  }
+  return null
+}
+
 async function fetchMidiArrayBuffer(
   url: string,
   reqId: number,
   filename: string
 ): Promise<ArrayBuffer | null> {
   try {
-    const controller = new AbortController()
-    const timeoutId = setTimeout(
-      () => controller.abort(),
-      10000 // 10s timeout for MIDI fetch
-    )
-    let arrayBuffer = null
-    try {
-      const response = await fetch(url, { signal: controller.signal })
-      if (reqId !== audioState.playRequestId) return null
-      if (!response.ok) throw new Error(`Failed to load MIDI: ${url}`)
-      arrayBuffer = await response.arrayBuffer()
-    } finally {
-      clearTimeout(timeoutId)
-    }
+    const response = await fetchWithTimeout(url)
     if (reqId !== audioState.playRequestId) return null
+    if (!response.ok) throw new Error(`Failed to load MIDI: ${url}`)
+
+    const arrayBuffer = await response.arrayBuffer()
+    if (reqId !== audioState.playRequestId) return null
+
     return arrayBuffer
   } catch (err) {
-    if (err instanceof Error && (err as Error).name === 'AbortError') {
-      logger.warn('AudioEngine', `MIDI fetch timed out for "${filename}"`)
-    } else {
-      logger.error('AudioEngine', 'Error playing MIDI:', err)
-    }
-    return null
+    return handleFetchError(err, filename)
   }
 }
 
@@ -487,100 +577,144 @@ function parseMidiData(arrayBuffer: ArrayBuffer): unknown | null {
  * @param {boolean} useCleanPlayback - If true, bypass FX for MIDI playback.
  * @returns {Array} An array of created Tone.Part objects.
  */
+type ProcessedMidiEvent = {
+  time: number
+  midiPitch: number
+  duration?: number | string | null
+  velocity?: number | null
+  percussionTrack: boolean
+  frequencyNote?: string | null
+}
+
+function createProcessedMidiEvent(
+  note: ParsedMidiNote,
+  percussionTrack: boolean
+): ProcessedMidiEvent | null {
+  if (!Number.isFinite(note.time) || note.time < 0) return null
+  const midiPitch = normalizeMidiPitch(note)
+  if (midiPitch == null) return null
+
+  const evt: ProcessedMidiEvent = {
+    time: note.time,
+    midiPitch,
+    duration: note.duration,
+    velocity: note.velocity,
+    percussionTrack
+  }
+
+  if (!percussionTrack) {
+    evt.frequencyNote = getNoteName(midiPitch)
+  }
+  return evt
+}
+
+function processMidiTrackNotes(
+  notes: ParsedMidiNote[],
+  percussionTrack: boolean
+): ProcessedMidiEvent[] {
+  return notes.reduce<ProcessedMidiEvent[]>((acc, note) => {
+    const evt = createProcessedMidiEvent(note, percussionTrack)
+    if (evt) acc.push(evt)
+    return acc
+  }, [])
+}
+
+function getClampedDuration(dur: unknown): number {
+  const base = isFiniteNumber(dur) ? dur : MIN_NOTE_DURATION
+  return Math.min(MAX_NOTE_DURATION, Math.max(MIN_NOTE_DURATION, base))
+}
+
+function getClampedVelocity(vel: unknown): number {
+  const base = isFiniteNumber(vel) ? vel : 1
+  return Math.max(0, Math.min(1, base))
+}
+
+type SynthsContext = {
+  leadSynth: Tone.PolySynth | null | undefined
+  bassSynth: Tone.PolySynth | null | undefined
+  drumSet: DrumKitSynth | null | undefined
+}
+
+function triggerMidiSynth(
+  pitch: number,
+  time: number,
+  velocity: number,
+  duration: number,
+  freqNote: string | null | undefined,
+  leadSynth: Tone.PolySynth,
+  bassSynth: Tone.PolySynth
+) {
+  const freq = freqNote ?? getNoteName(pitch) ?? 'C4'
+  const synth = pitch < 45 ? bassSynth : leadSynth
+  synth.triggerAttackRelease(freq, duration, time, velocity)
+}
+
+function handleMidiEvent(
+  time: number,
+  value: ProcessedMidiEvent,
+  synths: SynthsContext
+) {
+  const { leadSynth, bassSynth, drumSet } = synths
+  if (!leadSynth || !bassSynth || !drumSet) return
+
+  const duration = getClampedDuration(value.duration)
+  const velocity = getClampedVelocity(value.velocity)
+
+  if (value.percussionTrack) {
+    return playDrumNote(value.midiPitch, time, velocity, drumSet)
+  }
+
+  triggerMidiSynth(
+    value.midiPitch,
+    time,
+    velocity,
+    duration,
+    value.frequencyNote,
+    leadSynth,
+    bassSynth
+  )
+}
+
+function createTrackPart(
+  track: ParsedMidiTrack,
+  synths: SynthsContext
+): Tone.Part<unknown> | null {
+  const notes = Array.isArray(track.notes) ? track.notes : []
+  const events = processMidiTrackNotes(notes, isPercussionTrack(track))
+  if (events.length === 0) return null
+
+  const trackPart = new Tone.Part((time: number, value: ProcessedMidiEvent) => {
+    try {
+      handleMidiEvent(time, value, synths)
+    } catch (err) {
+      logger.error('AudioEngine', 'Error in MIDI callback', err)
+    }
+  }, events) as unknown as Tone.Part<unknown>
+
+  trackPart.start(0)
+  return trackPart
+}
+
+function getSynthsContext(useCleanPlayback: boolean): SynthsContext {
+  return {
+    leadSynth: useCleanPlayback ? audioState.midiLead : audioState.guitar,
+    bassSynth: useCleanPlayback ? audioState.midiBass : audioState.bass,
+    drumSet: useCleanPlayback ? audioState.midiDrumKit : audioState.drumKit
+  }
+}
+
 function createMidiParts(
   midi: ParsedMidi,
   useCleanPlayback: boolean
 ): Tone.Part<unknown>[] {
-  const leadSynth = useCleanPlayback ? audioState.midiLead : audioState.guitar
-  const bassSynth = useCleanPlayback ? audioState.midiBass : audioState.bass
-  const drumSet = useCleanPlayback ? audioState.midiDrumKit : audioState.drumKit
-
-  type MidiEvent = {
-    time: number
-    midiPitch: number
-    duration?: number | string | null
-    velocity?: number | null
-    percussionTrack: boolean
-    frequencyNote?: string | null
-  }
-
-  const nextMidiParts: Tone.Part<unknown>[] = []
+  const synths = getSynthsContext(useCleanPlayback)
   const tracks = Array.isArray(midi?.tracks) ? midi.tracks : []
-  for (const track of tracks) {
-    const notes = Array.isArray(track.notes) ? track.notes : []
-    const percussionTrack = isPercussionTrack(track)
 
-    const eventsWithFrequencies: MidiEvent[] = []
-
-    for (const note of notes) {
-      if (!Number.isFinite(note.time) || note.time < 0) continue
-      const midiPitch = normalizeMidiPitch(note)
-      if (midiPitch == null) continue
-
-      const evt: MidiEvent = {
-        time: note.time,
-        midiPitch,
-        duration: note.duration,
-        velocity: note.velocity,
-        percussionTrack
-      }
-
-      if (!percussionTrack) {
-        evt.frequencyNote = getNoteName(midiPitch)
-      }
-
-      eventsWithFrequencies.push(evt)
-    }
-
-    if (eventsWithFrequencies.length === 0) continue
-
-    const trackPart = new Tone.Part((time: number, value: MidiEvent) => {
-      try {
-        if (!leadSynth || !bassSynth || !drumSet) return
-
-        const midiPitch = value.midiPitch
-
-        const duration = Math.min(
-          MAX_NOTE_DURATION,
-          Math.max(
-            MIN_NOTE_DURATION,
-            Number.isFinite(value.duration as number)
-              ? (value.duration as number)
-              : MIN_NOTE_DURATION
-          )
-        )
-
-        const velocity = Math.max(
-          0,
-          Math.min(
-            1,
-            Number.isFinite(value.velocity as number)
-              ? (value.velocity as number)
-              : 1
-          )
-        )
-
-        if (value.percussionTrack) {
-          playDrumNote(midiPitch, time, velocity, drumSet)
-          return
-        }
-
-        const freq = value.frequencyNote ?? getNoteName(midiPitch) ?? 'C4'
-
-        if (midiPitch < 45) {
-          bassSynth.triggerAttackRelease(freq, duration, time, velocity)
-        } else {
-          leadSynth.triggerAttackRelease(freq, duration, time, velocity)
-        }
-      } catch (err) {
-        logger.error('AudioEngine', 'Error in MIDI callback', err)
-      }
-    }, eventsWithFrequencies) as unknown as Tone.Part<unknown>
-
-    trackPart.start(0)
-    nextMidiParts.push(trackPart)
-  }
-  return nextMidiParts
+  return tracks.reduce<Tone.Part<unknown>[]>((acc, track) => {
+    const part = createTrackPart(track, synths)
+    if (part) acc.push(part)
+    return acc
+  }, [])
 }
 
 /**
@@ -588,31 +722,65 @@ function createMidiParts(
  * @param {object} midi - The parsed MIDI object.
  * @param {object} params - Parameters for scheduling.
  */
-function scheduleMidiTransport(
-  midi: ParsedMidi,
-  params: MidiTransportParams
-): void {
-  const {
-    reqId,
-    filename,
-    offset,
-    loop,
-    delay,
-    onEnded,
-    stopAfterSeconds,
-    startTimeSec
-  } = params
-
-  const firstTempo = midi.header.tempos[0]
-  if (firstTempo) {
-    Tone.getTransport().bpm.value = firstTempo.bpm
+function scheduleEndCallback(
+  reqId: number,
+  filename: string,
+  duration: number,
+  requestedOffset: number,
+  onEnded: ((info: MidiPlaybackEndInfo) => void) | null
+) {
+  if (onEnded && duration > 0) {
+    audioState.transportEndEventId = Tone.getTransport().scheduleOnce(() => {
+      if (reqId === audioState.playRequestId) {
+        onEnded({ filename, duration, offsetSeconds: requestedOffset })
+      }
+    }, duration)
   }
+}
 
-  const validDelay = Number.isFinite(delay) ? Math.max(0, delay) : 0
-  let requestedOffset = Number.isFinite(offset) ? Math.max(0, offset) : 0
-  const duration = Number.isFinite(midi.duration) ? midi.duration : 0
+function scheduleStopCallback(
+  reqId: number,
+  requestedOffset: number,
+  stopAfterSeconds: number | null
+) {
+  const finiteStopAfter = isFiniteNumber(stopAfterSeconds)
+    ? stopAfterSeconds
+    : null
+  if (finiteStopAfter !== null && finiteStopAfter > 0) {
+    const stopTime = requestedOffset + finiteStopAfter
+    audioState.transportStopEventId = Tone.getTransport().scheduleOnce(() => {
+      if (reqId === audioState.playRequestId) stopAudio()
+    }, stopTime)
+  }
+}
 
-  // Reset offset when it is at or beyond duration to ensure sound plays.
+function scheduleMidiEndEvents(
+  reqId: number,
+  filename: string,
+  duration: number,
+  requestedOffset: number,
+  onEnded: ((info: MidiPlaybackEndInfo) => void) | null,
+  stopAfterSeconds: number | null
+): void {
+  scheduleEndCallback(reqId, filename, duration, requestedOffset, onEnded)
+  scheduleStopCallback(reqId, requestedOffset, stopAfterSeconds)
+}
+
+function configureTransportLoop(
+  loop: boolean,
+  duration: number,
+  requestedOffset: number
+) {
+  const transport = Tone.getTransport()
+  transport.loop = loop
+  if (loop) {
+    transport.loopEnd = duration
+    transport.loopStart = requestedOffset
+  }
+}
+
+function getValidOffset(offset: number, duration: number): number {
+  let requestedOffset = isFiniteNumber(offset) ? Math.max(0, offset) : 0
   if (duration > 0 && requestedOffset >= duration) {
     logger.warn(
       'AudioEngine',
@@ -620,52 +788,55 @@ function scheduleMidiTransport(
     )
     requestedOffset = 0
   }
+  return requestedOffset
+}
+
+function getTransportStartTime(
+  startTimeSec: number | null,
+  validDelay: number
+): number {
+  if (isFiniteNumber(startTimeSec)) {
+    return startTimeSec
+  }
+  const minLookahead = 0.1
+  return Tone.now() + Math.max(minLookahead, validDelay)
+}
+
+function scheduleMidiTransport(
+  midi: ParsedMidi,
+  params: MidiTransportParams
+): void {
+  const firstTempo = midi.header.tempos[0]
+  if (firstTempo) Tone.getTransport().bpm.value = firstTempo.bpm
+
+  const validDelay = isFiniteNumber(params.delay)
+    ? Math.max(0, params.delay)
+    : 0
+  const duration = isFiniteNumber(midi.duration) ? midi.duration : 0
+  const requestedOffset = getValidOffset(params.offset, duration)
 
   logger.debug(
     'AudioEngine',
     `Starting Transport. Delay=${validDelay}, Offset=${requestedOffset}`
   )
 
-  if (loop) {
-    Tone.getTransport().loop = true
-    Tone.getTransport().loopEnd = midi.duration
-    // Loop from excerpt start, so intros don't restart on every loop
-    Tone.getTransport().loopStart = requestedOffset
-  } else {
-    Tone.getTransport().loop = false
+  configureTransportLoop(params.loop, midi.duration, requestedOffset)
+
+  if (!params.loop) {
+    scheduleMidiEndEvents(
+      params.reqId,
+      params.filename,
+      duration,
+      requestedOffset,
+      params.onEnded,
+      params.stopAfterSeconds
+    )
   }
 
-  if (!loop && onEnded && duration > 0) {
-    audioState.transportEndEventId = Tone.getTransport().scheduleOnce(() => {
-      if (reqId !== audioState.playRequestId) return
-      onEnded({
-        filename,
-        duration,
-        offsetSeconds: requestedOffset
-      })
-    }, duration)
-  }
-
-  const finiteStopAfterSeconds =
-    typeof stopAfterSeconds === 'number' && Number.isFinite(stopAfterSeconds)
-      ? stopAfterSeconds
-      : null
-  if (!loop && finiteStopAfterSeconds != null && finiteStopAfterSeconds > 0) {
-    const stopTime = requestedOffset + finiteStopAfterSeconds
-    audioState.transportStopEventId = Tone.getTransport().scheduleOnce(() => {
-      if (reqId !== audioState.playRequestId) return
-      stopAudio()
-    }, stopTime)
-  }
-
-  // Schedule Transport.start in advance to prevent pops/crackles
-  // Add minimum 100ms lookahead for reliable scheduling
-  const minLookahead = 0.1
-  const transportStartTime =
-    typeof startTimeSec === 'number' && Number.isFinite(startTimeSec)
-      ? startTimeSec
-      : Tone.now() + Math.max(minLookahead, validDelay)
-
+  const transportStartTime = getTransportStartTime(
+    params.startTimeSec,
+    validDelay
+  )
   Tone.getTransport().start(transportStartTime, requestedOffset)
 }
 
@@ -683,68 +854,90 @@ function scheduleMidiTransport(
  * @param {number} [params.options.startTimeSec] - Absolute Tone.js time to start playback.
  * @param {number|null} [params.ownedRequestId=null] - Internal request ownership override.
  */
-export async function playMidiFileInternal(
-  params: MidiPlaybackParams
-): Promise<boolean> {
-  const {
-    filename,
-    offset = 0,
-    loop = false,
-    delay = 0,
-    options = {},
-    ownedRequestId = null
-  } = params
+function isRequestValid(reqId: number): boolean {
+  return reqId === audioState.playRequestId
+}
 
-  const { onEnded, useCleanPlayback, stopAfterSeconds, startTimeSec } =
-    normalizeMidiPlaybackOptions(options)
-
-  const reqId = initializePlaybackRequest(
-    filename,
-    offset,
-    loop,
-    ownedRequestId
-  )
-
+async function prepareAudioContextForMidi(reqId: number): Promise<boolean> {
   const unlocked = await ensureAudioContext()
   if (!unlocked) {
     logger.warn('AudioEngine', 'Cannot play MIDI: AudioContext is locked')
     return false
   }
 
-  if (reqId !== audioState.playRequestId) {
+  if (!isRequestValid(reqId)) {
     logger.debug(
       'AudioEngine',
       `Request cancelled during ensureAudioContext (reqId: ${reqId} vs ${audioState.playRequestId})`
     )
     return false
   }
+  return true
+}
+
+async function loadAndValidateMidi(
+  url: string,
+  reqId: number,
+  filename: string
+): Promise<ParsedMidi | null> {
+  const arrayBuffer = await fetchMidiArrayBuffer(url, reqId, filename)
+  if (!arrayBuffer || !isRequestValid(reqId)) return null
+  return parseMidiData(arrayBuffer) as ParsedMidi | null
+}
+
+async function fetchAndParseMidi(
+  filename: string,
+  reqId: number
+): Promise<ParsedMidi | null> {
+  const url = resolveMidiUrl(filename)
+  if (!url) return null
+
+  const midi = await loadAndValidateMidi(url, reqId, filename)
+  return midi && isRequestValid(reqId) ? midi : null
+}
+
+function processMidiPlaybackParams(params: MidiPlaybackParams) {
+  const defaults = {
+    offset: 0,
+    loop: false,
+    delay: 0,
+    options: {},
+    ownedRequestId: null
+  }
+  return { ...defaults, ...params }
+}
+
+export async function playMidiFileInternal(
+  rawParams: MidiPlaybackParams
+): Promise<boolean> {
+  const params = processMidiPlaybackParams(rawParams)
+  const normOptions = normalizeMidiPlaybackOptions(params.options)
+  const reqId = initializePlaybackRequest(
+    params.filename,
+    params.offset,
+    params.loop,
+    params.ownedRequestId
+  )
+
+  if (!(await prepareAudioContextForMidi(reqId))) return false
 
   stopAudioInternal()
   Tone.getTransport().cancel()
 
-  const url = resolveMidiUrl(filename)
-  if (!url) return false
-
-  const arrayBuffer = await fetchMidiArrayBuffer(url, reqId, filename)
-  if (!arrayBuffer) return false
-  if (reqId !== audioState.playRequestId) return false
-
-  const midi = parseMidiData(arrayBuffer) as ParsedMidi | null
+  const midi = await fetchAndParseMidi(params.filename, reqId)
   if (!midi) return false
-  if (reqId !== audioState.playRequestId) return false
 
-  const parts = createMidiParts(midi, useCleanPlayback)
-  audioState.midiParts = parts
+  audioState.midiParts = createMidiParts(midi, normOptions.useCleanPlayback)
 
   scheduleMidiTransport(midi, {
     reqId,
-    filename,
-    offset,
-    loop,
-    delay,
-    onEnded,
-    stopAfterSeconds,
-    startTimeSec
+    filename: params.filename,
+    offset: params.offset,
+    loop: params.loop,
+    delay: params.delay,
+    onEnded: normOptions.onEnded,
+    stopAfterSeconds: normOptions.stopAfterSeconds,
+    startTimeSec: normOptions.startTimeSec
   })
 
   return true
