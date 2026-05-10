@@ -1412,6 +1412,7 @@ const processContrabandExpiry = (band: BandState): BandState => {
         if (e.instanceId != null && itemObj.instanceId === e.instanceId) {
           nextBand.stash[itemKey] = {
             ...itemObj,
+            stacks: typeof itemObj.stacks === 'number' ? itemObj.stacks : 1,
             applied: false
           }
           break

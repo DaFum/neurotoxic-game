@@ -46,7 +46,10 @@ import {
   handleClinicEnhance,
   handleBloodBankDonate
 } from './reducers/clinicReducer'
-import { QuestLifecycle } from '../domain/questLifecycle'
+import {
+  handleAddQuest,
+  handleAdvanceQuest
+} from './reducers/questReducer'
 import {
   handleLoadGame,
   handleResetState,
@@ -141,8 +144,8 @@ const reducerMap = {
   [ActionTypes.MERCH_PRESS]: handleMerchPress,
   [ActionTypes.DARK_WEB_LEAK]: handleDarkWebLeak,
   [ActionTypes.ADD_VENUE_BLACKLIST]: handleAddVenueBlacklist,
-  [ActionTypes.ADD_QUEST]: QuestLifecycle.addQuest,
-  [ActionTypes.ADVANCE_QUEST]: QuestLifecycle.advanceQuest,
+  [ActionTypes.ADD_QUEST]: handleAddQuest,
+  [ActionTypes.ADVANCE_QUEST]: handleAdvanceQuest,
   [ActionTypes.ADD_UNLOCK]: handleAddUnlock,
   [ActionTypes.CLINIC_HEAL]: handleClinicHeal,
   [ActionTypes.CLINIC_ENHANCE]: handleClinicEnhance,
