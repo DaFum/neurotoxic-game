@@ -72,7 +72,7 @@ describe('useAmpLogic', () => {
 
       act(() => {
         // 0.0001 < Math.min(1, 0.02 * (5000 / 100)) = 1.0 => guaranteed hijack trigger
-        result.current.update(5000, 5)
+        result.current.update(5000)
       })
 
       // Give state a moment to flush
