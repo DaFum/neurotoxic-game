@@ -230,9 +230,10 @@ export function useAmpLogic() {
       }
 
       // Kranker Schrank Hijack Logic
+      const clampedHijackProbability = Math.min(1, 0.02 * (deltaMS / 100))
       if (
         !isHijackActiveRef.current &&
-        getSafeRandom() < 0.02 * (deltaMS / 100)
+        getSafeRandom() < clampedHijackProbability
       ) {
         isHijackActiveRef.current = true
         setIsHijackActive(true)
