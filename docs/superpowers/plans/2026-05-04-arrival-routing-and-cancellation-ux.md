@@ -665,9 +665,9 @@ Inside `MapNodeTooltip`, after the existing venue stats block for GIG/FESTIVAL/F
     node.type === 'FESTIVAL' ||
     node.type === 'FINALE') &&
     harmony !== undefined &&
-    calcCancellationRisk(harmony) > 0 &&
     (() => {
       const risk = calcCancellationRisk(harmony)
+      if (risk === 0) return null
       const pct = (risk * 100).toFixed(1)
       const freqDenom = Math.round(1 / risk)
       const badgeClass =
@@ -774,10 +774,10 @@ vi.mock('framer-motion', () => ({
     div: ({ children, ...props }) => <div {...props}>{children}</div>
   }
 }))
-vi.mock('../src/ui/shared', () => ({
+vi.mock('../../src/ui/shared', () => ({
   HexNode: ({ children }) => <div>{children}</div>
 }))
-vi.mock('../src/utils/locationI18n', () => ({ translateLocation: v => v }))
+vi.mock('../../src/utils/locationI18n', () => ({ translateLocation: v => v }))
 
 // Import after mocks
 const { MapNode } = await import('../../src/components/MapNode.tsx')
