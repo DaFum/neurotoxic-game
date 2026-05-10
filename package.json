@@ -19,7 +19,7 @@
     "simulate:balance:compare": "node scripts/game-balance-simulation.mjs --compare-baseline reports/game-balance-simulation-baseline.json",
     "test": "pnpm run test:fast",
     "test:additional": "pnpm run test:perf && pnpm run test:locale:smoke && pnpm run test:locale:full",
-    "test:all": "pnpm run test:node && pnpm run test:vitest:logic && pnpm run test:ui",
+    "test:all": "node ./scripts/run-all-tests.mjs",
     "test:e2e": "playwright test",
     "test:e2e:shard1": "playwright test --shard=1/2",
     "test:e2e:shard2": "playwright test --shard=2/2",

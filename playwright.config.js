@@ -23,7 +23,8 @@ export default defineConfig({
     timeout: 10000
   },
   fullyParallel: !!process.env.CI,
-  workers: process.env.CI ? 2 : 1,
+  // 2 workers locally (4 specs → 2 in parallel); CI stays at 2 with retries
+  workers: process.env.CI ? 2 : 2,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [['list'], ['blob']] : 'list',
   use: {
