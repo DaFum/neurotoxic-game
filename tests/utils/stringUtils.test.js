@@ -1,5 +1,5 @@
 import { describe, it } from 'vitest'
-import assert from 'node:assert'
+import assert from 'node:assert/strict'
 import { hashString } from '../../src/utils/stringUtils'
 
 describe('hashString', () => {
