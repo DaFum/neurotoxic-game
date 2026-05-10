@@ -12,6 +12,15 @@ export const LOG_LEVELS = {
   NONE: 4
 }
 
+export const isValidLogLevel = (level: number): boolean => {
+  return (
+    Number.isFinite(level) &&
+    Number.isInteger(level) &&
+    level >= LOG_LEVELS.DEBUG &&
+    level <= LOG_LEVELS.NONE
+  )
+}
+
 /**
  * A configurable logger system for debugging game flow.
  */

@@ -41,6 +41,7 @@ vi.mock('../../src/data/songs', () => ({
 }))
 vi.mock('../../src/utils/logger', () => ({
   logger: { error: vi.fn(), warn: vi.fn(), debug: vi.fn() },
+  isValidLogLevel: vi.fn(() => true),
   LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, NONE: 4 }
 }))
 vi.mock('react-i18next', () => ({

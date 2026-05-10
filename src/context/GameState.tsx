@@ -11,7 +11,7 @@ import {
   startTransition
 } from 'react'
 import { useTranslation } from 'react-i18next'
-import { logger, LOG_LEVELS } from '../utils/logger'
+import { logger, isValidLogLevel } from '../utils/logger'
 import { secureRandom } from '../utils/crypto'
 import { handleError, StateError } from '../utils/errorHandler'
 import { getUnlocks } from '../utils/unlockManager'
@@ -353,12 +353,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   useEffect(() => {
     if (state.settings?.logLevel !== undefined) {
       const numericLogLevel = Number(state.settings.logLevel)
-      if (
-        Number.isFinite(numericLogLevel) &&
-        Number.isInteger(numericLogLevel) &&
-        numericLogLevel >= LOG_LEVELS.DEBUG &&
-        numericLogLevel <= LOG_LEVELS.NONE
-      ) {
+      if (isValidLogLevel(numericLogLevel)) {
         logger.setLevel(numericLogLevel)
       } else {
         logger.warn(
@@ -424,12 +419,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
     // Synchronize logger if logLevel is updated
     if (updates.logLevel !== undefined) {
       const numericLogLevel = Number(updates.logLevel)
-      if (
-        Number.isFinite(numericLogLevel) &&
-        Number.isInteger(numericLogLevel) &&
-        numericLogLevel >= LOG_LEVELS.DEBUG &&
-        numericLogLevel <= LOG_LEVELS.NONE
-      ) {
+      if (isValidLogLevel(numericLogLevel)) {
         logger.setLevel(numericLogLevel)
       } else {
         logger.warn(

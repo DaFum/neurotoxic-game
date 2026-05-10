@@ -21,6 +21,7 @@ const mockLogger = {
 mock.module(new URL('../../src/utils/logger.ts', import.meta.url).href, {
   namedExports: {
     logger: mockLogger,
+    isValidLogLevel: mock.fn(() => true),
     LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, NONE: 4 },
     Logger: class Logger {}
   }

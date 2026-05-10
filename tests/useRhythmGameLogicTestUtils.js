@@ -145,6 +145,7 @@ export const mockRhythmGameLogicModules = () => {
   mock.module('../src/utils/logger', {
     namedExports: {
       logger: mockLogger,
+      isValidLogLevel: mock.fn(() => true),
       LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, NONE: 4 }
     }
   })

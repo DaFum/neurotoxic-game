@@ -5,7 +5,7 @@
  */
 
 import { CHARACTERS } from '../data/characters'
-import { LOG_LEVELS } from '../utils/logger'
+import { LOG_LEVELS, isValidLogLevel } from '../utils/logger'
 import { isPlainObject } from '../utils/gameStateUtils'
 import { DEFAULT_MINIGAME_STATE, GAME_PHASES } from './gameConstants'
 import { normalizeTraitMap } from '../utils/traitUtils'
@@ -217,12 +217,7 @@ const sanitizeSettings = (
   }
   if ('logLevel' in input) {
     const numeric = Number(input.logLevel)
-    if (
-      Number.isFinite(numeric) &&
-      Number.isInteger(numeric) &&
-      numeric >= LOG_LEVELS.DEBUG &&
-      numeric <= LOG_LEVELS.NONE
-    ) {
+    if (isValidLogLevel(numeric)) {
       next.logLevel = numeric
     }
   }

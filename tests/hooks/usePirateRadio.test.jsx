@@ -16,6 +16,7 @@ vi.mock('../../src/utils/logger', () => ({
     info: vi.fn(),
     debug: vi.fn()
   },
+  isValidLogLevel: vi.fn(() => true),
   LOG_LEVELS: {
     DEBUG: 0,
     INFO: 1,
