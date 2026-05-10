@@ -158,6 +158,101 @@ export async function loadAudioBuffer(
 }
 
 /**
+ * Fetches an audio file into an ArrayBuffer with a timeout.
+ * @param {string} url - The URL to fetch.
+ * @param {string} filename - The original filename for logging.
+ * @returns {Promise<ArrayBuffer | null>} The downloaded ArrayBuffer, or null on failure.
+ */
+async function fetchAudioArrayBuffer(
+  url: string,
+  filename: string
+): Promise<ArrayBuffer | null> {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(
+    () => controller.abort(),
+    AUDIO_BUFFER_LOAD_TIMEOUT_MS
+  )
+  try {
+    const response = await fetch(url, { signal: controller.signal })
+    if (!response.ok) {
+      logger.warn(
+        'AudioEngine',
+        `Failed to load audio "${filename}": HTTP ${response.status} from ${url}`
+      )
+      return null
+    }
+    return await response.arrayBuffer()
+  } finally {
+    clearTimeout(timeoutId)
+  }
+}
+
+/**
+ * Decodes audio data into an AudioBuffer with a timeout.
+ * @param {ArrayBuffer} arrayBuffer - The raw audio data.
+ * @returns {Promise<AudioBuffer>} The decoded AudioBuffer. Throws on failure.
+ */
+async function decodeAudioDataWithTimeout(
+  arrayBuffer: ArrayBuffer
+): Promise<AudioBuffer> {
+  const rawContext = getRawAudioContext()
+  let decodeTimeoutId: ReturnType<typeof setTimeout> | null = null
+  const decodeTimeoutPromise = new Promise<never>((_, reject) => {
+    decodeTimeoutId = setTimeout(
+      () => reject(new Error('AUDIO_DECODE_TIMEOUT')),
+      AUDIO_BUFFER_DECODE_TIMEOUT_MS
+    )
+  })
+
+  try {
+    return await Promise.race([
+      rawContext.decodeAudioData(arrayBuffer),
+      decodeTimeoutPromise
+    ])
+  } finally {
+    if (decodeTimeoutId) clearTimeout(decodeTimeoutId)
+  }
+}
+
+/**
+ * Caches an audio buffer and manages LRU cache eviction.
+ * @param {string} cacheKey - The cache key.
+ * @param {AudioBuffer} buffer - The buffer to cache.
+ * @param {string} filename - The original filename for logging.
+ */
+function cacheAudioBuffer(
+  cacheKey: string,
+  buffer: AudioBuffer,
+  filename: string
+): void {
+  const newBufferSize = getAudioBufferSize(buffer)
+
+  // Evict items until we are within both size and count limits.
+  // We always allow at least one item (the new one) to remain, even if it exceeds the byte limit.
+  for (const [oldestKey, oldestBuffer] of audioState.audioBufferCache) {
+    if (
+      (audioState.audioBufferCache.size < MAX_AUDIO_BUFFER_CACHE_SIZE ||
+        MAX_AUDIO_BUFFER_CACHE_SIZE <= 0) &&
+      audioState.currentCacheByteSize + newBufferSize <=
+        MAX_AUDIO_BUFFER_BYTE_SIZE
+    ) {
+      break
+    }
+
+    audioState.currentCacheByteSize -= getAudioBufferSize(oldestBuffer)
+    audioState.audioBufferCache.delete(oldestKey)
+  }
+
+  audioState.audioBufferCache.set(cacheKey, buffer)
+  audioState.currentCacheByteSize += newBufferSize
+
+  logger.debug(
+    'AudioEngine',
+    `Decoded audio buffer: "${filename}" (${buffer.duration.toFixed(1)}s, ${buffer.sampleRate}Hz, ${(newBufferSize / 1024 / 1024).toFixed(2)}MB). Cache: ${audioState.audioBufferCache.size} items, ${(audioState.currentCacheByteSize / 1024 / 1024).toFixed(2)}MB`
+  )
+}
+
+/**
  * Internal implementation of loading an audio buffer.
  * @param {string} filename - Audio filename.
  * @param {string} cacheKey - The cache key for storage.
@@ -188,70 +283,12 @@ async function loadAudioBufferInternal(
   }
 
   try {
-    // Avoid hanging gig initialization on stalled network/body reads.
-    const controller = new AbortController()
-    const timeoutId = setTimeout(
-      () => controller.abort(),
-      AUDIO_BUFFER_LOAD_TIMEOUT_MS
-    )
-    let arrayBuffer = null
-    try {
-      const response = await fetch(url, { signal: controller.signal })
-      if (!response.ok) {
-        logger.warn(
-          'AudioEngine',
-          `Failed to load audio "${filename}": HTTP ${response.status} from ${url}`
-        )
-        return null
-      }
-      arrayBuffer = await response.arrayBuffer()
-    } finally {
-      clearTimeout(timeoutId)
-    }
-    const rawContext = getRawAudioContext()
-    let decodeTimeoutId = null
-    const decodeTimeoutPromise = new Promise((_, reject) => {
-      decodeTimeoutId = setTimeout(
-        () => reject(new Error('AUDIO_DECODE_TIMEOUT')),
-        AUDIO_BUFFER_DECODE_TIMEOUT_MS
-      )
-    })
-    let buffer: AudioBuffer | null = null
-    try {
-      buffer = (await Promise.race([
-        rawContext.decodeAudioData(arrayBuffer),
-        decodeTimeoutPromise
-      ])) as AudioBuffer | null
-    } finally {
-      if (decodeTimeoutId) clearTimeout(decodeTimeoutId)
-    }
+    const arrayBuffer = await fetchAudioArrayBuffer(url, filename)
+    if (!arrayBuffer) return null
 
-    if (!buffer) return null
-    const newBufferSize = getAudioBufferSize(buffer)
+    const buffer = await decodeAudioDataWithTimeout(arrayBuffer)
 
-    // Evict items until we are within both size and count limits.
-    // We always allow at least one item (the new one) to remain, even if it exceeds the byte limit.
-    for (const [oldestKey, oldestBuffer] of audioState.audioBufferCache) {
-      if (
-        (audioState.audioBufferCache.size < MAX_AUDIO_BUFFER_CACHE_SIZE ||
-          MAX_AUDIO_BUFFER_CACHE_SIZE <= 0) &&
-        audioState.currentCacheByteSize + newBufferSize <=
-          MAX_AUDIO_BUFFER_BYTE_SIZE
-      ) {
-        break
-      }
-
-      audioState.currentCacheByteSize -= getAudioBufferSize(oldestBuffer)
-      audioState.audioBufferCache.delete(oldestKey)
-    }
-
-    audioState.audioBufferCache.set(cacheKey, buffer)
-    audioState.currentCacheByteSize += newBufferSize
-
-    logger.debug(
-      'AudioEngine',
-      `Decoded audio buffer: "${filename}" (${buffer.duration.toFixed(1)}s, ${buffer.sampleRate}Hz, ${(newBufferSize / 1024 / 1024).toFixed(2)}MB). Cache: ${audioState.audioBufferCache.size} items, ${(audioState.currentCacheByteSize / 1024 / 1024).toFixed(2)}MB`
-    )
+    cacheAudioBuffer(cacheKey, buffer, filename)
     return buffer
   } catch (err) {
     if (err instanceof Error && err.name === 'AbortError') {
