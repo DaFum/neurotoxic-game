@@ -99,9 +99,9 @@ function handleRepairVan() {
 ```javascript
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { gameReducer, ActionTypes } from '../src/context/gameReducer.ts'
+import { gameReducer, ActionTypes } from '../src/context/gameReducer.js'
 import { createInitialState } from '../src/context/initialState.js'
-import { repairVan } from '../src/context/actionCreators.ts'
+import { repairVan } from '../src/context/actionCreators.js'
 
 test('REPAIR_VAN restores condition and deducts money', () => {
   let state = createInitialState()

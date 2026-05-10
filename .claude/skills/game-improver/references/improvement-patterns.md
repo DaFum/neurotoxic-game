@@ -218,7 +218,7 @@ export const HQ_ITEM_COSTS = {
 ```javascript
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { gameReducer, ActionTypes } from '../src/context/gameReducer.ts'
+import { gameReducer, ActionTypes } from '../src/context/gameReducer.js'
 import { createInitialState } from '../src/context/initialState.js'
 
 test('Meditation Pod increases harmony daily', async t => {

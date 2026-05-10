@@ -56,7 +56,7 @@ grep -o 'pnpm run [a-z:_-]*' .claude/skills/<skill-name>/SKILL.md | sort -u | \
 ```
 
 **Decision tree:**
-- `npm` anywhere? → Replace with `pnpm`; `npm install` → `pnpm install --frozen-lockfile`; `npm ci` → `pnpm install --frozen-lockfile`; `npm run X` → `pnpm run X`; `npm -v` → `pnpm -v`
+- `npm` anywhere? → Replace with `pnpm`; `npm install` → `pnpm install`; `npm ci` → `pnpm install --frozen-lockfile`; `npm run X` → `pnpm run X`; `npm -v` → `pnpm -v`
 - Script name not in `package.json`? → Check if renamed; update to current name
 - Both names valid aliases? → Use the one listed in AGENTS.md critical commands
 

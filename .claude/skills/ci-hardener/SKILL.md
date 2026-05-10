@@ -50,6 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
       - uses: actions/setup-node@v6
         with:
           node-version: '20'
