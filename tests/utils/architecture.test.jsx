@@ -29,18 +29,29 @@ const createMockGameState = () => ({
     controversyLevel: 0,
     connections: []
   },
-  finances: {
-    debt: 0,
-    bills: 0,
-    autoPayBills: false,
-    history: []
-  },
   reputationByRegion: {},
   activeQuests: [],
   toasts: [],
   venueBlacklist: [],
   activeStoryFlags: [],
-  pendingEvents: []
+  pendingEvents: [],
+  version: 1,
+  currentScene: 'main_menu',
+  rivalBand: null,
+  gameMap: null,
+  currentGig: null,
+  setlist: [],
+  lastGigStats: null,
+  activeEvent: null,
+  isScreenshotMode: false,
+  eventCooldowns: [],
+  settings: {
+    volume: 1,
+    difficulty: 'normal',
+    dyslexiaFont: false,
+    highContrast: false,
+    reduceMotion: false
+  }
 })
 
 test('Events DB has global unique IDs across all categories', () => {
@@ -48,12 +59,11 @@ test('Events DB has global unique IDs across all categories', () => {
   const duplicates = []
 
   for (const event of ALL_RAW_EVENTS) {
-    const e = event
-    if (!e || typeof e.id !== 'string') continue
-    if (allIds.has(e.id)) {
-      duplicates.push(e.id)
+    if (!event || typeof event.id !== 'string') continue
+    if (allIds.has(event.id)) {
+      duplicates.push(event.id)
     } else {
-      allIds.add(e.id)
+      allIds.add(event.id)
     }
   }
 
