@@ -444,22 +444,12 @@ export const applyPostGigPerformancePenalty = ({
 }
 
 /**
- * Calculates post-gig player stat changes: money and fame.
+ * Calculates post-gig player stat changes for money and fame.
  *
- * Fame logic:
- *   perfScore ≥ 31 → fame gain via calculateGigFameReward (range ~41–110 before
- *                    diminishing returns), scaled linearly with perfScore.
- *   perfScore < 31 → fame loss of FAME_LOSS_BAD_GIG (9), plus an additional
- *                    miss-penalty for every miss beyond MISS_TOLERANCE.
- *
- * perfScore is derived from rawScore / PERF_SCORE_SCALER (currently 150), clamped
- * to [PERF_SCORE_MIN=30, PERF_SCORE_MAX=100]. A perfScore of 31 therefore requires
- * a rawScore of at least 4650.
- *
- * @param params.player          - Current player state (fame, money).
- * @param params.perfScore       - Gig performance score (0–100).
- * @param params.financials      - Post-gig financial breakdown (net income).
- * @param params.misses          - Total missed notes (used for bad-gig miss penalty).
+ * @param params.player             - Current player state.
+ * @param params.perfScore          - Gig performance score (0–100).
+ * @param params.financials         - Post-gig financial breakdown.
+ * @param params.misses             - Total missed notes.
  * @param params.calculateFameGain  - Applies diminishing returns to raw fame gain.
  * @param params.calculateFameLevel - Maps total fame to a fame level.
  * @param params.clampPlayerFame    - Clamps fame to valid range.

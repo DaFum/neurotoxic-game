@@ -1,8 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act, waitFor } from '@testing-library/react'
-import {
-  usePostGigLogic
-} from '../../src/hooks/usePostGigLogic'
+import { usePostGigLogic } from '../../src/hooks/usePostGigLogic'
 import * as GameState from '../../src/context/GameState'
 import * as economyEngine from '../../src/utils/economyEngine'
 import * as socialEngine from '../../src/utils/socialEngine'
@@ -722,7 +720,7 @@ describe('usePostGigLogic', () => {
 
     it('applies miss penalty on bad gig with excess misses', async () => {
       const baseState = getBaseState({
-        lastGigStats: { score: 25000, accuracy: 60, events: [], misses: 13 }
+        lastGigStats: { score: 1000, accuracy: 60, events: [], misses: 13 }
       })
       GameState.useGameState.mockReturnValue(baseState)
       const { result } = renderHook(() => usePostGigLogic())
@@ -730,7 +728,7 @@ describe('usePostGigLogic', () => {
       act(() => {
         result.current.handleContinue()
       })
-      // perfScore = clamp(25000/500, 30, 100) = 50 -> bad gig
+      // perfScore = clamp(1000/150, 30, 100) = 30 -> bad gig (below threshold 31)
       // missPenalty = round((13 - 8) * MISS_PENALTY_RATE)
       // finalFameGain = -FAME_LOSS_BAD_GIG - missPenalty
       const expectedMissPenalty = Math.round(

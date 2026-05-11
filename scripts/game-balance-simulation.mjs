@@ -26,6 +26,7 @@ import {
   EXPENSE_CONSTANTS,
   MAX_GIG_NET,
   MODIFIER_COSTS,
+  TICKET_SALES_CONSTANTS,
   shouldTriggerBankruptcy
 } from '../src/utils/economyEngine.js'
 import {
@@ -51,7 +52,10 @@ import {
   validatePurchase,
   processPurchaseEffect
 } from '../src/utils/purchaseLogicUtils.js'
-import { calculateContinueStats } from '../src/utils/postGigUtils.js'
+import {
+  calculateContinueStats,
+  calculatePerformanceScore as normalizePerformanceScore
+} from '../src/utils/postGigUtils.js'
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -78,8 +82,6 @@ export const SIMULATION_CONSTANTS = {
   postPulseChance: 0.18,
   trendShiftChance: 0.12,
   contrabandDropChance: 0.11,
-  hqUpgradeCost: 25000, // Tier 2 HQ Upgrade cost
-  vanUpgradeCost: 1500, // Tier 2 Van Upgrade cost
   outputJson: REPORT_FILES.outputJson,
   outputMarkdown: REPORT_FILES.outputMarkdown
 }
@@ -355,6 +357,12 @@ export const SCENARIOS = [
 const VENUES = ALL_VENUES.filter(v => v.type !== 'HOME' && v.capacity > 0)
 const HOME = ALL_VENUES.find(v => v.id === SIMULATION_CONSTANTS.homeVenueId)
 const UPGRADE_CATALOG = getUnifiedUpgradeCatalog()
+const _HQ_BEER_PIPELINE = UPGRADE_CATALOG.find(
+  item => item.id === 'hq_room_beer_pipeline'
+)
+const _VAN_TUNING = UPGRADE_CATALOG.find(item => item.id === 'hq_van_tuning')
+const HQ_UPGRADE_COST = Number(_HQ_BEER_PIPELINE?.cost ?? 25000)
+const VAN_UPGRADE_COST = Number(_VAN_TUNING?.cost ?? 1500)
 const SHOP_FAME_ENTRY_IDS = new Set(
   [...HQ_ITEMS.van, ...HQ_ITEMS.hq]
     .filter(item => item.currency === 'fame')
@@ -849,8 +857,15 @@ const estimateMerchBuyers = (
   previousFame = state.player.fame
 ) => {
   const fame = previousFame || 0
-  const fameRatio = Math.min(1.0, fame / (venue.capacity * 8))
-  let fillRate = 0.3 + fameRatio * 0.8
+  const safeCapacity = Math.max(1, venue.capacity || 0)
+  const fameRatio = Math.min(
+    1.0,
+    Math.log(Math.max(0, fame) + 1) /
+      Math.log(safeCapacity * TICKET_SALES_CONSTANTS.FAME_CAPACITY_SCALER + 1)
+  )
+  let fillRate =
+    TICKET_SALES_CONSTANTS.BASE_DRAW_RATIO +
+    fameRatio * TICKET_SALES_CONSTANTS.FAME_FILL_WEIGHT
   if (modifiers.promo) fillRate += 0.15
   if (modifiers.soundcheck) fillRate += 0.15
   fillRate = Math.min(1, Math.max(0.1, fillRate))
@@ -1033,22 +1048,12 @@ const maybeMaintainVanAndResources = (state, scenario, rng, counters) => {
     }
   }
 
-  if (
-    state.player.money > SIMULATION_CONSTANTS.hqUpgradeCost * 1.5 &&
-    rng() < 0.3
-  ) {
-    const hqUpgrade = UPGRADE_CATALOG.find(
-      item => item.id === 'hq_room_beer_pipeline'
-    )
-    applyCatalogPurchase(state, hqUpgrade, counters)
+  if (state.player.money > HQ_UPGRADE_COST * 1.5 && rng() < 0.3) {
+    applyCatalogPurchase(state, _HQ_BEER_PIPELINE, counters)
   }
 
-  if (
-    state.player.money > SIMULATION_CONSTANTS.vanUpgradeCost * 1.5 &&
-    rng() < 0.2
-  ) {
-    const vanUpgrade = UPGRADE_CATALOG.find(item => item.id === 'hq_van_tuning')
-    applyCatalogPurchase(state, vanUpgrade, counters)
+  if (state.player.money > VAN_UPGRADE_COST * 1.5 && rng() < 0.2) {
+    applyCatalogPurchase(state, _VAN_TUNING, counters)
   }
 }
 
@@ -1089,8 +1094,11 @@ const calculatePerformanceScore = (state, venue, modifiers, rng) => {
       variance
   )
 
+  // Normalize through the real game function so the score always stays within
+  // [PERF_SCORE_MIN, PERF_SCORE_MAX] (currently 30–100).
+  const rawScore = Math.max(0, score) * 150
   return {
-    score: Math.max(5, Math.min(100, score)),
+    score: normalizePerformanceScore(rawScore),
     gigModifiers,
     physics
   }
@@ -1692,13 +1700,13 @@ const summarizeScenario = runs => {
     ),
     gigsToAffordHqUpgrade: Number(
       (
-        SIMULATION_CONSTANTS.hqUpgradeCost /
+        HQ_UPGRADE_COST /
         Math.max(1, totals.totalGigNet / Math.max(1, totals.gigsPlayed))
       ).toFixed(2)
     ),
     gigsToAffordVanUpgrade: Number(
       (
-        SIMULATION_CONSTANTS.vanUpgradeCost /
+        VAN_UPGRADE_COST /
         Math.max(1, totals.totalGigNet / Math.max(1, totals.gigsPlayed))
       ).toFixed(2)
     )
@@ -2074,7 +2082,7 @@ const buildMarkdownReport = payload => {
   lines.push(
     `| Venue-Fame-Gates | diff-2: fame 0–59 · diff-3: 60–199 · diff-4: 200–399 · diff-5: 400+ |`
   )
-  lines.push(`| Fame-Level-Skala | Level = floor(fame / 100) |`)
+  lines.push(`| Fame-Level-Skala | Level = floor(sqrt(fame / 200)) |`)
   lines.push('')
 
   // ── Fame Audit ───────────────────────────────────────────────────────────
@@ -2146,7 +2154,7 @@ const buildMarkdownReport = payload => {
     const sc = SCENARIOS.find(x => x.id === scenario.id)
     const startMoney = sc?.initialOverrides?.player?.money ?? '?'
     const startFame = sc?.initialOverrides?.player?.fame ?? 0
-    const fameLevel = Math.floor(s.avgFinalFame / 100)
+    const fameLevel = calculateFameLevel(s.avgFinalFame)
     lines.push(
       `| ${scenario.name} | ${fmtEur(startMoney)} | ${startFame} | ${fmtEur(s.avgFinalMoney)} | ${s.avgPeakToTroughDrop}% | ${s.sinkToIncomeRatio} | ${s.gigCapHits}% | ${s.avgFinalFame} | ${fameLevel} | ${s.avgFinalHarmony} | ${s.avgFinalControversy} | ${s.avgGigsPlayed} | ${s.avgClinicVisits} | ${fmtPct(s.bankruptcyRate)} | ${fmtEur(s.avgGigNet)} | ${getScenarioInsight(s)} |`
     )

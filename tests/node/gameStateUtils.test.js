@@ -27,10 +27,11 @@ test('clampNonNegative edge cases', () => {
 test('calculateFameLevel', () => {
   assert.strictEqual(calculateFameLevel(0), 0)
   assert.strictEqual(calculateFameLevel(50), 0) // below first threshold
-  assert.strictEqual(calculateFameLevel(100), 1) // exactly level 1
-  assert.strictEqual(calculateFameLevel(150), 1) // within level 1
-  assert.strictEqual(calculateFameLevel(200), 2) // exactly level 2
-  assert.strictEqual(calculateFameLevel(1050), 10) // level 10
+  assert.strictEqual(calculateFameLevel(100), 0) // below level 1 (needs 200)
+  assert.strictEqual(calculateFameLevel(199), 0) // just below level 1
+  assert.strictEqual(calculateFameLevel(200), 1) // exactly level 1
+  assert.strictEqual(calculateFameLevel(800), 2) // exactly level 2
+  assert.strictEqual(calculateFameLevel(20000), 10) // level 10
   assert.strictEqual(calculateFameLevel(-500), 0) // Should cap at 0
   assert.strictEqual(calculateFameLevel(null), 0)
   assert.strictEqual(calculateFameLevel(undefined), 0)
