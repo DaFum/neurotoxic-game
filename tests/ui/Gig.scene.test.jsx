@@ -4,7 +4,7 @@ import { Gig } from '../../src/scenes/Gig.tsx'
 import { useRhythmGameLogic } from '../../src/hooks/useRhythmGameLogic'
 import { useGameState } from '../../src/context/GameState.tsx'
 import { GAME_PHASES } from '../../src/context/gameConstants'
-import { audioManager } from '../../src/utils/audio/AudioManager'
+import { audioManager } from '../../src/utils/audio/audioEngine'
 import {
   pauseAudio,
   resumeAudio,
@@ -13,15 +13,17 @@ import {
 
 // Mock dependencies
 vi.mock('../../src/context/GameState')
-vi.mock('../../src/utils/audio/AudioManager', () => ({
+vi.mock('../../src/utils/audio/audioEngine', () => ({
   audioManager: {
     ensureAudioContext: vi.fn().mockResolvedValue(true)
-  }
-}))
-vi.mock('../../src/utils/audio/audioEngine', () => ({
+  },
+  audioService: {
+    ensureAudioContext: vi.fn().mockResolvedValue(true)
+  },
   pauseAudio: vi.fn(),
   resumeAudio: vi.fn(),
-  stopAudio: vi.fn()
+  stopAudio: vi.fn(),
+  getPlayRequestId: vi.fn()
 }))
 vi.mock('../../src/utils/imageGen', () => ({
   getGenImageUrl: vi.fn(prompt => `mock-${prompt}.jpg`),

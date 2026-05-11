@@ -18,14 +18,15 @@ const mocks = vi.hoisted(() => ({
   resetGigStateTracking: vi.fn()
 }))
 
-vi.mock('../../src/utils/audio/AudioManager', () => ({
+vi.mock('../../src/utils/audio/audioEngine', () => ({
   audioManager: {
     stopMusic: mocks.stopMusic,
     ensureAudioContext: mocks.ensureAudioContext
-  }
-}))
-
-vi.mock('../../src/utils/audio/audioEngine', () => ({
+  },
+  audioService: {
+    stopMusic: mocks.stopMusic,
+    ensureAudioContext: mocks.ensureAudioContext
+  },
   stopAudio: mocks.stopAudio
 }))
 

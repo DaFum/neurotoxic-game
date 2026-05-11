@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useSyncExternalStore } from 'react'
-import { audioService } from '../utils/audio/audioService'
+import { audioService } from '../utils/audio/audioEngine'
 import { handleError } from '../utils/errorHandler'
 import type {
   AudioControlHandlers,

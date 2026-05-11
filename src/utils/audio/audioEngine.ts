@@ -53,3 +53,7 @@ export * from './midiUtils'
 export * from './selectionUtils'
 export * from './songUtils'
 export * from './timingUtils'
+
+// Stateful entry points
+export { audioManager } from './AudioManager'
+export { audioService } from './audioService'
