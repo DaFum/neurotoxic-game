@@ -36,7 +36,7 @@ export const isPlainObject = (
  */
 export const calculateFameLevel = (fame: number): number => {
   const clampedFame = clampNonNegative(fame)
-  return Math.floor(clampedFame / 100)
+  return Math.floor(Math.sqrt(clampedFame / 200))
 }
 
 /**

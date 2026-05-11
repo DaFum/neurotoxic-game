@@ -121,8 +121,8 @@ test('questReducer - Rewards Logic', async t => {
     const nextState = handleCompleteQuest(initialState, { questId: 'q_fame' })
 
     assert.equal(nextState.player.fame, 200)
-    // Fame level: floor(200 / 100) = 2
-    assert.equal(nextState.player.fameLevel, 2)
+    // Fame level: floor(sqrt(200 / 200)) = 1
+    assert.equal(nextState.player.fameLevel, 1)
     assert.equal(nextState.toasts[0].messageKey, 'ui:toast.quest_complete_fame')
   })
 
