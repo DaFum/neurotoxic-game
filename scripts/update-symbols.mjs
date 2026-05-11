@@ -26,7 +26,9 @@ const CHECK = process.argv.includes('--check')
 // 1. Collect src files (including .d.ts for src/types)
 // ---------------------------------------------------------------------------
 function walkSrc(dir, out = []) {
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+  const entries = fs.readdirSync(dir, { withFileTypes: true })
+  entries.sort((a, b) => a.name < b.name ? -1 : a.name > b.name ? 1 : 0)
+  for (const entry of entries) {
     const full = path.join(dir, entry.name)
     if (entry.isDirectory()) { walkSrc(full, out); continue }
     if (/\.(ts|tsx|js|jsx)$/.test(entry.name)) out.push(full)
@@ -124,10 +126,7 @@ for (const sourceFile of program.getSourceFiles()) {
     // Exclude underscore-prefixed test/internal helpers
     if (sym.name.startsWith('_')) continue
 
-    const isDefault = sym.name === 'default'
-    const exportedName = isDefault
-      ? (sym.declarations?.[0]?.name?.text ?? 'default')
-      : sym.name
+    const exportedName = sym.name
 
     // Skip if the symbol's declaration lives in an external lib
     const decl = sym.declarations?.[0]
@@ -142,7 +141,7 @@ for (const sourceFile of program.getSourceFiles()) {
       name: exportedName,
       path: rel,
       type: kindLabel(sym),
-      isDefault,
+      isDefault: false,
     }
     if (isTypeOnlySym(sym)) entry.typeOnly = true
 
