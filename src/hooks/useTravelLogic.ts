@@ -14,7 +14,8 @@ import {
   calculateTravelExpenses,
   calculateRefuelCost,
   calculateRepairCost,
-  EXPENSE_CONSTANTS
+  EXPENSE_CONSTANTS,
+  calculateGuaranteedDailyCost
 } from '../utils/economyEngine'
 import {
   isConnected as isConnectedUtil,
@@ -44,7 +45,6 @@ import { clampPlayerMoney } from '../utils/gameStateUtils'
 import { translateLocation } from '../utils/locationI18n'
 import { VENUES_BY_ID } from '../data/venues'
 import { getTravelArrivalUpdates } from '../utils/travelUtils'
-import { calculateGuaranteedDailyCost } from '../utils/economyEngine'
 import {
   createMoveRivalBandAction,
   createCheckRivalEncounterAction
