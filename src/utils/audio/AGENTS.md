@@ -20,7 +20,7 @@ Applies to `src/utils/audio/**`.
 - `audioState.midiDrumKit` is `Nullable<DrumKitSynth>` but `playDrumNote` expects `DrumKitSynth | undefined`; pass `audioState.midiDrumKit ?? undefined` (not the raw value) when calling it.
 - New SFX types must be added both to the `AudioSfxType` union and to `VALID_SFX_TYPES` in `AudioManager`; missing either side silently drops the playback.
 - Decoding helpers (e.g. `decodeAudioDataWithTimeout`) must not double-check the same promise; rely on the outer abort/timeout path.
-- `audioService` and `audioManager` use deliberately different method casing for the same operations: `audioService.setSfxVolume` (camelCase, React-facing) bridges to `audioManager.setSFXVolume` (PascalCase, class-internal). Pick the casing that matches the facade you imported; mixing them silently no-ops.
+- `audioService` and `audioManager` use deliberately different method casing for the same operations: `audioService.setSfxVolume` (lowercase acronym, React-facing) bridges to `audioManager.setSFXVolume` (uppercase acronym, class-internal). Both are camelCase — they differ only in how the `SFX` acronym is cased. Pick the casing that matches the facade you imported; mixing them silently no-ops.
 - Use `audioService.hasNativeSubscribe()` to gate native subscription vs. polling fallback in React consumers; do not probe `audioManager.subscribe` directly from outside this folder.
 
 ## Public API
