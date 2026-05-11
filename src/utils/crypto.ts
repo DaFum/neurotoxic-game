@@ -136,10 +136,14 @@ export const getSafeUUID = (): string => {
   )
 }
 
-export const __testInternals = {
-  resetBatch: (): void => {
-    batchArray = null
-    batchIndex = BATCH_SIZE
-    secureRandomErrorReported = false
-  }
-}
+// Conditional export that gets compiled away in production
+export const __testInternals: { resetBatch: () => void } | undefined =
+  process.env.NODE_ENV === 'test'
+    ? {
+        resetBatch: (): void => {
+          batchArray = null
+          batchIndex = BATCH_SIZE
+          secureRandomErrorReported = false
+        }
+      }
+    : undefined

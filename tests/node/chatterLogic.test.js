@@ -1,6 +1,5 @@
 import { test, mock } from 'node:test'
 import assert from 'node:assert/strict'
-import * as cryptoUtils from '../../src/utils/crypto'
 import { resetSecureRandomBatchForTesting } from '../helpers/cryptoTestUtils.js'
 
 // Mock the data modules before importing the logic
