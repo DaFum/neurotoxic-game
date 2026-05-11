@@ -77,6 +77,11 @@ export const clampPlayerFame = (fame: number): number => {
   return Math.max(0, Math.floor(fame))
 }
 
+/**
+ * Fame reward tuning constants.
+ * GIG_BASE_REWARD      – Flat fame awarded for any passing gig (perfScore ≥ 31).
+ * GIG_SCORE_MULTIPLIER – Additional fame per perfScore point on top of the base.
+ */
 export const FAME_PROGRESS_CONSTANTS = Object.freeze({
   GIG_BASE_REWARD: 100,
   GIG_SCORE_MULTIPLIER: 10,

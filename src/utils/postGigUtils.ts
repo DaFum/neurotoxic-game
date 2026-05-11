@@ -443,6 +443,20 @@ export const applyPostGigPerformancePenalty = ({
   }
 }
 
+/**
+ * Calculates post-gig player stat changes for money and fame.
+ *
+ * @param params.player             - Current player state.
+ * @param params.perfScore          - Gig performance score (0–100).
+ * @param params.financials         - Post-gig financial breakdown.
+ * @param params.misses             - Total missed notes.
+ * @param params.calculateFameGain  - Applies diminishing returns to raw fame gain.
+ * @param params.calculateFameLevel - Maps total fame to a fame level.
+ * @param params.clampPlayerFame    - Clamps fame to valid range.
+ * @param params.clampPlayerMoney   - Clamps money to valid range.
+ * @param params.BALANCE_CONSTANTS  - Shared balance tuning values.
+ * @returns {{ newMoney, newFame, fameLevel }}
+ */
 export const calculateContinueStats = ({
   player,
   perfScore,
