@@ -75,13 +75,17 @@ function isTypeOnlySym(sym) {
 // ---------------------------------------------------------------------------
 /** @type {Record<string, object[]>} */
 const knownSymbols = {}
+/** @type {Record<string, Set<string>>} */
+const knownSignatures = {}
 
 function upsert(name, entry) {
-  if (!knownSymbols[name]) knownSymbols[name] = []
+  if (!knownSymbols[name]) {
+    knownSymbols[name] = []
+    knownSignatures[name] = new Set()
+  }
   const sig = JSON.stringify({ path: entry.path ?? null, module: entry.module ?? null, isDefault: entry.isDefault })
-  if (!knownSymbols[name].some(e =>
-    JSON.stringify({ path: e.path ?? null, module: e.module ?? null, isDefault: e.isDefault }) === sig
-  )) {
+  if (!knownSignatures[name].has(sig)) {
+    knownSignatures[name].add(sig)
     knownSymbols[name].push(entry)
   }
 }
@@ -101,7 +105,7 @@ const SKIP_PAIRS = new Set([
 for (const sourceFile of program.getSourceFiles()) {
   const fp = sourceFile.fileName.replace(/\\/g, '/')
   if (!fp.startsWith(SRC.replace(/\\/g, '/'))) continue
-  if (sourceFile.isDeclarationFile && !fp.startsWith(SRC.replace(/\\/g, '/'))) continue
+  if (sourceFile.isDeclarationFile && !sourceFile.fileName.includes(SRC)) continue
 
   const rel = relPath(sourceFile.fileName)
   const moduleSym = checker.getSymbolAtLocation(sourceFile)
@@ -143,7 +147,7 @@ for (const sourceFile of program.getSourceFiles()) {
 // ---------------------------------------------------------------------------
 // 4. Merge static external-module allowlist
 // ---------------------------------------------------------------------------
-/** @type {Array<object>} */
+/** @type {Array<{name: string, module: string, isDefault: boolean, typeOnly?: boolean, isNamespace?: boolean}>} */
 const EXTERNAL = [
   // React
   { name: 'React',                     module: 'react',          isDefault: true },

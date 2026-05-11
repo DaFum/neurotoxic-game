@@ -131,10 +131,7 @@ export const usePostGigHandlers = ({
           })
         } catch (e) {
           logger.error('PostGig', 'Failed to resolve selected post', e)
-          addToast(
-            t('ui:postGig.postResolutionFailed'),
-            'error'
-          )
+          addToast(t('ui:postGig.postResolutionFailed'), 'error')
           return
         }
 
