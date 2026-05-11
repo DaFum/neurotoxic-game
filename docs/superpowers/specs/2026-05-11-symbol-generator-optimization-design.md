@@ -45,7 +45,8 @@ if (sym.flags & ts.SymbolFlags.Alias) {
 const decl = resolvedSym.declarations?.[0]
 if (!decl) continue
 const declFile = decl.getSourceFile().fileName.replace(/\\/g, '/')
-if (!declFile.startsWith(SRC)) continue
+const srcNorm = SRC.replace(/\\/g, '/')
+if (!declFile.startsWith(srcNorm)) continue
 
 const defPath = relPath(declFile)
 const exportPath = rel !== defPath ? rel : undefined
@@ -63,19 +64,33 @@ const exportPath = rel !== defPath ? rel : undefined
 
 ### Section 2 — Default exports
 
-**Change:** remove `'default'` from `SKIP_NAMES`. After the named-export loop for each source file, run an explicit pass for `'default'`:
+**Change:** keep `'default'` excluded from the main named-export loop via an explicit guard:
 
-1. Look up the `default` export symbol via `checker.getExportsOfModule`.
+```js
+if (sym.name === 'default') continue  // handled in dedicated default pass below
+```
+
+This replaces removing `'default'` from `SKIP_NAMES` — `SKIP_NAMES` continues to contain `'__esModule'` only. After the named-export loop completes for each source file, run a dedicated default-export pass:
+
+1. Look up the `default` export symbol separately from the module's export table (not via the main loop).
 2. Resolve through `getAliasedSymbol` to get the real symbol.
 3. Determine the key: use the resolved symbol's `name` if it is a real identifier (not `'default'`, not empty, not an internal transient name). Fall back to `default@${rel}`.
 4. Record the entry with `isDefault: true`.
 
+Separating the passes avoids any risk of `'default'` being partially handled twice.
+
 **Dedup signature** includes `isDefault`, so a symbol named `App` exported as a named export and as a default export in different files can coexist without collision.
 
 **Example outputs:**
+
+Named default (`export default function App()`):
 ```json
-{ "name": "App",              "path": "src/App.tsx",          "type": "function", "source": "local", "isDefault": true }
-{ "name": "default@src/i18n.ts", "path": "src/i18n.ts",      "type": "const",    "source": "local", "isDefault": true }
+{ "name": "App", "path": "src/App.tsx", "type": "function", "source": "local", "isDefault": true }
+```
+
+Anonymous fallback (`export default () => {}`):
+```json
+{ "name": "default@src/utils/helpers.ts", "path": "src/utils/helpers.ts", "type": "function", "source": "local", "isDefault": true }
 ```
 
 ---
@@ -140,7 +155,7 @@ Local symbol entry:
 }
 ```
 
-External symbol entry:
+External symbol entry (`type` remains a coarse compatibility field for external entries — not a declaration-kind guarantee):
 ```json
 {
   "name": "useState",
@@ -162,13 +177,13 @@ Default export entry (named):
 }
 ```
 
-Default export entry (anonymous fallback):
+Default export entry (anonymous fallback — for `export default () => {}` or `export default class {}`):
 ```json
 {
-  "name": "default@src/i18n.ts",
-  "path": "src/i18n.ts",
+  "name": "default@src/utils/helpers.ts",
+  "path": "src/utils/helpers.ts",
   "source": "local",
-  "type": "const",
+  "type": "function",
   "isDefault": true
 }
 ```
