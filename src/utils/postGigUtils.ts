@@ -443,6 +443,30 @@ export const applyPostGigPerformancePenalty = ({
   }
 }
 
+/**
+ * Calculates post-gig player stat changes: money and fame.
+ *
+ * Fame logic:
+ *   perfScore ≥ 31 → fame gain via calculateGigFameReward (range ~41–110 before
+ *                    diminishing returns), scaled linearly with perfScore.
+ *   perfScore < 31 → fame loss of FAME_LOSS_BAD_GIG (9), plus an additional
+ *                    miss-penalty for every miss beyond MISS_TOLERANCE.
+ *
+ * perfScore is derived from rawScore / PERF_SCORE_SCALER (currently 150), clamped
+ * to [PERF_SCORE_MIN=30, PERF_SCORE_MAX=100]. A perfScore of 31 therefore requires
+ * a rawScore of at least 4650.
+ *
+ * @param params.player          - Current player state (fame, money).
+ * @param params.perfScore       - Gig performance score (0–100).
+ * @param params.financials      - Post-gig financial breakdown (net income).
+ * @param params.misses          - Total missed notes (used for bad-gig miss penalty).
+ * @param params.calculateFameGain  - Applies diminishing returns to raw fame gain.
+ * @param params.calculateFameLevel - Maps total fame to a fame level.
+ * @param params.clampPlayerFame    - Clamps fame to valid range.
+ * @param params.clampPlayerMoney   - Clamps money to valid range.
+ * @param params.BALANCE_CONSTANTS  - Shared balance tuning values.
+ * @returns {{ newMoney, newFame, fameLevel }}
+ */
 export const calculateContinueStats = ({
   player,
   perfScore,
@@ -467,7 +491,7 @@ export const calculateContinueStats = ({
   const prevFame = player.fame ?? 0
 
   let finalFameGain = -BALANCE_CONSTANTS.FAME_LOSS_BAD_GIG
-  if (perfScore >= 62) {
+  if (perfScore >= 31) {
     const rawFameGain = calculateGigFameReward(perfScore)
     finalFameGain = calculateFameGain(
       rawFameGain,
@@ -499,7 +523,7 @@ export const calculateContinueStats = ({
 
 const PERF_SCORE_MIN = 30
 const PERF_SCORE_MAX = 100
-const PERF_SCORE_SCALER = 500
+const PERF_SCORE_SCALER = 150
 
 export const calculatePerformanceScore = (rawScore: number): number => {
   return Math.min(
