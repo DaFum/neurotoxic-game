@@ -2,7 +2,6 @@
  * (#1) Actual Updates: Extracted socket graphics to sub-components, removed TODO.
 
  */
-import { CONNECTOR_TYPES } from '../kabelsalatConstants'
 import { XlrSocket } from './sockets/XlrSocket.tsx'
 import { JackSocket } from './sockets/JackSocket.tsx'
 import { DcSocket } from './sockets/DcSocket.tsx'

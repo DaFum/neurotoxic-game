@@ -2,7 +2,6 @@
  * (#1) Actual Updates: Extracted plug graphics to sub-components, removed TODO.
 
  */
-import { CONNECTOR_TYPES } from '../kabelsalatConstants'
 import { XlrPlug } from './plugs/XlrPlug.tsx'
 import { JackPlug } from './plugs/JackPlug.tsx'
 import { DcPlug } from './plugs/DcPlug.tsx'
