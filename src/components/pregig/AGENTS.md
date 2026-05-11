@@ -13,3 +13,4 @@ Applies to `src/components/pregig/**`.
 ## Gotchas
 
 - Previous gig selections do not carry over. UI state should initialize from current defaults, not persisted old selections.
+- Band-meeting / harmony-restore actions must guard `band.harmony >= 100` and refund (early-return with a "maxed out" info toast) before deducting cost; the clamp in the reducer would otherwise swallow the spend with no benefit.

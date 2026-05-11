@@ -18,3 +18,5 @@ Applies to `src/context/reducers/**`.
 
 - Loaded save compatibility must cover legacy venue, settings, and unlock formats.
 - Reducer typing regressions should fail `pnpm run typecheck`; whole-project issues belong to `pnpm run typecheck:core`.
+- `addContrabandHelper` in `bandReducer.ts` is intentionally a direct state-mutation helper, not an action. It exists so `minigameReducer` and `tradeReducer` can perform atomic cross-domain updates without multi-action orchestration (TOCTOU safety). Do not convert it to a dispatched action.
+- `questReducer.ts` is only an integration point; quest progress/completion/deadline logic lives in `src/domain/questLifecycle.ts`. Do not move domain logic into the reducer.

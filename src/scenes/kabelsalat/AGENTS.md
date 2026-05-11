@@ -13,3 +13,6 @@ Applies to `src/scenes/kabelsalat/**` unless a deeper `AGENTS.md` overrides it.
 ## Gotchas
 
 - Tests should cover timeout-loss, fully wired win, StrictMode replay, and manual overlay continue paths when end-flow logic changes.
+- Scene transitions out of Kabelsalat must be StrictMode-safe: a manual fallback button must still route to `GIG` if the auto-advance effect double-fires or is dropped. Do not rely on a single `useEffect` to handle scene change.
+- Socket/cable shuffles must use an in-place Fisher-Yates over `secureRandom()` (with a `Math.random()` last-resort fallback), never the `sort(() => Math.random() - 0.5)` pattern — it's biased and was previously flagged as insecure.
+- `CONNECTOR_TYPES` is derived from the `CABLES` array; do not maintain a parallel hard-coded list.
