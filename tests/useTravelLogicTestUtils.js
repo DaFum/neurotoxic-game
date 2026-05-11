@@ -68,7 +68,8 @@ mock.module(new URL('../src/utils/economyEngine.ts', import.meta.url).href, {
     calculateRepairCost: mockCalculateRepairCost,
     calculateTravelMinigameResult: mock.fn(),
     calculateRoadieMinigameResult: mock.fn(),
-    EXPENSE_CONSTANTS: mockExpenseConstants
+    EXPENSE_CONSTANTS: mockExpenseConstants,
+    calculateGuaranteedDailyCost: mockCalculateGuaranteedDailyCost
   }
 })
 
@@ -82,9 +83,7 @@ mock.module(
 )
 
 mock.module(new URL('../src/utils/simulationUtils.ts', import.meta.url).href, {
-  namedExports: {
-    calculateGuaranteedDailyCost: mockCalculateGuaranteedDailyCost
-  }
+  namedExports: {}
 })
 
 mock.module(new URL('../src/utils/logger.ts', import.meta.url).href, {

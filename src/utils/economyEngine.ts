@@ -1,7 +1,7 @@
 import { logger } from './logger'
 import { bandHasTrait } from './traitUtils'
 import { calculateZealotryEffects } from './socialEngine'
-import type { BandState, PlayerState, Venue } from '../types/game'
+import type { BandState, GameState, PlayerState, Venue } from '../types/game'
 import type {
   FinancialBreakdownItem,
   PostGigFinancials
@@ -391,6 +391,25 @@ export const calculateFuelCost = (
   )
 
   return { fuelLiters, fuelCost }
+}
+
+export const calculateGuaranteedDailyCost = (
+  player: Pick<GameState['player'], 'fameLevel'>,
+  band: Pick<GameState['band'], 'members'>,
+  social: Partial<Pick<GameState['social'], 'youtube'>> = {}
+) => {
+  const bandSize = Array.isArray(band.members) ? band.members.length : 3
+  const fameLevel = player.fameLevel || 0
+  const lifestyleInflation = Math.floor(Math.pow(fameLevel, 1.4) * 15)
+  let dailyCost =
+    EXPENSE_CONSTANTS.DAILY.BASE_COST + bandSize * 8 + lifestyleInflation
+
+  if ((social.youtube || 0) >= 10000) {
+    const adRevenue = Math.floor((social.youtube || 0) / 10000) * 10
+    dailyCost -= adRevenue
+  }
+
+  return dailyCost
 }
 
 /**
