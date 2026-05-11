@@ -3,7 +3,7 @@ import { renderHook, act, cleanup } from '@testing-library/react'
 import { setupJSDOM, teardownJSDOM } from '../testUtils'
 
 // Mock Dependencies
-const { mockAudioEngine } = vi.hoisted(() => {
+const { mockAudioEngine, mockGigStats, mockRhythmUtils } = vi.hoisted(() => {
   const listeners = new Set()
 
   const audioState = {
@@ -91,35 +91,32 @@ const { mockAudioEngine } = vi.hoisted(() => {
     getPlayRequestId: vi.fn(),
     subscribeToAudioState: vi.fn(),
     playSFX: vi.fn(),
-    setCorruptionEffect: vi.fn()
+    setCorruptionEffect: vi.fn(),
+    enableCorruptionBurstAudio: vi.fn(),
+    disableCorruptionBurstAudio: vi.fn()
   }
 
   return {
     mockAudioManager: manager,
     mockAudioService: service,
-    mockAudioEngine: engine
+    mockAudioEngine: engine,
+    mockGigStats: {
+      calculateScore: vi.fn(),
+      calculateAccuracy: vi.fn(() => 100),
+      applyGameModifiers: vi.fn(),
+      updateGigPerformanceStats: vi.fn(x => x),
+      buildGigStatsSnapshot: vi.fn()
+    },
+    mockRhythmUtils: {
+      checkHit: vi.fn(),
+      getNoteScore: vi.fn(),
+      generateLanes: vi.fn()
+    }
   }
 })
 
 vi.mock('../../src/utils/audio/audioEngine', () => mockAudioEngine)
 vi.mock('../../src/utils/audio/timingUtils', () => mockAudioEngine)
-
-vi.mock('../../src/utils/gigStats', () => mockGigStats)
-
-vi.mock('../../src/utils/rhythmUtils', () => mockRhythmUtils)
-const mockGigStats = {
-  calculateScore: vi.fn(),
-  calculateAccuracy: vi.fn(() => 100),
-  applyGameModifiers: vi.fn(),
-  updateGigPerformanceStats: vi.fn(x => x),
-  buildGigStatsSnapshot: vi.fn()
-}
-
-const mockRhythmUtils = {
-  checkHit: vi.fn(),
-  getNoteScore: vi.fn(),
-  generateLanes: vi.fn()
-}
 
 vi.mock('../../src/utils/gigStats', () => mockGigStats)
 vi.mock('../../src/utils/rhythmUtils', () => mockRhythmUtils)
