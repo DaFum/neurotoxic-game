@@ -106,7 +106,7 @@ function upsert(name, entry) {
   }
 }
 
-const SKIP_NAMES = new Set(['__esModule', 'default'])
+const SKIP_NAMES = new Set(['__esModule'])
 
 // Specific (name, path) pairs to exclude: re-exports from secondary/compat files
 // where the symbol is already indexed from its canonical source.
@@ -130,6 +130,7 @@ for (const sourceFile of program.getSourceFiles()) {
   // getExportsOfModule resolves export * re-exports transitively
   for (const sym of checker.getExportsOfModule(moduleSym)) {
     if (SKIP_NAMES.has(sym.name)) continue
+    if (sym.name === 'default') continue  // handled in dedicated default-export pass below
 
     // Exclude underscore-prefixed test/internal helpers
     if (sym.name.startsWith('_')) continue
@@ -169,6 +170,44 @@ for (const sourceFile of program.getSourceFiles()) {
     if (isTypeOnlySym(resolvedSym)) entry.typeOnly = true
 
     upsert(exportedName, entry)
+  }
+
+  // --- dedicated default-export pass ---
+  const defaultSym = checker.getExportsOfModule(moduleSym).find(s => s.name === 'default')
+  if (defaultSym) {
+    let resolvedDefault = defaultSym
+    if (defaultSym.flags & ts.SymbolFlags.Alias) {
+      const aliased = checker.getAliasedSymbol(defaultSym)
+      if (aliased.declarations?.length) resolvedDefault = aliased
+    }
+
+    const defaultDecl = resolvedDefault.declarations?.[0]
+    if (defaultDecl) {
+      const defaultDeclFile = defaultDecl.getSourceFile().fileName.replace(/\\/g, '/')
+      const srcNorm = SRC.replace(/\\/g, '/')
+      if (defaultDeclFile.startsWith(srcNorm)) {
+        const symName = resolvedDefault.name
+        // Use the resolved name only if it is a real identifier, not the
+        // synthetic "default" name TypeScript assigns to anonymous exports.
+        // For `export default function Foo()`, the symbol name stays 'default'
+        // but the declaration carries the real name — fall back to that.
+        const declName = /** @type {any} */ (defaultDecl).name?.text
+        const key = (symName && symName !== 'default' && !symName.startsWith('__'))
+          ? symName
+          : (declName && declName !== 'default' && !declName.startsWith('__'))
+            ? declName
+            : `default@${rel}`
+        const entry = {
+          name: key,
+          path: relPath(defaultDeclFile),
+          source: 'local',
+          type: kindLabel(resolvedDefault),
+          isDefault: true,
+        }
+        if (isTypeOnlySym(resolvedDefault)) entry.typeOnly = true
+        upsert(key, entry)
+      }
+    }
   }
 }
 
