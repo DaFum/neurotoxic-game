@@ -9,7 +9,7 @@ Applies to `src/utils/audio/**`.
 - `audioEngine.getGigTimeMs()` is the canonical gig clock source.
 - Keep OGG-unavailable fallback paths intact for MIDI/procedural playback.
 - Preserve setup/playback/dispose cleanup semantics.
-- Song/note contracts live in `src/types/audio.d.ts` and `src/types/rhythmGame.ts`; import with `import type`.
+- Song/note contracts live in `src/types/audio.d.ts` and `src/types/rhythmGame.d.ts`; import with `import type`.
 - Rely on bundled Tone.js and @tonejs/midi declarations; do not add stub `.d.ts` shims.
 
 ## Gotchas

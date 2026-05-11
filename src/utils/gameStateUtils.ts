@@ -733,7 +733,7 @@ export const calculateAppliedDelta = (
  * @param {object} currentRelationships - The current relationships of the member.
  * @returns {object|null} The calculated change or null if none.
  */
-export const calculateMemberRelationshipChange = (
+const calculateMemberRelationshipChange = (
   change: RelationshipChange,
   memberName: string,
   hasGrudgeHolder: boolean,

@@ -2,6 +2,14 @@ import { hasTrait } from './traitUtils'
 import { CHARACTERS } from '../data/characters'
 import type { GameState } from '../types/game'
 
+/**
+ * Domain logic for trait unlock evaluation.
+ * Inspects game state + a context envelope and returns the
+ * list of { memberId, traitId } pairs that have been earned.
+ *
+ * Does NOT persist anything. For persistence, see ./unlockManager.ts.
+ */
+
 type UnlockCheckState = Pick<GameState, 'player' | 'band' | 'social'>
 
 /**

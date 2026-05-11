@@ -1,5 +1,13 @@
 import { safeStorageOperation } from './errorHandler'
 
+/**
+ * Persistence layer for earned unlock IDs.
+ * Reads and writes `neurotoxic_unlocks` in localStorage.
+ *
+ * Does NOT evaluate whether state qualifies for an unlock.
+ * For eligibility logic, see ./unlockCheck.ts.
+ */
+
 const UNLOCKS_KEY = 'neurotoxic_unlocks'
 
 /**

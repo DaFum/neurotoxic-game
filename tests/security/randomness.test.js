@@ -20,10 +20,8 @@ vi.mock('../../src/data/events/index', () => ({
 }))
 
 // Import secureRandom
-import {
-  secureRandom,
-  resetSecureRandomBatchForTesting
-} from '../../src/utils/crypto'
+import { secureRandom } from '../../src/utils/crypto'
+import { resetSecureRandomBatchForTesting } from '../helpers/cryptoTestUtils.js'
 
 test('secureRandom returns values in [0, 1)', () => {
   for (let i = 0; i < 1000; i++) {

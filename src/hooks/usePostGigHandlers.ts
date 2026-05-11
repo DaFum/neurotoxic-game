@@ -41,8 +41,6 @@ import { shouldTriggerBankruptcy } from '../utils/economyEngine'
 import { generateBrandOffers } from '../utils/socialEngine'
 import { submitLeaderboardScores } from '../utils/leaderboardUtils'
 
-export const DEFAULT_POST_FAILED_MSG = 'Post failed. Try another option.'
-
 export interface UsePostGigHandlersReturn {
   isProcessingAction: boolean
   handlePostSelection: (option: SocialPostOption) => void
@@ -134,9 +132,7 @@ export const usePostGigHandlers = ({
         } catch (e) {
           logger.error('PostGig', 'Failed to resolve selected post', e)
           addToast(
-            t('ui:postGig.postResolutionFailed', {
-              defaultValue: DEFAULT_POST_FAILED_MSG
-            }),
+            t('ui:postGig.postResolutionFailed'),
             'error'
           )
           return
