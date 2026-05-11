@@ -1700,13 +1700,13 @@ const summarizeScenario = runs => {
     ),
     gigsToAffordHqUpgrade: Number(
       (
-        SIMULATION_CONSTANTS.hqUpgradeCost /
+        HQ_UPGRADE_COST /
         Math.max(1, totals.totalGigNet / Math.max(1, totals.gigsPlayed))
       ).toFixed(2)
     ),
     gigsToAffordVanUpgrade: Number(
       (
-        SIMULATION_CONSTANTS.vanUpgradeCost /
+        VAN_UPGRADE_COST /
         Math.max(1, totals.totalGigNet / Math.max(1, totals.gigsPlayed))
       ).toFixed(2)
     )

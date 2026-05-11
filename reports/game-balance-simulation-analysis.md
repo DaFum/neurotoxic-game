@@ -1,6 +1,6 @@
 # Game Balance Simulation – Analyse
 
-Erstellt am: 2026-05-11T13:01:59.327Z
+Erstellt am: 2026-05-11T13:14:01.232Z
 
 ## Simulationseinstellungen
 
@@ -99,16 +99,16 @@ Hinweis: Mathematisch ist alles kaufbar, weil gute Gigs mindestens 1 Fame geben.
 
 | Szenario | Ø Gig-Netto | Ø Reisekosten/Gig | Netto/Reise-Ratio | Gigs f. HQ-Upgrade | Gigs f. Van-Upgrade | Bewertung |
 |---|---:|---:|---:|---:|---:|---|
-| Baseline Touring | €3.211 | €123 | 26.1× | NaN | NaN | ✅ Einkommensstruktur akzeptabel. |
-| Bootstrap Struggle | €2.494 | €97 | 25.7× | NaN | NaN | ✅ Einkommensstruktur akzeptabel. |
-| Aggressive Marketing | €3.110 | €116 | 26.8× | NaN | NaN | ✅ Einkommensstruktur akzeptabel. |
-| Scandal Recovery | €2.687 | €111 | 24.3× | NaN | NaN | ✅ Einkommensstruktur akzeptabel. |
-| Festival Push | €2.973 | €112 | 26.6× | NaN | NaN | ✅ Einkommensstruktur akzeptabel. |
-| Chaos Tour | €2.850 | €116 | 24.7× | NaN | NaN | ✅ Einkommensstruktur akzeptabel. |
-| Cult Hypergrowth | €3.169 | €116 | 27.2× | NaN | NaN | ✅ Einkommensstruktur akzeptabel. |
-| Early Game Probe (Fame 0–50) | €2.778 | €103 | 27× | NaN | NaN | ✅ Einkommensstruktur akzeptabel. |
-| Mid Game Probe (Fame 60–150) | €2.984 | €114 | 26.1× | NaN | NaN | ✅ Einkommensstruktur akzeptabel. |
-| Late Game Probe (Fame 175+) | €3.226 | €122 | 26.4× | NaN | NaN | ✅ Einkommensstruktur akzeptabel. |
+| Baseline Touring | €3.211 | €123 | 26.1× | 7.79 | 0.47 | ✅ Einkommensstruktur akzeptabel. |
+| Bootstrap Struggle | €2.494 | €97 | 25.7× | 10.03 | 0.6 | ✅ Einkommensstruktur akzeptabel. |
+| Aggressive Marketing | €3.110 | €116 | 26.8× | 8.04 | 0.48 | ✅ Einkommensstruktur akzeptabel. |
+| Scandal Recovery | €2.687 | €111 | 24.3× | 9.31 | 0.56 | ✅ Einkommensstruktur akzeptabel. |
+| Festival Push | €2.973 | €112 | 26.6× | 8.41 | 0.5 | ✅ Einkommensstruktur akzeptabel. |
+| Chaos Tour | €2.850 | €116 | 24.7× | 8.77 | 0.53 | ✅ Einkommensstruktur akzeptabel. |
+| Cult Hypergrowth | €3.169 | €116 | 27.2× | 7.89 | 0.47 | ✅ Einkommensstruktur akzeptabel. |
+| Early Game Probe (Fame 0–50) | €2.778 | €103 | 27× | 9 | 0.54 | ✅ Einkommensstruktur akzeptabel. |
+| Mid Game Probe (Fame 60–150) | €2.984 | €114 | 26.1× | 8.38 | 0.5 | ✅ Einkommensstruktur akzeptabel. |
+| Late Game Probe (Fame 175+) | €3.226 | €122 | 26.4× | 7.75 | 0.47 | ✅ Einkommensstruktur akzeptabel. |
 
 ## Gig-Performance-Kalibrierung
 
@@ -214,16 +214,16 @@ Zieldefinition: Insolvenz, Endgeld und Fame-Fortschritt pro Gig je Szenario (kal
 
 | Szenario | Δ Insolvenzrate | Δ Endgeld | Δ Fame/Gig | Δ Gigs |
 |---|---:|---:|---:|---:|
-| Baseline Touring | -23.85% | €85.414 | 392.6 | 5.56 |
-| Bootstrap Struggle | -71.16% | €12.074 | 0.1 | 8.01 |
-| Aggressive Marketing | -38.08% | €35.953 | 371.52 | 9.16 |
-| Scandal Recovery | -82.69% | €23.511 | 324.42 | 14.15 |
-| Festival Push | -83.08% | €25.362 | 185.16 | 13.76 |
-| Chaos Tour | -44.62% | €28.600 | 362.84 | 10.5 |
-| Cult Hypergrowth | -17.31% | €31.522 | 419.88 | 4.33 |
-| Early Game Probe (Fame 0–50) | -42.31% | €12.211 | 374.03 | 2.9 |
-| Mid Game Probe (Fame 60–150) | -1.54% | €8.360 | 434.47 | 0.33 |
-| Late Game Probe (Fame 175+) | -1.15% | €20.037 | 381.41 | 0.15 |
+| Baseline Touring | 0% | €0 | 0 | 0 |
+| Bootstrap Struggle | 0% | €0 | 0 | 0 |
+| Aggressive Marketing | 0% | €0 | 0 | 0 |
+| Scandal Recovery | 0% | €0 | 0 | 0 |
+| Festival Push | 0% | €0 | 0 | 0 |
+| Chaos Tour | 0% | €0 | 0 | 0 |
+| Cult Hypergrowth | 0% | €0 | 0 | 0 |
+| Early Game Probe (Fame 0–50) | 0% | €0 | 0 | 0 |
+| Mid Game Probe (Fame 60–150) | 0% | €0 | 0 | 0 |
+| Late Game Probe (Fame 175+) | 0% | €0 | 0 | 0 |
 
 ## Feature-Abdeckung in der Simulation
 
