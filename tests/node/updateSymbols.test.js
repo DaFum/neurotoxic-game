@@ -32,3 +32,14 @@ test('every external symbol entry has source: "external"', () => {
     }
   }
 })
+
+test('symbols.json output is deterministic across two consecutive runs', () => {
+  const first = fs.readFileSync('symbols.json', 'utf8')
+  execSync('node scripts/update-symbols.mjs', { stdio: 'pipe' })
+  const second = fs.readFileSync('symbols.json', 'utf8')
+  assert.equal(
+    first,
+    second,
+    'Two consecutive runs should produce identical symbols.json'
+  )
+})
