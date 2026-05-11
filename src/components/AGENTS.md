@@ -20,3 +20,4 @@ Applies to `src/components/**` unless a deeper `AGENTS.md` overrides it.
 
 - Minigame components must not import Pixi-only logic into hook layers.
 - Overworld, PreGig, PostGig, and Stage routes each have deeper ownership rules; read the nested file before editing those folders.
+- Components consuming wide state slices (e.g. `ChatterOverlay`) must read via `useGameSelector` and a `useMemo`-wrapped prop slice; passing the full `gameState` causes global re-render thrash and is a recurring perf regression.

@@ -22,3 +22,4 @@ Applies to `src/components/stage/**`.
 
 - Preserve fallback behavior for procedural/MIDI playback when OGG assets are unavailable.
 - Pixi.js v8 cleanup uses two distinct destroy args: `app.destroy({ removeView: true }, { children: true, texture: true, textureSource: true })`.
+- `renderer.generateTexture` is method-bound; call it as `renderer.generateTexture(graphics)` (or `.call(renderer, graphics)` when destructured) and pass `resolution: getOptimalResolution()` to preserve HiDPI crispness without regressing perf. A bare `1` was a recent regression.

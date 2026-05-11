@@ -16,3 +16,4 @@ Applies to `src/hooks/minigames/**`.
 - `COMPLETE_TRAVEL_MINIGAME` must not change scene directly.
 - Tourbus completion payload damage is raw minigame damage; van condition loss is derived later at 50% scaling by `calculateTravelMinigameResult()`.
 - StrictMode replay can rerun effects; guard one-shot completion handlers.
+- Tourbus obstacle generation has three types — `FUEL`, `OBSTACLE`, `VOID_HAZARD` — and `VOID_HAZARD` spawns at ~10%; the reducer applies `voidHazardHits * 10` as a band stamina penalty in `minigameReducer`. Adding obstacle types requires updating both the producer (`useTourbusLogic`) and consumer (`minigameReducer`, `TourbusObstacleManager`) together.

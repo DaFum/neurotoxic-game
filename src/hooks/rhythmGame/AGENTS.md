@@ -14,3 +14,4 @@ Applies to `src/hooks/rhythmGame/**`.
 
 - End detection uses `setlistCompleted` plus `isNearTrackEnd`.
 - JSON-note tracks cap playback to `maxNoteTime + NOTE_TAIL_MS`.
+- `useRhythmGameAudio` must not re-initialize on state re-renders. Gate setup on stable refs/IDs (song, gigId), not derived values that change every tick, or rhythm playback becomes flaky and the init lock can starve.

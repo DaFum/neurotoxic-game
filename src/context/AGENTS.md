@@ -23,3 +23,8 @@ Applies to `src/context/**` unless a deeper `AGENTS.md` overrides it.
 - `createInitialState` settings sanitization keeps only `crtEnabled`, `tutorialSeen`, and `logLevel`.
 - `useReducer` dispatch is not synchronous for `stateRef`; derive toast values from pre-dispatch state.
 - Toast `options` values must be primitive-only: `string | number | boolean | null`.
+- Autosave is centralized in `usePersistence`'s `shouldAutosaveOnTransition` effect (fires on `GIG → POST_GIG` and `POST_GIG → (GAMEOVER | OVERWORLD)`). Do not add explicit `saveGame()` calls in scene handlers — it causes double-saves.
+- The save key is `SAVE_KEY = 'neurotoxic_v3_save'` and `createRawLoadPayload` whitelists `LOADABLE_SAVE_KEYS` only. New persisted state fields require updating `LOADABLE_SAVE_KEYS`, `createPersistedState`, and the reducer's load handler together.
+- `neurotoxic_inject_marker` localStorage flag is a screenshot/E2E-only hydration channel; player loads go through MENU → "Load Game". The marker is removed in a `useEffect` after mount (not in `initGameState`) to survive React StrictMode's double-invoked lazy initializer.
+- `UPDATE_SOCIAL` accepts both `Partial<SocialState>` and a functional updater `(prev: SocialState) => Partial<SocialState>` (see `GameAction` union in `src/types/game.d.ts`). `socialReducer` evaluates the function against current state at reducer time; do not pre-compute against `stateRef` in the caller — that's the bug `2f15bc3e` / `78709491` fixed.
+- `normalizeLoadedGameMap` (called from the load handler) coerces stringy node `x`/`y` back to numbers; new map fields that arrive from legacy saves must extend that normalizer rather than the reducer's load path.
