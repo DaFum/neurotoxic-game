@@ -1,5 +1,7 @@
 import { register } from 'node:module'
 
+process.env.NODE_ENV = 'test'
+
 // Register the loader relative to this file
 register('./loader.mjs', import.meta.url)
 

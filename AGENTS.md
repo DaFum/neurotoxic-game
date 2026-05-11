@@ -27,6 +27,10 @@
 - Audio gameplay timing must use `audioEngine.getGigTimeMs()`, never direct Tone.js time reads.
 - PreGig modifier costs come only from `MODIFIER_COSTS` in `src/utils/economyEngine.ts`.
 - User-facing text must use namespaced i18n keys. Update matching EN and DE locale JSON together.
+- Unlock logic is split across two files. `src/utils/unlockManager.ts` owns
+  localStorage persistence (`getUnlocks`, `addUnlock`). `src/utils/unlockCheck.ts`
+  owns state-based eligibility evaluation (`checkTraitUnlocks`). Do not add
+  persistence logic to `unlockCheck` or evaluation logic to `unlockManager`.
 
 ## TypeScript
 

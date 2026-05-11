@@ -10,14 +10,10 @@ import {
   derivePostOptions
 } from '../utils/postGigUtils'
 
-export { DEFAULT_POST_FAILED_MSG } from './usePostGigHandlers'
-
 export type PostOptionsErrorState =
   | false
   | { kind: 'pending'; error: unknown }
   | { kind: 'handled' }
-export const DEFAULT_SOCIAL_UNAVAILABLE_MSG =
-  'Social options are unavailable right now.'
 
 export const usePostGigLogic = () => {
   const { t } = useTranslation(['ui'])
@@ -163,9 +159,7 @@ export const usePostGigLogic = () => {
   // Handle post options generation error side effects purely in an effect
   useEffect(() => {
     if (postOptionsError) {
-      const fallbackMsg = t('ui:postGig.socialOptionsUnavailable', {
-        defaultValue: DEFAULT_SOCIAL_UNAVAILABLE_MSG
-      })
+      const fallbackMsg = t('ui:postGig.socialOptionsUnavailable')
 
       // eslint-disable-next-line @eslint-react/set-state-in-effect
       setPostResult({

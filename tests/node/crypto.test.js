@@ -2,10 +2,10 @@ import { test, describe, beforeEach, afterEach } from 'node:test'
 import { strict as assert } from 'node:assert'
 import {
   secureRandom,
-  resetSecureRandomBatchForTesting,
   getSafeRandom,
   getSafeUUID
 } from '../../src/utils/crypto'
+import { resetSecureRandomBatchForTesting } from '../helpers/cryptoTestUtils.js'
 
 describe('secureRandom', () => {
   let originalCryptoDescriptor

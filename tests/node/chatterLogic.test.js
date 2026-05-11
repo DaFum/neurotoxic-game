@@ -1,6 +1,6 @@
 import { test, mock } from 'node:test'
 import assert from 'node:assert/strict'
-import * as cryptoUtils from '../../src/utils/crypto'
+import { resetSecureRandomBatchForTesting } from '../helpers/cryptoTestUtils.js'
 
 // Mock the data modules before importing the logic
 mock.module(
@@ -130,14 +130,14 @@ const withMockedCrypto = (getRandomValuesFn, callback) => {
       },
       configurable: true
     })
-    cryptoUtils.resetSecureRandomBatchForTesting()
+    resetSecureRandomBatchForTesting()
     callback()
   } finally {
     Object.defineProperty(globalThis, 'crypto', {
       value: originalCrypto,
       configurable: true
     })
-    cryptoUtils.resetSecureRandomBatchForTesting()
+    resetSecureRandomBatchForTesting()
   }
 }
 

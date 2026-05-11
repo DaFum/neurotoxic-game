@@ -229,7 +229,7 @@ export const addContrabandHelper = (
  * @param {string} memberId - Target member ID for targeted effects
  * @returns {Object|null} Updated band object, or null if application fails (e.g. invalid target)
  */
-export const applyContrabandEffect = (
+const applyContrabandEffect = (
   band: BandState,
   item: Record<string, unknown>,
   memberId: string | undefined
