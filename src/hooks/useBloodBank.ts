@@ -1,5 +1,7 @@
 import { useState, useCallback, useMemo } from 'react'
 import { useGameState } from '../context/GameState'
+import { GAME_CONSTANTS } from '../context/gameConstants'
+import { validateBloodBankDonation } from '../utils/bloodBankUtils'
 
 export const useBloodBank = () => {
   const { bloodBankDonate, player, band } = useGameState()
@@ -10,45 +12,49 @@ export const useBloodBank = () => {
   const closeBloodBank = useCallback(() => setShowBloodBank(false), [])
 
   const config = useMemo(() => {
-    // Dynamic config: higher fame/money means slightly better payout but higher toll
     const multiplier = 1 + (player?.fameLevel || 0) * 0.2
     return {
-      moneyGain: Math.floor(100 * multiplier),
-      harmonyCost: 15, // Fixed high toll on band harmony
-      staminaCost: 30, // Severe stamina drain per member
-      controversyGain: 5 // Sketchy underground activity
+      moneyGain: Math.floor(GAME_CONSTANTS.BLOOD_BANK.BLOOD_BASE_MONEY * multiplier),
+      harmonyCost: GAME_CONSTANTS.BLOOD_BANK.BLOOD_HARMONY_COST,
+      staminaCost: GAME_CONSTANTS.BLOOD_BANK.BLOOD_STAMINA_COST,
+      controversyGain: GAME_CONSTANTS.BLOOD_BANK.BLOOD_CONTROVERSY_GAIN
     }
   }, [player?.fameLevel])
 
-  const canDonate = useMemo(() => {
-    if (!band || !band.members || band.members.length === 0) return false
-    const hasEnoughHarmony = band.harmony > config.harmonyCost
-    // Need enough stamina to survive the drain
-    const minStaminaRequired = config.staminaCost + 10
-    const allMembersHaveStamina = band.members.every(
-      m => (m.stamina || 0) >= minStaminaRequired
-    )
-    return hasEnoughHarmony && allMembersHaveStamina
-  }, [band, config.harmonyCost, config.staminaCost])
+  const marrowConfig = useMemo(() => {
+    const multiplier = 1 + (player?.fameLevel || 0) * 0.2
+    return {
+      moneyGain: Math.floor(GAME_CONSTANTS.BLOOD_BANK.MARROW_BASE_MONEY * multiplier),
+      harmonyCost: GAME_CONSTANTS.BLOOD_BANK.MARROW_HARMONY_COST,
+      staminaCost: GAME_CONSTANTS.BLOOD_BANK.MARROW_STAMINA_COST,
+      controversyGain: GAME_CONSTANTS.BLOOD_BANK.MARROW_CONTROVERSY_GAIN
+    }
+  }, [player?.fameLevel])
 
-  const triggerDonate = useCallback(() => {
-    if (!canDonate) return
+  const canDonate = useMemo(() => validateBloodBankDonation(band, config), [band, config])
+  const canDonateMarrow = useMemo(() => validateBloodBankDonation(band, marrowConfig), [band, marrowConfig])
+
+  const triggerDonate = useCallback((type: 'blood' | 'marrow' = 'blood') => {
+    const isMarrow = type === 'marrow'
+    const activeConfig = isMarrow ? marrowConfig : config
+
+    if (isMarrow ? !canDonateMarrow : !canDonate) return
 
     const successToast = {
-      message: 'ui:blood_bank.success_toast',
-      type: 'success'
+      message: isMarrow ? 'ui:blood_bank.marrow_success_toast' : 'ui:blood_bank.success_toast',
+      type: 'success' as const
     }
 
     bloodBankDonate({
-      moneyGain: config.moneyGain,
-      harmonyCost: config.harmonyCost,
-      staminaCost: config.staminaCost,
-      controversyGain: config.controversyGain,
+      moneyGain: activeConfig.moneyGain,
+      harmonyCost: activeConfig.harmonyCost,
+      staminaCost: activeConfig.staminaCost,
+      controversyGain: activeConfig.controversyGain,
       successToast
     })
 
     closeBloodBank()
-  }, [canDonate, bloodBankDonate, closeBloodBank, config])
+  }, [canDonate, canDonateMarrow, bloodBankDonate, closeBloodBank, config, marrowConfig])
 
   return {
     showBloodBank,
@@ -56,6 +62,8 @@ export const useBloodBank = () => {
     closeBloodBank,
     triggerDonate,
     canDonate,
-    config
+    canDonateMarrow,
+    config,
+    marrowConfig
   }
 }
