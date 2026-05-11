@@ -1,6 +1,6 @@
 // Utility functions for Simulation <-> Action connection
 import { CHARACTERS } from '../data/characters'
-import { EXPENSE_CONSTANTS } from './economyEngine'
+import { calculateGuaranteedDailyCost } from './economyEngine'
 import { applyReputationDecay } from './socialEngine'
 import { calcBaseBreakdownChance } from './upgradeUtils'
 import { hasTrait } from './traitUtils'
@@ -277,24 +277,7 @@ const CONTROVERSY_ACCELERATED_DECAY_THRESHOLD = 55
 const CONTROVERSY_ACCELERATED_DECAY_AMOUNT = 3
 const CONTROVERSY_NORMAL_DECAY_AMOUNT = 1
 
-export const calculateGuaranteedDailyCost = (
-  player: Pick<GameState['player'], 'fameLevel'>,
-  band: Pick<GameState['band'], 'members'>,
-  social: Partial<Pick<GameState['social'], 'youtube'>> = {}
-) => {
-  const bandSize = Array.isArray(band.members) ? band.members.length : 3
-  const fameLevel = player.fameLevel || 0
-  const lifestyleInflation = Math.floor(Math.pow(fameLevel, 1.4) * 15)
-  let dailyCost =
-    EXPENSE_CONSTANTS.DAILY.BASE_COST + bandSize * 8 + lifestyleInflation
 
-  if ((social.youtube || 0) >= 10000) {
-    const adRevenue = Math.floor((social.youtube || 0) / 10000) * 10
-    dailyCost -= adRevenue
-  }
-
-  return dailyCost
-}
 
 export const calculateDailyUpdates = (
   currentState: GameState,

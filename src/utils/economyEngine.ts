@@ -1,7 +1,7 @@
 import { logger } from './logger'
 import { bandHasTrait } from './traitUtils'
 import { calculateZealotryEffects } from './socialEngine'
-import type { BandState, PlayerState, Venue } from '../types/game'
+import type { BandState, PlayerState, SocialState, Venue } from '../types/game'
 import type {
   FinancialBreakdownItem,
   PostGigFinancials
@@ -391,6 +391,33 @@ export const calculateFuelCost = (
   )
 
   return { fuelLiters, fuelCost }
+}
+
+/**
+ * Calculates the guaranteed daily cost for the player, including lifestyle inflation
+ * and potential offsets from social media revenue.
+ * @param {object} player - Player state containing fame level.
+ * @param {object} band - Band state containing members.
+ * @param {object} [social={}] - Social state containing YouTube followers.
+ * @returns {number} The calculated daily cost.
+ */
+export const calculateGuaranteedDailyCost = (
+  player: Pick<PlayerState, 'fameLevel'>,
+  band: Pick<BandState, 'members'>,
+  social: Partial<Pick<SocialState, 'youtube'>> = {}
+) => {
+  const bandSize = Array.isArray(band.members) ? band.members.length : 3
+  const fameLevel = player.fameLevel || 0
+  const lifestyleInflation = Math.floor(Math.pow(fameLevel, 1.4) * 15)
+  let dailyCost =
+    EXPENSE_CONSTANTS.DAILY.BASE_COST + bandSize * 8 + lifestyleInflation
+
+  if ((social.youtube || 0) >= 10000) {
+    const adRevenue = Math.floor((social.youtube || 0) / 10000) * 10
+    dailyCost -= adRevenue
+  }
+
+  return dailyCost
 }
 
 /**
