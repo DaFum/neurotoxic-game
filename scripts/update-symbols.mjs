@@ -140,6 +140,7 @@ for (const sourceFile of program.getSourceFiles()) {
     const entry = {
       name: exportedName,
       path: rel,
+      source: 'local',
       type: kindLabel(sym),
       isDefault: false,
     }
@@ -216,7 +217,7 @@ const EXTERNAL = [
 ]
 
 for (const e of EXTERNAL) {
-  upsert(e.name, e)
+  upsert(e.name, { ...e, source: 'external' })
 }
 
 // ---------------------------------------------------------------------------
