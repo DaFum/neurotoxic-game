@@ -39,15 +39,21 @@ const srcFiles = walkSrc(SRC)
 // ---------------------------------------------------------------------------
 // 2. Build program
 // ---------------------------------------------------------------------------
-const program = ts.createProgram(srcFiles, {
-  allowJs: true,
-  checkJs: false,
-  noEmit: true,
-  skipLibCheck: true,
-  moduleResolution: ts.ModuleResolutionKind.Bundler,
-  jsx: ts.JsxEmit.Preserve,
-})
-const checker = program.getTypeChecker()
+let program, checker
+try {
+  program = ts.createProgram(srcFiles, {
+    allowJs: true,
+    checkJs: false,
+    noEmit: true,
+    skipLibCheck: true,
+    moduleResolution: ts.ModuleResolutionKind.Bundler,
+    jsx: ts.JsxEmit.Preserve,
+  })
+  checker = program.getTypeChecker()
+} catch (err) {
+  console.error(`update-symbols: ts.createProgram failed — ${err instanceof Error ? err.message : err}`)
+  process.exit(1)
+}
 
 function relPath(abs) {
   return abs.replace(/\\/g, '/').replace(ROOT.replace(/\\/g, '/') + '/', '')
