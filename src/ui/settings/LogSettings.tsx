@@ -1,5 +1,4 @@
 import { memo, useCallback } from 'react'
-import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { LOG_LEVELS } from '../../utils/logger'
 import type { ChangeEvent } from 'react'
@@ -49,8 +48,3 @@ export const LogSettings = memo(function LogSettings({
     </div>
   )
 })
-
-LogSettings.propTypes = {
-  logLevel: PropTypes.number.isRequired,
-  onLogLevelChange: PropTypes.func.isRequired
-}

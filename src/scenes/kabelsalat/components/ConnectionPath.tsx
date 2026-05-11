@@ -1,6 +1,5 @@
 import { CABLE_MAP } from '../kabelsalatConstants'
 import { getMessyPath } from '../kabelsalatUtils'
-import PropTypes from 'prop-types'
 import type { FC } from 'react'
 import type { CableId } from '../kabelsalatConstants'
 
@@ -45,10 +44,4 @@ export const ConnectionPath: FC<ConnectionPathProps> = ({
       }}
     />
   )
-}
-ConnectionPath.propTypes = {
-  sockId: PropTypes.string.isRequired,
-  cabId: PropTypes.string.isRequired,
-  isPowerConnected: PropTypes.bool.isRequired,
-  socketOrder: PropTypes.arrayOf(PropTypes.string).isRequired
 }

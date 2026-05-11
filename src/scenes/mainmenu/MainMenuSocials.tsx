@@ -1,10 +1,8 @@
 /*
  * (#1) Actual Updates: Added PropTypes.
 
-
  */
 import { useTranslation } from 'react-i18next'
-import PropTypes from 'prop-types'
 import {
   Modal,
   UplinkButton,
@@ -79,8 +77,4 @@ export const MainMenuSocials = ({ onClose }: { onClose: () => void }) => {
       </div>
     </Modal>
   )
-}
-
-MainMenuSocials.propTypes = {
-  onClose: PropTypes.func.isRequired
 }

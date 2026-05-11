@@ -5,7 +5,6 @@
  */
 import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
-import PropTypes from 'prop-types'
 import { GlitchButton } from '../../ui/GlitchButton'
 
 export const GameOverButtons = ({ onRetry, onReturnToMenu }) => {
@@ -32,9 +31,4 @@ export const GameOverButtons = ({ onRetry, onReturnToMenu }) => {
       </GlitchButton>
     </motion.div>
   )
-}
-
-GameOverButtons.propTypes = {
-  onRetry: PropTypes.func.isRequired,
-  onReturnToMenu: PropTypes.func.isRequired
 }

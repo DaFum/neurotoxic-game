@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { ActionButton } from './shared/ActionButton'
 import {
@@ -185,16 +184,4 @@ export const BloodBankModal = ({
       </div>
     </div>
   )
-}
-
-BloodBankModal.propTypes = {
-  onClose: PropTypes.func.isRequired,
-  onDonate: PropTypes.func.isRequired,
-  canDonate: PropTypes.bool.isRequired,
-  config: PropTypes.shape({
-    moneyGain: PropTypes.number.isRequired,
-    harmonyCost: PropTypes.number.isRequired,
-    staminaCost: PropTypes.number.isRequired,
-    controversyGain: PropTypes.number.isRequired
-  }).isRequired
 }

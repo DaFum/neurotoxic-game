@@ -1,5 +1,4 @@
 import { memo } from 'react'
-import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import type { BandMembersLayerProps } from '../../../types/components'
 
@@ -56,10 +55,3 @@ export const BandMembersLayer = memo(
 )
 
 BandMembersLayer.displayName = 'BandMembersLayer'
-
-BandMembersLayer.propTypes = {
-  matzeUrl: PropTypes.string.isRequired,
-  mariusUrl: PropTypes.string.isRequired,
-  larsUrl: PropTypes.string.isRequired,
-  setBandMemberRef: PropTypes.func.isRequired
-}

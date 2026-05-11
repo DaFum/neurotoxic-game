@@ -5,7 +5,6 @@
 
 import { useEffect, useRef } from 'react'
 import type { ReactNode, MouseEvent } from 'react'
-import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { UIFrameCorner } from './Icons'
 import { Tooltip } from './Tooltip'
@@ -120,13 +119,4 @@ export const Modal = ({
       </div>
     </div>
   )
-}
-
-Modal.propTypes = {
-  isOpen: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-  title: PropTypes.string,
-  children: PropTypes.node,
-  contentClassName: PropTypes.string,
-  className: PropTypes.string
 }

@@ -1,6 +1,5 @@
 import { memo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { ActionButton } from '../../ui/shared'
 import { SideEffectsPreview } from './SideEffectsPreview'
@@ -95,14 +94,3 @@ export const SocialOptionButton = memo(function SocialOptionButton({
 })
 
 SocialOptionButton.displayName = 'SocialOptionButton'
-SocialOptionButton.propTypes = {
-  opt: PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-    name: PropTypes.string,
-    platform: PropTypes.string,
-    category: PropTypes.string,
-    badges: PropTypes.arrayOf(PropTypes.string)
-  }).isRequired,
-  index: PropTypes.number.isRequired,
-  onSelect: PropTypes.func.isRequired
-}

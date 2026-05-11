@@ -1,5 +1,4 @@
 import { memo } from 'react'
-import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { ToggleSwitch } from '../shared/ToggleSwitch'
 
@@ -36,8 +35,3 @@ export const VisualSettings = memo(function VisualSettings({
     </div>
   )
 })
-
-VisualSettings.propTypes = {
-  crtEnabled: PropTypes.bool.isRequired,
-  onToggleCRT: PropTypes.func.isRequired
-}

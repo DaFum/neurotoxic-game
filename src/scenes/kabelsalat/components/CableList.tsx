@@ -1,5 +1,4 @@
 import { CABLES } from '../kabelsalatConstants'
-import PropTypes from 'prop-types'
 import { CableItem } from './CableItem.tsx'
 import type { TFunction } from 'i18next'
 
@@ -50,13 +49,4 @@ export const CableList = ({
       })}
     </>
   )
-}
-
-CableList.propTypes = {
-  t: PropTypes.func.isRequired,
-  connections: PropTypes.objectOf(PropTypes.string).isRequired,
-  selectedCable: PropTypes.string,
-  isShocked: PropTypes.bool.isRequired,
-  isGameOver: PropTypes.bool.isRequired,
-  handleCableClick: PropTypes.func.isRequired
 }

@@ -1,5 +1,4 @@
 import { memo } from 'react'
-import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import type { ChangeEvent } from 'react'
 
@@ -74,9 +73,3 @@ export const VolumeSlider = memo(function VolumeSlider({
     </div>
   )
 })
-
-VolumeSlider.propTypes = {
-  label: PropTypes.string.isRequired,
-  value: PropTypes.number.isRequired,
-  onChange: PropTypes.func.isRequired
-}

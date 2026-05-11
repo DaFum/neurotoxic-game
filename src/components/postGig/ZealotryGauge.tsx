@@ -1,6 +1,5 @@
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import PropTypes from 'prop-types'
 import { ZEALOTRY_PROMO_THRESHOLD } from '../../utils/economyEngine'
 import {
   getGenImageUrl,
@@ -66,6 +65,3 @@ export const ZealotryGauge = memo(
 )
 
 ZealotryGauge.displayName = 'ZealotryGauge'
-ZealotryGauge.propTypes = {
-  zealotryLevel: PropTypes.number
-}

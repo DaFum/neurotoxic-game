@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 import type { ChangeEvent, KeyboardEvent, RefObject } from 'react'
-import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { Modal } from '../../ui/shared'
 import { GlitchButton } from '../../ui/GlitchButton'
@@ -67,15 +66,4 @@ export const MainMenuNameInputPrompt = ({
       </div>
     </Modal>
   )
-}
-
-MainMenuNameInputPrompt.propTypes = {
-  playerNameInput: PropTypes.string.isRequired,
-  setPlayerNameInput: PropTypes.func.isRequired,
-  handleNameSubmit: PropTypes.func.isRequired,
-  onClose: PropTypes.func.isRequired,
-  inputRef: PropTypes.oneOfType([
-    PropTypes.func,
-    PropTypes.shape({ current: PropTypes.object })
-  ])
 }

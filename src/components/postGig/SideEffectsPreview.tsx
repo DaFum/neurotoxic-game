@@ -1,6 +1,5 @@
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import PropTypes from 'prop-types'
 
 type SideEffectsPreviewProps = { badges?: string[] }
 
@@ -39,6 +38,3 @@ export const SideEffectsPreview = memo(
 )
 
 SideEffectsPreview.displayName = 'SideEffectsPreview'
-SideEffectsPreview.propTypes = {
-  badges: PropTypes.arrayOf(PropTypes.string)
-}

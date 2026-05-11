@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import type { TourbusControlsProps } from '../../../types/components'
 
@@ -28,9 +27,4 @@ export const TourbusControls = ({
       />
     </div>
   )
-}
-
-TourbusControls.propTypes = {
-  onMoveLeft: PropTypes.func.isRequired,
-  onMoveRight: PropTypes.func.isRequired
 }

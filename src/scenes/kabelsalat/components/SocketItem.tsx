@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react'
-import PropTypes from 'prop-types'
 import type { FC } from 'react'
 import { PlugGraphics } from './PlugGraphics.tsx'
 import { SocketGraphics } from './SocketGraphics.tsx'
@@ -153,14 +152,3 @@ const SocketItemComponent: FC<SocketItemProps> = ({
 
 export const SocketItem = React.memo(SocketItemComponent)
 SocketItem.displayName = 'SocketItem'
-
-SocketItem.propTypes = {
-  t: PropTypes.func.isRequired,
-  socketId: PropTypes.oneOf(Object.keys(SOCKET_DEFS)).isRequired,
-  index: PropTypes.number.isRequired,
-  connections: PropTypes.objectOf(PropTypes.string).isRequired,
-  isPowerConnected: PropTypes.bool.isRequired,
-  selectedCable: PropTypes.string,
-  isGameOver: PropTypes.bool.isRequired,
-  handleSocketClick: PropTypes.func.isRequired
-}

@@ -1,5 +1,4 @@
 import { useEffect, useRef, memo } from 'react'
-import PropTypes from 'prop-types'
 import { createPixiStageController } from './PixiStageController'
 import { logger } from '../utils/logger'
 import type { PixiController, PixiStageProps } from '../types/components'
@@ -68,13 +67,6 @@ const PixiStageComponent = <TState = unknown,>({
     />
   )
 }
-
-PixiStageComponent.propTypes = {
-  gameStateRef: PropTypes.object.isRequired,
-  update: PropTypes.func.isRequired,
-  controllerFactory: PropTypes.func
-}
-
 export const PixiStage = memo(
   PixiStageComponent
 ) as unknown as PixiStageComponentType

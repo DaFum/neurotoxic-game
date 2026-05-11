@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import type { FC } from 'react'
 
 const LIGHTNING_Y_COORDS = [0, 200, 400, 600]
@@ -24,16 +23,3 @@ export const LightningEffects: FC<{ lightningSeeds: LightningSeed[] }> = ({
     ))}
   </g>
 )
-
-LightningEffects.propTypes = {
-  lightningSeeds: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-      startX: PropTypes.number.isRequired,
-      o1: PropTypes.number.isRequired,
-      o2: PropTypes.number.isRequired,
-      o3: PropTypes.number.isRequired,
-      w: PropTypes.number.isRequired
-    })
-  ).isRequired
-}

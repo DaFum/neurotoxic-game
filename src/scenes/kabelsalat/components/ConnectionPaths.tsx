@@ -1,9 +1,7 @@
 /*
  * (#1) Actual Updates: Refactored ConnectionPaths to use the newly extracted ConnectionPath sub-component.
 
-
  */
-import PropTypes from 'prop-types'
 import { ConnectionPath } from './ConnectionPath.tsx'
 import type { ConnectionPathProps } from './ConnectionPath.tsx'
 
@@ -38,9 +36,4 @@ export const ConnectionPaths = ({
       })}
     </>
   )
-}
-ConnectionPaths.propTypes = {
-  connections: PropTypes.objectOf(PropTypes.string).isRequired,
-  isPowerConnected: PropTypes.bool.isRequired,
-  socketOrder: PropTypes.arrayOf(PropTypes.string).isRequired
 }

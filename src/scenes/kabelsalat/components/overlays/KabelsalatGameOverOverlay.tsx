@@ -1,10 +1,8 @@
 /*
  * (#1) Actual Updates: Created GameOverOverlay component.
 
-
  */
 import React from 'react'
-import PropTypes from 'prop-types'
 import type { FC } from 'react'
 import type { TFunction } from 'i18next'
 import { ActionButton } from '../../../../ui/shared'
@@ -31,8 +29,3 @@ export const KabelsalatGameOverOverlay: FC<KabelsalatGameOverOverlayProps> =
     )
   })
 KabelsalatGameOverOverlay.displayName = 'KabelsalatGameOverOverlay'
-
-KabelsalatGameOverOverlay.propTypes = {
-  t: PropTypes.func.isRequired,
-  onAdvance: PropTypes.func.isRequired
-}

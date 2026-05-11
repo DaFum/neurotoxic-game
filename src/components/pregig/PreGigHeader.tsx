@@ -1,11 +1,9 @@
 /*
  * (#1) Actual Updates: Extracted PreGigHeader into a separate component.
 
-
  */
 import React from 'react'
 import { motion } from 'framer-motion'
-import PropTypes from 'prop-types'
 import { formatNumber } from '../../utils/numberUtils'
 
 export const PreGigHeader = React.memo(
@@ -47,17 +45,3 @@ export const PreGigHeader = React.memo(
   }
 )
 PreGigHeader.displayName = 'PreGigHeader'
-
-PreGigHeader.propTypes = {
-  t: PropTypes.func.isRequired,
-  i18n: PropTypes.shape({
-    language: PropTypes.string
-  }),
-  currentGig: PropTypes.shape({
-    name: PropTypes.string
-  }),
-  player: PropTypes.shape({
-    money: PropTypes.number.isRequired
-  }).isRequired,
-  calculatedBudget: PropTypes.number.isRequired
-}

@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next'
 import { GlitchButton } from './GlitchButton'
 import { useGameSelector } from '../context/GameState'
 import { formatCurrency } from '../utils/numberUtils'
-import PropTypes from 'prop-types'
 
 /**
  * Pirate Radio Broadcast Interface
@@ -158,18 +157,3 @@ export const PirateRadioModal = memo(
     )
   }
 )
-
-PirateRadioModal.propTypes = {
-  onClose: PropTypes.func.isRequired,
-  onBroadcast: PropTypes.func.isRequired,
-  canBroadcast: PropTypes.bool.isRequired,
-  hasBroadcastedToday: PropTypes.bool.isRequired,
-  config: PropTypes.shape({
-    FAME_GAIN: PropTypes.number.isRequired,
-    ZEALOTRY_GAIN: PropTypes.number.isRequired,
-    CONTROVERSY_GAIN: PropTypes.number.isRequired,
-    COST: PropTypes.number.isRequired,
-    HARMONY_COST: PropTypes.number.isRequired
-  }).isRequired,
-  contentClassName: PropTypes.string
-}

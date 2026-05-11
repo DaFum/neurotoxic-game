@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../../context/GameState'
@@ -72,9 +71,3 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }: DealsPhaseProps) => {
 }
 
 export const DealsPhase = memo(DealsPhaseComponent)
-
-DealsPhase.propTypes = {
-  offers: PropTypes.array.isRequired,
-  onAccept: PropTypes.func.isRequired,
-  onSkip: PropTypes.func.isRequired
-}

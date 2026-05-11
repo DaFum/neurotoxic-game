@@ -3,7 +3,6 @@
  * (#2) Next steps and ideas to develop further: We could break down the SVG into smaller semantic layers.
  * (#3) Found errors + solutions: Extracted to avoid overly long components.
  */
-import PropTypes from 'prop-types'
 import { Overlays } from './Overlays.tsx'
 import { CableList } from './CableList.tsx'
 import { SocketList } from './SocketList.tsx'
@@ -108,29 +107,4 @@ export const KabelsalatBoard: FC<KabelsalatBoardProps> = ({
       </svg>
     </div>
   )
-}
-
-KabelsalatBoard.propTypes = {
-  t: PropTypes.func.isRequired,
-  isShocked: PropTypes.bool.isRequired,
-  isPoweredOn: PropTypes.bool.isRequired,
-  isGameOver: PropTypes.bool.isRequired,
-  faultReason: PropTypes.string,
-  isPowerConnected: PropTypes.bool.isRequired,
-  lightningSeeds: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-      startX: PropTypes.number.isRequired,
-      o1: PropTypes.number.isRequired,
-      o2: PropTypes.number.isRequired,
-      o3: PropTypes.number.isRequired,
-      w: PropTypes.number.isRequired
-    })
-  ).isRequired,
-  connections: PropTypes.objectOf(PropTypes.string).isRequired,
-  socketOrder: PropTypes.arrayOf(PropTypes.string).isRequired,
-  selectedCable: PropTypes.string,
-  handleSocketClick: PropTypes.func.isRequired,
-  handleCableClick: PropTypes.func.isRequired,
-  onAdvance: PropTypes.func.isRequired
 }

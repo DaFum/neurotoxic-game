@@ -1,10 +1,8 @@
 /*
  * (#1) Actual Updates: Extracted CableItem component, wrapped in React.memo
 
-
  */
 import React, { useCallback } from 'react'
-import PropTypes from 'prop-types'
 import { PlugGraphics } from './PlugGraphics.tsx'
 
 export const CableItem = React.memo(
@@ -124,20 +122,3 @@ export const CableItem = React.memo(
   }
 )
 CableItem.displayName = 'CableItem'
-
-CableItem.propTypes = {
-  t: PropTypes.func.isRequired,
-  cable: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    labelKey: PropTypes.string.isRequired,
-    type: PropTypes.string.isRequired,
-    x: PropTypes.number.isRequired,
-    y: PropTypes.number.isRequired,
-    color: PropTypes.string.isRequired
-  }).isRequired,
-  isConnected: PropTypes.bool.isRequired,
-  isSelected: PropTypes.bool.isRequired,
-  isShocked: PropTypes.bool.isRequired,
-  isGameOver: PropTypes.bool.isRequired,
-  handleCableClick: PropTypes.func.isRequired
-}

@@ -1,11 +1,9 @@
 /*
  * (#1) Actual Updates: Extracted CreditEntry component, wrapped in React.memo.
 
-
  */
 import React from 'react'
 import { motion } from 'framer-motion'
-import PropTypes from 'prop-types'
 
 export const CreditEntry = React.memo(({ role, name, delay }) => {
   return (
@@ -26,9 +24,3 @@ export const CreditEntry = React.memo(({ role, name, delay }) => {
   )
 })
 CreditEntry.displayName = 'CreditEntry'
-
-CreditEntry.propTypes = {
-  role: PropTypes.string.isRequired,
-  name: PropTypes.string.isRequired,
-  delay: PropTypes.number.isRequired
-}

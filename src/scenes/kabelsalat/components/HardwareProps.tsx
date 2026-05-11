@@ -1,10 +1,8 @@
 /*
  * (#1) Actual Updates: Added PropTypes.
 
-
  */
 import { memo } from 'react'
-import PropTypes from 'prop-types'
 
 export const RackScrew = memo(({ x, y }) => (
   <g transform={`translate(${x}, ${y})`}>
@@ -117,13 +115,3 @@ export const PowerIndicator = memo(({ t, isPowerConnected }) => (
     </text>
   </g>
 ))
-
-RackScrew.propTypes = {
-  x: PropTypes.number.isRequired,
-  y: PropTypes.number.isRequired
-}
-
-PowerIndicator.propTypes = {
-  t: PropTypes.func.isRequired,
-  isPowerConnected: PropTypes.bool.isRequired
-}

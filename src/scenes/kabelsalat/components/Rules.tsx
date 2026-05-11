@@ -1,9 +1,7 @@
 /*
  * (#1) Actual Updates: Added PropTypes.
 
-
  */
-import PropTypes from 'prop-types'
 import type { FC } from 'react'
 
 interface RuleItemProps {
@@ -22,12 +20,6 @@ const RuleItem: FC<RuleItemProps> = ({ label, text }) => (
     )}
   </li>
 )
-
-RuleItem.propTypes = {
-  label: PropTypes.string,
-  text: PropTypes.string.isRequired
-}
-
 interface RulesProps {
   t: (key: string, options?: unknown) => string
 }
@@ -51,7 +43,3 @@ export const Rules: FC<RulesProps> = ({ t }) => (
     </ul>
   </div>
 )
-
-Rules.propTypes = {
-  t: PropTypes.func.isRequired
-}
