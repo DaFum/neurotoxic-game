@@ -77,32 +77,19 @@ export const clampPlayerFame = (fame: number): number => {
   return Math.max(0, Math.floor(fame))
 }
 
-/**
- * Fame reward tuning constants.
- *
- * GIG_BASE_REWARD        – Flat fame awarded for any passing gig (perfScore ≥ 31).
- * GIG_SCORE_MULTIPLIER   – Additional fame per perfScore point on top of the base.
- *
- * Resulting range (before diminishing returns):
- *   perfScore 31  → 10 + floor(31 × 1)  = ~41 fame
- *   perfScore 100 → 10 + floor(100 × 1) = ~110 fame
- */
 export const FAME_PROGRESS_CONSTANTS = Object.freeze({
-  GIG_BASE_REWARD: 10,
-  GIG_SCORE_MULTIPLIER: 1,
+  GIG_BASE_REWARD: 100,
+  GIG_SCORE_MULTIPLIER: 10,
   DIMINISHING_RETURNS_START: 30000,
   DIMINISHING_RETURNS_RATE: 0.0001
 })
 
 /**
- * Calculates the raw fame reward for a successful gig (perfScore ≥ 31) before
- * diminishing returns are applied.
+ * Calculates the raw fame reward for a successful gig before any diminishing returns.
+ * Tuned so the full fame catalog remains reachable in roughly 20-30 strong gigs.
  *
- * Formula: GIG_BASE_REWARD + floor(performanceScore × GIG_SCORE_MULTIPLIER)
- * Range  : ~41 (perfScore 31) – ~110 (perfScore 100)
- *
- * @param {number} performanceScore - Gig performance score (0–100).
- * @returns {number} Raw fame reward passed into calculateFameGain.
+ * @param {number} performanceScore - Gig performance score.
+ * @returns {number} Raw gig fame reward.
  */
 export const calculateGigFameReward = (performanceScore: number): number => {
   const safePerformanceScore = Number.isFinite(performanceScore)
