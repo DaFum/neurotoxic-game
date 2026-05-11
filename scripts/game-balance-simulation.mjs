@@ -2074,7 +2074,7 @@ const buildMarkdownReport = payload => {
   lines.push(
     `| Venue-Fame-Gates | diff-2: fame 0–59 · diff-3: 60–199 · diff-4: 200–399 · diff-5: 400+ |`
   )
-  lines.push(`| Fame-Level-Skala | Level = floor(fame / 100) |`)
+  lines.push(`| Fame-Level-Skala | Level = floor(sqrt(fame / 200)) |`)
   lines.push('')
 
   // ── Fame Audit ───────────────────────────────────────────────────────────
@@ -2146,7 +2146,7 @@ const buildMarkdownReport = payload => {
     const sc = SCENARIOS.find(x => x.id === scenario.id)
     const startMoney = sc?.initialOverrides?.player?.money ?? '?'
     const startFame = sc?.initialOverrides?.player?.fame ?? 0
-    const fameLevel = Math.floor(s.avgFinalFame / 100)
+    const fameLevel = calculateFameLevel(s.avgFinalFame)
     lines.push(
       `| ${scenario.name} | ${fmtEur(startMoney)} | ${startFame} | ${fmtEur(s.avgFinalMoney)} | ${s.avgPeakToTroughDrop}% | ${s.sinkToIncomeRatio} | ${s.gigCapHits}% | ${s.avgFinalFame} | ${fameLevel} | ${s.avgFinalHarmony} | ${s.avgFinalControversy} | ${s.avgGigsPlayed} | ${s.avgClinicVisits} | ${fmtPct(s.bankruptcyRate)} | ${fmtEur(s.avgGigNet)} | ${getScenarioInsight(s)} |`
     )
