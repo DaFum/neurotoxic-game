@@ -5,8 +5,6 @@ import { PreGigHeader } from '../components/pregig/PreGigHeader'
 import { PreGigStartButton } from '../components/pregig/PreGigStartButton'
 import { usePreGigLogic } from '../hooks/usePreGigLogic'
 
-export { _resetLastMinigameFallback } from '../hooks/usePreGigLogic'
-
 const SONGS_DICT = Object.create(null)
 for (let i = 0; i < SONGS_DB.length; i++) {
   const song = SONGS_DB[i]

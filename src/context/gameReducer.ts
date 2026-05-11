@@ -75,7 +75,8 @@ export const BAND_ACTIONS = [
   ActionTypes.UPDATE_BAND,
   ActionTypes.USE_CONTRABAND,
   ActionTypes.CONSUME_ITEM,
-  ActionTypes.UNLOCK_TRAIT
+  ActionTypes.UNLOCK_TRAIT,
+  ActionTypes.TOGGLE_NEURO_DECIMATOR
 ] as const
 
 type BandActionType = (typeof BAND_ACTIONS)[number]
