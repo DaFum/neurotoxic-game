@@ -111,12 +111,8 @@ const SKIP_NAMES = new Set(['__esModule'])
 // Specific (name, path) pairs to exclude: re-exports from secondary/compat files
 // where the symbol is already indexed from its canonical source.
 // Format: 'symbolName@src/relative/path.ts'
-const SKIP_PAIRS = new Set([
-  'ActionTypes@src/context/gameReducer.ts',
-  'PRACTICE_RETURN_SCENES@src/context/GameState.tsx',
-  'getPrimaryEffect@src/ui/bandhq/hooks/usePurchaseLogic.ts',
-  '_resetLastMinigameFallback@src/scenes/PreGig.tsx',
-])
+// After alias resolution improvements, all known duplicates now collapse automatically.
+const SKIP_PAIRS = new Set()
 
 for (const sourceFile of program.getSourceFiles()) {
   const fp = sourceFile.fileName.replace(/\\/g, '/')
