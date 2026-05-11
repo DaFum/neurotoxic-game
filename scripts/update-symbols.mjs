@@ -136,23 +136,37 @@ for (const sourceFile of program.getSourceFiles()) {
 
     const exportedName = sym.name
 
-    // Skip if the symbol's declaration lives in an external lib
-    const decl = sym.declarations?.[0]
+    // Resolve alias to actual definition symbol (handles barrel re-exports)
+    let resolvedSym = sym
+    if (sym.flags & ts.SymbolFlags.Alias) {
+      const aliased = checker.getAliasedSymbol(sym)
+      if (aliased.declarations?.length) resolvedSym = aliased
+    }
+
+    // Skip if the resolved declaration lives outside src/
+    const decl = resolvedSym.declarations?.[0]
     if (!decl) continue
     const declFile = decl.getSourceFile().fileName.replace(/\\/g, '/')
-    if (!declFile.startsWith(SRC.replace(/\\/g, '/'))) continue
+    const srcNorm = SRC.replace(/\\/g, '/')
+    if (!declFile.startsWith(srcNorm)) continue
 
-    // Skip specific (name, path) pairs that are known secondary re-exports
+    // Skip specific (name, path) pairs that are known secondary re-exports.
+    // After alias resolution most barrel duplicates collapse automatically;
+    // entries remaining here represent genuine dual-definition cases.
     if (SKIP_PAIRS.has(`${exportedName}@${rel}`)) continue
+
+    const defPath = relPath(declFile)
+    const exportPath = rel !== defPath ? rel : undefined
 
     const entry = {
       name: exportedName,
-      path: rel,
+      path: defPath,
       source: 'local',
-      type: kindLabel(sym),
+      type: kindLabel(resolvedSym),
       isDefault: false,
     }
-    if (isTypeOnlySym(sym)) entry.typeOnly = true
+    if (exportPath !== undefined) entry.exportPath = exportPath
+    if (isTypeOnlySym(resolvedSym)) entry.typeOnly = true
 
     upsert(exportedName, entry)
   }

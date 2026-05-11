@@ -272,28 +272,12 @@
         "type": "type",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "ActionType",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "NoteType": [
       {
         "name": "NoteType",
         "path": "src/types/audio.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "NoteType",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "type",
         "isDefault": false,
@@ -308,28 +292,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "Note",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "Song": [
       {
         "name": "Song",
         "path": "src/types/audio.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "Song",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -344,28 +312,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "LayeredSnare",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "DrumKitSynth": [
       {
         "name": "DrumKitSynth",
         "path": "src/types/audio.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "DrumKitSynth",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -380,35 +332,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "AudioState",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "AudioState",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "AudioSnapshot": [
       {
         "name": "AudioSnapshot",
         "path": "src/types/audio.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "AudioSnapshot",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -423,28 +352,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "AudioManagerLike",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "UseAudioControlOptions": [
       {
         "name": "UseAudioControlOptions",
         "path": "src/types/audio.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "UseAudioControlOptions",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -459,14 +372,6 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "UseAudioControlResult",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "AudioControls": [
@@ -477,35 +382,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "AudioControls",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "AudioControls",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "AudioControlHandlers": [
       {
         "name": "AudioControlHandlers",
         "path": "src/types/audio.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "AudioControlHandlers",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -577,13 +459,6 @@
         "type": "type",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "RhythmLiveStats",
-        "path": "src/hooks/rhythmGame/useRhythmGameState.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "RhythmNote": [
@@ -594,13 +469,6 @@
         "type": "type",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "RhythmNote",
-        "path": "src/hooks/rhythmGame/useRhythmGameState.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "RhythmSongStatsEntry": [
@@ -625,14 +493,6 @@
       {
         "name": "GigStats",
         "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "GigStats",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -667,13 +527,6 @@
         "type": "type",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "RhythmModifiers",
-        "path": "src/hooks/rhythmGame/useRhythmGameState.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "RhythmGameRefState": [
@@ -684,13 +537,6 @@
         "type": "type",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "RhythmGameRefState",
-        "path": "src/hooks/rhythmGame/useRhythmGameState.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "GAME_PHASES": [
@@ -872,28 +718,12 @@
         "type": "type",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "GamePhase",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "Rarity": [
       {
         "name": "Rarity",
         "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "Rarity",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "type",
         "isDefault": false,
@@ -908,28 +738,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "GameSettings",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "UnknownRecord": [
       {
         "name": "UnknownRecord",
         "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "UnknownRecord",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "type",
         "isDefault": false,
@@ -944,28 +758,12 @@
         "type": "type",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "RawGameSettings",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "StashEntry": [
       {
         "name": "StashEntry",
         "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "StashEntry",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "type",
         "isDefault": false,
@@ -980,28 +778,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "EventOption",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "GameEvent": [
       {
         "name": "GameEvent",
         "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "GameEvent",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -1016,14 +798,6 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "Venue",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "CharacterProfile": [
@@ -1034,28 +808,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "CharacterProfile",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "CharacterTrait": [
       {
         "name": "CharacterTrait",
         "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "CharacterTrait",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -1077,28 +835,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "MapNode",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "GameMap": [
       {
         "name": "GameMap",
         "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "GameMap",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -1113,28 +855,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "MinigameState",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "PlayerState": [
       {
         "name": "PlayerState",
         "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "PlayerState",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -1149,28 +875,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "BandMember",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "StashItem": [
       {
         "name": "StashItem",
         "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "StashItem",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -1185,28 +895,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "BandState",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "BrandAlignment": [
       {
         "name": "BrandAlignment",
         "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "BrandAlignment",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "type",
         "isDefault": false,
@@ -1221,28 +915,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "RivalBandState",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "SocialState": [
       {
         "name": "SocialState",
         "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "SocialState",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -1257,28 +935,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "GigModifiers",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "ToastPayload": [
       {
         "name": "ToastPayload",
         "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "ToastPayload",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -1293,28 +955,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "QuestState",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "ResetStatePayload": [
       {
         "name": "ResetStatePayload",
         "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "ResetStatePayload",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -1329,28 +975,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "EventDeltaPayload",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "UpdatePlayerPayload": [
       {
         "name": "UpdatePlayerPayload",
         "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "UpdatePlayerPayload",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "type",
         "isDefault": false,
@@ -1365,28 +995,12 @@
         "type": "type",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "UpdateBandPayload",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "CompleteTravelMinigamePayload": [
       {
         "name": "CompleteTravelMinigamePayload",
         "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "CompleteTravelMinigamePayload",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -1401,28 +1015,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "ClinicActionPayload",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "DarkWebLeakConfig": [
       {
         "name": "DarkWebLeakConfig",
         "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "DarkWebLeakConfig",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -1437,28 +1035,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "DarkWebLeakPayload",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "PirateBroadcastPayload": [
       {
         "name": "PirateBroadcastPayload",
         "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "PirateBroadcastPayload",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -1473,28 +1055,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "BloodBankDonatePayload",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "TradeVoidItemPayload": [
       {
         "name": "TradeVoidItemPayload",
         "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "TradeVoidItemPayload",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -1509,28 +1075,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "MerchPressPayload",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "LastGigStats": [
       {
         "name": "LastGigStats",
         "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "LastGigStats",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -1545,28 +1095,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "GameState",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "RawLoadedGame": [
       {
         "name": "RawLoadedGame",
         "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "RawLoadedGame",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "type",
         "isDefault": false,
@@ -1581,14 +1115,6 @@
         "type": "type",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "Action",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "GameAction": [
@@ -1599,28 +1125,12 @@
         "type": "type",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "GameAction",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "PostResult": [
       {
         "name": "PostResult",
         "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "PostResult",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -1951,28 +1461,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "FinancialBreakdownItem",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "PostGigFinancials": [
       {
         "name": "PostGigFinancials",
         "path": "src/types/economy.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "PostGigFinancials",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -3167,28 +2661,12 @@
         "type": "type",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "VoidCallback",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "AsyncCallback": [
       {
         "name": "AsyncCallback",
         "path": "src/types/callbacks.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "AsyncCallback",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "type",
         "isDefault": false,
@@ -3203,28 +2681,12 @@
         "type": "type",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "AsyncVoidCallback",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "AsyncBooleanCallback": [
       {
         "name": "AsyncBooleanCallback",
         "path": "src/types/callbacks.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "AsyncBooleanCallback",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "type",
         "isDefault": false,
@@ -3239,28 +2701,12 @@
         "type": "type",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "ToggleBooleanCallback",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "TranslationCallback": [
       {
         "name": "TranslationCallback",
         "path": "src/types/callbacks.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "TranslationCallback",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "type",
         "isDefault": false,
@@ -3275,28 +2721,12 @@
         "type": "type",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "ToastCallback",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "OptionalToastCallback": [
       {
         "name": "OptionalToastCallback",
         "path": "src/types/callbacks.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "OptionalToastCallback",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "type",
         "isDefault": false,
@@ -3311,28 +2741,12 @@
         "type": "type",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "CollisionHandler",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "MissHandler": [
       {
         "name": "MissHandler",
         "path": "src/types/callbacks.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "MissHandler",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "type",
         "isDefault": false,
@@ -3347,28 +2761,12 @@
         "type": "type",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "GigFinalizeHandler",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "RemoveByIdCallback": [
       {
         "name": "RemoveByIdCallback",
         "path": "src/types/callbacks.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "RemoveByIdCallback",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "type",
         "isDefault": false,
@@ -3383,28 +2781,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "PixiController",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "ChatterMessageType": [
       {
         "name": "ChatterMessageType",
         "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "ChatterMessageType",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "type",
         "isDefault": false,
@@ -3419,28 +2801,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "ChatterMessageData",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "ChatterGameState": [
       {
         "name": "ChatterGameState",
         "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "ChatterGameState",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "type",
         "isDefault": false,
@@ -3455,28 +2821,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "ChatterOverlayProps",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "GigHUDProps": [
       {
         "name": "GigHUDProps",
         "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "GigHUDProps",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -3491,28 +2841,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "MapNodeProps",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "MapConnectionProps": [
       {
         "name": "MapConnectionProps",
         "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "MapConnectionProps",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -3527,28 +2861,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "HecklerOverlayProps",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "GenericListProps": [
       {
         "name": "GenericListProps",
         "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "GenericListProps",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -3563,28 +2881,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "ChatterMessageProps",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "SocialOption": [
       {
         "name": "SocialOption",
         "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "SocialOption",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -3599,28 +2901,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "ActiveEffect",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "ActiveEffectEntry": [
       {
         "name": "ActiveEffectEntry",
         "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "ActiveEffectEntry",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "type",
         "isDefault": false,
@@ -3635,28 +2921,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "SocialOptionButtonProps",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "PauseOverlayProps": [
       {
         "name": "PauseOverlayProps",
         "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "PauseOverlayProps",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -3671,28 +2941,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "MinigameLogicBase",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "TourbusMinigameLogic": [
       {
         "name": "TourbusMinigameLogic",
         "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "TourbusMinigameLogic",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -3707,28 +2961,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "MinigameSceneFrameProps",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "AmpStageOptions": [
       {
         "name": "AmpStageOptions",
         "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "AmpStageOptions",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -3743,28 +2981,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "StageControllerOptions",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "PixiStageProps": [
       {
         "name": "PixiStageProps",
         "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "PixiStageProps",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -3779,28 +3001,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "ToggleRadioProps",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "TutorialManagerProps": [
       {
         "name": "TutorialManagerProps",
         "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "TutorialManagerProps",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -3815,28 +3021,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "ClinicHeaderProps",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "ClinicMemberCardHeaderProps": [
       {
         "name": "ClinicMemberCardHeaderProps",
         "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "ClinicMemberCardHeaderProps",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -3851,28 +3041,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "ClinicMemberCardProps",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "ClinicMemberCardActionProps": [
       {
         "name": "ClinicMemberCardActionProps",
         "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "ClinicMemberCardActionProps",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -3887,28 +3061,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "ActionButtonWrapperProps",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "AmpControlsProps": [
       {
         "name": "AmpControlsProps",
         "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "AmpControlsProps",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -3923,28 +3081,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "AmpHUDProps",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "AudioLockedOverlayProps": [
       {
         "name": "AudioLockedOverlayProps",
         "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "AudioLockedOverlayProps",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -3959,28 +3101,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "BandMembersLayerProps",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "RoadieControlsProps": [
       {
         "name": "RoadieControlsProps",
         "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "RoadieControlsProps",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -3995,28 +3121,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "RoadieHUDProps",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "TourbusControlsProps": [
       {
         "name": "TourbusControlsProps",
         "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "TourbusControlsProps",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -4031,28 +3141,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "TourbusHUDProps",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "TravelingVanProps": [
       {
         "name": "TravelingVanProps",
         "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "TravelingVanProps",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -4067,28 +3161,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "CompletePhaseProps",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "DealContract": [
       {
         "name": "DealContract",
         "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "DealContract",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -4103,28 +3181,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "DealCardProps",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "DealImageProps": [
       {
         "name": "DealImageProps",
         "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "DealImageProps",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -4139,28 +3201,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "DealInfoProps",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "DealActionsProps": [
       {
         "name": "DealActionsProps",
         "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "DealActionsProps",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -4175,28 +3221,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "DealNegotiationState",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "NegotiationResult": [
       {
         "name": "NegotiationResult",
         "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "NegotiationResult",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -4211,28 +3241,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "DealNegotiationHook",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "DealsPhaseProps": [
       {
         "name": "DealsPhaseProps",
         "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "DealsPhaseProps",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -4247,28 +3261,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "FinancialListProps",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "NegotiationModalProps": [
       {
         "name": "NegotiationModalProps",
         "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "NegotiationModalProps",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -4283,28 +3281,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "EventModalOption",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "EventModalEvent": [
       {
         "name": "EventModalEvent",
         "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "EventModalEvent",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -4319,28 +3301,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "EventModalPrecomputedResult",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "FinancialItem": [
       {
         "name": "FinancialItem",
         "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "FinancialItem",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -4355,28 +3321,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "FinancialCategory",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "ReportPhaseProps": [
       {
         "name": "ReportPhaseProps",
         "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "ReportPhaseProps",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -4391,28 +3341,12 @@
         "type": "type",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "Effect",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "PurchaseItem": [
       {
         "name": "PurchaseItem",
         "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "PurchaseItem",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -4427,28 +3361,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "CatalogItem",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "VoidTraderItem": [
       {
         "name": "VoidTraderItem",
         "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "VoidTraderItem",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -4463,28 +3381,12 @@
         "type": "type",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "Balances",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "CatalogConsumerProps": [
       {
         "name": "CatalogConsumerProps",
         "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "CatalogConsumerProps",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
@@ -4499,14 +3401,6 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "CatalogTabProps",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "UnlockMessageKind": [
@@ -4517,28 +3411,12 @@
         "type": "type",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "UnlockMessageKind",
-        "path": "src/types/index.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "UnlockMessage": [
       {
         "name": "UnlockMessage",
         "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "UnlockMessage",
-        "path": "src/types/index.ts",
         "source": "local",
         "type": "type",
         "isDefault": false,
@@ -5718,13 +4596,6 @@
         "source": "local",
         "type": "function",
         "isDefault": false
-      },
-      {
-        "name": "setupAudio",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "getPreferredAudioContextState": [
@@ -5815,13 +4686,6 @@
         "source": "local",
         "type": "function",
         "isDefault": false
-      },
-      {
-        "name": "safeDispose",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "disposeAudio": [
@@ -5830,13 +4694,6 @@
         "path": "src/utils/audio/dispose.ts",
         "source": "local",
         "type": "function",
-        "isDefault": false
-      },
-      {
-        "name": "disposeAudio",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
         "isDefault": false
       }
     ],
@@ -5847,26 +4704,12 @@
         "source": "local",
         "type": "function",
         "isDefault": false
-      },
-      {
-        "name": "ensureAudioContext",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "getRawAudioContext": [
       {
         "name": "getRawAudioContext",
         "path": "src/utils/audio/context.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "getRawAudioContext",
-        "path": "src/utils/audio/audioEngine.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -5879,26 +4722,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "getAudioContextTimeSec",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "getToneStartTimeSec": [
       {
         "name": "getToneStartTimeSec",
         "path": "src/utils/audio/context.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "getToneStartTimeSec",
-        "path": "src/utils/audio/audioEngine.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -5974,13 +4803,6 @@
         "source": "local",
         "type": "function",
         "isDefault": false
-      },
-      {
-        "name": "hasAudioAsset",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "loadAudioBuffer": [
@@ -5989,13 +4811,6 @@
         "path": "src/utils/audio/assets.ts",
         "source": "local",
         "type": "function",
-        "isDefault": false
-      },
-      {
-        "name": "loadAudioBuffer",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
         "isDefault": false
       }
     ],
@@ -6033,13 +4848,6 @@
         "source": "local",
         "type": "function",
         "isDefault": false
-      },
-      {
-        "name": "playSFX",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "setSFXVolume": [
@@ -6048,13 +4856,6 @@
         "path": "src/utils/audio/playback.ts",
         "source": "local",
         "type": "function",
-        "isDefault": false
-      },
-      {
-        "name": "setSFXVolume",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
         "isDefault": false
       }
     ],
@@ -6065,13 +4866,6 @@
         "source": "local",
         "type": "function",
         "isDefault": false
-      },
-      {
-        "name": "setMusicVolume",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "getGigTimeMs": [
@@ -6080,13 +4874,6 @@
         "path": "src/utils/audio/playback.ts",
         "source": "local",
         "type": "function",
-        "isDefault": false
-      },
-      {
-        "name": "getGigTimeMs",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
         "isDefault": false
       }
     ],
@@ -6097,13 +4884,6 @@
         "source": "local",
         "type": "function",
         "isDefault": false
-      },
-      {
-        "name": "stopGigPlayback",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "startGigPlayback": [
@@ -6112,13 +4892,6 @@
         "path": "src/utils/audio/playback.ts",
         "source": "local",
         "type": "function",
-        "isDefault": false
-      },
-      {
-        "name": "startGigPlayback",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
         "isDefault": false
       }
     ],
@@ -6129,13 +4902,6 @@
         "source": "local",
         "type": "function",
         "isDefault": false
-      },
-      {
-        "name": "startGigClock",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "pauseGigPlayback": [
@@ -6145,13 +4911,6 @@
         "source": "local",
         "type": "function",
         "isDefault": false
-      },
-      {
-        "name": "pauseGigPlayback",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "resumeGigPlayback": [
@@ -6160,13 +4919,6 @@
         "path": "src/utils/audio/playback.ts",
         "source": "local",
         "type": "function",
-        "isDefault": false
-      },
-      {
-        "name": "resumeGigPlayback",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
         "isDefault": false
       }
     ],
@@ -6186,13 +4938,6 @@
         "source": "local",
         "type": "function",
         "isDefault": false
-      },
-      {
-        "name": "stopAmbientPlayback",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "stopAudio": [
@@ -6201,13 +4946,6 @@
         "path": "src/utils/audio/playback.ts",
         "source": "local",
         "type": "function",
-        "isDefault": false
-      },
-      {
-        "name": "stopAudio",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
         "isDefault": false
       }
     ],
@@ -6218,13 +4956,6 @@
         "source": "local",
         "type": "function",
         "isDefault": false
-      },
-      {
-        "name": "pauseAudio",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "resumeAudio": [
@@ -6233,13 +4964,6 @@
         "path": "src/utils/audio/playback.ts",
         "source": "local",
         "type": "function",
-        "isDefault": false
-      },
-      {
-        "name": "resumeAudio",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
         "isDefault": false
       }
     ],
@@ -6250,13 +4974,6 @@
         "source": "local",
         "type": "function",
         "isDefault": false
-      },
-      {
-        "name": "getTransportState",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "setDestinationMute": [
@@ -6265,13 +4982,6 @@
         "path": "src/utils/audio/playback.ts",
         "source": "local",
         "type": "function",
-        "isDefault": false
-      },
-      {
-        "name": "setDestinationMute",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
         "isDefault": false
       }
     ],
@@ -6282,13 +4992,6 @@
         "source": "local",
         "type": "function",
         "isDefault": false
-      },
-      {
-        "name": "isAmbientOggPlaying",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "getToneAbsoluteTimeMs": [
@@ -6297,13 +5000,6 @@
         "path": "src/utils/audio/playback.ts",
         "source": "local",
         "type": "function",
-        "isDefault": false
-      },
-      {
-        "name": "getToneAbsoluteTimeMs",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
         "isDefault": false
       }
     ],
@@ -6314,13 +5010,6 @@
         "source": "local",
         "type": "function",
         "isDefault": false
-      },
-      {
-        "name": "getPlayRequestId",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "setCorruptionEffect": [
@@ -6330,26 +5019,12 @@
         "source": "local",
         "type": "function",
         "isDefault": false
-      },
-      {
-        "name": "setCorruptionEffect",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "calculateGigTimeMs": [
       {
         "name": "calculateGigTimeMs",
         "path": "src/utils/audio/playback.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "calculateGigTimeMs",
-        "path": "src/utils/audio/audioEngine.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -6362,26 +5037,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "calculateGigPlaybackWindow",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "enableCorruptionBurstAudio": [
       {
         "name": "enableCorruptionBurstAudio",
         "path": "src/utils/audio/playback.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "enableCorruptionBurstAudio",
-        "path": "src/utils/audio/audioEngine.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -6394,13 +5055,6 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "disableCorruptionBurstAudio",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "startMetalGenerator": [
@@ -6409,13 +5063,6 @@
         "path": "src/utils/audio/proceduralMetal.ts",
         "source": "local",
         "type": "function",
-        "isDefault": false
-      },
-      {
-        "name": "startMetalGenerator",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
         "isDefault": false
       }
     ],
@@ -6426,26 +5073,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "getSongId",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "resolveSongPlaybackWindow": [
       {
         "name": "resolveSongPlaybackWindow",
         "path": "src/utils/audio/songUtils.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "resolveSongPlaybackWindow",
-        "path": "src/utils/audio/audioEngine.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -6523,26 +5156,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "isPercussionTrack",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "normalizeMidiPitch": [
       {
         "name": "normalizeMidiPitch",
         "path": "src/utils/audio/midiUtils.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "normalizeMidiPitch",
-        "path": "src/utils/audio/audioEngine.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -6555,13 +5174,6 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "isValidMidiNote",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "buildMidiTrackEvents": [
@@ -6571,26 +5183,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "buildMidiTrackEvents",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "getNoteName": [
       {
         "name": "getNoteName",
         "path": "src/utils/audio/midiUtils.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "getNoteName",
-        "path": "src/utils/audio/audioEngine.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -6621,13 +5219,6 @@
         "source": "local",
         "type": "function",
         "isDefault": false
-      },
-      {
-        "name": "playNoteAtTime",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "playSongFromData": [
@@ -6636,13 +5227,6 @@
         "path": "src/utils/audio/midiPlayback.ts",
         "source": "local",
         "type": "function",
-        "isDefault": false
-      },
-      {
-        "name": "playSongFromData",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
         "isDefault": false
       }
     ],
@@ -6662,26 +5246,12 @@
         "source": "local",
         "type": "function",
         "isDefault": false
-      },
-      {
-        "name": "playMidiFile",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "selectRandomItem": [
       {
         "name": "selectRandomItem",
         "path": "src/utils/audio/selectionUtils.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "selectRandomItem",
-        "path": "src/utils/audio/audioEngine.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -6730,13 +5300,6 @@
         "source": "local",
         "type": "function",
         "isDefault": false
-      },
-      {
-        "name": "playRandomAmbientMidi",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "playRandomAmbientOgg": [
@@ -6746,26 +5309,12 @@
         "source": "local",
         "type": "function",
         "isDefault": false
-      },
-      {
-        "name": "playRandomAmbientOgg",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "getScheduledHitTimeMs": [
       {
         "name": "getScheduledHitTimeMs",
         "path": "src/utils/audio/timingUtils.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "getScheduledHitTimeMs",
-        "path": "src/utils/audio/audioEngine.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -6778,26 +5327,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "audioManager",
-        "path": "src/utils/audio/audioEngine.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "audioService": [
       {
         "name": "audioService",
         "path": "src/utils/audio/audioService.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "audioService",
-        "path": "src/utils/audio/audioEngine.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -6855,13 +5390,6 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "ActionButton",
-        "path": "src/ui/shared/index.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "LanguageSettings": [
@@ -6880,26 +5408,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "VolumeSlider",
-        "path": "src/ui/shared/index.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "ToggleSwitch": [
       {
         "name": "ToggleSwitch",
         "path": "src/ui/shared/ToggleSwitch.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "ToggleSwitch",
-        "path": "src/ui/shared/index.tsx",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -6939,26 +5453,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "Tooltip",
-        "path": "src/ui/shared/index.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "UplinkButton": [
       {
         "name": "UplinkButton",
         "path": "src/ui/shared/BrutalistUI.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "UplinkButton",
-        "path": "src/ui/shared/index.tsx",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -6971,26 +5471,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "HexBorder",
-        "path": "src/ui/shared/index.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "CrosshairIcon": [
       {
         "name": "CrosshairIcon",
         "path": "src/ui/shared/BrutalistUI.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "CrosshairIcon",
-        "path": "src/ui/shared/index.tsx",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -7003,26 +5489,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "MoneyIcon",
-        "path": "src/ui/shared/index.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "AlertIcon": [
       {
         "name": "AlertIcon",
         "path": "src/ui/shared/BrutalistUI.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "AlertIcon",
-        "path": "src/ui/shared/index.tsx",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -7035,26 +5507,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "SkullIcon",
-        "path": "src/ui/shared/index.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "GearIcon": [
       {
         "name": "GearIcon",
         "path": "src/ui/shared/BrutalistUI.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "GearIcon",
-        "path": "src/ui/shared/index.tsx",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -7067,26 +5525,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "HexNode",
-        "path": "src/ui/shared/index.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "WarningStripe": [
       {
         "name": "WarningStripe",
         "path": "src/ui/shared/BrutalistUI.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "WarningStripe",
-        "path": "src/ui/shared/index.tsx",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -7099,26 +5543,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "BiohazardIcon",
-        "path": "src/ui/shared/index.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "CorporateSeal": [
       {
         "name": "CorporateSeal",
         "path": "src/ui/shared/BrutalistUI.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "CorporateSeal",
-        "path": "src/ui/shared/index.tsx",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -7131,26 +5561,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "BrutalToggle",
-        "path": "src/ui/shared/index.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "BlockMeter": [
       {
         "name": "BlockMeter",
         "path": "src/ui/shared/BrutalistUI.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "BlockMeter",
-        "path": "src/ui/shared/index.tsx",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -7163,26 +5579,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "BrutalTabs",
-        "path": "src/ui/shared/index.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "StatBlock": [
       {
         "name": "StatBlock",
         "path": "src/ui/shared/BrutalistUI.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "StatBlock",
-        "path": "src/ui/shared/index.tsx",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -7195,26 +5597,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "BrutalFader",
-        "path": "src/ui/shared/index.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "CrisisModal": [
       {
         "name": "CrisisModal",
         "path": "src/ui/shared/BrutalistUI.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "CrisisModal",
-        "path": "src/ui/shared/index.tsx",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -7227,26 +5615,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "DeadmanButton",
-        "path": "src/ui/shared/index.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "BrutalSlot": [
       {
         "name": "BrutalSlot",
         "path": "src/ui/shared/BrutalistUI.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "BrutalSlot",
-        "path": "src/ui/shared/index.tsx",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -7259,26 +5633,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "VoidLoader",
-        "path": "src/ui/shared/index.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "HazardTicker": [
       {
         "name": "HazardTicker",
         "path": "src/ui/shared/BrutalistUI.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "HazardTicker",
-        "path": "src/ui/shared/index.tsx",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -7310,26 +5670,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "SettingsPanel",
-        "path": "src/ui/shared/index.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "RazorPlayIcon": [
       {
         "name": "RazorPlayIcon",
         "path": "src/ui/shared/Icons.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "RazorPlayIcon",
-        "path": "src/ui/shared/index.tsx",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -7342,26 +5688,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "VoidSkullIcon",
-        "path": "src/ui/shared/index.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "BandcampIcon": [
       {
         "name": "BandcampIcon",
         "path": "src/ui/shared/Icons.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "BandcampIcon",
-        "path": "src/ui/shared/index.tsx",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -7374,26 +5706,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "InstaIcon",
-        "path": "src/ui/shared/index.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "TikTokIcon": [
       {
         "name": "TikTokIcon",
         "path": "src/ui/shared/Icons.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "TikTokIcon",
-        "path": "src/ui/shared/index.tsx",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -7406,26 +5724,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "YouTubeIcon",
-        "path": "src/ui/shared/index.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "BlogIcon": [
       {
         "name": "BlogIcon",
         "path": "src/ui/shared/Icons.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "BlogIcon",
-        "path": "src/ui/shared/index.tsx",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -7438,26 +5742,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "GameIcon",
-        "path": "src/ui/shared/index.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "UIFrameCorner": [
       {
         "name": "UIFrameCorner",
         "path": "src/ui/shared/Icons.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "UIFrameCorner",
-        "path": "src/ui/shared/index.tsx",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -7470,13 +5760,6 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "Modal",
-        "path": "src/ui/shared/index.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "AnimatedDivider": [
@@ -7486,26 +5769,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "AnimatedDivider",
-        "path": "src/ui/shared/index.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "AnimatedSubtitle": [
       {
         "name": "AnimatedSubtitle",
         "path": "src/ui/shared/AnimatedTypography.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "AnimatedSubtitle",
-        "path": "src/ui/shared/index.tsx",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -7644,40 +5913,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "CHATTER_DB",
-        "path": "src/data/chatter/index.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "CHATTER_DB",
-        "path": "src/data/chatter.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "ALLOWED_DEFAULT_SCENES": [
       {
         "name": "ALLOWED_DEFAULT_SCENES",
         "path": "src/data/chatter/standardChatter.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "ALLOWED_DEFAULT_SCENES",
-        "path": "src/data/chatter/index.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "ALLOWED_DEFAULT_SCENES",
-        "path": "src/data/chatter.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -7705,13 +5946,6 @@
       {
         "name": "getRandomChatter",
         "path": "src/data/chatter/index.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "getRandomChatter",
-        "path": "src/data/chatter.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -8414,26 +6648,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "useGlitchEffect",
-        "path": "src/hooks/overworld/index.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "useAmbientResume": [
       {
         "name": "useAmbientResume",
         "path": "src/hooks/overworld/useAmbientResume.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "useAmbientResume",
-        "path": "src/hooks/overworld/index.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -8446,26 +6666,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "useOverworldSave",
-        "path": "src/hooks/overworld/index.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "useSpawnRivalBand": [
       {
         "name": "useSpawnRivalBand",
         "path": "src/hooks/overworld/useSpawnRivalBand.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "useSpawnRivalBand",
-        "path": "src/hooks/overworld/index.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -8613,13 +6819,6 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "useOverworldModals",
-        "path": "src/hooks/overworld/index.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "OverworldHeaderProps": [
@@ -8704,13 +6903,6 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "TravelingVan",
-        "path": "src/components/overworld/index.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "MapConnection": [
@@ -8726,13 +6918,6 @@
       {
         "name": "OverworldMap",
         "path": "src/components/overworld/OverworldMap.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "OverworldMap",
-        "path": "src/components/overworld/index.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -8828,27 +7013,12 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "OverworldModalsProps",
-        "path": "src/components/overworld/index.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "OverworldModals": [
       {
         "name": "OverworldModals",
         "path": "src/components/overworld/OverworldModals.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "OverworldModals",
-        "path": "src/components/overworld/index.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -8870,26 +7040,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "getPixiColorFromToken",
-        "path": "src/components/stage/utils.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "withTimeout": [
       {
         "name": "withTimeout",
         "path": "src/components/stage/stageRenderUtils.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "withTimeout",
-        "path": "src/components/stage/utils.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -8902,26 +7058,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "calculateNoteY",
-        "path": "src/components/stage/utils.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "calculateCrowdOffset": [
       {
         "name": "calculateCrowdOffset",
         "path": "src/components/stage/stageRenderUtils.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "calculateCrowdOffset",
-        "path": "src/components/stage/utils.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -8934,26 +7076,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "RHYTHM_LAYOUT",
-        "path": "src/components/stage/utils.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "CROWD_LAYOUT": [
       {
         "name": "CROWD_LAYOUT",
         "path": "src/components/stage/stageRenderUtils.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "CROWD_LAYOUT",
-        "path": "src/components/stage/utils.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -8966,26 +7094,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "buildRhythmLayout",
-        "path": "src/components/stage/utils.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "loadTexture": [
       {
         "name": "loadTexture",
         "path": "src/components/stage/stageRenderUtils.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "loadTexture",
-        "path": "src/components/stage/utils.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -8998,26 +7112,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "getOptimalResolution",
-        "path": "src/components/stage/utils.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "loadTextures": [
       {
         "name": "loadTextures",
         "path": "src/components/stage/stageRenderUtils.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "loadTextures",
-        "path": "src/components/stage/utils.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -10273,26 +8373,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "ROADIE_GRID_WIDTH",
-        "path": "src/hooks/minigames/constants.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "ROADIE_GRID_HEIGHT": [
       {
         "name": "ROADIE_GRID_HEIGHT",
         "path": "src/hooks/minigames/minigameConstants.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "ROADIE_GRID_HEIGHT",
-        "path": "src/hooks/minigames/constants.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -10305,26 +8391,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "ROADIE_MOVE_COOLDOWN_BASE",
-        "path": "src/hooks/minigames/constants.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "GRID_WIDTH": [
       {
         "name": "GRID_WIDTH",
         "path": "src/hooks/minigames/minigameConstants.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "GRID_WIDTH",
-        "path": "src/hooks/minigames/constants.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -10337,26 +8409,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "GRID_HEIGHT",
-        "path": "src/hooks/minigames/constants.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "TOURBUS_LANE_COUNT": [
       {
         "name": "TOURBUS_LANE_COUNT",
         "path": "src/hooks/minigames/minigameConstants.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "TOURBUS_LANE_COUNT",
-        "path": "src/hooks/minigames/constants.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -10369,26 +8427,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "TOURBUS_BUS_Y_PERCENT",
-        "path": "src/hooks/minigames/constants.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "TOURBUS_BUS_HEIGHT_PERCENT": [
       {
         "name": "TOURBUS_BUS_HEIGHT_PERCENT",
         "path": "src/hooks/minigames/minigameConstants.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "TOURBUS_BUS_HEIGHT_PERCENT",
-        "path": "src/hooks/minigames/constants.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -10401,26 +8445,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "TOURBUS_BASE_SPEED",
-        "path": "src/hooks/minigames/constants.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "TOURBUS_MAX_SPEED": [
       {
         "name": "TOURBUS_MAX_SPEED",
         "path": "src/hooks/minigames/minigameConstants.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "TOURBUS_MAX_SPEED",
-        "path": "src/hooks/minigames/constants.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -10433,13 +8463,6 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "TOURBUS_SPAWN_RATE_MS",
-        "path": "src/hooks/minigames/constants.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "TOURBUS_TARGET_DISTANCE": [
@@ -10449,49 +8472,46 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "TOURBUS_TARGET_DISTANCE",
-        "path": "src/hooks/minigames/constants.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "BASE_SPEED": [
       {
         "name": "BASE_SPEED",
-        "path": "src/hooks/minigames/useTourbusLogic.ts",
+        "path": "src/hooks/minigames/minigameConstants.ts",
         "source": "local",
         "type": "const",
-        "isDefault": false
+        "isDefault": false,
+        "exportPath": "src/hooks/minigames/useTourbusLogic.ts"
       }
     ],
     "MAX_SPEED": [
       {
         "name": "MAX_SPEED",
-        "path": "src/hooks/minigames/useTourbusLogic.ts",
+        "path": "src/hooks/minigames/minigameConstants.ts",
         "source": "local",
         "type": "const",
-        "isDefault": false
+        "isDefault": false,
+        "exportPath": "src/hooks/minigames/useTourbusLogic.ts"
       }
     ],
     "SPAWN_RATE_MS": [
       {
         "name": "SPAWN_RATE_MS",
-        "path": "src/hooks/minigames/useTourbusLogic.ts",
+        "path": "src/hooks/minigames/minigameConstants.ts",
         "source": "local",
         "type": "const",
-        "isDefault": false
+        "isDefault": false,
+        "exportPath": "src/hooks/minigames/useTourbusLogic.ts"
       }
     ],
     "TARGET_DISTANCE": [
       {
         "name": "TARGET_DISTANCE",
-        "path": "src/hooks/minigames/useTourbusLogic.ts",
+        "path": "src/hooks/minigames/minigameConstants.ts",
         "source": "local",
         "type": "const",
-        "isDefault": false
+        "isDefault": false,
+        "exportPath": "src/hooks/minigames/useTourbusLogic.ts"
       }
     ],
     "HIT_DAMAGE_BASE": [
@@ -10745,27 +8765,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "CABLES",
-        "path": "src/scenes/kabelsalat/constants.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "Cable": [
       {
         "name": "Cable",
         "path": "src/scenes/kabelsalat/kabelsalatConstants.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "Cable",
-        "path": "src/scenes/kabelsalat/constants.ts",
         "source": "local",
         "type": "type",
         "isDefault": false,
@@ -10780,27 +8785,12 @@
         "type": "type",
         "isDefault": false,
         "typeOnly": true
-      },
-      {
-        "name": "CableId",
-        "path": "src/scenes/kabelsalat/constants.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "CABLE_MAP": [
       {
         "name": "CABLE_MAP",
         "path": "src/scenes/kabelsalat/kabelsalatConstants.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "CABLE_MAP",
-        "path": "src/scenes/kabelsalat/constants.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -10813,26 +8803,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "SLOT_XS",
-        "path": "src/scenes/kabelsalat/constants.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "SOCKET_Y": [
       {
         "name": "SOCKET_Y",
         "path": "src/scenes/kabelsalat/kabelsalatConstants.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "SOCKET_Y",
-        "path": "src/scenes/kabelsalat/constants.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -10845,26 +8821,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "SOCKET_DEFS",
-        "path": "src/scenes/kabelsalat/constants.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "INITIAL_SOCKET_ORDER": [
       {
         "name": "INITIAL_SOCKET_ORDER",
         "path": "src/scenes/kabelsalat/kabelsalatConstants.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "INITIAL_SOCKET_ORDER",
-        "path": "src/scenes/kabelsalat/constants.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -10877,26 +8839,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "TIME_LIMIT",
-        "path": "src/scenes/kabelsalat/constants.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "CONNECTOR_TYPES": [
       {
         "name": "CONNECTOR_TYPES",
         "path": "src/scenes/kabelsalat/kabelsalatConstants.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "CONNECTOR_TYPES",
-        "path": "src/scenes/kabelsalat/constants.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -10929,26 +8877,12 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "generateLightningSeeds",
-        "path": "src/scenes/kabelsalat/utils.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
       }
     ],
     "getMessyPath": [
       {
         "name": "getMessyPath",
         "path": "src/scenes/kabelsalat/kabelsalatUtils.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      },
-      {
-        "name": "getMessyPath",
-        "path": "src/scenes/kabelsalat/utils.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
