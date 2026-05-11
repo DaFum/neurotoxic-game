@@ -70,6 +70,14 @@ function kindLabel(sym) {
   if (ts.isInterfaceDeclaration(decl)) return 'interface'
   if (ts.isTypeAliasDeclaration(decl)) return 'type'
   if (ts.isEnumDeclaration(decl)) return 'enum'
+  if (ts.isVariableDeclaration(decl)) {
+    const list = decl.parent
+    if (ts.isVariableDeclarationList(list)) {
+      if (list.flags & ts.NodeFlags.Const) return 'const'
+      if (list.flags & ts.NodeFlags.Let)   return 'let'
+      return 'var'
+    }
+  }
   return 'const'
 }
 
