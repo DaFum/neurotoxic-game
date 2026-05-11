@@ -277,8 +277,6 @@ const CONTROVERSY_ACCELERATED_DECAY_THRESHOLD = 55
 const CONTROVERSY_ACCELERATED_DECAY_AMOUNT = 3
 const CONTROVERSY_NORMAL_DECAY_AMOUNT = 1
 
-
-
 export const calculateDailyUpdates = (
   currentState: GameState,
   rng: () => number = getSafeRandom
