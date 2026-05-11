@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react'
-import { audioManager } from '../utils/audio/AudioManager'
+import { audioManager } from '../utils/audio/audioEngine'
 import {
   createKeyToLaneMap,
   handleKeyDownLogic,

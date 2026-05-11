@@ -34,7 +34,7 @@ import {
   processTravelEvents,
   isGigNode
 } from '../utils/arrivalUtils'
-import { audioManager } from '../utils/audio/AudioManager'
+import { audioManager } from '../utils/audio/audioEngine'
 import { logger } from '../utils/logger'
 import { handleError, StateError } from '../utils/errorHandler'
 import { calcBaseBreakdownChance } from '../utils/upgradeUtils'

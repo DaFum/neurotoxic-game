@@ -1,7 +1,7 @@
 import { useState, useEffect, memo } from 'react'
 import { useGameSelector, useGameDispatch } from '../context/GameState'
 import { toggleNeuroDecimator } from '../context/actionCreators'
-import { audioManager } from '../utils/audio/AudioManager'
+import { audioManager } from '../utils/audio/audioEngine'
 import { useTranslation } from 'react-i18next'
 import {
   Map as MapIcon,

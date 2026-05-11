@@ -5,7 +5,7 @@ import {
   buildGigStatsSnapshot,
   calculateAccuracy
 } from '../../utils/gigStats'
-import { audioManager } from '../../utils/audio/AudioManager'
+import { audioManager } from '../../utils/audio/audioEngine'
 import {
   getGigTimeMs,
   getToneAbsoluteTimeMs,

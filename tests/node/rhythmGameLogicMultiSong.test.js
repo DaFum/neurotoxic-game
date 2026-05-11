@@ -68,7 +68,7 @@ mock.module(
 mock.module(
   new URL('../../src/utils/audio/audioEngine.ts', import.meta.url).href,
   {
-    namedExports: mockAudioEngine
+    namedExports: { ...mockAudioEngine, audioManager: mockAudioManager }
   }
 )
 mock.module(new URL('../../src/utils/rhythmUtils.ts', import.meta.url).href, {

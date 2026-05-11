@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { useGameState } from '../context/GameState'
-import { audioManager } from '../utils/audio/AudioManager'
+import { audioManager } from '../utils/audio/audioEngine'
 import {
   checkHasBroadcastedToday,
   validatePirateBroadcast

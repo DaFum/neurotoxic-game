@@ -3,22 +3,110 @@ import { renderHook, act, cleanup } from '@testing-library/react'
 import { setupJSDOM, teardownJSDOM } from '../testUtils'
 
 // Mock Dependencies
-const mockAudioEngine = {
-  playHit: vi.fn(),
-  playMiss: vi.fn(),
-  stopAudio: vi.fn(),
-  setMusicVolume: vi.fn(),
-  setSfxVolume: vi.fn(),
-  getGigTimeMs: vi.fn(),
-  getToneAbsoluteTimeMs: vi.fn(),
-  playNoteAtTime: vi.fn(),
-  getScheduledHitTimeMs: vi.fn(),
-  getPlayRequestId: vi.fn(),
-  subscribeToAudioState: vi.fn(),
-  playSFX: vi.fn(),
-  setCorruptionEffect: vi.fn()
-}
+const { mockAudioEngine } = vi.hoisted(() => {
+  const listeners = new Set()
 
+  const audioState = {
+    musicVol: 0.5,
+    sfxVol: 0.5,
+    isMuted: false,
+    currentSongId: null
+  }
+
+  const manager = {
+    get musicVolume() { return audioState.musicVol },
+    set musicVolume(v) { audioState.musicVol = v },
+    get sfxVolume() { return audioState.sfxVol },
+    set sfxVolume(v) { audioState.sfxVol = v },
+    get muted() { return audioState.isMuted },
+    set muted(v) { audioState.isMuted = v },
+    get isPlaying() { return audioState.currentSongId != null },
+    get currentSongId() { return audioState.currentSongId },
+    set currentSongId(v) { audioState.currentSongId = v },
+    subscribe: vi.fn(listener => {
+      listeners.add(listener)
+      return () => listeners.delete(listener)
+    }),
+    getStateSnapshot: vi.fn(() => ({
+      musicVol: audioState.musicVol,
+      sfxVol: audioState.sfxVol,
+      isMuted: audioState.isMuted,
+      isPlaying: audioState.currentSongId != null,
+      currentSongId: audioState.currentSongId
+    })),
+    setMusicVolume: vi.fn(v => {
+      audioState.musicVol = v
+      listeners.forEach(fn => fn())
+      return true
+    }),
+    setSFXVolume: vi.fn(v => {
+      audioState.sfxVol = v
+      listeners.forEach(fn => fn())
+      return true
+    }),
+    toggleMute: vi.fn(() => {
+      audioState.isMuted = !audioState.isMuted
+      listeners.forEach(fn => fn())
+      return audioState.isMuted
+    }),
+    stopMusic: vi.fn(() => {
+      audioState.currentSongId = null
+      listeners.forEach(fn => fn())
+    }),
+    resumeMusic: vi.fn(async () => {
+      audioState.currentSongId = 'ambient'
+      listeners.forEach(fn => fn())
+      return true
+    }),
+    ensureAudioContext: vi.fn(async () => true),
+    startAmbient: vi.fn(async () => true),
+    playSFX: vi.fn(),
+    stopAudio: vi.fn()
+  }
+
+  const service = {
+    getState: vi.fn(() => manager.getStateSnapshot()),
+    hasNativeSubscribe: vi.fn(() => true),
+    subscribe: vi.fn(listener => manager.subscribe(listener)),
+    setMusicVolume: vi.fn(v => manager.setMusicVolume(v)),
+    setSfxVolume: vi.fn(v => manager.setSFXVolume(v)),
+    toggleMute: vi.fn(() => manager.toggleMute()),
+    startAmbient: vi.fn(() => manager.startAmbient()),
+    stopMusic: vi.fn(() => manager.stopMusic()),
+    resumeMusic: vi.fn(() => manager.resumeMusic())
+  }
+
+  const engine = {
+    audioManager: manager,
+    audioService: service,
+    playHit: vi.fn(),
+    playMiss: vi.fn(),
+    stopAudio: vi.fn(),
+    setMusicVolume: vi.fn(),
+    setSfxVolume: vi.fn(),
+    getGigTimeMs: vi.fn(),
+    getToneAbsoluteTimeMs: vi.fn(),
+    playNoteAtTime: vi.fn(),
+    getScheduledHitTimeMs: vi.fn(),
+    getPlayRequestId: vi.fn(),
+    subscribeToAudioState: vi.fn(),
+    playSFX: vi.fn(),
+    setCorruptionEffect: vi.fn()
+  }
+
+  return {
+    mockAudioManager: manager,
+    mockAudioService: service,
+    mockAudioEngine: engine
+  }
+})
+
+vi.mock('../../src/utils/audio/audioEngine', () => mockAudioEngine)
+vi.mock('../../src/utils/audio/timingUtils', () => mockAudioEngine)
+
+vi.mock('../../src/utils/gigStats', () => mockGigStats)
+
+vi.mock('../../src/utils/rhythmUtils', () => mockRhythmUtils)
 const mockGigStats = {
   calculateScore: vi.fn(),
   calculateAccuracy: vi.fn(() => 100),
@@ -33,14 +121,7 @@ const mockRhythmUtils = {
   generateLanes: vi.fn()
 }
 
-vi.mock('../../src/utils/audio/AudioManager', () => ({
-  audioManager: mockAudioEngine
-}))
-vi.mock('../../src/utils/audio/audioEngine', () => mockAudioEngine)
-vi.mock('../../src/utils/audio/timingUtils', () => mockAudioEngine)
-
 vi.mock('../../src/utils/gigStats', () => mockGigStats)
-
 vi.mock('../../src/utils/rhythmUtils', () => mockRhythmUtils)
 vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },

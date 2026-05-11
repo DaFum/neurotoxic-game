@@ -17,3 +17,16 @@ Applies to `src/utils/audio/**`.
 - Narrow array/map lookups before use; this domain is under stricter CheckJS.
 - Snapshot consumers should prefer `getStateSnapshot()` and normalize partial snapshots to complete `AudioSnapshot` shapes.
 - Native subscription is valid only when `subscribe` is a function; otherwise polling must stay active.
+
+## Public API
+
+All imports from outside this directory must go through `audioEngine.ts`.
+Direct imports from sub-modules (`./AudioManager`, `./audioService`,
+`./playback`, etc.) are only permitted inside `src/utils/audio/` itself.
+
+Roles:
+- `audioManager` (stateful class instance) — for non-React contexts:
+  Pixi stage controllers, hook lifecycle, imperative timing.
+- `audioService` (React-safe adapter) — for React components and hooks
+  that need `useSyncExternalStore`-style reactivity.
+- All other utilities are stateless and safe to call from anywhere.
