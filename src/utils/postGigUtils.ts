@@ -467,7 +467,7 @@ export const calculateContinueStats = ({
   const prevFame = player.fame ?? 0
 
   let finalFameGain = -BALANCE_CONSTANTS.FAME_LOSS_BAD_GIG
-  if (perfScore >= 62) {
+  if (perfScore >= 31) {
     const rawFameGain = calculateGigFameReward(perfScore)
     finalFameGain = calculateFameGain(
       rawFameGain,
@@ -499,7 +499,7 @@ export const calculateContinueStats = ({
 
 const PERF_SCORE_MIN = 30
 const PERF_SCORE_MAX = 100
-const PERF_SCORE_SCALER = 500
+const PERF_SCORE_SCALER = 150
 
 export const calculatePerformanceScore = (rawScore: number): number => {
   return Math.min(
