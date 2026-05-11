@@ -20,6 +20,16 @@ export const useBloodBank = () => {
     }
   }, [player?.fameLevel])
 
+  const marrowConfig = useMemo(() => {
+    const multiplier = 1 + (player?.fameLevel || 0) * 0.2
+    return {
+      moneyGain: Math.floor(500 * multiplier),
+      harmonyCost: 40,
+      staminaCost: 60,
+      controversyGain: 20
+    }
+  }, [player?.fameLevel])
+
   const canDonate = useMemo(() => {
     if (!band || !band.members || band.members.length === 0) return false
     const hasEnoughHarmony = band.harmony > config.harmonyCost
@@ -31,24 +41,37 @@ export const useBloodBank = () => {
     return hasEnoughHarmony && allMembersHaveStamina
   }, [band, config.harmonyCost, config.staminaCost])
 
-  const triggerDonate = useCallback(() => {
-    if (!canDonate) return
+  const canDonateMarrow = useMemo(() => {
+    if (!band || !band.members || band.members.length === 0) return false
+    const hasEnoughHarmony = band.harmony > marrowConfig.harmonyCost
+    const minStaminaRequired = marrowConfig.staminaCost + 10
+    const allMembersHaveStamina = band.members.every(
+      m => (m.stamina || 0) >= minStaminaRequired
+    )
+    return hasEnoughHarmony && allMembersHaveStamina
+  }, [band, marrowConfig.harmonyCost, marrowConfig.staminaCost])
+
+  const triggerDonate = useCallback((type: 'blood' | 'marrow' = 'blood') => {
+    const isMarrow = type === 'marrow'
+    const activeConfig = isMarrow ? marrowConfig : config
+
+    if (isMarrow ? !canDonateMarrow : !canDonate) return
 
     const successToast = {
-      message: 'ui:blood_bank.success_toast',
-      type: 'success'
+      message: isMarrow ? 'ui:blood_bank.marrow_success_toast' : 'ui:blood_bank.success_toast',
+      type: 'success' as const
     }
 
     bloodBankDonate({
-      moneyGain: config.moneyGain,
-      harmonyCost: config.harmonyCost,
-      staminaCost: config.staminaCost,
-      controversyGain: config.controversyGain,
+      moneyGain: activeConfig.moneyGain,
+      harmonyCost: activeConfig.harmonyCost,
+      staminaCost: activeConfig.staminaCost,
+      controversyGain: activeConfig.controversyGain,
       successToast
     })
 
     closeBloodBank()
-  }, [canDonate, bloodBankDonate, closeBloodBank, config])
+  }, [canDonate, canDonateMarrow, bloodBankDonate, closeBloodBank, config, marrowConfig])
 
   return {
     showBloodBank,
@@ -56,6 +79,8 @@ export const useBloodBank = () => {
     closeBloodBank,
     triggerDonate,
     canDonate,
-    config
+    canDonateMarrow,
+    config,
+    marrowConfig
   }
 }

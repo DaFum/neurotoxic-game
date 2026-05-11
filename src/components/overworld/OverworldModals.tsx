@@ -38,9 +38,11 @@ export interface OverworldModalsProps {
   // Blood Bank
   showBloodBank: boolean
   closeBloodBank: () => void
-  triggerDonate: () => void
+  triggerDonate: (type: 'blood' | 'marrow') => void
   canDonate: boolean
+  canDonateMarrow: boolean
   bloodBankConfig: React.ComponentProps<typeof BloodBankModal>['config']
+  marrowConfig: React.ComponentProps<typeof BloodBankModal>['marrowConfig']
 
   // Dark Web Leak
   showDarkWebLeak: boolean
@@ -74,7 +76,9 @@ export const OverworldModals = React.memo(
     closeBloodBank,
     triggerDonate,
     canDonate,
+    canDonateMarrow,
     bloodBankConfig,
+    marrowConfig,
     showDarkWebLeak,
     closeDarkWebLeak,
     triggerLeak,
@@ -109,7 +113,9 @@ export const OverworldModals = React.memo(
             onClose={closeBloodBank}
             onDonate={triggerDonate}
             canDonate={canDonate}
+            canDonateMarrow={canDonateMarrow}
             config={bloodBankConfig}
+            marrowConfig={marrowConfig}
           />
         )}
         {showDarkWebLeak && (

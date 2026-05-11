@@ -86,7 +86,9 @@ export const Overworld = () => {
       closeBloodBank,
       triggerDonate,
       canDonate,
-      config: bloodBankConfig
+      canDonateMarrow,
+      config: bloodBankConfig,
+      marrowConfig
     },
     darkWebLeak: {
       showDarkWebLeak,
@@ -231,7 +233,9 @@ export const Overworld = () => {
           onClose={closeBloodBank}
           onDonate={triggerDonate}
           canDonate={canDonate}
+          canDonateMarrow={canDonateMarrow}
           config={bloodBankConfig}
+          marrowConfig={marrowConfig}
         />
       )}
       {showDarkWebLeak && (
