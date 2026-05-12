@@ -1,4 +1,4 @@
-import type { ActionTypes } from '../context/actionTypes'
+import type { ActionTypes, ActionType } from '../context/actionTypes'
 import type { RhythmSetlistEntry } from './rhythmGame'
 import type { GAME_PHASES } from '../context/gameConstants'
 
