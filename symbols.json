@@ -264,8 +264,7 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "typeOnly": true
       }
     ],
     "Projectile": [

@@ -1,6 +1,6 @@
-import { ActionTypes } from '../context/actionTypes'
+import { ActionTypes, type ActionType } from '../context/actionTypes'
 import { GAME_PHASES } from '../context/gameConstants'
-import type { ActionType, GamePhase } from '../types/game'
+import type { GamePhase } from '../types/game'
 import {
   calculateTravelMinigameResult,
   calculateRoadieMinigameResult,
