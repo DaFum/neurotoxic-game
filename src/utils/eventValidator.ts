@@ -285,6 +285,37 @@ export const validateGameEvent = (event: unknown): boolean => {
         `Event "${e.id}" option[${i}]: must have either an effect or a skillCheck`
       )
     }
+
+    if (hasEffect) {
+      validateEffect(o.effect, String(e.id), i)
+    }
+    if (hasSkillCheck) {
+      const sc = o.skillCheck as Record<string, unknown>
+      if (typeof sc.stat !== 'string') {
+        throw new Error(
+          `Event "${e.id}" option[${i}]: skillCheck.stat must be a string`
+        )
+      }
+      if (typeof sc.threshold !== 'number') {
+        throw new Error(
+          `Event "${e.id}" option[${i}]: skillCheck.threshold must be a number`
+        )
+      }
+      const success = sc.success
+      const failure = sc.failure
+      if (!success || typeof success !== 'object' || Array.isArray(success)) {
+        throw new Error(
+          `Event "${e.id}" option[${i}]: skillCheck.success must be an object`
+        )
+      }
+      if (!failure || typeof failure !== 'object' || Array.isArray(failure)) {
+        throw new Error(
+          `Event "${e.id}" option[${i}]: skillCheck.failure must be an object`
+        )
+      }
+      validateEffect(success, String(e.id), i)
+      validateEffect(failure, String(e.id), i)
+    }
   }
 
   // Events with 'crisis' tag must start with 'crisis_' and have chance in [0,1]
