@@ -164,3 +164,29 @@ An analysis was conducted for any barrel files (`index.ts`) that re-export scene
 - **`src/components/`:** Only `src/components/overworld/index.ts` exists, which does not act as a barrel file for `src/scenes/`.
 
 There are no barrel files re-exporting scenes within the scene directories.
+
+## 6. Agents
+
+Agents in this project refer to AI coding assistants (like Jules, Claude, or Codex) utilized for development, rather than runtime application entities. They do not interact with `SceneRouter`, `GAME_PHASES`, or the scene lifecycle at runtime.
+
+### Definition and Capabilities
+Agents are LLM-powered development tools that assist with code generation, refactoring, and debugging. They operate within the environment to read codebase files, execute bash commands (like tests and linters), and modify source code based on user prompts.
+
+### Limitations and Failure Modes
+- **Context Limits:** Agents can lose context or hallucinate if instructed without strict boundaries.
+- **Architectural Misalignment:** They may suggest changes that violate project-specific architectural rules (e.g., adding `propTypes` in React 19) if not properly guided by `AGENTS.md` instructions.
+- **Security/Privacy:** Agents read source code and environmental context; sensitive keys should not be exposed in prompts or unchecked code paths.
+
+### Recommended Use-Cases (Agent vs. Manual)
+<details>
+<summary><strong>Agent: Refactoring Scene Exports</strong></summary>
+When standardizing export styles across all 14 scene files (e.g., converting mixed exports to strict named exports), an agent can efficiently generate and apply the structural diffs across multiple files simultaneously.
+</details>
+
+<details>
+<summary><strong>Manual: Complex Lifecycle Debugging</strong></summary>
+If `SceneRouter` fails to unmount a PIXI stage correctly during a specific minigame transition, a developer should manually trace the `useEffect` cleanup and PIXI lifecycle, as agents may struggle to holistically evaluate asynchronous engine state without extensive prompting.
+</details>
+
+### Integration Notes relevant to Scene Lifecycle
+While agents do not participate in the `SceneRouter` or `GAME_PHASES` logic, they are bound by the project's development rules when modifying these systems. For example, when using an agent to add a new scene to `GAME_PHASES`, the agent must be instructed to adhere to the rule: *"Use named exports exclusively for Scene components... When using React lazy loading, import them via the '.then(m => ({ default: m.SceneName }))' mapping pattern."*
