@@ -77,17 +77,21 @@ describe('Rate Limit Bypass Security Tests', () => {
     assert.deepStrictEqual(res.json.mock.lastCall[0], { error: 'Too many requests' })
   })
 
-  test('FIX VERIFICATION: Should use x-real-ip when TRUST_PROXY is enabled', async () => {
+  test('VULNERABILITY FIX: Should not be bypassed by whitespace-only x-real-ip', async () => {
     process.env.TRUST_PROXY = 'true'
     const { normalizeIp } = await import('../../lib/apiUtils.js')
 
     const req = {
         socket: { remoteAddress: '10.0.0.1' },
-        headers: { 'x-real-ip': ' real-ip-test ' }
+        headers: {
+            'x-real-ip': '   ',
+            'x-forwarded-for': 'client-ip, proxy1-ip'
+        }
     }
 
     const ip = normalizeIp(req)
-    assert.strictEqual(ip, 'real-ip-test')
+    // Should fall through to the next source (x-forwarded-for last hop)
+    assert.strictEqual(ip, 'proxy1-ip')
 
     // Cleanup to prevent test pollution
     delete process.env.TRUST_PROXY
