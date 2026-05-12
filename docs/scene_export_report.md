@@ -139,6 +139,8 @@ const Overworld = lazy(() => import('../scenes/Overworld.tsx'))
 // ...
 ```
 
+Note: `MainMenu` is currently imported as a named export and is not lazy-loaded in `src/components/SceneRouter.tsx`. This aligns with the 'named export' architectural rule, unlike the other lazy-loaded scenes.
+
 The router itself uses a `switch` statement mapped directly to the `GAME_PHASES` enumeration to dictate which scene component to render. It also accommodates minigames through a sub-routing check based on the `minigameType` prop:
 
 ```typescript

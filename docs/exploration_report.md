@@ -9,7 +9,7 @@ _Note: This report was generated with the assistance of an AI agent (Jules). The
 Saves are primarily managed in `src/context/usePersistence.ts`.
 
 - **SAVE_KEY**: `export const SAVE_KEY = 'neurotoxic_v3_save'`
-- **Writing**: The `saveGame` function calls `createPersistedState(stateSnapshot)` which maps the current `GameState` into a serializable object containing whitelisted keys. It then uses `localStorage.setItem(SAVE_KEY, JSON.stringify(saveData))` (wrapped in `safeStorage`).
+- **Writing**: The `saveGame` function calls `createPersistedState(stateSnapshot)` which maps the current `GameState` into a serializable object containing whitelisted keys. Note: Currently, `createPersistedState` fails to include the `minigame` field in the returned object, despite it being present in `LOADABLE_SAVE_KEYS`. It then uses `localStorage.setItem(SAVE_KEY, JSON.stringify(saveData))` (wrapped in `safeStorage`).
 - **Reading**: The `loadGame` function uses `localStorage.getItem(SAVE_KEY)`, parses it, validates it with `validateSaveData(parsed)` (from `src/utils/saveValidator.ts`), and constructs the raw load payload.
 - **createRawLoadPayload**: Filters the parsed JSON object to only include keys defined in `LOADABLE_SAVE_KEYS` array, and injects unlocked items.
 
@@ -96,10 +96,12 @@ _(Note: There is also an `AGENTS.md` file in this directory.)_
 
 `game.d.ts` is currently acting as a monolithic catch-all for many disparate domains. The following types clearly belong in distinct domain-specific `.d.ts` files to improve modularity:
 
-- **Quest Types:** `QuestState` -> could move to `quest.d.ts`
-- **Event Types:** `EventOption`, `GameEvent` -> could move to `events.d.ts`
-- **Social Types:** `SocialState`, `BrandAlignment`, `PostResult` -> could move to `social.d.ts`
-- **NPC/Character Types:** `CharacterProfile`, `CharacterTrait` -> could move to `npc.d.ts` or `character.d.ts`
-- **Map/Venue Types:** `MapNode`, `GameMap`, `Venue` -> could move to `map.d.ts` or `world.d.ts`
-- **Gig/Performance Types:** `GigModifiers`, `PostGigSummary` -> could move to `gig.d.ts` or merge with rhythm types.
-- **Minigame Specific Types:** `CompleteTravelMinigamePayload`, `ClinicActionPayload`, etc. -> could move to `actions.d.ts` or specific minigame/scene type definitions.
+*   **Player Types:** `PlayerState` -> could move to `player.d.ts`
+*   **Band Types:** `BandState` -> could move to `band.d.ts`
+*   **Quest Types:** `QuestState` -> could move to `quest.d.ts`
+*   **Event Types:** `EventOption`, `GameEvent` -> could move to `events.d.ts`
+*   **Social Types:** `SocialState`, `BrandAlignment`, `PostResult`, `RivalBandState` -> could move to `social.d.ts` or `rivals.d.ts`
+*   **NPC/Character Types:** `CharacterProfile`, `CharacterTrait` -> could move to `npc.d.ts` or `character.d.ts`
+*   **Map/Venue Types:** `MapNode`, `GameMap`, `Venue` -> could move to `map.d.ts` or `world.d.ts`
+*   **Gig/Performance Types:** `GigModifiers`, `PostGigSummary` -> could move to `gig.d.ts` or merge with rhythm types.
+*   **Minigame Specific Types:** `CompleteTravelMinigamePayload`, `ClinicActionPayload`, etc. -> could move to `actions.d.ts` or specific minigame/scene type definitions.

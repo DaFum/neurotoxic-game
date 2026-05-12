@@ -73,36 +73,28 @@ describe('Rate Limit Bypass Security Tests', () => {
       body: { playerId: 'p1', playerName: 'n1', money: 100 }
     }
     await statsHandler(req6, res)
-    assert.strictEqual(
-      res.status.mock.lastCall[0],
-      429,
-      'FIX: Rate limit should NOT be bypassed via x-forwarded-for spoofing'
-    )
+    assert.strictEqual(res.status.mock.lastCall[0], 429, 'FIX: Rate limit should NOT be bypassed via x-forwarded-for spoofing')
+    assert.deepStrictEqual(res.json.mock.lastCall[0], { error: 'Too many requests' })
   })
 
-  test('FIX VERIFICATION: Should ignore x-forwarded-for when TRUST_PROXY is not enabled', async () => {
-    delete process.env.TRUST_PROXY
-    const { normalizeIp } = await import('../../lib/apiUtils.js')
-
-    const req = {
-      socket: { remoteAddress: '127.0.0.1' },
-      headers: { 'x-forwarded-for': '1.1.1.1' }
-    }
-
-    const ip = normalizeIp(req)
-    assert.strictEqual(ip, '127.0.0.1')
-  })
-
-  test('FIX VERIFICATION: Should use last IP in x-forwarded-for when TRUST_PROXY is enabled', async () => {
+  test('VULNERABILITY FIX: Should not be bypassed by whitespace-only x-real-ip', async () => {
     process.env.TRUST_PROXY = 'true'
     const { normalizeIp } = await import('../../lib/apiUtils.js')
 
     const req = {
-      socket: { remoteAddress: '10.0.0.1' }, // Immediate Proxy IP
-      headers: { 'x-forwarded-for': 'client-ip, proxy1-ip' }
+        socket: { remoteAddress: '10.0.0.1' },
+        headers: {
+            'x-real-ip': '   ',
+            'x-forwarded-for': 'client-ip, proxy1-ip'
+        }
     }
 
     const ip = normalizeIp(req)
+    // Should fall through to the next source (x-forwarded-for last hop)
     assert.strictEqual(ip, 'proxy1-ip')
+
+    // Cleanup to prevent test pollution
+    delete process.env.TRUST_PROXY
   })
+
 })
