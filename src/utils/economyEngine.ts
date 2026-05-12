@@ -1045,7 +1045,12 @@ export const calculateKabelsalatMinigameResult = (
   if (!Number.isFinite(safePurgesUsed) || safePurgesUsed < 0) {
     safePurgesUsed = 0
   }
-  stress += Math.floor(safePurgesUsed * 5)
+  // Clamp to prevent overflow when multiplying by 5
+  safePurgesUsed = Math.min(
+    Math.floor(safePurgesUsed),
+    Math.floor(Number.MAX_SAFE_INTEGER / 5)
+  )
+  stress += safePurgesUsed * 5
 
   return { stress, reward }
 }
