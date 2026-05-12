@@ -5,6 +5,8 @@ import type { GameState } from '../../types/game'
 
 export { CHATTER_DB, ALLOWED_DEFAULT_SCENES }
 
+const ALLOWED_DEFAULT_SCENES_SET = new Set(ALLOWED_DEFAULT_SCENES)
+
 type ChatterScene =
   | 'ANY'
   | 'MENU'
@@ -122,6 +124,7 @@ export const getRandomChatter = (state: GameState) => {
   }
 
   const memo = { minMood, maxMood, minStamina, maxStamina }
+  const isDefaultSceneAllowed = ALLOWED_DEFAULT_SCENES_SET.has(state.currentScene)
 
   // 2) Standard chatter
   for (let i = 0; i < CHATTER_DB.length; i++) {
@@ -129,10 +132,7 @@ export const getRandomChatter = (state: GameState) => {
     if (!c) continue
     if (
       (c.condition && c.condition(state, memo)) ||
-      (!c.condition &&
-        (
-          ALLOWED_DEFAULT_SCENES as readonly GameState['currentScene'][]
-        ).includes(state.currentScene))
+      (!c.condition && isDefaultSceneAllowed)
     ) {
       pool.push(c)
     }
