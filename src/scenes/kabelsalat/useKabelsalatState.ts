@@ -80,28 +80,24 @@ export const useKabelsalatState = (): KabelsalatState => {
   )
 
   // 5. Interactions
-  const { handleCableClick, handleSocketClick, triggerShock } = useKabelsalatInteractions(
-    t,
-    isPoweredOn,
-    isGameOver,
-    isWinningRef,
-    selectedCable,
-    setSelectedCable,
-    connections,
-    setConnections,
-    isShocked,
-    setIsShocked,
-    setFaultReason
-  )
+  const { handleCableClick, handleSocketClick, triggerShock } =
+    useKabelsalatInteractions(
+      t,
+      isPoweredOn,
+      isGameOver,
+      isWinningRef,
+      selectedCable,
+      setSelectedCable,
+      connections,
+      setConnections,
+      isShocked,
+      setIsShocked,
+      setFaultReason
+    )
 
   // 6. Void Surge (Autonomously injected mechanic)
-  const { voidSurge, voidSurgesPurged, purgeVoidSurge } = useKabelsalatVoidSurge(
-    isPoweredOn,
-    isGameOver,
-    isShocked,
-    triggerShock,
-    t
-  )
+  const { voidSurge, voidSurgesPurged, purgeVoidSurge } =
+    useKabelsalatVoidSurge(isPoweredOn, isGameOver, isShocked, triggerShock, t)
 
   // 3. Game End
   const { forceAdvance } = useKabelsalatGameEnd(

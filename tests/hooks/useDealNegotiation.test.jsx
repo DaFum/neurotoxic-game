@@ -27,7 +27,7 @@ vi.mock('../../src/context/GameState', () => ({
 // Mock useTranslation
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key) => key
+    t: key => key
   })
 }))
 
@@ -44,7 +44,9 @@ describe('useDealNegotiation', () => {
   })
 
   it('initializes with correct default state', () => {
-    const { result } = renderHook(() => useDealNegotiation({ onAccept: mockOnAccept }))
+    const { result } = renderHook(() =>
+      useDealNegotiation({ onAccept: mockOnAccept })
+    )
     expect(result.current.negotiatedDeals).toEqual({})
     expect(result.current.negotiationModalOpen).toBe(false)
     expect(result.current.selectedDeal).toBe(null)
@@ -52,8 +54,14 @@ describe('useDealNegotiation', () => {
   })
 
   it('handleNegotiationStart sets the selected deal and opens modal', () => {
-    const { result } = renderHook(() => useDealNegotiation({ onAccept: mockOnAccept }))
-    const deal = { id: 'deal-1', name: 'Test Deal', offer: { upfront: 500, duration: 3 } }
+    const { result } = renderHook(() =>
+      useDealNegotiation({ onAccept: mockOnAccept })
+    )
+    const deal = {
+      id: 'deal-1',
+      name: 'Test Deal',
+      offer: { upfront: 500, duration: 3 }
+    }
 
     act(() => {
       result.current.handleNegotiationStart(deal)
@@ -65,7 +73,9 @@ describe('useDealNegotiation', () => {
   })
 
   it('handleAcceptDeal calls onAccept and handles success', async () => {
-    const { result } = renderHook(() => useDealNegotiation({ onAccept: mockOnAccept }))
+    const { result } = renderHook(() =>
+      useDealNegotiation({ onAccept: mockOnAccept })
+    )
     const deal = { id: 'deal-1', name: 'Test Deal' }
     mockOnAccept.mockResolvedValueOnce(undefined)
 
@@ -78,7 +88,9 @@ describe('useDealNegotiation', () => {
   })
 
   it('handleAcceptDeal calls handleError on failure', async () => {
-    const { result } = renderHook(() => useDealNegotiation({ onAccept: mockOnAccept }))
+    const { result } = renderHook(() =>
+      useDealNegotiation({ onAccept: mockOnAccept })
+    )
     const deal = { id: 'deal-1', name: 'Test Deal' }
     const error = new Error('Accept failed')
     mockOnAccept.mockRejectedValueOnce(error)
@@ -95,7 +107,9 @@ describe('useDealNegotiation', () => {
   })
 
   it('handleNegotiationSubmit handles SUCCESS outcome', async () => {
-    const { result } = renderHook(() => useDealNegotiation({ onAccept: mockOnAccept }))
+    const { result } = renderHook(() =>
+      useDealNegotiation({ onAccept: mockOnAccept })
+    )
     const deal = { id: 'deal-1', name: 'Test Deal' }
     const negotiatedDeal = { ...deal, offer: { upfront: 600 } }
 
@@ -135,7 +149,9 @@ describe('useDealNegotiation', () => {
   })
 
   it('handleNegotiationSubmit handles REVOKED outcome', () => {
-    const { result } = renderHook(() => useDealNegotiation({ onAccept: mockOnAccept }))
+    const { result } = renderHook(() =>
+      useDealNegotiation({ onAccept: mockOnAccept })
+    )
     const deal = { id: 'deal-1', name: 'Test Deal' }
 
     act(() => {
@@ -161,7 +177,9 @@ describe('useDealNegotiation', () => {
   })
 
   it('handleNegotiationSubmit handles FAILED outcome', () => {
-    const { result } = renderHook(() => useDealNegotiation({ onAccept: mockOnAccept }))
+    const { result } = renderHook(() =>
+      useDealNegotiation({ onAccept: mockOnAccept })
+    )
     const deal = { id: 'deal-1', name: 'Test Deal' }
 
     act(() => {
@@ -187,7 +205,9 @@ describe('useDealNegotiation', () => {
   })
 
   it('handleNegotiationSubmit handles WORSENED outcome', () => {
-    const { result } = renderHook(() => useDealNegotiation({ onAccept: mockOnAccept }))
+    const { result } = renderHook(() =>
+      useDealNegotiation({ onAccept: mockOnAccept })
+    )
     const deal = { id: 'deal-1', name: 'Test Deal' }
     const worsenedDeal = { ...deal, offer: { upfront: 400 } }
 
@@ -214,7 +234,9 @@ describe('useDealNegotiation', () => {
   })
 
   it('handleNegotiationSubmit handles error during negotiation', () => {
-    const { result } = renderHook(() => useDealNegotiation({ onAccept: mockOnAccept }))
+    const { result } = renderHook(() =>
+      useDealNegotiation({ onAccept: mockOnAccept })
+    )
     const deal = { id: 'deal-1', name: 'Test Deal' }
     const error = new Error('Negotiation crashed')
 

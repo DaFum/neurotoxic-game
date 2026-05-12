@@ -65,7 +65,7 @@ export const KabelsalatBoard: FC<KabelsalatBoardProps> = ({
         }`}
     >
       {/* Void Surge Meter overlay - autonomous mechanic */}
-      {(!isGameOver && !isPoweredOn) && (
+      {!isGameOver && !isPoweredOn && (
         <div className='absolute top-4 right-4 z-20 flex flex-col items-end gap-2'>
           <div className='text-toxic-green font-bold text-sm tracking-widest bg-void-black/80 px-2 py-1 border border-toxic-green/50'>
             {t('ui:minigames.kabelsalat.voidSurge')}: {Math.floor(voidSurge)}%

@@ -9,7 +9,7 @@ describe('useKabelsalatVoidSurge', () => {
   beforeEach(() => {
     vi.useFakeTimers()
     triggerShockMock = vi.fn()
-    tMock = vi.fn((key) => key)
+    tMock = vi.fn(key => key)
   })
 
   afterEach(() => {
@@ -48,13 +48,15 @@ describe('useKabelsalatVoidSurge', () => {
     })
 
     expect(triggerShockMock).toHaveBeenCalledTimes(1)
-    expect(triggerShockMock).toHaveBeenCalledWith(expect.stringMatching(/ui:minigames\.kabelsalat/i))
+    expect(triggerShockMock).toHaveBeenCalledWith(
+      expect.stringMatching(/ui:minigames\.kabelsalat/i)
+    )
     expect(result.current.voidSurge).toBe(0)
   })
 
   it('does not increment when inactive', () => {
-    const { result } = renderHook(() =>
-      useKabelsalatVoidSurge(true, false, false, triggerShockMock, tMock) // isPoweredOn = true -> inactive
+    const { result } = renderHook(
+      () => useKabelsalatVoidSurge(true, false, false, triggerShockMock, tMock) // isPoweredOn = true -> inactive
     )
 
     act(() => {
