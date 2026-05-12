@@ -74,8 +74,8 @@ Files in `src/data/events/`:
 **Recovery/Relief Events found (e.g., in `consequences.ts`):**
 *   **`consequences_comeback_album`:** Queued when recovering from controversy after an Apology Tour. Massive positive boosts (Money +300, Fame +100, Loyalty +20, Controversy -15).
 *   **Quests as Relief:** The `QUEST_PROVE_YOURSELF` triggered after 3 bad shows gives the player a specific goal rather than just losing.
-*   **`consequences_cancel_culture_quest`:** Triggers at 85+ controversy. It starts the `apology_tour` quest, guiding the player out of high controversy.
-*   **`consequences_ego_breakup_threat`:** Triggers when an ego-focused member drives harmony < 25. Triggers `breakup_quest_active`, which gives the player a chance to save the band rather than an instant game over.
+*   **`consequences_cancel_culture_quest`:** Triggers at 85+ controversy. It sets the `cancel_quest_active` story flag (rather than directly adding a quest via the `quest` effect type), which acts as a trigger to guide the player out of high controversy.
+*   **`consequences_ego_breakup_threat`:** Triggers when an ego-focused member drives harmony < 25. It sets the `breakup_quest_active` story flag, which gives the player a chance to save the band rather than an instant game over.
 
 ## 5. Steering and Difficulty Scaling (`hooks` & `utils`)
 
