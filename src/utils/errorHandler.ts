@@ -185,6 +185,13 @@ const SENSITIVE_KEY_PATTERNS = [
   'cookie'
 ]
 
+const escapeRegExp = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+const SENSITIVE_KEY_REGEXP =
+  SENSITIVE_KEY_PATTERNS.length > 0
+    ? new RegExp(SENSITIVE_KEY_PATTERNS.map(escapeRegExp).join('|'))
+    : null
+
 const isPlainObject = (value: unknown): value is Record<string, unknown> => {
   return (
     value !== null &&
@@ -203,11 +210,7 @@ const normalizeSeverity = (severity: unknown) => {
 
 const isSensitiveContextKey = (key: string) => {
   if (SENSITIVE_CONTEXT_KEYS.has(key)) return true
-  for (let i = 0; i < SENSITIVE_KEY_PATTERNS.length; i++) {
-    const pattern = SENSITIVE_KEY_PATTERNS[i]
-    if (pattern && key.includes(pattern)) return true
-  }
-  return false
+  return SENSITIVE_KEY_REGEXP ? SENSITIVE_KEY_REGEXP.test(key) : false
 }
 
 const sanitizeContextValue = (
