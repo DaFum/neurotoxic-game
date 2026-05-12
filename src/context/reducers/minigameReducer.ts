@@ -21,7 +21,6 @@ import { normalizeVenueId } from '../../utils/mapUtils'
 import { addContrabandHelper } from './bandReducer'
 import { pickRandomContraband } from '../../utils/contrabandUtils'
 import {
-  GAME_PHASES,
   MINIGAME_TYPES,
   DEFAULT_MINIGAME_STATE,
   DEFAULT_EQUIPMENT_COUNT
