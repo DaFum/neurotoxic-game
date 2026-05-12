@@ -86,7 +86,8 @@ function simulateTour(playstyle) {
     // Social
     if (Math.random() < socialActivity) {
       try {
-        const growth = calculateSocialGrowth('instagram', perf, s.followers, false, s.controversy + controversyBias, 50)
+        const controversyInput = Math.max(0, Math.min(100, s.controversy + controversyBias))
+        const growth = calculateSocialGrowth('instagram', perf, s.followers, false, controversyInput, 50)
         s.followers = Math.max(0, s.followers + growth)
         s.controversy = Math.max(0, Math.min(100, s.controversy + (controversyBias > 0 ? 2 : -0.5)))
       } catch (err) {
