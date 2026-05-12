@@ -1040,7 +1040,11 @@ export const calculateKabelsalatMinigameResult = (
   }
 
   // Stress penalty for relying on neurotoxic purges
-  const safePurgesUsed = Math.max(0, Number(safeResults.voidSurgesPurged) || 0)
+  const rawPurged = safeResults.voidSurgesPurged
+  let safePurgesUsed = Number(rawPurged)
+  if (!Number.isFinite(safePurgesUsed) || safePurgesUsed < 0) {
+    safePurgesUsed = 0
+  }
   stress += Math.floor(safePurgesUsed * 5)
 
   return { stress, reward }

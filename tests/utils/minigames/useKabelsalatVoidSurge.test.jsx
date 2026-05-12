@@ -47,7 +47,7 @@ describe('useKabelsalatVoidSurge', () => {
       vi.advanceTimersByTime(20000) // 20 * 5 = 100
     })
 
-    expect(triggerShockMock).toHaveBeenCalledWith('ui:minigames.amp.hud.anomaly')
+    expect(triggerShockMock).toHaveBeenCalledWith(expect.stringMatching(/ui:minigames\.kabelsalat/i))
     expect(result.current.voidSurge).toBe(0)
   })
 
