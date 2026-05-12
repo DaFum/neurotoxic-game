@@ -86,6 +86,7 @@ export const createUpdatePlayerAction = (
         }
       } else {
         delete safeUpdates.fame
+        delete safeUpdates.fameLevel
       }
     }
   }
@@ -111,20 +112,15 @@ export const createUpdateBandAction = (
   }
 
   let safeUpdates = updates
-  if (
-    updates &&
-    typeof updates === 'object' &&
-    Object.hasOwn(updates, 'harmony')
-  ) {
-    const harmonyValue = (updates as { harmony?: unknown }).harmony
-    if (typeof harmonyValue === 'number') {
-      safeUpdates = {
-        ...updates,
-        harmony: clampBandHarmony(harmonyValue)
+  if (updates && typeof updates === 'object') {
+    safeUpdates = { ...updates }
+    if (Object.hasOwn(safeUpdates, 'harmony')) {
+      const harmonyValue = (safeUpdates as { harmony?: unknown }).harmony
+      if (typeof harmonyValue === 'number') {
+        safeUpdates.harmony = clampBandHarmony(harmonyValue)
+      } else {
+        delete (safeUpdates as { harmony?: unknown }).harmony
       }
-    } else {
-      safeUpdates = { ...updates }
-      delete (safeUpdates as { harmony?: unknown }).harmony
     }
   }
   return {
