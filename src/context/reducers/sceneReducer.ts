@@ -1,4 +1,4 @@
-import { GAME_PHASES, ALLOWED_SCENE_VALUES } from '../gameConstants'
+import { ALLOWED_SCENE_VALUES } from '../gameConstants'
 import { logger } from '../../utils/logger'
 import type { GameState, GamePhase } from '../../types/game'
 
