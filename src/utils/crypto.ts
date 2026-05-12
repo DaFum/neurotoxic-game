@@ -26,7 +26,7 @@ const lut: string[] = Array.from({ length: 256 }, (_, i) =>
  * @returns {number}
  */
 export const secureRandom = (): number => {
-  const crypto = globalThis.crypto || window?.crypto
+  const crypto = globalThis.crypto || (typeof window !== 'undefined' ? window.crypto : undefined)
 
   if (!crypto?.getRandomValues) {
     throw new Error(
@@ -141,7 +141,7 @@ const bufferToHexUUID = (buffer: Uint8Array): string => {
  * @returns {string}
  */
 export const getSafeUUID = (): string => {
-  const crypto = globalThis.crypto || window?.crypto
+  const crypto = globalThis.crypto || (typeof window !== 'undefined' ? window.crypto : undefined)
   try {
     const uuid = crypto?.randomUUID?.()
     if (uuid) return uuid
