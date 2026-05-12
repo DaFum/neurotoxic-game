@@ -71,17 +71,22 @@ export const createUpdatePlayerAction = (
     safeUpdates = { ...updates }
     if (Object.hasOwn(safeUpdates, 'money')) {
       const moneyValue = (safeUpdates as { money?: unknown }).money
-      safeUpdates.money = clampPlayerMoney(
-        typeof moneyValue === 'number' ? moneyValue : Number.NaN
-      )
+      if (typeof moneyValue === 'number' && Number.isFinite(moneyValue)) {
+        safeUpdates.money = clampPlayerMoney(moneyValue)
+      } else {
+        delete safeUpdates.money
+      }
     }
     if (Object.hasOwn(safeUpdates, 'fame')) {
       const fameValue = (safeUpdates as { fame?: unknown }).fame
-      safeUpdates.fame = clampPlayerFame(
-        typeof fameValue === 'number' ? fameValue : Number.NaN
-      )
-      if (!Object.hasOwn(safeUpdates, 'fameLevel')) {
-        safeUpdates.fameLevel = calculateFameLevel(safeUpdates.fame)
+      if (typeof fameValue === 'number' && Number.isFinite(fameValue)) {
+        safeUpdates.fame = clampPlayerFame(fameValue)
+        if (!Object.hasOwn(safeUpdates, 'fameLevel')) {
+          safeUpdates.fameLevel = calculateFameLevel(safeUpdates.fame)
+        }
+      } else {
+        delete safeUpdates.fame
+        delete safeUpdates.fameLevel
       }
     }
   }
@@ -107,18 +112,15 @@ export const createUpdateBandAction = (
   }
 
   let safeUpdates = updates
-  if (
-    updates &&
-    typeof updates === 'object' &&
-    Object.hasOwn(updates, 'harmony')
-  ) {
-    const harmonyValue = (updates as { harmony?: unknown }).harmony
-    safeUpdates = {
-      ...updates,
-      harmony:
-        typeof harmonyValue === 'number'
-          ? clampBandHarmony(harmonyValue)
-          : clampBandHarmony(1)
+  if (updates && typeof updates === 'object') {
+    safeUpdates = { ...updates }
+    if (Object.hasOwn(safeUpdates, 'harmony')) {
+      const harmonyValue = (safeUpdates as { harmony?: unknown }).harmony
+      if (typeof harmonyValue === 'number' && Number.isFinite(harmonyValue)) {
+        safeUpdates.harmony = clampBandHarmony(harmonyValue)
+      } else {
+        delete (safeUpdates as { harmony?: unknown }).harmony
+      }
     }
   }
   return {
