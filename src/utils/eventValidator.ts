@@ -260,14 +260,17 @@ export const validateGameEvent = (event: unknown): boolean => {
 
   for (let i = 0; i < e.options.length; i++) {
     const opt = e.options[i] as Record<string, unknown>
-    if (typeof opt.label !== 'string' || opt.label.trim() === '') {
+    if (typeof opt.label !== 'string' || !opt.label.startsWith('events:')) {
       throw new Error(
-        `Event "${e.id}" option[${i}]: label must be a non-empty string`
+        `Event "${e.id}" option[${i}]: label must start with 'events:' (got: ${JSON.stringify(opt.label)})`
       )
     }
-    if (typeof opt.outcomeText !== 'string' || opt.outcomeText.trim() === '') {
+    if (
+      typeof opt.outcomeText !== 'string' ||
+      !opt.outcomeText.startsWith('events:')
+    ) {
       throw new Error(
-        `Event "${e.id}" option[${i}]: outcomeText must be a non-empty string`
+        `Event "${e.id}" option[${i}]: outcomeText must start with 'events:' (got: ${JSON.stringify(opt.outcomeText)})`
       )
     }
     if (!opt.effect && !opt.skillCheck) {

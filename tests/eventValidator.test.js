@@ -37,12 +37,24 @@ describe('validateGameEvent', () => {
     assert.throws(() => validateGameEvent(e), /options/)
   })
 
-  it('throws when an option has no label', () => {
+  it('throws when an option label does not start with events:', () => {
     const e = {
       ...baseEvent,
-      options: [{ label: '', outcomeText: 'events:x.outcome', effect: {} }]
+      options: [
+        { label: 'Bad Label', outcomeText: 'events:x.outcome', effect: {} }
+      ]
     }
     assert.throws(() => validateGameEvent(e), /label/)
+  })
+
+  it('throws when an option outcomeText does not start with events:', () => {
+    const e = {
+      ...baseEvent,
+      options: [
+        { label: 'events:x.label', outcomeText: 'Bad outcome', effect: {} }
+      ]
+    }
+    assert.throws(() => validateGameEvent(e), /outcomeText/)
   })
 
   it('throws when an option has no effect and no skillCheck', () => {
