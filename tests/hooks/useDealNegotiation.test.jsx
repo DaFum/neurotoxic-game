@@ -12,13 +12,8 @@ vi.mock('../../src/utils/errorHandler', () => ({
   handleError: vi.fn()
 }))
 
-const mockAddToast = vi.fn()
-const mockGameState = {
-  player: { money: 1000 },
-  band: { harmony: 50 },
-  social: { brandReputation: {} },
-  addToast: mockAddToast
-}
+let mockAddToast
+let mockGameState
 
 vi.mock('../../src/context/GameState', () => ({
   useGameState: () => mockGameState
@@ -35,6 +30,13 @@ describe('useDealNegotiation', () => {
   const mockOnAccept = vi.fn()
 
   beforeEach(() => {
+    mockAddToast = vi.fn()
+    mockGameState = {
+      player: { money: 1000 },
+      band: { harmony: 50 },
+      social: { brandReputation: {} },
+      addToast: mockAddToast
+    }
     vi.clearAllMocks()
     vi.useFakeTimers()
   })
@@ -158,6 +160,13 @@ describe('useDealNegotiation', () => {
       deal: null
     })
     expect(mockAddToast).toHaveBeenCalledWith('Revoked!', 'error')
+
+    act(() => {
+      vi.advanceTimersByTime(1500)
+    })
+
+    expect(result.current.negotiationModalOpen).toBe(false)
+    expect(result.current.selectedDeal).toBe(null)
   })
 
   it('handleNegotiationSubmit handles FAILED outcome', () => {
@@ -177,6 +186,12 @@ describe('useDealNegotiation', () => {
 
     act(() => {
       result.current.handleNegotiationSubmit('SAFE')
+    })
+
+    expect(negotiateDeal).toHaveBeenCalledWith(deal, 'SAFE', {
+      player: mockGameState.player,
+      band: mockGameState.band,
+      social: mockGameState.social
     })
 
     expect(result.current.negotiatedDeals['deal-1']).toEqual({
