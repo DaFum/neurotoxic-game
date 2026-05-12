@@ -4,6 +4,7 @@ import { BRAND_ALIGNMENTS } from '../context/initialState'
 import { generateBrandName } from './socialEngine'
 import { secureRandom } from './crypto'
 import { RIVAL_STAY_CHANCE } from '../context/gameConstants'
+import { isEmptyObject } from './gameStateUtils'
 
 import type { BrandAlignment } from '../types/game'
 
@@ -32,7 +33,7 @@ export const moveRivalBand = (
   gameMap: GameMap | null,
   rng: () => number = secureRandom
 ): RivalBandState => {
-  if (!gameMap || !gameMap.nodes || Object.keys(gameMap.nodes).length === 0) {
+  if (!gameMap || !gameMap.nodes || isEmptyObject(gameMap.nodes)) {
     return rivalBand
   }
 

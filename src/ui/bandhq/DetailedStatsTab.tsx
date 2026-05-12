@@ -4,6 +4,7 @@ import { ProgressBar, Panel, Tooltip } from '../shared'
 import { useMemo, type ReactNode } from 'react'
 import { CHARACTERS } from '../../data/characters'
 import { translateLocation } from '../../utils/locationI18n'
+import { isEmptyObject } from '../../utils/gameStateUtils'
 import type {
   PlayerState,
   BandState,
@@ -335,7 +336,7 @@ const RegionalStandingSection = ({
       defaultValue: 'Regional Standing'
     })}
   >
-    {Object.keys(reputationByRegion).length === 0 ? (
+    {isEmptyObject(reputationByRegion) ? (
       <div className='text-xs text-ash-gray italic py-4 text-center'>
         {t('ui:detailedStats.noRegionalData', {
           defaultValue: 'No regional data yet. Play gigs to build reputation.'
