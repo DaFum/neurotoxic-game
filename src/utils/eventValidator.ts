@@ -277,7 +277,10 @@ export const validateGameEvent = (event: unknown): boolean => {
         `Event "${e.id}" option[${i}]: outcomeText must start with 'events:' (got: ${JSON.stringify(o.outcomeText)})`
       )
     }
-    if (!Object.hasOwn(o, 'effect') && !Object.hasOwn(o, 'skillCheck')) {
+    const hasEffect = Object.hasOwn(o, 'effect') && o.effect !== undefined
+    const hasSkillCheck =
+      Object.hasOwn(o, 'skillCheck') && o.skillCheck !== undefined
+    if (!hasEffect && !hasSkillCheck) {
       throw new Error(
         `Event "${e.id}" option[${i}]: must have either an effect or a skillCheck`
       )

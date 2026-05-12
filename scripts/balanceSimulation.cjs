@@ -12,7 +12,10 @@ logger.setLevel(LOG_LEVELS.NONE)
 function parsePositiveIntArg(flag, fallback) {
   const idx = process.argv.indexOf(flag)
   const raw = idx !== -1 ? process.argv[idx + 1] : undefined
-  const value = raw === undefined ? fallback : Number.parseInt(raw, 10)
+  if (idx !== -1 && raw === undefined) {
+    throw new Error(`${flag} requires a value`)
+  }
+  const value = raw === undefined ? fallback : Number(raw)
   if (!Number.isInteger(value) || value <= 0) {
     throw new Error(`${flag} must be a positive integer (got: ${JSON.stringify(raw)})`)
   }
