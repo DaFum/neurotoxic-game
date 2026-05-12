@@ -53,25 +53,18 @@ describe('validateGameEvent', () => {
     assert.throws(() => validateGameEvent(e), /effect/)
   })
 
-  it('throws when crisis event id does not start with crisis_', () => {
-    const e = {
-      ...baseEvent,
-      category: 'crisis',
-      tags: ['crisis'],
-      id: 'bad_id',
-      chance: 0.1,
-      trigger: 'random'
-    }
+  it('throws when crisis-tagged event id does not start with crisis_', () => {
+    const e = { ...baseEvent, tags: ['crisis'], id: 'bad_id', chance: 0.1 }
     assert.throws(() => validateGameEvent(e), /crisis_/)
   })
 
-  it('throws when consequence event has no prerequisiteEventId', () => {
-    const e = { ...baseEvent, category: 'consequences' }
+  it('throws when event has prerequisiteEventId but it is empty', () => {
+    const e = { ...baseEvent, prerequisiteEventId: '' }
     assert.throws(() => validateGameEvent(e), /prerequisiteEventId/)
   })
 
-  it('throws when quest event has no questId', () => {
-    const e = { ...baseEvent, category: 'quest' }
+  it('throws when event has questId but it is empty', () => {
+    const e = { ...baseEvent, questId: '' }
     assert.throws(() => validateGameEvent(e), /questId/)
   })
 })

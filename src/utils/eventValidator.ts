@@ -277,40 +277,39 @@ export const validateGameEvent = (event: unknown): boolean => {
     }
   }
 
-  const category = e.category
-
-  if (category === 'crisis') {
+  // Events with 'crisis' tag must start with 'crisis_' and have chance in [0,1]
+  if (Array.isArray(e.tags) && (e.tags as string[]).includes('crisis')) {
     if (typeof e.id !== 'string' || !e.id.startsWith('crisis_')) {
       throw new Error(
-        `Crisis event id must start with 'crisis_' (got: ${JSON.stringify(e.id)})`
+        `Crisis-tagged event id must start with 'crisis_' (got: ${JSON.stringify(e.id)})`
       )
-    }
-    const tags = e.tags
-    if (!Array.isArray(tags) || !(tags as string[]).includes('crisis')) {
-      throw new Error(`Crisis event "${e.id}": tags must include 'crisis'`)
     }
     const chance = e.chance
     if (typeof chance !== 'number' || chance < 0 || chance > 1) {
       throw new Error(
-        `Crisis event "${e.id}": chance must be a number in [0, 1]`
+        `Crisis-tagged event "${e.id}": chance must be a number in [0, 1]`
       )
     }
   }
 
-  if (category === 'consequences') {
+  // Events with a prerequisiteEventId field must have it non-empty
+  if (Object.hasOwn(e, 'prerequisiteEventId')) {
     if (
       typeof e.prerequisiteEventId !== 'string' ||
       e.prerequisiteEventId.trim() === ''
     ) {
       throw new Error(
-        `Consequence event "${e.id}": must have a non-empty prerequisiteEventId`
+        `Event "${e.id}": prerequisiteEventId must be a non-empty string when present`
       )
     }
   }
 
-  if (category === 'quest') {
+  // Events with a questId field must have it non-empty
+  if (Object.hasOwn(e, 'questId')) {
     if (typeof e.questId !== 'string' || e.questId.trim() === '') {
-      throw new Error(`Quest event "${e.id}": must have a non-empty questId`)
+      throw new Error(
+        `Event "${e.id}": questId must be a non-empty string when present`
+      )
     }
   }
 
