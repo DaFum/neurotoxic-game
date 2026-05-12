@@ -225,3 +225,139 @@ export const validateCrisisEvent = (event: unknown): boolean => {
 
   return true
 }
+
+export const validateGameEvent = (event: unknown): boolean => {
+  if (!event || typeof event !== 'object') {
+    throw new Error('Event must be an object')
+  }
+
+  const e = event as Record<string, unknown>
+
+  if (typeof e.id !== 'string' || e.id.trim() === '') {
+    throw new Error(
+      `Event id must be a non-empty string (got: ${JSON.stringify(e.id)})`
+    )
+  }
+
+  if (typeof e.title !== 'string' || !e.title.startsWith('events:')) {
+    throw new Error(
+      `Event "${e.id}": title must start with 'events:' (got: ${JSON.stringify(e.title)})`
+    )
+  }
+
+  if (
+    typeof e.description !== 'string' ||
+    !e.description.startsWith('events:')
+  ) {
+    throw new Error(
+      `Event "${e.id}": description must start with 'events:' (got: ${JSON.stringify(e.description)})`
+    )
+  }
+
+  if (!Array.isArray(e.options) || e.options.length === 0) {
+    throw new Error(`Event "${e.id}": options must be a non-empty array`)
+  }
+
+  for (let i = 0; i < e.options.length; i++) {
+    const opt = e.options[i]
+    if (!opt || typeof opt !== 'object' || Array.isArray(opt)) {
+      throw new Error(`Event "${e.id}" option[${i}]: must be a non-null object`)
+    }
+    const o = opt as Record<string, unknown>
+    if (typeof o.label !== 'string' || !o.label.startsWith('events:')) {
+      throw new Error(
+        `Event "${e.id}" option[${i}]: label must start with 'events:' (got: ${JSON.stringify(o.label)})`
+      )
+    }
+    if (
+      typeof o.outcomeText !== 'string' ||
+      !o.outcomeText.startsWith('events:')
+    ) {
+      throw new Error(
+        `Event "${e.id}" option[${i}]: outcomeText must start with 'events:' (got: ${JSON.stringify(o.outcomeText)})`
+      )
+    }
+    const hasEffect = Object.hasOwn(o, 'effect') && o.effect !== undefined
+    const hasSkillCheck =
+      Object.hasOwn(o, 'skillCheck') && o.skillCheck !== undefined
+    if (!hasEffect && !hasSkillCheck) {
+      throw new Error(
+        `Event "${e.id}" option[${i}]: must have either an effect or a skillCheck`
+      )
+    }
+
+    if (hasEffect) {
+      validateEffect(o.effect, String(e.id), i)
+    }
+    if (hasSkillCheck) {
+      const sc = o.skillCheck as Record<string, unknown>
+      if (typeof sc.stat !== 'string') {
+        throw new Error(
+          `Event "${e.id}" option[${i}]: skillCheck.stat must be a string`
+        )
+      }
+      if (typeof sc.threshold !== 'number') {
+        throw new Error(
+          `Event "${e.id}" option[${i}]: skillCheck.threshold must be a number`
+        )
+      }
+      const success = sc.success
+      const failure = sc.failure
+      if (!success || typeof success !== 'object' || Array.isArray(success)) {
+        throw new Error(
+          `Event "${e.id}" option[${i}]: skillCheck.success must be an object`
+        )
+      }
+      if (!failure || typeof failure !== 'object' || Array.isArray(failure)) {
+        throw new Error(
+          `Event "${e.id}" option[${i}]: skillCheck.failure must be an object`
+        )
+      }
+      validateEffect(success, String(e.id), i)
+      validateEffect(failure, String(e.id), i)
+    }
+  }
+
+  // Events with 'crisis' tag must start with 'crisis_' and have chance in [0,1]
+  if (Array.isArray(e.tags) && (e.tags as string[]).includes('crisis')) {
+    if (typeof e.id !== 'string' || !e.id.startsWith('crisis_')) {
+      throw new Error(
+        `Crisis-tagged event id must start with 'crisis_' (got: ${JSON.stringify(e.id)})`
+      )
+    }
+    const chance = e.chance
+    if (
+      typeof chance !== 'number' ||
+      !Number.isFinite(chance) ||
+      chance < 0 ||
+      chance > 1
+    ) {
+      throw new Error(
+        `Crisis-tagged event "${e.id}": chance must be a number in [0, 1]`
+      )
+    }
+  }
+
+  // Events with a prerequisiteEventId field must have it non-empty
+  if (Object.hasOwn(e, 'prerequisiteEventId')) {
+    if (
+      typeof e.prerequisiteEventId !== 'string' ||
+      e.prerequisiteEventId.trim() === ''
+    ) {
+      throw new Error(
+        `Event "${e.id}": prerequisiteEventId must be a non-empty string when present`
+      )
+    }
+  }
+
+  // Events with a questId field must have it non-empty
+  if (Object.hasOwn(e, 'questId')) {
+    if (typeof e.questId !== 'string' || e.questId.trim() === '') {
+      throw new Error(
+        `Event "${e.id}": questId must be a non-empty string when present`
+      )
+    }
+  }
+
+  return true
+}

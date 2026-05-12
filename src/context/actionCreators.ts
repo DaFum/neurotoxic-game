@@ -23,7 +23,7 @@ import type {
   GameMap,
   GameEvent,
   GigModifiers,
-  GigStats,
+  PostGigSummary,
   MerchPressPayload,
   PirateBroadcastPayload,
   QuestState,
@@ -215,7 +215,7 @@ export const createSetSetlistAction = (
  * @returns {Object} Action object
  */
 export const createSetLastGigStatsAction = (
-  stats: GigStats | null
+  stats: PostGigSummary | null
 ): Extract<GameAction, { type: typeof ActionTypes.SET_LAST_GIG_STATS }> => ({
   type: ActionTypes.SET_LAST_GIG_STATS,
   payload: stats

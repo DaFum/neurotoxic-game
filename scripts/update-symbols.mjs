@@ -18,11 +18,11 @@ import path from 'path'
 import ts from 'typescript'
 
 const ROOT = path.resolve('.')
-const SRC  = path.join(ROOT, 'src')
-const OUT  = path.join(ROOT, 'symbols.json')
+const SRC = path.join(ROOT, 'src')
+const OUT = path.join(ROOT, 'symbols.json')
 const CHECK = process.argv.includes('--check')
 
-const SRC_NORM   = SRC.replace(/\\/g, '/')
+const SRC_NORM = SRC.replace(/\\/g, '/')
 const SRC_PREFIX = `${SRC_NORM}/`
 
 /** Returns true only for files genuinely inside src/ (not src-generated/ etc.) */
@@ -36,10 +36,13 @@ function isUnderSrc(fileName) {
 // ---------------------------------------------------------------------------
 function walkSrc(dir, out = []) {
   const entries = fs.readdirSync(dir, { withFileTypes: true })
-  entries.sort((a, b) => a.name < b.name ? -1 : a.name > b.name ? 1 : 0)
+  entries.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
   for (const entry of entries) {
     const full = path.join(dir, entry.name)
-    if (entry.isDirectory()) { walkSrc(full, out); continue }
+    if (entry.isDirectory()) {
+      walkSrc(full, out)
+      continue
+    }
     if (/\.(ts|tsx|js|jsx)$/.test(entry.name)) out.push(full)
   }
   return out
@@ -58,11 +61,13 @@ try {
     noEmit: true,
     skipLibCheck: true,
     moduleResolution: ts.ModuleResolutionKind.Bundler,
-    jsx: ts.JsxEmit.Preserve,
+    jsx: ts.JsxEmit.Preserve
   })
   checker = program.getTypeChecker()
 } catch (err) {
-  console.error(`update-symbols: ts.createProgram failed — ${err instanceof Error ? err.message : err}`)
+  console.error(
+    `update-symbols: ts.createProgram failed — ${err instanceof Error ? err.message : err}`
+  )
   process.exit(1)
 }
 
@@ -74,7 +79,12 @@ function relPath(abs) {
 function kindLabel(sym) {
   const decl = sym.declarations?.[0]
   if (!decl) return 'const'
-  if (ts.isFunctionDeclaration(decl) || ts.isFunctionExpression(decl) || ts.isArrowFunction(decl)) return 'function'
+  if (
+    ts.isFunctionDeclaration(decl) ||
+    ts.isFunctionExpression(decl) ||
+    ts.isArrowFunction(decl)
+  )
+    return 'function'
   if (ts.isClassDeclaration(decl) || ts.isClassExpression(decl)) return 'class'
   if (ts.isInterfaceDeclaration(decl)) return 'interface'
   if (ts.isTypeAliasDeclaration(decl)) return 'type'
@@ -86,7 +96,7 @@ function kindLabel(sym) {
     while (list && !ts.isVariableDeclarationList(list)) list = list.parent
     if (list) {
       if (list.flags & ts.NodeFlags.Const) return 'const'
-      if (list.flags & ts.NodeFlags.Let)   return 'let'
+      if (list.flags & ts.NodeFlags.Let) return 'let'
       return 'var'
     }
   }
@@ -95,15 +105,21 @@ function kindLabel(sym) {
 
 function isTypeOnlySym(sym) {
   const flags = sym.flags
-  return !!(flags & (ts.SymbolFlags.Interface | ts.SymbolFlags.TypeAlias | ts.SymbolFlags.TypeParameter))
+  return !!(
+    flags &
+    (ts.SymbolFlags.Interface |
+      ts.SymbolFlags.TypeAlias |
+      ts.SymbolFlags.TypeParameter)
+  )
 }
 
 // Detects `export type { Foo }` — the type-only flag lives on the ExportSpecifier
 // or ExportDeclaration node and is lost after alias resolution.
 function isTypeOnlyExport(sym) {
-  return !!sym.declarations?.some(decl =>
-    (ts.isExportSpecifier(decl) && decl.isTypeOnly) ||
-    (ts.isExportDeclaration(decl) && decl.isTypeOnly)
+  return !!sym.declarations?.some(
+    decl =>
+      (ts.isExportSpecifier(decl) && decl.isTypeOnly) ||
+      (ts.isExportDeclaration(decl) && decl.isTypeOnly)
   )
 }
 
@@ -114,10 +130,10 @@ function resolveAlias(checker, sym) {
   const seen = new Set()
   let cur = sym
   while (cur.flags & ts.SymbolFlags.Alias) {
-    if (seen.has(cur)) break  // cycle guard
+    if (seen.has(cur)) break // cycle guard
     seen.add(cur)
     const next = checker.getAliasedSymbol(cur)
-    if (!next.declarations?.length) break  // no declarations — stop here
+    if (!next.declarations?.length) break // no declarations — stop here
     cur = next
   }
   return cur
@@ -136,7 +152,11 @@ function upsert(name, entry) {
     knownSymbols[name] = []
     knownSignatures[name] = new Set()
   }
-  const sig = JSON.stringify({ path: entry.path ?? null, module: entry.module ?? null, isDefault: entry.isDefault })
+  const sig = JSON.stringify({
+    path: entry.path ?? null,
+    module: entry.module ?? null,
+    isDefault: entry.isDefault
+  })
   if (!knownSignatures[name].has(sig)) {
     knownSignatures[name].add(sig)
     knownSymbols[name].push(entry)
@@ -145,9 +165,10 @@ function upsert(name, entry) {
     // first entry wins the dedup but has no exportPath. When a barrel scan
     // provides one, merge it into the existing entry (first barrel wins).
     const existing = knownSymbols[name].find(
-      e => (e.path ?? null) === (entry.path ?? null) &&
-           (e.module ?? null) === (entry.module ?? null) &&
-           e.isDefault === entry.isDefault
+      e =>
+        (e.path ?? null) === (entry.path ?? null) &&
+        (e.module ?? null) === (entry.module ?? null) &&
+        e.isDefault === entry.isDefault
     )
     if (existing && !existing.exportPath) existing.exportPath = entry.exportPath
   }
@@ -161,10 +182,13 @@ const SKIP_NAMES = new Set(['__esModule'])
 // After alias resolution improvements, all known duplicates now collapse automatically.
 const SKIP_PAIRS = new Set()
 
-for (const sourceFile of program.getSourceFiles()) {
+for (const srcFilePath of srcFiles) {
+  const sourceFile = program.getSourceFile(srcFilePath)
+  if (!sourceFile) continue
   const fp = sourceFile.fileName.replace(/\\/g, '/')
   if (!isUnderSrc(fp)) continue
-  if (sourceFile.isDeclarationFile && !sourceFile.fileName.includes(SRC)) continue
+  if (sourceFile.isDeclarationFile && !sourceFile.fileName.includes(SRC))
+    continue
 
   const rel = relPath(sourceFile.fileName)
   const moduleSym = checker.getSymbolAtLocation(sourceFile)
@@ -174,7 +198,7 @@ for (const sourceFile of program.getSourceFiles()) {
   const moduleExports = checker.getExportsOfModule(moduleSym)
   for (const sym of moduleExports) {
     if (SKIP_NAMES.has(sym.name)) continue
-    if (sym.name === 'default') continue  // handled in dedicated default-export pass below
+    if (sym.name === 'default') continue // handled in dedicated default-export pass below
 
     // Exclude underscore-prefixed test/internal helpers
     if (sym.name.startsWith('_')) continue
@@ -203,10 +227,11 @@ for (const sourceFile of program.getSourceFiles()) {
       path: defPath,
       source: 'local',
       type: kindLabel(resolvedSym),
-      isDefault: false,
+      isDefault: false
     }
     if (exportPath !== undefined) entry.exportPath = exportPath
-    if (isTypeOnlyExport(sym) || isTypeOnlySym(resolvedSym)) entry.typeOnly = true
+    if (isTypeOnlyExport(sym) || isTypeOnlySym(resolvedSym))
+      entry.typeOnly = true
 
     upsert(exportedName, entry)
   }
@@ -219,7 +244,9 @@ for (const sourceFile of program.getSourceFiles()) {
 
     const defaultDecl = resolvedDefault.declarations?.[0]
     if (defaultDecl) {
-      const defaultDeclFile = defaultDecl.getSourceFile().fileName.replace(/\\/g, '/')
+      const defaultDeclFile = defaultDecl
+        .getSourceFile()
+        .fileName.replace(/\\/g, '/')
       if (isUnderSrc(defaultDeclFile)) {
         const symName = resolvedDefault.name
         // Use the resolved name only if it is a real identifier, not the
@@ -230,21 +257,23 @@ for (const sourceFile of program.getSourceFiles()) {
         const defPath = relPath(defaultDeclFile)
         // Anchor anonymous fallback key to the definition file, not the scan
         // file, so re-exporting barrels don't produce multiple identities.
-        const key = (symName && symName !== 'default' && !symName.startsWith('__'))
-          ? symName
-          : (declName && declName !== 'default' && !declName.startsWith('__'))
-            ? declName
-            : `default@${defPath}`
+        const key =
+          symName && symName !== 'default' && !symName.startsWith('__')
+            ? symName
+            : declName && declName !== 'default' && !declName.startsWith('__')
+              ? declName
+              : `default@${defPath}`
         const exportPath = rel !== defPath ? rel : undefined
         const entry = {
           name: key,
           path: defPath,
           source: 'local',
           type: kindLabel(resolvedDefault),
-          isDefault: true,
+          isDefault: true
         }
         if (exportPath !== undefined) entry.exportPath = exportPath
-        if (defaultTypeOnly || isTypeOnlySym(resolvedDefault)) entry.typeOnly = true
+        if (defaultTypeOnly || isTypeOnlySym(resolvedDefault))
+          entry.typeOnly = true
         upsert(key, entry)
       }
     }
@@ -257,64 +286,99 @@ for (const sourceFile of program.getSourceFiles()) {
 /** @type {Array<{name: string, module: string, isDefault: boolean, typeOnly?: boolean, isNamespace?: boolean}>} */
 const EXTERNAL = [
   // React
-  { name: 'React',                     module: 'react',          isDefault: true },
-  { name: 'useState',                  module: 'react',          isDefault: false },
-  { name: 'useEffect',                 module: 'react',          isDefault: false },
-  { name: 'useRef',                    module: 'react',          isDefault: false },
-  { name: 'useCallback',               module: 'react',          isDefault: false },
-  { name: 'useMemo',                   module: 'react',          isDefault: false },
-  { name: 'useReducer',                module: 'react',          isDefault: false },
-  { name: 'useContext',                module: 'react',          isDefault: false },
-  { name: 'useLayoutEffect',           module: 'react',          isDefault: false },
-  { name: 'createContext',             module: 'react',          isDefault: false },
-  { name: 'Suspense',                  module: 'react',          isDefault: false },
-  { name: 'Fragment',                  module: 'react',          isDefault: false },
-  { name: 'ReactNode',                 module: 'react',          isDefault: false, typeOnly: true },
-  { name: 'ReactElement',              module: 'react',          isDefault: false, typeOnly: true },
-  { name: 'FC',                        module: 'react',          isDefault: false, typeOnly: true },
-  { name: 'ComponentType',             module: 'react',          isDefault: false, typeOnly: true },
-  { name: 'RefObject',                 module: 'react',          isDefault: false, typeOnly: true },
-  { name: 'MutableRefObject',          module: 'react',          isDefault: false, typeOnly: true },
-  { name: 'Dispatch',                  module: 'react',          isDefault: false, typeOnly: true },
-  { name: 'MouseEvent',                module: 'react',          isDefault: false, typeOnly: true },
-  { name: 'KeyboardEvent',             module: 'react',          isDefault: false, typeOnly: true },
-  { name: 'PointerEvent',              module: 'react',          isDefault: false, typeOnly: true },
-  { name: 'ChangeEvent',               module: 'react',          isDefault: false, typeOnly: true },
-  { name: 'SyntheticEvent',            module: 'react',          isDefault: false, typeOnly: true },
-  { name: 'ErrorInfo',                 module: 'react',          isDefault: false, typeOnly: true },
-  { name: 'HTMLAttributes',            module: 'react',          isDefault: false, typeOnly: true },
-  { name: 'SVGProps',                  module: 'react',          isDefault: false, typeOnly: true },
-  { name: 'MouseEventHandler',         module: 'react',          isDefault: false, typeOnly: true },
-  { name: 'ComponentPropsWithoutRef',  module: 'react',          isDefault: false, typeOnly: true },
+  { name: 'React', module: 'react', isDefault: true },
+  { name: 'useState', module: 'react', isDefault: false },
+  { name: 'useEffect', module: 'react', isDefault: false },
+  { name: 'useRef', module: 'react', isDefault: false },
+  { name: 'useCallback', module: 'react', isDefault: false },
+  { name: 'useMemo', module: 'react', isDefault: false },
+  { name: 'useReducer', module: 'react', isDefault: false },
+  { name: 'useContext', module: 'react', isDefault: false },
+  { name: 'useLayoutEffect', module: 'react', isDefault: false },
+  { name: 'createContext', module: 'react', isDefault: false },
+  { name: 'Suspense', module: 'react', isDefault: false },
+  { name: 'Fragment', module: 'react', isDefault: false },
+  { name: 'ReactNode', module: 'react', isDefault: false, typeOnly: true },
+  { name: 'ReactElement', module: 'react', isDefault: false, typeOnly: true },
+  { name: 'FC', module: 'react', isDefault: false, typeOnly: true },
+  { name: 'ComponentType', module: 'react', isDefault: false, typeOnly: true },
+  { name: 'RefObject', module: 'react', isDefault: false, typeOnly: true },
+  {
+    name: 'MutableRefObject',
+    module: 'react',
+    isDefault: false,
+    typeOnly: true
+  },
+  { name: 'Dispatch', module: 'react', isDefault: false, typeOnly: true },
+  { name: 'MouseEvent', module: 'react', isDefault: false, typeOnly: true },
+  { name: 'KeyboardEvent', module: 'react', isDefault: false, typeOnly: true },
+  { name: 'PointerEvent', module: 'react', isDefault: false, typeOnly: true },
+  { name: 'ChangeEvent', module: 'react', isDefault: false, typeOnly: true },
+  { name: 'SyntheticEvent', module: 'react', isDefault: false, typeOnly: true },
+  { name: 'ErrorInfo', module: 'react', isDefault: false, typeOnly: true },
+  { name: 'HTMLAttributes', module: 'react', isDefault: false, typeOnly: true },
+  { name: 'SVGProps', module: 'react', isDefault: false, typeOnly: true },
+  {
+    name: 'MouseEventHandler',
+    module: 'react',
+    isDefault: false,
+    typeOnly: true
+  },
+  {
+    name: 'ComponentPropsWithoutRef',
+    module: 'react',
+    isDefault: false,
+    typeOnly: true
+  },
   // i18next
-  { name: 'TFunction',                 module: 'i18next',        isDefault: false, typeOnly: true },
+  { name: 'TFunction', module: 'i18next', isDefault: false, typeOnly: true },
   // react-i18next
-  { name: 'useTranslation',            module: 'react-i18next',  isDefault: false },
-  { name: 'Trans',                     module: 'react-i18next',  isDefault: false },
+  { name: 'useTranslation', module: 'react-i18next', isDefault: false },
+  { name: 'Trans', module: 'react-i18next', isDefault: false },
   // framer-motion
-  { name: 'motion',                    module: 'framer-motion',  isDefault: false },
-  { name: 'AnimatePresence',           module: 'framer-motion',  isDefault: false },
-  { name: 'Variants',                  module: 'framer-motion',  isDefault: false, typeOnly: true },
-  { name: 'HTMLMotionProps',           module: 'framer-motion',  isDefault: false, typeOnly: true },
-  { name: 'Transition',                module: 'framer-motion',  isDefault: false, typeOnly: true },
+  { name: 'motion', module: 'framer-motion', isDefault: false },
+  { name: 'AnimatePresence', module: 'framer-motion', isDefault: false },
+  {
+    name: 'Variants',
+    module: 'framer-motion',
+    isDefault: false,
+    typeOnly: true
+  },
+  {
+    name: 'HTMLMotionProps',
+    module: 'framer-motion',
+    isDefault: false,
+    typeOnly: true
+  },
+  {
+    name: 'Transition',
+    module: 'framer-motion',
+    isDefault: false,
+    typeOnly: true
+  },
   // Tone.js
-  { name: 'Tone',                      module: 'tone',           isDefault: false, isNamespace: true },
+  { name: 'Tone', module: 'tone', isDefault: false, isNamespace: true },
   // @tonejs/midi
-  { name: 'ToneJsMidi',                module: '@tonejs/midi',   isDefault: false, isNamespace: true },
+  {
+    name: 'ToneJsMidi',
+    module: '@tonejs/midi',
+    isDefault: false,
+    isNamespace: true
+  },
   // pixi.js
-  { name: 'PIXI',                      module: 'pixi.js',        isDefault: false, isNamespace: true },
+  { name: 'PIXI', module: 'pixi.js', isDefault: false, isNamespace: true },
   // vitest
-  { name: 'describe',  module: 'vitest', isDefault: false },
-  { name: 'it',        module: 'vitest', isDefault: false },
-  { name: 'test',      module: 'vitest', isDefault: false },
-  { name: 'expect',    module: 'vitest', isDefault: false },
-  { name: 'vi',        module: 'vitest', isDefault: false },
+  { name: 'describe', module: 'vitest', isDefault: false },
+  { name: 'it', module: 'vitest', isDefault: false },
+  { name: 'test', module: 'vitest', isDefault: false },
+  { name: 'expect', module: 'vitest', isDefault: false },
+  { name: 'vi', module: 'vitest', isDefault: false },
   { name: 'beforeEach', module: 'vitest', isDefault: false },
-  { name: 'afterEach',  module: 'vitest', isDefault: false },
-  { name: 'beforeAll',  module: 'vitest', isDefault: false },
-  { name: 'afterAll',   module: 'vitest', isDefault: false },
+  { name: 'afterEach', module: 'vitest', isDefault: false },
+  { name: 'beforeAll', module: 'vitest', isDefault: false },
+  { name: 'afterAll', module: 'vitest', isDefault: false },
   // node:assert
-  { name: 'assert',    module: 'node:assert/strict', isDefault: true },
+  { name: 'assert', module: 'node:assert/strict', isDefault: true }
 ]
 
 for (const e of EXTERNAL) {
@@ -332,9 +396,13 @@ if (CHECK) {
     console.log('symbols.json is up to date.')
     process.exit(0)
   }
-  console.error('symbols.json is out of date. Run: node scripts/update-symbols.mjs')
+  console.error(
+    'symbols.json is out of date. Run: node scripts/update-symbols.mjs'
+  )
   process.exit(1)
 }
 
 fs.writeFileSync(OUT, output)
-console.log(`symbols.json written — ${Object.keys(knownSymbols).length} symbols from ${srcFiles.length} src files.`)
+console.log(
+  `symbols.json written — ${Object.keys(knownSymbols).length} symbols from ${srcFiles.length} src files.`
+)
