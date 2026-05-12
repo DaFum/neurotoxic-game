@@ -11,7 +11,7 @@ import { getRawAudioContext } from './context'
  */
 export function createAndConnectBufferSource(
   buffer: AudioBuffer,
-  onEnded: ((source: AudioBufferSourceNode) => void) | null = null
+  onEnded: ((_source: AudioBufferSourceNode) => void) | null = null
 ): AudioBufferSourceNode | null {
   const rawContext = getRawAudioContext()
   const source = rawContext.createBufferSource()

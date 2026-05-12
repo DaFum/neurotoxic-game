@@ -176,7 +176,7 @@ const createGigBufferSource = ({
   onEnded
 }: {
   buffer: AudioBuffer
-  onEnded?: ((source: AudioBufferSourceNode) => void) | null
+  onEnded?: ((_source: AudioBufferSourceNode) => void) | null
 }): AudioBufferSourceNode | null => {
   return createAndConnectBufferSource(buffer, onEnded)
 }
