@@ -37,6 +37,11 @@ describe('validateGameEvent', () => {
     assert.throws(() => validateGameEvent(e), /options/)
   })
 
+  it('throws when an option is null', () => {
+    const e = { ...baseEvent, options: [null] }
+    assert.throws(() => validateGameEvent(e), /non-null object/)
+  })
+
   it('throws when an option label does not start with events:', () => {
     const e = {
       ...baseEvent,

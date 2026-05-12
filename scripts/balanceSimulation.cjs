@@ -71,7 +71,7 @@ function simulateTour(playstyle) {
 
         if (s.money <= 0) s.bankruptcyCount++
       } catch (err) {
-        console.error(`[Gig Simulation Error] Day ${d}:`, err.message)
+        console.error(`[Gig Simulation Error] Day ${d}:`, err instanceof Error ? err.message : String(err))
       }
     }
 
@@ -82,7 +82,7 @@ function simulateTour(playstyle) {
         s.followers = Math.max(0, s.followers + growth)
         s.controversy = Math.min(100, s.controversy + (controversyBias > 0 ? 2 : -0.5))
       } catch (err) {
-        console.error(`[Social Simulation Error] Day ${d}:`, err.message)
+        console.error(`[Social Simulation Error] Day ${d}:`, err instanceof Error ? err.message : String(err))
       }
     }
 

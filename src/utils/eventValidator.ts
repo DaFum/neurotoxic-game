@@ -259,21 +259,25 @@ export const validateGameEvent = (event: unknown): boolean => {
   }
 
   for (let i = 0; i < e.options.length; i++) {
-    const opt = e.options[i] as Record<string, unknown>
-    if (typeof opt.label !== 'string' || !opt.label.startsWith('events:')) {
+    const opt = e.options[i]
+    if (!opt || typeof opt !== 'object' || Array.isArray(opt)) {
+      throw new Error(`Event "${e.id}" option[${i}]: must be a non-null object`)
+    }
+    const o = opt as Record<string, unknown>
+    if (typeof o.label !== 'string' || !o.label.startsWith('events:')) {
       throw new Error(
-        `Event "${e.id}" option[${i}]: label must start with 'events:' (got: ${JSON.stringify(opt.label)})`
+        `Event "${e.id}" option[${i}]: label must start with 'events:' (got: ${JSON.stringify(o.label)})`
       )
     }
     if (
-      typeof opt.outcomeText !== 'string' ||
-      !opt.outcomeText.startsWith('events:')
+      typeof o.outcomeText !== 'string' ||
+      !o.outcomeText.startsWith('events:')
     ) {
       throw new Error(
-        `Event "${e.id}" option[${i}]: outcomeText must start with 'events:' (got: ${JSON.stringify(opt.outcomeText)})`
+        `Event "${e.id}" option[${i}]: outcomeText must start with 'events:' (got: ${JSON.stringify(o.outcomeText)})`
       )
     }
-    if (!opt.effect && !opt.skillCheck) {
+    if (!o.effect && !o.skillCheck) {
       throw new Error(
         `Event "${e.id}" option[${i}]: must have either an effect or a skillCheck`
       )
