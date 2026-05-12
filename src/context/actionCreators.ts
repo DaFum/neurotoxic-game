@@ -71,17 +71,21 @@ export const createUpdatePlayerAction = (
     safeUpdates = { ...updates }
     if (Object.hasOwn(safeUpdates, 'money')) {
       const moneyValue = (safeUpdates as { money?: unknown }).money
-      safeUpdates.money = clampPlayerMoney(
-        typeof moneyValue === 'number' ? moneyValue : Number.NaN
-      )
+      if (typeof moneyValue === 'number') {
+        safeUpdates.money = clampPlayerMoney(moneyValue)
+      } else {
+        delete safeUpdates.money
+      }
     }
     if (Object.hasOwn(safeUpdates, 'fame')) {
       const fameValue = (safeUpdates as { fame?: unknown }).fame
-      safeUpdates.fame = clampPlayerFame(
-        typeof fameValue === 'number' ? fameValue : Number.NaN
-      )
-      if (!Object.hasOwn(safeUpdates, 'fameLevel')) {
-        safeUpdates.fameLevel = calculateFameLevel(safeUpdates.fame)
+      if (typeof fameValue === 'number') {
+        safeUpdates.fame = clampPlayerFame(fameValue)
+        if (!Object.hasOwn(safeUpdates, 'fameLevel')) {
+          safeUpdates.fameLevel = calculateFameLevel(safeUpdates.fame)
+        }
+      } else {
+        delete safeUpdates.fame
       }
     }
   }
@@ -113,12 +117,14 @@ export const createUpdateBandAction = (
     Object.hasOwn(updates, 'harmony')
   ) {
     const harmonyValue = (updates as { harmony?: unknown }).harmony
-    safeUpdates = {
-      ...updates,
-      harmony:
-        typeof harmonyValue === 'number'
-          ? clampBandHarmony(harmonyValue)
-          : clampBandHarmony(1)
+    if (typeof harmonyValue === 'number') {
+      safeUpdates = {
+        ...updates,
+        harmony: clampBandHarmony(harmonyValue)
+      }
+    } else {
+      safeUpdates = { ...updates }
+      delete (safeUpdates as { harmony?: unknown }).harmony
     }
   }
   return {
