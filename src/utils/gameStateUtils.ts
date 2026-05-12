@@ -30,6 +30,21 @@ export const isPlainObject = (
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
 /**
+ * High-performance check for object emptiness.
+ * Returns true if the object has no enumerable properties.
+ * Avoids the array allocation of Object.keys().length === 0.
+ *
+ * @param {object} obj - The object to check
+ * @returns {boolean} True if empty, false otherwise
+ */
+export const isEmptyObject = (obj: Record<string, unknown>): boolean => {
+  for (const _ in obj) {
+    return false
+  }
+  return true
+}
+
+/**
  * Derives fame level from raw fame.
  * @param {number} fame - Raw fame amount.
  * @returns {number} Derived fame level.
