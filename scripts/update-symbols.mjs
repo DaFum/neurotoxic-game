@@ -98,6 +98,15 @@ function isTypeOnlySym(sym) {
   return !!(flags & (ts.SymbolFlags.Interface | ts.SymbolFlags.TypeAlias | ts.SymbolFlags.TypeParameter))
 }
 
+// Detects `export type { Foo }` — the type-only flag lives on the ExportSpecifier
+// or ExportDeclaration node and is lost after alias resolution.
+function isTypeOnlyExport(sym) {
+  return !!sym.declarations?.some(decl =>
+    (ts.isExportSpecifier(decl) && decl.isTypeOnly) ||
+    (ts.isExportDeclaration(decl) && decl.isTypeOnly)
+  )
+}
+
 // Unwrap alias chains to the final non-alias symbol.
 // Single getAliasedSymbol calls only resolve one hop; multi-layer barrels
 // require looping until the symbol carries its own declaration.
@@ -197,7 +206,7 @@ for (const sourceFile of program.getSourceFiles()) {
       isDefault: false,
     }
     if (exportPath !== undefined) entry.exportPath = exportPath
-    if (isTypeOnlySym(resolvedSym)) entry.typeOnly = true
+    if (isTypeOnlyExport(sym) || isTypeOnlySym(resolvedSym)) entry.typeOnly = true
 
     upsert(exportedName, entry)
   }
