@@ -225,3 +225,94 @@ export const validateCrisisEvent = (event: unknown): boolean => {
 
   return true
 }
+
+export const validateGameEvent = (event: unknown): boolean => {
+  if (!event || typeof event !== 'object') {
+    throw new Error('Event must be an object')
+  }
+
+  const e = event as Record<string, unknown>
+
+  if (typeof e.id !== 'string' || e.id.trim() === '') {
+    throw new Error(
+      `Event id must be a non-empty string (got: ${JSON.stringify(e.id)})`
+    )
+  }
+
+  if (typeof e.title !== 'string' || !e.title.startsWith('events:')) {
+    throw new Error(
+      `Event "${e.id}": title must start with 'events:' (got: ${JSON.stringify(e.title)})`
+    )
+  }
+
+  if (
+    typeof e.description !== 'string' ||
+    !e.description.startsWith('events:')
+  ) {
+    throw new Error(
+      `Event "${e.id}": description must start with 'events:' (got: ${JSON.stringify(e.description)})`
+    )
+  }
+
+  if (!Array.isArray(e.options) || e.options.length === 0) {
+    throw new Error(`Event "${e.id}": options must be a non-empty array`)
+  }
+
+  for (let i = 0; i < e.options.length; i++) {
+    const opt = e.options[i] as Record<string, unknown>
+    if (typeof opt.label !== 'string' || opt.label.trim() === '') {
+      throw new Error(
+        `Event "${e.id}" option[${i}]: label must be a non-empty string`
+      )
+    }
+    if (typeof opt.outcomeText !== 'string' || opt.outcomeText.trim() === '') {
+      throw new Error(
+        `Event "${e.id}" option[${i}]: outcomeText must be a non-empty string`
+      )
+    }
+    if (!opt.effect && !opt.skillCheck) {
+      throw new Error(
+        `Event "${e.id}" option[${i}]: must have either an effect or a skillCheck`
+      )
+    }
+  }
+
+  const category = e.category
+
+  if (category === 'crisis') {
+    if (typeof e.id !== 'string' || !e.id.startsWith('crisis_')) {
+      throw new Error(
+        `Crisis event id must start with 'crisis_' (got: ${JSON.stringify(e.id)})`
+      )
+    }
+    const tags = e.tags
+    if (!Array.isArray(tags) || !(tags as string[]).includes('crisis')) {
+      throw new Error(`Crisis event "${e.id}": tags must include 'crisis'`)
+    }
+    const chance = e.chance
+    if (typeof chance !== 'number' || chance < 0 || chance > 1) {
+      throw new Error(
+        `Crisis event "${e.id}": chance must be a number in [0, 1]`
+      )
+    }
+  }
+
+  if (category === 'consequences') {
+    if (
+      typeof e.prerequisiteEventId !== 'string' ||
+      e.prerequisiteEventId.trim() === ''
+    ) {
+      throw new Error(
+        `Consequence event "${e.id}": must have a non-empty prerequisiteEventId`
+      )
+    }
+  }
+
+  if (category === 'quest') {
+    if (typeof e.questId !== 'string' || e.questId.trim() === '') {
+      throw new Error(`Quest event "${e.id}": must have a non-empty questId`)
+    }
+  }
+
+  return true
+}
