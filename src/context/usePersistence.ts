@@ -6,7 +6,7 @@ import {
   useRef
 } from 'react'
 import type { TFunction } from 'i18next'
-import { normalizeSetlistForSave, isPlainObject } from '../utils/gameStateUtils'
+import { normalizeSetlistForSave, isPlainObject, safeJsonParse } from '../utils/gameStateUtils'
 import {
   handleError,
   safeStorageOperation,
@@ -201,7 +201,7 @@ export function usePersistence({
         try {
           const saved = localStorage.getItem(SAVE_KEY)
           if (!saved) return false
-          parsed = JSON.parse(saved)
+          parsed = safeJsonParse(saved)
         } catch (_error) {
           handleError(
             new StateError(

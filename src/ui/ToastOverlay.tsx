@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { logger } from '../utils/logger'
 import { translateContextKeys } from '../utils/translationUtils'
+import { safeJsonParse } from '../utils/gameStateUtils'
 import { useEffect, memo } from 'react'
 
 const renderToastMessage = (toast, t) => {
@@ -26,7 +27,7 @@ const renderToastMessage = (toast, t) => {
     const key = toast.message.slice(0, firstPipeIdx)
     const contextStr = toast.message.slice(firstPipeIdx + 1)
     try {
-      const rawContext = JSON.parse(contextStr)
+      const rawContext = safeJsonParse(contextStr)
       const context = translateContextKeys(rawContext, t)
       return t(key, { ...context, ...safeOptions })
     } catch (_e) {
