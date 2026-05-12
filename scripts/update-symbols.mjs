@@ -86,6 +86,22 @@ function isTypeOnlySym(sym) {
   return !!(flags & (ts.SymbolFlags.Interface | ts.SymbolFlags.TypeAlias | ts.SymbolFlags.TypeParameter))
 }
 
+// Unwrap alias chains to the final non-alias symbol.
+// Single getAliasedSymbol calls only resolve one hop; multi-layer barrels
+// require looping until the symbol carries its own declaration.
+function resolveAlias(checker, sym) {
+  const seen = new Set()
+  let cur = sym
+  while (cur.flags & ts.SymbolFlags.Alias) {
+    if (seen.has(cur)) break  // cycle guard
+    seen.add(cur)
+    const next = checker.getAliasedSymbol(cur)
+    if (!next.declarations?.length) break  // no declarations — stop here
+    cur = next
+  }
+  return cur
+}
+
 // ---------------------------------------------------------------------------
 // 3. Walk each source file and collect its exports
 // ---------------------------------------------------------------------------
@@ -133,12 +149,8 @@ for (const sourceFile of program.getSourceFiles()) {
 
     const exportedName = sym.name
 
-    // Resolve alias to actual definition symbol (handles barrel re-exports)
-    let resolvedSym = sym
-    if (sym.flags & ts.SymbolFlags.Alias) {
-      const aliased = checker.getAliasedSymbol(sym)
-      if (aliased.declarations?.length) resolvedSym = aliased
-    }
+    // Resolve alias chain to actual definition symbol (handles multi-hop barrels)
+    const resolvedSym = resolveAlias(checker, sym)
 
     // Skip if the resolved declaration lives outside src/
     const decl = resolvedSym.declarations?.[0]
@@ -171,11 +183,7 @@ for (const sourceFile of program.getSourceFiles()) {
   // --- dedicated default-export pass ---
   const defaultSym = checker.getExportsOfModule(moduleSym).find(s => s.name === 'default')
   if (defaultSym) {
-    let resolvedDefault = defaultSym
-    if (defaultSym.flags & ts.SymbolFlags.Alias) {
-      const aliased = checker.getAliasedSymbol(defaultSym)
-      if (aliased.declarations?.length) resolvedDefault = aliased
-    }
+    const resolvedDefault = resolveAlias(checker, defaultSym)
 
     const defaultDecl = resolvedDefault.declarations?.[0]
     if (defaultDecl) {
