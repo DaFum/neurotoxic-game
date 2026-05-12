@@ -76,21 +76,10 @@ export const getSafeRandom = (): number => {
 }
 
 /**
- * A safe wrapper for generating UUIDs that prefers crypto.randomUUID()
- * but falls back to a generated string if unavailable.
- * @returns {string}
+ * Populates a buffer with random values using either the Crypto API
+ * or Math.random() as a fallback.
  */
-export const getSafeUUID = (): string => {
-  const crypto = globalThis.crypto || window?.crypto
-  try {
-    const uuid = crypto?.randomUUID?.()
-    if (uuid) return uuid
-  } catch {
-    // Fall through to fallback
-  }
-
-  // Fallback RFC4122 v4 UUID
-  const buffer = new Uint8Array(16)
+const generateRandomBuffer = (buffer: Uint8Array, crypto: Crypto | undefined): void => {
   try {
     if (typeof crypto?.getRandomValues !== 'function') {
       throw new Error('getRandomValues not supported')
@@ -106,12 +95,22 @@ export const getSafeUUID = (): string => {
       buffer[i] = Math.floor(Math.random() * 256)
     }
   }
+}
 
+/**
+ * Mutates the buffer to set the correct version and variant bits for a v4 UUID.
+ */
+const setUUIDv4Bits = (buffer: Uint8Array): void => {
   // Set version to 4
   buffer[6] = ((buffer[6] ?? 0) & 0x0f) | 0x40
   // Set variant to RFC4122
   buffer[8] = ((buffer[8] ?? 0) & 0x3f) | 0x80
+}
 
+/**
+ * Converts a buffer into a formatted UUID string.
+ */
+const bufferToHexUUID = (buffer: Uint8Array): string => {
   return (
     (lut[buffer[0] ?? 0] || '') +
     (lut[buffer[1] ?? 0] || '') +
@@ -134,6 +133,29 @@ export const getSafeUUID = (): string => {
     (lut[buffer[14] ?? 0] || '') +
     (lut[buffer[15] ?? 0] || '')
   )
+}
+
+/**
+ * A safe wrapper for generating UUIDs that prefers crypto.randomUUID()
+ * but falls back to a generated string if unavailable.
+ * @returns {string}
+ */
+export const getSafeUUID = (): string => {
+  const crypto = globalThis.crypto || window?.crypto
+  try {
+    const uuid = crypto?.randomUUID?.()
+    if (uuid) return uuid
+  } catch {
+    // Fall through to fallback
+  }
+
+  // Fallback RFC4122 v4 UUID
+  const buffer = new Uint8Array(16)
+
+  generateRandomBuffer(buffer, crypto)
+  setUUIDv4Bits(buffer)
+
+  return bufferToHexUUID(buffer)
 }
 
 // Conditional export that gets compiled away in production
