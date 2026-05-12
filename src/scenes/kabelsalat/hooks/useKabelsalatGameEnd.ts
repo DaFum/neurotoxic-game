@@ -33,7 +33,7 @@ export const useKabelsalatGameEnd = (
         completeKabelsalatMinigame({
           isPoweredOn: isPowered,
           timeLeft: isPowered ? timeLeftRef.current : 0,
-          voidSurgesPurged
+          voidSurgesPurged: 0
         })
       } catch (error) {
         import('../../../utils/errorHandler')
