@@ -74,6 +74,23 @@ describe('Rate Limit Bypass Security Tests', () => {
     }
     await statsHandler(req6, res)
     assert.strictEqual(res.status.mock.lastCall[0], 429, 'FIX: Rate limit should NOT be bypassed via x-forwarded-for spoofing')
+    assert.deepStrictEqual(res.json.mock.lastCall[0], { error: 'Too many requests' })
+  })
+
+  test('FIX VERIFICATION: Should use x-real-ip when TRUST_PROXY is enabled', async () => {
+    process.env.TRUST_PROXY = 'true'
+    const { normalizeIp } = await import('../../lib/apiUtils.js')
+
+    const req = {
+        socket: { remoteAddress: '10.0.0.1' },
+        headers: { 'x-real-ip': ' real-ip-test ' }
+    }
+
+    const ip = normalizeIp(req)
+    assert.strictEqual(ip, 'real-ip-test')
+
+    // Cleanup to prevent test pollution
+    delete process.env.TRUST_PROXY
   })
 
   test('FIX VERIFICATION: Should ignore x-forwarded-for when TRUST_PROXY is not enabled', async () => {
@@ -100,5 +117,8 @@ describe('Rate Limit Bypass Security Tests', () => {
 
     const ip = normalizeIp(req)
     assert.strictEqual(ip, 'proxy1-ip')
+
+    // Cleanup to prevent test pollution
+    delete process.env.TRUST_PROXY
   })
 })
