@@ -30,6 +30,23 @@ export const isPlainObject = (
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
 /**
+ * High-performance check for object emptiness.
+ * Returns true if the object has no enumerable properties.
+ * Avoids the array allocation of Object.keys().length === 0.
+ *
+ * @param {object} obj - The object to check
+ * @returns {boolean} True if empty, false otherwise
+ */
+export const isEmptyObject = (obj: Record<string, unknown>): boolean => {
+  for (const key in obj) {
+    if (Object.hasOwn(obj, key)) {
+      return false
+    }
+  }
+  return true
+}
+
+/**
  * Derives fame level from raw fame.
  * @param {number} fame - Raw fame amount.
  * @returns {number} Derived fame level.
@@ -295,6 +312,20 @@ export const applyInventoryItemDelta = (
  */
 const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
 export const isForbiddenKey = (key: string): boolean => FORBIDDEN_KEYS.has(key)
+
+/**
+ * A secure wrapper around JSON.parse that uses a reviver to strip out
+ * potentially dangerous keys associated with prototype pollution.
+ *
+ * @param text The JSON string to parse
+ * @returns The parsed object, safely filtered
+ */
+export const safeJsonParse = <T = unknown>(text: string): T => {
+  return JSON.parse(text, (key: string, value: unknown) => {
+    if (isForbiddenKey(key)) return undefined
+    return value
+  })
+}
 
 /**
  * Applies event delta changes to the current game state.

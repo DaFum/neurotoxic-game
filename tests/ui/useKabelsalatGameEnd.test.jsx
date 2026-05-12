@@ -28,10 +28,13 @@ describe('useKabelsalatGameEnd', () => {
 
     vi.advanceTimersByTime(3500)
 
+    expect(mockCompleteKabelsalatMinigame).toHaveBeenCalledTimes(1)
     expect(mockCompleteKabelsalatMinigame).toHaveBeenCalledWith({
       isPoweredOn: false,
-      timeLeft: 0
+      timeLeft: 0,
+      voidSurgesPurged: 0
     })
+    expect(mockChangeScene).toHaveBeenCalledTimes(1)
     expect(mockChangeScene).toHaveBeenCalledWith('GIG')
   })
 
@@ -40,10 +43,36 @@ describe('useKabelsalatGameEnd', () => {
 
     vi.advanceTimersByTime(2500)
 
+    expect(mockCompleteKabelsalatMinigame).toHaveBeenCalledTimes(1)
     expect(mockCompleteKabelsalatMinigame).toHaveBeenCalledWith({
       isPoweredOn: true,
-      timeLeft: 12
+      timeLeft: 12,
+      voidSurgesPurged: 0
     })
+    expect(mockChangeScene).toHaveBeenCalledTimes(1)
+    expect(mockChangeScene).toHaveBeenCalledWith('GIG')
+  })
+
+  it('uses the latest timeLeft value when the timeout fires', () => {
+    const { rerender } = renderHook(
+      ({ isPoweredOn, isGameOver, timeLeft }) =>
+        useKabelsalatGameEnd(isPoweredOn, isGameOver, timeLeft),
+      {
+        initialProps: { isPoweredOn: true, isGameOver: false, timeLeft: 12 }
+      }
+    )
+
+    rerender({ isPoweredOn: true, isGameOver: false, timeLeft: 8 })
+
+    vi.advanceTimersByTime(2500)
+
+    expect(mockCompleteKabelsalatMinigame).toHaveBeenCalledTimes(1)
+    expect(mockCompleteKabelsalatMinigame).toHaveBeenCalledWith({
+      isPoweredOn: true,
+      timeLeft: 8,
+      voidSurgesPurged: 0
+    })
+    expect(mockChangeScene).toHaveBeenCalledTimes(1)
     expect(mockChangeScene).toHaveBeenCalledWith('GIG')
   })
 
@@ -57,7 +86,8 @@ describe('useKabelsalatGameEnd', () => {
     expect(mockCompleteKabelsalatMinigame).toHaveBeenCalledTimes(1)
     expect(mockCompleteKabelsalatMinigame).toHaveBeenCalledWith({
       isPoweredOn: true,
-      timeLeft: 9
+      timeLeft: 9,
+      voidSurgesPurged: 0
     })
     expect(mockChangeScene).toHaveBeenCalledTimes(1)
     expect(mockChangeScene).toHaveBeenCalledWith('GIG')
@@ -72,8 +102,10 @@ describe('useKabelsalatGameEnd', () => {
     expect(mockCompleteKabelsalatMinigame).toHaveBeenCalledTimes(1)
     expect(mockCompleteKabelsalatMinigame).toHaveBeenCalledWith({
       isPoweredOn: true,
-      timeLeft: 7
+      timeLeft: 7,
+      voidSurgesPurged: 0
     })
     expect(mockChangeScene).toHaveBeenCalledTimes(1)
+    expect(mockChangeScene).toHaveBeenCalledWith('GIG')
   })
 })
