@@ -7,6 +7,7 @@ import { useRef, useCallback, useEffect, useState } from 'react'
 import { useGameState } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
 import { audioManager } from '../../utils/audio/audioEngine'
+import { isEmptyObject } from '../../utils/gameStateUtils'
 import {
   ROADIE_GRID_WIDTH,
   ROADIE_GRID_HEIGHT,
@@ -147,7 +148,7 @@ export const useRoadieLogic = () => {
     useGameState()
 
   // Conditionally inject contraband to escort if present in stash
-  const hasContraband = !!(band?.stash && Object.keys(band.stash).length > 0)
+  const hasContraband = !!(band?.stash && !isEmptyObject(band.stash))
 
   // Mutable Game State
   const gameStateRef = useRef({

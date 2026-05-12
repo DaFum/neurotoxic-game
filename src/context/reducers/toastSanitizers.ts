@@ -1,4 +1,5 @@
 import type { ToastPayload } from '../../types/game'
+import { isEmptyObject } from '../../utils/gameStateUtils'
 
 export const ALLOWED_TOAST_TYPES = [
   'success',
@@ -75,7 +76,7 @@ export const sanitizeSuccessToast = (
     type
   }
   const safeOptions = { ...safePrimitives, ...safeOptionsPatch }
-  if (Object.keys(safeOptions).length > 0) {
+  if (!isEmptyObject(safeOptions)) {
     safeToast.options = safeOptions
   }
   if (finalMessage.length > 0) safeToast.message = finalMessage
@@ -124,7 +125,7 @@ export const sanitizeLoadedToast = (
   ) {
     const opts = toastObj.options as Record<string, unknown>
     const safePrimitives = sanitizePrimitiveOptions(opts)
-    if (Object.keys(safePrimitives).length > 0) {
+    if (!isEmptyObject(safePrimitives)) {
       safeToast.options = safePrimitives
     }
   }
