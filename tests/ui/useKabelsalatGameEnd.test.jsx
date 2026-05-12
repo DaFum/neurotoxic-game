@@ -106,5 +106,6 @@ describe('useKabelsalatGameEnd', () => {
       voidSurgesPurged: 0
     })
     expect(mockChangeScene).toHaveBeenCalledTimes(1)
+    expect(mockChangeScene).toHaveBeenCalledWith('GIG')
   })
 })
