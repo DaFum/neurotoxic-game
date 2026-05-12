@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import { MapConnection } from '../MapConnection'
-import { MapNode } from '../MapNode'
+import { MapNodeView } from '../MapNodeView'
 import { TravelingVan } from './TravelingVan'
 import { calculateEffectiveTicketPrice } from '../../utils/economyEngine'
 import { useNetworkStatus } from '../../hooks/useNetworkStatus'
@@ -197,7 +197,7 @@ export const OverworldMap = React.memo(
 
         return (
           <React.Fragment key={node.id}>
-            <MapNode
+            <MapNodeView
               node={node}
               isCurrent={isCurrent}
               isTraveling={isTraveling}

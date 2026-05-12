@@ -30,6 +30,7 @@ Direct imports from sub-modules (`./AudioManager`, `./audioService`,
 `./playback`, etc.) are only permitted inside `src/utils/audio/` itself.
 
 Roles:
+
 - `audioManager` (stateful class instance) — for non-React contexts:
   Pixi stage controllers, hook lifecycle, imperative timing.
 - `audioService` (React-safe adapter) — for React components and hooks

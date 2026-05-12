@@ -34,6 +34,7 @@ test('every external symbol entry has source: "external"', () => {
 })
 
 test('symbols.json output is deterministic across two consecutive runs', () => {
+  execSync('node scripts/update-symbols.mjs', { stdio: 'pipe' })
   const first = fs.readFileSync('symbols.json', 'utf8')
   execSync('node scripts/update-symbols.mjs', { stdio: 'pipe' })
   const second = fs.readFileSync('symbols.json', 'utf8')

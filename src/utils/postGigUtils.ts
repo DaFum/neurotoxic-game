@@ -19,7 +19,7 @@ import { BRAND_ALIGNMENTS } from '../context/initialState'
 import { BRAND_DEALS_BY_ID } from '../data/brandDeals'
 import { SOCIAL_PLATFORMS } from '../data/platforms'
 
-import type { GameState, GigStats, Venue } from '../types/game'
+import type { GameState, PostGigSummary, Venue } from '../types/game'
 import type { PostGigFinancials } from '../types/economy'
 import type { SocialPostOption } from './socialEngine'
 import type { BrandDeal } from './socialEngine'
@@ -28,7 +28,7 @@ export type CalculatePostGigStateParams = {
   player: GameState['player']
   band: GameState['band']
   social: GameState['social']
-  lastGigStats?: GigStats | null
+  lastGigStats?: PostGigSummary | null
   currentGig?: Venue | null
   perfScore?: number
   secureRandomValue?: number

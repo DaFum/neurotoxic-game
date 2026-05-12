@@ -5,8 +5,8 @@ import { userEvent } from '@testing-library/user-event'
 
 afterEach(cleanup)
 
-describe('MapNode', () => {
-  let MapNode
+describe('MapNodeView', () => {
+  let MapNodeView
 
   const mockNode = {
     id: 'node1',
@@ -29,13 +29,13 @@ describe('MapNode', () => {
 
   beforeEach(async () => {
     vi.clearAllMocks()
-    const module = await import('../../src/components/MapNode.tsx')
-    MapNode = module.MapNode
+    const module = await import('../../src/components/MapNodeView.tsx')
+    MapNodeView = module.MapNodeView
   })
 
   test('renders visual states appropriately (position, current, travel, pending, unreachable, ticketPrice)', async () => {
     const { container, rerender } = render(
-      <MapNode
+      <MapNodeView
         node={mockNode}
         isCurrent={false}
         isTraveling={false}
@@ -59,7 +59,7 @@ describe('MapNode', () => {
 
     // Current node with van
     rerender(
-      <MapNode
+      <MapNodeView
         node={mockNode}
         isCurrent={true}
         isTraveling={false}
@@ -80,7 +80,7 @@ describe('MapNode', () => {
 
     // Traveling (no van)
     rerender(
-      <MapNode
+      <MapNodeView
         node={mockNode}
         isCurrent={true}
         isTraveling={true}
@@ -98,7 +98,7 @@ describe('MapNode', () => {
 
     // Pending confirm
     rerender(
-      <MapNode
+      <MapNodeView
         node={mockNode}
         isCurrent={false}
         isTraveling={false}
@@ -119,7 +119,7 @@ describe('MapNode', () => {
 
     // Not reachable
     rerender(
-      <MapNode
+      <MapNodeView
         node={mockNode}
         isCurrent={false}
         isTraveling={false}
@@ -140,7 +140,7 @@ describe('MapNode', () => {
 
   test('renders different node types correctly', async () => {
     const { rerender, getByText, queryByText } = render(
-      <MapNode
+      <MapNodeView
         node={{ ...mockNode, type: 'GIG' }}
         isCurrent={false}
         isTraveling={false}
@@ -160,7 +160,7 @@ describe('MapNode', () => {
 
     // Hidden but type START
     rerender(
-      <MapNode
+      <MapNodeView
         node={{ ...mockNode, type: 'START' }}
         isCurrent={false}
         isTraveling={false}
@@ -178,7 +178,7 @@ describe('MapNode', () => {
 
     // Festival type
     rerender(
-      <MapNode
+      <MapNodeView
         node={{ ...mockNode, type: 'FESTIVAL' }}
         isCurrent={false}
         isTraveling={false}
@@ -196,7 +196,7 @@ describe('MapNode', () => {
 
     // Rest Stop type
     rerender(
-      <MapNode
+      <MapNodeView
         node={{ ...mockNode, type: 'REST_STOP' }}
         isCurrent={false}
         isTraveling={false}
@@ -214,7 +214,7 @@ describe('MapNode', () => {
 
     // Mystery type
     rerender(
-      <MapNode
+      <MapNodeView
         node={{ ...mockNode, type: 'SPECIAL' }}
         isCurrent={false}
         isTraveling={false}
@@ -232,7 +232,7 @@ describe('MapNode', () => {
 
     // Finale type
     rerender(
-      <MapNode
+      <MapNodeView
         node={{ ...mockNode, type: 'FINALE' }}
         isCurrent={false}
         isTraveling={false}
@@ -253,7 +253,7 @@ describe('MapNode', () => {
     const user = userEvent.setup()
 
     render(
-      <MapNode
+      <MapNodeView
         node={mockNode}
         isCurrent={false}
         isTraveling={false}
@@ -306,7 +306,7 @@ describe('MapNode', () => {
 
   test('clears touch hover state on pointer release', () => {
     render(
-      <MapNode
+      <MapNodeView
         node={mockNode}
         isCurrent={false}
         isTraveling={false}
@@ -331,7 +331,7 @@ describe('MapNode', () => {
 
   test('clears touch hover state when pointer leaves the node', () => {
     render(
-      <MapNode
+      <MapNodeView
         node={mockNode}
         isCurrent={false}
         isTraveling={false}

@@ -21,11 +21,11 @@ import { normalizeVenueId } from '../../utils/mapUtils'
 import { addContrabandHelper } from './bandReducer'
 import { pickRandomContraband } from '../../utils/contrabandUtils'
 import {
-  GAME_PHASES,
   MINIGAME_TYPES,
   DEFAULT_MINIGAME_STATE,
   DEFAULT_EQUIPMENT_COUNT
 } from '../gameConstants'
+import { MINIGAME_REGISTRY } from '../../utils/minigameRegistry'
 
 export const handleStartTravelMinigame = (
   state: GameState,
@@ -35,7 +35,7 @@ export const handleStartTravelMinigame = (
   logger.info('GameState', `Starting Travel Minigame to ${targetNodeId}`)
   return {
     ...state,
-    currentScene: GAME_PHASES.TRAVEL_MINIGAME,
+    currentScene: MINIGAME_REGISTRY.travel.scene,
     minigame: {
       ...DEFAULT_MINIGAME_STATE,
       active: true,
@@ -235,7 +235,7 @@ export const handleStartRoadieMinigame = (
   logger.info('GameState', `Starting Roadie Minigame for Gig ${gigId}`)
   return {
     ...state,
-    currentScene: GAME_PHASES.PRE_GIG_MINIGAME,
+    currentScene: MINIGAME_REGISTRY.roadie.scene,
     minigame: {
       ...DEFAULT_MINIGAME_STATE,
       active: true,
@@ -254,7 +254,7 @@ export const handleStartAmpCalibration = (
   logger.info('GameState', `Starting Amp Calibration Minigame for Gig ${gigId}`)
   return {
     ...state,
-    currentScene: GAME_PHASES.PRE_GIG_MINIGAME,
+    currentScene: MINIGAME_REGISTRY.ampCalibration.scene,
     minigame: {
       ...DEFAULT_MINIGAME_STATE,
       active: true,
@@ -319,7 +319,7 @@ export const handleStartKabelsalatMinigame = (
   logger.info('GameState', `Starting Kabelsalat Minigame for Gig ${gigId}`)
   return {
     ...state,
-    currentScene: GAME_PHASES.PRE_GIG_MINIGAME,
+    currentScene: MINIGAME_REGISTRY.kabelsalat.scene,
     minigame: {
       ...DEFAULT_MINIGAME_STATE,
       active: true,
