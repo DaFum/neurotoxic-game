@@ -50,12 +50,12 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
     const map = new Map<string, string>()
     if (!gameMap?.nodes) return map
 
-    for (const [nodeId, node] of Object.entries(gameMap.nodes)) {
+    for (const [, node] of Object.entries(gameMap.nodes)) {
       if (node.venueId) {
-        map.set(node.venueId, nodeId)
+        map.set(node.venueId, node.id)
       } else if (node.venue?.id) {
         // Fallback for some potential older map formats
-        map.set(node.venue.id, nodeId)
+        map.set(node.venue.id, node.id)
       }
     }
     return map
@@ -68,7 +68,9 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
         // Find the node corresponding to the venue to compare correctly against the rival map node
         const venueNodeId = venueIdToNodeIdMap.get(currentGig.id)
         gameStateRef.current.rivalPenaltyActive =
-          rivalBand?.currentLocationId === venueNodeId
+          !!rivalBand &&
+          !!venueNodeId &&
+          rivalBand.currentLocationId === venueNodeId
       } else {
         gameStateRef.current.rivalPenaltyActive = false
       }
