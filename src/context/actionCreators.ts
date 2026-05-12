@@ -71,7 +71,7 @@ export const createUpdatePlayerAction = (
     safeUpdates = { ...updates }
     if (Object.hasOwn(safeUpdates, 'money')) {
       const moneyValue = (safeUpdates as { money?: unknown }).money
-      if (typeof moneyValue === 'number') {
+      if (typeof moneyValue === 'number' && Number.isFinite(moneyValue)) {
         safeUpdates.money = clampPlayerMoney(moneyValue)
       } else {
         delete safeUpdates.money
@@ -79,7 +79,7 @@ export const createUpdatePlayerAction = (
     }
     if (Object.hasOwn(safeUpdates, 'fame')) {
       const fameValue = (safeUpdates as { fame?: unknown }).fame
-      if (typeof fameValue === 'number') {
+      if (typeof fameValue === 'number' && Number.isFinite(fameValue)) {
         safeUpdates.fame = clampPlayerFame(fameValue)
         if (!Object.hasOwn(safeUpdates, 'fameLevel')) {
           safeUpdates.fameLevel = calculateFameLevel(safeUpdates.fame)
@@ -116,7 +116,7 @@ export const createUpdateBandAction = (
     safeUpdates = { ...updates }
     if (Object.hasOwn(safeUpdates, 'harmony')) {
       const harmonyValue = (safeUpdates as { harmony?: unknown }).harmony
-      if (typeof harmonyValue === 'number') {
+      if (typeof harmonyValue === 'number' && Number.isFinite(harmonyValue)) {
         safeUpdates.harmony = clampBandHarmony(harmonyValue)
       } else {
         delete (safeUpdates as { harmony?: unknown }).harmony
