@@ -163,7 +163,7 @@ const MapNodeTooltip = memo(
 
 MapNodeTooltip.displayName = 'MapNodeTooltip'
 
-export const MapNode = memo(
+export const MapNodeView = memo(
   ({
     node,
     isCurrent,
@@ -390,4 +390,4 @@ export const MapNode = memo(
   }
 )
 
-MapNode.displayName = 'MapNode'
+MapNodeView.displayName = 'MapNodeView'

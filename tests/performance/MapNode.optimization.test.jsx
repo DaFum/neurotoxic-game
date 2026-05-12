@@ -2,14 +2,14 @@ import { afterEach, describe, expect, test } from 'vitest'
 
 import { render, cleanup } from '@testing-library/react'
 
-import { MapNode } from '../../src/components/MapNode.tsx'
+import { MapNodeView } from '../../src/components/MapNodeView.tsx'
 
-describe('MapNode Optimization', () => {
+describe('MapNodeView Optimization', () => {
   afterEach(() => {
     cleanup()
   })
 
-  test('MapNode: style object for position should be referentially stable across re-renders', async () => {
+  test('MapNodeView: style object for position should be referentially stable across re-renders', async () => {
     const node = {
       id: '1',
       type: 'GIG',
@@ -21,7 +21,7 @@ describe('MapNode Optimization', () => {
     const setHoveredNode = () => {}
 
     const { container, rerender } = render(
-      <MapNode
+      <MapNodeView
         node={node}
         isCurrent={false}
         isTraveling={false}
@@ -48,7 +48,7 @@ describe('MapNode Optimization', () => {
     // Rerender with a prop change that forces re-render but shouldn't affect position
     // Changing isTraveling to true
     rerender(
-      <MapNode
+      <MapNodeView
         node={node}
         isCurrent={false}
         isTraveling={true}

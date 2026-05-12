@@ -28,7 +28,7 @@ const UI_SOURCE_FILES = [
   'src/scenes/MainMenu.tsx',
   'src/scenes/IntroVideo.tsx',
   'src/components/ChatterOverlay.tsx',
-  'src/components/MapNode.tsx'
+  'src/components/MapNodeView.tsx'
 ]
 
 const KEY_PATTERN = /\bt\(\s*['"]([^'"]+)['"]/g

@@ -75,8 +75,8 @@ vi.mock('../../src/components/MapConnection', () => ({
   MapConnection: () => <g data-testid='map-connection' />
 }))
 
-vi.mock('../../src/components/MapNode', () => ({
-  MapNode: () => <div data-testid='map-node' />
+vi.mock('../../src/components/MapNodeView', () => ({
+  MapNodeView: () => <div data-testid='map-node' />
 }))
 
 describe('Overworld Component', () => {
