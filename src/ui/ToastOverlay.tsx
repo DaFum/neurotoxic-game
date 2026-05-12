@@ -26,7 +26,12 @@ const renderToastMessage = (toast, t) => {
     const key = toast.message.slice(0, firstPipeIdx)
     const contextStr = toast.message.slice(firstPipeIdx + 1)
     try {
-      const rawContext = JSON.parse(contextStr)
+      const rawContext = JSON.parse(contextStr, (k, v) => {
+        if (k === '__proto__' || k === 'constructor' || k === 'prototype') {
+          return undefined
+        }
+        return v
+      })
       const context = translateContextKeys(rawContext, t)
       return t(key, { ...context, ...safeOptions })
     } catch (_e) {
