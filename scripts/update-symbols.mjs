@@ -22,6 +22,15 @@ const SRC  = path.join(ROOT, 'src')
 const OUT  = path.join(ROOT, 'symbols.json')
 const CHECK = process.argv.includes('--check')
 
+const SRC_NORM   = SRC.replace(/\\/g, '/')
+const SRC_PREFIX = `${SRC_NORM}/`
+
+/** Returns true only for files genuinely inside src/ (not src-generated/ etc.) */
+function isUnderSrc(fileName) {
+  const f = fileName.replace(/\\/g, '/')
+  return f === SRC_NORM || f.startsWith(SRC_PREFIX)
+}
+
 // ---------------------------------------------------------------------------
 // 1. Collect src files (including .d.ts for src/types)
 // ---------------------------------------------------------------------------
@@ -145,7 +154,7 @@ const SKIP_PAIRS = new Set()
 
 for (const sourceFile of program.getSourceFiles()) {
   const fp = sourceFile.fileName.replace(/\\/g, '/')
-  if (!fp.startsWith(SRC.replace(/\\/g, '/'))) continue
+  if (!isUnderSrc(fp)) continue
   if (sourceFile.isDeclarationFile && !sourceFile.fileName.includes(SRC)) continue
 
   const rel = relPath(sourceFile.fileName)
@@ -170,8 +179,7 @@ for (const sourceFile of program.getSourceFiles()) {
     const decl = resolvedSym.declarations?.[0]
     if (!decl) continue
     const declFile = decl.getSourceFile().fileName.replace(/\\/g, '/')
-    const srcNorm = SRC.replace(/\\/g, '/')
-    if (!declFile.startsWith(srcNorm)) continue
+    if (!isUnderSrc(declFile)) continue
 
     // Skip specific (name, path) pairs that are known secondary re-exports.
     // After alias resolution most barrel duplicates collapse automatically;
@@ -202,8 +210,7 @@ for (const sourceFile of program.getSourceFiles()) {
     const defaultDecl = resolvedDefault.declarations?.[0]
     if (defaultDecl) {
       const defaultDeclFile = defaultDecl.getSourceFile().fileName.replace(/\\/g, '/')
-      const srcNorm = SRC.replace(/\\/g, '/')
-      if (defaultDeclFile.startsWith(srcNorm)) {
+      if (isUnderSrc(defaultDeclFile)) {
         const symName = resolvedDefault.name
         // Use the resolved name only if it is a real identifier, not the
         // synthetic "default" name TypeScript assigns to anonymous exports.
