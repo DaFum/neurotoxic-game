@@ -297,6 +297,20 @@ const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
 export const isForbiddenKey = (key: string): boolean => FORBIDDEN_KEYS.has(key)
 
 /**
+ * A secure wrapper around JSON.parse that uses a reviver to strip out
+ * potentially dangerous keys associated with prototype pollution.
+ *
+ * @param text The JSON string to parse
+ * @returns The parsed object, safely filtered
+ */
+export const safeJsonParse = <T = unknown>(text: string): T => {
+  return JSON.parse(text, (key: string, value: unknown) => {
+    if (isForbiddenKey(key)) return undefined
+    return value
+  })
+}
+
+/**
  * Applies event delta changes to the current game state.
  * Prevents prototype pollution and merges object properties.
  *

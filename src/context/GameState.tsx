@@ -16,7 +16,7 @@ import { secureRandom } from '../utils/crypto'
 import { handleError, StateError } from '../utils/errorHandler'
 import { getUnlocks } from '../utils/unlockManager'
 import { hasUpgrade } from '../utils/upgradeUtils'
-import { isPlainObject } from '../utils/gameStateUtils'
+import { isPlainObject, safeJsonParse } from '../utils/gameStateUtils'
 import { useLeaderboardSync } from '../hooks/useLeaderboardSync'
 
 // Import modular state management
@@ -292,7 +292,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
           try {
             const saved = localStorage.getItem(SAVE_KEY)
             if (!saved) return null
-            const parsed: unknown = JSON.parse(saved)
+            const parsed: unknown = safeJsonParse(saved)
             return isPlainObject(parsed) ? parsed : null
           } catch (err) {
             logger.error('GameState', 'Failed to parse injected state', err)
@@ -432,7 +432,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
 
     // Persist to global settings (persist across new games)
     safeStorageNoFallback('saveGlobalSettings', () => {
-      const current = JSON.parse(
+      const current = safeJsonParse<Record<string, unknown>>(
         localStorage.getItem('neurotoxic_global_settings') || '{}'
       )
       const next = { ...current, ...updates }
