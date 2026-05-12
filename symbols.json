@@ -4425,6 +4425,15 @@
         "isDefault": false
       }
     ],
+    "useKabelsalatVoidSurge": [
+      {
+        "name": "useKabelsalatVoidSurge",
+        "path": "src/scenes/kabelsalat/hooks/useKabelsalatVoidSurge.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
     "generateLightningSeeds": [
       {
         "name": "generateLightningSeeds",
@@ -8484,6 +8493,15 @@
         "isDefault": false
       }
     ],
+    "isEmptyObject": [
+      {
+        "name": "isEmptyObject",
+        "path": "src/utils/gameStateUtils.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
     "calculateFameLevel": [
       {
         "name": "calculateFameLevel",
@@ -8694,6 +8712,15 @@
     "isForbiddenKey": [
       {
         "name": "isForbiddenKey",
+        "path": "src/utils/gameStateUtils.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
+    "safeJsonParse": [
+      {
+        "name": "safeJsonParse",
         "path": "src/utils/gameStateUtils.ts",
         "source": "local",
         "type": "const",
@@ -9198,15 +9225,6 @@
       {
         "name": "calculateContinueStats",
         "path": "src/utils/postGigUtils.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      }
-    ],
-    "useKabelsalatVoidSurge": [
-      {
-        "name": "useKabelsalatVoidSurge",
-        "path": "src/scenes/kabelsalat/hooks/useKabelsalatVoidSurge.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
