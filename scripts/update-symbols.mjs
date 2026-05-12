@@ -122,6 +122,16 @@ function upsert(name, entry) {
   if (!knownSignatures[name].has(sig)) {
     knownSignatures[name].add(sig)
     knownSymbols[name].push(entry)
+  } else if (entry.exportPath) {
+    // Definition files are typically scanned before their barrels, so the
+    // first entry wins the dedup but has no exportPath. When a barrel scan
+    // provides one, merge it into the existing entry (first barrel wins).
+    const existing = knownSymbols[name].find(
+      e => (e.path ?? null) === (entry.path ?? null) &&
+           (e.module ?? null) === (entry.module ?? null) &&
+           e.isDefault === entry.isDefault
+    )
+    if (existing && !existing.exportPath) existing.exportPath = entry.exportPath
   }
 }
 
