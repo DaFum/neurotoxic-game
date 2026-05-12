@@ -9275,6 +9275,15 @@
         "isDefault": false
       }
     ],
+    "useKabelsalatVoidSurge": [
+      {
+        "name": "useKabelsalatVoidSurge",
+        "path": "src/scenes/kabelsalat/hooks/useKabelsalatVoidSurge.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
     "KabelsalatState": [
       {
         "name": "KabelsalatState",

@@ -94,6 +94,7 @@ type GigFinancialParams = {
 type KabelsalatResults = {
   isPoweredOn?: boolean
   timeLeft?: number
+  voidSurgesPurged?: number
 }
 
 export const EXPENSE_CONSTANTS = {
@@ -1037,6 +1038,10 @@ export const calculateKabelsalatMinigameResult = (
       reward = Math.floor(reward * 1.5)
     }
   }
+
+  // Stress penalty for relying on neurotoxic purges
+  const safePurgesUsed = Math.max(0, Number(safeResults.voidSurgesPurged) || 0)
+  stress += Math.floor(safePurgesUsed * 5)
 
   return { stress, reward }
 }

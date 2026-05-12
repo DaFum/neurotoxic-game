@@ -456,6 +456,8 @@
   "minigames.kabelsalat.rules.rule2Label": "Regel 2",
   "minigames.kabelsalat.rules.rule2Text": "Synths (MIDI) und Mikrofone (XLR) benötigen zuerst einen aktiven AMP (JACK).",
   "minigames.kabelsalat.rules.time": "System muss unter 25 Sekunden booten!",
+  "minigames.kabelsalat.purgeAnomaly": "ANOMALIE BEREINIGEN",
+  "minigames.kabelsalat.voidSurge": "VOID SURGE",
   "minigames.kabelsalat.rulesTitle": "RIGGING_PROTOKOLL",
   "minigames.kabelsalat.sockets.amp": "AMP_IN",
   "minigames.kabelsalat.sockets.mic": "MIC_IN",

@@ -9,6 +9,7 @@ import { useKabelsalatTimer } from './hooks/useKabelsalatTimer'
 import { useKabelsalatShuffle } from './hooks/useKabelsalatShuffle'
 import { useKabelsalatInteractions } from './hooks/useKabelsalatInteractions'
 import { useKabelsalatGameEnd } from './hooks/useKabelsalatGameEnd'
+import { useKabelsalatVoidSurge } from './hooks/useKabelsalatVoidSurge'
 
 import type { TFunction } from 'i18next'
 
@@ -28,6 +29,9 @@ export interface KabelsalatState {
   handleSocketClick: (socketId: SocketId) => void
   isPowerConnected: boolean
   forceAdvance: (isPowered: boolean) => void
+  voidSurge: number
+  voidSurgesPurged: number
+  purgeVoidSurge: () => void
 }
 
 export const useKabelsalatState = (): KabelsalatState => {
@@ -63,12 +67,7 @@ export const useKabelsalatState = (): KabelsalatState => {
     setIsGameOver
   )
 
-  // 3. Game End
-  const { forceAdvance } = useKabelsalatGameEnd(
-    isPoweredOn,
-    isGameOver,
-    timeLeft
-  )
+  // 3. Game End (updated below)
 
   // 4. Shuffle
   useKabelsalatShuffle(
@@ -81,7 +80,7 @@ export const useKabelsalatState = (): KabelsalatState => {
   )
 
   // 5. Interactions
-  const { handleCableClick, handleSocketClick } = useKabelsalatInteractions(
+  const { handleCableClick, handleSocketClick, triggerShock } = useKabelsalatInteractions(
     t,
     isPoweredOn,
     isGameOver,
@@ -93,6 +92,23 @@ export const useKabelsalatState = (): KabelsalatState => {
     isShocked,
     setIsShocked,
     setFaultReason
+  )
+
+  // 6. Void Surge (Autonomously injected mechanic)
+  const { voidSurge, voidSurgesPurged, purgeVoidSurge } = useKabelsalatVoidSurge(
+    isPoweredOn,
+    isGameOver,
+    isShocked,
+    triggerShock,
+    t
+  )
+
+  // 3. Game End
+  const { forceAdvance } = useKabelsalatGameEnd(
+    isPoweredOn,
+    isGameOver,
+    timeLeft,
+    voidSurgesPurged
   )
 
   // Lightning Seeds
@@ -116,6 +132,9 @@ export const useKabelsalatState = (): KabelsalatState => {
     handleCableClick,
     handleSocketClick,
     isPowerConnected: !!connections['power'],
-    forceAdvance
+    forceAdvance,
+    voidSurge,
+    voidSurgesPurged,
+    purgeVoidSurge
   }
 }
