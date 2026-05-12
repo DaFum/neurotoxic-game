@@ -30,6 +30,8 @@ interface KabelsalatBoardProps {
   handleSocketClick: (id: SocketId) => void
   handleCableClick: (id: CableId) => void
   onAdvance: (isPowered: boolean) => void
+  voidSurge: number
+  purgeVoidSurge: () => void
 }
 
 export const KabelsalatBoard: FC<KabelsalatBoardProps> = ({
@@ -45,7 +47,9 @@ export const KabelsalatBoard: FC<KabelsalatBoardProps> = ({
   selectedCable,
   handleSocketClick,
   handleCableClick,
-  onAdvance
+  onAdvance,
+  voidSurge,
+  purgeVoidSurge
 }) => {
   return (
     <div
@@ -60,6 +64,30 @@ export const KabelsalatBoard: FC<KabelsalatBoardProps> = ({
                 : 'border-concrete-gray'
         }`}
     >
+      {/* Void Surge Meter overlay - autonomous mechanic */}
+      {(!isGameOver && !isPoweredOn) && (
+        <div className='absolute top-4 right-4 z-20 flex flex-col items-end gap-2'>
+          <div className='text-toxic-green font-bold text-sm tracking-widest bg-void-black/80 px-2 py-1 border border-toxic-green/50'>
+            {t('ui:minigames.kabelsalat.voidSurge')}: {Math.floor(voidSurge)}%
+          </div>
+          <div className='w-48 h-4 bg-void-black border-2 border-concrete-gray p-0.5'>
+            <div
+              className={`h-full transition-all duration-300 ${voidSurge > 80 ? 'bg-error-red animate-pulse' : 'bg-cosmic-purple'}`}
+              style={{ width: `${Math.min(100, Math.max(0, voidSurge))}%` }}
+            />
+          </div>
+          {voidSurge > 0 && (
+            <button
+              type='button'
+              onClick={purgeVoidSurge}
+              className='mt-2 px-3 py-1 bg-void-black text-xs text-cosmic-purple border border-cosmic-purple hover:bg-cosmic-purple hover:text-void-black transition-colors font-bold tracking-wider'
+            >
+              {t('ui:minigames.kabelsalat.purgeAnomaly')}
+            </button>
+          )}
+        </div>
+      )}
+
       <Overlays
         t={t}
         isShocked={isShocked}

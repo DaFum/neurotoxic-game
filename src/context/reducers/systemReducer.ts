@@ -23,7 +23,8 @@ import {
   calculateFameLevel,
   isForbiddenKey,
   clampVanFuel,
-  isPlainObject
+  isPlainObject,
+  isEmptyObject
 } from '../../utils/gameStateUtils'
 import { calculateDailyUpdates } from '../../utils/simulationUtils'
 import { EXPENSE_CONSTANTS } from '../../utils/economyEngine'
@@ -89,7 +90,7 @@ const copySafePrimitiveObject = (
       copied[key] = entry
     }
   }
-  return Object.keys(copied).length > 0 ? copied : undefined
+  return !isEmptyObject(copied) ? copied : undefined
 }
 
 const MAX_SAFE_JSON_COPY_DEPTH = 12
@@ -120,7 +121,7 @@ const copySafeJsonValue = (value: unknown, depth = 0): unknown => {
     const entry = copySafeJsonValue(value[key], depth + 1)
     if (entry !== undefined) copied[key] = entry
   }
-  return Object.keys(copied).length > 0 ? copied : undefined
+  return !isEmptyObject(copied) ? copied : undefined
 }
 
 const copySafeEffectPayload = (
@@ -236,7 +237,7 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
             copiedEntry[entryKey] = entryValue
           }
         }
-        if (Object.keys(copiedEntry).length > 0) {
+        if (!isEmptyObject(copiedEntry)) {
           copied.push(copiedEntry)
         }
       }
@@ -264,7 +265,7 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
         copied[key] = entry
       }
     }
-    return Object.keys(copied).length > 0 ? copied : null
+    return !isEmptyObject(copied) ? copied : null
   }
 
   for (const nodeKey in nodesRecord) {
@@ -973,7 +974,7 @@ const sanitizeActiveEventOption = (value: unknown): EventOption | null => {
     option.disabled = value.disabled
   }
 
-  return Object.keys(option).length > 0 ? option : null
+  return !isEmptyObject(option) ? option : null
 }
 
 const sanitizeActiveEvent = (value: unknown): GameState['activeEvent'] => {
@@ -1091,7 +1092,7 @@ const sanitizeLastGigStats = (value: unknown): GameState['lastGigStats'] => {
     const parsed = finiteOptionalNumber(value[key])
     if (parsed !== undefined) sanitized[key] = parsed
   }
-  return Object.keys(sanitized).length > 0 ? sanitized : null
+  return !isEmptyObject(sanitized) ? sanitized : null
 }
 
 const sanitizeActiveQuests = (value: unknown): GameState['activeQuests'] => {

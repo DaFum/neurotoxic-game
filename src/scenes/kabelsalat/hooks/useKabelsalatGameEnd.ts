@@ -6,7 +6,8 @@ import { logger } from '../../../utils/logger'
 export const useKabelsalatGameEnd = (
   isPoweredOn: boolean,
   isGameOver: boolean,
-  timeLeft: number
+  timeLeft: number,
+  voidSurgesPurged: number = 0
 ) => {
   const { completeKabelsalatMinigame, changeScene } = useGameState()
 
@@ -57,7 +58,7 @@ export const useKabelsalatGameEnd = (
         changeScene(GAME_PHASES.GIG)
       }
     },
-    [completeKabelsalatMinigame, changeScene]
+    [completeKabelsalatMinigame, changeScene, voidSurgesPurged]
   )
 
   const scheduleGameEnd = useCallback(

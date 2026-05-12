@@ -94,6 +94,7 @@ type GigFinancialParams = {
 type KabelsalatResults = {
   isPoweredOn?: boolean
   timeLeft?: number
+  voidSurgesPurged?: number
 }
 
 export const EXPENSE_CONSTANTS = {
@@ -1037,6 +1038,19 @@ export const calculateKabelsalatMinigameResult = (
       reward = Math.floor(reward * 1.5)
     }
   }
+
+  // Stress penalty for relying on neurotoxic purges
+  const rawPurged = safeResults.voidSurgesPurged
+  let safePurgesUsed = Number(rawPurged)
+  if (!Number.isFinite(safePurgesUsed) || safePurgesUsed < 0) {
+    safePurgesUsed = 0
+  }
+  // Clamp to prevent overflow when multiplying by 5
+  safePurgesUsed = Math.min(
+    Math.floor(safePurgesUsed),
+    Math.floor(Number.MAX_SAFE_INTEGER / 5)
+  )
+  stress += safePurgesUsed * 5
 
   return { stress, reward }
 }
