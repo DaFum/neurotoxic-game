@@ -161,7 +161,9 @@ const SKIP_NAMES = new Set(['__esModule'])
 // After alias resolution improvements, all known duplicates now collapse automatically.
 const SKIP_PAIRS = new Set()
 
-for (const sourceFile of program.getSourceFiles()) {
+for (const srcFilePath of srcFiles) {
+  const sourceFile = program.getSourceFile(srcFilePath)
+  if (!sourceFile) continue
   const fp = sourceFile.fileName.replace(/\\/g, '/')
   if (!isUnderSrc(fp)) continue
   if (sourceFile.isDeclarationFile && !sourceFile.fileName.includes(SRC)) continue
