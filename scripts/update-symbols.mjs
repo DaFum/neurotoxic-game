@@ -214,6 +214,7 @@ for (const sourceFile of program.getSourceFiles()) {
   // --- dedicated default-export pass ---
   const defaultSym = moduleExports.find(s => s.name === 'default')
   if (defaultSym) {
+    const defaultTypeOnly = isTypeOnlyExport(defaultSym)
     const resolvedDefault = resolveAlias(checker, defaultSym)
 
     const defaultDecl = resolvedDefault.declarations?.[0]
@@ -243,7 +244,7 @@ for (const sourceFile of program.getSourceFiles()) {
           isDefault: true,
         }
         if (exportPath !== undefined) entry.exportPath = exportPath
-        if (isTypeOnlySym(resolvedDefault)) entry.typeOnly = true
+        if (defaultTypeOnly || isTypeOnlySym(resolvedDefault)) entry.typeOnly = true
         upsert(key, entry)
       }
     }
