@@ -277,7 +277,7 @@ export const validateGameEvent = (event: unknown): boolean => {
         `Event "${e.id}" option[${i}]: outcomeText must start with 'events:' (got: ${JSON.stringify(o.outcomeText)})`
       )
     }
-    if (!o.effect && !o.skillCheck) {
+    if (!Object.hasOwn(o, 'effect') && !Object.hasOwn(o, 'skillCheck')) {
       throw new Error(
         `Event "${e.id}" option[${i}]: must have either an effect or a skillCheck`
       )
@@ -292,7 +292,12 @@ export const validateGameEvent = (event: unknown): boolean => {
       )
     }
     const chance = e.chance
-    if (typeof chance !== 'number' || chance < 0 || chance > 1) {
+    if (
+      typeof chance !== 'number' ||
+      !Number.isFinite(chance) ||
+      chance < 0 ||
+      chance > 1
+    ) {
       throw new Error(
         `Crisis-tagged event "${e.id}": chance must be a number in [0, 1]`
       )

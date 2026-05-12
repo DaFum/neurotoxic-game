@@ -75,6 +75,11 @@ describe('validateGameEvent', () => {
     assert.throws(() => validateGameEvent(e), /crisis_/)
   })
 
+  it('throws when crisis-tagged event has NaN chance', () => {
+    const e = { ...baseEvent, tags: ['crisis'], id: 'crisis_test', chance: NaN }
+    assert.throws(() => validateGameEvent(e), /chance/)
+  })
+
   it('throws when event has prerequisiteEventId but it is empty', () => {
     const e = { ...baseEvent, prerequisiteEventId: '' }
     assert.throws(() => validateGameEvent(e), /prerequisiteEventId/)

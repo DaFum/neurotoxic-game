@@ -9,10 +9,18 @@ const { logger, LOG_LEVELS } = require('../src/utils/logger.ts')
 // Silence engine logs so only the summary table is printed
 logger.setLevel(LOG_LEVELS.NONE)
 
-const toursArgIdx = process.argv.indexOf('--tours')
-const daysArgIdx = process.argv.indexOf('--days')
-const TOURS = parseInt((toursArgIdx !== -1 && process.argv[toursArgIdx + 1]) || '100', 10)
-const DAYS_PER_TOUR = parseInt((daysArgIdx !== -1 && process.argv[daysArgIdx + 1]) || '30', 10)
+function parsePositiveIntArg(flag, fallback) {
+  const idx = process.argv.indexOf(flag)
+  const raw = idx !== -1 ? process.argv[idx + 1] : undefined
+  const value = raw === undefined ? fallback : Number.parseInt(raw, 10)
+  if (!Number.isInteger(value) || value <= 0) {
+    throw new Error(`${flag} must be a positive integer (got: ${JSON.stringify(raw)})`)
+  }
+  return value
+}
+
+const TOURS = parsePositiveIntArg('--tours', 100)
+const DAYS_PER_TOUR = parsePositiveIntArg('--days', 30)
 
 const PLAYSTYLES = {
   conservative:    { perfMean: 70, perfVariance: 10, socialActivity: 0.3, spendMultiplier: 0.7 },
@@ -22,7 +30,7 @@ const PLAYSTYLES = {
 }
 
 function randomNormal(mean, variance) {
-  const u1 = Math.random()
+  const u1 = 1 - Math.random()
   const u2 = Math.random()
   const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2)
   return Math.max(0, Math.min(100, mean + z * Math.sqrt(variance)))
@@ -62,7 +70,7 @@ function simulateTour(playstyle) {
           gigStats: {},
           context: {}
         })
-        const net = financials.net * spendMultiplier
+        const net = financials.income.total - financials.expenses.total * spendMultiplier
         s.money = clampPlayerMoney(s.money + net)
 
         // calculateFameGain returns the delta; add it to current fame
@@ -80,7 +88,7 @@ function simulateTour(playstyle) {
       try {
         const growth = calculateSocialGrowth('instagram', perf, s.followers, false, s.controversy + controversyBias, 50)
         s.followers = Math.max(0, s.followers + growth)
-        s.controversy = Math.min(100, s.controversy + (controversyBias > 0 ? 2 : -0.5))
+        s.controversy = Math.max(0, Math.min(100, s.controversy + (controversyBias > 0 ? 2 : -0.5)))
       } catch (err) {
         console.error(`[Social Simulation Error] Day ${d}:`, err instanceof Error ? err.message : String(err))
       }

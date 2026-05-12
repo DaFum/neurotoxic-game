@@ -41,6 +41,9 @@ export const MINIGAME_REGISTRY = {
     scene: GAME_PHASES.PRE_GIG_MINIGAME,
     calculateResult: calculateKabelsalatMinigameResult
   }
-} as const satisfies Record<string, MinigameRegistryEntry>
+} as const satisfies Record<
+  'travel' | 'roadie' | 'ampCalibration' | 'kabelsalat',
+  MinigameRegistryEntry
+>
 
 export type MinigameKey = keyof typeof MINIGAME_REGISTRY
