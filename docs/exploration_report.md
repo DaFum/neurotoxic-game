@@ -1,5 +1,7 @@
 # Codebase Exploration Report
 
+*Note: This report was generated with the assistance of an AI agent (Jules). The agent's role is to aid in codebase exploration, refactoring, and feature development by summarizing complex architectural patterns and executing specific instructions. For detailed rules on how agents interact with this repository, refer to the `AGENTS.md` file located in the relevant domain directories (e.g., `src/context/AGENTS.md`). Agents should be utilized for well-scoped tasks, boilerplate generation, and structured analysis. Be aware of their limitations: agents rely on explicit context (like `AGENTS.md`) and may hallucinate connections across completely disjointed domains without proper guidance.*
+
 ## Area 1: Save system / versioning
 
 ### 1. Where saves are written and read
