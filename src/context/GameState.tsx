@@ -432,10 +432,12 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
 
     // Persist to global settings (persist across new games)
     safeStorageNoFallback('saveGlobalSettings', () => {
-      const current = safeJsonParse<Record<string, unknown>>(
+      const current = safeJsonParse(
         localStorage.getItem('neurotoxic_global_settings') || '{}'
       )
-      const next = { ...current, ...updates }
+      const next = isPlainObject(current)
+        ? { ...current, ...updates }
+        : { ...updates }
       localStorage.setItem('neurotoxic_global_settings', JSON.stringify(next))
     })
   }, [])

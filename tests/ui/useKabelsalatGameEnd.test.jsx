@@ -49,6 +49,27 @@ describe('useKabelsalatGameEnd', () => {
     expect(mockChangeScene).toHaveBeenCalledWith('GIG')
   })
 
+  it('uses the latest timeLeft value when the timeout fires', () => {
+    const { rerender } = renderHook(
+      ({ isPoweredOn, isGameOver, timeLeft }) =>
+        useKabelsalatGameEnd(isPoweredOn, isGameOver, timeLeft),
+      {
+        initialProps: { isPoweredOn: true, isGameOver: false, timeLeft: 12 }
+      }
+    )
+
+    rerender({ isPoweredOn: true, isGameOver: false, timeLeft: 8 })
+
+    vi.advanceTimersByTime(2500)
+
+    expect(mockCompleteKabelsalatMinigame).toHaveBeenCalledWith({
+      isPoweredOn: true,
+      timeLeft: 8,
+      voidSurgesPurged: 0
+    })
+    expect(mockChangeScene).toHaveBeenCalledWith('GIG')
+  })
+
   it('survives StrictMode effect replay and still transitions once', () => {
     renderHook(() => useKabelsalatGameEnd(true, false, 9), {
       wrapper: StrictMode
