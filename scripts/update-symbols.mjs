@@ -70,9 +70,12 @@ function kindLabel(sym) {
   if (ts.isInterfaceDeclaration(decl)) return 'interface'
   if (ts.isTypeAliasDeclaration(decl)) return 'type'
   if (ts.isEnumDeclaration(decl)) return 'enum'
-  if (ts.isVariableDeclaration(decl)) {
-    const list = decl.parent
-    if (ts.isVariableDeclarationList(list)) {
+  if (ts.isVariableDeclaration(decl) || ts.isBindingElement(decl)) {
+    // Walk up to the VariableDeclarationList to read the keyword flags.
+    // BindingElement covers destructured exports (e.g. export let { a } = obj).
+    let list = decl.parent
+    while (list && !ts.isVariableDeclarationList(list)) list = list.parent
+    if (list) {
       if (list.flags & ts.NodeFlags.Const) return 'const'
       if (list.flags & ts.NodeFlags.Let)   return 'let'
       return 'var'
@@ -140,7 +143,8 @@ for (const sourceFile of program.getSourceFiles()) {
   if (!moduleSym) continue
 
   // getExportsOfModule resolves export * re-exports transitively
-  for (const sym of checker.getExportsOfModule(moduleSym)) {
+  const moduleExports = checker.getExportsOfModule(moduleSym)
+  for (const sym of moduleExports) {
     if (SKIP_NAMES.has(sym.name)) continue
     if (sym.name === 'default') continue  // handled in dedicated default-export pass below
 
@@ -181,7 +185,7 @@ for (const sourceFile of program.getSourceFiles()) {
   }
 
   // --- dedicated default-export pass ---
-  const defaultSym = checker.getExportsOfModule(moduleSym).find(s => s.name === 'default')
+  const defaultSym = moduleExports.find(s => s.name === 'default')
   if (defaultSym) {
     const resolvedDefault = resolveAlias(checker, defaultSym)
 
@@ -196,18 +200,23 @@ for (const sourceFile of program.getSourceFiles()) {
         // For `export default function Foo()`, the symbol name stays 'default'
         // but the declaration carries the real name — fall back to that.
         const declName = /** @type {any} */ (defaultDecl).name?.text
+        const defPath = relPath(defaultDeclFile)
+        // Anchor anonymous fallback key to the definition file, not the scan
+        // file, so re-exporting barrels don't produce multiple identities.
         const key = (symName && symName !== 'default' && !symName.startsWith('__'))
           ? symName
           : (declName && declName !== 'default' && !declName.startsWith('__'))
             ? declName
-            : `default@${rel}`
+            : `default@${defPath}`
+        const exportPath = rel !== defPath ? rel : undefined
         const entry = {
           name: key,
-          path: relPath(defaultDeclFile),
+          path: defPath,
           source: 'local',
           type: kindLabel(resolvedDefault),
           isDefault: true,
         }
+        if (exportPath !== undefined) entry.exportPath = exportPath
         if (isTypeOnlySym(resolvedDefault)) entry.typeOnly = true
         upsert(key, entry)
       }
