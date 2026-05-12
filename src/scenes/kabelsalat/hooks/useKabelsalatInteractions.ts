@@ -6,6 +6,7 @@ import {
   type Dispatch,
   type SetStateAction
 } from 'react'
+import type { TFunction } from 'i18next'
 import { SOCKET_DEFS, CABLE_MAP } from '../kabelsalatConstants'
 import type { CableId } from '../kabelsalatConstants'
 import type { SocketId } from '../../../types/kabelsalat'
@@ -16,7 +17,7 @@ const isSocketId = (value: string): value is SocketId =>
   Object.hasOwn(SOCKET_DEFS, value)
 
 export const useKabelsalatInteractions = (
-  t: (key: string) => string,
+  t: TFunction,
   isPoweredOn: boolean,
   isGameOver: boolean,
   isWinningRef: MutableRefObject<boolean>,

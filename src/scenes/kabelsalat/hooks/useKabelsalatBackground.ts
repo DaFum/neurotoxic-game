@@ -26,7 +26,11 @@ export const useKabelsalatBackground = () => {
           setBgTextureUrl(rawUrl)
         }
       } catch (err) {
-        logger.warn('Failed to load Kabelsalat background texture', err)
+        logger.warn(
+          'useKabelsalatBackground',
+          'Failed to load Kabelsalat background texture',
+          err
+        )
         if (isMounted && rawUrl) {
           setBgTextureUrl(rawUrl)
         }

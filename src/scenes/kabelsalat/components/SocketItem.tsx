@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react'
 import type { FC } from 'react'
+import type { TFunction } from 'i18next'
 import { PlugGraphics } from './PlugGraphics.tsx'
 import { SocketGraphics } from './SocketGraphics.tsx'
 import {
@@ -12,7 +13,7 @@ import type { CableId } from '../kabelsalatConstants'
 import type { SocketId } from '../../../types/kabelsalat'
 
 interface SocketItemProps {
-  t: (key: string, options?: unknown) => string
+  t: TFunction
   socketId: SocketId
   index: number
   connections: Partial<Record<SocketId, CableId>>

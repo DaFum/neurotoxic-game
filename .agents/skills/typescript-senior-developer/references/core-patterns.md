@@ -140,18 +140,18 @@ For sanitizers, explicitly ignore `__proto__`, `constructor`, and `prototype` if
 
 ## Utility Types Used in the Project
 
-| Utility | Use |
-| --- | --- |
-| `Partial<T>` | update payloads such as partial player state |
-| `Pick<T, K>` | narrow a context value passed to a sub-component |
-| `Omit<T, K>` | strip persisted fields and restore them on load |
-| `Extract<U, V>` | action creator return types |
-| `Exclude<U, V>` | remove scene variants from a sub-flow |
-| `ReturnType<F>` | infer reducer, selector, or factory output |
-| `Parameters<F>` | mirror callback signatures in wrappers or mocks |
+| Utility          | Use                                                     |
+| ---------------- | ------------------------------------------------------- |
+| `Partial<T>`     | update payloads such as partial player state            |
+| `Pick<T, K>`     | narrow a context value passed to a sub-component        |
+| `Omit<T, K>`     | strip persisted fields and restore them on load         |
+| `Extract<U, V>`  | action creator return types                             |
+| `Exclude<U, V>`  | remove scene variants from a sub-flow                   |
+| `ReturnType<F>`  | infer reducer, selector, or factory output              |
+| `Parameters<F>`  | mirror callback signatures in wrappers or mocks         |
 | `NonNullable<T>` | express a value after explicit null/undefined filtering |
-| `Record<K, V>` | dictionaries keyed by a finite string union |
-| `Readonly<T>` | frozen constants and immutable config surfaces |
+| `Record<K, V>`   | dictionaries keyed by a finite string union             |
+| `Readonly<T>`    | frozen constants and immutable config surfaces          |
 
 Reusable helper for action payloads:
 
@@ -237,7 +237,11 @@ Inline props are fine for one-off components:
 
 ```tsx
 function ScoreDisplay({ score, label }: { score: number; label: string }) {
-  return <div>{label}: {score}</div>
+  return (
+    <div>
+      {label}: {score}
+    </div>
+  )
 }
 ```
 

@@ -47,10 +47,29 @@ vi.mock('../../src/utils/audio/audioEngine', () => {
   return {
     audioManager: manager,
     audioService: {
-      ...manager,
       getState: manager.getStateSnapshot,
       hasNativeSubscribe: vi.fn(() => true),
-      setSfxVolume: manager.setSFXVolume
+      subscribe: manager.subscribe,
+      setMusicVolume: manager.setMusicVolume,
+      setSfxVolume: manager.setSFXVolume,
+      toggleMute: manager.toggleMute,
+      stopMusic: manager.stopMusic,
+      resumeMusic: manager.resumeMusic,
+      get musicVolume() {
+        return manager.musicVolume
+      },
+      get sfxVolume() {
+        return manager.sfxVolume
+      },
+      get muted() {
+        return manager.muted
+      },
+      get isPlaying() {
+        return manager.isPlaying
+      },
+      get currentSongId() {
+        return manager.currentSongId
+      }
     }
   }
 })

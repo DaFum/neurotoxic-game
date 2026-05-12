@@ -14,17 +14,18 @@
 
 ## File Map
 
-| File | Action | Purpose |
-|---|---|---|
-| `scripts/update-symbols.mjs` | Modify | All five semantic fixes |
-| `tests/node/updateSymbols.test.js` | Create | Integration assertions on regenerated output |
-| `symbols.json` | Regenerated | Do not hand-edit; always via `node scripts/update-symbols.mjs` |
+| File                               | Action      | Purpose                                                        |
+| ---------------------------------- | ----------- | -------------------------------------------------------------- |
+| `scripts/update-symbols.mjs`       | Modify      | All five semantic fixes                                        |
+| `tests/node/updateSymbols.test.js` | Create      | Integration assertions on regenerated output                   |
+| `symbols.json`                     | Regenerated | Do not hand-edit; always via `node scripts/update-symbols.mjs` |
 
 ---
 
 ## Task 1: Add `source` discriminant to all entries
 
 **Files:**
+
 - Modify: `scripts/update-symbols.mjs:140-148` (entry construction in named-export loop)
 - Modify: `scripts/update-symbols.mjs:218-220` (EXTERNAL merge loop)
 - Create: `tests/node/updateSymbols.test.js`
@@ -58,7 +59,11 @@ test('every external symbol entry has source: "external"', () => {
   for (const [name, entries] of Object.entries(ks)) {
     for (const entry of entries) {
       if (entry.module !== undefined) {
-        assert.equal(entry.source, 'external', `${name} missing source: "external"`)
+        assert.equal(
+          entry.source,
+          'external',
+          `${name} missing source: "external"`
+        )
       }
     }
   }
@@ -78,13 +83,13 @@ Expected: two FAILs — `source` field does not exist yet.
 In `scripts/update-symbols.mjs`, find the `entry` object inside the named-export loop (around line 140) and add the field:
 
 ```js
-    const entry = {
-      name: exportedName,
-      path: rel,
-      source: 'local',
-      type: kindLabel(sym),
-      isDefault: false,
-    }
+const entry = {
+  name: exportedName,
+  path: rel,
+  source: 'local',
+  type: kindLabel(sym),
+  isDefault: false
+}
 ```
 
 - [ ] **Step 4: Add `source: 'external'` to the EXTERNAL merge loop**
@@ -125,6 +130,7 @@ git commit -m "feat: add source discriminant to symbol index entries"
 ## Task 2: Tighten `kindLabel` for const / let / var
 
 **Files:**
+
 - Modify: `scripts/update-symbols.mjs:65-74` (the `kindLabel` function)
 - Modify: `tests/node/updateSymbols.test.js` (add test)
 
@@ -157,7 +163,12 @@ Find `function kindLabel(sym)` (around line 65) and replace the entire function:
 function kindLabel(sym) {
   const decl = sym.declarations?.[0]
   if (!decl) return 'const'
-  if (ts.isFunctionDeclaration(decl) || ts.isFunctionExpression(decl) || ts.isArrowFunction(decl)) return 'function'
+  if (
+    ts.isFunctionDeclaration(decl) ||
+    ts.isFunctionExpression(decl) ||
+    ts.isArrowFunction(decl)
+  )
+    return 'function'
   if (ts.isClassDeclaration(decl) || ts.isClassExpression(decl)) return 'class'
   if (ts.isInterfaceDeclaration(decl)) return 'interface'
   if (ts.isTypeAliasDeclaration(decl)) return 'type'
@@ -166,7 +177,7 @@ function kindLabel(sym) {
     const list = decl.parent
     if (ts.isVariableDeclarationList(list)) {
       if (list.flags & ts.NodeFlags.Const) return 'const'
-      if (list.flags & ts.NodeFlags.Let)   return 'let'
+      if (list.flags & ts.NodeFlags.Let) return 'let'
       return 'var'
     }
   }
@@ -209,6 +220,7 @@ git commit -m "feat: distinguish const/let/var in kindLabel"
 This is the core semantic fix. `sym` inside `getExportsOfModule` for a barrel file carries the ExportSpecifier as its declaration, not the original function. Unwrapping via `getAliasedSymbol` gives the real symbol.
 
 **Files:**
+
 - Modify: `scripts/update-symbols.mjs:113-150` (the main export loop body)
 - Modify: `tests/node/updateSymbols.test.js` (add assertions)
 
@@ -221,9 +233,17 @@ test('setupAudio has exactly one entry and points to setup.ts', () => {
   const ks = loadSymbols()
   const entries = ks['setupAudio']
   assert.ok(entries, 'setupAudio should be in index')
-  assert.equal(entries.length, 1, 'should have exactly one entry (no barrel duplicate)')
+  assert.equal(
+    entries.length,
+    1,
+    'should have exactly one entry (no barrel duplicate)'
+  )
   assert.equal(entries[0].path, 'src/utils/audio/setup.ts')
-  assert.equal(entries[0].type, 'function', 'type should be function, not const')
+  assert.equal(
+    entries[0].type,
+    'function',
+    'type should be function, not const'
+  )
   assert.equal(entries[0].source, 'local')
 })
 
@@ -245,8 +265,15 @@ test('ActionType has exactly one entry pointing to actionTypes.ts', () => {
   const ks = loadSymbols()
   const entries = ks['ActionType']
   assert.ok(entries, 'ActionType should be in index')
-  assert.equal(entries.length, 1, 'ActionType should not be duplicated via index.ts barrel')
-  assert.ok(entries[0].path.includes('actionTypes'), `path was ${entries[0].path}`)
+  assert.equal(
+    entries.length,
+    1,
+    'ActionType should not be duplicated via index.ts barrel'
+  )
+  assert.ok(
+    entries[0].path.includes('actionTypes'),
+    `path was ${entries[0].path}`
+  )
 })
 ```
 
@@ -341,6 +368,7 @@ git commit -m "feat: resolve alias symbols to definition site for path and kindL
 ## Task 4: Capture default exports
 
 **Files:**
+
 - Modify: `scripts/update-symbols.mjs:101` (SKIP_NAMES — remove `'default'`)
 - Modify: `scripts/update-symbols.mjs:113-150` (add `'default'` guard + default pass after named loop)
 - Modify: `tests/node/updateSymbols.test.js` (add assertions)
@@ -363,13 +391,22 @@ test('App is indexed as a default export from src/App.tsx', () => {
 test('default exports have isDefault: true', () => {
   const ks = loadSymbols()
   // All files known to have default exports should appear with isDefault: true
-  const defaultEntries = Object.values(ks).flat().filter(e => e.isDefault && e.source === 'local')
-  assert.ok(defaultEntries.length >= 5, `Expected at least 5 local default exports, got ${defaultEntries.length}`)
+  const defaultEntries = Object.values(ks)
+    .flat()
+    .filter(e => e.isDefault && e.source === 'local')
+  assert.ok(
+    defaultEntries.length >= 5,
+    `Expected at least 5 local default exports, got ${defaultEntries.length}`
+  )
 })
 
 test('no symbol entry has name "default"', () => {
   const ks = loadSymbols()
-  assert.equal(ks['default'], undefined, '"default" should not be a key; anonymous exports use default@path')
+  assert.equal(
+    ks['default'],
+    undefined,
+    '"default" should not be a key; anonymous exports use default@path'
+  )
 })
 ```
 
@@ -384,22 +421,26 @@ Expected: the three new tests FAIL.
 - [ ] **Step 3: Remove `'default'` from SKIP_NAMES and add explicit guard in main loop**
 
 Find this line:
+
 ```js
 const SKIP_NAMES = new Set(['__esModule', 'default'])
 ```
 
 Change it to:
+
 ```js
 const SKIP_NAMES = new Set(['__esModule'])
 ```
 
 Then find the first `continue` checks inside the export loop:
+
 ```js
     if (SKIP_NAMES.has(sym.name)) continue
     if (sym.name.startsWith('_')) continue
 ```
 
 Add an explicit default guard immediately after:
+
 ```js
     if (SKIP_NAMES.has(sym.name)) continue
     if (sym.name === 'default') continue  // handled in dedicated default-export pass below
@@ -411,38 +452,43 @@ Add an explicit default guard immediately after:
 After the closing brace of the `for (const sym of checker.getExportsOfModule(moduleSym))` loop (and before the outer `for (const sourceFile ...)` loop closes), add:
 
 ```js
-  // --- dedicated default-export pass ---
-  const defaultSym = checker.getExportsOfModule(moduleSym).find(s => s.name === 'default')
-  if (defaultSym) {
-    let resolvedDefault = defaultSym
-    if (defaultSym.flags & ts.SymbolFlags.Alias) {
-      const aliased = checker.getAliasedSymbol(defaultSym)
-      if (aliased.declarations?.length) resolvedDefault = aliased
-    }
+// --- dedicated default-export pass ---
+const defaultSym = checker
+  .getExportsOfModule(moduleSym)
+  .find(s => s.name === 'default')
+if (defaultSym) {
+  let resolvedDefault = defaultSym
+  if (defaultSym.flags & ts.SymbolFlags.Alias) {
+    const aliased = checker.getAliasedSymbol(defaultSym)
+    if (aliased.declarations?.length) resolvedDefault = aliased
+  }
 
-    const defaultDecl = resolvedDefault.declarations?.[0]
-    if (defaultDecl) {
-      const defaultDeclFile = defaultDecl.getSourceFile().fileName.replace(/\\/g, '/')
-      const srcNorm = SRC.replace(/\\/g, '/')
-      if (defaultDeclFile.startsWith(srcNorm)) {
-        const symName = resolvedDefault.name
-        // Use the resolved name only if it is a real identifier, not the
-        // synthetic "default" name TypeScript assigns to anonymous exports.
-        const key = (symName && symName !== 'default' && !symName.startsWith('__'))
+  const defaultDecl = resolvedDefault.declarations?.[0]
+  if (defaultDecl) {
+    const defaultDeclFile = defaultDecl
+      .getSourceFile()
+      .fileName.replace(/\\/g, '/')
+    const srcNorm = SRC.replace(/\\/g, '/')
+    if (defaultDeclFile.startsWith(srcNorm)) {
+      const symName = resolvedDefault.name
+      // Use the resolved name only if it is a real identifier, not the
+      // synthetic "default" name TypeScript assigns to anonymous exports.
+      const key =
+        symName && symName !== 'default' && !symName.startsWith('__')
           ? symName
           : `default@${rel}`
-        const entry = {
-          name: key,
-          path: relPath(defaultDeclFile),
-          source: 'local',
-          type: kindLabel(resolvedDefault),
-          isDefault: true,
-        }
-        if (isTypeOnlySym(resolvedDefault)) entry.typeOnly = true
-        upsert(key, entry)
+      const entry = {
+        name: key,
+        path: relPath(defaultDeclFile),
+        source: 'local',
+        type: kindLabel(resolvedDefault),
+        isDefault: true
       }
+      if (isTypeOnlySym(resolvedDefault)) entry.typeOnly = true
+      upsert(key, entry)
     }
   }
+}
 ```
 
 - [ ] **Step 5: Regenerate `symbols.json`**
@@ -486,6 +532,7 @@ git commit -m "feat: capture default exports in symbol index"
 The alias-resolution change collapses most barrel duplicates automatically. The four current SKIP_PAIRS entries may no longer be needed.
 
 **Files:**
+
 - Modify: `scripts/update-symbols.mjs:106-111` (SKIP_PAIRS set)
 
 - [ ] **Step 1: Temporarily comment out all SKIP_PAIRS entries and regenerate**
@@ -497,7 +544,7 @@ const SKIP_PAIRS = new Set([
   'ActionTypes@src/context/gameReducer.ts',
   'PRACTICE_RETURN_SCENES@src/context/GameState.tsx',
   'getPrimaryEffect@src/ui/bandhq/hooks/usePurchaseLogic.ts',
-  '_resetLastMinigameFallback@src/scenes/PreGig.tsx',
+  '_resetLastMinigameFallback@src/scenes/PreGig.tsx'
 ])
 ```
 
@@ -544,7 +591,7 @@ For each of `ActionTypes`, `PRACTICE_RETURN_SCENES`, `getPrimaryEffect`:
 const SKIP_PAIRS = new Set([
   // ActionTypes is independently declared in both actionTypes.ts and gameReducer.ts
   // (not a re-export), so alias resolution alone cannot collapse the duplicate.
-  'ActionTypes@src/context/gameReducer.ts',
+  'ActionTypes@src/context/gameReducer.ts'
 ])
 ```
 
@@ -576,6 +623,7 @@ git commit -m "refactor: remove obsolete SKIP_PAIRS entries after alias resoluti
 `exportPath` is first-encounter-wins, so the output depends on file-scan order. Verify the order is stable (the scanner uses `readdirSync` + alphabetical sort, which is deterministic on any OS).
 
 **Files:**
+
 - Modify: `tests/node/updateSymbols.test.js` (add determinism test)
 
 - [ ] **Step 1: Add a determinism test**

@@ -1,12 +1,13 @@
 # Codebase Exploration Report
 
-*Note: This report was generated with the assistance of an AI agent (Jules). The agent's role is to aid in codebase exploration, refactoring, and feature development by summarizing complex architectural patterns and executing specific instructions. For detailed rules on how agents interact with this repository, refer to the `AGENTS.md` file located in the relevant domain directories (e.g., `src/context/AGENTS.md`). Agents should be utilized for well-scoped tasks, boilerplate generation, and structured analysis. Be aware of their limitations: agents rely on explicit context (like `AGENTS.md`) and may hallucinate connections across completely disjointed domains without proper guidance.*
+_Note: This report was generated with the assistance of an AI agent (Jules). The agent's role is to aid in codebase exploration, refactoring, and feature development by summarizing complex architectural patterns and executing specific instructions. For detailed rules on how agents interact with this repository, refer to the `AGENTS.md` file located in the relevant domain directories (e.g., `src/context/AGENTS.md`). Agents should be utilized for well-scoped tasks, boilerplate generation, and structured analysis. Be aware of their limitations: agents rely on explicit context (like `AGENTS.md`) and may hallucinate connections across completely disjointed domains without proper guidance._
 
 ## Area 1: Save system / versioning
 
 ### 1. Where saves are written and read
 
 Saves are primarily managed in `src/context/usePersistence.ts`.
+
 - **SAVE_KEY**: `export const SAVE_KEY = 'neurotoxic_v3_save'`
 - **Writing**: The `saveGame` function calls `createPersistedState(stateSnapshot)` which maps the current `GameState` into a serializable object containing whitelisted keys. It then uses `localStorage.setItem(SAVE_KEY, JSON.stringify(saveData))` (wrapped in `safeStorage`).
 - **Reading**: The `loadGame` function uses `localStorage.getItem(SAVE_KEY)`, parses it, validates it with `validateSaveData(parsed)` (from `src/utils/saveValidator.ts`), and constructs the raw load payload.
@@ -36,11 +37,11 @@ export const createRawLoadPayload = (
 - **Migration Logic**: In `src/context/reducers/systemReducer.ts`, inside `handleLoadGame`, there is a basic version check that bumps version 1.0 to 2:
 
 ```typescript
-  // Version Migration Map
-  if (migratedState.version < 2) {
-    // 1.0 -> 2 additions (if any structured layout changes need applying)
-    migratedState.version = 2
-  }
+// Version Migration Map
+if (migratedState.version < 2) {
+  // 1.0 -> 2 additions (if any structured layout changes need applying)
+  migratedState.version = 2
+}
 ```
 
 ### 3. The LOAD_GAME reducer case
@@ -60,18 +61,18 @@ Located in `src/context/reducers/systemReducer.ts` as `handleLoadGame`. It does 
 
 Here are the exported interfaces/types and their logical domains:
 
-*   **System/Global Domains:** `GameState`, `GamePhase`, `Rarity`, `GameSettings`, `UnknownRecord`, `RawGameSettings`, `RawLoadedGame`, `Action`, `GameAction`
-*   **Events/Story:** `EventOption`, `GameEvent`
-*   **Map/World:** `Venue`, `MapNode`, `GameMap`
-*   **NPCs/Characters:** `CharacterProfile`, `CharacterTrait`
-*   **Minigames:** `MinigameState`
-*   **Player/Progression:** `PlayerState`
-*   **Band/Inventory:** `BandMember`, `StashItem`, `BandState`
-*   **Social/Rivals:** `BrandAlignment`, `RivalBandState`, `SocialState`, `PostResult`
-*   **Gigs/Performance:** `GigModifiers`, `PostGigSummary`
-*   **UI/System:** `ToastPayload`
-*   **Quests:** `QuestState`
-*   **Action Payloads (System/Minigame/Events):** `ResetStatePayload`, `EventDeltaPayload`, `UpdatePlayerPayload`, `UpdateBandPayload`, `CompleteTravelMinigamePayload`, `ClinicActionPayload`, `DarkWebLeakConfig`, `DarkWebLeakPayload`, `PirateBroadcastPayload`, `BloodBankDonatePayload`, `TradeVoidItemPayload`, `MerchPressPayload`
+- **System/Global Domains:** `GameState`, `GamePhase`, `Rarity`, `GameSettings`, `UnknownRecord`, `RawGameSettings`, `RawLoadedGame`, `Action`, `GameAction`
+- **Events/Story:** `EventOption`, `GameEvent`
+- **Map/World:** `Venue`, `MapNode`, `GameMap`
+- **NPCs/Characters:** `CharacterProfile`, `CharacterTrait`
+- **Minigames:** `MinigameState`
+- **Player/Progression:** `PlayerState`
+- **Band/Inventory:** `BandMember`, `StashItem`, `BandState`
+- **Social/Rivals:** `BrandAlignment`, `RivalBandState`, `SocialState`, `PostResult`
+- **Gigs/Performance:** `GigModifiers`, `PostGigSummary`
+- **UI/System:** `ToastPayload`
+- **Quests:** `QuestState`
+- **Action Payloads (System/Minigame/Events):** `ResetStatePayload`, `EventDeltaPayload`, `UpdatePlayerPayload`, `UpdateBandPayload`, `CompleteTravelMinigamePayload`, `ClinicActionPayload`, `DarkWebLeakConfig`, `DarkWebLeakPayload`, `PirateBroadcastPayload`, `BloodBankDonatePayload`, `TradeVoidItemPayload`, `MerchPressPayload`
 
 ### 2. Other existing type files in `src/types/`
 
@@ -89,16 +90,16 @@ Based on a directory listing (`ls src/types/`), the following type files exist:
 - `rhythm.d.ts`
 - `rhythmGame.d.ts`
 
-*(Note: There is also an `AGENTS.md` file in this directory.)*
+_(Note: There is also an `AGENTS.md` file in this directory.)_
 
 ### 3. Types that belong to their own domain files
 
 `game.d.ts` is currently acting as a monolithic catch-all for many disparate domains. The following types clearly belong in distinct domain-specific `.d.ts` files to improve modularity:
 
-*   **Quest Types:** `QuestState` -> could move to `quest.d.ts`
-*   **Event Types:** `EventOption`, `GameEvent` -> could move to `events.d.ts`
-*   **Social Types:** `SocialState`, `BrandAlignment`, `PostResult` -> could move to `social.d.ts`
-*   **NPC/Character Types:** `CharacterProfile`, `CharacterTrait` -> could move to `npc.d.ts` or `character.d.ts`
-*   **Map/Venue Types:** `MapNode`, `GameMap`, `Venue` -> could move to `map.d.ts` or `world.d.ts`
-*   **Gig/Performance Types:** `GigModifiers`, `PostGigSummary` -> could move to `gig.d.ts` or merge with rhythm types.
-*   **Minigame Specific Types:** `CompleteTravelMinigamePayload`, `ClinicActionPayload`, etc. -> could move to `actions.d.ts` or specific minigame/scene type definitions.
+- **Quest Types:** `QuestState` -> could move to `quest.d.ts`
+- **Event Types:** `EventOption`, `GameEvent` -> could move to `events.d.ts`
+- **Social Types:** `SocialState`, `BrandAlignment`, `PostResult` -> could move to `social.d.ts`
+- **NPC/Character Types:** `CharacterProfile`, `CharacterTrait` -> could move to `npc.d.ts` or `character.d.ts`
+- **Map/Venue Types:** `MapNode`, `GameMap`, `Venue` -> could move to `map.d.ts` or `world.d.ts`
+- **Gig/Performance Types:** `GigModifiers`, `PostGigSummary` -> could move to `gig.d.ts` or merge with rhythm types.
+- **Minigame Specific Types:** `CompleteTravelMinigamePayload`, `ClinicActionPayload`, etc. -> could move to `actions.d.ts` or specific minigame/scene type definitions.
