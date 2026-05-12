@@ -11,8 +11,8 @@ logger.setLevel(LOG_LEVELS.NONE)
 
 const toursArgIdx = process.argv.indexOf('--tours')
 const daysArgIdx = process.argv.indexOf('--days')
-const TOURS = parseInt(toursArgIdx !== -1 ? process.argv[toursArgIdx + 1] : '100', 10)
-const DAYS_PER_TOUR = parseInt(daysArgIdx !== -1 ? process.argv[daysArgIdx + 1] : '30', 10)
+const TOURS = parseInt((toursArgIdx !== -1 && process.argv[toursArgIdx + 1]) || '100', 10)
+const DAYS_PER_TOUR = parseInt((daysArgIdx !== -1 && process.argv[daysArgIdx + 1]) || '30', 10)
 
 const PLAYSTYLES = {
   conservative:    { perfMean: 70, perfVariance: 10, socialActivity: 0.3, spendMultiplier: 0.7 },
@@ -70,8 +70,8 @@ function simulateTour(playstyle) {
         s.fame = Math.max(0, s.fame + fameGain)
 
         if (s.money <= 0) s.bankruptcyCount++
-      } catch (_) {
-        // skip gig if calculation fails with these inputs
+      } catch (err) {
+        console.error(`[Gig Simulation Error] Day ${d}:`, err.message)
       }
     }
 
@@ -81,8 +81,8 @@ function simulateTour(playstyle) {
         const growth = calculateSocialGrowth('instagram', perf, s.followers, false, s.controversy + controversyBias, 50)
         s.followers = Math.max(0, s.followers + growth)
         s.controversy = Math.min(100, s.controversy + (controversyBias > 0 ? 2 : -0.5))
-      } catch (_) {
-        // skip social if calculation fails
+      } catch (err) {
+        console.error(`[Social Simulation Error] Day ${d}:`, err.message)
       }
     }
 
@@ -100,7 +100,7 @@ function runBatch(playstyleName, playstyle) {
   for (let t = 0; t < TOURS; t++) {
     finals.push(simulateTour(playstyle))
   }
-  const avg = key => finals.reduce((sum, f) => sum + (f[key] || 0), 0) / finals.length
+  const avg = key => finals.length ? finals.reduce((sum, f) => sum + (f[key] || 0), 0) / finals.length : 0
   const pct = (key, threshold) => (finals.filter(f => f[key] >= threshold).length / finals.length * 100).toFixed(1) + '%'
 
   return {

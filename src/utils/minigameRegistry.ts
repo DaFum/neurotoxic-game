@@ -1,5 +1,6 @@
 import { ActionTypes } from '../context/actionTypes'
 import { GAME_PHASES } from '../context/gameConstants'
+import type { ActionType, GamePhase } from '../types/game'
 import {
   calculateTravelMinigameResult,
   calculateRoadieMinigameResult,
@@ -8,9 +9,9 @@ import {
 } from './economyEngine'
 
 export interface MinigameRegistryEntry {
-  startAction: string
-  completeAction: string
-  scene: string
+  startAction: ActionType
+  completeAction: ActionType
+  scene: GamePhase
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   calculateResult: (...args: any[]) => unknown
 }
