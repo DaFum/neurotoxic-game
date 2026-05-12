@@ -45,21 +45,35 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
   // 1. Core State (React + Ref)
   const { gameStateRef, state, setters } = useRhythmGameState()
 
+  // Memoize venue to node mapping to avoid O(N) lookup on every effect run
+  const venueIdToNodeIdMap = useMemo(() => {
+    const map = new Map<string, string>()
+    if (!gameMap?.nodes) return map
+
+    for (const [nodeId, node] of Object.entries(gameMap.nodes)) {
+      if (node.venueId) {
+        map.set(node.venueId, nodeId)
+      } else if (node.venue?.id) {
+        // Fallback for some potential older map formats
+        map.set(node.venue.id, nodeId)
+      }
+    }
+    return map
+  }, [gameMap?.nodes])
+
   // Set rival penalty directly in the ref for the scoring hook to access
   useEffect(() => {
     if (gameStateRef.current) {
       if (currentGig) {
         // Find the node corresponding to the venue to compare correctly against the rival map node
-        const venueNode = Object.values(gameMap?.nodes || {}).find(
-          n => n.venue?.id === currentGig.id
-        )
+        const venueNodeId = venueIdToNodeIdMap.get(currentGig.id)
         gameStateRef.current.rivalPenaltyActive =
-          rivalBand?.currentLocationId === venueNode?.id
+          rivalBand?.currentLocationId === venueNodeId
       } else {
         gameStateRef.current.rivalPenaltyActive = false
       }
     }
-  }, [rivalBand, currentGig, gameMap, gameStateRef])
+  }, [rivalBand, currentGig, venueIdToNodeIdMap, gameStateRef])
 
   // 2. Scoring Logic (Hits, Misses, Toxic Mode)
   const scoringActions = useRhythmGameScoring({
