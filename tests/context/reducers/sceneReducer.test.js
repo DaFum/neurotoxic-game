@@ -1,10 +1,10 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
+import { handleChangeScene } from '../../../src/context/reducers/sceneReducer'
 import {
-  ALLOWED_SCENE_VALUES,
-  handleChangeScene
-} from '../../../src/context/reducers/sceneReducer'
-import { GAME_PHASES } from '../../../src/context/gameConstants'
+  GAME_PHASES,
+  ALLOWED_SCENE_VALUES
+} from '../../../src/context/gameConstants'
 
 describe('sceneReducer', () => {
   describe('handleChangeScene', () => {

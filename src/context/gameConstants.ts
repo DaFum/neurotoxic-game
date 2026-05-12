@@ -15,6 +15,10 @@ export const GAME_PHASES = Object.freeze({
   CLINIC: 'CLINIC'
 } as const satisfies Record<string, string>)
 
+export const ALLOWED_SCENE_VALUES = Object.freeze(
+  Object.values(GAME_PHASES) as GamePhase[]
+)
+
 export const MINIGAME_TYPES = {
   TOURBUS: 'TOURBUS',
   ROADIE: 'ROADIE',

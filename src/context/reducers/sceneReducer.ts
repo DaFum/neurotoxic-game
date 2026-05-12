@@ -1,10 +1,6 @@
-import { GAME_PHASES } from '../gameConstants'
+import { GAME_PHASES, ALLOWED_SCENE_VALUES } from '../gameConstants'
 import { logger } from '../../utils/logger'
 import type { GameState, GamePhase } from '../../types/game'
-
-export const ALLOWED_SCENE_VALUES = Object.freeze(
-  Object.values(GAME_PHASES) as GamePhase[]
-)
 
 const ALLOWED_SCENE_SET: ReadonlySet<string> = new Set(ALLOWED_SCENE_VALUES)
 
