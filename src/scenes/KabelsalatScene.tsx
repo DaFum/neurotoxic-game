@@ -19,7 +19,9 @@ export const KabelsalatScene = () => {
     handleCableClick,
     handleSocketClick,
     isPowerConnected,
-    forceAdvance
+    forceAdvance,
+    voidSurge,
+    purgeVoidSurge
   } = useKabelsalatState()
 
   return (
@@ -56,6 +58,8 @@ export const KabelsalatScene = () => {
           handleSocketClick={handleSocketClick}
           handleCableClick={handleCableClick}
           onAdvance={forceAdvance}
+          voidSurge={voidSurge}
+          purgeVoidSurge={purgeVoidSurge}
         />
 
         <Rules t={t} />

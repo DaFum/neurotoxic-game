@@ -172,5 +172,5 @@ export const useKabelsalatInteractions = (
     ]
   )
 
-  return { handleCableClick, handleSocketClick }
+  return { handleCableClick, handleSocketClick, triggerShock }
 }
