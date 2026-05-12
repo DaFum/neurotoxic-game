@@ -1,7 +1,7 @@
 import type { RhythmSetlistEntry } from '../types/rhythmGame'
 import type {
   GameState,
-  GigStats,
+  PostGigSummary,
   Venue,
   UpdatePlayerPayload,
   PostResult
@@ -55,7 +55,7 @@ export interface UsePostGigHandlersProps {
   player: GameState['player']
   band: GameState['band']
   social: GameState['social']
-  lastGigStats: GigStats | null
+  lastGigStats: PostGigSummary | null
   currentGig: Venue | null
   perfScore: number
   financials: PostGigFinancials | null

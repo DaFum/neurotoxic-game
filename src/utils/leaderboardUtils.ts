@@ -1,4 +1,4 @@
-import type { GameState, GigStats, Venue } from '../types/game'
+import type { GameState, PostGigSummary, Venue } from '../types/game'
 import { SONGS_BY_ID } from '../data/songs'
 import { logger } from './logger'
 
@@ -15,7 +15,7 @@ export const submitLeaderboardScores = async ({
   setlist
 }: {
   player: GameState['player']
-  lastGigStats: GigStats | null
+  lastGigStats: PostGigSummary | null
   currentGig: Venue | null
   setlist: GameState['setlist']
 }) => {

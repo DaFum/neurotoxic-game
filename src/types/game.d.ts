@@ -234,7 +234,7 @@ export interface ToastPayload {
   [key: string]: unknown
 }
 
-export interface GigStats extends UnknownRecord {
+export interface PostGigSummary extends UnknownRecord {
   score?: number
   misses?: number
   accuracy?: number
@@ -347,14 +347,6 @@ export interface MerchPressPayload {
   successToast?: Omit<ToastPayload, 'id'> & Partial<Pick<ToastPayload, 'id'>>
 }
 
-export interface LastGigStats extends UnknownRecord {
-  score?: number
-  misses?: number
-  accuracy?: number
-  combo?: number
-  health?: number
-  overload?: number
-}
 export interface GameState {
   version: number
   currentScene: GamePhase
@@ -365,7 +357,7 @@ export interface GameState {
   gameMap: GameMap | null
   currentGig: Venue | null
   setlist: RhythmSetlistEntry[]
-  lastGigStats: LastGigStats | null
+  lastGigStats: PostGigSummary | null
   activeEvent: GameEvent | null
   pendingEvents: string[]
   isScreenshotMode: boolean
@@ -406,7 +398,7 @@ export type GameAction =
   | Action<ActionTypes['SET_GIG'], Venue | null>
   | Action<ActionTypes['START_GIG'], Venue>
   | Action<ActionTypes['SET_SETLIST'], RhythmSetlistEntry[]>
-  | Action<ActionTypes['SET_LAST_GIG_STATS'], GigStats | null>
+  | Action<ActionTypes['SET_LAST_GIG_STATS'], PostGigSummary | null>
   | Action<ActionTypes['SET_ACTIVE_EVENT'], GameEvent | null>
   | Action<ActionTypes['ADD_TOAST'], ToastPayload>
   | Action<ActionTypes['REMOVE_TOAST'], string>

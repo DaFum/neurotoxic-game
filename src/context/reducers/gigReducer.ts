@@ -1,4 +1,4 @@
-import type { GameState, GigStats, Venue } from '../../types/game'
+import type { GameState, PostGigSummary, Venue } from '../../types/game'
 import type { RhythmSetlistEntry } from '../../types/rhythmGame'
 import { logger } from '../../utils/logger'
 import { getSafeUUID } from '../../utils/crypto'
@@ -122,7 +122,7 @@ const handleRecordGoodShow = (state: GameState): GameState => {
 
 export const handleSetLastGigStats = (
   state: GameState,
-  payload: GigStats | null
+  payload: PostGigSummary | null
 ): GameState => {
   if (payload === null) {
     return {
