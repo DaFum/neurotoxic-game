@@ -14,15 +14,33 @@ const { mockAudioEngine, mockGigStats, mockRhythmUtils } = vi.hoisted(() => {
   }
 
   const manager = {
-    get musicVolume() { return audioState.musicVol },
-    set musicVolume(v) { audioState.musicVol = v },
-    get sfxVolume() { return audioState.sfxVol },
-    set sfxVolume(v) { audioState.sfxVol = v },
-    get muted() { return audioState.isMuted },
-    set muted(v) { audioState.isMuted = v },
-    get isPlaying() { return audioState.currentSongId != null },
-    get currentSongId() { return audioState.currentSongId },
-    set currentSongId(v) { audioState.currentSongId = v },
+    get musicVolume() {
+      return audioState.musicVol
+    },
+    set musicVolume(v) {
+      audioState.musicVol = v
+    },
+    get sfxVolume() {
+      return audioState.sfxVol
+    },
+    set sfxVolume(v) {
+      audioState.sfxVol = v
+    },
+    get muted() {
+      return audioState.isMuted
+    },
+    set muted(v) {
+      audioState.isMuted = v
+    },
+    get isPlaying() {
+      return audioState.currentSongId != null
+    },
+    get currentSongId() {
+      return audioState.currentSongId
+    },
+    set currentSongId(v) {
+      audioState.currentSongId = v
+    },
     subscribe: vi.fn(listener => {
       listeners.add(listener)
       return () => listeners.delete(listener)

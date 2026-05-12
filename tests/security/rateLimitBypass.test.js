@@ -33,9 +33,9 @@ describe('Rate Limit Bypass Security Tests', () => {
 
     // Reset incr mock
     let counts = {}
-    mockRedisClient.incr.mockImplementation((key) => {
-        counts[key] = (counts[key] || 0) + 1
-        return Promise.resolve(counts[key])
+    mockRedisClient.incr.mockImplementation(key => {
+      counts[key] = (counts[key] || 0) + 1
+      return Promise.resolve(counts[key])
     })
   })
 
@@ -55,22 +55,22 @@ describe('Rate Limit Bypass Security Tests', () => {
 
     // 1. Fill rate limit for real IP 127.0.0.1
     for (let i = 0; i < 5; i++) {
-        const req = {
-            method: 'POST',
-            socket: { remoteAddress: '127.0.0.1' },
-            headers: { 'x-forwarded-for': '1.1.1.1' }, // Spoofed
-            body: { playerId: 'p1', playerName: 'n1', money: 100 }
-        }
-        await statsHandler(req, res)
-        assert.strictEqual(res.status.mock.lastCall[0], 200)
+      const req = {
+        method: 'POST',
+        socket: { remoteAddress: '127.0.0.1' },
+        headers: { 'x-forwarded-for': '1.1.1.1' }, // Spoofed
+        body: { playerId: 'p1', playerName: 'n1', money: 100 }
+      }
+      await statsHandler(req, res)
+      assert.strictEqual(res.status.mock.lastCall[0], 200)
     }
 
     // 6th request with SAME real IP but DIFFERENT spoofed IP should be blocked
     const req6 = {
-        method: 'POST',
-        socket: { remoteAddress: '127.0.0.1' },
-        headers: { 'x-forwarded-for': '2.2.2.2' }, // Different spoofed IP
-        body: { playerId: 'p1', playerName: 'n1', money: 100 }
+      method: 'POST',
+      socket: { remoteAddress: '127.0.0.1' },
+      headers: { 'x-forwarded-for': '2.2.2.2' }, // Different spoofed IP
+      body: { playerId: 'p1', playerName: 'n1', money: 100 }
     }
     await statsHandler(req6, res)
     assert.strictEqual(res.status.mock.lastCall[0], 429, 'FIX: Rate limit should NOT be bypassed via x-forwarded-for spoofing')

@@ -84,13 +84,27 @@ Separating the passes avoids any risk of `'default'` being partially handled twi
 **Example outputs:**
 
 Named default (`export default function App()`):
+
 ```json
-{ "name": "App", "path": "src/App.tsx", "type": "function", "source": "local", "isDefault": true }
+{
+  "name": "App",
+  "path": "src/App.tsx",
+  "type": "function",
+  "source": "local",
+  "isDefault": true
+}
 ```
 
 Anonymous fallback (`export default () => {}`):
+
 ```json
-{ "name": "default@src/utils/helpers.ts", "path": "src/utils/helpers.ts", "type": "function", "source": "local", "isDefault": true }
+{
+  "name": "default@src/utils/helpers.ts",
+  "path": "src/utils/helpers.ts",
+  "type": "function",
+  "source": "local",
+  "isDefault": true
+}
 ```
 
 ---
@@ -115,11 +129,11 @@ if (ts.isVariableDeclaration(decl)) {
   const list = decl.parent
   if (ts.isVariableDeclarationList(list)) {
     if (list.flags & ts.NodeFlags.Const) return 'const'
-    if (list.flags & ts.NodeFlags.Let)   return 'let'
+    if (list.flags & ts.NodeFlags.Let) return 'let'
     return 'var'
   }
 }
-return 'const'  // non-variable declarations that match no explicit case
+return 'const' // non-variable declarations that match no explicit case
 ```
 
 The final `'const'` fallback is kept only for non-variable nodes that don't match function/class/interface/type/enum. For actual variable declarations, the keyword is always determined precisely.
@@ -130,12 +144,12 @@ The final `'const'` fallback is kept only for non-variable nodes that don't matc
 
 After the alias-unwrapping fix, regenerate `symbols.json` and audit the four current entries:
 
-| Entry | Expected outcome |
-|---|---|
-| `ActionTypes@src/context/gameReducer.ts` | Likely drops automatically — verify |
-| `PRACTICE_RETURN_SCENES@src/context/GameState.tsx` | Likely drops automatically — verify |
-| `getPrimaryEffect@src/ui/bandhq/hooks/usePurchaseLogic.ts` | Likely drops automatically — verify |
-| `_resetLastMinigameFallback@src/scenes/PreGig.tsx` | Remove unconditionally: already filtered by `sym.name.startsWith('_')` guard |
+| Entry                                                      | Expected outcome                                                             |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `ActionTypes@src/context/gameReducer.ts`                   | Likely drops automatically — verify                                          |
+| `PRACTICE_RETURN_SCENES@src/context/GameState.tsx`         | Likely drops automatically — verify                                          |
+| `getPrimaryEffect@src/ui/bandhq/hooks/usePurchaseLogic.ts` | Likely drops automatically — verify                                          |
+| `_resetLastMinigameFallback@src/scenes/PreGig.tsx`         | Remove unconditionally: already filtered by `sym.name.startsWith('_')` guard |
 
 Any SKIP_PAIRS entry that survives must have an inline comment explaining why alias resolution does not collapse it (e.g., the symbol has two independent definitions, not a re-export relationship).
 
@@ -144,6 +158,7 @@ Any SKIP_PAIRS entry that survives must have an inline comment explaining why al
 ## Schema after this change
 
 Local symbol entry:
+
 ```json
 {
   "name": "setupAudio",
@@ -156,6 +171,7 @@ Local symbol entry:
 ```
 
 External symbol entry (`type` remains a coarse compatibility field for external entries — not a declaration-kind guarantee):
+
 ```json
 {
   "name": "useState",
@@ -167,6 +183,7 @@ External symbol entry (`type` remains a coarse compatibility field for external 
 ```
 
 Default export entry (named):
+
 ```json
 {
   "name": "App",
@@ -178,6 +195,7 @@ Default export entry (named):
 ```
 
 Default export entry (anonymous fallback — for `export default () => {}` or `export default class {}`):
+
 ```json
 {
   "name": "default@src/utils/helpers.ts",

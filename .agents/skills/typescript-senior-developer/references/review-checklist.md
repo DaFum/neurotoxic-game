@@ -45,12 +45,12 @@ For each finding, include:
 
 ## Common Findings and Fixes
 
-| Finding | Risk | Safer replacement |
-| --- | --- | --- |
-| `JSON.parse(raw) as GameState` | accepts invalid saves and crashes later | parse as `unknown`, validate with `isGameState` |
-| `as any` in action payloads | breaks discriminated union safety | fix `GameAction` or return `Extract<...>` |
-| missing `as const` on `ActionTypes` | action type widens to `string` | add `as const` and derive value union |
-| `SONGS_BY_ID.get(id)!` | missing data becomes runtime crash | check `if (!song) return` or handle fallback |
-| `Record<string, unknown>` for finite configs | missing scene/config keys compile | use `Record<SceneName, Config>` with `satisfies` |
-| `in` for parsed JSON | prototype chain can pass check | use `Object.hasOwn(value, key)` |
-| `forwardRef` in new component | conflicts with React 19 convention | accept `ref?: React.Ref<T>` as a prop |
+| Finding                                      | Risk                                    | Safer replacement                                |
+| -------------------------------------------- | --------------------------------------- | ------------------------------------------------ |
+| `JSON.parse(raw) as GameState`               | accepts invalid saves and crashes later | parse as `unknown`, validate with `isGameState`  |
+| `as any` in action payloads                  | breaks discriminated union safety       | fix `GameAction` or return `Extract<...>`        |
+| missing `as const` on `ActionTypes`          | action type widens to `string`          | add `as const` and derive value union            |
+| `SONGS_BY_ID.get(id)!`                       | missing data becomes runtime crash      | check `if (!song) return` or handle fallback     |
+| `Record<string, unknown>` for finite configs | missing scene/config keys compile       | use `Record<SceneName, Config>` with `satisfies` |
+| `in` for parsed JSON                         | prototype chain can pass check          | use `Object.hasOwn(value, key)`                  |
+| `forwardRef` in new component                | conflicts with React 19 convention      | accept `ref?: React.Ref<T>` as a prop            |

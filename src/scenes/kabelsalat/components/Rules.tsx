@@ -3,6 +3,7 @@
 
  */
 import type { FC } from 'react'
+import type { TFunction } from 'i18next'
 
 interface RuleItemProps {
   label?: string
@@ -21,7 +22,7 @@ const RuleItem: FC<RuleItemProps> = ({ label, text }) => (
   </li>
 )
 interface RulesProps {
-  t: (key: string, options?: unknown) => string
+  t: TFunction
 }
 
 export const Rules: FC<RulesProps> = ({ t }) => (

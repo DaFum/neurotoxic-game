@@ -3,8 +3,15 @@
 
  */
 import { memo } from 'react'
+import type { FC } from 'react'
+import type { TFunction } from 'i18next'
 
-export const RackScrew = memo(({ x, y }) => (
+interface RackScrewProps {
+  x: number
+  y: number
+}
+
+const RackScrewComponent: FC<RackScrewProps> = ({ x, y }) => (
   <g transform={`translate(${x}, ${y})`}>
     <circle
       cx='0'
@@ -31,7 +38,9 @@ export const RackScrew = memo(({ x, y }) => (
       strokeWidth='1.5'
     />
   </g>
-))
+)
+
+export const RackScrew = memo(RackScrewComponent)
 
 const RACK_GEOMETRY = {
   OUTER_X: 40,
@@ -86,7 +95,15 @@ const INDICATOR_GEOMETRY = {
   LABEL_Y: 125
 }
 
-export const PowerIndicator = memo(({ t, isPowerConnected }) => (
+interface PowerIndicatorProps {
+  t: TFunction
+  isPowerConnected: boolean
+}
+
+const PowerIndicatorComponent: FC<PowerIndicatorProps> = ({
+  t,
+  isPowerConnected
+}) => (
   <g>
     <circle
       cx={INDICATOR_GEOMETRY.CX}
@@ -114,4 +131,6 @@ export const PowerIndicator = memo(({ t, isPowerConnected }) => (
       {t('ui:minigames.kabelsalat.pwrLabel')}
     </text>
   </g>
-))
+)
+
+export const PowerIndicator = memo(PowerIndicatorComponent)

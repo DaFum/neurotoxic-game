@@ -12,27 +12,28 @@
 
 ## FILE MAP
 
-| File | Change |
-|---|---|
-| `src/types/game.d.ts` | Remove duplicate `ActionType`; rename `GigStats` → `PostGigSummary` |
-| `src/types/rhythmGame.d.ts` | No change — this `GigStats` is the authoritative rhythm-game shape |
-| `src/components/MapNode.tsx` | Rename exported component `MapNode` → `MapNodeView`; add `displayName` |
-| `src/components/MapNode.tsx` (file) | Rename file to `MapNodeView.tsx` |
-| `src/scenes/MainMenu.tsx` | Add named export `MainMenu` to match all other scene files |
-| `src/context/gameConstants.ts` | Move `ALLOWED_SCENE_VALUES` here from sceneReducer; keep `PRACTICE_RETURN_SCENES` |
-| `src/context/reducers/sceneReducer.ts` | Import `ALLOWED_SCENE_VALUES` from gameConstants instead of defining it |
-| `src/utils/eventValidator.ts` | Add `validateGameEvent()` general validator and per-category validators |
-| `tests/eventValidator.test.js` | New: validate every event in EVENTS_DB passes the general validator |
-| `scripts/balanceSimulation.cjs` | New: dev-only balance runner (CommonJS for direct Node execution) |
-| `src/context/reducers/minigameReducer.ts` | Import scene+action values from new registry instead of hardcoding |
-| `src/utils/minigameRegistry.ts` | New: `MINIGAME_REGISTRY` typed const |
-| `tests/minigameRegistry.test.js` | New: verify each registry entry has valid scene, actionTypes, and calculateResult |
+| File                                      | Change                                                                            |
+| ----------------------------------------- | --------------------------------------------------------------------------------- |
+| `src/types/game.d.ts`                     | Remove duplicate `ActionType`; rename `GigStats` → `PostGigSummary`               |
+| `src/types/rhythmGame.d.ts`               | No change — this `GigStats` is the authoritative rhythm-game shape                |
+| `src/components/MapNode.tsx`              | Rename exported component `MapNode` → `MapNodeView`; add `displayName`            |
+| `src/components/MapNode.tsx` (file)       | Rename file to `MapNodeView.tsx`                                                  |
+| `src/scenes/MainMenu.tsx`                 | Add named export `MainMenu` to match all other scene files                        |
+| `src/context/gameConstants.ts`            | Move `ALLOWED_SCENE_VALUES` here from sceneReducer; keep `PRACTICE_RETURN_SCENES` |
+| `src/context/reducers/sceneReducer.ts`    | Import `ALLOWED_SCENE_VALUES` from gameConstants instead of defining it           |
+| `src/utils/eventValidator.ts`             | Add `validateGameEvent()` general validator and per-category validators           |
+| `tests/eventValidator.test.js`            | New: validate every event in EVENTS_DB passes the general validator               |
+| `scripts/balanceSimulation.cjs`           | New: dev-only balance runner (CommonJS for direct Node execution)                 |
+| `src/context/reducers/minigameReducer.ts` | Import scene+action values from new registry instead of hardcoding                |
+| `src/utils/minigameRegistry.ts`           | New: `MINIGAME_REGISTRY` typed const                                              |
+| `tests/minigameRegistry.test.js`          | New: verify each registry entry has valid scene, actionTypes, and calculateResult |
 
 ---
 
 ## Task 1: Remove duplicate ActionType in game.d.ts
 
 **Files:**
+
 - Modify: `src/types/game.d.ts` (top of file, around line 5-7)
 
 The file currently defines `ActionType` itself using `ActionTypes[keyof ActionTypes]`. The canonical definition already lives in `src/context/actionTypes.ts` as `export type ActionType = (typeof ActionTypes)[keyof typeof ActionTypes]`. Removing the local definition and re-exporting eliminates the duplicate without changing any consuming code.
@@ -49,6 +50,7 @@ Expected: game.d.ts shows `export type ActionType = ActionTypes[keyof ActionType
 - [ ] **Step 2: Remove the duplicate definition from game.d.ts**
 
 Find this block near the top of `src/types/game.d.ts`:
+
 ```typescript
 import type { ActionTypes } from '../context/actionTypes'
 // ...
@@ -56,6 +58,7 @@ export type ActionType = ActionTypes[keyof ActionTypes]
 ```
 
 Replace the type definition line with a re-export:
+
 ```typescript
 export type { ActionType } from '../context/actionTypes'
 ```
@@ -90,6 +93,7 @@ git commit -m "refactor: re-export ActionType from actionTypes instead of redefi
 ## Task 2: Rename GigStats in game.d.ts to PostGigSummary
 
 **Files:**
+
 - Modify: `src/types/game.d.ts`
 - Modify: any file that imports `GigStats` from `src/types/game.d.ts` or `src/types/index.ts`
 
@@ -106,6 +110,7 @@ Record every file path and line number. These are the files you need to update i
 - [ ] **Step 2: Rename the interface in game.d.ts**
 
 Find in `src/types/game.d.ts`:
+
 ```typescript
 export interface GigStats extends UnknownRecord {
   score?: number
@@ -118,6 +123,7 @@ export interface GigStats extends UnknownRecord {
 ```
 
 Replace with:
+
 ```typescript
 export interface PostGigSummary extends UnknownRecord {
   score?: number
@@ -136,6 +142,7 @@ Also check whether `LastGigStats` in the same file is structurally identical to 
 In each file, replace `GigStats` (from game.d.ts) with `PostGigSummary`. Do not touch any import from `rhythmGame.d.ts` — the rhythm-game `GigStats` keeps its name.
 
 Typical changes look like:
+
 ```typescript
 // Before
 import type { GigStats } from '../types/game'
@@ -144,6 +151,7 @@ import type { PostGigSummary } from '../types/game'
 ```
 
 And in type annotations:
+
 ```typescript
 // Before
 gigStats: GigStats
@@ -179,6 +187,7 @@ git commit -m "refactor: rename GigStats→PostGigSummary in game.d.ts to avoid 
 ## Task 3: Rename MapNode component to MapNodeView
 
 **Files:**
+
 - Rename: `src/components/MapNode.tsx` → `src/components/MapNodeView.tsx`
 - Modify: all files that import from `src/components/MapNode`
 
@@ -196,18 +205,21 @@ Record every importer.
 - [ ] **Step 2: Rename the export inside the file**
 
 In `src/components/MapNode.tsx`, find:
+
 ```typescript
 export const MapNode = memo(
   (props: MapNodeProps) => {
 ```
 
 Replace with:
+
 ```typescript
 export const MapNodeView = memo(
   (props: MapNodeProps) => {
 ```
 
 Also update the displayName line:
+
 ```typescript
 // Before
 MapNode.displayName = 'MapNode'
@@ -262,6 +274,7 @@ git commit -m "refactor: rename MapNode component→MapNodeView to resolve colli
 ## Task 4: Add named export to MainMenu.tsx
 
 **Files:**
+
 - Modify: `src/scenes/MainMenu.tsx`
 
 Every other scene file (Overworld, Gig, PostGig, AmpCalibrationScene, etc.) exports both a named export and a default export. MainMenu currently only exports a default. This breaks the convention and causes auto-import tools to behave differently for this one file.
@@ -277,10 +290,12 @@ Expected: only `export default` found, no `export const MainMenu`.
 - [ ] **Step 2: Add the named export**
 
 Find the component definition in `src/scenes/MainMenu.tsx`. It will look like one of:
+
 ```typescript
 // Pattern A – function declaration
 export default function MainMenu() {
 ```
+
 ```typescript
 // Pattern B – const arrow function
 const MainMenu = () => {
@@ -289,6 +304,7 @@ export default MainMenu
 ```
 
 For Pattern A, add a named export by extracting:
+
 ```typescript
 export function MainMenu() {
   // ... same body ...
@@ -297,6 +313,7 @@ export default MainMenu
 ```
 
 For Pattern B, add `export` to the const declaration:
+
 ```typescript
 export const MainMenu = () => {
 // ...
@@ -323,6 +340,7 @@ git commit -m "refactor: add named export to MainMenu to match scene convention"
 ## Task 5: Move ALLOWED_SCENE_VALUES to gameConstants.ts
 
 **Files:**
+
 - Modify: `src/context/gameConstants.ts`
 - Modify: `src/context/reducers/sceneReducer.ts`
 
@@ -341,6 +359,7 @@ export const ALLOWED_SCENE_VALUES = Object.freeze(
 - [ ] **Step 2: Remove the definition from sceneReducer.ts and import it**
 
 In `src/context/reducers/sceneReducer.ts`, find:
+
 ```typescript
 export const ALLOWED_SCENE_VALUES = Object.freeze(
   Object.values(GAME_PHASES) as GamePhase[]
@@ -348,14 +367,17 @@ export const ALLOWED_SCENE_VALUES = Object.freeze(
 ```
 
 Delete that block. Add `ALLOWED_SCENE_VALUES` to the import from `gameConstants`:
+
 ```typescript
 import { GAME_PHASES, ALLOWED_SCENE_VALUES } from '../gameConstants'
 ```
 
 Note: if `ALLOWED_SCENE_VALUES` was exported from `sceneReducer.ts` and other files imported it from there, find those importers with:
+
 ```bash
 grep -rn "ALLOWED_SCENE_VALUES" src/ tests/ --include="*.ts" --include="*.tsx"
 ```
+
 Update each to import from `gameConstants` instead.
 
 - [ ] **Step 3: Type-check**
@@ -386,17 +408,20 @@ git commit -m "refactor: move ALLOWED_SCENE_VALUES to gameConstants alongside GA
 ## Task 6: Add validateGameEvent() general event validator
 
 **Files:**
+
 - Modify: `src/utils/eventValidator.ts`
 
 `validateCrisisEvent` in `eventValidator.ts` validates only crisis events. All other categories (transport, band, gig, financial, special, consequences, relationship, quest) have no validator. Add a `validateGameEvent()` that covers the shared base shape every event must have, plus per-category rules.
 
 The base shape every event must satisfy:
+
 - `id`: non-empty string
 - `title`: non-empty string starting with `'events:'`
 - `description`: non-empty string starting with `'events:'`
 - `options`: non-empty array where each option has a non-empty `label` string and either an `effect` object or a `skillCheck` object, and a non-empty `outcomeText` string
 
 Per-category rules:
+
 - `transport` / `travel`: trigger must be `'travel'`
 - `crisis`: id must start with `'crisis_'`, tags must include `'crisis'`, chance must be 0–1
 - `consequences`: must have a non-empty `prerequisiteEventId` string
@@ -462,7 +487,14 @@ describe('validateGameEvent', () => {
   })
 
   it('throws when crisis event id does not start with crisis_', () => {
-    const e = { ...baseEvent, category: 'crisis', tags: ['crisis'], id: 'bad_id', chance: 0.1, trigger: 'random' }
+    const e = {
+      ...baseEvent,
+      category: 'crisis',
+      tags: ['crisis'],
+      id: 'bad_id',
+      chance: 0.1,
+      trigger: 'random'
+    }
     assert.throws(() => validateGameEvent(e), /crisis_/)
   })
 
@@ -499,15 +531,24 @@ export const validateGameEvent = (event: unknown): boolean => {
   const e = event as Record<string, unknown>
 
   if (typeof e.id !== 'string' || e.id.trim() === '') {
-    throw new Error(`Event id must be a non-empty string (got: ${JSON.stringify(e.id)})`)
+    throw new Error(
+      `Event id must be a non-empty string (got: ${JSON.stringify(e.id)})`
+    )
   }
 
   if (typeof e.title !== 'string' || !e.title.startsWith('events:')) {
-    throw new Error(`Event "${e.id}": title must start with 'events:' (got: ${JSON.stringify(e.title)})`)
+    throw new Error(
+      `Event "${e.id}": title must start with 'events:' (got: ${JSON.stringify(e.title)})`
+    )
   }
 
-  if (typeof e.description !== 'string' || !e.description.startsWith('events:')) {
-    throw new Error(`Event "${e.id}": description must start with 'events:' (got: ${JSON.stringify(e.description)})`)
+  if (
+    typeof e.description !== 'string' ||
+    !e.description.startsWith('events:')
+  ) {
+    throw new Error(
+      `Event "${e.id}": description must start with 'events:' (got: ${JSON.stringify(e.description)})`
+    )
   }
 
   if (!Array.isArray(e.options) || e.options.length === 0) {
@@ -517,13 +558,19 @@ export const validateGameEvent = (event: unknown): boolean => {
   for (let i = 0; i < e.options.length; i++) {
     const opt = e.options[i] as Record<string, unknown>
     if (typeof opt.label !== 'string' || opt.label.trim() === '') {
-      throw new Error(`Event "${e.id}" option[${i}]: label must be a non-empty string`)
+      throw new Error(
+        `Event "${e.id}" option[${i}]: label must be a non-empty string`
+      )
     }
     if (typeof opt.outcomeText !== 'string' || opt.outcomeText.trim() === '') {
-      throw new Error(`Event "${e.id}" option[${i}]: outcomeText must be a non-empty string`)
+      throw new Error(
+        `Event "${e.id}" option[${i}]: outcomeText must be a non-empty string`
+      )
     }
     if (!opt.effect && !opt.skillCheck) {
-      throw new Error(`Event "${e.id}" option[${i}]: must have either an effect or a skillCheck`)
+      throw new Error(
+        `Event "${e.id}" option[${i}]: must have either an effect or a skillCheck`
+      )
     }
   }
 
@@ -532,7 +579,9 @@ export const validateGameEvent = (event: unknown): boolean => {
 
   if (category === 'crisis') {
     if (typeof e.id !== 'string' || !e.id.startsWith('crisis_')) {
-      throw new Error(`Crisis event id must start with 'crisis_' (got: ${JSON.stringify(e.id)})`)
+      throw new Error(
+        `Crisis event id must start with 'crisis_' (got: ${JSON.stringify(e.id)})`
+      )
     }
     const tags = e.tags
     if (!Array.isArray(tags) || !(tags as string[]).includes('crisis')) {
@@ -540,13 +589,20 @@ export const validateGameEvent = (event: unknown): boolean => {
     }
     const chance = e.chance
     if (typeof chance !== 'number' || chance < 0 || chance > 1) {
-      throw new Error(`Crisis event "${e.id}": chance must be a number in [0, 1]`)
+      throw new Error(
+        `Crisis event "${e.id}": chance must be a number in [0, 1]`
+      )
     }
   }
 
   if (category === 'consequences') {
-    if (typeof e.prerequisiteEventId !== 'string' || e.prerequisiteEventId.trim() === '') {
-      throw new Error(`Consequence event "${e.id}": must have a non-empty prerequisiteEventId`)
+    if (
+      typeof e.prerequisiteEventId !== 'string' ||
+      e.prerequisiteEventId.trim() === ''
+    ) {
+      throw new Error(
+        `Consequence event "${e.id}": must have a non-empty prerequisiteEventId`
+      )
     }
   }
 
@@ -580,6 +636,7 @@ git commit -m "feat: add validateGameEvent() general event validator with per-ca
 ## Task 7: Validate every event in EVENTS_DB
 
 **Files:**
+
 - Modify: `tests/eventValidator.test.js`
 
 This task adds a test that loads every event from every category in `EVENTS_DB` and asserts they pass `validateGameEvent`. It catches malformed events added in the future.
@@ -628,6 +685,7 @@ git commit -m "test: validate every EVENTS_DB entry against validateGameEvent"
 ## Task 8: Balance simulation harness
 
 **Files:**
+
 - Create: `scripts/balanceSimulation.cjs`
 
 This is a dev-only CommonJS script (`.cjs` because it uses `require()` per project convention). It simulates multiple tours using the pure calculation functions and prints a summary table to stdout. It has zero imports from the React or Vite layer — only pure utility functions.
@@ -646,18 +704,49 @@ Create `scripts/balanceSimulation.cjs`:
 // Prints a per-playstyle summary table and flags balance concerns.
 
 const { calculateGigFinancials } = require('../src/utils/economyEngine.ts')
-const { calculateFameGain, clampMoney, clampHarmony } = require('../src/utils/gameStateUtils.ts')
+const {
+  calculateFameGain,
+  clampMoney,
+  clampHarmony
+} = require('../src/utils/gameStateUtils.ts')
 const { calculateSocialGrowth } = require('../src/utils/socialEngine.ts')
 const { calculateDailyUpdates } = require('../src/utils/simulationUtils.ts')
 
-const TOURS = parseInt(process.argv[process.argv.indexOf('--tours') + 1] || '100', 10)
-const DAYS_PER_TOUR = parseInt(process.argv[process.argv.indexOf('--days') + 1] || '30', 10)
+const TOURS = parseInt(
+  process.argv[process.argv.indexOf('--tours') + 1] || '100',
+  10
+)
+const DAYS_PER_TOUR = parseInt(
+  process.argv[process.argv.indexOf('--days') + 1] || '30',
+  10
+)
 
 const PLAYSTYLES = {
-  conservative: { perfMean: 70, perfVariance: 10, socialActivity: 0.3, spendMultiplier: 0.7 },
-  aggressive:   { perfMean: 55, perfVariance: 25, socialActivity: 0.9, spendMultiplier: 1.3 },
-  highControversy: { perfMean: 65, perfVariance: 15, socialActivity: 1.0, spendMultiplier: 1.0, controversyBias: 30 },
-  noSocial:     { perfMean: 72, perfVariance: 8,  socialActivity: 0.0, spendMultiplier: 0.9 },
+  conservative: {
+    perfMean: 70,
+    perfVariance: 10,
+    socialActivity: 0.3,
+    spendMultiplier: 0.7
+  },
+  aggressive: {
+    perfMean: 55,
+    perfVariance: 25,
+    socialActivity: 0.9,
+    spendMultiplier: 1.3
+  },
+  highControversy: {
+    perfMean: 65,
+    perfVariance: 15,
+    socialActivity: 1.0,
+    spendMultiplier: 1.0,
+    controversyBias: 30
+  },
+  noSocial: {
+    perfMean: 72,
+    perfVariance: 8,
+    socialActivity: 0.0,
+    spendMultiplier: 0.9
+  }
 }
 
 function randomNormal(mean, variance) {
@@ -678,14 +767,20 @@ function makeInitialState() {
     vanCondition: 80,
     vanFuel: 80,
     day: 1,
-    bankruptcyCount: 0,
+    bankruptcyCount: 0
   }
 }
 
 function simulateTour(playstyle) {
   const s = makeInitialState()
   const history = []
-  const { perfMean, perfVariance, socialActivity, spendMultiplier, controversyBias = 0 } = playstyle
+  const {
+    perfMean,
+    perfVariance,
+    socialActivity,
+    spendMultiplier,
+    controversyBias = 0
+  } = playstyle
 
   for (let d = 0; d < DAYS_PER_TOUR; d++) {
     const perf = randomNormal(perfMean, perfVariance)
@@ -698,11 +793,17 @@ function simulateTour(playstyle) {
         performanceScore: perf,
         modifiers: {},
         bandInventory: {},
-        playerState: { fameLevel: Math.floor(s.fame / 100), money: s.money, van: { condition: s.vanCondition, fuel: s.vanFuel } },
+        playerState: {
+          fameLevel: Math.floor(s.fame / 100),
+          money: s.money,
+          van: { condition: s.vanCondition, fuel: s.vanFuel }
+        },
         gigStats: {},
         context: {}
       })
-      const net = (financials.totalIncome || 0) - (financials.totalExpenses || 0) * spendMultiplier
+      const net =
+        (financials.totalIncome || 0) -
+        (financials.totalExpenses || 0) * spendMultiplier
       s.money = clampMoney(s.money + net)
       s.fame = calculateFameGain(perf * 0.5, s.fame)
       if (s.money <= 0) s.bankruptcyCount++
@@ -710,9 +811,19 @@ function simulateTour(playstyle) {
 
     // Social
     if (Math.random() < socialActivity) {
-      const growth = calculateSocialGrowth('instagram', perf, s.followers, false, s.controversy + controversyBias, 50)
+      const growth = calculateSocialGrowth(
+        'instagram',
+        perf,
+        s.followers,
+        false,
+        s.controversy + controversyBias,
+        50
+      )
       s.followers = Math.max(0, s.followers + growth)
-      s.controversy = Math.min(100, s.controversy + (controversyBias > 0 ? 2 : -0.5))
+      s.controversy = Math.min(
+        100,
+        s.controversy + (controversyBias > 0 ? 2 : -0.5)
+      )
     }
 
     // Daily decay
@@ -720,7 +831,13 @@ function simulateTour(playstyle) {
     s.vanCondition = Math.max(0, s.vanCondition - 0.5)
     s.day++
 
-    history.push({ day: s.day, money: s.money, fame: s.fame, followers: s.followers, harmony: s.harmony })
+    history.push({
+      day: s.day,
+      money: s.money,
+      fame: s.fame,
+      followers: s.followers,
+      harmony: s.harmony
+    })
   }
 
   return { final: s, history }
@@ -732,8 +849,13 @@ function runBatch(playstyleName, playstyle) {
     results.push(simulateTour(playstyle))
   }
   const finals = results.map(r => r.final)
-  const avg = key => finals.reduce((sum, f) => sum + (f[key] || 0), 0) / finals.length
-  const pct = (key, threshold) => (finals.filter(f => f[key] >= threshold).length / finals.length * 100).toFixed(1) + '%'
+  const avg = key =>
+    finals.reduce((sum, f) => sum + (f[key] || 0), 0) / finals.length
+  const pct = (key, threshold) =>
+    (
+      (finals.filter(f => f[key] >= threshold).length / finals.length) *
+      100
+    ).toFixed(1) + '%'
 
   return {
     style: playstyleName,
@@ -742,13 +864,17 @@ function runBatch(playstyleName, playstyle) {
     avgFollowers: avg('followers').toFixed(0),
     avgHarmony: avg('harmony').toFixed(1),
     bankruptcyRate: pct('bankruptcyCount', 1),
-    richRate: pct('money', 2000),
+    richRate: pct('money', 2000)
   }
 }
 
 console.log(`\nBalance Simulation — ${TOURS} tours × ${DAYS_PER_TOUR} days\n`)
-console.log('Style            | AvgMoney | AvgFame | AvgFollowers | AvgHarmony | Bankruptcy% | Rich%')
-console.log('-----------------|----------|---------|--------------|------------|-------------|------')
+console.log(
+  'Style            | AvgMoney | AvgFame | AvgFollowers | AvgHarmony | Bankruptcy% | Rich%'
+)
+console.log(
+  '-----------------|----------|---------|--------------|------------|-------------|------'
+)
 
 for (const [name, style] of Object.entries(PLAYSTYLES)) {
   const r = runBatch(name, style)
@@ -758,10 +884,14 @@ for (const [name, style] of Object.entries(PLAYSTYLES)) {
 }
 
 console.log('\nBalance concerns to watch:')
-console.log('  - If bankruptcyRate > 40% for any style, economy is too punishing.')
+console.log(
+  '  - If bankruptcyRate > 40% for any style, economy is too punishing.'
+)
 console.log('  - If richRate > 60% for conservative, economy is too rewarding.')
 console.log('  - If avgHarmony < 20 after 30 days, harmony decay is too fast.')
-console.log('  - If noSocial richRate >> conservative richRate, social is irrelevant.')
+console.log(
+  '  - If noSocial richRate >> conservative richRate, social is irrelevant.'
+)
 ```
 
 - [ ] **Step 2: Run the simulation**
@@ -784,6 +914,7 @@ git commit -m "feat: add dev-only balance simulation harness (scripts/balanceSim
 ## Task 9: Create MINIGAME_REGISTRY
 
 **Files:**
+
 - Create: `src/utils/minigameRegistry.ts`
 - Modify: `src/context/reducers/minigameReducer.ts`
 - Create: `tests/minigameRegistry.test.js`
@@ -806,24 +937,36 @@ describe('MINIGAME_REGISTRY', () => {
 
   it('has an entry for every known minigame', () => {
     for (const key of KNOWN_MINIGAMES) {
-      assert.ok(Object.hasOwn(MINIGAME_REGISTRY, key), `Missing registry entry for "${key}"`)
+      assert.ok(
+        Object.hasOwn(MINIGAME_REGISTRY, key),
+        `Missing registry entry for "${key}"`
+      )
     }
   })
 
   for (const [key, entry] of Object.entries(MINIGAME_REGISTRY)) {
     it(`${key}: startAction references a valid ActionType`, () => {
       const values = Object.values(ActionTypes)
-      assert.ok(values.includes(entry.startAction), `startAction "${entry.startAction}" not in ActionTypes`)
+      assert.ok(
+        values.includes(entry.startAction),
+        `startAction "${entry.startAction}" not in ActionTypes`
+      )
     })
 
     it(`${key}: completeAction references a valid ActionType`, () => {
       const values = Object.values(ActionTypes)
-      assert.ok(values.includes(entry.completeAction), `completeAction "${entry.completeAction}" not in ActionTypes`)
+      assert.ok(
+        values.includes(entry.completeAction),
+        `completeAction "${entry.completeAction}" not in ActionTypes`
+      )
     })
 
     it(`${key}: scene references a valid GAME_PHASES value`, () => {
       const phases = Object.values(GAME_PHASES)
-      assert.ok(phases.includes(entry.scene), `scene "${entry.scene}" not in GAME_PHASES`)
+      assert.ok(
+        phases.includes(entry.scene),
+        `scene "${entry.scene}" not in GAME_PHASES`
+      )
     })
 
     it(`${key}: calculateResult is a function`, () => {
@@ -850,7 +993,7 @@ import {
   calculateTravelMinigameResult,
   calculateRoadieMinigameResult,
   calculateAmpCalibrationResult,
-  calculateKabelsalatMinigameResult,
+  calculateKabelsalatMinigameResult
 } from './economyEngine'
 
 export interface MinigameRegistryEntry {
@@ -865,26 +1008,26 @@ export const MINIGAME_REGISTRY = {
     startAction: ActionTypes.START_TRAVEL_MINIGAME,
     completeAction: ActionTypes.COMPLETE_TRAVEL_MINIGAME,
     scene: GAME_PHASES.TRAVEL_MINIGAME,
-    calculateResult: calculateTravelMinigameResult,
+    calculateResult: calculateTravelMinigameResult
   },
   roadie: {
     startAction: ActionTypes.START_ROADIE_MINIGAME,
     completeAction: ActionTypes.COMPLETE_ROADIE_MINIGAME,
     scene: GAME_PHASES.PRE_GIG_MINIGAME,
-    calculateResult: calculateRoadieMinigameResult,
+    calculateResult: calculateRoadieMinigameResult
   },
   ampCalibration: {
     startAction: ActionTypes.START_AMP_CALIBRATION,
     completeAction: ActionTypes.COMPLETE_AMP_CALIBRATION,
     scene: GAME_PHASES.PRE_GIG_MINIGAME,
-    calculateResult: calculateAmpCalibrationResult,
+    calculateResult: calculateAmpCalibrationResult
   },
   kabelsalat: {
     startAction: ActionTypes.START_KABELSALAT_MINIGAME,
     completeAction: ActionTypes.COMPLETE_KABELSALAT_MINIGAME,
     scene: GAME_PHASES.PRE_GIG_MINIGAME,
-    calculateResult: calculateKabelsalatMinigameResult,
-  },
+    calculateResult: calculateKabelsalatMinigameResult
+  }
 } as const satisfies Record<string, MinigameRegistryEntry>
 
 export type MinigameKey = keyof typeof MINIGAME_REGISTRY
@@ -912,10 +1055,18 @@ For each `handleStart*` function, replace the hardcoded scene string with the re
 
 ```typescript
 // Before (approximate)
-return { ...state, currentScene: 'TRAVEL_MINIGAME', minigame: { ...state.minigame, type: MINIGAME_TYPES.TOURBUS, active: true } }
+return {
+  ...state,
+  currentScene: 'TRAVEL_MINIGAME',
+  minigame: { ...state.minigame, type: MINIGAME_TYPES.TOURBUS, active: true }
+}
 
 // After
-return { ...state, currentScene: MINIGAME_REGISTRY.travel.scene, minigame: { ...state.minigame, type: MINIGAME_TYPES.TOURBUS, active: true } }
+return {
+  ...state,
+  currentScene: MINIGAME_REGISTRY.travel.scene,
+  minigame: { ...state.minigame, type: MINIGAME_TYPES.TOURBUS, active: true }
+}
 ```
 
 Do the same for the other three start handlers. Do not change the complete handlers' state logic — only the scene string references.
@@ -941,19 +1092,20 @@ git commit -m "feat: add MINIGAME_REGISTRY; update minigameReducer to use regist
 
 **Spec coverage check:**
 
-| Spec item | Covered by |
-|---|---|
-| Remove ActionType duplicate | Task 1 |
-| Rename GigStats → PostGigSummary | Task 2 |
-| Rename MapNode component → MapNodeView | Task 3 |
-| Standardize scene named exports | Task 4 |
-| Single scene registry (ALLOWED_SCENE_VALUES in gameConstants) | Task 5 |
-| General event schema validator | Task 6 |
-| Tests for every event in EVENTS_DB | Task 7 |
-| Balance simulation harness | Task 8 |
-| Minigame registry | Task 9 |
+| Spec item                                                     | Covered by |
+| ------------------------------------------------------------- | ---------- |
+| Remove ActionType duplicate                                   | Task 1     |
+| Rename GigStats → PostGigSummary                              | Task 2     |
+| Rename MapNode component → MapNodeView                        | Task 3     |
+| Standardize scene named exports                               | Task 4     |
+| Single scene registry (ALLOWED_SCENE_VALUES in gameConstants) | Task 5     |
+| General event schema validator                                | Task 6     |
+| Tests for every event in EVENTS_DB                            | Task 7     |
+| Balance simulation harness                                    | Task 8     |
+| Minigame registry                                             | Task 9     |
 
 **Potential issues:**
+
 - Task 2: `LastGigStats` in game.d.ts may or may not be identical to `PostGigSummary` — the plan instructs checking this before removing it.
 - Task 8: The `clampMoney` and `clampHarmony` functions may have different export names. If the simulation script fails to import them, look for the actual clamp helper names in `gameStateUtils.ts` and update the require statements.
 - Task 9: The scene values for roadie/ampCalibration/kabelsalat minigames — the exploration showed all three use `PRE_GIG_MINIGAME` but the actual handlers must be verified. The registry tests will catch any mismatch.
