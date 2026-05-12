@@ -30,7 +30,8 @@ describe('useKabelsalatGameEnd', () => {
 
     expect(mockCompleteKabelsalatMinigame).toHaveBeenCalledWith({
       isPoweredOn: false,
-      timeLeft: 0
+      timeLeft: 0,
+      voidSurgesPurged: 0
     })
     expect(mockChangeScene).toHaveBeenCalledWith('GIG')
   })
@@ -42,7 +43,8 @@ describe('useKabelsalatGameEnd', () => {
 
     expect(mockCompleteKabelsalatMinigame).toHaveBeenCalledWith({
       isPoweredOn: true,
-      timeLeft: 12
+      timeLeft: 12,
+      voidSurgesPurged: 0
     })
     expect(mockChangeScene).toHaveBeenCalledWith('GIG')
   })
@@ -57,7 +59,8 @@ describe('useKabelsalatGameEnd', () => {
     expect(mockCompleteKabelsalatMinigame).toHaveBeenCalledTimes(1)
     expect(mockCompleteKabelsalatMinigame).toHaveBeenCalledWith({
       isPoweredOn: true,
-      timeLeft: 9
+      timeLeft: 9,
+      voidSurgesPurged: 0
     })
     expect(mockChangeScene).toHaveBeenCalledTimes(1)
     expect(mockChangeScene).toHaveBeenCalledWith('GIG')
@@ -72,7 +75,8 @@ describe('useKabelsalatGameEnd', () => {
     expect(mockCompleteKabelsalatMinigame).toHaveBeenCalledTimes(1)
     expect(mockCompleteKabelsalatMinigame).toHaveBeenCalledWith({
       isPoweredOn: true,
-      timeLeft: 7
+      timeLeft: 7,
+      voidSurgesPurged: 0
     })
     expect(mockChangeScene).toHaveBeenCalledTimes(1)
   })

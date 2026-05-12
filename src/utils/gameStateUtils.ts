@@ -38,8 +38,10 @@ export const isPlainObject = (
  * @returns {boolean} True if empty, false otherwise
  */
 export const isEmptyObject = (obj: Record<string, unknown>): boolean => {
-  for (const _ in obj) {
-    return false
+  for (const key in obj) {
+    if (Object.hasOwn(obj, key)) {
+      return false
+    }
   }
   return true
 }
