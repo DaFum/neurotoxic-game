@@ -71,6 +71,14 @@ test('Minigame Economy Calculations', async t => {
     )
     assert.strictEqual(resultFast.stress, 0)
     assert.strictEqual(resultFast.reward, 135)
+
+    // Powered on, but used Void Surge Purge -> incurs stress penalty
+    const resultPurge = calculateKabelsalatMinigameResult(
+      { isPoweredOn: true, timeLeft: 25, voidSurgesPurged: 3 },
+      { members: [] }
+    )
+    assert.strictEqual(resultPurge.stress, 15) // 3 * 5
+    assert.strictEqual(resultPurge.reward, 135)
   })
 
   await t.test('Amp Calibration Minigame Results', () => {

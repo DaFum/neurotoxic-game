@@ -83,7 +83,7 @@ export const isGigNode = (
  */
 export const processTravelEvents = (
   node: ArrivalNode | null | undefined,
-  triggerEvent: (a: string, b?: string) => boolean
+  triggerEvent: (category: string, triggerPoint?: string) => boolean
 ): boolean => {
   if (isGigNode(node)) {
     return false
@@ -102,7 +102,7 @@ type HandleNodeArrivalParams = {
   player: PlayerState
   updateBand: (p: Partial<BandState>) => void
   updatePlayer: (p: Partial<PlayerState>) => void
-  triggerEvent: (a: string, b?: string) => boolean
+  triggerEvent: (category: string, triggerPoint?: string) => boolean
   startGig: (venue: Venue) => void
   addToast: (msg: string, level?: string) => void
   onShowHQ?: () => void
