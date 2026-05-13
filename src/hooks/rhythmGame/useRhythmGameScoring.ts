@@ -187,6 +187,11 @@ export const useRhythmGameScoring = ({
         setAccuracy(newAccuracy)
       }
 
+      // Dispatch Void Stress increase on miss
+      if (typeof updateBand === 'function') {
+        updateBand(createUpdateVoidStressAction(2.5 * count).payload)
+      }
+
       // Only play miss SFX if it's a real miss
       if (!isEmptyHit) {
         audioManager.playSFX('miss')

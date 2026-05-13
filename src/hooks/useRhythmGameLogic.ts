@@ -30,7 +30,7 @@ export type RhythmGameLogicReturn = {
 export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
   const { t } = useTranslation()
   const gameState = useGameState()
-  const { setLastGigStats, addToast, endGig } = gameState
+  const { setLastGigStats, addToast, endGig, updateBand } = gameState
   const {
     setlist,
     band,
@@ -82,7 +82,7 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
     gameStateRef,
     setters,
     performance: band.performance, // Injected for dynamic stats
-    contextActions: { addToast, setLastGigStats, endGig }
+    contextActions: { addToast, setLastGigStats, endGig, updateBand }
   })
   const { activateToxicMode } = scoringActions
 
