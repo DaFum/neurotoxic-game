@@ -10,7 +10,7 @@ import {
   derivePostOptions
 } from '../utils/postGigUtils'
 import type { PostResult } from '../types/game'
-import type { BrandDeal } from '../data/brandDeals'
+import type { BrandDeal } from '../types/social'
 
 export type PostOptionsErrorState =
   | false

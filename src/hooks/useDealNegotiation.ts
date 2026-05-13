@@ -14,7 +14,7 @@ import type {
   DealNegotiationState,
   NegotiationResult
 } from '../types/components'
-import type { BrandDeal } from '../data/brandDeals'
+import type { BrandDeal } from '../types/social'
 
 type Deal = BrandDeal
 

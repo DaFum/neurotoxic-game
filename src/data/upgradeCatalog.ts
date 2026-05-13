@@ -1,5 +1,5 @@
 import { HQ_ITEMS } from './hqItems'
-import type { CatalogInputItem, CatalogItem } from '../types/components'
+import type { CatalogInputItem, CatalogItem, Effect } from '../types/components'
 
 /**
  * Legacy fame-based upgrades, previously in upgrades.js.
@@ -140,16 +140,56 @@ const LEGACY_UPGRADES = [
   }
 ]
 
+const isEffect = (value: unknown): value is Effect => {
+  if (typeof value !== 'object' || value === null) return false
+  const effect = value as Record<string, unknown>
+  if (typeof effect.type !== 'string') return false
+
+  switch (effect.type) {
+    case 'inventory_add':
+      return typeof effect.item === 'string' && typeof effect.value === 'number'
+    case 'inventory_set':
+      return typeof effect.item === 'string'
+    case 'stat_modifier':
+      return (
+        (effect.target === 'player' ||
+          effect.target === 'band' ||
+          effect.target === 'van' ||
+          effect.target === 'performance') &&
+        typeof effect.stat === 'string' &&
+        typeof effect.value === 'number'
+      )
+    case 'unlock_upgrade':
+    case 'unlock_hq':
+      return typeof effect.id === 'string'
+    case 'passive':
+      return typeof effect.key === 'string'
+    default:
+      return false
+  }
+}
+
+const normalizeEffect = (value: unknown, itemId: string | number): Effect => {
+  if (isEffect(value)) return value
+  throw new Error(`Invalid catalog effect for item "${String(itemId)}"`)
+}
+
 const normalizeUpgradeShape = (item: CatalogInputItem): CatalogItem => {
   const { effect, effects: rawEffects, ...rest } = item
+  const normalizedEffect =
+    effect != null ? normalizeEffect(effect, item.id) : undefined
+  const effects = Array.isArray(rawEffects)
+    ? rawEffects.map(rawEffect => normalizeEffect(rawEffect, item.id))
+    : rawEffects != null
+      ? [normalizeEffect(rawEffects, item.id)]
+      : normalizedEffect != null
+        ? [normalizedEffect]
+        : []
+
   return {
     ...rest,
-    ...(effect != null ? { effect } : {}),
-    effects: Array.isArray(rawEffects)
-      ? [...rawEffects]
-      : effect != null
-        ? [effect]
-        : []
+    ...(normalizedEffect != null ? { effect: normalizedEffect } : {}),
+    effects
   }
 }
 

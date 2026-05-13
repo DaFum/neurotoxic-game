@@ -24,11 +24,11 @@ import type {
   PostGigSummary,
   Venue,
   PostResult,
-  UnknownRecord
+  UnknownRecord,
+  BrandAlignment
 } from '../types/game'
 import type { PostGigFinancials } from '../types/economy'
-import type { Platform, SocialPostOption } from '../types/social'
-import type { BrandDeal } from './socialEngine'
+import type { BrandDeal, Platform, SocialPostOption } from '../types/social'
 
 type ResolvedPostResult = PostResult & {
   platform: Platform
@@ -63,21 +63,39 @@ const toNumber = (value: unknown, fallback = 0): number =>
 const isSocialPlatformId = (value: unknown): value is Platform =>
   typeof value === 'string' && SOCIAL_PLATFORM_IDS.has(value as Platform)
 
+const normalizeNumericDelta = (
+  value: unknown,
+  fieldName: string
+): number | undefined => {
+  if (typeof value !== 'number') return undefined
+  if (!Number.isFinite(value)) {
+    throw new Error(`Invalid post result ${fieldName}: ${String(value)}`)
+  }
+  return value
+}
+
 const normalizeInfluencerUpdate = (
   value: unknown
 ): ResolvedPostResult['influencerUpdate'] => {
-  if (
-    !value ||
-    typeof value !== 'object' ||
-    !Object.hasOwn(value, 'id') ||
-    !Object.hasOwn(value, 'scoreChange')
-  ) {
+  if (value == null) {
     return undefined
+  }
+
+  if (typeof value !== 'object') {
+    throw new Error('Invalid influencerUpdate: expected an object')
+  }
+
+  if (!Object.hasOwn(value, 'id')) {
+    throw new Error('Invalid influencerUpdate: id must be a string')
+  }
+
+  if (!Object.hasOwn(value, 'scoreChange')) {
+    throw new Error('Invalid influencerUpdate: scoreChange is required')
   }
 
   const update = value as { id?: unknown; scoreChange?: unknown }
   if (typeof update.id !== 'string') {
-    return undefined
+    throw new Error('Invalid influencerUpdate: id must be a string')
   }
 
   const scoreChange = toNumber(update.scoreChange, Number.NaN)
@@ -93,6 +111,30 @@ const normalizeInfluencerUpdate = (
     id: update.id,
     scoreChange
   }
+}
+
+const getDealIdentifier = (deal: UnknownRecord): string => {
+  const id = deal.id
+  return typeof id === 'string' || typeof id === 'number'
+    ? String(id)
+    : 'unknown'
+}
+
+const normalizeRemainingGigs = (deal: UnknownRecord): number => {
+  const remainingGigs = deal.remainingGigs
+  if (
+    typeof remainingGigs !== 'number' ||
+    !Number.isFinite(remainingGigs) ||
+    !Number.isInteger(remainingGigs) ||
+    remainingGigs < 0
+  ) {
+    throw new Error(
+      `Invalid remainingGigs for active deal ${getDealIdentifier(
+        deal
+      )}: ${String(remainingGigs)}`
+    )
+  }
+  return remainingGigs
 }
 
 const normalizeResolvedPost = (
@@ -112,29 +154,24 @@ const normalizeResolvedPost = (
     success: raw.success === true,
     followers: toNumber(raw.followers),
     message: typeof raw.message === 'string' ? raw.message : '',
-    moneyChange:
-      typeof raw.moneyChange === 'number' ? raw.moneyChange : undefined,
-    harmonyChange:
-      typeof raw.harmonyChange === 'number' ? raw.harmonyChange : undefined,
-    controversyChange:
-      typeof raw.controversyChange === 'number'
-        ? raw.controversyChange
-        : undefined,
-    loyaltyChange:
-      typeof raw.loyaltyChange === 'number' ? raw.loyaltyChange : undefined,
-    zealotryChange:
-      typeof raw.zealotryChange === 'number' ? raw.zealotryChange : undefined,
-    staminaChange:
-      typeof raw.staminaChange === 'number' ? raw.staminaChange : undefined,
-    moodChange: typeof raw.moodChange === 'number' ? raw.moodChange : undefined,
+    moneyChange: normalizeNumericDelta(raw.moneyChange, 'moneyChange'),
+    harmonyChange: normalizeNumericDelta(raw.harmonyChange, 'harmonyChange'),
+    controversyChange: normalizeNumericDelta(
+      raw.controversyChange,
+      'controversyChange'
+    ),
+    loyaltyChange: normalizeNumericDelta(raw.loyaltyChange, 'loyaltyChange'),
+    zealotryChange: normalizeNumericDelta(raw.zealotryChange, 'zealotryChange'),
+    staminaChange: normalizeNumericDelta(raw.staminaChange, 'staminaChange'),
+    moodChange: normalizeNumericDelta(raw.moodChange, 'moodChange'),
     allMembersMoodChange: raw.allMembersMoodChange === true,
     allMembersStaminaChange: raw.allMembersStaminaChange === true,
     targetMember:
       typeof raw.targetMember === 'string' ? raw.targetMember : undefined,
-    reputationCooldownSet:
-      typeof raw.reputationCooldownSet === 'number'
-        ? raw.reputationCooldownSet
-        : undefined,
+    reputationCooldownSet: normalizeNumericDelta(
+      raw.reputationCooldownSet,
+      'reputationCooldownSet'
+    ),
     egoClear: raw.egoClear === true,
     egoDrop:
       typeof raw.egoDrop === 'string' || raw.egoDrop === null
@@ -300,8 +337,8 @@ export const calculatePostGigStateUpdates = (
     for (let i = 0; i < updatedSocial.activeDeals.length; i++) {
       const deal = updatedSocial.activeDeals[i]
       if (!deal || typeof deal !== 'object') continue
-      const nextRemainingGigs =
-        toNumber((deal as UnknownRecord).remainingGigs, 1) - 1
+      const dealRecord = deal as UnknownRecord
+      const nextRemainingGigs = normalizeRemainingGigs(dealRecord) - 1
       if (nextRemainingGigs > 0) {
         nextDeals.push({ ...deal, remainingGigs: nextRemainingGigs })
       }
@@ -415,8 +452,9 @@ const OPPOSING_ALIGNMENT_MAP = {
   [BRAND_ALIGNMENTS.SUSTAINABLE]: BRAND_ALIGNMENTS.EVIL, // SUSTAINABLE still opposes EVIL
   [BRAND_ALIGNMENTS.CORPORATE]: BRAND_ALIGNMENTS.INDIE,
   [BRAND_ALIGNMENTS.INDIE]: BRAND_ALIGNMENTS.CORPORATE,
-  [BRAND_ALIGNMENTS.GOOD]: BRAND_ALIGNMENTS.EVIL
-}
+  [BRAND_ALIGNMENTS.GOOD]: BRAND_ALIGNMENTS.EVIL,
+  [BRAND_ALIGNMENTS.NEUTRAL]: BRAND_ALIGNMENTS.NEUTRAL
+} as const satisfies Record<BrandAlignment, BrandAlignment>
 
 export const getAcceptDealMoneyUpdate = ({
   deal,
@@ -470,11 +508,8 @@ export const getAcceptDealSocialUpdateFactory = (deal: BrandDeal) => {
       const currentRep = updates.brandReputation[deal.alignment] || 0
       updates.brandReputation[deal.alignment] = Math.min(100, currentRep + 5)
 
-      const opposing =
-        OPPOSING_ALIGNMENT_MAP[
-          deal.alignment as keyof typeof OPPOSING_ALIGNMENT_MAP
-        ]
-      if (opposing) {
+      const opposing = OPPOSING_ALIGNMENT_MAP[deal.alignment]
+      if (opposing !== deal.alignment) {
         const oppRep = updates.brandReputation[opposing] || 0
         updates.brandReputation[opposing] = Math.max(0, oppRep - 3)
       }

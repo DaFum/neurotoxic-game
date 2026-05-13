@@ -1,4 +1,45 @@
+import type { BrandAlignment } from './game'
+
 export type Platform = 'instagram' | 'tiktok' | 'youtube' | 'newsletter'
+
+export interface BrandDealRequirements {
+  followers: number
+  trend?: string[]
+  trendSet?: Set<string>
+  trait?: string
+  maxZealotry?: number
+  minZealotry?: number
+  maxControversy?: number
+  minControversy?: number
+  [key: string]: unknown
+}
+
+export interface BrandDealOffer {
+  upfront: number
+  duration: number
+  perGig?: number
+  revenueShare?: number
+  item?: string
+  [key: string]: unknown
+}
+
+export interface BrandDeal {
+  id: string
+  name: string
+  description: string
+  type: string
+  alignment: BrandAlignment
+  requirements: BrandDealRequirements
+  offer: BrandDealOffer
+  penalty?: {
+    controversy?: number
+    loyalty?: number
+    [key: string]: unknown
+  }
+  benefit?: Record<string, unknown>
+  remainingGigs?: number
+  [key: string]: unknown
+}
 
 export interface SocialEngineGameState {
   player: {

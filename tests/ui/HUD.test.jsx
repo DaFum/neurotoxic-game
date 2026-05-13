@@ -4,23 +4,23 @@ import { afterEach, describe, expect, test, vi } from 'vitest'
 const mockToggleNeuroDecimator = vi.hoisted(() => vi.fn())
 const mockUpdateBand = vi.hoisted(() => vi.fn())
 const mockSetNeuroDecimator = vi.hoisted(() => vi.fn())
+const mockGameState = vi.hoisted(() => ({
+  player: {
+    money: 100,
+    day: 1,
+    location: 'venues:stendal_proberaum.name',
+    van: { fuel: 100, condition: 100 }
+  },
+  band: {
+    harmony: 80,
+    neuroDecimatorActive: false,
+    inventory: { neuroDecimator: true },
+    members: []
+  }
+}))
 
 vi.mock('../../src/context/GameState', () => ({
-  useGameSelector: selector =>
-    selector({
-      player: {
-        money: 100,
-        day: 1,
-        location: 'venues:stendal_proberaum.name',
-        van: { fuel: 100, condition: 100 }
-      },
-      band: {
-        harmony: 80,
-        neuroDecimatorActive: false,
-        inventory: { neuroDecimator: true },
-        members: []
-      }
-    }),
+  useGameSelector: selector => selector(mockGameState),
   useGameActions: () => ({
     updateBand: mockUpdateBand
   }),
@@ -56,6 +56,8 @@ describe('HUD', () => {
     mockToggleNeuroDecimator.mockClear()
     mockUpdateBand.mockClear()
     mockSetNeuroDecimator.mockClear()
+    mockGameState.band.members = []
+    mockGameState.band.neuroDecimatorActive = false
   })
 
   test('dispatches the dedicated decimator toggle action from the HUD button', async () => {
@@ -68,5 +70,16 @@ describe('HUD', () => {
     expect(mockToggleNeuroDecimator).toHaveBeenCalledWith(true)
     expect(mockUpdateBand).not.toHaveBeenCalled()
     expect(mockSetNeuroDecimator).toHaveBeenCalledWith(true)
+  })
+
+  test('renders the localized fallback for unnamed members', async () => {
+    const { HUD } = await import('../../src/ui/HUD')
+    mockGameState.band.members = [
+      { id: 'member-no-name', name: '', mood: 50, stamina: 60 }
+    ]
+
+    render(<HUD />)
+
+    expect(screen.getByText('Member')).toBeInTheDocument()
   })
 })

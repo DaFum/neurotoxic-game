@@ -292,8 +292,7 @@ export const HUD = memo(() => {
                 className='flex items-center justify-between w-52 mb-1.5 last:mb-0'
               >
                 <span className='text-star-white/80 text-[11px]'>
-                  {m.name ??
-                    t('ui:member.unknown', { defaultValue: 'Unknown' })}
+                  {safeName}
                 </span>
                 <div className='flex items-center gap-1.5'>
                   <Tooltip

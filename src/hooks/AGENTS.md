@@ -2,7 +2,7 @@
 
 ## Scope
 
-Applies to `src/hooks/**` unless a deeper `AGENTS.md` overrides it!
+Applies to `src/hooks/**` unless a deeper `AGENTS.md` overrides it.
 
 ## Rules
 

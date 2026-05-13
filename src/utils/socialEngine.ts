@@ -25,13 +25,15 @@ import {
   clampPlayerMoney,
   clampBandHarmony
 } from './gameStateUtils'
-import type { SocialEngineGameState, SocialPostOption } from '../types/social'
+import type {
+  BrandDeal,
+  SocialEngineGameState,
+  SocialPostOption
+} from '../types/social'
 
 type AllowedTrend = (typeof ALLOWED_TRENDS)[number]
 
 type RandomFn = () => number
-export type BrandDeal =
-  typeof BRAND_DEALS_BY_ID extends Map<string, infer Deal> ? Deal : never
 
 interface WeightedPostOption extends SocialPostOption {
   _weight: number
@@ -273,7 +275,11 @@ export const resolvePost = (
     // resolved deltas stay within bounds before applying and displaying correctly.
     let moneyChange =
       typeof result.moneyChange === 'number' ? result.moneyChange : undefined
-    if (moneyChange !== undefined && gameState.player?.money !== undefined) {
+    if (
+      moneyChange !== undefined &&
+      Number.isFinite(moneyChange) &&
+      gameState.player?.money !== undefined
+    ) {
       const prevMoney = gameState.player.money ?? 0
       const nextMoney = clampPlayerMoney(prevMoney + moneyChange)
       moneyChange = nextMoney - prevMoney
@@ -283,7 +289,11 @@ export const resolvePost = (
       typeof result.harmonyChange === 'number'
         ? result.harmonyChange
         : undefined
-    if (harmonyChange !== undefined && gameState.band?.harmony !== undefined) {
+    if (
+      harmonyChange !== undefined &&
+      Number.isFinite(harmonyChange) &&
+      gameState.band?.harmony !== undefined
+    ) {
       const prevHarmony = Number(gameState.band.harmony ?? 0)
       const nextHarmony = clampBandHarmony(prevHarmony + harmonyChange)
       harmonyChange = nextHarmony - prevHarmony

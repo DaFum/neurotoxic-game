@@ -58,7 +58,10 @@ export interface PreGigLogicReturn {
 
 export const usePreGigLogic = (): PreGigLogicReturn => {
   const { t, i18n } = useTranslation(['ui', 'venues'])
-  const typedT = t as TranslationCallback
+  const typedT = useCallback<TranslationCallback>(
+    (key, options) => t(key, options),
+    [t]
+  )
 
   const GIG_MODIFIER_OPTIONS = useMemo<ModifierOption[]>(
     () => [

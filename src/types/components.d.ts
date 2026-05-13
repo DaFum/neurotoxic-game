@@ -9,8 +9,7 @@ import type {
 import type { RemoveByIdCallback, TranslationCallback } from './callbacks'
 import type { RefObject, MutableRefObject } from 'react'
 import type * as React from 'react'
-import type { Platform, SocialPostOption } from './social'
-import type { BrandDeal } from '../data/brandDeals'
+import type { BrandDeal, Platform, SocialPostOption } from './social'
 export type { AudioState, AudioControls } from './audio'
 
 export interface PixiController {
@@ -301,21 +300,6 @@ export interface CompletePhaseProps {
   isProcessingAction?: boolean
 }
 
-export interface DealContract {
-  id: string
-  name: string
-  description: string
-  alignment?: string
-  offer: {
-    upfront: number
-    duration: number
-    perGig?: number
-    item?: string
-  }
-  penalty?: Record<string, unknown>
-  [key: string]: unknown
-}
-
 export interface DealCardProps {
   deal: BrandDeal
   negotiationState?: DealNegotiationState
@@ -476,7 +460,8 @@ export type Effect =
   | (EffectBase & { type: 'passive'; key: string; value?: unknown })
   | (EffectBase & { type: 'unlock_hq'; id: string })
 
-export type CatalogEffect = Effect | Record<string, unknown>
+export type CatalogEffect = Effect
+export type CatalogInputEffect = Effect | Record<string, unknown>
 
 export interface PurchaseItem {
   id?: string | number
@@ -486,8 +471,8 @@ export interface PurchaseItem {
   category?: string
   description?: string
   img?: string
-  effect?: CatalogEffect
-  effects?: CatalogEffect[]
+  effect?: Effect
+  effects?: Effect[]
   oneTime?: boolean
   imgPrompt?: string
   requiresReputation?: boolean
@@ -507,8 +492,8 @@ export interface CatalogInputItem extends Omit<
 > {
   id: string | number
   cost: number
-  effect?: CatalogEffect | null
-  effects?: CatalogEffect[] | CatalogEffect | null
+  effect?: CatalogInputEffect | null
+  effects?: CatalogInputEffect[] | CatalogInputEffect | null
   [key: string]: unknown
 }
 
