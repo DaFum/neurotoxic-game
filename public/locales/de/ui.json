@@ -1161,7 +1161,9 @@
     {
       "title": "ui:featureList.sec6.title",
       "type": "bullets",
-      "items": ["ui:featureList.sec6.items.0"],
+      "items": [
+        "ui:featureList.sec6.items.0"
+      ],
       "description": "ui:featureList.sec6.description"
     },
     {
@@ -1550,5 +1552,13 @@
   "minigames.amp.hud.interference": "INTERFERENZ",
   "minigames.amp.hud.resonance": "VOID-RESONANZ",
   "minigames.amp.completion.resonance": "Void-Resonanz eingefangen: {{voidResonance}}%",
-  "minigames.amp.completion.hijacks": "Überschriebene Hijacks: {{hijacksOverridden}}"
+  "minigames.amp.completion.hijacks": "Überschriebene Hijacks: {{hijacksOverridden}}",
+  "tabs.glossary": "GLOSSAR",
+  "glossary.terms.harmony": "Harmonie",
+  "glossary.desc.harmony": "Harmonie ist die Lebensader der Band. Wenn sie zu niedrig fällt, verweigern die Mitglieder den Auftritt und die Band löst sich auf.",
+  "glossary.terms.hype": "Hype",
+  "glossary.desc.hype": "Hype stellt deine kurzfristige Bekanntheit und Energie dar. Es kann als Multiplikator für Gagen wirken.",
+  "glossary.terms.zealotry": "Fanatismus (Eiferertum)",
+  "glossary.desc.zealotry": "Fanatismus zeigt an, wie radikal deine Kernfanbase ist. Höherer Fanatismus führt zu speziellen Deals, aber kann den Mainstream abschrecken.",
+  "glossary.liveValue": "Live"
 }

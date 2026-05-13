@@ -1156,7 +1156,9 @@
     {
       "title": "ui:featureList.sec6.title",
       "type": "bullets",
-      "items": ["ui:featureList.sec6.items.0"],
+      "items": [
+        "ui:featureList.sec6.items.0"
+      ],
       "description": "ui:featureList.sec6.description"
     },
     {
@@ -1550,5 +1552,13 @@
   "minigames.amp.hud.interference": "INTERFERENCE",
   "minigames.amp.hud.resonance": "VOID RESONANCE",
   "minigames.amp.completion.resonance": "Void Resonance Captured: {{voidResonance}}%",
-  "minigames.amp.completion.hijacks": "Hijacks Overridden: {{hijacksOverridden}}"
+  "minigames.amp.completion.hijacks": "Hijacks Overridden: {{hijacksOverridden}}",
+  "tabs.glossary": "GLOSSARY",
+  "glossary.terms.harmony": "Harmony",
+  "glossary.desc.harmony": "Harmony is the lifeblood of the band. If it drops too low, members will refuse to perform and the band may break up.",
+  "glossary.terms.hype": "Hype",
+  "glossary.desc.hype": "Hype represents your short-term fame and energy. It acts as a multiplier for gig payouts.",
+  "glossary.terms.zealotry": "Zealotry",
+  "glossary.desc.zealotry": "Zealotry indicates how radical your core fanbase is. Higher zealotry leads to special deals but can scare away the mainstream.",
+  "glossary.liveValue": "Live"
 }

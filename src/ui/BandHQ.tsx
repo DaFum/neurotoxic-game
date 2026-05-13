@@ -19,6 +19,7 @@ import { SetlistTab } from './bandhq/SetlistTab.tsx'
 import { SettingsTab } from './bandhq/SettingsTab.tsx'
 import { LeaderboardTab } from './bandhq/LeaderboardTab.tsx'
 import { VoidTraderTab } from './bandhq/VoidTraderTab.tsx'
+import { GlossaryTab } from './bandhq/GlossaryTab.tsx'
 import { Tooltip } from './shared/Tooltip.tsx'
 import { useNetworkStatus } from '../hooks/useNetworkStatus'
 
@@ -156,6 +157,7 @@ export const BandHQ = ({ onClose, className = '' }: BandHQProps) => {
             { id: 'SETLIST', key: 'tabs.setlist' },
             { id: 'LEADERBOARD', key: 'tabs.leaderboard' },
             { id: 'SETTINGS', key: 'tabs.settings' },
+            { id: 'GLOSSARY', key: 'tabs.glossary' },
             {
               id: 'VOID',
               key:
@@ -279,6 +281,8 @@ export const BandHQ = ({ onClose, className = '' }: BandHQProps) => {
                   processingItemId={processingItemId ?? undefined}
                 />
               )}
+
+            {currentTab === 'GLOSSARY' && <GlossaryTab />}
 
             {currentTab === 'SETTINGS' && (
               <SettingsTab
