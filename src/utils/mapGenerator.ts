@@ -18,7 +18,7 @@
 
 import { ALL_VENUES } from '../data/venues'
 import { StateError } from './errorHandler'
-import type { MapNodeType, Venue } from '../types/game'
+import type { MapNodeType, Venue, CityTraitState } from '../types/game'
 
 type MapConnection = { from: string; to: string }
 type GeneratedMapNode = {
@@ -38,6 +38,7 @@ type MapGeneratorState = {
   nodes: Record<string, GeneratedMapNode>
   nodeList: GeneratedMapNode[]
   connections: MapConnection[]
+  cityStates: Record<string, CityTraitState>
 }
 type VenuePools = {
   easyVenues: Venue[]
@@ -93,7 +94,8 @@ export class MapGenerator {
       layers: [],
       nodes: {},
       nodeList: [],
-      connections: []
+      connections: [],
+      cityStates: {}
     }
 
     // Layer 0: Stendal (Home)
@@ -178,7 +180,37 @@ export class MapGenerator {
     // We will keep it mutating the *internal* map structure being built.
     this.resolveOverlaps(map.nodeList)
 
+    this._populateCityStates(map)
+
     return map
+  }
+
+  /**
+   * Generates determinisic city traits for each unique city found on the generated map.
+   */
+  _populateCityStates(map: MapGeneratorState): void {
+    const genres = ['Punk', 'Metal', 'Goth', 'Indie', 'Synth', 'Noise', 'Hardcore']
+    const spendingProfiles = ['Stingy', 'Average', 'Generous', 'Drunkards', 'Merch-Hungry']
+
+    for (const node of map.nodeList) {
+      if (node.venue && node.venue.city) {
+        const cityName = node.venue.city
+
+        // Only generate traits once per city per map generation
+        if (!map.cityStates[cityName]) {
+          const genreBias = genres[Math.floor(this.random() * genres.length)] || 'Unknown'
+          // Attention span in minutes: 15 to 60
+          const attentionSpan = Math.floor(this.random() * 45) + 15
+          const barSpendingProfile = spendingProfiles[Math.floor(this.random() * spendingProfiles.length)] || 'Average'
+
+          map.cityStates[cityName] = {
+            genreBias,
+            attentionSpan,
+            barSpendingProfile
+          }
+        }
+      }
+    }
   }
 
   /**

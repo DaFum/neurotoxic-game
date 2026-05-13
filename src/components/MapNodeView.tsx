@@ -20,6 +20,8 @@ type NodeVisibility = 'visible' | 'dimmed' | 'hidden'
 
 type MapNodeData = GameMapNode
 
+import type { CityTraitState } from '../types/game'
+
 interface MapNodeTooltipProps {
   node: MapNodeData
   isCurrent: boolean
@@ -27,6 +29,8 @@ interface MapNodeTooltipProps {
   ticketPrice?: number
   t: TranslationCallback
   harmony?: number
+  cityTraits?: CityTraitState
+  isPendingConfirm?: boolean
 }
 
 interface MapNodeProps {
@@ -42,6 +46,7 @@ interface MapNodeProps {
   vanUrl: string
   ticketPrice?: number
   harmony?: number
+  cityTraits?: CityTraitState
 }
 
 const getPinAltText = (t: TranslationCallback, type: string): string => {
@@ -93,11 +98,23 @@ const MapNodeTooltip = memo(
     nodeLocationName,
     ticketPrice,
     t,
-    harmony
+    harmony,
+    cityTraits,
+    isPendingConfirm
   }: MapNodeTooltipProps) => {
     return (
-      <div className='hidden group-hover:block group-focus:block absolute top-full mt-2 bg-void-black/90 border border-toxic-green p-2 z-50 whitespace-nowrap pointer-events-none'>
+      <div className={`${isPendingConfirm ? 'block' : 'hidden group-hover:block group-focus:block'} absolute top-full mt-2 bg-void-black/90 border border-toxic-green p-2 z-50 whitespace-nowrap pointer-events-none`}>
         <div className='font-bold text-toxic-green'>{nodeLocationName}</div>
+
+        {cityTraits && (
+          <div className='mt-1 mb-2 pt-1 border-t border-toxic-green/30 text-[10px] text-ash-gray font-mono flex flex-col gap-0.5'>
+            <div className='text-toxic-green/80 font-bold uppercase tracking-wider text-[9px] mb-0.5'>Szene-Intel</div>
+            <div><span className='text-star-white'>Genre-Bias:</span> {cityTraits.genreBias}</div>
+            <div><span className='text-star-white'>Aufmerksamkeitsspanne:</span> {cityTraits.attentionSpan}m</div>
+            <div><span className='text-star-white'>Bar-Ausgabenprofil:</span> {cityTraits.barSpendingProfile}</div>
+          </div>
+        )}
+
         {(node.type === 'GIG' ||
           node.type === 'FESTIVAL' ||
           node.type === 'FINALE') && (
@@ -163,7 +180,8 @@ export const MapNodeView = memo(
     iconUrl,
     vanUrl,
     ticketPrice,
-    harmony
+    harmony,
+    cityTraits
   }: MapNodeProps) => {
     const { t } = useTranslation(['venues', 'ui'])
     const [isHoveredLocal, setIsHoveredLocal] = useState(false)
@@ -347,6 +365,8 @@ export const MapNodeView = memo(
           ticketPrice={ticketPrice}
           t={t}
           harmony={harmony}
+          cityTraits={cityTraits}
+          isPendingConfirm={isPendingConfirm}
         />
       </div>
     )
@@ -372,7 +392,10 @@ export const MapNodeView = memo(
       prev.node.venue?.pay === next.node.venue?.pay &&
       prev.node.venue?.diff === next.node.venue?.diff &&
       prev.node.venue?.price === next.node.venue?.price &&
-      prev.harmony === next.harmony
+      prev.harmony === next.harmony &&
+      prev.cityTraits?.genreBias === next.cityTraits?.genreBias &&
+      prev.cityTraits?.attentionSpan === next.cityTraits?.attentionSpan &&
+      prev.cityTraits?.barSpendingProfile === next.cityTraits?.barSpendingProfile
     )
   }
 )
