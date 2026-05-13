@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { useContrabandStash } from '../../src/hooks/useContrabandStash'
 import * as GameState from '../../src/context/GameState'
+import { logger } from '../../src/utils/logger'
 
 // Mock react-i18next
 vi.mock('react-i18next', () => ({
@@ -20,6 +21,14 @@ vi.mock('react-i18next', () => ({
   }),
   initReactI18next: { type: '3rdParty', init: () => {} }
 }))
+
+vi.mock('../../src/utils/logger', async importOriginal => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    logger: { ...actual.logger, warn: vi.fn() }
+  }
+})
 
 describe('useContrabandStash', () => {
   const mockUseContraband = vi.fn()
@@ -169,6 +178,31 @@ describe('useContrabandStash', () => {
     expect(mockAddToast).toHaveBeenCalledWith(
       'Applied Guitar Strings!',
       'success'
+    )
+  })
+
+  it('warns when using an item without an id', () => {
+    const { result } = renderHook(() => useContrabandStash())
+
+    act(() => {
+      result.current.stashProps.handleUseItem('item-without-id', {
+        type: 'consumable',
+        name: 'Mystery Item'
+      })
+    })
+
+    expect(mockUseContraband).not.toHaveBeenCalled()
+    expect(mockAddToast).toHaveBeenCalledWith(
+      'Unable to use contraband: missing item id',
+      'warning'
+    )
+    expect(logger.warn).toHaveBeenCalledWith(
+      'ContrabandStash',
+      'Unable to use item: missing item id',
+      {
+        instanceId: 'item-without-id',
+        selectedMember: 'member1'
+      }
     )
   })
 

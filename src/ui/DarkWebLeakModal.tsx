@@ -70,7 +70,7 @@ export const DarkWebLeakModal = ({
           </p>
         )}
         <div className='flex justify-end gap-2 mt-4'>
-          <GlitchButton variant='secondary' onClick={onCancel}>
+          <GlitchButton variant='primary' onClick={onCancel}>
             {t('ui:dark_web_leak.cancel', { defaultValue: 'CANCEL' })}
           </GlitchButton>
           <GlitchButton

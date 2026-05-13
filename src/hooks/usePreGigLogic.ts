@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
-import type { TFunction } from 'react-i18next'
 import type { PlayerState, Venue, GigModifiers } from '../types/game'
-import type { RhythmSetlistEntry, Song } from '../types/rhythmGame'
+import type { RhythmSetlistEntry } from '../types/rhythmGame'
+import type { Song } from '../types/audio'
 import type { ActiveEffectEntry } from '../types/components'
+import type { TranslationCallback } from '../types/callbacks'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
@@ -37,14 +38,14 @@ export type ModifierOption = {
 }
 
 export interface PreGigLogicReturn {
-  t: (key: string, options?: unknown) => string
+  t: TranslationCallback
   i18n: { language: string }
   currentGig: Venue | null
   player: PlayerState
   setlist: RhythmSetlistEntry[]
   gigModifiers: GigModifiers
   currentModifiers: { activeEffects: ActiveEffectEntry[] }
-  selectedSongIds: Set<unknown>
+  selectedSongIds: Set<string>
   calculatedBudget: number
   isStarting: boolean
   GIG_MODIFIER_OPTIONS: ModifierOption[]
@@ -57,41 +58,45 @@ export interface PreGigLogicReturn {
 
 export const usePreGigLogic = (): PreGigLogicReturn => {
   const { t, i18n } = useTranslation(['ui', 'venues'])
+  const typedT = useCallback<TranslationCallback>(
+    (key, options) => t(key, options),
+    [t]
+  )
 
   const GIG_MODIFIER_OPTIONS = useMemo<ModifierOption[]>(
     () => [
       {
         key: 'soundcheck',
-        label: t('ui:pregig.modifiers.soundcheck.label'),
+        label: typedT('ui:pregig.modifiers.soundcheck.label'),
         cost: MODIFIER_COSTS.soundcheck,
-        desc: t('ui:pregig.modifiers.soundcheck.desc')
+        desc: typedT('ui:pregig.modifiers.soundcheck.desc')
       },
       {
         key: 'promo',
-        label: t('ui:pregig.modifiers.promo.label'),
+        label: typedT('ui:pregig.modifiers.promo.label'),
         cost: MODIFIER_COSTS.promo,
-        desc: t('ui:pregig.modifiers.promo.desc')
+        desc: typedT('ui:pregig.modifiers.promo.desc')
       },
       {
         key: 'merch',
-        label: t('ui:pregig.modifiers.merch.label'),
+        label: typedT('ui:pregig.modifiers.merch.label'),
         cost: MODIFIER_COSTS.merch,
-        desc: t('ui:pregig.modifiers.merch.desc')
+        desc: typedT('ui:pregig.modifiers.merch.desc')
       },
       {
         key: 'catering',
-        label: t('ui:pregig.modifiers.catering.label'),
+        label: typedT('ui:pregig.modifiers.catering.label'),
         cost: MODIFIER_COSTS.catering,
-        desc: t('ui:pregig.modifiers.catering.desc')
+        desc: typedT('ui:pregig.modifiers.catering.desc')
       },
       {
         key: 'guestlist',
-        label: t('ui:pregig.modifiers.guestlist.label'),
+        label: typedT('ui:pregig.modifiers.guestlist.label'),
         cost: MODIFIER_COSTS.guestlist,
-        desc: t('ui:pregig.modifiers.guestlist.desc')
+        desc: typedT('ui:pregig.modifiers.guestlist.desc')
       }
     ],
-    [t]
+    [typedT]
   )
 
   const {
@@ -118,17 +123,20 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
   const currentModifiers = getGigModifiers(band, gigModifiers)
 
   const selectedSongIds = useMemo(() => {
-    const ids = new Set()
+    const ids = new Set<string>()
     for (let i = 0; i < setlist.length; i++) {
-      ids.add(getSongId(setlist[i]))
+      const item = setlist[i]
+      if (!item) continue
+      const id = getSongId(item)
+      if (id) ids.add(id)
     }
     return ids
   }, [setlist])
 
-  const tRef = useRef<TFunction>(t)
+  const tRef = useRef<TranslationCallback>(typedT)
   useEffect(() => {
-    tRef.current = t
-  }, [t])
+    tRef.current = typedT
+  }, [typedT])
 
   useEffect(() => {
     if (!currentGig) {
@@ -140,14 +148,14 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
   const handleBandMeeting = useCallback(() => {
     const cost = BAND_MEETING_COST
     if (player.money < cost) {
-      addToast(t('ui:pregig.toasts.noMoneySnacks'), 'error')
+      addToast(typedT('ui:pregig.toasts.noMoneySnacks'), 'error')
       return
     }
 
     const prevHarmony = band.harmony ?? 1
     if (prevHarmony >= 100) {
       addToast(
-        t('ui:pregig.toasts.meetingHeldMax', {
+        typedT('ui:pregig.toasts.meetingHeldMax', {
           defaultValue: 'Harmony already maxed out.'
         }),
         'info'
@@ -162,10 +170,10 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     updateBand({ harmony: newHarmony })
 
     addToast(
-      t('ui:pregig.toasts.meetingHeld', { amount: appliedDelta }),
+      typedT('ui:pregig.toasts.meetingHeld', { amount: appliedDelta }),
       'success'
     )
-  }, [player.money, addToast, t, updatePlayer, band.harmony, updateBand])
+  }, [player.money, addToast, typedT, updatePlayer, band.harmony, updateBand])
 
   const hasRunRef = useRef(false)
   useEffect(() => {
@@ -210,14 +218,21 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
       if (!isActive) {
         const projectedTotal = calculatedBudget + cost
         if (projectedTotal > player.money) {
-          addToast(t('ui:pregig.toasts.noMoneyUpgrade'), 'error')
+          addToast(typedT('ui:pregig.toasts.noMoneyUpgrade'), 'error')
           return
         }
       }
 
       setGigModifiers({ [key]: !isActive })
     },
-    [gigModifiers, calculatedBudget, player.money, addToast, setGigModifiers, t]
+    [
+      gigModifiers,
+      calculatedBudget,
+      player.money,
+      addToast,
+      setGigModifiers,
+      typedT
+    ]
   )
 
   const handleStartShow = useCallback(async () => {
@@ -226,7 +241,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
       const audioOk = await audioManager.ensureAudioContext()
       if (!audioOk) {
         setIsStarting(false)
-        addToast(t('ui:pregig.toasts.audioFail'), 'error')
+        addToast(typedT('ui:pregig.toasts.audioFail'), 'error')
         return
       }
       const gigId = currentGig?.id || `gig_${getSafeUUID()}`
@@ -281,7 +296,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
       setIsStarting(false)
       handleError(err, {
         addToast,
-        fallbackMessage: t('ui:pregig.toasts.audioFail')
+        fallbackMessage: typedT('ui:pregig.toasts.audioFail')
       })
     }
   }, [
@@ -289,12 +304,12 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     startRoadieMinigame,
     startKabelsalatMinigame,
     startAmpCalibration,
-    t,
+    typedT,
     addToast
   ])
 
   return {
-    t,
+    t: typedT,
     i18n,
     currentGig,
     player,

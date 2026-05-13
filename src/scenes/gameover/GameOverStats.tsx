@@ -5,8 +5,13 @@
  */
 import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
+import type { PlayerState } from '../../types/game'
 
-export const GameOverStats = ({ player }) => {
+export const GameOverStats = ({
+  player
+}: {
+  player?: Pick<PlayerState, 'day' | 'fame' | 'totalTravels' | 'score'>
+}) => {
   const { t } = useTranslation(['ui'])
 
   const statRows = [

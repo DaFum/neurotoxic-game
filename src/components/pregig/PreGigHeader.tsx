@@ -5,9 +5,19 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { formatNumber } from '../../utils/numberUtils'
+import type { PlayerState, Venue } from '../../types/game'
+import type { TranslationCallback } from '../../types/callbacks'
+
+type PreGigHeaderProps = {
+  t: TranslationCallback
+  i18n: { language?: string }
+  currentGig: Venue | null
+  player: Pick<PlayerState, 'money'>
+  calculatedBudget: number
+}
 
 export const PreGigHeader = React.memo(
-  ({ t, i18n, currentGig, player, calculatedBudget }) => {
+  ({ t, i18n, currentGig, player, calculatedBudget }: PreGigHeaderProps) => {
     return (
       <motion.div
         initial={{ opacity: 0, y: -10 }}

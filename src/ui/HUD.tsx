@@ -1,6 +1,5 @@
 import { useState, useEffect, memo } from 'react'
 import { useGameSelector, useGameDispatch } from '../context/GameState'
-import { toggleNeuroDecimator } from '../context/actionCreators'
 import { audioManager } from '../utils/audio/audioEngine'
 import { useTranslation } from 'react-i18next'
 import {
@@ -39,7 +38,7 @@ const SHORTCUTS = [
 export const HUD = memo(() => {
   const player = useGameSelector(state => state.player)
   const band = useGameSelector(state => state.band)
-  const dispatch = useGameDispatch()
+  const { toggleNeuroDecimator } = useGameDispatch()
   const { t } = useTranslation(['ui', 'venues'])
   const locationName = translateLocation(t, player.location, player.location)
   const [showHelp, setShowHelp] = useState(false)
@@ -47,22 +46,25 @@ export const HUD = memo(() => {
 
   // Global keyboard shortcuts
   useEffect(() => {
-    const handleKey = e => {
+    const handleKey = (e: KeyboardEvent) => {
+      const target = e.target
       if (e.key === '?' || (e.key === 'h' && !e.ctrlKey && !e.metaKey)) {
         // Don't trigger if user is typing in an input
         if (
-          e.target.tagName === 'INPUT' ||
-          e.target.tagName === 'TEXTAREA' ||
-          e.target.tagName === 'SELECT'
+          target instanceof HTMLElement &&
+          (target.tagName === 'INPUT' ||
+            target.tagName === 'TEXTAREA' ||
+            target.tagName === 'SELECT')
         )
           return
         setShowHelp(prev => !prev)
       }
       if (e.key === 'm' && !e.ctrlKey && !e.metaKey) {
         if (
-          e.target.tagName === 'INPUT' ||
-          e.target.tagName === 'TEXTAREA' ||
-          e.target.tagName === 'SELECT'
+          target instanceof HTMLElement &&
+          (target.tagName === 'INPUT' ||
+            target.tagName === 'TEXTAREA' ||
+            target.tagName === 'SELECT')
         )
           return
         handleAudioChange.toggleMute()
@@ -239,11 +241,11 @@ export const HUD = memo(() => {
 
       {/* Right Panel - Band Status */}
       <div className='flex flex-col gap-2 items-end'>
-        {band?.inventory?.neuroDecimator && (
+        {Boolean(band?.inventory?.neuroDecimator) && (
           <button
             onClick={() => {
               const nextState = !band.neuroDecimatorActive
-              dispatch(toggleNeuroDecimator(nextState))
+              toggleNeuroDecimator(nextState)
               audioManager.setNeuroDecimator(nextState)
             }}
             type='button'
@@ -266,7 +268,7 @@ export const HUD = memo(() => {
             </span>
           </button>
         )}
-        {band?.inventory?.neurotoxicPedal && (
+        {Boolean(band?.inventory?.neurotoxicPedal) && (
           <div className='bg-void-black text-toxic-green border-2 border-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)] px-3 py-1.5 flex items-center gap-2 animate-pulse mb-2 pointer-events-auto'>
             <Skull size={14} className='text-toxic-green' />
             <span className='font-black uppercase tracking-wider text-[10px]'>
@@ -280,60 +282,67 @@ export const HUD = memo(() => {
           <div className='text-right border-b border-toxic-green/30 mb-2 pb-1 text-[10px] tracking-widest text-ash-gray'>
             {t('ui:bandStatus', { defaultValue: 'BAND STATUS' })}
           </div>
-          {band.members.map(m => (
-            <div
-              key={m.name}
-              className='flex items-center justify-between w-52 mb-1.5 last:mb-0'
-            >
-              <span className='text-star-white/80 text-[11px]'>{m.name}</span>
-              <div className='flex items-center gap-1.5'>
-                <Tooltip
-                  content={t('ui:hud.mood', { defaultValue: 'Mood' })}
-                  position='bottom'
-                >
-                  <div className='flex items-center gap-1 pointer-events-auto'>
-                    <div className='w-12'>
-                      <ProgressBar
-                        value={m.mood}
-                        max={100}
-                        color='bg-mood-pink'
-                        size='mini'
-                        aria-label={t('ui:hud.memberMood', {
-                          name: m.name,
-                          defaultValue: `${m.name} Mood`
-                        })}
-                      />
+          {band.members.map((m, idx) => {
+            const safeName =
+              m.name?.trim() ||
+              t('ui:hud.unnamedMember', { defaultValue: 'Member' })
+            return (
+              <div
+                key={m.id ?? m.name ?? `member-${idx}`}
+                className='flex items-center justify-between w-52 mb-1.5 last:mb-0'
+              >
+                <span className='text-star-white/80 text-[11px]'>
+                  {safeName}
+                </span>
+                <div className='flex items-center gap-1.5'>
+                  <Tooltip
+                    content={t('ui:hud.mood', { defaultValue: 'Mood' })}
+                    position='bottom'
+                  >
+                    <div className='flex items-center gap-1 pointer-events-auto'>
+                      <div className='w-12'>
+                        <ProgressBar
+                          value={m.mood}
+                          max={100}
+                          color='bg-mood-pink'
+                          size='mini'
+                          aria-label={t('ui:hud.memberMood', {
+                            name: safeName,
+                            defaultValue: `${safeName} Mood`
+                          })}
+                        />
+                      </div>
+                      <span className='text-[9px] text-mood-pink w-7 text-right tabular-nums'>
+                        {m.mood}%
+                      </span>
                     </div>
-                    <span className='text-[9px] text-mood-pink w-7 text-right tabular-nums'>
-                      {m.mood}%
-                    </span>
-                  </div>
-                </Tooltip>
-                <Tooltip
-                  content={t('ui:hud.stamina', { defaultValue: 'Stamina' })}
-                  position='bottom'
-                >
-                  <div className='flex items-center gap-1 pointer-events-auto'>
-                    <div className='w-12'>
-                      <ProgressBar
-                        value={m.stamina}
-                        max={100}
-                        color='bg-stamina-green'
-                        size='mini'
-                        aria-label={t('ui:hud.memberStamina', {
-                          name: m.name,
-                          defaultValue: `${m.name} Stamina`
-                        })}
-                      />
+                  </Tooltip>
+                  <Tooltip
+                    content={t('ui:hud.stamina', { defaultValue: 'Stamina' })}
+                    position='bottom'
+                  >
+                    <div className='flex items-center gap-1 pointer-events-auto'>
+                      <div className='w-12'>
+                        <ProgressBar
+                          value={m.stamina}
+                          max={100}
+                          color='bg-stamina-green'
+                          size='mini'
+                          aria-label={t('ui:hud.memberStamina', {
+                            name: safeName,
+                            defaultValue: `${safeName} Stamina`
+                          })}
+                        />
+                      </div>
+                      <span className='text-[9px] text-stamina-green w-7 text-right tabular-nums'>
+                        {m.stamina}%
+                      </span>
                     </div>
-                    <span className='text-[9px] text-stamina-green w-7 text-right tabular-nums'>
-                      {m.stamina}%
-                    </span>
-                  </div>
-                </Tooltip>
+                  </Tooltip>
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
           <div className='mt-2 pt-1.5 border-t border-toxic-green/20 flex items-center justify-between'>
             <span className='text-[10px] text-ash-gray'>
               {t('ui:harmony', { defaultValue: 'HARMONY' })}

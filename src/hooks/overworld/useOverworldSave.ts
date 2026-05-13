@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 
-export const useOverworldSave = (saveGame: () => Promise<void>) => {
+export const useOverworldSave = (saveGame: () => Promise<void> | void) => {
   const [isSaving, setIsSaving] = useState(false)
   const isMountedRef = useRef(true)
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)

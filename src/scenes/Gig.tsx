@@ -8,10 +8,17 @@ import { useGigInput } from '../hooks/useGigInput'
 import { useGigSession } from '../hooks/useGigSession'
 import { useGigVisuals } from '../hooks/useGigVisuals'
 import { GigHUD } from '../components/GigHUD'
+import { createPixiStageController } from '../components/PixiStageController'
+import type { PixiStageProps } from '../types/components'
+import type { RhythmGameRefState } from '../types/rhythmGame'
 
-const PixiStage = lazy(() =>
-  import('../components/PixiStage').then(m => ({ default: m.PixiStage }))
-)
+const PixiStage = lazy(async () => {
+  const { PixiStage: LoadedPixiStage } = await import('../components/PixiStage')
+  const RhythmPixiStage = (props: PixiStageProps<RhythmGameRefState>) => (
+    <LoadedPixiStage<RhythmGameRefState> {...props} />
+  )
+  return { default: RhythmPixiStage }
+})
 import { audioManager } from '../utils/audio/audioEngine'
 
 import { AudioLockedOverlay } from '../components/minigames/gig/AudioLockedOverlay'
@@ -122,7 +129,11 @@ export const Gig = () => {
           </div>
         }
       >
-        <PixiStage gameStateRef={gameStateRef} update={update} />
+        <PixiStage
+          gameStateRef={gameStateRef}
+          update={update}
+          controllerFactory={createPixiStageController}
+        />
       </Suspense>
 
       {/* Layer 3 & 4: HUD & Inputs */}

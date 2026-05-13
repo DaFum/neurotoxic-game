@@ -20,7 +20,7 @@ export type RhythmLiveStats = {
   lateHits?: number
   maxCombo: number
   peakHype: number
-  corruptionLevel: number
+  corruptionLevel?: number
 }
 
 export type RhythmNote = {

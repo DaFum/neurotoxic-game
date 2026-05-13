@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { MapNode } from '../types/game'
+import type { MapNode } from '../types/game'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
 import { useTravelLogic } from '../hooks/useTravelLogic'
@@ -39,7 +39,6 @@ export const Overworld = () => {
     triggerEvent,
     saveGame,
     gameMap,
-    hasUpgrade,
     updateBand,
     band,
     social,
@@ -125,7 +124,6 @@ export const Overworld = () => {
     advanceDay,
     triggerEvent,
     startGig,
-    hasUpgrade,
     addToast,
     changeScene,
     onShowHQ: openHQ,
@@ -199,7 +197,7 @@ export const Overworld = () => {
         handleTravel={handleTravel}
         setHoveredNode={setHoveredNode}
         hoveredNode={hoveredNode}
-        currentNode={currentNode}
+        currentNode={currentNode ?? null}
         travelTarget={travelTarget}
         travelCompletedRef={travelCompletedRef}
         onTravelComplete={onTravelComplete}

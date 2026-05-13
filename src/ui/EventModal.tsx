@@ -7,7 +7,7 @@ import { VoidSkullIcon } from './shared/Icons'
 import { generateEffectText } from '../utils/effectFormatter'
 import { resolveEventChoice } from '../utils/eventEngine'
 import { useGameSelector } from '../context/GameState'
-import type { EngineGameState } from '../types/game'
+import type { EngineGameState } from '../utils/eventEngine'
 import type {
   EventModalEvent,
   EventModalOption,
@@ -281,6 +281,11 @@ export const EventModal = ({
               >
                 {eventOptions.map((option, index) => {
                   const isDisabled = option.disabled || false
+                  const optionLabel =
+                    option.label ??
+                    option.textKey ??
+                    option.text ??
+                    'ui:event.option'
                   const buttonContent = (
                     <motion.button
                       type='button'
@@ -292,7 +297,7 @@ export const EventModal = ({
                       key={
                         option.id ||
                         option.nextEventId ||
-                        `${option.label}-${index}`
+                        `${optionLabel}-${index}`
                       }
                       onClick={() => handleOptionSelect(option)}
                       className={`w-full p-3 border font-bold tracking-widest uppercase transition-colors text-left flex justify-between focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void-black
@@ -301,7 +306,7 @@ export const EventModal = ({
                     >
                       <span>
                         <span className='opacity-50 mr-2'>[{index + 1}]</span>
-                        {String(t(option.label, eventContext))}
+                        {String(t(optionLabel, eventContext))}
                       </span>
 
                       <div className='flex flex-col items-end text-right'>

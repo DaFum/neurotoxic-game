@@ -4,6 +4,24 @@ import { useTranslation } from 'react-i18next'
 import { GlitchButton } from './GlitchButton'
 import { useGameSelector } from '../context/GameState'
 import { formatCurrency } from '../utils/numberUtils'
+import type { PirateBroadcastPayload } from '../types/game'
+
+type PirateRadioConfig = {
+  COST: PirateBroadcastPayload['cost']
+  FAME_GAIN: PirateBroadcastPayload['fameGain']
+  ZEALOTRY_GAIN: PirateBroadcastPayload['zealotryGain']
+  CONTROVERSY_GAIN: PirateBroadcastPayload['controversyGain']
+  HARMONY_COST: PirateBroadcastPayload['harmonyCost']
+}
+
+type PirateRadioModalProps = {
+  onClose: () => void
+  onBroadcast: () => void
+  canBroadcast: boolean
+  hasBroadcastedToday: boolean
+  config: PirateRadioConfig
+  contentClassName?: string
+}
 
 /**
  * Pirate Radio Broadcast Interface
@@ -18,7 +36,7 @@ export const PirateRadioModal = memo(
     hasBroadcastedToday,
     config,
     contentClassName = ''
-  }) => {
+  }: PirateRadioModalProps) => {
     const { t, i18n } = useTranslation(['ui'])
     const player = useGameSelector(state => state.player)
     const band = useGameSelector(state => state.band)

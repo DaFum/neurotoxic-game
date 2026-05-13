@@ -25,55 +25,15 @@ import {
   clampPlayerMoney,
   clampBandHarmony
 } from './gameStateUtils'
+import type {
+  BrandDeal,
+  SocialEngineGameState,
+  SocialPostOption
+} from '../types/social'
 
 type AllowedTrend = (typeof ALLOWED_TRENDS)[number]
 
 type RandomFn = () => number
-export type BrandDeal =
-  typeof BRAND_DEALS_BY_ID extends Map<string, infer Deal> ? Deal : never
-
-interface SocialEngineGameState {
-  player: {
-    day?: number
-    money?: number
-    fame?: number
-    currentNodeId?: string | null
-    [key: string]: unknown
-  }
-  band?: Record<string, unknown>
-  rivalBand?: {
-    id: string
-    currentLocationId: string | null
-    powerLevel: number
-    [key: string]: unknown
-  } | null
-  social?: {
-    reputationCooldown?: number
-    trend?: string
-    instagram?: number
-    tiktok?: number
-    youtube?: number
-    controversyLevel?: number
-    zealotry?: number
-    activeDeals?: unknown[]
-    brandReputation?: Record<string, number>
-    [key: string]: unknown
-  }
-  currentGig?: { id?: string; [key: string]: unknown } | null
-  [key: string]: unknown
-}
-
-interface SocialPostOption {
-  id: string
-  category?: string
-  badges?: string[]
-  platform?: string
-  condition: (gameState: SocialEngineGameState) => boolean
-  resolve?: (
-    gameState: SocialEngineGameState & { diceRoll: number }
-  ) => Record<string, unknown>
-  [key: string]: unknown
-}
 
 interface WeightedPostOption extends SocialPostOption {
   _weight: number
@@ -315,7 +275,11 @@ export const resolvePost = (
     // resolved deltas stay within bounds before applying and displaying correctly.
     let moneyChange =
       typeof result.moneyChange === 'number' ? result.moneyChange : undefined
-    if (moneyChange !== undefined && gameState.player?.money !== undefined) {
+    if (
+      moneyChange !== undefined &&
+      Number.isFinite(moneyChange) &&
+      gameState.player?.money !== undefined
+    ) {
       const prevMoney = gameState.player.money ?? 0
       const nextMoney = clampPlayerMoney(prevMoney + moneyChange)
       moneyChange = nextMoney - prevMoney
@@ -325,7 +289,11 @@ export const resolvePost = (
       typeof result.harmonyChange === 'number'
         ? result.harmonyChange
         : undefined
-    if (harmonyChange !== undefined && gameState.band?.harmony !== undefined) {
+    if (
+      harmonyChange !== undefined &&
+      Number.isFinite(harmonyChange) &&
+      gameState.band?.harmony !== undefined
+    ) {
       const prevHarmony = Number(gameState.band.harmony ?? 0)
       const nextHarmony = clampBandHarmony(prevHarmony + harmonyChange)
       harmonyChange = nextHarmony - prevHarmony
@@ -795,22 +763,14 @@ export const generateBrandOffers = (
  * @param {Function} rng - Random number generator.
  * @returns {object} { success: boolean, deal: object, feedback: string, status: 'ACCEPTED'|'REVOKED'|'FAILED' }
  */
-export const negotiateDeal = (
-  deal: Record<string, unknown> & {
-    alignment?: string
-    offer: { upfront: number; perGig?: number; [key: string]: unknown }
-  },
+export const negotiateDeal = <TDeal extends BrandDeal>(
+  deal: TDeal,
   strategy: 'AGGRESSIVE' | 'PERSUASIVE' | 'SAFE',
   gameState: SocialEngineGameState,
   rng: RandomFn = secureRandom
 ): {
   success: boolean
-  deal:
-    | (Record<string, unknown> & {
-        alignment?: string
-        offer: { upfront: number; perGig?: number; [key: string]: unknown }
-      })
-    | null
+  deal: TDeal | null
   feedback: string
   status: 'ACCEPTED' | 'REVOKED' | 'FAILED'
 } => {
@@ -829,12 +789,10 @@ export const negotiateDeal = (
 
   // Optimization: structuredClone is slow for hot paths. Manual shallow copy
   // with nested offer copy is ~98% faster.
-  let newDeal:
-    | (Record<string, unknown> & {
-        alignment?: string
-        offer: { upfront: number; perGig?: number; [key: string]: unknown }
-      })
-    | null = { ...deal, offer: { ...deal.offer } }
+  const newDeal: TDeal = {
+    ...deal,
+    offer: { ...deal.offer }
+  }
 
   // Modifiers
   const hasManager = bandHasTrait(band, 'social_manager')
@@ -892,7 +850,6 @@ export const negotiateDeal = (
       } else {
         feedback = 'They walked out. Deal revoked.'
         status = 'REVOKED'
-        newDeal = null
         isSuccess = false
       }
       break
@@ -903,7 +860,7 @@ export const negotiateDeal = (
 
   return {
     success: isSuccess,
-    deal: newDeal,
+    deal: status === 'REVOKED' ? null : newDeal,
     feedback,
     status
   }

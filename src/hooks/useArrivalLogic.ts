@@ -6,6 +6,12 @@ import {
   processTravelEvents
 } from '../utils/arrivalUtils'
 import { GAME_PHASES } from '../context/gameConstants'
+import type { GamePhase } from '../types/game'
+
+type UseArrivalLogicOptions = {
+  onShowHQ?: () => void
+  rng?: () => number
+}
 
 /**
  * Hook to encapsulate reusable arrival sequence logic for both legacy travel and Minigame integration.
@@ -20,7 +26,10 @@ import { GAME_PHASES } from '../context/gameConstants'
  * `player.currentNodeId`, so stale guards never block arrivals at subsequent nodes even after
  * an error or a rapid node change.
  */
-export const useArrivalLogic = ({ onShowHQ, rng } = {}) => {
+export const useArrivalLogic = ({
+  onShowHQ,
+  rng
+}: UseArrivalLogicOptions = {}) => {
   const {
     advanceDay,
     saveGame,
@@ -93,7 +102,7 @@ export const useArrivalLogic = ({ onShowHQ, rng } = {}) => {
             eventAlreadyActive: travelEventActive,
             rng
           })
-        : { scene: GAME_PHASES.OVERWORLD as const, gigStarted: false }
+        : { scene: GAME_PHASES.OVERWORLD as GamePhase, gigStarted: false }
 
       if (!arrivalResult.gigStarted) {
         changeScene(arrivalResult.scene)

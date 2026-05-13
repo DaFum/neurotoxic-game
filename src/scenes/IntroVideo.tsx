@@ -11,7 +11,7 @@ import { logger } from '../utils/logger'
  */
 export const IntroVideo = () => {
   const { changeScene } = useGameState()
-  const videoRef = useRef(null)
+  const videoRef = useRef<HTMLVideoElement | null>(null)
   const [autoplayBlocked, setAutoplayBlocked] = useState(false)
   const [isVideoSupported, setIsVideoSupported] = useState(true)
 
@@ -24,8 +24,8 @@ export const IntroVideo = () => {
       videoRef.current
         .play()
         .then(() => setAutoplayBlocked(false))
-        .catch(err => {
-          if (err?.name === 'NotSupportedError') {
+        .catch((err: unknown) => {
+          if (err instanceof DOMException && err.name === 'NotSupportedError') {
             logger.warn(
               'IntroVideo',
               'Intro video format is not supported by this browser. Skipping intro.'
@@ -43,8 +43,11 @@ export const IntroVideo = () => {
   useEffect(() => {
     // Attempt to play video on mount
     if (videoRef.current) {
-      videoRef.current.play().catch(error => {
-        if (error?.name === 'NotSupportedError') {
+      videoRef.current.play().catch((error: unknown) => {
+        if (
+          error instanceof DOMException &&
+          error.name === 'NotSupportedError'
+        ) {
           logger.warn(
             'IntroVideo',
             'Intro video source is unsupported. Skipping intro.'

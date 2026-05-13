@@ -43,17 +43,22 @@ export class RoadieTrafficManager {
     if (sprite) return sprite
 
     if (this.textures.cars.length > 0) {
-      let textureHash = car.textureHash
-      if (!Number.isFinite(textureHash)) {
-        textureHash = hashString(
-          String(car.id ?? `car_${car.row}_${car.speed}`)
-        )
-      }
+      const textureHash =
+        typeof car.textureHash === 'number' && Number.isFinite(car.textureHash)
+          ? car.textureHash
+          : hashString(String(car.id ?? `car_${car.row}_${car.speed}`))
       const texIndex =
         Math.floor(Math.abs(textureHash)) % this.textures.cars.length
-      sprite = new Sprite(this.textures.cars[texIndex])
+      const texture = this.textures.cars[texIndex]
+      if (!texture) {
+        sprite = new Graphics()
+        ;(sprite as Graphics).rect(-30, -20, 60, 40)
+        ;(sprite as Graphics).fill(this.colors.bloodRed)
+      } else {
+        sprite = new Sprite(texture)
 
-      sprite.anchor.set(0.5)
+        sprite.anchor.set(0.5)
+      }
     } else {
       sprite = new Graphics()
       ;(sprite as Graphics).rect(-30, -20, 60, 40)

@@ -3,20 +3,8 @@ import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { getSongId } from '../../utils/audio/songUtils'
 import { Tooltip } from '../../ui/shared/Tooltip'
-
-interface SongData {
-  id: string | number
-  name: string
-  difficulty: number
-  duration: number
-  energy: {
-    peak: number
-  }
-}
-
-interface SetlistSongRef {
-  id: string | number
-}
+import type { RhythmSetlistEntry } from '../../types/rhythmGame'
+import type { Song } from '../../types/audio'
 
 interface SetlistPlayerState {
   stats?: {
@@ -25,19 +13,19 @@ interface SetlistPlayerState {
 }
 
 interface SongRowProps {
-  song: SongData
+  song: Song
   isSelected: boolean
   isLocked: boolean
-  toggleSong: (song: SongData) => void
+  toggleSong: (song: Song) => void
 }
 
 interface SetlistBlockProps {
-  setlist: Array<string | SetlistSongRef>
-  songsDb: SongData[]
-  songsDict: Record<string, SongData>
-  selectedSongIds: Set<string | number>
+  setlist: RhythmSetlistEntry[]
+  songsDb: Song[]
+  songsDict: Record<string, Song>
   player?: SetlistPlayerState
-  toggleSong: (song: SongData) => void
+  selectedSongIds: Set<string>
+  toggleSong: (song: Song) => void
 }
 
 const SongRow = memo(function SongRow({
@@ -94,7 +82,7 @@ const SongRow = memo(function SongRow({
           <div className='w-14 h-1.5 bg-shadow-black overflow-hidden border border-ash-gray/20'>
             <div
               className={`h-full transition-all ${isSelected ? 'bg-toxic-green' : 'bg-blood-red/60'}`}
-              style={{ width: `${song.energy.peak}%` }}
+              style={{ width: `${song.energy?.peak ?? 50}%` }}
             />
           </div>
         </div>
@@ -167,20 +155,21 @@ export const SetlistBlock = ({
 
       <div className='mt-3 h-14 border-t border-ash-gray/20 pt-2 flex items-end justify-between gap-1'>
         {setlist.map((s, i) => {
-          const id = getSongId(s)
-          const songData = songsDict[id] || {
+          const id = getSongId(s) ?? `slot-${i}`
+          const songData = songsDict[id] ?? {
             energy: { peak: 50 }
           }
+          const peak = songData.energy?.peak ?? 50
           return (
             <motion.div
               key={id}
               initial={{ height: 0 }}
-              animate={{ height: `${songData.energy?.peak || 50}%` }}
+              animate={{ height: `${peak}%` }}
               transition={{ duration: 0.4, delay: i * 0.1 }}
               className='flex-1 bg-gradient-to-t from-toxic-green to-toxic-green/40 relative group cursor-default'
             >
               <div className='absolute -top-4 left-0 text-[10px] w-full text-center opacity-0 group-hover:opacity-100 transition-opacity text-star-white tabular-nums'>
-                {songData.energy?.peak}%
+                {peak}%
               </div>
             </motion.div>
           )

@@ -177,7 +177,7 @@ export const processRhythmGameTick = ({
     stateRef.isCorruptionBurstActive = false
     stateRef.corruptionBurstEndTime = 0
     setIsCorruptionBurstActive(false)
-    setCorruptionState(stateRef.stats.corruptionLevel, false)
+    setCorruptionState(stateRef.stats.corruptionLevel ?? 0, false)
     setCorruptionEffect(false)
     disableCorruptionBurstAudio()
   }

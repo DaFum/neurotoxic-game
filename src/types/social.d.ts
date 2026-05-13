@@ -1,0 +1,84 @@
+import type { BrandAlignment } from './game'
+
+export type Platform = 'instagram' | 'tiktok' | 'youtube' | 'newsletter'
+
+export interface BrandDealRequirements {
+  followers: number
+  trend?: string[]
+  trendSet?: Set<string>
+  trait?: string
+  maxZealotry?: number
+  minZealotry?: number
+  maxControversy?: number
+  minControversy?: number
+  [key: string]: unknown
+}
+
+export interface BrandDealOffer {
+  upfront: number
+  duration: number
+  perGig?: number
+  revenueShare?: number
+  item?: string
+  [key: string]: unknown
+}
+
+export interface BrandDeal {
+  id: string
+  name: string
+  description: string
+  type: string
+  alignment: BrandAlignment
+  requirements: BrandDealRequirements
+  offer: BrandDealOffer
+  penalty?: {
+    controversy?: number
+    loyalty?: number
+    [key: string]: unknown
+  }
+  benefit?: Record<string, unknown>
+  remainingGigs?: number
+  [key: string]: unknown
+}
+
+export interface SocialEngineGameState {
+  player: {
+    day?: number
+    money?: number
+    fame?: number
+    currentNodeId?: string | null
+    [key: string]: unknown
+  }
+  band?: Record<string, unknown>
+  rivalBand?: {
+    id: string
+    currentLocationId: string | null
+    powerLevel: number
+    [key: string]: unknown
+  } | null
+  social?: {
+    reputationCooldown?: number
+    trend?: string
+    instagram?: number
+    tiktok?: number
+    youtube?: number
+    controversyLevel?: number
+    zealotry?: number
+    activeDeals?: unknown[]
+    brandReputation?: Record<string, number>
+    [key: string]: unknown
+  }
+  currentGig?: { id?: string; [key: string]: unknown } | null
+}
+
+export interface SocialPostOption {
+  id: string
+  category?: string
+  badges?: string[]
+  platform?: Platform
+  condition: (gameState: SocialEngineGameState) => boolean
+  resolve?: (
+    gameState: SocialEngineGameState & { diceRoll: number }
+  ) => Record<string, unknown>
+  [key: string]: unknown
+}

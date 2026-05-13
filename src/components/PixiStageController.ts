@@ -18,7 +18,9 @@ import type { RhythmGameRefState } from '../types/rhythmGame'
 /**
  * Manages Pixi.js stage lifecycle and rendering updates.
  */
-class PixiStageController extends BaseStageController<RhythmGameRefState> {
+class PixiStageController<
+  TState extends RhythmGameRefState = RhythmGameRefState
+> extends BaseStageController<TState> {
   // Getters and Setters for backward compatibility with existing tests
   get colorMatrix() {
     return this.toxicFilterManager?.colorMatrix ?? null
@@ -59,7 +61,7 @@ class PixiStageController extends BaseStageController<RhythmGameRefState> {
   /**
    * @param {object} params - Controller dependencies.
    */
-  constructor(params: StageControllerOptions<RhythmGameRefState>) {
+  constructor(params: StageControllerOptions<TState>) {
     super(params)
     this.stageContainer = null
 
@@ -97,36 +99,41 @@ class PixiStageController extends BaseStageController<RhythmGameRefState> {
    * @private
    */
   _initManagersAndStartLoading() {
+    const app = this.app
+    const stageContainer = this.stageContainer
+    if (!app || !stageContainer) {
+      return []
+    }
     // Initialize Managers and start loading assets in parallel
-    this.crowdManager = new CrowdManager(this.app!, this.stageContainer)
+    this.crowdManager = new CrowdManager(app, stageContainer)
     const crowdLoad = withTimeout(
       this.crowdManager.loadAssets(),
       'Crowd Assets'
     )
 
-    this.laneManager = new LaneManager(
-      this.app!,
-      this.stageContainer,
-      this.gameStateRef
-    )
+    this.laneManager = new LaneManager(app, stageContainer, this.gameStateRef)
     this.laneManager.init()
 
     // Rhythm container is needed for effects and notes.
     // LaneManager owns the rhythm container.
     const rhythmContainer = this.laneManager.container
+    if (!rhythmContainer) {
+      return [crowdLoad]
+    }
 
-    this.effectManager = new EffectManager(this.app!, rhythmContainer)
+    this.effectManager = new EffectManager(app, rhythmContainer)
     const effectLoad = withTimeout(
       this.effectManager.loadAssets(),
       'Effect Assets'
     )
 
     this.noteManager = new NoteManager(
-      this.app!,
+      app,
       rhythmContainer,
       this.gameStateRef,
-      (x: number, y: number, color: number) =>
-        this.effectManager.spawnHitEffect(x, y, color)
+      (x: number, y: number, color: number) => {
+        this.effectManager?.spawnHitEffect(x, y, color)
+      }
     )
     const noteLoad = withTimeout(this.noteManager.loadAssets(), 'Note Assets')
 
@@ -139,6 +146,7 @@ class PixiStageController extends BaseStageController<RhythmGameRefState> {
    */
   _finalizeInit() {
     if (this.isDisposed) return
+    if (!this.crowdManager || !this.effectManager || !this.noteManager) return
 
     // Initialize managers now that assets are loaded
     this.crowdManager.init()
@@ -178,6 +186,13 @@ class PixiStageController extends BaseStageController<RhythmGameRefState> {
     if (!toxic) {
       return
     }
+    const laneManager = this.laneManager
+    const crowdManager = this.crowdManager
+    const noteManager = this.noteManager
+    const effectManager = this.effectManager
+    if (!laneManager || !crowdManager || !noteManager || !effectManager) {
+      return
+    }
 
     const elapsed = getGigTimeMs()
 
@@ -192,14 +207,12 @@ class PixiStageController extends BaseStageController<RhythmGameRefState> {
 
     toxic.update(state, elapsed, stageContainer)
 
-    this.laneManager.update(state)
-    this.crowdManager.update(
-      state.combo ?? 0,
-      state.isToxicMode ?? false,
-      elapsed
-    )
-    this.noteManager.update(state, elapsed, this.laneManager.layout)
-    this.effectManager.update(deltaMS)
+    laneManager.update(state)
+    crowdManager.update(state.combo ?? 0, state.isToxicMode ?? false, elapsed)
+    const laneLayout = laneManager.layout
+    if (!laneLayout) return
+    noteManager.update(state, elapsed, laneLayout)
+    effectManager.update(deltaMS)
   }
 
   /**
@@ -253,6 +266,8 @@ class PixiStageController extends BaseStageController<RhythmGameRefState> {
  * @param {object} params - Controller dependencies.
  * @returns {PixiStageController} Controller instance.
  */
-export const createPixiStageController = (
-  params: StageControllerOptions<RhythmGameRefState>
-) => new PixiStageController(params)
+export const createPixiStageController = <
+  TState extends RhythmGameRefState = RhythmGameRefState
+>(
+  params: StageControllerOptions<TState>
+) => new PixiStageController<TState>(params)

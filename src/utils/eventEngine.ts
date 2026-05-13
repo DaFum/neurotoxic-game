@@ -57,7 +57,7 @@ type EffectShape = {
   nextEventId?: string
   [key: string]: unknown
 }
-type EngineGameState = {
+export type EngineGameState = {
   eventCooldowns?: string[] | Set<string>
   activeStoryFlags?: string[] | Set<string>
   pendingEvents?: string[] | Set<string>

@@ -7,13 +7,7 @@
 import { useCallback } from 'react'
 import type { ReactElement } from 'react'
 import type { UnknownRecord } from '../types/game'
-import {
-  Modal,
-  Panel,
-  AnimatedDivider,
-  ActionButton,
-  HexBorder
-} from './shared/index.tsx'
+import { Modal, Panel, AnimatedDivider, ActionButton } from './shared/index.tsx'
 import { useTranslation } from 'react-i18next'
 
 import { GlitchButton } from './GlitchButton'
@@ -33,8 +27,8 @@ interface ContrabandStashProps {
   stash?: UnknownRecord[]
   members?: UnknownRecord[]
   selectedMember?: string | null
-  setSelectedMember?: (id: unknown) => void
-  handleUseItem?: (instanceId: unknown, item: unknown) => void
+  setSelectedMember?: (id: string) => void
+  handleUseItem?: (instanceId: string, item: StashItem) => void
   onClose?: () => void
 }
 
@@ -45,7 +39,7 @@ type BandMemberItem = {
 
 type StashItem = {
   id: string
-  instanceId?: string | number
+  instanceId?: string
   effectType?: string
   rarity?: string
   type?: string
@@ -82,12 +76,12 @@ export const ContrabandStash = ({
   const { t } = useTranslation(['ui', 'items'])
 
   const makeSelectMember = useCallback(
-    (id: unknown) => () => setSelectedMember?.(id),
+    (id: string) => () => setSelectedMember?.(id),
     [setSelectedMember]
   )
 
   const makeUseItem = useCallback(
-    (instanceId: unknown, item: unknown) => () =>
+    (instanceId: string, item: StashItem) => () =>
       handleUseItem?.(instanceId, item),
     [handleUseItem]
   )
@@ -169,11 +163,9 @@ export const ContrabandStash = ({
                   item.effectType === 'stamina' || item.effectType === 'mood'
                 const stableKey = item.instanceId ?? `migrated-${item.id}`
                 acc.push(
-                  <HexBorder
+                  <div
                     key={stableKey}
-                    color='var(--color-toxic-green)'
-                    className='bg-void-black flex flex-col justify-between'
-                    padding='p-4'
+                    className='bg-void-black flex flex-col justify-between border border-toxic-green p-4'
                   >
                     <div>
                       <div className='flex justify-between items-start mb-2'>
@@ -289,7 +281,10 @@ export const ContrabandStash = ({
                         </div>
                       ) : item.type === 'consumable' || !item.applyOnAdd ? (
                         <ActionButton
-                          onClick={makeUseItem(item.instanceId, item)}
+                          onClick={makeUseItem(
+                            item.instanceId ?? item.id,
+                            item
+                          )}
                           disabled={requiresTarget && !selectedMember}
                           variant='primary'
                           className='w-full text-sm font-bold'
@@ -310,7 +305,7 @@ export const ContrabandStash = ({
                         </div>
                       )}
                     </div>
-                  </HexBorder>
+                  </div>
                 )
               }
               return acc

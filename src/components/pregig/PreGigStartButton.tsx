@@ -5,9 +5,17 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { RazorPlayIcon } from '../../ui/shared/Icons'
+import type { TranslationCallback } from '../../types/callbacks'
+
+type PreGigStartButtonProps = {
+  t: TranslationCallback
+  isStarting: boolean
+  isSetlistEmpty: boolean
+  onStartShow: () => void | Promise<void>
+}
 
 export const PreGigStartButton = React.memo(
-  ({ t, isStarting, isSetlistEmpty, onStartShow }) => {
+  ({ t, isStarting, isSetlistEmpty, onStartShow }: PreGigStartButtonProps) => {
     return (
       <motion.button
         type='button'

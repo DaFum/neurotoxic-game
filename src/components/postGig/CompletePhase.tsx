@@ -23,9 +23,9 @@ export const CompletePhase = ({
   const isHighControversy = (social?.controversyLevel || 0) > 50
 
   const getOutcomeImagePrompt = () => {
-    if (result.success) {
+    if (result.success === true) {
       return IMG_PROMPTS.GIG_SUCCESS
-    } else if (result.platform === 'tiktok') {
+    } else if ((result.platform ?? '') === 'tiktok') {
       return IMG_PROMPTS.SOCIAL_POST_LIFESTYLE
     } else {
       return IMG_PROMPTS.GIG_FAILURE
@@ -51,12 +51,12 @@ export const CompletePhase = ({
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
           className={`text-4xl font-display mb-4 ${
-            result.success
+            result.success === true
               ? 'text-toxic-green drop-shadow-[0_0_20px_var(--color-toxic-green)] animate-neon-flicker'
               : 'text-blood-red'
           }`}
         >
-          {result.success
+          {result.success === true
             ? t('ui:postGig.viralHit', { defaultValue: 'VIRAL HIT!' })
             : t('ui:postGig.flop', { defaultValue: 'FLOPOCOLYPSE' })}
         </motion.h3>
@@ -66,22 +66,24 @@ export const CompletePhase = ({
           transition={{ delay: 0.4 }}
           className='mb-6 text-ash-gray font-mono max-w-md mx-auto'
         >
-          {result.message}
+          {result.message ?? ''}
         </motion.p>
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
           className={`text-3xl font-bold mb-8 tabular-nums font-mono ${
-            result.totalFollowers > 0 ? 'text-toxic-green' : 'text-blood-red'
+            (result.totalFollowers ?? 0) > 0
+              ? 'text-toxic-green'
+              : 'text-blood-red'
           }`}
         >
-          {result.totalFollowers > 0 ? '+' : ''}
-          {result.totalFollowers}{' '}
+          {(result.totalFollowers ?? 0) > 0 ? '+' : ''}
+          {result.totalFollowers ?? 0}{' '}
           {t('ui:postGig.followers', { defaultValue: 'Followers' })}
           <div className='text-sm text-ash-gray/60 mt-1 font-normal tracking-wider'>
-            {t(`ui:postGig.platforms.${result.platform}`, {
-              defaultValue: result.platform
+            {t(`ui:postGig.platforms.${result.platform ?? 'unknown'}`, {
+              defaultValue: result.platform ?? 'unknown'
             })}
           </div>
         </motion.div>

@@ -123,6 +123,36 @@ describe('calculateChaosStyle', async () => {
   })
 })
 
+describe('playBandMemberAnimation', async () => {
+  const { playBandMemberAnimation } =
+    await import('../../src/hooks/useGigEffects')
+
+  beforeEach(() => {
+    setupJSDOM()
+  })
+
+  afterEach(() => {
+    teardownJSDOM()
+    mock.restoreAll()
+  })
+
+  test('reuses an existing animation when KeyframeEffect is unavailable', () => {
+    delete globalThis.KeyframeEffect
+    const el = document.createElement('div')
+    const existingAnimation = {
+      cancel: mock.fn(),
+      play: mock.fn(),
+      effect: { target: el }
+    }
+
+    const result = playBandMemberAnimation(el, existingAnimation)
+
+    assert.strictEqual(result, existingAnimation)
+    assert.equal(existingAnimation.cancel.mock.callCount(), 1)
+    assert.equal(existingAnimation.play.mock.callCount(), 1)
+  })
+})
+
 describe('applyChaosJitter', async () => {
   beforeEach(() => {
     setupJSDOM()

@@ -19,10 +19,167 @@ import { BRAND_ALIGNMENTS } from '../context/initialState'
 import { BRAND_DEALS_BY_ID } from '../data/brandDeals'
 import { SOCIAL_PLATFORMS } from '../data/platforms'
 
-import type { GameState, PostGigSummary, Venue } from '../types/game'
+import type {
+  GameState,
+  PostGigSummary,
+  Venue,
+  PostResult,
+  UnknownRecord,
+  BrandAlignment
+} from '../types/game'
 import type { PostGigFinancials } from '../types/economy'
-import type { SocialPostOption } from './socialEngine'
-import type { BrandDeal } from './socialEngine'
+import type { BrandDeal, Platform, SocialPostOption } from '../types/social'
+
+type ResolvedPostResult = PostResult & {
+  platform: Platform
+  success: boolean
+  followers: number
+  message: string
+  harmonyChange?: number
+  controversyChange?: number
+  loyaltyChange?: number
+  zealotryChange?: number
+  staminaChange?: number
+  moodChange?: number
+  allMembersMoodChange?: boolean
+  allMembersStaminaChange?: boolean
+  targetMember?: string
+  reputationCooldownSet?: number
+  egoClear?: boolean
+  egoDrop?: string | null
+  influencerUpdate?: { id: string; scoreChange: number }
+}
+
+const SOCIAL_PLATFORM_IDS = new Set<Platform>([
+  'instagram',
+  'tiktok',
+  'youtube',
+  'newsletter'
+])
+
+const toNumber = (value: unknown, fallback = 0): number =>
+  typeof value === 'number' && Number.isFinite(value) ? value : fallback
+
+const isSocialPlatformId = (value: unknown): value is Platform =>
+  typeof value === 'string' && SOCIAL_PLATFORM_IDS.has(value as Platform)
+
+const normalizeNumericDelta = (
+  value: unknown,
+  fieldName: string
+): number | undefined => {
+  if (typeof value !== 'number') return undefined
+  if (!Number.isFinite(value)) {
+    throw new Error(`Invalid post result ${fieldName}: ${String(value)}`)
+  }
+  return value
+}
+
+const normalizeInfluencerUpdate = (
+  value: unknown
+): ResolvedPostResult['influencerUpdate'] => {
+  if (value == null) {
+    return undefined
+  }
+
+  if (typeof value !== 'object') {
+    throw new Error('Invalid influencerUpdate: expected an object')
+  }
+
+  if (!Object.hasOwn(value, 'id')) {
+    throw new Error('Invalid influencerUpdate: id must be a string')
+  }
+
+  if (!Object.hasOwn(value, 'scoreChange')) {
+    throw new Error('Invalid influencerUpdate: scoreChange is required')
+  }
+
+  const update = value as { id?: unknown; scoreChange?: unknown }
+  if (typeof update.id !== 'string') {
+    throw new Error('Invalid influencerUpdate: id must be a string')
+  }
+
+  const scoreChange = toNumber(update.scoreChange, Number.NaN)
+  if (!Number.isFinite(scoreChange)) {
+    throw new Error(
+      `Invalid influencerUpdate scoreChange for ${update.id}: ${String(
+        update.scoreChange
+      )}`
+    )
+  }
+
+  return {
+    id: update.id,
+    scoreChange
+  }
+}
+
+const getDealIdentifier = (deal: UnknownRecord): string => {
+  const id = deal.id
+  return typeof id === 'string' || typeof id === 'number'
+    ? String(id)
+    : 'unknown'
+}
+
+const normalizeRemainingGigs = (deal: UnknownRecord): number => {
+  const remainingGigs = deal.remainingGigs
+  if (
+    typeof remainingGigs !== 'number' ||
+    !Number.isFinite(remainingGigs) ||
+    !Number.isInteger(remainingGigs) ||
+    remainingGigs < 0
+  ) {
+    throw new Error(
+      `Invalid remainingGigs for active deal ${getDealIdentifier(
+        deal
+      )}: ${String(remainingGigs)}`
+    )
+  }
+  return remainingGigs
+}
+
+const normalizeResolvedPost = (
+  raw: Record<string, unknown>
+): ResolvedPostResult => {
+  if (!isSocialPlatformId(raw.platform)) {
+    throw new Error(
+      `Invalid social post platform: ${String(raw.platform ?? 'missing')}`
+    )
+  }
+  const platform = raw.platform
+  const influencerUpdate = normalizeInfluencerUpdate(raw.influencerUpdate)
+
+  return {
+    ...raw,
+    platform,
+    success: raw.success === true,
+    followers: toNumber(raw.followers),
+    message: typeof raw.message === 'string' ? raw.message : '',
+    moneyChange: normalizeNumericDelta(raw.moneyChange, 'moneyChange'),
+    harmonyChange: normalizeNumericDelta(raw.harmonyChange, 'harmonyChange'),
+    controversyChange: normalizeNumericDelta(
+      raw.controversyChange,
+      'controversyChange'
+    ),
+    loyaltyChange: normalizeNumericDelta(raw.loyaltyChange, 'loyaltyChange'),
+    zealotryChange: normalizeNumericDelta(raw.zealotryChange, 'zealotryChange'),
+    staminaChange: normalizeNumericDelta(raw.staminaChange, 'staminaChange'),
+    moodChange: normalizeNumericDelta(raw.moodChange, 'moodChange'),
+    allMembersMoodChange: raw.allMembersMoodChange === true,
+    allMembersStaminaChange: raw.allMembersStaminaChange === true,
+    targetMember:
+      typeof raw.targetMember === 'string' ? raw.targetMember : undefined,
+    reputationCooldownSet: normalizeNumericDelta(
+      raw.reputationCooldownSet,
+      'reputationCooldownSet'
+    ),
+    egoClear: raw.egoClear === true,
+    egoDrop:
+      typeof raw.egoDrop === 'string' || raw.egoDrop === null
+        ? raw.egoDrop
+        : undefined,
+    influencerUpdate
+  }
+}
 export type CalculatePostGigStateParams = {
   option: SocialPostOption
   player: GameState['player']
@@ -48,24 +205,38 @@ export const calculatePostGigStateUpdates = (
     secureRandomValue
   } = params
   const gameState = { player, band, social }
-  const result = resolvePost(option, gameState, secureRandomValue)
+  const result = normalizeResolvedPost(
+    resolvePost(option, gameState, secureRandomValue)
+  )
 
-  const isGigViral =
+  const isGigViral = Boolean(
     lastGigStats &&
-    checkViralEvent(lastGigStats, {
-      context: {
-        perfScore,
-        band,
-        venue: currentGig,
-        events: lastGigStats?.events
+    checkViralEvent(
+      {
+        accuracy: lastGigStats.accuracy ?? 0,
+        maxCombo: lastGigStats.maxCombo ?? lastGigStats.combo ?? 0,
+        score: lastGigStats.score ?? 0
       },
-      roll: secureRandomValue
-    })
+      {
+        context: {
+          perfScore,
+          band,
+          venue: currentGig,
+          events:
+            Array.isArray(lastGigStats?.events) ||
+            lastGigStats?.events instanceof Set
+              ? lastGigStats.events
+              : undefined
+        },
+        roll: secureRandomValue
+      }
+    )
+  )
   const gigViralBonus = isGigViral ? 1 : 0
 
   const organicGrowth = calculateSocialGrowth(
     result.platform,
-    perfScore,
+    perfScore ?? 0,
     social[result.platform] || 0,
     isGigViral,
     social.controversyLevel || 0,
@@ -92,11 +263,13 @@ export const calculatePostGigStateUpdates = (
     result.targetMember
   ) {
     newBand.members = newBand.members.map(m => {
+      const moodChange = result.moodChange
+      const staminaChange = result.staminaChange
       const needsMoodUpdate =
-        result.moodChange &&
+        typeof moodChange === 'number' &&
         (result.allMembersMoodChange || m.name === result.targetMember)
       const needsStaminaUpdate =
-        result.staminaChange &&
+        typeof staminaChange === 'number' &&
         (result.allMembersStaminaChange || m.name === result.targetMember)
 
       if (!needsMoodUpdate && !needsStaminaUpdate) {
@@ -105,11 +278,11 @@ export const calculatePostGigStateUpdates = (
 
       const updatedM = { ...m }
       if (needsMoodUpdate) {
-        updatedM.mood = clampMemberMood(updatedM.mood + result.moodChange)
+        updatedM.mood = clampMemberMood(updatedM.mood + moodChange)
       }
       if (needsStaminaUpdate) {
         updatedM.stamina = clampMemberStamina(
-          updatedM.stamina + result.staminaChange,
+          updatedM.stamina + staminaChange,
           updatedM.staminaMax
         )
       }
@@ -131,7 +304,7 @@ export const calculatePostGigStateUpdates = (
     Math.min(100, (social.zealotry || 0) + (result.zealotryChange || 0))
   )
 
-  const updatedSocial = {
+  const updatedSocial: Partial<GameState['social']> = {
     [result.platform]: Math.max(
       0,
       (social[result.platform] || 0) + totalFollowers
@@ -160,10 +333,12 @@ export const calculatePostGigStateUpdates = (
 
   // Automatically decrement all active deals every gig
   if (updatedSocial.activeDeals && updatedSocial.activeDeals.length > 0) {
-    const nextDeals = []
+    const nextDeals: UnknownRecord[] = []
     for (let i = 0; i < updatedSocial.activeDeals.length; i++) {
       const deal = updatedSocial.activeDeals[i]
-      const nextRemainingGigs = (deal.remainingGigs || 1) - 1
+      if (!deal || typeof deal !== 'object') continue
+      const dealRecord = deal as UnknownRecord
+      const nextRemainingGigs = normalizeRemainingGigs(dealRecord) - 1
       if (nextRemainingGigs > 0) {
         nextDeals.push({ ...deal, remainingGigs: nextRemainingGigs })
       }
@@ -229,7 +404,7 @@ export const calculatePostGigStateUpdates = (
           ...currentInfluencer,
           score: Math.min(
             100,
-            Math.max(0, (currentInfluencer.score || 0) + scoreChange)
+            Math.max(0, toNumber(currentInfluencer.score) + scoreChange)
           )
         }
       }
@@ -241,7 +416,10 @@ export const calculatePostGigStateUpdates = (
 
     for (const key in SOCIAL_PLATFORMS) {
       if (Object.hasOwn(SOCIAL_PLATFORMS, key)) {
-        const platformId = SOCIAL_PLATFORMS[key].id
+        const platformConfig =
+          SOCIAL_PLATFORMS[key as keyof typeof SOCIAL_PLATFORMS]
+        const platformId = platformConfig.id
+        if (!isSocialPlatformId(platformId)) continue
 
         // Do not cross-post to the platform that triggered the update,
         // and do not cross-post to the newsletter, which is treated differently.
@@ -251,7 +429,7 @@ export const calculatePostGigStateUpdates = (
         ) {
           updatedSocial[platformId] = Math.max(
             0,
-            (social[platformId] || 0) + delta
+            toNumber(social[platformId]) + delta
           )
         }
       }
@@ -274,8 +452,9 @@ const OPPOSING_ALIGNMENT_MAP = {
   [BRAND_ALIGNMENTS.SUSTAINABLE]: BRAND_ALIGNMENTS.EVIL, // SUSTAINABLE still opposes EVIL
   [BRAND_ALIGNMENTS.CORPORATE]: BRAND_ALIGNMENTS.INDIE,
   [BRAND_ALIGNMENTS.INDIE]: BRAND_ALIGNMENTS.CORPORATE,
-  [BRAND_ALIGNMENTS.GOOD]: BRAND_ALIGNMENTS.EVIL
-}
+  [BRAND_ALIGNMENTS.GOOD]: BRAND_ALIGNMENTS.EVIL,
+  [BRAND_ALIGNMENTS.NEUTRAL]: BRAND_ALIGNMENTS.NEUTRAL
+} as const satisfies Record<BrandAlignment, BrandAlignment>
 
 export const getAcceptDealMoneyUpdate = ({
   deal,
@@ -330,7 +509,7 @@ export const getAcceptDealSocialUpdateFactory = (deal: BrandDeal) => {
       updates.brandReputation[deal.alignment] = Math.min(100, currentRep + 5)
 
       const opposing = OPPOSING_ALIGNMENT_MAP[deal.alignment]
-      if (opposing) {
+      if (opposing !== deal.alignment) {
         const oppRep = updates.brandReputation[opposing] || 0
         updates.brandReputation[opposing] = Math.max(0, oppRep - 3)
       }
@@ -579,7 +758,7 @@ export const deriveFinancials = ({
         'discounted_tickets_active'
       ),
       daysSinceLastGig: gigContext?.daysSinceLastGig ?? 0,
-      lastGigDifficulty: gigContext?.lastGigDifficulty ?? null,
+      lastGigDifficulty: gigContext?.lastGigDifficulty ?? undefined,
       social
     }
   })

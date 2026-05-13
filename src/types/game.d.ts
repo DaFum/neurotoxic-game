@@ -1,6 +1,7 @@
 import type { ActionTypes, ActionType } from '../context/actionTypes'
 import type { RhythmSetlistEntry } from './rhythmGame'
 import type { GAME_PHASES } from '../context/gameConstants'
+import type { Platform } from './social'
 
 export type GamePhase = (typeof GAME_PHASES)[keyof typeof GAME_PHASES]
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic'
@@ -44,10 +45,13 @@ export interface Venue {
   city?: string
   region?: string
   capacity?: number
+  pay?: number
+  price?: number
   difficulty?: number
   diff?: number
   reputation?: number
   sourceScene?: GamePhase
+  songId?: string
   [key: string]: unknown
 }
 
@@ -67,11 +71,23 @@ export interface CharacterTrait {
   unlockHint: string
 }
 
+export type MapNodeType =
+  | 'START'
+  | 'GIG'
+  | 'SPECIAL'
+  | 'REST_STOP'
+  | 'FESTIVAL'
+  | 'FINALE'
+  | 'CITY'
+  | 'REST'
+
 export interface MapNode {
   id: string
   x: number
   y: number
-  layer?: number
+  layer: number
+  type: MapNodeType
+  venue?: Venue
   venueId?: string
   neighbors?: string[]
   [key: string]: unknown
@@ -157,6 +173,15 @@ export interface StashItem {
   [key: string]: unknown
 }
 
+export type ContrabandStashItem = {
+  id?: string
+  name?: string
+  effectType?: string
+  type?: string
+  instanceId?: string
+  [key: string]: unknown
+}
+
 export interface BandState {
   members: BandMember[]
   harmony: number
@@ -239,6 +264,8 @@ export interface PostGigSummary extends UnknownRecord {
   combo?: number
   health?: number
   overload?: number
+  maxCombo?: number
+  songStats?: Array<{ songId: string; score: number; accuracy: number }>
 }
 
 export interface QuestState extends UnknownRecord {
@@ -290,7 +317,7 @@ export interface ClinicActionPayload {
   moodGain?: number
   trait?: string
   successToast?: Omit<ToastPayload, 'id'> & Partial<Pick<ToastPayload, 'id'>>
-  getSuccessToast?: (...args: unknown[]) => unknown
+  getSuccessToast?: (...args: number[]) => unknown
   [key: string]: unknown
 }
 
@@ -342,6 +369,7 @@ export interface MerchPressPayload {
   controversyGain: number
   fameGain: number
   harmonyCost: number
+  isSuccess?: boolean
   successToast?: Omit<ToastPayload, 'id'> & Partial<Pick<ToastPayload, 'id'>>
 }
 
@@ -457,8 +485,8 @@ export type GameAction =
   | Action<ActionTypes['SET_PENDING_BANDHQ_OPEN'], boolean>
 
 export interface PostResult {
-  platform: string
-  success: boolean
+  platform?: Platform
+  success?: boolean
   followers?: number
   totalFollowers?: number
   moneyChange?: number

@@ -751,6 +751,7 @@ test('systemReducer - LOAD_GAME', async t => {
             id: 'start',
             x: 12,
             y: 34,
+            layer: 0,
             neighbors: ['next'],
             type: 'GIG',
             metadata: {
@@ -764,6 +765,8 @@ test('systemReducer - LOAD_GAME', async t => {
             id: 'next',
             x: 0,
             y: 0,
+            layer: 0,
+            type: 'GIG',
             venueId: 'venue-1',
             label: 'Next',
             flags: ['legacy', 2]
@@ -801,7 +804,7 @@ test('systemReducer - LOAD_GAME', async t => {
       assert.deepEqual(
         { ...nextState.gameMap.nodes },
         {
-          start: { id: 'start', x: 9, y: 10 }
+          start: { id: 'start', x: 9, y: 10, layer: 0, type: 'START' }
         }
       )
       assert.equal(Object.hasOwn(nextState.gameMap.nodes, '__proto__'), false)

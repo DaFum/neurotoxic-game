@@ -1,19 +1,25 @@
 import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { logger, LOG_LEVELS } from '../utils/logger'
+import type { LogEntry } from '../utils/logger'
 
-export const DebugLogViewer = ({ className = '' }) => {
+type LogLevelName = keyof typeof LOG_LEVELS
+
+const isLogLevelName = (level: string): level is LogLevelName =>
+  Object.hasOwn(LOG_LEVELS, level)
+
+export const DebugLogViewer = ({ className = '' }: { className?: string }) => {
   const [visible, setVisible] = useState(false)
-  const [logs, setLogs] = useState([])
+  const [logs, setLogs] = useState<LogEntry[]>([])
   const [filterLevel, setFilterLevel] = useState(LOG_LEVELS.DEBUG)
-  const bottomRef = useRef(null)
+  const bottomRef = useRef<HTMLDivElement | null>(null)
   const { t } = useTranslation()
 
   // Keyboard Toggle
   useEffect(() => {
     if (!import.meta.env.DEV) return
 
-    const handleKey = e => {
+    const handleKey = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.key === '`') {
         setVisible(prev => !prev)
       }
@@ -38,7 +44,7 @@ export const DebugLogViewer = ({ className = '' }) => {
     return unsubscribe
   }, [visible])
 
-  const getLevelColor = level => {
+  const getLevelColor = (level: string) => {
     switch (level) {
       case 'DEBUG':
         return 'text-ash-gray'
@@ -69,7 +75,7 @@ export const DebugLogViewer = ({ className = '' }) => {
             </span>
             <select
               value={filterLevel}
-              onChange={e => setFilterLevel(parseInt(e.target.value))}
+              onChange={e => setFilterLevel(parseInt(e.target.value, 10))}
               className='bg-void-black text-star-white border-2 border-ash-gray px-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green transition-colors cursor-pointer'
             >
               <option value={LOG_LEVELS.DEBUG}>DEBUG</option>
@@ -125,7 +131,11 @@ export const DebugLogViewer = ({ className = '' }) => {
         {/* Log Stream */}
         <div className='flex-1 overflow-y-auto p-2 space-y-1'>
           {logs
-            .filter(l => LOG_LEVELS[l.level] >= filterLevel)
+            .filter(l =>
+              isLogLevelName(l.level)
+                ? LOG_LEVELS[l.level] >= filterLevel
+                : false
+            )
             .map(log => (
               <div key={log.id} className='flex gap-2 hover:bg-star-white/5'>
                 <span className='text-ash-gray shrink-0'>
@@ -144,7 +154,7 @@ export const DebugLogViewer = ({ className = '' }) => {
                 </span>
                 <span className='text-star-white/80 break-all'>
                   {log.message}
-                  {log.data && (
+                  {log.data !== undefined && log.data !== null && (
                     <span className='text-ash-gray ml-2'>
                       {JSON.stringify(log.data)}
                     </span>

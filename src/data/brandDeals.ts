@@ -1,5 +1,6 @@
 // Brand Deal Templates and Logic
 // This file defines the potential brand partnerships a band can attract.
+import type { BrandDeal } from '../types/social'
 
 export const BRAND_DEALS = [
   {
@@ -1106,19 +1107,12 @@ export const BRAND_DEALS = [
       loyalty: -2
     }
   }
-]
-
-// Helper to derive the return type for BRAND_DEALS_BY_ID since we're adding trendSet
-type TransformedBrandDeal = (typeof BRAND_DEALS)[number] & {
-  requirements?: {
-    trendSet?: Set<string>
-  }
-}
+] satisfies BrandDeal[]
 
 // Pre-computed map of brand deals for O(1) lookups.
-export const BRAND_DEALS_BY_ID = new Map<string, TransformedBrandDeal>()
+export const BRAND_DEALS_BY_ID = new Map<string, BrandDeal>()
 for (const deal of BRAND_DEALS) {
-  const transformedDeal: TransformedBrandDeal = { ...deal }
+  const transformedDeal: BrandDeal = { ...deal }
 
   if (deal.requirements) {
     if (Array.isArray(deal.requirements.trend)) {

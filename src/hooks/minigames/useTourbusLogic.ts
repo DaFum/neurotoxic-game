@@ -13,6 +13,27 @@ import {
 } from './minigameConstants'
 import { getSafeRandom } from '../../utils/crypto'
 
+type TourbusObstacleType = 'FUEL' | 'OBSTACLE' | 'VOID_HAZARD'
+
+type TourbusObstacle = {
+  id: string
+  lane: number
+  y: number
+  type: TourbusObstacleType
+  collided: boolean
+}
+
+type TourbusLogicState = {
+  busLane: number
+  obstacles: TourbusObstacle[]
+  distance: number
+  speed: number
+  lastSpawnTime: number
+  isGameOver: boolean
+  damage: number
+  itemsCollected: TourbusObstacleType[]
+}
+
 // Re-export constants for backward compatibility and tests
 export {
   TOURBUS_BASE_SPEED as BASE_SPEED,
@@ -29,7 +50,7 @@ export const HIT_DAMAGE_BULLBAR = 5
  * Calculates damage taken from a hit, applying mitigation from upgrades.
  * Prioritizes Armor over Bullbar.
  */
-export const getHitDamage = upgrades => {
+export const getHitDamage = (upgrades: string[]) => {
   if (hasUpgrade(upgrades, 'van_armor')) {
     return HIT_DAMAGE_ARMOR
   }
@@ -43,7 +64,7 @@ export const useTourbusLogic = () => {
   const { player, completeTravelMinigame } = useGameState()
 
   // Game Loop State (Mutable, no re-renders)
-  const gameStateRef = useRef({
+  const gameStateRef = useRef<TourbusLogicState>({
     busLane: 1, // 0, 1, 2
     obstacles: [], // { id, lane, y (0-100), type }
     distance: 0,
@@ -91,7 +112,7 @@ export const useTourbusLogic = () => {
   }, [player.van?.upgrades])
 
   const update = useCallback(
-    deltaMS => {
+    (deltaMS: number) => {
       const game = gameStateRef.current
       if (game.isGameOver) return
 
@@ -125,7 +146,7 @@ export const useTourbusLogic = () => {
         const safeRandomId = getSafeRandom()
 
         const lane = Math.floor(safeRandomLane * TOURBUS_LANE_COUNT)
-        let type: 'FUEL' | 'OBSTACLE' | 'VOID_HAZARD' = 'OBSTACLE'
+        let type: TourbusObstacleType = 'OBSTACLE'
         if (safeRandomType > 0.9) {
           type = 'VOID_HAZARD' // 10% chance
         } else if (safeRandomType > 0.7) {
@@ -142,7 +163,7 @@ export const useTourbusLogic = () => {
       }
 
       // Move Obstacles & Collision
-      const survivingObstacles = []
+      const survivingObstacles: TourbusObstacle[] = []
 
       // Speed of obstacles relative to bus.
       // If we assume camera follows bus, objects move down.
@@ -152,6 +173,7 @@ export const useTourbusLogic = () => {
 
       for (let i = 0; i < game.obstacles.length; i++) {
         const obs = game.obstacles[i]
+        if (!obs) continue
         obs.y += obstacleSpeed * deltaMS
 
         if (
@@ -229,7 +251,7 @@ export const useTourbusLogic = () => {
 
   // Setup keyboard controls
   useEffect(() => {
-    const handleKeyDown = e => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.code === 'ArrowLeft' || e.code === 'KeyA') {
         e.preventDefault()
         moveLeft()

@@ -5,15 +5,15 @@
  */
 import { motion } from 'framer-motion'
 import GigModifierButton from '../../ui/GigModifierButton'
-import type { TFunction } from 'i18next'
 import type { ModifierOption } from '../../hooks/usePreGigLogic'
 import type { ActiveEffectEntry } from '../../types/components'
+import type { TranslationCallback } from '../../types/callbacks'
 
 type GigModifiersBlockProps = {
-  t: TFunction
+  t: TranslationCallback
   gigModifierOptions: ModifierOption[]
   gigModifiers: Record<string, boolean>
-  toggleModifier: (key: string) => void
+  toggleModifier: (key: ModifierOption['key']) => void
   handleBandMeeting: () => void
   bandMeetingCost: number
   currentModifiers: { activeEffects: ActiveEffectEntry[] }
@@ -66,7 +66,7 @@ export const GigModifiersBlock = ({
             key={item.key}
             item={item}
             isActive={!!gigModifiers[item.key]}
-            onClick={toggleModifier}
+            onClick={() => toggleModifier(item.key)}
           />
         ))}
 

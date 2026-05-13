@@ -9,6 +9,7 @@ import type {
 import type { RemoveByIdCallback, TranslationCallback } from './callbacks'
 import type { RefObject, MutableRefObject } from 'react'
 import type * as React from 'react'
+import type { BrandDeal, Platform, SocialPostOption } from './social'
 export type { AudioState, AudioControls } from './audio'
 
 export interface PixiController {
@@ -35,7 +36,13 @@ export interface ChatterMessageData {
 
 export type ChatterGameState = Pick<
   GameState,
-  'currentScene' | 'band' | 'player' | 'gameMap' | 'social' | 'lastGigStats'
+  | 'currentScene'
+  | 'band'
+  | 'player'
+  | 'gameMap'
+  | 'social'
+  | 'lastGigStats'
+  | 'gigModifiers'
 >
 
 export interface ChatterOverlayProps {
@@ -84,10 +91,10 @@ export interface ChatterMessageProps {
   t: TranslationCallback
 }
 
-export interface SocialOption extends EventOption {
-  id: string | number
+export interface SocialOption extends EventOption, SocialPostOption {
+  id: string
   name?: string
-  platform?: string
+  platform?: Platform
   category?: string
   badges?: string[]
 }
@@ -118,7 +125,7 @@ export interface PauseOverlayProps {
 
 export interface MinigameLogicBase<TState = unknown> {
   gameStateRef: RefObject<TState>
-  update: (state: unknown) => void
+  update: (deltaMS: number) => void
   finishMinigame?: () => void
   dispatch?: (action: import('../types/game').GameAction) => void
 }
@@ -130,11 +137,9 @@ export interface TourbusMinigameLogic extends MinigameLogicBase {
 }
 
 export interface MinigameSceneFrameProps<TState = unknown> {
-  controllerFactory?: (
-    options: StageControllerOptions<TState>
-  ) => PixiController
+  controllerFactory: (options: StageControllerOptions<TState>) => PixiController
   logic: MinigameLogicBase<TState>
-  uiState?: { isGameOver?: boolean }
+  uiState?: { isGameOver?: boolean; [key: string]: unknown }
   onComplete: () => void
   completionTitle?: string
   renderCompletionStats?: (stats: unknown) => React.ReactNode
@@ -148,6 +153,11 @@ export interface AmpStageOptions {
   isOverdriveActive?: boolean
   isOverheat?: boolean
   heat?: number
+  isAnomalyActive?: boolean
+  voidResonance?: number
+  interference?: number
+  isHijackActive?: boolean
+  hijacksOverridden?: number
 }
 
 export interface StageControllerOptions<TState = unknown> {
@@ -158,10 +168,8 @@ export interface StageControllerOptions<TState = unknown> {
 
 export interface PixiStageProps<TState = unknown> {
   gameStateRef: RefObject<TState>
-  update: (state: unknown) => void
-  controllerFactory?: (
-    options: StageControllerOptions<TState>
-  ) => PixiController
+  update: (deltaMS: number) => void
+  controllerFactory: (options: StageControllerOptions<TState>) => PixiController
 }
 
 export interface ToggleRadioProps {
@@ -201,7 +209,7 @@ export interface ClinicMemberCardActionProps {
 
 export interface ActionButtonWrapperProps {
   disabledReason?: string | null
-  children: React.ReactElement
+  children: React.ReactElement<{ disabled?: boolean }>
 }
 
 export interface AmpControlsProps {
@@ -281,19 +289,7 @@ export interface TravelingVanProps {
 }
 
 export interface CompletePhaseProps {
-  result: {
-    success: boolean
-    message: string
-    totalFollowers: number
-    platform: string
-    moneyChange?: number
-    harmonyChange?: number
-    controversyChange?: number
-    loyaltyChange?: number
-    staminaChange?: number
-    moodChange?: number
-    targetMember?: string
-  }
+  result: import('./game').PostResult
   onContinue: () => void
   onSpinStory?: () => void
   player?: Pick<PlayerState, 'hqUpgrades'>
@@ -304,27 +300,12 @@ export interface CompletePhaseProps {
   isProcessingAction?: boolean
 }
 
-export interface DealContract {
-  id: string
-  name: string
-  description: string
-  alignment?: string
-  offer: {
-    upfront: number
-    duration: number
-    perGig?: number
-    item?: string
-  }
-  penalty?: Record<string, unknown>
-  [key: string]: unknown
-}
-
 export interface DealCardProps {
-  deal: DealContract
+  deal: BrandDeal
   negotiationState?: DealNegotiationState
   brandReputation?: Record<string, number>
-  handleAcceptDeal: (deal: DealContract) => void | Promise<void>
-  handleNegotiationStart: (deal: DealContract) => void
+  handleAcceptDeal: (deal: BrandDeal) => void | Promise<void>
+  handleNegotiationStart: (deal: BrandDeal) => void
 }
 
 export interface DealImageProps {
@@ -351,17 +332,17 @@ export interface DealInfoProps {
 }
 
 export interface DealActionsProps {
-  deal: DealContract
-  displayDeal: DealContract
+  deal: BrandDeal
+  displayDeal: BrandDeal
   isRevoked?: boolean
   hasNegotiated?: boolean
   negotiationState?: DealCardProps['negotiationState']
-  handleAcceptDeal: (deal: DealContract) => void | Promise<void>
-  handleNegotiationStart: (deal: DealContract) => void
+  handleAcceptDeal: (deal: BrandDeal) => void | Promise<void>
+  handleNegotiationStart: (deal: BrandDeal) => void
 }
 
 export interface DealNegotiationState {
-  deal?: DealContract | null
+  deal?: BrandDeal | null
   status?: 'REVOKED' | 'FAILED' | 'SUCCESS' | 'WORSENED'
   feedback?: string
   success?: boolean
@@ -370,7 +351,7 @@ export interface DealNegotiationState {
 
 export interface NegotiationResult {
   success: boolean
-  deal: DealContract | null
+  deal: BrandDeal | null
   feedback: string
   status: 'ACCEPTED' | 'REVOKED' | 'FAILED'
 }
@@ -379,18 +360,18 @@ export interface DealNegotiationHook {
   negotiatedDeals: Record<string, DealNegotiationState>
   negotiationModalOpen: boolean
   setNegotiationModalOpen: (open: boolean) => void
-  selectedDeal: DealContract | null
+  selectedDeal: BrandDeal | null
   negotiationResult: NegotiationResult | null
-  handleNegotiationStart: (deal: DealContract) => void
-  handleAcceptDeal: (deal: DealContract) => Promise<void>
+  handleNegotiationStart: (deal: BrandDeal) => void
+  handleAcceptDeal: (deal: BrandDeal) => Promise<void>
   handleNegotiationSubmit: (
     submission: 'SAFE' | 'PERSUASIVE' | 'AGGRESSIVE'
   ) => void
 }
 
 export interface DealsPhaseProps {
-  offers: DealContract[]
-  onAccept: (deal: DealContract) => void | Promise<void>
+  offers: BrandDeal[]
+  onAccept: (deal: BrandDeal) => void | Promise<void>
   onSkip: () => void
 }
 
@@ -409,7 +390,7 @@ export interface NegotiationModalProps {
 }
 
 export interface EventModalOption extends EventOption {
-  label: string
+  label?: string
   flags?: string[]
   disabled?: boolean
   nextEventId?: string
@@ -479,6 +460,9 @@ export type Effect =
   | (EffectBase & { type: 'passive'; key: string; value?: unknown })
   | (EffectBase & { type: 'unlock_hq'; id: string })
 
+export type CatalogEffect = Effect
+export type CatalogInputEffect = Effect | Record<string, unknown>
+
 export interface PurchaseItem {
   id?: string | number
   name?: string
@@ -500,6 +484,17 @@ export interface PurchaseItem {
 export interface CatalogItem extends PurchaseItem {
   id: string | number
   cost: number
+}
+
+export interface CatalogInputItem extends Omit<
+  PurchaseItem,
+  'effect' | 'effects'
+> {
+  id: string | number
+  cost: number
+  effect?: CatalogInputEffect | null
+  effects?: CatalogInputEffect[] | CatalogInputEffect | null
+  [key: string]: unknown
 }
 
 export interface VoidTraderItem extends PurchaseItem {

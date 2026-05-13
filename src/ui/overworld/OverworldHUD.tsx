@@ -53,7 +53,7 @@ export const OverworldHUD = React.memo(
     const isPlaying =
       typeof audioState === 'object' &&
       audioState !== null &&
-      (audioState as Record<string, unknown>).isPlaying === true
+      (audioState as unknown as Record<string, unknown>).isPlaying === true
     const moneyValue = player.money ?? 0
     const displayMoney = useAnimatedNum(moneyValue)
     const prevMoneyRef = useRef(moneyValue)

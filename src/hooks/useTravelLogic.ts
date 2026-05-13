@@ -49,6 +49,37 @@ import {
   createMoveRivalBandAction,
   createCheckRivalEncounterAction
 } from '../context/actionCreators'
+import type {
+  BandState,
+  GameAction,
+  GameMap,
+  GamePhase,
+  GameState,
+  MapNode,
+  PlayerState,
+  SocialState,
+  Venue
+} from '../types/game'
+
+type TravelLogicParams = {
+  player: PlayerState
+  band: BandState
+  social: SocialState
+  gameMap: GameMap | null
+  updatePlayer: (updates: Partial<PlayerState>) => void
+  updateBand: (updates: Partial<BandState>) => void
+  saveGame: (showToast?: boolean, stateSnapshot?: GameState) => void
+  advanceDay: () => void
+  triggerEvent: (category: string, triggerPoint?: string | null) => boolean
+  startGig: (venue: Venue) => void
+  addToast: (message: string, type?: string) => void
+  changeScene: (scene: GamePhase) => void
+  reputationByRegion?: Record<string, number>
+  venueBlacklist?: string[]
+  onShowHQ?: () => void
+  onStartTravelMinigame?: (nodeId: string) => void
+  dispatch?: (action: GameAction) => void
+}
 
 /**
  * Failsafe timeout duration in milliseconds
@@ -56,6 +87,17 @@ import {
  * @constant {number}
  */
 const TRAVEL_ANIMATION_TIMEOUT_MS = 1510
+
+const isVenue = (value: unknown): value is Venue => {
+  if (!value || typeof value !== 'object') return false
+  const venue = value as { id?: unknown; name?: unknown }
+  return (
+    Object.hasOwn(value, 'id') &&
+    Object.hasOwn(value, 'name') &&
+    typeof venue.id === 'string' &&
+    typeof venue.name === 'string'
+  )
+}
 
 /**
  * Custom hook for managing travel state and logic
@@ -93,14 +135,16 @@ export const useTravelLogic = ({
   onShowHQ,
   onStartTravelMinigame,
   dispatch
-}) => {
+}: TravelLogicParams) => {
   const [isTraveling, setIsTraveling] = useState(false)
-  const [travelTarget, setTravelTarget] = useState(null)
-  const [pendingTravelNode, setPendingTravelNode] = useState(null)
+  const [travelTarget, setTravelTarget] = useState<MapNode | null>(null)
+  const [pendingTravelNode, setPendingTravelNode] = useState<MapNode | null>(
+    null
+  )
   const travelCompletedRef = useRef(false)
-  const timeoutRef = useRef(null)
-  const failsafeTimeoutRef = useRef(null)
-  const pendingTimeoutRef = useRef(null)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const failsafeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pendingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Optimization: Use refs for frequently changing state to prevent handler recreation
   const playerRef = useRef(player)
@@ -135,14 +179,17 @@ export const useTravelLogic = ({
     dispatch
   ])
 
-  const getLocationName = useCallback((location, venueId) => {
-    return getLocationNameUtil(
-      location,
-      venueId,
-      i18n.t.bind(i18n),
-      translateLocation
-    )
-  }, [])
+  const getLocationName = useCallback(
+    (location: string | undefined, venueId?: string | null) => {
+      return getLocationNameUtil(
+        location,
+        venueId,
+        i18n.t.bind(i18n),
+        translateLocation
+      )
+    },
+    []
+  )
 
   /**
    * Checks if a target node is connected to the current node
@@ -150,7 +197,7 @@ export const useTravelLogic = ({
    * @returns {boolean} True if connected
    */
   const isConnected = useCallback(
-    targetNodeId => {
+    (targetNodeId: string) => {
       return isConnectedUtil(gameMap, player.currentNodeId, targetNodeId)
     },
     [gameMap, player.currentNodeId]
@@ -162,17 +209,20 @@ export const useTravelLogic = ({
    * @param {number} currentLayer - Current player layer
    * @returns {string} 'visible', 'dimmed', or 'hidden'
    */
-  const getNodeVisibility = useCallback((nodeLayer, currentLayer) => {
-    return getNodeVisibilityUtil(nodeLayer, currentLayer)
-  }, [])
+  const getNodeVisibility = useCallback(
+    (nodeLayer: number, currentLayer: number) => {
+      return getNodeVisibilityUtil(nodeLayer, currentLayer)
+    },
+    []
+  )
 
   /**
    * Handles logic when arriving at a node
    * @param {Object} node - Arrived node
    */
   const handleNodeArrivalCallback = useCallback(
-    (node, eventAlreadyActive = false) => {
-      handleNodeArrival({
+    (node: MapNode, eventAlreadyActive = false) => {
+      const result = handleNodeArrival({
         node,
         band: bandRef.current,
         player: playerRef.current,
@@ -181,10 +231,12 @@ export const useTravelLogic = ({
         triggerEvent,
         startGig,
         addToast,
-        changeScene,
         onShowHQ,
         eventAlreadyActive
       })
+      if (!result.gigStarted) {
+        changeScene(result.scene)
+      }
     },
     [
       updateBand,
@@ -202,7 +254,7 @@ export const useTravelLogic = ({
    * @param {Object} [explicitNode] - Explicit target node (bypasses state)
    */
   const onTravelComplete = useCallback(
-    (explicitNode = null) => {
+    (explicitNode: MapNode | null = null) => {
       const player = playerRef.current
       const band = bandRef.current
       const social = socialRef.current
@@ -260,9 +312,12 @@ export const useTravelLogic = ({
       )
       if (!resourceCheck.allowed) {
         addToast(
-          i18n.t(resourceCheck.errorKey, {
-            defaultValue: 'Error: Insufficient resources upon arrival.'
-          }),
+          i18n.t(
+            resourceCheck.errorKey ?? 'ui:travel.errors.invalidDestination',
+            {
+              defaultValue: 'Error: Insufficient resources upon arrival.'
+            }
+          ),
           'error'
         )
         setIsTraveling(false)
@@ -350,7 +405,7 @@ export const useTravelLogic = ({
    * @param {Object} node - Target node
    */
   const startTravelSequence = useCallback(
-    node => {
+    (node: MapNode) => {
       if (isTravelingRef.current) return
       isTravelingRef.current = true
       setIsTraveling(true)
@@ -440,7 +495,7 @@ export const useTravelLogic = ({
    * @param {Object} node - Target node
    */
   const handleTravel = useCallback(
-    node => {
+    (node: MapNode) => {
       // Early interaction block if already traveling
       if (isTravelingRef.current) return
 
@@ -484,9 +539,10 @@ export const useTravelLogic = ({
           // We can reuse the standardized arrival logic which handles
           // harmony checks, show cancellations, and routing safely.
           const venueId = normalizeVenueId(node.venue)
+          const resolvedVenue = resolveVenue(node.venue, venueId, VENUES_BY_ID)
           const processedNode = {
             ...node,
-            venue: resolveVenue(node.venue, venueId, VENUES_BY_ID) || node.venue
+            venue: isVenue(resolvedVenue) ? resolvedVenue : node.venue
           }
           handleNodeArrivalCallback(processedNode, false)
         } else if (node.type === 'START') {
@@ -535,8 +591,9 @@ export const useTravelLogic = ({
 
       if (!accessCheck.allowed) {
         addToast(
-          i18n.t(accessCheck.errorKey, {
-            defaultValue: accessCheck.defaultMessage,
+          i18n.t(accessCheck.errorKey ?? 'ui:travel.errors.invalidLocation', {
+            defaultValue:
+              accessCheck.defaultMessage ?? 'Error: Invalid location.',
             ...accessCheck.errorContext
           }),
           'error'
@@ -552,8 +609,9 @@ export const useTravelLogic = ({
       )
       if (!preCheck.allowed) {
         addToast(
-          i18n.t(preCheck.errorKey, {
-            defaultValue: preCheck.defaultMessage
+          i18n.t(preCheck.errorKey ?? 'ui:travel.errors.locationNotConnected', {
+            defaultValue:
+              preCheck.defaultMessage ?? 'Cannot travel: location not connected'
           }),
           'warning'
         )
@@ -577,9 +635,15 @@ export const useTravelLogic = ({
       )
       if (!resourceCheck.allowed) {
         addToast(
-          i18n.t(resourceCheck.errorKey, {
-            defaultValue: resourceCheck.defaultMessage
-          }),
+          i18n.t(
+            resourceCheck.errorKey ??
+              'ui:travel.errors.notEnoughMoneyForTravel',
+            {
+              defaultValue:
+                resourceCheck.defaultMessage ??
+                'Not enough money for gas and food!'
+            }
+          ),
           'error'
         )
         if (pendingTravelNodeRef.current?.id === node.id) clearPendingTravel()

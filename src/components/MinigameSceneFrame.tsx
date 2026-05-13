@@ -18,7 +18,7 @@ type BackdoorMinigameState = {
   }
 }
 
-export const MinigameSceneFrame = ({
+export const MinigameSceneFrame = <TState,>({
   controllerFactory,
   logic,
   uiState,
@@ -27,7 +27,7 @@ export const MinigameSceneFrame = ({
   renderCompletionStats,
   completionButtonText = 'CONTINUE',
   children
-}: MinigameSceneFrameProps) => {
+}: MinigameSceneFrameProps<TState>) => {
   const {
     settings,
     completeTravelMinigame,
@@ -81,10 +81,16 @@ export const MinigameSceneFrame = ({
               gameStateSnapshot && typeof gameStateSnapshot === 'object'
                 ? (gameStateSnapshot as BackdoorMinigameState).minigame
                 : undefined
+            const windowGameState =
+              window.gameState &&
+              typeof window.gameState === 'object' &&
+              'minigame' in window.gameState
+                ? (window.gameState as BackdoorMinigameState)
+                : undefined
             const currentType =
               minigameTypeSource && typeof minigameTypeSource === 'object'
                 ? minigameTypeSource.type
-                : window.gameState?.minigame?.type
+                : windowGameState?.minigame?.type
 
             if (currentType === MINIGAME_TYPES.TOURBUS) {
               completeTravelMinigame(0, [])

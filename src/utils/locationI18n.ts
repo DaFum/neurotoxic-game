@@ -1,4 +1,4 @@
-import type { TFunction } from 'i18next'
+import type { TranslationCallback } from '../types/callbacks'
 
 const VENUE_NAMESPACE = 'venues:'
 const VENUE_NAME_SUFFIX = '.name'
@@ -10,7 +10,7 @@ const toVenueKey = (location: string) => {
 }
 
 export const translateLocation = (
-  t: TFunction,
+  t: TranslationCallback,
   location: string,
   fallback = 'Unknown'
 ) => {
