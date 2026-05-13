@@ -18,7 +18,7 @@
 
 import { ALL_VENUES } from '../data/venues'
 import { StateError } from './errorHandler'
-import type { Venue } from '../types/game'
+import type { MapNodeType, Venue } from '../types/game'
 
 type MapConnection = { from: string; to: string }
 type GeneratedMapNode = {
@@ -26,7 +26,10 @@ type GeneratedMapNode = {
   layer: number
   venue: Venue
   status: 'unlocked' | 'completed' | 'locked'
-  type: 'START' | 'GIG' | 'SPECIAL' | 'REST_STOP' | 'FESTIVAL' | 'FINALE'
+  type: Extract<
+    MapNodeType,
+    'START' | 'GIG' | 'SPECIAL' | 'REST_STOP' | 'FESTIVAL' | 'FINALE'
+  >
   x: number
   y: number
 }

@@ -18,7 +18,9 @@ import type { RhythmGameRefState } from '../types/rhythmGame'
 /**
  * Manages Pixi.js stage lifecycle and rendering updates.
  */
-class PixiStageController extends BaseStageController<RhythmGameRefState> {
+class PixiStageController<
+  TState extends RhythmGameRefState = RhythmGameRefState
+> extends BaseStageController<TState> {
   // Getters and Setters for backward compatibility with existing tests
   get colorMatrix() {
     return this.toxicFilterManager?.colorMatrix ?? null
@@ -59,7 +61,7 @@ class PixiStageController extends BaseStageController<RhythmGameRefState> {
   /**
    * @param {object} params - Controller dependencies.
    */
-  constructor(params: StageControllerOptions<RhythmGameRefState>) {
+  constructor(params: StageControllerOptions<TState>) {
     super(params)
     this.stageContainer = null
 
@@ -264,6 +266,8 @@ class PixiStageController extends BaseStageController<RhythmGameRefState> {
  * @param {object} params - Controller dependencies.
  * @returns {PixiStageController} Controller instance.
  */
-export const createPixiStageController = (
-  params: StageControllerOptions<RhythmGameRefState>
-) => new PixiStageController(params)
+export const createPixiStageController = <
+  TState extends RhythmGameRefState = RhythmGameRefState
+>(
+  params: StageControllerOptions<TState>
+) => new PixiStageController<TState>(params)

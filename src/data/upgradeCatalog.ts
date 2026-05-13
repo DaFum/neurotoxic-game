@@ -1,5 +1,5 @@
 import { HQ_ITEMS } from './hqItems'
-import type { CatalogItem } from '../types/components'
+import type { CatalogInputItem, CatalogItem } from '../types/components'
 
 /**
  * Legacy fame-based upgrades, previously in upgrades.js.
@@ -140,24 +140,17 @@ const LEGACY_UPGRADES = [
   }
 ]
 
-type UpgradeCatalogItem = {
-  id: string | number
-  cost: number
-  effect?: unknown
-  effects?: unknown
-  [key: string]: unknown
-}
-
-const normalizeUpgradeShape = (item: UpgradeCatalogItem): CatalogItem => {
-  const normalized = {
-    ...item,
-    effects: Array.isArray(item.effects)
-      ? [...item.effects]
-      : item.effect
-        ? [item.effect]
+const normalizeUpgradeShape = (item: CatalogInputItem): CatalogItem => {
+  const { effect, effects: rawEffects, ...rest } = item
+  return {
+    ...rest,
+    ...(effect != null ? { effect } : {}),
+    effects: Array.isArray(rawEffects)
+      ? [...rawEffects]
+      : effect != null
+        ? [effect]
         : []
   }
-  return normalized as unknown as CatalogItem
 }
 
 /**

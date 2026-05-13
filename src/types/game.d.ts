@@ -70,12 +70,22 @@ export interface CharacterTrait {
   unlockHint: string
 }
 
+export type MapNodeType =
+  | 'START'
+  | 'GIG'
+  | 'SPECIAL'
+  | 'REST_STOP'
+  | 'FESTIVAL'
+  | 'FINALE'
+  | 'CITY'
+  | 'REST'
+
 export interface MapNode {
   id: string
   x: number
   y: number
   layer: number
-  type: string
+  type: MapNodeType
   venue?: Venue
   venueId?: string
   neighbors?: string[]
@@ -159,6 +169,15 @@ export interface BandMember extends UnknownRecord {
 
 export interface StashItem {
   stacks: number
+  [key: string]: unknown
+}
+
+export type ContrabandStashItem = {
+  id?: string
+  name?: string
+  effectType?: string
+  type?: string
+  instanceId?: string
   [key: string]: unknown
 }
 

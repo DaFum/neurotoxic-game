@@ -60,7 +60,6 @@ import type {
   SocialState,
   Venue
 } from '../types/game'
-import type { TranslationCallback } from '../types/callbacks'
 
 type TravelLogicParams = {
   player: PlayerState
@@ -170,7 +169,7 @@ export const useTravelLogic = ({
   ])
 
   const getLocationName = useCallback(
-    (location: string | undefined, venueId?: string) => {
+    (location: string | undefined, venueId?: string | null) => {
       return getLocationNameUtil(
         location,
         venueId,
@@ -555,7 +554,7 @@ export const useTravelLogic = ({
               defaultValue: 'You are at {{location}}.',
               location: getLocationName(
                 node.venue.name,
-                normalizeVenueId(node.venue) ?? undefined
+                normalizeVenueId(node.venue)
               )
             }),
             'info'
@@ -659,7 +658,7 @@ export const useTravelLogic = ({
             '{{location}} ({{distance}}km) | Travel Costs: {{travelCost}}€ | Daily Upkeep: {{dailyCost}}€ | Total Cash Impact: {{totalCost}}€ | Fuel: {{fuelLiters}}L — Click again to confirm',
           location: getLocationName(
             node.venue.name,
-            normalizeVenueId(node.venue) ?? undefined
+            normalizeVenueId(node.venue)
           ),
           distance: dist,
           travelCost: totalCost,

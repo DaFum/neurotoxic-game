@@ -1,8 +1,6 @@
 import { useEffect, useRef, memo } from 'react'
-import { createPixiStageController } from './PixiStageController'
 import { logger } from '../utils/logger'
 import type { PixiController, PixiStageProps } from '../types/components'
-import type { StageControllerOptions } from '../types/components'
 import type { RhythmGameRefState } from '../types/rhythmGame'
 
 type PixiStageComponentType = <TState = RhythmGameRefState>(
@@ -21,11 +19,7 @@ const PixiStageComponent = <TState = RhythmGameRefState,>(
   props: PixiStageProps<TState>
 ) => {
   const { gameStateRef, update } = props
-  const controllerFactory =
-    props.controllerFactory ??
-    (createPixiStageController as unknown as (
-      options: StageControllerOptions<TState>
-    ) => PixiController)
+  const controllerFactory = props.controllerFactory
   const containerRef = useRef<HTMLDivElement | null>(null)
   const updateRef = useRef(update)
   const controllerRef = useRef<PixiController | null>(null)

@@ -43,7 +43,10 @@ export const getStashItemUseMessage = (
   t: (key: string, options?: Record<string, unknown>) => string
 ) => {
   const itemName = item.name ?? item.id ?? 'ui:item.unknown'
-  const translatedName = t(itemName, { defaultValue: item.name ?? itemName })
+  const i18nKey = item.id
+    ? `items:contraband.${item.id}.name`
+    : 'ui:item.unknown'
+  const translatedName = t(i18nKey, { defaultValue: item.name ?? itemName })
   const messageAction =
     item.type === 'consumable'
       ? t('ui:stash.actionUsed', { defaultValue: 'Used' })

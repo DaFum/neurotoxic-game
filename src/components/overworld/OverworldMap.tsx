@@ -192,7 +192,7 @@ export const OverworldMap = React.memo(
         else if (node.type === 'FINALE') iconUrl = pinFinaleUrl
 
         const effectivePrice = calculateEffectiveTicketPrice(
-          node.venue ?? { id: node.id, name: node.id },
+          node.venue ?? { id: node.id, name: node.id, price: 0 },
           {
             discountedTickets: activeStoryFlags?.includes(
               'discounted_tickets_active'

@@ -57,6 +57,12 @@ export const pickRandomSubset = <T>(
     return result
   }
 
+  for (let i = 0; i < n; i++) {
+    if (!Object.hasOwn(arr, i)) {
+      throw new Error('Input array cannot be sparse')
+    }
+  }
+
   // Create a copy so we don't mutate the original array
   const shuffled = [...arr]
 

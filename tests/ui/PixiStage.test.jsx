@@ -2,12 +2,7 @@ import { afterEach, describe, expect, test, vi } from 'vitest'
 import { render, cleanup } from '@testing-library/react'
 import { PixiStage } from '../../src/components/PixiStage.tsx'
 
-import { createPixiStageController } from '../../src/components/PixiStageController'
 import { logger } from '../../src/utils/logger'
-
-vi.mock('../../src/components/PixiStageController', () => ({
-  createPixiStageController: vi.fn()
-}))
 
 vi.mock('../../src/utils/logger', () => ({
   logger: { error: vi.fn() }
@@ -34,9 +29,13 @@ describe('PixiStage', () => {
   })
 
   test('renders canvas container with correct styling', () => {
-    createPixiStageController.mockReturnValue(createMockController())
+    const mockFactory = vi.fn(() => createMockController())
     const { container } = render(
-      <PixiStage gameStateRef={mockGameStateRef} update={mockUpdate} />
+      <PixiStage
+        gameStateRef={mockGameStateRef}
+        update={mockUpdate}
+        controllerFactory={mockFactory}
+      />
     )
 
     const canvasContainer = container.firstChild
@@ -186,24 +185,6 @@ describe('PixiStage', () => {
     await flushPromises()
     const factoryCall = mockFactory.mock.calls[0][0]
     expect(factoryCall.updateRef.current).toBe(newUpdate)
-  })
-
-  test('uses default controller factory when not provided', async () => {
-    const mockController = createMockController()
-    createPixiStageController.mockReturnValue(mockController)
-
-    render(<PixiStage gameStateRef={mockGameStateRef} update={mockUpdate} />)
-
-    await flushPromises()
-
-    expect(createPixiStageController).toHaveBeenCalledWith(
-      expect.objectContaining({
-        containerRef: expect.objectContaining({ current: expect.anything() }),
-        gameStateRef: mockGameStateRef,
-        updateRef: expect.objectContaining({ current: mockUpdate })
-      })
-    )
-    expect(mockController.init).toHaveBeenCalled()
   })
 
   test('containerRef is attached to DOM element', async () => {

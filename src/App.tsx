@@ -84,6 +84,7 @@ function GameContent() {
     player,
     gameMap,
     social,
+    gigModifiers,
     lastGigStats
   } = useGameSelector(state => ({
     currentScene: state.currentScene,
@@ -94,6 +95,7 @@ function GameContent() {
     player: state.player,
     gameMap: state.gameMap,
     social: state.social,
+    gigModifiers: state.gigModifiers,
     lastGigStats: state.lastGigStats
   }))
 
@@ -110,9 +112,10 @@ function GameContent() {
       player,
       gameMap,
       social,
-      lastGigStats
+      lastGigStats,
+      gigModifiers
     }),
-    [currentScene, band, player, gameMap, social, lastGigStats]
+    [currentScene, band, player, gameMap, social, lastGigStats, gigModifiers]
   )
 
   return (

@@ -5,14 +5,8 @@ import {
   validateStashItemSelection,
   getStashItemUseMessage
 } from '../utils/contrabandStashUtils'
-type ContrabandStashItem = {
-  id?: string
-  name?: string
-  effectType?: string
-  type?: string
-  instanceId?: string
-  [key: string]: unknown
-}
+import { logger } from '../utils/logger'
+import type { ContrabandStashItem } from '../types/game'
 
 /**
  * Hook to manage the Contraband Stash UI state and actions.
@@ -49,7 +43,19 @@ export const useContrabandStash = () => {
         return
       }
 
-      if (!item.id) return
+      if (!item.id) {
+        addToast(
+          t('ui:stash.missingItemId', {
+            defaultValue: 'Unable to use contraband: missing item id'
+          }),
+          'warning'
+        )
+        logger.warn('ContrabandStash', 'Unable to use item: missing item id', {
+          instanceId,
+          selectedMember
+        })
+        return
+      }
       dispatchUseContraband(instanceId, item.id, selectedMember)
 
       const message = getStashItemUseMessage(item, t)

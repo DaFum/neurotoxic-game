@@ -4667,6 +4667,17 @@
         "typeOnly": true
       }
     ],
+    "MapNodeType": [
+      {
+        "name": "MapNodeType",
+        "path": "src/types/game.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
     "MapNode": [
       {
         "name": "MapNode",
@@ -4728,6 +4739,17 @@
         "path": "src/types/game.d.ts",
         "source": "local",
         "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "ContrabandStashItem": [
+      {
+        "name": "ContrabandStashItem",
+        "path": "src/types/game.d.ts",
+        "source": "local",
+        "type": "type",
         "isDefault": false,
         "exportPath": "src/types/index.ts",
         "typeOnly": true
@@ -5767,6 +5789,17 @@
         "typeOnly": true
       }
     ],
+    "CatalogEffect": [
+      {
+        "name": "CatalogEffect",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
     "PurchaseItem": [
       {
         "name": "PurchaseItem",
@@ -5781,6 +5814,17 @@
     "CatalogItem": [
       {
         "name": "CatalogItem",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "CatalogInputItem": [
+      {
+        "name": "CatalogInputItem",
         "path": "src/types/components.d.ts",
         "source": "local",
         "type": "interface",

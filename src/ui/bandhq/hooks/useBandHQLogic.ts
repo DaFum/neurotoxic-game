@@ -19,6 +19,7 @@ import type { PurchaseItem, VoidTraderItem } from '../../../types/components'
 type BandHQLogicParams = {
   player: PlayerState
   band: BandState
+  // Returns false when validation blocks a purchase; successful callers ignore the value.
   handleBuy: (item: PurchaseItem) => Promise<void | boolean> | void | boolean
   tradeVoidItem: (payload: TradeVoidItemPayload) => void
   addToast: (

@@ -180,4 +180,13 @@ test('pickRandomSubset', async t => {
       assert.strictEqual(rngCallCount, 3)
     }
   )
+
+  await t.test('rejects sparse arrays before the copy shuffle path', () => {
+    const input = [1, 2, 3, 4, 5]
+    delete input[1]
+    assert.throws(
+      () => pickRandomSubset(input, 3),
+      /Input array cannot be sparse/
+    )
+  })
 })

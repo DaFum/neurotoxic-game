@@ -37,7 +37,13 @@ export interface ChatterMessageData {
 
 export type ChatterGameState = Pick<
   GameState,
-  'currentScene' | 'band' | 'player' | 'gameMap' | 'social' | 'lastGigStats'
+  | 'currentScene'
+  | 'band'
+  | 'player'
+  | 'gameMap'
+  | 'social'
+  | 'lastGigStats'
+  | 'gigModifiers'
 >
 
 export interface ChatterOverlayProps {
@@ -132,9 +138,7 @@ export interface TourbusMinigameLogic extends MinigameLogicBase {
 }
 
 export interface MinigameSceneFrameProps<TState = unknown> {
-  controllerFactory?: (
-    options: StageControllerOptions<TState>
-  ) => PixiController
+  controllerFactory: (options: StageControllerOptions<TState>) => PixiController
   logic: MinigameLogicBase<TState>
   uiState?: { isGameOver?: boolean; [key: string]: unknown }
   onComplete: () => void
@@ -166,9 +170,7 @@ export interface StageControllerOptions<TState = unknown> {
 export interface PixiStageProps<TState = unknown> {
   gameStateRef: RefObject<TState>
   update: (deltaMS: number) => void
-  controllerFactory?: (
-    options: StageControllerOptions<TState>
-  ) => PixiController
+  controllerFactory: (options: StageControllerOptions<TState>) => PixiController
 }
 
 export interface ToggleRadioProps {
@@ -474,6 +476,8 @@ export type Effect =
   | (EffectBase & { type: 'passive'; key: string; value?: unknown })
   | (EffectBase & { type: 'unlock_hq'; id: string })
 
+export type CatalogEffect = Effect | Record<string, unknown>
+
 export interface PurchaseItem {
   id?: string | number
   name?: string
@@ -482,8 +486,8 @@ export interface PurchaseItem {
   category?: string
   description?: string
   img?: string
-  effect?: Effect
-  effects?: Effect[]
+  effect?: CatalogEffect
+  effects?: CatalogEffect[]
   oneTime?: boolean
   imgPrompt?: string
   requiresReputation?: boolean
@@ -495,6 +499,17 @@ export interface PurchaseItem {
 export interface CatalogItem extends PurchaseItem {
   id: string | number
   cost: number
+}
+
+export interface CatalogInputItem extends Omit<
+  PurchaseItem,
+  'effect' | 'effects'
+> {
+  id: string | number
+  cost: number
+  effect?: CatalogEffect | null
+  effects?: CatalogEffect[] | CatalogEffect | null
+  [key: string]: unknown
 }
 
 export interface VoidTraderItem extends PurchaseItem {

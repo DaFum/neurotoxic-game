@@ -69,7 +69,12 @@ const isSocialPlatformId = (value: unknown): value is SocialPlatformId =>
 const normalizeResolvedPost = (
   raw: Record<string, unknown>
 ): ResolvedPostResult => {
-  const platform = isSocialPlatformId(raw.platform) ? raw.platform : 'instagram'
+  if (!isSocialPlatformId(raw.platform)) {
+    throw new Error(
+      `Invalid social post platform: ${String(raw.platform ?? 'missing')}`
+    )
+  }
+  const platform = raw.platform
   const influencerUpdate =
     raw.influencerUpdate &&
     typeof raw.influencerUpdate === 'object' &&

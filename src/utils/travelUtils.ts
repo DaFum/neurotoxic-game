@@ -61,7 +61,7 @@ export const resolveVenue = (
  */
 export const getLocationName = (
   location: string | undefined,
-  venueId: string | undefined,
+  venueId: string | null | undefined,
   t: TranslationCallback,
   translateLocation: (
     t: TranslationCallback,
@@ -99,7 +99,7 @@ export const checkVenueAccess = ({
   venuesMap: VenueMap
   getLocationName: (
     location: string | undefined,
-    venueId: string | undefined
+    venueId: string | null | undefined
   ) => string
 }): VenueAccessResult => {
   if (node.type === 'START' || !node.venue) {
