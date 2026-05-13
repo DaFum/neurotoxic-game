@@ -77,6 +77,7 @@ type TravelLogicParams = {
   reputationByRegion?: Record<string, number>
   venueBlacklist?: string[]
   onShowHQ?: () => void
+  onShowSupplyStop?: (inventory: any[]) => void
   onStartTravelMinigame?: (nodeId: string) => void
   dispatch?: (action: GameAction) => void
 }
@@ -133,6 +134,7 @@ export const useTravelLogic = ({
   reputationByRegion,
   venueBlacklist = [],
   onShowHQ,
+  onShowSupplyStop,
   onStartTravelMinigame,
   dispatch
 }: TravelLogicParams) => {
@@ -232,6 +234,7 @@ export const useTravelLogic = ({
         startGig,
         addToast,
         onShowHQ,
+        onShowSupplyStop,
         eventAlreadyActive
       })
       if (!result.gigStarted) {
@@ -245,6 +248,7 @@ export const useTravelLogic = ({
       startGig,
       addToast,
       onShowHQ,
+      onShowSupplyStop,
       changeScene
     ]
   )

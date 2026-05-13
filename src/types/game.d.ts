@@ -80,6 +80,7 @@ export type MapNodeType =
   | 'FINALE'
   | 'CITY'
   | 'REST'
+  | 'supplyStop'
 
 export interface MapNode {
   id: string
@@ -90,6 +91,8 @@ export interface MapNode {
   venue?: Venue
   venueId?: string
   neighbors?: string[]
+  shopInventory?: import('./components').PurchaseItem[]
+
   [key: string]: unknown
 }
 

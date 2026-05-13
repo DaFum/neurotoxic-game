@@ -20,6 +20,7 @@ import { EventLog } from '../ui/overworld/EventLog'
 import { translateLocation } from '../utils/locationI18n'
 import { OverworldMap } from '../components/overworld'
 import { BandHQ } from '../ui/BandHQ'
+import { SupplyStopModal } from '../ui/SupplyStopModal'
 import { QuestsModal } from '../ui/QuestsModal'
 import { ContrabandStash } from '../ui/ContrabandStash'
 import { PirateRadioModal } from '../ui/PirateRadioModal'
@@ -127,6 +128,7 @@ export const Overworld = () => {
     addToast,
     changeScene,
     onShowHQ: openHQ,
+    onShowSupplyStop: setSupplyStopInventory,
     onStartTravelMinigame: startTravelMinigame
     // dispatch removed as we no longer pass it
   })
@@ -207,6 +209,7 @@ export const Overworld = () => {
       <EventLog t={t} day={player.day} locationId={player.location} />
 
       {showHQ && <BandHQ onClose={closeHQ} />}
+      {supplyStopInventory && <SupplyStopModal inventory={supplyStopInventory} onClose={() => setSupplyStopInventory(null)} />}
       {showQuests && <QuestsModal {...questsProps} />}
       {showStash && <ContrabandStash {...stashProps} />}
       {showPirateRadio && (

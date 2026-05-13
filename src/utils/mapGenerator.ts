@@ -18,6 +18,7 @@
 
 import { ALL_VENUES } from '../data/venues'
 import { StateError } from './errorHandler'
+import { HQ_ITEMS } from '../data/hqItems'
 import type { MapNodeType, Venue, CityTraitState } from '../types/game'
 
 type MapConnection = { from: string; to: string }
@@ -368,6 +369,7 @@ export class MapGenerator {
         const typeRoll = this.random()
         let nodeType: GeneratedMapNode['type'] = 'GIG'
         if (typeRoll > 0.9) nodeType = 'SPECIAL'
+        else if (typeRoll > 0.8) nodeType = 'supplyStop'
         else if (typeRoll > 0.7) nodeType = 'REST_STOP'
         else if ((venue.capacity ?? 0) >= 1000) nodeType = 'FESTIVAL'
 
@@ -379,6 +381,13 @@ export class MapGenerator {
           type: nodeType,
           x: getVenueCoord(venue, 'x', 50),
           y: getVenueCoord(venue, 'y', i * 10 + 10)
+        }
+
+        if (nodeType === 'supplyStop') {
+          const inventoryAddItems = HQ_ITEMS.gear.filter(
+            i => i.effect?.type === 'inventory_add'
+          )
+          node.shopInventory = this.pickRandomSubset(inventoryAddItems, 3)
         }
         layerNodes.push(node)
         map.nodes[node.id] = node
