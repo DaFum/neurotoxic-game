@@ -44,10 +44,13 @@ export interface Venue {
   city?: string
   region?: string
   capacity?: number
+  pay?: number
+  price?: number
   difficulty?: number
   diff?: number
   reputation?: number
   sourceScene?: GamePhase
+  songId?: string
   [key: string]: unknown
 }
 
@@ -71,7 +74,9 @@ export interface MapNode {
   id: string
   x: number
   y: number
-  layer?: number
+  layer: number
+  type: string
+  venue?: Venue
   venueId?: string
   neighbors?: string[]
   [key: string]: unknown
@@ -239,6 +244,8 @@ export interface PostGigSummary extends UnknownRecord {
   combo?: number
   health?: number
   overload?: number
+  maxCombo?: number
+  songStats?: Array<{ songId: string; score: number; accuracy: number }>
 }
 
 export interface QuestState extends UnknownRecord {
@@ -290,7 +297,7 @@ export interface ClinicActionPayload {
   moodGain?: number
   trait?: string
   successToast?: Omit<ToastPayload, 'id'> & Partial<Pick<ToastPayload, 'id'>>
-  getSuccessToast?: (...args: unknown[]) => unknown
+  getSuccessToast?: (...args: number[]) => unknown
   [key: string]: unknown
 }
 
@@ -342,6 +349,7 @@ export interface MerchPressPayload {
   controversyGain: number
   fameGain: number
   harmonyCost: number
+  isSuccess?: boolean
   successToast?: Omit<ToastPayload, 'id'> & Partial<Pick<ToastPayload, 'id'>>
 }
 
@@ -371,6 +379,7 @@ export interface GameState {
   minigame: MinigameState
   unlocks: string[]
   pendingBandHQOpen: boolean
+  [key: string]: unknown
 }
 
 export type RawLoadedGame = UnknownRecord
@@ -457,8 +466,8 @@ export type GameAction =
   | Action<ActionTypes['SET_PENDING_BANDHQ_OPEN'], boolean>
 
 export interface PostResult {
-  platform: string
-  success: boolean
+  platform?: string
+  success?: boolean
   followers?: number
   totalFollowers?: number
   moneyChange?: number

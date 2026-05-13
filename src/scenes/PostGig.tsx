@@ -105,7 +105,7 @@ export const PostGig = () => {
             />
           )}
 
-          {phase === 'COMPLETE' && (
+          {phase === 'COMPLETE' && postResult && (
             <CompletePhase
               result={postResult}
               onContinue={handleContinue}

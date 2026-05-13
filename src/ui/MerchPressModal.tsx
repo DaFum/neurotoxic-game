@@ -10,7 +10,28 @@ import {
   getGeneratedImageFallbackUrl
 } from '../utils/imageGen'
 
-export const MerchPressModal = ({ onClose, onPress, canPress, config }) => {
+type MerchPressConfig = {
+  cost: number
+  loyaltyGain: number
+  controversyGain: number
+  fameGain: number
+  failChance: number
+  harmonyCostOnFail: number
+}
+
+type MerchPressModalProps = {
+  onClose: () => void
+  onPress: () => void
+  canPress: boolean
+  config: MerchPressConfig
+}
+
+export const MerchPressModal = ({
+  onClose,
+  onPress,
+  canPress,
+  config
+}: MerchPressModalProps) => {
   const { t } = useTranslation(['ui'])
   const player = useGameSelector(state => state.player)
   const band = useGameSelector(state => state.band)

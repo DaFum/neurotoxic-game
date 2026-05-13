@@ -4,10 +4,11 @@ import { pauseAudio, resumeAudio, stopAudio } from '../utils/audio/audioEngine'
 import { buildGigStatsSnapshot } from '../utils/gigStats'
 import { handleError } from '../utils/errorHandler'
 import type { RhythmGameRefState, RhythmLiveStats } from '../types/rhythmGame'
+import type { PostGigSummary } from '../types/game'
 
 type UseGigSessionProps = {
   addToast: (message: string, type: 'info' | 'error' | 'success') => void
-  setLastGigStats: (stats: unknown) => void
+  setLastGigStats: (stats: PostGigSummary | null) => void
   endGig: () => void
   tRef: { current: TFunction }
   gameStateRef: { current: RhythmGameRefState }
@@ -92,7 +93,8 @@ export const useGigSession = ({
         earlyHits: rawStats.earlyHits ?? 0,
         lateHits: rawStats.lateHits ?? 0,
         maxCombo: rawStats.maxCombo ?? 0,
-        peakHype: rawStats.peakHype ?? 0
+        peakHype: rawStats.peakHype ?? 0,
+        corruptionLevel: rawStats.corruptionLevel ?? 0
       }
       const toxicTime = gameStateRef.current?.toxicTimeTotal ?? 0
 

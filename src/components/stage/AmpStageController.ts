@@ -7,7 +7,7 @@ import type {
 } from '../../types/components'
 import { AmpWaveManager } from './AmpWaveManager'
 
-export class AmpStageController extends BaseStageController {
+export class AmpStageController extends BaseStageController<AmpStageOptions> {
   waveManager: AmpWaveManager | null
   bg: PIXI.Graphics | null
   targetFreq: number
@@ -35,6 +35,7 @@ export class AmpStageController extends BaseStageController {
   }
 
   async setup() {
+    if (!this.container || !this.app) return
     this.bg = new PIXI.Graphics()
     this.container.addChildAt(this.bg, 0)
 
@@ -116,6 +117,7 @@ export class AmpStageController extends BaseStageController {
   }
 
   update(dt: number) {
+    if (!this.container) return
     this.syncState()
 
     this.time += dt * 0.1

@@ -10,13 +10,13 @@ import { useGameState } from '../context/GameState'
 import { negotiateDeal } from '../utils/socialEngine'
 import { handleError } from '../utils/errorHandler'
 import type {
-  DealCardProps,
   DealNegotiationHook,
   DealNegotiationState,
   NegotiationResult
 } from '../types/components'
+import type { BrandDeal } from '../data/brandDeals'
 
-type Deal = DealCardProps['deal']
+type Deal = BrandDeal
 
 export const useDealNegotiation = ({
   onAccept

@@ -37,6 +37,15 @@ export const ClinicMemberCard = ({
   enhanceMember
 }: ClinicMemberCardProps) => {
   const { t } = useTranslation(['ui'])
+  const memberId = member.id
+  const isFullyHealed =
+    member.stamina >= 100 &&
+    (CLINIC_CONFIG.HEAL_MOOD_GAIN <= 0 || member.mood >= 100)
+  const missingMemberReason = !memberId
+    ? t('ui:clinic.invalidMember', {
+        defaultValue: 'Member unavailable'
+      })
+    : null
 
   return (
     <motion.div
@@ -61,20 +70,22 @@ export const ClinicMemberCard = ({
       <div className='flex flex-col gap-2 mt-auto'>
         <ActionButtonWrapper
           disabledReason={
-            player.money < healCostMoney
+            missingMemberReason ??
+            (player.money < healCostMoney
               ? t('ui:clinic.notEnoughMoney', {
                   defaultValue: 'Not enough money'
                 })
-              : member.stamina >= 100 &&
-                  (CLINIC_CONFIG.HEAL_MOOD_GAIN === 0 || member.mood >= 100)
+              : isFullyHealed
                 ? t('ui:clinic.fullyHealed', {
                     defaultValue: 'Member is already fully healed'
                   })
-                : null
+                : null)
           }
         >
           <GlitchButton
-            onClick={() => healMember(member.id)}
+            onClick={() => {
+              if (memberId) healMember(memberId)
+            }}
             variant='primary'
             size='sm'
             className='w-full text-xs py-1'
@@ -88,7 +99,8 @@ export const ClinicMemberCard = ({
 
         <ActionButtonWrapper
           disabledReason={
-            player.fame < enhanceCostFame
+            missingMemberReason ??
+            (player.fame < enhanceCostFame
               ? t('ui:clinic.notEnoughFame', {
                   defaultValue: 'Not enough fame'
                 })
@@ -96,13 +108,15 @@ export const ClinicMemberCard = ({
                 ? t('ui:clinic.alreadyEnhanced', {
                     defaultValue: 'Member already has this enhancement'
                   })
-                : null
+                : null)
           }
         >
           <GlitchButton
-            onClick={() =>
-              enhanceMember(member.id, CLINIC_CONFIG.CYBER_LUNGS_TRAIT_ID)
-            }
+            onClick={() => {
+              if (memberId) {
+                enhanceMember(memberId, CLINIC_CONFIG.CYBER_LUNGS_TRAIT_ID)
+              }
+            }}
             variant='warning'
             size='sm'
             className='w-full text-xs py-1'

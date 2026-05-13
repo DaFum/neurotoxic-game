@@ -19,7 +19,7 @@ import type { PurchaseItem, VoidTraderItem } from '../../../types/components'
 type BandHQLogicParams = {
   player: PlayerState
   band: BandState
-  handleBuy: (item: PurchaseItem) => Promise<void> | void
+  handleBuy: (item: PurchaseItem) => Promise<void | boolean> | void | boolean
   tradeVoidItem: (payload: TradeVoidItemPayload) => void
   addToast: (
     message: string,

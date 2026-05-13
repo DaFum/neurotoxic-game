@@ -9,6 +9,8 @@ import {
   deriveFinancials,
   derivePostOptions
 } from '../utils/postGigUtils'
+import type { PostResult } from '../types/game'
+import type { BrandDeal } from '../data/brandDeals'
 
 export type PostOptionsErrorState =
   | false
@@ -39,8 +41,8 @@ export const usePostGigLogic = () => {
   } = useGameState()
 
   const [phase, setPhase] = useState('REPORT') // REPORT, SOCIAL, DEALS, COMPLETE
-  const [postResult, setPostResult] = useState(null)
-  const [brandOffers, setBrandOffers] = useState([])
+  const [postResult, setPostResult] = useState<PostResult | null>(null)
+  const [brandOffers, setBrandOffers] = useState<BrandDeal[]>([])
   const [postOptionsError, setPostOptionsError] = useState(false)
   const errorHandledRef = useRef<PostOptionsErrorState>(false)
 

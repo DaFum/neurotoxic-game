@@ -102,7 +102,9 @@ type GameDispatchActions = {
   ) => void
   updateBand: (updates: Parameters<typeof createUpdateBandAction>[0]) => void
   updateSocial: (
-    updates: Parameters<typeof createUpdateSocialAction>[0]
+    updates:
+      | Partial<SocialState>
+      | ((prev: SocialState) => Partial<SocialState>)
   ) => void
   setGameMap: (mapData: Parameters<typeof createSetMapAction>[0]) => void
   setCurrentGig: (gig: Parameters<typeof createSetGigAction>[0]) => void

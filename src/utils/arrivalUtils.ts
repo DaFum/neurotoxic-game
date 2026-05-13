@@ -11,9 +11,9 @@ import {
 } from './gameStateUtils'
 import { secureRandom } from './crypto'
 import i18n from '../i18n'
-import type { BandState, PlayerState, Venue } from '../types/game'
+import type { BandState, MapNode, PlayerState, Venue } from '../types/game'
 
-type ArrivalNode = {
+type ArrivalNode = Partial<MapNode> & {
   type: string
   venue?: Venue
 }
@@ -207,11 +207,16 @@ export const handleNodeArrival = (
         return { scene: GAME_PHASES.OVERWORLD, gigStarted: false }
       }
 
+      const venue = node.venue
+      if (!venue) {
+        return { scene: GAME_PHASES.OVERWORLD, gigStarted: false }
+      }
+
       logger.info('ArrivalLogic', 'Starting Gig at destination', {
-        venue: node.venue.name
+        venue: venue.name
       })
       try {
-        startGig(node.venue)
+        startGig(venue)
         return { scene: GAME_PHASES.OVERWORLD, gigStarted: true }
       } catch (error) {
         handleError(error, {

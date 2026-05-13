@@ -10,7 +10,11 @@ import { secureRandom } from './crypto'
  * @param {Function} [rng=secureRandom] - A random number generator function.
  * @returns {Array} An array containing the sampled items.
  */
-export const pickRandomSubset = (arr, count, rng = secureRandom) => {
+export const pickRandomSubset = <T>(
+  arr: T[],
+  count: number,
+  rng: () => number = secureRandom
+): T[] => {
   if (!arr || arr.length === 0) return []
   const n = arr.length
   const countInt = Math.floor(count)

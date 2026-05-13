@@ -18,20 +18,7 @@ const MOTION_HOVER = { scale: 1.2, zIndex: 60 }
 const MOTION_NO_HOVER = {}
 type NodeVisibility = 'visible' | 'dimmed' | 'hidden'
 
-interface MapVenueData {
-  id?: string
-  name?: string
-  capacity?: number
-  pay?: number
-  price?: number
-  diff?: number
-  [key: string]: unknown
-}
-
-interface MapNodeData extends GameMapNode {
-  type: string
-  venue?: MapVenueData
-}
+type MapNodeData = GameMapNode
 
 interface MapNodeTooltipProps {
   node: MapNodeData
@@ -244,7 +231,7 @@ export const MapNodeView = memo(
 
     const nodeLocationName = translateLocation(
       t,
-      node.venue?.name,
+      node.venue?.name ?? '',
       t('ui:map.unknown')
     )
 

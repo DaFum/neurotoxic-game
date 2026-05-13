@@ -88,6 +88,7 @@
   "clinic.funds": "FUNDS:",
   "clinic.heal_button": "HEAL ({{cost}}€)",
   "clinic.heal_success": "+{{stamina}} Stamina, +{{mood}} Mood. The void embraces you.",
+  "clinic.invalidMember": "Invalid band member",
   "clinic.leave": "LEAVE CLINIC",
   "clinic.lore": "Sacrifice money and fame for immediate cybernetic enhancement or synthetic healing.",
   "clinic.mood": "Mood:",

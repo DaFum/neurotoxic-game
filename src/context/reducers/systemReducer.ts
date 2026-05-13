@@ -284,7 +284,11 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
         ? nodeRecord.id
         : nodeKey
     if (isForbiddenKey(id)) continue
-    const sanitizedNode: GameMap['nodes'][string] = { id, x, y }
+    const sanitizedNode: Partial<GameMap['nodes'][string]> = {
+      id,
+      x,
+      y
+    }
 
     if (
       typeof nodeRecord.layer === 'number' &&
@@ -339,7 +343,7 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
       }
     }
 
-    sanitizedNodes[id] = sanitizedNode
+    sanitizedNodes[id] = sanitizedNode as GameMap['nodes'][string]
   }
 
   const sanitizedConnections: Array<{ from: string; to: string }> = []

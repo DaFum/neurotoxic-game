@@ -1,6 +1,5 @@
 import { useState, useEffect, memo } from 'react'
-import { useGameSelector, useGameDispatch } from '../context/GameState'
-import { toggleNeuroDecimator } from '../context/actionCreators'
+import { useGameSelector, useGameActions } from '../context/GameState'
 import { audioManager } from '../utils/audio/audioEngine'
 import { useTranslation } from 'react-i18next'
 import {
@@ -39,7 +38,7 @@ const SHORTCUTS = [
 export const HUD = memo(() => {
   const player = useGameSelector(state => state.player)
   const band = useGameSelector(state => state.band)
-  const dispatch = useGameDispatch()
+  const { updateBand } = useGameActions()
   const { t } = useTranslation(['ui', 'venues'])
   const locationName = translateLocation(t, player.location, player.location)
   const [showHelp, setShowHelp] = useState(false)
@@ -47,22 +46,25 @@ export const HUD = memo(() => {
 
   // Global keyboard shortcuts
   useEffect(() => {
-    const handleKey = e => {
+    const handleKey = (e: KeyboardEvent) => {
+      const target = e.target
       if (e.key === '?' || (e.key === 'h' && !e.ctrlKey && !e.metaKey)) {
         // Don't trigger if user is typing in an input
         if (
-          e.target.tagName === 'INPUT' ||
-          e.target.tagName === 'TEXTAREA' ||
-          e.target.tagName === 'SELECT'
+          target instanceof HTMLElement &&
+          (target.tagName === 'INPUT' ||
+            target.tagName === 'TEXTAREA' ||
+            target.tagName === 'SELECT')
         )
           return
         setShowHelp(prev => !prev)
       }
       if (e.key === 'm' && !e.ctrlKey && !e.metaKey) {
         if (
-          e.target.tagName === 'INPUT' ||
-          e.target.tagName === 'TEXTAREA' ||
-          e.target.tagName === 'SELECT'
+          target instanceof HTMLElement &&
+          (target.tagName === 'INPUT' ||
+            target.tagName === 'TEXTAREA' ||
+            target.tagName === 'SELECT')
         )
           return
         handleAudioChange.toggleMute()
@@ -239,11 +241,11 @@ export const HUD = memo(() => {
 
       {/* Right Panel - Band Status */}
       <div className='flex flex-col gap-2 items-end'>
-        {band?.inventory?.neuroDecimator && (
+        {Boolean(band?.inventory?.neuroDecimator) && (
           <button
             onClick={() => {
               const nextState = !band.neuroDecimatorActive
-              dispatch(toggleNeuroDecimator(nextState))
+              updateBand({ neuroDecimatorActive: nextState })
               audioManager.setNeuroDecimator(nextState)
             }}
             type='button'
@@ -266,7 +268,7 @@ export const HUD = memo(() => {
             </span>
           </button>
         )}
-        {band?.inventory?.neurotoxicPedal && (
+        {Boolean(band?.inventory?.neurotoxicPedal) && (
           <div className='bg-void-black text-toxic-green border-2 border-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)] px-3 py-1.5 flex items-center gap-2 animate-pulse mb-2 pointer-events-auto'>
             <Skull size={14} className='text-toxic-green' />
             <span className='font-black uppercase tracking-wider text-[10px]'>
@@ -282,10 +284,12 @@ export const HUD = memo(() => {
           </div>
           {band.members.map(m => (
             <div
-              key={m.name}
+              key={m.id ?? m.name}
               className='flex items-center justify-between w-52 mb-1.5 last:mb-0'
             >
-              <span className='text-star-white/80 text-[11px]'>{m.name}</span>
+              <span className='text-star-white/80 text-[11px]'>
+                {m.name ?? t('ui:member.unknown', { defaultValue: 'Unknown' })}
+              </span>
               <div className='flex items-center gap-1.5'>
                 <Tooltip
                   content={t('ui:hud.mood', { defaultValue: 'Mood' })}
@@ -299,8 +303,8 @@ export const HUD = memo(() => {
                         color='bg-mood-pink'
                         size='mini'
                         aria-label={t('ui:hud.memberMood', {
-                          name: m.name,
-                          defaultValue: `${m.name} Mood`
+                          name: m.name ?? '',
+                          defaultValue: `${m.name ?? ''} Mood`
                         })}
                       />
                     </div>
@@ -321,8 +325,8 @@ export const HUD = memo(() => {
                         color='bg-stamina-green'
                         size='mini'
                         aria-label={t('ui:hud.memberStamina', {
-                          name: m.name,
-                          defaultValue: `${m.name} Stamina`
+                          name: m.name ?? '',
+                          defaultValue: `${m.name ?? ''} Stamina`
                         })}
                       />
                     </div>

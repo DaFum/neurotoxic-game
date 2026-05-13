@@ -4,7 +4,21 @@
  * @param {string|null} selectedMember - The ID of the currently selected band member.
  * @returns {Object} Validation result { isValid, errorKey, defaultMessage }
  */
-export const validateStashItemSelection = (item, selectedMember) => {
+type StashItemLike = {
+  id?: string
+  name?: string
+  effectType?: string
+  type?: string
+}
+
+type StashValidationResult =
+  | { isValid: true; errorKey?: undefined; defaultMessage?: undefined }
+  | { isValid: false; errorKey: string; defaultMessage: string }
+
+export const validateStashItemSelection = (
+  item: StashItemLike,
+  selectedMember: string | null | undefined
+): StashValidationResult => {
   if (
     (item.effectType === 'stamina' || item.effectType === 'mood') &&
     !selectedMember
@@ -24,8 +38,12 @@ export const validateStashItemSelection = (item, selectedMember) => {
  * @param {Function} t - The translation function.
  * @returns {Object} Message payload { key, options }
  */
-export const getStashItemUseMessage = (item, t) => {
-  const translatedName = t(item.name, { defaultValue: item.name })
+export const getStashItemUseMessage = (
+  item: StashItemLike,
+  t: (key: string, options?: Record<string, unknown>) => string
+) => {
+  const itemName = item.name ?? item.id ?? 'ui:item.unknown'
+  const translatedName = t(itemName, { defaultValue: item.name ?? itemName })
   const messageAction =
     item.type === 'consumable'
       ? t('ui:stash.actionUsed', { defaultValue: 'Used' })

@@ -125,7 +125,6 @@ export const Overworld = () => {
     advanceDay,
     triggerEvent,
     startGig,
-    hasUpgrade,
     addToast,
     changeScene,
     onShowHQ: openHQ,
@@ -199,7 +198,7 @@ export const Overworld = () => {
         handleTravel={handleTravel}
         setHoveredNode={setHoveredNode}
         hoveredNode={hoveredNode}
-        currentNode={currentNode}
+        currentNode={currentNode ?? null}
         travelTarget={travelTarget}
         travelCompletedRef={travelCompletedRef}
         onTravelComplete={onTravelComplete}

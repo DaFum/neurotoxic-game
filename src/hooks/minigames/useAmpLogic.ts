@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { useGameState } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
 import { getSafeRandom } from '../../utils/crypto'
+import type { AmpStageOptions } from '../../types/components'
 
 const MINIGAME_DURATION = 15
 const FALLBACK_ADVANCE_DELAY_MS = 10_000
@@ -48,7 +49,18 @@ export function useAmpLogic() {
   const isOverheatRef = useRef(isOverheat)
   const voidResonanceRef = useRef(voidResonance)
   const isAnomalyActiveRef = useRef(isAnomalyActive)
-  const gameStateRef = useRef(null)
+  const gameStateRef = useRef<AmpStageOptions>({
+    dialValue,
+    targetValue,
+    isOverdriveActive,
+    isOverheat,
+    heat,
+    isAnomalyActive,
+    voidResonance,
+    interference,
+    isHijackActive,
+    hijacksOverridden
+  })
 
   useEffect(() => {
     isHijackActiveRef.current = isHijackActive
@@ -144,7 +156,7 @@ export function useAmpLogic() {
 
   // Function called by PixiStage component to get latest state for rendering
   const update = useCallback(
-    deltaMS => {
+    (deltaMS: number) => {
       if (isCompleteRef.current || !Number.isFinite(deltaMS) || deltaMS <= 0)
         return
 

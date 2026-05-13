@@ -1,11 +1,10 @@
 import { useEffect } from 'react'
 
-import { EngineGameState } from '../../context/GameState'
-import { MapData } from '../../types/game'
+import type { GameMap, RivalBandState } from '../../types/game'
 
 export const useSpawnRivalBand = (
-  rivalBand: EngineGameState['rivalBand'],
-  gameMap: MapData | null | undefined,
+  rivalBand: RivalBandState | null | undefined,
+  gameMap: GameMap | null | undefined,
   spawnRivalBand: (() => void) | undefined
 ) => {
   useEffect(() => {

@@ -5,7 +5,7 @@ import type { GameState } from '../../types/game'
 
 export { CHATTER_DB, ALLOWED_DEFAULT_SCENES }
 
-const ALLOWED_DEFAULT_SCENES_SET = new Set(ALLOWED_DEFAULT_SCENES)
+const ALLOWED_DEFAULT_SCENES_SET = new Set<string>(ALLOWED_DEFAULT_SCENES)
 
 type ChatterScene =
   | 'ANY'
@@ -16,7 +16,7 @@ type ChatterScene =
   | 'TRAVEL_MINIGAME'
   | 'GIG'
   | 'POSTGIG'
-type VenueLinesByScene = Record<ChatterScene, string[]>
+type VenueLinesByScene = Partial<Record<ChatterScene, string[]>>
 type VenueChatterEntry = {
   linesByScene?: VenueLinesByScene
   lines?: string[]
@@ -25,7 +25,7 @@ type ChatterPoolItem = {
   text: string
   weight?: number
   condition?:
-    | ((state: GameState, memo: Record<string, number>) => boolean)
+    | ((state: ChatterState, memo: Record<string, number>) => boolean)
     | null
   speaker?: string | null
   type?: string
@@ -51,7 +51,12 @@ const getValidatedVenueChatterLine = (
   )
 }
 
-export const getRandomChatter = (state: GameState) => {
+type ChatterState = Pick<
+  GameState,
+  'gameMap' | 'player' | 'currentScene' | 'band'
+>
+
+export const getRandomChatter = (state: ChatterState) => {
   const pool: ChatterPoolItem[] = []
 
   // 1) Venue Specific Chatter (Scene-aware)
@@ -124,11 +129,13 @@ export const getRandomChatter = (state: GameState) => {
   }
 
   const memo = { minMood, maxMood, minStamina, maxStamina }
-  const isDefaultSceneAllowed = ALLOWED_DEFAULT_SCENES_SET.has(state.currentScene)
+  const isDefaultSceneAllowed = ALLOWED_DEFAULT_SCENES_SET.has(
+    state.currentScene
+  )
 
   // 2) Standard chatter
   for (let i = 0; i < CHATTER_DB.length; i++) {
-    const c = CHATTER_DB[i]
+    const c = CHATTER_DB[i] as ChatterPoolItem | undefined
     if (!c) continue
     if (
       (c.condition && c.condition(state, memo)) ||

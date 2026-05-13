@@ -78,7 +78,7 @@ export const buildGigStatsSnapshot = (
   perfectHits: stats.perfectHits,
   maxCombo: stats.maxCombo,
   peakHype: stats.peakHype,
-  corruptionLevel: stats.corruptionLevel,
+  corruptionLevel: stats.corruptionLevel ?? 0,
   toxicTimeTotal,
   accuracy: calculateAccuracy(
     stats.perfectHits + (stats.hits || 0),

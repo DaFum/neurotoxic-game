@@ -14,6 +14,7 @@ import {
   ROADIE_MOVE_COOLDOWN_BASE
 } from './minigameConstants'
 import { hashString } from '../../utils/stringUtils'
+import type { RoadieRenderState } from '../../components/stage/RoadiePlayerManager'
 
 const TRAFFIC_ROWS = [1, 2, 3, 4, 5, 6]
 // Speed: 0.01 cells/ms = 10 cells/sec. Grid is 12 wide. 1.2 sec to cross.
@@ -22,9 +23,45 @@ const TRAFFIC_ROWS = [1, 2, 3, 4, 5, 6]
 const TRAFFIC_SPEEDS = [0.005, -0.009, 0.012, -0.007, 0.015, -0.01]
 const CAR_SPAWN_RATES = [2500, 2200, 1600, 2800, 1400, 2000] // Slightly denser
 
+type RoadieCarryingItem = {
+  id: string
+  type: string
+  weight: number
+}
+
+type RoadieTrafficCar = {
+  id: string
+  textureHash: number
+  row: number
+  x: number
+  speed: number
+  width: number
+}
+
+type RoadieSpawner = {
+  row: number
+  timer: number
+  rate: number
+  speed: number
+}
+
+type RoadieLogicState = RoadieRenderState & {
+  carrying: RoadieCarryingItem | null
+  itemsToDeliver: RoadieCarryingItem[]
+  itemsDelivered: RoadieCarryingItem[]
+  contrabandCount: number
+  traffic: RoadieTrafficCar[]
+  lastMoveTime: number
+  isGameOver: boolean
+  spawners: RoadieSpawner[]
+}
+
 // --- Extracted Game Logic ---
 
-export function checkCollision(car, playerPos) {
+export function checkCollision(
+  car: RoadieTrafficCar,
+  playerPos: RoadieLogicState['playerPos']
+) {
   if (car.row !== playerPos.y) return false
 
   const pLeft = playerPos.x + 0.1
@@ -35,7 +72,10 @@ export function checkCollision(car, playerPos) {
   return pLeft < cRight && pRight > cLeft
 }
 
-export function handleCrash(game, onGameOver) {
+export function handleCrash(
+  game: RoadieLogicState,
+  onGameOver: (damage: number) => void
+) {
   audioManager.playSFX('crash')
 
   if (game.carrying) {
@@ -56,9 +96,10 @@ export function handleCrash(game, onGameOver) {
   }
 }
 
-export function spawnTraffic(game, deltaMS) {
+export function spawnTraffic(game: RoadieLogicState, deltaMS: number) {
   for (let i = 0, len = game.spawners.length; i < len; i++) {
     const spawner = game.spawners[i]
+    if (!spawner) continue
     spawner.timer += deltaMS
     while (spawner.timer > spawner.rate) {
       spawner.timer -= spawner.rate
@@ -77,13 +118,18 @@ export function spawnTraffic(game, deltaMS) {
   }
 }
 
-export function processTraffic(game, deltaMS, onCrash) {
+export function processTraffic(
+  game: RoadieLogicState,
+  deltaMS: number,
+  onCrash: (damage: number) => void
+) {
   const traffic = game.traffic
   let writeIdx = 0
   let crashed = false
 
   for (let i = 0; i < traffic.length; i++) {
     const car = traffic[i]
+    if (!car) continue
     car.x += car.speed * deltaMS
 
     if (!crashed && checkCollision(car, game.playerPos)) {
@@ -112,18 +158,21 @@ export function processTraffic(game, deltaMS, onCrash) {
   return crashed
 }
 
-export function handlePickup(game) {
+export function handlePickup(game: RoadieLogicState) {
   if (
     game.playerPos.y === 0 &&
     !game.carrying &&
     game.itemsToDeliver.length > 0
   ) {
-    game.carrying = game.itemsToDeliver.shift()
+    game.carrying = game.itemsToDeliver.shift() ?? null
     audioManager.playSFX('pickup')
   }
 }
 
-export function handleDelivery(game, onGameOver) {
+export function handleDelivery(
+  game: RoadieLogicState,
+  onGameOver: (equipmentDamage: number, contrabandDelivered?: number) => void
+) {
   if (game.playerPos.y === ROADIE_GRID_HEIGHT - 1 && game.carrying) {
     game.itemsDelivered.push(game.carrying)
 
@@ -151,7 +200,7 @@ export const useRoadieLogic = () => {
   const hasContraband = !!(band?.stash && !isEmptyObject(band.stash))
 
   // Mutable Game State
-  const gameStateRef = useRef({
+  const gameStateRef = useRef<RoadieLogicState>({
     playerPos: { x: 6, y: 0 },
     carrying: null, // { type, weight }
     itemsToDeliver: [
@@ -161,7 +210,7 @@ export const useRoadieLogic = () => {
       { id: 'amp', type: 'AMP', weight: 2 },
       { id: 'drums', type: 'DRUMS', weight: 1.5 },
       { id: 'guitar', type: 'GUITAR', weight: 1 }
-    ].filter(Boolean),
+    ].filter((item): item is RoadieCarryingItem => item !== null),
     itemsDelivered: [],
     contrabandCount: 0,
     traffic: [], // { id, row, x (float), speed }
@@ -171,8 +220,8 @@ export const useRoadieLogic = () => {
     spawners: TRAFFIC_ROWS.map((row, i) => ({
       row,
       timer: 0,
-      rate: CAR_SPAWN_RATES[i],
-      speed: TRAFFIC_SPEEDS[i]
+      rate: CAR_SPAWN_RATES[i] ?? 2000,
+      speed: TRAFFIC_SPEEDS[i] ?? 0.01
     }))
   })
 
@@ -181,7 +230,7 @@ export const useRoadieLogic = () => {
     itemsRemaining: gameStateRef.current.itemsToDeliver.length,
     itemsDelivered: 0,
     currentDamage: 0,
-    carrying: null,
+    carrying: null as RoadieCarryingItem | null,
     isGameOver: false
   }))
 
@@ -191,7 +240,7 @@ export const useRoadieLogic = () => {
   })
 
   const move = useCallback(
-    (dx, dy) => {
+    (dx: number, dy: number) => {
       const game = gameStateRef.current
       if (game.isGameOver) return
 
@@ -229,7 +278,7 @@ export const useRoadieLogic = () => {
   )
 
   const update = useCallback(
-    deltaMS => {
+    (deltaMS: number) => {
       const game = gameStateRef.current
       if (game.isGameOver) return
 
@@ -251,7 +300,7 @@ export const useRoadieLogic = () => {
       }
 
       spawnTraffic(game, deltaMS)
-      const crashed = processTraffic(game, deltaMS, damage =>
+      const crashed = processTraffic(game, deltaMS, (damage: number) =>
         completeRoadieMinigame(damage, game.contrabandCount || 0)
       )
 
@@ -276,7 +325,7 @@ export const useRoadieLogic = () => {
   )
 
   useEffect(() => {
-    const handleKeyDown = e => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.code === 'ArrowLeft' || e.code === 'KeyA') {
         e.preventDefault()
         move(-1, 0)
@@ -305,7 +354,7 @@ export const useRoadieLogic = () => {
       gameStateRef.current.itemsToDeliver.length > 0
     ) {
       gameStateRef.current.carrying =
-        gameStateRef.current.itemsToDeliver.shift()
+        gameStateRef.current.itemsToDeliver.shift() ?? null
       setUiState(prev => ({
         ...prev,
         carrying: gameStateRef.current.carrying,

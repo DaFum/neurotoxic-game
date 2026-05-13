@@ -19,10 +19,108 @@ import { BRAND_ALIGNMENTS } from '../context/initialState'
 import { BRAND_DEALS_BY_ID } from '../data/brandDeals'
 import { SOCIAL_PLATFORMS } from '../data/platforms'
 
-import type { GameState, PostGigSummary, Venue } from '../types/game'
+import type {
+  GameState,
+  PostGigSummary,
+  Venue,
+  PostResult,
+  UnknownRecord
+} from '../types/game'
 import type { PostGigFinancials } from '../types/economy'
 import type { SocialPostOption } from './socialEngine'
 import type { BrandDeal } from './socialEngine'
+
+type SocialPlatformId = 'instagram' | 'tiktok' | 'youtube' | 'newsletter'
+
+type ResolvedPostResult = PostResult & {
+  platform: SocialPlatformId
+  success: boolean
+  followers: number
+  message: string
+  harmonyChange?: number
+  controversyChange?: number
+  loyaltyChange?: number
+  zealotryChange?: number
+  staminaChange?: number
+  moodChange?: number
+  allMembersMoodChange?: boolean
+  allMembersStaminaChange?: boolean
+  targetMember?: string
+  reputationCooldownSet?: number
+  egoClear?: boolean
+  egoDrop?: string | null
+  influencerUpdate?: { id: string; scoreChange: number }
+}
+
+const SOCIAL_PLATFORM_IDS = new Set<SocialPlatformId>([
+  'instagram',
+  'tiktok',
+  'youtube',
+  'newsletter'
+])
+
+const toNumber = (value: unknown, fallback = 0): number =>
+  typeof value === 'number' && Number.isFinite(value) ? value : fallback
+
+const isSocialPlatformId = (value: unknown): value is SocialPlatformId =>
+  typeof value === 'string' &&
+  SOCIAL_PLATFORM_IDS.has(value as SocialPlatformId)
+
+const normalizeResolvedPost = (
+  raw: Record<string, unknown>
+): ResolvedPostResult => {
+  const platform = isSocialPlatformId(raw.platform) ? raw.platform : 'instagram'
+  const influencerUpdate =
+    raw.influencerUpdate &&
+    typeof raw.influencerUpdate === 'object' &&
+    Object.hasOwn(raw.influencerUpdate, 'id') &&
+    Object.hasOwn(raw.influencerUpdate, 'scoreChange') &&
+    typeof (raw.influencerUpdate as { id?: unknown }).id === 'string'
+      ? {
+          id: (raw.influencerUpdate as { id: string }).id,
+          scoreChange: toNumber(
+            (raw.influencerUpdate as { scoreChange?: unknown }).scoreChange
+          )
+        }
+      : undefined
+
+  return {
+    ...raw,
+    platform,
+    success: raw.success === true,
+    followers: toNumber(raw.followers),
+    message: typeof raw.message === 'string' ? raw.message : '',
+    moneyChange:
+      typeof raw.moneyChange === 'number' ? raw.moneyChange : undefined,
+    harmonyChange:
+      typeof raw.harmonyChange === 'number' ? raw.harmonyChange : undefined,
+    controversyChange:
+      typeof raw.controversyChange === 'number'
+        ? raw.controversyChange
+        : undefined,
+    loyaltyChange:
+      typeof raw.loyaltyChange === 'number' ? raw.loyaltyChange : undefined,
+    zealotryChange:
+      typeof raw.zealotryChange === 'number' ? raw.zealotryChange : undefined,
+    staminaChange:
+      typeof raw.staminaChange === 'number' ? raw.staminaChange : undefined,
+    moodChange: typeof raw.moodChange === 'number' ? raw.moodChange : undefined,
+    allMembersMoodChange: raw.allMembersMoodChange === true,
+    allMembersStaminaChange: raw.allMembersStaminaChange === true,
+    targetMember:
+      typeof raw.targetMember === 'string' ? raw.targetMember : undefined,
+    reputationCooldownSet:
+      typeof raw.reputationCooldownSet === 'number'
+        ? raw.reputationCooldownSet
+        : undefined,
+    egoClear: raw.egoClear === true,
+    egoDrop:
+      typeof raw.egoDrop === 'string' || raw.egoDrop === null
+        ? raw.egoDrop
+        : undefined,
+    influencerUpdate
+  }
+}
 export type CalculatePostGigStateParams = {
   option: SocialPostOption
   player: GameState['player']
@@ -48,24 +146,38 @@ export const calculatePostGigStateUpdates = (
     secureRandomValue
   } = params
   const gameState = { player, band, social }
-  const result = resolvePost(option, gameState, secureRandomValue)
+  const result = normalizeResolvedPost(
+    resolvePost(option, gameState, secureRandomValue)
+  )
 
-  const isGigViral =
+  const isGigViral = Boolean(
     lastGigStats &&
-    checkViralEvent(lastGigStats, {
-      context: {
-        perfScore,
-        band,
-        venue: currentGig,
-        events: lastGigStats?.events
+    checkViralEvent(
+      {
+        accuracy: lastGigStats.accuracy ?? 0,
+        maxCombo: lastGigStats.maxCombo ?? lastGigStats.combo ?? 0,
+        score: lastGigStats.score
       },
-      roll: secureRandomValue
-    })
+      {
+        context: {
+          perfScore,
+          band,
+          venue: currentGig,
+          events:
+            Array.isArray(lastGigStats?.events) ||
+            lastGigStats?.events instanceof Set
+              ? lastGigStats.events
+              : undefined
+        },
+        roll: secureRandomValue
+      }
+    )
+  )
   const gigViralBonus = isGigViral ? 1 : 0
 
   const organicGrowth = calculateSocialGrowth(
     result.platform,
-    perfScore,
+    perfScore ?? 0,
     social[result.platform] || 0,
     isGigViral,
     social.controversyLevel || 0,
@@ -92,11 +204,13 @@ export const calculatePostGigStateUpdates = (
     result.targetMember
   ) {
     newBand.members = newBand.members.map(m => {
+      const moodChange = result.moodChange
+      const staminaChange = result.staminaChange
       const needsMoodUpdate =
-        result.moodChange &&
+        typeof moodChange === 'number' &&
         (result.allMembersMoodChange || m.name === result.targetMember)
       const needsStaminaUpdate =
-        result.staminaChange &&
+        typeof staminaChange === 'number' &&
         (result.allMembersStaminaChange || m.name === result.targetMember)
 
       if (!needsMoodUpdate && !needsStaminaUpdate) {
@@ -105,11 +219,11 @@ export const calculatePostGigStateUpdates = (
 
       const updatedM = { ...m }
       if (needsMoodUpdate) {
-        updatedM.mood = clampMemberMood(updatedM.mood + result.moodChange)
+        updatedM.mood = clampMemberMood(updatedM.mood + moodChange)
       }
       if (needsStaminaUpdate) {
         updatedM.stamina = clampMemberStamina(
-          updatedM.stamina + result.staminaChange,
+          updatedM.stamina + staminaChange,
           updatedM.staminaMax
         )
       }
@@ -131,7 +245,7 @@ export const calculatePostGigStateUpdates = (
     Math.min(100, (social.zealotry || 0) + (result.zealotryChange || 0))
   )
 
-  const updatedSocial = {
+  const updatedSocial: Partial<GameState['social']> = {
     [result.platform]: Math.max(
       0,
       (social[result.platform] || 0) + totalFollowers
@@ -160,10 +274,12 @@ export const calculatePostGigStateUpdates = (
 
   // Automatically decrement all active deals every gig
   if (updatedSocial.activeDeals && updatedSocial.activeDeals.length > 0) {
-    const nextDeals = []
+    const nextDeals: UnknownRecord[] = []
     for (let i = 0; i < updatedSocial.activeDeals.length; i++) {
       const deal = updatedSocial.activeDeals[i]
-      const nextRemainingGigs = (deal.remainingGigs || 1) - 1
+      if (!deal || typeof deal !== 'object') continue
+      const nextRemainingGigs =
+        toNumber((deal as UnknownRecord).remainingGigs, 1) - 1
       if (nextRemainingGigs > 0) {
         nextDeals.push({ ...deal, remainingGigs: nextRemainingGigs })
       }
@@ -229,7 +345,7 @@ export const calculatePostGigStateUpdates = (
           ...currentInfluencer,
           score: Math.min(
             100,
-            Math.max(0, (currentInfluencer.score || 0) + scoreChange)
+            Math.max(0, toNumber(currentInfluencer.score) + scoreChange)
           )
         }
       }
@@ -241,7 +357,9 @@ export const calculatePostGigStateUpdates = (
 
     for (const key in SOCIAL_PLATFORMS) {
       if (Object.hasOwn(SOCIAL_PLATFORMS, key)) {
-        const platformId = SOCIAL_PLATFORMS[key].id
+        const platformConfig =
+          SOCIAL_PLATFORMS[key as keyof typeof SOCIAL_PLATFORMS]
+        const platformId = platformConfig.id as SocialPlatformId
 
         // Do not cross-post to the platform that triggered the update,
         // and do not cross-post to the newsletter, which is treated differently.
@@ -251,7 +369,7 @@ export const calculatePostGigStateUpdates = (
         ) {
           updatedSocial[platformId] = Math.max(
             0,
-            (social[platformId] || 0) + delta
+            toNumber(social[platformId]) + delta
           )
         }
       }
@@ -329,7 +447,10 @@ export const getAcceptDealSocialUpdateFactory = (deal: BrandDeal) => {
       const currentRep = updates.brandReputation[deal.alignment] || 0
       updates.brandReputation[deal.alignment] = Math.min(100, currentRep + 5)
 
-      const opposing = OPPOSING_ALIGNMENT_MAP[deal.alignment]
+      const opposing =
+        OPPOSING_ALIGNMENT_MAP[
+          deal.alignment as keyof typeof OPPOSING_ALIGNMENT_MAP
+        ]
       if (opposing) {
         const oppRep = updates.brandReputation[opposing] || 0
         updates.brandReputation[opposing] = Math.max(0, oppRep - 3)
@@ -579,7 +700,7 @@ export const deriveFinancials = ({
         'discounted_tickets_active'
       ),
       daysSinceLastGig: gigContext?.daysSinceLastGig ?? 0,
-      lastGigDifficulty: gigContext?.lastGigDifficulty ?? null,
+      lastGigDifficulty: gigContext?.lastGigDifficulty ?? undefined,
       social
     }
   })

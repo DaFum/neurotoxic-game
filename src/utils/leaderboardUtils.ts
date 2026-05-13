@@ -36,7 +36,7 @@ export const submitLeaderboardScores = async ({
     const setlistFirstId =
       typeof setlist?.[0] === 'string' ? setlist[0] : setlist?.[0]?.id
     const playedSongId = currentGig?.songId ?? setlistFirstId
-    if (playedSongId) {
+    if (typeof playedSongId === 'string') {
       songsToSubmit = [
         {
           songId: playedSongId,

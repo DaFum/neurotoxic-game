@@ -195,7 +195,7 @@ class TourbusStageController extends BaseStageController<TourbusControllerState>
   }
 
   createBus() {
-    if (!this.app) return
+    if (!this.app || !this.container) return
     const height = this.app.screen.height
 
     if (this.textures.bus) {
@@ -265,6 +265,7 @@ class TourbusStageController extends BaseStageController<TourbusControllerState>
 
   update(dt: number) {
     if (this.effectManager) this.effectManager.update(dt)
+    if (!this.container) return
 
     const state = this.gameStateRef.current
     if (!state) return

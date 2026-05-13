@@ -37,9 +37,13 @@ export const TourbusScene = () => {
       completionTitle={t('minigame:tourbus.destination_reached', {
         defaultValue: 'DESTINATION REACHED'
       })}
-      renderCompletionStats={state => {
+      renderCompletionStats={(state: unknown) => {
+        const damage =
+          state && typeof state === 'object' && 'damage' in state
+            ? Number((state as { damage?: unknown }).damage)
+            : 0
         const { conditionLoss } = calculateTravelMinigameResult(
-          state.damage,
+          Number.isFinite(damage) ? damage : 0,
           []
         )
         return `${t('minigame:tourbus.condition_loss', { defaultValue: 'Condition Loss:' })} ${conditionLoss}%`

@@ -1131,3 +1131,5 @@ for (const deal of BRAND_DEALS) {
 
   BRAND_DEALS_BY_ID.set(deal.id, transformedDeal)
 }
+
+export type BrandDeal = TransformedBrandDeal

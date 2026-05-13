@@ -19,6 +19,8 @@ import type {
 } from '../../types/game'
 import type { TranslationCallback } from '../../types/callbacks'
 
+type NodeVisibility = 'visible' | 'dimmed' | 'hidden'
+
 interface OverworldMapProps {
   t: TranslationCallback
   gameMap: GameMap | null
@@ -28,7 +30,7 @@ interface OverworldMapProps {
   currentLayer: number
   isTraveling: boolean
   pendingTravelNode: GameMapNode | null
-  getNodeVisibility: (nodeLayer: number, currentLayer: number) => number
+  getNodeVisibility: (nodeLayer: number, currentLayer: number) => NodeVisibility
   isConnected: (nodeId: string) => boolean
   handleTravel: (node: GameMapNode) => void
   setHoveredNode: React.Dispatch<React.SetStateAction<GameMapNode | null>>
@@ -189,11 +191,14 @@ export const OverworldMap = React.memo(
         else if (node.type === 'SPECIAL') iconUrl = pinSpecialUrl
         else if (node.type === 'FINALE') iconUrl = pinFinaleUrl
 
-        const effectivePrice = calculateEffectiveTicketPrice(node.venue || {}, {
-          discountedTickets: activeStoryFlags?.includes(
-            'discounted_tickets_active'
-          )
-        })
+        const effectivePrice = calculateEffectiveTicketPrice(
+          node.venue ?? { id: node.id, name: node.id },
+          {
+            discountedTickets: activeStoryFlags?.includes(
+              'discounted_tickets_active'
+            )
+          }
+        )
 
         return (
           <React.Fragment key={node.id}>
@@ -215,7 +220,7 @@ export const OverworldMap = React.memo(
                   : undefined
               }
             />
-            {hasRival && visibility > 0 && (
+            {hasRival && visibility !== 'hidden' && (
               <div
                 className='absolute z-30 pointer-events-none transition-all duration-300'
                 style={{

@@ -31,6 +31,14 @@ type AllowedTrend = (typeof ALLOWED_TRENDS)[number]
 type RandomFn = () => number
 export type BrandDeal =
   typeof BRAND_DEALS_BY_ID extends Map<string, infer Deal> ? Deal : never
+type NegotiableBrandDeal = Omit<BrandDeal, 'offer'> & {
+  offer: {
+    upfront: number
+    duration: number
+    perGig?: number
+    [key: string]: unknown
+  }
+}
 
 interface SocialEngineGameState {
   player: {
@@ -63,7 +71,7 @@ interface SocialEngineGameState {
   [key: string]: unknown
 }
 
-interface SocialPostOption {
+export interface SocialPostOption {
   id: string
   category?: string
   badges?: string[]
@@ -796,21 +804,13 @@ export const generateBrandOffers = (
  * @returns {object} { success: boolean, deal: object, feedback: string, status: 'ACCEPTED'|'REVOKED'|'FAILED' }
  */
 export const negotiateDeal = (
-  deal: Record<string, unknown> & {
-    alignment?: string
-    offer: { upfront: number; perGig?: number; [key: string]: unknown }
-  },
+  deal: BrandDeal,
   strategy: 'AGGRESSIVE' | 'PERSUASIVE' | 'SAFE',
   gameState: SocialEngineGameState,
   rng: RandomFn = secureRandom
 ): {
   success: boolean
-  deal:
-    | (Record<string, unknown> & {
-        alignment?: string
-        offer: { upfront: number; perGig?: number; [key: string]: unknown }
-      })
-    | null
+  deal: BrandDeal | null
   feedback: string
   status: 'ACCEPTED' | 'REVOKED' | 'FAILED'
 } => {
@@ -829,12 +829,10 @@ export const negotiateDeal = (
 
   // Optimization: structuredClone is slow for hot paths. Manual shallow copy
   // with nested offer copy is ~98% faster.
-  let newDeal:
-    | (Record<string, unknown> & {
-        alignment?: string
-        offer: { upfront: number; perGig?: number; [key: string]: unknown }
-      })
-    | null = { ...deal, offer: { ...deal.offer } }
+  const newDeal: NegotiableBrandDeal = {
+    ...deal,
+    offer: { ...deal.offer }
+  }
 
   // Modifiers
   const hasManager = bandHasTrait(band, 'social_manager')
@@ -892,7 +890,6 @@ export const negotiateDeal = (
       } else {
         feedback = 'They walked out. Deal revoked.'
         status = 'REVOKED'
-        newDeal = null
         isSuccess = false
       }
       break
@@ -903,7 +900,7 @@ export const negotiateDeal = (
 
   return {
     success: isSuccess,
-    deal: newDeal,
+    deal: status === 'REVOKED' ? null : (newDeal as unknown as BrandDeal),
     feedback,
     status
   }

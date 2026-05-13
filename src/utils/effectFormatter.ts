@@ -1,8 +1,37 @@
-export const generateEffectText = (delta, t) => {
-  if (!delta) return ''
-  const lines = []
+import type { TranslationCallback } from '../types/callbacks'
+import type { UnknownRecord } from '../types/game'
 
-  const addStatLine = (value, tKey, defaultValue, unit = '') => {
+type EffectDelta = {
+  [key: string]: unknown
+  player?: UnknownRecord & { van?: UnknownRecord }
+  social?: UnknownRecord
+  band?: UnknownRecord & {
+    membersDelta?: UnknownRecord | UnknownRecord[]
+    inventory?: UnknownRecord
+  }
+  flags?: UnknownRecord & {
+    addQuest?: unknown
+    queueEvent?: unknown
+    addStoryFlag?: unknown
+    gameOver?: unknown
+  }
+  score?: unknown
+}
+
+export const generateEffectText = (
+  rawDelta: object | null | undefined,
+  t: TranslationCallback
+) => {
+  if (!rawDelta) return ''
+  const delta = rawDelta as EffectDelta
+  const lines: string[] = []
+
+  const addStatLine = (
+    value: unknown,
+    tKey: string,
+    defaultValue: string,
+    unit = ''
+  ) => {
     if (typeof value === 'number' && value !== 0) {
       lines.push(
         `${t(tKey, { defaultValue })}: ${value > 0 ? '+' : ''}${value}${unit}`
@@ -51,14 +80,15 @@ export const generateEffectText = (delta, t) => {
       let totalStaminaChange = 0
 
       if (Array.isArray(delta.band.membersDelta)) {
-        const moodChanges = []
-        const staminaChanges = []
+        const moodChanges: number[] = []
+        const staminaChanges: number[] = []
         for (let i = 0; i < delta.band.membersDelta.length; i++) {
-          if (typeof delta.band.membersDelta[i]?.moodChange === 'number') {
-            moodChanges.push(delta.band.membersDelta[i].moodChange)
+          const memberDelta = delta.band.membersDelta[i]
+          if (typeof memberDelta?.moodChange === 'number') {
+            moodChanges.push(memberDelta.moodChange)
           }
-          if (typeof delta.band.membersDelta[i]?.staminaChange === 'number') {
-            staminaChanges.push(delta.band.membersDelta[i].staminaChange)
+          if (typeof memberDelta?.staminaChange === 'number') {
+            staminaChanges.push(memberDelta.staminaChange)
           }
         }
         if (moodChanges.length > 0) {
@@ -110,11 +140,14 @@ export const generateEffectText = (delta, t) => {
       const quests = Array.isArray(delta.flags.addQuest)
         ? delta.flags.addQuest
         : [delta.flags.addQuest]
-      quests.forEach(q => {
+      quests.forEach((q: unknown) => {
         const questLabel =
           typeof q === 'object' && q !== null
-            ? (q.title ?? t(q.id, { defaultValue: q.label }))
-            : t(q, { defaultValue: q })
+            ? ((q as UnknownRecord).title ??
+              t(String((q as UnknownRecord).id ?? 'ui:quest.unknown'), {
+                defaultValue: String((q as UnknownRecord).label ?? '')
+              }))
+            : t(String(q), { defaultValue: String(q) })
         lines.push(
           `${t('ui:event.new_quest', { defaultValue: 'New Quest' })}: ${questLabel}`
         )

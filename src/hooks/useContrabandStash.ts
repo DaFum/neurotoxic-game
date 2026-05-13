@@ -5,6 +5,14 @@ import {
   validateStashItemSelection,
   getStashItemUseMessage
 } from '../utils/contrabandStashUtils'
+type ContrabandStashItem = {
+  id?: string
+  name?: string
+  effectType?: string
+  type?: string
+  instanceId?: string
+  [key: string]: unknown
+}
 
 /**
  * Hook to manage the Contraband Stash UI state and actions.
@@ -29,7 +37,7 @@ export const useContrabandStash = () => {
   )
 
   const handleUseItem = useCallback(
-    (instanceId, item) => {
+    (instanceId: string, item: ContrabandStashItem) => {
       const validation = validateStashItemSelection(item, selectedMember)
       if (!validation.isValid) {
         addToast(
@@ -41,6 +49,7 @@ export const useContrabandStash = () => {
         return
       }
 
+      if (!item.id) return
       dispatchUseContraband(instanceId, item.id, selectedMember)
 
       const message = getStashItemUseMessage(item, t)

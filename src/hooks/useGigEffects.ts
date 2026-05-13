@@ -1,6 +1,12 @@
 import { useEffect, useRef, useCallback, useMemo } from 'react'
+import type { CSSProperties } from 'react'
 import { getSafeRandom } from '../utils/crypto'
 import { handleError } from '../utils/errorHandler'
+
+type GigVisualStats = {
+  isToxicMode: boolean
+  overload: number
+}
 
 /**
  * Calculates chaos visual filter styles based on stats.
@@ -8,8 +14,11 @@ import { handleError } from '../utils/errorHandler'
  * @param {number} overload
  * @returns {Object} CSS style object
  */
-export const calculateChaosStyle = (isToxicMode, overload) => {
-  const style = {}
+export const calculateChaosStyle = (
+  isToxicMode: boolean,
+  overload: number
+): CSSProperties => {
+  const style: CSSProperties = {}
   if (isToxicMode) {
     style.filter = 'invert(0.1) contrast(1.5) saturate(2)'
     return style
@@ -31,12 +40,19 @@ export const calculateChaosStyle = (isToxicMode, overload) => {
  * @param {Animation} existingAnim - The previously cached animation instance
  * @returns {Animation|null} The created or reused animation instance
  */
-export const playBandMemberAnimation = (memberEl, existingAnim) => {
+export const playBandMemberAnimation = (
+  memberEl: Element | null,
+  existingAnim: Animation | null | undefined
+): Animation | null => {
   if (!memberEl) return null
 
   let anim = existingAnim
   // Reuse existing animation if valid and attached to same element
-  if (anim && anim.effect && anim.effect.target === memberEl) {
+  if (
+    anim &&
+    anim.effect instanceof KeyframeEffect &&
+    anim.effect.target === memberEl
+  ) {
     anim.cancel()
     anim.play()
   } else {
@@ -68,15 +84,15 @@ export const playBandMemberAnimation = (memberEl, existingAnim) => {
  * @returns {boolean} True if successful, False if an error occurred
  */
 export const applyChaosJitter = (
-  containerEl,
-  isToxicMode,
-  getRandom,
-  onError
-) => {
+  containerEl: HTMLElement | null,
+  isToxicMode: boolean,
+  getRandom: (() => number) | null,
+  onError?: (error: unknown) => void
+): boolean => {
   if (!containerEl) return true
 
   try {
-    if (isToxicMode) {
+    if (isToxicMode && getRandom) {
       const JITTER_PIXELS = 2
       const x = getRandom() * (JITTER_PIXELS * 2) - JITTER_PIXELS
       const y = getRandom() * (JITTER_PIXELS * 2) - JITTER_PIXELS
@@ -98,19 +114,21 @@ export const applyChaosJitter = (
  * @param {Object} stats - The current game stats (e.g., isToxicMode, overload).
  * @returns {Object} - Refs and styles for the Gig component.
  */
-export const useGigEffects = stats => {
-  const chaosContainerRef = useRef(null)
-  const bandAnimationsRef = useRef({})
-  const bandMembersRef = useRef([])
-  const bandMemberSettersRef = useRef([])
+export const useGigEffects = (stats: GigVisualStats) => {
+  const chaosContainerRef = useRef<HTMLDivElement | null>(null)
+  const bandAnimationsRef = useRef<Record<number, Animation | null>>({})
+  const bandMembersRef = useRef<Array<HTMLElement | null>>([])
+  const bandMemberSettersRef = useRef<
+    Array<((el: HTMLElement | null) => void) | undefined>
+  >([])
 
   /**
    * Returns a stable ref callback for a band member at the given index.
    * @param {number} index
    */
-  const setBandMemberRef = useCallback(index => {
+  const setBandMemberRef = useCallback((index: number) => {
     if (!bandMemberSettersRef.current[index]) {
-      bandMemberSettersRef.current[index] = el => {
+      bandMemberSettersRef.current[index] = (el: HTMLElement | null) => {
         bandMembersRef.current[index] = el
       }
     }
@@ -121,7 +139,7 @@ export const useGigEffects = stats => {
    * Triggers a CSS animation on the corresponding band member DOM element.
    * @param {number} laneIndex
    */
-  const triggerBandAnimation = useCallback(laneIndex => {
+  const triggerBandAnimation = useCallback((laneIndex: number) => {
     const memberEl = bandMembersRef.current[laneIndex]
     if (memberEl) {
       const currentAnim = bandAnimationsRef.current[laneIndex]
@@ -134,14 +152,14 @@ export const useGigEffects = stats => {
 
   // Chaos Mode Visuals (Jitter via RAF)
   useEffect(() => {
-    let rAF
+    let rAF: number | undefined
     const animateChaos = () => {
       const isSuccess = applyChaosJitter(
         chaosContainerRef.current,
         stats.isToxicMode,
         getSafeRandom,
-        error => {
-          cancelAnimationFrame(rAF)
+        (error: unknown) => {
+          if (rAF !== undefined) cancelAnimationFrame(rAF)
           handleError(error, { severity: 'medium', silent: true })
         }
       )
@@ -154,12 +172,19 @@ export const useGigEffects = stats => {
     if (stats.isToxicMode) {
       rAF = requestAnimationFrame(animateChaos)
     } else {
-      applyChaosJitter(chaosContainerRef.current, false, null, error => {
-        handleError(error, { severity: 'medium', silent: true })
-      })
+      applyChaosJitter(
+        chaosContainerRef.current,
+        false,
+        null,
+        (error: unknown) => {
+          handleError(error, { severity: 'medium', silent: true })
+        }
+      )
     }
 
-    return () => cancelAnimationFrame(rAF)
+    return () => {
+      if (rAF !== undefined) cancelAnimationFrame(rAF)
+    }
   }, [stats.isToxicMode])
 
   // Chaos Mode Visuals (Filters)

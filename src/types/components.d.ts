@@ -9,6 +9,8 @@ import type {
 import type { RemoveByIdCallback, TranslationCallback } from './callbacks'
 import type { RefObject, MutableRefObject } from 'react'
 import type * as React from 'react'
+import type { SocialPostOption } from '../utils/socialEngine'
+import type { BrandDeal } from '../data/brandDeals'
 export type { AudioState, AudioControls } from './audio'
 
 export interface PixiController {
@@ -84,8 +86,8 @@ export interface ChatterMessageProps {
   t: TranslationCallback
 }
 
-export interface SocialOption extends EventOption {
-  id: string | number
+export interface SocialOption extends EventOption, SocialPostOption {
+  id: string
   name?: string
   platform?: string
   category?: string
@@ -118,7 +120,7 @@ export interface PauseOverlayProps {
 
 export interface MinigameLogicBase<TState = unknown> {
   gameStateRef: RefObject<TState>
-  update: (state: unknown) => void
+  update: (deltaMS: number) => void
   finishMinigame?: () => void
   dispatch?: (action: import('../types/game').GameAction) => void
 }
@@ -134,7 +136,7 @@ export interface MinigameSceneFrameProps<TState = unknown> {
     options: StageControllerOptions<TState>
   ) => PixiController
   logic: MinigameLogicBase<TState>
-  uiState?: { isGameOver?: boolean }
+  uiState?: { isGameOver?: boolean; [key: string]: unknown }
   onComplete: () => void
   completionTitle?: string
   renderCompletionStats?: (stats: unknown) => React.ReactNode
@@ -148,6 +150,11 @@ export interface AmpStageOptions {
   isOverdriveActive?: boolean
   isOverheat?: boolean
   heat?: number
+  isAnomalyActive?: boolean
+  voidResonance?: number
+  interference?: number
+  isHijackActive?: boolean
+  hijacksOverridden?: number
 }
 
 export interface StageControllerOptions<TState = unknown> {
@@ -158,7 +165,7 @@ export interface StageControllerOptions<TState = unknown> {
 
 export interface PixiStageProps<TState = unknown> {
   gameStateRef: RefObject<TState>
-  update: (state: unknown) => void
+  update: (deltaMS: number) => void
   controllerFactory?: (
     options: StageControllerOptions<TState>
   ) => PixiController
@@ -201,7 +208,7 @@ export interface ClinicMemberCardActionProps {
 
 export interface ActionButtonWrapperProps {
   disabledReason?: string | null
-  children: React.ReactElement
+  children: React.ReactElement<{ disabled?: boolean }>
 }
 
 export interface AmpControlsProps {
@@ -281,19 +288,7 @@ export interface TravelingVanProps {
 }
 
 export interface CompletePhaseProps {
-  result: {
-    success: boolean
-    message: string
-    totalFollowers: number
-    platform: string
-    moneyChange?: number
-    harmonyChange?: number
-    controversyChange?: number
-    loyaltyChange?: number
-    staminaChange?: number
-    moodChange?: number
-    targetMember?: string
-  }
+  result: import('./game').PostResult
   onContinue: () => void
   onSpinStory?: () => void
   player?: Pick<PlayerState, 'hqUpgrades'>
@@ -320,11 +315,11 @@ export interface DealContract {
 }
 
 export interface DealCardProps {
-  deal: DealContract
+  deal: BrandDeal
   negotiationState?: DealNegotiationState
   brandReputation?: Record<string, number>
-  handleAcceptDeal: (deal: DealContract) => void | Promise<void>
-  handleNegotiationStart: (deal: DealContract) => void
+  handleAcceptDeal: (deal: BrandDeal) => void | Promise<void>
+  handleNegotiationStart: (deal: BrandDeal) => void
 }
 
 export interface DealImageProps {
@@ -351,17 +346,17 @@ export interface DealInfoProps {
 }
 
 export interface DealActionsProps {
-  deal: DealContract
-  displayDeal: DealContract
+  deal: BrandDeal
+  displayDeal: BrandDeal
   isRevoked?: boolean
   hasNegotiated?: boolean
   negotiationState?: DealCardProps['negotiationState']
-  handleAcceptDeal: (deal: DealContract) => void | Promise<void>
-  handleNegotiationStart: (deal: DealContract) => void
+  handleAcceptDeal: (deal: BrandDeal) => void | Promise<void>
+  handleNegotiationStart: (deal: BrandDeal) => void
 }
 
 export interface DealNegotiationState {
-  deal?: DealContract | null
+  deal?: BrandDeal | null
   status?: 'REVOKED' | 'FAILED' | 'SUCCESS' | 'WORSENED'
   feedback?: string
   success?: boolean
@@ -370,7 +365,7 @@ export interface DealNegotiationState {
 
 export interface NegotiationResult {
   success: boolean
-  deal: DealContract | null
+  deal: BrandDeal | null
   feedback: string
   status: 'ACCEPTED' | 'REVOKED' | 'FAILED'
 }
@@ -379,18 +374,18 @@ export interface DealNegotiationHook {
   negotiatedDeals: Record<string, DealNegotiationState>
   negotiationModalOpen: boolean
   setNegotiationModalOpen: (open: boolean) => void
-  selectedDeal: DealContract | null
+  selectedDeal: BrandDeal | null
   negotiationResult: NegotiationResult | null
-  handleNegotiationStart: (deal: DealContract) => void
-  handleAcceptDeal: (deal: DealContract) => Promise<void>
+  handleNegotiationStart: (deal: BrandDeal) => void
+  handleAcceptDeal: (deal: BrandDeal) => Promise<void>
   handleNegotiationSubmit: (
     submission: 'SAFE' | 'PERSUASIVE' | 'AGGRESSIVE'
   ) => void
 }
 
 export interface DealsPhaseProps {
-  offers: DealContract[]
-  onAccept: (deal: DealContract) => void | Promise<void>
+  offers: BrandDeal[]
+  onAccept: (deal: BrandDeal) => void | Promise<void>
   onSkip: () => void
 }
 
@@ -409,7 +404,7 @@ export interface NegotiationModalProps {
 }
 
 export interface EventModalOption extends EventOption {
-  label: string
+  label?: string
   flags?: string[]
   disabled?: boolean
   nextEventId?: string

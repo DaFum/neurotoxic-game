@@ -5,10 +5,17 @@ import { logger } from '../utils/logger'
 import { translateContextKeys } from '../utils/translationUtils'
 import { safeJsonParse } from '../utils/gameStateUtils'
 import { useEffect, memo } from 'react'
+import type { TFunction } from 'i18next'
+import type { ToastPayload } from '../types/game'
 
-const renderToastMessage = (toast, t) => {
+const toRecord = (value: unknown): Record<string, unknown> =>
+  value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {}
+
+const renderToastMessage = (toast: ToastPayload, t: TFunction) => {
   const safeOptions = toast.options
-    ? translateContextKeys(toast.options, t)
+    ? toRecord(translateContextKeys(toast.options, t))
     : {}
 
   if (toast.messageKey) {
@@ -18,7 +25,7 @@ const renderToastMessage = (toast, t) => {
     })
   }
 
-  if (!toast.message || !toast.message.startsWith('ui:')) {
+  if (typeof toast.message !== 'string' || !toast.message.startsWith('ui:')) {
     return toast.message
   }
 
@@ -28,7 +35,7 @@ const renderToastMessage = (toast, t) => {
     const contextStr = toast.message.slice(firstPipeIdx + 1)
     try {
       const rawContext = safeJsonParse(contextStr)
-      const context = translateContextKeys(rawContext, t)
+      const context = toRecord(translateContextKeys(rawContext, t))
       return t(key, { ...context, ...safeOptions })
     } catch (_e) {
       logger.error('UI', 'Toast message JSON parse error', {
@@ -43,7 +50,19 @@ const renderToastMessage = (toast, t) => {
   return t(toast.message, safeOptions)
 }
 
-const ToastItem = memo(({ toast, removeToast, style }) => {
+type ToastStyle = {
+  border: string
+  text: string
+  icon: string
+}
+
+type ToastItemProps = {
+  toast: ToastPayload
+  removeToast: (id: string) => void
+  style: ToastStyle
+}
+
+const ToastItem = memo(({ toast, removeToast, style }: ToastItemProps) => {
   const { t } = useTranslation(['ui', 'events', 'venues', 'items', 'economy'])
 
   useEffect(() => {
@@ -73,7 +92,7 @@ const ToastItem = memo(({ toast, removeToast, style }) => {
           {style.icon}
         </span>
         <p className={`font-[Courier_New] text-sm leading-snug ${style.text}`}>
-          {renderToastMessage(toast, t)}
+          {String(renderToastMessage(toast, t) ?? '')}
         </p>
       </div>
       <div className={`h-[2px] w-full ${style.border} border-t`} />
@@ -103,7 +122,7 @@ const TOAST_STYLE_MAP = {
     text: 'text-info-blue',
     icon: 'ℹ'
   }
-}
+} as const satisfies Record<ToastPayload['type'], ToastStyle>
 
 /**
  * Renders global toast notifications with consistent visual taxonomy.
@@ -129,7 +148,7 @@ export const ToastOverlay = () => {
     >
       <AnimatePresence>
         {toasts.map(toast => {
-          const style = TOAST_STYLE_MAP[toast.type] || TOAST_STYLE_MAP.info
+          const style = TOAST_STYLE_MAP[toast.type] ?? TOAST_STYLE_MAP.info
           return (
             <ToastItem
               key={toast.id}

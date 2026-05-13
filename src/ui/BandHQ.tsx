@@ -243,7 +243,7 @@ export const BandHQ = ({ onClose, className = '' }: BandHQProps) => {
                 isItemOwned={isItemOwned}
                 isItemDisabled={isItemDisabled}
                 getAdjustedCost={getAdjustedCost}
-                processingItemId={processingItemId}
+                processingItemId={processingItemId ?? undefined}
               />
             )}
 
@@ -255,7 +255,7 @@ export const BandHQ = ({ onClose, className = '' }: BandHQProps) => {
                 isItemOwned={isItemOwned}
                 isItemDisabled={isItemDisabled}
                 getAdjustedCost={getAdjustedCost}
-                processingItemId={processingItemId}
+                processingItemId={processingItemId ?? undefined}
               />
             )}
 
@@ -276,7 +276,7 @@ export const BandHQ = ({ onClose, className = '' }: BandHQProps) => {
                   handleTrade={handleVoidTrade}
                   isItemOwned={isVoidItemOwned}
                   isItemDisabled={isVoidItemDisabled}
-                  processingItemId={processingItemId}
+                  processingItemId={processingItemId ?? undefined}
                 />
               )}
 

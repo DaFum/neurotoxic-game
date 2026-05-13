@@ -7,7 +7,15 @@ import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import { GlitchButton } from '../../ui/GlitchButton'
 
-export const GameOverButtons = ({ onRetry, onReturnToMenu }) => {
+type GameOverButtonsProps = {
+  onRetry: () => void
+  onReturnToMenu: () => void
+}
+
+export const GameOverButtons = ({
+  onRetry,
+  onReturnToMenu
+}: GameOverButtonsProps) => {
   const { t } = useTranslation(['ui'])
 
   return (

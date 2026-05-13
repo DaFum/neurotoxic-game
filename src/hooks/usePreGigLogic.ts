@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
-import type { TFunction } from 'react-i18next'
 import type { PlayerState, Venue, GigModifiers } from '../types/game'
-import type { RhythmSetlistEntry, Song } from '../types/rhythmGame'
+import type { RhythmSetlistEntry } from '../types/rhythmGame'
+import type { Song } from '../types/audio'
 import type { ActiveEffectEntry } from '../types/components'
+import type { TranslationCallback } from '../types/callbacks'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
@@ -37,14 +38,14 @@ export type ModifierOption = {
 }
 
 export interface PreGigLogicReturn {
-  t: (key: string, options?: unknown) => string
+  t: TranslationCallback
   i18n: { language: string }
   currentGig: Venue | null
   player: PlayerState
   setlist: RhythmSetlistEntry[]
   gigModifiers: GigModifiers
   currentModifiers: { activeEffects: ActiveEffectEntry[] }
-  selectedSongIds: Set<unknown>
+  selectedSongIds: Set<string>
   calculatedBudget: number
   isStarting: boolean
   GIG_MODIFIER_OPTIONS: ModifierOption[]
@@ -57,6 +58,7 @@ export interface PreGigLogicReturn {
 
 export const usePreGigLogic = (): PreGigLogicReturn => {
   const { t, i18n } = useTranslation(['ui', 'venues'])
+  const typedT = t as TranslationCallback
 
   const GIG_MODIFIER_OPTIONS = useMemo<ModifierOption[]>(
     () => [
@@ -118,17 +120,18 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
   const currentModifiers = getGigModifiers(band, gigModifiers)
 
   const selectedSongIds = useMemo(() => {
-    const ids = new Set()
+    const ids = new Set<string>()
     for (let i = 0; i < setlist.length; i++) {
-      ids.add(getSongId(setlist[i]))
+      const id = getSongId(setlist[i])
+      if (id) ids.add(id)
     }
     return ids
   }, [setlist])
 
-  const tRef = useRef<TFunction>(t)
+  const tRef = useRef<TranslationCallback>(typedT)
   useEffect(() => {
-    tRef.current = t
-  }, [t])
+    tRef.current = typedT
+  }, [typedT])
 
   useEffect(() => {
     if (!currentGig) {
@@ -289,12 +292,12 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     startRoadieMinigame,
     startKabelsalatMinigame,
     startAmpCalibration,
-    t,
+    typedT,
     addToast
   ])
 
   return {
-    t,
+    t: typedT,
     i18n,
     currentGig,
     player,

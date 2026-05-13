@@ -2,6 +2,7 @@ import { Graphics } from 'pixi.js'
 import { BaseStageController } from './BaseStageController'
 import { RoadieTrafficManager } from './RoadieTrafficManager'
 import { RoadiePlayerManager } from './RoadiePlayerManager'
+import type { RoadieRenderState } from './RoadiePlayerManager'
 import {
   ROADIE_GRID_WIDTH,
   ROADIE_GRID_HEIGHT
@@ -16,7 +17,11 @@ import {
 import { handleError, GameError } from '../../utils/errorHandler'
 import type { StageControllerOptions } from '../../types/components'
 
-class RoadieStageController extends BaseStageController {
+type RoadieStageState = RoadieRenderState & {
+  traffic?: unknown
+}
+
+class RoadieStageController extends BaseStageController<RoadieStageState> {
   effectManager: EffectManager | null
   textures: {
     roadie: import('pixi.js').Texture | null
@@ -35,11 +40,12 @@ class RoadieStageController extends BaseStageController {
   trafficManager: RoadieTrafficManager | null
   playerManager: RoadiePlayerManager | null
 
-  constructor(params: StageControllerOptions) {
+  constructor(params: StageControllerOptions<RoadieStageState>) {
     super(params)
     this.effectManager = null
     this.trafficManager = null
     this.playerManager = null
+    this.bgGraphics = null
 
     this.textures = {
       roadie: null,
@@ -57,30 +63,33 @@ class RoadieStageController extends BaseStageController {
   }
 
   async setup() {
+    const app = this.app
+    const container = this.container
+    if (!app || !container) return
     // Draw Background Grid (Static)
     this.drawBackground()
 
     // Effect Manager
-    this.effectManager = new EffectManager(this.app, this.container)
+    this.effectManager = new EffectManager(app, container)
     this.effectManager.init()
 
     // Load Assets concurrently
     await Promise.all([this.loadAssets(), this.effectManager.loadAssets()])
     if (this.isDisposed) return
 
-    const screenW = this.app.screen.width
-    const screenH = this.app.screen.height
+    const screenW = app.screen.width
+    const screenH = app.screen.height
     const cellW = screenW / ROADIE_GRID_WIDTH
     const cellH = screenH / ROADIE_GRID_HEIGHT
 
     this.playerManager = new RoadiePlayerManager(this.textures, this.colors)
-    this.playerManager.setup(this.container, cellW, cellH)
+    this.playerManager.setup(container, cellW, cellH)
     if (this.effectManager) {
       this.playerManager.setEffectManager(this.effectManager)
     }
 
     this.trafficManager = new RoadieTrafficManager(
-      this.container,
+      container,
       this.textures,
       this.colors
     )
@@ -117,9 +126,9 @@ class RoadieStageController extends BaseStageController {
       if (loaded.carC) cars.push(loaded.carC)
       this.textures.cars = cars
       this.textures.items = {
-        AMP: loaded.amp,
-        DRUMS: loaded.drums,
-        GUITAR: loaded.guitar
+        AMP: loaded.amp ?? undefined,
+        DRUMS: loaded.drums ?? undefined,
+        GUITAR: loaded.guitar ?? undefined
       }
     } catch (e) {
       handleError(
@@ -135,6 +144,7 @@ class RoadieStageController extends BaseStageController {
   }
 
   drawBackground() {
+    if (!this.container) return
     if (this.bgGraphics) {
       this.container.removeChild(this.bgGraphics)
       this.bgGraphics.destroy()
@@ -220,5 +230,6 @@ class RoadieStageController extends BaseStageController {
   }
 }
 
-export const createRoadieStageController = (params: StageControllerOptions) =>
-  new RoadieStageController(params)
+export const createRoadieStageController = (
+  params: StageControllerOptions<RoadieStageState>
+) => new RoadieStageController(params)

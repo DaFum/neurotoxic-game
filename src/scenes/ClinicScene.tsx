@@ -16,6 +16,8 @@ export const ClinicScene = () => {
     leaveClinic
   } = useClinicLogic()
 
+  if (!player || !band) return null
+
   return (
     <div className='w-full h-full bg-void-black relative overflow-hidden flex flex-col items-center justify-center p-2 sm:p-8'>
       {/* Background Ambience */}

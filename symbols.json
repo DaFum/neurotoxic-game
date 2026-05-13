@@ -775,6 +775,16 @@
         "isDefault": false
       }
     ],
+    "RoadieRenderState": [
+      {
+        "name": "RoadieRenderState",
+        "path": "src/components/stage/RoadiePlayerManager.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "typeOnly": true
+      }
+    ],
     "RoadiePlayerManager": [
       {
         "name": "RoadiePlayerManager",
@@ -2383,6 +2393,24 @@
         "source": "local",
         "type": "const",
         "isDefault": false
+      }
+    ],
+    "BrandDeal": [
+      {
+        "name": "BrandDeal",
+        "path": "src/data/brandDeals.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "typeOnly": true
+      },
+      {
+        "name": "BrandDeal",
+        "path": "src/utils/socialEngine.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "typeOnly": true
       }
     ],
     "CHARACTERS": [
@@ -4518,1007 +4546,6 @@
         "isDefault": false
       }
     ],
-    "NoteType": [
-      {
-        "name": "NoteType",
-        "path": "src/types/audio.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "Note": [
-      {
-        "name": "Note",
-        "path": "src/types/audio.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "Song": [
-      {
-        "name": "Song",
-        "path": "src/types/audio.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "LayeredSnare": [
-      {
-        "name": "LayeredSnare",
-        "path": "src/types/audio.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "DrumKitSynth": [
-      {
-        "name": "DrumKitSynth",
-        "path": "src/types/audio.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "AudioState": [
-      {
-        "name": "AudioState",
-        "path": "src/types/audio.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "AudioSnapshot": [
-      {
-        "name": "AudioSnapshot",
-        "path": "src/types/audio.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "AudioManagerLike": [
-      {
-        "name": "AudioManagerLike",
-        "path": "src/types/audio.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "UseAudioControlOptions": [
-      {
-        "name": "UseAudioControlOptions",
-        "path": "src/types/audio.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "UseAudioControlResult": [
-      {
-        "name": "UseAudioControlResult",
-        "path": "src/types/audio.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "AudioControls": [
-      {
-        "name": "AudioControls",
-        "path": "src/types/audio.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "AudioControlHandlers": [
-      {
-        "name": "AudioControlHandlers",
-        "path": "src/types/audio.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "VoidCallback": [
-      {
-        "name": "VoidCallback",
-        "path": "src/types/callbacks.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "AsyncCallback": [
-      {
-        "name": "AsyncCallback",
-        "path": "src/types/callbacks.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "AsyncVoidCallback": [
-      {
-        "name": "AsyncVoidCallback",
-        "path": "src/types/callbacks.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "AsyncBooleanCallback": [
-      {
-        "name": "AsyncBooleanCallback",
-        "path": "src/types/callbacks.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "ToggleBooleanCallback": [
-      {
-        "name": "ToggleBooleanCallback",
-        "path": "src/types/callbacks.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "TranslationCallback": [
-      {
-        "name": "TranslationCallback",
-        "path": "src/types/callbacks.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "ToastCallback": [
-      {
-        "name": "ToastCallback",
-        "path": "src/types/callbacks.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "OptionalToastCallback": [
-      {
-        "name": "OptionalToastCallback",
-        "path": "src/types/callbacks.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "CollisionHandler": [
-      {
-        "name": "CollisionHandler",
-        "path": "src/types/callbacks.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "MissHandler": [
-      {
-        "name": "MissHandler",
-        "path": "src/types/callbacks.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "GigFinalizeHandler": [
-      {
-        "name": "GigFinalizeHandler",
-        "path": "src/types/callbacks.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "RemoveByIdCallback": [
-      {
-        "name": "RemoveByIdCallback",
-        "path": "src/types/callbacks.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "PixiController": [
-      {
-        "name": "PixiController",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "ChatterMessageType": [
-      {
-        "name": "ChatterMessageType",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "ChatterMessageData": [
-      {
-        "name": "ChatterMessageData",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "ChatterGameState": [
-      {
-        "name": "ChatterGameState",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "ChatterOverlayProps": [
-      {
-        "name": "ChatterOverlayProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "GigHUDProps": [
-      {
-        "name": "GigHUDProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "MapNodeProps": [
-      {
-        "name": "MapNodeProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "MapConnectionProps": [
-      {
-        "name": "MapConnectionProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "HecklerOverlayProps": [
-      {
-        "name": "HecklerOverlayProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "GenericListProps": [
-      {
-        "name": "GenericListProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "ChatterMessageProps": [
-      {
-        "name": "ChatterMessageProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "SocialOption": [
-      {
-        "name": "SocialOption",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "ActiveEffect": [
-      {
-        "name": "ActiveEffect",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "ActiveEffectEntry": [
-      {
-        "name": "ActiveEffectEntry",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "SocialOptionButtonProps": [
-      {
-        "name": "SocialOptionButtonProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "PauseOverlayProps": [
-      {
-        "name": "PauseOverlayProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "MinigameLogicBase": [
-      {
-        "name": "MinigameLogicBase",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "TourbusMinigameLogic": [
-      {
-        "name": "TourbusMinigameLogic",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "MinigameSceneFrameProps": [
-      {
-        "name": "MinigameSceneFrameProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "AmpStageOptions": [
-      {
-        "name": "AmpStageOptions",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "StageControllerOptions": [
-      {
-        "name": "StageControllerOptions",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "PixiStageProps": [
-      {
-        "name": "PixiStageProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "ToggleRadioProps": [
-      {
-        "name": "ToggleRadioProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "TutorialManagerProps": [
-      {
-        "name": "TutorialManagerProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "ClinicHeaderProps": [
-      {
-        "name": "ClinicHeaderProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "ClinicMemberCardHeaderProps": [
-      {
-        "name": "ClinicMemberCardHeaderProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "ClinicMemberCardProps": [
-      {
-        "name": "ClinicMemberCardProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "ClinicMemberCardActionProps": [
-      {
-        "name": "ClinicMemberCardActionProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "ActionButtonWrapperProps": [
-      {
-        "name": "ActionButtonWrapperProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "AmpControlsProps": [
-      {
-        "name": "AmpControlsProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "AmpHUDProps": [
-      {
-        "name": "AmpHUDProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "AudioLockedOverlayProps": [
-      {
-        "name": "AudioLockedOverlayProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "BandMembersLayerProps": [
-      {
-        "name": "BandMembersLayerProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "RoadieControlsProps": [
-      {
-        "name": "RoadieControlsProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "RoadieHUDProps": [
-      {
-        "name": "RoadieHUDProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "TourbusControlsProps": [
-      {
-        "name": "TourbusControlsProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "TourbusHUDProps": [
-      {
-        "name": "TourbusHUDProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "TravelingVanProps": [
-      {
-        "name": "TravelingVanProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "CompletePhaseProps": [
-      {
-        "name": "CompletePhaseProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "DealContract": [
-      {
-        "name": "DealContract",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "DealCardProps": [
-      {
-        "name": "DealCardProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "DealImageProps": [
-      {
-        "name": "DealImageProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "DealInfoProps": [
-      {
-        "name": "DealInfoProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "DealActionsProps": [
-      {
-        "name": "DealActionsProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "DealNegotiationState": [
-      {
-        "name": "DealNegotiationState",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "NegotiationResult": [
-      {
-        "name": "NegotiationResult",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "DealNegotiationHook": [
-      {
-        "name": "DealNegotiationHook",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "DealsPhaseProps": [
-      {
-        "name": "DealsPhaseProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "FinancialListProps": [
-      {
-        "name": "FinancialListProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "NegotiationModalProps": [
-      {
-        "name": "NegotiationModalProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "EventModalOption": [
-      {
-        "name": "EventModalOption",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "EventModalEvent": [
-      {
-        "name": "EventModalEvent",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "EventModalPrecomputedResult": [
-      {
-        "name": "EventModalPrecomputedResult",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "FinancialItem": [
-      {
-        "name": "FinancialItem",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "FinancialCategory": [
-      {
-        "name": "FinancialCategory",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "ReportPhaseProps": [
-      {
-        "name": "ReportPhaseProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "Effect": [
-      {
-        "name": "Effect",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "PurchaseItem": [
-      {
-        "name": "PurchaseItem",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "CatalogItem": [
-      {
-        "name": "CatalogItem",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "VoidTraderItem": [
-      {
-        "name": "VoidTraderItem",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "Balances": [
-      {
-        "name": "Balances",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "CatalogConsumerProps": [
-      {
-        "name": "CatalogConsumerProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "CatalogTabProps": [
-      {
-        "name": "CatalogTabProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "UnlockMessageKind": [
-      {
-        "name": "UnlockMessageKind",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "UnlockMessage": [
-      {
-        "name": "UnlockMessage",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "FinancialBreakdownItem": [
-      {
-        "name": "FinancialBreakdownItem",
-        "path": "src/types/economy.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "PostGigFinancials": [
-      {
-        "name": "PostGigFinancials",
-        "path": "src/types/economy.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
     "GamePhase": [
       {
         "name": "GamePhase",
@@ -5526,8 +4553,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "Rarity": [
@@ -5537,8 +4564,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "GameSettings": [
@@ -5548,8 +4575,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "UnknownRecord": [
@@ -5559,8 +4586,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "RawGameSettings": [
@@ -5570,8 +4597,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "StashEntry": [
@@ -5581,8 +4608,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "EventOption": [
@@ -5592,8 +4619,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "GameEvent": [
@@ -5603,8 +4630,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "Venue": [
@@ -5614,8 +4641,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "CharacterProfile": [
@@ -5625,8 +4652,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "CharacterTrait": [
@@ -5636,8 +4663,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "MapNode": [
@@ -5647,8 +4674,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "GameMap": [
@@ -5658,8 +4685,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "MinigameState": [
@@ -5669,8 +4696,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "PlayerState": [
@@ -5680,8 +4707,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "BandMember": [
@@ -5691,8 +4718,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "StashItem": [
@@ -5702,8 +4729,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "BandState": [
@@ -5713,8 +4740,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "BrandAlignment": [
@@ -5724,8 +4751,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "RivalBandState": [
@@ -5735,8 +4762,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "SocialState": [
@@ -5746,8 +4773,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "GigModifiers": [
@@ -5757,8 +4784,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "ToastPayload": [
@@ -5768,8 +4795,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "PostGigSummary": [
@@ -5779,8 +4806,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "QuestState": [
@@ -5790,8 +4817,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "ResetStatePayload": [
@@ -5801,8 +4828,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "EventDeltaPayload": [
@@ -5812,8 +4839,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "UpdatePlayerPayload": [
@@ -5823,8 +4850,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "UpdateBandPayload": [
@@ -5834,8 +4861,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "CompleteTravelMinigamePayload": [
@@ -5845,8 +4872,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "ClinicActionPayload": [
@@ -5856,8 +4883,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "DarkWebLeakConfig": [
@@ -5867,8 +4894,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "DarkWebLeakPayload": [
@@ -5878,8 +4905,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "PirateBroadcastPayload": [
@@ -5889,8 +4916,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "BloodBankDonatePayload": [
@@ -5900,8 +4927,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "TradeVoidItemPayload": [
@@ -5911,8 +4938,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "MerchPressPayload": [
@@ -5922,8 +4949,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "GameState": [
@@ -5933,8 +4960,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "RawLoadedGame": [
@@ -5944,8 +4971,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "Action": [
@@ -5955,8 +4982,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "GameAction": [
@@ -5966,8 +4993,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "PostResult": [
@@ -5977,97 +5004,1008 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "SocketId": [
-      {
-        "name": "SocketId",
-        "path": "src/types/kabelsalat.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
+        "exportPath": "src/types/index.ts",
         "typeOnly": true
       }
     ],
-    "LightningSeed": [
+    "NoteType": [
       {
-        "name": "LightningSeed",
-        "path": "src/types/kabelsalat.d.ts",
+        "name": "NoteType",
+        "path": "src/types/audio.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "Note": [
+      {
+        "name": "Note",
+        "path": "src/types/audio.d.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
+        "exportPath": "src/types/index.ts",
         "typeOnly": true
       }
     ],
-    "TempoMapEntry": [
+    "Song": [
       {
-        "name": "TempoMapEntry",
-        "path": "src/types/rhythm.d.ts",
+        "name": "Song",
+        "path": "src/types/audio.d.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
+        "exportPath": "src/types/index.ts",
         "typeOnly": true
       }
     ],
-    "ProcessedTempoMapEntry": [
+    "LayeredSnare": [
       {
-        "name": "ProcessedTempoMapEntry",
-        "path": "src/types/rhythm.d.ts",
+        "name": "LayeredSnare",
+        "path": "src/types/audio.d.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
+        "exportPath": "src/types/index.ts",
         "typeOnly": true
       }
     ],
-    "RhythmLane": [
+    "DrumKitSynth": [
       {
-        "name": "RhythmLane",
-        "path": "src/types/rhythmGame.d.ts",
+        "name": "DrumKitSynth",
+        "path": "src/types/audio.d.ts",
         "source": "local",
-        "type": "type",
+        "type": "interface",
         "isDefault": false,
+        "exportPath": "src/types/index.ts",
         "typeOnly": true
       }
     ],
-    "RhythmSongStatsEntry": [
+    "AudioState": [
       {
-        "name": "RhythmSongStatsEntry",
-        "path": "src/types/rhythmGame.d.ts",
+        "name": "AudioState",
+        "path": "src/types/audio.d.ts",
         "source": "local",
-        "type": "type",
+        "type": "interface",
         "isDefault": false,
+        "exportPath": "src/types/index.ts",
         "typeOnly": true
       }
     ],
-    "GigStats": [
+    "AudioSnapshot": [
       {
-        "name": "GigStats",
-        "path": "src/types/rhythmGame.d.ts",
+        "name": "AudioSnapshot",
+        "path": "src/types/audio.d.ts",
         "source": "local",
-        "type": "type",
+        "type": "interface",
         "isDefault": false,
+        "exportPath": "src/types/index.ts",
         "typeOnly": true
       }
     ],
-    "SetLastGigStats": [
+    "AudioManagerLike": [
       {
-        "name": "SetLastGigStats",
-        "path": "src/types/rhythmGame.d.ts",
+        "name": "AudioManagerLike",
+        "path": "src/types/audio.d.ts",
         "source": "local",
-        "type": "type",
+        "type": "interface",
         "isDefault": false,
+        "exportPath": "src/types/index.ts",
         "typeOnly": true
       }
     ],
-    "RhythmSetlistEntry": [
+    "UseAudioControlOptions": [
       {
-        "name": "RhythmSetlistEntry",
-        "path": "src/types/rhythmGame.d.ts",
+        "name": "UseAudioControlOptions",
+        "path": "src/types/audio.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "UseAudioControlResult": [
+      {
+        "name": "UseAudioControlResult",
+        "path": "src/types/audio.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "AudioControls": [
+      {
+        "name": "AudioControls",
+        "path": "src/types/audio.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "AudioControlHandlers": [
+      {
+        "name": "AudioControlHandlers",
+        "path": "src/types/audio.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "PixiController": [
+      {
+        "name": "PixiController",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "ChatterMessageType": [
+      {
+        "name": "ChatterMessageType",
+        "path": "src/types/components.d.ts",
         "source": "local",
         "type": "type",
         "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "ChatterMessageData": [
+      {
+        "name": "ChatterMessageData",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "ChatterGameState": [
+      {
+        "name": "ChatterGameState",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "ChatterOverlayProps": [
+      {
+        "name": "ChatterOverlayProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "GigHUDProps": [
+      {
+        "name": "GigHUDProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "MapNodeProps": [
+      {
+        "name": "MapNodeProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "MapConnectionProps": [
+      {
+        "name": "MapConnectionProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "HecklerOverlayProps": [
+      {
+        "name": "HecklerOverlayProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "GenericListProps": [
+      {
+        "name": "GenericListProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "ChatterMessageProps": [
+      {
+        "name": "ChatterMessageProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "SocialOption": [
+      {
+        "name": "SocialOption",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "ActiveEffect": [
+      {
+        "name": "ActiveEffect",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "ActiveEffectEntry": [
+      {
+        "name": "ActiveEffectEntry",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "SocialOptionButtonProps": [
+      {
+        "name": "SocialOptionButtonProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "PauseOverlayProps": [
+      {
+        "name": "PauseOverlayProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "MinigameLogicBase": [
+      {
+        "name": "MinigameLogicBase",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "TourbusMinigameLogic": [
+      {
+        "name": "TourbusMinigameLogic",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "MinigameSceneFrameProps": [
+      {
+        "name": "MinigameSceneFrameProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "AmpStageOptions": [
+      {
+        "name": "AmpStageOptions",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "StageControllerOptions": [
+      {
+        "name": "StageControllerOptions",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "PixiStageProps": [
+      {
+        "name": "PixiStageProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "ToggleRadioProps": [
+      {
+        "name": "ToggleRadioProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "TutorialManagerProps": [
+      {
+        "name": "TutorialManagerProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "ClinicHeaderProps": [
+      {
+        "name": "ClinicHeaderProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "ClinicMemberCardHeaderProps": [
+      {
+        "name": "ClinicMemberCardHeaderProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "ClinicMemberCardProps": [
+      {
+        "name": "ClinicMemberCardProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "ClinicMemberCardActionProps": [
+      {
+        "name": "ClinicMemberCardActionProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "ActionButtonWrapperProps": [
+      {
+        "name": "ActionButtonWrapperProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "AmpControlsProps": [
+      {
+        "name": "AmpControlsProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "AmpHUDProps": [
+      {
+        "name": "AmpHUDProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "AudioLockedOverlayProps": [
+      {
+        "name": "AudioLockedOverlayProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "BandMembersLayerProps": [
+      {
+        "name": "BandMembersLayerProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "RoadieControlsProps": [
+      {
+        "name": "RoadieControlsProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "RoadieHUDProps": [
+      {
+        "name": "RoadieHUDProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "TourbusControlsProps": [
+      {
+        "name": "TourbusControlsProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "TourbusHUDProps": [
+      {
+        "name": "TourbusHUDProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "TravelingVanProps": [
+      {
+        "name": "TravelingVanProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "CompletePhaseProps": [
+      {
+        "name": "CompletePhaseProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "DealContract": [
+      {
+        "name": "DealContract",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "DealCardProps": [
+      {
+        "name": "DealCardProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "DealImageProps": [
+      {
+        "name": "DealImageProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "DealInfoProps": [
+      {
+        "name": "DealInfoProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "DealActionsProps": [
+      {
+        "name": "DealActionsProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "DealNegotiationState": [
+      {
+        "name": "DealNegotiationState",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "NegotiationResult": [
+      {
+        "name": "NegotiationResult",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "DealNegotiationHook": [
+      {
+        "name": "DealNegotiationHook",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "DealsPhaseProps": [
+      {
+        "name": "DealsPhaseProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "FinancialListProps": [
+      {
+        "name": "FinancialListProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "NegotiationModalProps": [
+      {
+        "name": "NegotiationModalProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "EventModalOption": [
+      {
+        "name": "EventModalOption",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "EventModalEvent": [
+      {
+        "name": "EventModalEvent",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "EventModalPrecomputedResult": [
+      {
+        "name": "EventModalPrecomputedResult",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "FinancialItem": [
+      {
+        "name": "FinancialItem",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "FinancialCategory": [
+      {
+        "name": "FinancialCategory",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "ReportPhaseProps": [
+      {
+        "name": "ReportPhaseProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "Effect": [
+      {
+        "name": "Effect",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "PurchaseItem": [
+      {
+        "name": "PurchaseItem",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "CatalogItem": [
+      {
+        "name": "CatalogItem",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "VoidTraderItem": [
+      {
+        "name": "VoidTraderItem",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "Balances": [
+      {
+        "name": "Balances",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "CatalogConsumerProps": [
+      {
+        "name": "CatalogConsumerProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "CatalogTabProps": [
+      {
+        "name": "CatalogTabProps",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "UnlockMessageKind": [
+      {
+        "name": "UnlockMessageKind",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "UnlockMessage": [
+      {
+        "name": "UnlockMessage",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "VoidCallback": [
+      {
+        "name": "VoidCallback",
+        "path": "src/types/callbacks.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "AsyncCallback": [
+      {
+        "name": "AsyncCallback",
+        "path": "src/types/callbacks.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "AsyncVoidCallback": [
+      {
+        "name": "AsyncVoidCallback",
+        "path": "src/types/callbacks.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "AsyncBooleanCallback": [
+      {
+        "name": "AsyncBooleanCallback",
+        "path": "src/types/callbacks.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "ToggleBooleanCallback": [
+      {
+        "name": "ToggleBooleanCallback",
+        "path": "src/types/callbacks.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "TranslationCallback": [
+      {
+        "name": "TranslationCallback",
+        "path": "src/types/callbacks.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "ToastCallback": [
+      {
+        "name": "ToastCallback",
+        "path": "src/types/callbacks.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "OptionalToastCallback": [
+      {
+        "name": "OptionalToastCallback",
+        "path": "src/types/callbacks.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "CollisionHandler": [
+      {
+        "name": "CollisionHandler",
+        "path": "src/types/callbacks.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "MissHandler": [
+      {
+        "name": "MissHandler",
+        "path": "src/types/callbacks.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "GigFinalizeHandler": [
+      {
+        "name": "GigFinalizeHandler",
+        "path": "src/types/callbacks.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "RemoveByIdCallback": [
+      {
+        "name": "RemoveByIdCallback",
+        "path": "src/types/callbacks.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "FinancialBreakdownItem": [
+      {
+        "name": "FinancialBreakdownItem",
+        "path": "src/types/economy.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "PostGigFinancials": [
+      {
+        "name": "PostGigFinancials",
+        "path": "src/types/economy.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
         "typeOnly": true
       }
     ],
@@ -8493,6 +8431,16 @@
         "isDefault": false
       }
     ],
+    "EngineGameState": [
+      {
+        "name": "EngineGameState",
+        "path": "src/utils/eventEngine.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "typeOnly": true
+      }
+    ],
     "HARMONY_DEATH_SPIRAL_THRESHOLD": [
       {
         "name": "HARMONY_DEATH_SPIRAL_THRESHOLD",
@@ -9698,12 +9646,12 @@
         "isDefault": false
       }
     ],
-    "BrandDeal": [
+    "SocialPostOption": [
       {
-        "name": "BrandDeal",
+        "name": "SocialPostOption",
         "path": "src/utils/socialEngine.ts",
         "source": "local",
-        "type": "type",
+        "type": "interface",
         "isDefault": false,
         "typeOnly": true
       }

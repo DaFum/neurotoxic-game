@@ -28,7 +28,7 @@ export const EventLog = React.memo(({ t, day, locationId }: EventLogProps) => {
     (prev: EventLogEntry[], added: EventLogEntry[]) =>
       added.length > 0 ? [...prev, ...added].slice(-20) : prev,
     undefined,
-    () => [
+    (): EventLogEntry[] => [
       {
         id: ++entryIdRef.current,
         day,

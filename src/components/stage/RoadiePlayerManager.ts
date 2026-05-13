@@ -5,7 +5,7 @@ type RoadieCarriedItem = {
   type: string
 }
 
-type RoadieRenderState = {
+export type RoadieRenderState = {
   playerPos: { x: number; y: number }
   carrying: RoadieCarriedItem | null
   equipmentDamage: number

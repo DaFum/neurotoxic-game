@@ -36,10 +36,17 @@ export const RoadieRunScene = () => {
   const handleMoveRight = useCallback(() => actions.move(1, 0), [actions])
 
   const renderCompletionStats = useCallback(
-    state =>
-      t('ui:roadieRun.completion.equipmentDamage', {
-        damage: Math.max(0, state.currentDamage)
-      }),
+    (state: unknown) => {
+      const currentDamage =
+        state &&
+        typeof state === 'object' &&
+        typeof (state as { currentDamage?: unknown }).currentDamage === 'number'
+          ? (state as { currentDamage: number }).currentDamage
+          : 0
+      return t('ui:roadieRun.completion.equipmentDamage', {
+        damage: Math.max(0, currentDamage)
+      })
+    },
     [t]
   )
 

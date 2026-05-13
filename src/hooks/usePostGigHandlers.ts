@@ -1,5 +1,6 @@
 import type { RhythmSetlistEntry } from '../types/rhythmGame'
 import type {
+  GamePhase,
   GameState,
   PostGigSummary,
   Venue,
@@ -70,11 +71,11 @@ export interface UsePostGigHandlersProps {
   updateSocial: (
     updates:
       | Partial<GameState['social']>
-      | ((prev: GameState['social']) => GameState['social'])
+      | ((prev: GameState['social']) => Partial<GameState['social']>)
   ) => void
   unlockTrait: (memberId: string, traitId: string) => void
   addToast: (message: string, type: 'success' | 'error' | 'info') => void
-  changeScene: (scene: string) => void
+  changeScene: (scene: GamePhase) => void
   addQuest: (
     quest: Parameters<
       typeof import('../context/actionCreators').createAddQuestAction
