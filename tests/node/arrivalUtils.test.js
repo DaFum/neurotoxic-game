@@ -234,6 +234,48 @@ describe('handleNodeArrival', () => {
     })
   })
 
+  test('GIG - resolves legacy venue string before starting gig', () => {
+    const mocks = getMocks()
+    const node = { type: 'GIG', venue: 'venues:stendal_proberaum.name' }
+    const band = { harmony: 50 }
+
+    const result = handleNodeArrival({
+      node,
+      band,
+      ...mocks
+    })
+
+    assert.deepStrictEqual(result, {
+      scene: GAME_PHASES.OVERWORLD,
+      gigStarted: true
+    })
+    assert.strictEqual(mocks.startGig.mock.calls.length, 1)
+    assert.strictEqual(
+      mocks.startGig.mock.calls[0].arguments[0].id,
+      'stendal_proberaum'
+    )
+  })
+
+  test('GIG - rejects unresolved legacy venue string', () => {
+    const mocks = getMocks()
+    const node = { type: 'GIG', venue: 'venues:missing_venue.name' }
+    const band = { harmony: 50 }
+
+    const result = handleNodeArrival({
+      node,
+      band,
+      ...mocks
+    })
+
+    assert.deepStrictEqual(result, {
+      scene: GAME_PHASES.OVERWORLD,
+      gigStarted: false
+    })
+    assert.strictEqual(mocks.startGig.mock.calls.length, 0)
+    assert.strictEqual(mocks.addToast.mock.calls.length, 1)
+    assert.strictEqual(mocks.addToast.mock.calls[0].arguments[1], 'error')
+  })
+
   test('GIG - handles startGig error', () => {
     const mocks = getMocks()
     const node = { type: 'GIG', venue: { name: 'The Club' } }

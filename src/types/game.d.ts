@@ -1,6 +1,7 @@
 import type { ActionTypes, ActionType } from '../context/actionTypes'
 import type { RhythmSetlistEntry } from './rhythmGame'
 import type { GAME_PHASES } from '../context/gameConstants'
+import type { Platform } from './social'
 
 export type GamePhase = (typeof GAME_PHASES)[keyof typeof GAME_PHASES]
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic'
@@ -484,7 +485,7 @@ export type GameAction =
   | Action<ActionTypes['SET_PENDING_BANDHQ_OPEN'], boolean>
 
 export interface PostResult {
-  platform?: string
+  platform?: Platform
   success?: boolean
   followers?: number
   totalFollowers?: number

@@ -2,7 +2,7 @@
 
 ## Workflow
 
-- Use the Superpower skill before any repo action that changes code, tests, tooling, docs, config, git history, or agent instructions.
+- Use the Superpowers skill before any repo action that changes code, tests, tooling, docs, config, git history, or agent instructions.
 - Read only the relevant nested `AGENTS.md` files before editing; nested files add scope rules and override root guidance when more specific.
 
 ## Critical Commands

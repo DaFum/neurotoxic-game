@@ -63,7 +63,8 @@ import {
   createBloodBankDonateAction,
   createAddVenueBlacklistAction,
   createSetPendingBandHQOpenAction,
-  createLoadGameAction
+  createLoadGameAction,
+  toggleNeuroDecimator as createToggleNeuroDecimatorAction
 } from './actionCreators'
 import type {
   BloodBankDonatePayload,
@@ -101,6 +102,9 @@ type GameDispatchActions = {
     updates: Parameters<typeof createUpdatePlayerAction>[0]
   ) => void
   updateBand: (updates: Parameters<typeof createUpdateBandAction>[0]) => void
+  toggleNeuroDecimator: (
+    isActive: Parameters<typeof createToggleNeuroDecimatorAction>[0]
+  ) => void
   updateSocial: (
     updates:
       | Partial<SocialState>
@@ -395,6 +399,12 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
    */
   const updateBand = useCallback(
     (updates: UpdateBandPayload) => dispatch(createUpdateBandAction(updates)),
+    []
+  )
+
+  const toggleNeuroDecimator = useCallback(
+    (isActive: Parameters<typeof createToggleNeuroDecimatorAction>[0]) =>
+      dispatch(createToggleNeuroDecimatorAction(isActive)),
     []
   )
 
@@ -821,6 +831,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       changeScene,
       updatePlayer,
       updateBand,
+      toggleNeuroDecimator,
       updateSocial,
       setGameMap,
       setCurrentGig,
@@ -869,6 +880,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       changeScene,
       updatePlayer,
       updateBand,
+      toggleNeuroDecimator,
       updateSocial,
       setGameMap,
       setCurrentGig,

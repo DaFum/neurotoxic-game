@@ -7,7 +7,7 @@ import type {
   UpdatePlayerPayload,
   PostResult
 } from '../types/game'
-import type { SocialPostOption } from '../utils/socialEngine'
+import type { SocialPostOption } from '../types/social'
 import type { BrandDeal } from '../data/brandDeals'
 import type { PostGigFinancials } from '../types/economy'
 import { useCallback, useRef, useState } from 'react'

@@ -27,13 +27,11 @@ import type {
   UnknownRecord
 } from '../types/game'
 import type { PostGigFinancials } from '../types/economy'
-import type { SocialPostOption } from './socialEngine'
+import type { Platform, SocialPostOption } from '../types/social'
 import type { BrandDeal } from './socialEngine'
 
-type SocialPlatformId = 'instagram' | 'tiktok' | 'youtube' | 'newsletter'
-
 type ResolvedPostResult = PostResult & {
-  platform: SocialPlatformId
+  platform: Platform
   success: boolean
   followers: number
   message: string
@@ -52,7 +50,7 @@ type ResolvedPostResult = PostResult & {
   influencerUpdate?: { id: string; scoreChange: number }
 }
 
-const SOCIAL_PLATFORM_IDS = new Set<SocialPlatformId>([
+const SOCIAL_PLATFORM_IDS = new Set<Platform>([
   'instagram',
   'tiktok',
   'youtube',
@@ -62,9 +60,40 @@ const SOCIAL_PLATFORM_IDS = new Set<SocialPlatformId>([
 const toNumber = (value: unknown, fallback = 0): number =>
   typeof value === 'number' && Number.isFinite(value) ? value : fallback
 
-const isSocialPlatformId = (value: unknown): value is SocialPlatformId =>
-  typeof value === 'string' &&
-  SOCIAL_PLATFORM_IDS.has(value as SocialPlatformId)
+const isSocialPlatformId = (value: unknown): value is Platform =>
+  typeof value === 'string' && SOCIAL_PLATFORM_IDS.has(value as Platform)
+
+const normalizeInfluencerUpdate = (
+  value: unknown
+): ResolvedPostResult['influencerUpdate'] => {
+  if (
+    !value ||
+    typeof value !== 'object' ||
+    !Object.hasOwn(value, 'id') ||
+    !Object.hasOwn(value, 'scoreChange')
+  ) {
+    return undefined
+  }
+
+  const update = value as { id?: unknown; scoreChange?: unknown }
+  if (typeof update.id !== 'string') {
+    return undefined
+  }
+
+  const scoreChange = toNumber(update.scoreChange, Number.NaN)
+  if (!Number.isFinite(scoreChange)) {
+    throw new Error(
+      `Invalid influencerUpdate scoreChange for ${update.id}: ${String(
+        update.scoreChange
+      )}`
+    )
+  }
+
+  return {
+    id: update.id,
+    scoreChange
+  }
+}
 
 const normalizeResolvedPost = (
   raw: Record<string, unknown>
@@ -75,19 +104,7 @@ const normalizeResolvedPost = (
     )
   }
   const platform = raw.platform
-  const influencerUpdate =
-    raw.influencerUpdate &&
-    typeof raw.influencerUpdate === 'object' &&
-    Object.hasOwn(raw.influencerUpdate, 'id') &&
-    Object.hasOwn(raw.influencerUpdate, 'scoreChange') &&
-    typeof (raw.influencerUpdate as { id?: unknown }).id === 'string'
-      ? {
-          id: (raw.influencerUpdate as { id: string }).id,
-          scoreChange: toNumber(
-            (raw.influencerUpdate as { scoreChange?: unknown }).scoreChange
-          )
-        }
-      : undefined
+  const influencerUpdate = normalizeInfluencerUpdate(raw.influencerUpdate)
 
   return {
     ...raw,
@@ -364,7 +381,8 @@ export const calculatePostGigStateUpdates = (
       if (Object.hasOwn(SOCIAL_PLATFORMS, key)) {
         const platformConfig =
           SOCIAL_PLATFORMS[key as keyof typeof SOCIAL_PLATFORMS]
-        const platformId = platformConfig.id as SocialPlatformId
+        const platformId = platformConfig.id
+        if (!isSocialPlatformId(platformId)) continue
 
         // Do not cross-post to the platform that triggered the update,
         // and do not cross-post to the newsletter, which is treated differently.

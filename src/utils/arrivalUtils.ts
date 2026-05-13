@@ -11,16 +11,33 @@ import {
 } from './gameStateUtils'
 import { secureRandom } from './crypto'
 import i18n from '../i18n'
+import { normalizeVenueId } from './mapUtils'
+import { VENUES_BY_ID } from '../data/venues'
 import type { BandState, MapNode, PlayerState, Venue } from '../types/game'
 
-type ArrivalNode = Partial<MapNode> & {
+type ArrivalNode = Omit<Partial<MapNode>, 'type' | 'venue'> & {
   type: string
-  venue?: Venue
+  venue?: unknown
 }
 
 type GigArrivalNode = ArrivalNode & {
   type: 'GIG' | 'FESTIVAL' | 'FINALE'
-  venue: Venue
+}
+
+const isArrivalVenueObject = (value: unknown): value is Venue => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false
+  return typeof (value as { name?: unknown }).name === 'string'
+}
+
+const resolveArrivalVenue = (node: ArrivalNode): Venue | null => {
+  if (isArrivalVenueObject(node.venue)) return node.venue
+
+  const venueId =
+    normalizeVenueId(node.venue) ??
+    (typeof node.venueId === 'string' ? normalizeVenueId(node.venueId) : null)
+  if (!venueId) return null
+
+  return VENUES_BY_ID.get(venueId) ?? null
 }
 
 export type ArrivalResult = {
@@ -207,8 +224,14 @@ export const handleNodeArrival = (
         return { scene: GAME_PHASES.OVERWORLD, gigStarted: false }
       }
 
-      const venue = node.venue
+      const venue = resolveArrivalVenue(node)
       if (!venue) {
+        addToast(
+          i18n.t('ui:errors.invalidVenueData', {
+            defaultValue: 'Invalid venue data.'
+          }),
+          'error'
+        )
         return { scene: GAME_PHASES.OVERWORLD, gigStarted: false }
       }
 

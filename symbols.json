@@ -6053,6 +6053,39 @@
         "typeOnly": true
       }
     ],
+    "Platform": [
+      {
+        "name": "Platform",
+        "path": "src/types/social.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "SocialEngineGameState": [
+      {
+        "name": "SocialEngineGameState",
+        "path": "src/types/social.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "SocialPostOption": [
+      {
+        "name": "SocialPostOption",
+        "path": "src/types/social.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
     "BandHQProps": [
       {
         "name": "BandHQProps",
@@ -9688,16 +9721,6 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      }
-    ],
-    "SocialPostOption": [
-      {
-        "name": "SocialPostOption",
-        "path": "src/utils/socialEngine.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "calculateViralityScore": [

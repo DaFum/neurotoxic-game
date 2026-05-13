@@ -53,7 +53,13 @@ const getValidatedVenueChatterLine = (
 
 type ChatterState = Pick<
   GameState,
-  'gameMap' | 'player' | 'currentScene' | 'band' | 'social' | 'gigModifiers'
+  | 'gameMap'
+  | 'player'
+  | 'currentScene'
+  | 'band'
+  | 'social'
+  | 'gigModifiers'
+  | 'lastGigStats'
 >
 
 export const getRandomChatter = (state: ChatterState) => {

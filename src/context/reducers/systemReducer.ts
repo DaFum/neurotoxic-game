@@ -11,7 +11,8 @@ import type {
   GamePhase,
   GameSettings,
   RawGameSettings,
-  ResetStatePayload
+  ResetStatePayload,
+  MapNodeType
 } from '../../types/game'
 import { logger } from '../../utils/logger'
 import {
@@ -60,6 +61,57 @@ export const ALLOWED_SCENES = new Set([
   GAME_PHASES.GAMEOVER,
   GAME_PHASES.CLINIC
 ])
+
+const ALLOWED_MAP_NODE_TYPES = new Set<MapNodeType>([
+  'START',
+  'GIG',
+  'SPECIAL',
+  'REST_STOP',
+  'FESTIVAL',
+  'FINALE',
+  'CITY',
+  'REST'
+])
+
+const isMapNodeType = (value: unknown): value is MapNodeType =>
+  typeof value === 'string' && ALLOWED_MAP_NODE_TYPES.has(value as MapNodeType)
+
+const inferLoadedMapNodeLayer = (
+  nodeRecord: Record<string, unknown>,
+  id: string
+): number => {
+  if (
+    typeof nodeRecord.layer === 'number' &&
+    Number.isFinite(nodeRecord.layer)
+  ) {
+    return nodeRecord.layer
+  }
+
+  const layerMatch = /^node_(\d+)_/.exec(id)
+  const rawLayer = layerMatch?.[1]
+  if (rawLayer !== undefined) {
+    const parsedLayer = Number(rawLayer)
+    if (Number.isFinite(parsedLayer)) return parsedLayer
+  }
+
+  return 0
+}
+
+const inferLoadedMapNodeType = (
+  nodeRecord: Record<string, unknown>,
+  id: string
+): MapNodeType => {
+  if (isMapNodeType(nodeRecord.type)) return nodeRecord.type
+  if (id === 'start' || id === 'node_0_0') return 'START'
+  if (
+    typeof nodeRecord.venueId === 'string' ||
+    typeof nodeRecord.venue === 'string' ||
+    isPlainObject(nodeRecord.venue)
+  ) {
+    return 'GIG'
+  }
+  return 'SPECIAL'
+}
 
 const finiteNumberOr = (value: unknown, fallback: number): number =>
   typeof value === 'number' && Number.isFinite(value) ? value : fallback
@@ -284,18 +336,14 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
         ? nodeRecord.id
         : nodeKey
     if (isForbiddenKey(id)) continue
-    const sanitizedNode: Partial<GameMap['nodes'][string]> = {
+    const sanitizedNode: GameMap['nodes'][string] = {
       id,
       x,
-      y
+      y,
+      layer: inferLoadedMapNodeLayer(nodeRecord, id),
+      type: inferLoadedMapNodeType(nodeRecord, id)
     }
 
-    if (
-      typeof nodeRecord.layer === 'number' &&
-      Number.isFinite(nodeRecord.layer)
-    ) {
-      sanitizedNode.layer = nodeRecord.layer
-    }
     if (typeof nodeRecord.venueId === 'string') {
       sanitizedNode.venueId = nodeRecord.venueId
     }
@@ -317,6 +365,7 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
         key === 'x' ||
         key === 'y' ||
         key === 'layer' ||
+        key === 'type' ||
         key === 'venueId' ||
         key === 'neighbors'
       ) {
@@ -343,7 +392,7 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
       }
     }
 
-    sanitizedNodes[id] = sanitizedNode as GameMap['nodes'][string]
+    sanitizedNodes[id] = sanitizedNode
   }
 
   const sanitizedConnections: Array<{ from: string; to: string }> = []

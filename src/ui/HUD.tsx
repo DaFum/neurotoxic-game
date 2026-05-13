@@ -1,5 +1,5 @@
 import { useState, useEffect, memo } from 'react'
-import { useGameSelector, useGameActions } from '../context/GameState'
+import { useGameSelector, useGameDispatch } from '../context/GameState'
 import { audioManager } from '../utils/audio/audioEngine'
 import { useTranslation } from 'react-i18next'
 import {
@@ -38,7 +38,7 @@ const SHORTCUTS = [
 export const HUD = memo(() => {
   const player = useGameSelector(state => state.player)
   const band = useGameSelector(state => state.band)
-  const { updateBand } = useGameActions()
+  const { toggleNeuroDecimator } = useGameDispatch()
   const { t } = useTranslation(['ui', 'venues'])
   const locationName = translateLocation(t, player.location, player.location)
   const [showHelp, setShowHelp] = useState(false)
@@ -245,7 +245,7 @@ export const HUD = memo(() => {
           <button
             onClick={() => {
               const nextState = !band.neuroDecimatorActive
-              updateBand({ neuroDecimatorActive: nextState })
+              toggleNeuroDecimator(nextState)
               audioManager.setNeuroDecimator(nextState)
             }}
             type='button'

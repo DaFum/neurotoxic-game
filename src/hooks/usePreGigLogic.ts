@@ -64,36 +64,36 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     () => [
       {
         key: 'soundcheck',
-        label: t('ui:pregig.modifiers.soundcheck.label'),
+        label: typedT('ui:pregig.modifiers.soundcheck.label'),
         cost: MODIFIER_COSTS.soundcheck,
-        desc: t('ui:pregig.modifiers.soundcheck.desc')
+        desc: typedT('ui:pregig.modifiers.soundcheck.desc')
       },
       {
         key: 'promo',
-        label: t('ui:pregig.modifiers.promo.label'),
+        label: typedT('ui:pregig.modifiers.promo.label'),
         cost: MODIFIER_COSTS.promo,
-        desc: t('ui:pregig.modifiers.promo.desc')
+        desc: typedT('ui:pregig.modifiers.promo.desc')
       },
       {
         key: 'merch',
-        label: t('ui:pregig.modifiers.merch.label'),
+        label: typedT('ui:pregig.modifiers.merch.label'),
         cost: MODIFIER_COSTS.merch,
-        desc: t('ui:pregig.modifiers.merch.desc')
+        desc: typedT('ui:pregig.modifiers.merch.desc')
       },
       {
         key: 'catering',
-        label: t('ui:pregig.modifiers.catering.label'),
+        label: typedT('ui:pregig.modifiers.catering.label'),
         cost: MODIFIER_COSTS.catering,
-        desc: t('ui:pregig.modifiers.catering.desc')
+        desc: typedT('ui:pregig.modifiers.catering.desc')
       },
       {
         key: 'guestlist',
-        label: t('ui:pregig.modifiers.guestlist.label'),
+        label: typedT('ui:pregig.modifiers.guestlist.label'),
         cost: MODIFIER_COSTS.guestlist,
-        desc: t('ui:pregig.modifiers.guestlist.desc')
+        desc: typedT('ui:pregig.modifiers.guestlist.desc')
       }
     ],
-    [t]
+    [typedT]
   )
 
   const {
@@ -122,7 +122,9 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
   const selectedSongIds = useMemo(() => {
     const ids = new Set<string>()
     for (let i = 0; i < setlist.length; i++) {
-      const id = getSongId(setlist[i])
+      const item = setlist[i]
+      if (!item) continue
+      const id = getSongId(item)
       if (id) ids.add(id)
     }
     return ids
@@ -213,14 +215,21 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
       if (!isActive) {
         const projectedTotal = calculatedBudget + cost
         if (projectedTotal > player.money) {
-          addToast(t('ui:pregig.toasts.noMoneyUpgrade'), 'error')
+          addToast(typedT('ui:pregig.toasts.noMoneyUpgrade'), 'error')
           return
         }
       }
 
       setGigModifiers({ [key]: !isActive })
     },
-    [gigModifiers, calculatedBudget, player.money, addToast, setGigModifiers, t]
+    [
+      gigModifiers,
+      calculatedBudget,
+      player.money,
+      addToast,
+      setGigModifiers,
+      typedT
+    ]
   )
 
   const handleStartShow = useCallback(async () => {

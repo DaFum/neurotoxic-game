@@ -167,7 +167,6 @@ export const usePostGigLogic = () => {
       setPostResult({
         type: 'ERROR',
         success: false,
-        platform: 'none',
         totalFollowers: 0,
         followers: 0,
         moneyChange: 0,

@@ -47,12 +47,15 @@ export const playBandMemberAnimation = (
   if (!memberEl) return null
 
   let anim = existingAnim
+  const effectTarget =
+    typeof KeyframeEffect !== 'undefined' &&
+    anim?.effect instanceof KeyframeEffect
+      ? anim.effect.target
+      : anim?.effect && typeof anim.effect === 'object'
+        ? (anim.effect as { target?: unknown }).target
+        : undefined
   // Reuse existing animation if valid and attached to same element
-  if (
-    anim &&
-    anim.effect instanceof KeyframeEffect &&
-    anim.effect.target === memberEl
-  ) {
+  if (anim && effectTarget === memberEl) {
     anim.cancel()
     anim.play()
   } else {

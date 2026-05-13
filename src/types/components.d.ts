@@ -9,7 +9,7 @@ import type {
 import type { RemoveByIdCallback, TranslationCallback } from './callbacks'
 import type { RefObject, MutableRefObject } from 'react'
 import type * as React from 'react'
-import type { SocialPostOption } from '../utils/socialEngine'
+import type { Platform, SocialPostOption } from './social'
 import type { BrandDeal } from '../data/brandDeals'
 export type { AudioState, AudioControls } from './audio'
 
@@ -95,7 +95,7 @@ export interface ChatterMessageProps {
 export interface SocialOption extends EventOption, SocialPostOption {
   id: string
   name?: string
-  platform?: string
+  platform?: Platform
   category?: string
   badges?: string[]
 }
