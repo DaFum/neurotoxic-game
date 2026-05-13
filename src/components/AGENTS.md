@@ -7,7 +7,7 @@ Applies to `src/components/**` unless a deeper `AGENTS.md` overrides it.
 ## UI Rules
 
 - User-facing text must use namespaced i18n keys and keep EN/DE locale JSON in sync.
-- Use CSS variables for colors; do not introduce literal color values.
+- Use strict Tailwind v4 syntax for styling. Do not use custom CSS variables within arbitrary values.
 - React 19 refs are normal props. Do not add `React.forwardRef()`.
 - Include `t` in callback/effect dependency arrays when used inside that scope.
 
