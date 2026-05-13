@@ -22,6 +22,7 @@ import {
   createSetGigModifiersAction,
   createLoadGameAction,
   createResetStateAction,
+  createBanterAction,
   createApplyEventDeltaAction,
   createPopPendingEventAction,
   createConsumeItemAction,
@@ -46,6 +47,39 @@ import {
 import { ActionTypes } from '../../src/context/gameReducer'
 
 describe('Action Creators', () => {
+
+  describe('createBanterAction', () => {
+    it('creates an APPLY_EVENT_DELTA action with clamped relationship change', () => {
+      const action = createBanterAction('Marius', 'Matze', 50, -10)
+      assert.deepEqual(action, {
+        type: ActionTypes.APPLY_EVENT_DELTA,
+        payload: {
+          band: {
+            relationshipChange: [{
+              member1: 'Marius',
+              member2: 'Matze',
+              change: -10,
+              source: 'banter',
+              timestamp: action.payload.band.relationshipChange[0].timestamp
+            }]
+          }
+        }
+      })
+      assert.ok(action.payload.band.relationshipChange[0].timestamp > 0)
+    })
+
+    it('clamps resulting relationship value', () => {
+      const action = createBanterAction('Marius', 'Matze', 90, 50)
+      assert.equal(action.payload.band.relationshipChange[0].change, 10)
+    })
+
+    it('throws an error for self-relationship banter', () => {
+      assert.throws(() => {
+        createBanterAction('Marius', 'Marius', 50, 10)
+      }, /Self-relationship banter is not allowed/)
+    })
+  })
+
   // Hoisted fixtures reused across table entries
   const _healPayload = {
     memberId: 'matze',

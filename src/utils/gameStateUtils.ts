@@ -234,7 +234,25 @@ export const RELATIONSHIP_MAX_SCORE = 100
  * @param {number} harmony - Candidate harmony value.
  * @returns {number} Clamped harmony value in range [1, 100].
  */
+export const clampRelationship = (score: number): number => {
+  if (!Number.isFinite(score)) return RELATIONSHIP_DEFAULT_SCORE
+  return Math.max(RELATIONSHIP_MIN_SCORE, Math.min(RELATIONSHIP_MAX_SCORE, Math.round(score)))
+}
+
+/**
+ * Clamps band harmony to the canonical gameplay range.
+ *
+ * @param {number} harmony - Candidate harmony value.
+ * @returns {number} Clamped harmony value in range [1, 100].
+ */
 export const clampBandHarmony = (harmony: number): number => {
+  if (!Number.isFinite(harmony)) return 1
+  const safeHarmony = Math.floor(harmony)
+  return Math.max(1, Math.min(100, safeHarmony))
+}
+
+/**
+ * Clamps band harmony = (harmony: number): number => {
   if (!Number.isFinite(harmony)) return 1
   const safeHarmony = Math.floor(harmony)
   return Math.max(1, Math.min(100, safeHarmony))
@@ -380,6 +398,8 @@ type RelationshipChange = {
   member1: string
   member2: string
   change: number
+  source?: string
+  timestamp?: number
 }
 
 type MemberDelta = FilteredRecord & {
@@ -812,10 +832,7 @@ const calculateMemberRelationshipChange = (
   }
 
   const currentScore = currentRelationships[other] ?? RELATIONSHIP_DEFAULT_SCORE
-  const newScore = Math.max(
-    RELATIONSHIP_MIN_SCORE,
-    Math.min(RELATIONSHIP_MAX_SCORE, Math.round(currentScore + amount))
-  )
+  const newScore = clampRelationship(currentScore + amount)
 
   return { other, newScore }
 }
@@ -913,7 +930,7 @@ export const applyEventDelta = (
     const isNotSelfRelationship = (rc: RelationshipChange) =>
       rc.member1 !== rc.member2
 
-    const relationshipChange = Array.isArray(delta.band.relationshipChange)
+const relationshipChange = Array.isArray(delta.band.relationshipChange)
       ? delta.band.relationshipChange.filter(
           rc =>
             isRelationshipChange(rc) &&
@@ -925,6 +942,23 @@ export const applyEventDelta = (
           )
         ? [delta.band.relationshipChange]
         : []
+
+    if (relationshipChange.length > 0) {
+      for (let i = 0; i < relationshipChange.length; i++) {
+        const rc = relationshipChange[i] as RelationshipChange
+        if (rc.source === 'banter') {
+          nextBand.banterEvents = [
+            ...(nextBand.banterEvents || []),
+            {
+              member1: rc.member1,
+              member2: rc.member2,
+              delta: rc.change,
+              timestamp: rc.timestamp || Date.now()
+            }
+          ]
+        }
+      }
+    }
     const skillDelta = delta.band.skill
 
     if (
