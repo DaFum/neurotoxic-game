@@ -399,6 +399,7 @@ export interface GameState {
   minigame: MinigameState
   unlocks: string[]
   pendingBandHQOpen: boolean
+  completedMilestones: string[]
 }
 
 export type RawLoadedGame = UnknownRecord
