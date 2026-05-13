@@ -8,7 +8,7 @@ Applies to `src/components/stage/**`.
 
 - Stage gameplay timing must use `audioEngine.getGigTimeMs()`.
 - End-of-song logic uses `setlistCompleted` and `isNearTrackEnd`; do not reintroduce `audioPlaybackEnded`.
-- Agents must not use `audioPlaybackEnded`, perform low-level audio decoding, or alter setlist flow.
+- Do not perform low-level audio decoding or alter setlist flow.
 - Keep shared audio and rhythm contracts imported from `src/types/**`.
 
 ## Gotchas

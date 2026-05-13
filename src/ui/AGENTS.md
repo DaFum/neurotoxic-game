@@ -7,7 +7,7 @@ Applies to `src/ui/**` unless a deeper `AGENTS.md` overrides it.
 ## Rules
 
 - Use i18n keys for visible UI text and update EN/DE together.
-- Use strict Tailwind v4 syntax for styling. Do not use custom CSS variables within arbitrary values.
+- Use CSS variables for colors and Tailwind v4 token syntax for non-color tokens.
 - Design UI extensions with `contentClassName` forwarding to ensure compliance with Brutalist flexbox layouts.
 - Keep shared UI contracts imported from `src/types/**`; do not create component-local type clones.
 - Include `t` in dependencies for callbacks/effects that use it.
