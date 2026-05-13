@@ -10,6 +10,7 @@ Applies to `api/**`.
 - Treat request bodies and query params as `unknown` at route boundaries; narrow with explicit validators before use.
 - Use concrete response interfaces or `Record<string, unknown>` with narrowing. Do not widen handler data to `Record<string, any>`.
 - Keep API error bodies stable in the `{ error: string }` style so node/UI suites can assert deterministic failure paths.
+- The project uses a `TRUST_PROXY` environment variable to gate the use of `X-Forwarded-For` and `X-Real-IP` headers. When enabled, it prioritizes `X-Real-IP` or the last IP in the `X-Forwarded-For` chain. By default, only `req.socket.remoteAddress` is used.
 
 ## Gotchas
 
