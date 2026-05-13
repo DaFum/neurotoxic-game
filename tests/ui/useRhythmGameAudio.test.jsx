@@ -15,7 +15,12 @@ const mocks = vi.hoisted(() => ({
   })),
   resolveActiveSetlist: vi.fn(() => [{ id: 'song_1', name: 'Song 1' }]),
   playSongSequence: vi.fn(async () => {}),
-  resetGigStateTracking: vi.fn()
+  resetGigStateTracking: vi.fn(),
+  musicVolume: 0.5,
+  sfxVolume: 0.5,
+  muted: false,
+  isPlaying: false,
+  currentSongId: null
 }))
 
 vi.mock('../../src/utils/audio/audioEngine', () => ({
@@ -24,6 +29,21 @@ vi.mock('../../src/utils/audio/audioEngine', () => ({
     ensureAudioContext: mocks.ensureAudioContext
   },
   audioService: {
+    get musicVolume() {
+      return mocks.musicVolume
+    },
+    get sfxVolume() {
+      return mocks.sfxVolume
+    },
+    get muted() {
+      return mocks.muted
+    },
+    get isPlaying() {
+      return mocks.isPlaying
+    },
+    get currentSongId() {
+      return mocks.currentSongId
+    },
     stopMusic: mocks.stopMusic,
     ensureAudioContext: mocks.ensureAudioContext
   },

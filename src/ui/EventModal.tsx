@@ -35,7 +35,7 @@ export const EventModal = ({
 }: {
   event: EventModalEvent | null
   onOptionSelect: (
-    _option: EventModalOption & {
+    option: EventModalOption & {
       _precomputedResult?: EventModalPrecomputedResult
     }
   ) => void

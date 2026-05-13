@@ -4581,7 +4581,7 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true,
-        "exportPath": "src/types/components.d.ts"
+        "exportPath": "src/types/index.ts"
       }
     ],
     "AudioSnapshot": [
@@ -4636,7 +4636,7 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true,
-        "exportPath": "src/types/components.d.ts"
+        "exportPath": "src/types/index.ts"
       }
     ],
     "AudioControlHandlers": [
@@ -9315,15 +9315,6 @@
       {
         "name": "calculateContinueStats",
         "path": "src/utils/postGigUtils.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      }
-    ],
-    "useKabelsalatVoidSurge": [
-      {
-        "name": "useKabelsalatVoidSurge",
-        "path": "src/scenes/kabelsalat/hooks/useKabelsalatVoidSurge.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
