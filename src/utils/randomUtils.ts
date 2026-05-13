@@ -1,9 +1,16 @@
 import { secureRandom } from './crypto'
 
+const assertDenseArray = <T>(arr: T[]): void => {
+  for (let i = 0; i < arr.length; i++) {
+    if (!Object.hasOwn(arr, i)) {
+      throw new Error('Input array cannot be sparse')
+    }
+  }
+}
+
 /**
  * Returns a random subset of an array of a specific size.
- * Uses a partial Fisher-Yates shuffle to only shuffle the required number of elements,
- * resulting in O(count) time complexity rather than O(N).
+ * Validates sparse arrays up front, then uses optimized Fisher-Yates selection paths.
  *
  * @param {Array} arr - The array to sample from.
  * @param {number} count - The number of items to pick.
@@ -23,6 +30,8 @@ export const pickRandomSubset = <T>(
   const k = Math.min(countInt, n)
 
   if (k <= 0) return []
+
+  assertDenseArray(arr)
 
   // Fast-path: pick 1 element without array copy
   if (k === 1) {
@@ -55,12 +64,6 @@ export const pickRandomSubset = <T>(
       swaps.set(j, valTarget)
     }
     return result
-  }
-
-  for (let i = 0; i < n; i++) {
-    if (!Object.hasOwn(arr, i)) {
-      throw new Error('Input array cannot be sparse')
-    }
   }
 
   // Create a copy so we don't mutate the original array

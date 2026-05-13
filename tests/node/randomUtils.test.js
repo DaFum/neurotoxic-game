@@ -189,4 +189,17 @@ test('pickRandomSubset', async t => {
       /Input array cannot be sparse/
     )
   })
+
+  await t.test(
+    'rejects sparse arrays before the sparse Fisher-Yates path can read a hole',
+    () => {
+      const input = Array.from({ length: 20 }, (_, index) => index + 1)
+      delete input[0]
+
+      assert.throws(
+        () => pickRandomSubset(input, 4, () => 0),
+        /Input array cannot be sparse/
+      )
+    }
+  )
 })

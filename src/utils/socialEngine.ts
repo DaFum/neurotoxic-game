@@ -31,14 +31,6 @@ type AllowedTrend = (typeof ALLOWED_TRENDS)[number]
 type RandomFn = () => number
 export type BrandDeal =
   typeof BRAND_DEALS_BY_ID extends Map<string, infer Deal> ? Deal : never
-type NegotiableBrandDeal = Omit<BrandDeal, 'offer'> & {
-  offer: {
-    upfront: number
-    duration: number
-    perGig?: number
-    [key: string]: unknown
-  }
-}
 
 interface SocialEngineGameState {
   player: {
@@ -802,14 +794,14 @@ export const generateBrandOffers = (
  * @param {Function} rng - Random number generator.
  * @returns {object} { success: boolean, deal: object, feedback: string, status: 'ACCEPTED'|'REVOKED'|'FAILED' }
  */
-export const negotiateDeal = (
-  deal: BrandDeal,
+export const negotiateDeal = <TDeal extends BrandDeal>(
+  deal: TDeal,
   strategy: 'AGGRESSIVE' | 'PERSUASIVE' | 'SAFE',
   gameState: SocialEngineGameState,
   rng: RandomFn = secureRandom
 ): {
   success: boolean
-  deal: BrandDeal | null
+  deal: TDeal | null
   feedback: string
   status: 'ACCEPTED' | 'REVOKED' | 'FAILED'
 } => {
@@ -828,7 +820,7 @@ export const negotiateDeal = (
 
   // Optimization: structuredClone is slow for hot paths. Manual shallow copy
   // with nested offer copy is ~98% faster.
-  const newDeal: NegotiableBrandDeal = {
+  const newDeal: TDeal = {
     ...deal,
     offer: { ...deal.offer }
   }
@@ -899,7 +891,7 @@ export const negotiateDeal = (
 
   return {
     success: isSuccess,
-    deal: status === 'REVOKED' ? null : (newDeal as unknown as BrandDeal),
+    deal: status === 'REVOKED' ? null : newDeal,
     feedback,
     status
   }

@@ -91,7 +91,12 @@ const TRAVEL_ANIMATION_TIMEOUT_MS = 1510
 const isVenue = (value: unknown): value is Venue => {
   if (!value || typeof value !== 'object') return false
   const venue = value as { id?: unknown; name?: unknown }
-  return typeof venue.id === 'string' && typeof venue.name === 'string'
+  return (
+    Object.hasOwn(value, 'id') &&
+    Object.hasOwn(value, 'name') &&
+    typeof venue.id === 'string' &&
+    typeof venue.name === 'string'
+  )
 }
 
 /**
