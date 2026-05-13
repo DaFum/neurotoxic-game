@@ -314,6 +314,22 @@ const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
 export const isForbiddenKey = (key: string): boolean => FORBIDDEN_KEYS.has(key)
 
 /**
+ * Optimized check for forbidden keys in an object.
+ * Avoids `Object.keys(obj).some(isForbiddenKey)` which allocates an array.
+ *
+ * @param {object} obj - The object to check
+ * @returns {boolean} True if the object has any forbidden keys
+ */
+export const hasForbiddenKeys = (obj: Record<string, unknown>): boolean => {
+  for (const key in obj) {
+    if (Object.hasOwn(obj, key) && isForbiddenKey(key)) {
+      return true
+    }
+  }
+  return false
+}
+
+/**
  * A secure wrapper around JSON.parse that uses a reviver to strip out
  * potentially dangerous keys associated with prototype pollution.
  *
