@@ -72,7 +72,7 @@ export const createUpdatePlayerAction = (
     if (Object.hasOwn(safeUpdates, 'money')) {
       const moneyValue = (safeUpdates as { money?: unknown }).money
       if (typeof moneyValue === 'number' && Number.isFinite(moneyValue)) {
-        safeUpdates.money = clampPlayerMoney(moneyValue)
+        safeUpdates.money = Math.max(0, clampPlayerMoney(moneyValue))
       } else {
         delete safeUpdates.money
       }
@@ -117,7 +117,7 @@ export const createUpdateBandAction = (
     if (Object.hasOwn(safeUpdates, 'harmony')) {
       const harmonyValue = (safeUpdates as { harmony?: unknown }).harmony
       if (typeof harmonyValue === 'number' && Number.isFinite(harmonyValue)) {
-        safeUpdates.harmony = clampBandHarmony(harmonyValue)
+        safeUpdates.harmony = Math.max(1, Math.min(100, clampBandHarmony(harmonyValue)))
       } else {
         delete (safeUpdates as { harmony?: unknown }).harmony
       }
