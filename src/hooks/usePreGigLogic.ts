@@ -143,14 +143,14 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
   const handleBandMeeting = useCallback(() => {
     const cost = BAND_MEETING_COST
     if (player.money < cost) {
-      addToast(t('ui:pregig.toasts.noMoneySnacks'), 'error')
+      addToast(typedT('ui:pregig.toasts.noMoneySnacks'), 'error')
       return
     }
 
     const prevHarmony = band.harmony ?? 1
     if (prevHarmony >= 100) {
       addToast(
-        t('ui:pregig.toasts.meetingHeldMax', {
+        typedT('ui:pregig.toasts.meetingHeldMax', {
           defaultValue: 'Harmony already maxed out.'
         }),
         'info'
@@ -165,10 +165,10 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     updateBand({ harmony: newHarmony })
 
     addToast(
-      t('ui:pregig.toasts.meetingHeld', { amount: appliedDelta }),
+      typedT('ui:pregig.toasts.meetingHeld', { amount: appliedDelta }),
       'success'
     )
-  }, [player.money, addToast, t, updatePlayer, band.harmony, updateBand])
+  }, [player.money, addToast, typedT, updatePlayer, band.harmony, updateBand])
 
   const hasRunRef = useRef(false)
   useEffect(() => {

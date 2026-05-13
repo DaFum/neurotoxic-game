@@ -161,7 +161,7 @@ export const calculatePostGigStateUpdates = (
       {
         accuracy: lastGigStats.accuracy ?? 0,
         maxCombo: lastGigStats.maxCombo ?? lastGigStats.combo ?? 0,
-        score: lastGigStats.score
+        score: lastGigStats.score ?? 0
       },
       {
         context: {

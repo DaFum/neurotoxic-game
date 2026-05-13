@@ -68,7 +68,6 @@ interface SocialEngineGameState {
     [key: string]: unknown
   }
   currentGig?: { id?: string; [key: string]: unknown } | null
-  [key: string]: unknown
 }
 
 export interface SocialPostOption {

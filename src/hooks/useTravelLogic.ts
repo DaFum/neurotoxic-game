@@ -88,6 +88,12 @@ type TravelLogicParams = {
  */
 const TRAVEL_ANIMATION_TIMEOUT_MS = 1510
 
+const isVenue = (value: unknown): value is Venue => {
+  if (!value || typeof value !== 'object') return false
+  const venue = value as { id?: unknown; name?: unknown }
+  return typeof venue.id === 'string' && typeof venue.name === 'string'
+}
+
 /**
  * Custom hook for managing travel state and logic
  * @param {Object} params - Hook parameters
@@ -531,10 +537,7 @@ export const useTravelLogic = ({
           const resolvedVenue = resolveVenue(node.venue, venueId, VENUES_BY_ID)
           const processedNode = {
             ...node,
-            venue:
-              resolvedVenue && typeof resolvedVenue.id === 'string'
-                ? (resolvedVenue as Venue)
-                : node.venue
+            venue: isVenue(resolvedVenue) ? resolvedVenue : node.venue
           }
           handleNodeArrivalCallback(processedNode, false)
         } else if (node.type === 'START') {

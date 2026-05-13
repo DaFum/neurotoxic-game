@@ -398,7 +398,6 @@ export interface GameState {
   minigame: MinigameState
   unlocks: string[]
   pendingBandHQOpen: boolean
-  [key: string]: unknown
 }
 
 export type RawLoadedGame = UnknownRecord
