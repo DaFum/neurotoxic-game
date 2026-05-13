@@ -24,6 +24,21 @@ vi.mock('../../src/utils/audio/audioEngine', () => ({
     ensureAudioContext: mocks.ensureAudioContext
   },
   audioService: {
+    get musicVolume() {
+      return mocks.musicVolume
+    },
+    get sfxVolume() {
+      return mocks.sfxVolume
+    },
+    get muted() {
+      return mocks.muted
+    },
+    get isPlaying() {
+      return mocks.isPlaying
+    },
+    get currentSongId() {
+      return mocks.currentSongId
+    },
     stopMusic: mocks.stopMusic,
     ensureAudioContext: mocks.ensureAudioContext
   },
