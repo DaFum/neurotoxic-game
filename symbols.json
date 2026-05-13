@@ -2395,24 +2395,6 @@
         "isDefault": false
       }
     ],
-    "BrandDeal": [
-      {
-        "name": "BrandDeal",
-        "path": "src/data/brandDeals.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
-      },
-      {
-        "name": "BrandDeal",
-        "path": "src/utils/socialEngine.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
-      }
-    ],
     "CHARACTERS": [
       {
         "name": "CHARACTERS",
@@ -5591,17 +5573,6 @@
         "typeOnly": true
       }
     ],
-    "DealContract": [
-      {
-        "name": "DealContract",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "exportPath": "src/types/index.ts",
-        "typeOnly": true
-      }
-    ],
     "DealCardProps": [
       {
         "name": "DealCardProps",
@@ -5792,6 +5763,17 @@
     "CatalogEffect": [
       {
         "name": "CatalogEffect",
+        "path": "src/types/components.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "CatalogInputEffect": [
+      {
+        "name": "CatalogInputEffect",
         "path": "src/types/components.d.ts",
         "source": "local",
         "type": "type",
@@ -6059,6 +6041,39 @@
         "path": "src/types/social.d.ts",
         "source": "local",
         "type": "type",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "BrandDealRequirements": [
+      {
+        "name": "BrandDealRequirements",
+        "path": "src/types/social.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "BrandDealOffer": [
+      {
+        "name": "BrandDealOffer",
+        "path": "src/types/social.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
+      }
+    ],
+    "BrandDeal": [
+      {
+        "name": "BrandDeal",
+        "path": "src/types/social.d.ts",
+        "source": "local",
+        "type": "interface",
         "isDefault": false,
         "exportPath": "src/types/index.ts",
         "typeOnly": true
