@@ -4518,6 +4518,61 @@
         "isDefault": false
       }
     ],
+    "NoteType": [
+      {
+        "name": "NoteType",
+        "path": "src/types/audio.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "typeOnly": true,
+        "exportPath": "src/types/index.ts"
+      }
+    ],
+    "Note": [
+      {
+        "name": "Note",
+        "path": "src/types/audio.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "typeOnly": true,
+        "exportPath": "src/types/index.ts"
+      }
+    ],
+    "Song": [
+      {
+        "name": "Song",
+        "path": "src/types/audio.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "typeOnly": true,
+        "exportPath": "src/types/index.ts"
+      }
+    ],
+    "LayeredSnare": [
+      {
+        "name": "LayeredSnare",
+        "path": "src/types/audio.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "typeOnly": true,
+        "exportPath": "src/types/index.ts"
+      }
+    ],
+    "DrumKitSynth": [
+      {
+        "name": "DrumKitSynth",
+        "path": "src/types/audio.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "typeOnly": true,
+        "exportPath": "src/types/index.ts"
+      }
+    ],
     "AudioState": [
       {
         "name": "AudioState",
@@ -9912,6 +9967,430 @@
         "source": "local",
         "type": "const",
         "isDefault": false
+      }
+    ],
+    "React": [
+      {
+        "name": "React",
+        "module": "react",
+        "isDefault": true,
+        "source": "external"
+      }
+    ],
+    "useState": [
+      {
+        "name": "useState",
+        "module": "react",
+        "isDefault": false,
+        "source": "external"
+      }
+    ],
+    "useEffect": [
+      {
+        "name": "useEffect",
+        "module": "react",
+        "isDefault": false,
+        "source": "external"
+      }
+    ],
+    "useRef": [
+      {
+        "name": "useRef",
+        "module": "react",
+        "isDefault": false,
+        "source": "external"
+      }
+    ],
+    "useCallback": [
+      {
+        "name": "useCallback",
+        "module": "react",
+        "isDefault": false,
+        "source": "external"
+      }
+    ],
+    "useMemo": [
+      {
+        "name": "useMemo",
+        "module": "react",
+        "isDefault": false,
+        "source": "external"
+      }
+    ],
+    "useReducer": [
+      {
+        "name": "useReducer",
+        "module": "react",
+        "isDefault": false,
+        "source": "external"
+      }
+    ],
+    "useContext": [
+      {
+        "name": "useContext",
+        "module": "react",
+        "isDefault": false,
+        "source": "external"
+      }
+    ],
+    "useLayoutEffect": [
+      {
+        "name": "useLayoutEffect",
+        "module": "react",
+        "isDefault": false,
+        "source": "external"
+      }
+    ],
+    "createContext": [
+      {
+        "name": "createContext",
+        "module": "react",
+        "isDefault": false,
+        "source": "external"
+      }
+    ],
+    "Suspense": [
+      {
+        "name": "Suspense",
+        "module": "react",
+        "isDefault": false,
+        "source": "external"
+      }
+    ],
+    "Fragment": [
+      {
+        "name": "Fragment",
+        "module": "react",
+        "isDefault": false,
+        "source": "external"
+      }
+    ],
+    "ReactNode": [
+      {
+        "name": "ReactNode",
+        "module": "react",
+        "isDefault": false,
+        "typeOnly": true,
+        "source": "external"
+      }
+    ],
+    "ReactElement": [
+      {
+        "name": "ReactElement",
+        "module": "react",
+        "isDefault": false,
+        "typeOnly": true,
+        "source": "external"
+      }
+    ],
+    "FC": [
+      {
+        "name": "FC",
+        "module": "react",
+        "isDefault": false,
+        "typeOnly": true,
+        "source": "external"
+      }
+    ],
+    "ComponentType": [
+      {
+        "name": "ComponentType",
+        "module": "react",
+        "isDefault": false,
+        "typeOnly": true,
+        "source": "external"
+      }
+    ],
+    "RefObject": [
+      {
+        "name": "RefObject",
+        "module": "react",
+        "isDefault": false,
+        "typeOnly": true,
+        "source": "external"
+      }
+    ],
+    "MutableRefObject": [
+      {
+        "name": "MutableRefObject",
+        "module": "react",
+        "isDefault": false,
+        "typeOnly": true,
+        "source": "external"
+      }
+    ],
+    "Dispatch": [
+      {
+        "name": "Dispatch",
+        "module": "react",
+        "isDefault": false,
+        "typeOnly": true,
+        "source": "external"
+      }
+    ],
+    "MouseEvent": [
+      {
+        "name": "MouseEvent",
+        "module": "react",
+        "isDefault": false,
+        "typeOnly": true,
+        "source": "external"
+      }
+    ],
+    "KeyboardEvent": [
+      {
+        "name": "KeyboardEvent",
+        "module": "react",
+        "isDefault": false,
+        "typeOnly": true,
+        "source": "external"
+      }
+    ],
+    "PointerEvent": [
+      {
+        "name": "PointerEvent",
+        "module": "react",
+        "isDefault": false,
+        "typeOnly": true,
+        "source": "external"
+      }
+    ],
+    "ChangeEvent": [
+      {
+        "name": "ChangeEvent",
+        "module": "react",
+        "isDefault": false,
+        "typeOnly": true,
+        "source": "external"
+      }
+    ],
+    "SyntheticEvent": [
+      {
+        "name": "SyntheticEvent",
+        "module": "react",
+        "isDefault": false,
+        "typeOnly": true,
+        "source": "external"
+      }
+    ],
+    "ErrorInfo": [
+      {
+        "name": "ErrorInfo",
+        "module": "react",
+        "isDefault": false,
+        "typeOnly": true,
+        "source": "external"
+      }
+    ],
+    "HTMLAttributes": [
+      {
+        "name": "HTMLAttributes",
+        "module": "react",
+        "isDefault": false,
+        "typeOnly": true,
+        "source": "external"
+      }
+    ],
+    "SVGProps": [
+      {
+        "name": "SVGProps",
+        "module": "react",
+        "isDefault": false,
+        "typeOnly": true,
+        "source": "external"
+      }
+    ],
+    "MouseEventHandler": [
+      {
+        "name": "MouseEventHandler",
+        "module": "react",
+        "isDefault": false,
+        "typeOnly": true,
+        "source": "external"
+      }
+    ],
+    "ComponentPropsWithoutRef": [
+      {
+        "name": "ComponentPropsWithoutRef",
+        "module": "react",
+        "isDefault": false,
+        "typeOnly": true,
+        "source": "external"
+      }
+    ],
+    "TFunction": [
+      {
+        "name": "TFunction",
+        "module": "i18next",
+        "isDefault": false,
+        "typeOnly": true,
+        "source": "external"
+      }
+    ],
+    "useTranslation": [
+      {
+        "name": "useTranslation",
+        "module": "react-i18next",
+        "isDefault": false,
+        "source": "external"
+      }
+    ],
+    "Trans": [
+      {
+        "name": "Trans",
+        "module": "react-i18next",
+        "isDefault": false,
+        "source": "external"
+      }
+    ],
+    "motion": [
+      {
+        "name": "motion",
+        "module": "framer-motion",
+        "isDefault": false,
+        "source": "external"
+      }
+    ],
+    "AnimatePresence": [
+      {
+        "name": "AnimatePresence",
+        "module": "framer-motion",
+        "isDefault": false,
+        "source": "external"
+      }
+    ],
+    "Variants": [
+      {
+        "name": "Variants",
+        "module": "framer-motion",
+        "isDefault": false,
+        "typeOnly": true,
+        "source": "external"
+      }
+    ],
+    "HTMLMotionProps": [
+      {
+        "name": "HTMLMotionProps",
+        "module": "framer-motion",
+        "isDefault": false,
+        "typeOnly": true,
+        "source": "external"
+      }
+    ],
+    "Transition": [
+      {
+        "name": "Transition",
+        "module": "framer-motion",
+        "isDefault": false,
+        "typeOnly": true,
+        "source": "external"
+      }
+    ],
+    "Tone": [
+      {
+        "name": "Tone",
+        "module": "tone",
+        "isDefault": false,
+        "isNamespace": true,
+        "source": "external"
+      }
+    ],
+    "ToneJsMidi": [
+      {
+        "name": "ToneJsMidi",
+        "module": "@tonejs/midi",
+        "isDefault": false,
+        "isNamespace": true,
+        "source": "external"
+      }
+    ],
+    "PIXI": [
+      {
+        "name": "PIXI",
+        "module": "pixi.js",
+        "isDefault": false,
+        "isNamespace": true,
+        "source": "external"
+      }
+    ],
+    "describe": [
+      {
+        "name": "describe",
+        "module": "vitest",
+        "isDefault": false,
+        "source": "external"
+      }
+    ],
+    "it": [
+      {
+        "name": "it",
+        "module": "vitest",
+        "isDefault": false,
+        "source": "external"
+      }
+    ],
+    "test": [
+      {
+        "name": "test",
+        "module": "vitest",
+        "isDefault": false,
+        "source": "external"
+      }
+    ],
+    "expect": [
+      {
+        "name": "expect",
+        "module": "vitest",
+        "isDefault": false,
+        "source": "external"
+      }
+    ],
+    "vi": [
+      {
+        "name": "vi",
+        "module": "vitest",
+        "isDefault": false,
+        "source": "external"
+      }
+    ],
+    "beforeEach": [
+      {
+        "name": "beforeEach",
+        "module": "vitest",
+        "isDefault": false,
+        "source": "external"
+      }
+    ],
+    "afterEach": [
+      {
+        "name": "afterEach",
+        "module": "vitest",
+        "isDefault": false,
+        "source": "external"
+      }
+    ],
+    "beforeAll": [
+      {
+        "name": "beforeAll",
+        "module": "vitest",
+        "isDefault": false,
+        "source": "external"
+      }
+    ],
+    "afterAll": [
+      {
+        "name": "afterAll",
+        "module": "vitest",
+        "isDefault": false,
+        "source": "external"
+      }
+    ],
+    "assert": [
+      {
+        "name": "assert",
+        "module": "node:assert/strict",
+        "isDefault": true,
+        "source": "external"
       }
     ]
   }
