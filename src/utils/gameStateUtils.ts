@@ -321,12 +321,11 @@ export const isForbiddenKey = (key: string): boolean => FORBIDDEN_KEYS.has(key)
  * @returns {boolean} True if the object has any forbidden keys
  */
 export const hasForbiddenKeys = (obj: Record<string, unknown>): boolean => {
-  for (const key in obj) {
-    if (Object.hasOwn(obj, key) && isForbiddenKey(key)) {
-      return true
-    }
-  }
-  return false
+  return (
+    Object.hasOwn(obj, '__proto__') ||
+    Object.hasOwn(obj, 'constructor') ||
+    Object.hasOwn(obj, 'prototype')
+  )
 }
 
 /**
