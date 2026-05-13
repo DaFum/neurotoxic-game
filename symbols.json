@@ -4581,7 +4581,7 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/components.d.ts"
       }
     ],
     "AudioSnapshot": [
@@ -4636,7 +4636,7 @@
         "type": "interface",
         "isDefault": false,
         "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/components.d.ts"
       }
     ],
     "AudioControlHandlers": [
