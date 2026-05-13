@@ -42,7 +42,6 @@
 - Reducer default branches must call `assertNever(action)`.
 - Prefer `as const satisfies Record<Union, T>` for keyed configs; avoid widening with `as Record<...>`.
 - Shared domain contracts belong in `src/types/*.d.ts`; do not duplicate local structural clones.
-- Under `noUncheckedIndexedAccess`, narrow indexed values before use.
 - Preserve valid falsy values with nullish checks (`??`), not truthy fallbacks (`||`).
 - Give categorize/split helpers explicit named return types instead of broad `Record<string, T[]>`.
 - Boundary and error-handler functions must accept `unknown` and narrow before use.
