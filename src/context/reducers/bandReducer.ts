@@ -5,7 +5,8 @@ import {
   clampMemberMood,
   clampMemberStamina,
   applyInventoryItemDelta,
-  isForbiddenKey
+  isForbiddenKey,
+  hasForbiddenKeys
 } from '../../utils/gameStateUtils'
 import { applyTraitUnlocks } from '../../utils/traitUtils'
 import { ActionTypes } from '../actionTypes'
@@ -37,7 +38,7 @@ export const handleUpdateBand = (
     !updates ||
     typeof updates !== 'object' ||
     Array.isArray(updates) ||
-    Object.keys(updates).some(isForbiddenKey)
+    hasForbiddenKeys(updates as Record<string, unknown>)
   ) {
     return state
   }
