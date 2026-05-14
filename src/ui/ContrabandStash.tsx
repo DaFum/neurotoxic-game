@@ -108,7 +108,7 @@ export const ContrabandStash = ({
         className='w-full max-w-4xl max-h-[85vh] flex flex-col'
         contentClassName='flex-1 min-h-0 flex flex-col p-4 sm:p-6 overflow-y-auto'
       >
-        <p className='text-ash-gray text-sm mb-4'>
+        <p className='text-(--color-ash-gray) text-sm mb-4'>
           {t('ui:contraband.description', {
             defaultValue:
               'Artifacts and strange detritus gathered from the void. Use with caution.'
@@ -117,8 +117,8 @@ export const ContrabandStash = ({
         <AnimatedDivider className='mb-6' />
 
         {/* Member Selection for targeted items */}
-        <div className='mb-6 bg-shadow-black border border-toxic-green-20 p-4 rounded-sm'>
-          <h3 className='text-toxic-green text-sm font-bold mb-3 uppercase tracking-wider'>
+        <div className='mb-6 bg-(--color-shadow-black) border border-(--color-toxic-green-20) p-4 rounded-sm'>
+          <h3 className='text-(--color-toxic-green) text-sm font-bold mb-3 uppercase tracking-wider'>
             {t('ui:contraband.targetMemberLabel', {
               defaultValue: 'Target Member:'
             })}
@@ -132,10 +132,10 @@ export const ContrabandStash = ({
                     type='button'
                     aria-pressed={selectedMember === m.id}
                     onClick={makeSelectMember(m.id)}
-                    className={`px-4 py-2 border font-mono text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green ${
+                    className={`px-4 py-2 border font-mono text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-toxic-green) ${
                       selectedMember === m.id
-                        ? 'border-toxic-green bg-toxic-green-20 text-star-white'
-                        : 'border-ash-gray bg-transparent text-ash-gray hover:border-toxic-green hover:text-toxic-green'
+                        ? 'border-(--color-toxic-green) bg-(--color-toxic-green-20) text-(--color-star-white)'
+                        : 'border-(--color-ash-gray) bg-transparent text-(--color-ash-gray) hover:border-(--color-toxic-green) hover:text-(--color-toxic-green)'
                     }`}
                   >
                     {m.name ??
@@ -151,7 +151,7 @@ export const ContrabandStash = ({
         {/* Stash Grid */}
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
           {stash.length === 0 ? (
-            <div className='col-span-full text-center py-10 text-ash-gray italic border border-dashed border-toxic-green-20'>
+            <div className='col-span-full text-center py-10 text-(--color-ash-gray) italic border border-dashed border-(--color-toxic-green-20)'>
               {t('ui:contraband.noItems', {
                 defaultValue: 'No contraband collected yet.'
               })}
@@ -165,12 +165,12 @@ export const ContrabandStash = ({
                 acc.push(
                   <div
                     key={stableKey}
-                    className='bg-void-black flex flex-col justify-between border border-toxic-green p-4'
+                    className='bg-(--color-void-black) flex flex-col justify-between border border-(--color-toxic-green) p-4'
                   >
                     <div>
                       <div className='flex justify-between items-start mb-2'>
                         <div className='flex flex-col gap-1'>
-                          <h4 className='text-toxic-green font-bold text-lg font-[Metal_Mania] tracking-wider uppercase drop-shadow-[0_0_5px_var(--color-toxic-green-20)]'>
+                          <h4 className='text-(--color-toxic-green) font-bold text-lg font-[Metal_Mania] tracking-wider uppercase drop-shadow-[0_0_5px_var(--color-toxic-green-20)]'>
                             {t(`items:contraband.${item.id}.name`, {
                               defaultValue: t('ui:item.unknown', {
                                 defaultValue: 'Unknown Item'
@@ -181,12 +181,12 @@ export const ContrabandStash = ({
                             <span
                               className={
                                 item.rarity === 'common'
-                                  ? 'text-ash-gray'
+                                  ? 'text-(--color-ash-gray)'
                                   : item.rarity === 'uncommon'
-                                    ? 'text-electric-blue'
+                                    ? 'text-(--color-electric-blue)'
                                     : item.rarity === 'rare'
-                                      ? 'text-toxic-green'
-                                      : 'text-alert-amber' // epic
+                                      ? 'text-(--color-toxic-green)'
+                                      : 'text-(--color-alert-amber)' // epic
                               }
                             >
                               {t(`ui:rarity.${item.rarity ?? 'unknown'}`, {
@@ -200,8 +200,8 @@ export const ContrabandStash = ({
                           <span
                             className={`text-xs px-2 py-1 rounded border font-mono ${
                               item.type === 'consumable'
-                                ? 'border-blood-red text-blood-red bg-blood-red-20'
-                                : 'border-electric-blue text-electric-blue bg-electric-blue-20'
+                                ? 'border-(--color-blood-red) text-(--color-blood-red) bg-(--color-blood-red-20)'
+                                : 'border-(--color-electric-blue) text-(--color-electric-blue) bg-(--color-electric-blue-20)'
                             }`}
                           >
                             {item.type
@@ -213,7 +213,7 @@ export const ContrabandStash = ({
                                 })}
                           </span>
                           {item.duration && (
-                            <span className='text-xs text-ash-gray italic'>
+                            <span className='text-xs text-(--color-ash-gray) italic'>
                               {item.duration}{' '}
                               {t('ui:contraband.gigs', {
                                 defaultValue: 'GIGS'
@@ -225,7 +225,7 @@ export const ContrabandStash = ({
                       <div className='flex flex-row gap-4 items-start mb-4'>
                         {item.imagePrompt &&
                           Object.hasOwn(IMG_PROMPTS, item.imagePrompt) && (
-                            <div className='w-20 h-20 shrink-0 border border-toxic-green-20 bg-void-black flex items-center justify-center p-1 rounded overflow-hidden shadow-[0_0_10px_var(--color-toxic-green-10)]'>
+                            <div className='w-20 h-20 shrink-0 border border-(--color-toxic-green-20) bg-(--color-void-black) flex items-center justify-center p-1 rounded overflow-hidden shadow-[0_0_10px_var(--color-toxic-green-10)]'>
                               <img
                                 src={
                                   isImageGenerationAvailable()
@@ -247,7 +247,7 @@ export const ContrabandStash = ({
                               />
                             </div>
                           )}
-                        <p className='text-ash-gray text-xs min-h-[40px] leading-relaxed flex-1'>
+                        <p className='text-(--color-ash-gray) text-xs min-h-[40px] leading-relaxed flex-1'>
                           {item.description
                             ? t(item.description, {
                                 defaultValue: t('ui:item.descriptionUnknown', {
@@ -266,7 +266,7 @@ export const ContrabandStash = ({
                       !selectedMember &&
                       !item.applied &&
                       item.type === 'consumable' ? (
-                        <p className='text-blood-red text-xs mb-2 italic'>
+                        <p className='text-(--color-blood-red) text-xs mb-2 italic'>
                           {t('ui:contraband.requiresTarget', {
                             defaultValue: 'Requires target member.'
                           })}
@@ -274,7 +274,7 @@ export const ContrabandStash = ({
                       ) : null}
 
                       {item.applied ? (
-                        <div className='w-full text-center text-xs text-electric-blue border border-electric-blue-20 py-2 bg-electric-blue-10'>
+                        <div className='w-full text-center text-xs text-(--color-electric-blue) border border-(--color-electric-blue-20) py-2 bg-(--color-electric-blue-10)'>
                           {t('ui:contraband.applied', {
                             defaultValue: 'APPLIED'
                           })}
@@ -298,7 +298,7 @@ export const ContrabandStash = ({
                               })}
                         </ActionButton>
                       ) : (
-                        <div className='w-full text-center text-xs text-electric-blue border border-electric-blue-20 py-2 bg-electric-blue-10'>
+                        <div className='w-full text-center text-xs text-(--color-electric-blue) border border-(--color-electric-blue-20) py-2 bg-(--color-electric-blue-10)'>
                           {t('ui:contraband.passiveActive', {
                             defaultValue: 'PASSIVE EFFECT ACTIVE'
                           })}
