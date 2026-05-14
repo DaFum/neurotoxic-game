@@ -340,7 +340,10 @@ export const usePostGigHandlers = ({
   }, [player, updatePlayer, updateSocial, addToast, t])
 
   const handleContinue = useCallback(() => {
-    if (financials?.soldMerch) {
+    if (!financials) return
+    if (isProcessingActionRef.current) return
+    isProcessingActionRef.current = true
+    if (financials.soldMerch) {
       updateBand(prevBand => {
         const updatedInventory = { ...prevBand.inventory }
         for (const merchKey in financials.soldMerch) {
@@ -356,9 +359,6 @@ export const usePostGigHandlers = ({
         return { ...prevBand, inventory: updatedInventory }
       })
     }
-    if (!financials) return
-    if (isProcessingActionRef.current) return
-    isProcessingActionRef.current = true
     setIsProcessingAction(true)
 
     const stats = calculateContinueStats({

@@ -878,12 +878,10 @@ export const createMerchPressAction = (
       : payload
 })
 
-
 /**
  * Creates a banter action for inter-member dialogue outcomes.
  * @param {string} member1 - Name of first member
  * @param {string} member2 - Name of second member
- * @param {number} currentScore - The current relationship score between them
  * @param {number} delta - The un-clamped relationship change
  * @returns {Object} Action object
  */

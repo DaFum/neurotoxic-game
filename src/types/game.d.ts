@@ -3,6 +3,14 @@ import type { RhythmSetlistEntry } from './rhythmGame'
 import type { GAME_PHASES } from '../context/gameConstants'
 import type { Platform } from './social'
 
+export type RelationshipChange = {
+  member1: string
+  member2: string
+  change: number
+  source?: string
+  timestamp?: number
+}
+
 export type GamePhase = (typeof GAME_PHASES)[keyof typeof GAME_PHASES]
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic'
 

@@ -27,7 +27,9 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
           ? (bandInventory[key] as number)
           : 0
 
-      const hqItemDef = HQ_ITEMS.find(item => item.effect.key === key)
+      const hqItemDef = Object.values(HQ_ITEMS)
+        .flat()
+        .find(item => item.effect?.item === key)
       const restockCost = hqItemDef ? hqItemDef.cost : 50 // fallback
 
       return {

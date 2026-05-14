@@ -5588,6 +5588,17 @@
         "exportPath": "src/types/index.ts"
       }
     ],
+    "RelationshipChange": [
+      {
+        "name": "RelationshipChange",
+        "path": "src/types/game.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "typeOnly": true,
+        "exportPath": "src/types/index.ts"
+      }
+    ],
     "GamePhase": [
       {
         "name": "GamePhase",
