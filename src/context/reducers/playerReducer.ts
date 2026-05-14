@@ -6,13 +6,7 @@ import {
   clampPlayerFame,
   calculateFameLevel
 } from '../../utils/gameStateUtils'
-import { ActionTypes } from '../actionTypes'
 import type { PlayerState, UpdatePlayerPayload } from '../../types/game'
-
-export type PlayerAction = {
-  type: typeof ActionTypes.UPDATE_PLAYER
-  payload: UpdatePlayerPayload
-}
 
 /**
  * Handles player update actions

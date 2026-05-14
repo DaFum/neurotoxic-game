@@ -34,7 +34,7 @@ export type SideEffect =
   | { type: 'changeScene'; scene: GamePhase }
   | { type: 'saveGame'; state: GameState }
 
-export type EventResolution = {
+type EventResolution = {
   actions: GameAction[]
   sideEffects: SideEffect[]
   outcomeText: string

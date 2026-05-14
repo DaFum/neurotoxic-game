@@ -7,7 +7,7 @@ import { MerchPressModal } from '../../ui/MerchPressModal'
 import { BloodBankModal } from '../../ui/BloodBankModal'
 import { DarkWebLeakModal } from '../../ui/DarkWebLeakModal'
 
-export interface OverworldModalsProps {
+interface OverworldModalsProps {
   // Band HQ
   showHQ: boolean
   closeHQ: () => void
