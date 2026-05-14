@@ -14,8 +14,14 @@
  */
 export function getSafeStorageItem<T>(key: string, fallback: T): T {
   try {
-    const raw =
-      typeof window !== 'undefined' ? window.localStorage.getItem(key) : null
+    const storage =
+      typeof window !== 'undefined'
+        ? window.localStorage
+        : typeof globalThis !== 'undefined'
+          ? globalThis.localStorage
+          : null
+    if (!storage) return fallback
+    const raw = storage.getItem(key)
     if (raw === null) return fallback
     const parsed = JSON.parse(raw)
     if (parsed === null || parsed === undefined) return fallback
@@ -33,8 +39,14 @@ export function getSafeStorageItem<T>(key: string, fallback: T): T {
  */
 export function setSafeStorageItem(key: string, value: unknown): void {
   try {
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem(key, JSON.stringify(value))
+    const storage =
+      typeof window !== 'undefined'
+        ? window.localStorage
+        : typeof globalThis !== 'undefined'
+          ? globalThis.localStorage
+          : null
+    if (storage) {
+      storage.setItem(key, JSON.stringify(value))
     }
   } catch {
     // Silently fail on quota exceeded or other errors
@@ -47,8 +59,14 @@ export function setSafeStorageItem(key: string, value: unknown): void {
  */
 export function removeSafeStorageItem(key: string): void {
   try {
-    if (typeof window !== 'undefined') {
-      window.localStorage.removeItem(key)
+    const storage =
+      typeof window !== 'undefined'
+        ? window.localStorage
+        : typeof globalThis !== 'undefined'
+          ? globalThis.localStorage
+          : null
+    if (storage) {
+      storage.removeItem(key)
     }
   } catch {
     // Silently fail
@@ -61,10 +79,14 @@ export function removeSafeStorageItem(key: string): void {
  */
 export function hasSafeStorageItem(key: string): boolean {
   try {
-    if (typeof window !== 'undefined') {
-      return window.localStorage.getItem(key) !== null
-    }
-    return false
+    const storage =
+      typeof window !== 'undefined'
+        ? window.localStorage
+        : typeof globalThis !== 'undefined'
+          ? globalThis.localStorage
+          : null
+    if (!storage) return false
+    return storage.getItem(key) !== null
   } catch {
     return false
   }

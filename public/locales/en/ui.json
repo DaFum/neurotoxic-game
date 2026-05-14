@@ -1584,6 +1584,8 @@
   "map.intel.barSpendingProfile": "Bar Spending Profile",
   "pregig.merchStrategy.title": "Merch Strategy",
   "pregig.merchStrategy.restock": "Restock",
+  "pregig.merchStrategy.stock": "Stock: {{count}}",
+  "pregig.merchStrategy.restockCost": "Cost: {{cost}}",
   "map.intel.genres.punk": "Punk",
   "map.intel.genres.metal": "Metal",
   "map.intel.genres.goth": "Goth",
