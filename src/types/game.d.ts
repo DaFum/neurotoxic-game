@@ -439,6 +439,7 @@ export type Action<
 export type GameAction =
   | Action<ActionTypes['CHANGE_SCENE'], GamePhase>
   | Action<ActionTypes['UPDATE_PLAYER'], UpdatePlayerPayload>
+  | Action<ActionTypes['UPDATE_VOID_STRESS'], { delta: number }>
   | Action<ActionTypes['TOGGLE_NEURO_DECIMATOR'], { isActive: boolean }>
   | Action<ActionTypes['UPDATE_BAND'], UpdateBandPayload>
   | Action<
