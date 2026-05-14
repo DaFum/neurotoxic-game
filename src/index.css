@@ -856,7 +856,7 @@ input[type='range'].vol-slider::-moz-range-thumb:hover {
 /* ── Slow horizontal scan bar (atmosphere) ── */
 @keyframes scan-bar {
   0% {
-    transform: translateY(-30%);
+    transform: translateY(-30vh);
     opacity: 0;
   }
   10% {
@@ -866,7 +866,7 @@ input[type='range'].vol-slider::-moz-range-thumb:hover {
     opacity: 0.4;
   }
   100% {
-    transform: translateY(130%);
+    transform: translateY(100vh);
     opacity: 0;
   }
 }

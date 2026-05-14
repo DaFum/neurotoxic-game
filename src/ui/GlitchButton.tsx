@@ -126,7 +126,7 @@ export const GlitchButton = ({
             className='absolute inset-0 overflow-hidden pointer-events-none'
             aria-hidden='true'
           >
-            <span className='absolute top-0 left-0 h-full w-1/3 -translate-x-full bg-gradient-to-r from-transparent via-star-white/20 to-transparent skew-x-[-18deg] group-hover:animate-[shimmer_700ms_ease-out]' />
+            <span className='absolute top-0 left-0 h-full w-1/3 -translate-x-full bg-gradient-to-r from-transparent via-star-white/20 to-transparent skew-x-[-12deg] motion-safe:group-hover:animate-[shimmer_700ms_ease-out]' />
           </span>
           {/* Sharp corner ticks */}
           <span
