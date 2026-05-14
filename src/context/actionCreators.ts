@@ -898,8 +898,11 @@ export const createBanterAction = (
     throw new Error('Self-relationship banter is not allowed')
   }
 
-  const newScore = clampRelationship(currentScore + delta)
-  const clampedDelta = newScore - currentScore
+  const safeCurrentScore = Number.isFinite(currentScore) ? currentScore : 50
+  const safeDelta = Number.isFinite(delta) ? delta : 0
+
+  const newScore = clampRelationship(safeCurrentScore + safeDelta)
+  const clampedDelta = newScore - safeCurrentScore
 
   return {
     type: ActionTypes.APPLY_EVENT_DELTA,
