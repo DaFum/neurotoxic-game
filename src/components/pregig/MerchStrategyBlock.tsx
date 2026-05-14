@@ -31,9 +31,10 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
 
       const hqItemDef = ALL_HQ_ITEMS.find(
         item =>
-          item.effect !== undefined &&
-          'item' in item.effect &&
-          item.effect.item === key
+          typeof item.effect === 'object' &&
+          item.effect !== null &&
+          Object.hasOwn(item.effect, 'item') &&
+          (item.effect as { item?: unknown }).item === key
       )
       const restockCost = hqItemDef?.cost ?? 50 // fallback
 

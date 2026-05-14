@@ -144,9 +144,10 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
         .flat()
         .find(
           item =>
-            item.effect !== undefined &&
-            'item' in item.effect &&
-            item.effect.item === merchKey
+            typeof item.effect === 'object' &&
+            item.effect !== null &&
+            Object.hasOwn(item.effect, 'item') &&
+            (item.effect as { item?: unknown }).item === merchKey
         )
       if (!itemDef) return
 

@@ -216,7 +216,9 @@ test('MapGenerator cityStates keys match venue ID prefixes of non-START/FINALE n
   const generator = new MapGenerator(99)
   const map = generator.generateMap(5)
 
-  const venueNodes = Object.values(map.nodes).filter(n => n.venue && n.venue.id)
+  const venueNodes = Object.values(map.nodes).filter(
+    n => n.type !== 'START' && n.type !== 'FINALE' && n.venue && n.venue.id
+  )
 
   for (const node of venueNodes) {
     const cityKey = getCityKeyFromVenueId(node.venue.id)
