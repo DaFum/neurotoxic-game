@@ -36,21 +36,35 @@ export const SupplyStopModal: React.FC<SupplyStopModalProps> = ({
       return
     }
 
-    // Deduct money
-    const newMoney = Math.max(0, (player.money || 0) - adjustedCost)
-    updatePlayer({ money: newMoney })
+    const playerPatch: Partial<PlayerState> = {
+      money: Math.max(0, (player.money || 0) - adjustedCost)
+    }
+    let bandPatch: Partial<BandState> = {}
 
     // Process effects
     const effect = item.effects?.[0] || item.effect
     if (effect) {
       const result = processPurchaseEffect(effect, item, {}, player, band)
-      if (result.playerPatch) updatePlayer(result.playerPatch)
-      if (result.bandPatch) updateBand(result.bandPatch)
+      if (result.playerPatch) Object.assign(playerPatch, result.playerPatch)
+      if (result.bandPatch) bandPatch = result.bandPatch
     }
 
     // Apply reputation consequence (deduct fame)
-    const newFame = Math.max(0, (player.fame || 0) - 5)
-    updatePlayer({ fame: newFame })
+    const currentFame = playerPatch.fame ?? player.fame ?? 0
+    const nextFame = Math.max(0, currentFame - 5)
+    playerPatch.fame = nextFame
+    playerPatch.fameLevel = calculateFameLevel(nextFame)
+
+    updatePlayer(playerPatch)
+    // Avoid Object.keys as per guidelines
+    let hasBandPatch = false
+    for (const _k in bandPatch) {
+      hasBandPatch = true
+      break
+    }
+    if (hasBandPatch) {
+      updateBand(bandPatch)
+    }
 
     addToast(
       t('ui:shop.black_market_purchase', {

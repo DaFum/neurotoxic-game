@@ -5694,17 +5694,6 @@
         "exportPath": "src/types/index.ts"
       }
     ],
-    "CityTraitState": [
-      {
-        "name": "CityTraitState",
-        "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
     "GameMap": [
       {
         "name": "GameMap",
@@ -6334,6 +6323,25 @@
       {
         "name": "QuestsModal",
         "path": "src/ui/QuestsModal.tsx",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
+    "SupplyStopModalProps": [
+      {
+        "name": "SupplyStopModalProps",
+        "path": "src/ui/SupplyStopModal.tsx",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "typeOnly": true
+      }
+    ],
+    "SupplyStopModal": [
+      {
+        "name": "SupplyStopModal",
+        "path": "src/ui/SupplyStopModal.tsx",
         "source": "local",
         "type": "const",
         "isDefault": false

@@ -71,7 +71,6 @@ const ALLOWED_MAP_NODE_TYPES = new Set<MapNodeType>([
   'FINALE',
   'CITY',
   'REST',
-  'supplyStop',
   'supplyStop'
 ])
 

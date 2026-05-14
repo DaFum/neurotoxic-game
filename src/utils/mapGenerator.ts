@@ -157,6 +157,10 @@ export class MapGenerator {
     const usedVenueIds = new Set<string>()
     if (homeVenue) usedVenueIds.add(homeVenue.id)
 
+    const inventoryAddItems = HQ_ITEMS.gear.filter(
+      i => i.effect?.type === 'inventory_add'
+    )
+
     // Pre-reserve Finale Venue (Leipzig Arena) so it is not picked randomly
     if (cachedFinaleVenue) usedVenueIds.add(cachedFinaleVenue.id)
 
@@ -167,7 +171,7 @@ export class MapGenerator {
       usedVenueIds
     }
 
-    this._generateIntermediateLayers(map, validDepth, pools)
+    this._generateIntermediateLayers(map, validDepth, pools, inventoryAddItems)
     this._generateConnections(map, validDepth)
     this._generateFinaleLayer(map, validDepth, hardVenues, pools)
     this._assignInitialCoordinates(map)
@@ -223,7 +227,8 @@ export class MapGenerator {
   _generateIntermediateLayers(
     map: MapGeneratorState,
     depth: number,
-    pools: VenuePools & { usedVenueIds: Set<string> }
+    pools: VenuePools & { usedVenueIds: Set<string> },
+    inventoryAddItems: import('../types/components').PurchaseItem[]
   ): void {
     const { easyVenues, mediumVenues, hardVenues, usedVenueIds } = pools
 
@@ -384,11 +389,9 @@ export class MapGenerator {
         }
 
         if (nodeType === 'supplyStop') {
-          const inventoryAddItems = HQ_ITEMS.gear.filter(
-            i => i.effect?.type === 'inventory_add'
-          )
           node.shopInventory = this.pickRandomSubset(inventoryAddItems, 3)
         }
+
         layerNodes.push(node)
         map.nodes[node.id] = node
         map.nodeList.push(node)
