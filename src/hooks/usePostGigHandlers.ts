@@ -343,108 +343,117 @@ export const usePostGigHandlers = ({
     if (!financials) return
     if (isProcessingActionRef.current) return
     isProcessingActionRef.current = true
-    if (financials.soldMerch) {
-      updateBand(prevBand => {
-        const updatedInventory = { ...prevBand.inventory }
-        for (const merchKey in financials.soldMerch) {
-          if (Object.hasOwn(financials.soldMerch, merchKey)) {
-            const soldAmount = financials.soldMerch[merchKey] || 0
-            const currentAmount =
-              typeof updatedInventory[merchKey] === 'number'
-                ? (updatedInventory[merchKey] as number)
-                : 0
-            updatedInventory[merchKey] = Math.max(0, currentAmount - soldAmount)
-          }
-        }
-        return { ...prevBand, inventory: updatedInventory }
-      })
-    }
     setIsProcessingAction(true)
+    try {
+      if (financials.soldMerch) {
+        updateBand(prevBand => {
+          const updatedInventory = { ...prevBand.inventory }
+          for (const merchKey in financials.soldMerch) {
+            if (Object.hasOwn(financials.soldMerch, merchKey)) {
+              const soldAmount = financials.soldMerch[merchKey] || 0
+              const currentAmount =
+                typeof updatedInventory[merchKey] === 'number'
+                  ? (updatedInventory[merchKey] as number)
+                  : 0
+              updatedInventory[merchKey] = Math.max(
+                0,
+                currentAmount - soldAmount
+              )
+            }
+          }
+          return { ...prevBand, inventory: updatedInventory }
+        })
+      }
 
-    const stats = calculateContinueStats({
-      player,
-      perfScore,
-      financials,
-      misses: lastGigStats?.misses ?? 0,
-      calculateFameGain,
-      calculateFameLevel,
-      clampPlayerFame,
-      clampPlayerMoney,
-      BALANCE_CONSTANTS
-    })
+      const stats = calculateContinueStats({
+        player,
+        perfScore,
+        financials,
+        misses: lastGigStats?.misses ?? 0,
+        calculateFameGain,
+        calculateFameLevel,
+        clampPlayerFame,
+        clampPlayerMoney,
+        BALANCE_CONSTANTS
+      })
 
-    updatePlayer({
-      money: stats.newMoney,
-      fame: stats.newFame,
-      fameLevel: stats.fameLevel,
-      lastGigNodeId: player.currentNodeId
-    })
+      updatePlayer({
+        money: stats.newMoney,
+        fame: stats.newFame,
+        fameLevel: stats.fameLevel,
+        lastGigNodeId: player.currentNodeId
+      })
 
-    if (band.inventory?.neurotoxicPedal) {
-      updateBand(prevBand => {
-        const currentHarmony = prevBand.harmony ?? 100
-        const newHarmony = clampBandHarmony(
-          currentHarmony - NEUROTOXIC_PEDAL_HARMONY_PENALTY
+      if (band.inventory?.neurotoxicPedal) {
+        updateBand(prevBand => {
+          const currentHarmony = prevBand.harmony ?? 100
+          const newHarmony = clampBandHarmony(
+            currentHarmony - NEUROTOXIC_PEDAL_HARMONY_PENALTY
+          )
+          return {
+            ...prevBand,
+            harmony: newHarmony
+          }
+        })
+      }
+
+      if (activeStoryFlags?.includes('cancel_quest_active')) {
+        addQuest({
+          id: QUEST_APOLOGY_TOUR,
+          label: 'ui:quests.postgig.apologyTour.title',
+          description: 'ui:quests.postgig.apologyTour.description',
+          deadline: player.day + 14,
+          progress: 0,
+          required: 3,
+          rewardFlag: 'apology_tour_complete',
+          failurePenalty: {
+            social: { controversyLevel: 25 },
+            band: { harmony: -20 }
+          }
+        })
+      }
+
+      if (activeStoryFlags?.includes('breakup_quest_active')) {
+        addQuest({
+          id: QUEST_EGO_MANAGEMENT,
+          label: 'ui:quests.postgig.saveTheBand.title',
+          description: 'ui:quests.postgig.saveTheBand.description',
+          deadline: player.day + 5,
+          progress: 0,
+          required: 1,
+          rewardFlag: 'ego_crisis_resolved',
+          failurePenalty: { type: 'game_over' }
+        })
+      }
+
+      submitLeaderboardScores({
+        player,
+        lastGigStats,
+        currentGig,
+        setlist
+      }).catch(err => logger.error('PostGig', err, { player, currentGig }))
+
+      if (shouldTriggerBankruptcy(stats.newMoney, financials.net)) {
+        addToast(
+          t('ui:postGig.gameOverBankrupt', {
+            defaultValue: 'GAME OVER: BANKRUPT! The tour is over.'
+          }),
+          'error'
         )
-        return {
-          ...prevBand,
-          harmony: newHarmony
-        }
-      })
-    }
-
-    if (activeStoryFlags?.includes('cancel_quest_active')) {
-      addQuest({
-        id: QUEST_APOLOGY_TOUR,
-        label: 'ui:quests.postgig.apologyTour.title',
-        description: 'ui:quests.postgig.apologyTour.description',
-        deadline: player.day + 14,
-        progress: 0,
-        required: 3,
-        rewardFlag: 'apology_tour_complete',
-        failurePenalty: {
-          social: { controversyLevel: 25 },
-          band: { harmony: -20 }
-        }
-      })
-    }
-
-    if (activeStoryFlags?.includes('breakup_quest_active')) {
-      addQuest({
-        id: QUEST_EGO_MANAGEMENT,
-        label: 'ui:quests.postgig.saveTheBand.title',
-        description: 'ui:quests.postgig.saveTheBand.description',
-        deadline: player.day + 5,
-        progress: 0,
-        required: 1,
-        rewardFlag: 'ego_crisis_resolved',
-        failurePenalty: { type: 'game_over' }
-      })
-    }
-
-    submitLeaderboardScores({
-      player,
-      lastGigStats,
-      currentGig,
-      setlist
-    }).catch(err => logger.error('PostGig', err, { player, currentGig }))
-
-    if (shouldTriggerBankruptcy(stats.newMoney, financials.net)) {
-      addToast(
-        t('ui:postGig.gameOverBankrupt', {
-          defaultValue: 'GAME OVER: BANKRUPT! The tour is over.'
-        }),
-        'error'
-      )
-      isProcessingActionRef.current = false
-      setIsProcessingAction(false)
-      changeScene(GAME_PHASES.GAMEOVER)
-    } else {
-      queueMicrotask(() => {
         isProcessingActionRef.current = false
         setIsProcessingAction(false)
-        changeScene(GAME_PHASES.OVERWORLD)
-      })
+        changeScene(GAME_PHASES.GAMEOVER)
+      } else {
+        queueMicrotask(() => {
+          isProcessingActionRef.current = false
+          setIsProcessingAction(false)
+          changeScene(GAME_PHASES.OVERWORLD)
+        })
+      }
+    } catch (err) {
+      logger.error('PostGig handleContinue', err)
+      isProcessingActionRef.current = false
+      setIsProcessingAction(false)
     }
   }, [
     financials,

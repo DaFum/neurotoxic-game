@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { DEFAULT_MERCH_PRICES } from '../../utils/economyEngine'
 import { HQ_ITEMS } from '../../data/hqItems'
 
+const ALL_HQ_ITEMS = Object.values(HQ_ITEMS).flat()
+
 interface MerchStrategyBlockProps {
   bandInventory: Record<string, unknown>
   customPrices: Record<string, number>
@@ -27,9 +29,7 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
           ? (bandInventory[key] as number)
           : 0
 
-      const hqItemDef = Object.values(HQ_ITEMS)
-        .flat()
-        .find(item => item.effect?.item === key)
+      const hqItemDef = ALL_HQ_ITEMS.find(item => item.effect?.item === key)
       const restockCost = hqItemDef ? hqItemDef.cost : 50 // fallback
 
       return {
