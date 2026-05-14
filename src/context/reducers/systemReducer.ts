@@ -219,9 +219,84 @@ const sanitizeBandInventory = (value: unknown): BandState['inventory'] => {
   return sanitized
 }
 
+const copySafeArray = (
+  value: unknown
+): Array<
+  | string
+  | number
+  | boolean
+  | null
+  | Record<string, string | number | boolean | null>
+> | null => {
+  if (!Array.isArray(value)) return null
+  const copied: Array<
+    | string
+    | number
+    | boolean
+    | null
+    | Record<string, string | number | boolean | null>
+  > = []
+  for (let i = 0; i < value.length; i++) {
+    const entry = value[i]
+    if (
+      typeof entry === 'string' ||
+      typeof entry === 'number' ||
+      typeof entry === 'boolean' ||
+      entry === null
+    ) {
+      copied.push(entry)
+    } else if (entry && typeof entry === 'object' && !Array.isArray(entry)) {
+      const entryRecord = entry as Record<string, unknown>
+      const copiedEntry: Record<string, string | number | boolean | null> = {}
+      for (const entryKey in entryRecord) {
+        if (!Object.hasOwn(entryRecord, entryKey)) continue
+        if (isForbiddenKey(entryKey)) continue
+        const entryValue = entryRecord[entryKey]
+        if (
+          typeof entryValue === 'string' ||
+          typeof entryValue === 'number' ||
+          typeof entryValue === 'boolean' ||
+          entryValue === null
+        ) {
+          copiedEntry[entryKey] = entryValue
+        }
+      }
+      if (!isEmptyObject(copiedEntry)) {
+        copied.push(copiedEntry)
+      }
+    }
+  }
+  return copied
+}
+
+const copySafeFlatObject = (
+  value: unknown
+): Record<string, string | number | boolean | null> | null => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return null
+  }
+  const source = value as Record<string, unknown>
+  const copied: Record<string, string | number | boolean | null> = {}
+  for (const key in source) {
+    if (!Object.hasOwn(source, key)) continue
+    if (isForbiddenKey(key)) continue
+    const entry = source[key]
+    if (
+      typeof entry === 'string' ||
+      typeof entry === 'number' ||
+      typeof entry === 'boolean' ||
+      entry === null
+    ) {
+      copied[key] = entry
+    }
+  }
+  return !isEmptyObject(copied) ? copied : null
+}
+
 /**
  * Validates a purchase effect object from a loaded save.
- * Ensures value is finite and non-negative for inventory_add effects.
+ * Accepts valid effect types: inventory_add (value must be non-negative),
+ * unlock_upgrade, unlock_hq, inventory_set, and any effect with safe primitives.
  * Returns the effect if valid, null otherwise.
  */
 const validateLoadedEffect = (
@@ -231,17 +306,14 @@ const validateLoadedEffect = (
 
   const effectObj = effect as Record<string, unknown>
   const typeStr = typeof effectObj.type === 'string' ? effectObj.type : ''
-  const value =
-    typeof effectObj.value === 'number' ? effectObj.value : undefined
 
-  // Must have a value that is finite
-  if (value === undefined || !Number.isFinite(value)) {
-    return null
-  }
-
-  // For inventory_add, value must be non-negative (can't reduce inventory via load)
-  if (typeStr === 'inventory_add' && value < 0) {
-    return null
+  // For inventory_add, ensure value is non-negative (can't reduce inventory via load)
+  if (typeStr === 'inventory_add') {
+    const value =
+      typeof effectObj.value === 'number' ? effectObj.value : undefined
+    if (value === undefined || !Number.isFinite(value) || value < 0) {
+      return null
+    }
   }
 
   // Copy safe primitives and return
@@ -272,78 +344,6 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
   // copySafeFlatObject returns null if all items are filtered out.
   // This asymmetry preserves array identity for map data node properties while dropping empty objects.
   // Also note that copySafeArray silently drops nested arrays and non-primitive/non-object entries.
-  const copySafeArray = (
-    value: unknown
-  ): Array<
-    | string
-    | number
-    | boolean
-    | null
-    | Record<string, string | number | boolean | null>
-  > | null => {
-    if (!Array.isArray(value)) return null
-    const copied: Array<
-      | string
-      | number
-      | boolean
-      | null
-      | Record<string, string | number | boolean | null>
-    > = []
-    for (let i = 0; i < value.length; i++) {
-      const entry = value[i]
-      if (
-        typeof entry === 'string' ||
-        typeof entry === 'number' ||
-        typeof entry === 'boolean' ||
-        entry === null
-      ) {
-        copied.push(entry)
-      } else if (entry && typeof entry === 'object' && !Array.isArray(entry)) {
-        const entryRecord = entry as Record<string, unknown>
-        const copiedEntry: Record<string, string | number | boolean | null> = {}
-        for (const entryKey in entryRecord) {
-          if (!Object.hasOwn(entryRecord, entryKey)) continue
-          if (isForbiddenKey(entryKey)) continue
-          const entryValue = entryRecord[entryKey]
-          if (
-            typeof entryValue === 'string' ||
-            typeof entryValue === 'number' ||
-            typeof entryValue === 'boolean' ||
-            entryValue === null
-          ) {
-            copiedEntry[entryKey] = entryValue
-          }
-        }
-        if (!isEmptyObject(copiedEntry)) {
-          copied.push(copiedEntry)
-        }
-      }
-    }
-    return copied
-  }
-  const copySafeFlatObject = (
-    value: unknown
-  ): Record<string, string | number | boolean | null> | null => {
-    if (!value || typeof value !== 'object' || Array.isArray(value)) {
-      return null
-    }
-    const source = value as Record<string, unknown>
-    const copied: Record<string, string | number | boolean | null> = {}
-    for (const key in source) {
-      if (!Object.hasOwn(source, key)) continue
-      if (isForbiddenKey(key)) continue
-      const entry = source[key]
-      if (
-        typeof entry === 'string' ||
-        typeof entry === 'number' ||
-        typeof entry === 'boolean' ||
-        entry === null
-      ) {
-        copied[key] = entry
-      }
-    }
-    return !isEmptyObject(copied) ? copied : null
-  }
 
   for (const nodeKey in nodesRecord) {
     if (!Object.hasOwn(nodesRecord, nodeKey)) continue

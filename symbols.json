@@ -8845,15 +8845,6 @@
         "isDefault": false
       }
     ],
-    "clampUnit": [
-      {
-        "name": "clampUnit",
-        "path": "src/utils/gameStateUtils.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      }
-    ],
     "normalizePercentageToScale": [
       {
         "name": "normalizePercentageToScale",
