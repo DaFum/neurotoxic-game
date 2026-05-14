@@ -421,10 +421,9 @@ export const MapNodeView = memo(
       prev.node.venue?.diff === next.node.venue?.diff &&
       prev.node.venue?.price === next.node.venue?.price &&
       prev.harmony === next.harmony &&
-      prev.cityTraits?.genreBias === next.cityTraits?.genreBias &&
-      prev.cityTraits?.attentionSpan === next.cityTraits?.attentionSpan &&
-      prev.cityTraits?.barSpendingProfile ===
-        next.cityTraits?.barSpendingProfile
+      // cityTraits entries are stable references owned by gameMap.cityStates,
+      // so reference equality covers all current and future trait fields.
+      prev.cityTraits === next.cityTraits
     )
   }
 )

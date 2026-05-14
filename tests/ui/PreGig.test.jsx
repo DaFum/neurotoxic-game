@@ -480,6 +480,17 @@ describe('PreGig', () => {
     fireEvent.click(decreaseBtns[0])
 
     expect(mockUseGameState.updateBand).toHaveBeenCalled()
+    // Apply the captured updater to a sample band state and verify the result
+    const updater = mockUseGameState.updateBand.mock.calls[0][0]
+    const nextBand =
+      typeof updater === 'function'
+        ? updater({
+            harmony: 50,
+            inventory: { shirts: 5 },
+            merchPrices: { shirts: 20 }
+          })
+        : updater
+    expect(nextBand.merchPrices.shirts).toBe(19)
   })
 
   test('merch tab restock button invokes updatePlayer for cost deduction', async () => {
@@ -502,10 +513,8 @@ describe('PreGig', () => {
 
     fireEvent.click(restockBtns[0])
 
-    // Either updatePlayer (cost) or updateBand (inventory) should be called
-    const wasUpdated =
-      mockUseGameState.updatePlayer.mock.calls.length > 0 ||
-      mockUseGameState.updateBand.mock.calls.length > 0
-    expect(wasUpdated).toBe(true)
+    // Restock must do both: deduct money AND add inventory
+    expect(mockUseGameState.updatePlayer).toHaveBeenCalled()
+    expect(mockUseGameState.updateBand).toHaveBeenCalled()
   })
 })

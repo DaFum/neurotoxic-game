@@ -19,6 +19,7 @@
 import { ALL_VENUES } from '../data/venues'
 import { StateError } from './errorHandler'
 import { HQ_ITEMS } from '../data/hqItems'
+import { logger } from './logger'
 import type { MapNodeType, Venue, CityTraitState } from '../types/game'
 
 type MapConnection = { from: string; to: string }
@@ -63,10 +64,28 @@ const getVenueCoord = (venue: Venue, axis: 'x' | 'y', fallback: number) => {
   return typeof raw === 'number' && Number.isFinite(raw) ? raw : fallback
 }
 
-/** Derives the city key from a venue ID (e.g. 'berlin_so36' → 'berlin'). */
+/**
+ * Derives the city key from a venue ID (e.g. 'berlin_so36' → 'berlin').
+ * Returns '' when the ID has no underscore; callers must guard against the
+ * empty string. In dev builds a malformed non-empty ID emits a warning so
+ * legacy/typo'd venue IDs surface rather than silently disabling city intel.
+ */
 export const getCityKeyFromVenueId = (venueId: string): string => {
   const idx = venueId.indexOf('_')
-  return idx === -1 ? '' : venueId.slice(0, idx)
+  if (idx === -1) {
+    if (
+      venueId.length > 0 &&
+      typeof process !== 'undefined' &&
+      process.env?.NODE_ENV !== 'production'
+    ) {
+      logger.warn(
+        'mapGenerator',
+        `Malformed venue ID "${venueId}" has no underscore; city intel will be empty`
+      )
+    }
+    return ''
+  }
+  return venueId.slice(0, idx)
 }
 
 const CITY_TRAIT_GENRES = [
@@ -257,23 +276,6 @@ export class MapGenerator {
    * Generates determinisic city traits for each unique city found on the generated map.
    */
   _populateCityStates(map: MapGeneratorState): void {
-    const genres = [
-      'punk',
-      'metal',
-      'goth',
-      'indie',
-      'synth',
-      'noise',
-      'hardcore'
-    ]
-    const spendingProfiles = [
-      'stingy',
-      'average',
-      'generous',
-      'drunkards',
-      'merch-hungry'
-    ]
-
     for (const node of map.nodeList) {
       if (node.venue && node.venue.id) {
         const cityName = getCityKeyFromVenueId(node.venue.id)
@@ -282,13 +284,15 @@ export class MapGenerator {
         // Only generate traits once per city per map generation
         if (!map.cityStates[cityName]) {
           const genreBias =
-            genres[Math.floor(this.random() * genres.length)] || 'unknown'
+            CITY_TRAIT_GENRES[
+              Math.floor(this.random() * CITY_TRAIT_GENRES.length)
+            ] ?? 'unknown'
           // Attention span in minutes: 15 to 59
           const attentionSpan = Math.floor(this.random() * 45) + 15
           const barSpendingProfile =
-            spendingProfiles[
-              Math.floor(this.random() * spendingProfiles.length)
-            ] || 'average'
+            CITY_TRAIT_SPENDING_PROFILES[
+              Math.floor(this.random() * CITY_TRAIT_SPENDING_PROFILES.length)
+            ] ?? 'average'
 
           map.cityStates[cityName] = {
             genreBias,

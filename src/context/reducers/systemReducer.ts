@@ -373,18 +373,18 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
           if (!Object.hasOwn(itemRecord, itemKey)) continue
           if (isForbiddenKey(itemKey)) continue
           const v = itemRecord[itemKey]
-          if (typeof v === 'string' || typeof v === 'boolean') {
-            ;(sanitizedItem as Record<string, unknown>)[itemKey] = v
-          } else if (typeof v === 'number' && Number.isFinite(v)) {
-            // Clamp economic fields non-negative; accept other finite numbers as-is
-            if (itemKey === 'cost' || itemKey === 'price') {
+          if (itemKey === 'cost' || itemKey === 'price') {
+            // Economic fields must be finite numbers; reject strings and NaN/Infinity
+            if (typeof v === 'number' && Number.isFinite(v)) {
               ;(sanitizedItem as Record<string, unknown>)[itemKey] = Math.max(
                 0,
                 v
               )
-            } else {
-              ;(sanitizedItem as Record<string, unknown>)[itemKey] = v
             }
+          } else if (typeof v === 'string' || typeof v === 'boolean') {
+            ;(sanitizedItem as Record<string, unknown>)[itemKey] = v
+          } else if (typeof v === 'number' && Number.isFinite(v)) {
+            ;(sanitizedItem as Record<string, unknown>)[itemKey] = v
           } else if (itemKey === 'effect') {
             const flatEffect = copySafeFlatObject(v)
             if (flatEffect) sanitizedItem.effect = flatEffect as never
@@ -522,16 +522,7 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
   for (const nodeId in sanitizedNodes) {
     if (!Object.hasOwn(sanitizedNodes, nodeId)) continue
     const node = sanitizedNodes[nodeId]
-    let venueId: string | undefined
-    if (typeof node?.venueId === 'string') {
-      venueId = node.venueId
-    } else if (
-      node?.venue &&
-      typeof node.venue === 'object' &&
-      typeof (node.venue as { id?: unknown }).id === 'string'
-    ) {
-      venueId = (node.venue as { id: string }).id
-    }
+    const venueId = normalizeVenueId(node?.venueId ?? node?.venue)
     if (!venueId) continue
     const cityKey = getCityKeyFromVenueId(venueId)
     if (!cityKey) continue
