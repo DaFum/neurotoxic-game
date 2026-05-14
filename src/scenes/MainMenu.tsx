@@ -76,6 +76,16 @@ export const MainMenu = () => {
       />
       <div className='absolute inset-0 z-0 bg-gradient-to-b from-black/0 to-black/90 pointer-events-none' />
 
+      {/* Atmosphere: slow scanning bar */}
+      <div
+        aria-hidden='true'
+        className='absolute inset-x-0 top-0 h-24 z-0 pointer-events-none animate-scan-bar'
+        style={{
+          background:
+            'linear-gradient(to bottom, transparent, var(--color-toxic-green-10) 45%, var(--color-toxic-green-20) 50%, var(--color-toxic-green-10) 55%, transparent)'
+        }}
+      />
+
       {showHQ && <BandHQ onClose={closeHQ} />}
 
       <div className='relative z-10 flex flex-col items-center'>
@@ -83,8 +93,12 @@ export const MainMenu = () => {
           initial={{ scale: 0.8, opacity: 0, y: -20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
-          className="text-6xl md:text-9xl text-center text-transparent bg-clip-text bg-gradient-to-b from-toxic-green to-toxic-green-dark font-['Metal_Mania'] animate-neon-flicker mb-2"
-          style={{ WebkitTextStroke: '2px var(--color-toxic-green)' }}
+          data-text='NEUROTOXIC'
+          className="title-ghost text-6xl md:text-9xl text-center text-transparent bg-clip-text bg-gradient-to-b from-toxic-green to-toxic-green-dark font-['Metal_Mania'] animate-neon-flicker mb-2"
+          style={{
+            WebkitTextStroke: '2px var(--color-toxic-green)',
+            filter: 'drop-shadow(0 0 18px var(--color-toxic-green-glow))'
+          }}
         >
           NEUROTOXIC
         </motion.h1>

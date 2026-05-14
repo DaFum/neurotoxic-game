@@ -119,7 +119,25 @@ export const GlitchButton = ({
       )}
       {/* Glitch Overlay Effect on Hover */}
       {!isIntervention && (
-        <span className='absolute inset-0 bg-star-white opacity-0 group-hover:opacity-10 mix-blend-difference pointer-events-none' />
+        <>
+          <span className='absolute inset-0 bg-star-white opacity-0 group-hover:opacity-10 mix-blend-difference pointer-events-none' />
+          {/* Diagonal shimmer sweep on hover */}
+          <span
+            className='absolute inset-0 overflow-hidden pointer-events-none'
+            aria-hidden='true'
+          >
+            <span className='absolute top-0 left-0 h-full w-1/3 -translate-x-full bg-gradient-to-r from-transparent via-star-white/20 to-transparent skew-x-[-12deg] motion-safe:group-hover:animate-[shimmer_700ms_ease-out]' />
+          </span>
+          {/* Sharp corner ticks */}
+          <span
+            aria-hidden='true'
+            className='absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-current opacity-60 pointer-events-none'
+          />
+          <span
+            aria-hidden='true'
+            className='absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-current opacity-60 pointer-events-none'
+          />
+        </>
       )}
     </button>
   )

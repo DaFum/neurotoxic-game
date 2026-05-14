@@ -24,10 +24,20 @@ export const Settings = () => {
   )
 
   return (
-    <div className='flex flex-col items-center justify-center h-full w-full bg-void-black z-50 p-8'>
+    <div className='flex flex-col items-center justify-center h-full w-full bg-void-black z-50 p-8 relative overflow-hidden'>
+      {/* Atmosphere: descending green scan bar */}
+      <div
+        aria-hidden='true'
+        className='absolute inset-x-0 top-0 h-28 pointer-events-none animate-scan-bar z-0'
+        style={{
+          background:
+            'linear-gradient(to bottom, transparent, var(--color-toxic-green-10) 50%, transparent)'
+        }}
+      />
+
       <SettingsTitle />
 
-      <div className='w-full max-w-2xl border-2 border-toxic-green p-8 bg-void-black/80'>
+      <div className='corner-frame w-full max-w-2xl border-2 border-toxic-green p-8 bg-void-black/80 relative z-10 shadow-[6px_6px_0_var(--color-toxic-green-20)]'>
         <SettingsPanel
           settings={settings}
           musicVol={audioState.musicVol}
