@@ -9372,6 +9372,15 @@
         "isDefault": false
       }
     ],
+    "deriveCityTraits": [
+      {
+        "name": "deriveCityTraits",
+        "path": "src/utils/mapGenerator.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
     "MapGenerator": [
       {
         "name": "MapGenerator",
@@ -9449,6 +9458,15 @@
     "formatNumber": [
       {
         "name": "formatNumber",
+        "path": "src/utils/numberUtils.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
+    "formatSignedFinancialAmount": [
+      {
+        "name": "formatSignedFinancialAmount",
         "path": "src/utils/numberUtils.ts",
         "source": "local",
         "type": "const",
