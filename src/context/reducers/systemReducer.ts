@@ -358,6 +358,44 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
       }
       sanitizedNode.neighbors = neighbors
     }
+    if (Array.isArray(nodeRecord.shopInventory)) {
+      const items: import('../../types/components').PurchaseItem[] = []
+      for (let i = 0; i < nodeRecord.shopInventory.length; i++) {
+        const raw = nodeRecord.shopInventory[i]
+        if (!raw || typeof raw !== 'object' || Array.isArray(raw)) continue
+        const itemRecord = raw as Record<string, unknown>
+        const sanitizedItem: import('../../types/components').PurchaseItem = {}
+        for (const itemKey in itemRecord) {
+          if (!Object.hasOwn(itemRecord, itemKey)) continue
+          if (isForbiddenKey(itemKey)) continue
+          const v = itemRecord[itemKey]
+          if (
+            typeof v === 'string' ||
+            typeof v === 'number' ||
+            typeof v === 'boolean'
+          ) {
+            ;(sanitizedItem as Record<string, unknown>)[itemKey] = v
+          } else if (itemKey === 'effect') {
+            const flatEffect = copySafeFlatObject(v)
+            if (flatEffect) sanitizedItem.effect = flatEffect as never
+          } else if (itemKey === 'effects' && Array.isArray(v)) {
+            const flatEffects: Array<Record<string, unknown>> = []
+            for (let j = 0; j < v.length; j++) {
+              const flatEffect = copySafeFlatObject(v[j])
+              if (flatEffect) flatEffects.push(flatEffect)
+            }
+            if (flatEffects.length > 0) {
+              sanitizedItem.effects = flatEffects as never
+            }
+          }
+        }
+        if (!isEmptyObject(sanitizedItem as Record<string, unknown>)) {
+          items.push(sanitizedItem)
+        }
+      }
+      sanitizedNode.shopInventory = items
+    }
+
     for (const key in nodeRecord) {
       if (!Object.hasOwn(nodeRecord, key)) continue
       if (
@@ -368,7 +406,8 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
         key === 'layer' ||
         key === 'type' ||
         key === 'venueId' ||
-        key === 'neighbors'
+        key === 'neighbors' ||
+        key === 'shopInventory'
       ) {
         continue
       }

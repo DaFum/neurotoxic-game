@@ -22,15 +22,15 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
 
   const merchItems = useMemo(() => {
     return Object.keys(DEFAULT_MERCH_PRICES).map(key => {
-      const defaultPrice = DEFAULT_MERCH_PRICES[key] || 10
-      const currentPrice = customPrices[key] || defaultPrice
+      const defaultPrice = DEFAULT_MERCH_PRICES[key] ?? 10
+      const currentPrice = customPrices[key] ?? defaultPrice
       const stock =
         typeof bandInventory[key] === 'number'
           ? (bandInventory[key] as number)
           : 0
 
       const hqItemDef = ALL_HQ_ITEMS.find(item => item.effect?.item === key)
-      const restockCost = hqItemDef ? hqItemDef.cost : 50 // fallback
+      const restockCost = hqItemDef?.cost ?? 50 // fallback
 
       return {
         key,
