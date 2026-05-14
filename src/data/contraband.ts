@@ -367,8 +367,7 @@ const CONTRABAND_DB = [
     icon: 'icon_compass',
     applyOnAdd: true,
     stackable: false
-  }
-,
+  },
 
   // N3UR0-FORGE AUTONOMOUS MUTATIONS
   {
@@ -421,8 +420,7 @@ const CONTRABAND_DB = [
     rarity: 'epic',
     icon: 'icon_ampoule',
     stackable: false
-  },
-
+  }
 ]
 
 export const CONTRABAND_RARITY_WEIGHTS = {

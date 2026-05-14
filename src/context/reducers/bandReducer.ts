@@ -2,6 +2,7 @@ import { logger } from '../../utils/logger'
 import { assertNever } from '../../utils/assertNever'
 import {
   clampBandHarmony,
+  clampBandStress,
   clampMemberMood,
   clampMemberStamina,
   applyInventoryItemDelta,
@@ -238,7 +239,11 @@ const applyContrabandEffect = (
   const newBand = { ...band }
 
   if (item.effectType === 'stress') {
-    newBand.stress = Math.max(0, Math.min(100, (newBand.stress || 0) + (item.value as number)))
+    newBand.stress = clampBandStress(
+      Math.floor(
+        ((newBand.stress as number | undefined) ?? 0) + (item.value as number)
+      )
+    )
   } else if (item.effectType === 'stamina' || item.effectType === 'mood') {
     if (
       !memberId ||

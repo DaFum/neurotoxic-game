@@ -247,6 +247,7 @@ export const clampBandHarmony = (harmony: number): number => {
  * @returns {number} Clamped loyalty value in range [0, 100].
  */
 export const clampLoyalty = (loyalty: number): number => clamp0to100(loyalty)
+export const clampBandStress = (stress: number): number => clamp0to100(stress)
 
 /**
  * Clamps social zealotry to the canonical gameplay range.

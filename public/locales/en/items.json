@@ -178,5 +178,23 @@
   "contraband.c_silver_tongue.name": "Silver Tongue",
   "contraband.c_silver_tongue.description": "Boosts charisma for interviews; +20 Mood for member when used.",
   "contraband.c_broken_compass.name": "Broken Compass",
-  "contraband.c_broken_compass.description": "Strangely points to profitable choices; small persistent tour benefit."
+  "contraband.c_broken_compass.description": "Strangely points to profitable choices; small persistent tour benefit.",
+  "contraband": {
+    "c_neuro_mold_spores": {
+      "name": "Neuro-Mold Spores",
+      "description": "Reduces band stress significantly. Smells like cyber-rot."
+    },
+    "c_cybernetic_plectrum_implant": {
+      "name": "Cybernetic Plectrum Implant",
+      "description": "Lowers guitar minigame difficulty permanently."
+    },
+    "c_fermented_void_juice": {
+      "name": "Fermented Void Juice",
+      "description": "An intense mood booster extracted from the abyss."
+    },
+    "c_hyper_adrenaline_ampoule": {
+      "name": "Hyper-Adrenaline Ampoule",
+      "description": "Increases maximum stamina permanently."
+    }
+  }
 }
