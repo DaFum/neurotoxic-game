@@ -295,9 +295,8 @@ const copySafeFlatObject = (
 
 /**
  * Validates a purchase effect object from a loaded save.
- * Accepts valid effect types: inventory_add (value must be non-negative),
- * unlock_upgrade, unlock_hq, inventory_set, and any effect with safe primitives.
- * Returns the effect if valid, null otherwise.
+ * Validates required fields per effect type and ensures finite numeric values.
+ * Returns safe-copied primitives for the effect if valid, null otherwise.
  */
 const validateLoadedEffect = (
   effect: unknown
@@ -307,13 +306,24 @@ const validateLoadedEffect = (
   const effectObj = effect as Record<string, unknown>
   const typeStr = typeof effectObj.type === 'string' ? effectObj.type : ''
 
-  // For inventory_add, ensure value is non-negative (can't reduce inventory via load)
   if (typeStr === 'inventory_add') {
+    // Must have string item and finite non-negative numeric value
+    if (typeof effectObj.item !== 'string') return null
     const value =
       typeof effectObj.value === 'number' ? effectObj.value : undefined
-    if (value === undefined || !Number.isFinite(value) || value < 0) {
-      return null
-    }
+    if (value === undefined || !Number.isFinite(value) || value < 0) return null
+  } else if (typeStr === 'inventory_set') {
+    // Must have string item
+    if (typeof effectObj.item !== 'string') return null
+  } else if (typeStr === 'unlock_upgrade' || typeStr === 'unlock_hq') {
+    // Must have string id
+    if (typeof effectObj.id !== 'string') return null
+  } else if (typeStr === 'stat_modifier' || typeStr === 'passive') {
+    // Must have string key
+    if (typeof effectObj.key !== 'string') return null
+  } else {
+    // Unknown effect type — reject to avoid corrupted state
+    return null
   }
 
   // Copy safe primitives and return

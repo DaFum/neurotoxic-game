@@ -1,7 +1,8 @@
 /**
- * Centralized, type-safe localStorage wrapper with consistent error handling.
- * All direct localStorage access should go through these functions.
- * Automatically handles JSON serialization/deserialization and null/invalid value guards.
+ * Type-safe localStorage helpers with consistent error handling.
+ * New code should prefer these over direct localStorage access.
+ * Note: these helpers assume JSON-encoded values and will not correctly read
+ * legacy raw-string keys written directly via localStorage.setItem.
  */
 
 /**
