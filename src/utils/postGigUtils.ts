@@ -594,18 +594,13 @@ export const applyPostGigPerformancePenalty = ({
   missTolerance: number
   missMoneyPenalty?: number
 }) => {
-  const { penalty } = calculateExcessMissMoneyPenalty({
+  const { excessMisses, penalty } = calculateExcessMissMoneyPenalty({
     misses,
     missTolerance,
     missMoneyPenalty
   })
 
-  if (penalty <= 0)
-    if (baseReport.soldMerch) {
-      // Explicitly pass through the sold merch so it can be deducted from inventory
-      financials.soldMerch = baseReport.soldMerch
-    }
-  return financials
+  if (penalty <= 0) return financials
 
   const newExpensesTotal = financials.expenses.total + penalty
 

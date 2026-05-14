@@ -136,16 +136,12 @@ famePromoVariants.forEach(variant => {
       gigStats: buildGigStats()
     })
 
-    const item1 = {
-      value: result1.income.breakdown
-        .filter(b => b.labelKey && b.labelKey.includes('merchSales'))
-        .reduce((sum, b) => sum + b.value, 0)
-    }
-    const item2 = {
-      value: result2.income.breakdown
-        .filter(b => b.labelKey && b.labelKey.includes('merchSales'))
-        .reduce((sum, b) => sum + b.value, 0)
-    }
+    const item1 = result1.income.breakdown.find(
+      b => b.labelKey === variant.expectedField
+    )
+    const item2 = result2.income.breakdown.find(
+      b => b.labelKey === variant.expectedField
+    )
 
     assert.ok(
       variant.assertion(item1.value, item2.value),
@@ -896,7 +892,7 @@ test('calculateMerchIncome gracefully handles missing/undefined params', () => {
     undefined
   )
   assert.ok(result.revenue >= 0)
-  // assert.ok(result.cost >= 0)
+  assert.ok(Object.hasOwn(result, 'revenue'))
 })
 
 test('calculateVenueSplit gracefully handles missing/undefined params', () => {
