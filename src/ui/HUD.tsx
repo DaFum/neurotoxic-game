@@ -252,6 +252,7 @@ export const HUD = memo(() => {
             aria-label={t('ui:hud.toggleDecimator', {
               defaultValue: 'Toggle decimator'
             })}
+            aria-pressed={band.neuroDecimatorActive}
             className={`pointer-events-auto flex-1 min-h-0 border-2 px-3 py-1.5 mb-2 transition-all duration-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void-black focus-visible:ring-toxic-green ${
               band.neuroDecimatorActive
                 ? 'bg-blood-red text-void-black border-blood-red shadow-[4px_4px_0px_var(--color-blood-red)]'
