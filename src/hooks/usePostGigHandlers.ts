@@ -350,7 +350,7 @@ export const usePostGigHandlers = ({
           const updatedInventory = { ...prevBand.inventory }
           for (const merchKey in financials.soldMerch) {
             if (Object.hasOwn(financials.soldMerch, merchKey)) {
-              const soldAmount = financials.soldMerch[merchKey] || 0
+              const soldAmount = financials.soldMerch[merchKey] ?? 0
               const currentAmount =
                 typeof updatedInventory[merchKey] === 'number'
                   ? (updatedInventory[merchKey] as number)
@@ -432,7 +432,11 @@ export const usePostGigHandlers = ({
         currentGig,
         setlist
       }).catch(err =>
-        logger.error('PostGig', 'submitLeaderboardScores failed', err)
+        logger.error('PostGig', 'submitLeaderboardScores failed', {
+          err,
+          player,
+          currentGig
+        })
       )
 
       if (shouldTriggerBankruptcy(stats.newMoney, financials.net)) {
@@ -456,7 +460,7 @@ export const usePostGigHandlers = ({
       logger.error(
         'PostGig handleContinue',
         'Unexpected error in continue flow',
-        err
+        { err, player, currentGig }
       )
       isProcessingActionRef.current = false
       setIsProcessingAction(false)

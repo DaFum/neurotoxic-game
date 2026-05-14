@@ -64,8 +64,10 @@ const getVenueCoord = (venue: Venue, axis: 'x' | 'y', fallback: number) => {
 }
 
 /** Derives the city key from a venue ID (e.g. 'berlin_so36' → 'berlin'). */
-export const getCityKeyFromVenueId = (venueId: string): string =>
-  venueId.split('_')[0] ?? ''
+export const getCityKeyFromVenueId = (venueId: string): string => {
+  const idx = venueId.indexOf('_')
+  return idx === -1 ? '' : venueId.slice(0, idx)
+}
 
 /**
  * Procedural generation for the game map using a Directed Acyclic Graph (DAG).

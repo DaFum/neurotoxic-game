@@ -168,8 +168,9 @@ test('getCityKeyFromVenueId extracts the prefix before the first underscore', ()
   assert.equal(getCityKeyFromVenueId('no_underscore_here'), 'no')
 })
 
-test('getCityKeyFromVenueId returns the full string when venueId has no underscore', () => {
-  assert.equal(getCityKeyFromVenueId('singleword'), 'singleword')
+test('getCityKeyFromVenueId returns empty string when venueId has no underscore', () => {
+  assert.equal(getCityKeyFromVenueId('singleword'), '')
+  assert.equal(getCityKeyFromVenueId(''), '')
 })
 
 test('MapGenerator populates cityStates keyed by venue ID prefix', () => {
