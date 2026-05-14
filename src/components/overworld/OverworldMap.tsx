@@ -3,6 +3,7 @@ import { MapConnection } from '../MapConnection'
 import { MapNodeView } from '../MapNodeView'
 import { TravelingVan } from './TravelingVan'
 import { calculateEffectiveTicketPrice } from '../../utils/economyEngine'
+import { getCityKeyFromVenueId } from '../../utils/mapGenerator'
 import { useNetworkStatus } from '../../hooks/useNetworkStatus'
 import {
   getGenImageUrl,
@@ -221,7 +222,7 @@ export const OverworldMap = React.memo(
               }
               cityTraits={
                 node.venue?.id
-                  ? gameMap?.cityStates?.[node.venue.id.split('_')[0] ?? '']
+                  ? gameMap?.cityStates?.[getCityKeyFromVenueId(node.venue.id)]
                   : undefined
               }
             />

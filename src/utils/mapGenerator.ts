@@ -63,6 +63,10 @@ const getVenueCoord = (venue: Venue, axis: 'x' | 'y', fallback: number) => {
   return typeof raw === 'number' && Number.isFinite(raw) ? raw : fallback
 }
 
+/** Derives the city key from a venue ID (e.g. 'berlin_so36' → 'berlin'). */
+export const getCityKeyFromVenueId = (venueId: string): string =>
+  venueId.split('_')[0] ?? ''
+
 /**
  * Procedural generation for the game map using a Directed Acyclic Graph (DAG).
  */
@@ -226,7 +230,7 @@ export class MapGenerator {
 
     for (const node of map.nodeList) {
       if (node.venue && node.venue.id) {
-        const cityName = node.venue.id.split('_')[0]
+        const cityName = getCityKeyFromVenueId(node.venue.id)
         if (!cityName) continue
 
         // Only generate traits once per city per map generation
