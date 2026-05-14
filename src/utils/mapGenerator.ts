@@ -29,10 +29,17 @@ type GeneratedMapNode = {
   status: 'unlocked' | 'completed' | 'locked'
   type: Extract<
     MapNodeType,
-    'START' | 'GIG' | 'SPECIAL' | 'REST_STOP' | 'FESTIVAL' | 'FINALE'
+    | 'START'
+    | 'GIG'
+    | 'SPECIAL'
+    | 'REST_STOP'
+    | 'FESTIVAL'
+    | 'FINALE'
+    | 'supplyStop'
   >
   x: number
   y: number
+  shopInventory?: import('../types/components').PurchaseItem[]
 }
 type MapGeneratorState = {
   layers: GeneratedMapNode[][]
@@ -88,7 +95,13 @@ export class MapGenerator {
   generateMap(depth: number = 10): MapGeneratorState {
     const validDepth = Math.floor(depth)
     if (!Number.isFinite(validDepth) || validDepth < 1) {
-      return { layers: [], nodes: {}, nodeList: [], connections: [] }
+      return {
+        layers: [],
+        nodes: {},
+        nodeList: [],
+        connections: [],
+        cityStates: {}
+      }
     }
 
     const map: MapGeneratorState = {
@@ -159,7 +172,7 @@ export class MapGenerator {
 
     const inventoryAddItems = HQ_ITEMS.gear.filter(
       i => i.effect?.type === 'inventory_add'
-    )
+    ) as import('../types/components').PurchaseItem[]
 
     // Pre-reserve Finale Venue (Leipzig Arena) so it is not picked randomly
     if (cachedFinaleVenue) usedVenueIds.add(cachedFinaleVenue.id)
@@ -194,8 +207,22 @@ export class MapGenerator {
    * Generates determinisic city traits for each unique city found on the generated map.
    */
   _populateCityStates(map: MapGeneratorState): void {
-    const genres = ['punk', 'metal', 'goth', 'indie', 'synth', 'noise', 'hardcore']
-    const spendingProfiles = ['stingy', 'average', 'generous', 'drunkards', 'merch-hungry']
+    const genres = [
+      'punk',
+      'metal',
+      'goth',
+      'indie',
+      'synth',
+      'noise',
+      'hardcore'
+    ]
+    const spendingProfiles = [
+      'stingy',
+      'average',
+      'generous',
+      'drunkards',
+      'merch-hungry'
+    ]
 
     for (const node of map.nodeList) {
       if (node.venue && node.venue.city) {
@@ -203,10 +230,14 @@ export class MapGenerator {
 
         // Only generate traits once per city per map generation
         if (!map.cityStates[cityName]) {
-          const genreBias = genres[Math.floor(this.random() * genres.length)] || 'unknown'
+          const genreBias =
+            genres[Math.floor(this.random() * genres.length)] || 'unknown'
           // Attention span in minutes: 15 to 60
           const attentionSpan = Math.floor(this.random() * 45) + 15
-          const barSpendingProfile = spendingProfiles[Math.floor(this.random() * spendingProfiles.length)] || 'average'
+          const barSpendingProfile =
+            spendingProfiles[
+              Math.floor(this.random() * spendingProfiles.length)
+            ] || 'average'
 
           map.cityStates[cityName] = {
             genreBias,

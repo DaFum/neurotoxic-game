@@ -54,6 +54,7 @@ type EconomyContext = {
   zealotry?: number
   regionRep?: number
   discountedTickets?: boolean
+  merchPrices?: Record<string, number>
   social?: {
     zealotry?: number
     activeDeals?: Array<{
@@ -315,10 +316,7 @@ export const calculateMerchIncome = (
   const soldItems: Record<string, number> = {}
   let totalRevenue = 0
 
-  const ctxSocial = context.social as
-    | { merchPrices?: Record<string, number> }
-    | undefined
-  const customPrices = ctxSocial?.merchPrices || {}
+  const customPrices = context.merchPrices ?? {}
 
   // Guard against undefined bandInventory (blocking issue)
   const safeInventory = bandInventory || {}
@@ -333,7 +331,7 @@ export const calculateMerchIncome = (
           : 0
       if (inventoryCount > 0 && totalBuyersRemaining > 0) {
         const defaultPrice = DEFAULT_MERCH_PRICES[merchKey] || 10
-        const currentPrice = customPrices[merchKey] || defaultPrice
+        const currentPrice = customPrices[merchKey] ?? defaultPrice
 
         let priceModifier = 1
         if (currentPrice > defaultPrice) {

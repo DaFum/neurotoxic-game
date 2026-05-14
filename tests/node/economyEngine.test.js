@@ -350,7 +350,7 @@ test('calculateGigFinancials uses all inventory types for sales limit', () => {
       .reduce((sum, b) => sum + b.value, 0)
   }
   assert.ok(
-    merchItem.value >= 0,
+    merchItem.value > 0,
     'Should sell patches/vinyls if other items out'
   )
 })
@@ -519,7 +519,7 @@ test('calculateGigFinancials merch table modifier increases sales', () => {
       .reduce((sum, b) => sum + b.value, 0)
   }
   assert.ok(
-    tableMerch.value >= noTableMerch.value,
+    tableMerch.value > noTableMerch.value,
     'Merch table should increase sales'
   )
 })
