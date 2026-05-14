@@ -1086,6 +1086,15 @@
         "isDefault": false
       }
     ],
+    "createUpdateVoidStressAction": [
+      {
+        "name": "createUpdateVoidStressAction",
+        "path": "src/context/actionCreators.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
     "createUpdateBandAction": [
       {
         "name": "createUpdateBandAction",
@@ -8992,6 +9001,15 @@
     "clampLoyalty": [
       {
         "name": "clampLoyalty",
+        "path": "src/utils/gameStateUtils.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
+    "clampBandStress": [
+      {
+        "name": "clampBandStress",
         "path": "src/utils/gameStateUtils.ts",
         "source": "local",
         "type": "const",
