@@ -183,7 +183,7 @@ export const gameReducer = (
   state: GameState,
   action: GameAction
 ): GameState => {
-  let nextState = state
+  let nextState: GameState
 
   if (!isHandledAction(action)) {
     nextState = bandReducer(state, action)
