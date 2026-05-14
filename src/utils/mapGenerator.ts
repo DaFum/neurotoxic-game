@@ -189,8 +189,8 @@ export class MapGenerator {
    * Generates determinisic city traits for each unique city found on the generated map.
    */
   _populateCityStates(map: MapGeneratorState): void {
-    const genres = ['Punk', 'Metal', 'Goth', 'Indie', 'Synth', 'Noise', 'Hardcore']
-    const spendingProfiles = ['Stingy', 'Average', 'Generous', 'Drunkards', 'Merch-Hungry']
+    const genres = ['punk', 'metal', 'goth', 'indie', 'synth', 'noise', 'hardcore']
+    const spendingProfiles = ['stingy', 'average', 'generous', 'drunkards', 'merch-hungry']
 
     for (const node of map.nodeList) {
       if (node.venue && node.venue.city) {
@@ -198,10 +198,10 @@ export class MapGenerator {
 
         // Only generate traits once per city per map generation
         if (!map.cityStates[cityName]) {
-          const genreBias = genres[Math.floor(this.random() * genres.length)] || 'Unknown'
+          const genreBias = genres[Math.floor(this.random() * genres.length)] || 'unknown'
           // Attention span in minutes: 15 to 60
           const attentionSpan = Math.floor(this.random() * 45) + 15
-          const barSpendingProfile = spendingProfiles[Math.floor(this.random() * spendingProfiles.length)] || 'Average'
+          const barSpendingProfile = spendingProfiles[Math.floor(this.random() * spendingProfiles.length)] || 'average'
 
           map.cityStates[cityName] = {
             genreBias,

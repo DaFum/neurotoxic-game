@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import { HexNode } from '../ui/shared'
 import { translateLocation } from '../utils/locationI18n'
-import type { MapNode as GameMapNode } from '../types/game'
+import type { MapNode as GameMapNode, CityTraitState } from '../types/game'
 import type { TranslationCallback } from '../types/callbacks'
 import { calcCancellationRisk } from '../utils/gameStateUtils'
 
@@ -19,8 +19,6 @@ const MOTION_NO_HOVER = {}
 type NodeVisibility = 'visible' | 'dimmed' | 'hidden'
 
 type MapNodeData = GameMapNode
-
-import type { CityTraitState } from '../types/game'
 
 interface MapNodeTooltipProps {
   node: MapNodeData
@@ -108,10 +106,21 @@ const MapNodeTooltip = memo(
 
         {cityTraits && (
           <div className='mt-1 mb-2 pt-1 border-t border-toxic-green/30 text-[10px] text-ash-gray font-mono flex flex-col gap-0.5'>
-            <div className='text-toxic-green/80 font-bold uppercase tracking-wider text-[9px] mb-0.5'>Szene-Intel</div>
-            <div><span className='text-star-white'>Genre-Bias:</span> {cityTraits.genreBias}</div>
-            <div><span className='text-star-white'>Aufmerksamkeitsspanne:</span> {cityTraits.attentionSpan}m</div>
-            <div><span className='text-star-white'>Bar-Ausgabenprofil:</span> {cityTraits.barSpendingProfile}</div>
+            <div className='text-toxic-green/80 font-bold uppercase tracking-wider text-[9px] mb-0.5'>
+              {t('ui:map.intel.title')}
+            </div>
+            <div>
+              <span className='text-star-white'>{t('ui:map.intel.genreBias')}</span>{' '}
+              {t(`ui:map.intel.genres.${cityTraits.genreBias}`, { defaultValue: cityTraits.genreBias })}
+            </div>
+            <div>
+              <span className='text-star-white'>{t('ui:map.intel.attentionSpan')}</span>{' '}
+              {cityTraits.attentionSpan}m
+            </div>
+            <div>
+              <span className='text-star-white'>{t('ui:map.intel.barSpendingProfile')}</span>{' '}
+              {t(`ui:map.intel.spending.${cityTraits.barSpendingProfile}`, { defaultValue: cityTraits.barSpendingProfile })}
+            </div>
           </div>
         )}
 
