@@ -206,6 +206,7 @@ export interface BandState {
     crowdDecay: number
   }
   inventory: Record<string, unknown>
+  merchPrices?: Record<string, number>
   neuroDecimatorActive: boolean
   banterEvents?: Array<{
     member1: string
