@@ -219,6 +219,9 @@ export const OverworldMap = React.memo(
                   ? band.harmony
                   : undefined
               }
+              cityTraits={
+                node.venue?.city ? gameMap?.cityStates?.[node.venue.city] : undefined
+              }
             />
             {hasRival && visibility !== 'hidden' && (
               <div

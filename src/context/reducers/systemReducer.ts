@@ -420,6 +420,36 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
     connections: sanitizedConnections
   }
 
+  if (mapRecord.cityStates && typeof mapRecord.cityStates === 'object' && !Array.isArray(mapRecord.cityStates)) {
+    const cityStatesRecord = mapRecord.cityStates as Record<string, unknown>
+    const sanitizedCityStates: Record<string, import('../../types/game').CityTraitState> = {}
+
+    for (const city in cityStatesRecord) {
+      if (!Object.hasOwn(cityStatesRecord, city)) continue
+      if (isForbiddenKey(city)) continue
+
+      const cityTrait = cityStatesRecord[city]
+      if (cityTrait && typeof cityTrait === 'object' && !Array.isArray(cityTrait)) {
+        const cityTraitRecord = cityTrait as Record<string, unknown>
+        if (
+          typeof cityTraitRecord.genreBias === 'string' &&
+          typeof cityTraitRecord.attentionSpan === 'number' &&
+          typeof cityTraitRecord.barSpendingProfile === 'string'
+        ) {
+          sanitizedCityStates[city] = {
+            genreBias: cityTraitRecord.genreBias,
+            attentionSpan: cityTraitRecord.attentionSpan,
+            barSpendingProfile: cityTraitRecord.barSpendingProfile
+          }
+        }
+      }
+    }
+
+    if (Object.keys(sanitizedCityStates).length > 0) {
+      sanitizedMap.cityStates = sanitizedCityStates
+    }
+  }
+
   if (typeof mapRecord.name === 'string') {
     sanitizedMap.name = mapRecord.name
   }

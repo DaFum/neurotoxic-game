@@ -2624,25 +2624,6 @@
         "isDefault": false
       }
     ],
-    "Milestone": [
-      {
-        "name": "Milestone",
-        "path": "src/data/milestones/milestones.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      }
-    ],
-    "MILESTONES": [
-      {
-        "name": "MILESTONES",
-        "path": "src/data/milestones/milestones.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      }
-    ],
     "SOCIAL_PLATFORMS": [
       {
         "name": "SOCIAL_PLATFORMS",
@@ -5705,6 +5686,17 @@
     "MapNode": [
       {
         "name": "MapNode",
+        "path": "src/types/game.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "typeOnly": true,
+        "exportPath": "src/types/index.ts"
+      }
+    ],
+    "CityTraitState": [
+      {
+        "name": "CityTraitState",
         "path": "src/types/game.d.ts",
         "source": "local",
         "type": "interface",
@@ -8942,6 +8934,15 @@
     "applyInventoryItemDelta": [
       {
         "name": "applyInventoryItemDelta",
+        "path": "src/utils/gameStateUtils.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
+    "isForbiddenKey": [
+      {
+        "name": "isForbiddenKey",
         "path": "src/utils/gameStateUtils.ts",
         "source": "local",
         "type": "const",
