@@ -445,12 +445,12 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
         const cityTraitRecord = cityTrait as Record<string, unknown>
         if (
           typeof cityTraitRecord.genreBias === 'string' &&
-          typeof cityTraitRecord.attentionSpan === 'number' &&
+          Number.isFinite(cityTraitRecord.attentionSpan) &&
           typeof cityTraitRecord.barSpendingProfile === 'string'
         ) {
           sanitizedCityStates[city] = {
             genreBias: cityTraitRecord.genreBias,
-            attentionSpan: cityTraitRecord.attentionSpan,
+            attentionSpan: cityTraitRecord.attentionSpan as number,
             barSpendingProfile: cityTraitRecord.barSpendingProfile
           }
         }
