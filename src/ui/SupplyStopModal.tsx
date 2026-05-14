@@ -8,7 +8,9 @@ import {
   canAfford,
   processPurchaseEffect
 } from '../utils/purchaseLogicUtils'
-import type { PurchaseItem } from '../types/components'
+import { calculateFameLevel } from '../utils/gameStateUtils'
+import type { CatalogItem, PurchaseItem } from '../types/components'
+import type { PlayerState, BandState } from '../types/game'
 
 export interface SupplyStopModalProps {
   inventory: PurchaseItem[]
@@ -42,11 +44,15 @@ export const SupplyStopModal: React.FC<SupplyStopModalProps> = ({
     let bandPatch: Partial<BandState> = {}
 
     // Process effects
-    const effect = item.effects?.[0] || item.effect
+    const effect = item.effects?.[0] ?? item.effect
     if (effect) {
       const result = processPurchaseEffect(effect, item, {}, player, band)
-      if (result.playerPatch) Object.assign(playerPatch, result.playerPatch)
-      if (result.bandPatch) bandPatch = result.bandPatch
+      if (result && 'playerPatch' in result && result.playerPatch) {
+        Object.assign(playerPatch, result.playerPatch)
+      }
+      if (result && 'bandPatch' in result && result.bandPatch) {
+        bandPatch = result.bandPatch
+      }
     }
 
     // Apply reputation consequence (deduct fame)
@@ -99,6 +105,12 @@ export const SupplyStopModal: React.FC<SupplyStopModalProps> = ({
 
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
           {inventory.map(item => {
+            if (item.id == null) return null
+            const catalogItem: CatalogItem = {
+              ...item,
+              id: item.id,
+              cost: item.cost ?? 0
+            }
             const adjustedCost = getAdjustedCost(item, band)
             const owned = isItemOwned(item, player, band)
             const disabled = !canAfford(item, player, adjustedCost)
@@ -106,7 +118,7 @@ export const SupplyStopModal: React.FC<SupplyStopModalProps> = ({
             return (
               <ShopItem
                 key={item.id}
-                item={item}
+                item={catalogItem}
                 isOwned={owned}
                 isDisabled={disabled}
                 adjustedCost={adjustedCost}

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
-import type { PlayerState, Venue, GigModifiers } from '../types/game'
+import type { PlayerState, Venue, GigModifiers, GameState } from '../types/game'
 import type { RhythmSetlistEntry } from '../types/rhythmGame'
 import type { Song } from '../types/audio'
 import type { ActiveEffectEntry } from '../types/components'
@@ -144,8 +144,8 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
         .flat()
         .find(
           item =>
-            item.effect &&
-            typeof item.effect.item === 'string' &&
+            item.effect !== undefined &&
+            'item' in item.effect &&
             item.effect.item === merchKey
         )
       if (!itemDef) return

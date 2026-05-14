@@ -58,7 +58,7 @@ const getPinAltText = (t: TranslationCallback, type: string): string => {
 const getNodeTypeLabel = (t: TranslationCallback, type: string): string => {
   if (type === 'GIG') return t('ui:map.nodeType.gig')
   if (type === 'supplyStop')
-    return t('ui:map.nodeType.supply_stop', 'SUPPLY STOP')
+    return t('ui:map.nodeType.supply_stop', { defaultValue: 'SUPPLY STOP' })
   if (type === 'REST_STOP') return t('ui:map.nodeType.rest')
   return t('ui:map.nodeType.fallback', {
     type: type.substring(0, 3)
@@ -180,7 +180,7 @@ const MapNodeTooltip = memo(
         )}
         {node.type === 'supplyStop' && (
           <div className='text-[10px] text-toxic-green font-mono'>
-            {t('ui:map.supply_stop_desc', 'Supply Stop')}
+            {t('ui:map.supply_stop_desc', { defaultValue: 'Supply Stop' })}
           </div>
         )}
         {isCurrent && (
