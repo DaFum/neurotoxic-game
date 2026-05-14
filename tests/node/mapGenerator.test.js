@@ -2,7 +2,8 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import {
   MapGenerator,
-  getCityKeyFromVenueId
+  getCityKeyFromVenueId,
+  deriveCityTraits
 } from '../../src/utils/mapGenerator'
 
 test('MapGenerator generates a map with correct structure', () => {
@@ -225,4 +226,29 @@ test('MapGenerator cityStates keys match venue ID prefixes of non-START/FINALE n
       `cityStates should have entry for city "${cityKey}" (venue ${node.venue.id})`
     )
   }
+})
+
+test('deriveCityTraits is deterministic for the same city key', () => {
+  const a = deriveCityTraits('berlin')
+  const b = deriveCityTraits('berlin')
+  assert.deepEqual(a, b, 'Same key should yield identical traits')
+})
+
+test('deriveCityTraits produces valid trait fields', () => {
+  const traits = deriveCityTraits('hamburg')
+  assert.ok(typeof traits.genreBias === 'string' && traits.genreBias.length > 0)
+  assert.ok(traits.attentionSpan >= 15 && traits.attentionSpan <= 59)
+  assert.ok(
+    typeof traits.barSpendingProfile === 'string' &&
+      traits.barSpendingProfile.length > 0
+  )
+})
+
+test('deriveCityTraits varies across different city keys', () => {
+  const keys = ['berlin', 'hamburg', 'munich', 'cologne', 'leipzig']
+  const seen = new Set(keys.map(k => JSON.stringify(deriveCityTraits(k))))
+  assert.ok(
+    seen.size > 1,
+    'Different cities should not all collide to one trait set'
+  )
 })

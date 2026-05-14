@@ -33,6 +33,10 @@ import { generateDailyTrend } from '../../utils/socialEngine'
 import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks, normalizeTraitMap } from '../../utils/traitUtils'
 import { normalizeVenueId } from '../../utils/mapUtils'
+import {
+  getCityKeyFromVenueId,
+  deriveCityTraits
+} from '../../utils/mapGenerator'
 import { CONTRABAND_BY_ID } from '../../data/contraband'
 import {
   createInitialState,
@@ -499,6 +503,39 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
     if (Object.keys(sanitizedCityStates).length > 0) {
       sanitizedMap.cityStates = sanitizedCityStates
     }
+  }
+
+  // Backfill cityStates for saves that predate the city-intel feature so the
+  // tooltip is not silently empty on existing tours. Traits derive from a
+  // stable hash of the city key, so each city stays consistent across loads.
+  const backfilledCityStates: Record<
+    string,
+    import('../../types/game').CityTraitState
+  > = sanitizedMap.cityStates ?? {}
+  let cityStatesGrew = false
+  for (const nodeId in sanitizedNodes) {
+    if (!Object.hasOwn(sanitizedNodes, nodeId)) continue
+    const node = sanitizedNodes[nodeId]
+    let venueId: string | undefined
+    if (typeof node?.venueId === 'string') {
+      venueId = node.venueId
+    } else if (
+      node?.venue &&
+      typeof node.venue === 'object' &&
+      typeof (node.venue as { id?: unknown }).id === 'string'
+    ) {
+      venueId = (node.venue as { id: string }).id
+    }
+    if (!venueId) continue
+    const cityKey = getCityKeyFromVenueId(venueId)
+    if (!cityKey) continue
+    if (!Object.hasOwn(backfilledCityStates, cityKey)) {
+      backfilledCityStates[cityKey] = deriveCityTraits(cityKey)
+      cityStatesGrew = true
+    }
+  }
+  if (cityStatesGrew) {
+    sanitizedMap.cityStates = backfilledCityStates
   }
 
   if (typeof mapRecord.name === 'string') {
