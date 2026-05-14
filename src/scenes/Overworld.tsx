@@ -100,6 +100,9 @@ export const Overworld = () => {
       DARK_WEB_LEAK_CONFIG
     }
   } = useOverworldModals()
+  const [supplyStopInventory, setSupplyStopInventory] = useState<
+    import('../types/components').PurchaseItem[] | null
+  >(null)
 
   const {
     isTraveling,
@@ -209,7 +212,12 @@ export const Overworld = () => {
       <EventLog t={t} day={player.day} locationId={player.location} />
 
       {showHQ && <BandHQ onClose={closeHQ} />}
-      {supplyStopInventory && <SupplyStopModal inventory={supplyStopInventory} onClose={() => setSupplyStopInventory(null)} />}
+      {supplyStopInventory && (
+        <SupplyStopModal
+          inventory={supplyStopInventory}
+          onClose={() => setSupplyStopInventory(null)}
+        />
+      )}
       {showQuests && <QuestsModal {...questsProps} />}
       {showStash && <ContrabandStash {...stashProps} />}
       {showPirateRadio && (

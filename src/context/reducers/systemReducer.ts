@@ -70,7 +70,9 @@ const ALLOWED_MAP_NODE_TYPES = new Set<MapNodeType>([
   'FESTIVAL',
   'FINALE',
   'CITY',
-  'REST'
+  'REST',
+  'supplyStop',
+  'supplyStop'
 ])
 
 const isMapNodeType = (value: unknown): value is MapNodeType =>

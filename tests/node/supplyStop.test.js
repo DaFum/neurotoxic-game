@@ -26,18 +26,35 @@ test('MapGenerator generates supplyStop nodes with inventory_add items determini
     if (foundSupplyStop) break
   }
 
-  assert.ok(foundSupplyStop, 'Should generate at least one supplyStop node after several attempts')
-  assert.ok(Array.isArray(supplyStopNode.shopInventory), 'supplyStop node should have shopInventory array')
-  assert.ok(supplyStopNode.shopInventory.length > 0, 'shopInventory should not be empty')
+  assert.ok(
+    foundSupplyStop,
+    'Should generate at least one supplyStop node after several attempts'
+  )
+  assert.ok(
+    Array.isArray(supplyStopNode.shopInventory),
+    'supplyStop node should have shopInventory array'
+  )
+  assert.ok(
+    supplyStopNode.shopInventory.length > 0,
+    'shopInventory should not be empty'
+  )
 
   const dummyPlayer = { hqUpgrades: [], van: { upgrades: [] } }
   const dummyBand = { inventory: {} }
 
   for (const item of supplyStopNode.shopInventory) {
     const effect = item.effects?.[0] || item.effect
-    assert.equal(effect?.type, 'inventory_add', `Item ${item.id} should have inventory_add effect type`)
+    assert.equal(
+      effect?.type,
+      'inventory_add',
+      `Item ${item.id} should have inventory_add effect type`
+    )
 
     const owned = isItemOwned(item, dummyPlayer, dummyBand)
-    assert.equal(owned, false, `Consumable item ${item.id} with inventory_add should not be evaluated as OWNED`)
+    assert.equal(
+      owned,
+      false,
+      `Consumable item ${item.id} with inventory_add should not be evaluated as OWNED`
+    )
   }
 })

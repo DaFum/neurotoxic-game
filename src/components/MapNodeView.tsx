@@ -57,7 +57,8 @@ const getPinAltText = (t: TranslationCallback, type: string): string => {
 
 const getNodeTypeLabel = (t: TranslationCallback, type: string): string => {
   if (type === 'GIG') return t('ui:map.nodeType.gig')
-  if (type === 'supplyStop') return t('ui:map.nodeType.supply_stop', 'SUPPLY STOP')
+  if (type === 'supplyStop')
+    return t('ui:map.nodeType.supply_stop', 'SUPPLY STOP')
   if (type === 'REST_STOP') return t('ui:map.nodeType.rest')
   return t('ui:map.nodeType.fallback', {
     type: type.substring(0, 3)

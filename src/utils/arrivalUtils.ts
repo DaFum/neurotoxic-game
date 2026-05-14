@@ -123,7 +123,9 @@ type HandleNodeArrivalParams = {
   startGig: (venue: Venue) => void
   addToast: (msg: string, level?: string) => void
   onShowHQ?: () => void
-  onShowSupplyStop?: (inventory: any[]) => void
+  onShowSupplyStop?: (
+    inventory: import('../types/components').PurchaseItem[]
+  ) => void
   eventAlreadyActive?: boolean
   rng?: () => number
 }
