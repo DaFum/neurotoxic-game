@@ -53,12 +53,14 @@ export const PreGig = () => {
       <div className='w-full max-w-5xl relative z-10'>
         <div className='flex gap-4 border-b border-zinc-800 pb-2 mb-4'>
           <button
+            type='button'
             className={`font-mono uppercase px-4 py-2 ${activeTab === 'logistics' ? 'bg-(--color-toxic-green) text-black' : 'text-zinc-400 hover:text-white'}`}
             onClick={() => setActiveTab('logistics')}
           >
             Logistics
           </button>
           <button
+            type='button'
             className={`font-mono uppercase px-4 py-2 ${activeTab === 'merch' ? 'bg-(--color-toxic-green) text-black' : 'text-zinc-400 hover:text-white'}`}
             onClick={() => setActiveTab('merch')}
           >

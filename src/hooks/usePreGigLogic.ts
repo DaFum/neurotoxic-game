@@ -142,7 +142,12 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     (merchKey: string) => {
       const itemDef = Object.values(HQ_ITEMS)
         .flat()
-        .find(item => item.effect && item.effect.item === merchKey)
+        .find(
+          item =>
+            item.effect &&
+            typeof item.effect.item === 'string' &&
+            item.effect.item === merchKey
+        )
       if (!itemDef) return
 
       const cost = itemDef.cost
@@ -163,7 +168,11 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
           ...prevBand,
           inventory: {
             ...currentInventory,
-            [merchKey]: currentAmount + ((itemDef.effect.value as number) || 10)
+            [merchKey]:
+              currentAmount +
+              (typeof itemDef.effect?.value === 'number'
+                ? itemDef.effect.value
+                : 10)
           }
         }
       })
