@@ -1238,10 +1238,10 @@ export const handleLoadGame = (
     minigame: sanitizeMinigameState(loadedState.minigame),
     unlocks: Array.isArray(loadedState.unlocks)
       ? sanitizeStringArray(loadedState.unlocks)
-      : state.unlocks || [],
+      : (state.unlocks ?? []),
     completedMilestones: Array.isArray(loadedState.completedMilestones)
       ? sanitizeStringArray(loadedState.completedMilestones)
-      : state.completedMilestones || []
+      : (state.completedMilestones ?? [])
   }
 
   // Apply venue migrations using spreads

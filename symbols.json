@@ -8948,15 +8948,6 @@
         "isDefault": false
       }
     ],
-    "isForbiddenKey": [
-      {
-        "name": "isForbiddenKey",
-        "path": "src/utils/gameStateUtils.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      }
-    ],
     "hasForbiddenKeys": [
       {
         "name": "hasForbiddenKeys",

@@ -207,33 +207,34 @@ export const gameReducer = (
   }
 
   if (action.type === ActionTypes.ADVANCE_DAY) {
-    for (let i = 0; i < MILESTONES.length; i++) {
-      const milestone = MILESTONES[i]
-      if (!milestone) continue
+    const snapshotBeforeMilestones = nextState
+    const triggeredMilestones = MILESTONES.filter(
+      m =>
+        !snapshotBeforeMilestones.completedMilestones?.includes(m.id) &&
+        m.condition(snapshotBeforeMilestones)
+    )
 
-      if (!nextState.completedMilestones?.includes(milestone.id)) {
-        if (milestone.condition(nextState)) {
-          nextState = {
-            ...nextState,
-            completedMilestones: [
-              ...(nextState.completedMilestones || []),
-              milestone.id
-            ]
-          }
-          nextState = gameReducer(nextState, milestone.rewardAction)
-
-          if (milestone.labelKey) {
-            nextState = gameReducer(nextState, {
-              type: ActionTypes.ADD_TOAST,
-              payload: {
-                id: getSafeUUID(),
-                type: 'info',
-                messageKey: milestone.labelKey
-              }
-            })
-          }
-        }
+    for (const milestone of triggeredMilestones) {
+      nextState = {
+        ...nextState,
+        completedMilestones: [
+          ...(nextState.completedMilestones ?? []),
+          milestone.id
+        ]
       }
+
+      if (milestone.rewardAction) {
+        nextState = gameReducer(nextState, milestone.rewardAction)
+      }
+
+      nextState = gameReducer(nextState, {
+        type: ActionTypes.ADD_TOAST,
+        payload: {
+          id: getSafeUUID(),
+          type: 'info',
+          messageKey: milestone.labelKey
+        }
+      })
     }
   }
 

@@ -1,4 +1,10 @@
 {
+  "milestones": {
+    "survive_1_week": "Milestone Unlocked: Survived 1 Week!",
+    "first_gig_done": "Milestone Unlocked: First Gig Completed!",
+    "high_harmony": "Milestone Unlocked: Band harmony is high!",
+    "high_harmony.reward": "You received a new perk!"
+  },
   "action_clear": "CLEAR",
   "aria.shortcutsHelp": "Toggle keyboard shortcuts help",
   "aria.toggleMuteSystem": "Toggle mute system",
