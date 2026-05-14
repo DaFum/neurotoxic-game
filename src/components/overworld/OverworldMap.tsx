@@ -220,7 +220,9 @@ export const OverworldMap = React.memo(
                   : undefined
               }
               cityTraits={
-                node.venue?.city ? gameMap?.cityStates?.[node.venue.city] : undefined
+                node.venue?.id
+                  ? gameMap?.cityStates?.[node.venue.id.split('_')[0] ?? '']
+                  : undefined
               }
             />
             {hasRival && visibility !== 'hidden' && (

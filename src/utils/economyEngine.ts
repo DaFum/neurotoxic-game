@@ -330,7 +330,7 @@ export const calculateMerchIncome = (
           ? safeInventory[merchKey]
           : 0
       if (inventoryCount > 0 && totalBuyersRemaining > 0) {
-        const defaultPrice = DEFAULT_MERCH_PRICES[merchKey] || 10
+        const defaultPrice = DEFAULT_MERCH_PRICES[merchKey] ?? 10
         const currentPrice = customPrices[merchKey] ?? defaultPrice
 
         let priceModifier = 1

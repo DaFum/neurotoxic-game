@@ -225,8 +225,9 @@ export class MapGenerator {
     ]
 
     for (const node of map.nodeList) {
-      if (node.venue && node.venue.city) {
-        const cityName = node.venue.city
+      if (node.venue && node.venue.id) {
+        const cityName = node.venue.id.split('_')[0]
+        if (!cityName) continue
 
         // Only generate traits once per city per map generation
         if (!map.cityStates[cityName]) {
