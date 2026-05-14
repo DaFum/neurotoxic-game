@@ -2,6 +2,7 @@ import { SONGS_DB } from '../data/songs'
 import { GigModifiersBlock } from '../components/pregig/GigModifiersBlock'
 import { SetlistBlock } from '../components/pregig/SetlistBlock'
 import { MerchStrategyBlock } from '../components/pregig/MerchStrategyBlock'
+import { useState } from 'react'
 import { PreGigHeader } from '../components/pregig/PreGigHeader'
 import { PreGigStartButton } from '../components/pregig/PreGigStartButton'
 import { usePreGigLogic } from '../hooks/usePreGigLogic'
@@ -16,6 +17,7 @@ for (let i = 0; i < SONGS_DB.length; i++) {
  * Scene for preparing for a gig: managing budget, setlist, and modifiers.
  */
 export const PreGig = () => {
+  const [activeTab, setActiveTab] = useState<'logistics' | 'merch'>('logistics')
   const {
     t,
     i18n,
