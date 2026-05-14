@@ -229,6 +229,17 @@ export const RELATIONSHIP_MIN_SCORE = 0
 export const RELATIONSHIP_MAX_SCORE = 100
 
 /**
+ * Clamps relationship score to the canonical gameplay range.
+ *
+ * @param {number} score - Candidate relationship score.
+ * @returns {number} Clamped relationship value in range [0, 100].
+ */
+export const clampRelationship = (score: number): number => {
+  if (!Number.isFinite(score)) return RELATIONSHIP_DEFAULT_SCORE
+  return Math.max(RELATIONSHIP_MIN_SCORE, Math.min(RELATIONSHIP_MAX_SCORE, Math.round(score)))
+}
+
+/**
  * Clamps band harmony to the canonical gameplay range.
  *
  * @param {number} harmony - Candidate harmony value.
@@ -239,6 +250,8 @@ export const clampBandHarmony = (harmony: number): number => {
   const safeHarmony = Math.floor(harmony)
   return Math.max(1, Math.min(100, safeHarmony))
 }
+
+
 
 /**
  * Clamps social loyalty to the canonical gameplay range.
@@ -380,6 +393,8 @@ type RelationshipChange = {
   member1: string
   member2: string
   change: number
+  source?: string
+  timestamp?: number
 }
 
 type MemberDelta = FilteredRecord & {
@@ -812,10 +827,7 @@ const calculateMemberRelationshipChange = (
   }
 
   const currentScore = currentRelationships[other] ?? RELATIONSHIP_DEFAULT_SCORE
-  const newScore = Math.max(
-    RELATIONSHIP_MIN_SCORE,
-    Math.min(RELATIONSHIP_MAX_SCORE, Math.round(currentScore + amount))
-  )
+  const newScore = clampRelationship(currentScore + amount)
 
   return { other, newScore }
 }
@@ -925,6 +937,21 @@ export const applyEventDelta = (
           )
         ? [delta.band.relationshipChange]
         : []
+
+    if (relationshipChange.length > 0) {
+      const banterDeltas = relationshipChange.filter(rc => rc.source === 'banter')
+      if (banterDeltas.length > 0) {
+        nextBand.banterEvents = [
+          ...(nextBand.banterEvents || []),
+          ...banterDeltas.map(rc => ({
+            member1: rc.member1,
+            member2: rc.member2,
+            delta: rc.change,
+            timestamp: rc.timestamp || Date.now()
+          }))
+        ].slice(-50)
+      }
+    }
     const skillDelta = delta.band.skill
 
     if (

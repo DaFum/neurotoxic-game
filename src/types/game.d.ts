@@ -197,6 +197,12 @@ export interface BandState {
   }
   inventory: Record<string, unknown>
   neuroDecimatorActive: boolean
+  banterEvents?: Array<{
+    member1: string
+    member2: string
+    delta: number
+    timestamp: number
+  }>
   [key: string]: unknown
 }
 
