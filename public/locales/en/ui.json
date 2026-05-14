@@ -1312,6 +1312,7 @@
   "pregig.toasts.noGig": "No gig active! Returning to map.",
   "pregig.toasts.noMoneySnacks": "Not enough money for snacks!",
   "pregig.toasts.noMoneyUpgrade": "Not enough money for this upgrade!",
+  "pregig.toasts.restocked": "Restocked!",
   "quests.button": "QUESTS",
   "quests.closeButton": "Close Quests",
   "quests.closeLabel": "[CLOSE]",
