@@ -25,10 +25,9 @@ const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     termKey: 'ui:glossary.terms.hype',
     descriptionKey: 'ui:glossary.desc.hype',
     liveValueSelector: (state: GlossaryState, t: TFunction<['ui'], undefined>) => {
-      // Hype often reflects fame or loyalty, we will show Fame and Loyalty here as proxies since hype is an event effect
+      // Hype event effects map to fame, so the live value should reflect fame only.
       const fameLabel = t('ui:stats.fame', { defaultValue: 'Fame' })
-      const loyaltyLabel = t('ui:stats.loyalty', { defaultValue: 'Loyalty' })
-      return `${fameLabel}: ${state.player.fame} | ${loyaltyLabel}: ${state.social.loyalty ?? 0}`
+      return `${fameLabel}: ${state.player.fame}`
     }
   },
   {
