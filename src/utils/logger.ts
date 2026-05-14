@@ -41,7 +41,7 @@ export class Logger {
       'neurotoxic_log_level',
       null
     )
-    if (savedLevel !== null && Number.isFinite(savedLevel)) {
+    if (savedLevel !== null && isValidLogLevel(savedLevel)) {
       this.minLevel = savedLevel
     }
   }
@@ -51,6 +51,10 @@ export class Logger {
    * @param {number} level
    */
   setLevel(level: number): void {
+    if (!isValidLogLevel(level)) {
+      console.warn(`[Logger] Invalid log level: ${level}, ignoring`)
+      return
+    }
     this.minLevel = level
     setSafeStorageItem('neurotoxic_log_level', level)
   }

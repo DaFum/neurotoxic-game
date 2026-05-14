@@ -739,10 +739,10 @@ export const BrutalToggle = memo(
     const { isGlitching, trigger: pulseGlitch } = useGlitchPulse()
     const labelId = useId()
 
-    const toggle = () => {
+    const toggle = useCallback(() => {
       pulseGlitch()
-      setIsOn(!isOn)
-    }
+      setIsOn(prev => !prev)
+    }, [pulseGlitch])
 
     return (
       <div className='flex items-center justify-between w-full max-w-sm border border-toxic-green/30 p-3 bg-void-black'>

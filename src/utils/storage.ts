@@ -5,6 +5,20 @@
  */
 
 /**
+ * Resolves the available localStorage instance across browser and server environments.
+ * @returns localStorage instance or null if unavailable
+ */
+function getStorage(): Storage | null {
+  if (typeof window !== 'undefined') {
+    return window.localStorage
+  }
+  if (typeof globalThis !== 'undefined') {
+    return globalThis.localStorage
+  }
+  return null
+}
+
+/**
  * Safely get a typed item from localStorage.
  * Returns the parsed value or the fallback if the key doesn't exist, is unparseable, or is invalid.
  * @template T - The expected type of the value
@@ -14,12 +28,7 @@
  */
 export function getSafeStorageItem<T>(key: string, fallback: T): T {
   try {
-    const storage =
-      typeof window !== 'undefined'
-        ? window.localStorage
-        : typeof globalThis !== 'undefined'
-          ? globalThis.localStorage
-          : null
+    const storage = getStorage()
     if (!storage) return fallback
     const raw = storage.getItem(key)
     if (raw === null) return fallback
@@ -39,12 +48,7 @@ export function getSafeStorageItem<T>(key: string, fallback: T): T {
  */
 export function setSafeStorageItem(key: string, value: unknown): void {
   try {
-    const storage =
-      typeof window !== 'undefined'
-        ? window.localStorage
-        : typeof globalThis !== 'undefined'
-          ? globalThis.localStorage
-          : null
+    const storage = getStorage()
     if (storage) {
       storage.setItem(key, JSON.stringify(value))
     }
@@ -59,12 +63,7 @@ export function setSafeStorageItem(key: string, value: unknown): void {
  */
 export function removeSafeStorageItem(key: string): void {
   try {
-    const storage =
-      typeof window !== 'undefined'
-        ? window.localStorage
-        : typeof globalThis !== 'undefined'
-          ? globalThis.localStorage
-          : null
+    const storage = getStorage()
     if (storage) {
       storage.removeItem(key)
     }
@@ -79,12 +78,7 @@ export function removeSafeStorageItem(key: string): void {
  */
 export function hasSafeStorageItem(key: string): boolean {
   try {
-    const storage =
-      typeof window !== 'undefined'
-        ? window.localStorage
-        : typeof globalThis !== 'undefined'
-          ? globalThis.localStorage
-          : null
+    const storage = getStorage()
     if (!storage) return false
     return storage.getItem(key) !== null
   } catch {
