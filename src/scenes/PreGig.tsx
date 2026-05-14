@@ -1,6 +1,7 @@
 import { SONGS_DB } from '../data/songs'
 import { GigModifiersBlock } from '../components/pregig/GigModifiersBlock'
 import { SetlistBlock } from '../components/pregig/SetlistBlock'
+import { MerchStrategyBlock } from '../components/pregig/MerchStrategyBlock'
 import { PreGigHeader } from '../components/pregig/PreGigHeader'
 import { PreGigStartButton } from '../components/pregig/PreGigStartButton'
 import { usePreGigLogic } from '../hooks/usePreGigLogic'
@@ -23,6 +24,9 @@ export const PreGig = () => {
     setlist,
     gigModifiers,
     currentModifiers,
+    band,
+    handleUpdateMerchPrice,
+    handleRestockMerch,
     selectedSongIds,
     calculatedBudget,
     isStarting,
@@ -44,27 +48,50 @@ export const PreGig = () => {
         calculatedBudget={calculatedBudget}
       />
 
-      <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full max-w-5xl h-auto lg:h-[58vh] relative z-10'>
-        {/* Actions */}
-        <GigModifiersBlock
-          t={t}
-          gigModifierOptions={GIG_MODIFIER_OPTIONS}
-          gigModifiers={gigModifiers}
-          toggleModifier={toggleModifier}
-          handleBandMeeting={handleBandMeeting}
-          bandMeetingCost={BAND_MEETING_COST}
-          currentModifiers={currentModifiers}
-        />
+      <div className='w-full max-w-5xl relative z-10'>
+        <div className='flex gap-4 border-b border-zinc-800 pb-2 mb-4'>
+          <button
+            className={`font-mono uppercase px-4 py-2 ${activeTab === 'logistics' ? 'bg-(--color-toxic-green) text-black' : 'text-zinc-400 hover:text-white'}`}
+            onClick={() => setActiveTab('logistics')}
+          >
+            Logistics
+          </button>
+          <button
+            className={`font-mono uppercase px-4 py-2 ${activeTab === 'merch' ? 'bg-(--color-toxic-green) text-black' : 'text-zinc-400 hover:text-white'}`}
+            onClick={() => setActiveTab('merch')}
+          >
+            Merch
+          </button>
+        </div>
 
-        {/* Setlist */}
-        <SetlistBlock
-          setlist={setlist}
-          songsDb={SONGS_DB}
-          songsDict={SONGS_DICT}
-          selectedSongIds={selectedSongIds}
-          player={player}
-          toggleSong={toggleSong}
-        />
+        {activeTab === 'logistics' ? (
+          <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 h-auto lg:h-[58vh]'>
+            <GigModifiersBlock
+              t={t}
+              gigModifierOptions={GIG_MODIFIER_OPTIONS}
+              gigModifiers={gigModifiers}
+              toggleModifier={toggleModifier}
+              handleBandMeeting={handleBandMeeting}
+              bandMeetingCost={BAND_MEETING_COST}
+              currentModifiers={currentModifiers}
+            />
+            <SetlistBlock
+              setlist={setlist}
+              songsDb={SONGS_DB}
+              songsDict={SONGS_DICT}
+              selectedSongIds={selectedSongIds}
+              player={player}
+              toggleSong={toggleSong}
+            />
+          </div>
+        ) : (
+          <MerchStrategyBlock
+            bandInventory={band.inventory || {}}
+            customPrices={band.merchPrices || {}}
+            onUpdatePrice={handleUpdateMerchPrice}
+            onRestock={handleRestockMerch}
+          />
+        )}
       </div>
 
       <PreGigStartButton

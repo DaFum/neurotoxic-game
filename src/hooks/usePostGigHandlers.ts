@@ -340,6 +340,22 @@ export const usePostGigHandlers = ({
   }, [player, updatePlayer, updateSocial, addToast, t])
 
   const handleContinue = useCallback(() => {
+    if (financials?.soldMerch) {
+      updateBand(prevBand => {
+        const updatedInventory = { ...prevBand.inventory }
+        for (const merchKey in financials.soldMerch) {
+          if (Object.hasOwn(financials.soldMerch, merchKey)) {
+            const soldAmount = financials.soldMerch[merchKey] || 0
+            const currentAmount =
+              typeof updatedInventory[merchKey] === 'number'
+                ? (updatedInventory[merchKey] as number)
+                : 0
+            updatedInventory[merchKey] = Math.max(0, currentAmount - soldAmount)
+          }
+        }
+        return { ...prevBand, inventory: updatedInventory }
+      })
+    }
     if (!financials) return
     if (isProcessingActionRef.current) return
     isProcessingActionRef.current = true

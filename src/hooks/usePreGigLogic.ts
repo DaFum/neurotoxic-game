@@ -14,6 +14,7 @@ import { audioManager } from '../utils/audio/audioEngine'
 import { getSongId } from '../utils/audio/songUtils'
 import { handleError } from '../utils/errorHandler'
 import { getSafeRandom, getSafeUUID } from '../utils/crypto'
+import { HQ_ITEMS } from '../data/hqItems'
 
 type Minigame = 'roadie' | 'kabelsalat' | 'amp'
 let lastMinigameFallback: Minigame | null = null
@@ -38,6 +39,10 @@ export type ModifierOption = {
 }
 
 export interface PreGigLogicReturn {
+  handleUpdateMerchPrice: (merchKey: string, newPrice: number) => void
+  handleRestockMerch: (merchKey: string) => void
+  band: GameState['band']
+
   t: TranslationCallback
   i18n: { language: string }
   currentGig: Venue | null
@@ -58,6 +63,56 @@ export interface PreGigLogicReturn {
 
 export const usePreGigLogic = (): PreGigLogicReturn => {
   const { t, i18n } = useTranslation(['ui', 'venues'])
+
+  const handleUpdateMerchPrice = useCallback(
+    (merchKey: string, newPrice: number) => {
+      updateBand(prevBand => ({
+        ...prevBand,
+        merchPrices: {
+          ...(prevBand.merchPrices || {}),
+          [merchKey]: newPrice
+        }
+      }))
+    },
+    [updateBand]
+  )
+
+  const handleRestockMerch = useCallback(
+    (merchKey: string) => {
+      const itemDef = HQ_ITEMS.find(item => item.effect.key === merchKey)
+      if (!itemDef) return
+
+      const cost = itemDef.cost
+      if (player.money < cost) {
+        addToast(typedT('ui:pregig.toasts.noMoneyUpgrade'), 'error')
+        return
+      }
+
+      updatePlayer({ money: clampPlayerMoney(player.money - cost) })
+
+      updateBand(prevBand => {
+        const currentInventory = prevBand.inventory || {}
+        const currentAmount =
+          typeof currentInventory[merchKey] === 'number'
+            ? (currentInventory[merchKey] as number)
+            : 0
+        return {
+          ...prevBand,
+          inventory: {
+            ...currentInventory,
+            [merchKey]: currentAmount + ((itemDef.effect.value as number) || 10)
+          }
+        }
+      })
+
+      addToast(
+        typedT('ui:pregig.toasts.restocked', { defaultValue: 'Restocked!' }),
+        'success'
+      )
+    },
+    [player.money, updatePlayer, updateBand, addToast, typedT]
+  )
+
   const typedT = useCallback<TranslationCallback>(
     (key, options) => t(key, options),
     [t]
@@ -309,6 +364,9 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
   ])
 
   return {
+    handleUpdateMerchPrice,
+    handleRestockMerch,
+    band,
     t: typedT,
     i18n,
     currentGig,
