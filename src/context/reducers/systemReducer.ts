@@ -421,16 +421,27 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
     connections: sanitizedConnections
   }
 
-  if (mapRecord.cityStates && typeof mapRecord.cityStates === 'object' && !Array.isArray(mapRecord.cityStates)) {
+  if (
+    mapRecord.cityStates &&
+    typeof mapRecord.cityStates === 'object' &&
+    !Array.isArray(mapRecord.cityStates)
+  ) {
     const cityStatesRecord = mapRecord.cityStates as Record<string, unknown>
-    const sanitizedCityStates: Record<string, import('../../types/game').CityTraitState> = {}
+    const sanitizedCityStates: Record<
+      string,
+      import('../../types/game').CityTraitState
+    > = {}
 
     for (const city in cityStatesRecord) {
       if (!Object.hasOwn(cityStatesRecord, city)) continue
       if (isForbiddenKey(city)) continue
 
       const cityTrait = cityStatesRecord[city]
-      if (cityTrait && typeof cityTrait === 'object' && !Array.isArray(cityTrait)) {
+      if (
+        cityTrait &&
+        typeof cityTrait === 'object' &&
+        !Array.isArray(cityTrait)
+      ) {
         const cityTraitRecord = cityTrait as Record<string, unknown>
         if (
           typeof cityTraitRecord.genreBias === 'string' &&
@@ -705,6 +716,23 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
     if (value !== undefined) rawBand[key] = value
   }
 
+  if (
+    bandData.merchPrices &&
+    typeof bandData.merchPrices === 'object' &&
+    !Array.isArray(bandData.merchPrices)
+  ) {
+    const raw = bandData.merchPrices as Record<string, unknown>
+    const sanitized: Record<string, number> = {}
+    for (const k in raw) {
+      if (!Object.hasOwn(raw, k)) continue
+      if (isForbiddenKey(k)) continue
+      const v = raw[k]
+      if (typeof v === 'number' && Number.isFinite(v) && v >= 0) {
+        sanitized[k] = v
+      }
+    }
+    rawBand.merchPrices = sanitized
+  }
   // Validate Band Members
   const memberSource = Array.isArray(bandData.members)
     ? bandData.members

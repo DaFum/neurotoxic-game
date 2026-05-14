@@ -431,7 +431,9 @@ export const usePostGigHandlers = ({
         lastGigStats,
         currentGig,
         setlist
-      }).catch(err => logger.error('PostGig', err, { player, currentGig }))
+      }).catch(err =>
+        logger.error('PostGig', 'submitLeaderboardScores failed', err)
+      )
 
       if (shouldTriggerBankruptcy(stats.newMoney, financials.net)) {
         addToast(
@@ -451,7 +453,11 @@ export const usePostGigHandlers = ({
         })
       }
     } catch (err) {
-      logger.error('PostGig handleContinue', err)
+      logger.error(
+        'PostGig handleContinue',
+        'Unexpected error in continue flow',
+        err
+      )
       isProcessingActionRef.current = false
       setIsProcessingAction(false)
     }

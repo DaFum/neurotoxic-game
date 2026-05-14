@@ -237,7 +237,7 @@ export class MapGenerator {
         if (!map.cityStates[cityName]) {
           const genreBias =
             genres[Math.floor(this.random() * genres.length)] || 'unknown'
-          // Attention span in minutes: 15 to 60
+          // Attention span in minutes: 15 to 59
           const attentionSpan = Math.floor(this.random() * 45) + 15
           const barSpendingProfile =
             spendingProfiles[

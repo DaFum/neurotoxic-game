@@ -55,6 +55,7 @@ export const PreGig = () => {
           <button
             type='button'
             className={`font-mono uppercase px-4 py-2 ${activeTab === 'logistics' ? 'bg-(--color-toxic-green) text-(--color-void-black)' : 'text-(--color-ash-gray) hover:text-(--color-toxic-green)'}`}
+            aria-pressed={activeTab === 'logistics'}
             onClick={() => setActiveTab('logistics')}
           >
             {t('ui:pregig.tabs.logistics')}
@@ -62,6 +63,7 @@ export const PreGig = () => {
           <button
             type='button'
             className={`font-mono uppercase px-4 py-2 ${activeTab === 'merch' ? 'bg-(--color-toxic-green) text-(--color-void-black)' : 'text-(--color-ash-gray) hover:text-(--color-toxic-green)'}`}
+            aria-pressed={activeTab === 'merch'}
             onClick={() => setActiveTab('merch')}
           >
             {t('ui:pregig.tabs.merch')}

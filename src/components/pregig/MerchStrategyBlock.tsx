@@ -70,6 +70,9 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
               <div className='flex items-center gap-2'>
                 <button
                   type='button'
+                  aria-label={t('ui:pregig.merchStrategy.decreasePrice', {
+                    item: item.name
+                  })}
                   onClick={() =>
                     onUpdatePrice(item.key, Math.max(1, item.currentPrice - 1))
                   }
@@ -83,6 +86,9 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
                 </span>
                 <button
                   type='button'
+                  aria-label={t('ui:pregig.merchStrategy.increasePrice', {
+                    item: item.name
+                  })}
                   onClick={() => onUpdatePrice(item.key, item.currentPrice + 1)}
                   className='bg-(--color-concrete-gray) hover:bg-(--color-steel-gray) p-1 text-(--color-toxic-green)'
                 >
