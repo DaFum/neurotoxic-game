@@ -3,6 +3,14 @@ import type { RhythmSetlistEntry } from './rhythmGame'
 import type { GAME_PHASES } from '../context/gameConstants'
 import type { Platform } from './social'
 
+export type RelationshipChange = {
+  member1: string
+  member2: string
+  change: number
+  source?: string
+  timestamp?: number
+}
+
 export type GamePhase = (typeof GAME_PHASES)[keyof typeof GAME_PHASES]
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic'
 
@@ -80,6 +88,7 @@ export type MapNodeType =
   | 'FINALE'
   | 'CITY'
   | 'REST'
+  | 'supplyStop'
 
 export interface MapNode {
   id: string
@@ -90,13 +99,22 @@ export interface MapNode {
   venue?: Venue
   venueId?: string
   neighbors?: string[]
+  shopInventory?: import('./components').PurchaseItem[]
+
   [key: string]: unknown
+}
+
+export interface CityTraitState {
+  genreBias: string
+  attentionSpan: number
+  barSpendingProfile: string
 }
 
 export interface GameMap {
   nodes: Record<string, MapNode>
   edges?: Array<{ from: string; to: string }>
   connections: Array<{ from: string; to: string }>
+  cityStates?: Record<string, CityTraitState>
   [key: string]: unknown
 }
 
@@ -196,7 +214,14 @@ export interface BandState {
     crowdDecay: number
   }
   inventory: Record<string, unknown>
+  merchPrices?: Record<string, number>
   neuroDecimatorActive: boolean
+  banterEvents?: Array<{
+    member1: string
+    member2: string
+    delta: number
+    timestamp: number
+  }>
   [key: string]: unknown
 }
 
@@ -399,6 +424,7 @@ export interface GameState {
   minigame: MinigameState
   unlocks: string[]
   pendingBandHQOpen: boolean
+  completedMilestones: string[]
 }
 
 export type RawLoadedGame = UnknownRecord

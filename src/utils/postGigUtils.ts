@@ -720,6 +720,7 @@ export const deriveFinancials = ({
   perfScore,
   gigModifiers,
   bandInventory,
+  bandMerchPrices,
   player,
   social,
   reputationByRegion,
@@ -731,6 +732,7 @@ export const deriveFinancials = ({
   perfScore: number
   gigModifiers: GameState['gigModifiers']
   bandInventory: GameState['band']['inventory']
+  bandMerchPrices?: GameState['band']['merchPrices']
   player: GameState['player']
   social: GameState['social']
   reputationByRegion: GameState['reputationByRegion']
@@ -759,6 +761,7 @@ export const deriveFinancials = ({
       ),
       daysSinceLastGig: gigContext?.daysSinceLastGig ?? 0,
       lastGigDifficulty: gigContext?.lastGigDifficulty ?? undefined,
+      merchPrices: bandMerchPrices,
       social
     }
   })

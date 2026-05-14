@@ -2,7 +2,7 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { FinancialList } from './FinancialList'
-import { formatNumber } from '../../utils/numberUtils'
+import { formatSignedFinancialAmount } from '../../utils/numberUtils'
 import type { FinancialItem } from '../../types/components'
 
 type FinancialColumnProps = {
@@ -44,13 +44,7 @@ export const FinancialColumn = React.memo(
             {t('economy:postGig.total')}
           </span>
           <span className='tabular-nums'>
-            {type === 'income'
-              ? t('economy:report.amount_positive', {
-                  amount: formatNumber(total, i18n?.language)
-                })
-              : t('economy:report.amount_negative', {
-                  amount: formatNumber(Math.abs(total), i18n?.language)
-                })}
+            {formatSignedFinancialAmount(total, type, t, i18n?.language)}
           </span>
         </div>
       </motion.div>

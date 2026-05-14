@@ -178,5 +178,23 @@
   "contraband.c_silver_tongue.name": "Silberzunge",
   "contraband.c_silver_tongue.description": "Steigert Charisma für Interviews; +20 Stimmung für das Mitglied bei Verwendung.",
   "contraband.c_broken_compass.name": "Kaputter Kompass",
-  "contraband.c_broken_compass.description": "Zeigt seltsamerweise auf profitable Entscheidungen; kleiner, aber beständiger Tour-Vorteil."
+  "contraband.c_broken_compass.description": "Zeigt seltsamerweise auf profitable Entscheidungen; kleiner, aber beständiger Tour-Vorteil.",
+  "contraband": {
+    "c_neuro_mold_spores": {
+      "name": "Neuro-Schimmel Sporen",
+      "description": "Reduziert den Band-Stress drastisch. Riecht nach Cyber-Fäule."
+    },
+    "c_cybernetic_plectrum_implant": {
+      "name": "Kybernetisches Plektrum-Implantat",
+      "description": "Senkt die Gitarren-Schwierigkeit dauerhaft."
+    },
+    "c_fermented_void_juice": {
+      "name": "Fermentierter Void-Saft",
+      "description": "Ein extremer Stimmungs-Booster direkt aus dem Abgrund."
+    },
+    "c_hyper_adrenaline_ampoule": {
+      "name": "Hyper-Adrenalin Ampulle",
+      "description": "Erhöht die maximale Ausdauer dauerhaft."
+    }
+  }
 }

@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
-import { formatNumber } from '../../utils/numberUtils'
+import { formatSignedFinancialAmount } from '../../utils/numberUtils'
 import type { FinancialListProps } from '../../types/components'
 
 export const FinancialList = ({ items, type }: FinancialListProps) => {
@@ -22,13 +22,7 @@ export const FinancialList = ({ items, type }: FinancialListProps) => {
             <span
               className={`${type === 'income' ? 'text-toxic-green' : 'text-blood-red'} font-bold tabular-nums`}
             >
-              {type === 'income'
-                ? t('economy:report.amount_positive', {
-                    amount: formatNumber(item.value, i18n?.language)
-                  })
-                : t('economy:report.amount_negative', {
-                    amount: formatNumber(Math.abs(item.value), i18n?.language)
-                  })}
+              {formatSignedFinancialAmount(item.value, type, t, i18n?.language)}
             </span>
           </motion.li>
         )

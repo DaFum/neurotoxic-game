@@ -14,3 +14,4 @@ Applies to `src/components/overworld/**`.
 ## Gotchas
 
 - UI refactors here commonly make actions unreachable while components still render in tests. Add reachability coverage for changed menus.
+- `cityTraits` for map nodes must be derived via `getCityKeyFromVenueId(node.venue.id)` imported from `src/utils/mapGenerator.ts`. `node.venue.city` does not exist; using it silently drops city intel from map nodes.

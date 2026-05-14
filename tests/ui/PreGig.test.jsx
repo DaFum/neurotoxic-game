@@ -26,6 +26,39 @@ vi.mock('../../src/utils/audio/AudioManager', () => ({
     play: vi.fn()
   }
 }))
+// Mock MerchStrategyBlock to avoid HQ_ITEMS/economyEngine dependency in these tests
+const mockOnUpdatePrice = vi.fn()
+const mockOnRestock = vi.fn()
+vi.mock('../../src/components/pregig/MerchStrategyBlock', () => ({
+  MerchStrategyBlock: ({ onUpdatePrice, onRestock, ...props }) => {
+    // store refs so tests can call them
+    mockOnUpdatePrice.mockImplementation(onUpdatePrice)
+    mockOnRestock.mockImplementation(onRestock)
+    return (
+      <div {...props}>
+        <h3>ui:pregig.merchStrategy.title</h3>
+        <button
+          type='button'
+          aria-label='ui:pregig.merchStrategy.decreasePrice shirts'
+          onClick={() => onUpdatePrice('shirts', 19)}
+        >
+          -
+        </button>
+        <button
+          type='button'
+          aria-label='ui:pregig.merchStrategy.increasePrice shirts'
+          onClick={() => onUpdatePrice('shirts', 21)}
+        >
+          +
+        </button>
+        <button type='button' onClick={() => onRestock('shirts')}>
+          ui:pregig.merchStrategy.restock
+        </button>
+      </div>
+    )
+  }
+}))
+
 // Mock GigModifierButton to inspect props
 vi.mock('../../src/ui/GigModifierButton', () => ({
   default: ({ item, onClick }) => (
@@ -51,6 +84,13 @@ vi.mock('../../src/utils/economyEngine', () => ({
     merch: 75,
     catering: 60,
     guestlist: 80
+  },
+  DEFAULT_MERCH_PRICES: {
+    shirts: 20,
+    hoodies: 45,
+    patches: 5,
+    vinyl: 35,
+    cds: 15
   }
 }))
 vi.mock('../../src/utils/audio/songUtils', () => ({
@@ -68,7 +108,7 @@ const mockUseGameState = {
   updatePlayer: vi.fn(),
   triggerEvent: vi.fn(),
   activeEvent: null,
-  band: { harmony: 50 },
+  band: { harmony: 50, inventory: { shirts: 10 }, merchPrices: {} },
   updateBand: vi.fn(),
   addToast: vi.fn(),
   startRoadieMinigame: vi.fn(),
@@ -402,5 +442,79 @@ describe('PreGig', () => {
     } finally {
       sessionStorage.setItem = originalSetItem
     }
+  })
+
+  test('switches to Merch tab and renders merch strategy controls', async () => {
+    const { findByText } = render(React.createElement(PreGig))
+
+    const merchTabBtn = await findByText(/ui:pregig.tabs.merch/i)
+    fireEvent.click(merchTabBtn)
+
+    // MerchStrategyBlock title should appear
+    const title = await findByText(/ui:pregig.merchStrategy.title/i)
+    expect(title).toBeTruthy()
+  })
+
+  test('merch tab price decrease button invokes updateBand with lower price', async () => {
+    mockUseGameState.band = {
+      harmony: 50,
+      inventory: { shirts: 5 },
+      merchPrices: { shirts: 20 }
+    }
+
+    const { findByText, findAllByLabelText } = render(
+      React.createElement(PreGig)
+    )
+
+    const merchTabBtn = await findByText(/ui:pregig.tabs.merch/i)
+    fireEvent.click(merchTabBtn)
+
+    // Wait for merch controls to render
+    await findByText(/ui:pregig.merchStrategy.title/i)
+
+    const decreaseBtns = await findAllByLabelText(
+      /ui:pregig.merchStrategy.decreasePrice/i
+    )
+    expect(decreaseBtns.length).toBeGreaterThan(0)
+
+    fireEvent.click(decreaseBtns[0])
+
+    expect(mockUseGameState.updateBand).toHaveBeenCalled()
+    // Apply the captured updater to a sample band state and verify the result
+    const updater = mockUseGameState.updateBand.mock.calls[0][0]
+    const nextBand =
+      typeof updater === 'function'
+        ? updater({
+            harmony: 50,
+            inventory: { shirts: 5 },
+            merchPrices: { shirts: 20 }
+          })
+        : updater
+    expect(nextBand.merchPrices.shirts).toBe(19)
+  })
+
+  test('merch tab restock button invokes updatePlayer for cost deduction', async () => {
+    mockUseGameState.band = {
+      harmony: 50,
+      inventory: { shirts: 0 },
+      merchPrices: {}
+    }
+    mockUseGameState.player = { money: 500 }
+
+    const { findByText, findAllByText } = render(React.createElement(PreGig))
+
+    const merchTabBtn = await findByText(/ui:pregig.tabs.merch/i)
+    fireEvent.click(merchTabBtn)
+
+    await findByText(/ui:pregig.merchStrategy.title/i)
+
+    const restockBtns = await findAllByText(/ui:pregig.merchStrategy.restock/i)
+    expect(restockBtns.length).toBeGreaterThan(0)
+
+    fireEvent.click(restockBtns[0])
+
+    // Restock must do both: deduct money AND add inventory
+    expect(mockUseGameState.updatePlayer).toHaveBeenCalled()
+    expect(mockUseGameState.updateBand).toHaveBeenCalled()
   })
 })

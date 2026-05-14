@@ -1,7 +1,12 @@
 import { hasTrait } from './traitUtils'
 import { EXPENSE_CONSTANTS } from './economyEngine'
 import { logger } from './logger'
-import type { BandMember, GameState, StashEntry } from '../types/game'
+import type {
+  BandMember,
+  GameState,
+  RelationshipChange,
+  StashEntry
+} from '../types/game'
 
 /**
  * Clamps a value to be at least 0.
@@ -229,6 +234,20 @@ export const RELATIONSHIP_MIN_SCORE = 0
 export const RELATIONSHIP_MAX_SCORE = 100
 
 /**
+ * Clamps relationship score to the canonical gameplay range.
+ *
+ * @param {number} score - Candidate relationship score.
+ * @returns {number} Clamped relationship value in range [0, 100].
+ */
+export const clampRelationship = (score: number): number => {
+  if (!Number.isFinite(score)) return RELATIONSHIP_DEFAULT_SCORE
+  return Math.max(
+    RELATIONSHIP_MIN_SCORE,
+    Math.min(RELATIONSHIP_MAX_SCORE, Math.round(score))
+  )
+}
+
+/**
  * Clamps band harmony to the canonical gameplay range.
  *
  * @param {number} harmony - Candidate harmony value.
@@ -247,6 +266,7 @@ export const clampBandHarmony = (harmony: number): number => {
  * @returns {number} Clamped loyalty value in range [0, 100].
  */
 export const clampLoyalty = (loyalty: number): number => clamp0to100(loyalty)
+export const clampBandStress = (stress: number): number => clamp0to100(stress)
 
 /**
  * Clamps social zealotry to the canonical gameplay range.
@@ -314,6 +334,21 @@ const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
 export const isForbiddenKey = (key: string): boolean => FORBIDDEN_KEYS.has(key)
 
 /**
+ * Optimized check for forbidden keys in an object.
+ * Avoids `Object.keys(obj).some(isForbiddenKey)` which allocates an array.
+ *
+ * @param {object} obj - The object to check
+ * @returns {boolean} True if the object has any forbidden keys
+ */
+export const hasForbiddenKeys = (obj: Record<string, unknown>): boolean => {
+  return (
+    Object.hasOwn(obj, '__proto__') ||
+    Object.hasOwn(obj, 'constructor') ||
+    Object.hasOwn(obj, 'prototype')
+  )
+}
+
+/**
  * A secure wrapper around JSON.parse that uses a reviver to strip out
  * potentially dangerous keys associated with prototype pollution.
  *
@@ -360,12 +395,6 @@ const calculateClampedControversyDelta = (
  * @returns {object} New object with filtered properties.
  */
 type FilteredRecord = Record<string, unknown>
-
-type RelationshipChange = {
-  member1: string
-  member2: string
-  change: number
-}
 
 type MemberDelta = FilteredRecord & {
   moodChange?: number
@@ -797,10 +826,7 @@ const calculateMemberRelationshipChange = (
   }
 
   const currentScore = currentRelationships[other] ?? RELATIONSHIP_DEFAULT_SCORE
-  const newScore = Math.max(
-    RELATIONSHIP_MIN_SCORE,
-    Math.min(RELATIONSHIP_MAX_SCORE, Math.round(currentScore + amount))
-  )
+  const newScore = clampRelationship(currentScore + amount)
 
   return { other, newScore }
 }
@@ -910,6 +936,23 @@ export const applyEventDelta = (
           )
         ? [delta.band.relationshipChange]
         : []
+
+    if (relationshipChange.length > 0) {
+      const banterDeltas = relationshipChange.filter(
+        rc => rc.source === 'banter'
+      )
+      if (banterDeltas.length > 0) {
+        nextBand.banterEvents = [
+          ...(nextBand.banterEvents || []),
+          ...banterDeltas.map(rc => ({
+            member1: rc.member1,
+            member2: rc.member2,
+            delta: rc.change,
+            timestamp: rc.timestamp ?? Date.now()
+          }))
+        ].slice(-50)
+      }
+    }
     const skillDelta = delta.band.skill
 
     if (

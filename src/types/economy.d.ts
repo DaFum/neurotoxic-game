@@ -9,4 +9,5 @@ export interface PostGigFinancials {
   income: { total: number; breakdown: FinancialBreakdownItem[] }
   expenses: { total: number; breakdown: FinancialBreakdownItem[] }
   net: number
+  soldMerch?: Record<string, number>
 }

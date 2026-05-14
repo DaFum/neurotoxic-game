@@ -28,11 +28,18 @@ import {
   isEmptyObject
 } from '../../utils/gameStateUtils'
 import { calculateDailyUpdates } from '../../utils/simulationUtils'
-import { EXPENSE_CONSTANTS } from '../../utils/economyEngine'
+import {
+  DEFAULT_MERCH_PRICES,
+  EXPENSE_CONSTANTS
+} from '../../utils/economyEngine'
 import { generateDailyTrend } from '../../utils/socialEngine'
 import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks, normalizeTraitMap } from '../../utils/traitUtils'
 import { normalizeVenueId } from '../../utils/mapUtils'
+import {
+  getCityKeyFromVenueId,
+  deriveCityTraits
+} from '../../utils/mapGenerator'
 import { CONTRABAND_BY_ID } from '../../data/contraband'
 import {
   createInitialState,
@@ -70,7 +77,8 @@ const ALLOWED_MAP_NODE_TYPES = new Set<MapNodeType>([
   'FESTIVAL',
   'FINALE',
   'CITY',
-  'REST'
+  'REST',
+  'supplyStop'
 ])
 
 const isMapNodeType = (value: unknown): value is MapNodeType =>
@@ -357,6 +365,78 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
       }
       sanitizedNode.neighbors = neighbors
     }
+    if (Array.isArray(nodeRecord.shopInventory)) {
+      const items: import('../../types/components').PurchaseItem[] = []
+      // Whitelist of PurchaseItem fields preserved on load. Anything else from
+      // untrusted save data is dropped rather than coerced into the item shape.
+      const STRING_KEYS = new Set([
+        'name',
+        'currency',
+        'category',
+        'description',
+        'img',
+        'imgPrompt',
+        'rarity'
+      ])
+      const NUMBER_KEYS = new Set(['maxStacks'])
+      const BOOLEAN_KEYS = new Set([
+        'oneTime',
+        'requiresReputation',
+        'stackable'
+      ])
+      for (let i = 0; i < nodeRecord.shopInventory.length; i++) {
+        const raw = nodeRecord.shopInventory[i]
+        if (!raw || typeof raw !== 'object' || Array.isArray(raw)) continue
+        const itemRecord = raw as Record<string, unknown>
+        const sanitizedItem: import('../../types/components').PurchaseItem = {}
+        for (const itemKey in itemRecord) {
+          if (!Object.hasOwn(itemRecord, itemKey)) continue
+          if (isForbiddenKey(itemKey)) continue
+          const v = itemRecord[itemKey]
+          if (itemKey === 'id') {
+            if (typeof v === 'string' || typeof v === 'number') {
+              sanitizedItem.id = v
+            }
+          } else if (itemKey === 'cost' || itemKey === 'price') {
+            if (typeof v === 'number' && Number.isFinite(v)) {
+              ;(sanitizedItem as Record<string, unknown>)[itemKey] = Math.max(
+                0,
+                v
+              )
+            }
+          } else if (STRING_KEYS.has(itemKey)) {
+            if (typeof v === 'string') {
+              ;(sanitizedItem as Record<string, unknown>)[itemKey] = v
+            }
+          } else if (NUMBER_KEYS.has(itemKey)) {
+            if (typeof v === 'number' && Number.isFinite(v)) {
+              ;(sanitizedItem as Record<string, unknown>)[itemKey] = v
+            }
+          } else if (BOOLEAN_KEYS.has(itemKey)) {
+            if (typeof v === 'boolean') {
+              ;(sanitizedItem as Record<string, unknown>)[itemKey] = v
+            }
+          } else if (itemKey === 'effect') {
+            const flatEffect = copySafeFlatObject(v)
+            if (flatEffect) sanitizedItem.effect = flatEffect as never
+          } else if (itemKey === 'effects' && Array.isArray(v)) {
+            const flatEffects: Array<Record<string, unknown>> = []
+            for (let j = 0; j < v.length; j++) {
+              const flatEffect = copySafeFlatObject(v[j])
+              if (flatEffect) flatEffects.push(flatEffect)
+            }
+            if (flatEffects.length > 0) {
+              sanitizedItem.effects = flatEffects as never
+            }
+          }
+        }
+        if (!isEmptyObject(sanitizedItem as Record<string, unknown>)) {
+          items.push(sanitizedItem)
+        }
+      }
+      sanitizedNode.shopInventory = items
+    }
+
     for (const key in nodeRecord) {
       if (!Object.hasOwn(nodeRecord, key)) continue
       if (
@@ -367,7 +447,8 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
         key === 'layer' ||
         key === 'type' ||
         key === 'venueId' ||
-        key === 'neighbors'
+        key === 'neighbors' ||
+        key === 'shopInventory'
       ) {
         continue
       }
@@ -418,6 +499,71 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
   const sanitizedMap: GameMap = {
     nodes: sanitizedNodes,
     connections: sanitizedConnections
+  }
+
+  if (
+    mapRecord.cityStates &&
+    typeof mapRecord.cityStates === 'object' &&
+    !Array.isArray(mapRecord.cityStates)
+  ) {
+    const cityStatesRecord = mapRecord.cityStates as Record<string, unknown>
+    const sanitizedCityStates: Record<
+      string,
+      import('../../types/game').CityTraitState
+    > = {}
+
+    for (const city in cityStatesRecord) {
+      if (!Object.hasOwn(cityStatesRecord, city)) continue
+      if (isForbiddenKey(city)) continue
+
+      const cityTrait = cityStatesRecord[city]
+      if (
+        cityTrait &&
+        typeof cityTrait === 'object' &&
+        !Array.isArray(cityTrait)
+      ) {
+        const cityTraitRecord = cityTrait as Record<string, unknown>
+        if (
+          typeof cityTraitRecord.genreBias === 'string' &&
+          Number.isFinite(cityTraitRecord.attentionSpan) &&
+          typeof cityTraitRecord.barSpendingProfile === 'string'
+        ) {
+          sanitizedCityStates[city] = {
+            genreBias: cityTraitRecord.genreBias,
+            attentionSpan: cityTraitRecord.attentionSpan as number,
+            barSpendingProfile: cityTraitRecord.barSpendingProfile
+          }
+        }
+      }
+    }
+
+    if (Object.keys(sanitizedCityStates).length > 0) {
+      sanitizedMap.cityStates = sanitizedCityStates
+    }
+  }
+
+  // Backfill cityStates for saves that predate the city-intel feature so the
+  // tooltip is not silently empty on existing tours. Traits derive from a
+  // stable hash of the city key, so each city stays consistent across loads.
+  const backfilledCityStates: Record<
+    string,
+    import('../../types/game').CityTraitState
+  > = sanitizedMap.cityStates ?? {}
+  let cityStatesGrew = false
+  for (const nodeId in sanitizedNodes) {
+    if (!Object.hasOwn(sanitizedNodes, nodeId)) continue
+    const node = sanitizedNodes[nodeId]
+    const venueId = normalizeVenueId(node?.venueId ?? node?.venue)
+    if (!venueId) continue
+    const cityKey = getCityKeyFromVenueId(venueId)
+    if (!cityKey) continue
+    if (!Object.hasOwn(backfilledCityStates, cityKey)) {
+      backfilledCityStates[cityKey] = deriveCityTraits(cityKey)
+      cityStatesGrew = true
+    }
+  }
+  if (cityStatesGrew) {
+    sanitizedMap.cityStates = backfilledCityStates
   }
 
   if (typeof mapRecord.name === 'string') {
@@ -674,6 +820,22 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
     if (value !== undefined) rawBand[key] = value
   }
 
+  if (
+    bandData.merchPrices &&
+    typeof bandData.merchPrices === 'object' &&
+    !Array.isArray(bandData.merchPrices)
+  ) {
+    const raw = bandData.merchPrices as Record<string, unknown>
+    const sanitized: Record<string, number> = {}
+    for (const k of Object.keys(DEFAULT_MERCH_PRICES)) {
+      if (!Object.hasOwn(raw, k)) continue
+      const v = raw[k]
+      if (typeof v === 'number' && Number.isFinite(v) && v >= 0) {
+        sanitized[k] = v
+      }
+    }
+    rawBand.merchPrices = sanitized
+  }
   // Validate Band Members
   const memberSource = Array.isArray(bandData.members)
     ? bandData.members
@@ -1238,7 +1400,10 @@ export const handleLoadGame = (
     minigame: sanitizeMinigameState(loadedState.minigame),
     unlocks: Array.isArray(loadedState.unlocks)
       ? sanitizeStringArray(loadedState.unlocks)
-      : state.unlocks || []
+      : (state.unlocks ?? []),
+    completedMilestones: Array.isArray(loadedState.completedMilestones)
+      ? sanitizeStringArray(loadedState.completedMilestones)
+      : (state.completedMilestones ?? [])
   }
 
   // Apply venue migrations using spreads

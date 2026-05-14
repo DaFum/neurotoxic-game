@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import { HexNode } from '../ui/shared'
 import { translateLocation } from '../utils/locationI18n'
-import type { MapNode as GameMapNode } from '../types/game'
+import type { MapNode as GameMapNode, CityTraitState } from '../types/game'
 import type { TranslationCallback } from '../types/callbacks'
 import { calcCancellationRisk } from '../utils/gameStateUtils'
 
@@ -27,6 +27,8 @@ interface MapNodeTooltipProps {
   ticketPrice?: number
   t: TranslationCallback
   harmony?: number
+  cityTraits?: CityTraitState
+  isPendingConfirm?: boolean
 }
 
 interface MapNodeProps {
@@ -42,6 +44,7 @@ interface MapNodeProps {
   vanUrl: string
   ticketPrice?: number
   harmony?: number
+  cityTraits?: CityTraitState
 }
 
 const getPinAltText = (t: TranslationCallback, type: string): string => {
@@ -54,6 +57,8 @@ const getPinAltText = (t: TranslationCallback, type: string): string => {
 
 const getNodeTypeLabel = (t: TranslationCallback, type: string): string => {
   if (type === 'GIG') return t('ui:map.nodeType.gig')
+  if (type === 'supplyStop')
+    return t('ui:map.nodeType.supply_stop', { defaultValue: 'SUPPLY STOP' })
   if (type === 'REST_STOP') return t('ui:map.nodeType.rest')
   return t('ui:map.nodeType.fallback', {
     type: type.substring(0, 3)
@@ -93,11 +98,46 @@ const MapNodeTooltip = memo(
     nodeLocationName,
     ticketPrice,
     t,
-    harmony
+    harmony,
+    cityTraits,
+    isPendingConfirm
   }: MapNodeTooltipProps) => {
     return (
-      <div className='hidden group-hover:block group-focus:block absolute top-full mt-2 bg-void-black/90 border border-toxic-green p-2 z-50 whitespace-nowrap pointer-events-none'>
+      <div
+        className={`${isPendingConfirm ? 'block' : 'hidden group-hover:block group-focus:block'} absolute top-full mt-2 bg-void-black/90 border border-toxic-green p-2 z-50 whitespace-nowrap pointer-events-none`}
+      >
         <div className='font-bold text-toxic-green'>{nodeLocationName}</div>
+
+        {cityTraits && (
+          <div className='mt-1 mb-2 pt-1 border-t border-toxic-green/30 text-[10px] text-ash-gray font-mono flex flex-col gap-0.5'>
+            <div className='text-toxic-green/80 font-bold uppercase tracking-wider text-[9px] mb-0.5'>
+              {t('ui:map.intel.title')}
+            </div>
+            <div>
+              <span className='text-star-white'>
+                {t('ui:map.intel.genreBias')}
+              </span>{' '}
+              {t(`ui:map.intel.genres.${cityTraits.genreBias}`, {
+                defaultValue: cityTraits.genreBias
+              })}
+            </div>
+            <div>
+              <span className='text-star-white'>
+                {t('ui:map.intel.attentionSpan')}
+              </span>{' '}
+              {cityTraits.attentionSpan}m
+            </div>
+            <div>
+              <span className='text-star-white'>
+                {t('ui:map.intel.barSpendingProfile')}
+              </span>{' '}
+              {t(`ui:map.intel.spending.${cityTraits.barSpendingProfile}`, {
+                defaultValue: cityTraits.barSpendingProfile
+              })}
+            </div>
+          </div>
+        )}
+
         {(node.type === 'GIG' ||
           node.type === 'FESTIVAL' ||
           node.type === 'FINALE') && (
@@ -138,6 +178,11 @@ const MapNodeTooltip = memo(
             {t('ui:map.finale_desc')}
           </div>
         )}
+        {node.type === 'supplyStop' && (
+          <div className='text-[10px] text-toxic-green font-mono'>
+            {t('ui:map.supply_stop_desc', { defaultValue: 'Supply Stop' })}
+          </div>
+        )}
         {isCurrent && (
           <div className='text-blood-red text-xs font-bold'>
             {t('ui:map.current_location')}
@@ -163,7 +208,8 @@ export const MapNodeView = memo(
     iconUrl,
     vanUrl,
     ticketPrice,
-    harmony
+    harmony,
+    cityTraits
   }: MapNodeProps) => {
     const { t } = useTranslation(['venues', 'ui'])
     const [isHoveredLocal, setIsHoveredLocal] = useState(false)
@@ -347,6 +393,8 @@ export const MapNodeView = memo(
           ticketPrice={ticketPrice}
           t={t}
           harmony={harmony}
+          cityTraits={cityTraits}
+          isPendingConfirm={isPendingConfirm}
         />
       </div>
     )
@@ -372,7 +420,10 @@ export const MapNodeView = memo(
       prev.node.venue?.pay === next.node.venue?.pay &&
       prev.node.venue?.diff === next.node.venue?.diff &&
       prev.node.venue?.price === next.node.venue?.price &&
-      prev.harmony === next.harmony
+      prev.harmony === next.harmony &&
+      // cityTraits entries are stable references owned by gameMap.cityStates,
+      // so reference equality covers all current and future trait fields.
+      prev.cityTraits === next.cityTraits
     )
   }
 )

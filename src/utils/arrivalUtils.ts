@@ -123,6 +123,9 @@ type HandleNodeArrivalParams = {
   startGig: (venue: Venue) => void
   addToast: (msg: string, level?: string) => void
   onShowHQ?: () => void
+  onShowSupplyStop?: (
+    inventory: import('../types/components').PurchaseItem[]
+  ) => void
   eventAlreadyActive?: boolean
   rng?: () => number
 }
@@ -140,10 +143,26 @@ export const handleNodeArrival = (
     startGig,
     addToast,
     onShowHQ,
+    onShowSupplyStop,
     eventAlreadyActive = false,
     rng = secureRandom
   } = params
   switch (node.type) {
+    case 'supplyStop': {
+      addToast(
+        i18n.t('ui:arrival.supplyStop', {
+          defaultValue: 'You arrived at a Supply Stop.'
+        }),
+        'info'
+      )
+      if (onShowSupplyStop) {
+        const inventory = Array.isArray(node.shopInventory)
+          ? (node.shopInventory as import('../types/components').PurchaseItem[])
+          : []
+        onShowSupplyStop(inventory)
+      }
+      return { scene: GAME_PHASES.OVERWORLD, gigStarted: false }
+    }
     case 'REST_STOP': {
       const members = band?.members ?? []
       const newMembers = new Array(members.length)

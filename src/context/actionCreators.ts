@@ -888,3 +888,39 @@ export const createMerchPressAction = (
         }
       : payload
 })
+
+/**
+ * Creates a banter action for inter-member dialogue outcomes.
+ * @param {string} member1 - Name of first member
+ * @param {string} member2 - Name of second member
+ * @param {number} delta - The un-clamped relationship change
+ * @returns {Object} Action object
+ */
+export const createBanterAction = (
+  member1: string,
+  member2: string,
+  delta: number
+): Extract<GameAction, { type: typeof ActionTypes.APPLY_EVENT_DELTA }> => {
+  if (member1 === member2) {
+    throw new Error('Self-relationship banter is not allowed')
+  }
+
+  const safeDelta = Number.isFinite(delta) ? delta : 0
+
+  return {
+    type: ActionTypes.APPLY_EVENT_DELTA,
+    payload: {
+      band: {
+        relationshipChange: [
+          {
+            member1,
+            member2,
+            change: safeDelta,
+            source: 'banter',
+            timestamp: Date.now()
+          }
+        ]
+      }
+    }
+  }
+}

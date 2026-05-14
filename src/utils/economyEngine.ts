@@ -20,6 +20,15 @@ export const MODIFIER_COSTS = {
 }
 
 export const BAR_RATE_VIP = 0.3
+
+export const DEFAULT_MERCH_PRICES: Record<string, number> = {
+  shirts: 20,
+  hoodies: 45,
+  patches: 5,
+  vinyl: 35,
+  cds: 15
+}
+
 export const BAR_RATE_NORMAL = 0.15
 export const AVG_SPEND_PER_PERSON_AT_BAR = 5
 export const ZEALOTRY_PROMO_THRESHOLD = 80
@@ -45,6 +54,7 @@ type EconomyContext = {
   zealotry?: number
   regionRep?: number
   discountedTickets?: boolean
+  merchPrices?: Record<string, number>
   social?: {
     zealotry?: number
     activeDeals?: Array<{
@@ -257,17 +267,17 @@ export const calculateMerchIncome = (
   // Better baseline merch conversion.
   // Smoothly scales from 10% to 40% based on performance
   let buyRate = 0.1 + (performanceScore / 100) * 0.3
-  const breakdownItems = []
+  const breakdownItems: FinancialBreakdownItem[] = []
 
   if (performanceScore >= 95) {
-    buyRate *= 1.25 // S-Rank Bonus
+    buyRate += 0.2
     breakdownItems.push({
-      labelKey: 'economy:gigIncome.hypeBonus.label',
+      labelKey: 'economy:gigIncome.sRankShow.label',
       value: 0,
-      detailKey: 'economy:gigIncome.hypeBonus.detail'
+      detailKey: 'economy:gigIncome.sRankShow.detail'
     })
-  } else if (performanceScore < 40) {
-    buyRate *= 0.5 // Poor performance penalty
+  } else if (performanceScore <= 30) {
+    buyRate -= 0.15
     breakdownItems.push({
       labelKey: 'economy:gigIncome.badShow.label',
       value: 0,
@@ -283,54 +293,91 @@ export const calculateMerchIncome = (
     const loyaltyBuyBonus = Math.min(0.15, (loyalty / 100) * 0.2)
     buyRate = Math.min(0.45, buyRate + loyaltyBuyBonus)
     breakdownItems.push({
-      labelKey: 'economy:gigIncome.loyalFans.label',
+      labelKey: 'economy:gigIncome.scandalSupport.label',
       value: 0,
-      detailKey: 'economy:gigIncome.loyalFans.detail'
+      detailKey: 'economy:gigIncome.scandalSupport.detail'
     })
   }
 
-  // Penalty: Misses drive people away (scaled penalty)
-  const misses = typeof gigStats.misses === 'number' ? gigStats.misses : 0
-  if (misses > 0) {
-    const missPenalty = Math.min(buyRate * 0.5, misses * 0.015)
-    buyRate -= missPenalty
-  }
+  // Calculate missed notes penalty from gigStats
+  const maxHypePenalty = gigStats.peakHype
+    ? Math.max(0, 1 - gigStats.peakHype / 100) * 0.1
+    : 0
+  const missesPenalty = gigStats.misses
+    ? Math.min(0.2, (gigStats.misses / 100) * 0.15)
+    : 0
+  buyRate -= maxHypePenalty + missesPenalty
 
-  const totalInventory = Math.max(
-    0,
-    (bandInventory?.shirts || 0) +
-      (bandInventory?.hoodies || 0) +
-      (bandInventory?.cds || 0) +
-      (bandInventory?.patches || 0) +
-      (bandInventory?.vinyl || 0)
-  )
+  // Calculate total sold based on tickets and buy rate
   const potentialBuyers = Math.floor(
     Math.max(0, ticketsSold) * Math.max(0, buyRate)
   )
-  const buyers = Math.min(potentialBuyers, totalInventory)
 
-  // Average Spend per buyer (simplified mix)
-  const merchAvgRevenue = 25 // Shirt + Sticker
-  const merchAvgCost = 10
-  const merchRevenue = buyers * merchAvgRevenue
-  const merchCost = buyers * merchAvgCost
+  const soldItems: Record<string, number> = {}
+  let totalRevenue = 0
 
-  breakdownItems.push({
-    labelKey: 'economy:gigIncome.merchSales.label',
-    value: merchRevenue,
-    detailKey: 'economy:gigIncome.merchSales.detail',
-    detailParams: { buyers }
-  })
+  const customPrices = context.merchPrices ?? {}
+
+  // Guard against undefined bandInventory (blocking issue)
+  const safeInventory = bandInventory || {}
+
+  let totalBuyersRemaining = potentialBuyers
+
+  for (const merchKey in DEFAULT_MERCH_PRICES) {
+    if (Object.hasOwn(DEFAULT_MERCH_PRICES, merchKey)) {
+      const inventoryCount =
+        typeof safeInventory[merchKey] === 'number'
+          ? safeInventory[merchKey]
+          : 0
+      if (inventoryCount > 0 && totalBuyersRemaining > 0) {
+        const defaultPrice = DEFAULT_MERCH_PRICES[merchKey] ?? 10
+        const currentPrice = customPrices[merchKey] ?? defaultPrice
+
+        let priceModifier = 1
+        if (currentPrice > defaultPrice) {
+          priceModifier = Math.max(
+            0.2,
+            1 - ((currentPrice - defaultPrice) / defaultPrice) * 1.5
+          )
+        } else if (currentPrice < defaultPrice) {
+          priceModifier = Math.min(
+            2.0,
+            1 + ((defaultPrice - currentPrice) / defaultPrice) * 1.0
+          )
+        }
+
+        const typeDemandWeight = 1.0 // Could randomize or vary by type
+        const typeBuyers = Math.ceil(
+          totalBuyersRemaining * typeDemandWeight * priceModifier * 0.5
+        ) // Simplified share
+
+        const soldAmount = Math.min(
+          inventoryCount,
+          Math.min(typeBuyers, totalBuyersRemaining)
+        )
+
+        if (soldAmount > 0) {
+          soldItems[merchKey] = soldAmount
+          const itemRevenue = soldAmount * currentPrice
+          totalRevenue += itemRevenue
+
+          breakdownItems.push({
+            labelKey: `economy:gigIncome.merchSales.${merchKey}.label`,
+            value: itemRevenue,
+            detailKey: 'economy:gigIncome.merchSales.detail',
+            detailParams: { buyers: soldAmount }
+          })
+
+          totalBuyersRemaining -= soldAmount
+        }
+      }
+    }
+  }
 
   return {
-    revenue: merchRevenue,
-    cost: merchCost,
+    revenue: totalRevenue,
     breakdownItems,
-    costItem: {
-      labelKey: 'economy:gigExpenses.merchRestock.label',
-      value: merchCost,
-      detailKey: 'economy:gigExpenses.merchRestock.detail'
-    }
+    soldItems
   }
 }
 
@@ -768,8 +815,7 @@ export const calculateGigFinancials = ({
   )
   report.income.breakdown.push(...merch.breakdownItems)
   report.income.total += merch.revenue
-  report.expenses.breakdown.push(merch.costItem)
-  report.expenses.total += merch.cost
+  report.soldMerch = merch.soldItems
 
   // 5. Bar Cut
   const barCut = calculateBarCut(tickets.ticketsSold, modifiers)

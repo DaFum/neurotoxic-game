@@ -18,7 +18,9 @@
 
 import { ALL_VENUES } from '../data/venues'
 import { StateError } from './errorHandler'
-import type { MapNodeType, Venue } from '../types/game'
+import { HQ_ITEMS } from '../data/hqItems'
+import { logger } from './logger'
+import type { MapNodeType, Venue, CityTraitState } from '../types/game'
 
 type MapConnection = { from: string; to: string }
 type GeneratedMapNode = {
@@ -28,16 +30,24 @@ type GeneratedMapNode = {
   status: 'unlocked' | 'completed' | 'locked'
   type: Extract<
     MapNodeType,
-    'START' | 'GIG' | 'SPECIAL' | 'REST_STOP' | 'FESTIVAL' | 'FINALE'
+    | 'START'
+    | 'GIG'
+    | 'SPECIAL'
+    | 'REST_STOP'
+    | 'FESTIVAL'
+    | 'FINALE'
+    | 'supplyStop'
   >
   x: number
   y: number
+  shopInventory?: import('../types/components').PurchaseItem[]
 }
 type MapGeneratorState = {
   layers: GeneratedMapNode[][]
   nodes: Record<string, GeneratedMapNode>
   nodeList: GeneratedMapNode[]
   connections: MapConnection[]
+  cityStates: Record<string, CityTraitState>
 }
 type VenuePools = {
   easyVenues: Venue[]
@@ -52,6 +62,77 @@ let cachedVenuesLength: number = -1
 const getVenueCoord = (venue: Venue, axis: 'x' | 'y', fallback: number) => {
   const raw = venue[axis]
   return typeof raw === 'number' && Number.isFinite(raw) ? raw : fallback
+}
+
+/**
+ * Derives the city key from a venue ID (e.g. 'berlin_so36' → 'berlin').
+ * Returns '' when the ID has no underscore; callers must guard against the
+ * empty string. In dev builds a malformed non-empty ID emits a warning so
+ * legacy/typo'd venue IDs surface rather than silently disabling city intel.
+ */
+const warnedMalformedVenueIds = new Set<string>()
+export const getCityKeyFromVenueId = (venueId: string): string => {
+  const idx = venueId.indexOf('_')
+  if (idx === -1) {
+    if (
+      venueId.length > 0 &&
+      typeof process !== 'undefined' &&
+      process.env?.NODE_ENV !== 'production' &&
+      !warnedMalformedVenueIds.has(venueId)
+    ) {
+      warnedMalformedVenueIds.add(venueId)
+      logger.warn(
+        'mapGenerator',
+        `Malformed venue ID "${venueId}" has no underscore; city intel will be empty`
+      )
+    }
+    return ''
+  }
+  return venueId.slice(0, idx)
+}
+
+const CITY_TRAIT_GENRES = [
+  'punk',
+  'metal',
+  'goth',
+  'indie',
+  'synth',
+  'noise',
+  'hardcore'
+] as const
+
+const CITY_TRAIT_SPENDING_PROFILES = [
+  'stingy',
+  'average',
+  'generous',
+  'drunkards',
+  'merch-hungry'
+] as const
+
+const hashCityKey = (cityKey: string): number => {
+  let h = 2166136261
+  for (let i = 0; i < cityKey.length; i++) {
+    h ^= cityKey.charCodeAt(i)
+    h = Math.imul(h, 16777619)
+  }
+  return h >>> 0
+}
+
+/**
+ * Deterministically derive city traits for a given city key. Used to backfill
+ * `cityStates` for saved maps that predate the city intel system.
+ */
+export const deriveCityTraits = (
+  cityKey: string
+): import('../types/game').CityTraitState => {
+  const h = hashCityKey(cityKey)
+  const genreBias = CITY_TRAIT_GENRES[h % CITY_TRAIT_GENRES.length] ?? 'unknown'
+  const attentionSpan = 15 + ((h >>> 8) % 45)
+  const barSpendingProfile =
+    CITY_TRAIT_SPENDING_PROFILES[
+      (h >>> 16) % CITY_TRAIT_SPENDING_PROFILES.length
+    ] ?? 'average'
+  return { genreBias, attentionSpan, barSpendingProfile }
 }
 
 /**
@@ -86,14 +167,21 @@ export class MapGenerator {
   generateMap(depth: number = 10): MapGeneratorState {
     const validDepth = Math.floor(depth)
     if (!Number.isFinite(validDepth) || validDepth < 1) {
-      return { layers: [], nodes: {}, nodeList: [], connections: [] }
+      return {
+        layers: [],
+        nodes: {},
+        nodeList: [],
+        connections: [],
+        cityStates: {}
+      }
     }
 
     const map: MapGeneratorState = {
       layers: [],
       nodes: {},
       nodeList: [],
-      connections: []
+      connections: [],
+      cityStates: {}
     }
 
     // Layer 0: Stendal (Home)
@@ -154,6 +242,10 @@ export class MapGenerator {
     const usedVenueIds = new Set<string>()
     if (homeVenue) usedVenueIds.add(homeVenue.id)
 
+    const inventoryAddItems = HQ_ITEMS.gear.filter(
+      i => i.effect?.type === 'inventory_add'
+    ) as import('../types/components').PurchaseItem[]
+
     // Pre-reserve Finale Venue (Leipzig Arena) so it is not picked randomly
     if (cachedFinaleVenue) usedVenueIds.add(cachedFinaleVenue.id)
 
@@ -164,7 +256,7 @@ export class MapGenerator {
       usedVenueIds
     }
 
-    this._generateIntermediateLayers(map, validDepth, pools)
+    this._generateIntermediateLayers(map, validDepth, pools, inventoryAddItems)
     this._generateConnections(map, validDepth)
     this._generateFinaleLayer(map, validDepth, hardVenues, pools)
     this._assignInitialCoordinates(map)
@@ -178,7 +270,27 @@ export class MapGenerator {
     // We will keep it mutating the *internal* map structure being built.
     this.resolveOverlaps(map.nodeList)
 
+    this._populateCityStates(map)
+
     return map
+  }
+
+  /**
+   * Generates determinisic city traits for each unique city found on the generated map.
+   */
+  _populateCityStates(map: MapGeneratorState): void {
+    for (const node of map.nodeList) {
+      if (node.venue && node.venue.id) {
+        const cityName = getCityKeyFromVenueId(node.venue.id)
+        if (!cityName) continue
+
+        // Reuse the hash-based derivation so newly generated maps and
+        // backfilled legacy saves produce the same traits for the same city.
+        if (!Object.hasOwn(map.cityStates, cityName)) {
+          map.cityStates[cityName] = deriveCityTraits(cityName)
+        }
+      }
+    }
   }
 
   /**
@@ -190,7 +302,8 @@ export class MapGenerator {
   _generateIntermediateLayers(
     map: MapGeneratorState,
     depth: number,
-    pools: VenuePools & { usedVenueIds: Set<string> }
+    pools: VenuePools & { usedVenueIds: Set<string> },
+    inventoryAddItems: import('../types/components').PurchaseItem[]
   ): void {
     const { easyVenues, mediumVenues, hardVenues, usedVenueIds } = pools
 
@@ -336,6 +449,7 @@ export class MapGenerator {
         const typeRoll = this.random()
         let nodeType: GeneratedMapNode['type'] = 'GIG'
         if (typeRoll > 0.9) nodeType = 'SPECIAL'
+        else if (typeRoll > 0.8) nodeType = 'supplyStop'
         else if (typeRoll > 0.7) nodeType = 'REST_STOP'
         else if ((venue.capacity ?? 0) >= 1000) nodeType = 'FESTIVAL'
 
@@ -348,6 +462,11 @@ export class MapGenerator {
           x: getVenueCoord(venue, 'x', 50),
           y: getVenueCoord(venue, 'y', i * 10 + 10)
         }
+
+        if (nodeType === 'supplyStop') {
+          node.shopInventory = this.pickRandomSubset(inventoryAddItems, 3)
+        }
+
         layerNodes.push(node)
         map.nodes[node.id] = node
         map.nodeList.push(node)
