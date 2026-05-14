@@ -266,7 +266,8 @@ describe('Contraband Schema (with imagePrompt)', () => {
         'gig_modifier',
         'practice_gain',
         'affinity',
-        'style'
+        'style',
+        'stress'
       ]
 
       for (const item of CONTRABAND_DB) {

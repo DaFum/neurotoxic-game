@@ -1,7 +1,10 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
-import { formatNumber } from '../../utils/numberUtils'
+import {
+  formatNumber,
+  formatSignedFinancialAmount
+} from '../../utils/numberUtils'
 
 type NetResultProps = { net: number }
 
@@ -10,13 +13,9 @@ export const NetResult = React.memo(({ net }: NetResultProps) => {
 
   const getNetString = () => {
     if (net > 0)
-      return t('economy:report.amount_positive', {
-        amount: formatNumber(net, i18n?.language)
-      })
+      return formatSignedFinancialAmount(net, 'income', t, i18n?.language)
     if (net < 0)
-      return t('economy:report.amount_negative', {
-        amount: formatNumber(Math.abs(net), i18n?.language)
-      })
+      return formatSignedFinancialAmount(net, 'expense', t, i18n?.language)
     return t('economy:report.amount_with_currency', {
       amount: formatNumber(0, i18n?.language)
     })

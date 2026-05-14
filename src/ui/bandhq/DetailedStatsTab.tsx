@@ -4,6 +4,7 @@ import { ProgressBar, Panel, Tooltip } from '../shared'
 import { useMemo, type ReactNode } from 'react'
 import { CHARACTERS } from '../../data/characters'
 import { translateLocation } from '../../utils/locationI18n'
+import { getCityKeyFromVenueId } from '../../utils/mapGenerator'
 import { isEmptyObject } from '../../utils/gameStateUtils'
 import type {
   PlayerState,
@@ -350,7 +351,10 @@ const RegionalStandingSection = ({
             label={translateLocation(t, region, region)}
             value={rep}
             subtext={
-              venueBlacklist.some(v => v.split('_')[0] === region)
+              venueBlacklist.some(v => {
+                const cityKey = getCityKeyFromVenueId(v)
+                return cityKey !== '' && cityKey === region
+              })
                 ? t('ui:detailedStats.blacklisted', {
                     defaultValue: 'BLACKLISTED VENUES'
                   })

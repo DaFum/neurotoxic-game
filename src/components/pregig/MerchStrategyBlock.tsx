@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { DEFAULT_MERCH_PRICES } from '../../utils/economyEngine'
 import { HQ_ITEMS } from '../../data/hqItems'
 
+const ALL_HQ_ITEMS = Object.values(HQ_ITEMS).flat()
+
 interface MerchStrategyBlockProps {
   bandInventory: Record<string, unknown>
   customPrices: Record<string, number>
@@ -20,15 +22,21 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
 
   const merchItems = useMemo(() => {
     return Object.keys(DEFAULT_MERCH_PRICES).map(key => {
-      const defaultPrice = DEFAULT_MERCH_PRICES[key] || 10
-      const currentPrice = customPrices[key] || defaultPrice
+      const defaultPrice = DEFAULT_MERCH_PRICES[key] ?? 10
+      const currentPrice = customPrices[key] ?? defaultPrice
       const stock =
         typeof bandInventory[key] === 'number'
           ? (bandInventory[key] as number)
           : 0
 
-      const hqItemDef = HQ_ITEMS.find(item => item.effect.key === key)
-      const restockCost = hqItemDef ? hqItemDef.cost : 50 // fallback
+      const hqItemDef = ALL_HQ_ITEMS.find(
+        item =>
+          typeof item.effect === 'object' &&
+          item.effect !== null &&
+          Object.hasOwn(item.effect, 'item') &&
+          (item.effect as { item?: unknown }).item === key
+      )
+      const restockCost = hqItemDef?.cost ?? 50 // fallback
 
       return {
         key,
@@ -53,47 +61,56 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
         {merchItems.map(item => (
           <div
             key={item.key}
-            className='flex justify-between items-center bg-zinc-900/50 p-3 border border-zinc-800'
+            className='flex justify-between items-center bg-(--color-charcoal-gray) p-3 border border-(--color-concrete-gray)'
           >
             <div className='flex flex-col'>
-              <span className='text-white font-mono uppercase'>
+              <span className='text-(--color-toxic-green) font-mono uppercase'>
                 {item.name}
               </span>
-              <span className='text-zinc-400 font-mono text-sm'>
-                Stock: {item.stock}
+              <span className='text-(--color-ash-gray) font-mono text-sm'>
+                {t('ui:pregig.merchStrategy.stock', { count: item.stock })}
               </span>
             </div>
 
             <div className='flex items-center gap-4'>
               <div className='flex items-center gap-2'>
                 <button
+                  type='button'
+                  aria-label={t('ui:pregig.merchStrategy.decreasePrice', {
+                    item: item.name
+                  })}
                   onClick={() =>
                     onUpdatePrice(item.key, Math.max(1, item.currentPrice - 1))
                   }
-                  className='bg-zinc-800 hover:bg-zinc-700 p-1 text-white'
+                  className='bg-(--color-concrete-gray) hover:bg-(--color-steel-gray) p-1 text-(--color-toxic-green)'
                 >
                   -
                 </button>
                 <span className='text-(--color-toxic-green) font-mono w-8 text-center'>
-                  {'$'}
+                  {'€'}
                   {item.currentPrice}
                 </span>
                 <button
+                  type='button'
+                  aria-label={t('ui:pregig.merchStrategy.increasePrice', {
+                    item: item.name
+                  })}
                   onClick={() => onUpdatePrice(item.key, item.currentPrice + 1)}
-                  className='bg-zinc-800 hover:bg-zinc-700 p-1 text-white'
+                  className='bg-(--color-concrete-gray) hover:bg-(--color-steel-gray) p-1 text-(--color-toxic-green)'
                 >
                   +
                 </button>
               </div>
 
               <button
+                type='button'
                 onClick={() => onRestock(item.key)}
-                className='bg-(--color-toxic-green) text-black font-mono px-3 py-1 uppercase text-sm hover:bg-green-400 transition-colors'
-                title={`Cost: ${item.restockCost}`}
-              >
-                {t('ui:pregig.merchStrategy.restock', {
-                  defaultValue: 'Restock'
+                className='bg-(--color-toxic-green) text-(--color-void-black) font-mono px-3 py-1 uppercase text-sm hover:opacity-80 transition-colors'
+                title={t('ui:pregig.merchStrategy.restockCost', {
+                  cost: item.restockCost
                 })}
+              >
+                {t('ui:pregig.merchStrategy.restock')}
               </button>
             </div>
           </div>

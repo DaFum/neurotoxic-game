@@ -5588,6 +5588,17 @@
         "exportPath": "src/types/index.ts"
       }
     ],
+    "RelationshipChange": [
+      {
+        "name": "RelationshipChange",
+        "path": "src/types/game.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "typeOnly": true,
+        "exportPath": "src/types/index.ts"
+      }
+    ],
     "GamePhase": [
       {
         "name": "GamePhase",
@@ -9352,6 +9363,24 @@
         "typeOnly": true
       }
     ],
+    "getCityKeyFromVenueId": [
+      {
+        "name": "getCityKeyFromVenueId",
+        "path": "src/utils/mapGenerator.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
+    "deriveCityTraits": [
+      {
+        "name": "deriveCityTraits",
+        "path": "src/utils/mapGenerator.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
     "MapGenerator": [
       {
         "name": "MapGenerator",
@@ -9429,6 +9458,15 @@
     "formatNumber": [
       {
         "name": "formatNumber",
+        "path": "src/utils/numberUtils.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
+    "formatSignedFinancialAmount": [
+      {
+        "name": "formatSignedFinancialAmount",
         "path": "src/utils/numberUtils.ts",
         "source": "local",
         "type": "const",

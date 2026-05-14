@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
-import type { PlayerState, Venue, GigModifiers } from '../types/game'
+import type { PlayerState, Venue, GigModifiers, GameState } from '../types/game'
 import type { RhythmSetlistEntry } from '../types/rhythmGame'
 import type { Song } from '../types/audio'
 import type { ActiveEffectEntry } from '../types/components'
@@ -130,7 +130,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
       updateBand(prevBand => ({
         ...prevBand,
         merchPrices: {
-          ...(prevBand.merchPrices || {}),
+          ...(prevBand.merchPrices ?? {}),
           [merchKey]: newPrice
         }
       }))
@@ -144,9 +144,10 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
         .flat()
         .find(
           item =>
-            item.effect &&
-            typeof item.effect.item === 'string' &&
-            item.effect.item === merchKey
+            typeof item.effect === 'object' &&
+            item.effect !== null &&
+            Object.hasOwn(item.effect, 'item') &&
+            (item.effect as { item?: unknown }).item === merchKey
         )
       if (!itemDef) return
 
@@ -159,7 +160,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
       updatePlayer({ money: clampPlayerMoney(player.money - cost) })
 
       updateBand(prevBand => {
-        const currentInventory = prevBand.inventory || {}
+        const currentInventory = prevBand.inventory ?? {}
         const currentAmount =
           typeof currentInventory[merchKey] === 'number'
             ? (currentInventory[merchKey] as number)

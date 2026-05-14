@@ -24,6 +24,24 @@ export const formatNumber = (value: number, language = 'en'): string => {
   return formatter.format(value)
 }
 
+/**
+ * Formats a financial amount as a translated, signed string for post-gig reports.
+ * Routes through `economy:report.amount_positive` / `amount_negative` so each
+ * locale controls sign placement and currency glyph.
+ */
+export const formatSignedFinancialAmount = (
+  value: number,
+  type: 'income' | 'expense',
+  t: (key: string, options?: Record<string, unknown>) => string,
+  language = 'en'
+): string => {
+  const key =
+    type === 'income'
+      ? 'economy:report.amount_positive'
+      : 'economy:report.amount_negative'
+  return t(key, { amount: formatNumber(Math.abs(value), language) })
+}
+
 export const formatCurrency = (
   value: number,
   language = 'en',

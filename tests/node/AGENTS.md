@@ -19,3 +19,5 @@ Applies to `tests/node/**`.
 - Keep `songsData.test.js` focused on transform edge cases and `songs-real.test.js` on production dataset contracts.
 - Split-runner commands must stay Windows-shell portable.
 - Real dataset assertions should include `song.id` in failure messages.
+- `mapGenerator.test.js` imports `getCityKeyFromVenueId` directly; assert prefix extraction (including the empty-string case for IDs with no underscore) alongside `cityStates` population and key-to-venue-prefix alignment.
+- `economyEngine.test.js` tests for `calculateMerchIncome` must cover custom `context.merchPrices` — verify that non-default prices change revenue vs the default, and that identical prices produce identical revenue.

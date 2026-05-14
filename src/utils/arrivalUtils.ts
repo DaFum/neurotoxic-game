@@ -156,7 +156,10 @@ export const handleNodeArrival = (
         'info'
       )
       if (onShowSupplyStop) {
-        onShowSupplyStop(node.shopInventory || [])
+        const inventory = Array.isArray(node.shopInventory)
+          ? (node.shopInventory as import('../types/components').PurchaseItem[])
+          : []
+        onShowSupplyStop(inventory)
       }
       return { scene: GAME_PHASES.OVERWORLD, gigStarted: false }
     }

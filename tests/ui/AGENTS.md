@@ -17,3 +17,5 @@ Applies to `tests/ui/**` unless a deeper `AGENTS.md` overrides it.
 - Menu redesigns need assertions that legacy actions remain reachable.
 - Kabelsalat tests must assert timeout-loss and fully wired win paths call `changeScene('GIG')`.
 - Minigame completion overlays need fallback-timer and unmount-cleanup coverage.
+- Use a props-spy pattern (`const capturedProps = []; vi.mock(…, () => ({ Component: props => { capturedProps.push(props); return <div /> } }))`) to assert derived props (e.g. `cityTraits`) passed down to child components without rendering the child itself.
+- Mock `MerchStrategyBlock` in `PreGig` tests to avoid `HQ_ITEMS`/`economyEngine` dependency; provide `onUpdatePrice` and `onRestock` callback props in the mock so handler tests can fire them directly. The `economyEngine` mock must include `DEFAULT_MERCH_PRICES` when merch tab tests are present.

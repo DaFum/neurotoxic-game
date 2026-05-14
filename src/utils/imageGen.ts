@@ -332,6 +332,15 @@ export const IMG_PROMPTS = {
   ITEM_BROKEN_COMPASS:
     'pixel art shattered compass with a wildly spinning needle glowing icon',
 
+  ITEM_NEURO_MOLD:
+    'A glowing, toxic green cluster of neuro-mold spores in a dark, brutalist metal container, cyber-grime aesthetic, hyper-detailed, dramatic lighting --ar 1:1 --v 6.0',
+  ITEM_CYBER_PLECTRUM:
+    'A sleek, chrome-plated cybernetic guitar plectrum with glowing neon circuits, resting on a matte black amplifier, cyberpunk aesthetic, photorealistic --ar 1:1 --v 6.0',
+  ITEM_VOID_JUICE:
+    'A cracked, brutalist glass vial filled with a swirling, pitch-black liquid that absorbs light, ominous atmosphere, Kranker Schrank lore, macro photography --ar 1:1 --v 6.0',
+  ITEM_ADRENALINE_AMPOULE:
+    'A military-grade adrenaline auto-injector with a glowing orange reservoir, sitting on a rusted industrial grate, high contrast, cinematic --ar 1:1 --v 6.0',
+
   // Social & Brand Deals
   SOCIAL_POST_VIRAL:
     'pixel art smartphone screen glowing toxic green fire trending viral icon',

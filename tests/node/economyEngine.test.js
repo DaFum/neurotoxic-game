@@ -350,7 +350,7 @@ test('calculateGigFinancials uses all inventory types for sales limit', () => {
       .reduce((sum, b) => sum + b.value, 0)
   }
   assert.ok(
-    merchItem.value >= 0,
+    merchItem.value > 0,
     'Should sell patches/vinyls if other items out'
   )
 })
@@ -519,7 +519,7 @@ test('calculateGigFinancials merch table modifier increases sales', () => {
       .reduce((sum, b) => sum + b.value, 0)
   }
   assert.ok(
-    tableMerch.value >= noTableMerch.value,
+    tableMerch.value > noTableMerch.value,
     'Merch table should increase sales'
   )
 })
@@ -944,4 +944,69 @@ test('calculateFuelCost handles edge cases for distance', async t => {
     assert.strictEqual(result.fuelLiters, Infinity)
     assert.strictEqual(result.fuelCost, Infinity)
   })
+})
+
+test('calculateMerchIncome uses custom prices from context.merchPrices', () => {
+  // shirts default price is 20; set a higher custom price to reduce demand
+  const bandInventory = { shirts: 50, hoodies: 50 }
+  const context = { merchPrices: { shirts: 40, hoodies: 45 } } // shirts doubled, hoodies at default
+
+  const defaultResult = calculateMerchIncome(
+    200, // ticketsSold
+    70, // performanceScore
+    {}, // gigStats
+    {}, // modifiers
+    bandInventory,
+    {} // no custom prices
+  )
+
+  const customResult = calculateMerchIncome(
+    200,
+    70,
+    {},
+    {},
+    bandInventory,
+    context
+  )
+
+  // The key assertion: custom prices are applied (revenue differs)
+  assert.notEqual(
+    defaultResult.revenue,
+    customResult.revenue,
+    'Custom merch prices should change total revenue'
+  )
+
+  // Shirts: higher price means fewer sold but more revenue per unit
+  // The overall effect through the demand penalty: custom revenue may be lower or higher
+  // Just verify the function runs without errors and returns valid revenue
+  assert.ok(
+    typeof customResult.revenue === 'number',
+    'revenue should be a number'
+  )
+  assert.ok(customResult.revenue >= 0, 'revenue should be non-negative')
+  assert.ok(
+    typeof customResult.soldItems === 'object',
+    'soldItems should be an object'
+  )
+})
+
+test('calculateMerchIncome with identical custom prices equals default behaviour', () => {
+  const bandInventory = { shirts: 20 }
+  const context = { merchPrices: { shirts: 20 } } // same as default
+
+  const defaultResult = calculateMerchIncome(100, 50, {}, {}, bandInventory, {})
+  const identicalResult = calculateMerchIncome(
+    100,
+    50,
+    {},
+    {},
+    bandInventory,
+    context
+  )
+
+  assert.equal(
+    defaultResult.revenue,
+    identicalResult.revenue,
+    'Setting default price explicitly should produce same revenue'
+  )
 })

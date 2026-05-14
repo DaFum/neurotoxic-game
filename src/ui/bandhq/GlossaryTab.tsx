@@ -9,14 +9,20 @@ type GlossaryState = Pick<GameState, 'band' | 'player' | 'social'>
 interface GlossaryEntry {
   termKey: string
   descriptionKey: string
-  liveValueSelector: (state: GlossaryState, t: TFunction<['ui'], undefined>) => string | null
+  liveValueSelector: (
+    state: GlossaryState,
+    t: TFunction<['ui'], undefined>
+  ) => string | null
 }
 
 const GLOSSARY_ENTRIES: GlossaryEntry[] = [
   {
     termKey: 'ui:glossary.terms.harmony',
     descriptionKey: 'ui:glossary.desc.harmony',
-    liveValueSelector: (state: GlossaryState, _t: TFunction<['ui'], undefined>) => {
+    liveValueSelector: (
+      state: GlossaryState,
+      _t: TFunction<['ui'], undefined>
+    ) => {
       const harmony = state.band.harmony
       return typeof harmony === 'number' ? `${harmony}/100` : null
     }
@@ -24,7 +30,10 @@ const GLOSSARY_ENTRIES: GlossaryEntry[] = [
   {
     termKey: 'ui:glossary.terms.hype',
     descriptionKey: 'ui:glossary.desc.hype',
-    liveValueSelector: (state: GlossaryState, t: TFunction<['ui'], undefined>) => {
+    liveValueSelector: (
+      state: GlossaryState,
+      t: TFunction<['ui'], undefined>
+    ) => {
       // Hype event effects map to fame, so the live value should reflect fame only.
       const fameLabel = t('ui:stats.fame', { defaultValue: 'Fame' })
       return `${fameLabel}: ${state.player.fame}`
@@ -33,7 +42,10 @@ const GLOSSARY_ENTRIES: GlossaryEntry[] = [
   {
     termKey: 'ui:glossary.terms.zealotry',
     descriptionKey: 'ui:glossary.desc.zealotry',
-    liveValueSelector: (state: GlossaryState, _t: TFunction<['ui'], undefined>) => {
+    liveValueSelector: (
+      state: GlossaryState,
+      _t: TFunction<['ui'], undefined>
+    ) => {
       const zealotry = state.social.zealotry
       return typeof zealotry === 'number' ? `${zealotry}/100` : null
     }
@@ -69,7 +81,10 @@ export const GlossaryTab = () => {
           {GLOSSARY_ENTRIES.map(entry => {
             const liveValue = entry.liveValueSelector(mockState, t)
             return (
-              <div key={entry.termKey} className='border-b border-ash-gray/20 pb-4'>
+              <div
+                key={entry.termKey}
+                className='border-b border-ash-gray/20 pb-4'
+              >
                 <h4 className='text-star-white font-bold font-mono text-lg flex items-center gap-2'>
                   {t(entry.termKey)}
                   {liveValue !== null && (

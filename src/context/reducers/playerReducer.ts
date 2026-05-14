@@ -28,7 +28,10 @@ export const handleUpdatePlayer = <TState extends WithPlayer>(
   const updates =
     typeof payload === 'function' ? payload(state.player) : payload
 
-  if (!isPlainObject(updates) || hasForbiddenKeys(updates as Record<string, unknown>)) {
+  if (
+    !isPlainObject(updates) ||
+    hasForbiddenKeys(updates as Record<string, unknown>)
+  ) {
     return state
   }
 

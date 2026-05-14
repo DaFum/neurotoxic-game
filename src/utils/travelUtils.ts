@@ -1,4 +1,5 @@
 import { normalizeVenueId } from './mapUtils'
+import { getCityKeyFromVenueId } from './mapGenerator'
 import { clampPlayerMoney, clampBandHarmony } from './gameStateUtils'
 import type { BandState, MapNode, PlayerState, Venue } from '../types/game'
 import type { TranslationCallback } from '../types/callbacks'
@@ -139,8 +140,8 @@ export const checkVenueAccess = ({
     }
   }
 
-  const regionId = venueId?.split('_')?.[0] || 'Unknown'
-  if ((reputationByRegion[regionId] || 0) <= -30) {
+  const regionId = (venueId && getCityKeyFromVenueId(venueId)) || 'Unknown'
+  if ((reputationByRegion[regionId] ?? 0) <= -30) {
     return {
       allowed: false,
       errorKey: 'ui:travel.errors.bookingRefusedRegionalReputation',
@@ -232,7 +233,8 @@ export const getTravelArrivalUpdates = ({
       ...player.van,
       fuel: Math.max(0, (player.van?.fuel ?? 0) - fuelLiters)
     },
-    location: normalizeVenueId(node.venue)?.split('_')?.[0] || 'Unknown',
+    location:
+      getCityKeyFromVenueId(normalizeVenueId(node.venue) ?? '') || 'Unknown',
     currentNodeId: node.id,
     totalTravels: (player.totalTravels ?? 0) + 1
   }

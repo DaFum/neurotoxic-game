@@ -187,10 +187,11 @@ const SENSITIVE_KEY_PATTERNS = [
 
 const escapeRegExp = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
-const SENSITIVE_KEY_REGEXP =
-  SENSITIVE_KEY_PATTERNS.some(Boolean)
-    ? new RegExp(SENSITIVE_KEY_PATTERNS.filter(Boolean).map(escapeRegExp).join('|'))
-    : null
+const SENSITIVE_KEY_REGEXP = SENSITIVE_KEY_PATTERNS.some(Boolean)
+  ? new RegExp(
+      SENSITIVE_KEY_PATTERNS.filter(Boolean).map(escapeRegExp).join('|')
+    )
+  : null
 
 const isPlainObject = (value: unknown): value is Record<string, unknown> => {
   return (
