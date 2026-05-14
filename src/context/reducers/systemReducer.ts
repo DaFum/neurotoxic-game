@@ -219,6 +219,35 @@ const sanitizeBandInventory = (value: unknown): BandState['inventory'] => {
   return sanitized
 }
 
+/**
+ * Validates a purchase effect object from a loaded save.
+ * Ensures value is finite and non-negative for inventory_add effects.
+ * Returns the effect if valid, null otherwise.
+ */
+const validateLoadedEffect = (
+  effect: unknown
+): Record<string, unknown> | null => {
+  if (!isPlainObject(effect)) return null
+
+  const effectObj = effect as Record<string, unknown>
+  const typeStr = typeof effectObj.type === 'string' ? effectObj.type : ''
+  const value =
+    typeof effectObj.value === 'number' ? effectObj.value : undefined
+
+  // Must have a value that is finite
+  if (value === undefined || !Number.isFinite(value)) {
+    return null
+  }
+
+  // For inventory_add, value must be non-negative (can't reduce inventory via load)
+  if (typeStr === 'inventory_add' && value < 0) {
+    return null
+  }
+
+  // Copy safe primitives and return
+  return copySafeFlatObject(effectObj)
+}
+
 const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
   if (typeof gameMap !== 'object' || gameMap === null) {
     return null
@@ -405,13 +434,13 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
               ;(sanitizedItem as Record<string, unknown>)[itemKey] = v
             }
           } else if (itemKey === 'effect') {
-            const flatEffect = copySafeFlatObject(v)
-            if (flatEffect) sanitizedItem.effect = flatEffect as never
+            const validEffect = validateLoadedEffect(v)
+            if (validEffect) sanitizedItem.effect = validEffect as never
           } else if (itemKey === 'effects' && Array.isArray(v)) {
             const flatEffects: Array<Record<string, unknown>> = []
             for (let j = 0; j < v.length; j++) {
-              const flatEffect = copySafeFlatObject(v[j])
-              if (flatEffect) flatEffects.push(flatEffect)
+              const validEffect = validateLoadedEffect(v[j])
+              if (validEffect) flatEffects.push(validEffect)
             }
             if (flatEffects.length > 0) {
               sanitizedItem.effects = flatEffects as never
