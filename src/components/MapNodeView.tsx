@@ -58,7 +58,7 @@ const getPinAltText = (t: TranslationCallback, type: string): string => {
 const getNodeTypeLabel = (t: TranslationCallback, type: string): string => {
   if (type === 'GIG') return t('ui:map.nodeType.gig')
   if (type === 'supplyStop')
-    return t('ui:map.nodeType.supply_stop', 'SUPPLY STOP')
+    return t('ui:map.nodeType.supply_stop', { defaultValue: 'SUPPLY STOP' })
   if (type === 'REST_STOP') return t('ui:map.nodeType.rest')
   return t('ui:map.nodeType.fallback', {
     type: type.substring(0, 3)
@@ -103,7 +103,9 @@ const MapNodeTooltip = memo(
     isPendingConfirm
   }: MapNodeTooltipProps) => {
     return (
-      <div className={`${isPendingConfirm ? 'block' : 'hidden group-hover:block group-focus:block'} absolute top-full mt-2 bg-void-black/90 border border-toxic-green p-2 z-50 whitespace-nowrap pointer-events-none`}>
+      <div
+        className={`${isPendingConfirm ? 'block' : 'hidden group-hover:block group-focus:block'} absolute top-full mt-2 bg-void-black/90 border border-toxic-green p-2 z-50 whitespace-nowrap pointer-events-none`}
+      >
         <div className='font-bold text-toxic-green'>{nodeLocationName}</div>
 
         {cityTraits && (
@@ -112,16 +114,26 @@ const MapNodeTooltip = memo(
               {t('ui:map.intel.title')}
             </div>
             <div>
-              <span className='text-star-white'>{t('ui:map.intel.genreBias')}</span>{' '}
-              {t(`ui:map.intel.genres.${cityTraits.genreBias}`, { defaultValue: cityTraits.genreBias })}
+              <span className='text-star-white'>
+                {t('ui:map.intel.genreBias')}
+              </span>{' '}
+              {t(`ui:map.intel.genres.${cityTraits.genreBias}`, {
+                defaultValue: cityTraits.genreBias
+              })}
             </div>
             <div>
-              <span className='text-star-white'>{t('ui:map.intel.attentionSpan')}</span>{' '}
+              <span className='text-star-white'>
+                {t('ui:map.intel.attentionSpan')}
+              </span>{' '}
               {cityTraits.attentionSpan}m
             </div>
             <div>
-              <span className='text-star-white'>{t('ui:map.intel.barSpendingProfile')}</span>{' '}
-              {t(`ui:map.intel.spending.${cityTraits.barSpendingProfile}`, { defaultValue: cityTraits.barSpendingProfile })}
+              <span className='text-star-white'>
+                {t('ui:map.intel.barSpendingProfile')}
+              </span>{' '}
+              {t(`ui:map.intel.spending.${cityTraits.barSpendingProfile}`, {
+                defaultValue: cityTraits.barSpendingProfile
+              })}
             </div>
           </div>
         )}
@@ -168,7 +180,7 @@ const MapNodeTooltip = memo(
         )}
         {node.type === 'supplyStop' && (
           <div className='text-[10px] text-toxic-green font-mono'>
-            {t('ui:map.supply_stop_desc', 'Supply Stop')}
+            {t('ui:map.supply_stop_desc', { defaultValue: 'Supply Stop' })}
           </div>
         )}
         {isCurrent && (
@@ -409,9 +421,9 @@ export const MapNodeView = memo(
       prev.node.venue?.diff === next.node.venue?.diff &&
       prev.node.venue?.price === next.node.venue?.price &&
       prev.harmony === next.harmony &&
-      prev.cityTraits?.genreBias === next.cityTraits?.genreBias &&
-      prev.cityTraits?.attentionSpan === next.cityTraits?.attentionSpan &&
-      prev.cityTraits?.barSpendingProfile === next.cityTraits?.barSpendingProfile
+      // cityTraits entries are stable references owned by gameMap.cityStates,
+      // so reference equality covers all current and future trait fields.
+      prev.cityTraits === next.cityTraits
     )
   }
 )

@@ -500,6 +500,15 @@
         "isDefault": false
       }
     ],
+    "MerchStrategyBlock": [
+      {
+        "name": "MerchStrategyBlock",
+        "path": "src/components/pregig/MerchStrategyBlock.tsx",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
     "PreGigHeader": [
       {
         "name": "PreGigHeader",
@@ -1485,6 +1494,15 @@
     "createMerchPressAction": [
       {
         "name": "createMerchPressAction",
+        "path": "src/context/actionCreators.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
+    "createBanterAction": [
+      {
+        "name": "createBanterAction",
         "path": "src/context/actionCreators.ts",
         "source": "local",
         "type": "const",
@@ -2619,6 +2637,25 @@
       {
         "name": "HQ_ITEMS",
         "path": "src/data/hqItems.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
+    "Milestone": [
+      {
+        "name": "Milestone",
+        "path": "src/data/milestones/milestones.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "typeOnly": true
+      }
+    ],
+    "MILESTONES": [
+      {
+        "name": "MILESTONES",
+        "path": "src/data/milestones/milestones.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -5551,6 +5588,17 @@
         "exportPath": "src/types/index.ts"
       }
     ],
+    "RelationshipChange": [
+      {
+        "name": "RelationshipChange",
+        "path": "src/types/game.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "typeOnly": true,
+        "exportPath": "src/types/index.ts"
+      }
+    ],
     "GamePhase": [
       {
         "name": "GamePhase",
@@ -5686,6 +5734,17 @@
     "MapNode": [
       {
         "name": "MapNode",
+        "path": "src/types/game.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "typeOnly": true,
+        "exportPath": "src/types/index.ts"
+      }
+    ],
+    "CityTraitState": [
+      {
+        "name": "CityTraitState",
         "path": "src/types/game.d.ts",
         "source": "local",
         "type": "interface",
@@ -6369,6 +6428,15 @@
       {
         "name": "DetailedStatsTab",
         "path": "src/ui/bandhq/DetailedStatsTab.tsx",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
+    "GlossaryTab": [
+      {
+        "name": "GlossaryTab",
+        "path": "src/ui/bandhq/GlossaryTab.tsx",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -8252,6 +8320,15 @@
         "isDefault": false
       }
     ],
+    "DEFAULT_MERCH_PRICES": [
+      {
+        "name": "DEFAULT_MERCH_PRICES",
+        "path": "src/utils/economyEngine.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
     "BAR_RATE_NORMAL": [
       {
         "name": "BAR_RATE_NORMAL",
@@ -8894,6 +8971,15 @@
         "isDefault": false
       }
     ],
+    "clampRelationship": [
+      {
+        "name": "clampRelationship",
+        "path": "src/utils/gameStateUtils.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
     "clampBandHarmony": [
       {
         "name": "clampBandHarmony",
@@ -9277,6 +9363,24 @@
         "typeOnly": true
       }
     ],
+    "getCityKeyFromVenueId": [
+      {
+        "name": "getCityKeyFromVenueId",
+        "path": "src/utils/mapGenerator.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
+    "deriveCityTraits": [
+      {
+        "name": "deriveCityTraits",
+        "path": "src/utils/mapGenerator.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
     "MapGenerator": [
       {
         "name": "MapGenerator",
@@ -9354,6 +9458,15 @@
     "formatNumber": [
       {
         "name": "formatNumber",
+        "path": "src/utils/numberUtils.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
+    "formatSignedFinancialAmount": [
+      {
+        "name": "formatSignedFinancialAmount",
         "path": "src/utils/numberUtils.ts",
         "source": "local",
         "type": "const",

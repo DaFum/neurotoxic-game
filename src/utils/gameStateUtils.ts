@@ -1,7 +1,12 @@
 import { hasTrait } from './traitUtils'
 import { EXPENSE_CONSTANTS } from './economyEngine'
 import { logger } from './logger'
-import type { BandMember, GameState, StashEntry } from '../types/game'
+import type {
+  BandMember,
+  GameState,
+  RelationshipChange,
+  StashEntry
+} from '../types/game'
 
 /**
  * Clamps a value to be at least 0.
@@ -236,7 +241,10 @@ export const RELATIONSHIP_MAX_SCORE = 100
  */
 export const clampRelationship = (score: number): number => {
   if (!Number.isFinite(score)) return RELATIONSHIP_DEFAULT_SCORE
-  return Math.max(RELATIONSHIP_MIN_SCORE, Math.min(RELATIONSHIP_MAX_SCORE, Math.round(score)))
+  return Math.max(
+    RELATIONSHIP_MIN_SCORE,
+    Math.min(RELATIONSHIP_MAX_SCORE, Math.round(score))
+  )
 }
 
 /**
@@ -250,8 +258,6 @@ export const clampBandHarmony = (harmony: number): number => {
   const safeHarmony = Math.floor(harmony)
   return Math.max(1, Math.min(100, safeHarmony))
 }
-
-
 
 /**
  * Clamps social loyalty to the canonical gameplay range.
@@ -388,14 +394,6 @@ const calculateClampedControversyDelta = (
  * @returns {object} New object with filtered properties.
  */
 type FilteredRecord = Record<string, unknown>
-
-type RelationshipChange = {
-  member1: string
-  member2: string
-  change: number
-  source?: string
-  timestamp?: number
-}
 
 type MemberDelta = FilteredRecord & {
   moodChange?: number
@@ -939,7 +937,9 @@ export const applyEventDelta = (
         : []
 
     if (relationshipChange.length > 0) {
-      const banterDeltas = relationshipChange.filter(rc => rc.source === 'banter')
+      const banterDeltas = relationshipChange.filter(
+        rc => rc.source === 'banter'
+      )
       if (banterDeltas.length > 0) {
         nextBand.banterEvents = [
           ...(nextBand.banterEvents || []),
@@ -947,7 +947,7 @@ export const applyEventDelta = (
             member1: rc.member1,
             member2: rc.member2,
             delta: rc.change,
-            timestamp: rc.timestamp || Date.now()
+            timestamp: rc.timestamp ?? Date.now()
           }))
         ].slice(-50)
       }

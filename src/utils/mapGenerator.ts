@@ -19,6 +19,7 @@
 import { ALL_VENUES } from '../data/venues'
 import { StateError } from './errorHandler'
 import { HQ_ITEMS } from '../data/hqItems'
+import { logger } from './logger'
 import type { MapNodeType, Venue, CityTraitState } from '../types/game'
 
 type MapConnection = { from: string; to: string }
@@ -29,10 +30,17 @@ type GeneratedMapNode = {
   status: 'unlocked' | 'completed' | 'locked'
   type: Extract<
     MapNodeType,
-    'START' | 'GIG' | 'SPECIAL' | 'REST_STOP' | 'FESTIVAL' | 'FINALE'
+    | 'START'
+    | 'GIG'
+    | 'SPECIAL'
+    | 'REST_STOP'
+    | 'FESTIVAL'
+    | 'FINALE'
+    | 'supplyStop'
   >
   x: number
   y: number
+  shopInventory?: import('../types/components').PurchaseItem[]
 }
 type MapGeneratorState = {
   layers: GeneratedMapNode[][]
@@ -54,6 +62,77 @@ let cachedVenuesLength: number = -1
 const getVenueCoord = (venue: Venue, axis: 'x' | 'y', fallback: number) => {
   const raw = venue[axis]
   return typeof raw === 'number' && Number.isFinite(raw) ? raw : fallback
+}
+
+/**
+ * Derives the city key from a venue ID (e.g. 'berlin_so36' → 'berlin').
+ * Returns '' when the ID has no underscore; callers must guard against the
+ * empty string. In dev builds a malformed non-empty ID emits a warning so
+ * legacy/typo'd venue IDs surface rather than silently disabling city intel.
+ */
+const warnedMalformedVenueIds = new Set<string>()
+export const getCityKeyFromVenueId = (venueId: string): string => {
+  const idx = venueId.indexOf('_')
+  if (idx === -1) {
+    if (
+      venueId.length > 0 &&
+      typeof process !== 'undefined' &&
+      process.env?.NODE_ENV !== 'production' &&
+      !warnedMalformedVenueIds.has(venueId)
+    ) {
+      warnedMalformedVenueIds.add(venueId)
+      logger.warn(
+        'mapGenerator',
+        `Malformed venue ID "${venueId}" has no underscore; city intel will be empty`
+      )
+    }
+    return ''
+  }
+  return venueId.slice(0, idx)
+}
+
+const CITY_TRAIT_GENRES = [
+  'punk',
+  'metal',
+  'goth',
+  'indie',
+  'synth',
+  'noise',
+  'hardcore'
+] as const
+
+const CITY_TRAIT_SPENDING_PROFILES = [
+  'stingy',
+  'average',
+  'generous',
+  'drunkards',
+  'merch-hungry'
+] as const
+
+const hashCityKey = (cityKey: string): number => {
+  let h = 2166136261
+  for (let i = 0; i < cityKey.length; i++) {
+    h ^= cityKey.charCodeAt(i)
+    h = Math.imul(h, 16777619)
+  }
+  return h >>> 0
+}
+
+/**
+ * Deterministically derive city traits for a given city key. Used to backfill
+ * `cityStates` for saved maps that predate the city intel system.
+ */
+export const deriveCityTraits = (
+  cityKey: string
+): import('../types/game').CityTraitState => {
+  const h = hashCityKey(cityKey)
+  const genreBias = CITY_TRAIT_GENRES[h % CITY_TRAIT_GENRES.length] ?? 'unknown'
+  const attentionSpan = 15 + ((h >>> 8) % 45)
+  const barSpendingProfile =
+    CITY_TRAIT_SPENDING_PROFILES[
+      (h >>> 16) % CITY_TRAIT_SPENDING_PROFILES.length
+    ] ?? 'average'
+  return { genreBias, attentionSpan, barSpendingProfile }
 }
 
 /**
@@ -88,7 +167,13 @@ export class MapGenerator {
   generateMap(depth: number = 10): MapGeneratorState {
     const validDepth = Math.floor(depth)
     if (!Number.isFinite(validDepth) || validDepth < 1) {
-      return { layers: [], nodes: {}, nodeList: [], connections: [] }
+      return {
+        layers: [],
+        nodes: {},
+        nodeList: [],
+        connections: [],
+        cityStates: {}
+      }
     }
 
     const map: MapGeneratorState = {
@@ -159,7 +244,7 @@ export class MapGenerator {
 
     const inventoryAddItems = HQ_ITEMS.gear.filter(
       i => i.effect?.type === 'inventory_add'
-    )
+    ) as import('../types/components').PurchaseItem[]
 
     // Pre-reserve Finale Venue (Leipzig Arena) so it is not picked randomly
     if (cachedFinaleVenue) usedVenueIds.add(cachedFinaleVenue.id)
@@ -194,25 +279,15 @@ export class MapGenerator {
    * Generates determinisic city traits for each unique city found on the generated map.
    */
   _populateCityStates(map: MapGeneratorState): void {
-    const genres = ['punk', 'metal', 'goth', 'indie', 'synth', 'noise', 'hardcore']
-    const spendingProfiles = ['stingy', 'average', 'generous', 'drunkards', 'merch-hungry']
-
     for (const node of map.nodeList) {
-      if (node.venue && node.venue.city) {
-        const cityName = node.venue.city
+      if (node.venue && node.venue.id) {
+        const cityName = getCityKeyFromVenueId(node.venue.id)
+        if (!cityName) continue
 
-        // Only generate traits once per city per map generation
-        if (!map.cityStates[cityName]) {
-          const genreBias = genres[Math.floor(this.random() * genres.length)] || 'unknown'
-          // Attention span in minutes: 15 to 60
-          const attentionSpan = Math.floor(this.random() * 45) + 15
-          const barSpendingProfile = spendingProfiles[Math.floor(this.random() * spendingProfiles.length)] || 'average'
-
-          map.cityStates[cityName] = {
-            genreBias,
-            attentionSpan,
-            barSpendingProfile
-          }
+        // Reuse the hash-based derivation so newly generated maps and
+        // backfilled legacy saves produce the same traits for the same city.
+        if (!Object.hasOwn(map.cityStates, cityName)) {
+          map.cityStates[cityName] = deriveCityTraits(cityName)
         }
       }
     }

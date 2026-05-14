@@ -3,6 +3,8 @@ import { MapConnection } from '../MapConnection'
 import { MapNodeView } from '../MapNodeView'
 import { TravelingVan } from './TravelingVan'
 import { calculateEffectiveTicketPrice } from '../../utils/economyEngine'
+import { getCityKeyFromVenueId } from '../../utils/mapGenerator'
+import { normalizeVenueId } from '../../utils/mapUtils'
 import { useNetworkStatus } from '../../hooks/useNetworkStatus'
 import {
   getGenImageUrl,
@@ -191,6 +193,10 @@ export const OverworldMap = React.memo(
         else if (node.type === 'SPECIAL') iconUrl = pinSpecialUrl
         else if (node.type === 'FINALE') iconUrl = pinFinaleUrl
 
+        const nodeVenueId = normalizeVenueId(node.venueId ?? node.venue)
+        const cityKey = nodeVenueId ? getCityKeyFromVenueId(nodeVenueId) : ''
+        const cityTraits = cityKey ? gameMap?.cityStates?.[cityKey] : undefined
+
         const effectivePrice = calculateEffectiveTicketPrice(
           node.venue ?? { id: node.id, name: node.id, price: 0 },
           {
@@ -219,9 +225,7 @@ export const OverworldMap = React.memo(
                   ? band.harmony
                   : undefined
               }
-              cityTraits={
-                node.venue?.city ? gameMap?.cityStates?.[node.venue.city] : undefined
-              }
+              cityTraits={cityTraits}
             />
             {hasRival && visibility !== 'hidden' && (
               <div

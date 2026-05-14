@@ -41,7 +41,7 @@
 - Action creators return `Extract<GameAction, { type: typeof ActionTypes.X }>`; do not hand-write action object shapes.
 - Reducer default branches must call `assertNever(action)`.
 - Prefer `as const satisfies Record<Union, T>` for keyed configs; avoid widening with `as Record<...>`.
-- Shared domain contracts belong in `src/types/*.d.ts`; do not duplicate local structural clones.
+- Shared domain contracts belong in `src/types/*.d.ts`; do not duplicate local structural clones. `RelationshipChange` is defined in `src/types/game.d.ts`, not `gameStateUtils.ts`.
 - Preserve valid falsy values with nullish checks (`??`), not truthy fallbacks (`||`).
 - Give categorize/split helpers explicit named return types instead of broad `Record<string, T[]>`.
 - Boundary and error-handler functions must accept `unknown` and narrow before use.
@@ -82,3 +82,7 @@
 - Include `t` in hook/callback dependency arrays when used in that scope.
 - Use `.cjs` for ad-hoc Node scripts using `require()`.
 - Use `process.env.VITE_VAR` for env vars shared by Vite and `node:test`.
+- `getCityKeyFromVenueId` (exported from `src/utils/mapGenerator.ts`) returns `''` for venue IDs that contain no underscore; callers must guard the empty-string case.
+- `band.merchPrices` is persisted through save/load via `sanitizeBand` in `src/context/reducers/systemReducer.ts`; do not strip it during state sanitization.
+- `MerchStrategyBlock` lives in `src/components/pregig/`; it uses full i18n and design-token styling.
+- `deriveFinancials` in `src/utils/postGigUtils.ts` accepts an optional `bandMerchPrices` param; pass `band.merchPrices` when calling from post-gig hooks.

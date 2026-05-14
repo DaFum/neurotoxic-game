@@ -17,6 +17,8 @@ Applies to `src/context/reducers/**`.
 ## Gotchas
 
 - Loaded save compatibility must cover legacy venue, settings, and unlock formats.
+- `sanitizeBand` in `systemReducer.ts` preserves `band.merchPrices` through save/load: it whitelists entries by key, validates values with `Number.isFinite(v) && v >= 0`, and skips prototype-pollution keys. Extend the same pattern for any new per-item numeric map added to `BandState`.
+- `cityStates` sanitization uses `Number.isFinite(attentionSpan)` (not `typeof === 'number'`) to reject `NaN` and `Infinity` that would otherwise pass a plain typeof check.
 - Reducer typing regressions should fail `pnpm run typecheck`; whole-project issues belong to `pnpm run typecheck:core`.
 - `addContrabandHelper` in `bandReducer.ts` is a pure state-update helper (returns a new `GameState`, does not mutate) intentionally exposed as a function rather than a dispatched action. It exists so `minigameReducer` and `tradeReducer` can compose atomic cross-domain updates in a single reducer pass, avoiding stale-state races. Do not convert it to a dispatched action.
 - `questReducer.ts` is only an integration point; quest progress/completion/deadline logic lives in `src/domain/questLifecycle.ts`. Do not move domain logic into the reducer.

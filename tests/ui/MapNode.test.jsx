@@ -353,4 +353,37 @@ describe('MapNodeView', () => {
     fireEvent.pointerLeave(button, { pointerType: 'touch' })
     expect(mockSetHoveredNode).toHaveBeenLastCalledWith(null)
   })
+
+  test('renders city intel tooltip with genreBias, attentionSpan, and barSpendingProfile', () => {
+    const cityTraits = {
+      genreBias: 'metal',
+      attentionSpan: 45,
+      barSpendingProfile: 'high'
+    }
+
+    render(
+      <MapNodeView
+        node={mockNode}
+        isCurrent={false}
+        isTraveling={false}
+        visibility='visible'
+        isReachable={true}
+        isPendingConfirm={true}
+        handleTravel={mockHandleTravel}
+        setHoveredNode={mockSetHoveredNode}
+        iconUrl={iconUrl}
+        vanUrl={vanUrl}
+        ticketPrice={10}
+        cityTraits={cityTraits}
+      />
+    )
+
+    expect(screen.getByText('ui:map.intel.title')).toBeInTheDocument()
+    expect(screen.getByText('ui:map.intel.genreBias')).toBeInTheDocument()
+    expect(screen.getByText('ui:map.intel.attentionSpan')).toBeInTheDocument()
+    expect(
+      screen.getByText('ui:map.intel.barSpendingProfile')
+    ).toBeInTheDocument()
+    expect(screen.getByText(/45m/)).toBeInTheDocument()
+  })
 })
