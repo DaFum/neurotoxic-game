@@ -367,6 +367,59 @@ const CONTRABAND_DB = [
     icon: 'icon_compass',
     applyOnAdd: true,
     stackable: false
+  },
+
+  // N3UR0-FORGE AUTONOMOUS MUTATIONS
+  {
+    id: 'c_neuro_mold_spores',
+    imagePrompt: 'ITEM_NEURO_MOLD',
+    name: 'items:contraband.c_neuro_mold_spores.name',
+    type: 'consumable',
+    effectType: 'stress',
+    value: -30,
+    description: 'items:contraband.c_neuro_mold_spores.description',
+    rarity: 'rare',
+    icon: 'icon_mold',
+    stackable: true,
+    maxStacks: 3
+  },
+  {
+    id: 'c_cybernetic_plectrum_implant',
+    imagePrompt: 'ITEM_CYBER_PLECTRUM',
+    name: 'items:contraband.c_cybernetic_plectrum_implant.name',
+    type: 'equipment',
+    effectType: 'guitar_difficulty',
+    value: -0.5,
+    description: 'items:contraband.c_cybernetic_plectrum_implant.description',
+    rarity: 'epic',
+    icon: 'icon_implant',
+    applyOnAdd: true,
+    stackable: false
+  },
+  {
+    id: 'c_fermented_void_juice',
+    imagePrompt: 'ITEM_VOID_JUICE',
+    name: 'items:contraband.c_fermented_void_juice.name',
+    type: 'consumable',
+    effectType: 'mood',
+    value: 60,
+    description: 'items:contraband.c_fermented_void_juice.description',
+    rarity: 'uncommon',
+    icon: 'icon_juice',
+    stackable: true,
+    maxStacks: 4
+  },
+  {
+    id: 'c_hyper_adrenaline_ampoule',
+    imagePrompt: 'ITEM_ADRENALINE_AMPOULE',
+    name: 'items:contraband.c_hyper_adrenaline_ampoule.name',
+    type: 'consumable',
+    effectType: 'stamina_max',
+    value: 20,
+    description: 'items:contraband.c_hyper_adrenaline_ampoule.description',
+    rarity: 'epic',
+    icon: 'icon_ampoule',
+    stackable: false
   }
 ]
 
