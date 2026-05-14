@@ -73,7 +73,7 @@ export { ActionTypes }
 /**
  * Utility type to extract the payload type from a GameAction union.
  */
-export const BAND_ACTIONS = [
+const BAND_ACTIONS = [
   ActionTypes.UPDATE_BAND,
   ActionTypes.USE_CONTRABAND,
   ActionTypes.CONSUME_ITEM,
@@ -100,7 +100,7 @@ type ReducerEntry<K extends HandledActionTypes> = [PayloadFor<K>] extends [
   ? (state: GameState) => GameState
   : (state: GameState, payload: PayloadFor<K>) => GameState
 
-export type ReducerMap = {
+type ReducerMap = {
   [K in HandledActionTypes]: ReducerEntry<K>
 }
 

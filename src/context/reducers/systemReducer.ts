@@ -57,18 +57,6 @@ import { QuestLifecycle } from '../../domain/questLifecycle'
 import { getSafeRandom } from '../../utils/crypto'
 import { ALLOWED_TOAST_TYPES, sanitizeLoadedToast } from './toastSanitizers'
 
-export const ALLOWED_SCENES = new Set([
-  GAME_PHASES.OVERWORLD,
-  GAME_PHASES.PRE_GIG,
-  GAME_PHASES.GIG,
-  GAME_PHASES.PRACTICE,
-  GAME_PHASES.POST_GIG,
-  GAME_PHASES.TRAVEL_MINIGAME,
-  GAME_PHASES.PRE_GIG_MINIGAME,
-  GAME_PHASES.GAMEOVER,
-  GAME_PHASES.CLINIC
-])
-
 const ALLOWED_MAP_NODE_TYPES = new Set<MapNodeType>([
   'START',
   'GIG',
@@ -231,6 +219,117 @@ const sanitizeBandInventory = (value: unknown): BandState['inventory'] => {
   return sanitized
 }
 
+const copySafeArray = (
+  value: unknown
+): Array<
+  | string
+  | number
+  | boolean
+  | null
+  | Record<string, string | number | boolean | null>
+> | null => {
+  if (!Array.isArray(value)) return null
+  const copied: Array<
+    | string
+    | number
+    | boolean
+    | null
+    | Record<string, string | number | boolean | null>
+  > = []
+  for (let i = 0; i < value.length; i++) {
+    const entry = value[i]
+    if (
+      typeof entry === 'string' ||
+      typeof entry === 'number' ||
+      typeof entry === 'boolean' ||
+      entry === null
+    ) {
+      copied.push(entry)
+    } else if (entry && typeof entry === 'object' && !Array.isArray(entry)) {
+      const entryRecord = entry as Record<string, unknown>
+      const copiedEntry: Record<string, string | number | boolean | null> = {}
+      for (const entryKey in entryRecord) {
+        if (!Object.hasOwn(entryRecord, entryKey)) continue
+        if (isForbiddenKey(entryKey)) continue
+        const entryValue = entryRecord[entryKey]
+        if (
+          typeof entryValue === 'string' ||
+          typeof entryValue === 'number' ||
+          typeof entryValue === 'boolean' ||
+          entryValue === null
+        ) {
+          copiedEntry[entryKey] = entryValue
+        }
+      }
+      if (!isEmptyObject(copiedEntry)) {
+        copied.push(copiedEntry)
+      }
+    }
+  }
+  return copied
+}
+
+const copySafeFlatObject = (
+  value: unknown
+): Record<string, string | number | boolean | null> | null => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return null
+  }
+  const source = value as Record<string, unknown>
+  const copied: Record<string, string | number | boolean | null> = {}
+  for (const key in source) {
+    if (!Object.hasOwn(source, key)) continue
+    if (isForbiddenKey(key)) continue
+    const entry = source[key]
+    if (
+      typeof entry === 'string' ||
+      typeof entry === 'number' ||
+      typeof entry === 'boolean' ||
+      entry === null
+    ) {
+      copied[key] = entry
+    }
+  }
+  return !isEmptyObject(copied) ? copied : null
+}
+
+/**
+ * Validates a purchase effect object from a loaded save.
+ * Validates required fields per effect type and ensures finite numeric values.
+ * Returns safe-copied primitives for the effect if valid, null otherwise.
+ */
+const validateLoadedEffect = (
+  effect: unknown
+): Record<string, unknown> | null => {
+  if (!isPlainObject(effect)) return null
+
+  const effectObj = effect as Record<string, unknown>
+  const typeStr = typeof effectObj.type === 'string' ? effectObj.type : ''
+
+  if (typeStr === 'inventory_add') {
+    // Must have string item and finite non-negative numeric value
+    if (typeof effectObj.item !== 'string') return null
+    const value =
+      typeof effectObj.value === 'number' ? effectObj.value : undefined
+    if (value === undefined || !Number.isFinite(value) || value < 0) return null
+  } else if (typeStr === 'inventory_set') {
+    // Must have string item
+    if (typeof effectObj.item !== 'string') return null
+  } else if (typeStr === 'unlock_upgrade' || typeStr === 'unlock_hq') {
+    // Must have string id
+    if (typeof effectObj.id !== 'string') return null
+  } else if (typeStr === 'stat_modifier' || typeStr === 'passive') {
+    // Must have string key
+    if (typeof effectObj.key !== 'string') return null
+  } else {
+    // Unknown effect type — reject to avoid corrupted state
+    return null
+  }
+
+  // Copy safe primitives and return
+  return copySafeFlatObject(effectObj)
+}
+
 const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
   if (typeof gameMap !== 'object' || gameMap === null) {
     return null
@@ -255,78 +354,6 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
   // copySafeFlatObject returns null if all items are filtered out.
   // This asymmetry preserves array identity for map data node properties while dropping empty objects.
   // Also note that copySafeArray silently drops nested arrays and non-primitive/non-object entries.
-  const copySafeArray = (
-    value: unknown
-  ): Array<
-    | string
-    | number
-    | boolean
-    | null
-    | Record<string, string | number | boolean | null>
-  > | null => {
-    if (!Array.isArray(value)) return null
-    const copied: Array<
-      | string
-      | number
-      | boolean
-      | null
-      | Record<string, string | number | boolean | null>
-    > = []
-    for (let i = 0; i < value.length; i++) {
-      const entry = value[i]
-      if (
-        typeof entry === 'string' ||
-        typeof entry === 'number' ||
-        typeof entry === 'boolean' ||
-        entry === null
-      ) {
-        copied.push(entry)
-      } else if (entry && typeof entry === 'object' && !Array.isArray(entry)) {
-        const entryRecord = entry as Record<string, unknown>
-        const copiedEntry: Record<string, string | number | boolean | null> = {}
-        for (const entryKey in entryRecord) {
-          if (!Object.hasOwn(entryRecord, entryKey)) continue
-          if (isForbiddenKey(entryKey)) continue
-          const entryValue = entryRecord[entryKey]
-          if (
-            typeof entryValue === 'string' ||
-            typeof entryValue === 'number' ||
-            typeof entryValue === 'boolean' ||
-            entryValue === null
-          ) {
-            copiedEntry[entryKey] = entryValue
-          }
-        }
-        if (!isEmptyObject(copiedEntry)) {
-          copied.push(copiedEntry)
-        }
-      }
-    }
-    return copied
-  }
-  const copySafeFlatObject = (
-    value: unknown
-  ): Record<string, string | number | boolean | null> | null => {
-    if (!value || typeof value !== 'object' || Array.isArray(value)) {
-      return null
-    }
-    const source = value as Record<string, unknown>
-    const copied: Record<string, string | number | boolean | null> = {}
-    for (const key in source) {
-      if (!Object.hasOwn(source, key)) continue
-      if (isForbiddenKey(key)) continue
-      const entry = source[key]
-      if (
-        typeof entry === 'string' ||
-        typeof entry === 'number' ||
-        typeof entry === 'boolean' ||
-        entry === null
-      ) {
-        copied[key] = entry
-      }
-    }
-    return !isEmptyObject(copied) ? copied : null
-  }
 
   for (const nodeKey in nodesRecord) {
     if (!Object.hasOwn(nodesRecord, nodeKey)) continue
@@ -417,13 +444,13 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
               ;(sanitizedItem as Record<string, unknown>)[itemKey] = v
             }
           } else if (itemKey === 'effect') {
-            const flatEffect = copySafeFlatObject(v)
-            if (flatEffect) sanitizedItem.effect = flatEffect as never
+            const validEffect = validateLoadedEffect(v)
+            if (validEffect) sanitizedItem.effect = validEffect as never
           } else if (itemKey === 'effects' && Array.isArray(v)) {
             const flatEffects: Array<Record<string, unknown>> = []
             for (let j = 0; j < v.length; j++) {
-              const flatEffect = copySafeFlatObject(v[j])
-              if (flatEffect) flatEffects.push(flatEffect)
+              const validEffect = validateLoadedEffect(v[j])
+              if (validEffect) flatEffects.push(validEffect)
             }
             if (flatEffects.length > 0) {
               sanitizedItem.effects = flatEffects as never

@@ -1,5 +1,7 @@
-import { memo, useState, useRef, useEffect, useId, useCallback } from 'react'
+import { memo, useId, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
+
+import { useGlitchPulse } from '../../hooks/useGlitchPulse'
 
 /**
  * ToggleSwitch - A standardized toggle switch for binary options.
@@ -25,25 +27,12 @@ const ToggleSwitchComponent = ({
 }: ToggleSwitchProps) => {
   const { t } = useTranslation()
   const labelId = useId()
-  const [isGlitching, setIsGlitching] = useState(false)
-  const glitchTimerRef = useRef<number | null>(null)
+  const { isGlitching, trigger: pulseGlitch } = useGlitchPulse()
 
   const handleToggle = useCallback(() => {
-    setIsGlitching(true)
-    if (glitchTimerRef.current) {
-      window.clearTimeout(glitchTimerRef.current)
-    }
-    glitchTimerRef.current = window.setTimeout(() => setIsGlitching(false), 150)
+    pulseGlitch()
     onToggle()
-  }, [onToggle])
-
-  useEffect(() => {
-    return () => {
-      if (glitchTimerRef.current) {
-        clearTimeout(glitchTimerRef.current)
-      }
-    }
-  }, [])
+  }, [onToggle, pulseGlitch])
 
   return (
     <div

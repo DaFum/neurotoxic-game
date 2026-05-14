@@ -12,7 +12,7 @@ const LANE_GUIDE_ALPHA = 0.16
 
 type RhythmLayout = ReturnType<typeof buildRhythmLayout>
 
-export interface TaggedGraphics extends Graphics {
+interface TaggedGraphics extends Graphics {
   __laneIndex: number
   __layer: string
 }

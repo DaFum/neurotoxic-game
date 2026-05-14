@@ -1,6 +1,7 @@
 import { memo } from 'react'
 
 import { BlockMeter } from '../../ui/shared'
+import { normalizePercentageToScale } from '../../utils/gameStateUtils'
 
 interface CorruptionMeterProps {
   corruptionLevel: number
@@ -20,7 +21,7 @@ export const CorruptionMeter = memo(function CorruptionMeter({
       ) : (
         <BlockMeter
           label='DECIBEL CORRUPTION'
-          value={Math.min(10, Math.max(0, Math.floor(corruptionLevel / 10)))}
+          value={normalizePercentageToScale(corruptionLevel, 10)}
           max={10}
           isDanger={corruptionLevel > 80}
         />

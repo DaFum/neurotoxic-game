@@ -343,17 +343,6 @@
         "exportPath": "src/components/overworld/index.ts"
       }
     ],
-    "OverworldModalsProps": [
-      {
-        "name": "OverworldModalsProps",
-        "path": "src/components/overworld/OverworldModals.tsx",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/components/overworld/index.ts"
-      }
-    ],
     "OverworldModals": [
       {
         "name": "OverworldModals",
@@ -644,16 +633,6 @@
         "source": "local",
         "type": "class",
         "isDefault": false
-      }
-    ],
-    "TaggedGraphics": [
-      {
-        "name": "TaggedGraphics",
-        "path": "src/components/stage/LaneRenderer.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "LaneRenderer": [
@@ -1509,15 +1488,6 @@
         "isDefault": false
       }
     ],
-    "createBanterAction": [
-      {
-        "name": "createBanterAction",
-        "path": "src/context/actionCreators.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      }
-    ],
     "ActionTypes": [
       {
         "name": "ActionTypes",
@@ -1707,25 +1677,6 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      }
-    ],
-    "BAND_ACTIONS": [
-      {
-        "name": "BAND_ACTIONS",
-        "path": "src/context/gameReducer.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      }
-    ],
-    "ReducerMap": [
-      {
-        "name": "ReducerMap",
-        "path": "src/context/gameReducer.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "gameReducer": [
@@ -2052,16 +2003,6 @@
         "isDefault": false
       }
     ],
-    "PlayerAction": [
-      {
-        "name": "PlayerAction",
-        "path": "src/context/reducers/playerReducer.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
-      }
-    ],
     "handleUpdatePlayer": [
       {
         "name": "handleUpdatePlayer",
@@ -2201,15 +2142,6 @@
       {
         "name": "handleDarkWebLeak",
         "path": "src/context/reducers/socialReducer.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      }
-    ],
-    "ALLOWED_SCENES": [
-      {
-        "name": "ALLOWED_SCENES",
-        "path": "src/context/reducers/systemReducer.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -2808,16 +2740,6 @@
     "SideEffect": [
       {
         "name": "SideEffect",
-        "path": "src/domain/eventResolver.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
-      }
-    ],
-    "EventResolution": [
-      {
-        "name": "EventResolution",
         "path": "src/domain/eventResolver.ts",
         "source": "local",
         "type": "type",
@@ -3494,6 +3416,15 @@
       {
         "name": "useGigVisuals",
         "path": "src/hooks/useGigVisuals.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
+    "useGlitchPulse": [
+      {
+        "name": "useGlitchPulse",
+        "path": "src/hooks/useGlitchPulse.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -8854,6 +8785,15 @@
         "isDefault": false
       }
     ],
+    "normalizePercentageToScale": [
+      {
+        "name": "normalizePercentageToScale",
+        "path": "src/utils/gameStateUtils.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
     "clampPlayerFame": [
       {
         "name": "clampPlayerFame",
@@ -10083,6 +10023,42 @@
         "path": "src/utils/socialEngine.ts",
         "source": "local",
         "type": "const",
+        "isDefault": false
+      }
+    ],
+    "getSafeStorageItem": [
+      {
+        "name": "getSafeStorageItem",
+        "path": "src/utils/storage.ts",
+        "source": "local",
+        "type": "function",
+        "isDefault": false
+      }
+    ],
+    "setSafeStorageItem": [
+      {
+        "name": "setSafeStorageItem",
+        "path": "src/utils/storage.ts",
+        "source": "local",
+        "type": "function",
+        "isDefault": false
+      }
+    ],
+    "removeSafeStorageItem": [
+      {
+        "name": "removeSafeStorageItem",
+        "path": "src/utils/storage.ts",
+        "source": "local",
+        "type": "function",
+        "isDefault": false
+      }
+    ],
+    "hasSafeStorageItem": [
+      {
+        "name": "hasSafeStorageItem",
+        "path": "src/utils/storage.ts",
+        "source": "local",
+        "type": "function",
         "isDefault": false
       }
     ],
