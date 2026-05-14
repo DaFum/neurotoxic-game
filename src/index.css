@@ -750,6 +750,155 @@ input[type='range'].vol-slider::-moz-range-thumb:hover {
   background: var(--color-toxic-green);
 }
 
+/* ── Chromatic Flicker (animated RGB split for titles) ── */
+@keyframes chromatic-flicker {
+  0%,
+  100% {
+    text-shadow:
+      2px 0 0 var(--color-blood-red-bright),
+      -2px 0 0 var(--color-neon-cyan);
+  }
+  18% {
+    text-shadow:
+      3px 0 0 var(--color-blood-red-bright),
+      -3px 0 0 var(--color-neon-cyan),
+      0 0 24px var(--color-toxic-green-glow);
+  }
+  22% {
+    text-shadow:
+      -2px 0 0 var(--color-blood-red-bright),
+      2px 0 0 var(--color-neon-cyan);
+  }
+  46% {
+    text-shadow:
+      1px 0 0 var(--color-blood-red-bright),
+      -1px 0 0 var(--color-neon-cyan);
+  }
+  72% {
+    text-shadow:
+      4px 0 0 var(--color-blood-red-bright),
+      -4px 0 0 var(--color-neon-cyan),
+      0 0 18px var(--color-blood-red-glow);
+  }
+}
+
+.animate-chromatic-flicker {
+  animation: chromatic-flicker 4.2s infinite steps(1, end);
+}
+
+/* ── Animated film grain (cheap GPU-friendly) ── */
+@keyframes grain-shift {
+  0% {
+    transform: translate(0, 0);
+  }
+  10% {
+    transform: translate(-4%, -2%);
+  }
+  20% {
+    transform: translate(3%, -6%);
+  }
+  30% {
+    transform: translate(-5%, 4%);
+  }
+  40% {
+    transform: translate(2%, 5%);
+  }
+  50% {
+    transform: translate(-6%, 1%);
+  }
+  60% {
+    transform: translate(5%, -3%);
+  }
+  70% {
+    transform: translate(-2%, 6%);
+  }
+  80% {
+    transform: translate(4%, -4%);
+  }
+  90% {
+    transform: translate(-3%, 2%);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+.animate-grain {
+  animation: grain-shift 1.6s steps(10, end) infinite;
+}
+
+/* ── Brutalist corner brackets (decorative frame) ── */
+.corner-frame {
+  position: relative;
+}
+.corner-frame::before,
+.corner-frame::after {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--color-toxic-green);
+  pointer-events: none;
+}
+.corner-frame::before {
+  top: -2px;
+  left: -2px;
+  border-right: 0;
+  border-bottom: 0;
+}
+.corner-frame::after {
+  bottom: -2px;
+  right: -2px;
+  border-left: 0;
+  border-top: 0;
+}
+
+/* ── Slow horizontal scan bar (atmosphere) ── */
+@keyframes scan-bar {
+  0% {
+    transform: translateY(-30%);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.4;
+  }
+  90% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: translateY(130%);
+    opacity: 0;
+  }
+}
+
+.animate-scan-bar {
+  animation: scan-bar 6.5s linear infinite;
+}
+
+/* ── Title ghost layer (subtle data-text duplicate behind) ── */
+.title-ghost {
+  position: relative;
+}
+.title-ghost::before {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--color-blood-red-dark);
+  transform: translate(6px, 4px);
+  opacity: 0.45;
+  pointer-events: none;
+  z-index: -1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-chromatic-flicker,
+  .animate-grain,
+  .animate-scan-bar {
+    animation: none;
+  }
+}
+
 .font-script {
   font-family: 'Brush Script MT', 'Lucida Handwriting', cursive;
 }

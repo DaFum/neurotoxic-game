@@ -49,6 +49,24 @@ export const Credits = () => {
       <div className='absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-void-black to-transparent z-10 pointer-events-none' />
       <div className='absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-void-black to-transparent z-10 pointer-events-none' />
 
+      {/* Subtle vignette + descending scan bar for cinematic feel */}
+      <div
+        aria-hidden='true'
+        className='absolute inset-0 pointer-events-none z-0'
+        style={{
+          background:
+            'radial-gradient(ellipse at center, transparent 55%, var(--color-void-black) 100%)'
+        }}
+      />
+      <div
+        aria-hidden='true'
+        className='absolute inset-x-0 top-0 h-40 pointer-events-none animate-scan-bar z-0'
+        style={{
+          background:
+            'linear-gradient(to bottom, transparent, var(--color-toxic-green-10) 50%, transparent)'
+        }}
+      />
+
       {/* Scrolling credits */}
       <div className='flex-1 flex items-center justify-center w-full overflow-hidden'>
         <div className='animate-credits-scroll space-y-12 py-16'>

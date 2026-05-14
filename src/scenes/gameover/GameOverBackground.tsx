@@ -19,6 +19,16 @@ export const GameOverBackground = React.memo(() => {
 
       {/* Red scanlines */}
       <div className='absolute inset-0 pointer-events-none opacity-10 bg-[repeating-linear-gradient(0deg,transparent,transparent_2px,var(--color-blood-red)_2px,var(--color-blood-red)_4px)]' />
+
+      {/* Slow descending red scan bar */}
+      <div
+        aria-hidden='true'
+        className='absolute inset-x-0 top-0 h-32 pointer-events-none animate-scan-bar'
+        style={{
+          background:
+            'linear-gradient(to bottom, transparent, rgb(var(--color-blood-red-rgb) / 0.18) 50%, transparent)'
+        }}
+      />
     </>
   )
 })

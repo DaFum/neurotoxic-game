@@ -24,7 +24,7 @@ export const GameOverHeader = React.memo(() => {
         <VoidSkullIcon className='w-24 h-24 text-blood-red drop-shadow-[0_0_20px_var(--color-blood-red)]' />
       </motion.div>
 
-      <h1 className='text-8xl md:text-9xl text-blood-red font-[Metal_Mania] mb-2 animate-doom-zoom relative z-10'>
+      <h1 className='text-8xl md:text-9xl text-blood-red font-[Metal_Mania] mb-2 animate-doom-zoom animate-chromatic-flicker relative z-10'>
         {t('ui:gameOver.soldOut')}
       </h1>
 
