@@ -12,8 +12,7 @@ import {
   clampPlayerFame,
   calculateFameLevel,
   clampBandHarmony,
-  clampNonNegative,
-  clampRelationship
+  clampNonNegative
 } from '../utils/gameStateUtils'
 import type { RhythmSetlistEntry } from '../types/rhythmGame'
 import type {
@@ -891,18 +890,13 @@ export const createMerchPressAction = (
 export const createBanterAction = (
   member1: string,
   member2: string,
-  currentScore: number,
   delta: number
 ): Extract<GameAction, { type: typeof ActionTypes.APPLY_EVENT_DELTA }> => {
   if (member1 === member2) {
     throw new Error('Self-relationship banter is not allowed')
   }
 
-  const safeCurrentScore = Number.isFinite(currentScore) ? currentScore : 50
   const safeDelta = Number.isFinite(delta) ? delta : 0
-
-  const newScore = clampRelationship(safeCurrentScore + safeDelta)
-  const clampedDelta = newScore - safeCurrentScore
 
   return {
     type: ActionTypes.APPLY_EVENT_DELTA,
@@ -912,7 +906,7 @@ export const createBanterAction = (
           {
             member1,
             member2,
-            change: clampedDelta,
+            change: safeDelta,
             source: 'banter',
             timestamp: Date.now()
           }

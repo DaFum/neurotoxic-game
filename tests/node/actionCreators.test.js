@@ -49,8 +49,8 @@ import { ActionTypes } from '../../src/context/gameReducer'
 describe('Action Creators', () => {
 
   describe('createBanterAction', () => {
-    it('creates an APPLY_EVENT_DELTA action with clamped relationship change', () => {
-      const action = createBanterAction('Marius', 'Matze', 50, -10)
+    it('creates an APPLY_EVENT_DELTA action with safe delta', () => {
+      const action = createBanterAction('Marius', 'Matze', -10)
       assert.deepEqual(action, {
         type: ActionTypes.APPLY_EVENT_DELTA,
         payload: {
@@ -68,14 +68,14 @@ describe('Action Creators', () => {
       assert.ok(action.payload.band.relationshipChange[0].timestamp > 0)
     })
 
-    it('clamps resulting relationship value', () => {
-      const action = createBanterAction('Marius', 'Matze', 90, 50)
-      assert.equal(action.payload.band.relationshipChange[0].change, 10)
+    it('sanitizes non-finite delta to 0', () => {
+      const action = createBanterAction('Marius', 'Matze', NaN)
+      assert.equal(action.payload.band.relationshipChange[0].change, 0)
     })
 
     it('throws an error for self-relationship banter', () => {
       assert.throws(() => {
-        createBanterAction('Marius', 'Marius', 50, 10)
+        createBanterAction('Marius', 'Marius', 10)
       }, /Self-relationship banter is not allowed/)
     })
   })

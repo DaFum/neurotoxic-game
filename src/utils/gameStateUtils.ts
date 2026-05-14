@@ -925,7 +925,7 @@ export const applyEventDelta = (
     const isNotSelfRelationship = (rc: RelationshipChange) =>
       rc.member1 !== rc.member2
 
-const relationshipChange = Array.isArray(delta.band.relationshipChange)
+    const relationshipChange = Array.isArray(delta.band.relationshipChange)
       ? delta.band.relationshipChange.filter(
           rc =>
             isRelationshipChange(rc) &&
@@ -949,7 +949,7 @@ const relationshipChange = Array.isArray(delta.band.relationshipChange)
             delta: rc.change,
             timestamp: rc.timestamp || Date.now()
           }))
-        ]
+        ].slice(-50)
       }
     }
     const skillDelta = delta.band.skill
