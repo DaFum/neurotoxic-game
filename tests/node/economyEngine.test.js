@@ -969,11 +969,6 @@ test('calculateMerchIncome uses custom prices from context.merchPrices', () => {
     context
   )
 
-  // Higher shirt price should reduce shirt sales and thus total revenue for shirts
-  const defaultShirtRevenue = defaultResult.soldItems?.shirts ?? 0
-  const customShirtRevenue = customResult.soldItems?.shirts ?? 0
-
-  // With price doubled, fewer buyers → lower shirt revenue per-unit sold count OR same
   // The key assertion: custom prices are applied (revenue differs)
   assert.notEqual(
     defaultResult.revenue,

@@ -103,7 +103,9 @@ const MapNodeTooltip = memo(
     isPendingConfirm
   }: MapNodeTooltipProps) => {
     return (
-      <div className={`${isPendingConfirm ? 'block' : 'hidden group-hover:block group-focus:block'} absolute top-full mt-2 bg-void-black/90 border border-toxic-green p-2 z-50 whitespace-nowrap pointer-events-none`}>
+      <div
+        className={`${isPendingConfirm ? 'block' : 'hidden group-hover:block group-focus:block'} absolute top-full mt-2 bg-void-black/90 border border-toxic-green p-2 z-50 whitespace-nowrap pointer-events-none`}
+      >
         <div className='font-bold text-toxic-green'>{nodeLocationName}</div>
 
         {cityTraits && (
@@ -112,16 +114,26 @@ const MapNodeTooltip = memo(
               {t('ui:map.intel.title')}
             </div>
             <div>
-              <span className='text-star-white'>{t('ui:map.intel.genreBias')}</span>{' '}
-              {t(`ui:map.intel.genres.${cityTraits.genreBias}`, { defaultValue: cityTraits.genreBias })}
+              <span className='text-star-white'>
+                {t('ui:map.intel.genreBias')}
+              </span>{' '}
+              {t(`ui:map.intel.genres.${cityTraits.genreBias}`, {
+                defaultValue: cityTraits.genreBias
+              })}
             </div>
             <div>
-              <span className='text-star-white'>{t('ui:map.intel.attentionSpan')}</span>{' '}
+              <span className='text-star-white'>
+                {t('ui:map.intel.attentionSpan')}
+              </span>{' '}
               {cityTraits.attentionSpan}m
             </div>
             <div>
-              <span className='text-star-white'>{t('ui:map.intel.barSpendingProfile')}</span>{' '}
-              {t(`ui:map.intel.spending.${cityTraits.barSpendingProfile}`, { defaultValue: cityTraits.barSpendingProfile })}
+              <span className='text-star-white'>
+                {t('ui:map.intel.barSpendingProfile')}
+              </span>{' '}
+              {t(`ui:map.intel.spending.${cityTraits.barSpendingProfile}`, {
+                defaultValue: cityTraits.barSpendingProfile
+              })}
             </div>
           </div>
         )}
@@ -411,7 +423,8 @@ export const MapNodeView = memo(
       prev.harmony === next.harmony &&
       prev.cityTraits?.genreBias === next.cityTraits?.genreBias &&
       prev.cityTraits?.attentionSpan === next.cityTraits?.attentionSpan &&
-      prev.cityTraits?.barSpendingProfile === next.cityTraits?.barSpendingProfile
+      prev.cityTraits?.barSpendingProfile ===
+        next.cityTraits?.barSpendingProfile
     )
   }
 )

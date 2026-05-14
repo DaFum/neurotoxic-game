@@ -1,6 +1,5 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest'
 import { render } from '@testing-library/react'
-import React from 'react'
 
 // Capture props passed to MapNodeView so we can assert on cityTraits
 const capturedProps = []
