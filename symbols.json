@@ -9363,6 +9363,15 @@
         "typeOnly": true
       }
     ],
+    "getCityKeyFromVenueId": [
+      {
+        "name": "getCityKeyFromVenueId",
+        "path": "src/utils/mapGenerator.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
     "MapGenerator": [
       {
         "name": "MapGenerator",

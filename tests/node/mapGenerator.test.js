@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { MapGenerator } from '../../src/utils/mapGenerator'
+import {
+  MapGenerator,
+  getCityKeyFromVenueId
+} from '../../src/utils/mapGenerator'
 
 test('MapGenerator generates a map with correct structure', () => {
   const generator = new MapGenerator()
@@ -156,5 +159,69 @@ test('MapGenerator ensures nodes do not overlap', () => {
         `Nodes ${n1.id} and ${n2.id} should be apart. Dist: ${dist}`
       )
     }
+  }
+})
+
+test('getCityKeyFromVenueId extracts the prefix before the first underscore', () => {
+  assert.equal(getCityKeyFromVenueId('berlin_so36'), 'berlin')
+  assert.equal(getCityKeyFromVenueId('hamburg_fabrik'), 'hamburg')
+  assert.equal(getCityKeyFromVenueId('no_underscore_here'), 'no')
+})
+
+test('getCityKeyFromVenueId returns the full string when venueId has no underscore', () => {
+  assert.equal(getCityKeyFromVenueId('singleword'), 'singleword')
+})
+
+test('MapGenerator populates cityStates keyed by venue ID prefix', () => {
+  const generator = new MapGenerator(42)
+  const map = generator.generateMap(5)
+
+  assert.ok(
+    map.cityStates && typeof map.cityStates === 'object',
+    'map.cityStates should exist'
+  )
+
+  // Every key in cityStates must be a non-empty city prefix
+  for (const cityKey of Object.keys(map.cityStates)) {
+    assert.ok(
+      cityKey.length > 0,
+      `cityStates key should be non-empty: "${cityKey}"`
+    )
+  }
+
+  // Each city state entry should have stable trait fields
+  for (const [cityKey, traits] of Object.entries(map.cityStates)) {
+    assert.ok(
+      typeof traits.genreBias === 'string',
+      `${cityKey}.genreBias should be a string`
+    )
+    assert.ok(
+      typeof traits.attentionSpan === 'number',
+      `${cityKey}.attentionSpan should be a number`
+    )
+    assert.ok(
+      traits.attentionSpan >= 15 && traits.attentionSpan <= 59,
+      `${cityKey}.attentionSpan ${traits.attentionSpan} should be in [15, 59]`
+    )
+    assert.ok(
+      typeof traits.barSpendingProfile === 'string',
+      `${cityKey}.barSpendingProfile should be a string`
+    )
+  }
+})
+
+test('MapGenerator cityStates keys match venue ID prefixes of non-START/FINALE nodes', () => {
+  const generator = new MapGenerator(99)
+  const map = generator.generateMap(5)
+
+  const venueNodes = Object.values(map.nodes).filter(n => n.venue && n.venue.id)
+
+  for (const node of venueNodes) {
+    const cityKey = getCityKeyFromVenueId(node.venue.id)
+    if (!cityKey) continue
+    assert.ok(
+      Object.hasOwn(map.cityStates, cityKey),
+      `cityStates should have entry for city "${cityKey}" (venue ${node.venue.id})`
+    )
   }
 })
