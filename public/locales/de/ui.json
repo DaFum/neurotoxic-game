@@ -1,4 +1,10 @@
 {
+  "milestones": {
+    "survive_1_week": "Meilenstein Freigeschaltet: 1 Woche überlebt!",
+    "first_gig_done": "Meilenstein Freigeschaltet: Erster Gig abgeschlossen!",
+    "high_harmony": "Meilenstein Freigeschaltet: Bandharmonie ist hoch!",
+    "high_harmony.reward": "Du hast einen neuen Perk erhalten!"
+  },
   "action_clear": "LEEREN",
   "aria.shortcutsHelp": "Tastenkürzel-Hilfe umschalten",
   "aria.toggleMuteSystem": "Systemton umschalten",

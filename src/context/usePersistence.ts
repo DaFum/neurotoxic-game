@@ -46,7 +46,8 @@ const LOADABLE_SAVE_KEYS = [
   'npcs',
   'gigModifiers',
   'setlist',
-  'minigame'
+  'minigame',
+  'completedMilestones'
 ] as const
 
 type UsePersistenceParams = {
@@ -91,7 +92,8 @@ export const createPersistedState = (currentState: GameState) => {
     npcs,
     gigModifiers,
     setlist,
-    unlocks
+    unlocks,
+    completedMilestones
   } = currentState
 
   return {
@@ -115,6 +117,7 @@ export const createPersistedState = (currentState: GameState) => {
     npcs,
     gigModifiers,
     unlocks,
+    completedMilestones,
     setlist: normalizeSetlistForSave(setlist)
   }
 }

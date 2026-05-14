@@ -254,7 +254,8 @@ export const initialState: GameState = {
   gigModifiers: { ...DEFAULT_GIG_MODIFIERS },
   minigame: { ...DEFAULT_MINIGAME_STATE },
   unlocks: [],
-  pendingBandHQOpen: false
+  pendingBandHQOpen: false,
+  completedMilestones: []
 }
 
 /**
@@ -297,5 +298,6 @@ export const createInitialState = (
   unlocks: Array.isArray(persistedData.unlocks)
     ? [...persistedData.unlocks]
     : [],
-  pendingBandHQOpen: false
+  pendingBandHQOpen: false,
+  completedMilestones: []
 })

@@ -47,6 +47,8 @@ import {
   handleBloodBankDonate
 } from './reducers/clinicReducer'
 import { handleAddQuest, handleAdvanceQuest } from './reducers/questReducer'
+import { MILESTONES } from '../data/milestones/milestones'
+import { getSafeUUID } from '../utils/crypto'
 import {
   handleLoadGame,
   handleResetState,
@@ -181,26 +183,60 @@ export const gameReducer = (
   state: GameState,
   action: GameAction
 ): GameState => {
-  if (!isHandledAction(action)) {
-    return bandReducer(state, action)
-  }
+  let nextState: GameState
 
-  if (
+  if (!isHandledAction(action)) {
+    nextState = bandReducer(state, action)
+  } else if (
     action &&
     typeof action === 'object' &&
     Object.hasOwn(action, 'type') &&
     Object.hasOwn(reducerMap, (action as { type: string }).type)
   ) {
-    return runHandledAction(state, action)
+    nextState = runHandledAction(state, action)
+  } else {
+    logger.warn(
+      'gameReducer',
+      `Unhandled action type: ${(action as { type?: unknown }).type}`,
+      action
+    )
+
+    // This is a defensive structural safety check.
+    // It is only reachable if a truly malformed action bypasses the dispatch system.
+    return assertNever(action as never)
   }
 
-  logger.warn(
-    'gameReducer',
-    `Unhandled action type: ${(action as { type?: unknown }).type}`,
-    action
-  )
+  if (action.type === ActionTypes.ADVANCE_DAY) {
+    const snapshotBeforeMilestones = nextState
+    const triggeredMilestones = MILESTONES.filter(
+      m =>
+        !snapshotBeforeMilestones.completedMilestones?.includes(m.id) &&
+        m.condition(snapshotBeforeMilestones)
+    )
 
-  // This is a defensive structural safety check.
-  // It is only reachable if a truly malformed action bypasses the dispatch system.
-  return assertNever(action as never)
+    for (const milestone of triggeredMilestones) {
+      nextState = {
+        ...nextState,
+        completedMilestones: [
+          ...(nextState.completedMilestones ?? []),
+          milestone.id
+        ]
+      }
+
+      if (milestone.rewardAction) {
+        nextState = gameReducer(nextState, milestone.rewardAction)
+      }
+
+      nextState = gameReducer(nextState, {
+        type: ActionTypes.ADD_TOAST,
+        payload: {
+          id: getSafeUUID(),
+          type: 'info',
+          messageKey: milestone.labelKey
+        }
+      })
+    }
+  }
+
+  return nextState
 }
