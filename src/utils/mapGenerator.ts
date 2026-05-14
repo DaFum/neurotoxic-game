@@ -70,14 +70,17 @@ const getVenueCoord = (venue: Venue, axis: 'x' | 'y', fallback: number) => {
  * empty string. In dev builds a malformed non-empty ID emits a warning so
  * legacy/typo'd venue IDs surface rather than silently disabling city intel.
  */
+const warnedMalformedVenueIds = new Set<string>()
 export const getCityKeyFromVenueId = (venueId: string): string => {
   const idx = venueId.indexOf('_')
   if (idx === -1) {
     if (
       venueId.length > 0 &&
       typeof process !== 'undefined' &&
-      process.env?.NODE_ENV !== 'production'
+      process.env?.NODE_ENV !== 'production' &&
+      !warnedMalformedVenueIds.has(venueId)
     ) {
+      warnedMalformedVenueIds.add(venueId)
       logger.warn(
         'mapGenerator',
         `Malformed venue ID "${venueId}" has no underscore; city intel will be empty`
@@ -281,24 +284,10 @@ export class MapGenerator {
         const cityName = getCityKeyFromVenueId(node.venue.id)
         if (!cityName) continue
 
-        // Only generate traits once per city per map generation
-        if (!map.cityStates[cityName]) {
-          const genreBias =
-            CITY_TRAIT_GENRES[
-              Math.floor(this.random() * CITY_TRAIT_GENRES.length)
-            ] ?? 'unknown'
-          // Attention span in minutes: 15 to 59
-          const attentionSpan = Math.floor(this.random() * 45) + 15
-          const barSpendingProfile =
-            CITY_TRAIT_SPENDING_PROFILES[
-              Math.floor(this.random() * CITY_TRAIT_SPENDING_PROFILES.length)
-            ] ?? 'average'
-
-          map.cityStates[cityName] = {
-            genreBias,
-            attentionSpan,
-            barSpendingProfile
-          }
+        // Reuse the hash-based derivation so newly generated maps and
+        // backfilled legacy saves produce the same traits for the same city.
+        if (!Object.hasOwn(map.cityStates, cityName)) {
+          map.cityStates[cityName] = deriveCityTraits(cityName)
         }
       }
     }

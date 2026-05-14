@@ -87,7 +87,7 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
                   -
                 </button>
                 <span className='text-(--color-toxic-green) font-mono w-8 text-center'>
-                  {'$'}
+                  {'€'}
                   {item.currentPrice}
                 </span>
                 <button

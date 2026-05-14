@@ -28,7 +28,10 @@ import {
   isEmptyObject
 } from '../../utils/gameStateUtils'
 import { calculateDailyUpdates } from '../../utils/simulationUtils'
-import { EXPENSE_CONSTANTS } from '../../utils/economyEngine'
+import {
+  DEFAULT_MERCH_PRICES,
+  EXPENSE_CONSTANTS
+} from '../../utils/economyEngine'
 import { generateDailyTrend } from '../../utils/socialEngine'
 import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks, normalizeTraitMap } from '../../utils/traitUtils'
@@ -364,6 +367,23 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
     }
     if (Array.isArray(nodeRecord.shopInventory)) {
       const items: import('../../types/components').PurchaseItem[] = []
+      // Whitelist of PurchaseItem fields preserved on load. Anything else from
+      // untrusted save data is dropped rather than coerced into the item shape.
+      const STRING_KEYS = new Set([
+        'name',
+        'currency',
+        'category',
+        'description',
+        'img',
+        'imgPrompt',
+        'rarity'
+      ])
+      const NUMBER_KEYS = new Set(['maxStacks'])
+      const BOOLEAN_KEYS = new Set([
+        'oneTime',
+        'requiresReputation',
+        'stackable'
+      ])
       for (let i = 0; i < nodeRecord.shopInventory.length; i++) {
         const raw = nodeRecord.shopInventory[i]
         if (!raw || typeof raw !== 'object' || Array.isArray(raw)) continue
@@ -373,18 +393,29 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
           if (!Object.hasOwn(itemRecord, itemKey)) continue
           if (isForbiddenKey(itemKey)) continue
           const v = itemRecord[itemKey]
-          if (itemKey === 'cost' || itemKey === 'price') {
-            // Economic fields must be finite numbers; reject strings and NaN/Infinity
+          if (itemKey === 'id') {
+            if (typeof v === 'string' || typeof v === 'number') {
+              sanitizedItem.id = v
+            }
+          } else if (itemKey === 'cost' || itemKey === 'price') {
             if (typeof v === 'number' && Number.isFinite(v)) {
               ;(sanitizedItem as Record<string, unknown>)[itemKey] = Math.max(
                 0,
                 v
               )
             }
-          } else if (typeof v === 'string' || typeof v === 'boolean') {
-            ;(sanitizedItem as Record<string, unknown>)[itemKey] = v
-          } else if (typeof v === 'number' && Number.isFinite(v)) {
-            ;(sanitizedItem as Record<string, unknown>)[itemKey] = v
+          } else if (STRING_KEYS.has(itemKey)) {
+            if (typeof v === 'string') {
+              ;(sanitizedItem as Record<string, unknown>)[itemKey] = v
+            }
+          } else if (NUMBER_KEYS.has(itemKey)) {
+            if (typeof v === 'number' && Number.isFinite(v)) {
+              ;(sanitizedItem as Record<string, unknown>)[itemKey] = v
+            }
+          } else if (BOOLEAN_KEYS.has(itemKey)) {
+            if (typeof v === 'boolean') {
+              ;(sanitizedItem as Record<string, unknown>)[itemKey] = v
+            }
           } else if (itemKey === 'effect') {
             const flatEffect = copySafeFlatObject(v)
             if (flatEffect) sanitizedItem.effect = flatEffect as never
@@ -796,9 +827,8 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
   ) {
     const raw = bandData.merchPrices as Record<string, unknown>
     const sanitized: Record<string, number> = {}
-    for (const k in raw) {
+    for (const k of Object.keys(DEFAULT_MERCH_PRICES)) {
       if (!Object.hasOwn(raw, k)) continue
-      if (isForbiddenKey(k)) continue
       const v = raw[k]
       if (typeof v === 'number' && Number.isFinite(v) && v >= 0) {
         sanitized[k] = v

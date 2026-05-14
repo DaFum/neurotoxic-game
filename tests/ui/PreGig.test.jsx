@@ -30,12 +30,12 @@ vi.mock('../../src/utils/audio/AudioManager', () => ({
 const mockOnUpdatePrice = vi.fn()
 const mockOnRestock = vi.fn()
 vi.mock('../../src/components/pregig/MerchStrategyBlock', () => ({
-  MerchStrategyBlock: ({ onUpdatePrice, onRestock }) => {
+  MerchStrategyBlock: ({ onUpdatePrice, onRestock, ...props }) => {
     // store refs so tests can call them
     mockOnUpdatePrice.mockImplementation(onUpdatePrice)
     mockOnRestock.mockImplementation(onRestock)
     return (
-      <div>
+      <div {...props}>
         <h3>ui:pregig.merchStrategy.title</h3>
         <button
           type='button'

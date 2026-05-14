@@ -351,7 +351,10 @@ const RegionalStandingSection = ({
             label={translateLocation(t, region, region)}
             value={rep}
             subtext={
-              venueBlacklist.some(v => getCityKeyFromVenueId(v) === region)
+              venueBlacklist.some(v => {
+                const cityKey = getCityKeyFromVenueId(v)
+                return cityKey !== '' && cityKey === region
+              })
                 ? t('ui:detailedStats.blacklisted', {
                     defaultValue: 'BLACKLISTED VENUES'
                   })

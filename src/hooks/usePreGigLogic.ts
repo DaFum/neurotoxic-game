@@ -130,7 +130,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
       updateBand(prevBand => ({
         ...prevBand,
         merchPrices: {
-          ...(prevBand.merchPrices || {}),
+          ...(prevBand.merchPrices ?? {}),
           [merchKey]: newPrice
         }
       }))
@@ -160,7 +160,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
       updatePlayer({ money: clampPlayerMoney(player.money - cost) })
 
       updateBand(prevBand => {
-        const currentInventory = prevBand.inventory || {}
+        const currentInventory = prevBand.inventory ?? {}
         const currentAmount =
           typeof currentInventory[merchKey] === 'number'
             ? (currentInventory[merchKey] as number)
