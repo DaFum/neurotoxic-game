@@ -83,9 +83,19 @@ export const clampMemberStamina = (
  * @param {number} mood - Candidate mood value.
  * @returns {number} Clamped mood value.
  */
-export const clampMemberMood = (mood: number): number => {
-  if (!Number.isFinite(mood)) return 0
-  return Math.max(0, Math.min(100, Math.floor(mood)))
+export const clampMemberMood = (mood: number): number => clamp0to100(mood)
+
+/**
+ * Maps a 0..100 percentage onto an N-step integer scale (0..steps).
+ * Shared by the brutalist HUD meters which all render block-bar gauges.
+ */
+export const normalizePercentageToScale = (
+  value: number,
+  steps: number
+): number => {
+  if (!Number.isFinite(value) || !Number.isFinite(steps) || steps <= 0) return 0
+  const clamped = clamp0to100(value)
+  return Math.round((clamped / 100) * steps)
 }
 
 /**

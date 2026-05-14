@@ -14,7 +14,9 @@ export const VolumeSlider = memo(function VolumeSlider({
   ) => void
 }) {
   const { t } = useTranslation(['ui'])
-  const clampedValue = Math.min(1, Math.max(0, value))
+  const clampedValue = Number.isFinite(value)
+    ? Math.max(0, Math.min(1, value))
+    : 0
   const max = 10
   const val = Math.round(clampedValue * max)
   const segments = Array.from({ length: max }, (_, i) => i + 1)

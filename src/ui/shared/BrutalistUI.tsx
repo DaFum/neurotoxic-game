@@ -3,6 +3,8 @@ import { useState, useEffect, useRef, useId, memo, useCallback } from 'react'
 import type { MouseEvent, ComponentType, ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { useGlitchPulse } from '../../hooks/useGlitchPulse'
+
 interface HazardTickerProps {
   message: string
 }
@@ -734,22 +736,13 @@ export const BrutalToggle = memo(
   ({ label, initialState = false }: BrutalToggleProps) => {
     const { t } = useTranslation()
     const [isOn, setIsOn] = useState<boolean>(initialState)
-    const [isGlitching, setIsGlitching] = useState<boolean>(false)
-    const glitchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+    const { isGlitching, trigger: pulseGlitch } = useGlitchPulse()
     const labelId = useId()
 
     const toggle = () => {
-      setIsGlitching(true)
-      if (glitchTimerRef.current) clearTimeout(glitchTimerRef.current)
-      glitchTimerRef.current = setTimeout(() => setIsGlitching(false), 150)
+      pulseGlitch()
       setIsOn(!isOn)
     }
-
-    useEffect(() => {
-      return () => {
-        if (glitchTimerRef.current) clearTimeout(glitchTimerRef.current)
-      }
-    }, [])
 
     return (
       <div className='flex items-center justify-between w-full max-w-sm border border-toxic-green/30 p-3 bg-void-black'>

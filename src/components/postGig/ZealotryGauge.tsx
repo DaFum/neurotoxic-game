@@ -1,6 +1,7 @@
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ZEALOTRY_PROMO_THRESHOLD } from '../../utils/economyEngine'
+import { clampZealotry } from '../../utils/gameStateUtils'
 import {
   getGenImageUrl,
   IMG_PROMPTS,
@@ -46,7 +47,7 @@ export const ZealotryGauge = memo(
             <div
               className='bg-blood-red h-full transition-all duration-500'
               style={{
-                width: `${Math.min(100, Math.max(0, zealotryLevel))}%`
+                width: `${clampZealotry(zealotryLevel)}%`
               }}
             />
           </div>

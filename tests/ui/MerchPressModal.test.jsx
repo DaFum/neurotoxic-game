@@ -14,7 +14,8 @@ vi.mock('../../src/context/GameState', () => ({
 }))
 
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: key => key })
+  useTranslation: () => ({ t: key => key }),
+  initReactI18next: { type: '3rdParty', init: () => {} }
 }))
 
 describe('MerchPressModal', () => {

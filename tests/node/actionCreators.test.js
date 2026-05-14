@@ -22,7 +22,6 @@ import {
   createSetGigModifiersAction,
   createLoadGameAction,
   createResetStateAction,
-  createBanterAction,
   createApplyEventDeltaAction,
   createPopPendingEventAction,
   createConsumeItemAction,
@@ -47,39 +46,6 @@ import {
 import { ActionTypes } from '../../src/context/gameReducer'
 
 describe('Action Creators', () => {
-
-  describe('createBanterAction', () => {
-    it('creates an APPLY_EVENT_DELTA action with safe delta', () => {
-      const action = createBanterAction('Marius', 'Matze', -10)
-      assert.deepEqual(action, {
-        type: ActionTypes.APPLY_EVENT_DELTA,
-        payload: {
-          band: {
-            relationshipChange: [{
-              member1: 'Marius',
-              member2: 'Matze',
-              change: -10,
-              source: 'banter',
-              timestamp: action.payload.band.relationshipChange[0].timestamp
-            }]
-          }
-        }
-      })
-      assert.ok(action.payload.band.relationshipChange[0].timestamp > 0)
-    })
-
-    it('sanitizes non-finite delta to 0', () => {
-      const action = createBanterAction('Marius', 'Matze', NaN)
-      assert.equal(action.payload.band.relationshipChange[0].change, 0)
-    })
-
-    it('throws an error for self-relationship banter', () => {
-      assert.throws(() => {
-        createBanterAction('Marius', 'Marius', 10)
-      }, /Self-relationship banter is not allowed/)
-    })
-  })
-
   // Hoisted fixtures reused across table entries
   const _healPayload = {
     memberId: 'matze',

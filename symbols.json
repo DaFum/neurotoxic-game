@@ -1086,6 +1086,15 @@
         "isDefault": false
       }
     ],
+    "createUpdateVoidStressAction": [
+      {
+        "name": "createUpdateVoidStressAction",
+        "path": "src/context/actionCreators.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
     "createUpdateBandAction": [
       {
         "name": "createUpdateBandAction",
@@ -1494,15 +1503,6 @@
     "createMerchPressAction": [
       {
         "name": "createMerchPressAction",
-        "path": "src/context/actionCreators.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      }
-    ],
-    "createBanterAction": [
-      {
-        "name": "createBanterAction",
         "path": "src/context/actionCreators.ts",
         "source": "local",
         "type": "const",
@@ -2192,15 +2192,6 @@
       {
         "name": "handleDarkWebLeak",
         "path": "src/context/reducers/socialReducer.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      }
-    ],
-    "ALLOWED_SCENES": [
-      {
-        "name": "ALLOWED_SCENES",
-        "path": "src/context/reducers/systemReducer.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -3485,6 +3476,15 @@
       {
         "name": "useGigVisuals",
         "path": "src/hooks/useGigVisuals.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
+    "useGlitchPulse": [
+      {
+        "name": "useGlitchPulse",
+        "path": "src/hooks/useGlitchPulse.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -8845,6 +8845,24 @@
         "isDefault": false
       }
     ],
+    "clampUnit": [
+      {
+        "name": "clampUnit",
+        "path": "src/utils/gameStateUtils.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
+    "normalizePercentageToScale": [
+      {
+        "name": "normalizePercentageToScale",
+        "path": "src/utils/gameStateUtils.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
     "clampPlayerFame": [
       {
         "name": "clampPlayerFame",
@@ -8992,6 +9010,15 @@
     "clampLoyalty": [
       {
         "name": "clampLoyalty",
+        "path": "src/utils/gameStateUtils.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
+    "clampBandStress": [
+      {
+        "name": "clampBandStress",
         "path": "src/utils/gameStateUtils.ts",
         "source": "local",
         "type": "const",

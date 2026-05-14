@@ -2,6 +2,7 @@ import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { BlockMeter } from '../../ui/shared'
+import { normalizePercentageToScale } from '../../utils/gameStateUtils'
 
 interface HealthBarProps {
   health: number
@@ -19,7 +20,7 @@ export const HealthBar = memo(function HealthBar({
       <div className='bg-void-black/80 p-3 sm:p-4 border border-toxic-green/30 backdrop-blur-sm'>
         <BlockMeter
           label={String(t('ui:gig.crowdEnergy', 'CROWD ENERGY'))}
-          value={Math.min(20, Math.max(0, Math.round((health / 100) * 20)))}
+          value={normalizePercentageToScale(health, 20)}
           max={20}
           isDanger={health < 20}
         />
