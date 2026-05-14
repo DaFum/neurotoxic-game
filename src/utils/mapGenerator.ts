@@ -18,6 +18,7 @@
 
 import { ALL_VENUES } from '../data/venues'
 import { StateError } from './errorHandler'
+import { HQ_ITEMS } from '../data/hqItems'
 import type { MapNodeType, Venue, CityTraitState } from '../types/game'
 
 type MapConnection = { from: string; to: string }
@@ -156,6 +157,10 @@ export class MapGenerator {
     const usedVenueIds = new Set<string>()
     if (homeVenue) usedVenueIds.add(homeVenue.id)
 
+    const inventoryAddItems = HQ_ITEMS.gear.filter(
+      i => i.effect?.type === 'inventory_add'
+    )
+
     // Pre-reserve Finale Venue (Leipzig Arena) so it is not picked randomly
     if (cachedFinaleVenue) usedVenueIds.add(cachedFinaleVenue.id)
 
@@ -166,7 +171,7 @@ export class MapGenerator {
       usedVenueIds
     }
 
-    this._generateIntermediateLayers(map, validDepth, pools)
+    this._generateIntermediateLayers(map, validDepth, pools, inventoryAddItems)
     this._generateConnections(map, validDepth)
     this._generateFinaleLayer(map, validDepth, hardVenues, pools)
     this._assignInitialCoordinates(map)
@@ -222,7 +227,8 @@ export class MapGenerator {
   _generateIntermediateLayers(
     map: MapGeneratorState,
     depth: number,
-    pools: VenuePools & { usedVenueIds: Set<string> }
+    pools: VenuePools & { usedVenueIds: Set<string> },
+    inventoryAddItems: import('../types/components').PurchaseItem[]
   ): void {
     const { easyVenues, mediumVenues, hardVenues, usedVenueIds } = pools
 
@@ -368,6 +374,7 @@ export class MapGenerator {
         const typeRoll = this.random()
         let nodeType: GeneratedMapNode['type'] = 'GIG'
         if (typeRoll > 0.9) nodeType = 'SPECIAL'
+        else if (typeRoll > 0.8) nodeType = 'supplyStop'
         else if (typeRoll > 0.7) nodeType = 'REST_STOP'
         else if ((venue.capacity ?? 0) >= 1000) nodeType = 'FESTIVAL'
 
@@ -380,6 +387,11 @@ export class MapGenerator {
           x: getVenueCoord(venue, 'x', 50),
           y: getVenueCoord(venue, 'y', i * 10 + 10)
         }
+
+        if (nodeType === 'supplyStop') {
+          node.shopInventory = this.pickRandomSubset(inventoryAddItems, 3)
+        }
+
         layerNodes.push(node)
         map.nodes[node.id] = node
         map.nodeList.push(node)
