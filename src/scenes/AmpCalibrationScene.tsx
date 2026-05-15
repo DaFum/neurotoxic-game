@@ -117,5 +117,3 @@ export const AmpCalibrationScene = () => {
     </MinigameSceneFrame>
   )
 }
-
-export default AmpCalibrationScene
