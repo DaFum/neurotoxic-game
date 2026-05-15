@@ -10,6 +10,7 @@ const getGenImageUrlMock = vi.fn(
 
 vi.mock('../../src/utils/imageGen', () => ({
   isImageGenerationAvailable: () => true,
+  resolveGenImageUrl: () => 'mock-url',
   getGeneratedImageFallbackUrl: () => 'mock-fallback',
   getGenImageUrl: getGenImageUrlMock,
   IMG_PROMPTS: {

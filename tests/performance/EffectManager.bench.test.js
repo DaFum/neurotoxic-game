@@ -43,6 +43,7 @@ vi.mock('pixi.js', () => {
 // Mock other utils
 vi.mock('../../src/utils/imageGen', () => ({
   getGenImageUrl: () => '',
+  resolveGenImageUrl: () => '',
   IMG_PROMPTS: {}
 }))
 vi.mock('../../src/utils/logger', () => ({

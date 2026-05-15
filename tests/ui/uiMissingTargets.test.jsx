@@ -28,6 +28,7 @@ vi.mock('../../src/ui/shared', () => ({
 
 vi.mock('../../src/utils/imageGen', () => ({
   isImageGenerationAvailable: () => true,
+  resolveGenImageUrl: () => 'mock-url',
   getGeneratedImageFallbackUrl: () => 'mock-fallback',
   getGenImageUrl: () => 'mock://image',
   IMG_PROMPTS: {}

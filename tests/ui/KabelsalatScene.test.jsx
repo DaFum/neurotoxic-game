@@ -51,6 +51,7 @@ vi.mock('../../src/context/GameState', () => ({
 
 vi.mock('../../src/utils/imageGen', () => ({
   isImageGenerationAvailable: () => true,
+  resolveGenImageUrl: () => 'mock-url',
   getGeneratedImageFallbackUrl: () => 'mock-fallback',
   getGenImageUrl: () => 'mock://bg',
   IMG_PROMPTS: { MINIGAME_KABELSALAT_BG: 'bg' }

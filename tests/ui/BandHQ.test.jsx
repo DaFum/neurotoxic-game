@@ -62,6 +62,7 @@ vi.mock('../../src/data/upgradeCatalog', () => ({
 vi.mock('../../src/data/songs', () => ({ SONGS_DB: [] }))
 vi.mock('../../src/utils/imageGen', () => ({
   isImageGenerationAvailable: () => true,
+  resolveGenImageUrl: () => 'mock-url',
   getGeneratedImageFallbackUrl: () => 'mock-fallback',
   getGenImageUrl: () => 'mock-url',
   IMG_PROMPTS: {}
