@@ -96,12 +96,12 @@ _(Note: There is also an `AGENTS.md` file in this directory.)_
 
 `game.d.ts` is currently acting as a monolithic catch-all for many disparate domains. The following types clearly belong in distinct domain-specific `.d.ts` files to improve modularity:
 
-*   **Player Types:** `PlayerState` -> could move to `player.d.ts`
-*   **Band Types:** `BandState` -> could move to `band.d.ts`
-*   **Quest Types:** `QuestState` -> could move to `quest.d.ts`
-*   **Event Types:** `EventOption`, `GameEvent` -> could move to `events.d.ts`
-*   **Social Types:** `SocialState`, `BrandAlignment`, `PostResult`, `RivalBandState` -> could move to `social.d.ts` or `rivals.d.ts`
-*   **NPC/Character Types:** `CharacterProfile`, `CharacterTrait` -> could move to `npc.d.ts` or `character.d.ts`
-*   **Map/Venue Types:** `MapNode`, `GameMap`, `Venue` -> could move to `map.d.ts` or `world.d.ts`
-*   **Gig/Performance Types:** `GigModifiers`, `PostGigSummary` -> could move to `gig.d.ts` or merge with rhythm types.
-*   **Minigame Specific Types:** `CompleteTravelMinigamePayload`, `ClinicActionPayload`, etc. -> could move to `actions.d.ts` or specific minigame/scene type definitions.
+- **Player Types:** `PlayerState` -> could move to `player.d.ts`
+- **Band Types:** `BandState` -> could move to `band.d.ts`
+- **Quest Types:** `QuestState` -> could move to `quest.d.ts`
+- **Event Types:** `EventOption`, `GameEvent` -> could move to `events.d.ts`
+- **Social Types:** `SocialState`, `BrandAlignment`, `PostResult`, `RivalBandState` -> could move to `social.d.ts` or `rivals.d.ts`
+- **NPC/Character Types:** `CharacterProfile`, `CharacterTrait` -> could move to `npc.d.ts` or `character.d.ts`
+- **Map/Venue Types:** `MapNode`, `GameMap`, `Venue` -> could move to `map.d.ts` or `world.d.ts`
+- **Gig/Performance Types:** `GigModifiers`, `PostGigSummary` -> could move to `gig.d.ts` or merge with rhythm types.
+- **Minigame Specific Types:** `CompleteTravelMinigamePayload`, `ClinicActionPayload`, etc. -> could move to `actions.d.ts` or specific minigame/scene type definitions.
