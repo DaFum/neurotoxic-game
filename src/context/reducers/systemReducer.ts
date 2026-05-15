@@ -565,7 +565,7 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
       }
     }
 
-    if (Object.keys(sanitizedCityStates).length > 0) {
+    if (!isEmptyObject(sanitizedCityStates)) {
       sanitizedMap.cityStates = sanitizedCityStates
     }
   }
