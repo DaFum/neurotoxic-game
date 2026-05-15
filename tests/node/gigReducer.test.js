@@ -176,6 +176,24 @@ describe('gigReducer', () => {
       )
     })
 
+    it('should not duplicate consequences_comeback_album across repeated qualifying gigs', () => {
+      baseState.currentGig = { id: 'v1', capacity: 100 }
+      baseState.activeStoryFlags = ['apology_tour_complete']
+      baseState.social = { loyalty: 0, controversyLevel: 20 }
+
+      const afterFirst = handleSetLastGigStats(baseState, { score: 50 })
+      const afterSecond = handleSetLastGigStats(afterFirst, { score: 50 })
+
+      const occurrences = (afterSecond.pendingEvents || []).filter(
+        id => id === 'consequences_comeback_album'
+      ).length
+      assert.strictEqual(
+        occurrences,
+        1,
+        'comeback album should be queued exactly once'
+      )
+    })
+
     it('should not queue consequences_comeback_album when comeback already triggered', () => {
       baseState.currentGig = { id: 'v1', capacity: 100 }
       baseState.activeStoryFlags = [
