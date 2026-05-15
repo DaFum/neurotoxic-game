@@ -12,7 +12,7 @@ export const useBloodBank = () => {
   const closeBloodBank = useCallback(() => setShowBloodBank(false), [])
 
   const config = useMemo(() => {
-    const multiplier = 1 + (player?.fameLevel || 0) * 0.2
+    const multiplier = 1 + (player?.fameLevel ?? 0) * 0.2
     return {
       moneyGain: Math.floor(
         GAME_CONSTANTS.BLOOD_BANK.BLOOD_BASE_MONEY * multiplier
@@ -24,7 +24,7 @@ export const useBloodBank = () => {
   }, [player?.fameLevel])
 
   const marrowConfig = useMemo(() => {
-    const multiplier = 1 + (player?.fameLevel || 0) * 0.2
+    const multiplier = 1 + (player?.fameLevel ?? 0) * 0.2
     return {
       moneyGain: Math.floor(
         GAME_CONSTANTS.BLOOD_BANK.MARROW_BASE_MONEY * multiplier

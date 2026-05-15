@@ -20,7 +20,7 @@ export const CompletePhase = ({
 }: CompletePhaseProps) => {
   const { t, i18n } = useTranslation()
   const hasPR = player?.hqUpgrades?.includes('pr_manager_contract')
-  const isHighControversy = (social?.controversyLevel || 0) > 50
+  const isHighControversy = (social?.controversyLevel ?? 0) > 50
 
   const getOutcomeImagePrompt = () => {
     if (result.success === true) {
