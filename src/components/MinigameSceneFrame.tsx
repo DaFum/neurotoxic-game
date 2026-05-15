@@ -9,7 +9,7 @@ import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
 import { PixiStage } from './PixiStage'
 import { ActionButton } from '../ui/shared'
-import type { MinigameSceneFrameProps } from '../types/components'
+import type { MinigameSceneFrameProps } from '../types'
 import { MINIGAME_TYPES } from '../context/gameConstants'
 
 type BackdoorMinigameState = {

@@ -12,7 +12,7 @@ import type {
   EventModalEvent,
   EventModalOption,
   EventModalPrecomputedResult
-} from '../types/components'
+} from '../types'
 
 type EventOutcome = {
   option: EventModalOption

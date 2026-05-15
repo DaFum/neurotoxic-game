@@ -77,7 +77,7 @@ import type {
   TradeVoidItemPayload,
   UpdateBandPayload,
   UpdatePlayerPayload
-} from '../types/game'
+} from '../types'
 import { useEventSystem } from './useEventSystem'
 import { useMapGeneration } from './useMapGeneration'
 import {

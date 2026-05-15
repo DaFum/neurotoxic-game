@@ -2,7 +2,7 @@ import { trySpawnProjectile, processProjectiles } from './hecklerLogic'
 import { buildGigStatsSnapshot } from './gigStats'
 import { logger } from './logger'
 import { disableCorruptionBurstAudio } from './audio/audioEngine'
-import type { RhythmGameRefState, SetLastGigStats } from '../types/rhythmGame'
+import type { RhythmGameRefState, SetLastGigStats } from '../types'
 import type { HecklerSession } from './hecklerLogic'
 import type {
   AsyncBooleanCallback,
@@ -11,7 +11,7 @@ import type {
   MissHandler,
   ToggleBooleanCallback,
   VoidCallback
-} from '../types/callbacks'
+} from '../types'
 
 const NOTE_MISS_WINDOW_MS = 300
 

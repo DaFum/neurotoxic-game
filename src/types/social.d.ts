@@ -82,3 +82,53 @@ export interface SocialPostOption {
   ) => Record<string, unknown>
   [key: string]: unknown
 }
+
+export type BrandAlignment =
+  | 'EVIL'
+  | 'CORPORATE'
+  | 'INDIE'
+  | 'SUSTAINABLE'
+  | 'GOOD'
+  | 'NEUTRAL'
+
+export interface RivalBandState {
+  id: string
+  name: string
+  alignment: BrandAlignment
+  powerLevel: number
+  currentLocationId: string | null
+  [key: string]: unknown
+}
+
+export interface SocialState extends UnknownRecord {
+  instagram: number
+  tiktok: number
+  youtube: number
+  newsletter: number
+  viral: number
+  lastGigDay: number | null
+  lastGigDifficulty: number | null
+  lastPirateBroadcastDay: number | null
+  lastDarkWebLeakDay: number | null
+  controversyLevel: number
+  loyalty: number
+  zealotry: number
+  reputationCooldown: number
+  egoFocus: string | null
+  trend: string
+  activeDeals: UnknownRecord[]
+  brandReputation: Record<string, number>
+  influencers: Record<string, UnknownRecord>
+  [key: string]: unknown
+}
+
+export interface PostResult {
+  platform?: Platform
+  success?: boolean
+  followers?: number
+  totalFollowers?: number
+  moneyChange?: number
+  message?: string
+  unlockTrait?: { memberId: string; traitId: string } | null
+  [key: string]: unknown
+}

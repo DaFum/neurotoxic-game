@@ -7,7 +7,7 @@ import type {
   AudioSnapshot,
   UseAudioControlOptions,
   UseAudioControlResult
-} from '../types/audio'
+} from '../types'
 
 export const executeAudioAction = (
   manager: AudioManagerLike,

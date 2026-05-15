@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useId, memo, type MouseEvent, type ReactNode } from 'react'
 import { formatNumber } from '../utils/numberUtils'
 import type { Variants } from 'framer-motion'
-import type { PlayerState, QuestState } from '../types/game'
+import type { PlayerState, QuestState } from '../types'
 
 type IconProps = {
   className?: string

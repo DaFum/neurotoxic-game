@@ -10,9 +10,9 @@ import {
   createUpdatePlayerAction
 } from './actionCreators'
 import { resolveEvent, type SideEffect } from '../domain/eventResolver'
-import type { GameAction, GameState } from '../types/game'
-import type { OptionalToastCallback } from '../types/callbacks'
-import type { GamePhase } from '../types/game'
+import type { GameAction, GameState } from '../types'
+import type { OptionalToastCallback } from '../types'
+import type { GamePhase } from '../types'
 
 type ChangeScene = (scene: GamePhase) => void
 type SaveGame = (showToast?: boolean, stateSnapshot?: GameState) => void

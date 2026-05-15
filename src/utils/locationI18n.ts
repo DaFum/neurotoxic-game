@@ -1,4 +1,4 @@
-import type { TranslationCallback } from '../types/callbacks'
+import type { TranslationCallback } from '../types'
 
 const VENUE_NAMESPACE = 'venues:'
 const VENUE_NAME_SUFFIX = '.name'

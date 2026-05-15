@@ -1,5 +1,5 @@
-import type { TranslationCallback } from '../types/callbacks'
-import type { UnknownRecord } from '../types/game'
+import type { TranslationCallback } from '../types'
+import type { UnknownRecord } from '../types'
 
 type EffectDelta = {
   [key: string]: unknown

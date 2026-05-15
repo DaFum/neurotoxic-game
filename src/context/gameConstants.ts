@@ -1,4 +1,4 @@
-import type { MinigameState, GamePhase } from '../types/game'
+import type { MinigameState, GamePhase } from '../types'
 export const GAME_PHASES = Object.freeze({
   OVERWORLD: 'OVERWORLD',
   TRAVEL_MINIGAME: 'TRAVEL_MINIGAME',

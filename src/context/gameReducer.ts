@@ -7,7 +7,7 @@
 import { ActionTypes } from './actionTypes'
 import { logger } from '../utils/logger'
 import { assertNever } from '../utils/assertNever'
-import type { GameAction, GameState } from '../types/game'
+import type { GameAction, GameState } from '../types'
 import { handleChangeScene } from './reducers/sceneReducer'
 import { handleUpdatePlayer } from './reducers/playerReducer'
 import { bandReducer } from './reducers/bandReducer'

@@ -1,4 +1,4 @@
-import type { BandState } from '../types/game'
+import type { BandState } from '../types'
 
 export const validateBloodBankDonation = (
   band: Partial<BandState> | undefined | null,

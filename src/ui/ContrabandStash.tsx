@@ -6,7 +6,7 @@
 
 import { useCallback } from 'react'
 import type { ReactElement } from 'react'
-import type { UnknownRecord } from '../types/game'
+import type { UnknownRecord } from '../types'
 import { Modal, Panel, AnimatedDivider, ActionButton } from './shared/index.tsx'
 import { useTranslation } from 'react-i18next'
 

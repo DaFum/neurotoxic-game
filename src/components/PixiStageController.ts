@@ -12,8 +12,8 @@ import { EffectManager } from './stage/EffectManager'
 import { NoteManager } from './stage/NoteManager'
 import { getGigTimeMs } from '../utils/audio/audioEngine'
 import { withTimeout } from './stage/utils'
-import type { StageControllerOptions } from '../types/components'
-import type { RhythmGameRefState } from '../types/rhythmGame'
+import type { StageControllerOptions } from '../types'
+import type { RhythmGameRefState } from '../types'
 
 /**
  * Manages Pixi.js stage lifecycle and rendering updates.

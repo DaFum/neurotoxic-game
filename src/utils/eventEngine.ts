@@ -20,7 +20,7 @@ import { secureRandom } from './crypto'
 import { bandHasTrait } from './traitUtils'
 import { calculateAppliedDelta } from './gameStateUtils'
 import { StateError } from './errorHandler'
-import type { GameEvent, GameState } from '../types/game'
+import type { GameEvent, GameState } from '../types'
 
 type TemplateContext = Record<string, string>
 type TriggerPoint = string | null

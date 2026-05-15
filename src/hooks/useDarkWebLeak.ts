@@ -1,4 +1,4 @@
-import type { DarkWebLeakConfig } from '../types/game'
+import type { DarkWebLeakConfig } from '../types'
 import { useState, useCallback } from 'react'
 import { useGameState } from '../context/GameState'
 import { audioManager } from '../utils/audio/audioEngine'

@@ -1,4 +1,4 @@
-import type { RhythmSetlistEntry } from '../types/rhythmGame'
+import type { RhythmSetlistEntry } from '../types'
 import type {
   GamePhase,
   GameState,
@@ -6,9 +6,9 @@ import type {
   Venue,
   UpdatePlayerPayload,
   PostResult
-} from '../types/game'
-import type { BrandDeal, SocialPostOption } from '../types/social'
-import type { PostGigFinancials } from '../types/economy'
+} from '../types'
+import type { BrandDeal, SocialPostOption } from '../types'
+import type { PostGigFinancials } from '../types'
 import { useCallback, useRef, useState } from 'react'
 import {
   GAME_PHASES,

@@ -10,12 +10,7 @@ import {
   createApplyEventDeltaAction,
   createSetActiveEventAction
 } from '../context/actionCreators'
-import type {
-  GameAction,
-  GamePhase,
-  GameState,
-  QuestState
-} from '../types/game'
+import type { GameAction, GamePhase, GameState, QuestState } from '../types'
 
 export type SideEffect =
   | { type: 'persistUnlock'; id: string }

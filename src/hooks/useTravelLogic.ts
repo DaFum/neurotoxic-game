@@ -59,7 +59,7 @@ import type {
   PlayerState,
   SocialState,
   Venue
-} from '../types/game'
+} from '../types'
 
 type TravelLogicParams = {
   player: PlayerState
@@ -77,9 +77,7 @@ type TravelLogicParams = {
   reputationByRegion?: Record<string, number>
   venueBlacklist?: string[]
   onShowHQ?: () => void
-  onShowSupplyStop?: (
-    inventory: import('../types/components').PurchaseItem[]
-  ) => void
+  onShowSupplyStop?: (inventory: import('../types').PurchaseItem[]) => void
   onStartTravelMinigame?: (nodeId: string) => void
   dispatch?: (action: GameAction) => void
 }

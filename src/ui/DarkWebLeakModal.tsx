@@ -3,7 +3,7 @@ import { Modal } from './shared/Modal'
 import { GlitchButton } from './GlitchButton'
 import { useTranslation } from 'react-i18next'
 
-import type { DarkWebLeakConfig } from '../types/game'
+import type { DarkWebLeakConfig } from '../types'
 
 export interface DarkWebLeakModalProps {
   config: DarkWebLeakConfig

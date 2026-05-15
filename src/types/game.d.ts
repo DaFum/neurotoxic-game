@@ -1,7 +1,27 @@
+import type { PlayerState } from './player'
+import type { BandState } from './band'
+import type { QuestState } from './quest'
+import type { GameEvent } from './events'
+import type { CharacterProfile } from './npc'
+import type { GameMap, Venue } from './map'
+import type { GigModifiers, PostGigSummary } from './gig'
+import type {
+  CompleteTravelMinigamePayload,
+  ClinicActionPayload,
+  DarkWebLeakPayload,
+  PirateBroadcastPayload,
+  BloodBankDonatePayload,
+  TradeVoidItemPayload,
+  MerchPressPayload,
+  UpdatePlayerPayload,
+  UpdateBandPayload,
+  ResetStatePayload,
+  EventDeltaPayload
+} from './actions'
+import type { RivalBandState, SocialState } from './social'
 import type { ActionTypes, ActionType } from '../context/actionTypes'
 import type { RhythmSetlistEntry } from './rhythmGame'
 import type { GAME_PHASES } from '../context/gameConstants'
-import type { Platform } from './social'
 
 export type RelationshipChange = {
   member1: string
@@ -27,58 +47,6 @@ export type StashEntry = {
   stacks?: number | null
 }
 
-export interface EventOption {
-  id?: string
-  text?: string
-  textKey?: string
-  effects?: UnknownRecord
-  [key: string]: unknown
-}
-
-export interface GameEvent {
-  id: string
-  category?: string
-  title?: string
-  titleKey?: string
-  description?: string
-  descriptionKey?: string
-  options?: EventOption[]
-  effects?: UnknownRecord
-  [key: string]: unknown
-}
-
-export interface Venue {
-  id: string
-  name: string
-  city?: string
-  region?: string
-  capacity?: number
-  pay?: number
-  price?: number
-  difficulty?: number
-  diff?: number
-  reputation?: number
-  sourceScene?: GamePhase
-  songId?: string
-  [key: string]: unknown
-}
-
-export interface CharacterProfile {
-  id: string
-  name?: string
-  role?: string
-  traits?: string[]
-  relationship?: number
-  [key: string]: unknown
-}
-
-export interface CharacterTrait {
-  id: string
-  name: string
-  desc: string
-  unlockHint: string
-}
-
 export type MapNodeType =
   | 'START'
   | 'GIG'
@@ -90,32 +58,10 @@ export type MapNodeType =
   | 'REST'
   | 'supplyStop'
 
-export interface MapNode {
-  id: string
-  x: number
-  y: number
-  layer: number
-  type: MapNodeType
-  venue?: Venue
-  venueId?: string
-  neighbors?: string[]
-  shopInventory?: import('./components').PurchaseItem[]
-
-  [key: string]: unknown
-}
-
 export interface CityTraitState {
   genreBias: string
   attentionSpan: number
   barSpendingProfile: string
-}
-
-export interface GameMap {
-  nodes: Record<string, MapNode>
-  edges?: Array<{ from: string; to: string }>
-  connections: Array<{ from: string; to: string }>
-  cityStates?: Record<string, CityTraitState>
-  [key: string]: unknown
 }
 
 export interface MinigameState {
@@ -134,145 +80,6 @@ export interface MinigameState {
   [key: string]: unknown
 }
 
-export interface PlayerState {
-  playerId: string | null
-  playerName: string
-  money: number
-  day: number
-  time: number
-  location: string
-  currentNodeId: string
-  lastGigNodeId: string | null
-  tutorialStep: number
-  score: number
-  fame: number
-  fameLevel: number
-  eventsTriggeredToday: number
-  totalTravels: number
-  hqUpgrades: string[]
-  clinicVisits: number
-  van: {
-    fuel: number
-    condition: number
-    upgrades: string[]
-    breakdownChance: number
-  }
-  passiveFollowers: number
-  stats: {
-    totalDistance: number
-    conflictsResolved: number
-    stageDives: number
-    consecutiveBadShows: number
-    proveYourselfMode: boolean
-  }
-  [key: string]: unknown
-}
-
-export interface BandMember extends UnknownRecord {
-  id?: string
-  name?: string
-  mood: number
-  stamina: number
-  staminaMax?: number
-  traits: Record<string, unknown>
-  relationships: Record<string, number>
-  baseStats?: Record<string, number>
-  skill?: number
-  charisma?: number
-  technical?: number
-  improv?: number
-  composition?: number
-  role?: string
-  equipment?: Record<string, unknown>
-}
-
-export interface StashItem {
-  stacks: number
-  [key: string]: unknown
-}
-
-export type ContrabandStashItem = {
-  id?: string
-  name?: string
-  effectType?: string
-  type?: string
-  instanceId?: string
-  [key: string]: unknown
-}
-
-export interface BandState {
-  members: BandMember[]
-  harmony: number
-  harmonyRegenTravel: boolean
-  inventorySlots: number
-  luck: number
-  stash: Record<string, StashItem>
-  activeContrabandEffects: unknown[]
-  performance: {
-    guitarDifficulty: number
-    drumMultiplier: number
-    crowdDecay: number
-  }
-  inventory: Record<string, unknown>
-  merchPrices?: Record<string, number>
-  neuroDecimatorActive: boolean
-  banterEvents?: Array<{
-    member1: string
-    member2: string
-    delta: number
-    timestamp: number
-  }>
-  [key: string]: unknown
-}
-
-export type BrandAlignment =
-  | 'EVIL'
-  | 'CORPORATE'
-  | 'INDIE'
-  | 'SUSTAINABLE'
-  | 'GOOD'
-  | 'NEUTRAL'
-
-export interface RivalBandState {
-  id: string
-  name: string
-  alignment: BrandAlignment
-  powerLevel: number
-  currentLocationId: string | null
-  [key: string]: unknown
-}
-
-export interface SocialState {
-  instagram: number
-  tiktok: number
-  youtube: number
-  newsletter: number
-  viral: number
-  lastGigDay: number | null
-  lastGigDifficulty: number | null
-  lastPirateBroadcastDay: number | null
-  lastDarkWebLeakDay: number | null
-  controversyLevel: number
-  loyalty: number
-  zealotry: number
-  reputationCooldown: number
-  egoFocus: string | null
-  trend: string
-  activeDeals: UnknownRecord[]
-  brandReputation: Record<string, number>
-  influencers: Record<string, UnknownRecord>
-  [key: string]: unknown
-}
-
-export interface GigModifiers {
-  promo: boolean
-  soundcheck: boolean
-  merch: boolean
-  catering: boolean
-  guestlist: boolean
-  [key: string]: boolean
-}
-
 export interface ToastPayload {
   id: string
   type: 'success' | 'error' | 'warning' | 'info'
@@ -280,122 +87,6 @@ export interface ToastPayload {
   messageKey?: string
   options?: Record<string, unknown>
   [key: string]: unknown
-}
-
-export interface PostGigSummary extends UnknownRecord {
-  score?: number
-  misses?: number
-  accuracy?: number
-  combo?: number
-  health?: number
-  overload?: number
-  maxCombo?: number
-  songStats?: Array<{ songId: string; score: number; accuracy: number }>
-}
-
-export interface QuestState extends UnknownRecord {
-  id: string
-  label?: string
-  deadline?: number | null
-  progress?: number
-  required?: number
-  rewardType?: string
-  rewardData?: UnknownRecord
-  rewardFlag?: string
-  moneyReward?: number
-  failurePenalty?: UnknownRecord
-}
-
-export interface ResetStatePayload extends UnknownRecord {
-  settings?: RawGameSettings
-  unlocks?: string[]
-}
-
-export interface EventDeltaPayload extends UnknownRecord {
-  player?: Partial<PlayerState>
-  band?: Partial<BandState>
-  social?: Partial<SocialState>
-  activeStoryFlags?: string[]
-  pendingEvents?: string[]
-}
-
-export type UpdatePlayerPayload =
-  | Partial<PlayerState>
-  | ((player: PlayerState) => Partial<PlayerState>)
-
-export type UpdateBandPayload =
-  | Partial<BandState>
-  | ((band: BandState) => Partial<BandState>)
-
-export interface CompleteTravelMinigamePayload {
-  damageTaken: number
-  itemsCollected: unknown[]
-  rngValue?: number
-  contrabandId?: string
-  instanceId?: string
-}
-
-export interface ClinicActionPayload {
-  memberId: string
-  type: 'heal' | 'enhance'
-  staminaGain?: number
-  moodGain?: number
-  trait?: string
-  successToast?: Omit<ToastPayload, 'id'> & Partial<Pick<ToastPayload, 'id'>>
-  getSuccessToast?: (...args: number[]) => unknown
-  [key: string]: unknown
-}
-
-export interface DarkWebLeakConfig {
-  COST: number
-  FAME_GAIN: number
-  ZEALOTRY_GAIN: number
-  CONTROVERSY_GAIN: number
-  HARMONY_COST: number
-  REQUIRED_CONTROVERSY: number
-}
-
-export interface DarkWebLeakPayload {
-  cost: number
-  fameGain: number
-  zealotryGain: number
-  controversyGain: number
-  harmonyCost: number
-  successToast?: Omit<ToastPayload, 'id'> & Partial<Pick<ToastPayload, 'id'>>
-}
-
-export interface PirateBroadcastPayload {
-  cost: number
-  fameGain: number
-  zealotryGain: number
-  controversyGain: number
-  harmonyCost: number
-  successToast?: Omit<ToastPayload, 'id'> & Partial<Pick<ToastPayload, 'id'>>
-}
-
-export interface BloodBankDonatePayload {
-  moneyGain: number
-  harmonyCost: number
-  staminaCost: number
-  controversyGain: number
-  successToast?: Omit<ToastPayload, 'id'> & Partial<Pick<ToastPayload, 'id'>>
-}
-
-export interface TradeVoidItemPayload {
-  contrabandId: string
-  fameCost: number
-  instanceId?: string
-  successToast?: Omit<ToastPayload, 'id'> & Partial<Pick<ToastPayload, 'id'>>
-}
-
-export interface MerchPressPayload {
-  cost: number
-  loyaltyGain: number
-  controversyGain: number
-  fameGain: number
-  harmonyCost: number
-  isSuccess?: boolean
-  successToast?: Omit<ToastPayload, 'id'> & Partial<Pick<ToastPayload, 'id'>>
 }
 
 export interface GameState {
@@ -510,14 +201,3 @@ export type GameAction =
   | Action<ActionTypes['BLOOD_BANK_DONATE'], BloodBankDonatePayload>
   | Action<ActionTypes['DARK_WEB_LEAK'], DarkWebLeakPayload>
   | Action<ActionTypes['SET_PENDING_BANDHQ_OPEN'], boolean>
-
-export interface PostResult {
-  platform?: Platform
-  success?: boolean
-  followers?: number
-  totalFollowers?: number
-  moneyChange?: number
-  message?: string
-  unlockTrait?: { memberId: string; traitId: string } | null
-  [key: string]: unknown
-}

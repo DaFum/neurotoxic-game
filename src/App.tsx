@@ -18,7 +18,7 @@ import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/react'
 import { GAME_PHASES } from './context/gameConstants'
 import { SceneRouter } from './components/SceneRouter.tsx'
-import type { GamePhase } from './types/game'
+import type { GamePhase } from './types'
 
 const SCENES_WITHOUT_HUD: Set<GamePhase> = new Set([
   GAME_PHASES.INTRO,

@@ -6,7 +6,7 @@ import type {
   GameState,
   RelationshipChange,
   StashEntry
-} from '../types/game'
+} from '../types'
 
 /**
  * Clamps a value to be at least 0.

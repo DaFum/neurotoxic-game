@@ -3,7 +3,7 @@ import {
   CONTRABAND_BY_RARITY
 } from '../data/contraband'
 import { secureRandom } from './crypto'
-import type { Rarity } from '../types/game'
+import type { Rarity } from '../types'
 
 export const DROP_BASE_CHANCE = 0.15
 export const LUCK_MOD_PER_POINT = 0.005

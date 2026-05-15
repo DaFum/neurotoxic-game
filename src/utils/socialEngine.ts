@@ -29,7 +29,7 @@ import type {
   BrandDeal,
   SocialEngineGameState,
   SocialPostOption
-} from '../types/social'
+} from '../types'
 
 type AllowedTrend = (typeof ALLOWED_TRENDS)[number]
 

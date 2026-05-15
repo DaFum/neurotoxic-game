@@ -16,7 +16,7 @@ import {
   createChangeSceneAction,
   createSetMapAction
 } from './actionCreators'
-import type { GameAction, GameMap } from '../types/game'
+import type { GameAction, GameMap } from '../types'
 
 const MAP_GENERATION_MAX_RETRIES = 2
 const MAP_GENERATION_RETRY_DELAY_MS = 250

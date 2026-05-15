@@ -1,5 +1,5 @@
 import { calculateRefuelCost, calculateTravelExpenses } from './economyEngine'
-import type { BandState } from '../types/game'
+import type { BandState } from '../types'
 
 type MapConnection = { from?: unknown; to?: unknown }
 type GameNode = { type?: unknown }

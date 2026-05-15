@@ -127,7 +127,7 @@ export interface MinigameLogicBase<TState = unknown> {
   gameStateRef: RefObject<TState>
   update: (deltaMS: number) => void
   finishMinigame?: () => void
-  dispatch?: (action: import('../types/game').GameAction) => void
+  dispatch?: (action: import('../types').GameAction) => void
 }
 
 export interface TourbusMinigameLogic extends MinigameLogicBase {

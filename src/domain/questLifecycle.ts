@@ -1,4 +1,4 @@
-import type { GameState, QuestState, ToastPayload } from '../types/game'
+import type { GameState, QuestState, ToastPayload } from '../types'
 import {
   clampPlayerFame,
   clampBandHarmony,

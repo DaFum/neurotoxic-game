@@ -13,7 +13,7 @@ import { secureRandom } from './crypto'
 import i18n from '../i18n'
 import { normalizeVenueId } from './mapUtils'
 import { VENUES_BY_ID } from '../data/venues'
-import type { BandState, MapNode, PlayerState, Venue } from '../types/game'
+import type { BandState, MapNode, PlayerState, Venue } from '../types'
 
 type ArrivalNode = Omit<Partial<MapNode>, 'type' | 'venue'> & {
   type: string
@@ -42,7 +42,7 @@ const resolveArrivalVenue = (node: ArrivalNode): Venue | null => {
 
 export type ArrivalResult = {
   /** Scene to navigate to after processing. Hook is responsible for calling changeScene. */
-  scene: import('../types/game').GamePhase
+  scene: import('../types').GamePhase
   /** True when startGig was called successfully. Hook must not call changeScene when true. */
   gigStarted: boolean
 }
@@ -123,9 +123,7 @@ type HandleNodeArrivalParams = {
   startGig: (venue: Venue) => void
   addToast: (msg: string, level?: string) => void
   onShowHQ?: () => void
-  onShowSupplyStop?: (
-    inventory: import('../types/components').PurchaseItem[]
-  ) => void
+  onShowSupplyStop?: (inventory: import('../types').PurchaseItem[]) => void
   eventAlreadyActive?: boolean
   rng?: () => number
 }
@@ -157,7 +155,7 @@ export const handleNodeArrival = (
       )
       if (onShowSupplyStop) {
         const inventory = Array.isArray(node.shopInventory)
-          ? (node.shopInventory as import('../types/components').PurchaseItem[])
+          ? (node.shopInventory as import('../types').PurchaseItem[])
           : []
         onShowSupplyStop(inventory)
       }

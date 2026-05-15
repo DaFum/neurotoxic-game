@@ -1,4 +1,4 @@
-import type { GameState, PostGigSummary, Venue } from '../types/game'
+import type { GameState, PostGigSummary, Venue } from '../types'
 import { SONGS_BY_ID } from '../data/songs'
 import { logger } from './logger'
 

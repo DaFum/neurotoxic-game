@@ -1,7 +1,7 @@
 import { useEffect, useRef, memo } from 'react'
 import { logger } from '../utils/logger'
-import type { PixiController, PixiStageProps } from '../types/components'
-import type { RhythmGameRefState } from '../types/rhythmGame'
+import type { PixiController, PixiStageProps } from '../types'
+import type { RhythmGameRefState } from '../types'
 
 type PixiStageComponentType = <TState = RhythmGameRefState>(
   props: PixiStageProps<TState>
