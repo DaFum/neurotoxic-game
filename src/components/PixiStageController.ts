@@ -1,10 +1,9 @@
 /*
- * (#1) Actual Updates: Replaced insecure Math.random() with getSafeRandom() from utils/crypto for screen shake effect.
+ * (#1) Actual Updates: Replaced insecure Math.random() with state.rng() for screen shake effect based on PR feedback.
  * (#2) Next Steps: Ensure no regressions in Pixi rendering or tests.
- * (#3) Found Errors + Solutions: Replaced Math.random with getSafeRandom to prevent Insecure Randomness vulnerability.
+ * (#3) Found Errors + Solutions: Replaced getSafeRandom with state.rng() for deterministic performance in the main loop.
  */
 import type { Container } from 'pixi.js'
-import { getSafeRandom } from '../utils/crypto'
 import { ToxicFilterManager } from './stage/ToxicFilterManager'
 import { BaseStageController } from './stage/BaseStageController'
 import { CrowdManager } from './stage/CrowdManager'
@@ -199,8 +198,8 @@ class PixiStageController<
 
     if (state.isCorruptionBurstActive) {
       // Deterministic small shake
-      stageContainer.x = getSafeRandom() * 10 - 5
-      stageContainer.y = getSafeRandom() * 10 - 5
+      stageContainer.x = state.rng() * 10 - 5
+      stageContainer.y = state.rng() * 10 - 5
     } else {
       stageContainer.x = 0
       stageContainer.y = 0
