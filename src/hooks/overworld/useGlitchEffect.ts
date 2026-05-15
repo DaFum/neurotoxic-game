@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { getSafeRandom } from '../../utils/crypto'
 
 export const useGlitchEffect = () => {
   const [glitch, setGlitch] = useState('')
@@ -7,8 +8,8 @@ export const useGlitchEffect = () => {
     const TYPES = ['glitch-on', 'g-hue', 'g-pixel'] as const
     let timeoutId: ReturnType<typeof setTimeout> | null = null
     const id = setInterval(() => {
-      if (Math.random() < 0.22) {
-        const glitchType = TYPES[Math.floor(Math.random() * TYPES.length)]
+      if (getSafeRandom() < 0.22) {
+        const glitchType = TYPES[Math.floor(getSafeRandom() * TYPES.length)]
         if (!glitchType) {
           return
         }
@@ -16,7 +17,7 @@ export const useGlitchEffect = () => {
           clearTimeout(timeoutId)
         }
         setGlitch(glitchType)
-        timeoutId = setTimeout(() => setGlitch(''), 160 + Math.random() * 120)
+        timeoutId = setTimeout(() => setGlitch(''), 160 + getSafeRandom() * 120)
       }
     }, 4000)
 
