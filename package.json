@@ -62,7 +62,7 @@
     "react-dom": "19.2.5",
     "react-i18next": "^17.0.6",
     "redis": "^5.12.1",
-    "tone": "15.5.6"
+    "tone": "15.5.11"
   },
   "devDependencies": {
     "@eslint-react/eslint-plugin": "5.7.3",
