@@ -84,13 +84,9 @@
   - Description: Entire prototype UI file `VisualPrototypes` is unused.
   - Recommendation: DELETE - Remove prototype code if not meant for production.
 
-* **HIGH** - `src/scenes/kabelsalat/useKabelsalatState.ts:8` and components
-  - Description: The `kabelsalat` scene is entirely orphaned and never imported.
-  - Recommendation: INTEGRATE - Hook up the kabelsalat minigame or DELETE if abandoned.
-
 * **MED** - `src/utils/imageGen.ts:60`
-  - Description: Exports `fetchGenImage`, `clearImageCache` but they are never called.
-  - Recommendation: INTEGRATE - Wire this into the UI for dynamic image generation or DELETE.
+  - Description: Exports `clearImageCache` is never called. Note that `fetchGenImage` is used internally in the same file.
+  - Recommendation: DELETE - Remove `clearImageCache` if caching is managed elsewhere.
 
 * **LOW** - `src/components/stage/NoteSpritePool.ts:13`
   - Description: Multiple unintegrated constants (`NOTE_JITTER_RANGE`, `NOTE_INITIAL_Y`, etc) and the `NoteSpriteFactory`.
@@ -99,7 +95,7 @@
 ## 3. INCONSISTENCIES
 
 * **HIGH** - `src/context/actionCreators.ts:250` vs `src/context/reducers/socialReducer.ts:114`
-  - Description: In `src/context/actionCreators.ts` and various reducers, clamps are sometimes applied in the action creator (violating AGENTS.md) and sometimes omitted in the reducer.
+  - Description: In `src/context/actionCreators.ts` and various reducers, clamps are sometimes applied in the action creator (violating the project rule defined in AGENTS.md. Note: Agents are AI assistants used to maintain the codebase, and AGENTS.md provides them with strict architectural rules, context limitations, and usage guidelines for autonomous modifications. Specifically, the rule states that reducers are the final authority for bounded state and action creators should sanitize early but reducers must still apply canonical clamps) and sometimes omitted in the reducer.
   - Recommendation: FIX - Apply `Math.max` early in action creators, but always use canonical clamps in reducers.
 
 * **MED** - `src/ui/settings/AudioSettings.tsx:20`
@@ -109,7 +105,7 @@
 ## 4. DEAD / UNREACHABLE CODE
 
 * **MED** - `src/hooks/usePreGigLogic.ts:18` - `_resetLastMinigameFallback`
-  - Description: This fallback function is never invoked.
+  - Description: This fallback function is never invoked. (The minigame it relates to, `kabelsalat`, is integrated properly via `MINIGAME_REGISTRY.kabelsalat.scene`.)
   - Recommendation: DELETE - Remove dead fallback logic.
 
 * **MED** - `src/utils/errorHandler.ts:131` - `withRetry`
@@ -118,14 +114,4 @@
 
 ## 5. MISSING INTEGRATION
 
-* **HIGH** - `src/types/social.d.ts:21`
-  - Description: Brand deals logic and data exist (`BRAND_DEALS`, `BrandDealOffer`) but are not hooked up to any UI or reducer flow.
-  - Recommendation: INTEGRATE - Implement brand deals into the social/band HQ UI.
-
-* **HIGH** - `src/ui/DarkWebLeakModal.tsx:18`
-  - Description: Fully built UI component for Dark Web Leaks, but it is never imported or rendered in any game scene or overworld overlay.
-  - Recommendation: INTEGRATE - Wire this into `OverworldModals` or the main event loop.
-
-* **HIGH** - `src/ui/SupplyStopModal.tsx:16`
-  - Description: Fully built UI component for Supply Stops, never imported.
-  - Recommendation: INTEGRATE - Wire this into the overworld travel sequence.
+* **NONE FOUND**
