@@ -96,22 +96,6 @@ export const createUpdatePlayerAction = (
   }
 }
 
-/**
- * Creates a band update action
- * @param {Object} updates - Band state updates
- * @returns {Object} Action object
- */
-export const createUpdateVoidStressAction = (
-  delta: number
-): Extract<GameAction, { type: typeof ActionTypes.UPDATE_VOID_STRESS }> => {
-  return {
-    type: ActionTypes.UPDATE_VOID_STRESS,
-    payload: {
-      delta: Number.isFinite(delta) ? delta : 0
-    }
-  }
-}
-
 export const createUpdateBandAction = (
   updates: UpdateBandPayload
 ): Extract<GameAction, { type: typeof ActionTypes.UPDATE_BAND }> => {

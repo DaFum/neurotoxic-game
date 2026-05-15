@@ -24,7 +24,6 @@ import {
   calculateMissImpact
 } from '../../utils/rhythmGameScoringUtils'
 import { RIVAL_GIG_CROWD_DECAY_PENALTY } from '../../context/gameConstants'
-import { createUpdateVoidStressAction } from '../../context/actionCreators'
 import type {
   RhythmGameRefState,
   SetLastGigStats
@@ -58,7 +57,6 @@ type RhythmGameScoringParams = {
     addToast: (message: string, type?: string) => void
     setLastGigStats: SetLastGigStats
     endGig: () => void
-    updateBand: (updates: unknown) => void
   }
 }
 
@@ -99,7 +97,7 @@ export const useRhythmGameScoring = ({
     setCorruptionBurstEndTime,
     setCorruptionState
   } = setters
-  const { addToast, setLastGigStats, endGig, updateBand } = contextActions
+  const { addToast, setLastGigStats, endGig } = contextActions
 
   // Extract primitives from performance to stabilise callback dependency arrays
   const baseCrowdDecay = performance?.crowdDecay ?? 1.0
@@ -189,14 +187,6 @@ export const useRhythmGameScoring = ({
         setAccuracy(newAccuracy)
       }
 
-      // Dispatch Void Stress increase on miss
-      if (typeof updateBand === 'function') {
-        const action = createUpdateVoidStressAction(2.5 * count)
-        if ('payload' in action) {
-          updateBand(action.payload)
-        }
-      }
-
       // Only play miss SFX if it's a real miss
       if (!isEmptyHit) {
         audioManager.playSFX('miss')
@@ -250,8 +240,7 @@ export const useRhythmGameScoring = ({
       setOverload,
       setAccuracy,
       baseCrowdDecay,
-      t,
-      updateBand
+      t
     ]
   )
 
