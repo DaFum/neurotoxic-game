@@ -2,7 +2,7 @@
 
 The Tour Director is an automated game difficulty management system. Its purpose is to prevent unrecoverable negative game states (such as a "death spiral" where low stats cause more negative events, further lowering stats) while maintaining an appropriate level of challenge. It typically activates during daily updates or post-gig evaluations, dampening negative random events when harmony is critically low, and triggering relief quests after consecutive failures. It controls event probability weights and conditionally triggers specific recovery scenarios, but it does not directly alter base player stats or force instant success.
 
-## 1. `HARMONY_DEATH_SPIRAL_*` constants
+## 1. HARMONY_DEATH_SPIRAL_* constants
 
 **Definition:**
 Defined in `src/utils/eventEngine.ts`:
