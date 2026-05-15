@@ -12,7 +12,8 @@ import {
   clampPlayerFame,
   calculateFameLevel,
   clampBandHarmony,
-  clampNonNegative
+  clampNonNegative,
+  clamp0to100
 } from '../utils/gameStateUtils'
 import type { RhythmSetlistEntry } from '../types/rhythmGame'
 import type {
@@ -432,7 +433,7 @@ export const createCompleteRoadieMinigameAction = (
 > => ({
   type: ActionTypes.COMPLETE_ROADIE_MINIGAME,
   payload: {
-    equipmentDamage: Math.max(0, Math.min(100, Number(equipmentDamage) || 0)),
+    equipmentDamage: clamp0to100(Number(equipmentDamage) || 0),
     contrabandDelivered: Math.max(0, Number(contrabandDelivered) || 0)
   }
 })

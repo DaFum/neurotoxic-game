@@ -17,6 +17,7 @@ import { POST_OPTIONS } from '../data/postOptions'
 import { SOCIAL_PLATFORMS } from '../data/platforms'
 import { BRAND_DEALS_BY_ID } from '../data/brandDeals'
 import { bandHasTrait } from './traitUtils'
+import { clampZealotry } from './gameStateUtils'
 import { StateError } from './errorHandler'
 import { ALLOWED_TRENDS, ALLOWED_TRENDS_SET } from '../data/socialTrends'
 import { BRAND_ALIGNMENTS } from '../context/initialState'
@@ -608,7 +609,7 @@ export const generateBrandName = (
 export const calculateZealotryEffects = (
   zealotry: number
 ): { passiveIncome: number; raidProbability: number } => {
-  const z = Math.max(0, Math.min(100, Number(zealotry) || 0))
+  const z = clampZealotry(Number(zealotry) || 0)
   return {
     passiveIncome: Math.floor(z * 1.2),
     raidProbability: (z / 100) * 0.08

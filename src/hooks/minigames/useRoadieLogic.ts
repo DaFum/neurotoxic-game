@@ -7,7 +7,7 @@ import { useRef, useCallback, useEffect, useState } from 'react'
 import { useGameState } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
 import { audioManager } from '../../utils/audio/audioEngine'
-import { isEmptyObject } from '../../utils/gameStateUtils'
+import { isEmptyObject, clamp0to100 } from '../../utils/gameStateUtils'
 import {
   ROADIE_GRID_WIDTH,
   ROADIE_GRID_HEIGHT,
@@ -79,7 +79,7 @@ export function handleCrash(
   audioManager.playSFX('crash')
 
   if (game.carrying) {
-    game.equipmentDamage = Math.max(0, Math.min(100, game.equipmentDamage + 10))
+    game.equipmentDamage = clamp0to100(game.equipmentDamage + 10)
 
     if (game.equipmentDamage >= 100) {
       game.isGameOver = true

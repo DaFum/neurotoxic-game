@@ -2,6 +2,7 @@ import * as PIXI from 'pixi.js'
 import { getPixiColorFromToken } from './stageRenderUtils'
 import { BaseStageController } from './BaseStageController'
 import { getSafeRandom } from '../../utils/crypto'
+import { clamp0to100 } from '../../utils/gameStateUtils'
 import type {
   StageControllerOptions,
   AmpStageOptions
@@ -88,7 +89,7 @@ export class AmpStageController extends BaseStageController<AmpStageOptions> {
       if (Object.hasOwn(state, 'interference')) {
         const sanitizedInterference = Number(state.interference)
         if (Number.isFinite(sanitizedInterference)) {
-          this.interference = Math.max(0, Math.min(100, sanitizedInterference))
+          this.interference = clamp0to100(sanitizedInterference)
         }
       }
       if (Object.hasOwn(state, 'isHijackActive')) {

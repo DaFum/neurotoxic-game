@@ -3,6 +3,7 @@
  * (#2) Next steps and ideas to develop further: We could break down the SVG into smaller semantic layers.
  * (#3) Found errors + solutions: Extracted to avoid overly long components.
  */
+import { clamp0to100 } from '../../../utils/gameStateUtils'
 import { Overlays } from './Overlays.tsx'
 import { CableList } from './CableList.tsx'
 import { SocketList } from './SocketList.tsx'
@@ -73,7 +74,7 @@ export const KabelsalatBoard: FC<KabelsalatBoardProps> = ({
           <div className='w-48 h-4 bg-void-black border-2 border-concrete-gray p-0.5'>
             <div
               className={`h-full transition-all duration-300 ${voidSurge > 80 ? 'bg-error-red animate-pulse' : 'bg-cosmic-purple'}`}
-              style={{ width: `${Math.min(100, Math.max(0, voidSurge))}%` }}
+              style={{ width: `${clamp0to100(voidSurge)}%` }}
             />
           </div>
           {voidSurge > 0 && (

@@ -1,4 +1,5 @@
 import { logger } from './logger'
+import { clamp0to100 } from './gameStateUtils'
 import { bandHasTrait } from './traitUtils'
 import { calculateZealotryEffects } from './socialEngine'
 import type { BandState, PlayerState, SocialState, Venue } from '../types'
@@ -1018,8 +1019,8 @@ export const calculateAmpCalibrationResult = (
   if (!Number.isFinite(numResonance)) {
     numResonance = 0
   }
-  const safeScore = Math.max(0, Math.min(100, numScore))
-  const safeResonance = Math.min(100, Math.max(0, numResonance))
+  const safeScore = clamp0to100(numScore)
+  const safeResonance = clamp0to100(numResonance)
   let stress = 0
   let reward = 0
 

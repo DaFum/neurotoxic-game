@@ -12,6 +12,7 @@ import {
   TOURBUS_TARGET_DISTANCE
 } from './minigameConstants'
 import { getSafeRandom } from '../../utils/crypto'
+import { clamp0to100 } from '../../utils/gameStateUtils'
 
 type TourbusObstacleType = 'FUEL' | 'OBSTACLE' | 'VOID_HAZARD'
 
@@ -187,7 +188,7 @@ export const useTourbusLogic = () => {
             // Damage Mitigation
             const hitDamage = getHitDamage(upgradesRef.current)
 
-            game.damage = Math.max(0, Math.min(100, game.damage + hitDamage))
+            game.damage = clamp0to100(game.damage + hitDamage)
             audioManager.playSFX('crash') // Play SFX immediately on collision
           } else if (obs.type === 'FUEL') {
             game.itemsCollected.push('FUEL')
