@@ -55,7 +55,8 @@ Located primarily in `src/utils/eventEngine.ts`:
   - Calls `handleRecordGoodShow`. Resets `consecutiveBadShows` to 0.
   - Gains regional reputation.
   - Advances `QUEST_APOLOGY_TOUR` or `QUEST_PROVE_YOURSELF` if conditions are met.
-  - If `activeStoryFlags` has `apology_tour_complete` but not `comeback_triggered`, and controversy < 30, queues `consequences_comeback_album` in `pendingEvents`.
+- **Comeback Album Queue (score-agnostic):**
+  - Evaluated at the end of `handleSetLastGigStats`, regardless of score. If `activeStoryFlags` has `apology_tour_complete` but not `comeback_triggered`, and `social.controversyLevel < 30`, queues `consequences_comeback_album` in `pendingEvents`.
 
 **Daily Updates (`src/utils/simulationUtils.ts`):**
 The `calculateDailyUpdates` function handles passive decay and checks:
