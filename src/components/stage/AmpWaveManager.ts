@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js'
 import { getPixiColorFromToken } from './stageRenderUtils'
 import { AMP_CALIBRATION_TOLERANCE } from '../../context/gameConstants'
+import { getSafeRandom } from '../../utils/crypto'
 
 export class AmpWaveManager {
   private app: PIXI.Application
@@ -26,14 +27,14 @@ export class AmpWaveManager {
     const firstY =
       centerY +
       Math.sin(0 / period + time) * amplitude +
-      (Math.random() - 0.5) * jitter
+      (jitter !== 0 ? (getSafeRandom() - 0.5) * jitter : 0)
     this.waveGraphics.moveTo(0, firstY)
 
     for (let x = 5; x < width; x += 5) {
       const y =
         centerY +
         Math.sin(x / period + time) * amplitude +
-        (Math.random() - 0.5) * jitter
+        (jitter !== 0 ? (getSafeRandom() - 0.5) * jitter : 0)
       this.waveGraphics.lineTo(x, y)
     }
 
@@ -91,7 +92,7 @@ export class AmpWaveManager {
       finalTargetColor = getPixiColorFromToken('--blood-red')
     }
 
-    if (interference > 0 && Math.random() < interference / 200) {
+    if (interference > 0 && getSafeRandom() < interference / 200) {
       targetJitter += interference
       if (!isHijackActive)
         finalTargetColor = getPixiColorFromToken('--warning-yellow')

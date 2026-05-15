@@ -7,6 +7,7 @@ import type {
   AmpStageOptions
 } from '../../types/components'
 import { AmpWaveManager } from './AmpWaveManager'
+import { getSafeRandom } from '../../utils/crypto'
 
 export class AmpStageController extends BaseStageController<AmpStageOptions> {
   waveManager: AmpWaveManager | null
