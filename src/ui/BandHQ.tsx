@@ -2,12 +2,7 @@ import React, { useMemo, useState, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { getUnifiedUpgradeCatalog } from '../data/upgradeCatalog'
-import {
-  getGenImageUrl,
-  IMG_PROMPTS,
-  isImageGenerationAvailable,
-  getGeneratedImageFallbackUrl
-} from '../utils/imageGen'
+import { IMG_PROMPTS, resolveGenImageUrl } from '../utils/imageGen'
 import { usePurchaseLogic } from './bandhq/hooks/usePurchaseLogic'
 import { useBandHQLogic } from './bandhq/hooks/useBandHQLogic'
 
@@ -115,7 +110,7 @@ export const BandHQ = ({ onClose, className = '' }: BandHQProps) => {
       <div
         className='fixed inset-0 z-40 bg-cover bg-center opacity-20 pointer-events-none'
         style={{
-          backgroundImage: `url("${isImageGenerationAvailable(isOnline) ? getGenImageUrl(IMG_PROMPTS.BAND_HQ_BG) : getGeneratedImageFallbackUrl()}")`
+          backgroundImage: `url("${resolveGenImageUrl(IMG_PROMPTS.BAND_HQ_BG, isOnline)}")`
         }}
       />
 

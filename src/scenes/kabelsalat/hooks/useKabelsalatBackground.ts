@@ -1,12 +1,7 @@
 import { useState, useEffect } from 'react'
 import { loadTexture } from '../../../components/stage/stageRenderUtils'
 import { logger } from '../../../utils/logger'
-import {
-  getGenImageUrl,
-  IMG_PROMPTS,
-  isImageGenerationAvailable,
-  getGeneratedImageFallbackUrl
-} from '../../../utils/imageGen'
+import { IMG_PROMPTS, resolveGenImageUrl } from '../../../utils/imageGen'
 
 export const useKabelsalatBackground = () => {
   const [bgTextureUrl, setBgTextureUrl] = useState<string | null>(null)
@@ -16,9 +11,7 @@ export const useKabelsalatBackground = () => {
     const fetchTexture = async () => {
       let rawUrl: string | undefined
       try {
-        rawUrl = isImageGenerationAvailable()
-          ? getGenImageUrl(IMG_PROMPTS.MINIGAME_KABELSALAT_BG)
-          : getGeneratedImageFallbackUrl()
+        rawUrl = resolveGenImageUrl(IMG_PROMPTS.MINIGAME_KABELSALAT_BG)
         const texture = await loadTexture(rawUrl)
         if (isMounted && texture && texture.source && texture.source.resource) {
           setBgTextureUrl(texture.source.resource.src || rawUrl)

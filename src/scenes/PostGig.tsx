@@ -1,10 +1,5 @@
 import { motion } from 'framer-motion'
-import {
-  getGenImageUrl,
-  IMG_PROMPTS,
-  isImageGenerationAvailable,
-  getGeneratedImageFallbackUrl
-} from '../utils/imageGen'
+import { IMG_PROMPTS, resolveGenImageUrl } from '../utils/imageGen'
 import { usePostGigLogic } from '../hooks/usePostGigLogic'
 
 import { lazy, Suspense } from 'react'
@@ -64,7 +59,7 @@ export const PostGig = () => {
       <div
         className='absolute inset-0 opacity-20 bg-cover bg-center'
         style={{
-          backgroundImage: `url("${isImageGenerationAvailable() ? getGenImageUrl(IMG_PROMPTS.POST_GIG_BG) : getGeneratedImageFallbackUrl()}")`
+          backgroundImage: `url("${resolveGenImageUrl(IMG_PROMPTS.POST_GIG_BG)}")`
         }}
       />
 

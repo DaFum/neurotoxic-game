@@ -3,12 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { GlitchButton } from './GlitchButton'
 import { ProgressBar, Tooltip } from './shared/index.tsx'
 import { useGameSelector } from '../context/GameState'
-import {
-  getGenImageUrl,
-  IMG_PROMPTS,
-  isImageGenerationAvailable,
-  getGeneratedImageFallbackUrl
-} from '../utils/imageGen'
+import { IMG_PROMPTS, resolveGenImageUrl } from '../utils/imageGen'
 
 type MerchPressConfig = {
   cost: number
@@ -66,7 +61,7 @@ export const MerchPressModal = ({
           <div
             className='absolute inset-0 z-0 opacity-20 pointer-events-none'
             style={{
-              backgroundImage: `url('${isImageGenerationAvailable() ? getGenImageUrl(IMG_PROMPTS.MERCH_PRESS_BG) : getGeneratedImageFallbackUrl()}')`,
+              backgroundImage: `url('${resolveGenImageUrl(IMG_PROMPTS.MERCH_PRESS_BG)}')`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               mixBlendMode: 'screen'

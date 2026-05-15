@@ -8583,6 +8583,15 @@
         "isDefault": false
       }
     ],
+    "clamp0to100": [
+      {
+        "name": "clamp0to100",
+        "path": "src/utils/gameStateUtils.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
     "clampControversyLevel": [
       {
         "name": "clampControversyLevel",
@@ -8948,6 +8957,15 @@
     "getGenImageUrl": [
       {
         "name": "getGenImageUrl",
+        "path": "src/utils/imageGen.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
+    "resolveGenImageUrl": [
+      {
+        "name": "resolveGenImageUrl",
         "path": "src/utils/imageGen.ts",
         "source": "local",
         "type": "const",

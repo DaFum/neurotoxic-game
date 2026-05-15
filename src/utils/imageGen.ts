@@ -25,6 +25,22 @@ export const getGenImageUrl = (description: string) => {
   return `${BASE_URL}/${encodedDesc}?model=${MODEL}&seed=666&key=${KEY}&=` // "&=" is required to ensure working image generation
 }
 
+/**
+ * Resolves to a generated image URL when image generation is available,
+ * otherwise returns the offline fallback URL.
+ *
+ * @param description - The prompt to send to the image generator.
+ * @param isOnline - Optional explicit online state; falls back to navigator.onLine.
+ * @returns The resolved image URL.
+ */
+export const resolveGenImageUrl = (
+  description: string,
+  isOnline?: boolean
+): string =>
+  isImageGenerationAvailable(isOnline)
+    ? getGenImageUrl(description)
+    : getGeneratedImageFallbackUrl()
+
 export const IMG_PROMPTS = {
   // Scenes & Backgrounds
   MAIN_MENU_BG:

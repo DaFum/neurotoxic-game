@@ -1,11 +1,6 @@
 import { Texture } from 'pixi.js'
 import { handleError } from '../../utils/errorHandler'
-import {
-  getGenImageUrl,
-  IMG_PROMPTS,
-  isImageGenerationAvailable,
-  getGeneratedImageFallbackUrl
-} from '../../utils/imageGen'
+import { IMG_PROMPTS, resolveGenImageUrl } from '../../utils/imageGen'
 import { loadTextures } from './stageRenderUtils'
 
 export type NoteTextures = { skull: Texture | null; lightning: Texture | null }
@@ -20,12 +15,8 @@ export class NoteTextureManager {
   async loadAssets(): Promise<void> {
     try {
       const urls = {
-        skull: isImageGenerationAvailable()
-          ? getGenImageUrl(IMG_PROMPTS.NOTE_SKULL)
-          : getGeneratedImageFallbackUrl(),
-        lightning: isImageGenerationAvailable()
-          ? getGenImageUrl(IMG_PROMPTS.NOTE_LIGHTNING)
-          : getGeneratedImageFallbackUrl()
+        skull: resolveGenImageUrl(IMG_PROMPTS.NOTE_SKULL),
+        lightning: resolveGenImageUrl(IMG_PROMPTS.NOTE_LIGHTNING)
       }
 
       const loadedTextures = await loadTextures(
