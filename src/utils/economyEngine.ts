@@ -19,7 +19,7 @@ export const MODIFIER_COSTS = {
   guestlist: 50
 }
 
-export const BAR_RATE_VIP = 0.3
+const BAR_RATE_VIP = 0.3
 
 export const DEFAULT_MERCH_PRICES: Record<string, number> = {
   shirts: 20,
@@ -29,8 +29,8 @@ export const DEFAULT_MERCH_PRICES: Record<string, number> = {
   cds: 15
 }
 
-export const BAR_RATE_NORMAL = 0.15
-export const AVG_SPEND_PER_PERSON_AT_BAR = 5
+const BAR_RATE_NORMAL = 0.15
+const AVG_SPEND_PER_PERSON_AT_BAR = 5
 export const ZEALOTRY_PROMO_THRESHOLD = 80
 
 type EconomyRecord = Record<string, unknown>
@@ -149,7 +149,7 @@ export const TICKET_SALES_CONSTANTS = {
 
 export const MANAGEMENT_CUT_RATE = 0.15
 export const MAX_GIG_NET = 7500
-export const GLOBAL_PAYOUT_NERF = 0.5
+const GLOBAL_PAYOUT_NERF = 0.5
 const TRAVEL_LOGISTICS_BASE = 18
 const TRAVEL_LOGISTICS_PER_100KM = 4
 const TRAVEL_LOGISTICS_PER_FAME_LEVEL = 1.5
@@ -387,7 +387,7 @@ export const calculateMerchIncome = (
  * @param {object} [nodeB=null] - The source node.
  * @returns {number} The calculated distance.
  */
-export const calculateDistance = (nodeA: unknown, nodeB: unknown = null) => {
+const calculateDistance = (nodeA: unknown, nodeB: unknown = null) => {
   const pointA = (nodeA && typeof nodeA === 'object' ? nodeA : {}) as MapPoint
   const pointB = (nodeB && typeof nodeB === 'object' ? nodeB : {}) as MapPoint
   const x1 = typeof pointA.x === 'number' ? pointA.x : (pointA.venue?.x ?? 50)
