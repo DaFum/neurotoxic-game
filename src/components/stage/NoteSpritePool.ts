@@ -1,6 +1,5 @@
 import { Container, Sprite, Texture } from 'pixi.js'
-import { handleError } from '../../utils/errorHandler'
-import { secureRandom } from '../../utils/crypto'
+import { getSafeRandom } from '../../utils/crypto'
 
 export const NOTE_JITTER_RANGE = 10
 export const NOTE_SPRITE_SIZE = 80
@@ -27,11 +26,9 @@ type NoteTextures = {
 
 export class NoteSpriteFactory {
   noteTextures: NoteTextures
-  rngErrorReported: boolean
 
   constructor() {
     this.noteTextures = { skull: null, lightning: null }
-    this.rngErrorReported = false
   }
 
   _getEffectiveTexture(laneIndex: number): Texture | null {
@@ -73,16 +70,7 @@ export class NoteSpriteFactory {
     sprite.visible = true
     sprite.alpha = 1
 
-    let randomVal
-    try {
-      randomVal = secureRandom()
-    } catch (e) {
-      if (!this.rngErrorReported) {
-        this.rngErrorReported = true
-        handleError(e, { severity: 'medium', silent: true })
-      }
-      randomVal = Math.random()
-    }
+    const randomVal = getSafeRandom()
     sprite.jitterOffset = (randomVal - 0.5) * NOTE_JITTER_RANGE
 
     const effectiveTexture = this._getEffectiveTexture(laneIndex)
@@ -132,14 +120,6 @@ export class NoteSpritePool {
 
   set noteTextures(value: NoteTextures) {
     this.factory.noteTextures = value
-  }
-
-  get rngErrorReported(): boolean {
-    return this.factory.rngErrorReported
-  }
-
-  set rngErrorReported(value: boolean) {
-    this.factory.rngErrorReported = value
   }
 
   _getEffectiveTexture(laneIndex: number): Texture | null {
