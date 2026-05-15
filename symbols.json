@@ -3678,13 +3678,6 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "AmpCalibrationScene",
-        "path": "src/scenes/AmpCalibrationScene.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": true
       }
     ],
     "ClinicScene": [
@@ -3694,13 +3687,6 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "ClinicScene",
-        "path": "src/scenes/ClinicScene.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": true
       }
     ],
     "Credits": [
@@ -3710,13 +3696,6 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "Credits",
-        "path": "src/scenes/Credits.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": true
       }
     ],
     "GameOver": [
@@ -3726,13 +3705,6 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "GameOver",
-        "path": "src/scenes/GameOver.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": true
       }
     ],
     "Gig": [
@@ -3742,13 +3714,6 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "Gig",
-        "path": "src/scenes/Gig.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": true
       }
     ],
     "IntroVideo": [
@@ -3758,13 +3723,6 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "IntroVideo",
-        "path": "src/scenes/IntroVideo.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": true
       }
     ],
     "KabelsalatScene": [
@@ -3774,13 +3732,6 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "KabelsalatScene",
-        "path": "src/scenes/KabelsalatScene.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": true
       }
     ],
     "MainMenu": [
@@ -3790,13 +3741,6 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "MainMenu",
-        "path": "src/scenes/MainMenu.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": true
       }
     ],
     "Overworld": [
@@ -3806,13 +3750,6 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "Overworld",
-        "path": "src/scenes/Overworld.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": true
       }
     ],
     "PostGig": [
@@ -3822,13 +3759,6 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "PostGig",
-        "path": "src/scenes/PostGig.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": true
       }
     ],
     "PreGig": [
@@ -3838,13 +3768,6 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "PreGig",
-        "path": "src/scenes/PreGig.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": true
       }
     ],
     "RoadieRunScene": [
@@ -3854,13 +3777,6 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "RoadieRunScene",
-        "path": "src/scenes/RoadieRunScene.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": true
       }
     ],
     "Settings": [
@@ -3870,13 +3786,6 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "Settings",
-        "path": "src/scenes/Settings.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": true
       }
     ],
     "TourbusScene": [
@@ -3886,13 +3795,6 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      },
-      {
-        "name": "TourbusScene",
-        "path": "src/scenes/TourbusScene.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": true
       }
     ],
     "CreditEntry": [
