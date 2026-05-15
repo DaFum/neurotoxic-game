@@ -60,5 +60,3 @@ export const TourbusScene = () => {
     </MinigameSceneFrame>
   )
 }
-
-export default TourbusScene

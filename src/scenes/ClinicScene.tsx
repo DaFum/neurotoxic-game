@@ -49,5 +49,3 @@ export const ClinicScene = () => {
     </div>
   )
 }
-
-export default ClinicScene

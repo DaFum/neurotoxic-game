@@ -13,7 +13,7 @@ vi.mock('../../src/scenes/MainMenu.tsx', () => ({
 }))
 
 vi.mock('../../src/scenes/Gig.tsx', () => ({
-  default: props => (
+  Gig: props => (
     <div data-testid='gig-scene' {...props}>
       Gig
     </div>
@@ -21,7 +21,7 @@ vi.mock('../../src/scenes/Gig.tsx', () => ({
 }))
 
 vi.mock('../../src/scenes/RoadieRunScene.tsx', () => ({
-  default: props => (
+  RoadieRunScene: props => (
     <div data-testid='roadie-scene' {...props}>
       Roadie
     </div>
@@ -29,7 +29,7 @@ vi.mock('../../src/scenes/RoadieRunScene.tsx', () => ({
 }))
 
 vi.mock('../../src/scenes/KabelsalatScene.tsx', () => ({
-  default: props => (
+  KabelsalatScene: props => (
     <div data-testid='kabelsalat-scene' {...props}>
       Kabelsalat
     </div>
@@ -37,7 +37,7 @@ vi.mock('../../src/scenes/KabelsalatScene.tsx', () => ({
 }))
 
 vi.mock('../../src/scenes/AmpCalibrationScene.tsx', () => ({
-  default: props => (
+  AmpCalibrationScene: props => (
     <div data-testid='amp-scene' {...props}>
       Amp
     </div>

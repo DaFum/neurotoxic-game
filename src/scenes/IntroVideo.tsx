@@ -86,5 +86,3 @@ export const IntroVideo = () => {
     </div>
   )
 }
-
-export default IntroVideo

@@ -150,6 +150,66 @@ describe('gigReducer', () => {
       assert.strictEqual(apologyQuest.progress, 0)
     })
 
+    it('should queue consequences_comeback_album when apology tour complete and controversy recovered', () => {
+      baseState.currentGig = { id: 'v1', capacity: 100 }
+      baseState.activeStoryFlags = ['apology_tour_complete']
+      baseState.social = { loyalty: 0, controversyLevel: 20 }
+      const payload = { score: 50 }
+      const nextState = handleSetLastGigStats(baseState, payload)
+
+      assert.ok(
+        nextState.pendingEvents?.includes('consequences_comeback_album'),
+        'comeback album event should be queued'
+      )
+    })
+
+    it('should not queue consequences_comeback_album when controversy is still high', () => {
+      baseState.currentGig = { id: 'v1', capacity: 100 }
+      baseState.activeStoryFlags = ['apology_tour_complete']
+      baseState.social = { loyalty: 0, controversyLevel: 45 }
+      const payload = { score: 50 }
+      const nextState = handleSetLastGigStats(baseState, payload)
+
+      assert.ok(
+        !nextState.pendingEvents?.includes('consequences_comeback_album'),
+        'comeback album event should not be queued when controversy >= 30'
+      )
+    })
+
+    it('should not duplicate consequences_comeback_album across repeated qualifying gigs', () => {
+      baseState.currentGig = { id: 'v1', capacity: 100 }
+      baseState.activeStoryFlags = ['apology_tour_complete']
+      baseState.social = { loyalty: 0, controversyLevel: 20 }
+
+      const afterFirst = handleSetLastGigStats(baseState, { score: 50 })
+      const afterSecond = handleSetLastGigStats(afterFirst, { score: 50 })
+
+      const occurrences = (afterSecond.pendingEvents || []).filter(
+        id => id === 'consequences_comeback_album'
+      ).length
+      assert.strictEqual(
+        occurrences,
+        1,
+        'comeback album should be queued exactly once'
+      )
+    })
+
+    it('should not queue consequences_comeback_album when comeback already triggered', () => {
+      baseState.currentGig = { id: 'v1', capacity: 100 }
+      baseState.activeStoryFlags = [
+        'apology_tour_complete',
+        'comeback_triggered'
+      ]
+      baseState.social = { loyalty: 0, controversyLevel: 10 }
+      const payload = { score: 50 }
+      const nextState = handleSetLastGigStats(baseState, payload)
+
+      assert.ok(
+        !nextState.pendingEvents?.includes('consequences_comeback_album'),
+        'comeback album should not re-queue once comeback_triggered'
+      )
+    })
+
     it('should auto-complete ego management quest on high harmony', () => {
       baseState.band.harmony = 60
       baseState.activeQuests = [

@@ -83,5 +83,3 @@ export const KabelsalatScene = () => {
     </div>
   )
 }
-
-export default KabelsalatScene

@@ -176,6 +176,50 @@ test('eventEngine.selectEvent dampens random band events when harmony < 30', () 
   }
 })
 
+test('eventEngine.selectEvent does not dampen band events at the harmony threshold (>= 30)', () => {
+  const MOCK_POOL = [
+    { id: 'band_random', trigger: 'random', category: 'band', chance: 0.4 }
+  ]
+  // Harmony at exactly the threshold should NOT trigger dampening
+  // (condition is strict `< 30`)
+  const state = { band: { harmony: 30 }, activeStoryFlags: [] }
+
+  // Single-element pool: no shuffle calls, first rng goes to the chance roll.
+  // 0.3 < 0.4 (undampened) selects the event.
+  mockSecureRandom.mock.mockImplementation(() => 0.3)
+
+  try {
+    const selected = eventEngine.selectEvent(MOCK_POOL, state, 'random')
+    assert.equal(
+      selected?.id,
+      'band_random',
+      'Band event should be selectable at undampened chance when harmony === threshold'
+    )
+  } finally {
+    mockSecureRandom.mock.mockImplementation(() => 0.5)
+  }
+})
+
+test('eventEngine.selectEvent does not dampen non-random band events even at low harmony', () => {
+  const MOCK_POOL = [
+    { id: 'band_pregig', trigger: 'pre_gig', category: 'band', chance: 0.4 }
+  ]
+  const state = { band: { harmony: 10 }, activeStoryFlags: [] }
+
+  mockSecureRandom.mock.mockImplementation(() => 0.3)
+
+  try {
+    const selected = eventEngine.selectEvent(MOCK_POOL, state, 'pre_gig')
+    assert.equal(
+      selected?.id,
+      'band_pregig',
+      'Non-random band event should not be dampened by death-spiral logic'
+    )
+  } finally {
+    mockSecureRandom.mock.mockImplementation(() => 0.5)
+  }
+})
+
 test('eventEngine.selectEvent respects cooldowns', () => {
   const state = buildGameState({ eventCooldowns: ['event_cooldown'] })
   const selected = eventEngine.selectEvent(

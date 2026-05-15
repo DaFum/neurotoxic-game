@@ -119,5 +119,3 @@ export const PostGig = () => {
     </div>
   )
 }
-
-export default PostGig

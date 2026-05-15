@@ -13,21 +13,53 @@ import { lazy } from 'react'
 import { MainMenu } from '../scenes/MainMenu.tsx'
 import { GAME_PHASES, MINIGAME_TYPES } from '../context/gameConstants'
 
-const ClinicScene = lazy(() => import('../scenes/ClinicScene.tsx'))
-const Overworld = lazy(() => import('../scenes/Overworld.tsx'))
-const Gig = lazy(() => import('../scenes/Gig.tsx'))
-const PreGig = lazy(() => import('../scenes/PreGig.tsx'))
-const PostGig = lazy(() => import('../scenes/PostGig.tsx'))
-const TourbusScene = lazy(() => import('../scenes/TourbusScene.tsx'))
-const RoadieRunScene = lazy(() => import('../scenes/RoadieRunScene.tsx'))
-const KabelsalatScene = lazy(() => import('../scenes/KabelsalatScene.tsx'))
-const AmpCalibrationScene = lazy(
-  () => import('../scenes/AmpCalibrationScene.tsx')
+const ClinicScene = lazy(() =>
+  import('../scenes/ClinicScene.tsx').then(m => ({ default: m.ClinicScene }))
 )
-const Settings = lazy(() => import('../scenes/Settings.tsx'))
-const Credits = lazy(() => import('../scenes/Credits.tsx'))
-const GameOver = lazy(() => import('../scenes/GameOver.tsx'))
-const IntroVideo = lazy(() => import('../scenes/IntroVideo.tsx'))
+const Overworld = lazy(() =>
+  import('../scenes/Overworld.tsx').then(m => ({ default: m.Overworld }))
+)
+const Gig = lazy(() =>
+  import('../scenes/Gig.tsx').then(m => ({ default: m.Gig }))
+)
+const PreGig = lazy(() =>
+  import('../scenes/PreGig.tsx').then(m => ({ default: m.PreGig }))
+)
+const PostGig = lazy(() =>
+  import('../scenes/PostGig.tsx').then(m => ({ default: m.PostGig }))
+)
+const TourbusScene = lazy(() =>
+  import('../scenes/TourbusScene.tsx').then(m => ({
+    default: m.TourbusScene
+  }))
+)
+const RoadieRunScene = lazy(() =>
+  import('../scenes/RoadieRunScene.tsx').then(m => ({
+    default: m.RoadieRunScene
+  }))
+)
+const KabelsalatScene = lazy(() =>
+  import('../scenes/KabelsalatScene.tsx').then(m => ({
+    default: m.KabelsalatScene
+  }))
+)
+const AmpCalibrationScene = lazy(() =>
+  import('../scenes/AmpCalibrationScene.tsx').then(m => ({
+    default: m.AmpCalibrationScene
+  }))
+)
+const Settings = lazy(() =>
+  import('../scenes/Settings.tsx').then(m => ({ default: m.Settings }))
+)
+const Credits = lazy(() =>
+  import('../scenes/Credits.tsx').then(m => ({ default: m.Credits }))
+)
+const GameOver = lazy(() =>
+  import('../scenes/GameOver.tsx').then(m => ({ default: m.GameOver }))
+)
+const IntroVideo = lazy(() =>
+  import('../scenes/IntroVideo.tsx').then(m => ({ default: m.IntroVideo }))
+)
 
 type ScenePhase = (typeof GAME_PHASES)[keyof typeof GAME_PHASES]
 type MinigameType = (typeof MINIGAME_TYPES)[keyof typeof MINIGAME_TYPES]

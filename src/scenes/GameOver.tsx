@@ -48,5 +48,3 @@ export const GameOver = () => {
     </div>
   )
 }
-
-export default GameOver
