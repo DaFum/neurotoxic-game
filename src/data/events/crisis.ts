@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
-import type { GameState } from '../../types/game'
-import type { UnknownRecord } from '../../types/game'
+import type { GameState } from '../../types'
+import type { UnknownRecord } from '../../types'
 import { calculateZealotryEffects } from '../../utils/socialEngine'
 import { secureRandom } from '../../utils/crypto'
 import { validateCrisisEvent } from '../../utils/eventValidator'

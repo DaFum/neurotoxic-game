@@ -12,7 +12,7 @@ import {
   processRhythmGameTick,
   finalizeGig
 } from '../../utils/rhythmGameLoopUtils'
-import type { GameEvent } from '../../types/game'
+import type { GameEvent } from '../../types'
 import type {
   RhythmGameRefState,
   SetLastGigStats

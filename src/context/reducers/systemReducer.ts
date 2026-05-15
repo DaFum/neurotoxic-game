@@ -13,7 +13,7 @@ import type {
   RawGameSettings,
   ResetStatePayload,
   MapNodeType
-} from '../../types/game'
+} from '../../types'
 import { logger } from '../../utils/logger'
 import {
   clampBandHarmony,

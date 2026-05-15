@@ -100,7 +100,7 @@ export interface RivalBandState {
   [key: string]: unknown
 }
 
-export interface SocialState extends UnknownRecord {
+export interface SocialState {
   instagram: number
   tiktok: number
   youtube: number

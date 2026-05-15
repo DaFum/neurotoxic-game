@@ -9,8 +9,8 @@ import { useGigSession } from '../hooks/useGigSession'
 import { useGigVisuals } from '../hooks/useGigVisuals'
 import { GigHUD } from '../components/GigHUD'
 import { createPixiStageController } from '../components/PixiStageController'
-import type { PixiStageProps } from '../types'
-import type { RhythmGameRefState } from '../types'
+import type { PixiStageProps } from '../types/components'
+import type { RhythmGameRefState } from '../types/rhythmGame'
 
 const PixiStage = lazy(async () => {
   const { PixiStage: LoadedPixiStage } = await import('../components/PixiStage')

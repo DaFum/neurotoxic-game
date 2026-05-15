@@ -9,7 +9,7 @@ import {
   processPurchaseEffect
 } from '../utils/purchaseLogicUtils'
 import { calculateFameLevel } from '../utils/gameStateUtils'
-import type { CatalogItem, PurchaseItem } from '../types'
+import type { CatalogItem, PurchaseItem } from '../types/components'
 import type { PlayerState, BandState } from '../types'
 
 export interface SupplyStopModalProps {

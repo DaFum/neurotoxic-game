@@ -1,4 +1,3 @@
-import type { UnknownRecord } from './game'
 export interface QuestState extends UnknownRecord {
   id: string
   label?: string

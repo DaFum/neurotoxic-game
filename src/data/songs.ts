@@ -1,6 +1,6 @@
 // Music Library
 import rhythmSongs from '../assets/rhythm_songs.json' with { type: 'json' }
-import type { Note, Song } from '../types'
+import type { Note, Song } from '../types/audio'
 
 type RawNote = {
   t?: number

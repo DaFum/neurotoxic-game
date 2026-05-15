@@ -3,7 +3,7 @@
  * @module milestones
  */
 
-import type { GameState, GameAction } from '../../types/game'
+import type { GameState, GameAction } from '../../types'
 import { ActionTypes } from '../../context/actionTypes'
 
 export interface Milestone {

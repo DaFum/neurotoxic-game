@@ -1,4 +1,3 @@
-import type { UnknownRecord } from './game'
 export interface EventOption {
   id?: string
   text?: string

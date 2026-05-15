@@ -1,4 +1,4 @@
-import type { TranslationCallback } from '../types'
+import type { TranslationCallback } from '../types/callbacks'
 import type { UnknownRecord } from '../types'
 
 type EffectDelta = {

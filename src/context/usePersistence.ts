@@ -23,7 +23,7 @@ import { logger } from '../utils/logger'
 import { GAME_PHASES } from './gameConstants'
 import { createLoadGameAction } from './actionCreators'
 import type { GameAction, GameState } from '../types'
-import type { OptionalToastCallback } from '../types'
+import type { OptionalToastCallback } from '../types/callbacks'
 
 export const SAVE_KEY = 'neurotoxic_v3_save'
 const LOADABLE_SAVE_KEYS = [

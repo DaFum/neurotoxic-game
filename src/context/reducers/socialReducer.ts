@@ -4,7 +4,7 @@ import type {
   MerchPressPayload,
   PirateBroadcastPayload,
   DarkWebLeakPayload
-} from '../../types/game'
+} from '../../types'
 import { logger } from '../../utils/logger'
 import { ALLOWED_TRENDS } from '../../data/socialTrends'
 import { getSafeUUID } from '../../utils/crypto'

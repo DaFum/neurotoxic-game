@@ -14,7 +14,7 @@ import {
   clampBandHarmony,
   clampNonNegative
 } from '../utils/gameStateUtils'
-import type { RhythmSetlistEntry } from '../types'
+import type { RhythmSetlistEntry } from '../types/rhythmGame'
 import type {
   BloodBankDonatePayload,
   ClinicActionPayload,

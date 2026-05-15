@@ -6,7 +6,7 @@ import {
   clampPlayerFame,
   calculateFameLevel
 } from '../../utils/gameStateUtils'
-import type { PlayerState, UpdatePlayerPayload } from '../../types/game'
+import type { PlayerState, UpdatePlayerPayload } from '../../types'
 
 /**
  * Handles player update actions

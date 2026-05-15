@@ -18,7 +18,7 @@ import type {
   PlayerState,
   RivalBandState,
   BandState
-} from '../../types/game'
+} from '../../types'
 import type { TranslationCallback } from '../../types/callbacks'
 
 type NodeVisibility = 'visible' | 'dimmed' | 'hidden'

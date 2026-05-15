@@ -3,7 +3,7 @@ import { TFunction } from 'i18next'
 import { pauseAudio, resumeAudio, stopAudio } from '../utils/audio/audioEngine'
 import { buildGigStatsSnapshot } from '../utils/gigStats'
 import { handleError } from '../utils/errorHandler'
-import type { RhythmGameRefState, RhythmLiveStats } from '../types'
+import type { RhythmGameRefState, RhythmLiveStats } from '../types/rhythmGame'
 import type { PostGigSummary } from '../types'
 
 type UseGigSessionProps = {

@@ -2,7 +2,10 @@ import { logger } from './logger'
 import { bandHasTrait } from './traitUtils'
 import { calculateZealotryEffects } from './socialEngine'
 import type { BandState, PlayerState, SocialState, Venue } from '../types'
-import type { FinancialBreakdownItem, PostGigFinancials } from '../types'
+import type {
+  FinancialBreakdownItem,
+  PostGigFinancials
+} from '../types/economy'
 
 /**
  * Per-modifier costs used both in the PreGig UI preview and the PostGig expense calculation.

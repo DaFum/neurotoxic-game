@@ -33,7 +33,7 @@ import type {
   ToastPayload,
   UpdateBandPayload,
   UpdatePlayerPayload
-} from '../../../types/game'
+} from '../../../types'
 import type {
   ToastCallback,
   TranslationCallback

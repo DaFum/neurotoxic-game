@@ -1,4 +1,4 @@
-import type { GameState } from '../../types/game'
+import type { GameState } from '../../types'
 import { computeStashBustRisk } from '../../utils/contrabandUtils'
 
 // Transport Events

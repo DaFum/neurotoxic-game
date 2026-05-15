@@ -1,6 +1,6 @@
 import { logger } from '../../utils/logger'
 
-import type { GameState, BandMember } from '../../types/game'
+import type { GameState, BandMember } from '../../types'
 
 type RelPair = { member1: string; member2: string; score: number }
 

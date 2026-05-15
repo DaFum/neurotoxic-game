@@ -1,6 +1,6 @@
 // Brand Deal Templates and Logic
 // This file defines the potential brand partnerships a band can attract.
-import type { BrandDeal } from '../types'
+import type { BrandDeal } from '../types/social'
 
 export const BRAND_DEALS = [
   {

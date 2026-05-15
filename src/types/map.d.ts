@@ -1,4 +1,3 @@
-import type { MapNodeType, CityTraitState, GamePhase } from './game'
 export interface MapNode {
   id: string
   x: number

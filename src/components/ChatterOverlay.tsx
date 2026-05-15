@@ -8,7 +8,7 @@ import type {
   ChatterMessageProps,
   ChatterMessageType,
   ChatterOverlayProps
-} from '../types'
+} from '../types/components'
 
 const MESSAGE_LIFETIME_MS = 10000
 

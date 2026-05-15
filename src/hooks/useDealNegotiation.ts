@@ -13,8 +13,8 @@ import type {
   DealNegotiationHook,
   DealNegotiationState,
   NegotiationResult
-} from '../types'
-import type { BrandDeal } from '../types'
+} from '../types/components'
+import type { BrandDeal } from '../types/social'
 
 type Deal = BrandDeal
 

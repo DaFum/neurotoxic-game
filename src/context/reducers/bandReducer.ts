@@ -18,7 +18,7 @@ import type {
   GameAction,
   GameState,
   UpdateBandPayload
-} from '../../types/game'
+} from '../../types'
 
 /**
  * Handles band update actions

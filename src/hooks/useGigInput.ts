@@ -6,7 +6,7 @@ import {
   handleKeyUpLogic
 } from '../utils/gigInputUtils'
 import type { RhythmGameLogicReturn } from './useRhythmGameLogic'
-import type { RhythmLane } from '../types'
+import type { RhythmLane } from '../types/rhythmGame'
 
 type GigInputParams = {
   actions: RhythmGameLogicReturn['actions']

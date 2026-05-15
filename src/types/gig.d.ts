@@ -1,4 +1,3 @@
-import type { UnknownRecord } from './game'
 export interface GigModifiers {
   promo: boolean
   soundcheck: boolean

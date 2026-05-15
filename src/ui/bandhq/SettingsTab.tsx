@@ -1,4 +1,4 @@
-import type { GameSettings } from '../../types/game'
+import type { GameSettings } from '../../types'
 import type { GameStateWithActions } from '../../context/GameState'
 import type { AudioState, AudioControls } from '../../types/audio'
 import { SettingsPanel } from '../shared'

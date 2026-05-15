@@ -13,7 +13,7 @@ import type {
   BandMember as GameBandMember,
   QuestState,
   CharacterTrait
-} from '../../types/game'
+} from '../../types'
 
 // --- Helpers ---
 

@@ -42,7 +42,7 @@ const resolveArrivalVenue = (node: ArrivalNode): Venue | null => {
 
 export type ArrivalResult = {
   /** Scene to navigate to after processing. Hook is responsible for calling changeScene. */
-  scene: import('../types').GamePhase
+  scene: import('../types/game').GamePhase
   /** True when startGig was called successfully. Hook must not call changeScene when true. */
   gigStarted: boolean
 }
@@ -123,7 +123,9 @@ type HandleNodeArrivalParams = {
   startGig: (venue: Venue) => void
   addToast: (msg: string, level?: string) => void
   onShowHQ?: () => void
-  onShowSupplyStop?: (inventory: import('../types').PurchaseItem[]) => void
+  onShowSupplyStop?: (
+    inventory: import('../types/components').PurchaseItem[]
+  ) => void
   eventAlreadyActive?: boolean
   rng?: () => number
 }
@@ -155,7 +157,7 @@ export const handleNodeArrival = (
       )
       if (onShowSupplyStop) {
         const inventory = Array.isArray(node.shopInventory)
-          ? (node.shopInventory as import('../types').PurchaseItem[])
+          ? (node.shopInventory as import('../types/components').PurchaseItem[])
           : []
         onShowSupplyStop(inventory)
       }

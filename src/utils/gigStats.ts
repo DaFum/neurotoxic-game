@@ -28,7 +28,7 @@ export const calculateAccuracy = (
  * @param {{combo: number, overload: number}} payload - Current combo and hype values.
  * @returns {GigPerformanceStats} Updated stats snapshot.
  */
-import type { RhythmLiveStats } from '../types'
+import type { RhythmLiveStats } from '../types/rhythmGame'
 
 export const updateGigPerformanceStats = (
   stats: RhythmLiveStats,

@@ -1,7 +1,7 @@
 import { resolveSongPlaybackWindow } from './audio/songUtils'
 import { secureRandom } from './crypto'
-import type { Note, Song } from '../types'
-import type { TempoMapEntry, ProcessedTempoMapEntry } from '../types'
+import type { Note, Song } from '../types/audio'
+import type { TempoMapEntry, ProcessedTempoMapEntry } from '../types/rhythm'
 
 type RandomFn = () => number
 

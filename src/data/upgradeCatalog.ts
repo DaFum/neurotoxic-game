@@ -1,5 +1,5 @@
 import { HQ_ITEMS } from './hqItems'
-import type { CatalogInputItem, CatalogItem, Effect } from '../types'
+import type { CatalogInputItem, CatalogItem, Effect } from '../types/components'
 
 /**
  * Legacy fame-based upgrades, previously in upgrades.js.

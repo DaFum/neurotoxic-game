@@ -2,7 +2,7 @@ import { normalizeVenueId } from './mapUtils'
 import { getCityKeyFromVenueId } from './mapGenerator'
 import { clampPlayerMoney, clampBandHarmony } from './gameStateUtils'
 import type { BandState, MapNode, PlayerState, Venue } from '../types'
-import type { TranslationCallback } from '../types'
+import type { TranslationCallback } from '../types/callbacks'
 
 interface VenueLike extends Partial<Venue> {
   [key: string]: unknown

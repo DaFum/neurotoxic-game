@@ -14,12 +14,12 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { getRandomChatter } from '../data/chatter'
 import { getSafeRandom, getSafeUUID } from '../utils/crypto'
 import type { BandMember } from '../types'
-import type { TranslationCallback } from '../types'
+import type { TranslationCallback } from '../types/callbacks'
 import type {
   ChatterGameState,
   ChatterMessageData,
   ChatterMessageType
-} from '../types'
+} from '../types/components'
 
 const CHATTER_DELAY_MIN_MS = 8000
 const CHATTER_DELAY_RANGE_MS = 17000

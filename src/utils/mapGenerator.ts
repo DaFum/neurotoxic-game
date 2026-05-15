@@ -40,7 +40,7 @@ type GeneratedMapNode = {
   >
   x: number
   y: number
-  shopInventory?: import('../types').PurchaseItem[]
+  shopInventory?: import('../types/components').PurchaseItem[]
 }
 type MapGeneratorState = {
   layers: GeneratedMapNode[][]
@@ -124,7 +124,7 @@ const hashCityKey = (cityKey: string): number => {
  */
 export const deriveCityTraits = (
   cityKey: string
-): import('../types').CityTraitState => {
+): import('../types/game').CityTraitState => {
   const h = hashCityKey(cityKey)
   const genreBias = CITY_TRAIT_GENRES[h % CITY_TRAIT_GENRES.length] ?? 'unknown'
   const attentionSpan = 15 + ((h >>> 8) % 45)
@@ -244,7 +244,7 @@ export class MapGenerator {
 
     const inventoryAddItems = HQ_ITEMS.gear.filter(
       i => i.effect?.type === 'inventory_add'
-    ) as import('../types').PurchaseItem[]
+    ) as import('../types/components').PurchaseItem[]
 
     // Pre-reserve Finale Venue (Leipzig Arena) so it is not picked randomly
     if (cachedFinaleVenue) usedVenueIds.add(cachedFinaleVenue.id)
@@ -303,7 +303,7 @@ export class MapGenerator {
     map: MapGeneratorState,
     depth: number,
     pools: VenuePools & { usedVenueIds: Set<string> },
-    inventoryAddItems: import('../types').PurchaseItem[]
+    inventoryAddItems: import('../types/components').PurchaseItem[]
   ): void {
     const { easyVenues, mediumVenues, hardVenues, usedVenueIds } = pools
 

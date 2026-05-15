@@ -1,4 +1,4 @@
-import type { GameState, ToastPayload } from '../../types/game'
+import type { GameState, ToastPayload } from '../../types'
 import { logger } from '../../utils/logger'
 import {
   clampPlayerFame,

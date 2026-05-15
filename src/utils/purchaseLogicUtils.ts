@@ -10,7 +10,7 @@ import {
   calculateFameLevel
 } from './gameStateUtils'
 import type { PlayerState, BandState, BandMember } from '../types'
-import type { Effect, PurchaseItem, UnlockMessage } from '../types'
+import type { Effect, PurchaseItem, UnlockMessage } from '../types/components'
 
 type Inventory = Record<string, unknown>
 

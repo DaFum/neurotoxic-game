@@ -1,4 +1,4 @@
-import type { ToastPayload } from '../../types/game'
+import type { ToastPayload } from '../../types'
 import { isEmptyObject } from '../../utils/gameStateUtils'
 
 export const ALLOWED_TOAST_TYPES = [

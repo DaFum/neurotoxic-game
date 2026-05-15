@@ -1,4 +1,3 @@
-import type { UnknownRecord } from './game'
 export interface BandMember extends UnknownRecord {
   id?: string
   name?: string

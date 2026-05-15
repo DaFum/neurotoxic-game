@@ -27,8 +27,8 @@ import type {
   UnknownRecord,
   BrandAlignment
 } from '../types'
-import type { PostGigFinancials } from '../types'
-import type { BrandDeal, Platform, SocialPostOption } from '../types'
+import type { PostGigFinancials } from '../types/economy'
+import type { BrandDeal, Platform, SocialPostOption } from '../types/social'
 
 type ResolvedPostResult = PostResult & {
   platform: Platform

@@ -7,7 +7,7 @@ import type {
   PurchaseItem,
   Effect
 } from '../../types/components'
-import type { PlayerState } from '../../types/game'
+import type { PlayerState } from '../../types'
 
 type ShopTabProps = Omit<CatalogConsumerProps, 'items'> & {
   player: Pick<PlayerState, 'money'>

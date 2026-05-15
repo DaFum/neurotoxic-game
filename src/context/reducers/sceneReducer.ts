@@ -1,6 +1,6 @@
 import { ALLOWED_SCENE_VALUES } from '../gameConstants'
 import { logger } from '../../utils/logger'
-import type { GameState, GamePhase } from '../../types/game'
+import type { GameState, GamePhase } from '../../types'
 
 const ALLOWED_SCENE_SET: ReadonlySet<string> = new Set(ALLOWED_SCENE_VALUES)
 

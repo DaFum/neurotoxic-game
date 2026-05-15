@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { useGameSelector } from '../../context/GameState'
-import type { GameState } from '../../types/game'
+import type { GameState } from '../../types'
 import { useMemo } from 'react'
 
 type GlossaryState = Pick<GameState, 'band' | 'player' | 'social'>

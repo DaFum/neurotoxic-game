@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import type { GameMap, RivalBandState } from '../../types/game'
+import type { GameMap, RivalBandState } from '../../types'
 
 export const useSpawnRivalBand = (
   rivalBand: RivalBandState | null | undefined,

@@ -1,9 +1,6 @@
-import type { GameState } from '../../types/game'
-import type {
-  ClinicActionPayload,
-  BloodBankDonatePayload
-} from '../../types/game'
-import type { BandMember } from '../../types/game'
+import type { GameState } from '../../types'
+import type { ClinicActionPayload, BloodBankDonatePayload } from '../../types'
+import type { BandMember } from '../../types'
 import { CLINIC_CONFIG, calculateClinicCost } from '../gameConstants'
 import { logger } from '../../utils/logger'
 import {

@@ -101,7 +101,7 @@ export const Overworld = () => {
     }
   } = useOverworldModals()
   const [supplyStopInventory, setSupplyStopInventory] = useState<
-    import('../types').PurchaseItem[] | null
+    import('../types/components').PurchaseItem[] | null
   >(null)
 
   const {

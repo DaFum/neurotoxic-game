@@ -1,7 +1,7 @@
 import { CHATTER_DB, ALLOWED_DEFAULT_SCENES } from './standardChatter'
 import { VENUE_CHATTER_LOOKUP } from './venueChatter'
 import { getSafeRandom } from '../../utils/crypto'
-import type { GameState } from '../../types/game'
+import type { GameState } from '../../types'
 
 export { CHATTER_DB, ALLOWED_DEFAULT_SCENES }
 
