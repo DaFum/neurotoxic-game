@@ -2,7 +2,7 @@
 
 The Tour Director is an automated game difficulty management system. Its purpose is to prevent unrecoverable negative game states (such as a "death spiral" where low stats cause more negative events, further lowering stats) while maintaining an appropriate level of challenge. It typically activates during daily updates or post-gig evaluations, dampening negative random events when harmony is critically low, and triggering relief quests after consecutive failures. It controls event probability weights and conditionally triggers specific recovery scenarios, but it does not directly alter base player stats or force instant success.
 
-## 1. HARMONY_DEATH_SPIRAL_* constants
+## 1. `HARMONY_DEATH_SPIRAL_*` constants
 
 **Definition:**
 Defined in `src/utils/eventEngine.ts`:
@@ -88,11 +88,11 @@ Files in `src/data/events/`:
 
 ## 5. Steering and Difficulty Scaling (`utils`)
 
-*   **Van Breakdown Scaling (`simulationUtils.ts`):** Breakdowns are heavily scaled based on van condition. Condition < 30 multiplies breakdown chance by 3.0. Controversy >= 80 adds +0.5 multiplier. This makes the game harder when the player is doing poorly or in high controversy.
-*   **Gig Modifiers (`simulationUtils.ts` - `getGigModifiers`):**
-    *   Harmony > 80: "TELEPATHY" - easier hits (+20ms hit window).
-    *   Harmony < 40: "DISCONNECT" - notes jitter.
-    *   Harmony < 20: "TOXIC" - severe jitter, strict timing (-25ms hit window).
-    *   Stamina < 30 (Marius/Drums): Rushing tempo (drum speed x1.2).
-    *   Mood < 30 (Matze/Guitar): Guitar score -50%.
+- **Van Breakdown Scaling (`simulationUtils.ts`):** Breakdowns are heavily scaled based on van condition. Condition < 30 multiplies breakdown chance by 3.0. Controversy >= 80 adds +0.5 multiplier. This makes the game harder when the player is doing poorly or in high controversy.
+- **Gig Modifiers (`simulationUtils.ts` - `getGigModifiers`):**
+  - Harmony > 80: "TELEPATHY" - easier hits (+20ms hit window).
+  - Harmony < 40: "DISCONNECT" - notes jitter.
+  - Harmony < 20: "TOXIC" - severe jitter, strict timing (-25ms hit window).
+  - Stamina < 30 (Marius/Drums): Rushing tempo (drum speed x1.2).
+  - Mood < 30 (Matze/Guitar): Guitar score -50%.
     These difficulty modifiers intentionally increase the challenge when band stats are poor. This deliberate penalization of the rhythm game aspect necessitates the anti-death-spiral systems (like event dampening and recovery events) to mitigate the harsher conditions, preserve gameplay balance, and prevent an unrecoverable mechanical death spiral.

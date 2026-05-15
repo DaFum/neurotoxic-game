@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js'
 import { getPixiColorFromToken } from './stageRenderUtils'
 import { BaseStageController } from './BaseStageController'
+import { getSafeRandom } from '../../utils/crypto'
 import type {
   StageControllerOptions,
   AmpStageOptions
@@ -125,8 +126,8 @@ export class AmpStageController extends BaseStageController<AmpStageOptions> {
 
     // Apply jitter to the stage container based on interference
     if (this.interference > 0) {
-      this.container.x = (Math.random() - 0.5) * (this.interference / 10)
-      this.container.y = (Math.random() - 0.5) * (this.interference / 10)
+      this.container.x = (getSafeRandom() - 0.5) * (this.interference / 10)
+      this.container.y = (getSafeRandom() - 0.5) * (this.interference / 10)
     } else {
       this.container.x = 0
       this.container.y = 0
