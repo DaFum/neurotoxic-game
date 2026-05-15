@@ -1,4 +1,4 @@
-import type { GameState, PostGigSummary, Venue } from '../../types/game'
+import type { GameState, PostGigSummary, Venue } from '../../types'
 import type { RhythmSetlistEntry } from '../../types/rhythmGame'
 import { logger } from '../../utils/logger'
 import { getSafeUUID } from '../../utils/crypto'

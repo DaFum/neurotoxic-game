@@ -1,4 +1,4 @@
-import type { GameState, QuestState, ToastPayload } from '../types/game'
+import type { BandMember, GameState, QuestState, ToastPayload } from '../types'
 import {
   clampPlayerFame,
   clampBandHarmony,
@@ -103,12 +103,12 @@ export const QuestLifecycle = {
               ? Math.max(0, Math.min(originalMembers.length - 1, randomIdx))
               : 0
 
-        const members = originalMembers.map((m, idx) => {
+        const members = originalMembers.map((m: BandMember, idx: number) => {
           if (idx === memberIdx) {
             const baseStats = (m.baseStats ?? {}) as Record<string, unknown>
             const currentSkill = m.baseStats
               ? Number((m.baseStats as Record<string, unknown>).skill)
-              : Number((m as Record<string, unknown>).skill)
+              : Number(m.skill)
             const skillValue = Number.isFinite(currentSkill) ? currentSkill : 0
             return {
               ...m,

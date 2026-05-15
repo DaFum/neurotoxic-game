@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import type { BandState, PlayerState, SocialState } from '../../types/game'
+import type { BandState, PlayerState, SocialState } from '../../types'
 import { StatBox, ProgressBar } from '../shared'
 
 type StatsTabProps = {

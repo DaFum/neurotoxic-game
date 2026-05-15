@@ -13,7 +13,7 @@ import { secureRandom } from './crypto'
 import i18n from '../i18n'
 import { normalizeVenueId } from './mapUtils'
 import { VENUES_BY_ID } from '../data/venues'
-import type { BandState, MapNode, PlayerState, Venue } from '../types/game'
+import type { BandState, MapNode, PlayerState, Venue } from '../types'
 
 type ArrivalNode = Omit<Partial<MapNode>, 'type' | 'venue'> & {
   type: string

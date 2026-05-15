@@ -1,9 +1,6 @@
-import type { GameState } from '../../types/game'
-import type {
-  ClinicActionPayload,
-  BloodBankDonatePayload
-} from '../../types/game'
-import type { BandMember } from '../../types/game'
+import type { GameState } from '../../types'
+import type { ClinicActionPayload, BloodBankDonatePayload } from '../../types'
+import type { BandMember } from '../../types'
 import { CLINIC_CONFIG, calculateClinicCost } from '../gameConstants'
 import { logger } from '../../utils/logger'
 import {
@@ -69,7 +66,9 @@ const executeClinicAction = (
     return state
   }
 
-  const memberExists = state.band.members.some(m => m.id === memberId)
+  const memberExists = state.band.members.some(
+    (m: BandMember) => m.id === memberId
+  )
   if (!memberExists) {
     logger.warn('ClinicReducer', 'Target member not found in band')
     return state
@@ -77,14 +76,16 @@ const executeClinicAction = (
 
   let memberUpdateResult: Record<string, unknown> | null = null
 
-  const updatedMembers: BandMember[] = state.band.members.map(member => {
-    if (member.id !== memberId) return member
-    memberUpdateResult = memberUpdater(member)
-    return (
-      (memberUpdateResult.updatedMember as BandMember) ||
-      (memberUpdateResult as unknown as BandMember)
-    )
-  })
+  const updatedMembers: BandMember[] = state.band.members.map(
+    (member: BandMember) => {
+      if (member.id !== memberId) return member
+      memberUpdateResult = memberUpdater(member)
+      return (
+        (memberUpdateResult.updatedMember as BandMember) ||
+        (memberUpdateResult as unknown as BandMember)
+      )
+    }
+  )
 
   const nextFame = clampPlayerFame(playerFame - fameCost)
   const nextState: GameState = {
@@ -224,7 +225,7 @@ export const handleBloodBankDonate = (
 
   // Apply stamina drain to all members and calculate actual loss
   let totalStaminaLost = 0
-  const updatedMembers = state.band.members.map(member => {
+  const updatedMembers = state.band.members.map((member: BandMember) => {
     const prevStamina = member.stamina || 0
     const nextStamina = clampMemberStamina(
       prevStamina - staminaCost,

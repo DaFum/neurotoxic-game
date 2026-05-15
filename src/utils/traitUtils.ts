@@ -1,12 +1,7 @@
 import { CHARACTERS } from '../data/characters'
 import { logger } from '../utils/logger'
 import { getSafeUUID } from '../utils/crypto'
-import type {
-  GameState,
-  BandMember,
-  BandState,
-  ToastPayload
-} from '../types/game'
+import type { GameState, BandMember, BandState, ToastPayload } from '../types'
 
 type TraitDef = {
   id: string

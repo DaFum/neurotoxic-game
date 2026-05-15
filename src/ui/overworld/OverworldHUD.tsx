@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { GlitchButton } from '../GlitchButton'
 import { useTranslation } from 'react-i18next'
-import { type BandState, type PlayerState } from '../../types/game'
+import { type BandState, type PlayerState } from '../../types'
 import { translateLocation } from '../../utils/locationI18n'
 import { useAudioControl } from '../../hooks/useAudioControl'
 

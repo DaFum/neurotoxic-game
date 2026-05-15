@@ -2,7 +2,7 @@ import { logger } from '../../utils/logger'
 import { applyEventDelta } from '../../utils/gameStateUtils'
 import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks } from '../../utils/traitUtils'
-import type { EventDeltaPayload, GameEvent, GameState } from '../../types/game'
+import type { EventDeltaPayload, GameEvent, GameState } from '../../types'
 
 export const handleSetActiveEvent = (
   state: GameState,

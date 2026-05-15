@@ -7,7 +7,7 @@
 import { ActionTypes } from './actionTypes'
 import { logger } from '../utils/logger'
 import { assertNever } from '../utils/assertNever'
-import type { GameAction, GameState } from '../types/game'
+import type { GameAction, GameState } from '../types'
 import { handleChangeScene } from './reducers/sceneReducer'
 import { handleUpdatePlayer } from './reducers/playerReducer'
 import { bandReducer } from './reducers/bandReducer'
@@ -94,11 +94,12 @@ type ActionFor<K extends HandledActionTypes> = Extract<
 type PayloadFor<K extends HandledActionTypes> =
   ActionFor<K> extends { payload: infer P } ? P : undefined
 
-type ReducerEntry<K extends HandledActionTypes> = [PayloadFor<K>] extends [
-  undefined
-]
-  ? (state: GameState) => GameState
-  : (state: GameState, payload: PayloadFor<K>) => GameState
+type ReducerEntry<K extends HandledActionTypes> =
+  ActionFor<K> extends {
+    payload: infer P
+  }
+    ? (state: GameState, payload: P) => GameState
+    : (state: GameState) => GameState
 
 type ReducerMap = {
   [K in HandledActionTypes]: ReducerEntry<K>
@@ -172,8 +173,10 @@ function runHandledAction<K extends HandledActionTypes>(
   const handler = reducerMap[action.type] as ReducerEntry<K>
 
   if (Object.hasOwn(action, 'payload')) {
-    // @ts-expect-error - action.payload is strictly tied to K, but TS loses the link
-    return handler(state, action.payload as PayloadFor<K>)
+    return (handler as (state: GameState, payload: PayloadFor<K>) => GameState)(
+      state,
+      (action as { payload: PayloadFor<K> }).payload
+    )
   }
 
   return (handler as (state: GameState) => GameState)(state)

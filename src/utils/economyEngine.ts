@@ -1,7 +1,7 @@
 import { logger } from './logger'
 import { bandHasTrait } from './traitUtils'
 import { calculateZealotryEffects } from './socialEngine'
-import type { BandState, PlayerState, SocialState, Venue } from '../types/game'
+import type { BandState, PlayerState, SocialState, Venue } from '../types'
 import type {
   FinancialBreakdownItem,
   PostGigFinancials

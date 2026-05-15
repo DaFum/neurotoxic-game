@@ -6,7 +6,7 @@
 
 import { ActionTypes } from './actionTypes'
 import { getSafeUUID } from '../utils/crypto'
-import type { RivalBandState } from '../types/game'
+import type { RivalBandState } from '../types'
 import {
   clampPlayerMoney,
   clampPlayerFame,
@@ -37,7 +37,7 @@ import type {
   UpdatePlayerPayload,
   SocialState,
   DarkWebLeakPayload
-} from '../types/game'
+} from '../types'
 
 /**
  * Creates a scene change action

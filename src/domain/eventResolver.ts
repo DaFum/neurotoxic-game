@@ -11,11 +11,12 @@ import {
   createSetActiveEventAction
 } from '../context/actionCreators'
 import type {
+  EventDeltaPayload,
   GameAction,
   GamePhase,
   GameState,
   QuestState
-} from '../types/game'
+} from '../types'
 
 export type SideEffect =
   | { type: 'persistUnlock'; id: string }
@@ -159,7 +160,7 @@ export function resolveEvent(
     : {}
 
   if (delta) {
-    const deltaAction = createApplyEventDeltaAction(delta)
+    const deltaAction = createApplyEventDeltaAction(delta as EventDeltaPayload)
     actions.push(deltaAction)
 
     // Compute preview state for saveGame (pure — no side effects)

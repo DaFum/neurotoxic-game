@@ -6,7 +6,7 @@ import {
   processTravelEvents
 } from '../utils/arrivalUtils'
 import { GAME_PHASES } from '../context/gameConstants'
-import type { GamePhase } from '../types/game'
+import type { GamePhase } from '../types'
 
 type UseArrivalLogicOptions = {
   onShowHQ?: () => void

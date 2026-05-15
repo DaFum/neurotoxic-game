@@ -1,4 +1,4 @@
-import type { BandMember } from '../types/game'
+import type { BandMember } from '../types'
 import { hasActiveSponsorship } from '../utils/gameStateUtils'
 import { SOCIAL_PLATFORMS } from './platforms'
 import i18n from '../i18n'
@@ -6,7 +6,7 @@ import { getSafeRandom } from '../utils/crypto'
 import { hasTrait } from '../utils/traitUtils'
 import { QUEST_APOLOGY_TOUR } from './questsConstants'
 import { hasActiveQuest } from '../utils/questUtils'
-import type { GameState } from '../types/game'
+import type { GameState } from '../types'
 
 const getSecureRollOnce = () => {
   return getSafeRandom()

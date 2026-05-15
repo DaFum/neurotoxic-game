@@ -5,7 +5,7 @@
  * all raw event definitions into `EVENTS_DB`. New domain events should be added to the raw arrays
  * and let this registry handle the implicit merge, avoiding manual array merging across the codebase.
  */
-import type { UnknownRecord } from '../../types/game'
+import type { UnknownRecord } from '../../types'
 import { TRANSPORT_EVENTS } from './transport'
 import { BAND_EVENTS } from './band'
 import { GIG_EVENTS } from './gig'

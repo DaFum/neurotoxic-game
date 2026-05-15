@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import { HexNode } from '../ui/shared'
 import { translateLocation } from '../utils/locationI18n'
-import type { MapNode as GameMapNode, CityTraitState } from '../types/game'
+import type { MapNode as GameMapNode, CityTraitState } from '../types'
 import type { TranslationCallback } from '../types/callbacks'
 import { calcCancellationRisk } from '../utils/gameStateUtils'
 

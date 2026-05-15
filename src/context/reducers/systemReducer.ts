@@ -13,7 +13,7 @@ import type {
   RawGameSettings,
   ResetStatePayload,
   MapNodeType
-} from '../../types/game'
+} from '../../types'
 import { logger } from '../../utils/logger'
 import {
   clampBandHarmony,
@@ -927,7 +927,7 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
         'technical',
         'improv',
         'composition'
-      ]) {
+      ] as const) {
         const value = finiteOptionalNumber(m[key])
         if (value !== undefined) member[key] = value
       }

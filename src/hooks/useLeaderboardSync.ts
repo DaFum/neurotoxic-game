@@ -2,7 +2,7 @@
 import { useEffect } from 'react'
 import { safeStorageOperation } from '../utils/errorHandler'
 import { logger } from '../utils/logger'
-import type { GameState } from '../types/game'
+import type { GameState } from '../types'
 
 type LeaderboardStatsPayload = {
   playerId: string

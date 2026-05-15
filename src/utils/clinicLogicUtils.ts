@@ -1,4 +1,4 @@
-import type { BandMember } from '../types/game'
+import type { BandMember } from '../types'
 
 export const validateHealMember = (
   member: BandMember | null | undefined,

@@ -6,7 +6,7 @@ import {
   getStashItemUseMessage
 } from '../utils/contrabandStashUtils'
 import { logger } from '../utils/logger'
-import type { ContrabandStashItem } from '../types/game'
+import type { ContrabandStashItem } from '../types'
 
 /**
  * Hook to manage the Contraband Stash UI state and actions.

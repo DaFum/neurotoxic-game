@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../shared/ActionButton'
 import { CONTRABAND_BY_RARITY, VOID_TRADER_COSTS } from '../../data/contraband'
-import type { PlayerState } from '../../types/game'
+import type { PlayerState } from '../../types'
 import type { VoidTraderItem } from '../../types/components'
 
 interface VoidTraderTabProps {

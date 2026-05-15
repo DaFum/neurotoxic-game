@@ -1,5 +1,5 @@
 import { useCallback, useRef, useLayoutEffect } from 'react'
-import type { GameSettings } from '../types/game'
+import type { GameSettings } from '../types'
 import type { GameStateWithActions } from '../context/GameState'
 
 type UpdateSettings = GameStateWithActions['updateSettings']

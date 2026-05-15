@@ -6,7 +6,7 @@ import type {
   Venue,
   UpdatePlayerPayload,
   PostResult
-} from '../types/game'
+} from '../types'
 import type { BrandDeal, SocialPostOption } from '../types/social'
 import type { PostGigFinancials } from '../types/economy'
 import { useCallback, useRef, useState } from 'react'

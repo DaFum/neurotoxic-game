@@ -5,7 +5,7 @@
  */
 import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
-import type { PlayerState } from '../../types/game'
+import type { PlayerState } from '../../types'
 
 export const GameOverStats = ({
   player

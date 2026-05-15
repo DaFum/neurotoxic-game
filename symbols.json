@@ -4505,6 +4505,138 @@
         "isDefault": false
       }
     ],
+    "CompleteTravelMinigamePayload": [
+      {
+        "name": "CompleteTravelMinigamePayload",
+        "path": "src/types/actions.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "typeOnly": true,
+        "exportPath": "src/types/game.d.ts"
+      }
+    ],
+    "ClinicActionPayload": [
+      {
+        "name": "ClinicActionPayload",
+        "path": "src/types/actions.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "typeOnly": true,
+        "exportPath": "src/types/game.d.ts"
+      }
+    ],
+    "DarkWebLeakConfig": [
+      {
+        "name": "DarkWebLeakConfig",
+        "path": "src/types/actions.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "typeOnly": true,
+        "exportPath": "src/types/game.d.ts"
+      }
+    ],
+    "DarkWebLeakPayload": [
+      {
+        "name": "DarkWebLeakPayload",
+        "path": "src/types/actions.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "typeOnly": true,
+        "exportPath": "src/types/game.d.ts"
+      }
+    ],
+    "PirateBroadcastPayload": [
+      {
+        "name": "PirateBroadcastPayload",
+        "path": "src/types/actions.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "typeOnly": true,
+        "exportPath": "src/types/game.d.ts"
+      }
+    ],
+    "BloodBankDonatePayload": [
+      {
+        "name": "BloodBankDonatePayload",
+        "path": "src/types/actions.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "typeOnly": true,
+        "exportPath": "src/types/game.d.ts"
+      }
+    ],
+    "TradeVoidItemPayload": [
+      {
+        "name": "TradeVoidItemPayload",
+        "path": "src/types/actions.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "typeOnly": true,
+        "exportPath": "src/types/game.d.ts"
+      }
+    ],
+    "MerchPressPayload": [
+      {
+        "name": "MerchPressPayload",
+        "path": "src/types/actions.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "typeOnly": true,
+        "exportPath": "src/types/game.d.ts"
+      }
+    ],
+    "UpdatePlayerPayload": [
+      {
+        "name": "UpdatePlayerPayload",
+        "path": "src/types/actions.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "typeOnly": true,
+        "exportPath": "src/types/game.d.ts"
+      }
+    ],
+    "UpdateBandPayload": [
+      {
+        "name": "UpdateBandPayload",
+        "path": "src/types/actions.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "typeOnly": true,
+        "exportPath": "src/types/game.d.ts"
+      }
+    ],
+    "ResetStatePayload": [
+      {
+        "name": "ResetStatePayload",
+        "path": "src/types/actions.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "typeOnly": true,
+        "exportPath": "src/types/game.d.ts"
+      }
+    ],
+    "EventDeltaPayload": [
+      {
+        "name": "EventDeltaPayload",
+        "path": "src/types/actions.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "typeOnly": true,
+        "exportPath": "src/types/game.d.ts"
+      }
+    ],
     "NoteType": [
       {
         "name": "NoteType",
@@ -4635,6 +4767,50 @@
         "isDefault": false,
         "typeOnly": true,
         "exportPath": "src/types/index.ts"
+      }
+    ],
+    "BandMember": [
+      {
+        "name": "BandMember",
+        "path": "src/types/band.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "typeOnly": true,
+        "exportPath": "src/types/game.d.ts"
+      }
+    ],
+    "StashItem": [
+      {
+        "name": "StashItem",
+        "path": "src/types/band.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "typeOnly": true,
+        "exportPath": "src/types/game.d.ts"
+      }
+    ],
+    "ContrabandStashItem": [
+      {
+        "name": "ContrabandStashItem",
+        "path": "src/types/band.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "typeOnly": true,
+        "exportPath": "src/types/game.d.ts"
+      }
+    ],
+    "BandState": [
+      {
+        "name": "BandState",
+        "path": "src/types/band.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "typeOnly": true,
+        "exportPath": "src/types/game.d.ts"
       }
     ],
     "VoidCallback": [
@@ -5528,6 +5704,28 @@
         "exportPath": "src/types/index.ts"
       }
     ],
+    "EventOption": [
+      {
+        "name": "EventOption",
+        "path": "src/types/events.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "typeOnly": true,
+        "exportPath": "src/types/game.d.ts"
+      }
+    ],
+    "GameEvent": [
+      {
+        "name": "GameEvent",
+        "path": "src/types/events.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "typeOnly": true,
+        "exportPath": "src/types/game.d.ts"
+      }
+    ],
     "RelationshipChange": [
       {
         "name": "RelationshipChange",
@@ -5605,61 +5803,6 @@
         "exportPath": "src/types/index.ts"
       }
     ],
-    "EventOption": [
-      {
-        "name": "EventOption",
-        "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "GameEvent": [
-      {
-        "name": "GameEvent",
-        "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "Venue": [
-      {
-        "name": "Venue",
-        "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "CharacterProfile": [
-      {
-        "name": "CharacterProfile",
-        "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "CharacterTrait": [
-      {
-        "name": "CharacterTrait",
-        "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
     "MapNodeType": [
       {
         "name": "MapNodeType",
@@ -5671,31 +5814,9 @@
         "exportPath": "src/types/index.ts"
       }
     ],
-    "MapNode": [
-      {
-        "name": "MapNode",
-        "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
     "CityTraitState": [
       {
         "name": "CityTraitState",
-        "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "GameMap": [
-      {
-        "name": "GameMap",
         "path": "src/types/game.d.ts",
         "source": "local",
         "type": "interface",
@@ -5715,262 +5836,9 @@
         "exportPath": "src/types/index.ts"
       }
     ],
-    "PlayerState": [
-      {
-        "name": "PlayerState",
-        "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "BandMember": [
-      {
-        "name": "BandMember",
-        "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "StashItem": [
-      {
-        "name": "StashItem",
-        "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "ContrabandStashItem": [
-      {
-        "name": "ContrabandStashItem",
-        "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "BandState": [
-      {
-        "name": "BandState",
-        "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "BrandAlignment": [
-      {
-        "name": "BrandAlignment",
-        "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "RivalBandState": [
-      {
-        "name": "RivalBandState",
-        "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "SocialState": [
-      {
-        "name": "SocialState",
-        "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "GigModifiers": [
-      {
-        "name": "GigModifiers",
-        "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
     "ToastPayload": [
       {
         "name": "ToastPayload",
-        "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "PostGigSummary": [
-      {
-        "name": "PostGigSummary",
-        "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "QuestState": [
-      {
-        "name": "QuestState",
-        "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "ResetStatePayload": [
-      {
-        "name": "ResetStatePayload",
-        "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "EventDeltaPayload": [
-      {
-        "name": "EventDeltaPayload",
-        "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "UpdatePlayerPayload": [
-      {
-        "name": "UpdatePlayerPayload",
-        "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "UpdateBandPayload": [
-      {
-        "name": "UpdateBandPayload",
-        "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "CompleteTravelMinigamePayload": [
-      {
-        "name": "CompleteTravelMinigamePayload",
-        "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "ClinicActionPayload": [
-      {
-        "name": "ClinicActionPayload",
-        "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "DarkWebLeakConfig": [
-      {
-        "name": "DarkWebLeakConfig",
-        "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "DarkWebLeakPayload": [
-      {
-        "name": "DarkWebLeakPayload",
-        "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "PirateBroadcastPayload": [
-      {
-        "name": "PirateBroadcastPayload",
-        "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "BloodBankDonatePayload": [
-      {
-        "name": "BloodBankDonatePayload",
-        "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "TradeVoidItemPayload": [
-      {
-        "name": "TradeVoidItemPayload",
-        "path": "src/types/game.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "MerchPressPayload": [
-      {
-        "name": "MerchPressPayload",
         "path": "src/types/game.d.ts",
         "source": "local",
         "type": "interface",
@@ -6023,15 +5891,103 @@
         "exportPath": "src/types/index.ts"
       }
     ],
-    "PostResult": [
+    "PlayerState": [
       {
-        "name": "PostResult",
-        "path": "src/types/game.d.ts",
+        "name": "PlayerState",
+        "path": "src/types/player.d.ts",
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/game.d.ts",
+        "typeOnly": true
+      }
+    ],
+    "QuestState": [
+      {
+        "name": "QuestState",
+        "path": "src/types/quest.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/game.d.ts",
+        "typeOnly": true
+      }
+    ],
+    "CharacterProfile": [
+      {
+        "name": "CharacterProfile",
+        "path": "src/types/npc.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/game.d.ts",
+        "typeOnly": true
+      }
+    ],
+    "CharacterTrait": [
+      {
+        "name": "CharacterTrait",
+        "path": "src/types/npc.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/game.d.ts",
+        "typeOnly": true
+      }
+    ],
+    "MapNode": [
+      {
+        "name": "MapNode",
+        "path": "src/types/map.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/game.d.ts",
+        "typeOnly": true
+      }
+    ],
+    "GameMap": [
+      {
+        "name": "GameMap",
+        "path": "src/types/map.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/game.d.ts",
+        "typeOnly": true
+      }
+    ],
+    "Venue": [
+      {
+        "name": "Venue",
+        "path": "src/types/map.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/game.d.ts",
+        "typeOnly": true
+      }
+    ],
+    "GigModifiers": [
+      {
+        "name": "GigModifiers",
+        "path": "src/types/gig.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/game.d.ts",
+        "typeOnly": true
+      }
+    ],
+    "PostGigSummary": [
+      {
+        "name": "PostGigSummary",
+        "path": "src/types/gig.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/game.d.ts",
+        "typeOnly": true
       }
     ],
     "Platform": [
@@ -6041,7 +5997,7 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "exportPath": "src/types/index.ts",
+        "exportPath": "src/types/game.d.ts",
         "typeOnly": true
       }
     ],
@@ -6052,7 +6008,7 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "exportPath": "src/types/index.ts",
+        "exportPath": "src/types/game.d.ts",
         "typeOnly": true
       }
     ],
@@ -6063,7 +6019,7 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "exportPath": "src/types/index.ts",
+        "exportPath": "src/types/game.d.ts",
         "typeOnly": true
       }
     ],
@@ -6074,7 +6030,7 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "exportPath": "src/types/index.ts",
+        "exportPath": "src/types/game.d.ts",
         "typeOnly": true
       }
     ],
@@ -6085,7 +6041,7 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "exportPath": "src/types/index.ts",
+        "exportPath": "src/types/game.d.ts",
         "typeOnly": true
       }
     ],
@@ -6096,7 +6052,62 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "exportPath": "src/types/index.ts",
+        "exportPath": "src/types/game.d.ts",
+        "typeOnly": true
+      }
+    ],
+    "BrandAlignment": [
+      {
+        "name": "BrandAlignment",
+        "path": "src/types/social.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "exportPath": "src/types/game.d.ts",
+        "typeOnly": true
+      }
+    ],
+    "RivalBandState": [
+      {
+        "name": "RivalBandState",
+        "path": "src/types/social.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/game.d.ts",
+        "typeOnly": true
+      }
+    ],
+    "SocialState": [
+      {
+        "name": "SocialState",
+        "path": "src/types/social.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/game.d.ts",
+        "typeOnly": true
+      }
+    ],
+    "PostResult": [
+      {
+        "name": "PostResult",
+        "path": "src/types/social.d.ts",
+        "source": "local",
+        "type": "interface",
+        "isDefault": false,
+        "exportPath": "src/types/game.d.ts",
+        "typeOnly": true
+      }
+    ],
+    "UpdateSocialPayload": [
+      {
+        "name": "UpdateSocialPayload",
+        "path": "src/types/social.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "exportPath": "src/types/game.d.ts",
         "typeOnly": true
       }
     ],

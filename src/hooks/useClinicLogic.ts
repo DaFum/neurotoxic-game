@@ -1,10 +1,10 @@
 import { useCallback, useMemo } from 'react'
-import type { BandMember } from '../types/game'
+import type { BandMember } from '../types'
 import type { TFunction } from 'i18next'
 import type { GameStateWithActions } from '../context/GameState'
 import { getSafeUUID } from '../utils/crypto'
 import { useTranslation } from 'react-i18next'
-import type { PlayerState, BandState } from '../types/game'
+import type { PlayerState, BandState } from '../types'
 import { useGameState } from '../context/GameState'
 import {
   GAME_PHASES,

@@ -20,7 +20,7 @@ import { ALL_VENUES } from '../data/venues'
 import { StateError } from './errorHandler'
 import { HQ_ITEMS } from '../data/hqItems'
 import { logger } from './logger'
-import type { MapNodeType, Venue, CityTraitState } from '../types/game'
+import type { MapNodeType, Venue, CityTraitState } from '../types'
 
 type MapConnection = { from: string; to: string }
 type GeneratedMapNode = {

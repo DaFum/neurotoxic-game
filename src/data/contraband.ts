@@ -6,7 +6,7 @@
  */
 
 import { logger } from '../utils/logger'
-import type { Rarity } from '../types/game'
+import type { Rarity } from '../types'
 
 const CONTRABAND_DB = [
   // ursprüngliche Items (bewahrt)

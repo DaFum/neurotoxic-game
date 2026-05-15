@@ -12,12 +12,7 @@ import {
   playSongSequence,
   resetGigStateTracking
 } from '../../utils/audio/rhythmGameAudioUtils'
-import type {
-  GameMap,
-  GameState,
-  GigModifiers,
-  PlayerState
-} from '../../types/game'
+import type { GameMap, GameState, GigModifiers, PlayerState } from '../../types'
 import type {
   RhythmGameRefState,
   RhythmSetlistEntry,

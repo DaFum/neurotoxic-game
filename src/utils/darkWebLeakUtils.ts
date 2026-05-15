@@ -3,7 +3,7 @@ import type {
   PlayerState,
   BandState,
   DarkWebLeakConfig
-} from '../types/game'
+} from '../types'
 
 export const checkHasLeakedToday = (
   social: Partial<SocialState> | undefined | null,

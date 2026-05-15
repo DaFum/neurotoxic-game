@@ -6,7 +6,7 @@ import { translateContextKeys } from '../utils/translationUtils'
 import { safeJsonParse } from '../utils/gameStateUtils'
 import { useEffect, memo } from 'react'
 import type { TFunction } from 'i18next'
-import type { ToastPayload } from '../types/game'
+import type { ToastPayload } from '../types'
 
 const toRecord = (value: unknown): Record<string, unknown> =>
   value && typeof value === 'object' && !Array.isArray(value)

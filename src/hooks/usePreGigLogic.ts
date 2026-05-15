@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
-import type { PlayerState, Venue, GigModifiers, GameState } from '../types/game'
+import type { PlayerState, Venue, GigModifiers, GameState } from '../types'
 import type { RhythmSetlistEntry } from '../types/rhythmGame'
 import type { Song } from '../types/audio'
 import type { ActiveEffectEntry } from '../types/components'

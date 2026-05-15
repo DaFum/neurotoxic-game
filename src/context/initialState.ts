@@ -14,7 +14,7 @@ import type {
   GameSettings,
   BandState,
   RivalBandState
-} from '../types/game'
+} from '../types'
 
 /**
  * Brand alignment constants

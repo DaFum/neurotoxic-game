@@ -13,7 +13,7 @@ import type {
   PlayerState,
   ToastPayload,
   TradeVoidItemPayload
-} from '../../../types/game'
+} from '../../../types'
 import type { PurchaseItem, VoidTraderItem } from '../../../types/components'
 
 type BandHQLogicParams = {

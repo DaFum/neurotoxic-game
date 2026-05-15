@@ -59,7 +59,7 @@ import type {
   PlayerState,
   SocialState,
   Venue
-} from '../types/game'
+} from '../types'
 
 type TravelLogicParams = {
   player: PlayerState

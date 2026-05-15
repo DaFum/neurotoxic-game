@@ -26,7 +26,7 @@ import type {
   PostResult,
   UnknownRecord,
   BrandAlignment
-} from '../types/game'
+} from '../types'
 import type { PostGigFinancials } from '../types/economy'
 import type { BrandDeal, Platform, SocialPostOption } from '../types/social'
 

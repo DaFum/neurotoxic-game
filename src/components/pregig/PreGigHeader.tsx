@@ -5,7 +5,7 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { formatNumber } from '../../utils/numberUtils'
-import type { PlayerState, Venue } from '../../types/game'
+import type { PlayerState, Venue } from '../../types'
 import type { TranslationCallback } from '../../types/callbacks'
 
 type PreGigHeaderProps = {

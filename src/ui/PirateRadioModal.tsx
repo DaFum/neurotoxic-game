@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { GlitchButton } from './GlitchButton'
 import { useGameSelector } from '../context/GameState'
 import { formatCurrency } from '../utils/numberUtils'
-import type { PirateBroadcastPayload } from '../types/game'
+import type { PirateBroadcastPayload } from '../types'
 
 type PirateRadioConfig = {
   COST: PirateBroadcastPayload['cost']

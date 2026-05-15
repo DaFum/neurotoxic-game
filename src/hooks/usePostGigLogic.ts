@@ -9,7 +9,7 @@ import {
   deriveFinancials,
   derivePostOptions
 } from '../utils/postGigUtils'
-import type { PostResult } from '../types/game'
+import type { PostResult } from '../types'
 import type { BrandDeal } from '../types/social'
 
 export type PostOptionsErrorState =

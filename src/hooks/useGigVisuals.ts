@@ -5,7 +5,7 @@ import {
   isImageGenerationAvailable,
   getGeneratedImageFallbackUrl
 } from '../utils/imageGen'
-import type { Venue } from '../types/game'
+import type { Venue } from '../types'
 
 type UseGigVisualsProps = {
   currentGig: Venue | null

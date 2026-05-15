@@ -1,6 +1,6 @@
 import { CatalogTab } from './CatalogTab'
 import type { CatalogConsumerProps, CatalogItem } from '../../types/components'
-import type { PlayerState } from '../../types/game'
+import type { PlayerState } from '../../types'
 
 type UpgradesTabProps = Omit<CatalogConsumerProps, 'items'> & {
   player: Pick<PlayerState, 'money' | 'fame'>

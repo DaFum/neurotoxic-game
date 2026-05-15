@@ -17,7 +17,7 @@ import { generateNotesForSong, parseSongNotes } from '../rhythmUtils'
 import { resolveSongPlaybackWindow } from './songUtils'
 import { getSafeRandom } from '../crypto'
 import type { Song, Note } from '../../types/audio'
-import type { BandState, GameMap, GigModifiers } from '../../types/game'
+import type { BandState, GameMap, GigModifiers } from '../../types'
 import type {
   RhythmGameRefState,
   RhythmNote,

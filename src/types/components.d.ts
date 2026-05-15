@@ -1,3 +1,4 @@
+import type { GameAction } from './game'
 import type {
   GameEvent,
   EventOption,

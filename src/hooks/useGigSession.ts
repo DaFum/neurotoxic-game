@@ -4,7 +4,7 @@ import { pauseAudio, resumeAudio, stopAudio } from '../utils/audio/audioEngine'
 import { buildGigStatsSnapshot } from '../utils/gigStats'
 import { handleError } from '../utils/errorHandler'
 import type { RhythmGameRefState, RhythmLiveStats } from '../types/rhythmGame'
-import type { PostGigSummary } from '../types/game'
+import type { PostGigSummary } from '../types'
 
 type UseGigSessionProps = {
   addToast: (message: string, type: 'info' | 'error' | 'success') => void

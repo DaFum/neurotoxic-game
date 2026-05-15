@@ -22,7 +22,7 @@ import { addUnlock, getUnlocks } from '../utils/unlockManager'
 import { logger } from '../utils/logger'
 import { GAME_PHASES } from './gameConstants'
 import { createLoadGameAction } from './actionCreators'
-import type { GameAction, GameState } from '../types/game'
+import type { GameAction, GameState } from '../types'
 import type { OptionalToastCallback } from '../types/callbacks'
 
 export const SAVE_KEY = 'neurotoxic_v3_save'
@@ -93,7 +93,8 @@ export const createPersistedState = (currentState: GameState) => {
     gigModifiers,
     setlist,
     unlocks,
-    completedMilestones
+    completedMilestones,
+    minigame
   } = currentState
 
   return {
@@ -118,6 +119,7 @@ export const createPersistedState = (currentState: GameState) => {
     gigModifiers,
     unlocks,
     completedMilestones,
+    minigame,
     setlist: normalizeSetlistForSave(setlist)
   }
 }
