@@ -1,3 +1,5 @@
+import type { PurchaseItem } from './components'
+
 export interface MapNode {
   id: string
   x: number
@@ -7,7 +9,7 @@ export interface MapNode {
   venue?: Venue
   venueId?: string
   neighbors?: string[]
-  shopInventory?: import('./components').PurchaseItem[]
+  shopInventory?: PurchaseItem[]
 
   [key: string]: unknown
 }

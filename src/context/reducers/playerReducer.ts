@@ -42,8 +42,9 @@ export const handleUpdatePlayer = <TState extends WithPlayer>(
       typeof safeUpdates.fame === 'number'
         ? safeUpdates.fame
         : state.player.fame
-    safeUpdates.fame = clampPlayerFame(nextFame)
-    safeUpdates.fameLevel = calculateFameLevel(safeUpdates.fame)
+    const clampedFame = clampPlayerFame(nextFame)
+    safeUpdates.fame = clampedFame
+    safeUpdates.fameLevel = calculateFameLevel(clampedFame)
   }
 
   const mergedPlayer = {
