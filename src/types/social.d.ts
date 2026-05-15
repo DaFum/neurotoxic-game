@@ -1,4 +1,4 @@
-import type { BrandAlignment } from './game'
+import type { UnknownRecord } from './game'
 
 export type Platform = 'instagram' | 'tiktok' | 'youtube' | 'newsletter'
 
@@ -100,7 +100,7 @@ export interface RivalBandState {
   [key: string]: unknown
 }
 
-export interface SocialState {
+export interface SocialState extends UnknownRecord {
   instagram: number
   tiktok: number
   youtube: number
@@ -119,7 +119,6 @@ export interface SocialState {
   activeDeals: UnknownRecord[]
   brandReputation: Record<string, number>
   influencers: Record<string, UnknownRecord>
-  [key: string]: unknown
 }
 
 export interface PostResult {
@@ -132,3 +131,7 @@ export interface PostResult {
   unlockTrait?: { memberId: string; traitId: string } | null
   [key: string]: unknown
 }
+
+export type UpdateSocialPayload =
+  | Partial<SocialState>
+  | ((social: SocialState) => Partial<SocialState>)

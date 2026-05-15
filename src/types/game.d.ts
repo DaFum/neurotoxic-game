@@ -112,10 +112,7 @@ export type GameAction =
   | Action<ActionTypes['UPDATE_VOID_STRESS'], { delta: number }>
   | Action<ActionTypes['TOGGLE_NEURO_DECIMATOR'], { isActive: boolean }>
   | Action<ActionTypes['UPDATE_BAND'], UpdateBandPayload>
-  | Action<
-      ActionTypes['UPDATE_SOCIAL'],
-      Partial<SocialState> | ((prev: SocialState) => Partial<SocialState>)
-    >
+  | Action<ActionTypes['UPDATE_SOCIAL'], import('./social').UpdateSocialPayload>
   | Action<ActionTypes['UPDATE_SETTINGS'], UnknownRecord>
   | Action<ActionTypes['SET_MAP'], GameMap | null>
   | Action<ActionTypes['SET_GIG'], Venue | null>
