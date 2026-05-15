@@ -57,32 +57,3 @@ export function setSafeStorageItem(key: string, value: unknown): void {
     // Silently fail on quota exceeded or other errors
   }
 }
-
-/**
- * Safely remove an item from localStorage.
- * @param key - localStorage key
- */
-export function removeSafeStorageItem(key: string): void {
-  try {
-    const storage = getStorage()
-    if (storage) {
-      storage.removeItem(key)
-    }
-  } catch {
-    // Silently fail
-  }
-}
-
-/**
- * Safely check if a key exists in localStorage.
- * @param key - localStorage key
- */
-export function hasSafeStorageItem(key: string): boolean {
-  try {
-    const storage = getStorage()
-    if (!storage) return false
-    return storage.getItem(key) !== null
-  } catch {
-    return false
-  }
-}
