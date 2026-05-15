@@ -108,7 +108,7 @@ export const QuestLifecycle = {
             const baseStats = (m.baseStats ?? {}) as Record<string, unknown>
             const currentSkill = m.baseStats
               ? Number((m.baseStats as Record<string, unknown>).skill)
-              : Number((m as unknown as Record<string, unknown>).skill)
+              : Number(m.skill)
             const skillValue = Number.isFinite(currentSkill) ? currentSkill : 0
             return {
               ...m,
