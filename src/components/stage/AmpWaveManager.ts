@@ -27,14 +27,14 @@ export class AmpWaveManager {
     const firstY =
       centerY +
       Math.sin(0 / period + time) * amplitude +
-      (getSafeRandom() - 0.5) * jitter
+      (jitter !== 0 ? (getSafeRandom() - 0.5) * jitter : 0)
     this.waveGraphics.moveTo(0, firstY)
 
     for (let x = 5; x < width; x += 5) {
       const y =
         centerY +
         Math.sin(x / period + time) * amplitude +
-        (getSafeRandom() - 0.5) * jitter
+        (jitter !== 0 ? (getSafeRandom() - 0.5) * jitter : 0)
       this.waveGraphics.lineTo(x, y)
     }
 
