@@ -1,6 +1,7 @@
 import type { ActionTypes, ActionType } from '../context/actionTypes'
 import type { RhythmSetlistEntry } from './rhythmGame'
 import type { GAME_PHASES } from '../context/gameConstants'
+import type { UpdateSocialPayload } from './social'
 
 export type RelationshipChange = {
   member1: string
@@ -112,7 +113,7 @@ export type GameAction =
   | Action<ActionTypes['UPDATE_VOID_STRESS'], { delta: number }>
   | Action<ActionTypes['TOGGLE_NEURO_DECIMATOR'], { isActive: boolean }>
   | Action<ActionTypes['UPDATE_BAND'], UpdateBandPayload>
-  | Action<ActionTypes['UPDATE_SOCIAL'], import('./social').UpdateSocialPayload>
+  | Action<ActionTypes['UPDATE_SOCIAL'], UpdateSocialPayload>
   | Action<ActionTypes['UPDATE_SETTINGS'], UnknownRecord>
   | Action<ActionTypes['SET_MAP'], GameMap | null>
   | Action<ActionTypes['SET_GIG'], Venue | null>
