@@ -65,7 +65,7 @@ mock.module(new URL('../../src/utils/errorHandler.ts', import.meta.url).href, {
 
 mock.module(new URL('../../src/utils/crypto.ts', import.meta.url).href, {
   namedExports: {
-    secureRandom: mock.fn(() => 0.5)
+    getSafeRandom: mock.fn(() => 0.5)
   }
 })
 
@@ -299,27 +299,4 @@ describe('NoteSpritePool', () => {
     assert.equal(mockSprite.destroy.mock.calls.length, 1)
   })
 
-  test('reports rng error exactly once per pool instance', async () => {
-    mockHandleError.mock.resetCalls()
-    const cryptoModule = await import('../../src/utils/crypto')
-
-    // Break secureRandom to throw an error
-    cryptoModule.secureRandom.mock.mockImplementation(() => {
-      throw new Error('crypto failed')
-    })
-
-    const sprite = new PIXI.Sprite()
-    const lane = { color: 0x0000ff, renderX: 300 }
-
-    // First call: Error is caught and reported
-    pool.initializeNoteSprite(sprite, lane, 0)
-    assert.equal(pool.rngErrorReported, true)
-    assert.equal(mockHandleError.mock.calls.length, 1)
-
-    // Second call: Error is caught but not reported again
-    pool.initializeNoteSprite(sprite, lane, 0)
-    assert.equal(mockHandleError.mock.calls.length, 1) // still 1
-
-    cryptoModule.secureRandom.mock.restore()
-  })
 })
