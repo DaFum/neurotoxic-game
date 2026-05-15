@@ -927,7 +927,7 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
         'technical',
         'improv',
         'composition'
-      ]) {
+      ] as const) {
         const value = finiteOptionalNumber(m[key])
         if (value !== undefined) member[key] = value
       }
