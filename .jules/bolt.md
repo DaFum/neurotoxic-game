@@ -122,8 +122,6 @@
 
 **Learning:** Moving `.filter().map()` chains out of render functions into static loops, especially for modules that export static arrays, avoids repeated array allocations on every render. Changing array iteration methods to simple for-loops significantly improves CPU-bound performance.
 **Action:** Lift array processing pipelines dependent only on static constants to the top level of the module and utilize basic `for` loops for iteration.
-
 ## 2026-05-12 - Optimization: isEmptyObject vs Object.keys().length
-
 **Learning:** Replaced `Object.keys(obj).length === 0` with a custom `isEmptyObject` helper where object validation overhead is minimal but frequency is high to avoid O(N) memory allocation to an array.
 **Action:** Use `isEmptyObject(obj)` for empty object checks.

@@ -17,8 +17,8 @@ describe('normalizeIp', () => {
     const { normalizeIp } = await import('../../lib/apiUtils.js')
 
     const req = {
-      socket: { remoteAddress: '127.0.0.1' },
-      headers: { 'x-forwarded-for': '1.1.1.1' }
+        socket: { remoteAddress: '127.0.0.1' },
+        headers: { 'x-forwarded-for': '1.1.1.1' }
     }
 
     const ip = normalizeIp(req)
@@ -30,8 +30,8 @@ describe('normalizeIp', () => {
     const { normalizeIp } = await import('../../lib/apiUtils.js')
 
     const req = {
-      socket: { remoteAddress: '10.0.0.1' }, // Immediate Proxy IP
-      headers: { 'x-forwarded-for': 'client-ip, proxy1-ip' }
+        socket: { remoteAddress: '10.0.0.1' }, // Immediate Proxy IP
+        headers: { 'x-forwarded-for': 'client-ip, proxy1-ip' }
     }
 
     const ip = normalizeIp(req)

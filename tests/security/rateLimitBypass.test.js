@@ -73,14 +73,8 @@ describe('Rate Limit Bypass Security Tests', () => {
       body: { playerId: 'p1', playerName: 'n1', money: 100 }
     }
     await statsHandler(req6, res)
-    assert.strictEqual(
-      res.status.mock.lastCall[0],
-      429,
-      'FIX: Rate limit should NOT be bypassed via x-forwarded-for spoofing'
-    )
-    assert.deepStrictEqual(res.json.mock.lastCall[0], {
-      error: 'Too many requests'
-    })
+    assert.strictEqual(res.status.mock.lastCall[0], 429, 'FIX: Rate limit should NOT be bypassed via x-forwarded-for spoofing')
+    assert.deepStrictEqual(res.json.mock.lastCall[0], { error: 'Too many requests' })
   })
 
   test('VULNERABILITY FIX: Should not be bypassed by whitespace-only x-real-ip', async () => {
@@ -88,11 +82,11 @@ describe('Rate Limit Bypass Security Tests', () => {
     const { normalizeIp } = await import('../../lib/apiUtils.js')
 
     const req = {
-      socket: { remoteAddress: '10.0.0.1' },
-      headers: {
-        'x-real-ip': '   ',
-        'x-forwarded-for': 'client-ip, proxy1-ip'
-      }
+        socket: { remoteAddress: '10.0.0.1' },
+        headers: {
+            'x-real-ip': '   ',
+            'x-forwarded-for': 'client-ip, proxy1-ip'
+        }
     }
 
     const ip = normalizeIp(req)
@@ -102,4 +96,5 @@ describe('Rate Limit Bypass Security Tests', () => {
     // Cleanup to prevent test pollution
     delete process.env.TRUST_PROXY
   })
+
 })
