@@ -13,7 +13,6 @@ import {
   ErrorSeverity,
   handleError,
   safeStorageOperation,
-  withRetry,
   initGlobalErrorHandling
 } from '../../src/utils/errorHandler'
 
@@ -709,78 +708,4 @@ it('should return null when null is explicitly passed as fallback', () => {
     null
   )
   assert.strictEqual(result, null)
-})
-
-describe('withRetry', () => {
-  it('should resolve immediately if the function succeeds on the first try', async () => {
-    const fn = async () => 'success'
-    const result = await withRetry(fn)
-    assert.strictEqual(result, 'success')
-  })
-
-  it('should retry on failure and resolve if it eventually succeeds', async () => {
-    let attempts = 0
-    const fn = async () => {
-      attempts++
-      if (attempts < 3) throw new Error('temporary error')
-      return 'eventual success'
-    }
-    const result = await withRetry(fn, { retries: 3, delay: 10 })
-    assert.strictEqual(result, 'eventual success')
-    assert.strictEqual(attempts, 3)
-  })
-
-  it('should throw the error if the maximum number of retries is exceeded', async () => {
-    let attempts = 0
-    const fn = async () => {
-      attempts++
-      throw new Error(`error on attempt ${attempts}`)
-    }
-
-    await assert.rejects(
-      async () => await withRetry(fn, { retries: 2, delay: 10 }),
-      { message: 'error on attempt 3' }
-    )
-    assert.strictEqual(attempts, 3) // 1 initial + 2 retries
-  })
-
-  it('should not retry if the error is a non-recoverable GameError', async () => {
-    let attempts = 0
-    const fn = async () => {
-      attempts++
-      throw new GameError('fatal error', { recoverable: false })
-    }
-
-    await assert.rejects(
-      async () => await withRetry(fn, { retries: 5, delay: 10 }),
-      { message: 'fatal error' }
-    )
-    assert.strictEqual(attempts, 1) // Should fail immediately
-  })
-
-  it('should handle fractional and infinite retry values gracefully', async () => {
-    let attempts = 0
-    const fn = async () => {
-      attempts++
-      if (attempts < 2) throw new Error('temp error')
-      return 'success'
-    }
-
-    const resultFractional = await withRetry(fn, { retries: 1.5, delay: 10 })
-    assert.strictEqual(resultFractional, 'success')
-    assert.strictEqual(attempts, 2)
-
-    let attemptsInf = 0
-    const fnInf = async () => {
-      attemptsInf++
-      throw new Error('fail')
-    }
-
-    // Infinity should be handled and default to 3 safe retries (4 maxAttempts)
-    await assert.rejects(
-      async () => await withRetry(fnInf, { retries: Infinity, delay: 1 }),
-      { message: 'fail' }
-    )
-    assert.strictEqual(attemptsInf, 4)
-  })
 })

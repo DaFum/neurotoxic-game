@@ -86,10 +86,6 @@ export class GameError extends Error {
     return new StateError(message, context)
   }
 
-  static Render(message: string, context: Record<string, unknown> = {}) {
-    return new RenderError(message, context)
-  }
-
   static Audio(message: string, context: Record<string, unknown> = {}) {
     return new AudioError(message, context)
   }
@@ -128,18 +124,6 @@ export class StorageError extends GameError {
       recoverable: true
     })
     this.name = 'StorageError'
-  }
-}
-
-export class RenderError extends GameError {
-  constructor(message: string, context: Record<string, unknown> = {}) {
-    super(message, {
-      category: ErrorCategory.RENDER,
-      severity: ErrorSeverity.HIGH,
-      context,
-      recoverable: true
-    })
-    this.name = 'RenderError'
   }
 }
 
@@ -592,55 +576,4 @@ export const safeStorageOperation = <T>(
   // Only log if we are gracefully degrading to a fallback
   handleError(storageError, { silent: true })
   return fallbackValue
-}
-
-/**
- * Executes a function with automatic retry logic for recoverable errors.
- * @param {Function} fn - The async function to execute.
- * @param {Object} [options] - Retry options.
- * @param {number} [options.retries=3] - Maximum number of retries.
- * @param {number} [options.delay=1000] - Base delay in milliseconds between retries.
- * @param {number} [options.backoff=2] - Multiplier for exponential backoff.
- * @returns {Promise<*>} The result of the function.
- * @throws {Error} The final error if all retries fail.
- */
-export const withRetry = async <T>(
-  fn: () => Promise<T>,
-  options: {
-    retries?: number
-    delay?: number
-    backoff?: number
-  } = {}
-): Promise<T> => {
-  const { retries = 3, delay = 1000, backoff = 2 } = options
-  const safeRetries = Number.isFinite(retries)
-    ? Math.max(0, Math.floor(retries))
-    : 3
-  const maxAttempts = safeRetries + 1
-  let attempt = 0
-  let currentDelay = delay
-
-  do {
-    try {
-      return await fn()
-    } catch (error) {
-      attempt++
-      const isRecoverable =
-        error instanceof GameError ? error.recoverable : true
-
-      if (attempt >= maxAttempts || !isRecoverable) {
-        throw error
-      }
-
-      handleError(error, {
-        silent: true,
-        source: 'withRetry',
-        errorInfo: { attempt, maxRetries: maxAttempts, nextDelay: currentDelay }
-      })
-
-      await new Promise(resolve => setTimeout(resolve, currentDelay))
-      currentDelay *= backoff
-    }
-  } while (attempt < maxAttempts)
-  throw new Error('Retries failed')
 }

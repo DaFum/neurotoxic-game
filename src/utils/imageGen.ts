@@ -7,7 +7,7 @@ export const GENERATED_IMAGE_OFFLINE_FALLBACK = `${typeof import.meta !== 'undef
 
 // navigator.onLine is true for any network connection (LAN, captive portals),
 // not necessarily internet access to gen.pollinations.ai. This is a best-effort
-// check; the error-path fallback in fetchGenImageAsObjectUrl handles the rest.
+// check.
 export const isImageGenerationAvailable = (isOnline?: boolean) =>
   isOnline ?? (typeof navigator === 'undefined' || navigator.onLine)
 
@@ -23,87 +23,6 @@ export const getGeneratedImageFallbackUrl = () =>
 export const getGenImageUrl = (description: string) => {
   const encodedDesc = encodeURIComponent(description)
   return `${BASE_URL}/${encodedDesc}?model=${MODEL}&seed=666&key=${KEY}&=` // "&=" is required to ensure working image generation
-}
-
-/**
- * Fetches a generated image with explicit Accept headers.
- * @param {string} description - The detailed prompt for the image.
- * @returns {Promise<Response>} The fetch response.
- */
-export const fetchGenImage = (description: string) => {
-  const encodedDesc = encodeURIComponent(description)
-  return fetch(
-    `${BASE_URL}/${encodedDesc}?model=${MODEL}&seed=666&key=${KEY}&=`, // "&=" is required to ensure working image generation
-    {
-      headers: {
-        Accept: 'image/jpeg, image/png, video/mp4'
-      }
-    }
-  )
-}
-
-const objectUrlCache = new Map<string, Promise<string>>()
-
-/**
- * Fetches a generated image and returns an object URL for use in CSS/styles.
- * Uses a memory cache to avoid redundant network requests and memory leaks.
- * Caches the Promise to prevent concurrent fetch races.
- *
- * @param {string} description - The detailed prompt for the image.
- * @returns {Promise<string>} A blob object URL.
- */
-export const fetchGenImageAsObjectUrl = (
-  description: string
-): Promise<string> => {
-  if (!isImageGenerationAvailable()) {
-    return Promise.resolve(GENERATED_IMAGE_OFFLINE_FALLBACK)
-  }
-
-  const cached = objectUrlCache.get(description)
-  if (cached) return cached
-
-  const promise = (async () => {
-    try {
-      const res = await fetchGenImage(description)
-      if (!res.ok) throw new Error(`Image fetch failed: ${res.status}`)
-      const blob = await res.blob()
-      return URL.createObjectURL(blob)
-    } catch (error) {
-      objectUrlCache.delete(description)
-      if (!isImageGenerationAvailable()) {
-        return GENERATED_IMAGE_OFFLINE_FALLBACK
-      }
-      throw error
-    }
-  })()
-
-  objectUrlCache.set(description, promise)
-  return promise
-}
-
-/**
- * Clears the object URL cache and revokes all generated blob URLs to free up memory.
- * Primarily used for testing or when memory pressure is high.
- * Must be awaited to ensure all pending blob generation promises are handled.
- *
- * WARNING: Revoking these URLs will immediately break any active image elements
- * or CSS backgrounds that are still currently rendering them. Only call this when
- * you are certain the old images are no longer needed (e.g. between full game runs).
- *
- * @returns {Promise<void>} Resolves when all object URLs are cleared.
- */
-export const clearImageCache = async () => {
-  const urls = await Promise.allSettled(Array.from(objectUrlCache.values()))
-  for (const result of urls) {
-    if (
-      result.status === 'fulfilled' &&
-      typeof URL !== 'undefined' &&
-      URL.revokeObjectURL
-    ) {
-      URL.revokeObjectURL(result.value)
-    }
-  }
-  objectUrlCache.clear()
 }
 
 export const IMG_PROMPTS = {
