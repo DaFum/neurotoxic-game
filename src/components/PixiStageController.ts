@@ -1,9 +1,10 @@
 /*
- * (#1) Actual Updates: Extracted withTimeout utility to utils.js.
- * (#2) Next Steps: Continue monitoring class size.
- * (#3) Found Errors + Solutions: None.
+ * (#1) Actual Updates: Replaced insecure Math.random() with getSafeRandom() from utils/crypto for screen shake effect.
+ * (#2) Next Steps: Ensure no regressions in Pixi rendering or tests.
+ * (#3) Found Errors + Solutions: Replaced Math.random with getSafeRandom to prevent Insecure Randomness vulnerability.
  */
 import type { Container } from 'pixi.js'
+import { getSafeRandom } from '../utils/crypto'
 import { ToxicFilterManager } from './stage/ToxicFilterManager'
 import { BaseStageController } from './stage/BaseStageController'
 import { CrowdManager } from './stage/CrowdManager'
@@ -198,8 +199,8 @@ class PixiStageController<
 
     if (state.isCorruptionBurstActive) {
       // Deterministic small shake
-      stageContainer.x = Math.random() * 10 - 5
-      stageContainer.y = Math.random() * 10 - 5
+      stageContainer.x = getSafeRandom() * 10 - 5
+      stageContainer.y = getSafeRandom() * 10 - 5
     } else {
       stageContainer.x = 0
       stageContainer.y = 0
