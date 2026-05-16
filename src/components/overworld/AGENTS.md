@@ -15,3 +15,4 @@ Applies to `src/components/overworld/**`.
 
 - UI refactors here commonly make actions unreachable while components still render in tests. Add reachability coverage for changed menus.
 - `cityTraits` for map nodes must be derived via `getCityKeyFromVenueId(node.venue.id)` imported from `src/utils/mapGenerator.ts`. `node.venue.city` does not exist; using it silently drops city intel from map nodes.
+- `OverworldModals` is the canonical container for the Overworld modal stack (Band HQ, Quests, Stash, Pirate Radio, Merch Press, Blood Bank, Dark Web Leak). Add new overworld modals here and thread their state through `useOverworldModals()`; do not inline `{showFoo && <FooModal />}` blocks in `src/scenes/Overworld.tsx`.
