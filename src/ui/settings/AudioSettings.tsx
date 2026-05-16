@@ -31,7 +31,10 @@ export const AudioSettings = memo(function AudioSettings({
       const raw = e.target.value
       const parsed = typeof raw === 'number' ? raw : parseFloat(String(raw))
       if (!Number.isFinite(parsed)) return
-      cb(parsed)
+      // Normalize at the UI boundary to match the slider's max='1' contract;
+      // AudioManager re-clamps downstream but defensive clamping here keeps
+      // out-of-range numeric inputs from propagating through state.
+      cb(Math.min(1, Math.max(0, parsed)))
     },
     []
   )
