@@ -38,7 +38,7 @@ export const ZealotryGauge = memo(
             <div
               className='bg-blood-red h-full transition-all duration-500'
               style={{
-                width: clampZealotry(zealotryLevel ?? 0) + '%'
+                width: `${clampZealotry(zealotryLevel)}%`
               }}
             />
           </div>
