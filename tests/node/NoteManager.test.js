@@ -99,6 +99,7 @@ mock.module(new URL('../../src/utils/imageGen.ts', import.meta.url).href, {
     isImageGenerationAvailable: () => true,
     getGeneratedImageFallbackUrl: () => 'mock-fallback',
     getGenImageUrl: mock.fn(prompt => `url://${prompt}`),
+    resolveGenImageUrl: mock.fn(prompt => `url://${prompt}`),
     IMG_PROMPTS: { NOTE_SKULL: 'skull', NOTE_LIGHTNING: 'lightning' }
   }
 })

@@ -63,6 +63,9 @@ mock.module(new URL('../../src/utils/imageGen.ts', import.meta.url).href, {
     isImageGenerationAvailable: () => mockIsImageGenerationAvailable,
     getGeneratedImageFallbackUrl: () => 'mock-fallback',
     getGenImageUrl: mock.fn(prompt => `url://${prompt}`),
+    resolveGenImageUrl: mock.fn(prompt =>
+      mockIsImageGenerationAvailable ? `url://${prompt}` : 'mock-fallback'
+    ),
     IMG_PROMPTS: { CROWD_IDLE: 'idle', CROWD_MOSH: 'mosh' }
   }
 })

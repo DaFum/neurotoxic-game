@@ -11,11 +11,7 @@ import { Modal, Panel, AnimatedDivider, ActionButton } from './shared/index.tsx'
 import { useTranslation } from 'react-i18next'
 
 import { GlitchButton } from './GlitchButton'
-import {
-  IMG_PROMPTS,
-  resolveGenImageUrl,
-  getGeneratedImageFallbackUrl
-} from '../utils/imageGen'
+import { IMG_PROMPTS, resolveGenImageUrl } from '../utils/imageGen'
 
 /**
  * Contraband Stash Modal Component
@@ -234,11 +230,6 @@ export const ContrabandStash = ({
                                 alt={t(`items:contraband.${item.id}.name`)}
                                 className='w-full h-full object-contain'
                                 loading='lazy'
-                                onError={e => {
-                                  e.currentTarget.onerror = null
-                                  e.currentTarget.src =
-                                    getGeneratedImageFallbackUrl()
-                                }}
                               />
                             </div>
                           )}

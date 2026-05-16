@@ -1104,7 +1104,7 @@ Don't assume packages are available:
 
 Then use it:
 
-```python
+````python
 from pypdf import PdfReader
 reader = PdfReader("file.pdf")
 ```"

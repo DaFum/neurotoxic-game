@@ -1,11 +1,7 @@
 import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { CatalogItem } from '../../types/components'
-import {
-  IMG_PROMPTS,
-  resolveGenImageUrl,
-  getGeneratedImageFallbackUrl
-} from '../../utils/imageGen'
+import { IMG_PROMPTS, resolveGenImageUrl } from '../../utils/imageGen'
 import { getPrimaryEffect } from '../../utils/purchaseLogicUtils'
 import { GlitchButton } from '../GlitchButton'
 import { Tooltip } from '../shared'
@@ -75,10 +71,6 @@ export const ShopItem = React.memo(
               alt=''
               aria-hidden='true'
               className='w-12 h-12 object-contain bg-void-black border-2 border-ash-gray'
-              onError={e => {
-                e.currentTarget.onerror = null
-                e.currentTarget.src = getGeneratedImageFallbackUrl()
-              }}
             />
             <h4 className='font-bold text-toxic-green leading-tight font-mono uppercase'>
               {typeof item.name === 'string'

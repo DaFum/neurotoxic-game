@@ -434,7 +434,7 @@ export const createCompleteRoadieMinigameAction = (
   type: ActionTypes.COMPLETE_ROADIE_MINIGAME,
   payload: {
     equipmentDamage: clamp0to100(Number(equipmentDamage) || 0),
-    contrabandDelivered: Math.max(0, Number(contrabandDelivered) || 0)
+    contrabandDelivered: clampNonNegative(Number(contrabandDelivered) || 0)
   }
 })
 
