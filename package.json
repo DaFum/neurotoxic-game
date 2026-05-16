@@ -60,7 +60,7 @@
     "playwright": "^1.59.1",
     "react": "19.2.5",
     "react-dom": "19.2.5",
-    "react-i18next": "^17.0.6",
+    "react-i18next": "^17.0.7",
     "redis": "^5.12.1",
     "tone": "15.5.11"
   },
