@@ -57,12 +57,9 @@ const sanitizeNonNegativePayload = <
     const raw = payload[key] as unknown
     sanitized[key] = clampNonNegative(Number(raw) || 0) as T[typeof key]
   }
-  if (payload.successToast) {
-    sanitized.successToast = {
-      ...payload.successToast,
-      id: getSafeUUID()
-    } as T['successToast']
-  }
+  sanitized.successToast = payload.successToast
+    ? ({ ...payload.successToast, id: getSafeUUID() } as T['successToast'])
+    : undefined
   return sanitized
 }
 
