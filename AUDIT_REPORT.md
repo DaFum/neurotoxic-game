@@ -52,7 +52,7 @@ Sections:
 ### HIGH
 
 - **HIGH** `UPDATE_RIVAL_BAND` fully orphaned: declared `src/context/actionTypes.ts:38`, creator `actionCreators.ts:563-579` (`createUpdateRivalBandAction`), handler `reducers/rivalReducer.ts:46-59`, mapped at `gameReducer.ts:143`, typed at `src/types/game.d.ts:155`. **No dispatcher anywhere**. Action: **DELETE** end-to-end or **INTEGRATE** if rival HP/power mutation is intended.
-- **HIGH** `src/utils/postGigUtils.ts` — `calculateExcessMissMoneyPenalty` / `applyPostGigPerformancePenalty` are never invoked, yet AGENTS.md explicitly mandates that miss-money penalties appear in the expense breakdown. Action: **INTEGRATE** into the post-gig financial pipeline or **DELETE**.
+- ~~**HIGH** `src/utils/postGigUtils.ts` — `calculateExcessMissMoneyPenalty` / `applyPostGigPerformancePenalty` are never invoked~~ **RETRACTED**: both are integrated. `deriveFinancials` (`postGigUtils.ts:769`) calls `applyPostGigPerformancePenalty`, which calls `calculateExcessMissMoneyPenalty` (`postGigUtils.ts:597`); `deriveFinancials` is consumed by `src/hooks/usePostGigLogic.ts:92`. No action.
 - **HIGH** `src/utils/eventValidator.ts` — `validateGameEvent` is exported but never imported in `src/`; schemas under `src/schemas/` reference it as the validator of record. Action: **INTEGRATE** at event ingestion or **DELETE**.
 
 ### MED
@@ -154,7 +154,7 @@ Sections:
 ## 5. MISSING INTEGRATION
 
 - **HIGH** `UPDATE_RIVAL_BAND` (see Orphans §2 HIGH) — likely a feature gap: rival HP/power can never be mutated. Action: **INTEGRATE** into encounter resolution OR **DELETE**.
-- **HIGH** `applyPostGigPerformancePenalty` / `calculateExcessMissMoneyPenalty` (see Orphans §2 HIGH) — AGENTS.md mandates miss-penalty appears in expense breakdown; function exists but is not wired. Action: **INTEGRATE** in `deriveFinancials` flow.
+- ~~**HIGH** `applyPostGigPerformancePenalty` / `calculateExcessMissMoneyPenalty`~~ **RETRACTED**: already wired via `deriveFinancials` → `usePostGigLogic.ts`. No action.
 - **HIGH** `validateGameEvent` (see Orphans §2 HIGH) — schema validator unused at event ingestion. Action: **INTEGRATE** or **DELETE**.
 - **LOW** `src/context/reducers/systemReducer.ts:1500-1510` `handleSetMap(null)` logs as warning, but `useMapGeneration.ts:88` dispatches null as the legitimate retry-exhausted path. Action: **FIX** log level.
 - **LOW** `GAME_PHASES.PRACTICE` is not in `SCENES_WITHOUT_HUD` in `App.tsx:23-33`. Confirm HUD-during-practice is intentional.
@@ -165,22 +165,22 @@ Sections:
 ## 6. SUMMARY & PRIORITIES
 
 ### Headline metrics
-- ~95 findings: 17 HIGH, ~45 MED, ~30 LOW
+- ~95 findings: ~15 HIGH, ~45 MED, ~30 LOW (2 HIGH findings retracted post-review; see §2/§5)
 - No orphan hooks/components; no `forwardRef`, `.propTypes`, `@ts-ignore`/`@ts-nocheck`, or `: any` in audited surfaces
 - Locale parity (scalar paths) between EN/DE: clean
 - Hex literals in components: all intentional Pixi-token fallbacks
 
 ### Top-priority fixes (highest ROI)
 1. **Resolve `UPDATE_RIVAL_BAND`** — delete or integrate the full chain.
-2. **Wire `applyPostGigPerformancePenalty`** — AGENTS rule violation; players currently lose visibility into miss-money penalties.
-3. **Sync `COMPLETE_AMP_CALIBRATION` union with `hijacksOverridden`** — type/runtime drift hidden by assertions.
-4. **Tighten `SET_GIG_MODIFIERS` reducer signature** to match the action union.
-5. **Sweep numeric `|| 0` → `?? 0`** in hooks/utils — explicit AGENTS gotcha, masks valid zero state.
-6. **Tokenize hardcoded `z-*` Tailwind values** across HUD/minigames — single-PR mechanical fix.
-7. **Delete the four drift-prone props interfaces** in `src/types/components.d.ts`.
-8. **Merge `handlePirateBroadcast`/`handleDarkWebLeak`** behind a parametrized helper.
-9. **Consolidate amp-dial clamp** into one helper.
-10. **Standardize currency rendering** through `formatCurrency`.
+2. **Sync `COMPLETE_AMP_CALIBRATION` union with `hijacksOverridden`** — type/runtime drift hidden by assertions.
+3. **Tighten `SET_GIG_MODIFIERS` reducer signature** to match the action union.
+4. **Sweep numeric `|| 0` → `?? 0`** in hooks/utils — explicit AGENTS gotcha, masks valid zero state.
+5. **Tokenize hardcoded `z-*` Tailwind values** across HUD/minigames — single-PR mechanical fix.
+6. **Delete the four drift-prone props interfaces** in `src/types/components.d.ts`.
+7. **Merge `handlePirateBroadcast`/`handleDarkWebLeak`** behind a parametrized helper.
+8. **Consolidate amp-dial clamp** into one helper.
+9. **Standardize currency rendering** through `formatCurrency`.
+10. **Wire or delete `validateGameEvent`** at event ingestion.
 
 ### Highest-leverage cleanup batches
 - `src/types/components.d.ts` orphan/duplicate purge (~15 deletions in one PR).
