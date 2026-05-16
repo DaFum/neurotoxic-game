@@ -60,8 +60,8 @@ importers:
         specifier: ^5.12.1
         version: 5.12.1
       tone:
-        specifier: 15.5.6
-        version: 15.5.6
+        specifier: 15.5.11
+        version: 15.5.11
     devDependencies:
       '@eslint-react/eslint-plugin':
         specifier: 5.7.3
@@ -3884,8 +3884,8 @@ packages:
     resolution: {integrity: sha512-y8MN937s/HVhEoBU1SxfHC+wxCHkV1a9gW8eAdTadYh/bGyesZIVcbjI+mSpFbSVwQici/XjBjuUyri1dnXwBw==}
     engines: {node: '>=10.13.0'}
 
-  tone@15.5.6:
-    resolution: {integrity: sha512-6AfYbEGk2HQCj4BCjMfoBy5kTEW0vHK7NvBImCuW3v08yDxoc8rcm9mf+hRChxXSTlIBOw7mg2Ava+eYCdK0Gw==}
+  tone@15.5.11:
+    resolution: {integrity: sha512-cAMauwS+9zGb2kFe3hehnx8oU3Vs+ta0aUyRO+l8gRPM1IY3NVxbNGd9VF04u5gLzBG94HprrirASifWYHbeAQ==}
 
   tough-cookie@6.0.1:
     resolution: {integrity: sha512-LktZQb3IeoUWB9lqR5EWTHgW/VTITCXg4D21M+lvybRVdylLrRMnqaIONLVb5mav8vM19m44HIcGq4qASeu2Qw==}
@@ -8252,7 +8252,7 @@ snapshots:
       - bare-abort-controller
       - react-native-b4a
 
-  tone@15.5.6:
+  tone@15.5.11:
     dependencies:
       standardized-audio-context: 25.3.77
       tslib: 2.8.1
