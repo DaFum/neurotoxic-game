@@ -45,6 +45,7 @@ const parseZealotryActionPayload = (
   },
   optionalGainFields = false
 ): ZealotryPayloadParsed | null => {
+  if (!payload || typeof payload !== 'object') return null
   const parsedCost = Number(payload.cost)
   const parsedFameGain = Number(payload.fameGain)
   const parsedZealotryGain = Number(payload.zealotryGain)
