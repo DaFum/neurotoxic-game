@@ -23,23 +23,25 @@ export const AudioSettings = memo(function AudioSettings({
 }: AudioSettingsProps) {
   const { t } = useTranslation()
 
+  const handleVolumeChange = (
+    cb: (v: number) => void,
+    e: ChangeEvent<HTMLInputElement> | { target: { value: number } }
+  ) => {
+    const raw = e.target.value
+    const parsed = typeof raw === 'number' ? raw : parseFloat(String(raw))
+    if (!Number.isFinite(parsed)) return
+    cb(parsed)
+  }
+
   const handleMusicChange = useCallback(
-    (e: ChangeEvent<HTMLInputElement> | { target: { value: number } }) => {
-      const raw = e.target.value
-      const parsed = typeof raw === 'number' ? raw : parseFloat(String(raw))
-      if (!Number.isFinite(parsed)) return
-      onMusicChange(parsed)
-    },
+    (e: ChangeEvent<HTMLInputElement> | { target: { value: number } }) =>
+      handleVolumeChange(onMusicChange, e),
     [onMusicChange]
   )
 
   const handleSfxChange = useCallback(
-    (e: ChangeEvent<HTMLInputElement> | { target: { value: number } }) => {
-      const raw = e.target.value
-      const parsed = typeof raw === 'number' ? raw : parseFloat(String(raw))
-      if (!Number.isFinite(parsed)) return
-      onSfxChange(parsed)
-    },
+    (e: ChangeEvent<HTMLInputElement> | { target: { value: number } }) =>
+      handleVolumeChange(onSfxChange, e),
     [onSfxChange]
   )
 
