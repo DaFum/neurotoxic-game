@@ -20,6 +20,7 @@ vi.mock('../../src/components/overworld/TravelingVan', () => ({
 
 vi.mock('../../src/utils/imageGen', () => ({
   isImageGenerationAvailable: () => false,
+  resolveGenImageUrl: () => 'mock-url',
   getGeneratedImageFallbackUrl: () => 'mock-fallback',
   getGenImageUrl: () => 'mock-image',
   IMG_PROMPTS: {}

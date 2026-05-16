@@ -48,7 +48,8 @@ vi.mock('../../src/components/stage/pixiAppTeardown', () => ({
 }))
 
 vi.mock('../../src/utils/logger', () => ({
-  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() }
+  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+  LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3 }
 }))
 
 describe('AmpStageController', () => {

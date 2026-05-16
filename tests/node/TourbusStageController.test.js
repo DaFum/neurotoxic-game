@@ -185,13 +185,6 @@ const stageRenderUtilsMocks = {
 }
 
 mock.module(
-  new URL('../../src/components/stage/utils.ts', import.meta.url).href,
-  {
-    namedExports: stageRenderUtilsMocks
-  }
-)
-
-mock.module(
   new URL('../../src/components/stage/stageRenderUtils.ts', import.meta.url)
     .href,
   {

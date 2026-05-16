@@ -17,6 +17,7 @@ vi.mock('../../src/hooks/useBandHQModal', () => ({
 
 vi.mock('../../src/utils/imageGen', () => ({
   isImageGenerationAvailable: () => true,
+  resolveGenImageUrl: () => 'mock-url',
   getGeneratedImageFallbackUrl: () => 'mock-fallback',
   getGenImageUrl: vi.fn(),
   IMG_PROMPTS: { MAIN_MENU_BG: 'mock-bg' }

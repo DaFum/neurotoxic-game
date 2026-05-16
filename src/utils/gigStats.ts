@@ -1,3 +1,5 @@
+import { clamp0to100 } from './gameStateUtils'
+
 /**
  * @typedef {object} GigPerformanceStats
  * @property {number} perfectHits
@@ -19,7 +21,7 @@ export const calculateAccuracy = (
 ): number => {
   const total = perfectHits + misses
   if (total === 0) return 100
-  return Math.max(0, Math.min(100, Math.round((perfectHits / total) * 100)))
+  return clamp0to100(Math.round((perfectHits / total) * 100))
 }
 
 /**

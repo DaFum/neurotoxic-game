@@ -1,10 +1,5 @@
 import type { Texture } from 'pixi.js'
-import {
-  getGenImageUrl,
-  IMG_PROMPTS,
-  isImageGenerationAvailable,
-  getGeneratedImageFallbackUrl
-} from '../../utils/imageGen'
+import { IMG_PROMPTS, resolveGenImageUrl } from '../../utils/imageGen'
 import { handleError } from '../../utils/errorHandler'
 import { loadTextures } from './stageRenderUtils'
 
@@ -23,12 +18,8 @@ export class CrowdTextureManager {
   async loadAssets(): Promise<void> {
     try {
       const urls = {
-        idle: isImageGenerationAvailable()
-          ? getGenImageUrl(IMG_PROMPTS.CROWD_IDLE)
-          : getGeneratedImageFallbackUrl(),
-        mosh: isImageGenerationAvailable()
-          ? getGenImageUrl(IMG_PROMPTS.CROWD_MOSH)
-          : getGeneratedImageFallbackUrl()
+        idle: resolveGenImageUrl(IMG_PROMPTS.CROWD_IDLE),
+        mosh: resolveGenImageUrl(IMG_PROMPTS.CROWD_MOSH)
       }
 
       const loadedTextures = await loadTextures(

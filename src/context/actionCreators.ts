@@ -12,7 +12,8 @@ import {
   clampPlayerFame,
   calculateFameLevel,
   clampBandHarmony,
-  clampNonNegative
+  clampNonNegative,
+  clamp0to100
 } from '../utils/gameStateUtils'
 import type { RhythmSetlistEntry } from '../types/rhythmGame'
 import type {
@@ -93,22 +94,6 @@ export const createUpdatePlayerAction = (
   return {
     type: ActionTypes.UPDATE_PLAYER,
     payload: safeUpdates
-  }
-}
-
-/**
- * Creates a band update action
- * @param {Object} updates - Band state updates
- * @returns {Object} Action object
- */
-export const createUpdateVoidStressAction = (
-  delta: number
-): Extract<GameAction, { type: typeof ActionTypes.UPDATE_VOID_STRESS }> => {
-  return {
-    type: ActionTypes.UPDATE_VOID_STRESS,
-    payload: {
-      delta: Number.isFinite(delta) ? delta : 0
-    }
   }
 }
 
@@ -448,8 +433,8 @@ export const createCompleteRoadieMinigameAction = (
 > => ({
   type: ActionTypes.COMPLETE_ROADIE_MINIGAME,
   payload: {
-    equipmentDamage: Math.max(0, Math.min(100, Number(equipmentDamage) || 0)),
-    contrabandDelivered: Math.max(0, Number(contrabandDelivered) || 0)
+    equipmentDamage: clamp0to100(Number(equipmentDamage) || 0),
+    contrabandDelivered: clampNonNegative(Number(contrabandDelivered) || 0)
   }
 })
 

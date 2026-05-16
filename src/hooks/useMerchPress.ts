@@ -12,7 +12,7 @@ export const useMerchPress = () => {
 
   const config = useMemo(() => {
     // Dynamic config scaling with fame level (e.g. higher stakes as you grow)
-    const multiplier = 1 + (player?.fameLevel || 0) * 0.5
+    const multiplier = 1 + (player?.fameLevel ?? 0) * 0.5
     return {
       cost: Math.floor(150 * multiplier),
       loyaltyGain: Math.floor(5 * multiplier),
@@ -24,8 +24,8 @@ export const useMerchPress = () => {
   }, [player?.fameLevel])
 
   const canPress =
-    (player?.money || 0) >= config.cost &&
-    (band?.harmony || 0) >= config.harmonyCostOnFail
+    (player?.money ?? 0) >= config.cost &&
+    (band?.harmony ?? 0) >= config.harmonyCostOnFail
 
   const triggerPress = useCallback(() => {
     if (!canPress) return

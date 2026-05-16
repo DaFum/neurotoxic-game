@@ -51,6 +51,7 @@ vi.mock('../../src/context/GameState', () => ({
 
 vi.mock('../../src/utils/imageGen', () => ({
   isImageGenerationAvailable: () => true,
+  resolveGenImageUrl: () => 'mock-url',
   getGeneratedImageFallbackUrl: () => 'mock-fallback',
   getGenImageUrl: () => 'mock://bg',
   IMG_PROMPTS: { MINIGAME_KABELSALAT_BG: 'bg' }
@@ -65,7 +66,8 @@ vi.mock('../../src/components/stage/stageRenderUtils', async importOriginal => {
 })
 
 vi.mock('../../src/utils/logger', () => ({
-  logger: { warn: vi.fn() }
+  logger: { warn: vi.fn() },
+  LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3 }
 }))
 
 describe('KabelsalatScene', () => {

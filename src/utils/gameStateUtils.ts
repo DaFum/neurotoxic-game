@@ -171,7 +171,7 @@ export const calculateFameGain = (
   return fameGain
 }
 
-const clamp0to100 = (value: number): number => {
+export const clamp0to100 = (value: number): number => {
   if (!Number.isFinite(value)) return 0
   return Math.max(0, Math.min(100, Math.floor(value)))
 }

@@ -12,9 +12,8 @@ import { useTranslation } from 'react-i18next'
 
 import { GlitchButton } from './GlitchButton'
 import {
-  getGenImageUrl,
   IMG_PROMPTS,
-  isImageGenerationAvailable,
+  resolveGenImageUrl,
   getGeneratedImageFallbackUrl
 } from '../utils/imageGen'
 
@@ -227,15 +226,11 @@ export const ContrabandStash = ({
                           Object.hasOwn(IMG_PROMPTS, item.imagePrompt) && (
                             <div className='w-20 h-20 shrink-0 border border-(--color-toxic-green-20) bg-(--color-void-black) flex items-center justify-center p-1 rounded overflow-hidden shadow-[0_0_10px_var(--color-toxic-green-10)]'>
                               <img
-                                src={
-                                  isImageGenerationAvailable()
-                                    ? getGenImageUrl(
-                                        IMG_PROMPTS[
-                                          item.imagePrompt as keyof typeof IMG_PROMPTS
-                                        ]
-                                      )
-                                    : getGeneratedImageFallbackUrl()
-                                }
+                                src={resolveGenImageUrl(
+                                  IMG_PROMPTS[
+                                    item.imagePrompt as keyof typeof IMG_PROMPTS
+                                  ]
+                                )}
                                 alt={t(`items:contraband.${item.id}.name`)}
                                 className='w-full h-full object-contain'
                                 loading='lazy'

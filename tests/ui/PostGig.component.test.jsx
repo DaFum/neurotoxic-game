@@ -14,6 +14,7 @@ vi.mock('../../src/context/GameState', () => ({
 
 vi.mock('../../src/utils/imageGen', () => ({
   isImageGenerationAvailable: () => true,
+  resolveGenImageUrl: () => 'mock-url',
   getGeneratedImageFallbackUrl: () => 'mock-fallback',
   getGenImageUrl: vi.fn(() => 'mock-url'),
   IMG_PROMPTS: { POST_GIG_BG: 'mock-bg' }

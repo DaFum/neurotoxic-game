@@ -2,9 +2,8 @@ import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { CatalogItem } from '../../types/components'
 import {
-  getGenImageUrl,
   IMG_PROMPTS,
-  isImageGenerationAvailable,
+  resolveGenImageUrl,
   getGeneratedImageFallbackUrl
 } from '../../utils/imageGen'
 import { getPrimaryEffect } from '../../utils/purchaseLogicUtils'
@@ -72,11 +71,7 @@ export const ShopItem = React.memo(
         <div>
           <div className='flex items-center gap-2 mb-2'>
             <img
-              src={
-                isImageGenerationAvailable()
-                  ? getGenImageUrl(sanitizedPrompt)
-                  : getGeneratedImageFallbackUrl()
-              }
+              src={resolveGenImageUrl(sanitizedPrompt)}
               alt=''
               aria-hidden='true'
               className='w-12 h-12 object-contain bg-void-black border-2 border-ash-gray'

@@ -3,12 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import { ActionButton } from '../../ui/shared'
 import { SideEffectsPreview } from './SideEffectsPreview'
-import {
-  getGenImageUrl,
-  IMG_PROMPTS,
-  isImageGenerationAvailable,
-  getGeneratedImageFallbackUrl
-} from '../../utils/imageGen'
+import { IMG_PROMPTS, resolveGenImageUrl } from '../../utils/imageGen'
 import type { SocialOptionButtonProps } from '../../types/components'
 
 const CATEGORY_PROMPTS = {
@@ -49,7 +44,7 @@ export const SocialOptionButton = memo(function SocialOptionButton({
         <div
           className='absolute inset-0 opacity-80 group-hover:opacity-20 transition-opacity bg-cover bg-center pointer-events-none'
           style={{
-            backgroundImage: `url("${isImageGenerationAvailable() ? getGenImageUrl(getImagePromptForCategory(opt.category, opt.badges)) : getGeneratedImageFallbackUrl()}")`
+            backgroundImage: `url("${resolveGenImageUrl(getImagePromptForCategory(opt.category, opt.badges))}")`
           }}
         />
 

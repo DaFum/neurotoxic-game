@@ -24,6 +24,7 @@ import {
   calculateFameLevel,
   isForbiddenKey,
   clampVanFuel,
+  clampRelationship,
   isPlainObject,
   isEmptyObject
 } from '../../utils/gameStateUtils'
@@ -564,7 +565,7 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
       }
     }
 
-    if (Object.keys(sanitizedCityStates).length > 0) {
+    if (!isEmptyObject(sanitizedCityStates)) {
       sanitizedMap.cityStates = sanitizedCityStates
     }
   }
@@ -905,16 +906,18 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
         equipment: copySafePrimitiveObject(m.equipment) ?? {},
         relationships: isPlainObject(m.relationships)
           ? Object.fromEntries(
-              Object.entries(m.relationships).filter(([key, value]) => {
-                const normalizedKey = key.toLowerCase()
-                if (
-                  selfRelationshipKeys.has(key) ||
-                  selfRelationshipKeys.has(normalizedKey)
-                ) {
-                  return false
-                }
-                return typeof value === 'number' && Number.isFinite(value)
-              }) as Array<[string, number]>
+              (
+                Object.entries(m.relationships).filter(([key, value]) => {
+                  const normalizedKey = key.toLowerCase()
+                  if (
+                    selfRelationshipKeys.has(key) ||
+                    selfRelationshipKeys.has(normalizedKey)
+                  ) {
+                    return false
+                  }
+                  return typeof value === 'number' && Number.isFinite(value)
+                }) as Array<[string, number]>
+              ).map(([key, value]) => [key, clampRelationship(value)])
             )
           : {}
       }
@@ -1269,7 +1272,7 @@ const sanitizeNpcs = (value: unknown): GameState['npcs'] => {
         : {}),
       ...(typeof npc.relationship === 'number' &&
       Number.isFinite(npc.relationship)
-        ? { relationship: npc.relationship }
+        ? { relationship: clampRelationship(npc.relationship) }
         : {})
     }
   }
