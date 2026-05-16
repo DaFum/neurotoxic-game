@@ -167,6 +167,31 @@ export const setupGigPhysics = (
 export const resolveActiveSetlist = (
   setlist: RhythmSetlistEntry[]
 ): ActiveSong[] => {
+  // Applies canonical defaults for the core ActiveSong numeric/identity fields.
+  // `notes` is passed through explicitly because each call site computes it
+  // from a different source (own notes, resolved SONGS_BY_ID notes, or undefined).
+  type SongRefShape = {
+    id?: string
+    name?: string
+    bpm?: number
+    duration?: number
+    difficulty?: number
+  }
+  const fillSongDefaults = (
+    songRef: SongRefShape,
+    base: SongRefShape | undefined,
+    notes: Note[] | undefined
+  ) => ({
+    ...(base ?? {}),
+    ...songRef,
+    id: songRef.id ?? base?.id ?? 'jam',
+    name: songRef.name ?? base?.name ?? songRef.id ?? 'Jam',
+    bpm: songRef.bpm ?? base?.bpm ?? 120,
+    duration: songRef.duration ?? base?.duration ?? 60,
+    difficulty: songRef.difficulty ?? base?.difficulty ?? 2,
+    notes
+  })
+
   return (
     setlist.length > 0
       ? setlist
@@ -184,39 +209,22 @@ export const resolveActiveSetlist = (
       )
     }
     if (hasNotesField(songRef) && songRef.notes.length > 0) {
-      return {
-        ...songRef,
-        id: songRef.id ?? 'jam',
-        name: songRef.name ?? songRef.id ?? 'Jam',
-        bpm: songRef.bpm ?? 120,
-        duration: songRef.duration ?? 60,
-        difficulty: songRef.difficulty ?? 2,
-        notes: songRef.notes
-      }
+      return fillSongDefaults(songRef, undefined, songRef.notes)
     }
 
     if (songRef.id && songRef.id !== 'jam') {
       const resolvedSong = SONGS_BY_ID.get(songRef.id)
-      return {
-        ...resolvedSong,
-        ...songRef,
-        id: songRef.id ?? resolvedSong?.id ?? 'jam',
-        name: songRef.name ?? resolvedSong?.name ?? songRef.id ?? 'Jam',
-        bpm: songRef.bpm ?? resolvedSong?.bpm ?? 120,
-        duration: songRef.duration ?? resolvedSong?.duration ?? 60,
-        difficulty: songRef.difficulty ?? resolvedSong?.difficulty ?? 2,
-        notes: hasNotesField(songRef) ? songRef.notes : resolvedSong?.notes
-      }
+      return fillSongDefaults(
+        songRef,
+        resolvedSong,
+        hasNotesField(songRef) ? songRef.notes : resolvedSong?.notes
+      )
     }
-    return {
-      ...songRef,
-      id: songRef.id ?? 'jam',
-      name: songRef.name ?? songRef.id ?? 'Jam',
-      bpm: songRef.bpm ?? 120,
-      duration: songRef.duration ?? 60,
-      difficulty: songRef.difficulty ?? 2,
-      notes: hasNotesField(songRef) ? songRef.notes : undefined
-    }
+    return fillSongDefaults(
+      songRef,
+      undefined,
+      hasNotesField(songRef) ? songRef.notes : undefined
+    )
   })
 }
 
