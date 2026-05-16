@@ -1504,7 +1504,7 @@ export const handleSetMap = (
   if (payload) {
     logger.info('GameState', 'Map Generated')
   } else {
-    logger.warn('GameState', 'Map generation failed, null fallback applied')
+    logger.info('GameState', 'Map generation null fallback applied')
   }
   return { ...state, gameMap: payload }
 }

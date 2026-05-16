@@ -1,5 +1,7 @@
 import type { PurchaseItem } from './components'
 
+export type NodeVisibility = 'visible' | 'dimmed' | 'hidden'
+
 export interface MapNode {
   id: string
   x: number

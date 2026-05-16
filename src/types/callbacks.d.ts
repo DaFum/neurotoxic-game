@@ -1,5 +1,7 @@
 export type VoidCallback = () => void
 
+export type RandomFn = () => number
+
 export type AsyncCallback<TResult = void> = () =>
   | TResult
   | void

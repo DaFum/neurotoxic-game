@@ -7,8 +7,7 @@ import { JackSocket } from './sockets/JackSocket.tsx'
 import { DcSocket } from './sockets/DcSocket.tsx'
 import { IecSocket } from './sockets/IecSocket.tsx'
 import { MidiSocket } from './sockets/MidiSocket.tsx'
-
-type ConnectorType = 'xlr' | 'jack' | 'dc' | 'iec' | 'midi'
+import type { ConnectorType } from '../../../types/kabelsalat'
 
 export const SocketGraphics = ({ type }: { type: ConnectorType | string }) => {
   switch (type) {

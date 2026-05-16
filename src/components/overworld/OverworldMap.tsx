@@ -20,8 +20,7 @@ import type {
   BandState
 } from '../../types'
 import type { TranslationCallback } from '../../types/callbacks'
-
-type NodeVisibility = 'visible' | 'dimmed' | 'hidden'
+import type { NodeVisibility } from '../../types/map'
 
 interface OverworldMapProps {
   t: TranslationCallback

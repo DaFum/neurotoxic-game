@@ -11,14 +11,10 @@ import {
 } from './gameStateUtils'
 import type { PlayerState, BandState, BandMember } from '../types'
 import type { Effect, PurchaseItem, UnlockMessage } from '../types/components'
+import type { PlayerPatch, BandPatch } from '../types/purchase'
 
 type Inventory = Record<string, unknown>
 
-type PlayerPatch = Omit<Partial<PlayerState>, 'van'> & {
-  van?: Partial<PlayerState['van']>
-  fameLevel?: number
-}
-type BandPatch = Partial<BandState> | null
 type EffectHandler = (
   effect: Effect,
   item: PurchaseItem,

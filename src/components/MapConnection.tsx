@@ -1,6 +1,6 @@
 import { memo } from 'react'
 
-type NodeVisibility = 'visible' | 'dimmed' | 'hidden'
+import type { NodeVisibility } from '../types/map'
 
 interface MapConnectionEndpoint {
   x: number

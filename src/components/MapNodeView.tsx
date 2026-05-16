@@ -8,6 +8,7 @@ import { motion } from 'framer-motion'
 import { HexNode } from '../ui/shared'
 import { translateLocation } from '../utils/locationI18n'
 import type { MapNode as GameMapNode, CityTraitState } from '../types'
+import type { NodeVisibility } from '../types/map'
 import type { TranslationCallback } from '../types/callbacks'
 import { calcCancellationRisk } from '../utils/gameStateUtils'
 
@@ -16,7 +17,6 @@ const MOTION_INITIAL = { scale: 0 }
 const MOTION_ANIMATE = { scale: 1 }
 const MOTION_HOVER = { scale: 1.2, zIndex: 60 }
 const MOTION_NO_HOVER = {}
-type NodeVisibility = 'visible' | 'dimmed' | 'hidden'
 
 type MapNodeData = GameMapNode
 

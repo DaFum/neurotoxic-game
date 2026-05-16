@@ -7,8 +7,7 @@ import { JackPlug } from './plugs/JackPlug.tsx'
 import { DcPlug } from './plugs/DcPlug.tsx'
 import { IecPlug } from './plugs/IecPlug.tsx'
 import { MidiPlug } from './plugs/MidiPlug.tsx'
-
-type ConnectorType = 'xlr' | 'jack' | 'dc' | 'iec' | 'midi'
+import type { ConnectorType } from '../../../types/kabelsalat'
 
 export const PlugGraphics = ({ type }: { type: ConnectorType | string }) => {
   switch (type) {

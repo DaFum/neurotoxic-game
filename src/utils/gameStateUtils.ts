@@ -292,10 +292,8 @@ export const clampZealotry = (zealotry: number): number => clamp0to100(zealotry)
  * @param {number} condition - Candidate condition value.
  * @returns {number} Clamped condition value.
  */
-export const clampVanCondition = (condition: number): number => {
-  if (!Number.isFinite(condition)) return 0
-  return Math.floor(Math.max(0, Math.min(100, condition)))
-}
+export const clampVanCondition = (condition: number): number =>
+  clamp0to100(condition)
 
 /**
  * Clamps van fuel to the allowed capacity.

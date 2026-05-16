@@ -14,15 +14,7 @@ import {
 import { getSafeRandom } from '../../utils/crypto'
 import { clamp0to100 } from '../../utils/gameStateUtils'
 
-type TourbusObstacleType = 'FUEL' | 'OBSTACLE' | 'VOID_HAZARD'
-
-type TourbusObstacle = {
-  id: string
-  lane: number
-  y: number
-  type: TourbusObstacleType
-  collided: boolean
-}
+import type { TourbusObstacle, TourbusObstacleType } from '../../types/tourbus'
 
 type TourbusLogicState = {
   busLane: number
