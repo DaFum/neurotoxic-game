@@ -35,7 +35,7 @@ import {
   processTravelEvents,
   isGigNode
 } from '../utils/arrivalUtils'
-import { audioService } from '../utils/audio/audioService'
+import { audioService } from '../utils/audio/audioEngine'
 import { logger } from '../utils/logger'
 import { handleError, StateError } from '../utils/errorHandler'
 import { calcBaseBreakdownChance } from '../utils/upgradeUtils'
@@ -426,7 +426,7 @@ export const useTravelLogic = ({
         pendingTimeoutRef.current = null
       }
 
-      audioManager
+      audioService
         .ensureAudioContext()
         .then(isReady => {
           if (!isReady) {

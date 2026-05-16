@@ -6,7 +6,7 @@
 import { useRef, useCallback, useEffect, useState } from 'react'
 import { useGameState } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
-import { audioService } from '../../utils/audio/audioService'
+import { audioService } from '../../utils/audio/audioEngine'
 import { isEmptyObject, clamp0to100 } from '../../utils/gameStateUtils'
 import {
   ROADIE_GRID_WIDTH,

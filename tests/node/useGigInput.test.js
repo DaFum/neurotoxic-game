@@ -38,6 +38,7 @@ mock.module(import.meta.resolve('../../src/utils/errorHandler.ts'), {
 mock.module(import.meta.resolve('../../src/utils/audio/audioEngine.ts'), {
   namedExports: {
     audioManager: mockAudioManager,
+    audioService: mockAudioManager,
     stopAudio: mockStopAudio,
     enableCorruptionBurstAudio: mock.fn(),
     disableCorruptionBurstAudio: mock.fn()

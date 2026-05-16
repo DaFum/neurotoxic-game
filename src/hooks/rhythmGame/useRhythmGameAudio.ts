@@ -1,6 +1,6 @@
 import { useCallback, useRef, useEffect } from 'react'
 import type { TFunction } from 'i18next'
-import { audioService } from '../../utils/audio/audioService'
+import { audioService } from '../../utils/audio/audioEngine'
 import { stopAudio } from '../../utils/audio/audioEngine'
 import { handleError } from '../../utils/errorHandler'
 import { logger } from '../../utils/logger'

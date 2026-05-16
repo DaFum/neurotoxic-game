@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react'
-import { audioService } from '../utils/audio/audioService'
+import { audioService } from '../utils/audio/audioEngine'
 import {
   createKeyToLaneMap,
   handleKeyDownLogic,

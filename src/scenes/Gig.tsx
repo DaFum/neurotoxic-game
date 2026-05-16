@@ -19,7 +19,7 @@ const PixiStage = lazy(async () => {
   )
   return { default: RhythmPixiStage }
 })
-import { audioService } from '../utils/audio/audioService'
+import { audioService } from '../utils/audio/audioEngine'
 
 import { AudioLockedOverlay } from '../components/minigames/gig/AudioLockedOverlay'
 import { BandMembersLayer } from '../components/minigames/gig/BandMembersLayer'

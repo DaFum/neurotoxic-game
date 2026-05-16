@@ -480,6 +480,25 @@
         "isDefault": false
       }
     ],
+    "FinancialEntryType": [
+      {
+        "name": "FinancialEntryType",
+        "path": "src/components/postGig/financialColors.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "typeOnly": true
+      }
+    ],
+    "getFinancialColors": [
+      {
+        "name": "getFinancialColors",
+        "path": "src/components/postGig/financialColors.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
     "GigModifiersBlock": [
       {
         "name": "GigModifiersBlock",
@@ -2370,8 +2389,7 @@
         "path": "src/data/chatter/index.ts",
         "source": "local",
         "type": "const",
-        "isDefault": false,
-        "exportPath": "src/data/chatter.ts"
+        "isDefault": false
       }
     ],
     "VENUE_CHATTER_DB": [
@@ -6021,6 +6039,16 @@
         "typeOnly": true
       }
     ],
+    "ValidationResult": [
+      {
+        "name": "ValidationResult",
+        "path": "src/types/validation.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "typeOnly": true
+      }
+    ],
     "BandHQProps": [
       {
         "name": "BandHQProps",
@@ -6942,6 +6970,16 @@
         "source": "local",
         "type": "function",
         "isDefault": false
+      }
+    ],
+    "AudioSfxType": [
+      {
+        "name": "AudioSfxType",
+        "path": "src/utils/audio/AudioManager.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "typeOnly": true
       }
     ],
     "audioManager": [
@@ -9212,6 +9250,24 @@
     "getAcceptDealSocialUpdateFactory": [
       {
         "name": "getAcceptDealSocialUpdateFactory",
+        "path": "src/utils/postGigUtils.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
+    "SPIN_STORY_MONEY_COST": [
+      {
+        "name": "SPIN_STORY_MONEY_COST",
+        "path": "src/utils/postGigUtils.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
+    "SPIN_STORY_CONTROVERSY_REDUCTION": [
+      {
+        "name": "SPIN_STORY_CONTROVERSY_REDUCTION",
         "path": "src/utils/postGigUtils.ts",
         "source": "local",
         "type": "const",

@@ -1,6 +1,6 @@
 import { useState, useEffect, memo } from 'react'
 import { useGameSelector, useGameDispatch } from '../context/GameState'
-import { audioService } from '../utils/audio/audioService'
+import { audioService } from '../utils/audio/audioEngine'
 import { useTranslation } from 'react-i18next'
 import {
   Map as MapIcon,

@@ -32,6 +32,9 @@ vi.mock('../../src/context/GameState', () => ({
 vi.mock('../../src/utils/audio/audioEngine', () => ({
   audioManager: {
     setNeuroDecimator: mockSetNeuroDecimator
+  },
+  audioService: {
+    setNeuroDecimator: mockSetNeuroDecimator
   }
 }))
 

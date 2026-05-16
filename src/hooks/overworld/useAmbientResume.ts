@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { audioService } from '../../utils/audio/audioService'
+import { audioService } from '../../utils/audio/audioEngine'
 
 export const useAmbientResume = () => {
   useEffect(() => {
