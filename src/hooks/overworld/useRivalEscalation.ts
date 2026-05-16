@@ -12,8 +12,14 @@ export const useRivalEscalation = (
   const lastEscalatedNodeRef = useRef<string | null>(null)
 
   useEffect(() => {
-    if (!rivalBand || !playerNodeId || !updateRivalBand) return
-    if (rivalBand.currentLocationId !== playerNodeId) return
+    if (!rivalBand || !playerNodeId || !updateRivalBand) {
+      lastEscalatedNodeRef.current = null
+      return
+    }
+    if (rivalBand.currentLocationId !== playerNodeId) {
+      lastEscalatedNodeRef.current = null
+      return
+    }
     if (lastEscalatedNodeRef.current === playerNodeId) return
 
     lastEscalatedNodeRef.current = playerNodeId

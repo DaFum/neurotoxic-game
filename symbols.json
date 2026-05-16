@@ -3042,6 +3042,16 @@
         "exportPath": "src/hooks/overworld/index.ts"
       }
     ],
+    "useRivalEscalation": [
+      {
+        "name": "useRivalEscalation",
+        "path": "src/hooks/overworld/useRivalEscalation.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false,
+        "exportPath": "src/hooks/overworld/index.ts"
+      }
+    ],
     "useOverworldModals": [
       {
         "name": "useOverworldModals",
@@ -4683,6 +4693,17 @@
         "exportPath": "src/types/index.ts"
       }
     ],
+    "RandomFn": [
+      {
+        "name": "RandomFn",
+        "path": "src/types/callbacks.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "typeOnly": true,
+        "exportPath": "src/types/index.ts"
+      }
+    ],
     "AsyncCallback": [
       {
         "name": "AsyncCallback",
@@ -4782,17 +4803,6 @@
         "exportPath": "src/types/index.ts"
       }
     ],
-    "GigFinalizeHandler": [
-      {
-        "name": "GigFinalizeHandler",
-        "path": "src/types/callbacks.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
     "RemoveByIdCallback": [
       {
         "name": "RemoveByIdCallback",
@@ -4851,61 +4861,6 @@
     "ChatterOverlayProps": [
       {
         "name": "ChatterOverlayProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "GigHUDProps": [
-      {
-        "name": "GigHUDProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "MapNodeProps": [
-      {
-        "name": "MapNodeProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "MapConnectionProps": [
-      {
-        "name": "MapConnectionProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "HecklerOverlayProps": [
-      {
-        "name": "HecklerOverlayProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "GenericListProps": [
-      {
-        "name": "GenericListProps",
         "path": "src/types/components.d.ts",
         "source": "local",
         "type": "interface",
@@ -4991,17 +4946,6 @@
         "exportPath": "src/types/index.ts"
       }
     ],
-    "TourbusMinigameLogic": [
-      {
-        "name": "TourbusMinigameLogic",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
     "MinigameSceneFrameProps": [
       {
         "name": "MinigameSceneFrameProps",
@@ -5046,28 +4990,6 @@
         "exportPath": "src/types/index.ts"
       }
     ],
-    "ToggleRadioProps": [
-      {
-        "name": "ToggleRadioProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "TutorialManagerProps": [
-      {
-        "name": "TutorialManagerProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
     "ClinicHeaderProps": [
       {
         "name": "ClinicHeaderProps",
@@ -5079,31 +5001,9 @@
         "exportPath": "src/types/index.ts"
       }
     ],
-    "ClinicMemberCardHeaderProps": [
-      {
-        "name": "ClinicMemberCardHeaderProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
     "ClinicMemberCardProps": [
       {
         "name": "ClinicMemberCardProps",
-        "path": "src/types/components.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "ClinicMemberCardActionProps": [
-      {
-        "name": "ClinicMemberCardActionProps",
         "path": "src/types/components.d.ts",
         "source": "local",
         "type": "interface",
@@ -5794,6 +5694,17 @@
         "typeOnly": true
       }
     ],
+    "NodeVisibility": [
+      {
+        "name": "NodeVisibility",
+        "path": "src/types/map.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "exportPath": "src/types/game.d.ts",
+        "typeOnly": true
+      }
+    ],
     "MapNode": [
       {
         "name": "MapNode",
@@ -5980,12 +5891,42 @@
         "typeOnly": true
       }
     ],
+    "ConnectorType": [
+      {
+        "name": "ConnectorType",
+        "path": "src/types/kabelsalat.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "typeOnly": true
+      }
+    ],
     "LightningSeed": [
       {
         "name": "LightningSeed",
         "path": "src/types/kabelsalat.d.ts",
         "source": "local",
         "type": "interface",
+        "isDefault": false,
+        "typeOnly": true
+      }
+    ],
+    "PlayerPatch": [
+      {
+        "name": "PlayerPatch",
+        "path": "src/types/purchase.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "typeOnly": true
+      }
+    ],
+    "BandPatch": [
+      {
+        "name": "BandPatch",
+        "path": "src/types/purchase.d.ts",
+        "source": "local",
+        "type": "type",
         "isDefault": false,
         "typeOnly": true
       }
@@ -6056,6 +5997,26 @@
         "path": "src/types/rhythmGame.d.ts",
         "source": "local",
         "type": "type",
+        "isDefault": false,
+        "typeOnly": true
+      }
+    ],
+    "TourbusObstacleType": [
+      {
+        "name": "TourbusObstacleType",
+        "path": "src/types/tourbus.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "typeOnly": true
+      }
+    ],
+    "TourbusObstacle": [
+      {
+        "name": "TourbusObstacle",
+        "path": "src/types/tourbus.d.ts",
+        "source": "local",
+        "type": "interface",
         "isDefault": false,
         "typeOnly": true
       }
@@ -8586,6 +8547,15 @@
     "clamp0to100": [
       {
         "name": "clamp0to100",
+        "path": "src/utils/gameStateUtils.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
+    "clampAmpDial": [
+      {
+        "name": "clampAmpDial",
         "path": "src/utils/gameStateUtils.ts",
         "source": "local",
         "type": "const",

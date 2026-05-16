@@ -235,10 +235,13 @@ export const createSetSetlistAction = (
  */
 export const createSetLastGigStatsAction = (
   stats: PostGigSummary | null
-): Extract<GameAction, { type: typeof ActionTypes.SET_LAST_GIG_STATS }> => ({
-  type: ActionTypes.SET_LAST_GIG_STATS,
-  payload: stats
-})
+): Extract<GameAction, { type: typeof ActionTypes.SET_LAST_GIG_STATS }> => {
+  const payloadWithToastId = stats ? { ...stats, toastId: getSafeUUID() } : null
+  return {
+    type: ActionTypes.SET_LAST_GIG_STATS,
+    payload: payloadWithToastId
+  }
+}
 
 /**
  * Creates an active event action

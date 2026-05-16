@@ -123,7 +123,14 @@ describe('Action Creators', () => {
     },
     {
       name: 'createSetLastGigStatsAction',
-      call: () => createSetLastGigStatsAction({ score: 1000, combo: 50 }),
+      call: () => {
+        const action = createSetLastGigStatsAction({ score: 1000, combo: 50 })
+        // strip out dynamic toastId so deepStrictEqual doesn't fail
+        if (action.payload?.toastId) {
+          delete action.payload.toastId
+        }
+        return action
+      },
       expected: {
         type: ActionTypes.SET_LAST_GIG_STATS,
         payload: { score: 1000, combo: 50 }

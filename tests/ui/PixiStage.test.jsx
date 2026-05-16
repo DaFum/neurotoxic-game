@@ -41,7 +41,7 @@ describe('PixiStage', () => {
     const canvasContainer = container.firstChild
     expect(canvasContainer?.className).toContain('absolute')
     expect(canvasContainer?.className).toContain('inset-0')
-    expect(canvasContainer?.className).toContain('z-20')
+    expect(canvasContainer?.className).toContain('z-(--z-stage)')
     expect(canvasContainer?.className).toContain('pointer-events-none')
   })
 
