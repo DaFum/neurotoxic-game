@@ -224,10 +224,7 @@ export const canAfford = (
  * @param {Object} bandInventory - Current band inventory
  * @returns {Object} Band patch to apply
  */
-export const applyInventorySet = (
-  effect: Effect,
-  bandInventory?: Inventory
-) => ({
+const applyInventorySet = (effect: Effect, bandInventory?: Inventory) => ({
   inventory: { ...(bandInventory ?? {}), [effect.item as string]: effect.value }
 })
 
@@ -237,10 +234,7 @@ export const applyInventorySet = (
  * @param {Object} bandInventory - Current band inventory
  * @returns {Object} Band patch to apply
  */
-export const applyInventoryAdd = (
-  effect: Effect,
-  bandInventory?: Inventory
-) => {
+const applyInventoryAdd = (effect: Effect, bandInventory?: Inventory) => {
   if (typeof effect.item !== 'string') {
     throw new StateError(
       `Invalid effect item for inventory_add: ${String(effect.item)}`
@@ -275,7 +269,7 @@ export const applyInventoryAdd = (
  * @param {Object} band - Band state
  * @returns {Object} Object with updated playerPatch and bandPatch
  */
-export const applyStatModifier = (
+const applyStatModifier = (
   effect: Effect,
   playerPatch: PlayerPatch,
   player: PlayerState,
@@ -477,7 +471,7 @@ export const processPurchaseEffect = (
  * @param {Object} playerVan - Current player van state
  * @returns {Object} Updated player patch
  */
-export const applyUnlockUpgrade = (
+const applyUnlockUpgrade = (
   effect: Effect,
   item: PurchaseItem,
   playerPatch: PlayerPatch,
@@ -511,7 +505,7 @@ export const applyUnlockUpgrade = (
  * @param {Object} band - Band state
  * @returns {Object} Object with updated playerPatch, bandPatch and messages
  */
-export const applyUnlockHQ = (
+const applyUnlockHQ = (
   item: PurchaseItem,
   playerPatch: PlayerPatch,
   player: PlayerState,
@@ -623,7 +617,7 @@ export const applyUnlockHQ = (
  * @param {Object} player - Player state
  * @returns {Object} Object with updated playerPatch and bandPatch
  */
-export const applyPassive = (
+const applyPassive = (
   effect: Effect,
   playerPatch: PlayerPatch,
   player: PlayerState
