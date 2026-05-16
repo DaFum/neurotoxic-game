@@ -1,7 +1,7 @@
 import type { DarkWebLeakConfig } from '../types'
 import { useState, useCallback } from 'react'
 import { useGameState } from '../context/GameState'
-import { audioManager } from '../utils/audio/audioEngine'
+import { audioService } from '../utils/audio/audioService'
 import {
   checkHasLeakedToday,
   validateDarkWebLeak
@@ -34,7 +34,7 @@ export const useDarkWebLeak = () => {
   const triggerLeak = useCallback(() => {
     if (!canLeak || checkHasLeakedToday(social, player.day)) return
 
-    audioManager.playSFX('cash')
+    audioService.playSFX('cash')
 
     darkWebLeak({
       cost: DARK_WEB_LEAK_CONFIG.COST,

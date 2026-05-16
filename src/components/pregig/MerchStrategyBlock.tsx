@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DEFAULT_MERCH_PRICES } from '../../utils/economyEngine'
+import { formatCurrency } from '../../utils/numberUtils'
 import { HQ_ITEMS } from '../../data/hqItems'
 
 const ALL_HQ_ITEMS = Object.values(HQ_ITEMS).flat()
@@ -18,7 +19,7 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
   onUpdatePrice,
   onRestock
 }) => {
-  const { t } = useTranslation(['economy', 'ui'])
+  const { t, i18n } = useTranslation(['economy', 'ui'])
 
   const merchItems = useMemo(() => {
     return Object.keys(DEFAULT_MERCH_PRICES).map(key => {
@@ -87,8 +88,7 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
                   -
                 </button>
                 <span className='text-(--color-toxic-green) font-mono w-8 text-center'>
-                  {'€'}
-                  {item.currentPrice}
+                  {formatCurrency(item.currentPrice, i18n.language)}
                 </span>
                 <button
                   type='button'

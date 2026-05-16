@@ -1,5 +1,5 @@
 import { logger } from '../../utils/logger'
-import { applyEventDelta } from '../../utils/gameStateUtils'
+import { applyEventDelta, isForbiddenKey } from '../../utils/gameStateUtils'
 import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks } from '../../utils/traitUtils'
 import type { EventDeltaPayload, GameEvent, GameState } from '../../types'
@@ -44,7 +44,12 @@ export const handleAddCooldown = (
   state: GameState,
   payload: string
 ): GameState => {
-  if (payload && !state.eventCooldowns.includes(payload)) {
+  if (
+    typeof payload === 'string' &&
+    payload.length > 0 &&
+    !isForbiddenKey(payload) &&
+    !state.eventCooldowns.includes(payload)
+  ) {
     return {
       ...state,
       eventCooldowns: [...state.eventCooldowns, payload]

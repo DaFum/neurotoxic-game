@@ -228,7 +228,13 @@ export const applyInventorySet = (
 })
 
 /**
- * Applies inventory add effect
+ * Applies an inventory_add `Effect` from a purchase/HQ item and returns a
+ * band patch. Distinct from `applyInventoryItemDelta` in
+ * `gameStateUtils.ts`: that helper handles raw `EVENT_DELTA` inventory math
+ * for a single key (numeric add or boolean overwrite) and operates on the
+ * value level; this one handles the `Effect` shape used by the catalog/HQ
+ * purchase pipeline and produces a full band patch.
+ *
  * @param {Object} effect - Effect configuration
  * @param {Object} bandInventory - Current band inventory
  * @returns {Object} Band patch to apply

@@ -19,7 +19,7 @@ const PixiStage = lazy(async () => {
   )
   return { default: RhythmPixiStage }
 })
-import { audioManager } from '../utils/audio/audioEngine'
+import { audioService } from '../utils/audio/audioService'
 
 import { AudioLockedOverlay } from '../components/minigames/gig/AudioLockedOverlay'
 import { BandMembersLayer } from '../components/minigames/gig/BandMembersLayer'
@@ -91,7 +91,7 @@ export const Gig = () => {
     return (
       <AudioLockedOverlay
         onInitializeAudio={() => {
-          audioManager.ensureAudioContext().then(isUnlocked => {
+          audioService.ensureAudioContext().then(isUnlocked => {
             if (isUnlocked !== false) {
               actions.retryAudioInitialization()
             }

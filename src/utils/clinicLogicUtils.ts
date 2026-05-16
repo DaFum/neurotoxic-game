@@ -1,10 +1,11 @@
 import type { BandMember } from '../types'
+import type { ValidationResult } from '../types/validation'
 
 export const validateHealMember = (
   member: BandMember | null | undefined,
   playerMoney: number,
   healCostMoney: number
-) => {
+): ValidationResult => {
   if (!member) return { isValid: false, silent: true }
 
   if (playerMoney < healCostMoney) {
@@ -23,7 +24,7 @@ export const validateEnhanceMember = (
   trait: string,
   playerFame: number,
   enhanceCostFame: number
-) => {
+): ValidationResult => {
   if (!member) return { isValid: false, silent: true }
 
   // Intentional silent return: If the member already has the trait,

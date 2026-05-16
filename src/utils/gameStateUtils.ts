@@ -322,7 +322,12 @@ export const clampVanFuel = (
 }
 
 /**
- * Applies an inventory delta to a single inventory slot.
+ * Applies an inventory delta to a single inventory slot. Used by the
+ * `EVENT_DELTA` reducer path to merge boolean overwrites or numeric
+ * additions into one inventory key. For the purchase/HQ pipeline that
+ * consumes `Effect` shapes and builds full band patches, see
+ * `applyInventoryAdd` in `purchaseLogicUtils.ts`.
+ *
  * @param {boolean|number|undefined} currentValue - Existing inventory value.
  * @param {boolean|number} deltaValue - Delta to apply.
  * @returns {boolean|number|undefined} Updated inventory value.

@@ -35,7 +35,7 @@ import {
   processTravelEvents,
   isGigNode
 } from '../utils/arrivalUtils'
-import { audioManager } from '../utils/audio/audioEngine'
+import { audioService } from '../utils/audio/audioService'
 import { logger } from '../utils/logger'
 import { handleError, StateError } from '../utils/errorHandler'
 import { calcBaseBreakdownChance } from '../utils/upgradeUtils'
@@ -434,7 +434,7 @@ export const useTravelLogic = ({
             return
           }
           try {
-            audioManager.playSFX('travel')
+            audioService.playSFX('travel')
           } catch (error) {
             logger.warn('useTravelLogic', 'Travel SFX playback failed', error)
           }
@@ -743,7 +743,7 @@ export const useTravelLogic = ({
     )
 
     try {
-      audioManager.playSFX('cash')
+      audioService.playSFX('cash')
     } catch (_e) {
       // Ignore audio errors
     }
@@ -802,7 +802,7 @@ export const useTravelLogic = ({
     )
 
     try {
-      audioManager.playSFX('cash')
+      audioService.playSFX('cash')
     } catch (_e) {
       // Ignore audio errors
     }

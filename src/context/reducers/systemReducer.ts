@@ -1681,12 +1681,9 @@ const processContrabandExpiry = (band: BandState): BandState => {
  */
 export const handleAdvanceDay = (
   state: GameState,
-  payload: Record<string, unknown>
+  payload?: { rng?: () => number }
 ): GameState => {
-  const rng =
-    typeof payload?.rng === 'function'
-      ? (payload.rng as () => number)
-      : getSafeRandom
+  const rng = typeof payload?.rng === 'function' ? payload.rng : getSafeRandom
   const { player, band, social, pendingFlags } = calculateDailyUpdates(
     state,
     rng

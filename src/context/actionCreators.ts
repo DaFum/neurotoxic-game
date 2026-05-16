@@ -44,6 +44,12 @@ import type {
  * Sanitizes a payload by clamping listed numeric fields to non-negative values
  * and stamping any `successToast` with a fresh UUID. Returns the payload
  * unchanged if it is not an object.
+ *
+ * Negative values for the listed `numericKeys` (e.g. `harmonyCost`,
+ * `staminaCost`, `controversyGain`) are silently floored to `0` rather
+ * than rejected. Reducers downstream re-clamp the final state and treat
+ * `0` as a safe no-op, so the silent floor is intentional: callers can
+ * pass best-effort costs without needing to short-circuit on bad inputs.
  */
 const sanitizeNonNegativePayload = <
   T extends { successToast?: { id?: string } | undefined }

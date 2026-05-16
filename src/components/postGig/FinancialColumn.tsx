@@ -2,6 +2,7 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { FinancialList } from './FinancialList'
+import { getFinancialColors } from './financialColors'
 import { formatSignedFinancialAmount } from '../../utils/numberUtils'
 import type { FinancialItem } from '../../types/components'
 
@@ -18,12 +19,11 @@ export const FinancialColumn = React.memo(
   ({ titleKey, type, items, total, delay, initialX }: FinancialColumnProps) => {
     const { t, i18n } = useTranslation(['economy', 'ui'])
 
-    const isIncome = type === 'income'
-    const colorClass = isIncome ? 'text-toxic-green' : 'text-blood-red'
-    const borderClass = isIncome ? 'border-toxic-green' : 'border-blood-red'
-    const borderLightClass = isIncome
-      ? 'border-toxic-green/40'
-      : 'border-blood-red/40'
+    const {
+      text: colorClass,
+      border: borderClass,
+      borderLight: borderLightClass
+    } = getFinancialColors(type)
 
     return (
       <motion.div

@@ -1,6 +1,7 @@
 import { logger } from '../../utils/logger'
 import { assertNever } from '../../utils/assertNever'
 import {
+  clamp0to100,
   clampBandHarmony,
   clampBandStress,
   clampMemberMood,
@@ -44,13 +45,45 @@ export const handleUpdateBand = (
     return state
   }
 
-  const safeUpdates = { ...updates }
+  const safeUpdates: Record<string, unknown> = { ...updates }
   if (Object.hasOwn(safeUpdates, 'harmony')) {
     safeUpdates.harmony = clampBandHarmony(
       typeof safeUpdates.harmony === 'number'
         ? safeUpdates.harmony
         : state.band.harmony
     )
+  }
+  if (
+    Object.hasOwn(safeUpdates, 'stress') &&
+    typeof safeUpdates.stress === 'number'
+  ) {
+    safeUpdates.stress = clampBandStress(safeUpdates.stress)
+  }
+  if (
+    Object.hasOwn(safeUpdates, 'luck') &&
+    typeof safeUpdates.luck === 'number'
+  ) {
+    safeUpdates.luck = clamp0to100(safeUpdates.luck)
+  }
+  if (
+    Object.hasOwn(safeUpdates, 'tempo') &&
+    typeof safeUpdates.tempo === 'number'
+  ) {
+    safeUpdates.tempo = clamp0to100(safeUpdates.tempo)
+  }
+
+  if (Array.isArray(safeUpdates.members)) {
+    safeUpdates.members = (safeUpdates.members as BandMember[]).map(member => {
+      if (!member || typeof member !== 'object') return member
+      const next: BandMember = { ...member }
+      if (typeof next.stamina === 'number') {
+        next.stamina = clampMemberStamina(next.stamina)
+      }
+      if (typeof next.mood === 'number') {
+        next.mood = clampMemberMood(next.mood)
+      }
+      return next
+    })
   }
 
   const mergedBand = {

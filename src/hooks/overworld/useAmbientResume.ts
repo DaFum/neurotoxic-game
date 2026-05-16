@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { audioManager } from '../../utils/audio/audioEngine'
+import { audioService } from '../../utils/audio/audioService'
 
 export const useAmbientResume = () => {
   useEffect(() => {
@@ -7,7 +7,7 @@ export const useAmbientResume = () => {
     let retryTimeoutId: ReturnType<typeof setTimeout> | null = null
 
     const attemptResume = async (attempt = 0) => {
-      const started = await audioManager.resumeMusic().catch(() => false)
+      const started = await audioService.resumeMusic().catch(() => false)
       if (!started && !cancelled && attempt < 1) {
         retryTimeoutId = setTimeout(() => {
           void attemptResume(attempt + 1)

@@ -5,7 +5,7 @@ import {
   buildGigStatsSnapshot,
   calculateAccuracy
 } from '../../utils/gigStats'
-import { audioManager } from '../../utils/audio/audioEngine'
+import { audioService } from '../../utils/audio/audioService'
 import {
   getGigTimeMs,
   getToneAbsoluteTimeMs,
@@ -189,7 +189,7 @@ export const useRhythmGameScoring = ({
 
       // Only play miss SFX if it's a real miss
       if (!isEmptyHit) {
-        audioManager.playSFX('miss')
+        audioService.playSFX('miss')
       }
 
       gameStateRef.current.health = nextHealth
@@ -311,7 +311,7 @@ export const useRhythmGameScoring = ({
             velocity
           )
         } else {
-          audioManager.playSFX('hit') // Fallback
+          audioService.playSFX('hit') // Fallback
         }
 
         // Prefer the value written into modifiers by audio init (physics-aware), fall back to

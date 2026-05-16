@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { useGameState } from '../context/GameState'
-import { audioManager } from '../utils/audio/audioEngine'
+import { audioService } from '../utils/audio/audioService'
 import {
   checkHasBroadcastedToday,
   validatePirateBroadcast
@@ -48,7 +48,7 @@ export const usePirateRadio = () => {
   const triggerBroadcast = useCallback(() => {
     if (!canBroadcast) return
 
-    audioManager.playSFX('cash')
+    audioService.playSFX('cash')
 
     pirateBroadcast({
       cost: PIRATE_RADIO_CONFIG.COST,

@@ -1,6 +1,6 @@
 import { useCallback, useRef, useEffect } from 'react'
 import type { TFunction } from 'i18next'
-import { audioManager } from '../../utils/audio/audioEngine'
+import { audioService } from '../../utils/audio/audioService'
 import { stopAudio } from '../../utils/audio/audioEngine'
 import { handleError } from '../../utils/errorHandler'
 import { logger } from '../../utils/logger'
@@ -145,7 +145,7 @@ export const useRhythmGameAudio = ({
 
     try {
       // Mute ambient radio to prevent audio overlap
-      audioManager.stopMusic()
+      audioService.stopMusic()
 
       const currentHarmony = clampBandHarmony(currentBand?.harmony)
 
@@ -186,7 +186,7 @@ export const useRhythmGameAudio = ({
         return
       }
 
-      const audioUnlocked = await audioManager.ensureAudioContext()
+      const audioUnlocked = await audioService.ensureAudioContext()
 
       if (isAborted()) {
         return

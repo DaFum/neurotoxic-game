@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react'
-import { audioManager } from '../utils/audio/audioEngine'
+import { audioService } from '../utils/audio/audioService'
 import {
   createKeyToLaneMap,
   handleKeyDownLogic,
@@ -38,7 +38,7 @@ export const useGigInput = ({
   const ensureAudioFromGesture = useCallback(() => {
     if (hasUnlockedAudioRef.current) return
     hasUnlockedAudioRef.current = true
-    audioManager.ensureAudioContext()
+    audioService.ensureAudioContext()
   }, [])
 
   // Keyboard Event Handling
