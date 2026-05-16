@@ -6,6 +6,21 @@ type RelPair = { member1: string; member2: string; score: number }
 
 const warnedSelfRelationshipNames = new Set<string>()
 
+const findRelationshipPairByScore = (
+  state: GameState,
+  predicate: (score: number) => boolean
+): { member1: string; member2: string } | false => {
+  const members = state.band?.members
+  if (!members) return false
+  const rels = getFlatRelationships(members)
+  for (let i = 0; i < rels.length; i++) {
+    const rel = rels[i]
+    if (rel && predicate(rel.score))
+      return { member1: rel.member1, member2: rel.member2 }
+  }
+  return false
+}
+
 const getFlatRelationships = (members: BandMember[]): RelPair[] => {
   const flat: RelPair[] = []
   const len = members.length
@@ -42,20 +57,8 @@ export const RELATIONSHIP_EVENTS = [
     description: 'events:toxic_infighting.desc',
     trigger: 'random',
     chance: 0.1,
-    condition: (state: GameState) => {
-      // Find two members with relationship < 20
-      const members = state.band?.members
-      if (!members) return false
-
-      const rels = getFlatRelationships(members)
-      const len = rels.length
-      for (let i = 0; i < len; i++) {
-        const rel = rels[i]
-        if (rel && rel.score < 20)
-          return { member1: rel.member1, member2: rel.member2 }
-      }
-      return false
-    },
+    condition: (state: GameState) =>
+      findRelationshipPairByScore(state, score => score < 20),
     options: [
       {
         label: 'events:toxic_infighting.opt1.label',
@@ -105,20 +108,8 @@ export const RELATIONSHIP_EVENTS = [
     description: 'events:synergy_moment.desc',
     trigger: 'random',
     chance: 0.1,
-    condition: (state: GameState) => {
-      // Find two members with relationship > 80
-      const members = state.band?.members
-      if (!members) return false
-
-      const rels = getFlatRelationships(members)
-      const len = rels.length
-      for (let i = 0; i < len; i++) {
-        const rel = rels[i]
-        if (rel && rel.score > 80)
-          return { member1: rel.member1, member2: rel.member2 }
-      }
-      return false
-    },
+    condition: (state: GameState) =>
+      findRelationshipPairByScore(state, score => score > 80),
     options: [
       {
         label: 'events:synergy_moment.opt1.label',

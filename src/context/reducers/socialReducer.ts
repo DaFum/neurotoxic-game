@@ -18,6 +18,115 @@ import {
 } from '../../utils/gameStateUtils'
 import { sanitizeSuccessToast } from './toastSanitizers'
 
+type ZealotryPayloadParsed = {
+  cost: number
+  fameGain: number
+  zealotryGain: number
+  controversyGain: number
+  harmonyCost: number
+}
+
+/**
+ * Parses and validates the numeric fields shared by pirate-broadcast and
+ * dark-web-leak payloads. Returns null when any required field is invalid
+ * (non-finite or negative) - callers should bail with the unchanged state.
+ *
+ * `optionalGainFields` lets pirate-broadcast treat its fameGain / zealotryGain
+ * / controversyGain as optional (defaulting to 0 when missing) while still
+ * validating the value when present.
+ */
+const parseZealotryActionPayload = (
+  payload: {
+    cost?: unknown
+    fameGain?: unknown
+    zealotryGain?: unknown
+    controversyGain?: unknown
+    harmonyCost?: unknown
+  },
+  optionalGainFields = false
+): ZealotryPayloadParsed | null => {
+  if (!payload || typeof payload !== 'object') return null
+  const parsedCost = Number(payload.cost)
+  const parsedFameGain = Number(payload.fameGain)
+  const parsedZealotryGain = Number(payload.zealotryGain)
+  const parsedControversyGain = Number(payload.controversyGain)
+  const parsedHarmonyCost = Number(payload.harmonyCost)
+
+  const requireGain = (raw: unknown, parsed: number): boolean =>
+    optionalGainFields
+      ? raw != null && (!Number.isFinite(parsed) || parsed < 0)
+      : !Number.isFinite(parsed) || parsed < 0
+
+  if (
+    !Number.isFinite(parsedCost) ||
+    parsedCost < 0 ||
+    requireGain(payload.fameGain, parsedFameGain) ||
+    requireGain(payload.zealotryGain, parsedZealotryGain) ||
+    requireGain(payload.controversyGain, parsedControversyGain) ||
+    !Number.isFinite(parsedHarmonyCost) ||
+    parsedHarmonyCost < 0
+  ) {
+    return null
+  }
+
+  return {
+    cost: parsedCost,
+    fameGain:
+      optionalGainFields && payload.fameGain == null ? 0 : parsedFameGain,
+    zealotryGain:
+      optionalGainFields && payload.zealotryGain == null
+        ? 0
+        : parsedZealotryGain,
+    controversyGain:
+      optionalGainFields && payload.controversyGain == null
+        ? 0
+        : parsedControversyGain,
+    harmonyCost: parsedHarmonyCost
+  }
+}
+
+/**
+ * Builds a sanitized success toast (with deltas patched in) and appends it
+ * to `nextState.toasts` when present. No-op when `successToast` is falsy.
+ */
+const appendDeltaSuccessToast = (
+  nextState: GameState,
+  successToast: unknown,
+  prevToasts: GameState['toasts'] | undefined,
+  optionsPatch: Record<string, number>
+): void => {
+  if (!successToast) return
+  const safeToast = sanitizeSuccessToast(successToast, {
+    fallbackId: getSafeUUID(),
+    optionsPatch
+  })
+  if (safeToast) {
+    nextState.toasts = [...(prevToasts || []), safeToast]
+  }
+}
+
+/**
+ * Validates state.player.money and state.band.harmony are within expected
+ * bounds for zealotry-style actions. Returns the parsed numbers, or null when
+ * the state itself is corrupted - callers should bail with unchanged state.
+ */
+const readPlayerFundsAndHarmony = (
+  state: GameState
+): { money: number; harmony: number } | null => {
+  const money = Number(state.player.money)
+  const harmony = Number(state.band.harmony)
+  if (
+    !Number.isFinite(money) ||
+    !Number.isFinite(harmony) ||
+    money < 0 ||
+    harmony < 1 ||
+    harmony > 100
+  ) {
+    return null
+  }
+  return { money, harmony }
+}
+
 /**
  * Handles social update actions
  * @param {Object} state - Current state
@@ -193,27 +302,13 @@ export const handleMerchPress = (
   // Inventory rewards removed based on feedback that they are unused/orphaned
   // and do not add gameplay value.
 
-  if (successToast) {
-    const deltaLoyalty = nextLoyalty - currentLoyalty
-    const deltaControversy = nextControversy - currentControversy
-    const deltaHarmony = nextHarmony - currentHarmony
-    const deltaFame = nextFame - currentFame
-    const actualCost = currentMoney - nextMoney
-
-    const safeToast = sanitizeSuccessToast(successToast, {
-      fallbackId: getSafeUUID(),
-      optionsPatch: {
-        deltaLoyalty,
-        deltaControversy,
-        deltaHarmony,
-        deltaFame,
-        cost: actualCost
-      }
-    })
-    if (safeToast) {
-      nextState.toasts = [...(state.toasts || []), safeToast]
-    }
-  }
+  appendDeltaSuccessToast(nextState, successToast, state.toasts, {
+    deltaLoyalty: nextLoyalty - currentLoyalty,
+    deltaControversy: nextControversy - currentControversy,
+    deltaHarmony: nextHarmony - currentHarmony,
+    deltaFame: nextFame - currentFame,
+    cost: currentMoney - nextMoney
+  })
 
   return nextState
 }
@@ -226,48 +321,21 @@ export const handlePirateBroadcast = (
     ? (state.player.day as number)
     : 0
 
-  const parsedCost = Number(payload.cost)
-  const parsedFameGain = Number(payload.fameGain)
-  const parsedZealotryGain = Number(payload.zealotryGain)
-  const parsedControversyGain = Number(payload.controversyGain)
-  const parsedHarmonyCost = Number(payload.harmonyCost)
-  const successToast = payload.successToast
-
-  if (
-    !Number.isFinite(parsedCost) ||
-    parsedCost < 0 ||
-    (payload.fameGain != null &&
-      (!Number.isFinite(parsedFameGain) || parsedFameGain < 0)) ||
-    (payload.zealotryGain != null &&
-      (!Number.isFinite(parsedZealotryGain) || parsedZealotryGain < 0)) ||
-    (payload.controversyGain != null &&
-      (!Number.isFinite(parsedControversyGain) || parsedControversyGain < 0)) ||
-    !Number.isFinite(parsedHarmonyCost) ||
-    parsedHarmonyCost < 0
-  ) {
+  const parsed = parseZealotryActionPayload(payload, true)
+  if (!parsed) {
     logger.warn('GameState', 'Invalid pirate broadcast payload')
     return state
   }
+  const { cost, fameGain, zealotryGain, controversyGain, harmonyCost } = parsed
+  const successToast = payload.successToast
 
-  const cost = parsedCost
-  const fameGain = payload.fameGain != null ? parsedFameGain : 0
-  const zealotryGain = payload.zealotryGain != null ? parsedZealotryGain : 0
-  const controversyGain =
-    payload.controversyGain != null ? parsedControversyGain : 0
-  const harmonyCost = parsedHarmonyCost
-
-  const currentMoney = Number(state.player.money)
-  const currentHarmony = Number(state.band.harmony)
-  if (
-    !Number.isFinite(currentMoney) ||
-    !Number.isFinite(currentHarmony) ||
-    currentMoney < 0 ||
-    currentHarmony < 1 ||
-    currentHarmony > 100
-  ) {
+  const funds = readPlayerFundsAndHarmony(state)
+  if (!funds) {
     logger.warn('GameState', 'Invalid player funds or harmony state')
     return state
   }
+  const currentMoney = funds.money
+  const currentHarmony = funds.harmony
 
   if (state.social.lastPirateBroadcastDay === playerDay) {
     logger.warn('GameState', 'Pirate broadcast already triggered today')
@@ -312,27 +380,13 @@ export const handlePirateBroadcast = (
     }
   }
 
-  if (successToast) {
-    const deltaFame = nextFame - currentFame
-    const deltaZealotry = nextZealotry - currentZealotry
-    const deltaControversy = nextControversy - currentControversy
-    const deltaHarmony = nextHarmony - currentHarmony
-    const actualCost = currentMoney - nextMoney
-
-    const safeToast = sanitizeSuccessToast(successToast, {
-      fallbackId: getSafeUUID(),
-      optionsPatch: {
-        deltaFame,
-        deltaZealotry,
-        deltaControversy,
-        deltaHarmony,
-        cost: actualCost
-      }
-    })
-    if (safeToast) {
-      nextState.toasts = [...(state.toasts || []), safeToast]
-    }
-  }
+  appendDeltaSuccessToast(nextState, successToast, state.toasts, {
+    deltaFame: nextFame - currentFame,
+    deltaZealotry: nextZealotry - currentZealotry,
+    deltaControversy: nextControversy - currentControversy,
+    deltaHarmony: nextHarmony - currentHarmony,
+    cost: currentMoney - nextMoney
+  })
 
   return nextState
 }
@@ -354,48 +408,21 @@ export const handleDarkWebLeak = (
     return state
   }
 
-  const parsedCost = Number(payload.cost)
-  const parsedFameGain = Number(payload.fameGain)
-  const parsedZealotryGain = Number(payload.zealotryGain)
-  const parsedControversyGain = Number(payload.controversyGain)
-  const parsedHarmonyCost = Number(payload.harmonyCost)
-  const successToast = payload.successToast
-
-  if (
-    !Number.isFinite(parsedCost) ||
-    parsedCost < 0 ||
-    !Number.isFinite(parsedFameGain) ||
-    parsedFameGain < 0 ||
-    !Number.isFinite(parsedZealotryGain) ||
-    parsedZealotryGain < 0 ||
-    !Number.isFinite(parsedControversyGain) ||
-    parsedControversyGain < 0 ||
-    !Number.isFinite(parsedHarmonyCost) ||
-    parsedHarmonyCost < 0
-  ) {
+  const parsed = parseZealotryActionPayload(payload)
+  if (!parsed) {
     logger.warn('GameState', 'Invalid dark web leak payload')
     return state
   }
+  const { cost, fameGain, zealotryGain, controversyGain, harmonyCost } = parsed
+  const successToast = payload.successToast
 
-  const cost = parsedCost
-  const fameGain = parsedFameGain
-  const zealotryGain = parsedZealotryGain
-  const controversyGain = parsedControversyGain
-  const harmonyCost = parsedHarmonyCost
-
-  const currentMoney = Number(state.player.money)
-  const currentHarmony = Number(state.band.harmony)
-
-  if (
-    !Number.isFinite(currentMoney) ||
-    !Number.isFinite(currentHarmony) ||
-    currentMoney < 0 ||
-    currentHarmony < 1 ||
-    currentHarmony > 100
-  ) {
+  const funds = readPlayerFundsAndHarmony(state)
+  if (!funds) {
     logger.warn('GameState', 'Invalid player funds or harmony state')
     return state
   }
+  const currentMoney = funds.money
+  const currentHarmony = funds.harmony
 
   if (currentMoney < cost || currentHarmony < harmonyCost) {
     logger.warn('GameState', 'Insufficient funds or harmony for dark web leak')
@@ -435,27 +462,13 @@ export const handleDarkWebLeak = (
     }
   }
 
-  if (successToast) {
-    const deltaFame = nextFame - currentFame
-    const deltaZealotry = nextZealotry - currentZealotry
-    const deltaControversy = nextControversy - currentControversy
-    const deltaHarmony = nextHarmony - currentHarmony
-    const actualCost = currentMoney - nextMoney
-
-    const safeToast = sanitizeSuccessToast(successToast, {
-      fallbackId: getSafeUUID(),
-      optionsPatch: {
-        deltaFame,
-        deltaZealotry,
-        deltaControversy,
-        deltaHarmony,
-        cost: actualCost
-      }
-    })
-    if (safeToast) {
-      nextState.toasts = [...(state.toasts || []), safeToast]
-    }
-  }
+  appendDeltaSuccessToast(nextState, successToast, state.toasts, {
+    deltaFame: nextFame - currentFame,
+    deltaZealotry: nextZealotry - currentZealotry,
+    deltaControversy: nextControversy - currentControversy,
+    deltaHarmony: nextHarmony - currentHarmony,
+    cost: currentMoney - nextMoney
+  })
 
   return nextState
 }

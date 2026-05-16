@@ -11,6 +11,7 @@ import { PixiStage } from './PixiStage'
 import { ActionButton } from '../ui/shared'
 import type { MinigameSceneFrameProps } from '../types/components'
 import { MINIGAME_TYPES } from '../context/gameConstants'
+import { logger } from '../utils/logger'
 
 type BackdoorMinigameState = {
   minigame?: {
@@ -108,8 +109,9 @@ export const MinigameSceneFrame = <TState,>({
               onComplete()
               return
             } else {
-              console.warn(
-                'Unhandled minigame type for completion: ',
+              logger.warn(
+                'Minigame',
+                'Unhandled minigame type for completion',
                 currentType
               )
               return

@@ -11,6 +11,65 @@ type BloodBankConfig = {
   controversyGain: number
 }
 
+const DonationCosts = ({
+  config,
+  pulseCosts,
+  t
+}: {
+  config: BloodBankConfig
+  pulseCosts?: boolean
+  t: ReturnType<typeof useTranslation>['t']
+}) => {
+  const costValueClass = `text-blood-red font-bold${pulseCosts ? ' animate-pulse' : ''}`
+  return (
+    <div className='flex flex-col gap-1 text-sm font-mono'>
+      <div className='flex justify-between items-center'>
+        <span className='text-ash-gray'>
+          {t('ui:blood_bank.cost_harmony', { defaultValue: 'BAND HARMONY' })}
+        </span>
+        <span className={costValueClass}>-{config.harmonyCost}</span>
+      </div>
+      <div className='flex justify-between items-center'>
+        <span className='text-ash-gray'>
+          {t('ui:blood_bank.cost_stamina', { defaultValue: 'STAMINA (ALL)' })}
+        </span>
+        <span className={costValueClass}>-{config.staminaCost}</span>
+      </div>
+      <div className='flex justify-between items-center'>
+        <span className='text-ash-gray'>
+          {t('ui:blood_bank.cost_controversy', { defaultValue: 'CONTROVERSY' })}
+        </span>
+        <span className='text-blood-red font-bold'>
+          +{config.controversyGain}
+        </span>
+      </div>
+    </div>
+  )
+}
+
+const ProfitRow = ({
+  moneyGain,
+  size,
+  t
+}: {
+  moneyGain: number
+  size: 'sm' | 'lg'
+  t: ReturnType<typeof useTranslation>['t']
+}) => {
+  const valueClass =
+    size === 'lg'
+      ? 'text-3xl font-bold text-toxic-green drop-shadow-[0_0_8px_var(--color-toxic-green)]'
+      : 'text-2xl font-bold text-toxic-green drop-shadow-[0_0_4px_var(--color-toxic-green)]'
+  return (
+    <div className='flex justify-between items-center bg-toxic-green/10 p-2'>
+      <span className='text-toxic-green font-mono uppercase tracking-widest text-sm'>
+        {t('ui:blood_bank.gain', { defaultValue: 'PROFIT' })}
+      </span>
+      <span className={valueClass}>+€{moneyGain}</span>
+    </div>
+  )
+}
+
 export const BloodBankModal = ({
   onClose,
   onDonate,
@@ -113,47 +172,9 @@ export const BloodBankModal = ({
                   })}
                 </h3>
 
-                <div className='flex justify-between items-center bg-toxic-green/10 p-2'>
-                  <span className='text-toxic-green font-mono uppercase tracking-widest text-sm'>
-                    {t('ui:blood_bank.gain', { defaultValue: 'PROFIT' })}
-                  </span>
-                  <span className='text-2xl font-bold text-toxic-green drop-shadow-[0_0_4px_var(--color-toxic-green)]'>
-                    +€{config.moneyGain}
-                  </span>
-                </div>
+                <ProfitRow moneyGain={config.moneyGain} size='sm' t={t} />
 
-                <div className='flex flex-col gap-1 text-sm font-mono'>
-                  <div className='flex justify-between items-center'>
-                    <span className='text-ash-gray'>
-                      {t('ui:blood_bank.cost_harmony', {
-                        defaultValue: 'BAND HARMONY'
-                      })}
-                    </span>
-                    <span className='text-blood-red font-bold'>
-                      -{config.harmonyCost}
-                    </span>
-                  </div>
-                  <div className='flex justify-between items-center'>
-                    <span className='text-ash-gray'>
-                      {t('ui:blood_bank.cost_stamina', {
-                        defaultValue: 'STAMINA (ALL)'
-                      })}
-                    </span>
-                    <span className='text-blood-red font-bold'>
-                      -{config.staminaCost}
-                    </span>
-                  </div>
-                  <div className='flex justify-between items-center'>
-                    <span className='text-ash-gray'>
-                      {t('ui:blood_bank.cost_controversy', {
-                        defaultValue: 'CONTROVERSY'
-                      })}
-                    </span>
-                    <span className='text-blood-red font-bold'>
-                      +{config.controversyGain}
-                    </span>
-                  </div>
-                </div>
+                <DonationCosts config={config} t={t} />
 
                 <div className='mt-auto pt-4'>
                   <ActionButton
@@ -183,47 +204,9 @@ export const BloodBankModal = ({
                   <span className='animate-pulse'>⚠️</span>
                 </h3>
 
-                <div className='flex justify-between items-center bg-toxic-green/10 p-2'>
-                  <span className='text-toxic-green font-mono uppercase tracking-widest text-sm'>
-                    {t('ui:blood_bank.gain', { defaultValue: 'PROFIT' })}
-                  </span>
-                  <span className='text-3xl font-bold text-toxic-green drop-shadow-[0_0_8px_var(--color-toxic-green)]'>
-                    +€{marrowConfig.moneyGain}
-                  </span>
-                </div>
+                <ProfitRow moneyGain={marrowConfig.moneyGain} size='lg' t={t} />
 
-                <div className='flex flex-col gap-1 text-sm font-mono'>
-                  <div className='flex justify-between items-center'>
-                    <span className='text-ash-gray'>
-                      {t('ui:blood_bank.cost_harmony', {
-                        defaultValue: 'BAND HARMONY'
-                      })}
-                    </span>
-                    <span className='text-blood-red font-bold animate-pulse'>
-                      -{marrowConfig.harmonyCost}
-                    </span>
-                  </div>
-                  <div className='flex justify-between items-center'>
-                    <span className='text-ash-gray'>
-                      {t('ui:blood_bank.cost_stamina', {
-                        defaultValue: 'STAMINA (ALL)'
-                      })}
-                    </span>
-                    <span className='text-blood-red font-bold animate-pulse'>
-                      -{marrowConfig.staminaCost}
-                    </span>
-                  </div>
-                  <div className='flex justify-between items-center'>
-                    <span className='text-ash-gray'>
-                      {t('ui:blood_bank.cost_controversy', {
-                        defaultValue: 'CONTROVERSY'
-                      })}
-                    </span>
-                    <span className='text-blood-red font-bold'>
-                      +{marrowConfig.controversyGain}
-                    </span>
-                  </div>
-                </div>
+                <DonationCosts config={marrowConfig} pulseCosts t={t} />
 
                 <div className='mt-auto pt-4'>
                   <ActionButton

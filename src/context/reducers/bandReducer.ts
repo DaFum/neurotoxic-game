@@ -130,6 +130,82 @@ export const handleConsumeItem = (
 }
 
 /**
+ * Effect types that simply add `value` to a numeric band property
+ * (defaulting to 0 when missing). Keys must match BandState fields.
+ */
+const ADDITIVE_BAND_EFFECT_FIELDS = {
+  luck: 'luck',
+  crit: 'crit',
+  crowd_control: 'crowdControl',
+  affinity: 'affinity',
+  style: 'style',
+  tour_success: 'tourSuccess',
+  gig_modifier: 'gigModifier',
+  tempo: 'tempo',
+  practice_gain: 'practiceGain'
+} as const
+
+/**
+ * Effect types historically supported by the equipment apply-on-add path.
+ * The contraband path supports a superset; equipment must remain restricted
+ * to this list to preserve prior behavior.
+ */
+const EQUIPMENT_APPLY_ON_ADD_EFFECTS: ReadonlySet<string> = new Set([
+  'luck',
+  'stamina_max',
+  'guitar_difficulty',
+  'crit',
+  'crowd_control',
+  'affinity',
+  'style',
+  'tour_success'
+])
+
+/**
+ * Applies a single equipment/contraband numeric effect to the band, mutating
+ * the supplied `newBand` reference. Returns true when a recognized effect was
+ * applied; false otherwise (caller may then fall through to specialized paths).
+ * When `allowedEffectTypes` is provided, unrecognized-by-set effect types are
+ * skipped (used to preserve the equipment apply-on-add allowlist).
+ */
+const applySharedBandEffect = (
+  newBand: BandState,
+  effectType: unknown,
+  value: number,
+  allowedEffectTypes?: ReadonlySet<string>
+): boolean => {
+  if (typeof effectType !== 'string') return false
+  if (allowedEffectTypes && !allowedEffectTypes.has(effectType)) return false
+  if (Object.hasOwn(ADDITIVE_BAND_EFFECT_FIELDS, effectType)) {
+    const field =
+      ADDITIVE_BAND_EFFECT_FIELDS[
+        effectType as keyof typeof ADDITIVE_BAND_EFFECT_FIELDS
+      ]
+    const band = newBand as unknown as Record<string, number | undefined>
+    band[field] = (band[field] || 0) + value
+    return true
+  }
+  if (effectType === 'stamina_max') {
+    newBand.members = newBand.members.map((m: BandMember) => ({
+      ...m,
+      staminaMax: ((m.staminaMax as number | undefined) ?? 100) + value
+    }))
+    return true
+  }
+  if (effectType === 'guitar_difficulty') {
+    newBand.performance = {
+      ...newBand.performance,
+      guitarDifficulty: Math.max(
+        0.1,
+        (newBand.performance?.guitarDifficulty ?? 1) + value
+      )
+    }
+    return true
+  }
+  return false
+}
+
+/**
  * Architecture (Redux Orchestration / State Transitions):
  * Pure helper function to handle adding contraband.
  * This is exposed as a direct state-update helper rather than an action
@@ -186,36 +262,12 @@ export const addContrabandHelper = (
   })
 
   if (item.applyOnAdd && item.type === 'equipment') {
-    if (item.effectType === 'luck') {
-      newBand.luck = (newBand.luck || 0) + (item.value as number)
-    } else if (item.effectType === 'stamina_max') {
-      newBand.members = newBand.members.map((m: BandMember) => ({
-        ...m,
-        staminaMax:
-          ((m.staminaMax as number | undefined) ?? 100) + (item.value as number)
-      }))
-    } else if (item.effectType === 'guitar_difficulty') {
-      newBand.performance = {
-        ...newBand.performance,
-        guitarDifficulty: Math.max(
-          0.1,
-          (newBand.performance?.guitarDifficulty ?? 1) + (item.value as number)
-        )
-      }
-    } else if (item.effectType === 'crit') {
-      newBand.crit = ((newBand.crit as number) || 0) + (item.value as number)
-    } else if (item.effectType === 'crowd_control') {
-      newBand.crowdControl =
-        ((newBand.crowdControl as number) || 0) + (item.value as number)
-    } else if (item.effectType === 'affinity') {
-      newBand.affinity =
-        ((newBand.affinity as number) || 0) + (item.value as number)
-    } else if (item.effectType === 'style') {
-      newBand.style = ((newBand.style as number) || 0) + (item.value as number)
-    } else if (item.effectType === 'tour_success') {
-      newBand.tourSuccess =
-        ((newBand.tourSuccess as number) || 0) + (item.value as number)
-    }
+    applySharedBandEffect(
+      newBand,
+      item.effectType,
+      item.value as number,
+      EQUIPMENT_APPLY_ON_ADD_EFFECTS
+    )
   }
 
   return {
@@ -274,55 +326,8 @@ const applyContrabandEffect = (
     newBand.harmony = clampBandHarmony(
       (newBand.harmony ?? 1) + (item.value as number)
     )
-  } else if (item.effectType === 'luck') {
-    newBand.luck = (newBand.luck || 0) + (item.value as number)
-  } else if (item.effectType === 'guitar_difficulty') {
-    newBand.performance = {
-      ...newBand.performance,
-      guitarDifficulty: Math.max(
-        0.1,
-        (newBand.performance?.guitarDifficulty ?? 1) + (item.value as number)
-      )
-    }
-  } else if (
-    item.effectType === 'tour_success' ||
-    item.effectType === 'gig_modifier' ||
-    item.effectType === 'tempo' ||
-    item.effectType === 'practice_gain' ||
-    item.effectType === 'stamina_max' ||
-    item.effectType === 'crit' ||
-    item.effectType === 'affinity' ||
-    item.effectType === 'style' ||
-    item.effectType === 'crowd_control'
-  ) {
-    if (item.effectType === 'stamina_max') {
-      newBand.members = newBand.members.map((m: BandMember) => ({
-        ...m,
-        staminaMax:
-          ((m.staminaMax as number | undefined) ?? 100) + (item.value as number)
-      }))
-    } else if (item.effectType === 'style') {
-      newBand.style = ((newBand.style as number) || 0) + (item.value as number)
-    } else if (item.effectType === 'tour_success') {
-      newBand.tourSuccess =
-        ((newBand.tourSuccess as number) || 0) + (item.value as number)
-    } else if (item.effectType === 'gig_modifier') {
-      newBand.gigModifier =
-        ((newBand.gigModifier as number) || 0) + (item.value as number)
-    } else if (item.effectType === 'tempo') {
-      newBand.tempo = ((newBand.tempo as number) || 0) + (item.value as number)
-    } else if (item.effectType === 'practice_gain') {
-      newBand.practiceGain =
-        ((newBand.practiceGain as number) || 0) + (item.value as number)
-    } else if (item.effectType === 'crit') {
-      newBand.crit = ((newBand.crit as number) || 0) + (item.value as number)
-    } else if (item.effectType === 'affinity') {
-      newBand.affinity =
-        ((newBand.affinity as number) || 0) + (item.value as number)
-    } else if (item.effectType === 'crowd_control') {
-      newBand.crowdControl =
-        ((newBand.crowdControl as number) || 0) + (item.value as number)
-    }
+  } else {
+    applySharedBandEffect(newBand, item.effectType, item.value as number)
   }
 
   if (item.duration != null) {

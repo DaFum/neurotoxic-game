@@ -19,14 +19,8 @@ import { ToggleRadio } from '../components/ToggleRadio'
 import { EventLog } from '../ui/overworld/EventLog'
 import { translateLocation } from '../utils/locationI18n'
 import { OverworldMap } from '../components/overworld'
-import { BandHQ } from '../ui/BandHQ'
+import { OverworldModals } from '../components/overworld/OverworldModals'
 import { SupplyStopModal } from '../ui/SupplyStopModal'
-import { QuestsModal } from '../ui/QuestsModal'
-import { ContrabandStash } from '../ui/ContrabandStash'
-import { PirateRadioModal } from '../ui/PirateRadioModal'
-import { MerchPressModal } from '../ui/MerchPressModal'
-import { BloodBankModal } from '../ui/BloodBankModal'
-import { DarkWebLeakModal } from '../ui/DarkWebLeakModal'
 
 /**
  * The map navigation scene where players select their next destination.
@@ -211,51 +205,44 @@ export const Overworld = () => {
 
       <EventLog t={t} day={player.day} locationId={player.location} />
 
-      {showHQ && <BandHQ onClose={closeHQ} />}
       {supplyStopInventory && (
         <SupplyStopModal
           inventory={supplyStopInventory}
           onClose={() => setSupplyStopInventory(null)}
         />
       )}
-      {showQuests && <QuestsModal {...questsProps} />}
-      {showStash && <ContrabandStash {...stashProps} />}
-      {showPirateRadio && (
-        <PirateRadioModal
-          onClose={closePirateRadio}
-          onBroadcast={triggerBroadcast}
-          canBroadcast={canBroadcast}
-          hasBroadcastedToday={hasBroadcastedToday}
-          config={PIRATE_RADIO_CONFIG}
-        />
-      )}
-      {showMerchPress && (
-        <MerchPressModal
-          onClose={closeMerchPress}
-          onPress={triggerPress}
-          canPress={canPress}
-          config={merchPressConfig}
-        />
-      )}
-      {showBloodBank && (
-        <BloodBankModal
-          onClose={closeBloodBank}
-          onDonate={triggerDonate}
-          canDonate={canDonate}
-          canDonateMarrow={canDonateMarrow}
-          config={bloodBankConfig}
-          marrowConfig={marrowConfig}
-        />
-      )}
-      {showDarkWebLeak && (
-        <DarkWebLeakModal
-          onCancel={closeDarkWebLeak}
-          onConfirm={triggerLeak}
-          canLeak={canDarkWebLeak}
-          hasLeakedToday={hasLeakedToday}
-          config={DARK_WEB_LEAK_CONFIG}
-        />
-      )}
+      <OverworldModals
+        showHQ={showHQ}
+        closeHQ={closeHQ}
+        showQuests={showQuests}
+        questsProps={questsProps}
+        showStash={showStash}
+        stashProps={stashProps}
+        showPirateRadio={showPirateRadio}
+        closePirateRadio={closePirateRadio}
+        triggerBroadcast={triggerBroadcast}
+        canBroadcast={canBroadcast}
+        hasBroadcastedToday={hasBroadcastedToday}
+        PIRATE_RADIO_CONFIG={PIRATE_RADIO_CONFIG}
+        showMerchPress={showMerchPress}
+        closeMerchPress={closeMerchPress}
+        triggerPress={triggerPress}
+        canPress={canPress}
+        merchPressConfig={merchPressConfig}
+        showBloodBank={showBloodBank}
+        closeBloodBank={closeBloodBank}
+        triggerDonate={triggerDonate}
+        canDonate={canDonate}
+        canDonateMarrow={canDonateMarrow}
+        bloodBankConfig={bloodBankConfig}
+        marrowConfig={marrowConfig}
+        showDarkWebLeak={showDarkWebLeak}
+        closeDarkWebLeak={closeDarkWebLeak}
+        triggerLeak={triggerLeak}
+        canDarkWebLeak={canDarkWebLeak}
+        hasLeakedToday={hasLeakedToday}
+        DARK_WEB_LEAK_CONFIG={DARK_WEB_LEAK_CONFIG}
+      />
     </div>
   )
 }

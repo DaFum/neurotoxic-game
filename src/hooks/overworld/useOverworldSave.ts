@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { logger } from '../../utils/logger'
 
 export const useOverworldSave = (saveGame: () => Promise<void> | void) => {
   const [isSaving, setIsSaving] = useState(false)
@@ -23,7 +24,7 @@ export const useOverworldSave = (saveGame: () => Promise<void> | void) => {
         try {
           await saveGame()
         } catch (err) {
-          console.error('Save failed', err)
+          logger.error('OverworldSave', 'Save failed', err)
         } finally {
           if (isMountedRef.current) {
             setIsSaving(false)

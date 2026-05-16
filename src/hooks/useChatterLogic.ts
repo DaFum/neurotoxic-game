@@ -13,6 +13,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { getRandomChatter } from '../data/chatter'
 import { getSafeRandom, getSafeUUID } from '../utils/crypto'
+import { logger } from '../utils/logger'
 import type { BandMember } from '../types'
 import type { TranslationCallback } from '../types/callbacks'
 import type {
@@ -84,8 +85,9 @@ export const useChatterLogic = (
         try {
           result = getRandomChatter(currentState) as ChatterTemplate | null
         } catch (error) {
-          console.error(
-            '[useChatterLogic] getRandomChatter failed; continuing scheduler loop.',
+          logger.error(
+            'ChatterLogic',
+            'getRandomChatter failed; continuing scheduler loop.',
             error
           )
         }

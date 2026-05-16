@@ -11,6 +11,7 @@ import { Modal, Panel, AnimatedDivider, ActionButton } from './shared/index.tsx'
 import { useTranslation } from 'react-i18next'
 
 import { GlitchButton } from './GlitchButton'
+import { logger } from '../utils/logger'
 import {
   IMG_PROMPTS,
   resolveGenImageUrl,
@@ -91,7 +92,7 @@ export const ContrabandStash = ({
     typeof handleUseItem !== 'function' ||
     typeof onClose !== 'function'
   ) {
-    console.error('Invalid props passed to ContrabandStash')
+    logger.error('ContrabandStash', 'Invalid props passed to ContrabandStash')
     return null
   }
 

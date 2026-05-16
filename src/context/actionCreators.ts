@@ -41,6 +41,29 @@ import type {
 } from '../types'
 
 /**
+ * Sanitizes a payload by clamping listed numeric fields to non-negative values
+ * and stamping any `successToast` with a fresh UUID. Returns the payload
+ * unchanged if it is not an object.
+ */
+const sanitizeNonNegativePayload = <
+  T extends { successToast?: { id?: string } | undefined }
+>(
+  payload: T,
+  numericKeys: ReadonlyArray<keyof T>
+): T => {
+  if (!payload || typeof payload !== 'object') return payload
+  const sanitized = { ...payload }
+  for (const key of numericKeys) {
+    const raw = payload[key] as unknown
+    sanitized[key] = clampNonNegative(Number(raw) || 0) as T[typeof key]
+  }
+  sanitized.successToast = payload.successToast
+    ? ({ ...payload.successToast, id: getSafeUUID() } as T['successToast'])
+    : undefined
+  return sanitized
+}
+
+/**
  * Creates a scene change action
  * @param {string} scene - Target scene name
  * @returns {Object} Action object
@@ -719,22 +742,13 @@ export const createPirateBroadcastAction = (
   payload: PirateBroadcastPayload
 ): Extract<GameAction, { type: typeof ActionTypes.PIRATE_BROADCAST }> => ({
   type: ActionTypes.PIRATE_BROADCAST,
-  payload:
-    payload && typeof payload === 'object'
-      ? {
-          ...payload,
-          cost: clampNonNegative(Number(payload.cost) || 0),
-          fameGain: clampNonNegative(Number(payload.fameGain) || 0),
-          zealotryGain: clampNonNegative(Number(payload.zealotryGain) || 0),
-          controversyGain: clampNonNegative(
-            Number(payload.controversyGain) || 0
-          ),
-          harmonyCost: clampNonNegative(Number(payload.harmonyCost) || 0),
-          successToast: payload.successToast
-            ? { ...payload.successToast, id: getSafeUUID() }
-            : undefined
-        }
-      : payload
+  payload: sanitizeNonNegativePayload(payload, [
+    'cost',
+    'fameGain',
+    'zealotryGain',
+    'controversyGain',
+    'harmonyCost'
+  ])
 })
 
 /**
@@ -766,21 +780,12 @@ export const createBloodBankDonateAction = (
   payload: BloodBankDonatePayload
 ): Extract<GameAction, { type: typeof ActionTypes.BLOOD_BANK_DONATE }> => ({
   type: ActionTypes.BLOOD_BANK_DONATE,
-  payload:
-    payload && typeof payload === 'object'
-      ? {
-          ...payload,
-          moneyGain: clampNonNegative(Number(payload.moneyGain) || 0),
-          harmonyCost: clampNonNegative(Number(payload.harmonyCost) || 0),
-          staminaCost: clampNonNegative(Number(payload.staminaCost) || 0),
-          controversyGain: clampNonNegative(
-            Number(payload.controversyGain) || 0
-          ),
-          successToast: payload.successToast
-            ? { ...payload.successToast, id: getSafeUUID() }
-            : undefined
-        }
-      : payload
+  payload: sanitizeNonNegativePayload(payload, [
+    'moneyGain',
+    'harmonyCost',
+    'staminaCost',
+    'controversyGain'
+  ])
 })
 
 /**
@@ -793,20 +798,16 @@ export const createBloodBankDonateAction = (
  */
 export const createTradeVoidItemAction = (
   payload: TradeVoidItemPayload
-): Extract<GameAction, { type: typeof ActionTypes.TRADE_VOID_ITEM }> => ({
-  type: ActionTypes.TRADE_VOID_ITEM,
-  payload:
-    payload && typeof payload === 'object'
-      ? {
-          ...payload,
-          fameCost: clampNonNegative(Number(payload.fameCost) || 0),
-          instanceId: getSafeUUID(),
-          successToast: payload.successToast
-            ? { ...payload.successToast, id: getSafeUUID() }
-            : undefined
-        }
-      : payload
-})
+): Extract<GameAction, { type: typeof ActionTypes.TRADE_VOID_ITEM }> => {
+  const base = sanitizeNonNegativePayload(payload, ['fameCost'])
+  return {
+    type: ActionTypes.TRADE_VOID_ITEM,
+    payload:
+      base && typeof base === 'object'
+        ? { ...base, instanceId: getSafeUUID() }
+        : base
+  }
+}
 
 /**
  * Creates an action to trigger a dark web leak.
@@ -823,22 +824,13 @@ export const createDarkWebLeakAction = (
   payload: DarkWebLeakPayload
 ): Extract<GameAction, { type: typeof ActionTypes.DARK_WEB_LEAK }> => ({
   type: ActionTypes.DARK_WEB_LEAK,
-  payload:
-    payload && typeof payload === 'object'
-      ? {
-          ...payload,
-          cost: clampNonNegative(Number(payload.cost) || 0),
-          fameGain: clampNonNegative(Number(payload.fameGain) || 0),
-          zealotryGain: clampNonNegative(Number(payload.zealotryGain) || 0),
-          controversyGain: clampNonNegative(
-            Number(payload.controversyGain) || 0
-          ),
-          harmonyCost: clampNonNegative(Number(payload.harmonyCost) || 0),
-          successToast: payload.successToast
-            ? { ...payload.successToast, id: getSafeUUID() }
-            : undefined
-        }
-      : payload
+  payload: sanitizeNonNegativePayload(payload, [
+    'cost',
+    'fameGain',
+    'zealotryGain',
+    'controversyGain',
+    'harmonyCost'
+  ])
 })
 
 /**
@@ -856,20 +848,11 @@ export const createMerchPressAction = (
   payload: MerchPressPayload
 ): Extract<GameAction, { type: typeof ActionTypes.MERCH_PRESS }> => ({
   type: ActionTypes.MERCH_PRESS,
-  payload:
-    payload && typeof payload === 'object'
-      ? {
-          ...payload,
-          cost: clampNonNegative(Number(payload.cost) || 0),
-          loyaltyGain: clampNonNegative(Number(payload.loyaltyGain) || 0),
-          controversyGain: clampNonNegative(
-            Number(payload.controversyGain) || 0
-          ),
-          fameGain: clampNonNegative(Number(payload.fameGain) || 0),
-          harmonyCost: clampNonNegative(Number(payload.harmonyCost) || 0),
-          successToast: payload.successToast
-            ? { ...payload.successToast, id: getSafeUUID() }
-            : undefined
-        }
-      : payload
+  payload: sanitizeNonNegativePayload(payload, [
+    'cost',
+    'loyaltyGain',
+    'controversyGain',
+    'fameGain',
+    'harmonyCost'
+  ])
 })
