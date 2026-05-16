@@ -96,6 +96,7 @@ export const AmpControls = memo(function AmpControls({
 
       <div className='flex items-center gap-4 w-full'>
         <button
+          type='button'
           onClick={handleFineTuneDown}
           className='w-12 h-12 flex items-center justify-center bg-void-black border-2 border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black active:scale-95 transition-colors font-bold text-xl rounded focus:outline-none focus:ring-2 focus:ring-toxic-green focus:ring-offset-2 focus:ring-offset-void-black'
           aria-label={t('ui:minigames.amp.controls.fineTuneDown', {
@@ -127,6 +128,7 @@ export const AmpControls = memo(function AmpControls({
         />
 
         <button
+          type='button'
           onClick={handleFineTuneUp}
           className='w-12 h-12 flex items-center justify-center bg-void-black border-2 border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black active:scale-95 transition-colors font-bold text-xl rounded focus:outline-none focus:ring-2 focus:ring-toxic-green focus:ring-offset-2 focus:ring-offset-void-black'
           aria-label={t('ui:minigames.amp.controls.fineTuneUp', {
@@ -145,6 +147,7 @@ export const AmpControls = memo(function AmpControls({
 
       <div className='mt-2 flex gap-4'>
         <button
+          type='button'
           onClick={handleToggleOverdrive}
           className={`px-6 py-2 font-mono font-bold uppercase border-2 transition-all duration-150 ${
             isOverdriveActive
@@ -154,6 +157,7 @@ export const AmpControls = memo(function AmpControls({
           aria-label={t('ui:minigames.amp.controls.overdrive', {
             defaultValue: 'Toggle Overdrive'
           })}
+          aria-pressed={isOverdriveActive}
         >
           {t('ui:minigames.amp.controls.overdrive', {
             defaultValue: 'OVERDRIVE'
@@ -162,6 +166,7 @@ export const AmpControls = memo(function AmpControls({
 
         {purgeInterference && (
           <button
+            type='button'
             onClick={purgeInterference}
             disabled={!interference || interference < 1}
             className='px-6 py-2 font-mono font-bold uppercase border-2 transition-all duration-150 bg-blood-red text-void-black border-blood-red hover:bg-void-black hover:text-blood-red shadow-[0_0_15px_var(--color-blood-red)] disabled:opacity-50 disabled:cursor-not-allowed'

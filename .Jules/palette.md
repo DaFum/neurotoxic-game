@@ -110,3 +110,6 @@
 
 **Learning:** Adding `pointer-events-auto` to wrapper elements inside `pointer-events-none` containers is necessary for hover interactions (like tooltips) to work properly.
 **Action:** Always check pointer-events inheritance when adding interactive elements or tooltips to HUD components.
+## 2026-05-16 - ARIA Toggle State Pattern
+**Learning:** Interactive toggle buttons with custom visual states (like the Overdrive button in AmpControls) require `aria-pressed` bound directly to their active state to correctly communicate their toggle status to screen readers, unlike standard buttons which only need an `aria-label`.
+**Action:** Always verify if a button behaves as a toggle (changes state on click) and ensure `aria-pressed={isActive}` is present.

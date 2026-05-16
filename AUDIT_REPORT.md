@@ -3,6 +3,7 @@
 Audit of `/home/user/neurotoxic-game/src/` against `AGENTS.md` + `CLAUDE.md` and nested AGENTS files. No files were modified. Findings categorized by type, severity (HIGH / MED / LOW), with file:line, description, and recommended action (DELETE / MERGE / INTEGRATE / FIX).
 
 Sections:
+
 1. Duplicates
 2. Orphans / unintegrated code
 3. Inconsistencies
@@ -114,7 +115,7 @@ Sections:
 - **MED** `handleUpdateBand` clamps only `harmony` while `stress`, `luck`, `tempo`, member `stamina`/`mood` flow through unclamped (`bandReducer.ts:30-62`). Action: **FIX** with shared band clamps.
 - **MED** `src/context/gameConstants.ts:22` `MINIGAME_TYPES` is a plain object literal; adjacent `GAME_PHASES` uses `as const satisfies …`. Action: **FIX** to use `as const satisfies`.
 - **MED** Per `src/types/AGENTS.md`, shared domain contracts must live in `src/types/`, but `MapNodeProps`, `MapConnectionProps`, `HecklerOverlayProps`, `GigHUDProps`, `EventDelta`, `TourbusObstacle`, `PlayerPatch`, `BandPatch`, `ConnectorType`, `NodeVisibility` are duplicated locally and the shared versions drift. Action: **MERGE**/**DELETE**.
-- **MED** `src/hooks/usePreGigLogic.ts:314` — `currentGig?.id || \`gig_${getSafeUUID()}\`` will mint a new UUID for `id === ''`. Action: **FIX** to `??`.
+- **MED** `src/hooks/usePreGigLogic.ts:314` — `currentGig?.id || \`gig\_${getSafeUUID()}\``will mint a new UUID for`id === ''`. Action: **FIX** to `??`.
 
 ### LOW
 
@@ -165,12 +166,14 @@ Sections:
 ## 6. SUMMARY & PRIORITIES
 
 ### Headline metrics
+
 - ~95 findings: ~15 HIGH, ~45 MED, ~30 LOW (2 HIGH findings retracted post-review; see §2/§5)
 - No orphan hooks/components; no `forwardRef`, `.propTypes`, `@ts-ignore`/`@ts-nocheck`, or `: any` in audited surfaces
 - Locale parity (scalar paths) between EN/DE: clean
 - Hex literals in components: all intentional Pixi-token fallbacks
 
 ### Top-priority fixes (highest ROI)
+
 1. **Resolve `UPDATE_RIVAL_BAND`** — delete or integrate the full chain.
 2. **Sync `COMPLETE_AMP_CALIBRATION` union with `hijacksOverridden`** — type/runtime drift hidden by assertions.
 3. **Tighten `SET_GIG_MODIFIERS` reducer signature** to match the action union.
@@ -183,12 +186,14 @@ Sections:
 10. **Wire or delete `validateGameEvent`** at event ingestion.
 
 ### Highest-leverage cleanup batches
+
 - `src/types/components.d.ts` orphan/duplicate purge (~15 deletions in one PR).
 - Locale ui.json stale-key purge (~160 keys, EN+DE in lockstep).
 - `||` → `??` sweep (hooks + utils, ~15 sites).
 - `z-*` tokenization sweep (~12 sites).
 
 ### Audit confidence notes
+
 - Orphan claims verified via ripgrep across `src/` excluding self-files; locale claims cross-checked against literal-string usage and dynamic indexing patterns (`featureList.*` excluded as dynamic).
 - "Missing integration" findings are conservative: only flagged where a fully-implemented function is unreferenced and AGENTS.md mandates its use, OR where an action type has a full reducer/creator chain with zero dispatchers.
 - A few items overlap categories (e.g. `UPDATE_RIVAL_BAND` is both Orphan and Missing Integration); each is listed once with cross-references.
