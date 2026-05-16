@@ -15,6 +15,8 @@ import {
   BALANCE_CONSTANTS
 } from './gameStateUtils'
 import type { BandState, GameState, BandMember } from '../types'
+import type { Song } from '../types/audio'
+import type { ActiveEffect } from '../types/components'
 
 const findMembersByName = <K extends string>(
   members: BandMember[],
@@ -34,8 +36,6 @@ const findMembersByName = <K extends string>(
   }
   return result
 }
-import type { Song } from '../types/audio'
-import type { ActiveEffect } from '../types/components'
 
 const PRE_GIG_ACTIVE_EFFECTS = {
   soundcheck: {

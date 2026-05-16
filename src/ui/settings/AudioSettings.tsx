@@ -31,8 +31,7 @@ export const AudioSettings = memo(function AudioSettings({
       const raw = e.target.value
       const parsed = typeof raw === 'number' ? raw : parseFloat(String(raw))
       if (!Number.isFinite(parsed)) return
-      const normalized = Math.min(1, Math.max(0, parsed))
-      cb(normalized)
+      cb(parsed)
     },
     []
   )

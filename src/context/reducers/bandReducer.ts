@@ -146,16 +146,36 @@ const ADDITIVE_BAND_EFFECT_FIELDS = {
 } as const
 
 /**
+ * Effect types historically supported by the equipment apply-on-add path.
+ * The contraband path supports a superset; equipment must remain restricted
+ * to this list to preserve prior behavior.
+ */
+const EQUIPMENT_APPLY_ON_ADD_EFFECTS: ReadonlySet<string> = new Set([
+  'luck',
+  'stamina_max',
+  'guitar_difficulty',
+  'crit',
+  'crowd_control',
+  'affinity',
+  'style',
+  'tour_success'
+])
+
+/**
  * Applies a single equipment/contraband numeric effect to the band, mutating
  * the supplied `newBand` reference. Returns true when a recognized effect was
  * applied; false otherwise (caller may then fall through to specialized paths).
+ * When `allowedEffectTypes` is provided, unrecognized-by-set effect types are
+ * skipped (used to preserve the equipment apply-on-add allowlist).
  */
 const applySharedBandEffect = (
   newBand: BandState,
   effectType: unknown,
-  value: number
+  value: number,
+  allowedEffectTypes?: ReadonlySet<string>
 ): boolean => {
   if (typeof effectType !== 'string') return false
+  if (allowedEffectTypes && !allowedEffectTypes.has(effectType)) return false
   if (Object.hasOwn(ADDITIVE_BAND_EFFECT_FIELDS, effectType)) {
     const field =
       ADDITIVE_BAND_EFFECT_FIELDS[
@@ -242,7 +262,12 @@ export const addContrabandHelper = (
   })
 
   if (item.applyOnAdd && item.type === 'equipment') {
-    applySharedBandEffect(newBand, item.effectType, item.value as number)
+    applySharedBandEffect(
+      newBand,
+      item.effectType,
+      item.value as number,
+      EQUIPMENT_APPLY_ON_ADD_EFFECTS
+    )
   }
 
   return {
