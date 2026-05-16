@@ -156,7 +156,7 @@ const applySharedBandEffect = (
   value: number
 ): boolean => {
   if (typeof effectType !== 'string') return false
-  if (effectType in ADDITIVE_BAND_EFFECT_FIELDS) {
+  if (Object.hasOwn(ADDITIVE_BAND_EFFECT_FIELDS, effectType)) {
     const field =
       ADDITIVE_BAND_EFFECT_FIELDS[
         effectType as keyof typeof ADDITIVE_BAND_EFFECT_FIELDS
