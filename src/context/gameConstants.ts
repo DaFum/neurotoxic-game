@@ -24,7 +24,10 @@ export const MINIGAME_TYPES = {
   ROADIE: 'ROADIE',
   KABELSALAT: 'KABELSALAT',
   AMP_CALIBRATION: 'AMP_CALIBRATION'
-} as const satisfies Record<'TOURBUS' | 'ROADIE' | 'KABELSALAT' | 'AMP_CALIBRATION', string>
+} as const satisfies Record<
+  'TOURBUS' | 'ROADIE' | 'KABELSALAT' | 'AMP_CALIBRATION',
+  string
+>
 
 export const AMP_CALIBRATION_TOLERANCE = 50
 

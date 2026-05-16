@@ -1,4 +1,7 @@
-import type { SOCKET_DEFS, CABLES } from '../scenes/kabelsalat/kabelsalatConstants'
+import type {
+  SOCKET_DEFS,
+  CABLES
+} from '../scenes/kabelsalat/kabelsalatConstants'
 
 export type SocketId = keyof typeof SOCKET_DEFS
 
