@@ -1,6 +1,7 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRegisterSW } from 'virtual:pwa-register/react'
+import { logger } from '../utils/logger'
 import './ReloadPrompt.css'
 
 export default function ReloadPrompt() {
@@ -11,7 +12,7 @@ export default function ReloadPrompt() {
     updateServiceWorker
   } = useRegisterSW({
     onRegisterError(error) {
-      console.warn('SW registration error', error)
+      logger.warn('ReloadPrompt', 'SW registration error', error)
     }
   })
 

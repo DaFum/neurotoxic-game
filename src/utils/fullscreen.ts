@@ -1,3 +1,5 @@
+import { logger } from './logger'
+
 export async function enterFullscreen() {
   const element = document.documentElement
 
@@ -5,7 +7,7 @@ export async function enterFullscreen() {
     try {
       await element.requestFullscreen()
     } catch (err) {
-      console.warn('Fullscreen request failed:', err)
+      logger.warn('Fullscreen', 'Fullscreen request failed', err)
     }
   }
 }

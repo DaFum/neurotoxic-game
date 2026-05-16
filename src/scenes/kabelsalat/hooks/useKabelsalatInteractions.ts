@@ -10,6 +10,7 @@ import type { TFunction } from 'i18next'
 import { SOCKET_DEFS, CABLE_MAP } from '../kabelsalatConstants'
 import type { CableId } from '../kabelsalatConstants'
 import type { SocketId } from '../../../types/kabelsalat'
+import { logger } from '../../../utils/logger'
 
 const isCableId = (value: string): value is CableId =>
   Object.hasOwn(CABLE_MAP, value)
@@ -110,8 +111,9 @@ export const useKabelsalatInteractions = (
             `Invalid socketId in useKabelsalatInteractions: ${socketId}`
           )
         } else {
-          console.error(
-            `Invalid socketId in useKabelsalatInteractions: ${socketId}`
+          logger.error(
+            'KabelsalatInteractions',
+            `Invalid socketId: ${socketId}`
           )
           return
         }
@@ -124,8 +126,9 @@ export const useKabelsalatInteractions = (
             `Invalid selectedCable in useKabelsalatInteractions: ${selectedCable}`
           )
         } else {
-          console.error(
-            `Invalid selectedCable in useKabelsalatInteractions: ${selectedCable}`
+          logger.error(
+            'KabelsalatInteractions',
+            `Invalid selectedCable: ${selectedCable}`
           )
           return
         }

@@ -7,6 +7,7 @@
 import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { handleError, StateError } from '../../../utils/errorHandler'
+import { logger } from '../../../utils/logger'
 import { checkTraitUnlocks } from '../../../utils/unlockCheck'
 import { applyTraitUnlocks } from '../../../utils/traitUtils'
 import { translateContextKeys } from '../../../utils/translationUtils'
@@ -135,7 +136,11 @@ const processTraitToasts = (
       return
     }
     if (!import.meta.env.PROD) {
-      console.error('Invalid trait toast: empty message', toastItem)
+      logger.error(
+        'PurchaseLogic',
+        'Invalid trait toast: empty message',
+        toastItem
+      )
     }
   })
 }
@@ -218,7 +223,7 @@ const processEffectMessages = (
       return
     }
     if (!import.meta.env.PROD) {
-      console.error('Invalid effect toast: empty message', msg)
+      logger.error('PurchaseLogic', 'Invalid effect toast: empty message', msg)
     }
   })
 }
