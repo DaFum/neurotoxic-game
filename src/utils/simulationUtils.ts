@@ -15,6 +15,25 @@ import {
   BALANCE_CONSTANTS
 } from './gameStateUtils'
 import type { BandState, GameState, BandMember } from '../types'
+
+const findMembersByName = <K extends string>(
+  members: BandMember[],
+  names: Readonly<Record<K, string>>
+): Partial<Record<K, BandMember>> => {
+  const result: Partial<Record<K, BandMember>> = {}
+  const keys = Object.keys(names) as K[]
+  for (let i = 0; i < members.length; i++) {
+    const m = members[i]
+    if (!m) continue
+    for (const key of keys) {
+      if (m.name === names[key]) {
+        result[key] = m
+        break
+      }
+    }
+  }
+  return result
+}
 import type { Song } from '../types/audio'
 import type { ActiveEffect } from '../types/components'
 
@@ -103,13 +122,10 @@ export const getGigModifiers = (
   }
 
   // 2. Member Status
-  let matze, Marius
-  for (let i = 0; i < members.length; i++) {
-    const m = members[i]
-    if (!m) continue
-    if (m.name === CHARACTERS.MATZE.name) matze = m
-    else if (m.name === CHARACTERS.MARIUS.name) Marius = m
-  }
+  const { matze, Marius } = findMembersByName(members, {
+    matze: CHARACTERS.MATZE.name,
+    Marius: CHARACTERS.MARIUS.name
+  })
 
   // Matze (Guitar)
   if (matze && matze.mood < 30) {
@@ -158,14 +174,11 @@ export const calculateGigPhysics = (bandState: BandState, song: Song) => {
   // Formula: Base 120ms + (Skill * 4ms)
   // Tightened from 150+5×skill (190ms at skill 8) to 120+4×skill (~152ms at skill 8)
   // to raise the skill floor and make misses more impactful.
-  let matze, Marius, Lars
-  for (let i = 0; i < members.length; i++) {
-    const m = members[i]
-    if (!m) continue
-    if (m.name === CHARACTERS.MATZE.name) matze = m
-    else if (m.name === CHARACTERS.MARIUS.name) Marius = m
-    else if (m.name === CHARACTERS.LARS.name) Lars = m
-  }
+  const { matze, Marius, Lars } = findMembersByName(members, {
+    matze: CHARACTERS.MATZE.name,
+    Marius: CHARACTERS.MARIUS.name,
+    Lars: CHARACTERS.LARS.name
+  })
 
   const getMemberSkill = (member?: BandMember): number => {
     if (!member) return 0
