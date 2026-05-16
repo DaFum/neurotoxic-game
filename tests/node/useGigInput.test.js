@@ -13,7 +13,7 @@ import { setupJSDOM, teardownJSDOM } from '../testUtils'
 
 // Mocks
 const mockAudioManager = {
-  ensureAudioContext: mock.fn()
+  ensureAudioContext: mock.fn(() => Promise.resolve(true))
 }
 
 const mockGigStats = {

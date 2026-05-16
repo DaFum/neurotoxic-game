@@ -36,7 +36,7 @@ test('DealCard ignores malformed negotiated deals without upfront/duration', () 
   )
 
   expect(screen.getByText('Base Deal')).toBeInTheDocument()
-  expect(container).toHaveTextContent('1000€')
+  expect(container).toHaveTextContent('€1,000')
   expect(container).toHaveTextContent('3 Gigs')
 })
 
@@ -67,6 +67,6 @@ test('DealCard ignores negotiated deals with missing description or non-finite n
 
   expect(screen.getByText('Base Deal')).toBeInTheDocument()
   expect(container).toHaveTextContent('Base description')
-  expect(container).toHaveTextContent('1000€')
+  expect(container).toHaveTextContent('€1,000')
   expect(container).toHaveTextContent('3 Gigs')
 })

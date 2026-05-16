@@ -177,7 +177,7 @@ const DealInfo = memo(
         <div className='text-xs font-mono grid grid-cols-2 gap-x-4 gap-y-1 text-star-white/80'>
           <div>
             💰 {t('ui:deals.upfront', { defaultValue: 'Upfront' })}:{' '}
-            {formatCurrency(displayDeal.offer.upfront, i18n.language)}
+            {formatCurrency(displayDeal.offer.upfront, i18n?.language ?? 'en')}
           </div>
           <div>
             📅 {t('ui:deals.duration', { defaultValue: 'Duration' })}:{' '}
@@ -187,7 +187,7 @@ const DealInfo = memo(
           {displayDeal.offer.perGig != null && (
             <div>
               💵 {t('ui:deals.perGig', { defaultValue: 'Per Gig' })}:{' '}
-              {formatCurrency(displayDeal.offer.perGig, i18n.language)}
+              {formatCurrency(displayDeal.offer.perGig, i18n?.language ?? 'en')}
             </div>
           )}
           {displayDeal.offer.item != null && (

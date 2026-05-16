@@ -88,7 +88,7 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
                   -
                 </button>
                 <span className='text-(--color-toxic-green) font-mono w-8 text-center'>
-                  {formatCurrency(item.currentPrice, i18n.language)}
+                  {formatCurrency(item.currentPrice, i18n?.language ?? 'en')}
                 </span>
                 <button
                   type='button'

@@ -53,37 +53,40 @@ export const handleUpdateBand = (
         : state.band.harmony
     )
   }
-  if (
-    Object.hasOwn(safeUpdates, 'stress') &&
-    typeof safeUpdates.stress === 'number'
-  ) {
-    safeUpdates.stress = clampBandStress(safeUpdates.stress)
+  const sanitizeNumericKey = (
+    key: 'stress' | 'luck' | 'tempo',
+    clamp: (value: number) => number
+  ) => {
+    if (!Object.hasOwn(safeUpdates, key)) return
+    const raw = safeUpdates[key]
+    if (typeof raw === 'number' && Number.isFinite(raw)) {
+      safeUpdates[key] = clamp(raw)
+    } else {
+      delete safeUpdates[key]
+    }
   }
-  if (
-    Object.hasOwn(safeUpdates, 'luck') &&
-    typeof safeUpdates.luck === 'number'
-  ) {
-    safeUpdates.luck = clamp0to100(safeUpdates.luck)
-  }
-  if (
-    Object.hasOwn(safeUpdates, 'tempo') &&
-    typeof safeUpdates.tempo === 'number'
-  ) {
-    safeUpdates.tempo = clamp0to100(safeUpdates.tempo)
-  }
+  sanitizeNumericKey('stress', clampBandStress)
+  sanitizeNumericKey('luck', clamp0to100)
+  sanitizeNumericKey('tempo', clamp0to100)
 
   if (Array.isArray(safeUpdates.members)) {
-    safeUpdates.members = (safeUpdates.members as BandMember[]).map(member => {
-      if (!member || typeof member !== 'object') return member
-      const next: BandMember = { ...member }
-      if (typeof next.stamina === 'number') {
-        next.stamina = clampMemberStamina(next.stamina)
-      }
-      if (typeof next.mood === 'number') {
-        next.mood = clampMemberMood(next.mood)
-      }
-      return next
-    })
+    safeUpdates.members = (safeUpdates.members as unknown[])
+      .filter(
+        (member): member is BandMember =>
+          !!member && typeof member === 'object' && !Array.isArray(member)
+      )
+      .map(member => {
+        const next: BandMember = { ...member }
+        if (typeof next.stamina === 'number') {
+          const maxStamina =
+            typeof next.staminaMax === 'number' ? next.staminaMax : undefined
+          next.stamina = clampMemberStamina(next.stamina, maxStamina)
+        }
+        if (typeof next.mood === 'number') {
+          next.mood = clampMemberMood(next.mood)
+        }
+        return next
+      })
   }
 
   const mergedBand = {

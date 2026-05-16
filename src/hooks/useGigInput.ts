@@ -37,8 +37,17 @@ export const useGigInput = ({
 
   const ensureAudioFromGesture = useCallback(() => {
     if (hasUnlockedAudioRef.current) return
+    // Optimistically mark as unlocked to dedupe concurrent gestures; clear on
+    // failure so a later gesture can retry rather than getting stuck silent.
     hasUnlockedAudioRef.current = true
-    audioService.ensureAudioContext()
+    void audioService
+      .ensureAudioContext()
+      .then(success => {
+        if (!success) hasUnlockedAudioRef.current = false
+      })
+      .catch(() => {
+        hasUnlockedAudioRef.current = false
+      })
   }, [])
 
   // Keyboard Event Handling

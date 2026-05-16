@@ -157,7 +157,7 @@ export const usePostGigLogic = () => {
 
       setPostOptionsError(true)
     }
-  }, [postOptions])
+  }, [postOptionsDerivationError])
 
   // Handle post options generation error side effects purely in an effect
   useEffect(() => {
