@@ -66,7 +66,8 @@ vi.mock('../../src/components/stage/stageRenderUtils', async importOriginal => {
 })
 
 vi.mock('../../src/utils/logger', () => ({
-  logger: { warn: vi.fn() }
+  logger: { warn: vi.fn() },
+  LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3 }
 }))
 
 describe('KabelsalatScene', () => {

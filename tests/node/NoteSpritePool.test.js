@@ -298,5 +298,4 @@ describe('NoteSpritePool', () => {
     assert.equal(pool.container, null)
     assert.equal(mockSprite.destroy.mock.calls.length, 1)
   })
-
 })
