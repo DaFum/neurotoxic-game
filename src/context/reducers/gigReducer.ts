@@ -176,7 +176,7 @@ export const handleSetLastGigStats = (
         const gigVenueId = state.currentGig?.id || 'unknown_venue'
         nextState = handleAddVenueBlacklist(nextState, {
           venueId: gigVenueId,
-          toastId: payload.toastId || `${gigVenueId}-blacklisted`
+          toastId: payload.toastId ?? `${gigVenueId}-blacklisted`
         })
       }
     }
