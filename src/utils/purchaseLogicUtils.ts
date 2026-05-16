@@ -224,7 +224,10 @@ export const canAfford = (
  * @param {Object} bandInventory - Current band inventory
  * @returns {Object} Band patch to apply
  */
-const applyInventorySet = (effect: Effect, bandInventory?: Inventory) => ({
+export const applyInventorySet = (
+  effect: Effect,
+  bandInventory?: Inventory
+) => ({
   inventory: { ...(bandInventory ?? {}), [effect.item as string]: effect.value }
 })
 
@@ -234,7 +237,10 @@ const applyInventorySet = (effect: Effect, bandInventory?: Inventory) => ({
  * @param {Object} bandInventory - Current band inventory
  * @returns {Object} Band patch to apply
  */
-const applyInventoryAdd = (effect: Effect, bandInventory?: Inventory) => {
+export const applyInventoryAdd = (
+  effect: Effect,
+  bandInventory?: Inventory
+) => {
   if (typeof effect.item !== 'string') {
     throw new StateError(
       `Invalid effect item for inventory_add: ${String(effect.item)}`
@@ -269,7 +275,7 @@ const applyInventoryAdd = (effect: Effect, bandInventory?: Inventory) => {
  * @param {Object} band - Band state
  * @returns {Object} Object with updated playerPatch and bandPatch
  */
-const applyStatModifier = (
+export const applyStatModifier = (
   effect: Effect,
   playerPatch: PlayerPatch,
   player: PlayerState,
@@ -471,7 +477,7 @@ export const processPurchaseEffect = (
  * @param {Object} playerVan - Current player van state
  * @returns {Object} Updated player patch
  */
-const applyUnlockUpgrade = (
+export const applyUnlockUpgrade = (
   effect: Effect,
   item: PurchaseItem,
   playerPatch: PlayerPatch,
@@ -505,7 +511,7 @@ const applyUnlockUpgrade = (
  * @param {Object} band - Band state
  * @returns {Object} Object with updated playerPatch, bandPatch and messages
  */
-const applyUnlockHQ = (
+export const applyUnlockHQ = (
   item: PurchaseItem,
   playerPatch: PlayerPatch,
   player: PlayerState,
@@ -617,7 +623,7 @@ const applyUnlockHQ = (
  * @param {Object} player - Player state
  * @returns {Object} Object with updated playerPatch and bandPatch
  */
-const applyPassive = (
+export const applyPassive = (
   effect: Effect,
   playerPatch: PlayerPatch,
   player: PlayerState
