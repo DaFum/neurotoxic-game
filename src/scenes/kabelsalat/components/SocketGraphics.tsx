@@ -9,7 +9,7 @@ import { IecSocket } from './sockets/IecSocket.tsx'
 import { MidiSocket } from './sockets/MidiSocket.tsx'
 import type { ConnectorType } from '../../../types/kabelsalat'
 
-export const SocketGraphics = ({ type }: { type: ConnectorType | string }) => {
+export const SocketGraphics = ({ type }: { type: ConnectorType }) => {
   switch (type) {
     case 'xlr':
       return <XlrSocket />
