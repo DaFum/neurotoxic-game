@@ -51,9 +51,9 @@ Sections:
 
 ### HIGH
 
-- **HIGH** `UPDATE_RIVAL_BAND` fully orphaned: declared `src/context/actionTypes.ts:38`, creator `actionCreators.ts:563-579` (`createUpdateRivalBandAction`), handler `reducers/rivalReducer.ts:46-59`, mapped at `gameReducer.ts:143`, typed at `src/types/game.d.ts:155`. **No dispatcher anywhere**. Action: **DELETE** end-to-end or **INTEGRATE** if rival HP/power mutation is intended.
+- **HIGH** `UPDATE_RIVAL_BAND` fully orphaned: declared `src/context/actionTypes.ts:38`, creator `actionCreators.ts:563-579` (`createUpdateRivalBandAction`), handler `reducers/rivalReducer.ts:46-59`, mapped at `gameReducer.ts:143`, typed at `src/types/game.d.ts:155`. **No dispatcher anywhere**. Action: **INTEGRATE** if rival HP/power mutation is intended (likely feature gap), else **DELETE** end-to-end. Prefer INTEGRATE — confirm with product owner before deleting.
 - ~~**HIGH** `src/utils/postGigUtils.ts` — `calculateExcessMissMoneyPenalty` / `applyPostGigPerformancePenalty` are never invoked~~ **RETRACTED**: both are integrated. `deriveFinancials` (`postGigUtils.ts:769`) calls `applyPostGigPerformancePenalty`, which calls `calculateExcessMissMoneyPenalty` (`postGigUtils.ts:597`); `deriveFinancials` is consumed by `src/hooks/usePostGigLogic.ts:92`. No action.
-- **HIGH** `src/utils/eventValidator.ts` — `validateGameEvent` is exported but never imported in `src/`; schemas under `src/schemas/` reference it as the validator of record. Action: **INTEGRATE** at event ingestion or **DELETE**.
+- **HIGH** `src/utils/eventValidator.ts` — `validateGameEvent` is exported but never imported in `src/`; schemas under `src/schemas/` reference it as the validator of record. (Note: `tests/eventValidator.test.js` imports it — any DELETE must also remove that test.) Action: **INTEGRATE** at event ingestion (preferred) or **DELETE** together with the test.
 
 ### MED
 
@@ -83,7 +83,7 @@ Sections:
   - `src/hooks/usePostGigLogic.ts:65` — `lastGigStats?.score || 0`
   - `src/components/MapNodeView.tsx:156` — `node.venue?.diff || 0`
   - `src/utils/gigStats.ts:86` — `stats.hits || 0`
-  - widespread in `src/utils/postGigUtils.ts`, `socialEngine.ts`, `eventEngine.ts`, `arrivalUtils.ts`. Action: **FIX** to `??`.
+  - widespread in `src/utils/postGigUtils.ts`, `socialEngine.ts`, `eventEngine.ts`, `arrivalUtils.ts`. Action: **FIX** to `??` — verify each site individually before a blind sweep; a few callers may rely on `0` as the floor for `null`/`undefined`, in which case the existing `|| 0` is semantically correct and should be left.
 - **HIGH** Hardcoded Tailwind z-index instead of `z-(--z-X)` tokens:
   - `src/components/PixiStage.tsx:65` (z-20)
   - `src/components/GigHUD.tsx:51` (z-30)
