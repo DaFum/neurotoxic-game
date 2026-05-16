@@ -310,21 +310,48 @@ export const handleMerchPress = (
   return nextState
 }
 
-export const handlePirateBroadcast = (
+type ZealotryDayField = 'lastPirateBroadcastDay' | 'lastDarkWebLeakDay'
+
+const applyZealotryAction = (
   state: GameState,
-  payload: PirateBroadcastPayload
+  payload: PirateBroadcastPayload | DarkWebLeakPayload | null | undefined,
+  dayField: ZealotryDayField,
+  options: {
+    optionalGainFields: boolean
+    duplicateLogMessage: string
+    insufficientLogMessage: string
+    invalidLogMessage: string
+    invalidPayloadShapeLogMessage?: string
+  }
 ): GameState => {
   const playerDay = Number.isFinite(state.player.day)
     ? (state.player.day as number)
     : 0
 
-  const parsed = parseZealotryActionPayload(payload, true)
+  if (state.social[dayField] === playerDay) {
+    logger.warn('GameState', options.duplicateLogMessage)
+    return state
+  }
+
+  if (options.invalidPayloadShapeLogMessage) {
+    if (!payload || typeof payload !== 'object') {
+      logger.warn('GameState', options.invalidPayloadShapeLogMessage)
+      return state
+    }
+  }
+
+  if (!payload) {
+    logger.warn('GameState', options.invalidLogMessage)
+    return state
+  }
+
+  const parsed = parseZealotryActionPayload(payload, options.optionalGainFields)
   if (!parsed) {
-    logger.warn('GameState', 'Invalid pirate broadcast payload')
+    logger.warn('GameState', options.invalidLogMessage)
     return state
   }
   const { cost, fameGain, zealotryGain, controversyGain, harmonyCost } = parsed
-  const successToast = payload.successToast
+  const successToast = payload?.successToast
 
   const funds = readPlayerFundsAndHarmony(state)
   if (!funds) {
@@ -334,13 +361,8 @@ export const handlePirateBroadcast = (
   const currentMoney = funds.money
   const currentHarmony = funds.harmony
 
-  if (state.social.lastPirateBroadcastDay === playerDay) {
-    logger.warn('GameState', 'Pirate broadcast already triggered today')
-    return state
-  }
-
   if (currentMoney < cost || currentHarmony < harmonyCost) {
-    logger.warn('GameState', 'Insufficient funds or harmony for broadcast')
+    logger.warn('GameState', options.insufficientLogMessage)
     return state
   }
 
@@ -372,7 +394,7 @@ export const handlePirateBroadcast = (
       ...state.social,
       zealotry: nextZealotry,
       controversyLevel: nextControversy,
-      lastPirateBroadcastDay: playerDay
+      [dayField]: playerDay
     }
   }
 
@@ -386,84 +408,26 @@ export const handlePirateBroadcast = (
 
   return nextState
 }
+
+export const handlePirateBroadcast = (
+  state: GameState,
+  payload: PirateBroadcastPayload
+): GameState =>
+  applyZealotryAction(state, payload, 'lastPirateBroadcastDay', {
+    optionalGainFields: true,
+    duplicateLogMessage: 'Pirate broadcast already triggered today',
+    insufficientLogMessage: 'Insufficient funds or harmony for broadcast',
+    invalidLogMessage: 'Invalid pirate broadcast payload'
+  })
 
 export const handleDarkWebLeak = (
   state: GameState,
   payload: DarkWebLeakPayload | null | undefined
-): GameState => {
-  const playerDay = Number.isFinite(state.player.day)
-    ? (state.player.day as number)
-    : 0
-  if (state.social.lastDarkWebLeakDay === playerDay) {
-    logger.warn('GameState', 'Dark web leak already triggered today')
-    return state
-  }
-
-  if (!payload || typeof payload !== 'object') {
-    logger.warn('GameState', 'Invalid payload for DARK_WEB_LEAK')
-    return state
-  }
-
-  const parsed = parseZealotryActionPayload(payload)
-  if (!parsed) {
-    logger.warn('GameState', 'Invalid dark web leak payload')
-    return state
-  }
-  const { cost, fameGain, zealotryGain, controversyGain, harmonyCost } = parsed
-  const successToast = payload.successToast
-
-  const funds = readPlayerFundsAndHarmony(state)
-  if (!funds) {
-    logger.warn('GameState', 'Invalid player funds or harmony state')
-    return state
-  }
-  const currentMoney = funds.money
-  const currentHarmony = funds.harmony
-
-  if (currentMoney < cost || currentHarmony < harmonyCost) {
-    logger.warn('GameState', 'Insufficient funds or harmony for dark web leak')
-    return state
-  }
-
-  const currentFame = Number(state.player.fame) || 0
-  const currentZealotry = Number(state.social.zealotry) || 0
-  const currentControversy = Number(state.social.controversyLevel) || 0
-
-  const nextMoney = clampPlayerMoney(currentMoney - cost)
-  const nextHarmony = clampBandHarmony(currentHarmony - harmonyCost)
-  const nextFame = clampPlayerFame(currentFame + fameGain)
-  const nextZealotry = clampZealotry(currentZealotry + zealotryGain)
-  const nextControversy = clampControversyLevel(
-    currentControversy + controversyGain
-  )
-
-  const nextState = {
-    ...state,
-    player: {
-      ...state.player,
-      money: nextMoney,
-      fame: nextFame,
-      fameLevel: calculateFameLevel(nextFame)
-    },
-    band: {
-      ...state.band,
-      harmony: nextHarmony
-    },
-    social: {
-      ...state.social,
-      zealotry: nextZealotry,
-      controversyLevel: nextControversy,
-      lastDarkWebLeakDay: playerDay
-    }
-  }
-
-  appendDeltaSuccessToast(nextState, successToast, state.toasts, {
-    deltaFame: nextFame - currentFame,
-    deltaZealotry: nextZealotry - currentZealotry,
-    deltaControversy: nextControversy - currentControversy,
-    deltaHarmony: nextHarmony - currentHarmony,
-    cost: currentMoney - nextMoney
+): GameState =>
+  applyZealotryAction(state, payload, 'lastDarkWebLeakDay', {
+    optionalGainFields: false,
+    duplicateLogMessage: 'Dark web leak already triggered today',
+    insufficientLogMessage: 'Insufficient funds or harmony for dark web leak',
+    invalidLogMessage: 'Invalid dark web leak payload',
+    invalidPayloadShapeLogMessage: 'Invalid payload for DARK_WEB_LEAK'
   })
-
-  return nextState
-}

@@ -124,6 +124,10 @@
   --font-code: 'Courier New', monospace;
   --font-script: 'Brush Script MT', 'Lucida Handwriting', cursive;
 
+  --z-stage-bg: 10;
+  --z-stage: 20;
+  --z-stage-overlay: 30;
+  --z-stage-controls: 40;
   --z-hud: 50;
   --z-modal: 100;
   --z-tutorial: 150;

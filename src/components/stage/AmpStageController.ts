@@ -2,7 +2,7 @@ import * as PIXI from 'pixi.js'
 import { getPixiColorFromToken } from './stageRenderUtils'
 import { BaseStageController } from './BaseStageController'
 import { getSafeRandom } from '../../utils/crypto'
-import { clamp0to100 } from '../../utils/gameStateUtils'
+import { clamp0to100, clampAmpDial } from '../../utils/gameStateUtils'
 import type {
   StageControllerOptions,
   AmpStageOptions
@@ -63,8 +63,7 @@ export class AmpStageController extends BaseStageController<AmpStageOptions> {
       if (Object.hasOwn(state, 'targetValue')) {
         const sanitizedTarget = Number(state.targetValue)
         if (Number.isFinite(sanitizedTarget)) {
-          const boundedTargetFreq = Math.max(0, Math.min(1000, sanitizedTarget))
-          this.targetFreq = boundedTargetFreq
+          this.targetFreq = clampAmpDial(sanitizedTarget)
         }
       }
       if (Object.hasOwn(state, 'dialValue')) {

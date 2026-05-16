@@ -228,7 +228,7 @@ export const OverworldMap = React.memo(
             />
             {hasRival && visibility !== 'hidden' && (
               <div
-                className='absolute z-30 pointer-events-none transition-all duration-300'
+                className='absolute z-(--z-stage-overlay) pointer-events-none transition-all duration-300'
                 style={{
                   left: `${node.x}%`,
                   top: `${node.y}%`,

@@ -177,6 +177,17 @@ export const clamp0to100 = (value: number): number => {
 }
 
 /**
+ * Clamps an amp-calibration dial value to its valid 0..1000 range.
+ *
+ * Non-finite inputs collapse to 0. The result is kept as a floating-point
+ * number to preserve sub-integer dial precision.
+ */
+export const clampAmpDial = (value: number): number => {
+  if (!Number.isFinite(value)) return 0
+  return Math.max(0, Math.min(1000, value))
+}
+
+/**
  * Clamps a social controversy level to be between 0 and 100.
  *
  * @param {number} level - Candidate controversy level.

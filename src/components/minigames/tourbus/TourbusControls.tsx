@@ -8,7 +8,7 @@ export const TourbusControls = ({
   const { t } = useTranslation('minigame')
 
   return (
-    <div className='absolute inset-0 z-40 flex justify-between pointer-events-auto'>
+    <div className='absolute inset-0 z-(--z-stage-controls) flex justify-between pointer-events-auto'>
       <button
         type='button'
         aria-label={t('minigame:tourbus.moveLeft', {

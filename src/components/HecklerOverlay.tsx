@@ -105,7 +105,7 @@ export const HecklerOverlay = memo(function HecklerOverlay({
   return (
     <div
       ref={containerRef}
-      className='absolute inset-0 pointer-events-none overflow-hidden z-20'
+      className='absolute inset-0 pointer-events-none overflow-hidden z-(--z-stage)'
     />
   )
 })
