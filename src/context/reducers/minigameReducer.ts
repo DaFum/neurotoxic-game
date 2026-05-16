@@ -264,6 +264,37 @@ export const handleStartAmpCalibration = (
   }
 }
 
+/**
+ * Applies the shared post-minigame side effects (band harmony loss, money
+ * reward, damaged_gear modifier on failure, minigame.active=false) to the
+ * supplied state. Used by both the Amp Calibration and Kabelsalat
+ * completion handlers, which differ only in how `stress` and `reward` are
+ * computed upstream.
+ */
+const applyPostMinigameResult = (
+  state: GameState,
+  stress: number,
+  reward: number,
+  failureLogTag: string
+): GameState => {
+  const nextHarmony = clampBandHarmony(state.band.harmony - stress)
+  const nextMoney = clampPlayerMoney(state.player.money + reward)
+
+  const nextModifiers = { ...state.gigModifiers }
+  if (stress > 0) {
+    logger.warn('GameState', `${failureLogTag}: damaged_gear active`)
+    nextModifiers.damaged_gear = true
+  }
+
+  return {
+    ...state,
+    band: { ...state.band, harmony: nextHarmony },
+    player: { ...state.player, money: nextMoney },
+    gigModifiers: nextModifiers,
+    minigame: { ...state.minigame, active: false }
+  }
+}
+
 export const handleCompleteAmpCalibration = (
   state: GameState,
   payload: Record<string, unknown>
@@ -280,35 +311,15 @@ export const handleCompleteAmpCalibration = (
     typeof hijacksOverridden === 'number' ? hijacksOverridden : 0
   )
 
-  const nextHarmony = clampBandHarmony(state.band.harmony - stress)
-  const nextMoney = clampPlayerMoney(state.player.money + reward)
-
-  const nextBand = {
-    ...state.band,
-    harmony: nextHarmony
-  }
-
-  const nextPlayer = {
-    ...state.player,
-    money: nextMoney
-  }
-
-  const nextModifiers = { ...state.gigModifiers }
-  if (stress > 0) {
-    logger.warn('GameState', 'Amp Calibration failed: damaged_gear active')
-    nextModifiers.damaged_gear = true
-  }
-
   // Keep minigame.type set so SceneRouter continues rendering AmpCalibrationScene
   // while its completion overlay is visible. Scene transition (and final reset)
   // is driven by the UI overlay's CONTINUE button via changeScene(GIG).
-  return {
-    ...state,
-    band: nextBand,
-    player: nextPlayer,
-    gigModifiers: nextModifiers,
-    minigame: { ...state.minigame, active: false }
-  }
+  return applyPostMinigameResult(
+    state,
+    stress,
+    reward,
+    'Amp Calibration failed'
+  )
 }
 
 export const handleStartKabelsalatMinigame = (
@@ -342,35 +353,10 @@ export const handleCompleteKabelsalatMinigame = (
     state.band
   )
 
-  const nextHarmony = clampBandHarmony(state.band.harmony - stress)
-  const nextMoney = clampPlayerMoney(state.player.money + reward)
-
-  const nextBand = {
-    ...state.band,
-    harmony: nextHarmony
-  }
-
-  const nextPlayer = {
-    ...state.player,
-    money: nextMoney
-  }
-
-  const nextModifiers = { ...state.gigModifiers }
-  if (stress > 0) {
-    logger.warn('GameState', 'Kabelsalat failed: damaged_gear active')
-    nextModifiers.damaged_gear = true
-  }
-
   // Keep minigame.type set so SceneRouter continues rendering KabelsalatScene
   // while its completion overlay is visible. Scene transition is driven by
   // useKabelsalatGameEnd's changeScene(GIG) call after the delay.
-  return {
-    ...state,
-    band: nextBand,
-    player: nextPlayer,
-    gigModifiers: nextModifiers,
-    minigame: { ...state.minigame, active: false }
-  }
+  return applyPostMinigameResult(state, stress, reward, 'Kabelsalat failed')
 }
 
 export const handleCompleteRoadieMinigame = (
