@@ -105,9 +105,7 @@ export const createUpdatePlayerAction = (
       const fameValue = (safeUpdates as { fame?: unknown }).fame
       if (typeof fameValue === 'number' && Number.isFinite(fameValue)) {
         safeUpdates.fame = clampPlayerFame(fameValue)
-        if (!Object.hasOwn(safeUpdates, 'fameLevel')) {
-          safeUpdates.fameLevel = calculateFameLevel(safeUpdates.fame)
-        }
+        safeUpdates.fameLevel = calculateFameLevel(safeUpdates.fame)
       } else {
         delete safeUpdates.fame
         delete safeUpdates.fameLevel

@@ -65,7 +65,6 @@ export interface MerchPressPayload {
   controversyGain: number
   fameGain: number
   harmonyCost: number
-  isSuccess?: boolean
   successToast?: Omit<ToastPayload, 'id'> & Partial<Pick<ToastPayload, 'id'>>
 }
 

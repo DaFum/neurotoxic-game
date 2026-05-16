@@ -22,6 +22,4 @@ export type CollisionHandler = (projectile: unknown) => void
 
 export type MissHandler = (missCount: number, fromInput: boolean) => void
 
-export type GigFinalizeHandler<TState> = (state: TState) => void
-
 export type RemoveByIdCallback = (id: string) => void

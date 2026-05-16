@@ -311,7 +311,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
         addToast(typedT('ui:pregig.toasts.audioFail'), 'error')
         return
       }
-      const gigId = currentGig?.id || `gig_${getSafeUUID()}`
+      const gigId = currentGig?.id ?? `gig_${getSafeUUID()}`
 
       let lastMinigame = lastMinigameFallback
       try {

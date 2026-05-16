@@ -14,7 +14,8 @@ import {
   clampPlayerFame,
   calculateFameLevel,
   clampLoyalty,
-  clampZealotry
+  clampZealotry,
+  clampControversyLevel
 } from '../../utils/gameStateUtils'
 import { sanitizeSuccessToast } from './toastSanitizers'
 
@@ -274,9 +275,8 @@ export const handleMerchPress = (
   const nextMoney = clampPlayerMoney(currentMoney - cost)
   const nextHarmony = clampBandHarmony(currentHarmony - harmonyCost)
   const nextLoyalty = clampLoyalty(currentLoyalty + loyaltyGain)
-  const nextControversy = Math.max(
-    0,
-    Math.min(100, currentControversy + controversyGain)
+  const nextControversy = clampControversyLevel(
+    currentControversy + controversyGain
   )
   const nextFame = clampPlayerFame(currentFame + fameGain)
 
@@ -298,9 +298,6 @@ export const handleMerchPress = (
       controversyLevel: nextControversy
     }
   }
-
-  // Inventory rewards removed based on feedback that they are unused/orphaned
-  // and do not add gameplay value.
 
   appendDeltaSuccessToast(nextState, successToast, state.toasts, {
     deltaLoyalty: nextLoyalty - currentLoyalty,
@@ -355,9 +352,8 @@ export const handlePirateBroadcast = (
   const nextHarmony = clampBandHarmony(currentHarmony - harmonyCost)
   const nextFame = clampPlayerFame(currentFame + fameGain)
   const nextZealotry = clampZealotry(currentZealotry + zealotryGain)
-  const nextControversy = Math.max(
-    0,
-    Math.min(100, currentControversy + controversyGain)
+  const nextControversy = clampControversyLevel(
+    currentControversy + controversyGain
   )
 
   const nextState = {
@@ -437,9 +433,8 @@ export const handleDarkWebLeak = (
   const nextHarmony = clampBandHarmony(currentHarmony - harmonyCost)
   const nextFame = clampPlayerFame(currentFame + fameGain)
   const nextZealotry = clampZealotry(currentZealotry + zealotryGain)
-  const nextControversy = Math.max(
-    0,
-    Math.min(100, currentControversy + controversyGain)
+  const nextControversy = clampControversyLevel(
+    currentControversy + controversyGain
   )
 
   const nextState = {

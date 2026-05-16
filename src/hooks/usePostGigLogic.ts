@@ -62,7 +62,7 @@ export const usePostGigLogic = () => {
     }[phase] ?? 'TOUR UPDATE'
 
   const perfScore = useMemo(
-    () => calculatePerformanceScore(lastGigStats?.score || 0),
+    () => calculatePerformanceScore(lastGigStats?.score ?? 0),
     [lastGigStats]
   )
 

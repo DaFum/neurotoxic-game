@@ -153,7 +153,7 @@ const MapNodeTooltip = memo(
             <br />
             {t('ui:map.ticket')}: {ticketPrice ?? node.venue?.price}
             {'\u20AC'} | {t('ui:map.diff')}:{' '}
-            {'\u2605'.repeat(node.venue?.diff || 0)}
+            {'\u2605'.repeat(node.venue?.diff ?? 0)}
           </div>
         )}
         {(node.type === 'GIG' ||

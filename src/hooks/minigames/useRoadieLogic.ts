@@ -177,7 +177,7 @@ export function handleDelivery(
     game.itemsDelivered.push(game.carrying)
 
     if (game.carrying.type === 'CONTRABAND') {
-      game.contrabandCount = (game.contrabandCount || 0) + 1
+      game.contrabandCount = (game.contrabandCount ?? 0) + 1
     }
 
     game.carrying = null
@@ -185,7 +185,7 @@ export function handleDelivery(
 
     if (game.itemsToDeliver.length === 0) {
       game.isGameOver = true
-      onGameOver(game.equipmentDamage, game.contrabandCount || 0)
+      onGameOver(game.equipmentDamage, game.contrabandCount ?? 0)
     }
   }
 }
@@ -294,14 +294,14 @@ export const useRoadieLogic = () => {
             currentDamage: 100,
             isGameOver: true
           }))
-          completeRoadieMinigame(100, game.contrabandCount || 0)
+          completeRoadieMinigame(100, game.contrabandCount ?? 0)
           return
         }
       }
 
       spawnTraffic(game, deltaMS)
       const crashed = processTraffic(game, deltaMS, (damage: number) =>
-        completeRoadieMinigame(damage, game.contrabandCount || 0)
+        completeRoadieMinigame(damage, game.contrabandCount ?? 0)
       )
 
       if (crashed || (game.carrying && game.carrying.type === 'CONTRABAND')) {

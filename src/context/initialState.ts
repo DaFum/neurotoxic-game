@@ -297,7 +297,5 @@ export const createInitialState = (
   minigame: { ...DEFAULT_MINIGAME_STATE },
   unlocks: Array.isArray(persistedData.unlocks)
     ? [...persistedData.unlocks]
-    : [],
-  pendingBandHQOpen: false,
-  completedMilestones: []
+    : []
 })

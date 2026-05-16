@@ -46,7 +46,6 @@ export const useMerchPress = () => {
       controversyGain: config.controversyGain,
       fameGain: config.fameGain,
       harmonyCost,
-      isSuccess: !isFailure,
       successToast
     })
 

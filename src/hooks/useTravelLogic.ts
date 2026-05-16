@@ -583,7 +583,7 @@ export const useTravelLogic = ({
       })
 
       const currentStartNode = gameMap?.nodes[player.currentNodeId]
-      const currentLayer = currentStartNode?.layer || 0
+      const currentLayer = currentStartNode?.layer ?? 0
       const visibility = getNodeVisibilityUtil(node.layer, currentLayer)
 
       const accessCheck = checkVenueAccess({

@@ -442,8 +442,6 @@ export const bandReducer = (
   state: GameState,
   action: GameAction
 ): GameState => {
-  if (!('payload' in action)) return state
-
   switch (action.type) {
     case ActionTypes.TOGGLE_NEURO_DECIMATOR:
       return handleToggleNeuroDecimator(
