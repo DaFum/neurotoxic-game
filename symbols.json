@@ -6917,6 +6917,26 @@
         "isDefault": false
       }
     ],
+    "ArrivalNode": [
+      {
+        "name": "ArrivalNode",
+        "path": "src/utils/arrivalUtils.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "typeOnly": true
+      }
+    ],
+    "GigArrivalNode": [
+      {
+        "name": "GigArrivalNode",
+        "path": "src/utils/arrivalUtils.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "typeOnly": true
+      }
+    ],
     "ArrivalResult": [
       {
         "name": "ArrivalResult",
