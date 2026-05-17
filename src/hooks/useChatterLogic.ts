@@ -11,7 +11,7 @@
  * - Solution: Used refs for gameState to separate UI updates from logical ticks.
  */
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { getRandomChatter } from '../data/chatter'
+import { getRandomChatter } from '../data/chatter/index'
 import { getSafeRandom, getSafeUUID } from '../utils/crypto'
 import { logger } from '../utils/logger'
 import type { BandMember } from '../types'

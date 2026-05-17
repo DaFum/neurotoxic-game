@@ -3,10 +3,11 @@
 
  */
 import { useTranslation } from 'react-i18next'
+import { formatCurrency } from '../../utils/numberUtils'
 import type { ClinicHeaderProps } from '../../types/components'
 
 export const ClinicHeader = ({ player }: ClinicHeaderProps) => {
-  const { t } = useTranslation(['ui'])
+  const { t, i18n } = useTranslation(['ui'])
 
   return (
     <header className='border-b border-toxic-green/50 pb-4 shrink-0'>
@@ -21,7 +22,8 @@ export const ClinicHeader = ({ player }: ClinicHeaderProps) => {
       </p>
       <div className='flex gap-4 mt-4 text-xs font-mono text-star-white'>
         <span>
-          {t('ui:clinic.funds', { defaultValue: 'FUNDS:' })} {player.money}€
+          {t('ui:clinic.funds', { defaultValue: 'FUNDS:' })}{' '}
+          {formatCurrency(player.money ?? 0, i18n?.language ?? 'en')}
         </span>
         <span>
           {t('ui:clinic.fame', { defaultValue: 'FAME:' })} {player.fame}

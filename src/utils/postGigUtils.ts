@@ -521,17 +521,20 @@ export const getAcceptDealSocialUpdateFactory = (deal: BrandDeal) => {
   }
 }
 
+export const SPIN_STORY_MONEY_COST = 200
+export const SPIN_STORY_CONTROVERSY_REDUCTION = 25
+
 export const getSpinStoryMoneyUpdate = ({
   player
 }: {
   player: GameState['player']
 }) => {
-  if ((player.money ?? 0) < 200) {
+  if ((player.money ?? 0) < SPIN_STORY_MONEY_COST) {
     return { success: false }
   }
 
   const prevMoney = player.money ?? 0
-  const nextMoney = clampPlayerMoney(prevMoney - 200)
+  const nextMoney = clampPlayerMoney(prevMoney - SPIN_STORY_MONEY_COST)
   const appliedDelta = nextMoney - prevMoney
 
   return {
@@ -544,7 +547,7 @@ export const getSpinStoryMoneyUpdate = ({
 export const getSpinStorySocialUpdateFactory = () => {
   return (prevSocial: GameState['social']) => ({
     controversyLevel: clampControversyLevel(
-      (prevSocial.controversyLevel || 0) - 25
+      (prevSocial.controversyLevel || 0) - SPIN_STORY_CONTROVERSY_REDUCTION
     )
   })
 }

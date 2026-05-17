@@ -2,6 +2,7 @@ import { memo, type ChangeEvent, type KeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCallback } from 'react'
 import type { AmpControlsProps } from '../../../types/components'
+import { clampAmpDial } from '../../../utils/gameStateUtils'
 
 export const AmpControls = memo(function AmpControls({
   dialValue,
@@ -31,21 +32,21 @@ export const AmpControls = memo(function AmpControls({
     (e: KeyboardEvent<HTMLInputElement>) => {
       if (e.key === 'ArrowLeft') {
         e.preventDefault()
-        setDialValue(prev => Math.max(0, prev - 10))
+        setDialValue(prev => clampAmpDial(prev - 10))
       } else if (e.key === 'ArrowRight') {
         e.preventDefault()
-        setDialValue(prev => Math.min(1000, prev + 10))
+        setDialValue(prev => clampAmpDial(prev + 10))
       }
     },
     [setDialValue]
   )
 
   const handleFineTuneDown = useCallback(() => {
-    setDialValue(prev => Math.max(0, prev - 1))
+    setDialValue(prev => clampAmpDial(prev - 1))
   }, [setDialValue])
 
   const handleFineTuneUp = useCallback(() => {
-    setDialValue(prev => Math.min(1000, prev + 1))
+    setDialValue(prev => clampAmpDial(prev + 1))
   }, [setDialValue])
 
   // Optional distance color mapping for better UX

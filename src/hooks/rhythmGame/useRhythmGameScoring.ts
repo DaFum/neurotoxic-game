@@ -5,7 +5,7 @@ import {
   buildGigStatsSnapshot,
   calculateAccuracy
 } from '../../utils/gigStats'
-import { audioManager } from '../../utils/audio/audioEngine'
+import { audioService } from '../../utils/audio/audioEngine'
 import {
   getGigTimeMs,
   getToneAbsoluteTimeMs,
@@ -178,7 +178,7 @@ export const useRhythmGameScoring = ({
       gameStateRef.current.stats = updatedStats
 
       const newAccuracy = calculateAccuracy(
-        updatedStats.perfectHits + (updatedStats.hits || 0),
+        updatedStats.perfectHits + (updatedStats.hits ?? 0),
         updatedStats.misses
       )
 
@@ -189,7 +189,7 @@ export const useRhythmGameScoring = ({
 
       // Only play miss SFX if it's a real miss
       if (!isEmptyHit) {
-        audioManager.playSFX('miss')
+        audioService.playSFX('miss')
       }
 
       gameStateRef.current.health = nextHealth
@@ -311,7 +311,7 @@ export const useRhythmGameScoring = ({
             velocity
           )
         } else {
-          audioManager.playSFX('hit') // Fallback
+          audioService.playSFX('hit') // Fallback
         }
 
         // Prefer the value written into modifiers by audio init (physics-aware), fall back to
@@ -332,7 +332,7 @@ export const useRhythmGameScoring = ({
           gameStateRef.current.stats.perfectHits++
 
           if (!gameStateRef.current.isCorruptionBurstActive) {
-            const currentCorruption = gameStateRef.current.corruptionLevel || 0
+            const currentCorruption = gameStateRef.current.corruptionLevel ?? 0
             const nextCorruption = Math.min(100, currentCorruption + 5)
             gameStateRef.current.corruptionLevel = nextCorruption
             gameStateRef.current.stats.corruptionLevel = nextCorruption
@@ -359,7 +359,7 @@ export const useRhythmGameScoring = ({
 
         const currentAccuracy = calculateAccuracy(
           gameStateRef.current.stats.perfectHits +
-            (gameStateRef.current.stats.hits || 0),
+            (gameStateRef.current.stats.hits ?? 0),
           gameStateRef.current.stats.misses
         )
         setAccuracy(currentAccuracy)
@@ -391,7 +391,7 @@ export const useRhythmGameScoring = ({
 
         if (!toxicModeActive) {
           const gain = 4 // Increased gain to make Toxic Mode reachable
-          const currentOverload = gameStateRef.current.overload || 0
+          const currentOverload = gameStateRef.current.overload ?? 0
           const next = currentOverload + gain
           const peakCandidate = Math.min(next, 100)
 

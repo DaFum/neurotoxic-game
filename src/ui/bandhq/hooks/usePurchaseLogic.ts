@@ -40,14 +40,9 @@ import type {
   TranslationCallback
 } from '../../../types/callbacks'
 import type { Effect, PurchaseItem } from '../../../types/components'
+import type { PlayerPatch, BandPatch } from '../../../types/purchase'
 
 export { getPrimaryEffect } // Re-export for backward compatibility if needed, though we will update consumers.
-
-type PlayerPatch = Omit<Partial<PlayerState>, 'van'> & {
-  van?: Partial<PlayerState['van']>
-}
-
-type BandPatch = Partial<BandState> | null
 
 type EffectMessage = {
   messageKey?: string

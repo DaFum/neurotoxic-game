@@ -4,8 +4,8 @@
  */
 import { ConnectionPath } from './ConnectionPath.tsx'
 import type { ConnectionPathProps } from './ConnectionPath.tsx'
+import type { SocketId } from '../../../types/kabelsalat'
 
-type SocketId = ConnectionPathProps['sockId']
 type CableId = ConnectionPathProps['cabId']
 
 type ConnectionPathsProps = {

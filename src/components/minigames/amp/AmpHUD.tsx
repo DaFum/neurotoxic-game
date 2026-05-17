@@ -16,7 +16,7 @@ export const AmpHUD = memo(function AmpHUD({
   const { t } = useTranslation(['ui'])
 
   return (
-    <div className='absolute top-4 left-4 z-30 text-star-white font-mono pointer-events-none bg-void-black/80 p-4 border-2 border-toxic-green shadow-[0_0_15px_var(--color-toxic-green)]'>
+    <div className='absolute top-4 left-4 z-(--z-stage-overlay) text-star-white font-mono pointer-events-none bg-void-black/80 p-4 border-2 border-toxic-green shadow-[0_0_15px_var(--color-toxic-green)]'>
       <h2 className='text-2xl font-bold text-toxic-green tracking-widest uppercase mb-2'>
         {t('ui:minigames.amp.title', { defaultValue: 'AMP CALIBRATION' })}
       </h2>

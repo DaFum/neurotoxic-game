@@ -5,7 +5,7 @@ import { logger } from '../logger'
 import { audioState } from './state'
 
 type AudioListener = () => void
-type AudioSfxType =
+export type AudioSfxType =
   | 'hit'
   | 'miss'
   | 'menu'

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { useGameState } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
 import { getSafeRandom } from '../../utils/crypto'
+import { clampAmpDial } from '../../utils/gameStateUtils'
 import type { AmpStageOptions } from '../../types/components'
 
 const MINIGAME_DURATION = 15
@@ -240,7 +241,7 @@ export function useAmpLogic() {
         getSafeRandom() < Math.max(0, Math.min(1, chance * (deltaMS / 100)))
       ) {
         const shift = (getSafeRandom() - 0.5) * shiftSize
-        setTargetValue(prev => Math.max(0, Math.min(1000, prev + shift)))
+        setTargetValue(prev => clampAmpDial(prev + shift))
       }
 
       // Kranker Schrank Hijack Logic

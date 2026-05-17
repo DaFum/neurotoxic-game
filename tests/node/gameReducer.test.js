@@ -157,16 +157,39 @@ describe('gameReducer', () => {
       })
     })
 
-    it('should update band members', () => {
-      const newMembers = [{ name: 'Test', mood: 100, stamina: 100 }]
+    it('should patch existing band members by id and append new ones', () => {
+      const existing = testState.band.members
+      // Sanity-check the seed shape so the merge expectations below stay
+      // anchored to a real BandMember layout.
+      assert.ok(existing.length > 0, 'expected seed members')
+      assert.ok(typeof existing[0].id === 'string', 'seed member needs id')
+
+      const patchedId = existing[0].id
+      const newMember = {
+        id: 'test',
+        name: 'Test',
+        mood: 100,
+        stamina: 100
+      }
       const action = {
         type: ActionTypes.UPDATE_BAND,
-        payload: { members: newMembers }
+        payload: {
+          members: [{ id: patchedId, mood: 42, stamina: 30 }, newMember]
+        }
       }
       const newState = gameReducer(testState, action)
 
-      assert.strictEqual(newState.band.members.length, 1)
-      assert.strictEqual(newState.band.members[0].name, 'Test')
+      assert.strictEqual(newState.band.members.length, existing.length + 1)
+      const patched = newState.band.members.find(m => m.id === patchedId)
+      assert.ok(patched, 'patched member should still be present')
+      assert.strictEqual(patched.mood, 42)
+      assert.strictEqual(patched.stamina, 30)
+      // Untouched fields must survive.
+      assert.strictEqual(patched.name, existing[0].name)
+
+      const appended = newState.band.members[newState.band.members.length - 1]
+      assert.strictEqual(appended.id, 'test')
+      assert.strictEqual(appended.name, 'Test')
     })
   })
 

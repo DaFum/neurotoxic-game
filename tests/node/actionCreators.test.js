@@ -123,7 +123,19 @@ describe('Action Creators', () => {
     },
     {
       name: 'createSetLastGigStatsAction',
-      call: () => createSetLastGigStatsAction({ score: 1000, combo: 50 }),
+      call: () => {
+        const action = createSetLastGigStatsAction({ score: 1000, combo: 50 })
+        // toastId is dynamically minted and must be present; assert before
+        // stripping so a regression that drops it can't silently slip through.
+        assert.ok(action.payload, 'expected action.payload to be defined')
+        assert.ok(
+          typeof action.payload.toastId === 'string' &&
+            action.payload.toastId.length > 0,
+          'expected action.payload.toastId to be a non-empty string'
+        )
+        delete action.payload.toastId
+        return action
+      },
       expected: {
         type: ActionTypes.SET_LAST_GIG_STATS,
         payload: { score: 1000, combo: 50 }

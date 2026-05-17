@@ -4,7 +4,7 @@ import { Gig } from '../../src/scenes/Gig.tsx'
 import { useRhythmGameLogic } from '../../src/hooks/useRhythmGameLogic'
 import { useGameState } from '../../src/context/GameState.tsx'
 import { GAME_PHASES } from '../../src/context/gameConstants'
-import { audioManager } from '../../src/utils/audio/audioEngine'
+import { audioManager, audioService } from '../../src/utils/audio/audioEngine'
 import {
   pauseAudio,
   resumeAudio,
@@ -484,6 +484,7 @@ describe('Gig Scene Component', () => {
       })
 
       audioManager.ensureAudioContext.mockResolvedValue(true)
+      audioService.ensureAudioContext.mockResolvedValue(true)
 
       render(<Gig />)
 
@@ -493,7 +494,7 @@ describe('Gig Scene Component', () => {
       })
 
       await flushPromises()
-      expect(audioManager.ensureAudioContext).toHaveBeenCalled()
+      expect(audioService.ensureAudioContext).toHaveBeenCalled()
       expect(mockRetry).toHaveBeenCalled()
     })
 

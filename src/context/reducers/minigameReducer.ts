@@ -297,7 +297,12 @@ const applyPostMinigameResult = (
 
 export const handleCompleteAmpCalibration = (
   state: GameState,
-  payload: Record<string, unknown>
+  payload: {
+    score: number
+    voidResonance: number
+    purgesUsed: number
+    hijacksOverridden: number
+  }
 ): GameState => {
   const { score, voidResonance, purgesUsed, hijacksOverridden } = payload
   logger.info('GameState', 'Amp Calibration Minigame Complete', payload)
@@ -342,7 +347,7 @@ export const handleStartKabelsalatMinigame = (
 
 export const handleCompleteKabelsalatMinigame = (
   state: GameState,
-  payload: Record<string, unknown>
+  payload: { results: unknown }
 ): GameState => {
   const { results } = payload
   logger.info('GameState', 'Kabelsalat Minigame Complete', payload)

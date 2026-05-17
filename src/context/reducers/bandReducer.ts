@@ -1,6 +1,7 @@
 import { logger } from '../../utils/logger'
 import { assertNever } from '../../utils/assertNever'
 import {
+  clamp0to100,
   clampBandHarmony,
   clampBandStress,
   clampMemberMood,
@@ -44,13 +45,83 @@ export const handleUpdateBand = (
     return state
   }
 
-  const safeUpdates = { ...updates }
+  const safeUpdates: Record<string, unknown> = { ...updates }
   if (Object.hasOwn(safeUpdates, 'harmony')) {
     safeUpdates.harmony = clampBandHarmony(
       typeof safeUpdates.harmony === 'number'
         ? safeUpdates.harmony
         : state.band.harmony
     )
+  }
+  const sanitizeNumericKey = (
+    key: 'stress' | 'luck' | 'tempo',
+    clamp: (value: number) => number
+  ) => {
+    if (!Object.hasOwn(safeUpdates, key)) return
+    const raw = safeUpdates[key]
+    if (typeof raw === 'number' && Number.isFinite(raw)) {
+      safeUpdates[key] = clamp(raw)
+    } else {
+      delete safeUpdates[key]
+    }
+  }
+  sanitizeNumericKey('stress', clampBandStress)
+  sanitizeNumericKey('luck', clamp0to100)
+  sanitizeNumericKey('tempo', clamp0to100)
+
+  if (Array.isArray(safeUpdates.members)) {
+    // Members come in as partial patches; merge by id against the prior
+    // band state so callers can safely send `{ id, stamina }` without
+    // having to repeat every required field. Entries without an `id` (or
+    // an unknown id) are dropped rather than spread into state with
+    // missing identity fields.
+    const existingById = new Map<string, BandMember>()
+    for (const existing of state.band.members) {
+      if (existing && typeof existing.id === 'string') {
+        existingById.set(existing.id, existing)
+      }
+    }
+    // Sanitized members keyed by id so patches replace, not duplicate. We
+    // preserve original ordering for known members and append any new
+    // members at the end.
+    const sanitizedById = new Map<string, BandMember>()
+    for (const raw of safeUpdates.members as unknown[]) {
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) continue
+      const patch = raw as Partial<BandMember>
+      const id = typeof patch.id === 'string' ? patch.id : undefined
+      const existing = id ? existingById.get(id) : undefined
+      let next: BandMember | null = null
+      if (existing) {
+        next = { ...existing, ...patch, id: existing.id }
+      } else if (id && typeof patch.name === 'string') {
+        next = { ...(patch as BandMember), id }
+      }
+      if (!next) continue
+      if (typeof next.stamina === 'number') {
+        const maxStamina =
+          typeof next.staminaMax === 'number' ? next.staminaMax : undefined
+        next.stamina = clampMemberStamina(next.stamina, maxStamina)
+      }
+      if (typeof next.mood === 'number') {
+        next.mood = clampMemberMood(next.mood)
+      }
+      if (typeof next.id === 'string') {
+        sanitizedById.set(next.id, next)
+      }
+    }
+    // Preserve untouched members in place; replace only those whose id was
+    // patched; append truly new members at the end.
+    const preservedMembers: BandMember[] = state.band.members.map(
+      (member: BandMember) => {
+        const id = typeof member?.id === 'string' ? member.id : undefined
+        return (id && sanitizedById.get(id)) || member
+      }
+    )
+    const appendedMembers: BandMember[] = []
+    for (const [id, member] of sanitizedById) {
+      if (!existingById.has(id)) appendedMembers.push(member)
+    }
+    safeUpdates.members = [...preservedMembers, ...appendedMembers]
   }
 
   const mergedBand = {
@@ -442,8 +513,6 @@ export const bandReducer = (
   state: GameState,
   action: GameAction
 ): GameState => {
-  if (!('payload' in action)) return state
-
   switch (action.type) {
     case ActionTypes.TOGGLE_NEURO_DECIMATOR:
       return handleToggleNeuroDecimator(

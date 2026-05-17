@@ -48,7 +48,7 @@ export const GigHUD = memo(function GigHUD({
   } = stats
 
   return (
-    <div className='absolute inset-0 z-30 pointer-events-none'>
+    <div className='absolute inset-0 z-(--z-stage-overlay) pointer-events-none'>
       <ToxicModeFlash isToxicMode={isToxicMode} />
 
       <HecklerOverlay gameStateRef={gameStateRef} />

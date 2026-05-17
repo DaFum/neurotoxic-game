@@ -83,7 +83,7 @@ export const buildGigStatsSnapshot = (
   corruptionLevel: stats.corruptionLevel ?? 0,
   toxicTimeTotal,
   accuracy: calculateAccuracy(
-    stats.perfectHits + (stats.hits || 0),
+    stats.perfectHits + (stats.hits ?? 0),
     stats.misses
   ),
   songStats: songStats.map(s => ({ ...s }))

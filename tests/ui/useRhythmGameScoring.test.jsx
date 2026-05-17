@@ -91,7 +91,10 @@ const { mockAudioEngine, mockGigStats, mockRhythmUtils } = vi.hoisted(() => {
     toggleMute: vi.fn(() => manager.toggleMute()),
     startAmbient: vi.fn(() => manager.startAmbient()),
     stopMusic: vi.fn(() => manager.stopMusic()),
-    resumeMusic: vi.fn(() => manager.resumeMusic())
+    resumeMusic: vi.fn(() => manager.resumeMusic()),
+    ensureAudioContext: vi.fn(() => manager.ensureAudioContext?.()),
+    playSFX: vi.fn(),
+    setNeuroDecimator: vi.fn()
   }
 
   const engine = {

@@ -50,42 +50,6 @@ export interface ChatterOverlayProps {
   gameState: ChatterGameState
 }
 
-export interface GigHUDProps {
-  stats: {
-    score: number
-    combo: number
-    health: number
-    overload: number
-    isToxicMode: boolean
-    isGameOver: boolean
-    isAudioReady: boolean
-    accuracy: number
-  }
-  gameStateRef: { current: GameState }
-  onLaneInput: (laneIndex: number, isDown: boolean, now: number) => void
-}
-
-export interface MapNodeProps {
-  node: MapNode
-  isCurrentNode?: boolean
-  isTargetNode?: boolean
-  onSelect?: (nodeId: string) => void
-}
-
-export interface MapConnectionProps {
-  from: MapNode
-  to: MapNode
-  isUnlocked?: boolean
-}
-
-export interface HecklerOverlayProps {
-  gameStateRef: { current: GameState }
-}
-
-export interface GenericListProps<TItem = unknown> {
-  items: TItem[]
-}
-
 export interface ChatterMessageProps {
   msg: ChatterMessageData
   onRemove: RemoveByIdCallback
@@ -131,12 +95,6 @@ export interface MinigameLogicBase<TState = unknown> {
   dispatch?: (action: import('../types/game').GameAction) => void
 }
 
-export interface TourbusMinigameLogic extends MinigameLogicBase {
-  rngValue?: number
-  contrabandId?: string
-  instanceId?: string
-}
-
 export interface MinigameSceneFrameProps<TState = unknown> {
   controllerFactory: (options: StageControllerOptions<TState>) => PixiController
   logic: MinigameLogicBase<TState>
@@ -173,33 +131,11 @@ export interface PixiStageProps<TState = unknown> {
   controllerFactory: (options: StageControllerOptions<TState>) => PixiController
 }
 
-export interface ToggleRadioProps {
-  state: unknown
-}
-
-export interface TutorialManagerProps {
-  onStepComplete?: (stepId: string) => void
-}
-
 export interface ClinicHeaderProps {
   player: Pick<PlayerState, 'money' | 'fame'>
 }
 
-export interface ClinicMemberCardHeaderProps {
-  disabledReason?: string
-  children?: React.ReactNode
-}
-
 export interface ClinicMemberCardProps {
-  member: BandMember
-  player: Pick<PlayerState, 'money' | 'fame'>
-  healCostMoney: number
-  enhanceCostFame: number
-  healMember: (memberId: string) => void
-  enhanceMember: (memberId: string, traitId: string) => void
-}
-
-export interface ClinicMemberCardActionProps {
   member: BandMember
   player: Pick<PlayerState, 'money' | 'fame'>
   healCostMoney: number

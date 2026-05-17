@@ -16,4 +16,5 @@ export interface PostGigSummary extends UnknownRecord {
   overload?: number
   maxCombo?: number
   songStats?: Array<{ songId: string; score: number; accuracy: number }>
+  toastId?: string
 }

@@ -44,6 +44,12 @@ import type {
  * Sanitizes a payload by clamping listed numeric fields to non-negative values
  * and stamping any `successToast` with a fresh UUID. Returns the payload
  * unchanged if it is not an object.
+ *
+ * Negative values for the listed `numericKeys` (e.g. `harmonyCost`,
+ * `staminaCost`, `controversyGain`) are silently floored to `0` rather
+ * than rejected. Reducers downstream re-clamp the final state and treat
+ * `0` as a safe no-op, so the silent floor is intentional: callers can
+ * pass best-effort costs without needing to short-circuit on bad inputs.
  */
 const sanitizeNonNegativePayload = <
   T extends { successToast?: { id?: string } | undefined }
@@ -105,9 +111,7 @@ export const createUpdatePlayerAction = (
       const fameValue = (safeUpdates as { fame?: unknown }).fame
       if (typeof fameValue === 'number' && Number.isFinite(fameValue)) {
         safeUpdates.fame = clampPlayerFame(fameValue)
-        if (!Object.hasOwn(safeUpdates, 'fameLevel')) {
-          safeUpdates.fameLevel = calculateFameLevel(safeUpdates.fame)
-        }
+        safeUpdates.fameLevel = calculateFameLevel(safeUpdates.fame)
       } else {
         delete safeUpdates.fame
         delete safeUpdates.fameLevel
@@ -237,10 +241,13 @@ export const createSetSetlistAction = (
  */
 export const createSetLastGigStatsAction = (
   stats: PostGigSummary | null
-): Extract<GameAction, { type: typeof ActionTypes.SET_LAST_GIG_STATS }> => ({
-  type: ActionTypes.SET_LAST_GIG_STATS,
-  payload: stats
-})
+): Extract<GameAction, { type: typeof ActionTypes.SET_LAST_GIG_STATS }> => {
+  const payloadWithToastId = stats ? { ...stats, toastId: getSafeUUID() } : null
+  return {
+    type: ActionTypes.SET_LAST_GIG_STATS,
+    payload: payloadWithToastId
+  }
+}
 
 /**
  * Creates an active event action

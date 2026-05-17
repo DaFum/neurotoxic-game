@@ -35,7 +35,7 @@ import {
   processTravelEvents,
   isGigNode
 } from '../utils/arrivalUtils'
-import { audioManager } from '../utils/audio/audioEngine'
+import { audioService } from '../utils/audio/audioEngine'
 import { logger } from '../utils/logger'
 import { handleError, StateError } from '../utils/errorHandler'
 import { calcBaseBreakdownChance } from '../utils/upgradeUtils'
@@ -426,7 +426,7 @@ export const useTravelLogic = ({
         pendingTimeoutRef.current = null
       }
 
-      audioManager
+      audioService
         .ensureAudioContext()
         .then(isReady => {
           if (!isReady) {
@@ -434,7 +434,7 @@ export const useTravelLogic = ({
             return
           }
           try {
-            audioManager.playSFX('travel')
+            audioService.playSFX('travel')
           } catch (error) {
             logger.warn('useTravelLogic', 'Travel SFX playback failed', error)
           }
@@ -583,7 +583,7 @@ export const useTravelLogic = ({
       })
 
       const currentStartNode = gameMap?.nodes[player.currentNodeId]
-      const currentLayer = currentStartNode?.layer || 0
+      const currentLayer = currentStartNode?.layer ?? 0
       const visibility = getNodeVisibilityUtil(node.layer, currentLayer)
 
       const accessCheck = checkVenueAccess({
@@ -743,7 +743,7 @@ export const useTravelLogic = ({
     )
 
     try {
-      audioManager.playSFX('cash')
+      audioService.playSFX('cash')
     } catch (_e) {
       // Ignore audio errors
     }
@@ -802,7 +802,7 @@ export const useTravelLogic = ({
     )
 
     try {
-      audioManager.playSFX('cash')
+      audioService.playSFX('cash')
     } catch (_e) {
       // Ignore audio errors
     }

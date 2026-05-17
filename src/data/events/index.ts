@@ -16,6 +16,7 @@ import { CONSEQUENCE_EVENTS } from './consequences'
 import { RELATIONSHIP_EVENTS } from './relationshipEvents'
 import { QUEST_EVENTS } from './quests'
 import { logger } from '../../utils/logger'
+import { validateGameEvent } from '../../utils/eventValidator'
 
 export const EVENT_CATEGORIES = [
   'transport',
@@ -84,6 +85,17 @@ for (let i = 0; i < ALL_RAW_EVENTS.length; i++) {
       'EventValidation',
       `Invalid Event Category: ${category} for event ${eObj.id}`,
       e
+    )
+    continue
+  }
+
+  try {
+    validateGameEvent(eObj)
+  } catch (err) {
+    logger.error(
+      'EventValidation',
+      `Event "${eObj.id}" failed schema validation`,
+      err instanceof Error ? err.message : err
     )
     continue
   }

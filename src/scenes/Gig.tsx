@@ -19,7 +19,8 @@ const PixiStage = lazy(async () => {
   )
   return { default: RhythmPixiStage }
 })
-import { audioManager } from '../utils/audio/audioEngine'
+import { audioService } from '../utils/audio/audioEngine'
+import { logger } from '../utils/logger'
 
 import { AudioLockedOverlay } from '../components/minigames/gig/AudioLockedOverlay'
 import { BandMembersLayer } from '../components/minigames/gig/BandMembersLayer'
@@ -91,11 +92,18 @@ export const Gig = () => {
     return (
       <AudioLockedOverlay
         onInitializeAudio={() => {
-          audioManager.ensureAudioContext().then(isUnlocked => {
-            if (isUnlocked !== false) {
-              actions.retryAudioInitialization()
-            }
-          })
+          void audioService
+            .ensureAudioContext()
+            .then(isUnlocked => {
+              if (isUnlocked !== false) {
+                actions.retryAudioInitialization()
+              } else {
+                logger.warn('Gig', 'Audio context unlock returned false')
+              }
+            })
+            .catch(err => {
+              logger.error('Gig', 'Audio context unlock rejected', err)
+            })
         }}
       />
     )

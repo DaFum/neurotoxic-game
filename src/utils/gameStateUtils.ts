@@ -177,6 +177,17 @@ export const clamp0to100 = (value: number): number => {
 }
 
 /**
+ * Clamps an amp-calibration dial value to its valid 0..1000 range.
+ *
+ * Non-finite inputs collapse to 0. The result is kept as a floating-point
+ * number to preserve sub-integer dial precision.
+ */
+export const clampAmpDial = (value: number): number => {
+  if (!Number.isFinite(value)) return 0
+  return Math.max(0, Math.min(1000, value))
+}
+
+/**
  * Clamps a social controversy level to be between 0 and 100.
  *
  * @param {number} level - Candidate controversy level.
@@ -292,10 +303,8 @@ export const clampZealotry = (zealotry: number): number => clamp0to100(zealotry)
  * @param {number} condition - Candidate condition value.
  * @returns {number} Clamped condition value.
  */
-export const clampVanCondition = (condition: number): number => {
-  if (!Number.isFinite(condition)) return 0
-  return Math.floor(Math.max(0, Math.min(100, condition)))
-}
+export const clampVanCondition = (condition: number): number =>
+  clamp0to100(condition)
 
 /**
  * Clamps van fuel to the allowed capacity.
@@ -313,7 +322,12 @@ export const clampVanFuel = (
 }
 
 /**
- * Applies an inventory delta to a single inventory slot.
+ * Applies an inventory delta to a single inventory slot. Used by the
+ * `EVENT_DELTA` reducer path to merge boolean overwrites or numeric
+ * additions into one inventory key. For the purchase/HQ pipeline that
+ * consumes `Effect` shapes and builds full band patches, see
+ * `applyInventoryAdd` in `purchaseLogicUtils.ts`.
+ *
  * @param {boolean|number|undefined} currentValue - Existing inventory value.
  * @param {boolean|number} deltaValue - Delta to apply.
  * @returns {boolean|number|undefined} Updated inventory value.
