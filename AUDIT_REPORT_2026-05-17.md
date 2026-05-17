@@ -5,6 +5,9 @@
 **Scope:** `src/` (audio, components, context/reducers, data, hooks, scenes, schemas, types, ui, utils); spot-check of `tests/` and `public/locales/`.
 **Method:** Four parallel `Explore` agents using ripgrep verification. No files modified.
 
+> **Verification pass (2026-05-17, post-audit):** Each finding was re-checked against current source. Findings confirmed unchanged unless annotated below with **[VERIFIED]**, **[REVISED]**, or **[INVALID]**. A consolidated verification summary follows at the bottom of this document.
+
+
 Severity legend: **HIGH** = correctness bug / convention violation with real impact · **MED** = code-health debt · **LOW** = nit but worth fixing.
 
 Action legend: **FIX** · **DELETE** · **MERGE** · **INTEGRATE** · **DOCUMENT**.
@@ -117,3 +120,69 @@ No dead reducer cases or removed-action-type handlers found. Default branches us
 7. **Decide on rival-hook integration surface** (M1).
 
 All changes are localized; no architectural rework required.
+
+---
+
+## Verification Pass — Per-Finding Results
+
+Each finding re-checked against `src/` and `public/locales/` on 2026-05-17. ✓ = confirmed in current code; ✗ = not present / claim wrong; ⚠ = partially correct or overstated.
+
+### Duplicates
+- **D1** ✓ `getVenueCoord` exists at `mapGenerator.ts:62` but is **not exported** (file-local), and `economyEngine.ts` does indeed re-derive coords. Note: action is "export `getVenueCoord` first, then reuse", not a drop-in merge.
+- **D2** ✓ confirmed.
+- **D3** ✓ confirmed.
+- **D4** ✓ `PirateRadioModal.tsx` and `MerchPressModal.tsx` do not import `shared/Modal`; only `DarkWebLeakModal` does.
+- **D5** ✓ `_toSafeInt` at `actionCreators.ts:519`, used 4× at lines 533–536.
+- **D6** ✓ pattern present.
+- **D7** ✓ pattern present.
+- **D8** ✓ confirmed.
+
+### Orphans
+- **O1** ✓ `HARMONY_DEATH_SPIRAL_THRESHOLD` / `_DAMPEN_FACTOR` exported at `eventEngine.ts:173–174`, only consumed inside the same file (lines 293–295). Safe to drop the `export`.
+- **O2** ✓ confirmed (single external consumer, not an orphan).
+- **O3** ✗ **[INVALID]** `payload.toastId` from `createSetLastGigStatsAction` *is* consumed at `gigReducer.ts:179` as a fallback for a blacklist toast. Do not delete.
+
+### Inconsistencies — `||` vs `??`
+- **I1** ✓ `postGigUtils.ts:238` — `social[result.platform] || 0`.
+- **I2** ✓ `postGigUtils.ts:308` — `(social[result.platform] || 0) + totalFollowers`. (Line 307 is the surrounding statement, only 308 has the expression.)
+- **I3** ✓ `postGigUtils.ts:316` — `(social.loyalty || 0) + (result.loyaltyChange || 0)`.
+- **I4** ✓ `economyEngine.ts:210` and `:292` — both confirmed (line 292 also has `loyalty || 0`).
+- **I5** ✓ `SupplyStopModal.tsx:42`.
+- **I6** ✓ `consequences.ts:250`.
+- **I7** ✓ `quests.ts:119`.
+- **I8** ✓ `economyEngine.ts:502`.
+- **I9** ✓ `economyEngine.ts:174`.
+
+### Inconsistencies — clamp discipline
+- **I10** ✓ `socialReducer.ts:250, 253, 254` — three raw `Math.max(0, …)`.
+- **I11** ✓ `tradeReducer.ts:65`.
+- **I12** ⚠ **[REVISED]** Payload is typed `{ damageTaken: number; itemsCollected: unknown[]; rngValue?: number }`. TS types + an action-creator gate make malformed payloads unlikely; the *itemsCollected* array elements are already `unknown[]` and handled defensively in `calculateTravelMinigameResult`. Downgrade to LOW — add a `Number.isFinite(damageTaken)` guard only.
+- **I13** ✓ `socialReducer.ts:165–166` clamps `zealotry` only; `controversyLevel` path not present in `handleUpdateSocial`.
+- **I14** ✓ `socialReducer.ts:201` — `if (nextState.social.loyalty >= 30)` with explanatory comment; no constant exported.
+- **I15** ✓ `actionCreators.ts:162` — `isActive: !!isActive` with `isActive: boolean` typed param; coercion is dead per types.
+
+### Inconsistencies — currency / color
+- **I16** ✓ `€` glyph counts confirmed: ui.json 3+3, economy.json 3+3, items.json 1+1, events.json 47+47. Total ~108 instances across EN/DE.
+- **I17** ⚠ **[REVISED]** Hex values at `useRhythmGameState.ts:180, 188, 196` are passed as the *fallback* argument to `getPixiColorFromToken('--rhythm-…', '#…')`, not used alongside it. They only fire if the token is missing. This is acceptable defensive code; downgrade to LOW (or close as not-a-bug).
+
+### Dead Code
+- **DC1** ⚠ **[REVISED]** The defensive `gigData = gigData || {}` reassignments **do** fire when callers pass explicit `null` (JS default params only apply to `undefined`). Not unreachable. **Exception:** `economyEngine.ts:545` is unreachable because `:544` already does `if (!gigData) return 0`. Downgrade DC1 to LOW with action "remove only `:545` and consider whether the null-guard pattern is worth the noise elsewhere."
+- **DC2** ✗ **[INVALID]** The `if (!deal) return …` at `postGigUtils.ts:368–376` is reachable: `deal` remains `undefined` when no `SPONSORSHIP` entry is found in `social.activeDeals`. Not dead code.
+- **DC3** ✗ **[INVALID]** `eventEngine.ts:517–525` already does an explicit `if (typeof event.condition !== 'function')` check inside the try block and routes to `handleError` + `return null`. The original claim was wrong; no fix needed.
+
+### Missing Integration
+- **M1** ⚠ **[REVISED]** `useSpawnRivalBand` and `useRivalEscalation` *are* re-exported from `src/hooks/overworld/index.ts:4–5`. They're only consumed by `Overworld.tsx`, which is correct scoping for an Overworld-specific concern. Downgrade to LOW or close as not-a-bug.
+- **M2** ✓ `useNetworkStatus` is called independently in `MainMenu`, `useGigVisuals`, `BandHQ`, and `OverworldMap` — four separate listeners. A single context-lifted source would dedupe but each call already uses the same `navigator.onLine` events; functionally consistent. Keep as MED.
+- **M3** ✓ four stage controllers present; no central factory/registry.
+
+### Net result after verification
+
+| Outcome | Count |
+|---|---|
+| Confirmed as filed | 27 |
+| Downgraded / revised | 5 (I12, I17, DC1, M1, plus partial DC1 line-only fix) |
+| Invalidated | 3 (O3, DC2, DC3) |
+| **Actionable items** | **31** (of which 9 HIGH `||→??` bugs remain the top priority) |
+
+The `||` → `??` sweep (I1–I9) and the locale `€` strip (I16) survive verification unchanged and remain the highest-impact items for a fix pass.
+
