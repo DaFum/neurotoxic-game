@@ -81,15 +81,15 @@ export const handleUpdateBand = (
         existingById.set(existing.id, existing)
       }
     }
-    const sanitizedMembers: BandMember[] = []
+    // Sanitized members keyed by id so patches replace, not duplicate. We
+    // preserve original ordering for known members and append any new
+    // members at the end.
+    const sanitizedById = new Map<string, BandMember>()
     for (const raw of safeUpdates.members as unknown[]) {
       if (!raw || typeof raw !== 'object' || Array.isArray(raw)) continue
       const patch = raw as Partial<BandMember>
       const id = typeof patch.id === 'string' ? patch.id : undefined
       const existing = id ? existingById.get(id) : undefined
-      // If a known id matches, merge patch onto the existing member; if the
-      // patch already looks like a full BandMember (has id + name), accept
-      // it as a new/replacement member; otherwise drop.
       let next: BandMember | null = null
       if (existing) {
         next = { ...existing, ...patch, id: existing.id }
@@ -105,9 +105,23 @@ export const handleUpdateBand = (
       if (typeof next.mood === 'number') {
         next.mood = clampMemberMood(next.mood)
       }
-      sanitizedMembers.push(next)
+      if (typeof next.id === 'string') {
+        sanitizedById.set(next.id, next)
+      }
     }
-    safeUpdates.members = sanitizedMembers
+    // Preserve untouched members in place; replace only those whose id was
+    // patched; append truly new members at the end.
+    const preservedMembers: BandMember[] = state.band.members.map(
+      (member: BandMember) => {
+        const id = typeof member?.id === 'string' ? member.id : undefined
+        return (id && sanitizedById.get(id)) || member
+      }
+    )
+    const appendedMembers: BandMember[] = []
+    for (const [id, member] of sanitizedById) {
+      if (!existingById.has(id)) appendedMembers.push(member)
+    }
+    safeUpdates.members = [...preservedMembers, ...appendedMembers]
   }
 
   const mergedBand = {
