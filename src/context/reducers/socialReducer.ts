@@ -95,7 +95,7 @@ const appendDeltaSuccessToast = (
   nextState: GameState,
   successToast: unknown,
   prevToasts: GameState['toasts'] | undefined,
-  optionsPatch: Record<string, number>
+  optionsPatch: Record<string, number | string>
 ): void => {
   if (!successToast) return
   const safeToast = sanitizeSuccessToast(successToast, {
@@ -408,7 +408,7 @@ const applyZealotryAction = (
     deltaZealotry: nextZealotry - currentZealotry,
     deltaControversy: nextControversy - currentControversy,
     deltaHarmony: nextHarmony - currentHarmony,
-    cost: currentMoney - nextMoney
+    cost: formatCurrency(currentMoney - nextMoney, undefined, 'always')
   })
 
   return nextState

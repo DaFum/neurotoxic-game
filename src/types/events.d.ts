@@ -20,7 +20,7 @@ export interface GameEvent {
 
 export type EventDelta = {
   score?: number
-  player?: Record<string, unknown> & {
+  player: Record<string, unknown> & {
     money?: number
     time?: number
     fame?: number
@@ -35,7 +35,7 @@ export type EventDelta = {
       [key: string]: unknown
     }
   }
-  band?: Record<string, unknown> & {
+  band: Record<string, unknown> & {
     harmony?: number
     inventory?: Record<string, unknown>
     members?: unknown
@@ -45,12 +45,12 @@ export type EventDelta = {
     skill?: number
     stashRemove?: string[]
   }
-  social?: Record<string, unknown> & {
+  social: Record<string, unknown> & {
     controversyLevel?: number
     viral?: number
     loyalty?: number
   }
-  flags?: Record<string, unknown> & {
+  flags: Record<string, unknown> & {
     queueEvent?: string
     unlock?: unknown
     gameOver?: boolean

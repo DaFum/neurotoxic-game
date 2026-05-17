@@ -69,7 +69,10 @@ describe('handleBloodBankDonate Reducer', () => {
     // Check actual deltas passed to toast
     const options = result.toasts[0].options
     assert.ok(options)
-    assert.strictEqual(options.deltaMoney.toString().includes('200'), true)
+    assert.strictEqual(
+      options.deltaMoney,
+      formatCurrency(200, undefined, 'always')
+    )
     assert.strictEqual(options.deltaHarmony, 30) // 80 - 50
     assert.strictEqual(options.deltaControversy, 5) // 15 - 10
     // deltaStamina should be the total actual loss:
