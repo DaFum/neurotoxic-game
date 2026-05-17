@@ -1,3 +1,5 @@
+import i18n from '../i18n'
+import { formatCurrency } from './numberUtils'
 import { HQ_ITEMS } from '../data/hqItems'
 import { bandHasTrait } from './traitUtils'
 import { StateError } from './errorHandler'
@@ -571,7 +573,8 @@ export const applyUnlockHQ = (
       )
       messages.push({
         messageKey: 'ui:shop.messages.labelSigned',
-        fallback: 'Signed! +500€ Advance.',
+        fallback: `Signed! ${formatCurrency(500, i18n.language, 'always')} Advance.`,
+        options: { advance: formatCurrency(500, i18n.language, 'always') },
         type: 'success'
       })
       break

@@ -5,7 +5,8 @@ import type {
   BandMember,
   GameState,
   RelationshipChange,
-  StashEntry
+  StashEntry,
+  EventDelta
 } from '../types'
 
 /**
@@ -423,45 +424,6 @@ type FilteredRecord = Record<string, unknown>
 type MemberDelta = FilteredRecord & {
   moodChange?: number
   staminaChange?: number
-}
-
-type EventDelta = {
-  score?: number
-  player?: FilteredRecord & {
-    money?: number
-    time?: number
-    fame?: number
-    score?: number
-    day?: number
-    location?: string
-    currentNodeId?: string
-    stats?: Record<string, string | number | boolean>
-    van?: {
-      fuel?: number
-      condition?: number
-      [key: string]: unknown
-    }
-  }
-  band?: FilteredRecord & {
-    harmony?: number
-    inventory?: Record<string, unknown>
-    members?: unknown
-    membersDelta?: unknown
-    relationshipChange?: unknown
-    luck?: number
-    skill?: number
-    stashRemove?: unknown[]
-  }
-  social?: Record<string, unknown> & {
-    controversyLevel?: number
-    viral?: number
-    loyalty?: number
-  }
-  flags?: FilteredRecord & {
-    addStoryFlag?: unknown
-    queueEvent?: unknown
-    addCooldown?: unknown
-  }
 }
 
 type MutableGameState = GameState & {

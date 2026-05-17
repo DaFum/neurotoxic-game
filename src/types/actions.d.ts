@@ -1,3 +1,5 @@
+import type { EventDelta } from './events'
+
 export interface CompleteTravelMinigamePayload {
   damageTaken: number
   itemsCollected: unknown[]
@@ -81,10 +83,7 @@ export interface ResetStatePayload extends UnknownRecord {
   unlocks?: string[]
 }
 
-export interface EventDeltaPayload extends UnknownRecord {
-  player?: Partial<PlayerState>
-  band?: Partial<BandState>
-  social?: Partial<SocialState>
+export interface EventDeltaPayload extends EventDelta {
   activeStoryFlags?: string[]
   pendingEvents?: string[]
 }

@@ -1,3 +1,4 @@
+import { formatCurrency } from '../../utils/numberUtils'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../../ui/shared'
@@ -104,9 +105,13 @@ export const CompletePhase = ({
               className='bg-blood-red text-star-white px-6 py-2 border-2 border-blood-red hover:bg-star-white hover:text-blood-red disabled:opacity-50'
             >
               {t('ui:postGig.spinStory', {
-                cost: SPIN_STORY_MONEY_COST,
+                cost: formatCurrency(
+                  -SPIN_STORY_MONEY_COST,
+                  i18n.language,
+                  'always'
+                ),
                 controversy: SPIN_STORY_CONTROVERSY_REDUCTION,
-                defaultValue: `Spin Story (-${SPIN_STORY_MONEY_COST}€, -${SPIN_STORY_CONTROVERSY_REDUCTION} Controversy)`
+                defaultValue: `Spin Story (${formatCurrency(-SPIN_STORY_MONEY_COST, i18n.language, 'always')}, -${SPIN_STORY_CONTROVERSY_REDUCTION} Controversy)`
               })}
             </ActionButton>
           )}

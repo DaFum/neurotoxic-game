@@ -1,3 +1,4 @@
+import type { EventDelta } from '../types'
 /**
 
  *
@@ -87,38 +88,6 @@ export type EngineGameState = {
     context?: Record<string, unknown>
   }
   [key: string]: unknown
-}
-type EventDelta = {
-  player: Record<string, unknown> & {
-    van?: Record<string, unknown>
-    stats?: Record<string, number>
-    time?: number
-    money?: number
-    fame?: number
-  }
-  band: Record<string, unknown> & {
-    relationshipChange?: Array<{
-      member1: string
-      member2: string
-      change: unknown
-    }>
-    membersDelta?: Record<string, unknown>
-    inventory?: Record<string, unknown>
-    stashRemove?: string[]
-    harmony?: number
-    luck?: number
-    skill?: number
-  }
-  social: Record<string, unknown>
-  flags: Record<string, unknown> & {
-    queueEvent?: string
-    unlock?: unknown
-    gameOver?: boolean
-    addStoryFlag?: unknown
-    addCooldown?: unknown
-    addQuest?: unknown[]
-  }
-  score?: number
 }
 
 const asNumber = (value: unknown): number =>
@@ -353,12 +322,15 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
     delta: EventDelta,
     context: TemplateContext
   ) => {
+    const parsedChange =
+      typeof eff.value === 'number' ? eff.value : Number(eff.value)
+    if (!Number.isFinite(parsedChange)) return
     if (!delta.band.relationshipChange) delta.band.relationshipChange = []
     const resolveName = (str: string) => resolveTemplateString(str, context)
     delta.band.relationshipChange.push({
       member1: resolveName(String(eff.member1 ?? '')),
       member2: resolveName(String(eff.member2 ?? '')),
-      change: eff.value
+      change: parsedChange
     })
   },
   resource: (eff: EffectShape, delta: EventDelta) => {
@@ -479,10 +451,14 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
     delta.flags.gameOver = true
   },
   flag: (eff: EffectShape, delta: EventDelta) => {
-    delta.flags.addStoryFlag = eff.flag
+    if (typeof eff.flag === 'string' && eff.flag.length > 0) {
+      delta.flags.addStoryFlag = eff.flag
+    }
   },
   cooldown: (eff: EffectShape, delta: EventDelta) => {
-    delta.flags.addCooldown = eff.eventId
+    if (typeof eff.eventId === 'string' && eff.eventId.length > 0) {
+      delta.flags.addCooldown = eff.eventId
+    }
   },
   social_set: (eff: EffectShape, delta: EventDelta) => {
     if (typeof eff.stat === 'string' && eff.stat.length > 0) {

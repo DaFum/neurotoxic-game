@@ -3583,6 +3583,17 @@
         "typeOnly": true
       }
     ],
+    "EventDelta": [
+      {
+        "name": "EventDelta",
+        "path": "src/types/events.d.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "typeOnly": true,
+        "exportPath": "src/types/game.d.ts"
+      }
+    ],
     "EventDeltaPayload": [
       {
         "name": "EventDeltaPayload",
@@ -4607,24 +4618,6 @@
       {
         "name": "GlossaryTab",
         "path": "src/ui/bandhq/GlossaryTab.tsx",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      }
-    ],
-    "GRID_HEIGHT": [
-      {
-        "name": "GRID_HEIGHT",
-        "path": "src/hooks/minigames/minigameConstants.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      }
-    ],
-    "GRID_WIDTH": [
-      {
-        "name": "GRID_WIDTH",
-        "path": "src/hooks/minigames/minigameConstants.ts",
         "source": "local",
         "type": "const",
         "isDefault": false

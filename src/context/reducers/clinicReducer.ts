@@ -1,3 +1,5 @@
+import i18n from '../../i18n'
+import { formatCurrency } from '../../utils/numberUtils'
 import type { GameState } from '../../types'
 import type { ClinicActionPayload, BloodBankDonatePayload } from '../../types'
 import type { BandMember } from '../../types'
@@ -263,7 +265,7 @@ export const handleBloodBankDonate = (
     const safeToast = sanitizeSuccessToast(successToast, {
       fallbackId: getSafeUUID(),
       optionsPatch: {
-        deltaMoney,
+        deltaMoney: formatCurrency(deltaMoney, i18n.language, 'always'),
         deltaHarmony,
         deltaControversy,
         deltaStamina: totalStaminaLost

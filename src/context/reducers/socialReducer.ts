@@ -1,3 +1,5 @@
+import i18n from '../../i18n'
+import { formatCurrency } from '../../utils/numberUtils'
 import type {
   GameState,
   SocialState,
@@ -94,7 +96,7 @@ const appendDeltaSuccessToast = (
   nextState: GameState,
   successToast: unknown,
   prevToasts: GameState['toasts'] | undefined,
-  optionsPatch: Record<string, number>
+  optionsPatch: Record<string, number | string>
 ): void => {
   if (!successToast) return
   const safeToast = sanitizeSuccessToast(successToast, {
@@ -407,7 +409,7 @@ const applyZealotryAction = (
     deltaZealotry: nextZealotry - currentZealotry,
     deltaControversy: nextControversy - currentControversy,
     deltaHarmony: nextHarmony - currentHarmony,
-    cost: currentMoney - nextMoney
+    cost: formatCurrency(nextMoney - currentMoney, i18n.language, 'always')
   })
 
   return nextState
