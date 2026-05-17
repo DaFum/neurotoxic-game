@@ -81,10 +81,11 @@ export interface ResetStatePayload extends UnknownRecord {
   unlocks?: string[]
 }
 
-export interface EventDeltaPayload extends UnknownRecord {
-  player?: Partial<PlayerState>
-  band?: Partial<BandState>
-  social?: Partial<SocialState>
+import type { EventDelta } from './events'
+export interface EventDeltaPayload extends EventDelta {
+  player: Partial<PlayerState> & Record<string, unknown>
+  band: Partial<BandState> & Record<string, unknown>
+  social: Partial<SocialState> & Record<string, unknown>
   activeStoryFlags?: string[]
   pendingEvents?: string[]
 }

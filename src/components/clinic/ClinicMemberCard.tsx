@@ -1,3 +1,4 @@
+import { formatCurrency } from '../../utils/numberUtils'
 /*
  * (#1) Actual Updates: Extracted ClinicMemberCard into a separate component.
 
@@ -91,8 +92,8 @@ export const ClinicMemberCard = ({
             className='w-full text-xs py-1'
           >
             {t('ui:clinic.heal_button', {
-              defaultValue: 'HEAL ({{cost}}€)',
-              cost: healCostMoney
+              defaultValue: 'HEAL ({{cost}})',
+              cost: formatCurrency(healCostMoney)
             })}
           </GlitchButton>
         </ActionButtonWrapper>
