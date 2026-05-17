@@ -1026,7 +1026,14 @@ const sanitizeMinigameState = (rawMinigame: unknown): GameState['minigame'] => {
     Object.hasOwn(minigameObj, 'type') &&
     (typeof minigameObj.type === 'string' || minigameObj.type === null)
   ) {
-    nextMinigame.type = minigameObj.type
+    nextMinigame.type =
+      typeof minigameObj.type === 'string' &&
+      (minigameObj.type === 'TOURBUS' ||
+        minigameObj.type === 'ROADIE' ||
+        minigameObj.type === 'KABELSALAT' ||
+        minigameObj.type === 'AMP_CALIBRATION')
+        ? minigameObj.type
+        : null
   }
   if (
     Object.hasOwn(minigameObj, 'targetDestination') &&

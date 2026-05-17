@@ -6,7 +6,7 @@ import {
   getStashItemUseMessage
 } from '../utils/contrabandStashUtils'
 import { logger } from '../utils/logger'
-import type { ContrabandStashItem } from '../types'
+import type { ContrabandStashItem, StashItem } from '../types'
 
 /**
  * Hook to manage the Contraband Stash UI state and actions.
@@ -25,8 +25,8 @@ export const useContrabandStash = () => {
   const openStash = useCallback(() => setShowStash(true), [])
   const closeStash = useCallback(() => setShowStash(false), [])
 
-  const stashArray = useMemo(
-    () => Object.values(band.stash || {}),
+  const stashArray = useMemo<StashItem[]>(
+    () => Object.values(band.stash ?? {}) as StashItem[],
     [band.stash]
   )
 
@@ -34,12 +34,14 @@ export const useContrabandStash = () => {
     (instanceId: string, item: ContrabandStashItem) => {
       const validation = validateStashItemSelection(item, selectedMember)
       if (!validation.isValid) {
-        addToast(
-          t(validation.errorKey, {
-            defaultValue: validation.defaultMessage
-          }),
-          'warning'
-        )
+        if (validation.errorKey) {
+          addToast(
+            t(validation.errorKey, {
+              defaultValue: validation.defaultMessage
+            }),
+            'warning'
+          )
+        }
         return
       }
 

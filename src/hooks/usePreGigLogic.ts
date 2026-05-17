@@ -1,5 +1,11 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
-import type { PlayerState, Venue, GigModifiers, GameState } from '../types'
+import type {
+  PlayerState,
+  Venue,
+  GigModifiers,
+  GameState,
+  BandState
+} from '../types'
 import type { RhythmSetlistEntry } from '../types/rhythmGame'
 import type { Song } from '../types/audio'
 import type { ActiveEffectEntry } from '../types/components'
@@ -127,7 +133,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
 
   const handleUpdateMerchPrice = useCallback(
     (merchKey: string, newPrice: number) => {
-      updateBand(prevBand => ({
+      updateBand((prevBand: BandState) => ({
         ...prevBand,
         merchPrices: {
           ...(prevBand.merchPrices ?? {}),
@@ -159,7 +165,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
 
       updatePlayer({ money: clampPlayerMoney(player.money - cost) })
 
-      updateBand(prevBand => {
+      updateBand((prevBand: BandState) => {
         const currentInventory = prevBand.inventory ?? {}
         const currentAmount =
           typeof currentInventory[merchKey] === 'number'

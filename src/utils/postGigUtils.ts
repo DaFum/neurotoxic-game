@@ -28,6 +28,7 @@ import type {
   UnknownRecord,
   BrandAlignment
 } from '../types'
+import type { BandMember } from '../types/band'
 import type { PostGigFinancials } from '../types/economy'
 import type { BrandDeal, Platform, SocialPostOption } from '../types/social'
 
@@ -268,7 +269,7 @@ export const calculatePostGigStateUpdates = (
     result.allMembersStaminaChange ||
     result.targetMember
   ) {
-    newBand.members = newBand.members.map(m => {
+    newBand.members = newBand.members.map((m: BandMember) => {
       const moodChange = result.moodChange
       const staminaChange = result.staminaChange
       const needsMoodUpdate =
@@ -546,11 +547,15 @@ export const getAcceptDealSocialUpdateFactory = (deal: BrandDeal) => {
 export const SPIN_STORY_MONEY_COST = 200
 export const SPIN_STORY_CONTROVERSY_REDUCTION = 25
 
+export type SpinStoryMoneyUpdate =
+  | { success: false }
+  | { success: true; nextMoney: number; appliedDelta: number }
+
 export const getSpinStoryMoneyUpdate = ({
   player
 }: {
   player: GameState['player']
-}) => {
+}): SpinStoryMoneyUpdate => {
   if ((player.money ?? 0) < SPIN_STORY_MONEY_COST) {
     return { success: false }
   }

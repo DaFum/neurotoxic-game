@@ -83,7 +83,7 @@ export const SOCKET_DEFS = {
     type: 'midi',
     color: 'var(--color-cosmic-purple)'
   }
-}
+} as const
 
 export const INITIAL_SOCKET_ORDER = [
   'mic',

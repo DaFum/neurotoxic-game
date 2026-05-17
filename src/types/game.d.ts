@@ -44,8 +44,14 @@ export interface CityTraitState {
   barSpendingProfile: string
 }
 
+export type MinigameType =
+  | 'TOURBUS'
+  | 'ROADIE'
+  | 'KABELSALAT'
+  | 'AMP_CALIBRATION'
+
 export interface MinigameState {
-  type?: string | null
+  type?: MinigameType | null
   isActive?: boolean
   targetNodeId?: string | null
   active?: boolean

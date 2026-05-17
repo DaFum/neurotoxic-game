@@ -1,5 +1,6 @@
 import { useMemo, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import type { MapNode } from '../types/map'
 import { useGameState } from '../context/GameState.tsx'
 import { stopAudio } from '../utils/audio/audioEngine'
 import { useRhythmGameState } from './rhythmGame/useRhythmGameState'
@@ -30,7 +31,7 @@ export type RhythmGameLogicReturn = {
 export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
   const { t } = useTranslation()
   const gameState = useGameState()
-  const { setLastGigStats, addToast, endGig, updateBand } = gameState
+  const { setLastGigStats, addToast, endGig } = gameState
   const {
     setlist,
     band,
@@ -50,7 +51,10 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
     const map = new Map<string, string>()
     if (!gameMap?.nodes) return map
 
-    for (const [, node] of Object.entries(gameMap.nodes)) {
+    for (const [, node] of Object.entries(gameMap.nodes) as [
+      string,
+      MapNode
+    ][]) {
       if (node.venueId) {
         map.set(node.venueId, node.id)
       } else if (node.venue?.id) {
@@ -82,7 +86,7 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
     gameStateRef,
     setters,
     performance: band.performance, // Injected for dynamic stats
-    contextActions: { addToast, setLastGigStats, endGig, updateBand }
+    contextActions: { addToast, setLastGigStats, endGig }
   })
   const { activateToxicMode } = scoringActions
 

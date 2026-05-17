@@ -1,6 +1,7 @@
 export interface QuestState extends UnknownRecord {
   id: string
   label?: string
+  description?: string
   deadline?: number | null
   progress?: number
   required?: number

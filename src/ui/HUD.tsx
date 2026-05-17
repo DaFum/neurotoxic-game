@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { useAudioControl } from '../hooks/useAudioControl'
 import { formatCurrency } from '../utils/numberUtils'
+import type { BandMember } from '../types/band'
 import { ProgressBar, Tooltip } from './shared'
 import { translateLocation } from '../utils/locationI18n'
 
@@ -281,7 +282,7 @@ export const HUD = memo(() => {
           <div className='text-right border-b border-toxic-green/30 mb-2 pb-1 text-[10px] tracking-widest text-ash-gray'>
             {t('ui:bandStatus', { defaultValue: 'BAND STATUS' })}
           </div>
-          {band.members.map((m, idx) => {
+          {band.members.map((m: BandMember, idx: number) => {
             const safeName =
               m.name?.trim() ||
               t('ui:hud.unnamedMember', { defaultValue: 'Member' })

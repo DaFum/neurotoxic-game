@@ -1,5 +1,6 @@
 import type { RhythmSetlistEntry } from '../types/rhythmGame'
 import type {
+  BandState,
   GamePhase,
   GameState,
   PostGigSummary,
@@ -347,7 +348,7 @@ export const usePostGigHandlers = ({
     setIsProcessingAction(true)
     try {
       if (financials.soldMerch) {
-        updateBand(prevBand => {
+        updateBand((prevBand: BandState) => {
           const updatedInventory = { ...prevBand.inventory }
           for (const merchKey in financials.soldMerch) {
             if (Object.hasOwn(financials.soldMerch, merchKey)) {
@@ -386,7 +387,7 @@ export const usePostGigHandlers = ({
       })
 
       if (band.inventory?.neurotoxicPedal) {
-        updateBand(prevBand => {
+        updateBand((prevBand: BandState) => {
           const currentHarmony = prevBand.harmony ?? 100
           const newHarmony = clampBandHarmony(
             currentHarmony - NEUROTOXIC_PEDAL_HARMONY_PENALTY
