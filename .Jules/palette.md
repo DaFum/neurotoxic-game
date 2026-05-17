@@ -83,7 +83,7 @@
 ## 2025-02-18 - Tooltip Container Layout
 
 **Learning:** When conditionally wrapping full-width components (like buttons) in a `Tooltip` component (which defaults to an `inline-block` layout), the wrapper can cause the inner button to shrink unexpectedly. Passing class names from the parent can lead to class conflicts (e.g. `block` vs `inline-block` in Tailwind).
-**Action:** Instead of hardcoding layout classes from the parent, the `Tooltip` component should dynamically read the child element`s `className`(using`React.cloneElement`or direct reading) and apply necessary layout properties (like`w-full block`) to both its outer `div`and inner disabled`span` wrappers automatically. This preserves the layout of full-width children safely without duplicate prop passing.
+**Action:** Instead of hardcoding layout classes from the parent, the `Tooltip` component should dynamically read the child element's `className` (using `React.cloneElement` or direct reading) and apply necessary layout properties (like `w-full block`) to both its outer `div` and inner disabled `span` wrappers automatically. This preserves the layout of full-width children safely without duplicate prop passing.
 
 ## 2025-02-28 - Tooltip for Locked Songs in Pre-Gig Setlist
 
@@ -110,3 +110,8 @@
 
 **Learning:** Adding `pointer-events-auto` to wrapper elements inside `pointer-events-none` containers is necessary for hover interactions (like tooltips) to work properly.
 **Action:** Always check pointer-events inheritance when adding interactive elements or tooltips to HUD components.
+
+## 2026-05-16 - ARIA Toggle State Pattern
+
+**Learning:** Interactive toggle buttons with custom visual states (like the Overdrive button in AmpControls) require `aria-pressed` bound directly to their active state to correctly communicate their toggle status to screen readers, unlike standard buttons which only need an `aria-label`.
+**Action:** Always verify if a button behaves as a toggle (changes state on click) and ensure `aria-pressed={isActive}` is present.
