@@ -1,3 +1,4 @@
+import { formatCurrency } from '../../utils/numberUtils'
 import type {
   GameState,
   SocialState,
