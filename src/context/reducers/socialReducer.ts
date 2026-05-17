@@ -17,7 +17,8 @@ import {
   calculateFameLevel,
   clampLoyalty,
   clampZealotry,
-  clampControversyLevel
+  clampControversyLevel,
+  clampNonNegative
 } from '../../utils/gameStateUtils'
 import { sanitizeSuccessToast } from './toastSanitizers'
 
@@ -166,6 +167,12 @@ export const handleUpdateSocial = (
     updates.zealotry = clampZealotry(Number(updates.zealotry) || 0)
   }
 
+  if (updates.controversyLevel !== undefined) {
+    updates.controversyLevel = clampControversyLevel(
+      Number(updates.controversyLevel) || 0
+    )
+  }
+
   if (updates.activeDeals !== undefined) {
     if (!Array.isArray(updates.activeDeals)) {
       logger.warn('GameState', 'Invalid activeDeals update (must be array)')
@@ -192,17 +199,21 @@ export const handleUpdateSocial = (
   return { ...state, social: { ...state.social, ...updates } }
 }
 
+const VENUE_DEFENSE_LOYALTY_THRESHOLD = 30
+const VENUE_DEFENSE_LOYALTY_COST = 15
+
 export const handleAddVenueBlacklist = (
   state: GameState,
   { venueId, toastId }: { venueId: string; toastId: string }
 ): GameState => {
   const nextState = { ...state }
-  // Intentional design: If loyalty is high enough (>= 30), loyal fans will defend the band
-  // and prevent the venue from blacklisting them, at the cost of 15 loyalty points.
-  if (nextState.social.loyalty >= 30) {
+  // Intentional design: when loyalty is high enough, loyal fans defend the
+  // band and prevent the venue from blacklisting them, at the cost of some
+  // loyalty points.
+  if (nextState.social.loyalty >= VENUE_DEFENSE_LOYALTY_THRESHOLD) {
     nextState.social = {
       ...nextState.social,
-      loyalty: nextState.social.loyalty - 15
+      loyalty: nextState.social.loyalty - VENUE_DEFENSE_LOYALTY_COST
     }
     nextState.toasts = [
       ...(nextState.toasts || []),
@@ -247,11 +258,11 @@ export const handleMerchPress = (
     return state
   }
 
-  const cost = Math.max(0, parsedCost)
+  const cost = clampNonNegative(parsedCost)
   const loyaltyGain = parsedLoyaltyGain
   const controversyGain = parsedControversyGain
-  const harmonyCost = Math.max(0, parsedHarmonyCost)
-  const fameGain = Math.max(0, parsedFameGain)
+  const harmonyCost = clampNonNegative(parsedHarmonyCost)
+  const fameGain = clampNonNegative(parsedFameGain)
   const successToast = payload.successToast
 
   const currentMoney = clampPlayerMoney(state.player.money)

@@ -13,6 +13,7 @@ import {
   Skull
 } from 'lucide-react'
 import { useAudioControl } from '../hooks/useAudioControl'
+import { formatCurrency } from '../utils/numberUtils'
 import { ProgressBar, Tooltip } from './shared'
 import { translateLocation } from '../utils/locationI18n'
 
@@ -39,7 +40,7 @@ export const HUD = memo(() => {
   const player = useGameSelector(state => state.player)
   const band = useGameSelector(state => state.band)
   const { toggleNeuroDecimator } = useGameDispatch()
-  const { t } = useTranslation(['ui', 'venues'])
+  const { t, i18n } = useTranslation(['ui', 'venues'])
   const locationName = translateLocation(t, player.location, player.location)
   const [showHelp, setShowHelp] = useState(false)
   const { audioState, handleAudioChange } = useAudioControl()
@@ -96,10 +97,7 @@ export const HUD = memo(() => {
             <span
               className={`text-sm font-bold tabular-nums ${player.money < 40 ? 'text-blood-red' : ''}`}
             >
-              {t('ui:currency', {
-                value: player.money,
-                defaultValue: `${player.money} \u20AC`
-              })}
+              {formatCurrency(player.money, i18n?.language)}
             </span>
           </div>
           <div className='flex items-center gap-2 mb-2'>

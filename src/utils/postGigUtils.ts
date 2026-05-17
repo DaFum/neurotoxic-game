@@ -242,10 +242,10 @@ export const calculatePostGigStateUpdates = (
   const organicGrowth = calculateSocialGrowth(
     result.platform,
     perfScore ?? 0,
-    social[result.platform] || 0,
+    social[result.platform] ?? 0,
     isGigViral,
-    social.controversyLevel || 0,
-    social.loyalty || 0
+    social.controversyLevel ?? 0,
+    social.loyalty ?? 0
   )
   const totalFollowers = result.followers + organicGrowth
   const finalResult = { ...result, totalFollowers }
@@ -309,21 +309,21 @@ export const calculatePostGigStateUpdates = (
 
   const boundedZealotry = Math.max(
     0,
-    Math.min(100, (social.zealotry || 0) + (result.zealotryChange || 0))
+    Math.min(100, (social.zealotry ?? 0) + (result.zealotryChange ?? 0))
   )
 
   const updatedSocial: Partial<GameState['social']> = {
     [result.platform]: Math.max(
       0,
-      (social[result.platform] || 0) + totalFollowers
+      (social[result.platform] ?? 0) + totalFollowers
     ),
-    viral: (social.viral || 0) + (result.success ? 1 : 0) + gigViralBonus,
+    viral: (social.viral ?? 0) + (result.success ? 1 : 0) + gigViralBonus,
     lastGigDay: player.day,
     lastGigDifficulty: currentGig?.diff ?? currentGig?.difficulty ?? 1,
     controversyLevel: clampControversyLevel(
-      (social.controversyLevel || 0) + (result.controversyChange || 0)
+      (social.controversyLevel ?? 0) + (result.controversyChange ?? 0)
     ),
-    loyalty: Math.max(0, (social.loyalty || 0) + (result.loyaltyChange || 0)),
+    loyalty: Math.max(0, (social.loyalty ?? 0) + (result.loyaltyChange ?? 0)),
     zealotry: boundedZealotry,
     reputationCooldown:
       result.reputationCooldownSet !== undefined

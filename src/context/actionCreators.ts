@@ -160,7 +160,7 @@ export const toggleNeuroDecimator = (
   { type: typeof ActionTypes.TOGGLE_NEURO_DECIMATOR }
 > => ({
   type: ActionTypes.TOGGLE_NEURO_DECIMATOR,
-  payload: { isActive: !!isActive }
+  payload: { isActive }
 })
 
 /**

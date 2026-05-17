@@ -171,7 +171,7 @@ export const calculateTicketIncome = (
   // Base draw is ~30%. Fame fills the rest.
   const baseDrawRatio = TICKET_SALES_CONSTANTS.BASE_DRAW_RATIO
   // Fame needs to be ~8x capacity to fill it easily
-  const baseCapacity = Math.max(0, gigData.capacity || 0)
+  const baseCapacity = Math.max(0, gigData.capacity ?? 0)
   const safeCapacity = Math.max(1, baseCapacity) // Prevent division by zero or negative
 
   // Logarithmic fame scaling: fame matters more at low levels, flattens at high levels.
@@ -207,7 +207,7 @@ export const calculateTicketIncome = (
   }
 
   // Controversy attendance penalty: -1% per point above 40, max -30%
-  const controversyLevel = context.controversyLevel || 0
+  const controversyLevel = context.controversyLevel ?? 0
   if (controversyLevel >= 40) {
     fillRate -= Math.min(0.3, (controversyLevel - 40) * 0.01)
   }
@@ -289,7 +289,7 @@ export const calculateMerchIncome = (
   if (modifiers.merch) buyRate += 0.1 // Boosted merch table effect to reward investment
 
   // Loyalty converts to merch sales during controversy
-  if ((context?.controversyLevel || 0) >= 40 && (context?.loyalty || 0) >= 20) {
+  if ((context?.controversyLevel ?? 0) >= 40 && (context?.loyalty ?? 0) >= 20) {
     const loyalty = typeof context.loyalty === 'number' ? context.loyalty : 0
     const loyaltyBuyBonus = Math.min(0.15, (loyalty / 100) * 0.2)
     buyRate = Math.min(0.45, buyRate + loyaltyBuyBonus)
@@ -499,7 +499,7 @@ export const calculateTravelExpenses = (
   const fameLogistics = Math.floor(fameLevel * TRAVEL_LOGISTICS_PER_FAME_LEVEL)
   const cashReserveFee = Math.min(
     TRAVEL_LOGISTICS_CASH_CAP,
-    Math.floor((playerState?.money || 0) / 1000) * 5
+    Math.floor((playerState?.money ?? 0) / 1000) * 5
   )
   const logisticsCost =
     TRAVEL_LOGISTICS_BASE + distanceLogistics + fameLogistics + cashReserveFee

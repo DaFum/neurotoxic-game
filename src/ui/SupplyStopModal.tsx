@@ -39,7 +39,7 @@ export const SupplyStopModal: React.FC<SupplyStopModalProps> = ({
     }
 
     const playerPatch: Partial<PlayerState> = {
-      money: Math.max(0, (player.money || 0) - adjustedCost)
+      money: Math.max(0, (player.money ?? 0) - adjustedCost)
     }
     let bandPatch: Partial<BandState> = {}
 
