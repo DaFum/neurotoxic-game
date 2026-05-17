@@ -20,6 +20,11 @@ export const clampNonNegative = (value: number): number => {
   return Math.max(0, value)
 }
 
+export const clampToNonNegativeInt = (value: unknown): number => {
+  const n = Number(value)
+  return Number.isFinite(n) ? Math.max(0, Math.floor(n)) : 0
+}
+
 export const isStashEntry = (entry: unknown): entry is StashEntry => {
   if (entry === null || typeof entry !== 'object') return false
   const obj = entry as Record<string, unknown>

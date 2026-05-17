@@ -1,6 +1,9 @@
 // Module-level cache for Intl.NumberFormat instances to prevent repeated instantiation overhead
 const numberFormatters = new Map<string, Intl.NumberFormat>()
 
+export const toFiniteNumber = (value: unknown, fallback = 0): number =>
+  typeof value === 'number' && Number.isFinite(value) ? value : fallback
+
 /**
  * Returns a cached Intl.NumberFormat instance based on language and options.
  */

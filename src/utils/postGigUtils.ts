@@ -1,5 +1,6 @@
 import { BALANCE_CONSTANTS } from './gameStateUtils'
 import { calculateGigFinancials } from './economyEngine'
+import { toFiniteNumber } from './numberUtils'
 import { generatePostOptions } from './socialEngine'
 
 import {
@@ -57,11 +58,17 @@ const SOCIAL_PLATFORM_IDS = new Set<Platform>([
   'newsletter'
 ])
 
-const toNumber = (value: unknown, fallback = 0): number =>
-  typeof value === 'number' && Number.isFinite(value) ? value : fallback
-
 const isSocialPlatformId = (value: unknown): value is Platform =>
   typeof value === 'string' && SOCIAL_PLATFORM_IDS.has(value as Platform)
+
+const applyClampedMoneyDelta = (
+  currentMoney: number,
+  delta: number
+): { nextMoney: number; appliedDelta: number } => {
+  const prevMoney = currentMoney ?? 0
+  const nextMoney = clampPlayerMoney(prevMoney + delta)
+  return { nextMoney, appliedDelta: nextMoney - prevMoney }
+}
 
 const normalizeNumericDelta = (
   value: unknown,
@@ -98,7 +105,7 @@ const normalizeInfluencerUpdate = (
     throw new Error('Invalid influencerUpdate: id must be a string')
   }
 
-  const scoreChange = toNumber(update.scoreChange, Number.NaN)
+  const scoreChange = toFiniteNumber(update.scoreChange, Number.NaN)
   if (!Number.isFinite(scoreChange)) {
     throw new Error(
       `Invalid influencerUpdate scoreChange for ${update.id}: ${String(
@@ -152,7 +159,7 @@ const normalizeResolvedPost = (
     ...raw,
     platform,
     success: raw.success === true,
-    followers: toNumber(raw.followers),
+    followers: toFiniteNumber(raw.followers),
     message: typeof raw.message === 'string' ? raw.message : '',
     moneyChange: normalizeNumericDelta(raw.moneyChange, 'moneyChange'),
     harmonyChange: normalizeNumericDelta(raw.harmonyChange, 'harmonyChange'),
@@ -292,9 +299,12 @@ export const calculatePostGigStateUpdates = (
   let nextMoney = player.money ?? 0
   let appliedMoneyDelta = 0
   if (result.moneyChange) {
-    const prevMoney = player.money ?? 0
-    nextMoney = clampPlayerMoney(prevMoney + result.moneyChange)
-    appliedMoneyDelta = nextMoney - prevMoney
+    const applied = applyClampedMoneyDelta(
+      player.money ?? 0,
+      result.moneyChange
+    )
+    nextMoney = applied.nextMoney
+    appliedMoneyDelta = applied.appliedDelta
   }
 
   const boundedZealotry = Math.max(
@@ -402,7 +412,7 @@ export const calculatePostGigStateUpdates = (
           ...currentInfluencer,
           score: Math.min(
             100,
-            Math.max(0, toNumber(currentInfluencer.score) + scoreChange)
+            Math.max(0, toFiniteNumber(currentInfluencer.score) + scoreChange)
           )
         }
       }
@@ -427,7 +437,7 @@ export const calculatePostGigStateUpdates = (
         ) {
           updatedSocial[platformId] = Math.max(
             0,
-            toNumber(social[platformId]) + delta
+            toFiniteNumber(social[platformId]) + delta
           )
         }
       }
@@ -465,9 +475,12 @@ export const getAcceptDealMoneyUpdate = ({
   let nextMoney = player.money ?? 0
 
   if (deal.offer.upfront) {
-    const prevMoney = player.money ?? 0
-    nextMoney = clampPlayerMoney(prevMoney + deal.offer.upfront)
-    appliedMoneyDelta = nextMoney - prevMoney
+    const applied = applyClampedMoneyDelta(
+      player.money ?? 0,
+      deal.offer.upfront
+    )
+    nextMoney = applied.nextMoney
+    appliedMoneyDelta = applied.appliedDelta
   }
 
   return { nextMoney, appliedMoneyDelta }
@@ -531,9 +544,10 @@ export const getSpinStoryMoneyUpdate = ({
     return { success: false }
   }
 
-  const prevMoney = player.money ?? 0
-  const nextMoney = clampPlayerMoney(prevMoney - SPIN_STORY_MONEY_COST)
-  const appliedDelta = nextMoney - prevMoney
+  const { nextMoney, appliedDelta } = applyClampedMoneyDelta(
+    player.money ?? 0,
+    -SPIN_STORY_MONEY_COST
+  )
 
   return {
     success: true,

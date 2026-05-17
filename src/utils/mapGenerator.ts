@@ -20,6 +20,7 @@ import { ALL_VENUES } from '../data/venues'
 import { StateError } from './errorHandler'
 import { HQ_ITEMS } from '../data/hqItems'
 import { logger } from './logger'
+import { toFiniteNumber } from './numberUtils'
 import type { MapNodeType, Venue, CityTraitState } from '../types'
 
 type MapConnection = { from: string; to: string }
@@ -59,10 +60,8 @@ let cachedHomeVenue: Venue | null = null
 let cachedFinaleVenue: Venue | null = null
 let cachedVenuesLength: number = -1
 
-const getVenueCoord = (venue: Venue, axis: 'x' | 'y', fallback: number) => {
-  const raw = venue[axis]
-  return typeof raw === 'number' && Number.isFinite(raw) ? raw : fallback
-}
+const getVenueCoord = (venue: Venue, axis: 'x' | 'y', fallback: number) =>
+  toFiniteNumber(venue[axis], fallback)
 
 /**
  * Derives the city key from a venue ID (e.g. 'berlin_so36' → 'berlin').

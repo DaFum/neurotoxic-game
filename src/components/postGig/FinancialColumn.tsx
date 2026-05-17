@@ -2,7 +2,7 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { FinancialList } from './FinancialList'
-import { getFinancialColors } from './financialColors'
+import { getFinancialColors } from '../../utils/financialColors'
 import { formatSignedFinancialAmount } from '../../utils/numberUtils'
 import type { FinancialItem } from '../../types/components'
 
