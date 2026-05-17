@@ -328,11 +328,9 @@ const applyZealotryAction = (
     ? (state.player.day as number)
     : 0
 
-  if (state.social[dayField] === playerDay) {
-    logger.warn('GameState', options.duplicateLogMessage)
-    return state
-  }
-
+  // Payload-shape validation runs first so a malformed payload sent on the
+  // same day as a successful broadcast logs an "invalid payload" warning
+  // (not the misleading "already triggered today") for debuggability.
   if (options.invalidPayloadShapeLogMessage) {
     if (!payload || typeof payload !== 'object') {
       logger.warn('GameState', options.invalidPayloadShapeLogMessage)
@@ -350,8 +348,14 @@ const applyZealotryAction = (
     logger.warn('GameState', options.invalidLogMessage)
     return state
   }
+
+  if (state.social[dayField] === playerDay) {
+    logger.warn('GameState', options.duplicateLogMessage)
+    return state
+  }
+
   const { cost, fameGain, zealotryGain, controversyGain, harmonyCost } = parsed
-  const successToast = payload?.successToast
+  const successToast = payload.successToast
 
   const funds = readPlayerFundsAndHarmony(state)
   if (!funds) {

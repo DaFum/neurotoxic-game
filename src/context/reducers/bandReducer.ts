@@ -70,23 +70,44 @@ export const handleUpdateBand = (
   sanitizeNumericKey('tempo', clamp0to100)
 
   if (Array.isArray(safeUpdates.members)) {
-    safeUpdates.members = (safeUpdates.members as unknown[])
-      .filter(
-        (member): member is BandMember =>
-          !!member && typeof member === 'object' && !Array.isArray(member)
-      )
-      .map(member => {
-        const next: BandMember = { ...member }
-        if (typeof next.stamina === 'number') {
-          const maxStamina =
-            typeof next.staminaMax === 'number' ? next.staminaMax : undefined
-          next.stamina = clampMemberStamina(next.stamina, maxStamina)
-        }
-        if (typeof next.mood === 'number') {
-          next.mood = clampMemberMood(next.mood)
-        }
-        return next
-      })
+    // Members come in as partial patches; merge by id against the prior
+    // band state so callers can safely send `{ id, stamina }` without
+    // having to repeat every required field. Entries without an `id` (or
+    // an unknown id) are dropped rather than spread into state with
+    // missing identity fields.
+    const existingById = new Map<string, BandMember>()
+    for (const existing of state.band.members) {
+      if (existing && typeof existing.id === 'string') {
+        existingById.set(existing.id, existing)
+      }
+    }
+    const sanitizedMembers: BandMember[] = []
+    for (const raw of safeUpdates.members as unknown[]) {
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) continue
+      const patch = raw as Partial<BandMember>
+      const id = typeof patch.id === 'string' ? patch.id : undefined
+      const existing = id ? existingById.get(id) : undefined
+      // If a known id matches, merge patch onto the existing member; if the
+      // patch already looks like a full BandMember (has id + name), accept
+      // it as a new/replacement member; otherwise drop.
+      let next: BandMember | null = null
+      if (existing) {
+        next = { ...existing, ...patch, id: existing.id }
+      } else if (id && typeof patch.name === 'string') {
+        next = { ...(patch as BandMember), id }
+      }
+      if (!next) continue
+      if (typeof next.stamina === 'number') {
+        const maxStamina =
+          typeof next.staminaMax === 'number' ? next.staminaMax : undefined
+        next.stamina = clampMemberStamina(next.stamina, maxStamina)
+      }
+      if (typeof next.mood === 'number') {
+        next.mood = clampMemberMood(next.mood)
+      }
+      sanitizedMembers.push(next)
+    }
+    safeUpdates.members = sanitizedMembers
   }
 
   const mergedBand = {
