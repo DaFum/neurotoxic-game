@@ -248,7 +248,7 @@ The `||→??` migration preserved `0` but lost the implicit `NaN→0` coercion. 
 ### Dead Code
 | # | Status | Commit / Notes |
 |---|---|---|
-| DC1 | ✅ RESOLVED (scoped) | Only the truly unreachable line was removed: `economyEngine.ts:calculateEffectiveTicketPrice` had `if (!gigData) return 0` followed by `gigData = gigData || {}` — the second line is dead and is now deleted. The other `x = x || {}` guards remain because JS default parameters only fire for `undefined`, so they still defend against callers passing explicit `null`. |
+| DC1 | ✅ RESOLVED (scoped) | Only the truly unreachable line was removed in `economyEngine.ts:calculateEffectiveTicketPrice`: the `gigData = gigData \|\| {}` reassignment immediately after an `if (!gigData) return 0` early-return is dead and is now deleted. The other `x = x \|\| {}` guards in the file remain — JS default parameters only fire for `undefined`, so they still defend against callers passing explicit `null`. |
 | DC2 | ⏭️ CLOSED — NOT A BUG | The `if (!deal) return …` branch in `postGigUtils.ts` is reachable when no `SPONSORSHIP` entry exists in `social.activeDeals`. |
 | DC3 | ⏭️ CLOSED — NOT A BUG | `eventEngine.processEvent` already has an explicit pre-check; the audit misread the structure. |
 
