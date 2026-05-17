@@ -1,3 +1,4 @@
+import i18n from '../i18n'
 import { formatCurrency } from '../utils/numberUtils'
 import type { BandMember, GameState, QuestState, ToastPayload } from '../types'
 import {
@@ -51,7 +52,7 @@ export const QuestLifecycle = {
           messageKey: 'ui:toast.quest_complete_money',
           options: {
             name: quest.label,
-            amount: formatCurrency(appliedDelta, undefined, 'always')
+            amount: formatCurrency(appliedDelta, i18n.language, 'always')
           },
           type: 'success'
         })

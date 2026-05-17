@@ -322,12 +322,15 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
     delta: EventDelta,
     context: TemplateContext
   ) => {
+    const parsedChange =
+      typeof eff.value === 'number' ? eff.value : Number(eff.value)
+    if (!Number.isFinite(parsedChange)) return
     if (!delta.band.relationshipChange) delta.band.relationshipChange = []
     const resolveName = (str: string) => resolveTemplateString(str, context)
     delta.band.relationshipChange.push({
       member1: resolveName(String(eff.member1 ?? '')),
       member2: resolveName(String(eff.member2 ?? '')),
-      change: typeof eff.value === 'number' ? eff.value : Number(eff.value)
+      change: parsedChange
     })
   },
   resource: (eff: EffectShape, delta: EventDelta) => {

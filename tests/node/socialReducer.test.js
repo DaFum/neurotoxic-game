@@ -7,6 +7,7 @@ import {
   handlePirateBroadcast
 } from '../../src/context/reducers/socialReducer'
 import { ALLOWED_TRENDS } from '../../src/data/socialTrends'
+import { formatCurrency } from '../../src/utils/numberUtils'
 
 describe('socialReducer', () => {
   let baseState
@@ -421,7 +422,7 @@ describe('socialReducer', () => {
         deltaZealotry: 15,
         deltaControversy: 20,
         deltaHarmony: -10,
-        cost: 200
+        cost: formatCurrency(-200, undefined, 'always')
       })
     })
   })

@@ -1,3 +1,4 @@
+import i18n from '../../i18n'
 import { formatCurrency } from '../../utils/numberUtils'
 import type {
   GameState,
@@ -408,7 +409,7 @@ const applyZealotryAction = (
     deltaZealotry: nextZealotry - currentZealotry,
     deltaControversy: nextControversy - currentControversy,
     deltaHarmony: nextHarmony - currentHarmony,
-    cost: formatCurrency(currentMoney - nextMoney, undefined, 'always')
+    cost: formatCurrency(nextMoney - currentMoney, i18n.language, 'always')
   })
 
   return nextState
