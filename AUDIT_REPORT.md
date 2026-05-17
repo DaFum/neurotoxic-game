@@ -35,7 +35,7 @@ Items that were intentionally skipped retain a one-line reason.
 
 - **MED** Remaining currency/format inconsistencies — toast-strings in
   `usePostGigHandlers.ts:166,257-258,330` and `useTravelLogic.ts:670,725,
-739,774,798,825` use `€` inside i18n template strings (`{{amount}}€`).
+  739,774,798,825` use `€` inside i18n template strings (`{{amount}}€`).
   These flow through `t()` so locale strings own sign/glyph placement, but
   they don't share the locale-aware `formatCurrency` formatter. **SKIPPED**
   with reason: changing the i18n template surface requires coordinated
