@@ -144,11 +144,11 @@ export const useClinicLogic = (): {
 
   const membersMap = useMemo(() => {
     const map = new Map<string, BandMember>()
-    band?.members?.forEach(m => {
-      if (m.id) {
+    ;(band?.members ?? [])
+      .filter((m: BandMember): m is BandMember & { id: string } => !!m.id)
+      .forEach(m => {
         map.set(m.id, m)
-      }
-    })
+      })
     return map
   }, [band?.members])
 
