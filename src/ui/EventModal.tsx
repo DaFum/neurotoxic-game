@@ -62,21 +62,20 @@ export const EventModal = ({
   // Track preview outcomes locally instead of injecting them from GameState, avoiding render cycle race conditions
   const [outcome, setOutcome] = useState<EventOutcome | null>(null)
   const [previewError, setPreviewError] = useState(false)
+  const [prevEventId, setPrevEventId] = useState<string | undefined>(event?.id)
+
+  // Reset outcome on new events
+  if (event?.id !== prevEventId) {
+    setPrevEventId(event?.id)
+    setOutcome(null)
+    setPreviewError(false)
+  }
 
   // Keep game state ref stable so handleOptionSelect doesn't refresh constantly, resetting the keyboard listener
   const gameStateRef = useRef(gameState)
   useEffect(() => {
     gameStateRef.current = gameState
   }, [gameState])
-
-  // Reset outcome on new events
-  const eventId = event?.id
-  useEffect(() => {
-    // eslint-disable-next-line @eslint-react/set-state-in-effect
-    setOutcome(null)
-    // eslint-disable-next-line @eslint-react/set-state-in-effect
-    setPreviewError(false)
-  }, [eventId])
 
   const handleOptionSelect = useCallback((option: EventModalOption) => {
     try {
