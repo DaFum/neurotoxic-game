@@ -119,7 +119,10 @@ export const UplinkButton = memo(
         {/* Glitch Background on Hover */}
         {isHovered && (
           <div className='absolute inset-0 bg-toxic-green/10 z-0'>
-            <div className='absolute inset-0 bg-[image:repeating-linear-gradient(transparent,transparent_2px,var(--color-void-black-50)_2px,var(--color-void-black-50)_4px)] opacity-50'></div>
+            <div
+              className='absolute inset-0 opacity-50'
+              style={{ backgroundImage: 'repeating-linear-gradient(transparent, transparent 2px, var(--color-void-black-50) 2px, var(--color-void-black-50) 4px)' }}
+            ></div>
             <div className='w-full h-1 bg-toxic-green absolute top-1/2 animate-[scan_0.5s_linear_infinite]'></div>
           </div>
         )}
@@ -965,7 +968,10 @@ export const CrisisModal = memo(({ isOpen, onClose }: CrisisModalProps) => {
         aria-hidden='true'
       ></div>
       {/* Scanline FX on background */}
-      <div className='absolute inset-0 pointer-events-none opacity-20 bg-[image:repeating-linear-gradient(transparent,transparent_2px,var(--color-void-black-50)_2px,var(--color-void-black-50)_4px)]'></div>
+      <div
+        className='absolute inset-0 pointer-events-none opacity-20'
+        style={{ backgroundImage: 'repeating-linear-gradient(transparent, transparent 2px, var(--color-void-black-50) 2px, var(--color-void-black-50) 4px)' }}
+      ></div>
 
       {/* Modal Box */}
       <div className='relative w-full max-w-lg border-2 border-toxic-green bg-void-black shadow-[0_0_40px_var(--color-toxic-green-glow)] animate-[glitch-anim_0.2s_ease-in-out]'>
