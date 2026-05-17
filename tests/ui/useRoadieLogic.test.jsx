@@ -31,7 +31,7 @@ mock.mock('../../src/utils/audio/AudioManager', () => ({
 
 const { useRoadieLogic } =
   await import('../../src/hooks/minigames/useRoadieLogic')
-const { ROADIE_GRID_WIDTH: GRID_WIDTH, ROADIE_GRID_HEIGHT: GRID_HEIGHT } =
+const { ROADIE_GRID_WIDTH, ROADIE_GRID_HEIGHT } =
   await import('../../src/hooks/minigames/minigameConstants')
 
 describe('useRoadieLogic', () => {
@@ -84,11 +84,11 @@ describe('useRoadieLogic', () => {
     mock.advanceTimersByTime(1000)
 
     // Right Boundary
-    game.playerPos.x = GRID_WIDTH - 1
+    game.playerPos.x = ROADIE_GRID_WIDTH - 1
     act(() => {
       result.current.actions.move(1, 0)
     })
-    expect(game.playerPos).toEqual({ x: GRID_WIDTH - 1, y: 0 })
+    expect(game.playerPos).toEqual({ x: ROADIE_GRID_WIDTH - 1, y: 0 })
     mock.advanceTimersByTime(1000)
 
     // Up Boundary
@@ -96,28 +96,31 @@ describe('useRoadieLogic', () => {
     act(() => {
       result.current.actions.move(0, -1)
     })
-    expect(game.playerPos).toEqual({ x: GRID_WIDTH - 1, y: 0 })
+    expect(game.playerPos).toEqual({ x: ROADIE_GRID_WIDTH - 1, y: 0 })
     mock.advanceTimersByTime(1000)
 
     // Down Boundary
-    game.playerPos.y = GRID_HEIGHT - 1
+    game.playerPos.y = ROADIE_GRID_HEIGHT - 1
     act(() => {
       result.current.actions.move(0, 1)
     })
-    expect(game.playerPos).toEqual({ x: GRID_WIDTH - 1, y: GRID_HEIGHT - 1 })
+    expect(game.playerPos).toEqual({
+      x: ROADIE_GRID_WIDTH - 1,
+      y: ROADIE_GRID_HEIGHT - 1
+    })
     mock.advanceTimersByTime(1000)
 
     // 3. Deliver item at venue
     game.carrying = { id: 'amp', type: 'AMP', weight: 2 }
     game.itemsDelivered = []
     mockPlaySFX.mockClear()
-    game.playerPos = { x: 6, y: GRID_HEIGHT - 2 }
+    game.playerPos = { x: 6, y: ROADIE_GRID_HEIGHT - 2 }
     mock.advanceTimersByTime(1000)
     const beforeDeliverCount = mockPlaySFX.mock.calls.length
     act(() => {
       result.current.actions.move(0, 1)
     })
-    expect(game.playerPos.y).toBe(GRID_HEIGHT - 1)
+    expect(game.playerPos.y).toBe(ROADIE_GRID_HEIGHT - 1)
     expect(game.carrying).toBe(null)
     expect(game.itemsDelivered.length).toBe(1)
 
@@ -164,7 +167,7 @@ describe('useRoadieLogic', () => {
     // 7. Trigger game over on completion
     game.itemsToDeliver = []
     game.carrying = { id: 'last-item', weight: 1 }
-    game.playerPos = { x: 6, y: GRID_HEIGHT - 2 }
+    game.playerPos = { x: 6, y: ROADIE_GRID_HEIGHT - 2 }
     mock.advanceTimersByTime(1000)
     act(() => {
       result.current.actions.move(0, 1)

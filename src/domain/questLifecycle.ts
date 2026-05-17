@@ -1,3 +1,4 @@
+import { formatCurrency } from '../utils/numberUtils'
 import type { BandMember, GameState, QuestState, ToastPayload } from '../types'
 import {
   clampPlayerFame,
@@ -48,7 +49,10 @@ export const QuestLifecycle = {
         generatedToasts.push({
           id: `${questId}-money`,
           messageKey: 'ui:toast.quest_complete_money',
-          options: { name: quest.label, amount: appliedDelta },
+          options: {
+            name: quest.label,
+            amount: formatCurrency(appliedDelta, undefined, 'always')
+          },
           type: 'success'
         })
       }

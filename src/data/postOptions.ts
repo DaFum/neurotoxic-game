@@ -1,3 +1,4 @@
+import { formatCurrency } from '../utils/numberUtils'
 import type { BandMember } from '../types'
 import { hasActiveSponsorship } from '../utils/gameStateUtils'
 import { SOCIAL_PLATFORMS } from './platforms'
@@ -912,9 +913,9 @@ export const POST_OPTIONS = [
         influencerUpdate: { id: selectedId, scoreChange: 10 },
         message: i18n.t('ui:postOptions.influencerSuccess', {
           selectedId: displayName,
-          cost,
+          cost: formatCurrency(cost, i18n.language),
           traitBonusText,
-          defaultValue: `Collaborated with {{selectedId}}. Cost {{cost}}€{{traitBonusText}}`
+          defaultValue: `Collaborated with {{selectedId}}. Cost {{cost}}{{traitBonusText}}`
         })
       }
     }

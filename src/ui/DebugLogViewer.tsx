@@ -1,7 +1,6 @@
 import { useState, useEffect, useSyncExternalStore } from 'react'
 import { useTranslation } from 'react-i18next'
 import { logger, LOG_LEVELS } from '../utils/logger'
-import type { LogEntry } from '../utils/logger'
 
 type LogLevelName = keyof typeof LOG_LEVELS
 

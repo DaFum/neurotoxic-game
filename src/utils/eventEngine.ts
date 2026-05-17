@@ -1,3 +1,4 @@
+import type { EventDelta } from '../types'
 /**
 
  *
@@ -87,38 +88,6 @@ export type EngineGameState = {
     context?: Record<string, unknown>
   }
   [key: string]: unknown
-}
-type EventDelta = {
-  player: Record<string, unknown> & {
-    van?: Record<string, unknown>
-    stats?: Record<string, number>
-    time?: number
-    money?: number
-    fame?: number
-  }
-  band: Record<string, unknown> & {
-    relationshipChange?: Array<{
-      member1: string
-      member2: string
-      change: unknown
-    }>
-    membersDelta?: Record<string, unknown>
-    inventory?: Record<string, unknown>
-    stashRemove?: string[]
-    harmony?: number
-    luck?: number
-    skill?: number
-  }
-  social: Record<string, unknown>
-  flags: Record<string, unknown> & {
-    queueEvent?: string
-    unlock?: unknown
-    gameOver?: boolean
-    addStoryFlag?: unknown
-    addCooldown?: unknown
-    addQuest?: unknown[]
-  }
-  score?: number
 }
 
 const asNumber = (value: unknown): number =>
@@ -353,21 +322,21 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
     delta: EventDelta,
     context: TemplateContext
   ) => {
-    if (!delta.band.relationshipChange) delta.band.relationshipChange = []
+    if (!delta.band!.relationshipChange) delta.band!.relationshipChange = []
     const resolveName = (str: string) => resolveTemplateString(str, context)
-    delta.band.relationshipChange.push({
+    delta.band!.relationshipChange.push({
       member1: resolveName(String(eff.member1 ?? '')),
       member2: resolveName(String(eff.member2 ?? '')),
-      change: eff.value
+      change: typeof eff.value === 'number' ? eff.value : Number(eff.value)
     })
   },
   resource: (eff: EffectShape, delta: EventDelta) => {
     if (eff.resource === 'money')
-      delta.player.money = asNumber(delta.player.money) + asNumber(eff.value)
+      delta.player!.money = asNumber(delta.player!.money) + asNumber(eff.value)
     if (eff.resource === 'fuel') {
-      delta.player.van = { ...(delta.player.van || {}) }
-      delta.player.van.fuel =
-        asNumber(delta.player.van.fuel) + asNumber(eff.value)
+      delta.player!.van = { ...(delta.player!.van || {}) }
+      delta.player!.van.fuel =
+        asNumber(delta.player!.van.fuel) + asNumber(eff.value)
     }
   },
   /**
@@ -401,102 +370,102 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
       if (min !== undefined) amount = Math.max(min, amount)
       if (max !== undefined) amount = Math.min(max, amount)
 
-      delta.player.money = asNumber(delta.player.money) + amount
+      delta.player!.money = asNumber(delta.player!.money) + amount
     }
   },
   stat: (eff: EffectShape, delta: EventDelta) => {
     if (eff.stat === 'time')
-      delta.player.time = asNumber(delta.player.time) + asNumber(eff.value)
+      delta.player!.time = asNumber(delta.player!.time) + asNumber(eff.value)
     if (eff.stat === 'fame')
-      delta.player.fame = asNumber(delta.player.fame) + asNumber(eff.value)
+      delta.player!.fame = asNumber(delta.player!.fame) + asNumber(eff.value)
     if (eff.stat === 'harmony')
-      delta.band.harmony = asNumber(delta.band.harmony) + asNumber(eff.value)
+      delta.band!.harmony = asNumber(delta.band!.harmony) + asNumber(eff.value)
     if (eff.stat === 'mood') {
-      delta.band.membersDelta = {
-        ...(delta.band.membersDelta || {}),
+      delta.band!.membersDelta = {
+        ...(delta.band!.membersDelta || {}),
         moodChange: asNumber(eff.value)
       }
     }
     if (eff.stat === 'stamina') {
-      delta.band.membersDelta = {
-        ...(delta.band.membersDelta || {}),
+      delta.band!.membersDelta = {
+        ...(delta.band!.membersDelta || {}),
         staminaChange: asNumber(eff.value)
       }
     }
     if (eff.stat === 'van_condition') {
-      delta.player.van = { ...(delta.player.van || {}) }
-      delta.player.van.condition =
-        asNumber(delta.player.van.condition) + asNumber(eff.value)
+      delta.player!.van = { ...(delta.player!.van || {}) }
+      delta.player!.van.condition =
+        asNumber(delta.player!.van.condition) + asNumber(eff.value)
     }
     if (eff.stat === 'hype' || eff.stat === 'crowd_energy')
-      delta.player.fame = asNumber(delta.player.fame) + asNumber(eff.value)
+      delta.player!.fame = asNumber(delta.player!.fame) + asNumber(eff.value)
     if (eff.stat === 'viral')
-      delta.social.viral = asNumber(delta.social.viral) + asNumber(eff.value)
+      delta.social!.viral = asNumber(delta.social!.viral) + asNumber(eff.value)
     if (eff.stat === 'controversyLevel')
-      delta.social.controversyLevel =
-        asNumber(delta.social.controversyLevel) + asNumber(eff.value)
+      delta.social!.controversyLevel =
+        asNumber(delta.social!.controversyLevel) + asNumber(eff.value)
     if (eff.stat === 'loyalty')
-      delta.social.loyalty =
-        asNumber(delta.social.loyalty) + asNumber(eff.value)
+      delta.social!.loyalty =
+        asNumber(delta.social!.loyalty) + asNumber(eff.value)
     if (eff.stat === 'score')
       delta.score = asNumber(delta.score) + asNumber(eff.value)
     if (eff.stat === 'luck')
-      delta.band.luck = asNumber(delta.band.luck) + asNumber(eff.value)
+      delta.band!.luck = asNumber(delta.band!.luck) + asNumber(eff.value)
     if (eff.stat === 'skill')
-      delta.band.skill = asNumber(delta.band.skill) + asNumber(eff.value)
+      delta.band!.skill = asNumber(delta.band!.skill) + asNumber(eff.value)
   },
   stat_increment: (eff: EffectShape, delta: EventDelta) => {
     if (eff.stat === 'conflictsResolved') {
-      if (!delta.player.stats) delta.player.stats = {}
-      delta.player.stats.conflictsResolved =
-        asNumber(delta.player.stats.conflictsResolved) + asNumber(eff.value)
+      if (!delta.player!.stats) delta.player!.stats = {}
+      delta.player!.stats.conflictsResolved =
+        asNumber(delta.player!.stats.conflictsResolved) + asNumber(eff.value)
     }
     if (eff.stat === 'stageDives') {
-      if (!delta.player.stats) delta.player.stats = {}
-      delta.player.stats.stageDives =
-        asNumber(delta.player.stats.stageDives) + asNumber(eff.value)
+      if (!delta.player!.stats) delta.player!.stats = {}
+      delta.player!.stats.stageDives =
+        asNumber(delta.player!.stats.stageDives) + asNumber(eff.value)
     }
   },
   item: (eff: EffectShape, delta: EventDelta) => {
     if (typeof eff.item === 'string' && eff.item.length > 0) {
-      if (!delta.band.inventory) delta.band.inventory = {}
+      if (!delta.band!.inventory) delta.band!.inventory = {}
       if (typeof eff.value === 'number') {
         const current =
-          typeof delta.band.inventory[eff.item] === 'number'
-            ? delta.band.inventory[eff.item]
+          typeof delta.band!.inventory[eff.item] === 'number'
+            ? delta.band!.inventory[eff.item]
             : 0
-        delta.band.inventory[eff.item] = asNumber(current) + eff.value
+        delta.band!.inventory[eff.item] = asNumber(current) + eff.value
       } else {
         const val = eff.value !== undefined ? eff.value : true
-        delta.band.inventory[eff.item] = val
+        delta.band!.inventory[eff.item] = val
       }
     }
   },
   unlock: (eff: EffectShape, delta: EventDelta) => {
-    delta.flags.unlock = eff.unlock
+    delta.flags!.unlock = eff.unlock
   },
   game_over: (eff: EffectShape, delta: EventDelta) => {
-    delta.flags.gameOver = true
+    delta.flags!.gameOver = true
   },
   flag: (eff: EffectShape, delta: EventDelta) => {
-    delta.flags.addStoryFlag = eff.flag
+    delta.flags!.addStoryFlag = eff.flag
   },
   cooldown: (eff: EffectShape, delta: EventDelta) => {
-    delta.flags.addCooldown = eff.eventId
+    delta.flags!.addCooldown = eff.eventId
   },
   social_set: (eff: EffectShape, delta: EventDelta) => {
     if (typeof eff.stat === 'string' && eff.stat.length > 0) {
-      delta.social[eff.stat] = eff.value
+      delta.social![eff.stat] = eff.value
     }
   },
   chain: (eff: EffectShape, delta: EventDelta) => {
     if (typeof eff.eventId === 'string') {
-      delta.flags.queueEvent = eff.eventId
+      delta.flags!.queueEvent = eff.eventId
     }
   },
   quest: (eff: EffectShape, delta: EventDelta) => {
-    if (!delta.flags.addQuest) delta.flags.addQuest = []
-    delta.flags.addQuest.push(eff.quest)
+    if (!delta.flags!.addQuest) delta.flags!.addQuest = []
+    delta.flags!.addQuest.push(eff.quest)
   },
   stash_confiscate: (
     eff: EffectShape,
@@ -506,8 +475,8 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
     // itemId can be provided explicitly on the effect or inherited from event context
     const itemId = eff.itemId || context?.riskItemId
     if (typeof itemId === 'string' && itemId.length > 0) {
-      if (!delta.band.stashRemove) delta.band.stashRemove = []
-      delta.band.stashRemove.push(itemId)
+      if (!delta.band!.stashRemove) delta.band!.stashRemove = []
+      delta.band!.stashRemove.push(itemId)
     }
   }
 })
@@ -823,7 +792,7 @@ export const eventEngine = {
     }
 
     if (result.nextEventId) {
-      delta.flags.queueEvent = result.nextEventId
+      delta.flags!.queueEvent = result.nextEventId
     }
 
     return delta

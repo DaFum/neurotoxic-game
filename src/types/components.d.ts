@@ -467,6 +467,7 @@ export interface CatalogTabProps {
 export type UnlockMessageKind = 'success' | 'error' | 'info'
 
 export type UnlockMessage = {
+  options?: Record<string, unknown>
   messageKey: string
   fallback?: string
   type: UnlockMessageKind
