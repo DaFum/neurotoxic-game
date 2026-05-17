@@ -388,7 +388,16 @@ for (const e of EXTERNAL) {
 // ---------------------------------------------------------------------------
 // 5. Write or check
 // ---------------------------------------------------------------------------
-const output = JSON.stringify({ knownSymbols }, null, 2)
+
+// Sort the symbols object keys alphabetically to ensure deterministic diffs
+const sortedKnownSymbols = Object.keys(knownSymbols)
+  .sort((a, b) => a.localeCompare(b))
+  .reduce((acc, key) => {
+    acc[key] = knownSymbols[key]
+    return acc
+  }, {})
+
+const output = JSON.stringify({ knownSymbols: sortedKnownSymbols }, null, 2)
 
 if (CHECK) {
   const existing = fs.existsSync(OUT) ? fs.readFileSync(OUT, 'utf8') : ''
