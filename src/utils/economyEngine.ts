@@ -546,7 +546,6 @@ export const calculateEffectiveTicketPrice = (
   context: EconomyContext = {}
 ) => {
   if (!gigData) return 0
-  gigData = gigData || {}
   context = context || {}
   let price = gigData.price || 0
   if (context.discountedTickets && price > 10) {

@@ -186,3 +186,92 @@ Each finding re-checked against `src/` and `public/locales/` on 2026-05-17. ✓ 
 
 The `||` → `??` sweep (I1–I9) and the locale `€` strip (I16) survive verification unchanged and remain the highest-impact items for a fix pass.
 
+---
+
+## Final Resolution Status (PR #1667)
+
+Status legend:
+- ✅ **RESOLVED** — fix landed on `claude/audit-neurotoxic-codebase-omBf3`.
+- ⏭️ **CLOSED — NOT A BUG** — re-verification or review feedback showed the finding doesn't require action.
+- ⏸️ **DEFERRED** — needs a design decision before action; intentionally not changed.
+
+### Duplicates
+| # | Status | Commit / Notes |
+|---|---|---|
+| D1 | ✅ RESOLVED | `mapGenerator.ts:getVenueCoord` now routes through `toFiniteNumber`; the deeper `economyEngine.ts:calculateDistance` shape difference is documented (different point shapes — not a drop-in merge). |
+| D2 | ✅ RESOLVED | `toFiniteNumber(value, fallback)` added to `src/utils/numberUtils.ts`; replaces inline `toNumber` in `postGigUtils` and `mapGenerator`'s `getVenueCoord`. |
+| D3 | ✅ RESOLVED | `applyClampedMoneyDelta(currentMoney, delta)` extracted in `postGigUtils.ts`; used by all three previously-duplicated call sites. |
+| D4 | ⏸️ DEFERRED | `PirateRadioModal` and `MerchPressModal` have intentionally divergent brutalist visuals (2px border, glitch-text title, custom [X] vs. the shared `Modal`'s 4px border + corner frames + shadow). Switching is a design call. |
+| D5 | ✅ RESOLVED | `clampToNonNegativeInt` added to `gameStateUtils.ts`; `_toSafeInt` deleted and replaced in `createCompleteAmpCalibrationAction`. |
+| D6 | ⏭️ CLOSED — NOT A BUG | AGENTS.md explicitly designates dual-layer sanitation as intentional: "Early payload sanitation and final-state clamping serve different purposes and may both be required." |
+| D7 | ⏭️ CLOSED — NOT A BUG | Per-modal `useGameSelector` is the canonical pattern; extraction is optional and adds no correctness value. |
+| D8 | ✅ RESOLVED | `financialColors.ts` moved from `components/postGig/` to `src/utils/`; two consumers updated. |
+
+### Orphans
+| # | Status | Commit / Notes |
+|---|---|---|
+| O1 | ✅ RESOLVED | `HARMONY_DEATH_SPIRAL_THRESHOLD` / `_DAMPEN_FACTOR` are now file-local `const` in `eventEngine.ts`. |
+| O2 | ⏭️ CLOSED — NOT A BUG | `isStashEntry` has a legitimate single external consumer (`useBandHQLogic`). Not actually orphan. |
+| O3 | ⏭️ CLOSED — NOT A BUG | Verification showed `payload.toastId` *is* consumed at `gigReducer.ts:179`. |
+
+### Inconsistencies — `||` vs `??` → `toFiniteNumber`
+The `||→??` migration preserved `0` but lost the implicit `NaN→0` coercion. Per PR #1667 review feedback (gemini-code-assist, coderabbitai), all touched sites now use `toFiniteNumber(value, 0)` which preserves both invariants.
+
+| # | Status | Commit / Notes |
+|---|---|---|
+| I1 | ✅ RESOLVED | `postGigUtils.ts:calculateSocialGrowth` arg → `toFiniteNumber`. |
+| I2 | ✅ RESOLVED | `updatedSocial[result.platform]` spread → `toFiniteNumber`. |
+| I3 | ✅ RESOLVED | `loyalty` chain → `toFiniteNumber`. |
+| I4 | ✅ RESOLVED | `economyEngine.ts:210` (`controversyLevel`) and `:292` (`controversyLevel`/`loyalty`) → `toFiniteNumber`. |
+| I5 | ✅ RESOLVED | `SupplyStopModal.tsx:42` `player.money` → `toFiniteNumber`. |
+| I6 | ✅ RESOLVED | `consequences.ts:250` `harmony` → `toFiniteNumber`. |
+| I7 | ✅ RESOLVED | `quests.ts:119` `harmony` → `toFiniteNumber`. |
+| I8 | ✅ RESOLVED | `economyEngine.ts:502` cashReserveFee → `toFiniteNumber`. |
+| I9 | ✅ RESOLVED | `economyEngine.ts:174` `baseCapacity` → `toFiniteNumber`. |
+
+### Inconsistencies — clamp discipline
+| # | Status | Commit / Notes |
+|---|---|---|
+| I10 | ✅ RESOLVED | `socialReducer.handleMerchPress` uses `clampNonNegative` for cost/harmonyCost/fameGain. |
+| I11 | ✅ RESOLVED | `tradeReducer.handleTradeVoidItem` uses `clampNonNegative(Number(fameCost))` (which returns 0 for NaN). |
+| I12 | ✅ RESOLVED | `handleCompleteTravelMinigame` guards `damageTaken` (`Number.isFinite` + `Math.max(0, …)` per CodeRabbit review) and `itemsCollected` (`Array.isArray`). |
+| I13 | ✅ RESOLVED | `handleUpdateSocial` clamps `controversyLevel` via `clampControversyLevel`. |
+| I14 | ✅ RESOLVED | `VENUE_DEFENSE_LOYALTY_THRESHOLD` (30) and `VENUE_DEFENSE_LOYALTY_COST` (15) extracted in `socialReducer.ts`. |
+| I15 | ✅ RESOLVED | Unreachable `!!isActive` coercion removed from `toggleNeuroDecimator`. |
+
+### Inconsistencies — currency / color
+| # | Status | Commit / Notes |
+|---|---|---|
+| I16 | ✅ RESOLVED (partial) | `ui.json` (cost / currency / currencyNegative) and `economy.json` (report.amount_*) stripped in both locales; four UI consumers + `formatSignedFinancialAmount` migrated to `formatCurrency(value, lang, signDisplay)`. **Out of scope:** `events.json` event-option labels and `items.json:hq_room_label.description` — these are static narrative text, not toast amounts baked at dispatch, and fall outside AGENTS.md's `formatCurrency` contract. |
+| I17 | ⏭️ CLOSED — NOT A BUG | Hex values at `useRhythmGameState.ts:180, 188, 196` are the *fallback* arg to `getPixiColorFromToken('--token', '#hex')` — only used if the CSS var is missing. Defensive, not parallel hardcoding. |
+
+### Dead Code
+| # | Status | Commit / Notes |
+|---|---|---|
+| DC1 | ✅ RESOLVED (scoped) | Only the truly unreachable line was removed: `economyEngine.ts:calculateEffectiveTicketPrice` had `if (!gigData) return 0` followed by `gigData = gigData || {}` — the second line is dead and is now deleted. The other `x = x || {}` guards remain because JS default parameters only fire for `undefined`, so they still defend against callers passing explicit `null`. |
+| DC2 | ⏭️ CLOSED — NOT A BUG | The `if (!deal) return …` branch in `postGigUtils.ts` is reachable when no `SPONSORSHIP` entry exists in `social.activeDeals`. |
+| DC3 | ⏭️ CLOSED — NOT A BUG | `eventEngine.processEvent` already has an explicit pre-check; the audit misread the structure. |
+
+### Missing Integration
+| # | Status | Commit / Notes |
+|---|---|---|
+| M1 | ⏭️ CLOSED — NOT A BUG | `useSpawnRivalBand` / `useRivalEscalation` are already re-exported from `hooks/overworld/index.ts` and correctly scoped to the Overworld scene. |
+| M2 | ✅ RESOLVED | `useNetworkStatus` lifted into `NetworkStatusProvider` (single window listener); `App.tsx` now wraps the tree. All four consumers share one source of truth, public API unchanged. |
+| M3 | ⏭️ CLOSED — NOT A BUG | Each scene already owns its controller via a `create*StageController` factory passed as `controllerFactory` prop. A registry would only centralize what's already explicit. |
+
+### Resolution totals
+
+| Outcome | Count |
+|---|---|
+| ✅ Resolved (code change) | 23 |
+| ⏭️ Closed — not a bug (verification or review) | 10 |
+| ⏸️ Deferred — design call required | 1 (D4) |
+| **Total findings tracked** | **34** |
+
+Commits on this branch implementing the resolutions:
+- `972e5ad` — `refactor(hooks): lift useNetworkStatus into NetworkStatusProvider (M2)`
+- `d96c079` — Duplicate fixes (D1, D2, D3, D5, D8).
+- `5eb46db` — Inconsistency sweep (I1–I16 partial).
+- `708d120` — `toFiniteNumber` migration after PR review (NaN-safety for I1–I9 + minigame clamp).
+- (this commit) — O1 export removal, DC1 dead-line cleanup, audit report resolution table.
+
