@@ -264,7 +264,7 @@ describe('usePostGigLogic', () => {
       expect(mockUpdateSocial).toHaveBeenCalledWith(
         expect.objectContaining({ instagram: expect.any(Number), viral: 1 })
       )
-      expect(mockAddToast).toHaveBeenCalledWith('Money +300€', 'success')
+      expect(mockAddToast).toHaveBeenCalledWith('Money +€300', 'success')
       expect(mockAddToast).toHaveBeenCalledWith('Harmony +15', 'success')
       expect(mockUpdateBand).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -317,7 +317,7 @@ describe('usePostGigLogic', () => {
         result.current.handlePostSelection(result.current.postOptions[0])
       })
 
-      expect(mockAddToast).toHaveBeenCalledWith('Money -500€', 'error')
+      expect(mockAddToast).toHaveBeenCalledWith('Money -€500', 'error')
       expect(mockAddToast).toHaveBeenCalledWith('Harmony +50', 'success')
       await waitFor(() => {
         expect(result.current.phase).toBe('DEALS')

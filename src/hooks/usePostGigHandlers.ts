@@ -28,6 +28,8 @@ import {
   BALANCE_CONSTANTS
 } from '../utils/gameStateUtils'
 import { logger } from '../utils/logger'
+import i18n from '../i18n'
+import { formatCurrency } from '../utils/numberUtils'
 import {
   calculatePostGigStateUpdates,
   getAcceptDealMoneyUpdate,
@@ -161,9 +163,10 @@ export const usePostGigHandlers = ({
 
         if (appliedMoneyDelta !== 0) {
           updatePlayer({ money: nextMoney })
-          const sign = appliedMoneyDelta > 0 ? '+' : ''
+          const sign =
+            appliedMoneyDelta > 0 ? '+' : appliedMoneyDelta < 0 ? '-' : ''
           addToast(
-            `${t('ui:postGig.money', { defaultValue: 'Money' })} ${sign}${appliedMoneyDelta}€`,
+            `${t('ui:postGig.money', { defaultValue: 'Money' })} ${sign}${formatCurrency(Math.abs(appliedMoneyDelta), i18n.language, 'never')}`,
             appliedMoneyDelta > 0 ? 'success' : 'error'
           )
         } else if (finalResult.moneyChange) {
@@ -254,8 +257,8 @@ export const usePostGigHandlers = ({
           appliedMoneyDelta === 0
             ? ''
             : appliedMoneyDelta > 0
-              ? ` (+${appliedMoneyDelta}€)`
-              : ` (${appliedMoneyDelta}€)`
+              ? ` (+${formatCurrency(appliedMoneyDelta, i18n.language, 'never')})`
+              : ` (-${formatCurrency(Math.abs(appliedMoneyDelta), i18n.language, 'never')})`
         addToast(
           t('ui:postGig.acceptedDeal', {
             dealName: deal.name,
@@ -327,7 +330,9 @@ export const usePostGigHandlers = ({
     updateSocial(socialUpdateFactory)
 
     const moneyText =
-      updates.appliedDelta !== 0 ? ` (${updates.appliedDelta}€)` : ''
+      updates.appliedDelta !== 0
+        ? ` (${formatCurrency(updates.appliedDelta, i18n.language)})`
+        : ''
     addToast(
       t('ui:postGig.storySpunControversyReduced', {
         moneyText,

@@ -100,9 +100,9 @@ describe('useTravelLogic', () => {
     })
 
     const toastMessage = props.addToast.mock.calls[0].arguments[0]
-    assert.match(toastMessage, /Travel Costs: 50€/)
-    assert.match(toastMessage, /Daily Upkeep: 155€/)
-    assert.match(toastMessage, /Total Cash Impact: 205€/)
+    assert.match(toastMessage, /Travel Costs: €50/)
+    assert.match(toastMessage, /Daily Upkeep: €155/)
+    assert.match(toastMessage, /Total Cash Impact: €205/)
   })
 
   test('handleTravel confirmation passes social state into guaranteed daily cost', () => {
@@ -131,8 +131,8 @@ describe('useTravelLogic', () => {
       social
     )
     const toastMessage = props.addToast.mock.calls[0].arguments[0]
-    assert.match(toastMessage, /Daily Upkeep: 42€/)
-    assert.match(toastMessage, /Total Cash Impact: 92€/)
+    assert.match(toastMessage, /Daily Upkeep: €42/)
+    assert.match(toastMessage, /Total Cash Impact: €92/)
   })
 
   test('onTravelComplete passes social state into guaranteed daily cost', () => {
