@@ -5,6 +5,10 @@ import { useTranslation } from 'react-i18next'
 
 import { useGlitchPulse } from '../../hooks/useGlitchPulse'
 
+const SCANLINE_BACKGROUND_STYLE = {
+  backgroundImage: 'repeating-linear-gradient(transparent, transparent 2px, var(--color-void-black-50) 2px, var(--color-void-black-50) 4px)'
+} as const
+
 interface HazardTickerProps {
   message: string
 }
@@ -121,7 +125,7 @@ export const UplinkButton = memo(
           <div className='absolute inset-0 bg-toxic-green/10 z-0'>
             <div
               className='absolute inset-0 opacity-50'
-              style={{ backgroundImage: 'repeating-linear-gradient(transparent, transparent 2px, var(--color-void-black-50) 2px, var(--color-void-black-50) 4px)' }}
+              style={SCANLINE_BACKGROUND_STYLE}
             ></div>
             <div className='w-full h-1 bg-toxic-green absolute top-1/2 animate-[scan_0.5s_linear_infinite]'></div>
           </div>
@@ -970,7 +974,7 @@ export const CrisisModal = memo(({ isOpen, onClose }: CrisisModalProps) => {
       {/* Scanline FX on background */}
       <div
         className='absolute inset-0 pointer-events-none opacity-20'
-        style={{ backgroundImage: 'repeating-linear-gradient(transparent, transparent 2px, var(--color-void-black-50) 2px, var(--color-void-black-50) 4px)' }}
+        style={SCANLINE_BACKGROUND_STYLE}
       ></div>
 
       {/* Modal Box */}

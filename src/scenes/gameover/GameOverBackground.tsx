@@ -5,6 +5,11 @@
  */
 import React from 'react'
 
+const SCANLINES_STYLE = {
+  backgroundImage:
+    'repeating-linear-gradient(0deg, transparent, transparent 2px, var(--color-blood-red) 2px, var(--color-blood-red) 4px)'
+} as const
+
 export const GameOverBackground = React.memo(() => {
   return (
     <>
@@ -20,10 +25,7 @@ export const GameOverBackground = React.memo(() => {
       {/* Red scanlines */}
       <div
         className='absolute inset-0 pointer-events-none opacity-10'
-        style={{
-          backgroundImage:
-            'repeating-linear-gradient(0deg, transparent, transparent 2px, var(--color-blood-red) 2px, var(--color-blood-red) 4px)'
-        }}
+        style={SCANLINES_STYLE}
       />
 
       {/* Slow descending red scan bar */}
