@@ -88,10 +88,8 @@ export class Logger {
    * @private
    */
   _push(entry: LogEntry): void {
-    this.logs.unshift(entry) // Newest first
-    if (this.logs.length > this.maxLogs) {
-      this.logs.pop()
-    }
+    // Return a new array reference to support React useSyncExternalStore
+    this.logs = [entry, ...this.logs].slice(0, this.maxLogs)
     this._emit({ type: 'add', entry })
   }
 

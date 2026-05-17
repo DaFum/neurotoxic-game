@@ -6,6 +6,10 @@ vi.mock('../../src/utils/logger', () => {
   const listeners = new Set()
   const logger = {
     maxLogs: 100,
+    minLevel: 10,
+    setLevel: vi.fn(level => {
+      logger.minLevel = level
+    }),
     logs: [
       {
         id: 'log1',
@@ -55,6 +59,7 @@ describe('DebugLogViewer', () => {
     loggerMock = (await import('../../src/utils/logger')).logger
 
     // Reset seed data
+    loggerMock.minLevel = 10
     loggerMock.logs = [
       {
         id: 'log1',
@@ -176,15 +181,22 @@ describe('DebugLogViewer', () => {
     fireEvent.keyDown(window, { key: '`', ctrlKey: true })
 
     act(() => {
-      loggerMock._emitAdd({
+      // Must also update the mock's logs array since the component re-syncs state immediately
+      // on subscribe and slice/reads from logger.logs
+      const newEntry = {
         id: 'log3',
         timestamp: '2025-01-01T10:02:00.000Z',
         level: 'WARN',
         channel: 'Network',
         message: 'retry connection'
-      })
+      }
+      // Add the new log entry directly to the mock store
+      loggerMock.logs = [newEntry, ...loggerMock.logs]
+      // Then trigger the event for any active subscriptions
+      loggerMock._emitAdd(newEntry)
     })
 
+    // wait for React to process the state update
     expect(await screen.findByText('retry connection')).toBeInTheDocument()
   })
 })
