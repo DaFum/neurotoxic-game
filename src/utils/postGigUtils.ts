@@ -222,11 +222,9 @@ export const calculatePostGigStateUpdates = (
           perfScore,
           band,
           venue: currentGig,
-          events:
-            Array.isArray(lastGigStats?.events) ||
-            lastGigStats?.events instanceof Set
-              ? lastGigStats.events
-              : undefined
+          events: Array.isArray(lastGigStats?.events)
+            ? lastGigStats.events
+            : undefined
         },
         roll: secureRandomValue
       }
