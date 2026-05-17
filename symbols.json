@@ -1957,6 +1957,15 @@
         "isDefault": false
       }
     ],
+    "clampToNonNegativeInt": [
+      {
+        "name": "clampToNonNegativeInt",
+        "path": "src/utils/gameStateUtils.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
     "clampVanCondition": [
       {
         "name": "clampVanCondition",
@@ -3791,7 +3800,7 @@
     "FinancialEntryType": [
       {
         "name": "FinancialEntryType",
-        "path": "src/components/postGig/financialColors.ts",
+        "path": "src/utils/financialColors.ts",
         "source": "local",
         "type": "type",
         "isDefault": false,
@@ -4225,7 +4234,7 @@
     "getFinancialColors": [
       {
         "name": "getFinancialColors",
-        "path": "src/components/postGig/financialColors.ts",
+        "path": "src/utils/financialColors.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -6331,6 +6340,15 @@
       {
         "name": "NetResult",
         "path": "src/components/postGig/NetResult.tsx",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
+    "NetworkStatusProvider": [
+      {
+        "name": "NetworkStatusProvider",
+        "path": "src/hooks/useNetworkStatus.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -8979,6 +8997,15 @@
         "isDefault": false,
         "typeOnly": true,
         "exportPath": "src/types/index.ts"
+      }
+    ],
+    "toFiniteNumber": [
+      {
+        "name": "toFiniteNumber",
+        "path": "src/utils/numberUtils.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
       }
     ],
     "ToggleBooleanCallback": [
