@@ -572,8 +572,8 @@ export const applyUnlockHQ = (
       )
       messages.push({
         messageKey: 'ui:shop.messages.labelSigned',
-        fallback: `Signed! +${formatCurrency(500)} Advance.`,
-        options: { advance: formatCurrency(500) },
+        fallback: `Signed! ${formatCurrency(500, undefined, 'always')} Advance.`,
+        options: { advance: formatCurrency(500, undefined, 'always') },
         type: 'success'
       })
       break

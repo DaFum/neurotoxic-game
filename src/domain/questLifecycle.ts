@@ -49,7 +49,10 @@ export const QuestLifecycle = {
         generatedToasts.push({
           id: `${questId}-money`,
           messageKey: 'ui:toast.quest_complete_money',
-          options: { name: quest.label, amount: formatCurrency(appliedDelta) },
+          options: {
+            name: quest.label,
+            amount: formatCurrency(appliedDelta, undefined, 'always')
+          },
           type: 'success'
         })
       }

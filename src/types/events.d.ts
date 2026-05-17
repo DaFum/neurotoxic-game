@@ -39,7 +39,7 @@ export type EventDelta = {
     harmony?: number
     inventory?: Record<string, unknown>
     members?: unknown
-    membersDelta?: Record<string, unknown>
+    membersDelta?: unknown
     relationshipChange?: Array<{
       member1: string
       member2: string
