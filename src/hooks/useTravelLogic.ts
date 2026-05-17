@@ -37,6 +37,7 @@ import {
 } from '../utils/arrivalUtils'
 import { audioService } from '../utils/audio/audioEngine'
 import { logger } from '../utils/logger'
+import { formatCurrency } from '../utils/numberUtils'
 import { handleError, StateError } from '../utils/errorHandler'
 import { calcBaseBreakdownChance } from '../utils/upgradeUtils'
 import i18n from '../i18n'
@@ -669,15 +670,15 @@ export const useTravelLogic = ({
       addToast(
         i18n.t('ui:travel.confirmTravelPrompt', {
           defaultValue:
-            '{{location}} ({{distance}}km) | Travel Costs: {{travelCost}}€ | Daily Upkeep: {{dailyCost}}€ | Total Cash Impact: {{totalCost}}€ | Fuel: {{fuelLiters}}L — Click again to confirm',
+            '{{location}} ({{distance}}km) | Travel Costs: {{travelCost}} | Daily Upkeep: {{dailyCost}} | Total Cash Impact: {{totalCost}} | Fuel: {{fuelLiters}}L — Click again to confirm',
           location: getLocationName(
             node.venue.name,
             normalizeVenueId(node.venue)
           ),
           distance: dist,
-          travelCost: totalCost,
-          dailyCost,
-          totalCost: totalCashImpact,
+          travelCost: formatCurrency(totalCost, i18n.language),
+          dailyCost: formatCurrency(dailyCost, i18n.language),
+          totalCost: formatCurrency(totalCashImpact, i18n.language),
           fuelLiters: fuelLiters.toFixed(1)
         }),
         'warning'
@@ -722,8 +723,8 @@ export const useTravelLogic = ({
     if ((player.money ?? 0) < cost) {
       addToast(
         i18n.t('ui:travel.refuel.notEnoughMoney', {
-          defaultValue: 'Not enough money! Need {{cost}}€ to fill up.',
-          cost
+          defaultValue: 'Not enough money! Need {{cost}} to fill up.',
+          cost: formatCurrency(cost, i18n.language)
         }),
         'error'
       )
@@ -736,8 +737,8 @@ export const useTravelLogic = ({
     })
     addToast(
       i18n.t('ui:travel.refuel.refueled', {
-        defaultValue: 'Refueled: -{{cost}}€',
-        cost
+        defaultValue: 'Refueled: -{{cost}}',
+        cost: formatCurrency(cost, i18n.language)
       }),
       'success'
     )
@@ -771,8 +772,8 @@ export const useTravelLogic = ({
     if ((player.money ?? 0) < cost) {
       addToast(
         i18n.t('ui:travel.repair.notEnoughMoney', {
-          defaultValue: 'Not enough money! Need {{cost}}€ to repair.',
-          cost
+          defaultValue: 'Not enough money! Need {{cost}} to repair.',
+          cost: formatCurrency(cost, i18n.language)
         }),
         'error'
       )
@@ -795,8 +796,8 @@ export const useTravelLogic = ({
 
     addToast(
       i18n.t('ui:travel.repair.repaired', {
-        defaultValue: 'Repaired: -{{cost}}€',
-        cost
+        defaultValue: 'Repaired: -{{cost}}',
+        cost: formatCurrency(cost, i18n.language)
       }),
       'success'
     )
