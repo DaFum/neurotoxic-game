@@ -45,6 +45,8 @@
   "button.transmit": "SENDEN",
   "button.unmute": "Ton an (M)",
   "cancel": "ABBRECHEN",
+  "chatter_labels.default_fallback": "Band-Feed",
+  "chatter_labels.default_speaker": "Band",
   "checklist.done": "GIG STARTEN",
   "checklist.header": "PRE-GIG SEQUENZ",
   "checklist.task1": "TOURBUS AUFTANKEN",

@@ -45,6 +45,8 @@
   "button.transmit": "TRANSMIT",
   "button.unmute": "Unmute (M)",
   "cancel": "CANCEL",
+  "chatter_labels.default_fallback": "Band Feed",
+  "chatter_labels.default_speaker": "Band",
   "checklist.done": "INITIATE GIG",
   "checklist.header": "PRE-GIG SEQUENCE",
   "checklist.task1": "REFUEL TOURVAN",
