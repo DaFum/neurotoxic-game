@@ -17,4 +17,5 @@ export interface PostGigSummary extends UnknownRecord {
   maxCombo?: number
   songStats?: Array<{ songId: string; score: number; accuracy: number }>
   toastId?: string
+  events?: string[]
 }
