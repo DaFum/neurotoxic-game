@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useSyncExternalStore } from 'react'
 import { useTranslation } from 'react-i18next'
 import { logger, LOG_LEVELS } from '../utils/logger'
 import type { LogEntry } from '../utils/logger'
@@ -34,21 +34,11 @@ const DebugLogViewerContent = ({
   filterLevel: number
   setFilterLevel: (level: number) => void
 }) => {
-  const [logs, setLogs] = useState<LogEntry[]>(() => [...logger.logs])
-  const bottomRef = useRef<HTMLDivElement | null>(null)
+  const logs = useSyncExternalStore(
+    logger.subscribe.bind(logger),
+    () => logger.logs
+  )
   const { t } = useTranslation()
-
-  // Log Subscription
-  useEffect(() => {
-    const unsubscribe = logger.subscribe(event => {
-      if (event.type === 'add') {
-        setLogs(prev => [event.entry, ...prev].slice(0, logger.maxLogs))
-      } else if (event.type === 'clear') {
-        setLogs([])
-      }
-    })
-    return unsubscribe
-  }, [])
 
   return (
     <div
@@ -151,7 +141,6 @@ const DebugLogViewerContent = ({
                 </span>
               </div>
             ))}
-          <div ref={bottomRef} />
         </div>
       </div>
     </div>
@@ -160,7 +149,7 @@ const DebugLogViewerContent = ({
 
 export const DebugLogViewer = ({ className = '' }: { className?: string }) => {
   const [visible, setVisible] = useState(false)
-  const [filterLevel, setFilterLevel] = useState(LOG_LEVELS.DEBUG)
+  const [filterLevel, setFilterLevel] = useState<number>(logger.minLevel)
 
   // Keyboard Toggle
   useEffect(() => {
@@ -182,7 +171,10 @@ export const DebugLogViewer = ({ className = '' }: { className?: string }) => {
       className={className}
       onClose={() => setVisible(false)}
       filterLevel={filterLevel}
-      setFilterLevel={setFilterLevel}
+      setFilterLevel={level => {
+        setFilterLevel(level)
+        logger.setLevel(level)
+      }}
     />
   )
 }
