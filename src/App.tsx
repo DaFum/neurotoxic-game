@@ -14,6 +14,7 @@ import {
   useGameActions
 } from './context/GameState'
 import { ErrorBoundary } from './ui/CrashHandler'
+import { NetworkStatusProvider } from './hooks/useNetworkStatus'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/react'
 import { GAME_PHASES } from './context/gameConstants'
@@ -178,9 +179,11 @@ export default function App() {
   return (
     <ErrorBoundary>
       <div className='noise-overlay pointer-events-none mix-blend-overlay'></div>
-      <GameStateProvider>
-        <GameContent />
-      </GameStateProvider>
+      <NetworkStatusProvider>
+        <GameStateProvider>
+          <GameContent />
+        </GameStateProvider>
+      </NetworkStatusProvider>
     </ErrorBoundary>
   )
 }

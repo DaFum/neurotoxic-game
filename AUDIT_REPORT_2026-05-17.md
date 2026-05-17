@@ -172,8 +172,8 @@ Each finding re-checked against `src/` and `public/locales/` on 2026-05-17. ✓ 
 
 ### Missing Integration
 - **M1** ⚠ **[REVISED]** `useSpawnRivalBand` and `useRivalEscalation` *are* re-exported from `src/hooks/overworld/index.ts:4–5`. They're only consumed by `Overworld.tsx`, which is correct scoping for an Overworld-specific concern. Downgrade to LOW or close as not-a-bug.
-- **M2** ✓ `useNetworkStatus` is called independently in `MainMenu`, `useGigVisuals`, `BandHQ`, and `OverworldMap` — four separate listeners. A single context-lifted source would dedupe but each call already uses the same `navigator.onLine` events; functionally consistent. Keep as MED.
-- **M3** ✓ four stage controllers present; no central factory/registry.
+- **M2** ✓ **[RESOLVED]** Refactored `useNetworkStatus` into a `NetworkStatusProvider` + context-backed hook (commit on this branch). Single window listener now serves all four consumers; public API unchanged.
+- **M3** ✗ **[INVALID — re-verification]** Each scene already owns its controller via a `create*StageController` factory passed as a `controllerFactory` prop: `Gig.tsx` → `createPixiStageController`, `AmpCalibrationScene.tsx` → `createAmpStageController`, `RoadieRunScene.tsx` → `createRoadieStageController`, `TourbusScene.tsx` → `createTourbusStageController`. A registry would centralize what is already explicit at the call site. Close.
 
 ### Net result after verification
 

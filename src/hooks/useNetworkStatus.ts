@@ -1,9 +1,23 @@
-import { useState, useEffect } from 'react'
+import {
+  createContext,
+  createElement,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode
+} from 'react'
 
-export const useNetworkStatus = () => {
-  const [isOnline, setIsOnline] = useState(
-    typeof navigator !== 'undefined' ? navigator.onLine : true
-  )
+const getInitialOnline = () =>
+  typeof navigator !== 'undefined' ? navigator.onLine : true
+
+const NetworkStatusContext = createContext<boolean | null>(null)
+
+export const NetworkStatusProvider = ({
+  children
+}: {
+  children: ReactNode
+}) => {
+  const [isOnline, setIsOnline] = useState<boolean>(getInitialOnline)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -20,5 +34,15 @@ export const useNetworkStatus = () => {
     }
   }, [])
 
-  return isOnline
+  return createElement(
+    NetworkStatusContext.Provider,
+    { value: isOnline },
+    children
+  )
+}
+
+export const useNetworkStatus = (): boolean => {
+  const ctx = useContext(NetworkStatusContext)
+  if (ctx !== null) return ctx
+  return getInitialOnline()
 }
