@@ -15,12 +15,12 @@ import { normalizeVenueId } from './mapUtils'
 import { VENUES_BY_ID } from '../data/venues'
 import type { BandState, MapNode, PlayerState, Venue } from '../types'
 
-type ArrivalNode = Omit<Partial<MapNode>, 'type' | 'venue'> & {
+export type ArrivalNode = Omit<Partial<MapNode>, 'type' | 'venue'> & {
   type: string
   venue?: unknown
 }
 
-type GigArrivalNode = ArrivalNode & {
+export type GigArrivalNode<T = ArrivalNode> = T & {
   type: 'GIG' | 'FESTIVAL' | 'FINALE'
 }
 
@@ -84,9 +84,9 @@ export const processHarmonyRegen = (
  * @param {object} node - The current node.
  * @returns {boolean} True if the node is a GIG, FESTIVAL, or FINALE.
  */
-export const isGigNode = (
-  node: ArrivalNode | null | undefined
-): node is GigArrivalNode => {
+export const isGigNode = <T extends { type?: string }>(
+  node: T | null | undefined
+): node is GigArrivalNode<T> => {
   return (
     node?.type === 'GIG' || node?.type === 'FESTIVAL' || node?.type === 'FINALE'
   )
