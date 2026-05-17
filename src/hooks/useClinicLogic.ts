@@ -144,7 +144,7 @@ export const useClinicLogic = (): {
 
   const membersMap = useMemo(() => {
     const map = new Map<string, BandMember>()
-    band?.members?.forEach(m => {
+    band?.members?.forEach((m: BandMember) => {
       if (m.id) {
         map.set(m.id, m)
       }
