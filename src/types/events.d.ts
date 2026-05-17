@@ -40,13 +40,7 @@ export type EventDelta = {
     inventory?: Record<string, unknown>
     members?: unknown
     membersDelta?: unknown
-    relationshipChange?: Array<{
-      member1: string
-      member2: string
-      change: number
-      source?: string
-      timestamp?: number
-    }>
+    relationshipChange?: import('./game').RelationshipChange[]
     luck?: number
     skill?: number
     stashRemove?: string[]

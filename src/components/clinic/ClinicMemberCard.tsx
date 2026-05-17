@@ -37,7 +37,7 @@ export const ClinicMemberCard = ({
   healMember,
   enhanceMember
 }: ClinicMemberCardProps) => {
-  const { t } = useTranslation(['ui'])
+  const { t, i18n } = useTranslation(['ui'])
   const memberId = member.id
   const isFullyHealed =
     member.stamina >= 100 &&
@@ -93,7 +93,7 @@ export const ClinicMemberCard = ({
           >
             {t('ui:clinic.heal_button', {
               defaultValue: 'HEAL ({{cost}})',
-              cost: formatCurrency(healCostMoney)
+              cost: formatCurrency(healCostMoney, i18n?.language)
             })}
           </GlitchButton>
         </ActionButtonWrapper>
