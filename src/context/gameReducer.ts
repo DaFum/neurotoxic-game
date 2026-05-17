@@ -204,8 +204,11 @@ export const gameReducer = (
       action
     )
 
-    // This is a defensive structural safety check.
-    // It is only reachable if a truly malformed action bypasses the dispatch system.
+    // Runtime safety net for malformed actions that bypass the dispatch
+    // system. This is NOT an exhaustiveness check — the `as never` cast
+    // hides the compile-time guarantee assertNever otherwise provides, and
+    // the Object.hasOwn guards above already filter out every known action
+    // type. The call throws if an unknown action shape reaches the reducer.
     return assertNever(action as never)
   }
 

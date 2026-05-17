@@ -4,7 +4,7 @@ import { getSafeUUID } from '../../utils/crypto'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
-import { audioManager } from '../../utils/audio/audioEngine'
+import { audioService } from '../../utils/audio/audioEngine'
 import { enterFullscreen } from '../../utils/fullscreen'
 
 export const useMainMenu = () => {
@@ -53,7 +53,7 @@ export const useMainMenu = () => {
   )
 
   const startAmbientSafely = useCallback(() => {
-    void audioManager.startAmbient().catch(err => {
+    void audioService.startAmbient().catch(err => {
       reportAudioIssue(
         err,
         tRef.current('ui:errors.ambient_start_failed', {
@@ -64,7 +64,7 @@ export const useMainMenu = () => {
   }, [reportAudioIssue])
 
   const initializeAudio = useCallback(() => {
-    void audioManager
+    void audioService
       .ensureAudioContext()
       .then(success => {
         if (success) {

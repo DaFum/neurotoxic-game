@@ -111,7 +111,7 @@ describe('HecklerOverlay', () => {
   test('has correct z-index and overflow settings', () => {
     const { container } = render(<HecklerOverlay gameStateRef={gameStateRef} />)
     const overlay = container.firstChild
-    expect(overlay.className).toContain('z-20')
+    expect(overlay.className).toContain('z-(--z-stage)')
     expect(overlay.className).toContain('overflow-hidden')
     expect(overlay.className).toContain('pointer-events-none')
   })

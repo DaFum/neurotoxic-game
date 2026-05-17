@@ -690,9 +690,13 @@ export class MapGenerator {
             let dist = Math.sqrt(distSq)
 
             if (dist < 0.1) {
-              // Exact overlap (or very close), push randomly
-              dx = this.random() - 0.5 || 0.1
-              dy = this.random() - 0.5 || 0.1
+              // Exact overlap (or very close), push randomly. Guard against
+              // a zero offset (which would collapse `dist` to 0 and break
+              // the resolution math below) by falling back to a small bias.
+              const rawDx = this.random() - 0.5
+              const rawDy = this.random() - 0.5
+              dx = rawDx === 0 ? 0.1 : rawDx
+              dy = rawDy === 0 ? 0.1 : rawDy
               dist = Math.sqrt(dx * dx + dy * dy)
             }
 

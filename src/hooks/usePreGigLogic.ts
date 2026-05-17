@@ -10,7 +10,7 @@ import { GAME_PHASES } from '../context/gameConstants'
 import { MODIFIER_COSTS } from '../utils/economyEngine'
 import { clampPlayerMoney, clampBandHarmony } from '../utils/gameStateUtils'
 import { getGigModifiers } from '../utils/simulationUtils'
-import { audioManager } from '../utils/audio/audioEngine'
+import { audioService } from '../utils/audio/audioEngine'
 import { getSongId } from '../utils/audio/songUtils'
 import { handleError } from '../utils/errorHandler'
 import { getSafeRandom, getSafeUUID } from '../utils/crypto'
@@ -305,13 +305,13 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
   const handleStartShow = useCallback(async () => {
     setIsStarting(true)
     try {
-      const audioOk = await audioManager.ensureAudioContext()
+      const audioOk = await audioService.ensureAudioContext()
       if (!audioOk) {
         setIsStarting(false)
         addToast(typedT('ui:pregig.toasts.audioFail'), 'error')
         return
       }
-      const gigId = currentGig?.id || `gig_${getSafeUUID()}`
+      const gigId = currentGig?.id ?? `gig_${getSafeUUID()}`
 
       let lastMinigame = lastMinigameFallback
       try {

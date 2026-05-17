@@ -1,5 +1,7 @@
 export type VoidCallback = () => void
 
+export type RandomFn = () => number
+
 export type AsyncCallback<TResult = void> = () =>
   | TResult
   | void
@@ -21,7 +23,5 @@ export type OptionalToastCallback = (message: string, type?: string) => void
 export type CollisionHandler = (projectile: unknown) => void
 
 export type MissHandler = (missCount: number, fromInput: boolean) => void
-
-export type GigFinalizeHandler<TState> = (state: TState) => void
 
 export type RemoveByIdCallback = (id: string) => void

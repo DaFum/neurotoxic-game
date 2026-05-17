@@ -1,6 +1,6 @@
 import { useState, useEffect, memo } from 'react'
 import { useGameSelector, useGameDispatch } from '../context/GameState'
-import { audioManager } from '../utils/audio/audioEngine'
+import { audioService } from '../utils/audio/audioEngine'
 import { useTranslation } from 'react-i18next'
 import {
   Map as MapIcon,
@@ -246,7 +246,7 @@ export const HUD = memo(() => {
             onClick={() => {
               const nextState = !band.neuroDecimatorActive
               toggleNeuroDecimator(nextState)
-              audioManager.setNeuroDecimator(nextState)
+              audioService.setNeuroDecimator(nextState)
             }}
             type='button'
             aria-label={t('ui:hud.toggleDecimator', {

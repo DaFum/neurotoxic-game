@@ -347,7 +347,7 @@ const selectEvent = (
   return null
 }
 
-const EFFECT_HANDLERS = Object.assign(Object.create(null), {
+const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
   relationship: (
     eff: EffectShape,
     delta: EventDelta,
@@ -521,7 +521,7 @@ const processEffect = (
   context: TemplateContext = {},
   gameState: EngineGameState | null = null
 ) => {
-  const handler = EFFECT_HANDLERS[String(eff.type)]
+  const handler = EVENT_EFFECT_HANDLERS[String(eff.type)]
   if (typeof handler === 'function') {
     handler(eff, delta, context, gameState)
   }

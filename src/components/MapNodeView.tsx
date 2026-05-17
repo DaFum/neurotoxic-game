@@ -8,6 +8,7 @@ import { motion } from 'framer-motion'
 import { HexNode } from '../ui/shared'
 import { translateLocation } from '../utils/locationI18n'
 import type { MapNode as GameMapNode, CityTraitState } from '../types'
+import type { NodeVisibility } from '../types/map'
 import type { TranslationCallback } from '../types/callbacks'
 import { calcCancellationRisk } from '../utils/gameStateUtils'
 
@@ -16,7 +17,6 @@ const MOTION_INITIAL = { scale: 0 }
 const MOTION_ANIMATE = { scale: 1 }
 const MOTION_HOVER = { scale: 1.2, zIndex: 60 }
 const MOTION_NO_HOVER = {}
-type NodeVisibility = 'visible' | 'dimmed' | 'hidden'
 
 type MapNodeData = GameMapNode
 
@@ -153,7 +153,7 @@ const MapNodeTooltip = memo(
             <br />
             {t('ui:map.ticket')}: {ticketPrice ?? node.venue?.price}
             {'\u20AC'} | {t('ui:map.diff')}:{' '}
-            {'\u2605'.repeat(node.venue?.diff || 0)}
+            {'\u2605'.repeat(node.venue?.diff ?? 0)}
           </div>
         )}
         {(node.type === 'GIG' ||
@@ -301,7 +301,7 @@ export const MapNodeView = memo(
     return (
       <div
         className={`map-node ${isReachable ? 'clickable' : ''} absolute flex flex-col items-center justify-center w-16 h-20 -ml-8 -mt-10 group
-          ${isCurrent ? 'z-50' : 'z-10'}
+          ${isCurrent ? 'z-(--z-stage-controls)' : 'z-(--z-stage-bg)'}
           ${!isReachable && !isCurrent ? 'opacity-30 grayscale pointer-events-none' : 'opacity-100'}
           ${isReachable ? 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black' : ''}
       `}
@@ -351,7 +351,7 @@ export const MapNodeView = memo(
           animate={MOTION_ANIMATE}
           whileHover={isReachable ? MOTION_HOVER : MOTION_NO_HOVER}
           whileFocus={isReachable ? MOTION_HOVER : MOTION_NO_HOVER}
-          className='relative z-10 flex items-center justify-center'
+          className='relative z-(--z-stage-bg) flex items-center justify-center'
         >
           <HexNode
             className={`w-12 h-12 transition-all duration-200 ${isHoveredLocal || isPendingConfirm ? 'text-star-white drop-shadow-[0_0_15px_var(--color-toxic-green)]' : 'text-toxic-green'}`}
@@ -372,13 +372,13 @@ export const MapNodeView = memo(
 
         {/* Pending confirmation label */}
         {isPendingConfirm && (
-          <div className='absolute top-0 left-1/2 -translate-x-1/2 text-warning-yellow text-[10px] font-bold whitespace-nowrap pointer-events-none animate-pulse bg-void-black/80 px-1.5 py-0.5 border border-warning-yellow z-20'>
+          <div className='absolute top-0 left-1/2 -translate-x-1/2 text-warning-yellow text-[10px] font-bold whitespace-nowrap pointer-events-none animate-pulse bg-void-black/80 px-1.5 py-0.5 border border-warning-yellow z-(--z-stage)'>
             {t('ui:map.confirm_q')}
           </div>
         )}
 
         {/* Node Label (Always visible, matching BrutalistUI style) */}
-        <div className='mt-2 flex flex-col items-center z-10 pointer-events-none'>
+        <div className='mt-2 flex flex-col items-center z-(--z-stage-bg) pointer-events-none'>
           <span
             className={`text-[10px] font-bold tracking-widest uppercase text-center transition-colors ${isHoveredLocal || isPendingConfirm ? 'text-star-white' : 'text-toxic-green'}`}
           >

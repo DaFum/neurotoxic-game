@@ -9,6 +9,7 @@ import {
   useAmbientResume,
   useOverworldSave,
   useSpawnRivalBand,
+  useRivalEscalation,
   useOverworldModals
 } from '../hooks/overworld'
 
@@ -45,12 +46,14 @@ export const Overworld = () => {
     startTravelMinigame,
     activeStoryFlags,
     rivalBand,
-    spawnRivalBand
+    spawnRivalBand,
+    updateRivalBand
   } = useGameState()
 
   const [hoveredNode, setHoveredNode] = useState<MapNode | null>(null)
 
   useSpawnRivalBand(rivalBand, gameMap, spawnRivalBand)
+  useRivalEscalation(rivalBand, player.currentNodeId, updateRivalBand)
   const glitch = useGlitchEffect()
 
   const {

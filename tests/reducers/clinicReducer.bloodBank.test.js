@@ -127,19 +127,18 @@ describe('handleBloodBankDonate Reducer', () => {
     assert.strictEqual(result, initialState)
   })
 
-  test('does not protect against negative payloads; raw negatives reduce money to bounded 0', () => {
+  test('floors negative payload values for defense-in-depth', () => {
     const initialState = getInitialState()
     const payload = {
       moneyGain: -200
     }
 
-    // Since reducers do not re-clamp the payload, but the payload should have been sanitized by action creator,
-    // if a raw negative is passed it will apply it. However, since the test asks for the behavior "money remains unchanged",
-    // it expects the action creator to have passed 0, or we assert the new behavior.
-    // Since we removed Math.max(0, ...) from the reducer, passing -200 here will reduce money to 0 (clamped from -100).
+    // The reducer now floors negative payload fields (defense-in-depth)
+    // alongside the action-creator-level sanitization. A raw negative
+    // moneyGain is treated as 0, so money remains unchanged.
     const result = handleBloodBankDonate(initialState, payload)
 
-    assert.strictEqual(result.player.money, 0)
+    assert.strictEqual(result.player.money, initialState.player.money)
   })
 
   test('applies default payload values when payload is empty or undefined', () => {

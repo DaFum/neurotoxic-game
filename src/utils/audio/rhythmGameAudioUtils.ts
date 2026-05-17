@@ -24,13 +24,15 @@ import type {
   RhythmSetlistEntry,
   RhythmModifiers
 } from '../../types/rhythmGame'
-import type { ToastCallback, TranslationCallback } from '../../types/callbacks'
+import type {
+  RandomFn,
+  ToastCallback,
+  TranslationCallback
+} from '../../types/callbacks'
 
 const GIG_LEAD_IN_MS = 2000
 const NOTE_LEAD_IN_MS = 100
 export const NOTE_TAIL_MS = 1000
-
-type RandomFn = () => number
 
 interface MutableRef<T> {
   current: T

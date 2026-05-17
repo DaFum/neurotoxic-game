@@ -50,6 +50,7 @@ import {
   createStartAmpCalibrationAction,
   createCompleteAmpCalibrationAction,
   createSpawnRivalBandAction,
+  createUpdateRivalBandAction,
   createUnlockTraitAction,
   createAddQuestAction,
   createAdvanceQuestAction,
@@ -73,6 +74,7 @@ import type {
   MerchPressPayload,
   PirateBroadcastPayload,
   DarkWebLeakPayload,
+  RivalBandState,
   SocialState,
   TradeVoidItemPayload,
   UpdateBandPayload,
@@ -208,6 +210,7 @@ type GameDispatchActions = {
     payload: Parameters<typeof createBloodBankDonateAction>[0]
   ) => void
   setPendingBandHQOpen: (isOpen: boolean) => void
+  updateRivalBand: (patch: Partial<RivalBandState>) => void
 }
 
 /**
@@ -806,6 +809,12 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
     []
   )
 
+  const updateRivalBand = useCallback(
+    (patch: Partial<RivalBandState>) =>
+      dispatch(createUpdateRivalBandAction(patch)),
+    []
+  )
+
   const setPendingBandHQOpen = useCallback(
     (isOpen: boolean) => dispatch(createSetPendingBandHQOpenAction(isOpen)),
     []
@@ -874,7 +883,8 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       tradeVoidItem,
       bloodBankDonate,
       setPendingBandHQOpen,
-      spawnRivalBand
+      spawnRivalBand,
+      updateRivalBand
     }),
     [
       changeScene,
@@ -922,7 +932,8 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       tradeVoidItem,
       bloodBankDonate,
       setPendingBandHQOpen,
-      spawnRivalBand
+      spawnRivalBand,
+      updateRivalBand
     ]
   )
 

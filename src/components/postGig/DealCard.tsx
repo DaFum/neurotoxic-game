@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../../ui/shared'
 import { BRAND_ALIGNMENTS } from '../../context/initialState'
 import { IMG_PROMPTS, resolveGenImageUrl } from '../../utils/imageGen'
+import { formatCurrency } from '../../utils/numberUtils'
 import type {
   DealImageProps,
   DealInfoProps,
@@ -146,7 +147,7 @@ const DealImage = memo(({ alignment, name }: DealImageProps) => (
 DealImage.displayName = 'DealImage'
 const DealInfo = memo(
   ({ displayDeal, isRevoked, brandReputation }: DealInfoProps) => {
-    const { t } = useTranslation()
+    const { t, i18n } = useTranslation()
     const alignment = displayDeal.alignment
     const alignmentReputation =
       alignment != null ? brandReputation?.[alignment] : undefined
@@ -176,7 +177,7 @@ const DealInfo = memo(
         <div className='text-xs font-mono grid grid-cols-2 gap-x-4 gap-y-1 text-star-white/80'>
           <div>
             💰 {t('ui:deals.upfront', { defaultValue: 'Upfront' })}:{' '}
-            {displayDeal.offer.upfront}€
+            {formatCurrency(displayDeal.offer.upfront, i18n?.language ?? 'en')}
           </div>
           <div>
             📅 {t('ui:deals.duration', { defaultValue: 'Duration' })}:{' '}
@@ -186,7 +187,7 @@ const DealInfo = memo(
           {displayDeal.offer.perGig != null && (
             <div>
               💵 {t('ui:deals.perGig', { defaultValue: 'Per Gig' })}:{' '}
-              {displayDeal.offer.perGig}€
+              {formatCurrency(displayDeal.offer.perGig, i18n?.language ?? 'en')}
             </div>
           )}
           {displayDeal.offer.item != null && (

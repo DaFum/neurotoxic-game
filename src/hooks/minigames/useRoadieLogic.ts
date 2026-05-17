@@ -6,7 +6,7 @@
 import { useRef, useCallback, useEffect, useState } from 'react'
 import { useGameState } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
-import { audioManager } from '../../utils/audio/audioEngine'
+import { audioService } from '../../utils/audio/audioEngine'
 import { isEmptyObject, clamp0to100 } from '../../utils/gameStateUtils'
 import {
   ROADIE_GRID_WIDTH,
@@ -76,7 +76,7 @@ export function handleCrash(
   game: RoadieLogicState,
   onGameOver: (damage: number) => void
 ) {
-  audioManager.playSFX('crash')
+  audioService.playSFX('crash')
 
   if (game.carrying) {
     game.equipmentDamage = clamp0to100(game.equipmentDamage + 10)
@@ -165,7 +165,7 @@ export function handlePickup(game: RoadieLogicState) {
     game.itemsToDeliver.length > 0
   ) {
     game.carrying = game.itemsToDeliver.shift() ?? null
-    audioManager.playSFX('pickup')
+    audioService.playSFX('pickup')
   }
 }
 
@@ -177,15 +177,15 @@ export function handleDelivery(
     game.itemsDelivered.push(game.carrying)
 
     if (game.carrying.type === 'CONTRABAND') {
-      game.contrabandCount = (game.contrabandCount || 0) + 1
+      game.contrabandCount = (game.contrabandCount ?? 0) + 1
     }
 
     game.carrying = null
-    audioManager.playSFX('deliver')
+    audioService.playSFX('deliver')
 
     if (game.itemsToDeliver.length === 0) {
       game.isGameOver = true
-      onGameOver(game.equipmentDamage, game.contrabandCount || 0)
+      onGameOver(game.equipmentDamage, game.contrabandCount ?? 0)
     }
   }
 }
@@ -294,14 +294,14 @@ export const useRoadieLogic = () => {
             currentDamage: 100,
             isGameOver: true
           }))
-          completeRoadieMinigame(100, game.contrabandCount || 0)
+          completeRoadieMinigame(100, game.contrabandCount ?? 0)
           return
         }
       }
 
       spawnTraffic(game, deltaMS)
       const crashed = processTraffic(game, deltaMS, (damage: number) =>
-        completeRoadieMinigame(damage, game.contrabandCount || 0)
+        completeRoadieMinigame(damage, game.contrabandCount ?? 0)
       )
 
       if (crashed || (game.carrying && game.carrying.type === 'CONTRABAND')) {

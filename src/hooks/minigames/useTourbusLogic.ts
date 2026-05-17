@@ -1,6 +1,6 @@
 import { useRef, useCallback, useEffect, useState } from 'react'
 import { useGameState } from '../../context/GameState'
-import { audioManager } from '../../utils/audio/audioEngine'
+import { audioService } from '../../utils/audio/audioEngine'
 import { hasUpgrade } from '../../utils/upgradeUtils'
 import {
   TOURBUS_LANE_COUNT,
@@ -14,15 +14,7 @@ import {
 import { getSafeRandom } from '../../utils/crypto'
 import { clamp0to100 } from '../../utils/gameStateUtils'
 
-type TourbusObstacleType = 'FUEL' | 'OBSTACLE' | 'VOID_HAZARD'
-
-type TourbusObstacle = {
-  id: string
-  lane: number
-  y: number
-  type: TourbusObstacleType
-  collided: boolean
-}
+import type { TourbusObstacle, TourbusObstacleType } from '../../types/tourbus'
 
 type TourbusLogicState = {
   busLane: number
@@ -189,13 +181,13 @@ export const useTourbusLogic = () => {
             const hitDamage = getHitDamage(upgradesRef.current)
 
             game.damage = clamp0to100(game.damage + hitDamage)
-            audioManager.playSFX('crash') // Play SFX immediately on collision
+            audioService.playSFX('crash') // Play SFX immediately on collision
           } else if (obs.type === 'FUEL') {
             game.itemsCollected.push('FUEL')
-            audioManager.playSFX('pickup')
+            audioService.playSFX('pickup')
           } else if (obs.type === 'VOID_HAZARD') {
             game.itemsCollected.push('VOID_HAZARD')
-            audioManager.playSFX('void_hit')
+            audioService.playSFX('void_hit')
           }
         }
 

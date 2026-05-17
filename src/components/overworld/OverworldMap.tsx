@@ -20,8 +20,7 @@ import type {
   BandState
 } from '../../types'
 import type { TranslationCallback } from '../../types/callbacks'
-
-type NodeVisibility = 'visible' | 'dimmed' | 'hidden'
+import type { NodeVisibility } from '../../types/map'
 
 interface OverworldMapProps {
   t: TranslationCallback
@@ -229,7 +228,7 @@ export const OverworldMap = React.memo(
             />
             {hasRival && visibility !== 'hidden' && (
               <div
-                className='absolute z-30 pointer-events-none transition-all duration-300'
+                className='absolute z-(--z-stage-overlay) pointer-events-none transition-all duration-300'
                 style={{
                   left: `${node.x}%`,
                   top: `${node.y}%`,

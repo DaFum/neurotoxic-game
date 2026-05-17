@@ -62,7 +62,7 @@ const PixiStageComponent = <TState = RhythmGameRefState,>(
 
   return (
     <div
-      className='absolute inset-0 z-20 pointer-events-none'
+      className='absolute inset-0 z-(--z-stage) pointer-events-none'
       ref={containerRef}
     />
   )

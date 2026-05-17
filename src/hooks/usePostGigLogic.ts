@@ -13,9 +13,11 @@ import type { PostResult } from '../types'
 import type { BrandDeal } from '../types/social'
 
 export type PostOptionsErrorState =
-  | false
+  | { kind: 'idle' }
   | { kind: 'pending'; error: unknown }
   | { kind: 'handled' }
+
+const POST_OPTIONS_ERROR_IDLE: PostOptionsErrorState = { kind: 'idle' }
 
 export const usePostGigLogic = () => {
   const { t } = useTranslation(['ui'])
@@ -44,7 +46,7 @@ export const usePostGigLogic = () => {
   const [postResult, setPostResult] = useState<PostResult | null>(null)
   const [brandOffers, setBrandOffers] = useState<BrandDeal[]>([])
   const [postOptionsError, setPostOptionsError] = useState(false)
-  const errorHandledRef = useRef<PostOptionsErrorState>(false)
+  const errorHandledRef = useRef<PostOptionsErrorState>(POST_OPTIONS_ERROR_IDLE)
 
   const phaseTitleKey =
     {
@@ -62,7 +64,7 @@ export const usePostGigLogic = () => {
     }[phase] ?? 'TOUR UPDATE'
 
   const perfScore = useMemo(
-    () => calculatePerformanceScore(lastGigStats?.score || 0),
+    () => calculatePerformanceScore(lastGigStats?.score ?? 0),
     [lastGigStats]
   )
 
@@ -132,23 +134,20 @@ export const usePostGigLogic = () => {
   // Store the error fact silently inside ref, which we will read in the next useEffect
   useEffect(() => {
     if (postOptionsDerivationError) {
-      if (errorHandledRef.current === false) {
+      if (errorHandledRef.current.kind === 'idle') {
         errorHandledRef.current = {
           kind: 'pending',
           error: postOptionsDerivationError
         }
       }
     } else {
-      errorHandledRef.current = false
+      errorHandledRef.current = POST_OPTIONS_ERROR_IDLE
     }
   }, [postOptionsDerivationError])
 
   // Process any error that happened during post option generation
   useEffect(() => {
-    if (
-      errorHandledRef.current !== false &&
-      errorHandledRef.current.kind === 'pending'
-    ) {
+    if (errorHandledRef.current.kind === 'pending') {
       logger.error(
         'PostGig',
         'Failed to generate post options',
@@ -158,7 +157,7 @@ export const usePostGigLogic = () => {
 
       setPostOptionsError(true)
     }
-  }, [postOptions])
+  }, [postOptionsDerivationError])
 
   // Handle post options generation error side effects purely in an effect
   useEffect(() => {

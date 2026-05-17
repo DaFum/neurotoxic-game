@@ -2,8 +2,14 @@ import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../../ui/shared'
 import { IMG_PROMPTS, resolveGenImageUrl } from '../../utils/imageGen'
+import {
+  SPIN_STORY_MONEY_COST,
+  SPIN_STORY_CONTROVERSY_REDUCTION
+} from '../../utils/postGigUtils'
 import { SideEffectsSummary } from './SideEffectsSummary'
 import type { CompletePhaseProps } from '../../types/components'
+
+const UNKNOWN_PLATFORM = 'unknown'
 
 export const CompletePhase = ({
   result,
@@ -77,8 +83,8 @@ export const CompletePhase = ({
           {result.totalFollowers ?? 0}{' '}
           {t('ui:postGig.followers', { defaultValue: 'Followers' })}
           <div className='text-sm text-ash-gray/60 mt-1 font-normal tracking-wider'>
-            {t(`ui:postGig.platforms.${result.platform ?? 'unknown'}`, {
-              defaultValue: result.platform ?? 'unknown'
+            {t(`ui:postGig.platforms.${result.platform ?? UNKNOWN_PLATFORM}`, {
+              defaultValue: result.platform ?? UNKNOWN_PLATFORM
             })}
           </div>
         </motion.div>
@@ -98,7 +104,9 @@ export const CompletePhase = ({
               className='bg-blood-red text-star-white px-6 py-2 border-2 border-blood-red hover:bg-star-white hover:text-blood-red disabled:opacity-50'
             >
               {t('ui:postGig.spinStory', {
-                defaultValue: 'Spin Story (-200€, -25 Controversy)'
+                cost: SPIN_STORY_MONEY_COST,
+                controversy: SPIN_STORY_CONTROVERSY_REDUCTION,
+                defaultValue: `Spin Story (-${SPIN_STORY_MONEY_COST}€, -${SPIN_STORY_CONTROVERSY_REDUCTION} Controversy)`
               })}
             </ActionButton>
           )}

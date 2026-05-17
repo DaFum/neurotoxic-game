@@ -31,10 +31,9 @@ import type {
   SocialEngineGameState,
   SocialPostOption
 } from '../types/social'
+import type { RandomFn } from '../types/callbacks'
 
 type AllowedTrend = (typeof ALLOWED_TRENDS)[number]
-
-type RandomFn = () => number
 
 interface WeightedPostOption extends SocialPostOption {
   _weight: number

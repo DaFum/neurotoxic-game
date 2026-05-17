@@ -99,7 +99,7 @@ export const RoadieControls = memo(function RoadieControls({
       <section
         data-testid='roadie-touch-surface'
         aria-label={t('ui:roadieRun.controls.touchAria')}
-        className='absolute inset-0 z-20 md:hidden pointer-events-auto touch-none select-none'
+        className='absolute inset-0 z-(--z-stage) md:hidden pointer-events-auto touch-none select-none'
         onPointerDown={handleTouchPointerDown}
         onPointerUp={handleTouchPointerEnd}
         onPointerCancel={clearTouchStart}
@@ -123,13 +123,13 @@ export const RoadieControls = memo(function RoadieControls({
         {t('ui:roadieRun.controls.movementHint')}
       </div>
 
-      <div className='absolute bottom-5 left-1/2 -translate-x-1/2 z-30 px-3 py-1 border border-star-white/20 bg-void-black/60 text-star-white/60 text-xs font-mono pointer-events-none md:hidden'>
+      <div className='absolute bottom-5 left-1/2 -translate-x-1/2 z-(--z-stage-overlay) px-3 py-1 border border-star-white/20 bg-void-black/60 text-star-white/60 text-xs font-mono pointer-events-none md:hidden'>
         {t('ui:roadieRun.controls.touchHint')}
       </div>
 
       {/* Optional desktop D-Pad */}
       <div
-        className={`absolute bottom-24 right-8 z-40 hidden grid-cols-3 gap-2 pointer-events-auto ${showControls ? 'md:grid' : ''}`}
+        className={`absolute bottom-24 right-8 z-(--z-stage-controls) hidden grid-cols-3 gap-2 pointer-events-auto ${showControls ? 'md:grid' : ''}`}
       >
         <div />
         <button

@@ -1,13 +1,6 @@
 import { Container, Graphics, Sprite, Texture } from 'pixi.js'
 import { EffectManager } from './EffectManager'
-
-type TourbusObstacle = {
-  id: string | number
-  lane: number
-  y: number
-  type: 'FUEL' | 'OBSTACLE' | 'VOID_HAZARD'
-  collided?: boolean
-}
+import type { TourbusObstacle } from '../../types/tourbus'
 
 export type TourbusRenderState = {
   obstacles: TourbusObstacle[]

@@ -1504,7 +1504,7 @@ export const handleSetMap = (
   if (payload) {
     logger.info('GameState', 'Map Generated')
   } else {
-    logger.warn('GameState', 'Map generation failed, null fallback applied')
+    logger.info('GameState', 'Map generation null fallback applied')
   }
   return { ...state, gameMap: payload }
 }
@@ -1681,12 +1681,9 @@ const processContrabandExpiry = (band: BandState): BandState => {
  */
 export const handleAdvanceDay = (
   state: GameState,
-  payload: Record<string, unknown>
+  payload?: { rng?: () => number }
 ): GameState => {
-  const rng =
-    typeof payload?.rng === 'function'
-      ? (payload.rng as () => number)
-      : getSafeRandom
+  const rng = typeof payload?.rng === 'function' ? payload.rng : getSafeRandom
   const { player, band, social, pendingFlags } = calculateDailyUpdates(
     state,
     rng

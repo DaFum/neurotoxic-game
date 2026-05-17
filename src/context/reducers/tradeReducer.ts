@@ -1,4 +1,4 @@
-import type { GameState, ToastPayload } from '../../types'
+import type { GameState, ToastPayload, TradeVoidItemPayload } from '../../types'
 import { logger } from '../../utils/logger'
 import {
   clampPlayerFame,
@@ -49,7 +49,7 @@ const sanitizeContextValue = (value: unknown): unknown => {
  */
 export const handleTradeVoidItem = (
   state: GameState,
-  payload: Record<string, unknown>
+  payload: TradeVoidItemPayload
 ): GameState => {
   if (!payload || typeof payload !== 'object') {
     logger.warn('GameState', 'Invalid payload for TRADE_VOID_ITEM')

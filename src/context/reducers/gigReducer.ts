@@ -1,4 +1,5 @@
 import type { GameState, PostGigSummary, Venue } from '../../types'
+import type { GigModifiers } from '../../types/gig'
 import type { RhythmSetlistEntry } from '../../types/rhythmGame'
 import { logger } from '../../utils/logger'
 import { getSafeUUID } from '../../utils/crypto'
@@ -54,8 +55,8 @@ export const handleSetSetlist = (
 export const handleSetGigModifiers = (
   state: GameState,
   payload:
-    | Record<string, boolean>
-    | ((mods: Record<string, boolean>) => Record<string, boolean>)
+    | Partial<GigModifiers>
+    | ((prev: GigModifiers) => Partial<GigModifiers>)
 ): GameState => {
   const updates =
     (typeof payload === 'function' ? payload(state.gigModifiers) : payload) ??
@@ -175,7 +176,7 @@ export const handleSetLastGigStats = (
         const gigVenueId = state.currentGig?.id || 'unknown_venue'
         nextState = handleAddVenueBlacklist(nextState, {
           venueId: gigVenueId,
-          toastId: `${gigVenueId}-blacklisted`
+          toastId: payload.toastId ?? `${gigVenueId}-blacklisted`
         })
       }
     }

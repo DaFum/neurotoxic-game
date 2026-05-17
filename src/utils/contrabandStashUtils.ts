@@ -4,6 +4,8 @@
  * @param {string|null} selectedMember - The ID of the currently selected band member.
  * @returns {Object} Validation result { isValid, errorKey, defaultMessage }
  */
+import type { ValidationResult } from '../types/validation'
+
 type StashItemLike = {
   id?: string
   name?: string
@@ -11,14 +13,10 @@ type StashItemLike = {
   type?: string
 }
 
-type StashValidationResult =
-  | { isValid: true; errorKey?: undefined; defaultMessage?: undefined }
-  | { isValid: false; errorKey: string; defaultMessage: string }
-
 export const validateStashItemSelection = (
   item: StashItemLike,
   selectedMember: string | null | undefined
-): StashValidationResult => {
+): ValidationResult => {
   if (
     (item.effectType === 'stamina' || item.effectType === 'mood') &&
     !selectedMember
