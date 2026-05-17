@@ -163,10 +163,8 @@ export const usePostGigHandlers = ({
 
         if (appliedMoneyDelta !== 0) {
           updatePlayer({ money: nextMoney })
-          const sign =
-            appliedMoneyDelta > 0 ? '+' : appliedMoneyDelta < 0 ? '-' : ''
           addToast(
-            `${t('ui:postGig.money', { defaultValue: 'Money' })} ${sign}${formatCurrency(Math.abs(appliedMoneyDelta), i18n.language, 'never')}`,
+            `${t('ui:postGig.money', { defaultValue: 'Money' })} ${formatCurrency(appliedMoneyDelta, i18n.language, 'always')}`,
             appliedMoneyDelta > 0 ? 'success' : 'error'
           )
         } else if (finalResult.moneyChange) {
@@ -256,9 +254,7 @@ export const usePostGigHandlers = ({
         const moneyText =
           appliedMoneyDelta === 0
             ? ''
-            : appliedMoneyDelta > 0
-              ? ` (+${formatCurrency(appliedMoneyDelta, i18n.language, 'never')})`
-              : ` (-${formatCurrency(Math.abs(appliedMoneyDelta), i18n.language, 'never')})`
+            : ` (${formatCurrency(appliedMoneyDelta, i18n.language, 'always')})`
         addToast(
           t('ui:postGig.acceptedDeal', {
             dealName: deal.name,
