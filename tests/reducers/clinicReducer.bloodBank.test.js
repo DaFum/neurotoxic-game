@@ -1,4 +1,4 @@
-import { formatCurrency } from '../../src/utils/numberUtils.ts'
+import { formatCurrency } from '../../src/utils/numberUtils'
 import { test, describe, mock } from 'node:test'
 import assert from 'node:assert'
 

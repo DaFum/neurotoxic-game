@@ -11,6 +11,7 @@ import {
   createSetActiveEventAction
 } from '../context/actionCreators'
 import type {
+  EventDelta,
   EventDeltaPayload,
   GameAction,
   GamePhase,
@@ -100,10 +101,7 @@ export function resolveEvent(
 
   type RawResolution = {
     result?: unknown
-    delta?: {
-      flags?: { addQuest?: unknown; unlock?: unknown; gameOver?: unknown }
-      [key: string]: unknown
-    }
+    delta?: EventDelta
     outcomeText?: string
     description?: string
     _precomputedResult?: RawResolution
@@ -160,9 +158,7 @@ export function resolveEvent(
     : {}
 
   if (delta) {
-    const deltaAction = createApplyEventDeltaAction(
-      delta as unknown as EventDeltaPayload
-    )
+    const deltaAction = createApplyEventDeltaAction(delta as EventDeltaPayload)
     actions.push(deltaAction)
 
     // Compute preview state for saveGame (pure — no side effects)
