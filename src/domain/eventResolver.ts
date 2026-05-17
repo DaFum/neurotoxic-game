@@ -160,7 +160,9 @@ export function resolveEvent(
     : {}
 
   if (delta) {
-    const deltaAction = createApplyEventDeltaAction(delta as EventDeltaPayload)
+    const deltaAction = createApplyEventDeltaAction(
+      delta as unknown as EventDeltaPayload
+    )
     actions.push(deltaAction)
 
     // Compute preview state for saveGame (pure — no side effects)

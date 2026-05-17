@@ -451,10 +451,14 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
     delta.flags.gameOver = true
   },
   flag: (eff: EffectShape, delta: EventDelta) => {
-    delta.flags.addStoryFlag = eff.flag
+    if (typeof eff.flag === 'string' && eff.flag.length > 0) {
+      delta.flags.addStoryFlag = eff.flag
+    }
   },
   cooldown: (eff: EffectShape, delta: EventDelta) => {
-    delta.flags.addCooldown = eff.eventId
+    if (typeof eff.eventId === 'string' && eff.eventId.length > 0) {
+      delta.flags.addCooldown = eff.eventId
+    }
   },
   social_set: (eff: EffectShape, delta: EventDelta) => {
     if (typeof eff.stat === 'string' && eff.stat.length > 0) {

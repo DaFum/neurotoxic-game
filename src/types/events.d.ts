@@ -54,9 +54,8 @@ export type EventDelta = {
     queueEvent?: string
     unlock?: unknown
     gameOver?: boolean
-    addStoryFlag?: unknown
-    addCooldown?: unknown
+    addStoryFlag?: string
+    addCooldown?: string
     addQuest?: unknown[]
   }
-  [key: string]: unknown
 }
