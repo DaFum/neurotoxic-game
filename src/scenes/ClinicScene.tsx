@@ -21,7 +21,10 @@ export const ClinicScene = () => {
   return (
     <div className='w-full h-full bg-void-black relative overflow-hidden flex flex-col items-center justify-center p-2 sm:p-8'>
       {/* Background Ambience */}
-      <div className='absolute inset-0 bg-[radial-gradient(circle_at_center,var(--color-toxic-green-5)_0%,var(--color-void-black-90)_100%)] pointer-events-none' />
+      <div
+        className='absolute inset-0 pointer-events-none'
+        style={{ backgroundImage: 'radial-gradient(circle at center, var(--color-toxic-green-5) 0%, var(--color-void-black-90) 100%)' }}
+      />
 
       <div className='z-10 w-full max-h-full max-w-4xl bg-void-black border-2 border-toxic-green p-4 sm:p-6 shadow-[0_0_20px_var(--color-toxic-green-20)] flex flex-col'>
         <ClinicHeader player={player} />
