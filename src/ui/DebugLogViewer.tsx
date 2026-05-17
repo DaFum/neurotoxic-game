@@ -8,29 +8,38 @@ type LogLevelName = keyof typeof LOG_LEVELS
 const isLogLevelName = (level: string): level is LogLevelName =>
   Object.hasOwn(LOG_LEVELS, level)
 
-export const DebugLogViewer = ({ className = '' }: { className?: string }) => {
-  const [visible, setVisible] = useState(false)
-  const [logs, setLogs] = useState<LogEntry[]>([])
-  const [filterLevel, setFilterLevel] = useState(LOG_LEVELS.DEBUG)
+const getLevelColor = (level: string) => {
+  switch (level) {
+    case 'DEBUG':
+      return 'text-ash-gray'
+    case 'INFO':
+      return 'text-info-blue'
+    case 'WARN':
+      return 'text-warning-yellow'
+    case 'ERROR':
+      return 'text-blood-red'
+    default:
+      return 'text-star-white'
+  }
+}
+
+const DebugLogViewerContent = ({
+  className,
+  onClose,
+  filterLevel,
+  setFilterLevel
+}: {
+  className: string
+  onClose: () => void
+  filterLevel: number
+  setFilterLevel: (level: number) => void
+}) => {
+  const [logs, setLogs] = useState<LogEntry[]>(() => [...logger.logs])
   const bottomRef = useRef<HTMLDivElement | null>(null)
   const { t } = useTranslation()
 
-  // Keyboard Toggle
-  useEffect(() => {
-    if (!import.meta.env.DEV) return
-
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.key === '`') {
-        setVisible(prev => !prev)
-      }
-    }
-    window.addEventListener('keydown', handleKey)
-    return () => window.removeEventListener('keydown', handleKey)
-  }, [])
-
   // Log Subscription
   useEffect(() => {
-    if (!visible) return
     const unsubscribe = logger.subscribe(event => {
       if (event.type === 'add') {
         setLogs(prev => [event.entry, ...prev].slice(0, logger.maxLogs))
@@ -38,28 +47,8 @@ export const DebugLogViewer = ({ className = '' }: { className?: string }) => {
         setLogs([])
       }
     })
-    // Initial load
-    // eslint-disable-next-line @eslint-react/set-state-in-effect
-    setLogs([...logger.logs])
     return unsubscribe
-  }, [visible])
-
-  const getLevelColor = (level: string) => {
-    switch (level) {
-      case 'DEBUG':
-        return 'text-ash-gray'
-      case 'INFO':
-        return 'text-info-blue'
-      case 'WARN':
-        return 'text-warning-yellow'
-      case 'ERROR':
-        return 'text-blood-red'
-      default:
-        return 'text-star-white'
-    }
-  }
-
-  if (!visible) return null
+  }, [])
 
   return (
     <div
@@ -120,7 +109,7 @@ export const DebugLogViewer = ({ className = '' }: { className?: string }) => {
           </div>
           <button
             type='button'
-            onClick={() => setVisible(false)}
+            onClick={onClose}
             aria-label='Close log'
             className='border-2 border-blood-red bg-void-black text-blood-red px-2 py-1 shadow-[4px_4px_0px_var(--color-blood-red)] hover:bg-blood-red hover:text-void-black uppercase font-bold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blood-red focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
           >
@@ -166,5 +155,34 @@ export const DebugLogViewer = ({ className = '' }: { className?: string }) => {
         </div>
       </div>
     </div>
+  )
+}
+
+export const DebugLogViewer = ({ className = '' }: { className?: string }) => {
+  const [visible, setVisible] = useState(false)
+  const [filterLevel, setFilterLevel] = useState(LOG_LEVELS.DEBUG)
+
+  // Keyboard Toggle
+  useEffect(() => {
+    if (!import.meta.env.DEV) return
+
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === '`') {
+        setVisible(prev => !prev)
+      }
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [])
+
+  if (!visible) return null
+
+  return (
+    <DebugLogViewerContent
+      className={className}
+      onClose={() => setVisible(false)}
+      filterLevel={filterLevel}
+      setFilterLevel={setFilterLevel}
+    />
   )
 }
