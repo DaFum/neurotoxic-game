@@ -240,7 +240,7 @@ const SocialReachSection = ({
           />
           <DetailRow
             label={t('ui:stats.brandDeals', { defaultValue: 'Brand Deals' })}
-            value={activeDeals.length}
+            value={activeDealDisplays.length}
             subtext={
               activeDealDisplays.length > 0 ? (
                 <div className='space-y-1'>
@@ -263,7 +263,7 @@ const SocialReachSection = ({
                 })
               )
             }
-            locked={!isUnlocked(activeDeals)}
+            locked={!isUnlocked(activeDealDisplays)}
           />
         </div>
       </div>
