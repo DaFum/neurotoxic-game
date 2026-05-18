@@ -56,6 +56,9 @@ import {
   PRACTICE_RETURN_SCENES
 } from '../gameConstants'
 import type { MinigameType } from '../../types/game'
+import { QuestLifecycle } from '../../domain/questLifecycle'
+import { getSafeRandom } from '../../utils/crypto'
+import { ALLOWED_TOAST_TYPES, sanitizeLoadedToast } from './toastSanitizers'
 
 const ALLOWED_MINIGAME_TYPES = new Set<MinigameType>(
   Object.values(MINIGAME_TYPES)
@@ -63,9 +66,6 @@ const ALLOWED_MINIGAME_TYPES = new Set<MinigameType>(
 
 const isMinigameType = (value: unknown): value is MinigameType =>
   typeof value === 'string' && ALLOWED_MINIGAME_TYPES.has(value as MinigameType)
-import { QuestLifecycle } from '../../domain/questLifecycle'
-import { getSafeRandom } from '../../utils/crypto'
-import { ALLOWED_TOAST_TYPES, sanitizeLoadedToast } from './toastSanitizers'
 
 const ALLOWED_MAP_NODE_TYPES = new Set<MapNodeType>([
   'START',
