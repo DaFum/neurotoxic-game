@@ -170,8 +170,8 @@ const resolveTemplateString = (
   })
 }
 
-export const HARMONY_DEATH_SPIRAL_THRESHOLD = 30
-export const HARMONY_DEATH_SPIRAL_DAMPEN_FACTOR = 0.5
+const HARMONY_DEATH_SPIRAL_THRESHOLD = 30
+const HARMONY_DEATH_SPIRAL_DAMPEN_FACTOR = 0.5
 
 const eventPoolMapCache = new WeakMap()
 

@@ -1,4 +1,5 @@
 import type { GameState } from '../../types'
+import { toFiniteNumber } from '../../utils/numberUtils'
 
 export const QUEST_EVENTS = [
   {
@@ -116,7 +117,7 @@ export const QUEST_EVENTS = [
     chance: 0.3, // High chance if condition is met, reduced to 0.3 to prevent spam
     condition: (state: GameState) =>
       (!state.activeQuests || state.activeQuests.length === 0) &&
-      (state.band?.harmony || 0) < 60,
+      toFiniteNumber(state.band?.harmony, 0) < 60,
     options: [
       {
         label: 'events:quest_trigger_harmony_project.opt1.label',

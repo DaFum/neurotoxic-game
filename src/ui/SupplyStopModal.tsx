@@ -8,6 +8,7 @@ import {
   canAfford,
   processPurchaseEffect
 } from '../utils/purchaseLogicUtils'
+import { toFiniteNumber } from '../utils/numberUtils'
 import { calculateFameLevel } from '../utils/gameStateUtils'
 import type { CatalogItem, PurchaseItem } from '../types/components'
 import type { PlayerState, BandState } from '../types'
@@ -39,7 +40,7 @@ export const SupplyStopModal: React.FC<SupplyStopModalProps> = ({
     }
 
     const playerPatch: Partial<PlayerState> = {
-      money: Math.max(0, (player.money || 0) - adjustedCost)
+      money: Math.max(0, toFiniteNumber(player.money, 0) - adjustedCost)
     }
     let bandPatch: Partial<BandState> = {}
 

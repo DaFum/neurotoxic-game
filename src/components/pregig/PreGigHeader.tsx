@@ -4,7 +4,7 @@
  */
 import React from 'react'
 import { motion } from 'framer-motion'
-import { formatNumber } from '../../utils/numberUtils'
+import { formatCurrency } from '../../utils/numberUtils'
 import type { PlayerState, Venue } from '../../types'
 import type { TranslationCallback } from '../../types/callbacks'
 
@@ -35,18 +35,14 @@ export const PreGigHeader = React.memo(
           <span>
             {t('ui:pregig.budget')}{' '}
             <span className='text-toxic-green font-bold tabular-nums'>
-              {t('ui:currency', {
-                value: formatNumber(player.money, i18n?.language)
-              })}
+              {formatCurrency(player.money, i18n?.language)}
             </span>
           </span>
           <span className='text-ash-gray/30'>|</span>
           <span>
             {t('ui:pregig.costs')}{' '}
             <span className='text-blood-red font-bold tabular-nums'>
-              {t('ui:currencyNegative', {
-                value: formatNumber(calculatedBudget, i18n?.language)
-              })}
+              {formatCurrency(-Math.abs(calculatedBudget), i18n?.language)}
             </span>
           </span>
         </div>

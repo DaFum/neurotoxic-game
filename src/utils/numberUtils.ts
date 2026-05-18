@@ -1,6 +1,9 @@
 // Module-level cache for Intl.NumberFormat instances to prevent repeated instantiation overhead
 const numberFormatters = new Map<string, Intl.NumberFormat>()
 
+export const toFiniteNumber = (value: unknown, fallback = 0): number =>
+  typeof value === 'number' && Number.isFinite(value) ? value : fallback
+
 /**
  * Returns a cached Intl.NumberFormat instance based on language and options.
  */
@@ -25,21 +28,19 @@ export const formatNumber = (value: number, language = 'en'): string => {
 }
 
 /**
- * Formats a financial amount as a translated, signed string for post-gig reports.
- * Routes through `economy:report.amount_positive` / `amount_negative` so each
- * locale controls sign placement and currency glyph.
+ * Formats a financial amount as a signed currency string for post-gig reports.
+ * Income forces a leading `+`, expenses force a leading `-` so the column-vs-row
+ * sign stays consistent regardless of the raw value's sign. Locale-correct
+ * currency glyph + separators come from Intl.NumberFormat.
  */
 export const formatSignedFinancialAmount = (
   value: number,
   type: 'income' | 'expense',
-  t: (key: string, options?: Record<string, unknown>) => string,
   language = 'en'
 ): string => {
-  const key =
-    type === 'income'
-      ? 'economy:report.amount_positive'
-      : 'economy:report.amount_negative'
-  return t(key, { amount: formatNumber(Math.abs(value), language) })
+  const magnitude = Math.abs(value)
+  const signed = type === 'income' ? magnitude : -magnitude
+  return formatCurrency(signed, language, 'always')
 }
 
 export const formatCurrency = (

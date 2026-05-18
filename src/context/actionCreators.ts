@@ -13,6 +13,7 @@ import {
   calculateFameLevel,
   clampBandHarmony,
   clampNonNegative,
+  clampToNonNegativeInt,
   clamp0to100
 } from '../utils/gameStateUtils'
 import type { RhythmSetlistEntry } from '../types/rhythmGame'
@@ -159,7 +160,7 @@ export const toggleNeuroDecimator = (
   { type: typeof ActionTypes.TOGGLE_NEURO_DECIMATOR }
 > => ({
   type: ActionTypes.TOGGLE_NEURO_DECIMATOR,
-  payload: { isActive: !!isActive }
+  payload: { isActive }
 })
 
 /**
@@ -516,11 +517,6 @@ export const createStartAmpCalibrationAction = (
  * @param {number} voidResonance
  * @returns {Object} Action object
  */
-const _toSafeInt = (v: unknown): number => {
-  const n = Number(v)
-  return Number.isFinite(n) ? Math.max(0, Math.floor(n)) : 0
-}
-
 export const createCompleteAmpCalibrationAction = (
   score: number,
   voidResonance: number = 0,
@@ -530,10 +526,10 @@ export const createCompleteAmpCalibrationAction = (
   GameAction,
   { type: typeof ActionTypes.COMPLETE_AMP_CALIBRATION }
 > => {
-  const safeScore = _toSafeInt(score)
-  const safeResonance = _toSafeInt(voidResonance)
-  const safePurgesUsed = _toSafeInt(purgesUsed)
-  const safeHijacksOverridden = _toSafeInt(hijacksOverridden)
+  const safeScore = clampToNonNegativeInt(score)
+  const safeResonance = clampToNonNegativeInt(voidResonance)
+  const safePurgesUsed = clampToNonNegativeInt(purgesUsed)
+  const safeHijacksOverridden = clampToNonNegativeInt(hijacksOverridden)
 
   return {
     type: ActionTypes.COMPLETE_AMP_CALIBRATION,

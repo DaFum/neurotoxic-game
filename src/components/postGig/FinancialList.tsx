@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { formatSignedFinancialAmount } from '../../utils/numberUtils'
-import { getFinancialColors } from './financialColors'
+import { getFinancialColors } from '../../utils/financialColors'
 import type { FinancialListProps } from '../../types/components'
 
 export const FinancialList = ({ items, type }: FinancialListProps) => {
@@ -23,7 +23,7 @@ export const FinancialList = ({ items, type }: FinancialListProps) => {
             <span
               className={`${getFinancialColors(type).text} font-bold tabular-nums`}
             >
-              {formatSignedFinancialAmount(item.value, type, t, i18n?.language)}
+              {formatSignedFinancialAmount(item.value, type, i18n?.language)}
             </span>
           </motion.li>
         )

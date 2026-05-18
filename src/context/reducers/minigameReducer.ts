@@ -53,7 +53,9 @@ export const handleCompleteTravelMinigame = (
     rngValue?: number
   }
 ): GameState => {
-  const { damageTaken, itemsCollected, rngValue } = payload
+  const { damageTaken: rawDamage, itemsCollected: rawItems, rngValue } = payload
+  const damageTaken = Number.isFinite(rawDamage) ? Math.max(0, rawDamage) : 0
+  const itemsCollected = Array.isArray(rawItems) ? rawItems : []
   logger.info('GameState', 'Travel Minigame Complete', payload)
 
   // Apply Travel Results

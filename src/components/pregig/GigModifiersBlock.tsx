@@ -4,7 +4,9 @@
 
  */
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import GigModifierButton from '../../ui/GigModifierButton'
+import { formatCurrency } from '../../utils/numberUtils'
 import type { ModifierOption } from '../../hooks/usePreGigLogic'
 import type { ActiveEffectEntry } from '../../types/components'
 import type { TranslationCallback } from '../../types/callbacks'
@@ -50,6 +52,7 @@ export const GigModifiersBlock = ({
   bandMeetingCost,
   currentModifiers
 }: GigModifiersBlockProps) => {
+  const { i18n } = useTranslation()
   return (
     <motion.div
       initial={{ opacity: 0, x: -20 }}
@@ -85,7 +88,7 @@ export const GigModifiersBlock = ({
               </span>
             </span>
             <span className='font-mono text-sm font-bold tabular-nums'>
-              {t('ui:cost', { cost: bandMeetingCost })}
+              {formatCurrency(bandMeetingCost, i18n?.language)}
             </span>
           </button>
         </div>

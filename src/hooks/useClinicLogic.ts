@@ -146,7 +146,7 @@ export const useClinicLogic = (): {
     const map = new Map<string, BandMember>()
     ;(band?.members ?? [])
       .filter((m: BandMember): m is BandMember & { id: string } => !!m.id)
-      .forEach(m => {
+      .forEach((m: BandMember & { id: string }) => {
         map.set(m.id, m)
       })
     return map
