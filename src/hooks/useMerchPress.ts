@@ -1,9 +1,11 @@
 import { useState, useCallback, useMemo } from 'react'
-import { useGameState } from '../context/GameState'
+import { useGameActions, useGameSelector } from '../context/GameState'
 import { secureRandom } from '../utils/crypto'
 
 export const useMerchPress = () => {
-  const { merchPress, player, band } = useGameState()
+  const player = useGameSelector(state => state.player)
+  const band = useGameSelector(state => state.band)
+  const { merchPress } = useGameActions()
 
   const [showMerchPress, setShowMerchPress] = useState(false)
 

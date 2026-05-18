@@ -93,9 +93,14 @@ vi.mock('../../src/utils/logger', () => ({
   LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, NONE: 4 }
 }))
 
-vi.mock('../../src/context/GameState', () => ({
-  useGameState: vi.fn()
-}))
+vi.mock('../../src/context/GameState', () => {
+  const useGameState = vi.fn()
+  return {
+    useGameState,
+    useGameActions: useGameState,
+    useGameSelector: selector => selector(useGameState())
+  }
+})
 
 vi.mock('../../src/utils/imageGen', () => ({
   isImageGenerationAvailable: () => true,

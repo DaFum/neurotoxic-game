@@ -1,8 +1,3 @@
-/*
- * (#1) Actual Updates: Extracted JackSocket into a static UI component.
-
-
- */
 import React from 'react'
 
 export const JackSocket = React.memo(function JackSocket() {

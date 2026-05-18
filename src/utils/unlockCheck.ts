@@ -12,6 +12,17 @@ import type { GameState } from '../types'
 
 type UnlockCheckState = Pick<GameState, 'player' | 'band' | 'social'>
 
+const hasRelationshipBelow = (
+  relationships: unknown,
+  threshold: number
+): boolean => {
+  if (!relationships || typeof relationships !== 'object') return false
+  return Object.values(relationships).some(
+    score =>
+      typeof score === 'number' && Number.isFinite(score) && score < threshold
+  )
+}
+
 /**
  * Checks for trait unlocks based on game state changes.
  * @param {object} state - The full game state (player, band, etc.).
@@ -162,7 +173,7 @@ export const checkTraitUnlocks = (
     // Grudge Holder (Matze): Relationship < 30
     if (Matze && !hasTrait(Matze, 'grudge_holder') && Matze.relationships) {
       if (
-        Object.values(Matze.relationships).some(score => (score ?? 50) < 30) &&
+        hasRelationshipBelow(Matze.relationships, 30) &&
         !newUnlocks.some(u => u.traitId === 'grudge_holder')
       ) {
         newUnlocks.push({ memberId: Matze.name, traitId: 'grudge_holder' })

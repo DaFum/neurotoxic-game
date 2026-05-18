@@ -1,4 +1,4 @@
-import { safeStorageOperation } from './errorHandler'
+import { safeStorageOperation } from './storage'
 
 /**
  * Persistence layer for earned unlock IDs.

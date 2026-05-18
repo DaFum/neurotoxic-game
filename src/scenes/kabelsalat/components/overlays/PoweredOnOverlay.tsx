@@ -1,7 +1,3 @@
-/*
- * (#1) Actual Updates: Created PoweredOnOverlay component.
-
- */
 import React from 'react'
 import type { FC } from 'react'
 import type { TFunction } from 'i18next'

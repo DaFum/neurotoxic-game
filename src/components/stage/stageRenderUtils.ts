@@ -1,8 +1,3 @@
-/*
- * (#1) Actual Updates: Added withTimeout utility from PixiStageController.
- * (#2) Next Steps: Continue adding shared utilities here.
- * (#3) Found Errors + Solutions: None.
- */
 import { Assets, ImageSource, Texture } from 'pixi.js'
 import { logger } from '../../utils/logger'
 

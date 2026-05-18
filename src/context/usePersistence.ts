@@ -11,12 +11,8 @@ import {
   isPlainObject,
   safeJsonParse
 } from '../utils/gameStateUtils'
-import {
-  handleError,
-  safeStorageOperation,
-  StateError,
-  StorageError
-} from '../utils/errorHandler'
+import { handleError, StateError, StorageError } from '../utils/errorHandler'
+import { safeStorage, safeStorageNoFallback } from '../utils/storage'
 import { validateSaveData } from '../utils/saveValidator'
 import { addUnlock, getUnlocks } from '../utils/unlockManager'
 import { logger } from '../utils/logger'
@@ -122,27 +118,6 @@ export const createPersistedState = (currentState: GameState) => {
     minigame,
     setlist: normalizeSetlistForSave(setlist)
   }
-}
-
-export function safeStorage<T>(
-  operation: string,
-  fn: () => T,
-  fallbackValue: T
-): T {
-  return (
-    safeStorageOperation as unknown as (
-      op: string,
-      exec: () => T,
-      fallback: T
-    ) => T
-  )(operation, fn, fallbackValue)
-}
-
-export function safeStorageNoFallback<T>(operation: string, fn: () => T): T {
-  return (safeStorageOperation as unknown as (op: string, exec: () => T) => T)(
-    operation,
-    fn
-  )
 }
 
 export function usePersistence({

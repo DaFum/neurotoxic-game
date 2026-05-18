@@ -1,8 +1,3 @@
-/*
- * (#1) Actual Updates: Extracted CreditFooter component, localized text, and wrapped in React.memo.
-
-
- */
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 

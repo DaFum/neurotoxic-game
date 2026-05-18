@@ -1,7 +1,3 @@
-/*
- * (#1) Actual Updates: Extracted complex UI sub-components into standalone files (HeaderTitle, HeaderTimer) for better maintainability.
-
- */
 import type { FC } from 'react'
 import type { TFunction } from 'i18next'
 import { HeaderTitle } from './HeaderTitle.tsx'

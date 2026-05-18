@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
 import type { MapNode } from '../types'
 import { useTranslation } from 'react-i18next'
-import { useGameState } from '../context/GameState'
+import { useGameActions, useGameSelector } from '../context/GameState'
 import { useTravelLogic } from '../hooks/useTravelLogic'
 import { GAME_PHASES } from '../context/gameConstants'
 import {
@@ -28,27 +28,27 @@ import { SupplyStopModal } from '../ui/SupplyStopModal'
  */
 export const Overworld = () => {
   const { t } = useTranslation(['ui', 'venues'])
+  const player = useGameSelector(state => state.player)
+  const gameMap = useGameSelector(state => state.gameMap)
+  const band = useGameSelector(state => state.band)
+  const social = useGameSelector(state => state.social)
+  const reputationByRegion = useGameSelector(state => state.reputationByRegion)
+  const venueBlacklist = useGameSelector(state => state.venueBlacklist)
+  const activeStoryFlags = useGameSelector(state => state.activeStoryFlags)
+  const rivalBand = useGameSelector(state => state.rivalBand)
   const {
     startGig,
-    player,
     updatePlayer,
     triggerEvent,
     saveGame,
-    gameMap,
     updateBand,
-    band,
-    social,
-    reputationByRegion,
-    venueBlacklist,
     addToast,
     advanceDay,
     changeScene,
     startTravelMinigame,
-    activeStoryFlags,
-    rivalBand,
     spawnRivalBand,
     updateRivalBand
-  } = useGameState()
+  } = useGameActions()
 
   const [hoveredNode, setHoveredNode] = useState<MapNode | null>(null)
 

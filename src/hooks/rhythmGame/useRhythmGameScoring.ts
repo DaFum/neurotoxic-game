@@ -74,7 +74,7 @@ export type RhythmGameScoringReturn = {
  * @param {Object} params.gameStateRef - Reference to the mutable game state.
  * @param {Object} params.setters - React state setters from useRhythmGameState.
  * @param {Object} params.performance - Band performance stats (modifiers).
- * @param {Object} params.contextActions - Actions from useGameState (addToast, setLastGigStats, endGig).
+ * @param {Object} params.contextActions - Game action callbacks (addToast, setLastGigStats, endGig).
  * @returns {Object} Scoring actions: handleHit, handleMiss, activateToxicMode.
  */
 export const useRhythmGameScoring = ({

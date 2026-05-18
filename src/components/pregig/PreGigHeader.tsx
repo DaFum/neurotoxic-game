@@ -1,7 +1,3 @@
-/*
- * (#1) Actual Updates: Extracted PreGigHeader into a separate component.
-
- */
 import React from 'react'
 import { motion } from 'framer-motion'
 import { formatCurrency } from '../../utils/numberUtils'

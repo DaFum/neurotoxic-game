@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useGameState } from '../context/GameState'
+import { useGameActions } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
 import { GlitchButton } from '../ui/GlitchButton'
 import { CreditEntry } from './credits/CreditEntry'
@@ -12,7 +12,7 @@ import { CreditHeader } from './credits/CreditHeader'
  */
 export const Credits = () => {
   const { t } = useTranslation()
-  const { changeScene } = useGameState()
+  const { changeScene } = useGameActions()
 
   const handleReturn = useCallback(
     () => changeScene(GAME_PHASES.MENU),

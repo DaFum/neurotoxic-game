@@ -1,8 +1,3 @@
-/*
- * (#1) Actual Updates: Extracted MidiPlug into a static UI component.
-
-
- */
 import React from 'react'
 
 export const MidiPlug = React.memo(function MidiPlug() {

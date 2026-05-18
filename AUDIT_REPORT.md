@@ -1,35 +1,57 @@
-# Neurotoxic Codebase Audit Report — Remaining Items
+# Neurotoxic Code-Quality Audit Findings
 
-Original audit had ~95 findings. Items that have been processed (fixed,
-merged, integrated, or verified non-issue) have been removed from this file.
-Items that were intentionally skipped retain a one-line reason.
+Scope: `src/` primary audit, with targeted `tests/` ripgrep checks for orphan verification. Orphan claims below were verified with `rg`.
 
-## 4. DEAD / UNREACHABLE CODE
+## DUPLICATES
 
-### LOW
+No remaining findings in this section after the selected cleanup pass.
 
-- **LOW** `src/schemas/crisis.json` — header says authoritative validation
-  is `validateCrisisEvent` in `eventValidator`; no code consumes the JSON
-  schema directly. **SKIPPED**: the JSON schema is documentary and
-  `validateCrisisEvent` now runs at startup via the §1 integration of
-  `validateGameEvent`. Leaving the schema as a developer reference is
-  consistent with that role; deletion would lose the human-readable doc.
-- **LOW** `src/utils/imageGen.ts:4` — hardcoded API key (gitleaks-allowed).
-  **NOTE ONLY** per original audit.
+## ORPHANED / UNINTEGRATED CODE
 
-## 5. MISSING INTEGRATION
+| Severity | Location                                                                      | Finding                                                                                                                                                              | Recommended action                                                       |
+| -------- | ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| HIGH     | `src/ui/shared/BrutalistUI.tsx:964`                                           | `CrisisModal` is fully built but has no `src/` consumer except the shared barrel export. Looks intended for crisis events but is never rendered.                     | INTEGRATE into crisis/event flow or DELETE.                              |
+| MED      | `src/ui/shared/BrutalistUI.tsx:743`, `:833`, `:892`, `:909`, `:1170`, `:1213` | `BrutalToggle`, `BrutalTabs`, `StatBlock`, `BrutalFader`, `BrutalSlot`, and `VoidLoader` are exported only through `src/ui/shared/index.tsx`; no real app consumers. | DELETE unused demo components or move to story/demo-only surface.        |
+| LOW      | `src/ui/shared/BrutalistUI.tsx:304`, `:406`, `:485`, `:623`, `:678`           | `MoneyIcon`, `SkullIcon`, `GearIcon`, `BiohazardIcon`, `CorporateSeal` are not used by app code. `MoneyIcon` has tests only.                                         | DELETE unused icon exports or integrate intentionally.                   |
+| LOW      | `src/scenes/kabelsalat/kabelsalatConstants.ts:97`                             | `CONNECTOR_TYPES` is exported and covered by local AGENTS guidance, but has no code or test references.                                                              | DELETE export or INTEGRATE into Kabelsalat validation/UI.                |
+| LOW      | `src/utils/minigameRegistry.ts:26`                                            | `MinigameKey` exported type is unused; `MINIGAME_REGISTRY` itself is used.                                                                                           | DELETE unused type export.                                               |
+| LOW      | `src/context/initialState.ts:76`                                              | `DEFAULT_RIVAL_BAND_STATE` is exported but only used inside `initialState.ts`.                                                                                       | Make it file-local unless public API is intentional.                     |
+| LOW      | `src/context/usePersistence.ts:74`                                            | `createPersistedState` is exported but only used inside `usePersistence.ts`.                                                                                         | Make it file-local or add explicit tests/imports if intended public API. |
+| LOW      | `src/utils/numberUtils.ts:22`                                                 | `formatNumber` has tests but no `src/` consumers; UI still formats many numbers inline.                                                                              | INTEGRATE into numeric UI or remove public export.                       |
 
-### LOW
+## INCONSISTENCIES
 
-- **LOW** `GAME_PHASES.PRACTICE` is not in `SCENES_WITHOUT_HUD` in
-  `App.tsx:23-33`. **CONFIRMED INTENTIONAL**: practice mode mirrors a gig
-  session (HUD-on) — same treatment as `GAME_PHASES.GIG`, which is also
-  outside the set. No change needed.
+| Severity | Location                                                                                                                                                                         | Finding                                                                                                                                               | Recommended action                                                                                          |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| HIGH     | `src/hooks/rhythmGame/useRhythmGameAudio.ts:14`, `src/hooks/rhythmGame/useRhythmGameScoring.ts:18`, `src/components/pregig/SetlistBlock.tsx:4`, `src/hooks/usePreGigLogic.ts:20` | Files outside `src/utils/audio/` import audio submodules directly, violating `src/utils/audio/AGENTS.md`; imports should go through `audioEngine.ts`. | FIX imports and re-export missing rhythm helpers from `audioEngine.ts` if needed.                           |
+| MED      | `src/context/actionCreators.ts:650`, `src/domain/questLifecycle.ts:208`                                                                                                          | `createAdvanceQuestAction` passes raw `amount`; quest lifecycle only caps upper bound. Negative, `NaN`, or infinite values can corrupt progress.      | FIX by sanitizing finite non-negative amount in action creator and clamping final progress.                 |
+| MED      | `src/context/actionCreators.ts:566`, `src/context/reducers/rivalReducer.ts:56`                                                                                                   | `createUpdateRivalBandAction` claims sanitized payload, but `powerLevel` is copied raw and reducer blindly merges.                                    | FIX finite/bounds validation in creator and reducer.                                                        |
+| MED      | `src/ui/GigModifierButton.tsx:41`, `src/ui/bandhq/StatsTab.tsx:24`, `src/ui/BloodBankModal.tsx:68`, `src/ui/DarkWebLeakModal.tsx:41`, `src/ui/bandhq/ShopItem.tsx:117`           | Money is rendered with raw `€` strings despite project rule to use locale-aware `formatCurrency`.                                                     | FIX with `formatCurrency(value, i18n.language, ...)` and bare locale placeholders where text is translated. |
+| MED      | `src/ui/bandhq/DetailedStatsTab.tsx:104`, `src/ui/bandhq/CatalogTab.tsx:8`, `src/ui/bandhq/LeaderboardTab.tsx:281`, `src/ui/overworld/OverworldHUD.tsx:186`, `src/ui/MerchPressModal.tsx:121`, `src/ui/MerchPressModal.tsx:166`, `src/utils/effectFormatter.ts:44` | Additional money/currency displays also hardcode `€` or append a raw suffix instead of using the shared formatter/i18n path. | FIX with locale-aware currency formatting or translated display labels. |
+| MED      | `src/context/gameReducer.ts:172`, `src/context/gameReducer.ts:212`, `src/context/reducers/bandReducer.ts:541`                                                                    | `@ts-expect-error` and `assertNever(action as never)` weaken the project’s strict TypeScript/exhaustiveness conventions.                              | FIX reducer-map/switch typing so no suppression/cast-to-never is needed.                                    |
+| LOW      | `src/ui/SupplyStopModal.tsx:86`                                                                                                                                                  | Hardcoded Tailwind arbitrary RGBA shadow color violates design-token color rule.                                                                      | FIX with CSS var/token-based shadow.                                                                        |
+| LOW      | `src/components/stage/stageRenderUtils.ts:9`, `src/hooks/rhythmGame/useRhythmGameState.ts:180`                                                                                   | Pixi color fallbacks duplicate hardcoded token hex values and lane colors pass explicit hardcoded fallbacks.                                          | FIX by centralizing/generated token fallback mapping or relying on token helper defaults.                   |
 
-## 6. NOTES
+## DEAD / UNREACHABLE CODE
 
-All HIGH-severity findings from the original audit have been processed.
-The original §6 ("Headline metrics", "Top-priority fixes", "Highest-leverage
-cleanup batches", "Audit confidence notes") is omitted from this trimmed
-report — see the PR history on `claude/integrate-audit-report-MhGWV` for
-the implementation timeline and per-commit rationale.
+| Severity | Location                                                              | Finding                                                                                                                             | Recommended action                                                 |
+| -------- | --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| MED      | `src/data/events/transport.ts:98`, `src/data/events/transport.ts:146` | Story flags `VAN_DAMAGED` and `RENTAL_VAN` are written but never read anywhere in `src/` or `tests/`. Their consequences are inert. | INTEGRATE flag checks into van/rental systems or DELETE the flags. |
+| MED      | `src/ui/shared/BrutalistUI.tsx:833`                                   | `BrutalTabs` renders placeholder “Loading module” panels but has no app consumer, so this UI path is unreachable.                   | DELETE or replace with real integrated tabs.                       |
+| LOW      | `src/scenes/kabelsalat/kabelsalatConstants.ts:97`                     | `CONNECTOR_TYPES` is derived but not consumed by code, so changes to it cannot affect gameplay.                                    | DELETE or wire into validation/render logic.                       |
+
+## MISSING INTEGRATION
+
+| Severity | Location                                                                             | Finding                                                                                                                                                  | Recommended action                                                            |
+| -------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| HIGH     | `src/data/events/transport.ts:98`, `src/data/events/transport.ts:146`                | Transport event outcomes appear to set durable consequences, but `VAN_DAMAGED` and `RENTAL_VAN` are never used by travel, economy, van condition, or UI. | INTEGRATE into van condition/rental logic, or remove misleading flags.        |
+| HIGH     | `src/ui/shared/BrutalistUI.tsx:964`                                                  | `CrisisModal` looks like a completed feature surface, but crisis events currently flow through generic event handling instead.                           | INTEGRATE with crisis thresholds/events or delete as unused UI.               |
+| MED      | `src/utils/numberUtils.ts:22`                                                        | Tested number formatter is not wired into stats, shop, leaderboard, or HUD numeric display paths.                                                        | INTEGRATE into numeric display components if locale formatting is desired.    |
+| MED      | `src/utils/audio/audioEngine.ts:54`, `src/utils/audio/audioEngine.ts:55`, `src/hooks/rhythmGame/useRhythmGameAudio.ts:14` | Audio hub re-exports `songUtils` and `timingUtils`, but not `rhythmGameAudioUtils`; rhythm-game audio helpers are still imported directly.              | INTEGRATE rhythm-game audio exports into `audioEngine.ts` and update callers. |
+
+## Checks With No Findings
+
+- EN/DE locale key comparison found no missing keys between `public/locales/en` and `public/locales/de`.
+- Literal `t('namespace:key')` lookups scanned from `src/` had no missing locale keys.
+- `ActionTypes` were present in both reducer mapping and action creator coverage.
+- No direct Tone.js timing reads outside the audio layer were found for gameplay timing.

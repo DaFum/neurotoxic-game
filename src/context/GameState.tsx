@@ -18,6 +18,7 @@ import { getUnlocks } from '../utils/unlockManager'
 import { hasUpgrade } from '../utils/upgradeUtils'
 import { isPlainObject, safeJsonParse } from '../utils/gameStateUtils'
 import { useLeaderboardSync } from '../hooks/useLeaderboardSync'
+import { safeStorage, safeStorageNoFallback } from '../utils/storage'
 
 // Import modular state management
 import { createInitialState } from './initialState'
@@ -85,8 +86,6 @@ import { useMapGeneration } from './useMapGeneration'
 import {
   SAVE_KEY,
   createRawLoadPayload,
-  safeStorage,
-  safeStorageNoFallback,
   usePersistence
 } from './usePersistence'
 
@@ -210,6 +209,7 @@ type GameDispatchActions = {
     payload: Parameters<typeof createBloodBankDonateAction>[0]
   ) => void
   setPendingBandHQOpen: (isOpen: boolean) => void
+  spawnRivalBand: () => void
   updateRivalBand: (patch: Partial<RivalBandState>) => void
 }
 
@@ -221,7 +221,6 @@ type GameDispatchActions = {
 export type GameStateWithActions = GameState &
   GameDispatchActions & {
     hasUpgrade: (upgradeId: string) => boolean
-    spawnRivalBand?: () => void
   }
 
 type HotGameStateContextStore = typeof globalThis & {

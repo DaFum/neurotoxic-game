@@ -3,9 +3,14 @@ import { renderHook, act } from '@testing-library/react'
 import { useBloodBank } from '../../src/hooks/useBloodBank'
 import * as GameStateContext from '../../src/context/GameState'
 
-vi.mock('../../src/context/GameState', () => ({
-  useGameState: vi.fn()
-}))
+vi.mock('../../src/context/GameState', () => {
+  const useGameState = vi.fn()
+  return {
+    useGameState,
+    useGameActions: useGameState,
+    useGameSelector: selector => selector(useGameState())
+  }
+})
 
 describe('useBloodBank', () => {
   let mockBloodBankDonate

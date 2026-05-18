@@ -1,7 +1,3 @@
-/*
- * (#1) Actual Updates: Extracted CableItem component, wrapped in React.memo
-
- */
 import React, { useCallback } from 'react'
 import type { FC } from 'react'
 import type { TFunction } from 'i18next'

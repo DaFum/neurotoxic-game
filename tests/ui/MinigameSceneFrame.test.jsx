@@ -8,7 +8,9 @@ const mockGameState = {
 }
 
 vi.mock('../../src/context/GameState.tsx', () => ({
-  useGameState: () => mockGameState
+  useGameState: () => mockGameState,
+  useGameActions: () => mockGameState,
+  useGameSelector: selector => selector(mockGameState)
 }))
 
 // Mock PixiStage component

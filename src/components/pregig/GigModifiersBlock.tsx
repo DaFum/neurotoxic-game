@@ -1,8 +1,3 @@
-/**
- * (#1) Actual Updates: Extracted GigModifiersBlock from PreGig scene
- * (#2) Next Steps: Extract remaining logic
-
- */
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import GigModifierButton from '../../ui/GigModifierButton'

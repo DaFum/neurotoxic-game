@@ -1,6 +1,6 @@
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useGameState } from '../../context/GameState'
+import { useGameSelector } from '../../context/GameState'
 import { useDealNegotiation } from '../../hooks/useDealNegotiation'
 import { DealCard } from './DealCard'
 import { NegotiationModal } from './NegotiationModal'
@@ -8,7 +8,7 @@ import type { DealsPhaseProps } from '../../types/components'
 
 const DealsPhaseComponent = ({ offers, onAccept, onSkip }: DealsPhaseProps) => {
   const { t } = useTranslation()
-  const { social } = useGameState()
+  const social = useGameSelector(state => state.social)
 
   const {
     negotiatedDeals,

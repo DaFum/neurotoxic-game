@@ -1,7 +1,7 @@
 import {
   createContext,
   createElement,
-  useContext,
+  use,
   useEffect,
   useState,
   type ReactNode
@@ -42,7 +42,7 @@ export const NetworkStatusProvider = ({
 }
 
 export const useNetworkStatus = (): boolean => {
-  const ctx = useContext(NetworkStatusContext)
+  const ctx = use(NetworkStatusContext)
   if (ctx !== null) return ctx
   return getInitialOnline()
 }

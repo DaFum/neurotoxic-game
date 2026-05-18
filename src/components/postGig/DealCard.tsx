@@ -1,14 +1,3 @@
-/**
- * (#1) Actual Updates:
- * - Extracted subcomponents (`DealImage`, `DealInfo`, `DealActions`) from the main `DealCard` component.
- * - Reduced complexity and overall length of the `DealCard` render function.
- *
- * (#2) Next Steps:
- * - Check if other complex cards in the DealsPhase or SocialPhase can benefit from similar granular extraction.
- *
- * (#3) Found Errors + Solutions:
- * - Complexity was getting high due to multiple conditionals and inline rendering logic. Solution: Used `memo()` wrapper on new granular display components and moved their relevant prop types to themselves.
- */
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../../ui/shared'

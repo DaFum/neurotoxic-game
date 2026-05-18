@@ -1,10 +1,5 @@
-/*
- * (#1) Actual Updates: Refactored GameOver.tsx into smaller, maintainable UI components (GameOverBackground, GameOverHeader, GameOverStats, GameOverButtons).
- * (#2) Next Steps: Continue monitoring for other bulky scenes requiring similar extraction.
-
- */
 import { useEffect } from 'react'
-import { useGameState } from '../context/GameState'
+import { useGameActions, useGameSelector } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
 import { GameOverBackground } from './gameover/GameOverBackground'
 import { GameOverHeader } from './gameover/GameOverHeader'
@@ -15,7 +10,8 @@ import { GameOverButtons } from './gameover/GameOverButtons'
  * Scene displayed when the game ends (bankruptcy or health failure).
  */
 export const GameOver = () => {
-  const { changeScene, player, loadGame, resetState } = useGameState()
+  const player = useGameSelector(state => state.player)
+  const { changeScene, loadGame, resetState } = useGameActions()
 
   useEffect(() => {
     if (!player || player.score === undefined) {

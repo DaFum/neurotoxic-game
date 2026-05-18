@@ -2,14 +2,13 @@ import { describe, expect, test } from 'vitest'
 import { render, fireEvent } from '@testing-library/react'
 import {
   GameStateProvider,
-  useGameState
+  useGameSelector
 } from '../../src/context/GameState.tsx'
 import { Credits } from '../../src/scenes/Credits.tsx'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 
-// A small harness to capture global actions if needed, though Credits just fires changeScene
 const CreditsTestHarness = () => {
-  const { currentScene } = useGameState()
+  const currentScene = useGameSelector(state => state.currentScene)
   return (
     <div>
       <div data-testid='scene'>{currentScene}</div>

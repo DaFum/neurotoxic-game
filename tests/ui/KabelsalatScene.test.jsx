@@ -42,12 +42,17 @@ vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} }
 }))
 
-vi.mock('../../src/context/GameState', () => ({
-  useGameState: vi.fn(() => ({
+vi.mock('../../src/context/GameState', () => {
+  const useGameState = vi.fn(() => ({
     completeKabelsalatMinigame: vi.fn(),
     changeScene: vi.fn()
   }))
-}))
+  return {
+    useGameState,
+    useGameActions: useGameState,
+    useGameSelector: selector => selector(useGameState())
+  }
+})
 
 vi.mock('../../src/utils/imageGen', () => ({
   isImageGenerationAvailable: () => true,

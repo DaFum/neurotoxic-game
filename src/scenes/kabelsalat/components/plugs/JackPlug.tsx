@@ -1,8 +1,3 @@
-/*
- * (#1) Actual Updates: Extracted JackPlug into a static UI component.
-
-
- */
 import React from 'react'
 
 export const JackPlug = React.memo(function JackPlug() {

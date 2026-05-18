@@ -1,8 +1,3 @@
-/*
- * (#1) Actual Updates: Refactored logic to reduce cognitive complexity and improve testability. Extracted pure logic to utils.
-
-
- */
 /**
  * Travel Logic Hook
  * Encapsulates all travel-related state and logic for the Overworld scene.
@@ -32,8 +27,8 @@ import {
 } from '../utils/travelUtils'
 import {
   handleNodeArrival,
-  processTravelEvents,
-  isGigNode
+  isGigNode,
+  processTravelEvents
 } from '../utils/arrivalUtils'
 import { audioService } from '../utils/audio/audioEngine'
 import { logger } from '../utils/logger'
@@ -362,15 +357,9 @@ export const useTravelLogic = ({
       // Trigger travel events (shown as global modal overlay).
       // Keep legacy behavior: overworld travel to performance nodes still rolls
       // transport/band travel events before node arrival handling.
-      let travelEventActive
-      if (isGigNode(node)) {
-        travelEventActive = triggerEvent('transport', 'travel')
-        if (!travelEventActive) {
-          travelEventActive = triggerEvent('band', 'travel')
-        }
-      } else {
-        travelEventActive = processTravelEvents(node, triggerEvent)
-      }
+      const travelEventActive = processTravelEvents(node, triggerEvent, {
+        includeGigNodes: true
+      })
 
       // Tell context to move the rival band whenever the player moves
       if (dispatchRef.current) {

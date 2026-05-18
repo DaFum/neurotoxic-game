@@ -17,11 +17,21 @@ const mockChangeScene = mock.fn()
 const mockUseGameState = mock.fn(() => ({
   completeRoadieMinigame: mockCompleteRoadieMinigame,
   currentScene: GAME_PHASES.PRE_GIG_MINIGAME,
+  band: { stash: {} },
   changeScene: mockChangeScene
 }))
+const mockUseGameActions = () => {
+  const state = mockUseGameState()
+  return {
+    completeRoadieMinigame: state.completeRoadieMinigame,
+    changeScene: state.changeScene
+  }
+}
 
 mock.mock('../../src/context/GameState', () => ({
-  useGameState: mockUseGameState
+  useGameState: mockUseGameState,
+  useGameActions: mockUseGameActions,
+  useGameSelector: selector => selector(mockUseGameState())
 }))
 
 const mockPlaySFX = mock.fn()

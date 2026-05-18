@@ -1,7 +1,3 @@
-/*
- * (#1) Actual Updates: Extracted PreGigStartButton into a separate component.
-
- */
 import React from 'react'
 import { motion } from 'framer-motion'
 import { RazorPlayIcon } from '../../ui/shared/Icons'

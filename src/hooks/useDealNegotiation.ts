@@ -1,12 +1,6 @@
-/**
- * (#1) Actual Updates: Extracted deal negotiation state and logic from `DealsPhase.tsx` into a reusable hook `useDealNegotiation.js` to improve component readability and maintainability.
- * (#2) Next Steps: Consider writing tests for the `useDealNegotiation` hook, ensuring different negotiation outcomes and cleanup are properly verified.
- * (#3) Found Errors + Solutions: No errors found.
- */
-
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useGameState } from '../context/GameState'
+import { useGameActions, useGameSelector } from '../context/GameState'
 import { negotiateDeal } from '../utils/socialEngine'
 import { handleError } from '../utils/errorHandler'
 import type {
@@ -24,7 +18,10 @@ export const useDealNegotiation = ({
   onAccept: (deal: Deal) => Promise<void> | void
 }): DealNegotiationHook => {
   const { t } = useTranslation()
-  const { player, band, social, addToast } = useGameState()
+  const player = useGameSelector(state => state.player)
+  const band = useGameSelector(state => state.band)
+  const social = useGameSelector(state => state.social)
+  const { addToast } = useGameActions()
   const [negotiatedDeals, setNegotiatedDeals] = useState<
     Record<string, DealNegotiationState>
   >({}) // id: { status, deal }

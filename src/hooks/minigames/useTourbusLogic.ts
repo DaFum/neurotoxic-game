@@ -1,5 +1,5 @@
 import { useRef, useCallback, useEffect, useState } from 'react'
-import { useGameState } from '../../context/GameState'
+import { useGameActions, useGameSelector } from '../../context/GameState'
 import { audioService } from '../../utils/audio/audioEngine'
 import { hasUpgrade } from '../../utils/upgradeUtils'
 import {
@@ -54,7 +54,8 @@ export const getHitDamage = (upgrades: string[]) => {
 }
 
 export const useTourbusLogic = () => {
-  const { player, completeTravelMinigame } = useGameState()
+  const player = useGameSelector(state => state.player)
+  const { completeTravelMinigame } = useGameActions()
 
   // Game Loop State (Mutable, no re-renders)
   const gameStateRef = useRef<TourbusLogicState>({

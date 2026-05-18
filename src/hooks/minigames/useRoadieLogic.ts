@@ -1,10 +1,5 @@
-/*
- * (#1) Actual Updates: Refactored logic to reduce cognitive complexity and improve testability.
-
-
- */
 import { useRef, useCallback, useEffect, useState } from 'react'
-import { useGameState } from '../../context/GameState'
+import { useGameActions, useGameSelector } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
 import { audioService } from '../../utils/audio/audioEngine'
 import { isEmptyObject, clamp0to100 } from '../../utils/gameStateUtils'
@@ -193,8 +188,9 @@ export function handleDelivery(
 // --- End Extracted Game Logic ---
 
 export const useRoadieLogic = () => {
-  const { completeRoadieMinigame, currentScene, changeScene, band } =
-    useGameState()
+  const currentScene = useGameSelector(state => state.currentScene)
+  const band = useGameSelector(state => state.band)
+  const { completeRoadieMinigame, changeScene } = useGameActions()
 
   // Conditionally inject contraband to escort if present in stash
   const hasContraband = !!(band?.stash && !isEmptyObject(band.stash))

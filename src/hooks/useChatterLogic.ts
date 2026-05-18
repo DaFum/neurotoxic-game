@@ -1,15 +1,3 @@
-/**
- * (#1) Actual Updates:
- * - Extracted chatter polling, generation, and cleanup logic from ChatterOverlay.tsx.
- * - Created custom hook `useChatterLogic` to handle periodic background messages and state.
- *
- * (#2) Next Steps:
- * - Expand chatter events and conditions based on deeper game state metrics (e.g. harmony, fame).
- *
- * (#3) Found Errors + Solutions:
- * - Error: Component re-renders on every timeout tick.
- * - Solution: Used refs for gameState to separate UI updates from logical ticks.
- */
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { getRandomChatter } from '../data/chatter/index'
 import { getSafeRandom, getSafeUUID } from '../utils/crypto'

@@ -1,8 +1,3 @@
-/*
- * (#1) Actual Updates: Extracted DcSocket into a static UI component.
-
-
- */
 import React from 'react'
 
 export const DcSocket = React.memo(function DcSocket() {

@@ -1,8 +1,3 @@
-/*
- * (#1) Actual Updates: Extracted XlrSocket into a static UI component.
-
-
- */
 import React from 'react'
 
 export const XlrSocket = React.memo(function XlrSocket() {

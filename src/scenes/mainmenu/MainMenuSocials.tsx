@@ -1,7 +1,3 @@
-/*
- * (#1) Actual Updates: Added PropTypes.
-
- */
 import { useTranslation } from 'react-i18next'
 import {
   Modal,

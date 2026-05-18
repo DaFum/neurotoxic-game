@@ -1,5 +1,6 @@
 // Legacy PropTypes removed
 import { HQ_ITEMS } from '../../data/hqItems'
+import { isCatalogEffect } from '../../utils/catalogEffectUtils'
 import { CatalogTab } from './CatalogTab'
 import type {
   CatalogConsumerProps,
@@ -11,35 +12,6 @@ import type { PlayerState } from '../../types'
 
 type ShopTabProps = Omit<CatalogConsumerProps, 'items'> & {
   player: Pick<PlayerState, 'money'>
-}
-
-const isEffect = (obj: unknown): obj is Effect => {
-  if (typeof obj !== 'object' || obj === null) return false
-  const effect = obj as Record<string, unknown>
-  if (typeof effect.type !== 'string') return false
-
-  switch (effect.type) {
-    case 'inventory_add':
-      return typeof effect.item === 'string' && typeof effect.value === 'number'
-    case 'inventory_set':
-      return typeof effect.item === 'string'
-    case 'stat_modifier':
-      return (
-        (effect.target === 'player' ||
-          effect.target === 'band' ||
-          effect.target === 'van' ||
-          effect.target === 'performance') &&
-        typeof effect.stat === 'string' &&
-        typeof effect.value === 'number'
-      )
-    case 'unlock_upgrade':
-    case 'unlock_hq':
-      return typeof effect.id === 'string'
-    case 'passive':
-      return typeof effect.key === 'string'
-    default:
-      return false
-  }
 }
 
 // ⚡ Bolt Optimization:
@@ -66,7 +38,7 @@ const ITEMS: CatalogItem[] = (() => {
       if (item == null || item.id == null) continue
       if (typeof item.cost !== 'number' || !Number.isFinite(item.cost)) continue
 
-      if (item.effect != null && !isEffect(item.effect)) {
+      if (item.effect != null && !isCatalogEffect(item.effect)) {
         throw new Error(
           `Invalid effect shape in ShopTab for item "${String(item.id)}"`
         )

@@ -315,6 +315,21 @@ describe('processTravelEvents', () => {
     assert.strictEqual(triggerEvent.mock.calls.length, 0)
   })
 
+  test('can use the legacy policy that triggers travel events for gig nodes', () => {
+    const triggerEvent = mock.fn((category, tag) => {
+      assert.strictEqual(category, 'transport')
+      assert.strictEqual(tag, 'travel')
+      return true
+    })
+
+    const result = processTravelEvents({ type: 'GIG' }, triggerEvent, {
+      includeGigNodes: true
+    })
+
+    assert.strictEqual(result, true)
+    assert.strictEqual(triggerEvent.mock.calls.length, 1)
+  })
+
   test('triggers transport first and short-circuits when active', () => {
     const triggerEvent = mock.fn((category, tag) => {
       assert.strictEqual(category, 'transport')

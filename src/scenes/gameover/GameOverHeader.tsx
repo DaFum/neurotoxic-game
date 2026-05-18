@@ -1,8 +1,3 @@
-/*
- * (#1) Actual Updates: Extracted header elements from GameOver.tsx to a standalone file.
- * (#2) Next Steps: Continue extracting other sub-components from GameOver.tsx.
-
- */
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'

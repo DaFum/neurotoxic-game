@@ -539,11 +539,22 @@ initGlobalErrorHandling()
  * @param {*} [fallbackValue] - Value to return on error
  * @returns {*} Result or fallback value
  */
-export const safeStorageOperation = <T>(
+export function safeStorageOperation<T>(operation: string, fn: () => T): T
+export function safeStorageOperation<T>(
+  operation: string,
+  fn: () => T,
+  fallbackValue: T
+): T
+export function safeStorageOperation<T>(
   operation: string,
   fn: () => T,
   fallbackValue?: T | null
-): T | null => {
+): T | null
+export function safeStorageOperation<T>(
+  operation: string,
+  fn: () => T,
+  fallbackValue?: T | null
+): T | null {
   let retries = 2
   let lastError: unknown = null
 

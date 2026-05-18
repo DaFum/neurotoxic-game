@@ -14,9 +14,14 @@ vi.mock('react-i18next', () => ({
 }))
 
 // Mock GameState context
-vi.mock('../../src/context/GameState', () => ({
-  useGameState: vi.fn()
-}))
+vi.mock('../../src/context/GameState', () => {
+  const useGameState = vi.fn()
+  return {
+    useGameState,
+    useGameActions: useGameState,
+    useGameSelector: selector => selector(useGameState())
+  }
+})
 
 // Mock logger
 vi.mock('../../src/utils/logger', () => ({

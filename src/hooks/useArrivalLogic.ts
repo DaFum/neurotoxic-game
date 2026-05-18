@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react'
-import { useGameState } from '../context/GameState'
+import { useGameActions, useGameSelector } from '../context/GameState'
 import {
   handleNodeArrival,
   processHarmonyRegen,
@@ -15,8 +15,8 @@ type UseArrivalLogicOptions = {
 
 /**
  * Hook to encapsulate reusable arrival sequence logic for both legacy travel and Minigame integration.
- * Note: While this handles shared side effects and delegated non-performance travel events (via arrivalUtils),
- * inline event triggering for GIG, FESTIVAL, and FINALE destinations remains within useTravelLogic.
+ * Note: arrivalUtils owns the travel-event policy. This hook keeps the default policy
+ * that skips GIG, FESTIVAL, and FINALE destinations.
  *
  * Idempotency: `isHandlingRef` stores the nodeId currently being processed rather than a plain
  * boolean. This prevents double-execution for the same node while automatically allowing a fresh
@@ -30,6 +30,9 @@ export const useArrivalLogic = ({
   onShowHQ,
   rng
 }: UseArrivalLogicOptions = {}) => {
+  const band = useGameSelector(state => state.band)
+  const gameMap = useGameSelector(state => state.gameMap)
+  const player = useGameSelector(state => state.player)
   const {
     advanceDay,
     saveGame,
@@ -38,11 +41,8 @@ export const useArrivalLogic = ({
     triggerEvent,
     startGig,
     changeScene,
-    addToast,
-    band,
-    gameMap,
-    player
-  } = useGameState()
+    addToast
+  } = useGameActions()
 
   // Stores the nodeId being processed; undefined means idle. Using the nodeId rather than a
   // plain boolean handles rapid node changes: two different nodeIds are always distinct guards.

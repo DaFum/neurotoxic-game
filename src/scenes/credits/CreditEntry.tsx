@@ -1,7 +1,3 @@
-/*
- * (#1) Actual Updates: Extracted CreditEntry component, wrapped in React.memo.
-
- */
 import React from 'react'
 import { motion } from 'framer-motion'
 

@@ -1,9 +1,9 @@
 import { Tooltip } from './Tooltip'
+import { SegmentedSlider } from './SegmentedSlider'
+import { ToggleSwitch } from './ToggleSwitch'
 import { useState, useEffect, useRef, useId, memo, useCallback } from 'react'
 import type { MouseEvent, ComponentType, ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-
-import { useGlitchPulse } from '../../hooks/useGlitchPulse'
 
 const SCANLINE_BACKGROUND_STYLE = {
   backgroundImage:
@@ -38,6 +38,8 @@ interface UplinkButtonProps {
 interface BrutalToggleProps {
   label: string
   initialState?: boolean
+  isOn?: boolean
+  onToggle?: (next: boolean) => void
 }
 
 interface DeadmanButtonProps {
@@ -71,6 +73,8 @@ interface BrutalFaderProps {
   label: string
   initialValue?: number
   max?: number
+  value?: number
+  onChange?: (next: number) => void
 }
 
 interface CrisisModalProps {
@@ -740,48 +744,48 @@ export const CorporateSeal = memo(({ className, title }: SvgIconProps) => {
 // --- UI COMPONENTS ---
 
 // 1. Industrial Toggle
+// Supports uncontrolled mode (seed via `initialState`) and controlled mode
+// (pass `isOn` + `onToggle`). Only strict booleans are treated as controlled;
+// `undefined`/`null`/non-boolean values fall through to uncontrolled mode so a
+// stray `NaN` or missing prop can't put the component in a stuck state. The
+// internal state mirrors the controlled value so a later transition back to
+// uncontrolled retains the last value instead of snapping to `initialState`.
 export const BrutalToggle = memo(
-  ({ label, initialState = false }: BrutalToggleProps) => {
-    const { t } = useTranslation()
-    const [isOn, setIsOn] = useState<boolean>(initialState)
-    const { isGlitching, trigger: pulseGlitch } = useGlitchPulse()
-    const labelId = useId()
+  ({
+    label,
+    initialState = false,
+    isOn: controlledIsOn,
+    onToggle
+  }: BrutalToggleProps) => {
+    const isControlled = typeof controlledIsOn === 'boolean'
+    const [internalIsOn, setInternalIsOn] = useState<boolean>(initialState)
+    const isOn =
+      typeof controlledIsOn === 'boolean' ? controlledIsOn : internalIsOn
 
-    const toggle = useCallback(() => {
-      pulseGlitch()
-      setIsOn(prev => !prev)
-    }, [pulseGlitch])
+    // Mirror controlled prop into internal state so a later transition back
+    // to uncontrolled mode retains the value. Guarded by a value equality
+    // check to avoid loops; this is the canonical "uncontrolled with
+    // optional controlled" sync pattern.
+    useEffect(() => {
+      if (
+        typeof controlledIsOn === 'boolean' &&
+        controlledIsOn !== internalIsOn
+      ) {
+        // eslint-disable-next-line @eslint-react/set-state-in-effect -- intentional controlled-to-internal mirror
+        setInternalIsOn(controlledIsOn)
+      }
+    }, [controlledIsOn, internalIsOn])
 
     return (
-      <div className='flex items-center justify-between w-full max-w-sm border border-toxic-green/30 p-3 bg-void-black'>
-        <span
-          id={labelId}
-          className='text-sm font-bold tracking-widest uppercase'
-        >
-          {label}
-        </span>
-        <button
-          type='button'
-          onClick={toggle}
-          aria-labelledby={labelId}
-          className={`relative w-16 h-8 border-2 border-toxic-green flex items-center p-1 transition-colors duration-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green ${isGlitching ? 'translate-x-[1px] translate-y-[1px]' : ''}`}
-          aria-pressed={isOn}
-        >
-          <div
-            className={`w-full h-full absolute inset-0 bg-toxic-green transition-opacity duration-150 ${isOn ? 'opacity-20' : 'opacity-0'}`}
-          ></div>
-          <div
-            className={`w-5 h-full bg-toxic-green transition-transform duration-100 z-10 ${isOn ? 'translate-x-8' : 'translate-x-0'}`}
-          >
-            <div className='w-[2px] h-full bg-void-black mx-auto opacity-50'></div>
-          </div>
-          <span
-            className={`absolute text-[10px] font-bold z-0 ${isOn ? 'left-2 text-toxic-green' : 'right-2 text-toxic-green/50'}`}
-          >
-            {isOn ? t('ui:toggle.on', 'ON') : t('ui:toggle.off', 'OFF')}
-          </span>
-        </button>
-      </div>
+      <ToggleSwitch
+        isOn={isOn}
+        onToggle={() => {
+          const next = !isOn
+          if (!isControlled) setInternalIsOn(next)
+          onToggle?.(next)
+        }}
+        ariaLabel={label}
+      />
     )
   }
 )
@@ -906,56 +910,65 @@ export const StatBlock = memo(
 )
 
 // 5. Brutal Amp Fader (Custom Slider)
+// Supports uncontrolled mode (seed via `initialValue`) and controlled mode
+// (pass `value` + `onChange`). Only finite numbers are treated as controlled;
+// `NaN`/`Infinity`/`undefined` fall through to uncontrolled so a malformed
+// prop can't leave the slider stuck. The internal state mirrors the
+// controlled value so a later transition back to uncontrolled retains it.
 export const BrutalFader = memo(
-  ({ label, initialValue = 7, max = 10 }: BrutalFaderProps) => {
-    const { t } = useTranslation(['ui'])
-    const [val, setVal] = useState<number>(initialValue)
-    const segments = Array.from({ length: max }, (_, i) => i + 1)
+  ({
+    label,
+    initialValue = 7,
+    max = 10,
+    value: controlledValue,
+    onChange
+  }: BrutalFaderProps) => {
+    const safeMax = Number.isFinite(max) && max > 0 ? Math.floor(max) : 1
+    const clampValue = useCallback(
+      (value: number) => Math.max(1, Math.min(safeMax, Math.round(value))),
+      [safeMax]
+    )
+    const finiteControlled =
+      typeof controlledValue === 'number' && Number.isFinite(controlledValue)
+        ? clampValue(controlledValue)
+        : null
+    const isControlled = finiteControlled !== null
+    const [internalVal, setInternalVal] = useState<number>(() =>
+      clampValue(initialValue)
+    )
+    const val = finiteControlled ?? internalVal
+
+    // Mirror controlled prop into internal state so a later transition back
+    // to uncontrolled mode retains the value.
+    useEffect(() => {
+      if (finiteControlled !== null && finiteControlled !== internalVal) {
+        // eslint-disable-next-line @eslint-react/set-state-in-effect -- intentional controlled-to-internal mirror
+        setInternalVal(finiteControlled)
+      }
+    }, [finiteControlled, internalVal])
+
+    const setClampedValue = useCallback(
+      (value: number) => {
+        const next = clampValue(value)
+        if (!isControlled) setInternalVal(next)
+        onChange?.(next)
+      },
+      [clampValue, isControlled, onChange]
+    )
 
     return (
-      <div className='w-full max-w-sm flex flex-col gap-2'>
-        <div className='flex justify-between items-end'>
-          <span className='text-xs tracking-widest uppercase opacity-80'>
-            {label}
-          </span>
-          <span className='text-sm font-bold text-toxic-green'>{val}</span>
-        </div>
-        <div
-          className='flex gap-1 h-8 items-end cursor-pointer group'
-          role='presentation'
-        >
-          {segments.map(segment => {
-            const isActive = segment <= val
-            // Calculate dynamic height for the bars to look like an EQ/Volume fader
-            const height = `${30 + (segment / max) * 70}%`
-            return (
-              <button
-                type='button'
-                key={segment}
-                onClick={() => setVal(segment)}
-                onKeyDown={e => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    if (e.key === ' ') e.preventDefault()
-                    setVal(segment)
-                  }
-                }}
-                className='flex-1 relative h-full flex items-end group-hover:opacity-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
-                aria-label={t('ui:set_label_to_segment', {
-                  label: t(label),
-                  segment
-                })}
-                aria-pressed={isActive}
-              >
-                <div
-                  style={{ height }}
-                  className={`w-full transition-colors duration-75 border-b-2 border-transparent hover:border-void-black
-                  ${isActive ? 'bg-toxic-green shadow-[0_0_8px_var(--color-toxic-green)]' : 'bg-toxic-green/20'}`}
-                ></div>
-              </button>
-            )
-          })}
-        </div>
-      </div>
+      <SegmentedSlider
+        label={label}
+        inputValue={val}
+        inputMin={1}
+        inputMax={safeMax}
+        inputStep={1}
+        activeSegments={val}
+        segmentCount={safeMax}
+        valueLabel={String(val)}
+        onInputChange={event => setClampedValue(Number(event.target.value))}
+        onSegmentSelect={setClampedValue}
+      />
     )
   }
 )

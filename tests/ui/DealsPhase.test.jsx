@@ -8,13 +8,17 @@ vi.mock('../../src/utils/errorHandler', () => ({
   handleError: vi.fn()
 }))
 
+const mockGameState = {
+  player: { stats: {} },
+  band: {},
+  social: { brandReputation: { Corp: 10 } },
+  addToast: vi.fn()
+}
+
 vi.mock('../../src/context/GameState', () => ({
-  useGameState: () => ({
-    player: { stats: {} },
-    band: {},
-    social: { brandReputation: { Corp: 10 } },
-    addToast: vi.fn()
-  })
+  useGameState: () => mockGameState,
+  useGameActions: () => mockGameState,
+  useGameSelector: selector => selector(mockGameState)
 }))
 
 vi.mock('../../src/utils/socialEngine', () => ({

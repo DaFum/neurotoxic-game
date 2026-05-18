@@ -1,8 +1,3 @@
-/*
- * (#1) Actual Updates: Added null guard for gigEvents in calculateViralityScore to prevent crashes when gigEvents is null/undefined.
-
-
- */
 // Logic for Social Media Virality and Posting
 import { secureRandom } from './crypto'
 import {

@@ -167,20 +167,23 @@ vi.mock('../../src/utils/audio/AudioManager', () => ({
 
 vi.mock('../../src/context/GameState.tsx', async importOriginal => {
   const actual = await importOriginal()
+  const mockGameState = {
+    currentGig: { name: 'Test Gig', diff: 1, songId: 'test_song' },
+    band: { harmony: 50 },
+    player: {},
+    settings: { volume: 50 },
+    addToast: vi.fn(),
+    changeScene: vi.fn(),
+    setLastGigStats: vi.fn(),
+    endGig: vi.fn(),
+    activeEvent: null,
+    setActiveEvent: vi.fn()
+  }
   return {
     ...actual,
-    useGameState: () => ({
-      currentGig: { name: 'Test Gig', diff: 1, songId: 'test_song' },
-      band: { harmony: 50 },
-      player: {},
-      settings: { volume: 50 },
-      addToast: vi.fn(),
-      changeScene: vi.fn(),
-      setLastGigStats: vi.fn(),
-      endGig: vi.fn(),
-      activeEvent: null,
-      setActiveEvent: vi.fn()
-    })
+    useGameState: () => mockGameState,
+    useGameActions: () => mockGameState,
+    useGameSelector: selector => selector(mockGameState)
   }
 })
 

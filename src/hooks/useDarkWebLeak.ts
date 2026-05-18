@@ -1,6 +1,6 @@
 import type { DarkWebLeakConfig } from '../types'
 import { useState, useCallback } from 'react'
-import { useGameState } from '../context/GameState'
+import { useGameActions, useGameSelector } from '../context/GameState'
 import { audioService } from '../utils/audio/audioEngine'
 import {
   checkHasLeakedToday,
@@ -18,7 +18,10 @@ export const DARK_WEB_LEAK_CONFIG: DarkWebLeakConfig = {
 
 export const useDarkWebLeak = () => {
   const [showDarkWebLeak, setShowDarkWebLeak] = useState(false)
-  const { player, band, social, darkWebLeak } = useGameState()
+  const player = useGameSelector(state => state.player)
+  const band = useGameSelector(state => state.band)
+  const social = useGameSelector(state => state.social)
+  const { darkWebLeak } = useGameActions()
 
   const openDarkWebLeak = useCallback(() => setShowDarkWebLeak(true), [])
   const closeDarkWebLeak = useCallback(() => setShowDarkWebLeak(false), [])

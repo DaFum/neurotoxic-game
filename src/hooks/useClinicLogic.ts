@@ -1,11 +1,10 @@
 import { useCallback, useMemo } from 'react'
 import type { BandMember } from '../types'
 import type { TFunction } from 'i18next'
-import type { GameStateWithActions } from '../context/GameState'
+import { useGameActions, useGameSelector } from '../context/GameState'
 import { getSafeUUID } from '../utils/crypto'
 import { useTranslation } from 'react-i18next'
 import type { PlayerState, BandState } from '../types'
-import { useGameState } from '../context/GameState'
 import {
   GAME_PHASES,
   CLINIC_CONFIG,
@@ -16,12 +15,14 @@ import {
   validateEnhanceMember
 } from '../utils/clinicLogicUtils'
 
+type GameActions = ReturnType<typeof useGameActions>
+
 const useClinicHeal = (
   playerMoney: number,
   currentVisits: number,
   membersMap: Map<string, BandMember>,
-  clinicHeal: GameStateWithActions['clinicHeal'],
-  addToast: GameStateWithActions['addToast'],
+  clinicHeal: GameActions['clinicHeal'],
+  addToast: GameActions['addToast'],
   t: TFunction
 ) => {
   const healCostMoney = calculateClinicCost(
@@ -76,8 +77,8 @@ const useClinicEnhance = (
   playerFame: number,
   currentVisits: number,
   membersMap: Map<string, BandMember>,
-  clinicEnhance: GameStateWithActions['clinicEnhance'],
-  addToast: GameStateWithActions['addToast'],
+  clinicEnhance: GameActions['clinicEnhance'],
+  addToast: GameActions['addToast'],
   t: TFunction
 ) => {
   const enhanceCostFame = calculateClinicCost(
@@ -137,8 +138,9 @@ export const useClinicLogic = (): {
   leaveClinic: () => void
 } => {
   const { t } = useTranslation(['ui'])
-  const { player, band, changeScene, addToast, clinicHeal, clinicEnhance } =
-    useGameState()
+  const player = useGameSelector(state => state.player)
+  const band = useGameSelector(state => state.band)
+  const { changeScene, addToast, clinicHeal, clinicEnhance } = useGameActions()
 
   const currentVisits = player?.clinicVisits ?? 0
 

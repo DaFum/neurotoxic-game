@@ -1,8 +1,3 @@
-/*
- * (#1) Actual Updates: Extracted MidiSocket into a static UI component.
-
-
- */
 import React from 'react'
 
 export const MidiSocket = React.memo(function MidiSocket() {

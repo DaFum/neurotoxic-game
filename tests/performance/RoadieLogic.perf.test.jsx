@@ -3,12 +3,16 @@ import { renderHook, act } from '@testing-library/react'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 
 // Mock dependencies BEFORE import
+const mockGameState = {
+  completeRoadieMinigame: vi.fn(),
+  currentScene: GAME_PHASES.PRE_GIG_MINIGAME,
+  changeScene: vi.fn()
+}
+
 vi.mock('../../src/context/GameState', () => ({
-  useGameState: () => ({
-    completeRoadieMinigame: vi.fn(),
-    currentScene: GAME_PHASES.PRE_GIG_MINIGAME,
-    changeScene: vi.fn()
-  })
+  useGameState: () => mockGameState,
+  useGameActions: () => mockGameState,
+  useGameSelector: selector => selector(mockGameState)
 }))
 vi.mock('../../src/utils/audio/AudioManager', () => ({
   audioManager: {
