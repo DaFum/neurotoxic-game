@@ -101,3 +101,23 @@ test('DealCard translates catalog deal names and descriptions', () => {
     )
   ).toBeInTheDocument()
 })
+
+test('DealCard translates by id even when name is dynamically generated', () => {
+  render(
+    <DealCard
+      deal={{
+        id: 'energy_drink_cx',
+        name: 'Toxic Rush Energy',
+        description:
+          'The green stuff that glows. They want you to drink it on stage.',
+        offer: { upfront: 1000, duration: 3 }
+      }}
+      brandReputation={{}}
+      handleAcceptDeal={vi.fn()}
+      handleNegotiationStart={vi.fn()}
+    />
+  )
+
+  expect(screen.getByText('Toxischer Energy-Drink')).toBeInTheDocument()
+  expect(screen.queryByText('Toxic Rush Energy')).not.toBeInTheDocument()
+})
