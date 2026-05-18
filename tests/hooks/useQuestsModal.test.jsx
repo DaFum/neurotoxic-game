@@ -1,22 +1,38 @@
 import { renderHook, act } from '@testing-library/react'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, afterEach } from 'vitest'
 import { useQuestsModal } from '../../src/hooks/useQuestsModal'
-import { useGameState } from '../../src/context/GameState.tsx'
 
-// Mock the GameState context
+const DEFAULT_STATE = Object.freeze({
+  activeQuests: [
+    { id: 'quest1', label: 'Quest 1' },
+    { id: 'quest2', label: 'Quest 2' }
+  ],
+  player: { name: 'Test Player' }
+})
+
+// Hoisted holder so the mock factory and tests share a single source of truth
+// for the mocked game state. Multi-selector hooks call `useGameSelector` once
+// per slice; reading from a shared ref guarantees every selector sees the
+// same snapshot (avoids the `mockReturnValueOnce` foot-gun).
+const mocks = vi.hoisted(() => ({ state: null }))
+
 vi.mock('../../src/context/GameState.tsx', () => {
-  const useGameState = vi.fn(() => ({
-    activeQuests: [
-      { id: 'quest1', label: 'Quest 1' },
-      { id: 'quest2', label: 'Quest 2' }
-    ],
-    player: { name: 'Test Player' }
-  }))
+  const useGameState = vi.fn(() => mocks.state)
   return {
     useGameState,
     useGameActions: useGameState,
-    useGameSelector: selector => selector(useGameState())
+    useGameSelector: selector => selector(mocks.state)
   }
+})
+
+const setMockState = next => {
+  mocks.state = next
+}
+
+setMockState({ ...DEFAULT_STATE })
+
+afterEach(() => {
+  setMockState({ ...DEFAULT_STATE })
 })
 
 describe('useQuestsModal', () => {
@@ -63,8 +79,7 @@ describe('useQuestsModal', () => {
   })
 
   it('should correctly pass through undefined or null activeQuests', () => {
-    // Override the mock for this specific test
-    vi.mocked(useGameState).mockReturnValueOnce({
+    setMockState({
       player: { name: 'Test Player' },
       activeQuests: undefined
     })
@@ -76,7 +91,7 @@ describe('useQuestsModal', () => {
       activeQuests: []
     })
 
-    vi.mocked(useGameState).mockReturnValueOnce({
+    setMockState({
       player: { name: 'Test Player' },
       activeQuests: null
     })

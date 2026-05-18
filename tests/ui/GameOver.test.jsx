@@ -3,14 +3,17 @@ import { useEffect } from 'react'
 import { render, fireEvent, waitFor } from '@testing-library/react'
 import {
   GameStateProvider,
-  useGameState
+  useGameActions,
+  useGameSelector
 } from '../../src/context/GameState.tsx'
 import { GameOver } from '../../src/scenes/GameOver.tsx'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 
 // Intercepts the game state to set up conditions for the GameOver screen
 const GameOverTestHarness = ({ children }) => {
-  const { updatePlayer, player, currentScene } = useGameState()
+  const player = useGameSelector(state => state.player)
+  const currentScene = useGameSelector(state => state.currentScene)
+  const { updatePlayer } = useGameActions()
 
   useEffect(() => {
     if (player.score !== 100) {

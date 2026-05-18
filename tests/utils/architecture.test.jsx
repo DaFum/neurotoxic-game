@@ -7,6 +7,7 @@ import { handleAdvanceDay } from '../../src/context/reducers/systemReducer'
 import { handleAdvanceQuest } from '../../src/context/reducers/questReducer'
 import { handleSetLastGigStats } from '../../src/context/reducers/gigReducer'
 import { QUEST_APOLOGY_TOUR } from '../../src/data/questsConstants'
+import * as GameStateModule from '../../src/context/GameState'
 
 const SRC_ROOT = path.resolve(process.cwd(), 'src')
 const GAME_STATE_MODULE = path.join(SRC_ROOT, 'context', 'GameState.tsx')
@@ -100,6 +101,16 @@ test('Events DB has global unique IDs across all categories', () => {
   )
 })
 
+// Matches the bare `useGameState` identifier but not `useGameStateSelector`,
+// `useGameStateActions`, or any future identifier with `useGameState` as a
+// substring. Comments are stripped before the check so JSDoc/inline references
+// (e.g. "@deprecated use useGameSelector instead of useGameState") do not
+// trigger false positives.
+const DEPRECATED_HOOK_REGEX = /\buseGameState\b(?!Selector|Actions|\w)/
+
+const stripComments = source =>
+  source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '')
+
 test('Production source does not consume deprecated useGameState hook', async () => {
   const sourceFiles = await findSourceFiles(SRC_ROOT)
   const offenders = []
@@ -108,7 +119,7 @@ test('Production source does not consume deprecated useGameState hook', async ()
     if (filePath === GAME_STATE_MODULE) continue
 
     const source = await fs.readFile(filePath, 'utf8')
-    if (source.includes('useGameState')) {
+    if (DEPRECATED_HOOK_REGEX.test(stripComments(source))) {
       offenders.push(relativeSourcePath(filePath))
     }
   }
@@ -117,6 +128,14 @@ test('Production source does not consume deprecated useGameState hook', async ()
     offenders,
     [],
     `Deprecated useGameState references found:\n${offenders.join('\n')}`
+  )
+})
+
+test('Legacy useGameState compat export still exists on GameState module', () => {
+  assert.strictEqual(
+    typeof GameStateModule.useGameState,
+    'function',
+    'GameState.tsx must keep the legacy useGameState export so the architecture guard above is meaningful — if this assertion fails, the deprecated-hook detection is guarding a hook that no longer exists.'
   )
 })
 

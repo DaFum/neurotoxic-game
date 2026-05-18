@@ -76,29 +76,16 @@ const SceneLoadingFallback = () => {
  * @returns {JSX.Element} Das gerenderte React-Element, das die aktive Szene und alle globalen Overlays/Hilfekomponenten enthält.
  */
 function GameContent() {
-  const {
-    currentScene,
-    activeEvent,
-    settings,
-    minigameType,
-    band,
-    player,
-    gameMap,
-    social,
-    gigModifiers,
-    lastGigStats
-  } = useGameSelector(state => ({
-    currentScene: state.currentScene,
-    activeEvent: state.activeEvent,
-    settings: state.settings,
-    minigameType: state.minigame?.type,
-    band: state.band,
-    player: state.player,
-    gameMap: state.gameMap,
-    social: state.social,
-    gigModifiers: state.gigModifiers,
-    lastGigStats: state.lastGigStats
-  }))
+  const currentScene = useGameSelector(state => state.currentScene)
+  const activeEvent = useGameSelector(state => state.activeEvent)
+  const settings = useGameSelector(state => state.settings)
+  const minigameType = useGameSelector(state => state.minigame?.type)
+  const band = useGameSelector(state => state.band)
+  const player = useGameSelector(state => state.player)
+  const gameMap = useGameSelector(state => state.gameMap)
+  const social = useGameSelector(state => state.social)
+  const gigModifiers = useGameSelector(state => state.gigModifiers)
+  const lastGigStats = useGameSelector(state => state.lastGigStats)
 
   const { resolveEvent } = useGameActions()
 
