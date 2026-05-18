@@ -1,8 +1,3 @@
-/*
- * (#1) Actual Updates: Replaced insecure Math.random() with state.rng() for screen shake effect based on PR feedback.
- * (#2) Next Steps: Ensure no regressions in Pixi rendering or tests.
- * (#3) Found Errors + Solutions: Replaced getSafeRandom with state.rng() for deterministic performance in the main loop.
- */
 import type { Container } from 'pixi.js'
 import { ToxicFilterManager } from './stage/ToxicFilterManager'
 import { BaseStageController } from './stage/BaseStageController'

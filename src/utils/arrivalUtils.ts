@@ -92,6 +92,10 @@ export const isGigNode = <T extends { type?: string }>(
   )
 }
 
+type ProcessTravelEventsOptions = {
+  includeGigNodes?: boolean
+}
+
 /**
  * Triggers travel events if applicable for the current node.
  * @param {object} node - The current node.
@@ -100,9 +104,10 @@ export const isGigNode = <T extends { type?: string }>(
  */
 export const processTravelEvents = (
   node: ArrivalNode | null | undefined,
-  triggerEvent: (category: string, triggerPoint?: string) => boolean
+  triggerEvent: (category: string, triggerPoint?: string) => boolean,
+  options: ProcessTravelEventsOptions = {}
 ): boolean => {
-  if (isGigNode(node)) {
+  if (isGigNode(node) && !options.includeGigNodes) {
     return false
   }
 

@@ -4,13 +4,7 @@ Scope: `src/` primary audit, with targeted `tests/` ripgrep checks for orphan ve
 
 ## DUPLICATES
 
-| Severity | Location                                                                                              | Finding                                                                                                                                                   | Recommended action                                                                               |
-| -------- | ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| MED      | `src/data/upgradeCatalog.ts:143`, `src/ui/bandhq/ShopTab.tsx:13`                                      | Exact duplicate `isEffect` type guard logic for catalog effects.                                                                                          | MERGE into one shared catalog/effect utility.                                                    |
-| MED      | `src/ui/shared/BrutalistUI.tsx:743`, `src/ui/shared/ToggleSwitch.tsx:57`                              | Near/exact duplicate toggle UI behavior; `BrutalToggle` is uncontrolled and unused, while `ToggleSwitch` is controlled and used.                          | DELETE `BrutalToggle` or MERGE into `ToggleSwitch`.                                              |
-| MED      | `src/ui/shared/BrutalistUI.tsx:909`, `src/ui/shared/VolumeSlider.tsx:20`                              | Near-duplicate segmented fader/slider UI. `VolumeSlider` has accessibility and controlled value handling; `BrutalFader` is unused.                        | DELETE `BrutalFader` or MERGE into shared slider primitive.                                      |
-| MED      | `src/utils/storage.ts:1`, `src/utils/errorHandler.ts:542`, `src/context/usePersistence.ts:127`        | Three overlapping safe-storage paths exist. `src/utils/storage.ts` is used by `logger`, while persistence/unlocks use `safeStorageOperation` and local wrappers. | MERGE storage behavior behind one persistence/storage helper.                                    |
-| MED      | `src/hooks/useTravelLogic.ts:362`, `src/utils/arrivalUtils.ts:101`, `src/hooks/useArrivalLogic.ts:79` | Travel-event handling is duplicated and divergent: legacy travel fires events for gig nodes, while shared arrival utilities intentionally skip gig nodes; the exception is documented but still split across paths. | MERGE behavior into one explicit travel-event helper. |
+No remaining findings in this section after the selected cleanup pass.
 
 ## ORPHANED / UNINTEGRATED CODE
 

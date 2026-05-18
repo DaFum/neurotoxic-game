@@ -1,7 +1,3 @@
-/*
- * (#1) Actual Updates: Extracted SocketItem component to improve maintainability.
-
- */
 import type { FC } from 'react'
 import type { TFunction } from 'i18next'
 import { SocketItem } from './SocketItem.tsx'

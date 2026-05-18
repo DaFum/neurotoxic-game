@@ -4,6 +4,13 @@
  * Note: these helpers assume JSON-encoded values and will not correctly read
  * legacy raw-string keys written directly via localStorage.setItem.
  */
+import { safeStorageOperation as runSafeStorageOperation } from './errorHandler'
+
+export const safeStorageOperation = <T>(
+  operation: string,
+  fn: () => T,
+  fallbackValue?: T | null
+): T | null => runSafeStorageOperation(operation, fn, fallbackValue)
 
 /**
  * Resolves the available localStorage instance across browser and server environments.
@@ -56,4 +63,24 @@ export function setSafeStorageItem(key: string, value: unknown): void {
   } catch {
     // Silently fail on quota exceeded or other errors
   }
+}
+
+export function safeStorage<T>(
+  operation: string,
+  fn: () => T,
+  fallbackValue: T
+): T {
+  return (
+    runSafeStorageOperation as unknown as (
+      op: string,
+      exec: () => T,
+      fallback: T
+    ) => T
+  )(operation, fn, fallbackValue)
+}
+
+export function safeStorageNoFallback<T>(operation: string, fn: () => T): T {
+  return (
+    runSafeStorageOperation as unknown as (op: string, exec: () => T) => T
+  )(operation, fn)
 }

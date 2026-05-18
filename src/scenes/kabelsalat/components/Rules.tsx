@@ -1,7 +1,3 @@
-/*
- * (#1) Actual Updates: Added PropTypes.
-
- */
 import type { FC } from 'react'
 import type { TFunction } from 'i18next'
 

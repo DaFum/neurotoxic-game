@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
-import { safeStorageOperation, handleError } from '../../utils/errorHandler'
+import { handleError } from '../../utils/errorHandler'
+import { safeStorageOperation } from '../../utils/storage'
 import { getSafeUUID } from '../../utils/crypto'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../../context/GameState'

@@ -1,8 +1,3 @@
-/*
- * (#1) Actual Updates: Refactored GameOver.tsx into smaller, maintainable UI components (GameOverBackground, GameOverHeader, GameOverStats, GameOverButtons).
- * (#2) Next Steps: Continue monitoring for other bulky scenes requiring similar extraction.
-
- */
 import { useEffect } from 'react'
 import { useGameState } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'

@@ -1,9 +1,9 @@
 import { Tooltip } from './Tooltip'
+import { SegmentedSlider } from './SegmentedSlider'
+import { ToggleSwitch } from './ToggleSwitch'
 import { useState, useEffect, useRef, useId, memo, useCallback } from 'react'
 import type { MouseEvent, ComponentType, ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-
-import { useGlitchPulse } from '../../hooks/useGlitchPulse'
 
 const SCANLINE_BACKGROUND_STYLE = {
   backgroundImage:
@@ -742,46 +742,13 @@ export const CorporateSeal = memo(({ className, title }: SvgIconProps) => {
 // 1. Industrial Toggle
 export const BrutalToggle = memo(
   ({ label, initialState = false }: BrutalToggleProps) => {
-    const { t } = useTranslation()
     const [isOn, setIsOn] = useState<boolean>(initialState)
-    const { isGlitching, trigger: pulseGlitch } = useGlitchPulse()
-    const labelId = useId()
-
-    const toggle = useCallback(() => {
-      pulseGlitch()
-      setIsOn(prev => !prev)
-    }, [pulseGlitch])
-
     return (
-      <div className='flex items-center justify-between w-full max-w-sm border border-toxic-green/30 p-3 bg-void-black'>
-        <span
-          id={labelId}
-          className='text-sm font-bold tracking-widest uppercase'
-        >
-          {label}
-        </span>
-        <button
-          type='button'
-          onClick={toggle}
-          aria-labelledby={labelId}
-          className={`relative w-16 h-8 border-2 border-toxic-green flex items-center p-1 transition-colors duration-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green ${isGlitching ? 'translate-x-[1px] translate-y-[1px]' : ''}`}
-          aria-pressed={isOn}
-        >
-          <div
-            className={`w-full h-full absolute inset-0 bg-toxic-green transition-opacity duration-150 ${isOn ? 'opacity-20' : 'opacity-0'}`}
-          ></div>
-          <div
-            className={`w-5 h-full bg-toxic-green transition-transform duration-100 z-10 ${isOn ? 'translate-x-8' : 'translate-x-0'}`}
-          >
-            <div className='w-[2px] h-full bg-void-black mx-auto opacity-50'></div>
-          </div>
-          <span
-            className={`absolute text-[10px] font-bold z-0 ${isOn ? 'left-2 text-toxic-green' : 'right-2 text-toxic-green/50'}`}
-          >
-            {isOn ? t('ui:toggle.on', 'ON') : t('ui:toggle.off', 'OFF')}
-          </span>
-        </button>
-      </div>
+      <ToggleSwitch
+        isOn={isOn}
+        onToggle={() => setIsOn(prev => !prev)}
+        ariaLabel={label}
+      />
     )
   }
 )
@@ -909,53 +876,36 @@ export const StatBlock = memo(
 export const BrutalFader = memo(
   ({ label, initialValue = 7, max = 10 }: BrutalFaderProps) => {
     const { t } = useTranslation(['ui'])
-    const [val, setVal] = useState<number>(initialValue)
-    const segments = Array.from({ length: max }, (_, i) => i + 1)
+    const safeMax = Number.isFinite(max) && max > 0 ? Math.floor(max) : 1
+    const clampValue = useCallback(
+      (value: number) => Math.max(1, Math.min(safeMax, Math.round(value))),
+      [safeMax]
+    )
+    const [val, setVal] = useState<number>(() => clampValue(initialValue))
+    const setClampedValue = useCallback(
+      (value: number) => setVal(clampValue(value)),
+      [clampValue]
+    )
 
     return (
-      <div className='w-full max-w-sm flex flex-col gap-2'>
-        <div className='flex justify-between items-end'>
-          <span className='text-xs tracking-widest uppercase opacity-80'>
-            {label}
-          </span>
-          <span className='text-sm font-bold text-toxic-green'>{val}</span>
-        </div>
-        <div
-          className='flex gap-1 h-8 items-end cursor-pointer group'
-          role='presentation'
-        >
-          {segments.map(segment => {
-            const isActive = segment <= val
-            // Calculate dynamic height for the bars to look like an EQ/Volume fader
-            const height = `${30 + (segment / max) * 70}%`
-            return (
-              <button
-                type='button'
-                key={segment}
-                onClick={() => setVal(segment)}
-                onKeyDown={e => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    if (e.key === ' ') e.preventDefault()
-                    setVal(segment)
-                  }
-                }}
-                className='flex-1 relative h-full flex items-end group-hover:opacity-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
-                aria-label={t('ui:set_label_to_segment', {
-                  label: t(label),
-                  segment
-                })}
-                aria-pressed={isActive}
-              >
-                <div
-                  style={{ height }}
-                  className={`w-full transition-colors duration-75 border-b-2 border-transparent hover:border-void-black
-                  ${isActive ? 'bg-toxic-green shadow-[0_0_8px_var(--color-toxic-green)]' : 'bg-toxic-green/20'}`}
-                ></div>
-              </button>
-            )
-          })}
-        </div>
-      </div>
+      <SegmentedSlider
+        label={label}
+        inputValue={val}
+        inputMin={1}
+        inputMax={safeMax}
+        inputStep={1}
+        activeSegments={val}
+        segmentCount={safeMax}
+        valueLabel={String(val)}
+        onInputChange={event => setClampedValue(Number(event.target.value))}
+        onSegmentSelect={setClampedValue}
+        getSegmentAriaLabel={segment =>
+          t('ui:set_label_to_segment', {
+            label: t(label),
+            segment
+          })
+        }
+      />
     )
   }
 )

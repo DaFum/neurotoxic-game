@@ -1,8 +1,3 @@
-/*
- * (#1) Actual Updates: Refactored logic to reduce cognitive complexity and improve testability.
-
-
- */
 import { useRef, useCallback, useEffect, useState } from 'react'
 import { useGameState } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'

@@ -1,8 +1,3 @@
-/*
- * (#1) Actual Updates: Extracted IecSocket into a static UI component.
-
-
- */
 import React from 'react'
 
 export const IecSocket = React.memo(function IecSocket() {

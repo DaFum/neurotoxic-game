@@ -15,8 +15,8 @@ type UseArrivalLogicOptions = {
 
 /**
  * Hook to encapsulate reusable arrival sequence logic for both legacy travel and Minigame integration.
- * Note: While this handles shared side effects and delegated non-performance travel events (via arrivalUtils),
- * inline event triggering for GIG, FESTIVAL, and FINALE destinations remains within useTravelLogic.
+ * Note: arrivalUtils owns the travel-event policy. This hook keeps the default policy
+ * that skips GIG, FESTIVAL, and FINALE destinations.
  *
  * Idempotency: `isHandlingRef` stores the nodeId currently being processed rather than a plain
  * boolean. This prevents double-execution for the same node while automatically allowing a fresh

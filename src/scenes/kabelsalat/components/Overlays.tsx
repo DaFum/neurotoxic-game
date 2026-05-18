@@ -1,7 +1,3 @@
-/*
- * (#1) Actual Updates: Refactored Overlays component to use sub-components.
-
- */
 import type { FC } from 'react'
 import type { TFunction } from 'i18next'
 import { ShockOverlay } from './overlays/ShockOverlay.tsx'

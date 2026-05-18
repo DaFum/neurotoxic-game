@@ -1,8 +1,3 @@
-/*
- * (#1) Actual Updates: Extracted XlrPlug into a static UI component.
-
-
- */
 import React from 'react'
 
 export const XlrPlug = React.memo(function XlrPlug() {

@@ -1,7 +1,3 @@
-/*
- * (#1) Actual Updates: Refactored ConnectionPaths to use the newly extracted ConnectionPath sub-component.
-
- */
 import { ConnectionPath } from './ConnectionPath.tsx'
 import type { ConnectionPathProps } from './ConnectionPath.tsx'
 import type { SocketId } from '../../../types/kabelsalat'

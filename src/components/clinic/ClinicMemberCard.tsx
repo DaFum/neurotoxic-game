@@ -1,8 +1,4 @@
 import { formatCurrency } from '../../utils/numberUtils'
-/*
- * (#1) Actual Updates: Extracted ClinicMemberCard into a separate component.
-
- */
 import React from 'react'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'

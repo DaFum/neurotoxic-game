@@ -1,7 +1,3 @@
-/*
- * (#1) Actual Updates: Extracted ClinicHeader into a separate component.
-
- */
 import { useTranslation } from 'react-i18next'
 import { formatCurrency } from '../../utils/numberUtils'
 import type { ClinicHeaderProps } from '../../types/components'

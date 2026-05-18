@@ -5437,6 +5437,15 @@
         "isDefault": false
       }
     ],
+    "isCatalogEffect": [
+      {
+        "name": "isCatalogEffect",
+        "path": "src/utils/catalogEffectUtils.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      }
+    ],
     "isClosedAudioContextState": [
       {
         "name": "isClosedAudioContextState",
@@ -6334,6 +6343,15 @@
         "isDefault": false,
         "exportPath": "src/types/index.ts",
         "typeOnly": true
+      }
+    ],
+    "normalizeCatalogEffect": [
+      {
+        "name": "normalizeCatalogEffect",
+        "path": "src/utils/catalogEffectUtils.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
       }
     ],
     "normalizeMidiPitch": [
@@ -7922,7 +7940,7 @@
     "safeStorage": [
       {
         "name": "safeStorage",
-        "path": "src/context/usePersistence.ts",
+        "path": "src/utils/storage.ts",
         "source": "local",
         "type": "function",
         "isDefault": false
@@ -7931,7 +7949,7 @@
     "safeStorageNoFallback": [
       {
         "name": "safeStorageNoFallback",
-        "path": "src/context/usePersistence.ts",
+        "path": "src/utils/storage.ts",
         "source": "local",
         "type": "function",
         "isDefault": false
@@ -7941,6 +7959,13 @@
       {
         "name": "safeStorageOperation",
         "path": "src/utils/errorHandler.ts",
+        "source": "local",
+        "type": "const",
+        "isDefault": false
+      },
+      {
+        "name": "safeStorageOperation",
+        "path": "src/utils/storage.ts",
         "source": "local",
         "type": "const",
         "isDefault": false
@@ -7998,6 +8023,16 @@
         "source": "local",
         "type": "const",
         "isDefault": false
+      }
+    ],
+    "SegmentedSlider": [
+      {
+        "name": "SegmentedSlider",
+        "path": "src/ui/shared/SegmentedSlider.tsx",
+        "source": "local",
+        "type": "const",
+        "isDefault": false,
+        "exportPath": "src/ui/shared/index.tsx"
       }
     ],
     "selectRandomItem": [

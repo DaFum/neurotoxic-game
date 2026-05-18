@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 import { useEffect } from 'react'
-import { safeStorageOperation } from '../utils/errorHandler'
+import { safeStorageOperation } from '../utils/storage'
 import { logger } from '../utils/logger'
 import type { GameState } from '../types'
 

@@ -1,8 +1,3 @@
-/*
- * (#1) Actual Updates: Extracted IecPlug into a static UI component.
-
-
- */
 import React from 'react'
 
 export const IecPlug = React.memo(function IecPlug() {

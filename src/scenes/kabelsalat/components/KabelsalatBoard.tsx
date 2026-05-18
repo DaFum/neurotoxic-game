@@ -1,8 +1,3 @@
-/*
- * (#1) Actual Updates: Extracted KabelsalatBoard from KabelsalatScene for better maintainability.
- * (#2) Next steps and ideas to develop further: We could break down the SVG into smaller semantic layers.
- * (#3) Found errors + solutions: Extracted to avoid overly long components.
- */
 import { clamp0to100 } from '../../../utils/gameStateUtils'
 import { Overlays } from './Overlays.tsx'
 import { CableList } from './CableList.tsx'

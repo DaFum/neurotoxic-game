@@ -1,8 +1,3 @@
-/*
- * (#1) Actual Updates: Extracted DcPlug into a static UI component.
-
-
- */
 import React from 'react'
 
 export const DcPlug = React.memo(function DcPlug() {

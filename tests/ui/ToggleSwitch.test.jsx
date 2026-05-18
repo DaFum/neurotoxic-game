@@ -2,6 +2,7 @@ import { afterEach, describe, expect, test, vi } from 'vitest'
 import { render, fireEvent, cleanup } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ToggleSwitch } from '../../src/ui/shared/ToggleSwitch.tsx'
+import { BrutalToggle } from '../../src/ui/shared/BrutalistUI.tsx'
 
 describe('ToggleSwitch', () => {
   afterEach(() => {
@@ -100,5 +101,20 @@ describe('ToggleSwitch', () => {
     const labelElement = container.querySelector(`[id="${labelledById}"]`)
     expect(labelElement).toBeTruthy()
     expect(labelElement.textContent).toBe('Accessible Switch')
+  })
+
+  test('BrutalToggle delegates to the accessible shared switch primitive', () => {
+    const { getByRole } = render(
+      <BrutalToggle label='Legacy Brutal Switch' initialState={false} />
+    )
+
+    const switchButton = getByRole('switch', {
+      name: 'Legacy Brutal Switch'
+    })
+    expect(switchButton.getAttribute('aria-checked')).toBe('false')
+
+    fireEvent.click(switchButton)
+
+    expect(switchButton.getAttribute('aria-checked')).toBe('true')
   })
 })

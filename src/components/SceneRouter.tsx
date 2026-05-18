@@ -1,14 +1,3 @@
-/*
- * REVIEW
- * #1 Actual updates:
- *    Extracted SceneRouter component and its lazy-loaded scene imports from App.tsx into this dedicated file.
- *    Added strict TypeScript prop typing using enums for currentScene and minigameType.
- * #2 Next steps and ideas to develop further:
- *    Consider dynamic loading of scene configurations from a data file, or creating nested routers for complex minigames.
- * #3 Found errors + solutions:
- *    None during extraction.
- */
-
 import { lazy } from 'react'
 import { MainMenu } from '../scenes/MainMenu.tsx'
 import { GAME_PHASES, MINIGAME_TYPES } from '../context/gameConstants'

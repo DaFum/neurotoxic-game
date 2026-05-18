@@ -9,6 +9,7 @@ import { memo, type HTMLAttributes, type ReactNode } from 'react'
 // Export components
 export { SettingsPanel } from '../settings/SettingsPanel'
 export { VolumeSlider } from './VolumeSlider'
+export { SegmentedSlider } from './SegmentedSlider'
 export { Tooltip } from './Tooltip'
 export { Modal } from './Modal'
 export { ActionButton } from './ActionButton'

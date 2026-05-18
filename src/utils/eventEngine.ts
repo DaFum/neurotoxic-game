@@ -1,19 +1,4 @@
 import type { EventDelta } from '../types'
-/**
-
- *
- * (#1) Actual Updates:
- * - Optimized `resolveTemplateString` by replacing `for...in` and `Object.hasOwn` with `Object.keys()` to avoid prototype chain overhead.
- * - Added a global `toLowerCaseCache` to prevent re-allocating new lowercase strings for frequently reused context keys.
- * - Added explicit forbidden key checks (`__proto__`, `constructor`, `prototype`) within the mapping loop to maintain protection against prototype pollution when using `Object.keys()`.
- *
- * (#2) Next Steps:
- * - Consider pre-compiling templates at event load time if template resolution remains a hot path during large event pools generation.
- *
- * (#3) Found Errors + Solutions:
- * - Found repeated string allocation for `.toLowerCase()` in a hot loop path. Solved by introducing a module-level `toLowerCaseCache`.
- */
-
 import { EVENTS_DB } from '../data/events/index'
 import { EVENT_STRINGS } from '../data/events/constants'
 import { logger } from './logger'
