@@ -14,6 +14,8 @@ import {
   clampMemberStamina,
   clampMemberMood,
   clampControversyLevel,
+  clampLoyalty,
+  clamp0to100,
   calculateGigFameReward
 } from './gameStateUtils'
 import { BRAND_ALIGNMENTS } from '../context/initialState'
@@ -309,12 +311,8 @@ export const calculatePostGigStateUpdates = (
     appliedMoneyDelta = applied.appliedDelta
   }
 
-  const boundedZealotry = Math.max(
-    0,
-    Math.min(
-      100,
-      toFiniteNumber(social.zealotry, 0) + (result.zealotryChange ?? 0)
-    )
+  const boundedZealotry = clamp0to100(
+    toFiniteNumber(social.zealotry, 0) + (result.zealotryChange ?? 0)
   )
 
   const updatedSocial: Partial<GameState['social']> = {
@@ -322,18 +320,17 @@ export const calculatePostGigStateUpdates = (
       0,
       toFiniteNumber(social[result.platform], 0) + totalFollowers
     ),
-    viral:
-      toFiniteNumber(social.viral, 0) +
-      (result.success ? 1 : 0) +
-      gigViralBonus,
+    viral: Math.max(
+      0,
+      toFiniteNumber(social.viral, 0) + (result.success ? 1 : 0) + gigViralBonus
+    ),
     lastGigDay: player.day,
     lastGigDifficulty: currentGig?.diff ?? currentGig?.difficulty ?? 1,
     controversyLevel: clampControversyLevel(
       toFiniteNumber(social.controversyLevel, 0) +
         (result.controversyChange ?? 0)
     ),
-    loyalty: Math.max(
-      0,
+    loyalty: clampLoyalty(
       toFiniteNumber(social.loyalty, 0) + (result.loyaltyChange ?? 0)
     ),
     zealotry: boundedZealotry,
