@@ -3,6 +3,7 @@ import type { TFunction } from 'i18next'
 import { ProgressBar, Panel, Tooltip } from '../shared'
 import { useMemo, type ReactNode } from 'react'
 import { CHARACTERS } from '../../data/characters'
+import { getTranslatedBrandDealDisplay } from '../../utils/brandDealI18n'
 import { translateLocation } from '../../utils/locationI18n'
 import { getCityKeyFromVenueId } from '../../utils/mapGenerator'
 import { isEmptyObject } from '../../utils/gameStateUtils'
@@ -158,6 +159,11 @@ const SocialReachSection = ({
   social,
   t
 }: { social: SocialData } & BasicTProps) => {
+  const activeDeals = social.activeDeals ?? []
+  const activeDealDisplays = activeDeals.flatMap((deal, index) => {
+    const display = getTranslatedBrandDealDisplay(deal, t, index)
+    return display ? [display] : []
+  })
   const totalReach =
     (social.instagram ?? 0) +
     (social.tiktok ?? 0) +
@@ -234,14 +240,30 @@ const SocialReachSection = ({
           />
           <DetailRow
             label={t('ui:stats.brandDeals', { defaultValue: 'Brand Deals' })}
-            value={social.activeDeals?.length || 0}
+            value={activeDeals.length}
             subtext={
-              social.activeDeals?.map(d => d.id).join(', ') ||
-              t('ui:stats.noContracts', {
-                defaultValue: 'No active contracts'
-              })
+              activeDealDisplays.length > 0 ? (
+                <div className='space-y-1'>
+                  {activeDealDisplays.map(deal => (
+                    <div key={deal.key}>
+                      <div className='font-bold text-star-white'>
+                        {deal.name}
+                      </div>
+                      {deal.description ? (
+                        <div className='leading-snug text-ash-gray/70'>
+                          {deal.description}
+                        </div>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                t('ui:stats.noContracts', {
+                  defaultValue: 'No active contracts'
+                })
+              )
             }
-            locked={!isUnlocked(social.activeDeals)}
+            locked={!isUnlocked(activeDeals)}
           />
         </div>
       </div>
@@ -763,7 +785,14 @@ export const DetailedStatsTab = ({
   venueBlacklist?: string[]
   reputationByRegion?: Record<string, number>
 }) => {
-  const { t } = useTranslation(['ui', 'events', 'items', 'venues', 'traits'])
+  const { t } = useTranslation([
+    'ui',
+    'events',
+    'items',
+    'venues',
+    'traits',
+    'economy'
+  ])
 
   return (
     <div className='space-y-8'>

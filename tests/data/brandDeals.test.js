@@ -1,6 +1,27 @@
 import { describe, it } from 'vitest'
 import assert from 'node:assert'
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { BRAND_DEALS } from '../../src/data/brandDeals'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const readEconomyLocale = locale =>
+  JSON.parse(
+    fs.readFileSync(
+      path.join(
+        __dirname,
+        '..',
+        '..',
+        'public',
+        'locales',
+        locale,
+        'economy.json'
+      ),
+      'utf8'
+    )
+  )
 
 describe('BRAND_DEALS data module', () => {
   it('should be an array of brand deals', () => {
@@ -97,6 +118,39 @@ describe('BRAND_DEALS data module', () => {
             `Deal ${deal.id} benefit.controversy should be a number`
           )
         }
+      }
+    }
+  })
+
+  it('each brand deal has English and German locale entries', () => {
+    const locales = {
+      en: readEconomyLocale('en'),
+      de: readEconomyLocale('de')
+    }
+
+    for (const deal of BRAND_DEALS) {
+      for (const [locale, entries] of Object.entries(locales)) {
+        const nameKey = `brandDeals.${deal.id}.name`
+        const descriptionKey = `brandDeals.${deal.id}.description`
+
+        assert.equal(
+          typeof entries[nameKey],
+          'string',
+          `${locale}/economy.json missing ${nameKey}`
+        )
+        assert.ok(
+          entries[nameKey].trim().length > 0,
+          `${locale}/economy.json has empty ${nameKey}`
+        )
+        assert.equal(
+          typeof entries[descriptionKey],
+          'string',
+          `${locale}/economy.json missing ${descriptionKey}`
+        )
+        assert.ok(
+          entries[descriptionKey].trim().length > 0,
+          `${locale}/economy.json has empty ${descriptionKey}`
+        )
       }
     }
   })

@@ -2,6 +2,7 @@ import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../../ui/shared'
 import { BRAND_ALIGNMENTS } from '../../context/initialState'
+import { getTranslatedBrandDealDisplay } from '../../utils/brandDealI18n'
 import { IMG_PROMPTS, resolveGenImageUrl } from '../../utils/imageGen'
 import { formatCurrency } from '../../utils/numberUtils'
 import type {
@@ -281,9 +282,18 @@ export const DealCard = memo(
     handleAcceptDeal,
     handleNegotiationStart
   }: DealCardProps) => {
+    const { t } = useTranslation(['ui', 'economy'])
     const isRevoked = getNegotiationStatus(negotiationState) === 'REVOKED'
     const negotiatedDeal = negotiationState?.deal
     const displayDeal = isDeal(negotiatedDeal) ? negotiatedDeal : deal
+    const translatedDisplay = getTranslatedBrandDealDisplay(displayDeal, t)
+    const localizedDisplayDeal = translatedDisplay
+      ? {
+          ...displayDeal,
+          name: translatedDisplay.name,
+          description: translatedDisplay.description ?? displayDeal.description
+        }
+      : displayDeal
     const hasNegotiated = !!negotiationState
 
     return (
@@ -299,11 +309,11 @@ export const DealCard = memo(
 
         <div className='flex-1 z-10 flex gap-4 items-start'>
           <DealImage
-            alignment={displayDeal.alignment}
-            name={displayDeal.name}
+            alignment={localizedDisplayDeal.alignment}
+            name={localizedDisplayDeal.name}
           />
           <DealInfo
-            displayDeal={displayDeal}
+            displayDeal={localizedDisplayDeal}
             isRevoked={isRevoked}
             brandReputation={brandReputation}
           />
