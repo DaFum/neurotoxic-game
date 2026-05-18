@@ -1,6 +1,10 @@
 import type { TFunction } from 'i18next'
 import { BRAND_DEALS_BY_ID } from '../data/brandDeals'
 
+type BrandDealTranslator =
+  | TFunction
+  | ((key: string, options?: Record<string, unknown>) => string)
+
 interface BrandDealDisplayInput {
   id?: unknown
   name?: unknown
@@ -26,7 +30,7 @@ const getNonEmptyString = (value: unknown): string | undefined => {
 }
 
 const translateString = (
-  t: TFunction,
+  t: BrandDealTranslator,
   key: string,
   defaultValue: string
 ): string => {
@@ -36,29 +40,25 @@ const translateString = (
 
 export const getTranslatedBrandDealDisplay = (
   deal: BrandDealDisplayInput,
-  t: TFunction,
+  t: BrandDealTranslator,
   index = 0
 ): BrandDealDisplay | null => {
   const id = getNonEmptyString(deal.id)
   const catalogDeal = id ? BRAND_DEALS_BY_ID.get(id) : undefined
   const inlineName = getNonEmptyString(deal.name)
   const inlineDescription = getNonEmptyString(deal.description)
-  const fallbackName = inlineName ?? catalogDeal?.name ?? id
+  const fallbackName = catalogDeal?.name ?? inlineName ?? id
+  const fallbackDescription = catalogDeal?.description ?? inlineDescription
 
   if (!fallbackName) return null
 
-  const shouldTranslateName =
-    id !== undefined && (!inlineName || inlineName === catalogDeal?.name)
-  const shouldTranslateDescription =
-    id !== undefined &&
-    (!inlineDescription || inlineDescription === catalogDeal?.description)
-  const fallbackDescription = inlineDescription ?? catalogDeal?.description
+  const hasCatalogEntry = id !== undefined && catalogDeal !== undefined
 
-  const name = shouldTranslateName
+  const name = hasCatalogEntry
     ? translateString(t, getBrandDealNameKey(id), fallbackName)
-    : fallbackName
+    : (inlineName ?? fallbackName)
   const description =
-    fallbackDescription && shouldTranslateDescription
+    hasCatalogEntry && fallbackDescription
       ? translateString(t, getBrandDealDescriptionKey(id), fallbackDescription)
       : fallbackDescription
 
