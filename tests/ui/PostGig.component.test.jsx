@@ -8,9 +8,14 @@ import * as socialEngine from '../../src/utils/socialEngine'
 import { BRAND_ALIGNMENTS } from '../../src/context/initialState'
 
 // Mock dependencies
-vi.mock('../../src/context/GameState', () => ({
-  useGameState: vi.fn()
-}))
+vi.mock('../../src/context/GameState', () => {
+  const useGameState = vi.fn()
+  return {
+    useGameState,
+    useGameActions: useGameState,
+    useGameSelector: selector => selector(useGameState())
+  }
+})
 
 vi.mock('../../src/utils/imageGen', () => ({
   isImageGenerationAvailable: () => true,

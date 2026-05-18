@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { useGameState } from '../context/GameState'
+import { useGameActions, useGameSelector } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
 import { useAudioControl } from '../hooks/useAudioControl'
 import { useSettingsActions } from '../hooks/useSettingsActions'
@@ -11,7 +11,8 @@ import { SettingsReturnButton } from '../ui/settings/SettingsReturnButton'
  * Settings scene for configuring audio, visuals, and data management.
  */
 export const Settings = () => {
-  const { changeScene, settings, updateSettings, deleteSave } = useGameState()
+  const settings = useGameSelector(state => state.settings)
+  const { changeScene, updateSettings, deleteSave } = useGameActions()
   const { audioState, handleAudioChange } = useAudioControl()
   const { handleToggleCRT, handleLogLevelChange } = useSettingsActions(
     settings,

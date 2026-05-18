@@ -4,14 +4,18 @@ import { MainMenu } from '../../src/scenes/MainMenu'
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
 
 // Mock everything like in the tests
+const useGameState = vi.fn(() => ({
+  changeScene: vi.fn(),
+  updatePlayer: vi.fn(),
+  resetState: vi.fn(),
+  addToast: vi.fn(),
+  loadGame: vi.fn()
+}))
+
 vi.mock('../../src/context/GameState', () => ({
-  useGameState: vi.fn(() => ({
-    changeScene: vi.fn(),
-    updatePlayer: vi.fn(),
-    resetState: vi.fn(),
-    addToast: vi.fn(),
-    loadGame: vi.fn()
-  }))
+  useGameState,
+  useGameActions: useGameState,
+  useGameSelector: selector => selector(useGameState())
 }))
 
 vi.mock('../../src/hooks/useBandHQModal', () => ({

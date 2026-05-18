@@ -10,7 +10,12 @@ vi.mock('../../src/context/GameState', () => ({
   useGameState: () => ({
     completeKabelsalatMinigame: mockCompleteKabelsalatMinigame,
     changeScene: mockChangeScene
-  })
+  }),
+  useGameActions: () => ({
+    completeKabelsalatMinigame: mockCompleteKabelsalatMinigame,
+    changeScene: mockChangeScene
+  }),
+  useGameSelector: selector => selector({})
 }))
 
 describe('useKabelsalatGameEnd', () => {

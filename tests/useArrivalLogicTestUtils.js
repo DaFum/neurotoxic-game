@@ -53,7 +53,9 @@ export const resetMockGameState = () => {
 
 // Mock modules - Correct path specifier
 vi.mock('../src/context/GameState.tsx', () => ({
-  useGameState: mockUseGameState
+  useGameState: mockUseGameState,
+  useGameActions: mockUseGameState,
+  useGameSelector: selector => selector(mockUseGameState())
 }))
 
 // Mock utils

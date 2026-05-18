@@ -8,13 +8,17 @@ const mockChangeScene = vi.fn()
 const mockUpdateSettings = vi.fn()
 const mockDeleteSave = vi.fn()
 
+const mockGameState = {
+  changeScene: mockChangeScene,
+  settings: { crtEnabled: true, logLevel: 1 },
+  updateSettings: mockUpdateSettings,
+  deleteSave: mockDeleteSave
+}
+
 vi.mock('../../src/context/GameState.tsx', () => ({
-  useGameState: () => ({
-    changeScene: mockChangeScene,
-    settings: { crtEnabled: true, logLevel: 1 },
-    updateSettings: mockUpdateSettings,
-    deleteSave: mockDeleteSave
-  })
+  useGameState: () => mockGameState,
+  useGameActions: () => mockGameState,
+  useGameSelector: selector => selector(mockGameState)
 }))
 const mockSetMusic = vi.fn()
 const mockSetSfx = vi.fn()

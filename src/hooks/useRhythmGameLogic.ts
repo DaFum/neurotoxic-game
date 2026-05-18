@@ -1,7 +1,7 @@
 import { useMemo, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { MapNode } from '../types/map'
-import { useGameState } from '../context/GameState.tsx'
+import { useGameActions, useGameSelector } from '../context/GameState.tsx'
 import { stopAudio } from '../utils/audio/audioEngine'
 import { useRhythmGameState } from './rhythmGame/useRhythmGameState'
 import { useRhythmGameScoring } from './rhythmGame/useRhythmGameScoring'
@@ -30,18 +30,15 @@ export type RhythmGameLogicReturn = {
  */
 export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
   const { t } = useTranslation()
-  const gameState = useGameState()
-  const { setLastGigStats, addToast, endGig } = gameState
-  const {
-    setlist,
-    band,
-    activeEvent,
-    gameMap,
-    player,
-    gigModifiers,
-    currentGig,
-    rivalBand
-  } = gameState
+  const setlist = useGameSelector(state => state.setlist)
+  const band = useGameSelector(state => state.band)
+  const activeEvent = useGameSelector(state => state.activeEvent)
+  const gameMap = useGameSelector(state => state.gameMap)
+  const player = useGameSelector(state => state.player)
+  const gigModifiers = useGameSelector(state => state.gigModifiers)
+  const currentGig = useGameSelector(state => state.currentGig)
+  const rivalBand = useGameSelector(state => state.rivalBand)
+  const { setLastGigStats, addToast, endGig } = useGameActions()
 
   // 1. Core State (React + Ref)
   const { gameStateRef, state, setters } = useRhythmGameState()

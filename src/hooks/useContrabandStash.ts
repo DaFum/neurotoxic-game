@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react'
-import { useGameState } from '../context/GameState'
+import { useGameActions, useGameSelector } from '../context/GameState'
 import { useTranslation } from 'react-i18next'
 import {
   validateStashItemSelection,
@@ -13,11 +13,8 @@ import type { ContrabandStashItem, StashItem } from '../types'
  * @returns {Object} Stash state and handlers
  */
 export const useContrabandStash = () => {
-  const {
-    band,
-    useContraband: dispatchUseContraband,
-    addToast
-  } = useGameState()
+  const band = useGameSelector(state => state.band)
+  const { useContraband: dispatchUseContraband, addToast } = useGameActions()
   const [showStash, setShowStash] = useState(false)
   const [selectedMember, setSelectedMember] = useState(band.members[0]?.id)
   const { t } = useTranslation(['ui'])

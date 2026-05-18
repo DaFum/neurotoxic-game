@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useGameState } from '../context/GameState'
+import { useGameActions, useGameSelector } from '../context/GameState'
 import { negotiateDeal } from '../utils/socialEngine'
 import { handleError } from '../utils/errorHandler'
 import type {
@@ -18,7 +18,10 @@ export const useDealNegotiation = ({
   onAccept: (deal: Deal) => Promise<void> | void
 }): DealNegotiationHook => {
   const { t } = useTranslation()
-  const { player, band, social, addToast } = useGameState()
+  const player = useGameSelector(state => state.player)
+  const band = useGameSelector(state => state.band)
+  const social = useGameSelector(state => state.social)
+  const { addToast } = useGameActions()
   const [negotiatedDeals, setNegotiatedDeals] = useState<
     Record<string, DealNegotiationState>
   >({}) // id: { status, deal }

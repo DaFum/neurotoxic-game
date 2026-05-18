@@ -31,7 +31,9 @@ const mockUseRoadieLogic = () => ({
 
 // Register mocks
 vi.mock('../../src/context/GameState', () => ({
-  useGameState: mockUseGameState
+  useGameState: mockUseGameState,
+  useGameActions: mockUseGameState,
+  useGameSelector: selector => selector(mockUseGameState())
 }))
 vi.mock('../../src/hooks/minigames/useRoadieLogic', () => ({
   useRoadieLogic: mockUseRoadieLogic

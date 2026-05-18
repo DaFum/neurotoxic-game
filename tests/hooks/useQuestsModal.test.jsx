@@ -4,15 +4,20 @@ import { useQuestsModal } from '../../src/hooks/useQuestsModal'
 import { useGameState } from '../../src/context/GameState.tsx'
 
 // Mock the GameState context
-vi.mock('../../src/context/GameState.tsx', () => ({
-  useGameState: vi.fn(() => ({
+vi.mock('../../src/context/GameState.tsx', () => {
+  const useGameState = vi.fn(() => ({
     activeQuests: [
       { id: 'quest1', label: 'Quest 1' },
       { id: 'quest2', label: 'Quest 2' }
     ],
     player: { name: 'Test Player' }
   }))
-}))
+  return {
+    useGameState,
+    useGameActions: useGameState,
+    useGameSelector: selector => selector(useGameState())
+  }
+})
 
 describe('useQuestsModal', () => {
   it('should initialize with showQuests as false', () => {

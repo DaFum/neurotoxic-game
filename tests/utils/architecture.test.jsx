@@ -1,10 +1,36 @@
 import { test } from 'vitest'
 import assert from 'node:assert/strict'
+import fs from 'node:fs/promises'
+import path from 'node:path'
 import { ALL_RAW_EVENTS } from '../../src/data/events/index'
 import { handleAdvanceDay } from '../../src/context/reducers/systemReducer'
 import { handleAdvanceQuest } from '../../src/context/reducers/questReducer'
 import { handleSetLastGigStats } from '../../src/context/reducers/gigReducer'
 import { QUEST_APOLOGY_TOUR } from '../../src/data/questsConstants'
+
+const SRC_ROOT = path.resolve(process.cwd(), 'src')
+const GAME_STATE_MODULE = path.join(SRC_ROOT, 'context', 'GameState.tsx')
+const SOURCE_EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx'])
+
+const findSourceFiles = async directory => {
+  const entries = await fs.readdir(directory, { withFileTypes: true })
+  const files = []
+
+  for (const entry of entries) {
+    const absolutePath = path.join(directory, entry.name)
+
+    if (entry.isDirectory()) {
+      files.push(...(await findSourceFiles(absolutePath)))
+    } else if (SOURCE_EXTENSIONS.has(path.extname(entry.name))) {
+      files.push(absolutePath)
+    }
+  }
+
+  return files
+}
+
+const relativeSourcePath = absolutePath =>
+  path.relative(process.cwd(), absolutePath).replaceAll(path.sep, '/')
 
 const createMockGameState = () => ({
   player: {
@@ -71,6 +97,26 @@ test('Events DB has global unique IDs across all categories', () => {
     duplicates.length,
     0,
     `Found duplicate event IDs: ${duplicates.join(', ')}`
+  )
+})
+
+test('Production source does not consume deprecated useGameState hook', async () => {
+  const sourceFiles = await findSourceFiles(SRC_ROOT)
+  const offenders = []
+
+  for (const filePath of sourceFiles) {
+    if (filePath === GAME_STATE_MODULE) continue
+
+    const source = await fs.readFile(filePath, 'utf8')
+    if (source.includes('useGameState')) {
+      offenders.push(relativeSourcePath(filePath))
+    }
+  }
+
+  assert.deepStrictEqual(
+    offenders,
+    [],
+    `Deprecated useGameState references found:\n${offenders.join('\n')}`
   )
 })
 

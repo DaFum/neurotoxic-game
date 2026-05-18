@@ -2,11 +2,15 @@ import { renderHook, act } from '@testing-library/react'
 import { expect, test, vi } from 'vitest'
 import { useQuestsModal } from '../../src/hooks/useQuestsModal'
 
+const mockGameState = {
+  activeQuests: ['quest1'],
+  player: { name: 'Player' }
+}
+
 vi.mock('../../src/context/GameState.tsx', () => ({
-  useGameState: () => ({
-    activeQuests: ['quest1'],
-    player: { name: 'Player' }
-  })
+  useGameState: () => mockGameState,
+  useGameActions: () => mockGameState,
+  useGameSelector: selector => selector(mockGameState)
 }))
 
 test('useQuestsModal toggles modal state correctly', () => {

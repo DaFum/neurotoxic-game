@@ -1,6 +1,6 @@
 /**
  * Checks whether a specific upgrade is owned.
- * Pure function extracted from useGameState to allow direct testing
+ * Pure function extracted from context state helpers to allow direct testing
  * and avoid recreating the closure on every render.
  *
  * @param {string[]} upgrades - The player's current upgrades array.

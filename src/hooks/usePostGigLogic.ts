@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useGameState } from '../context/GameState'
+import { useGameActions, useGameSelector } from '../context/GameState'
 import { logger } from '../utils/logger'
 import { usePostGigHandlers } from './usePostGigHandlers'
 import {
@@ -21,26 +21,26 @@ const POST_OPTIONS_ERROR_IDLE: PostOptionsErrorState = { kind: 'idle' }
 
 export const usePostGigLogic = () => {
   const { t } = useTranslation(['ui'])
+  const currentGig = useGameSelector(state => state.currentGig)
+  const player = useGameSelector(state => state.player)
+  const gigModifiers = useGameSelector(state => state.gigModifiers)
+  const activeEvent = useGameSelector(state => state.activeEvent)
+  const band = useGameSelector(state => state.band)
+  const social = useGameSelector(state => state.social)
+  const lastGigStats = useGameSelector(state => state.lastGigStats)
+  const reputationByRegion = useGameSelector(state => state.reputationByRegion)
+  const activeStoryFlags = useGameSelector(state => state.activeStoryFlags)
+  const setlist = useGameSelector(state => state.setlist)
   const {
-    currentGig,
-    player,
     updatePlayer,
-    gigModifiers,
     triggerEvent,
-    activeEvent,
-    band,
     updateBand,
     updateSocial,
-    social,
-    lastGigStats,
     addToast,
     changeScene,
     unlockTrait,
-    reputationByRegion,
-    activeStoryFlags,
-    addQuest,
-    setlist
-  } = useGameState()
+    addQuest
+  } = useGameActions()
 
   const [phase, setPhase] = useState('REPORT') // REPORT, SOCIAL, DEALS, COMPLETE
   const [postResult, setPostResult] = useState<PostResult | null>(null)

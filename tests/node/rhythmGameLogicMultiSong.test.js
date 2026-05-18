@@ -18,6 +18,7 @@ import {
 
 // Local mocks to ensure correct intercept
 const mockUseGameState = mock.fn()
+const mockGameSelector = selector => selector(mockUseGameState())
 const mockAudioManager = {
   stopMusic: mock.fn(),
   ensureAudioContext: mock.fn(async () => true),
@@ -57,7 +58,11 @@ const mockGigStats = {
 
 // Register mocks BEFORE import
 mock.module(new URL('../../src/context/GameState.tsx', import.meta.url).href, {
-  namedExports: { useGameState: mockUseGameState }
+  namedExports: {
+    useGameState: mockUseGameState,
+    useGameActions: mockUseGameState,
+    useGameSelector: mockGameSelector
+  }
 })
 mock.module(
   new URL('../../src/utils/audio/AudioManager.ts', import.meta.url).href,

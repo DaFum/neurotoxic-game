@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState, useCallback } from 'react'
-import { useGameState } from '../context/GameState'
+import { useGameActions } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
 import introVideo from '../assets/Neurotoxic_start.webm'
 import { AutoplayOverlay } from './intro/components/AutoplayOverlay'
@@ -10,7 +10,7 @@ import { logger } from '../utils/logger'
  * Scene for playing the intro video before the main menu.
  */
 export const IntroVideo = () => {
-  const { changeScene } = useGameState()
+  const { changeScene } = useGameActions()
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const [autoplayBlocked, setAutoplayBlocked] = useState(false)
   const [isVideoSupported, setIsVideoSupported] = useState(true)

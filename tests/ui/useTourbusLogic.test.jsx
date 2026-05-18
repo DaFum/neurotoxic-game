@@ -17,7 +17,9 @@ const mockUseGameState = mock.fn(() => ({
 }))
 
 mock.mock('../../src/context/GameState', () => ({
-  useGameState: mockUseGameState
+  useGameState: mockUseGameState,
+  useGameActions: mockUseGameState,
+  useGameSelector: selector => selector(mockUseGameState())
 }))
 
 const mockPlaySFX = mock.fn()

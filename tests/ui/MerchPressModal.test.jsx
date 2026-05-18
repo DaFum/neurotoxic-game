@@ -8,6 +8,7 @@ const { mockState } = vi.hoisted(() => ({
 
 vi.mock('../../src/context/GameState', () => ({
   useGameState: vi.fn().mockImplementation(() => mockState.current),
+  useGameActions: vi.fn().mockImplementation(() => mockState.current),
   useGameSelector: vi
     .fn()
     .mockImplementation(selector => selector(mockState.current))
