@@ -29,10 +29,6 @@ vi.mock('react-i18next', () => ({
       if (options?.returnObjects) {
         return []
       }
-      if (key === 'report.amount_positive') return `+€${options?.amount ?? 0}`
-      if (key === 'report.amount_negative') return `-€${options?.amount ?? 0}`
-      if (key === 'report.amount_with_currency')
-        return `€${options?.amount ?? 0}`
       const template = options?.defaultValue || key
       if (!options || typeof options !== 'object') return template
 

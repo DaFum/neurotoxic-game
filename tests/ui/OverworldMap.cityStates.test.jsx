@@ -31,7 +31,7 @@ vi.mock('../../src/utils/economyEngine', () => ({
 }))
 
 vi.mock('../../src/hooks/useNetworkStatus', () => ({
-  useNetworkStatus: () => ({ isOnline: true })
+  useNetworkStatus: () => true
 }))
 
 const { OverworldMap } =

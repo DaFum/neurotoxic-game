@@ -198,7 +198,7 @@ Status legend:
 ### Duplicates
 | # | Status | Commit / Notes |
 |---|---|---|
-| D1 | ✅ RESOLVED | `mapGenerator.ts:getVenueCoord` now routes through `toFiniteNumber`; the deeper `economyEngine.ts:calculateDistance` shape difference is documented (different point shapes — not a drop-in merge). |
+| D1 | ✅ RESOLVED (scoped) | `mapGenerator.ts:getVenueCoord` was already a shared private helper for finite-coord extraction. The actual change is routing it through the new `toFiniteNumber` primitive in `numberUtils.ts`. The deeper `economyEngine.ts:calculateDistance` is **not** merged: it accepts both `point.x` and `point.venue?.x` shapes, so a drop-in is unsafe; left as-is and documented here. |
 | D2 | ✅ RESOLVED | `toFiniteNumber(value, fallback)` added to `src/utils/numberUtils.ts`; replaces inline `toNumber` in `postGigUtils` and `mapGenerator`'s `getVenueCoord`. |
 | D3 | ✅ RESOLVED | `applyClampedMoneyDelta(currentMoney, delta)` extracted in `postGigUtils.ts`; used by all three previously-duplicated call sites. |
 | D4 | ⏸️ DEFERRED | `PirateRadioModal` and `MerchPressModal` have intentionally divergent brutalist visuals (2px border, glitch-text title, custom [X] vs. the shared `Modal`'s 4px border + corner frames + shadow). Switching is a design call. |
