@@ -6,10 +6,11 @@ const mockGameState = {
   activeQuests: ['quest1'],
   player: { name: 'Player' }
 }
+const mockGameActions = {}
 
 vi.mock('../../src/context/GameState.tsx', () => ({
-  useGameState: () => mockGameState,
-  useGameActions: () => mockGameState,
+  useGameState: () => ({ ...mockGameState, ...mockGameActions }),
+  useGameActions: () => mockGameActions,
   useGameSelector: selector => selector(mockGameState)
 }))
 

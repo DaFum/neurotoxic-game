@@ -5,9 +5,13 @@ import {
   DARK_WEB_LEAK_CONFIG
 } from '../../src/hooks/useDarkWebLeak'
 
-vi.mock('../../src/utils/audio/audioEngine', () => ({
-  audioService: { playSFX: vi.fn() }
-}))
+vi.mock('../../src/utils/audio/audioEngine', () => {
+  const playSFX = vi.fn()
+  return {
+    audioManager: { playSFX },
+    audioService: { playSFX }
+  }
+})
 
 const mockGameState = {
   player: { day: 5, money: 1000 },

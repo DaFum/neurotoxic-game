@@ -6,16 +6,20 @@ import { useKabelsalatGameEnd } from '../../src/scenes/kabelsalat/hooks/useKabel
 const mockCompleteKabelsalatMinigame = vi.fn()
 const mockChangeScene = vi.fn()
 
+const mockGameActions = {
+  completeKabelsalatMinigame: mockCompleteKabelsalatMinigame,
+  changeScene: mockChangeScene
+}
+const mockGameState = {
+  currentScene: 'KABELSALAT',
+  player: { day: 1, money: 0 },
+  settings: { crtEnabled: false }
+}
+
 vi.mock('../../src/context/GameState', () => ({
-  useGameState: () => ({
-    completeKabelsalatMinigame: mockCompleteKabelsalatMinigame,
-    changeScene: mockChangeScene
-  }),
-  useGameActions: () => ({
-    completeKabelsalatMinigame: mockCompleteKabelsalatMinigame,
-    changeScene: mockChangeScene
-  }),
-  useGameSelector: selector => selector({})
+  useGameState: () => ({ ...mockGameState, ...mockGameActions }),
+  useGameActions: () => mockGameActions,
+  useGameSelector: selector => selector(mockGameState)
 }))
 
 describe('useKabelsalatGameEnd', () => {

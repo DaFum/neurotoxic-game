@@ -16,10 +16,12 @@ let mockUiState = {
   isGameOver: false
 }
 
-const mockUseGameState = () => ({
+const mockGameState = {
   changeScene: mockChangeScene,
   settings: { crtEnabled: false }
-})
+}
+const mockGameActions = { changeScene: mockChangeScene }
+const mockUseGameState = () => mockGameState
 
 const mockUseRoadieLogic = () => ({
   uiState: mockUiState,
@@ -32,8 +34,8 @@ const mockUseRoadieLogic = () => ({
 // Register mocks
 vi.mock('../../src/context/GameState', () => ({
   useGameState: mockUseGameState,
-  useGameActions: mockUseGameState,
-  useGameSelector: selector => selector(mockUseGameState())
+  useGameActions: () => mockGameActions,
+  useGameSelector: selector => selector(mockGameState)
 }))
 vi.mock('../../src/hooks/minigames/useRoadieLogic', () => ({
   useRoadieLogic: mockUseRoadieLogic

@@ -3,19 +3,28 @@ import { render, fireEvent, screen } from '@testing-library/react'
 import { MainMenu } from '../../src/scenes/MainMenu'
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
 
-// Mock everything like in the tests
-const useGameState = vi.fn(() => ({
+// Mock everything like in the tests. Use a stable mock state object so
+// selector calls don't reallocate state and skew benchmark timing.
+const mockGameState = {
   changeScene: vi.fn(),
   updatePlayer: vi.fn(),
   resetState: vi.fn(),
   addToast: vi.fn(),
   loadGame: vi.fn()
-}))
+}
+const mockGameActions = {
+  changeScene: mockGameState.changeScene,
+  updatePlayer: mockGameState.updatePlayer,
+  resetState: mockGameState.resetState,
+  addToast: mockGameState.addToast,
+  loadGame: mockGameState.loadGame
+}
+const useGameState = vi.fn(() => mockGameState)
 
 vi.mock('../../src/context/GameState', () => ({
   useGameState,
-  useGameActions: useGameState,
-  useGameSelector: selector => selector(useGameState())
+  useGameActions: () => mockGameActions,
+  useGameSelector: selector => selector(mockGameState)
 }))
 
 vi.mock('../../src/hooks/useBandHQModal', () => ({

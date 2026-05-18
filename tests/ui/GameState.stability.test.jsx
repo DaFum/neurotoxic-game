@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import {
   GameStateProvider,
@@ -13,6 +13,10 @@ beforeEach(() => {
     removeItem: vi.fn(),
     clear: vi.fn()
   })
+})
+
+afterEach(() => {
+  vi.unstubAllGlobals()
 })
 
 const wrapper = ({ children }) => (

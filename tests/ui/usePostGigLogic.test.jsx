@@ -10,9 +10,21 @@ import { BALANCE_CONSTANTS } from '../../src/utils/gameStateUtils'
 
 vi.mock('../../src/context/GameState', () => {
   const useGameState = vi.fn()
+  // Honor the production contract: useGameActions exposes only dispatchers,
+  // not full state. Test fixtures merge actions into the base state for
+  // convenience, so derive the action-only view by filtering for callables.
+  const extractActions = state => {
+    if (!state || typeof state !== 'object') return {}
+    const actions = {}
+    for (const key of Object.keys(state)) {
+      const value = state[key]
+      if (typeof value === 'function') actions[key] = value
+    }
+    return actions
+  }
   return {
     useGameState,
-    useGameActions: useGameState,
+    useGameActions: () => extractActions(useGameState()),
     useGameSelector: selector => selector(useGameState())
   }
 })
