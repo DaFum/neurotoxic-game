@@ -109,8 +109,13 @@ export const mockRhythmGameLogicDependencies = {
 
 // Helper to mock modules
 export const mockRhythmGameLogicModules = () => {
+  const mockGameSelector = selector => selector(mockUseGameState())
   mock.module('../src/context/GameState.tsx', {
-    namedExports: { useGameState: mockUseGameState }
+    namedExports: {
+      useGameState: mockUseGameState,
+      useGameActions: mockUseGameState,
+      useGameSelector: mockGameSelector
+    }
   })
   mock.module('../src/utils/simulationUtils', {
     namedExports: mockSimulationUtils

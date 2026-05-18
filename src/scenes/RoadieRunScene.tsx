@@ -5,13 +5,13 @@ import { createRoadieStageController } from '../components/stage/RoadieStageCont
 import { MinigameSceneFrame } from '../components/MinigameSceneFrame'
 import { RoadieHUD } from '../components/minigames/roadie/RoadieHUD'
 import { RoadieControls } from '../components/minigames/roadie/RoadieControls'
-import { useGameState } from '../context/GameState'
+import { useGameActions } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
 
 export const RoadieRunScene = () => {
   const { t } = useTranslation(['ui'])
   const { uiState, gameStateRef, stats, update, actions } = useRoadieLogic()
-  const { changeScene } = useGameState()
+  const { changeScene } = useGameActions()
   const [showControls, setShowControls] = useState(false)
 
   const controllerFactory = useMemo(() => createRoadieStageController, [])

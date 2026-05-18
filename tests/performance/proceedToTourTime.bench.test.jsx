@@ -9,14 +9,18 @@ const resetStateMock = vi.fn()
 const addToastMock = vi.fn()
 const loadGameMock = vi.fn()
 
+const mockGameState = {
+  changeScene: changeSceneMock,
+  updatePlayer: updatePlayerMock,
+  resetState: resetStateMock,
+  addToast: addToastMock,
+  loadGame: loadGameMock
+}
+
 vi.mock('../../src/context/GameState', () => ({
-  useGameState: () => ({
-    changeScene: changeSceneMock,
-    updatePlayer: updatePlayerMock,
-    resetState: resetStateMock,
-    addToast: addToastMock,
-    loadGame: loadGameMock
-  })
+  useGameState: () => mockGameState,
+  useGameActions: () => mockGameState,
+  useGameSelector: selector => selector(mockGameState)
 }))
 
 vi.mock('../../src/hooks/useBandHQModal', () => ({

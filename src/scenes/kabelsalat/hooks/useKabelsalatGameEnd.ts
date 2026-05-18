@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useRef } from 'react'
-import { useGameState } from '../../../context/GameState'
+import { useGameActions } from '../../../context/GameState'
 import { GAME_PHASES } from '../../../context/gameConstants'
 import { logger } from '../../../utils/logger'
 
@@ -9,7 +9,7 @@ export const useKabelsalatGameEnd = (
   timeLeft: number,
   voidSurgesPurged: number = 0
 ) => {
-  const { completeKabelsalatMinigame, changeScene } = useGameState()
+  const { completeKabelsalatMinigame, changeScene } = useGameActions()
 
   const transitionedRef = useRef(false)
   const timeLeftRef = useRef(timeLeft)

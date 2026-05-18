@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useGameState } from '../context/GameState'
+import { useGameActions, useGameSelector } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
 import { GameOverBackground } from './gameover/GameOverBackground'
 import { GameOverHeader } from './gameover/GameOverHeader'
@@ -10,7 +10,8 @@ import { GameOverButtons } from './gameover/GameOverButtons'
  * Scene displayed when the game ends (bankruptcy or health failure).
  */
 export const GameOver = () => {
-  const { changeScene, player, loadGame, resetState } = useGameState()
+  const player = useGameSelector(state => state.player)
+  const { changeScene, loadGame, resetState } = useGameActions()
 
   useEffect(() => {
     if (!player || player.score === undefined) {

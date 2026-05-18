@@ -51,9 +51,24 @@ export const resetMockGameState = () => {
   mockGameState.player = { currentNodeId: 'node_start' }
 }
 
+// Honor the production contract: useGameActions exposes only dispatchers.
+// The fixture mockGameState merges actions and state for convenience, so
+// derive the action-only view by filtering for function values.
+const extractActions = state => {
+  if (!state || typeof state !== 'object') return {}
+  const actions = {}
+  for (const key of Object.keys(state)) {
+    const value = state[key]
+    if (typeof value === 'function') actions[key] = value
+  }
+  return actions
+}
+
 // Mock modules - Correct path specifier
 vi.mock('../src/context/GameState.tsx', () => ({
-  useGameState: mockUseGameState
+  useGameState: mockUseGameState,
+  useGameActions: () => extractActions(mockUseGameState()),
+  useGameSelector: selector => selector(mockUseGameState())
 }))
 
 // Mock utils

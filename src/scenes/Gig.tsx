@@ -1,6 +1,6 @@
 import { useEffect, useRef, lazy, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useGameState } from '../context/GameState'
+import { useGameActions, useGameSelector } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
 import { useRhythmGameLogic } from '../hooks/useRhythmGameLogic'
 import { useGigEffects } from '../hooks/useGigEffects'
@@ -32,8 +32,9 @@ import { PauseOverlay } from '../components/minigames/gig/PauseOverlay'
  */
 export const Gig = () => {
   const { t } = useTranslation()
-  const { currentGig, changeScene, addToast, setLastGigStats, band, endGig } =
-    useGameState()
+  const currentGig = useGameSelector(state => state.currentGig)
+  const band = useGameSelector(state => state.band)
+  const { changeScene, addToast, setLastGigStats, endGig } = useGameActions()
 
   const tRef = useRef(t)
   useEffect(() => {

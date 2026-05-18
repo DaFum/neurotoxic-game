@@ -5,7 +5,7 @@ import { createAmpStageController } from '../components/stage/AmpStageController
 import { MinigameSceneFrame } from '../components/MinigameSceneFrame'
 import { AmpHUD } from '../components/minigames/amp/AmpHUD'
 import { AmpControls } from '../components/minigames/amp/AmpControls'
-import { useGameState } from '../context/GameState'
+import { useGameActions } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
 
 export const AmpCalibrationScene = () => {
@@ -32,7 +32,7 @@ export const AmpCalibrationScene = () => {
     overrideHijack
   } = useAmpLogic()
 
-  const { changeScene } = useGameState()
+  const { changeScene } = useGameActions()
 
   const controllerFactory = useMemo(() => createAmpStageController, [])
 

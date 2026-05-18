@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useGameState } from '../context/GameState'
+import { useGameActions, useGameSelector } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
 
 export const TUTORIAL_STEPS = [0, 1, 2, 3]
@@ -8,8 +8,10 @@ export const TOTAL_STEPS = TUTORIAL_STEPS.length
 
 export const useTutorial = () => {
   const { t } = useTranslation()
-  const { player, updatePlayer, currentScene, settings, updateSettings } =
-    useGameState()
+  const player = useGameSelector(state => state.player)
+  const currentScene = useGameSelector(state => state.currentScene)
+  const settings = useGameSelector(state => state.settings)
+  const { updatePlayer, updateSettings } = useGameActions()
   const step = player.tutorialStep ?? 0
 
   const completeStep = useCallback(() => {

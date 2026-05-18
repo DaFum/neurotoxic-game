@@ -1,6 +1,6 @@
 import React, { useCallback, useLayoutEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useGameState, useGameSelector } from '../../context/GameState'
+import { useGameActions, useGameSelector } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
 import { ActionButton } from '../shared'
 import { SONGS_DB, SONGS_BY_ID } from '../../data/songs'
@@ -102,7 +102,7 @@ export const SetlistTab = (props: SetlistTabProps) => {
   const { setlist, setSetlist, addToast } = props
   // { setlist, setSetlist, addToast }) => {
   const { t } = useTranslation(['ui', 'venues'])
-  const { setCurrentGig, changeScene } = useGameState()
+  const { setCurrentGig, changeScene } = useGameActions()
   const currentScene = useGameSelector(state => state.currentScene)
 
   const latestSetlistRef = useRef(setlist)

@@ -52,11 +52,16 @@ describe('useContrabandStash', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.spyOn(GameState, 'useGameState').mockReturnValue({
+    const mockState = {
       band: defaultBand,
       useContraband: mockUseContraband,
       addToast: mockAddToast
-    })
+    }
+    vi.spyOn(GameState, 'useGameState').mockReturnValue(mockState)
+    vi.spyOn(GameState, 'useGameActions').mockReturnValue(mockState)
+    vi.spyOn(GameState, 'useGameSelector').mockImplementation(selector =>
+      selector(mockState)
+    )
   })
 
   it('initializes with default state', () => {
@@ -207,11 +212,16 @@ describe('useContrabandStash', () => {
   })
 
   it('handles empty stash gracefully', () => {
-    vi.spyOn(GameState, 'useGameState').mockReturnValue({
+    const mockState = {
       band: { members: [], stash: undefined },
       useContraband: mockUseContraband,
       addToast: mockAddToast
-    })
+    }
+    vi.spyOn(GameState, 'useGameState').mockReturnValue(mockState)
+    vi.spyOn(GameState, 'useGameActions').mockReturnValue(mockState)
+    vi.spyOn(GameState, 'useGameSelector').mockImplementation(selector =>
+      selector(mockState)
+    )
 
     const { result } = renderHook(() => useContrabandStash())
 

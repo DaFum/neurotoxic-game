@@ -1,4 +1,12 @@
-import { afterEach, describe, expect, test, vi } from 'vitest'
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  test,
+  vi
+} from 'vitest'
 import { render, cleanup, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { GAME_PHASES } from '../../src/context/gameConstants'
@@ -16,8 +24,23 @@ const mockGameStateValue = {
 }
 
 vi.mock('../../src/context/GameState.tsx', () => ({
-  useGameState: () => mockGameStateValue
+  useGameState: () => mockGameStateValue,
+  useGameActions: () => mockGameStateValue,
+  useGameSelector: selector => selector(mockGameStateValue)
 }))
+
+let TutorialManager
+
+beforeAll(async () => {
+  ;({ TutorialManager } =
+    await import('../../src/components/TutorialManager.tsx'))
+})
+
+beforeEach(() => {
+  mockGameStateValue.player = { tutorialStep: 0 }
+  mockGameStateValue.currentScene = GAME_PHASES.MENU
+  mockGameStateValue.settings = { tutorialSeen: false }
+})
 
 afterEach(() => {
   cleanup()
@@ -26,9 +49,6 @@ afterEach(() => {
 
 describe('TutorialManager', () => {
   test('renders welcome message for step 0 on MENU scene', async () => {
-    const { TutorialManager } =
-      await import('../../src/components/TutorialManager.tsx')
-
     render(<TutorialManager />)
 
     expect(
@@ -42,9 +62,6 @@ describe('TutorialManager', () => {
   })
 
   test('displays correct step counter', async () => {
-    const { TutorialManager } =
-      await import('../../src/components/TutorialManager.tsx')
-
     render(<TutorialManager />)
 
     expect(
@@ -53,8 +70,6 @@ describe('TutorialManager', () => {
   })
 
   test('calls updatePlayer when NEXT button is clicked', async () => {
-    const { TutorialManager } =
-      await import('../../src/components/TutorialManager.tsx')
     const user = userEvent.setup()
 
     render(<TutorialManager />)
@@ -69,9 +84,6 @@ describe('TutorialManager', () => {
     mockGameStateValue.player.tutorialStep = 3
     mockGameStateValue.currentScene = GAME_PHASES.GIG
 
-    const { TutorialManager } =
-      await import('../../src/components/TutorialManager.tsx')
-
     render(<TutorialManager />)
 
     expect(screen.getByRole('button', { name: /done/i })).toBeTruthy()
@@ -81,8 +93,6 @@ describe('TutorialManager', () => {
     mockGameStateValue.player.tutorialStep = 3
     mockGameStateValue.currentScene = GAME_PHASES.GIG
 
-    const { TutorialManager } =
-      await import('../../src/components/TutorialManager.tsx')
     const user = userEvent.setup()
 
     render(<TutorialManager />)
@@ -98,8 +108,6 @@ describe('TutorialManager', () => {
     mockGameStateValue.player.tutorialStep = 0
     mockGameStateValue.currentScene = GAME_PHASES.MENU
 
-    const { TutorialManager } =
-      await import('../../src/components/TutorialManager.tsx')
     const user = userEvent.setup()
 
     render(<TutorialManager />)
@@ -118,9 +126,6 @@ describe('TutorialManager', () => {
     mockGameStateValue.player.tutorialStep = 0
     mockGameStateValue.currentScene = GAME_PHASES.MENU
 
-    const { TutorialManager } =
-      await import('../../src/components/TutorialManager.tsx')
-
     const { container } = render(<TutorialManager />)
 
     expect(container.firstChild).toBeFalsy()
@@ -131,9 +136,6 @@ describe('TutorialManager', () => {
     mockGameStateValue.player.tutorialStep = -1
     mockGameStateValue.currentScene = GAME_PHASES.MENU
 
-    const { TutorialManager } =
-      await import('../../src/components/TutorialManager.tsx')
-
     const { container } = render(<TutorialManager />)
 
     expect(container.firstChild).toBeFalsy()
@@ -143,9 +145,6 @@ describe('TutorialManager', () => {
     mockGameStateValue.player.tutorialStep = 1
     mockGameStateValue.currentScene = GAME_PHASES.OVERWORLD
     mockGameStateValue.settings.tutorialSeen = false
-
-    const { TutorialManager } =
-      await import('../../src/components/TutorialManager.tsx')
 
     render(<TutorialManager />)
 
@@ -162,9 +161,6 @@ describe('TutorialManager', () => {
     mockGameStateValue.currentScene = GAME_PHASES.OVERWORLD
     mockGameStateValue.settings.tutorialSeen = false
 
-    const { TutorialManager } =
-      await import('../../src/components/TutorialManager.tsx')
-
     render(<TutorialManager />)
 
     expect(
@@ -180,9 +176,6 @@ describe('TutorialManager', () => {
     mockGameStateValue.player.tutorialStep = 3
     mockGameStateValue.currentScene = GAME_PHASES.GIG
     mockGameStateValue.settings.tutorialSeen = false
-
-    const { TutorialManager } =
-      await import('../../src/components/TutorialManager.tsx')
 
     render(<TutorialManager />)
 
@@ -201,9 +194,6 @@ describe('TutorialManager', () => {
     mockGameStateValue.currentScene = GAME_PHASES.PRACTICE
     mockGameStateValue.settings.tutorialSeen = false
 
-    const { TutorialManager } =
-      await import('../../src/components/TutorialManager.tsx')
-
     render(<TutorialManager />)
 
     expect(
@@ -221,9 +211,6 @@ describe('TutorialManager', () => {
     mockGameStateValue.currentScene = GAME_PHASES.OVERWORLD
     mockGameStateValue.settings.tutorialSeen = false
 
-    const { TutorialManager } =
-      await import('../../src/components/TutorialManager.tsx')
-
     const { container } = render(<TutorialManager />)
 
     const dots = container.querySelectorAll('[class*="w-2 h-2"]')
@@ -234,9 +221,6 @@ describe('TutorialManager', () => {
     mockGameStateValue.player.tutorialStep = 1
     mockGameStateValue.currentScene = GAME_PHASES.MENU // Wrong scene for step 1
     mockGameStateValue.settings.tutorialSeen = false
-
-    const { TutorialManager } =
-      await import('../../src/components/TutorialManager.tsx')
 
     const { container } = render(<TutorialManager />)
 
@@ -249,9 +233,6 @@ describe('TutorialManager', () => {
     mockGameStateValue.currentScene = GAME_PHASES.MENU
     mockGameStateValue.settings.tutorialSeen = false
 
-    const { TutorialManager } =
-      await import('../../src/components/TutorialManager.tsx')
-
     const { container } = render(<TutorialManager />)
 
     const dialog = container.querySelector('[role="dialog"]')
@@ -263,9 +244,6 @@ describe('TutorialManager', () => {
     mockGameStateValue.player = {} // No tutorialStep
     mockGameStateValue.currentScene = GAME_PHASES.MENU
     mockGameStateValue.settings.tutorialSeen = false
-
-    const { TutorialManager } =
-      await import('../../src/components/TutorialManager.tsx')
 
     // Should default to step 0
     render(<TutorialManager />)

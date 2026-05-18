@@ -1,10 +1,12 @@
 import { useState, useCallback, useMemo } from 'react'
-import { useGameState } from '../context/GameState'
+import { useGameActions, useGameSelector } from '../context/GameState'
 import { GAME_CONSTANTS } from '../context/gameConstants'
 import { validateBloodBankDonation } from '../utils/bloodBankUtils'
 
 export const useBloodBank = () => {
-  const { bloodBankDonate, player, band } = useGameState()
+  const player = useGameSelector(state => state.player)
+  const band = useGameSelector(state => state.band)
+  const { bloodBankDonate } = useGameActions()
 
   const [showBloodBank, setShowBloodBank] = useState(false)
 

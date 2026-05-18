@@ -11,7 +11,7 @@ import type { Song } from '../types/audio'
 import type { ActiveEffectEntry } from '../types/components'
 import type { TranslationCallback } from '../types/callbacks'
 import { useTranslation } from 'react-i18next'
-import { useGameState } from '../context/GameState'
+import { useGameActions, useGameSelector } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
 import { MODIFIER_COSTS } from '../utils/economyEngine'
 import { clampPlayerMoney, clampBandHarmony } from '../utils/gameStateUtils'
@@ -111,25 +111,25 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     [typedT]
   )
 
+  const currentGig = useGameSelector(state => state.currentGig)
+  const setlist = useGameSelector(state => state.setlist)
+  const gigModifiers = useGameSelector(state => state.gigModifiers)
+  const player = useGameSelector(state => state.player)
+  const activeEvent = useGameSelector(state => state.activeEvent)
+  const band = useGameSelector(state => state.band)
+  const isScreenshotMode = useGameSelector(state => state.isScreenshotMode)
   const {
-    currentGig,
     changeScene,
     setSetlist,
-    setlist,
-    gigModifiers,
     setGigModifiers,
-    player,
     updatePlayer,
     triggerEvent,
-    activeEvent,
-    band,
     updateBand,
     addToast,
     startRoadieMinigame,
     startKabelsalatMinigame,
-    startAmpCalibration,
-    isScreenshotMode
-  } = useGameState()
+    startAmpCalibration
+  } = useGameActions()
 
   const handleUpdateMerchPrice = useCallback(
     (merchKey: string, newPrice: number) => {

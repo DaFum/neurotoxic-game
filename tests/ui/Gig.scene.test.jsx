@@ -12,7 +12,14 @@ import {
 } from '../../src/utils/audio/audioEngine'
 
 // Mock dependencies
-vi.mock('../../src/context/GameState')
+vi.mock('../../src/context/GameState', () => {
+  const useGameState = vi.fn()
+  return {
+    useGameState,
+    useGameActions: useGameState,
+    useGameSelector: selector => selector(useGameState())
+  }
+})
 vi.mock('../../src/utils/audio/audioEngine', () => ({
   audioManager: {
     ensureAudioContext: vi.fn().mockResolvedValue(true)

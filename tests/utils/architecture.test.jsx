@@ -1,10 +1,37 @@
 import { test } from 'vitest'
 import assert from 'node:assert/strict'
+import fs from 'node:fs/promises'
+import path from 'node:path'
 import { ALL_RAW_EVENTS } from '../../src/data/events/index'
 import { handleAdvanceDay } from '../../src/context/reducers/systemReducer'
 import { handleAdvanceQuest } from '../../src/context/reducers/questReducer'
 import { handleSetLastGigStats } from '../../src/context/reducers/gigReducer'
 import { QUEST_APOLOGY_TOUR } from '../../src/data/questsConstants'
+import * as GameStateModule from '../../src/context/GameState'
+
+const SRC_ROOT = path.resolve(process.cwd(), 'src')
+const GAME_STATE_MODULE = path.join(SRC_ROOT, 'context', 'GameState.tsx')
+const SOURCE_EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx'])
+
+const findSourceFiles = async directory => {
+  const entries = await fs.readdir(directory, { withFileTypes: true })
+  const files = []
+
+  for (const entry of entries) {
+    const absolutePath = path.join(directory, entry.name)
+
+    if (entry.isDirectory()) {
+      files.push(...(await findSourceFiles(absolutePath)))
+    } else if (SOURCE_EXTENSIONS.has(path.extname(entry.name))) {
+      files.push(absolutePath)
+    }
+  }
+
+  return files
+}
+
+const relativeSourcePath = absolutePath =>
+  path.relative(process.cwd(), absolutePath).replaceAll(path.sep, '/')
 
 const createMockGameState = () => ({
   player: {
@@ -71,6 +98,44 @@ test('Events DB has global unique IDs across all categories', () => {
     duplicates.length,
     0,
     `Found duplicate event IDs: ${duplicates.join(', ')}`
+  )
+})
+
+// Matches the bare `useGameState` identifier but not `useGameStateSelector`,
+// `useGameStateActions`, or any future identifier with `useGameState` as a
+// substring. Comments are stripped before the check so JSDoc/inline references
+// (e.g. "@deprecated use useGameSelector instead of useGameState") do not
+// trigger false positives.
+const DEPRECATED_HOOK_REGEX = /\buseGameState\b(?!Selector|Actions|\w)/
+
+const stripComments = source =>
+  source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '')
+
+test('Production source does not consume deprecated useGameState hook', async () => {
+  const sourceFiles = await findSourceFiles(SRC_ROOT)
+  const offenders = []
+
+  for (const filePath of sourceFiles) {
+    if (filePath === GAME_STATE_MODULE) continue
+
+    const source = await fs.readFile(filePath, 'utf8')
+    if (DEPRECATED_HOOK_REGEX.test(stripComments(source))) {
+      offenders.push(relativeSourcePath(filePath))
+    }
+  }
+
+  assert.deepStrictEqual(
+    offenders,
+    [],
+    `Deprecated useGameState references found:\n${offenders.join('\n')}`
+  )
+})
+
+test('Legacy useGameState compat export still exists on GameState module', () => {
+  assert.strictEqual(
+    typeof GameStateModule.useGameState,
+    'function',
+    'GameState.tsx must keep the legacy useGameState export so the architecture guard above is meaningful — if this assertion fails, the deprecated-hook detection is guarding a hook that no longer exists.'
   )
 })
 

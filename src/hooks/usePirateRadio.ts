@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { useGameState } from '../context/GameState'
+import { useGameActions, useGameSelector } from '../context/GameState'
 import { audioService } from '../utils/audio/audioEngine'
 import {
   checkHasBroadcastedToday,
@@ -17,7 +17,10 @@ export const PIRATE_RADIO_CONFIG = {
 
 export const usePirateRadio = () => {
   const [showPirateRadio, setShowPirateRadio] = useState(false)
-  const { player, band, social, pirateBroadcast } = useGameState()
+  const player = useGameSelector(state => state.player)
+  const band = useGameSelector(state => state.band)
+  const social = useGameSelector(state => state.social)
+  const { pirateBroadcast } = useGameActions()
 
   const openPirateRadio = useCallback(() => setShowPirateRadio(true), [])
   const closePirateRadio = useCallback(() => setShowPirateRadio(false), [])

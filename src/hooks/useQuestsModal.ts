@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react'
-import { useGameState } from '../context/GameState.tsx'
+import { useGameSelector } from '../context/GameState.tsx'
 
 /**
  * Hook to manage Quests modal state and props.
@@ -7,7 +7,8 @@ import { useGameState } from '../context/GameState.tsx'
  */
 export const useQuestsModal = () => {
   const [showQuests, setShowQuests] = useState(false)
-  const gameState = useGameState()
+  const activeQuests = useGameSelector(state => state.activeQuests)
+  const player = useGameSelector(state => state.player)
 
   const openQuests = useCallback(() => setShowQuests(true), [])
   const closeQuests = useCallback(() => setShowQuests(false), [])
@@ -15,10 +16,10 @@ export const useQuestsModal = () => {
   const questsProps = useMemo(
     () => ({
       onClose: closeQuests,
-      activeQuests: gameState.activeQuests ?? [],
-      player: gameState.player
+      activeQuests: activeQuests ?? [],
+      player
     }),
-    [closeQuests, gameState.activeQuests, gameState.player]
+    [closeQuests, activeQuests, player]
   )
 
   return {

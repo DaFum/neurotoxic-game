@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { useGameState } from '../../context/GameState'
+import { useGameActions } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
 import { getSafeRandom } from '../../utils/crypto'
 import { clampAmpDial } from '../../utils/gameStateUtils'
@@ -9,7 +9,7 @@ const MINIGAME_DURATION = 15
 const FALLBACK_ADVANCE_DELAY_MS = 10_000
 
 export function useAmpLogic() {
-  const { completeAmpCalibration, changeScene } = useGameState()
+  const { completeAmpCalibration, changeScene } = useGameActions()
 
   const [dialValue, setDialValue] = useState(500)
   const [targetValue, setTargetValue] = useState(

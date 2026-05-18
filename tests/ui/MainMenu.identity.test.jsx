@@ -7,9 +7,14 @@ import { useBandHQModal } from '../../src/hooks/useBandHQModal'
 
 // Mock dependencies
 
-vi.mock('../../src/context/GameState', () => ({
-  useGameState: vi.fn()
-}))
+vi.mock('../../src/context/GameState', () => {
+  const useGameState = vi.fn()
+  return {
+    useGameState,
+    useGameActions: useGameState,
+    useGameSelector: selector => selector(useGameState())
+  }
+})
 
 vi.mock('../../src/hooks/useBandHQModal', () => ({
   useBandHQModal: vi.fn()

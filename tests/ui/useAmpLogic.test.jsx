@@ -10,7 +10,12 @@ vi.mock('../../src/context/GameState', () => ({
   useGameState: () => ({
     completeAmpCalibration: mockCompleteAmpCalibration,
     changeScene: mockChangeScene
-  })
+  }),
+  useGameActions: () => ({
+    completeAmpCalibration: mockCompleteAmpCalibration,
+    changeScene: mockChangeScene
+  }),
+  useGameSelector: selector => selector({})
 }))
 
 describe('useAmpLogic', () => {

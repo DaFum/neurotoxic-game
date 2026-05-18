@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { useGameState } from '../context/GameState'
+import { useGameActions, useGameSelector } from '../context/GameState'
 import { PixiStage } from './PixiStage'
 import { ActionButton } from '../ui/shared'
 import type { MinigameSceneFrameProps } from '../types/components'
@@ -23,14 +23,13 @@ export const MinigameSceneFrame = <TState,>({
   completionButtonText = 'CONTINUE',
   children
 }: MinigameSceneFrameProps<TState>) => {
+  const settings = useGameSelector(state => state.settings)
   const {
-    settings,
     completeTravelMinigame,
     completeRoadieMinigame,
     completeKabelsalatMinigame,
-    completeAmpCalibration,
-    endGig
-  } = useGameState()
+    completeAmpCalibration
+  } = useGameActions()
   const continueButtonRef = useRef<HTMLButtonElement | null>(null)
   const previousFocusRef = useRef<HTMLElement | null>(null)
   const logicRef = useRef(logic)
@@ -122,8 +121,7 @@ export const MinigameSceneFrame = <TState,>({
     completeTravelMinigame,
     completeRoadieMinigame,
     completeKabelsalatMinigame,
-    completeAmpCalibration,
-    endGig
+    completeAmpCalibration
   ])
 
   return (

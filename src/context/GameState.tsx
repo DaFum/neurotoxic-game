@@ -209,6 +209,7 @@ type GameDispatchActions = {
     payload: Parameters<typeof createBloodBankDonateAction>[0]
   ) => void
   setPendingBandHQOpen: (isOpen: boolean) => void
+  spawnRivalBand: () => void
   updateRivalBand: (patch: Partial<RivalBandState>) => void
 }
 
@@ -220,7 +221,6 @@ type GameDispatchActions = {
 export type GameStateWithActions = GameState &
   GameDispatchActions & {
     hasUpgrade: (upgradeId: string) => boolean
-    spawnRivalBand?: () => void
   }
 
 type HotGameStateContextStore = typeof globalThis & {

@@ -117,7 +117,9 @@ const mockUseGameState = {
 }
 
 vi.mock('../../src/context/GameState', () => ({
-  useGameState: () => mockUseGameState
+  useGameState: () => mockUseGameState,
+  useGameActions: () => mockUseGameState,
+  useGameSelector: selector => selector(mockUseGameState)
 }))
 // Import PreGig after mocks
 const { PreGig } = await import('../../src/scenes/PreGig.tsx')
