@@ -38,6 +38,8 @@ interface UplinkButtonProps {
 interface BrutalToggleProps {
   label: string
   initialState?: boolean
+  isOn?: boolean
+  onToggle?: (next: boolean) => void
 }
 
 interface DeadmanButtonProps {
@@ -71,6 +73,8 @@ interface BrutalFaderProps {
   label: string
   initialValue?: number
   max?: number
+  value?: number
+  onChange?: (next: number) => void
 }
 
 interface CrisisModalProps {
@@ -740,13 +744,27 @@ export const CorporateSeal = memo(({ className, title }: SvgIconProps) => {
 // --- UI COMPONENTS ---
 
 // 1. Industrial Toggle
+// Supports uncontrolled mode (seed via `initialState`) and controlled mode
+// (pass `isOn` + `onToggle`). In controlled mode the rendered state tracks
+// the prop, so callers can sync from external state (e.g. settings load).
 export const BrutalToggle = memo(
-  ({ label, initialState = false }: BrutalToggleProps) => {
-    const [isOn, setIsOn] = useState<boolean>(initialState)
+  ({
+    label,
+    initialState = false,
+    isOn: controlledIsOn,
+    onToggle
+  }: BrutalToggleProps) => {
+    const isControlled = controlledIsOn !== undefined
+    const [internalIsOn, setInternalIsOn] = useState<boolean>(initialState)
+    const isOn = isControlled ? controlledIsOn : internalIsOn
     return (
       <ToggleSwitch
         isOn={isOn}
-        onToggle={() => setIsOn(prev => !prev)}
+        onToggle={() => {
+          const next = !isOn
+          if (!isControlled) setInternalIsOn(next)
+          onToggle?.(next)
+        }}
         ariaLabel={label}
       />
     )
@@ -873,18 +891,34 @@ export const StatBlock = memo(
 )
 
 // 5. Brutal Amp Fader (Custom Slider)
+// Supports uncontrolled mode (seed via `initialValue`) and controlled mode
+// (pass `value` + `onChange`). In controlled mode the rendered value tracks
+// the prop, so callers can sync from external state.
 export const BrutalFader = memo(
-  ({ label, initialValue = 7, max = 10 }: BrutalFaderProps) => {
-    const { t } = useTranslation(['ui'])
+  ({
+    label,
+    initialValue = 7,
+    max = 10,
+    value: controlledValue,
+    onChange
+  }: BrutalFaderProps) => {
     const safeMax = Number.isFinite(max) && max > 0 ? Math.floor(max) : 1
     const clampValue = useCallback(
       (value: number) => Math.max(1, Math.min(safeMax, Math.round(value))),
       [safeMax]
     )
-    const [val, setVal] = useState<number>(() => clampValue(initialValue))
+    const isControlled = controlledValue !== undefined
+    const [internalVal, setInternalVal] = useState<number>(() =>
+      clampValue(initialValue)
+    )
+    const val = isControlled ? clampValue(controlledValue) : internalVal
     const setClampedValue = useCallback(
-      (value: number) => setVal(clampValue(value)),
-      [clampValue]
+      (value: number) => {
+        const next = clampValue(value)
+        if (!isControlled) setInternalVal(next)
+        onChange?.(next)
+      },
+      [clampValue, isControlled, onChange]
     )
 
     return (
@@ -899,12 +933,6 @@ export const BrutalFader = memo(
         valueLabel={String(val)}
         onInputChange={event => setClampedValue(Number(event.target.value))}
         onSegmentSelect={setClampedValue}
-        getSegmentAriaLabel={segment =>
-          t('ui:set_label_to_segment', {
-            label: t(label),
-            segment
-          })
-        }
       />
     )
   }

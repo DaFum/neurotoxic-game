@@ -1,5 +1,4 @@
 import { memo } from 'react'
-import { useTranslation } from 'react-i18next'
 import type { ChangeEvent } from 'react'
 
 import { SegmentedSlider } from './SegmentedSlider'
@@ -15,7 +14,6 @@ export const VolumeSlider = memo(function VolumeSlider({
     e: ChangeEvent<HTMLInputElement> | { target: { value: number } }
   ) => void
 }) {
-  const { t } = useTranslation(['ui'])
   const clampedValue = Number.isFinite(value)
     ? Math.max(0, Math.min(1, value))
     : 0
@@ -36,9 +34,6 @@ export const VolumeSlider = memo(function VolumeSlider({
       onInputChange={onChange}
       onSegmentSelect={segment =>
         onChange({ target: { value: segment / max } })
-      }
-      getSegmentAriaLabel={segment =>
-        t('ui:volume.set', { pct: Math.round((segment / max) * 100) })
       }
     />
   )

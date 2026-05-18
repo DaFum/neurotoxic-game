@@ -1,5 +1,4 @@
 import { memo } from 'react'
-import { useTranslation } from 'react-i18next'
 import type { ChangeEvent } from 'react'
 
 type SegmentedSliderProps = {
@@ -13,7 +12,6 @@ type SegmentedSliderProps = {
   valueLabel: string
   onInputChange: (event: ChangeEvent<HTMLInputElement>) => void
   onSegmentSelect: (segment: number) => void
-  getSegmentAriaLabel?: (segment: number) => string
 }
 
 export const SegmentedSlider = memo(function SegmentedSlider({
@@ -26,10 +24,8 @@ export const SegmentedSlider = memo(function SegmentedSlider({
   segmentCount,
   valueLabel,
   onInputChange,
-  onSegmentSelect,
-  getSegmentAriaLabel
+  onSegmentSelect
 }: SegmentedSliderProps) {
-  const { t } = useTranslation(['ui'])
   const safeSegmentCount =
     Number.isFinite(segmentCount) && segmentCount > 0
       ? Math.floor(segmentCount)
@@ -70,11 +66,6 @@ export const SegmentedSlider = memo(function SegmentedSlider({
               key={segment}
               onClick={() => onSegmentSelect(segment)}
               className='flex-1 relative h-full flex items-end group-hover:opacity-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
-              aria-label={
-                getSegmentAriaLabel?.(segment) ??
-                t('ui:set_label_to_segment', { label, segment })
-              }
-              aria-pressed={isActive}
               tabIndex={-1}
               aria-hidden='true'
             >
