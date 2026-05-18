@@ -745,8 +745,11 @@ export const CorporateSeal = memo(({ className, title }: SvgIconProps) => {
 
 // 1. Industrial Toggle
 // Supports uncontrolled mode (seed via `initialState`) and controlled mode
-// (pass `isOn` + `onToggle`). In controlled mode the rendered state tracks
-// the prop, so callers can sync from external state (e.g. settings load).
+// (pass `isOn` + `onToggle`). Only strict booleans are treated as controlled;
+// `undefined`/`null`/non-boolean values fall through to uncontrolled mode so a
+// stray `NaN` or missing prop can't put the component in a stuck state. The
+// internal state mirrors the controlled value so a later transition back to
+// uncontrolled retains the last value instead of snapping to `initialState`.
 export const BrutalToggle = memo(
   ({
     label,
@@ -754,9 +757,25 @@ export const BrutalToggle = memo(
     isOn: controlledIsOn,
     onToggle
   }: BrutalToggleProps) => {
-    const isControlled = controlledIsOn !== undefined
+    const isControlled = typeof controlledIsOn === 'boolean'
     const [internalIsOn, setInternalIsOn] = useState<boolean>(initialState)
-    const isOn = isControlled ? controlledIsOn : internalIsOn
+    const isOn =
+      typeof controlledIsOn === 'boolean' ? controlledIsOn : internalIsOn
+
+    // Mirror controlled prop into internal state so a later transition back
+    // to uncontrolled mode retains the value. Guarded by a value equality
+    // check to avoid loops; this is the canonical "uncontrolled with
+    // optional controlled" sync pattern.
+    useEffect(() => {
+      if (
+        typeof controlledIsOn === 'boolean' &&
+        controlledIsOn !== internalIsOn
+      ) {
+        // eslint-disable-next-line @eslint-react/set-state-in-effect -- intentional controlled-to-internal mirror
+        setInternalIsOn(controlledIsOn)
+      }
+    }, [controlledIsOn, internalIsOn])
+
     return (
       <ToggleSwitch
         isOn={isOn}
@@ -892,8 +911,10 @@ export const StatBlock = memo(
 
 // 5. Brutal Amp Fader (Custom Slider)
 // Supports uncontrolled mode (seed via `initialValue`) and controlled mode
-// (pass `value` + `onChange`). In controlled mode the rendered value tracks
-// the prop, so callers can sync from external state.
+// (pass `value` + `onChange`). Only finite numbers are treated as controlled;
+// `NaN`/`Infinity`/`undefined` fall through to uncontrolled so a malformed
+// prop can't leave the slider stuck. The internal state mirrors the
+// controlled value so a later transition back to uncontrolled retains it.
 export const BrutalFader = memo(
   ({
     label,
@@ -907,11 +928,25 @@ export const BrutalFader = memo(
       (value: number) => Math.max(1, Math.min(safeMax, Math.round(value))),
       [safeMax]
     )
-    const isControlled = controlledValue !== undefined
+    const finiteControlled =
+      typeof controlledValue === 'number' && Number.isFinite(controlledValue)
+        ? clampValue(controlledValue)
+        : null
+    const isControlled = finiteControlled !== null
     const [internalVal, setInternalVal] = useState<number>(() =>
       clampValue(initialValue)
     )
-    const val = isControlled ? clampValue(controlledValue) : internalVal
+    const val = finiteControlled ?? internalVal
+
+    // Mirror controlled prop into internal state so a later transition back
+    // to uncontrolled mode retains the value.
+    useEffect(() => {
+      if (finiteControlled !== null && finiteControlled !== internalVal) {
+        // eslint-disable-next-line @eslint-react/set-state-in-effect -- intentional controlled-to-internal mirror
+        setInternalVal(finiteControlled)
+      }
+    }, [finiteControlled, internalVal])
+
     const setClampedValue = useCallback(
       (value: number) => {
         const next = clampValue(value)
