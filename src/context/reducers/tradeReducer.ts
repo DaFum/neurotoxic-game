@@ -63,7 +63,12 @@ export const handleTradeVoidItem = (
   const instanceId =
     typeof payload.instanceId === 'string' ? payload.instanceId : undefined
 
-  const cost = clampNonNegative(Number(fameCost))
+  const parsedCost = Number(fameCost)
+  if (!Number.isFinite(parsedCost) || parsedCost < 0) {
+    logger.warn('GameState', 'Invalid fameCost for void trade', fameCost)
+    return state
+  }
+  const cost = clampNonNegative(parsedCost)
   const currentFame = Number(state.player.fame) || 0
 
   if (currentFame < cost) {
