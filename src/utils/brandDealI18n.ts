@@ -56,7 +56,7 @@ export const getTranslatedBrandDealDisplay = (
 
   const name = hasCatalogEntry
     ? translateString(t, getBrandDealNameKey(id), fallbackName)
-    : (inlineName ?? fallbackName)
+    : fallbackName
   const description =
     hasCatalogEntry && fallbackDescription
       ? translateString(t, getBrandDealDescriptionKey(id), fallbackDescription)
