@@ -5145,24 +5145,6 @@
         "isDefault": false
       }
     ],
-    "HARMONY_DEATH_SPIRAL_DAMPEN_FACTOR": [
-      {
-        "name": "HARMONY_DEATH_SPIRAL_DAMPEN_FACTOR",
-        "path": "src/utils/eventEngine.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      }
-    ],
-    "HARMONY_DEATH_SPIRAL_THRESHOLD": [
-      {
-        "name": "HARMONY_DEATH_SPIRAL_THRESHOLD",
-        "path": "src/utils/eventEngine.ts",
-        "source": "local",
-        "type": "const",
-        "isDefault": false
-      }
-    ],
     "hasActiveQuest": [
       {
         "name": "hasActiveQuest",
@@ -6197,6 +6179,17 @@
         "path": "src/types/game.d.ts",
         "source": "local",
         "type": "interface",
+        "isDefault": false,
+        "typeOnly": true,
+        "exportPath": "src/types/index.ts"
+      }
+    ],
+    "MinigameType": [
+      {
+        "name": "MinigameType",
+        "path": "src/types/game.d.ts",
+        "source": "local",
+        "type": "type",
         "isDefault": false,
         "typeOnly": true,
         "exportPath": "src/types/index.ts"
@@ -8654,6 +8647,16 @@
         "source": "local",
         "type": "const",
         "isDefault": false
+      }
+    ],
+    "SpinStoryMoneyUpdate": [
+      {
+        "name": "SpinStoryMoneyUpdate",
+        "path": "src/utils/postGigUtils.ts",
+        "source": "local",
+        "type": "type",
+        "isDefault": false,
+        "typeOnly": true
       }
     ],
     "StageControllerOptions": [

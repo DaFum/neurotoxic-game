@@ -6,7 +6,8 @@ import { useTranslation } from 'react-i18next'
 import { useGlitchPulse } from '../../hooks/useGlitchPulse'
 
 const SCANLINE_BACKGROUND_STYLE = {
-  backgroundImage: 'repeating-linear-gradient(transparent, transparent 2px, var(--color-void-black-50) 2px, var(--color-void-black-50) 4px)'
+  backgroundImage:
+    'repeating-linear-gradient(transparent, transparent 2px, var(--color-void-black-50) 2px, var(--color-void-black-50) 4px)'
 } as const
 
 interface HazardTickerProps {

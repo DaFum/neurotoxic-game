@@ -161,17 +161,10 @@ export const checkTraitUnlocks = (
 
     // Grudge Holder (Matze): Relationship < 30
     if (Matze && !hasTrait(Matze, 'grudge_holder') && Matze.relationships) {
-      let hasGrudge = false
-      for (const memberId in Matze.relationships) {
-        if (
-          Object.hasOwn(Matze.relationships, memberId) &&
-          (Matze.relationships[memberId] ?? 50) < 30
-        ) {
-          hasGrudge = true
-          break
-        }
-      }
-      if (hasGrudge) {
+      if (
+        Object.values(Matze.relationships).some(score => (score ?? 50) < 30) &&
+        !newUnlocks.some(u => u.traitId === 'grudge_holder')
+      ) {
         newUnlocks.push({ memberId: Matze.name, traitId: 'grudge_holder' })
       }
     }
