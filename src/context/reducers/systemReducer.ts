@@ -52,8 +52,17 @@ import {
 import {
   DEFAULT_MINIGAME_STATE,
   GAME_PHASES,
+  MINIGAME_TYPES,
   PRACTICE_RETURN_SCENES
 } from '../gameConstants'
+import type { MinigameType } from '../../types/game'
+
+const ALLOWED_MINIGAME_TYPES = new Set<MinigameType>(
+  Object.values(MINIGAME_TYPES)
+)
+
+const isMinigameType = (value: unknown): value is MinigameType =>
+  typeof value === 'string' && ALLOWED_MINIGAME_TYPES.has(value as MinigameType)
 import { QuestLifecycle } from '../../domain/questLifecycle'
 import { getSafeRandom } from '../../utils/crypto'
 import { ALLOWED_TOAST_TYPES, sanitizeLoadedToast } from './toastSanitizers'
@@ -1026,14 +1035,9 @@ const sanitizeMinigameState = (rawMinigame: unknown): GameState['minigame'] => {
     Object.hasOwn(minigameObj, 'type') &&
     (typeof minigameObj.type === 'string' || minigameObj.type === null)
   ) {
-    nextMinigame.type =
-      typeof minigameObj.type === 'string' &&
-      (minigameObj.type === 'TOURBUS' ||
-        minigameObj.type === 'ROADIE' ||
-        minigameObj.type === 'KABELSALAT' ||
-        minigameObj.type === 'AMP_CALIBRATION')
-        ? minigameObj.type
-        : null
+    nextMinigame.type = isMinigameType(minigameObj.type)
+      ? minigameObj.type
+      : null
   }
   if (
     Object.hasOwn(minigameObj, 'targetDestination') &&
@@ -1352,7 +1356,7 @@ const sanitizeActiveQuests = (value: unknown): GameState['activeQuests'] => {
   return value.flatMap(quest => {
     if (!isPlainObject(quest) || typeof quest.id !== 'string') return []
     const sanitized: GameState['activeQuests'][number] = { id: quest.id }
-    for (const key of ['label', 'rewardType', 'rewardFlag']) {
+    for (const key of ['label', 'description', 'rewardType', 'rewardFlag']) {
       if (typeof quest[key] === 'string') sanitized[key] = quest[key]
     }
     for (const key of ['deadline', 'progress', 'required', 'moneyReward']) {
