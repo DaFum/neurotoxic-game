@@ -7,8 +7,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "ActionButton": [
@@ -28,8 +28,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "ActionType": [
@@ -59,8 +59,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "ActiveEffectEntry": [
@@ -70,8 +70,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "addContrabandHelper": [
@@ -216,8 +216,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "AmpHUD": [
@@ -236,8 +236,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "AmpStageController": [
@@ -256,8 +256,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "AmpWaveManager": [
@@ -458,8 +458,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "AsyncCallback": [
@@ -469,8 +469,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "AsyncVoidCallback": [
@@ -480,8 +480,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "AUDIO_BUFFER_DECODE_TIMEOUT_MS": [
@@ -509,8 +509,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "AudioControls": [
@@ -520,8 +520,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/components.d.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "AudioError": [
@@ -549,8 +549,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "audioManager": [
@@ -570,8 +570,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "audioService": [
@@ -610,8 +610,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "audioState": [
@@ -630,8 +630,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/components.d.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "AutoplayOverlay": [
@@ -659,8 +659,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "BAND_EVENTS": [
@@ -727,8 +727,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/game.d.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "BandMembersLayer": [
@@ -747,17 +747,7 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "BandPatch": [
-      {
-        "name": "BandPatch",
-        "path": "src/types/purchase.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
+        "exportPath": "src/types/index.ts",
         "typeOnly": true
       }
     ],
@@ -777,8 +767,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/game.d.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "BASE_SPEED": [
@@ -853,8 +843,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/game.d.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "BloodBankModal": [
@@ -900,7 +890,7 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "exportPath": "src/types/game.d.ts",
+        "exportPath": "src/types/index.ts",
         "typeOnly": true
       }
     ],
@@ -911,7 +901,7 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "exportPath": "src/types/game.d.ts",
+        "exportPath": "src/types/index.ts",
         "typeOnly": true
       }
     ],
@@ -922,7 +912,7 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "exportPath": "src/types/game.d.ts",
+        "exportPath": "src/types/index.ts",
         "typeOnly": true
       }
     ],
@@ -933,7 +923,7 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "exportPath": "src/types/game.d.ts",
+        "exportPath": "src/types/index.ts",
         "typeOnly": true
       }
     ],
@@ -1557,8 +1547,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "CatalogEffect": [
@@ -1568,8 +1558,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "CatalogInputEffect": [
@@ -1579,8 +1569,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "CatalogInputItem": [
@@ -1590,8 +1580,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "CatalogItem": [
@@ -1601,8 +1591,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "CatalogTab": [
@@ -1621,8 +1611,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "ChangeEvent": [
@@ -1641,7 +1631,7 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "exportPath": "src/types/game.d.ts",
+        "exportPath": "src/types/index.ts",
         "typeOnly": true
       }
     ],
@@ -1661,7 +1651,7 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "exportPath": "src/types/game.d.ts",
+        "exportPath": "src/types/index.ts",
         "typeOnly": true
       }
     ],
@@ -1682,8 +1672,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "ChatterMessageData": [
@@ -1693,8 +1683,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "ChatterMessageProps": [
@@ -1704,8 +1694,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "ChatterMessageType": [
@@ -1715,8 +1705,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "ChatterOverlay": [
@@ -1735,8 +1725,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "checkCollision": [
@@ -1845,8 +1835,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "clamp0to100": [
@@ -2045,8 +2035,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/game.d.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "ClinicHeader": [
@@ -2065,8 +2055,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "ClinicMemberCard": [
@@ -2085,8 +2075,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "ClinicScene": [
@@ -2105,8 +2095,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "ComboDisplay": [
@@ -2134,8 +2124,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "CompleteTravelMinigamePayload": [
@@ -2145,8 +2135,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/game.d.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "ComponentPropsWithoutRef": [
@@ -2222,16 +2212,6 @@
         "isDefault": false
       }
     ],
-    "ConnectorType": [
-      {
-        "name": "ConnectorType",
-        "path": "src/types/kabelsalat.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
-      }
-    ],
     "CONSEQUENCE_EVENTS": [
       {
         "name": "CONSEQUENCE_EVENTS",
@@ -2284,8 +2264,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/game.d.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "ControlsHint": [
@@ -3000,8 +2980,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/game.d.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "DarkWebLeakModal": [
@@ -3030,8 +3010,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/game.d.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "DataManagement": [
@@ -3105,8 +3085,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "DealCard": [
@@ -3125,8 +3105,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "DealImageProps": [
@@ -3136,8 +3116,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "DealInfoProps": [
@@ -3147,8 +3127,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "DealNegotiationHook": [
@@ -3158,8 +3138,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "DealNegotiationState": [
@@ -3169,8 +3149,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "DealsPhase": [
@@ -3189,8 +3169,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "DEBOUNCE_MS": [
@@ -3399,8 +3379,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "Effect": [
@@ -3410,8 +3390,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "EFFECT_HANDLERS": [
@@ -3599,8 +3579,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/game.d.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "EventDeltaPayload": [
@@ -3610,8 +3590,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/game.d.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "eventEngine": [
@@ -3658,8 +3638,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "EventModalOption": [
@@ -3669,8 +3649,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "EventModalPrecomputedResult": [
@@ -3680,8 +3660,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "EventOption": [
@@ -3691,8 +3671,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/game.d.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "EVENTS_DB": [
@@ -3773,8 +3753,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "FinancialCategory": [
@@ -3784,8 +3764,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "FinancialColumn": [
@@ -3814,8 +3794,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "FinancialList": [
@@ -3834,8 +3814,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "formatCurrency": [
@@ -3898,8 +3878,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "GameError": [
@@ -3918,8 +3898,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/game.d.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "GameIcon": [
@@ -3939,7 +3919,7 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "exportPath": "src/types/game.d.ts",
+        "exportPath": "src/types/index.ts",
         "typeOnly": true
       }
     ],
@@ -4004,8 +3984,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "gameReducer": [
@@ -4024,8 +4004,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "GameState": [
@@ -4035,8 +4015,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "GameStateProvider": [
@@ -4591,7 +4571,7 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "exportPath": "src/types/game.d.ts",
+        "exportPath": "src/types/index.ts",
         "typeOnly": true
       }
     ],
@@ -4602,16 +4582,6 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      }
-    ],
-    "GigStats": [
-      {
-        "name": "GigStats",
-        "path": "src/types/rhythmGame.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "GlitchButton": [
@@ -5728,8 +5698,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "LeaderboardTab": [
@@ -5748,16 +5718,6 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      }
-    ],
-    "LightningSeed": [
-      {
-        "name": "LightningSeed",
-        "path": "src/types/kabelsalat.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "loadAudioBuffer": [
@@ -5932,7 +5892,7 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "exportPath": "src/types/game.d.ts",
+        "exportPath": "src/types/index.ts",
         "typeOnly": true
       }
     ],
@@ -5943,8 +5903,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "MapNodeView": [
@@ -6036,8 +5996,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/game.d.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "MerchStrategyBlock": [
@@ -6139,8 +6099,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "MinigameRegistryEntry": [
@@ -6169,8 +6129,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "MinigameState": [
@@ -6180,8 +6140,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "MinigameType": [
@@ -6191,8 +6151,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "MissHandler": [
@@ -6202,8 +6162,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "Modal": [
@@ -6314,8 +6274,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "NegotiationResult": [
@@ -6325,8 +6285,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "NetResult": [
@@ -6372,7 +6332,7 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "exportPath": "src/types/game.d.ts",
+        "exportPath": "src/types/index.ts",
         "typeOnly": true
       }
     ],
@@ -6438,8 +6398,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "NOTE_CENTER_OFFSET": [
@@ -6577,8 +6537,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "oggCandidates": [
@@ -6597,8 +6557,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "Overlays": [
@@ -6776,8 +6736,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "pickRandomContraband": [
@@ -6823,8 +6783,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/game.d.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "PirateRadioModal": [
@@ -6852,8 +6812,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "PixiStage": [
@@ -6872,8 +6832,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "Platform": [
@@ -6883,7 +6843,7 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "exportPath": "src/types/game.d.ts",
+        "exportPath": "src/types/index.ts",
         "typeOnly": true
       }
     ],
@@ -6905,16 +6865,6 @@
         "isDefault": false
       }
     ],
-    "PlayerPatch": [
-      {
-        "name": "PlayerPatch",
-        "path": "src/types/purchase.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
-      }
-    ],
     "PlayerState": [
       {
         "name": "PlayerState",
@@ -6922,7 +6872,7 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "exportPath": "src/types/game.d.ts",
+        "exportPath": "src/types/index.ts",
         "typeOnly": true
       }
     ],
@@ -7047,8 +6997,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "PostGigSummary": [
@@ -7058,7 +7008,7 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "exportPath": "src/types/game.d.ts",
+        "exportPath": "src/types/index.ts",
         "typeOnly": true
       }
     ],
@@ -7079,7 +7029,7 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "exportPath": "src/types/game.d.ts",
+        "exportPath": "src/types/index.ts",
         "typeOnly": true
       }
     ],
@@ -7164,16 +7114,6 @@
         "source": "local",
         "type": "const",
         "isDefault": false
-      }
-    ],
-    "ProcessedTempoMapEntry": [
-      {
-        "name": "ProcessedTempoMapEntry",
-        "path": "src/types/rhythm.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "processHarmonyRegen": [
@@ -7265,8 +7205,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "QUEST_APOLOGY_TOUR": [
@@ -7330,7 +7270,7 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "exportPath": "src/types/game.d.ts",
+        "exportPath": "src/types/index.ts",
         "typeOnly": true
       }
     ],
@@ -7359,8 +7299,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "Rarity": [
@@ -7370,8 +7310,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "RawGameSettings": [
@@ -7381,8 +7321,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "RawLoadedGame": [
@@ -7392,8 +7332,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "RazorPlayIcon": [
@@ -7511,8 +7451,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "ReloadPrompt": [
@@ -7531,8 +7471,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "ReportPhase": [
@@ -7551,8 +7491,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "resetGigState": [
@@ -7580,8 +7520,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/game.d.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "resolveActiveSetlist": [
@@ -7747,16 +7687,6 @@
         "typeOnly": true
       }
     ],
-    "RhythmLane": [
-      {
-        "name": "RhythmLane",
-        "path": "src/types/rhythmGame.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
-      }
-    ],
     "RhythmLiveStats": [
       {
         "name": "RhythmLiveStats",
@@ -7787,26 +7717,6 @@
         "type": "type",
         "isDefault": false,
         "exportPath": "src/hooks/rhythmGame/useRhythmGameState.ts",
-        "typeOnly": true
-      }
-    ],
-    "RhythmSetlistEntry": [
-      {
-        "name": "RhythmSetlistEntry",
-        "path": "src/types/rhythmGame.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
-      }
-    ],
-    "RhythmSongStatsEntry": [
-      {
-        "name": "RhythmSongStatsEntry",
-        "path": "src/types/rhythmGame.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
         "typeOnly": true
       }
     ],
@@ -7873,7 +7783,7 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "exportPath": "src/types/game.d.ts",
+        "exportPath": "src/types/index.ts",
         "typeOnly": true
       }
     ],
@@ -7920,8 +7830,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "RoadieHUD": [
@@ -7940,8 +7850,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "RoadiePlayerManager": [
@@ -8118,16 +8028,6 @@
         "type": "function",
         "isDefault": false,
         "exportPath": "src/utils/audio/audioEngine.ts"
-      }
-    ],
-    "SetLastGigStats": [
-      {
-        "name": "SetLastGigStats",
-        "path": "src/types/rhythmGame.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "SetlistBlock": [
@@ -8434,7 +8334,7 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "exportPath": "src/types/game.d.ts",
+        "exportPath": "src/types/index.ts",
         "typeOnly": true
       }
     ],
@@ -8445,8 +8345,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "SocialOptionButton": [
@@ -8465,8 +8365,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "SocialPhase": [
@@ -8485,7 +8385,7 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "exportPath": "src/types/game.d.ts",
+        "exportPath": "src/types/index.ts",
         "typeOnly": true
       }
     ],
@@ -8496,7 +8396,7 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "exportPath": "src/types/game.d.ts",
+        "exportPath": "src/types/index.ts",
         "typeOnly": true
       }
     ],
@@ -8527,16 +8427,6 @@
         "isDefault": false
       }
     ],
-    "SocketId": [
-      {
-        "name": "SocketId",
-        "path": "src/types/kabelsalat.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
-      }
-    ],
     "SocketItem": [
       {
         "name": "SocketItem",
@@ -8562,8 +8452,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "SONGS_BY_ID": [
@@ -8666,8 +8556,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "StageResizeHandler": [
@@ -8716,8 +8606,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "StashItem": [
@@ -8727,8 +8617,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/game.d.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "StatBlock": [
@@ -8916,16 +8806,6 @@
         "exportPath": "src/hooks/minigames/useTourbusLogic.ts"
       }
     ],
-    "TempoMapEntry": [
-      {
-        "name": "TempoMapEntry",
-        "path": "src/types/rhythm.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
-        "typeOnly": true
-      }
-    ],
     "test": [
       {
         "name": "test",
@@ -8978,8 +8858,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "ToastOverlay": [
@@ -8998,8 +8878,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "toFiniteNumber": [
@@ -9018,8 +8898,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "toggleNeuroDecimator": [
@@ -9166,8 +9046,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "TourbusHUD": [
@@ -9186,17 +9066,7 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
-      }
-    ],
-    "TourbusObstacle": [
-      {
-        "name": "TourbusObstacle",
-        "path": "src/types/tourbus.d.ts",
-        "source": "local",
-        "type": "interface",
-        "isDefault": false,
+        "exportPath": "src/types/index.ts",
         "typeOnly": true
       }
     ],
@@ -9207,16 +9077,6 @@
         "source": "local",
         "type": "class",
         "isDefault": false
-      }
-    ],
-    "TourbusObstacleType": [
-      {
-        "name": "TourbusObstacleType",
-        "path": "src/types/tourbus.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
       }
     ],
     "TourbusRenderState": [
@@ -9272,8 +9132,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/game.d.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "Trans": [
@@ -9327,8 +9187,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "TRANSPORT_EVENTS": [
@@ -9357,8 +9217,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "trySpawnProjectile": [
@@ -9405,8 +9265,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "UnlockMessage": [
@@ -9416,8 +9276,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "UnlockMessageKind": [
@@ -9427,8 +9287,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "UpdateBandPayload": [
@@ -9438,8 +9298,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/game.d.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "updateGigPerformanceStats": [
@@ -9458,8 +9318,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/game.d.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "UpdateSocialPayload": [
@@ -9469,7 +9329,7 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "exportPath": "src/types/game.d.ts",
+        "exportPath": "src/types/index.ts",
         "typeOnly": true
       }
     ],
@@ -9536,8 +9396,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "UseAudioControlResult": [
@@ -9547,8 +9407,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "useBandHQLogic": [
@@ -10225,16 +10085,6 @@
         "isDefault": false
       }
     ],
-    "ValidationResult": [
-      {
-        "name": "ValidationResult",
-        "path": "src/types/validation.d.ts",
-        "source": "local",
-        "type": "type",
-        "isDefault": false,
-        "typeOnly": true
-      }
-    ],
     "Variants": [
       {
         "name": "Variants",
@@ -10251,7 +10101,7 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "exportPath": "src/types/game.d.ts",
+        "exportPath": "src/types/index.ts",
         "typeOnly": true
       }
     ],
@@ -10315,8 +10165,8 @@
         "source": "local",
         "type": "type",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "VoidLoader": [
@@ -10346,8 +10196,8 @@
         "source": "local",
         "type": "interface",
         "isDefault": false,
-        "typeOnly": true,
-        "exportPath": "src/types/index.ts"
+        "exportPath": "src/types/index.ts",
+        "typeOnly": true
       }
     ],
     "VoidTraderTab": [

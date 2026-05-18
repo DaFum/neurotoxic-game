@@ -17,6 +17,8 @@
     "simulate:balance": "node scripts/game-balance-simulation.mjs",
     "simulate:balance:baseline": "node scripts/game-balance-simulation.mjs --write-baseline reports/game-balance-simulation-baseline.json",
     "simulate:balance:compare": "node scripts/game-balance-simulation.mjs --compare-baseline reports/game-balance-simulation-baseline.json",
+    "symbols:check": "node scripts/update-symbols.mjs --check",
+    "symbols:update": "node ./scripts/update-symbols.mjs",
     "test": "pnpm run test:fast",
     "test:additional": "pnpm run test:perf && pnpm run test:locale:smoke && pnpm run test:locale:full",
     "test:all": "node ./scripts/run-all-tests.mjs",
