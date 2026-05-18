@@ -23,10 +23,16 @@ export const isCatalogEffect = (value: unknown): value is Effect => {
         Object.hasOwn(effect, 'item') &&
         typeof effect.item === 'string' &&
         Object.hasOwn(effect, 'value') &&
-        typeof effect.value === 'number'
+        Number.isFinite(effect.value)
       )
     case 'inventory_set':
-      return Object.hasOwn(effect, 'item') && typeof effect.item === 'string'
+      return (
+        Object.hasOwn(effect, 'item') &&
+        typeof effect.item === 'string' &&
+        (!Object.hasOwn(effect, 'value') ||
+          typeof effect.value !== 'number' ||
+          Number.isFinite(effect.value))
+      )
     case 'stat_modifier':
       return (
         Object.hasOwn(effect, 'target') &&
@@ -35,7 +41,7 @@ export const isCatalogEffect = (value: unknown): value is Effect => {
         Object.hasOwn(effect, 'stat') &&
         typeof effect.stat === 'string' &&
         Object.hasOwn(effect, 'value') &&
-        typeof effect.value === 'number'
+        Number.isFinite(effect.value)
       )
     case 'unlock_upgrade':
     case 'unlock_hq':

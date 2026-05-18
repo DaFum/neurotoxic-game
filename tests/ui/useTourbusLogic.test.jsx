@@ -11,14 +11,17 @@ import { renderHook, act, cleanup } from '@testing-library/react'
 import { setupJSDOM, teardownJSDOM } from '../testUtils'
 
 // Mock dependencies
+const mockCompleteTravelMinigame = mock.fn()
 const mockUseGameState = mock.fn(() => ({
-  player: { van: { upgrades: [] } },
-  completeTravelMinigame: mock.fn()
+  player: { van: { upgrades: [] } }
+}))
+const mockUseGameActions = mock.fn(() => ({
+  completeTravelMinigame: mockCompleteTravelMinigame
 }))
 
 mock.mock('../../src/context/GameState', () => ({
   useGameState: mockUseGameState,
-  useGameActions: mockUseGameState,
+  useGameActions: mockUseGameActions,
   useGameSelector: selector => selector(mockUseGameState())
 }))
 
@@ -71,9 +74,12 @@ describe('useTourbusLogic', () => {
   beforeEach(() => {
     setupJSDOM()
     mockUseGameState.mockImplementation(() => ({
-      player: { van: { upgrades: [] } },
-      completeTravelMinigame: mock.fn()
+      player: { van: { upgrades: [] } }
     }))
+    mockUseGameActions.mockImplementation(() => ({
+      completeTravelMinigame: mockCompleteTravelMinigame
+    }))
+    mockCompleteTravelMinigame.mockClear()
     mockPlaySFX.mockClear()
     mockHasUpgrade.mockImplementation(() => false)
   })
@@ -149,7 +155,9 @@ describe('useTourbusLogic', () => {
   test('collision, items, off-screen cleanup, and game completion work correctly', () => {
     const completeMock = mock.fn()
     mockUseGameState.mockImplementation(() => ({
-      player: { van: { upgrades: [] } },
+      player: { van: { upgrades: [] } }
+    }))
+    mockUseGameActions.mockImplementation(() => ({
       completeTravelMinigame: completeMock
     }))
 
@@ -251,7 +259,9 @@ describe('useTourbusLogic', () => {
   test('finishMinigame completes travel only once when update also reaches the target distance', () => {
     const completeMock = mock.fn()
     mockUseGameState.mockImplementation(() => ({
-      player: { van: { upgrades: [] } },
+      player: { van: { upgrades: [] } }
+    }))
+    mockUseGameActions.mockImplementation(() => ({
       completeTravelMinigame: completeMock
     }))
 

@@ -10,11 +10,27 @@ import {
   safeStorageOperation as runSafeStorageOperation
 } from './errorHandler'
 
-export const safeStorageOperation = <T>(
+export function safeStorageOperation<T>(operation: string, fn: () => T): T
+export function safeStorageOperation<T>(
+  operation: string,
+  fn: () => T,
+  fallbackValue: T
+): T
+export function safeStorageOperation<T>(
   operation: string,
   fn: () => T,
   fallbackValue?: T | null
-): T | null => runSafeStorageOperation(operation, fn, fallbackValue)
+): T | null
+export function safeStorageOperation<T>(
+  operation: string,
+  fn: () => T,
+  fallbackValue?: T | null
+): T | null {
+  if (fallbackValue !== undefined) {
+    return runSafeStorageOperation(operation, fn, fallbackValue)
+  }
+  return runSafeStorageOperation(operation, fn)
+}
 
 /**
  * Resolves the available localStorage instance across browser and server environments.
@@ -106,17 +122,9 @@ export function safeStorage<T>(
   fn: () => T,
   fallbackValue: T
 ): T {
-  return (
-    runSafeStorageOperation as unknown as (
-      op: string,
-      exec: () => T,
-      fallback: T
-    ) => T
-  )(operation, fn, fallbackValue)
+  return runSafeStorageOperation(operation, fn, fallbackValue)
 }
 
 export function safeStorageNoFallback<T>(operation: string, fn: () => T): T {
-  return (
-    runSafeStorageOperation as unknown as (op: string, exec: () => T) => T
-  )(operation, fn)
+  return runSafeStorageOperation(operation, fn)
 }

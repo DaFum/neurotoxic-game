@@ -54,6 +54,33 @@ describe('isCatalogEffect', () => {
     assert.equal(isCatalogEffect({}), false)
   })
 
+  test('rejects non-finite numeric effect values', () => {
+    for (const value of [Number.NaN, Number.POSITIVE_INFINITY]) {
+      assert.equal(
+        isCatalogEffect({ type: 'inventory_add', item: 'strings', value }),
+        false
+      )
+      assert.equal(
+        isCatalogEffect({
+          type: 'stat_modifier',
+          target: 'player',
+          stat: 'fame',
+          value
+        }),
+        false
+      )
+      assert.equal(
+        isCatalogEffect({ type: 'inventory_set', item: 'strings', value }),
+        false
+      )
+    }
+
+    assert.equal(
+      isCatalogEffect({ type: 'inventory_set', item: 'strings', value: true }),
+      true
+    )
+  })
+
   test('rejects payloads whose discriminator only exists on the prototype', () => {
     const proto = { type: 'passive', key: 'roadie_bonus' }
     const payload = Object.create(proto)
@@ -122,6 +149,14 @@ describe('normalizeCatalogEffect', () => {
           'no_value'
         ),
       /Invalid catalog effect for item "no_value"/
+    )
+    assert.throws(
+      () =>
+        normalizeCatalogEffect(
+          { type: 'stat_modifier', target: 'player', stat: 'fame', value: NaN },
+          'nan_stat'
+        ),
+      /Invalid catalog effect for item "nan_stat"/
     )
   })
 

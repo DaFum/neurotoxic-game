@@ -5,6 +5,12 @@ import { GAME_PHASES } from '../../src/context/gameConstants'
 
 const mockCompleteAmpCalibration = vi.fn()
 const mockChangeScene = vi.fn()
+const canonicalSelectorState = {
+  currentScene: 'PRE_GIG_MINIGAME',
+  player: { van: { upgrades: [] } },
+  band: { members: [], stash: {} },
+  settings: {}
+}
 
 vi.mock('../../src/context/GameState', () => ({
   useGameState: () => ({
@@ -15,7 +21,7 @@ vi.mock('../../src/context/GameState', () => ({
     completeAmpCalibration: mockCompleteAmpCalibration,
     changeScene: mockChangeScene
   }),
-  useGameSelector: selector => selector({})
+  useGameSelector: selector => selector(canonicalSelectorState)
 }))
 
 describe('useAmpLogic', () => {
