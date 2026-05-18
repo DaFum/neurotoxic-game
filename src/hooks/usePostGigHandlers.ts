@@ -42,6 +42,7 @@ import {
 } from '../utils/postGigUtils'
 import { shouldTriggerBankruptcy } from '../utils/economyEngine'
 import { generateBrandOffers } from '../utils/socialEngine'
+import { getTranslatedBrandDealDisplay } from '../utils/brandDealI18n'
 import { submitLeaderboardScores } from '../utils/leaderboardUtils'
 
 export interface UsePostGigHandlersReturn {
@@ -256,9 +257,11 @@ export const usePostGigHandlers = ({
           appliedMoneyDelta === 0
             ? ''
             : ` (${formatCurrency(appliedMoneyDelta, i18n.language, 'always')})`
+        const localizedDealName =
+          getTranslatedBrandDealDisplay(deal, t)?.name ?? deal.name
         addToast(
           t('ui:postGig.acceptedDeal', {
-            dealName: deal.name,
+            dealName: localizedDealName,
             moneyText,
             defaultValue: 'Accepted deal: {{dealName}}{{moneyText}}'
           }),

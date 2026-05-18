@@ -4,7 +4,14 @@ import { DealCard } from '../../src/components/postGig/DealCard.tsx'
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (_key, options) => options?.defaultValue ?? _key
+    t: (key, options) => {
+      const translations = {
+        'economy:brandDeals.energy_drink_cx.description':
+          'Das grüne Zeug, das leuchtet. Sie wollen, dass ihr es auf der Bühne trinkt.',
+        'economy:brandDeals.energy_drink_cx.name': 'Toxischer Energy-Drink'
+      }
+      return translations[key] ?? options?.defaultValue ?? key
+    }
   }),
   initReactI18next: { type: '3rdParty', init: () => {} }
 }))
@@ -69,4 +76,48 @@ test('DealCard ignores negotiated deals with missing description or non-finite n
   expect(container).toHaveTextContent('Base description')
   expect(container).toHaveTextContent('€1,000')
   expect(container).toHaveTextContent('3 Gigs')
+})
+
+test('DealCard translates catalog deal names and descriptions', () => {
+  render(
+    <DealCard
+      deal={{
+        id: 'energy_drink_cx',
+        name: 'Toxic Energy Drink',
+        description:
+          'The green stuff that glows. They want you to drink it on stage.',
+        offer: { upfront: 1000, duration: 3 }
+      }}
+      brandReputation={{}}
+      handleAcceptDeal={vi.fn()}
+      handleNegotiationStart={vi.fn()}
+    />
+  )
+
+  expect(screen.getByText('Toxischer Energy-Drink')).toBeInTheDocument()
+  expect(
+    screen.getByText(
+      'Das grüne Zeug, das leuchtet. Sie wollen, dass ihr es auf der Bühne trinkt.'
+    )
+  ).toBeInTheDocument()
+})
+
+test('DealCard translates by id even when name is dynamically generated', () => {
+  render(
+    <DealCard
+      deal={{
+        id: 'energy_drink_cx',
+        name: 'Toxic Rush Energy',
+        description:
+          'The green stuff that glows. They want you to drink it on stage.',
+        offer: { upfront: 1000, duration: 3 }
+      }}
+      brandReputation={{}}
+      handleAcceptDeal={vi.fn()}
+      handleNegotiationStart={vi.fn()}
+    />
+  )
+
+  expect(screen.getByText('Toxischer Energy-Drink')).toBeInTheDocument()
+  expect(screen.queryByText('Toxic Rush Energy')).not.toBeInTheDocument()
 })

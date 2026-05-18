@@ -7,6 +7,9 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key, options) => {
       const translations = {
+        'economy:brandDeals.energy_drink_cx.description':
+          'Das grüne Zeug, das leuchtet. Sie wollen, dass ihr es auf der Bühne trinkt.',
+        'economy:brandDeals.energy_drink_cx.name': 'Toxischer Energy-Drink',
         'events:quest_sponsor_demand.label': 'Bizarre Forderung des Sponsors',
         'ui:stats.active_quests': 'Aktive Quests',
         'ui:ui.day': 'Tag'
@@ -67,5 +70,25 @@ describe('DetailedStatsTab', () => {
     expect(
       screen.queryByText('events:quest_sponsor_demand.label')
     ).not.toBeInTheDocument()
+  })
+
+  it('translates active brand deal names and descriptions', () => {
+    render(
+      <DetailedStatsTab
+        player={player}
+        band={band}
+        social={{
+          ...social,
+          activeDeals: [{ id: 'energy_drink_cx', remainingGigs: 3 }]
+        }}
+      />
+    )
+
+    expect(screen.getByText('Toxischer Energy-Drink')).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        'Das grüne Zeug, das leuchtet. Sie wollen, dass ihr es auf der Bühne trinkt.'
+      )
+    ).toBeInTheDocument()
   })
 })
