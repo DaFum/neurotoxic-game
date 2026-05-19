@@ -172,34 +172,33 @@ export const buildAssetUrlMap = (
   warn: (message: string) => void = console.warn,
   label = 'Asset'
 ): Record<string, string> => {
-  const accumulator: Record<string, string> = {}
+  const accumulator: Record<string, string> = Object.create(null)
   if (!assetGlob || typeof assetGlob !== 'object') return accumulator
   const map = assetGlob as Record<string, unknown>
-  for (const path in map) {
-    if (Object.hasOwn(map, path)) {
-      const urlRaw = map[path]
-      const url = typeof urlRaw === 'string' ? urlRaw : String(urlRaw)
-      const relativePath = path.replace('../assets/', '')
-      if (!accumulator[relativePath]) {
-        accumulator[relativePath] = url
-      }
+  for (const path of Object.keys(map)) {
+    const urlRaw = map[path]
+    const url = typeof urlRaw === 'string' ? urlRaw : String(urlRaw)
+    const relativePath = path.replace(/^.*?\/assets\//, '')
+    if (!Object.hasOwn(accumulator, relativePath)) {
+      accumulator[relativePath] = url
+    }
 
-      const baseName = relativePath.split('/').pop()
-      if (!baseName) continue
+    const baseName = relativePath.split('/').pop()
+    if (!baseName) continue
 
-      const existingBasenameUrl = accumulator[baseName]
-      if (!existingBasenameUrl) {
-        accumulator[baseName] = url
-        continue
-      }
+    const existingBasenameUrl = accumulator[baseName]
+    if (!Object.hasOwn(accumulator, baseName)) {
+      accumulator[baseName] = url
+      continue
+    }
 
-      if (existingBasenameUrl !== url) {
-        warn(
-          `[audioEngine] ${label} basename conflict for "${baseName}". ` +
-            `Keeping "${existingBasenameUrl}" and ignoring "${url}".`
-        )
-      }
+    if (existingBasenameUrl !== url) {
+      warn(
+        `[audioEngine] ${label} basename conflict for "${baseName}". ` +
+          `Keeping "${existingBasenameUrl}" and ignoring "${url}".`
+      )
     }
   }
+
   return accumulator
 }
