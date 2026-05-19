@@ -44,3 +44,23 @@ test('symbols.json output is deterministic across two consecutive runs', () => {
     'Two consecutive runs should produce identical symbols.json'
   )
 })
+
+test('direct exports from declaration files remain indexed', () => {
+  execSync('node scripts/update-symbols.mjs', { stdio: 'pipe' })
+  const ks = loadSymbols()
+  const expectedDeclarationSymbols = [
+    ['BandPatch', 'src/types/purchase.d.ts'],
+    ['ConnectorType', 'src/types/kabelsalat.d.ts'],
+    ['GigStats', 'src/types/rhythmGame.d.ts'],
+    ['TempoMapEntry', 'src/types/rhythm.d.ts'],
+    ['TourbusObstacle', 'src/types/tourbus.d.ts'],
+    ['ValidationResult', 'src/types/validation.d.ts']
+  ]
+
+  for (const [name, expectedPath] of expectedDeclarationSymbols) {
+    assert.ok(
+      ks[name]?.some(entry => entry.path === expectedPath),
+      `${name} should be indexed from ${expectedPath}`
+    )
+  }
+})

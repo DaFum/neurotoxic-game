@@ -1848,6 +1848,16 @@
         "type": "const"
       }
     ],
+    "CityGenre": [
+      {
+        "isDefault": false,
+        "name": "CityGenre",
+        "path": "src/data/merch.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
     "CityTraitState": [
       {
         "exportPath": "src/types/index.ts",
@@ -3241,9 +3251,10 @@
     ],
     "DEFAULT_MERCH_PRICES": [
       {
+        "exportPath": "src/utils/economyEngine.ts",
         "isDefault": false,
         "name": "DEFAULT_MERCH_PRICES",
-        "path": "src/utils/economyEngine.ts",
+        "path": "src/data/merch.ts",
         "source": "local",
         "type": "const"
       }
@@ -6048,6 +6059,25 @@
         "type": "const"
       }
     ],
+    "MERCH_PROFILES": [
+      {
+        "isDefault": false,
+        "name": "MERCH_PROFILES",
+        "path": "src/data/merch.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "MerchItemProfile": [
+      {
+        "isDefault": false,
+        "name": "MerchItemProfile",
+        "path": "src/data/merch.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
+      }
+    ],
     "MerchPressModal": [
       {
         "isDefault": false,
@@ -8673,6 +8703,25 @@
         "path": "src/data/events/special.ts",
         "source": "local",
         "type": "const"
+      }
+    ],
+    "SPENDING_PROFILE_MERCH_MULTIPLIER": [
+      {
+        "isDefault": false,
+        "name": "SPENDING_PROFILE_MERCH_MULTIPLIER",
+        "path": "src/data/merch.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "SpendingProfile": [
+      {
+        "isDefault": false,
+        "name": "SpendingProfile",
+        "path": "src/data/merch.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
       }
     ],
     "SPIN_STORY_CONTROVERSY_REDUCTION": [
