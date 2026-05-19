@@ -16,7 +16,7 @@ test('GigModifierButton renders item details correctly', () => {
 
   expect(screen.getByText('Test Modifier')).toBeInTheDocument()
   expect(screen.getByText('This is a test description')).toBeInTheDocument()
-  expect(screen.getByText('50€')).toBeInTheDocument()
+  expect(screen.getByText('€50')).toBeInTheDocument()
 })
 
 test('GigModifierButton calls onClick with correct key', () => {

@@ -41,7 +41,7 @@ export const EventModal = ({
   ) => void
   className?: string
 }) => {
-  const { t } = useTranslation(['ui', 'events', 'items'])
+  const { t, i18n } = useTranslation(['ui', 'events', 'items'])
   const containerRef = useRef<HTMLDivElement | null>(null)
 
   const player = useGameSelector(state => state.player)
@@ -143,8 +143,10 @@ export const EventModal = ({
     outcome?._precomputedResult?.appliedDelta ??
     outcome?._precomputedResult?.delta
   const memoizedEffectText = useMemo(() => {
-    return precomputedDelta ? generateEffectText(precomputedDelta, t) : ''
-  }, [precomputedDelta, t])
+    return precomputedDelta
+      ? generateEffectText(precomputedDelta, t, i18n?.language)
+      : ''
+  }, [precomputedDelta, t, i18n?.language])
 
   const outcomeMessage = useMemo(() => {
     if (!outcome || !event) return ''

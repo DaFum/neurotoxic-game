@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import type { BandState, PlayerState, SocialState } from '../../types'
 import { StatBox, ProgressBar } from '../shared'
+import { formatCurrency } from '../../utils/numberUtils'
 
 type StatsTabProps = {
   player: Pick<PlayerState, 'money' | 'fame' | 'day' | 'van'>
@@ -9,7 +10,7 @@ type StatsTabProps = {
 }
 
 export const StatsTab = ({ player, band, social }: StatsTabProps) => {
-  const { t } = useTranslation(['ui'])
+  const { t, i18n } = useTranslation(['ui'])
   return (
     <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
       {/* Financials & Fame */}
@@ -21,7 +22,7 @@ export const StatsTab = ({ player, band, social }: StatsTabProps) => {
           <div className='grid grid-cols-2 gap-4'>
             <StatBox
               label={t('ui:stats.funds', { defaultValue: 'Funds' })}
-              value={`${player.money}€`}
+              value={formatCurrency(player.money ?? 0, i18n?.language)}
               icon='€'
             />
             <StatBox

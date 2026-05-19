@@ -405,6 +405,33 @@ describe('Action Creators', () => {
         payload: { questId: 'quest_1', amount: 2, randomIdx: 5 }
       })
     })
+
+    it('clamps negative amount to zero', () => {
+      assert.strictEqual(
+        createAdvanceQuestAction('quest_1', -5).payload.amount,
+        0
+      )
+    })
+
+    it('coerces NaN amount to zero', () => {
+      assert.strictEqual(
+        createAdvanceQuestAction('quest_1', Number.NaN).payload.amount,
+        0
+      )
+    })
+
+    it('coerces Infinity amount to zero', () => {
+      assert.strictEqual(
+        createAdvanceQuestAction('quest_1', Number.POSITIVE_INFINITY).payload
+          .amount,
+        0
+      )
+      assert.strictEqual(
+        createAdvanceQuestAction('quest_1', Number.NEGATIVE_INFINITY).payload
+          .amount,
+        0
+      )
+    })
   })
 
   describe('createPirateBroadcastAction', () => {

@@ -22,5 +22,3 @@ export const MINIGAME_REGISTRY = {
   'travel' | 'roadie' | 'ampCalibration' | 'kabelsalat',
   MinigameRegistryEntry
 >
-
-export type MinigameKey = keyof typeof MINIGAME_REGISTRY

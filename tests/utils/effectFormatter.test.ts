@@ -26,7 +26,7 @@ describe('generateEffectText', () => {
     const result = generateEffectText(delta, t)
     assert.equal(
       result,
-      'Effects: Money: +100€, Fame: -10, Time: +2h, Fuel: -5, Van Condition: +10'
+      'Effects: Money: +€100, Fame: -10, Time: +2h, Fuel: -5, Van Condition: +10'
     )
   })
 
@@ -170,6 +170,6 @@ describe('generateEffectText', () => {
       }
     }
     const result = generateEffectText(delta, t)
-    assert.equal(result, 'Effects: Money: +50€, Game Over')
+    assert.equal(result, 'Effects: Money: +€50, Game Over')
   })
 })

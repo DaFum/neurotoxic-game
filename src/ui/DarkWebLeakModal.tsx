@@ -4,6 +4,7 @@ import { GlitchButton } from './GlitchButton'
 import { useTranslation } from 'react-i18next'
 
 import type { DarkWebLeakConfig } from '../types'
+import { formatCurrency } from '../utils/numberUtils'
 
 export interface DarkWebLeakModalProps {
   config: DarkWebLeakConfig
@@ -20,7 +21,7 @@ export const DarkWebLeakModal = ({
   onCancel,
   hasLeakedToday
 }: DarkWebLeakModalProps) => {
-  const { t } = useTranslation(['ui'])
+  const { t, i18n } = useTranslation(['ui'])
   return (
     <Modal
       title={t('ui:dark_web_leak.title', {
@@ -38,8 +39,8 @@ export const DarkWebLeakModal = ({
         </p>
         <div className='flex flex-col gap-1 text-sm bg-black/50 p-2 border border-toxic-green/50'>
           <div className='text-blood-red'>
-            {t('ui:dark_web_leak.cost', { defaultValue: 'COST:' })} €
-            {config.COST}
+            {t('ui:dark_web_leak.cost', { defaultValue: 'COST:' })}{' '}
+            {formatCurrency(config.COST, i18n?.language)}
           </div>
           <div className='text-stamina-green'>
             {t('ui:dark_web_leak.fame', { defaultValue: 'FAME:' })} +

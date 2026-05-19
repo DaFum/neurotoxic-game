@@ -177,7 +177,7 @@ const INITIAL_GAME_STATE_REF: Omit<RhythmGameRefState, 'rng'> = {
       id: 'guitar',
       key: 'ArrowLeft',
       x: 0,
-      color: getPixiColorFromToken('--rhythm-guitar', '#ff0041'),
+      color: getPixiColorFromToken('--rhythm-guitar'),
       active: false,
       hitWindow: 150
     },
@@ -185,7 +185,7 @@ const INITIAL_GAME_STATE_REF: Omit<RhythmGameRefState, 'rng'> = {
       id: 'drums',
       key: 'ArrowDown',
       x: 120,
-      color: getPixiColorFromToken('--rhythm-drums', '#00ff41'),
+      color: getPixiColorFromToken('--rhythm-drums'),
       active: false,
       hitWindow: 150
     },
@@ -193,7 +193,7 @@ const INITIAL_GAME_STATE_REF: Omit<RhythmGameRefState, 'rng'> = {
       id: 'bass',
       key: 'ArrowRight',
       x: 240,
-      color: getPixiColorFromToken('--rhythm-bass', '#0041ff'),
+      color: getPixiColorFromToken('--rhythm-bass'),
       active: false,
       hitWindow: 150
     }

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { SONGS_DB } from '../../data/songs'
 import { logger } from '../../utils/logger'
 import { GlitchButton } from '../GlitchButton'
+import { formatCurrency } from '../../utils/numberUtils'
 
 type LeaderboardView =
   | 'BALANCE'
@@ -35,7 +36,7 @@ const isAbortError = (error: unknown): boolean => {
 }
 
 export const LeaderboardTab = () => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [view, setView] = useState<LeaderboardView>('BALANCE')
   const [selectedSongId, setSelectedSongId] = useState<string>(
     () => SONGS_DB[0]?.leaderboardId ?? ''
@@ -278,7 +279,7 @@ export const LeaderboardTab = () => {
                       </td>
                       <td className='py-2 px-2 text-right text-toxic-green'>
                         {view === 'BALANCE'
-                          ? `€${entry.score.toLocaleString()}`
+                          ? formatCurrency(entry.score, i18n?.language)
                           : view === 'DISTANCE'
                             ? t('ui:leaderboard.col_value_km', {
                                 value: entry.score.toLocaleString(),

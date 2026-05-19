@@ -1,5 +1,6 @@
 import type { TranslationCallback } from '../types/callbacks'
 import type { UnknownRecord } from '../types'
+import { formatCurrency } from './numberUtils'
 
 type EffectDelta = {
   [key: string]: unknown
@@ -20,7 +21,8 @@ type EffectDelta = {
 
 export const generateEffectText = (
   rawDelta: object | null | undefined,
-  t: TranslationCallback
+  t: TranslationCallback,
+  language = 'en'
 ) => {
   if (!rawDelta) return ''
   const delta = rawDelta as EffectDelta
@@ -39,9 +41,21 @@ export const generateEffectText = (
     }
   }
 
+  const addCurrencyLine = (
+    value: unknown,
+    tKey: string,
+    defaultValue: string
+  ) => {
+    if (typeof value === 'number' && Number.isFinite(value) && value !== 0) {
+      lines.push(
+        `${t(tKey, { defaultValue })}: ${formatCurrency(value, language, 'always')}`
+      )
+    }
+  }
+
   // Player
   if (delta.player) {
-    addStatLine(delta.player.money, 'ui:stats.money', 'Money', '€')
+    addCurrencyLine(delta.player.money, 'ui:stats.money', 'Money')
     addStatLine(delta.player.fame, 'ui:stats.fame', 'Fame')
     addStatLine(delta.player.time, 'ui:stats.time', 'Time', 'h')
 

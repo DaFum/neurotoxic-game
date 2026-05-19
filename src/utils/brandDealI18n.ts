@@ -43,6 +43,7 @@ export const getTranslatedBrandDealDisplay = (
   t: BrandDealTranslator,
   index = 0
 ): BrandDealDisplay | null => {
+  if (typeof deal !== 'object' || deal === null) return null
   const id = getNonEmptyString(deal.id)
   const catalogDeal = id ? BRAND_DEALS_BY_ID.get(id) : undefined
   const inlineName = getNonEmptyString(deal.name)

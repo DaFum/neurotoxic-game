@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { ActionButton } from './shared/ActionButton'
 import { IMG_PROMPTS, resolveGenImageUrl } from '../utils/imageGen'
+import { formatCurrency } from '../utils/numberUtils'
 
 import { useEffect, useRef, type KeyboardEvent } from 'react'
 
@@ -50,11 +51,13 @@ const DonationCosts = ({
 const ProfitRow = ({
   moneyGain,
   size,
-  t
+  t,
+  language
 }: {
   moneyGain: number
   size: 'sm' | 'lg'
   t: ReturnType<typeof useTranslation>['t']
+  language: string
 }) => {
   const valueClass =
     size === 'lg'
@@ -65,7 +68,9 @@ const ProfitRow = ({
       <span className='text-toxic-green font-mono uppercase tracking-widest text-sm'>
         {t('ui:blood_bank.gain', { defaultValue: 'PROFIT' })}
       </span>
-      <span className={valueClass}>+€{moneyGain}</span>
+      <span className={valueClass}>
+        {formatCurrency(moneyGain, language, 'always')}
+      </span>
     </div>
   )
 }
@@ -85,7 +90,7 @@ export const BloodBankModal = ({
   config: BloodBankConfig
   marrowConfig: BloodBankConfig
 }) => {
-  const { t } = useTranslation(['ui'])
+  const { t, i18n } = useTranslation(['ui'])
   const modalRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
@@ -172,7 +177,12 @@ export const BloodBankModal = ({
                   })}
                 </h3>
 
-                <ProfitRow moneyGain={config.moneyGain} size='sm' t={t} />
+                <ProfitRow
+                  moneyGain={config.moneyGain}
+                  size='sm'
+                  t={t}
+                  language={i18n?.language}
+                />
 
                 <DonationCosts config={config} t={t} />
 
@@ -204,7 +214,12 @@ export const BloodBankModal = ({
                   <span className='animate-pulse'>⚠️</span>
                 </h3>
 
-                <ProfitRow moneyGain={marrowConfig.moneyGain} size='lg' t={t} />
+                <ProfitRow
+                  moneyGain={marrowConfig.moneyGain}
+                  size='lg'
+                  t={t}
+                  language={i18n?.language}
+                />
 
                 <DonationCosts config={marrowConfig} pulseCosts t={t} />
 

@@ -54,5 +54,26 @@ describe('rivalReducer', () => {
         currentLocationId: 'node_x'
       })
     })
+
+    it('clamps negative powerLevel to zero', () => {
+      const action = createUpdateRivalBandAction({ powerLevel: -5 })
+      assert.equal(action.payload.powerLevel, 0)
+    })
+
+    it('coerces NaN powerLevel to zero', () => {
+      const action = createUpdateRivalBandAction({ powerLevel: Number.NaN })
+      assert.equal(action.payload.powerLevel, 0)
+    })
+
+    it('coerces Infinity powerLevel to zero', () => {
+      const posInf = createUpdateRivalBandAction({
+        powerLevel: Number.POSITIVE_INFINITY
+      })
+      assert.equal(posInf.payload.powerLevel, 0)
+      const negInf = createUpdateRivalBandAction({
+        powerLevel: Number.NEGATIVE_INFINITY
+      })
+      assert.equal(negInf.payload.powerLevel, 0)
+    })
   })
 })

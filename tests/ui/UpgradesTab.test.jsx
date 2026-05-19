@@ -58,7 +58,7 @@ describe('UpgradesTab', () => {
       />
     )
     expect(screen.getByText(/500★/)).toBeInTheDocument()
-    expect(screen.getByText(/1000€/)).toBeInTheDocument()
+    expect(screen.getByText(/€1,000/)).toBeInTheDocument()
     expect(screen.getByText(/ui:bandhq\.fame/)).toBeInTheDocument()
     expect(screen.getByText(/ui:bandhq\.money/)).toBeInTheDocument()
   })
