@@ -1147,7 +1147,8 @@ export const applyEventDelta = (
             string,
             Record<string, unknown>
           > = Object.create(null)
-          for (const influencerId of Object.keys(value)) {
+          for (const influencerId in value) {
+            if (!Object.hasOwn(value, influencerId)) continue
             if (isForbiddenKey(influencerId)) continue
             const influencerValue = value[influencerId]
             if (isPlainObject(influencerValue)) {
