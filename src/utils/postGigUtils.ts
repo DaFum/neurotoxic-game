@@ -30,6 +30,7 @@ import type {
   UnknownRecord,
   BrandAlignment
 } from '../types'
+import type { CityTraitState } from '../types/game'
 import type { BandMember } from '../types/band'
 import type { PostGigFinancials } from '../types/economy'
 import type { BrandDeal, Platform, SocialPostOption } from '../types/social'
@@ -753,7 +754,8 @@ export const deriveFinancials = ({
   social,
   reputationByRegion,
   activeStoryFlags,
-  gigContext
+  gigContext,
+  cityTraits
 }: {
   currentGig: GameState['currentGig']
   lastGigStats: GameState['lastGigStats']
@@ -769,6 +771,7 @@ export const deriveFinancials = ({
     daysSinceLastGig: number
     lastGigDifficulty: number | null
   } | null
+  cityTraits?: CityTraitState
 }) => {
   if (!currentGig || !lastGigStats) return null
 
@@ -790,7 +793,8 @@ export const deriveFinancials = ({
       daysSinceLastGig: gigContext?.daysSinceLastGig ?? 0,
       lastGigDifficulty: gigContext?.lastGigDifficulty ?? undefined,
       merchPrices: bandMerchPrices,
-      social
+      social,
+      cityTraits
     }
   })
 

@@ -22,12 +22,17 @@ const SRC = path.join(ROOT, 'src')
 const OUT = path.join(ROOT, 'symbols.json')
 const CHECK = process.argv.includes('--check')
 
-const SRC_NORM = SRC.replace(/\\/g, '/')
+function normalizePath(fileName) {
+  return fileName.replace(/\\/g, '/')
+}
+
+const ROOT_NORM = normalizePath(ROOT)
+const SRC_NORM = normalizePath(SRC)
 const SRC_PREFIX = `${SRC_NORM}/`
 
 /** Returns true only for files genuinely inside src/ (not src-generated/ etc.) */
 function isUnderSrc(fileName) {
-  const f = fileName.replace(/\\/g, '/')
+  const f = normalizePath(fileName)
   return f === SRC_NORM || f.startsWith(SRC_PREFIX)
 }
 
@@ -72,7 +77,11 @@ try {
 }
 
 function relPath(abs) {
-  return abs.replace(/\\/g, '/').replace(ROOT.replace(/\\/g, '/') + '/', '')
+  const normalized = normalizePath(abs)
+  const rootPrefix = `${ROOT_NORM}/`
+  return normalized.startsWith(rootPrefix)
+    ? normalized.slice(rootPrefix.length)
+    : normalized
 }
 
 // Determine the declaration kind label from a symbol's declarations
@@ -185,10 +194,8 @@ const SKIP_PAIRS = new Set()
 for (const srcFilePath of srcFiles) {
   const sourceFile = program.getSourceFile(srcFilePath)
   if (!sourceFile) continue
-  const fp = sourceFile.fileName.replace(/\\/g, '/')
+  const fp = normalizePath(sourceFile.fileName)
   if (!isUnderSrc(fp)) continue
-  if (sourceFile.isDeclarationFile && !sourceFile.fileName.includes(SRC))
-    continue
 
   const rel = relPath(sourceFile.fileName)
   const moduleSym = checker.getSymbolAtLocation(sourceFile)
@@ -211,7 +218,7 @@ for (const srcFilePath of srcFiles) {
     // Skip if the resolved declaration lives outside src/
     const decl = resolvedSym.declarations?.[0]
     if (!decl) continue
-    const declFile = decl.getSourceFile().fileName.replace(/\\/g, '/')
+    const declFile = normalizePath(decl.getSourceFile().fileName)
     if (!isUnderSrc(declFile)) continue
 
     // Skip specific (name, path) pairs that are known secondary re-exports.
@@ -244,9 +251,7 @@ for (const srcFilePath of srcFiles) {
 
     const defaultDecl = resolvedDefault.declarations?.[0]
     if (defaultDecl) {
-      const defaultDeclFile = defaultDecl
-        .getSourceFile()
-        .fileName.replace(/\\/g, '/')
+      const defaultDeclFile = normalizePath(defaultDecl.getSourceFile().fileName)
       if (isUnderSrc(defaultDeclFile)) {
         const symName = resolvedDefault.name
         // Use the resolved name only if it is a real identifier, not the

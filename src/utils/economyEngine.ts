@@ -3,7 +3,16 @@ import { clamp0to100 } from './gameStateUtils'
 import { toFiniteNumber } from './numberUtils'
 import { bandHasTrait } from './traitUtils'
 import { calculateZealotryEffects } from './socialEngine'
+import {
+  DEFAULT_MERCH_PRICES,
+  MERCH_PROFILES,
+  SPENDING_PROFILE_MERCH_MULTIPLIER,
+  type MerchItemProfile,
+  type CityGenre,
+  type SpendingProfile
+} from '../data/merch'
 import type { BandState, PlayerState, SocialState, Venue } from '../types'
+import type { CityTraitState } from '../types/game'
 import type {
   FinancialBreakdownItem,
   PostGigFinancials
@@ -23,13 +32,7 @@ export const MODIFIER_COSTS = {
 
 const BAR_RATE_VIP = 0.3
 
-export const DEFAULT_MERCH_PRICES: Record<string, number> = {
-  shirts: 20,
-  hoodies: 45,
-  patches: 5,
-  vinyl: 35,
-  cds: 15
-}
+export { DEFAULT_MERCH_PRICES }
 
 const BAR_RATE_NORMAL = 0.15
 const AVG_SPEND_PER_PERSON_AT_BAR = 5
@@ -57,6 +60,7 @@ type EconomyContext = {
   regionRep?: number
   discountedTickets?: boolean
   merchPrices?: Record<string, number>
+  cityTraits?: CityTraitState
   social?: {
     zealotry?: number
     activeDeals?: Array<{
@@ -318,64 +322,101 @@ export const calculateMerchIncome = (
     Math.max(0, ticketsSold) * Math.max(0, buyRate)
   )
 
+  const customPrices = context.merchPrices ?? {}
+  const safeInventory = bandInventory || {}
+  const cityTraits = context.cityTraits
+
+  const genreBias = (cityTraits?.genreBias ?? '') as CityGenre
+  const spendingProfile = (cityTraits?.barSpendingProfile ??
+    'average') as SpendingProfile
+  const spendingMult = SPENDING_PROFILE_MERCH_MULTIPLIER[spendingProfile] ?? 1.0
+
+  const peakHype =
+    typeof gigStats?.peakHype === 'number' ? gigStats.peakHype : 0
+  const misses = typeof gigStats?.misses === 'number' ? gigStats.misses : 0
+  const hypeNorm = Math.max(0, Math.min(100, peakHype)) / 100
+  const missNorm = Math.max(0, Math.min(100, misses)) / 100
+
+  const priceModifierFor = (
+    price: number,
+    defaultPrice: number,
+    elasticity: number
+  ): number => {
+    if (price > defaultPrice) {
+      return Math.max(
+        0.2,
+        1 - ((price - defaultPrice) / defaultPrice) * 1.5 * elasticity
+      )
+    }
+    if (price < defaultPrice) {
+      return Math.min(2.0, 1 + ((defaultPrice - price) / defaultPrice) * 1.0)
+    }
+    return 1.0
+  }
+
+  const rawShare: Record<string, number> = {}
+  const priceByKey: Record<string, number> = {}
+
+  // Compute raw share for every item regardless of inventory. Out-of-stock
+  // items still contribute to totalRawShare so their portion of demand is
+  // lost (capped at 0 in the allocation loop) rather than redistributed to
+  // in-stock items.
+  for (const profile of Object.values(MERCH_PROFILES) as MerchItemProfile[]) {
+    const genreMult = profile.genreAffinity[genreBias] ?? 1.0
+    const perfLift =
+      1 +
+      (hypeNorm - 0.5) * profile.performanceSensitivity -
+      missNorm * profile.missSensitivity
+    const perfMult = Math.max(0.1, perfLift)
+
+    const price = customPrices[profile.key] ?? profile.defaultPrice
+    priceByKey[profile.key] = price
+    const priceMult = priceModifierFor(
+      price,
+      profile.defaultPrice,
+      profile.priceElasticity
+    )
+
+    rawShare[profile.key] =
+      profile.baseAppeal * genreMult * spendingMult * perfMult * priceMult
+  }
+
+  const totalRawShare = Object.values(rawShare).reduce((a, b) => a + b, 0)
+  if (totalRawShare <= 0) {
+    return { revenue: 0, breakdownItems, soldItems: {} }
+  }
+
+  const demandLiftRaw = spendingMult * (0.5 + hypeNorm * 0.8 - missNorm * 0.4)
+  const demandLift = Math.max(0.3, Math.min(1.8, demandLiftRaw))
+  const effectiveBuyers = Math.floor(Math.max(0, potentialBuyers) * demandLift)
+
   const soldItems: Record<string, number> = {}
   let totalRevenue = 0
+  const sortedKeys = Object.keys(MERCH_PROFILES).sort()
 
-  const customPrices = context.merchPrices ?? {}
-
-  // Guard against undefined bandInventory (blocking issue)
-  const safeInventory = bandInventory || {}
-
-  let totalBuyersRemaining = potentialBuyers
-
-  for (const merchKey in DEFAULT_MERCH_PRICES) {
-    if (Object.hasOwn(DEFAULT_MERCH_PRICES, merchKey)) {
-      const inventoryCount =
-        typeof safeInventory[merchKey] === 'number'
-          ? safeInventory[merchKey]
-          : 0
-      if (inventoryCount > 0 && totalBuyersRemaining > 0) {
-        const defaultPrice = DEFAULT_MERCH_PRICES[merchKey] ?? 10
-        const currentPrice = customPrices[merchKey] ?? defaultPrice
-
-        let priceModifier = 1
-        if (currentPrice > defaultPrice) {
-          priceModifier = Math.max(
-            0.2,
-            1 - ((currentPrice - defaultPrice) / defaultPrice) * 1.5
-          )
-        } else if (currentPrice < defaultPrice) {
-          priceModifier = Math.min(
-            2.0,
-            1 + ((defaultPrice - currentPrice) / defaultPrice) * 1.0
-          )
-        }
-
-        const typeDemandWeight = 1.0 // Could randomize or vary by type
-        const typeBuyers = Math.ceil(
-          totalBuyersRemaining * typeDemandWeight * priceModifier * 0.5
-        ) // Simplified share
-
-        const soldAmount = Math.min(
-          inventoryCount,
-          Math.min(typeBuyers, totalBuyersRemaining)
-        )
-
-        if (soldAmount > 0) {
-          soldItems[merchKey] = soldAmount
-          const itemRevenue = soldAmount * currentPrice
-          totalRevenue += itemRevenue
-
-          breakdownItems.push({
-            labelKey: `economy:gigIncome.merchSales.${merchKey}.label`,
-            value: itemRevenue,
-            detailKey: 'economy:gigIncome.merchSales.detail',
-            detailParams: { buyers: soldAmount }
-          })
-
-          totalBuyersRemaining -= soldAmount
-        }
-      }
+  for (const key of sortedKeys) {
+    const share = (rawShare[key] ?? 0) / totalRawShare
+    const desired = Math.floor(effectiveBuyers * share)
+    const inventoryCount =
+      typeof safeInventory[key] === 'number'
+        ? (safeInventory[key] as number)
+        : 0
+    const sold = Math.min(desired, inventoryCount)
+    if (sold > 0) {
+      soldItems[key] = sold
+      const price =
+        priceByKey[key] ??
+        (MERCH_PROFILES as Record<string, MerchItemProfile>)[key]
+          ?.defaultPrice ??
+        0
+      const itemRevenue = sold * price
+      totalRevenue += itemRevenue
+      breakdownItems.push({
+        labelKey: `economy:gigIncome.merchSales.${key}.label`,
+        value: itemRevenue,
+        detailKey: 'economy:gigIncome.merchSales.detail',
+        detailParams: { buyers: sold }
+      })
     }
   }
 

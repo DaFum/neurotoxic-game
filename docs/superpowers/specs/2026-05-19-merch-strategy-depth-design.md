@@ -151,10 +151,12 @@ Replace the existing per-item greedy loop. New algorithm:
 ```
 INPUT: potentialBuyers, customPrices, bandInventory, gigStats, cityTraits
 
-// Step 1: compute raw share per item
+// Step 1: compute raw share per item — for ALL items regardless of inventory,
+// so out-of-stock items contribute to totalRawShare and their share is "lost"
+// rather than redistributed in Step 2. The inventory cap is applied only in
+// Step 4 (allocation), where `sold = min(desired, inventory)` zeroes out
+// allocation for empty stock.
 for each profile in MERCH_PROFILES:
-  if bandInventory[profile.key] <= 0: skip (raw share = 0)
-
   genreMult = profile.genreAffinity[cityTraits.genreBias] ?? 1.0
   spendingMult = SPENDING_PROFILE_MERCH_MULTIPLIER[cityTraits.barSpendingProfile] ?? 1.0
   perfLift = 1
