@@ -173,7 +173,13 @@ const escapeRegExp = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 const SENSITIVE_KEY_REGEXP = SENSITIVE_KEY_PATTERNS.some(Boolean)
   ? new RegExp(
-      SENSITIVE_KEY_PATTERNS.filter(Boolean).map(escapeRegExp).join('|')
+      SENSITIVE_KEY_PATTERNS.reduce((acc, pattern) => {
+        if (pattern) {
+          const escaped = escapeRegExp(pattern)
+          return acc ? acc + '|' + escaped : escaped
+        }
+        return acc
+      }, '')
     )
   : null
 
