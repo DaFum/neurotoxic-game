@@ -178,7 +178,7 @@ export const buildAssetUrlMap = (
   for (const path of Object.keys(map)) {
     const urlRaw = map[path]
     const url = typeof urlRaw === 'string' ? urlRaw : String(urlRaw)
-    const relativePath = path.replace('../assets/', '')
+    const relativePath = path.replace(/^.*?\/assets\//, '')
     if (!accumulator[relativePath]) {
       accumulator[relativePath] = url
     }
