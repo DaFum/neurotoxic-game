@@ -203,8 +203,9 @@ const sanitizeBandInventory = (value: unknown): BandState['inventory'] => {
   if (!isPlainObject(value)) return sanitized
 
   const defaultInventory = DEFAULT_BAND_STATE.inventory
-  for (const key of Object.keys(defaultInventory)) {
-    const fallback = defaultInventory[key]
+  for (const key in defaultInventory) {
+    if (!Object.hasOwn(defaultInventory, key)) continue
+    const fallback = defaultInventory[key as keyof typeof defaultInventory]
     const raw = value[key]
 
     if (typeof fallback === 'number') {
@@ -214,16 +215,16 @@ const sanitizeBandInventory = (value: unknown): BandState['inventory'] => {
           : typeof raw === 'string' && raw.trim().length > 0
             ? Number(raw)
             : Number.NaN
-      sanitized[key] = Number.isFinite(numeric) ? numeric : fallback
+      sanitized[key as keyof BandState['inventory']] = Number.isFinite(numeric) ? numeric : fallback as any
       continue
     }
 
     if (typeof fallback === 'boolean') {
-      sanitized[key] = typeof raw === 'boolean' ? raw : fallback
+      sanitized[key as keyof BandState['inventory']] = typeof raw === 'boolean' ? raw : fallback as any
       continue
     }
 
-    sanitized[key] = fallback
+    sanitized[key as keyof BandState['inventory']] = fallback as any
   }
 
   return sanitized
