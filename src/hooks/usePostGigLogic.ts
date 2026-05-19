@@ -31,7 +31,7 @@ export const usePostGigLogic = () => {
   const lastGigStats = useGameSelector(state => state.lastGigStats)
   const reputationByRegion = useGameSelector(state => state.reputationByRegion)
   const activeStoryFlags = useGameSelector(state => state.activeStoryFlags)
-  const cityStates = useGameSelector(state => state.cityStates)
+  const cityStates = useGameSelector(state => state.gameMap?.cityStates)
   const setlist = useGameSelector(state => state.setlist)
   const {
     updatePlayer,

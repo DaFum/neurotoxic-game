@@ -235,8 +235,8 @@ test('undefined cityTraits falls back to neutral multipliers without crashing', 
   const result = callMerch({ context: {} })
   assert.ok(result.revenue >= 0, 'revenue should be non-negative')
   assert.ok(
-    typeof result.soldItems === 'object',
-    'soldItems should be an object'
+    result.soldItems !== null && typeof result.soldItems === 'object',
+    'soldItems should be a non-null object'
   )
 })
 
