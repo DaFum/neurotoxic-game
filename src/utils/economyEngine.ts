@@ -3,6 +3,7 @@ import { clamp0to100 } from './gameStateUtils'
 import { toFiniteNumber } from './numberUtils'
 import { bandHasTrait } from './traitUtils'
 import { calculateZealotryEffects } from './socialEngine'
+import { DEFAULT_MERCH_PRICES } from '../data/merch'
 import type { BandState, PlayerState, SocialState, Venue } from '../types'
 import type {
   FinancialBreakdownItem,
@@ -23,7 +24,6 @@ export const MODIFIER_COSTS = {
 
 const BAR_RATE_VIP = 0.3
 
-import { DEFAULT_MERCH_PRICES } from '../data/merch'
 export { DEFAULT_MERCH_PRICES }
 
 const BAR_RATE_NORMAL = 0.15
