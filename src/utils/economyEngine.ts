@@ -23,13 +23,8 @@ export const MODIFIER_COSTS = {
 
 const BAR_RATE_VIP = 0.3
 
-export const DEFAULT_MERCH_PRICES: Record<string, number> = {
-  shirts: 20,
-  hoodies: 45,
-  patches: 5,
-  vinyl: 35,
-  cds: 15
-}
+import { DEFAULT_MERCH_PRICES } from '../data/merch'
+export { DEFAULT_MERCH_PRICES }
 
 const BAR_RATE_NORMAL = 0.15
 const AVG_SPEND_PER_PERSON_AT_BAR = 5
