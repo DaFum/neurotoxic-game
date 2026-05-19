@@ -102,6 +102,46 @@ export const HQ_ITEMS = {
       description: 'items:hq_merch_cds_bundle.description',
       effect: { type: 'inventory_add', item: 'cds', value: 50 }
     },
+    {
+      id: 'hq_merch_neuro_cutting_board_bundle',
+      name: 'items:hq_merch_neuro_cutting_board_bundle.name',
+      category: 'MERCH',
+      cost: 150, // 7.5€/Board production cost
+      currency: 'money',
+      img: 'ITEM_MERCH_NEURO_CUTTING_BOARD',
+      description: 'items:hq_merch_neuro_cutting_board_bundle.description',
+      effect: { type: 'inventory_add', item: 'neuro_cutting_board', value: 20 }
+    },
+    {
+      id: 'hq_merch_neuro_lunchbox_bundle',
+      name: 'items:hq_merch_neuro_lunchbox_bundle.name',
+      category: 'MERCH',
+      cost: 200, // 10€/Lunchbox production cost
+      currency: 'money',
+      img: 'ITEM_MERCH_NEURO_LUNCHBOX',
+      description: 'items:hq_merch_neuro_lunchbox_bundle.description',
+      effect: { type: 'inventory_add', item: 'neuro_lunchbox', value: 20 }
+    },
+    {
+      id: 'hq_merch_neuro_mug_bundle',
+      name: 'items:hq_merch_neuro_mug_bundle.name',
+      category: 'MERCH',
+      cost: 120, // 4€/Mug production cost
+      currency: 'money',
+      img: 'ITEM_MERCH_NEURO_MUG',
+      description: 'items:hq_merch_neuro_mug_bundle.description',
+      effect: { type: 'inventory_add', item: 'neuro_mug', value: 30 }
+    },
+    {
+      id: 'hq_merch_neuro_bowl_bundle',
+      name: 'items:hq_merch_neuro_bowl_bundle.name',
+      category: 'MERCH',
+      cost: 150, // 5€/Bowl production cost
+      currency: 'money',
+      img: 'ITEM_MERCH_NEURO_BOWL',
+      description: 'items:hq_merch_neuro_bowl_bundle.description',
+      effect: { type: 'inventory_add', item: 'neuro_bowl', value: 30 }
+    },
     // Realistic/Gritty Gear
     {
       id: 'hq_gear_broken_pedal',

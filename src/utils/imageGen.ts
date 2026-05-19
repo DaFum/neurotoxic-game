@@ -130,6 +130,12 @@ export const IMG_PROMPTS = {
   ITEM_MERCH_PATCHES: 'pixel art pile of embroidered patches icon',
   ITEM_MERCH_VINYL: 'pixel art vinyl record stack icon',
   ITEM_MERCH_CDS: 'pixel art stack of cd cases icon',
+  ITEM_MERCH_NEURO_CUTTING_BOARD:
+    'pixel art green toxic glowing cutting board breakfast icon',
+  ITEM_MERCH_NEURO_LUNCHBOX:
+    'pixel art green toxic glowing metal lunchbox icon',
+  ITEM_MERCH_NEURO_MUG: 'pixel art green toxic glowing coffee mug icon',
+  ITEM_MERCH_NEURO_BOWL: 'pixel art green toxic glowing cereal bowl icon',
   ITEM_BROKEN_PEDAL: 'pixel art broken guitar pedal with duct tape icon',
   ITEM_CHEAP_MICS: 'pixel art cheap plastic microphone icon',
   ITEM_DIY_PATCH_KIT: 'pixel art needle and thread sewing kit icon',

@@ -81,6 +81,42 @@ export const MERCH_PROFILES = {
     genreAffinity: {},
     performanceSensitivity: 0.2,
     missSensitivity: 0.2
+  },
+  neuro_cutting_board: {
+    key: 'neuro_cutting_board',
+    defaultPrice: 25,
+    baseAppeal: 0.08,
+    priceElasticity: 1.2,
+    genreAffinity: { noise: 1.8, synth: 1.5, hardcore: 1.2 },
+    performanceSensitivity: 0.5,
+    missSensitivity: 0.3
+  },
+  neuro_lunchbox: {
+    key: 'neuro_lunchbox',
+    defaultPrice: 30,
+    baseAppeal: 0.07,
+    priceElasticity: 1.3,
+    genreAffinity: { noise: 1.8, synth: 1.5, punk: 1.2 },
+    performanceSensitivity: 0.6,
+    missSensitivity: 0.3
+  },
+  neuro_mug: {
+    key: 'neuro_mug',
+    defaultPrice: 20,
+    baseAppeal: 0.12,
+    priceElasticity: 1.1,
+    genreAffinity: { noise: 1.7, synth: 1.4, goth: 1.3 },
+    performanceSensitivity: 0.4,
+    missSensitivity: 0.2
+  },
+  neuro_bowl: {
+    key: 'neuro_bowl',
+    defaultPrice: 22,
+    baseAppeal: 0.09,
+    priceElasticity: 1.2,
+    genreAffinity: { noise: 1.7, synth: 1.4, hardcore: 1.1 },
+    performanceSensitivity: 0.5,
+    missSensitivity: 0.2
   }
 } as const satisfies Record<string, MerchItemProfile>
 
