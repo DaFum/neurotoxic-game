@@ -10,6 +10,7 @@ import {
   derivePostOptions
 } from '../utils/postGigUtils'
 import { deriveCityTraits, getCityKeyFromVenueId } from '../utils/mapGenerator'
+import { normalizeVenueId } from '../utils/mapUtils'
 import type { PostResult } from '../types'
 import type { BrandDeal } from '../types/social'
 
@@ -92,7 +93,12 @@ export const usePostGigLogic = () => {
 
   // Derive financials purely without triggering a re-render loop
   const financials = useMemo(() => {
-    const cityKey = getCityKeyFromVenueId(currentGig?.id ?? '')
+    // Normalize first — legacy/saved venues can carry namespaced IDs like
+    // `venues:berlin_so36`, but `gameMap.cityStates` is keyed by the normalized
+    // form. Skipping this step misses saved entries on those venues.
+    const normalizedVenueId =
+      normalizeVenueId(currentGig?.id) ?? currentGig?.id ?? ''
+    const cityKey = getCityKeyFromVenueId(normalizedVenueId)
     const cityTraits =
       cityKey === ''
         ? undefined

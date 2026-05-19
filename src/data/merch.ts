@@ -1,6 +1,6 @@
 /**
  * Per-item merch demand profiles. Source of truth for prices and demand
- * curves consumed by economyEngine.calculateMerchRevenue.
+ * curves consumed by economyEngine.calculateMerchIncome.
  */
 
 export type CityGenre =
