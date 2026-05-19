@@ -5,6 +5,7 @@ import { bandHasTrait } from './traitUtils'
 import { calculateZealotryEffects } from './socialEngine'
 import { DEFAULT_MERCH_PRICES } from '../data/merch'
 import type { BandState, PlayerState, SocialState, Venue } from '../types'
+import type { CityTraitState } from '../types/game'
 import type {
   FinancialBreakdownItem,
   PostGigFinancials
@@ -52,6 +53,7 @@ type EconomyContext = {
   regionRep?: number
   discountedTickets?: boolean
   merchPrices?: Record<string, number>
+  cityTraits?: CityTraitState
   social?: {
     zealotry?: number
     activeDeals?: Array<{
