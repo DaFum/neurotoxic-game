@@ -241,16 +241,30 @@ test('undefined cityTraits falls back to neutral multipliers without crashing', 
 })
 
 test('merch-hungry + great show can sell more units than potentialBuyers implies', () => {
+  const inventory = {
+    shirts: 999,
+    hoodies: 999,
+    patches: 999,
+    cds: 999,
+    vinyl: 999
+  }
+  const gigStats = { misses: 0, peakHype: 100 }
+  const baseline = callMerch({
+    ticketsSold: 200,
+    gigStats,
+    inventory,
+    context: {
+      cityTraits: {
+        genreBias: 'punk',
+        barSpendingProfile: 'average',
+        attentionSpan: 30
+      }
+    }
+  })
   const result = callMerch({
     ticketsSold: 200,
-    gigStats: { misses: 0, peakHype: 100 },
-    inventory: {
-      shirts: 999,
-      hoodies: 999,
-      patches: 999,
-      cds: 999,
-      vinyl: 999
-    },
+    gigStats,
+    inventory,
     context: {
       cityTraits: {
         genreBias: 'punk',
@@ -260,13 +274,13 @@ test('merch-hungry + great show can sell more units than potentialBuyers implies
     }
   })
 
-  const totalSold = Object.values(result.soldItems ?? {}).reduce(
-    (a, b) => a + b,
-    0
-  )
+  const sum = items => Object.values(items ?? {}).reduce((a, b) => a + b, 0)
+  const baselineSold = sum(baseline.soldItems)
+  const totalSold = sum(result.soldItems)
+
   assert.ok(
-    totalSold > 50,
-    `expected demand lift to drive significant sales beyond baseline; totalSold=${totalSold}`
+    totalSold > baselineSold,
+    `merch-hungry demand lift should beat average baseline; baselineSold=${baselineSold}, totalSold=${totalSold}`
   )
 })
 
