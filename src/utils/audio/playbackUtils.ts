@@ -172,14 +172,14 @@ export const buildAssetUrlMap = (
   warn: (message: string) => void = console.warn,
   label = 'Asset'
 ): Record<string, string> => {
-  const accumulator: Record<string, string> = {}
+  const accumulator: Record<string, string> = Object.create(null)
   if (!assetGlob || typeof assetGlob !== 'object') return accumulator
   const map = assetGlob as Record<string, unknown>
   for (const path of Object.keys(map)) {
     const urlRaw = map[path]
     const url = typeof urlRaw === 'string' ? urlRaw : String(urlRaw)
     const relativePath = path.replace(/^.*?\/assets\//, '')
-    if (!accumulator[relativePath]) {
+    if (!Object.hasOwn(accumulator, relativePath)) {
       accumulator[relativePath] = url
     }
 
@@ -187,7 +187,7 @@ export const buildAssetUrlMap = (
     if (!baseName) continue
 
     const existingBasenameUrl = accumulator[baseName]
-    if (!existingBasenameUrl) {
+    if (!Object.hasOwn(accumulator, baseName)) {
       accumulator[baseName] = url
       continue
     }
