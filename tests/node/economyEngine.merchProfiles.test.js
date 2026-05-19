@@ -269,3 +269,36 @@ test('merch-hungry + great show can sell more units than potentialBuyers implies
     `expected demand lift to drive significant sales beyond baseline; totalSold=${totalSold}`
   )
 })
+
+test('out-of-stock items do not redistribute their demand share to in-stock items', () => {
+  const ctx = {
+    cityTraits: {
+      genreBias: 'punk',
+      barSpendingProfile: 'average',
+      attentionSpan: 30
+    }
+  }
+  // Full inventory baseline.
+  const baseline = callMerch({ context: ctx })
+  // Same setup, but zero out hoodies + vinyl. Demand that would have gone to
+  // them must be lost, not absorbed by shirts/patches/cds.
+  const partial = callMerch({
+    inventory: buildInventory({ hoodies: 0, vinyl: 0 }),
+    context: ctx
+  })
+
+  const baseShirts = baseline.soldItems?.shirts ?? 0
+  const partShirts = partial.soldItems?.shirts ?? 0
+  const basePatches = baseline.soldItems?.patches ?? 0
+  const partPatches = partial.soldItems?.patches ?? 0
+
+  // Allow rounding-floor noise (1 unit) but reject absorption of out-of-stock demand.
+  assert.ok(
+    partShirts <= baseShirts + 1,
+    `shirts must not gain from out-of-stock hoodies/vinyl: baseline=${baseShirts}, partial=${partShirts}`
+  )
+  assert.ok(
+    partPatches <= basePatches + 1,
+    `patches must not gain from out-of-stock hoodies/vinyl: baseline=${basePatches}, partial=${partPatches}`
+  )
+})

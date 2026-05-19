@@ -357,16 +357,11 @@ export const calculateMerchIncome = (
   const rawShare: Record<string, number> = {}
   const priceByKey: Record<string, number> = {}
 
+  // Compute raw share for every item regardless of inventory. Out-of-stock
+  // items still contribute to totalRawShare so their portion of demand is
+  // lost (capped at 0 in the allocation loop) rather than redistributed to
+  // in-stock items.
   for (const profile of Object.values(MERCH_PROFILES) as MerchItemProfile[]) {
-    const inventoryCount =
-      typeof safeInventory[profile.key] === 'number'
-        ? (safeInventory[profile.key] as number)
-        : 0
-    if (inventoryCount <= 0) {
-      rawShare[profile.key] = 0
-      continue
-    }
-
     const genreMult = profile.genreAffinity[genreBias] ?? 1.0
     const perfLift =
       1 +
