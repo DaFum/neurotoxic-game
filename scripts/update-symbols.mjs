@@ -389,11 +389,39 @@ for (const e of EXTERNAL) {
 // 5. Write or check
 // ---------------------------------------------------------------------------
 
+// Sort an entry object's keys alphabetically so the JSON layout is stable
+// regardless of the insertion order in upsert().
+function sortKeys(obj) {
+  return Object.keys(obj)
+    .sort((a, b) => a.localeCompare(b))
+    .reduce((acc, key) => {
+      acc[key] = obj[key]
+      return acc
+    }, {})
+}
+
+// Stable per-entry sort key: external entries by module, local entries by
+// path then exportPath; default vs named is tiebroken last. Ensures arrays
+// are deterministic even if scan order shifts.
+function entrySortKey(e) {
+  return [
+    e.source ?? '',
+    e.module ?? '',
+    e.path ?? '',
+    e.exportPath ?? '',
+    e.isDefault ? '1' : '0'
+  ].join(' ')
+}
+
 // Sort the symbols object keys alphabetically to ensure deterministic diffs
 const sortedKnownSymbols = Object.keys(knownSymbols)
   .sort((a, b) => a.localeCompare(b))
   .reduce((acc, key) => {
-    acc[key] = knownSymbols[key]
+    const entries = knownSymbols[key]
+      .slice()
+      .sort((a, b) => entrySortKey(a).localeCompare(entrySortKey(b)))
+      .map(sortKeys)
+    acc[key] = entries
     return acc
   }, {})
 
