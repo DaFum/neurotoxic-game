@@ -204,6 +204,7 @@ const sanitizeBandInventory = (value: unknown): BandState['inventory'] => {
 
   const defaultInventory = DEFAULT_BAND_STATE.inventory
   for (const key in defaultInventory) {
+    if (!Object.hasOwn(defaultInventory, key)) continue
     const fallback = defaultInventory[key as keyof typeof defaultInventory]
     const raw = value[key]
 
