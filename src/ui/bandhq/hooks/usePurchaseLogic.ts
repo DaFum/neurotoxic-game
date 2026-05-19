@@ -84,7 +84,7 @@ const asToastOptions = (value: unknown): Record<string, unknown> => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return {}
   const options: Record<string, unknown> = Object.create(null)
   const source = value as Record<string, unknown>
-  for (const key in source) {
+  for (const key of Object.keys(source)) {
     if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
       continue
     }
