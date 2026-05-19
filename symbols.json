@@ -947,6 +947,15 @@
         "typeOnly": true
       }
     ],
+    "BrandDealsTab": [
+      {
+        "isDefault": false,
+        "name": "BrandDealsTab",
+        "path": "src/ui/bandhq/BrandDealsTab.tsx",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "BrutalFader": [
       {
         "exportPath": "src/ui/shared/index.tsx",

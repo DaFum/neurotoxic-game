@@ -21,6 +21,7 @@ import {
 import { BRAND_ALIGNMENTS } from '../context/initialState'
 import { BRAND_DEALS_BY_ID } from '../data/brandDeals'
 import { SOCIAL_PLATFORMS } from '../data/platforms'
+const SOCIAL_PLATFORMS_VALUES = Object.values(SOCIAL_PLATFORMS)
 
 import type {
   GameState,
@@ -432,24 +433,19 @@ export const calculatePostGigStateUpdates = (
   if (result.success && totalFollowers > 0) {
     const delta = Math.floor(totalFollowers * 0.25)
 
-    for (const key in SOCIAL_PLATFORMS) {
-      if (Object.hasOwn(SOCIAL_PLATFORMS, key)) {
-        const platformConfig =
-          SOCIAL_PLATFORMS[key as keyof typeof SOCIAL_PLATFORMS]
-        const platformId = platformConfig.id
-        if (!isSocialPlatformId(platformId)) continue
+    for (const platformConfig of SOCIAL_PLATFORMS_VALUES) {
+      const platformId = platformConfig.id as Platform
 
-        // Do not cross-post to the platform that triggered the update,
-        // and do not cross-post to the newsletter, which is treated differently.
-        if (
-          platformId !== result.platform &&
-          platformId !== SOCIAL_PLATFORMS.NEWSLETTER.id
-        ) {
-          updatedSocial[platformId] = Math.max(
-            0,
-            toFiniteNumber(social[platformId]) + delta
-          )
-        }
+      // Do not cross-post to the platform that triggered the update,
+      // and do not cross-post to the newsletter, which is treated differently.
+      if (
+        platformId !== result.platform &&
+        platformId !== SOCIAL_PLATFORMS.NEWSLETTER.id
+      ) {
+        updatedSocial[platformId] = Math.max(
+          0,
+          toFiniteNumber(social[platformId]) + delta
+        )
       }
     }
   }
