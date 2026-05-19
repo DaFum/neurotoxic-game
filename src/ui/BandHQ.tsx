@@ -15,6 +15,7 @@ import { SettingsTab } from './bandhq/SettingsTab.tsx'
 import { LeaderboardTab } from './bandhq/LeaderboardTab.tsx'
 import { VoidTraderTab } from './bandhq/VoidTraderTab.tsx'
 import { GlossaryTab } from './bandhq/GlossaryTab.tsx'
+import { BrandDealsTab } from './bandhq/BrandDealsTab.tsx'
 import { Tooltip } from './shared/Tooltip.tsx'
 import { useNetworkStatus } from '../hooks/useNetworkStatus'
 
@@ -151,6 +152,7 @@ export const BandHQ = ({ onClose, className = '' }: BandHQProps) => {
             { id: 'UPGRADES', key: 'tabs.upgrades' },
             { id: 'SETLIST', key: 'tabs.setlist' },
             { id: 'LEADERBOARD', key: 'tabs.leaderboard' },
+            { id: 'BRAND_DEALS', key: 'tabs.brandDeals' },
             { id: 'SETTINGS', key: 'tabs.settings' },
             { id: 'GLOSSARY', key: 'tabs.glossary' },
             {
@@ -278,6 +280,8 @@ export const BandHQ = ({ onClose, className = '' }: BandHQProps) => {
               )}
 
             {currentTab === 'GLOSSARY' && <GlossaryTab />}
+
+            {currentTab === 'BRAND_DEALS' && <BrandDealsTab social={social} />}
 
             {currentTab === 'SETTINGS' && (
               <SettingsTab
