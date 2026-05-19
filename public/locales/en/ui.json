@@ -27,6 +27,7 @@
   "brandDeals.activeLabel": "ACTIVE DEAL",
   "brandDeals.alignment": "Alignment:",
   "brandDeals.duration": "Duration:",
+  "brandDeals.durationValue": "{{count}} Gigs",
   "brandDeals.durationValue_one": "{{count}} Gig",
   "brandDeals.durationValue_other": "{{count}} Gigs",
   "brandDeals.upfront": "Upfront:",
