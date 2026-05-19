@@ -9,6 +9,7 @@ import {
   deriveFinancials,
   derivePostOptions
 } from '../utils/postGigUtils'
+import { deriveCityTraits, getCityKeyFromVenueId } from '../utils/mapGenerator'
 import type { PostResult } from '../types'
 import type { BrandDeal } from '../types/social'
 
@@ -30,6 +31,7 @@ export const usePostGigLogic = () => {
   const lastGigStats = useGameSelector(state => state.lastGigStats)
   const reputationByRegion = useGameSelector(state => state.reputationByRegion)
   const activeStoryFlags = useGameSelector(state => state.activeStoryFlags)
+  const cityStates = useGameSelector(state => state.cityStates)
   const setlist = useGameSelector(state => state.setlist)
   const {
     updatePlayer,
@@ -89,34 +91,40 @@ export const usePostGigLogic = () => {
   }
 
   // Derive financials purely without triggering a re-render loop
-  const financials = useMemo(
-    () =>
-      deriveFinancials({
-        currentGig,
-        lastGigStats,
-        perfScore,
-        gigModifiers,
-        bandInventory: band.inventory,
-        bandMerchPrices: band.merchPrices,
-        player,
-        social,
-        reputationByRegion,
-        activeStoryFlags,
-        gigContext: gigContextRef.current
-      }),
-    [
+  const financials = useMemo(() => {
+    const cityKey = getCityKeyFromVenueId(currentGig?.id ?? '')
+    const cityTraits =
+      cityKey === ''
+        ? undefined
+        : (cityStates?.[cityKey] ?? deriveCityTraits(cityKey))
+
+    return deriveFinancials({
       currentGig,
       lastGigStats,
       perfScore,
       gigModifiers,
-      band.inventory,
-      band.merchPrices,
+      bandInventory: band.inventory,
+      bandMerchPrices: band.merchPrices,
       player,
       social,
       reputationByRegion,
-      activeStoryFlags
-    ]
-  )
+      activeStoryFlags,
+      gigContext: gigContextRef.current,
+      cityTraits
+    })
+  }, [
+    currentGig,
+    lastGigStats,
+    perfScore,
+    gigModifiers,
+    band.inventory,
+    band.merchPrices,
+    player,
+    social,
+    reputationByRegion,
+    activeStoryFlags,
+    cityStates
+  ])
 
   // Derive post options purely without triggering a re-render loop
   const { options: postOptions, error: postOptionsDerivationError } =
