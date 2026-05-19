@@ -130,8 +130,9 @@ export const generateEffectText = (
 
   // Inventory/Items
   if (delta.band?.inventory) {
-    for (const key of Object.keys(delta.band.inventory)) {
-      const qty = delta.band.inventory[key]
+    const inventory = delta.band.inventory
+    for (const key of Object.keys(inventory)) {
+      const qty = inventory[key]
       if (typeof qty === 'number' && qty !== 0) {
         lines.push(
           `${t(`items:${key}`, { defaultValue: key })}: ${
