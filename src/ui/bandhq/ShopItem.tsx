@@ -33,8 +33,12 @@ export const ShopItem = React.memo(
     processingItemId
   }: ShopItemProps) => {
     const { t, i18n } = useTranslation(['items', 'ui'])
-    const formatPrice = (v: number) =>
-      item.currency === 'fame' ? `${v} ★` : formatCurrency(v, i18n?.language)
+    const formatPrice = (v: number) => {
+      const safe = Number.isFinite(v) ? v : 0
+      return item.currency === 'fame'
+        ? `${safe} ★`
+        : formatCurrency(safe, i18n?.language)
+    }
     const hasDiscount =
       adjustedCost !== undefined &&
       item.cost !== undefined &&

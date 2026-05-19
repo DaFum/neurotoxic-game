@@ -104,7 +104,7 @@ const CareerOverviewSection = ({
     >
       <DetailRow
         label={t('ui:stats.funds', { defaultValue: 'Funds' })}
-        value={formatCurrency(player.money, i18n?.language)}
+        value={formatCurrency(player.money ?? 0, i18n?.language)}
       />
       <DetailRow
         label={t('ui:stats.fame', { defaultValue: 'Fame' })}

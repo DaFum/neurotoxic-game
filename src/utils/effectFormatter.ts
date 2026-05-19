@@ -46,7 +46,7 @@ export const generateEffectText = (
     tKey: string,
     defaultValue: string
   ) => {
-    if (typeof value === 'number' && value !== 0) {
+    if (typeof value === 'number' && Number.isFinite(value) && value !== 0) {
       lines.push(
         `${t(tKey, { defaultValue })}: ${formatCurrency(value, language, 'always')}`
       )
