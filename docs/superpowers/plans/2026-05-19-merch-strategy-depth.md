@@ -14,21 +14,22 @@
 
 ## File Structure
 
-| File | Status | Responsibility |
-|---|---|---|
-| `src/data/merch.ts` | **NEW** | Per-item profiles (`MERCH_PROFILES`), spending-profile multipliers (`SPENDING_PROFILE_MERCH_MULTIPLIER`), derived `DEFAULT_MERCH_PRICES` re-export. Pure data, no logic. |
-| `src/utils/economyEngine.ts` | MODIFY | `DEFAULT_MERCH_PRICES` re-exports from `src/data/merch.ts`. `EconomyContext.cityTraits` added. `calculateMerchRevenue` rewritten. |
-| `src/utils/postGigUtils.ts` | MODIFY | `deriveFinancials` accepts optional `cityTraits` param and threads it into `EconomyContext`. |
-| `src/hooks/usePostGigLogic.ts` | MODIFY | Derives `cityTraits` from `state.cityStates` keyed by `getCityKeyFromVenueId(currentGig.id)`, with `deriveCityTraits` fallback. Passes into `deriveFinancials`. |
-| `tests/node/economyEngine.merchProfiles.test.js` | **NEW** | Unit tests for new demand pipeline (genre match, spending profile, performance lift, elasticity, order-independence, inventory cap, undefined traits, demand-lift > 1). |
-| `tests/node/economyEngine.test.js` | MODIFY | Update assertions invalidated by the rewrite (exact merch revenue numbers → ratio assertions). |
-| `src/utils/AGENTS.md` | MODIFY | One-line pointer to `src/data/merch.ts` as source of truth for per-item demand profiles. |
+| File                                             | Status  | Responsibility                                                                                                                                                           |
+| ------------------------------------------------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `src/data/merch.ts`                              | **NEW** | Per-item profiles (`MERCH_PROFILES`), spending-profile multipliers (`SPENDING_PROFILE_MERCH_MULTIPLIER`), derived `DEFAULT_MERCH_PRICES` re-export. Pure data, no logic. |
+| `src/utils/economyEngine.ts`                     | MODIFY  | `DEFAULT_MERCH_PRICES` re-exports from `src/data/merch.ts`. `EconomyContext.cityTraits` added. `calculateMerchRevenue` rewritten.                                        |
+| `src/utils/postGigUtils.ts`                      | MODIFY  | `deriveFinancials` accepts optional `cityTraits` param and threads it into `EconomyContext`.                                                                             |
+| `src/hooks/usePostGigLogic.ts`                   | MODIFY  | Derives `cityTraits` from `state.cityStates` keyed by `getCityKeyFromVenueId(currentGig.id)`, with `deriveCityTraits` fallback. Passes into `deriveFinancials`.          |
+| `tests/node/economyEngine.merchProfiles.test.js` | **NEW** | Unit tests for new demand pipeline (genre match, spending profile, performance lift, elasticity, order-independence, inventory cap, undefined traits, demand-lift > 1).  |
+| `tests/node/economyEngine.test.js`               | MODIFY  | Update assertions invalidated by the rewrite (exact merch revenue numbers → ratio assertions).                                                                           |
+| `src/utils/AGENTS.md`                            | MODIFY  | One-line pointer to `src/data/merch.ts` as source of truth for per-item demand profiles.                                                                                 |
 
 ---
 
 ## Task 1: Create the merch data module (pure data)
 
 **Files:**
+
 - Create: `src/data/merch.ts`
 
 - [ ] **Step 1: Create the data module with profiles and spending multipliers**
@@ -156,6 +157,7 @@ git commit -m "feat: add merch item profiles and spending multipliers data modul
 ## Task 2: Re-export `DEFAULT_MERCH_PRICES` from the data module
 
 **Files:**
+
 - Modify: `src/utils/economyEngine.ts:26-32`
 
 - [ ] **Step 1: Replace the inline DEFAULT_MERCH_PRICES with a re-export**
@@ -200,6 +202,7 @@ git commit -m "refactor: source DEFAULT_MERCH_PRICES from data/merch module"
 ## Task 3: Add `cityTraits` to `EconomyContext` type
 
 **Files:**
+
 - Modify: `src/utils/economyEngine.ts:51-69`
 
 - [ ] **Step 1: Import CityTraitState and extend EconomyContext**
@@ -258,6 +261,7 @@ git commit -m "feat(types): add cityTraits to EconomyContext"
 ## Task 4: Write failing test — genre match boost
 
 **Files:**
+
 - Create: `tests/node/economyEngine.merchProfiles.test.js`
 
 - [ ] **Step 1: Write the failing test**
@@ -284,7 +288,12 @@ const buildGigStats = (overrides = {}) => ({
   ...overrides
 })
 
-const callMerch = ({ ticketsSold = 200, gigStats = buildGigStats(), inventory = buildInventory(), context = {} } = {}) =>
+const callMerch = ({
+  ticketsSold = 200,
+  gigStats = buildGigStats(),
+  inventory = buildInventory(),
+  context = {}
+} = {}) =>
   calculateMerchIncome({
     ticketsSold,
     gigStats,
@@ -295,12 +304,20 @@ const callMerch = ({ ticketsSold = 200, gigStats = buildGigStats(), inventory = 
 test('patches sell more in a punk city than in an indie city', () => {
   const punkResult = callMerch({
     context: {
-      cityTraits: { genreBias: 'punk', barSpendingProfile: 'average', attentionSpan: 30 }
+      cityTraits: {
+        genreBias: 'punk',
+        barSpendingProfile: 'average',
+        attentionSpan: 30
+      }
     }
   })
   const indieResult = callMerch({
     context: {
-      cityTraits: { genreBias: 'indie', barSpendingProfile: 'average', attentionSpan: 30 }
+      cityTraits: {
+        genreBias: 'indie',
+        barSpendingProfile: 'average',
+        attentionSpan: 30
+      }
     }
   })
 
@@ -333,6 +350,7 @@ git commit -m "test: failing test for genre-driven merch demand"
 ## Task 5: Implement new `calculateMerchRevenue` algorithm
 
 **Files:**
+
 - Modify: `src/utils/economyEngine.ts:316-387` (the existing `calculateMerchIncome` body)
 
 - [ ] **Step 1: Read the existing function**
@@ -369,16 +387,20 @@ const safeInventory = bandInventory || {}
 const cityTraits = context?.cityTraits
 
 const genreBias = (cityTraits?.genreBias ?? '') as CityGenre
-const spendingProfile = (cityTraits?.barSpendingProfile ?? 'average') as SpendingProfile
-const spendingMult =
-  SPENDING_PROFILE_MERCH_MULTIPLIER[spendingProfile] ?? 1.0
+const spendingProfile = (cityTraits?.barSpendingProfile ??
+  'average') as SpendingProfile
+const spendingMult = SPENDING_PROFILE_MERCH_MULTIPLIER[spendingProfile] ?? 1.0
 
 const peakHype = typeof gigStats?.peakHype === 'number' ? gigStats.peakHype : 0
 const misses = typeof gigStats?.misses === 'number' ? gigStats.misses : 0
 const hypeNorm = Math.max(0, Math.min(100, peakHype)) / 100
 const missNorm = Math.max(0, Math.min(100, misses)) / 100
 
-const priceModifier = (price: number, defaultPrice: number, elasticity: number): number => {
+const priceModifier = (
+  price: number,
+  defaultPrice: number,
+  elasticity: number
+): number => {
   if (price > defaultPrice) {
     return Math.max(
       0.2,
@@ -386,10 +408,7 @@ const priceModifier = (price: number, defaultPrice: number, elasticity: number):
     )
   }
   if (price < defaultPrice) {
-    return Math.min(
-      2.0,
-      1 + ((defaultPrice - price) / defaultPrice) * 1.0
-    )
+    return Math.min(2.0, 1 + ((defaultPrice - price) / defaultPrice) * 1.0)
   }
   return 1.0
 }
@@ -417,7 +436,11 @@ for (const profile of Object.values(MERCH_PROFILES) as MerchItemProfile[]) {
 
   const price = customPrices[profile.key] ?? profile.defaultPrice
   priceByKey[profile.key] = price
-  const priceMult = priceModifier(price, profile.defaultPrice, profile.priceElasticity)
+  const priceMult = priceModifier(
+    price,
+    profile.defaultPrice,
+    profile.priceElasticity
+  )
 
   rawShare[profile.key] =
     profile.baseAppeal * genreMult * spendingMult * perfMult * priceMult
@@ -430,8 +453,7 @@ if (totalRawShare <= 0) {
 }
 
 // Step 3: total demand lift — great shows in good cities can exceed potentialBuyers
-const demandLiftRaw =
-  spendingMult * (0.5 + hypeNorm * 0.8 - missNorm * 0.4)
+const demandLiftRaw = spendingMult * (0.5 + hypeNorm * 0.8 - missNorm * 0.4)
 const demandLift = Math.max(0.3, Math.min(1.8, demandLiftRaw))
 const effectiveBuyers = Math.floor(Math.max(0, potentialBuyers) * demandLift)
 
@@ -448,7 +470,10 @@ for (const key of sortedKeys) {
   const sold = Math.min(desired, inventoryCount)
   if (sold > 0) {
     soldItems[key] = sold
-    const price = priceByKey[key] ?? (MERCH_PROFILES as Record<string, MerchItemProfile>)[key]?.defaultPrice ?? 0
+    const price =
+      priceByKey[key] ??
+      (MERCH_PROFILES as Record<string, MerchItemProfile>)[key]?.defaultPrice ??
+      0
     const itemRevenue = sold * price
     totalRevenue += itemRevenue
     breakdownItems.push({
@@ -470,7 +495,8 @@ return {
 ```
 
 **Notes for the engineer:**
-- The existing `potentialBuyers` calculation (using `buyRate`, hype/miss penalties on `buyRate`, and `Math.floor(ticketsSold * buyRate)`) is preserved unchanged. Only the *per-item* loop after `potentialBuyers` is replaced.
+
+- The existing `potentialBuyers` calculation (using `buyRate`, hype/miss penalties on `buyRate`, and `Math.floor(ticketsSold * buyRate)`) is preserved unchanged. Only the _per-item_ loop after `potentialBuyers` is replaced.
 - The existing `breakdownItems` array (containing earlier scandal-support / signing-bonus lines) is preserved and pushed into.
 - Sorted-key iteration in Step 4 makes the output deterministic regardless of `MERCH_PROFILES` declaration order — required for the order-independence test in Task 9.
 - `as CityGenre` and `as SpendingProfile` cast strings to literal types for the lookup; the `?? 1.0` and `?? 'average'` defaults handle missing/unknown values.
@@ -497,6 +523,7 @@ git commit -m "feat: per-item merch demand model with city and performance signa
 ## Task 6: Add remaining unit tests for the new pipeline
 
 **Files:**
+
 - Modify: `tests/node/economyEngine.merchProfiles.test.js`
 
 - [ ] **Step 1: Append the spending-profile test**
@@ -507,12 +534,20 @@ Append to `tests/node/economyEngine.merchProfiles.test.js`:
 test('merch-hungry city produces more revenue than stingy city', () => {
   const hungry = callMerch({
     context: {
-      cityTraits: { genreBias: 'punk', barSpendingProfile: 'merch-hungry', attentionSpan: 30 }
+      cityTraits: {
+        genreBias: 'punk',
+        barSpendingProfile: 'merch-hungry',
+        attentionSpan: 30
+      }
     }
   })
   const stingy = callMerch({
     context: {
-      cityTraits: { genreBias: 'punk', barSpendingProfile: 'stingy', attentionSpan: 30 }
+      cityTraits: {
+        genreBias: 'punk',
+        barSpendingProfile: 'stingy',
+        attentionSpan: 30
+      }
     }
   })
   assert.ok(
@@ -528,15 +563,29 @@ test('merch-hungry city produces more revenue than stingy city', () => {
 test('high peak hype lifts vinyl revenue more than CD revenue', () => {
   const greatShow = callMerch({
     gigStats: { misses: 0, peakHype: 100 },
-    context: { cityTraits: { genreBias: 'indie', barSpendingProfile: 'average', attentionSpan: 30 } }
+    context: {
+      cityTraits: {
+        genreBias: 'indie',
+        barSpendingProfile: 'average',
+        attentionSpan: 30
+      }
+    }
   })
   const mediocre = callMerch({
     gigStats: { misses: 0, peakHype: 30 },
-    context: { cityTraits: { genreBias: 'indie', barSpendingProfile: 'average', attentionSpan: 30 } }
+    context: {
+      cityTraits: {
+        genreBias: 'indie',
+        barSpendingProfile: 'average',
+        attentionSpan: 30
+      }
+    }
   })
 
-  const vinylDelta = (greatShow.soldItems?.vinyl ?? 0) - (mediocre.soldItems?.vinyl ?? 0)
-  const cdDelta = (greatShow.soldItems?.cds ?? 0) - (mediocre.soldItems?.cds ?? 0)
+  const vinylDelta =
+    (greatShow.soldItems?.vinyl ?? 0) - (mediocre.soldItems?.vinyl ?? 0)
+  const cdDelta =
+    (greatShow.soldItems?.cds ?? 0) - (mediocre.soldItems?.cds ?? 0)
 
   assert.ok(
     vinylDelta > cdDelta,
@@ -551,15 +600,29 @@ test('high peak hype lifts vinyl revenue more than CD revenue', () => {
 test('high miss count hurts vinyl revenue more than patches revenue', () => {
   const clean = callMerch({
     gigStats: { misses: 0, peakHype: 70 },
-    context: { cityTraits: { genreBias: 'indie', barSpendingProfile: 'average', attentionSpan: 30 } }
+    context: {
+      cityTraits: {
+        genreBias: 'indie',
+        barSpendingProfile: 'average',
+        attentionSpan: 30
+      }
+    }
   })
   const sloppy = callMerch({
     gigStats: { misses: 50, peakHype: 70 },
-    context: { cityTraits: { genreBias: 'indie', barSpendingProfile: 'average', attentionSpan: 30 } }
+    context: {
+      cityTraits: {
+        genreBias: 'indie',
+        barSpendingProfile: 'average',
+        attentionSpan: 30
+      }
+    }
   })
 
-  const vinylDrop = (clean.soldItems?.vinyl ?? 0) - (sloppy.soldItems?.vinyl ?? 0)
-  const patchDrop = (clean.soldItems?.patches ?? 0) - (sloppy.soldItems?.patches ?? 0)
+  const vinylDrop =
+    (clean.soldItems?.vinyl ?? 0) - (sloppy.soldItems?.vinyl ?? 0)
+  const patchDrop =
+    (clean.soldItems?.patches ?? 0) - (sloppy.soldItems?.patches ?? 0)
 
   assert.ok(
     vinylDrop >= patchDrop,
@@ -573,7 +636,11 @@ test('high miss count hurts vinyl revenue more than patches revenue', () => {
 ```js
 test('overpricing hoodies hurts sales faster than overpricing patches', () => {
   const baseCtx = {
-    cityTraits: { genreBias: 'metal', barSpendingProfile: 'average', attentionSpan: 30 }
+    cityTraits: {
+      genreBias: 'metal',
+      barSpendingProfile: 'average',
+      attentionSpan: 30
+    }
   }
   const defaultPrices = callMerch({ context: baseCtx })
   const overpriced = callMerch({
@@ -584,9 +651,13 @@ test('overpricing hoodies hurts sales faster than overpricing patches', () => {
   })
 
   const hoodieDropPct =
-    1 - (overpriced.soldItems?.hoodies ?? 0) / (defaultPrices.soldItems?.hoodies ?? 1)
+    1 -
+    (overpriced.soldItems?.hoodies ?? 0) /
+      (defaultPrices.soldItems?.hoodies ?? 1)
   const patchDropPct =
-    1 - (overpriced.soldItems?.patches ?? 0) / (defaultPrices.soldItems?.patches ?? 1)
+    1 -
+    (overpriced.soldItems?.patches ?? 0) /
+      (defaultPrices.soldItems?.patches ?? 1)
 
   assert.ok(
     hoodieDropPct > patchDropPct,
@@ -602,7 +673,11 @@ test('result is independent of MERCH_PROFILES iteration order', async () => {
   // Run twice; if the implementation iterates a sorted key list internally
   // and normalizes shares before allocation, the result must be deterministic.
   const ctx = {
-    cityTraits: { genreBias: 'punk', barSpendingProfile: 'average', attentionSpan: 30 }
+    cityTraits: {
+      genreBias: 'punk',
+      barSpendingProfile: 'average',
+      attentionSpan: 30
+    }
   }
   const a = callMerch({ context: ctx })
   const b = callMerch({ context: ctx })
@@ -624,9 +699,19 @@ test('inventory cap prevents overselling even under huge demand', () => {
     ticketsSold: 10000,
     gigStats: { misses: 0, peakHype: 100 },
     inventory: { shirts: 0, hoodies: 0, patches: 1, cds: 0, vinyl: 0 },
-    context: { cityTraits: { genreBias: 'punk', barSpendingProfile: 'merch-hungry', attentionSpan: 30 } }
+    context: {
+      cityTraits: {
+        genreBias: 'punk',
+        barSpendingProfile: 'merch-hungry',
+        attentionSpan: 30
+      }
+    }
   })
-  assert.equal(result.soldItems?.patches ?? 0, 1, 'cannot sell more than inventory')
+  assert.equal(
+    result.soldItems?.patches ?? 0,
+    1,
+    'cannot sell more than inventory'
+  )
 })
 ```
 
@@ -636,7 +721,10 @@ test('inventory cap prevents overselling even under huge demand', () => {
 test('undefined cityTraits falls back to neutral multipliers without crashing', () => {
   const result = callMerch({ context: {} })
   assert.ok(result.revenue >= 0, 'revenue should be non-negative')
-  assert.ok(typeof result.soldItems === 'object', 'soldItems should be an object')
+  assert.ok(
+    typeof result.soldItems === 'object',
+    'soldItems should be an object'
+  )
 })
 ```
 
@@ -649,11 +737,26 @@ test('merch-hungry + great show can sell more units than potentialBuyers implies
   const result = callMerch({
     ticketsSold: 100,
     gigStats: { misses: 0, peakHype: 100 },
-    inventory: { shirts: 999, hoodies: 999, patches: 999, cds: 999, vinyl: 999 },
-    context: { cityTraits: { genreBias: 'punk', barSpendingProfile: 'merch-hungry', attentionSpan: 30 } }
+    inventory: {
+      shirts: 999,
+      hoodies: 999,
+      patches: 999,
+      cds: 999,
+      vinyl: 999
+    },
+    context: {
+      cityTraits: {
+        genreBias: 'punk',
+        barSpendingProfile: 'merch-hungry',
+        attentionSpan: 30
+      }
+    }
   })
 
-  const totalSold = Object.values(result.soldItems ?? {}).reduce((a, b) => a + b, 0)
+  const totalSold = Object.values(result.soldItems ?? {}).reduce(
+    (a, b) => a + b,
+    0
+  )
   // Conservative ceiling: potentialBuyers cannot exceed ticketsSold; demandLift up to 1.8
   // expect total sold > 50% of ticketsSold given the boosts.
   assert.ok(
@@ -680,6 +783,7 @@ git commit -m "test: unit coverage for per-item merch demand pipeline"
 ## Task 7: Thread `cityTraits` through `deriveFinancials`
 
 **Files:**
+
 - Modify: `src/utils/postGigUtils.ts:745-803`
 
 - [ ] **Step 1: Add `cityTraits` parameter to `deriveFinancials`**
@@ -768,6 +872,7 @@ git commit -m "feat: thread cityTraits through deriveFinancials into EconomyCont
 ## Task 8: Wire `cityTraits` from `usePostGigLogic`
 
 **Files:**
+
 - Modify: `src/hooks/usePostGigLogic.ts:1-50, 80-119`
 
 - [ ] **Step 1: Add imports**
@@ -791,40 +896,40 @@ const cityStates = useGameSelector(state => state.cityStates)
 Find the `useMemo` that calls `deriveFinancials` (around line 92). Update it:
 
 ```ts
-  const financials = useMemo(() => {
-    const cityKey = getCityKeyFromVenueId(currentGig?.id ?? '')
-    const cityTraits =
-      cityKey === ''
-        ? undefined
-        : (cityStates?.[cityKey] ?? deriveCityTraits(cityKey))
+const financials = useMemo(() => {
+  const cityKey = getCityKeyFromVenueId(currentGig?.id ?? '')
+  const cityTraits =
+    cityKey === ''
+      ? undefined
+      : (cityStates?.[cityKey] ?? deriveCityTraits(cityKey))
 
-    return deriveFinancials({
-      currentGig,
-      lastGigStats,
-      perfScore,
-      gigModifiers,
-      bandInventory: band.inventory,
-      bandMerchPrices: band.merchPrices,
-      player,
-      social,
-      reputationByRegion,
-      activeStoryFlags,
-      gigContext: gigContextRef.current,
-      cityTraits
-    })
-  }, [
+  return deriveFinancials({
     currentGig,
     lastGigStats,
     perfScore,
     gigModifiers,
-    band.inventory,
-    band.merchPrices,
+    bandInventory: band.inventory,
+    bandMerchPrices: band.merchPrices,
     player,
     social,
     reputationByRegion,
     activeStoryFlags,
-    cityStates
-  ])
+    gigContext: gigContextRef.current,
+    cityTraits
+  })
+}, [
+  currentGig,
+  lastGigStats,
+  perfScore,
+  gigModifiers,
+  band.inventory,
+  band.merchPrices,
+  player,
+  social,
+  reputationByRegion,
+  activeStoryFlags,
+  cityStates
+])
 ```
 
 **Note:** `cityStates` is added to the dependency array. `gigContextRef.current` is a ref (not reactive) and stays out of deps as before.
@@ -851,6 +956,7 @@ git commit -m "feat: derive cityTraits from cityStates and pass into deriveFinan
 ## Task 9: Update existing economyEngine tests invalidated by the rewrite
 
 **Files:**
+
 - Modify: `tests/node/economyEngine.test.js` (lines around 185, 195, 225, 230, 259, 264, 317, 349, 513, 518 — wherever merch revenue is asserted)
 
 - [ ] **Step 1: Run the existing test suite and list failures**
@@ -872,11 +978,17 @@ assert.equal(merchRevenue, 1850)
 Replace with a directional invariant that still proves the merch system is working without baking in the old greedy-allocation arithmetic:
 
 ```js
-assert.ok(merchRevenue > 0, 'merch revenue should be positive with stock and buyers')
-assert.ok(merchRevenue < gigData.capacity * 50, 'merch revenue should not exceed an absurd ceiling')
+assert.ok(
+  merchRevenue > 0,
+  'merch revenue should be positive with stock and buyers'
+)
+assert.ok(
+  merchRevenue < gigData.capacity * 50,
+  'merch revenue should not exceed an absurd ceiling'
+)
 ```
 
-For tests that compare two scenarios (e.g., "higher hype → higher merch revenue"), keep them as ratio/inequality assertions — those are *more* valid after the rewrite, not less.
+For tests that compare two scenarios (e.g., "higher hype → higher merch revenue"), keep them as ratio/inequality assertions — those are _more_ valid after the rewrite, not less.
 
 - [ ] **Step 3: Apply updates**
 
@@ -899,6 +1011,7 @@ git commit -m "test: update merch revenue assertions for new demand pipeline"
 ## Task 10: Document the new data module in AGENTS.md
 
 **Files:**
+
 - Modify: `src/utils/AGENTS.md`
 
 - [ ] **Step 1: Add a one-line pointer**
@@ -940,6 +1053,7 @@ Expected: PASS.
 
 Run: `pnpm run dev`
 Play through a single gig: pick a venue, set merch prices in the PreGig screen, finish the gig, inspect the PostGig breakdown. Verify:
+
 - Merch line items appear in the breakdown.
 - The `net` value equals displayed income minus displayed expenses (AGENTS.md gotcha).
 - No console errors related to `cityTraits`, `MERCH_PROFILES`, or `deriveCityTraits`.
