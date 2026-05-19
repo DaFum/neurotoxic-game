@@ -74,8 +74,8 @@ describe('ShopItem', () => {
     const { getByText } = render(
       <ShopItem {...defaultProps} adjustedCost={80} />
     )
-    expect(getByText('80')).toBeInTheDocument()
-    expect(getByText('100')).toHaveClass('line-through')
+    expect(getByText('€80')).toBeInTheDocument()
+    expect(getByText('€100')).toHaveClass('line-through')
   })
 
   it('calls onBuy when clicking Buy button', () => {

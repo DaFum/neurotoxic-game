@@ -33,6 +33,7 @@ mock.module(
   {
     namedExports: {
       ...mockAudioEngine,
+      ...mockTimingUtils,
       audioManager: mockAudioManager,
       audioService: mockAudioManager
     }

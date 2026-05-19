@@ -1,4 +1,6 @@
 import { memo } from 'react'
+import { useTranslation } from 'react-i18next'
+import { formatCurrency } from '../utils/numberUtils'
 
 type GigModifierItem = {
   key: string
@@ -16,6 +18,7 @@ type GigModifierButtonProps = {
 
 const GigModifierButton = memo(
   ({ item, isActive, onClick, disabled = false }: GigModifierButtonProps) => {
+    const { i18n } = useTranslation()
     const handleClick = () => {
       if (disabled) return
       onClick(item.key)
@@ -38,7 +41,7 @@ const GigModifierButton = memo(
           <span className='text-[10px] opacity-70'>{item.desc}</span>
         </span>
         <span className='font-mono text-sm font-bold tabular-nums'>
-          {item.cost}€
+          {formatCurrency(item.cost, i18n?.language)}
         </span>
         {!isActive && (
           <div className='absolute inset-0 bg-white/5 translate-x-[-100%] group-hover:animate-[shimmer_0.8s_ease-out] skew-x-12 pointer-events-none' />

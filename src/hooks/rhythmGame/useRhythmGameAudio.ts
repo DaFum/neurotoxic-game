@@ -1,17 +1,16 @@
 import { useCallback, useRef, useEffect } from 'react'
 import type { TFunction } from 'i18next'
-import { audioService } from '../../utils/audio/audioEngine'
-import { stopAudio } from '../../utils/audio/audioEngine'
-import { handleError } from '../../utils/errorHandler'
-import { logger } from '../../utils/logger'
-import { clampBandHarmony } from '../../utils/gameStateUtils'
-import { buildGigStatsSnapshot } from '../../utils/gigStats'
+import { audioService, stopAudio } from '../../utils/audio/audioEngine'
 import {
   setupGigPhysics,
   resolveActiveSetlist,
   playSongSequence,
   resetGigStateTracking
 } from '../../utils/audio/rhythmGameAudioUtils'
+import { handleError } from '../../utils/errorHandler'
+import { logger } from '../../utils/logger'
+import { clampBandHarmony } from '../../utils/gameStateUtils'
+import { buildGigStatsSnapshot } from '../../utils/gigStats'
 import type { GameMap, GameState, GigModifiers, PlayerState } from '../../types'
 import type {
   RhythmGameRefState,

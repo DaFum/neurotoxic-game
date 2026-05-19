@@ -4,6 +4,7 @@ import { GlitchButton } from './GlitchButton'
 import { ProgressBar, Tooltip } from './shared/index.tsx'
 import { useGameSelector } from '../context/GameState'
 import { IMG_PROMPTS, resolveGenImageUrl } from '../utils/imageGen'
+import { formatCurrency } from '../utils/numberUtils'
 
 type MerchPressConfig = {
   cost: number
@@ -27,7 +28,7 @@ export const MerchPressModal = ({
   canPress,
   config
 }: MerchPressModalProps) => {
-  const { t } = useTranslation(['ui'])
+  const { t, i18n } = useTranslation(['ui'])
   const player = useGameSelector(state => state.player)
   const band = useGameSelector(state => state.band)
 
@@ -118,7 +119,7 @@ export const MerchPressModal = ({
                     {t('ui:merch_press.cost_label', { defaultValue: 'COST' })}
                   </span>
                   <span className='text-xl font-display text-blood-red'>
-                    €{config.cost}
+                    {formatCurrency(config.cost, i18n?.language)}
                   </span>
                 </div>
                 <div className='bg-void-black border border-toxic-green-20 p-3 flex flex-col items-center justify-center relative overflow-hidden group'>
@@ -163,7 +164,8 @@ export const MerchPressModal = ({
                       <span
                         className={`${isAffordable ? 'text-toxic-green' : 'text-blood-red'}`}
                       >
-                        €{player?.money ?? 0} / €{config.cost}
+                        {formatCurrency(player?.money ?? 0, i18n?.language)} /{' '}
+                        {formatCurrency(config.cost, i18n?.language)}
                       </span>
                     </div>
                     <ProgressBar

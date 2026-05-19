@@ -5,17 +5,17 @@ import {
   buildGigStatsSnapshot,
   calculateAccuracy
 } from '../../utils/gigStats'
-import { audioService } from '../../utils/audio/audioEngine'
 import {
+  audioService,
   getGigTimeMs,
   getToneAbsoluteTimeMs,
   playNoteAtTime,
   stopAudio,
   getPlayRequestId,
   enableCorruptionBurstAudio,
-  setCorruptionEffect
+  setCorruptionEffect,
+  getScheduledHitTimeMs
 } from '../../utils/audio/audioEngine'
-import { getScheduledHitTimeMs } from '../../utils/audio/timingUtils'
 import { checkHit } from '../../utils/rhythmUtils'
 import {
   calculateDynamicHitWindow,

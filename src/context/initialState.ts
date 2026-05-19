@@ -73,7 +73,7 @@ export const DEFAULT_PLAYER_STATE = {
  * @type {Object}
  */
 
-export const DEFAULT_RIVAL_BAND_STATE: RivalBandState | null = null
+const DEFAULT_RIVAL_BAND_STATE: RivalBandState | null = null
 
 /**
  * Default band state configuration

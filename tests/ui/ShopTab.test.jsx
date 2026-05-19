@@ -89,7 +89,7 @@ describe('ShopTab', () => {
         isItemDisabled={isItemDisabled}
       />
     )
-    expect(screen.getByText(/1000€/)).toBeInTheDocument()
+    expect(screen.getByText(/€1,000/)).toBeInTheDocument()
     expect(screen.getByText(/ui:bandhq\.funds/)).toBeInTheDocument()
   })
 

@@ -246,9 +246,9 @@ test('EventModal shows applied bounded delta instead of raw requested delta', as
   fireEvent.click(screen.getByText('Spend cash'))
 
   await waitFor(() => {
-    expect(screen.getByText(/ui:stats.money: -50€/)).toBeInTheDocument()
+    expect(screen.getByText(/ui:stats.money: -€50/)).toBeInTheDocument()
   })
-  expect(screen.queryByText(/ui:stats.money: -200€/)).not.toBeInTheDocument()
+  expect(screen.queryByText(/ui:stats.money: -€200/)).not.toBeInTheDocument()
 })
 
 test('EventModal shows applied member mood delta instead of raw requested member delta', async () => {

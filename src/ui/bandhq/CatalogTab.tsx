@@ -2,13 +2,14 @@ import { useTranslation } from 'react-i18next'
 import type { CatalogTabProps } from '../../types/components'
 import { logger } from '../../utils/logger'
 import { ShopItem } from './ShopItem'
+import { formatCurrency } from '../../utils/numberUtils'
 
 const BALANCE_DISPLAY_META = {
-  fame: { className: 'text-warning-yellow', suffix: '★' },
-  funds: { className: 'text-toxic-green', suffix: '€' },
-  money: { className: 'text-toxic-green', suffix: '€' },
-  credits: { className: 'text-toxic-green', suffix: '€' },
-  bonus: { className: 'text-star-white', suffix: '' }
+  fame: { className: 'text-warning-yellow', suffix: '★', isCurrency: false },
+  funds: { className: 'text-toxic-green', suffix: '', isCurrency: true },
+  money: { className: 'text-toxic-green', suffix: '', isCurrency: true },
+  credits: { className: 'text-toxic-green', suffix: '', isCurrency: true },
+  bonus: { className: 'text-star-white', suffix: '', isCurrency: false }
 } as const
 
 const hasBalanceMetaKey = (
@@ -25,7 +26,7 @@ export const CatalogTab = ({
   getAdjustedCostCallback,
   processingItemId
 }: CatalogTabProps) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   if (import.meta.env.DEV) {
     const keys = Object.keys(balances)
@@ -50,15 +51,16 @@ export const CatalogTab = ({
             ? BALANCE_DISPLAY_META[key]
             : {
                 className: 'text-star-white',
-                suffix: ''
+                suffix: '',
+                isCurrency: false
               }
+          const display = meta.isCurrency
+            ? formatCurrency(value, i18n?.language)
+            : `${value}${meta.suffix}`
           return (
             <span key={key}>
               {t(`ui:bandhq.${key}`)}:{' '}
-              <span className={meta.className}>
-                {value}
-                {meta.suffix}
-              </span>
+              <span className={meta.className}>{display}</span>
             </span>
           )
         })}

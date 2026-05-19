@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { type BandState, type PlayerState } from '../../types'
 import { translateLocation } from '../../utils/locationI18n'
 import { useAudioControl } from '../../hooks/useAudioControl'
+import { formatCurrency } from '../../utils/numberUtils'
 
 export interface OverworldHUDProps {
   player: PlayerState
@@ -47,7 +48,7 @@ function useAnimatedNum(value: number, ms = 450) {
 
 export const OverworldHUD = React.memo(
   ({ player, band }: OverworldHUDProps) => {
-    const { t } = useTranslation(['ui'])
+    const { t, i18n } = useTranslation(['ui'])
     const [showSC, setShowSC] = useState(false)
     const { audioState, handleAudioChange } = useAudioControl()
     const isPlaying =
@@ -181,14 +182,10 @@ export const OverworldHUD = React.memo(
           <div className={`ow-panel ${fuelLow ? 'fuel-warn' : ''}`}>
             <div className='money-row'>
               <span
-                style={{ color: 'var(--color-warning-yellow)', fontSize: 14 }}
-              >
-                €
-              </span>
-              <span
                 className={`money-val ${moneyAnim} ${(player.money ?? 0) < 40 ? 'low' : ''}`}
+                style={{ color: 'var(--color-warning-yellow)' }}
               >
-                {displayMoney}
+                {formatCurrency(displayMoney, i18n?.language)}
               </span>
             </div>
             <div className='loc-row'>

@@ -570,8 +570,10 @@ export const createUpdateRivalBandAction = (
   if (payload.id !== undefined) safeUpdates.id = payload.id
   if (payload.name !== undefined) safeUpdates.name = payload.name
   if (payload.alignment !== undefined) safeUpdates.alignment = payload.alignment
-  if (payload.powerLevel !== undefined)
-    safeUpdates.powerLevel = payload.powerLevel
+  if (payload.powerLevel !== undefined) {
+    const raw = Number(payload.powerLevel)
+    safeUpdates.powerLevel = Number.isFinite(raw) ? Math.max(0, raw) : 0
+  }
   if (payload.currentLocationId !== undefined)
     safeUpdates.currentLocationId = payload.currentLocationId
 
@@ -651,10 +653,14 @@ export const createAdvanceQuestAction = (
   questId: string,
   amount = 1,
   randomIdx: number | undefined = undefined
-): Extract<GameAction, { type: typeof ActionTypes.ADVANCE_QUEST }> => ({
-  type: ActionTypes.ADVANCE_QUEST,
-  payload: { questId, amount, randomIdx }
-})
+): Extract<GameAction, { type: typeof ActionTypes.ADVANCE_QUEST }> => {
+  const raw = Number(amount)
+  const safeAmount = Number.isFinite(raw) ? Math.max(0, raw) : 0
+  return {
+    type: ActionTypes.ADVANCE_QUEST,
+    payload: { questId, amount: safeAmount, randomIdx }
+  }
+}
 
 /**
  * Creates an action to add an unlock to the state.

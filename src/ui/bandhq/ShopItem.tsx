@@ -7,6 +7,7 @@ import {
   getGeneratedImageFallbackUrl
 } from '../../utils/imageGen'
 import { getPrimaryEffect } from '../../utils/purchaseLogicUtils'
+import { formatCurrency } from '../../utils/numberUtils'
 import { GlitchButton } from '../GlitchButton'
 import { Tooltip } from '../shared'
 
@@ -31,7 +32,19 @@ export const ShopItem = React.memo(
     onBuy,
     processingItemId
   }: ShopItemProps) => {
-    const { t } = useTranslation(['items', 'ui'])
+    const { t, i18n } = useTranslation(['items', 'ui'])
+    const formatPrice = (v: number) =>
+      item.currency === 'fame' ? `${v} ★` : formatCurrency(v, i18n?.language)
+    const hasDiscount =
+      adjustedCost !== undefined &&
+      item.cost !== undefined &&
+      adjustedCost < item.cost
+    const priceValue =
+      adjustedCost !== undefined
+        ? adjustedCost
+        : item.cost !== undefined
+          ? item.cost
+          : 0
     const primaryEffect = getPrimaryEffect(item)
     const isConsumable = primaryEffect?.type === 'inventory_add'
     const isPurchased = isOwned && !isConsumable
@@ -98,23 +111,18 @@ export const ShopItem = React.memo(
                 : 'text-star-white'
             }`}
           >
-            {adjustedCost !== undefined &&
-            item.cost !== undefined &&
-            adjustedCost < item.cost ? (
+            {hasDiscount && item.cost !== undefined ? (
               <>
                 <span className='line-through opacity-50 mr-2'>
-                  {item.cost}
+                  {formatPrice(item.cost)}
                 </span>
-                <span className='text-toxic-green'>{adjustedCost}</span>
+                <span className='text-toxic-green'>
+                  {formatPrice(adjustedCost as number)}
+                </span>
               </>
-            ) : adjustedCost !== undefined ? (
-              adjustedCost
-            ) : item.cost !== undefined ? (
-              item.cost
             ) : (
-              0
-            )}{' '}
-            {item.currency === 'fame' ? '★' : '€'}
+              formatPrice(priceValue)
+            )}
           </span>
           {isPurchased || isDisabled ? (
             <Tooltip

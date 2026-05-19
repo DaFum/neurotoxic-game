@@ -4,6 +4,7 @@ import { ProgressBar, Panel, Tooltip } from '../shared'
 import { useMemo, type ReactNode } from 'react'
 import { CHARACTERS } from '../../data/characters'
 import { getTranslatedBrandDealDisplay } from '../../utils/brandDealI18n'
+import { formatCurrency } from '../../utils/numberUtils'
 import { translateLocation } from '../../utils/locationI18n'
 import { getCityKeyFromVenueId } from '../../utils/mapGenerator'
 import { isEmptyObject } from '../../utils/gameStateUtils'
@@ -89,6 +90,7 @@ const CareerOverviewSection = ({
   player,
   t
 }: { player: PlayerData } & BasicTProps) => {
+  const { i18n } = useTranslation()
   const locationName = translateLocation(
     t,
     player.location ?? '',
@@ -102,7 +104,7 @@ const CareerOverviewSection = ({
     >
       <DetailRow
         label={t('ui:stats.funds', { defaultValue: 'Funds' })}
-        value={`${player.money}€`}
+        value={formatCurrency(player.money, i18n?.language)}
       />
       <DetailRow
         label={t('ui:stats.fame', { defaultValue: 'Fame' })}
