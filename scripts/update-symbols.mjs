@@ -251,7 +251,9 @@ for (const srcFilePath of srcFiles) {
 
     const defaultDecl = resolvedDefault.declarations?.[0]
     if (defaultDecl) {
-      const defaultDeclFile = normalizePath(defaultDecl.getSourceFile().fileName)
+      const defaultDeclFile = normalizePath(
+        defaultDecl.getSourceFile().fileName
+      )
       if (isUnderSrc(defaultDeclFile)) {
         const symName = resolvedDefault.name
         // Use the resolved name only if it is a real identifier, not the
