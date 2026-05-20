@@ -53,30 +53,79 @@ const isValidAndAffordableInfluencer = (
 }
 
 /**
- * O(N) over members array with O(1) lookups per member for the first member with a specific trait.
- * N is typically very small (~4).
- * @param {Array} members - The band.members array
- * @param {string} traitId - The ID of the trait
- * @returns {object|undefined} The member object or undefined
+ * WeakMap cache keyed by the members array reference. Redux replaces the array
+ * reference whenever band.members changes, so cache entries invalidate naturally
+ * on every band mutation. Within a single render pass the social UI evaluates
+ * many post options against the same `band.members`, so building the
+ * `traitId -> member` map once and reusing it across calls is a real win
+ * (see tests/performance/postOptions.bench.js).
+ */
+const memberTraitCache = new WeakMap<
+  readonly BandMember[],
+  Map<string, BandMember>
+>()
+
+function ensureTraitCache(
+  members: readonly BandMember[]
+): Map<string, BandMember> {
+  const cached = memberTraitCache.get(members)
+  if (cached) return cached
+  const cacheMap = new Map<string, BandMember>()
+  for (let i = 0; i < members.length; i++) {
+    const m = members[i]
+    if (!m || typeof m !== 'object') continue
+    const rawTraits = (m as { traits?: unknown }).traits
+    if (!rawTraits || typeof rawTraits !== 'object') continue
+    if (Array.isArray(rawTraits)) {
+      for (let j = 0; j < rawTraits.length; j++) {
+        const t = rawTraits[j]
+        if (t && typeof t === 'object') {
+          const id = (t as { id?: unknown }).id
+          if (typeof id === 'string' && !cacheMap.has(id)) {
+            cacheMap.set(id, m)
+          }
+        }
+      }
+    } else {
+      for (const id in rawTraits as Record<string, unknown>) {
+        if (
+          Object.hasOwn(rawTraits as Record<string, unknown>, id) &&
+          !cacheMap.has(id)
+        ) {
+          cacheMap.set(id, m)
+        }
+      }
+    }
+  }
+  memberTraitCache.set(members, cacheMap)
+  return cacheMap
+}
+
+/**
+ * O(1) lookup (after one-time O(total-traits) cache build) for the first member
+ * with the given trait. N is typically ~4 members and ~3-5 traits each.
  */
 function getMemberWithTrait(
   members: unknown,
   traitId: string
 ): BandMember | undefined {
   if (!Array.isArray(members) || members.length === 0) return undefined
-  return members.find(m => hasTrait(m, traitId)) as BandMember | undefined
+  return ensureTraitCache(members as readonly BandMember[]).get(traitId)
 }
 
 /**
- * O(N * M) over members array checking if any member has any of the specified traits.
- * @param {Array} members - The band.members array
- * @param {...string} traitIds - The IDs of the traits to check
- * @returns {boolean} True if any member has at least one of the traits
+ * O(M) lookup (after one-time cache build) checking if any member has any of
+ * the specified traits. Replaces nested `.some(.some(...))` O(N*M) scans.
  */
 function hasMemberWithTrait(members: unknown, ...traitIds: string[]): boolean {
   if (!Array.isArray(members) || members.length === 0 || traitIds.length === 0)
     return false
-  return members.some(m => traitIds.some(id => hasTrait(m, id)))
+  const cache = ensureTraitCache(members as readonly BandMember[])
+  for (let i = 0; i < traitIds.length; i++) {
+    const id = traitIds[i]
+    if (id !== undefined && cache.has(id)) return true
+  }
+  return false
 }
 
 const requireBandMembers = (
