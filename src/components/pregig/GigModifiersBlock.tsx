@@ -38,6 +38,16 @@ const sanitizeEffectOptions = (
   return sanitized
 }
 
+const getEffectLabel = (eff: ActiveEffectEntry, t: TranslationCallback) => {
+  if (typeof eff === 'string') {
+    return t(eff, { defaultValue: eff })
+  }
+  return t(eff.key, {
+    ...sanitizeEffectOptions(eff.options),
+    defaultValue: eff.fallback
+  })
+}
+
 export const GigModifiersBlock = ({
   t,
   gigModifierOptions,
@@ -102,12 +112,7 @@ export const GigModifiersBlock = ({
                 className='text-star-white/60 flex items-center gap-1.5'
               >
                 <span className='w-1 h-1 bg-toxic-green inline-block' />
-                {typeof eff === 'string'
-                  ? t(eff, { defaultValue: eff })
-                  : t(eff.key, {
-                      ...sanitizeEffectOptions(eff.options),
-                      defaultValue: eff.fallback
-                    })}
+                {getEffectLabel(eff, t)}
               </li>
             ))}
           </ul>
