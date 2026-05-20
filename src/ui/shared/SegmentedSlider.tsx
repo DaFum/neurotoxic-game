@@ -1,6 +1,36 @@
 import { memo } from 'react'
 import type { ChangeEvent } from 'react'
 
+type SliderSegmentProps = {
+  segment: number
+  isActive: boolean
+  height: string
+  onSelect: (segment: number) => void
+}
+
+const SliderSegment = memo(function SliderSegment({
+  segment,
+  isActive,
+  height,
+  onSelect
+}: SliderSegmentProps) {
+  return (
+    <button
+      type='button'
+      onClick={() => onSelect(segment)}
+      className='flex-1 relative h-full flex items-end group-hover:opacity-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
+      tabIndex={-1}
+      aria-hidden='true'
+    >
+      <div
+        style={{ height }}
+        className={`w-full transition-colors duration-75 border-b-2 border-transparent hover:border-void-black
+          ${isActive ? 'bg-toxic-green shadow-[0_0_8px_var(--color-toxic-green)]' : 'bg-toxic-green/20'}`}
+      ></div>
+    </button>
+  )
+})
+
 type SegmentedSliderProps = {
   label: string
   inputValue: number
@@ -61,20 +91,13 @@ export const SegmentedSlider = memo(function SegmentedSlider({
           const isActive = segment <= activeSegments
           const height = `${30 + (segment / safeSegmentCount) * 70}%`
           return (
-            <button
-              type='button'
+            <SliderSegment
               key={segment}
-              onClick={() => onSegmentSelect(segment)}
-              className='flex-1 relative h-full flex items-end group-hover:opacity-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
-              tabIndex={-1}
-              aria-hidden='true'
-            >
-              <div
-                style={{ height }}
-                className={`w-full transition-colors duration-75 border-b-2 border-transparent hover:border-void-black
-                  ${isActive ? 'bg-toxic-green shadow-[0_0_8px_var(--color-toxic-green)]' : 'bg-toxic-green/20'}`}
-              ></div>
-            </button>
+              segment={segment}
+              isActive={isActive}
+              height={height}
+              onSelect={onSegmentSelect}
+            />
           )
         })}
       </div>
