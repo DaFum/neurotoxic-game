@@ -27,7 +27,7 @@ Make the pre-gig merch decision pivot on three meaningful axes:
 2. **Audience-driven demand** — city `genreBias` and `barSpendingProfile` shift per-item demand multiplicatively.
 3. **Performance-driven demand** — gig `peakHype` and `misses` lift or suppress per-item demand by item-specific sensitivity.
 
-The decision becomes: *"This is a punk-hardcore city with a merch-hungry crowd, and I'm confident in a high-hype show — overstock patches and price hoodies aggressively. The vinyl run that worked in the indie city last week is dead weight here."*
+The decision becomes: _"This is a punk-hardcore city with a merch-hungry crowd, and I'm confident in a high-hype show — overstock patches and price hoodies aggressively. The vinyl run that worked in the indie city last week is dead weight here."_
 
 ---
 
@@ -51,7 +51,7 @@ Single source of truth for per-item profiles. Replaces the inline `DEFAULT_MERCH
 // src/data/merch.ts
 import type { CityTraitState } from '../types/game'
 
-type CityGenre = CityTraitState['genreBias']  // 'punk' | 'metal' | 'goth' | 'indie' | 'synth' | 'noise' | 'hardcore' | 'unknown'
+type CityGenre = CityTraitState['genreBias'] // 'punk' | 'metal' | 'goth' | 'indie' | 'synth' | 'noise' | 'hardcore' | 'unknown'
 
 export interface MerchItemProfile {
   /** Slug used as the inventory key and i18n suffix. */
@@ -74,7 +74,7 @@ export const MERCH_PROFILES = {
   patches: {
     key: 'patches',
     defaultPrice: 5,
-    baseAppeal: 0.40,
+    baseAppeal: 0.4,
     priceElasticity: 0.8,
     genreAffinity: { punk: 1.6, hardcore: 1.5, metal: 1.3 },
     performanceSensitivity: 0.2,
@@ -101,7 +101,7 @@ export const MERCH_PROFILES = {
   vinyl: {
     key: 'vinyl',
     defaultPrice: 35,
-    baseAppeal: 0.10,
+    baseAppeal: 0.1,
     priceElasticity: 1.5,
     genreAffinity: { indie: 1.7, synth: 1.5, goth: 1.3 },
     performanceSensitivity: 0.8,
@@ -112,7 +112,7 @@ export const MERCH_PROFILES = {
     defaultPrice: 15,
     baseAppeal: 0.05,
     priceElasticity: 0.9,
-    genreAffinity: {},  // universal but dying — applied via baseAppeal
+    genreAffinity: {}, // universal but dying — applied via baseAppeal
     performanceSensitivity: 0.2,
     missSensitivity: 0.2
   }
@@ -136,10 +136,10 @@ In the same `src/data/merch.ts`:
 type SpendingProfile = CityTraitState['barSpendingProfile']
 
 export const SPENDING_PROFILE_MERCH_MULTIPLIER = {
-  'stingy': 0.7,
-  'average': 1.0,
-  'generous': 1.2,
-  'drunkards': 0.9,         // money goes to the bar, not the merch table
+  stingy: 0.7,
+  average: 1.0,
+  generous: 1.2,
+  drunkards: 0.9, // money goes to the bar, not the merch table
   'merch-hungry': 1.5
 } as const satisfies Record<SpendingProfile, number>
 ```
@@ -199,7 +199,7 @@ return { revenue, breakdownItems, soldItems }
 
 - **Order-independent.** Step 2 normalizes before allocation. Step 4 iterates in sorted-key order purely for deterministic logging.
 - **No greedy bleed-over.** Removing the `totalBuyersRemaining -= soldAmount` accumulator means a popular item doesn't starve others arbitrarily; share is set by appeal.
-- **Inventory-bounded.** `sold = min(desired, inventory)` — never sells beyond stock. Lost demand from being out of stock is *not* redistributed to other items (this is the design choice; redistribution would punish underpricing by reducing the lost-sale signal).
+- **Inventory-bounded.** `sold = min(desired, inventory)` — never sells beyond stock. Lost demand from being out of stock is _not_ redistributed to other items (this is the design choice; redistribution would punish underpricing by reducing the lost-sale signal).
 - **`effectiveBuyers > potentialBuyers` allowed.** `demandLift` caps at 1.8, so a great show in a merch-hungry city can move up to 80% more units than ticket-buy-rate alone implies.
 
 ### 4.4 Wiring: pass `cityTraits` through `context`
@@ -314,7 +314,7 @@ New file: `tests/node/economyEngine.merchProfiles.test.js` (node:test runner —
 
 No new user-facing strings. The breakdown labels (`economy:gigIncome.merchSales.<key>.label`) already exist in both `public/locales/en/economy.json` and `public/locales/de/economy.json`.
 
-If the implementation surfaces *why* an item sold well (out of scope per non-goals), strings would be added then. Not now.
+If the implementation surfaces _why_ an item sold well (out of scope per non-goals), strings would be added then. Not now.
 
 ---
 
@@ -322,20 +322,20 @@ If the implementation surfaces *why* an item sold well (out of scope per non-goa
 
 - **Save files:** No new persisted fields. Existing `band.merchPrices` keeps working. `band.bandInventory` keys unchanged.
 - **Existing tests:** `DEFAULT_MERCH_PRICES` export is preserved (derived from profiles) with identical numbers, so callers in `MerchStrategyBlock` and `systemReducer.sanitizeBand` need no changes.
-- **Balance impact:** This *will* shift revenue distributions in existing playthroughs. That's the point. Document in release notes.
+- **Balance impact:** This _will_ shift revenue distributions in existing playthroughs. That's the point. Document in release notes.
 
 ---
 
 ## 11. Files touched
 
-| File | Change |
-|---|---|
-| `src/data/merch.ts` | **New.** `MERCH_PROFILES`, `SPENDING_PROFILE_MERCH_MULTIPLIER`, derived `DEFAULT_MERCH_PRICES` export. |
-| `src/utils/economyEngine.ts` | `DEFAULT_MERCH_PRICES` re-exports from `src/data/merch.ts`. `EconomyContext.cityTraits` added. `calculateMerchRevenue` rewritten per §4.3. |
-| `src/hooks/usePostGigLogic.ts` | Derive `cityTraits` from `currentGig.id` + `state.cityStates`, pass into `context`. |
-| `tests/node/economyEngine.merchProfiles.test.js` | **New.** All §8 unit tests. |
-| `tests/node/economyEngine.test.js` | Update assertions invalidated by §4.3 rewrite. |
-| `src/utils/AGENTS.md` | Add one-line note pointing to `src/data/merch.ts` as the source of truth for per-item profiles. |
+| File                                             | Change                                                                                                                                     |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `src/data/merch.ts`                              | **New.** `MERCH_PROFILES`, `SPENDING_PROFILE_MERCH_MULTIPLIER`, derived `DEFAULT_MERCH_PRICES` export.                                     |
+| `src/utils/economyEngine.ts`                     | `DEFAULT_MERCH_PRICES` re-exports from `src/data/merch.ts`. `EconomyContext.cityTraits` added. `calculateMerchRevenue` rewritten per §4.3. |
+| `src/hooks/usePostGigLogic.ts`                   | Derive `cityTraits` from `currentGig.id` + `state.cityStates`, pass into `context`.                                                        |
+| `tests/node/economyEngine.merchProfiles.test.js` | **New.** All §8 unit tests.                                                                                                                |
+| `tests/node/economyEngine.test.js`               | Update assertions invalidated by §4.3 rewrite.                                                                                             |
+| `src/utils/AGENTS.md`                            | Add one-line note pointing to `src/data/merch.ts` as the source of truth for per-item profiles.                                            |
 
 No changes to: `MerchStrategyBlock.tsx`, `sanitizeBand`, action creators, action types, reducer state shape.
 

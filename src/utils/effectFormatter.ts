@@ -130,20 +130,19 @@ export const generateEffectText = (
 
   // Inventory/Items
   if (delta.band?.inventory) {
-    for (const key in delta.band.inventory) {
-      if (Object.hasOwn(delta.band.inventory, key)) {
-        const qty = delta.band.inventory[key]
-        if (typeof qty === 'number' && qty !== 0) {
-          lines.push(
-            `${t(`items:${key}`, { defaultValue: key })}: ${
-              qty > 0 ? '+' : ''
-            }${qty}`
-          )
-        } else if (qty === true) {
-          lines.push(`+${t(`items:${key}`, { defaultValue: key })}`)
-        } else if (qty === false) {
-          lines.push(`-${t(`items:${key}`, { defaultValue: key })}`)
-        }
+    const inventory = delta.band.inventory
+    for (const key of Object.keys(inventory)) {
+      const qty = inventory[key]
+      if (typeof qty === 'number' && qty !== 0) {
+        lines.push(
+          `${t(`items:${key}`, { defaultValue: key })}: ${
+            qty > 0 ? '+' : ''
+          }${qty}`
+        )
+      } else if (qty === true) {
+        lines.push(`+${t(`items:${key}`, { defaultValue: key })}`)
+      } else if (qty === false) {
+        lines.push(`-${t(`items:${key}`, { defaultValue: key })}`)
       }
     }
   }
