@@ -14,8 +14,9 @@ Applies to `src/components/pregig/**`.
 
 ## Merch Item Lookup
 
-- `ALL_HQ_ITEMS` is hoisted to module level as `Object.values(HQ_ITEMS).flat()`.
-- To find the HQ item definition for a merch key, use `ALL_HQ_ITEMS.find(item => item.effect?.item === key)`. Do not call `.find` on the raw `HQ_ITEMS` object (which is keyed by category, not flat).
+- Use `HQ_ITEMS_BY_MERCH_KEY` (exported from `src/data/hqItems.ts`) — a precomputed `Map<string, HQItem>` keyed by `effect.item` (e.g. `'shirts'`, `'vinyl'`).
+- Call `HQ_ITEMS_BY_MERCH_KEY.get(key)` — O(1) — instead of scanning `Object.values(HQ_ITEMS).flat().find(...)`. Do not call `.find` on the raw `HQ_ITEMS` object (which is keyed by category, not flat).
+- `ALL_HQ_ITEMS` (also exported from `src/data/hqItems.ts`) is the flat array for cases where iteration is needed.
 
 ## Tab Switcher (PreGig scene)
 

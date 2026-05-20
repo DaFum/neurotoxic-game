@@ -2,9 +2,7 @@ import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DEFAULT_MERCH_PRICES } from '../../utils/economyEngine'
 import { formatCurrency } from '../../utils/numberUtils'
-import { HQ_ITEMS } from '../../data/hqItems'
-
-const ALL_HQ_ITEMS = Object.values(HQ_ITEMS).flat()
+import { HQ_ITEMS_BY_MERCH_KEY } from '../../data/hqItems'
 
 interface MerchStrategyBlockProps {
   bandInventory: Record<string, unknown>
@@ -30,14 +28,7 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
           ? (bandInventory[key] as number)
           : 0
 
-      const hqItemDef = ALL_HQ_ITEMS.find(
-        item =>
-          typeof item.effect === 'object' &&
-          item.effect !== null &&
-          Object.hasOwn(item.effect, 'item') &&
-          (item.effect as { item?: unknown }).item === key
-      )
-      const restockCost = hqItemDef?.cost ?? 50 // fallback
+      const restockCost = HQ_ITEMS_BY_MERCH_KEY.get(key)?.cost ?? 50 // fallback
 
       return {
         key,
