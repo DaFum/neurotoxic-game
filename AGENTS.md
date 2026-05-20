@@ -2,7 +2,7 @@
 
 ## Workflow
 
-- Use the Superpowers skill before any repo action that changes code, tests, tooling, docs, config, git history, or agent instructions.
+- Use the relevant installed Superpowers workflow skill before any repo action that changes code, tests, tooling, docs, config, git history, or agent instructions. Repo action means editing files, running write/generation commands, changing dependencies, or running git operations that affect repository state.
 - Read only the relevant nested `AGENTS.md` files before editing; nested files add scope rules and override root guidance when more specific.
 
 ## Critical Commands
@@ -14,9 +14,20 @@
 
 ## Architecture Constraints
 
-- Do not upgrade pinned dependencies without discussion; do not add Howler.js.
+### Dependencies
+
+- Do not upgrade pinned dependencies without discussion. Do not add Howler.js; the project standardizes on Tone.js through `src/utils/audio/audioEngine.ts`, and a second audio stack would bypass timing/audio invariants. If a dependency change appears necessary, stop and discuss first.
+
+### State and payload safety
+
 - All state updates go through action creators. New actions must update `actionTypes`, reducer handling, and `actionCreators` together.
-- Payload safety is two-layered: action creators normalize or drop locally invalid raw fields; reducers remain the final authority, re-clamp computed state with canonical helpers, and reject malformed or hostile payloads by returning unchanged state. Do not remove reducer clamps because input was normalized earlier.
+- Payload safety is two-layered:
+  - Action creators normalize or drop locally invalid raw fields before dispatch.
+  - Reducers remain the final authority, re-clamp computed state with canonical helpers, and reject malformed or hostile payloads by returning unchanged state.
+  - Do not remove reducer clamps because input was normalized earlier.
+
+### Domain invariants
+
 - Audio gameplay timing must use `audioEngine.getGigTimeMs()`, never direct Tone.js time reads.
 - PreGig modifier costs come only from `MODIFIER_COSTS` in `src/utils/economyEngine.ts`.
 - User-facing text must use namespaced i18n keys. Update matching EN and DE locale JSON together.

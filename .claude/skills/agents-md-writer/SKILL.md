@@ -1,6 +1,6 @@
 ---
 name: agents-md-writer
-description: Write high-quality AGENTS.md, CLAUDE.md, or CODEX.md context files for code repositories. Use this skill whenever the user asks to create, write, generate, improve, or review a repository context file for coding agents — including any mention of "AGENTS.md", "CLAUDE.md", "CODEX.md", "GEMINI.md", ".cursorrules", "copilot-instructions.md", "context file for agents", "agent instructions", "coding agent setup", or requests like "help my AI agent understand this repo". Also trigger when users say things like "initialize agent config", "set up Claude Code for my project", "write instructions for Codex/Copilot", "make my repo AI-friendly", "migrate my .cursorrules", "sync my AI config across tools", or "validate my AGENTS.md". This skill is informed by peer-reviewed research on what actually helps coding agents solve tasks, and covers the full multi-tool ecosystem including Claude Code, Codex, Copilot, Cursor, Gemini CLI, Jules, and Windsurf.
+description: Use when asked to create, improve, review, migrate, sync, or validate repository context files for coding agents, including AGENTS.md, CLAUDE.md, CODEX.md, GEMINI.md, .cursorrules, or .github/copilot-instructions.md. Trigger on close synonyms and paraphrases such as "agent instructions", "coding agent setup", "AI-friendly repo", or "Copilot/Codex/Claude instructions".
 ---
 
 # AGENTS.md Writer
@@ -44,9 +44,11 @@ Before writing the context file, understand the repository:
 3. **Identify the tech stack** — language, framework, package manager, test runner
 4. **Check for non-obvious tooling** — custom build scripts, monorepo tools, unusual dependency managers
 5. **Look for existing context files** — check for AGENTS.md, CLAUDE.md, CODEX.md, .cursorrules, .github/copilot-instructions.md, GEMINI.md
-6. **Identify pain points** — things that would trip up an agent that aren't documented elsewhere
+6. **Resolve context-file conflicts** — use the user-stated source of truth first, then the broadest shared file (`AGENTS.md`); keep tool-specific differences only when that tool requires them
+7. **Identify pain points** — things that would trip up an agent that aren't documented elsewhere
 
 If the user provides a repo path (local or GitHub URL), explore it. If they describe their repo verbally, ask targeted questions — but keep it efficient, don't interrogate them.
+If the path or URL is invalid or inaccessible, stop and ask for a valid path or the relevant files. If no docs or context files exist, infer from code and package scripts, then ask only about high-risk gaps.
 
 ## The Golden Rule
 
@@ -57,6 +59,8 @@ If the user provides a repo path (local or GitHub URL), explore it. If they desc
 > 3. It is specific and actionable (not vague guidance)
 
 If a piece of information fails any of these three tests, leave it out.
+
+Priority when rules compete: repo-specific correctness risk wins, then non-discoverability, then brevity. Specific and actionable means the instruction names exact files, commands, conditions, or required behavior; vague means broad quality goals like "handle errors properly" without saying what to do.
 
 ## Context File Structure
 
@@ -203,7 +207,7 @@ These are backed by research findings that show they actively hurt performance:
 
 ## Choosing Your File Strategy
 
-Ask the user which tools they use, then apply this decision tree:
+Ask the user which tools they use, then follow this ordered process:
 
 **Single-tool teams:**
 
