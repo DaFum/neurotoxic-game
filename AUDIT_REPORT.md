@@ -4,8 +4,6 @@ Verified against the current codebase on 2026-05-20.
 
 Scope: `src/` with targeted checks in `tests/`, root and relevant nested `AGENTS.md`, and EN/DE locale parity. Tests were not audited as primary source except where needed to classify test-only exports or coverage gaps. Locale parity was rechecked across `public/locales/en/*.json` and `public/locales/de/*.json`; no key mismatches were found.
 
-This replaces the two earlier draft reports that were concatenated in this file. Repeated findings were merged, stale recommendations were narrowed, and line references below reflect the current workspace.
-
 ## 1. Duplicates / Overlapping Utility Surfaces
 
 ### MED
@@ -97,11 +95,3 @@ Import graph checks did not identify fully orphaned TS/TSX source files. The fin
 ### LOW
 
 - LOW | `tests/useTravelLogicTestUtils.js:141`, `tests/node/useTravelLogic.test.js:59`, `tests/ui/actionTypes.test.jsx:38` | rival travel integration coverage | Confirmed. Tests list rival action types, but `useTravelLogic` tests do not exercise a production-equivalent named rival move/check path; the test fixture also does not provide dispatchers for the missing named actions. | FIX: add a travel-completion test that asserts rival move/check dispatchers are called through named game actions, not raw dispatch.
-
-## Rewritten Or Removed Draft Items
-
-- The draft statement "No exact duplicated functions were confirmed" was incorrect. The loose `isPlainObject` helper in `gameStateUtils` and `saveValidator` is an exact duplicate.
-- The broad Pixi fallback-map drift finding was rewritten to the concrete `--electric-blue` missing fallback; the remaining hardcoded fallback map may still deserve a parity test, but the confirmed defect is the missing token.
-- The `useGameState` recommendation was narrowed from `DELETE` to `DOCUMENT/MIGRATE` because the architecture test intentionally requires the compatibility export.
-- Rival dispatch, dead rival reducer paths, dormant rival encounter toast, and static rival penalty findings were consolidated into the two rival integration findings above.
-- Supply-stop inline modal, supply-stop arrival, and supply-stop purchase-pipeline findings were consolidated, with separate recommendations for modal ownership, Tourbus arrival bridging, and canonical purchase handling.
