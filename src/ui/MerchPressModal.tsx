@@ -4,6 +4,7 @@ import { GlitchButton } from './GlitchButton'
 import { ProgressBar, Tooltip } from './shared/index.tsx'
 import { useGameSelector } from '../context/GameState'
 import { IMG_PROMPTS, resolveGenImageUrl } from '../utils/imageGen'
+import { PlayerState, BandState } from '../types'
 import { formatCurrency } from '../utils/numberUtils'
 
 type MerchPressConfig = {
@@ -71,36 +72,7 @@ export const MerchPressModal = ({
           <div className='absolute inset-0 bg-gradient-to-t from-void-black via-void-black/80 to-transparent z-0 pointer-events-none' />
 
           <div className='relative z-10 p-6'>
-            {/* Header */}
-            <div className='flex justify-between items-start mb-6 border-b border-toxic-green-20 pb-4'>
-              <div>
-                <h2
-                  className='text-2xl font-display text-toxic-green tracking-widest uppercase glitch-text'
-                  data-text={t('ui:merch_press.title', {
-                    defaultValue: 'UNDERGROUND MERCH PRESS'
-                  })}
-                >
-                  {t('ui:merch_press.title', {
-                    defaultValue: 'UNDERGROUND MERCH PRESS'
-                  })}
-                </h2>
-                <p className='text-sm text-ash-gray mt-1 uppercase tracking-wider'>
-                  {t('ui:merch_press.subtitle', {
-                    defaultValue: 'BOOTLEG OPERATION'
-                  })}
-                </p>
-              </div>
-              <Tooltip content={t('ui:menu.close')}>
-                <button
-                  type='button'
-                  onClick={onClose}
-                  className='text-toxic-green hover:text-star-white transition-colors p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
-                  aria-label={t('ui:menu.close')}
-                >
-                  [X]
-                </button>
-              </Tooltip>
-            </div>
+            <MerchPressHeader onClose={onClose} t={t} />
 
             {/* Content */}
             <div className='space-y-6'>
@@ -111,140 +83,28 @@ export const MerchPressModal = ({
                 })}
               </p>
 
-              {/* Costs and Gains */}
-              <div className='grid grid-cols-2 gap-4'>
-                <div className='bg-void-black border border-blood-red-20 p-3 flex flex-col items-center justify-center relative overflow-hidden group'>
-                  <div className='absolute inset-0 bg-blood-red-20 opacity-0 group-hover:opacity-100 transition-opacity' />
-                  <span className='text-xs text-blood-red mb-1 uppercase tracking-widest'>
-                    {t('ui:merch_press.cost_label', { defaultValue: 'COST' })}
-                  </span>
-                  <span className='text-xl font-display text-blood-red'>
-                    {formatCurrency(config.cost, i18n?.language)}
-                  </span>
-                </div>
-                <div className='bg-void-black border border-toxic-green-20 p-3 flex flex-col items-center justify-center relative overflow-hidden group'>
-                  <div className='absolute inset-0 bg-toxic-green-10 opacity-0 group-hover:opacity-100 transition-opacity' />
-                  <span className='text-xs text-toxic-green mb-1 uppercase tracking-widest'>
-                    {t('ui:merch_press.gain_label', { defaultValue: 'GAINS' })}
-                  </span>
-                  <span className='text-xl font-display text-toxic-green text-center'>
-                    +{config.loyaltyGain}{' '}
-                    {t('ui:stats.loyalty', { defaultValue: 'LOYALTY' })}
-                    <br />+{config.controversyGain}{' '}
-                    {t('ui:stats.controversy', { defaultValue: 'CONTROVERSY' })}
-                    <br />+{config.fameGain}{' '}
-                    {t('ui:stats.fame', { defaultValue: 'FAME' })}
-                  </span>
-                </div>
-              </div>
+              <MerchPressCostsAndGains config={config} t={t} i18n={i18n} />
 
-              <div className='bg-blood-red-20 border border-blood-red-20 p-4 mt-4'>
-                <p className='text-blood-red text-sm text-center font-bold'>
-                  {t('ui:merch_press.risk_warning', {
-                    risk: config.failChance * 100,
-                    harmonyCostOnFail: config.harmonyCostOnFail,
-                    defaultValue: `WARNING: ${config.failChance * 100}% CHANCE OF EQUIPMENT FAILURE (-${config.harmonyCostOnFail} HARMONY)`
-                  })}
-                </p>
-              </div>
+              <MerchPressRiskWarning config={config} t={t} />
 
-              {/* Current Stats */}
-              <div className='border border-toxic-green-20 p-4 space-y-4'>
-                <h3 className='text-toxic-green text-sm uppercase tracking-widest mb-2'>
-                  {t('ui:merch_press.current_stats', {
-                    defaultValue: 'CURRENT RESOURCES'
-                  })}
-                </h3>
-                <div className='grid grid-cols-2 gap-4'>
-                  <div>
-                    <div className='flex justify-between text-xs mb-1'>
-                      <span className='text-ash-gray uppercase'>
-                        {t('ui:stats.money', { defaultValue: 'FUNDS' })}
-                      </span>
-                      <span
-                        className={`${isAffordable ? 'text-toxic-green' : 'text-blood-red'}`}
-                      >
-                        {formatCurrency(player?.money ?? 0, i18n?.language)} /{' '}
-                        {formatCurrency(config.cost, i18n?.language)}
-                      </span>
-                    </div>
-                    <ProgressBar
-                      value={
-                        config.cost > 0
-                          ? Math.min(
-                              100,
-                              ((player?.money ?? 0) / config.cost) * 100
-                            )
-                          : 0
-                      }
-                      max={100}
-                      showValue={false}
-                      color={isAffordable ? 'bg-toxic-green' : 'bg-blood-red'}
-                    />
-                  </div>
-                  <div>
-                    <div className='flex justify-between text-xs mb-1'>
-                      <span className='text-ash-gray uppercase'>
-                        {t('ui:stats.harmony', { defaultValue: 'HARMONY' })}
-                      </span>
-                      <span
-                        className={`${hasEnoughHarmony ? 'text-toxic-green' : 'text-blood-red'}`}
-                      >
-                        {band?.harmony ?? 0}%
-                      </span>
-                    </div>
-                    <ProgressBar
-                      value={band?.harmony ?? 0}
-                      max={100}
-                      showValue={false}
-                      color={
-                        hasEnoughHarmony ? 'bg-toxic-green' : 'bg-blood-red'
-                      }
-                    />
-                  </div>
-                </div>
-              </div>
+              <MerchPressCurrentStats
+                config={config}
+                t={t}
+                i18n={i18n}
+                player={player}
+                band={band}
+                isAffordable={isAffordable}
+                hasEnoughHarmony={hasEnoughHarmony}
+              />
             </div>
 
-            {/* Actions */}
-            <div className='mt-8 flex flex-col sm:flex-row justify-end gap-4'>
-              <GlitchButton
-                variant='primary'
-                onClick={onClose}
-                className='w-full sm:w-auto uppercase'
-              >
-                [ {t('ui:button.cancel', { defaultValue: 'CANCEL' })} ]
-              </GlitchButton>
-              {!canPress ? (
-                <Tooltip content={disabledReason}>
-                  <GlitchButton
-                    variant='danger'
-                    onClick={onPress}
-                    disabled={true}
-                    aria-disabled='true'
-                    tabIndex={-1}
-                    className='w-full sm:w-auto uppercase'
-                  >
-                    [{' '}
-                    {t('ui:merch_press.confirm', {
-                      defaultValue: 'START PRESS'
-                    })}{' '}
-                    ]
-                  </GlitchButton>
-                </Tooltip>
-              ) : (
-                <GlitchButton
-                  variant='warning'
-                  onClick={onPress}
-                  disabled={false}
-                  className='w-full sm:w-auto uppercase'
-                >
-                  [{' '}
-                  {t('ui:merch_press.confirm', { defaultValue: 'START PRESS' })}{' '}
-                  ]
-                </GlitchButton>
-              )}
-            </div>
+            <MerchPressActions
+              onClose={onClose}
+              onPress={onPress}
+              canPress={canPress}
+              disabledReason={disabledReason}
+              t={t}
+            />
 
             {/* Corner Decorations */}
             <div className='absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-toxic-green pointer-events-none' />
@@ -255,5 +115,231 @@ export const MerchPressModal = ({
         </motion.div>
       </motion.div>
     </AnimatePresence>
+  )
+}
+
+type MerchPressHeaderProps = {
+  onClose: () => void
+  t: ReturnType<typeof useTranslation>['t']
+}
+
+function MerchPressHeader({ onClose, t }: MerchPressHeaderProps) {
+  return (
+    <div className='flex justify-between items-start mb-6 border-b border-toxic-green-20 pb-4'>
+      <div>
+        <h2
+          className='text-2xl font-display text-toxic-green tracking-widest uppercase glitch-text'
+          data-text={t('ui:merch_press.title', {
+            defaultValue: 'UNDERGROUND MERCH PRESS'
+          })}
+        >
+          {t('ui:merch_press.title', {
+            defaultValue: 'UNDERGROUND MERCH PRESS'
+          })}
+        </h2>
+        <p className='text-sm text-ash-gray mt-1 uppercase tracking-wider'>
+          {t('ui:merch_press.subtitle', {
+            defaultValue: 'BOOTLEG OPERATION'
+          })}
+        </p>
+      </div>
+      <Tooltip content={t('ui:menu.close')}>
+        <button
+          type='button'
+          onClick={onClose}
+          className='text-toxic-green hover:text-star-white transition-colors p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
+          aria-label={t('ui:menu.close')}
+        >
+          [X]
+        </button>
+      </Tooltip>
+    </div>
+  )
+}
+
+type MerchPressCostsAndGainsProps = {
+  config: MerchPressConfig
+  t: ReturnType<typeof useTranslation>['t']
+  i18n: ReturnType<typeof useTranslation>['i18n']
+}
+
+function MerchPressCostsAndGains({
+  config,
+  t,
+  i18n
+}: MerchPressCostsAndGainsProps) {
+  return (
+    <div className='grid grid-cols-2 gap-4'>
+      <div className='bg-void-black border border-blood-red-20 p-3 flex flex-col items-center justify-center relative overflow-hidden group'>
+        <div className='absolute inset-0 bg-blood-red-20 opacity-0 group-hover:opacity-100 transition-opacity' />
+        <span className='text-xs text-blood-red mb-1 uppercase tracking-widest'>
+          {t('ui:merch_press.cost_label', { defaultValue: 'COST' })}
+        </span>
+        <span className='text-xl font-display text-blood-red'>
+          {formatCurrency(config.cost, i18n?.language)}
+        </span>
+      </div>
+      <div className='bg-void-black border border-toxic-green-20 p-3 flex flex-col items-center justify-center relative overflow-hidden group'>
+        <div className='absolute inset-0 bg-toxic-green-10 opacity-0 group-hover:opacity-100 transition-opacity' />
+        <span className='text-xs text-toxic-green mb-1 uppercase tracking-widest'>
+          {t('ui:merch_press.gain_label', { defaultValue: 'GAINS' })}
+        </span>
+        <span className='text-xl font-display text-toxic-green text-center'>
+          +{config.loyaltyGain}{' '}
+          {t('ui:stats.loyalty', { defaultValue: 'LOYALTY' })}
+          <br />+{config.controversyGain}{' '}
+          {t('ui:stats.controversy', { defaultValue: 'CONTROVERSY' })}
+          <br />+{config.fameGain}{' '}
+          {t('ui:stats.fame', { defaultValue: 'FAME' })}
+        </span>
+      </div>
+    </div>
+  )
+}
+
+type MerchPressRiskWarningProps = {
+  config: MerchPressConfig
+  t: ReturnType<typeof useTranslation>['t']
+}
+
+function MerchPressRiskWarning({ config, t }: MerchPressRiskWarningProps) {
+  return (
+    <div className='bg-blood-red-20 border border-blood-red-20 p-4 mt-4'>
+      <p className='text-blood-red text-sm text-center font-bold'>
+        {t('ui:merch_press.risk_warning', {
+          risk: config.failChance * 100,
+          harmonyCostOnFail: config.harmonyCostOnFail,
+          defaultValue: `WARNING: ${config.failChance * 100}% CHANCE OF EQUIPMENT FAILURE (-${config.harmonyCostOnFail} HARMONY)`
+        })}
+      </p>
+    </div>
+  )
+}
+
+type MerchPressCurrentStatsProps = {
+  config: MerchPressConfig
+  t: ReturnType<typeof useTranslation>['t']
+  i18n: ReturnType<typeof useTranslation>['i18n']
+  player: PlayerState | null
+  band: BandState | null
+  isAffordable: boolean
+  hasEnoughHarmony: boolean
+}
+
+function MerchPressCurrentStats({
+  config,
+  t,
+  i18n,
+  player,
+  band,
+  isAffordable,
+  hasEnoughHarmony
+}: MerchPressCurrentStatsProps) {
+  return (
+    <div className='border border-toxic-green-20 p-4 space-y-4'>
+      <h3 className='text-toxic-green text-sm uppercase tracking-widest mb-2'>
+        {t('ui:merch_press.current_stats', {
+          defaultValue: 'CURRENT RESOURCES'
+        })}
+      </h3>
+      <div className='grid grid-cols-2 gap-4'>
+        <div>
+          <div className='flex justify-between text-xs mb-1'>
+            <span className='text-ash-gray uppercase'>
+              {t('ui:stats.money', { defaultValue: 'FUNDS' })}
+            </span>
+            <span
+              className={`${isAffordable ? 'text-toxic-green' : 'text-blood-red'}`}
+            >
+              {formatCurrency(player?.money ?? 0, i18n?.language)} /{' '}
+              {formatCurrency(config.cost, i18n?.language)}
+            </span>
+          </div>
+          <ProgressBar
+            value={
+              config.cost > 0
+                ? Math.min(100, ((player?.money ?? 0) / config.cost) * 100)
+                : 0
+            }
+            max={100}
+            showValue={false}
+            color={isAffordable ? 'bg-toxic-green' : 'bg-blood-red'}
+          />
+        </div>
+        <div>
+          <div className='flex justify-between text-xs mb-1'>
+            <span className='text-ash-gray uppercase'>
+              {t('ui:stats.harmony', { defaultValue: 'HARMONY' })}
+            </span>
+            <span
+              className={`${hasEnoughHarmony ? 'text-toxic-green' : 'text-blood-red'}`}
+            >
+              {band?.harmony ?? 0}%
+            </span>
+          </div>
+          <ProgressBar
+            value={band?.harmony ?? 0}
+            max={100}
+            showValue={false}
+            color={hasEnoughHarmony ? 'bg-toxic-green' : 'bg-blood-red'}
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+type MerchPressActionsProps = {
+  onClose: () => void
+  onPress: () => void
+  canPress: boolean
+  disabledReason: string | null
+  t: ReturnType<typeof useTranslation>['t']
+}
+
+function MerchPressActions({
+  onClose,
+  onPress,
+  canPress,
+  disabledReason,
+  t
+}: MerchPressActionsProps) {
+  return (
+    <div className='mt-8 flex flex-col sm:flex-row justify-end gap-4'>
+      <GlitchButton
+        variant='primary'
+        onClick={onClose}
+        className='w-full sm:w-auto uppercase'
+      >
+        [ {t('ui:button.cancel', { defaultValue: 'CANCEL' })} ]
+      </GlitchButton>
+      {!canPress ? (
+        <Tooltip content={disabledReason}>
+          <GlitchButton
+            variant='danger'
+            onClick={onPress}
+            disabled={true}
+            aria-disabled='true'
+            tabIndex={-1}
+            className='w-full sm:w-auto uppercase'
+          >
+            [{' '}
+            {t('ui:merch_press.confirm', {
+              defaultValue: 'START PRESS'
+            })}{' '}
+            ]
+          </GlitchButton>
+        </Tooltip>
+      ) : (
+        <GlitchButton
+          variant='warning'
+          onClick={onPress}
+          disabled={false}
+          className='w-full sm:w-auto uppercase'
+        >
+          [ {t('ui:merch_press.confirm', { defaultValue: 'START PRESS' })} ]
+        </GlitchButton>
+      )}
+    </div>
   )
 }
