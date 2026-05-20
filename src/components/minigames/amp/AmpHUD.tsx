@@ -1,9 +1,10 @@
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { AmpHUDProps } from '../../../types/components'
+import type { TranslationCallback } from '../../../types/callbacks'
 
 type IndicatorProps = {
-  t: (key: string, options?: unknown) => string
+  t: TranslationCallback
 }
 
 function VoidResonanceIndicator({
