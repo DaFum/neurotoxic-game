@@ -7,7 +7,7 @@
   {
     "skill": "refactor-with-safety",
     "prompt": "Refactor the event engine without breaking tests.",
-    "expectIncludes": ["npm run lint", "npm run test", "npm run build"]
+    "expectIncludes": ["pnpm run lint", "pnpm run test", "pnpm run build"]
   },
   {
     "skill": "repo-navigator-agents-routing",

@@ -16,7 +16,7 @@ Enhance the application with developer-facing diagnostic tools.
 
 2.  **Integrate with Existing Systems**
     - **Logger**: `logger.debug('Category', 'Message', data)`
-    - **Viewer**: `DebugLogViewer.jsx` (toggle via keyboard shortcut (configurable; default: Ctrl+`)).
+    - **Viewer**: use the current React/TypeScript component pattern for debug log views (toggle via keyboard shortcut; default: Ctrl+`).
     - **State**: Expose internal state via `window.__DEBUG__` if necessary (dev only). Ensure consumers can override the default shortcut.
 
 3.  **Implement Access Control**
@@ -49,4 +49,4 @@ Enhance the application with developer-facing diagnostic tools.
 **Output**:
 "Added coordinate logging to the player loop. Enable 'Player' category in DebugLogViewer to see it."
 
-_Skill sync: compatible with React 19.2.5 / Vite 8.0.10 baseline as of 2026-05-10._
+_Skill sync: compatible with React 19.2.6 / Vite 8.0.10 / Tailwind 4.2.4 baseline as of 2026-05-20._

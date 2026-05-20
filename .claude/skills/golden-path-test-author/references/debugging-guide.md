@@ -196,7 +196,7 @@ Error: Cannot find module '../../src/context/gameReducer.js'
 **Diagnosis:**
 
 - Path is wrong
-- File doesn't exist
+- Source file exists as TypeScript, but node:test imports keep the `.js` suffix under `tsx`
 - File was moved or renamed
 
 **Fix Checklist:**
@@ -204,7 +204,7 @@ Error: Cannot find module '../../src/context/gameReducer.js'
 ```javascript
 // ✅ Check the path relative to the test file
 // If test file is: tests/golden-path/travel.test.js
-// And reducer is:   src/context/gameReducer.js
+// And reducer is:   src/context/gameReducer.ts
 // Then import:      ../../src/context/gameReducer.js
 //           (../)   (up to tests/)
 //           (../)   (up to root)
@@ -212,11 +212,11 @@ Error: Cannot find module '../../src/context/gameReducer.js'
 
 // ✅ Verify the file exists
 // From repo root:
-ls src/context/gameReducer.js
+ls src/context/gameReducer.ts
 
 // ✅ Check for typos
-// ❌ gameReducer.js
-// ✅ gameReducer.js
+// Bad: src/context/gameReducer.ts in the node:test import
+// Good: ../../src/context/gameReducer.js in the node:test import
 ```
 
 **Prevention:**
@@ -225,9 +225,9 @@ Use a consistent import pattern:
 ```javascript
 // At the top of each test file, document the structure
 // tests/golden-path/[name].test.js
-//   ../../src/context/gameReducer.js
-//   ../../src/context/initialState.js
-//   ../../src/context/gameConstants.js
+//   ../../src/context/gameReducer.js (source file: src/context/gameReducer.ts)
+//   ../../src/context/initialState.js (source file: src/context/initialState.ts)
+//   ../../src/context/gameConstants.js (source file: src/context/gameConstants.ts)
 
 import { gameReducer, ActionTypes } from '../../src/context/gameReducer.js'
 import { createInitialState } from '../../src/context/initialState.js'
@@ -363,13 +363,13 @@ test('Day advance costs money', async t => {
 ### Run a Single Test File
 
 ```bash
-pnpm run test -- tests/golden-path/travel.test.js
+node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/golden-path/travel.test.js
 ```
 
 ### Run a Single Test by Name
 
 ```bash
-pnpm run test -- tests/goldenPath.test.js --grep "Travel costs fuel"
+node --test --test-name-pattern "Travel costs fuel" --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/goldenPath.test.js
 ```
 
 ### Add Debug Logging
@@ -392,7 +392,7 @@ await t.test('Travel deducts money', () => {
 Then run with output:
 
 ```bash
-pnpm run test -- tests/golden-path/travel.test.js 2>&1 | grep -A5 "BEFORE"
+node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/golden-path/travel.test.js 2>&1 | grep -A5 "BEFORE"
 ```
 
 ### Compare with Working Tests
@@ -415,4 +415,4 @@ Use them as a reference:
 - [ ] Boundaries are checked (money ≥ 0, harmony ∈ [1,100], fuel ∈ [0,100])
 - [ ] Scene transitions are valid (check GAME_PHASES)
 - [ ] Independent tests reset state; sequences share state intentionally
-- [ ] Test runs locally: `pnpm run test -- tests/golden-path/[name].test.js`
+- [ ] Test runs locally: `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/golden-path/[name].test.js`

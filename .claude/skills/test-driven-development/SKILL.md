@@ -121,7 +121,7 @@ Vague name, tests mock not code
 **MANDATORY. Never skip.**
 
 ```bash
-pnpm run test path/to/test.test.ts
+pnpm run test
 ```
 
 Confirm:
@@ -177,7 +177,7 @@ Don't add features, refactor other code, or "improve" beyond the test.
 **MANDATORY.**
 
 ```bash
-pnpm run test path/to/test.test.ts
+pnpm run test
 ```
 
 Confirm:

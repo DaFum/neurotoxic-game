@@ -106,7 +106,7 @@ Include commands ONLY if they differ from what an agent would naturally try.
 **DO NOT INCLUDE:**
 
 - `git clone`, `cd`, `pip install` — agents know these
-- Standard `pytest` or `npm test` invocations (agents try these by default)
+- Bare/default `pytest` invocations and default package-manager test commands (which agents try by default); include non-standard or custom test invocations.
 - Commands documented in README.md or CONTRIBUTING.md
 
 **Good example:**

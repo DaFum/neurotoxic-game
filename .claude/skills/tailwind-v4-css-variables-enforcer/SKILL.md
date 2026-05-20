@@ -52,4 +52,4 @@ This skill enforces Tailwind v4 and CSS Variables usage across the repo.
 **Output**:
 "Converted styles to v4 syntax. Replaced `red-500` with `--mood-pink`."
 
-_Skill sync: compatible with React 19.2.5 / Vite 8.0.10 baseline as of 2026-05-10._
+_Skill sync: compatible with React 19.2.6 / Vite 8.0.10 / Tailwind 4.2.4 baseline as of 2026-05-20._

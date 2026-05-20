@@ -215,16 +215,16 @@ const sanitizeBandInventory = (value: unknown): BandState['inventory'] => {
           : typeof raw === 'string' && raw.trim().length > 0
             ? Number(raw)
             : Number.NaN
-      sanitized[key as keyof BandState['inventory']] = Number.isFinite(numeric) ? numeric : fallback as any
+      sanitized[key] = Number.isFinite(numeric) ? numeric : fallback
       continue
     }
 
     if (typeof fallback === 'boolean') {
-      sanitized[key as keyof BandState['inventory']] = typeof raw === 'boolean' ? raw : fallback as any
+      sanitized[key] = typeof raw === 'boolean' ? raw : fallback
       continue
     }
 
-    sanitized[key as keyof BandState['inventory']] = fallback as any
+    sanitized[key] = fallback
   }
 
   return sanitized

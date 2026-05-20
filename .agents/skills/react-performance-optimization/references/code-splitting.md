@@ -89,21 +89,37 @@ async function loadPolyfills() {
 ## Bundle Analysis Tools
 
 ```bash
-# Webpack Bundle Analyzer
-npm install --save-dev webpack-bundle-analyzer
+# Vite Bundle Visualizer (already pinned in this repo; add only if absent)
+pnpm add -D rollup-plugin-visualizer
+```
 
-# Vite Bundle Visualizer
-npm install --save-dev rollup-plugin-visualizer
+```js
+// vite.config.js
+import { visualizer } from 'rollup-plugin-visualizer'
 
-# Analyze bundle composition
-npm run build -- --stats
-npx webpack-bundle-analyzer dist/stats.json
+export default defineConfig({
+  plugins: [
+    // existing plugins...
+    visualizer({
+      filename: 'dist/bundle-analysis.html',
+      template: 'treemap',
+      gzipSize: true,
+      brotliSize: true
+    })
+  ]
+})
+```
+
+```bash
+# Generate and inspect the Vite bundle report
+pnpm run build
+# Open dist/bundle-analysis.html in a browser.
 ```
 
 **Analysis workflow:**
 
-1. Generate production build with stats
-2. Open bundle visualizer
+1. Generate the production build with `rollup-plugin-visualizer` enabled
+2. Open `dist/bundle-analysis.html`
 3. Identify large dependencies
 4. Check for duplicate code
 5. Find optimization opportunities (lazy loading, tree shaking)

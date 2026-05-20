@@ -619,28 +619,41 @@ export const resetRepoRootCache = () => {
  * @returns {Promise<void>} Promise resolving when complete.
  */
 export const runQualityGate = async () => {
-  const runCommand = (command, args) =>
+  const createPnpmCommand = args => {
+    if (process.platform === 'win32') {
+      return {
+        command: 'cmd.exe',
+        args: ['/d', '/s', '/c', 'pnpm', ...args],
+        label: `pnpm ${args.join(' ')}`
+      }
+    }
+    return {
+      command: 'pnpm',
+      args,
+      label: `pnpm ${args.join(' ')}`
+    }
+  }
+
+  const runCommand = ({ command, args, label }) =>
     new Promise((resolve, reject) => {
-      const child = spawn(command, args, { stdio: 'inherit', shell: true })
+      const child = spawn(command, args, { stdio: 'inherit' })
       child.on('error', _error => {
-        reject(
-          new Error(
-            `${command} ${args.join(' ')} failed to start: ${_error.message}`
-          )
-        )
+        reject(new Error(`${label} failed to start: ${_error.message}`))
       })
-      child.on('exit', code => {
+      child.on('exit', (code, signal) => {
         if (code === 0) {
           resolve()
         } else {
-          reject(new Error(`${command} ${args.join(' ')} failed with ${code}`))
+          reject(
+            new Error(`${label} failed with code ${code}, signal ${signal}`)
+          )
         }
       })
     })
 
-  await runCommand('npm', ['run', 'lint'])
-  await runCommand('npm', ['run', 'test'])
-  await runCommand('npm', ['run', 'build'])
+  await runCommand(createPnpmCommand(['run', 'lint']))
+  await runCommand(createPnpmCommand(['run', 'test']))
+  await runCommand(createPnpmCommand(['run', 'build']))
 }
 
 /**

@@ -25,7 +25,7 @@ Synthesize the project's architecture, constraints, and workflows into a single 
 
 2.  **Synthesize Constraints**
     Extract non-negotiables:
-    - **Stack**: React 19.2.4, Vite 8.0.1, Tailwind 4.2.2.
+    - **Stack**: React 19.2.6, Vite 8.0.10, Tailwind 4.2.4.
     - **State**: Immutable, Reducer-driven.
     - **Style**: Brutalist, CSS Variables.
 
@@ -57,7 +57,7 @@ Neurotoxic is a brutalist rhythm game...
 
 ## Tech Stack
 
-- React 19.2.4 + Vite 8.0.1
+- React 19.2.6 + Vite 8.0.10
 - Tailwind 4 (Brutalist Design)
 - Pixi.js 8 + Tone.js 15
 
@@ -70,7 +70,7 @@ Neurotoxic is a brutalist rhythm game...
 ## Architecture Map
 
 - `src/scenes/`: Main game states (Overworld, Gig).
-- `src/utils/audioEngine.js`: Central audio controller.
+- `src/utils/audio/audioEngine.ts`: Central audio controller.
 ```
 
-_Skill sync: compatible with React 19.2.4 / Vite 8.0.1 baseline as of 2026-03-18._
+_Skill sync: compatible with React 19.2.6 / Vite 8.0.10 / Tailwind 4.2.4 baseline as of 2026-05-20._

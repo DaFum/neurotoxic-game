@@ -6,7 +6,7 @@ description: detect and fix memory leaks in Pixi.js components. Trigger when rev
 # Pixi Lifecycle Sentinel
 
 Ensure strict lifecycle management for Pixi.js instances to prevent memory leaks.
-Prioritize audits in `PixiStage.jsx` and `PixiStageController.js` when present.
+Prioritize audits in `src/components/PixiStage.tsx` and `src/components/PixiStageController.ts` when present.
 
 ## Workflow
 
@@ -63,4 +63,4 @@ useEffect(() => {
 **Output**:
 "Added cleanup function to destroy the Pixi application on unmount. This prevents canvas duplication and memory leaks."
 
-_Skill sync: compatible with React 19.2.5 / Vite 8.0.10 baseline as of 2026-05-10._
+_Skill sync: compatible with React 19.2.6 / Vite 8.0.10 / Tailwind 4.2.4 baseline as of 2026-05-20._

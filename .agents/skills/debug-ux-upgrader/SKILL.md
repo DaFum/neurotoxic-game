@@ -19,12 +19,12 @@ Enhance the application with developer-facing diagnostic tools.
 
 1.  **Determine the Tooling Type**
     - **Visual Overlay**: Real-time stats (FPS, state). Add to `DebugLogViewer` or a new overlay.
-    - **Logging**: Structured events. Use `src/utils/logger.js`.
+    - **Logging**: Structured events. Use `src/utils/logger.ts`.
     - **Control**: Toggles/Actions. Add keyboard shortcuts or URL params.
 
 2.  **Integrate with Existing Systems**
     - **Logger**: `logger.debug('Category', 'Message', data)`
-    - **Viewer**: `DebugLogViewer.jsx` (toggle via keyboard shortcut (configurable; default: Ctrl+`)).
+    - **Viewer**: use the current React/TypeScript component pattern for debug log views (toggle via keyboard shortcut; default: Ctrl+`).
     - **State**: Expose internal state via `window.__DEBUG__` if necessary (dev only). Ensure consumers can override the default shortcut.
 
 3.  **Implement Access Control**
@@ -57,4 +57,4 @@ Enhance the application with developer-facing diagnostic tools.
 **Output**:
 "Added coordinate logging to the player loop. Enable 'Player' category in DebugLogViewer to see it."
 
-_Skill sync: compatible with React 19.2.4 / Vite 8.0.1 baseline as of 2026-03-18._
+_Skill sync: compatible with React 19.2.6 / Vite 8.0.10 / Tailwind 4.2.4 baseline as of 2026-05-20._

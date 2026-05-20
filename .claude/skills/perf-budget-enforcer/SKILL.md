@@ -22,7 +22,7 @@ Analyze and optimize application performance, focusing on bundle size and runtim
 2.  **Identify Bottlenecks**
     - **Large Dependencies**: Pixi.js, Tone.js. Are they lazy-loaded?
     - **Assets**: Large images or audio embedded in the bundle? Move to `public/`.
-    - **Code Splitting**: Are routes lazy-loaded in `App.jsx`?
+    - **Code Splitting**: Are routes lazy-loaded in the current TSX app root or `src/components/SceneRouter.tsx`?
 
 3.  **Optimize**
     - **Lazy Loading**: Use `React.lazy()` for heavy components (`PixiStage`, `ToneSynth`).
@@ -49,4 +49,4 @@ Analyze and optimize application performance, focusing on bundle size and runtim
 **Output**:
 "Lazy-loaded Pixi and Tone. Main bundle size reduced by 80%. Initial load is now under 1s."
 
-_Skill sync: compatible with React 19.2.5 / Vite 8.0.10 baseline as of 2026-05-10._
+_Skill sync: compatible with React 19.2.6 / Vite 8.0.10 / Tailwind 4.2.4 baseline as of 2026-05-20._

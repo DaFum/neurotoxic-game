@@ -77,9 +77,9 @@ TypeScript only type-checks; it never emits JS. Vite handles transpilation indep
 pnpm run typecheck
 # = tsc --noEmit
 
-# Check a single file (shows errors with line numbers)
-npx tsc --noEmit --pretty src/utils/gameStateUtils.ts
+# Run the repo type gate with line-numbered errors
+pnpm run typecheck:core
 
-# Show all errors including deep dependencies
-npx tsc --noEmit 2>&1 | head -50
+# The same full tsc gate reports errors across included project files and dependencies
+pnpm run typecheck:core
 ```

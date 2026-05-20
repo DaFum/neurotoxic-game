@@ -30,7 +30,7 @@ Isolate bugs by creating a minimal, self-contained reproduction environment.
     - _Example_: "Set `player.health = -1` on init to test death screen."
 
 5.  **Document Usage**
-    "To run the repro, import `ReproScene` in `App.jsx` and set it as the initial route."
+    "To run the repro, import `ReproScene` in the current TSX app route/scene entry point and set it as the initial route."
 
 ## Example
 
@@ -47,4 +47,4 @@ Isolate bugs by creating a minimal, self-contained reproduction environment.
 **Output**:
 "Created `tests/repro_travel_crash.test.js`. Run with `node --test tests/repro_travel_crash.test.js`. Confirmed it throws an error."
 
-_Skill sync: compatible with React 19.2.5 / Vite 8.0.10 baseline as of 2026-05-10._
+_Skill sync: compatible with React 19.2.6 / Vite 8.0.10 / Tailwind 4.2.4 baseline as of 2026-05-20._

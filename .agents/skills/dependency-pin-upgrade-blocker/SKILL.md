@@ -32,7 +32,7 @@ Strictly enforce pinned versions for critical dependencies to ensure stability a
 
 1.  **Check `package.json`**
     Compare proposed changes against the pinned table.
-    - _Minor/Patch upgrades_: Allowed (e.g., `18.2.0` -> `18.3.0`).
+    - _Minor/Patch upgrades_: Allowed (e.g., `19.2.0` -> `19.2.6`).
     - _Major upgrades_: **Blocked** unless explicitly authorized by a separate migration plan.
 
 2.  **Verify Compatibility**
@@ -58,4 +58,4 @@ Strictly enforce pinned versions for critical dependencies to ensure stability a
 **Output**:
 "Upgraded minor dependencies. Held back React (19.x), Vite (8.x), and Pixi (8.x) to pinned major versions to preserve stability."
 
-_Skill sync: compatible with React 19.2.4 / Vite 8.0.1 baseline as of 2026-03-18._
+_Skill sync: compatible with React 19.2.6 / Vite 8.0.10 / Tailwind 4.2.4 baseline as of 2026-05-20._

@@ -25,7 +25,7 @@ pnpm run lint
 **Run**:
 
 ```bash
-pnpm run test
+node --test --watch --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/path/to/file.test.js
 ```
 
 **Verify**:
@@ -39,13 +39,13 @@ pnpm run test
 **For single file**:
 
 ```bash
-pnpm run test -- tests/path/to/file.test.js
+node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/path/to/file.test.js
 ```
 
 **For watch mode** (faster iteration):
 
 ```bash
-pnpm run test -- --watch
+pnpm run test
 ```
 
 ### 3. UI Tests (Vitest)
@@ -67,7 +67,7 @@ pnpm run test:ui
 **For single file**:
 
 ```bash
-pnpm run test:ui -- tests/path/to/file.test.jsx
+pnpm run test:ui:file -- tests/path/to/file.test.jsx
 ```
 
 ### 4. Build Verification
