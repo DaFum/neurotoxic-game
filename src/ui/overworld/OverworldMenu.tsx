@@ -56,6 +56,158 @@ interface MenuCategory {
   items: MenuItem[]
 }
 
+const MenuHeader = React.memo(
+  ({
+    cat,
+    t
+  }: {
+    cat: MenuCategory | undefined
+    t: import('../../types/callbacks').TranslationCallback
+  }) => (
+    <div className='menu-panel-hdr flex items-center justify-between px-3.5 py-2.5 border-b border-toxic-green/20 bg-toxic-green/5'>
+      <div className='menu-panel-title font-[Metal_Mania] text-[15px] text-toxic-green tracking-[2px] drop-shadow-[0_0_8px_var(--color-toxic-green)] flex items-center gap-2'>
+        {cat ? (
+          <>
+            <span style={{ color: cat.color }}>{cat.icon}</span>
+            {cat.label}
+            <span className='menu-panel-title-sub text-[8px] text-ash-gray tracking-[3px] font-mono drop-shadow-none ml-2'>
+              {cat.items.length}{' '}
+              {t('ui:menu.options_count_upper', {
+                defaultValue: 'OPTIONS'
+              })}
+            </span>
+          </>
+        ) : (
+          <>◈ {t('ui:menu.actions', { defaultValue: 'ACTIONS' })}</>
+        )}
+      </div>
+    </div>
+  )
+)
+MenuHeader.displayName = 'MenuHeader'
+
+const MenuCategoryList = React.memo(
+  ({
+    menuCategories,
+    isTraveling,
+    setActiveCat,
+    t
+  }: {
+    menuCategories: MenuCategory[]
+    isTraveling: boolean
+    setActiveCat: (id: string) => void
+    t: import('../../types/callbacks').TranslationCallback
+  }) => (
+    <div className='menu-cat-list flex flex-col p-1.5'>
+      {menuCategories.map(c => (
+        <GlitchButton
+          key={c.id}
+          className='menu-cat-btn !border-none !bg-transparent w-full !mb-0 border-b border-ash-gray/15 hover:!bg-toxic-green/5 !px-3.5 !py-2.5'
+          disabled={isTraveling}
+          onClick={() => setActiveCat(c.id)}
+          size='sm'
+        >
+          <div className='flex w-full justify-between items-center text-left'>
+            <div className='menu-cat-left flex items-center gap-2.5'>
+              <span
+                className='menu-cat-icon text-[16px] w-5 text-center'
+                style={{ color: c.color }}
+              >
+                {c.icon}
+              </span>
+              <span
+                className='menu-cat-label font-[Metal_Mania] text-[14px] tracking-[1px]'
+                style={{ color: c.color }}
+              >
+                {c.label}
+              </span>
+            </div>
+            <div className='menu-cat-right flex items-center gap-2'>
+              <span className='menu-cat-count text-[8px] text-ash-gray font-mono tracking-[1px]'>
+                {c.items.length}{' '}
+                {t('ui:menu.options_count_lower', {
+                  defaultValue: 'options'
+                })}
+              </span>
+              <span
+                className='menu-cat-arrow text-[11px] opacity-60'
+                style={{ color: c.color }}
+              >
+                ›
+              </span>
+            </div>
+          </div>
+        </GlitchButton>
+      ))}
+    </div>
+  )
+)
+MenuCategoryList.displayName = 'MenuCategoryList'
+
+const MenuSubmenu = React.memo(
+  ({
+    cat,
+    actions,
+    isDisabled,
+    handleClose,
+    handleBack,
+    t
+  }: {
+    cat: MenuCategory
+    actions: Record<MenuAction, () => void>
+    isDisabled: (item: MenuItem) => boolean
+    handleClose: () => void
+    handleBack: () => void
+    t: import('../../types/callbacks').TranslationCallback
+  }) => (
+    <div className='menu-sub flex flex-col'>
+      <GlitchButton
+        className='menu-back-btn !w-full !border-none !bg-ash-gray/10 !border-b !border-ash-gray/20 !px-3.5 !py-2 !text-[10px] !text-left'
+        size='sm'
+        variant='primary'
+        onClick={handleBack}
+      >
+        ‹ &nbsp;
+        {t('ui:menu.back_to_actions', {
+          defaultValue: 'BACK TO ACTIONS'
+        })}
+      </GlitchButton>
+      <div className='menu-sub-items flex flex-col p-1.5'>
+        {cat.items.map(item => (
+          <GlitchButton
+            key={item.action}
+            className={`menu-sub-item !border-transparent !bg-transparent !mb-1 !p-2 !w-full hover:enabled:-translate-x-[2px] v-${item.v}`}
+            disabled={isDisabled(item)}
+            onClick={() => {
+              actions[item.action]()
+              handleClose()
+            }}
+            size='sm'
+          >
+            <div className='flex w-full justify-between items-center text-left'>
+              <div className='menu-sub-item-left flex items-center gap-2.5'>
+                <span className='menu-sub-icon text-[14px] w-[18px] text-center'>
+                  {item.icon}
+                </span>
+                <div className='text-left'>
+                  <div className='menu-sub-label font-[Metal_Mania] text-[13px] tracking-[1px]'>
+                    [{item.label}]
+                  </div>
+                  <div className='menu-sub-desc text-[8px] opacity-55 font-mono tracking-[0.5px] mt-[1px]'>
+                    {item.desc}
+                  </div>
+                </div>
+              </div>
+              <span className='menu-sub-arrow text-[10px] opacity-50'>›</span>
+            </div>
+          </GlitchButton>
+        ))}
+      </div>
+    </div>
+  )
+)
+MenuSubmenu.displayName = 'MenuSubmenu'
+
 export const OverworldMenu = React.memo(
   ({
     t,
@@ -365,120 +517,26 @@ export const OverworldMenu = React.memo(
       >
         {isMenuOpen && (
           <div className='menu-panel'>
-            {/* Header */}
-            <div className='menu-panel-hdr flex items-center justify-between px-3.5 py-2.5 border-b border-toxic-green/20 bg-toxic-green/5'>
-              <div className='menu-panel-title font-[Metal_Mania] text-[15px] text-toxic-green tracking-[2px] drop-shadow-[0_0_8px_var(--color-toxic-green)] flex items-center gap-2'>
-                {cat ? (
-                  <>
-                    <span style={{ color: cat.color }}>{cat.icon}</span>
-                    {cat.label}
-                    <span className='menu-panel-title-sub text-[8px] text-ash-gray tracking-[3px] font-mono drop-shadow-none ml-2'>
-                      {cat.items.length}{' '}
-                      {t('ui:menu.options_count_upper', {
-                        defaultValue: 'OPTIONS'
-                      })}
-                    </span>
-                  </>
-                ) : (
-                  <>◈ {t('ui:menu.actions', { defaultValue: 'ACTIONS' })}</>
-                )}
-              </div>
-            </div>
+            <MenuHeader cat={cat} t={t} />
 
-            {/* Category list */}
             {!activeCat && (
-              <div className='menu-cat-list flex flex-col p-1.5'>
-                {menuCategories.map(c => (
-                  <GlitchButton
-                    key={c.id}
-                    className='menu-cat-btn !border-none !bg-transparent w-full !mb-0 border-b border-ash-gray/15 hover:!bg-toxic-green/5 !px-3.5 !py-2.5'
-                    disabled={isTraveling}
-                    onClick={() => setActiveCat(c.id)}
-                    size='sm'
-                  >
-                    <div className='flex w-full justify-between items-center text-left'>
-                      <div className='menu-cat-left flex items-center gap-2.5'>
-                        <span
-                          className='menu-cat-icon text-[16px] w-5 text-center'
-                          style={{ color: c.color }}
-                        >
-                          {c.icon}
-                        </span>
-                        <span
-                          className='menu-cat-label font-[Metal_Mania] text-[14px] tracking-[1px]'
-                          style={{ color: c.color }}
-                        >
-                          {c.label}
-                        </span>
-                      </div>
-                      <div className='menu-cat-right flex items-center gap-2'>
-                        <span className='menu-cat-count text-[8px] text-ash-gray font-mono tracking-[1px]'>
-                          {c.items.length}{' '}
-                          {t('ui:menu.options_count_lower', {
-                            defaultValue: 'options'
-                          })}
-                        </span>
-                        <span
-                          className='menu-cat-arrow text-[11px] opacity-60'
-                          style={{ color: c.color }}
-                        >
-                          ›
-                        </span>
-                      </div>
-                    </div>
-                  </GlitchButton>
-                ))}
-              </div>
+              <MenuCategoryList
+                menuCategories={menuCategories}
+                isTraveling={isTraveling}
+                setActiveCat={setActiveCat}
+                t={t}
+              />
             )}
 
-            {/* Submenu */}
             {activeCat && cat && (
-              <div className='menu-sub flex flex-col'>
-                <GlitchButton
-                  className='menu-back-btn !w-full !border-none !bg-ash-gray/10 !border-b !border-ash-gray/20 !px-3.5 !py-2 !text-[10px] !text-left'
-                  size='sm'
-                  variant='primary'
-                  onClick={handleBack}
-                >
-                  ‹ &nbsp;
-                  {t('ui:menu.back_to_actions', {
-                    defaultValue: 'BACK TO ACTIONS'
-                  })}
-                </GlitchButton>
-                <div className='menu-sub-items flex flex-col p-1.5'>
-                  {cat.items.map(item => (
-                    <GlitchButton
-                      key={item.action}
-                      className={`menu-sub-item !border-transparent !bg-transparent !mb-1 !p-2 !w-full hover:enabled:-translate-x-[2px] v-${item.v}`}
-                      disabled={isDisabled(item)}
-                      onClick={() => {
-                        actions[item.action]()
-                        handleClose()
-                      }}
-                      size='sm'
-                    >
-                      <div className='flex w-full justify-between items-center text-left'>
-                        <div className='menu-sub-item-left flex items-center gap-2.5'>
-                          <span className='menu-sub-icon text-[14px] w-[18px] text-center'>
-                            {item.icon}
-                          </span>
-                          <div className='text-left'>
-                            <div className='menu-sub-label font-[Metal_Mania] text-[13px] tracking-[1px]'>
-                              [{item.label}]
-                            </div>
-                            <div className='menu-sub-desc text-[8px] opacity-55 font-mono tracking-[0.5px] mt-[1px]'>
-                              {item.desc}
-                            </div>
-                          </div>
-                        </div>
-                        <span className='menu-sub-arrow text-[10px] opacity-50'>
-                          ›
-                        </span>
-                      </div>
-                    </GlitchButton>
-                  ))}
-                </div>
-              </div>
+              <MenuSubmenu
+                cat={cat}
+                actions={actions}
+                isDisabled={isDisabled}
+                handleClose={handleClose}
+                handleBack={handleBack}
+                t={t}
+              />
             )}
           </div>
         )}
