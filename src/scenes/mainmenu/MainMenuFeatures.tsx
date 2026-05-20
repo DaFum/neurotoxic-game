@@ -49,6 +49,95 @@ const isFeatureSectionArray = (value: unknown): value is FeatureSection[] => {
   })
 }
 
+const FeatureBulletList = ({ items }: { items: string[] }) => {
+  const { t } = useTranslation()
+
+  return (
+    <ul className='list-none flex flex-col gap-2 pl-2 border-l border-toxic-green/20'>
+      {items.map((item: string) => {
+        const translatedItem = t(item)
+        const splitIdx = translatedItem.indexOf(':')
+        return (
+          <li
+            key={item}
+            className='text-ash-gray font-mono text-sm md:text-base pl-2 relative before:content-["-"] before:absolute before:left-[-8px] before:text-toxic-green'
+          >
+            {splitIdx > -1 ? (
+              <>
+                <span className='text-toxic-green font-bold'>
+                  {translatedItem.substring(0, splitIdx + 1)}
+                </span>
+                {translatedItem.substring(splitIdx + 1)}
+              </>
+            ) : (
+              translatedItem
+            )}
+          </li>
+        )
+      })}
+    </ul>
+  )
+}
+
+const FeatureTable = ({
+  headers,
+  rows,
+  title
+}: {
+  headers: string[]
+  rows: string[][]
+  title: string
+}) => {
+  const { t } = useTranslation()
+
+  return (
+    <div className='overflow-x-auto w-full border border-toxic-green/30 bg-void-black/50'>
+      <table className='w-full text-left font-mono text-sm'>
+        <thead className='bg-toxic-green/10 border-b border-toxic-green/30'>
+          <tr>
+            {headers.map((header: string) => (
+              <th
+                key={header}
+                className='p-2 text-toxic-green uppercase font-normal'
+              >
+                {t(header)}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row: string[]) => {
+            if (!row || row.length === 0) {
+              throw new Error(
+                `MainMenuFeatures: empty row in section "${title}"`
+              )
+            }
+            const rowKey = row[0]
+            return (
+              <tr
+                key={rowKey}
+                className='border-b border-toxic-green/10 last:border-0'
+              >
+                {row.map((cell: string, colIndex: number) => {
+                  const dataStableKey = `${rowKey}-${colIndex}-${cell}`
+                  return (
+                    <td
+                      key={dataStableKey}
+                      className={`p-2 ${cell === rowKey ? 'text-toxic-green/90 whitespace-nowrap align-top font-bold' : 'text-ash-gray align-top'}`}
+                    >
+                      {t(cell)}
+                    </td>
+                  )
+                })}
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
 export const MainMenuFeatures = ({ onClose }: { onClose: () => void }) => {
   const { t } = useTranslation()
   const featureListValue = t('ui:featureList', {
@@ -78,80 +167,15 @@ export const MainMenuFeatures = ({ onClose }: { onClose: () => void }) => {
             )}
 
             {section.type === 'bullets' && section.items && (
-              <ul className='list-none flex flex-col gap-2 pl-2 border-l border-toxic-green/20'>
-                {section.items.map((item: string) => {
-                  const translatedItem = t(item)
-                  const splitIdx = translatedItem.indexOf(':')
-                  return (
-                    <li
-                      key={item}
-                      className='text-ash-gray font-mono text-sm md:text-base pl-2 relative before:content-["-"] before:absolute before:left-[-8px] before:text-toxic-green'
-                    >
-                      {splitIdx > -1 ? (
-                        <>
-                          <span className='text-toxic-green font-bold'>
-                            {translatedItem.substring(0, splitIdx + 1)}
-                          </span>
-                          {translatedItem.substring(splitIdx + 1)}
-                        </>
-                      ) : (
-                        translatedItem
-                      )}
-                    </li>
-                  )
-                })}
-              </ul>
+              <FeatureBulletList items={section.items} />
             )}
 
             {section.type === 'table' && section.headers && section.rows && (
-              <div className='overflow-x-auto w-full border border-toxic-green/30 bg-void-black/50'>
-                <table className='w-full text-left font-mono text-sm'>
-                  <thead className='bg-toxic-green/10 border-b border-toxic-green/30'>
-                    <tr>
-                      {section.headers.map((header: string) => (
-                        <th
-                          key={header}
-                          className='p-2 text-toxic-green uppercase font-normal'
-                        >
-                          {t(header)}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {section.rows.map((row: string[]) => {
-                      if (!row || row.length === 0) {
-                        throw new Error(
-                          `MainMenuFeatures: empty row in section "${section.title}"`
-                        )
-                      }
-                      const rowKey = row[0]
-                      return (
-                        <tr
-                          key={rowKey}
-                          className='border-b border-toxic-green/10 last:border-0'
-                        >
-                          {row.map((cell: string, colIndex: number) => {
-                            // Using a combination of rowKey, cell value, and colIndex to ensure uniqueness.
-                            // While using indices as keys is discouraged for dynamic lists (add/remove/reorder),
-                            // table columns are structurally static within a row. A composite key satisfies React
-                            // and guarantees uniqueness even if `cell` values are repeated across columns.
-                            const dataStableKey = `${rowKey}-${colIndex}-${cell}`
-                            return (
-                              <td
-                                key={dataStableKey}
-                                className={`p-2 ${cell === rowKey ? 'text-toxic-green/90 whitespace-nowrap align-top font-bold' : 'text-ash-gray align-top'}`}
-                              >
-                                {t(cell)}
-                              </td>
-                            )
-                          })}
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
+              <FeatureTable
+                headers={section.headers}
+                rows={section.rows}
+                title={section.title}
+              />
             )}
           </div>
         ))}
