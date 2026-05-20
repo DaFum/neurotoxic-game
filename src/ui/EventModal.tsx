@@ -52,15 +52,17 @@ const EventOptionButton = ({
       ? 'border-toxic-green bg-toxic-green/10 hover:bg-toxic-green hover:text-void-black text-toxic-green focus-visible:ring-toxic-green'
       : 'border-star-white/50 text-star-white/50 hover:border-star-white hover:text-star-white hover:bg-star-white/10 focus-visible:ring-star-white'
 
-  const button = (
+  return (
     <motion.button
       type='button'
-      disabled={isDisabled}
+      aria-disabled={isDisabled}
       variants={{
         hidden: { opacity: 0, x: -20 },
         visible: { opacity: 1, x: 0 }
       }}
-      onClick={() => onSelect(option)}
+      onClick={() => {
+        if (!isDisabled) onSelect(option)
+      }}
       className={`w-full p-3 border font-bold tracking-widest uppercase transition-colors text-left flex justify-between focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${buttonClass}`}
     >
       <span>
@@ -77,12 +79,6 @@ const EventOptionButton = ({
       </div>
     </motion.button>
   )
-
-  // Disabled buttons can't receive focus, so wrap with a focusable span for keyboard a11y
-  if (isDisabled) {
-    return <span tabIndex={0}>{button}</span>
-  }
-  return button
 }
 
 export const EventModal = ({
@@ -344,7 +340,7 @@ export const EventModal = ({
                     option.text ??
                     'ui:event.option'
                   const key =
-                    option.id || option.nextEventId || `${optionLabel}-${index}`
+                    option.id ?? option.nextEventId ?? `${optionLabel}-${index}`
                   return (
                     <EventOptionButton
                       key={key}

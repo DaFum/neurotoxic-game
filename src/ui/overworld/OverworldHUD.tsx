@@ -97,11 +97,11 @@ const getMemberStatus = (m: Member): MemberStatus => {
   return 'ok'
 }
 
-const STATUS_DOT_COLOR: Record<MemberStatus, string> = {
+const STATUS_DOT_COLOR = {
   crit: 'var(--color-blood-red)',
   low: 'var(--color-warning-yellow)',
   ok: 'var(--color-toxic-green)'
-}
+} as const satisfies Record<MemberStatus, string>
 
 const getMoodColor = (mood: number) => {
   if (mood < 30) return 'var(--color-blood-red)'

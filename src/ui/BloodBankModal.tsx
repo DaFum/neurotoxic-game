@@ -84,6 +84,20 @@ type DonationCardProps = {
   language: string
 }
 
+type DonationVariantConfig = {
+  container: string
+  title: string
+  warning: string
+  buttonEnabled: string
+  titleKey: string
+  titleDefault: string
+  actionKey: string
+  actionDefault: string
+  size: 'sm' | 'lg'
+  pulseCosts: boolean
+  showWarningGlyph: boolean
+}
+
 const DONATION_VARIANTS = {
   blood: {
     container: 'border-2 border-blood-red',
@@ -114,7 +128,7 @@ const DONATION_VARIANTS = {
     pulseCosts: true,
     showWarningGlyph: true
   }
-} as const
+} as const satisfies Record<'blood' | 'marrow', DonationVariantConfig>
 
 const DonationCard = ({
   variant,
@@ -264,7 +278,7 @@ export const BloodBankModal = ({
                 canDonate={canDonate}
                 onDonate={() => onDonate('blood')}
                 t={t}
-                language={i18n?.language}
+                language={i18n?.language ?? 'en'}
               />
               <DonationCard
                 variant='marrow'
@@ -272,7 +286,7 @@ export const BloodBankModal = ({
                 canDonate={canDonateMarrow}
                 onDonate={() => onDonate('marrow')}
                 t={t}
-                language={i18n?.language}
+                language={i18n?.language ?? 'en'}
               />
             </div>
           </div>
