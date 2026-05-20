@@ -2,6 +2,7 @@ import type { ActionTypes, ActionType } from '../context/actionTypes'
 import type { RhythmSetlistEntry } from './rhythmGame'
 import type { GAME_PHASES } from '../context/gameConstants'
 import type { UpdateSocialPayload } from './social'
+import type { PurchaseItem } from './components'
 
 export type RelationshipChange = {
   member1: string
@@ -101,6 +102,7 @@ export interface GameState {
   minigame: MinigameState
   unlocks: string[]
   pendingBandHQOpen: boolean
+  pendingSupplyStopInventory: PurchaseItem[] | null
   completedMilestones: string[]
 }
 
@@ -188,6 +190,10 @@ export type GameAction =
   | Action<ActionTypes['BLOOD_BANK_DONATE'], BloodBankDonatePayload>
   | Action<ActionTypes['DARK_WEB_LEAK'], DarkWebLeakPayload>
   | Action<ActionTypes['SET_PENDING_BANDHQ_OPEN'], boolean>
+  | Action<
+      ActionTypes['SET_PENDING_SUPPLY_STOP_INVENTORY'],
+      PurchaseItem[] | null
+    >
 
 export * from './player'
 export * from './band'

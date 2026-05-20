@@ -76,6 +76,7 @@ test('stage utils', async t => {
       assert.equal(getPixiColorFromToken('--void-black'), 0x0a0a0a)
       assert.equal(getPixiColorFromToken('--toxic-green'), 0x00ff41)
       assert.equal(getPixiColorFromToken('--star-white'), 0xffffff)
+      assert.equal(getPixiColorFromToken('--electric-blue'), 0x3b82f6)
       assert.equal(getPixiColorFromToken('--unknown-token'), 0xffffff)
 
       globalThis.window = originalWindow

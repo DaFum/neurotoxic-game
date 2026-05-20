@@ -8,12 +8,8 @@ export const checkHasBroadcastedToday = (
   return social.lastPirateBroadcastDay === playerDay
 }
 
-const requireFiniteNumber = (value: unknown, label: string): number => {
-  if (typeof value !== 'number' || !Number.isFinite(value)) {
-    throw new Error(`${label} must be a finite number`)
-  }
-  return value
-}
+const readFiniteNumber = (value: unknown): number | null =>
+  typeof value === 'number' && Number.isFinite(value) ? value : null
 
 export const validatePirateBroadcast = (
   social: { lastPirateBroadcastDay?: unknown } | null | undefined,
@@ -23,14 +19,20 @@ export const validatePirateBroadcast = (
 ): boolean => {
   if (!social || !player || !band || !config) return false
 
-  const day = requireFiniteNumber(player.day, 'player.day')
-  const money = requireFiniteNumber(player.money, 'player.money')
-  const harmony = requireFiniteNumber(band.harmony, 'band.harmony')
-  const cost = requireFiniteNumber(config.COST, 'config.COST')
-  const harmonyCost = requireFiniteNumber(
-    config.HARMONY_COST,
-    'config.HARMONY_COST'
-  )
+  const day = readFiniteNumber(player.day)
+  const money = readFiniteNumber(player.money)
+  const harmony = readFiniteNumber(band.harmony)
+  const cost = readFiniteNumber(config.COST)
+  const harmonyCost = readFiniteNumber(config.HARMONY_COST)
+  if (
+    day === null ||
+    money === null ||
+    harmony === null ||
+    cost === null ||
+    harmonyCost === null
+  ) {
+    return false
+  }
   const hasBroadcastedToday = checkHasBroadcastedToday(social, day)
 
   const currentMoney = clampPlayerMoney(money)

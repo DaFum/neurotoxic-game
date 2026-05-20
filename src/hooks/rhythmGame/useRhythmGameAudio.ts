@@ -1,12 +1,13 @@
 import { useCallback, useRef, useEffect } from 'react'
 import type { TFunction } from 'i18next'
-import { audioService, stopAudio } from '../../utils/audio/audioEngine'
 import {
+  audioService,
+  stopAudio,
   setupGigPhysics,
   resolveActiveSetlist,
   playSongSequence,
   resetGigStateTracking
-} from '../../utils/audio/rhythmGameAudioUtils'
+} from '../../utils/audio/audioEngine'
 import { handleError } from '../../utils/errorHandler'
 import { logger } from '../../utils/logger'
 import { clampBandHarmony } from '../../utils/gameStateUtils'

@@ -125,6 +125,12 @@ describe('validateCrisisEvent', () => {
           ev.chance = 1.1
         },
         ev => {
+          ev.chance = Number.NaN
+        },
+        ev => {
+          ev.chance = Number.POSITIVE_INFINITY
+        },
+        ev => {
           ev.chance = '0.5'
         }
       ]

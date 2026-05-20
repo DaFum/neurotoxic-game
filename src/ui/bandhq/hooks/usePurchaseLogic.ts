@@ -79,6 +79,15 @@ type TranslateFn = (
   options?: Parameters<TranslationCallback>[1]
 ) => ReturnType<TranslationCallback>
 type UpdateBandFn = (patch: Partial<BandState>) => void
+type PlayerPatchTransform = (
+  playerPatch: PlayerPatch,
+  context: {
+    item: PurchaseItem
+    player: PlayerState
+    band: BandState
+    social: SocialState
+  }
+) => PlayerPatch
 
 const asToastOptions = (value: unknown): Record<string, unknown> => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return {}
@@ -297,7 +306,8 @@ export const usePurchaseLogic = ({
   social,
   updatePlayer,
   updateBand,
-  addToast
+  addToast,
+  transformPlayerPatch
 }: {
   player: PlayerState
   band: BandState
@@ -305,6 +315,7 @@ export const usePurchaseLogic = ({
   updatePlayer: (patch: UpdatePlayerPayload) => void
   updateBand: (patch: UpdateBandPayload) => void
   addToast: ToastFn
+  transformPlayerPatch?: PlayerPatchTransform
 }) => {
   const { t } = useTranslation(['ui', 'items'])
   /**
@@ -428,12 +439,23 @@ export const usePurchaseLogic = ({
           }
         }
 
+        const finalPlayerPatch = transformPlayerPatch
+          ? transformPlayerPatch(playerPatch, { item, player, band, social })
+          : playerPatch
+
         // Apply updates
-        updatePlayer(playerPatch as UpdatePlayerPayload)
+        updatePlayer(finalPlayerPatch as UpdatePlayerPayload)
 
         // Check Purchase Unlocks
         processPurchaseUnlocks(
-          { item, player, band, social, playerPatch, bandPatch },
+          {
+            item,
+            player,
+            band,
+            social,
+            playerPatch: finalPlayerPatch,
+            bandPatch
+          },
           { updateBand, addToast, t }
         )
 
@@ -456,7 +478,16 @@ export const usePurchaseLogic = ({
         return false
       }
     },
-    [player, band, social, updatePlayer, updateBand, addToast, t]
+    [
+      player,
+      band,
+      social,
+      updatePlayer,
+      updateBand,
+      addToast,
+      transformPlayerPatch,
+      t
+    ]
   )
 
   /**

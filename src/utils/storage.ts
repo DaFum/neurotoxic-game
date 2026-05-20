@@ -7,7 +7,7 @@
 import {
   handleError,
   StorageError,
-  safeStorageOperation as runSafeStorageOperation
+  runSafeStorageOperation
 } from './errorHandler'
 
 export function safeStorageOperation<T>(operation: string, fn: () => T): T

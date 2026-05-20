@@ -47,7 +47,11 @@ vi.mock('../../src/utils/audio/audioEngine', () => ({
     stopMusic: mocks.stopMusic,
     ensureAudioContext: mocks.ensureAudioContext
   },
-  stopAudio: mocks.stopAudio
+  stopAudio: mocks.stopAudio,
+  setupGigPhysics: mocks.setupGigPhysics,
+  resolveActiveSetlist: mocks.resolveActiveSetlist,
+  playSongSequence: mocks.playSongSequence,
+  resetGigStateTracking: mocks.resetGigStateTracking
 }))
 
 vi.mock('../../src/utils/errorHandler', () => ({
@@ -59,13 +63,6 @@ vi.mock('../../src/utils/logger', () => ({
   logger: { warn: mocks.loggerWarn, error: mocks.loggerError, info: vi.fn() },
   isValidLogLevel: vi.fn(() => true),
   LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3 }
-}))
-
-vi.mock('../../src/utils/audio/rhythmGameAudioUtils', () => ({
-  setupGigPhysics: mocks.setupGigPhysics,
-  resolveActiveSetlist: mocks.resolveActiveSetlist,
-  playSongSequence: mocks.playSongSequence,
-  resetGigStateTracking: mocks.resetGigStateTracking
 }))
 
 import { useRhythmGameAudio } from '../../src/hooks/rhythmGame/useRhythmGameAudio'

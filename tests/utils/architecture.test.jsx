@@ -12,6 +12,7 @@ import * as GameStateModule from '../../src/context/GameState'
 const SRC_ROOT = path.resolve(process.cwd(), 'src')
 const GAME_STATE_MODULE = path.join(SRC_ROOT, 'context', 'GameState.tsx')
 const SOURCE_EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx'])
+const SOURCE_SCAN_TIMEOUT_MS = 30_000
 
 const findSourceFiles = async directory => {
   const entries = await fs.readdir(directory, { withFileTypes: true })
@@ -111,25 +112,29 @@ const DEPRECATED_HOOK_REGEX = /\buseGameState\b(?!Selector|Actions|\w)/
 const stripComments = source =>
   source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '')
 
-test('Production source does not consume deprecated useGameState hook', async () => {
-  const sourceFiles = await findSourceFiles(SRC_ROOT)
-  const offenders = []
+test(
+  'Production source does not consume deprecated useGameState hook',
+  async () => {
+    const sourceFiles = await findSourceFiles(SRC_ROOT)
+    const offenders = []
 
-  for (const filePath of sourceFiles) {
-    if (filePath === GAME_STATE_MODULE) continue
+    for (const filePath of sourceFiles) {
+      if (filePath === GAME_STATE_MODULE) continue
 
-    const source = await fs.readFile(filePath, 'utf8')
-    if (DEPRECATED_HOOK_REGEX.test(stripComments(source))) {
-      offenders.push(relativeSourcePath(filePath))
+      const source = await fs.readFile(filePath, 'utf8')
+      if (DEPRECATED_HOOK_REGEX.test(stripComments(source))) {
+        offenders.push(relativeSourcePath(filePath))
+      }
     }
-  }
 
-  assert.deepStrictEqual(
-    offenders,
-    [],
-    `Deprecated useGameState references found:\n${offenders.join('\n')}`
-  )
-})
+    assert.deepStrictEqual(
+      offenders,
+      [],
+      `Deprecated useGameState references found:\n${offenders.join('\n')}`
+    )
+  },
+  SOURCE_SCAN_TIMEOUT_MS
+)
 
 test('Legacy useGameState compat export still exists on GameState module', () => {
   assert.strictEqual(

@@ -51,6 +51,8 @@ import {
   createStartAmpCalibrationAction,
   createCompleteAmpCalibrationAction,
   createSpawnRivalBandAction,
+  createMoveRivalBandAction,
+  createCheckRivalEncounterAction,
   createUpdateRivalBandAction,
   createUnlockTraitAction,
   createAddQuestAction,
@@ -65,6 +67,7 @@ import {
   createBloodBankDonateAction,
   createAddVenueBlacklistAction,
   createSetPendingBandHQOpenAction,
+  createSetPendingSupplyStopInventoryAction,
   createLoadGameAction,
   toggleNeuroDecimator as createToggleNeuroDecimatorAction
 } from './actionCreators'
@@ -209,7 +212,12 @@ type GameDispatchActions = {
     payload: Parameters<typeof createBloodBankDonateAction>[0]
   ) => void
   setPendingBandHQOpen: (isOpen: boolean) => void
+  setPendingSupplyStopInventory: (
+    inventory: GameState['pendingSupplyStopInventory']
+  ) => void
   spawnRivalBand: () => void
+  moveRivalBand: () => void
+  checkRivalEncounter: () => void
   updateRivalBand: (patch: Partial<RivalBandState>) => void
 }
 
@@ -808,6 +816,16 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
     []
   )
 
+  const moveRivalBand = useCallback(
+    () => dispatch(createMoveRivalBandAction()),
+    []
+  )
+
+  const checkRivalEncounter = useCallback(
+    () => dispatch(createCheckRivalEncounterAction()),
+    []
+  )
+
   const updateRivalBand = useCallback(
     (patch: Partial<RivalBandState>) =>
       dispatch(createUpdateRivalBandAction(patch)),
@@ -816,6 +834,12 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
 
   const setPendingBandHQOpen = useCallback(
     (isOpen: boolean) => dispatch(createSetPendingBandHQOpenAction(isOpen)),
+    []
+  )
+
+  const setPendingSupplyStopInventory = useCallback(
+    (inventory: GameState['pendingSupplyStopInventory']) =>
+      dispatch(createSetPendingSupplyStopInventoryAction(inventory)),
     []
   )
 
@@ -882,7 +906,10 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       tradeVoidItem,
       bloodBankDonate,
       setPendingBandHQOpen,
+      setPendingSupplyStopInventory,
       spawnRivalBand,
+      moveRivalBand,
+      checkRivalEncounter,
       updateRivalBand
     }),
     [
@@ -931,7 +958,10 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       tradeVoidItem,
       bloodBankDonate,
       setPendingBandHQOpen,
+      setPendingSupplyStopInventory,
       spawnRivalBand,
+      moveRivalBand,
+      checkRivalEncounter,
       updateRivalBand
     ]
   )

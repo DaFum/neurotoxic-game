@@ -10,6 +10,9 @@ import type { GamePhase } from '../types'
 
 type UseArrivalLogicOptions = {
   onShowHQ?: () => void
+  onShowSupplyStop?: (
+    inventory: import('../types/components').PurchaseItem[]
+  ) => void
   rng?: () => number
 }
 
@@ -28,6 +31,7 @@ type UseArrivalLogicOptions = {
  */
 export const useArrivalLogic = ({
   onShowHQ,
+  onShowSupplyStop,
   rng
 }: UseArrivalLogicOptions = {}) => {
   const band = useGameSelector(state => state.band)
@@ -41,7 +45,9 @@ export const useArrivalLogic = ({
     triggerEvent,
     startGig,
     changeScene,
-    addToast
+    addToast,
+    setPendingBandHQOpen,
+    setPendingSupplyStopInventory
   } = useGameActions()
 
   // Stores the nodeId being processed; undefined means idle. Using the nodeId rather than a
@@ -98,7 +104,16 @@ export const useArrivalLogic = ({
             triggerEvent,
             startGig,
             addToast,
-            onShowHQ,
+            onShowHQ:
+              onShowHQ ??
+              (() => {
+                setPendingBandHQOpen(true)
+              }),
+            onShowSupplyStop:
+              onShowSupplyStop ??
+              (inventory => {
+                setPendingSupplyStopInventory(inventory)
+              }),
             eventAlreadyActive: travelEventActive,
             rng
           })
@@ -127,6 +142,9 @@ export const useArrivalLogic = ({
     gameMap,
     player,
     onShowHQ,
+    onShowSupplyStop,
+    setPendingBandHQOpen,
+    setPendingSupplyStopInventory,
     rng
   ])
 

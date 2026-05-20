@@ -152,6 +152,7 @@ export const validateCrisisEvent = (event: unknown): boolean => {
 
   if (
     typeof e.chance !== 'number' ||
+    !Number.isFinite(e.chance) ||
     (e.chance as number) < 0 ||
     (e.chance as number) > 1
   ) {

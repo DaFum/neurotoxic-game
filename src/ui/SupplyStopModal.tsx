@@ -2,16 +2,13 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameSelector, useGameActions } from '../context/GameState'
 import { ShopItem } from './bandhq/ShopItem'
-import {
-  isItemOwned,
-  getAdjustedCost,
-  canAfford,
-  processPurchaseEffect
-} from '../utils/purchaseLogicUtils'
+import { usePurchaseLogic } from './bandhq/hooks/usePurchaseLogic'
 import { toFiniteNumber } from '../utils/numberUtils'
 import { calculateFameLevel } from '../utils/gameStateUtils'
 import type { CatalogItem, PurchaseItem } from '../types/components'
-import type { PlayerState, BandState } from '../types'
+import type { PlayerPatch } from '../types/purchase'
+
+const BLACK_MARKET_FAME_LOSS = 5
 
 export interface SupplyStopModalProps {
   inventory: PurchaseItem[]
@@ -25,57 +22,46 @@ export const SupplyStopModal: React.FC<SupplyStopModalProps> = ({
   const { t } = useTranslation(['ui', 'items'])
   const player = useGameSelector(state => state.player)
   const band = useGameSelector(state => state.band)
+  const social = useGameSelector(state => state.social)
   const { updatePlayer, updateBand, addToast } = useGameActions()
+  const fameLostRef = React.useRef(0)
+  const applyBlackMarketFamePenalty = React.useCallback(
+    (playerPatch: PlayerPatch): PlayerPatch => {
+      // The shared purchase hook builds the normal cost/effect patch first.
+      // Supply Stops then apply their bounded reputation penalty to that final
+      // fame value so purchase effects and black-market risk stay atomic.
+      const currentFame = toFiniteNumber(playerPatch.fame ?? player.fame, 0)
+      const nextFame = Math.max(0, currentFame - BLACK_MARKET_FAME_LOSS)
+      fameLostRef.current = currentFame - nextFame
+
+      return {
+        ...playerPatch,
+        fame: nextFame,
+        fameLevel: calculateFameLevel(nextFame)
+      }
+    },
+    [player.fame]
+  )
+  const purchaseLogic = usePurchaseLogic({
+    player,
+    band,
+    social,
+    updatePlayer,
+    updateBand,
+    addToast,
+    transformPlayerPatch: applyBlackMarketFamePenalty
+  })
 
   const handlePurchaseWithConsequences = (item: PurchaseItem) => {
-    const adjustedCost = getAdjustedCost(item, band)
-    if (!canAfford(item, player, adjustedCost)) {
-      addToast(
-        t('ui:shop.insufficient_funds', {
-          defaultValue: 'Insufficient funds.'
-        }),
-        'error'
-      )
+    const purchased = purchaseLogic.handleBuy(item)
+    if (!purchased) {
       return
-    }
-
-    const playerPatch: Partial<PlayerState> = {
-      money: Math.max(0, toFiniteNumber(player.money, 0) - adjustedCost)
-    }
-    let bandPatch: Partial<BandState> = {}
-
-    // Process effects
-    const effect = item.effects?.[0] ?? item.effect
-    if (effect) {
-      const result = processPurchaseEffect(effect, item, {}, player, band)
-      if (result && 'playerPatch' in result && result.playerPatch) {
-        Object.assign(playerPatch, result.playerPatch)
-      }
-      if (result && 'bandPatch' in result && result.bandPatch) {
-        bandPatch = result.bandPatch
-      }
-    }
-
-    // Apply reputation consequence (deduct fame)
-    const currentFame = playerPatch.fame ?? player.fame ?? 0
-    const nextFame = Math.max(0, currentFame - 5)
-    playerPatch.fame = nextFame
-    playerPatch.fameLevel = calculateFameLevel(nextFame)
-
-    updatePlayer(playerPatch)
-    // Avoid Object.keys as per guidelines
-    let hasBandPatch = false
-    for (const _k in bandPatch) {
-      hasBandPatch = true
-      break
-    }
-    if (hasBandPatch) {
-      updateBand(bandPatch)
     }
 
     addToast(
       t('ui:shop.black_market_purchase', {
-        defaultValue: 'Purchased from Black Market! Lost 5 Fame.'
+        amount: fameLostRef.current,
+        defaultValue: 'Purchased from Black Market! Lost {{amount}} Fame.'
       }),
       'warning'
     )
@@ -112,9 +98,9 @@ export const SupplyStopModal: React.FC<SupplyStopModalProps> = ({
               id: item.id,
               cost: item.cost ?? 0
             }
-            const adjustedCost = getAdjustedCost(item, band)
-            const owned = isItemOwned(item, player, band)
-            const disabled = !canAfford(item, player, adjustedCost)
+            const adjustedCost = purchaseLogic.getAdjustedCost(item)
+            const owned = purchaseLogic.isItemOwned(item)
+            const disabled = purchaseLogic.isItemDisabled(item)
 
             return (
               <ShopItem

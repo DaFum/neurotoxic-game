@@ -41,7 +41,10 @@ import {
   createUseContrabandAction,
   createClinicHealAction,
   createClinicEnhanceAction,
-  createPirateBroadcastAction
+  createPirateBroadcastAction,
+  createBloodBankDonateAction,
+  createDarkWebLeakAction,
+  createMerchPressAction
 } from '../../src/context/actionCreators'
 import { ActionTypes } from '../../src/context/gameReducer'
 
@@ -380,6 +383,21 @@ describe('Action Creators', () => {
         }
       )
     })
+
+    it('sanitizes numeric payload boundaries', () => {
+      assert.deepStrictEqual(
+        createCompleteTravelMinigameAction(
+          Number.POSITIVE_INFINITY,
+          'bad-items',
+          1
+        ).payload,
+        { damageTaken: 0, itemsCollected: [], rngValue: 0.9999999999999999 }
+      )
+      assert.deepStrictEqual(
+        createCompleteTravelMinigameAction(Number.NaN, [], Number.NaN).payload,
+        { damageTaken: 0, itemsCollected: [], rngValue: undefined }
+      )
+    })
   })
 
   describe('createAddVenueBlacklistAction', () => {
@@ -465,6 +483,45 @@ describe('Action Creators', () => {
       assert.strictEqual(action.payload.successToast.message, 'Success')
       assert.strictEqual(action.payload.successToast.type, 'success')
       assert.ok(action.payload.successToast.id.length > 0)
+    })
+
+    it('coerces non-finite numeric fields to zero across service actions', () => {
+      const pirate = createPirateBroadcastAction({
+        cost: Number.POSITIVE_INFINITY,
+        fameGain: Number.NaN,
+        zealotryGain: 20,
+        controversyGain: 10,
+        harmonyCost: 5
+      })
+      assert.strictEqual(pirate.payload.cost, 0)
+      assert.strictEqual(pirate.payload.fameGain, 0)
+
+      const blood = createBloodBankDonateAction({
+        moneyGain: Number.NaN,
+        harmonyCost: Number.NEGATIVE_INFINITY,
+        staminaCost: 10,
+        controversyGain: 5
+      })
+      assert.strictEqual(blood.payload.moneyGain, 0)
+      assert.strictEqual(blood.payload.harmonyCost, 0)
+
+      const leak = createDarkWebLeakAction({
+        cost: 100,
+        fameGain: Number.POSITIVE_INFINITY,
+        zealotryGain: 1,
+        controversyGain: 1,
+        harmonyCost: 1
+      })
+      assert.strictEqual(leak.payload.fameGain, 0)
+
+      const merch = createMerchPressAction({
+        cost: 100,
+        loyaltyGain: Number.NaN,
+        controversyGain: 1,
+        fameGain: 1,
+        harmonyCost: 1
+      })
+      assert.strictEqual(merch.payload.loyaltyGain, 0)
     })
   })
 })
