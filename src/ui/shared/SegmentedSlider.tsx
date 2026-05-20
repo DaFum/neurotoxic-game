@@ -18,7 +18,7 @@ const SliderSegment = memo(function SliderSegment({
     <button
       type='button'
       onClick={() => onSelect(segment)}
-      className='flex-1 relative h-full flex items-end group-hover:opacity-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
+      className='flex-1 relative h-full flex items-end group-hover:opacity-100 cursor-pointer'
       tabIndex={-1}
       aria-hidden='true'
     >
