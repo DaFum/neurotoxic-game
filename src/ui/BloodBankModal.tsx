@@ -75,6 +75,95 @@ const ProfitRow = ({
   )
 }
 
+type DonationCardProps = {
+  variant: 'blood' | 'marrow'
+  config: BloodBankConfig
+  canDonate: boolean
+  onDonate: () => void
+  t: ReturnType<typeof useTranslation>['t']
+  language: string
+}
+
+const DONATION_VARIANTS = {
+  blood: {
+    container: 'border-2 border-blood-red',
+    title: 'text-blood-red border-b border-blood-red',
+    warning: 'text-blood-red',
+    buttonEnabled:
+      'bg-blood-red text-void-black border-blood-red hover:bg-void-black hover:text-blood-red shadow-[0_0_15px_var(--color-blood-red)]',
+    titleKey: 'ui:blood_bank.blood_title',
+    titleDefault: 'BLOOD DONATION',
+    actionKey: 'ui:blood_bank.action',
+    actionDefault: 'DONATE BLOOD',
+    size: 'sm' as const,
+    pulseCosts: false,
+    showWarningGlyph: false
+  },
+  marrow: {
+    container: 'border-2 border-warning-yellow',
+    title:
+      'text-warning-yellow border-b border-warning-yellow flex items-center justify-center gap-2',
+    warning: 'text-warning-yellow',
+    buttonEnabled:
+      'bg-warning-yellow text-void-black border-warning-yellow hover:bg-void-black hover:text-warning-yellow shadow-[0_0_20px_var(--color-warning-yellow)]',
+    titleKey: 'ui:blood_bank.marrow_title',
+    titleDefault: 'MARROW EXTRACTION',
+    actionKey: 'ui:blood_bank.action_marrow',
+    actionDefault: 'EXTRACT MARROW',
+    size: 'lg' as const,
+    pulseCosts: true,
+    showWarningGlyph: true
+  }
+} as const
+
+const DonationCard = ({
+  variant,
+  config,
+  canDonate,
+  onDonate,
+  t,
+  language
+}: DonationCardProps) => {
+  const v = DONATION_VARIANTS[variant]
+  return (
+    <div className={`flex flex-col gap-4 ${v.container} p-4 bg-void-black/80`}>
+      <h3
+        className={`font-bold font-mono uppercase tracking-widest text-center pb-2 ${v.title}`}
+      >
+        {v.showWarningGlyph && <span className='animate-pulse'>⚠️</span>}
+        {t(v.titleKey, { defaultValue: v.titleDefault })}
+        {v.showWarningGlyph && <span className='animate-pulse'>⚠️</span>}
+      </h3>
+
+      <ProfitRow
+        moneyGain={config.moneyGain}
+        size={v.size}
+        t={t}
+        language={language}
+      />
+
+      <DonationCosts config={config} pulseCosts={v.pulseCosts} t={t} />
+
+      <div className='mt-auto pt-4'>
+        <ActionButton
+          onClick={onDonate}
+          disabled={!canDonate}
+          className={`w-full ${canDonate ? v.buttonEnabled : ''}`}
+        >
+          {t(v.actionKey, { defaultValue: v.actionDefault })}
+        </ActionButton>
+        {!canDonate && (
+          <p
+            className={`text-xs font-mono uppercase tracking-wider text-center mt-2 ${v.warning}`}
+          >
+            {t('ui:blood_bank.warning', { defaultValue: 'TOO WEAK' })}
+          </p>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export const BloodBankModal = ({
   onClose,
   onDonate,
@@ -169,77 +258,22 @@ export const BloodBankModal = ({
             </div>
 
             <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-              {/* BLOOD DONATION */}
-              <div className='flex flex-col gap-4 border-2 border-blood-red p-4 bg-void-black/80'>
-                <h3 className='text-blood-red font-bold font-mono uppercase tracking-widest text-center border-b border-blood-red pb-2'>
-                  {t('ui:blood_bank.blood_title', {
-                    defaultValue: 'BLOOD DONATION'
-                  })}
-                </h3>
-
-                <ProfitRow
-                  moneyGain={config.moneyGain}
-                  size='sm'
-                  t={t}
-                  language={i18n?.language}
-                />
-
-                <DonationCosts config={config} t={t} />
-
-                <div className='mt-auto pt-4'>
-                  <ActionButton
-                    onClick={() => onDonate('blood')}
-                    disabled={!canDonate}
-                    className={`w-full ${canDonate ? 'bg-blood-red text-void-black border-blood-red hover:bg-void-black hover:text-blood-red shadow-[0_0_15px_var(--color-blood-red)]' : ''}`}
-                  >
-                    {t('ui:blood_bank.action', {
-                      defaultValue: 'DONATE BLOOD'
-                    })}
-                  </ActionButton>
-                  {!canDonate && (
-                    <p className='text-blood-red text-xs font-mono uppercase tracking-wider text-center mt-2'>
-                      {t('ui:blood_bank.warning', { defaultValue: 'TOO WEAK' })}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* MARROW EXTRACTION */}
-              <div className='flex flex-col gap-4 border-2 border-warning-yellow p-4 bg-void-black/80'>
-                <h3 className='text-warning-yellow font-bold font-mono uppercase tracking-widest text-center border-b border-warning-yellow pb-2 flex items-center justify-center gap-2'>
-                  <span className='animate-pulse'>⚠️</span>
-                  {t('ui:blood_bank.marrow_title', {
-                    defaultValue: 'MARROW EXTRACTION'
-                  })}
-                  <span className='animate-pulse'>⚠️</span>
-                </h3>
-
-                <ProfitRow
-                  moneyGain={marrowConfig.moneyGain}
-                  size='lg'
-                  t={t}
-                  language={i18n?.language}
-                />
-
-                <DonationCosts config={marrowConfig} pulseCosts t={t} />
-
-                <div className='mt-auto pt-4'>
-                  <ActionButton
-                    onClick={() => onDonate('marrow')}
-                    disabled={!canDonateMarrow}
-                    className={`w-full ${canDonateMarrow ? 'bg-warning-yellow text-void-black border-warning-yellow hover:bg-void-black hover:text-warning-yellow shadow-[0_0_20px_var(--color-warning-yellow)]' : ''}`}
-                  >
-                    {t('ui:blood_bank.action_marrow', {
-                      defaultValue: 'EXTRACT MARROW'
-                    })}
-                  </ActionButton>
-                  {!canDonateMarrow && (
-                    <p className='text-warning-yellow text-xs font-mono uppercase tracking-wider text-center mt-2'>
-                      {t('ui:blood_bank.warning', { defaultValue: 'TOO WEAK' })}
-                    </p>
-                  )}
-                </div>
-              </div>
+              <DonationCard
+                variant='blood'
+                config={config}
+                canDonate={canDonate}
+                onDonate={() => onDonate('blood')}
+                t={t}
+                language={i18n?.language}
+              />
+              <DonationCard
+                variant='marrow'
+                config={marrowConfig}
+                canDonate={canDonateMarrow}
+                onDonate={() => onDonate('marrow')}
+                t={t}
+                language={i18n?.language}
+              />
             </div>
           </div>
 

@@ -22,6 +22,31 @@ const getLevelColor = (level: string) => {
   }
 }
 
+type LogEntry = (typeof logger.logs)[number]
+
+const LogRow = ({ log }: { log: LogEntry }) => (
+  <div className='flex gap-2 hover:bg-star-white/5'>
+    <span className='text-ash-gray shrink-0'>
+      [{log.timestamp.split('T')[1].slice(0, 8)}]
+    </span>
+    <span className={`font-bold w-12 shrink-0 ${getLevelColor(log.level)}`}>
+      {log.level}
+    </span>
+    <span
+      className='text-toxic-green w-24 shrink-0 truncate'
+      title={log.channel}
+    >
+      [{log.channel}]
+    </span>
+    <span className='text-star-white/80 break-all'>
+      {log.message}
+      {log.data !== undefined && log.data !== null && (
+        <span className='text-ash-gray ml-2'>{JSON.stringify(log.data)}</span>
+      )}
+    </span>
+  </div>
+)
+
 const DebugLogViewerContent = ({
   className,
   onClose,
@@ -115,30 +140,7 @@ const DebugLogViewerContent = ({
                 : false
             )
             .map(log => (
-              <div key={log.id} className='flex gap-2 hover:bg-star-white/5'>
-                <span className='text-ash-gray shrink-0'>
-                  [{log.timestamp.split('T')[1].slice(0, 8)}]
-                </span>
-                <span
-                  className={`font-bold w-12 shrink-0 ${getLevelColor(log.level)}`}
-                >
-                  {log.level}
-                </span>
-                <span
-                  className='text-toxic-green w-24 shrink-0 truncate'
-                  title={log.channel}
-                >
-                  [{log.channel}]
-                </span>
-                <span className='text-star-white/80 break-all'>
-                  {log.message}
-                  {log.data !== undefined && log.data !== null && (
-                    <span className='text-ash-gray ml-2'>
-                      {JSON.stringify(log.data)}
-                    </span>
-                  )}
-                </span>
-              </div>
+              <LogRow key={log.id} log={log} />
             ))}
         </div>
       </div>

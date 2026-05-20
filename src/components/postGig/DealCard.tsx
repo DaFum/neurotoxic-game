@@ -214,6 +214,19 @@ const DealInfo = memo(
   }
 )
 DealInfo.displayName = 'DealInfo'
+const getNegotiationStatusText = (
+  status: string | undefined,
+  t: ReturnType<typeof useTranslation>['t']
+): string => {
+  if (status === 'SUCCESS') {
+    return t('ui:deals.termImproved', { defaultValue: 'TERM IMPROVED' })
+  }
+  if (status === 'WORSENED') {
+    return t('ui:deals.termsWorsened', { defaultValue: 'TERMS WORSENED' })
+  }
+  return t('ui:deals.negotiationFailed', { defaultValue: 'NEGOTIATION FAILED' })
+}
+
 const DealActions = memo(
   ({
     deal,
@@ -250,17 +263,7 @@ const DealActions = memo(
               <div
                 className={`text-center text-[10px] font-mono tracking-wider ${negotiationStatus === 'SUCCESS' ? 'text-toxic-green' : 'text-warning-yellow'}`}
               >
-                {negotiationStatus === 'SUCCESS'
-                  ? t('ui:deals.termImproved', {
-                      defaultValue: 'TERM IMPROVED'
-                    })
-                  : negotiationStatus === 'WORSENED'
-                    ? t('ui:deals.termsWorsened', {
-                        defaultValue: 'TERMS WORSENED'
-                      })
-                    : t('ui:deals.negotiationFailed', {
-                        defaultValue: 'NEGOTIATION FAILED'
-                      })}
+                {getNegotiationStatusText(negotiationStatus, t)}
               </div>
             )}
           </>

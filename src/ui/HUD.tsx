@@ -34,6 +34,71 @@ const SHORTCUTS = [
   { key: 'ESC', desc: 'Close overlays', descKey: 'ui:shortcuts.closeOverlays' }
 ]
 
+interface BandMemberRowProps {
+  m: BandMember
+  idx: number
+  t: ReturnType<typeof useTranslation>['t']
+}
+
+const BandMemberRow = ({ m, idx, t }: BandMemberRowProps) => {
+  const safeName =
+    m.name?.trim() || t('ui:hud.unnamedMember', { defaultValue: 'Member' })
+  return (
+    <div
+      key={m.id ?? m.name ?? `member-${idx}`}
+      className='flex items-center justify-between w-52 mb-1.5 last:mb-0'
+    >
+      <span className='text-star-white/80 text-[11px]'>{safeName}</span>
+      <div className='flex items-center gap-1.5'>
+        <Tooltip
+          content={t('ui:hud.mood', { defaultValue: 'Mood' })}
+          position='bottom'
+        >
+          <div className='flex items-center gap-1 pointer-events-auto'>
+            <div className='w-12'>
+              <ProgressBar
+                value={m.mood}
+                max={100}
+                color='bg-mood-pink'
+                size='mini'
+                aria-label={t('ui:hud.memberMood', {
+                  name: safeName,
+                  defaultValue: `${safeName} Mood`
+                })}
+              />
+            </div>
+            <span className='text-[9px] text-mood-pink w-7 text-right tabular-nums'>
+              {m.mood}%
+            </span>
+          </div>
+        </Tooltip>
+        <Tooltip
+          content={t('ui:hud.stamina', { defaultValue: 'Stamina' })}
+          position='bottom'
+        >
+          <div className='flex items-center gap-1 pointer-events-auto'>
+            <div className='w-12'>
+              <ProgressBar
+                value={m.stamina}
+                max={100}
+                color='bg-stamina-green'
+                size='mini'
+                aria-label={t('ui:hud.memberStamina', {
+                  name: safeName,
+                  defaultValue: `${safeName} Stamina`
+                })}
+              />
+            </div>
+            <span className='text-[9px] text-stamina-green w-7 text-right tabular-nums'>
+              {m.stamina}%
+            </span>
+          </div>
+        </Tooltip>
+      </div>
+    </div>
+  )
+}
+
 /**
  * Heads-Up Display overlay showing player stats, band status, and volume controls.
  */
@@ -282,67 +347,14 @@ export const HUD = memo(() => {
           <div className='text-right border-b border-toxic-green/30 mb-2 pb-1 text-[10px] tracking-widest text-ash-gray'>
             {t('ui:bandStatus', { defaultValue: 'BAND STATUS' })}
           </div>
-          {band.members.map((m: BandMember, idx: number) => {
-            const safeName =
-              m.name?.trim() ||
-              t('ui:hud.unnamedMember', { defaultValue: 'Member' })
-            return (
-              <div
-                key={m.id ?? m.name ?? `member-${idx}`}
-                className='flex items-center justify-between w-52 mb-1.5 last:mb-0'
-              >
-                <span className='text-star-white/80 text-[11px]'>
-                  {safeName}
-                </span>
-                <div className='flex items-center gap-1.5'>
-                  <Tooltip
-                    content={t('ui:hud.mood', { defaultValue: 'Mood' })}
-                    position='bottom'
-                  >
-                    <div className='flex items-center gap-1 pointer-events-auto'>
-                      <div className='w-12'>
-                        <ProgressBar
-                          value={m.mood}
-                          max={100}
-                          color='bg-mood-pink'
-                          size='mini'
-                          aria-label={t('ui:hud.memberMood', {
-                            name: safeName,
-                            defaultValue: `${safeName} Mood`
-                          })}
-                        />
-                      </div>
-                      <span className='text-[9px] text-mood-pink w-7 text-right tabular-nums'>
-                        {m.mood}%
-                      </span>
-                    </div>
-                  </Tooltip>
-                  <Tooltip
-                    content={t('ui:hud.stamina', { defaultValue: 'Stamina' })}
-                    position='bottom'
-                  >
-                    <div className='flex items-center gap-1 pointer-events-auto'>
-                      <div className='w-12'>
-                        <ProgressBar
-                          value={m.stamina}
-                          max={100}
-                          color='bg-stamina-green'
-                          size='mini'
-                          aria-label={t('ui:hud.memberStamina', {
-                            name: safeName,
-                            defaultValue: `${safeName} Stamina`
-                          })}
-                        />
-                      </div>
-                      <span className='text-[9px] text-stamina-green w-7 text-right tabular-nums'>
-                        {m.stamina}%
-                      </span>
-                    </div>
-                  </Tooltip>
-                </div>
-              </div>
-            )
-          })}
+          {band.members.map((m: BandMember, idx: number) => (
+            <BandMemberRow
+              key={m.id ?? m.name ?? `member-${idx}`}
+              m={m}
+              idx={idx}
+              t={t}
+            />
+          ))}
           <div className='mt-2 pt-1.5 border-t border-toxic-green/20 flex items-center justify-between'>
             <span className='text-[10px] text-ash-gray'>
               {t('ui:harmony', { defaultValue: 'HARMONY' })}

@@ -23,6 +23,21 @@ type PirateRadioModalProps = {
   contentClassName?: string
 }
 
+const StatRow = ({
+  label,
+  value,
+  valueClass
+}: {
+  label: string
+  value: string
+  valueClass: string
+}) => (
+  <div className='flex justify-between'>
+    <span>{label}</span>
+    <span className={valueClass}>{value}</span>
+  </div>
+)
+
 /**
  * Pirate Radio Broadcast Interface
  * Brutalist UI to trigger illegal radio hacks for fame and zealotry.
@@ -80,34 +95,27 @@ export const PirateRadioModal = memo(
             </p>
 
             <div className='bg-void-black/50 border border-toxic-green/30 p-4 space-y-2'>
-              <div className='flex justify-between'>
-                <span>
-                  {t('ui:pirate_radio.fame_gain', {
-                    defaultValue: 'FAME GAIN'
-                  })}
-                </span>
-                <span className='text-toxic-green'>+{config.FAME_GAIN}</span>
-              </div>
-              <div className='flex justify-between'>
-                <span>
-                  {t('ui:pirate_radio.zealotry_gain', {
-                    defaultValue: 'ZEALOTRY GAIN'
-                  })}
-                </span>
-                <span className='text-warning-yellow'>
-                  +{config.ZEALOTRY_GAIN}
-                </span>
-              </div>
-              <div className='flex justify-between'>
-                <span>
-                  {t('ui:pirate_radio.controversy_gain', {
-                    defaultValue: 'CONTROVERSY'
-                  })}
-                </span>
-                <span className='text-blood-red'>
-                  +{config.CONTROVERSY_GAIN}
-                </span>
-              </div>
+              <StatRow
+                label={t('ui:pirate_radio.fame_gain', {
+                  defaultValue: 'FAME GAIN'
+                })}
+                value={`+${config.FAME_GAIN}`}
+                valueClass='text-toxic-green'
+              />
+              <StatRow
+                label={t('ui:pirate_radio.zealotry_gain', {
+                  defaultValue: 'ZEALOTRY GAIN'
+                })}
+                value={`+${config.ZEALOTRY_GAIN}`}
+                valueClass='text-warning-yellow'
+              />
+              <StatRow
+                label={t('ui:pirate_radio.controversy_gain', {
+                  defaultValue: 'CONTROVERSY'
+                })}
+                value={`+${config.CONTROVERSY_GAIN}`}
+                valueClass='text-blood-red'
+              />
             </div>
 
             <div className='bg-void-black/50 border border-blood-red/30 p-4 space-y-2'>
@@ -116,38 +124,28 @@ export const PirateRadioModal = memo(
                   defaultValue: '[ REQUIRED OFFERING ]'
                 })}
               </h3>
-              <div className='flex justify-between'>
-                <span>
-                  {t('ui:pirate_radio.cost', {
-                    defaultValue: 'COST (BRIBES/TECH)'
-                  })}
-                </span>
-                <span
-                  className={
-                    (player?.money ?? 0) >= config.COST
-                      ? 'text-ash-gray'
-                      : 'text-blood-red'
-                  }
-                >
-                  {formatCurrency(config.COST, i18n?.language)}
-                </span>
-              </div>
-              <div className='flex justify-between'>
-                <span>
-                  {t('ui:pirate_radio.harmony_cost', {
-                    defaultValue: 'HARMONY DRAIN'
-                  })}
-                </span>
-                <span
-                  className={
-                    (band?.harmony ?? 0) >= config.HARMONY_COST
-                      ? 'text-ash-gray'
-                      : 'text-blood-red'
-                  }
-                >
-                  -{config.HARMONY_COST}
-                </span>
-              </div>
+              <StatRow
+                label={t('ui:pirate_radio.cost', {
+                  defaultValue: 'COST (BRIBES/TECH)'
+                })}
+                value={formatCurrency(config.COST, i18n?.language)}
+                valueClass={
+                  (player?.money ?? 0) >= config.COST
+                    ? 'text-ash-gray'
+                    : 'text-blood-red'
+                }
+              />
+              <StatRow
+                label={t('ui:pirate_radio.harmony_cost', {
+                  defaultValue: 'HARMONY DRAIN'
+                })}
+                value={`-${config.HARMONY_COST}`}
+                valueClass={
+                  (band?.harmony ?? 0) >= config.HARMONY_COST
+                    ? 'text-ash-gray'
+                    : 'text-blood-red'
+                }
+              />
             </div>
           </div>
 

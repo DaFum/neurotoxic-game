@@ -28,6 +28,63 @@ type EventOutcome = {
  * @param {Function} props.onOptionSelect - Callback when an option is selected.
  */
 
+interface EventOptionButtonProps {
+  option: EventModalOption
+  index: number
+  optionLabel: string
+  eventContext: Record<string, unknown> | undefined
+  onSelect: (option: EventModalOption) => void
+  t: ReturnType<typeof useTranslation>['t']
+}
+
+const EventOptionButton = ({
+  option,
+  index,
+  optionLabel,
+  eventContext,
+  onSelect,
+  t
+}: EventOptionButtonProps) => {
+  const isDisabled = option.disabled || false
+  const buttonClass = isDisabled
+    ? 'border-ash-gray/20 text-ash-gray/20 cursor-not-allowed'
+    : index === 0
+      ? 'border-toxic-green bg-toxic-green/10 hover:bg-toxic-green hover:text-void-black text-toxic-green focus-visible:ring-toxic-green'
+      : 'border-star-white/50 text-star-white/50 hover:border-star-white hover:text-star-white hover:bg-star-white/10 focus-visible:ring-star-white'
+
+  const button = (
+    <motion.button
+      type='button'
+      disabled={isDisabled}
+      variants={{
+        hidden: { opacity: 0, x: -20 },
+        visible: { opacity: 1, x: 0 }
+      }}
+      onClick={() => onSelect(option)}
+      className={`w-full p-3 border font-bold tracking-widest uppercase transition-colors text-left flex justify-between focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${buttonClass}`}
+    >
+      <span>
+        <span className='opacity-50 mr-2'>[{index + 1}]</span>
+        {String(t(optionLabel, eventContext))}
+      </span>
+
+      <div className='flex flex-col items-end text-right'>
+        {option.skillCheck && (
+          <span className='inline-block mt-1 text-[10px] text-warning-yellow'>
+            [{'⚔'} {t('ui:skillCheck')}]
+          </span>
+        )}
+      </div>
+    </motion.button>
+  )
+
+  // Disabled buttons can't receive focus, so wrap with a focusable span for keyboard a11y
+  if (isDisabled) {
+    return <span tabIndex={0}>{button}</span>
+  }
+  return button
+}
+
 export const EventModal = ({
   event,
   onOptionSelect,
@@ -281,55 +338,24 @@ export const EventModal = ({
                 }}
               >
                 {eventOptions.map((option, index) => {
-                  const isDisabled = option.disabled || false
                   const optionLabel =
                     option.label ??
                     option.textKey ??
                     option.text ??
                     'ui:event.option'
-                  const buttonContent = (
-                    <motion.button
-                      type='button'
-                      disabled={isDisabled}
-                      variants={{
-                        hidden: { opacity: 0, x: -20 },
-                        visible: { opacity: 1, x: 0 }
-                      }}
-                      key={
-                        option.id ||
-                        option.nextEventId ||
-                        `${optionLabel}-${index}`
-                      }
-                      onClick={() => handleOptionSelect(option)}
-                      className={`w-full p-3 border font-bold tracking-widest uppercase transition-colors text-left flex justify-between focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void-black
-                        ${isDisabled ? 'border-ash-gray/20 text-ash-gray/20 cursor-not-allowed' : index === 0 ? 'border-toxic-green bg-toxic-green/10 hover:bg-toxic-green hover:text-void-black text-toxic-green focus-visible:ring-toxic-green' : 'border-star-white/50 text-star-white/50 hover:border-star-white hover:text-star-white hover:bg-star-white/10 focus-visible:ring-star-white'}
-                      `}
-                    >
-                      <span>
-                        <span className='opacity-50 mr-2'>[{index + 1}]</span>
-                        {String(t(optionLabel, eventContext))}
-                      </span>
-
-                      <div className='flex flex-col items-end text-right'>
-                        {/* Skill check indicator */}
-                        {option.skillCheck && (
-                          <span className='inline-block mt-1 text-[10px] text-warning-yellow'>
-                            [{'\u2694'} {t('ui:skillCheck')}]
-                          </span>
-                        )}
-                      </div>
-                    </motion.button>
+                  const key =
+                    option.id || option.nextEventId || `${optionLabel}-${index}`
+                  return (
+                    <EventOptionButton
+                      key={key}
+                      option={option}
+                      index={index}
+                      optionLabel={optionLabel}
+                      eventContext={eventContext}
+                      onSelect={handleOptionSelect}
+                      t={t}
+                    />
                   )
-
-                  if (isDisabled) {
-                    return (
-                      // eslint-disable-next-line @eslint-react/no-array-index-key
-                      <span key={`disabled-wrapper-${index}`} tabIndex={0}>
-                        {buttonContent}
-                      </span>
-                    )
-                  }
-                  return buttonContent
                 })}
               </motion.div>
             </>

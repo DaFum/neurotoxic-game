@@ -11,6 +11,83 @@ interface MerchStrategyBlockProps {
   onRestock: (merchKey: string) => void
 }
 
+interface MerchItem {
+  key: string
+  name: string
+  stock: number
+  currentPrice: number
+  defaultPrice: number
+  restockCost: number
+}
+
+interface MerchItemRowProps {
+  item: MerchItem
+  language: string
+  onUpdatePrice: (merchKey: string, newPrice: number) => void
+  onRestock: (merchKey: string) => void
+  t: ReturnType<typeof useTranslation>['t']
+}
+
+const MerchItemRow: React.FC<MerchItemRowProps> = ({
+  item,
+  language,
+  onUpdatePrice,
+  onRestock,
+  t
+}) => (
+  <div className='flex justify-between items-center bg-(--color-charcoal-gray) p-3 border border-(--color-concrete-gray)'>
+    <div className='flex flex-col'>
+      <span className='text-(--color-toxic-green) font-mono uppercase'>
+        {item.name}
+      </span>
+      <span className='text-(--color-ash-gray) font-mono text-sm'>
+        {t('ui:pregig.merchStrategy.stock', { count: item.stock })}
+      </span>
+    </div>
+
+    <div className='flex items-center gap-4'>
+      <div className='flex items-center gap-2'>
+        <button
+          type='button'
+          aria-label={t('ui:pregig.merchStrategy.decreasePrice', {
+            item: item.name
+          })}
+          onClick={() =>
+            onUpdatePrice(item.key, Math.max(1, item.currentPrice - 1))
+          }
+          className='bg-(--color-concrete-gray) hover:bg-(--color-steel-gray) p-1 text-(--color-toxic-green)'
+        >
+          -
+        </button>
+        <span className='text-(--color-toxic-green) font-mono w-8 text-center'>
+          {formatCurrency(item.currentPrice, language)}
+        </span>
+        <button
+          type='button'
+          aria-label={t('ui:pregig.merchStrategy.increasePrice', {
+            item: item.name
+          })}
+          onClick={() => onUpdatePrice(item.key, item.currentPrice + 1)}
+          className='bg-(--color-concrete-gray) hover:bg-(--color-steel-gray) p-1 text-(--color-toxic-green)'
+        >
+          +
+        </button>
+      </div>
+
+      <button
+        type='button'
+        onClick={() => onRestock(item.key)}
+        className='bg-(--color-toxic-green) text-(--color-void-black) font-mono px-3 py-1 uppercase text-sm hover:opacity-80 transition-colors'
+        title={t('ui:pregig.merchStrategy.restockCost', {
+          cost: item.restockCost
+        })}
+      >
+        {t('ui:pregig.merchStrategy.restock')}
+      </button>
+    </div>
+  </div>
+)
+
 export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
   bandInventory,
   customPrices,
@@ -51,60 +128,14 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
 
       <div className='flex flex-col gap-3'>
         {merchItems.map(item => (
-          <div
+          <MerchItemRow
             key={item.key}
-            className='flex justify-between items-center bg-(--color-charcoal-gray) p-3 border border-(--color-concrete-gray)'
-          >
-            <div className='flex flex-col'>
-              <span className='text-(--color-toxic-green) font-mono uppercase'>
-                {item.name}
-              </span>
-              <span className='text-(--color-ash-gray) font-mono text-sm'>
-                {t('ui:pregig.merchStrategy.stock', { count: item.stock })}
-              </span>
-            </div>
-
-            <div className='flex items-center gap-4'>
-              <div className='flex items-center gap-2'>
-                <button
-                  type='button'
-                  aria-label={t('ui:pregig.merchStrategy.decreasePrice', {
-                    item: item.name
-                  })}
-                  onClick={() =>
-                    onUpdatePrice(item.key, Math.max(1, item.currentPrice - 1))
-                  }
-                  className='bg-(--color-concrete-gray) hover:bg-(--color-steel-gray) p-1 text-(--color-toxic-green)'
-                >
-                  -
-                </button>
-                <span className='text-(--color-toxic-green) font-mono w-8 text-center'>
-                  {formatCurrency(item.currentPrice, i18n?.language ?? 'en')}
-                </span>
-                <button
-                  type='button'
-                  aria-label={t('ui:pregig.merchStrategy.increasePrice', {
-                    item: item.name
-                  })}
-                  onClick={() => onUpdatePrice(item.key, item.currentPrice + 1)}
-                  className='bg-(--color-concrete-gray) hover:bg-(--color-steel-gray) p-1 text-(--color-toxic-green)'
-                >
-                  +
-                </button>
-              </div>
-
-              <button
-                type='button'
-                onClick={() => onRestock(item.key)}
-                className='bg-(--color-toxic-green) text-(--color-void-black) font-mono px-3 py-1 uppercase text-sm hover:opacity-80 transition-colors'
-                title={t('ui:pregig.merchStrategy.restockCost', {
-                  cost: item.restockCost
-                })}
-              >
-                {t('ui:pregig.merchStrategy.restock')}
-              </button>
-            </div>
-          </div>
+            item={item}
+            language={i18n?.language ?? 'en'}
+            onUpdatePrice={onUpdatePrice}
+            onRestock={onRestock}
+            t={t}
+          />
         ))}
       </div>
     </div>

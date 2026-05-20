@@ -46,6 +46,110 @@ function useAnimatedNum(value: number, ms = 450) {
   return cur
 }
 
+interface VanStatRowProps {
+  value: number | undefined
+  isLow: boolean
+  icon: string
+  lowColor: string
+  normalColor: string
+  notAvailableLabel: string
+}
+
+const VanStatRow = ({
+  value,
+  isLow,
+  icon,
+  lowColor,
+  normalColor,
+  notAvailableLabel
+}: VanStatRowProps) => {
+  const activeColor = isLow ? lowColor : normalColor
+  return (
+    <div className='van-row'>
+      <span className='van-icon' style={{ color: activeColor }}>
+        {icon}
+      </span>
+      <div className='mini-track'>
+        <div
+          className='mini-fill'
+          style={{
+            width: value !== undefined ? `${value}%` : '0%',
+            background: activeColor
+          }}
+        />
+      </div>
+      <span
+        className='mini-num'
+        style={{ color: isLow ? lowColor : undefined }}
+      >
+        {value !== undefined ? value : notAvailableLabel}
+      </span>
+    </div>
+  )
+}
+
+type Member = NonNullable<BandState['members']>[number]
+type MemberStatus = 'crit' | 'low' | 'ok'
+
+const getMemberStatus = (m: Member): MemberStatus => {
+  if (m.mood < 30 || m.stamina < 20) return 'crit'
+  if (m.mood < 50 || m.stamina < 35) return 'low'
+  return 'ok'
+}
+
+const STATUS_DOT_COLOR: Record<MemberStatus, string> = {
+  crit: 'var(--color-blood-red)',
+  low: 'var(--color-warning-yellow)',
+  ok: 'var(--color-toxic-green)'
+}
+
+const getMoodColor = (mood: number) => {
+  if (mood < 30) return 'var(--color-blood-red)'
+  if (mood < 50) return 'var(--color-warning-yellow)'
+  return 'var(--color-mood-pink)'
+}
+
+const getStaminaColor = (stamina: number) => {
+  if (stamina < 20) return 'var(--color-blood-red)'
+  if (stamina < 35) return 'var(--color-warning-yellow)'
+  return 'var(--color-toxic-green)'
+}
+
+const StatBar = ({ value, color }: { value: number; color: string }) => (
+  <div className='bar-grp'>
+    <div className='bar-track'>
+      <div
+        className='bar-fill'
+        style={{ width: `${value}%`, background: color }}
+      />
+    </div>
+    <span className='bar-pct' style={{ color }}>
+      {Math.round(value)}%
+    </span>
+  </div>
+)
+
+const BandMemberRow = ({ m }: { m: Member }) => {
+  const status = getMemberStatus(m)
+  const nameClass =
+    status === 'crit' ? 'mbr-crit' : status === 'low' ? 'mbr-low' : ''
+  return (
+    <div className='mbr-row'>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+        <span
+          className='mbr-status-dot'
+          style={{ background: STATUS_DOT_COLOR[status] }}
+        />
+        <span className={`mbr-name ${nameClass}`}>{m.name}</span>
+      </div>
+      <div className='mbr-bars'>
+        <StatBar value={m.mood} color={getMoodColor(m.mood)} />
+        <StatBar value={m.stamina} color={getStaminaColor(m.stamina)} />
+      </div>
+    </div>
+  )
+}
+
 export const OverworldHUD = React.memo(
   ({ player, band }: OverworldHUDProps) => {
     const { t, i18n } = useTranslation(['ui'])
@@ -170,12 +274,6 @@ export const OverworldHUD = React.memo(
       return () => window.removeEventListener('keydown', handleKeyDown)
     }, [handleAudioChange, isPlaying])
 
-    const memberStatus = (m: NonNullable<BandState['members']>[number]) => {
-      if (m.mood < 30 || m.stamina < 20) return 'crit'
-      if (m.mood < 50 || m.stamina < 35) return 'low'
-      return 'ok'
-    }
-
     return (
       <div className='hud'>
         <div className='hud-left'>
@@ -196,73 +294,26 @@ export const OverworldHUD = React.memo(
               </span>
             </div>
             <div className='van-stats'>
-              <div className='van-row'>
-                <span
-                  className='van-icon'
-                  style={{
-                    color: fuelLow
-                      ? 'var(--color-blood-red)'
-                      : 'var(--color-warning-yellow)'
-                  }}
-                >
-                  ⛽
-                </span>
-                <div className='mini-track'>
-                  <div
-                    className='mini-fill'
-                    style={{
-                      width: vanFuel !== undefined ? `${vanFuel}%` : '0%',
-                      background: fuelLow
-                        ? 'var(--color-blood-red)'
-                        : 'var(--color-warning-yellow)'
-                    }}
-                  />
-                </div>
-                <span
-                  className='mini-num'
-                  style={{
-                    color: fuelLow ? 'var(--color-blood-red)' : undefined
-                  }}
-                >
-                  {vanFuel !== undefined
-                    ? vanFuel
-                    : t('ui:overworld.notAvailable', { defaultValue: 'N/A' })}
-                </span>
-              </div>
-              <div className='van-row'>
-                <span
-                  className='van-icon'
-                  style={{
-                    color: condLow
-                      ? 'var(--color-blood-red)'
-                      : 'var(--color-condition-blue)'
-                  }}
-                >
-                  🔧
-                </span>
-                <div className='mini-track'>
-                  <div
-                    className='mini-fill'
-                    style={{
-                      width:
-                        vanCondition !== undefined ? `${vanCondition}%` : '0%',
-                      background: condLow
-                        ? 'var(--color-blood-red)'
-                        : 'var(--color-condition-blue)'
-                    }}
-                  />
-                </div>
-                <span
-                  className='mini-num'
-                  style={{
-                    color: condLow ? 'var(--color-blood-red)' : undefined
-                  }}
-                >
-                  {vanCondition !== undefined
-                    ? vanCondition
-                    : t('ui:overworld.notAvailable', { defaultValue: 'N/A' })}
-                </span>
-              </div>
+              <VanStatRow
+                value={vanFuel}
+                isLow={fuelLow}
+                icon='⛽'
+                lowColor='var(--color-blood-red)'
+                normalColor='var(--color-warning-yellow)'
+                notAvailableLabel={t('ui:overworld.notAvailable', {
+                  defaultValue: 'N/A'
+                })}
+              />
+              <VanStatRow
+                value={vanCondition}
+                isLow={condLow}
+                icon='🔧'
+                lowColor='var(--color-blood-red)'
+                normalColor='var(--color-condition-blue)'
+                notAvailableLabel={t('ui:overworld.notAvailable', {
+                  defaultValue: 'N/A'
+                })}
+              />
               {fuelLow && (
                 <div
                   style={{
@@ -348,93 +399,9 @@ export const OverworldHUD = React.memo(
             <div className='band-hdr'>
               {t('ui:overworld.band_status', { defaultValue: 'Band Status' })}
             </div>
-            {(band?.members ?? []).map(m => {
-              const st = memberStatus(m)
-              return (
-                <div className='mbr-row' key={m.id}>
-                  <div
-                    style={{ display: 'flex', alignItems: 'center', gap: 4 }}
-                  >
-                    <span
-                      className='mbr-status-dot'
-                      style={{
-                        background:
-                          st === 'crit'
-                            ? 'var(--color-blood-red)'
-                            : st === 'low'
-                              ? 'var(--color-warning-yellow)'
-                              : 'var(--color-toxic-green)'
-                      }}
-                    />
-                    <span
-                      className={`mbr-name ${st === 'crit' ? 'mbr-crit' : st === 'low' ? 'mbr-low' : ''}`}
-                    >
-                      {m.name}
-                    </span>
-                  </div>
-                  <div className='mbr-bars'>
-                    <div className='bar-grp'>
-                      <div className='bar-track'>
-                        <div
-                          className='bar-fill'
-                          style={{
-                            width: `${m.mood}%`,
-                            background:
-                              m.mood < 30
-                                ? 'var(--color-blood-red)'
-                                : m.mood < 50
-                                  ? 'var(--color-warning-yellow)'
-                                  : 'var(--color-mood-pink)'
-                          }}
-                        />
-                      </div>
-                      <span
-                        className='bar-pct'
-                        style={{
-                          color:
-                            m.mood < 30
-                              ? 'var(--color-blood-red)'
-                              : m.mood < 50
-                                ? 'var(--color-warning-yellow)'
-                                : 'var(--color-mood-pink)'
-                        }}
-                      >
-                        {Math.round(m.mood)}%
-                      </span>
-                    </div>
-                    <div className='bar-grp'>
-                      <div className='bar-track'>
-                        <div
-                          className='bar-fill'
-                          style={{
-                            width: `${m.stamina}%`,
-                            background:
-                              m.stamina < 20
-                                ? 'var(--color-blood-red)'
-                                : m.stamina < 35
-                                  ? 'var(--color-warning-yellow)'
-                                  : 'var(--color-toxic-green)'
-                          }}
-                        />
-                      </div>
-                      <span
-                        className='bar-pct'
-                        style={{
-                          color:
-                            m.stamina < 20
-                              ? 'var(--color-blood-red)'
-                              : m.stamina < 35
-                                ? 'var(--color-warning-yellow)'
-                                : 'var(--color-toxic-green)'
-                        }}
-                      >
-                        {Math.round(m.stamina)}%
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
+            {(band?.members ?? []).map(m => (
+              <BandMemberRow key={m.id} m={m} />
+            ))}
             <div className='harmony-row'>
               <span className='harmony-label'>
                 {t('ui:overworld.harmony', { defaultValue: 'Harmony' })}
