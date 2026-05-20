@@ -1,3 +1,0 @@
-Revert: ⚡ Optimize asToastOptions array allocation overhead
-
-Reverted the `for...in` optimization in `asToastOptions` based on PR review feedback. `Object.keys()` is more idiomatic and safer for this non-performance-critical path.
