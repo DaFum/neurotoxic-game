@@ -63,7 +63,7 @@ export default defineConfig({
             options: {
               cacheName: 'generated-images-runtime',
               expiration: {
-                maxEntries: 120,
+                maxEntries: 200,
                 maxAgeSeconds: 30 * 24 * 60 * 60 // 30 Days
               },
               cacheableResponse: {
