@@ -8,22 +8,15 @@
 ## Critical Commands
 
 - Use `pnpm` only. Do not use `npm` or `yarn`.
-- Full PR gate: `pnpm run test:all`.
-- Fast local gate: `pnpm run test`.
-- UI and migrated suites: `pnpm run test:ui`.
-- Full legacy node suites: `pnpm run test:node`.
-- Extended perf and locale suites: `pnpm run test:additional`.
-- Single `node:test` file: `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/<file>.test.js`.
-- Single Vitest file: `pnpm run test:ui:file -- tests/<file>.test.js(x)`.
+- Test scope picker: `pnpm run test` for fast local, `pnpm run test:all` for full PR, `pnpm run test:ui` for Vitest/UI, `pnpm run test:node` for legacy node, `pnpm run test:additional` for perf/locale.
+- Single-file tests: use `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/<file>.test.js` for `node:test`; use `pnpm run test:ui:file -- tests/<file>.test.js(x)` for Vitest.
 - Type gates: `pnpm run typecheck:core`; `pnpm run typecheck` is the scoped reducer gate.
 
 ## Architecture Constraints
 
 - Do not upgrade pinned dependencies without discussion; do not add Howler.js.
 - All state updates go through action creators. New actions must update `actionTypes`, reducer handling, and `actionCreators` together.
-- Sanitize raw payload fields in action creators as early as possible (using inline `Math.max` or `gameStateUtils.ts` helpers) when the invariant is local to the incoming value, such as non-negative costs, rewards, or direct bounded assignments.
-- Reducers remain the final authority for bounded state. When computing next state from prior state plus a payload, delta, reward, cost, or functional update, apply canonical clamp helpers before storing the final value.
-- Do not remove terminal reducer clamps merely because an action creator also normalizes input. Early payload sanitation and final-state clamping serve different purposes and may both be required.
+- Payload safety is two-layered: action creators normalize or drop locally invalid raw fields; reducers remain the final authority, re-clamp computed state with canonical helpers, and reject malformed or hostile payloads by returning unchanged state. Do not remove reducer clamps because input was normalized earlier.
 - Audio gameplay timing must use `audioEngine.getGigTimeMs()`, never direct Tone.js time reads.
 - PreGig modifier costs come only from `MODIFIER_COSTS` in `src/utils/economyEngine.ts`.
 - User-facing text must use namespaced i18n keys. Update matching EN and DE locale JSON together.
@@ -39,7 +32,7 @@
 - Use `Object.hasOwn()` for untrusted property checks; prototype-pollution tests assert hostile keys are stripped.
 - `isolatedModules` requires type-only imports (`import type` or mixed `import { Foo, type Bar }`).
 - Action creators return `Extract<GameAction, { type: typeof ActionTypes.X }>`; do not hand-write action object shapes.
-- Reducer default branches must call `assertNever(action)`.
+- Reducer default branches must call `assertNever`; `gameReducer` deliberately uses `assertNever(action as never)` as a runtime trap, so do not remove the cast to chase compile-time exhaustiveness.
 - Prefer `as const satisfies Record<Union, T>` for keyed configs; avoid widening with `as Record<...>`.
 - Shared domain contracts belong in `src/types/*.d.ts`; do not duplicate local structural clones. `RelationshipChange` is defined in `src/types/game.d.ts`, not `gameStateUtils.ts`.
 - Preserve valid falsy values with nullish checks (`??`), not truthy fallbacks (`||`).
@@ -49,7 +42,7 @@
 
 ## Testing
 
-- Choose the runner by neighboring tests; do not mix `node:test` and Vitest patterns in one file.
+- Choose the runner by the framework already used in the same file; for new files, match the closest same-directory/domain tests. Do not mix `node:test` and Vitest patterns in one file.
 - Vitest localStorage assertions must mock and restore `window.localStorage.setItem` in `try/finally`.
 - `react-i18next` mocks must include `initReactI18next: { type: '3rdParty', init: () => {} }`.
 - Explicitly populate lookup maps such as `SONGS_BY_ID` in mocked fixture data.
@@ -67,7 +60,7 @@
 - Never add band members to their own `relationships` map; self-relationships corrupt trait and infighting logic.
 - `createInitialState` settings sanitization keeps only `crtEnabled`, `tutorialSeen`, and `logLevel`.
 - `START_GIG` resets `gigModifiers` to defaults.
-- `useArrivalLogic` owns all arrival routing; `COMPLETE_TRAVEL_MINIGAME` must not change scene.
+- Minigame completion reducers must not change `currentScene` (`COMPLETE_TRAVEL_MINIGAME`, `COMPLETE_AMP_CALIBRATION`, `COMPLETE_KABELSALAT_MINIGAME`, `COMPLETE_ROADIE_MINIGAME`); arrival/overlay continuation callbacks own scene changes.
 - Tourbus minigame damage is intentionally converted to van condition loss via `calculateTravelMinigameResult()` at 50% scaling; 100 damage means max 50 condition loss.
 - Travel confirmation must disclose travel cost plus guaranteed daily upkeep because arrival also calls `advanceDay()`.
 - Gig report `net` must equal displayed income minus displayed expenses; economy dampeners and performance miss money penalties belong in the expense breakdown, not hidden continue deductions.
@@ -86,6 +79,8 @@
 - `band.merchPrices` is persisted through save/load via `sanitizeBand` in `src/context/reducers/systemReducer.ts`; do not strip it during state sanitization.
 - `MerchStrategyBlock` lives in `src/components/pregig/`; it uses full i18n and design-token styling.
 - `deriveFinancials` in `src/utils/postGigUtils.ts` accepts an optional `bandMerchPrices` param; pass `band.merchPrices` when calling from post-gig hooks.
-- Locale keys can be looked up dynamically. Before deleting a key from `public/locales/{en,de}/ui.json` because grep finds no literal match, also search for templated lookups (``t(`ui:<prefix>.${var}`)``). Known dynamic prefixes: `chatter_labels.${scene}` in `src/components/ChatterOverlay.tsx`, `bandhq.${balanceKey}` in `src/ui/bandhq/CatalogTab.tsx` (balance keys include `money`, `funds`, `fame`), and `featureList.*` indexed by config array.
-- `EventDelta` lives in `src/types/events.d.ts` and is the single source of truth shared by `eventEngine.ts`, `gameStateUtils.ts`, and `EventDeltaPayload` in `actions.d.ts`. The four container fields (`player`, `band`, `social`, `flags`) are required so handlers in `eventEngine.ts` can mutate them without non-null assertions; callers must initialize an empty object for each before passing the delta around. `EventDeltaPayload` only adds `activeStoryFlags` and `pendingEvents` on top — do not redeclare the container fields.
-- Currency strings emitted into toast `options` are baked at dispatch time. Pass `formatCurrency(value, i18n.language, signDisplay)` from reducers and action creators (`clinicReducer.ts`, `socialReducer.ts`, `purchaseLogicUtils.ts`, `questLifecycle.ts`) — import the singleton from `src/i18n.ts` so German users get locale-correct formatting; passing `undefined` falls back to `'en'` and bakes English currency into every toast. Consume the formatted string with a bare `{{amount}}` placeholder in the locale templates and remove any hardcoded `€` glyphs from `public/locales/{en,de}/ui.json`. When formatting inside a React component, use `i18n.language` from `useTranslation()` instead.
+- Locale keys may be looked up via template (``t(`ui:<prefix>.${var}`)``) — search the codebase for the prefix before deleting an apparently-unused key. Known dynamic prefixes: `chatter_labels.${scene}` (`src/components/ChatterOverlay.tsx`), `bandhq.${balanceKey}` (`src/ui/bandhq/CatalogTab.tsx`, balance keys `money`/`funds`/`fame`), `featureList.*` (indexed by config array).
+- `EventDelta` (`src/types/events.d.ts`) is the single source of truth, shared with `eventEngine.ts`, `gameStateUtils.ts`, and `EventDeltaPayload` (`actions.d.ts`). Its four container fields (`player`, `band`, `social`, `flags`) are required — callers must initialize each as `{}` so `eventEngine` handlers can mutate without non-null assertions. `EventDeltaPayload` only adds `activeStoryFlags` + `pendingEvents`; do not redeclare containers.
+- Payload sanitizers must use `Number.isFinite(v)`, not bare `typeof v === 'number'` (which lets `NaN`/`Infinity` through and corrupts downstream clamps). When dropping `fame` from a payload, also drop the paired derived `fameLevel`.
+- `BASE_STATE` in `.claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js` must mirror `createInitialState()` exactly. Only `toasts` and `isScreenshotMode` may be omitted; any other top-level field added to `initialState` without updating `BASE_STATE` fails `tests/node/playwright-screenshot-fixture-validation.test.js`.
+- Toast `options` currency strings are baked at dispatch — call `formatCurrency(value, i18n.language, signDisplay)` (import `i18n` singleton from `src/i18n.ts` in reducers/action creators; use `i18n.language` from `useTranslation()` in components). Passing `undefined` falls back to `'en'` and bakes English currency for German users. Locale templates use a bare `{{amount}}` placeholder — no hardcoded `€` in `public/locales/{en,de}/ui.json`.
