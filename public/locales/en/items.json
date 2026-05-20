@@ -204,5 +204,7 @@
       "name": "Hyper-Adrenaline Ampoule",
       "description": "Increases maximum stamina permanently."
     }
-  }
+  },
+  "hq_room_void_altar.name": "Altar of the Void",
+  "hq_room_void_altar.description": "An unsettling monolith that hums. (+10 Luck immediate)."
 }

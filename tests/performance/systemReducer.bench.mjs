@@ -1,4 +1,4 @@
-import { performance } from 'node:perf_hooks';
+import { performance } from 'node:perf_hooks'
 
 const DEFAULT_BAND_STATE = {
   inventory: {
@@ -15,13 +15,14 @@ const DEFAULT_BAND_STATE = {
     hasTShirts: false,
     hasBadges: false,
     hasPosters: false,
-    hasVipPasses: false,
+    hasVipPasses: false
   }
 }
 
-const sanitizeBandInventoryOriginal = (value) => {
+const sanitizeBandInventoryOriginal = value => {
   const sanitized = { ...DEFAULT_BAND_STATE.inventory }
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return sanitized
+  if (!value || typeof value !== 'object' || Array.isArray(value))
+    return sanitized
 
   const defaultInventory = DEFAULT_BAND_STATE.inventory
   for (const key of Object.keys(defaultInventory)) {
@@ -50,9 +51,10 @@ const sanitizeBandInventoryOriginal = (value) => {
   return sanitized
 }
 
-const sanitizeBandInventoryOptimized = (value) => {
+const sanitizeBandInventoryOptimized = value => {
   const sanitized = { ...DEFAULT_BAND_STATE.inventory }
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return sanitized
+  if (!value || typeof value !== 'object' || Array.isArray(value))
+    return sanitized
 
   const defaultInventory = DEFAULT_BAND_STATE.inventory
   for (const key in defaultInventory) {
@@ -90,24 +92,30 @@ const payload = {
 }
 
 function runBenchmark(fn, iterations) {
-  const start = performance.now();
+  const start = performance.now()
   for (let i = 0; i < iterations; i++) {
-    fn(payload);
+    fn(payload)
   }
-  const end = performance.now();
-  return end - start;
+  const end = performance.now()
+  return end - start
 }
 
 // Warmup
-runBenchmark(sanitizeBandInventoryOriginal, 100000);
-runBenchmark(sanitizeBandInventoryOptimized, 100000);
+runBenchmark(sanitizeBandInventoryOriginal, 100000)
+runBenchmark(sanitizeBandInventoryOptimized, 100000)
 
-const iterations = 5000000;
-const originalTime = runBenchmark(sanitizeBandInventoryOriginal, iterations);
-const optimizedTime = runBenchmark(sanitizeBandInventoryOptimized, iterations);
+const iterations = 5000000
+const originalTime = runBenchmark(sanitizeBandInventoryOriginal, iterations)
+const optimizedTime = runBenchmark(sanitizeBandInventoryOptimized, iterations)
 
-console.log(`Original Time (${iterations} iterations): ${originalTime.toFixed(2)}ms`);
-console.log(`Optimized Time (${iterations} iterations): ${optimizedTime.toFixed(2)}ms`);
-const diff = originalTime - optimizedTime;
-const percentage = (diff / originalTime) * 100;
-console.log(`Improvement: ${diff.toFixed(2)}ms (${percentage.toFixed(2)}% faster)`);
+console.log(
+  `Original Time (${iterations} iterations): ${originalTime.toFixed(2)}ms`
+)
+console.log(
+  `Optimized Time (${iterations} iterations): ${optimizedTime.toFixed(2)}ms`
+)
+const diff = originalTime - optimizedTime
+const percentage = (diff / originalTime) * 100
+console.log(
+  `Improvement: ${diff.toFixed(2)}ms (${percentage.toFixed(2)}% faster)`
+)

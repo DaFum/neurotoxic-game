@@ -13,7 +13,7 @@
 ## 2026-04-10 - Merch Press Disabled State
 
 **Learning:** `src/ui/MerchPressModal.tsx` originally wrapped its disabled CTA in a generic `<span role="button">` and its `disabledReason` only checked `isAffordable`, ignoring `config.harmonyCostOnFail`. The current implementation evaluates both `(player.money >= config.cost)` and `(band.harmony >= config.harmonyCostOnFail)` before allowing the press.
-**Action:** When an action has multiple gating constraints (funds, harmony, fuel, fame, etc.), evaluate all of them when computing `disabledReason` so the Tooltip surfaces the *specific* blocker. Pass the disabled `<button>` straight to `Tooltip` rather than reintroducing a `<span role="button">` wrapper.
+**Action:** When an action has multiple gating constraints (funds, harmony, fuel, fame, etc.), evaluate all of them when computing `disabledReason` so the Tooltip surfaces the _specific_ blocker. Pass the disabled `<button>` straight to `Tooltip` rather than reintroducing a `<span role="button">` wrapper.
 
 ## 2026-05-24 - Invisible native elements need visible focus proxies
 

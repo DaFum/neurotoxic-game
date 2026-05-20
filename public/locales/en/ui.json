@@ -1579,5 +1579,10 @@
   "unit.km": "km",
   "unlocked": "UNLOCKED: {{unlock}}!",
   "visual_interface": "VISUAL INTERFACE",
-  "volume.set": "Set volume to {{pct}}%"
+  "volume.set": "Set volume to {{pct}}%",
+  "shop": {
+    "messages": {
+      "voidAltar": "The abyss stares back. Luck +10."
+    }
+  }
 }

@@ -566,6 +566,17 @@ export const applyUnlockHQ = (
       })
       break
 
+    case 'hq_room_void_altar':
+      nextBandPatch = {
+        luck: (band.luck ?? 0) + 10
+      }
+      messages.push({
+        messageKey: 'ui:shop.messages.voidAltar',
+        fallback: 'The abyss stares back. Luck +10.',
+        type: 'success'
+      })
+      break
+
     case 'hq_room_label':
       nextPlayerPatch.money = clampPlayerMoney(
         ((nextPlayerPatch.money as number | undefined) ?? player.money ?? 0) +
