@@ -229,6 +229,9 @@ export const OverworldMap = React.memo(
         }),
         finaleNode: t('ui:map.offline.finaleNode', {
           defaultValue: 'Finale node'
+        }),
+        supplyNode: t('ui:map.offline.supplyNode', {
+          defaultValue: 'Supply node'
         })
       }
       const offlineAssets = {
@@ -255,7 +258,8 @@ export const OverworldMap = React.memo(
         pinClubUrl: createOfflinePinUrl(offlineCopy.clubNode, 'C'),
         pinRestUrl: createOfflinePinUrl(offlineCopy.restNode, 'R'),
         pinSpecialUrl: createOfflinePinUrl(offlineCopy.specialNode, 'S'),
-        pinFinaleUrl: createOfflinePinUrl(offlineCopy.finaleNode, '!')
+        pinFinaleUrl: createOfflinePinUrl(offlineCopy.finaleNode, '!'),
+        pinSupplyUrl: createOfflinePinUrl(offlineCopy.supplyNode, 'B')
       }
       const fallback = getGeneratedImageFallbackUrl()
       return {
@@ -285,7 +289,10 @@ export const OverworldMap = React.memo(
           : offlineAssets.pinSpecialUrl || fallback,
         pinFinaleUrl: isOnline
           ? getGenImageUrl(IMG_PROMPTS.ICON_PIN_FINALE)
-          : offlineAssets.pinFinaleUrl || fallback
+          : offlineAssets.pinFinaleUrl || fallback,
+        pinSupplyUrl: isOnline
+          ? getGenImageUrl(IMG_PROMPTS.ICON_PIN_SUPPLY)
+          : offlineAssets.pinSupplyUrl || fallback
       }
     }, [isOnlineNetwork, t])
 
@@ -298,7 +305,8 @@ export const OverworldMap = React.memo(
       pinClubUrl,
       pinRestUrl,
       pinSpecialUrl,
-      pinFinaleUrl
+      pinFinaleUrl,
+      pinSupplyUrl
     } = urls
 
     // Memoized connection rendering
@@ -340,6 +348,7 @@ export const OverworldMap = React.memo(
         else if (node.type === 'REST_STOP') iconUrl = pinRestUrl
         else if (node.type === 'SPECIAL') iconUrl = pinSpecialUrl
         else if (node.type === 'FINALE') iconUrl = pinFinaleUrl
+        else if (node.type === 'supplyStop') iconUrl = pinSupplyUrl
 
         const nodeVenueId = normalizeVenueId(node.venueId ?? node.venue)
         const cityKey = nodeVenueId ? getCityKeyFromVenueId(nodeVenueId) : ''
@@ -402,6 +411,7 @@ export const OverworldMap = React.memo(
       pinRestUrl,
       pinSpecialUrl,
       pinFinaleUrl,
+      pinSupplyUrl,
       vanUrl,
       activeStoryFlags,
       setHoveredNode,
