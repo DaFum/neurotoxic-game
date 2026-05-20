@@ -236,7 +236,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     }
 
     updatePlayer({ money: clampPlayerMoney(player.money - cost) })
-    const newHarmony = clampBandHarmony(prevHarmony + 15)
+    const newHarmony = clampBandHarmony(Math.min(100, prevHarmony + 15))
     const appliedDelta = newHarmony - prevHarmony
 
     updateBand({ harmony: newHarmony })

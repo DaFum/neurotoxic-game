@@ -353,17 +353,19 @@ export const usePostGigHandlers = ({
       if (financials.soldMerch) {
         updateBand((prevBand: BandState) => {
           const updatedInventory = { ...prevBand.inventory }
-          for (const merchKey in financials.soldMerch) {
-            if (Object.hasOwn(financials.soldMerch, merchKey)) {
-              const soldAmount = financials.soldMerch[merchKey] ?? 0
-              const currentAmount =
-                typeof updatedInventory[merchKey] === 'number'
-                  ? (updatedInventory[merchKey] as number)
-                  : 0
-              updatedInventory[merchKey] = Math.max(
-                0,
-                currentAmount - soldAmount
-              )
+          if (financials.soldMerch) {
+            for (const merchKey in financials.soldMerch) {
+              if (Object.hasOwn(financials.soldMerch, merchKey)) {
+                const soldAmount = financials.soldMerch[merchKey] ?? 0
+                const currentAmount =
+                  typeof updatedInventory[merchKey] === 'number'
+                    ? (updatedInventory[merchKey] as number)
+                    : 0
+                updatedInventory[merchKey] = Math.max(
+                  0,
+                  currentAmount - soldAmount
+                )
+              }
             }
           }
           return { ...prevBand, inventory: updatedInventory }
@@ -451,13 +453,9 @@ export const usePostGigHandlers = ({
           }),
           'error'
         )
-        isProcessingActionRef.current = false
-        setIsProcessingAction(false)
         changeScene(GAME_PHASES.GAMEOVER)
       } else {
         queueMicrotask(() => {
-          isProcessingActionRef.current = false
-          setIsProcessingAction(false)
           changeScene(GAME_PHASES.OVERWORLD)
         })
       }
@@ -467,6 +465,7 @@ export const usePostGigHandlers = ({
         'Unexpected error in continue flow',
         { err, player, currentGig }
       )
+    } finally {
       isProcessingActionRef.current = false
       setIsProcessingAction(false)
     }
