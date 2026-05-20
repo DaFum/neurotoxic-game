@@ -9,17 +9,23 @@ export const createKeyToLaneMap = (
   const keyToLaneMap = new Map<string, number>()
   if (!currentLanes) return keyToLaneMap
 
-  for (const index in currentLanes) {
-    if (!Object.hasOwn(currentLanes, index)) continue
-
-    const lane = currentLanes[index] as { key?: string } | null
-    if (
-      lane &&
-      Object.hasOwn(lane, 'key') &&
-      lane.key != null &&
-      Number.isInteger(Number(index))
-    ) {
-      keyToLaneMap.set(lane.key, Number(index))
+  if (Array.isArray(currentLanes)) {
+    for (let index = 0; index < currentLanes.length; index++) {
+      if (!Object.hasOwn(currentLanes, index)) continue
+      const lane = currentLanes[index] as { key?: string } | null
+      if (lane && lane.key != null) {
+        keyToLaneMap.set(lane.key, index)
+      }
+    }
+  } else {
+    for (const index in currentLanes) {
+      if (!Object.hasOwn(currentLanes, index)) continue
+      const lane = (
+        currentLanes as unknown as Record<string, { key?: string } | null>
+      )[index]
+      if (lane && lane.key != null && Number.isInteger(Number(index))) {
+        keyToLaneMap.set(lane.key, Number(index))
+      }
     }
   }
   return keyToLaneMap
