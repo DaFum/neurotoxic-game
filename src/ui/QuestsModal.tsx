@@ -98,6 +98,15 @@ const IconCube = makeIcon(
     strokeLinejoin='round'
   />
 )
+const IconClose = makeIcon(
+  <path
+    strokeLinecap='round'
+    strokeLinejoin='round'
+    strokeWidth={2}
+    d='M6 18L18 6M6 6l12 12'
+  />,
+  { fill: 'none', stroke: 'currentColor' }
+)
 
 type QuestDisplayState = QuestState & {
   description?: string
@@ -314,21 +323,7 @@ export const QuestsModal = ({
               className='text-ash-gray hover:text-blood-red transition-colors p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blood-red focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
               aria-label={t('ui:quests.closeButton')}
             >
-              <svg
-                className='w-6 h-6'
-                fill='none'
-                viewBox='0 0 24 24'
-                stroke='currentColor'
-                aria-hidden='true'
-                focusable='false'
-              >
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth={2}
-                  d='M6 18L18 6M6 6l12 12'
-                />
-              </svg>
+              <IconClose className='w-6 h-6' />
             </button>
           </div>
 
