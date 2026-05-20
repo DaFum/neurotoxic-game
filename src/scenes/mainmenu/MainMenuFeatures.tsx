@@ -49,7 +49,11 @@ const isFeatureSectionArray = (value: unknown): value is FeatureSection[] => {
   })
 }
 
-const FeatureBulletList = ({ items }: { items: string[] }) => {
+type FeatureBulletListProps = {
+  items: string[]
+}
+
+const FeatureBulletList = ({ items }: FeatureBulletListProps) => {
   const { t } = useTranslation()
 
   return (
@@ -79,15 +83,13 @@ const FeatureBulletList = ({ items }: { items: string[] }) => {
   )
 }
 
-const FeatureTable = ({
-  headers,
-  rows,
-  title
-}: {
+type FeatureTableProps = {
   headers: string[]
   rows: string[][]
   title: string
-}) => {
+}
+
+const FeatureTable = ({ headers, rows, title }: FeatureTableProps) => {
   const { t } = useTranslation()
 
   return (
@@ -108,9 +110,8 @@ const FeatureTable = ({
         <tbody>
           {rows.map((row: string[]) => {
             if (!row || row.length === 0) {
-              throw new Error(
-                `MainMenuFeatures: empty row in section "${title}"`
-              )
+              console.error(`MainMenuFeatures: empty row in section "${title}"`)
+              return null
             }
             const rowKey = row[0]
             return (
