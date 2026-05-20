@@ -43,8 +43,70 @@ interface OverworldMapProps {
   activeStoryFlags: string[]
 }
 
-const SVG_TOKEN_STYLE =
-  '<defs><style>:root{--color-void-black:var(--color-void-black);--color-star-white:var(--color-star-white);--color-toxic-green:var(--color-toxic-green);--color-ash-gray:var(--color-ash-gray);}</style></defs>'
+const SVG_TOKEN_NAMES = [
+  '--color-void-black',
+  '--color-star-white',
+  '--color-toxic-green',
+  '--color-ash-gray'
+] as const
+
+type SvgTokenName = (typeof SVG_TOKEN_NAMES)[number]
+
+const SVG_TOKEN_FALLBACKS = {
+  '--color-void-black': '#0a0a0a',
+  '--color-star-white': '#ffffff',
+  '--color-toxic-green': '#00ff41',
+  '--color-ash-gray': '#888888'
+} as const satisfies Record<SvgTokenName, string>
+
+const HEX_COLOR_PATTERN = /^#(?:[0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i
+const SVG_UNSAFE_CSS_PATTERN = /[;{}<>]/
+
+const isSafeSvgColorValue = (value: string): boolean => {
+  const trimmedValue = value.trim()
+  if (
+    !trimmedValue ||
+    trimmedValue.includes('var(') ||
+    SVG_UNSAFE_CSS_PATTERN.test(trimmedValue)
+  ) {
+    return false
+  }
+
+  if (
+    typeof window !== 'undefined' &&
+    typeof window.CSS?.supports === 'function'
+  ) {
+    return window.CSS.supports('color', trimmedValue)
+  }
+
+  return HEX_COLOR_PATTERN.test(trimmedValue)
+}
+
+const resolveSvgTokenValue = (tokenName: SvgTokenName): string => {
+  const fallback = SVG_TOKEN_FALLBACKS[tokenName]
+  if (
+    typeof window === 'undefined' ||
+    typeof document === 'undefined' ||
+    typeof window.getComputedStyle !== 'function'
+  ) {
+    return fallback
+  }
+
+  const resolvedValue = window
+    .getComputedStyle(document.documentElement)
+    .getPropertyValue(tokenName)
+    .trim()
+
+  return isSafeSvgColorValue(resolvedValue) ? resolvedValue : fallback
+}
+
+const createSvgTokenStyle = (): string => {
+  const tokenDefinitions = SVG_TOKEN_NAMES.map(
+    tokenName => `${tokenName}:${resolveSvgTokenValue(tokenName)}`
+  ).join(';')
+
+  return `<defs><style>:root{${tokenDefinitions}}</style></defs>`
+}
 
 const escapeSvgText = (value: string): string =>
   value.replace(/[&<>"']/g, char => {
@@ -113,12 +175,13 @@ export const OverworldMap = React.memo(
     // Memoized URL generators
     const urls = useMemo(() => {
       const isOnline = isImageGenerationAvailable() && isOnlineNetwork
+      const svgTokenStyle = createSvgTokenStyle()
       const createOfflineSvgUrl = (svgMarkup: string) =>
         `data:image/svg+xml;utf8,${encodeURIComponent(svgMarkup)}`
       const createOfflinePinUrl = (label: string, symbol: string) =>
         createOfflineSvgUrl(`
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="${escapeSvgText(label)}">
-            ${SVG_TOKEN_STYLE}
+            ${svgTokenStyle}
             <circle cx="32" cy="24" r="16" fill="var(--color-star-white)" stroke="var(--color-void-black)" stroke-width="3"/>
             <path d="M32 58 21 34h22L32 58Z" fill="var(--color-star-white)" stroke="var(--color-void-black)" stroke-width="3" stroke-linejoin="round"/>
             <text x="32" y="29" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="var(--color-void-black)">${escapeSvgText(symbol)}</text>
@@ -127,7 +190,7 @@ export const OverworldMap = React.memo(
       const createOfflineVanUrl = (label: string, text: string) =>
         createOfflineSvgUrl(`
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="${escapeSvgText(label)}">
-            ${SVG_TOKEN_STYLE}
+            ${svgTokenStyle}
             <rect x="10" y="20" width="34" height="20" rx="4" fill="var(--color-star-white)" stroke="var(--color-void-black)" stroke-width="3"/>
             <path d="M44 26h10l4 8v6H44Z" fill="var(--color-star-white)" stroke="var(--color-void-black)" stroke-width="3" stroke-linejoin="round"/>
             <circle cx="22" cy="44" r="5" fill="var(--color-star-white)" stroke="var(--color-void-black)" stroke-width="3"/>
@@ -171,7 +234,7 @@ export const OverworldMap = React.memo(
       const offlineAssets = {
         mapBgUrl: createOfflineSvgUrl(`
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" role="img" aria-label="${escapeSvgText(offlineCopy.mapAria)}">
-            ${SVG_TOKEN_STYLE}
+            ${svgTokenStyle}
             <rect width="800" height="450" fill="var(--color-star-white)"/>
             <path d="M40 360C140 320 220 330 320 290S520 210 620 230s100 40 140 20" fill="none" stroke="var(--color-void-black)" stroke-width="10" stroke-linecap="round"/>
             <path d="M90 110c40 10 70 40 120 30s90-50 150-30 100 70 170 60 110-60 170-50" fill="none" stroke="var(--color-toxic-green)" stroke-width="6" stroke-dasharray="18 12" stroke-linecap="round"/>

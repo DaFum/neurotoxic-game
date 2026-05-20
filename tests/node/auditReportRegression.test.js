@@ -12,13 +12,18 @@ test('rhythm hook uses audioEngine facade for audio orchestration helpers', () =
 
 test('offline overworld SVG copy and colors are tokenized/i18n-driven', () => {
   const source = readSource('src/components/overworld/OverworldMap.tsx')
-  const styleMatch = source.match(/const SVG_TOKEN_STYLE =\r?\n\s+'([^']+)'/)
-  assert.ok(styleMatch, 'SVG_TOKEN_STYLE should remain a string literal')
-  assert.doesNotMatch(styleMatch[1], /#[0-9a-fA-F]{3,8}/)
-  assert.match(styleMatch[1], /var\(--color-void-black\)/)
-  assert.match(styleMatch[1], /var\(--color-star-white\)/)
-  assert.match(styleMatch[1], /var\(--color-toxic-green\)/)
-  assert.match(styleMatch[1], /var\(--color-ash-gray\)/)
+  const css = readSource('src/index.css')
+  assert.match(source, /const SVG_TOKEN_FALLBACKS = /)
+  assert.match(source, /getComputedStyle\(document\.documentElement\)/)
+  assert.match(source, /const createSvgTokenStyle = \(\): string =>/)
+  assert.doesNotMatch(source, /--color-[\w-]+:var\(--color-[\w-]+\)/)
+  assert.match(source, /fill="var\(--color-star-white\)"/)
+  assert.match(source, /stroke="var\(--color-void-black\)"/)
+  for (const [, tokenName, tokenValue] of source.matchAll(
+    /'(--color-[^']+)': '(#[0-9a-fA-F]{3,8})'/g
+  )) {
+    assert.match(css, new RegExp(`${tokenName}:\\s*${tokenValue};`))
+  }
   assert.doesNotMatch(source, />OFFLINE MAP</)
   assert.doesNotMatch(
     source,
@@ -46,6 +51,7 @@ test('milestones do not store raw action objects or raw toast actions', () => {
 test('supply stop purchases route through Band HQ purchase logic', () => {
   const source = readSource('src/ui/SupplyStopModal.tsx')
   assert.match(source, /usePurchaseLogic/)
+  assert.match(source, /transformPlayerPatch: applyBlackMarketFamePenalty/)
   assert.doesNotMatch(source, /processPurchaseEffect/)
 })
 
@@ -53,8 +59,9 @@ test('supply stop black market toast reports applied fame loss', () => {
   const source = readSource('src/ui/SupplyStopModal.tsx')
   const enUi = readSource('public/locales/en/ui.json')
   const deUi = readSource('public/locales/de/ui.json')
-  assert.match(source, /const fameLost = currentFame - nextFame/)
-  assert.match(source, /amount: fameLost/)
+  assert.match(source, /fameLostRef\.current = currentFame - nextFame/)
+  assert.match(source, /amount: fameLostRef\.current/)
+  assert.doesNotMatch(source, /updatePlayer\(\{\s*fame: nextFame/)
   assert.doesNotMatch(source, /Lost 5 Fame/)
   assert.match(enUi, /Lost \{\{amount\}\} Fame/)
   assert.match(deUi, /\{\{amount\}\} Fame verloren/)

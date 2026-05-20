@@ -244,4 +244,50 @@ describe('usePurchaseLogic', () => {
     assert.ok(playerPatch, 'Player patch should be created')
     assert.equal(playerPatch.passiveFollowers, 15)
   })
+
+  test('handleBuy applies player patch transform before dispatching player update', () => {
+    const playerUpdates = []
+    const player = {
+      money: 500,
+      fame: 4,
+      fameLevel: 1,
+      van: { upgrades: [] },
+      hqUpgrades: []
+    }
+
+    const { result } = renderHook(() =>
+      purchaseLogicHook({
+        player,
+        band: { inventory: {}, performance: {} },
+        updatePlayer: patch => {
+          playerUpdates.push(patch)
+        },
+        updateBand: () => {},
+        addToast: () => {},
+        transformPlayerPatch: patch => ({
+          ...patch,
+          fame: 0,
+          fameLevel: 1
+        })
+      })
+    )
+
+    act(() => {
+      const success = result.current.handleBuy({
+        id: 'black_market_strings',
+        name: 'Strings',
+        cost: 100,
+        currency: 'money',
+        effect: { type: 'inventory_add', item: 'strings', value: 1 }
+      })
+      assert.equal(success, true)
+    })
+
+    assert.equal(playerUpdates.length, 1)
+    assert.deepEqual(playerUpdates[0], {
+      money: 400,
+      fame: 0,
+      fameLevel: 1
+    })
+  })
 })

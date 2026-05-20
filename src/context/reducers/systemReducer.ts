@@ -1782,6 +1782,7 @@ export const handleSetPendingBandHQOpen = (
   state: GameState,
   isOpen: boolean
 ): GameState => {
+  if (state.pendingBandHQOpen === isOpen) return state
   return { ...state, pendingBandHQOpen: isOpen }
 }
 
@@ -1789,8 +1790,11 @@ export const handleSetPendingSupplyStopInventory = (
   state: GameState,
   inventory: GameState['pendingSupplyStopInventory']
 ): GameState => {
+  const nextInventory = Array.isArray(inventory) ? inventory : null
+  if (state.pendingSupplyStopInventory === nextInventory) return state
+
   return {
     ...state,
-    pendingSupplyStopInventory: Array.isArray(inventory) ? inventory : null
+    pendingSupplyStopInventory: nextInventory
   }
 }

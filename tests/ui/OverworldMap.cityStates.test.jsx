@@ -105,9 +105,29 @@ const baseProps = {
   activeStoryFlags: []
 }
 
+const svgTokenTestValues = {
+  '--color-void-black': '#111111',
+  '--color-star-white': '#eeeeee',
+  '--color-toxic-green': '#123456',
+  '--color-ash-gray': '#999999'
+}
+
+const getDecodedOfflineMapSvg = container => {
+  const mapBackground = container.querySelector('.map-wrap > div')
+  const backgroundImage = mapBackground?.style.backgroundImage ?? ''
+  const urlMatch = backgroundImage.match(/url\(["']?(.*?)["']?\)$/)
+
+  expect(urlMatch?.[1]).toBeDefined()
+
+  return decodeURIComponent(urlMatch[1])
+}
+
 describe('OverworldMap cityStates lookup', () => {
   beforeEach(() => {
     capturedProps.length = 0
+    for (const tokenName of Object.keys(svgTokenTestValues)) {
+      document.documentElement.style.removeProperty(tokenName)
+    }
   })
 
   test('passes cityTraits derived from venue.id prefix when cityStates is present', () => {
@@ -132,5 +152,25 @@ describe('OverworldMap cityStates lookup', () => {
     const startNodeProps = capturedProps.find(p => p.node?.id === 'node_0_0')
     expect(startNodeProps).toBeDefined()
     expect(startNodeProps.cityTraits).toBeUndefined()
+  })
+
+  test('embeds resolved design-token colors in offline SVG assets', () => {
+    for (const [tokenName, tokenValue] of Object.entries(svgTokenTestValues)) {
+      document.documentElement.style.setProperty(tokenName, tokenValue)
+    }
+
+    const { container } = render(
+      <OverworldMap {...baseProps} gameMap={makeGameMap(true)} />
+    )
+    const decodedSvg = getDecodedOfflineMapSvg(container)
+
+    expect(decodedSvg).toContain('--color-void-black:#111111')
+    expect(decodedSvg).toContain('--color-star-white:#eeeeee')
+    expect(decodedSvg).toContain('--color-toxic-green:#123456')
+    expect(decodedSvg).toContain('--color-ash-gray:#999999')
+    expect(decodedSvg).not.toContain(
+      '--color-toxic-green:var(--color-toxic-green)'
+    )
+    expect(decodedSvg).toContain('fill="var(--color-star-white)"')
   })
 })
