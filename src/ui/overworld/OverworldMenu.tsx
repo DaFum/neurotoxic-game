@@ -102,7 +102,7 @@ const MenuCategoryList = React.memo(
       {menuCategories.map(c => (
         <GlitchButton
           key={c.id}
-          className='menu-cat-btn !border-none !bg-transparent w-full !mb-0 border-b border-ash-gray/15 hover:!bg-toxic-green/5 !px-3.5 !py-2.5'
+          className='menu-cat-btn !border-t-0 !border-x-0 !border-b !bg-transparent w-full !mb-0 border-ash-gray/15 hover:!bg-toxic-green/5 !px-3.5 !py-2.5'
           disabled={isTraveling}
           onClick={() => setActiveCat(c.id)}
           size='sm'
@@ -162,7 +162,7 @@ const MenuSubmenu = React.memo(
   }) => (
     <div className='menu-sub flex flex-col'>
       <GlitchButton
-        className='menu-back-btn !w-full !border-none !bg-ash-gray/10 !border-b !border-ash-gray/20 !px-3.5 !py-2 !text-[10px] !text-left'
+        className='menu-back-btn !w-full !border-t-0 !border-x-0 !border-b !bg-ash-gray/10 !border-ash-gray/20 !px-3.5 !py-2 !text-[10px] !text-left'
         size='sm'
         variant='primary'
         onClick={handleBack}
@@ -176,7 +176,7 @@ const MenuSubmenu = React.memo(
         {cat.items.map(item => (
           <GlitchButton
             key={item.action}
-            className={`menu-sub-item !border-transparent !bg-transparent !mb-1 !p-2 !w-full hover:enabled:-translate-x-[2px] v-${item.v}`}
+            className={`menu-sub-item !border-transparent !bg-transparent !mb-1 !p-2 !w-full hover:enabled:-translate-x-[2px] ${item.v === 'p' ? 'v-p' : item.v === 'w' ? 'v-w' : 'v-d'}`}
             disabled={isDisabled(item)}
             onClick={() => {
               actions[item.action]()
