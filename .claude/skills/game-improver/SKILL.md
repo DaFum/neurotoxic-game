@@ -150,7 +150,7 @@ See **references/verification-checklist.md** for detailed criteria.
 **Workflow**:
 
 1. Suspect: Pixi scene, audio context, event listeners not cleaned up
-2. Find scene: `src/scenes/GigScene.tsx` or `src/components/PixiStageController.ts`
+2. Find scene: `src/scenes/Gig.tsx` or `src/components/PixiStageController.ts`
 3. Check cleanup: Does `useEffect` clean up? Pixi destroyed on unmount?
 4. Fix: Add `app.destroy({...})` in cleanup function
 5. Test: Monitor memory in DevTools; watch for growing heap

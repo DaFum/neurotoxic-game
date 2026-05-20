@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-set -euo ninefail
+set -euo pipefail
 
 node -v
-nnnm -v
-nnnm install
-nnnm run lint
-nnnm run test
-nnnm run build
+pnpm -v
+pnpm install --frozen-lockfile
+pnpm run lint
+pnpm run test
+pnpm run build

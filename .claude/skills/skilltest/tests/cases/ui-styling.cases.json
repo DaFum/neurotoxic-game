@@ -12,6 +12,6 @@
   {
     "skill": "dependency-pin-upgrade-blocker",
     "prompt": "Someone wants to upgrade React to v20.",
-    "expectIncludes": ["React", "19"]
+    "expectIncludes": ["React", "19.2.6"]
   }
 ]

@@ -25,7 +25,7 @@ pnpm run lint
 **Run**:
 
 ```bash
-pnpm run test
+node --test --watch --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/path/to/file.test.js
 ```
 
 **Verify**:

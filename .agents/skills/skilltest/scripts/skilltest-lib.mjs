@@ -640,11 +640,13 @@ export const runQualityGate = async () => {
       child.on('error', _error => {
         reject(new Error(`${label} failed to start: ${_error.message}`))
       })
-      child.on('exit', code => {
+      child.on('exit', (code, signal) => {
         if (code === 0) {
           resolve()
         } else {
-          reject(new Error(`${label} failed with ${code}`))
+          reject(
+            new Error(`${label} failed with code ${code}, signal ${signal}`)
+          )
         }
       })
     })

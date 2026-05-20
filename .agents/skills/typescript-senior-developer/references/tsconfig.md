@@ -80,6 +80,6 @@ pnpm run typecheck
 # Run the repo type gate with line-numbered errors
 pnpm run typecheck:core
 
-# Show all errors including deep dependencies
+# The same full tsc gate reports errors across included project files and dependencies
 pnpm run typecheck:core
 ```

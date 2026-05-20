@@ -159,10 +159,10 @@ export default MyComponent
 pnpm dlx lighthouse
 
 # Run audit
-lighthouse https://your-app.com --view
+pnpm dlx lighthouse https://your-app.com --view
 
 # CI integration
-lighthouse https://your-app.com --output json --output-path ./report.json
+pnpm dlx lighthouse https://your-app.com --output json --output-path ./report.json
 ```
 
 **Key metrics:**

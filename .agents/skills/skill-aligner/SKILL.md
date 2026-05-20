@@ -50,13 +50,13 @@ Each skill directory can contain any of these file types. All of them can carry 
 
 ```bash
 # Scan every file in the skill for package-manager commands
-grep -rn "npm " .claude/skills/<skill-name>/
+grep -rn "npm " .agents/skills/<skill-name>/
 
 # Cross-reference scripts section of package.json
 jq '.scripts | keys' package.json
 
 # Check that pnpm run <name> actually exists
-grep -o 'pnpm run [a-z:_-]*' .claude/skills/<skill-name>/SKILL.md | sort -u | \
+grep -o 'pnpm run [a-z:_-]*' .agents/skills/<skill-name>/SKILL.md | sort -u | \
   while read cmd; do
     script="${cmd#pnpm run }"
     jq -e --arg s "$script" '.scripts[$s]' package.json > /dev/null \
@@ -83,7 +83,7 @@ grep -o 'pnpm run [a-z:_-]*' .claude/skills/<skill-name>/SKILL.md | sort -u | \
 
 ```bash
 # Find all version references across the entire skill
-grep -rn -E '(React|Vite|Tailwind|Framer|Tone\.js|Node) [0-9]+\.[0-9]' .claude/skills/<skill-name>/
+grep -rn -E '(React|Vite|Tailwind|Framer|Tone\.js|Node) [0-9]+\.[0-9]' .agents/skills/<skill-name>/
 
 # Get ground truth
 jq '{react: .dependencies.react, vite: .devDependencies.vite, tailwindcss: .devDependencies.tailwindcss}' package.json
@@ -108,11 +108,11 @@ jq '{react: .dependencies.react, vite: .devDependencies.vite, tailwindcss: .devD
 
 ```bash
 # Scan all markdown in the skill for .js/.jsx src/ references
-grep -rn 'src/.*\.jsx\?\b' .claude/skills/<skill-name>/ \
+grep -rn 'src/.*\.jsx\?\b' .agents/skills/<skill-name>/ \
   | grep -v '\.test\.\|\.spec\.\|config\.\|\.mjs\|setup\.'
 
 # Verify actual extension on disk for each hit
-for f in $(grep -roh 'src/[a-zA-Z0-9/_.-]*\.jsx\?' .claude/skills/<skill-name>/ | sort -u); do
+for f in $(grep -roh 'src/[a-zA-Z0-9/_.-]*\.jsx\?' .agents/skills/<skill-name>/ | sort -u); do
   base="${f%.*}"
   found=false
   for ext in .ts .tsx .js .jsx; do
@@ -142,10 +142,10 @@ done
 
 ```bash
 # Find all src/ references across the skill
-grep -rn -oE 'src/[a-zA-Z0-9/_.-]+' .claude/skills/<skill-name>/ | sort -u
+grep -rn -oE 'src/[a-zA-Z0-9/_.-]+' .agents/skills/<skill-name>/ | sort -u
 
 # Verify each directory still exists
-grep -roh -E 'src/[a-zA-Z0-9/_/-]+/' .claude/skills/<skill-name>/ | sort -u | \
+grep -roh -E 'src/[a-zA-Z0-9/_/-]+/' .agents/skills/<skill-name>/ | sort -u | \
   while read dir; do [ -d "$dir" ] && echo "✓ $dir" || echo "✗ MISSING dir: $dir"; done
 ```
 
@@ -163,13 +163,13 @@ Shell scripts and Node scripts are executable artefacts — their bugs are silen
 
 ```bash
 # Check shebang is present
-head -1 .claude/skills/<skill-name>/scripts/*.sh
+head -1 .agents/skills/<skill-name>/scripts/*.sh
 
 # Find npm commands
-grep -n "npm " .claude/skills/<skill-name>/scripts/*.sh
+grep -n "npm " .agents/skills/<skill-name>/scripts/*.sh
 
 # Find hardcoded script names and verify against package.json
-grep -oE 'pnpm run [a-z:_-]+' .claude/skills/<skill-name>/scripts/*.sh | sort -u | \
+grep -oE 'pnpm run [a-z:_-]+' .agents/skills/<skill-name>/scripts/*.sh | sort -u | \
   while read cmd; do
     script="${cmd#pnpm run }"
     jq -e --arg s "$script" '.scripts[$s]' package.json > /dev/null \
@@ -181,10 +181,10 @@ grep -oE 'pnpm run [a-z:_-]+' .claude/skills/<skill-name>/scripts/*.sh | sort -u
 
 ```bash
 # Find npm references in Node scripts
-grep -n "npm " .claude/skills/<skill-name>/scripts/*.mjs .claude/skills/<skill-name>/scripts/*.js 2>/dev/null
+grep -n "npm " .agents/skills/<skill-name>/scripts/*.mjs .agents/skills/<skill-name>/scripts/*.js 2>/dev/null
 
 # Find src/ path references in scripts
-grep -n "src/" .claude/skills/<skill-name>/scripts/*.mjs .claude/skills/<skill-name>/scripts/*.js 2>/dev/null
+grep -n "src/" .agents/skills/<skill-name>/scripts/*.mjs .agents/skills/<skill-name>/scripts/*.js 2>/dev/null
 ```
 
 **Decision tree:**
@@ -206,11 +206,11 @@ Skills reference other skills by name in their descriptions, workflows, or escal
 
 ```bash
 # Extract skill name references from all files in the skill
-grep -roh -E '`[a-z][a-z-]+`' .claude/skills/<skill-name>/ | sort -u
+grep -roh -E '`[a-z][a-z-]+`' .agents/skills/<skill-name>/ | sort -u
 
 # Cross-reference against existing skill directories
-ls .claude/skills/ > /tmp/existing-skills.txt
-grep -roh -E '`[a-z][a-z-]+`' .claude/skills/<skill-name>/ | sort -u | tr -d '`' | \
+ls .agents/skills/ > /tmp/existing-skills.txt
+grep -roh -E '`[a-z][a-z-]+`' .agents/skills/<skill-name>/ | sort -u | tr -d '`' | \
   while read name; do
     grep -qx "$name" /tmp/existing-skills.txt && echo "✓ $name" || echo "? $name (not a skill dir)"
   done
@@ -238,7 +238,7 @@ grep -roh -E '`[a-z][a-z-]+`' .claude/skills/<skill-name>/ | sort -u | tr -d '`'
 grep -E '(pnpm|npm|yarn|Howler|AudioContext|i18n|Tailwind|forwardRef)' AGENTS.md CLAUDE.md
 
 # Scan skill for contradictions
-grep -rn -E '(yarn |Howler\.js|React\.forwardRef|import type .* from)' .claude/skills/<skill-name>/
+grep -rn -E '(yarn |Howler\.js|React\.forwardRef|import type .* from)' .agents/skills/<skill-name>/
 ```
 
 **Decision tree:**
@@ -260,7 +260,7 @@ grep -rn -E '(yarn |Howler\.js|React\.forwardRef|import type .* from)' .claude/s
 
 ```bash
 # Check what the skill says it triggers on
-head -5 .claude/skills/<skill-name>/SKILL.md
+head -5 .agents/skills/<skill-name>/SKILL.md
 
 # Compare to AGENTS.md critical commands to see if new commands exist
 grep "pnpm run" AGENTS.md
@@ -282,7 +282,7 @@ grep "pnpm run" AGENTS.md
 
 ```bash
 # List every file in the skill
-find .claude/skills/<skill-name> -type f | sort
+find .agents/skills/<skill-name> -type f | sort
 ```
 
 For each file, extract:
@@ -356,7 +356,7 @@ For bulk version/extension updates across an entire skill:
 
 ```bash
 # Bulk version replace across all files in a skill
-find .claude/skills/<skill-name> -type f \( -name "*.md" -o -name "*.sh" -o -name "*.mjs" \) \
+find .agents/skills/<skill-name> -type f \( -name "*.md" -o -name "*.sh" -o -name "*.mjs" \) \
   -exec sed -i \
     -e 's/React 19\.2\.4/React 19.2.6/g' \
     -e 's/Vite 8\.0\.1\b/Vite 8.0.10/g' \
@@ -364,7 +364,7 @@ find .claude/skills/<skill-name> -type f \( -name "*.md" -o -name "*.sh" -o -nam
   {} \;
 
 # Bulk npm → pnpm in shell scripts
-find .claude/skills/<skill-name>/scripts -name "*.sh" \
+find .agents/skills/<skill-name>/scripts -name "*.sh" \
   -exec sed -i \
     -e 's/\bnpm -v\b/pnpm -v/g' \
     -e 's/\bnpm install\b/pnpm install/g' \
@@ -377,14 +377,14 @@ find .claude/skills/<skill-name>/scripts -name "*.sh" \
 
 ```bash
 # No npm left in scripts
-grep -rn "npm " .claude/skills/<skill-name>/scripts/
+grep -rn "npm " .agents/skills/<skill-name>/scripts/
 
 # No stale .js src paths in narrative markdown
-grep -rn 'src/.*\.jsx\?\b' .claude/skills/<skill-name>/ \
+grep -rn 'src/.*\.jsx\?\b' .agents/skills/<skill-name>/ \
   | grep -v '\.test\.\|config\.\|\.mjs\|import '
 
 # All pnpm run commands valid
-grep -roh 'pnpm run [a-z:_-]*' .claude/skills/<skill-name>/ | sort -u | \
+grep -roh 'pnpm run [a-z:_-]*' .agents/skills/<skill-name>/ | sort -u | \
   while read cmd; do
     script="${cmd#pnpm run }"
     jq -e --arg s "$script" '.scripts[$s]' package.json > /dev/null \
@@ -424,7 +424,7 @@ fix: sync <skill-name> to React 19.2.6 / Vite 8.0.10 baseline
 
 **Steps**:
 
-1. `find .claude/skills/game-improver -type f | sort` — inventory all 9 files
+1. `find .agents/skills/game-improver -type f | sort` — inventory all 9 files
 2. Scan each for npm/extension/version drift
 3. Fix `SKILL.md` first (canonical), then `references/`, then `scripts/`
 4. Verify with the grep checks above
@@ -438,16 +438,16 @@ fix: sync <skill-name> to React 19.2.6 / Vite 8.0.10 baseline
 
 1. Find all affected files:
    ```bash
-   grep -rln "React 19\.2\.4" .claude/skills/ --include="*.md" --include="*.sh"
+   grep -rln "React 19\.2\.4" .agents/skills/ --include="*.md" --include="*.sh"
    ```
 2. Bulk-replace across all of them:
    ```bash
-   find .claude/skills -type f \( -name "*.md" -o -name "*.sh" \) \
+   find .agents/skills -type f \( -name "*.md" -o -name "*.sh" \) \
      -exec sed -i 's/React 19\.2\.4/React 19.2.6/g' {} \;
    ```
 3. Scan for any remaining old references:
    ```bash
-   grep -rln "React 19\.2\.4" .claude/skills/
+   grep -rln "React 19\.2\.4" .agents/skills/
    ```
 4. One commit covering all skills
 
@@ -459,17 +459,17 @@ fix: sync <skill-name> to React 19.2.6 / Vite 8.0.10 baseline
 
 1. Check every file in the skill:
    ```bash
-   grep -rn "AudioManager" .claude/skills/audio-debugger-ambient-vs-gig/
+   grep -rn "AudioManager" .agents/skills/audio-debugger-ambient-vs-gig/
    ```
 2. Verify new path: `ls src/utils/audio/AudioManager.ts`
 3. Replace in all files:
    ```bash
-   find .claude/skills/audio-debugger-ambient-vs-gig -type f \
+   find .agents/skills/audio-debugger-ambient-vs-gig -type f \
      -exec sed -i 's|src/utils/AudioManager\.js|src/utils/audio/AudioManager.ts|g' {} \;
    ```
 4. Check other skills that may reference the same path:
    ```bash
-   grep -rln "AudioManager" .claude/skills/ --include="*.md"
+   grep -rln "AudioManager" .agents/skills/ --include="*.md"
    ```
 
 ### Scenario 4: Cascading Cross-Skill Rename
@@ -480,12 +480,12 @@ fix: sync <skill-name> to React 19.2.6 / Vite 8.0.10 baseline
 
 1. Find all references to the old name:
    ```bash
-   grep -rln "state-mutation-guard" .claude/skills/
+   grep -rln "state-mutation-guard" .agents/skills/
    ```
 2. Update each referencing skill
 3. Verify the new name exists:
    ```bash
-   ls .claude/skills/state-safety-action-creator-guard/
+   ls .agents/skills/state-safety-action-creator-guard/
    ```
 4. Commit per referencing skill or as one batch
 
@@ -505,14 +505,14 @@ Check if it's inside a `node:test` `import` statement. If yes, keep `.js` — ts
 **Sync broke multiple skills?**
 
 ```bash
-git checkout -- .claude/skills/   # Undo all skill changes
+git checkout -- .agents/skills/   # Undo all skill changes
 # Then escalate to skill-creator with a list of the affected files
 ```
 
 **Script change not working?**
 
 ```bash
-bash -n .claude/skills/<skill-name>/scripts/<script>.sh  # Syntax check only
+bash -n .agents/skills/<skill-name>/scripts/<script>.sh  # Syntax check only
 ```
 
 ---
