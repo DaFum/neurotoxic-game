@@ -8,22 +8,15 @@
 ## Critical Commands
 
 - Use `pnpm` only. Do not use `npm` or `yarn`.
-- Full PR gate: `pnpm run test:all`.
-- Fast local gate: `pnpm run test`.
-- UI and migrated suites: `pnpm run test:ui`.
-- Full legacy node suites: `pnpm run test:node`.
-- Extended perf and locale suites: `pnpm run test:additional`.
-- Single `node:test` file: `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/<file>.test.js`.
-- Single Vitest file: `pnpm run test:ui:file -- tests/<file>.test.js(x)`.
+- Test scope picker: `pnpm run test` for fast local, `pnpm run test:all` for full PR, `pnpm run test:ui` for Vitest/UI, `pnpm run test:node` for legacy node, `pnpm run test:additional` for perf/locale.
+- Single-file tests: use `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/<file>.test.js` for `node:test`; use `pnpm run test:ui:file -- tests/<file>.test.js(x)` for Vitest.
 - Type gates: `pnpm run typecheck:core`; `pnpm run typecheck` is the scoped reducer gate.
 
 ## Architecture Constraints
 
 - Do not upgrade pinned dependencies without discussion; do not add Howler.js.
 - All state updates go through action creators. New actions must update `actionTypes`, reducer handling, and `actionCreators` together.
-- Sanitize raw payload fields in action creators as early as possible (using inline `Math.max` or `gameStateUtils.ts` helpers) when the invariant is local to the incoming value, such as non-negative costs, rewards, or direct bounded assignments.
-- Reducers remain the final authority for bounded state. When computing next state from prior state plus a payload, delta, reward, cost, or functional update, apply canonical clamp helpers before storing the final value.
-- Do not remove terminal reducer clamps merely because an action creator also normalizes input. Early payload sanitation and final-state clamping serve different purposes and may both be required.
+- Payload safety is two-layered: action creators normalize or drop locally invalid raw fields; reducers remain the final authority, re-clamp computed state with canonical helpers, and reject malformed or hostile payloads by returning unchanged state. Do not remove reducer clamps because input was normalized earlier.
 - Audio gameplay timing must use `audioEngine.getGigTimeMs()`, never direct Tone.js time reads.
 - PreGig modifier costs come only from `MODIFIER_COSTS` in `src/utils/economyEngine.ts`.
 - User-facing text must use namespaced i18n keys. Update matching EN and DE locale JSON together.
@@ -49,7 +42,7 @@
 
 ## Testing
 
-- Choose the runner by neighboring tests; do not mix `node:test` and Vitest patterns in one file.
+- Choose the runner by the framework already used in the same file; for new files, match the closest same-directory/domain tests. Do not mix `node:test` and Vitest patterns in one file.
 - Vitest localStorage assertions must mock and restore `window.localStorage.setItem` in `try/finally`.
 - `react-i18next` mocks must include `initReactI18next: { type: '3rdParty', init: () => {} }`.
 - Explicitly populate lookup maps such as `SONGS_BY_ID` in mocked fixture data.
@@ -86,7 +79,7 @@
 - `band.merchPrices` is persisted through save/load via `sanitizeBand` in `src/context/reducers/systemReducer.ts`; do not strip it during state sanitization.
 - `MerchStrategyBlock` lives in `src/components/pregig/`; it uses full i18n and design-token styling.
 - `deriveFinancials` in `src/utils/postGigUtils.ts` accepts an optional `bandMerchPrices` param; pass `band.merchPrices` when calling from post-gig hooks.
-- Locale keys may be looked up via template (``t(`ui:<prefix>.${var}`)``) — grep for the prefix before deleting an apparently-unused key. Known dynamic prefixes: `chatter_labels.${scene}` (`src/components/ChatterOverlay.tsx`), `bandhq.${balanceKey}` (`src/ui/bandhq/CatalogTab.tsx`, balance keys `money`/`funds`/`fame`), `featureList.*` (indexed by config array).
+- Locale keys may be looked up via template (``t(`ui:<prefix>.${var}`)``) — search the codebase for the prefix before deleting an apparently-unused key. Known dynamic prefixes: `chatter_labels.${scene}` (`src/components/ChatterOverlay.tsx`), `bandhq.${balanceKey}` (`src/ui/bandhq/CatalogTab.tsx`, balance keys `money`/`funds`/`fame`), `featureList.*` (indexed by config array).
 - `EventDelta` (`src/types/events.d.ts`) is the single source of truth, shared with `eventEngine.ts`, `gameStateUtils.ts`, and `EventDeltaPayload` (`actions.d.ts`). Its four container fields (`player`, `band`, `social`, `flags`) are required — callers must initialize each as `{}` so `eventEngine` handlers can mutate without non-null assertions. `EventDeltaPayload` only adds `activeStoryFlags` + `pendingEvents`; do not redeclare containers.
 - Payload sanitizers must use `Number.isFinite(v)`, not bare `typeof v === 'number'` (which lets `NaN`/`Infinity` through and corrupts downstream clamps). When dropping `fame` from a payload, also drop the paired derived `fameLevel`.
 - `BASE_STATE` in `.claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js` must mirror `createInitialState()` exactly. Only `toasts` and `isScreenshotMode` may be omitted; any other top-level field added to `initialState` without updating `BASE_STATE` fails `tests/node/playwright-screenshot-fixture-validation.test.js`.
