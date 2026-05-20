@@ -83,14 +83,14 @@ pnpm run test:all  # lint + test + test:ui in sequence
 **Run targeted tests** (faster, for iteration):
 
 ```bash
-# Logic tests
-pnpm run test -- tests/path/to/file.test.js
+# node:test single-file logic tests
+node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/path/to/file.test.js
 
-# UI tests
-pnpm run test:ui -- tests/path/to/file.test.jsx
+# Vitest/UI single-file tests
+pnpm run test:ui:file -- tests/path/to/file.test.jsx
 
-# Watch mode (re-run on save)
-pnpm run test -- --watch
+# Fast local suite
+pnpm run test
 ```
 
 **Build check** (catches import errors, bundle issues):
@@ -109,7 +109,7 @@ See **references/verification-checklist.md** for detailed criteria.
 
 ## Core Constraints
 
-**Stack**: React 19.2.5, Vite 8.0.10, Tailwind 4.2.4, Framer Motion 12.38.0, Tone.js 15.5.6. Node 22.13+.
+**Stack**: React 19.2.6, Vite 8.0.10, Tailwind 4.2.4, Framer Motion 12.38.0, Tone.js 15.5.11. Node 22.13+.
 **State Limits**: `player.money >= 0`, `band.harmony ∈ [1, 100]`, `van.fuel ∈ [0, 100]`. Clamp via `gameStateUtils.js`.
 **Audio**: Use `audioEngine.getGigTimeMs()` as single clock. Don't access Tone.js directly. Handle suspended AudioContext.
 **Pixi**: Destroy on unmount. No memory leaks. Pre-compute, don't allocate per-frame.
@@ -128,7 +128,7 @@ See **references/verification-checklist.md** for detailed criteria.
 2. Check reducer: Does `UPDATE_PLAYER` subtract fuel? Check `gameReducer.ts`
 3. Find test: `tests/travel.test.js` — what's the failing assertion?
 4. Fix: Add fuel deduction to travel action payload
-5. Test: `pnpm run test -- tests/travel.test.js`
+5. Test with the matching single-file command from `AGENTS.md`.
 6. Verify bounds: Is fuel clamped to [0, 100]? Check `gameStateUtils.ts`
 
 ### Example 2: New Feature (Upgrade System)
@@ -157,4 +157,4 @@ See **references/verification-checklist.md** for detailed criteria.
 
 See **references/improvement-patterns.md** for more complete examples.
 
-_Skill sync: React 19.2.5, Vite 8.0.10, Tailwind 4.2.4 baseline as of 2026-05-10._
+_Skill sync: compatible with React 19.2.6 / Vite 8.0.10 / Tailwind 4.2.4 baseline as of 2026-05-20._

@@ -62,4 +62,4 @@ jobs:
 **Output**:
 "Added `pnpm/action-setup` with caching to the install step. This will speed up subsequent runs by reusing the pnpm cache."
 
-_Skill sync: compatible with React 19.2.5 / Vite 8.0.10 baseline as of 2026-05-10._
+_Skill sync: compatible with React 19.2.6 / Vite 8.0.10 / Tailwind 4.2.4 baseline as of 2026-05-20._

@@ -13,7 +13,7 @@ Ensure stable audio playback across all browsers and devices.
     - **Rule**: `AudioContext` must start in `suspended` state.
     - **Resume**: Must call `Tone.start()` or `context.resume()` inside a `click` or `keydown` event.
     - **Diag**: Check `Tone.context.state` on load.
-    - **Relevant files**: `AudioManager.js`, `audioEngine.js`, `useAudioControl.js`.
+    - **Relevant files**: `src/utils/audio/AudioManager.ts`, `src/utils/audio/audioEngine.ts`, `src/hooks/rhythmGame/useRhythmGameAudio.ts`.
 
 2.  **Inspect Scheduling**
     - **Lookahead**: Is `Tone.context.lookAhead` sufficient? (Default 0.1s).
@@ -33,12 +33,12 @@ Ensure stable audio playback across all browsers and devices.
 
 **Action**:
 
-1.  Check `audioEngine.js`.
+1.  Check `src/utils/audio/audioEngine.ts`.
 2.  See extensive object creation in the render loop.
 3.  **Fix**: Reuse synth instances. Pre-calculate notes.
 4.  Increase `Tone.context.lookAhead` if CPU usage is high.
 
 **Output**:
-"Optimized synth pooling in `audioEngine.js` to reduce garbage collection pauses. Increased lookahead to 0.2s."
+"Optimized synth pooling in `src/utils/audio/audioEngine.ts` to reduce garbage collection pauses. Increased lookahead to 0.2s."
 
-_Skill sync: compatible with React 19.2.5 / Vite 8.0.10 baseline as of 2026-05-10._
+_Skill sync: compatible with React 19.2.6 / Vite 8.0.10 / Tailwind 4.2.4 baseline as of 2026-05-20._

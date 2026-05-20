@@ -9,8 +9,8 @@ If a tool is missing locally, the runner will report the error and continue.
 - **BASH_EXEC**: Ensure shell scripts are executable.
 - **CHECKOV**: IaC scanning (optional in this repo).
 - **GITLEAKS**: Secret scanning (optional in this repo).
-- **JAVASCRIPT_ES**: `npm run lint` (ESLint).
-- **JAVASCRIPT_PRETTIER**: `npm run format -- --check` (Prettier check).
+- **JAVASCRIPT_ES**: `pnpm run lint` (ESLint).
+- **JAVASCRIPT_PRETTIER**: `pnpm run format -- --check` (Prettier check).
 - **JSCPD**: Duplicate code detection.
 - **JSON**: Parse JSON files with Node.
 - **JSON_PRETTIER**: Prettier check for JSON files.

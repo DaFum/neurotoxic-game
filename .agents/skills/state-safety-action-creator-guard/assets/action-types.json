@@ -1,7 +1,7 @@
 {
   "schema": "Redux Action Types for NEUROTOXIC Game State",
   "description": "Complete list of action types with payloads and state invariants",
-  "source": "src/context/actionTypes.js",
+  "source": "src/context/actionTypes.ts",
   "actionTypes": [
     {
       "type": "CHANGE_SCENE",

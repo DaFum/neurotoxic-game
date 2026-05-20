@@ -287,7 +287,7 @@ const { currentScene } = useSelector(state => state.game) // Reads Redux
 **Task:** Verify state initialization sequence
 
 ```javascript
-// In src/main.jsx or similar:
+// In src/main.tsx or similar:
 1. Check if localStorage state is read on app mount
 2. Verify Redux store is populated BEFORE SceneRouter renders
 3. Add console logs to track currentScene changes
@@ -312,9 +312,9 @@ await page.evaluate(() => {
 
 **Files to inspect:**
 
-- `src/components/SceneRouter.jsx` — Does it listen to injected state changes?
-- `src/context/gameReducer.js` — Does it handle hydration?
-- `src/main.jsx` or App root — State initialization order
+- `src/components/SceneRouter.tsx` - Does it listen to injected state changes?
+- `src/context/gameReducer.ts` - Does it handle hydration?
+- `src/main.tsx` or App root - State initialization order
 
 **Check:**
 

@@ -24,6 +24,13 @@ A **golden path test** runs a sequence of actions (state transitions) end-to-end
 
 Use `node:test` + `node:assert` to test the **reducer + action creators together**, not individual reducers in isolation.
 
+## Scene Path
+
+- **MainMenu**: starts the game and initializes state.
+- **Overworld**: handles travel, map selection, and resource pressure.
+- **Gig**: executes rhythm performance and score capture.
+- **PostGig**: applies reports, payouts, and return-to-tour flow.
+
 ## Core Workflow
 
 ### 1. Choose Your Test Target
@@ -67,7 +74,7 @@ See **references/state-shapes.md** for game state structure and **references/com
 ### 4. Run and Debug
 
 ```bash
-pnpm run test -- tests/golden-path/[name].test.js
+node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/golden-path/[name].test.js
 ```
 
 If it fails, see **references/debugging-guide.md** for diagnosis steps.
@@ -211,4 +218,4 @@ See **references/transition-examples.md** for complete examples:
 
 The project already has comprehensive golden path tests in `tests/goldenPath.test.js` (630+ lines). Review that file for patterns before writing new tests—don't duplicate what's already covered.
 
-_Skill sync: compatible with React 19.2.5 / Vite 8.0.10 baseline as of 2026-05-10._
+_Skill sync: compatible with React 19.2.6 / Vite 8.0.10 / Tailwind 4.2.4 baseline as of 2026-05-20._

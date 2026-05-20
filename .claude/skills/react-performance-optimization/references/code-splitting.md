@@ -90,14 +90,14 @@ async function loadPolyfills() {
 
 ```bash
 # Webpack Bundle Analyzer
-npm install --save-dev webpack-bundle-analyzer
+pnpm add -D webpack-bundle-analyzer
 
 # Vite Bundle Visualizer
-npm install --save-dev rollup-plugin-visualizer
+pnpm add -D rollup-plugin-visualizer
 
 # Analyze bundle composition
-npm run build -- --stats
-npx webpack-bundle-analyzer dist/stats.json
+pnpm run build -- --stats
+pnpm exec webpack-bundle-analyzer dist/stats.json
 ```
 
 **Analysis workflow:**

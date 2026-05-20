@@ -40,7 +40,7 @@ Implement production-ready improvements, bug fixes, and features for NEUROTOXIC.
 
 ## Core Constraints
 
-- **Stack**: React 19.2.4, Vite 8.0.1, Tailwind 4, Pixi 8.
+- **Stack**: React 19.2.6, Vite 8.0.10, Tailwind 4.2.4, Pixi 8.18.1, Tone.js 15.5.11.
 - **State**: `player.money` must be >= 0. `band.harmony` must be > 0.
 - **Audio**: Must handle AudioContext state (suspended/running).
 
@@ -50,12 +50,12 @@ Implement production-ready improvements, bug fixes, and features for NEUROTOXIC.
 
 **Action**:
 
-1.  Read `src/data/upgrades.js` to see existing structure.
+1.  Read `src/data/hqItems.ts` to see existing Band HQ item structure.
 2.  Add new entry: `{ id: 'meditation_pod', cost: 500, effect: 'harmony_regen' }`.
-3.  Update `src/utils/economyEngine.js` or `src/hooks/useGameLoop.js` to implement the effect.
+3.  Update the relevant reducer/action flow and shared helpers such as `src/utils/economyEngine.ts` to implement the effect.
 4.  Verify balance (cost vs benefit).
 
 **Output**:
 "Implemented `meditation_pod` upgrade. Added logic to `useGameLoop` to regenerate +1 harmony per day."
 
-_Skill sync: compatible with React 19.2.4 / Vite 8.0.1 baseline as of 2026-03-18._
+_Skill sync: compatible with React 19.2.6 / Vite 8.0.10 / Tailwind 4.2.4 baseline as of 2026-05-20._

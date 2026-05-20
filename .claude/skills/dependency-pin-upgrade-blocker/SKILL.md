@@ -13,7 +13,7 @@ Strictly enforce pinned versions for critical dependencies to ensure stability a
 | ------------- | ------------ | ------------------- |
 | React         | 19.x         | **BLOCK** v20+      |
 | React DOM     | 19.x         | **BLOCK** v20+      |
-| Vite          | 7.x          | **BLOCK** v8+       |
+| Vite          | 8.x          | **BLOCK** v9+       |
 | Tailwind CSS  | 4.x          | **BLOCK** v5+       |
 | Framer Motion | 12.x         | **BLOCK** v13+      |
 | Tone.js       | 15.x         | **BLOCK** v16+      |
@@ -24,12 +24,12 @@ Strictly enforce pinned versions for critical dependencies to ensure stability a
 
 1.  **Check `package.json`**
     Compare proposed changes against the pinned table.
-    - _Minor/Patch upgrades_: Allowed (e.g., `18.2.0` -> `18.3.0`).
+    - _Minor/Patch upgrades_: Allowed (e.g., `19.2.0` -> `19.2.6`).
     - _Major upgrades_: **Blocked** unless explicitly authorized by a separate migration plan.
 
 2.  **Verify Compatibility**
     - **Tailwind v4**: Must use `@import "tailwindcss"`. No `@tailwind` directives.
-    - **Vite v7**: Ensure config and plugins stay v7-compatible.
+    - **Vite v8**: Ensure config and plugins stay v8-compatible.
     - **Pixi v8**: Ensure code uses v8 API (no `PIXI.InteractionManager`, use `eventMode`).
 
 3.  **Validate Node Version**
@@ -41,7 +41,7 @@ Strictly enforce pinned versions for critical dependencies to ensure stability a
 
 **Action**:
 
-1.  Check `npm outdated`.
+1.  Check `pnpm outdated`.
 2.  See `react` wants to go to `20.0.0` (hypothetically).
 3.  **Block**: "React 20 is not supported yet. Keeping at 19.x."
 4.  See `lodash` wants to go to `4.17.21`.
@@ -50,4 +50,4 @@ Strictly enforce pinned versions for critical dependencies to ensure stability a
 **Output**:
 "Upgraded minor dependencies. Held back React, Vite, and Pixi to pinned major versions to preserve stability."
 
-_Skill sync: compatible with React 19.2.5 / Vite 8.0.10 baseline as of 2026-05-10._
+_Skill sync: compatible with React 19.2.6 / Vite 8.0.10 / Tailwind 4.2.4 baseline as of 2026-05-20._

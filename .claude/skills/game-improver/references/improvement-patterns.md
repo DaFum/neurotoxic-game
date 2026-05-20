@@ -108,7 +108,7 @@ test('Travel deducts fuel exactly once', async t => {
 ### Verification
 
 ```bash
-pnpm run test -- tests/travel.test.js
+node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/travel.test.js
 # ✓ Travel deducts fuel exactly once
 ```
 
@@ -266,7 +266,7 @@ test('Meditation Pod increases harmony daily', async t => {
 ### Verification
 
 ```bash
-pnpm run test -- tests/meditation_pod.test.js
+node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/meditation_pod.test.js
 # ✓ Meditation Pod increases harmony daily
 # ✓ Purchase meditation pod
 # ✓ Harmony regenerates on day advance
@@ -284,7 +284,7 @@ Memory grows 50MB/min when switching gigs. Suspect: Pixi scene not destroying.
 ### Analysis
 
 1. **Profiler**: DevTools Memory tab → heap snapshots
-2. **Suspect**: `PixiStageController.jsx` or `GigScene.jsx`
+2. **Suspect**: `src/components/PixiStageController.ts` or `src/scenes/Gig.tsx`
 3. **Cleanup**: Does `useEffect` return cleanup function?
 
 ### Implementation
@@ -332,22 +332,22 @@ useEffect(() => {
 
 ### Scenario
 
-`PreGigMenu.jsx` is 400 lines. Extract `ModifierSelector` component.
+`src/scenes/PreGig.tsx` is growing large. Extract a focused `ModifierSelector` component if the existing pregig components do not cover the behavior.
 
 ### Implementation
 
 1. **Identify cohesive unit**: Lines 150-220 (modifier UI + state)
-2. **Create `ModifierSelector.jsx`**:
+2. **Create `ModifierSelector.tsx`**:
    - Props: `modifiers`, `onModifierChange`
    - Returns: JSX for modifier buttons
-3. **Update `PreGigMenu.jsx`**: Replace inline UI with `<ModifierSelector />`
+3. **Update `src/scenes/PreGig.tsx`**: Replace inline UI with `<ModifierSelector />`
 4. **Test**: Vitest — props, callbacks, renders correctly
 5. **Verify**: Same visual output, no behavioral change
 
 ### Verification
 
 ```bash
-pnpm run test:ui -- tests/ModifierSelector.test.jsx
+pnpm run test:ui:file -- tests/ModifierSelector.test.jsx
 pnpm run build  # Ensure bundle size doesn't increase significantly
 ```
 

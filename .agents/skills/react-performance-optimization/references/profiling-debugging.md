@@ -103,7 +103,7 @@ async function fetchData() {
 **Debug unnecessary re-renders in development:**
 
 ```bash
-npm install --save-dev @welldone-software/why-did-you-render
+pnpm add -D @welldone-software/why-did-you-render
 ```
 
 ```jsx
@@ -121,7 +121,7 @@ if (process.env.NODE_ENV === 'development') {
 ```
 
 ```jsx
-// Component.jsx
+// Component.tsx
 function MyComponent(props) {
   // ...
 }
@@ -156,7 +156,7 @@ export default MyComponent
 
 ```bash
 # Install Lighthouse CLI
-npm install -g lighthouse
+pnpm dlx lighthouse
 
 # Run audit
 lighthouse https://your-app.com --view

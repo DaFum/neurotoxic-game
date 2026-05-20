@@ -22,12 +22,12 @@
     },
     {
       "name": "JAVASCRIPT_ES",
-      "command": "npm",
+      "command": "pnpm",
       "args": ["run", "lint"]
     },
     {
       "name": "JAVASCRIPT_PRETTIER",
-      "command": "npm",
+      "command": "pnpm",
       "args": ["run", "format", "--", "--check"],
       "fixArgs": ["run", "format"]
     },
@@ -46,7 +46,7 @@
     },
     {
       "name": "JSON_PRETTIER",
-      "command": "npm",
+      "command": "pnpm",
       "args": ["run", "format", "--", "--check", "**/*.json"],
       "fixArgs": ["run", "format", "--", "**/*.json"]
     },
@@ -57,7 +57,7 @@
     },
     {
       "name": "MARKDOWN_PRETTIER",
-      "command": "npm",
+      "command": "pnpm",
       "args": ["run", "format", "--", "--check", "**/*.md"],
       "fixArgs": ["run", "format", "--", "**/*.md"]
     },

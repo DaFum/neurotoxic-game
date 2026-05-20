@@ -160,7 +160,7 @@ await page.screenshot({ path: 'overworld.png' })
 
 ## TRAVEL_MINIGAME
 
-The Tourbus minigame (TourbusScene.jsx). Reached by clicking a travel node on the overworld
+The Tourbus minigame (`src/scenes/TourbusScene.tsx`). Reached by clicking a travel node on the overworld
 and confirming.
 
 ```js
@@ -251,7 +251,7 @@ await page.waitForTimeout(1500)
 
 ## GIG
 
-The rhythm game (Gig.jsx + PixiStage). The game auto-starts after the pre-gig minigame.
+The rhythm game (`src/scenes/Gig.tsx` + `src/components/PixiStage.tsx`). The game auto-starts after the pre-gig minigame.
 Capturing mid-gig requires timing; the simplest approach is to screenshot immediately
 after the scene loads.
 
@@ -271,7 +271,7 @@ await page
   .waitFor({ timeout: 90000 })
 ```
 
-**Capturing the GIG HUD (GigHUD.jsx):**
+**Capturing the GIG HUD (`src/components/GigHUD.tsx`):**
 
 ```js
 // GigHUD overlays the canvas. It shows health, score, crowd meter.
@@ -287,7 +287,7 @@ identical to the WebGL path for our game. Screenshots are reliable.
 
 ## POSTGIG
 
-The post-gig report and social strategy phases (PostGig.jsx).
+The post-gig report and social strategy phases (`src/scenes/PostGig.tsx`).
 
 **Via full flow (auto-fail gig):**
 
@@ -320,7 +320,7 @@ await page.screenshot({ path: 'postgig.png' })
 
 ## GAMEOVER
 
-GAMEOVER (GameOver.jsx) is triggered when `player.money` reaches 0 or other bankruptcy conditions.
+GAMEOVER (`src/scenes/GameOver.tsx`) is triggered when `player.money` reaches 0 or other bankruptcy conditions.
 
 **Via state injection (only reliable path):**
 
@@ -341,7 +341,7 @@ in localStorage is the only way to reach it without playing 10+ rounds to bankru
 
 ## CLINIC
 
-ClinicScene.jsx — accessible from specific overworld nodes.
+`src/scenes/ClinicScene.tsx` - accessible from specific overworld nodes.
 
 ```js
 // Via state injection

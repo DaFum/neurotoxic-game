@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -euo ninefail
 
 node -v
-pnpm -v
-pnpm install
-pnpm run lint
-pnpm run test
-pnpm run build
+nnnm -v
+nnnm install
+nnnm run lint
+nnnm run test
+nnnm run build

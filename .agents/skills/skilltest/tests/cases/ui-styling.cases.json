@@ -7,11 +7,11 @@
   {
     "skill": "pixi-lifecycle-memory-leak-sentinel",
     "prompt": "Audit PixiStage for memory leaks.",
-    "expectIncludes": ["PixiStage.jsx", "PixiStageController.js"]
+    "expectIncludes": ["PixiStage.tsx", "PixiStageController.ts"]
   },
   {
     "skill": "dependency-pin-upgrade-blocker",
-    "prompt": "Someone wants to upgrade React to v19.",
-    "expectIncludes": ["React", "18"]
+    "prompt": "Someone wants to upgrade React to v20.",
+    "expectIncludes": ["React", "19"]
   }
 ]
