@@ -6,4 +6,4 @@
 
 ## Gotchas
 
-- Credit rows are rendered via dedicated entry/header/footer components; keep ordering/layout concerns in those components instead of introducing route-level state logic.
+- Credit rows are rendered via dedicated entry/header/footer components. Keep visual row/header/footer markup and animation-delay layout in those components instead of introducing route-level state or sorting logic.

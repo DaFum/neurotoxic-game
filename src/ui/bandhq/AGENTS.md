@@ -1,5 +1,5 @@
 # src/ui/bandhq - Agent Instructions
 
-- `CatalogTab` callback prop names (`*Callback`) are a shared contract across tabs; rename only with all consumers updated.
-- Shop/catalog labels use `ui:shop.messages.unknownItem` for malformed names.
-- Band HQ open behavior must not depend on Overworld category ordering.
+- `CatalogTab` callback prop names (`*Callback`) are shared by `CatalogTabProps`, `ShopTab`, `UpgradesTab`, tests, and mocks; rename only after updating every typed caller in the app.
+- Shop/catalog labels use `ui:shop.messages.unknownItem` when `item.name` is not a string.
+- Band HQ open behavior must route through the `MenuAction` action map (`openHQ`), not Overworld category index/order. If a change introduces order dependence, refactor it out.

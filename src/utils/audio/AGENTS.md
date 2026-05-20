@@ -9,11 +9,18 @@ Roles:
 - `audioManager` (stateful class instance) — for non-React contexts: Pixi stage controllers, hook lifecycle, imperative timing.
 - `audioService` (React-safe adapter) — for React components and hooks that need `useSyncExternalStore`-style reactivity.
 
-## Gotchas
+## Snapshots and subscription
 
-- Snapshot consumers should prefer `getStateSnapshot()` and normalize partial snapshots to complete `AudioSnapshot` shapes.
-- Native subscription is valid only when `subscribe` is a function; otherwise polling must stay active. Use `audioService.hasNativeSubscribe()` from React consumers — do not probe `audioManager.subscribe` directly from outside this folder.
-- `audioState.midiDrumKit` is `Nullable<DrumKitSynth>` but `playDrumNote` expects `DrumKitSynth | undefined`; pass `audioState.midiDrumKit ?? undefined`.
+- Snapshot consumers must call `getStateSnapshot()` when that method exists; use `getState()` only as a compatibility fallback. Always normalize partial snapshots to complete `AudioSnapshot` shapes.
+- React consumers own the polling fallback. Use `audioService.hasNativeSubscribe()`; when it returns `false` or `subscribe` is not a function, keep interval polling active instead of probing `audioManager.subscribe` outside this folder.
+
+## Drum kits and SFX
+
+- `audioState.midiDrumKit` is `Nullable<DrumKitSynth>` but `playDrumNote` expects `DrumKitSynth | undefined`; pass `audioState.midiDrumKit ?? undefined` so the default drum-kit fallback can run. If no kit exists, `playDrumNote` no-ops.
 - New SFX types must be added both to the `AudioSfxType` union and to `VALID_SFX_TYPES` in `AudioManager`. Unknown keys cause `playSFX()` to `logger.warn('AudioSystem', 'Unknown SFX type: …')` and silently return.
 - `audioService.setSfxVolume` (lowercase acronym, React-facing) bridges to `audioManager.setSFXVolume` (uppercase acronym, class-internal). Calling the wrong casing on a facade throws `TypeError` at runtime.
+
+## Decoding
+
 - Decoding helpers (e.g. `decodeAudioDataWithTimeout`) must not double-check the same promise; rely on the outer abort/timeout path.
+- Audio fetch/decode failures warn and return `null` from load helpers; do not synthesize fallback `AudioBuffer` objects for corrupt data.
