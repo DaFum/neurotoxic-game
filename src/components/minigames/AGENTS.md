@@ -1,15 +1,14 @@
 # src/components/minigames - Agent Instructions
 
-## Scope
-
-Applies to `src/components/minigames/**` unless a deeper `AGENTS.md` overrides it.
-
-## Rules
+## Hooks
 
 - Hooks return reactive game state only; do not import Pixi into minigame hooks.
-- Completion flow must preserve fallback timers, unmount cleanup, and explicit scene continuation paths.
 - Keep minigame state transitions routed through existing action creators and scene callbacks.
 
-## Gotchas
+## Completion
 
-- Completion overlays need both automatic and manual continue paths covered by tests when changed.
+- Completion flow must preserve fallback timers, unmount cleanup, and explicit scene continuation callbacks such as `onComplete`.
+
+## Tests
+
+- Completion overlays need both automatic fallback and manual `CONTINUE` paths covered by neighboring UI/hook tests when changed.

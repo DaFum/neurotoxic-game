@@ -1,17 +1,6 @@
 # api - Agent Instructions
 
-## Scope
-
-Applies to `api/**`.
-
-## API Rules
-
-- Keep endpoint response shapes backward compatible with current client and test contracts unless the change is explicitly versioned.
-- Treat request bodies and query params as `unknown` at route boundaries; narrow with explicit validators before use.
-- Use concrete response interfaces or `Record<string, unknown>` with narrowing. Do not widen handler data to `Record<string, any>`.
-- Keep API error bodies stable in the `{ error: string }` style so node/UI suites can assert deterministic failure paths.
-
-## Gotchas
-
-- Leaderboard and song-adjacent endpoints must normalize IDs consistently with `/api/leaderboard/**`; do not accept raw UI IDs without normalization.
-- Avoid backend endpoints for features that are not reachable in current UI flows; dead client paths create misleading API expectations.
+- Keep endpoint response shapes backward compatible; keep error bodies in the `{ error: string }` shape that node and UI suites assert against.
+- Leaderboard and song-adjacent endpoints must normalize IDs consistently with `/api/leaderboard/**`; do not accept raw UI IDs.
+- Do not add backend endpoints for features not reachable in current UI flows.
+- Rate-limit and abuse-detection paths must NOT trust `x-forwarded-for` by default — use the shared client-IP helper in `lib/apiUtils.js`. The header is only honored when `TRUST_PROXY=true` is explicitly set on the deployment; reading it directly opens rate-limit bypass via header spoofing. Asserted by `tests/security/rateLimitBypass.test.js`.

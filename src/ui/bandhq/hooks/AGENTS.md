@@ -1,18 +1,11 @@
 # src/ui/bandhq/hooks - Agent Instructions
 
-## Scope
+## Purchase effects
 
-Applies to `src/ui/bandhq/hooks/**`.
+- Fame-currency ownership patches must use the resolved effect (`validation.effect ?? getPrimaryEffect(item)` after validation), not the raw validation payload.
+- Toast content must reflect sanitized, actually-applied changes: values after validation, clamping, normalization, and effect processing, not the requested delta.
 
-## Rules
+## Processing locks
 
-- Hooks orchestrate Band HQ actions and toasts; reducers/action creators own state transitions.
-- Export explicit named return interfaces (`useX(...): XResult`) for public hooks.
-- Include full dependencies (`social`, `t`, dispatch/update handlers, derived state slices).
-- Clean up processing locks in `finally`, including validation failures before effects run.
-
-## Gotchas
-
-- Fame-currency ownership patches must use the resolved effect, not raw validation payloads.
-- Processing lock IDs must use nullish-safe assignment; do not collapse falsy IDs with `|| null`.
-- Toast content must reflect sanitized, actually applied changes.
+- `processingItemId` must clean up in `finally`, including in the validation-failure path before effects run.
+- Use `?? null` (nullish), not `|| null`, when assigning processing-lock IDs so legitimate non-nullish falsy IDs (`0`, `''`) are not collapsed before stringification/storage.

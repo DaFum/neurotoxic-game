@@ -1,23 +1,9 @@
 # src/components - Agent Instructions
 
-## Scope
+## Minigames
 
-Applies to `src/components/**` unless a deeper `AGENTS.md` overrides it.
+- Keep Pixi-dependent renderer/controller code (imports from `pixi.js`, Pixi classes, textures, sprites, and stage managers) out of React hook layers. Hooks should expose reactive state and callbacks only.
 
-## UI Rules
+## State Slices
 
-- User-facing text must use namespaced i18n keys and keep EN/DE locale JSON in sync.
-- Use CSS variables for colors; do not introduce literal color values.
-- React 19 refs are normal props. Do not add `React.forwardRef()`.
-- Include `t` in callback/effect dependency arrays when used inside that scope.
-
-## State Rules
-
-- Trigger state changes through action creators or provided callbacks; do not reconstruct reducer payloads in components.
-- Success toasts for bounded values must display the applied delta after clamping.
-
-## Gotchas
-
-- Minigame components must not import Pixi-only logic into hook layers.
-- Overworld, PreGig, PostGig, and Stage routes each have deeper ownership rules; read the nested file before editing those folders.
-- Components consuming wide state slices (e.g. `ChatterOverlay`) must read via `useGameSelector` and a `useMemo`-wrapped prop slice; passing the full `gameState` causes global re-render thrash and is a recurring perf regression.
+- Components consuming wide state slices (e.g. `ChatterOverlay`) must read fields via `useGameSelector` and pass a `useMemo`-wrapped prop object containing only those fields. Passing the full root `gameState` re-renders unrelated consumers whenever any game state field changes.

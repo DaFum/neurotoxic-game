@@ -1,3 +1,5 @@
+# Bolt's Journal
+
 ## 2025-05-20 - E2E Reliability vs Unit Tests for Rendering Logic
 
 **Learning:** E2E tests (`playwright`) are unreliable for verifying rendering logic (like lane visibility) in this codebase due to frequent audio context crashes/timeouts in the headless environment.
@@ -5,18 +7,18 @@
 
 ## 2025-03-02 - React SVG Icons Optimization
 
-**Learning:** Pure UI decoration components (like SVG icons) in heavily re-rendered environments like BrutalistUI.jsx should be wrapped in `React.memo()` to prevent unnecessary re-renders across the app, as their props typically consist only of simple string class names.
+**Learning:** Pure UI decoration components (like SVG icons) in heavily re-rendered environments like BrutalistUI.tsx should be wrapped in `React.memo()` to prevent unnecessary re-renders across the app, as their props typically consist only of simple string class names.
 **Action:** Always use `React.memo` for static UI decorations, especially when creating custom UI component libraries.
 
-## 2025-05-20 - Object.keys vs Object.entries
+## 2025-05-20 - Single-pass loops vs repeated Array.find()
 
-**Learning:** In hot loops, iterating over an array once is faster than using multiple `.find()` calls to retrieve distinct elements from the same array.
-**Action:** Always favor a single `for` loop pass when looking up multiple distinct elements from the same array to reduce overhead.
+**Learning:** In hot loops, iterating an array once is faster than issuing multiple `.find()` calls against the same array, since each `.find()` re-walks the array and allocates a callback closure.
+**Action:** When looking up several distinct elements from the same array (e.g. resolving multiple band-member traits or merch entries inside a reducer/selector), use one `for` loop that branches per item rather than chained `.find()` calls. For O(1) repeat lookups, prefer the precomputed Maps the project already maintains (e.g. `HQ_ITEMS_BY_MERCH_KEY`, `SONGS_BY_ID`).
 
 ## 2025-05-20 - Intl.NumberFormat Instantiation Overhead
 
 **Learning:** Re-instantiating `Intl.NumberFormat` in React functional components (even with `useMemo`) or within render loops (like mapping over quests) adds significant overhead to the JavaScript execution thread in this application. In a test benchmark, repeated instantiation took ~600ms vs ~10ms for a cached instance over 10,000 runs.
-**Action:** Always use the module-level caching utilities (`formatNumber` and `formatCurrency` in `src/utils/numberUtils.js`) instead of calling `new Intl.NumberFormat` inline to ensure predictable performance during frequent re-renders.
+**Action:** Always use the module-level caching utilities (`formatNumber` and `formatCurrency` in `src/utils/numberUtils.ts`) instead of `new Intl.NumberFormat` inline. Remember that currency strings baked into toast `options` must be formatted at dispatch time with the active `i18n.language` — see the AGENTS.md note on locale-correct currency for reducers/action creators.
 
 ## 2026-03-18 - CSS Token Lookup Overhead in PixiJS
 
@@ -40,8 +42,8 @@
 
 ## 2026-05-24 - Avoid `Map.entries()` in High-Frequency Game Loops
 
-**Learning:** In high-frequency paths like the PIXI.js update loop (e.g., `TourbusStageController.js`), using `for (const [key, value] of map.entries())` causes continuous per-iteration memory allocation for the `[key, value]` array. This puts pressure on the garbage collector and can cause frame drops.
-**Action:** Replace `map.entries()` iteration in `update()` or `_cleanupObstacles()` loops with `for (const key of map.keys())`. Retrieve the associated value using `map.get(key)` only if the condition necessitates it (e.g., when deleting an item).
+**Learning:** In PixiJS `update(dt)` paths, `for (const [key, value] of map.entries())` allocates a fresh `[key, value]` tuple per iteration. Across 60fps frames this becomes measurable GC pressure. (TourbusStageController has since been refactored away from this pattern; the rule still applies to any new stage controller.)
+**Action:** In any `update()` / cleanup loop iterating a `Map`, use `for (const key of map.keys())` and only call `map.get(key)` when the branch actually needs the value. Same rule applies to `map.forEach()` in `requestAnimationFrame` callbacks.
 
 ## 2026-02-14 - Optimize Virality Check Lookups
 
@@ -58,25 +60,25 @@
 **Learning:** `structuredClone` has significant overhead (~660ms vs ~10ms for 100k iterations) when used for duplicating simple nested objects on hot paths, like in `negotiateDeal`.
 **Action:** Use manual shallow copying with object spread syntax (`{ ...obj, nested: { ...obj.nested } }`) instead of `structuredClone` when deep cloning is not strictly necessary or when only specific nested objects are mutated.
 
-## 2026-04-20 - Component List Memoization
+## 2026-04-20 - Component List Memoization (ShopItem)
 
-**Learning:** Mapping arrays of complex sub-components without `React.memo` (like `ShopItem` inside `ShopTab`) causes O(N) re-renders when parent states change, even if the sub-component props are referentially stable or primitives.
-**Action:** Always wrap mapping children inside high-frequency parent components with `React.memo` and ensure the passed functions use `useCallback` to prevent deep virtual DOM diffing.
+**Learning:** Mapping arrays of complex sub-components without `React.memo` (like `ShopItem` inside `src/ui/bandhq/CatalogTab.tsx`) causes O(N) re-renders when parent BandHQ state changes, even when sub-component props are referentially stable primitives.
+**Action:** Wrap row components rendered inside high-frequency BandHQ tabs with `React.memo` and stabilize handler props with `useCallback` so virtual-DOM diffing stays shallow. The `useGameSelector(state=>state)` pattern provides no memoization benefit on its own — the child must be memoized.
 
 ## 2026-04-20 - Loop Unrolling Tradeoffs
 
 **Learning:** Unrolling loops across configuration objects (e.g., `SOCIAL_PLATFORMS`) provides minor speed improvements but introduces significant maintainability regressions by hardcoding dynamic keys.
 **Action:** Never unroll iterations that loop over configuration data or sources of truth. Reserve loop unrolling for pure computational arrays of fixed size.
 
-## 2026-04-20 - Component List Memoization
+## 2026-04-20 - Component List Memoization (SongRow)
 
-**Learning:** Mapping arrays of complex sub-components without `React.memo` (like `SongRow` inside `SetlistTab`) causes O(N) re-renders when parent states change, even if the sub-component props are referentially stable or primitives.
-**Action:** Always wrap mapping children inside high-frequency parent components with `React.memo` and ensure the passed functions use `useCallback` to prevent deep virtual DOM diffing.
+**Learning:** `SongRow` is implemented twice — once inside `src/ui/bandhq/SetlistTab.tsx` and once inside `src/components/pregig/SetlistBlock.tsx`. Both must stay wrapped in `React.memo` because they are mapped over the full setlist and re-render on every parent state change otherwise.
+**Action:** When touching either `SongRow` definition, preserve `React.memo` / `memo(function SongRow…)` and keep `toggleSongInSetlist` (and any other handler props) stable with `useCallback` in the parent. Verify both copies stay in sync if the row prop shape changes.
 
 ## 2026-04-09 - Avoid instanceof checks in hot loops
 
-**Learning:** In high-frequency paths like PixiJS render loops (e.g., `RoadieStageController.js`, `EffectManager.js`), using `instanceof Sprite` checks introduces significant overhead due to prototype chain traversal.
-**Action:** Replace `instanceof` checks with direct boolean property lookups by assigning `.isSprite = true` upon object instantiation.
+**Learning:** In PixiJS render loops, `instanceof Sprite` walks the prototype chain on every frame. The codebase already tags display objects with an `isSprite: boolean` discriminant in `src/components/stage/CrowdManager.ts` and `src/components/stage/EffectSpritePool.ts` so per-frame branches stay O(1).
+**Action:** When adding a new hot-loop branch that needs to distinguish `Sprite` from `Graphics` (or any subclass), tag the object with a boolean flag at construction time and read that flag in the `update()` path. Keep the `isSprite` discriminated-union pattern (`Sprite & { isSprite: true }` vs `Graphics & { isSprite: false }`) intact so TypeScript still narrows correctly.
 
 ## 2026-04-20 - Array Allocations in Random Utilities
 
@@ -85,10 +87,10 @@
 
 ## 2026-10-27 - Map Iteration Overhead in requestAnimationFrame
 
-**Learning:** Using `map.forEach()` inside high-frequency update loops like `requestAnimationFrame` (e.g., `HecklerOverlay.jsx`) creates unnecessary closure allocations on every frame, which can contribute to garbage collection pauses.
+**Learning:** Using `map.forEach()` inside high-frequency update loops like `requestAnimationFrame` (e.g., `HecklerOverlay.tsx`) creates unnecessary closure allocations on every frame, which can contribute to garbage collection pauses.
 **Action:** Always prefer `for (const key of map.keys())` over `map.forEach()` in hot rendering loops to eliminate function allocation overhead.
 
-## 2026-04-12 - [useRhythmGameAudio Infinite Loop and Lock Starvation]
+## 2026-04-12 - useRhythmGameAudio Infinite Loop and Lock Starvation
 
 **Learning:** `useRhythmGameAudio` suffered from an OOM infinite loop because it passed complex objects (`band`, `gameMap`, `setlist`) into its `useCallback` dependency array, causing `initializeGigState` to recreate on every render. This masked a lock starvation issue where `isInitializingRef` was never released if the setup was aborted. Furthermore, the test suite (`rhythmGameLogicMultiSong.test.js`) relied on repeated re-invocation from this infinite re-render loop, so it failed once the hook was stabilized.
 **Action:** Stabilized `useCallback`/`useEffect` dependencies using strictly mapped primitives (`band?.members?.length`, `band?.harmony`, `player?.currentNodeId`, `setlist?.length`, etc.) and wrapped initialization in a `try/finally` block to guarantee lock release.
@@ -96,14 +98,14 @@
 ## 2026-04-12 - Optimization: eventEngine.filterEvents
 
 **Learning:** The callback in Array.prototype.filter has significant overhead when called repeatedly. A standard for-loop with direct condition evaluation is significantly faster (~30-40% improvement in benchmarks).
-**Action:** Replaced `pool.filter` in `src/utils/eventEngine.js` with a manual for-loop, creating an empty array, and strictly controlling execution with `continue` rather than executing a high-frequency callback.
+**Action:** `src/utils/eventEngine.ts` uses a manual `for` loop with `continue` instead of `Array.prototype.filter`. Apply the same pattern in any other hot eligibility/pool filtering path.
 
-## 2026-04-15 - Vitest Projects & Setup Guarding
+## 2026-04-15 - Vitest Project Split (node vs jsdom)
 
-**Learning:** Running all tests (including pure Node logic tests) inside a global `jsdom` environment with heavy setup files (like complex Browser API mocks) creates massive overhead. Furthermore, Vitest's `isolate: true` causes the heavy `setupFiles` to be re-executed for _every single test file_ in the worker process, leading to severe redundant initialization delays.
-**Action:** Split test suites into separate Vitest projects (`node` and `jsdom` environments) based on their actual requirements. For `jsdom` projects, always wrap heavy, one-time global mock initializations in `setupFiles` with a `globalThis.__SETUP_DONE__` guard so they are only executed once per worker process.
+**Learning:** Running pure Node logic tests inside a global `jsdom` environment with heavy browser-API setup adds large per-file overhead, and `isolate: true` re-runs `setupFiles` for every file in the worker. This project keeps two configs: `vitest.config.js` (jsdom, `setupFiles: ['./tests/vitest.setup.js']`) and `vitest.config.node.js` (node env, no DOM setup), with the legacy `node --test` suite also still in use.
+**Action:** Route new tests to the lightest viable runner — `node --test` for pure logic (see `AGENTS.md` for the exact command), `vitest.config.node.js` for fast Vitest-style suites that don't need a DOM, and the default `vitest.config.js` only when JSDOM/React-Testing-Library is actually required. Don't add heavy global mocks to `tests/vitest.setup.js` without considering the per-file cost.
 
-## 2025-04-15 - [Heckler Overlay Rendering Optimization]
+## 2026-04-15 - Heckler Overlay Rendering Optimization
 
 **Learning:** In a high-frequency animation loop using `requestAnimationFrame`, modifying DOM properties like `node.style.top` and `node.style.left` causes layout thrashing and triggers layout and paint operations which are slow.
 **Action:** Always prefer `node.style.transform` with `translate3d(x, y, 0)` for positional animations as it utilizes hardware acceleration and avoids triggering costly layout recalculations.
@@ -113,7 +115,7 @@
 **Learning:** Chained array methods like `.map().filter()` on array structures during high-frequency simulation steps (e.g., in `postGigUtils.ts`) cause unnecessary intermediate array allocations, adding GC pressure.
 **Action:** Replace map/filter chains that iterate over objects like `activeDeals` with a single `for` loop, pushing valid and mapped updates directly to a new array to bypass intermediate array construction and improve efficiency.
 
-## 2026-04-21 - [Optimize Map Construction]
+## 2026-04-21 - Optimize Map Construction
 
 **Learning:** Replaced the `new Map(array.map(...))` pattern with a manual `for...of` loop using `.set()`. This avoids the allocation of an intermediate tuple array, reducing memory usage and GC overhead during initialization. Applied across `brandDeals.ts`, `contraband.ts`, `songs.ts`, and `useTravelLogic.ts`.
 **Action:** Always use `for...of` with `.set()` for Map initialization from large arrays to prevent intermediate tuple array allocations.
@@ -125,5 +127,5 @@
 
 ## 2026-05-12 - Optimization: isEmptyObject vs Object.keys().length
 
-**Learning:** Replaced `Object.keys(obj).length === 0` with a custom `isEmptyObject` helper where object validation overhead is minimal but frequency is high to avoid O(N) memory allocation to an array.
-**Action:** Use `isEmptyObject(obj)` for empty object checks.
+**Learning:** `Object.keys(obj).length === 0` allocates an array just to count it. In hot paths that frequently check "is this object empty", `isEmptyObject` (exported from `src/utils/gameStateUtils.ts`) uses a `for…in` short-circuit instead.
+**Action:** Import `isEmptyObject` from `src/utils/gameStateUtils.ts` for empty-object checks on hot paths (event delta containers, reducer guards, selector early-outs). Don't reintroduce `Object.keys(x).length === 0` in those contexts.

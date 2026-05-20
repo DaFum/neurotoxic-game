@@ -1,20 +1,4 @@
 # src/ui/overworld - Agent Instructions
 
-## Scope
-
-Applies to `src/ui/overworld/**`.
-
-## Agent Role & Usage
-
-Overworld UI agents compose header/HUD/menu/event-log presentation, keep these surfaces view-focused, and ensure localized/tokenized UI updates align with parent `src/ui/AGENTS.md` contracts. Use this scope for localized UI copy/layout updates and event-log presentation. Use higher-level scene docs for routing or gameplay-state logic.
-
-## Rules
-
-- Keep gameplay derivation and side-effectful mutations outside view components; consume precomputed props/state.
-- Preserve append-safe event-log behavior and avoid storing pre-translated strings in state.
-- Follow parent UI rules for i18n keys, styling tokens, and shared type contracts.
-
-## Gotchas
-
-- Overworld header/HUD/menu split is intentional; keep gameplay state derivation outside these view components and pass precomputed props.
-- Event log entries should stay append-safe and localization-friendly; avoid storing pre-translated strings in state.
+- Overworld header/HUD/menu split is intentional: derive gameplay state in `src/scenes/Overworld.tsx` or an Overworld hook, then pass typed props into these view components. If a required prop is missing or invalid, fix the caller/type contract instead of adding local gameplay derivation.
+- Event log entries must remain append-safe: append new entries with generated IDs, preserve insertion order while capping old entries, and store entry kind/payload or i18n keys, never pre-translated strings. Translate at render with `defaultValue` fallbacks for missing keys.

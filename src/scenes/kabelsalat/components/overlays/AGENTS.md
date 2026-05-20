@@ -1,15 +1,15 @@
 # src/scenes/kabelsalat/components/overlays - Agent Instructions
 
-## Scope
-
-Applies to `src/scenes/kabelsalat/components/overlays/**`.
-
-## Rules
+## Continuation
 
 - Overlay actions must preserve both automatic and manual continuation paths.
-- Consume Escape/click handlers consistently so overlay controls do not race scene-level handlers.
+- Manual continue buttons must remain rendered when the overlay is visible; loss overlays call `onAdvance(false)` and powered overlays call `onAdvance(true)`.
+
+## Events / Copy
+
+- If adding Escape, backdrop, or click handlers, handle the overlay action first and stop/prevent the event as needed so scene-level handlers do not also run.
 - Keep overlay copy in i18n keys.
 
-## Gotchas
+## Tests
 
 - Manual continue tests should assert the final scene transition, not just overlay text.

@@ -1,15 +1,11 @@
 # src/scenes/kabelsalat/components/plugs - Agent Instructions
 
-## Scope
-
-Applies to `src/scenes/kabelsalat/components/plugs/**`.
-
-## Rules
+## IDs / Handlers
 
 - Preserve literal plug ID types and shared drag/drop contracts.
 - Keep pointer/keyboard handlers composed with caller-provided handlers.
-- Keep runtime work short enough for frame-safe UI updates.
+- Do not convert plug IDs to arbitrary strings; socket matching depends on narrowed `CableId` literals.
 
-## Gotchas
+## Performance
 
-- Do not convert plug IDs to arbitrary strings; socket matching depends on narrowed literals.
+- Keep runtime work frame-safe: plug SVG components should stay pure/memoized, and pointer/keyboard paths should avoid heavy loops or allocations that could block a render frame.

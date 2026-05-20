@@ -1,14 +1,10 @@
 # src/scenes/mainmenu - Agent Instructions
 
-## Scope
-
-Applies to `src/scenes/mainmenu/**`.
-
 ## Rules
 
 - Keep menu actions reachable through keyboard and pointer flows.
 - Use i18n keys for all visible menu copy.
-- Preserve audio/settings callback contracts shared with UI settings.
+- Preserve audio/settings callback signatures and behavior shared with UI settings; menu audio setup stays fire-and-forget and must not block scene transitions.
 
 ## Gotchas
 

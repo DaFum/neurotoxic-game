@@ -1,17 +1,15 @@
 # src/hooks/rhythmGame - Agent Instructions
 
-## Scope
+## End Of Gig
 
-Applies to `src/hooks/rhythmGame/**`.
+- Detecting final song/setlist completion uses `setlistCompleted` plus `isNearTrackEnd` in `processRhythmGameTick`; do not use or fall back to `audioPlaybackEnded`.
 
-## Rules
+## Playback Windows
 
-- Use `audioEngine.getGigTimeMs()` for timing.
-- Import shared note/song/gig contracts from `src/types/audio.d.ts` and `src/types/rhythmGame.ts`.
-- Narrow array/map lookups before use under `noUncheckedIndexedAccess`.
+- JSON-note OGG/MIDI tracks cap playback at `maxNoteTime + NOTE_TAIL_MS`; procedural songs use full excerpt duration.
+- Normalize excerpt metadata with `resolveSongPlaybackWindow`; missing or non-finite `excerptStartMs` becomes `0`, and duration falls back through `excerptEndMs`, `excerptDurationMs`, `durationMs`, then the caller default.
+- MIDI note times in `public/data/rhythm_songs.json` are excerpt-relative (tick 0 = start of excerpt window). Do NOT subtract `excerptStartMs` from note times — that field is only for the OGG seek offset. `excerptDurationMs` is still used to cap which notes get scheduled. Regression guard in `tests/node/rhythmUtils.test.js`.
 
-## Gotchas
+## Initialization
 
-- End detection uses `setlistCompleted` plus `isNearTrackEnd`.
-- JSON-note tracks cap playback to `maxNoteTime + NOTE_TAIL_MS`.
-- `useRhythmGameAudio` must not re-initialize on state re-renders. Gate setup on stable refs/IDs (song, gigId), not derived values that change every tick, or rhythm playback becomes flaky and the init lock can starve.
+- `useRhythmGameAudio` must not re-initialize on state re-renders. Gate setup on values that stay fixed for the current gig setup, such as the song identity or `gigId`, not per-tick derived values like progress, score, or elapsed time; otherwise playback becomes flaky and the init lock can starve.
