@@ -4,7 +4,7 @@ import { GlitchButton } from './GlitchButton'
 import { ProgressBar, Tooltip } from './shared/index.tsx'
 import { useGameSelector } from '../context/GameState'
 import { IMG_PROMPTS, resolveGenImageUrl } from '../utils/imageGen'
-import { PlayerState, BandState } from "../types"
+import { PlayerState, BandState } from '../types'
 import { formatCurrency } from '../utils/numberUtils'
 
 type MerchPressConfig = {
@@ -118,7 +118,12 @@ export const MerchPressModal = ({
   )
 }
 
-function MerchPressHeader({ onClose, t }: { onClose: () => void; t: ReturnType<typeof useTranslation>["t"] }) {
+type MerchPressHeaderProps = {
+  onClose: () => void
+  t: ReturnType<typeof useTranslation>['t']
+}
+
+function MerchPressHeader({ onClose, t }: MerchPressHeaderProps) {
   return (
     <div className='flex justify-between items-start mb-6 border-b border-toxic-green-20 pb-4'>
       <div>
@@ -152,15 +157,17 @@ function MerchPressHeader({ onClose, t }: { onClose: () => void; t: ReturnType<t
   )
 }
 
+type MerchPressCostsAndGainsProps = {
+  config: MerchPressConfig
+  t: ReturnType<typeof useTranslation>['t']
+  i18n: ReturnType<typeof useTranslation>['i18n']
+}
+
 function MerchPressCostsAndGains({
   config,
   t,
   i18n
-}: {
-  config: MerchPressConfig
-  t: ReturnType<typeof useTranslation>["t"]
-  i18n: ReturnType<typeof useTranslation>["i18n"]
-}) {
+}: MerchPressCostsAndGainsProps) {
   return (
     <div className='grid grid-cols-2 gap-4'>
       <div className='bg-void-black border border-blood-red-20 p-3 flex flex-col items-center justify-center relative overflow-hidden group'>
@@ -190,13 +197,12 @@ function MerchPressCostsAndGains({
   )
 }
 
-function MerchPressRiskWarning({
-  config,
-  t
-}: {
+type MerchPressRiskWarningProps = {
   config: MerchPressConfig
-  t: ReturnType<typeof useTranslation>["t"]
-}) {
+  t: ReturnType<typeof useTranslation>['t']
+}
+
+function MerchPressRiskWarning({ config, t }: MerchPressRiskWarningProps) {
   return (
     <div className='bg-blood-red-20 border border-blood-red-20 p-4 mt-4'>
       <p className='text-blood-red text-sm text-center font-bold'>
@@ -210,6 +216,16 @@ function MerchPressRiskWarning({
   )
 }
 
+type MerchPressCurrentStatsProps = {
+  config: MerchPressConfig
+  t: ReturnType<typeof useTranslation>['t']
+  i18n: ReturnType<typeof useTranslation>['i18n']
+  player: PlayerState | null
+  band: BandState | null
+  isAffordable: boolean
+  hasEnoughHarmony: boolean
+}
+
 function MerchPressCurrentStats({
   config,
   t,
@@ -218,15 +234,7 @@ function MerchPressCurrentStats({
   band,
   isAffordable,
   hasEnoughHarmony
-}: {
-  config: MerchPressConfig
-  t: ReturnType<typeof useTranslation>["t"]
-  i18n: ReturnType<typeof useTranslation>["i18n"]
-  player: PlayerState | null
-  band: BandState | null
-  isAffordable: boolean
-  hasEnoughHarmony: boolean
-}) {
+}: MerchPressCurrentStatsProps) {
   return (
     <div className='border border-toxic-green-20 p-4 space-y-4'>
       <h3 className='text-toxic-green text-sm uppercase tracking-widest mb-2'>
@@ -281,19 +289,21 @@ function MerchPressCurrentStats({
   )
 }
 
+type MerchPressActionsProps = {
+  onClose: () => void
+  onPress: () => void
+  canPress: boolean
+  disabledReason: string | null
+  t: ReturnType<typeof useTranslation>['t']
+}
+
 function MerchPressActions({
   onClose,
   onPress,
   canPress,
   disabledReason,
   t
-}: {
-  onClose: () => void
-  onPress: () => void
-  canPress: boolean
-  disabledReason: string | null
-  t: ReturnType<typeof useTranslation>["t"]
-}) {
+}: MerchPressActionsProps) {
   return (
     <div className='mt-8 flex flex-col sm:flex-row justify-end gap-4'>
       <GlitchButton
