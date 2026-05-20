@@ -1,9 +1,5 @@
 # src/scenes/kabelsalat/components/sockets - Agent Instructions
 
-## Scope
-
-Applies to `src/scenes/kabelsalat/components/sockets/**`.
-
 ## Rules
 
 - Preserve literal socket ID/order types with `as const`.

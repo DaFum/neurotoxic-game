@@ -1,16 +1,6 @@
 # src/ui/shared - Agent Instructions
 
-## Scope
-
-Applies to `src/ui/shared/**`.
-
-## Rules
-
-- Shared primitives must remain app-agnostic and presentation-oriented.
-- Treat incoming props/events as boundary data; narrow before reading optional child props.
-- Compose consumer handlers (`onFocus`, `onBlur`, pointer handlers) instead of replacing them.
-
-## Gotchas
-
-- Tooltip-like wrappers must preserve disabled-element accessibility behavior (`aria-describedby`, keyboard focusability).
-- Use own-property checks when reading optional `aria-*`, `style`, or `className` props from unknown child objects.
+- Shared primitives must stay app-agnostic and presentation-only.
+- Tooltip-like wrappers must preserve disabled-element accessibility (`aria-describedby`, keyboard focusability).
+- Use `Object.hasOwn()` when reading optional `aria-*`, `style`, or `className` from unknown child props.
+- `Tooltip` must show on disabled children WITHOUT invoking the child's own `onMouseEnter`/`onFocus`. The wrapper owns hover/focus tracking; bubbling those events to the disabled child re-fires the consumer handler. Regression guard in `tests/ui/Tooltip.test.jsx`.

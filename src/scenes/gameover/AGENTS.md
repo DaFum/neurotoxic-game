@@ -1,9 +1,5 @@
 # src/scenes/gameover - Agent Instructions
 
-## Scope
-
-Applies to `src/scenes/gameover/**`.
-
 ## Gotchas
 
 - Game-over recovery actions must remain reachable through the existing button group; do not hide retry/menu actions behind conditional rendering without explicit fallback.

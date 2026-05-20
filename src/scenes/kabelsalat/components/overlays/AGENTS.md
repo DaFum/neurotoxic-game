@@ -1,9 +1,5 @@
 # src/scenes/kabelsalat/components/overlays - Agent Instructions
 
-## Scope
-
-Applies to `src/scenes/kabelsalat/components/overlays/**`.
-
 ## Rules
 
 - Overlay actions must preserve both automatic and manual continuation paths.

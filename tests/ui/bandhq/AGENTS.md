@@ -1,9 +1,5 @@
 # tests/ui/bandhq - Agent Instructions
 
-## Scope
-
-Applies to `tests/ui/bandhq/**` unless a deeper `AGENTS.md` overrides it.
-
 ## Rules
 
 - Assert reachable user flows: open tab, perform action, see feedback.

@@ -1,9 +1,5 @@
 # src/scenes/kabelsalat/components/plugs - Agent Instructions
 
-## Scope
-
-Applies to `src/scenes/kabelsalat/components/plugs/**`.
-
 ## Rules
 
 - Preserve literal plug ID types and shared drag/drop contracts.

@@ -1,9 +1,5 @@
 # src/components/minigames - Agent Instructions
 
-## Scope
-
-Applies to `src/components/minigames/**` unless a deeper `AGENTS.md` overrides it.
-
 ## Rules
 
 - Hooks return reactive game state only; do not import Pixi into minigame hooks.

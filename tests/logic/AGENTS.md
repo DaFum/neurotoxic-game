@@ -1,9 +1,5 @@
 # tests/logic - Agent Instructions
 
-## Scope
-
-Applies to `tests/logic/**`.
-
 ## Rules
 
 - Keep logic tests pure, deterministic, and free of DOM wiring unless strictly required.

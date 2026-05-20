@@ -1,9 +1,5 @@
 # src/components/clinic - Agent Instructions
 
-## Scope
-
-Applies to `src/components/clinic/**`.
-
 ## Rules
 
 - Keep clinic actions routed through existing economy/health action creators and callbacks.

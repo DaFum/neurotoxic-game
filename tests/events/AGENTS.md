@@ -1,9 +1,5 @@
 # tests/events - Agent Instructions
 
-## Scope
-
-Applies to `tests/events/**`.
-
 ## Rules
 
 - Validate event pool contracts: required fields, trigger/category consistency, option structure, and i18n keys.

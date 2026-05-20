@@ -1,9 +1,5 @@
 # src/scenes - Agent Instructions
 
-## Scope
-
-Applies to `src/scenes/**` unless a deeper `AGENTS.md` overrides it.
-
 ## Rules
 
 - Scene transitions must use provided scene callbacks and existing routing hooks.

@@ -1,42 +1,45 @@
 # src/utils - Agent Instructions
 
-## Scope
+## Object emptiness
 
-Applies to `src/utils/**` unless a deeper `AGENTS.md` overrides it.
+- Do not use `Object.keys(obj).length > 0` for emptiness checks; use `isEmptyObject` from `src/utils/gameStateUtils.ts`.
 
-## Rules
+## Economy invariants
 
-- Utilities stay pure and side-effect-free unless the filename explicitly indicates IO, network, or storage.
-- Treat external payloads and caught errors as `unknown` and narrow before access.
-- Fail loudly on invalid invariants in strict domains instead of silently continuing with corrupted state.
-- Avoid using `Object.keys(obj).length > 0` for checking object emptiness; use the custom `isEmptyObject` utility from `src/utils/gameStateUtils.ts`.
-- Unlock logic must be kept strictly separated: use `src/utils/unlockManager.ts` exclusively for localStorage persistence and `src/utils/unlockCheck.ts` exclusively for state-based eligibility evaluation.
+- `MAX_GIG_NET = 7500` in `economyEngine.ts`. Excess net is added back to expenses as an `overageFee` line (`economy:gigExpenses.overageFee.*` i18n keys), not silently truncated. `calculateGigFinancials()` must reconcile `net === income.total - expenses.total`.
+- Management cut is fame-progressive: `MANAGEMENT_CUT_RATE (0.15) × Math.min(1, playerFame / 200)`. Required to keep Bootstrap bankruptcy below the simulation gate.
+- `MAX_GIG_NET`, `MANAGEMENT_CUT_RATE`, and `BASE_DRAW_RATIO` are mirrored by `scripts/game-balance-simulation.mjs` via direct import. Changing them invalidates `reports/game-balance-simulation-baseline.json`; re-run `pnpm run simulate:balance:baseline`.
+- Fame level is `Math.floor(Math.sqrt(fame / 200))` (`calculateFameLevel` in `gameStateUtils.ts`). External formulas (sim scripts, tooltips) must import this helper, not duplicate the math.
+- Gig pass/fail uses `perfScore >= 31` with `PERF_SCORE_MIN = 30` and `PERF_SCORE_SCALER = 150` in `postGigUtils.ts`. Simulation scripts must import `calculatePerformanceScore()` rather than re-implement it.
 
-## Gotchas
+## Gig / merch threading
 
-- Retry/error helpers must preserve the original failure cause.
-- Map layer fallback selection must explicitly assert non-null venues before capacity/type access.
-- `pickRandomSubset` large-`k` branches must reject sparse arrays instead of unchecked assertions.
-- Purchase effect helpers should fail on invalid numeric payloads and normalize stored upgrade IDs to strings.
-- `calculateTravelMinigameResult()` is the source of truth for Tourbus condition loss; keep its 50% damage-to-condition scaling aligned with reducer and completion UI.
-- `calculateGigFinancials()` reports must reconcile: `net === income.total - expenses.total`; add balancing items to expenses for payout dampeners or penalties.
-- Hard gig cap: `MAX_GIG_NET = 7500` in `economyEngine.ts`. Excess net is added back to expenses as an `overageFee` line (`economy:gigExpenses.overageFee.*` i18n keys), not silently truncated.
-- Management cut is fame-progressive: `MANAGEMENT_CUT_RATE (0.15) × Math.min(1, playerFame / 200)`. Zero at fame=0, full at fame≥200; required to keep Bootstrap bankruptcy below the simulation gate.
+- `calculateTravelMinigameResult()` is the source of truth for Tourbus condition loss; its 50% damage-to-condition scaling must stay aligned with the reducer and completion UI.
 - `postGigUtils.calculatePostGigStateUpdates` reads `social.activeDeals` (pre-decrement), not `updatedSocial.activeDeals`, for `comm_sellout_ad` penalty resolution; otherwise sponsorship penalties on the deal's final expiring gig are silently dropped.
-- `MAX_GIG_NET`, `MANAGEMENT_CUT_RATE`, and `BASE_DRAW_RATIO` are mirrored by `scripts/game-balance-simulation.mjs` by direct import. Changing them invalidates `reports/game-balance-simulation-baseline.json`; re-run `pnpm run simulate:balance:baseline`.
-- Fame level is `Math.floor(Math.sqrt(fame / 200))` (`calculateFameLevel` in `gameStateUtils.ts`), not `floor(fame/100)`. Level 1 ≈ 200 fame, level 5 ≈ 5000, level 10 ≈ 20000. Any external formula (sim scripts, tooltips, derived UI) must use this helper, not duplicate the math.
-- Gig pass/fail uses `perfScore >= 31` with `PERF_SCORE_MIN = 30` and `PERF_SCORE_SCALER = 150` in `postGigUtils.ts`. `calculatePerformanceScore()` is the source of truth — simulation scripts must import it rather than re-implementing normalization.
-- Band harmony invariant is `[1, 100]` (clamped to min `1`, never `0`); `tests/node/reducerInvariants.test.js` enforces this across `clampBandHarmony` and `handleUpdateBand`. Money is `≥ 0`. Do not introduce branches that produce `harmony === 0`.
-- `crypto.ts` exposes `__testInternals` only when `process.env.NODE_ENV === 'test'` (compiled away in production). Test setup must set `NODE_ENV='test'` before importing; tests must fail fast if `__testInternals` is missing rather than silently skipping.
-- Probability inputs must clamp to `[0, 1]` and guard non-finite values before use; recurring fixes show this is the most common arithmetic foot-gun (`eventEngine`, `mapGenerator`, `contrabandUtils`, `audio/AudioManager`).
-- When accessing venue IDs from `MapNode` objects, support both the current `venueId` property and the legacy `venue?.id` structure to maintain compatibility.
-- `getCityKeyFromVenueId(venueId)` in `mapGenerator.ts` extracts the city prefix before the first `_` (e.g. `'berlin_so36'` → `'berlin'`); returns `''` if no underscore. Use this helper instead of `node.venue.city` (which does not exist).
-- `GeneratedMapNode` type includes `'supplyStop'` in its `type` union. When adding map node types, update the union, `_populateCityStates`, the node-type rollout logic, and any consumers that switch on `type`.
-- Attention span in generated map nodes has range 15–59 (formula: `Math.floor(random() * 45) + 15`).
-- `EconomyContext.merchPrices` is a direct top-level field (`context.merchPrices`), not nested under `context.social`. Passing merch prices via `context.social.merchPrices` is incorrect and silently ignored by `calculateMerchIncome`.
-- `deriveFinancials` in `postGigUtils.ts` takes an optional `bandMerchPrices?: GameState['band']['merchPrices']` param; it must be passed from `usePostGigLogic` (threaded via `context.merchPrices` into `calculateGigFinancials`).
-- Per-item merch demand profiles live in `src/data/merch.ts` (`MERCH_PROFILES`, `SPENDING_PROFILE_MERCH_MULTIPLIER`). `DEFAULT_MERCH_PRICES` is re-exported from there for backwards compatibility — do not redefine merch prices in `economyEngine.ts`. To rebalance an item, edit its profile (`baseAppeal`, `priceElasticity`, `genreAffinity`, `performanceSensitivity`, `missSensitivity`).
-- `calculateMerchIncome` reads `context.cityTraits?: CityTraitState` to apply city `genreBias` and `barSpendingProfile` multipliers. Threaded from `state.gameMap?.cityStates` via `usePostGigLogic.ts` (with `deriveCityTraits` fallback when the city key has no saved entry). Note: `cityStates` lives on the map, not at the top level of `GameState`. Undefined `cityTraits` falls back to neutral multipliers (1.0 across the board).
-- `RelationshipChange` type lives in `src/types/game.d.ts`; import it from there, not from `gameStateUtils.ts` (it was removed from that file).
-- The `triggerEvent` callback across utilities consistently uses the signature `(category: string, triggerPoint?: string) => boolean`.
-- Standard practice for error handling involves delegating error processing to the `handleError` utility from `src/utils/errorHandler.ts`.
+- `EconomyContext.merchPrices` is a direct top-level field, not nested under `context.social`. Passing via `context.social.merchPrices` is silently ignored by `calculateMerchIncome`.
+- `calculateMerchIncome` reads `context.cityTraits?: CityTraitState` threaded from `state.gameMap?.cityStates` (with `deriveCityTraits` fallback). `cityStates` lives on the map, not at the top of `GameState`. Undefined `cityTraits` → neutral 1.0 multipliers.
+- Per-item merch demand profiles live in `src/data/merch.ts` (`MERCH_PROFILES`, `SPENDING_PROFILE_MERCH_MULTIPLIER`). `DEFAULT_MERCH_PRICES` is re-exported from there; do not redefine merch prices in `economyEngine.ts`.
+
+## Map / venues
+
+- `getCityKeyFromVenueId(venueId)` in `mapGenerator.ts` extracts the prefix before the first `_`; returns `''` if no underscore. Use this helper instead of `node.venue.city` (which does not exist).
+- When accessing venue IDs from `MapNode` objects, support both the current `venueId` property and the legacy `venue?.id` structure.
+- `GeneratedMapNode.type` union includes `'supplyStop'`. When adding map node types, update the union, `_populateCityStates`, rollout logic, and any consumers that switch on `type`.
+- Attention span in generated map nodes uses formula `Math.floor(random() * 45) + 15` (range 15–59).
+
+## Crypto / probability
+
+- `crypto.ts` exposes `__testInternals` only when `process.env.NODE_ENV === 'test'` (compiled away in production). Test setup must set `NODE_ENV='test'` before importing; tests must fail fast if `__testInternals` is missing.
+- Probability inputs must clamp to `[0, 1]` and guard non-finite values before use (`eventEngine`, `mapGenerator`, `contrabandUtils`, `audio/AudioManager`).
+
+## Events
+
+- `resolveChoice` skillCheck in `eventEngine.ts` must branch `stat === 'luck'` BEFORE the `gameState.band[stat]` fallthrough. `band.luck` exists (default 0), so checking band stats first turns the random luck roll into a static 0.
+
+## Merch demand
+
+- `calculateMerchIncome` in `economyEngine.ts` computes `rawShare` for every item regardless of inventory; the cap is applied only at allocation (`sold = min(desired, inventory)`). Out-of-stock demand is intentionally lost, not redistributed — skipping zero-stock items at the share step would normalize in-stock shares to 1.0 and silently absorb missed sales.
+
+## triggerEvent
+
+- The `triggerEvent` callback across utilities uses the signature `(category: string, triggerPoint?: string) => boolean`.

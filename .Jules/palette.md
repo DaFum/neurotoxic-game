@@ -2,18 +2,18 @@
 
 ## 2026-03-14 - Custom Toggle Switch Accessibility
 
-**Learning:** Custom toggle buttons built with generic elements (`<button>` and `<span>`) lack implicit label associations, causing screen readers to announce them merely as "toggle, pressed" without context. This pattern is common in the brutalist UI components.
-**Action:** When implementing custom form controls or toggles alongside visual labels, always use `useId()` and link them explicitly via `aria-labelledby` on the interactive element pointing to the `id` of the visual text container.
+**Learning:** Custom toggles built from `<button>` + `<span>` (the pattern used across `src/ui/shared/BrutalistUI.tsx` and `src/components/ToggleRadio.tsx`) have no implicit label association, so screen readers announce only "toggle, pressed" without context.
+**Action:** When pairing a custom toggle with a visual label, generate an id with `useId()`, put it on the label span, and reference it via `aria-labelledby` on the interactive element. Also bind `aria-pressed={isActive}` so the toggle state is announced — visual styling alone is not enough.
 
 ## 2026-04-10 - Tooltips on Disabled Buttons
 
-**Learning:** React disabled elements (`disabled={true}`) swallow pointer events by default, making hover-based tooltips fail. When wrapping disabled buttons with tooltips to explain their disabled state, do not wrap them in semantically incorrect `<span>` tags just to capture hover. Instead, apply `aria-disabled='true'` and `tabIndex={-1}` to the interactive element, and handle the disabled logical check internally within the element or via the Tooltip component without natively disabling the DOM element, OR ensure the Tooltip component wraps elements intelligently as needed. (In this repo, our custom `Tooltip` component gracefully handles standard disabled buttons and `aria-disabled='true'`).
-**Action:** Use `aria-disabled='true'` alongside explicit `Tooltip` components to explain why actions are disabled, avoiding native `disabled={true}` if necessary for hover, but if the component library supports it, avoid extra nested `span` containers. In this codebase, the custom `Tooltip` component detects `aria-disabled` and injects its own hoverable wrapper intelligently, so we can just use `Tooltip` directly around the disabled element without polluting the DOM.
+**Learning:** Native `disabled` elements swallow pointer events, so hover tooltips fail on them. In this repo, `src/ui/shared/Tooltip.tsx` already detects both `disabled` and `aria-disabled` on its child and injects its own hoverable wrapper.
+**Action:** Pass the disabled control directly as a child of `Tooltip` — do not hand-roll a `<span tabIndex={0}>` wrapper at the call site. If you need hover on a control that must remain interactive (e.g. focusable for a reason explanation), prefer `aria-disabled="true"` over native `disabled` and let `Tooltip` do the rest.
 
 ## 2026-04-10 - Merch Press Disabled State
 
-**Learning:** `MerchPressModal` had a generic `<span role="button">` wrapping its disabled button, and its disabled reason was incomplete (only checking `isAffordable`, completely missing `harmonyCostOnFail`).
-**Action:** Ensure all constraints for an action are evaluated when presenting the disabled reason (e.g., both funds and harmony).
+**Learning:** `src/ui/MerchPressModal.tsx` originally wrapped its disabled CTA in a generic `<span role="button">` and its `disabledReason` only checked `isAffordable`, ignoring `config.harmonyCostOnFail`. The current implementation evaluates both `(player.money >= config.cost)` and `(band.harmony >= config.harmonyCostOnFail)` before allowing the press.
+**Action:** When an action has multiple gating constraints (funds, harmony, fuel, fame, etc.), evaluate all of them when computing `disabledReason` so the Tooltip surfaces the *specific* blocker. Pass the disabled `<button>` straight to `Tooltip` rather than reintroducing a `<span role="button">` wrapper.
 
 ## 2026-05-24 - Invisible native elements need visible focus proxies
 
@@ -72,7 +72,7 @@
 
 ## 2026-06-04 - Preventing accidental form submissions in interactive buttons
 
-**Learning:** In a heavily componentized brutalist React app where `<button>` elements are often reused in different layout contexts (e.g., `HUD.jsx`, `ToggleRadio.jsx`, `GigModifierButton.jsx`), omitting the `type="button"` attribute leaves them vulnerable to accidentally triggering implicit form submissions if an ancestor component wraps them in a `<form>`. This can lead to unhandled page reloads or broken state.
+**Learning:** In a heavily componentized brutalist React app where `<button>` elements are often reused in different layout contexts (e.g., `HUD.tsx`, `ToggleRadio.tsx`, `GigModifierButton.tsx`), omitting the `type="button"` attribute leaves them vulnerable to accidentally triggering implicit form submissions if an ancestor component wraps them in a `<form>`. This can lead to unhandled page reloads or broken state.
 **Action:** Always explicitly declare `type="button"` on interactive components like toggles, tabs, and action buttons that do not orchestrate data submission.
 
 ## 2026-06-05 - Focus rings on interactive inner elements
@@ -103,10 +103,10 @@
 
 ## 2024-05-15 - Replace Native Title with Tooltip Component
 
-**Learning:** The native HTML `title` attribute is often used for quick tooltips (e.g., on Mood and Stamina indicators), but it provides poor accessibility, is slow to appear, and cannot be styled.
-**Action:** Always replace native `title` attributes with the application's robust `<Tooltip>` component (found in `src/ui/shared/Tooltip.tsx`) to ensure consistent styling, immediate visual feedback, and proper ARIA descriptions for screen readers.
+**Learning:** The native HTML `title` attribute is slow, unstyleable, and inconsistent across browsers/assistive tech. `src/ui/shared/Tooltip.tsx` is the project's canonical replacement and handles `disabled` / `aria-disabled` children, pointer-events inheritance, and i18n strings out of the box.
+**Action:** Replace any `title="..."` on interactive or informational elements with `<Tooltip content={t('ui:...')}>...</Tooltip>`. Use the i18n key (never a raw string literal) and update EN + DE locale JSON together per the project's i18n rule.
 
-## 2026-05-03 - [HUD Tooltips]
+## 2026-05-03 - HUD Tooltips
 
 **Learning:** Adding `pointer-events-auto` to wrapper elements inside `pointer-events-none` containers is necessary for hover interactions (like tooltips) to work properly.
 **Action:** Always check pointer-events inheritance when adding interactive elements or tooltips to HUD components.

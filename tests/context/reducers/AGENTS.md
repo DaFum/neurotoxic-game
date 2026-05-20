@@ -1,9 +1,5 @@
 # tests/context/reducers - Agent Instructions
 
-## Scope
-
-Applies to `tests/context/reducers/**`.
-
 ## Rules
 
 - Exercise reducers through realistic action payloads and persisted-state edge cases.

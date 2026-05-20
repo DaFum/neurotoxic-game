@@ -1,9 +1,5 @@
 # src/scenes/kabelsalat/components - Agent Instructions
 
-## Scope
-
-Applies to `src/scenes/kabelsalat/components/**` unless a deeper `AGENTS.md` overrides it.
-
 ## Rules
 
 - Keep plug/socket props aligned with kabelsalat state contracts.

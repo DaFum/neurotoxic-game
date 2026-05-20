@@ -1,9 +1,5 @@
 # src/scenes/credits - Agent Instructions
 
-## Scope
-
-Applies to `src/scenes/credits/**`.
-
 ## Rules
 
 - No async fetches or randomized credit ordering.

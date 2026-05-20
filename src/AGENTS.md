@@ -1,9 +1,5 @@
 # src - Agent Instructions
 
-## Scope
-
-Applies to `src/**` unless a deeper `AGENTS.md` overrides it.
-
 ## Rules
 
 - Preserve action-creator-driven state transitions; components/hooks must not mutate state directly.

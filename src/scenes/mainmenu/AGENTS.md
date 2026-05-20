@@ -1,9 +1,5 @@
 # src/scenes/mainmenu - Agent Instructions
 
-## Scope
-
-Applies to `src/scenes/mainmenu/**`.
-
 ## Rules
 
 - Keep menu actions reachable through keyboard and pointer flows.

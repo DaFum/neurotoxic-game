@@ -1,9 +1,5 @@
 # src/scenes/kabelsalat/hooks - Agent Instructions
 
-## Scope
-
-Applies to `src/scenes/kabelsalat/hooks/**`.
-
 ## Rules
 
 - Keep `forceAdvance(isPowered: boolean)` typed through hook APIs and consumers.
