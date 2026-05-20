@@ -59,9 +59,16 @@ export default defineConfig({
           },
           {
             urlPattern: /^https:\/\/gen\.pollinations\.ai\/.*$/i,
-            handler: 'NetworkOnly',
+            handler: 'CacheFirst',
             options: {
-              cacheName: 'online-only-image-generator'
+              cacheName: 'generated-images-runtime',
+              expiration: {
+                maxEntries: 120,
+                maxAgeSeconds: 30 * 24 * 60 * 60 // 30 Days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
             }
           },
           {

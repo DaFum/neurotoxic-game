@@ -171,6 +171,38 @@ test('stage utils', async t => {
       }
     )
 
+    await sub.test('does not warn-read Pixi cache misses', async () => {
+      const OriginalImage = globalThis.Image
+      const mockHas = t.mock.method(PIXI.Assets.cache, 'has', () => false)
+      const mockGet = t.mock.method(PIXI.Assets.cache, 'get', () => {
+        throw new Error('cache miss should not call get')
+      })
+
+      globalThis.Image = class {
+        constructor() {
+          this.crossOrigin = ''
+          this.src = ''
+          setTimeout(() => {
+            if (this.onload) this.onload()
+          }, 0)
+        }
+      }
+
+      try {
+        const texture = await loadTexture(
+          'https://example.com/api/cache-miss-image'
+        )
+
+        assert.ok(texture)
+        assert.equal(mockHas.mock.calls.length, 1)
+        assert.equal(mockGet.mock.calls.length, 0)
+      } finally {
+        mockHas.mock.restore()
+        mockGet.mock.restore()
+        globalThis.Image = OriginalImage
+      }
+    })
+
     await sub.test('handles non-extension URL image load error', async () => {
       const OriginalImage = globalThis.Image
 
