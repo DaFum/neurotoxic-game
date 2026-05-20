@@ -59,3 +59,23 @@ test('sanitizeTraversableValue defaults to null-prototype objects and strips for
   assert.equal(Object.hasOwn(result.nested, 'constructor'), false)
   assert.equal(result.nested.safe, 1)
 })
+
+test('sanitizeTraversableValue treats sibling aliases as shared values, not cycles', () => {
+  const sharedObject = { keep: true }
+  const sharedArray = ['shared']
+  const input = {
+    first: sharedObject,
+    second: sharedObject,
+    arrayA: sharedArray,
+    arrayB: sharedArray
+  }
+  input.self = input
+
+  const result = sanitizeTraversableValue(input)
+
+  assert.equal(result.first.keep, true)
+  assert.equal(result.second.keep, true)
+  assert.deepEqual(result.arrayA, ['shared'])
+  assert.deepEqual(result.arrayB, ['shared'])
+  assert.equal(result.self, '[REDACTED]')
+})
