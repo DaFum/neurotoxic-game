@@ -112,10 +112,8 @@ export const generateEffectText = (
         }
       }
 
-      if (totalMoodChange !== 0)
-        addStatLine(totalMoodChange, 'ui:stats.mood', 'Mood')
-      if (totalStaminaChange !== 0)
-        addStatLine(totalStaminaChange, 'ui:stats.stamina', 'Stamina')
+      addStatLine(totalMoodChange, 'ui:stats.mood', 'Mood')
+      addStatLine(totalStaminaChange, 'ui:stats.stamina', 'Stamina')
     }
   }
 
