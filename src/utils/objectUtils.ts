@@ -1,5 +1,12 @@
 export type RecordGuard = (value: unknown) => value is Record<string, unknown>
 
+export const FORBIDDEN_KEYS: ReadonlySet<string> = new Set([
+  '__proto__',
+  'constructor',
+  'prototype'
+])
+export const isForbiddenKey = (key: string): boolean => FORBIDDEN_KEYS.has(key)
+
 type TraversalOptions = {
   isRecord?: RecordGuard
   createObject?: () => Record<string, unknown>
@@ -31,6 +38,11 @@ export const sanitizeTraversableValue = (
   visited: WeakSet<object> = new WeakSet()
 ): unknown => {
   const onCircular = options.onCircular ?? (() => '[REDACTED]')
+  const createObject =
+    options.createObject ??
+    (() => Object.create(null) as Record<string, unknown>)
+  const shouldSkipKey = (key: string): boolean =>
+    FORBIDDEN_KEYS.has(key) || (options.shouldSkipKey?.(key) ?? false)
 
   if (Array.isArray(value)) {
     if (visited.has(value)) return onCircular()
@@ -43,10 +55,10 @@ export const sanitizeTraversableValue = (
     if (visited.has(value)) return onCircular()
     visited.add(value)
 
-    const sanitized = options.createObject?.() ?? {}
+    const sanitized = createObject()
     for (const key in value) {
       if (!Object.hasOwn(value, key)) continue
-      if (options.shouldSkipKey?.(key)) continue
+      if (shouldSkipKey(key)) continue
       const rawValue = value[key]
       const sanitize = (nextValue: unknown) =>
         sanitizeTraversableValue(nextValue, options, visited)

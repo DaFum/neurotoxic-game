@@ -20,7 +20,9 @@ test('record guards expose loose and strict object semantics explicitly', () => 
 })
 
 test('sanitizeTraversableValue applies shared recursion rules', () => {
-  const input = { keep: '<ok>', secret: 'hidden', nested: { safe: true } }
+  const input = JSON.parse(
+    '{"keep":"<ok><again>","secret":"hidden","__proto__":{"polluted":true},"constructor":"bad","prototype":"bad","nested":{"safe":true,"__proto__":{"nestedPolluted":true}}}'
+  )
   input.self = input
 
   const result = sanitizeTraversableValue(input, {
@@ -28,13 +30,32 @@ test('sanitizeTraversableValue applies shared recursion rules', () => {
     createObject: () => Object.create(null),
     shouldSkipKey: key => key === 'secret',
     transformLeaf: value =>
-      typeof value === 'string' ? value.replace('<', '&lt;') : value
+      typeof value === 'string' ? value.replace(/</g, '&lt;') : value
   })
 
-  assert.equal(result.keep, '&lt;ok>')
+  assert.equal(result.keep, '&lt;ok>&lt;again>')
   assert.equal(result.secret, undefined)
+  assert.equal(Object.hasOwn(result, '__proto__'), false)
+  assert.equal(Object.hasOwn(result, 'constructor'), false)
+  assert.equal(Object.hasOwn(result, 'prototype'), false)
   assert.equal(result.nested.safe, true)
+  assert.equal(Object.hasOwn(result.nested, '__proto__'), false)
   assert.equal(result.self, '[REDACTED]')
   assert.equal(Object.getPrototypeOf(result), null)
   assert.equal(Object.getPrototypeOf(result.nested), null)
+})
+
+test('sanitizeTraversableValue defaults to null-prototype objects and strips forbidden keys', () => {
+  const input = JSON.parse(
+    '{"keep":true,"__proto__":{"polluted":true},"nested":{"constructor":"bad","safe":1}}'
+  )
+
+  const result = sanitizeTraversableValue(input)
+
+  assert.equal(Object.getPrototypeOf(result), null)
+  assert.equal(Object.hasOwn(result, '__proto__'), false)
+  assert.equal(result.keep, true)
+  assert.equal(Object.getPrototypeOf(result.nested), null)
+  assert.equal(Object.hasOwn(result.nested, 'constructor'), false)
+  assert.equal(result.nested.safe, 1)
 })

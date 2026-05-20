@@ -205,6 +205,7 @@ const sanitizeContextValue = (
     value,
     {
       isRecord: isPlainRecord,
+      createObject: () => ({}),
       shouldSkipKey: key =>
         key === '__proto__' || key === 'constructor' || key === 'prototype',
       transformRecordValue: (key, rawValue, sanitize) =>
@@ -511,15 +512,21 @@ export function runSafeStorageOperation<T>(
 export function runSafeStorageOperation<T>(
   operation: string,
   fn: () => T,
-  fallbackValue?: T | null
+  fallbackValue: null
 ): T | null
 export function runSafeStorageOperation<T>(
   operation: string,
   fn: () => T,
-  fallbackValue?: T | null
-): T | null {
+  fallbackValue: undefined
+): T | undefined
+export function runSafeStorageOperation<T>(
+  operation: string,
+  fn: () => T,
+  ...fallbackValue: [] | [T | null | undefined]
+): T | null | undefined {
   let retries = 2
   let lastError: unknown = null
+  const hasFallback = fallbackValue.length > 0
 
   while (retries >= 0) {
     try {
@@ -539,15 +546,15 @@ export function runSafeStorageOperation<T>(
   )
 
   // Behave deterministically:
-  // - If a fallbackValue was explicitly supplied (even null), return it.
-  // - If no fallback was provided (undefined), surface the StorageError to callers.
+  // - If a fallbackValue was explicitly supplied (even null/undefined), return it.
+  // - If no fallback argument was provided, surface the StorageError to callers.
 
-  if (fallbackValue === undefined) {
+  if (!hasFallback) {
     // No safe fallback was provided by the caller — surface the error without logging it twice
     throw storageError
   }
 
   // Only log if we are gracefully degrading to a fallback
   handleError(storageError, { silent: true })
-  return fallbackValue
+  return fallbackValue[0]
 }

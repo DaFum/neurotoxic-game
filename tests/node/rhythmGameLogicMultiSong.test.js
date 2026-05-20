@@ -194,8 +194,11 @@ const mockAudioEngine = {
       const maxNoteTime = lastFinal?.time ?? 0
       state.totalDuration =
         Array.isArray(currentSong.notes) && currentSong.notes.length > 0
-          ? maxNoteTime + 4000
-          : Math.max(maxNoteTime + 4000, currentSong.excerptDurationMs ?? 0)
+          ? maxNoteTime + NOTE_TAIL_MS
+          : Math.max(
+              maxNoteTime + NOTE_TAIL_MS,
+              currentSong.excerptDurationMs ?? 0
+            )
       state.songTransitioning = false
 
       if (activeSetlist.length > 1) {

@@ -76,7 +76,7 @@ const validatePlayer = (player: unknown): void => {
     p.money = clampPlayerMoney(p.money as number)
   }
 
-  if (p.van && !isLooseRecord(p.van)) {
+  if (p.van != null && !isLooseRecord(p.van)) {
     throw new StateError('player.van must be an object')
   }
 

@@ -44,7 +44,7 @@ interface OverworldMapProps {
 }
 
 const SVG_TOKEN_STYLE =
-  '<defs><style>:root{--color-void-black:#0a0a0a;--color-star-white:#ffffff;--color-toxic-green:#00ff41;--color-ash-gray:#888888;}</style></defs>'
+  '<defs><style>:root{--color-void-black:var(--color-void-black);--color-star-white:var(--color-star-white);--color-toxic-green:var(--color-toxic-green);--color-ash-gray:var(--color-ash-gray);}</style></defs>'
 
 const escapeSvgText = (value: string): string =>
   value.replace(/[&<>"']/g, char => {

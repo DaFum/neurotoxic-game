@@ -38,6 +38,7 @@ export const SupplyStopModal: React.FC<SupplyStopModalProps> = ({
 
     const currentFame = toFiniteNumber(player.fame, 0)
     const nextFame = Math.max(0, currentFame - 5)
+    const fameLost = currentFame - nextFame
     updatePlayer({
       fame: nextFame,
       fameLevel: calculateFameLevel(nextFame)
@@ -45,7 +46,8 @@ export const SupplyStopModal: React.FC<SupplyStopModalProps> = ({
 
     addToast(
       t('ui:shop.black_market_purchase', {
-        defaultValue: 'Purchased from Black Market! Lost 5 Fame.'
+        amount: fameLost,
+        defaultValue: 'Purchased from Black Market! Lost {{amount}} Fame.'
       }),
       'warning'
     )

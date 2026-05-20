@@ -1,7 +1,7 @@
 import { hasTrait } from './traitUtils'
 import { EXPENSE_CONSTANTS } from './economyEngine'
 import { logger } from './logger'
-import { isLooseRecord } from './objectUtils'
+import { isForbiddenKey, isLooseRecord } from './objectUtils'
 import type {
   BandMember,
   GameState,
@@ -46,7 +46,12 @@ export const isStashEntry = (entry: unknown): entry is StashEntry => {
   )
 }
 
-export { isLooseRecord, isPlainRecord } from './objectUtils'
+export {
+  FORBIDDEN_KEYS,
+  isForbiddenKey,
+  isLooseRecord,
+  isPlainRecord
+} from './objectUtils'
 
 /**
  * @deprecated Prefer `isLooseRecord` or `isPlainRecord` so the intended object
@@ -367,15 +372,6 @@ export const applyInventoryItemDelta = (
 
   return currentValue
 }
-
-/**
- * A hardened Set of prohibited object property keys used during state-merge operations.
- * Explicitly guards against prototype pollution vulnerabilities by blocking recursive assignment
- * into sensitive prototype traversal chains (e.g. `__proto__`, `constructor`, `prototype`).
- * Usage ensures event deltas cannot maliciously or accidentally mutate the global Object space.
- */
-const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
-export const isForbiddenKey = (key: string): boolean => FORBIDDEN_KEYS.has(key)
 
 /**
  * Optimized check for forbidden keys in an object.

@@ -3877,6 +3877,16 @@
         "typeOnly": true
       }
     ],
+    "FORBIDDEN_KEYS": [
+      {
+        "exportPath": "src/utils/gameStateUtils.ts",
+        "isDefault": false,
+        "name": "FORBIDDEN_KEYS",
+        "path": "src/utils/objectUtils.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "formatCurrency": [
       {
         "isDefault": false,
@@ -5589,9 +5599,10 @@
     ],
     "isForbiddenKey": [
       {
+        "exportPath": "src/utils/gameStateUtils.ts",
         "isDefault": false,
         "name": "isForbiddenKey",
-        "path": "src/utils/gameStateUtils.ts",
+        "path": "src/utils/objectUtils.ts",
         "source": "local",
         "type": "const"
       }

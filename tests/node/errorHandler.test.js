@@ -709,3 +709,14 @@ it('should return null when null is explicitly passed as fallback', () => {
   )
   assert.strictEqual(result, null)
 })
+
+it('should return undefined when undefined is explicitly passed as fallback', () => {
+  const result = runSafeStorageOperation(
+    'test-undefined',
+    () => {
+      throw new Error('Storage error')
+    },
+    undefined
+  )
+  assert.strictEqual(result, undefined)
+})

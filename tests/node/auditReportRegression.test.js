@@ -12,6 +12,13 @@ test('rhythm hook uses audioEngine facade for audio orchestration helpers', () =
 
 test('offline overworld SVG copy and colors are tokenized/i18n-driven', () => {
   const source = readSource('src/components/overworld/OverworldMap.tsx')
+  const styleMatch = source.match(/const SVG_TOKEN_STYLE =\r?\n\s+'([^']+)'/)
+  assert.ok(styleMatch, 'SVG_TOKEN_STYLE should remain a string literal')
+  assert.doesNotMatch(styleMatch[1], /#[0-9a-fA-F]{3,8}/)
+  assert.match(styleMatch[1], /var\(--color-void-black\)/)
+  assert.match(styleMatch[1], /var\(--color-star-white\)/)
+  assert.match(styleMatch[1], /var\(--color-toxic-green\)/)
+  assert.match(styleMatch[1], /var\(--color-ash-gray\)/)
   assert.doesNotMatch(source, />OFFLINE MAP</)
   assert.doesNotMatch(
     source,
@@ -40,4 +47,15 @@ test('supply stop purchases route through Band HQ purchase logic', () => {
   const source = readSource('src/ui/SupplyStopModal.tsx')
   assert.match(source, /usePurchaseLogic/)
   assert.doesNotMatch(source, /processPurchaseEffect/)
+})
+
+test('supply stop black market toast reports applied fame loss', () => {
+  const source = readSource('src/ui/SupplyStopModal.tsx')
+  const enUi = readSource('public/locales/en/ui.json')
+  const deUi = readSource('public/locales/de/ui.json')
+  assert.match(source, /const fameLost = currentFame - nextFame/)
+  assert.match(source, /amount: fameLost/)
+  assert.doesNotMatch(source, /Lost 5 Fame/)
+  assert.match(enUi, /Lost \{\{amount\}\} Fame/)
+  assert.match(deUi, /\{\{amount\}\} Fame verloren/)
 })

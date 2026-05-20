@@ -1418,7 +1418,7 @@
   "settings.return": "RETURN",
   "settings.systemConfig": "SYSTEM CONFIG",
   "sfx_volume": "SFX VOLUME",
-  "shop.black_market_purchase": "Purchased from Black Market! Lost 5 Fame.",
+  "shop.black_market_purchase": "Purchased from Black Market! Lost {{amount}} Fame.",
   "shop.insufficient_funds": "Insufficient funds.",
   "shop.messages.alreadyOwned": "Already owned {{itemName}}!",
   "shop.messages.fame": "Fame",

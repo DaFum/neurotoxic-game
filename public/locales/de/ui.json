@@ -1418,7 +1418,7 @@
   "settings.return": "ZURÜCK",
   "settings.systemConfig": "SYSTEMKONFIGURATION",
   "sfx_volume": "SFX LAUTSTÄRKE",
-  "shop.black_market_purchase": "Auf dem Schwarzmarkt gekauft! 5 Fame verloren.",
+  "shop.black_market_purchase": "Auf dem Schwarzmarkt gekauft! {{amount}} Fame verloren.",
   "shop.insufficient_funds": "Ungenügend Geld.",
   "shop.messages.alreadyOwned": "{{itemName}} bereits in Besitz!",
   "shop.messages.fame": "Ruhm",
