@@ -37,7 +37,7 @@ test('Vite PWA config caches generated Pollinations images at runtime', () => {
     pollinationsRoute.options.cacheableResponse.statuses,
     [0, 200]
   )
-  assert.equal(pollinationsRoute.options.expiration.maxEntries, 120)
+  assert.equal(pollinationsRoute.options.expiration.maxEntries, 200)
   assert.equal(
     pollinationsRoute.options.expiration.maxAgeSeconds,
     30 * 24 * 60 * 60
