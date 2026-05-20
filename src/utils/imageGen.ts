@@ -198,6 +198,8 @@ export const IMG_PROMPTS = {
     'pixel art orange traffic cone isolated on solid black background no shadow flat icon top down view',
   MINIGAME_FUEL:
     'pixel art red gas jerrycan isolated on solid black background no shadow flat icon top down view',
+  MINIGAME_VOID_HAZARD:
+    'pixel art dark mysterious glowing purple void portal hazard isolated on solid black background no shadow flat icon top down view',
 
   // Minigame - Roadie
   MINIGAME_ROADIE_IDLE:

@@ -13,6 +13,7 @@ export class TourbusObstacleManager {
     rock: Texture | null
     barrier: Texture | null
     fuel: Texture | null
+    voidHazard: Texture | null
   }
   colors: {
     warningYellow: number
@@ -33,6 +34,7 @@ export class TourbusObstacleManager {
       rock: Texture | null
       barrier: Texture | null
       fuel: Texture | null
+      voidHazard: Texture | null
     },
     colors: {
       warningYellow: number
@@ -67,6 +69,7 @@ export class TourbusObstacleManager {
         let tex = null
         if (obs.type === 'FUEL') tex = this.textures.fuel
         else if (obs.type === 'OBSTACLE') tex = this.textures.rock // Randomize?
+        else if (obs.type === 'VOID_HAZARD') tex = this.textures.voidHazard
 
         if (tex) {
           sprite = new Sprite(tex)
