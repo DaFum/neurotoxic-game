@@ -294,6 +294,51 @@ describe('useArrivalLogic', () => {
     )
   })
 
+  test('queues pending Band HQ when START arrival has no local modal callback', () => {
+    const { result } = setupArrivalScenario(useArrivalLogic, {
+      gameMap: {
+        nodes: {
+          node_start: { type: 'START' }
+        }
+      }
+    })
+
+    act(() => {
+      result.current.handleArrivalSequence()
+    })
+
+    expect(mockGameState.setPendingBandHQOpen.mock.calls).toEqual([[true]])
+  })
+
+  test('queues pending supply stop inventory when arrival has no local modal callback', () => {
+    const shopInventory = [
+      {
+        id: 'strings',
+        name: 'Strings',
+        cost: 10,
+        effect: { type: 'inventory_add', item: 'strings', value: 1 }
+      }
+    ]
+    const { result } = setupArrivalScenario(useArrivalLogic, {
+      gameMap: {
+        nodes: {
+          node_start: {
+            type: 'supplyStop',
+            shopInventory
+          }
+        }
+      }
+    })
+
+    act(() => {
+      result.current.handleArrivalSequence()
+    })
+
+    expect(mockGameState.setPendingSupplyStopInventory.mock.calls).toEqual([
+      [shopInventory]
+    ])
+  })
+
   test('handles FESTIVAL node with sufficient harmony', () => {
     const venue = { name: 'Festival Stage' }
     const { result } = setupArrivalScenario(useArrivalLogic, {

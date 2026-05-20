@@ -14,7 +14,8 @@ import {
   clampBandHarmony,
   clampNonNegative,
   clampToNonNegativeInt,
-  clamp0to100
+  clamp0to100,
+  clampUnitRandom
 } from '../utils/gameStateUtils'
 import type { RhythmSetlistEntry } from '../types/rhythmGame'
 import type {
@@ -38,7 +39,8 @@ import type {
   UpdateBandPayload,
   UpdatePlayerPayload,
   SocialState,
-  DarkWebLeakPayload
+  DarkWebLeakPayload,
+  PurchaseItem
 } from '../types'
 
 /**
@@ -62,7 +64,10 @@ const sanitizeNonNegativePayload = <
   const sanitized = { ...payload }
   for (const key of numericKeys) {
     const raw = payload[key] as unknown
-    sanitized[key] = clampNonNegative(Number(raw) || 0) as T[typeof key]
+    const numeric = Number(raw)
+    sanitized[key] = clampNonNegative(
+      Number.isFinite(numeric) ? numeric : 0
+    ) as T[typeof key]
   }
   sanitized.successToast = payload.successToast
     ? ({ ...payload.successToast, id: getSafeUUID() } as T['successToast'])
@@ -433,10 +438,19 @@ export const createCompleteTravelMinigameAction = (
 ): Extract<
   GameAction,
   { type: typeof ActionTypes.COMPLETE_TRAVEL_MINIGAME }
-> => ({
-  type: ActionTypes.COMPLETE_TRAVEL_MINIGAME,
-  payload: { damageTaken, itemsCollected, rngValue }
-})
+> => {
+  const numericDamage = Number(damageTaken)
+  return {
+    type: ActionTypes.COMPLETE_TRAVEL_MINIGAME,
+    payload: {
+      damageTaken: Number.isFinite(numericDamage)
+        ? Math.max(0, numericDamage)
+        : 0,
+      itemsCollected: Array.isArray(itemsCollected) ? itemsCollected : [],
+      rngValue: clampUnitRandom(rngValue)
+    }
+  }
+}
 
 /**
  * Creates start roadie minigame action
@@ -773,6 +787,16 @@ export const createSetPendingBandHQOpenAction = (
 > => ({
   type: ActionTypes.SET_PENDING_BANDHQ_OPEN,
   payload: isOpen
+})
+
+export const createSetPendingSupplyStopInventoryAction = (
+  inventory: PurchaseItem[] | null
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.SET_PENDING_SUPPLY_STOP_INVENTORY }
+> => ({
+  type: ActionTypes.SET_PENDING_SUPPLY_STOP_INVENTORY,
+  payload: Array.isArray(inventory) ? inventory : null
 })
 
 /**

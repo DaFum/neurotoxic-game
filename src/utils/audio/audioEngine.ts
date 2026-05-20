@@ -53,6 +53,12 @@ export * from './midiUtils'
 export * from './selectionUtils'
 export * from './songUtils'
 export * from './timingUtils'
+export {
+  setupGigPhysics,
+  resolveActiveSetlist,
+  playSongSequence,
+  resetGigStateTracking
+} from './rhythmGameAudioUtils'
 
 // Stateful entry points
 export { audioManager } from './AudioManager'

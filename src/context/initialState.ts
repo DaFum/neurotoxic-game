@@ -259,6 +259,7 @@ export const initialState: GameState = {
   minigame: { ...DEFAULT_MINIGAME_STATE },
   unlocks: [],
   pendingBandHQOpen: false,
+  pendingSupplyStopInventory: null,
   completedMilestones: []
 }
 

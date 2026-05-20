@@ -41,13 +41,8 @@ import { clampPlayerMoney } from '../utils/gameStateUtils'
 import { translateLocation } from '../utils/locationI18n'
 import { VENUES_BY_ID } from '../data/venues'
 import { getTravelArrivalUpdates } from '../utils/travelUtils'
-import {
-  createMoveRivalBandAction,
-  createCheckRivalEncounterAction
-} from '../context/actionCreators'
 import type {
   BandState,
-  GameAction,
   GameMap,
   GamePhase,
   GameState,
@@ -77,7 +72,8 @@ type TravelLogicParams = {
     inventory: import('../types/components').PurchaseItem[]
   ) => void
   onStartTravelMinigame?: (nodeId: string) => void
-  dispatch?: (action: GameAction) => void
+  moveRivalBand?: () => void
+  checkRivalEncounter?: () => void
 }
 
 /**
@@ -134,7 +130,8 @@ export const useTravelLogic = ({
   onShowHQ,
   onShowSupplyStop,
   onStartTravelMinigame,
-  dispatch
+  moveRivalBand,
+  checkRivalEncounter
 }: TravelLogicParams) => {
   const [isTraveling, setIsTraveling] = useState(false)
   const [travelTarget, setTravelTarget] = useState<MapNode | null>(null)
@@ -154,7 +151,8 @@ export const useTravelLogic = ({
   const reputationByRegionRef = useRef(reputationByRegion)
   const venueBlacklistRef = useRef(venueBlacklist)
   const isTravelingRef = useRef(isTraveling)
-  const dispatchRef = useRef(dispatch)
+  const moveRivalBandRef = useRef(moveRivalBand)
+  const checkRivalEncounterRef = useRef(checkRivalEncounter)
   const pendingTravelNodeRef = useRef(pendingTravelNode)
 
   // Synchronously update control flow refs to ensure handlers see latest state immediately
@@ -168,7 +166,8 @@ export const useTravelLogic = ({
     gameMapRef.current = gameMap
     reputationByRegionRef.current = reputationByRegion
     venueBlacklistRef.current = venueBlacklist
-    dispatchRef.current = dispatch
+    moveRivalBandRef.current = moveRivalBand
+    checkRivalEncounterRef.current = checkRivalEncounter
   }, [
     player,
     band,
@@ -176,7 +175,8 @@ export const useTravelLogic = ({
     gameMap,
     reputationByRegion,
     venueBlacklist,
-    dispatch
+    moveRivalBand,
+    checkRivalEncounter
   ])
 
   const getLocationName = useCallback(
@@ -361,11 +361,9 @@ export const useTravelLogic = ({
         includeGigNodes: true
       })
 
-      // Tell context to move the rival band whenever the player moves
-      if (dispatchRef.current) {
-        dispatchRef.current(createMoveRivalBandAction())
-        dispatchRef.current(createCheckRivalEncounterAction())
-      }
+      // Tell context to move the rival band whenever the player moves.
+      moveRivalBandRef.current?.()
+      checkRivalEncounterRef.current?.()
 
       // Always handle node arrival regardless of events —
       // gigs must start even when a travel event pops up.

@@ -1,4 +1,12 @@
-import { test, describe, before, after, beforeEach, afterEach } from 'node:test'
+import {
+  test,
+  describe,
+  before,
+  after,
+  beforeEach,
+  afterEach,
+  mock
+} from 'node:test'
 import assert from 'node:assert/strict'
 import { renderHook, act, cleanup } from '@testing-library/react'
 import { setupJSDOM, teardownJSDOM } from '../testUtils'
@@ -276,6 +284,22 @@ describe('useTravelLogic', () => {
 
     assert.equal(props.advanceDay.mock.calls.length, 1)
     assert.equal(props.saveGame.mock.calls.length, 1)
+  })
+
+  test('onTravelComplete moves and checks rival through named dispatch actions', () => {
+    const moveRivalBand = mock.fn()
+    const checkRivalEncounter = mock.fn()
+    const { result, targetNode } = setupTravelScenario(useTravelLogic, {
+      moveRivalBand,
+      checkRivalEncounter
+    })
+
+    act(() => {
+      result.current.onTravelComplete(targetNode)
+    })
+
+    assert.equal(moveRivalBand.mock.calls.length, 1)
+    assert.equal(checkRivalEncounter.mock.calls.length, 1)
   })
 
   test('handleRefuel fills tank and deducts money', () => {

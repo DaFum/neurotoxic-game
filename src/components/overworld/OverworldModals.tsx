@@ -6,6 +6,7 @@ import { PirateRadioModal } from '../../ui/PirateRadioModal'
 import { MerchPressModal } from '../../ui/MerchPressModal'
 import { BloodBankModal } from '../../ui/BloodBankModal'
 import { DarkWebLeakModal } from '../../ui/DarkWebLeakModal'
+import { SupplyStopModal } from '../../ui/SupplyStopModal'
 
 interface OverworldModalsProps {
   // Band HQ
@@ -51,6 +52,13 @@ interface OverworldModalsProps {
   canDarkWebLeak: boolean
   hasLeakedToday: boolean
   DARK_WEB_LEAK_CONFIG: React.ComponentProps<typeof DarkWebLeakModal>['config']
+
+  // Supply Stop
+  showSupplyStop: boolean
+  supplyStopInventory:
+    | React.ComponentProps<typeof SupplyStopModal>['inventory']
+    | null
+  closeSupplyStop: () => void
 }
 
 export const OverworldModals = React.memo(
@@ -84,7 +92,10 @@ export const OverworldModals = React.memo(
     triggerLeak,
     canDarkWebLeak,
     hasLeakedToday,
-    DARK_WEB_LEAK_CONFIG
+    DARK_WEB_LEAK_CONFIG,
+    showSupplyStop,
+    supplyStopInventory,
+    closeSupplyStop
   }: OverworldModalsProps) => {
     return (
       <>
@@ -125,6 +136,12 @@ export const OverworldModals = React.memo(
             canLeak={canDarkWebLeak}
             hasLeakedToday={hasLeakedToday}
             config={DARK_WEB_LEAK_CONFIG}
+          />
+        )}
+        {showSupplyStop && supplyStopInventory && (
+          <SupplyStopModal
+            inventory={supplyStopInventory}
+            onClose={closeSupplyStop}
           />
         )}
       </>

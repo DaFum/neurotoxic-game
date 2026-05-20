@@ -8,6 +8,7 @@
  */
 
 import { logger } from './logger'
+import { isPlainRecord, sanitizeTraversableValue } from './objectUtils'
 
 // Public API: shared error taxonomy and base classes for scene/util integration and future extension.
 /**
@@ -183,14 +184,6 @@ const SENSITIVE_KEY_REGEXP = SENSITIVE_KEY_PATTERNS.some(Boolean)
     )
   : null
 
-const isPlainObject = (value: unknown): value is Record<string, unknown> => {
-  return (
-    value !== null &&
-    typeof value === 'object' &&
-    Object.getPrototypeOf(value) === Object.prototype
-  )
-}
-
 const normalizeSeverity = (severity: unknown) => {
   if (typeof severity !== 'string') return null
   const normalized = severity.toLowerCase()
@@ -207,66 +200,30 @@ const isSensitiveContextKey = (key: string) => {
 const sanitizeContextValue = (
   value: unknown,
   visited: WeakSet<object>
-): unknown => {
-  if (Array.isArray(value)) {
-    if (visited.has(value)) return '[REDACTED]'
-    visited.add(value)
-    const len = value.length
-    const result: unknown[] = new Array(len)
-    for (let i = 0; i < len; i++) {
-      result[i] = sanitizeContextValue(value[i], visited)
-    }
-    return result
-  }
-
-  if (isPlainObject(value)) {
-    return sanitizeContextObject(value, visited)
-  }
-
-  return value
-}
-
-const sanitizeContextObject = (
-  context: Record<string, unknown>,
-  visited: WeakSet<object>
-): Record<string, unknown> | '[REDACTED]' => {
-  if (visited.has(context)) {
-    return '[REDACTED]'
-  }
-
-  visited.add(context)
-  const sanitized: Record<string, unknown> = {}
-
-  for (const key in context) {
-    if (
-      !Object.hasOwn(context, key) ||
-      key === '__proto__' ||
-      key === 'constructor' ||
-      key === 'prototype'
-    )
-      continue
-    const value = context[key]
-    const normalizedKey = key.toLowerCase()
-    if (isSensitiveContextKey(normalizedKey)) {
-      sanitized[key] = '[REDACTED]'
-      continue
-    }
-
-    sanitized[key] = sanitizeContextValue(value, visited)
-  }
-
-  return sanitized
-}
+): unknown =>
+  sanitizeTraversableValue(
+    value,
+    {
+      isRecord: isPlainRecord,
+      shouldSkipKey: key =>
+        key === '__proto__' || key === 'constructor' || key === 'prototype',
+      transformRecordValue: (key, rawValue, sanitize) =>
+        isSensitiveContextKey(key.toLowerCase())
+          ? '[REDACTED]'
+          : sanitize(rawValue)
+    },
+    visited
+  )
 
 const sanitizeContextPayload = (payload: unknown): Record<string, unknown> => {
   const visited = new WeakSet<object>()
 
-  if (isPlainObject(payload)) {
-    return sanitizeContextObject(payload, visited) as Record<string, unknown>
+  if (isPlainRecord(payload)) {
+    return sanitizeContextValue(payload, visited) as Record<string, unknown>
   }
 
   if (payload instanceof Error) {
-    return sanitizeContextObject(
+    return sanitizeContextValue(
       {
         name: payload.name,
         message: payload.message,
@@ -278,7 +235,7 @@ const sanitizeContextPayload = (payload: unknown): Record<string, unknown> => {
 
   if (payload !== null && typeof payload === 'object') {
     visited.add(payload)
-    return sanitizeContextObject(
+    return sanitizeContextValue(
       Object.assign({}, payload) as Record<string, unknown>,
       visited
     ) as Record<string, unknown>
@@ -296,7 +253,7 @@ type NormalizedErrorOptions = {
 const normalizeHandleErrorOptions = (
   options: unknown
 ): NormalizedErrorOptions => {
-  const safeOptions = isPlainObject(options) ? options : {}
+  const safeOptions = isPlainRecord(options) ? options : {}
 
   return {
     source:
@@ -474,7 +431,7 @@ const showErrorToast = (
  * @returns {Object} Processed error info
  */
 export const handleError = (error: unknown, options: unknown = {}) => {
-  const safeOptions = isPlainObject(options) ? options : {}
+  const safeOptions = isPlainRecord(options) ? options : {}
   const addToast =
     typeof safeOptions.addToast === 'function'
       ? (safeOptions.addToast as (msg: string, type: string) => void)
@@ -545,18 +502,18 @@ initGlobalErrorHandling()
  * @param {*} [fallbackValue] - Value to return on error
  * @returns {*} Result or fallback value
  */
-export function safeStorageOperation<T>(operation: string, fn: () => T): T
-export function safeStorageOperation<T>(
+export function runSafeStorageOperation<T>(operation: string, fn: () => T): T
+export function runSafeStorageOperation<T>(
   operation: string,
   fn: () => T,
   fallbackValue: T
 ): T
-export function safeStorageOperation<T>(
+export function runSafeStorageOperation<T>(
   operation: string,
   fn: () => T,
   fallbackValue?: T | null
 ): T | null
-export function safeStorageOperation<T>(
+export function runSafeStorageOperation<T>(
   operation: string,
   fn: () => T,
   fallbackValue?: T | null

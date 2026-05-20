@@ -1,6 +1,7 @@
 import { hasTrait } from './traitUtils'
 import { EXPENSE_CONSTANTS } from './economyEngine'
 import { logger } from './logger'
+import { isLooseRecord } from './objectUtils'
 import type {
   BandMember,
   GameState,
@@ -25,6 +26,16 @@ export const clampToNonNegativeInt = (value: unknown): number => {
   return Number.isFinite(n) ? Math.max(0, Math.floor(n)) : 0
 }
 
+const MAX_UNIT_RANDOM_EXCLUSIVE = 0.9999999999999999
+
+export const clampUnitRandom = (value: unknown): number | undefined => {
+  const n = Number(value)
+  if (!Number.isFinite(n)) return undefined
+  if (n < 0) return 0
+  if (n >= 1) return MAX_UNIT_RANDOM_EXCLUSIVE
+  return n
+}
+
 export const isStashEntry = (entry: unknown): entry is StashEntry => {
   if (entry === null || typeof entry !== 'object') return false
   const obj = entry as Record<string, unknown>
@@ -35,10 +46,13 @@ export const isStashEntry = (entry: unknown): entry is StashEntry => {
   )
 }
 
-export const isPlainObject = (
-  value: unknown
-): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value)
+export { isLooseRecord, isPlainRecord } from './objectUtils'
+
+/**
+ * @deprecated Prefer `isLooseRecord` or `isPlainRecord` so the intended object
+ * boundary is explicit.
+ */
+export const isPlainObject = isLooseRecord
 
 /**
  * High-performance check for object emptiness.

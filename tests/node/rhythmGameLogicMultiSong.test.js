@@ -24,6 +24,55 @@ const mockAudioManager = {
   ensureAudioContext: mock.fn(async () => true),
   playSFX: mock.fn()
 }
+
+const NOTE_LEAD_IN_MS = 100
+const NOTE_TAIL_MS = 1000
+const GIG_LEAD_IN_MS = 2000
+
+const mockSetupGigPhysics = mock.fn(() => ({
+  mergedModifiers: {},
+  speed: 500,
+  hitWindows: [100, 100, 100]
+}))
+
+const mockResolveActiveSetlist = mock.fn(setlist =>
+  (setlist.length > 0
+    ? setlist
+    : [{ id: 'jam', name: 'Jam', bpm: 120, duration: 60, difficulty: 2 }]
+  ).map(songRef => {
+    if (typeof songRef === 'string') {
+      return {
+        id: songRef,
+        name: songRef,
+        bpm: 120,
+        duration: 60,
+        difficulty: 2
+      }
+    }
+    return {
+      ...songRef,
+      id: songRef.id ?? 'jam',
+      name: songRef.name ?? songRef.id ?? 'Jam',
+      bpm: songRef.bpm ?? 120,
+      duration: songRef.duration ?? 60,
+      difficulty: songRef.difficulty ?? 2
+    }
+  })
+)
+
+const mockResetGigStateTracking = mock.fn(gameStateRef => {
+  if (!gameStateRef.current) return
+  gameStateRef.current.lastEndedSongIndex = -1
+  gameStateRef.current.songStats = []
+  gameStateRef.current.currentSongStartScore = 0
+  gameStateRef.current.currentSongStartPerfectHits = 0
+  gameStateRef.current.currentSongStartMisses = 0
+  gameStateRef.current.songTransitioning = false
+  gameStateRef.current.setlistCompleted = false
+  gameStateRef.current.isGameOver = false
+  gameStateRef.current.hasSubmittedResults = false
+})
+
 const mockAudioEngine = {
   enableCorruptionBurstAudio: mock.fn(),
   disableCorruptionBurstAudio: mock.fn(),
@@ -44,7 +93,124 @@ const mockAudioEngine = {
   getGigTimeMs: mock.fn(() => 0),
   getTransportState: mock.fn(() => 'started'),
   setCorruptionEffect: mock.fn(),
-  getScheduledHitTimeMs: mock.fn(() => 0)
+  getScheduledHitTimeMs: mock.fn(() => 0),
+  setupGigPhysics: mockSetupGigPhysics,
+  resolveActiveSetlist: mockResolveActiveSetlist,
+  resetGigStateTracking: mockResetGigStateTracking,
+  playSongSequence: mock.fn(
+    async function playSongSequence(
+      index,
+      activeSetlist,
+      gameStateRef,
+      addToast,
+      t
+    ) {
+      const state = gameStateRef.current
+      if (!state || state.hasSubmittedResults || state.isGameOver) return
+
+      if (index >= activeSetlist.length) {
+        state.setlistCompleted = true
+        state.songTransitioning = false
+        const nowMs = mockAudioEngine.getGigTimeMs()
+        if (Number.isFinite(nowMs) && nowMs > 0) {
+          state.totalDuration = nowMs
+        }
+        return
+      }
+
+      const currentSong = activeSetlist[index]
+      if (!currentSong) {
+        state.setlistCompleted = true
+        state.songTransitioning = false
+        return
+      }
+
+      state.setlistCompleted = false
+      state.songTransitioning = true
+      state.notes = []
+      state.nextMissCheckIndex = 0
+
+      let notes = []
+      if (Array.isArray(currentSong.notes) && currentSong.notes.length > 0) {
+        notes = mockRhythmUtils.parseSongNotes(currentSong, NOTE_LEAD_IN_MS, {})
+      }
+
+      const onSongEnded = () => {
+        if (state.lastEndedSongIndex === index) return Promise.resolve()
+        state.lastEndedSongIndex = index
+        if (state.isGameOver || state.hasSubmittedResults) {
+          return Promise.resolve()
+        }
+
+        state.songStats.push({
+          songId: currentSong.id,
+          score: Math.max(
+            0,
+            (state.score || 0) - (state.currentSongStartScore || 0)
+          ),
+          accuracy: 100,
+          index
+        })
+        state.currentSongStartScore = state.score || 0
+        state.currentSongStartPerfectHits = state.stats?.perfectHits || 0
+        state.currentSongStartMisses = state.stats?.misses || 0
+        state.songTransitioning = true
+
+        return mockAudioEngine.playSongSequence(
+          index + 1,
+          activeSetlist,
+          gameStateRef,
+          addToast,
+          t
+        )
+      }
+
+      const oggFilename = currentSong.sourceOgg ?? null
+      if (
+        typeof oggFilename === 'string' &&
+        mockAudioEngine.hasAudioAsset(oggFilename)
+      ) {
+        const lastNote = notes[notes.length - 1]
+        const durationMs = lastNote ? lastNote.time + NOTE_TAIL_MS : null
+        await mockAudioEngine.startGigPlayback({
+          filename: oggFilename,
+          bufferOffsetMs: Math.max(0, currentSong.excerptStartMs ?? 0),
+          delayMs: GIG_LEAD_IN_MS,
+          durationMs,
+          onEnded: onSongEnded
+        })
+      }
+
+      if (notes.length === 0) {
+        notes = mockRhythmUtils.generateNotesForSong(currentSong, {
+          leadIn: NOTE_LEAD_IN_MS
+        })
+      }
+
+      state.notes = notes
+      state.nextMissCheckIndex = 0
+      state.notesVersion = (state.notesVersion ?? 0) + 1
+      const lastFinal = notes[notes.length - 1]
+      const maxNoteTime = lastFinal?.time ?? 0
+      state.totalDuration =
+        Array.isArray(currentSong.notes) && currentSong.notes.length > 0
+          ? maxNoteTime + 4000
+          : Math.max(maxNoteTime + 4000, currentSong.excerptDurationMs ?? 0)
+      state.songTransitioning = false
+
+      if (activeSetlist.length > 1) {
+        addToast(
+          t
+            ? t('ui:nowPlaying', {
+                name: currentSong.name,
+                defaultValue: `Now Playing: {{name}}`
+              })
+            : `Now Playing: ${currentSong.name}`,
+          'info'
+        )
+      }
+    }
+  )
 }
 const mockRhythmUtils = {
   generateNotesForSong: mock.fn(() => []),

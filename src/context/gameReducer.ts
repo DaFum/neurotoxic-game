@@ -48,7 +48,7 @@ import {
 } from './reducers/clinicReducer'
 import { handleAddQuest, handleAdvanceQuest } from './reducers/questReducer'
 import { MILESTONES } from '../data/milestones/milestones'
-import { getSafeUUID } from '../utils/crypto'
+import { createAddToastAction } from './actionCreators'
 import {
   handleLoadGame,
   handleResetState,
@@ -58,7 +58,8 @@ import {
   handleRemoveToast,
   handleAdvanceDay,
   handleAddUnlock,
-  handleSetPendingBandHQOpen
+  handleSetPendingBandHQOpen,
+  handleSetPendingSupplyStopInventory
 } from './reducers/systemReducer'
 import { handleTradeVoidItem } from './reducers/tradeReducer'
 import {
@@ -152,7 +153,9 @@ const reducerMap = {
   [ActionTypes.CLINIC_ENHANCE]: handleClinicEnhance,
   [ActionTypes.TRADE_VOID_ITEM]: handleTradeVoidItem,
   [ActionTypes.BLOOD_BANK_DONATE]: handleBloodBankDonate,
-  [ActionTypes.SET_PENDING_BANDHQ_OPEN]: handleSetPendingBandHQOpen
+  [ActionTypes.SET_PENDING_BANDHQ_OPEN]: handleSetPendingBandHQOpen,
+  [ActionTypes.SET_PENDING_SUPPLY_STOP_INVENTORY]:
+    handleSetPendingSupplyStopInventory
 } satisfies ReducerMap
 
 /**
@@ -229,18 +232,18 @@ export const gameReducer = (
         ]
       }
 
-      if (milestone.rewardAction) {
-        nextState = gameReducer(nextState, milestone.rewardAction)
+      const rewardAction = milestone.createRewardAction?.()
+      if (rewardAction) {
+        nextState = gameReducer(nextState, rewardAction)
       }
 
-      nextState = gameReducer(nextState, {
-        type: ActionTypes.ADD_TOAST,
-        payload: {
-          id: getSafeUUID(),
+      nextState = gameReducer(
+        nextState,
+        createAddToastAction({
           type: 'info',
           messageKey: milestone.labelKey
-        }
-      })
+        })
+      )
     }
   }
 

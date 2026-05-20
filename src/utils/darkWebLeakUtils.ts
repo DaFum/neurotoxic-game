@@ -12,6 +12,9 @@ export const checkHasLeakedToday = (
   return social?.lastDarkWebLeakDay === currentDay
 }
 
+const isFiniteNumber = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value)
+
 export const validateDarkWebLeak = (
   social: Partial<SocialState> | undefined | null,
   player: Partial<PlayerState> | undefined | null,
@@ -19,17 +22,13 @@ export const validateDarkWebLeak = (
   config: DarkWebLeakConfig
 ) => {
   if (!social || !player || !band) return false
-  if (typeof player.money !== 'number' || player.money < 0) return false
-  if (
-    typeof band.harmony !== 'number' ||
-    band.harmony < 1 ||
-    band.harmony > 100
-  )
+  if (!isFiniteNumber(player.money) || player.money < 0) return false
+  if (!isFiniteNumber(band.harmony) || band.harmony < 1 || band.harmony > 100)
     return false
 
   if (checkHasLeakedToday(social, player.day)) return false
   if (
-    typeof social.controversyLevel !== 'number' ||
+    !isFiniteNumber(social.controversyLevel) ||
     social.controversyLevel < config.REQUIRED_CONTROVERSY
   )
     return false

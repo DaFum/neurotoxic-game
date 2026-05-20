@@ -20,7 +20,7 @@ import {
 } from './gameStateUtils'
 import { BRAND_ALIGNMENTS } from '../context/initialState'
 import { BRAND_DEALS_BY_ID } from '../data/brandDeals'
-import { SOCIAL_PLATFORMS } from '../data/platforms'
+import { SOCIAL_PLATFORM_IDS, SOCIAL_PLATFORMS } from '../data/platforms'
 const SOCIAL_PLATFORMS_VALUES = Object.values(SOCIAL_PLATFORMS)
 
 import type {
@@ -55,13 +55,6 @@ type ResolvedPostResult = PostResult & {
   egoDrop?: string | null
   influencerUpdate?: { id: string; scoreChange: number }
 }
-
-const SOCIAL_PLATFORM_IDS = new Set<Platform>([
-  'instagram',
-  'tiktok',
-  'youtube',
-  'newsletter'
-])
 
 const isSocialPlatformId = (value: unknown): value is Platform =>
   typeof value === 'string' && SOCIAL_PLATFORM_IDS.has(value as Platform)

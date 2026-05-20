@@ -12,7 +12,7 @@ import {
   ErrorCategory,
   ErrorSeverity,
   handleError,
-  safeStorageOperation,
+  runSafeStorageOperation,
   initGlobalErrorHandling
 } from '../../src/utils/errorHandler'
 
@@ -668,14 +668,14 @@ describe('initGlobalErrorHandling', () => {
   })
 })
 
-describe('safeStorageOperation', () => {
+describe('runSafeStorageOperation', () => {
   it('should return result on success', () => {
-    const result = safeStorageOperation('test', () => 'success')
+    const result = runSafeStorageOperation('test', () => 'success')
     assert.strictEqual(result, 'success')
   })
 
   it('should return fallback on error', () => {
-    const result = safeStorageOperation(
+    const result = runSafeStorageOperation(
       'test',
       () => {
         throw new Error('Storage error')
@@ -688,7 +688,7 @@ describe('safeStorageOperation', () => {
   it('should throw StorageError when error is thrown and no fallback provided', () => {
     assert.throws(
       () => {
-        safeStorageOperation('test', () => {
+        runSafeStorageOperation('test', () => {
           throw new Error('Storage error without explicit fallback')
         })
       },
@@ -700,7 +700,7 @@ describe('safeStorageOperation', () => {
 })
 
 it('should return null when null is explicitly passed as fallback', () => {
-  const result = safeStorageOperation(
+  const result = runSafeStorageOperation(
     'test-null',
     () => {
       throw new Error('Storage error')

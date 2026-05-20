@@ -11,9 +11,7 @@ import {
   clampPlayerMoney,
   clampNonNegative
 } from './gameStateUtils'
-
-const isPlainObject = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value)
+import { isLooseRecord } from './objectUtils'
 
 /**
  * Validates the structure and types of the save data.
@@ -23,7 +21,7 @@ const isPlainObject = (value: unknown): value is Record<string, unknown> =>
 export const validateSaveData = (data: unknown): boolean => {
   checkPrototypePollution(data)
 
-  if (!isPlainObject(data)) {
+  if (!isLooseRecord(data)) {
     throw new StateError('Save data must be an object')
   }
 
@@ -48,7 +46,7 @@ export const validateSaveData = (data: unknown): boolean => {
   validateSocial(data.social)
 
   // Validate GameMap (simplified check)
-  if (!isPlainObject(data.gameMap)) {
+  if (!isLooseRecord(data.gameMap)) {
     throw new StateError('gameMap must be an object')
   }
 
@@ -56,7 +54,7 @@ export const validateSaveData = (data: unknown): boolean => {
 }
 
 const validatePlayer = (player: unknown): void => {
-  if (!isPlainObject(player)) throw new StateError('player must be an object')
+  if (!isLooseRecord(player)) throw new StateError('player must be an object')
 
   const p = player as Record<string, unknown>
 
@@ -78,7 +76,7 @@ const validatePlayer = (player: unknown): void => {
     p.money = clampPlayerMoney(p.money as number)
   }
 
-  if (p.van && !isPlainObject(p.van)) {
+  if (p.van && !isLooseRecord(p.van)) {
     throw new StateError('player.van must be an object')
   }
 
@@ -138,7 +136,7 @@ const checkPrototypePollution = (obj: unknown): void => {
 }
 
 const validateBand = (band: unknown): void => {
-  if (!isPlainObject(band)) throw new StateError('band must be an object')
+  if (!isLooseRecord(band)) throw new StateError('band must be an object')
 
   const typedBand = band as Record<string, unknown>
   if (typedBand.members && !Array.isArray(typedBand.members)) {
@@ -149,7 +147,7 @@ const validateBand = (band: unknown): void => {
     const members = typedBand.members as unknown[]
     for (let index = 0, len = members.length; index < len; index++) {
       const member = members[index]
-      if (!isPlainObject(member)) {
+      if (!isLooseRecord(member)) {
         throw new StateError(`band.members[${index}] must be an object`)
       }
       const m = member as Record<string, unknown>
@@ -184,12 +182,12 @@ const validateBand = (band: unknown): void => {
       if (m.role != null && typeof m.role !== 'string') {
         throw new StateError(`band.members[${index}].role must be a string`)
       }
-      if (m.baseStats !== undefined && !isPlainObject(m.baseStats)) {
+      if (m.baseStats !== undefined && !isLooseRecord(m.baseStats)) {
         throw new StateError(
           `band.members[${index}].baseStats must be an object`
         )
       }
-      if (isPlainObject(m.baseStats)) {
+      if (isLooseRecord(m.baseStats)) {
         const baseStats = m.baseStats as Record<string, unknown>
         for (const baseStatKey in baseStats) {
           if (!Object.hasOwn(baseStats, baseStatKey)) continue
@@ -204,13 +202,13 @@ const validateBand = (band: unknown): void => {
           }
         }
       }
-      if (m.equipment !== undefined && !isPlainObject(m.equipment)) {
+      if (m.equipment !== undefined && !isLooseRecord(m.equipment)) {
         throw new StateError(
           `band.members[${index}].equipment must be an object`
         )
       }
       if (m.relationships !== undefined) {
-        if (!isPlainObject(m.relationships)) {
+        if (!isLooseRecord(m.relationships)) {
           throw new StateError(
             `band.members[${index}].relationships must be an object`
           )
@@ -250,7 +248,7 @@ const validateBand = (band: unknown): void => {
 }
 
 const validateSocial = (social: unknown): void => {
-  if (!isPlainObject(social)) throw new StateError('social must be an object')
+  if (!isLooseRecord(social)) throw new StateError('social must be an object')
 
   const typedSocial = social as Record<string, unknown>
   for (const key in typedSocial) {
@@ -283,7 +281,7 @@ const validateSocial = (social: unknown): void => {
       if (!Array.isArray(val))
         throw new StateError('social.activeDeals must be an array')
       ;(val as unknown[]).forEach((deal, i) => {
-        if (!isPlainObject(deal))
+        if (!isLooseRecord(deal))
           throw new StateError(`activeDeals[${i}] must be an object`)
         const d = deal as Record<string, unknown>
         if (typeof d.id !== 'string')
@@ -297,7 +295,7 @@ const validateSocial = (social: unknown): void => {
     }
 
     if (key === 'brandReputation') {
-      if (!isPlainObject(val))
+      if (!isLooseRecord(val))
         throw new StateError('social.brandReputation must be an object')
       const br = val as Record<string, unknown>
       for (const align in br) {
@@ -310,13 +308,13 @@ const validateSocial = (social: unknown): void => {
     }
 
     if (key === 'influencers') {
-      if (!isPlainObject(val))
+      if (!isLooseRecord(val))
         throw new StateError('social.influencers must be an object')
       const infs = val as Record<string, unknown>
       for (const id in infs) {
         if (!Object.hasOwn(infs, id)) continue
         const influencer = infs[id]
-        if (!isPlainObject(influencer))
+        if (!isLooseRecord(influencer))
           throw new StateError(`social.influencers.${id} must be an object`)
         const inf = influencer as Record<string, unknown>
         if (typeof inf.tier !== 'string')
