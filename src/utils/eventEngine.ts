@@ -488,6 +488,72 @@ const processEffect = (
   }
 }
 
+/**
+ * Computes the effective skill value for a skill check.
+ *
+ * Priority order matters:
+ * - 'luck' is always a pure roll (the band has a static `luck` property that would otherwise shadow it).
+ * - Top-level numeric band stats (e.g. `harmony`) divide by 10 to fit the 0-10 check scale.
+ * - Otherwise, take the best member value, preferring nested `baseStats` (1-10) over top-level
+ *   dynamic stats (0-100) so dynamic `stamina: 100` doesn't trivialize checks against base `stamina: 7`.
+ */
+const computeSkillCheckValue = (
+  stat: string,
+  gameState: EngineGameState,
+  rng: () => number
+): number => {
+  if (stat === 'luck') return rng() * 10
+  if (!gameState.band) return 0
+
+  const bandStat = gameState.band[stat]
+  if (typeof bandStat === 'number') return bandStat / 10
+
+  const members = Array.isArray(gameState.band.members)
+    ? gameState.band.members
+    : []
+  if (members.length === 0) return 0
+
+  let best = -Infinity
+  for (let i = 0; i < members.length; i++) {
+    const m = members[i]
+    if (!m) {
+      throw new StateError(
+        `Sparse members invariant violated in band.members at index ${i}`
+      )
+    }
+    const val = m.baseStats?.[stat] !== undefined ? m.baseStats[stat] : m[stat]
+    const currentVal = asNumber(val)
+    if (currentVal > best) best = currentVal
+  }
+  return best
+}
+
+/**
+ * Resolves a failed skill check, applying the Bandleader trait save (50% chance
+ * to convert conflict-event failures into successes with appended saved-text).
+ */
+const resolveSkillCheckFailure = (
+  success: EffectShape,
+  failure: EffectShape,
+  gameState: EngineGameState,
+  rng: () => number
+): EffectShape => {
+  // Pre-consume RNG for determinism regardless of trait presence
+  const bandleaderRoll = rng()
+  const isConflict = gameState.activeEvent?.tags?.includes('conflict') ?? false
+  const hasBandleader = isConflict && bandHasTrait(gameState.band, 'bandleader')
+
+  if (hasBandleader && bandleaderRoll < 0.5) {
+    return {
+      ...success,
+      outcome: 'success',
+      description:
+        (success?.description || '') + EVENT_STRINGS.SAVED_BY_BANDLEADER
+    }
+  }
+  return { ...failure, outcome: 'failure' }
+}
+
 export const eventEngine = {
   handleError(err: unknown, eventId?: string) {
     logger.error(
@@ -567,84 +633,14 @@ export const eventEngine = {
     if (choice.skillCheck) {
       const { stat, threshold, success, failure } = choice.skillCheck
 
-      let skillValue: number
-
-      // WARNING: 'luck' check must come first!
-      // The band object has a 'luck' property (default 0). If we checked band[stat] first,
-      // it would match and use the static stat (0) instead of the random roll intended here.
-      if (stat === 'luck') {
-        // Luck check: ignore band stats, just roll
-        skillValue = rng() * 10
-      } else if (gameState.band) {
-        const bandStat = gameState.band[stat]
-        if (typeof bandStat === 'number') {
-          // Band stat check (e.g. harmony)
-          // Explicitly check for number to avoid using objects like 'inventory' or 'members' as stats
-          skillValue = bandStat / 10
-        } else {
-          // Member stat check (e.g. skill)
-          // Ensure members array exists to prevent crash
-          const members = Array.isArray(gameState.band?.members)
-            ? gameState.band.members
-            : []
-          if (members.length > 0) {
-            skillValue = -Infinity
-            for (let i = 0; i < members.length; i++) {
-              const m = members[i]
-              if (!m) {
-                throw new StateError(
-                  `Sparse members invariant violated in band.members at index ${i}`
-                )
-              }
-              // Check nested baseStats (static attributes like skill/stamina 1-10) FIRST
-              // Then check top-level (dynamic stats like mood/health 0-100)
-              // This priority prevents dynamic 'stamina' (100) from trivializing checks intended for base 'stamina' (7)
-              const val =
-                m.baseStats?.[stat] !== undefined ? m.baseStats[stat] : m[stat]
-              const currentVal = asNumber(val)
-              if (currentVal > skillValue) {
-                skillValue = currentVal
-              }
-            }
-          } else {
-            skillValue = 0
-          }
-        }
-      } else {
-        skillValue = 0
-      }
-
+      const skillValue = computeSkillCheckValue(stat, gameState, rng)
       const roll = rng() * 10
       const total = skillValue + (roll > 8 ? 2 : 0) // Crit chance
 
       if (total >= threshold) {
         result = { ...success, outcome: 'success' }
       } else {
-        // Bandleader Trait Check: 50% chance to save a failed check in conflict events
-        // Pre-consume RNG for determinism
-        const bandleaderRoll = rng()
-        let savedByBandleader = false
-
-        if (
-          gameState.activeEvent?.tags?.includes('conflict') &&
-          bandHasTrait(gameState.band, 'bandleader')
-        ) {
-          if (bandleaderRoll < 0.5) {
-            savedByBandleader = true
-          }
-        }
-
-        if (savedByBandleader) {
-          const baseDesc = success?.description || ''
-          const savedText = EVENT_STRINGS.SAVED_BY_BANDLEADER
-          result = {
-            ...success,
-            outcome: 'success',
-            description: baseDesc + savedText
-          }
-        } else {
-          result = { ...failure, outcome: 'failure' }
-        }
+        result = resolveSkillCheckFailure(success, failure, gameState, rng)
       }
 
       // Track conflict resolution for unlocking 'bandleader'

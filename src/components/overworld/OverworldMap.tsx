@@ -43,6 +43,31 @@ interface OverworldMapProps {
   activeStoryFlags: string[]
 }
 
+const RivalMarker = ({
+  node,
+  rivalVanUrl,
+  label
+}: {
+  node: GameMapNode
+  rivalVanUrl: string
+  label: string
+}) => (
+  <div
+    className='absolute z-(--z-stage-overlay) pointer-events-none transition-all duration-300'
+    style={{
+      left: `${node.x}%`,
+      top: `${node.y}%`,
+      transform: 'translate(-50%, -100%)'
+    }}
+  >
+    <img
+      src={rivalVanUrl}
+      alt={label}
+      className='w-10 h-8 object-contain drop-shadow-[0_0_8px_var(--color-toxic-red)] opacity-90'
+    />
+  </div>
+)
+
 export const OverworldMap = React.memo(
   ({
     t,
@@ -227,22 +252,13 @@ export const OverworldMap = React.memo(
               cityTraits={cityTraits}
             />
             {hasRival && visibility !== 'hidden' && (
-              <div
-                className='absolute z-(--z-stage-overlay) pointer-events-none transition-all duration-300'
-                style={{
-                  left: `${node.x}%`,
-                  top: `${node.y}%`,
-                  transform: 'translate(-50%, -100%)'
-                }}
-              >
-                <img
-                  src={rivalVanUrl}
-                  alt={t('ui:overworld.rival_band', {
-                    defaultValue: 'Rival Band'
-                  })}
-                  className='w-10 h-8 object-contain drop-shadow-[0_0_8px_var(--color-toxic-red)] opacity-90'
-                />
-              </div>
+              <RivalMarker
+                node={node}
+                rivalVanUrl={rivalVanUrl}
+                label={t('ui:overworld.rival_band', {
+                  defaultValue: 'Rival Band'
+                })}
+              />
             )}
           </React.Fragment>
         )
