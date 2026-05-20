@@ -129,10 +129,18 @@ const StatBar = ({ value, color }: { value: number; color: string }) => (
   </div>
 )
 
-const BandMemberRow = ({ m }: { m: Member }) => {
+const BandMemberRow = ({
+  m,
+  t
+}: {
+  m: Member
+  t: ReturnType<typeof useTranslation>['t']
+}) => {
   const status = getMemberStatus(m)
   const nameClass =
     status === 'crit' ? 'mbr-crit' : status === 'low' ? 'mbr-low' : ''
+  const displayName =
+    m.name?.trim() || t('ui:hud.unnamedMember', { defaultValue: 'Member' })
   return (
     <div className='mbr-row'>
       <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -140,7 +148,7 @@ const BandMemberRow = ({ m }: { m: Member }) => {
           className='mbr-status-dot'
           style={{ background: STATUS_DOT_COLOR[status] }}
         />
-        <span className={`mbr-name ${nameClass}`}>{m.name}</span>
+        <span className={`mbr-name ${nameClass}`}>{displayName}</span>
       </div>
       <div className='mbr-bars'>
         <StatBar value={m.mood} color={getMoodColor(m.mood)} />
@@ -400,7 +408,7 @@ export const OverworldHUD = React.memo(
               {t('ui:overworld.band_status', { defaultValue: 'Band Status' })}
             </div>
             {(band?.members ?? []).map(m => (
-              <BandMemberRow key={m.id} m={m} />
+              <BandMemberRow key={m.id} m={m} t={t} />
             ))}
             <div className='harmony-row'>
               <span className='harmony-label'>
