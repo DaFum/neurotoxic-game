@@ -2,6 +2,147 @@ import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { AmpHUDProps } from '../../../types/components'
 
+type IndicatorProps = {
+  t: (key: string, options?: unknown) => string
+}
+
+function VoidResonanceIndicator({
+  voidResonance,
+  isAnomalyActive,
+  t
+}: IndicatorProps & { voidResonance: number; isAnomalyActive: boolean }) {
+  if (voidResonance <= 0 && !isAnomalyActive) return null
+
+  return (
+    <div className='mt-2 w-48'>
+      <div className='flex justify-between items-center mb-1'>
+        <span
+          className={`uppercase text-xs ${isAnomalyActive ? 'text-electric-blue animate-pulse font-bold' : 'text-ash-gray'}`}
+        >
+          {isAnomalyActive
+            ? t('ui:minigames.amp.hud.anomaly', {
+                defaultValue: 'VOID ANOMALY DETECTED'
+              })
+            : t('ui:minigames.amp.hud.resonance', {
+                defaultValue: 'VOID RESONANCE'
+              })}
+        </span>
+        <span className='text-electric-blue text-xs'>
+          {Math.floor(voidResonance)}%
+        </span>
+      </div>
+      <div className='h-2 w-full bg-void-black border border-electric-blue overflow-hidden shadow-[0_0_5px_var(--color-electric-blue)]'>
+        <div
+          className={`h-full bg-electric-blue transition-all duration-100 ${isAnomalyActive ? 'animate-pulse' : ''}`}
+          style={{ width: `${voidResonance}%` }}
+        />
+      </div>
+    </div>
+  )
+}
+
+function HeatIndicator({
+  heat,
+  isOverheat,
+  t
+}: IndicatorProps & { heat: number; isOverheat: boolean }) {
+  return (
+    <div className='mt-2 w-48'>
+      <div className='flex justify-between items-center mb-1'>
+        <span
+          className={`uppercase text-xs ${isOverheat ? 'text-blood-red animate-pulse font-bold' : 'text-ash-gray'}`}
+        >
+          {isOverheat
+            ? t('ui:minigames.amp.hud.overheat', {
+                defaultValue: 'OVERHEAT!'
+              })
+            : t('ui:minigames.amp.hud.heat', { defaultValue: 'HEAT' })}
+        </span>
+        <span
+          className={`text-xs ${isOverheat ? 'text-blood-red' : 'text-warning-yellow'}`}
+        >
+          {Math.floor(heat)}%
+        </span>
+      </div>
+      <div className='h-2 w-full bg-void-black border border-ash-gray overflow-hidden'>
+        <div
+          className={`h-full transition-all duration-100 ${isOverheat ? 'bg-blood-red animate-pulse' : 'bg-warning-yellow'}`}
+          style={{ width: `${heat}%` }}
+        />
+      </div>
+    </div>
+  )
+}
+
+function HijackIndicator({
+  isHijackActive,
+  hijacksOverridden,
+  t
+}: IndicatorProps & { isHijackActive: boolean; hijacksOverridden: number }) {
+  if (!isHijackActive && hijacksOverridden <= 0) return null
+
+  return (
+    <div className='mt-2 w-48 border border-blood-red p-2 bg-void-black/50'>
+      <div className='flex justify-between items-center'>
+        <span
+          className={`uppercase text-xs font-bold ${isHijackActive ? 'text-blood-red animate-pulse' : 'text-ash-gray'}`}
+        >
+          {t('ui:minigames.amp.hud.hijack', { defaultValue: 'HIJACK:' })}
+        </span>
+        <span
+          className={`text-xs ${isHijackActive ? 'text-blood-red font-bold' : 'text-ash-gray'}`}
+        >
+          {isHijackActive
+            ? t('ui:minigames.amp.hud.hijackActive', {
+                defaultValue: 'ACTIVE'
+              })
+            : t('ui:minigames.amp.hud.hijackClear', {
+                defaultValue: 'CLEAR'
+              })}
+        </span>
+      </div>
+      <div className='flex justify-between items-center mt-1'>
+        <span className='uppercase text-xs text-ash-gray'>
+          {t('ui:minigames.amp.hud.overrides', {
+            defaultValue: 'OVERRIDES:'
+          })}
+        </span>
+        <span className='text-toxic-green text-xs font-bold'>
+          {hijacksOverridden}
+        </span>
+      </div>
+    </div>
+  )
+}
+
+function InterferenceIndicator({
+  interference,
+  t
+}: IndicatorProps & { interference: number }) {
+  if (interference <= 0) return null
+
+  return (
+    <div className='mt-2 w-48'>
+      <div className='flex justify-between items-center mb-1'>
+        <span className='uppercase text-xs text-blood-red animate-pulse font-bold'>
+          {t('ui:minigames.amp.hud.interference', {
+            defaultValue: 'INTERFERENCE'
+          })}
+        </span>
+        <span className='text-blood-red text-xs'>
+          {Math.floor(interference)}%
+        </span>
+      </div>
+      <div className='h-2 w-full bg-void-black border border-blood-red overflow-hidden shadow-[0_0_5px_var(--color-blood-red)]'>
+        <div
+          className='h-full bg-blood-red transition-all duration-100'
+          style={{ width: `${interference}%` }}
+        />
+      </div>
+    </div>
+  )
+}
+
 export const AmpHUD = memo(function AmpHUD({
   timeLeft,
   score,
@@ -44,111 +185,21 @@ export const AmpHUD = memo(function AmpHUD({
           <span className='text-toxic-green'>{Math.floor(score)}%</span>
         </div>
 
-        {(voidResonance > 0 || isAnomalyActive) && (
-          <div className='mt-2 w-48'>
-            <div className='flex justify-between items-center mb-1'>
-              <span
-                className={`uppercase text-xs ${isAnomalyActive ? 'text-electric-blue animate-pulse font-bold' : 'text-ash-gray'}`}
-              >
-                {isAnomalyActive
-                  ? t('ui:minigames.amp.hud.anomaly', {
-                      defaultValue: 'VOID ANOMALY DETECTED'
-                    })
-                  : t('ui:minigames.amp.hud.resonance', {
-                      defaultValue: 'VOID RESONANCE'
-                    })}
-              </span>
-              <span className='text-electric-blue text-xs'>
-                {Math.floor(voidResonance)}%
-              </span>
-            </div>
-            <div className='h-2 w-full bg-void-black border border-electric-blue overflow-hidden shadow-[0_0_5px_var(--color-electric-blue)]'>
-              <div
-                className={`h-full bg-electric-blue transition-all duration-100 ${isAnomalyActive ? 'animate-pulse' : ''}`}
-                style={{ width: `${voidResonance}%` }}
-              />
-            </div>
-          </div>
-        )}
+        <VoidResonanceIndicator
+          voidResonance={voidResonance}
+          isAnomalyActive={isAnomalyActive}
+          t={t}
+        />
 
-        <div className='mt-2 w-48'>
-          <div className='flex justify-between items-center mb-1'>
-            <span
-              className={`uppercase text-xs ${isOverheat ? 'text-blood-red animate-pulse font-bold' : 'text-ash-gray'}`}
-            >
-              {isOverheat
-                ? t('ui:minigames.amp.hud.overheat', {
-                    defaultValue: 'OVERHEAT!'
-                  })
-                : t('ui:minigames.amp.hud.heat', { defaultValue: 'HEAT' })}
-            </span>
-            <span
-              className={`text-xs ${isOverheat ? 'text-blood-red' : 'text-warning-yellow'}`}
-            >
-              {Math.floor(heat)}%
-            </span>
-          </div>
-          <div className='h-2 w-full bg-void-black border border-ash-gray overflow-hidden'>
-            <div
-              className={`h-full transition-all duration-100 ${isOverheat ? 'bg-blood-red animate-pulse' : 'bg-warning-yellow'}`}
-              style={{ width: `${heat}%` }}
-            />
-          </div>
-        </div>
+        <HeatIndicator heat={heat} isOverheat={isOverheat} t={t} />
 
-        {(isHijackActive || hijacksOverridden > 0) && (
-          <div className='mt-2 w-48 border border-blood-red p-2 bg-void-black/50'>
-            <div className='flex justify-between items-center'>
-              <span
-                className={`uppercase text-xs font-bold ${isHijackActive ? 'text-blood-red animate-pulse' : 'text-ash-gray'}`}
-              >
-                {t('ui:minigames.amp.hud.hijack', { defaultValue: 'HIJACK:' })}
-              </span>
-              <span
-                className={`text-xs ${isHijackActive ? 'text-blood-red font-bold' : 'text-ash-gray'}`}
-              >
-                {isHijackActive
-                  ? t('ui:minigames.amp.hud.hijackActive', {
-                      defaultValue: 'ACTIVE'
-                    })
-                  : t('ui:minigames.amp.hud.hijackClear', {
-                      defaultValue: 'CLEAR'
-                    })}
-              </span>
-            </div>
-            <div className='flex justify-between items-center mt-1'>
-              <span className='uppercase text-xs text-ash-gray'>
-                {t('ui:minigames.amp.hud.overrides', {
-                  defaultValue: 'OVERRIDES:'
-                })}
-              </span>
-              <span className='text-toxic-green text-xs font-bold'>
-                {hijacksOverridden}
-              </span>
-            </div>
-          </div>
-        )}
+        <HijackIndicator
+          isHijackActive={isHijackActive}
+          hijacksOverridden={hijacksOverridden}
+          t={t}
+        />
 
-        {interference > 0 && (
-          <div className='mt-2 w-48'>
-            <div className='flex justify-between items-center mb-1'>
-              <span className='uppercase text-xs text-blood-red animate-pulse font-bold'>
-                {t('ui:minigames.amp.hud.interference', {
-                  defaultValue: 'INTERFERENCE'
-                })}
-              </span>
-              <span className='text-blood-red text-xs'>
-                {Math.floor(interference)}%
-              </span>
-            </div>
-            <div className='h-2 w-full bg-void-black border border-blood-red overflow-hidden shadow-[0_0_5px_var(--color-blood-red)]'>
-              <div
-                className='h-full bg-blood-red transition-all duration-100'
-                style={{ width: `${interference}%` }}
-              />
-            </div>
-          </div>
-        )}
+        <InterferenceIndicator interference={interference} t={t} />
       </div>
     </div>
   )
