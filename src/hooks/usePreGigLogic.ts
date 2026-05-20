@@ -19,7 +19,7 @@ import { getGigModifiers } from '../utils/simulationUtils'
 import { audioService, getSongId } from '../utils/audio/audioEngine'
 import { handleError } from '../utils/errorHandler'
 import { getSafeRandom, getSafeUUID } from '../utils/crypto'
-import { HQ_ITEMS } from '../data/hqItems'
+import { HQ_ITEMS_BY_MERCH_KEY } from '../data/hqItems'
 
 type Minigame = 'roadie' | 'kabelsalat' | 'amp'
 let lastMinigameFallback: Minigame | null = null
@@ -145,15 +145,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
 
   const handleRestockMerch = useCallback(
     (merchKey: string) => {
-      const itemDef = Object.values(HQ_ITEMS)
-        .flat()
-        .find(
-          item =>
-            typeof item.effect === 'object' &&
-            item.effect !== null &&
-            Object.hasOwn(item.effect, 'item') &&
-            (item.effect as { item?: unknown }).item === merchKey
-        )
+      const itemDef = HQ_ITEMS_BY_MERCH_KEY.get(merchKey)
       if (!itemDef) return
 
       const cost = itemDef.cost
