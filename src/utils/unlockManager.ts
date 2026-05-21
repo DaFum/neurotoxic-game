@@ -72,11 +72,14 @@ export const addUnlock = (unlockId: string): boolean => {
 
   // Refresh cache from storage. getUnlocks will recreate the Set ONLY if storage actually changed
   const currentUnlocks = getUnlocks()
+  const cache = unlocksCache
+
+  if (!cache) return false
 
   // Prevent duplicates in O(1) time
-  if (unlocksCache!.has(unlockId)) return false
+  if (cache.has(unlockId)) return false
 
-  unlocksCache!.add(unlockId)
+  cache.add(unlockId)
   currentUnlocks.push(unlockId)
 
   const success =
@@ -94,7 +97,7 @@ export const addUnlock = (unlockId: string): boolean => {
 
   if (!success) {
     // Roll back cache mutation if persistence fails
-    unlocksCache!.delete(unlockId)
+    cache.delete(unlockId)
     // Force a fresh read next time since we don't know the exact valid storage state
     lastRawUnlocks = null
   }
