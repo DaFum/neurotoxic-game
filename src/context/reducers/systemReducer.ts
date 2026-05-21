@@ -1474,9 +1474,14 @@ export const handleLoadGame = (
           ? migratePlayerLocation(safeState.player.location)
           : safeState.player.location
     },
-    venueBlacklist: safeState.venueBlacklist
-      .map(migrateLegacyVenueId)
-      .filter((id): id is string => id.length > 0)
+    venueBlacklist: (() => {
+      const acc: string[] = []
+      for (const id of safeState.venueBlacklist) {
+        const migrated = migrateLegacyVenueId(id)
+        if (migrated.length > 0) acc.push(migrated)
+      }
+      return acc
+    })()
   }
 
   // Version Migration Map
