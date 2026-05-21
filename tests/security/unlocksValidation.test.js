@@ -21,10 +21,12 @@ const originalLocalStorage = global.localStorage
 global.localStorage = mockStorage
 
 describe('Unlock Manager Security', async () => {
-  const { addUnlock } = await import('../../src/utils/unlockManager')
+  const { addUnlock, clearCache } =
+    await import('../../src/utils/unlockManager')
 
   beforeEach(() => {
     mockStorage.clear()
+    clearCache()
   })
 
   afterAll(() => {

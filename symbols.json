@@ -2067,6 +2067,15 @@
         "type": "function"
       }
     ],
+    "clearCache": [
+      {
+        "isDefault": false,
+        "name": "clearCache",
+        "path": "src/utils/unlockManager.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "clearTransportEvent": [
       {
         "isDefault": false,

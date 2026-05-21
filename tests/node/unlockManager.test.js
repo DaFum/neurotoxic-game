@@ -20,11 +20,12 @@ const mockStorage = {
 global.localStorage = mockStorage
 
 test('UnlockManager Unit Tests', async t => {
-  const { getUnlocks, addUnlock } =
+  const { getUnlocks, addUnlock, clearCache } =
     await import('../../src/utils/unlockManager')
 
   t.beforeEach(() => {
     mockStorage.clear()
+    clearCache()
   })
 
   await t.test('getUnlocks returns empty array when storage is empty', () => {

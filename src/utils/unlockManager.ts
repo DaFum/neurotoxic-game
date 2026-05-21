@@ -10,11 +10,25 @@ import { safeStorageOperation } from './storage'
 
 const UNLOCKS_KEY = 'neurotoxic_unlocks'
 
+// In-memory cache for O(1) duplicate checks
+let unlocksCache: Set<string> | null = null
+
+/**
+ * Clears the in-memory cache. Used primarily for testing.
+ */
+export const clearCache = (): void => {
+  unlocksCache = null
+}
+
 /**
  * Loads and validates unlocks from local storage.
  * @returns {string[]} Array of unlocked strings.
  */
 export const getUnlocks = (): string[] => {
+  if (unlocksCache) {
+    return Array.from(unlocksCache)
+  }
+
   const maybe = safeStorageOperation<string[]>(
     'loadUnlocks',
     () => {
@@ -36,7 +50,9 @@ export const getUnlocks = (): string[] => {
     []
   )
 
-  return maybe ?? []
+  const result = maybe ?? []
+  unlocksCache = new Set(result)
+  return result
 }
 
 /**
@@ -47,13 +63,16 @@ export const getUnlocks = (): string[] => {
 export const addUnlock = (unlockId: string): boolean => {
   if (typeof unlockId !== 'string') return false
 
-  // Get current validated unlocks
-  const currentUnlocks = getUnlocks()
+  // Ensure cache is populated
+  if (!unlocksCache) {
+    getUnlocks()
+  }
 
-  // Prevent duplicates
-  if (currentUnlocks.includes(unlockId)) return false
+  // Prevent duplicates in O(1) time
+  if (unlocksCache!.has(unlockId)) return false
 
-  currentUnlocks.push(unlockId)
+  unlocksCache!.add(unlockId)
+  const currentUnlocks = Array.from(unlocksCache!)
 
   return (
     safeStorageOperation<boolean>(
