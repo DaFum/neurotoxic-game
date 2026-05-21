@@ -18,9 +18,10 @@ import type {
   PostGigFinancials
 } from '../types/economy'
 
-const SORTED_MERCH_KEYS = Object.keys(MERCH_PROFILES).sort()
-const MERCH_PROFILE_VALUES = Object.values(MERCH_PROFILES) as MerchItemProfile[]
-
+const SORTED_MERCH_KEYS = Object.freeze(Object.keys(MERCH_PROFILES).sort())
+const MERCH_PROFILE_VALUES = Object.freeze(
+  Object.values(MERCH_PROFILES)
+) as ReadonlyArray<MerchItemProfile>
 
 /**
  * Per-modifier costs used both in the PreGig UI preview and the PostGig expense calculation.
