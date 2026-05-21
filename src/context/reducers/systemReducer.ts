@@ -905,14 +905,18 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
         traits: normalizeTraitMap(m.traits),
         mood: clampMemberMood(finiteNumberOr(m.mood, 50)),
         stamina: clampMemberStamina(finiteNumberOr(m.stamina, 100), staminaMax),
-        baseStats: isPlainObject(m.baseStats)
-          ? (Object.fromEntries(
-              Object.entries(m.baseStats).filter(
-                ([, value]) =>
-                  typeof value === 'number' && Number.isFinite(value)
-              )
-            ) as Record<string, number>)
-          : {},
+        baseStats: (() => {
+          if (!isPlainObject(m.baseStats)) return {}
+          const result: Record<string, number> = {}
+          for (const key in m.baseStats) {
+            if (!Object.hasOwn(m.baseStats, key)) continue
+            const value = m.baseStats[key as keyof typeof m.baseStats]
+            if (typeof value === 'number' && Number.isFinite(value)) {
+              result[key] = value
+            }
+          }
+          return result
+        })(),
         equipment: copySafePrimitiveObject(m.equipment) ?? {},
         relationships: isPlainObject(m.relationships)
           ? Object.fromEntries(
