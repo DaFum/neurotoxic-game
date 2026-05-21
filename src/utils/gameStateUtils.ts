@@ -925,32 +925,52 @@ export const applyEventDelta = (
     const isNotSelfRelationship = (rc: RelationshipChange) =>
       rc.member1 !== rc.member2
 
-    const relationshipChange = Array.isArray(delta.band.relationshipChange)
-      ? delta.band.relationshipChange.filter(
-          rc =>
-            isRelationshipChange(rc) &&
-            isNotSelfRelationship(rc as RelationshipChange)
-        )
-      : isRelationshipChange(delta.band.relationshipChange) &&
-          isNotSelfRelationship(
-            delta.band.relationshipChange as RelationshipChange
-          )
-        ? [delta.band.relationshipChange]
-        : []
+    const rawRC = delta.band.relationshipChange as unknown
+    const relationshipChange: RelationshipChange[] = []
 
-    if (relationshipChange.length > 0) {
-      const banterDeltas = relationshipChange.filter(
-        rc => rc.source === 'banter'
-      )
-      if (banterDeltas.length > 0) {
+    if (Array.isArray(rawRC)) {
+      let newBanterEvents: Array<{
+        member1: string
+        member2: string
+        delta: number
+        timestamp: number
+      }> | null = null
+      let now = 0
+      for (let i = 0; i < rawRC.length; i++) {
+        const rc = rawRC[i]
+        if (isRelationshipChange(rc) && isNotSelfRelationship(rc)) {
+          relationshipChange.push(rc)
+          const rcr = rc
+          if (rcr.source === 'banter') {
+            if (newBanterEvents === null) newBanterEvents = []
+            if (now === 0) now = Date.now()
+            newBanterEvents.push({
+              member1: rcr.member1,
+              member2: rcr.member2,
+              delta: rcr.change,
+              timestamp: rcr.timestamp ?? now
+            })
+          }
+        }
+      }
+      if (newBanterEvents !== null) {
         nextBand.banterEvents = [
           ...(nextBand.banterEvents || []),
-          ...banterDeltas.map(rc => ({
-            member1: rc.member1,
-            member2: rc.member2,
-            delta: rc.change,
-            timestamp: rc.timestamp ?? Date.now()
-          }))
+          ...newBanterEvents
+        ].slice(-50)
+      }
+    } else if (isRelationshipChange(rawRC) && isNotSelfRelationship(rawRC)) {
+      relationshipChange.push(rawRC)
+      const rcr = rawRC
+      if (rcr.source === 'banter') {
+        nextBand.banterEvents = [
+          ...(nextBand.banterEvents || []),
+          {
+            member1: rcr.member1,
+            member2: rcr.member2,
+            delta: rcr.change,
+            timestamp: rcr.timestamp ?? Date.now()
+          }
         ].slice(-50)
       }
     }
