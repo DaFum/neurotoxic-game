@@ -914,22 +914,24 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
             ) as Record<string, number>)
           : {},
         equipment: copySafePrimitiveObject(m.equipment) ?? {},
-        relationships: isPlainObject(m.relationships)
-          ? Object.fromEntries(
-              (
-                Object.entries(m.relationships).filter(([key, value]) => {
-                  const normalizedKey = key.toLowerCase()
-                  if (
-                    selfRelationshipKeys.has(key) ||
-                    selfRelationshipKeys.has(normalizedKey)
-                  ) {
-                    return false
-                  }
-                  return typeof value === 'number' && Number.isFinite(value)
-                }) as Array<[string, number]>
-              ).map(([key, value]) => [key, clampRelationship(value)])
-            )
-          : {}
+        relationships: (() => {
+          if (!isPlainObject(m.relationships)) return {}
+          const result: Record<string, number> = {}
+          for (const key of Object.keys(m.relationships)) {
+            const value = m.relationships[key as keyof typeof m.relationships]
+            const normalizedKey = key.toLowerCase()
+            if (
+              selfRelationshipKeys.has(key) ||
+              selfRelationshipKeys.has(normalizedKey)
+            ) {
+              continue
+            }
+            if (typeof value === 'number' && Number.isFinite(value)) {
+              result[key] = clampRelationship(value)
+            }
+          }
+          return result
+        })()
       }
       if (name !== undefined) member.name = name
       if (typeof m.role === 'string') member.role = m.role
