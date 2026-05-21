@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import type { UnknownRecord } from '../types'
 import { Modal, Panel, AnimatedDivider, ActionButton } from './shared/index.tsx'
 import { useTranslation } from 'react-i18next'
@@ -217,6 +217,21 @@ export const ContrabandStash = ({
     [handleUseItem]
   )
 
+  const renderedStashCards = useMemo(() => {
+    if (!Array.isArray(stash)) return []
+    return stash
+      .filter(isStashItem)
+      .map(item => (
+        <StashCard
+          key={item.instanceId ?? `migrated-${item.id}`}
+          item={item}
+          selectedMember={selectedMember}
+          onUseItem={makeUseItem(item.instanceId ?? item.id, item)}
+          t={t}
+        />
+      ))
+  }, [stash, selectedMember, makeUseItem, t])
+
   if (
     !Array.isArray(stash) ||
     !Array.isArray(members) ||
@@ -282,20 +297,7 @@ export const ContrabandStash = ({
               })}
             </div>
           ) : (
-            stash.reduce<React.JSX.Element[]>((acc, item) => {
-              if (isStashItem(item)) {
-                acc.push(
-                  <StashCard
-                    key={item.instanceId ?? `migrated-${item.id}`}
-                    item={item}
-                    selectedMember={selectedMember}
-                    onUseItem={makeUseItem(item.instanceId ?? item.id, item)}
-                    t={t}
-                  />
-                )
-              }
-              return acc
-            }, [])
+            renderedStashCards
           )}
         </div>
 
