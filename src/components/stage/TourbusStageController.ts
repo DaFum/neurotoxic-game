@@ -133,7 +133,9 @@ class TourbusStageController extends BaseStageController<TourbusControllerState>
           ? getGenImageUrl(IMG_PROMPTS.MINIGAME_OBSTACLE_BARRIER)
           : null,
         fuel: online ? getGenImageUrl(IMG_PROMPTS.MINIGAME_FUEL) : null,
-        voidHazard: online ? getGenImageUrl(IMG_PROMPTS.MINIGAME_VOID_HAZARD) : null
+        voidHazard: online
+          ? getGenImageUrl(IMG_PROMPTS.MINIGAME_VOID_HAZARD)
+          : null
       }
 
       const loaded = (await loadTextures(urls, undefined)) as Record<

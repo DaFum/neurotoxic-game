@@ -129,6 +129,7 @@
 
 **Learning:** `Object.keys(obj).length === 0` allocates an array just to count it. In hot paths that frequently check "is this object empty", `isEmptyObject` (exported from `src/utils/gameStateUtils.ts`) uses a `for…in` short-circuit instead.
 **Action:** Import `isEmptyObject` from `src/utils/gameStateUtils.ts` for empty-object checks on hot paths (event delta containers, reducer guards, selector early-outs). Don't reintroduce `Object.keys(x).length === 0` in those contexts.
+
 ## 2026-05-25 - Intermediate array allocations with reduce
 
 **Learning:** Accumulating values into intermediate arrays (`push`) only to iterate over them again via `.reduce()` introduces redundant memory allocation and garbage collection overhead on hot paths, severely degrading performance.
