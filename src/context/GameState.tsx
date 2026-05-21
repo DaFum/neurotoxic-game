@@ -15,7 +15,6 @@ import { logger, isValidLogLevel } from '../utils/logger'
 import { secureRandom } from '../utils/crypto'
 import { handleError, StateError } from '../utils/errorHandler'
 import { getUnlocks } from '../utils/unlockManager'
-import { hasUpgrade } from '../utils/upgradeUtils'
 import { isPlainObject, safeJsonParse } from '../utils/gameStateUtils'
 import { useLeaderboardSync } from '../hooks/useLeaderboardSync'
 import { safeStorage, safeStorageNoFallback } from '../utils/storage'
@@ -866,7 +865,6 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       addToast,
       removeToast,
       setGigModifiers,
-      // hasUpgrade is intentionally removed from dispatchValue to avoid stale reads
       consumeItem,
       advanceDay,
       saveGame,
@@ -1033,25 +1031,3 @@ export function useGameSelector<T>(selector: (state: GameState) => T): T {
  *
  * @returns {object} The game state and action dispatchers.
  */
-export const useGameState = () => {
-  const state = useRequiredContext(GameStateContext, 'useGameState')
-  const actions = useGameActions()
-
-  /**
-   * Checks if the player owns a specific van upgrade.
-   * Delegates to the pure utility in upgradeUtils.js for testability.
-   * @param {string} upgradeId - The ID of the upgrade.
-   * @returns {boolean} True if owned.
-   */
-  const checkHasUpgrade = useCallback(
-    (upgradeId: string) => hasUpgrade(state.player.van.upgrades, upgradeId),
-    [state.player.van.upgrades]
-  )
-
-  const merged = useMemo(
-    () => ({ ...state, ...actions, hasUpgrade: checkHasUpgrade }),
-    [state, actions, checkHasUpgrade]
-  )
-
-  return merged
-}

@@ -15,10 +15,10 @@ describe('GameStateProvider hot reload context identity', () => {
 
     vi.resetModules()
     const refreshedModule = await import('../../src/context/GameState.tsx')
-    const useRefreshedGameState = refreshedModule.useGameState
+    const useRefreshedGameActions = refreshedModule.useGameActions
 
     const Probe = () => {
-      const { saveGame } = useRefreshedGameState()
+      const { saveGame } = useRefreshedGameActions()
       return <div data-testid='hmr-probe'>{typeof saveGame}</div>
     }
 

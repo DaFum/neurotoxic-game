@@ -7,7 +7,6 @@ import { handleAdvanceDay } from '../../src/context/reducers/systemReducer'
 import { handleAdvanceQuest } from '../../src/context/reducers/questReducer'
 import { handleSetLastGigStats } from '../../src/context/reducers/gigReducer'
 import { QUEST_APOLOGY_TOUR } from '../../src/data/questsConstants'
-import * as GameStateModule from '../../src/context/GameState'
 
 const SRC_ROOT = path.resolve(process.cwd(), 'src')
 const GAME_STATE_MODULE = path.join(SRC_ROOT, 'context', 'GameState.tsx')
@@ -135,14 +134,6 @@ test(
   },
   SOURCE_SCAN_TIMEOUT_MS
 )
-
-test('Legacy useGameState compat export still exists on GameState module', () => {
-  assert.strictEqual(
-    typeof GameStateModule.useGameState,
-    'function',
-    'GameState.tsx must keep the legacy useGameState export so the architecture guard above is meaningful — if this assertion fails, the deprecated-hook detection is guarding a hook that no longer exists.'
-  )
-})
 
 test('Quests correctly trigger failure when deadlines exceed day advance', () => {
   const initialState = createMockGameState()

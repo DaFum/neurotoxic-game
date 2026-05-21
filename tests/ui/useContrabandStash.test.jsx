@@ -57,7 +57,6 @@ describe('useContrabandStash', () => {
       useContraband: mockUseContraband,
       addToast: mockAddToast
     }
-    vi.spyOn(GameState, 'useGameState').mockReturnValue(mockState)
     vi.spyOn(GameState, 'useGameActions').mockReturnValue(mockState)
     vi.spyOn(GameState, 'useGameSelector').mockImplementation(selector =>
       selector(mockState)
@@ -217,7 +216,6 @@ describe('useContrabandStash', () => {
       useContraband: mockUseContraband,
       addToast: mockAddToast
     }
-    vi.spyOn(GameState, 'useGameState').mockReturnValue(mockState)
     vi.spyOn(GameState, 'useGameActions').mockReturnValue(mockState)
     vi.spyOn(GameState, 'useGameSelector').mockImplementation(selector =>
       selector(mockState)
