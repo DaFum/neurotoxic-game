@@ -33,6 +33,15 @@ export const getUnlocks = (): string[] => {
     'loadUnlocks',
     () => {
       currentRaw = localStorage.getItem(UNLOCKS_KEY)
+
+      if (
+        currentRaw !== null &&
+        currentRaw === lastRawUnlocks &&
+        unlocksCache
+      ) {
+        return Array.from(unlocksCache)
+      }
+
       if (!currentRaw) return []
 
       let parsed: unknown
@@ -51,9 +60,8 @@ export const getUnlocks = (): string[] => {
   )
 
   // If the raw string hasn't changed and we have a cache, just return it
-  // We use Array.from to prevent callers from mutating the underlying Set structure
   if (currentRaw !== null && currentRaw === lastRawUnlocks && unlocksCache) {
-    return Array.from(unlocksCache)
+    return maybe ?? []
   }
 
   const result = maybe ?? []
