@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback } from 'react'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import type { PurchaseItem } from '../../types'
 
@@ -7,25 +7,20 @@ export const useSupplyStopModal = () => {
     state => state.pendingSupplyStopInventory
   )
   const { setPendingSupplyStopInventory } = useGameActions()
-  const [inventory, setInventory] = useState<PurchaseItem[] | null>(
-    pendingSupplyStopInventory
-  )
-
-  useEffect(() => {
-    if (!pendingSupplyStopInventory) return
-    setInventory(pendingSupplyStopInventory)
-    setPendingSupplyStopInventory(null)
-  }, [pendingSupplyStopInventory, setPendingSupplyStopInventory])
 
   const openSupplyStop = useCallback(
-    (nextInventory: PurchaseItem[]) => setInventory(nextInventory),
-    []
+    (nextInventory: PurchaseItem[]) =>
+      setPendingSupplyStopInventory(nextInventory),
+    [setPendingSupplyStopInventory]
   )
-  const closeSupplyStop = useCallback(() => setInventory(null), [])
+  const closeSupplyStop = useCallback(
+    () => setPendingSupplyStopInventory(null),
+    [setPendingSupplyStopInventory]
+  )
 
   return {
-    showSupplyStop: inventory !== null,
-    supplyStopInventory: inventory,
+    showSupplyStop: pendingSupplyStopInventory !== null,
+    supplyStopInventory: pendingSupplyStopInventory,
     openSupplyStop,
     closeSupplyStop
   }
