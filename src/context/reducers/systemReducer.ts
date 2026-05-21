@@ -906,11 +906,12 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
         mood: clampMemberMood(finiteNumberOr(m.mood, 50)),
         stamina: clampMemberStamina(finiteNumberOr(m.stamina, 100), staminaMax),
         baseStats: (() => {
-          if (!isPlainObject(m.baseStats)) return {}
+          const stats = m.baseStats
+          if (!isPlainObject(stats)) return {}
           const result: Record<string, number> = {}
-          for (const key in m.baseStats) {
-            if (!Object.hasOwn(m.baseStats, key)) continue
-            const value = m.baseStats[key as keyof typeof m.baseStats]
+          for (const key in stats) {
+            if (!Object.hasOwn(stats, key)) continue
+            const value = stats[key]
             if (typeof value === 'number' && Number.isFinite(value)) {
               result[key] = value
             }
