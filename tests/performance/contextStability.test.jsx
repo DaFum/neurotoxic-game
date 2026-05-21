@@ -4,7 +4,8 @@ import { act, render } from '@testing-library/react'
 import { useEffect } from 'react'
 import {
   GameStateProvider,
-  useGameState
+  useGameActions,
+  useGameSelector
 } from '../../src/context/GameState.tsx'
 
 test('GameState context functions stability', async _t => {
@@ -12,7 +13,8 @@ test('GameState context functions stability', async _t => {
   let changeSceneRef = null
 
   const Consumer = () => {
-    const { changeScene, updatePlayer, player } = useGameState()
+    const { changeScene, updatePlayer } = useGameActions()
+    const player = useGameSelector(s => s.player)
     renderCount++
 
     // Store references to check stability
