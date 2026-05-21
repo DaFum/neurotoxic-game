@@ -7,10 +7,22 @@
  * @param {string} upgradeId - The ID of the upgrade to check.
  * @returns {boolean} True if the upgrade is owned.
  */
+const upgradeCache = new WeakMap<string[], Set<string>>()
+
 export const hasUpgrade = (
   upgrades: string[] | null | undefined,
   upgradeId: string
-): boolean => Array.isArray(upgrades) && upgrades.includes(upgradeId)
+): boolean => {
+  if (!Array.isArray(upgrades)) return false
+
+  let upgradeSet = upgradeCache.get(upgrades)
+  if (upgradeSet === undefined) {
+    upgradeSet = new Set(upgrades)
+    upgradeCache.set(upgrades, upgradeSet)
+  }
+
+  return upgradeSet.has(upgradeId)
+}
 
 const BREAKDOWN_REDUCTIONS = {
   van_suspension: 0.01,
