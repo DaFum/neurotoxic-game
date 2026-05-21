@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import type { PurchaseItem } from '../../types'
 
@@ -18,10 +18,13 @@ export const useSupplyStopModal = () => {
     [setPendingSupplyStopInventory]
   )
 
-  return {
-    showSupplyStop: pendingSupplyStopInventory !== null,
-    supplyStopInventory: pendingSupplyStopInventory,
-    openSupplyStop,
-    closeSupplyStop
-  }
+  return useMemo(
+    () => ({
+      showSupplyStop: pendingSupplyStopInventory !== null,
+      supplyStopInventory: pendingSupplyStopInventory,
+      openSupplyStop,
+      closeSupplyStop
+    }),
+    [pendingSupplyStopInventory, openSupplyStop, closeSupplyStop]
+  )
 }
