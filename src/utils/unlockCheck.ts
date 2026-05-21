@@ -42,7 +42,7 @@ export const checkTraitUnlocks = (
   state: UnlockCheckState,
   context: unknown = {}
 ) => {
-  const newUnlocks = []
+  const newUnlocks: { memberId: string; traitId: string }[] = []
   const ctx = context as Record<string, unknown>
   const { band, player, social } = state
   const members = band?.members || []
@@ -181,10 +181,7 @@ export const checkTraitUnlocks = (
 
     // Grudge Holder (Matze): Relationship < 30
     if (Matze && !hasTrait(Matze, 'grudge_holder') && Matze.relationships) {
-      if (
-        hasRelationshipBelow(Matze.relationships, 30) &&
-        !newUnlocks.some(u => u.traitId === 'grudge_holder')
-      ) {
+      if (hasRelationshipBelow(Matze.relationships, 30)) {
         newUnlocks.push({ memberId: Matze.name, traitId: 'grudge_holder' })
       }
     }
