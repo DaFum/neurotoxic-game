@@ -106,13 +106,16 @@ export const SetlistTab = (props: SetlistTabProps) => {
   const currentScene = useGameSelector(state => state.currentScene)
 
   const latestSetlistRef = useRef(setlist)
-  useLayoutEffect(() => {
-    latestSetlistRef.current = setlist
-  }, [setlist])
-
   const selectedSongIds = useMemo(() => {
     return new Set(setlist.map((s: unknown) => getSetlistSongId(s)))
   }, [setlist])
+
+  const latestSelectedIdsRef = useRef(selectedSongIds)
+
+  useLayoutEffect(() => {
+    latestSetlistRef.current = setlist
+    latestSelectedIdsRef.current = selectedSongIds
+  }, [setlist, selectedSongIds])
 
   const isSongSelected = useCallback(
     (songId: unknown) => {
@@ -128,10 +131,7 @@ export const SetlistTab = (props: SetlistTabProps) => {
       const venueName = t('ui:bandhq.venue', { defaultValue: 'Band HQ' })
 
       const currentList = latestSetlistRef.current
-      const currentIndex = currentList.findIndex(
-        (s: unknown) => getSetlistSongId(s) === songId
-      )
-      const isSelected = currentIndex >= 0
+      const isSelected = latestSelectedIdsRef.current.has(songId)
 
       if (isSelected) {
         addToast(
@@ -155,13 +155,17 @@ export const SetlistTab = (props: SetlistTabProps) => {
 
       let nextSetlist
       if (isSelected) {
-        nextSetlist = [...currentList]
-        nextSetlist.splice(currentIndex, 1)
+        nextSetlist = currentList.filter(
+          (s: unknown) => getSetlistSongId(s) !== songId
+        )
       } else {
         // Currently allow 1 active song for MVP flow
         nextSetlist = [{ id: songId }]
       }
       latestSetlistRef.current = nextSetlist
+      latestSelectedIdsRef.current = new Set(
+        nextSetlist.map((s: unknown) => getSetlistSongId(s))
+      )
 
       setSetlist(nextSetlist)
     },

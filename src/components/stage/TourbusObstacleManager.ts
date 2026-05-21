@@ -72,7 +72,10 @@ export class TourbusObstacleManager {
         } else if (obs.type === 'OBSTACLE') {
           // Use id to pseudo-randomly determine which obstacle graphic to show
           // keeping it deterministic so it doesn't flicker between frames
-          tex = String(obs.id).charCodeAt(0) % 2 === 0 ? this.textures.rock : this.textures.barrier
+          tex =
+            String(obs.id).charCodeAt(0) % 2 === 0
+              ? this.textures.rock
+              : this.textures.barrier
         } else if (obs.type === 'VOID_HAZARD') {
           tex = this.textures.voidHazard
         }
