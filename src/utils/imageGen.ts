@@ -105,6 +105,8 @@ export const IMG_PROMPTS = {
   ICON_PIN_REST: 'pixel art map pin campfire shape orange rest stop cozy icon',
   ICON_PIN_SPECIAL: 'pixel art map pin mystery portal purple swirl cosmic icon',
   ICON_PIN_FINALE: 'pixel art map pin golden trophy crown star icon',
+  ICON_PIN_SUPPLY:
+    'pixel art map pin biohazard shape toxic green supply drop icon',
 
   // HQ
   BAND_HQ_BG:

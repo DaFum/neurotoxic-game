@@ -109,6 +109,7 @@ const mockTextureLightning = { id: 'lightning' }
 
 let mockCalculateNoteYResult = 0
 const mockPixiStageUtils = {
+  getPixiColorFromToken: mock.fn(() => 0x000000),
   calculateNoteY: mock.fn(() => mockCalculateNoteYResult),
   loadTexture: mock.fn(async url => {
     if (url?.includes('skull')) return mockTextureSkull
