@@ -110,7 +110,7 @@ type ReducerMap = {
  * Maps action types to their respective handler functions.
  * Using a map provides O(1) lookup instead of a long switch statement.
  */
-const reducerMap = {
+const reducerMap: ReducerMap = {
   [ActionTypes.CHANGE_SCENE]: handleChangeScene,
   [ActionTypes.UPDATE_PLAYER]: handleUpdatePlayer,
   [ActionTypes.UPDATE_SOCIAL]: handleUpdateSocial,
@@ -156,7 +156,7 @@ const reducerMap = {
   [ActionTypes.SET_PENDING_BANDHQ_OPEN]: handleSetPendingBandHQOpen,
   [ActionTypes.SET_PENDING_SUPPLY_STOP_INVENTORY]:
     handleSetPendingSupplyStopInventory
-} satisfies ReducerMap
+}
 
 /**
  * Main state reducer for the game.
@@ -172,8 +172,7 @@ function runHandledAction<K extends HandledActionTypes>(
   state: GameState,
   action: ActionFor<K>
 ): GameState {
-  // @ts-expect-error - TS has trouble indexing with K
-  const handler = reducerMap[action.type] as ReducerEntry<K>
+  const handler = reducerMap[action.type]
 
   if (Object.hasOwn(action, 'payload')) {
     return (handler as (state: GameState, payload: PayloadFor<K>) => GameState)(
