@@ -194,6 +194,12 @@ describe('usePostGigLogic', () => {
         throw new Error('bad state')
       })
       const { result } = renderHook(() => usePostGigLogic())
+
+      // Action triggers the error response now
+      act(() => {
+        result.current.handleNextPhase()
+      })
+
       await waitFor(() => {
         expect(result.current.postOptions).toEqual([])
         expect(result.current.phase).toBe('COMPLETE')

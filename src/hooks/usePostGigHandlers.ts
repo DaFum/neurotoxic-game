@@ -61,6 +61,7 @@ export interface UsePostGigHandlersProps {
   social: GameState['social']
   lastGigStats: PostGigSummary | null
   currentGig: Venue | null
+  postOptionsDerivationError: unknown
   perfScore: number
   financials: PostGigFinancials | null
   activeStoryFlags: string[]
@@ -96,6 +97,7 @@ export const usePostGigHandlers = ({
   social,
   lastGigStats,
   currentGig,
+  postOptionsDerivationError,
   perfScore,
   financials,
   activeStoryFlags,
@@ -488,8 +490,28 @@ export const usePostGigHandlers = ({
   ])
 
   const handleNextPhase = useCallback(() => {
-    setPhase('SOCIAL')
-  }, [setPhase])
+    if (postOptionsDerivationError) {
+      logger.error(
+        'PostGig',
+        'Failed to generate post options',
+        postOptionsDerivationError
+      )
+      const fallbackMsg = t('ui:postGig.socialOptionsUnavailable')
+
+      setPostResult({
+        type: 'ERROR',
+        success: false,
+        totalFollowers: 0,
+        followers: 0,
+        moneyChange: 0,
+        message: fallbackMsg
+      })
+      setPhase('COMPLETE')
+      addToast(fallbackMsg, 'error')
+    } else {
+      setPhase('SOCIAL')
+    }
+  }, [setPhase, postOptionsDerivationError, t, addToast, setPostResult])
 
   return {
     isProcessingAction,

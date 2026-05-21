@@ -14,13 +14,6 @@ import { normalizeVenueId } from '../utils/mapUtils'
 import type { PostResult } from '../types'
 import type { BrandDeal } from '../types/social'
 
-export type PostOptionsErrorState =
-  | { kind: 'idle' }
-  | { kind: 'pending'; error: unknown }
-  | { kind: 'handled' }
-
-const POST_OPTIONS_ERROR_IDLE: PostOptionsErrorState = { kind: 'idle' }
-
 export const usePostGigLogic = () => {
   const { t } = useTranslation(['ui'])
   const currentGig = useGameSelector(state => state.currentGig)
@@ -48,8 +41,6 @@ export const usePostGigLogic = () => {
   const [phase, setPhase] = useState('REPORT') // REPORT, SOCIAL, DEALS, COMPLETE
   const [postResult, setPostResult] = useState<PostResult | null>(null)
   const [brandOffers, setBrandOffers] = useState<BrandDeal[]>([])
-  const [postOptionsError, setPostOptionsError] = useState(false)
-  const errorHandledRef = useRef<PostOptionsErrorState>(POST_OPTIONS_ERROR_IDLE)
 
   const phaseTitleKey =
     {
@@ -145,58 +136,6 @@ export const usePostGigLogic = () => {
       })
     }, [currentGig, lastGigStats, player, band, social, activeEvent])
 
-  // Store the error fact silently inside ref, which we will read in the next useEffect
-  useEffect(() => {
-    if (postOptionsDerivationError) {
-      if (errorHandledRef.current.kind === 'idle') {
-        errorHandledRef.current = {
-          kind: 'pending',
-          error: postOptionsDerivationError
-        }
-      }
-    } else {
-      errorHandledRef.current = POST_OPTIONS_ERROR_IDLE
-    }
-  }, [postOptionsDerivationError])
-
-  // Process any error that happened during post option generation
-  useEffect(() => {
-    if (errorHandledRef.current.kind === 'pending') {
-      logger.error(
-        'PostGig',
-        'Failed to generate post options',
-        errorHandledRef.current.error
-      )
-      errorHandledRef.current = { kind: 'handled' } // mark handled
-
-      setPostOptionsError(true)
-    }
-  }, [postOptionsDerivationError])
-
-  // Handle post options generation error side effects purely in an effect
-  useEffect(() => {
-    if (postOptionsError) {
-      const fallbackMsg = t('ui:postGig.socialOptionsUnavailable')
-
-      // eslint-disable-next-line @eslint-react/set-state-in-effect
-      setPostResult({
-        type: 'ERROR',
-        success: false,
-        totalFollowers: 0,
-        followers: 0,
-        moneyChange: 0,
-        message: fallbackMsg
-      })
-      // eslint-disable-next-line @eslint-react/set-state-in-effect
-      setPhase('COMPLETE')
-      addToast(fallbackMsg, 'error')
-
-      // Reset the error state so it doesn't loop
-      // eslint-disable-next-line @eslint-react/set-state-in-effect
-      setPostOptionsError(false)
-    }
-  }, [postOptionsError, t, addToast])
-
   const {
     isProcessingAction,
     handlePostSelection,
@@ -211,6 +150,7 @@ export const usePostGigLogic = () => {
     social,
     lastGigStats,
     currentGig,
+    postOptionsDerivationError,
     perfScore,
     financials,
     activeStoryFlags,
