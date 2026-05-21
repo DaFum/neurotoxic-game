@@ -22,13 +22,17 @@ describe('ContrabandStash member mapping', () => {
   bench('filter and map (current)', () => {
     return members
       .filter(isBandMember)
-      .map(m => React.createElement('button', { key: m.id }, m.name))
+      .map(m =>
+        React.createElement('button', { key: m.id, type: 'button' }, m.name)
+      )
   })
 
   bench('reduce (optimized)', () => {
     return members.reduce((acc, m) => {
       if (isBandMember(m)) {
-        acc.push(React.createElement('button', { key: m.id }, m.name))
+        acc.push(
+          React.createElement('button', { key: m.id, type: 'button' }, m.name)
+        )
       }
       return acc
     }, [])
@@ -37,7 +41,11 @@ describe('ContrabandStash member mapping', () => {
   bench('map with null return (idiomatic)', () => {
     return members.map(m => {
       if (!isBandMember(m)) return null
-      return React.createElement('button', { key: m.id }, m.name)
+      return React.createElement(
+        'button',
+        { key: m.id, type: 'button' },
+        m.name
+      )
     })
   })
 })
