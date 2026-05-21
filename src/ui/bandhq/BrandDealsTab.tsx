@@ -16,8 +16,9 @@ export const BrandDealsTab = ({ social }: BrandDealsTabProps) => {
   const isOnline = useNetworkStatus()
 
   const activeDealIds = useMemo(() => {
-    return new Set(social.activeDeals?.map(d => d?.id).filter(Boolean) || [])
-  }, [social.activeDeals])
+    const ids = social?.activeDeals?.map(d => d?.id).filter(Boolean) ?? []
+    return new Set(ids)
+  }, [social?.activeDeals])
 
   return (
     <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
