@@ -8,24 +8,24 @@ import * as crypto from '../../src/utils/crypto'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 import { BALANCE_CONSTANTS } from '../../src/utils/gameStateUtils'
 
+function mockGameState(state) {
+  GameState.useGameSelector.mockImplementation(selector => selector(state))
+  GameState.useGameActions.mockReturnValue(state)
+}
+
 vi.mock('../../src/context/GameState', () => {
-  const useGameState = vi.fn()
-  // Honor the production contract: useGameActions exposes only dispatchers,
-  // not full state. Test fixtures merge actions into the base state for
-  // convenience, so derive the action-only view by filtering for callables.
+  const useGameActions = vi.fn()
+  const useGameSelector = vi.fn()
   const extractActions = state => {
-    if (!state || typeof state !== 'object') return {}
-    const actions = {}
-    for (const key of Object.keys(state)) {
-      const value = state[key]
-      if (typeof value === 'function') actions[key] = value
-    }
-    return actions
+    return Object.keys(state).reduce((acc, key) => {
+      if (typeof state[key] === 'function') acc[key] = state[key]
+      return acc
+    }, {})
   }
   return {
-    useGameState,
-    useGameActions: () => extractActions(useGameState()),
-    useGameSelector: selector => selector(useGameState())
+    useGameActions,
+    useGameSelector,
+    extractActions
   }
 })
 vi.mock('../../src/utils/economyEngine', () => ({
@@ -163,7 +163,7 @@ describe('usePostGigLogic', () => {
     socialEngine.calculateSocialGrowth.mockReturnValue(25)
     socialEngine.generateBrandOffers.mockReturnValue([])
     crypto.secureRandom.mockReturnValue(0.5)
-    GameState.useGameState.mockReturnValue(getBaseState())
+    mockGameState(getBaseState())
   })
 
   describe('Initialization & Event Trigger Chain', () => {
@@ -215,7 +215,7 @@ describe('usePostGigLogic', () => {
     })
 
     it('handles low stats initialization', async () => {
-      GameState.useGameState.mockReturnValue(
+      mockGameState(
         getBaseState({
           lastGigStats: { score: 1000, accuracy: 50, events: [] }
         })
@@ -229,7 +229,7 @@ describe('usePostGigLogic', () => {
     })
 
     it('skips event triggering when activeEvent already exists', () => {
-      GameState.useGameState.mockReturnValue(
+      mockGameState(
         getBaseState({ activeEvent: { id: 'some_event', type: 'financial' } })
       )
       renderHook(() => usePostGigLogic())
@@ -449,7 +449,7 @@ describe('usePostGigLogic', () => {
       )
 
       // Spin story (Insufficient funds)
-      GameState.useGameState.mockReturnValue(
+      mockGameState(
         getBaseState({
           player: { money: 100, fame: 100, day: 5, location: 'berlin' }
         })
@@ -483,7 +483,7 @@ describe('usePostGigLogic', () => {
       })
 
       // Continue game flow (Ego management quest)
-      GameState.useGameState.mockReturnValue(
+      mockGameState(
         getBaseState({ activeStoryFlags: ['breakup_quest_active'] })
       )
       let { result: egoQuestResult } = renderHook(() => usePostGigLogic())
@@ -504,7 +504,7 @@ describe('usePostGigLogic', () => {
     })
 
     it('includes excess miss money penalty in displayed financials before continue', async () => {
-      GameState.useGameState.mockReturnValue(
+      mockGameState(
         getBaseState({
           lastGigStats: { score: 25000, accuracy: 60, events: [], misses: 13 }
         })
@@ -527,7 +527,7 @@ describe('usePostGigLogic', () => {
     })
 
     it('does not subtract a hidden miss money penalty during continue', async () => {
-      GameState.useGameState.mockReturnValue(
+      mockGameState(
         getBaseState({
           lastGigStats: { score: 25000, accuracy: 60, events: [], misses: 13 }
         })
@@ -652,7 +652,7 @@ describe('usePostGigLogic', () => {
 
     it('handles sponsor deactivation and early return from continue', async () => {
       // Need a clean mount for sponsor deactivation
-      GameState.useGameState.mockReturnValue(
+      mockGameState(
         getBaseState({
           social: {
             instagram: 100,
@@ -700,9 +700,7 @@ describe('usePostGigLogic', () => {
     })
 
     it('returns early from handleContinue if financials are null', async () => {
-      GameState.useGameState.mockReturnValue(
-        getBaseState({ lastGigStats: null })
-      )
+      mockGameState(getBaseState({ lastGigStats: null }))
       const { result } = renderHook(() => usePostGigLogic())
       await waitFor(() => expect(result.current.financials).toBeNull())
       act(() => {
@@ -712,9 +710,7 @@ describe('usePostGigLogic', () => {
     })
 
     it('handles bankruptcy and story quests on continue', async () => {
-      GameState.useGameState.mockReturnValue(
-        getBaseState({ activeStoryFlags: ['cancel_quest_active'] })
-      )
+      mockGameState(getBaseState({ activeStoryFlags: ['cancel_quest_active'] }))
       economyEngine.shouldTriggerBankruptcy.mockReturnValue(true)
       economyEngine.calculateGigFinancials.mockReturnValue({
         net: -600,
@@ -747,7 +743,7 @@ describe('usePostGigLogic', () => {
       const baseState = getBaseState({
         lastGigStats: { score: 1000, accuracy: 60, events: [], misses: 13 }
       })
-      GameState.useGameState.mockReturnValue(baseState)
+      mockGameState(baseState)
       const { result } = renderHook(() => usePostGigLogic())
       await waitFor(() => expect(result.current.financials).toBeTruthy())
       act(() => {

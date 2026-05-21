@@ -2,11 +2,11 @@ import { describe, expect, test } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import {
   GameStateProvider,
-  useGameState
+  useGameActions
 } from '../../src/context/GameState.tsx'
 
 const Probe = () => {
-  const { endGig, saveGame, loadGame } = useGameState()
+  const { endGig, saveGame, loadGame } = useGameActions()
 
   return (
     <div data-testid='provider-probe'>

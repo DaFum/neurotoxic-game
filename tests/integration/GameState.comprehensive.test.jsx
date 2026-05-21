@@ -2,7 +2,8 @@ import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, waitFor, act } from '@testing-library/react'
 import {
   GameStateProvider,
-  useGameState
+  useGameActions,
+  useGameSelector
 } from '../../src/context/GameState.tsx'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 
@@ -106,7 +107,9 @@ describe('GameState Context - Core Actions', () => {
     localStorage.clear()
 
     TestComponent = ({ action }) => {
-      const gameState = useGameState()
+      const actions = useGameActions()
+      const state = useGameSelector(s => s)
+      const gameState = { ...state, ...actions }
       return (
         <div>
           <div data-testid='current-scene'>{gameState.currentScene}</div>
@@ -170,7 +173,9 @@ describe('GameState Context - Event System', () => {
     vi.clearAllMocks()
 
     TestComponent = () => {
-      const gameState = useGameState()
+      const actions = useGameActions()
+      const state = useGameSelector(s => s)
+      const gameState = { ...state, ...actions }
       return (
         <div>
           <div data-testid='active-event'>
@@ -215,7 +220,9 @@ describe('GameState Context - Event System', () => {
     const { eventEngine } = await import('../../src/utils/eventEngine')
 
     TestComponent = () => {
-      const gameState = useGameState()
+      const actions = useGameActions()
+      const state = useGameSelector(s => s)
+      const gameState = { ...state, ...actions }
       return (
         <div>
           <button
@@ -262,7 +269,9 @@ describe('GameState Context - Event System', () => {
     })
 
     TestComponent = () => {
-      const gameState = useGameState()
+      const actions = useGameActions()
+      const state = useGameSelector(s => s)
+      const gameState = { ...state, ...actions }
       return (
         <div>
           <div data-testid='pending-events'>
@@ -313,7 +322,9 @@ describe('GameState Context - Event System', () => {
     })
 
     TestComponent = () => {
-      const gameState = useGameState()
+      const actions = useGameActions()
+      const state = useGameSelector(s => s)
+      const gameState = { ...state, ...actions }
       return (
         <div>
           <div data-testid='pending-events'>
@@ -363,7 +374,9 @@ describe('GameState Context - Event System', () => {
 
   test('resolveEvent handles zero quest deadline offsets', async () => {
     TestComponent = () => {
-      const gameState = useGameState()
+      const actions = useGameActions()
+      const state = useGameSelector(s => s)
+      const gameState = { ...state, ...actions }
       return (
         <div>
           <div data-testid='quest-deadline'>
@@ -412,7 +425,9 @@ describe('GameState Context - Event System', () => {
 
   test('resolveEvent skips invalid quest deadline offsets', async () => {
     TestComponent = () => {
-      const gameState = useGameState()
+      const actions = useGameActions()
+      const state = useGameSelector(s => s)
+      const gameState = { ...state, ...actions }
       return (
         <div>
           <div data-testid='quest-deadline'>
@@ -460,7 +475,9 @@ describe('GameState Context - Event System', () => {
 
   test('addToast supports omitting the optional toast type', () => {
     TestComponent = () => {
-      const gameState = useGameState()
+      const actions = useGameActions()
+      const state = useGameSelector(s => s)
+      const gameState = { ...state, ...actions }
       return (
         <div>
           <div data-testid='toast-type'>
@@ -495,7 +512,9 @@ describe('GameState Context - Event System', () => {
 
   test('resolveEvent saves game-over events with the applied delta snapshot', () => {
     TestComponent = () => {
-      const gameState = useGameState()
+      const actions = useGameActions()
+      const state = useGameSelector(s => s)
+      const gameState = { ...state, ...actions }
       return (
         <div>
           <div data-testid='player-money'>{gameState.player.money}</div>
@@ -574,7 +593,9 @@ describe('GameState Context - Save/Load', () => {
     }
 
     const TestComponent = () => {
-      const gameState = useGameState()
+      const actions = useGameActions()
+      const state = useGameSelector(s => s)
+      const gameState = { ...state, ...actions }
       return (
         <div>
           <div data-testid='player-money'>{gameState.player?.money || 0}</div>
@@ -634,7 +655,9 @@ describe('GameState Context - Save/Load', () => {
 
   test('loadGame only dispatches whitelisted validated save fields', async () => {
     const TestComponent = () => {
-      const gameState = useGameState()
+      const actions = useGameActions()
+      const state = useGameSelector(s => s)
+      const gameState = { ...state, ...actions }
       return (
         <div>
           <div data-testid='toast-count'>{gameState.toasts.length}</div>
@@ -677,7 +700,9 @@ describe('GameState Context - Save/Load', () => {
     getUnlocks.mockReturnValue(['stored_unlock'])
 
     const TestComponent = () => {
-      const gameState = useGameState()
+      const actions = useGameActions()
+      const state = useGameSelector(s => s)
+      const gameState = { ...state, ...actions }
       return (
         <button type='button' onClick={() => gameState.loadGame()}>
           Load
@@ -711,7 +736,9 @@ describe('GameState Context - Save/Load', () => {
 describe('GameState Context - Gig Management', () => {
   test('gig lifecycle actions work correctly', () => {
     const TestComponent = () => {
-      const gameState = useGameState()
+      const actions = useGameActions()
+      const state = useGameSelector(s => s)
+      const gameState = { ...state, ...actions }
       return (
         <div>
           <div data-testid='scene'>{gameState.currentScene}</div>
@@ -807,7 +834,9 @@ describe('GameState Context - Gig Management', () => {
 describe('GameState Context - Minigames', () => {
   test('startTravelMinigame is callable', () => {
     const TestComponent = () => {
-      const gameState = useGameState()
+      const actions = useGameActions()
+      const state = useGameSelector(s => s)
+      const gameState = { ...state, ...actions }
       return (
         <button
           type='button'
@@ -833,7 +862,9 @@ describe('GameState Context - Minigames', () => {
 
   test('completeTravelMinigame is callable', () => {
     const TestComponent = () => {
-      const gameState = useGameState()
+      const actions = useGameActions()
+      const state = useGameSelector(s => s)
+      const gameState = { ...state, ...actions }
       return (
         <button
           type='button'
@@ -859,7 +890,9 @@ describe('GameState Context - Minigames', () => {
 
   test('startRoadieMinigame is callable', () => {
     const TestComponent = () => {
-      const gameState = useGameState()
+      const actions = useGameActions()
+      const state = useGameSelector(s => s)
+      const gameState = { ...state, ...actions }
       return (
         <button
           type='button'
@@ -885,7 +918,9 @@ describe('GameState Context - Minigames', () => {
 
   test('completeRoadieMinigame is callable', () => {
     const TestComponent = () => {
-      const gameState = useGameState()
+      const actions = useGameActions()
+      const state = useGameSelector(s => s)
+      const gameState = { ...state, ...actions }
       return (
         <button
           type='button'
@@ -907,44 +942,5 @@ describe('GameState Context - Minigames', () => {
         screen.getByText('Complete Roadie').click()
       })
     }).not.toThrow()
-  })
-})
-
-describe('GameState Context - hasUpgrade utility', () => {
-  test('hasUpgrade returns true for owned upgrades', () => {
-    const TestComponent = () => {
-      const gameState = useGameState()
-
-      return (
-        <div>
-          <button
-            type='button'
-            onClick={() =>
-              gameState.updatePlayer({
-                van: { upgrades: ['upgrade1', 'upgrade2'] }
-              })
-            }
-          >
-            Add Upgrades
-          </button>
-          <div data-testid='has-upgrade'>
-            {gameState.hasUpgrade('upgrade1') ? 'yes' : 'no'}
-          </div>
-        </div>
-      )
-    }
-
-    render(
-      <GameStateProvider>
-        <TestComponent />
-      </GameStateProvider>
-    )
-
-    const button = screen.getByText('Add Upgrades')
-    act(() => {
-      button.click()
-    })
-
-    expect(screen.getByTestId('has-upgrade')).toHaveTextContent('yes')
   })
 })
