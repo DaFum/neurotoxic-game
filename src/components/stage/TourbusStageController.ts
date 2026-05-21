@@ -31,6 +31,7 @@ type TourbusTextures = {
   rock: Texture | null
   barrier: Texture | null
   fuel: Texture | null
+  voidHazard: Texture | null
 }
 
 type TourbusColors = {
@@ -72,7 +73,8 @@ class TourbusStageController extends BaseStageController<TourbusControllerState>
       road: null,
       rock: null,
       barrier: null,
-      fuel: null
+      fuel: null,
+      voidHazard: null
     }
 
     this.colors = {
@@ -130,7 +132,8 @@ class TourbusStageController extends BaseStageController<TourbusControllerState>
         barrier: online
           ? getGenImageUrl(IMG_PROMPTS.MINIGAME_OBSTACLE_BARRIER)
           : null,
-        fuel: online ? getGenImageUrl(IMG_PROMPTS.MINIGAME_FUEL) : null
+        fuel: online ? getGenImageUrl(IMG_PROMPTS.MINIGAME_FUEL) : null,
+        voidHazard: online ? getGenImageUrl(IMG_PROMPTS.MINIGAME_VOID_HAZARD) : null
       }
 
       const loaded = (await loadTextures(urls, undefined)) as Record<
