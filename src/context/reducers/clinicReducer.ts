@@ -71,7 +71,8 @@ const executeClinicAction = (
   let targetIndex = -1
   const len = state.band.members.length
   for (let i = 0; i < len; i++) {
-    if (state.band.members[i].id === memberId) {
+    const member = state.band.members[i]
+    if (member && member.id === memberId) {
       targetIndex = i
       break
     }
