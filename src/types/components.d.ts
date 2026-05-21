@@ -146,7 +146,7 @@ export interface ClinicMemberCardProps {
 
 export interface ActionButtonWrapperProps {
   disabledReason?: string | null
-  children: React.ReactElement<{ disabled?: boolean }>
+  children: (disabled: boolean) => React.ReactElement
 }
 
 export interface AmpControlsProps {

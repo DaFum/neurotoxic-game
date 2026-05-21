@@ -14,10 +14,7 @@ const ActionButtonWrapper = ({
   disabledReason,
   children
 }: ActionButtonWrapperProps) => {
-  // eslint-disable-next-line @eslint-react/no-clone-element
-  const buttonWithDisabled = React.cloneElement(children, {
-    disabled: Boolean(disabledReason)
-  })
+  const buttonWithDisabled = children(Boolean(disabledReason))
 
   return disabledReason ? (
     <Tooltip content={disabledReason}>{buttonWithDisabled}</Tooltip>
@@ -79,19 +76,22 @@ export const ClinicMemberCard = ({
                 : null)
           }
         >
-          <GlitchButton
-            onClick={() => {
-              if (memberId) healMember(memberId)
-            }}
-            variant='primary'
-            size='sm'
-            className='w-full text-xs py-1'
-          >
-            {t('ui:clinic.heal_button', {
-              defaultValue: 'HEAL ({{cost}})',
-              cost: formatCurrency(healCostMoney, i18n?.language)
-            })}
-          </GlitchButton>
+          {disabled => (
+            <GlitchButton
+              onClick={() => {
+                if (memberId) healMember(memberId)
+              }}
+              variant='primary'
+              size='sm'
+              disabled={disabled}
+              className='w-full text-xs py-1'
+            >
+              {t('ui:clinic.heal_button', {
+                defaultValue: 'HEAL ({{cost}})',
+                cost: formatCurrency(healCostMoney, i18n?.language)
+              })}
+            </GlitchButton>
+          )}
         </ActionButtonWrapper>
 
         <ActionButtonWrapper
@@ -108,21 +108,24 @@ export const ClinicMemberCard = ({
                 : null)
           }
         >
-          <GlitchButton
-            onClick={() => {
-              if (memberId) {
-                enhanceMember(memberId, CLINIC_CONFIG.CYBER_LUNGS_TRAIT_ID)
-              }
-            }}
-            variant='warning'
-            size='sm'
-            className='w-full text-xs py-1'
-          >
-            {t('ui:clinic.enhance_button', {
-              defaultValue: 'GRAFT: CYBER LUNGS ({{fame}} Fame)',
-              fame: enhanceCostFame
-            })}
-          </GlitchButton>
+          {disabled => (
+            <GlitchButton
+              onClick={() => {
+                if (memberId) {
+                  enhanceMember(memberId, CLINIC_CONFIG.CYBER_LUNGS_TRAIT_ID)
+                }
+              }}
+              variant='warning'
+              size='sm'
+              disabled={disabled}
+              className='w-full text-xs py-1'
+            >
+              {t('ui:clinic.enhance_button', {
+                defaultValue: 'GRAFT: CYBER LUNGS ({{fame}} Fame)',
+                fame: enhanceCostFame
+              })}
+            </GlitchButton>
+          )}
         </ActionButtonWrapper>
       </div>
     </motion.div>
