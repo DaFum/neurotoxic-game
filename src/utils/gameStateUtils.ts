@@ -925,7 +925,7 @@ export const applyEventDelta = (
     const isNotSelfRelationship = (rc: RelationshipChange) =>
       rc.member1 !== rc.member2
 
-    const rawRC = delta.band.relationshipChange
+    const rawRC = delta.band.relationshipChange as unknown
     const relationshipChange: RelationshipChange[] = []
 
     if (Array.isArray(rawRC)) {
@@ -959,12 +959,9 @@ export const applyEventDelta = (
           ...newBanterEvents
         ].slice(-50)
       }
-    } else if (
-      isRelationshipChange(rawRC) &&
-      isNotSelfRelationship(rawRC as RelationshipChange)
-    ) {
-      relationshipChange.push(rawRC as RelationshipChange)
-      const rcr = rawRC as RelationshipChange
+    } else if (isRelationshipChange(rawRC) && isNotSelfRelationship(rawRC)) {
+      relationshipChange.push(rawRC)
+      const rcr = rawRC
       if (rcr.source === 'banter') {
         nextBand.banterEvents = [
           ...(nextBand.banterEvents || []),
