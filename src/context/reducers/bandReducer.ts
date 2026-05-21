@@ -257,10 +257,18 @@ const applySharedBandEffect = (
     return true
   }
   if (effectType === 'stamina_max') {
-    newBand.members = newBand.members.map((m: BandMember) => ({
-      ...m,
-      staminaMax: ((m.staminaMax as number | undefined) ?? 100) + value
-    }))
+    const updatedMembers = [...(newBand.members || [])]
+    for (let i = 0; i < updatedMembers.length; i++) {
+      const currentMember = updatedMembers[i]
+      if (currentMember) {
+        updatedMembers[i] = {
+          ...currentMember,
+          staminaMax:
+            ((currentMember.staminaMax as number | undefined) ?? 100) + value
+        } as BandMember
+      }
+    }
+    newBand.members = updatedMembers
     return true
   }
   if (effectType === 'guitar_difficulty') {
@@ -368,30 +376,42 @@ const applyContrabandEffect = (
       )
     )
   } else if (item.effectType === 'stamina' || item.effectType === 'mood') {
-    if (
-      !memberId ||
-      !newBand.members.some((m: BandMember) => m.id === memberId)
-    ) {
+    if (!memberId) {
       return null
     }
-    newBand.members = newBand.members.map((m: BandMember) => {
-      if (m.id === memberId) {
-        const key = item.effectType as 'stamina' | 'mood'
-        return {
-          ...m,
-          [key]:
-            key === 'stamina'
-              ? clampMemberStamina(
-                  ((m[key] as number) || 0) + (item.value as number),
-                  m.staminaMax as number
-                )
-              : clampMemberMood(
-                  ((m[key] as number) || 0) + (item.value as number)
-                )
-        }
+
+    let targetIndex = -1
+    const membersList = newBand.members || []
+    for (let i = 0; i < membersList.length; i++) {
+      const currentMember = membersList[i]
+      if (currentMember && currentMember.id === memberId) {
+        targetIndex = i
+        break
       }
-      return m
-    })
+    }
+
+    if (targetIndex === -1) {
+      return null
+    }
+
+    const m = membersList[targetIndex]
+    if (!m) return null
+
+    const key = item.effectType as 'stamina' | 'mood'
+    const updatedMembers = [...membersList]
+
+    updatedMembers[targetIndex] = {
+      ...m,
+      [key]:
+        key === 'stamina'
+          ? clampMemberStamina(
+              ((m[key] as number) || 0) + (item.value as number),
+              (m.staminaMax as number) || 100
+            )
+          : clampMemberMood(((m[key] as number) || 0) + (item.value as number))
+    } as BandMember
+
+    newBand.members = updatedMembers
     return newBand
   } else if (item.effectType === 'harmony') {
     newBand.harmony = clampBandHarmony(
