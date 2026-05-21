@@ -1,4 +1,4 @@
-import React, { useCallback, useLayoutEffect, useRef } from 'react'
+import React, { useCallback, useLayoutEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
@@ -110,11 +110,15 @@ export const SetlistTab = (props: SetlistTabProps) => {
     latestSetlistRef.current = setlist
   }, [setlist])
 
+  const selectedSongIds = useMemo(() => {
+    return new Set(setlist.map((s: unknown) => getSetlistSongId(s)))
+  }, [setlist])
+
   const isSongSelected = useCallback(
     (songId: unknown) => {
-      return setlist.some((s: unknown) => getSetlistSongId(s) === songId)
+      return selectedSongIds.has(songId)
     },
-    [setlist]
+    [selectedSongIds]
   )
 
   const toggleSongInSetlist = useCallback(
