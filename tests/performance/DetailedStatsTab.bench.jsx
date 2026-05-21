@@ -24,11 +24,13 @@ describe('DetailedStatsTab venueBlacklist optimization', () => {
   })
 
   bench('optimized: pre-computed Set', () => {
-    const blacklistedCityKeys = new Set(
-      venueBlacklist.map(v => getCityKeyFromVenueId(v)).filter(k => k !== '')
-    )
+    const keys = new Set()
+    for (const v of venueBlacklist) {
+      const k = getCityKeyFromVenueId(v)
+      if (k !== '') keys.add(k)
+    }
     Object.entries(reputationByRegion).forEach(([region, rep]) => {
-      const isBlacklisted = blacklistedCityKeys.has(region)
+      const isBlacklisted = keys.has(region)
     })
   })
 })

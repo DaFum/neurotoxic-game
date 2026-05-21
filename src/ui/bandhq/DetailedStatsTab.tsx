@@ -357,10 +357,17 @@ const RegionalStandingSection = ({
   venueBlacklist: string[]
 } & BasicTProps) => {
   const blacklistedCityKeys = useMemo(() => {
-    return new Set(
-      venueBlacklist.map(v => getCityKeyFromVenueId(v)).filter(k => k !== '')
-    )
+    const keys = new Set<string>()
+    for (const v of venueBlacklist) {
+      const k = getCityKeyFromVenueId(v)
+      if (k !== '') keys.add(k)
+    }
+    return keys
   }, [venueBlacklist])
+
+  const blacklistedVenuesLabel = useMemo(() => {
+    return venueBlacklist.map(v => translateLocation(t, v, v)).join(', ')
+  }, [venueBlacklist, t])
 
   return (
     <Panel
@@ -400,7 +407,7 @@ const RegionalStandingSection = ({
             })}
           </div>
           <div className='text-xs text-toxic-green font-mono italic'>
-            {venueBlacklist.map(v => translateLocation(t, v, v)).join(', ')}
+            {blacklistedVenuesLabel}
           </div>
         </div>
       )}
