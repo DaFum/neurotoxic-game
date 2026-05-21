@@ -71,8 +71,9 @@ export const SupplyStopModal: React.FC<SupplyStopModalProps> = ({
     <div className='fixed inset-0 z-50 flex items-center justify-center bg-void-black/90 backdrop-blur-sm p-4'>
       <div className='relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-void-black border border-toxic-green shadow-[0_0_20px_var(--color-toxic-green-10)] p-6'>
         <button
+          type='button'
           onClick={onClose}
-          className='absolute top-4 right-4 text-blood-red hover:text-white hover:bg-blood-red px-3 py-1 font-bold tracking-widest border border-blood-red transition-colors'
+          className='absolute top-4 right-4 text-blood-red hover:text-white hover:bg-blood-red px-3 py-1 font-bold tracking-widest border border-blood-red transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blood-red focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
         >
           {t('ui:action_close', { defaultValue: 'CLOSE' })}
         </button>
