@@ -43,12 +43,6 @@ export const checkTraitUnlocks = (
   context: unknown = {}
 ) => {
   const newUnlocks: { memberId: string; traitId: string }[] = []
-  const unlockedTraits = new Set<string>()
-
-  const addUnlock = (memberId: string, traitId: string) => {
-    newUnlocks.push({ memberId, traitId })
-    unlockedTraits.add(traitId)
-  }
   const ctx = context as Record<string, unknown>
   const { band, player, social } = state
   const members = band?.members || []
@@ -80,12 +74,12 @@ export const checkTraitUnlocks = (
 
     // Virtuoso (Matze): 100% Accuracy (0 Misses)
     if (Matze && !hasTrait(Matze, 'virtuoso') && misses === 0) {
-      addUnlock(Matze.name, 'virtuoso')
+      newUnlocks.push({ memberId: Matze.name, traitId: 'virtuoso' })
     }
 
     // Perfektionist (Matze): 100% Accuracy (match UI hint)
     if (Matze && !hasTrait(Matze, 'perfektionist') && accuracy === 100) {
-      addUnlock(Matze.name, 'perfektionist')
+      newUnlocks.push({ memberId: Matze.name, traitId: 'perfektionist' })
     }
 
     // Blast Machine (Marius): Fast song (>160 BPM) && Max Combo > 50
@@ -93,7 +87,7 @@ export const checkTraitUnlocks = (
       const isFast =
         typeof song?.bpm === 'number' && (song!.bpm as number) > 160
       if (isFast && maxCombo > 50) {
-        addUnlock(Marius.name, 'blast_machine')
+        newUnlocks.push({ memberId: Marius.name, traitId: 'blast_machine' })
       }
     }
 
@@ -101,7 +95,7 @@ export const checkTraitUnlocks = (
     if (Lars && !hasTrait(Lars, 'melodic_genius')) {
       const isSlow = typeof song?.bpm === 'number' && song.bpm < 120
       if (isSlow && maxCombo > 30) {
-        addUnlock(Lars.name, 'melodic_genius')
+        newUnlocks.push({ memberId: Lars.name, traitId: 'melodic_genius' })
       }
     }
 
@@ -109,7 +103,7 @@ export const checkTraitUnlocks = (
     if (Matze && !hasTrait(Matze, 'tech_wizard')) {
       const isTechnical = (Number(song?.['difficulty']) || 0) > 3
       if (isTechnical && accuracy === 100) {
-        addUnlock(Matze.name, 'tech_wizard')
+        newUnlocks.push({ memberId: Matze.name, traitId: 'tech_wizard' })
       }
     }
   }
@@ -119,7 +113,7 @@ export const checkTraitUnlocks = (
     // Road Warrior (Lars): Travel 5000km total (match UI hint)
     if (Lars && !hasTrait(Lars, 'road_warrior')) {
       if ((player.stats?.totalDistance || 0) >= 5000) {
-        addUnlock(Lars.name, 'road_warrior')
+        newUnlocks.push({ memberId: Lars.name, traitId: 'road_warrior' })
       }
     }
   }
@@ -135,7 +129,7 @@ export const checkTraitUnlocks = (
           item.id === 'hq_room_cheap_beer_fridge') ||
         (player.hqUpgrades || []).includes('hq_room_cheap_beer_fridge')
       ) {
-        addUnlock(Marius.name, 'party_animal')
+        newUnlocks.push({ memberId: Marius.name, traitId: 'party_animal' })
       }
     }
 
@@ -149,7 +143,7 @@ export const checkTraitUnlocks = (
        */
       const gearCount = typeof ctx.gearCount === 'number' ? ctx.gearCount : 0
       if ((gearCount || 0) >= 5) {
-        addUnlock(Matze.name, 'gear_nerd')
+        newUnlocks.push({ memberId: Matze.name, traitId: 'gear_nerd' })
       }
     }
   }
@@ -164,7 +158,7 @@ export const checkTraitUnlocks = (
         social.youtube || 0
       )
       if (maxFollowers >= 1000) {
-        addUnlock(Lars.name, 'social_manager')
+        newUnlocks.push({ memberId: Lars.name, traitId: 'social_manager' })
       }
     }
   }
@@ -174,31 +168,28 @@ export const checkTraitUnlocks = (
     // Bandleader (Lars): Resolve 3 conflicts
     if (Lars && !hasTrait(Lars, 'bandleader')) {
       if ((player.stats?.conflictsResolved || 0) >= 3) {
-        addUnlock(Lars.name, 'bandleader')
+        newUnlocks.push({ memberId: Lars.name, traitId: 'bandleader' })
       }
     }
 
     // Showman (Marius): Perform 3 Stage Dives
     if (Marius && !hasTrait(Marius, 'showman')) {
       if ((player.stats?.stageDives || 0) >= 3) {
-        addUnlock(Marius.name, 'showman')
+        newUnlocks.push({ memberId: Marius.name, traitId: 'showman' })
       }
     }
 
     // Grudge Holder (Matze): Relationship < 30
     if (Matze && !hasTrait(Matze, 'grudge_holder') && Matze.relationships) {
-      if (
-        hasRelationshipBelow(Matze.relationships, 30) &&
-        !unlockedTraits.has('grudge_holder')
-      ) {
-        addUnlock(Matze.name, 'grudge_holder')
+      if (hasRelationshipBelow(Matze.relationships, 30)) {
+        newUnlocks.push({ memberId: Matze.name, traitId: 'grudge_holder' })
       }
     }
 
     // Peacemaker (Lars): High Band Harmony (e.g. > 90)
     if (Lars && !hasTrait(Lars, 'peacemaker')) {
       if ((band.harmony ?? 1) >= 90) {
-        addUnlock(Lars.name, 'peacemaker')
+        newUnlocks.push({ memberId: Lars.name, traitId: 'peacemaker' })
       }
     }
   }
