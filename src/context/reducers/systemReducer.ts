@@ -730,6 +730,28 @@ const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
   }
 }
 
+const parseNumericStats = (
+  obj: unknown,
+  valueTransformer?: (val: number) => number,
+  ignoredKeys?: Set<string>
+): Record<string, number> => {
+  if (!isPlainObject(obj)) return {}
+  const result: Record<string, number> = {}
+  for (const key of Object.keys(obj)) {
+    if (isForbiddenKey(key)) continue
+    if (ignoredKeys && ignoredKeys.has(key)) continue
+
+    const normalizedKey = key.toLowerCase()
+    if (ignoredKeys && ignoredKeys.has(normalizedKey)) continue
+
+    const value = obj[key as keyof typeof obj]
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      result[key] = valueTransformer ? valueTransformer(value) : value
+    }
+  }
+  return result
+}
+
 const sanitizeBand = (loadedBand: unknown): BandState => {
   const bandData = isPlainObject(loadedBand)
     ? (loadedBand as Record<string, unknown>)
@@ -905,33 +927,13 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
         traits: normalizeTraitMap(m.traits),
         mood: clampMemberMood(finiteNumberOr(m.mood, 50)),
         stamina: clampMemberStamina(finiteNumberOr(m.stamina, 100), staminaMax),
-        baseStats: isPlainObject(m.baseStats)
-          ? (Object.fromEntries(
-              Object.entries(m.baseStats).filter(
-                ([, value]) =>
-                  typeof value === 'number' && Number.isFinite(value)
-              )
-            ) as Record<string, number>)
-          : {},
+        baseStats: parseNumericStats(m.baseStats),
         equipment: copySafePrimitiveObject(m.equipment) ?? {},
-        relationships: (() => {
-          if (!isPlainObject(m.relationships)) return {}
-          const result: Record<string, number> = {}
-          for (const key of Object.keys(m.relationships)) {
-            const value = m.relationships[key as keyof typeof m.relationships]
-            const normalizedKey = key.toLowerCase()
-            if (
-              selfRelationshipKeys.has(key) ||
-              selfRelationshipKeys.has(normalizedKey)
-            ) {
-              continue
-            }
-            if (typeof value === 'number' && Number.isFinite(value)) {
-              result[key] = clampRelationship(value)
-            }
-          }
-          return result
-        })()
+        relationships: parseNumericStats(
+          m.relationships,
+          clampRelationship,
+          selfRelationshipKeys
+        )
       }
       if (name !== undefined) member.name = name
       if (typeof m.role === 'string') member.role = m.role
