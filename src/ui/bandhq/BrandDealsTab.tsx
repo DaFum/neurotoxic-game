@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BRAND_DEALS } from '../../data/brandDeals'
 import { getTranslatedBrandDealDisplay } from '../../utils/brandDealI18n'
@@ -14,6 +15,10 @@ export const BrandDealsTab = ({ social }: BrandDealsTabProps) => {
   const { t, i18n } = useTranslation()
   const isOnline = useNetworkStatus()
 
+  const activeDealIds = useMemo(() => {
+    return new Set(social.activeDeals?.map(d => d?.id).filter(Boolean) || [])
+  }, [social.activeDeals])
+
   return (
     <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
       {BRAND_DEALS.map(deal => {
@@ -22,9 +27,7 @@ export const BrandDealsTab = ({ social }: BrandDealsTabProps) => {
           t
         )
 
-        const isActive = social.activeDeals?.some(
-          activeDeal => activeDeal?.id === deal.id
-        )
+        const isActive = activeDealIds.has(deal.id)
 
         // Generate a specific, fitting image prompt for each deal
         const prompt = `pixel art logo for ${deal.name}, ${deal.description}, dark grunge aesthetic, high contrast, visually striking`
