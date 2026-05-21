@@ -7,6 +7,8 @@ import {
 } from 'react'
 import { SOCKET_DEFS } from '../kabelsalatConstants'
 import type { CableId } from '../kabelsalatConstants'
+
+const SOCKET_COUNT = Object.keys(SOCKET_DEFS).length
 import type { SocketId } from '../../../types/kabelsalat'
 
 export const useKabelsalatTimer = (
@@ -58,12 +60,15 @@ export const useKabelsalatTimer = (
 
     let connectionCount = 0
     for (const key in connections) {
-      if (Object.hasOwn(connections, key) && connections[key as keyof typeof connections] != null) {
+      if (
+        Object.hasOwn(connections, key) &&
+        connections[key as keyof typeof connections] != null
+      ) {
         connectionCount++
       }
     }
 
-    if (connectionCount === Object.keys(SOCKET_DEFS).length) {
+    if (connectionCount === SOCKET_COUNT) {
       if (timerRef.current) clearInterval(timerRef.current)
       isWinningRef.current = true
 
