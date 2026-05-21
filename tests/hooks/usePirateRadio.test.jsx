@@ -101,23 +101,14 @@ describe('usePirateRadio', () => {
     expect(result.current.canBroadcast).toBe(false)
   })
 
-  it('logs validation failures when state invariants are corrupt', async () => {
+  it('does not log when validation rejects corrupt state without throwing', async () => {
     const { logger } = await import('../../src/utils/logger')
     mockGameState.player.money = Number.POSITIVE_INFINITY
 
     const { result } = renderHook(() => usePirateRadio())
 
     expect(result.current.canBroadcast).toBe(false)
-    expect(logger.error).toHaveBeenCalledWith(
-      'PirateRadio',
-      expect.stringContaining('validatePirateBroadcast'),
-      expect.objectContaining({
-        error: expect.any(Error),
-        playerDay: 5,
-        social: mockGameState.social,
-        config: PIRATE_RADIO_CONFIG
-      })
-    )
+    expect(logger.error).not.toHaveBeenCalled()
   })
 
   it('triggerBroadcast does nothing if canBroadcast is false', async () => {

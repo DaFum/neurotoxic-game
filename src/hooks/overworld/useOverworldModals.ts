@@ -5,6 +5,7 @@ import { usePirateRadio } from '../usePirateRadio'
 import { useMerchPress } from '../useMerchPress'
 import { useBloodBank } from '../useBloodBank'
 import { useDarkWebLeak } from '../useDarkWebLeak'
+import { useSupplyStopModal } from './useSupplyStopModal'
 
 export const useOverworldModals = () => {
   const hq = useBandHQModal()
@@ -14,6 +15,7 @@ export const useOverworldModals = () => {
   const merchPress = useMerchPress()
   const bloodBank = useBloodBank()
   const darkWebLeak = useDarkWebLeak()
+  const supplyStop = useSupplyStopModal()
 
   return {
     hq,
@@ -22,6 +24,7 @@ export const useOverworldModals = () => {
     pirateRadio,
     merchPress,
     bloodBank,
-    darkWebLeak
+    darkWebLeak,
+    supplyStop
   }
 }

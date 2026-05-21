@@ -6,6 +6,10 @@ import {
   clampNonNegative,
   isForbiddenKey
 } from '../../utils/gameStateUtils'
+import {
+  isLooseRecord,
+  sanitizeTraversableValue
+} from '../../utils/objectUtils'
 import { addContrabandHelper } from './bandReducer'
 import { getSafeUUID } from '../../utils/crypto'
 import { sanitizeSuccessToast } from './toastSanitizers'
@@ -19,26 +23,18 @@ const ESCAPE_MAP = {
 }
 
 const sanitizeContextValue = (value: unknown): unknown => {
-  if (typeof value === 'string') {
-    return value.replace(/[&<>"']/g, match => {
-      const escapeKey = match as keyof typeof ESCAPE_MAP
-      return ESCAPE_MAP[escapeKey]
-    })
-  }
-  if (Array.isArray(value)) {
-    return value.map(item => sanitizeContextValue(item))
-  }
-  if (value !== null && typeof value === 'object') {
-    const out: Record<string, unknown> = Object.create(null)
-    for (const [prop, val] of Object.entries(
-      value as Record<string, unknown>
-    )) {
-      if (isForbiddenKey(prop)) continue
-      out[prop] = sanitizeContextValue(val)
+  return sanitizeTraversableValue(value, {
+    isRecord: isLooseRecord,
+    createObject: () => Object.create(null),
+    shouldSkipKey: isForbiddenKey,
+    transformLeaf: leaf => {
+      if (typeof leaf !== 'string') return leaf
+      return leaf.replace(/[&<>"']/g, match => {
+        const escapeKey = match as keyof typeof ESCAPE_MAP
+        return ESCAPE_MAP[escapeKey]
+      })
     }
-    return out
-  }
-  return value
+  })
 }
 
 /**
@@ -140,14 +136,7 @@ export const handleTradeVoidItem = (
           const key = enrichedMessage.slice(0, firstPipeIdx)
           const jsonStr = enrichedMessage.slice(firstPipeIdx + 1)
           const parsedContext = JSON.parse(jsonStr)
-          const isPlainObject =
-            parsedContext !== null &&
-            typeof parsedContext === 'object' &&
-            !Array.isArray(parsedContext) &&
-            (Object.getPrototypeOf(parsedContext) === Object.prototype ||
-              Object.getPrototypeOf(parsedContext) === null)
-
-          if (isPlainObject) {
+          if (isLooseRecord(parsedContext)) {
             const rawContext = parsedContext as Record<string, unknown>
             const finalSafeContext = sanitizeContextValue(rawContext) as Record<
               string,

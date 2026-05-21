@@ -94,25 +94,14 @@ export const generateEffectText = (
       let totalStaminaChange = 0
 
       if (Array.isArray(delta.band.membersDelta)) {
-        const moodChanges: number[] = []
-        const staminaChanges: number[] = []
         for (let i = 0; i < delta.band.membersDelta.length; i++) {
           const memberDelta = delta.band.membersDelta[i]
           if (typeof memberDelta?.moodChange === 'number') {
-            moodChanges.push(memberDelta.moodChange)
+            totalMoodChange += memberDelta.moodChange
           }
           if (typeof memberDelta?.staminaChange === 'number') {
-            staminaChanges.push(memberDelta.staminaChange)
+            totalStaminaChange += memberDelta.staminaChange
           }
-        }
-        if (moodChanges.length > 0) {
-          totalMoodChange = moodChanges.reduce((sum, value) => sum + value, 0)
-        }
-        if (staminaChanges.length > 0) {
-          totalStaminaChange = staminaChanges.reduce(
-            (sum, value) => sum + value,
-            0
-          )
         }
       } else {
         if (typeof delta.band.membersDelta.moodChange === 'number') {

@@ -5,7 +5,8 @@ import {
   clampPlayerMoney,
   clampBandHarmony,
   clampVanFuel,
-  clampMemberStamina
+  clampMemberStamina,
+  clampUnitRandom
 } from '../../utils/gameStateUtils'
 import {
   calculateTravelExpenses,
@@ -56,6 +57,7 @@ export const handleCompleteTravelMinigame = (
   const { damageTaken: rawDamage, itemsCollected: rawItems, rngValue } = payload
   const damageTaken = Number.isFinite(rawDamage) ? Math.max(0, rawDamage) : 0
   const itemsCollected = Array.isArray(rawItems) ? rawItems : []
+  const safeRngValue = clampUnitRandom(rngValue)
   logger.info('GameState', 'Travel Minigame Complete', payload)
 
   // Apply Travel Results
@@ -90,7 +92,7 @@ export const handleCompleteTravelMinigame = (
 
   let nextMembers = state.band.members
   if (voidHazardHits && voidHazardHits > 0 && nextMembers.length > 0) {
-    const baseRng = typeof rngValue === 'number' ? rngValue : 0
+    const baseRng = safeRngValue ?? 0
     const memberIndex = Math.floor(baseRng * nextMembers.length)
     const hitMember = nextMembers[memberIndex]
     if (hitMember) {
@@ -170,15 +172,15 @@ export const handleCompleteTravelMinigame = (
   const luck = newState.band?.luck || 0
   const chance = computeDropChance(undefined, luck)
 
-  if (rngValue !== undefined && rngValue < chance) {
+  if (safeRngValue !== undefined && safeRngValue < chance) {
     // Generate inner random value deterministically based on rngValue
     // A simple hash function to derive a second deterministic number [0,1)
-    let seedInt = Math.floor(rngValue * 4294967296) // 2**32
+    let seedInt = Math.floor(safeRngValue * 4294967296) // 2**32
     seedInt = (seedInt * 1664525 + 1013904223) >>> 0 // LCG
     const innerRng = seedInt / 4294967296
     const mockRng = () => innerRng
     const contrabandId = pickRandomContraband(mockRng)
-    const instanceId = `drop-${rngValue}`
+    const instanceId = `drop-${safeRngValue}`
 
     if (contrabandId) {
       // Call addContrabandHelper directly to leverage its logic

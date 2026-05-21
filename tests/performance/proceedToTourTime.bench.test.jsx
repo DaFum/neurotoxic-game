@@ -55,27 +55,28 @@ vi.mock('../../src/utils/errorHandler', () => {
       this.originalError = options?.originalError
     }
   }
+  const runSafeStorageOperation = vi.fn((op, fn, ...fallbackValue) => {
+    try {
+      return fn()
+    } catch (error) {
+      const storageError = new MockStorageError(
+        `Storage operation failed after retries: ${op}`,
+        {
+          originalError: error instanceof Error ? error.message : String(error)
+        }
+      )
+      if (fallbackValue.length === 0) {
+        throw storageError
+      }
+      mockHandleError(storageError, { silent: true })
+      return fallbackValue[0]
+    }
+  })
   return {
     handleError: mockHandleError,
     StorageError: MockStorageError,
-    safeStorageOperation: vi.fn((op, fn, fallbackValue) => {
-      try {
-        return fn()
-      } catch (error) {
-        const storageError = new MockStorageError(
-          `Storage operation failed after retries: ${op}`,
-          {
-            originalError:
-              error instanceof Error ? error.message : String(error)
-          }
-        )
-        if (fallbackValue === undefined) {
-          throw storageError
-        }
-        mockHandleError(storageError, { silent: true })
-        return fallbackValue
-      }
-    })
+    runSafeStorageOperation,
+    safeStorageOperation: runSafeStorageOperation
   }
 })
 

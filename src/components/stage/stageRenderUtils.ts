@@ -7,6 +7,7 @@ const PIXI_TOKEN_FALLBACKS: Readonly<Record<string, string>> = Object.freeze({
   '--star-white': '#ffffff',
   '--ash-gray': '#888888',
   '--warning-yellow': '#ffcc00',
+  '--electric-blue': '#3b82f6',
   '--rhythm-guitar': '#ff0041',
   '--rhythm-drums': '#00ff41',
   '--rhythm-bass': '#0041ff',

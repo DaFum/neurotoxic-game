@@ -89,6 +89,16 @@ describe('saveValidator', () => {
         message: /player.van must be an object/
       })
     })
+    ;[0, '', false].forEach(van => {
+      it(`throws if player.van is ${JSON.stringify(van)}`, () => {
+        const data = getValidData()
+        data.player.van = van
+        assert.throws(() => validateSaveData(data), {
+          name: 'StateError',
+          message: /player.van must be an object/
+        })
+      })
+    })
   })
 
   describe('band validation', () => {

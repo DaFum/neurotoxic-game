@@ -189,6 +189,7 @@ export const BASE_STATE = {
   npcs: {},
   unlocks: [],
   pendingBandHQOpen: false,
+  pendingSupplyStopInventory: null,
   completedMilestones: []
 }
 

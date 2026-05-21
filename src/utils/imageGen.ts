@@ -105,6 +105,8 @@ export const IMG_PROMPTS = {
   ICON_PIN_REST: 'pixel art map pin campfire shape orange rest stop cozy icon',
   ICON_PIN_SPECIAL: 'pixel art map pin mystery portal purple swirl cosmic icon',
   ICON_PIN_FINALE: 'pixel art map pin golden trophy crown star icon',
+  ICON_PIN_SUPPLY:
+    'pixel art map pin biohazard shape toxic green supply drop icon',
 
   // HQ
   BAND_HQ_BG:
@@ -198,6 +200,8 @@ export const IMG_PROMPTS = {
     'pixel art orange traffic cone isolated on solid black background no shadow flat icon top down view',
   MINIGAME_FUEL:
     'pixel art red gas jerrycan isolated on solid black background no shadow flat icon top down view',
+  MINIGAME_VOID_HAZARD:
+    'pixel art dark mysterious glowing purple void portal hazard isolated on solid black background no shadow flat icon top down view',
 
   // Minigame - Roadie
   MINIGAME_ROADIE_IDLE:

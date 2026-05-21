@@ -8,7 +8,9 @@ import {
   handleAddToast,
   handleRemoveToast,
   handleAdvanceDay,
-  handleAddUnlock
+  handleAddUnlock,
+  handleSetPendingBandHQOpen,
+  handleSetPendingSupplyStopInventory
 } from '../../src/context/reducers/systemReducer'
 import { createInitialState } from '../../src/context/initialState'
 import { GAME_PHASES } from '../../src/context/gameConstants'
@@ -929,6 +931,49 @@ test('systemReducer - ADD_UNLOCK', async t => {
       unlocks: ['unlock1']
     })
   })
+})
+
+test('systemReducer - pending modal state', async t => {
+  await t.test(
+    'returns same state when pending Band HQ flag is unchanged',
+    () => {
+      const state = { ...createInitialState(), pendingBandHQOpen: true }
+
+      assert.equal(handleSetPendingBandHQOpen(state, true), state)
+    }
+  )
+
+  await t.test(
+    'returns same state when pending supply stop inventory is unchanged',
+    () => {
+      const inventory = [
+        {
+          id: 'strings',
+          name: 'Strings',
+          cost: 10,
+          effect: { type: 'inventory_add', item: 'strings', value: 1 }
+        }
+      ]
+      const state = {
+        ...createInitialState(),
+        pendingSupplyStopInventory: inventory
+      }
+
+      assert.equal(handleSetPendingSupplyStopInventory(state, inventory), state)
+    }
+  )
+
+  await t.test(
+    'returns same state when pending supply stop inventory stays null',
+    () => {
+      const state = {
+        ...createInitialState(),
+        pendingSupplyStopInventory: null
+      }
+
+      assert.equal(handleSetPendingSupplyStopInventory(state, null), state)
+    }
+  )
 })
 
 test('systemReducer - ADVANCE_DAY core logic', async t => {

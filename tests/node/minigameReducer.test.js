@@ -104,6 +104,23 @@ describe('minigameReducer', () => {
       assert.strictEqual(nextState.currentScene, GAME_PHASES.TRAVEL_MINIGAME) // should preserve the initial scene without overriding it
       assert.deepStrictEqual(nextState.minigame, { ...DEFAULT_MINIGAME_STATE })
     })
+
+    it('clamps non-finite rngValue before applying void hazard stamina loss', () => {
+      baseState.minigame.targetDestination = 'node2'
+      baseState.band.members = [
+        { id: 'matze', stamina: 100, staminaMax: 100 },
+        { id: 'marius', stamina: 100, staminaMax: 100 }
+      ]
+
+      const nextState = handleCompleteTravelMinigame(baseState, {
+        damageTaken: 0,
+        itemsCollected: ['VOID_HAZARD'],
+        rngValue: Number.POSITIVE_INFINITY
+      })
+
+      assert.strictEqual(nextState.band.members[0].stamina, 90)
+      assert.strictEqual(nextState.band.members[1].stamina, 100)
+    })
   })
 
   describe('handleCompleteAmpCalibration', () => {

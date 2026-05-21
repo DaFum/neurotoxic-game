@@ -21,7 +21,6 @@ import { EventLog } from '../ui/overworld/EventLog'
 import { translateLocation } from '../utils/locationI18n'
 import { OverworldMap } from '../components/overworld'
 import { OverworldModals } from '../components/overworld/OverworldModals'
-import { SupplyStopModal } from '../ui/SupplyStopModal'
 
 /**
  * The map navigation scene where players select their next destination.
@@ -47,7 +46,9 @@ export const Overworld = () => {
     changeScene,
     startTravelMinigame,
     spawnRivalBand,
-    updateRivalBand
+    updateRivalBand,
+    moveRivalBand,
+    checkRivalEncounter
   } = useGameActions()
 
   const [hoveredNode, setHoveredNode] = useState<MapNode | null>(null)
@@ -95,11 +96,14 @@ export const Overworld = () => {
       triggerLeak,
       canLeak: canDarkWebLeak,
       DARK_WEB_LEAK_CONFIG
+    },
+    supplyStop: {
+      showSupplyStop,
+      supplyStopInventory,
+      openSupplyStop,
+      closeSupplyStop
     }
   } = useOverworldModals()
-  const [supplyStopInventory, setSupplyStopInventory] = useState<
-    import('../types/components').PurchaseItem[] | null
-  >(null)
 
   const {
     isTraveling,
@@ -128,9 +132,10 @@ export const Overworld = () => {
     addToast,
     changeScene,
     onShowHQ: openHQ,
-    onShowSupplyStop: setSupplyStopInventory,
-    onStartTravelMinigame: startTravelMinigame
-    // dispatch removed as we no longer pass it
+    onShowSupplyStop: openSupplyStop,
+    onStartTravelMinigame: startTravelMinigame,
+    moveRivalBand,
+    checkRivalEncounter
   })
 
   const { isSaving, handleSaveWithDelay } = useOverworldSave(saveGame)
@@ -208,12 +213,6 @@ export const Overworld = () => {
 
       <EventLog t={t} day={player.day} locationId={player.location} />
 
-      {supplyStopInventory && (
-        <SupplyStopModal
-          inventory={supplyStopInventory}
-          onClose={() => setSupplyStopInventory(null)}
-        />
-      )}
       <OverworldModals
         showHQ={showHQ}
         closeHQ={closeHQ}
@@ -245,6 +244,9 @@ export const Overworld = () => {
         canDarkWebLeak={canDarkWebLeak}
         hasLeakedToday={hasLeakedToday}
         DARK_WEB_LEAK_CONFIG={DARK_WEB_LEAK_CONFIG}
+        showSupplyStop={showSupplyStop}
+        supplyStopInventory={supplyStopInventory}
+        closeSupplyStop={closeSupplyStop}
       />
     </div>
   )

@@ -1,12 +1,11 @@
 import { formatCurrency } from '../utils/numberUtils'
-import type { BandMember } from '../types'
+import type { BandMember, GameState, Platform } from '../types'
 import { hasActiveSponsorship } from '../utils/gameStateUtils'
 import { SOCIAL_PLATFORMS } from './platforms'
 import i18n from '../i18n'
 import { getSafeRandom } from '../utils/crypto'
 import { QUEST_APOLOGY_TOUR } from './questsConstants'
 import { hasActiveQuest } from '../utils/questUtils'
-import type { GameState } from '../types'
 
 const getSecureRollOnce = () => {
   return getSafeRandom()
@@ -925,7 +924,7 @@ export const POST_OPTIONS = [
       if (influencer.tier === 'Mega') followersGain = 10000
 
       // Influencer Traits
-      let platform = SOCIAL_PLATFORMS.INSTAGRAM.id
+      let platform: Platform = SOCIAL_PLATFORMS.INSTAGRAM.id
       let controversyChange = 0
       let traitBonusText = ''
 

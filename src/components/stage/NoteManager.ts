@@ -1,6 +1,6 @@
 import { Application, Container } from 'pixi.js'
 import type { RefObject } from 'react'
-import { calculateNoteY } from './stageRenderUtils'
+import { calculateNoteY, getPixiColorFromToken } from './stageRenderUtils'
 import {
   NoteSpritePool,
   NOTE_CENTER_OFFSET,
@@ -145,7 +145,9 @@ export class NoteManager {
       const sprite = entity.sprite
 
       if (note.hit) {
-        const laneColor = state.lanes?.[note.laneIndex]?.color ?? 0xffffff
+        const laneColor =
+          state.lanes?.[note.laneIndex]?.color ??
+          getPixiColorFromToken('--star-white')
         if (this.onHit) {
           this.onHit(sprite.x, sprite.y, laneColor)
         }

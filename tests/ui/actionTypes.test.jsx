@@ -51,7 +51,8 @@ describe('ActionTypes', () => {
       'TRADE_VOID_ITEM',
       'BLOOD_BANK_DONATE',
       'DARK_WEB_LEAK',
-      'SET_PENDING_BANDHQ_OPEN'
+      'SET_PENDING_BANDHQ_OPEN',
+      'SET_PENDING_SUPPLY_STOP_INVENTORY'
     ]
 
     expectedTypes.forEach(type => {

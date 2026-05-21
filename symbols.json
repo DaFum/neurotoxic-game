@@ -2004,6 +2004,15 @@
         "type": "const"
       }
     ],
+    "clampUnitRandom": [
+      {
+        "isDefault": false,
+        "name": "clampUnitRandom",
+        "path": "src/utils/gameStateUtils.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "clampVanCondition": [
       {
         "isDefault": false,
@@ -2753,6 +2762,15 @@
       {
         "isDefault": false,
         "name": "createSetPendingBandHQOpenAction",
+        "path": "src/context/actionCreators.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "createSetPendingSupplyStopInventoryAction": [
+      {
+        "isDefault": false,
+        "name": "createSetPendingSupplyStopInventoryAction",
         "path": "src/context/actionCreators.ts",
         "source": "local",
         "type": "const"
@@ -3857,6 +3875,16 @@
         "source": "local",
         "type": "interface",
         "typeOnly": true
+      }
+    ],
+    "FORBIDDEN_KEYS": [
+      {
+        "exportPath": "src/utils/gameStateUtils.ts",
+        "isDefault": false,
+        "name": "FORBIDDEN_KEYS",
+        "path": "src/utils/objectUtils.ts",
+        "source": "local",
+        "type": "const"
       }
     ],
     "formatCurrency": [
@@ -5049,6 +5077,15 @@
         "type": "const"
       }
     ],
+    "handleSetPendingSupplyStopInventory": [
+      {
+        "isDefault": false,
+        "name": "handleSetPendingSupplyStopInventory",
+        "path": "src/context/reducers/systemReducer.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "handleSetSetlist": [
       {
         "isDefault": false,
@@ -5562,9 +5599,10 @@
     ],
     "isForbiddenKey": [
       {
+        "exportPath": "src/utils/gameStateUtils.ts",
         "isDefault": false,
         "name": "isForbiddenKey",
-        "path": "src/utils/gameStateUtils.ts",
+        "path": "src/utils/objectUtils.ts",
         "source": "local",
         "type": "const"
       }
@@ -5605,6 +5643,16 @@
         "type": "const"
       }
     ],
+    "isLooseRecord": [
+      {
+        "exportPath": "src/utils/gameStateUtils.ts",
+        "isDefault": false,
+        "name": "isLooseRecord",
+        "path": "src/utils/objectUtils.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "isPercussionTrack": [
       {
         "exportPath": "src/utils/audio/audioEngine.ts",
@@ -5620,6 +5668,16 @@
         "isDefault": false,
         "name": "isPlainObject",
         "path": "src/utils/gameStateUtils.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "isPlainRecord": [
+      {
+        "exportPath": "src/utils/gameStateUtils.ts",
+        "isDefault": false,
+        "name": "isPlainRecord",
+        "path": "src/utils/objectUtils.ts",
         "source": "local",
         "type": "const"
       }
@@ -7081,6 +7139,7 @@
     ],
     "playSongSequence": [
       {
+        "exportPath": "src/utils/audio/audioEngine.ts",
         "isDefault": false,
         "name": "playSongSequence",
         "path": "src/utils/audio/rhythmGameAudioUtils.ts",
@@ -7516,6 +7575,16 @@
         "typeOnly": true
       }
     ],
+    "RecordGuard": [
+      {
+        "isDefault": false,
+        "name": "RecordGuard",
+        "path": "src/utils/objectUtils.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
     "RefObject": [
       {
         "isDefault": false,
@@ -7650,6 +7719,7 @@
     ],
     "resetGigStateTracking": [
       {
+        "exportPath": "src/utils/audio/audioEngine.ts",
         "isDefault": false,
         "name": "resetGigStateTracking",
         "path": "src/utils/audio/rhythmGameAudioUtils.ts",
@@ -7670,6 +7740,7 @@
     ],
     "resolveActiveSetlist": [
       {
+        "exportPath": "src/utils/audio/audioEngine.ts",
         "isDefault": false,
         "name": "resolveActiveSetlist",
         "path": "src/utils/audio/rhythmGameAudioUtils.ts",
@@ -8074,6 +8145,15 @@
         "type": "const"
       }
     ],
+    "runSafeStorageOperation": [
+      {
+        "isDefault": false,
+        "name": "runSafeStorageOperation",
+        "path": "src/utils/errorHandler.ts",
+        "source": "local",
+        "type": "function"
+      }
+    ],
     "safeDispose": [
       {
         "exportPath": "src/utils/audio/audioEngine.ts",
@@ -8115,13 +8195,6 @@
       {
         "isDefault": false,
         "name": "safeStorageOperation",
-        "path": "src/utils/errorHandler.ts",
-        "source": "local",
-        "type": "function"
-      },
-      {
-        "isDefault": false,
-        "name": "safeStorageOperation",
         "path": "src/utils/storage.ts",
         "source": "local",
         "type": "function"
@@ -8141,6 +8214,15 @@
         "isDefault": false,
         "name": "sanitizeSuccessToast",
         "path": "src/context/reducers/toastSanitizers.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "sanitizeTraversableValue": [
+      {
+        "isDefault": false,
+        "name": "sanitizeTraversableValue",
+        "path": "src/utils/objectUtils.ts",
         "source": "local",
         "type": "const"
       }
@@ -8374,6 +8456,7 @@
     ],
     "setupGigPhysics": [
       {
+        "exportPath": "src/utils/audio/audioEngine.ts",
         "isDefault": false,
         "name": "setupGigPhysics",
         "path": "src/utils/audio/rhythmGameAudioUtils.ts",
@@ -8515,6 +8598,15 @@
         "isDefault": false,
         "name": "SLOT_XS",
         "path": "src/scenes/kabelsalat/kabelsalatConstants.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "SOCIAL_PLATFORM_IDS": [
+      {
+        "isDefault": false,
+        "name": "SOCIAL_PLATFORM_IDS",
+        "path": "src/data/platforms.ts",
         "source": "local",
         "type": "const"
       }
@@ -10218,6 +10310,16 @@
         "module": "react",
         "name": "useState",
         "source": "external"
+      }
+    ],
+    "useSupplyStopModal": [
+      {
+        "exportPath": "src/hooks/overworld/index.ts",
+        "isDefault": false,
+        "name": "useSupplyStopModal",
+        "path": "src/hooks/overworld/useSupplyStopModal.ts",
+        "source": "local",
+        "type": "const"
       }
     ],
     "useTourbusLogic": [
