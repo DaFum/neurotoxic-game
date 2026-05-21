@@ -163,6 +163,9 @@ export const SetlistTab = (props: SetlistTabProps) => {
         nextSetlist = [{ id: songId }]
       }
       latestSetlistRef.current = nextSetlist
+      latestSelectedIdsRef.current = new Set(
+        nextSetlist.map((s: unknown) => getSetlistSongId(s))
+      )
 
       setSetlist(nextSetlist)
     },
