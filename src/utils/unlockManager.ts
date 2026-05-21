@@ -12,12 +12,14 @@ const UNLOCKS_KEY = 'neurotoxic_unlocks'
 
 // In-memory cache for O(1) duplicate checks
 let unlocksCache: Set<string> | null = null
+let lastRawUnlocks: string | null = null
 
 /**
  * Clears the in-memory cache. Used primarily for testing.
  */
 export const clearCache = (): void => {
   unlocksCache = null
+  lastRawUnlocks = null
 }
 
 /**
@@ -25,19 +27,17 @@ export const clearCache = (): void => {
  * @returns {string[]} Array of unlocked strings.
  */
 export const getUnlocks = (): string[] => {
-  if (unlocksCache) {
-    return Array.from(unlocksCache)
-  }
+  let currentRaw: string | null = null
 
   const maybe = safeStorageOperation<string[]>(
     'loadUnlocks',
     () => {
-      const raw = localStorage.getItem(UNLOCKS_KEY)
-      if (!raw) return []
+      currentRaw = localStorage.getItem(UNLOCKS_KEY)
+      if (!currentRaw) return []
 
       let parsed: unknown
       try {
-        parsed = JSON.parse(raw)
+        parsed = JSON.parse(currentRaw)
       } catch (_e) {
         return []
       }
@@ -50,8 +50,15 @@ export const getUnlocks = (): string[] => {
     []
   )
 
+  // If the raw string hasn't changed and we have a cache, just return it
+  // We use Array.from to prevent callers from mutating the underlying Set structure
+  if (currentRaw !== null && currentRaw === lastRawUnlocks && unlocksCache) {
+    return Array.from(unlocksCache)
+  }
+
   const result = maybe ?? []
   unlocksCache = new Set(result)
+  lastRawUnlocks = currentRaw
   return result
 }
 
@@ -63,25 +70,34 @@ export const getUnlocks = (): string[] => {
 export const addUnlock = (unlockId: string): boolean => {
   if (typeof unlockId !== 'string') return false
 
-  // Ensure cache is populated
-  if (!unlocksCache) {
-    getUnlocks()
-  }
+  // Refresh cache from storage. getUnlocks will recreate the Set ONLY if storage actually changed
+  const currentUnlocks = getUnlocks()
 
   // Prevent duplicates in O(1) time
   if (unlocksCache!.has(unlockId)) return false
 
   unlocksCache!.add(unlockId)
-  const currentUnlocks = Array.from(unlocksCache!)
+  currentUnlocks.push(unlockId)
 
-  return (
+  const success =
     safeStorageOperation<boolean>(
       'saveUnlocks',
       () => {
-        localStorage.setItem(UNLOCKS_KEY, JSON.stringify(currentUnlocks))
+        const newRaw = JSON.stringify(currentUnlocks)
+        localStorage.setItem(UNLOCKS_KEY, newRaw)
+        // Update our cache reference immediately so we don't invalidate our own write
+        lastRawUnlocks = newRaw
         return true
       },
       false
     ) ?? false
-  )
+
+  if (!success) {
+    // Roll back cache mutation if persistence fails
+    unlocksCache!.delete(unlockId)
+    // Force a fresh read next time since we don't know the exact valid storage state
+    lastRawUnlocks = null
+  }
+
+  return success
 }
