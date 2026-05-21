@@ -68,26 +68,29 @@ const executeClinicAction = (
     return state
   }
 
-  const memberExists = state.band.members.some(
-    (m: BandMember) => m.id === memberId
-  )
-  if (!memberExists) {
+  let targetIndex = -1
+  const len = state.band.members.length
+  for (let i = 0; i < len; i++) {
+    const member = state.band.members[i]
+    if (member && member.id === memberId) {
+      targetIndex = i
+      break
+    }
+  }
+
+  if (targetIndex === -1) {
     logger.warn('ClinicReducer', 'Target member not found in band')
     return state
   }
 
-  let memberUpdateResult: Record<string, unknown> | null = null
+  const targetMember = state.band.members[targetIndex]
+  const memberUpdateResult = memberUpdater(targetMember)
+  const updatedMember =
+    (memberUpdateResult.updatedMember as BandMember) ||
+    (memberUpdateResult as unknown as BandMember)
 
-  const updatedMembers: BandMember[] = state.band.members.map(
-    (member: BandMember) => {
-      if (member.id !== memberId) return member
-      memberUpdateResult = memberUpdater(member)
-      return (
-        (memberUpdateResult.updatedMember as BandMember) ||
-        (memberUpdateResult as unknown as BandMember)
-      )
-    }
-  )
+  const updatedMembers: BandMember[] = [...state.band.members]
+  updatedMembers[targetIndex] = updatedMember
 
   const nextFame = clampPlayerFame(playerFame - fameCost)
   const nextState: GameState = {
