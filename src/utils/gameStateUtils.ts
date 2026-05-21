@@ -938,19 +938,16 @@ export const applyEventDelta = (
       let now = 0
       for (let i = 0; i < rawRC.length; i++) {
         const rc = rawRC[i]
-        if (
-          isRelationshipChange(rc) &&
-          isNotSelfRelationship(rc as RelationshipChange)
-        ) {
-          relationshipChange.push(rc as RelationshipChange)
-          const rcr = rc as RelationshipChange
+        if (isRelationshipChange(rc) && isNotSelfRelationship(rc)) {
+          relationshipChange.push(rc)
+          const rcr = rc
           if (rcr.source === 'banter') {
             if (newBanterEvents === null) newBanterEvents = []
             if (now === 0) now = Date.now()
             newBanterEvents.push({
-              member1: rcr.member1 as string,
-              member2: rcr.member2 as string,
-              delta: rcr.change as number,
+              member1: rcr.member1,
+              member2: rcr.member2,
+              delta: rcr.change,
               timestamp: rcr.timestamp ?? now
             })
           }
@@ -972,9 +969,9 @@ export const applyEventDelta = (
         nextBand.banterEvents = [
           ...(nextBand.banterEvents || []),
           {
-            member1: rcr.member1 as string,
-            member2: rcr.member2 as string,
-            delta: rcr.change as number,
+            member1: rcr.member1,
+            member2: rcr.member2,
+            delta: rcr.change,
             timestamp: rcr.timestamp ?? Date.now()
           }
         ].slice(-50)
