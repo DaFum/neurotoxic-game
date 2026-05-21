@@ -4097,16 +4097,6 @@
         "type": "const"
       }
     ],
-    "GameStateWithActions": [
-      {
-        "isDefault": false,
-        "name": "GameStateWithActions",
-        "path": "src/context/GameState.tsx",
-        "source": "local",
-        "type": "type",
-        "typeOnly": true
-      }
-    ],
     "GEAR_LOOKUP": [
       {
         "isDefault": false,
