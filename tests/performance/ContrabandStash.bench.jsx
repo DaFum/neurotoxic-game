@@ -1,3 +1,4 @@
+import React from 'react'
 import { bench, describe } from 'vitest'
 
 const isBandMember = value => {
@@ -19,15 +20,24 @@ const members = Array.from({ length: 1000 }, (_, i) => ({
 
 describe('ContrabandStash member mapping', () => {
   bench('filter and map (current)', () => {
-    return members.filter(isBandMember).map(m => m.id)
+    return members
+      .filter(isBandMember)
+      .map(m => React.createElement('button', { key: m.id }, m.name))
   })
 
   bench('reduce (optimized)', () => {
     return members.reduce((acc, m) => {
       if (isBandMember(m)) {
-        acc.push(m.id)
+        acc.push(React.createElement('button', { key: m.id }, m.name))
       }
       return acc
     }, [])
+  })
+
+  bench('map with null return (idiomatic)', () => {
+    return members.map(m => {
+      if (!isBandMember(m)) return null
+      return React.createElement('button', { key: m.id }, m.name)
+    })
   })
 })
