@@ -1,5 +1,5 @@
 import type { GameSettings } from '../../types'
-import { useGameActions } from '../../context/GameState'
+import type { useGameActions } from '../../context/GameState'
 import type { AudioState, AudioControls } from '../../types/audio'
 import { SettingsPanel } from '../shared'
 import { useSettingsActions } from '../../hooks/useSettingsActions'

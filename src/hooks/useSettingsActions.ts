@@ -1,6 +1,6 @@
 import { useCallback, useRef, useLayoutEffect } from 'react'
 import type { GameSettings } from '../types'
-import { useGameActions } from '../context/GameState'
+import type { useGameActions } from '../context/GameState'
 
 type UpdateSettings = ReturnType<typeof useGameActions>['updateSettings']
 
