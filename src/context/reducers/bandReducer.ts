@@ -406,13 +406,14 @@ const applyContrabandEffect = (
         key === 'stamina'
           ? clampMemberStamina(
               ((m[key] as number) || 0) + (item.value as number),
-              (m.staminaMax as number) || 100
+              typeof m.staminaMax === 'number' ? m.staminaMax : 100
             )
           : clampMemberMood(((m[key] as number) || 0) + (item.value as number))
     } as BandMember
 
     newBand.members = updatedMembers
-    return newBand
+
+    // removed return newBand so duration logic handles it at the end
   } else if (item.effectType === 'harmony') {
     newBand.harmony = clampBandHarmony(
       (newBand.harmony ?? 1) + (item.value as number)
@@ -422,16 +423,21 @@ const applyContrabandEffect = (
   }
 
   if (item.duration != null) {
-    newBand.activeContrabandEffects = [
-      ...(newBand.activeContrabandEffects || []),
-      {
-        instanceId: item.instanceId,
-        effectType: item.effectType,
-        value: item.value,
-        remainingDuration: item.duration,
-        ...(memberId ? { memberId } : {})
-      }
-    ]
+    const effectExists = (
+      (newBand.activeContrabandEffects as Array<Record<string, unknown>>) || []
+    ).some(e => e.instanceId === item.instanceId)
+    if (!effectExists) {
+      newBand.activeContrabandEffects = [
+        ...(newBand.activeContrabandEffects || []),
+        {
+          instanceId: item.instanceId,
+          effectType: item.effectType,
+          value: item.value,
+          remainingDuration: item.duration,
+          ...(memberId ? { memberId } : {})
+        }
+      ]
+    }
   }
 
   return newBand

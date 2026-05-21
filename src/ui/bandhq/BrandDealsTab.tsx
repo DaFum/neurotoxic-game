@@ -17,12 +17,12 @@ export const BrandDealsTab = ({ social }: BrandDealsTabProps) => {
 
   const activeDealIds = useMemo(() => {
     const deals = social?.activeDeals || []
-    const ids = []
+    const ids = new Set<string>()
     for (let i = 0; i < deals.length; i++) {
       const deal = deals[i]
-      if (deal && deal.id) ids.push(deal.id)
+      if (deal && typeof deal.id === 'string') ids.add(deal.id)
     }
-    return new Set(ids)
+    return ids
   }, [social?.activeDeals])
 
   return (
