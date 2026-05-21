@@ -1,5 +1,5 @@
 import type { GameSettings } from '../../types'
-import type { GameStateWithActions } from '../../context/GameState'
+import { useGameActions } from '../../context/GameState'
 import type { AudioState, AudioControls } from '../../types/audio'
 import { SettingsPanel } from '../shared'
 import { useSettingsActions } from '../../hooks/useSettingsActions'
@@ -8,7 +8,7 @@ type SettingsTabProps = {
   settings: GameSettings
   audioState: AudioState
   onAudioChange: AudioControls
-  updateSettings: GameStateWithActions['updateSettings']
+  updateSettings: ReturnType<typeof useGameActions>['updateSettings']
   deleteSave: () => void
 }
 

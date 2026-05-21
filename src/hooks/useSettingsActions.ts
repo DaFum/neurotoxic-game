@@ -1,8 +1,8 @@
 import { useCallback, useRef, useLayoutEffect } from 'react'
 import type { GameSettings } from '../types'
-import type { GameStateWithActions } from '../context/GameState'
+import { useGameActions } from '../context/GameState'
 
-type UpdateSettings = GameStateWithActions['updateSettings']
+type UpdateSettings = ReturnType<typeof useGameActions>['updateSettings']
 
 export type UseSettingsActionsReturn = {
   handleToggleCRT: () => void

@@ -221,16 +221,6 @@ type GameDispatchActions = {
   updateRivalBand: (patch: Partial<RivalBandState>) => void
 }
 
-/**
- * @deprecated Prefer `useGameSelector` for state reads and `useGameActions`
- * for dispatch-only access. This combined shape subscribes consumers to the
- * full game state and should remain only for legacy call sites.
- */
-export type GameStateWithActions = GameState &
-  GameDispatchActions & {
-    hasUpgrade: (upgradeId: string) => boolean
-  }
-
 type HotGameStateContextStore = typeof globalThis & {
   __NEUROTOXIC_GAME_STATE_CONTEXT__?: Context<GameState | null>
   __NEUROTOXIC_GAME_DISPATCH_CONTEXT__?: Context<GameDispatchActions | null>
@@ -1043,7 +1033,7 @@ export function useGameSelector<T>(selector: (state: GameState) => T): T {
  *
  * @returns {object} The game state and action dispatchers.
  */
-export const useGameState = (): GameStateWithActions => {
+export const useGameState = () => {
   const state = useRequiredContext(GameStateContext, 'useGameState')
   const actions = useGameActions()
 
