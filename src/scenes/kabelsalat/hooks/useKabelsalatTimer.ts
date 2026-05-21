@@ -54,11 +54,16 @@ export const useKabelsalatTimer = (
 
   // Process success scenario
   useEffect(() => {
-    if (
-      !finishedRef.current &&
-      Object.values(connections).filter(value => value != null).length ===
-        Object.keys(SOCKET_DEFS).length
-    ) {
+    if (finishedRef.current) return
+
+    let connectionCount = 0
+    for (const key in connections) {
+      if (Object.hasOwn(connections, key) && connections[key as keyof typeof connections] != null) {
+        connectionCount++
+      }
+    }
+
+    if (connectionCount === Object.keys(SOCKET_DEFS).length) {
       if (timerRef.current) clearInterval(timerRef.current)
       isWinningRef.current = true
 
