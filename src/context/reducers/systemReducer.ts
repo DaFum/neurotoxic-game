@@ -730,6 +730,28 @@ const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
   }
 }
 
+const parseNumericStats = (
+  obj: unknown,
+  valueTransformer?: (val: number) => number,
+  ignoredKeys?: Set<string>
+): Record<string, number> => {
+  if (!isPlainObject(obj)) return {}
+  const result: Record<string, number> = {}
+  for (const key of Object.keys(obj)) {
+    if (isForbiddenKey(key)) continue
+    if (ignoredKeys && ignoredKeys.has(key)) continue
+
+    const normalizedKey = key.toLowerCase()
+    if (ignoredKeys && ignoredKeys.has(normalizedKey)) continue
+
+    const value = obj[key as keyof typeof obj]
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      result[key] = valueTransformer ? valueTransformer(value) : value
+    }
+  }
+  return result
+}
+
 const sanitizeBand = (loadedBand: unknown): BandState => {
   const bandData = isPlainObject(loadedBand)
     ? (loadedBand as Record<string, unknown>)
@@ -919,22 +941,11 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
           return result
         })(),
         equipment: copySafePrimitiveObject(m.equipment) ?? {},
-        relationships: isPlainObject(m.relationships)
-          ? Object.fromEntries(
-              (
-                Object.entries(m.relationships).filter(([key, value]) => {
-                  const normalizedKey = key.toLowerCase()
-                  if (
-                    selfRelationshipKeys.has(key) ||
-                    selfRelationshipKeys.has(normalizedKey)
-                  ) {
-                    return false
-                  }
-                  return typeof value === 'number' && Number.isFinite(value)
-                }) as Array<[string, number]>
-              ).map(([key, value]) => [key, clampRelationship(value)])
-            )
-          : {}
+        relationships: parseNumericStats(
+          m.relationships,
+          clampRelationship,
+          selfRelationshipKeys
+        )
       }
       if (name !== undefined) member.name = name
       if (typeof m.role === 'string') member.role = m.role
