@@ -355,53 +355,65 @@ const RegionalStandingSection = ({
 }: {
   reputationByRegion: Record<string, number>
   venueBlacklist: string[]
-} & BasicTProps) => (
-  <Panel
-    title={t('ui:stats.regional_standing', {
-      defaultValue: 'Regional Standing'
-    })}
-  >
-    {isEmptyObject(reputationByRegion) ? (
-      <div className='text-xs text-ash-gray italic py-4 text-center'>
-        {t('ui:detailedStats.noRegionalData', {
-          defaultValue: 'No regional data yet. Play gigs to build reputation.'
-        })}
-      </div>
-    ) : (
-      <div className='space-y-1'>
-        {Object.entries(reputationByRegion).map(([region, rep]) => (
-          <DetailRow
-            key={region}
-            label={translateLocation(t, region, region)}
-            value={rep}
-            subtext={
-              venueBlacklist.some(v => {
-                const cityKey = getCityKeyFromVenueId(v)
-                return cityKey !== '' && cityKey === region
-              })
-                ? t('ui:detailedStats.blacklisted', {
-                    defaultValue: 'BLACKLISTED VENUES'
-                  })
-                : null
-            }
-          />
-        ))}
-      </div>
-    )}
-    {venueBlacklist.length > 0 && (
-      <div className='mt-2 pt-2 border-t border-ash-gray/20'>
-        <div className='text-[10px] text-ash-gray mb-1 uppercase tracking-widest'>
-          {t('ui:detailedStats.blacklistedVenues', {
-            defaultValue: 'Blacklisted Venues'
+} & BasicTProps) => {
+  const blacklistedCityKeys = useMemo(() => {
+    const keys = new Set<string>()
+    for (const v of venueBlacklist) {
+      const k = getCityKeyFromVenueId(v)
+      if (k !== '') keys.add(k)
+    }
+    return keys
+  }, [venueBlacklist])
+
+  const blacklistedVenuesLabel = useMemo(() => {
+    return venueBlacklist.map(v => translateLocation(t, v, v)).join(', ')
+  }, [venueBlacklist, t])
+
+  return (
+    <Panel
+      title={t('ui:stats.regional_standing', {
+        defaultValue: 'Regional Standing'
+      })}
+    >
+      {isEmptyObject(reputationByRegion) ? (
+        <div className='text-xs text-ash-gray italic py-4 text-center'>
+          {t('ui:detailedStats.noRegionalData', {
+            defaultValue: 'No regional data yet. Play gigs to build reputation.'
           })}
         </div>
-        <div className='text-xs text-toxic-green font-mono italic'>
-          {venueBlacklist.map(v => translateLocation(t, v, v)).join(', ')}
+      ) : (
+        <div className='space-y-1'>
+          {Object.entries(reputationByRegion).map(([region, rep]) => (
+            <DetailRow
+              key={region}
+              label={translateLocation(t, region, region)}
+              value={rep}
+              subtext={
+                blacklistedCityKeys.has(region)
+                  ? t('ui:detailedStats.blacklisted', {
+                      defaultValue: 'BLACKLISTED VENUES'
+                    })
+                  : null
+              }
+            />
+          ))}
         </div>
-      </div>
-    )}
-  </Panel>
-)
+      )}
+      {venueBlacklist.length > 0 && (
+        <div className='mt-2 pt-2 border-t border-ash-gray/20'>
+          <div className='text-[10px] text-ash-gray mb-1 uppercase tracking-widest'>
+            {t('ui:detailedStats.blacklistedVenues', {
+              defaultValue: 'Blacklisted Venues'
+            })}
+          </div>
+          <div className='text-xs text-toxic-green font-mono italic'>
+            {blacklistedVenuesLabel}
+          </div>
+        </div>
+      )}
+    </Panel>
+  )
+}
 
 const ActiveQuestsSection = ({
   activeQuests,
