@@ -567,15 +567,26 @@ export const applyUnlockHQ = (
       break
 
     case 'hq_room_void_altar':
+    case 'hq_room_shrine': {
       nextBandPatch = {
-        luck: (band.luck ?? 0) + 10
+        luck: Math.max(0, (getNumericProp(band, 'luck', 0) ?? 0) + 10)
       }
+      const messageKey =
+        item.id === 'hq_room_shrine'
+          ? 'ui:shop.messages.shrineAltar'
+          : 'ui:shop.messages.voidAltar'
+      const fallback =
+        item.id === 'hq_room_shrine'
+          ? 'The Rock Gods bless you. Luck +10.'
+          : 'The abyss stares back. Luck +10.'
+
       messages.push({
-        messageKey: 'ui:shop.messages.voidAltar',
-        fallback: 'The abyss stares back. Luck +10.',
+        messageKey,
+        fallback,
         type: 'success'
       })
       break
+    }
 
     case 'hq_room_label':
       nextPlayerPatch.money = clampPlayerMoney(

@@ -685,7 +685,7 @@ export const HQ_ITEMS = {
       currency: 'fame',
       img: 'ITEM_HQ_SHRINE',
       description: 'items:hq_room_shrine.description',
-      effect: { type: 'stat_modifier', target: 'band', stat: 'luck', value: 10 }
+      effect: { type: 'unlock_hq', id: 'hq_room_shrine' }
     },
     {
       id: 'hq_room_skull',

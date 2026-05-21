@@ -1582,7 +1582,8 @@
   "volume.set": "Lautstärke auf {{pct}}% setzen",
   "shop": {
     "messages": {
-      "voidAltar": "Der Abgrund starrt zurück. Glück +10."
+      "voidAltar": "Der Abgrund starrt zurück. Glück +10.",
+      "shrineAltar": "Die Rockgötter segnen dich. Glück +10."
     }
   }
 }
