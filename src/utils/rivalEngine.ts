@@ -43,7 +43,16 @@ export const moveRivalBand = (
   }
 
   // Find gig nodes
-  const allGigNodes = Object.values(gameMap.nodes).filter(n => n.type === 'GIG')
+  const allGigNodes: Array<NonNullable<(typeof gameMap.nodes)[string]>> = []
+  for (const key in gameMap.nodes) {
+    if (Object.hasOwn(gameMap.nodes, key)) {
+      const node = gameMap.nodes[key]
+      if (node && node.type === 'GIG') {
+        allGigNodes.push(node)
+      }
+    }
+  }
+
   let possibleNodes: typeof allGigNodes = []
 
   if (rivalBand.currentLocationId && gameMap.connections) {
