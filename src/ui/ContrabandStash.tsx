@@ -282,17 +282,20 @@ export const ContrabandStash = ({
               })}
             </div>
           ) : (
-            stash
-              .filter(isStashItem)
-              .map(item => (
-                <StashCard
-                  key={item.instanceId ?? `migrated-${item.id}`}
-                  item={item}
-                  selectedMember={selectedMember}
-                  onUseItem={makeUseItem(item.instanceId ?? item.id, item)}
-                  t={t}
-                />
-              ))
+            stash.reduce<React.JSX.Element[]>((acc, item) => {
+              if (isStashItem(item)) {
+                acc.push(
+                  <StashCard
+                    key={item.instanceId ?? `migrated-${item.id}`}
+                    item={item}
+                    selectedMember={selectedMember}
+                    onUseItem={makeUseItem(item.instanceId ?? item.id, item)}
+                    t={t}
+                  />
+                )
+              }
+              return acc
+            }, [])
           )}
         </div>
 
