@@ -204,5 +204,7 @@
       "name": "Hyper-Adrenalin Ampulle",
       "description": "Erhöht die maximale Ausdauer dauerhaft."
     }
-  }
+  },
+  "hq_room_void_altar.name": "Altar der Leere",
+  "hq_room_void_altar.description": "Ein beunruhigender Monolith, der summt. (+10 Glück Sofort)."
 }

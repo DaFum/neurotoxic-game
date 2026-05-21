@@ -685,7 +685,7 @@ export const HQ_ITEMS = {
       currency: 'fame',
       img: 'ITEM_HQ_SHRINE',
       description: 'items:hq_room_shrine.description',
-      effect: { type: 'stat_modifier', target: 'band', stat: 'luck', value: 10 }
+      effect: { type: 'unlock_hq', id: 'hq_room_shrine' }
     },
     {
       id: 'hq_room_skull',
@@ -712,6 +712,16 @@ export const HQ_ITEMS = {
       img: 'ITEM_HQ_PR_CONTRACT',
       description: 'items:pr_manager_contract.description',
       effect: { type: 'unlock_hq', id: 'pr_manager_contract' }
+    },
+    {
+      id: 'hq_room_void_altar',
+      name: 'items:hq_room_void_altar.name',
+      category: 'HQ',
+      cost: 660,
+      currency: 'fame',
+      img: 'ITEM_HQ_VOID_ALTAR',
+      description: 'items:hq_room_void_altar.description',
+      effect: { type: 'unlock_hq', id: 'hq_room_void_altar' }
     }
   ]
 }
