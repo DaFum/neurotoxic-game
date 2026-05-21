@@ -270,21 +270,25 @@ export const ContrabandStash = ({
             })}
           </h3>
           <div className='flex flex-wrap gap-2'>
-            {members.filter(isBandMember).map(m => (
-              <button
-                key={m.id}
-                type='button'
-                aria-pressed={selectedMember === m.id}
-                onClick={makeSelectMember(m.id)}
-                className={`px-4 py-2 border font-mono text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-toxic-green) ${
-                  selectedMember === m.id
-                    ? 'border-(--color-toxic-green) bg-(--color-toxic-green-20) text-(--color-star-white)'
-                    : 'border-(--color-ash-gray) bg-transparent text-(--color-ash-gray) hover:border-(--color-toxic-green) hover:text-(--color-toxic-green)'
-                }`}
-              >
-                {m.name ?? t('ui:member.unknown', { defaultValue: 'Unknown' })}
-              </button>
-            ))}
+            {members.map(m => {
+              if (!isBandMember(m)) return null
+              return (
+                <button
+                  key={m.id}
+                  type='button'
+                  aria-pressed={selectedMember === m.id}
+                  onClick={makeSelectMember(m.id)}
+                  className={`px-4 py-2 border font-mono text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-toxic-green) ${
+                    selectedMember === m.id
+                      ? 'border-(--color-toxic-green) bg-(--color-toxic-green-20) text-(--color-star-white)'
+                      : 'border-(--color-ash-gray) bg-transparent text-(--color-ash-gray) hover:border-(--color-toxic-green) hover:text-(--color-toxic-green)'
+                  }`}
+                >
+                  {m.name ??
+                    t('ui:member.unknown', { defaultValue: 'Unknown' })}
+                </button>
+              )
+            })}
           </div>
         </div>
 

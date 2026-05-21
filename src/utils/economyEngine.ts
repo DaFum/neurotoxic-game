@@ -18,6 +18,11 @@ import type {
   PostGigFinancials
 } from '../types/economy'
 
+const SORTED_MERCH_KEYS = Object.freeze(Object.keys(MERCH_PROFILES).sort())
+const MERCH_PROFILE_VALUES = Object.freeze(
+  Object.values(MERCH_PROFILES)
+) as ReadonlyArray<MerchItemProfile>
+
 /**
  * Per-modifier costs used both in the PreGig UI preview and the PostGig expense calculation.
  * Keep this as the single source of truth so both screens always agree.
@@ -361,7 +366,7 @@ export const calculateMerchIncome = (
   // items still contribute to totalRawShare so their portion of demand is
   // lost (capped at 0 in the allocation loop) rather than redistributed to
   // in-stock items.
-  for (const profile of Object.values(MERCH_PROFILES) as MerchItemProfile[]) {
+  for (const profile of MERCH_PROFILE_VALUES) {
     const genreMult = profile.genreAffinity[genreBias] ?? 1.0
     const perfLift =
       1 +
@@ -392,7 +397,7 @@ export const calculateMerchIncome = (
 
   const soldItems: Record<string, number> = {}
   let totalRevenue = 0
-  const sortedKeys = Object.keys(MERCH_PROFILES).sort()
+  const sortedKeys = SORTED_MERCH_KEYS
 
   for (const key of sortedKeys) {
     const share = (rawShare[key] ?? 0) / totalRawShare
