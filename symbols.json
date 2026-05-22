@@ -4681,6 +4681,7 @@
     ],
     "GigStats": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "GigStats",
         "path": "src/types/rhythmGame.d.ts",
@@ -7903,6 +7904,7 @@
     ],
     "RhythmLane": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "RhythmLane",
         "path": "src/types/rhythmGame.d.ts",
@@ -7946,6 +7948,7 @@
     ],
     "RhythmSetlistEntry": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "RhythmSetlistEntry",
         "path": "src/types/rhythmGame.d.ts",
@@ -7956,6 +7959,7 @@
     ],
     "RhythmSongStatsEntry": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "RhythmSongStatsEntry",
         "path": "src/types/rhythmGame.d.ts",
@@ -8304,6 +8308,7 @@
     ],
     "SetLastGigStats": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "SetLastGigStats",
         "path": "src/types/rhythmGame.d.ts",
