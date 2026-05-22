@@ -16,7 +16,7 @@ describe('DetailedStatsTab venueBlacklist optimization', () => {
 
   bench('baseline: O(N) scan per row', () => {
     Object.keys(reputationByRegion).forEach(region => {
-      const _isBlacklisted = venueBlacklist.some(v => {
+      venueBlacklist.some(v => {
         const cityKey = getCityKeyFromVenueId(v)
         return cityKey !== '' && cityKey === region
       })
@@ -30,7 +30,7 @@ describe('DetailedStatsTab venueBlacklist optimization', () => {
       if (k !== '') keys.add(k)
     }
     Object.keys(reputationByRegion).forEach(region => {
-      const _isBlacklisted = keys.has(region)
+      keys.has(region)
     })
   })
 })
