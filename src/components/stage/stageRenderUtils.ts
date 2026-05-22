@@ -187,7 +187,7 @@ const HIT_LINE_OFFSET = 60
 const HIT_LINE_STROKE_WIDTH = 4
 const RHYTHM_OFFSET_RATIO = 0.6
 
-export const RHYTHM_LAYOUT = Object.freeze({
+const RHYTHM_LAYOUT = Object.freeze({
   laneTotalWidth: LANE_TOTAL_WIDTH,
   laneWidth: LANE_WIDTH,
   laneHeightRatio: LANE_HEIGHT_RATIO,

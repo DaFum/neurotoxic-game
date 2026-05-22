@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { gameReducer, ActionTypes } from '../../src/context/gameReducer'
-import { initialState } from '../../src/context/initialState'
+import { createInitialState } from '../../src/context/initialState'
 import {
   GAME_PHASES,
   MINIGAME_TYPES,
@@ -10,6 +10,7 @@ import {
 
 test('Minigame State Transitions', async t => {
   await t.test('START_TRAVEL_MINIGAME updates state correctly', () => {
+    const initialState = createInitialState()
     const action = {
       type: ActionTypes.START_TRAVEL_MINIGAME,
       payload: { targetNodeId: 'node_1' }
@@ -25,6 +26,7 @@ test('Minigame State Transitions', async t => {
   await t.test(
     'COMPLETE_TRAVEL_MINIGAME applies results and updates location',
     () => {
+      const initialState = createInitialState()
       // Setup state as if minigame is active
       const activeState = {
         ...initialState,
@@ -98,6 +100,7 @@ test('Minigame State Transitions', async t => {
   await t.test(
     'COMPLETE_TRAVEL_MINIGAME applies results and updates location with legacy venue string',
     () => {
+      const initialState = createInitialState()
       // Setup state with legacy string format for venue
       const activeState = {
         ...initialState,
@@ -157,6 +160,7 @@ test('Minigame State Transitions', async t => {
     }
   ]) {
     await t.test(`${actionType} updates state correctly`, () => {
+      const initialState = createInitialState()
       const newState = gameReducer(initialState, {
         type: actionType,
         payload: { gigId: 'gig_123' }
@@ -171,6 +175,7 @@ test('Minigame State Transitions', async t => {
   await t.test(
     'COMPLETE_KABELSALAT_MINIGAME resets minigame state and applies economy effects',
     () => {
+      const initialState = createInitialState()
       const activeState = {
         ...initialState,
         player: { ...initialState.player, money: 1000 },
@@ -205,6 +210,7 @@ test('Minigame State Transitions', async t => {
   await t.test(
     'COMPLETE_ROADIE_MINIGAME resets minigame state and applies economy effects',
     () => {
+      const initialState = createInitialState()
       const activeState = {
         ...initialState,
         currentScene: GAME_PHASES.PRE_GIG_MINIGAME,

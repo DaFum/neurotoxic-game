@@ -233,7 +233,7 @@ const sanitizeSettings = (
  * Complete initial state for the game
  * @type {Object}
  */
-export const initialState: GameState = {
+const initialState: GameState = {
   version: 2,
   currentScene: GAME_PHASES.INTRO,
   player: { ...DEFAULT_PLAYER_STATE },

@@ -19,7 +19,7 @@ import {
   normalizeVenueId
 } from '../utils/mapUtils'
 import {
-  resolveVenue,
+  resolveTravelVenue,
   getLocationName as getLocationNameUtil,
   checkVenueAccess,
   checkTravelPrerequisites,
@@ -82,17 +82,6 @@ type TravelLogicParams = {
  * @constant {number}
  */
 const TRAVEL_ANIMATION_TIMEOUT_MS = 1510
-
-const isVenue = (value: unknown): value is Venue => {
-  if (!value || typeof value !== 'object') return false
-  const venue = value as { id?: unknown; name?: unknown }
-  return (
-    Object.hasOwn(value, 'id') &&
-    Object.hasOwn(value, 'name') &&
-    typeof venue.id === 'string' &&
-    typeof venue.name === 'string'
-  )
-}
 
 /**
  * Custom hook for managing travel state and logic
@@ -532,11 +521,10 @@ export const useTravelLogic = ({
 
           // We can reuse the standardized arrival logic which handles
           // harmony checks, show cancellations, and routing safely.
-          const venueId = normalizeVenueId(node.venue)
-          const resolvedVenue = resolveVenue(node.venue, venueId, VENUES_BY_ID)
+          const resolvedVenue = resolveTravelVenue(node.venue, VENUES_BY_ID)
           const processedNode = {
             ...node,
-            venue: isVenue(resolvedVenue) ? resolvedVenue : node.venue
+            venue: resolvedVenue ?? node.venue
           }
           handleNodeArrivalCallback(processedNode, false)
         } else if (node.type === 'START') {

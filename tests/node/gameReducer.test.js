@@ -65,8 +65,7 @@ const { gameReducer, ActionTypes } =
   await import('../../src/context/gameReducer')
 const { logger } = await import('../../src/utils/logger')
 
-const { createInitialState, initialState } =
-  await import('../../src/context/initialState')
+const { createInitialState } = await import('../../src/context/initialState')
 
 describe('gameReducer', () => {
   let testState
@@ -353,8 +352,9 @@ describe('gameReducer', () => {
       const action = { type: ActionTypes.RESET_STATE }
       const newState = gameReducer(testState, action)
 
-      assert.strictEqual(newState.currentScene, initialState.currentScene)
-      assert.strictEqual(newState.player.money, initialState.player.money)
+      const expectedState = createInitialState()
+      assert.strictEqual(newState.currentScene, expectedState.currentScene)
+      assert.strictEqual(newState.player.money, expectedState.player.money)
     })
 
     it('should retain unlocks on reset when payload is provided', () => {
@@ -367,8 +367,9 @@ describe('gameReducer', () => {
       }
       const newState = gameReducer(testState, action)
 
-      assert.strictEqual(newState.currentScene, initialState.currentScene)
-      assert.strictEqual(newState.player.money, initialState.player.money)
+      const expectedState = createInitialState()
+      assert.strictEqual(newState.currentScene, expectedState.currentScene)
+      assert.strictEqual(newState.player.money, expectedState.player.money)
       assert.deepStrictEqual(newState.unlocks, ['retained_unlock'])
     })
   })

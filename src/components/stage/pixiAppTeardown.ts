@@ -30,7 +30,7 @@ const isErrorWithMessage = (
 ): value is { message?: string | undefined } =>
   typeof value === 'object' && value !== null
 
-export function isBenignDestroyError(error: unknown): boolean {
+function isBenignDestroyError(error: unknown): boolean {
   const errorMessage =
     isErrorWithMessage(error) && typeof error.message === 'string'
       ? error.message
