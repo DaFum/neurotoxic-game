@@ -17,7 +17,7 @@ describe('kabelsalatTimer connections check', () => {
 
     const startOriginal = performance.now()
     for (let i = 0; i < ITERATIONS; i++) {
-      const isComplete =
+      const _isComplete =
         Object.values(connections).filter(value => value != null).length ===
         SOCKET_COUNT
     }
@@ -31,7 +31,7 @@ describe('kabelsalatTimer connections check', () => {
           count++
         }
       }
-      const isComplete = count === SOCKET_COUNT
+      const _isComplete = count === SOCKET_COUNT
     }
     const endOptimized = performance.now()
 
