@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import React from 'react'
 import { render, fireEvent } from '@testing-library/react'
+import fs from 'node:fs/promises'
+import path from 'node:path'
 
 // Mocks
 
@@ -129,6 +131,16 @@ const { getSafeRandom } = await import('../../src/utils/crypto')
 describe('PreGig', () => {
   test('exposes minigame fallback reset only through test internals', () => {
     expect(__testInternals?.resetLastMinigameFallback).toBeTypeOf('function')
+  })
+
+  test('guards test internals runtime detection for browsers without process', async () => {
+    const source = await fs.readFile(
+      path.join(process.cwd(), 'src', 'hooks', 'usePreGigLogic.ts'),
+      'utf8'
+    )
+
+    expect(source).toContain("typeof process !== 'undefined'")
+    expect(source).toContain("process.env?.NODE_ENV === 'test'")
   })
 
   beforeEach(() => {

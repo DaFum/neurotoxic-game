@@ -32,10 +32,12 @@ const resetLastMinigameFallback = (): void => {
   lastMinigameFallback = null
 }
 
+const isTestRuntime =
+  typeof process !== 'undefined' && process.env?.NODE_ENV === 'test'
+
 export const __testInternals:
   | { resetLastMinigameFallback: () => void }
-  | undefined =
-  process.env.NODE_ENV === 'test' ? { resetLastMinigameFallback } : undefined
+  | undefined = isTestRuntime ? { resetLastMinigameFallback } : undefined
 
 const BAND_MEETING_COST = 50
 

@@ -54,6 +54,20 @@ describe('travelUtils', () => {
     test('returns null for unresolved or malformed venue data', () => {
       assert.strictEqual(resolveTravelVenue('missing_venue', venuesMap), null)
       assert.strictEqual(resolveTravelVenue({ capacity: 100 }, venuesMap), null)
+      assert.strictEqual(
+        resolveTravelVenue(
+          { id: 'loose_venue', name: 'Loose Venue' },
+          venuesMap
+        ),
+        null
+      )
+      assert.strictEqual(
+        resolveTravelVenue(
+          { id: 'bad_capacity', name: 'Bad Capacity', capacity: '100' },
+          venuesMap
+        ),
+        null
+      )
     })
   })
 

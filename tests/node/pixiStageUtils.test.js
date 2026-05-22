@@ -13,12 +13,19 @@ test('calculateNoteY returns target position at hit time', () => {
 })
 
 test('buildRhythmLayout derives lane and hit line positions', () => {
-  const layout = buildRhythmLayout({ screenWidth: 1200, screenHeight: 600 })
+  const screenWidth = 1200
+  const screenHeight = 600
+  const laneTotalWidth = 360
+  const laneHeightRatio = 0.4
+  const hitLineOffset = 60
+  const rhythmOffsetRatio = 0.6
 
-  assert.equal(layout.startX, 420)
-  assert.equal(layout.laneHeight, 240)
-  assert.equal(layout.hitLineY, 180)
-  assert.equal(layout.rhythmOffsetY, 360)
+  const layout = buildRhythmLayout({ screenWidth, screenHeight })
+
+  assert.equal(layout.startX, (screenWidth - laneTotalWidth) / 2)
+  assert.equal(layout.laneHeight, screenHeight * laneHeightRatio)
+  assert.equal(layout.hitLineY, layout.laneHeight - hitLineOffset)
+  assert.equal(layout.rhythmOffsetY, screenHeight * rhythmOffsetRatio)
 })
 
 test('stageRenderUtils keeps rhythm layout constants internal', async () => {

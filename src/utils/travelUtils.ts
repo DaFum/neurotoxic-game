@@ -31,14 +31,21 @@ interface TravelArrivalUpdates {
   nextBand: Partial<BandState> | null
 }
 
-const isVenue = (value: unknown): value is Venue => {
+type ResolvedTravelVenue = Venue & { capacity: number }
+
+const isResolvedTravelVenue = (
+  value: unknown
+): value is ResolvedTravelVenue => {
   if (!value || typeof value !== 'object') return false
-  const venue = value as { id?: unknown; name?: unknown }
+  const venue = value as { id?: unknown; name?: unknown; capacity?: unknown }
   return (
     Object.hasOwn(value, 'id') &&
     Object.hasOwn(value, 'name') &&
+    Object.hasOwn(value, 'capacity') &&
     typeof venue.id === 'string' &&
-    typeof venue.name === 'string'
+    typeof venue.name === 'string' &&
+    typeof venue.capacity === 'number' &&
+    Number.isFinite(venue.capacity)
   )
 }
 
@@ -66,10 +73,10 @@ export const resolveVenue = (
 export const resolveTravelVenue = (
   venue: VenueLike | string | null | undefined,
   venuesMap: VenueMap
-): Venue | null => {
+): ResolvedTravelVenue | null => {
   const venueId = normalizeVenueId(venue)
   const resolvedVenue = resolveVenue(venue, venueId, venuesMap)
-  return isVenue(resolvedVenue) ? resolvedVenue : null
+  return isResolvedTravelVenue(resolvedVenue) ? resolvedVenue : null
 }
 
 /**
