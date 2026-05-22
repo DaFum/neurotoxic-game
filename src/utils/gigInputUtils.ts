@@ -22,11 +22,10 @@ export const createKeyToLaneMap = (
       }
     }
   } else {
-    for (const index in currentLanes) {
-      if (!Object.hasOwn(currentLanes, index)) continue
-      const lane = (
-        currentLanes as unknown as Record<string, { key?: string } | null>
-      )[index]
+    const lanesRecord = currentLanes as Record<string, { key?: string } | null>
+    for (const index in lanesRecord) {
+      if (!Object.hasOwn(lanesRecord, index)) continue
+      const lane = lanesRecord[index]
       if (lane && lane.key != null && Number.isInteger(Number(index))) {
         keyToLaneMap.set(lane.key, Number(index))
       }
