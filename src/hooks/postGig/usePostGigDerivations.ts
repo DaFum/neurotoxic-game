@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo } from 'react'
 import {
   calculatePerformanceScore,
   deriveGigContext,
@@ -64,13 +64,9 @@ export const usePostGigDerivations = ({
     }
   }, [currentGig, activeEvent, triggerEvent])
 
-  const gigContextRef = useRef<{
-    daysSinceLastGig: number
-    lastGigDifficulty: number | null
-  } | null>(null)
-  if (!gigContextRef.current) {
-    gigContextRef.current = deriveGigContext(currentGig, social, player)
-  }
+  const gigContext = useMemo(() => {
+    return deriveGigContext(currentGig, social, player)
+  }, [currentGig, social, player])
 
   // Derive financials purely without triggering a re-render loop
   const financials = useMemo(() => {
@@ -96,7 +92,7 @@ export const usePostGigDerivations = ({
       social,
       reputationByRegion,
       activeStoryFlags,
-      gigContext: gigContextRef.current,
+      gigContext,
       cityTraits
     })
   }, [
@@ -110,7 +106,8 @@ export const usePostGigDerivations = ({
     social,
     reputationByRegion,
     activeStoryFlags,
-    cityStates
+    cityStates,
+    gigContext
   ])
 
   // Derive post options purely without triggering a re-render loop
