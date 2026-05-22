@@ -50,6 +50,35 @@ const isValidAndAffordableInfluencer = (
   return cost <= money
 }
 
+const hasAffordableInfluencer = (
+  influencers: Record<string, unknown>,
+  money: number
+): boolean => {
+  // ⚡ Bolt Optimization: Replace Object.values().some() with for...in loop
+  // Avoids O(N) array allocation overhead and enables early return when a match is found.
+  for (const id in influencers) {
+    if (!Object.hasOwn(influencers, id)) continue
+    if (isValidAndAffordableInfluencer(influencers[id], money)) {
+      return true
+    }
+  }
+  return false
+}
+
+const getAffordableInfluencerIds = (
+  influencers: Record<string, unknown>,
+  money: number
+): string[] => {
+  const affordableIds: string[] = []
+  for (const id in influencers) {
+    if (!Object.hasOwn(influencers, id)) continue
+    if (isValidAndAffordableInfluencer(influencers[id], money)) {
+      affordableIds.push(id)
+    }
+  }
+  return affordableIds
+}
+
 /**
  * WeakMap cache keyed by the members array reference. Redux replaces the array
  * reference whenever band.members changes, so cache entries invalidate naturally
@@ -852,15 +881,7 @@ export const POST_OPTIONS = [
       const influencers = social?.influencers || {}
       if (!player || typeof player.money !== 'number') return false
 
-      // ⚡ Bolt Optimization: Replace Object.values().some() with for...in loop
-      // Avoids O(N) array allocation overhead and enables early return when a match is found.
-      for (const id in influencers) {
-        if (!Object.hasOwn(influencers, id)) continue
-        if (isValidAndAffordableInfluencer(influencers[id], player.money)) {
-          return true
-        }
-      }
-      return false
+      return hasAffordableInfluencer(influencers, player.money)
     },
     resolve: ({
       social,
@@ -869,15 +890,7 @@ export const POST_OPTIONS = [
     }: GameState & { diceRoll: number }) => {
       const influencers = social?.influencers || {}
       const playerMoney = player?.money ?? 0
-
-      // Filter by affordability
-      const affordableIds = []
-      for (const id in influencers) {
-        if (!Object.hasOwn(influencers, id)) continue
-        if (isValidAndAffordableInfluencer(influencers[id], playerMoney)) {
-          affordableIds.push(id)
-        }
-      }
+      const affordableIds = getAffordableInfluencerIds(influencers, playerMoney)
 
       if (affordableIds.length === 0) {
         return {
