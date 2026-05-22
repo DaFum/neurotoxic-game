@@ -1,21 +1,13 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameActions, useGameSelector } from '../context/GameState'
-import { logger } from '../utils/logger'
 import { usePostGigHandlers } from './usePostGigHandlers'
-import {
-  calculatePerformanceScore,
-  deriveGigContext,
-  deriveFinancials,
-  derivePostOptions
-} from '../utils/postGigUtils'
-import { deriveCityTraits, getCityKeyFromVenueId } from '../utils/mapGenerator'
-import { normalizeVenueId } from '../utils/mapUtils'
-import type { PostResult } from '../types'
-import type { BrandDeal } from '../types/social'
+import { usePostGigState } from './postGig/usePostGigState'
+import { usePostGigDerivations } from './postGig/usePostGigDerivations'
 
 export const usePostGigLogic = () => {
   const { t } = useTranslation(['ui'])
+
+  // Game State Selectors
   const currentGig = useGameSelector(state => state.currentGig)
   const player = useGameSelector(state => state.player)
   const gigModifiers = useGameSelector(state => state.gigModifiers)
@@ -27,6 +19,8 @@ export const usePostGigLogic = () => {
   const activeStoryFlags = useGameSelector(state => state.activeStoryFlags)
   const cityStates = useGameSelector(state => state.gameMap?.cityStates)
   const setlist = useGameSelector(state => state.setlist)
+
+  // Game Actions
   const {
     updatePlayer,
     triggerEvent,
@@ -38,104 +32,35 @@ export const usePostGigLogic = () => {
     addQuest
   } = useGameActions()
 
-  const [phase, setPhase] = useState('REPORT') // REPORT, SOCIAL, DEALS, COMPLETE
-  const [postResult, setPostResult] = useState<PostResult | null>(null)
-  const [brandOffers, setBrandOffers] = useState<BrandDeal[]>([])
+  // 1. Core State
+  const {
+    phase,
+    setPhase,
+    postResult,
+    setPostResult,
+    brandOffers,
+    setBrandOffers,
+    phaseTitleKey,
+    phaseTitleDefault
+  } = usePostGigState()
 
-  const phaseTitleKey =
-    {
-      REPORT: 'ui:postGig.phaseReport',
-      SOCIAL: 'ui:postGig.phaseSocialStrategy',
-      DEALS: 'ui:postGig.phaseBrandOffers',
-      COMPLETE: 'ui:postGig.phaseTourUpdate'
-    }[phase] ?? 'ui:postGig.phaseTourUpdate'
-  const phaseTitleDefault =
-    {
-      REPORT: 'GIG REPORT',
-      SOCIAL: 'SOCIAL MEDIA STRATEGY',
-      DEALS: 'BRAND OFFERS',
-      COMPLETE: 'TOUR UPDATE'
-    }[phase] ?? 'TOUR UPDATE'
-
-  const perfScore = useMemo(
-    () => calculatePerformanceScore(lastGigStats?.score ?? 0),
-    [lastGigStats]
-  )
-
-  useEffect(() => {
-    if (!currentGig) return
-
-    if (!activeEvent) {
-      if (!triggerEvent('financial', 'post_gig')) {
-        if (!triggerEvent('special', 'post_gig')) {
-          triggerEvent('band', 'post_gig')
-        }
-      }
-    }
-  }, [currentGig, activeEvent, triggerEvent])
-
-  const gigContextRef = useRef<{
-    daysSinceLastGig: number
-    lastGigDifficulty: number | null
-  } | null>(null)
-  if (!gigContextRef.current) {
-    gigContextRef.current = deriveGigContext(currentGig, social, player)
-  }
-
-  // Derive financials purely without triggering a re-render loop
-  const financials = useMemo(() => {
-    // Normalize first — legacy/saved venues can carry namespaced IDs like
-    // `venues:berlin_so36`, but `gameMap.cityStates` is keyed by the normalized
-    // form. Skipping this step misses saved entries on those venues.
-    const normalizedVenueId =
-      normalizeVenueId(currentGig?.id) ?? currentGig?.id ?? ''
-    const cityKey = getCityKeyFromVenueId(normalizedVenueId)
-    const cityTraits =
-      cityKey === ''
-        ? undefined
-        : (cityStates?.[cityKey] ?? deriveCityTraits(cityKey))
-
-    return deriveFinancials({
+  // 2. Derivations and Side Effects
+  const { perfScore, financials, postOptions, postOptionsDerivationError } =
+    usePostGigDerivations({
       currentGig,
-      lastGigStats,
-      perfScore,
-      gigModifiers,
-      bandInventory: band.inventory,
-      bandMerchPrices: band.merchPrices,
       player,
+      gigModifiers,
+      activeEvent,
+      band,
       social,
+      lastGigStats,
       reputationByRegion,
       activeStoryFlags,
-      gigContext: gigContextRef.current,
-      cityTraits
+      cityStates,
+      triggerEvent
     })
-  }, [
-    currentGig,
-    lastGigStats,
-    perfScore,
-    gigModifiers,
-    band.inventory,
-    band.merchPrices,
-    player,
-    social,
-    reputationByRegion,
-    activeStoryFlags,
-    cityStates
-  ])
 
-  // Derive post options purely without triggering a re-render loop
-  const { options: postOptions, error: postOptionsDerivationError } =
-    useMemo(() => {
-      return derivePostOptions({
-        currentGig,
-        lastGigStats,
-        player,
-        band,
-        social,
-        activeEvent
-      })
-    }, [currentGig, lastGigStats, player, band, social, activeEvent])
-
+  // 3. Handlers
   const {
     isProcessingAction,
     handlePostSelection,
@@ -168,6 +93,7 @@ export const usePostGigLogic = () => {
     t
   })
 
+  // 4. Expose API
   return {
     t,
     phase,

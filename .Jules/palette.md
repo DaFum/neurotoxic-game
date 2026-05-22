@@ -115,6 +115,8 @@
 
 **Learning:** Interactive toggle buttons with custom visual states (like the Overdrive button in AmpControls) require `aria-pressed` bound directly to their active state to correctly communicate their toggle status to screen readers, unlike standard buttons which only need an `aria-label`.
 **Action:** Always verify if a button behaves as a toggle (changes state on click) and ensure `aria-pressed={isActive}` is present.
+
 ## 2024-11-20 - Redundant ARIA Labels
+
 **Learning:** Adding an `aria-label` to a button that already contains the exact same text is a redundant accessibility anti-pattern. Screen readers will read the button's internal text naturally. `aria-label` should be reserved for icon-only buttons or when the visible text does not provide sufficient context.
 **Action:** Always check the internal text content of an interactive element before adding an `aria-label`. Only add it if the element is visually lacking descriptive text.
