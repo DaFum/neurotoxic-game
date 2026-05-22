@@ -96,7 +96,7 @@
     "postcss": "8.5.14",
     "prettier": "3.8.3",
     "rollup-plugin-visualizer": "7.0.1",
-    "tailwindcss": "4.2.4",
+    "tailwindcss": "4.3.0",
     "tsx": "4.22.3",
     "typescript": "6.0.3",
     "typescript-eslint": "^8.59.4",
