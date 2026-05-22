@@ -591,16 +591,28 @@ const MemberTraits = ({ member, t }: { member: BandMember } & BasicTProps) => {
   const potentialTraits = useMemo(() => {
     // Combine static defining traits with any dynamically grafted traits (e.g. clinic)
     const baseTraits = def?.traits || []
-    const runtimeTraits = Object.values(member?.traits || {})
-    if (baseTraits.length === 0 && runtimeTraits.length === 0) return []
+    const memberTraits = member?.traits || {}
+
+    let hasRuntime = false
+    for (const key in memberTraits) {
+      if (Object.hasOwn(memberTraits, key)) {
+        hasRuntime = true
+        break
+      }
+    }
+
+    if (baseTraits.length === 0 && !hasRuntime) return []
 
     const merged = [...baseTraits]
     const seen = new Set(baseTraits.map((bt: CharacterTrait) => bt.id))
 
-    for (const rt of runtimeTraits as CharacterTrait[]) {
-      if (rt?.id && !seen.has(rt.id)) {
-        merged.push(rt)
-        seen.add(rt.id)
+    for (const key in memberTraits) {
+      if (Object.hasOwn(memberTraits, key)) {
+        const rt = memberTraits[key] as CharacterTrait
+        if (rt?.id && !seen.has(rt.id)) {
+          merged.push(rt)
+          seen.add(rt.id)
+        }
       }
     }
     return merged
