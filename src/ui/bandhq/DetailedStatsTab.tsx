@@ -593,15 +593,16 @@ const MemberTraits = ({ member, t }: { member: BandMember } & BasicTProps) => {
     const baseTraits = def?.traits || []
     const memberTraits = member?.traits || {}
 
-    let hasRuntime = false
-    for (const key in memberTraits) {
-      if (Object.hasOwn(memberTraits, key)) {
-        hasRuntime = true
-        break
+    if (baseTraits.length === 0) {
+      let hasRuntime = false
+      for (const key in memberTraits) {
+        if (Object.hasOwn(memberTraits, key)) {
+          hasRuntime = true
+          break
+        }
       }
+      if (!hasRuntime) return []
     }
-
-    if (baseTraits.length === 0 && !hasRuntime) return []
 
     const merged = [...baseTraits]
     const seen = new Set(baseTraits.map((bt: CharacterTrait) => bt.id))
