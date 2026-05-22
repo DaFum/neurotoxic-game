@@ -12,16 +12,16 @@ import {
 import { normalizeVenueId } from '../../utils/mapUtils'
 import type {
   GameState,
-  Gig,
+  Venue,
   PlayerState,
   BandState,
   SocialState,
   GigStats,
-  CityState
+  CityTraitState
 } from '../../types'
 
 interface UsePostGigDerivationsProps {
-  currentGig: Gig | null
+  currentGig: Venue | null
   player: PlayerState
   gigModifiers: GameState['gigModifiers']
   activeEvent: GameState['activeEvent']
@@ -30,7 +30,7 @@ interface UsePostGigDerivationsProps {
   lastGigStats: GigStats | null
   reputationByRegion: GameState['reputationByRegion']
   activeStoryFlags: string[]
-  cityStates: Record<string, CityState> | undefined
+  cityStates: Record<string, CityTraitState> | undefined
   triggerEvent: (type: string, id: string) => boolean
 }
 

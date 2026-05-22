@@ -4,7 +4,11 @@
  * @returns {Map<string, number>} A Map where keys are lane keys and values are lane indices.
  */
 export const createKeyToLaneMap = (
-  currentLanes: Array<{ key?: string } | null> | null | undefined
+  currentLanes:
+    | Array<{ key?: string } | null>
+    | Record<string, { key?: string } | null>
+    | null
+    | undefined
 ): Map<string, number> => {
   const keyToLaneMap = new Map<string, number>()
   if (!currentLanes) return keyToLaneMap
