@@ -24,15 +24,20 @@ import { HQ_ITEMS_BY_MERCH_KEY } from '../data/hqItems'
 type Minigame = 'roadie' | 'kabelsalat' | 'amp'
 let lastMinigameFallback: Minigame | null = null
 
-// Exported exclusively for test cleanup
-
 const isMinigame = (value: unknown): value is Minigame => {
   return value === 'roadie' || value === 'kabelsalat' || value === 'amp'
 }
 
-export const _resetLastMinigameFallback = () => {
+const resetLastMinigameFallback = (): void => {
   lastMinigameFallback = null
 }
+
+const isTestRuntime =
+  typeof process !== 'undefined' && process.env?.NODE_ENV === 'test'
+
+export const __testInternals:
+  | { resetLastMinigameFallback: () => void }
+  | undefined = isTestRuntime ? { resetLastMinigameFallback } : undefined
 
 const BAND_MEETING_COST = 50
 

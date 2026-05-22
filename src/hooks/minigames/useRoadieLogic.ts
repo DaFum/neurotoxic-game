@@ -91,7 +91,7 @@ export function handleCrash(
   }
 }
 
-export function spawnTraffic(game: RoadieLogicState, deltaMS: number) {
+function spawnTraffic(game: RoadieLogicState, deltaMS: number) {
   for (let i = 0, len = game.spawners.length; i < len; i++) {
     const spawner = game.spawners[i]
     if (!spawner) continue
@@ -113,7 +113,7 @@ export function spawnTraffic(game: RoadieLogicState, deltaMS: number) {
   }
 }
 
-export function processTraffic(
+function processTraffic(
   game: RoadieLogicState,
   deltaMS: number,
   onCrash: (damage: number) => void

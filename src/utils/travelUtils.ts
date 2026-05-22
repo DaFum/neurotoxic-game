@@ -31,6 +31,24 @@ interface TravelArrivalUpdates {
   nextBand: Partial<BandState> | null
 }
 
+type ResolvedTravelVenue = Venue & { capacity: number }
+
+const isResolvedTravelVenue = (
+  value: unknown
+): value is ResolvedTravelVenue => {
+  if (!value || typeof value !== 'object') return false
+  const venue = value as { id?: unknown; name?: unknown; capacity?: unknown }
+  return (
+    Object.hasOwn(value, 'id') &&
+    Object.hasOwn(value, 'name') &&
+    Object.hasOwn(value, 'capacity') &&
+    typeof venue.id === 'string' &&
+    typeof venue.name === 'string' &&
+    typeof venue.capacity === 'number' &&
+    Number.isFinite(venue.capacity)
+  )
+}
+
 /**
  * Resolves full venue for capacity checks or fallback naming from VENUES_MAP list
  * @param {Object|string} venue - Venue data or ID
@@ -50,6 +68,15 @@ export const resolveVenue = (
     return venuesMap.get(id ?? '') || venue || null
   }
   return venue
+}
+
+export const resolveTravelVenue = (
+  venue: VenueLike | string | null | undefined,
+  venuesMap: VenueMap
+): ResolvedTravelVenue | null => {
+  const venueId = normalizeVenueId(venue)
+  const resolvedVenue = resolveVenue(venue, venueId, venuesMap)
+  return isResolvedTravelVenue(resolvedVenue) ? resolvedVenue : null
 }
 
 /**

@@ -1,13 +1,13 @@
 import { Container, Sprite, Texture } from 'pixi.js'
 import { getSafeRandom } from '../../utils/crypto'
 
-export const NOTE_JITTER_RANGE = 10
-export const NOTE_SPRITE_SIZE = 80
-export const NOTE_FALLBACK_WIDTH = 90
-export const NOTE_FALLBACK_HEIGHT = 20
-export const NOTE_INITIAL_Y = -50
+const NOTE_JITTER_RANGE = 10
+const NOTE_SPRITE_SIZE = 80
+const NOTE_FALLBACK_WIDTH = 90
+const NOTE_FALLBACK_HEIGHT = 20
+const NOTE_INITIAL_Y = -50
 export const NOTE_CENTER_OFFSET = 50
-export const NOTE_LIGHTNING_LANE_INDEX = 1
+const NOTE_LIGHTNING_LANE_INDEX = 1
 
 type LaneData = {
   color: number
@@ -24,7 +24,7 @@ type NoteTextures = {
   lightning: Texture | null
 }
 
-export class NoteSpriteFactory {
+class NoteSpriteFactory {
   noteTextures: NoteTextures
 
   constructor() {

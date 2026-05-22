@@ -17,10 +17,9 @@ export interface BrandDealDisplay {
   description?: string
 }
 
-export const getBrandDealNameKey = (id: string) =>
-  `economy:brandDeals.${id}.name`
+const getBrandDealNameKey = (id: string) => `economy:brandDeals.${id}.name`
 
-export const getBrandDealDescriptionKey = (id: string) =>
+const getBrandDealDescriptionKey = (id: string) =>
   `economy:brandDeals.${id}.description`
 
 const getNonEmptyString = (value: unknown): string | undefined => {

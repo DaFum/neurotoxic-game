@@ -10,14 +10,16 @@
 import { test, describe } from 'node:test'
 import { ok, strictEqual } from 'node:assert'
 
-// Import the actual initialState for comparison
-import { initialState } from '../../src/context/initialState'
+// Import the actual initial state factory for comparison
+import { createInitialState } from '../../src/context/initialState'
 
 // Import BASE_STATE directly — ensures fixture shape stays in sync with game state
 import { BASE_STATE } from '../../.claude/skills/playwright-screenshot/scripts/screenshot-state-inject'
 
 describe('Playwright Screenshot Fixtures', () => {
   test('BASE_STATE contains all required top-level fields from initialState', () => {
+    const initialState = createInitialState()
+
     // Compare BASE_STATE against initialState to catch drift.
     // Fields listed here are allowed to be absent from BASE_STATE because
     // they're transient/runtime-only and always supplied at hydration time.
@@ -39,6 +41,8 @@ describe('Playwright Screenshot Fixtures', () => {
   })
 
   test('BASE_STATE has no fields absent from initialState', () => {
+    const initialState = createInitialState()
+
     // Catch fields added to BASE_STATE that were never in initialState
     const initialKeys = new Set(Object.keys(initialState))
     for (const field of Object.keys(BASE_STATE)) {
@@ -50,6 +54,8 @@ describe('Playwright Screenshot Fixtures', () => {
   })
 
   test('player object has all required fields', () => {
+    const initialState = createInitialState()
+
     const requiredPlayerFields = [
       'playerId',
       'playerName',
@@ -81,6 +87,8 @@ describe('Playwright Screenshot Fixtures', () => {
   })
 
   test('band object has all required fields', () => {
+    const initialState = createInitialState()
+
     const requiredBandFields = [
       'members',
       'harmony',
@@ -102,6 +110,8 @@ describe('Playwright Screenshot Fixtures', () => {
   })
 
   test('social object has all required fields', () => {
+    const initialState = createInitialState()
+
     const requiredSocialFields = [
       'instagram',
       'tiktok',
@@ -130,6 +140,8 @@ describe('Playwright Screenshot Fixtures', () => {
   })
 
   test('minigame state has correct structure', () => {
+    const initialState = createInitialState()
+
     const requiredMinigameFields = [
       'active',
       'type',
@@ -149,6 +161,8 @@ describe('Playwright Screenshot Fixtures', () => {
   })
 
   test('player.stats has required fields', () => {
+    const initialState = createInitialState()
+
     const requiredStatsFields = [
       'totalDistance',
       'conflictsResolved',
@@ -166,6 +180,7 @@ describe('Playwright Screenshot Fixtures', () => {
   })
 
   test('band.harmony is a valid number within bounds [1, 100]', () => {
+    const initialState = createInitialState()
     const { harmony } = initialState.band
     strictEqual(typeof harmony, 'number', 'harmony must be a number')
     ok(
@@ -175,6 +190,7 @@ describe('Playwright Screenshot Fixtures', () => {
   })
 
   test('player.money is non-negative', () => {
+    const initialState = createInitialState()
     const { money } = initialState.player
     ok(typeof money === 'number', 'player.money must be a number')
     ok(money >= 0, `player.money must be >= 0, got ${money}`)

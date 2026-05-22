@@ -1497,15 +1497,6 @@
         "type": "const"
       }
     ],
-    "calculateTotalFollowers": [
-      {
-        "isDefault": false,
-        "name": "calculateTotalFollowers",
-        "path": "src/hooks/useLeaderboardSync.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
     "calculateTravelExpenses": [
       {
         "isDefault": false,
@@ -2848,15 +2839,6 @@
         "type": "const"
       }
     ],
-    "createSyncPayload": [
-      {
-        "isDefault": false,
-        "name": "createSyncPayload",
-        "path": "src/hooks/useLeaderboardSync.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
     "createTourbusStageController": [
       {
         "isDefault": false,
@@ -3845,16 +3827,6 @@
         "type": "const"
       }
     ],
-    "FinancialEntryType": [
-      {
-        "isDefault": false,
-        "name": "FinancialEntryType",
-        "path": "src/utils/financialColors.ts",
-        "source": "local",
-        "type": "type",
-        "typeOnly": true
-      }
-    ],
     "FinancialItem": [
       {
         "exportPath": "src/types/index.ts",
@@ -4266,24 +4238,6 @@
         "isDefault": false,
         "name": "getBaseAssetPath",
         "path": "src/utils/audio/playbackUtils.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
-    "getBrandDealDescriptionKey": [
-      {
-        "isDefault": false,
-        "name": "getBrandDealDescriptionKey",
-        "path": "src/utils/brandDealI18n.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
-    "getBrandDealNameKey": [
-      {
-        "isDefault": false,
-        "name": "getBrandDealNameKey",
-        "path": "src/utils/brandDealI18n.ts",
         "source": "local",
         "type": "const"
       }
@@ -5514,15 +5468,6 @@
         "type": "const"
       }
     ],
-    "initialState": [
-      {
-        "isDefault": false,
-        "name": "initialState",
-        "path": "src/context/initialState.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
     "InstaIcon": [
       {
         "exportPath": "src/ui/shared/index.tsx",
@@ -5548,15 +5493,6 @@
         "isDefault": false,
         "name": "isAmbientOggPlaying",
         "path": "src/utils/audio/playback.ts",
-        "source": "local",
-        "type": "function"
-      }
-    ],
-    "isBenignDestroyError": [
-      {
-        "isDefault": false,
-        "name": "isBenignDestroyError",
-        "path": "src/components/stage/pixiAppTeardown.ts",
         "source": "local",
         "type": "function"
       }
@@ -5687,15 +5623,6 @@
         "isDefault": false,
         "name": "isStashEntry",
         "path": "src/utils/gameStateUtils.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
-    "isValidForSync": [
-      {
-        "isDefault": false,
-        "name": "isValidForSync",
-        "path": "src/hooks/useLeaderboardSync.ts",
         "source": "local",
         "type": "const"
       }
@@ -6593,60 +6520,6 @@
         "type": "const"
       }
     ],
-    "NOTE_FALLBACK_HEIGHT": [
-      {
-        "isDefault": false,
-        "name": "NOTE_FALLBACK_HEIGHT",
-        "path": "src/components/stage/NoteSpritePool.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
-    "NOTE_FALLBACK_WIDTH": [
-      {
-        "isDefault": false,
-        "name": "NOTE_FALLBACK_WIDTH",
-        "path": "src/components/stage/NoteSpritePool.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
-    "NOTE_INITIAL_Y": [
-      {
-        "isDefault": false,
-        "name": "NOTE_INITIAL_Y",
-        "path": "src/components/stage/NoteSpritePool.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
-    "NOTE_JITTER_RANGE": [
-      {
-        "isDefault": false,
-        "name": "NOTE_JITTER_RANGE",
-        "path": "src/components/stage/NoteSpritePool.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
-    "NOTE_LIGHTNING_LANE_INDEX": [
-      {
-        "isDefault": false,
-        "name": "NOTE_LIGHTNING_LANE_INDEX",
-        "path": "src/components/stage/NoteSpritePool.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
-    "NOTE_SPRITE_SIZE": [
-      {
-        "isDefault": false,
-        "name": "NOTE_SPRITE_SIZE",
-        "path": "src/components/stage/NoteSpritePool.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
     "NOTE_TAIL_MS": [
       {
         "isDefault": false,
@@ -6673,15 +6546,6 @@
         "source": "local",
         "type": "type",
         "typeOnly": true
-      }
-    ],
-    "NoteSpriteFactory": [
-      {
-        "isDefault": false,
-        "name": "NoteSpriteFactory",
-        "path": "src/components/stage/NoteSpritePool.ts",
-        "source": "local",
-        "type": "class"
       }
     ],
     "NoteSpritePool": [
@@ -7364,15 +7228,6 @@
         "type": "const"
       }
     ],
-    "processTraffic": [
-      {
-        "isDefault": false,
-        "name": "processTraffic",
-        "path": "src/hooks/minigames/useRoadieLogic.ts",
-        "source": "local",
-        "type": "function"
-      }
-    ],
     "processTravelEvents": [
       {
         "isDefault": false,
@@ -7803,6 +7658,15 @@
         "type": "const"
       }
     ],
+    "resolveTravelVenue": [
+      {
+        "isDefault": false,
+        "name": "resolveTravelVenue",
+        "path": "src/utils/travelUtils.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "resolveVenue": [
       {
         "isDefault": false,
@@ -7830,15 +7694,6 @@
         "path": "src/utils/audio/playback.ts",
         "source": "local",
         "type": "function"
-      }
-    ],
-    "RHYTHM_LAYOUT": [
-      {
-        "isDefault": false,
-        "name": "RHYTHM_LAYOUT",
-        "path": "src/components/stage/stageRenderUtils.ts",
-        "source": "local",
-        "type": "const"
       }
     ],
     "RhythmGameAudioReturn": [
@@ -8810,15 +8665,6 @@
         "type": "const"
       }
     ],
-    "spawnTraffic": [
-      {
-        "isDefault": false,
-        "name": "spawnTraffic",
-        "path": "src/hooks/minigames/useRoadieLogic.ts",
-        "source": "local",
-        "type": "function"
-      }
-    ],
     "SPECIAL_EVENTS": [
       {
         "isDefault": false,
@@ -9102,15 +8948,6 @@
         "name": "SVGProps",
         "source": "external",
         "typeOnly": true
-      }
-    ],
-    "syncLeaderboardStats": [
-      {
-        "isDefault": false,
-        "name": "syncLeaderboardStats",
-        "path": "src/hooks/useLeaderboardSync.ts",
-        "source": "local",
-        "type": "const"
       }
     ],
     "SyntheticEvent": [
