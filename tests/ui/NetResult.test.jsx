@@ -2,7 +2,7 @@
  * Vitest tests for the NetResult component.
  *
  * NetResult renders the gig's bottom-line profit/loss in the PostGig report.
- * The TODO audit requires that gig report `net` equals displayed income minus
+ * The audit requires that gig report `net` equals displayed income minus
  * displayed expenses with no hidden deductions. These tests validate the display
  * logic is correct for positive, negative, and zero net values.
  */
