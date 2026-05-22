@@ -3,7 +3,6 @@ import assert from 'node:assert/strict'
 import {
   buildRhythmLayout,
   calculateNoteY,
-  RHYTHM_LAYOUT,
   getPixiColorFromToken
 } from '../../src/components/stage/stageRenderUtils'
 
@@ -17,9 +16,16 @@ test('buildRhythmLayout derives lane and hit line positions', () => {
   const layout = buildRhythmLayout({ screenWidth: 1200, screenHeight: 600 })
 
   assert.equal(layout.startX, 420)
-  assert.equal(layout.laneHeight, 600 * RHYTHM_LAYOUT.laneHeightRatio)
-  assert.equal(layout.hitLineY, layout.laneHeight - RHYTHM_LAYOUT.hitLineOffset)
-  assert.equal(layout.rhythmOffsetY, 600 * RHYTHM_LAYOUT.rhythmOffsetRatio)
+  assert.equal(layout.laneHeight, 240)
+  assert.equal(layout.hitLineY, 180)
+  assert.equal(layout.rhythmOffsetY, 360)
+})
+
+test('stageRenderUtils keeps rhythm layout constants internal', async () => {
+  const moduleExports =
+    await import('../../src/components/stage/stageRenderUtils')
+
+  assert.equal(Object.hasOwn(moduleExports, 'RHYTHM_LAYOUT'), false)
 })
 
 test('getPixiColorFromToken falls back when CSS variables are unavailable', () => {

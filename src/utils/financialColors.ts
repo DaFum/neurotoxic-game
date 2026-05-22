@@ -1,4 +1,4 @@
-export type FinancialEntryType = 'income' | 'expense'
+type FinancialEntryType = 'income' | 'expense'
 
 interface FinancialColorClasses {
   text: string

@@ -55,7 +55,7 @@ const getLeaderboardSyncEnabledFlag = () => {
  * @param {number} money - The player's current money.
  * @returns {boolean} True if valid.
  */
-export const isValidForSync = (
+const isValidForSync = (
   playerId: string | null | undefined,
   playerName: string | null | undefined,
   day: number | null | undefined,
@@ -78,7 +78,7 @@ export const isValidForSync = (
  * @param {object} social - The social state object.
  * @returns {number} The total sum of followers.
  */
-export const calculateTotalFollowers = (social: GameState['social']) => {
+const calculateTotalFollowers = (social: GameState['social']) => {
   return (
     (social?.instagram ?? 0) +
     (social?.tiktok ?? 0) +
@@ -100,7 +100,7 @@ export const calculateTotalFollowers = (social: GameState['social']) => {
  * @param {number} totalFollowers - The calculated total followers.
  * @returns {object} The payload object.
  */
-export const createSyncPayload = (
+const createSyncPayload = (
   playerId: string,
   playerName: string,
   money: number,
@@ -129,9 +129,7 @@ export const createSyncPayload = (
  * @param {object} payload - The data to sync.
  * @returns {Promise<boolean>} true when synced; false when intentionally skipped.
  */
-export const syncLeaderboardStats = async (
-  payload: LeaderboardStatsPayload
-) => {
+const syncLeaderboardStats = async (payload: LeaderboardStatsPayload) => {
   if (!getLeaderboardSyncEnabledFlag() || leaderboardStatsEndpointUnavailable) {
     return false
   }

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { test, describe } from 'vitest'
 import {
   resolveVenue,
+  resolveTravelVenue,
   getLocationName,
   checkVenueAccess,
   checkTravelPrerequisites,
@@ -36,6 +37,23 @@ describe('travelUtils', () => {
         resolveVenue({ id: 'venue_1' }, 'venue_1', venuesMap).capacity,
         100
       )
+    })
+  })
+
+  describe('resolveTravelVenue', () => {
+    test('returns a typed venue from a venue object via the venues map', () => {
+      const result = resolveTravelVenue({ id: 'venue_1' }, venuesMap)
+
+      assert.deepStrictEqual(result, {
+        id: 'venue_1',
+        name: 'Venue 1',
+        capacity: 100
+      })
+    })
+
+    test('returns null for unresolved or malformed venue data', () => {
+      assert.strictEqual(resolveTravelVenue('missing_venue', venuesMap), null)
+      assert.strictEqual(resolveTravelVenue({ capacity: 100 }, venuesMap), null)
     })
   })
 

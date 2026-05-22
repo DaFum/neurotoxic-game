@@ -1020,14 +1020,3 @@ export function useGameSelector<T>(selector: (state: GameState) => T): T {
   const state = useRequiredContext(GameStateContext, 'useGameSelector')
   return selector(state)
 }
-
-/**
- * Legacy hook to access the full game state plus action dispatchers.
- *
- * @deprecated Use `useGameSelector(selector)` for state reads and
- * `useGameActions()` for stable action dispatchers. Calling this hook
- * subscribes the consumer to the entire GameState context, so action-only
- * consumers re-render on every state change.
- *
- * @returns {object} The game state and action dispatchers.
- */

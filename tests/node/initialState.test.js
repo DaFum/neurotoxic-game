@@ -1,12 +1,15 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import {
-  initialState,
-  createInitialState
-} from '../../src/context/initialState'
+import { createInitialState } from '../../src/context/initialState'
 
-test('initialState exposes empty unlocks default', () => {
-  assert.deepEqual(initialState.unlocks, [])
+test('initialState module keeps the base singleton internal', async () => {
+  const moduleExports = await import('../../src/context/initialState')
+
+  assert.equal(Object.hasOwn(moduleExports, 'initialState'), false)
+})
+
+test('createInitialState exposes empty unlocks default', () => {
+  assert.deepEqual(createInitialState().unlocks, [])
 })
 
 test('createInitialState accepts persistedData', () => {

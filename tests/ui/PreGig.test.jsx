@@ -123,11 +123,14 @@ vi.mock('../../src/context/GameState', () => ({
 }))
 // Import PreGig after mocks
 const { PreGig } = await import('../../src/scenes/PreGig.tsx')
-const { _resetLastMinigameFallback } =
-  await import('../../src/hooks/usePreGigLogic')
+const { __testInternals } = await import('../../src/hooks/usePreGigLogic')
 const { getSafeRandom } = await import('../../src/utils/crypto')
 
 describe('PreGig', () => {
+  test('exposes minigame fallback reset only through test internals', () => {
+    expect(__testInternals?.resetLastMinigameFallback).toBeTypeOf('function')
+  })
+
   beforeEach(() => {
     //  removed (handled by vitest env)
     // Reset mocks
@@ -146,8 +149,8 @@ describe('PreGig', () => {
     }
 
     // Reset fallback memory
-    if (typeof _resetLastMinigameFallback === 'function') {
-      _resetLastMinigameFallback()
+    if (typeof __testInternals?.resetLastMinigameFallback === 'function') {
+      __testInternals.resetLastMinigameFallback()
     }
   })
 

@@ -24,57 +24,66 @@ const getNegotiationStatus = (value: unknown): string | undefined => {
   return undefined
 }
 
-const getAlignmentImagePrompt = (alignment?: string) => {
-  switch (alignment) {
-    case BRAND_ALIGNMENTS.EVIL:
-      return IMG_PROMPTS.BRAND_DEAL_EVIL
-    case BRAND_ALIGNMENTS.CORPORATE:
-      return IMG_PROMPTS.BRAND_DEAL_CORPORATE
-    case BRAND_ALIGNMENTS.INDIE:
-      return IMG_PROMPTS.BRAND_DEAL_INDIE
-    case BRAND_ALIGNMENTS.SUSTAINABLE:
-      return IMG_PROMPTS.BRAND_DEAL_SUSTAINABLE
-    default:
-      return IMG_PROMPTS.SOCIAL_POST_COMMERCIAL
-  }
+type BrandAlignment = (typeof BRAND_ALIGNMENTS)[keyof typeof BRAND_ALIGNMENTS]
+
+type AlignmentMetadata = {
+  imagePrompt: string
+  badgeKey: string
+  defaultLabel: string
+  colorClass: string
 }
 
-const getAlignmentBadge = (alignment?: string) => {
-  switch (alignment) {
-    case BRAND_ALIGNMENTS.EVIL:
-      return 'ui:deals.alignment.evil'
-    case BRAND_ALIGNMENTS.CORPORATE:
-      return 'ui:deals.alignment.corporate'
-    case BRAND_ALIGNMENTS.INDIE:
-      return 'ui:deals.alignment.indie'
-    case BRAND_ALIGNMENTS.SUSTAINABLE:
-      return 'ui:deals.alignment.sustainable'
-    case BRAND_ALIGNMENTS.GOOD:
-      return 'ui:deals.alignment.good'
-    case BRAND_ALIGNMENTS.NEUTRAL:
-      return 'ui:deals.alignment.neutral'
-    default:
-      return 'ui:deals.alignment.unknown'
-  }
+const DEFAULT_ALIGNMENT_METADATA: AlignmentMetadata = {
+  imagePrompt: IMG_PROMPTS.SOCIAL_POST_COMMERCIAL,
+  badgeKey: 'ui:deals.alignment.unknown',
+  defaultLabel: '❓ UNKNOWN',
+  colorClass: 'text-ash-gray'
 }
 
-const getAlignmentBadgeDefault = (alignment?: string) => {
-  switch (alignment) {
-    case BRAND_ALIGNMENTS.EVIL:
-      return '😈 EVIL'
-    case BRAND_ALIGNMENTS.CORPORATE:
-      return '🏢 CORP'
-    case BRAND_ALIGNMENTS.INDIE:
-      return '🎸 INDIE'
-    case BRAND_ALIGNMENTS.SUSTAINABLE:
-      return '🌱 ECO'
-    case BRAND_ALIGNMENTS.GOOD:
-      return '🕊️ GOOD'
-    case BRAND_ALIGNMENTS.NEUTRAL:
-      return '⚖️ NEUTRAL'
-    default:
-      return '❓ UNKNOWN'
+const ALIGNMENT_METADATA = {
+  [BRAND_ALIGNMENTS.EVIL]: {
+    imagePrompt: IMG_PROMPTS.BRAND_DEAL_EVIL,
+    badgeKey: 'ui:deals.alignment.evil',
+    defaultLabel: '😈 EVIL',
+    colorClass: 'text-toxic-green'
+  },
+  [BRAND_ALIGNMENTS.CORPORATE]: {
+    imagePrompt: IMG_PROMPTS.BRAND_DEAL_CORPORATE,
+    badgeKey: 'ui:deals.alignment.corporate',
+    defaultLabel: '🏢 CORP',
+    colorClass: 'text-electric-blue'
+  },
+  [BRAND_ALIGNMENTS.INDIE]: {
+    imagePrompt: IMG_PROMPTS.BRAND_DEAL_INDIE,
+    badgeKey: 'ui:deals.alignment.indie',
+    defaultLabel: '🎸 INDIE',
+    colorClass: 'text-hot-pink'
+  },
+  [BRAND_ALIGNMENTS.SUSTAINABLE]: {
+    imagePrompt: IMG_PROMPTS.BRAND_DEAL_SUSTAINABLE,
+    badgeKey: 'ui:deals.alignment.sustainable',
+    defaultLabel: '🌱 ECO',
+    colorClass: 'text-warning-yellow'
+  },
+  [BRAND_ALIGNMENTS.GOOD]: {
+    imagePrompt: IMG_PROMPTS.SOCIAL_POST_COMMERCIAL,
+    badgeKey: 'ui:deals.alignment.good',
+    defaultLabel: '🕊️ GOOD',
+    colorClass: 'text-pure-white'
+  },
+  [BRAND_ALIGNMENTS.NEUTRAL]: {
+    imagePrompt: IMG_PROMPTS.SOCIAL_POST_COMMERCIAL,
+    badgeKey: 'ui:deals.alignment.neutral',
+    defaultLabel: '⚖️ NEUTRAL',
+    colorClass: 'text-ash-gray'
   }
+} as const satisfies Record<BrandAlignment, AlignmentMetadata>
+
+const getAlignmentMetadata = (alignment?: string): AlignmentMetadata => {
+  if (alignment && Object.hasOwn(ALIGNMENT_METADATA, alignment)) {
+    return ALIGNMENT_METADATA[alignment as BrandAlignment]
+  }
+  return DEFAULT_ALIGNMENT_METADATA
 }
 
 const isDeal = (value: unknown): value is DealCardProps['deal'] => {
@@ -105,29 +114,10 @@ const isDeal = (value: unknown): value is DealCardProps['deal'] => {
   )
 }
 
-const getAlignmentColor = (alignment?: string) => {
-  switch (alignment) {
-    case BRAND_ALIGNMENTS.EVIL:
-      return 'text-toxic-green'
-    case BRAND_ALIGNMENTS.CORPORATE:
-      return 'text-electric-blue'
-    case BRAND_ALIGNMENTS.INDIE:
-      return 'text-hot-pink'
-    case BRAND_ALIGNMENTS.SUSTAINABLE:
-      return 'text-warning-yellow'
-    case BRAND_ALIGNMENTS.GOOD:
-      return 'text-pure-white'
-    case BRAND_ALIGNMENTS.NEUTRAL:
-      return 'text-ash-gray'
-    default:
-      return 'text-ash-gray'
-  }
-}
-
 const DealImage = memo(({ alignment, name }: DealImageProps) => (
   <div className='shrink-0 w-24 h-24 border border-current opacity-80 overflow-hidden'>
     <img
-      src={resolveGenImageUrl(getAlignmentImagePrompt(alignment))}
+      src={resolveGenImageUrl(getAlignmentMetadata(alignment).imagePrompt)}
       alt={name}
       className='w-full h-full object-cover object-center grayscale hover:grayscale-0 transition-all duration-300'
       loading='lazy'
@@ -139,6 +129,7 @@ const DealInfo = memo(
   ({ displayDeal, isRevoked, brandReputation }: DealInfoProps) => {
     const { t, i18n } = useTranslation()
     const alignment = displayDeal.alignment
+    const alignmentMetadata = getAlignmentMetadata(alignment)
     const alignmentReputation =
       alignment != null ? brandReputation?.[alignment] : undefined
 
@@ -152,10 +143,10 @@ const DealInfo = memo(
           </div>
           {displayDeal.alignment && (
             <span
-              className={`text-[10px] font-mono border border-current px-1 rounded ${getAlignmentColor(displayDeal.alignment)}`}
+              className={`text-[10px] font-mono border border-current px-1 rounded ${alignmentMetadata.colorClass}`}
             >
-              {t(getAlignmentBadge(displayDeal.alignment), {
-                defaultValue: getAlignmentBadgeDefault(displayDeal.alignment)
+              {t(alignmentMetadata.badgeKey, {
+                defaultValue: alignmentMetadata.defaultLabel
               })}
             </span>
           )}
@@ -305,7 +296,7 @@ export const DealCard = memo(
       >
         {/* Background Alignment Watermark */}
         <div
-          className={`absolute -right-4 -bottom-4 text-9xl opacity-5 font-black pointer-events-none select-none ${getAlignmentColor(displayDeal.alignment)}`}
+          className={`absolute -right-4 -bottom-4 text-9xl opacity-5 font-black pointer-events-none select-none ${getAlignmentMetadata(displayDeal.alignment).colorClass}`}
         >
           {displayDeal.alignment?.[0]}
         </div>
