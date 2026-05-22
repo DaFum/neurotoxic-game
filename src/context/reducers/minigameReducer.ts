@@ -320,9 +320,6 @@ export const handleCompleteAmpCalibration = (
     typeof hijacksOverridden === 'number' ? hijacksOverridden : 0
   )
 
-  // Keep minigame.type set so SceneRouter continues rendering AmpCalibrationScene
-  // while its completion overlay is visible. Scene transition (and final reset)
-  // is driven by the UI overlay's CONTINUE button via changeScene(GIG).
   return applyPostMinigameResult(
     state,
     stress,
@@ -362,9 +359,6 @@ export const handleCompleteKabelsalatMinigame = (
     state.band
   )
 
-  // Keep minigame.type set so SceneRouter continues rendering KabelsalatScene
-  // while its completion overlay is visible. Scene transition is driven by
-  // useKabelsalatGameEnd's changeScene(GIG) call after the delay.
   return applyPostMinigameResult(state, stress, reward, 'Kabelsalat failed')
 }
 
@@ -408,9 +402,6 @@ export const handleCompleteRoadieMinigame = (
     nextModifiers.damaged_gear = true
   }
 
-  // Keep minigame.type set so SceneRouter continues rendering RoadieRunScene
-  // while its completion overlay is visible. The CONTINUE button drives
-  // changeScene(GIG) via the scene's onComplete callback.
   return {
     ...state,
     band: nextBand,
