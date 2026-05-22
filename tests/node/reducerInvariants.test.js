@@ -5,7 +5,7 @@
  * stamina/mood ∈ [0,100], van fuel/condition ∈ [0,100]) are never
  * violated regardless of input to reducer handlers or clamp utilities.
  *
- * Addresses the TODO audit item: "Add reducer-level invariants test suite".
+ * Addresses the audit item: "Add reducer-level invariants test suite".
  */
 import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert/strict'
