@@ -40,7 +40,6 @@ const StatRow = ({
 
 /**
  * Pirate Radio Broadcast Interface
- * Brutalist UI to trigger illegal radio hacks for fame and zealotry.
  * Uses Tailwind v4 syntax and handles `contentClassName`.
  */
 export const PirateRadioModal = memo(
