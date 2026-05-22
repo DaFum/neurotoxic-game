@@ -336,7 +336,10 @@ export const OverworldMap = React.memo(
     // Memoized node rendering
     const renderedNodes = useMemo(() => {
       if (!gameMap) return null
-      return Object.values(gameMap.nodes).map(node => {
+      const nodes: React.ReactNode[] = []
+      for (const key in gameMap.nodes) {
+        if (!Object.hasOwn(gameMap.nodes, key)) continue
+        const node = gameMap.nodes[key as keyof typeof gameMap.nodes]
         const isCurrent = node.id === player.currentNodeId
         const hasRival = rivalBand?.currentLocationId === node.id
         const visibility = getNodeVisibility(node.layer, currentLayer)
@@ -363,7 +366,7 @@ export const OverworldMap = React.memo(
           }
         )
 
-        return (
+        nodes.push(
           <React.Fragment key={node.id}>
             <MapNodeView
               node={node}
@@ -395,7 +398,8 @@ export const OverworldMap = React.memo(
             )}
           </React.Fragment>
         )
-      })
+      }
+      return nodes
     }, [
       gameMap,
       player.currentNodeId,
