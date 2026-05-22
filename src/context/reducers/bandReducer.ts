@@ -257,14 +257,16 @@ const applySharedBandEffect = (
     return true
   }
   if (effectType === 'stamina_max') {
-    const updatedMembers = [...(newBand.members || [])]
+    const updatedMembers = [...(newBand.members ?? [])]
     for (let i = 0; i < updatedMembers.length; i++) {
       const currentMember = updatedMembers[i]
       if (currentMember) {
         updatedMembers[i] = {
           ...currentMember,
           staminaMax:
-            ((currentMember.staminaMax as number | undefined) ?? 100) + value
+            (typeof currentMember.staminaMax === 'number'
+              ? currentMember.staminaMax
+              : 100) + value
         } as BandMember
       }
     }
@@ -381,7 +383,7 @@ const applyContrabandEffect = (
     }
 
     let targetIndex = -1
-    const membersList = newBand.members || []
+    const membersList = newBand.members ?? []
     for (let i = 0; i < membersList.length; i++) {
       const currentMember = membersList[i]
       if (currentMember && currentMember.id === memberId) {
@@ -405,10 +407,10 @@ const applyContrabandEffect = (
       [key]:
         key === 'stamina'
           ? clampMemberStamina(
-              ((m[key] as number) || 0) + (item.value as number),
+              ((m[key] as number) ?? 0) + (item.value as number),
               typeof m.staminaMax === 'number' ? m.staminaMax : 100
             )
-          : clampMemberMood(((m[key] as number) || 0) + (item.value as number))
+          : clampMemberMood(((m[key] as number) ?? 0) + (item.value as number))
     } as BandMember
 
     newBand.members = updatedMembers
@@ -423,12 +425,15 @@ const applyContrabandEffect = (
   }
 
   if (item.duration != null) {
-    const effectExists = (
-      (newBand.activeContrabandEffects as Array<Record<string, unknown>>) || []
-    ).some(e => e.instanceId === item.instanceId)
+    const effectExists =
+      item.instanceId != null &&
+      (
+        (newBand.activeContrabandEffects as Array<Record<string, unknown>>) ??
+        []
+      ).some(e => e.instanceId != null && e.instanceId === item.instanceId)
     if (!effectExists) {
       newBand.activeContrabandEffects = [
-        ...(newBand.activeContrabandEffects || []),
+        ...(newBand.activeContrabandEffects ?? []),
         {
           instanceId: item.instanceId,
           effectType: item.effectType,

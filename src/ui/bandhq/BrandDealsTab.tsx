@@ -16,7 +16,7 @@ export const BrandDealsTab = ({ social }: BrandDealsTabProps) => {
   const isOnline = useNetworkStatus()
 
   const activeDealIds = useMemo(() => {
-    const deals = social?.activeDeals || []
+    const deals = social?.activeDeals ?? []
     const ids = new Set<string>()
     for (let i = 0; i < deals.length; i++) {
       const deal = deals[i]
