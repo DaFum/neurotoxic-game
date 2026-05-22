@@ -50,32 +50,53 @@ const isValidAndAffordableInfluencer = (
   return cost <= money
 }
 
-const hasAffordableInfluencer = (
-  influencers: Record<string, unknown>,
-  money: number
+const isInfluencerLookup = (
+  influencers: unknown
+): influencers is Record<string, unknown> => {
+  if (
+    typeof influencers !== 'object' ||
+    influencers === null ||
+    Array.isArray(influencers)
+  ) {
+    return false
+  }
+
+  const prototype = Object.getPrototypeOf(influencers)
+  return prototype === Object.prototype || prototype === null
+}
+
+const visitAffordableInfluencerIds = (
+  influencers: unknown,
+  money: number,
+  visitor: (id: string) => boolean
 ): boolean => {
-  // ⚡ Bolt Optimization: Replace Object.values().some() with for...in loop
-  // Avoids O(N) array allocation overhead and enables early return when a match is found.
+  if (!isInfluencerLookup(influencers)) return false
+
   for (const id in influencers) {
     if (!Object.hasOwn(influencers, id)) continue
-    if (isValidAndAffordableInfluencer(influencers[id], money)) {
-      return true
-    }
+    if (!isValidAndAffordableInfluencer(influencers[id], money)) continue
+    if (visitor(id)) return true
   }
+
   return false
 }
 
+const hasAffordableInfluencer = (
+  influencers: unknown,
+  money: number
+): boolean => {
+  return visitAffordableInfluencerIds(influencers, money, () => true)
+}
+
 const getAffordableInfluencerIds = (
-  influencers: Record<string, unknown>,
+  influencers: unknown,
   money: number
 ): string[] => {
   const affordableIds: string[] = []
-  for (const id in influencers) {
-    if (!Object.hasOwn(influencers, id)) continue
-    if (isValidAndAffordableInfluencer(influencers[id], money)) {
-      affordableIds.push(id)
-    }
-  }
+  visitAffordableInfluencerIds(influencers, money, id => {
+    affordableIds.push(id)
+    return false
+  })
   return affordableIds
 }
 

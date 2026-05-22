@@ -196,6 +196,22 @@ test('collab_influencer ignores invalid influencer entries', () => {
   )
 })
 
+test('collab_influencer treats array influencer containers as unavailable', () => {
+  const state = {
+    player: { money: 500 },
+    social: {
+      influencers: [{ tier: 'Micro', score: 0 }]
+    }
+  }
+
+  assert.equal(collabOption.condition(state), false)
+
+  const result = resolvePost(collabOption, state, 0)
+
+  assert.equal(result.success, false)
+  assert.match(result.message, /cannot afford/)
+})
+
 test('collab_influencer tier followers', () => {
   const state = {
     player: { money: 2000 },
