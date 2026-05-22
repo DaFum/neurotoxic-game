@@ -7193,6 +7193,16 @@
         "typeOnly": true
       }
     ],
+    "PostGigPhase": [
+      {
+        "isDefault": false,
+        "name": "PostGigPhase",
+        "path": "src/hooks/postGig/usePostGigState.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
     "PostGigSummary": [
       {
         "exportPath": "src/types/game.d.ts",
@@ -10101,6 +10111,15 @@
         "type": "const"
       }
     ],
+    "usePostGigDerivations": [
+      {
+        "isDefault": false,
+        "name": "usePostGigDerivations",
+        "path": "src/hooks/postGig/usePostGigDerivations.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "usePostGigHandlers": [
       {
         "isDefault": false,
@@ -10135,6 +10154,15 @@
         "isDefault": false,
         "name": "usePostGigLogic",
         "path": "src/hooks/usePostGigLogic.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "usePostGigState": [
+      {
+        "isDefault": false,
+        "name": "usePostGigState",
+        "path": "src/hooks/postGig/usePostGigState.ts",
         "source": "local",
         "type": "const"
       }
