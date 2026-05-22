@@ -139,3 +139,6 @@
 
 **Learning:** Combining `.map()` and `.filter()` in frequently called reducers (like `bandReducer`'s `applyContrabandEffect`) and render loops (like `BrandDealsTab`) creates intermediate array allocations that add up to significant GC pressure on hot paths.
 **Action:** Replaced array iteration method chains with procedural `for` loops to directly construct the filtered/mapped lists in a single pass. Specifically, in `applyContrabandEffect`, avoiding mapping over all members when only one member is updated avoids unnecessary object clones and array allocations. In `BrandDealsTab`, mapping active deals directly to `Set` values avoids intermediate tuple array creation.
+## 2025-02-23 - Prevent Redundant Array Allocation in Object Aggregations
+**Learning:** Sequential calls to `Object.values(obj).reduce(...)` directly after iterating to build the object create unnecessary intermediate arrays and a second O(N) pass, degrading performance.
+**Action:** Always compute running totals concurrently within the same initialization loop that populates the dictionary/object to eliminate redundant passes and memory allocations.

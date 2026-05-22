@@ -361,6 +361,9 @@ export const calculateMerchIncome = (
 
   const rawShare: Record<string, number> = {}
   const priceByKey: Record<string, number> = {}
+  // Bolt Optimization: Calculate totalRawShare cumulatively to avoid an extra
+  // Object.values().reduce() call and its associated intermediate array allocation.
+  let totalRawShare = 0
 
   // Compute raw share for every item regardless of inventory. Out-of-stock
   // items still contribute to totalRawShare so their portion of demand is
@@ -382,11 +385,12 @@ export const calculateMerchIncome = (
       profile.priceElasticity
     )
 
-    rawShare[profile.key] =
+    const share =
       profile.baseAppeal * genreMult * spendingMult * perfMult * priceMult
+    rawShare[profile.key] = share
+    totalRawShare += share
   }
 
-  const totalRawShare = Object.values(rawShare).reduce((a, b) => a + b, 0)
   if (totalRawShare <= 0) {
     return { revenue: 0, breakdownItems, soldItems: {} }
   }
