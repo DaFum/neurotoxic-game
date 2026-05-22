@@ -134,3 +134,8 @@
 
 **Learning:** Accumulating values into intermediate arrays (`push`) only to iterate over them again via `.reduce()` introduces redundant memory allocation and garbage collection overhead on hot paths, severely degrading performance.
 **Action:** When computing sums or aggregations from iterations, maintain an accumulator variable and update it directly inside the loop rather than building intermediate collections.
+
+## 2026-05-21 - Array Mapping and Filtering in Reducers and Render Loops
+
+**Learning:** Combining `.map()` and `.filter()` in frequently called reducers (like `bandReducer`'s `applyContrabandEffect`) and render loops (like `BrandDealsTab`) creates intermediate array allocations that add up to significant GC pressure on hot paths.
+**Action:** Replaced array iteration method chains with procedural `for` loops to directly construct the filtered/mapped lists in a single pass. Specifically, in `applyContrabandEffect`, avoiding mapping over all members when only one member is updated avoids unnecessary object clones and array allocations. In `BrandDealsTab`, mapping active deals directly to `Set` values avoids intermediate tuple array creation.

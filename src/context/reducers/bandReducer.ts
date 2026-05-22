@@ -257,10 +257,20 @@ const applySharedBandEffect = (
     return true
   }
   if (effectType === 'stamina_max') {
-    newBand.members = newBand.members.map((m: BandMember) => ({
-      ...m,
-      staminaMax: ((m.staminaMax as number | undefined) ?? 100) + value
-    }))
+    const updatedMembers = [...(newBand.members ?? [])]
+    for (let i = 0; i < updatedMembers.length; i++) {
+      const currentMember = updatedMembers[i]
+      if (currentMember) {
+        updatedMembers[i] = {
+          ...currentMember,
+          staminaMax:
+            (typeof currentMember.staminaMax === 'number'
+              ? currentMember.staminaMax
+              : 100) + value
+        } as BandMember
+      }
+    }
+    newBand.members = updatedMembers
     return true
   }
   if (effectType === 'guitar_difficulty') {
@@ -368,31 +378,44 @@ const applyContrabandEffect = (
       )
     )
   } else if (item.effectType === 'stamina' || item.effectType === 'mood') {
-    if (
-      !memberId ||
-      !newBand.members.some((m: BandMember) => m.id === memberId)
-    ) {
+    if (!memberId) {
       return null
     }
-    newBand.members = newBand.members.map((m: BandMember) => {
-      if (m.id === memberId) {
-        const key = item.effectType as 'stamina' | 'mood'
-        return {
-          ...m,
-          [key]:
-            key === 'stamina'
-              ? clampMemberStamina(
-                  ((m[key] as number) || 0) + (item.value as number),
-                  m.staminaMax as number
-                )
-              : clampMemberMood(
-                  ((m[key] as number) || 0) + (item.value as number)
-                )
-        }
+
+    let targetIndex = -1
+    const membersList = newBand.members ?? []
+    for (let i = 0; i < membersList.length; i++) {
+      const currentMember = membersList[i]
+      if (currentMember && currentMember.id === memberId) {
+        targetIndex = i
+        break
       }
-      return m
-    })
-    return newBand
+    }
+
+    if (targetIndex === -1) {
+      return null
+    }
+
+    const m = membersList[targetIndex]
+    if (!m) return null
+
+    const key = item.effectType as 'stamina' | 'mood'
+    const updatedMembers = [...membersList]
+
+    updatedMembers[targetIndex] = {
+      ...m,
+      [key]:
+        key === 'stamina'
+          ? clampMemberStamina(
+              ((m[key] as number) ?? 0) + (item.value as number),
+              typeof m.staminaMax === 'number' ? m.staminaMax : 100
+            )
+          : clampMemberMood(((m[key] as number) ?? 0) + (item.value as number))
+    } as BandMember
+
+    newBand.members = updatedMembers
+
+    // removed return newBand so duration logic handles it at the end
   } else if (item.effectType === 'harmony') {
     newBand.harmony = clampBandHarmony(
       (newBand.harmony ?? 1) + (item.value as number)
@@ -402,16 +425,24 @@ const applyContrabandEffect = (
   }
 
   if (item.duration != null) {
-    newBand.activeContrabandEffects = [
-      ...(newBand.activeContrabandEffects || []),
-      {
-        instanceId: item.instanceId,
-        effectType: item.effectType,
-        value: item.value,
-        remainingDuration: item.duration,
-        ...(memberId ? { memberId } : {})
-      }
-    ]
+    const effectExists =
+      item.instanceId != null &&
+      (
+        (newBand.activeContrabandEffects as Array<Record<string, unknown>>) ??
+        []
+      ).some(e => e.instanceId != null && e.instanceId === item.instanceId)
+    if (!effectExists) {
+      newBand.activeContrabandEffects = [
+        ...(newBand.activeContrabandEffects ?? []),
+        {
+          instanceId: item.instanceId,
+          effectType: item.effectType,
+          value: item.value,
+          remainingDuration: item.duration,
+          ...(memberId ? { memberId } : {})
+        }
+      ]
+    }
   }
 
   return newBand

@@ -7204,16 +7204,6 @@
         "typeOnly": true
       }
     ],
-    "PostOptionsErrorState": [
-      {
-        "isDefault": false,
-        "name": "PostOptionsErrorState",
-        "path": "src/hooks/usePostGigLogic.ts",
-        "source": "local",
-        "type": "type",
-        "typeOnly": true
-      }
-    ],
     "PostResult": [
       {
         "exportPath": "src/types/game.d.ts",

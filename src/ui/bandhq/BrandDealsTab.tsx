@@ -16,8 +16,13 @@ export const BrandDealsTab = ({ social }: BrandDealsTabProps) => {
   const isOnline = useNetworkStatus()
 
   const activeDealIds = useMemo(() => {
-    const ids = social?.activeDeals?.map(d => d?.id).filter(Boolean) ?? []
-    return new Set(ids)
+    const deals = social?.activeDeals ?? []
+    const ids = new Set<string>()
+    for (let i = 0; i < deals.length; i++) {
+      const deal = deals[i]
+      if (deal && typeof deal.id === 'string') ids.add(deal.id)
+    }
+    return ids
   }, [social?.activeDeals])
 
   return (
