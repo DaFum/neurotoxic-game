@@ -1,22 +1,12 @@
 import { Assets, ImageSource, Texture } from 'pixi.js'
 import { logger } from '../../utils/logger'
+import { BRAND_COLOR_HEX } from '../../utils/brandColors'
 
-const PIXI_TOKEN_FALLBACKS: Readonly<Record<string, string>> = Object.freeze({
-  '--void-black': '#0a0a0a',
-  '--toxic-green': '#00ff41',
-  '--star-white': '#ffffff',
-  '--ash-gray': '#888888',
-  '--warning-yellow': '#ffcc00',
-  '--electric-blue': '#3b82f6',
-  '--rhythm-guitar': '#ff0041',
-  '--rhythm-drums': '#00ff41',
-  '--rhythm-bass': '#0041ff',
-  '--blood-red': '#cc0000',
-  '--roadie-grass': '#1a4d1a',
-  '--cosmic-purple': '#6600cc',
-  '--void-purple': '#ff00ff',
-  '--roadie-venue-blue': '#0044cc'
-})
+const PIXI_TOKEN_FALLBACKS: Readonly<Record<string, string>> = Object.freeze(
+  Object.fromEntries(
+    Object.entries(BRAND_COLOR_HEX).map(([name, hex]) => [`--${name}`, hex])
+  )
+)
 
 const HEX_COLOR_PATTERN = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i
 

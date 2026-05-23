@@ -152,7 +152,7 @@ export const EXPENSE_CONSTANTS = {
   }
 }
 
-export const TICKET_SALES_CONSTANTS = {
+const TICKET_SALES_CONSTANTS = {
   BASE_DRAW_RATIO: 0.4,
   FAME_CAPACITY_SCALER: 10,
   FAME_FILL_WEIGHT: 0.55
@@ -339,8 +339,8 @@ export const calculateMerchIncome = (
   const peakHype =
     typeof gigStats?.peakHype === 'number' ? gigStats.peakHype : 0
   const misses = typeof gigStats?.misses === 'number' ? gigStats.misses : 0
-  const hypeNorm = Math.max(0, Math.min(100, peakHype)) / 100
-  const missNorm = Math.max(0, Math.min(100, misses)) / 100
+  const hypeNorm = clamp0to100(peakHype) / 100
+  const missNorm = clamp0to100(misses) / 100
 
   const priceModifierFor = (
     price: number,
@@ -796,7 +796,7 @@ export const calculateGigFinancials = ({
   gigStats,
   context = {}
 }: GigFinancialParams) => {
-  const playerFame = playerState?.fame || 0
+  const playerFame = playerState?.fame ?? 0
 
   logger.debug('Economy', 'Calculating Gig Financials', {
     gig: gigData.name,
