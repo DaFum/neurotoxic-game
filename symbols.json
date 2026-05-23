@@ -3932,6 +3932,17 @@
         "typeOnly": true
       }
     ],
+    "GameDispatchActions": [
+      {
+        "exportPath": "src/context/GameState.tsx",
+        "isDefault": false,
+        "name": "GameDispatchActions",
+        "path": "src/context/useGameDispatchActions.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
     "GameError": [
       {
         "isDefault": false,
@@ -7110,7 +7121,6 @@
     ],
     "PRACTICE_RETURN_SCENES": [
       {
-        "exportPath": "src/context/GameState.tsx",
         "isDefault": false,
         "name": "PRACTICE_RETURN_SCENES",
         "path": "src/context/gameConstants.ts",
@@ -9725,6 +9735,15 @@
         "path": "src/context/GameState.tsx",
         "source": "local",
         "type": "const"
+      }
+    ],
+    "useGameDispatchActions": [
+      {
+        "isDefault": false,
+        "name": "useGameDispatchActions",
+        "path": "src/context/useGameDispatchActions.ts",
+        "source": "local",
+        "type": "function"
       }
     ],
     "useGameSelector": [
