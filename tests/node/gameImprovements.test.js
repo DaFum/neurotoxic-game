@@ -40,7 +40,18 @@ const buildFullState = (overrides = {}) => {
       score: playerOverrides.score ?? 0,
       fame: playerOverrides.fame ?? 0,
       van: { ...DEFAULT_VAN, ...(playerOverrides.van || {}) },
-      passiveFollowers: playerOverrides.passiveFollowers ?? 0
+      passiveFollowers: playerOverrides.passiveFollowers ?? 0,
+      hqUpgrades: playerOverrides.hqUpgrades ?? [],
+      clinicVisits: playerOverrides.clinicVisits ?? 0,
+      totalTravels: playerOverrides.totalTravels ?? 0,
+      stats: {
+        totalDistance: 0,
+        conflictsResolved: 0,
+        stageDives: 0,
+        consecutiveBadShows: 0,
+        proveYourselfMode: false,
+        ...(playerOverrides.stats || {})
+      }
     },
     band: {
       members: bandOverrides.members || DEFAULT_MEMBERS.map(m => ({ ...m })),
@@ -67,7 +78,9 @@ const buildFullState = (overrides = {}) => {
     activeStoryFlags: overrides.activeStoryFlags || [],
     eventCooldowns: overrides.eventCooldowns || [],
     pendingEvents: overrides.pendingEvents || [],
-    toasts: overrides.toasts || []
+    toasts: overrides.toasts || [],
+    unlocks: overrides.unlocks || [],
+    completedMilestones: overrides.completedMilestones || []
   }
 }
 
