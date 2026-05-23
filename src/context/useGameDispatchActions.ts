@@ -1,3 +1,4 @@
+import { TFunction } from 'i18next'
 import {
   useCallback,
   useMemo,
@@ -195,8 +196,7 @@ interface UseGameDispatchActionsProps {
   dispatch: Dispatch<GameAction>
   state: GameState
   stateRef: MutableRefObject<GameState>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  tRef: MutableRefObject<any>
+  tRef: MutableRefObject<TFunction>
   resetMapGenerationRetries: () => void
 }
 
@@ -207,6 +207,10 @@ export function useGameDispatchActions({
   tRef,
   resetMapGenerationRetries
 }: UseGameDispatchActionsProps): GameDispatchActions {
+  /**
+   * Transitions the game to a new scene.
+   * @param {string} scene - The target scene name (e.g., GAME_PHASES.OVERWORLD).
+   */
   const changeScene = useCallback(
     (scene: Parameters<typeof createChangeSceneAction>[0]) =>
       startTransition(() => dispatch(createChangeSceneAction(scene))),
@@ -214,7 +218,10 @@ export function useGameDispatchActions({
   )
 
   const addToast = useCallback(
-    (message: Parameters<typeof createAddToastAction>[0], type?: string) => {
+    (
+      message: Parameters<typeof createAddToastAction>[0],
+      type: Parameters<typeof createAddToastAction>[1] = 'info'
+    ) => {
       const action = createAddToastAction(message, type)
       dispatch(action)
     },
@@ -278,7 +285,7 @@ export function useGameDispatchActions({
 
   const startGig = useCallback(
     (gig: Parameters<typeof createStartGigAction>[0]) =>
-      dispatch(createStartGigAction(gig)),
+      startTransition(() => dispatch(createStartGigAction(gig))),
     [dispatch]
   )
 
@@ -574,11 +581,12 @@ export function useGameDispatchActions({
 
       safeStorageNoFallback('saveGlobalSettings', () => {
         const current = safeJsonParse(
-          localStorage.getItem('neurotoxic_settings') || '{}'
+          localStorage.getItem('neurotoxic_global_settings') || '{}'
         )
-        const updated = isPlainObject(current) ? current : {}
-        Object.assign(updated, updates)
-        localStorage.setItem('neurotoxic_settings', JSON.stringify(updated))
+        const next = isPlainObject(current)
+          ? { ...current, ...updates }
+          : { ...updates }
+        localStorage.setItem('neurotoxic_global_settings', JSON.stringify(next))
       })
     },
     [dispatch]
