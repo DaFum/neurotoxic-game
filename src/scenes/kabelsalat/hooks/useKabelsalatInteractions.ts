@@ -65,13 +65,11 @@ export const useKabelsalatInteractions = (
 
       let connectionSocketId: SocketId | undefined
       for (const k in connections) {
-        if (Object.hasOwn(connections, k)) {
-          const socketId = k as SocketId
-          if (connections[socketId] === cableId) {
-            connectionSocketId = socketId
-            break
-          }
-        }
+        if (!Object.hasOwn(connections, k)) continue
+        const socketId = k as SocketId
+        if (connections[socketId] !== cableId) continue
+        connectionSocketId = socketId
+        break
       }
 
       if (connectionSocketId) {

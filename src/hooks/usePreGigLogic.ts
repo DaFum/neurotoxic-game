@@ -260,10 +260,8 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     (song: Song) => {
       if (selectedSongIds.has(song.id)) {
         setSetlist(setlist.filter(s => getSongId(s) !== song.id))
-      } else {
-        if (setlist.length < 3) {
-          setSetlist([...setlist, { id: song.id }])
-        }
+      } else if (setlist.length < 3) {
+        setSetlist([...setlist, { id: song.id }])
       }
     },
     [selectedSongIds, setSetlist, setlist]

@@ -56,13 +56,11 @@ function updateOverlayNodes(
   // sizes match, there are exactly zero stale nodes to remove.
   if (nodeCache.size > seenIds.size) {
     for (const id of nodeCache.keys()) {
-      if (!seenIds.has(id)) {
-        const node = nodeCache.get(id)
-        if (node) {
-          container.removeChild(node)
-          nodeCache.delete(id)
-        }
-      }
+      if (seenIds.has(id)) continue
+      const node = nodeCache.get(id)
+      if (!node) continue
+      container.removeChild(node)
+      nodeCache.delete(id)
     }
   }
 }
