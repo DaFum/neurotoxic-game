@@ -322,7 +322,8 @@
         "ui:featureList.sec3.items.3",
         "ui:featureList.sec3.items.4",
         "ui:featureList.sec3.items.5",
-        "ui:featureList.sec3.items.6"
+        "ui:featureList.sec3.items.6",
+        "ui:featureList.sec3.items.7"
       ],
       "description": "ui:featureList.sec3.description"
     },
@@ -349,7 +350,8 @@
         "ui:featureList.sec5.items.6",
         "ui:featureList.sec5.items.7",
         "ui:featureList.sec5.items.8",
-        "ui:featureList.sec5.items.9"
+        "ui:featureList.sec5.items.9",
+        "ui:featureList.sec5.items.10"
       ],
       "description": "ui:featureList.sec5.description"
     },
@@ -609,9 +611,21 @@
         "ui:featureList.sec22.items.4",
         "ui:featureList.sec22.items.5",
         "ui:featureList.sec22.items.6",
-        "ui:featureList.sec22.items.7"
+        "ui:featureList.sec22.items.7",
+        "ui:featureList.sec22.items.8"
       ],
       "description": "ui:featureList.sec22.description"
+    },
+    {
+      "title": "ui:featureList.sec23.title",
+      "type": "bullets",
+      "items": [
+        "ui:featureList.sec23.items.0",
+        "ui:featureList.sec23.items.1",
+        "ui:featureList.sec23.items.2",
+        "ui:featureList.sec23.items.3"
+      ],
+      "description": "ui:featureList.sec23.description"
     }
   ],
   "featureList.sec0.description": "1. Core Structure and Game Phases",
@@ -790,7 +804,14 @@
   "featureList.sec22.items.5": "Glitch/Brutalist UI Effects",
   "featureList.sec22.items.6": "Loading and Fallback Scenes",
   "featureList.sec22.items.7": "Defensive Error Handling in Save, Event, Social, and Audio paths",
+  "featureList.sec22.items.8": "Chatter / Dialogue Overlay System with scene- and venue-specific lines",
   "featureList.sec22.title": "23. Additional UX/System Features",
+  "featureList.sec23.description": "24. Milestones and Meta-Rewards",
+  "featureList.sec23.items.0": "Milestone Database with condition-triggered rewards",
+  "featureList.sec23.items.1": "Survival, First-Gig, and Harmony milestones",
+  "featureList.sec23.items.2": "Automatic reward dispatch (Money, Social growth) on completion",
+  "featureList.sec23.items.3": "Milestone progress feeds into unlock checks and toasts",
+  "featureList.sec23.title": "24. Milestones and Meta-Rewards",
   "featureList.sec3.description": "4. Pre-Gig Features",
   "featureList.sec3.items.0": "Setlist Selection",
   "featureList.sec3.items.1": "Budget/Cost Display",
@@ -799,6 +820,7 @@
   "featureList.sec3.items.4": "Display of active Buffs/Debuffs",
   "featureList.sec3.items.5": "Event triggers occurring in the Pre-Gig phase",
   "featureList.sec3.items.6": "Random selection of one of several Pre-Gig minigames before the actual Gig",
+  "featureList.sec3.items.7": "Merch Strategy: per-item pricing controls and restock actions before the show",
   "featureList.sec3.title": "4. Pre-Gig Features",
   "featureList.sec4.description": "5. Pre-Gig Minigames",
   "featureList.sec4.items.0": "Roadie Run: Top-down transport/pickup minigame. Equipment damage as a potential outcome.",
@@ -808,6 +830,7 @@
   "featureList.sec5.description": "6. Travel and Map Features",
   "featureList.sec5.items.0": "Graph-based Tour Map with nodes and connections",
   "featureList.sec5.items.1": "Visibility and accessibility logic for destinations",
+  "featureList.sec5.items.10": "Black Market Supply Stop: optional roadside encounter to spend resources on contraband or gear",
   "featureList.sec5.items.2": "Traveling between locations",
   "featureList.sec5.items.3": "Travel costs",
   "featureList.sec5.items.4": "Fuel consumption",
@@ -829,7 +852,7 @@
   "featureList.sec7.items.5": "Menu Categories: Management, Side Hustles, Logistics, System",
   "featureList.sec7.title": "8. Overworld Management",
   "featureList.sec8.description": "9. Band HQ",
-  "featureList.sec8.items.0": "Tabs for: Stats, Details, Shop, Upgrades, Setlist, Leaderboard, Settings, Void Trader",
+  "featureList.sec8.items.0": "Tabs for: Stats, Details, Shop, Upgrades, Catalog, Setlist, Leaderboard, Brand Deals, Glossary, Settings, Void Trader",
   "featureList.sec8.items.1": "Band and Career Overview",
   "featureList.sec8.items.2": "Detailed Band Member Stats",
   "featureList.sec8.items.3": "Performance Modifiers",
