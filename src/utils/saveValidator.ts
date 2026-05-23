@@ -286,10 +286,11 @@ const validateSocial = (social: unknown): void => {
         const d = deal as Record<string, unknown>
         if (typeof d.id !== 'string')
           throw new StateError(`activeDeals[${i}].id must be a string`)
-        if (
-          typeof d.remainingGigs !== 'number' ||
-          !Number.isFinite(d.remainingGigs)
-        )
+        if (typeof d.remainingGigs !== 'number')
+          throw new StateError(
+            `activeDeals[${i}].remainingGigs must be a number`
+          )
+        if (!Number.isFinite(d.remainingGigs))
           throw new StateError(
             `activeDeals[${i}].remainingGigs must be a finite number`
           )
@@ -304,7 +305,9 @@ const validateSocial = (social: unknown): void => {
       for (const align in br) {
         if (!Object.hasOwn(br, align)) continue
         const score = br[align]
-        if (typeof score !== 'number' || !Number.isFinite(score))
+        if (typeof score !== 'number')
+          throw new StateError(`brandReputation.${align} must be a number`)
+        if (!Number.isFinite(score))
           throw new StateError(
             `brandReputation.${align} must be a finite number`
           )
@@ -328,7 +331,11 @@ const validateSocial = (social: unknown): void => {
           throw new StateError(
             `social.influencers.${id}.trait must be a string`
           )
-        if (typeof inf.score !== 'number' || !Number.isFinite(inf.score))
+        if (typeof inf.score !== 'number')
+          throw new StateError(
+            `social.influencers.${id}.score must be a number`
+          )
+        if (!Number.isFinite(inf.score))
           throw new StateError(
             `social.influencers.${id}.score must be a finite number`
           )
@@ -336,7 +343,10 @@ const validateSocial = (social: unknown): void => {
       continue
     }
 
-    if (typeof val !== 'number' || !Number.isFinite(val)) {
+    if (typeof val !== 'number') {
+      throw new StateError(`Social value "${key}" must be a number: ${val}`)
+    }
+    if (!Number.isFinite(val)) {
       throw new StateError(
         `Social value "${key}" must be a finite number: ${val}`
       )

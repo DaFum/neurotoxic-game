@@ -170,6 +170,13 @@ export const toggleNeuroDecimator = (
 
 const HOSTILE_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
 
+const SOCIAL_NULLABLE_FIELDS = new Set([
+  'lastGigDay',
+  'lastGigDifficulty',
+  'lastPirateBroadcastDay',
+  'lastDarkWebLeakDay'
+])
+
 const SOCIAL_NUMERIC_FIELDS = new Set([
   'instagram',
   'tiktok',
@@ -193,16 +200,16 @@ const ALLOWED_SETTINGS_KEYS = new Set([
 ])
 
 const sanitizeSocialUpdates = (
-  updates: Partial<SocialState>
+  updates: Partial<SocialState> | null | undefined
 ): Partial<SocialState> => {
+  if (!updates || typeof updates !== 'object') return {}
   const out: Record<string, unknown> = {}
   for (const key of Object.keys(updates)) {
     if (HOSTILE_KEYS.has(key)) continue
-    if (!Object.hasOwn(updates, key)) continue
     const value = (updates as Record<string, unknown>)[key]
     if (SOCIAL_NUMERIC_FIELDS.has(key)) {
       if (value === null) {
-        out[key] = null
+        if (SOCIAL_NULLABLE_FIELDS.has(key)) out[key] = null
         continue
       }
       if (typeof value !== 'number' || !Number.isFinite(value)) continue
