@@ -290,6 +290,10 @@ const validateSocial = (social: unknown): void => {
           throw new StateError(
             `activeDeals[${i}].remainingGigs must be a number`
           )
+        if (!Number.isFinite(d.remainingGigs))
+          throw new StateError(
+            `activeDeals[${i}].remainingGigs must be a finite number`
+          )
       })
       continue
     }
@@ -303,6 +307,10 @@ const validateSocial = (social: unknown): void => {
         const score = br[align]
         if (typeof score !== 'number')
           throw new StateError(`brandReputation.${align} must be a number`)
+        if (!Number.isFinite(score))
+          throw new StateError(
+            `brandReputation.${align} must be a finite number`
+          )
       }
       continue
     }
@@ -327,12 +335,21 @@ const validateSocial = (social: unknown): void => {
           throw new StateError(
             `social.influencers.${id}.score must be a number`
           )
+        if (!Number.isFinite(inf.score))
+          throw new StateError(
+            `social.influencers.${id}.score must be a finite number`
+          )
       }
       continue
     }
 
     if (typeof val !== 'number') {
       throw new StateError(`Social value "${key}" must be a number: ${val}`)
+    }
+    if (!Number.isFinite(val)) {
+      throw new StateError(
+        `Social value "${key}" must be a finite number: ${val}`
+      )
     }
   }
 }

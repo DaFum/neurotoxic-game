@@ -9,3 +9,4 @@
 
 - Pixi.js v8 cleanup takes two distinct destroy args: `app.destroy({ removeView: true }, { children: true, texture: true, textureSource: true })`.
 - For `renderer.generateTexture`, keep method binding (`renderer.generateTexture(...)` or `.call(renderer, ...)` when destructured). When using the texture-generator options form, pass `resolution: getOptimalResolution()`; do not hardcode `resolution: 1`, which caused a HiDPI regression.
+- Subclasses of `BaseStageController` must destroy any `Graphics`/`Sprite`/`Container` field they assign themselves before calling `super.dispose()` — `super.dispose()` only tears down the shared app and root container, so per-controller fields like `RoadieStageController.bgGraphics` leak unless explicitly `.destroy()`-ed and nulled.

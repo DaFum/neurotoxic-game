@@ -20,6 +20,10 @@ Roles:
 - New SFX types must be added both to the `AudioSfxType` union and to `VALID_SFX_TYPES` in `AudioManager`. Unknown keys cause `playSFX()` to `logger.warn('AudioSystem', 'Unknown SFX type: …')` and silently return.
 - `audioService.setSfxVolume` (lowercase acronym, React-facing) bridges to `audioManager.setSFXVolume` (uppercase acronym, class-internal). Calling the wrong casing on a facade throws `TypeError` at runtime.
 
+## Disposal
+
+- Every node assigned to `audioState` in `instruments.ts` must have a matching `safeDispose` call in `disposeAudio` (`dispose.ts`). The master chain owns `masterLimiter`, `masterComp`, `musicGain`, `neuroDistortion`, `reverb`, `reverbSend`, and the `masterCorruption*` trio; when adding a new master-chain node, extend `disposeAudio` in the same change to avoid leaking it across teardowns.
+
 ## Decoding
 
 - Decoding helpers (e.g. `decodeAudioDataWithTimeout`) must not double-check the same promise; rely on the outer abort/timeout path.
