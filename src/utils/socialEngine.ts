@@ -791,7 +791,7 @@ export const negotiateDeal = <TDeal extends BrandDeal>(
 
   // Modifiers
   const hasManager = bandHasTrait(band, 'social_manager')
-  const isFamous = (gameState.player.fame || 0) > 1000
+  const isFamous = (gameState.player?.fame ?? 0) > 1000
 
   // Roll once
   const roll = rng()

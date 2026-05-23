@@ -400,7 +400,7 @@ export const calculatePostGigStateUpdates = (
       if (template.penalty.loyalty) {
         updatedSocial.loyalty = Math.max(
           0,
-          (updatedSocial.loyalty || 0) + template.penalty.loyalty
+          (updatedSocial.loyalty ?? 0) + template.penalty.loyalty
         )
       }
     }
@@ -503,7 +503,7 @@ export const getAcceptDealSocialUpdateFactory = (deal: BrandDeal) => {
       if (deal.penalty.loyalty) {
         updates.loyalty = Math.max(
           0,
-          (prevSocial.loyalty || 0) + deal.penalty.loyalty
+          (prevSocial.loyalty ?? 0) + deal.penalty.loyalty
         )
       }
       if (deal.penalty.controversy) {
@@ -772,10 +772,10 @@ export const deriveFinancials = ({
     playerState: player,
     gigStats: lastGigStats,
     context: {
-      controversyLevel: social?.controversyLevel || 0,
-      regionRep: reputationByRegion?.[player?.location] || 0,
-      loyalty: social?.loyalty || 0,
-      zealotry: social?.zealotry || 0,
+      controversyLevel: social?.controversyLevel ?? 0,
+      regionRep: reputationByRegion?.[player?.location] ?? 0,
+      loyalty: social?.loyalty ?? 0,
+      zealotry: social?.zealotry ?? 0,
       discountedTickets: activeStoryFlags?.includes(
         'discounted_tickets_active'
       ),

@@ -5,6 +5,7 @@ import { TravelingVan } from './TravelingVan'
 import { calculateEffectiveTicketPrice } from '../../utils/economyEngine'
 import { getCityKeyFromVenueId } from '../../utils/mapGenerator'
 import { normalizeVenueId } from '../../utils/mapUtils'
+import { BRAND_COLOR_HEX } from '../../utils/brandColors'
 import { useNetworkStatus } from '../../hooks/useNetworkStatus'
 import {
   getGenImageUrl,
@@ -53,10 +54,10 @@ const SVG_TOKEN_NAMES = [
 type SvgTokenName = (typeof SVG_TOKEN_NAMES)[number]
 
 const SVG_TOKEN_FALLBACKS = {
-  '--color-void-black': '#0a0a0a',
-  '--color-star-white': '#ffffff',
-  '--color-toxic-green': '#00ff41',
-  '--color-ash-gray': '#888888'
+  '--color-void-black': BRAND_COLOR_HEX['void-black'],
+  '--color-star-white': BRAND_COLOR_HEX['star-white'],
+  '--color-toxic-green': BRAND_COLOR_HEX['toxic-green'],
+  '--color-ash-gray': BRAND_COLOR_HEX['ash-gray']
 } as const satisfies Record<SvgTokenName, string>
 
 const HEX_COLOR_PATTERN = /^#(?:[0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i

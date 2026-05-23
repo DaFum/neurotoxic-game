@@ -1,12 +1,12 @@
 import type { GameState, PostGigSummary, Venue } from '../types'
+import type { RhythmSongStatsEntry } from '../types/rhythmGame'
 import { SONGS_BY_ID } from '../data/songs'
 import { logger } from './logger'
 
-export interface SongStat {
-  songId: string
-  score: number
-  accuracy: number
-}
+export type SongStat = Pick<
+  RhythmSongStatsEntry,
+  'songId' | 'score' | 'accuracy'
+>
 
 export const submitLeaderboardScores = async ({
   player,

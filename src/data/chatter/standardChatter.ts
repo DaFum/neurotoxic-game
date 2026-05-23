@@ -823,7 +823,7 @@ export const CHATTER_DB = [
     weight: 5,
     condition: (state: GameState) =>
       state.currentScene === GAME_PHASES.POST_GIG &&
-      ((state.lastGigStats?.score as number) || 0) > 10000
+      ((state.lastGigStats?.score as number) ?? 0) > 10000
   },
   {
     text: 'chatter:standard.msg_098',
@@ -847,7 +847,7 @@ export const CHATTER_DB = [
     weight: 5,
     condition: (state: GameState) =>
       state.currentScene === GAME_PHASES.POST_GIG &&
-      ((state.lastGigStats?.misses as number) || 0) > 10
+      ((state.lastGigStats?.misses as number) ?? 0) > 10
   },
   {
     text: 'chatter:standard.msg_102',
@@ -947,14 +947,14 @@ export const CHATTER_DB = [
     weight: 5,
     condition: (state: GameState) =>
       state.currentScene === GAME_PHASES.POST_GIG &&
-      (state.lastGigStats?.score || 0) > 9000
+      (state.lastGigStats?.score ?? 0) > 9000
   },
   {
     text: 'chatter:standard.msg_120',
     weight: 5,
     condition: (state: GameState) =>
       state.currentScene === GAME_PHASES.POST_GIG &&
-      (state.lastGigStats?.misses || 0) > 8
+      (state.lastGigStats?.misses ?? 0) > 8
   },
   {
     text: 'chatter:standard.msg_121',
@@ -1371,61 +1371,61 @@ export const CHATTER_DB = [
   {
     text: 'chatter:standard.msg_191',
     weight: 3,
-    condition: (state: GameState) => (state.social?.instagram || 0) > 500
+    condition: (state: GameState) => (state.social?.instagram ?? 0) > 500
   },
   {
     text: 'chatter:standard.msg_192',
     weight: 3,
-    condition: (state: GameState) => (state.social?.instagram || 0) > 800
+    condition: (state: GameState) => (state.social?.instagram ?? 0) > 800
   },
   {
     text: 'chatter:standard.msg_193',
     weight: 3,
-    condition: (state: GameState) => (state.social?.instagram || 0) > 500
+    condition: (state: GameState) => (state.social?.instagram ?? 0) > 500
   },
   {
     text: 'chatter:standard.msg_194',
     weight: 3,
-    condition: (state: GameState) => (state.social?.instagram || 0) > 1000
+    condition: (state: GameState) => (state.social?.instagram ?? 0) > 1000
   },
   {
     text: 'chatter:standard.msg_195',
     weight: 5,
-    condition: (state: GameState) => (state.social?.viral || 0) > 0
+    condition: (state: GameState) => (state.social?.viral ?? 0) > 0
   },
   {
     text: 'chatter:standard.msg_196',
     weight: 5,
-    condition: (state: GameState) => (state.social?.viral || 0) > 0,
+    condition: (state: GameState) => (state.social?.viral ?? 0) > 0,
     speaker: 'Marius'
   },
   {
     text: 'chatter:standard.msg_197',
     weight: 3,
-    condition: (state: GameState) => (state.social?.instagram || 0) > 700
+    condition: (state: GameState) => (state.social?.instagram ?? 0) > 700
   },
   {
     text: 'chatter:standard.msg_198',
     weight: 3,
-    condition: (state: GameState) => (state.social?.instagram || 0) > 1000,
+    condition: (state: GameState) => (state.social?.instagram ?? 0) > 1000,
     speaker: 'Marius'
   },
   {
     text: 'chatter:standard.msg_199',
     weight: 3,
-    condition: (state: GameState) => (state.social?.instagram || 0) > 900,
+    condition: (state: GameState) => (state.social?.instagram ?? 0) > 900,
     speaker: 'Matze'
   },
   {
     text: 'chatter:standard.msg_200',
     weight: 5,
-    condition: (state: GameState) => (state.social?.viral || 0) > 0,
+    condition: (state: GameState) => (state.social?.viral ?? 0) > 0,
     speaker: 'Lars'
   },
   {
     text: 'chatter:standard.msg_201',
     weight: 3,
-    condition: (state: GameState) => (state.social?.instagram || 0) > 800
+    condition: (state: GameState) => (state.social?.instagram ?? 0) > 800
   },
 
   // --- LOCATION SPECIFIC (General) ---
@@ -1830,66 +1830,66 @@ export const CHATTER_DB = [
   {
     text: 'chatter:standard.msg_272',
     weight: 6,
-    condition: (state: GameState) => (state.player.fame || 0) < 50
+    condition: (state: GameState) => (state.player.fame ?? 0) < 50
   },
   {
     text: 'chatter:standard.msg_273',
     weight: 6,
-    condition: (state: GameState) => (state.player.fame || 0) < 50,
+    condition: (state: GameState) => (state.player.fame ?? 0) < 50,
     speaker: 'Lars'
   },
   {
     text: 'chatter:standard.msg_274',
     weight: 6,
-    condition: (state: GameState) => (state.player.fame || 0) < 30
+    condition: (state: GameState) => (state.player.fame ?? 0) < 30
   },
   {
     text: 'chatter:standard.msg_275',
     weight: 5,
-    condition: (state: GameState) => (state.player.fameLevel || 0) >= 2
+    condition: (state: GameState) => (state.player.fameLevel ?? 0) >= 2
   },
   {
     text: 'chatter:standard.msg_276',
     weight: 5,
-    condition: (state: GameState) => (state.player.fameLevel || 0) >= 2,
+    condition: (state: GameState) => (state.player.fameLevel ?? 0) >= 2,
     speaker: 'Matze'
   },
   {
     text: 'chatter:standard.msg_277',
     weight: 5,
-    condition: (state: GameState) => (state.player.fameLevel || 0) >= 2
+    condition: (state: GameState) => (state.player.fameLevel ?? 0) >= 2
   },
   {
     text: 'chatter:standard.msg_278',
     weight: 4,
-    condition: (state: GameState) => (state.player.fameLevel || 0) >= 3
+    condition: (state: GameState) => (state.player.fameLevel ?? 0) >= 3
   },
   {
     text: 'chatter:standard.msg_279',
     weight: 4,
-    condition: (state: GameState) => (state.player.fameLevel || 0) >= 3,
+    condition: (state: GameState) => (state.player.fameLevel ?? 0) >= 3,
     speaker: 'Lars'
   },
   {
     text: 'chatter:standard.msg_280',
     weight: 3,
-    condition: (state: GameState) => (state.player.fameLevel || 0) >= 4
+    condition: (state: GameState) => (state.player.fameLevel ?? 0) >= 4
   },
   {
     text: 'chatter:standard.msg_281',
     weight: 3,
-    condition: (state: GameState) => (state.player.fameLevel || 0) >= 4
+    condition: (state: GameState) => (state.player.fameLevel ?? 0) >= 4
   },
   {
     text: 'chatter:standard.msg_282',
     weight: 2,
-    condition: (state: GameState) => (state.player.fameLevel || 0) >= 5,
+    condition: (state: GameState) => (state.player.fameLevel ?? 0) >= 5,
     speaker: 'Marius'
   },
   {
     text: 'chatter:standard.msg_283',
     weight: 2,
-    condition: (state: GameState) => (state.player.fameLevel || 0) >= 5
+    condition: (state: GameState) => (state.player.fameLevel ?? 0) >= 5
   },
 
   // --- CONDITION: INVENTORY AWARENESS ---
@@ -2031,45 +2031,45 @@ export const CHATTER_DB = [
   {
     text: 'chatter:standard.msg_306',
     weight: 5,
-    condition: (state: GameState) => (state.band.luck || 0) > 3
+    condition: (state: GameState) => (state.band.luck ?? 0) > 3
   },
   {
     text: 'chatter:standard.msg_307',
     weight: 5,
-    condition: (state: GameState) => (state.band.luck || 0) > 3,
+    condition: (state: GameState) => (state.band.luck ?? 0) > 3,
     speaker: 'Lars'
   },
   {
     text: 'chatter:standard.msg_308',
     weight: 4,
-    condition: (state: GameState) => (state.band.luck || 0) > 4
+    condition: (state: GameState) => (state.band.luck ?? 0) > 4
   },
   {
     text: 'chatter:standard.msg_309',
     weight: 4,
-    condition: (state: GameState) => (state.band.luck || 0) > 5,
+    condition: (state: GameState) => (state.band.luck ?? 0) > 5,
     speaker: 'Marius'
   },
   {
     text: 'chatter:standard.msg_310',
     weight: 8,
-    condition: (state: GameState) => (state.band.luck || 0) < -2
+    condition: (state: GameState) => (state.band.luck ?? 0) < -2
   },
   {
     text: 'chatter:standard.msg_311',
     weight: 8,
-    condition: (state: GameState) => (state.band.luck || 0) < -2
+    condition: (state: GameState) => (state.band.luck ?? 0) < -2
   },
   {
     text: 'chatter:standard.msg_312',
     weight: 10,
-    condition: (state: GameState) => (state.band.luck || 0) < -4,
+    condition: (state: GameState) => (state.band.luck ?? 0) < -4,
     speaker: 'Lars'
   },
   {
     text: 'chatter:standard.msg_313',
     weight: 8,
-    condition: (state: GameState) => (state.band.luck || 0) < -3,
+    condition: (state: GameState) => (state.band.luck ?? 0) < -3,
     speaker: 'Marius'
   },
 

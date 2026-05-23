@@ -279,7 +279,7 @@ const SocialReachSection = ({
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-x-4'>
           <DetailRow
             label={t('ui:stats.fanLoyalty', { defaultValue: 'Fan Loyalty' })}
-            value={social.loyalty || 0}
+            value={social.loyalty ?? 0}
             subtext={t('ui:stats.fanLoyaltyDesc', {
               defaultValue: 'Shields against bad gigs'
             })}

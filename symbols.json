@@ -884,6 +884,15 @@
         "type": "const"
       }
     ],
+    "BRAND_COLOR_HEX": [
+      {
+        "isDefault": false,
+        "name": "BRAND_COLOR_HEX",
+        "path": "src/utils/brandColors.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "BRAND_DEALS": [
       {
         "isDefault": false,
@@ -908,6 +917,16 @@
         "isDefault": false,
         "name": "BrandAlignment",
         "path": "src/types/social.d.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
+    "BrandColorName": [
+      {
+        "isDefault": false,
+        "name": "BrandColorName",
+        "path": "src/utils/brandColors.ts",
         "source": "local",
         "type": "type",
         "typeOnly": true
@@ -4122,15 +4141,6 @@
         "isDefault": false,
         "name": "generateBrandOffers",
         "path": "src/utils/socialEngine.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
-    "GENERATED_IMAGE_OFFLINE_FALLBACK": [
-      {
-        "isDefault": false,
-        "name": "GENERATED_IMAGE_OFFLINE_FALLBACK",
-        "path": "src/utils/imageGen.ts",
         "source": "local",
         "type": "const"
       }
@@ -8661,7 +8671,7 @@
         "name": "SongStat",
         "path": "src/utils/leaderboardUtils.ts",
         "source": "local",
-        "type": "interface",
+        "type": "type",
         "typeOnly": true
       }
     ],
@@ -9004,15 +9014,6 @@
         "name": "TFunction",
         "source": "external",
         "typeOnly": true
-      }
-    ],
-    "TICKET_SALES_CONSTANTS": [
-      {
-        "isDefault": false,
-        "name": "TICKET_SALES_CONSTANTS",
-        "path": "src/utils/economyEngine.ts",
-        "source": "local",
-        "type": "const"
       }
     ],
     "TikTokIcon": [

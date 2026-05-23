@@ -309,9 +309,9 @@ export const POST_OPTIONS = [
     category: 'Commercial',
     badges: [POST_BADGES.COMMERCIAL],
     condition: ({ social }: GameState) =>
-      (social?.controversyLevel || 0) >= 40 && (social?.loyalty || 0) >= 20,
+      (social?.controversyLevel ?? 0) >= 40 && (social?.loyalty ?? 0) >= 20,
     resolve: ({ social }: GameState) => {
-      const loyaltyVal = social?.loyalty || 0
+      const loyaltyVal = social?.loyalty ?? 0
       const moneyGain = Math.min(loyaltyVal * 8, 600)
       const loyaltyBurn = Math.floor(loyaltyVal * 0.3)
       return {
@@ -814,8 +814,8 @@ export const POST_OPTIONS = [
       typeof lastGigStats?.score === 'number' && lastGigStats.score > 15000,
     resolve: ({ social }: GameState) => {
       // Hype to Money mechanic (using loyalty as proxy for hype for now)
-      const hypeCash = Math.min((social.loyalty || 0) * 10, 1000)
-      const hypeBurn = Math.floor((social.loyalty || 0) * 0.5) // Burn only half hype instead of all
+      const hypeCash = Math.min((social?.loyalty ?? 0) * 10, 1000)
+      const hypeBurn = Math.floor((social?.loyalty ?? 0) * 0.5) // Burn only half hype instead of all
       return {
         type: 'FIXED',
         success: true,

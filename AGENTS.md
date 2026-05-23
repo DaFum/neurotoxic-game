@@ -46,7 +46,7 @@
 - Reducer default branches must call `assertNever`; `gameReducer` deliberately uses `assertNever(action as never)` as a runtime trap, so do not remove the cast to chase compile-time exhaustiveness.
 - Prefer `as const satisfies Record<Union, T>` for keyed configs; avoid widening with `as Record<...>`.
 - Shared domain contracts belong in `src/types/*.d.ts`; do not duplicate local structural clones. `RelationshipChange` is defined in `src/types/game.d.ts`, not `gameStateUtils.ts`.
-- Preserve valid falsy values with nullish checks (`??`), not truthy fallbacks (`||`).
+- Preserve valid falsy values with nullish checks (`??`), not truthy fallbacks (`||`). Exception: keep `Number(x) || 0` (and similar post-coercion patterns) — `Number()` returns `NaN` for invalid input, and `NaN ?? 0` evaluates to `NaN`, breaking the clamp. Sweep `||` → `??` only on direct property reads of optional numeric fields.
 - Give categorize/split helpers explicit named return types instead of broad `Record<string, T[]>`.
 - Boundary and error-handler functions must accept `unknown` and narrow before use.
 - Under `noUncheckedIndexedAccess`, guard indexed reads (`const item = array[i]; if (!item) continue`).
@@ -62,7 +62,8 @@
 
 - Commits use Conventional Commits (`feat:`, `fix:`, etc.).
 - Tailwind v4 uses `@import "tailwindcss"`; non-color tokens use syntax such as `z-(--z-crt)` or `style={{ zIndex: 'var(--z-crt)' }}`.
-- Do not hardcode colors. Use CSS vars (`var(--color-toxic-green)`) or Pixi token helpers (`getPixiColorFromToken('--toxic-green')`).
+- Do not hardcode colors. Use CSS vars (`var(--color-toxic-green)`) or Pixi token helpers (`getPixiColorFromToken('--toxic-green')`). Hex fallbacks for brand tokens live in a single source of truth at `src/utils/brandColors.ts` (`BRAND_COLOR_HEX`); both pixi (`stageRenderUtils`) and inline-SVG (`OverworldMap`) fallback maps must derive from it rather than reinline literal hex values.
+- `getPixiColorFromToken` accepts both bare (`--toxic-green`) and prefixed (`--color-toxic-green`) token names; the resolver prefixes bare tokens with `--color-` before calling `getComputedStyle`, so runtime CSS lookups succeed for either form. `PIXI_TOKEN_FALLBACKS` (sourced from `BRAND_COLOR_HEX`) keys both variants so the SSR/test fallback path matches the runtime path — when extending `BRAND_COLOR_HEX`, both `--${name}` and `--color-${name}` entries are emitted automatically.
 - Do not add `.propTypes` blocks. React 19 deprecates runtime propTypes validation. TypeScript interfaces in `src/types/components.d.ts` or inline prop types are the sole source of truth for prop contracts. The `prop-types` package has been removed from the project.
 
 ## Gotchas

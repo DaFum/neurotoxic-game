@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { SONGS_DB } from '../../data/songs'
 import { logger } from '../../utils/logger'
 import { GlitchButton } from '../GlitchButton'
-import { formatCurrency } from '../../utils/numberUtils'
+import { formatCurrency, formatNumber } from '../../utils/numberUtils'
 
 type LeaderboardView =
   | 'BALANCE'
@@ -282,11 +282,14 @@ export const LeaderboardTab = () => {
                           ? formatCurrency(entry.score, i18n?.language)
                           : view === 'DISTANCE'
                             ? t('ui:leaderboard.col_value_km', {
-                                value: entry.score.toLocaleString(),
+                                value: formatNumber(
+                                  entry.score,
+                                  i18n?.language
+                                ),
                                 unit: t('ui:unit.km', { defaultValue: 'km' }),
-                                defaultValue: `${entry.score.toLocaleString()} km`
+                                defaultValue: `${formatNumber(entry.score, i18n?.language)} km`
                               })
-                            : entry.score.toLocaleString()}
+                            : formatNumber(entry.score, i18n?.language)}
                       </td>
                     </tr>
                   )
