@@ -168,6 +168,50 @@ export const toggleNeuroDecimator = (
   payload: { isActive }
 })
 
+const HOSTILE_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
+
+const SOCIAL_NUMERIC_FIELDS = new Set([
+  'instagram',
+  'tiktok',
+  'youtube',
+  'newsletter',
+  'viral',
+  'lastGigDay',
+  'lastGigDifficulty',
+  'lastPirateBroadcastDay',
+  'lastDarkWebLeakDay',
+  'controversyLevel',
+  'loyalty',
+  'zealotry',
+  'reputationCooldown'
+])
+
+const ALLOWED_SETTINGS_KEYS = new Set([
+  'crtEnabled',
+  'tutorialSeen',
+  'logLevel'
+])
+
+const sanitizeSocialUpdates = (
+  updates: Partial<SocialState>
+): Partial<SocialState> => {
+  const out: Record<string, unknown> = {}
+  for (const key of Object.keys(updates)) {
+    if (HOSTILE_KEYS.has(key)) continue
+    if (!Object.hasOwn(updates, key)) continue
+    const value = (updates as Record<string, unknown>)[key]
+    if (SOCIAL_NUMERIC_FIELDS.has(key)) {
+      if (value === null) {
+        out[key] = null
+        continue
+      }
+      if (typeof value !== 'number' || !Number.isFinite(value)) continue
+    }
+    out[key] = value
+  }
+  return out as Partial<SocialState>
+}
+
 /**
  * Creates a social update action
  * @param {Object} updates - Social media state updates
@@ -175,10 +219,16 @@ export const toggleNeuroDecimator = (
  */
 export const createUpdateSocialAction = (
   updates: Partial<SocialState> | ((prev: SocialState) => Partial<SocialState>)
-): Extract<GameAction, { type: typeof ActionTypes.UPDATE_SOCIAL }> => ({
-  type: ActionTypes.UPDATE_SOCIAL,
-  payload: updates
-})
+): Extract<GameAction, { type: typeof ActionTypes.UPDATE_SOCIAL }> => {
+  const payload =
+    typeof updates === 'function'
+      ? (prev: SocialState) => sanitizeSocialUpdates(updates(prev))
+      : sanitizeSocialUpdates(updates)
+  return {
+    type: ActionTypes.UPDATE_SOCIAL,
+    payload
+  }
+}
 
 /**
  * Creates a settings update action
@@ -187,10 +237,21 @@ export const createUpdateSocialAction = (
  */
 export const createUpdateSettingsAction = (
   updates: Record<string, unknown>
-): Extract<GameAction, { type: typeof ActionTypes.UPDATE_SETTINGS }> => ({
-  type: ActionTypes.UPDATE_SETTINGS,
-  payload: updates
-})
+): Extract<GameAction, { type: typeof ActionTypes.UPDATE_SETTINGS }> => {
+  const filtered: Record<string, unknown> = {}
+  if (updates && typeof updates === 'object') {
+    for (const key of Object.keys(updates)) {
+      if (HOSTILE_KEYS.has(key)) continue
+      if (!ALLOWED_SETTINGS_KEYS.has(key)) continue
+      if (!Object.hasOwn(updates, key)) continue
+      filtered[key] = updates[key]
+    }
+  }
+  return {
+    type: ActionTypes.UPDATE_SETTINGS,
+    payload: filtered
+  }
+}
 
 /**
  * Creates a map set action
