@@ -129,6 +129,8 @@ export function disposeAudio() {
     audioState.masterCorruptionWetGain
   )
 
+  audioState.neuroDistortion = safeDispose(audioState.neuroDistortion)
+
   audioState.masterComp = safeDispose(audioState.masterComp)
   audioState.masterLimiter = safeDispose(audioState.masterLimiter)
 

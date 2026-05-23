@@ -226,6 +226,11 @@ class RoadieStageController extends BaseStageController<RoadieStageState> {
       this.effectManager = null
     }
 
+    if (this.bgGraphics) {
+      this.bgGraphics.destroy()
+      this.bgGraphics = null
+    }
+
     super.dispose()
   }
 }
