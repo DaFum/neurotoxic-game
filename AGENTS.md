@@ -63,7 +63,7 @@
 - Commits use Conventional Commits (`feat:`, `fix:`, etc.).
 - Tailwind v4 uses `@import "tailwindcss"`; non-color tokens use syntax such as `z-(--z-crt)` or `style={{ zIndex: 'var(--z-crt)' }}`.
 - Do not hardcode colors. Use CSS vars (`var(--color-toxic-green)`) or Pixi token helpers (`getPixiColorFromToken('--toxic-green')`). Hex fallbacks for brand tokens live in a single source of truth at `src/utils/brandColors.ts` (`BRAND_COLOR_HEX`); both pixi (`stageRenderUtils`) and inline-SVG (`OverworldMap`) fallback maps must derive from it rather than reinline literal hex values.
-- `getPixiColorFromToken` callers pass bare token names (`--toxic-green`), but the actual CSS variables in `src/index.css` are prefixed `--color-toxic-green`. Runtime `getComputedStyle` lookups therefore fail and the function falls back to `PIXI_TOKEN_FALLBACKS` (sourced from `BRAND_COLOR_HEX`). Until callers and CSS are reconciled, keep the fallback map authoritative.
+- `getPixiColorFromToken` accepts both bare (`--toxic-green`) and prefixed (`--color-toxic-green`) token names; the resolver prefixes bare tokens with `--color-` before calling `getComputedStyle`, so runtime CSS lookups succeed for either form. `PIXI_TOKEN_FALLBACKS` (sourced from `BRAND_COLOR_HEX`) keys both variants so the SSR/test fallback path matches the runtime path — when extending `BRAND_COLOR_HEX`, both `--${name}` and `--color-${name}` entries are emitted automatically.
 - Do not add `.propTypes` blocks. React 19 deprecates runtime propTypes validation. TypeScript interfaces in `src/types/components.d.ts` or inline prop types are the sole source of truth for prop contracts. The `prop-types` package has been removed from the project.
 
 ## Gotchas
