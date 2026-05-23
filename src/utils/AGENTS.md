@@ -43,7 +43,7 @@ baseline instead of duplicating formulas.
 - `getCityKeyFromVenueId(venueId)` in `mapGenerator.ts` extracts the prefix before the first `_`; returns `''` if no underscore. Use this helper instead of `node.venue.city` (which does not exist).
 - When accessing venue IDs from `MapNode` objects, support both the current `venueId` property and the legacy `venue?.id` structure.
 - `GeneratedMapNode.type` union includes `'supplyStop'`. When adding map node types, update the union, `_populateCityStates`, rollout logic, and any consumers that switch on `type`.
-- Attention span in generated map nodes uses formula `Math.floor(random() * 45) + 15` (range 15–59).
+- Attention span in `_buildCityProfile` (`mapGenerator.ts`) is hash-derived: `15 + ((h >>> 8) % 45)` (range 15–59). It must stay deterministic from the city key — do not switch it to `Math.random()` or `getSafeRandom()`.
 
 ## Crypto / probability
 
