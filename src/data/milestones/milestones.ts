@@ -4,6 +4,7 @@
  */
 
 import {
+  createUpdateBandAction,
   createUpdatePlayerAction,
   createUpdateSocialAction
 } from '../../context/actionCreators'
@@ -16,7 +17,14 @@ export interface Milestone {
   labelKey: string
 }
 
+const totalFollowers = (social: GameState['social']): number =>
+  (social.tiktok ?? 0) +
+  (social.instagram ?? 0) +
+  (social.youtube ?? 0) +
+  (social.newsletter ?? 0)
+
 export const MILESTONES = [
+  // === Survival ===
   {
     id: 'survive_1_week',
     condition: (state: GameState) => state.player.day > 7,
@@ -26,6 +34,37 @@ export const MILESTONES = [
       })),
     labelKey: 'milestones.survive_1_week'
   },
+  {
+    id: 'survive_2_weeks',
+    condition: (state: GameState) => state.player.day > 14,
+    createRewardAction: () =>
+      createUpdatePlayerAction((prev: GameState['player']) => ({
+        money: prev.money + 250
+      })),
+    labelKey: 'milestones.survive_2_weeks'
+  },
+  {
+    id: 'survive_1_month',
+    condition: (state: GameState) => state.player.day > 30,
+    createRewardAction: () =>
+      createUpdatePlayerAction((prev: GameState['player']) => ({
+        money: prev.money + 500,
+        fame: prev.fame + 25
+      })),
+    labelKey: 'milestones.survive_1_month'
+  },
+  {
+    id: 'survive_100_days',
+    condition: (state: GameState) => state.player.day > 100,
+    createRewardAction: () =>
+      createUpdatePlayerAction((prev: GameState['player']) => ({
+        money: prev.money + 2000,
+        fame: prev.fame + 100
+      })),
+    labelKey: 'milestones.survive_100_days'
+  },
+
+  // === Gigs / Performance ===
   {
     id: 'first_gig_done',
     condition: (state: GameState) => state.lastGigStats !== null,
@@ -37,8 +76,238 @@ export const MILESTONES = [
     labelKey: 'milestones.first_gig_done'
   },
   {
+    id: 'flawless_gig',
+    condition: (state: GameState) =>
+      (state.lastGigStats?.misses ?? Number.POSITIVE_INFINITY) === 0 &&
+      (state.lastGigStats?.score ?? 0) > 0,
+    createRewardAction: () =>
+      createUpdatePlayerAction((prev: GameState['player']) => ({
+        fame: prev.fame + 50,
+        money: prev.money + 250
+      })),
+    labelKey: 'milestones.flawless_gig'
+  },
+  {
+    id: 'big_combo',
+    condition: (state: GameState) => (state.lastGigStats?.maxCombo ?? 0) >= 50,
+    createRewardAction: () =>
+      createUpdateSocialAction((prev: GameState['social']) => ({
+        viral: (prev.viral ?? 0) + 5,
+        tiktok: prev.tiktok + 25
+      })),
+    labelKey: 'milestones.big_combo'
+  },
+
+  // === Money / Wealth ===
+  {
+    id: 'wealth_starter',
+    condition: (state: GameState) => state.player.money >= 1000,
+    createRewardAction: () =>
+      createUpdateBandAction((prev: GameState['band']) => ({
+        luck: (prev.luck ?? 0) + 5
+      })),
+    labelKey: 'milestones.wealth_starter'
+  },
+  {
+    id: 'wealth_established',
+    condition: (state: GameState) => state.player.money >= 5000,
+    createRewardAction: () =>
+      createUpdatePlayerAction((prev: GameState['player']) => ({
+        fame: prev.fame + 50
+      })),
+    labelKey: 'milestones.wealth_established'
+  },
+  {
+    id: 'wealth_baron',
+    condition: (state: GameState) => state.player.money >= 25000,
+    createRewardAction: () =>
+      createUpdatePlayerAction((prev: GameState['player']) => ({
+        fame: prev.fame + 200
+      })),
+    labelKey: 'milestones.wealth_baron'
+  },
+
+  // === Fame ===
+  {
+    id: 'fame_rising',
+    condition: (state: GameState) => state.player.fame >= 250,
+    createRewardAction: () =>
+      createUpdateSocialAction((prev: GameState['social']) => ({
+        tiktok: prev.tiktok + 100,
+        instagram: prev.instagram + 100
+      })),
+    labelKey: 'milestones.fame_rising'
+  },
+  {
+    id: 'fame_legend',
+    condition: (state: GameState) => state.player.fame >= 1500,
+    createRewardAction: () =>
+      createUpdatePlayerAction((prev: GameState['player']) => ({
+        money: prev.money + 1000
+      })),
+    labelKey: 'milestones.fame_legend'
+  },
+
+  // === Social Reach ===
+  {
+    id: 'social_influencer',
+    condition: (state: GameState) => totalFollowers(state.social) >= 500,
+    createRewardAction: () =>
+      createUpdatePlayerAction((prev: GameState['player']) => ({
+        money: prev.money + 500
+      })),
+    labelKey: 'milestones.social_influencer'
+  },
+  {
+    id: 'social_megastar',
+    condition: (state: GameState) => totalFollowers(state.social) >= 5000,
+    createRewardAction: () =>
+      createUpdateSocialAction((prev: GameState['social']) => ({
+        viral: (prev.viral ?? 0) + 25,
+        zealotry: (prev.zealotry ?? 0) + 10
+      })),
+    labelKey: 'milestones.social_megastar'
+  },
+  {
+    id: 'gone_viral',
+    condition: (state: GameState) => (state.social.viral ?? 0) >= 50,
+    createRewardAction: () =>
+      createUpdatePlayerAction((prev: GameState['player']) => ({
+        fame: prev.fame + 100
+      })),
+    labelKey: 'milestones.gone_viral'
+  },
+  {
+    id: 'cult_following',
+    condition: (state: GameState) => (state.social.zealotry ?? 0) >= 50,
+    createRewardAction: () =>
+      createUpdateSocialAction((prev: GameState['social']) => ({
+        newsletter: prev.newsletter + 250,
+        loyalty: (prev.loyalty ?? 0) + 10
+      })),
+    labelKey: 'milestones.cult_following'
+  },
+
+  // === Band ===
+  {
     id: 'high_harmony',
     condition: (state: GameState) => state.band.harmony >= 90,
     labelKey: 'milestones.high_harmony'
+  },
+  {
+    id: 'perfect_harmony',
+    condition: (state: GameState) => state.band.harmony >= 99,
+    createRewardAction: () =>
+      createUpdatePlayerAction((prev: GameState['player']) => ({
+        fame: prev.fame + 75
+      })),
+    labelKey: 'milestones.perfect_harmony'
+  },
+  {
+    id: 'full_band',
+    condition: (state: GameState) => state.band.members.length >= 4,
+    createRewardAction: () =>
+      createUpdateBandAction((prev: GameState['band']) => ({
+        harmony: prev.harmony + 10
+      })),
+    labelKey: 'milestones.full_band'
+  },
+  {
+    id: 'peacekeeper',
+    condition: (state: GameState) =>
+      (state.player.stats?.conflictsResolved ?? 0) >= 5,
+    createRewardAction: () =>
+      createUpdateBandAction((prev: GameState['band']) => ({
+        harmony: prev.harmony + 15
+      })),
+    labelKey: 'milestones.peacekeeper'
+  },
+
+  // === Road / Travel ===
+  {
+    id: 'road_warrior',
+    condition: (state: GameState) => (state.player.totalTravels ?? 0) >= 10,
+    createRewardAction: () =>
+      createUpdatePlayerAction((prev: GameState['player']) => ({
+        money: prev.money + 200
+      })),
+    labelKey: 'milestones.road_warrior'
+  },
+  {
+    id: 'road_legend',
+    condition: (state: GameState) => (state.player.totalTravels ?? 0) >= 50,
+    createRewardAction: () =>
+      createUpdatePlayerAction((prev: GameState['player']) => ({
+        money: prev.money + 750,
+        fame: prev.fame + 50
+      })),
+    labelKey: 'milestones.road_legend'
+  },
+
+  // === Stage Presence & HQ ===
+  {
+    id: 'stage_diver',
+    condition: (state: GameState) =>
+      (state.player.stats?.stageDives ?? 0) >= 10,
+    createRewardAction: () =>
+      createUpdateSocialAction((prev: GameState['social']) => ({
+        tiktok: prev.tiktok + 200,
+        viral: (prev.viral ?? 0) + 10
+      })),
+    labelKey: 'milestones.stage_diver'
+  },
+  {
+    id: 'hq_builder',
+    condition: (state: GameState) =>
+      (state.player.hqUpgrades?.length ?? 0) >= 3,
+    createRewardAction: () =>
+      createUpdateBandAction((prev: GameState['band']) => ({
+        luck: (prev.luck ?? 0) + 5
+      })),
+    labelKey: 'milestones.hq_builder'
+  },
+  {
+    id: 'van_tuned',
+    condition: (state: GameState) =>
+      (state.player.van?.upgrades?.length ?? 0) >= 2,
+    createRewardAction: () =>
+      createUpdatePlayerAction((prev: GameState['player']) => ({
+        money: prev.money + 250
+      })),
+    labelKey: 'milestones.van_tuned'
+  },
+
+  // === Resilience ===
+  {
+    id: 'clinic_survivor',
+    condition: (state: GameState) => (state.player.clinicVisits ?? 0) >= 3,
+    createRewardAction: () =>
+      createUpdateBandAction((prev: GameState['band']) => ({
+        harmony: prev.harmony + 5
+      })),
+    labelKey: 'milestones.clinic_survivor'
+  },
+
+  // === Meta ===
+  {
+    id: 'collector',
+    condition: (state: GameState) => (state.unlocks?.length ?? 0) >= 5,
+    createRewardAction: () =>
+      createUpdatePlayerAction((prev: GameState['player']) => ({
+        fame: prev.fame + 50,
+        money: prev.money + 300
+      })),
+    labelKey: 'milestones.collector'
+  },
+  {
+    id: 'milestone_chaser',
+    condition: (state: GameState) =>
+      (state.completedMilestones?.length ?? 0) >= 10,
+    createRewardAction: () =>
+      createUpdatePlayerAction((prev: GameState['player']) => ({
+        money: prev.money + 1000,
+        fame: prev.fame + 100
+      })),
+    labelKey: 'milestones.milestone_chaser'
   }
 ] satisfies readonly Milestone[]
