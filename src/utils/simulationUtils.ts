@@ -478,7 +478,6 @@ export const calculateDailyUpdates = (
   const hasSofa = hqUpgradesSet.has('hq_room_sofa')
   const hasOldCouch = hqUpgradesSet.has('hq_room_old_couch')
 
-  // Optimize: Combine 3 separate `.map()` passes into a single loop, eliminating intermediate arrays
   const nextMembers = new Array(nextBand.members.length)
   for (let i = 0; i < nextBand.members.length; i++) {
     const m = nextBand.members[i]
