@@ -2,9 +2,15 @@ import { Assets, ImageSource, Texture } from 'pixi.js'
 import { logger } from '../../utils/logger'
 import { BRAND_COLOR_HEX } from '../../utils/brandColors'
 
+// getPixiColorFromToken accepts both `--token` and `--color-token` forms
+// (see CSS-property derivation below). Mirror both keys here so the SSR/test
+// fallback path matches the runtime path.
 const PIXI_TOKEN_FALLBACKS: Readonly<Record<string, string>> = Object.freeze(
   Object.fromEntries(
-    Object.entries(BRAND_COLOR_HEX).map(([name, hex]) => [`--${name}`, hex])
+    Object.entries(BRAND_COLOR_HEX).flatMap(([name, hex]) => [
+      [`--${name}`, hex],
+      [`--color-${name}`, hex]
+    ])
   )
 )
 
