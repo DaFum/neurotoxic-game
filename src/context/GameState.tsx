@@ -186,10 +186,6 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
 
   // Actions wrappers using ActionTypes for type safety
 
-  /**
-   * Transitions the game to a different scene.
-   * @param {string} scene - The target scene name (e.g..OVERWORLD).
-   */
   const dispatchValue = useGameDispatchActions({
     dispatch,
     state,
