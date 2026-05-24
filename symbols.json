@@ -1,5 +1,15 @@
 {
   "knownSymbols": {
+    "AcquisitionMode": [
+      {
+        "isDefault": false,
+        "name": "AcquisitionMode",
+        "path": "src/types/assets.d.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
     "Action": [
       {
         "exportPath": "src/types/index.ts",
@@ -458,6 +468,66 @@
         "path": "src/utils/assertNever.ts",
         "source": "local",
         "type": "function"
+      }
+    ],
+    "AssetBoni": [
+      {
+        "isDefault": false,
+        "name": "AssetBoni",
+        "path": "src/types/assets.d.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
+      }
+    ],
+    "AssetFlavor": [
+      {
+        "isDefault": false,
+        "name": "AssetFlavor",
+        "path": "src/types/assets.d.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
+    "AssetKind": [
+      {
+        "isDefault": false,
+        "name": "AssetKind",
+        "path": "src/types/assets.d.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
+    "AssetModifiers": [
+      {
+        "isDefault": false,
+        "name": "AssetModifiers",
+        "path": "src/types/assets.d.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
+      }
+    ],
+    "AssetModule": [
+      {
+        "isDefault": false,
+        "name": "AssetModule",
+        "path": "src/types/assets.d.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
+      }
+    ],
+    "AssetSlot": [
+      {
+        "isDefault": false,
+        "name": "AssetSlot",
+        "path": "src/types/assets.d.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
       }
     ],
     "AsyncBooleanCallback": [
@@ -1105,6 +1175,15 @@
         "source": "local",
         "type": "interface",
         "typeOnly": true
+      }
+    ],
+    "buildDiyTier": [
+      {
+        "isDefault": false,
+        "name": "buildDiyTier",
+        "path": "src/utils/assetConfig.ts",
+        "source": "local",
+        "type": "const"
       }
     ],
     "buildDrumKit": [
@@ -1777,6 +1856,55 @@
         "typeOnly": true
       }
     ],
+    "CHASSIS_CONFIG": [
+      {
+        "isDefault": false,
+        "name": "CHASSIS_CONFIG",
+        "path": "src/utils/assetConfig.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "ChassisFlavorConfig": [
+      {
+        "isDefault": false,
+        "name": "ChassisFlavorConfig",
+        "path": "src/utils/assetConfig.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
+    "ChassisKindConfig": [
+      {
+        "isDefault": false,
+        "name": "ChassisKindConfig",
+        "path": "src/utils/assetConfig.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
+    "ChassisTier": [
+      {
+        "isDefault": false,
+        "name": "ChassisTier",
+        "path": "src/types/assets.d.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
+    "ChassisTierConfig": [
+      {
+        "isDefault": false,
+        "name": "ChassisTierConfig",
+        "path": "src/utils/assetConfig.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
+      }
+    ],
     "CHATTER_DB": [
       {
         "exportPath": "src/data/chatter/index.ts",
@@ -2307,6 +2435,15 @@
         "typeOnly": true
       }
     ],
+    "computeAmortization": [
+      {
+        "isDefault": false,
+        "name": "computeAmortization",
+        "path": "src/utils/loanProfiles.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "computeDropChance": [
       {
         "isDefault": false,
@@ -2797,6 +2934,15 @@
         "type": "const"
       }
     ],
+    "createRngStream": [
+      {
+        "isDefault": false,
+        "name": "createRngStream",
+        "path": "src/utils/seededRng.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "createRoadieStageController": [
       {
         "isDefault": false,
@@ -3085,6 +3231,16 @@
         "path": "src/components/stage/stageRenderUtils.ts",
         "source": "local",
         "type": "const"
+      }
+    ],
+    "CrowdfundCampaign": [
+      {
+        "isDefault": false,
+        "name": "CrowdfundCampaign",
+        "path": "src/types/assets.d.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
       }
     ],
     "CrowdManager": [
@@ -3495,6 +3651,33 @@
         "path": "src/utils/audio/dispose.ts",
         "source": "local",
         "type": "function"
+      }
+    ],
+    "DIY_PRICE_MULT": [
+      {
+        "isDefault": false,
+        "name": "DIY_PRICE_MULT",
+        "path": "src/utils/assetConfig.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "DIY_RISK": [
+      {
+        "isDefault": false,
+        "name": "DIY_RISK",
+        "path": "src/utils/assetConfig.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "DIY_UPKEEP_MULT": [
+      {
+        "isDefault": false,
+        "name": "DIY_UPKEEP_MULT",
+        "path": "src/utils/assetConfig.ts",
+        "source": "local",
+        "type": "const"
       }
     ],
     "DROP_BASE_CHANCE": [
@@ -5906,6 +6089,16 @@
         "type": "const"
       }
     ],
+    "Liability": [
+      {
+        "isDefault": false,
+        "name": "Liability",
+        "path": "src/types/assets.d.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
+      }
+    ],
     "LightningEffects": [
       {
         "isDefault": false,
@@ -5951,6 +6144,35 @@
         "path": "src/components/stage/stageRenderUtils.ts",
         "source": "local",
         "type": "const"
+      }
+    ],
+    "LOAN_PROFILES": [
+      {
+        "isDefault": false,
+        "name": "LOAN_PROFILES",
+        "path": "src/utils/loanProfiles.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "LoanProfile": [
+      {
+        "isDefault": false,
+        "name": "LoanProfile",
+        "path": "src/utils/loanProfiles.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
+      }
+    ],
+    "LoanProfileId": [
+      {
+        "isDefault": false,
+        "name": "LoanProfileId",
+        "path": "src/utils/loanProfiles.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
       }
     ],
     "LOG_LEVELS": [
@@ -6007,6 +6229,16 @@
         "path": "src/ui/settings/LogSettings.tsx",
         "source": "local",
         "type": "const"
+      }
+    ],
+    "LongTermAsset": [
+      {
+        "isDefault": false,
+        "name": "LongTermAsset",
+        "path": "src/types/assets.d.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
       }
     ],
     "LUCK_MOD_PER_POINT": [
@@ -6409,6 +6641,34 @@
         "typeOnly": true
       }
     ],
+    "MODULE_PROMPTS": [
+      {
+        "isDefault": false,
+        "name": "MODULE_PROMPTS",
+        "path": "src/utils/assetModuleRegistry.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "MODULE_REGISTRY": [
+      {
+        "isDefault": false,
+        "name": "MODULE_REGISTRY",
+        "path": "src/utils/assetModuleRegistry.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "ModuleUnlockReq": [
+      {
+        "isDefault": false,
+        "name": "ModuleUnlockReq",
+        "path": "src/types/assets.d.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
+      }
+    ],
     "MoneyIcon": [
       {
         "exportPath": "src/ui/shared/index.tsx",
@@ -6450,6 +6710,15 @@
         "isDefault": false,
         "name": "moveRivalBand",
         "path": "src/utils/rivalEngine.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "mulberry32": [
+      {
+        "isDefault": false,
+        "name": "mulberry32",
+        "path": "src/utils/seededRng.ts",
         "source": "local",
         "type": "const"
       }
@@ -6535,6 +6804,15 @@
         "isDefault": false,
         "name": "NEUROTOXIC_PEDAL_HARMONY_PENALTY",
         "path": "src/context/gameConstants.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "nextSeed": [
+      {
+        "isDefault": false,
+        "name": "nextSeed",
+        "path": "src/utils/seededRng.ts",
         "source": "local",
         "type": "const"
       }
@@ -7656,6 +7934,15 @@
         "typeOnly": true
       }
     ],
+    "REPAIR_COST_PER_POINT": [
+      {
+        "isDefault": false,
+        "name": "REPAIR_COST_PER_POINT",
+        "path": "src/utils/assetConfig.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "ReportPhase": [
       {
         "isDefault": false,
@@ -7956,6 +8243,16 @@
         "typeOnly": true
       }
     ],
+    "RiskEventType": [
+      {
+        "isDefault": false,
+        "name": "RiskEventType",
+        "path": "src/types/assets.d.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
     "RIVAL_GIG_CROWD_DECAY_PENALTY": [
       {
         "isDefault": false,
@@ -8171,11 +8468,47 @@
         "type": "function"
       }
     ],
+    "sanitizeAssets": [
+      {
+        "isDefault": false,
+        "name": "sanitizeAssets",
+        "path": "src/context/reducers/assetSanitizers.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "sanitizeCrowdfundCampaigns": [
+      {
+        "isDefault": false,
+        "name": "sanitizeCrowdfundCampaigns",
+        "path": "src/context/reducers/assetSanitizers.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "sanitizeLiabilities": [
+      {
+        "isDefault": false,
+        "name": "sanitizeLiabilities",
+        "path": "src/context/reducers/assetSanitizers.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "sanitizeLoadedToast": [
       {
         "isDefault": false,
         "name": "sanitizeLoadedToast",
         "path": "src/context/reducers/toastSanitizers.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "sanitizeRngSeed": [
+      {
+        "isDefault": false,
+        "name": "sanitizeRngSeed",
+        "path": "src/context/reducers/assetSanitizers.ts",
         "source": "local",
         "type": "const"
       }
@@ -8572,6 +8905,16 @@
         "path": "src/scenes/kabelsalat/kabelsalatConstants.ts",
         "source": "local",
         "type": "const"
+      }
+    ],
+    "SlotType": [
+      {
+        "isDefault": false,
+        "name": "SlotType",
+        "path": "src/types/assets.d.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
       }
     ],
     "SOCIAL_PLATFORM_IDS": [
@@ -9628,6 +9971,15 @@
         "source": "local",
         "type": "type",
         "typeOnly": true
+      }
+    ],
+    "UPGRADE_OVERHEAD": [
+      {
+        "isDefault": false,
+        "name": "UPGRADE_OVERHEAD",
+        "path": "src/utils/assetConfig.ts",
+        "source": "local",
+        "type": "const"
       }
     ],
     "UpgradesTab": [
