@@ -98,12 +98,15 @@ export function useAmpLogic() {
     hijacksOverridden
   })
 
-  // Grouped refs synchronization
+  // Separate high-frequency state from grouped refs synchronization
+  useEffect(() => {
+    timeLeftRef.current = timeLeft
+  }, [timeLeft])
+
   useEffect(() => {
     isHijackActiveRef.current = isHijackActive
     dialValueRef.current = dialValue
     targetValueRef.current = targetValue
-    timeLeftRef.current = timeLeft
     heatRef.current = heat
     isOverdriveActiveRef.current = isOverdriveActive
     isOverheatRef.current = isOverheat
@@ -113,7 +116,6 @@ export function useAmpLogic() {
     isHijackActive,
     dialValue,
     targetValue,
-    timeLeft,
     heat,
     isOverdriveActive,
     isOverheat,
