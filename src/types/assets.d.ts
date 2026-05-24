@@ -176,6 +176,66 @@ export type RiskEventType =
   | 'paranormal'
   | 'foreclosure'
 
+// === Action payloads ===
+
+export type PurchaseFailureReason =
+  | 'DIY_LOAN_NOT_ALLOWED'
+  | 'INSUFFICIENT_FUNDS'
+  | 'UNKNOWN_KIND_OR_TIER'
+
+export type InstallModuleFailureReason =
+  | 'UNKNOWN_MODULE'
+  | 'UNKNOWN_ASSET'
+  | 'UNKNOWN_SLOT'
+  | 'SLOT_OCCUPIED'
+  | 'SLOT_TYPE_MISMATCH'
+  | 'LOCKED'
+  | 'EXCLUSIVITY'
+  | 'MAX_PER_ASSET'
+
+export interface NewSlotEntry {
+  slotType: SlotType
+  id: string
+}
+
+export interface PurchaseChassisPayload {
+  /** Asset id pre-generated in the action creator (reducer-purity). */
+  id: string
+  kind: AssetKind
+  flavor: AssetFlavor
+  tier: ChassisTier
+  mode: AcquisitionMode
+  /** Slot ids pre-generated in the action creator, parallel to the chassis-config slot order. */
+  slotIds: string[]
+  /** Loan profile id when mode === 'loan'. */
+  loanProfileId?: string
+  /** Day index at acquisition, sourced from state.player.day. */
+  today: number
+}
+
+export interface UpgradeChassisTierPayload {
+  assetId: string
+  targetTier: ChassisTier
+  /** Slot ids for the newly exposed tier-N slots. */
+  newSlotIds: NewSlotEntry[]
+}
+
+export interface InstallModulePayload {
+  assetId: string
+  slotId: string
+  moduleId: string
+  /** Pre-generated ids for slots added by the module via `addsSlots`. */
+  newSlotIds?: NewSlotEntry[]
+}
+
+export interface ResolveCrowdfundPayload {
+  campaignId: string
+  outcome: 'success' | 'fail'
+  /** When success: pre-generated asset id and slot ids for the newly created chassis. */
+  newAssetId?: string
+  newSlotIds?: NewSlotEntry[]
+}
+
 export interface AssetModifiers {
   fuelMultiplier: number
   merchCostMultiplier: number
