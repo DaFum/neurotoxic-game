@@ -46,7 +46,11 @@ export const TOURBUS_T2_SLOTS = [...TOURBUS_T1_SLOTS, 'tb_side','tb_interior_cab
 export const TOURBUS_T3_SLOTS = [...TOURBUS_T2_SLOTS, 'tb_decal','tb_trailer_mount'] as const
 
 // Position relativ zum Van-Seitenansichts-Background (16:9, links=0, rechts=1)
-export const TOURBUS_SLOT_POSITIONS: Record<SlotType, { x: number; y: number }> = {
+// Partial, weil nur Tourbus-relevante SlotTypes belegt sind.
+// Aufrufer müssen mit `undefined` umgehen (oder per `narrowToTourbusSlotType`-Guard
+// einschränken). `TourbusVehicleView` filtert über `asset.slots`, die per Konstruktion
+// nur Tourbus-Slot-Typen enthalten — daher ist undefined nur als Sanity-Check zu behandeln.
+export const TOURBUS_SLOT_POSITIONS: Partial<Record<SlotType, { x: number; y: number }>> = {
   tb_roof:             { x: 0.50, y: 0.18 },
   tb_front:            { x: 0.85, y: 0.55 },
   tb_side:             { x: 0.55, y: 0.45 },
@@ -56,8 +60,7 @@ export const TOURBUS_SLOT_POSITIONS: Record<SlotType, { x: number; y: number }> 
   tb_decal:            { x: 0.50, y: 0.80 },
   tb_trailer_mount:    { x: 0.10, y: 0.60 },
   tb_trailer_addon:    { x: -0.15, y: 0.50 },  // links neben Van, Overlay-Bereich
-  // Andere SlotTypes nicht in Tourbus relevant — Plan 3-5 setzen sie
-} as Partial<Record<SlotType, { x: number; y: number }>> as Record<SlotType, { x: number; y: number }>
+}
 ```
 
 - [ ] **Step 2:** Commit — `feat(assets/tourbus): add slot constants and positions`
@@ -315,6 +318,7 @@ export const TourbusVehicleView = ({ asset, onSlotClick }: Props) => {
         .filter(s => s.slotType !== 'tb_trailer_addon')
         .map(slot => {
           const pos = TOURBUS_SLOT_POSITIONS[slot.slotType]
+          if (!pos) return null  // Sanity-Guard: Slot ohne Position wird übersprungen
           const installed = slot.installedModuleId
           return (
             <button

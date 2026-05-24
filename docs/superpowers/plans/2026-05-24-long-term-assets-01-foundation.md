@@ -450,10 +450,10 @@ export const LOAN_PROFILES: Record<LoanProfileId, LoanProfile> = {
 }
 
 export const computeAmortization = (
-  principal: number, dailyInterestRate: number, termDays: number,
+  principal: number, annualInterestRate: number, termDays: number,
 ): number => {
-  if (dailyInterestRate === 0) return principal / termDays
-  const r = dailyInterestRate / 365
+  if (annualInterestRate === 0) return principal / termDays
+  const r = annualInterestRate / 365
   return principal * (r * (1 + r) ** termDays) / ((1 + r) ** termDays - 1)
 }
 ```
