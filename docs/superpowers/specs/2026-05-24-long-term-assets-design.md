@@ -183,6 +183,7 @@ export interface CrowdfundCampaign {
   targetAmount: number
   fameStake: number
   daysRemaining: number
+  plannedSuccessRoll: number             // 0..1, deterministisch beim START gezogen (§8.6)
   // resolvedOutcome ist undefined solange daysRemaining > 0.
   // processCrowdfundTick setzt den Wert bei daysRemaining === 0,
   // wendet die Folgen an und entfernt den Eintrag im selben Tick.

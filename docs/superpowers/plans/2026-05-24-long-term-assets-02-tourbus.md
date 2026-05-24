@@ -290,7 +290,7 @@ test('clicking slot calls onSlotClick with slotId', () => { /* ... */ })
 
 ```tsx
 import { GeneratedImagePanel } from '../../../ui/shared/GeneratedImagePanel'
-import { getSectionBackgroundPrompt, getModuleImagePrompt } from '../../../utils/imageGen'
+import { getSectionBackgroundPrompt, getModuleImagePrompt, resolveGenImageUrl } from '../../../utils/imageGen'
 import { TOURBUS_SLOT_POSITIONS } from '../../../utils/assetSections/tourbusConfig'
 import { MODULE_REGISTRY } from '../../../utils/assetModuleRegistry'
 import { TourbusTrailerOverlay } from './TourbusTrailerOverlay'
@@ -381,8 +381,8 @@ export const TourbusTrailerOverlay = ({ asset, onSlotClick }: Props) => {
       <GeneratedImagePanel
         prompt={getTrailerImagePrompt(asset.chassisFlavor)}
         alt="Trailer"
-        aspectRatio="4:3"
-        sizeHint={{ width: 640, height: 480 }}
+        aspectRatio="16:9"
+        sizeHint={{ width: 640, height: 360 }}
       />
       {addonSlots.map((slot, i) => (
         <button
