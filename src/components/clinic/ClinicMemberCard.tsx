@@ -1,6 +1,6 @@
-import { formatCurrency } from '../../utils/numberUtils'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
+import { formatCurrency } from '../../utils/numberUtils'
 import { GlitchButton } from '../../ui/GlitchButton'
 import { Tooltip } from '../../ui/shared'
 import { CLINIC_CONFIG } from '../../context/gameConstants'
