@@ -823,15 +823,17 @@ const calculateMemberRelationshipChange = (
   let amount = change.change
   // Apply traits
   if (amount < 0) {
-    if (hasGrudgeHolder && hasPeacemaker) {
-      // Opposing traits cancel each other out for negative changes
-    } else if (hasGrudgeHolder) {
+    if (hasGrudgeHolder && !hasPeacemaker) {
+      // Grudge holder amplifies negative relationship changes
       amount *= RELATIONSHIP_GRUDGE_HOLDER_MULTIPLIER
-    } else if (hasPeacemaker) {
+    } else if (!hasGrudgeHolder && hasPeacemaker) {
+      // Peacemaker dampens negative relationship changes
       amount *= RELATIONSHIP_PEACEMAKER_NEGATIVE_MULTIPLIER
     }
+    // If both traits are present, they cancel each other out explicitly by applying no multipliers.
   } else if (amount > 0) {
     if (hasPeacemaker) {
+      // Peacemaker amplifies positive relationship changes
       amount *= RELATIONSHIP_PEACEMAKER_POSITIVE_MULTIPLIER
     }
   }
