@@ -1,4 +1,3 @@
-import React from 'react'
 import { Modal } from './shared/Modal'
 import { GlitchButton } from './GlitchButton'
 import { useTranslation } from 'react-i18next'
