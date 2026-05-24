@@ -1267,7 +1267,11 @@ export const assetReducer = (state: GameState, action: GameAction): GameState =>
     case ActionTypes.PURCHASE_CHASSIS_FAILED:
     case ActionTypes.SELL_CHASSIS_FAILED:
     case ActionTypes.INSTALL_MODULE_FAILED:
-      return state  // Toast wird vom middleware ausgelöst, kein State-Change
+      // Reducer-Purity: reine No-Op. Toast-Dispatch geschieht NICHT hier.
+      // Der Action-Creator (`purchaseChassis` etc., §5.2) gibt die Failed-Action
+      // zurück; eine Middleware oder ein Thunk-Wrapper im UI-Layer dispatched
+      // den Toast als zusätzliche Action (z.B. ADD_TOAST). Reducer bleibt pure.
+      return state
     case ActionTypes.INSTALL_MODULE: {
       const p = action.payload
       const module = MODULE_REGISTRY[p.moduleId]
@@ -1428,7 +1432,42 @@ export const advanceDay = (state: GameState) => {
 ```
 
 - [ ] **Step 3: Reducer für ADVANCE_DAY** dispatched intern ASSET_TICK + alle Folge-Ticks, setzt neuen `rngSeed`.
-- [ ] **Step 4: Tests grün. Commit** — `feat(assets): wire advanceDay to asset ticks with deterministic RNG`
+
+- [ ] **Step 4: Bestehende `createAdvanceDayAction()`-Aufrufer migrieren**
+
+Existierender Code dispatched `createAdvanceDayAction()` (payloadless). Suche alle Call-Sites:
+
+```bash
+grep -rn 'createAdvanceDayAction\|ADVANCE_DAY' src --include='*.ts' --include='*.tsx'
+```
+
+Erwartete Treffer (mindestens): `src/context/actionCreators.ts`, `src/context/useGameDispatchActions.ts`. Jede Stelle, die `dispatch(createAdvanceDayAction())` aufruft, ersetzen durch:
+
+```ts
+import { advanceDay } from '../context/actionCreators'  // bzw. neuer Pfad
+// Vorher: dispatch(createAdvanceDayAction())
+// Nachher (Hook hat Zugriff auf den State):
+dispatch(advanceDay(state))
+```
+
+In `useGameDispatchActions.ts` (oder dem Hook, der die Action dispatched) muss der Hook über `useGameState()` Zugriff auf den aktuellen State haben, damit `advanceDay(state)` den `rngSeed` lesen kann. Falls der Hook bisher keinen State-Zugriff hatte: ergänzen.
+
+- [ ] **Step 5: Tests anpassen**
+
+Bestehende Tests, die `createAdvanceDayAction()` direkt aufrufen oder die `ADVANCE_DAY`-Action-Shape assertieren, müssen `dayRngStream` und `nextRngSeed` im Payload erwarten:
+
+```js
+test('advanceDay action carries dayRngStream and nextRngSeed', () => {
+  const action = advanceDay({ ...state, rngSeed: 42 })
+  assert.ok(Array.isArray(action.payload.dayRngStream))
+  assert.equal(action.payload.dayRngStream.length, 32)
+  assert.equal(typeof action.payload.nextRngSeed, 'number')
+})
+```
+
+Suche bestehende Tests, die das alte Action-Format prüfen: `grep -rn 'createAdvanceDayAction\|ADVANCE_DAY' tests`.
+
+- [ ] **Step 6: Tests grün. Commit** — `feat(assets): wire advanceDay to asset ticks with deterministic RNG`
 
 ## Task 14: Economy-Engine-Erweiterung
 
@@ -1609,7 +1648,7 @@ test('same prompt produces same URL (cache-friendly)', () => {
 
 ```tsx
 import { useState, type CSSProperties } from 'react'
-import { resolveGenImageUrl, getGeneratedImageFallbackUrl, isImageGenerationAvailable } from '../../utils/imageGen'
+import { resolveGenImageUrl, getGeneratedImageFallbackUrl, isImageGenerationAvailable, appendImageSize } from '../../utils/imageGen'
 
 export interface GeneratedImagePanelProps {
   prompt: string

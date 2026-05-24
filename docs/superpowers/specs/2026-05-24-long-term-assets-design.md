@@ -125,7 +125,9 @@ export interface ModuleUnlockReq {
     skill: string
     tier: number
   }
-  requiredOtherModuleInstalled?: string // ein anderes Modul auf demselben Asset
+  // String: genau dieses Modul muss auf irgendeinem Asset installiert sein.
+  // Array: OR-Set akzeptabler Modul-IDs — eines davon reicht.
+  requiredOtherModuleInstalled?: string | readonly string[]
 }
 
 export interface AssetModule {
@@ -398,7 +400,7 @@ Alle Module: `MODULE_REGISTRY: Record<string, AssetModule>` in `src/utils/assetM
 - `UPGRADE_CHASSIS_TIER`
 - `SELL_CHASSIS`
 - `REPAIR_CHASSIS`
-- `INSTALL_MODULE` (payload: `{ assetId, slotId, moduleId, newSlotIds?: string[] }`)
+- `INSTALL_MODULE` (payload: `{ assetId, slotId, moduleId, newSlotIds?: Array<{ slotType: SlotType; id: string }> }`)
 - `REMOVE_MODULE` (payload: `{ assetId, slotId }`)
 - `START_CROWDFUND` / `RESOLVE_CROWDFUND`
 - `ASSET_FORECLOSED`
@@ -412,7 +414,7 @@ Allgemeine Regeln:
 - Strippen Prototyp-Keys via `Object.hasOwn`
 - Validieren gegen Konfig
 - Returnen `Extract<GameAction, { type: typeof ActionTypes.X }>`
-- **IDs werden im Action-Creator generiert**, nicht im Reducer (Reducer-Purity-Constraint). Bei `INSTALL_MODULE` mit einem Modul das `addsSlots` enthält, generiert der Action-Creator die neuen Slot-IDs (z.B. via `getSafeUUID()`) und übergibt sie als `newSlotIds` im Payload — der Reducer setzt sie 1:1 ein
+- **IDs werden im Action-Creator generiert**, nicht im Reducer (Reducer-Purity-Constraint). Bei `INSTALL_MODULE` mit einem Modul, dessen `addsSlots` Einträge enthält, generiert der Action-Creator pro Eintrag die Slot-Objekte (`{ slotType, id }`) — `slotType` aus `module.addsSlots[i].slotType`, `id` via `getSafeUUID()` — und übergibt sie als `newSlotIds: Array<{ slotType: SlotType; id: string }>` im Payload. Der Reducer setzt die Slots 1:1 in `asset.slots` ein
 
 `PURCHASE_CHASSIS`-Validierung:
 - DIY-Chassis + `mode: 'loan'` → returnt `{ type: 'PURCHASE_CHASSIS_FAILED', reason: 'DIY_LOAN_NOT_ALLOWED' }`. UI deaktiviert die Loan-Option für DIY zusätzlich proaktiv, der Action-Creator ist der zweite Verteidigungsring

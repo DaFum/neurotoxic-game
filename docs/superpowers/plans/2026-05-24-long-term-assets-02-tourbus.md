@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Tourbus-Sektion vollständig spielbar machen: 3 Chassis-Tiers (legit + DIY), 16 Module mit Bildern, Vehikel-Seitenansicht mit Slot-Hotspots, Trailer-Overlay für `tb_trailer_hitch`.
+**Goal:** Tourbus-Sektion vollständig spielbar machen: 3 Chassis-Tiers (legit + DIY), 17 Module mit Bildern, Vehikel-Seitenansicht mit Slot-Hotspots, Trailer-Overlay für `tb_trailer_hitch`.
 
-**Architecture:** Erweitert die Plan-1-Foundation. `CHASSIS_CONFIG.tourbus_chassis` wird konkretisiert, `MODULE_REGISTRY` mit 16 Tourbus-Modulen ergänzt, `TourbusSection.tsx` registriert sich im `SECTION_VIEWS`-Plug-Point.
+**Architecture:** Erweitert die Plan-1-Foundation. `CHASSIS_CONFIG.tourbus_chassis` wird konkretisiert, `MODULE_REGISTRY` mit 17 Tourbus-Modulen ergänzt, `TourbusSection.tsx` registriert sich im `SECTION_VIEWS`-Plug-Point.
 
 **Tech Stack:** TypeScript, React 19, Tailwind v4, `GeneratedImagePanel` aus Plan 1.
 
@@ -148,7 +148,7 @@ test('every chassis slot type has at least one compatible module', () => {
 })
 ```
 
-- [ ] **Step 2: Modul-Definitionen** (Spec §4.3, alle 16):
+- [ ] **Step 2: Modul-Definitionen** (Spec §4.3, alle 17):
 
 ```ts
 import type { AssetModule } from '../../types/assets'
@@ -291,7 +291,7 @@ for (const [k, v] of Object.entries(PROMPTS)) MODULE_PROMPTS[k] = v
 ```
 
 - [ ] **Step 3:** `src/utils/assetModuleRegistry.ts` ergänzen um `import './assetSections/tourbusModules'` (Side-Effect-Import; alternative: explizites `registerTourbusModules()`-Call im App-Init).
-- [ ] **Step 4: Tests grün. Commit** — `feat(assets/tourbus): register 16 modules with prompts`
+- [ ] **Step 4: Tests grün. Commit** — `feat(assets/tourbus): register 17 modules with prompts`
 
 ## Task 4: `TourbusVehicleView`
 
@@ -573,6 +573,6 @@ test('Golden-Path trailer-stacking: hitch adds slots, addon installs, no infinit
 
 - `pnpm run test:all` grün inkl. neuer Tourbus-Tests
 - Tourbus-Tab zeigt entweder Erwerb-Button oder Vehikel-Seitenansicht
-- 16 Module sichtbar im `ModulePickerModal` (gefiltert nach Slot-Typ)
+- 17 Module sichtbar im `ModulePickerModal` (gefiltert nach Slot-Typ)
 - Trailer-Hitch erweitert Slot-Set um 2 Addon-Slots, zweites Hitch-Install schlägt mit `MAX_PER_ASSET` fehl
 - Bilder laden online über Pollinations, fallen offline auf Fallback-SVG zurück
