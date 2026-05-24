@@ -77,6 +77,8 @@ vi.mock('../src/context/GameState.tsx', () => ({
 
 // Mock utils
 vi.mock('../src/utils/gameStateUtils', () => ({
+  finiteNumberOr: (value, fallback) =>
+    typeof value === 'number' && Number.isFinite(value) ? value : fallback,
   clampBandHarmony: val => {
     if (!Number.isFinite(val)) return 1
     return Math.max(1, Math.min(100, Math.floor(val)))
