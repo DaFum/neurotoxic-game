@@ -822,14 +822,18 @@ const calculateMemberRelationshipChange = (
 
   let amount = change.change
   // Apply traits
-  if (amount < 0 && hasGrudgeHolder) {
-    amount *= RELATIONSHIP_GRUDGE_HOLDER_MULTIPLIER
-  }
-  if (amount > 0 && hasPeacemaker) {
-    amount *= RELATIONSHIP_PEACEMAKER_POSITIVE_MULTIPLIER
-  }
-  if (amount < 0 && hasPeacemaker) {
-    amount *= RELATIONSHIP_PEACEMAKER_NEGATIVE_MULTIPLIER
+  if (amount < 0) {
+    if (hasGrudgeHolder && hasPeacemaker) {
+      // Opposing traits cancel each other out for negative changes
+    } else if (hasGrudgeHolder) {
+      amount *= RELATIONSHIP_GRUDGE_HOLDER_MULTIPLIER
+    } else if (hasPeacemaker) {
+      amount *= RELATIONSHIP_PEACEMAKER_NEGATIVE_MULTIPLIER
+    }
+  } else if (amount > 0) {
+    if (hasPeacemaker) {
+      amount *= RELATIONSHIP_PEACEMAKER_POSITIVE_MULTIPLIER
+    }
   }
 
   const currentScore = currentRelationships[other] ?? RELATIONSHIP_DEFAULT_SCORE
