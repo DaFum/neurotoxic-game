@@ -9,7 +9,8 @@ import {
   clampMemberStamina,
   clampMemberMood,
   clampPlayerFame,
-  calculateFameLevel
+  calculateFameLevel,
+  finiteNumberOr
 } from './gameStateUtils'
 import type { PlayerState, BandState, BandMember } from '../types'
 import type { Effect, PurchaseItem, UnlockMessage } from '../types/components'
@@ -608,13 +609,16 @@ export const applyUnlockHQ = (
       let transform: (m: BandMember) => BandMember
       switch (item.id) {
         case 'hq_room_coffee':
-          transform = m => ({ ...m, mood: clampMemberMood(m.mood + 20) })
+          transform = m => ({
+            ...m,
+            mood: clampMemberMood(finiteNumberOr(m.mood, 0) + 20)
+          })
           break
         case 'hq_room_sofa':
           transform = m => ({
             ...m,
             stamina: clampMemberStamina(
-              m.stamina + 30,
+              finiteNumberOr(m.stamina, 0) + 30,
               getNumericProp(m, 'staminaMax', 100)
             )
           })
@@ -623,13 +627,16 @@ export const applyUnlockHQ = (
           transform = m => ({
             ...m,
             stamina: clampMemberStamina(
-              m.stamina + 10,
+              finiteNumberOr(m.stamina, 0) + 10,
               getNumericProp(m, 'staminaMax', 100)
             )
           })
           break
         default:
-          transform = m => ({ ...m, mood: clampMemberMood(m.mood + 5) })
+          transform = m => ({
+            ...m,
+            mood: clampMemberMood(finiteNumberOr(m.mood, 0) + 5)
+          })
       }
       const members = (band.members ?? []).map(transform)
       nextBandPatch = { ...(nextBandPatch ?? {}), members }

@@ -8,7 +8,8 @@ import {
   clampMemberStamina,
   applyInventoryItemDelta,
   isForbiddenKey,
-  hasForbiddenKeys
+  hasForbiddenKeys,
+  finiteNumberOr
 } from '../../utils/gameStateUtils'
 import { applyTraitUnlocks } from '../../utils/traitUtils'
 import { ActionTypes } from '../actionTypes'
@@ -402,15 +403,16 @@ const applyContrabandEffect = (
     const key = item.effectType as 'stamina' | 'mood'
     const updatedMembers = [...membersList]
 
+    const itemValue = finiteNumberOr(item.value, 0)
     updatedMembers[targetIndex] = {
       ...m,
       [key]:
         key === 'stamina'
           ? clampMemberStamina(
-              ((m[key] as number) ?? 0) + (item.value as number),
-              typeof m.staminaMax === 'number' ? m.staminaMax : 100
+              finiteNumberOr(m[key], 0) + itemValue,
+              finiteNumberOr(m.staminaMax, 100)
             )
-          : clampMemberMood(((m[key] as number) ?? 0) + (item.value as number))
+          : clampMemberMood(finiteNumberOr(m[key], 0) + itemValue)
     } as BandMember
 
     newBand.members = updatedMembers

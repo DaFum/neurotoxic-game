@@ -111,6 +111,16 @@ export const clampMemberStamina = (
 export const clampMemberMood = (mood: number): number => clamp0to100(mood)
 
 /**
+ * Returns `value` when it is a finite number, else `fallback`. Use this at
+ * the boundary between persisted/legacy state and arithmetic-then-clamp paths
+ * (`clampMemberMood(member.mood + delta)`), where a missing or `NaN` input
+ * would otherwise short-circuit a `Number.isFinite` guard inside the clamp
+ * and silently zero the result.
+ */
+export const finiteNumberOr = (value: unknown, fallback: number): number =>
+  typeof value === 'number' && Number.isFinite(value) ? value : fallback
+
+/**
  * Maps a 0..100 percentage onto an N-step integer scale (0..steps).
  * Shared by the brutalist HUD meters which all render block-bar gauges.
  */
@@ -697,16 +707,12 @@ export const calculateAppliedDelta = (
           ? copyFilteredProperties(memberDelta)
           : Object.create(null)
 
-        const moodChange =
-          typeof mDelta.moodChange === 'number' ? mDelta.moodChange : 0
-        const staminaChange =
-          typeof mDelta.staminaChange === 'number' ? mDelta.staminaChange : 0
+        const moodChange = finiteNumberOr(mDelta.moodChange, 0)
+        const staminaChange = finiteNumberOr(mDelta.staminaChange, 0)
 
-        const currentMood = typeof member.mood === 'number' ? member.mood : 0
-        const currentStamina =
-          typeof member.stamina === 'number' ? member.stamina : 0
-        const staminaMax =
-          typeof member.staminaMax === 'number' ? member.staminaMax : 100
+        const currentMood = finiteNumberOr(member.mood, 0)
+        const currentStamina = finiteNumberOr(member.stamina, 0)
+        const staminaMax = finiteNumberOr(member.staminaMax, 100)
 
         const newMood = clampMemberMood(currentMood + moodChange)
         const newStamina = clampMemberStamina(
@@ -999,16 +1005,16 @@ export const applyEventDelta = (
         ) {
           const rawMemberDelta = isArrayDelta ? membersDelta[i] : membersDelta
           const mDelta = asMemberDelta(rawMemberDelta) ?? Object.create(null)
-          const moodChange =
-            typeof mDelta.moodChange === 'number' ? mDelta.moodChange : 0
-          const staminaChange =
-            typeof mDelta.staminaChange === 'number' ? mDelta.staminaChange : 0
+          const moodChange = finiteNumberOr(mDelta.moodChange, 0)
+          const staminaChange = finiteNumberOr(mDelta.staminaChange, 0)
 
           if (moodChange !== 0 || staminaChange !== 0) {
-            const newMood = clampMemberMood(member.mood + moodChange)
+            const newMood = clampMemberMood(
+              finiteNumberOr(member.mood, 0) + moodChange
+            )
             const newStamina = clampMemberStamina(
-              member.stamina + staminaChange,
-              member.staminaMax
+              finiteNumberOr(member.stamina, 0) + staminaChange,
+              finiteNumberOr(member.staminaMax, 100)
             )
 
             if (newMood !== member.mood || newStamina !== member.stamina) {

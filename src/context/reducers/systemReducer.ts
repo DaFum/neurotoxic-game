@@ -26,7 +26,8 @@ import {
   clampVanFuel,
   clampRelationship,
   isPlainObject,
-  isEmptyObject
+  isEmptyObject,
+  finiteNumberOr
 } from '../../utils/gameStateUtils'
 import { calculateDailyUpdates } from '../../utils/simulationUtils'
 import {
@@ -118,9 +119,6 @@ const inferLoadedMapNodeType = (
   }
   return 'SPECIAL'
 }
-
-const finiteNumberOr = (value: unknown, fallback: number): number =>
-  typeof value === 'number' && Number.isFinite(value) ? value : fallback
 
 const finiteOptionalNumber = (value: unknown): number | undefined =>
   typeof value === 'number' && Number.isFinite(value) ? value : undefined

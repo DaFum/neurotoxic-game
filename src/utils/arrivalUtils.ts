@@ -7,7 +7,8 @@ import {
   clampPlayerFame,
   calculateFameLevel,
   clampBandHarmony,
-  BALANCE_CONSTANTS
+  BALANCE_CONSTANTS,
+  finiteNumberOr
 } from './gameStateUtils'
 import { secureRandom } from './crypto'
 import i18n from '../i18n'
@@ -173,8 +174,11 @@ export const handleNodeArrival = (
       const newMembers = new Array(members.length)
       for (let i = 0; i < members.length; i++) {
         const m = members[i]
-        const newStamina = clampMemberStamina(m.stamina + 20, m.staminaMax)
-        const newMood = clampMemberMood(m.mood + 10)
+        const newStamina = clampMemberStamina(
+          finiteNumberOr(m.stamina, 0) + 20,
+          finiteNumberOr(m.staminaMax, 100)
+        )
+        const newMood = clampMemberMood(finiteNumberOr(m.mood, 0) + 10)
         newMembers[i] = {
           ...m,
           stamina: newStamina,
