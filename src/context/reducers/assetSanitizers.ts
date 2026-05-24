@@ -1,0 +1,237 @@
+import { finiteNumberOr, isPlainObject } from '../../utils/gameStateUtils'
+import { MODULE_REGISTRY } from '../../utils/assetModuleRegistry'
+import type {
+  AssetFlavor,
+  AssetSlot,
+  AcquisitionMode,
+  ChassisTier,
+  CrowdfundCampaign,
+  Liability,
+  LongTermAsset,
+  SlotType
+} from '../../types/assets'
+
+const VALID_KINDS: ReadonlySet<string> = new Set([
+  'tourbus_chassis',
+  'studio_chassis',
+  'bandhaus_chassis',
+  'merch_workshop_chassis'
+])
+const VALID_FLAVORS: ReadonlySet<string> = new Set(['legit', 'diy'])
+const VALID_MODES: ReadonlySet<string> = new Set(['cash', 'loan', 'crowdfund'])
+const VALID_SOURCES: ReadonlySet<string> = new Set(['loan', 'crowdfund'])
+const VALID_TIERS: ReadonlySet<number> = new Set([1, 2, 3])
+const VALID_OUTCOMES: ReadonlySet<string> = new Set(['success', 'fail'])
+
+const HOSTILE_KEYS = ['__proto__', 'constructor', 'prototype']
+
+/**
+ * Returns a shallow copy of `obj` with prototype-pollution keys stripped.
+ * Used as the first line of defense before reading any persisted asset data.
+ */
+const stripHostileKeys = <T extends Record<string, unknown>>(obj: T): T => {
+  const out: Record<string, unknown> = {}
+  for (const k of Object.keys(obj)) {
+    if (HOSTILE_KEYS.includes(k)) continue
+    if (Object.hasOwn(obj, k)) out[k] = obj[k]
+  }
+  return out as T
+}
+
+const clampCondition = (value: number): number => {
+  if (!Number.isFinite(value)) return 0
+  return Math.max(0, Math.min(100, value))
+}
+
+const sanitizePosition = (raw: unknown): { x: number; y: number } => {
+  if (!isPlainObject(raw)) return { x: 0, y: 0 }
+  return {
+    x: finiteNumberOr(raw.x, 0),
+    y: finiteNumberOr(raw.y, 0)
+  }
+}
+
+const sanitizeSlot = (
+  raw: unknown,
+  seenModuleIds: Set<string>
+): AssetSlot | null => {
+  if (!isPlainObject(raw)) return null
+  const clean = stripHostileKeys(raw)
+  if (typeof clean.id !== 'string' || clean.id.length === 0) return null
+  if (typeof clean.slotType !== 'string') return null
+
+  const moduleId =
+    typeof clean.installedModuleId === 'string' ? clean.installedModuleId : null
+
+  // Referential integrity: the module must exist and match the slot type,
+  // and it must not already be installed in another slot of the same asset.
+  let validModuleId: string | null = null
+  if (moduleId !== null && !seenModuleIds.has(moduleId)) {
+    const moduleEntry = MODULE_REGISTRY[moduleId]
+    if (moduleEntry && moduleEntry.slotType === clean.slotType) {
+      validModuleId = moduleId
+      seenModuleIds.add(moduleId)
+    }
+  }
+
+  // Slots fall into two categories:
+  // 1. Chassis-tier slots: no addedByModuleId — always kept (validated against
+  //    the chassis config separately by the install/upgrade flow, not here).
+  // 2. Dynamically-added slots: addedByModuleId points at the module that
+  //    created them. If that module is no longer in the registry, the slot is
+  //    orphaned and must be dropped to avoid dangling references.
+  let addedByModuleId: string | undefined
+  if (clean.addedByModuleId !== undefined) {
+    if (
+      typeof clean.addedByModuleId !== 'string' ||
+      !Object.hasOwn(MODULE_REGISTRY, clean.addedByModuleId)
+    ) {
+      // Orphaned dynamic slot — drop it entirely.
+      return null
+    }
+    addedByModuleId = clean.addedByModuleId
+  }
+
+  return {
+    id: clean.id,
+    slotType: clean.slotType as SlotType,
+    position: sanitizePosition(clean.position),
+    installedModuleId: validModuleId,
+    ...(addedByModuleId !== undefined ? { addedByModuleId } : {})
+  }
+}
+
+const sanitizeSlots = (raw: unknown): AssetSlot[] => {
+  if (!Array.isArray(raw)) return []
+  const out: AssetSlot[] = []
+  const seenModuleIds = new Set<string>()
+  for (const entry of raw) {
+    const slot = sanitizeSlot(entry, seenModuleIds)
+    if (slot !== null) out.push(slot)
+  }
+  // Drop child-slots whose parent module is no longer installed on this asset.
+  const installedModuleIds = new Set(
+    out.map(s => s.installedModuleId).filter((id): id is string => id !== null)
+  )
+  return out.filter(
+    s =>
+      s.addedByModuleId === undefined ||
+      installedModuleIds.has(s.addedByModuleId)
+  )
+}
+
+export const sanitizeAssets = (raw: unknown): LongTermAsset[] => {
+  if (!Array.isArray(raw)) return []
+  const out: LongTermAsset[] = []
+  const seenIds = new Set<string>()
+  for (const item of raw) {
+    if (!isPlainObject(item)) continue
+    const clean = stripHostileKeys(item)
+    if (typeof clean.id !== 'string' || seenIds.has(clean.id)) continue
+    if (!VALID_KINDS.has(clean.kind as string)) continue
+    if (!VALID_FLAVORS.has(clean.chassisFlavor as string)) continue
+    const tier = Number(clean.chassisTier)
+    if (!VALID_TIERS.has(tier)) continue
+    if (!VALID_MODES.has(clean.acquisitionMode as string)) continue
+
+    out.push({
+      id: clean.id,
+      kind: clean.kind as LongTermAsset['kind'],
+      chassisFlavor: clean.chassisFlavor as AssetFlavor,
+      chassisTier: tier as ChassisTier,
+      condition: clampCondition(finiteNumberOr(clean.condition, 100)),
+      baseUpkeep: finiteNumberOr(clean.baseUpkeep, 0),
+      baseDailyRevenue: finiteNumberOr(clean.baseDailyRevenue, 0),
+      slots: sanitizeSlots(clean.slots),
+      acquiredOnDay: finiteNumberOr(clean.acquiredOnDay, 0),
+      acquisitionMode: clean.acquisitionMode as AcquisitionMode,
+      baseRiskEventChance: finiteNumberOr(clean.baseRiskEventChance, 0)
+    })
+    seenIds.add(clean.id)
+  }
+  return out
+}
+
+export const sanitizeLiabilities = (
+  raw: unknown,
+  assets: ReadonlyArray<{ id: string }>
+): Liability[] => {
+  if (!Array.isArray(raw)) return []
+  const assetIds = new Set(assets.map(a => a.id))
+  const out: Liability[] = []
+  const seenIds = new Set<string>()
+  for (const item of raw) {
+    if (!isPlainObject(item)) continue
+    const clean = stripHostileKeys(item)
+    if (typeof clean.id !== 'string' || seenIds.has(clean.id)) continue
+    if (!VALID_SOURCES.has(clean.source as string)) continue
+    if (typeof clean.assetId !== 'string' || !assetIds.has(clean.assetId))
+      continue
+
+    const result: Liability = {
+      id: clean.id,
+      source: clean.source as Liability['source'],
+      assetId: clean.assetId,
+      principalRemaining: finiteNumberOr(clean.principalRemaining, 0),
+      interestRate: finiteNumberOr(clean.interestRate, 0),
+      dailyPayment: finiteNumberOr(clean.dailyPayment, 0),
+      termDaysRemaining: finiteNumberOr(clean.termDaysRemaining, 0),
+      defaultCounter: finiteNumberOr(clean.defaultCounter, 0)
+    }
+    if (typeof clean.crowdfundFamePromised === 'number') {
+      result.crowdfundFamePromised = finiteNumberOr(
+        clean.crowdfundFamePromised,
+        0
+      )
+    }
+    out.push(result)
+    seenIds.add(clean.id)
+  }
+  return out
+}
+
+export const sanitizeCrowdfundCampaigns = (
+  raw: unknown
+): CrowdfundCampaign[] => {
+  if (!Array.isArray(raw)) return []
+  const out: CrowdfundCampaign[] = []
+  const seenIds = new Set<string>()
+  for (const item of raw) {
+    if (!isPlainObject(item)) continue
+    const clean = stripHostileKeys(item)
+    if (typeof clean.id !== 'string' || seenIds.has(clean.id)) continue
+    if (!isPlainObject(clean.assetSpec)) continue
+    const spec = stripHostileKeys(clean.assetSpec)
+    if (!VALID_KINDS.has(spec.kind as string)) continue
+    if (!VALID_FLAVORS.has(spec.flavor as string)) continue
+    const tier = Number(spec.chassisTier)
+    if (!VALID_TIERS.has(tier)) continue
+
+    const outcome = clean.resolvedOutcome
+    const result: CrowdfundCampaign = {
+      id: clean.id,
+      assetSpec: {
+        kind: spec.kind as CrowdfundCampaign['assetSpec']['kind'],
+        flavor: spec.flavor as AssetFlavor,
+        chassisTier: tier as ChassisTier
+      },
+      targetAmount: finiteNumberOr(clean.targetAmount, 0),
+      fameStake: finiteNumberOr(clean.fameStake, 0),
+      daysRemaining: finiteNumberOr(clean.daysRemaining, 0),
+      plannedSuccessRoll: finiteNumberOr(clean.plannedSuccessRoll, 0)
+    }
+    if (typeof outcome === 'string' && VALID_OUTCOMES.has(outcome)) {
+      result.resolvedOutcome = outcome as CrowdfundCampaign['resolvedOutcome']
+    }
+    out.push(result)
+    seenIds.add(clean.id)
+  }
+  return out
+}
+
+export const sanitizeRngSeed = (raw: unknown): number => {
+  if (typeof raw === 'number' && Number.isFinite(raw) && raw >= 0) {
+    return raw | 0
+  }
+  return Date.now() & 0xffffffff
+}

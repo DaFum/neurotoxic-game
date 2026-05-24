@@ -60,6 +60,12 @@ import type { MinigameType } from '../../types/game'
 import { QuestLifecycle } from '../../domain/questLifecycle'
 import { getSafeRandom } from '../../utils/crypto'
 import { ALLOWED_TOAST_TYPES, sanitizeLoadedToast } from './toastSanitizers'
+import {
+  sanitizeAssets,
+  sanitizeCrowdfundCampaigns,
+  sanitizeLiabilities,
+  sanitizeRngSeed
+} from './assetSanitizers'
 
 const ALLOWED_MINIGAME_TYPES = new Set<MinigameType>(
   Object.values(MINIGAME_TYPES)
@@ -1420,6 +1426,15 @@ export const handleLoadGame = (
   const parsedVersion = Number(rawVersion)
   const explicitVersion = Number.isFinite(parsedVersion) ? parsedVersion : 0
 
+  // Assets must be sanitized before liabilities so orphan-detection
+  // (sanitizeLiabilities filters out liabilities pointing at non-existent assets)
+  // sees the validated asset set.
+  const sanitizedAssets = sanitizeAssets(loadedState.assets)
+  const sanitizedLiabilities = sanitizeLiabilities(
+    loadedState.liabilities,
+    sanitizedAssets
+  )
+
   const safeState: GameState = {
     ...state,
     version: explicitVersion,
@@ -1459,7 +1474,13 @@ export const handleLoadGame = (
       : (state.unlocks ?? []),
     completedMilestones: Array.isArray(loadedState.completedMilestones)
       ? sanitizeStringArray(loadedState.completedMilestones)
-      : (state.completedMilestones ?? [])
+      : (state.completedMilestones ?? []),
+    assets: sanitizedAssets,
+    liabilities: sanitizedLiabilities,
+    crowdfundCampaigns: sanitizeCrowdfundCampaigns(
+      loadedState.crowdfundCampaigns
+    ),
+    rngSeed: sanitizeRngSeed(loadedState.rngSeed)
   }
 
   // Apply venue migrations using spreads

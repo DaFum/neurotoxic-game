@@ -104,6 +104,15 @@ export interface GameState {
   pendingBandHQOpen: boolean
   pendingSupplyStopInventory: PurchaseItem[] | null
   completedMilestones: string[]
+  // Long-term asset system (see docs/superpowers/specs/2026-05-24-long-term-assets-design.md)
+  assets: import('./assets').LongTermAsset[]
+  liabilities: import('./assets').Liability[]
+  crowdfundCampaigns: import('./assets').CrowdfundCampaign[]
+  /**
+   * Persisted seed for deterministic asset-tick RNG. Action creators (notably
+   * `advanceDay`) read this to pre-roll a `dayRngStream` for the reducer.
+   */
+  rngSeed: number
 }
 
 export type RawLoadedGame = UnknownRecord
