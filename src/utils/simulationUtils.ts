@@ -368,8 +368,8 @@ const updateVanCondition = (
 }
 
 const updateBandHarmony = (
-  nextBand: BandState,
   nextPlayer: PlayerState,
+  nextBand: BandState,
   nextSocial: SocialState,
   controversySnapshot: number,
   rng: () => number,
@@ -418,8 +418,8 @@ const updateBandHarmony = (
 }
 
 const updateSocialDecay = (
-  nextSocial: SocialState,
   nextPlayer: PlayerState,
+  nextSocial: SocialState,
   rng: () => number
 ) => {
   // 3. Social Decay
@@ -592,9 +592,9 @@ export const calculateDailyUpdates = (
   const nextPlayer = {
     ...currentState.player,
     day: currentState.player.day + 1
-  } as PlayerState
-  const nextBand = { ...currentState.band } as BandState
-  const nextSocial = { ...currentState.social } as SocialState
+  }
+  const nextBand = { ...currentState.band }
+  const nextSocial = { ...currentState.social }
 
   // Snapshot controversyLevel at start of daily update to ensure consistent checks
   const controversySnapshot = nextSocial.controversyLevel || 0
@@ -602,8 +602,8 @@ export const calculateDailyUpdates = (
 
   updatePlayerFinances(nextPlayer, nextBand, nextSocial, rng)
   updateVanCondition(nextPlayer, controversySnapshot)
-  updateBandHarmony(nextBand, nextPlayer, nextSocial, controversySnapshot, rng, pendingFlags)
-  updateSocialDecay(nextSocial, nextPlayer, rng)
+  updateBandHarmony(nextPlayer, nextBand, nextSocial, controversySnapshot, rng, pendingFlags)
+  updateSocialDecay(nextPlayer, nextSocial, rng)
   updatePassiveEffectsAndMembers(nextPlayer, nextBand, nextSocial, controversySnapshot, rng)
 
   return {
