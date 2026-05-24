@@ -1,6 +1,6 @@
 ---
 name: refactor-with-safety
-description: refactor code without breaking functionality. Trigger when asked to clean up, restructure, or optimize code. Enforces test coverage and quality gates.
+description: Refactor code without breaking functionality. Trigger when asked to clean up, restructure, or optimize code. Enforces test coverage and quality gates.
 ---
 
 # Refactor with Safety

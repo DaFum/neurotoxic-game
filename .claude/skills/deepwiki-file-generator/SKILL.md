@@ -1,12 +1,6 @@
 ---
 name: deepwiki-file-generator
-description: >
-  Generate and improve `.devin/wiki.json` files that steer DeepWiki documentation for repositories.
-  Use this skill whenever the user mentions DeepWiki, wiki.json, Devin wiki, repository documentation generation,
-  or wants to control how their codebase gets auto-documented. Also trigger when users say things like
-  "document my repo", "generate wiki config", "improve my wiki structure", "my DeepWiki is missing pages",
-  or reference `.devin/wiki.json` in any way. Works for both creating new configs from scratch and
-  improving existing ones.
+description: Generate and improve `.devin/wiki.json` files that steer DeepWiki documentation for repositories. Use when the user mentions DeepWiki, wiki.json, Devin wiki, repository documentation generation, or organizing/generating a knowledge base for an AI agent.
 ---
 
 # DeepWiki wiki.json Generator

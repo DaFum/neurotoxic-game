@@ -1,6 +1,6 @@
 ---
 name: i18n-consistency-checker
-description: Diff en/ and de/ locale JSON files to surface missing or mismatched translation keys
+description: Diff en/ and de/ locale JSON files to surface missing or mismatched translation keys. Use when checking for un-translated strings or ensuring i18n parity.
 user-invocable: false
 ---
 

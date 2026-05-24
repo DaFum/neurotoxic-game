@@ -1,6 +1,6 @@
 ---
 name: writing-skills
-description: Use when creating new skills, editing existing skills, or verifying skills work before deployment
+description: Write and test agent skills using TDD. Use when creating new skills, editing existing skills, or verifying skills work before deployment.
 ---
 
 # Writing Skills

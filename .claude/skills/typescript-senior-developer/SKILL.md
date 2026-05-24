@@ -1,19 +1,6 @@
 ---
 name: typescript-senior-developer
-description: >
-  TypeScript senior-developer guidance for the NEUROTOXIC codebase — writing,
-  reviewing, refactoring, and migrating TypeScript with strict-mode discipline.
-  Trigger when: adding types to a `.js`/`.jsx` file, migrating JS to TS, fixing
-  `tsc` errors, chasing `any` leaks, writing generics or conditional/mapped types,
-  designing a discriminated union, typing a reducer or action creator, picking
-  `type` vs `interface`, narrowing `unknown` (API/JSON/localStorage), writing
-  type guards, typing React 19 props/refs/hooks, asking "how do I type this?",
-  deciding between `as` / `satisfies` / type assertion, choosing a utility type
-  (`Partial`/`Pick`/`Extract`/`Omit`/`Record`/`ReturnType`/`Parameters`), handling
-  `@ts-expect-error` suppressions, touching `src/types/` or `src/context/action*`,
-  extending a clamp in `gameStateUtils.ts`, or working with `SONGS_BY_ID`-style
-  lookup Maps. Also trigger for tsconfig questions, `isolatedModules` / `import type`
-  errors, module augmentation, and `.d.ts` editing.
+description: Provide TypeScript senior-developer guidance for the NEUROTOXIC codebase — writing, reviewing, refactoring, and migrating TypeScript with strict-mode discipline. Trigger when adding types to a `.js`/`.jsx` file, migrating JS to TS, fixing `tsc` errors, chasing `any` leaks, writing generics or conditional/mapped types, designing a discriminated union, typing a reducer or action creator, picking `type` vs `interface`, narrowing `unknown` (API/JSON/localStorage), writing type guards, typing React 19 props/refs/hooks, asking "how do I type this?", deciding between `as` / `satisfies` / type assertion, choosing a utility type, handling `@ts-expect-error` suppressions, or working with `SONGS_BY_ID`-style lookup Maps.
 ---
 
 # TypeScript Senior Developer
