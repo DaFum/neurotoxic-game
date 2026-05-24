@@ -656,6 +656,61 @@ test('generateBrandOffers preserves canonical deal id and name from the catalog'
   }
 })
 
+test('generateBrandOffers rejects NaN / Infinity social metrics from corrupted state', () => {
+  // A corrupted UPDATE_SOCIAL payload (or hostile in-memory state) can put
+  // NaN/Infinity into the numeric social fields. `NaN < threshold` is
+  // always false, so a naive `typeof === 'number'` check would let every
+  // deal bypass its follower/zealotry/controversy gates. The
+  // `finiteNumberOr` coercion must collapse those to 0 so eligibility
+  // still degrades to the stretch fallback rather than handing out
+  // high-tier deals to a corrupted band.
+  const gameState = {
+    social: {
+      instagram: Number.NaN,
+      tiktok: Infinity,
+      youtube: -Infinity,
+      zealotry: Number.NaN,
+      controversyLevel: Number.NaN,
+      trend: 'TECH',
+      activeDeals: [],
+      brandReputation: { EVIL: Number.NaN }
+    },
+    band: { members: [{ traits: { party_animal: { id: 'party_animal' } } }] }
+  }
+  const offers = generateBrandOffers(gameState, () => 0.1)
+  assert.equal(offers.length, 3, 'Must still surface exactly 3 offers')
+  for (const offer of offers) {
+    assert.equal(
+      offer.flavor.isStretched,
+      true,
+      'NaN-followers band must only receive stretch-tier offers'
+    )
+  }
+})
+
+test('generateBrandOffers never returns duplicate canonical ids', () => {
+  const gameState = {
+    social: {
+      instagram: 1000000,
+      tiktok: 1000000,
+      youtube: 1000000,
+      trend: 'TECH',
+      activeDeals: [],
+      brandReputation: {}
+    },
+    band: {
+      members: [{ traits: { party_animal: { id: 'party_animal' } } }]
+    }
+  }
+  const offers = generateBrandOffers(gameState, () => 0.1)
+  const ids = offers.map(o => o.id)
+  assert.equal(
+    new Set(ids).size,
+    ids.length,
+    'Offer ids must be unique (React key + negotiation map invariant)'
+  )
+})
+
 test('generateBrandOffers attaches flavor metadata to every offer', () => {
   const gameState = {
     social: {

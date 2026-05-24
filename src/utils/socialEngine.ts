@@ -18,7 +18,8 @@ import { ALLOWED_TRENDS, ALLOWED_TRENDS_SET } from '../data/socialTrends'
 import {
   hasActiveSponsorship,
   clampPlayerMoney,
-  clampBandHarmony
+  clampBandHarmony,
+  finiteNumberOr
 } from './gameStateUtils'
 import { buildBrandOffer } from './brandOfferFlavor'
 import type {
@@ -609,7 +610,9 @@ const scoreEntry = (
 ): number => {
   const reputation = gameState.social?.brandReputation ?? {}
   const align = String(entry.deal.alignment)
-  const rep = Object.hasOwn(reputation, align) ? (reputation[align] ?? 0) : 0
+  const rep = Object.hasOwn(reputation, align)
+    ? finiteNumberOr(reputation[align], 0)
+    : 0
   const tierPenalty = entry.tier * 30
   const jitter = rng() * 25
   return rep - rivalPenalty - tierPenalty + jitter
@@ -627,10 +630,14 @@ export const generateBrandOffers = (
     return []
   }
 
+  // Coerce numeric social fields via `finiteNumberOr` so a corrupted /
+  // hostile state (NaN / Infinity / non-number) cannot bypass eligibility
+  // gates — `NaN < threshold` is false for every threshold, which would
+  // otherwise let any deal slip through.
   const totalFollowers =
-    (typeof social.instagram === 'number' ? social.instagram : 0) +
-    (typeof social.tiktok === 'number' ? social.tiktok : 0) +
-    (typeof social.youtube === 'number' ? social.youtube : 0)
+    finiteNumberOr(social.instagram, 0) +
+    finiteNumberOr(social.tiktok, 0) +
+    finiteNumberOr(social.youtube, 0)
 
   const trendVal =
     typeof social.trend === 'string'
@@ -640,9 +647,8 @@ export const generateBrandOffers = (
   const matchCtx: DealMatchContext = {
     totalFollowers,
     trendVal,
-    zealotry: typeof social.zealotry === 'number' ? social.zealotry : 0,
-    controversy:
-      typeof social.controversyLevel === 'number' ? social.controversyLevel : 0,
+    zealotry: finiteNumberOr(social.zealotry, 0),
+    controversy: finiteNumberOr(social.controversyLevel, 0),
     band
   }
 
@@ -671,20 +677,13 @@ export const generateBrandOffers = (
     }))
     .sort((a, b) => b.score - a.score)
 
-  const picked: PoolEntry[] = []
-  for (const { entry } of scored) {
-    if (picked.length >= 3) break
-    picked.push(entry)
-  }
-
-  // Guarantee exactly 3 offers. If the catalog cannot supply 3 distinct
-  // entries (small pool), duplicate the highest-scored deal with a
-  // `desperate`-tier flavor so each card still feels distinct.
-  while (picked.length > 0 && picked.length < 3) {
-    const seed = picked[0]
-    if (!seed) break
-    picked.push({ deal: seed.deal, tier: 2 })
-  }
+  // `buildEligibilityPool` is guaranteed to surface ≥ 3 distinct catalog
+  // entries when the static `BRAND_DEALS` catalog has ≥ 3 entries (it
+  // walks the full catalog at tier 2 without restrictions). We therefore
+  // never duplicate offers — duplicate ids would collide on the React key
+  // in `DealsPhase`, on the negotiation map (`negotiatedDeals[id]`), and
+  // on the i18n + canonical-name lookup in `brandDealI18n`.
+  const picked = scored.slice(0, 3).map(({ entry }) => entry)
 
   return picked.map(entry =>
     buildBrandOffer(entry.deal, {
