@@ -15,7 +15,13 @@ import {
   BALANCE_CONSTANTS,
   finiteNumberOr
 } from './gameStateUtils'
-import type { PlayerState, BandState, GameState, SocialState, BandMember } from '../types'
+import type {
+  PlayerState,
+  BandState,
+  GameState,
+  SocialState,
+  BandMember
+} from '../types'
 import type { Song } from '../types/audio'
 import type { ActiveEffect } from '../types/components'
 
@@ -290,7 +296,6 @@ export const calculateGigPhysics = (bandState: BandState, song: Song) => {
 const CONTROVERSY_ACCELERATED_DECAY_THRESHOLD = 55
 const CONTROVERSY_ACCELERATED_DECAY_AMOUNT = 3
 const CONTROVERSY_NORMAL_DECAY_AMOUNT = 1
-
 
 const updatePlayerFinances = (
   nextPlayer: PlayerState,
@@ -584,7 +589,6 @@ const updatePassiveEffectsAndMembers = (
   }
 }
 
-
 export const calculateDailyUpdates = (
   currentState: GameState,
   rng: () => number = getSafeRandom
@@ -602,9 +606,22 @@ export const calculateDailyUpdates = (
 
   updatePlayerFinances(nextPlayer, nextBand, nextSocial, rng)
   updateVanCondition(nextPlayer, controversySnapshot)
-  updateBandHarmony(nextPlayer, nextBand, nextSocial, controversySnapshot, rng, pendingFlags)
+  updateBandHarmony(
+    nextPlayer,
+    nextBand,
+    nextSocial,
+    controversySnapshot,
+    rng,
+    pendingFlags
+  )
   updateSocialDecay(nextPlayer, nextSocial, rng)
-  updatePassiveEffectsAndMembers(nextPlayer, nextBand, nextSocial, controversySnapshot, rng)
+  updatePassiveEffectsAndMembers(
+    nextPlayer,
+    nextBand,
+    nextSocial,
+    controversySnapshot,
+    rng
+  )
 
   return {
     player: nextPlayer,

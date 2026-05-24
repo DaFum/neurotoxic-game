@@ -18,11 +18,13 @@ import { ALLOWED_TRENDS, ALLOWED_TRENDS_SET } from '../data/socialTrends'
 import {
   hasActiveSponsorship,
   clampPlayerMoney,
-  clampBandHarmony
+  clampBandHarmony,
+  finiteNumberOr
 } from './gameStateUtils'
+import { buildBrandOffer } from './brandOfferFlavor'
 import type {
-  BrandAlignment,
   BrandDeal,
+  BrandOffer,
   SocialEngineGameState,
   SocialPostOption
 } from '../types/social'
@@ -464,144 +466,12 @@ export const generateDailyTrend = (
 }
 
 /**
- * Generates a dynamic brand name based on alignment.
- * @param {string} baseName - Fallback or base name.
- * @param {string} alignment - Brand alignment (EVIL, CORPORATE, INDIE, SUSTAINABLE).
- * @param {Function} rng - Random number generator.
- * @returns {string} Generated brand name.
+ * Generates a dynamic brand-style name. Re-exported from `brandOfferFlavor`
+ * so existing callers (e.g. `rivalEngine.generateRivalBand`) keep working.
+ * Brand-deal offers use `buildBrandOffer()` instead and never overwrite
+ * the canonical `deal.name` from the static catalog.
  */
-type BrandNameParts = {
-  prefixes: string[]
-  suffixes: string[]
-  types?: string[]
-  noSpace?: boolean
-}
-
-const BRAND_NAME_PARTS: Record<BrandAlignment, BrandNameParts> = {
-  EVIL: {
-    prefixes: [
-      'Toxic',
-      'Neon',
-      'Quantum',
-      'Hyper',
-      'Radioactive',
-      'Cyber',
-      'Acid',
-      'Vile'
-    ],
-    suffixes: [
-      'Rush',
-      'Blast',
-      'Surge',
-      'Core',
-      'Sludge',
-      'Venom',
-      'Waste',
-      'X'
-    ],
-    types: ['Energy', 'Systems', 'Labs', 'Corp', 'Chemicals']
-  },
-  CORPORATE: {
-    prefixes: [
-      'Global',
-      'United',
-      'Apex',
-      'Summit',
-      'Prime',
-      'Omni',
-      'Macro',
-      'Elite'
-    ],
-    suffixes: [
-      'Dynamics',
-      'Solutions',
-      'Holdings',
-      'Ventures',
-      'Capital',
-      'Industries',
-      'Group'
-    ]
-  },
-  INDIE: {
-    prefixes: [
-      'Void',
-      'Abyss',
-      'Shadow',
-      'Underground',
-      'Basement',
-      'Garage',
-      'Lo-Fi',
-      'Raw'
-    ],
-    suffixes: [
-      'Records',
-      'Audio',
-      'Tapes',
-      'Sound',
-      'Collective',
-      'Zine',
-      'Press'
-    ]
-  },
-  SUSTAINABLE: {
-    prefixes: [
-      'Green',
-      'Eco',
-      'Pure',
-      'Nature',
-      'Gaia',
-      'Solar',
-      'Bio',
-      'Earth'
-    ],
-    suffixes: [
-      'Path',
-      'Roots',
-      'Harvest',
-      'Bloom',
-      'Cycle',
-      'Life',
-      'Leaf'
-    ],
-    types: ['Snacks', 'Wear', 'Gear', 'Organics', 'Co-op'],
-    noSpace: true
-  },
-  GOOD: {
-    prefixes: ['Noble', 'Brave', 'Valiant', 'Bright', 'Radiant'],
-    suffixes: ['Hearts', 'Souls', 'Shield', 'Light', 'Path'],
-    types: ['Apparel', 'Charity', 'Fund', 'Trust', 'Foundation']
-  },
-  NEUTRAL: {
-    prefixes: ['Standard', 'General', 'Prime', 'Apex', 'Solid'],
-    suffixes: ['Goods', 'Works', 'Tech', 'Systems', 'Solutions']
-  }
-}
-
-export const generateBrandName = (
-  baseName: string,
-  alignment: BrandAlignment,
-  rng: RandomFn = secureRandom
-): string => {
-  const parts = BRAND_NAME_PARTS[alignment]
-  if (!parts) return baseName
-
-  const pick = (arr: string[]): string => {
-    const idx = Math.floor(rng() * arr.length)
-    return arr[idx] ?? arr[0] ?? ''
-  }
-
-  const p = pick(parts.prefixes)
-  const s = pick(parts.suffixes)
-
-  const base = parts.noSpace ? `${p}${s}` : `${p} ${s}`
-
-  if (parts.types) {
-    const t = pick(parts.types)
-    return `${base} ${t}`
-  }
-
-  return base
-}
+export { generateBrandName } from './brandOfferFlavor'
 
 /**
  * Generates available brand deal offers based on band status and reputation.
@@ -619,144 +489,211 @@ export const calculateZealotryEffects = (
   }
 }
 
+type EligibilityTier = 0 | 1 | 2
+
+interface DealMatchContext {
+  totalFollowers: number
+  trendVal: AllowedTrend | undefined
+  zealotry: number
+  controversy: number
+  band: SocialEngineGameState['band']
+}
+
+const matchesStrict = (deal: BrandDeal, ctx: DealMatchContext): boolean => {
+  if (ctx.totalFollowers < deal.requirements.followers) return false
+
+  if (ctx.trendVal && deal.requirements.trend) {
+    if (ALLOWED_TRENDS_SET && !ALLOWED_TRENDS_SET.has(ctx.trendVal))
+      return false
+    if (deal.requirements.trendSet) {
+      if (!deal.requirements.trendSet.has(ctx.trendVal)) return false
+    } else if (!deal.requirements.trend.includes(ctx.trendVal)) {
+      return false
+    }
+  }
+
+  if (
+    deal.requirements.trait &&
+    !bandHasTrait(ctx.band, deal.requirements.trait)
+  )
+    return false
+
+  if (
+    deal.requirements.maxZealotry !== undefined &&
+    ctx.zealotry > deal.requirements.maxZealotry
+  )
+    return false
+  if (
+    deal.requirements.minZealotry !== undefined &&
+    ctx.zealotry < deal.requirements.minZealotry
+  )
+    return false
+
+  if (
+    deal.requirements.maxControversy !== undefined &&
+    ctx.controversy > deal.requirements.maxControversy
+  )
+    return false
+  if (
+    deal.requirements.minControversy !== undefined &&
+    ctx.controversy < deal.requirements.minControversy
+  )
+    return false
+
+  return true
+}
+
+const matchesLoose = (deal: BrandDeal, ctx: DealMatchContext): boolean => {
+  // Loose tier: ignore trend / trait / zealotry; reduce follower bar to 70%;
+  // grant ±10 slack on controversy bands.
+  if (ctx.totalFollowers < deal.requirements.followers * 0.7) return false
+  if (
+    deal.requirements.maxControversy !== undefined &&
+    ctx.controversy > deal.requirements.maxControversy + 10
+  )
+    return false
+  if (
+    deal.requirements.minControversy !== undefined &&
+    ctx.controversy < deal.requirements.minControversy - 10
+  )
+    return false
+  return true
+}
+
+interface PoolEntry {
+  deal: BrandDeal
+  tier: EligibilityTier
+}
+
+const buildEligibilityPool = (ctx: DealMatchContext): PoolEntry[] => {
+  const pool: PoolEntry[] = []
+  const seen = new Set<string>()
+
+  for (const deal of BRAND_DEALS_BY_ID.values()) {
+    if (matchesStrict(deal, ctx)) {
+      pool.push({ deal, tier: 0 })
+      seen.add(deal.id)
+    }
+  }
+  if (pool.length >= 3) return pool
+
+  for (const deal of BRAND_DEALS_BY_ID.values()) {
+    if (seen.has(deal.id)) continue
+    if (matchesLoose(deal, ctx)) {
+      pool.push({ deal, tier: 1 })
+      seen.add(deal.id)
+    }
+  }
+  if (pool.length >= 3) return pool
+
+  // Tier 2: probe sponsoring — lowest-bar deals regardless of trend/trait.
+  // Pick the catalog entries with the smallest follower requirement to keep
+  // them plausible for a brand-new band.
+  const remaining = [...BRAND_DEALS_BY_ID.values()].filter(
+    deal => !seen.has(deal.id)
+  )
+  remaining.sort((a, b) => a.requirements.followers - b.requirements.followers)
+  for (const deal of remaining) {
+    if (pool.length >= 3) break
+    pool.push({ deal, tier: 2 })
+    seen.add(deal.id)
+  }
+
+  return pool
+}
+
+const scoreEntry = (
+  entry: PoolEntry,
+  gameState: SocialEngineGameState,
+  rivalPenalty: number,
+  rng: RandomFn
+): number => {
+  const reputation = gameState.social?.brandReputation ?? {}
+  const align = String(entry.deal.alignment)
+  const rep = Object.hasOwn(reputation, align)
+    ? finiteNumberOr(reputation[align], 0)
+    : 0
+  const tierPenalty = entry.tier * 30
+  const jitter = rng() * 25
+  return rep - rivalPenalty - tierPenalty + jitter
+}
+
 export const generateBrandOffers = (
   gameState: SocialEngineGameState,
   rng: RandomFn = secureRandom
-): BrandDeal[] => {
-  const social = gameState?.social || {}
-  const band = gameState?.band || {}
-  const reputation = social.brandReputation || {}
+): BrandOffer[] => {
+  const social = gameState?.social ?? {}
+  const band = gameState?.band
 
-  // Pre-calculate common checks to avoid redundant computations
-  const totalFollowers =
-    (social.instagram || 0) + (social.tiktok || 0) + (social.youtube || 0)
-
-  // Fetch active deals
-  const activeDeals = social.activeDeals
-  const hasActiveDeals = !!activeDeals?.length
-
-  if (hasActiveDeals) {
-    // A player can hold only ONE deal at a time. If any deal type is active (e.g., SPONSORSHIP, ENDORSEMENT, RECORD_DEAL) the system blocks new offers.
+  // Single-deal invariant: never offer anything while a deal is active.
+  if (Array.isArray(social.activeDeals) && social.activeDeals.length > 0) {
     return []
   }
 
-  // Filter available deals
-  const eligibleDeals: BrandDeal[] = []
-  for (const deal of BRAND_DEALS_BY_ID.values()) {
-    // Check followers
-    if (totalFollowers < deal.requirements.followers) continue
+  // Coerce numeric social fields via `finiteNumberOr` so a corrupted /
+  // hostile state (NaN / Infinity / non-number) cannot bypass eligibility
+  // gates — `NaN < threshold` is false for every threshold, which would
+  // otherwise let any deal slip through.
+  const totalFollowers =
+    finiteNumberOr(social.instagram, 0) +
+    finiteNumberOr(social.tiktok, 0) +
+    finiteNumberOr(social.youtube, 0)
 
-    // Check trend match using O(1) loop or Set check if available
-    const trendVal = social.trend as AllowedTrend | undefined
-    if (trendVal && deal.requirements.trend) {
-      // Defend against unknown/invalid trend values and avoid runtime errors.
-      // We first check if social.trend is valid globally via ALLOWED_TRENDS_SET.
-      if (ALLOWED_TRENDS_SET && !ALLOWED_TRENDS_SET.has(trendVal)) continue
+  const trendVal =
+    typeof social.trend === 'string'
+      ? (social.trend as AllowedTrend)
+      : undefined
 
-      if (deal.requirements.trendSet) {
-        if (!deal.requirements.trendSet.has(trendVal)) continue
-      } else if (!deal.requirements.trend.includes(trendVal)) {
-        continue
-      }
-    }
-
-    // Check trait match (if required trait exists in band)
-    if (deal.requirements.trait && !bandHasTrait(band, deal.requirements.trait))
-      continue
-
-    // Check zealotry limits
-    if (
-      deal.requirements.maxZealotry &&
-      (social.zealotry || 0) > deal.requirements.maxZealotry
-    )
-      continue
-
-    // Check controversy limits
-    if (
-      deal.requirements.maxControversy !== undefined &&
-      (social.controversyLevel || 0) > deal.requirements.maxControversy
-    )
-      continue
-
-    if (
-      deal.requirements.minControversy !== undefined &&
-      (social.controversyLevel || 0) < deal.requirements.minControversy
-    )
-      continue
-
-    // Check zealotry min limit (added per requirement)
-    if (
-      deal.requirements.minZealotry !== undefined &&
-      (social.zealotry || 0) < deal.requirements.minZealotry
-    )
-      continue
-
-    eligibleDeals.push(deal)
+  const matchCtx: DealMatchContext = {
+    totalFollowers,
+    trendVal,
+    zealotry: finiteNumberOr(social.zealotry, 0),
+    controversy: finiteNumberOr(social.controversyLevel, 0),
+    band
   }
 
-  // Pick up to 3 random offers, weighted by reputation
-  const offers: BrandDeal[] = []
+  const pool = buildEligibilityPool(matchCtx)
+  if (pool.length === 0) return []
 
-  // Logic: Reputation increases the "chance" check.
-  // Base chance 30%.
-  // Reputation 0-100.
-  // Rep 50 -> +15% chance. Rep 100 -> +30% chance.
-  // Negative reputation reduces chance? Assuming reputation is 0-100 based on validation, but logic might allow negative?
+  const rivalInLocation =
+    gameState.rivalBand != null &&
+    gameState.player != null &&
+    gameState.rivalBand.currentLocationId === gameState.player.currentNodeId
 
-  const pool: BrandDeal[] = [...eligibleDeals]
+  const rivalPower =
+    rivalInLocation && gameState.rivalBand
+      ? Math.min(
+          MAX_RIVAL_DEAL_CHANCE_PENALTY * 100,
+          (gameState.rivalBand.powerLevel ?? 0) *
+            RIVAL_POWER_TO_DEAL_CHANCE_FACTOR *
+            100
+        )
+      : 0
 
-  // Partial Fisher-Yates inline to lazily yield random items without a full array shuffle.
-  // We only swap elements as we evaluate them, stopping as soon as 2 offers are found.
-  let found = 0
-  const n = pool.length
+  const scored = pool
+    .map(entry => ({
+      entry,
+      score: scoreEntry(entry, gameState, rivalPower, rng)
+    }))
+    .sort((a, b) => b.score - a.score)
 
-  for (let i = n - 1; i >= 0 && found < 3; i--) {
-    const j = Math.floor(rng() * (i + 1))
-    const a = pool[i]
-    const b = pool[j]
-    if (!a || !b) {
-      throw new StateError('Brand offer pool contained an invalid entry', {
-        meta: { i, j, poolLength: pool.length }
-      })
-    }
-    pool[i] = b
-    pool[j] = a
-    const deal = pool[i]
-    if (!deal) continue
+  // `buildEligibilityPool` is guaranteed to surface ≥ 3 distinct catalog
+  // entries when the static `BRAND_DEALS` catalog has ≥ 3 entries (it
+  // walks the full catalog at tier 2 without restrictions). We therefore
+  // never duplicate offers — duplicate ids would collide on the React key
+  // in `DealsPhase`, on the negotiation map (`negotiatedDeals[id]`), and
+  // on the i18n + canonical-name lookup in `brandDealI18n`.
+  const picked = scored.slice(0, 3).map(({ entry }) => entry)
 
-    const align = deal.alignment
-    const rep = reputation[align] || 0
-
-    // Base chance 0.3
-    // Rep bonus: 0.003 per point (100 rep = +0.3)
-    let chance = 0.3 + rep * 0.003
-
-    // Penalty for negative rep if we allow it, or just 0
-    if (rep < 0) chance += rep * 0.005 // Higher penalty for bad rep
-
-    // Rival Penalty: If rival is in the same location, reduce deal chance
-    if (
-      gameState.rivalBand &&
-      gameState.player &&
-      gameState.rivalBand.currentLocationId === gameState.player.currentNodeId
-    ) {
-      const rivalPower = gameState.rivalBand.powerLevel ?? 0
-      const powerPenalty = Math.min(
-        MAX_RIVAL_DEAL_CHANCE_PENALTY,
-        rivalPower * RIVAL_POWER_TO_DEAL_CHANCE_FACTOR
-      )
-      chance -= powerPenalty
-    }
-
-    if (rng() < chance) {
-      // Generate dynamic name
-      const dynamicName = generateBrandName(deal.name, align, rng)
-      offers.push({ ...deal, name: dynamicName })
-      found++
-    }
-  }
-
-  return offers
+  return picked.map(entry =>
+    buildBrandOffer(entry.deal, {
+      tier: entry.tier,
+      isStretched: entry.tier > 0,
+      gameState,
+      rng,
+      totalFollowers
+    })
+  )
 }
 
 /**

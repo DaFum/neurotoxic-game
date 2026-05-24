@@ -125,6 +125,12 @@ const DealImage = memo(({ alignment, name }: DealImageProps) => (
   </div>
 ))
 DealImage.displayName = 'DealImage'
+const urgencyClass = (urgency: string | undefined): string => {
+  if (urgency === 'high') return 'text-blood-red'
+  if (urgency === 'low') return 'text-ash-gray'
+  return 'text-warning-yellow'
+}
+
 const DealInfo = memo(
   ({ displayDeal, isRevoked, brandReputation }: DealInfoProps) => {
     const { t, i18n } = useTranslation()
@@ -132,10 +138,11 @@ const DealInfo = memo(
     const alignmentMetadata = getAlignmentMetadata(alignment)
     const alignmentReputation =
       alignment != null ? brandReputation?.[alignment] : undefined
+    const flavor = displayDeal.flavor
 
     return (
       <div className='flex-1'>
-        <div className='flex items-baseline gap-3'>
+        <div className='flex items-baseline gap-3 flex-wrap'>
           <div
             className={`font-bold text-lg ${isRevoked ? 'text-blood-red line-through' : 'text-toxic-green'}`}
           >
@@ -150,11 +157,66 @@ const DealInfo = memo(
               })}
             </span>
           )}
+          {flavor && flavor.variant !== 'standard' && (
+            <span className='text-[10px] font-mono border border-electric-blue/60 text-electric-blue px-1 rounded'>
+              {t(flavor.variantLabelKey, {
+                defaultValue: flavor.variantLabelDefault
+              })}
+            </span>
+          )}
+          {flavor && (
+            <span
+              className={`text-[10px] font-mono uppercase tracking-wider ${urgencyClass(flavor.urgency)}`}
+            >
+              {t(`economy:brandFlavor.urgency.${flavor.urgency}`, {
+                defaultValue: flavor.urgency
+              })}
+            </span>
+          )}
         </div>
+
+        {flavor && (
+          <div className='text-[11px] font-mono text-electric-blue/80 mt-1'>
+            {t('economy:brandFlavor.campaignLabel', {
+              defaultValue: 'Campaign'
+            })}
+            : “{flavor.campaignCodename}”
+            <span className='text-ash-gray ml-2'>
+              ·{' '}
+              {t('economy:brandFlavor.repLabel', {
+                defaultValue: 'Pitched by'
+              })}
+              :{' '}
+              <span className='text-star-white/80'>
+                {t(flavor.rep.nameKey, {
+                  defaultValue: flavor.rep.nameDefault
+                })}
+              </span>{' '}
+              <span className='italic'>
+                (
+                {t(flavor.rep.titleKey, {
+                  defaultValue: flavor.rep.titleDefault
+                })}
+                )
+              </span>
+            </span>
+          </div>
+        )}
 
         <div className='text-xs text-ash-gray italic mb-2'>
           {displayDeal.description}
         </div>
+
+        {flavor && (
+          <div className='text-[11px] mb-2 border-l-2 border-toxic-green/60 pl-2'>
+            <div className='text-toxic-green/90 italic'>
+              “{t(flavor.taglineKey, { defaultValue: flavor.taglineDefault })}”
+            </div>
+            <div className='text-ash-gray/90 text-[10px] mt-0.5'>
+              {t(flavor.hookKey, { defaultValue: flavor.hookDefault })}
+            </div>
+          </div>
+        )}
         <div className='text-xs font-mono grid grid-cols-2 gap-x-4 gap-y-1 text-star-white/80'>
           <div>
             💰 {t('ui:deals.upfront', { defaultValue: 'Upfront' })}:{' '}

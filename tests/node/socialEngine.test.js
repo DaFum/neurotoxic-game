@@ -456,6 +456,15 @@ test('generateBrandName returns base name for unknown alignment', () => {
   assert.equal(generateBrandName('Test', 'UNKNOWN'), 'Test')
 })
 
+test('generateBrandName guards against prototype-pollution alignment keys', () => {
+  // Hostile alignment values that would otherwise resolve to inherited
+  // Object.prototype properties (functions / null) and crash pick().
+  assert.equal(generateBrandName('Fallback', '__proto__'), 'Fallback')
+  assert.equal(generateBrandName('Fallback', 'toString'), 'Fallback')
+  assert.equal(generateBrandName('Fallback', 'hasOwnProperty'), 'Fallback')
+  assert.equal(generateBrandName('Fallback', 'constructor'), 'Fallback')
+})
+
 test('generateBrandOffers filters by reputation and traits', () => {
   const gameState = {
     social: {
@@ -544,4 +553,185 @@ test('generateBrandOffers does not generate more than 3 offers', () => {
 
   const offers = generateBrandOffers(gameState)
   assert.ok(offers.length <= 3, 'Should not generate more than 3 offers')
+})
+
+test('generateBrandOffers returns exactly 3 offers when no active deal', () => {
+  const gameState = {
+    social: {
+      instagram: 1000000,
+      tiktok: 1000000,
+      youtube: 1000000,
+      trend: 'TECH',
+      activeDeals: [],
+      brandReputation: {}
+    },
+    band: {
+      members: [
+        {
+          traits: {
+            party_animal: { id: 'party_animal' }
+          }
+        }
+      ]
+    }
+  }
+
+  const offers = generateBrandOffers(gameState)
+  assert.equal(
+    offers.length,
+    3,
+    'Should always return 3 offers when none active'
+  )
+})
+
+test('generateBrandOffers returns exactly 3 offers even for a brand-new band (stretch fallback)', () => {
+  // No followers, no traits, no trend — strict pool is empty. Stretch tiers
+  // (loose match + probe sponsoring) must fill the slate to 3.
+  const gameState = {
+    social: { instagram: 0, tiktok: 0, youtube: 0, activeDeals: [] },
+    band: { members: [] }
+  }
+  const offers = generateBrandOffers(gameState)
+  assert.equal(offers.length, 3, 'Stretch fallback must guarantee 3 offers')
+  // Each filler offer carries flavor metadata and isStretched=true.
+  for (const offer of offers) {
+    assert.ok(offer.flavor, 'Stretched offer should carry flavor metadata')
+    assert.equal(offer.flavor.isStretched, true)
+  }
+})
+
+test('generateBrandOffers returns 0 offers when an active deal exists', () => {
+  const gameState = {
+    social: {
+      instagram: 1000000,
+      tiktok: 1000000,
+      youtube: 1000000,
+      trend: 'TECH',
+      activeDeals: [
+        { id: 'energy_drink_cx', type: 'SPONSORSHIP', remainingGigs: 3 }
+      ],
+      brandReputation: {}
+    },
+    band: {
+      members: [{ traits: { party_animal: { id: 'party_animal' } } }]
+    }
+  }
+  const offers = generateBrandOffers(gameState)
+  assert.equal(offers.length, 0, 'Active deal must block all offers')
+})
+
+test('generateBrandOffers preserves canonical deal id and name from the catalog', async () => {
+  const { BRAND_DEALS_BY_ID } = await import('../../src/data/brandDeals.ts')
+  const gameState = {
+    social: {
+      instagram: 1000000,
+      tiktok: 1000000,
+      youtube: 1000000,
+      trend: 'TECH',
+      activeDeals: [],
+      brandReputation: {}
+    },
+    band: {
+      members: [{ traits: { party_animal: { id: 'party_animal' } } }]
+    }
+  }
+  const offers = generateBrandOffers(gameState)
+  assert.equal(offers.length, 3)
+  for (const offer of offers) {
+    const canonical = BRAND_DEALS_BY_ID.get(offer.id)
+    assert.ok(
+      canonical,
+      `Offer id ${offer.id} must exist in the static catalog`
+    )
+    assert.equal(
+      offer.name,
+      canonical.name,
+      'Offer must NOT overwrite canonical brand name'
+    )
+    assert.equal(
+      offer.description,
+      canonical.description,
+      'Offer must NOT overwrite canonical description'
+    )
+  }
+})
+
+test('generateBrandOffers rejects NaN / Infinity social metrics from corrupted state', () => {
+  // A corrupted UPDATE_SOCIAL payload (or hostile in-memory state) can put
+  // NaN/Infinity into the numeric social fields. `NaN < threshold` is
+  // always false, so a naive `typeof === 'number'` check would let every
+  // deal bypass its follower/zealotry/controversy gates. The
+  // `finiteNumberOr` coercion must collapse those to 0 so eligibility
+  // still degrades to the stretch fallback rather than handing out
+  // high-tier deals to a corrupted band.
+  const gameState = {
+    social: {
+      instagram: Number.NaN,
+      tiktok: Infinity,
+      youtube: -Infinity,
+      zealotry: Number.NaN,
+      controversyLevel: Number.NaN,
+      trend: 'TECH',
+      activeDeals: [],
+      brandReputation: { EVIL: Number.NaN }
+    },
+    band: { members: [{ traits: { party_animal: { id: 'party_animal' } } }] }
+  }
+  const offers = generateBrandOffers(gameState, () => 0.1)
+  assert.equal(offers.length, 3, 'Must still surface exactly 3 offers')
+  for (const offer of offers) {
+    assert.equal(
+      offer.flavor.isStretched,
+      true,
+      'NaN-followers band must only receive stretch-tier offers'
+    )
+  }
+})
+
+test('generateBrandOffers never returns duplicate canonical ids', () => {
+  const gameState = {
+    social: {
+      instagram: 1000000,
+      tiktok: 1000000,
+      youtube: 1000000,
+      trend: 'TECH',
+      activeDeals: [],
+      brandReputation: {}
+    },
+    band: {
+      members: [{ traits: { party_animal: { id: 'party_animal' } } }]
+    }
+  }
+  const offers = generateBrandOffers(gameState, () => 0.1)
+  const ids = offers.map(o => o.id)
+  assert.equal(
+    new Set(ids).size,
+    ids.length,
+    'Offer ids must be unique (React key + negotiation map invariant)'
+  )
+})
+
+test('generateBrandOffers attaches flavor metadata to every offer', () => {
+  const gameState = {
+    social: {
+      instagram: 1000000,
+      tiktok: 1000000,
+      youtube: 1000000,
+      trend: 'TECH',
+      activeDeals: [],
+      brandReputation: {}
+    },
+    band: {
+      members: [{ traits: { party_animal: { id: 'party_animal' } } }]
+    }
+  }
+  const offers = generateBrandOffers(gameState, () => 0.42)
+  for (const offer of offers) {
+    assert.ok(offer.flavor, 'Each offer must carry flavor')
+    assert.equal(typeof offer.flavor.campaignCodename, 'string')
+    assert.ok(offer.flavor.campaignCodename.length > 0)
+    assert.equal(typeof offer.flavor.rep.nameDefault, 'string')
+    assert.match(offer.flavor.taglineKey, /^economy:brandFlavor\.taglines\./)
+    assert.ok(['low', 'medium', 'high'].includes(offer.flavor.urgency))
+  }
 })

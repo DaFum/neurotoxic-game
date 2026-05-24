@@ -41,6 +41,42 @@ export interface BrandDeal {
   [key: string]: unknown
 }
 
+export type BrandOfferUrgency = 'low' | 'medium' | 'high'
+
+export type BrandOfferVariantId =
+  | 'standard'
+  | 'summer_edition'
+  | 'anniversary_push'
+  | 'stealth_drop'
+  | 'viral_comeback'
+  | 'desperate'
+  | 'probe'
+
+export interface BrandOfferRep {
+  nameKey: string
+  nameDefault: string
+  titleKey: string
+  titleDefault: string
+}
+
+export interface BrandOfferFlavor {
+  campaignCodename: string
+  rep: BrandOfferRep
+  taglineKey: string
+  taglineDefault: string
+  hookKey: string
+  hookDefault: string
+  variant: BrandOfferVariantId
+  variantLabelKey: string
+  variantLabelDefault: string
+  urgency: BrandOfferUrgency
+  isStretched: boolean
+}
+
+export interface BrandOffer extends BrandDeal {
+  flavor: BrandOfferFlavor
+}
+
 export interface SocialEngineGameState {
   player: {
     day?: number

@@ -34,19 +34,32 @@ function useAmpState() {
   const [interference, setInterference] = useState(0)
 
   return {
-    dialValue, setDialValue,
-    targetValue, setTargetValue,
-    timeLeft, setTimeLeft,
-    score, setScore,
-    isGameOver, setIsGameOver,
-    isOverdriveActive, setIsOverdriveActive,
-    heat, setHeat,
-    isOverheat, setIsOverheat,
-    voidResonance, setVoidResonance,
-    isAnomalyActive, setIsAnomalyActive,
-    isHijackActive, setIsHijackActive,
-    hijacksOverridden, setHijacksOverridden,
-    interference, setInterference
+    dialValue,
+    setDialValue,
+    targetValue,
+    setTargetValue,
+    timeLeft,
+    setTimeLeft,
+    score,
+    setScore,
+    isGameOver,
+    setIsGameOver,
+    isOverdriveActive,
+    setIsOverdriveActive,
+    heat,
+    setHeat,
+    isOverheat,
+    setIsOverheat,
+    voidResonance,
+    setVoidResonance,
+    isAnomalyActive,
+    setIsAnomalyActive,
+    isHijackActive,
+    setIsHijackActive,
+    hijacksOverridden,
+    setHijacksOverridden,
+    interference,
+    setInterference
   }
 }
 
@@ -54,19 +67,32 @@ export function useAmpLogic() {
   const { completeAmpCalibration, changeScene } = useGameActions()
 
   const {
-    dialValue, setDialValue,
-    targetValue, setTargetValue,
-    timeLeft, setTimeLeft,
-    score, setScore,
-    isGameOver, setIsGameOver,
-    isOverdriveActive, setIsOverdriveActive,
-    heat, setHeat,
-    isOverheat, setIsOverheat,
-    voidResonance, setVoidResonance,
-    isAnomalyActive, setIsAnomalyActive,
-    isHijackActive, setIsHijackActive,
-    hijacksOverridden, setHijacksOverridden,
-    interference, setInterference
+    dialValue,
+    setDialValue,
+    targetValue,
+    setTargetValue,
+    timeLeft,
+    setTimeLeft,
+    score,
+    setScore,
+    isGameOver,
+    setIsGameOver,
+    isOverdriveActive,
+    setIsOverdriveActive,
+    heat,
+    setHeat,
+    isOverheat,
+    setIsOverheat,
+    voidResonance,
+    setVoidResonance,
+    isAnomalyActive,
+    setIsAnomalyActive,
+    isHijackActive,
+    setIsHijackActive,
+    hijacksOverridden,
+    setHijacksOverridden,
+    interference,
+    setInterference
   } = useAmpState()
 
   const isHijackActiveRef = useRef(false)

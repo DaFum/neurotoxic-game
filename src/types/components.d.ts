@@ -262,6 +262,7 @@ export interface DealInfoProps {
       item?: string
     }
     penalty?: Record<string, unknown>
+    flavor?: import('./social').BrandOfferFlavor
     [key: string]: unknown
   }
   isRevoked?: boolean

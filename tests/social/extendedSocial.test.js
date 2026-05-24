@@ -73,19 +73,43 @@ describe('Extended Social & Trait Systems', () => {
       assert.ok(offers.length > 0, 'Should offer at least one deal')
     })
 
-    it('generateBrandOffers filters ineligible deals', () => {
+    it('generateBrandOffers falls back to stretch tier for a brand-new band', () => {
+      // Contract change: when no deal is active we always surface exactly 3
+      // offers. Bands that fail strict eligibility get probe-tier offers
+      // tagged `isStretched: true` instead of an empty slate, so the
+      // post-gig DEALS phase always has something to react to.
       const gameState = {
-        social: { instagram: 0, trend: 'NEUTRAL' },
+        social: { instagram: 0, trend: 'NEUTRAL', activeDeals: [] },
         band: { members: [] }
       }
 
       const mockRng = () => 0.1
       const offers = generateBrandOffers(gameState, mockRng)
-      assert.strictEqual(
-        offers.length,
-        0,
-        'Should return no offers for poor band'
-      )
+      assert.strictEqual(offers.length, 3, 'Should always offer 3 deals')
+      for (const offer of offers) {
+        assert.strictEqual(
+          offer.flavor.isStretched,
+          true,
+          'Brand-new band only gets stretch-tier offers'
+        )
+      }
+    })
+
+    it('generateBrandOffers returns 0 offers while a deal is active', () => {
+      const gameState = {
+        social: {
+          instagram: 10000,
+          trend: 'TECH',
+          activeDeals: [
+            { id: 'energy_drink_cx', type: 'SPONSORSHIP', remainingGigs: 3 }
+          ]
+        },
+        band: {
+          members: [{ traits: { party_animal: { id: 'party_animal' } } }]
+        }
+      }
+      const offers = generateBrandOffers(gameState, () => 0.1)
+      assert.strictEqual(offers.length, 0)
     })
   })
 
