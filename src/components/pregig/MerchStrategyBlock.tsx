@@ -97,27 +97,31 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
   const { t, i18n } = useTranslation(['economy', 'ui'])
 
   const merchItems = useMemo(() => {
-    return Object.keys(DEFAULT_MERCH_PRICES).map(key => {
-      const defaultPrice = DEFAULT_MERCH_PRICES[key] ?? 10
-      const currentPrice = customPrices[key] ?? defaultPrice
-      const stock =
-        typeof bandInventory[key] === 'number'
-          ? (bandInventory[key] as number)
-          : 0
+    const items = []
+    for (const key in DEFAULT_MERCH_PRICES) {
+      if (Object.hasOwn(DEFAULT_MERCH_PRICES, key)) {
+        const defaultPrice = DEFAULT_MERCH_PRICES[key] ?? 10
+        const currentPrice = customPrices[key] ?? defaultPrice
+        const stock =
+          typeof bandInventory[key] === 'number'
+            ? (bandInventory[key] as number)
+            : 0
 
-      const restockCost = HQ_ITEMS_BY_MERCH_KEY.get(key)?.cost ?? 50 // fallback
+        const restockCost = HQ_ITEMS_BY_MERCH_KEY.get(key)?.cost ?? 50 // fallback
 
-      return {
-        key,
-        name: t(`economy:gigIncome.merchSales.${key}.label`, {
-          defaultValue: key
-        }),
-        stock,
-        currentPrice,
-        defaultPrice,
-        restockCost
+        items.push({
+          key,
+          name: t(`economy:gigIncome.merchSales.${key}.label`, {
+            defaultValue: key
+          }),
+          stock,
+          currentPrice,
+          defaultPrice,
+          restockCost
+        })
       }
-    })
+    }
+    return items
   }, [bandInventory, customPrices, t])
 
   return (
