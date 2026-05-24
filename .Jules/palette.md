@@ -120,3 +120,8 @@
 
 **Learning:** Adding an `aria-label` to a button that already contains the exact same text is a redundant accessibility anti-pattern. Screen readers will read the button's internal text naturally. `aria-label` should be reserved for icon-only buttons or when the visible text does not provide sufficient context.
 **Action:** Always check the internal text content of an interactive element before adding an `aria-label`. Only add it if the element is visually lacking descriptive text.
+
+## 2026-05-24 - Added Context to Negotiate Button
+
+**Learning:** Icon-only or context-light buttons like 'Negotiate' inside recurring UI elements (like DealCards) need explicit ARIA labels to provide screen reader users with necessary context (e.g., _which_ brand deal is being negotiated).
+**Action:** Consistently verify and add descriptive 'aria-label' attributes on repeating action buttons.

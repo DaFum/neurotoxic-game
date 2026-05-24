@@ -307,6 +307,10 @@ const DealActions = memo(
               <button
                 type='button'
                 onClick={() => handleNegotiationStart(deal)}
+                aria-label={t('ui:deals.negotiateDeal', {
+                  name: deal.name,
+                  defaultValue: `Negotiate deal with ${deal.name}`
+                })}
                 className='px-4 py-1.5 border border-warning-yellow text-warning-yellow text-xs font-bold uppercase hover:bg-warning-yellow hover:text-void-black transition-colors'
               >
                 {t('ui:deals.negotiate', { defaultValue: 'NEGOTIATE' })}
