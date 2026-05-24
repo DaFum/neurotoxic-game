@@ -209,7 +209,7 @@ test('applyEventDelta handles both traits simultaneously (edge case) and symmetr
   }
 
   // Negative change:
-  // Weirdo has traits: -20 * 1.5 * 0.5 = -15. 50 - 15 = 35.
+  // Weirdo has both traits, which cancel each other out for negative changes: -20. 50 - 20 = 30.
   // Normal has no traits: -20. 50 - 20 = 30.
   const deltaNegative = {
     band: {
@@ -219,7 +219,7 @@ test('applyEventDelta handles both traits simultaneously (edge case) and symmetr
     }
   }
   const nextStateNegative = applyEventDelta(state, deltaNegative)
-  assert.equal(nextStateNegative.band.members[0].relationships.Normal, 35)
+  assert.equal(nextStateNegative.band.members[0].relationships.Normal, 30)
   assert.equal(nextStateNegative.band.members[1].relationships.Weirdo, 30)
 
   // Positive change:
