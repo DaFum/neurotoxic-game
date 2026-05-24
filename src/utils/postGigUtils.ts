@@ -14,6 +14,7 @@ import {
   clampMemberStamina,
   clampMemberMood,
   clampControversyLevel,
+  finiteNumberOr,
   clampLoyalty,
   clamp0to100,
   calculateGigFameReward
@@ -282,12 +283,14 @@ export const calculatePostGigStateUpdates = (
 
       const updatedM = { ...m }
       if (needsMoodUpdate) {
-        updatedM.mood = clampMemberMood(updatedM.mood + moodChange)
+        updatedM.mood = clampMemberMood(
+          finiteNumberOr(updatedM.mood, 0) + moodChange
+        )
       }
       if (needsStaminaUpdate) {
         updatedM.stamina = clampMemberStamina(
-          updatedM.stamina + staminaChange,
-          updatedM.staminaMax
+          finiteNumberOr(updatedM.stamina, 0) + staminaChange,
+          finiteNumberOr(updatedM.staminaMax, 100)
         )
       }
       return updatedM

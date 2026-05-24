@@ -12,7 +12,8 @@ import {
   clampVanCondition,
   clampMemberStamina,
   clampMemberMood,
-  BALANCE_CONSTANTS
+  BALANCE_CONSTANTS,
+  finiteNumberOr
 } from './gameStateUtils'
 import type { BandState, GameState, BandMember } from '../types'
 import type { Song } from '../types/audio'
@@ -478,7 +479,6 @@ export const calculateDailyUpdates = (
   const hasSofa = hqUpgradesSet.has('hq_room_sofa')
   const hasOldCouch = hqUpgradesSet.has('hq_room_old_couch')
 
-  // Optimize: Combine 3 separate `.map()` passes into a single loop, eliminating intermediate arrays
   const nextMembers = new Array(nextBand.members.length)
   for (let i = 0; i < nextBand.members.length; i++) {
     const m = nextBand.members[i]
@@ -489,7 +489,7 @@ export const calculateDailyUpdates = (
     }
 
     // 2a. Base Mood Drift
-    let mood = m.mood
+    let mood = finiteNumberOr(m.mood, 50)
     if (mood > 50) mood -= 2
     else if (mood < 50) mood += 2
     mood = clampMemberMood(mood)
@@ -500,7 +500,7 @@ export const calculateDailyUpdates = (
     }
 
     // 2c. Base Stamina Drift
-    let stamina = typeof m.stamina === 'number' ? m.stamina : 100
+    let stamina = finiteNumberOr(m.stamina, 100)
     stamina = Math.max(0, stamina - 5)
     if (nextBand.harmony > 60) stamina += 3
     if ((nextSocial.instagram || 0) >= 10000) stamina += 2
@@ -538,7 +538,10 @@ export const calculateDailyUpdates = (
       }
       if (m.name === CHARACTERS.MARIUS.name && hasTrait(m, 'party_animal')) {
         if (rng() < 0.3) {
-          m.stamina = clampMemberStamina(m.stamina - 5, m.staminaMax)
+          m.stamina = clampMemberStamina(
+            finiteNumberOr(m.stamina, 0) - 5,
+            m.staminaMax
+          )
         }
       }
     }

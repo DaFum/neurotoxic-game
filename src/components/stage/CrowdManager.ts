@@ -122,11 +122,12 @@ export class CrowdManager {
       if (!member) continue
       member.y = member.baseY - yOffset
 
-      // Texture swapping logic
-      if (member.isSprite) {
-        if (targetTexture && member.texture !== targetTexture) {
-          member.texture = targetTexture
-        }
+      if (
+        member.isSprite &&
+        targetTexture &&
+        member.texture !== targetTexture
+      ) {
+        member.texture = targetTexture
       }
 
       if (member.currentFillColor !== nextColor) {

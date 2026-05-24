@@ -3877,6 +3877,15 @@
         "typeOnly": true
       }
     ],
+    "finiteNumberOr": [
+      {
+        "isDefault": false,
+        "name": "finiteNumberOr",
+        "path": "src/utils/gameStateUtils.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "FORBIDDEN_KEYS": [
       {
         "exportPath": "src/utils/gameStateUtils.ts",

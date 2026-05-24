@@ -9,7 +9,8 @@ import {
   clampMemberStamina,
   clampMemberMood,
   clampPlayerFame,
-  calculateFameLevel
+  calculateFameLevel,
+  finiteNumberOr
 } from './gameStateUtils'
 import type { PlayerState, BandState, BandMember } from '../types'
 import type { Effect, PurchaseItem, UnlockMessage } from '../types/components'
@@ -605,36 +606,39 @@ export const applyUnlockHQ = (
     case 'hq_room_sofa':
     case 'hq_room_old_couch':
     case 'hq_room_cheap_beer_fridge': {
-      const members = (band.members ?? []).map((m: BandMember) => {
-        switch (item.id) {
-          case 'hq_room_coffee':
-            return {
-              ...m,
-              mood: clampMemberMood((m.mood ?? 0) + 20)
-            }
-          case 'hq_room_sofa':
-            return {
-              ...m,
-              stamina: clampMemberStamina(
-                (m.stamina ?? 0) + 30,
-                getNumericProp(m, 'staminaMax', 100)
-              )
-            }
-          case 'hq_room_old_couch':
-            return {
-              ...m,
-              stamina: clampMemberStamina(
-                (m.stamina ?? 0) + 10,
-                getNumericProp(m, 'staminaMax', 100)
-              )
-            }
-          default:
-            return {
-              ...m,
-              mood: clampMemberMood((m.mood ?? 0) + 5)
-            }
-        }
-      })
+      let transform: (m: BandMember) => BandMember
+      switch (item.id) {
+        case 'hq_room_coffee':
+          transform = m => ({
+            ...m,
+            mood: clampMemberMood(finiteNumberOr(m.mood, 0) + 20)
+          })
+          break
+        case 'hq_room_sofa':
+          transform = m => ({
+            ...m,
+            stamina: clampMemberStamina(
+              finiteNumberOr(m.stamina, 0) + 30,
+              getNumericProp(m, 'staminaMax', 100)
+            )
+          })
+          break
+        case 'hq_room_old_couch':
+          transform = m => ({
+            ...m,
+            stamina: clampMemberStamina(
+              finiteNumberOr(m.stamina, 0) + 10,
+              getNumericProp(m, 'staminaMax', 100)
+            )
+          })
+          break
+        default:
+          transform = m => ({
+            ...m,
+            mood: clampMemberMood(finiteNumberOr(m.mood, 0) + 5)
+          })
+      }
+      const members = (band.members ?? []).map(transform)
       nextBandPatch = { ...(nextBandPatch ?? {}), members }
       break
     }
