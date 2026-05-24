@@ -59,11 +59,12 @@ export const moveRivalBand = (
     // ⚡ BOLT OPTIMIZATION: Replaced chained .filter().map() with a single-pass loop.
     // Why: Eliminates two O(N) intermediate array allocations during pathfinding.
     // Impact: Reduces garbage collection pressure in simulation loops.
+    const currentLocationId = rivalBand.currentLocationId
     const connectedNodeIds = new Set<string>()
     for (const c of gameMap.connections) {
-      if (c.from === rivalBand.currentLocationId) {
+      if (c.from === currentLocationId) {
         connectedNodeIds.add(c.to)
-      } else if (c.to === rivalBand.currentLocationId) {
+      } else if (c.to === currentLocationId) {
         connectedNodeIds.add(c.from)
       }
     }
