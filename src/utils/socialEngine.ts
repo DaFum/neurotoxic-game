@@ -15,7 +15,6 @@ import { bandHasTrait } from './traitUtils'
 import { clampZealotry } from './gameStateUtils'
 import { StateError } from './errorHandler'
 import { ALLOWED_TRENDS, ALLOWED_TRENDS_SET } from '../data/socialTrends'
-import { BRAND_ALIGNMENTS } from '../context/initialState'
 import {
   hasActiveSponsorship,
   clampPlayerMoney,
@@ -470,21 +469,16 @@ export const generateDailyTrend = (
  * @param {Function} rng - Random number generator.
  * @returns {string} Generated brand name.
  */
-export const generateBrandName = (
-  baseName: string,
-  alignment: string,
-  rng: RandomFn = secureRandom
-): string => {
-  const pick = (arr: string[]): string => {
-    const idx = Math.max(
-      0,
-      Math.min(arr.length - 1, Math.floor(rng() * arr.length))
-    )
-    return arr[idx] ?? arr[0] ?? ''
-  }
+type BrandNameParts = {
+  prefixes: string[]
+  suffixes: string[]
+  types?: string[]
+  noSpace?: boolean
+}
 
-  if (alignment === BRAND_ALIGNMENTS.EVIL) {
-    const prefixes = [
+const BRAND_NAME_PARTS: Record<string, BrandNameParts> = {
+  EVIL: {
+    prefixes: [
       'Toxic',
       'Neon',
       'Quantum',
@@ -493,8 +487,8 @@ export const generateBrandName = (
       'Cyber',
       'Acid',
       'Vile'
-    ]
-    const suffixes = [
+    ],
+    suffixes: [
       'Rush',
       'Blast',
       'Surge',
@@ -503,13 +497,11 @@ export const generateBrandName = (
       'Venom',
       'Waste',
       'X'
-    ]
-    const types = ['Energy', 'Systems', 'Labs', 'Corp', 'Chemicals']
-    return `${pick(prefixes)} ${pick(suffixes)} ${pick(types)}`
-  }
-
-  if (alignment === BRAND_ALIGNMENTS.CORPORATE) {
-    const prefixes = [
+    ],
+    types: ['Energy', 'Systems', 'Labs', 'Corp', 'Chemicals']
+  },
+  CORPORATE: {
+    prefixes: [
       'Global',
       'United',
       'Apex',
@@ -518,8 +510,8 @@ export const generateBrandName = (
       'Omni',
       'Macro',
       'Elite'
-    ]
-    const suffixes = [
+    ],
+    suffixes: [
       'Dynamics',
       'Solutions',
       'Holdings',
@@ -528,11 +520,9 @@ export const generateBrandName = (
       'Industries',
       'Group'
     ]
-    return `${pick(prefixes)} ${pick(suffixes)}`
-  }
-
-  if (alignment === BRAND_ALIGNMENTS.INDIE) {
-    const prefixes = [
+  },
+  INDIE: {
+    prefixes: [
       'Void',
       'Abyss',
       'Shadow',
@@ -541,8 +531,8 @@ export const generateBrandName = (
       'Garage',
       'Lo-Fi',
       'Raw'
-    ]
-    const suffixes = [
+    ],
+    suffixes: [
       'Records',
       'Audio',
       'Tapes',
@@ -551,11 +541,9 @@ export const generateBrandName = (
       'Zine',
       'Press'
     ]
-    return `${pick(prefixes)} ${pick(suffixes)}`
-  }
-
-  if (alignment === BRAND_ALIGNMENTS.SUSTAINABLE) {
-    const prefixes = [
+  },
+  SUSTAINABLE: {
+    prefixes: [
       'Green',
       'Eco',
       'Pure',
@@ -564,8 +552,8 @@ export const generateBrandName = (
       'Solar',
       'Bio',
       'Earth'
-    ]
-    const suffixes = [
+    ],
+    suffixes: [
       'Path',
       'Roots',
       'Harvest',
@@ -573,25 +561,48 @@ export const generateBrandName = (
       'Cycle',
       'Life',
       'Leaf'
-    ]
-    const types = ['Snacks', 'Wear', 'Gear', 'Organics', 'Co-op']
-    return `${pick(prefixes)}${pick(suffixes)} ${pick(types)}`
+    ],
+    types: ['Snacks', 'Wear', 'Gear', 'Organics', 'Co-op'],
+    noSpace: true
+  },
+  GOOD: {
+    prefixes: ['Noble', 'Brave', 'Valiant', 'Bright', 'Radiant'],
+    suffixes: ['Hearts', 'Souls', 'Shield', 'Light', 'Path'],
+    types: ['Apparel', 'Charity', 'Fund', 'Trust', 'Foundation']
+  },
+  NEUTRAL: {
+    prefixes: ['Standard', 'General', 'Prime', 'Apex', 'Solid'],
+    suffixes: ['Goods', 'Works', 'Tech', 'Systems', 'Solutions']
+  }
+}
+
+export const generateBrandName = (
+  baseName: string,
+  alignment: string,
+  rng: RandomFn = secureRandom
+): string => {
+  const parts = BRAND_NAME_PARTS[alignment]
+  if (!parts) return baseName
+
+  const pick = (arr: string[]): string => {
+    const idx = Math.max(
+      0,
+      Math.min(arr.length - 1, Math.floor(rng() * arr.length))
+    )
+    return arr[idx] ?? arr[0] ?? ''
   }
 
-  if (alignment === BRAND_ALIGNMENTS.GOOD) {
-    const prefixes = ['Noble', 'Brave', 'Valiant', 'Bright', 'Radiant']
-    const suffixes = ['Hearts', 'Souls', 'Shield', 'Light', 'Path']
-    const types = ['Apparel', 'Charity', 'Fund', 'Trust', 'Foundation']
-    return `${pick(prefixes)} ${pick(suffixes)} ${pick(types)}`
+  const p = pick(parts.prefixes)
+  const s = pick(parts.suffixes)
+
+  const base = parts.noSpace ? `${p}${s}` : `${p} ${s}`
+
+  if (parts.types) {
+    const t = pick(parts.types)
+    return `${base} ${t}`
   }
 
-  if (alignment === BRAND_ALIGNMENTS.NEUTRAL) {
-    const prefixes = ['Standard', 'General', 'Prime', 'Apex', 'Solid']
-    const suffixes = ['Goods', 'Works', 'Tech', 'Systems', 'Solutions']
-    return `${pick(prefixes)} ${pick(suffixes)}`
-  }
-
-  return baseName
+  return base
 }
 
 /**
