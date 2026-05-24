@@ -605,26 +605,32 @@ export const applyUnlockHQ = (
     case 'hq_room_sofa':
     case 'hq_room_old_couch':
     case 'hq_room_cheap_beer_fridge': {
-      const transform: (m: BandMember) => BandMember =
-        item.id === 'hq_room_coffee'
-          ? m => ({ ...m, mood: clampMemberMood((m.mood ?? 0) + 20) })
-          : item.id === 'hq_room_sofa'
-            ? m => ({
-                ...m,
-                stamina: clampMemberStamina(
-                  (m.stamina ?? 0) + 30,
-                  getNumericProp(m, 'staminaMax', 100)
-                )
-              })
-            : item.id === 'hq_room_old_couch'
-              ? m => ({
-                  ...m,
-                  stamina: clampMemberStamina(
-                    (m.stamina ?? 0) + 10,
-                    getNumericProp(m, 'staminaMax', 100)
-                  )
-                })
-              : m => ({ ...m, mood: clampMemberMood((m.mood ?? 0) + 5) })
+      let transform: (m: BandMember) => BandMember
+      switch (item.id) {
+        case 'hq_room_coffee':
+          transform = m => ({ ...m, mood: clampMemberMood(m.mood + 20) })
+          break
+        case 'hq_room_sofa':
+          transform = m => ({
+            ...m,
+            stamina: clampMemberStamina(
+              m.stamina + 30,
+              getNumericProp(m, 'staminaMax', 100)
+            )
+          })
+          break
+        case 'hq_room_old_couch':
+          transform = m => ({
+            ...m,
+            stamina: clampMemberStamina(
+              m.stamina + 10,
+              getNumericProp(m, 'staminaMax', 100)
+            )
+          })
+          break
+        default:
+          transform = m => ({ ...m, mood: clampMemberMood(m.mood + 5) })
+      }
       const members = (band.members ?? []).map(transform)
       nextBandPatch = { ...(nextBandPatch ?? {}), members }
       break
