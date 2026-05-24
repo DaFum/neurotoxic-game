@@ -1,3 +1,6 @@
+import { HQ_ITEMS_BY_MERCH_KEY } from '../data/hqItems'
+import { NEUTRAL_ASSET_MODIFIERS } from './assetSelectors'
+import type { AssetModifiers } from '../types/assets'
 import { logger } from './logger'
 import { clamp0to100 } from './gameStateUtils'
 import { toFiniteNumber } from './numberUtils'
@@ -269,7 +272,8 @@ export const calculateMerchIncome = (
   gigStats: GigStatsLike = {},
   modifiers: GigModifiers = {},
   bandInventory: BandInventoryLike = {},
-  context: EconomyContext = {}
+  context: EconomyContext = {},
+  assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS
 ) => {
   gigStats = gigStats || {}
   modifiers = modifiers || {}
@@ -391,8 +395,9 @@ export const calculateMerchIncome = (
     totalRawShare += share
   }
 
+  const expenseItems: FinancialBreakdownItem[] = []
   if (totalRawShare <= 0) {
-    return { revenue: 0, breakdownItems, soldItems: {} }
+    return { revenue: 0, breakdownItems, expenseItems, soldItems: {} }
   }
 
   const demandLiftRaw = spendingMult * (0.5 + hypeNorm * 0.8 - missNorm * 0.4)
@@ -402,6 +407,7 @@ export const calculateMerchIncome = (
   const soldItems: Record<string, number> = {}
   let totalRevenue = 0
   const sortedKeys = SORTED_MERCH_KEYS
+  const capacityBonus = assetModifiers.merchCapacityBonus ?? 0
 
   for (const key of sortedKeys) {
     const share = (rawShare[key] ?? 0) / totalRawShare
@@ -410,16 +416,33 @@ export const calculateMerchIncome = (
       typeof safeInventory[key] === 'number'
         ? (safeInventory[key] as number)
         : 0
-    const sold = Math.min(desired, inventoryCount)
+    const effectiveInventory = inventoryCount + capacityBonus
+    const sold = Math.min(desired, effectiveInventory)
     if (sold > 0) {
       soldItems[key] = sold
-      const price =
+      const basePrice =
         priceByKey[key] ??
         (MERCH_PROFILES as Record<string, MerchItemProfile>)[key]
           ?.defaultPrice ??
         0
+
+      const price = Math.floor(basePrice * (1 + (assetModifiers.avgMerchSalePriceBonus ?? 0) / 100))
       const itemRevenue = sold * price
       totalRevenue += itemRevenue
+
+      const baseCost = HQ_ITEMS_BY_MERCH_KEY.get(key)?.cost ?? 0
+      const itemCost = Math.floor(baseCost * (assetModifiers.merchCostMultiplier ?? 1.0))
+      const totalItemCost = sold * itemCost
+
+      if (totalItemCost > 0) {
+        expenseItems.push({
+          labelKey: `economy:gigExpenses.merchProduction.${key}.label`,
+          value: totalItemCost,
+          detailKey: 'economy:gigExpenses.merchProduction.detail',
+          detailParams: { produced: sold }
+        })
+      }
+
       breakdownItems.push({
         labelKey: `economy:gigIncome.merchSales.${key}.label`,
         value: itemRevenue,
@@ -432,6 +455,7 @@ export const calculateMerchIncome = (
   return {
     revenue: totalRevenue,
     breakdownItems,
+    expenseItems,
     soldItems
   }
 }
@@ -468,7 +492,8 @@ const calculateDistance = (nodeA: unknown, nodeB: unknown = null) => {
 export const calculateFuelCost = (
   dist: number,
   playerState: Pick<PlayerState, 'van'> | null = null,
-  bandState: Pick<BandState, 'members'> | null = null
+  bandState: Pick<BandState, 'members'> | null = null,
+  assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS
 ) => {
   if (dist < 0) return { fuelLiters: 0, fuelCost: 0 }
 
@@ -490,7 +515,7 @@ export const calculateFuelCost = (
   }
 
   const fuelCost = Math.floor(
-    fuelLiters * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE
+    fuelLiters * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE * (assetModifiers.fuelMultiplier ?? 1.0)
   )
 
   return { fuelLiters, fuelCost }
@@ -795,7 +820,7 @@ export const calculateGigFinancials = ({
   playerState,
   gigStats,
   context = {}
-}: GigFinancialParams) => {
+}: GigFinancialParams, assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS) => {
   const playerFame = playerState?.fame ?? 0
 
   logger.debug('Economy', 'Calculating Gig Financials', {
@@ -865,11 +890,18 @@ export const calculateGigFinancials = ({
     gigStats,
     modifiers,
     bandInventory,
-    context
+    context,
+    assetModifiers
   )
   report.income.breakdown.push(...merch.breakdownItems)
   report.income.total += merch.revenue
   report.soldMerch = merch.soldItems
+  if (merch.expenseItems) {
+    for (const expense of merch.expenseItems) {
+      report.expenses.breakdown.push(expense)
+      report.expenses.total += expense.value
+    }
+  }
 
   // 5. Bar Cut
   const barCut = calculateBarCut(tickets.ticketsSold, modifiers)
@@ -914,6 +946,18 @@ export const calculateGigFinancials = ({
   if (sponsorshipBonuses.incomeItems.length > 0) {
     report.income.breakdown.push(...sponsorshipBonuses.incomeItems)
     report.income.total += sponsorshipBonuses.totalBonus
+  }
+
+  if (assetModifiers.tipBonusGigs && assetModifiers.tipBonusGigs > 0) {
+    const tipBonus = Math.floor(report.income.total * (assetModifiers.tipBonusGigs / 100))
+    if (tipBonus > 0) {
+      report.income.breakdown.push({
+        labelKey: 'economy:gigIncome.tipBonus.label',
+        value: tipBonus,
+        detailKey: 'economy:gigIncome.tipBonus.detail'
+      })
+      report.income.total += tipBonus
+    }
   }
 
   // 7. Management Cut (fame-progressive: 0% at fame=0, full 15% at fame≥200)
