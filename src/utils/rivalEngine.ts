@@ -56,15 +56,18 @@ export const moveRivalBand = (
   let possibleNodes: typeof allGigNodes = []
 
   if (rivalBand.currentLocationId && gameMap.connections) {
-    const connectedNodeIds = new Set(
-      gameMap.connections
-        .filter(
-          c =>
-            c.from === rivalBand.currentLocationId ||
-            c.to === rivalBand.currentLocationId
-        )
-        .map(c => (c.from === rivalBand.currentLocationId ? c.to : c.from))
-    )
+    // ⚡ BOLT OPTIMIZATION: Replaced chained .filter().map() with a single-pass loop.
+    // Why: Eliminates two O(N) intermediate array allocations during pathfinding.
+    // Impact: Reduces garbage collection pressure in simulation loops.
+    const currentLocationId = rivalBand.currentLocationId
+    const connectedNodeIds = new Set<string>()
+    for (const c of gameMap.connections) {
+      if (c.from === currentLocationId) {
+        connectedNodeIds.add(c.to)
+      } else if (c.to === currentLocationId) {
+        connectedNodeIds.add(c.from)
+      }
+    }
 
     possibleNodes = allGigNodes.filter(n => connectedNodeIds.has(n.id))
   }
