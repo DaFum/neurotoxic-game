@@ -21,6 +21,7 @@ import {
   clampBandHarmony
 } from './gameStateUtils'
 import type {
+  BrandAlignment,
   BrandDeal,
   SocialEngineGameState,
   SocialPostOption
@@ -476,7 +477,7 @@ type BrandNameParts = {
   noSpace?: boolean
 }
 
-const BRAND_NAME_PARTS: Record<string, BrandNameParts> = {
+const BRAND_NAME_PARTS: Record<BrandAlignment, BrandNameParts> = {
   EVIL: {
     prefixes: [
       'Toxic',
@@ -578,17 +579,14 @@ const BRAND_NAME_PARTS: Record<string, BrandNameParts> = {
 
 export const generateBrandName = (
   baseName: string,
-  alignment: string,
+  alignment: BrandAlignment,
   rng: RandomFn = secureRandom
 ): string => {
   const parts = BRAND_NAME_PARTS[alignment]
   if (!parts) return baseName
 
   const pick = (arr: string[]): string => {
-    const idx = Math.max(
-      0,
-      Math.min(arr.length - 1, Math.floor(rng() * arr.length))
-    )
+    const idx = Math.floor(rng() * arr.length)
     return arr[idx] ?? arr[0] ?? ''
   }
 
