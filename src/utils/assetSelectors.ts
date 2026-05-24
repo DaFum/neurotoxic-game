@@ -171,7 +171,7 @@ const memberHasSkill = (
   memberId?: string
 ): boolean => {
   const candidates = memberId
-    ? state.band.members.filter(m => m.id === memberId)
+    ? state.band.members.filter((m: { id?: string }) => m.id === memberId)
     : state.band.members
   for (const m of candidates) {
     const skills = (m as { skills?: Record<string, number> }).skills
