@@ -984,6 +984,61 @@
         "type": "const"
       }
     ],
+    "BrandOffer": [
+      {
+        "exportPath": "src/types/game.d.ts",
+        "isDefault": false,
+        "name": "BrandOffer",
+        "path": "src/types/social.d.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
+      }
+    ],
+    "BrandOfferFlavor": [
+      {
+        "exportPath": "src/types/game.d.ts",
+        "isDefault": false,
+        "name": "BrandOfferFlavor",
+        "path": "src/types/social.d.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
+      }
+    ],
+    "BrandOfferRep": [
+      {
+        "exportPath": "src/types/game.d.ts",
+        "isDefault": false,
+        "name": "BrandOfferRep",
+        "path": "src/types/social.d.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
+      }
+    ],
+    "BrandOfferUrgency": [
+      {
+        "exportPath": "src/types/game.d.ts",
+        "isDefault": false,
+        "name": "BrandOfferUrgency",
+        "path": "src/types/social.d.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
+    "BrandOfferVariantId": [
+      {
+        "exportPath": "src/types/game.d.ts",
+        "isDefault": false,
+        "name": "BrandOfferVariantId",
+        "path": "src/types/social.d.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
     "BrutalFader": [
       {
         "exportPath": "src/ui/shared/index.tsx",
@@ -1031,6 +1086,25 @@
         "path": "src/utils/audio/playbackUtils.ts",
         "source": "local",
         "type": "const"
+      }
+    ],
+    "buildBrandOffer": [
+      {
+        "isDefault": false,
+        "name": "buildBrandOffer",
+        "path": "src/utils/brandOfferFlavor.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "BuildBrandOfferContext": [
+      {
+        "isDefault": false,
+        "name": "BuildBrandOfferContext",
+        "path": "src/utils/brandOfferFlavor.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
       }
     ],
     "buildDrumKit": [
@@ -4138,9 +4212,10 @@
     ],
     "generateBrandName": [
       {
+        "exportPath": "src/utils/socialEngine.ts",
         "isDefault": false,
         "name": "generateBrandName",
-        "path": "src/utils/socialEngine.ts",
+        "path": "src/utils/brandOfferFlavor.ts",
         "source": "local",
         "type": "const"
       }
@@ -4150,6 +4225,15 @@
         "isDefault": false,
         "name": "generateBrandOffers",
         "path": "src/utils/socialEngine.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "generateCampaignCodename": [
+      {
+        "isDefault": false,
+        "name": "generateCampaignCodename",
+        "path": "src/utils/brandOfferFlavor.ts",
         "source": "local",
         "type": "const"
       }
