@@ -15,7 +15,7 @@ import {
   BALANCE_CONSTANTS,
   finiteNumberOr
 } from './gameStateUtils'
-import type { BandState, GameState, BandMember } from '../types'
+import type { PlayerState, BandState, GameState, SocialState, BandMember } from '../types'
 import type { Song } from '../types/audio'
 import type { ActiveEffect } from '../types/components'
 
@@ -291,21 +291,13 @@ const CONTROVERSY_ACCELERATED_DECAY_THRESHOLD = 55
 const CONTROVERSY_ACCELERATED_DECAY_AMOUNT = 3
 const CONTROVERSY_NORMAL_DECAY_AMOUNT = 1
 
-export const calculateDailyUpdates = (
-  currentState: GameState,
-  rng: () => number = getSafeRandom
+
+const updatePlayerFinances = (
+  nextPlayer: PlayerState,
+  nextBand: BandState,
+  nextSocial: SocialState,
+  rng: () => number
 ) => {
-  const nextPlayer = {
-    ...currentState.player,
-    day: currentState.player.day + 1
-  }
-  const nextBand = { ...currentState.band }
-  const nextSocial = { ...currentState.social }
-
-  // Snapshot controversyLevel at start of daily update to ensure consistent checks
-  const controversySnapshot = nextSocial.controversyLevel || 0
-
-  // 1. Costs
   let dailyCost = calculateGuaranteedDailyCost(nextPlayer, nextBand, nextSocial)
 
   // Newsletter Merch Sales Perk (Note: Can result in net daily income/negative dailyCost)
@@ -332,7 +324,12 @@ export const calculateDailyUpdates = (
     const expense = Math.round(taxableWealth * drainRate)
     nextPlayer.money = clampPlayerMoney(nextPlayer.money - expense)
   }
+}
 
+const updateVanCondition = (
+  nextPlayer: PlayerState,
+  controversySnapshot: number
+) => {
   // Van condition decay (wear from daily travel)
   if (nextPlayer.van) {
     nextPlayer.van = { ...nextPlayer.van }
@@ -368,7 +365,16 @@ export const calculateDailyUpdates = (
       Math.min(0.5, Math.round(adjustedBreakdownChance * 100) / 100)
     )
   }
+}
 
+const updateBandHarmony = (
+  nextBand: BandState,
+  nextPlayer: PlayerState,
+  nextSocial: SocialState,
+  controversySnapshot: number,
+  rng: () => number,
+  pendingFlags: Record<string, boolean>
+) => {
   // Harmony Decay (Drifts towards 50 like mood)
   if (nextBand.harmony > 50) {
     const nextHarmonyDecay = clampBandHarmony(nextBand.harmony - 2)
@@ -387,7 +393,6 @@ export const calculateDailyUpdates = (
   }
 
   // Ego System Drain (Lead Singer Syndrome)
-  const pendingFlags: Record<string, boolean> = {}
   if (nextSocial.egoFocus) {
     const nextHarmonyEgo = clampBandHarmony(nextBand.harmony - 2) // Passive drain for spotlighting a single member
     nextBand.harmony = nextHarmonyEgo
@@ -410,7 +415,13 @@ export const calculateDailyUpdates = (
   // Clamp harmony to valid range after all modifications
   const nextHarmonySafeguard = clampBandHarmony(nextBand.harmony)
   nextBand.harmony = nextHarmonySafeguard
+}
 
+const updateSocialDecay = (
+  nextSocial: SocialState,
+  nextPlayer: PlayerState,
+  rng: () => number
+) => {
   // 3. Social Decay
   nextSocial.viral = nextSocial.viral || 0
   // Viral decay
@@ -467,7 +478,15 @@ export const calculateDailyUpdates = (
       daysSinceActivity
     )
   }
+}
 
+const updatePassiveEffectsAndMembers = (
+  nextPlayer: PlayerState,
+  nextBand: BandState,
+  nextSocial: SocialState,
+  controversySnapshot: number,
+  rng: () => number
+) => {
   // 4. Passive Effects
   const hqUpgrades = nextPlayer.hqUpgrades || []
   const hqUpgradesSet = new Set(hqUpgrades)
@@ -563,6 +582,29 @@ export const calculateDailyUpdates = (
     nextSocial.instagram =
       (nextSocial.instagram || 0) + nextPlayer.passiveFollowers
   }
+}
+
+
+export const calculateDailyUpdates = (
+  currentState: GameState,
+  rng: () => number = getSafeRandom
+) => {
+  const nextPlayer = {
+    ...currentState.player,
+    day: currentState.player.day + 1
+  } as PlayerState
+  const nextBand = { ...currentState.band } as BandState
+  const nextSocial = { ...currentState.social } as SocialState
+
+  // Snapshot controversyLevel at start of daily update to ensure consistent checks
+  const controversySnapshot = nextSocial.controversyLevel || 0
+  const pendingFlags: Record<string, boolean> = {}
+
+  updatePlayerFinances(nextPlayer, nextBand, nextSocial, rng)
+  updateVanCondition(nextPlayer, controversySnapshot)
+  updateBandHarmony(nextBand, nextPlayer, nextSocial, controversySnapshot, rng, pendingFlags)
+  updateSocialDecay(nextSocial, nextPlayer, rng)
+  updatePassiveEffectsAndMembers(nextPlayer, nextBand, nextSocial, controversySnapshot, rng)
 
   return {
     player: nextPlayer,
