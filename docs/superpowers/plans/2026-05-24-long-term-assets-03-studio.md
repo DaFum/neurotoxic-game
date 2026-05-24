@@ -332,6 +332,27 @@ test('cracked DAW triggers copyright_strike on roll < chance', () => {
 
 - [ ] **Step 2: Commit** — `test(assets/studio): risk event firing for DIY modules`
 
+## Task 9: AGENTS.md aktualisieren
+
+**Files:**
+- Modify: `src/utils/AGENTS.md`
+- Modify: `src/components/assets/AGENTS.md`
+- Modify: `tests/node/AGENTS.md`
+
+- [ ] **Step 1: `src/utils/AGENTS.md`** — Sektion "Long-Term Assets / Studio" ergänzen:
+  - `assetSections/studioConfig.ts` exportiert `STUDIO_T1/T2/T3_SLOTS` und `STUDIO_SLOT_ZONES` (Rechteck-Zonen mit `x/y/w/h`, normalisiert 0..1, relativ zum 4:3-Background)
+  - `assetSections/studioModules.ts` registriert 14 Module. DIY-Module mit `riskEventTypes` (`copyright_strike`, `paranormal`, `police_check`) lösen über `rollAssetRiskEvents` Risk-Events aus
+
+- [ ] **Step 2: `src/components/assets/AGENTS.md`** — Sektion "Studio" ergänzen:
+  - `StudioFloorplanView` rendert 4:3 isometrisches Studio-Background mit Zonen-Slots (Rechteck-Overlays mit gestrichelter Border) statt runden Hotspots — passt zur Layout-Metapher (Räume statt Punkte am Vehikel)
+  - Sektion-Akzent: `var(--color-electric-blue)`
+  - `enablesReRecording`-Flag aus `st_pro_tools_hd` gibt UI-Hook für Song-Re-Aufnahme frei; Re-Recording-Logik selbst lebt im Song-Reducer (out of scope dieser Sektion)
+
+- [ ] **Step 3: `tests/node/AGENTS.md`** — ergänzen:
+  - Studio-spezifische Integrations-Tests: Aggregation von `songQualityBonus` über mehrere Module; DIY-Risk-Event-Tests für `st_cracked_daw_bundle` (`copyright_strike`) und `st_haunted_reverb_chamber` (`paranormal`)
+
+- [ ] **Step 4: Commit** — `docs(agents): document studio section invariants`
+
 ---
 
 ## Self-Review

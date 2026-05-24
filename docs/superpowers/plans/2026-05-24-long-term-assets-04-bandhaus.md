@@ -318,6 +318,28 @@ test('tier-3 chassis exposes bh_secret slot, tier-2 does not', () => { /* ... */
 
 - [ ] **Step 2: Commit** — `test(assets/bandhaus): integration tests`
 
+## Task 8: AGENTS.md aktualisieren
+
+**Files:**
+- Modify: `src/utils/AGENTS.md`
+- Modify: `src/components/assets/AGENTS.md`
+- Modify: `tests/node/AGENTS.md`
+
+- [ ] **Step 1: `src/utils/AGENTS.md`** — Sektion "Long-Term Assets / Bandhaus" ergänzen:
+  - `assetSections/bandhausConfig.ts` exportiert `BANDHAUS_T1/T2/T3_SLOTS` und `BANDHAUS_SLOT_ZONES`. Etagen-Layout: y=0..0.15 Dach/Front, 0.15..0.45 OG, 0.45..0.75 EG (inkl. `bh_backyard`), 0.75..0.95 Keller (`bh_secret` nur ab Tier 3)
+  - `assetSections/bandhausModules.ts` registriert 16 Module. `bh_secret`-Modul-Tier-Anforderung wird **implizit** über die Slot-Existenz erzwungen — der `bh_secret`-Slot existiert nur in `T3_SLOTS`. Wenn später eine zusätzliche Slot-unabhängige Constraint nötig wird: `unlock.minChassisTier: 3` an den jeweiligen Modul-Definitionen ergänzen
+
+- [ ] **Step 2: `src/components/assets/AGENTS.md`** — Sektion "Bandhaus" ergänzen:
+  - `BandhausCrossSectionView` rendert 3:4-Portrait-Background (Dollhouse-Querschnitt) mit Räumen als Zonen-Slots
+  - `bh_identity`-Slot (Mural) bekommt einen halbtransparenten dunklen Backdrop und ein größeres Modul-Bild (`512×128`), damit das Mural als Fassaden-Overlay gegen den Background-Hausansicht lesbar bleibt statt damit zu verschwimmen
+  - `bh_secret`-Slots werden in der UI nur gerendert, wenn `asset.chassisTier === 3`
+  - Sektion-Akzent: `var(--color-cosmic-purple)`
+
+- [ ] **Step 3: `tests/node/AGENTS.md`** — ergänzen:
+  - Bandhaus-Tests: Story-Flag-Unlocks (`bh_wall_mural` braucht `saved_local_venue`), Tier-3-Sichtbarkeit für `bh_secret`-Slots, `bh_weed_garden`-Raid-Risk-Event-Auswertung
+
+- [ ] **Step 4: Commit** — `docs(agents): document bandhaus section invariants`
+
 ---
 
 ## Self-Review

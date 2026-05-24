@@ -359,12 +359,34 @@ test('every AssetKind has exactly one SECTION_VIEWS entry', () => {
   }
 })
 
-test('MODULE_REGISTRY has 62 modules total (16+14+16+16)', () => {
-  assert.equal(Object.keys(MODULE_REGISTRY).length, 62)
+test('MODULE_REGISTRY has 63 modules total (17+14+16+16)', () => {
+  assert.equal(Object.keys(MODULE_REGISTRY).length, 63)
 })
 ```
 
 - [ ] **Step 2: Commit** — `test(assets): cross-section integration smoke tests`
+
+## Task 9: AGENTS.md aktualisieren
+
+**Files:**
+- Modify: `src/utils/AGENTS.md`
+- Modify: `src/components/assets/AGENTS.md`
+- Modify: `tests/node/AGENTS.md`
+
+- [ ] **Step 1: `src/utils/AGENTS.md`** — Sektion "Long-Term Assets / Merch-Werkstatt" ergänzen:
+  - `assetSections/workshopConfig.ts` exportiert `WORKSHOP_T1/T2/T3_SLOTS` und `WORKSHOP_SLOT_ZONES`. Layout: horizontale Produktionslinie (Print → Drying → Cutting → Packaging → Storage), vertikal angeflanscht (Specialty + Automation oben, Sales rechts)
+  - `assetSections/workshopModules.ts` registriert 16 Module. `mw_eco_ink_supply` verwendet `requiredOtherModuleInstalled: ['mw_4color_carousel', 'mw_manual_press']` (OR-Array) — diese OR-Semantik ist in `isModuleUnlocked` (Plan 1 Task 10) implementiert. Diese Sektion verlässt sich darauf, implementiert die Semantik nicht selbst neu
+
+- [ ] **Step 2: `src/components/assets/AGENTS.md`** — Sektion "Merch-Werkstatt" ergänzen:
+  - `WorkshopProductionLineView` rendert 21:9-Ultrawide-Förderband mit Stationen entlang der Linie und dekorativer CSS-Line zwischen Haupt-Print-Stationen (Förderband-Andeutung)
+  - Sektion-Akzent: `var(--color-warning-yellow)`
+  - `enablesLimitedEditions` (aus `mw_vinyl_cutter`) und `enablesBulkProduction` schalten Merch-Features frei; konkrete Konsumenten leben im Merch/Economy-Pfad
+
+- [ ] **Step 3: `tests/node/AGENTS.md`** — ergänzen:
+  - Workshop-Tests: OR-Unlock-Verifikation für `mw_eco_ink_supply` (Druckmodul muss installiert sein), additive Stapelung von `baseDailyRevenueDelta`-Modulen (mailorder + bandcamp + sticker), `mw_darkweb_vendor`-Multi-Event-Risk (`scam_or_bust` ODER `police_check`)
+  - Cross-Section-Smoke-Test (`allSectionsIntegrationSmoke.test.js`): `MODULE_REGISTRY` hat 63 Module gesamt (17 Tourbus + 14 Studio + 16 Bandhaus + 16 Workshop), alle 4 `SECTION_VIEWS` registriert, jeder Slot-Typ aus der `SlotType`-Union ist in mindestens einer Sektion-Konfig vertreten
+
+- [ ] **Step 4: Commit** — `docs(agents): document merch workshop section invariants and cross-section totals`
 
 ---
 
@@ -381,7 +403,7 @@ test('MODULE_REGISTRY has 62 modules total (16+14+16+16)', () => {
 - Werkstatt-Tab zeigt 21:9-Ultrawide-Förderband mit horizontalen Stationen
 - `mw_eco_ink_supply` ist erst unlocked nach Installation eines Druckmoduls (legit oder DIY)
 - `mw_4color_carousel` aktiviert Merch-Kostenreduktion in `calculateMerchIncome`
-- Cross-Section-Smoke-Test grün: 62 Module gesamt, alle Slot-Typen gemappt, alle 4 Sektionen registriert
+- Cross-Section-Smoke-Test grün: 63 Module gesamt, alle Slot-Typen gemappt, alle 4 Sektionen registriert
 - `pnpm run test:all` grün
 - Golden-Path-Cycle-Test mit beliebigem Asset-Kombi grün
 
@@ -392,7 +414,7 @@ test('MODULE_REGISTRY has 62 modules total (16+14+16+16)', () => {
 Nach Abschluss aller 5 Pläne ist das System komplett:
 
 - 4 Asset-Kategorien × 3 Tiers × 2 Flavors = 24 Chassis-Varianten
-- 62 Module mit individuellen Bildern
+- 63 Module mit individuellen Bildern
 - Vier eigenständige Sektion-Visuals (16:9 Vehikel, 4:3 Studio, 3:4 Bandhaus, 21:9 Werkstatt)
 - Drei Erwerbspfade (cash/loan/crowdfund) mit deterministischer Crowdfund-Auswertung
 - Tägliche Tick-Logik mit deterministischem RNG-Stream

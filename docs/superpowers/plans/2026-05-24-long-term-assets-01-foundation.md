@@ -1919,6 +1919,74 @@ export const SECTION_VIEWS: Partial<Record<AssetKind, SectionView>> = {}
 
 ---
 
+## Task 28: AGENTS.md aktualisieren
+
+Nach Plan-Abschluss müssen alle berührten Domains in ihren `AGENTS.md`-Dateien dokumentiert werden, damit zukünftige Agenten die neuen Invarianten kennen.
+
+**Files:**
+- Modify: `src/types/AGENTS.md`
+- Modify: `src/utils/AGENTS.md`
+- Modify: `src/context/AGENTS.md`
+- Modify: `src/context/reducers/AGENTS.md`
+- Modify: `src/ui/shared/AGENTS.md`
+- Create: `src/components/assets/AGENTS.md` (neue Domain)
+- Modify: `tests/node/AGENTS.md`
+- Modify: `tests/ui/AGENTS.md`
+- Modify: root `AGENTS.md` (Top-Level-Gotchas für Asset-System)
+
+- [ ] **Step 1: `src/types/AGENTS.md`** — ergänzen:
+  - `assets.d.ts` ist Source of Truth für `AssetKind`, `SlotType`, `AssetModule`, `AssetBoni`, `Liability`, `CrowdfundCampaign`. Keine strukturellen Klone in anderen Dateien.
+  - `ModuleUnlockReq.requiredOtherModuleInstalled` akzeptiert `string | readonly string[]` — Array hat OR-Semantik
+  - `CrowdfundCampaign.plannedSuccessRoll` wird beim START gezogen, `resolvedOutcome` ist `undefined` solange Kampagne aktiv
+
+- [ ] **Step 2: `src/utils/AGENTS.md`** — ergänzen:
+  - `CHASSIS_CONFIG` (`assetConfig.ts`) ist die einzige Stelle für Chassis-Preise/Upkeep. DIY-Varianten programmatisch über `buildDiyTier`, nicht hand-eintragen.
+  - `MODULE_REGISTRY` (`assetModuleRegistry.ts`) wird per Side-Effect-Import aus `assetSections/*Modules.ts` befüllt. Anti-Stacking-Invariante: kein Modul mit `slotType === addsSlots[i].slotType` (Build-Test fängt das).
+  - `MODULE_PROMPTS` ist via `imagePromptKey` indexiert; mehrere Module dürfen denselben Key teilen
+  - `NEUTRAL_ASSET_MODIFIERS` (`assetSelectors.ts`) ist die Identity für `AssetModifiers`-Aggregation. Multiplikative Felder = 1.0, additive = 0, Flags = false
+  - `getTotalDailyObligations(state)` = `calculateGuaranteedDailyCost + assetUpkeep − assetRevenue + liabilityPayments` (Source of Truth für Bankrott-Check)
+  - `seededRng.ts` (`mulberry32`, `createRngStream`): RNG-Stream wird im Action-Creator vorberechnet und im Payload mitgeschickt, **niemals** im Reducer
+  - `imageGen.ts` neue Helper: `getChassisImagePrompt`, `getModuleImagePrompt`, `getRepairImagePrompt`, `getLoanProfileImagePrompt`, `getCrowdfundImagePrompt`, `getRiskEventImagePrompt`, `getSectionBackgroundPrompt`, `getTrailerImagePrompt`, `appendImageSize` (Query-safe Append, funktioniert für Pollinations-URLs und Offline-Fallback-SVG)
+  - `loanProfiles.ts` (`LOAN_PROFILES`, `computeAmortization`): Parameter heißt `annualInterestRate` und wird intern durch 365 geteilt
+
+- [ ] **Step 3: `src/context/AGENTS.md`** — ergänzen:
+  - Asset-Action-Creators normalisieren Payloads via `finiteNumberOr` und strippen Prototyp-Keys via `Object.hasOwn`; DIY+loan → `PURCHASE_CHASSIS_FAILED` (typisiert, **nicht** `null`)
+  - Slot-IDs für `addsSlots` werden im Creator generiert (`getSafeUUID()`) und als `newSlotIds: Array<{ slotType, id }>` im Payload übergeben — Reducer setzt 1:1 ein
+  - `advanceDay(state)` zieht `dayRngStream` und `nextRngSeed` aus `seededRng` und legt sie in den Payload; alte payloadlose `createAdvanceDayAction()`-Aufrufer sind migriert auf `dispatch(advanceDay(state))`
+  - `INSTALL_MODULE`-Validierung prüft: Slot existiert + leer + Slot-Typ-Match + Unlock + `exclusiveWithGroup` + `maxPerAsset`. Flavor-Mix (legit-Modul auf DIY-Chassis und umgekehrt) ist **erlaubt**
+
+- [ ] **Step 4: `src/context/reducers/AGENTS.md`** — ergänzen:
+  - `assetReducer.ts` ist Pure: keine RNG-Calls, keine ID-Generierung, keine Side-Effects. `*_FAILED`-Actions sind reine No-Ops; Toast-Dispatch geschieht im Middleware/UI-Layer
+  - `advanceDay`-Reducer komponiert `processAssetTick → processLiabilityTick → processCrowdfundTick → rollAssetRiskEvents → applyBankruptcyCheck` und konsumiert den `dayRngStream` deterministisch
+  - `condition < 20` → aggregierte Boni neutralisiert (Asset gilt als kaputt). `condition === 0` → dispatch `ASSET_FORECLOSED`
+  - `sanitizeAssets`/`sanitizeLiabilities`/`sanitizeCrowdfundCampaigns` enforcen referenzielle Integrität: orphan Liabilities werden verworfen, ungültige `addedByModuleId` auf `undefined`, doppelte `installedModuleId` auf einem Asset reduziert auf einen Eintrag
+  - `BASE_STATE` (Playwright-Fixture) muss `assets`, `liabilities`, `crowdfundCampaigns`, `rngSeed` enthalten
+
+- [ ] **Step 5: `src/ui/shared/AGENTS.md`** — ergänzen:
+  - `GeneratedImagePanel` ist die einzige Komponente, die direkt Pollinations-URLs lädt. UI-Aufrufer geben Prompts und `sizeHint`, nie selbst URL-Manipulation. Offline-Fallback via `getGeneratedImageFallbackUrl` ist in der Komponente gekapselt.
+  - Pro Sektion wird `--section-accent` als CSS-Custom-Property gesetzt; `GeneratedImagePanel` und Asset-UI nutzen `var(--section-accent, var(--color-toxic-green))` für Borders
+
+- [ ] **Step 6: `src/components/assets/AGENTS.md`** — neu anlegen:
+  - Eine Hub-Szene `AssetsScene` mit vier Tabs. Sektion-Views registrieren sich über `sectionRegistry.ts` (`SECTION_VIEWS[kind] = { Component, accent }`). Foundation lässt das Registry leer; Sektion-Pläne 2–5 befüllen es.
+  - Gemeinsame Modale (`ChassisAcquisitionModal`, `LoanProfileModal`, `CrowdfundSetupModal`, `RepairConfirmModal`, `SellConfirmModal`, `RiskEventModal`, `ForeclosureModal`, `ModulePickerModal`) sind sektion-agnostisch und nehmen `kind`/`asset`/`slot` als Props.
+  - `ModulePickerModal` muss bei großen Pools (>12 Module) virtual scrolling oder progressive Loading nutzen (siehe Plan 1 Task 24); naives gleichzeitiges Laden aller Thumbnails ist zu teuer.
+  - Slot-`position`/`zone`-Koordinaten sind 0..1-normalisiert relativ zum Section-Background-Bild — sektion-spezifisch und in `assetSections/<section>Config.ts` definiert.
+
+- [ ] **Step 7: `tests/node/AGENTS.md`** — ergänzen:
+  - Neue Test-Domains: `assetsReducer`, `assetTicks`, `assetSelectors`, `liabilitiesAmortization`, `bankruptcyWithLiabilities`, `crowdfundResolution`, `assetPayloadSanitization`, `assetModuleRegistry`, `assetImagePrompts`. RNG-abhängige Tests setzen `state.rngSeed` und assertieren deterministisch über vorbereiteten `dayRngStream`.
+  - Anti-Stacking-Test in `assetModuleRegistry.test.js`: kein Modul mit `slotType === addsSlots[i].slotType`. Slot-Coverage-Test pro Sektion: jeder Slot-Typ in der Chassis-Konfig hat mindestens ein kompatibles Modul (außer dynamisch hinzugefügten Slot-Typen wie `tb_trailer_addon`).
+
+- [ ] **Step 8: `tests/ui/AGENTS.md`** — ergänzen:
+  - `GeneratedImagePanel`-Tests prüfen Seed-Determinismus (gleicher Prompt → gleiche URL) und Offline-Pfad. `ModulePickerModal`-Tests müssen Flavor-Mix-Erlaubnis verifizieren (legit-Modul auf DIY-Chassis sichtbar)
+
+- [ ] **Step 9: Root `AGENTS.md`** — ergänzen unter neuem Abschnitt "Long-Term Assets":
+  - Asset-Konfig (`CHASSIS_CONFIG`) und Modul-Konfig (`MODULE_REGISTRY`) sind eingefroren via `as const satisfies`; neue Chassis/Module bekommen ihre Werte über die etablierten Helper, nicht hand-eintragen
+  - `advanceDay` muss über den Action-Creator dispatched werden, **nicht** mit payloadlosem `createAdvanceDayAction()` — RNG-Determinismus hängt davon ab
+  - DIY-Chassis können nicht über Loan finanziert werden (nur `cash`/`crowdfund`); UI deaktiviert die Option, Action-Creator returnt `PURCHASE_CHASSIS_FAILED` als zweite Verteidigungslinie
+  - Bankrott-Check (`shouldTriggerBankruptcy`) muss `getTotalDailyObligations(state)` aus `assetSelectors.ts` verwenden, niemals nur `calculateGuaranteedDailyCost` direkt
+
+- [ ] **Step 10: Commit** — `docs(agents): document long-term assets foundation invariants`
+
 ## Self-Review-Checkliste vor Plan-Abschluss
 
 - [ ] Alle Spec-§3.x-Typen in Task 1 abgedeckt

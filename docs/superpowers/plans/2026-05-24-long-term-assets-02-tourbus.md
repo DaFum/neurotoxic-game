@@ -556,6 +556,29 @@ test('Golden-Path trailer-stacking: hitch adds slots, addon installs, no infinit
 
 - [ ] **Step 3: Commit** — `test(assets/tourbus): integration tests for anti-stacking`
 
+## Task 9: AGENTS.md aktualisieren
+
+**Files:**
+- Modify: `src/utils/AGENTS.md`
+- Modify: `src/components/assets/AGENTS.md`
+- Modify: `tests/node/AGENTS.md`
+
+- [ ] **Step 1: `src/utils/AGENTS.md`** — Sektion "Long-Term Assets / Tourbus" ergänzen:
+  - `assetSections/tourbusConfig.ts` exportiert `TOURBUS_T1_SLOTS`, `T2_SLOTS`, `T3_SLOTS` und `TOURBUS_SLOT_POSITIONS` (`Partial<Record<SlotType, ...>>` — Aufrufer müssen `undefined`-Guard setzen)
+  - `assetSections/tourbusModules.ts` registriert 17 Module via Side-Effect-Import in `MODULE_REGISTRY` und `MODULE_PROMPTS`
+  - Trailer-Anti-Stacking: `tb_trailer_hitch` hat `slotType: 'tb_trailer_mount'` und fügt nur `tb_trailer_addon`-Slots hinzu — verschiedene Typen, kein Selbst-Stacking. `maxPerAsset: 1` als zusätzliche Sicherung
+  - Trailer-Detection in der UI: `asset.slots.some(s => s.installedModuleId === 'tb_trailer_hitch')` — kein `MODULE_REGISTRY`-Lookup nötig
+
+- [ ] **Step 2: `src/components/assets/AGENTS.md`** — Sektion "Tourbus" ergänzen:
+  - `TourbusVehicleView` rendert 16:9-Background mit absolut positionierten Hotspots aus `TOURBUS_SLOT_POSITIONS`. `tb_trailer_addon`-Slots werden **nicht** auf dem Van gerendert, sondern im `TourbusTrailerOverlay`
+  - `TourbusTrailerOverlay` erscheint nur bei installiertem `tb_trailer_hitch` als zweites 16:9-Bild rechts neben dem Van, gleicher Aspect für nahtlose Andockung. Offline-Fallback nutzt dasselbe `getGeneratedImageFallbackUrl`-SVG
+  - Sektion-Akzent: `var(--color-toxic-green)`
+
+- [ ] **Step 3: `tests/node/AGENTS.md`** — ergänzen:
+  - Tourbus-spezifische Tests: `tourbusModules.test.js` enthält Slot-Coverage-Check (jeder Slot-Typ aus `T1/T2/T3_SLOTS` außer `tb_trailer_addon` hat mindestens ein Modul) und Anti-Stacking-Integration
+
+- [ ] **Step 4: Commit** — `docs(agents): document tourbus section invariants`
+
 ---
 
 ## Self-Review
