@@ -1565,6 +1565,14 @@ export const getRepairImagePrompt = (kind: AssetKind, flavor: AssetFlavor, tier:
   if (condition < 50) return `${base} damaged worn`
   return `${base} needs maintenance`
 }
+
+// Sicheres Anhängen von Größen-Parametern an eine Bild-URL.
+// Funktioniert sowohl für Pollinations-URLs (haben bereits `?model=...`)
+// als auch für den Offline-Fallback-SVG-Pfad (hat keine Query).
+export const appendImageSize = (url: string, width: number, height: number): string => {
+  const sep = url.includes('?') ? '&' : '?'
+  return `${url}${sep}width=${width}&height=${height}`
+}
 ```
 
 - [ ] **Step 3: Tests grün. Commit** — `feat(imageGen): add asset image prompt helpers`
@@ -1626,10 +1634,7 @@ export const GeneratedImagePanel = ({
   const [errored, setErrored] = useState(false)
   const available = isImageGenerationAvailable()
   let src = available ? resolveGenImageUrl(prompt) : getGeneratedImageFallbackUrl()
-  if (sizeHint) {
-    const sep = src.includes('?') ? '&' : '?'
-    src = `${src}${sep}width=${sizeHint.width}&height=${sizeHint.height}`
-  }
+  if (sizeHint) src = appendImageSize(src, sizeHint.width, sizeHint.height)
   if (errored) src = getGeneratedImageFallbackUrl()
   const style: CSSProperties = {
     aspectRatio: ASPECT_CSS[aspectRatio],

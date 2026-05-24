@@ -116,14 +116,15 @@ tourbus_chassis: {
 - Modify: `src/utils/assetModuleRegistry.ts` — Side-effect-Import
 - Test: `tests/node/tourbusModules.test.js`
 
-- [ ] **Step 1: Test (16 Module, kein Self-Stacking, alle Prompts vorhanden)**
+- [ ] **Step 1: Tests (17 Module, kein Self-Stacking, Slot-Coverage, alle Prompts vorhanden)**
 
 ```js
 import { MODULE_REGISTRY } from '../../src/utils/assetModuleRegistry.ts'
+import { TOURBUS_T1_SLOTS, TOURBUS_T2_SLOTS, TOURBUS_T3_SLOTS } from '../../src/utils/assetSections/tourbusConfig.ts'
 
-test('all 16 tourbus modules registered', () => {
+test('all 17 tourbus modules registered', () => {
   const tb = Object.values(MODULE_REGISTRY).filter(m => m.ownerKind === 'tourbus_chassis')
-  assert.equal(tb.length, 16)
+  assert.equal(tb.length, 17)
 })
 
 test('tb_trailer_hitch slotType is tb_trailer_mount and addsSlots is tb_trailer_addon (anti-stacking)', () => {
@@ -131,6 +132,19 @@ test('tb_trailer_hitch slotType is tb_trailer_mount and addsSlots is tb_trailer_
   assert.equal(hitch.slotType, 'tb_trailer_mount')
   assert.deepEqual(hitch.addsSlots, [{ slotType: 'tb_trailer_addon', count: 2 }])
   assert.equal(hitch.maxPerAsset, 1)
+})
+
+test('every chassis slot type has at least one compatible module', () => {
+  // tb_trailer_addon is dynamic — kommt nur durch tb_trailer_hitch hinzu, daher ausgeschlossen
+  const chassisSlots = new Set([...TOURBUS_T1_SLOTS, ...TOURBUS_T2_SLOTS, ...TOURBUS_T3_SLOTS])
+  const moduleSlotTypes = new Set(
+    Object.values(MODULE_REGISTRY)
+      .filter(m => m.ownerKind === 'tourbus_chassis')
+      .map(m => m.slotType)
+  )
+  for (const slot of chassisSlots) {
+    assert.ok(moduleSlotTypes.has(slot), `No module exists for slot type: ${slot}`)
+  }
 })
 ```
 
@@ -243,6 +257,13 @@ const MODULES: AssetModule[] = [
     unlock: { requiredMemberSkill: { skill: 'tech', tier: 2 } },
     imagePromptKey: 'tb_smoke_screen',
   },
+  {
+    id: 'tb_side_graphics', ownerKind: 'tourbus_chassis', slotType: 'tb_side', flavor: 'legit',
+    cost: 600, installCost: 100, removalRefundFraction: 0.3,
+    boni: { famePassivePerDay: 0.3 },
+    unlock: { minChassisTier: 2 },
+    imagePromptKey: 'tb_side_graphics',
+  },
 ]
 
 const PROMPTS: Record<string, string> = {
@@ -262,6 +283,7 @@ const PROMPTS: Record<string, string> = {
   tb_trailer_hitch: 'pixel art tour van with trailer hitch and small trailer attached side view',
   tb_fake_police_lights: 'pixel art tour van with fake police lights on top suspicious diy',
   tb_smoke_screen: 'pixel art tour van smoke screen ejection device fleeing scene',
+  tb_side_graphics: 'pixel art tour van side panel with large band logo and graphics paint job',
 }
 
 for (const m of MODULES) MODULE_REGISTRY[m.id] = m
@@ -293,18 +315,15 @@ test('clicking slot calls onSlotClick with slotId', () => { /* ... */ })
 
 ```tsx
 import { GeneratedImagePanel } from '../../../ui/shared/GeneratedImagePanel'
-import { getSectionBackgroundPrompt, getModuleImagePrompt, resolveGenImageUrl } from '../../../utils/imageGen'
+import { getSectionBackgroundPrompt, getModuleImagePrompt, resolveGenImageUrl, appendImageSize } from '../../../utils/imageGen'
 import { TOURBUS_SLOT_POSITIONS } from '../../../utils/assetSections/tourbusConfig'
-import { MODULE_REGISTRY } from '../../../utils/assetModuleRegistry'
 import { TourbusTrailerOverlay } from './TourbusTrailerOverlay'
 import type { LongTermAsset } from '../../../types/assets'
 
 interface Props { asset: LongTermAsset; onSlotClick: (slotId: string) => void }
 
 export const TourbusVehicleView = ({ asset, onSlotClick }: Props) => {
-  const hasTrailer = asset.slots.some(s =>
-    s.installedModuleId && MODULE_REGISTRY[s.installedModuleId]?.id === 'tb_trailer_hitch'
-  )
+  const hasTrailer = asset.slots.some(s => s.installedModuleId === 'tb_trailer_hitch')
   return (
     <div className="tourbus-vehicle-view" style={{ position: 'relative' }}>
       <GeneratedImagePanel
@@ -339,7 +358,7 @@ export const TourbusVehicleView = ({ asset, onSlotClick }: Props) => {
             >
               {installed ? (
                 <img
-                  src={resolveGenImageUrl(getModuleImagePrompt(installed)) + '&width=128&height=128'}
+                  src={appendImageSize(resolveGenImageUrl(getModuleImagePrompt(installed)), 128, 128)}
                   alt={installed} style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
               ) : (
@@ -498,7 +517,8 @@ SECTION_VIEWS.tourbus_chassis = { Component: TourbusSection, accent: 'var(--colo
       "tb_gps_jammer": { "name": "GPS jammer", "description": "Halves police risk" },
       "tb_trailer_hitch": { "name": "Trailer hitch", "description": "Adds trailer with 2 addon slots, +50 merch capacity" },
       "tb_fake_police_lights": { "name": "Fake police lights", "description": "+5% tips, attracts police attention" },
-      "tb_smoke_screen": { "name": "Smoke screen", "description": "Reduces theft risk on travel" }
+      "tb_smoke_screen": { "name": "Smoke screen", "description": "Reduces theft risk on travel" },
+      "tb_side_graphics": { "name": "Side graphics", "description": "Big band logo on the van flank, +0.3 fame/day" }
     }
   }
 }
@@ -540,13 +560,14 @@ test('Golden-Path trailer-stacking: hitch adds slots, addon installs, no infinit
 
 ## Self-Review
 
-- [ ] 16 Module aus Spec §4.3 alle vorhanden mit korrektem `slotType`, `flavor`, `boni`, `unlock`
+- [ ] 17 Module aus Spec §4.3 alle vorhanden mit korrektem `slotType`, `flavor`, `boni`, `unlock`
 - [ ] `tb_trailer_hitch.slotType === 'tb_trailer_mount'`, `addsSlots[0].slotType === 'tb_trailer_addon'`, `maxPerAsset: 1`
-- [ ] Alle 16 Module haben `imagePromptKey`-Eintrag in `MODULE_PROMPTS`
+- [ ] Alle 17 Module haben `imagePromptKey`-Eintrag in `MODULE_PROMPTS`
 - [ ] `TOURBUS_SLOT_POSITIONS` deckt alle Tourbus-Slot-Typen
 - [ ] Locale-Keys EN + DE simultan, alle Modul-IDs mit `name` + `description`
 - [ ] `SECTION_VIEWS.tourbus_chassis` registriert
 - [ ] Trailer-Overlay rendert nur bei installiertem Hitch
+- [ ] **Slot-Coverage:** jeder Slot-Typ in `TOURBUS_T1_SLOTS`/`T2_SLOTS`/`T3_SLOTS` (außer dynamischem `tb_trailer_addon`) hat mindestens ein kompatibles Modul in `MODULE_REGISTRY`. `TOURBUS_SLOT_POSITIONS` und Modul-Definitionen kreuzgeprüft — keine verwaisten Slots
 
 ## Acceptance Criteria
 

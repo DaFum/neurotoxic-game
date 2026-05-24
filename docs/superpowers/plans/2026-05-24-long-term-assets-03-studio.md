@@ -77,7 +77,14 @@ const STUDIO_LEGIT = {
   3: { price: 30000, upkeep: 80, revenue: 120, slots: STUDIO_T3_SLOTS, baseRiskEventChance: 0.003 },
 } as const
 
-// CHASSIS_CONFIG.studio_chassis = { legit: STUDIO_LEGIT, diy: { 1: buildDiyTier(STUDIO_LEGIT[1]), ... } }
+// CHASSIS_CONFIG.studio_chassis = {
+//   legit: STUDIO_LEGIT,
+//   diy: {
+//     1: buildDiyTier(STUDIO_LEGIT[1]),
+//     2: buildDiyTier(STUDIO_LEGIT[2]),
+//     3: buildDiyTier(STUDIO_LEGIT[3]),
+//   },
+// }
 ```
 
 - [ ] **Step 3: Commit** — `feat(assets/studio): populate chassis config`
@@ -196,7 +203,7 @@ test('clicking zone calls onSlotClick', () => { /* ... */ })
 
 ```tsx
 import { GeneratedImagePanel } from '../../../ui/shared/GeneratedImagePanel'
-import { getSectionBackgroundPrompt, resolveGenImageUrl, getModuleImagePrompt } from '../../../utils/imageGen'
+import { getSectionBackgroundPrompt, resolveGenImageUrl, getModuleImagePrompt, appendImageSize } from '../../../utils/imageGen'
 import { STUDIO_SLOT_ZONES } from '../../../utils/assetSections/studioConfig'
 import type { LongTermAsset } from '../../../types/assets'
 
@@ -230,7 +237,7 @@ export const StudioFloorplanView = ({ asset, onSlotClick }: Props) => (
         >
           {installed && (
             <img
-              src={resolveGenImageUrl(getModuleImagePrompt(installed)) + '&width=256&height=256'}
+              src={appendImageSize(resolveGenImageUrl(getModuleImagePrompt(installed)), 256, 256)}
               alt={installed} style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           )}

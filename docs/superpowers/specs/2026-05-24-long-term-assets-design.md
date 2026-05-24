@@ -318,8 +318,9 @@ Damit Module 1:1 in Code übersetzbar sind, verwenden alle Pool-Tabellen ein ein
 | `tb_trailer_hitch` | tb_trailer_mount | legit | `{ merchCapacityBonus: 50 }`, `addsSlots: [{ slotType: 'tb_trailer_addon', count: 2 }]` | `{ minFame: 40, minChassisTier: 3 }`, `maxPerAsset: 1` |
 | `tb_fake_police_lights` | tb_front | diy | `{ tipBonusGigs: 0.05 }`, `riskEventTypes: ['police_check']` | `{ minFame: 30 }` |
 | `tb_smoke_screen` | tb_front | diy | `{ reducesTheftRiskTravel: true }` | `{ requiredMemberSkill: { skill: 'tech', tier: 2 } }` |
+| `tb_side_graphics` | tb_side | legit | `{ famePassivePerDay: 0.3 }` | `{ minChassisTier: 2 }` |
 
-(16 Module für 4–8 Chassis-Slots + 2 Trailer-Addon-Slots, davon je 1 pro Slot-Typ-Konkurrenz)
+(17 Module für 4–8 Chassis-Slots + 2 Trailer-Addon-Slots; jeder Chassis-Slot-Typ hat mindestens ein kompatibles Modul)
 
 ### 4.4 Modul-Pool — Studio
 

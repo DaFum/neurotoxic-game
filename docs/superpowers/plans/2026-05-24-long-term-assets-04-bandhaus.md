@@ -52,7 +52,7 @@ export const BANDHAUS_SLOT_ZONES: Partial<Record<SlotType, { x: number; y: numbe
   bh_lounge:    { x: 0.70, y: 0.30, w: 0.40, h: 0.20 },   // OG rechts
   bh_stage:     { x: 0.30, y: 0.55, w: 0.40, h: 0.20 },   // EG links
   bh_kitchen:   { x: 0.70, y: 0.55, w: 0.40, h: 0.20 },   // EG rechts
-  bh_backyard:  { x: 0.93, y: 0.55, w: 0.14, h: 0.30 },   // außen rechts
+  bh_backyard:  { x: 0.93, y: 0.60, w: 0.14, h: 0.20 },   // außen rechts, vollständig im EG-Band (y 0.50..0.70)
   bh_security:  { x: 0.50, y: 0.78, w: 0.20, h: 0.10 },   // Vortür
   bh_secret:    { x: 0.50, y: 0.88, w: 0.50, h: 0.10 },   // Keller (Tier 3)
 }
@@ -88,7 +88,7 @@ const BANDHAUS_LEGIT = {
 - Create: `src/utils/assetSections/bandhausModules.ts`
 - Test: `tests/node/bandhausModules.test.js`
 
-- [ ] **Step 1: Test** — 16 Module, alle Prompts, mehrere mit `bh_secret` slotType erfordern Tier 3 (über `chassisTier`-Constraint, der über Slot-Existenz erzwungen wird).
+- [ ] **Step 1: Test** — 16 Module, alle Prompts. `bh_secret`-Module brauchen keine explizite Tier-3-Constraint im Modul-Unlock, weil die Tier-3-Pflicht **implizit** über die Slot-Existenz erzwungen wird: der `bh_secret`-Slot existiert nur in `BANDHAUS_T3_SLOTS`, also kann das Modul in Tier-1/2-Chassis gar nicht installiert werden. Wenn später eine andere Slot-unabhängige Unlock-Bedingung gewünscht ist, dann explizit `unlock.minChassisTier: 3` an den Modul-Definitionen ergänzen.
 - [ ] **Step 2:** Module aus Spec §4.5:
 
 ```ts
@@ -213,6 +213,14 @@ test('secret room is only rendered when tier >= 3', () => { /* ... */ })
   if (!zone) return null
   const installed = slot.installedModuleId
   const isMural = slot.slotType === 'bh_identity' && installed
+  // Hintergrund-Logik:
+  // - Befülltes nicht-Mural-Modul: transparent, das Modul-Bild zeigt sich klar.
+  // - Mural ODER leerer Slot: halbtransparent dunkel.
+  //   Bei Mural ist das beabsichtigt — das großformatige Fassaden-Bild
+  //   bekommt einen dunklen Backdrop, damit es als Overlay-Element gegen
+  //   das Background-Bild lesbar bleibt statt damit zu verschwimmen.
+  const bg = installed && !isMural ? 'transparent' : 'rgba(0,0,0,0.4)'
+  const size = isMural ? { w: 512, h: 128 } : { w: 256, h: 256 }
   return (
     <button
       key={slot.id} onClick={() => onSlotClick(slot.id)}
@@ -222,12 +230,12 @@ test('secret room is only rendered when tier >= 3', () => { /* ... */ })
         top: `${(zone.y - zone.h / 2) * 100}%`,
         width: `${zone.w * 100}%`, height: `${zone.h * 100}%`,
         border: '2px dashed var(--color-cosmic-purple)',
-        background: installed && !isMural ? 'transparent' : 'rgba(0,0,0,0.4)',
+        background: bg,
       }}
     >
       {installed && (
         <img
-          src={resolveGenImageUrl(getModuleImagePrompt(installed)) + (isMural ? '&width=512&height=128' : '&width=256&height=256')}
+          src={appendImageSize(resolveGenImageUrl(getModuleImagePrompt(installed)), size.w, size.h)}
           alt={installed}
           style={{ width: '100%', height: '100%', objectFit: 'cover' }}
         />

@@ -187,7 +187,7 @@ for (const m of MODULES) MODULE_REGISTRY[m.id] = m
 for (const [k, v] of Object.entries(PROMPTS)) MODULE_PROMPTS[k] = v
 ```
 
-- [ ] **Step 3:** Sicherstellen dass `isModuleUnlocked` in Plan 1 das `requiredOtherModuleInstalled`-Array-OR-Verhalten korrekt implementiert (siehe Plan 1 Task 10). Wenn nicht, hier ergänzen — Spec §3.1 verlangt `string | readonly string[]`.
+- [ ] **Step 3:** Verifizieren, dass `isModuleUnlocked` (Plan 1, Task 10) die OR-Semantik für `requiredOtherModuleInstalled: string | readonly string[]` korrekt implementiert (Spec §3.1). Die OR-Logik ist **Verantwortung von Plan 1** — falls sie dort fehlt oder fehlerhaft ist, in **Plan 1 (Task 10) ergänzen**, nicht ad-hoc in diesem Workshop-Plan. Hier in Plan 5 wird sie nur konsumiert.
 - [ ] **Step 4: Tests grün. Commit** — `feat(assets/workshop): register 16 modules with prompts`
 
 ## Task 4: `WorkshopProductionLineView`
@@ -211,7 +211,7 @@ test('automation/sales/specialty render above and right of main line', () => { /
 
 ```tsx
 import { GeneratedImagePanel } from '../../../ui/shared/GeneratedImagePanel'
-import { getSectionBackgroundPrompt, resolveGenImageUrl, getModuleImagePrompt } from '../../../utils/imageGen'
+import { getSectionBackgroundPrompt, resolveGenImageUrl, getModuleImagePrompt, appendImageSize } from '../../../utils/imageGen'
 import { WORKSHOP_SLOT_ZONES } from '../../../utils/assetSections/workshopConfig'
 import type { LongTermAsset } from '../../../types/assets'
 
@@ -248,7 +248,7 @@ export const WorkshopProductionLineView = ({ asset, onSlotClick }: Props) => (
         >
           {installed && (
             <img
-              src={resolveGenImageUrl(getModuleImagePrompt(installed)) + '&width=256&height=256'}
+              src={appendImageSize(resolveGenImageUrl(getModuleImagePrompt(installed)), 256, 256)}
               alt={installed} style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           )}
