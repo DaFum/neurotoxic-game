@@ -369,6 +369,23 @@ const RegionalStandingSection = ({
     return venueBlacklist.map(v => translateLocation(t, v, v)).join(', ')
   }, [venueBlacklist, t])
 
+  const regionalRows = useMemo(() => {
+    return Object.entries(reputationByRegion).map(([region, rep]) => (
+      <DetailRow
+        key={region}
+        label={translateLocation(t, region, region)}
+        value={rep}
+        subtext={
+          blacklistedCityKeys.has(region)
+            ? t('ui:detailedStats.blacklisted', {
+                defaultValue: 'BLACKLISTED VENUES'
+              })
+            : null
+        }
+      />
+    ))
+  }, [reputationByRegion, blacklistedCityKeys, t])
+
   return (
     <Panel
       title={t('ui:stats.regional_standing', {
@@ -383,20 +400,7 @@ const RegionalStandingSection = ({
         </div>
       ) : (
         <div className='space-y-1'>
-          {Object.entries(reputationByRegion).map(([region, rep]) => (
-            <DetailRow
-              key={region}
-              label={translateLocation(t, region, region)}
-              value={rep}
-              subtext={
-                blacklistedCityKeys.has(region)
-                  ? t('ui:detailedStats.blacklisted', {
-                      defaultValue: 'BLACKLISTED VENUES'
-                    })
-                  : null
-              }
-            />
-          ))}
+          {regionalRows}
         </div>
       )}
       {venueBlacklist.length > 0 && (
