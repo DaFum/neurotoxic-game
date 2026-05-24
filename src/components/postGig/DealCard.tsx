@@ -311,7 +311,7 @@ const DealActions = memo(
                   name: deal.name,
                   defaultValue: `Negotiate deal with ${deal.name}`
                 })}
-                className='px-4 py-1.5 border border-warning-yellow text-warning-yellow text-xs font-bold uppercase hover:bg-warning-yellow hover:text-void-black transition-colors'
+                className='px-4 py-1.5 border border-warning-yellow text-warning-yellow text-xs font-bold uppercase hover:bg-warning-yellow hover:text-void-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
               >
                 {t('ui:deals.negotiate', { defaultValue: 'NEGOTIATE' })}
               </button>
