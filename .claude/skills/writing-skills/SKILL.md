@@ -1,6 +1,6 @@
 ---
 name: writing-skills
-description: Write and test agent skills using TDD. Use when creating new skills, editing existing skills, or verifying skills work before deployment.
+description: Use when creating new skills, editing existing skills, or verifying skills work before deployment
 ---
 
 # Writing Skills
@@ -106,7 +106,7 @@ skills/
 - `description`: Third-person, describes ONLY when to use (NOT what it does)
   - Start with "Use when..." to focus on triggering conditions
   - Include specific symptoms, situations, and contexts
-  - **Always include both what the skill does and when to use it** (see CSO section for why)
+  - **NEVER summarize the skill's process or workflow** (see CSO section for why)
   - Keep under 500 characters if possible
 
 ```markdown
@@ -160,25 +160,28 @@ Concrete results
 
 **Format:** Start with "Use when..." to focus on triggering conditions
 
-**CRITICAL: Description = What it Does + When to Use**
+**CRITICAL: Description = When to Use, NOT What the Skill Does**
 
-The description must explicitly state what the skill does and then list the triggering conditions using 'Use when' or 'Trigger when'.
+The description should ONLY describe triggering conditions. Do NOT summarize the skill's process or workflow in the description.
 
-**Why this matters:** Anthropic best practices require descriptions to include both what the skill does and the trigger (e.g., 'Extract text. Use when working with PDFs.'). This helps the skill discovery mechanism choose the right skill from potentially 100+ available skills. The description is critical for selection, while the rest of SKILL.md provides the implementation details.
+**Why this matters:** Testing revealed that when a description summarizes the skill's workflow, Claude may follow the description instead of reading the full skill content. A description saying "code review between tasks" caused Claude to do ONE review, even though the skill's flowchart clearly showed TWO reviews (spec compliance then code quality).
 
-**The trap:** Descriptions that are vague or use first-person ('I can help you') prevent proper discovery. Avoid vague summaries.
+When the description was changed to just "Use when executing implementation plans with independent tasks" (no workflow summary), Claude correctly read the flowchart and followed the two-stage review process.
+
+**The trap:** Descriptions that summarize workflow create a shortcut Claude will take. The skill body becomes documentation Claude skips.
+
 ```yaml
-# ❌ BAD: Misses the action and uses first person
-description: I can help you execute plans.
+# ❌ BAD: Summarizes workflow - Claude may follow this instead of reading skill
+description: Use when executing plans - dispatches subagent per task with code review between tasks
 
-# ❌ BAD: Lacks triggering conditions
-description: Apply Test-Driven Development methodology.
+# ❌ BAD: Too much process detail
+description: Use for TDD - write test first, watch it fail, write minimal code, refactor
 
-# ✅ GOOD: Includes both action and triggering conditions
-description: Execute implementation plans using subagents. Use when executing implementation plans with independent tasks in the current session.
+# ✅ GOOD: Just triggering conditions, no workflow summary
+description: Use when executing implementation plans with independent tasks in the current session
 
-# ✅ GOOD: Includes action and trigger
-description: Apply Test-Driven Development methodology. Use when implementing any feature or bugfix, before writing implementation code.
+# ✅ GOOD: Triggering conditions only
+description: Use when implementing any feature or bugfix, before writing implementation code
 ```
 
 **Content:**
@@ -188,7 +191,7 @@ description: Apply Test-Driven Development methodology. Use when implementing an
 - Keep triggers technology-agnostic unless the skill itself is technology-specific
 - If skill is technology-specific, make that explicit in the trigger
 - Write in third person (injected into system prompt)
-- **Always include both what the skill does and when to use it**
+- **NEVER summarize the skill's process or workflow**
 
 ```yaml
 # ❌ BAD: Too abstract, vague, doesn't include when to use

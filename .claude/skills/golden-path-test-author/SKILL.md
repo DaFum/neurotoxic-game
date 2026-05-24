@@ -1,6 +1,6 @@
 ---
 name: golden-path-test-author
-description: Write and maintain integration tests for the critical game loop. Trigger when asked to add regression tests, verify game flow continuity, ensure state transitions work, check critical paths don't break, test bankruptcy/game-over paths, validate state clamping (money/harmony/fuel), audit action sequences, or diagnose transition bugs.
+description: Trigger when asked to add regression tests, verify game flow continuity, ensure state transitions work, check critical paths don't break, test bankruptcy/game-over paths, validate state clamping (money/harmony/fuel), audit action sequences, or diagnose transition bugs.
 ---
 
 # Golden Path Test Author

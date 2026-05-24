@@ -1,6 +1,6 @@
 ---
 name: deepwiki-file-generator
-description: Generate and improve `.devin/wiki.json` files that steer DeepWiki documentation for repositories. Use when the user mentions DeepWiki, wiki.json, Devin wiki, repository documentation generation, or organizing/generating a knowledge base for an AI agent.
+description: Use when the user mentions DeepWiki, wiki.json, Devin wiki, repository documentation generation, or organizing/generating a knowledge base for an AI agent.
 ---
 
 # DeepWiki wiki.json Generator

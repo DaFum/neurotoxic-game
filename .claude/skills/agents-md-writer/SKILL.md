@@ -1,6 +1,6 @@
 ---
 name: agents-md-writer
-description: Write and update agent context files. Use when asked to create, improve, review, migrate, sync, or validate repository context files for coding agents, including AGENTS.md, CLAUDE.md, CODEX.md, GEMINI.md, .cursorrules, or .github/copilot-instructions.md. Trigger on close synonyms and paraphrases such as 'agent instructions', 'coding agent setup', 'AI-friendly repo', or 'Copilot/Codex/Claude instructions'.
+description: Use when asked to create, improve, review, migrate, sync, or validate repository context files for coding agents, including AGENTS.md, CLAUDE.md, CODEX.md, GEMINI.md, .cursorrules, or .github/copilot-instructions.md. Trigger on close synonyms and paraphrases such as 'agent instructions', 'coding agent setup', 'AI-friendly repo', or 'Copilot/Codex/Claude instructions'.
 ---
 
 # AGENTS.md Writer

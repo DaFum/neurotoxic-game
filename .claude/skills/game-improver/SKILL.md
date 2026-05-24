@@ -1,6 +1,6 @@
 ---
 name: game-improver
-description: Implement bug fixes, features, balance adjustments, and performance optimizations for NEUROTOXIC. Trigger when asked to fix bugs (state corruption, crashes, logic errors), add features (new items, upgrades, mechanics), tune balance (costs, rewards, difficulty), optimize performance (render loops, memory leaks, bundle size), refactor code (clean up tech debt, improve readability), fix UI inconsistencies (broken layouts, color mismatches), or test new systems.
+description: Trigger when asked to fix bugs (state corruption, crashes, logic errors), add features (new items, upgrades, mechanics), tune balance (costs, rewards, difficulty), optimize performance (render loops, memory leaks, bundle size), refactor code (clean up tech debt, improve readability), fix UI inconsistencies (broken layouts, color mismatches), or test new systems.
 ---
 
 # Game Improver

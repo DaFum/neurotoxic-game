@@ -1,6 +1,6 @@
 ---
 name: react-performance-optimization
-description: React performance optimization patterns using memoization, code splitting, and efficient rendering strategies. Use when optimizing slow React applications, reducing bundle size, or improving user experience with large datasets.
+description: Use when optimizing slow React applications, reducing bundle size, or improving user experience with large datasets.
 ---
 
 # React Performance Optimization

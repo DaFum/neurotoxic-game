@@ -1,6 +1,6 @@
 ---
 name: ci-hardener
-description: Improve CI reliability, speed, and clarity. Trigger when CI is slow, flaky, fails silently, or needs optimization. Focus on GitHub Actions workflows.
+description: Trigger when CI is slow, flaky, fails silently, or needs optimization. Focus on GitHub Actions workflows.
 ---
 
 # CI Hardener

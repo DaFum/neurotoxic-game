@@ -1,6 +1,6 @@
 ---
 name: playwright-screenshot
-description: Take Playwright screenshots of any Neurotoxic game scene (INTRO, MENU, OVERWORLD, PREGIG, GIG, POSTGIG, GAMEOVER, CLINIC), UI overlays, PixiJS canvas, modal states, and visual regression baselines. Trigger when capturing screenshots, documenting UI, recording before/after diffs, debugging visual glitches, or producing visual regression tests.
+description: Trigger when capturing screenshots, documenting UI, recording before/after diffs, debugging visual glitches, or producing visual regression tests.
 ---
 
 # Playwright Screenshot Skill

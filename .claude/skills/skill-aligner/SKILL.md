@@ -1,6 +1,6 @@
 ---
 name: skill-aligner
-description: Align skills with repository conventions and detect drift across the skill library. Trigger when a skill feels outdated, references deleted files, uses incorrect/deprecated commands, has version mismatches (Vite 7 vs 8, React 18 vs 19), terminology doesn't match project docs, or contradicts AGENTS.md/CLAUDE.md. Use to synchronize single skills after repo changes, audit monorepo skills for cascading drift, or batch-update a skill library. Detects command mismatches, path changes, version drift, broken references, and circular dependencies.
+description: Trigger when a skill feels outdated, references deleted files, uses incorrect/deprecated commands, has version mismatches (Vite 7 vs 8, React 18 vs 19), terminology doesn't match project docs, or contradicts AGENTS.md/CLAUDE.md. Use to synchronize single skills after repo changes, audit monorepo skills for cascading drift, or batch-update a skill library. Detects command mismatches, path changes, version drift, broken references, and circular dependencies.
 ---
 
 # Skill Aligner

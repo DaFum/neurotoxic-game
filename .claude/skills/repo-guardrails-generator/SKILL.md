@@ -1,6 +1,6 @@
 ---
 name: repo-guardrails-generator
-description: Generate strict project guardrails and checklists that enforce consistency, prevent common mistakes, and align teams on standards. Trigger when defining rules for new repos, setting up new agents/projects, enforcing technical constraints (version pinning, dependency management), creating team practices (code review, testing standards), preventing specific failure patterns (flaky tests, style inconsistencies), or integrating guardrails with existing documentation (AGENTS.md, CLAUDE.md). Works for monorepos with multiple project types and helps avoid rule conflicts across teams.
+description: Trigger when defining rules for new repos, setting up new agents/projects, enforcing technical constraints (version pinning, dependency management), creating team practices (code review, testing standards), preventing specific failure patterns (flaky tests, style inconsistencies), or integrating guardrails with existing documentation (AGENTS.md, CLAUDE.md). Works for monorepos with multiple project types and helps avoid rule conflicts across teams.
 ---
 
 # Repo Guardrails Generator

@@ -1,6 +1,6 @@
 ---
 name: convention-keeper-brutalist-ui
-description: Enforce brutalist UI design system. Trigger when creating or modifying UI components. Checks for correct colors, borders, shadows, and Tailwind v4 usage.
+description: Trigger when creating or modifying UI components. Checks for correct colors, borders, shadows, and Tailwind v4 usage.
 ---
 
 # Brutalist UI Convention Keeper
