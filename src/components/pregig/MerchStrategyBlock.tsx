@@ -97,7 +97,7 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
   const { t, i18n } = useTranslation(['economy', 'ui'])
 
   const merchItems = useMemo(() => {
-    const items = []
+    const items: MerchItem[] = []
     for (const key in DEFAULT_MERCH_PRICES) {
       if (Object.hasOwn(DEFAULT_MERCH_PRICES, key)) {
         const defaultPrice = DEFAULT_MERCH_PRICES[key] ?? 10
