@@ -46,24 +46,33 @@ export const buildDiyTier = (legit: ChassisTierConfig): ChassisTierConfig => ({
   baseRiskEventChance: DIY_RISK
 })
 
-// Empty stub for foundation phase. Section plans 2–5 replace each entry
-// with concrete tier configurations. The empty shape lets reducers and
-// selectors compile against the union type before any section is populated.
-const EMPTY_TIER: ChassisTierConfig = {
+// Empty stub for foundation phase. Section plans 2–5 replace each entry with
+// concrete tier configurations. Every entry must be its own object — sharing
+// instances across kinds means a section plan mutating `tourbus_chassis.legit[1]`
+// would also affect `studio_chassis.legit[1]`. Factories below produce fresh
+// objects per kind, flavor, and tier.
+const makeEmptyTier = (): ChassisTierConfig => ({
   price: 0,
   upkeep: 0,
   revenue: 0,
   slots: [],
   baseRiskEventChance: 0
-}
-const EMPTY_KIND: ChassisKindConfig = {
-  legit: { 1: EMPTY_TIER, 2: EMPTY_TIER, 3: EMPTY_TIER },
-  diy: { 1: EMPTY_TIER, 2: EMPTY_TIER, 3: EMPTY_TIER }
-}
+})
+
+const makeEmptyFlavorConfig = (): ChassisFlavorConfig => ({
+  1: makeEmptyTier(),
+  2: makeEmptyTier(),
+  3: makeEmptyTier()
+})
+
+const makeEmptyKindConfig = (): ChassisKindConfig => ({
+  legit: makeEmptyFlavorConfig(),
+  diy: makeEmptyFlavorConfig()
+})
 
 export const CHASSIS_CONFIG: Record<AssetKind, ChassisKindConfig> = {
-  tourbus_chassis: EMPTY_KIND,
-  studio_chassis: EMPTY_KIND,
-  bandhaus_chassis: EMPTY_KIND,
-  merch_workshop_chassis: EMPTY_KIND
+  tourbus_chassis: makeEmptyKindConfig(),
+  studio_chassis: makeEmptyKindConfig(),
+  bandhaus_chassis: makeEmptyKindConfig(),
+  merch_workshop_chassis: makeEmptyKindConfig()
 }

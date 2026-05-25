@@ -1,5 +1,6 @@
 import { finiteNumberOr, isPlainObject } from '../../utils/gameStateUtils'
 import { MODULE_REGISTRY } from '../../utils/assetModuleRegistry'
+import { CHASSIS_CONFIG } from '../../utils/assetConfig'
 import type {
   AssetFlavor,
   AssetSlot,
@@ -22,6 +23,52 @@ const VALID_MODES: ReadonlySet<string> = new Set(['cash', 'loan', 'crowdfund'])
 const VALID_SOURCES: ReadonlySet<string> = new Set(['loan', 'crowdfund'])
 const VALID_TIERS: ReadonlySet<number> = new Set([1, 2, 3])
 const VALID_OUTCOMES: ReadonlySet<string> = new Set(['success', 'fail'])
+
+// Mirror of the SlotType union in src/types/assets.d.ts. Persisted payloads
+// (save files, hostile input) must be cross-checked against this allow-list
+// before being cast to the type — TypeScript erases the union at runtime.
+const VALID_SLOT_TYPES: ReadonlySet<string> = new Set([
+  // Tourbus
+  'tb_roof',
+  'tb_front',
+  'tb_side',
+  'tb_interior_driver',
+  'tb_interior_cabin',
+  'tb_audio',
+  'tb_decal',
+  'tb_trailer_mount',
+  'tb_trailer_addon',
+  // Studio
+  'st_control',
+  'st_outboard',
+  'st_mic',
+  'st_monitoring',
+  'st_treatment',
+  'st_software',
+  'st_vibe',
+  'st_iso',
+  // Bandhaus
+  'bh_stage',
+  'bh_sleeping',
+  'bh_kitchen',
+  'bh_lounge',
+  'bh_backyard',
+  'bh_security',
+  'bh_identity',
+  'bh_secret',
+  // Merch workshop
+  'mw_print',
+  'mw_drying',
+  'mw_cutting',
+  'mw_packaging',
+  'mw_storage',
+  'mw_specialty',
+  'mw_sales',
+  'mw_automation'
+])
+
+const isValidSlotType = (value: unknown): value is SlotType =>
+  typeof value === 'string' && VALID_SLOT_TYPES.has(value)
 
 const HOSTILE_KEYS = ['__proto__', 'constructor', 'prototype']
 
@@ -58,15 +105,21 @@ const sanitizeSlot = (
   if (!isPlainObject(raw)) return null
   const clean = stripHostileKeys(raw)
   if (typeof clean.id !== 'string' || clean.id.length === 0) return null
-  if (typeof clean.slotType !== 'string') return null
+  if (!isValidSlotType(clean.slotType)) return null
 
   const moduleId =
     typeof clean.installedModuleId === 'string' ? clean.installedModuleId : null
 
-  // Referential integrity: the module must exist and match the slot type,
-  // and it must not already be installed in another slot of the same asset.
+  // Referential integrity: the module must exist (own-property check guards
+  // against prototype-chain lookups for hostile ids like 'hasOwnProperty')
+  // and match the slot type, and it must not already be installed in another
+  // slot of the same asset.
   let validModuleId: string | null = null
-  if (moduleId !== null && !seenModuleIds.has(moduleId)) {
+  if (
+    moduleId !== null &&
+    !seenModuleIds.has(moduleId) &&
+    Object.hasOwn(MODULE_REGISTRY, moduleId)
+  ) {
     const moduleEntry = MODULE_REGISTRY[moduleId]
     if (moduleEntry && moduleEntry.slotType === clean.slotType) {
       validModuleId = moduleId
@@ -134,15 +187,30 @@ export const sanitizeAssets = (raw: unknown): LongTermAsset[] => {
     if (!VALID_TIERS.has(tier)) continue
     if (!VALID_MODES.has(clean.acquisitionMode as string)) continue
 
+    const kind = clean.kind as LongTermAsset['kind']
+    const flavor = clean.chassisFlavor as AssetFlavor
+    const chassisTier = tier as ChassisTier
+    // Cross-check sanitized slots against the chassis layout: a slot is only
+    // allowed if its slotType is either in the chassis config for this
+    // kind/flavor/tier OR was dynamically added by an installed module
+    // (addedByModuleId is set). Slots violating both rules are dropped to
+    // prevent impossible topologies from surviving a load.
+    const chassisSlotTypes = new Set<string>(
+      CHASSIS_CONFIG[kind]?.[flavor]?.[chassisTier]?.slots ?? []
+    )
+    const sanitizedSlots = sanitizeSlots(clean.slots).filter(
+      s => s.addedByModuleId !== undefined || chassisSlotTypes.has(s.slotType)
+    )
+
     out.push({
       id: clean.id,
-      kind: clean.kind as LongTermAsset['kind'],
-      chassisFlavor: clean.chassisFlavor as AssetFlavor,
-      chassisTier: tier as ChassisTier,
+      kind,
+      chassisFlavor: flavor,
+      chassisTier,
       condition: clampCondition(finiteNumberOr(clean.condition, 100)),
       baseUpkeep: finiteNumberOr(clean.baseUpkeep, 0),
       baseDailyRevenue: finiteNumberOr(clean.baseDailyRevenue, 0),
-      slots: sanitizeSlots(clean.slots),
+      slots: sanitizedSlots,
       acquiredOnDay: finiteNumberOr(clean.acquiredOnDay, 0),
       acquisitionMode: clean.acquisitionMode as AcquisitionMode,
       baseRiskEventChance: finiteNumberOr(clean.baseRiskEventChance, 0)
@@ -230,8 +298,11 @@ export const sanitizeCrowdfundCampaigns = (
 }
 
 export const sanitizeRngSeed = (raw: unknown): number => {
+  // Always return a non-negative 32-bit integer seed. The unsigned right-shift
+  // coerces to UInt32 (0..2^32-1) which is what mulberry32 expects; `| 0` alone
+  // would produce a signed 32-bit (potentially negative) value.
   if (typeof raw === 'number' && Number.isFinite(raw) && raw >= 0) {
-    return raw | 0
+    return raw >>> 0
   }
-  return Date.now() & 0xffffffff
+  return Date.now() >>> 0
 }

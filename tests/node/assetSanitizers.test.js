@@ -74,8 +74,10 @@ describe('sanitizeAssets', () => {
     )
     const out = sanitizeAssets([hostile])
     assert.equal(out.length, 1)
-    // Empty objects must NOT have inherited "polluted" prop
-    assert.equal({}.polluted, undefined)
+    // Empty objects must NOT have an own "polluted" property. Reading
+    // {}.polluted via the prototype chain would also return undefined
+    // legitimately, masking pollution — Object.hasOwn is the convention.
+    assert.equal(Object.hasOwn({}, 'polluted'), false)
   })
 
   it('drops duplicate ids', () => {
