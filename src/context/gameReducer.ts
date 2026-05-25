@@ -216,33 +216,41 @@ export const gameReducer = (
 
   if (action.type === ActionTypes.ADVANCE_DAY) {
     const snapshotBeforeMilestones = nextState
-    const triggeredMilestones = MILESTONES.filter(
-      m =>
-        !snapshotBeforeMilestones.completedMilestones?.includes(m.id) &&
-        m.condition(snapshotBeforeMilestones)
-    )
+    const completedSet = new Set(snapshotBeforeMilestones.completedMilestones)
+    const triggeredMilestones: typeof MILESTONES[number][] = []
 
-    for (const milestone of triggeredMilestones) {
+    for (let i = 0; i < MILESTONES.length; i++) {
+      const m = MILESTONES[i]
+      if (m && !completedSet.has(m.id) && m.condition(snapshotBeforeMilestones)) {
+        triggeredMilestones.push(m)
+        completedSet.add(m.id) // Ensure idempotency if conditions overlap
+      }
+    }
+
+    if (triggeredMilestones.length > 0) {
+      // Batch the array allocation once
       nextState = {
         ...nextState,
-        completedMilestones: [
-          ...(nextState.completedMilestones ?? []),
-          milestone.id
-        ]
+        completedMilestones: Array.from(completedSet)
       }
 
-      const rewardAction = milestone.createRewardAction?.()
-      if (rewardAction) {
-        nextState = gameReducer(nextState, rewardAction)
-      }
+      for (let i = 0; i < triggeredMilestones.length; i++) {
+        const milestone = triggeredMilestones[i]
+        if (!milestone) continue
 
-      nextState = gameReducer(
-        nextState,
-        createAddToastAction({
-          type: 'info',
-          messageKey: milestone.labelKey
-        })
-      )
+        const rewardAction = milestone.createRewardAction?.()
+        if (rewardAction) {
+          nextState = gameReducer(nextState, rewardAction)
+        }
+
+        nextState = gameReducer(
+          nextState,
+          createAddToastAction({
+            type: 'info',
+            messageKey: milestone.labelKey
+          })
+        )
+      }
     }
   }
 
