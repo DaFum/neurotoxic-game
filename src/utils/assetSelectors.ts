@@ -89,11 +89,14 @@ export const getAssetTotalUpkeep = (asset: LongTermAsset): number =>
   asset.baseUpkeep + (getAssetAggregateBoni(asset).upkeepDelta ?? 0)
 
 /**
- * Daily revenue scaled by condition. A broken asset (condition < 20) returns 0
- * because its aggregate boni — including baseDailyRevenueDelta — are
- * neutralized.
+ * Daily revenue scaled by condition. A broken asset (condition < 20) returns
+ * 0 — the aggregate-boni neutralization only zeroes the delta, but
+ * `baseDailyRevenue` is a chassis field and would otherwise still pay out
+ * `base * (condition/100)`. Explicit guard keeps broken assets fully silent
+ * so the bankruptcy check sees the real obligation.
  */
 export const getAssetTotalDailyRevenue = (asset: LongTermAsset): number => {
+  if (asset.condition < BROKEN_THRESHOLD) return 0
   const base = asset.baseDailyRevenue
   const delta = getAssetAggregateBoni(asset).baseDailyRevenueDelta ?? 0
   return (base + delta) * (asset.condition / 100)
