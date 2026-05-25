@@ -109,7 +109,7 @@ export const CrowdfundSetupModal = ({
         </p>
         <div className='flex justify-end gap-2'>
           <button onClick={onClose} className='border-2 px-3 py-1'>
-            {t('action_cancel', { ns: 'ui', defaultValue: 'Cancel' })}
+            {t('ui:action_cancel', { defaultValue: 'Cancel' })}
           </button>
           <button
             onClick={onConfirm}

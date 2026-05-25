@@ -1,4 +1,5 @@
 {
+  "action_cancel": "CANCEL",
   "action_clear": "CLEAR",
   "action_close": "CLOSE",
   "aria.shortcutsHelp": "Toggle keyboard shortcuts help",

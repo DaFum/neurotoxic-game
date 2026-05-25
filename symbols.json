@@ -102,6 +102,15 @@
         "type": "const"
       }
     ],
+    "advanceDay": [
+      {
+        "isDefault": false,
+        "name": "advanceDay",
+        "path": "src/context/actionCreators.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "afterAll": [
       {
         "isDefault": false,
@@ -555,6 +564,24 @@
         "source": "local",
         "type": "interface",
         "typeOnly": true
+      }
+    ],
+    "AssetsScene": [
+      {
+        "isDefault": false,
+        "name": "AssetsScene",
+        "path": "src/components/assets/AssetsScene.tsx",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "AssetsTopBar": [
+      {
+        "isDefault": false,
+        "name": "AssetsTopBar",
+        "path": "src/components/assets/AssetsTopBar.tsx",
+        "source": "local",
+        "type": "const"
       }
     ],
     "AsyncBooleanCallback": [
@@ -1892,6 +1919,15 @@
         "type": "const"
       }
     ],
+    "ChassisAcquisitionModal": [
+      {
+        "isDefault": false,
+        "name": "ChassisAcquisitionModal",
+        "path": "src/components/assets/ChassisAcquisitionModal.tsx",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "ChassisFlavorConfig": [
       {
         "isDefault": false,
@@ -2489,6 +2525,15 @@
         "type": "function"
       }
     ],
+    "CONDITION_DECAY_PER_DAY": [
+      {
+        "isDefault": false,
+        "name": "CONDITION_DECAY_PER_DAY",
+        "path": "src/utils/assetConfig.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "ConnectionPath": [
       {
         "isDefault": false,
@@ -2669,15 +2714,6 @@
       {
         "isDefault": false,
         "name": "createAddVenueBlacklistAction",
-        "path": "src/context/actionCreators.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
-    "createAdvanceDayAction": [
-      {
-        "isDefault": false,
-        "name": "createAdvanceDayAction",
         "path": "src/context/actionCreators.ts",
         "source": "local",
         "type": "const"
@@ -3270,6 +3306,24 @@
         "typeOnly": true
       }
     ],
+    "CrowdfundCampaignCard": [
+      {
+        "isDefault": false,
+        "name": "CrowdfundCampaignCard",
+        "path": "src/components/assets/CrowdfundCampaignCard.tsx",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "CrowdfundSetupModal": [
+      {
+        "isDefault": false,
+        "name": "CrowdfundSetupModal",
+        "path": "src/components/assets/CrowdfundSetupModal.tsx",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "CrowdManager": [
       {
         "isDefault": false,
@@ -3576,6 +3630,15 @@
         "isDefault": false,
         "name": "DEFAULT_PLAYER_STATE",
         "path": "src/context/initialState.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "DEFAULT_SECTION_ACCENT": [
+      {
+        "isDefault": false,
+        "name": "DEFAULT_SECTION_ACCENT",
+        "path": "src/components/assets/sectionRegistry.ts",
         "source": "local",
         "type": "const"
       }
@@ -4176,6 +4239,24 @@
         "isDefault": false,
         "name": "FORBIDDEN_KEYS",
         "path": "src/utils/objectUtils.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "FORECLOSURE_FAME_PENALTY": [
+      {
+        "isDefault": false,
+        "name": "FORECLOSURE_FAME_PENALTY",
+        "path": "src/utils/assetConfig.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "ForeclosureModal": [
+      {
+        "isDefault": false,
+        "name": "ForeclosureModal",
+        "path": "src/components/assets/ForeclosureModal.tsx",
         "source": "local",
         "type": "const"
       }
@@ -5230,6 +5311,33 @@
         "type": "const"
       }
     ],
+    "handleAssetFailedAction": [
+      {
+        "isDefault": false,
+        "name": "handleAssetFailedAction",
+        "path": "src/context/reducers/assetReducer.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "handleAssetForeclosed": [
+      {
+        "isDefault": false,
+        "name": "handleAssetForeclosed",
+        "path": "src/context/reducers/assetReducer.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "handleAssetRiskEventTriggered": [
+      {
+        "isDefault": false,
+        "name": "handleAssetRiskEventTriggered",
+        "path": "src/context/reducers/assetReducer.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "handleBloodBankDonate": [
       {
         "isDefault": false,
@@ -5374,6 +5482,15 @@
         "type": "const"
       }
     ],
+    "handleInstallModule": [
+      {
+        "isDefault": false,
+        "name": "handleInstallModule",
+        "path": "src/context/reducers/assetReducer.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "handleKeyDownLogic": [
       {
         "isDefault": false,
@@ -5455,6 +5572,24 @@
         "type": "const"
       }
     ],
+    "handlePurchaseChassis": [
+      {
+        "isDefault": false,
+        "name": "handlePurchaseChassis",
+        "path": "src/context/reducers/assetReducer.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "handleRemoveModule": [
+      {
+        "isDefault": false,
+        "name": "handleRemoveModule",
+        "path": "src/context/reducers/assetReducer.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "handleRemoveToast": [
       {
         "isDefault": false,
@@ -5464,11 +5599,38 @@
         "type": "const"
       }
     ],
+    "handleRepairChassis": [
+      {
+        "isDefault": false,
+        "name": "handleRepairChassis",
+        "path": "src/context/reducers/assetReducer.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "handleResetState": [
       {
         "isDefault": false,
         "name": "handleResetState",
         "path": "src/context/reducers/systemReducer.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "handleResolveCrowdfund": [
+      {
+        "isDefault": false,
+        "name": "handleResolveCrowdfund",
+        "path": "src/context/reducers/assetReducer.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "handleSellChassis": [
+      {
+        "isDefault": false,
+        "name": "handleSellChassis",
+        "path": "src/context/reducers/assetReducer.ts",
         "source": "local",
         "type": "const"
       }
@@ -5559,6 +5721,15 @@
         "isDefault": false,
         "name": "handleStartAmpCalibration",
         "path": "src/context/reducers/minigameReducer.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "handleStartCrowdfund": [
+      {
+        "isDefault": false,
+        "name": "handleStartCrowdfund",
+        "path": "src/context/reducers/assetReducer.ts",
         "source": "local",
         "type": "const"
       }
@@ -5667,6 +5838,15 @@
         "isDefault": false,
         "name": "handleUpdateSocial",
         "path": "src/context/reducers/socialReducer.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "handleUpgradeChassisTier": [
+      {
+        "isDefault": false,
+        "name": "handleUpgradeChassisTier",
+        "path": "src/context/reducers/assetReducer.ts",
         "source": "local",
         "type": "const"
       }
@@ -6336,6 +6516,15 @@
         "type": "const"
       }
     ],
+    "LiabilitiesPanel": [
+      {
+        "isDefault": false,
+        "name": "LiabilitiesPanel",
+        "path": "src/components/assets/LiabilitiesPanel.tsx",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "Liability": [
       {
         "isDefault": false,
@@ -6420,6 +6609,15 @@
         "source": "local",
         "type": "type",
         "typeOnly": true
+      }
+    ],
+    "LoanProfileModal": [
+      {
+        "isDefault": false,
+        "name": "LoanProfileModal",
+        "path": "src/components/assets/LoanProfileModal.tsx",
+        "source": "local",
+        "type": "const"
       }
     ],
     "LockReason": [
@@ -6912,6 +7110,15 @@
         "isDefault": false,
         "name": "MODULE_REGISTRY",
         "path": "src/utils/assetModuleRegistry.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "ModulePickerModal": [
+      {
+        "isDefault": false,
+        "name": "ModulePickerModal",
+        "path": "src/components/assets/ModulePickerModal.tsx",
         "source": "local",
         "type": "const"
       }
@@ -7850,6 +8057,24 @@
         "type": "const"
       }
     ],
+    "processAssetTick": [
+      {
+        "isDefault": false,
+        "name": "processAssetTick",
+        "path": "src/utils/assetTicks.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "processCrowdfundTick": [
+      {
+        "isDefault": false,
+        "name": "processCrowdfundTick",
+        "path": "src/utils/assetTicks.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "ProcessedTempoMapEntry": [
       {
         "isDefault": false,
@@ -7874,6 +8099,15 @@
         "isDefault": false,
         "name": "processLaneInput",
         "path": "src/utils/rhythmGameInputUtils.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "processLiabilityTick": [
+      {
+        "isDefault": false,
+        "name": "processLiabilityTick",
+        "path": "src/utils/assetTicks.ts",
         "source": "local",
         "type": "const"
       }
@@ -8286,6 +8520,15 @@
         "type": "const"
       }
     ],
+    "RepairConfirmModal": [
+      {
+        "isDefault": false,
+        "name": "RepairConfirmModal",
+        "path": "src/components/assets/RepairConfirmModal.tsx",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "ReportPhase": [
       {
         "isDefault": false,
@@ -8605,6 +8848,34 @@
         "typeOnly": true
       }
     ],
+    "RISK_EVENT_CONDITION_LOSS": [
+      {
+        "isDefault": false,
+        "name": "RISK_EVENT_CONDITION_LOSS",
+        "path": "src/utils/assetConfig.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "RiskEventDescriptor": [
+      {
+        "isDefault": false,
+        "name": "RiskEventDescriptor",
+        "path": "src/utils/assetTicks.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
+      }
+    ],
+    "RiskEventModal": [
+      {
+        "isDefault": false,
+        "name": "RiskEventModal",
+        "path": "src/components/assets/RiskEventModal.tsx",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "RiskEventType": [
       {
         "isDefault": false,
@@ -8660,6 +8931,24 @@
         "source": "local",
         "type": "interface",
         "typeOnly": true
+      }
+    ],
+    "RNG_BASE_BUFFER": [
+      {
+        "isDefault": false,
+        "name": "RNG_BASE_BUFFER",
+        "path": "src/utils/assetConfig.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "RNG_ROLLS_PER_ASSET": [
+      {
+        "isDefault": false,
+        "name": "RNG_ROLLS_PER_ASSET",
+        "path": "src/utils/assetConfig.ts",
+        "source": "local",
+        "type": "const"
       }
     ],
     "ROADIE_GRID_HEIGHT": [
@@ -8764,6 +9053,25 @@
         "path": "src/components/stage/RoadieTrafficManager.ts",
         "source": "local",
         "type": "class"
+      }
+    ],
+    "rollAssetRiskEvents": [
+      {
+        "isDefault": false,
+        "name": "rollAssetRiskEvents",
+        "path": "src/utils/assetTicks.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "RollAssetRiskEventsResult": [
+      {
+        "isDefault": false,
+        "name": "RollAssetRiskEventsResult",
+        "path": "src/utils/assetTicks.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
       }
     ],
     "Rules": [
@@ -8920,6 +9228,25 @@
         "type": "const"
       }
     ],
+    "SECTION_VIEWS": [
+      {
+        "isDefault": false,
+        "name": "SECTION_VIEWS",
+        "path": "src/components/assets/sectionRegistry.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "SectionView": [
+      {
+        "isDefault": false,
+        "name": "SectionView",
+        "path": "src/components/assets/sectionRegistry.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
+      }
+    ],
     "secureRandom": [
       {
         "isDefault": false,
@@ -8954,6 +9281,15 @@
         "isDefault": false,
         "name": "sellChassis",
         "path": "src/context/assetActionCreators.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "SellConfirmModal": [
+      {
+        "isDefault": false,
+        "name": "SellConfirmModal",
+        "path": "src/components/assets/SellConfirmModal.tsx",
         "source": "local",
         "type": "const"
       }

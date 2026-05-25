@@ -45,7 +45,7 @@ export const RiskEventModal = ({ eventType, isOpen, onClose }: Props) => {
               color: 'var(--color-void)'
             }}
           >
-            {t('action_close', { ns: 'ui', defaultValue: 'Close' })}
+            {t('ui:action_close', { defaultValue: 'Close' })}
           </button>
         </div>
       </div>

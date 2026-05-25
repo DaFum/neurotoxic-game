@@ -524,11 +524,22 @@ describe('Action Creators', () => {
 
 describe('advanceDay', () => {
   it('creates ADVANCE_DAY action with rng stream and next seed', () => {
-    const mockState = { rngSeed: 12345 }
+    // No assets → stream = 0 * RNG_ROLLS_PER_ASSET + RNG_BASE_BUFFER = 8
+    const mockState = { rngSeed: 12345, assets: [] }
     const action = advanceDay(mockState)
     assert.strictEqual(action.type, ActionTypes.ADVANCE_DAY)
     assert.ok(Array.isArray(action.payload.dayRngStream))
-    assert.strictEqual(action.payload.dayRngStream.length, 32)
+    assert.strictEqual(action.payload.dayRngStream.length, 8)
     assert.ok(typeof action.payload.nextRngSeed === 'number')
+  })
+
+  it('sizes dayRngStream proportionally to asset count', () => {
+    const mockState = {
+      rngSeed: 42,
+      assets: [{ id: 'a' }, { id: 'b' }, { id: 'c' }]
+    }
+    const action = advanceDay(mockState)
+    // 3 assets × 2 rolls + 8 buffer = 14
+    assert.strictEqual(action.payload.dayRngStream.length, 14)
   })
 })

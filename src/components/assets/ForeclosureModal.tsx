@@ -4,7 +4,8 @@ import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 import { getRiskEventImagePrompt } from '../../utils/imageGen'
 
 interface Props {
-  /** Optional kind label — sections can pass `t('assets:kind.<kind>')` here. */
+  // Optional kind label — sections may pass a pre-resolved
+  // `assets:kind.<kind>`-translated string here.
   assetLabel?: string
   isOpen: boolean
   onClose: () => void
@@ -44,7 +45,7 @@ export const ForeclosureModal = ({ assetLabel, isOpen, onClose }: Props) => {
               color: 'var(--color-void)'
             }}
           >
-            {t('action_close', { ns: 'ui', defaultValue: 'Close' })}
+            {t('ui:action_close', { defaultValue: 'Close' })}
           </button>
         </div>
       </div>
