@@ -12,7 +12,10 @@
 
 - Asset tests live in `assetsReducer`/`assetReducer`, `assetTicks`, `assetSelectors`, `assetSanitizers`, `assetActionCreators`, `assetConfig`, `assetImagePrompts`, `assetModuleRegistry`, `loanProfiles`, `seededRng`, `economyAssetModifiers`, `advanceDayAssetIntegration`, and `assetGoldenPath`. RNG-sensitive tests construct `dayRngStream` arrays explicitly so the test can pin which assets trigger risk events.
 - `assetModuleRegistry.test.js` enforces the anti-stacking and prompt-key invariants at build time. Any new module added by section plans must pass these.
-- Tests that mutate `MODULE_REGISTRY` / `CHASSIS_CONFIG` (e.g., `assetReducer.test.js`) snapshot the original values and restore them via `test.after(...)` — these are module-scoped mutable maps shared across the test process.
+- Tests that mutate `MODULE_REGISTRY` / `CHASSIS_CONFIG` / `MODULE_PROMPTS` (e.g., `assetReducer.test.js`, `assetActionCreators.test.js`, `assetGoldenPath.test.js`) MUST snapshot the original values (`structuredClone`) at file scope and restore via `after(...)` — these are module-scoped mutable maps shared across the test process, so mutations leak between sibling test files without a teardown.
+- Prompt-key membership checks use `Object.hasOwn(MODULE_PROMPTS, m.imagePromptKey)` — not `assert.ok(MODULE_PROMPTS[key], ...)`. The truthy form fails on valid but falsy values, and `Object.hasOwn` is the project convention for untrusted property checks.
+- `LOAN_PROFILES` invariants are pinned via `assert.deepEqual(Object.keys(LOAN_PROFILES).sort(), [...expected])` — an additive change to the registry must update the asserted set so silently-added profiles can't ship unannounced.
+- Crowdfund tick fixtures need `materializedAssetId` + `materializedSlotIds` once a section plan populates `CHASSIS_CONFIG[kind].legit[tier].slots`; the tick reads slot ids 1:1 from the campaign and pre-Plan-2 fixtures may otherwise crash on `undefined.0`.
 
 ## Tourbus
 
