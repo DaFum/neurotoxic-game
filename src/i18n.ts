@@ -20,7 +20,8 @@ i18n
       'chatter',
       'minigame',
       'unlocks',
-      'traits'
+      'traits',
+      'assets'
     ], // Pre-load namespaces used across scenes/modal overlays
     defaultNS: 'ui',
     keySeparator: false,
