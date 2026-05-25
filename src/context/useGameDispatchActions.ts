@@ -205,7 +205,10 @@ export type GameDispatchActions = {
   // *_FAILED actions which the reducer handles as no-ops; the dispatch
   // boundary tracks them so middleware can translate to toasts in future.
   purchaseChassis: (input: Parameters<typeof purchaseChassisAction>[0]) => void
-  upgradeChassisTier: (assetId: string, targetTier: 1 | 2 | 3) => void
+  upgradeChassisTier: (
+    assetId: string,
+    targetTier: import('../types/assets').ChassisTier
+  ) => void
   sellChassis: (assetId: string) => void
   repairChassis: (assetId: string) => void
   installModule: (input: Parameters<typeof installModuleAction>[0]) => void
@@ -622,7 +625,7 @@ export function useGameDispatchActions({
     [dispatch, stateRef]
   )
   const upgradeChassisTier = useCallback(
-    (assetId: string, targetTier: 1 | 2 | 3) => {
+    (assetId: string, targetTier: import('../types/assets').ChassisTier) => {
       const action = upgradeChassisTierAction(
         assetId,
         targetTier,

@@ -38,6 +38,7 @@ export const ForeclosureModal = ({ assetLabel, isOpen, onClose }: Props) => {
         </p>
         <div className='flex justify-end'>
           <button
+            type='button'
             onClick={onClose}
             className='border-2 px-3 py-1'
             style={{

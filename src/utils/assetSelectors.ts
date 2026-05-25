@@ -378,3 +378,7 @@ export const getModulePoolForAsset = (
   }
   return out
 }
+
+export const getTotalDebt = (state: GameState): number => {
+  return state.liabilities.reduce((sum, l) => sum + l.principalRemaining, 0)
+}

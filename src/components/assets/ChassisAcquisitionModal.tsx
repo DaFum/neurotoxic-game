@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Modal } from '../../ui/shared/Modal'
+import { CrowdfundSetupModal } from './CrowdfundSetupModal'
 import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 import { getChassisImagePrompt } from '../../utils/imageGen'
 import { CHASSIS_CONFIG } from '../../utils/assetConfig'
@@ -43,6 +44,7 @@ export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
   const [tier, setTier] = useState<ChassisTier>(1)
   const [mode, setMode] = useState<AcquisitionMode>('cash')
   const [loanProfile, setLoanProfile] = useState<LoanProfileId>('shortTerm')
+  const [showCrowdfundSetup, setShowCrowdfundSetup] = useState(false)
 
   const cfg = CHASSIS_CONFIG[kind]?.[flavor]?.[tier]
   const price = cfg?.price ?? 0
@@ -50,6 +52,10 @@ export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
   const insufficient = mode === 'cash' && money < price
 
   const onConfirm = () => {
+    if (mode === 'crowdfund') {
+      setShowCrowdfundSetup(true)
+      return
+    }
     purchaseChassis({
       kind,
       flavor,
@@ -61,96 +67,111 @@ export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
   }
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={t('assets:actions.purchase')}
-      className='max-w-2xl'
-    >
-      <div className='flex flex-col gap-3 p-4 font-mono text-sm'>
-        <GeneratedImagePanel
-          prompt={getChassisImagePrompt(kind, flavor, tier)}
-          alt={t(`assets:kind.${kind}`)}
-          aspectRatio='16:9'
-          sizeHint={{ width: 640, height: 360 }}
-        />
-
-        <div className='flex gap-4'>
-          <ChoiceGroup
-            label={t('assets:flavor.legit')}
-            options={FLAVORS}
-            value={flavor}
-            onChange={setFlavor}
-            renderLabel={f => t(`assets:flavor.${f}`)}
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title={t('assets:actions.purchase')}
+        className='max-w-2xl'
+      >
+        <div className='flex flex-col gap-3 p-4 font-mono text-sm'>
+          <GeneratedImagePanel
+            prompt={getChassisImagePrompt(kind, flavor, tier)}
+            alt={t(`assets:kind.${kind}`)}
+            aspectRatio='16:9'
+            sizeHint={{ width: 640, height: 360 }}
           />
-          <ChoiceGroup
-            label='Tier'
-            options={TIERS}
-            value={tier}
-            onChange={setTier}
-            renderLabel={tt => t(`assets:chassisTier.${tt}`)}
-          />
-        </div>
 
-        <ChoiceGroup
-          label='Mode'
-          options={MODES}
-          value={mode}
-          onChange={setMode}
-          renderLabel={m => t(`assets:mode.${m}`)}
-          disabledOption={flavor === 'diy' ? 'loan' : undefined}
-        />
-
-        {mode === 'loan' && (
-          <ChoiceGroup
-            label='Loan profile'
-            options={Object.keys(LOAN_PROFILES) as LoanProfileId[]}
-            value={loanProfile}
-            onChange={setLoanProfile}
-            renderLabel={p => t(`assets:loan.profile.${p}`)}
-          />
-        )}
-
-        <div
-          className='flex items-center justify-between border-t-2 pt-2'
-          style={{ borderColor: 'var(--section-accent)' }}
-        >
-          <span>{formatCurrency(price, i18n.language)}</span>
-          <div className='flex gap-2'>
-            <button
-              type='button'
-              onClick={onClose}
-              className='border-2 px-3 py-1'
-            >
-              {t('ui:action_cancel', { defaultValue: 'Cancel' })}
-            </button>
-            <button
-              type='button'
-              onClick={onConfirm}
-              disabled={diyLoanBlocked || insufficient || price === 0}
-              className='border-2 px-3 py-1 disabled:opacity-40'
-              style={{
-                background: 'var(--section-accent)',
-                color: 'var(--color-void)'
-              }}
-            >
-              {t('assets:actions.purchase')}
-            </button>
+          <div className='flex gap-4'>
+            <ChoiceGroup
+              label={t('assets:flavor.legit')}
+              options={FLAVORS}
+              value={flavor}
+              onChange={setFlavor}
+              renderLabel={f => t(`assets:flavor.${f}`)}
+            />
+            <ChoiceGroup
+              label={t('assets:chassisAcquisition.tier')}
+              options={TIERS}
+              value={tier}
+              onChange={setTier}
+              renderLabel={tt => t(`assets:chassisTier.${tt}`)}
+            />
           </div>
-        </div>
 
-        {diyLoanBlocked && (
-          <p style={{ color: 'var(--color-blood)' }}>
-            {t('assets:purchaseFailed.diy_loan_not_allowed')}
-          </p>
-        )}
-        {insufficient && (
-          <p style={{ color: 'var(--color-blood)' }}>
-            {t('assets:purchaseFailed.insufficient_funds')}
-          </p>
-        )}
-      </div>
-    </Modal>
+          <ChoiceGroup
+            label={t('assets:chassisAcquisition.mode')}
+            options={MODES}
+            value={mode}
+            onChange={setMode}
+            renderLabel={m => t(`assets:mode.${m}`)}
+            disabledOption={flavor === 'diy' ? 'loan' : undefined}
+          />
+
+          {mode === 'loan' && (
+            <ChoiceGroup
+              label={t('assets:chassisAcquisition.loanProfile')}
+              options={Object.keys(LOAN_PROFILES) as LoanProfileId[]}
+              value={loanProfile}
+              onChange={setLoanProfile}
+              renderLabel={p => t(`assets:loan.profile.${p}`)}
+            />
+          )}
+
+          <div
+            className='flex items-center justify-between border-t-2 pt-2'
+            style={{ borderColor: 'var(--section-accent)' }}
+          >
+            <span>{formatCurrency(price, i18n.language)}</span>
+            <div className='flex gap-2'>
+              <button
+                type='button'
+                onClick={onClose}
+                className='border-2 px-3 py-1'
+              >
+                {t('ui:action_cancel', { defaultValue: 'Cancel' })}
+              </button>
+              <button
+                type='button'
+                onClick={onConfirm}
+                disabled={diyLoanBlocked || insufficient || price === 0}
+                className='border-2 px-3 py-1 disabled:opacity-40'
+                style={{
+                  background: 'var(--section-accent)',
+                  color: 'var(--color-void)'
+                }}
+              >
+                {t('assets:actions.purchase')}
+              </button>
+            </div>
+          </div>
+
+          {diyLoanBlocked && (
+            <p style={{ color: 'var(--color-blood)' }}>
+              {t('assets:purchaseFailed.diy_loan_not_allowed')}
+            </p>
+          )}
+          {insufficient && (
+            <p style={{ color: 'var(--color-blood)' }}>
+              {t('assets:purchaseFailed.insufficient_funds')}
+            </p>
+          )}
+        </div>
+      </Modal>
+      {showCrowdfundSetup && (
+        <CrowdfundSetupModal
+          kind={kind}
+          flavor={flavor}
+          tier={tier}
+          targetAmount={price}
+          isOpen={showCrowdfundSetup}
+          onClose={() => {
+            setShowCrowdfundSetup(false)
+            onClose()
+          }}
+        />
+      )}
+    </>
   )
 }
 

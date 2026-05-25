@@ -28,12 +28,15 @@ export const LoanProfileModal = ({ isOpen, onClose, onSelect }: Props) => {
         {Object.values(LOAN_PROFILES).map(profile => (
           <button
             key={profile.id}
+            type='button'
             onClick={() => {
               onSelect(profile.id)
               onClose()
             }}
             className='flex gap-2 border-2 p-2 text-left'
-            style={{ borderColor: 'var(--section-accent)' }}
+            style={{
+              borderColor: 'var(--section-accent, var(--color-toxic-green))'
+            }}
           >
             <div className='w-16 shrink-0'>
               <GeneratedImagePanel

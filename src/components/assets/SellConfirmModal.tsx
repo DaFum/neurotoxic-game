@@ -65,10 +65,15 @@ export const SellConfirmModal = ({ asset, isOpen, onClose }: Props) => {
           </p>
         )}
         <div className='flex justify-end gap-2'>
-          <button onClick={onClose} className='border-2 px-3 py-1'>
+          <button
+            type='button'
+            onClick={onClose}
+            className='border-2 px-3 py-1'
+          >
             {t('ui:action_cancel', { defaultValue: 'Cancel' })}
           </button>
           <button
+            type='button'
             onClick={() => {
               sellChassis(asset.id)
               onClose()
@@ -76,7 +81,7 @@ export const SellConfirmModal = ({ asset, isOpen, onClose }: Props) => {
             disabled={blocked}
             className='border-2 px-3 py-1 disabled:opacity-40'
             style={{
-              background: 'var(--section-accent)',
+              background: 'var(--section-accent, var(--color-toxic-green))',
               color: 'var(--color-void)'
             }}
           >

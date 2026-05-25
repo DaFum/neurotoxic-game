@@ -56,7 +56,7 @@ export const AssetsScene = () => {
     >
       <AssetsTopBar />
 
-      <nav
+      <div
         className='flex flex-wrap gap-2 border-b-2 px-4 py-2'
         role='tablist'
         aria-label={t('assets:scene.title')}
@@ -96,12 +96,14 @@ export const AssetsScene = () => {
         >
           {t('assets:scene.back', { defaultValue: '← Back' })}
         </button>
-      </nav>
+      </div>
 
       <section
         className='flex-1 overflow-y-auto p-4'
         role='tabpanel'
-        aria-label={t(`assets:section.${active.replace('_chassis', '')}.title`)}
+        aria-label={t(
+          `assets:section.${TABS.find(t => t.key === active)?.shortLabel}.title`
+        )}
       >
         {activeView ? (
           <activeView.Component />

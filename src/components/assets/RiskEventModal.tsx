@@ -41,7 +41,7 @@ export const RiskEventModal = ({ eventType, isOpen, onClose }: Props) => {
             onClick={onClose}
             className='border-2 px-3 py-1'
             style={{
-              background: 'var(--section-accent)',
+              background: 'var(--section-accent, var(--color-toxic-green))',
               color: 'var(--color-void)'
             }}
           >

@@ -47,7 +47,7 @@ const formatLockReason = (
       })
     case 'otherModule':
       return t('assets:module.unlock.otherModule', {
-        moduleName: reason.refs?.join(' or ') ?? ''
+        moduleRefs: reason.refs ?? []
       })
   }
 }
@@ -133,8 +133,8 @@ export const ModulePickerModal = ({
                       className='text-xs'
                       style={{ color: 'var(--color-blood)' }}
                     >
-                      {lockReasons.map((r, i) => (
-                        <li key={i}>{formatLockReason(r, t)}</li>
+                      {lockReasons.map(r => (
+                        <li key={`${r.kind}-${r.ref ?? ''}-${r.amount ?? ''}-${r.refs?.join(',') ?? ''}`}>{formatLockReason(r, t)}</li>
                       ))}
                     </ul>
                   )}
@@ -149,6 +149,7 @@ export const ModulePickerModal = ({
                     </span>
                   )}
                   <button
+                    type='button'
                     onClick={() => {
                       installModule({
                         assetId: asset.id,

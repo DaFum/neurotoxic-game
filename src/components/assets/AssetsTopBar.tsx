@@ -1,6 +1,9 @@
 import { useTranslation } from 'react-i18next'
 import { useGameSelector } from '../../context/GameState'
-import { getTotalDailyObligations } from '../../utils/assetSelectors'
+import {
+  getTotalDailyObligations,
+  getTotalDebt
+} from '../../utils/assetSelectors'
 import { formatCurrency } from '../../utils/numberUtils'
 
 /**
@@ -16,9 +19,7 @@ export const AssetsTopBar = () => {
   const { t, i18n } = useTranslation(['assets'])
   const money = useGameSelector(state => state.player.money)
   const obligations = useGameSelector(getTotalDailyObligations)
-  const totalDebt = useGameSelector(state =>
-    state.liabilities.reduce((sum, l) => sum + l.principalRemaining, 0)
-  )
+  const totalDebt = useGameSelector(getTotalDebt)
 
   return (
     <header
