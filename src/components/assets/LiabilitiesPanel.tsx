@@ -32,12 +32,12 @@ export const LiabilitiesPanel = () => {
           <span className='opacity-70'>{l.source}</span>
           <span>
             {t('assets:loan.dailyPayment', {
-              amount: formatCurrency(Math.ceil(l.dailyPayment), i18n.language)
+              amount: formatCurrency(l.dailyPayment, i18n.language)
             })}
           </span>
           <span>
             {formatCurrency(l.principalRemaining, i18n.language)} (
-            {l.termDaysRemaining}d)
+            {t('assets:liability.termDays', { count: l.termDaysRemaining })})
           </span>
           {l.defaultCounter > 0 && (
             <span style={{ color: 'var(--color-blood)' }}>

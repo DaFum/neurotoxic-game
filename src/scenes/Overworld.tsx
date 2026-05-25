@@ -144,6 +144,9 @@ export const Overworld = () => {
   const openClinic = useCallback(() => {
     changeScene(GAME_PHASES.CLINIC)
   }, [changeScene])
+  const openAssets = useCallback(() => {
+    changeScene(GAME_PHASES.ASSETS)
+  }, [changeScene])
 
   const currentNode = gameMap?.nodes[player.currentNodeId]
   const currentLayer = currentNode?.layer || 0
@@ -185,6 +188,7 @@ export const Overworld = () => {
         openClinic={openClinic}
         openDarkWebLeak={openDarkWebLeak}
         openHQ={openHQ}
+        openAssets={openAssets}
         handleRefuel={handleRefuel}
         handleRepair={handleRepair}
         handleSaveWithDelay={handleSaveWithDelay}

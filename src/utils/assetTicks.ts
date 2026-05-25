@@ -15,8 +15,7 @@ import {
   CHASSIS_CONFIG,
   CONDITION_DECAY_PER_DAY,
   FORECLOSURE_FAME_PENALTY,
-  RISK_EVENT_CONDITION_LOSS,
-  buildDiyTier
+  RISK_EVENT_CONDITION_LOSS
 } from './assetConfig'
 
 /**
@@ -79,7 +78,7 @@ export const processAssetTick = (state: GameState): GameState => {
 export const processLiabilityTick = (state: GameState): GameState => {
   if (!state.liabilities || state.liabilities.length === 0) return state
   let currentMoney = state.player.money
-  let nextFame = state.band.fame
+  let nextFame = state.player.fame
   const nextLiabilities: Liability[] = []
   const foreclosedAssetIds = new Set<string>()
 
@@ -101,8 +100,14 @@ export const processLiabilityTick = (state: GameState): GameState => {
     } else {
       const defaultCounter = liability.defaultCounter + 1
       if (defaultCounter >= 7) {
-        foreclosedAssetIds.add(liability.assetId)
-        nextFame = Math.max(0, nextFame - FORECLOSURE_FAME_PENALTY)
+        // Apply the fame penalty exactly once per newly foreclosed asset:
+        // a single asset may have multiple liabilities (e.g. loan + future
+        // crowdfund top-up). Without this guard the player would lose
+        // 2× FORECLOSURE_FAME_PENALTY for the same asset.
+        if (!foreclosedAssetIds.has(liability.assetId)) {
+          foreclosedAssetIds.add(liability.assetId)
+          nextFame = Math.max(0, nextFame - FORECLOSURE_FAME_PENALTY)
+        }
       } else {
         nextLiabilities.push({ ...liability, defaultCounter })
       }
@@ -118,8 +123,7 @@ export const processLiabilityTick = (state: GameState): GameState => {
 
   return {
     ...state,
-    player: { ...state.player, money: currentMoney },
-    band: { ...state.band, fame: nextFame },
+    player: { ...state.player, money: currentMoney, fame: nextFame },
     assets: nextAssets,
     liabilities: finalLiabilities
   }
@@ -139,7 +143,7 @@ export const processCrowdfundTick = (state: GameState): GameState => {
   const remaining: CrowdfundCampaign[] = []
   const newAssets: LongTermAsset[] = []
   let money = state.player.money
-  let fame = state.band.fame
+  let fame = state.player.fame
 
   for (const campaign of state.crowdfundCampaigns) {
     const daysRemaining = campaign.daysRemaining - 1
@@ -161,9 +165,12 @@ export const processCrowdfundTick = (state: GameState): GameState => {
       // Materialize the asset deterministically from pre-generated ids
       // (stamped by startCrowdfund at campaign creation). No UUID generation
       // here — the reducer must stay pure.
+      // Read the resolved tier directly from CHASSIS_CONFIG so the price /
+      // upkeep / slot list stay in sync with whatever the section plan
+      // configured — recomputing via buildDiyTier here would drift if
+      // CHASSIS_CONFIG.diy were ever tuned independently of legit.
       const { kind, flavor, chassisTier } = campaign.assetSpec
-      const legitTier = CHASSIS_CONFIG[kind].legit[chassisTier]
-      const cfgTier = flavor === 'legit' ? legitTier : buildDiyTier(legitTier)
+      const cfgTier = CHASSIS_CONFIG[kind][flavor][chassisTier]
       newAssets.push({
         id: campaign.materializedAssetId,
         kind,
@@ -198,8 +205,7 @@ export const processCrowdfundTick = (state: GameState): GameState => {
 
   return {
     ...state,
-    player: { ...state.player, money },
-    band: { ...state.band, fame },
+    player: { ...state.player, money, fame },
     assets: [...(state.assets ?? []), ...newAssetsWithDay],
     crowdfundCampaigns: remaining
   }

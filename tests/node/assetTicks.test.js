@@ -45,13 +45,12 @@ test('processLiabilityTick - liability default counter increment and trigger at 
         defaultCounter: 6
       }
     ],
-    player: { money: 10 },
-    band: { fame: 50 }
+    player: { money: 10, fame: 50 }
   }
   const next = processLiabilityTick(state)
   assert.strictEqual(next.assets.length, 0)
   assert.strictEqual(next.liabilities.length, 0)
-  assert.ok(next.band.fame < 50)
+  assert.ok(next.player.fame < 50)
 })
 
 test('processCrowdfundTick - successful resolution awards money/fame and creates asset', () => {
@@ -73,8 +72,7 @@ test('processCrowdfundTick - successful resolution awards money/fame and creates
         }
       }
     ],
-    player: { money: 100, day: 5 },
-    band: { fame: 30 },
+    player: { money: 100, fame: 30, day: 5 },
     assets: []
   }
   const next = processCrowdfundTick(state)
@@ -82,7 +80,7 @@ test('processCrowdfundTick - successful resolution awards money/fame and creates
   assert.strictEqual(next.crowdfundCampaigns.length, 0)
   // Rewards applied.
   assert.strictEqual(next.player.money, 4100)
-  assert.strictEqual(next.band.fame, 80)
+  assert.strictEqual(next.player.fame, 80)
 })
 
 test('processCrowdfundTick - failed resolution subtracts fameStake', () => {
@@ -102,14 +100,13 @@ test('processCrowdfundTick - failed resolution subtracts fameStake', () => {
         }
       }
     ],
-    player: { money: 100, day: 5 },
-    band: { fame: 30 },
+    player: { money: 100, fame: 30, day: 5 },
     assets: []
   }
   const next = processCrowdfundTick(state)
   assert.strictEqual(next.crowdfundCampaigns.length, 0)
   assert.strictEqual(next.player.money, 100, 'no money awarded on fail')
-  assert.strictEqual(next.band.fame, 10, 'fame stake deducted')
+  assert.strictEqual(next.player.fame, 10, 'fame stake deducted')
   assert.strictEqual(next.assets.length, 0, 'no asset created on fail')
 })
 

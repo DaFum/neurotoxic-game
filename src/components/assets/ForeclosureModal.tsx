@@ -17,7 +17,7 @@ interface Props {
  * asset + liability; this modal is the player-facing notification.
  */
 export const ForeclosureModal = ({ assetLabel, isOpen, onClose }: Props) => {
-  const { t } = useTranslation(['assets'])
+  const { t } = useTranslation(['assets', 'ui'])
   return (
     <Modal
       isOpen={isOpen}

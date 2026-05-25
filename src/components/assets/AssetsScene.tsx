@@ -72,9 +72,11 @@ export const AssetsScene = () => {
             return (
               <button
                 key={tab.key}
+                id={`assets-tab-${tab.key}`}
                 type='button'
                 role='tab'
                 aria-selected={isActive}
+                aria-controls={`assets-panel-${tab.key}`}
                 onClick={() => setActive(tab.key)}
                 className='shrink-0 border-2 px-3 py-1 font-mono text-xs uppercase tracking-wider sm:text-sm'
                 style={{
@@ -109,9 +111,10 @@ export const AssetsScene = () => {
       </div>
 
       <section
+        id={`assets-panel-${active}`}
         className='min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4'
         role='tabpanel'
-        aria-label={t(`assets:section.${activeTab.shortLabel}.title`)}
+        aria-labelledby={`assets-tab-${active}`}
       >
         {activeView ? (
           <activeView.Component />

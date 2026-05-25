@@ -70,7 +70,10 @@ test('Economy Asset Modifiers', async t => {
         'calculateMerchIncome should not expose expenseItems'
       )
 
-      // merchCapacityBonus extends the per-key inventory cap by N units.
+      // merchCapacityBonus is a carry-cap modifier (raises restock ceiling),
+      // NOT phantom stock. Selling at gig time is bounded by actual
+      // on-hand inventory, so a 0-stock asset must sell 0 even with a
+      // capacity bonus stacked on top.
       const lowInventory = { shirts: 0 }
       const noCap = calculateMerchIncome(
         100,
@@ -84,7 +87,7 @@ test('Economy Asset Modifiers', async t => {
       assert.strictEqual(
         noCap.soldItems.shirts ?? 0,
         0,
-        'Should sell 0 without capacity bonus'
+        'Should sell 0 with zero stock and no capacity bonus'
       )
 
       const capMod = {
@@ -100,9 +103,10 @@ test('Economy Asset Modifiers', async t => {
         {},
         capMod
       )
-      assert.ok(
-        (withCap.soldItems.shirts ?? 0) > 0,
-        'Should sell >0 with capacity bonus'
+      assert.strictEqual(
+        withCap.soldItems.shirts ?? 0,
+        0,
+        'merchCapacityBonus must NOT fabricate sellable stock when inventory is 0'
       )
     }
   )

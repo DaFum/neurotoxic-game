@@ -18,6 +18,7 @@ interface OverworldMenuProps {
   openClinic: () => void
   openDarkWebLeak: () => void
   openHQ: () => void
+  openAssets: () => void
   handleRefuel: () => void
   handleRepair: () => void
   handleSaveWithDelay: () => void
@@ -25,6 +26,7 @@ interface OverworldMenuProps {
 
 type MenuAction =
   | 'openHQ'
+  | 'openAssets'
   | 'openQuests'
   | 'openStash'
   | 'openPirateRadio'
@@ -225,6 +227,7 @@ export const OverworldMenu = React.memo(
     openClinic,
     openDarkWebLeak,
     openHQ,
+    openAssets,
     handleRefuel,
     handleRepair,
     handleSaveWithDelay
@@ -247,6 +250,17 @@ export const OverworldMenu = React.memo(
               icon: '🤘',
               v: 'p',
               action: 'openHQ'
+            },
+            {
+              label: t('ui:overworld.assets_hub_button', {
+                defaultValue: 'INVESTMENTS'
+              }),
+              desc: t('ui:menu.assets_desc', {
+                defaultValue: 'Long-term assets & finances'
+              }),
+              icon: '🏦',
+              v: 'p',
+              action: 'openAssets'
             },
             {
               label: t('ui:quests.button', { defaultValue: 'QUESTS' }),
@@ -402,6 +416,7 @@ export const OverworldMenu = React.memo(
       () =>
         ({
           openHQ,
+          openAssets,
           openQuests,
           openStash,
           openPirateRadio,
@@ -417,6 +432,7 @@ export const OverworldMenu = React.memo(
         handleRefuel,
         handleRepair,
         handleSaveWithDelay,
+        openAssets,
         openBloodBank,
         openClinic,
         openDarkWebLeak,

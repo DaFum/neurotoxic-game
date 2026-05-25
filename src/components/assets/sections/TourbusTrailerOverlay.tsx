@@ -34,7 +34,7 @@ export const TourbusTrailerOverlay = ({ asset, onSlotClick }: Props) => {
             top: '50%',
             border:
               '2px dashed var(--section-accent, var(--color-toxic-green))',
-            background: 'rgba(0,0,0,0.5)',
+            background: 'var(--color-hotspot-bg)',
             color: 'var(--section-accent, var(--color-toxic-green))'
           }}
         >

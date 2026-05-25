@@ -4,8 +4,19 @@ import { TourbusVehicleView } from '../../src/components/assets/sections/Tourbus
 import type { LongTermAsset, SlotType } from '../../src/types/assets'
 
 vi.mock('../../src/ui/shared/GeneratedImagePanel', () => ({
-  GeneratedImagePanel: ({ alt }: { alt: string }) => (
-    <div data-testid='generated-image-panel' aria-label={alt} />
+  GeneratedImagePanel: ({
+    alt,
+    className
+  }: {
+    alt: string
+    className?: string
+  }) => (
+    <img
+      data-testid='generated-image-panel'
+      alt={alt}
+      className={className}
+      src='mock'
+    />
   )
 }))
 

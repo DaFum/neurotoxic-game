@@ -6,16 +6,14 @@ import {
 } from '../../src/utils/loanProfiles.ts'
 
 describe('LOAN_PROFILES', () => {
-  it('all five profiles defined', () => {
-    for (const id of [
-      'shortTerm',
-      'mediumTerm',
-      'longTerm',
+  it('all five profiles defined and no extras', () => {
+    assert.deepEqual(Object.keys(LOAN_PROFILES).sort(), [
+      'coop',
       'loanShark',
-      'coop'
-    ]) {
-      assert.ok(LOAN_PROFILES[id], `missing ${id}`)
-    }
+      'longTerm',
+      'mediumTerm',
+      'shortTerm'
+    ])
   })
 
   it('every profile has positive term and non-negative rate', () => {

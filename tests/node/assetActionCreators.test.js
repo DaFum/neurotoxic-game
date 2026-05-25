@@ -1,4 +1,4 @@
-import { describe, it } from 'node:test'
+import { describe, it, before, after } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   installModule,
@@ -16,6 +16,21 @@ import {
   MODULE_PROMPTS,
   MODULE_REGISTRY
 } from '../../src/utils/assetModuleRegistry.ts'
+
+// Snapshot the shared registries once and restore them after the suite so
+// per-test mutations (setupTourbusT1, registerTestModule) don't leak into
+// sibling test files.
+const cfgSnapshot = structuredClone(CHASSIS_CONFIG)
+const registrySnapshot = structuredClone(MODULE_REGISTRY)
+const promptsSnapshot = structuredClone(MODULE_PROMPTS)
+after(() => {
+  for (const k of Object.keys(CHASSIS_CONFIG)) delete CHASSIS_CONFIG[k]
+  Object.assign(CHASSIS_CONFIG, cfgSnapshot)
+  for (const k of Object.keys(MODULE_REGISTRY)) delete MODULE_REGISTRY[k]
+  Object.assign(MODULE_REGISTRY, registrySnapshot)
+  for (const k of Object.keys(MODULE_PROMPTS)) delete MODULE_PROMPTS[k]
+  Object.assign(MODULE_PROMPTS, promptsSnapshot)
+})
 
 // Test fixtures populate CHASSIS_CONFIG / MODULE_REGISTRY with a minimal entry
 // so the creator can exercise its full validation path without depending on

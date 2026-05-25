@@ -72,6 +72,17 @@ export const computeAmortization = (
   annualInterestRate: number,
   termDays: number
 ): number => {
+  // Guard the formula's failure modes (NaN/Infinity from zero-term or
+  // non-finite inputs). Returning 0 is the safest fallback — the caller
+  // turns it into a no-op daily payment rather than a crash.
+  if (
+    !Number.isFinite(principal) ||
+    !Number.isFinite(annualInterestRate) ||
+    !Number.isFinite(termDays) ||
+    termDays <= 0
+  ) {
+    return 0
+  }
   if (annualInterestRate === 0) return principal / termDays
   const r = annualInterestRate / 365
   return (principal * (r * (1 + r) ** termDays)) / ((1 + r) ** termDays - 1)

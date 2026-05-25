@@ -25,7 +25,7 @@ describe('buildDiyTier', () => {
     assert.equal(diy.baseRiskEventChance, DIY_RISK)
   })
 
-  it('preserves revenue and slots reference', () => {
+  it('preserves revenue and clones slots', () => {
     const slots = ['tb_roof', 'tb_front']
     const legit = {
       price: 1000,
@@ -36,7 +36,8 @@ describe('buildDiyTier', () => {
     }
     const diy = buildDiyTier(legit)
     assert.equal(diy.revenue, 20)
-    assert.equal(diy.slots, slots)
+    assert.deepEqual(diy.slots, slots)
+    assert.notEqual(diy.slots, slots, 'DIY slots must be a fresh array clone')
   })
 })
 

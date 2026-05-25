@@ -57,7 +57,7 @@ describe('tourbus modules registration', () => {
     for (const [id, m] of Object.entries(MODULE_REGISTRY)) {
       if (m.ownerKind !== 'tourbus_chassis') continue
       assert.ok(
-        MODULE_PROMPTS[m.imagePromptKey],
+        Object.hasOwn(MODULE_PROMPTS, m.imagePromptKey),
         `${id} references missing prompt key "${m.imagePromptKey}"`
       )
     }

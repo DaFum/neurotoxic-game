@@ -46,7 +46,8 @@ export const AssetsTopBar = () => {
           }}
         >
           {obligations > 0 ? '↘' : '↗'}{' '}
-          {formatCurrency(obligations, i18n.language, 'always')}/d
+          {formatCurrency(obligations, i18n.language, 'always')}
+          {t('assets:common.dailySuffix')}
         </span>
         {totalDebt > 0 && (
           <span

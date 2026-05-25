@@ -5,7 +5,7 @@ import type { LongTermAsset, SlotType } from '../../src/types/assets'
 
 vi.mock('../../src/ui/shared/GeneratedImagePanel', () => ({
   GeneratedImagePanel: ({ alt }: { alt: string }) => (
-    <div data-testid='generated-image-panel' aria-label={alt} />
+    <div data-testid='generated-image-panel' role='img' aria-label={alt} />
   )
 }))
 

@@ -49,7 +49,10 @@ export const LoanProfileModal = ({ isOpen, onClose, onSelect }: Props) => {
             <div className='flex flex-col'>
               <strong>{t(profile.labelKey)}</strong>
               <span className='text-xs opacity-60'>
-                {profile.termDays}d · {(profile.interestRate * 100).toFixed(1)}%
+                {t('assets:loan.profileMeta', {
+                  days: profile.termDays,
+                  rate: (profile.interestRate * 100).toFixed(1)
+                })}
               </span>
             </div>
           </button>

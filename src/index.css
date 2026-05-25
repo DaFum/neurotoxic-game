@@ -32,6 +32,10 @@
   --color-void-black-50: rgb(10 10 10 / 50%);
   /* RGB-Triplet für inline rgb()-Nutzung in JS/CSS */
   --color-void-black-rgb: 10 10 10;
+  /* Slot-hotspot tint used by long-term asset section views to darken the
+     background behind an empty slot button without re-introducing a color
+     literal in TSX. */
+  --color-hotspot-bg: rgb(10 10 10 / 50%);
   --color-shadow-black: #1a1a1a;
   --color-concrete-gray: #2a2a2a;
   --color-ash-gray: #888888;

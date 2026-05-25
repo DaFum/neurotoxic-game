@@ -98,6 +98,9 @@ test('handleRemoveModule - cleans up added child slots and refunds', () => {
 
   const next = handleRemoveModule(startState, { assetId: 'a1', slotId: 's1' })
   assert.strictEqual(next.assets[0].slots.length, 1)
+  // test_mod is registered with cost: 100, removalRefundFraction: 0.5 →
+  // refund of 50 added to the starting 1000.
+  assert.strictEqual(next.player.money, mockState.player.money + 50)
 })
 
 test('handleAssetFailedAction - is no-op', () => {

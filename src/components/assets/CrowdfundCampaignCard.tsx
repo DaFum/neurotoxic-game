@@ -17,7 +17,9 @@ export const CrowdfundCampaignCard = ({ campaign }: Props) => {
   return (
     <div
       className='flex gap-3 border-2 p-2 font-mono text-xs'
-      style={{ borderColor: 'var(--section-accent)' }}
+      style={{
+        borderColor: 'var(--section-accent, var(--color-toxic-green))'
+      }}
     >
       <div className='w-20 shrink-0'>
         <GeneratedImagePanel
@@ -34,7 +36,9 @@ export const CrowdfundCampaignCard = ({ campaign }: Props) => {
         <strong>{t(`assets:kind.${campaign.assetSpec.kind}`)}</strong>
         <span>
           {formatCurrency(campaign.targetAmount, i18n.language)} ·{' '}
-          {campaign.daysRemaining}d
+          {t('assets:campaign.daysRemaining', {
+            count: campaign.daysRemaining
+          })}
         </span>
         <span style={{ color: 'var(--color-warning-yellow)' }}>
           {t('assets:crowdfund.fameStake', { amount: campaign.fameStake })}

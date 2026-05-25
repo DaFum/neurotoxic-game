@@ -158,7 +158,7 @@ export const purchaseChassis = (
     if (!profile) return fail('UNKNOWN_KIND_OR_TIER')
     if (
       profile.minFameRequired !== undefined &&
-      state.band.fame < profile.minFameRequired
+      state.player.fame < profile.minFameRequired
     ) {
       return fail('LOAN_PROFILE_INELIGIBLE')
     }

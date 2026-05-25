@@ -210,10 +210,12 @@ const ChoiceGroup = <T extends string | number>({
             disabled={isDisabled}
             className='border-2 px-2 py-1 disabled:opacity-30'
             style={{
-              background: isActive ? 'var(--section-accent)' : 'transparent',
+              background: isActive
+                ? 'var(--section-accent, var(--color-toxic-green))'
+                : 'transparent',
               color: isActive ? 'var(--color-void)' : 'inherit',
               borderColor: isActive
-                ? 'var(--section-accent)'
+                ? 'var(--section-accent, var(--color-toxic-green))'
                 : 'var(--color-toxic-green)'
             }}
           >

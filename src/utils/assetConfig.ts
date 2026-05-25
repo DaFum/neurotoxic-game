@@ -68,7 +68,9 @@ export const buildDiyTier = (legit: ChassisTierConfig): ChassisTierConfig => ({
   price: Math.round(legit.price * DIY_PRICE_MULT),
   upkeep: Math.round(legit.upkeep * DIY_UPKEEP_MULT),
   revenue: legit.revenue,
-  slots: legit.slots,
+  // Clone so the DIY tier doesn't share the legit tier's slot array — a
+  // section plan mutating one would otherwise corrupt the other.
+  slots: [...legit.slots],
   baseRiskEventChance: DIY_RISK
 })
 

@@ -300,7 +300,12 @@ export const sanitizeCrowdfundCampaigns = (
       targetAmount: finiteNumberOr(clean.targetAmount, 0),
       fameStake: finiteNumberOr(clean.fameStake, 0),
       daysRemaining: finiteNumberOr(clean.daysRemaining, 0),
-      plannedSuccessRoll: finiteNumberOr(clean.plannedSuccessRoll, 0),
+      // Clamp to [0, 1] so a hostile/legacy save can't plant a roll outside
+      // the mulberry32 output range and skew tick resolution.
+      plannedSuccessRoll: Math.max(
+        0,
+        Math.min(1, finiteNumberOr(clean.plannedSuccessRoll, 0))
+      ),
       // Re-clamp into the same [0.05, 0.95] window the action creator enforces
       // so legacy saves (pre-`plannedSuccessProbability`) get a 50/50 default.
       plannedSuccessProbability: Math.max(

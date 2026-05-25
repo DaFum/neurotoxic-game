@@ -21,7 +21,7 @@ describe('MODULE_REGISTRY invariants', () => {
   it('every module imagePromptKey exists in MODULE_PROMPTS', () => {
     for (const [id, m] of Object.entries(MODULE_REGISTRY)) {
       assert.ok(
-        MODULE_PROMPTS[m.imagePromptKey],
+        Object.hasOwn(MODULE_PROMPTS, m.imagePromptKey),
         `${id} references missing prompt key "${m.imagePromptKey}"`
       )
     }

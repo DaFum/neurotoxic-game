@@ -405,7 +405,8 @@ export const calculateMerchIncome = (
   const soldItems: Record<string, number> = {}
   let totalRevenue = 0
   const sortedKeys = SORTED_MERCH_KEYS
-  const capacityBonus = assetModifiers.merchCapacityBonus ?? 0
+  // merchCapacityBonus is a carry-cap modifier (raises restock ceiling),
+  // NOT phantom stock. Selling is bounded by actual on-hand inventory.
 
   for (const key of sortedKeys) {
     const share = (rawShare[key] ?? 0) / totalRawShare
@@ -414,8 +415,7 @@ export const calculateMerchIncome = (
       typeof safeInventory[key] === 'number'
         ? (safeInventory[key] as number)
         : 0
-    const effectiveInventory = inventoryCount + capacityBonus
-    const sold = Math.min(desired, effectiveInventory)
+    const sold = Math.min(desired, inventoryCount)
     if (sold > 0) {
       soldItems[key] = sold
       const basePrice =

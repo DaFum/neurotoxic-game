@@ -49,7 +49,9 @@ export const TourbusVehicleView = ({ asset, onSlotClick }: Props) => {
                   borderColor:
                     'var(--section-accent, var(--color-toxic-green))',
                   borderRadius: '50%',
-                  background: installed ? 'transparent' : 'rgba(0,0,0,0.5)',
+                  background: installed
+                    ? 'transparent'
+                    : 'var(--color-hotspot-bg)',
                   cursor: 'pointer'
                 }}
               >

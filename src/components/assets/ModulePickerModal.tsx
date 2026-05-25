@@ -59,20 +59,38 @@ export const ModulePickerModal = ({
   onClose
 }: Props) => {
   const { t, i18n } = useTranslation(['assets'])
-  const state = useGameSelector(s => s)
+  // Narrow selectors so the modal only re-renders when an input that actually
+  // affects unlock/conflict evaluation changes. Subscribing to the whole
+  // state tree (`s => s`) re-rendered on every tick.
+  const fame = useGameSelector(s => s.player.fame)
+  const money = useGameSelector(s => s.player.money)
+  const scenePresence = useGameSelector(
+    s => (s.social as { scenePresence?: number }).scenePresence ?? 0
+  )
+  const activeStoryFlags = useGameSelector(s => s.activeStoryFlags)
+  const band = useGameSelector(s => s.band)
+  const assets = useGameSelector(s => s.assets)
   const { installModule } = useGameActions()
   const slot = useMemo(
     () => asset.slots.find(s => s.id === slotId),
     [asset, slotId]
   )
 
-  // Pool filtered to modules that fit the active slot type.
+  // Pool filtered to modules that fit the active slot type. The composite
+  // state is rebuilt only when one of the relevant slices changes.
   const pool = useMemo(() => {
     if (!slot) return []
-    return getModulePoolForAsset(asset, state).filter(
+    const composite = {
+      player: { fame, money },
+      social: { scenePresence },
+      activeStoryFlags,
+      band,
+      assets
+    } as unknown as Parameters<typeof getModulePoolForAsset>[1]
+    return getModulePoolForAsset(asset, composite).filter(
       entry => entry.module.slotType === slot.slotType
     )
-  }, [asset, slot, state])
+  }, [asset, slot, fame, money, scenePresence, activeStoryFlags, band, assets])
 
   if (!slot) return null
 

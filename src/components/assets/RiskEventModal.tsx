@@ -20,7 +20,7 @@ interface Props {
  * arrival (post-tick interstitial), reusing the same i18n keys.
  */
 export const RiskEventModal = ({ eventType, isOpen, onClose }: Props) => {
-  const { t } = useTranslation(['assets'])
+  const { t } = useTranslation(['assets', 'ui'])
   return (
     <Modal
       isOpen={isOpen}
@@ -38,6 +38,7 @@ export const RiskEventModal = ({ eventType, isOpen, onClose }: Props) => {
         <p>{t(`assets:risk.event.${eventType}`)}</p>
         <div className='flex justify-end'>
           <button
+            type='button'
             onClick={onClose}
             className='border-2 px-3 py-1'
             style={{
