@@ -42,7 +42,7 @@ export const CrowdfundSetupModal = ({
   const scenePresence = useGameSelector(s => s.social?.scenePresence ?? 0)
   const rngSeed = useGameSelector(s => s.rngSeed)
 
-  const [fameStake, setFameStake] = useState<number>(20)
+  const [fameStake, setFameStake] = useState<number>(Math.min(20, fame))
   const [days, setDays] = useState<number>(14)
 
   const probability = resolveCrowdfundProbability(
@@ -62,7 +62,8 @@ export const CrowdfundSetupModal = ({
       targetAmount,
       fameStake,
       daysRemaining: days,
-      plannedSuccessRoll: roll
+      plannedSuccessRoll: roll,
+      plannedSuccessProbability: probability
     })
     onClose()
   }
@@ -86,7 +87,7 @@ export const CrowdfundSetupModal = ({
           <input
             type='range'
             min={0}
-            max={Math.max(20, fame)}
+            max={fame}
             value={fameStake}
             onChange={e => setFameStake(Number(e.target.value))}
           />

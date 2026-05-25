@@ -114,6 +114,7 @@
   "purchaseFailed.diy_loan_not_allowed": "DIY-Chassis kann nicht \u00fcber Kredit finanziert werden.",
   "purchaseFailed.insufficient_funds": "Nicht genug Geld.",
   "purchaseFailed.unknown_kind_or_tier": "Asset-Konfiguration nicht verf\u00fcgbar.",
+  "purchaseFailed.loan_profile_ineligible": "Anforderungen f\u00fcr dieses Kreditprofil nicht erf\u00fcllt.",
   "installFailed.unknown_module": "Unbekanntes Modul.",
   "installFailed.unknown_asset": "Unbekanntes Asset.",
   "installFailed.unknown_slot": "Unbekannter Slot.",

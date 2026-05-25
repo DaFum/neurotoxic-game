@@ -8628,6 +8628,15 @@
         "typeOnly": true
       }
     ],
+    "resolveCrowdfundProbability": [
+      {
+        "isDefault": false,
+        "name": "resolveCrowdfundProbability",
+        "path": "src/utils/assetTicks.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "resolveEvent": [
       {
         "isDefault": false,

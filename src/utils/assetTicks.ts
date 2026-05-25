@@ -20,6 +20,30 @@ import {
 } from './assetConfig'
 
 /**
+ * Success probability for a crowdfund campaign, given current fame, scene
+ * presence, and the funding target.
+ *
+ * Shared by the setup-modal preview and `processCrowdfundTick` resolution so
+ * the number the player sees IS the number that resolves the campaign.
+ *
+ * Shape: a linear combination of normalized fame and scene presence minus a
+ * difficulty penalty proportional to the target. Clamped to [0.05, 0.95] so
+ * neither side is a foregone conclusion.
+ */
+export const resolveCrowdfundProbability = (
+  fame: number,
+  scenePresence: number,
+  targetAmount: number
+): number => {
+  const fameComponent = Math.min(1, Math.max(0, fame) / 200)
+  const sceneComponent = Math.min(1, Math.max(0, scenePresence) / 100)
+  const difficulty = Math.min(1, Math.max(0, targetAmount) / 30000)
+  const raw =
+    0.25 + 0.5 * fameComponent + 0.3 * sceneComponent - 0.4 * difficulty
+  return Math.max(0.05, Math.min(0.95, raw))
+}
+
+/**
  * Daily decay of every asset's condition, plus net cashflow (revenue − upkeep)
  * for productive assets. Broken assets (condition < 20) contribute zero boni
  * via the selector layer; they still decay further until repaired.
@@ -124,12 +148,13 @@ export const processCrowdfundTick = (state: GameState): GameState => {
       continue
     }
 
-    // Resolution: plannedSuccessRoll was drawn from mulberry32 at start time;
-    // we use 0.5 as the success/fail threshold here because the actual
-    // success probability formula lives in resolveCrowdfundProbability — for
-    // foundation we keep it deterministic on roll < 0.5 = fail. Section
-    // plans / balancing can replace this threshold with a formula.
-    const success = campaign.plannedSuccessRoll >= 0.5
+    // Resolution: the campaign was stamped at start time with both a
+    // pre-rolled `plannedSuccessRoll` (mulberry32, 0..1) and the
+    // `plannedSuccessProbability` the UI promised the player. Success when
+    // the roll falls inside the promised odds, so the displayed chance IS
+    // the realized chance.
+    const success =
+      campaign.plannedSuccessRoll < campaign.plannedSuccessProbability
     if (success) {
       money += campaign.targetAmount
       fame += campaign.fameStake
@@ -241,9 +266,10 @@ export const rollAssetRiskEvents = (
     }
 
     const typesArray = Array.from(riskEventTypes)
-    // Default to 'foreclosure' as a generic catch-all when no module exposes
-    // a specific event type — keeps behavior defined for legit-only chassis.
-    let selectedType: RiskEventType = 'foreclosure'
+    // Default to 'fire' as a generic catch-all when no module exposes a
+    // specific event type. Avoids confusingly displaying 'Foreclosure!' for
+    // cash-purchased assets with no liabilities.
+    let selectedType: RiskEventType = 'fire'
     if (typesArray.length > 0) {
       const typeRoll = dayRngStream[i++] ?? 0
       const index = Math.min(

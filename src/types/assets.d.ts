@@ -160,6 +160,13 @@ export interface CrowdfundCampaign {
   daysRemaining: number
   plannedSuccessRoll: number // 0..1, deterministisch beim START gezogen
   /**
+   * Success threshold stamped at campaign creation, mirroring what the setup
+   * modal showed the player. `processCrowdfundTick` resolves success when
+   * `plannedSuccessRoll < plannedSuccessProbability`, so the displayed odds
+   * ARE the realized odds. Clamped to [0.05, 0.95] in the action creator.
+   */
+  plannedSuccessProbability: number
+  /**
    * Pre-generated id for the asset that materializes on success. Stamped by
    * `startCrowdfund` so `processCrowdfundTick` stays pure (no UUID generation
    * inside the reducer). On failure, this id is simply discarded.
@@ -194,6 +201,7 @@ export type PurchaseFailureReason =
   | 'DIY_LOAN_NOT_ALLOWED'
   | 'INSUFFICIENT_FUNDS'
   | 'UNKNOWN_KIND_OR_TIER'
+  | 'LOAN_PROFILE_INELIGIBLE'
 
 export type InstallModuleFailureReason =
   | 'UNKNOWN_MODULE'

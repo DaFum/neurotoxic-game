@@ -1,9 +1,7 @@
 import { GeneratedImagePanel } from '../../../ui/shared/GeneratedImagePanel'
 import {
   getSectionBackgroundPrompt,
-  getModuleImagePrompt,
-  resolveGenImageUrl,
-  appendImageSize
+  getModuleImagePrompt
 } from '../../../utils/imageGen'
 import { TOURBUS_SLOT_POSITIONS } from '../../../utils/assetSections/tourbusConfig'
 import { TourbusTrailerOverlay } from './TourbusTrailerOverlay'
@@ -57,14 +55,13 @@ export const TourbusVehicleView = ({ asset, onSlotClick }: Props) => {
               }}
             >
               {installed ? (
-                <img
-                  src={appendImageSize(
-                    resolveGenImageUrl(getModuleImagePrompt(installed)),
-                    128,
-                    128
-                  )}
+                <GeneratedImagePanel
+                  prompt={getModuleImagePrompt(installed)}
                   alt={installed}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  aspectRatio='1:1'
+                  variant='hotspot'
+                  sizeHint={{ width: 128, height: 128 }}
+                  className='h-full w-full'
                 />
               ) : (
                 <span

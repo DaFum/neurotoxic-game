@@ -1,9 +1,4 @@
-import {
-  useEffect,
-  useState,
-  type CSSProperties,
-  type SyntheticEvent
-} from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import {
   resolveGenImageUrl,
   getGeneratedImageFallbackUrl,
@@ -97,12 +92,12 @@ export const GeneratedImagePanel = ({
           setLoaded(true)
           onLoad?.()
         }}
-        onError={(e: SyntheticEvent<HTMLImageElement>) => {
-          // Detach the DOM-level onerror first: if the offline fallback SVG
-          // itself fails to load (corrupted asset, blocked path), an
-          // uncleared handler would re-fire and infinite-loop.
-          e.currentTarget.onerror = null
-          e.currentTarget.src = getGeneratedImageFallbackUrl()
+        onError={() => {
+          // If the fallback itself failed, bail to avoid re-rendering with
+          // the same broken src and triggering React's onError forever.
+          // Clearing the DOM onerror handler does not detach React's
+          // synthetic listener, so we gate on `errored` state instead.
+          if (errored) return
           setErrored(true)
         }}
         style={{

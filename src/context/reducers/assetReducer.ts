@@ -163,19 +163,32 @@ export const handleRemoveModule = (
   const { assetId, slotId } = payload
   if (!state.assets) return state
 
+  // Reject the removal if any child slot the module added is still occupied.
+  // Silently destroying the installed children (and their refund eligibility)
+  // would let players turbo-launder modules: install hitch → install trailer
+  // addons → remove hitch → addons vanish without refund. Force the player
+  // to uninstall children first.
+  const targetAsset = state.assets.find(a => a.id === assetId)
+  if (!targetAsset) return state
+  const targetSlot = targetAsset.slots.find(s => s.id === slotId)
+  const removedModuleId = targetSlot?.installedModuleId ?? null
+  if (removedModuleId) {
+    const blocked = targetAsset.slots.some(
+      s => s.addedByModuleId === removedModuleId && s.installedModuleId !== null
+    )
+    if (blocked) return state
+  }
+
   let refund = 0
   const nextAssets = state.assets.map(asset => {
     if (asset.id !== assetId) return asset
 
-    const targetSlot = asset.slots.find(s => s.id === slotId)
     if (targetSlot && targetSlot.installedModuleId) {
       const moduleInfo = MODULE_REGISTRY[targetSlot.installedModuleId]
       if (moduleInfo) {
         refund = moduleInfo.cost * moduleInfo.removalRefundFraction
       }
     }
-
-    const removedModuleId = targetSlot?.installedModuleId
 
     let nextSlots = asset.slots.map(slot => {
       if (slot.id === slotId) {
@@ -275,8 +288,8 @@ export const handleSellChassis = (
   const asset = state.assets.find(a => a.id === assetId)
   if (!asset) return state
 
-  const liability = state.liabilities?.find(l => l.assetId === assetId)
-  const principalRemaining = liability?.principalRemaining || 0
+  const liability = state.liabilities.find(l => l.assetId === assetId)
+  const principalRemaining = liability?.principalRemaining ?? 0
 
   const daysOwned = Math.max(0, state.player.day - asset.acquiredOnDay)
   const conditionFactor = asset.condition / 100
@@ -308,7 +321,7 @@ export const handleSellChassis = (
   return {
     ...state,
     assets: state.assets.filter(a => a.id !== assetId),
-    liabilities: state.liabilities?.filter(l => l.assetId !== assetId),
+    liabilities: state.liabilities.filter(l => l.assetId !== assetId),
     player: {
       ...state.player,
       money: state.player.money + net
@@ -429,8 +442,8 @@ export const handleAssetForeclosed = (
 ): GameState => {
   return {
     ...state,
-    assets: state.assets?.filter(a => a.id !== payload.assetId),
-    liabilities: state.liabilities?.filter(l => l.assetId !== payload.assetId)
+    assets: state.assets.filter(a => a.id !== payload.assetId),
+    liabilities: state.liabilities.filter(l => l.assetId !== payload.assetId)
   }
 }
 

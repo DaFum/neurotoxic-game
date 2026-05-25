@@ -153,8 +153,20 @@ export const purchaseChassis = (
     return fail('INSUFFICIENT_FUNDS')
   }
   if (raw.mode === 'loan') {
-    if (!raw.loanProfileId || !LOAN_PROFILES[raw.loanProfileId]) {
-      return fail('UNKNOWN_KIND_OR_TIER')
+    if (!raw.loanProfileId) return fail('UNKNOWN_KIND_OR_TIER')
+    const profile = LOAN_PROFILES[raw.loanProfileId]
+    if (!profile) return fail('UNKNOWN_KIND_OR_TIER')
+    if (
+      profile.minFameRequired !== undefined &&
+      state.band.fame < profile.minFameRequired
+    ) {
+      return fail('LOAN_PROFILE_INELIGIBLE')
+    }
+    if (
+      profile.minScenePresenceRequired !== undefined &&
+      (state.social?.scenePresence ?? 0) < profile.minScenePresenceRequired
+    ) {
+      return fail('LOAN_PROFILE_INELIGIBLE')
     }
   }
   const slotIds = cfg.slots.map(() => getSafeUUID())
@@ -298,6 +310,11 @@ export interface StartCrowdfundInput {
   daysRemaining: number
   /** Pre-rolled 0..1 success roll from the seeded RNG stream. */
   plannedSuccessRoll: number
+  /**
+   * Success threshold to stamp on the campaign (= the probability the UI
+   * showed the player). Tick resolves success when `roll < probability`.
+   */
+  plannedSuccessProbability: number
 }
 
 export const startCrowdfund = (
@@ -344,6 +361,10 @@ export const startCrowdfund = (
         plannedSuccessRoll: Math.max(
           0,
           Math.min(1, finiteNumberOr(raw.plannedSuccessRoll, 0))
+        ),
+        plannedSuccessProbability: Math.max(
+          0.05,
+          Math.min(0.95, finiteNumberOr(raw.plannedSuccessProbability, 0.5))
         )
       }
     }

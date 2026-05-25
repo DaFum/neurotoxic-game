@@ -301,6 +301,12 @@ export const sanitizeCrowdfundCampaigns = (
       fameStake: finiteNumberOr(clean.fameStake, 0),
       daysRemaining: finiteNumberOr(clean.daysRemaining, 0),
       plannedSuccessRoll: finiteNumberOr(clean.plannedSuccessRoll, 0),
+      // Re-clamp into the same [0.05, 0.95] window the action creator enforces
+      // so legacy saves (pre-`plannedSuccessProbability`) get a 50/50 default.
+      plannedSuccessProbability: Math.max(
+        0.05,
+        Math.min(0.95, finiteNumberOr(clean.plannedSuccessProbability, 0.5))
+      ),
       materializedAssetId: rawAssetId,
       materializedSlotIds: rawSlotIds
     }
