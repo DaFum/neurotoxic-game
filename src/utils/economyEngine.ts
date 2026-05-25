@@ -600,7 +600,9 @@ export const calculateRefuelCost = (
   return Math.ceil(
     missing *
       EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE *
-      assetModifiers.fuelMultiplier
+      // Nullish fallback (not truthy) so a legitimate fuelMultiplier === 0
+      // applies as zero rather than collapsing to 1.
+      (assetModifiers.fuelMultiplier ?? 1)
   )
 }
 

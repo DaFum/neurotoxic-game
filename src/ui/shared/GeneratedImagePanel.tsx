@@ -1,4 +1,9 @@
-import { useEffect, useState, type CSSProperties } from 'react'
+import {
+  useEffect,
+  useState,
+  type CSSProperties,
+  type SyntheticEvent
+} from 'react'
 import {
   resolveGenImageUrl,
   getGeneratedImageFallbackUrl,
@@ -58,9 +63,9 @@ export const GeneratedImagePanel = ({
 
   const style: CSSProperties = {
     aspectRatio: ASPECT_CSS[aspectRatio],
-    background: 'var(--color-void, #000)',
+    background: 'var(--color-void)',
     border: '2px solid var(--section-accent, var(--color-toxic-green))',
-    boxShadow: '4px 4px 0 var(--color-void, #000)',
+    boxShadow: '4px 4px 0 var(--color-void)',
     position: 'relative',
     overflow: 'hidden'
   }
@@ -78,7 +83,7 @@ export const GeneratedImagePanel = ({
             position: 'absolute',
             inset: 0,
             background:
-              'linear-gradient(90deg, transparent, var(--color-toxic-green, #0f0) 30%, transparent)',
+              'linear-gradient(90deg, transparent, var(--color-toxic-green) 30%, transparent)',
             opacity: 0.2,
             animation: 'pulse 1.5s ease-in-out infinite'
           }}
@@ -92,7 +97,14 @@ export const GeneratedImagePanel = ({
           setLoaded(true)
           onLoad?.()
         }}
-        onError={() => setErrored(true)}
+        onError={(e: SyntheticEvent<HTMLImageElement>) => {
+          // Detach the DOM-level onerror first: if the offline fallback SVG
+          // itself fails to load (corrupted asset, blocked path), an
+          // uncleared handler would re-fire and infinite-loop.
+          e.currentTarget.onerror = null
+          e.currentTarget.src = getGeneratedImageFallbackUrl()
+          setErrored(true)
+        }}
         style={{
           width: '100%',
           height: '100%',

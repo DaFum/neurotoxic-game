@@ -1,4 +1,9 @@
-import type { AssetFlavor, AssetKind, ChassisTier, RiskEventType } from '../types/assets'
+import type {
+  AssetFlavor,
+  AssetKind,
+  ChassisTier,
+  RiskEventType
+} from '../types/assets'
 import { MODULE_REGISTRY, MODULE_PROMPTS } from './assetModuleRegistry'
 // Utility to generate dynamic image URLs via Pollinations.ai
 const BASE_URL = 'https://gen.pollinations.ai/image'
@@ -349,7 +354,9 @@ const CHASSIS_PARTS: Record<AssetKind, Record<AssetFlavor, string>> = {
 }
 
 export const getChassisImagePrompt = (
-  kind: AssetKind, flavor: AssetFlavor, tier: ChassisTier
+  kind: AssetKind,
+  flavor: AssetFlavor,
+  tier: ChassisTier
 ): string =>
   `pixel art ${CHASSIS_PARTS[kind][flavor]} ${TIER_MODIFIERS[tier]} dark moody toxic green accents`
 
@@ -357,8 +364,16 @@ const defaultModulePrompt = (id: string) =>
   `pixel art ${id.replace(/_/g, ' ')} dark moody toxic green accents`
 
 export const getModuleImagePrompt = (moduleId: string): string => {
+  // Object.hasOwn guards against hostile module ids that would otherwise hit
+  // prototype properties (e.g., 'hasOwnProperty', 'constructor').
+  if (!Object.hasOwn(MODULE_REGISTRY, moduleId)) {
+    return defaultModulePrompt(moduleId)
+  }
   const m = MODULE_REGISTRY[moduleId]
   if (!m) return defaultModulePrompt(moduleId)
+  if (!Object.hasOwn(MODULE_PROMPTS, m.imagePromptKey)) {
+    return defaultModulePrompt(moduleId)
+  }
   return MODULE_PROMPTS[m.imagePromptKey] ?? defaultModulePrompt(moduleId)
 }
 
@@ -370,11 +385,17 @@ export const getLoanProfileImagePrompt = (profileId: string): string => {
     loanShark: 'loan shark dark alley menacing',
     coop: 'punk cooperative community handshake'
   }
-  return `pixel art ${flavorMap[profileId] ?? 'bank loan'} dark moody`
+  // Same prototype-chain guard — profileId may be hostile when sourced from
+  // persisted state or query strings.
+  const flavor = Object.hasOwn(flavorMap, profileId)
+    ? flavorMap[profileId]
+    : undefined
+  return `pixel art ${flavor ?? 'bank loan'} dark moody`
 }
 
 export const getCrowdfundImagePrompt = (
-  kind: AssetKind, flavor: AssetFlavor
+  kind: AssetKind,
+  flavor: AssetFlavor
 ): string =>
   `pixel art crowdfunding campaign poster ${CHASSIS_PARTS[kind][flavor]} fans donating diy aesthetic`
 
@@ -394,7 +415,8 @@ export const getRiskEventImagePrompt = (eventType: RiskEventType): string => {
 }
 
 export const getSectionBackgroundPrompt = (
-  kind: AssetKind, flavor: AssetFlavor
+  kind: AssetKind,
+  flavor: AssetFlavor
 ): string =>
   `pixel art ${CHASSIS_PARTS[kind][flavor]} background wide shot atmospheric dark moody toxic green accents`
 
@@ -404,7 +426,10 @@ export const getTrailerImagePrompt = (flavor: AssetFlavor): string =>
   } band gear toxic green accents`
 
 export const getRepairImagePrompt = (
-  kind: AssetKind, flavor: AssetFlavor, tier: ChassisTier, condition: number
+  kind: AssetKind,
+  flavor: AssetFlavor,
+  tier: ChassisTier,
+  condition: number
 ): string => {
   const base = getChassisImagePrompt(kind, flavor, tier)
   if (condition < 20) return `${base} severely damaged broken`
@@ -418,7 +443,9 @@ export const getRepairImagePrompt = (
  * and the offline fallback SVG (no query params).
  */
 export const appendImageSize = (
-  url: string, width: number, height: number
+  url: string,
+  width: number,
+  height: number
 ): string => {
   const sep = url.includes('?') ? '&' : '?'
   return `${url}${sep}width=${width}&height=${height}`
