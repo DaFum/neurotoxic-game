@@ -97,3 +97,11 @@
 - Payload sanitizers must use `Number.isFinite(v)`, not bare `typeof v === 'number'` (which lets `NaN`/`Infinity` through and corrupts downstream clamps). Prefer the shared `finiteNumberOr(value, fallback)` helper from `src/utils/gameStateUtils.ts` instead of inlining the check. When dropping `fame` from a payload, also drop the paired derived `fameLevel`.
 - `BASE_STATE` in `.claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js` must mirror `createInitialState()` exactly. Only `toasts` and `isScreenshotMode` may be omitted; any other top-level field added to `initialState` without updating `BASE_STATE` fails `tests/node/playwright-screenshot-fixture-validation.test.js`.
 - Toast `options` currency strings are baked at dispatch — call `formatCurrency(value, i18n.language, signDisplay)` (import `i18n` singleton from `src/i18n.ts` in reducers/action creators; use `i18n.language` from `useTranslation()` in components). Passing `undefined` falls back to `'en'` and bakes English currency for German users. Locale templates use a bare `{{amount}}` placeholder — no hardcoded `€` in `public/locales/{en,de}/ui.json`.
+
+## Long-Term Assets
+
+- `CHASSIS_CONFIG` and `MODULE_REGISTRY` (`src/utils/`) are the only sources of truth for chassis prices/upkeep and module catalogues. New chassis/modules go through `buildDiyTier` and the `imagePromptKey` indirection — do not hand-author DIY values or hardcode prompts in components.
+- Use the typed `advanceDay(state)` action creator (`src/context/actionCreators.ts`); never dispatch a payloadless `createAdvanceDayAction()` — RNG determinism depends on the `dayRngStream` + `nextRngSeed` payload.
+- DIY chassis can only be acquired via `cash` or `crowdfund`. The UI disables the loan option for DIY; the action creator returns `PURCHASE_CHASSIS_FAILED` as the second defense.
+- Bankruptcy must consult `getTotalDailyObligations(state)` from `src/utils/assetSelectors.ts` (not `calculateGuaranteedDailyCost` directly) — that selector folds in asset upkeep, asset revenue, and liability payments.
+- Asset reducers (`src/context/reducers/assetReducer.ts`) and tick functions (`src/utils/assetTicks.ts`) are pure. Pre-generate UUIDs (slot ids, crowdfund-materialized asset id) in action creators; the reducer reads them from the payload.

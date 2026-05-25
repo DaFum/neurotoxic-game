@@ -61,3 +61,15 @@ baseline instead of duplicating formulas.
 ## triggerEvent
 
 - The `triggerEvent` callback across utilities uses the signature `(category: string, triggerPoint?: string) => boolean`. It returns `true` only after an event is selected, processed, and set active; `false` means no event was triggered.
+
+## Long-Term Assets
+
+- `CHASSIS_CONFIG` (`assetConfig.ts`) is the single source of chassis prices/upkeep. DIY variants are derived programmatically via `buildDiyTier`, never hand-entered. Each kind/flavor/tier holds a unique object instance (built via the `makeEmpty*` factories) so a section plan mutating `tourbus_chassis.legit[1]` cannot leak into other kinds.
+- `MODULE_REGISTRY` (`assetModuleRegistry.ts`) is populated by section plans via side-effect imports; foundation leaves it empty. Anti-stacking invariant tested in `assetModuleRegistry.test.js`: no module may have `slotType === addsSlots[i].slotType` (would enable infinite self-stacking).
+- `MODULE_PROMPTS` is keyed by `AssetModule.imagePromptKey` (multiple modules may share a key). A test enforces that every module's key exists in the map.
+- `NEUTRAL_ASSET_MODIFIERS` (`assetSelectors.ts`) is the identity for `AssetModifiers` aggregation: multipliers = 1.0, additives = 0, flags = false. Economy functions accept the modifiers parameter as optional with this default.
+- `getActiveAssetModifiers` aggregates multipliers with `!== undefined` checks (not truthy) so a legit `fuelMultiplier: 0` ("free fuel") still applies; truthy guards would silently drop it.
+- `getTotalDailyObligations` = `calculateGuaranteedDailyCost + assetUpkeep − assetRevenue + liabilityPayments`. This is the SoT for the bankruptcy check.
+- `seededRng.ts` (`mulberry32`, `createRngStream`, `nextSeed`): the RNG stream is pre-rolled in the `advanceDay` action creator (sized via `RNG_ROLLS_PER_ASSET × assetCount + RNG_BASE_BUFFER`) and consumed deterministically by `rollAssetRiskEvents`. Reducers must never generate random values directly.
+- `appendImageSize(url, w, h)` in `imageGen.ts` is query-safe (handles `?` vs `&` insertion). Use it instead of `url + '&width=...'`.
+- `loanProfiles.ts`: `computeAmortization` takes `annualInterestRate` (not daily); it divides by 365 internally.

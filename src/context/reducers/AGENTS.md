@@ -19,3 +19,15 @@
 - Reducer typing regressions fail `pnpm run typecheck`; whole-project issues belong to `pnpm run typecheck:core`.
 - `gameReducer`'s default branch logs the malformed action, then uses `assertNever(action as never)` as a **runtime** trap, not a compile-time exhaustiveness check. The `as never` cast is intentional — `Object.hasOwn` guards already filter known action types, so the branch is a defense-in-depth net against malformed dispatches. Removing the cast (or "fixing" the assertNever pattern) re-introduces compile errors and removes the runtime guard.
 - Every minigame completion handler must preserve `state.currentScene`: `handleCompleteTravelMinigame`, `handleCompleteAmpCalibration`, `handleCompleteKabelsalatMinigame`, `handleCompleteRoadieMinigame`. The overlay's CONTINUE button (via `useArrivalLogic` for travel, scene callbacks otherwise) owns scene transitions. Asserted across `tests/node/minigameReducer.test.js`.
+
+## Long-Term Assets
+
+- `assetReducer.ts` handlers are pure: no RNG calls, no UUID generation, no side effects. `*_FAILED` actions (`PURCHASE_CHASSIS_FAILED`, `INSTALL_MODULE_FAILED`, `SELL_CHASSIS_FAILED`) are reducer no-ops; toast dispatching belongs in a middleware/UI layer.
+- `handlePurchaseChassis`: loan-mode payload without a valid `loanProfileId` returns state unchanged (defense against free-chassis exploits via malformed dispatch).
+- `handleInstallModule`: tracks an `installed` flag so cost is deducted only when a slot actually transitioned from `null` to the new module — stale replays no longer charge the player for non-ops.
+- `handleUpgradeChassisTier` / `handleRepairChassis`: early-return state when the target `assetId` doesn't match an existing asset.
+- `handleAdvanceDay` composes `processAssetTick → processLiabilityTick → processCrowdfundTick → rollAssetRiskEvents` and surfaces risk-event descriptors to deduplicated toasts (`assets:risk.event.<type>`).
+- `condition < 20` → aggregated boni neutralized via selectors. `condition === 0` → `ASSET_FORECLOSED` dispatched by tick orchestrator.
+- `assetSanitizers.ts` enforces referential integrity: orphan liabilities and orphan `addedByModuleId` slots are dropped on load. The `VALID_SLOT_TYPES` allow-list mirrors the `SlotType` union (TS erases it at runtime) and is validated before any cast.
+- `sanitizeRngSeed` returns an unsigned 32-bit integer (`>>> 0`) so `mulberry32` sees a valid UInt32 seed even on saves from a build that wrote signed values.
+- `BASE_STATE` (Playwright fixture) must mirror `createInitialState` including `assets`, `liabilities`, `crowdfundCampaigns`, and `rngSeed`.

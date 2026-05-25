@@ -17,3 +17,11 @@
   3. Sanitize/read it in the reducer's `LOAD_GAME` handler.
 - `neurotoxic_inject_marker` localStorage flag is a screenshot/E2E-only hydration channel; the marker is removed in a `useEffect` after mount (not in `initGameState`) to survive StrictMode's double-invoked lazy initializer.
 - `normalizeLoadedGameMap` coerces stringy node `x`/`y` back to numbers for legacy saves. When adding persisted `GameMap` or map-node fields that old saves may contain, extend this normalizer rather than the reducer's load path.
+
+## Long-Term Assets
+
+- Asset action creators (`assetActionCreators.ts`) normalize payloads via `finiteNumberOr` and strip prototype keys before validation. DIY+loan returns `PURCHASE_CHASSIS_FAILED` (typed) — never `null`.
+- IDs for slots (chassis + dynamically-added) and crowdfund asset materialization are generated in the action creator (`getSafeUUID`) and passed via payload. The reducer reads them 1:1.
+- `advanceDay(state)` (in `actionCreators.ts`) is the only entry point that produces the `ADVANCE_DAY` action with `{ dayRngStream, nextRngSeed }` payload. Migrate any remaining `createAdvanceDayAction()` callers to this signature — RNG determinism depends on it.
+- `INSTALL_MODULE` validation chain: existing module → existing asset → existing slot → empty slot → matching slotType → unlocked → no `exclusiveWithGroup` conflict → `maxPerAsset` not exceeded. Flavor-mix between module and chassis is **allowed** (legit module on DIY chassis is intentional).
+- `GameDispatchActions` exposes asset helpers (`purchaseChassis`, `installModule`, `sellChassis`, etc.) that read `stateRef.current` so the validation snapshot matches the reducer's view.
