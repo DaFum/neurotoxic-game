@@ -33,6 +33,27 @@ export const UPGRADE_OVERHEAD = 500
  */
 export const REPAIR_COST_PER_POINT = 8
 
+/** Daily condition decay applied to every asset during `processAssetTick`. */
+export const CONDITION_DECAY_PER_DAY = 0.3
+
+/**
+ * Condition loss applied when a risk event triggers for an asset (fire,
+ * theft, raid, etc.). Centralized so balancing can adjust without code edits.
+ */
+export const RISK_EVENT_CONDITION_LOSS = 15
+
+/** Fame penalty applied when a liability defaults to foreclosure. */
+export const FORECLOSURE_FAME_PENALTY = 10
+
+/**
+ * RNG stream sizing for `advanceDay`. The reducer must consume rolls
+ * deterministically without ever falling off the end of the stream — see
+ * `rollAssetRiskEvents`. We budget two rolls per asset (trigger + type) plus
+ * a constant buffer for future tick stages (crowdfund jitter, etc.).
+ */
+export const RNG_ROLLS_PER_ASSET = 2
+export const RNG_BASE_BUFFER = 8
+
 /**
  * Derives a DIY-flavor chassis tier from its legit counterpart by applying
  * the standard DIY multipliers. Plans 2–5 use this to keep DIY values in sync

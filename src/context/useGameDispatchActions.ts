@@ -41,7 +41,7 @@ import {
   createSetGigModifiersAction,
   createResetStateAction,
   createConsumeItemAction,
-  createAdvanceDayAction,
+  advanceDay as advanceDayAction,
   createStartTravelMinigameAction,
   createCompleteTravelMinigameAction,
   createStartRoadieMinigameAction,
@@ -331,7 +331,7 @@ export function useGameDispatchActions({
     const currentState = stateRef.current
     const nextDay = currentState.player.day + 1
     try {
-      dispatch(createAdvanceDayAction())
+      dispatch(advanceDayAction(currentState))
     } catch (error) {
       handleError(
         new StateError('Failed to advance day', {
