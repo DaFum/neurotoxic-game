@@ -48,15 +48,15 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
     const map = new Map<string, string>()
     if (!gameMap?.nodes) return map
 
-    for (const [, node] of Object.entries(gameMap.nodes) as [
-      string,
-      MapNode
-    ][]) {
-      if (node.venueId) {
-        map.set(node.venueId, node.id)
-      } else if (node.venue?.id) {
-        // Fallback for some potential older map formats
-        map.set(node.venue.id, node.id)
+    for (const key in gameMap.nodes) {
+      if (Object.hasOwn(gameMap.nodes, key)) {
+        const node = gameMap.nodes[key] as MapNode
+        if (node.venueId) {
+          map.set(node.venueId, node.id)
+        } else if (node.venue?.id) {
+          // Fallback for some potential older map formats
+          map.set(node.venue.id, node.id)
+        }
       }
     }
     return map

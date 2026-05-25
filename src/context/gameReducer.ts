@@ -216,13 +216,16 @@ export const gameReducer = (
 
   if (action.type === ActionTypes.ADVANCE_DAY) {
     const snapshotBeforeMilestones = nextState
-    const triggeredMilestones = MILESTONES.filter(
-      m =>
-        !snapshotBeforeMilestones.completedMilestones?.includes(m.id) &&
-        m.condition(snapshotBeforeMilestones)
-    )
+    const triggeredMilestones = []
+    for (let i = 0; i < MILESTONES.length; i++) {
+      const m = MILESTONES[i]
+      if (m && !snapshotBeforeMilestones.completedMilestones?.includes(m.id) && m.condition(snapshotBeforeMilestones)) {
+        triggeredMilestones.push(m)
+      }
+    }
 
-    for (const milestone of triggeredMilestones) {
+    for (let i = 0; i < triggeredMilestones.length; i++) {
+      const milestone = triggeredMilestones[i]
       nextState = {
         ...nextState,
         completedMilestones: [
