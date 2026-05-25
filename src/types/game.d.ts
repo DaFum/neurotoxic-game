@@ -148,7 +148,10 @@ export type GameAction =
   | Action<ActionTypes['APPLY_EVENT_DELTA'], EventDeltaPayload>
   | Action<ActionTypes['POP_PENDING_EVENT']>
   | Action<ActionTypes['CONSUME_ITEM'], string>
-  | Action<ActionTypes['ADVANCE_DAY']>
+  | Action<
+      ActionTypes['ADVANCE_DAY'],
+      { dayRngStream: number[]; nextRngSeed: number }
+    >
   | Action<ActionTypes['ADD_COOLDOWN'], string>
   | Action<ActionTypes['START_TRAVEL_MINIGAME'], { targetNodeId: string }>
   | Action<

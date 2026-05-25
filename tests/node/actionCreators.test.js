@@ -25,7 +25,7 @@ import {
   createApplyEventDeltaAction,
   createPopPendingEventAction,
   createConsumeItemAction,
-  createAdvanceDayAction,
+  advanceDay,
   createAddCooldownAction,
   createStartTravelMinigameAction,
   createCompleteTravelMinigameAction,
@@ -276,12 +276,8 @@ describe('Action Creators', () => {
       name: 'createPopPendingEventAction',
       fn: createPopPendingEventAction,
       type: ActionTypes.POP_PENDING_EVENT
-    },
-    {
-      name: 'createAdvanceDayAction',
-      fn: createAdvanceDayAction,
-      type: ActionTypes.ADVANCE_DAY
     }
+    // createAdvanceDayAction removed
   ]
 
   noArgCases.forEach(({ name, fn, type }) => {
@@ -523,5 +519,16 @@ describe('Action Creators', () => {
       })
       assert.strictEqual(merch.payload.loyaltyGain, 0)
     })
+  })
+})
+
+describe('advanceDay', () => {
+  it('creates ADVANCE_DAY action with rng stream and next seed', () => {
+    const mockState = { rngSeed: 12345 }
+    const action = advanceDay(mockState)
+    assert.strictEqual(action.type, ActionTypes.ADVANCE_DAY)
+    assert.ok(Array.isArray(action.payload.dayRngStream))
+    assert.strictEqual(action.payload.dayRngStream.length, 32)
+    assert.ok(typeof action.payload.nextRngSeed === 'number')
   })
 })

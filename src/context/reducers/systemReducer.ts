@@ -1,3 +1,9 @@
+import {
+  processAssetTick,
+  processLiabilityTick,
+  processCrowdfundTick,
+  rollAssetRiskEvents
+} from '../../utils/assetTicks'
 import type {
   GameState,
   PlayerState,
@@ -1733,8 +1739,26 @@ const processContrabandExpiry = (band: BandState): BandState => {
  */
 export const handleAdvanceDay = (
   state: GameState,
-  payload?: { rng?: () => number }
+  payload?: {
+    dayRngStream?: number[]
+    nextRngSeed?: number
+    rng?: () => number
+  }
 ): GameState => {
+  let nextStatePre = processAssetTick(state)
+  nextStatePre = processLiabilityTick(nextStatePre)
+  nextStatePre = processCrowdfundTick(nextStatePre)
+  if (payload?.dayRngStream) {
+    const { state: s } = rollAssetRiskEvents(
+      nextStatePre,
+      payload.dayRngStream,
+      0
+    )
+    nextStatePre = s
+  }
+  const rngSeed = payload?.nextRngSeed ?? nextStatePre.rngSeed
+  state = { ...nextStatePre, rngSeed }
+
   const rng = typeof payload?.rng === 'function' ? payload.rng : getSafeRandom
   const { player, band, social, pendingFlags } = calculateDailyUpdates(
     state,

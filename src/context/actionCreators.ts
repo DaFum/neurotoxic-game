@@ -1,3 +1,4 @@
+import { createRngStream, nextSeed } from '../utils/seededRng'
 /**
  * Action Creators Module
  * Factory functions for creating dispatch actions.
@@ -461,12 +462,6 @@ export const createConsumeItemAction = (
  * Creates an advance day action
  * @returns {Object} Action object
  */
-export const createAdvanceDayAction = (): Extract<
-  GameAction,
-  { type: typeof ActionTypes.ADVANCE_DAY }
-> => ({
-  type: ActionTypes.ADVANCE_DAY
-})
 
 /**
  * Creates an add cooldown action
@@ -956,4 +951,14 @@ export const createMerchPressAction = (
     'fameGain',
     'harmonyCost'
   ])
+})
+
+export const advanceDay = (
+  state: GameState
+): Extract<GameAction, { type: typeof ActionTypes.ADVANCE_DAY }> => ({
+  type: ActionTypes.ADVANCE_DAY,
+  payload: {
+    dayRngStream: createRngStream(state.rngSeed, 32),
+    nextRngSeed: nextSeed(state.rngSeed)
+  }
 })

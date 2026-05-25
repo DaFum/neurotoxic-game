@@ -102,6 +102,15 @@
         "type": "const"
       }
     ],
+    "advanceDay": [
+      {
+        "isDefault": false,
+        "name": "advanceDay",
+        "path": "src/context/actionCreators.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "afterAll": [
       {
         "isDefault": false,
@@ -490,6 +499,15 @@
         "typeOnly": true
       }
     ],
+    "assetForeclosed": [
+      {
+        "isDefault": false,
+        "name": "assetForeclosed",
+        "path": "src/context/assetActionCreators.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "AssetKind": [
       {
         "isDefault": false,
@@ -518,6 +536,15 @@
         "source": "local",
         "type": "interface",
         "typeOnly": true
+      }
+    ],
+    "assetRiskEventTriggered": [
+      {
+        "isDefault": false,
+        "name": "assetRiskEventTriggered",
+        "path": "src/context/assetActionCreators.ts",
+        "source": "local",
+        "type": "const"
       }
     ],
     "AssetSlot": [
@@ -2647,15 +2674,6 @@
         "type": "const"
       }
     ],
-    "createAdvanceDayAction": [
-      {
-        "isDefault": false,
-        "name": "createAdvanceDayAction",
-        "path": "src/context/actionCreators.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
     "createAdvanceQuestAction": [
       {
         "isDefault": false,
@@ -4502,11 +4520,47 @@
         "type": "const"
       }
     ],
+    "getActiveAssetModifiers": [
+      {
+        "isDefault": false,
+        "name": "getActiveAssetModifiers",
+        "path": "src/utils/assetSelectors.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "getAdjustedCost": [
       {
         "isDefault": false,
         "name": "getAdjustedCost",
         "path": "src/utils/purchaseLogicUtils.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "getAssetAggregateBoni": [
+      {
+        "isDefault": false,
+        "name": "getAssetAggregateBoni",
+        "path": "src/utils/assetSelectors.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "getAssetTotalDailyRevenue": [
+      {
+        "isDefault": false,
+        "name": "getAssetTotalDailyRevenue",
+        "path": "src/utils/assetSelectors.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "getAssetTotalUpkeep": [
+      {
+        "isDefault": false,
+        "name": "getAssetTotalUpkeep",
+        "path": "src/utils/assetSelectors.ts",
         "source": "local",
         "type": "const"
       }
@@ -4612,6 +4666,15 @@
         "type": "const"
       }
     ],
+    "getInstalledModules": [
+      {
+        "isDefault": false,
+        "name": "getInstalledModules",
+        "path": "src/utils/assetSelectors.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "getLocationName": [
       {
         "isDefault": false,
@@ -4621,11 +4684,29 @@
         "type": "const"
       }
     ],
+    "getLockReasons": [
+      {
+        "isDefault": false,
+        "name": "getLockReasons",
+        "path": "src/utils/assetSelectors.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "getMessyPath": [
       {
         "isDefault": false,
         "name": "getMessyPath",
         "path": "src/scenes/kabelsalat/kabelsalatUtils.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "getModulePoolForAsset": [
+      {
+        "isDefault": false,
+        "name": "getModulePoolForAsset",
+        "path": "src/utils/assetSelectors.ts",
         "source": "local",
         "type": "const"
       }
@@ -4752,6 +4833,15 @@
         "type": "const"
       }
     ],
+    "getSlotConflicts": [
+      {
+        "isDefault": false,
+        "name": "getSlotConflicts",
+        "path": "src/utils/assetSelectors.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "getSongId": [
       {
         "exportPath": "src/utils/audio/audioEngine.ts",
@@ -4805,6 +4895,15 @@
         "isDefault": false,
         "name": "getToneStartTimeSec",
         "path": "src/utils/audio/context.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "getTotalDailyObligations": [
+      {
+        "isDefault": false,
+        "name": "getTotalDailyObligations",
+        "path": "src/utils/assetSelectors.ts",
         "source": "local",
         "type": "const"
       }
@@ -5031,6 +5130,33 @@
         "type": "const"
       }
     ],
+    "handleAssetFailedAction": [
+      {
+        "isDefault": false,
+        "name": "handleAssetFailedAction",
+        "path": "src/context/reducers/assetReducer.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "handleAssetForeclosed": [
+      {
+        "isDefault": false,
+        "name": "handleAssetForeclosed",
+        "path": "src/context/reducers/assetReducer.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "handleAssetRiskEventTriggered": [
+      {
+        "isDefault": false,
+        "name": "handleAssetRiskEventTriggered",
+        "path": "src/context/reducers/assetReducer.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "handleBloodBankDonate": [
       {
         "isDefault": false,
@@ -5175,6 +5301,15 @@
         "type": "const"
       }
     ],
+    "handleInstallModule": [
+      {
+        "isDefault": false,
+        "name": "handleInstallModule",
+        "path": "src/context/reducers/assetReducer.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "handleKeyDownLogic": [
       {
         "isDefault": false,
@@ -5256,6 +5391,24 @@
         "type": "const"
       }
     ],
+    "handlePurchaseChassis": [
+      {
+        "isDefault": false,
+        "name": "handlePurchaseChassis",
+        "path": "src/context/reducers/assetReducer.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "handleRemoveModule": [
+      {
+        "isDefault": false,
+        "name": "handleRemoveModule",
+        "path": "src/context/reducers/assetReducer.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "handleRemoveToast": [
       {
         "isDefault": false,
@@ -5265,11 +5418,38 @@
         "type": "const"
       }
     ],
+    "handleRepairChassis": [
+      {
+        "isDefault": false,
+        "name": "handleRepairChassis",
+        "path": "src/context/reducers/assetReducer.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "handleResetState": [
       {
         "isDefault": false,
         "name": "handleResetState",
         "path": "src/context/reducers/systemReducer.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "handleResolveCrowdfund": [
+      {
+        "isDefault": false,
+        "name": "handleResolveCrowdfund",
+        "path": "src/context/reducers/assetReducer.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "handleSellChassis": [
+      {
+        "isDefault": false,
+        "name": "handleSellChassis",
+        "path": "src/context/reducers/assetReducer.ts",
         "source": "local",
         "type": "const"
       }
@@ -5360,6 +5540,15 @@
         "isDefault": false,
         "name": "handleStartAmpCalibration",
         "path": "src/context/reducers/minigameReducer.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "handleStartCrowdfund": [
+      {
+        "isDefault": false,
+        "name": "handleStartCrowdfund",
+        "path": "src/context/reducers/assetReducer.ts",
         "source": "local",
         "type": "const"
       }
@@ -5468,6 +5657,15 @@
         "isDefault": false,
         "name": "handleUpdateSocial",
         "path": "src/context/reducers/socialReducer.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "handleUpgradeChassisTier": [
+      {
+        "isDefault": false,
+        "name": "handleUpgradeChassisTier",
+        "path": "src/context/reducers/assetReducer.ts",
         "source": "local",
         "type": "const"
       }
@@ -5775,6 +5973,45 @@
         "type": "const"
       }
     ],
+    "installModule": [
+      {
+        "isDefault": false,
+        "name": "installModule",
+        "path": "src/context/assetActionCreators.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "InstallModuleFailureReason": [
+      {
+        "isDefault": false,
+        "name": "InstallModuleFailureReason",
+        "path": "src/types/assets.d.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
+    "InstallModuleInput": [
+      {
+        "isDefault": false,
+        "name": "InstallModuleInput",
+        "path": "src/context/assetActionCreators.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
+      }
+    ],
+    "InstallModulePayload": [
+      {
+        "isDefault": false,
+        "name": "InstallModulePayload",
+        "path": "src/types/assets.d.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
+      }
+    ],
     "IntroVideo": [
       {
         "isDefault": false,
@@ -5882,6 +6119,15 @@
         "isDefault": false,
         "name": "isLooseRecord",
         "path": "src/utils/objectUtils.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "isModuleUnlocked": [
+      {
+        "isDefault": false,
+        "name": "isModuleUnlocked",
+        "path": "src/utils/assetSelectors.ts",
         "source": "local",
         "type": "const"
       }
@@ -6172,6 +6418,16 @@
         "path": "src/utils/loanProfiles.ts",
         "source": "local",
         "type": "type",
+        "typeOnly": true
+      }
+    ],
+    "LockReason": [
+      {
+        "isDefault": false,
+        "name": "LockReason",
+        "path": "src/utils/assetSelectors.ts",
+        "source": "local",
+        "type": "interface",
         "typeOnly": true
       }
     ],
@@ -6659,6 +6915,16 @@
         "type": "const"
       }
     ],
+    "ModulePoolEntry": [
+      {
+        "isDefault": false,
+        "name": "ModulePoolEntry",
+        "path": "src/utils/assetSelectors.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
+      }
+    ],
     "ModuleUnlockReq": [
       {
         "isDefault": false,
@@ -6806,6 +7072,25 @@
         "path": "src/context/gameConstants.ts",
         "source": "local",
         "type": "const"
+      }
+    ],
+    "NEUTRAL_ASSET_MODIFIERS": [
+      {
+        "isDefault": false,
+        "name": "NEUTRAL_ASSET_MODIFIERS",
+        "path": "src/utils/assetSelectors.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "NewSlotEntry": [
+      {
+        "isDefault": false,
+        "name": "NewSlotEntry",
+        "path": "src/types/assets.d.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
       }
     ],
     "nextSeed": [
@@ -7564,6 +7849,24 @@
         "type": "const"
       }
     ],
+    "processAssetTick": [
+      {
+        "isDefault": false,
+        "name": "processAssetTick",
+        "path": "src/utils/assetTicks.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "processCrowdfundTick": [
+      {
+        "isDefault": false,
+        "name": "processCrowdfundTick",
+        "path": "src/utils/assetTicks.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "ProcessedTempoMapEntry": [
       {
         "isDefault": false,
@@ -7588,6 +7891,15 @@
         "isDefault": false,
         "name": "processLaneInput",
         "path": "src/utils/rhythmGameInputUtils.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "processLiabilityTick": [
+      {
+        "isDefault": false,
+        "name": "processLiabilityTick",
+        "path": "src/utils/assetTicks.ts",
         "source": "local",
         "type": "const"
       }
@@ -7642,6 +7954,45 @@
         "isDefault": false,
         "name": "Projectile",
         "path": "src/utils/hecklerLogic.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
+    "purchaseChassis": [
+      {
+        "isDefault": false,
+        "name": "purchaseChassis",
+        "path": "src/context/assetActionCreators.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "PurchaseChassisInput": [
+      {
+        "isDefault": false,
+        "name": "PurchaseChassisInput",
+        "path": "src/context/assetActionCreators.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
+      }
+    ],
+    "PurchaseChassisPayload": [
+      {
+        "isDefault": false,
+        "name": "PurchaseChassisPayload",
+        "path": "src/types/assets.d.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
+      }
+    ],
+    "PurchaseFailureReason": [
+      {
+        "isDefault": false,
+        "name": "PurchaseFailureReason",
+        "path": "src/types/assets.d.ts",
         "source": "local",
         "type": "type",
         "typeOnly": true
@@ -7934,11 +8285,29 @@
         "typeOnly": true
       }
     ],
+    "removeModule": [
+      {
+        "isDefault": false,
+        "name": "removeModule",
+        "path": "src/context/assetActionCreators.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "REPAIR_COST_PER_POINT": [
       {
         "isDefault": false,
         "name": "REPAIR_COST_PER_POINT",
         "path": "src/utils/assetConfig.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "repairChassis": [
+      {
+        "isDefault": false,
+        "name": "repairChassis",
+        "path": "src/context/assetActionCreators.ts",
         "source": "local",
         "type": "const"
       }
@@ -8010,6 +8379,25 @@
         "path": "src/utils/audio/playbackUtils.ts",
         "source": "local",
         "type": "const"
+      }
+    ],
+    "resolveCrowdfund": [
+      {
+        "isDefault": false,
+        "name": "resolveCrowdfund",
+        "path": "src/context/assetActionCreators.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "ResolveCrowdfundPayload": [
+      {
+        "isDefault": false,
+        "name": "ResolveCrowdfundPayload",
+        "path": "src/types/assets.d.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
       }
     ],
     "resolveEvent": [
@@ -8404,6 +8792,15 @@
         "type": "class"
       }
     ],
+    "rollAssetRiskEvents": [
+      {
+        "isDefault": false,
+        "name": "rollAssetRiskEvents",
+        "path": "src/utils/assetTicks.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "Rules": [
       {
         "isDefault": false,
@@ -8583,6 +8980,15 @@
         "isDefault": false,
         "name": "selectRandomItem",
         "path": "src/utils/audio/selectionUtils.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "sellChassis": [
+      {
+        "isDefault": false,
+        "name": "sellChassis",
+        "path": "src/context/assetActionCreators.ts",
         "source": "local",
         "type": "const"
       }
@@ -9195,6 +9601,25 @@
         "path": "src/components/stage/StageResizeHandler.ts",
         "source": "local",
         "type": "class"
+      }
+    ],
+    "startCrowdfund": [
+      {
+        "isDefault": false,
+        "name": "startCrowdfund",
+        "path": "src/context/assetActionCreators.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "StartCrowdfundInput": [
+      {
+        "isDefault": false,
+        "name": "StartCrowdfundInput",
+        "path": "src/context/assetActionCreators.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
       }
     ],
     "startGigClock": [
@@ -9980,6 +10405,25 @@
         "path": "src/utils/assetConfig.ts",
         "source": "local",
         "type": "const"
+      }
+    ],
+    "upgradeChassisTier": [
+      {
+        "isDefault": false,
+        "name": "upgradeChassisTier",
+        "path": "src/context/assetActionCreators.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "UpgradeChassisTierPayload": [
+      {
+        "isDefault": false,
+        "name": "UpgradeChassisTierPayload",
+        "path": "src/types/assets.d.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
       }
     ],
     "UpgradesTab": [
