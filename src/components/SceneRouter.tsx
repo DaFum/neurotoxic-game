@@ -49,6 +49,9 @@ const GameOver = lazy(() =>
 const IntroVideo = lazy(() =>
   import('../scenes/IntroVideo.tsx').then(m => ({ default: m.IntroVideo }))
 )
+const AssetsScene = lazy(() =>
+  import('./assets/AssetsScene.tsx').then(m => ({ default: m.AssetsScene }))
+)
 
 type ScenePhase = (typeof GAME_PHASES)[keyof typeof GAME_PHASES]
 type MinigameType = (typeof MINIGAME_TYPES)[keyof typeof MINIGAME_TYPES]
@@ -82,6 +85,8 @@ export function SceneRouter({ currentScene, minigameType }: SceneRouterProps) {
       return <Overworld />
     case GAME_PHASES.CLINIC:
       return <ClinicScene />
+    case GAME_PHASES.ASSETS:
+      return <AssetsScene />
     case GAME_PHASES.TRAVEL_MINIGAME:
       return <TourbusScene />
     case GAME_PHASES.PRE_GIG:
