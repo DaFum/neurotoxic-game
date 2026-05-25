@@ -217,7 +217,7 @@ export const gameReducer = (
   if (action.type === ActionTypes.ADVANCE_DAY) {
     const snapshotBeforeMilestones = nextState
     const completedSet = new Set(snapshotBeforeMilestones.completedMilestones)
-    const triggeredMilestones = []
+    const triggeredMilestones: typeof MILESTONES[number][] = []
 
     for (let i = 0; i < MILESTONES.length; i++) {
       const m = MILESTONES[i]
@@ -236,7 +236,9 @@ export const gameReducer = (
 
       for (let i = 0; i < triggeredMilestones.length; i++) {
         const milestone = triggeredMilestones[i]
-        const rewardAction = milestone?.createRewardAction?.()
+        if (!milestone) continue
+
+        const rewardAction = milestone.createRewardAction?.()
         if (rewardAction) {
           nextState = gameReducer(nextState, rewardAction)
         }
@@ -245,7 +247,7 @@ export const gameReducer = (
           nextState,
           createAddToastAction({
             type: 'info',
-            messageKey: milestone!.labelKey
+            messageKey: milestone.labelKey
           })
         )
       }
