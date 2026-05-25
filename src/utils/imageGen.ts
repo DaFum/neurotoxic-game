@@ -1,3 +1,5 @@
+import type { AssetFlavor, AssetKind, ChassisTier, RiskEventType } from '../types/assets'
+import { MODULE_REGISTRY, MODULE_PROMPTS } from './assetModuleRegistry'
 // Utility to generate dynamic image URLs via Pollinations.ai
 const BASE_URL = 'https://gen.pollinations.ai/image'
 const MODEL = 'flux'
@@ -319,4 +321,105 @@ export const IMG_PROMPTS = {
   // Merch Press Feature
   MERCH_PRESS_BG:
     'pixel art underground dark basement printing press toxic green paint grimy sweatshop aesthetic'
+}
+
+const TIER_MODIFIERS: Record<ChassisTier, string> = {
+  1: 'cramped minimal setup',
+  2: 'expanded with extra gear',
+  3: 'fully professional level'
+}
+
+const CHASSIS_PARTS: Record<AssetKind, Record<AssetFlavor, string>> = {
+  tourbus_chassis: {
+    legit: 'tour van side view band gear',
+    diy: 'beat-up tour van duct tape repairs'
+  },
+  studio_chassis: {
+    legit: 'recording studio control room',
+    diy: 'cellar studio cables everywhere'
+  },
+  bandhaus_chassis: {
+    legit: 'rented band house cross section',
+    diy: 'squatted band house cross section graffiti'
+  },
+  merch_workshop_chassis: {
+    legit: 'merch workshop production line',
+    diy: 'garage merch printing workshop'
+  }
+}
+
+export const getChassisImagePrompt = (
+  kind: AssetKind, flavor: AssetFlavor, tier: ChassisTier
+): string =>
+  `pixel art ${CHASSIS_PARTS[kind][flavor]} ${TIER_MODIFIERS[tier]} dark moody toxic green accents`
+
+const defaultModulePrompt = (id: string) =>
+  `pixel art ${id.replace(/_/g, ' ')} dark moody toxic green accents`
+
+export const getModuleImagePrompt = (moduleId: string): string => {
+  const m = MODULE_REGISTRY[moduleId]
+  if (!m) return defaultModulePrompt(moduleId)
+  return MODULE_PROMPTS[m.imagePromptKey] ?? defaultModulePrompt(moduleId)
+}
+
+export const getLoanProfileImagePrompt = (profileId: string): string => {
+  const flavorMap: Record<string, string> = {
+    shortTerm: 'bank loan officer briefcase legit',
+    mediumTerm: 'bank counter contract pen',
+    longTerm: 'bank vault long-term security',
+    loanShark: 'loan shark dark alley menacing',
+    coop: 'punk cooperative community handshake'
+  }
+  return `pixel art ${flavorMap[profileId] ?? 'bank loan'} dark moody`
+}
+
+export const getCrowdfundImagePrompt = (
+  kind: AssetKind, flavor: AssetFlavor
+): string =>
+  `pixel art crowdfunding campaign poster ${CHASSIS_PARTS[kind][flavor]} fans donating diy aesthetic`
+
+export const getRiskEventImagePrompt = (eventType: RiskEventType): string => {
+  const map: Record<RiskEventType, string> = {
+    eviction: 'eviction notice landlord punks moving out',
+    fire: 'small fire damage smoking equipment',
+    theft: 'broken lock empty space stolen gear',
+    police_check: 'police flashlight checking band gear night',
+    copyright_strike: 'cease and desist letter angry lawyer',
+    raid: 'police raid breaking down door band scene',
+    scam_or_bust: 'dark web vendor revealed scam empty box',
+    paranormal: 'ghostly figure haunted studio eerie green glow',
+    foreclosure: 'foreclosure sign chained doors empty studio'
+  }
+  return `pixel art ${map[eventType]} dark moody punk`
+}
+
+export const getSectionBackgroundPrompt = (
+  kind: AssetKind, flavor: AssetFlavor
+): string =>
+  `pixel art ${CHASSIS_PARTS[kind][flavor]} background wide shot atmospheric dark moody toxic green accents`
+
+export const getTrailerImagePrompt = (flavor: AssetFlavor): string =>
+  `pixel art trailer side view ${
+    flavor === 'diy' ? 'self-welded diy duct tape' : 'certified rental'
+  } band gear toxic green accents`
+
+export const getRepairImagePrompt = (
+  kind: AssetKind, flavor: AssetFlavor, tier: ChassisTier, condition: number
+): string => {
+  const base = getChassisImagePrompt(kind, flavor, tier)
+  if (condition < 20) return `${base} severely damaged broken`
+  if (condition < 50) return `${base} damaged worn`
+  return `${base} needs maintenance`
+}
+
+/**
+ * Safely appends width/height query params to a generated-image URL.
+ * Works with Pollinations URLs (which already have `?model=...&seed=...`)
+ * and the offline fallback SVG (no query params).
+ */
+export const appendImageSize = (
+  url: string, width: number, height: number
+): string => {
+  const sep = url.includes('?') ? '&' : '?'
+  return `${url}${sep}width=${width}&height=${height}`
 }

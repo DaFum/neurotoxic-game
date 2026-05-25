@@ -42,6 +42,8 @@
   "gigIncome.techSponsor.label": "Technik-Sponsor",
   "gigIncome.ticketSales.detail": "{{sold}} / {{capacity}} verkauft",
   "gigIncome.ticketSales.label": "Ticketverkäufe",
+  "gigIncome.tipBonus.detail": "Asset-Bonus auf Trinkgelder",
+  "gigIncome.tipBonus.label": "Trinkgeld-Bonus",
   "gigIncome.vipBarRevenue.detail": "VIP-Publikum — {{percent}}% der Bar",
   "gigIncome.vipBarRevenue.label": "VIP-Bareinnahmen",
   "postGig.continueToSocials": "Weiter zu Socials >",
