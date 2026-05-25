@@ -1,4 +1,4 @@
-import { describe, it } from 'node:test'
+import { describe, it, afterEach } from 'node:test'
 import assert from 'node:assert/strict'
 import { gameReducer } from '../../src/context/gameReducer'
 import { ActionTypes } from '../../src/context/actionTypes'
@@ -22,7 +22,6 @@ import { advanceDay } from '../../src/context/actionCreators'
 const TEST_MODULE_ID = 'gp_test_module'
 
 let snapshot
-import { afterEach } from 'node:test'
 
 const setupConfig = () => {
   snapshot = {

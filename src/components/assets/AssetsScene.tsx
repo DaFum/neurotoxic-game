@@ -27,12 +27,12 @@ interface TabDef {
   icon: string
 }
 
-const TABS: readonly TabDef[] = [
+const TABS = [
   { key: 'tourbus_chassis', shortLabel: 'tourbus', icon: '🚐' },
   { key: 'studio_chassis', shortLabel: 'studio', icon: '🎚' },
   { key: 'bandhaus_chassis', shortLabel: 'bandhaus', icon: '🏠' },
   { key: 'merch_workshop_chassis', shortLabel: 'workshop', icon: '👕' }
-]
+] as const satisfies readonly TabDef[]
 
 export const AssetsScene = () => {
   const { t } = useTranslation(['assets'])
@@ -41,6 +41,7 @@ export const AssetsScene = () => {
 
   const activeView = SECTION_VIEWS[active]
   const accent = activeView?.accent ?? DEFAULT_SECTION_ACCENT
+  const activeTab = TABS.find(tab => tab.key === active) ?? TABS[0]
 
   // The CSS variable cascades to every descendant via inline style; modals
   // and panels nested under the scene root read it via
@@ -101,9 +102,7 @@ export const AssetsScene = () => {
       <section
         className='flex-1 overflow-y-auto p-4'
         role='tabpanel'
-        aria-label={t(
-          `assets:section.${TABS.find(t => t.key === active)?.shortLabel}.title`
-        )}
+        aria-label={t(`assets:section.${activeTab.shortLabel}.title`)}
       >
         {activeView ? (
           <activeView.Component />

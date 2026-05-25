@@ -50,7 +50,7 @@
   "module.unlock.skillAny": "Requires any member with {{skill}} tier {{tier}}",
   "module.unlock.scene": "Requires scene presence {{amount}}",
   "module.unlock.chassisTier": "Requires chassis tier {{tier}}",
-  "module.unlock.otherModule": "Requires {{moduleName}}",
+  "module.unlock.otherModule": "Requires module: {{moduleRefs}}",
   "module.conflict": "Conflicts with {{otherName}}",
   "loan.profile.shortTerm": "Short term (60d, 8%)",
   "loan.profile.mediumTerm": "Medium term (120d, 6%)",
@@ -122,19 +122,10 @@
   "slot.mw_specialty": "Specialty",
   "slot.mw_sales": "Sales channel",
   "slot.mw_automation": "Automation",
-  "chassisAcquisition": {
-    "tier": "Tier",
-    "mode": "Mode",
-    "loanProfile": "Loan profile"
-  },
-  "crowdfund": {
-    "days": "Days",
-    "target": "Target",
-    "chance": "% chance"
-  },
-  "module": {
-    "unlock": {
-      "otherModule": "Requires module: {{moduleRefs}}"
-    }
-  }
+  "chassisAcquisition.tier": "Tier",
+  "chassisAcquisition.mode": "Mode",
+  "chassisAcquisition.loanProfile": "Loan profile",
+  "crowdfund.days": "Days",
+  "crowdfund.target": "Target",
+  "crowdfund.chance": "% chance"
 }

@@ -120,7 +120,9 @@ export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
 
           <div
             className='flex items-center justify-between border-t-2 pt-2'
-            style={{ borderColor: 'var(--section-accent)' }}
+            style={{
+              borderColor: 'var(--section-accent, var(--color-toxic-green))'
+            }}
           >
             <span>{formatCurrency(price, i18n.language)}</span>
             <div className='flex gap-2'>
@@ -137,7 +139,7 @@ export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
                 disabled={diyLoanBlocked || insufficient || price === 0}
                 className='border-2 px-3 py-1 disabled:opacity-40'
                 style={{
-                  background: 'var(--section-accent)',
+                  background: 'var(--section-accent, var(--color-toxic-green))',
                   color: 'var(--color-void)'
                 }}
               >

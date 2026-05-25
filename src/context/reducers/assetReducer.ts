@@ -216,8 +216,7 @@ export const handleUpgradeChassisTier = (
   if (!targetAsset) return state
 
   if (targetTier <= targetAsset.chassisTier) return state
-  const targetLegitOuter = CHASSIS_CONFIG[targetAsset.kind]?.legit?.[targetTier]
-  if (!targetLegitOuter) return state
+  if (!CHASSIS_CONFIG[targetAsset.kind]?.legit?.[targetTier]) return state
 
   let upgradeCost = 0
   const nextAssets = state.assets.map(asset => {

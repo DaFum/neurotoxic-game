@@ -50,7 +50,7 @@
   "module.unlock.skillAny": "Ben\u00f6tigt Member mit {{skill}} Tier {{tier}}",
   "module.unlock.scene": "Ben\u00f6tigt Szene-Pr\u00e4senz {{amount}}",
   "module.unlock.chassisTier": "Ben\u00f6tigt Chassis-Tier {{tier}}",
-  "module.unlock.otherModule": "Ben\u00f6tigt {{moduleName}}",
+  "module.unlock.otherModule": "Ben\u00f6tigt Modul: {{moduleRefs}}",
   "module.conflict": "Konflikt mit {{otherName}}",
   "loan.profile.shortTerm": "Kurzfristig (60T, 8%)",
   "loan.profile.mediumTerm": "Mittelfristig (120T, 6%)",
@@ -122,19 +122,10 @@
   "slot.mw_specialty": "Spezial",
   "slot.mw_sales": "Verkaufskanal",
   "slot.mw_automation": "Automatisierung",
-  "chassisAcquisition": {
-    "tier": "Tier",
-    "mode": "Modus",
-    "loanProfile": "Kreditprofil"
-  },
-  "crowdfund": {
-    "days": "Tage",
-    "target": "Ziel",
-    "chance": "% Chance"
-  },
-  "module": {
-    "unlock": {
-      "otherModule": "Ben\u00f6tigt Modul: {{moduleRefs}}"
-    }
-  }
+  "chassisAcquisition.tier": "Tier",
+  "chassisAcquisition.mode": "Modus",
+  "chassisAcquisition.loanProfile": "Kreditprofil",
+  "crowdfund.days": "Tage",
+  "crowdfund.target": "Ziel",
+  "crowdfund.chance": "% Chance"
 }
