@@ -208,6 +208,13 @@ export const handleUpgradeChassisTier = (
   const { assetId, targetTier, newSlotIds } = payload
   if (!state.assets) return state
 
+  // Early-return when the target asset doesn't exist. Without this guard the
+  // reducer would still spread state and rebuild player.money (with
+  // upgradeCost staying at 0 — no functional damage today, but it wastes an
+  // allocation and could mask a buggy dispatch from upstream).
+  const targetAsset = state.assets.find(a => a.id === assetId)
+  if (!targetAsset) return state
+
   let upgradeCost = 0
   const nextAssets = state.assets.map(asset => {
     if (asset.id !== assetId) return asset
@@ -237,9 +244,9 @@ export const handleUpgradeChassisTier = (
     return {
       ...asset,
       chassisTier: targetTier,
-      baseUpkeep: targetConfigTier!.upkeep,
-      baseDailyRevenue: targetConfigTier!.revenue,
-      baseRiskEventChance: targetConfigTier!.baseRiskEventChance,
+      baseUpkeep: targetConfigTier.upkeep,
+      baseDailyRevenue: targetConfigTier.revenue,
+      baseRiskEventChance: targetConfigTier.baseRiskEventChance,
       slots: nextSlots
     }
   })
@@ -312,13 +319,16 @@ export const handleRepairChassis = (
   const { assetId } = payload
   if (!state.assets) return state
 
-  let repairCost = 0
-  const nextAssets = state.assets.map(asset => {
-    if (asset.id !== assetId) return asset
+  // Mirror the early-return pattern from handleUpgradeChassisTier: if no
+  // asset matches, return state unchanged rather than allocating a fresh
+  // state with a zero-cost repair.
+  const targetAsset = state.assets.find(a => a.id === assetId)
+  if (!targetAsset) return state
 
-    repairCost = (100 - asset.condition) * REPAIR_COST_PER_POINT
-    return { ...asset, condition: 100 }
-  })
+  const repairCost = (100 - targetAsset.condition) * REPAIR_COST_PER_POINT
+  const nextAssets = state.assets.map(asset =>
+    asset.id === assetId ? { ...asset, condition: 100 } : asset
+  )
 
   return {
     ...state,
