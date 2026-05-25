@@ -17,3 +17,10 @@
 ## Module Picker Performance
 
 - The picker can render up to ~20 modules per section. The plan's specified strategy is virtual scrolling (e.g. `react-window`) plus thumbnail-size hints. Foundation uses a simple grid because the empty module registry can't stress-test it; section plans 2-5 must verify the picker's open-time before shipping.
+
+## Tourbus
+
+- `sections/TourbusSection.tsx` is the entry point; it registers itself in `SECTION_VIEWS.tourbus_chassis` from `sectionRegistry.ts` with accent `var(--color-toxic-green)`.
+- `sections/TourbusVehicleView.tsx` renders a 16:9 `GeneratedImagePanel` background with absolutely-positioned hotspot buttons sourced from `TOURBUS_SLOT_POSITIONS`. Slots whose `slotType` has no position entry are skipped (sanity guard).
+- `tb_trailer_addon` slots are NOT rendered on the van — they belong to `sections/TourbusTrailerOverlay.tsx`, which mounts only when `tb_trailer_hitch` is installed and renders a second 16:9 panel to the left of the van.
+- All hotspot borders/buttons use `var(--section-accent, var(--color-toxic-green))` for consistent fallback when the scene root is absent.

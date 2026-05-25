@@ -73,3 +73,10 @@ baseline instead of duplicating formulas.
 - `seededRng.ts` (`mulberry32`, `createRngStream`, `nextSeed`): the RNG stream is pre-rolled in the `advanceDay` action creator (sized via `RNG_ROLLS_PER_ASSET × assetCount + RNG_BASE_BUFFER`) and consumed deterministically by `rollAssetRiskEvents`. Reducers must never generate random values directly.
 - `appendImageSize(url, w, h)` in `imageGen.ts` is query-safe (handles `?` vs `&` insertion). Use it instead of `url + '&width=...'`.
 - `loanProfiles.ts`: `computeAmortization` takes `annualInterestRate` (not daily); it divides by 365 internally.
+
+## Tourbus
+
+- `assetSections/tourbusConfig.ts` exports `TOURBUS_T1_SLOTS`, `TOURBUS_T2_SLOTS`, `TOURBUS_T3_SLOTS` (`as const` tuples) and `TOURBUS_SLOT_POSITIONS: Partial<Record<SlotType, {x,y}>>` — callers must handle `undefined` (the partial typing is intentional, only Tourbus slot types are populated).
+- `assetSections/tourbusModules.ts` registers 17 modules via side-effect import from `assetRegistryStore.ts` (the underlying registry; `assetModuleRegistry.ts` re-exports and triggers section imports). Editing tourbus modules must mutate `MODULE_REGISTRY` / `MODULE_PROMPTS` inside this file only.
+- Trailer anti-stacking: `tb_trailer_hitch` has `slotType: 'tb_trailer_mount'` and adds `tb_trailer_addon` slots — different slot types prevent self-stacking. `maxPerAsset: 1` is a belt-and-suspenders backup. Adding any new module that declares both `slotType: X` and `addsSlots: [{ slotType: X, ... }]` is forbidden and will be rejected by registry invariant tests.
+- Trailer detection in UI uses `asset.slots.some(s => s.installedModuleId === 'tb_trailer_hitch')` — no `MODULE_REGISTRY` lookup required.
