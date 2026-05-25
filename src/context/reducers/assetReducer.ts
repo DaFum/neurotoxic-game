@@ -215,6 +215,9 @@ export const handleUpgradeChassisTier = (
   const targetAsset = state.assets.find(a => a.id === assetId)
   if (!targetAsset) return state
 
+  if (targetTier <= targetAsset.chassisTier) return state
+  if (!CHASSIS_CONFIG[targetAsset.kind]?.legit?.[targetTier]) return state
+
   let upgradeCost = 0
   const nextAssets = state.assets.map(asset => {
     if (asset.id !== assetId) return asset
@@ -224,7 +227,8 @@ export const handleUpgradeChassisTier = (
       asset.chassisFlavor === 'legit'
         ? currentLegit
         : buildDiyTier(currentLegit)
-    const targetLegit = CHASSIS_CONFIG[asset.kind].legit[targetTier]
+    const targetLegit = CHASSIS_CONFIG[asset.kind]?.legit?.[targetTier]
+    if (!targetLegit || targetTier <= asset.chassisTier) return asset
     const targetConfigTier =
       asset.chassisFlavor === 'legit' ? targetLegit : buildDiyTier(targetLegit)
 

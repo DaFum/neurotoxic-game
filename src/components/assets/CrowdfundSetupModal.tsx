@@ -39,9 +39,7 @@ export const CrowdfundSetupModal = ({
   const { t, i18n } = useTranslation(['assets'])
   const { startCrowdfund } = useGameActions()
   const fame = useGameSelector(s => s.player.fame)
-  const scenePresence = useGameSelector(
-    s => (s.social as { scenePresence?: number }).scenePresence ?? 0
-  )
+  const scenePresence = useGameSelector(s => s.social?.scenePresence ?? 0)
   const rngSeed = useGameSelector(s => s.rngSeed)
 
   const [fameStake, setFameStake] = useState<number>(20)
@@ -94,7 +92,7 @@ export const CrowdfundSetupModal = ({
           />
         </label>
         <label className='flex items-center justify-between'>
-          Days: {days}
+          {t('assets:crowdfund.days')}: {days}
           <input
             type='range'
             min={3}
@@ -104,14 +102,21 @@ export const CrowdfundSetupModal = ({
           />
         </label>
         <p>
-          Target: {formatCurrency(targetAmount, i18n.language)} ·{' '}
-          {(probability * 100).toFixed(0)}% chance
+          {t('assets:crowdfund.target')}:{' '}
+          {formatCurrency(targetAmount, i18n.language)} ·{' '}
+          {(probability * 100).toFixed(0)}
+          {t('assets:crowdfund.chance')}
         </p>
         <div className='flex justify-end gap-2'>
-          <button onClick={onClose} className='border-2 px-3 py-1'>
+          <button
+            type='button'
+            onClick={onClose}
+            className='border-2 px-3 py-1'
+          >
             {t('ui:action_cancel', { defaultValue: 'Cancel' })}
           </button>
           <button
+            type='button'
             onClick={onConfirm}
             className='border-2 px-3 py-1'
             style={{

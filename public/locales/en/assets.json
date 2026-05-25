@@ -3,8 +3,7 @@
   "scene.subtitle": "Long-term assets and finances",
   "scene.placeholder": "Select a section to manage.",
   "scene.noSectionRegistered": "This section is not yet available.",
-  "scene.back": "← Back",
-
+  "scene.back": "\u2190 Back",
   "section.tourbus.title": "Tourbus",
   "section.tourbus.description": "Your rolling stage",
   "section.studio.title": "Studio",
@@ -13,23 +12,18 @@
   "section.bandhaus.description": "HQ, sleep, weed garden",
   "section.workshop.title": "Merch Workshop",
   "section.workshop.description": "Print, package, ship",
-
   "kind.tourbus_chassis": "Tourbus",
   "kind.studio_chassis": "Recording Studio",
   "kind.bandhaus_chassis": "Band House",
   "kind.merch_workshop_chassis": "Merch Workshop",
-
   "flavor.legit": "Legit",
   "flavor.diy": "DIY",
-
   "chassisTier.1": "Tier I",
   "chassisTier.2": "Tier II",
   "chassisTier.3": "Tier III",
-
   "mode.cash": "Cash",
   "mode.loan": "Loan",
   "mode.crowdfund": "Crowdfund",
-
   "actions.install": "Install",
   "actions.remove": "Remove",
   "actions.purchase": "Purchase",
@@ -40,18 +34,15 @@
   "actions.repairConfirm": "Repair for {{amount}}?",
   "actions.sellConfirm": "Sell for {{amount}}?",
   "actions.removeModuleConfirm": "Remove module (refund {{amount}})?",
-
   "condition.good": "Good",
   "condition.warning": "Warning",
   "condition.broken": "Broken",
-
   "modulePicker.title": "Choose a module",
   "modulePicker.noModulesAvailable": "No modules available for this slot.",
   "modulePicker.lockedReason": "Locked: {{reason}}",
   "modulePicker.exclusivityConflict": "Conflicts with {{otherName}}",
   "modulePicker.installCost": "Install cost: {{amount}}",
   "modulePicker.removeRefund": "Refund: {{amount}}",
-
   "module.unlock.fame": "Requires {{amount}} fame",
   "module.unlock.money": "Requires {{amount}} money",
   "module.unlock.story": "Requires story progress: {{flag}}",
@@ -59,9 +50,8 @@
   "module.unlock.skillAny": "Requires any member with {{skill}} tier {{tier}}",
   "module.unlock.scene": "Requires scene presence {{amount}}",
   "module.unlock.chassisTier": "Requires chassis tier {{tier}}",
-  "module.unlock.otherModule": "Requires {{moduleName}}",
+  "module.unlock.otherModule": "Requires module: {{moduleRefs}}",
   "module.conflict": "Conflicts with {{otherName}}",
-
   "loan.profile.shortTerm": "Short term (60d, 8%)",
   "loan.profile.mediumTerm": "Medium term (120d, 6%)",
   "loan.profile.longTerm": "Long term (180d, 4%)",
@@ -69,17 +59,14 @@
   "loan.profile.coop": "Cooperative (240d, 2%)",
   "loan.dailyPayment": "{{amount}}/day",
   "loan.defaultWarning": "Default in {{daysLeft}} days",
-
   "liability.paymentDue": "Payment due: {{amount}}",
   "liability.defaultWarning": "Liability in default: {{daysLeft}} days remaining before foreclosure",
   "liability.foreclosureNotice": "Foreclosure notice issued.",
   "liability.amortizationSchedule": "Amortization schedule",
-
   "crowdfund.setup": "Start campaign",
   "crowdfund.success": "Campaign successful!",
   "crowdfund.fail": "Campaign failed.",
   "crowdfund.fameStake": "Fame stake: {{amount}}",
-
   "risk.event.eviction": "Eviction!",
   "risk.event.fire": "Fire!",
   "risk.event.theft": "Theft!",
@@ -89,13 +76,10 @@
   "risk.event.scam_or_bust": "Scam!",
   "risk.event.paranormal": "Paranormal incident",
   "risk.event.foreclosure": "Foreclosure",
-
   "foreclosure": "Foreclosure",
-
   "purchaseFailed.diy_loan_not_allowed": "DIY chassis can't be financed via loan.",
   "purchaseFailed.insufficient_funds": "Not enough money.",
   "purchaseFailed.unknown_kind_or_tier": "Asset configuration not available.",
-
   "installFailed.unknown_module": "Unknown module.",
   "installFailed.unknown_asset": "Unknown asset.",
   "installFailed.unknown_slot": "Unknown slot.",
@@ -104,9 +88,7 @@
   "installFailed.locked": "Module is locked.",
   "installFailed.exclusivity": "Conflicts with an already-installed module.",
   "installFailed.max_per_asset": "Max-per-asset limit reached.",
-
   "sellFailed.liability_exceeds_value": "Outstanding debt exceeds sale value.",
-
   "slot.tb_roof": "Roof",
   "slot.tb_front": "Front",
   "slot.tb_side": "Side",
@@ -139,5 +121,11 @@
   "slot.mw_storage": "Storage",
   "slot.mw_specialty": "Specialty",
   "slot.mw_sales": "Sales channel",
-  "slot.mw_automation": "Automation"
+  "slot.mw_automation": "Automation",
+  "chassisAcquisition.tier": "Tier",
+  "chassisAcquisition.mode": "Mode",
+  "chassisAcquisition.loanProfile": "Loan profile",
+  "crowdfund.days": "Days",
+  "crowdfund.target": "Target",
+  "crowdfund.chance": "% chance"
 }

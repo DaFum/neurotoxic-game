@@ -17,4 +17,3 @@
 ## Module Picker Performance
 
 - The picker can render up to ~20 modules per section. The plan's specified strategy is virtual scrolling (e.g. `react-window`) plus thumbnail-size hints. Foundation uses a simple grid because the empty module registry can't stress-test it; section plans 2-5 must verify the picker's open-time before shipping.
-EOF

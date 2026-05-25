@@ -25,7 +25,9 @@ export const LiabilitiesPanel = () => {
         <li
           key={l.id}
           className='flex items-center justify-between border-2 px-2 py-1'
-          style={{ borderColor: 'var(--section-accent)' }}
+          style={{
+            borderColor: 'var(--section-accent, var(--color-toxic-green))'
+          }}
         >
           <span className='opacity-70'>{l.source}</span>
           <span>

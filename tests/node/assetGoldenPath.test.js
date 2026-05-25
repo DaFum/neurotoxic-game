@@ -1,4 +1,4 @@
-import { describe, it } from 'node:test'
+import { describe, it, afterEach } from 'node:test'
 import assert from 'node:assert/strict'
 import { gameReducer } from '../../src/context/gameReducer'
 import { ActionTypes } from '../../src/context/actionTypes'
@@ -20,7 +20,21 @@ import { advanceDay } from '../../src/context/actionCreators'
 // scaffold and add per-section variants (trailer stacking, etc.).
 
 const TEST_MODULE_ID = 'gp_test_module'
+
+let snapshot
+
 const setupConfig = () => {
+  snapshot = {
+    legit: CHASSIS_CONFIG.tourbus_chassis?.legit?.[1],
+    diy: CHASSIS_CONFIG.tourbus_chassis?.diy?.[1],
+    module: MODULE_REGISTRY[TEST_MODULE_ID],
+    prompt: MODULE_PROMPTS.gp_test_prompt
+  }
+
+  if (!CHASSIS_CONFIG.tourbus_chassis) {
+    CHASSIS_CONFIG.tourbus_chassis = { legit: {}, diy: {} }
+  }
+
   // Foundation config is empty stubs; populate just enough for the cycle.
   CHASSIS_CONFIG.tourbus_chassis.legit[1] = {
     price: 4000,
@@ -51,6 +65,32 @@ const setupConfig = () => {
   }
   MODULE_PROMPTS.gp_test_prompt = 'pixel art test module'
 }
+
+afterEach(() => {
+  if (snapshot.legit !== undefined) {
+    CHASSIS_CONFIG.tourbus_chassis.legit[1] = snapshot.legit
+  } else {
+    delete CHASSIS_CONFIG.tourbus_chassis.legit[1]
+  }
+
+  if (snapshot.diy !== undefined) {
+    CHASSIS_CONFIG.tourbus_chassis.diy[1] = snapshot.diy
+  } else {
+    delete CHASSIS_CONFIG.tourbus_chassis.diy[1]
+  }
+
+  if (snapshot.module !== undefined) {
+    MODULE_REGISTRY[TEST_MODULE_ID] = snapshot.module
+  } else {
+    delete MODULE_REGISTRY[TEST_MODULE_ID]
+  }
+
+  if (snapshot.prompt !== undefined) {
+    MODULE_PROMPTS.gp_test_prompt = snapshot.prompt
+  } else {
+    delete MODULE_PROMPTS.gp_test_prompt
+  }
+})
 
 const seedState = (overrides = {}) => ({
   ...createInitialState(),

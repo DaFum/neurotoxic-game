@@ -5080,6 +5080,15 @@
         "type": "const"
       }
     ],
+    "getTotalDebt": [
+      {
+        "isDefault": false,
+        "name": "getTotalDebt",
+        "path": "src/utils/assetSelectors.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "getTrailerImagePrompt": [
       {
         "isDefault": false,
