@@ -310,6 +310,19 @@ export const startCrowdfund = (
   ) {
     return null
   }
+  // Pre-generate the materialized-asset ids here so processCrowdfundTick
+  // stays pure (reducer-purity invariant). The number of slot ids matches
+  // the chassis-config slot count for this kind/flavor/tier. If the section
+  // plan hasn't populated CHASSIS_CONFIG yet (foundation phase: cfg.slots
+  // empty), the slot-ids list is also empty — the tick will materialize an
+  // empty-slot asset, which sanitizer + reducer flows handle gracefully.
+  const cfg = CHASSIS_CONFIG[raw.kind]?.[raw.flavor]?.[raw.tier]
+  const slotCount = cfg?.slots.length ?? 0
+  const materializedAssetId = getSafeUUID()
+  const materializedSlotIds: string[] = []
+  for (let i = 0; i < slotCount; i++) {
+    materializedSlotIds.push(getSafeUUID())
+  }
   return {
     type: ActionTypes.START_CROWDFUND,
     payload: {
@@ -323,6 +336,8 @@ export const startCrowdfund = (
         targetAmount: finiteNumberOr(raw.targetAmount, 0),
         fameStake: finiteNumberOr(raw.fameStake, 0),
         daysRemaining: finiteNumberOr(raw.daysRemaining, 0),
+        materializedAssetId,
+        materializedSlotIds,
         // Clamp to [0, 1] — defensively. The roll is meant to come from
         // mulberry32 (always in [0, 1)), but a malformed call site shouldn't
         // be able to plant a roll outside that range and skew resolution.

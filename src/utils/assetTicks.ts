@@ -18,7 +18,6 @@ import {
   RISK_EVENT_CONDITION_LOSS,
   buildDiyTier
 } from './assetConfig'
-import { getSafeUUID } from './crypto'
 
 /**
  * Daily decay of every asset's condition, plus net cashflow (revenue − upkeep)
@@ -134,21 +133,27 @@ export const processCrowdfundTick = (state: GameState): GameState => {
     if (success) {
       money += campaign.targetAmount
       fame += campaign.fameStake
-      // Materialize the asset from the chassis config. legit reads directly;
-      // diy derives via buildDiyTier so balancing stays consistent.
+      // Materialize the asset deterministically from pre-generated ids
+      // (stamped by startCrowdfund at campaign creation). No UUID generation
+      // here — the reducer must stay pure.
       const { kind, flavor, chassisTier } = campaign.assetSpec
       const legitTier = CHASSIS_CONFIG[kind].legit[chassisTier]
       const cfgTier = flavor === 'legit' ? legitTier : buildDiyTier(legitTier)
       newAssets.push({
-        id: getSafeUUID(),
+        id: campaign.materializedAssetId,
         kind,
         chassisFlavor: flavor,
         chassisTier,
         condition: 100,
         baseUpkeep: cfgTier.upkeep,
         baseDailyRevenue: cfgTier.revenue,
-        slots: cfgTier.slots.map(slotType => ({
-          id: getSafeUUID(),
+        slots: cfgTier.slots.map((slotType, i) => ({
+          // Bounds-safe fallback: if startCrowdfund was called before the
+          // section plan populated CHASSIS_CONFIG (so slot count was 0 then,
+          // non-zero now), synthesize a deterministic id from the asset id.
+          id:
+            campaign.materializedSlotIds[i] ??
+            `${campaign.materializedAssetId}_slot_${i}`,
           slotType,
           position: { x: 0, y: 0 },
           installedModuleId: null

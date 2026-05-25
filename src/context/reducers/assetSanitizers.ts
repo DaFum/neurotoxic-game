@@ -276,6 +276,20 @@ export const sanitizeCrowdfundCampaigns = (
     if (!VALID_TIERS.has(tier)) continue
 
     const outcome = clean.resolvedOutcome
+    // Materialized ids are required fields on the type (so processCrowdfundTick
+    // can consume them without runtime UUID generation). On a save from a
+    // pre-materialized-ids build, we synthesize stable fallback ids from the
+    // campaign id so loaded campaigns still resolve deterministically.
+    const rawAssetId =
+      typeof clean.materializedAssetId === 'string'
+        ? clean.materializedAssetId
+        : `${clean.id}_materialized_asset`
+    const rawSlotIds = Array.isArray(clean.materializedSlotIds)
+      ? clean.materializedSlotIds.filter(
+          (s: unknown): s is string => typeof s === 'string'
+        )
+      : []
+
     const result: CrowdfundCampaign = {
       id: clean.id,
       assetSpec: {
@@ -286,7 +300,9 @@ export const sanitizeCrowdfundCampaigns = (
       targetAmount: finiteNumberOr(clean.targetAmount, 0),
       fameStake: finiteNumberOr(clean.fameStake, 0),
       daysRemaining: finiteNumberOr(clean.daysRemaining, 0),
-      plannedSuccessRoll: finiteNumberOr(clean.plannedSuccessRoll, 0)
+      plannedSuccessRoll: finiteNumberOr(clean.plannedSuccessRoll, 0),
+      materializedAssetId: rawAssetId,
+      materializedSlotIds: rawSlotIds
     }
     if (typeof outcome === 'string' && VALID_OUTCOMES.has(outcome)) {
       result.resolvedOutcome = outcome as CrowdfundCampaign['resolvedOutcome']

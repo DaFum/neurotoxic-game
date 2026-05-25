@@ -62,29 +62,33 @@ export const handlePurchaseChassis = (
 
   if (mode === 'cash') {
     nextMoney -= configTier.price
-  } else if (mode === 'loan' && loanProfileId) {
+  } else if (mode === 'loan') {
+    // Loan-mode payloads must reference a real LoanProfile. The action
+    // creator already enforces this, but a malformed dispatch (replay tools,
+    // hostile inputs) must not be able to mint a free chassis by sending
+    // mode: 'loan' without a profile id.
+    if (!loanProfileId) return state
     const profile =
       LOAN_PROFILES[
         loanProfileId as import('../../utils/loanProfiles').LoanProfileId
       ]
-    if (profile) {
-      const dailyPayment = computeAmortization(
-        configTier.price,
-        profile.interestRate,
-        profile.termDays
-      )
-      const liability: Liability = {
-        id: `loan_${id}`,
-        source: 'loan',
-        assetId: id,
-        principalRemaining: configTier.price,
-        interestRate: profile.interestRate,
-        dailyPayment,
-        termDaysRemaining: profile.termDays,
-        defaultCounter: 0
-      }
-      nextLiabilities.push(liability)
+    if (!profile) return state
+    const dailyPayment = computeAmortization(
+      configTier.price,
+      profile.interestRate,
+      profile.termDays
+    )
+    const liability: Liability = {
+      id: `loan_${id}`,
+      source: 'loan',
+      assetId: id,
+      principalRemaining: configTier.price,
+      interestRate: profile.interestRate,
+      dailyPayment,
+      termDaysRemaining: profile.termDays,
+      defaultCounter: 0
     }
+    nextLiabilities.push(liability)
   }
 
   return {
@@ -108,17 +112,24 @@ export const handleInstallModule = (
   const moduleInfo = MODULE_REGISTRY[moduleId]
   if (!moduleInfo) return state
 
+  // Track whether the install actually landed. If the assetId/slotId in the
+  // payload doesn't match anything live (replay against a stale state, hostile
+  // dispatch), we must NOT deduct money — otherwise the player pays for an
+  // install that never happened.
+  let installed = false
+
   const nextAssets = state.assets.map(asset => {
     if (asset.id !== assetId) return asset
 
     const nextSlots = asset.slots.map(slot => {
-      if (slot.id === slotId) {
+      if (slot.id === slotId && slot.installedModuleId === null) {
+        installed = true
         return { ...slot, installedModuleId: moduleId }
       }
       return slot
     })
 
-    if (newSlotIds && newSlotIds.length > 0) {
+    if (installed && newSlotIds && newSlotIds.length > 0) {
       newSlotIds.forEach(newSlot => {
         nextSlots.push({
           id: newSlot.id,
@@ -132,6 +143,8 @@ export const handleInstallModule = (
 
     return { ...asset, slots: nextSlots }
   })
+
+  if (!installed) return state
 
   return {
     ...state,

@@ -159,6 +159,18 @@ export interface CrowdfundCampaign {
   fameStake: number
   daysRemaining: number
   plannedSuccessRoll: number // 0..1, deterministisch beim START gezogen
+  /**
+   * Pre-generated id for the asset that materializes on success. Stamped by
+   * `startCrowdfund` so `processCrowdfundTick` stays pure (no UUID generation
+   * inside the reducer). On failure, this id is simply discarded.
+   */
+  materializedAssetId: string
+  /**
+   * Pre-generated slot ids matching the chassis-config slot order for
+   * `assetSpec.kind`/`flavor`/`chassisTier`. Used by `processCrowdfundTick`
+   * on success; ignored on failure.
+   */
+  materializedSlotIds: readonly string[]
   // resolvedOutcome ist undefined solange daysRemaining > 0.
   // processCrowdfundTick setzt den Wert bei daysRemaining === 0,
   // wendet die Folgen an und entfernt den Eintrag im selben Tick.

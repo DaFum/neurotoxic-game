@@ -9,21 +9,32 @@ import {
 import { CHASSIS_CONFIG } from '../../src/utils/assetConfig.ts'
 import { MODULE_REGISTRY } from '../../src/utils/assetModuleRegistry.ts'
 
-if (!MODULE_REGISTRY['test_mod']) {
-  // @ts-expect-error test mock
-  MODULE_REGISTRY['test_mod'] = {
-    id: 'test_mod',
-    ownerKind: 'tourbus_chassis',
-    slotType: 'tb_roof',
-    flavor: 'legit',
-    cost: 100,
-    installCost: 50,
-    removalRefundFraction: 0.5,
-    boni: {},
-    unlock: {},
-    imagePromptKey: 'test'
-  }
+// MODULE_REGISTRY is a mutable shared module-scoped object. To prevent
+// pollution into other test files run in the same process, snapshot the
+// original 'test_mod' entry (if any) and restore it after every test below.
+// If the entry didn't exist, we delete the injected one.
+const originalTestMod = MODULE_REGISTRY['test_mod']
+// @ts-expect-error test mock — minimal AssetModule shape
+MODULE_REGISTRY['test_mod'] = {
+  id: 'test_mod',
+  ownerKind: 'tourbus_chassis',
+  slotType: 'tb_roof',
+  flavor: 'legit',
+  cost: 100,
+  installCost: 50,
+  removalRefundFraction: 0.5,
+  boni: {},
+  unlock: {},
+  imagePromptKey: 'test'
 }
+
+test.after(() => {
+  if (originalTestMod === undefined) {
+    delete MODULE_REGISTRY['test_mod']
+  } else {
+    MODULE_REGISTRY['test_mod'] = originalTestMod
+  }
+})
 
 const mockState = {
   player: { money: 1000, day: 10 },
