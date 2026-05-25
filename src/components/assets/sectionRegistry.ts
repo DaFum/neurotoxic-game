@@ -1,5 +1,6 @@
 import type { ComponentType } from 'react'
 import type { AssetKind } from '../../types/assets'
+import { TourbusSection } from './sections/TourbusSection'
 
 /**
  * View descriptor for a section-specific asset panel.
@@ -18,6 +19,11 @@ export interface SectionView {
 }
 
 export const SECTION_VIEWS: Partial<Record<AssetKind, SectionView>> = {}
+
+SECTION_VIEWS.tourbus_chassis = {
+  Component: TourbusSection,
+  accent: 'var(--color-toxic-green)'
+}
 
 /**
  * Default accent token used when no section view is registered for the
