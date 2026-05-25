@@ -1,6 +1,6 @@
 ---
 name: change-plan-conventional-commits
-description: Trigger when preparing to modify code, refactor, or fix bugs. Ensures commits follow Conventional Commits standard.
+description: plan code changes and draft commit messages. Trigger when preparing to modify code, refactor, or fix bugs. Ensures commits follow Conventional Commits standard.
 ---
 
 # Change Plan & Conventional Commits

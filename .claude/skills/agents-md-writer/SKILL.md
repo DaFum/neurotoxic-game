@@ -1,11 +1,18 @@
 ---
 name: agents-md-writer
-description: Use when asked to create, improve, review, migrate, sync, or validate repository context files for coding agents, including AGENTS.md, CLAUDE.md, CODEX.md, GEMINI.md, .cursorrules, or .github/copilot-instructions.md. Trigger on close synonyms and paraphrases such as 'agent instructions', 'coding agent setup', 'AI-friendly repo', or 'Copilot/Codex/Claude instructions'.
+description: Use when asked to create, improve, review, migrate, sync, or validate repository context files for coding agents, including AGENTS.md, CLAUDE.md, CODEX.md, GEMINI.md, .cursorrules, or .github/copilot-instructions.md. Trigger on close synonyms and paraphrases such as "agent instructions", "coding agent setup", "AI-friendly repo", or "Copilot/Codex/Claude instructions".
 ---
 
 # AGENTS.md Writer
 
-Write effective repository-level context files (AGENTS.md, CLAUDE.md, CODEX.md, etc.) that actually improve coding agent performance — across the entire multi-tool ecosystem.
+## Overview
+
+Write effective repository-level context files (AGENTS.md, CLAUDE.md, CODEX.md, etc.) that actually improve coding agent performance. The core principle: less is more.
+
+## When to Use
+
+- Use when asked to create, improve, review, migrate, sync, or validate repository context files for coding agents (AGENTS.md, CLAUDE.md, etc.).
+- Trigger on close synonyms such as "agent instructions", "coding agent setup", "AI-friendly repo", or "Copilot/Codex/Claude instructions".
 
 ## Why This Skill Exists
 
@@ -189,7 +196,7 @@ This is often the most valuable section. Include non-obvious things that would w
 - "The `legacy/` directory is frozen — never modify files there, create wrappers instead"
 - "Python 3.11+ required — some dependencies break on 3.10"
 
-## What to NEVER Include
+## Common Mistakes
 
 These are backed by research findings that show they actively hurt performance:
 
@@ -422,3 +429,11 @@ If the user has an existing AGENTS.md / CLAUDE.md:
 5. Rewrite to be minimal
 6. Run the validator on the result
 7. Show the user a before/after comparison with clear explanations of what was removed and why
+
+
+## Red Flags - STOP and Start Over
+
+- Including codebase overviews or directory listings
+- Paraphrasing or duplicating README content
+- Writing generic advice like 'write clean code'
+- Using vague instructions that cannot be programmatically followed

@@ -1,6 +1,6 @@
 ---
 name: skilltest
-description: Trigger when developing skills, checking CI, or debugging skill loading issues.
+description: validate skill structure and metadata. Trigger when developing skills, checking CI, or debugging skill loading issues.
 ---
 
 # Skilltest Harness

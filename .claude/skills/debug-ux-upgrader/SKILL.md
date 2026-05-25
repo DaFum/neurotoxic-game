@@ -1,6 +1,6 @@
 ---
 name: debug-ux-upgrader
-description: Trigger when asking for diagnostics, visualizations, or dev-tools. Use existing logger and debug viewer.
+description: add debug tools, overlays, and logging. Trigger when asking for diagnostics, visualizations, or dev-tools. Use existing logger and debug viewer.
 ---
 
 # Debug UX Upgrader

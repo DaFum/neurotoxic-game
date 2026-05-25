@@ -1,6 +1,11 @@
 ---
 name: golden-path-test-author
-description: Trigger when asked to add regression tests, verify game flow continuity, ensure state transitions work, check critical paths don't break, test bankruptcy/game-over paths, validate state clamping (money/harmony/fuel), audit action sequences, or diagnose transition bugs.
+description: |
+  Write and maintain integration tests for the critical game loop: INTRO → MENU → OVERWORLD → PREGIG → GIG → POSTGIG → OVERWORLD → GAMEOVER.
+
+  Trigger when: asked to add regression tests, verify game flow continuity, ensure state transitions work, check critical paths don't break, test bankruptcy/game-over paths, validate state clamping (money/harmony/fuel), audit action sequences, or diagnose transition bugs.
+
+  Use when testing reducer + action creators together (not individual actions in isolation). Covers FULL CYCLE tests, STATE SAFETY invariants, and TRANSITION SEQUENCES.
 ---
 
 # Golden Path Test Author

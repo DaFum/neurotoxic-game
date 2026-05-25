@@ -1,6 +1,6 @@
 ---
 name: release-notes-synthesizer
-description: Trigger when preparing a release, summarizing changes, or writing a changelog. Understands Conventional Commits.
+description: create release notes from commit history. Trigger when preparing a release, summarizing changes, or writing a changelog. Understands Conventional Commits.
 ---
 
 # Release Notes Synthesizer

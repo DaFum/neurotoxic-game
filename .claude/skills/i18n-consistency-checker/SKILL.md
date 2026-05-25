@@ -1,6 +1,6 @@
 ---
 name: i18n-consistency-checker
-description: Use when checking for un-translated strings or ensuring i18n parity.
+description: Diff en/ and de/ locale JSON files to surface missing or mismatched translation keys
 user-invocable: false
 ---
 
