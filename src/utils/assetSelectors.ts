@@ -44,10 +44,12 @@ const BROKEN_THRESHOLD = 20
 export const getInstalledModules = (asset: LongTermAsset): AssetModule[] => {
   const out: AssetModule[] = []
   for (const s of asset.slots) {
-    if (s.installedModuleId !== null) {
-      const m = MODULE_REGISTRY[s.installedModuleId]
-      if (m) out.push(m)
-    }
+    if (s.installedModuleId === null) continue
+    // Object.hasOwn guards against hostile module ids like 'hasOwnProperty'
+    // or 'constructor' that would otherwise reach prototype properties.
+    if (!Object.hasOwn(MODULE_REGISTRY, s.installedModuleId)) continue
+    const m = MODULE_REGISTRY[s.installedModuleId]
+    if (m) out.push(m)
   }
   return out
 }
@@ -111,12 +113,17 @@ export const getActiveAssetModifiers = (
   for (const a of assets) {
     if (a.condition < BROKEN_THRESHOLD) continue
     const b = getAssetAggregateBoni(a)
-    if (b.fuelMultiplier) m.fuelMultiplier *= b.fuelMultiplier
-    if (b.merchCostMultiplier) m.merchCostMultiplier *= b.merchCostMultiplier
-    if (b.songCostMultiplier) m.songCostMultiplier *= b.songCostMultiplier
-    if (b.trainingCostMultiplier)
+    // Use !== undefined rather than truthy checks: a multiplier of 0 is
+    // semantically valid (e.g., a module granting "free fuel") and must be
+    // applied. Truthy checks would silently drop it as if undefined.
+    if (b.fuelMultiplier !== undefined) m.fuelMultiplier *= b.fuelMultiplier
+    if (b.merchCostMultiplier !== undefined)
+      m.merchCostMultiplier *= b.merchCostMultiplier
+    if (b.songCostMultiplier !== undefined)
+      m.songCostMultiplier *= b.songCostMultiplier
+    if (b.trainingCostMultiplier !== undefined)
       m.trainingCostMultiplier *= b.trainingCostMultiplier
-    if (b.baseRiskChanceMultiplier)
+    if (b.baseRiskChanceMultiplier !== undefined)
       m.baseRiskChanceMultiplier *= b.baseRiskChanceMultiplier
     m.staminaRegenBonusPerDay += b.staminaRegenBonusPerDay ?? 0
     m.travelStaminaRegen += b.travelStaminaRegen ?? 0
@@ -321,6 +328,9 @@ export const getSlotConflicts = (
   asset: LongTermAsset,
   moduleId: string
 ): { canInstall: boolean; conflictingModuleIds: string[] } => {
+  if (!Object.hasOwn(MODULE_REGISTRY, moduleId)) {
+    return { canInstall: true, conflictingModuleIds: [] }
+  }
   const target = MODULE_REGISTRY[moduleId]
   if (!target || target.exclusiveWithGroup === undefined) {
     return { canInstall: true, conflictingModuleIds: [] }
@@ -329,6 +339,7 @@ export const getSlotConflicts = (
   for (const s of asset.slots) {
     if (s.installedModuleId === null) continue
     if (s.installedModuleId === moduleId) continue
+    if (!Object.hasOwn(MODULE_REGISTRY, s.installedModuleId)) continue
     const m = MODULE_REGISTRY[s.installedModuleId]
     if (m && m.exclusiveWithGroup === target.exclusiveWithGroup) {
       conflicts.push(m.id)

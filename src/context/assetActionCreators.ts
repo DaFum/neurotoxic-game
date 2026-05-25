@@ -33,7 +33,8 @@ import type {
   ChassisTier,
   InstallModuleFailureReason,
   NewSlotEntry,
-  PurchaseFailureReason
+  PurchaseFailureReason,
+  SlotType
 } from '../types/assets'
 
 type Extract2<T, V> = Extract<T, { type: V }>
@@ -252,11 +253,24 @@ export const upgradeChassisTier = (
     CHASSIS_CONFIG[asset.kind]?.[asset.chassisFlavor]?.[targetTier]
   if (!targetCfg) return null
 
-  const existingSlotTypes = new Set(asset.slots.map(s => s.slotType))
-  const newSlotIds: NewSlotEntry[] = []
+  // Count existing chassis-tier slots per slotType (skip dynamically-added
+  // slots from modules — those don't belong to the chassis layout). Diff
+  // against the target tier's per-type count and only pre-generate ids for
+  // the missing instances.
+  const existingByType = new Map<string, number>()
+  for (const s of asset.slots) {
+    if (s.addedByModuleId !== undefined) continue
+    existingByType.set(s.slotType, (existingByType.get(s.slotType) ?? 0) + 1)
+  }
+  const targetByType = new Map<string, number>()
   for (const slotType of targetCfg.slots) {
-    if (!existingSlotTypes.has(slotType)) {
-      newSlotIds.push({ slotType, id: getSafeUUID() })
+    targetByType.set(slotType, (targetByType.get(slotType) ?? 0) + 1)
+  }
+  const newSlotIds: NewSlotEntry[] = []
+  for (const [slotType, targetCount] of targetByType) {
+    const existing = existingByType.get(slotType) ?? 0
+    for (let i = existing; i < targetCount; i++) {
+      newSlotIds.push({ slotType: slotType as SlotType, id: getSafeUUID() })
     }
   }
   return {
@@ -309,7 +323,13 @@ export const startCrowdfund = (
         targetAmount: finiteNumberOr(raw.targetAmount, 0),
         fameStake: finiteNumberOr(raw.fameStake, 0),
         daysRemaining: finiteNumberOr(raw.daysRemaining, 0),
-        plannedSuccessRoll: finiteNumberOr(raw.plannedSuccessRoll, 0)
+        // Clamp to [0, 1] — defensively. The roll is meant to come from
+        // mulberry32 (always in [0, 1)), but a malformed call site shouldn't
+        // be able to plant a roll outside that range and skew resolution.
+        plannedSuccessRoll: Math.max(
+          0,
+          Math.min(1, finiteNumberOr(raw.plannedSuccessRoll, 0))
+        )
       }
     }
   }

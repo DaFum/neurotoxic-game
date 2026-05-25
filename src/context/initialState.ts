@@ -266,7 +266,7 @@ const initialState: GameState = {
   crowdfundCampaigns: [],
   // Seeded RNG for deterministic asset ticks. Replaced by sanitizer on load
   // when missing; falls back to Date.now() & 0xFFFFFFFF on fresh start.
-  rngSeed: Date.now() & 0xffffffff
+  rngSeed: Date.now() >>> 0
 }
 
 /**
@@ -312,5 +312,5 @@ export const createInitialState = (
   assets: [],
   liabilities: [],
   crowdfundCampaigns: [],
-  rngSeed: Date.now() & 0xffffffff
+  rngSeed: Date.now() >>> 0
 })

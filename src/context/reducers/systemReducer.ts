@@ -1749,12 +1749,37 @@ export const handleAdvanceDay = (
   nextStatePre = processLiabilityTick(nextStatePre)
   nextStatePre = processCrowdfundTick(nextStatePre)
   if (payload?.dayRngStream) {
-    const { state: s } = rollAssetRiskEvents(
+    const { state: s, events } = rollAssetRiskEvents(
       nextStatePre,
       payload.dayRngStream,
       0
     )
     nextStatePre = s
+    // Surface fired risk events as toasts so the player gets feedback. We
+    // dedupe by `${assetId}:${eventType}` within this single tick, which is
+    // naturally bounded (each asset can only fire one event per day) but
+    // guards against a future refactor that splits the rolls.
+    if (events.length > 0) {
+      const seen = new Set<string>()
+      const newToasts: ToastPayload[] = []
+      for (const ev of events) {
+        const dedupKey = `${ev.assetId}:${ev.eventType}`
+        if (seen.has(dedupKey)) continue
+        seen.add(dedupKey)
+        newToasts.push({
+          id: `risk_${ev.assetId}_${ev.eventType}_${state.player.day ?? 0}`,
+          type: 'warning',
+          messageKey: `assets:risk.event.${ev.eventType}`,
+          options: { assetId: ev.assetId }
+        })
+      }
+      if (newToasts.length > 0) {
+        nextStatePre = {
+          ...nextStatePre,
+          toasts: [...(nextStatePre.toasts ?? []), ...newToasts]
+        }
+      }
+    }
   }
   const rngSeed = payload?.nextRngSeed ?? nextStatePre.rngSeed
   state = { ...nextStatePre, rngSeed }

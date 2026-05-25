@@ -102,15 +102,6 @@
         "type": "const"
       }
     ],
-    "advanceDay": [
-      {
-        "isDefault": false,
-        "name": "advanceDay",
-        "path": "src/context/actionCreators.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
     "afterAll": [
       {
         "isDefault": false,
@@ -332,6 +323,15 @@
         "path": "src/App.tsx",
         "source": "local",
         "type": "function"
+      }
+    ],
+    "appendImageSize": [
+      {
+        "isDefault": false,
+        "name": "appendImageSize",
+        "path": "src/utils/imageGen.ts",
+        "source": "local",
+        "type": "const"
       }
     ],
     "applyChaosJitter": [
@@ -2674,6 +2674,15 @@
         "type": "const"
       }
     ],
+    "createAdvanceDayAction": [
+      {
+        "isDefault": false,
+        "name": "createAdvanceDayAction",
+        "path": "src/context/actionCreators.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "createAdvanceQuestAction": [
       {
         "isDefault": false,
@@ -4448,6 +4457,25 @@
         "type": "const"
       }
     ],
+    "GeneratedImagePanel": [
+      {
+        "isDefault": false,
+        "name": "GeneratedImagePanel",
+        "path": "src/ui/shared/GeneratedImagePanel.tsx",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "GeneratedImagePanelProps": [
+      {
+        "isDefault": false,
+        "name": "GeneratedImagePanelProps",
+        "path": "src/ui/shared/GeneratedImagePanel.tsx",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
+      }
+    ],
     "generateEffectText": [
       {
         "isDefault": false,
@@ -4593,11 +4621,29 @@
         "type": "const"
       }
     ],
+    "getChassisImagePrompt": [
+      {
+        "isDefault": false,
+        "name": "getChassisImagePrompt",
+        "path": "src/utils/imageGen.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "getCityKeyFromVenueId": [
       {
         "isDefault": false,
         "name": "getCityKeyFromVenueId",
         "path": "src/utils/mapGenerator.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "getCrowdfundImagePrompt": [
+      {
+        "isDefault": false,
+        "name": "getCrowdfundImagePrompt",
+        "path": "src/utils/imageGen.ts",
         "source": "local",
         "type": "const"
       }
@@ -4675,6 +4721,15 @@
         "type": "const"
       }
     ],
+    "getLoanProfileImagePrompt": [
+      {
+        "isDefault": false,
+        "name": "getLoanProfileImagePrompt",
+        "path": "src/utils/imageGen.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "getLocationName": [
       {
         "isDefault": false,
@@ -4698,6 +4753,15 @@
         "isDefault": false,
         "name": "getMessyPath",
         "path": "src/scenes/kabelsalat/kabelsalatUtils.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "getModuleImagePrompt": [
+      {
+        "isDefault": false,
+        "name": "getModuleImagePrompt",
+        "path": "src/utils/imageGen.ts",
         "source": "local",
         "type": "const"
       }
@@ -4796,6 +4860,24 @@
         "type": "const"
       }
     ],
+    "getRepairImagePrompt": [
+      {
+        "isDefault": false,
+        "name": "getRepairImagePrompt",
+        "path": "src/utils/imageGen.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "getRiskEventImagePrompt": [
+      {
+        "isDefault": false,
+        "name": "getRiskEventImagePrompt",
+        "path": "src/utils/imageGen.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "getSafeRandom": [
       {
         "isDefault": false,
@@ -4829,6 +4911,15 @@
         "isDefault": false,
         "name": "getScheduledHitTimeMs",
         "path": "src/utils/audio/timingUtils.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "getSectionBackgroundPrompt": [
+      {
+        "isDefault": false,
+        "name": "getSectionBackgroundPrompt",
+        "path": "src/utils/imageGen.ts",
         "source": "local",
         "type": "const"
       }
@@ -4904,6 +4995,15 @@
         "isDefault": false,
         "name": "getTotalDailyObligations",
         "path": "src/utils/assetSelectors.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "getTrailerImagePrompt": [
+      {
+        "isDefault": false,
+        "name": "getTrailerImagePrompt",
+        "path": "src/utils/imageGen.ts",
         "source": "local",
         "type": "const"
       }
@@ -5130,33 +5230,6 @@
         "type": "const"
       }
     ],
-    "handleAssetFailedAction": [
-      {
-        "isDefault": false,
-        "name": "handleAssetFailedAction",
-        "path": "src/context/reducers/assetReducer.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
-    "handleAssetForeclosed": [
-      {
-        "isDefault": false,
-        "name": "handleAssetForeclosed",
-        "path": "src/context/reducers/assetReducer.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
-    "handleAssetRiskEventTriggered": [
-      {
-        "isDefault": false,
-        "name": "handleAssetRiskEventTriggered",
-        "path": "src/context/reducers/assetReducer.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
     "handleBloodBankDonate": [
       {
         "isDefault": false,
@@ -5301,15 +5374,6 @@
         "type": "const"
       }
     ],
-    "handleInstallModule": [
-      {
-        "isDefault": false,
-        "name": "handleInstallModule",
-        "path": "src/context/reducers/assetReducer.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
     "handleKeyDownLogic": [
       {
         "isDefault": false,
@@ -5391,24 +5455,6 @@
         "type": "const"
       }
     ],
-    "handlePurchaseChassis": [
-      {
-        "isDefault": false,
-        "name": "handlePurchaseChassis",
-        "path": "src/context/reducers/assetReducer.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
-    "handleRemoveModule": [
-      {
-        "isDefault": false,
-        "name": "handleRemoveModule",
-        "path": "src/context/reducers/assetReducer.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
     "handleRemoveToast": [
       {
         "isDefault": false,
@@ -5418,38 +5464,11 @@
         "type": "const"
       }
     ],
-    "handleRepairChassis": [
-      {
-        "isDefault": false,
-        "name": "handleRepairChassis",
-        "path": "src/context/reducers/assetReducer.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
     "handleResetState": [
       {
         "isDefault": false,
         "name": "handleResetState",
         "path": "src/context/reducers/systemReducer.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
-    "handleResolveCrowdfund": [
-      {
-        "isDefault": false,
-        "name": "handleResolveCrowdfund",
-        "path": "src/context/reducers/assetReducer.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
-    "handleSellChassis": [
-      {
-        "isDefault": false,
-        "name": "handleSellChassis",
-        "path": "src/context/reducers/assetReducer.ts",
         "source": "local",
         "type": "const"
       }
@@ -5540,15 +5559,6 @@
         "isDefault": false,
         "name": "handleStartAmpCalibration",
         "path": "src/context/reducers/minigameReducer.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
-    "handleStartCrowdfund": [
-      {
-        "isDefault": false,
-        "name": "handleStartCrowdfund",
-        "path": "src/context/reducers/assetReducer.ts",
         "source": "local",
         "type": "const"
       }
@@ -5657,15 +5667,6 @@
         "isDefault": false,
         "name": "handleUpdateSocial",
         "path": "src/context/reducers/socialReducer.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
-    "handleUpgradeChassisTier": [
-      {
-        "isDefault": false,
-        "name": "handleUpgradeChassisTier",
-        "path": "src/context/reducers/assetReducer.ts",
         "source": "local",
         "type": "const"
       }
@@ -7849,24 +7850,6 @@
         "type": "const"
       }
     ],
-    "processAssetTick": [
-      {
-        "isDefault": false,
-        "name": "processAssetTick",
-        "path": "src/utils/assetTicks.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
-    "processCrowdfundTick": [
-      {
-        "isDefault": false,
-        "name": "processCrowdfundTick",
-        "path": "src/utils/assetTicks.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
     "ProcessedTempoMapEntry": [
       {
         "isDefault": false,
@@ -7891,15 +7874,6 @@
         "isDefault": false,
         "name": "processLaneInput",
         "path": "src/utils/rhythmGameInputUtils.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
-    "processLiabilityTick": [
-      {
-        "isDefault": false,
-        "name": "processLiabilityTick",
-        "path": "src/utils/assetTicks.ts",
         "source": "local",
         "type": "const"
       }
@@ -8790,15 +8764,6 @@
         "path": "src/components/stage/RoadieTrafficManager.ts",
         "source": "local",
         "type": "class"
-      }
-    ],
-    "rollAssetRiskEvents": [
-      {
-        "isDefault": false,
-        "name": "rollAssetRiskEvents",
-        "path": "src/utils/assetTicks.ts",
-        "source": "local",
-        "type": "const"
       }
     ],
     "Rules": [

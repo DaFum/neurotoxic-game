@@ -24,32 +24,24 @@ export const handlePurchaseChassis = (
   const { id, kind, flavor, tier, mode, slotIds, loanProfileId, today } =
     payload
 
-  let configTier:
-    | import('../../utils/assetConfig').ChassisTierConfig
-    | ReturnType<typeof buildDiyTier>
-    | undefined
-  if (flavor === 'legit') {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    configTier = (CHASSIS_CONFIG as Record<string, any>)[kind].legit[
-      tier
-    ] as import('../../utils/assetConfig').ChassisTierConfig
-  } else {
-    configTier = buildDiyTier(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ((CHASSIS_CONFIG as Record<string, any>)[kind].legit[
-        tier
-      ] as import('../../utils/assetConfig').ChassisTierConfig)!
-    )
-  }
+  // CHASSIS_CONFIG is fully typed — Record<AssetKind, ChassisKindConfig> with
+  // ChassisFlavorConfig nested under each flavor. Direct access without
+  // `any` casts; if the action-creator validation passed, the entry exists.
+  const legitTier = CHASSIS_CONFIG[kind].legit[tier]
+  const configTier = flavor === 'legit' ? legitTier : buildDiyTier(legitTier)
 
-  const slots: AssetSlot[] = configTier!.slots.map(
-    (st: import('../../types/assets').SlotType, i: number) => ({
-      id: slotIds[i] as string,
-      slotType: st,
+  // Bounds-check slotIds: if the action creator under-allocated ids, we
+  // generate a deterministic synthetic id so the asset stays consistent
+  // rather than storing undefined in a string field.
+  const slots: AssetSlot[] = configTier.slots.map((slotType, i) => {
+    const slotId = slotIds[i] ?? `${id}_slot_${i}`
+    return {
+      id: slotId,
+      slotType,
       position: { x: 0, y: 0 },
       installedModuleId: null
-    })
-  )
+    }
+  })
 
   const asset: LongTermAsset = {
     id,
@@ -57,19 +49,19 @@ export const handlePurchaseChassis = (
     chassisFlavor: flavor,
     chassisTier: tier,
     condition: 100,
-    baseUpkeep: configTier!.upkeep,
-    baseDailyRevenue: configTier!.revenue,
+    baseUpkeep: configTier.upkeep,
+    baseDailyRevenue: configTier.revenue,
     slots,
     acquiredOnDay: today,
     acquisitionMode: mode,
-    baseRiskEventChance: configTier!.baseRiskEventChance
+    baseRiskEventChance: configTier.baseRiskEventChance
   }
 
   let nextMoney = state.player.money
   const nextLiabilities = [...(state.liabilities || [])]
 
   if (mode === 'cash') {
-    nextMoney -= configTier!.price
+    nextMoney -= configTier.price
   } else if (mode === 'loan' && loanProfileId) {
     const profile =
       LOAN_PROFILES[
@@ -77,7 +69,7 @@ export const handlePurchaseChassis = (
       ]
     if (profile) {
       const dailyPayment = computeAmortization(
-        configTier!.price,
+        configTier.price,
         profile.interestRate,
         profile.termDays
       )
@@ -85,7 +77,7 @@ export const handlePurchaseChassis = (
         id: `loan_${id}`,
         source: 'loan',
         assetId: id,
-        principalRemaining: configTier!.price,
+        principalRemaining: configTier.price,
         interestRate: profile.interestRate,
         dailyPayment,
         termDaysRemaining: profile.termDays,
@@ -207,46 +199,17 @@ export const handleUpgradeChassisTier = (
   const nextAssets = state.assets.map(asset => {
     if (asset.id !== assetId) return asset
 
-    let currentConfigTier:
-      | import('../../utils/assetConfig').ChassisTierConfig
-      | ReturnType<typeof buildDiyTier>
-      | undefined
-    if (asset.chassisFlavor === 'legit') {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      currentConfigTier = (CHASSIS_CONFIG as Record<string, any>)[asset.kind]
-        .legit[
-        asset.chassisTier
-      ] as import('../../utils/assetConfig').ChassisTierConfig
-    } else {
-      currentConfigTier = buildDiyTier(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ((CHASSIS_CONFIG as Record<string, any>)[asset.kind].legit[
-          asset.chassisTier
-        ] as import('../../utils/assetConfig').ChassisTierConfig)!
-      )
-    }
-
-    let targetConfigTier:
-      | import('../../utils/assetConfig').ChassisTierConfig
-      | ReturnType<typeof buildDiyTier>
-      | undefined
-    if (asset.chassisFlavor === 'legit') {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      targetConfigTier = (CHASSIS_CONFIG as Record<string, any>)[asset.kind]
-        .legit[
-        targetTier
-      ] as import('../../utils/assetConfig').ChassisTierConfig
-    } else {
-      targetConfigTier = buildDiyTier(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ((CHASSIS_CONFIG as Record<string, any>)[asset.kind].legit[
-          targetTier
-        ] as import('../../utils/assetConfig').ChassisTierConfig)!
-      )
-    }
+    const currentLegit = CHASSIS_CONFIG[asset.kind].legit[asset.chassisTier]
+    const currentConfigTier =
+      asset.chassisFlavor === 'legit'
+        ? currentLegit
+        : buildDiyTier(currentLegit)
+    const targetLegit = CHASSIS_CONFIG[asset.kind].legit[targetTier]
+    const targetConfigTier =
+      asset.chassisFlavor === 'legit' ? targetLegit : buildDiyTier(targetLegit)
 
     upgradeCost =
-      targetConfigTier!.price - currentConfigTier!.price + UPGRADE_OVERHEAD
+      targetConfigTier.price - currentConfigTier.price + UPGRADE_OVERHEAD
 
     const nextSlots = [...asset.slots]
     newSlotIds.forEach(newSlot => {
@@ -295,23 +258,9 @@ export const handleSellChassis = (
   const conditionFactor = asset.condition / 100
   const depreciation = Math.max(0.4, 1 - (daysOwned / 365) * 0.4)
 
-  let configTier:
-    | import('../../utils/assetConfig').ChassisTierConfig
-    | ReturnType<typeof buildDiyTier>
-    | undefined
-  if (asset.chassisFlavor === 'legit') {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    configTier = (CHASSIS_CONFIG as Record<string, any>)[asset.kind].legit[
-      asset.chassisTier
-    ] as import('../../utils/assetConfig').ChassisTierConfig
-  } else {
-    configTier = buildDiyTier(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ((CHASSIS_CONFIG as Record<string, any>)[asset.kind].legit[
-        asset.chassisTier
-      ] as import('../../utils/assetConfig').ChassisTierConfig)!
-    )
-  }
+  const legitTier = CHASSIS_CONFIG[asset.kind].legit[asset.chassisTier]
+  const configTier =
+    asset.chassisFlavor === 'legit' ? legitTier : buildDiyTier(legitTier)
 
   let moduleRefunds = 0
   asset.slots.forEach(slot => {
@@ -324,7 +273,7 @@ export const handleSellChassis = (
   })
 
   const gross =
-    configTier!.price * conditionFactor * depreciation + moduleRefunds
+    configTier.price * conditionFactor * depreciation + moduleRefunds
 
   if (gross < principalRemaining) {
     return state
@@ -399,35 +348,23 @@ export const handleResolveCrowdfund = (
     nextFame += campaign.fameStake
 
     if (newAssetId && newSlotIds) {
-      let configTier:
-        | import('../../utils/assetConfig').ChassisTierConfig
-        | ReturnType<typeof buildDiyTier>
-        | undefined
-      if (campaign.assetSpec.flavor === 'legit') {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        configTier = (CHASSIS_CONFIG as Record<string, any>)[
-          campaign.assetSpec.kind
-        ].legit[
+      const legitTier =
+        CHASSIS_CONFIG[campaign.assetSpec.kind].legit[
           campaign.assetSpec.chassisTier
-        ] as import('../../utils/assetConfig').ChassisTierConfig
-      } else {
-        configTier = buildDiyTier(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ((CHASSIS_CONFIG as Record<string, any>)[campaign.assetSpec.kind]
-            .legit[
-            campaign.assetSpec.chassisTier
-          ] as import('../../utils/assetConfig').ChassisTierConfig)!
-        )
-      }
+        ]
+      const configTier =
+        campaign.assetSpec.flavor === 'legit'
+          ? legitTier
+          : buildDiyTier(legitTier)
 
-      const slots: AssetSlot[] = configTier!.slots.map(
-        (st: import('../../types/assets').SlotType, i: number) => ({
-          id: (newSlotIds || [])[i]?.id as string,
-          slotType: st,
-          position: { x: 0, y: 0 },
-          installedModuleId: null
-        })
-      )
+      const slots: AssetSlot[] = configTier.slots.map((slotType, i) => ({
+        // Same bounds-check as PURCHASE_CHASSIS: fall back to a deterministic
+        // synthetic id if newSlotIds is short.
+        id: newSlotIds[i]?.id ?? `${newAssetId}_slot_${i}`,
+        slotType,
+        position: { x: 0, y: 0 },
+        installedModuleId: null
+      }))
 
       const asset: LongTermAsset = {
         id: newAssetId,
@@ -435,12 +372,12 @@ export const handleResolveCrowdfund = (
         chassisFlavor: campaign.assetSpec.flavor,
         chassisTier: campaign.assetSpec.chassisTier,
         condition: 100,
-        baseUpkeep: configTier!.upkeep,
-        baseDailyRevenue: configTier!.revenue,
+        baseUpkeep: configTier.upkeep,
+        baseDailyRevenue: configTier.revenue,
         slots,
         acquiredOnDay: state.player.day,
         acquisitionMode: 'crowdfund',
-        baseRiskEventChance: configTier!.baseRiskEventChance
+        baseRiskEventChance: configTier.baseRiskEventChance
       }
       nextAssets = [...nextAssets, asset]
     }

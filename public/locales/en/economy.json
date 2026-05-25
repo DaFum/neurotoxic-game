@@ -42,6 +42,8 @@
   "gigIncome.techSponsor.label": "Tech Sponsor",
   "gigIncome.ticketSales.detail": "{{sold}} / {{capacity}} sold",
   "gigIncome.ticketSales.label": "Ticket Sales",
+  "gigIncome.tipBonus.detail": "Asset bonus to crowd tips",
+  "gigIncome.tipBonus.label": "Tip Bonus",
   "gigIncome.vipBarRevenue.detail": "VIP crowd — {{percent}}% of Bar",
   "gigIncome.vipBarRevenue.label": "VIP Bar Revenue",
   "postGig.continueToSocials": "Continue to Socials >",
