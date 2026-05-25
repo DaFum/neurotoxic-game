@@ -174,7 +174,7 @@ export const handleRemoveModule = (
   const removedModuleId = targetSlot?.installedModuleId ?? null
   if (removedModuleId) {
     const blocked = targetAsset.slots.some(
-      s => s.addedByModuleId === removedModuleId && s.installedModuleId !== null
+      s => s.addedByModuleId === removedModuleId && Boolean(s.installedModuleId)
     )
     if (blocked) return state
   }

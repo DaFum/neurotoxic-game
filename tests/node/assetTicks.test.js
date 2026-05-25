@@ -61,6 +61,9 @@ test('processCrowdfundTick - successful resolution awards money/fame and creates
         id: 'c1',
         daysRemaining: 1,
         plannedSuccessRoll: 0.6,
+        plannedSuccessProbability: 0.9,
+        materializedAssetId: 'mat_a1',
+        materializedSlotIds: [],
         targetAmount: 4000,
         fameStake: 50,
         assetSpec: {
@@ -88,7 +91,8 @@ test('processCrowdfundTick - failed resolution subtracts fameStake', () => {
       {
         id: 'c1',
         daysRemaining: 1,
-        plannedSuccessRoll: 0.1,
+        plannedSuccessRoll: 0.95,
+        plannedSuccessProbability: 0.5,
         targetAmount: 4000,
         fameStake: 20,
         assetSpec: {

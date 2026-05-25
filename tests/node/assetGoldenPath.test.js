@@ -184,8 +184,8 @@ describe('Asset golden path — crowdfund start → resolution', () => {
   it('successful campaign creates the asset and applies money+fame deltas', () => {
     setupConfig()
     let state = seedState({
-      // Force success by stamping plannedSuccessRoll >= 0.5 in the
-      // action creator. Use a high deterministic roll source.
+      // Force success by stamping plannedSuccessRoll < plannedSuccessProbability.
+      // Both are clamped to [0.05, 0.95] in the action creator.
       rngSeed: 0xffffffff
     })
 
@@ -198,7 +198,8 @@ describe('Asset golden path — crowdfund start → resolution', () => {
       targetAmount: 4000,
       fameStake: 20,
       daysRemaining: 1,
-      plannedSuccessRoll: 0.95
+      plannedSuccessRoll: 0.1,
+      plannedSuccessProbability: 0.9
     })
     assert.equal(startAction.type, ActionTypes.START_CROWDFUND)
     // Materialized ids were stamped by the action creator (Task 11-13 fix).
@@ -239,7 +240,8 @@ describe('Asset golden path — crowdfund start → resolution', () => {
       targetAmount: 4000,
       fameStake: 30,
       daysRemaining: 1,
-      plannedSuccessRoll: 0.1 // < 0.5 → fail
+      plannedSuccessRoll: 0.95,
+      plannedSuccessProbability: 0.1 // roll >= probability → fail
     })
     state = gameReducer(state, startAction)
 
