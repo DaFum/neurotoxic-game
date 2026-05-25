@@ -58,7 +58,7 @@ export const AssetsScene = () => {
       <AssetsTopBar />
 
       <div
-        className='flex flex-wrap gap-2 border-b-2 px-4 py-2'
+        className='flex items-stretch border-b-2'
         role='tablist'
         aria-label={t('assets:scene.title')}
         style={{
@@ -66,41 +66,50 @@ export const AssetsScene = () => {
           background: 'var(--color-void)'
         }}
       >
-        {TABS.map(tab => {
-          const isActive = tab.key === active
-          return (
-            <button
-              key={tab.key}
-              type='button'
-              role='tab'
-              aria-selected={isActive}
-              onClick={() => setActive(tab.key)}
-              className='border-2 px-3 py-1 font-mono text-sm uppercase tracking-wider'
-              style={{
-                borderColor: isActive ? 'var(--section-accent)' : 'transparent',
-                background: isActive ? 'var(--section-accent)' : 'transparent',
-                color: isActive ? 'var(--color-void)' : 'inherit'
-              }}
-            >
-              <span aria-hidden className='mr-1'>
-                {tab.icon}
-              </span>
-              {t(`assets:section.${tab.shortLabel}.title`)}
-            </button>
-          )
-        })}
+        <div className='scrollbar-hidden flex flex-1 gap-2 overflow-x-auto px-3 py-2'>
+          {TABS.map(tab => {
+            const isActive = tab.key === active
+            return (
+              <button
+                key={tab.key}
+                type='button'
+                role='tab'
+                aria-selected={isActive}
+                onClick={() => setActive(tab.key)}
+                className='shrink-0 border-2 px-3 py-1 font-mono text-xs uppercase tracking-wider sm:text-sm'
+                style={{
+                  borderColor: isActive
+                    ? 'var(--section-accent)'
+                    : 'transparent',
+                  background: isActive
+                    ? 'var(--section-accent)'
+                    : 'transparent',
+                  color: isActive ? 'var(--color-void)' : 'inherit'
+                }}
+              >
+                <span aria-hidden className='mr-1 text-base'>
+                  {tab.icon}
+                </span>
+                <span className='hidden sm:inline'>
+                  {t(`assets:section.${tab.shortLabel}.title`)}
+                </span>
+              </button>
+            )
+          })}
+        </div>
 
         <button
           type='button'
           onClick={() => changeScene(GAME_PHASES.OVERWORLD)}
-          className='ml-auto border-2 border-toxic-green px-3 py-1 font-mono text-xs uppercase'
+          className='shrink-0 self-center border-l-2 border-toxic-green px-3 py-3 font-mono text-xs uppercase'
+          style={{ borderLeftColor: 'var(--color-toxic-green)' }}
         >
           {t('assets:scene.back', { defaultValue: '← Back' })}
         </button>
       </div>
 
       <section
-        className='flex-1 overflow-y-auto p-4'
+        className='min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4'
         role='tabpanel'
         aria-label={t(`assets:section.${activeTab.shortLabel}.title`)}
       >

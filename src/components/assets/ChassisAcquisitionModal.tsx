@@ -82,7 +82,7 @@ export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
             sizeHint={{ width: 640, height: 360 }}
           />
 
-          <div className='flex gap-4'>
+          <div className='flex flex-col gap-3 sm:flex-row sm:gap-4'>
             <ChoiceGroup
               label={t('assets:flavor.legit')}
               options={FLAVORS}
@@ -119,12 +119,14 @@ export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
           )}
 
           <div
-            className='flex items-center justify-between border-t-2 pt-2'
+            className='flex flex-col items-stretch gap-2 border-t-2 pt-2 sm:flex-row sm:items-center sm:justify-between'
             style={{
               borderColor: 'var(--section-accent, var(--color-toxic-green))'
             }}
           >
-            <span>{formatCurrency(price, i18n.language)}</span>
+            <span className='text-base sm:text-sm'>
+              {formatCurrency(price, i18n.language)}
+            </span>
             <div className='flex gap-2'>
               <button
                 type='button'
@@ -194,9 +196,9 @@ const ChoiceGroup = <T extends string | number>({
   renderLabel,
   disabledOption
 }: ChoiceGroupProps<T>) => (
-  <div className='flex flex-col gap-1'>
+  <div className='flex min-w-0 flex-1 flex-col gap-1'>
     <span className='text-xs uppercase opacity-60'>{label}</span>
-    <div className='flex gap-1'>
+    <div className='flex flex-wrap gap-1'>
       {options.map(opt => {
         const isActive = opt === value
         const isDisabled = opt === disabledOption

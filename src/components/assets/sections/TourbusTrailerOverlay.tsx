@@ -8,17 +8,14 @@ interface Props {
 }
 
 /**
- * Renders the trailer panel left of the tour van, with hotspots for any
- * `tb_trailer_addon` slots. Mounted by `TourbusVehicleView` only when
- * `tb_trailer_hitch` is installed on the asset.
+ * Mobile: stacks beneath the van. Desktop (md+): docks to the left of the
+ * van as an absolutely-positioned overlay so the trailer looks "hitched".
+ * Mounted by `TourbusVehicleView` only when `tb_trailer_hitch` is installed.
  */
 export const TourbusTrailerOverlay = ({ asset, onSlotClick }: Props) => {
   const addonSlots = asset.slots.filter(s => s.slotType === 'tb_trailer_addon')
   return (
-    <div
-      className='absolute'
-      style={{ left: '-30%', top: '20%', width: '30%' }}
-    >
+    <div className='relative w-full md:absolute md:left-[-30%] md:top-[20%] md:w-[30%]'>
       <GeneratedImagePanel
         prompt={getTrailerImagePrompt(asset.chassisFlavor)}
         alt='Trailer'
@@ -31,12 +28,10 @@ export const TourbusTrailerOverlay = ({ asset, onSlotClick }: Props) => {
           type='button'
           aria-label={`slot ${slot.slotType}`}
           onClick={() => onSlotClick(slot.id)}
-          className='absolute -translate-x-1/2 -translate-y-1/2'
+          className='absolute h-9 w-9 -translate-x-1/2 -translate-y-1/2 sm:h-12 sm:w-12'
           style={{
             left: `${30 + i * 30}%`,
             top: '50%',
-            width: 48,
-            height: 48,
             border:
               '2px dashed var(--section-accent, var(--color-toxic-green))',
             background: 'rgba(0,0,0,0.5)',

@@ -23,18 +23,16 @@ export const AssetsTopBar = () => {
 
   return (
     <header
-      className='flex flex-wrap items-center justify-between gap-3 border-b-2 px-4 py-2'
+      className='flex items-center gap-3 border-b-2 px-3 py-2 sm:px-4'
       style={{
         borderColor: 'var(--section-accent, var(--color-toxic-green))',
         background: 'var(--color-void)'
       }}
     >
-      <div className='flex items-center gap-2'>
-        <span className='font-mono text-xs uppercase opacity-60'>
-          {t('assets:scene.title')}
-        </span>
-      </div>
-      <div className='flex items-center gap-6 font-mono text-sm'>
+      <span className='hidden shrink-0 font-mono text-xs uppercase opacity-60 sm:inline'>
+        {t('assets:scene.title')}
+      </span>
+      <div className='scrollbar-hidden flex flex-1 items-center gap-4 overflow-x-auto font-mono text-xs sm:gap-6 sm:text-sm'>
         <span className='whitespace-nowrap'>
           💰 {formatCurrency(money, i18n.language)}
         </span>
