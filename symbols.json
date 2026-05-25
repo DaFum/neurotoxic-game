@@ -7107,18 +7107,20 @@
     ],
     "MODULE_PROMPTS": [
       {
+        "exportPath": "src/utils/assetModuleRegistry.ts",
         "isDefault": false,
         "name": "MODULE_PROMPTS",
-        "path": "src/utils/assetModuleRegistry.ts",
+        "path": "src/utils/assetRegistryStore.ts",
         "source": "local",
         "type": "const"
       }
     ],
     "MODULE_REGISTRY": [
       {
+        "exportPath": "src/utils/assetModuleRegistry.ts",
         "isDefault": false,
         "name": "MODULE_REGISTRY",
-        "path": "src/utils/assetModuleRegistry.ts",
+        "path": "src/utils/assetRegistryStore.ts",
         "source": "local",
         "type": "const"
       }
@@ -10367,11 +10369,47 @@
         "type": "const"
       }
     ],
+    "TOURBUS_SLOT_POSITIONS": [
+      {
+        "isDefault": false,
+        "name": "TOURBUS_SLOT_POSITIONS",
+        "path": "src/utils/assetSections/tourbusConfig.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "TOURBUS_SPAWN_RATE_MS": [
       {
         "isDefault": false,
         "name": "TOURBUS_SPAWN_RATE_MS",
         "path": "src/hooks/minigames/minigameConstants.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "TOURBUS_T1_SLOTS": [
+      {
+        "isDefault": false,
+        "name": "TOURBUS_T1_SLOTS",
+        "path": "src/utils/assetSections/tourbusConfig.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "TOURBUS_T2_SLOTS": [
+      {
+        "isDefault": false,
+        "name": "TOURBUS_T2_SLOTS",
+        "path": "src/utils/assetSections/tourbusConfig.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "TOURBUS_T3_SLOTS": [
+      {
+        "isDefault": false,
+        "name": "TOURBUS_T3_SLOTS",
+        "path": "src/utils/assetSections/tourbusConfig.ts",
         "source": "local",
         "type": "const"
       }
@@ -10469,6 +10507,33 @@
         "isDefault": false,
         "name": "TourbusScene",
         "path": "src/scenes/TourbusScene.tsx",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "TourbusSection": [
+      {
+        "isDefault": false,
+        "name": "TourbusSection",
+        "path": "src/components/assets/sections/TourbusSection.tsx",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "TourbusTrailerOverlay": [
+      {
+        "isDefault": false,
+        "name": "TourbusTrailerOverlay",
+        "path": "src/components/assets/sections/TourbusTrailerOverlay.tsx",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "TourbusVehicleView": [
+      {
+        "isDefault": false,
+        "name": "TourbusVehicleView",
+        "path": "src/components/assets/sections/TourbusVehicleView.tsx",
         "source": "local",
         "type": "const"
       }
