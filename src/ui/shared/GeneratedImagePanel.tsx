@@ -1,8 +1,7 @@
-import { useState, type CSSProperties } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import {
   resolveGenImageUrl,
   getGeneratedImageFallbackUrl,
-  isImageGenerationAvailable,
   appendImageSize
 } from '../../utils/imageGen'
 
@@ -39,11 +38,23 @@ export const GeneratedImagePanel = ({
   const [loaded, setLoaded] = useState(false)
   const [errored, setErrored] = useState(false)
 
-  let src = isImageGenerationAvailable()
-    ? resolveGenImageUrl(prompt)
-    : getGeneratedImageFallbackUrl()
-  if (errored) src = getGeneratedImageFallbackUrl()
-  if (sizeHint) src = appendImageSize(src, sizeHint.width, sizeHint.height)
+  // Reset load/error state whenever the prompt changes — otherwise a previously
+  // successful image keeps `opacity: 1` during the new image's network round-trip
+  // (flicker), or a previously errored image stays on the fallback forever.
+  useEffect(() => {
+    setLoaded(false)
+    setErrored(false)
+  }, [prompt])
+
+  // resolveGenImageUrl already checks navigator.onLine and returns the
+  // fallback SVG when offline — no double-check needed here. Only the
+  // <img>-level onError path branches us explicitly to the fallback.
+  const baseSrc = errored
+    ? getGeneratedImageFallbackUrl()
+    : resolveGenImageUrl(prompt)
+  const src = sizeHint
+    ? appendImageSize(baseSrc, sizeHint.width, sizeHint.height)
+    : baseSrc
 
   const style: CSSProperties = {
     aspectRatio: ASPECT_CSS[aspectRatio],
@@ -61,7 +72,7 @@ export const GeneratedImagePanel = ({
     >
       {!loaded && !errored && (
         <div
-          className="gen-image-skeleton"
+          className='gen-image-skeleton'
           aria-hidden
           style={{
             position: 'absolute',
@@ -76,7 +87,7 @@ export const GeneratedImagePanel = ({
       <img
         src={src}
         alt={alt}
-        loading="lazy"
+        loading='lazy'
         onLoad={() => {
           setLoaded(true)
           onLoad?.()

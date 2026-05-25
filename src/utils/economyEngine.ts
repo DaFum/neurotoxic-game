@@ -1,4 +1,3 @@
-import { HQ_ITEMS_BY_MERCH_KEY } from '../data/hqItems'
 import { NEUTRAL_ASSET_MODIFIERS } from './assetSelectors'
 import type { AssetModifiers } from '../types/assets'
 import { logger } from './logger'
@@ -395,9 +394,8 @@ export const calculateMerchIncome = (
     totalRawShare += share
   }
 
-  const expenseItems: FinancialBreakdownItem[] = []
   if (totalRawShare <= 0) {
-    return { revenue: 0, breakdownItems, expenseItems, soldItems: {} }
+    return { revenue: 0, breakdownItems, soldItems: {} }
   }
 
   const demandLiftRaw = spendingMult * (0.5 + hypeNorm * 0.8 - missNorm * 0.4)
@@ -426,22 +424,14 @@ export const calculateMerchIncome = (
           ?.defaultPrice ??
         0
 
-      const price = Math.floor(basePrice * (1 + (assetModifiers.avgMerchSalePriceBonus ?? 0) / 100))
-      const itemRevenue = sold * price
+      // assetModifiers.avgMerchSalePriceBonus is a multiplicative bonus
+      // expressed as +X (e.g. 0.10 = +10%). Apply at the line-item level,
+      // then floor — multiplying sold × modifiedPrice and flooring once
+      // preserves precision better than flooring per-unit.
+      const itemRevenue = Math.floor(
+        sold * basePrice * (1 + (assetModifiers.avgMerchSalePriceBonus ?? 0))
+      )
       totalRevenue += itemRevenue
-
-      const baseCost = HQ_ITEMS_BY_MERCH_KEY.get(key)?.cost ?? 0
-      const itemCost = Math.floor(baseCost * (assetModifiers.merchCostMultiplier ?? 1.0))
-      const totalItemCost = sold * itemCost
-
-      if (totalItemCost > 0) {
-        expenseItems.push({
-          labelKey: `economy:gigExpenses.merchProduction.${key}.label`,
-          value: totalItemCost,
-          detailKey: 'economy:gigExpenses.merchProduction.detail',
-          detailParams: { produced: sold }
-        })
-      }
 
       breakdownItems.push({
         labelKey: `economy:gigIncome.merchSales.${key}.label`,
@@ -455,7 +445,6 @@ export const calculateMerchIncome = (
   return {
     revenue: totalRevenue,
     breakdownItems,
-    expenseItems,
     soldItems
   }
 }
@@ -515,7 +504,9 @@ export const calculateFuelCost = (
   }
 
   const fuelCost = Math.floor(
-    fuelLiters * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE * (assetModifiers.fuelMultiplier ?? 1.0)
+    fuelLiters *
+      EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE *
+      (assetModifiers.fuelMultiplier ?? 1.0)
   )
 
   return { fuelLiters, fuelCost }
@@ -559,10 +550,16 @@ export const calculateTravelExpenses = (
   node: unknown,
   fromNode: unknown = null,
   playerState: Pick<PlayerState, 'fameLevel' | 'money' | 'van'> | null = null,
-  bandState: Pick<BandState, 'members'> | null = null
+  bandState: Pick<BandState, 'members'> | null = null,
+  assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS
 ) => {
   const dist = calculateDistance(node, fromNode)
-  const { fuelLiters } = calculateFuelCost(dist, playerState, bandState)
+  const { fuelLiters } = calculateFuelCost(
+    dist,
+    playerState,
+    bandState,
+    assetModifiers
+  )
 
   const bandSize = bandState?.members?.length || 3
   const fameLevel = playerState?.fameLevel || 0
@@ -592,12 +589,19 @@ export const calculateTravelExpenses = (
  * @param {number} currentFuel - Current fuel level.
  * @returns {number} Cost in euros.
  */
-export const calculateRefuelCost = (currentFuel: number) => {
+export const calculateRefuelCost = (
+  currentFuel: number,
+  assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS
+) => {
   const missing = Math.max(
     0,
     EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL - currentFuel
   )
-  return Math.ceil(missing * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE)
+  return Math.ceil(
+    missing *
+      EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE *
+      assetModifiers.fuelMultiplier
+  )
 }
 
 /**
@@ -812,15 +816,18 @@ export const calculateGigExpenses = (modifiers: GigModifiers = {}) => {
  * @param {object|number} params.playerStateOrFame - Player state object or just fame (number) for legacy support
  * @param {object} params.gigStats - Detailed gig stats (misses, peakHype, etc)
  */
-export const calculateGigFinancials = ({
-  gigData,
-  performanceScore,
-  modifiers,
-  bandInventory,
-  playerState,
-  gigStats,
-  context = {}
-}: GigFinancialParams, assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS) => {
+export const calculateGigFinancials = (
+  {
+    gigData,
+    performanceScore,
+    modifiers,
+    bandInventory,
+    playerState,
+    gigStats,
+    context = {}
+  }: GigFinancialParams,
+  assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS
+) => {
   const playerFame = playerState?.fame ?? 0
 
   logger.debug('Economy', 'Calculating Gig Financials', {
@@ -896,12 +903,6 @@ export const calculateGigFinancials = ({
   report.income.breakdown.push(...merch.breakdownItems)
   report.income.total += merch.revenue
   report.soldMerch = merch.soldItems
-  if (merch.expenseItems) {
-    for (const expense of merch.expenseItems) {
-      report.expenses.breakdown.push(expense)
-      report.expenses.total += expense.value
-    }
-  }
 
   // 5. Bar Cut
   const barCut = calculateBarCut(tickets.ticketsSold, modifiers)
@@ -949,7 +950,11 @@ export const calculateGigFinancials = ({
   }
 
   if (assetModifiers.tipBonusGigs && assetModifiers.tipBonusGigs > 0) {
-    const tipBonus = Math.floor(report.income.total * (assetModifiers.tipBonusGigs / 100))
+    // tipBonusGigs is a decimal fraction (0.10 = 10%); apply directly to
+    // income.total.
+    const tipBonus = Math.floor(
+      report.income.total * assetModifiers.tipBonusGigs
+    )
     if (tipBonus > 0) {
       report.income.breakdown.push({
         labelKey: 'economy:gigIncome.tipBonus.label',
