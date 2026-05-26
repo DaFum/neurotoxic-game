@@ -44,12 +44,14 @@ describe('Studio economy integration', () => {
     assert.strictEqual(modifiers.flags.enablesReRecording, true)
   })
 
-  it('broken studio (condition < 20) → boni neutralized (songQualityBonus === 0 or undefined)', () => {
+  it('broken studio (condition < 20) → boni neutralized to {}', () => {
     const asset = makeStudioAsset(['st_ssl_console'], { condition: 10 })
     const boni = getAssetAggregateBoni(asset)
-    // getAssetAggregateBoni returns {} for broken assets — songQualityBonus will be undefined
-    const bonus = boni.songQualityBonus ?? 0
-    assert.strictEqual(bonus, 0)
+    // The contract documented in src/utils/AGENTS.md is "condition < 20 →
+    // aggregated boni neutralized" — assert the exact empty object rather
+    // than a 0/undefined coalescence so a regression that surfaces a 0
+    // bonus would still fail.
+    assert.deepStrictEqual(boni, {})
   })
 
   it('two studio modules with songQualityBonus stack additively (0.20 + 0.08 = 0.28)', () => {
