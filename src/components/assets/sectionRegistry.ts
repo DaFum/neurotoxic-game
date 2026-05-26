@@ -3,6 +3,7 @@ import type { AssetKind } from '../../types/assets'
 import { TourbusSection } from './sections/TourbusSection'
 import { StudioSection } from './sections/StudioSection'
 import { BandhausSection } from './sections/BandhausSection'
+import { MerchWorkshopSection } from './sections/MerchWorkshopSection'
 
 /**
  * View descriptor for a section-specific asset panel.
@@ -35,6 +36,11 @@ SECTION_VIEWS.studio_chassis = {
 SECTION_VIEWS.bandhaus_chassis = {
   Component: BandhausSection,
   accent: 'var(--color-cosmic-purple)'
+}
+
+SECTION_VIEWS.merch_workshop_chassis = {
+  Component: MerchWorkshopSection,
+  accent: 'var(--color-warning-yellow)'
 }
 
 /**
