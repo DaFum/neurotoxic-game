@@ -12,13 +12,14 @@ const mockExpenseConstants = {
   }
 }
 
-const mockCalculateRefuelCost = mock.fn(currentFuel => {
+const calculateRefuelCostDefault = currentFuel => {
   const missing = Math.max(
     0,
     mockExpenseConstants.TRANSPORT.MAX_FUEL - currentFuel
   )
   return Math.ceil(missing * mockExpenseConstants.TRANSPORT.FUEL_PRICE)
-})
+}
+const mockCalculateRefuelCost = mock.fn(calculateRefuelCostDefault)
 
 const mockCalculateRepairCost = mock.fn(currentCondition => {
   const missing = Math.max(0, 100 - currentCondition)
@@ -117,6 +118,8 @@ export const resetTravelLogicMockState = () => {
     guaranteedDailyCostDefault
   )
   mockCalculateGuaranteedDailyCost.mock.resetCalls()
+  mockCalculateRefuelCost.mock.mockImplementation(calculateRefuelCostDefault)
+  mockCalculateRefuelCost.mock.resetCalls()
   mockAudioManager.ensureAudioContext.mock.mockImplementation(
     ensureAudioContextDefault
   )

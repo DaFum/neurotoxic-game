@@ -180,6 +180,7 @@
   "installFailed.locked": "Modul ist gesperrt.",
   "installFailed.exclusivity": "Konflikt mit bereits installiertem Modul.",
   "installFailed.max_per_asset": "Maximalanzahl pro Asset erreicht.",
+  "installFailed.insufficient_funds": "Nicht genug Geld.",
   "sellFailed.liability_exceeds_value": "Restschuld \u00fcbersteigt den Verkaufswert.",
   "slot.tb_roof": "Dach",
   "slot.tb_front": "Front",

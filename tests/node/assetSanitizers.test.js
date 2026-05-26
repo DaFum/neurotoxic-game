@@ -283,6 +283,8 @@ describe('sanitizeRngSeed', () => {
   it('rejects NaN, Infinity and non-numbers', () => {
     assert.equal(typeof sanitizeRngSeed(NaN), 'number')
     assert.notEqual(sanitizeRngSeed(NaN), 0) // falls back to Date.now()
+    assert.equal(typeof sanitizeRngSeed(Infinity), 'number')
+    assert.notEqual(sanitizeRngSeed(Infinity), 0)
     assert.equal(typeof sanitizeRngSeed('seed'), 'number')
     assert.equal(typeof sanitizeRngSeed(null), 'number')
   })

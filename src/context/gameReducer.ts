@@ -62,6 +62,7 @@ import {
 import { handleAddQuest, handleAdvanceQuest } from './reducers/questReducer'
 import { MILESTONES } from '../data/milestones/milestones'
 import { createAddToastAction } from './actionCreators'
+import { assetForeclosed } from './assetActionCreators'
 import {
   handleLoadGame,
   handleResetState,
@@ -210,6 +211,16 @@ function runHandledAction<K extends HandledActionTypes>(
   return (handler as (state: GameState) => GameState)(state)
 }
 
+const applyZeroConditionForeclosures = (state: GameState): GameState => {
+  const assets = Array.isArray(state.assets) ? state.assets : []
+  let nextState = state
+  for (const asset of assets) {
+    if (asset.condition !== 0) continue
+    nextState = runHandledAction(nextState, assetForeclosed(asset.id))
+  }
+  return nextState
+}
+
 export const gameReducer = (
   state: GameState,
   action: GameAction
@@ -241,13 +252,18 @@ export const gameReducer = (
   }
 
   if (action.type === ActionTypes.ADVANCE_DAY) {
+    nextState = applyZeroConditionForeclosures(nextState)
     const snapshotBeforeMilestones = nextState
     const completedSet = new Set(snapshotBeforeMilestones.completedMilestones)
-    const triggeredMilestones: typeof MILESTONES[number][] = []
+    const triggeredMilestones: (typeof MILESTONES)[number][] = []
 
     for (let i = 0; i < MILESTONES.length; i++) {
       const m = MILESTONES[i]
-      if (m && !completedSet.has(m.id) && m.condition(snapshotBeforeMilestones)) {
+      if (
+        m &&
+        !completedSet.has(m.id) &&
+        m.condition(snapshotBeforeMilestones)
+      ) {
         triggeredMilestones.push(m)
         completedSet.add(m.id) // Ensure idempotency if conditions overlap
       }

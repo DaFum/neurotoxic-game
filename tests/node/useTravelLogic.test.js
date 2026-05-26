@@ -198,6 +198,14 @@ describe('useTravelLogic', () => {
     assert.equal(mockCalculateGuaranteedDailyCost.mock.calls.length, 1)
   })
 
+  test('resetTravelLogicMockState restores refuel cost default implementation', () => {
+    mockCalculateRefuelCost.mock.mockImplementation(() => 999)
+    resetTravelLogicMockState()
+
+    assert.equal(mockCalculateRefuelCost(25), 150)
+    assert.equal(mockCalculateRefuelCost.mock.calls.length, 1)
+  })
+
   test('handleTravel skips travel SFX and logs when audio context is unavailable', async () => {
     setEnsureAudioContextResult(false)
     const { result, targetNode } = setupTravelScenario(useTravelLogic, {
