@@ -634,6 +634,10 @@ describe('GameState Context - Save/Load', () => {
     expect(parsed).toHaveProperty('timestamp')
     expect(parsed).toHaveProperty('player')
     expect(parsed).toHaveProperty('band')
+    expect(parsed).toHaveProperty('assets')
+    expect(parsed).toHaveProperty('liabilities')
+    expect(parsed).toHaveProperty('crowdfundCampaigns')
+    expect(parsed).toHaveProperty('rngSeed')
 
     localStorage.setItem('neurotoxic_v3_save', JSON.stringify(mockSaveData))
 
@@ -662,6 +666,14 @@ describe('GameState Context - Save/Load', () => {
         <div>
           <div data-testid='toast-count'>{gameState.toasts.length}</div>
           <div data-testid='player-money'>{gameState.player.money}</div>
+          <div data-testid='asset-count'>{gameState.assets.length}</div>
+          <div data-testid='liability-count'>
+            {gameState.liabilities.length}
+          </div>
+          <div data-testid='crowdfund-count'>
+            {gameState.crowdfundCampaigns.length}
+          </div>
+          <div data-testid='rng-seed'>{gameState.rngSeed}</div>
           <button type='button' onClick={() => gameState.loadGame()}>
             Load
           </button>
@@ -676,6 +688,51 @@ describe('GameState Context - Save/Load', () => {
         band: { harmony: 80 },
         social: {},
         gameMap: { nodes: {}, connections: [] },
+        assets: [
+          {
+            id: 'loaded_asset',
+            kind: 'tourbus_chassis',
+            chassisFlavor: 'legit',
+            chassisTier: 1,
+            condition: 80,
+            baseUpkeep: 20,
+            baseDailyRevenue: 0,
+            slots: [],
+            acquiredOnDay: 1,
+            acquisitionMode: 'cash',
+            baseRiskEventChance: 0.005
+          }
+        ],
+        liabilities: [
+          {
+            id: 'loaded_liability',
+            source: 'loan',
+            assetId: 'loaded_asset',
+            principalRemaining: 100,
+            interestRate: 0.05,
+            dailyPayment: 5,
+            termDaysRemaining: 10,
+            defaultCounter: 0
+          }
+        ],
+        crowdfundCampaigns: [
+          {
+            id: 'loaded_campaign',
+            assetSpec: {
+              kind: 'tourbus_chassis',
+              flavor: 'legit',
+              chassisTier: 1
+            },
+            targetAmount: 1000,
+            fameStake: 5,
+            daysRemaining: 3,
+            plannedSuccessRoll: 0.2,
+            plannedSuccessProbability: 0.5,
+            materializedAssetId: 'loaded_campaign_asset',
+            materializedSlotIds: []
+          }
+        ],
+        rngSeed: 123456,
         toasts: [{ id: 'injected-toast', type: 'info', message: 'Injected' }]
       })
     )
@@ -692,6 +749,10 @@ describe('GameState Context - Save/Load', () => {
       expect(screen.getByTestId('player-money')).toHaveTextContent('777')
     })
     expect(screen.getByTestId('toast-count')).toHaveTextContent('0')
+    expect(screen.getByTestId('asset-count')).toHaveTextContent('1')
+    expect(screen.getByTestId('liability-count')).toHaveTextContent('1')
+    expect(screen.getByTestId('crowdfund-count')).toHaveTextContent('1')
+    expect(screen.getByTestId('rng-seed')).toHaveTextContent('123456')
   })
 
   test('loadGame persists merged legacy unlocks back to unlock storage', async () => {

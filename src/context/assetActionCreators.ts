@@ -19,7 +19,11 @@
  */
 
 import { ActionTypes } from './actionTypes'
-import { CHASSIS_CONFIG } from '../utils/assetConfig'
+import {
+  CHASSIS_CONFIG,
+  REPAIR_COST_PER_POINT,
+  UPGRADE_OVERHEAD
+} from '../utils/assetConfig'
 import { MODULE_REGISTRY } from '../utils/assetModuleRegistry'
 import { LOAN_PROFILES, type LoanProfileId } from '../utils/loanProfiles'
 import { getSlotConflicts, isModuleUnlocked } from '../utils/assetSelectors'
@@ -227,6 +231,9 @@ export const installModule = (
     s => s.installedModuleId === raw.moduleId
   ).length
   if (currentCount >= cap) return fail('MAX_PER_ASSET')
+  if (state.player.money < module.cost + module.installCost) {
+    return fail('INSUFFICIENT_FUNDS')
+  }
 
   const newSlotIds = buildAddedSlotEntries(raw.moduleId)
   return {
@@ -264,6 +271,11 @@ export const upgradeChassisTier = (
   const targetCfg =
     CHASSIS_CONFIG[asset.kind]?.[asset.chassisFlavor]?.[targetTier]
   if (!targetCfg) return null
+  const currentCfg =
+    CHASSIS_CONFIG[asset.kind]?.[asset.chassisFlavor]?.[asset.chassisTier]
+  if (!currentCfg) return null
+  const upgradeCost = targetCfg.price - currentCfg.price + UPGRADE_OVERHEAD
+  if (state.player.money < upgradeCost) return null
 
   // Count existing chassis-tier slots per slotType (skip dynamically-added
   // slots from modules — those don't belong to the chassis layout). Diff
@@ -296,10 +308,23 @@ export const sellChassis = (assetId: string): SellChassisAction => ({
   payload: { assetId }
 })
 
-export const repairChassis = (assetId: string): RepairChassisAction => ({
-  type: ActionTypes.REPAIR_CHASSIS,
-  payload: { assetId }
-})
+export const repairChassis = (
+  assetId: string,
+  state: GameState
+): RepairChassisAction | null => {
+  const asset = state.assets.find(a => a.id === assetId)
+  if (!asset) return null
+  const repairCost = Math.max(
+    0,
+    (100 - asset.condition) * REPAIR_COST_PER_POINT
+  )
+  if (repairCost <= 0) return null
+  if (state.player.money < repairCost) return null
+  return {
+    type: ActionTypes.REPAIR_CHASSIS,
+    payload: { assetId }
+  }
+}
 
 export interface StartCrowdfundInput {
   kind: AssetKind

@@ -328,8 +328,8 @@ export const sanitizeRngSeed = (raw: unknown): number => {
   // Always return a non-negative 32-bit integer seed. The unsigned right-shift
   // coerces to UInt32 (0..2^32-1) which is what mulberry32 expects; `| 0` alone
   // would produce a signed 32-bit (potentially negative) value.
-  if (typeof raw === 'number' && Number.isFinite(raw) && raw >= 0) {
-    return raw >>> 0
+  if (typeof raw === 'number' && Number.isFinite(raw)) {
+    return Math.trunc(raw) >>> 0
   }
   return Date.now() >>> 0
 }

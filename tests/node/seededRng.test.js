@@ -59,8 +59,12 @@ describe('nextSeed', () => {
     assert.notEqual(nextSeed(1), nextSeed(2))
   })
 
-  it('returns a 32-bit signed integer', () => {
-    const s = nextSeed(12345)
-    assert.equal(Number.isInteger(s), true)
+  it('returns unsigned 32-bit integer seeds', () => {
+    for (const seed of [1, 2, 42, 12345, 0xffffffff]) {
+      const s = nextSeed(seed)
+      assert.equal(Number.isInteger(s), true)
+      assert.ok(s >= 0, `seed ${seed} produced negative next seed ${s}`)
+      assert.ok(s <= 0xffffffff, `seed ${seed} produced out-of-range ${s}`)
+    }
   })
 })

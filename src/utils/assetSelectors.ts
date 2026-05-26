@@ -163,12 +163,14 @@ export const getTotalDailyObligations = (state: GameState): number => {
   )
   let assetUpkeep = 0
   let assetRevenue = 0
-  for (const a of state.assets) {
+  const assets = Array.isArray(state.assets) ? state.assets : []
+  for (const a of assets) {
     assetUpkeep += getAssetTotalUpkeep(a)
     assetRevenue += getAssetTotalDailyRevenue(a)
   }
   let liabilityPayments = 0
-  for (const l of state.liabilities) {
+  const liabilities = Array.isArray(state.liabilities) ? state.liabilities : []
+  for (const l of liabilities) {
     liabilityPayments += l.dailyPayment
   }
   return base + assetUpkeep - assetRevenue + liabilityPayments

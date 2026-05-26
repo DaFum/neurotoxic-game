@@ -32,3 +32,9 @@
 
 - `bandhausModules.test.js` enforces: 16 bandhaus modules registered, every chassis slot type has a compatible module, all `imagePromptKey` references resolve in `MODULE_PROMPTS` via `Object.hasOwn`, and `bh_wall_mural.unlock.requiredStoryFlags` includes `'saved_local_venue'`.
 - `bandhausIntegration.test.js` covers four scenarios: `bh_weed_garden` raid risk event via a pinned `dayRngStream`, `bh_wall_mural` story-flag-gated unlock through `isModuleUnlocked`, `bh_hot_tub`'s `infightingDamper` aggregation through `getActiveAssetModifiers`, and the implicit tier-gating of `bh_secret` (absent from `T2_SLOTS`, present in `T3_SLOTS`, mirrored on the DIY side via `buildDiyTier`'s slot clone).
+
+## Merch-Werkstatt
+
+- `workshopModules.test.js` enforces: 16 workshop modules registered, workshop modules use only workshop slot types, all `imagePromptKey` references resolve in `MODULE_PROMPTS` via `Object.hasOwn`, `mw_eco_ink_supply` has the print-module OR unlock, and `mw_darkweb_vendor` lists both `scam_or_bust` and `police_check`.
+- `workshopEconomyIntegration.test.js` covers: `mw_eco_ink_supply` OR-unlock through `isModuleUnlocked`, additive `baseDailyRevenueDelta` stacking (mailorder + bandcamp + sticker = 65), `mw_darkweb_vendor` risk selection via pinned `dayRngStream`, `mw_4color_carousel` merch-cost modifier aggregation, and `mw_vinyl_cutter` limited-edition flag aggregation.
+- `allSectionsIntegrationSmoke.test.js` pins the cross-section totals: 63 modules total (17 Tourbus + 14 Studio + 16 Bandhaus + 16 Workshop), all 4 `SECTION_VIEWS` entries registered, and every `SlotType` from the union mapped in at least one section config.

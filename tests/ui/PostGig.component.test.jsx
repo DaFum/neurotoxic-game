@@ -184,6 +184,7 @@ const createBaseState = (overrides = {}) => ({
     events: []
   },
   gigModifiers: {},
+  assets: [],
   activeEvent: null,
   activeStoryFlags: [],
   triggerEvent: mockTriggerEvent,
@@ -889,7 +890,8 @@ describe('PostGig Component - Edge Cases', () => {
       expect(economyEngine.calculateGigFinancials).toHaveBeenCalledWith(
         expect.objectContaining({
           performanceScore: 100 // Max clamped
-        })
+        }),
+        expect.any(Object)
       )
     })
   })

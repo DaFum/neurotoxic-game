@@ -15,6 +15,7 @@ import {
   calculateKabelsalatMinigameResult,
   calculateAmpCalibrationResult
 } from '../../utils/economyEngine'
+import { getActiveAssetModifiers } from '../../utils/assetSelectors'
 import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks } from '../../utils/traitUtils'
 import { computeDropChance } from '../../utils/contrabandUtils'
@@ -79,7 +80,8 @@ export const handleCompleteTravelMinigame = (
     targetNode,
     currentNode,
     state.player,
-    state.band
+    state.band,
+    getActiveAssetModifiers(state.assets ?? [])
   )
   const { conditionLoss, fuelBonus, voidHazardHits } =
     calculateTravelMinigameResult(damageTaken, itemsCollected)

@@ -36,6 +36,7 @@ import type { CityTraitState } from '../types/game'
 import type { BandMember } from '../types/band'
 import type { PostGigFinancials } from '../types/economy'
 import type { BrandDeal, Platform, SocialPostOption } from '../types/social'
+import type { AssetModifiers } from '../types/assets'
 
 type ResolvedPostResult = PostResult & {
   platform: Platform
@@ -747,7 +748,8 @@ export const deriveFinancials = ({
   reputationByRegion,
   activeStoryFlags,
   gigContext,
-  cityTraits
+  cityTraits,
+  assetModifiers
 }: {
   currentGig: GameState['currentGig']
   lastGigStats: GameState['lastGigStats']
@@ -764,31 +766,35 @@ export const deriveFinancials = ({
     lastGigDifficulty: number | null
   } | null
   cityTraits?: CityTraitState
+  assetModifiers?: AssetModifiers
 }) => {
   if (!currentGig || !lastGigStats) return null
 
-  const result = calculateGigFinancials({
-    gigData: currentGig,
-    performanceScore: perfScore,
-    modifiers: gigModifiers,
-    bandInventory: bandInventory,
-    playerState: player,
-    gigStats: lastGigStats,
-    context: {
-      controversyLevel: social?.controversyLevel ?? 0,
-      regionRep: reputationByRegion?.[player?.location] ?? 0,
-      loyalty: social?.loyalty ?? 0,
-      zealotry: social?.zealotry ?? 0,
-      discountedTickets: activeStoryFlags?.includes(
-        'discounted_tickets_active'
-      ),
-      daysSinceLastGig: gigContext?.daysSinceLastGig ?? 0,
-      lastGigDifficulty: gigContext?.lastGigDifficulty ?? undefined,
-      merchPrices: bandMerchPrices,
-      social,
-      cityTraits
-    }
-  })
+  const result = calculateGigFinancials(
+    {
+      gigData: currentGig,
+      performanceScore: perfScore,
+      modifiers: gigModifiers,
+      bandInventory: bandInventory,
+      playerState: player,
+      gigStats: lastGigStats,
+      context: {
+        controversyLevel: social?.controversyLevel ?? 0,
+        regionRep: reputationByRegion?.[player?.location] ?? 0,
+        loyalty: social?.loyalty ?? 0,
+        zealotry: social?.zealotry ?? 0,
+        discountedTickets: activeStoryFlags?.includes(
+          'discounted_tickets_active'
+        ),
+        daysSinceLastGig: gigContext?.daysSinceLastGig ?? 0,
+        lastGigDifficulty: gigContext?.lastGigDifficulty ?? undefined,
+        merchPrices: bandMerchPrices,
+        social,
+        cityTraits
+      }
+    },
+    assetModifiers
+  )
 
   return applyPostGigPerformancePenalty({
     financials: result,

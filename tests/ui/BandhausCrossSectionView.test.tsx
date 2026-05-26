@@ -27,9 +27,22 @@ vi.mock('../../src/utils/imageGen', () => ({
   getModuleImagePrompt: vi.fn((moduleId: string) => `module:${moduleId}`)
 }))
 
-// Identity `t` so aria-labels surface the raw key in test assertions.
+const translations: Record<string, string> = {
+  'assets:section.bandhaus.alt': 'Localized bandhaus cross-section',
+  'assets:slot.bh_stage': 'Stage area',
+  'assets:slot.bh_kitchen': 'Kitchen',
+  'assets:slot.bh_sleeping': 'Sleeping quarters',
+  'assets:slot.bh_secret': 'Secret room',
+  'assets:slot.bh_identity': 'House identity',
+  'assets:module.bh_wall_mural.name': 'Wall mural'
+}
+
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key: string) => key })
+  initReactI18next: { type: '3rdParty', init: () => {} },
+  useTranslation: () => ({
+    t: (key: string, options?: { defaultValue?: string }) =>
+      translations[key] ?? options?.defaultValue ?? key
+  })
 }))
 
 const mockAsset = (
@@ -63,6 +76,16 @@ describe('BandhausCrossSectionView', () => {
     vi.clearAllMocks()
   })
 
+  it('uses localized background alt text', () => {
+    const asset = mockAsset([
+      { id: 's1', slotType: 'bh_stage', installedModuleId: null }
+    ])
+    render(<BandhausCrossSectionView asset={asset} onSlotClick={vi.fn()} />)
+    expect(
+      screen.getByRole('img', { name: 'Localized bandhaus cross-section' })
+    ).toBeInTheDocument()
+  })
+
   it('renders one button per visible slot at tier 3', () => {
     const asset = mockAsset(
       [
@@ -89,9 +112,7 @@ describe('BandhausCrossSectionView', () => {
     )
     render(<BandhausCrossSectionView asset={asset} onSlotClick={vi.fn()} />)
     expect(screen.getAllByRole('button')).toHaveLength(3)
-    expect(
-      screen.queryByRole('button', { name: 'assets:slot.bh_secret' })
-    ).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Secret room' })).toBeNull()
   })
 
   it('renders a GeneratedImagePanel thumbnail inside bh_identity button when module is installed', () => {
@@ -107,7 +128,7 @@ describe('BandhausCrossSectionView', () => {
     )
     render(<BandhausCrossSectionView asset={asset} onSlotClick={vi.fn()} />)
     const muralButton = screen.getByRole('button', {
-      name: 'assets:slot.bh_identity'
+      name: 'House identity: Wall mural'
     })
     within(muralButton).getByRole('img')
   })
@@ -119,7 +140,7 @@ describe('BandhausCrossSectionView', () => {
     ])
     render(<BandhausCrossSectionView asset={asset} onSlotClick={onSlotClick} />)
     const button = screen.getByRole('button', {
-      name: 'assets:slot.bh_stage'
+      name: 'Stage area'
     })
     fireEvent.click(button)
     expect(onSlotClick).toHaveBeenCalledWith('slot-stage-xyz')
@@ -136,7 +157,7 @@ describe('BandhausCrossSectionView', () => {
     ])
     render(<BandhausCrossSectionView asset={asset} onSlotClick={vi.fn()} />)
     const button = screen.getByRole('button', {
-      name: 'assets:slot.bh_stage'
+      name: 'Stage area'
     })
     expect(button.style.left).toBe('10%')
     expect(button.style.top).toBe('45%')

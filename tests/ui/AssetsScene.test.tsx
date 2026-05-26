@@ -1,0 +1,91 @@
+import { fireEvent, render, screen } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
+import { AssetsScene } from '../../src/components/assets/AssetsScene'
+
+const mockChangeScene = vi.fn()
+const mockState = vi.hoisted(() => ({
+  player: { money: 1000 },
+  band: {},
+  social: {},
+  assets: [],
+  liabilities: [],
+  crowdfundCampaigns: []
+}))
+
+vi.mock('../../src/context/GameState', () => ({
+  useGameActions: () => ({ changeScene: mockChangeScene }),
+  useGameSelector: (selector: (state: typeof mockState) => unknown) =>
+    selector(mockState)
+}))
+
+vi.mock('../../src/utils/assetSelectors', () => ({
+  getTotalDailyObligations: () => 0,
+  getTotalDebt: () => 0
+}))
+
+vi.mock('../../src/utils/numberUtils', () => ({
+  formatCurrency: (value: number) => `${value} EUR`
+}))
+
+vi.mock('react-i18next', () => ({
+  initReactI18next: { type: '3rdParty', init: () => {} },
+  useTranslation: () => ({
+    i18n: { language: 'en' },
+    t: (key: string) => {
+      const labels: Record<string, string> = {
+        'assets:scene.title': 'Investments',
+        'assets:scene.subtitle': 'Long-term assets and finances',
+        'assets:scene.back': 'Back',
+        'assets:hub.accessibility.sectionTabs': 'Asset sections',
+        'assets:hub.status.cash': 'Cash',
+        'assets:hub.status.daily': 'Daily',
+        'assets:hub.status.debt': 'Debt',
+        'assets:hub.status.noDebt': 'No debt',
+        'assets:hub.status.campaigns': 'Campaigns',
+        'assets:section.tourbus.title': 'Tourbus',
+        'assets:section.studio.title': 'Studio',
+        'assets:section.bandhaus.title': 'Band House',
+        'assets:section.workshop.title': 'Workshop',
+        'assets:kind.tourbus_chassis': 'Tourbus',
+        'assets:kind.studio_chassis': 'Studio',
+        'assets:kind.bandhaus_chassis': 'Band House',
+        'assets:kind.merch_workshop_chassis': 'Workshop',
+        'assets:section.tourbus.description': 'Rolling stage',
+        'assets:section.studio.description': 'Cut songs',
+        'assets:section.bandhaus.description': 'HQ',
+        'assets:section.workshop.description': 'Print merch',
+        'assets:hub.actions.acquire': 'Acquire',
+        'assets:hub.finance.title': 'Finance',
+        'assets:hub.finance.noCampaigns': 'No active campaigns',
+        'assets:liability.paymentDue': 'Payment due: -'
+      }
+      return labels[key] ?? key
+    }
+  })
+}))
+
+describe('AssetsScene', () => {
+  it('renders mobile shell with preserved tab ids and panel ids', () => {
+    render(<AssetsScene />)
+
+    const tablist = screen.getByRole('tablist', { name: 'Asset sections' })
+    expect(tablist).toBeInTheDocument()
+    expect(screen.getByRole('tabpanel')).toHaveAttribute(
+      'id',
+      'assets-panel-tourbus_chassis'
+    )
+
+    const studioTab = screen.getByRole('tab', { name: /Studio/ })
+    expect(studioTab).toHaveAttribute('id', 'assets-tab-studio_chassis')
+    expect(studioTab).toHaveAttribute(
+      'aria-controls',
+      'assets-panel-studio_chassis'
+    )
+
+    fireEvent.click(studioTab)
+    expect(screen.getByRole('tabpanel')).toHaveAttribute(
+      'id',
+      'assets-panel-studio_chassis'
+    )
+  })
+})

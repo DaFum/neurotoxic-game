@@ -503,10 +503,10 @@ export const calculateFuelCost = (
     fuelLiters *= 0.85
   }
 
+  fuelLiters *= assetModifiers.fuelMultiplier ?? 1.0
+
   const fuelCost = Math.floor(
-    fuelLiters *
-      EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE *
-      (assetModifiers.fuelMultiplier ?? 1.0)
+    fuelLiters * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE
   )
 
   return { fuelLiters, fuelCost }

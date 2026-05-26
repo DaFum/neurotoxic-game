@@ -99,7 +99,7 @@ export const ModulePickerModal = ({
       isOpen={isOpen}
       onClose={onClose}
       title={t('assets:modulePicker.title')}
-      className='max-w-3xl'
+      className='assets-modal-sheet max-w-3xl'
     >
       <div className='flex flex-col gap-3 p-4 font-mono text-sm'>
         {pool.length === 0 && (
@@ -110,7 +110,10 @@ export const ModulePickerModal = ({
         <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
           {pool.map(({ module, unlocked, lockReasons }) => {
             const conflict = getSlotConflicts(asset, module.id)
-            const blocked = !unlocked || !conflict.canInstall
+            const installCost = module.cost + module.installCost
+            const insufficientFunds = money < installCost
+            const blocked =
+              !unlocked || !conflict.canInstall || insufficientFunds
             return (
               <div
                 key={module.id}
@@ -140,10 +143,7 @@ export const ModulePickerModal = ({
                   </span>
                   <span className='text-xs'>
                     {t('assets:modulePicker.installCost', {
-                      amount: formatCurrency(
-                        module.cost + module.installCost,
-                        i18n.language
-                      )
+                      amount: formatCurrency(installCost, i18n.language)
                     })}
                   </span>
                   {lockReasons.length > 0 && (
@@ -170,6 +170,14 @@ export const ModulePickerModal = ({
                       })}
                     </span>
                   )}
+                  {insufficientFunds && (
+                    <span
+                      className='text-xs'
+                      style={{ color: 'var(--color-blood)' }}
+                    >
+                      {t('assets:modulePicker.insufficientFunds')}
+                    </span>
+                  )}
                   <button
                     type='button'
                     onClick={() => {
@@ -181,7 +189,7 @@ export const ModulePickerModal = ({
                       onClose()
                     }}
                     disabled={blocked}
-                    className='mt-1 self-start border-2 px-2 py-1 disabled:opacity-30'
+                    className='mt-1 min-h-11 self-start border-2 px-2 py-2 disabled:opacity-30'
                     style={{
                       background: blocked
                         ? 'transparent'

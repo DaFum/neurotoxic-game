@@ -5,6 +5,7 @@ import * as GameState from '../../src/context/GameState'
 import * as economyEngine from '../../src/utils/economyEngine'
 import * as socialEngine from '../../src/utils/socialEngine'
 import * as crypto from '../../src/utils/crypto'
+import * as assetSelectors from '../../src/utils/assetSelectors'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 import { BALANCE_CONSTANTS } from '../../src/utils/gameStateUtils'
 
@@ -31,6 +32,30 @@ vi.mock('../../src/context/GameState', () => {
 vi.mock('../../src/utils/economyEngine', () => ({
   calculateGigFinancials: vi.fn(),
   shouldTriggerBankruptcy: vi.fn()
+}))
+vi.mock('../../src/utils/assetSelectors', () => ({
+  getActiveAssetModifiers: vi.fn(() => ({
+    fuelMultiplier: 1,
+    merchCostMultiplier: 1,
+    songCostMultiplier: 1,
+    trainingCostMultiplier: 1,
+    baseRiskChanceMultiplier: 1,
+    staminaRegenBonusPerDay: 0,
+    travelStaminaRegen: 0,
+    merchCapacityBonus: 0,
+    songQualityBonus: 0,
+    avgMerchSalePriceBonus: 0,
+    famePassivePerDay: 0,
+    bandMoodPerDay: 0,
+    tipBonusGigs: 0,
+    flags: {
+      infightingDamper: false,
+      enablesReRecording: false,
+      enablesLimitedEditions: false,
+      enablesBulkProduction: false,
+      reducesTheftRiskTravel: false
+    }
+  }))
 }))
 vi.mock('../../src/utils/socialEngine', () => ({
   generatePostOptions: vi.fn(),
@@ -118,6 +143,7 @@ describe('usePostGigLogic', () => {
     },
     lastGigStats: { score: 50000, accuracy: 95, events: [] },
     gigModifiers: {},
+    assets: [],
     activeEvent: null,
     activeStoryFlags: [],
     triggerEvent: mockTriggerEvent,
@@ -179,7 +205,8 @@ describe('usePostGigLogic', () => {
         expect.objectContaining({
           gigData: expect.objectContaining({ songId: 'test_song' }),
           performanceScore: 100
-        })
+        }),
+        expect.any(Object)
       )
       expect(mockTriggerEvent).toHaveBeenCalledWith('financial', 'post_gig')
       expect(mockTriggerEvent).toHaveBeenCalledWith('special', 'post_gig')
@@ -223,7 +250,48 @@ describe('usePostGigLogic', () => {
       renderHook(() => usePostGigLogic())
       await waitFor(() => {
         expect(economyEngine.calculateGigFinancials).toHaveBeenCalledWith(
-          expect.objectContaining({ performanceScore: 30 })
+          expect.objectContaining({ performanceScore: 30 }),
+          expect.any(Object)
+        )
+      })
+    })
+
+    it('passes active asset modifiers into post-gig financials', async () => {
+      const assetModifiers = {
+        fuelMultiplier: 1,
+        merchCostMultiplier: 1,
+        songCostMultiplier: 1,
+        trainingCostMultiplier: 1,
+        baseRiskChanceMultiplier: 1,
+        staminaRegenBonusPerDay: 0,
+        travelStaminaRegen: 0,
+        merchCapacityBonus: 0,
+        songQualityBonus: 0,
+        avgMerchSalePriceBonus: 0.25,
+        famePassivePerDay: 0,
+        bandMoodPerDay: 0,
+        tipBonusGigs: 0.1,
+        flags: {
+          infightingDamper: false,
+          enablesReRecording: false,
+          enablesLimitedEditions: false,
+          enablesBulkProduction: false,
+          reducesTheftRiskTravel: false
+        }
+      }
+      const assets = [{ id: 'asset_1', slots: [] }]
+      assetSelectors.getActiveAssetModifiers.mockReturnValueOnce(assetModifiers)
+      mockGameState(getBaseState({ assets }))
+
+      renderHook(() => usePostGigLogic())
+
+      await waitFor(() => {
+        expect(assetSelectors.getActiveAssetModifiers).toHaveBeenCalledWith(
+          assets
+        )
+        expect(economyEngine.calculateGigFinancials).toHaveBeenCalledWith(
+          expect.any(Object),
+          assetModifiers
         )
       })
     })

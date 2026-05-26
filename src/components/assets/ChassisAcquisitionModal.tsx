@@ -72,7 +72,7 @@ export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
         isOpen={isOpen}
         onClose={onClose}
         title={t('assets:actions.purchase')}
-        className='max-w-2xl'
+        className='assets-modal-sheet max-w-2xl'
       >
         <div className='flex flex-col gap-3 p-4 font-mono text-sm'>
           <GeneratedImagePanel
@@ -131,7 +131,7 @@ export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
               <button
                 type='button'
                 onClick={onClose}
-                className='border-2 px-3 py-1'
+                className='min-h-11 border-2 px-3 py-2'
               >
                 {t('ui:action_cancel', { defaultValue: 'Cancel' })}
               </button>
@@ -139,7 +139,7 @@ export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
                 type='button'
                 onClick={onConfirm}
                 disabled={diyLoanBlocked || insufficient || price === 0}
-                className='border-2 px-3 py-1 disabled:opacity-40'
+                className='min-h-11 border-2 px-3 py-2 disabled:opacity-40'
                 style={{
                   background: 'var(--section-accent, var(--color-toxic-green))',
                   color: 'var(--color-void)'
@@ -208,7 +208,7 @@ const ChoiceGroup = <T extends string | number>({
             type='button'
             onClick={() => onChange(opt)}
             disabled={isDisabled}
-            className='border-2 px-2 py-1 disabled:opacity-30'
+            className='min-h-11 border-2 px-2 py-2 disabled:opacity-30'
             style={{
               background: isActive
                 ? 'var(--section-accent, var(--color-toxic-green))'

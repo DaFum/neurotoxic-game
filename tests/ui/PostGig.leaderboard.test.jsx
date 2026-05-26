@@ -191,6 +191,7 @@ describe('PostGig Leaderboard Submission', () => {
     addToast: mockAddToast,
     unlockTrait: mockUnlockTrait,
     reputationByRegion: {},
+    assets: [],
     setlist: [],
     addQuest: vi.fn()
   })

@@ -4,7 +4,7 @@ import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 import { getRepairImagePrompt } from '../../utils/imageGen'
 import { REPAIR_COST_PER_POINT } from '../../utils/assetConfig'
 import { formatCurrency } from '../../utils/numberUtils'
-import { useGameActions } from '../../context/GameState'
+import { useGameActions, useGameSelector } from '../../context/GameState'
 import type { LongTermAsset } from '../../types/assets'
 
 interface Props {
@@ -16,6 +16,7 @@ interface Props {
 export const RepairConfirmModal = ({ asset, isOpen, onClose }: Props) => {
   const { t, i18n } = useTranslation(['assets'])
   const { repairChassis } = useGameActions()
+  const money = useGameSelector(state => state.player.money)
   const cost = Math.max(0, (100 - asset.condition) * REPAIR_COST_PER_POINT)
 
   return (
@@ -23,7 +24,7 @@ export const RepairConfirmModal = ({ asset, isOpen, onClose }: Props) => {
       isOpen={isOpen}
       onClose={onClose}
       title={t('assets:actions.repair')}
-      className='max-w-lg'
+      className='assets-modal-sheet max-w-lg'
     >
       <div className='flex flex-col gap-3 p-4 font-mono text-sm'>
         <GeneratedImagePanel
@@ -46,7 +47,7 @@ export const RepairConfirmModal = ({ asset, isOpen, onClose }: Props) => {
           <button
             type='button'
             onClick={onClose}
-            className='border-2 px-3 py-1'
+            className='min-h-11 border-2 px-3 py-2'
           >
             {t('ui:action_cancel', { defaultValue: 'Cancel' })}
           </button>
@@ -56,8 +57,8 @@ export const RepairConfirmModal = ({ asset, isOpen, onClose }: Props) => {
               repairChassis(asset.id)
               onClose()
             }}
-            disabled={cost === 0}
-            className='border-2 px-3 py-1 disabled:opacity-40'
+            disabled={cost === 0 || money < cost}
+            className='min-h-11 border-2 px-3 py-2 disabled:opacity-40'
             style={{
               background: 'var(--section-accent, var(--color-toxic-green))',
               color: 'var(--color-void)'

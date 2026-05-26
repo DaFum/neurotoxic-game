@@ -111,6 +111,8 @@ export const handleInstallModule = (
 
   const moduleInfo = MODULE_REGISTRY[moduleId]
   if (!moduleInfo) return state
+  const installCost = moduleInfo.cost + moduleInfo.installCost
+  if (state.player.money < installCost) return state
 
   // Track whether the install actually landed. If the assetId/slotId in the
   // payload doesn't match anything live (replay against a stale state, hostile
@@ -151,7 +153,7 @@ export const handleInstallModule = (
     assets: nextAssets,
     player: {
       ...state.player,
-      money: state.player.money - (moduleInfo.cost + moduleInfo.installCost)
+      money: state.player.money - installCost
     }
   }
 }
@@ -229,24 +231,19 @@ export const handleUpgradeChassisTier = (
   if (!targetAsset) return state
 
   if (targetTier <= targetAsset.chassisTier) return state
-  if (!CHASSIS_CONFIG[targetAsset.kind]?.legit?.[targetTier]) return state
+  const currentConfigTier =
+    CHASSIS_CONFIG[targetAsset.kind]?.[targetAsset.chassisFlavor]?.[
+      targetAsset.chassisTier
+    ]
+  const targetConfigTier =
+    CHASSIS_CONFIG[targetAsset.kind]?.[targetAsset.chassisFlavor]?.[targetTier]
+  if (!currentConfigTier || !targetConfigTier) return state
+  const upgradeCost =
+    targetConfigTier.price - currentConfigTier.price + UPGRADE_OVERHEAD
+  if (state.player.money < upgradeCost) return state
 
-  let upgradeCost = 0
   const nextAssets = state.assets.map(asset => {
     if (asset.id !== assetId) return asset
-
-    const currentLegit = CHASSIS_CONFIG[asset.kind].legit[asset.chassisTier]
-    const currentConfigTier =
-      asset.chassisFlavor === 'legit'
-        ? currentLegit
-        : buildDiyTier(currentLegit)
-    const targetLegit = CHASSIS_CONFIG[asset.kind]?.legit?.[targetTier]
-    if (!targetLegit || targetTier <= asset.chassisTier) return asset
-    const targetConfigTier =
-      asset.chassisFlavor === 'legit' ? targetLegit : buildDiyTier(targetLegit)
-
-    upgradeCost =
-      targetConfigTier.price - currentConfigTier.price + UPGRADE_OVERHEAD
 
     const nextSlots = [...asset.slots]
     newSlotIds.forEach(newSlot => {
@@ -343,6 +340,8 @@ export const handleRepairChassis = (
   if (!targetAsset) return state
 
   const repairCost = (100 - targetAsset.condition) * REPAIR_COST_PER_POINT
+  if (repairCost <= 0 || state.player.money < repairCost) return state
+
   const nextAssets = state.assets.map(asset =>
     asset.id === assetId ? { ...asset, condition: 100 } : asset
   )
@@ -381,21 +380,18 @@ export const handleResolveCrowdfund = (
     c => c.id !== campaignId
   )
 
-  let nextFame = state.band.fame
+  let nextFame = state.player.fame
   let nextAssets = state.assets || []
 
   if (outcome === 'success') {
     nextFame += campaign.fameStake
 
     if (newAssetId && newSlotIds) {
-      const legitTier =
-        CHASSIS_CONFIG[campaign.assetSpec.kind].legit[
+      const configTier =
+        CHASSIS_CONFIG[campaign.assetSpec.kind]?.[campaign.assetSpec.flavor]?.[
           campaign.assetSpec.chassisTier
         ]
-      const configTier =
-        campaign.assetSpec.flavor === 'legit'
-          ? legitTier
-          : buildDiyTier(legitTier)
+      if (!configTier) return state
 
       const slots: AssetSlot[] = configTier.slots.map((slotType, i) => ({
         // Same bounds-check as PURCHASE_CHASSIS: fall back to a deterministic
@@ -427,8 +423,8 @@ export const handleResolveCrowdfund = (
 
   return {
     ...state,
-    band: {
-      ...state.band,
+    player: {
+      ...state.player,
       fame: nextFame
     },
     assets: nextAssets,

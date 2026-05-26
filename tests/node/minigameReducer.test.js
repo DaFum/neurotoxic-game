@@ -1,4 +1,4 @@
-import { describe, it, beforeEach } from 'node:test'
+import { describe, it, beforeEach, after } from 'node:test'
 import assert from 'node:assert/strict'
 
 import {
@@ -16,6 +16,18 @@ import {
   MINIGAME_TYPES,
   DEFAULT_MINIGAME_STATE
 } from '../../src/context/gameConstants.ts'
+import { MODULE_REGISTRY } from '../../src/utils/assetModuleRegistry.ts'
+
+const travelFuelModuleId = 'test_minigame_fuel_discount'
+const originalTravelFuelModule = MODULE_REGISTRY[travelFuelModuleId]
+
+after(() => {
+  if (originalTravelFuelModule === undefined) {
+    delete MODULE_REGISTRY[travelFuelModuleId]
+  } else {
+    MODULE_REGISTRY[travelFuelModuleId] = originalTravelFuelModule
+  }
+})
 
 describe('minigameReducer', () => {
   let baseState
@@ -42,6 +54,7 @@ describe('minigameReducer', () => {
       currentScene: GAME_PHASES.OVERWORLD,
       minigame: { ...DEFAULT_MINIGAME_STATE },
       gigModifiers: {},
+      assets: [],
       toasts: []
     }
   })
@@ -76,6 +89,58 @@ describe('minigameReducer', () => {
           baseState.player.stats.totalDistance
       )
       assert.deepStrictEqual(nextState.minigame, { ...DEFAULT_MINIGAME_STATE })
+    })
+
+    it('applies active asset fuel modifiers to travel costs', () => {
+      MODULE_REGISTRY[travelFuelModuleId] = {
+        id: travelFuelModuleId,
+        ownerKind: 'tourbus_chassis',
+        slotType: 'tb_roof',
+        flavor: 'legit',
+        cost: 100,
+        installCost: 10,
+        removalRefundFraction: 0.5,
+        boni: { fuelMultiplier: 0.5 },
+        unlock: {},
+        imagePromptKey: 'test_minigame_fuel'
+      }
+      baseState.minigame.targetDestination = 'node2'
+      const baseline = handleCompleteTravelMinigame(baseState, {
+        damageTaken: 0,
+        itemsCollected: []
+      })
+
+      const boostedState = {
+        ...baseState,
+        assets: [
+          {
+            id: 'asset_fuel',
+            kind: 'tourbus_chassis',
+            chassisFlavor: 'legit',
+            chassisTier: 1,
+            condition: 100,
+            baseUpkeep: 0,
+            baseDailyRevenue: 0,
+            slots: [
+              {
+                id: 'slot_fuel',
+                slotType: 'tb_roof',
+                position: { x: 0, y: 0 },
+                installedModuleId: travelFuelModuleId
+              }
+            ],
+            acquiredOnDay: 1,
+            acquisitionMode: 'cash',
+            baseRiskEventChance: 0
+          }
+        ]
+      }
+      const boosted = handleCompleteTravelMinigame(boostedState, {
+        damageTaken: 0,
+        itemsCollected: []
+      })
+
+      assert.ok(boosted.player.van.fuel > baseline.player.van.fuel)
     })
 
     it('should prefer venue.id over venue.name when both exist', () => {

@@ -71,7 +71,7 @@ baseline instead of duplicating formulas.
 - `NEUTRAL_ASSET_MODIFIERS` (`assetSelectors.ts`) is the identity for `AssetModifiers` aggregation: multipliers = 1.0, additives = 0, flags = false. Economy functions accept the modifiers parameter as optional with this default.
 - `getActiveAssetModifiers` aggregates multipliers with `!== undefined` checks (not truthy) so a legit `fuelMultiplier: 0` ("free fuel") still applies; truthy guards would silently drop it.
 - `getTotalDailyObligations` = `calculateGuaranteedDailyCost + assetUpkeep − assetRevenue + liabilityPayments`. This is the SoT for the bankruptcy check.
-- `getTotalDebt(state)` = sum of `liability.principalRemaining`. UI top bars (e.g. `AssetsTopBar`) must use this selector — never reduce `state.liabilities` inline.
+- `getTotalDebt(state)` = sum of `liability.principalRemaining`. UI status surfaces (e.g. `AssetsStatusStrip`) must use this selector — never reduce `state.liabilities` inline.
 - `seededRng.ts` (`mulberry32`, `createRngStream`, `nextSeed`): the RNG stream is pre-rolled in the `advanceDay` action creator (sized via `RNG_ROLLS_PER_ASSET × assetCount + RNG_BASE_BUFFER`) and consumed deterministically by `rollAssetRiskEvents`. Reducers must never generate random values directly.
 - Fame lives on `state.player.fame` (canonical, per `src/types/player.d.ts`). Asset ticks and action creators MUST read/write fame through `state.player` — `state.band` has no `fame` field, and assigning to `state.band.fame` no-ops silently while corrupting the round-trip.
 - `processLiabilityTick` deduplicates `FORECLOSURE_FAME_PENALTY` per asset via the `foreclosedAssetIds` set: when an asset has multiple liabilities (loan + future top-up), the penalty fires exactly once on the day the asset is first foreclosed.
@@ -99,3 +99,8 @@ baseline instead of duplicating formulas.
 - `assetSections/bandhausConfig.ts` exports `BANDHAUS_T1_SLOTS` / `T2_SLOTS` / `T3_SLOTS` and `BANDHAUS_SLOT_ZONES: Partial<Record<SlotType, { x, y, w, h }>>`. Zones are rectangles centred on `(x, y)` with `(w, h)` size, normalised 0..1 over a 3:4 portrait background. Y-axis layout: `0..0.15` roof/front, `0.15..0.45` upper floor, `0.45..0.75` ground floor (incl. `bh_backyard`), `0.75..0.95` basement.
 - `assetSections/bandhausModules.ts` registers 16 modules via side-effect import from `assetRegistryStore.ts`. `bh_secret`-slotted modules (`bh_vinyl_press_corner`, `bh_pirate_radio_antenna`) have their Tier-3 requirement enforced implicitly — the `bh_secret` slot only exists in `BANDHAUS_T3_SLOTS`, so lower-tier chassis can't host them. If a future module needs a Tier-3 floor even on a slot that already exists in Tier-2, add `unlock.minChassisTier: 3` explicitly.
 - DIY bandhaus modules with `riskEventTypes` (`raid` from `bh_weed_garden`, `police_check` from `bh_pirate_radio_antenna`) feed `rollAssetRiskEvents` — verified by `bandhausIntegration.test.js`.
+
+## Merch-Werkstatt
+
+- `assetSections/workshopConfig.ts` exports `WORKSHOP_T1_SLOTS` / `T2_SLOTS` / `T3_SLOTS` and `WORKSHOP_SLOT_ZONES`. Layout is a 21:9 horizontal production line: Print → Drying → Cutting → Packaging → Storage, with Specialty + Automation above the line and Sales as the right-side dispatch gate.
+- `assetSections/workshopModules.ts` registers 16 modules. `mw_eco_ink_supply.unlock.requiredOtherModuleInstalled` uses `['mw_4color_carousel', 'mw_manual_press']` as an OR-set; `isModuleUnlocked` owns that OR semantics. Do not reimplement unlock evaluation inside workshop modules.

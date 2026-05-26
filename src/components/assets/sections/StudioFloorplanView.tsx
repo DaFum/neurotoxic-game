@@ -5,6 +5,8 @@ import {
   getModuleImagePrompt
 } from '../../../utils/imageGen'
 import { STUDIO_SLOT_ZONES } from '../../../utils/assetSections/studioConfig'
+import { formatSlotZonePercent } from '../../../utils/assetSections/slotLayout'
+import { getSlotButtonAriaLabel } from './slotLabels'
 import type { LongTermAsset } from '../../../types/assets'
 
 interface Props {
@@ -15,13 +17,13 @@ interface Props {
 export const StudioFloorplanView = ({ asset, onSlotClick }: Props) => {
   const { t } = useTranslation(['assets'])
   return (
-    <div className='relative'>
+    <div className='asset-hero-visual relative'>
       <GeneratedImagePanel
         prompt={getSectionBackgroundPrompt(
           'studio_chassis',
           asset.chassisFlavor
         )}
-        alt='Studio floorplan'
+        alt={t('assets:section.studio.alt')}
         aspectRatio='4:3'
         sizeHint={{ width: 1024, height: 768 }}
       />
@@ -33,14 +35,14 @@ export const StudioFloorplanView = ({ asset, onSlotClick }: Props) => {
           <button
             key={slot.id}
             type='button'
-            aria-label={t(`assets:slot.${slot.slotType}`)}
+            aria-label={getSlotButtonAriaLabel(t, slot.slotType, installed)}
             onClick={() => onSlotClick(slot.id)}
             className='absolute'
             style={{
-              left: `${(zone.x - zone.w / 2) * 100}%`,
-              top: `${(zone.y - zone.h / 2) * 100}%`,
-              width: `${zone.w * 100}%`,
-              height: `${zone.h * 100}%`,
+              left: formatSlotZonePercent((zone.x - zone.w / 2) * 100),
+              top: formatSlotZonePercent((zone.y - zone.h / 2) * 100),
+              width: formatSlotZonePercent(zone.w * 100),
+              height: formatSlotZonePercent(zone.h * 100),
               border:
                 '2px dashed var(--section-accent, var(--color-electric-blue))',
               background: installed ? 'transparent' : 'var(--color-hotspot-bg)',
@@ -50,7 +52,9 @@ export const StudioFloorplanView = ({ asset, onSlotClick }: Props) => {
             {installed && (
               <GeneratedImagePanel
                 prompt={getModuleImagePrompt(installed)}
-                alt={installed}
+                alt={t(`assets:module.${installed}.name`, {
+                  defaultValue: installed
+                })}
                 aspectRatio='1:1'
                 variant='hotspot'
                 sizeHint={{ width: 256, height: 256 }}

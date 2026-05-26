@@ -488,6 +488,15 @@
         "type": "function"
       }
     ],
+    "ASSET_SECTION_TABS": [
+      {
+        "isDefault": false,
+        "name": "ASSET_SECTION_TABS",
+        "path": "src/components/assets/sectionTabs.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "AssetBoni": [
       {
         "isDefault": false,
@@ -556,6 +565,43 @@
         "type": "const"
       }
     ],
+    "AssetsBottomTabs": [
+      {
+        "isDefault": false,
+        "name": "AssetsBottomTabs",
+        "path": "src/components/assets/AssetsBottomTabs.tsx",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "AssetSectionDeck": [
+      {
+        "isDefault": false,
+        "name": "AssetSectionDeck",
+        "path": "src/components/assets/AssetSectionDeck.tsx",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "AssetSectionPanel": [
+      {
+        "isDefault": false,
+        "name": "AssetSectionPanel",
+        "path": "src/components/assets/AssetSectionPanel.tsx",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "AssetSectionTab": [
+      {
+        "isDefault": false,
+        "name": "AssetSectionTab",
+        "path": "src/components/assets/sectionTabs.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
+      }
+    ],
     "AssetSlot": [
       {
         "isDefault": false,
@@ -564,6 +610,15 @@
         "source": "local",
         "type": "interface",
         "typeOnly": true
+      }
+    ],
+    "AssetSlotActionList": [
+      {
+        "isDefault": false,
+        "name": "AssetSlotActionList",
+        "path": "src/components/assets/AssetSlotActionList.tsx",
+        "source": "local",
+        "type": "const"
       }
     ],
     "AssetsScene": [
@@ -575,11 +630,11 @@
         "type": "const"
       }
     ],
-    "AssetsTopBar": [
+    "AssetsStatusStrip": [
       {
         "isDefault": false,
-        "name": "AssetsTopBar",
-        "path": "src/components/assets/AssetsTopBar.tsx",
+        "name": "AssetsStatusStrip",
+        "path": "src/components/assets/AssetsStatusStrip.tsx",
         "source": "local",
         "type": "const"
       }
@@ -820,6 +875,60 @@
         "isDefault": false,
         "name": "bandHasTrait",
         "path": "src/utils/traitUtils.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "BANDHAUS_SLOT_ZONES": [
+      {
+        "isDefault": false,
+        "name": "BANDHAUS_SLOT_ZONES",
+        "path": "src/utils/assetSections/bandhausConfig.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "BANDHAUS_T1_SLOTS": [
+      {
+        "isDefault": false,
+        "name": "BANDHAUS_T1_SLOTS",
+        "path": "src/utils/assetSections/bandhausConfig.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "BANDHAUS_T2_SLOTS": [
+      {
+        "isDefault": false,
+        "name": "BANDHAUS_T2_SLOTS",
+        "path": "src/utils/assetSections/bandhausConfig.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "BANDHAUS_T3_SLOTS": [
+      {
+        "isDefault": false,
+        "name": "BANDHAUS_T3_SLOTS",
+        "path": "src/utils/assetSections/bandhausConfig.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "BandhausCrossSectionView": [
+      {
+        "isDefault": false,
+        "name": "BandhausCrossSectionView",
+        "path": "src/components/assets/sections/BandhausCrossSectionView.tsx",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "BandhausSection": [
+      {
+        "isDefault": false,
+        "name": "BandhausSection",
+        "path": "src/components/assets/sections/BandhausSection.tsx",
         "source": "local",
         "type": "const"
       }
@@ -4288,6 +4397,15 @@
         "type": "const"
       }
     ],
+    "formatSlotZonePercent": [
+      {
+        "isDefault": false,
+        "name": "formatSlotZonePercent",
+        "path": "src/utils/assetSections/slotLayout.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "Fragment": [
       {
         "isDefault": false,
@@ -5001,6 +5119,15 @@
         "isDefault": false,
         "name": "getSectionBackgroundPrompt",
         "path": "src/utils/imageGen.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "getSlotButtonAriaLabel": [
+      {
+        "isDefault": false,
+        "name": "getSlotButtonAriaLabel",
+        "path": "src/components/assets/sections/slotLabels.ts",
         "source": "local",
         "type": "const"
       }
@@ -6925,6 +7052,15 @@
         "isDefault": false,
         "name": "MerchStrategyBlock",
         "path": "src/components/pregig/MerchStrategyBlock.tsx",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "MerchWorkshopSection": [
+      {
+        "isDefault": false,
+        "name": "MerchWorkshopSection",
+        "path": "src/components/assets/sections/MerchWorkshopSection.tsx",
         "source": "local",
         "type": "const"
       }
@@ -10107,6 +10243,60 @@
         "type": "class"
       }
     ],
+    "STUDIO_SLOT_ZONES": [
+      {
+        "isDefault": false,
+        "name": "STUDIO_SLOT_ZONES",
+        "path": "src/utils/assetSections/studioConfig.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "STUDIO_T1_SLOTS": [
+      {
+        "isDefault": false,
+        "name": "STUDIO_T1_SLOTS",
+        "path": "src/utils/assetSections/studioConfig.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "STUDIO_T2_SLOTS": [
+      {
+        "isDefault": false,
+        "name": "STUDIO_T2_SLOTS",
+        "path": "src/utils/assetSections/studioConfig.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "STUDIO_T3_SLOTS": [
+      {
+        "isDefault": false,
+        "name": "STUDIO_T3_SLOTS",
+        "path": "src/utils/assetSections/studioConfig.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "StudioFloorplanView": [
+      {
+        "isDefault": false,
+        "name": "StudioFloorplanView",
+        "path": "src/components/assets/sections/StudioFloorplanView.tsx",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "StudioSection": [
+      {
+        "isDefault": false,
+        "name": "StudioSection",
+        "path": "src/components/assets/sections/StudioSection.tsx",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "submitLeaderboardScores": [
       {
         "isDefault": false,
@@ -11749,6 +11939,51 @@
         "isDefault": false,
         "name": "withTimeout",
         "path": "src/components/stage/stageRenderUtils.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "WORKSHOP_SLOT_ZONES": [
+      {
+        "isDefault": false,
+        "name": "WORKSHOP_SLOT_ZONES",
+        "path": "src/utils/assetSections/workshopConfig.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "WORKSHOP_T1_SLOTS": [
+      {
+        "isDefault": false,
+        "name": "WORKSHOP_T1_SLOTS",
+        "path": "src/utils/assetSections/workshopConfig.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "WORKSHOP_T2_SLOTS": [
+      {
+        "isDefault": false,
+        "name": "WORKSHOP_T2_SLOTS",
+        "path": "src/utils/assetSections/workshopConfig.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "WORKSHOP_T3_SLOTS": [
+      {
+        "isDefault": false,
+        "name": "WORKSHOP_T3_SLOTS",
+        "path": "src/utils/assetSections/workshopConfig.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "WorkshopProductionLineView": [
+      {
+        "isDefault": false,
+        "name": "WorkshopProductionLineView",
+        "path": "src/components/assets/sections/WorkshopProductionLineView.tsx",
         "source": "local",
         "type": "const"
       }

@@ -73,7 +73,7 @@ export const CrowdfundSetupModal = ({
       isOpen={isOpen}
       onClose={onClose}
       title={t('assets:crowdfund.setup')}
-      className='max-w-lg'
+      className='assets-modal-sheet max-w-lg'
     >
       <div className='flex flex-col gap-3 p-4 font-mono text-sm'>
         <GeneratedImagePanel
@@ -112,14 +112,14 @@ export const CrowdfundSetupModal = ({
           <button
             type='button'
             onClick={onClose}
-            className='border-2 px-3 py-1'
+            className='min-h-11 border-2 px-3 py-2'
           >
             {t('ui:action_cancel', { defaultValue: 'Cancel' })}
           </button>
           <button
             type='button'
             onClick={onConfirm}
-            className='border-2 px-3 py-1'
+            className='min-h-11 border-2 px-3 py-2'
             style={{
               background: 'var(--section-accent)',
               color: 'var(--color-void)'
