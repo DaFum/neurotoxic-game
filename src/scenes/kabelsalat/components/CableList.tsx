@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { CABLES } from '../kabelsalatConstants'
 import { CableItem } from './CableItem.tsx'
 import type { TFunction } from 'i18next'
@@ -22,11 +23,20 @@ export const CableList = ({
   isGameOver,
   handleCableClick
 }: CableListProps) => {
-  const connectedCableIds = new Set<CableId>(
-    Object.values(connections).filter(
-      (connection): connection is CableId => connection != null
-    )
-  )
+  // Bolt: Memoize connected cable IDs to avoid allocating Sets on every render.
+  // Also avoid Object.values(connections).filter(...) to prevent intermediate array allocation overhead.
+  const connectedCableIds = useMemo(() => {
+    const set = new Set<CableId>()
+    for (const key in connections) {
+      if (Object.hasOwn(connections, key)) {
+        const connection = connections[key as SocketId]
+        if (connection != null) {
+          set.add(connection)
+        }
+      }
+    }
+    return set
+  }, [connections])
 
   return (
     <>
