@@ -54,12 +54,6 @@ export {
 } from './objectUtils'
 
 /**
- * @deprecated Prefer `isLooseRecord` or `isPlainRecord` so the intended object
- * boundary is explicit.
- */
-export const isPlainObject = isLooseRecord
-
-/**
  * High-performance check for object emptiness.
  * Returns true if the object has no enumerable properties.
  * Avoids the array allocation of Object.keys().length === 0.
@@ -531,10 +525,10 @@ const copyFilteredProperties = (source: unknown): FilteredRecord => {
 }
 
 const asMemberDelta = (value: unknown): MemberDelta | null =>
-  isPlainObject(value) ? value : null
+  isLooseRecord(value) ? value : null
 
 const isRelationshipChange = (value: unknown): value is RelationshipChange => {
-  if (!isPlainObject(value)) return false
+  if (!isLooseRecord(value)) return false
   return (
     typeof value.member1 === 'string' &&
     typeof value.member2 === 'string' &&
@@ -686,7 +680,7 @@ export const calculateAppliedDelta = (
 
     if (
       membersDelta &&
-      (Array.isArray(membersDelta) || isPlainObject(membersDelta))
+      (Array.isArray(membersDelta) || isLooseRecord(membersDelta))
     ) {
       const isArrayDelta = Array.isArray(membersDelta)
       const members = Array.isArray(state.band?.members)
@@ -1007,7 +1001,7 @@ export const applyEventDelta = (
         // 1. Mood & Stamina
         if (
           membersDelta &&
-          (Array.isArray(membersDelta) || isPlainObject(membersDelta))
+          (Array.isArray(membersDelta) || isLooseRecord(membersDelta))
         ) {
           const rawMemberDelta = isArrayDelta ? membersDelta[i] : membersDelta
           const mDelta = asMemberDelta(rawMemberDelta) ?? Object.create(null)
@@ -1184,7 +1178,7 @@ export const applyEventDelta = (
           nextSocial[key] = newValue
         }
       } else if (key === 'influencers') {
-        if (isPlainObject(value)) {
+        if (isLooseRecord(value)) {
           const safeInfluencersUpdate: Record<
             string,
             Record<string, unknown>
@@ -1193,7 +1187,7 @@ export const applyEventDelta = (
             if (!Object.hasOwn(value, influencerId)) continue
             if (isForbiddenKey(influencerId)) continue
             const influencerValue = value[influencerId]
-            if (isPlainObject(influencerValue)) {
+            if (isLooseRecord(influencerValue)) {
               safeInfluencersUpdate[influencerId] =
                 copyFilteredProperties(influencerValue)
             }
@@ -1291,7 +1285,7 @@ export const hasActiveSponsorship = (
     return false
   }
   return socialState.activeDeals.some(deal => {
-    if (!isPlainObject(deal)) return false
+    if (!isLooseRecord(deal)) return false
     const d: SponsorshipDealLike = deal
     return (
       d.type === 'SPONSORSHIP' &&

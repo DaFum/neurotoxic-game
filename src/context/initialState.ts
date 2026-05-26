@@ -6,7 +6,7 @@
 
 import { CHARACTERS } from '../data/characters'
 import { LOG_LEVELS, isValidLogLevel } from '../utils/logger'
-import { isPlainObject, safeJsonParse } from '../utils/gameStateUtils'
+import { isLooseRecord, safeJsonParse } from '../utils/gameStateUtils'
 import { DEFAULT_MINIGAME_STATE, GAME_PHASES } from './gameConstants'
 import { normalizeTraitMap } from '../utils/traitUtils'
 import type {
@@ -205,7 +205,7 @@ const sanitizeSettings = (
   tutorialSeen?: boolean
   logLevel?: number
 } => {
-  if (!isPlainObject(input)) return {}
+  if (!isLooseRecord(input)) return {}
 
   const next: {
     crtEnabled?: boolean

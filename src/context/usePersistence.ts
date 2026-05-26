@@ -8,7 +8,7 @@ import {
 import type { TFunction } from 'i18next'
 import {
   normalizeSetlistForSave,
-  isPlainObject,
+  isLooseRecord,
   safeJsonParse
 } from '../utils/gameStateUtils'
 import { handleError, StateError, StorageError } from '../utils/errorHandler'
@@ -211,7 +211,7 @@ export function usePersistence({
           return false
         }
 
-        if (!isPlainObject(parsed)) {
+        if (!isLooseRecord(parsed)) {
           handleError(
             new StateError(
               tRef.current('ui:save.corruptFailed', {

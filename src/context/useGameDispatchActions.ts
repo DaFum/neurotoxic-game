@@ -17,7 +17,7 @@ import type {
 } from '../types'
 import { GAME_PHASES, PRACTICE_RETURN_SCENES } from './gameConstants'
 import { logger, isValidLogLevel } from '../utils/logger'
-import { safeJsonParse, isPlainObject } from '../utils/gameStateUtils'
+import { safeJsonParse, isLooseRecord } from '../utils/gameStateUtils'
 import { safeStorageNoFallback, safeStorage } from '../utils/storage'
 import { handleError, StateError } from '../utils/errorHandler'
 import { getUnlocks } from '../utils/unlockManager'
@@ -607,7 +607,7 @@ export function useGameDispatchActions({
         const current = safeJsonParse(
           localStorage.getItem('neurotoxic_global_settings') || '{}'
         )
-        const next = isPlainObject(current)
+        const next = isLooseRecord(current)
           ? { ...current, ...updates }
           : { ...updates }
         localStorage.setItem('neurotoxic_global_settings', JSON.stringify(next))

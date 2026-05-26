@@ -7,7 +7,7 @@ import {
   clampPlayerMoney,
   calculateFameLevel,
   clampControversyLevel,
-  isPlainObject
+  isLooseRecord
 } from '../utils/gameStateUtils'
 import { QUEST_PROVE_YOURSELF } from '../data/questsConstants'
 import { hasActiveQuest } from '../utils/questUtils'
@@ -231,7 +231,7 @@ export const QuestLifecycle = {
     for (let i = 0; i < nextState.activeQuests.length; i++) {
       const quest = nextState.activeQuests[i]
       if (!quest) continue
-      const penalty = isPlainObject(quest.failurePenalty)
+      const penalty = isLooseRecord(quest.failurePenalty)
         ? (quest.failurePenalty as Record<string, unknown>)
         : undefined
 
@@ -241,7 +241,7 @@ export const QuestLifecycle = {
       ) {
         hasExpired = true
         if (penalty) {
-          const socialPenalty = isPlainObject(penalty.social)
+          const socialPenalty = isLooseRecord(penalty.social)
             ? (penalty.social as Record<string, unknown>)
             : undefined
           if (socialPenalty?.controversyLevel != null) {
@@ -255,7 +255,7 @@ export const QuestLifecycle = {
               (nextState.social.controversyLevel ?? 0) + validPenalty
             )
           }
-          const bandPenalty = isPlainObject(penalty.band)
+          const bandPenalty = isLooseRecord(penalty.band)
             ? (penalty.band as Record<string, unknown>)
             : undefined
           if (bandPenalty?.harmony != null) {

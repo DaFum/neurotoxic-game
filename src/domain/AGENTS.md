@@ -10,7 +10,7 @@
 
 ## Payloads
 
-- Treat raw event/quest payloads as `unknown`; narrow with `isPlainObject` or explicit type guards before constructing actions. Use `logger.warn` and skip payloads that fail those guards instead of throwing from domain helpers.
+- Treat raw event/quest payloads as `unknown`; narrow with `isLooseRecord` or explicit type guards before constructing actions. Use `logger.warn` and skip payloads that fail those guards instead of throwing from domain helpers.
 
 ## Gotchas
 
