@@ -213,13 +213,13 @@ const sanitizeSettings = (
     logLevel?: number
   } = {}
 
-  if ('crtEnabled' in input) {
+  if (Object.hasOwn(input, 'crtEnabled')) {
     next.crtEnabled = Boolean(input.crtEnabled)
   }
-  if ('tutorialSeen' in input) {
+  if (Object.hasOwn(input, 'tutorialSeen')) {
     next.tutorialSeen = Boolean(input.tutorialSeen)
   }
-  if ('logLevel' in input) {
+  if (Object.hasOwn(input, 'logLevel')) {
     const numeric = Number(input.logLevel)
     if (isValidLogLevel(numeric)) {
       next.logLevel = numeric

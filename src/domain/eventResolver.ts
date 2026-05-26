@@ -46,6 +46,7 @@ type EventResolution = {
 
 const isQuestStateLike = (value: unknown): value is QuestState =>
   isLooseRecord(value) &&
+  Object.hasOwn(value, 'id') &&
   typeof (value as Record<string, unknown>).id === 'string'
 
 function buildQuestActions(quests: unknown, currentDay: number): GameAction[] {

@@ -31,7 +31,7 @@ import {
   isForbiddenKey,
   clampVanFuel,
   clampRelationship,
-  isPlainRecord,
+  isLooseRecord,
   isEmptyObject,
   finiteNumberOr
 } from '../../utils/gameStateUtils'
@@ -127,7 +127,7 @@ const inferLoadedMapNodeType = (
   if (
     typeof nodeRecord.venueId === 'string' ||
     typeof nodeRecord.venue === 'string' ||
-    isPlainRecord(nodeRecord.venue)
+    isLooseRecord(nodeRecord.venue)
   ) {
     return 'GIG'
   }
@@ -145,7 +145,7 @@ const sanitizeStringArray = (value: unknown): string[] => {
 const copySafePrimitiveObject = (
   value: unknown
 ): Record<string, string | number | boolean | null> | undefined => {
-  if (!isPlainRecord(value)) return undefined
+  if (!isLooseRecord(value)) return undefined
   const copied: Record<string, string | number | boolean | null> = {}
   for (const key in value) {
     if (!Object.hasOwn(value, key)) continue
@@ -182,7 +182,7 @@ const copySafeJsonValue = (value: unknown, depth = 0): unknown => {
       return copied === undefined ? [] : [copied]
     })
   }
-  if (!isPlainRecord(value)) return undefined
+  if (!isLooseRecord(value)) return undefined
 
   const copied: Record<string, unknown> = {}
   for (const key in value) {
@@ -212,7 +212,7 @@ const copySafeEffectPayload = (
 
 const sanitizeBandInventory = (value: unknown): BandState['inventory'] => {
   const sanitized: BandState['inventory'] = { ...DEFAULT_BAND_STATE.inventory }
-  if (!isPlainRecord(value)) return sanitized
+  if (!isLooseRecord(value)) return sanitized
 
   const defaultInventory = DEFAULT_BAND_STATE.inventory
   for (const key in defaultInventory) {
@@ -324,7 +324,7 @@ const copySafeFlatObject = (
 const validateLoadedEffect = (
   effect: unknown
 ): Record<string, unknown> | null => {
-  if (!isPlainRecord(effect)) return null
+  if (!isLooseRecord(effect)) return null
 
   const effectObj = effect as Record<string, unknown>
   const typeStr = typeof effectObj.type === 'string' ? effectObj.type : ''
@@ -630,11 +630,15 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
 }
 
 const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
-  const playerData = isPlainRecord(loadedPlayer)
-    ? (loadedPlayer as Record<string, unknown>)
+  const playerData = isLooseRecord(loadedPlayer)
+    ? Object.assign({}, loadedPlayer)
     : {}
-  const vanData = isPlainRecord(playerData.van) ? playerData.van : {}
-  const statsData = isPlainRecord(playerData.stats) ? playerData.stats : {}
+  const vanData = isLooseRecord(playerData.van)
+    ? Object.assign({}, playerData.van)
+    : {}
+  const statsData = isLooseRecord(playerData.stats)
+    ? Object.assign({}, playerData.stats)
+    : {}
 
   const rawPlayer: PlayerState = {
     ...DEFAULT_PLAYER_STATE,
@@ -747,7 +751,7 @@ const parseNumericStats = (
   valueTransformer?: (val: number) => number,
   ignoredKeys?: Set<string>
 ): Record<string, number> => {
-  if (!isPlainRecord(obj)) return {}
+  if (!isLooseRecord(obj)) return {}
   const result: Record<string, number> = {}
   for (const key of Object.keys(obj)) {
     if (isForbiddenKey(key)) continue
@@ -765,8 +769,8 @@ const parseNumericStats = (
 }
 
 const sanitizeBand = (loadedBand: unknown): BandState => {
-  const bandData = isPlainRecord(loadedBand)
-    ? (loadedBand as Record<string, unknown>)
+  const bandData = isLooseRecord(loadedBand)
+    ? Object.assign({}, loadedBand)
     : {}
   const rawBand: BandState = {
     ...DEFAULT_BAND_STATE,
@@ -782,21 +786,24 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
     luck: finiteNumberOr(bandData.luck, DEFAULT_BAND_STATE.luck),
     performance: {
       ...DEFAULT_BAND_STATE.performance,
-      ...(isPlainRecord(bandData.performance)
-        ? {
-            guitarDifficulty: finiteNumberOr(
-              bandData.performance.guitarDifficulty,
-              DEFAULT_BAND_STATE.performance.guitarDifficulty
-            ),
-            drumMultiplier: finiteNumberOr(
-              bandData.performance.drumMultiplier,
-              DEFAULT_BAND_STATE.performance.drumMultiplier
-            ),
-            crowdDecay: finiteNumberOr(
-              bandData.performance.crowdDecay,
-              DEFAULT_BAND_STATE.performance.crowdDecay
-            )
-          }
+      ...(isLooseRecord(bandData.performance)
+        ? (() => {
+            const perfData = Object.assign({}, bandData.performance)
+            return {
+              guitarDifficulty: finiteNumberOr(
+                perfData.guitarDifficulty,
+                DEFAULT_BAND_STATE.performance.guitarDifficulty
+              ),
+              drumMultiplier: finiteNumberOr(
+                perfData.drumMultiplier,
+                DEFAULT_BAND_STATE.performance.drumMultiplier
+              ),
+              crowdDecay: finiteNumberOr(
+                perfData.crowdDecay,
+                DEFAULT_BAND_STATE.performance.crowdDecay
+              )
+            }
+          })()
         : {})
     },
     inventory: sanitizeBandInventory(bandData.inventory),
@@ -862,7 +869,7 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
     activeContrabandEffects: Array.isArray(bandData.activeContrabandEffects)
       ? (bandData.activeContrabandEffects as unknown[]).map(
           (effect: unknown) => {
-            const effectObj = isPlainRecord(effect)
+            const effectObj = isLooseRecord(effect)
               ? (effect as Record<string, unknown>)
               : {}
             return {
@@ -914,7 +921,7 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
     : DEFAULT_BAND_STATE.members
   const validatedMembers: BandMember[] = memberSource.flatMap(
     (rawMember, i) => {
-      if (!isPlainRecord(rawMember)) return []
+      if (!isLooseRecord(rawMember)) return []
       const m = rawMember
       const id =
         typeof m.id === 'string'
@@ -941,7 +948,7 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
         stamina: clampMemberStamina(finiteNumberOr(m.stamina, 100), staminaMax),
         baseStats: (() => {
           const stats = m.baseStats
-          if (!isPlainRecord(stats)) return {}
+          if (!isLooseRecord(stats)) return {}
           const result: Record<string, number> = {}
           for (const key in stats) {
             if (!Object.hasOwn(stats, key)) continue
@@ -1123,7 +1130,7 @@ const sanitizeSetlist = (rawSetlist: unknown): GameState['setlist'] => {
 const sanitizeReputationByRegion = (
   value: unknown
 ): GameState['reputationByRegion'] => {
-  if (!isPlainRecord(value)) return {}
+  if (!isLooseRecord(value)) return {}
   const sanitized: GameState['reputationByRegion'] = {}
   for (const key in value) {
     if (!Object.hasOwn(value, key)) continue
@@ -1143,7 +1150,8 @@ const sanitizeSocial = (value: unknown): SocialState => {
     brandReputation: { ...DEFAULT_SOCIAL_STATE.brandReputation },
     influencers: { ...DEFAULT_SOCIAL_STATE.influencers }
   }
-  if (!isPlainRecord(value)) return sanitized
+  if (!isLooseRecord(value)) return sanitized
+  const safeValue = Object.assign({}, value)
 
   for (const key of [
     'instagram',
@@ -1156,7 +1164,7 @@ const sanitizeSocial = (value: unknown): SocialState => {
     'zealotry',
     'reputationCooldown'
   ] as const) {
-    const parsed = finiteOptionalNumber(value[key])
+    const parsed = finiteOptionalNumber(safeValue[key])
     if (parsed !== undefined) sanitized[key] = parsed
   }
 
@@ -1166,7 +1174,7 @@ const sanitizeSocial = (value: unknown): SocialState => {
     'lastPirateBroadcastDay',
     'lastDarkWebLeakDay'
   ] as const) {
-    const raw = value[key]
+    const raw = safeValue[key]
     if (raw === null) {
       sanitized[key] = null
       continue
@@ -1175,15 +1183,15 @@ const sanitizeSocial = (value: unknown): SocialState => {
     if (parsed !== undefined) sanitized[key] = parsed
   }
 
-  if (typeof value.egoFocus === 'string' || value.egoFocus === null) {
-    sanitized.egoFocus = value.egoFocus
+  if (typeof safeValue.egoFocus === 'string' || safeValue.egoFocus === null) {
+    sanitized.egoFocus = safeValue.egoFocus
   }
-  if (typeof value.trend === 'string') {
-    sanitized.trend = value.trend
+  if (typeof safeValue.trend === 'string') {
+    sanitized.trend = safeValue.trend
   }
 
-  if (Array.isArray(value.activeDeals)) {
-    sanitized.activeDeals = value.activeDeals.flatMap(deal => {
+  if (Array.isArray(safeValue.activeDeals)) {
+    sanitized.activeDeals = safeValue.activeDeals.flatMap(deal => {
       const copied = copySafePrimitiveObject(deal)
       if (
         !copied ||
@@ -1196,25 +1204,25 @@ const sanitizeSocial = (value: unknown): SocialState => {
     })
   }
 
-  if (isPlainRecord(value.brandReputation)) {
+  if (isLooseRecord(safeValue.brandReputation)) {
     sanitized.brandReputation = {}
-    for (const key in value.brandReputation) {
-      if (!Object.hasOwn(value.brandReputation, key)) continue
+    for (const key in safeValue.brandReputation) {
+      if (!Object.hasOwn(safeValue.brandReputation, key)) continue
       if (isForbiddenKey(key)) continue
-      const reputation = value.brandReputation[key]
+      const reputation = safeValue.brandReputation[key]
       if (typeof reputation === 'number' && Number.isFinite(reputation)) {
         sanitized.brandReputation[key] = reputation
       }
     }
   }
 
-  if (isPlainRecord(value.influencers)) {
+  if (isLooseRecord(safeValue.influencers)) {
     sanitized.influencers = {}
-    for (const key in value.influencers) {
-      if (!Object.hasOwn(value.influencers, key)) continue
+    for (const key in safeValue.influencers) {
+      if (!Object.hasOwn(safeValue.influencers, key)) continue
       if (isForbiddenKey(key)) continue
-      const influencer = value.influencers[key]
-      if (!isPlainRecord(influencer)) continue
+      const influencer = safeValue.influencers[key]
+      if (!isLooseRecord(influencer)) continue
       const { tier, trait, score } = influencer
       if (
         typeof tier !== 'string' ||
@@ -1232,7 +1240,7 @@ const sanitizeSocial = (value: unknown): SocialState => {
 }
 
 const sanitizeActiveEventOption = (value: unknown): EventOption | null => {
-  if (!isPlainRecord(value)) return null
+  if (!isLooseRecord(value)) return null
 
   const option: EventOption = {}
   for (const key of [
@@ -1263,7 +1271,7 @@ const sanitizeActiveEventOption = (value: unknown): EventOption | null => {
 }
 
 const sanitizeActiveEvent = (value: unknown): GameState['activeEvent'] => {
-  if (!isPlainRecord(value) || typeof value.id !== 'string') return null
+  if (!isLooseRecord(value) || typeof value.id !== 'string') return null
 
   const event: GameEvent = { id: value.id }
   for (const key of [
@@ -1295,13 +1303,13 @@ const sanitizeActiveEvent = (value: unknown): GameState['activeEvent'] => {
 }
 
 const sanitizeNpcs = (value: unknown): GameState['npcs'] => {
-  if (!isPlainRecord(value)) return {}
+  if (!isLooseRecord(value)) return {}
   const sanitized: GameState['npcs'] = {}
   for (const key in value) {
     if (!Object.hasOwn(value, key)) continue
     if (isForbiddenKey(key)) continue
     const npc = value[key]
-    if (!isPlainRecord(npc) || typeof npc.id !== 'string') continue
+    if (!isLooseRecord(npc) || typeof npc.id !== 'string') continue
     if (isForbiddenKey(npc.id)) continue
     sanitized[key] = {
       id: npc.id,
@@ -1321,7 +1329,7 @@ const sanitizeNpcs = (value: unknown): GameState['npcs'] => {
 
 const sanitizeGigModifiers = (value: unknown): GameState['gigModifiers'] => {
   const sanitized = { ...DEFAULT_GIG_MODIFIERS }
-  if (!isPlainRecord(value)) return sanitized
+  if (!isLooseRecord(value)) return sanitized
   for (const key of Object.keys(DEFAULT_GIG_MODIFIERS)) {
     if (typeof value[key] === 'boolean') {
       sanitized[key as keyof typeof DEFAULT_GIG_MODIFIERS] = value[
@@ -1336,7 +1344,7 @@ const sanitizeGigModifiers = (value: unknown): GameState['gigModifiers'] => {
 }
 
 const sanitizeVenue = (value: unknown): GameState['currentGig'] => {
-  if (!isPlainRecord(value)) return null
+  if (!isLooseRecord(value)) return null
   if (typeof value.id !== 'string' || typeof value.name !== 'string') {
     return null
   }
@@ -1364,7 +1372,7 @@ const sanitizeVenue = (value: unknown): GameState['currentGig'] => {
 }
 
 const sanitizeLastGigStats = (value: unknown): GameState['lastGigStats'] => {
-  if (!isPlainRecord(value)) return null
+  if (!isLooseRecord(value)) return null
   const sanitized: NonNullable<GameState['lastGigStats']> = {}
   for (const key of [
     'score',
@@ -1383,7 +1391,7 @@ const sanitizeLastGigStats = (value: unknown): GameState['lastGigStats'] => {
 const sanitizeActiveQuests = (value: unknown): GameState['activeQuests'] => {
   if (!Array.isArray(value)) return []
   return value.flatMap(quest => {
-    if (!isPlainRecord(quest) || typeof quest.id !== 'string') return []
+    if (!isLooseRecord(quest) || typeof quest.id !== 'string') return []
     const sanitized: GameState['activeQuests'][number] = { id: quest.id }
     for (const key of ['label', 'description', 'rewardType', 'rewardFlag']) {
       if (typeof quest[key] === 'string') sanitized[key] = quest[key]
@@ -1399,7 +1407,7 @@ const sanitizeActiveQuests = (value: unknown): GameState['activeQuests'] => {
     const rewardData = copySafePrimitiveObject(quest.rewardData)
     if (rewardData !== undefined) sanitized.rewardData = rewardData
     const failurePenalty = copySafeJsonValue(quest.failurePenalty)
-    if (isPlainRecord(failurePenalty)) sanitized.failurePenalty = failurePenalty
+    if (isLooseRecord(failurePenalty)) sanitized.failurePenalty = failurePenalty
     return [sanitized]
   })
 }
