@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useGameActions } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
 import type { AssetKind } from '../../types/assets'
-import { AssetsTopBar } from './AssetsTopBar'
+import { AssetsStatusStrip } from './AssetsStatusStrip'
 import { DEFAULT_SECTION_ACCENT, SECTION_VIEWS } from './sectionRegistry'
 
 /**
@@ -55,7 +55,7 @@ export const AssetsScene = () => {
       className='relative flex h-full w-full flex-col bg-void-black text-toxic-green'
       style={wrapperStyle}
     >
-      <AssetsTopBar />
+      <AssetsStatusStrip />
 
       <div
         className='flex items-stretch border-b-2'
