@@ -488,6 +488,15 @@
         "type": "function"
       }
     ],
+    "ASSET_SECTION_TABS": [
+      {
+        "isDefault": false,
+        "name": "ASSET_SECTION_TABS",
+        "path": "src/components/assets/sectionTabs.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "AssetBoni": [
       {
         "isDefault": false,
@@ -556,6 +565,43 @@
         "type": "const"
       }
     ],
+    "AssetsBottomTabs": [
+      {
+        "isDefault": false,
+        "name": "AssetsBottomTabs",
+        "path": "src/components/assets/AssetsBottomTabs.tsx",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "AssetSectionDeck": [
+      {
+        "isDefault": false,
+        "name": "AssetSectionDeck",
+        "path": "src/components/assets/AssetSectionDeck.tsx",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "AssetSectionPanel": [
+      {
+        "isDefault": false,
+        "name": "AssetSectionPanel",
+        "path": "src/components/assets/AssetSectionPanel.tsx",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "AssetSectionTab": [
+      {
+        "isDefault": false,
+        "name": "AssetSectionTab",
+        "path": "src/components/assets/sectionTabs.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
+      }
+    ],
     "AssetSlot": [
       {
         "isDefault": false,
@@ -564,6 +610,15 @@
         "source": "local",
         "type": "interface",
         "typeOnly": true
+      }
+    ],
+    "AssetSlotActionList": [
+      {
+        "isDefault": false,
+        "name": "AssetSlotActionList",
+        "path": "src/components/assets/AssetSlotActionList.tsx",
+        "source": "local",
+        "type": "const"
       }
     ],
     "AssetsScene": [
@@ -575,11 +630,11 @@
         "type": "const"
       }
     ],
-    "AssetsTopBar": [
+    "AssetsStatusStrip": [
       {
         "isDefault": false,
-        "name": "AssetsTopBar",
-        "path": "src/components/assets/AssetsTopBar.tsx",
+        "name": "AssetsStatusStrip",
+        "path": "src/components/assets/AssetsStatusStrip.tsx",
         "source": "local",
         "type": "const"
       }
