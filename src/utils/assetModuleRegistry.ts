@@ -20,3 +20,4 @@ export { MODULE_REGISTRY, MODULE_PROMPTS } from './assetRegistryStore'
 
 import './assetSections/tourbusModules'
 import './assetSections/studioModules'
+import './assetSections/bandhausModules'

@@ -35,3 +35,11 @@
 - `sections/StudioFloorplanView.tsx` renders a 4:3 isometric studio background with rectangle zone overlays sourced from `STUDIO_SLOT_ZONES` — dashed borders instead of round point hotspots, matching the room-layout metaphor (zones, not points).
 - Zone rectangles use `top-left = (x - w/2, y - h/2)` and `width/height = (w, h)` after percent conversion.
 - Installed-module thumbnails route through `GeneratedImagePanel` with `aspectRatio='1:1'` + `variant='hotspot'` — do NOT introduce raw `<img>` tags here; the project's GeneratedImagePanel-is-the-only-Pollinations-consumer rule applies.
+
+## Bandhaus
+
+- `sections/BandhausSection.tsx` is the entry point; registers `SECTION_VIEWS.bandhaus_chassis` from `sectionRegistry.ts` with accent `var(--color-cosmic-purple)`. Uses the narrow-selector + `useMemo` pattern (subscribes to `s.assets` and memo-filters) so the panel doesn't re-render on unrelated state changes.
+- `sections/BandhausCrossSectionView.tsx` renders a 3:4 portrait Dollhouse cross-section. Slot rectangles use `top-left = (x - w/2, y - h/2)`.
+- `bh_secret` slots are tier-gated in the UI: the view returns `null` for any `bh_secret` slot when `asset.chassisTier < 3`, even if a sanitizer or save migration left the slot in place.
+- `bh_identity` slots, when populated, render the module image as a wide facade overlay (`sizeHint: { width: 512, height: 128 }`) with a half-transparent `--color-hotspot-bg` backdrop so the mural stays legible against the background image. Non-mural installed slots use a transparent backdrop.
+- All borders use `var(--section-accent, var(--color-cosmic-purple))`. Installed-module thumbnails route through `GeneratedImagePanel` — no raw `<img>` here, per the project Pollinations rule.
