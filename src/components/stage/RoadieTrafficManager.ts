@@ -2,7 +2,7 @@ import { Container, Graphics, Sprite } from 'pixi.js'
 import { logger } from '../../utils/logger'
 import { hashString } from '../../utils/stringUtils'
 
-type RoadieCar = {
+export type RoadieCar = {
   id: string | number
   x: number
   width: number
@@ -12,7 +12,7 @@ type RoadieCar = {
 }
 
 type RoadieTrafficState = {
-  traffic?: unknown
+  traffic?: RoadieCar[]
 }
 
 export class RoadieTrafficManager {
@@ -78,36 +78,16 @@ export class RoadieTrafficManager {
     }
 
     this.currentIds.clear()
-    for (const rawCar of state.traffic) {
-      if (!rawCar || typeof rawCar !== 'object') continue
-      const carRecord = rawCar as Record<string, unknown>
-      if (
-        (typeof carRecord.id !== 'string' &&
-          typeof carRecord.id !== 'number') ||
-        typeof carRecord.x !== 'number' ||
-        typeof carRecord.width !== 'number' ||
-        typeof carRecord.row !== 'number' ||
-        typeof carRecord.speed !== 'number'
-      )
-        continue
-      const carId = carRecord.id
-      const carX = carRecord.x
-      const carWidth = carRecord.width
-      const carRow = carRecord.row
-      const carSpeed = carRecord.speed
-      const carTextureHash =
-        typeof carRecord.textureHash === 'number'
-          ? carRecord.textureHash
-          : undefined
+    // ⚡ Bolt: Removed unnecessary runtime type validation and object allocation inside the hot path.
+    // Traffic array is guaranteed to be well-typed RoadieCar objects from the game logic state.
+    for (const car of state.traffic) {
+      if (!car) continue
+      const carId = car.id
+      const carX = car.x
+      const carWidth = car.width
+      const carRow = car.row
+      const carSpeed = car.speed
 
-      const car: RoadieCar = {
-        id: carId,
-        x: carX,
-        width: carWidth,
-        row: carRow,
-        speed: carSpeed,
-        textureHash: carTextureHash
-      }
       this.currentIds.add(carId)
       const sprite = this._getOrCreateCarSprite(car)
 

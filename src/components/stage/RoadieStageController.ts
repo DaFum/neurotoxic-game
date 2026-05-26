@@ -3,6 +3,7 @@ import { BaseStageController } from './BaseStageController'
 import { RoadieTrafficManager } from './RoadieTrafficManager'
 import { RoadiePlayerManager } from './RoadiePlayerManager'
 import type { RoadieRenderState } from './RoadiePlayerManager'
+import type { RoadieCar } from './RoadieTrafficManager'
 import {
   ROADIE_GRID_WIDTH,
   ROADIE_GRID_HEIGHT
@@ -18,7 +19,7 @@ import { handleError, GameError } from '../../utils/errorHandler'
 import type { StageControllerOptions } from '../../types/components'
 
 type RoadieStageState = RoadieRenderState & {
-  traffic?: unknown
+  traffic?: RoadieCar[]
 }
 
 class RoadieStageController extends BaseStageController<RoadieStageState> {
