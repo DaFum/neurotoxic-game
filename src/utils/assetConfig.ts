@@ -92,27 +92,6 @@ export const buildDiyTier = (legit: ChassisTierConfig): ChassisTierConfig => ({
 // Empty stub for foundation phase. Section plans 2–5 replace each entry with
 // concrete tier configurations. Every entry must be its own object — sharing
 // instances across kinds means a section plan mutating `tourbus_chassis.legit[1]`
-// would also affect `studio_chassis.legit[1]`. Factories below produce fresh
-// objects per kind, flavor, and tier.
-const makeEmptyTier = (): ChassisTierConfig => ({
-  price: 0,
-  upkeep: 0,
-  revenue: 0,
-  slots: [],
-  baseRiskEventChance: 0
-})
-
-const makeEmptyFlavorConfig = (): ChassisFlavorConfig => ({
-  1: makeEmptyTier(),
-  2: makeEmptyTier(),
-  3: makeEmptyTier()
-})
-
-const makeEmptyKindConfig = (): ChassisKindConfig => ({
-  legit: makeEmptyFlavorConfig(),
-  diy: makeEmptyFlavorConfig()
-})
-
 const TOURBUS_LEGIT = {
   1: {
     price: 4000,

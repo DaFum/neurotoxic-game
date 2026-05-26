@@ -42,7 +42,9 @@ export const GeneratedImagePanel = ({
   // successful image keeps `opacity: 1` during the new image's network round-trip
   // (flicker), or a previously errored image stays on the fallback forever.
   useEffect(() => {
+    // eslint-disable-next-line @eslint-react/set-state-in-effect
     setLoaded(false)
+    // eslint-disable-next-line @eslint-react/set-state-in-effect
     setErrored(false)
   }, [prompt])
 
