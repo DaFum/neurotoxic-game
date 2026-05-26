@@ -99,3 +99,8 @@ baseline instead of duplicating formulas.
 - `assetSections/bandhausConfig.ts` exports `BANDHAUS_T1_SLOTS` / `T2_SLOTS` / `T3_SLOTS` and `BANDHAUS_SLOT_ZONES: Partial<Record<SlotType, { x, y, w, h }>>`. Zones are rectangles centred on `(x, y)` with `(w, h)` size, normalised 0..1 over a 3:4 portrait background. Y-axis layout: `0..0.15` roof/front, `0.15..0.45` upper floor, `0.45..0.75` ground floor (incl. `bh_backyard`), `0.75..0.95` basement.
 - `assetSections/bandhausModules.ts` registers 16 modules via side-effect import from `assetRegistryStore.ts`. `bh_secret`-slotted modules (`bh_vinyl_press_corner`, `bh_pirate_radio_antenna`) have their Tier-3 requirement enforced implicitly — the `bh_secret` slot only exists in `BANDHAUS_T3_SLOTS`, so lower-tier chassis can't host them. If a future module needs a Tier-3 floor even on a slot that already exists in Tier-2, add `unlock.minChassisTier: 3` explicitly.
 - DIY bandhaus modules with `riskEventTypes` (`raid` from `bh_weed_garden`, `police_check` from `bh_pirate_radio_antenna`) feed `rollAssetRiskEvents` — verified by `bandhausIntegration.test.js`.
+
+## Merch-Werkstatt
+
+- `assetSections/workshopConfig.ts` exports `WORKSHOP_T1_SLOTS` / `T2_SLOTS` / `T3_SLOTS` and `WORKSHOP_SLOT_ZONES`. Layout is a 21:9 horizontal production line: Print → Drying → Cutting → Packaging → Storage, with Specialty + Automation above the line and Sales as the right-side dispatch gate.
+- `assetSections/workshopModules.ts` registers 16 modules. `mw_eco_ink_supply.unlock.requiredOtherModuleInstalled` uses `['mw_4color_carousel', 'mw_manual_press']` as an OR-set; `isModuleUnlocked` owns that OR semantics. Do not reimplement unlock evaluation inside workshop modules.

@@ -43,3 +43,9 @@
 - `bh_secret` slots are tier-gated in the UI: the view returns `null` for any `bh_secret` slot when `asset.chassisTier < 3`, even if a sanitizer or save migration left the slot in place.
 - `bh_identity` slots, when populated, render the module image as a wide facade overlay (`sizeHint: { width: 512, height: 128 }`) with a half-transparent `--color-hotspot-bg` backdrop so the mural stays legible against the background image. Non-mural installed slots use a transparent backdrop.
 - All borders use `var(--section-accent, var(--color-cosmic-purple))`. Installed-module thumbnails route through `GeneratedImagePanel` — no raw `<img>` here, per the project Pollinations rule.
+
+## Merch-Werkstatt
+
+- `sections/MerchWorkshopSection.tsx` is the entry point; registers `SECTION_VIEWS.merch_workshop_chassis` from `sectionRegistry.ts` with accent `var(--color-warning-yellow)`. Use the narrow-selector + `useMemo` pattern from Studio/Bandhaus.
+- `sections/WorkshopProductionLineView.tsx` renders a 21:9 ultrawide conveyor with station rectangles from `WORKSHOP_SLOT_ZONES` and a decorative CSS line between main production slots. Installed-module thumbnails must route through `GeneratedImagePanel`; do not add raw Pollinations `<img>` consumers.
+- `enablesLimitedEditions` (`mw_vinyl_cutter`) and `enablesBulkProduction` are asset modifier flags for merch/economy consumers. The section UI only surfaces module installation; feature behavior belongs in the merch/economy path.
