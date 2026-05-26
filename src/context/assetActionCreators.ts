@@ -19,7 +19,7 @@
  */
 
 import { ActionTypes } from './actionTypes'
-import { CHASSIS_CONFIG } from '../utils/assetConfig'
+import { CHASSIS_CONFIG, buildDiyTier, UPGRADE_OVERHEAD, REPAIR_COST_PER_POINT } from '../utils/assetConfig'
 import { MODULE_REGISTRY } from '../utils/assetModuleRegistry'
 import { LOAN_PROFILES, type LoanProfileId } from '../utils/loanProfiles'
 import { getSlotConflicts, isModuleUnlocked } from '../utils/assetSelectors'
@@ -257,13 +257,33 @@ export const upgradeChassisTier = (
   assetId: string,
   targetTier: ChassisTier,
   state: GameState
-): UpgradeChassisTierAction | null => {
+): UpgradeChassisTierAction | Extract<GameAction, { type: typeof ActionTypes.UPGRADE_CHASSIS_TIER_FAILED }> | null => {
   const asset = state.assets.find(a => a.id === assetId)
   if (!asset) return null
   if (asset.chassisTier >= targetTier) return null
   const targetCfg =
     CHASSIS_CONFIG[asset.kind]?.[asset.chassisFlavor]?.[targetTier]
   if (!targetCfg) return null
+
+  const currentCfg =
+    CHASSIS_CONFIG[asset.kind]?.[asset.chassisFlavor]?.[asset.chassisTier]
+  if (!currentCfg) return null
+
+  const targetConfigTier =
+    asset.chassisFlavor === 'legit' ? targetCfg : buildDiyTier(targetCfg)
+  const currentConfigTier =
+    asset.chassisFlavor === 'legit' ? currentCfg : buildDiyTier(currentCfg)
+
+  let upgradeCost =
+    targetConfigTier.price - currentConfigTier.price + UPGRADE_OVERHEAD
+  if (upgradeCost < 0) upgradeCost = 0
+
+  if (state.player.money < upgradeCost) {
+    return {
+      type: ActionTypes.UPGRADE_CHASSIS_TIER_FAILED,
+      payload: { reason: 'INSUFFICIENT_FUNDS' }
+    }
+  }
 
   // Count existing chassis-tier slots per slotType (skip dynamically-added
   // slots from modules — those don't belong to the chassis layout). Diff
@@ -296,10 +316,28 @@ export const sellChassis = (assetId: string): SellChassisAction => ({
   payload: { assetId }
 })
 
-export const repairChassis = (assetId: string): RepairChassisAction => ({
-  type: ActionTypes.REPAIR_CHASSIS,
-  payload: { assetId }
-})
+export const repairChassis = (
+  assetId: string,
+  state: GameState
+): RepairChassisAction | Extract<GameAction, { type: typeof ActionTypes.REPAIR_CHASSIS_FAILED }> | null => {
+  const asset = state.assets.find(a => a.id === assetId)
+  if (!asset) return null
+
+  if (asset.condition >= 100) return null
+
+  const repairCost = (100 - asset.condition) * REPAIR_COST_PER_POINT
+  if (state.player.money < repairCost) {
+    return {
+      type: ActionTypes.REPAIR_CHASSIS_FAILED,
+      payload: { reason: 'INSUFFICIENT_FUNDS' }
+    }
+  }
+
+  return {
+    type: ActionTypes.REPAIR_CHASSIS,
+    payload: { assetId }
+  }
+}
 
 export interface StartCrowdfundInput {
   kind: AssetKind

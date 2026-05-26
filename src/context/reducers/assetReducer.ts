@@ -16,7 +16,6 @@ import {
 } from '../../utils/assetConfig'
 import { LOAN_PROFILES, computeAmortization } from '../../utils/loanProfiles'
 import { MODULE_REGISTRY } from '../../utils/assetModuleRegistry'
-import { clampPlayerMoney } from '../../utils/gameStateUtils'
 
 export const handlePurchaseChassis = (
   state: GameState,
@@ -62,7 +61,6 @@ export const handlePurchaseChassis = (
   const nextLiabilities = [...(state.liabilities || [])]
 
   if (mode === 'cash') {
-    if (nextMoney < configTier.price) return state
     nextMoney -= configTier.price
   } else if (mode === 'loan') {
     // Loan-mode payloads must reference a real LoanProfile. The action
@@ -97,7 +95,7 @@ export const handlePurchaseChassis = (
     ...state,
     player: {
       ...state.player,
-      money: clampPlayerMoney(nextMoney)
+      money: nextMoney
     },
     assets: [...(state.assets || []), asset],
     liabilities: nextLiabilities
@@ -113,7 +111,6 @@ export const handleInstallModule = (
 
   const moduleInfo = MODULE_REGISTRY[moduleId]
   if (!moduleInfo) return state
-  if (state.player.money < moduleInfo.cost + moduleInfo.installCost) return state
 
   // Track whether the install actually landed. If the assetId/slotId in the
   // payload doesn't match anything live (replay against a stale state, hostile
@@ -154,7 +151,7 @@ export const handleInstallModule = (
     assets: nextAssets,
     player: {
       ...state.player,
-      money: clampPlayerMoney(state.player.money - (moduleInfo.cost + moduleInfo.installCost))
+      money: state.player.money - (moduleInfo.cost + moduleInfo.installCost)
     }
   }
 }
@@ -212,7 +209,7 @@ export const handleRemoveModule = (
     assets: nextAssets,
     player: {
       ...state.player,
-      money: clampPlayerMoney(state.player.money + refund)
+      money: state.player.money + refund
     }
   }
 }
@@ -271,14 +268,12 @@ export const handleUpgradeChassisTier = (
     }
   })
 
-  if (state.player.money < upgradeCost) return state
-
   return {
     ...state,
     assets: nextAssets,
     player: {
       ...state.player,
-      money: clampPlayerMoney(state.player.money - upgradeCost)
+      money: state.player.money - upgradeCost
     }
   }
 }
@@ -329,7 +324,7 @@ export const handleSellChassis = (
     liabilities: state.liabilities.filter(l => l.assetId !== assetId),
     player: {
       ...state.player,
-      money: clampPlayerMoney(state.player.money + net)
+      money: state.player.money + net
     }
   }
 }
@@ -348,7 +343,6 @@ export const handleRepairChassis = (
   if (!targetAsset) return state
 
   const repairCost = (100 - targetAsset.condition) * REPAIR_COST_PER_POINT
-  if (state.player.money < repairCost) return state
   const nextAssets = state.assets.map(asset =>
     asset.id === assetId ? { ...asset, condition: 100 } : asset
   )
@@ -358,7 +352,7 @@ export const handleRepairChassis = (
     assets: nextAssets,
     player: {
       ...state.player,
-      money: clampPlayerMoney(state.player.money - repairCost)
+      money: state.player.money - repairCost
     }
   }
 }

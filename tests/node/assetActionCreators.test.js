@@ -422,8 +422,12 @@ describe('startCrowdfund / resolveCrowdfund / sellChassis / repairChassis / remo
   })
 
   it('sellChassis / repairChassis / removeModule shape', () => {
+    const mockState = {
+      assets: [{ id: 'a1', condition: 50 }],
+      player: { money: 1000 }
+    }
     assert.equal(sellChassis('a1').type, ActionTypes.SELL_CHASSIS)
-    assert.equal(repairChassis('a1').type, ActionTypes.REPAIR_CHASSIS)
+    assert.equal(repairChassis('a1', mockState).type, ActionTypes.REPAIR_CHASSIS)
     assert.equal(removeModule('a1', 's1').type, ActionTypes.REMOVE_MODULE)
   })
 })

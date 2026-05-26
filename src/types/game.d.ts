@@ -219,12 +219,20 @@ export type GameAction =
       ActionTypes['UPGRADE_CHASSIS_TIER'],
       import('./assets').UpgradeChassisTierPayload
     >
+  | Action<
+      ActionTypes['UPGRADE_CHASSIS_TIER_FAILED'],
+      { reason: import('./assets').PurchaseFailureReason }
+    >
   | Action<ActionTypes['SELL_CHASSIS'], { assetId: string }>
   | Action<
       ActionTypes['SELL_CHASSIS_FAILED'],
       { assetId: string; reason: 'LIABILITY_EXCEEDS_VALUE' }
     >
   | Action<ActionTypes['REPAIR_CHASSIS'], { assetId: string }>
+  | Action<
+      ActionTypes['REPAIR_CHASSIS_FAILED'],
+      { reason: import('./assets').PurchaseFailureReason }
+    >
   | Action<
       ActionTypes['INSTALL_MODULE'],
       import('./assets').InstallModulePayload
