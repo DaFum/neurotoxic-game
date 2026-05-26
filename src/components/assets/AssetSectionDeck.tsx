@@ -50,8 +50,8 @@ export const AssetSectionDeck = ({
             disabled={!needsRepair}
             className='assets-hub-control min-h-11 border-2 px-2 py-2 text-xs uppercase disabled:opacity-40'
             style={{
-              borderColor: 'var(--section-accent)',
-              background: needsRepair ? 'var(--section-accent)' : 'transparent',
+              borderColor: 'var(--section-accent, var(--color-toxic-green))',
+              background: needsRepair ? 'var(--section-accent, var(--color-toxic-green))' : 'transparent',
               color: needsRepair ? 'var(--color-void-black)' : 'inherit'
             }}
           >
@@ -68,7 +68,7 @@ export const AssetSectionDeck = ({
             type='button'
             onClick={onSell}
             className='assets-hub-control min-h-11 border-2 px-2 py-2 text-xs uppercase'
-            style={{ borderColor: 'var(--section-accent)' }}
+            style={{ borderColor: 'var(--section-accent, var(--color-toxic-green))' }}
           >
             {t('assets:actions.sell')}
           </button>

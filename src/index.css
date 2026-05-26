@@ -1,10 +1,10 @@
 /* stylelint-disable-next-line import-notation */
 @import 'tailwindcss';
 @import './overworld.css';
-@import url('https://fonts.googleapis.com/css2?family=Metal+Mania&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Nosifer&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Staatliches&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@500;700;800&display=swap');
+@import 'https://fonts.googleapis.com/css2?family=Metal+Mania&display=swap';
+@import 'https://fonts.googleapis.com/css2?family=Nosifer&display=swap';
+@import 'https://fonts.googleapis.com/css2?family=Staatliches&display=swap';
+@import 'https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@500;700;800&display=swap';
 /* stylelint-disable-next-line at-rule-no-unknown, at-rule-empty-line-before */
 @source '../index.html';
 /* stylelint-disable-next-line at-rule-no-unknown */

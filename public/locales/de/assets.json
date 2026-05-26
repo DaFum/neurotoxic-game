@@ -27,7 +27,7 @@
   "hub.slotState.empty": "Leer",
   "hub.slotState.installed": "Eingebaut",
   "hub.slotState.locked": "Gesperrt",
-  "hub.slotState.damaged": "Beschadigt",
+  "hub.slotState.damaged": "Beschädigt",
   "hub.finance.title": "Finanzen",
   "hub.finance.noCampaigns": "Keine aktiven Kampagnen",
   "hub.accessibility.sectionTabs": "Asset-Sektionen",
