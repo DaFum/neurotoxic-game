@@ -27,3 +27,8 @@
 - `studioModules.test.js` enforces: 14 studio modules registered, every chassis slot type has a compatible module, all `imagePromptKey` references resolve in `MODULE_PROMPTS` via `Object.hasOwn`, and `st_pro_tools_hd.boni.enablesReRecording === true`.
 - `studioEconomyIntegration.test.js` verifies `songQualityBonus` additive stacking, the `enablesReRecording` modifier flag, and the broken-asset boni-neutralization guard (condition < 20 → `{}` from `getAssetAggregateBoni`).
 - `studioRiskEvents.test.js` verifies DIY modules surface their `riskEventTypes` through `rollAssetRiskEvents` and that the fallback for clean (no `riskEventTypes`) modules is `'fire'` (not the old `'foreclosure'`).
+
+## Bandhaus
+
+- `bandhausModules.test.js` enforces: 16 bandhaus modules registered, every chassis slot type has a compatible module, all `imagePromptKey` references resolve in `MODULE_PROMPTS` via `Object.hasOwn`, and `bh_wall_mural.unlock.requiredStoryFlags` includes `'saved_local_venue'`.
+- `bandhausIntegration.test.js` covers four scenarios: `bh_weed_garden` raid risk event via a pinned `dayRngStream`, `bh_wall_mural` story-flag-gated unlock through `isModuleUnlocked`, `bh_hot_tub`'s `infightingDamper` aggregation through `getActiveAssetModifiers`, and the implicit tier-gating of `bh_secret` (absent from `T2_SLOTS`, present in `T3_SLOTS`, mirrored on the DIY side via `buildDiyTier`'s slot clone).
