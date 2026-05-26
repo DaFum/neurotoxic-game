@@ -4,7 +4,7 @@ import {
   getSectionBackgroundPrompt,
   getModuleImagePrompt
 } from '../../../utils/imageGen'
-import { BANDHAUS_SLOT_ZONES } from '../../../utils/assetSections/bandhausConfig'
+import { WORKSHOP_SLOT_ZONES } from '../../../utils/assetSections/workshopConfig'
 import type { LongTermAsset } from '../../../types/assets'
 
 interface Props {
@@ -14,31 +14,35 @@ interface Props {
 
 const toPercent = (value: number): string => `${Number(value.toFixed(4))}%`
 
-export const BandhausCrossSectionView = ({ asset, onSlotClick }: Props) => {
+export const WorkshopProductionLineView = ({ asset, onSlotClick }: Props) => {
   const { t } = useTranslation(['assets'])
   return (
     <div className='relative'>
       <GeneratedImagePanel
         prompt={getSectionBackgroundPrompt(
-          'bandhaus_chassis',
+          'merch_workshop_chassis',
           asset.chassisFlavor
         )}
-        alt='Bandhaus cross-section'
-        aspectRatio='3:4'
-        sizeHint={{ width: 768, height: 1024 }}
+        alt='Workshop production line'
+        aspectRatio='21:9'
+        sizeHint={{ width: 1680, height: 720 }}
+      />
+      <div
+        aria-hidden
+        className='pointer-events-none absolute'
+        style={{
+          left: '5%',
+          right: '15%',
+          top: '55%',
+          height: 4,
+          background: 'var(--section-accent, var(--color-warning-yellow))',
+          opacity: 0.4
+        }}
       />
       {asset.slots.map(slot => {
-        // bh_secret is Tier-3 only — keep it hidden on lower-tier chassis
-        // even if a sanitizer or migration leaves the slot in place.
-        if (slot.slotType === 'bh_secret' && asset.chassisTier < 3) return null
-        const zone = BANDHAUS_SLOT_ZONES[slot.slotType]
+        const zone = WORKSHOP_SLOT_ZONES[slot.slotType]
         if (!zone) return null
         const installed = slot.installedModuleId
-        const isMural = slot.slotType === 'bh_identity' && installed !== null
-        // Mural needs a dark backdrop so the wide facade overlay reads against
-        // the background image; non-mural installed slots stay transparent.
-        const background =
-          installed && !isMural ? 'transparent' : 'var(--color-hotspot-bg)'
         return (
           <button
             key={slot.id}
@@ -52,8 +56,8 @@ export const BandhausCrossSectionView = ({ asset, onSlotClick }: Props) => {
               width: toPercent(zone.w * 100),
               height: toPercent(zone.h * 100),
               border:
-                '2px dashed var(--section-accent, var(--color-cosmic-purple))',
-              background,
+                '2px dashed var(--section-accent, var(--color-warning-yellow))',
+              background: installed ? 'transparent' : 'var(--color-hotspot-bg)',
               cursor: 'pointer'
             }}
           >
@@ -63,17 +67,9 @@ export const BandhausCrossSectionView = ({ asset, onSlotClick }: Props) => {
                 alt={t(`assets:module.${installed}.name`, {
                   defaultValue: installed
                 })}
-                // Mural slot is wide-flat (zone w=0.8, h=0.15 → roughly 4:1).
-                // 21:9 is the closest available aspect ratio to the actual
-                // container's 4:1 — anything narrower causes a vertical
-                // squish from the panel's internal CSS aspect-ratio rule.
-                aspectRatio={isMural ? '21:9' : '1:1'}
+                aspectRatio='1:1'
                 variant='hotspot'
-                sizeHint={
-                  isMural
-                    ? { width: 512, height: 128 }
-                    : { width: 256, height: 256 }
-                }
+                sizeHint={{ width: 256, height: 256 }}
                 className='h-full w-full'
               />
             )}

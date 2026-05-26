@@ -27,6 +27,8 @@ export default defineConfig({
     include: [
       'tests/ui/**/*.test.jsx',
       'tests/ui/**/*.spec.jsx',
+      'tests/ui/**/*.test.tsx',
+      'tests/ui/**/*.spec.tsx',
       'tests/integration/**/*.test.jsx',
       'tests/integration/**/*.spec.jsx',
       'tests/hooks/**/*.test.jsx',

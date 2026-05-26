@@ -12,6 +12,8 @@ interface Props {
   onSlotClick: (slotId: string) => void
 }
 
+const toPercent = (value: number): string => `${Number(value.toFixed(4))}%`
+
 export const StudioFloorplanView = ({ asset, onSlotClick }: Props) => {
   const { t } = useTranslation(['assets'])
   return (
@@ -37,10 +39,10 @@ export const StudioFloorplanView = ({ asset, onSlotClick }: Props) => {
             onClick={() => onSlotClick(slot.id)}
             className='absolute'
             style={{
-              left: `${(zone.x - zone.w / 2) * 100}%`,
-              top: `${(zone.y - zone.h / 2) * 100}%`,
-              width: `${zone.w * 100}%`,
-              height: `${zone.h * 100}%`,
+              left: toPercent((zone.x - zone.w / 2) * 100),
+              top: toPercent((zone.y - zone.h / 2) * 100),
+              width: toPercent(zone.w * 100),
+              height: toPercent(zone.h * 100),
               border:
                 '2px dashed var(--section-accent, var(--color-electric-blue))',
               background: installed ? 'transparent' : 'var(--color-hotspot-bg)',
