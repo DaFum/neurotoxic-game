@@ -4342,6 +4342,15 @@
         "type": "const"
       }
     ],
+    "formatSlotZonePercent": [
+      {
+        "isDefault": false,
+        "name": "formatSlotZonePercent",
+        "path": "src/utils/assetSections/slotLayout.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "Fragment": [
       {
         "isDefault": false,
@@ -5055,6 +5064,15 @@
         "isDefault": false,
         "name": "getSectionBackgroundPrompt",
         "path": "src/utils/imageGen.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "getSlotButtonAriaLabel": [
+      {
+        "isDefault": false,
+        "name": "getSlotButtonAriaLabel",
+        "path": "src/components/assets/sections/slotLabels.ts",
         "source": "local",
         "type": "const"
       }

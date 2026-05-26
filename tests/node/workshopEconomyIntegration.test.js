@@ -2,6 +2,8 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 // Side-effect: registers all modules including workshop modules
 import '../../src/utils/assetModuleRegistry.ts'
+import { ActionTypes } from '../../src/context/actionTypes.ts'
+import { installModule } from '../../src/context/assetActionCreators.ts'
 import { MODULE_REGISTRY } from '../../src/utils/assetModuleRegistry.ts'
 import {
   getActiveAssetModifiers,
@@ -91,6 +93,27 @@ describe('Workshop economy integration', () => {
       installedModules: ['mw_4color_carousel']
     })
     assert.strictEqual(isModuleUnlocked(module, stateWithCarousel), true)
+  })
+
+  it('mw_eco_ink_supply can be installed into storage after a print module is installed', () => {
+    const state = makeState()
+    state.assets = [
+      makeWorkshopAsset([
+        { slotType: 'mw_print', installedModuleId: 'mw_manual_press' },
+        { slotType: 'mw_storage', installedModuleId: null }
+      ])
+    ]
+
+    const action = installModule(
+      {
+        assetId: 'test-workshop',
+        slotId: 'slot-1',
+        moduleId: 'mw_eco_ink_supply'
+      },
+      state
+    )
+
+    assert.equal(action.type, ActionTypes.INSTALL_MODULE)
   })
 
   it('mw_darkweb_vendor triggers scam_or_bust event on pinned RNG roll', () => {

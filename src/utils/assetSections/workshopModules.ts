@@ -29,7 +29,7 @@ const MODULES: readonly AssetModule[] = [
   {
     id: 'mw_eco_ink_supply',
     ownerKind: 'merch_workshop_chassis',
-    slotType: 'mw_print',
+    slotType: 'mw_storage',
     flavor: 'legit',
     cost: 500,
     installCost: 0,

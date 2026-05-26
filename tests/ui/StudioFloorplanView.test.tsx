@@ -27,9 +27,18 @@ vi.mock('../../src/utils/imageGen', () => ({
   getModuleImagePrompt: vi.fn((moduleId: string) => `module:${moduleId}`)
 }))
 
-// Identity `t` so aria-labels surface the raw key in test assertions.
+const translations: Record<string, string> = {
+  'assets:slot.st_control': 'Mixing console',
+  'assets:slot.st_mic': 'Microphone locker',
+  'assets:slot.st_monitoring': 'Monitor speakers',
+  'assets:module.st_ssl_console.name': 'SSL Console'
+}
+
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key: string) => key })
+  useTranslation: () => ({
+    t: (key: string, options?: { defaultValue?: string }) =>
+      translations[key] ?? options?.defaultValue ?? key
+  })
 }))
 
 const mockAsset = (
@@ -83,7 +92,7 @@ describe('StudioFloorplanView', () => {
     ])
     render(<StudioFloorplanView asset={asset} onSlotClick={vi.fn()} />)
     const button = screen.getByRole('button', {
-      name: 'assets:slot.st_control'
+      name: 'Mixing console'
     })
     expect(button.style.left).toBe('35%')
     expect(button.style.top).toBe('45%')
@@ -98,7 +107,7 @@ describe('StudioFloorplanView', () => {
     ])
     render(<StudioFloorplanView asset={asset} onSlotClick={vi.fn()} />)
     const installedButton = screen.getByRole('button', {
-      name: 'assets:slot.st_control'
+      name: 'Mixing console: SSL Console'
     })
     // The mock renders GeneratedImagePanel as <img>, so there should be an img inside
     within(installedButton).getByRole('img')
@@ -111,7 +120,7 @@ describe('StudioFloorplanView', () => {
     ])
     render(<StudioFloorplanView asset={asset} onSlotClick={onSlotClick} />)
     const button = screen.getByRole('button', {
-      name: 'assets:slot.st_control'
+      name: 'Mixing console'
     })
     fireEvent.click(button)
     expect(onSlotClick).toHaveBeenCalledWith('slot-ctrl-xyz')

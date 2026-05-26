@@ -70,4 +70,12 @@ describe('workshop asset locale keys', () => {
       assertNonEmptyString(de, key, 'de')
     }
   })
+
+  it('defines EN and DE alt text for the workshop production image', async () => {
+    const en = await readAssetsLocale('en')
+    const de = await readAssetsLocale('de')
+
+    assertNonEmptyString(en, 'section.workshop.alt', 'en')
+    assertNonEmptyString(de, 'section.workshop.alt', 'de')
+  })
 })

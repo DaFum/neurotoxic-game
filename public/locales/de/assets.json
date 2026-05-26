@@ -12,6 +12,7 @@
   "section.bandhaus.description": "HQ, Schlafen, Gartenanbau",
   "section.workshop.title": "Merch-Werkstatt",
   "section.workshop.description": "Drucken, Verpacken, Versenden",
+  "section.workshop.alt": "Produktionslinie der Merch-Werkstatt",
   "kind.tourbus_chassis": "Tourbus",
   "kind.studio_chassis": "Aufnahmestudio",
   "kind.bandhaus_chassis": "Bandhaus",

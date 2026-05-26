@@ -12,6 +12,7 @@
   "section.bandhaus.description": "HQ, sleep, weed garden",
   "section.workshop.title": "Merch Workshop",
   "section.workshop.description": "Print, package, ship",
+  "section.workshop.alt": "Workshop production line",
   "kind.tourbus_chassis": "Tourbus",
   "kind.studio_chassis": "Recording Studio",
   "kind.bandhaus_chassis": "Band House",

@@ -5,14 +5,14 @@ import {
   getModuleImagePrompt
 } from '../../../utils/imageGen'
 import { WORKSHOP_SLOT_ZONES } from '../../../utils/assetSections/workshopConfig'
+import { formatSlotZonePercent } from '../../../utils/assetSections/slotLayout'
+import { getSlotButtonAriaLabel } from './slotLabels'
 import type { LongTermAsset } from '../../../types/assets'
 
 interface Props {
   asset: LongTermAsset
   onSlotClick: (slotId: string) => void
 }
-
-const toPercent = (value: number): string => `${Number(value.toFixed(4))}%`
 
 export const WorkshopProductionLineView = ({ asset, onSlotClick }: Props) => {
   const { t } = useTranslation(['assets'])
@@ -23,7 +23,9 @@ export const WorkshopProductionLineView = ({ asset, onSlotClick }: Props) => {
           'merch_workshop_chassis',
           asset.chassisFlavor
         )}
-        alt='Workshop production line'
+        alt={t('assets:section.workshop.alt', {
+          defaultValue: 'Workshop production line'
+        })}
         aspectRatio='21:9'
         sizeHint={{ width: 1680, height: 720 }}
       />
@@ -47,14 +49,14 @@ export const WorkshopProductionLineView = ({ asset, onSlotClick }: Props) => {
           <button
             key={slot.id}
             type='button'
-            aria-label={t(`assets:slot.${slot.slotType}`)}
+            aria-label={getSlotButtonAriaLabel(t, slot.slotType, installed)}
             onClick={() => onSlotClick(slot.id)}
             className='absolute'
             style={{
-              left: toPercent((zone.x - zone.w / 2) * 100),
-              top: toPercent((zone.y - zone.h / 2) * 100),
-              width: toPercent(zone.w * 100),
-              height: toPercent(zone.h * 100),
+              left: formatSlotZonePercent((zone.x - zone.w / 2) * 100),
+              top: formatSlotZonePercent((zone.y - zone.h / 2) * 100),
+              width: formatSlotZonePercent(zone.w * 100),
+              height: formatSlotZonePercent(zone.h * 100),
               border:
                 '2px dashed var(--section-accent, var(--color-warning-yellow))',
               background: installed ? 'transparent' : 'var(--color-hotspot-bg)',

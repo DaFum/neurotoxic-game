@@ -34,9 +34,23 @@ vi.mock('../../src/utils/imageGen', () => ({
   getModuleImagePrompt: vi.fn((moduleId: string) => `module:${moduleId}`)
 }))
 
-// Identity `t` so aria-labels surface the raw key in test assertions.
+const translations: Record<string, string> = {
+  'assets:section.workshop.alt': 'Localized workshop production line',
+  'assets:slot.mw_print': 'Print station',
+  'assets:slot.mw_drying': 'Drying',
+  'assets:slot.mw_storage': 'Storage',
+  'assets:slot.mw_specialty': 'Specialty',
+  'assets:slot.mw_automation': 'Automation',
+  'assets:slot.mw_sales': 'Sales channel',
+  'assets:module.mw_4color_carousel.name': '4-color carousel'
+}
+
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key: string) => key })
+  initReactI18next: { type: '3rdParty', init: () => {} },
+  useTranslation: () => ({
+    t: (key: string, options?: { defaultValue?: string }) =>
+      translations[key] ?? options?.defaultValue ?? key
+  })
 }))
 
 const mockAsset = (
@@ -77,10 +91,10 @@ describe('WorkshopProductionLineView', () => {
     render(<WorkshopProductionLineView asset={asset} onSlotClick={vi.fn()} />)
 
     expect(
-      screen.getByRole('img', { name: 'Workshop production line' })
+      screen.getByRole('img', { name: 'Localized workshop production line' })
     ).toBeInTheDocument()
     expect(capturedPanels[0]).toMatchObject({
-      alt: 'Workshop production line',
+      alt: 'Localized workshop production line',
       aspectRatio: '21:9',
       sizeHint: { width: 1680, height: 720 }
     })
@@ -96,12 +110,12 @@ describe('WorkshopProductionLineView', () => {
     ])
     render(<WorkshopProductionLineView asset={asset} onSlotClick={vi.fn()} />)
 
-    const print = screen.getByRole('button', { name: 'assets:slot.mw_print' })
+    const print = screen.getByRole('button', { name: 'Print station' })
     const drying = screen.getByRole('button', {
-      name: 'assets:slot.mw_drying'
+      name: 'Drying'
     })
     const storage = screen.getByRole('button', {
-      name: 'assets:slot.mw_storage'
+      name: 'Storage'
     })
 
     expect(print.style.left).toBe('2.5%')
@@ -124,12 +138,12 @@ describe('WorkshopProductionLineView', () => {
     render(<WorkshopProductionLineView asset={asset} onSlotClick={vi.fn()} />)
 
     const specialty = screen.getByRole('button', {
-      name: 'assets:slot.mw_specialty'
+      name: 'Specialty'
     })
     const automation = screen.getByRole('button', {
-      name: 'assets:slot.mw_automation'
+      name: 'Automation'
     })
-    const sales = screen.getByRole('button', { name: 'assets:slot.mw_sales' })
+    const sales = screen.getByRole('button', { name: 'Sales channel' })
 
     expect(specialty.style.top).toBe('5%')
     expect(automation.style.top).toBe('5%')
@@ -151,10 +165,10 @@ describe('WorkshopProductionLineView', () => {
     )
 
     const button = screen.getByRole('button', {
-      name: 'assets:slot.mw_print'
+      name: 'Print station: 4-color carousel'
     })
     within(button).getByRole('img', {
-      name: 'assets:module.mw_4color_carousel.name'
+      name: '4-color carousel'
     })
     fireEvent.click(button)
     expect(onSlotClick).toHaveBeenCalledWith('slot-print-xyz')

@@ -68,6 +68,7 @@ describe('workshop modules registration', () => {
   it('mw_eco_ink_supply requires either legit or diy print module', () => {
     const m = MODULE_REGISTRY['mw_eco_ink_supply']
     assert.ok(m, 'mw_eco_ink_supply must be registered')
+    assert.strictEqual(m.slotType, 'mw_storage')
     assert.deepEqual(m.unlock.requiredOtherModuleInstalled, [
       'mw_4color_carousel',
       'mw_manual_press'
