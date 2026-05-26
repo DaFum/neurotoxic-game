@@ -153,13 +153,22 @@ describe('purchaseChassis', () => {
   })
 
   it('returns FAILED for empty CHASSIS_CONFIG entry', () => {
-    // Tier 3 is still EMPTY_TIER (price: 0) until section plans populate it
-    const action = purchaseChassis(
-      { kind: 'studio_chassis', flavor: 'legit', tier: 3, mode: 'cash' },
-      makeState()
-    )
-    assert.equal(action.type, ActionTypes.PURCHASE_CHASSIS_FAILED)
-    assert.equal(action.payload.reason, 'UNKNOWN_KIND_OR_TIER')
+    const original = CHASSIS_CONFIG.studio_chassis.legit[3]
+    CHASSIS_CONFIG.studio_chassis.legit[3] = {
+      ...original,
+      price: 0,
+      slots: []
+    }
+    try {
+      const action = purchaseChassis(
+        { kind: 'studio_chassis', flavor: 'legit', tier: 3, mode: 'cash' },
+        makeState()
+      )
+      assert.equal(action.type, ActionTypes.PURCHASE_CHASSIS_FAILED)
+      assert.equal(action.payload.reason, 'UNKNOWN_KIND_OR_TIER')
+    } finally {
+      CHASSIS_CONFIG.studio_chassis.legit[3] = original
+    }
   })
 
   it('returns FAILED for unknown kind/flavor/tier/mode', () => {
