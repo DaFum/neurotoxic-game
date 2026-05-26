@@ -232,7 +232,7 @@ export const QuestLifecycle = {
       const quest = nextState.activeQuests[i]
       if (!quest) continue
       const penalty = isLooseRecord(quest.failurePenalty)
-        ? (quest.failurePenalty as Record<string, unknown>)
+        ? quest.failurePenalty
         : undefined
 
       if (
@@ -242,7 +242,7 @@ export const QuestLifecycle = {
         hasExpired = true
         if (penalty) {
           const socialPenalty = isLooseRecord(penalty.social)
-            ? (penalty.social as Record<string, unknown>)
+            ? penalty.social
             : undefined
           if (socialPenalty?.controversyLevel != null) {
             // Deep clone before mutating
@@ -256,7 +256,7 @@ export const QuestLifecycle = {
             )
           }
           const bandPenalty = isLooseRecord(penalty.band)
-            ? (penalty.band as Record<string, unknown>)
+            ? penalty.band
             : undefined
           if (bandPenalty?.harmony != null) {
             // Deep clone before mutating

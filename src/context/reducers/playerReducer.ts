@@ -24,7 +24,7 @@ export const handleUpdatePlayer = <TState extends WithPlayer>(
 
   if (
     !isLooseRecord(updates) ||
-    hasForbiddenKeys(updates as Record<string, unknown>)
+    hasForbiddenKeys(updates)
   ) {
     return state
   }

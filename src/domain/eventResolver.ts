@@ -138,13 +138,13 @@ export function resolveEvent(
       isLooseRecord(result) &&
       Object.hasOwn(result as object, 'value')
     ) {
-      flags.addQuest = (result as Record<string, unknown>).value
+      flags.addQuest = result.value
     } else if (
       flags.addStoryFlag === 'unlock' &&
       isLooseRecord(result) &&
       Object.hasOwn(result as object, 'value')
     ) {
-      flags.unlock = (result as Record<string, unknown>).value
+      flags.unlock = result.value
     } else if (flags.addStoryFlag === 'gameOver') {
       flags.gameOver = true
     }
