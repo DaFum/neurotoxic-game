@@ -167,7 +167,7 @@ Add matching keys to `public/locales/de/assets.json`:
   "hub.slotState.empty": "Leer",
   "hub.slotState.installed": "Eingebaut",
   "hub.slotState.locked": "Gesperrt",
-  "hub.slotState.damaged": "Beschadigt",
+  "hub.slotState.damaged": "Beschädigt",
   "hub.finance.title": "Finanzen",
   "hub.finance.noCampaigns": "Keine aktiven Kampagnen",
   "hub.accessibility.sectionTabs": "Asset-Sektionen",
@@ -1821,8 +1821,11 @@ Expected: PASS.
 If a test fails because it expects the old top tab strip, update it to assert:
 
 ```tsx
-screen.getByRole('tablist', { name: 'Asset sections' })
-screen.getByRole('tabpanel', { name: '' })
+const tablist = screen.getByRole('tablist', { name: 'Asset sections' })
+const tab = screen.getByRole('tab', { name: /.../ })
+const panel = screen.getByRole('tabpanel')
+expect(panel.id).toBe(tab.getAttribute('aria-controls'))
+expect(panel.getAttribute('aria-labelledby')).toBe(tab.id)
 ```
 
 If a test fails because the purchase button label changed from `assets:actions.purchase` to `assets:hub.actions.acquire`, update the test translation mock to return `Acquire` for `assets:hub.actions.acquire` and query:

@@ -1,6 +1,7 @@
 .assets-hub {
   --asset-font-display: var(--font-asset-display);
   --asset-font-control: var(--font-asset-control);
+
   min-height: 100%;
   font-family: var(--asset-font-control);
   background:
