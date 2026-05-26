@@ -44,7 +44,7 @@ export const AssetsBottomTabs = ({
               }}
             >
               <Icon aria-hidden className='h-4 w-4 shrink-0' />
-              <span className='truncate'>
+              <span className='min-w-0 max-w-full whitespace-normal break-words text-center leading-tight'>
                 {t(`assets:section.${tab.shortLabel}.title`)}
               </span>
             </button>
