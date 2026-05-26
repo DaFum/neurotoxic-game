@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameSelector } from '../../../context/GameState'
 import { StudioFloorplanView } from './StudioFloorplanView'
@@ -8,8 +8,13 @@ import type { LongTermAsset } from '../../../types/assets'
 
 export const StudioSection = () => {
   const { t } = useTranslation(['assets'])
-  const studioAssets = useGameSelector(s =>
-    s.assets.filter((a: LongTermAsset) => a.kind === 'studio_chassis')
+  // Subscribe to the stable `assets` slice and memo-filter — returning a
+  // freshly-filtered array from the selector itself would re-render on every
+  // unrelated state change because the new array reference !== the previous.
+  const assets = useGameSelector(s => s.assets)
+  const studioAssets = useMemo(
+    () => assets.filter((a: LongTermAsset) => a.kind === 'studio_chassis'),
+    [assets]
   )
   const [picker, setPicker] = useState<{
     asset: LongTermAsset

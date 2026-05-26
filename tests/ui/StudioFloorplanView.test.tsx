@@ -27,6 +27,11 @@ vi.mock('../../src/utils/imageGen', () => ({
   getModuleImagePrompt: vi.fn((moduleId: string) => `module:${moduleId}`)
 }))
 
+// Identity `t` so aria-labels surface the raw key in test assertions.
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({ t: (key: string) => key })
+}))
+
 const mockAsset = (
   slots: Array<{
     id: string
@@ -77,7 +82,9 @@ describe('StudioFloorplanView', () => {
       { id: 's1', slotType: 'st_control', installedModuleId: null }
     ])
     render(<StudioFloorplanView asset={asset} onSlotClick={vi.fn()} />)
-    const button = screen.getByRole('button', { name: 'zone st_control' })
+    const button = screen.getByRole('button', {
+      name: 'assets:slot.st_control'
+    })
     expect(button.style.left).toBe('35%')
     expect(button.style.top).toBe('45%')
     expect(button.style.width).toBe('30%')
@@ -91,7 +98,7 @@ describe('StudioFloorplanView', () => {
     ])
     render(<StudioFloorplanView asset={asset} onSlotClick={vi.fn()} />)
     const installedButton = screen.getByRole('button', {
-      name: 'zone st_control'
+      name: 'assets:slot.st_control'
     })
     // The mock renders GeneratedImagePanel as <img>, so there should be an img inside
     within(installedButton).getByRole('img')
@@ -103,7 +110,9 @@ describe('StudioFloorplanView', () => {
       { id: 'slot-ctrl-xyz', slotType: 'st_control', installedModuleId: null }
     ])
     render(<StudioFloorplanView asset={asset} onSlotClick={onSlotClick} />)
-    const button = screen.getByRole('button', { name: 'zone st_control' })
+    const button = screen.getByRole('button', {
+      name: 'assets:slot.st_control'
+    })
     fireEvent.click(button)
     expect(onSlotClick).toHaveBeenCalledWith('slot-ctrl-xyz')
   })

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { GeneratedImagePanel } from '../../../ui/shared/GeneratedImagePanel'
 import {
   getSectionBackgroundPrompt,
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export const StudioFloorplanView = ({ asset, onSlotClick }: Props) => {
+  const { t } = useTranslation(['assets'])
   return (
     <div className='relative'>
       <GeneratedImagePanel
@@ -31,7 +33,7 @@ export const StudioFloorplanView = ({ asset, onSlotClick }: Props) => {
           <button
             key={slot.id}
             type='button'
-            aria-label={`zone ${slot.slotType}`}
+            aria-label={t(`assets:slot.${slot.slotType}`)}
             onClick={() => onSlotClick(slot.id)}
             className='absolute'
             style={{
