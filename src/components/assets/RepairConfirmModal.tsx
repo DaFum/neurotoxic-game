@@ -24,7 +24,7 @@ export const RepairConfirmModal = ({ asset, isOpen, onClose }: Props) => {
       isOpen={isOpen}
       onClose={onClose}
       title={t('assets:actions.repair')}
-      className='max-w-lg'
+      className='assets-modal-sheet max-w-lg'
     >
       <div className='flex flex-col gap-3 p-4 font-mono text-sm'>
         <GeneratedImagePanel
@@ -47,7 +47,7 @@ export const RepairConfirmModal = ({ asset, isOpen, onClose }: Props) => {
           <button
             type='button'
             onClick={onClose}
-            className='border-2 px-3 py-1'
+            className='min-h-11 border-2 px-3 py-2'
           >
             {t('ui:action_cancel', { defaultValue: 'Cancel' })}
           </button>
@@ -58,7 +58,7 @@ export const RepairConfirmModal = ({ asset, isOpen, onClose }: Props) => {
               onClose()
             }}
             disabled={cost === 0 || money < cost}
-            className='border-2 px-3 py-1 disabled:opacity-40'
+            className='min-h-11 border-2 px-3 py-2 disabled:opacity-40'
             style={{
               background: 'var(--section-accent, var(--color-toxic-green))',
               color: 'var(--color-void)'

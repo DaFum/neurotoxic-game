@@ -99,7 +99,7 @@ export const ModulePickerModal = ({
       isOpen={isOpen}
       onClose={onClose}
       title={t('assets:modulePicker.title')}
-      className='max-w-3xl'
+      className='assets-modal-sheet max-w-3xl'
     >
       <div className='flex flex-col gap-3 p-4 font-mono text-sm'>
         {pool.length === 0 && (
@@ -189,7 +189,7 @@ export const ModulePickerModal = ({
                       onClose()
                     }}
                     disabled={blocked}
-                    className='mt-1 self-start border-2 px-2 py-1 disabled:opacity-30'
+                    className='mt-1 min-h-11 self-start border-2 px-2 py-2 disabled:opacity-30'
                     style={{
                       background: blocked
                         ? 'transparent'
