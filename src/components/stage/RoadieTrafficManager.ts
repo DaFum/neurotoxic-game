@@ -81,6 +81,7 @@ export class RoadieTrafficManager {
     // ⚡ Bolt: Removed unnecessary runtime type validation and object allocation inside the hot path.
     // Traffic array is guaranteed to be well-typed RoadieCar objects from the game logic state.
     for (const car of state.traffic) {
+      if (!car) continue
       const carId = car.id
       const carX = car.x
       const carWidth = car.width
