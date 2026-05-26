@@ -2,6 +2,7 @@ import type { ComponentType } from 'react'
 import type { AssetKind } from '../../types/assets'
 import { TourbusSection } from './sections/TourbusSection'
 import { StudioSection } from './sections/StudioSection'
+import { BandhausSection } from './sections/BandhausSection'
 
 /**
  * View descriptor for a section-specific asset panel.
@@ -29,6 +30,11 @@ SECTION_VIEWS.tourbus_chassis = {
 SECTION_VIEWS.studio_chassis = {
   Component: StudioSection,
   accent: 'var(--color-electric-blue)'
+}
+
+SECTION_VIEWS.bandhaus_chassis = {
+  Component: BandhausSection,
+  accent: 'var(--color-cosmic-purple)'
 }
 
 /**
