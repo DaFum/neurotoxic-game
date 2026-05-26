@@ -81,7 +81,7 @@ export const handleCompleteTravelMinigame = (
     currentNode,
     state.player,
     state.band,
-    getActiveAssetModifiers(state.assets)
+    getActiveAssetModifiers(state.assets ?? [])
   )
   const { conditionLoss, fuelBonus, voidHazardHits } =
     calculateTravelMinigameResult(damageTaken, itemsCollected)

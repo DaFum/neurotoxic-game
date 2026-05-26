@@ -1735,15 +1735,17 @@ const processContrabandExpiry = (band: BandState): BandState => {
 }
 
 const forecloseZeroConditionAssets = (state: GameState): GameState => {
+  const assets = Array.isArray(state.assets) ? state.assets : []
   const foreclosedAssetIds = new Set(
-    state.assets.filter(asset => asset.condition === 0).map(asset => asset.id)
+    assets.filter(asset => asset.condition === 0).map(asset => asset.id)
   )
   if (foreclosedAssetIds.size === 0) return state
+  const liabilities = Array.isArray(state.liabilities) ? state.liabilities : []
 
   return {
     ...state,
-    assets: state.assets.filter(asset => !foreclosedAssetIds.has(asset.id)),
-    liabilities: state.liabilities.filter(
+    assets: assets.filter(asset => !foreclosedAssetIds.has(asset.id)),
+    liabilities: liabilities.filter(
       liability => !foreclosedAssetIds.has(liability.assetId)
     )
   }
