@@ -19,6 +19,11 @@ import {
   BANDHAUS_T2_SLOTS,
   BANDHAUS_T3_SLOTS
 } from './assetSections/bandhausConfig'
+import {
+  WORKSHOP_T1_SLOTS,
+  WORKSHOP_T2_SLOTS,
+  WORKSHOP_T3_SLOTS
+} from './assetSections/workshopConfig'
 
 export interface ChassisTierConfig {
   price: number
@@ -180,6 +185,30 @@ const BANDHAUS_LEGIT = {
   }
 } satisfies ChassisFlavorConfig
 
+const WORKSHOP_LEGIT = {
+  1: {
+    price: 3500,
+    upkeep: 18,
+    revenue: 15,
+    slots: [...WORKSHOP_T1_SLOTS] as SlotType[],
+    baseRiskEventChance: 0.003
+  },
+  2: {
+    price: 8000,
+    upkeep: 30,
+    revenue: 40,
+    slots: [...WORKSHOP_T2_SLOTS] as SlotType[],
+    baseRiskEventChance: 0.003
+  },
+  3: {
+    price: 16000,
+    upkeep: 50,
+    revenue: 90,
+    slots: [...WORKSHOP_T3_SLOTS] as SlotType[],
+    baseRiskEventChance: 0.003
+  }
+} satisfies ChassisFlavorConfig
+
 export const CHASSIS_CONFIG: Record<AssetKind, ChassisKindConfig> = {
   tourbus_chassis: {
     legit: TOURBUS_LEGIT,
@@ -205,5 +234,12 @@ export const CHASSIS_CONFIG: Record<AssetKind, ChassisKindConfig> = {
       3: buildDiyTier(BANDHAUS_LEGIT[3])
     }
   },
-  merch_workshop_chassis: makeEmptyKindConfig()
+  merch_workshop_chassis: {
+    legit: WORKSHOP_LEGIT,
+    diy: {
+      1: buildDiyTier(WORKSHOP_LEGIT[1]),
+      2: buildDiyTier(WORKSHOP_LEGIT[2]),
+      3: buildDiyTier(WORKSHOP_LEGIT[3])
+    }
+  }
 }
