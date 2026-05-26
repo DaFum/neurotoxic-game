@@ -5,7 +5,9 @@ import { SECTION_VIEWS } from '../../src/components/assets/sectionRegistry'
 import type { LongTermAsset, SlotType } from '../../src/types/assets'
 
 const mockState = vi.hoisted(() => ({
-  assets: [] as LongTermAsset[]
+  assets: [] as LongTermAsset[],
+  crowdfundCampaigns: [],
+  liabilities: []
 }))
 
 const capturedProductionLineProps = vi.hoisted(
@@ -57,6 +59,24 @@ vi.mock('../../src/components/assets/ModulePickerModal', () => ({
         {asset.id}:{slotId}
       </div>
     ) : null
+}))
+
+vi.mock('../../src/components/assets/AssetSlotActionList', () => ({
+  AssetSlotActionList: ({
+    asset,
+    onSlotClick
+  }: {
+    asset: LongTermAsset
+    onSlotClick: (slotId: string) => void
+  }) => (
+    <button
+      type='button'
+      data-testid='slot-action-list'
+      onClick={() => onSlotClick(asset.slots[0]?.id ?? 'missing')}
+    >
+      slot list
+    </button>
+  )
 }))
 
 vi.mock('../../src/components/assets/ChassisAcquisitionModal', () => ({
@@ -134,11 +154,22 @@ describe('MerchWorkshopSection', () => {
     )
   })
 
+  it('opens module picker from the compact slot action list', () => {
+    mockState.assets = [mockAsset('workshop-1', 'merch_workshop_chassis')]
+
+    render(<MerchWorkshopSection />)
+    fireEvent.click(screen.getByTestId('slot-action-list'))
+
+    expect(screen.getByTestId('module-picker')).toHaveTextContent(
+      'workshop-1:workshop-1-slot'
+    )
+  })
+
   it('opens merch workshop acquisition modal when no workshop exists', () => {
     render(<MerchWorkshopSection />)
 
     fireEvent.click(
-      screen.getByRole('button', { name: 'assets:actions.purchase' })
+      screen.getByRole('button', { name: 'assets:hub.actions.acquire' })
     )
 
     expect(screen.getByTestId('acquire-modal')).toHaveTextContent(
