@@ -159,6 +159,7 @@ const sanitizeSlots = (raw: unknown): AssetSlot[] => {
   const out: AssetSlot[] = []
   const seenModuleIds = new Set<string>()
   const installedModuleIds = new Set<string>()
+  let hasDynamicSlots = false
 
   for (const entry of raw) {
     const slot = sanitizeSlot(entry, seenModuleIds)
@@ -167,7 +168,14 @@ const sanitizeSlots = (raw: unknown): AssetSlot[] => {
       if (slot.installedModuleId !== null) {
         installedModuleIds.add(slot.installedModuleId)
       }
+      if (slot.addedByModuleId !== undefined) {
+        hasDynamicSlots = true
+      }
     }
+  }
+
+  if (!hasDynamicSlots) {
+    return out
   }
 
   // Drop child-slots whose parent module is no longer installed on this asset.
