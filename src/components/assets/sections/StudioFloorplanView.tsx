@@ -17,13 +17,13 @@ interface Props {
 export const StudioFloorplanView = ({ asset, onSlotClick }: Props) => {
   const { t } = useTranslation(['assets'])
   return (
-    <div className='relative'>
+    <div className='asset-hero-visual relative'>
       <GeneratedImagePanel
         prompt={getSectionBackgroundPrompt(
           'studio_chassis',
           asset.chassisFlavor
         )}
-        alt='Studio floorplan'
+        alt={t('assets:section.studio.alt')}
         aspectRatio='4:3'
         sizeHint={{ width: 1024, height: 768 }}
       />

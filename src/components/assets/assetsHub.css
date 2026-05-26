@@ -52,6 +52,14 @@
   max-width: min(100%, 48rem);
 }
 
+.asset-hero-frame {
+  overflow: hidden;
+}
+
+.asset-hero-visual {
+  min-width: 0;
+}
+
 @keyframes assets-hub-reveal {
   from {
     opacity: 0;
@@ -68,6 +76,14 @@
     align-self: flex-end;
     max-height: calc(100svh - 1rem);
     border-bottom-width: 0;
+  }
+
+  .asset-hero-visual--wide {
+    min-height: 12rem;
+  }
+
+  .asset-hero-visual--wide > *:first-child {
+    min-height: 12rem;
   }
 }
 

@@ -37,6 +37,22 @@ vi.mock('../../src/components/assets/sections/TourbusTrailerOverlay', () => ({
   TourbusTrailerOverlay: () => <div data-testid='trailer-overlay' />
 }))
 
+const translations: Record<string, string> = {
+  'assets:section.tourbus.alt': 'Localized tourbus side view',
+  'assets:slot.tb_roof': 'slot tb_roof',
+  'assets:slot.tb_front': 'slot tb_front',
+  'assets:slot.tb_audio': 'slot tb_audio',
+  'assets:slot.tb_decal': 'slot tb_decal'
+}
+
+vi.mock('react-i18next', () => ({
+  initReactI18next: { type: '3rdParty', init: () => {} },
+  useTranslation: () => ({
+    t: (key: string, options?: { defaultValue?: string }) =>
+      translations[key] ?? options?.defaultValue ?? key
+  })
+}))
+
 const mockAsset = (
   slots: Array<{
     id: string
@@ -67,6 +83,16 @@ describe('TourbusVehicleView', () => {
     vi.clearAllMocks()
   })
 
+  it('uses localized background alt text', () => {
+    const asset = mockAsset([
+      { id: 's1', slotType: 'tb_roof', installedModuleId: null }
+    ])
+    render(<TourbusVehicleView asset={asset} onSlotClick={vi.fn()} />)
+    expect(
+      screen.getByRole('img', { name: 'Localized tourbus side view' })
+    ).toBeInTheDocument()
+  })
+
   it('renders one button per non-trailer-addon slot', () => {
     const asset = mockAsset([
       { id: 's1', slotType: 'tb_roof', installedModuleId: null },
@@ -86,7 +112,7 @@ describe('TourbusVehicleView', () => {
     render(<TourbusVehicleView asset={asset} onSlotClick={vi.fn()} />)
     const buttons = screen.getAllByRole('button')
     const installedButton = buttons.find(
-      btn => btn.getAttribute('aria-label') === 'slot tb_roof'
+      btn => btn.getAttribute('aria-label') === 'slot tb_roof: tb_solar_panel'
     )
     expect(installedButton).toBeDefined()
     within(installedButton!).getByRole('img')

@@ -17,7 +17,7 @@ interface Props {
 export const WorkshopProductionLineView = ({ asset, onSlotClick }: Props) => {
   const { t } = useTranslation(['assets'])
   return (
-    <div className='relative'>
+    <div className='asset-hero-visual asset-hero-visual--wide relative'>
       <GeneratedImagePanel
         prompt={getSectionBackgroundPrompt(
           'merch_workshop_chassis',

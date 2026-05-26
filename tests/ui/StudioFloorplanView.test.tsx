@@ -28,6 +28,7 @@ vi.mock('../../src/utils/imageGen', () => ({
 }))
 
 const translations: Record<string, string> = {
+  'assets:section.studio.alt': 'Localized studio floorplan',
   'assets:slot.st_control': 'Mixing console',
   'assets:slot.st_mic': 'Microphone locker',
   'assets:slot.st_monitoring': 'Monitor speakers',
@@ -35,6 +36,7 @@ const translations: Record<string, string> = {
 }
 
 vi.mock('react-i18next', () => ({
+  initReactI18next: { type: '3rdParty', init: () => {} },
   useTranslation: () => ({
     t: (key: string, options?: { defaultValue?: string }) =>
       translations[key] ?? options?.defaultValue ?? key
@@ -69,6 +71,16 @@ const mockAsset = (
 describe('StudioFloorplanView', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+  })
+
+  it('uses localized background alt text', () => {
+    const asset = mockAsset([
+      { id: 's1', slotType: 'st_control', installedModuleId: null }
+    ])
+    render(<StudioFloorplanView asset={asset} onSlotClick={vi.fn()} />)
+    expect(
+      screen.getByRole('img', { name: 'Localized studio floorplan' })
+    ).toBeInTheDocument()
   })
 
   it('renders one zone button per slot whose slotType has a STUDIO_SLOT_ZONES entry', () => {

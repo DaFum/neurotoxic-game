@@ -28,6 +28,7 @@ vi.mock('../../src/utils/imageGen', () => ({
 }))
 
 const translations: Record<string, string> = {
+  'assets:section.bandhaus.alt': 'Localized bandhaus cross-section',
   'assets:slot.bh_stage': 'Stage area',
   'assets:slot.bh_kitchen': 'Kitchen',
   'assets:slot.bh_sleeping': 'Sleeping quarters',
@@ -37,6 +38,7 @@ const translations: Record<string, string> = {
 }
 
 vi.mock('react-i18next', () => ({
+  initReactI18next: { type: '3rdParty', init: () => {} },
   useTranslation: () => ({
     t: (key: string, options?: { defaultValue?: string }) =>
       translations[key] ?? options?.defaultValue ?? key
@@ -72,6 +74,16 @@ const mockAsset = (
 describe('BandhausCrossSectionView', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+  })
+
+  it('uses localized background alt text', () => {
+    const asset = mockAsset([
+      { id: 's1', slotType: 'bh_stage', installedModuleId: null }
+    ])
+    render(<BandhausCrossSectionView asset={asset} onSlotClick={vi.fn()} />)
+    expect(
+      screen.getByRole('img', { name: 'Localized bandhaus cross-section' })
+    ).toBeInTheDocument()
   })
 
   it('renders one button per visible slot at tier 3', () => {

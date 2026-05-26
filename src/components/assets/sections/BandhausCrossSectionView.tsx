@@ -17,13 +17,13 @@ interface Props {
 export const BandhausCrossSectionView = ({ asset, onSlotClick }: Props) => {
   const { t } = useTranslation(['assets'])
   return (
-    <div className='relative'>
+    <div className='asset-hero-visual relative'>
       <GeneratedImagePanel
         prompt={getSectionBackgroundPrompt(
           'bandhaus_chassis',
           asset.chassisFlavor
         )}
-        alt='Bandhaus cross-section'
+        alt={t('assets:section.bandhaus.alt')}
         aspectRatio='3:4'
         sizeHint={{ width: 768, height: 1024 }}
       />
