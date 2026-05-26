@@ -61,12 +61,12 @@ function updateOverlayNodes(
       nodeCache.clear()
     } else {
       // Partial removal
-      for (const [id, node] of nodeCache) {
+      nodeCache.forEach((node, id) => {
         if (!seenIds.has(id)) {
-          if (node) container.removeChild(node)
+          container.removeChild(node)
           nodeCache.delete(id)
         }
-      }
+      })
     }
   }
 }
