@@ -1135,6 +1135,7 @@ export const DeadmanButton = memo(
         </span>
         <button
           type='button'
+          aria-label={label}
           onMouseDown={startHold}
           onMouseUp={stopHold}
           onMouseLeave={stopHold}
