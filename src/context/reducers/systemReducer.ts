@@ -31,7 +31,7 @@ import {
   isForbiddenKey,
   clampVanFuel,
   clampRelationship,
-  isLooseRecord,
+  isPlainRecord,
   isEmptyObject,
   finiteNumberOr
 } from '../../utils/gameStateUtils'
@@ -127,7 +127,7 @@ const inferLoadedMapNodeType = (
   if (
     typeof nodeRecord.venueId === 'string' ||
     typeof nodeRecord.venue === 'string' ||
-    isLooseRecord(nodeRecord.venue)
+    isPlainRecord(nodeRecord.venue)
   ) {
     return 'GIG'
   }
@@ -145,7 +145,7 @@ const sanitizeStringArray = (value: unknown): string[] => {
 const copySafePrimitiveObject = (
   value: unknown
 ): Record<string, string | number | boolean | null> | undefined => {
-  if (!isLooseRecord(value)) return undefined
+  if (!isPlainRecord(value)) return undefined
   const copied: Record<string, string | number | boolean | null> = {}
   for (const key in value) {
     if (!Object.hasOwn(value, key)) continue
@@ -182,7 +182,7 @@ const copySafeJsonValue = (value: unknown, depth = 0): unknown => {
       return copied === undefined ? [] : [copied]
     })
   }
-  if (!isLooseRecord(value)) return undefined
+  if (!isPlainRecord(value)) return undefined
 
   const copied: Record<string, unknown> = {}
   for (const key in value) {
@@ -212,7 +212,7 @@ const copySafeEffectPayload = (
 
 const sanitizeBandInventory = (value: unknown): BandState['inventory'] => {
   const sanitized: BandState['inventory'] = { ...DEFAULT_BAND_STATE.inventory }
-  if (!isLooseRecord(value)) return sanitized
+  if (!isPlainRecord(value)) return sanitized
 
   const defaultInventory = DEFAULT_BAND_STATE.inventory
   for (const key in defaultInventory) {
@@ -324,7 +324,7 @@ const copySafeFlatObject = (
 const validateLoadedEffect = (
   effect: unknown
 ): Record<string, unknown> | null => {
-  if (!isLooseRecord(effect)) return null
+  if (!isPlainRecord(effect)) return null
 
   const effectObj = effect as Record<string, unknown>
   const typeStr = typeof effectObj.type === 'string' ? effectObj.type : ''
@@ -630,11 +630,11 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
 }
 
 const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
-  const playerData = isLooseRecord(loadedPlayer)
+  const playerData = isPlainRecord(loadedPlayer)
     ? (loadedPlayer as Record<string, unknown>)
     : {}
-  const vanData = isLooseRecord(playerData.van) ? playerData.van : {}
-  const statsData = isLooseRecord(playerData.stats) ? playerData.stats : {}
+  const vanData = isPlainRecord(playerData.van) ? playerData.van : {}
+  const statsData = isPlainRecord(playerData.stats) ? playerData.stats : {}
 
   const rawPlayer: PlayerState = {
     ...DEFAULT_PLAYER_STATE,
@@ -747,7 +747,7 @@ const parseNumericStats = (
   valueTransformer?: (val: number) => number,
   ignoredKeys?: Set<string>
 ): Record<string, number> => {
-  if (!isLooseRecord(obj)) return {}
+  if (!isPlainRecord(obj)) return {}
   const result: Record<string, number> = {}
   for (const key of Object.keys(obj)) {
     if (isForbiddenKey(key)) continue
@@ -765,7 +765,7 @@ const parseNumericStats = (
 }
 
 const sanitizeBand = (loadedBand: unknown): BandState => {
-  const bandData = isLooseRecord(loadedBand)
+  const bandData = isPlainRecord(loadedBand)
     ? (loadedBand as Record<string, unknown>)
     : {}
   const rawBand: BandState = {
@@ -782,7 +782,7 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
     luck: finiteNumberOr(bandData.luck, DEFAULT_BAND_STATE.luck),
     performance: {
       ...DEFAULT_BAND_STATE.performance,
-      ...(isLooseRecord(bandData.performance)
+      ...(isPlainRecord(bandData.performance)
         ? {
             guitarDifficulty: finiteNumberOr(
               bandData.performance.guitarDifficulty,
@@ -862,7 +862,7 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
     activeContrabandEffects: Array.isArray(bandData.activeContrabandEffects)
       ? (bandData.activeContrabandEffects as unknown[]).map(
           (effect: unknown) => {
-            const effectObj = isLooseRecord(effect)
+            const effectObj = isPlainRecord(effect)
               ? (effect as Record<string, unknown>)
               : {}
             return {
@@ -914,7 +914,7 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
     : DEFAULT_BAND_STATE.members
   const validatedMembers: BandMember[] = memberSource.flatMap(
     (rawMember, i) => {
-      if (!isLooseRecord(rawMember)) return []
+      if (!isPlainRecord(rawMember)) return []
       const m = rawMember
       const id =
         typeof m.id === 'string'
@@ -941,7 +941,7 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
         stamina: clampMemberStamina(finiteNumberOr(m.stamina, 100), staminaMax),
         baseStats: (() => {
           const stats = m.baseStats
-          if (!isLooseRecord(stats)) return {}
+          if (!isPlainRecord(stats)) return {}
           const result: Record<string, number> = {}
           for (const key in stats) {
             if (!Object.hasOwn(stats, key)) continue
@@ -1123,7 +1123,7 @@ const sanitizeSetlist = (rawSetlist: unknown): GameState['setlist'] => {
 const sanitizeReputationByRegion = (
   value: unknown
 ): GameState['reputationByRegion'] => {
-  if (!isLooseRecord(value)) return {}
+  if (!isPlainRecord(value)) return {}
   const sanitized: GameState['reputationByRegion'] = {}
   for (const key in value) {
     if (!Object.hasOwn(value, key)) continue
@@ -1143,7 +1143,7 @@ const sanitizeSocial = (value: unknown): SocialState => {
     brandReputation: { ...DEFAULT_SOCIAL_STATE.brandReputation },
     influencers: { ...DEFAULT_SOCIAL_STATE.influencers }
   }
-  if (!isLooseRecord(value)) return sanitized
+  if (!isPlainRecord(value)) return sanitized
 
   for (const key of [
     'instagram',
@@ -1196,7 +1196,7 @@ const sanitizeSocial = (value: unknown): SocialState => {
     })
   }
 
-  if (isLooseRecord(value.brandReputation)) {
+  if (isPlainRecord(value.brandReputation)) {
     sanitized.brandReputation = {}
     for (const key in value.brandReputation) {
       if (!Object.hasOwn(value.brandReputation, key)) continue
@@ -1208,13 +1208,13 @@ const sanitizeSocial = (value: unknown): SocialState => {
     }
   }
 
-  if (isLooseRecord(value.influencers)) {
+  if (isPlainRecord(value.influencers)) {
     sanitized.influencers = {}
     for (const key in value.influencers) {
       if (!Object.hasOwn(value.influencers, key)) continue
       if (isForbiddenKey(key)) continue
       const influencer = value.influencers[key]
-      if (!isLooseRecord(influencer)) continue
+      if (!isPlainRecord(influencer)) continue
       const { tier, trait, score } = influencer
       if (
         typeof tier !== 'string' ||
@@ -1232,7 +1232,7 @@ const sanitizeSocial = (value: unknown): SocialState => {
 }
 
 const sanitizeActiveEventOption = (value: unknown): EventOption | null => {
-  if (!isLooseRecord(value)) return null
+  if (!isPlainRecord(value)) return null
 
   const option: EventOption = {}
   for (const key of [
@@ -1263,7 +1263,7 @@ const sanitizeActiveEventOption = (value: unknown): EventOption | null => {
 }
 
 const sanitizeActiveEvent = (value: unknown): GameState['activeEvent'] => {
-  if (!isLooseRecord(value) || typeof value.id !== 'string') return null
+  if (!isPlainRecord(value) || typeof value.id !== 'string') return null
 
   const event: GameEvent = { id: value.id }
   for (const key of [
@@ -1295,13 +1295,13 @@ const sanitizeActiveEvent = (value: unknown): GameState['activeEvent'] => {
 }
 
 const sanitizeNpcs = (value: unknown): GameState['npcs'] => {
-  if (!isLooseRecord(value)) return {}
+  if (!isPlainRecord(value)) return {}
   const sanitized: GameState['npcs'] = {}
   for (const key in value) {
     if (!Object.hasOwn(value, key)) continue
     if (isForbiddenKey(key)) continue
     const npc = value[key]
-    if (!isLooseRecord(npc) || typeof npc.id !== 'string') continue
+    if (!isPlainRecord(npc) || typeof npc.id !== 'string') continue
     if (isForbiddenKey(npc.id)) continue
     sanitized[key] = {
       id: npc.id,
@@ -1321,7 +1321,7 @@ const sanitizeNpcs = (value: unknown): GameState['npcs'] => {
 
 const sanitizeGigModifiers = (value: unknown): GameState['gigModifiers'] => {
   const sanitized = { ...DEFAULT_GIG_MODIFIERS }
-  if (!isLooseRecord(value)) return sanitized
+  if (!isPlainRecord(value)) return sanitized
   for (const key of Object.keys(DEFAULT_GIG_MODIFIERS)) {
     if (typeof value[key] === 'boolean') {
       sanitized[key as keyof typeof DEFAULT_GIG_MODIFIERS] = value[
@@ -1336,7 +1336,7 @@ const sanitizeGigModifiers = (value: unknown): GameState['gigModifiers'] => {
 }
 
 const sanitizeVenue = (value: unknown): GameState['currentGig'] => {
-  if (!isLooseRecord(value)) return null
+  if (!isPlainRecord(value)) return null
   if (typeof value.id !== 'string' || typeof value.name !== 'string') {
     return null
   }
@@ -1364,7 +1364,7 @@ const sanitizeVenue = (value: unknown): GameState['currentGig'] => {
 }
 
 const sanitizeLastGigStats = (value: unknown): GameState['lastGigStats'] => {
-  if (!isLooseRecord(value)) return null
+  if (!isPlainRecord(value)) return null
   const sanitized: NonNullable<GameState['lastGigStats']> = {}
   for (const key of [
     'score',
@@ -1383,7 +1383,7 @@ const sanitizeLastGigStats = (value: unknown): GameState['lastGigStats'] => {
 const sanitizeActiveQuests = (value: unknown): GameState['activeQuests'] => {
   if (!Array.isArray(value)) return []
   return value.flatMap(quest => {
-    if (!isLooseRecord(quest) || typeof quest.id !== 'string') return []
+    if (!isPlainRecord(quest) || typeof quest.id !== 'string') return []
     const sanitized: GameState['activeQuests'][number] = { id: quest.id }
     for (const key of ['label', 'description', 'rewardType', 'rewardFlag']) {
       if (typeof quest[key] === 'string') sanitized[key] = quest[key]
@@ -1399,7 +1399,7 @@ const sanitizeActiveQuests = (value: unknown): GameState['activeQuests'] => {
     const rewardData = copySafePrimitiveObject(quest.rewardData)
     if (rewardData !== undefined) sanitized.rewardData = rewardData
     const failurePenalty = copySafeJsonValue(quest.failurePenalty)
-    if (isLooseRecord(failurePenalty)) sanitized.failurePenalty = failurePenalty
+    if (isPlainRecord(failurePenalty)) sanitized.failurePenalty = failurePenalty
     return [sanitized]
   })
 }
