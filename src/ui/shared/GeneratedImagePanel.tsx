@@ -42,8 +42,10 @@ export const GeneratedImagePanel = ({
   // successful image keeps `opacity: 1` during the new image's network round-trip
   // (flicker), or a previously errored image stays on the fallback forever.
   useEffect(() => {
-    setLoaded(false)
-    setErrored(false)
+    requestAnimationFrame(() => {
+      setLoaded(false)
+      setErrored(false)
+    })
   }, [prompt])
 
   // resolveGenImageUrl already checks navigator.onLine and returns the
