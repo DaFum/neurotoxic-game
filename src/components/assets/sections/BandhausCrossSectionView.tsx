@@ -1,0 +1,77 @@
+import { useTranslation } from 'react-i18next'
+import { GeneratedImagePanel } from '../../../ui/shared/GeneratedImagePanel'
+import {
+  getSectionBackgroundPrompt,
+  getModuleImagePrompt
+} from '../../../utils/imageGen'
+import { BANDHAUS_SLOT_ZONES } from '../../../utils/assetSections/bandhausConfig'
+import type { LongTermAsset } from '../../../types/assets'
+
+interface Props {
+  asset: LongTermAsset
+  onSlotClick: (slotId: string) => void
+}
+
+export const BandhausCrossSectionView = ({ asset, onSlotClick }: Props) => {
+  const { t } = useTranslation(['assets'])
+  return (
+    <div className='relative'>
+      <GeneratedImagePanel
+        prompt={getSectionBackgroundPrompt(
+          'bandhaus_chassis',
+          asset.chassisFlavor
+        )}
+        alt='Bandhaus cross-section'
+        aspectRatio='3:4'
+        sizeHint={{ width: 768, height: 1024 }}
+      />
+      {asset.slots.map(slot => {
+        // bh_secret is Tier-3 only — keep it hidden on lower-tier chassis
+        // even if a sanitizer or migration leaves the slot in place.
+        if (slot.slotType === 'bh_secret' && asset.chassisTier < 3) return null
+        const zone = BANDHAUS_SLOT_ZONES[slot.slotType]
+        if (!zone) return null
+        const installed = slot.installedModuleId
+        const isMural = slot.slotType === 'bh_identity' && installed !== null
+        // Mural needs a dark backdrop so the wide facade overlay reads against
+        // the background image; non-mural installed slots stay transparent.
+        const background =
+          installed && !isMural ? 'transparent' : 'var(--color-hotspot-bg)'
+        return (
+          <button
+            key={slot.id}
+            type='button'
+            aria-label={t(`assets:slot.${slot.slotType}`)}
+            onClick={() => onSlotClick(slot.id)}
+            className='absolute'
+            style={{
+              left: `${(zone.x - zone.w / 2) * 100}%`,
+              top: `${(zone.y - zone.h / 2) * 100}%`,
+              width: `${zone.w * 100}%`,
+              height: `${zone.h * 100}%`,
+              border:
+                '2px dashed var(--section-accent, var(--color-cosmic-purple))',
+              background,
+              cursor: 'pointer'
+            }}
+          >
+            {installed && (
+              <GeneratedImagePanel
+                prompt={getModuleImagePrompt(installed)}
+                alt={installed}
+                aspectRatio={isMural ? '4:3' : '1:1'}
+                variant='hotspot'
+                sizeHint={
+                  isMural
+                    ? { width: 512, height: 128 }
+                    : { width: 256, height: 256 }
+                }
+                className='h-full w-full'
+              />
+            )}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
