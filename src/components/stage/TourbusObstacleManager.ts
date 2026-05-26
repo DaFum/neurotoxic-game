@@ -145,16 +145,22 @@ export class TourbusObstacleManager {
     }
   }
 
+  private cleanupObstacle(
+    sprite: (Sprite | Graphics) & { hasExploded?: boolean },
+    id: string | number
+  ) {
+    if (!this.currentIds.has(id)) {
+      if (sprite) sprite.destroy() // PixiJS automatically removes from parent
+      this.obstacleMap.delete(id)
+    }
+  }
+
   cleanupObstacles() {
     // Performance optimization: Iterate using forEach to prevent
     // per-frame garbage collection pauses caused by allocating [id, sprite] arrays in entries(),
     // while also avoiding the redundant .get(id) lookup.
-    this.obstacleMap.forEach((sprite, id) => {
-      if (!this.currentIds.has(id)) {
-        if (sprite) sprite.destroy() // PixiJS automatically removes from parent
-        this.obstacleMap.delete(id)
-      }
-    })
+    // Using a class method and passing `this` avoids closure allocation.
+    this.obstacleMap.forEach(this.cleanupObstacle, this)
   }
 
   dispose() {
