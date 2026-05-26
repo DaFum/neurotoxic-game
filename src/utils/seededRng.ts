@@ -39,5 +39,5 @@ export const createRngStream = (seed: number, length: number): number[] => {
 export const nextSeed = (seed: number): number => {
   // One step of mulberry32 mixed back into 32-bit space.
   const rng = mulberry32(seed)
-  return (rng() * 2 ** 32) | 0
+  return (rng() * 2 ** 32) >>> 0
 }

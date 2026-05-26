@@ -43,6 +43,7 @@
   "modulePicker.lockedReason": "Locked: {{reason}}",
   "modulePicker.exclusivityConflict": "Conflicts with {{otherName}}",
   "modulePicker.installCost": "Install cost: {{amount}}",
+  "modulePicker.insufficientFunds": "Not enough money.",
   "modulePicker.removeRefund": "Refund: {{amount}}",
   "module.unlock.fame": "Requires {{amount}} fame",
   "module.unlock.money": "Requires {{amount}} money",

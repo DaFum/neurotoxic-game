@@ -43,6 +43,7 @@
   "modulePicker.lockedReason": "Gesperrt: {{reason}}",
   "modulePicker.exclusivityConflict": "Konflikt mit {{otherName}}",
   "modulePicker.installCost": "Einbaukosten: {{amount}}",
+  "modulePicker.insufficientFunds": "Nicht genug Geld.",
   "modulePicker.removeRefund": "R\u00fcckerstattung: {{amount}}",
   "module.unlock.fame": "Ben\u00f6tigt {{amount}} Fame",
   "module.unlock.money": "Ben\u00f6tigt {{amount}} Geld",

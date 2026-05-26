@@ -276,11 +276,13 @@ describe('sanitizeRngSeed', () => {
     assert.equal(sanitizeRngSeed(12.7), 12)
   })
 
-  it('rejects NaN, Infinity, negative and non-numbers', () => {
+  it('preserves signed legacy seeds by coercing them to UInt32', () => {
+    assert.equal(sanitizeRngSeed(-1), 0xffffffff)
+  })
+
+  it('rejects NaN, Infinity and non-numbers', () => {
     assert.equal(typeof sanitizeRngSeed(NaN), 'number')
     assert.notEqual(sanitizeRngSeed(NaN), 0) // falls back to Date.now()
-    assert.equal(typeof sanitizeRngSeed(-1), 'number')
-    assert.notEqual(sanitizeRngSeed(-1), -1)
     assert.equal(typeof sanitizeRngSeed('seed'), 'number')
     assert.equal(typeof sanitizeRngSeed(null), 'number')
   })

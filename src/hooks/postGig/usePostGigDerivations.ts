@@ -10,6 +10,7 @@ import {
   getCityKeyFromVenueId
 } from '../../utils/mapGenerator'
 import { normalizeVenueId } from '../../utils/mapUtils'
+import { getActiveAssetModifiers } from '../../utils/assetSelectors'
 import type {
   GameState,
   Venue,
@@ -26,6 +27,7 @@ interface UsePostGigDerivationsProps {
   gigModifiers: GameState['gigModifiers']
   activeEvent: GameState['activeEvent']
   band: BandState
+  assets: GameState['assets']
   social: SocialState
   lastGigStats: GigStats | null
   reputationByRegion: GameState['reputationByRegion']
@@ -40,6 +42,7 @@ export const usePostGigDerivations = ({
   gigModifiers,
   activeEvent,
   band,
+  assets,
   social,
   lastGigStats,
   reputationByRegion,
@@ -68,6 +71,11 @@ export const usePostGigDerivations = ({
     return deriveGigContext(currentGig, social, player)
   }, [currentGig, social, player])
 
+  const assetModifiers = useMemo(
+    () => getActiveAssetModifiers(assets),
+    [assets]
+  )
+
   // Derive financials purely without triggering a re-render loop
   const financials = useMemo(() => {
     // Normalize first — legacy/saved venues can carry namespaced IDs like
@@ -93,7 +101,8 @@ export const usePostGigDerivations = ({
       reputationByRegion,
       activeStoryFlags,
       gigContext,
-      cityTraits
+      cityTraits,
+      assetModifiers
     })
   }, [
     currentGig,
@@ -107,7 +116,8 @@ export const usePostGigDerivations = ({
     reputationByRegion,
     activeStoryFlags,
     cityStates,
-    gigContext
+    gigContext,
+    assetModifiers
   ])
 
   // Derive post options purely without triggering a re-render loop

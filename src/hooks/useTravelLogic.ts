@@ -41,6 +41,7 @@ import { clampPlayerMoney } from '../utils/gameStateUtils'
 import { translateLocation } from '../utils/locationI18n'
 import { VENUES_BY_ID } from '../data/venues'
 import { getTravelArrivalUpdates } from '../utils/travelUtils'
+import { getActiveAssetModifiers } from '../utils/assetSelectors'
 import type {
   BandState,
   GameMap,
@@ -55,6 +56,7 @@ import type {
 type TravelLogicParams = {
   player: PlayerState
   band: BandState
+  assets: GameState['assets']
   social: SocialState
   gameMap: GameMap | null
   updatePlayer: (updates: Partial<PlayerState>) => void
@@ -104,6 +106,7 @@ const TRAVEL_ANIMATION_TIMEOUT_MS = 1510
 export const useTravelLogic = ({
   player,
   band,
+  assets,
   social,
   gameMap,
   updatePlayer,
@@ -135,6 +138,7 @@ export const useTravelLogic = ({
   // Optimization: Use refs for frequently changing state to prevent handler recreation
   const playerRef = useRef(player)
   const bandRef = useRef(band)
+  const assetsRef = useRef(assets)
   const socialRef = useRef(social)
   const gameMapRef = useRef(gameMap)
   const reputationByRegionRef = useRef(reputationByRegion)
@@ -151,6 +155,7 @@ export const useTravelLogic = ({
   useEffect(() => {
     playerRef.current = player
     bandRef.current = band
+    assetsRef.current = assets
     socialRef.current = social
     gameMapRef.current = gameMap
     reputationByRegionRef.current = reputationByRegion
@@ -160,6 +165,7 @@ export const useTravelLogic = ({
   }, [
     player,
     band,
+    assets,
     social,
     gameMap,
     reputationByRegion,
@@ -248,6 +254,7 @@ export const useTravelLogic = ({
     (explicitNode: MapNode | null = null) => {
       const player = playerRef.current
       const band = bandRef.current
+      const assetModifiers = getActiveAssetModifiers(assetsRef.current)
       const social = socialRef.current
       const gameMap = gameMapRef.current
 
@@ -290,7 +297,8 @@ export const useTravelLogic = ({
         node,
         currentStartNode,
         player,
-        band
+        band,
+        assetModifiers
       )
       const dailyCost = calculateGuaranteedDailyCost(player, band, social)
       const totalCashImpact = totalCost + dailyCost
@@ -484,6 +492,7 @@ export const useTravelLogic = ({
 
       const player = playerRef.current
       const band = bandRef.current
+      const assetModifiers = getActiveAssetModifiers(assetsRef.current)
       const social = socialRef.current
       const gameMap = gameMapRef.current
 
@@ -605,7 +614,8 @@ export const useTravelLogic = ({
         node,
         currentStartNode,
         player,
-        band
+        band,
+        assetModifiers
       )
       const dailyCost = calculateGuaranteedDailyCost(player, band, social)
       const totalCashImpact = totalCost + dailyCost
@@ -683,7 +693,8 @@ export const useTravelLogic = ({
     if (isTravelingRef.current) return
 
     const currentFuel = player.van?.fuel ?? 0
-    const cost = calculateRefuelCost(currentFuel)
+    const assetModifiers = getActiveAssetModifiers(assetsRef.current)
+    const cost = calculateRefuelCost(currentFuel, assetModifiers)
 
     if (cost <= 0) {
       addToast(

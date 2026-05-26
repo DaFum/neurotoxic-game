@@ -110,7 +110,10 @@ export const ModulePickerModal = ({
         <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
           {pool.map(({ module, unlocked, lockReasons }) => {
             const conflict = getSlotConflicts(asset, module.id)
-            const blocked = !unlocked || !conflict.canInstall
+            const installCost = module.cost + module.installCost
+            const insufficientFunds = money < installCost
+            const blocked =
+              !unlocked || !conflict.canInstall || insufficientFunds
             return (
               <div
                 key={module.id}
@@ -140,10 +143,7 @@ export const ModulePickerModal = ({
                   </span>
                   <span className='text-xs'>
                     {t('assets:modulePicker.installCost', {
-                      amount: formatCurrency(
-                        module.cost + module.installCost,
-                        i18n.language
-                      )
+                      amount: formatCurrency(installCost, i18n.language)
                     })}
                   </span>
                   {lockReasons.length > 0 && (
@@ -168,6 +168,14 @@ export const ModulePickerModal = ({
                       {t('assets:modulePicker.exclusivityConflict', {
                         otherName: conflict.conflictingModuleIds.join(', ')
                       })}
+                    </span>
+                  )}
+                  {insufficientFunds && (
+                    <span
+                      className='text-xs'
+                      style={{ color: 'var(--color-blood)' }}
+                    >
+                      {t('assets:modulePicker.insufficientFunds')}
                     </span>
                   )}
                   <button

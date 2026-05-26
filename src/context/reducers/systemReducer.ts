@@ -38,8 +38,10 @@ import {
 import { calculateDailyUpdates } from '../../utils/simulationUtils'
 import {
   DEFAULT_MERCH_PRICES,
-  EXPENSE_CONSTANTS
+  EXPENSE_CONSTANTS,
+  shouldTriggerBankruptcy
 } from '../../utils/economyEngine'
+import { getTotalDailyObligations } from '../../utils/assetSelectors'
 import { generateDailyTrend } from '../../utils/socialEngine'
 import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks, normalizeTraitMap } from '../../utils/traitUtils'
@@ -1732,6 +1734,33 @@ const processContrabandExpiry = (band: BandState): BandState => {
   return nextBand
 }
 
+const forecloseZeroConditionAssets = (state: GameState): GameState => {
+  const foreclosedAssetIds = new Set(
+    state.assets.filter(asset => asset.condition === 0).map(asset => asset.id)
+  )
+  if (foreclosedAssetIds.size === 0) return state
+
+  return {
+    ...state,
+    assets: state.assets.filter(asset => !foreclosedAssetIds.has(asset.id)),
+    liabilities: state.liabilities.filter(
+      liability => !foreclosedAssetIds.has(liability.assetId)
+    )
+  }
+}
+
+const applyDailyBankruptcyCheck = (state: GameState): GameState => {
+  const totalDailyObligations = getTotalDailyObligations(state)
+  if (!shouldTriggerBankruptcy(state.player.money, -totalDailyObligations)) {
+    return state
+  }
+
+  return {
+    ...state,
+    currentScene: GAME_PHASES.GAMEOVER
+  }
+}
+
 /**
  * Handles day advancement
  * @param {Object} state - Current state
@@ -1781,6 +1810,7 @@ export const handleAdvanceDay = (
       }
     }
   }
+  nextStatePre = forecloseZeroConditionAssets(nextStatePre)
   const rngSeed = payload?.nextRngSeed ?? nextStatePre.rngSeed
   state = { ...nextStatePre, rngSeed }
 
@@ -1841,6 +1871,8 @@ export const handleAdvanceDay = (
       'consequences_bandmate_scandal'
     ]
   }
+
+  nextState = applyDailyBankruptcyCheck(nextState)
 
   logger.info('GameState', `Day Advanced to ${player.day}`)
   return nextState

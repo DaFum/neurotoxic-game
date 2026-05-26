@@ -133,6 +133,7 @@ beforeEach(resetTravelLogicMockState)
 
 export const mockTravelLogicDependencies = {
   mockCalculateTravelExpenses,
+  mockCalculateRefuelCost,
   mockAudioManager,
   mockCalculateGuaranteedDailyCost,
   mockLogger,
@@ -159,6 +160,7 @@ export const createTravelLogicProps = (overrides = {}) => ({
     totalTravels: 0
   },
   band: { members: [], harmony: 50 },
+  assets: [],
   gameMap: {
     nodes: {
       node_start: {

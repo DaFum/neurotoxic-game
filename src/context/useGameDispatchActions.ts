@@ -643,9 +643,10 @@ export function useGameDispatchActions({
   )
   const repairChassis = useCallback(
     (assetId: string) => {
-      dispatch(repairChassisAction(assetId))
+      const action = repairChassisAction(assetId, stateRef.current)
+      if (action) dispatch(action)
     },
-    [dispatch]
+    [dispatch, stateRef]
   )
   const installModule = useCallback(
     (input: Parameters<typeof installModuleAction>[0]) => {

@@ -43,7 +43,11 @@ const LOADABLE_SAVE_KEYS = [
   'gigModifiers',
   'setlist',
   'minigame',
-  'completedMilestones'
+  'completedMilestones',
+  'assets',
+  'liabilities',
+  'crowdfundCampaigns',
+  'rngSeed'
 ] as const
 
 type UsePersistenceParams = {
@@ -90,7 +94,11 @@ const createPersistedState = (currentState: GameState) => {
     setlist,
     unlocks,
     completedMilestones,
-    minigame
+    minigame,
+    assets,
+    liabilities,
+    crowdfundCampaigns,
+    rngSeed
   } = currentState
 
   return {
@@ -116,6 +124,10 @@ const createPersistedState = (currentState: GameState) => {
     unlocks,
     completedMilestones,
     minigame,
+    assets,
+    liabilities,
+    crowdfundCampaigns,
+    rngSeed,
     setlist: normalizeSetlistForSave(setlist)
   }
 }

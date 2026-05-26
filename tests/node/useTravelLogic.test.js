@@ -19,15 +19,20 @@ import {
   setupTravelScenario,
   resetTravelLogicMockState
 } from '../useTravelLogicTestUtils'
+import { MODULE_REGISTRY } from '../../src/utils/assetModuleRegistry.ts'
 
 const {
   mockCalculateTravelExpenses,
+  mockCalculateRefuelCost,
   mockAudioManager,
   mockCalculateGuaranteedDailyCost,
   mockLogger,
   mockHandleError,
   setEnsureAudioContextResult
 } = mockTravelLogicDependencies
+
+const travelFuelModuleId = 'test_travel_fuel_discount'
+const originalTravelFuelModule = MODULE_REGISTRY[travelFuelModuleId]
 
 const { useTravelLogic } = await setupTravelLogicTest()
 
@@ -37,11 +42,17 @@ describe('useTravelLogic', () => {
   })
 
   after(() => {
+    if (originalTravelFuelModule === undefined) {
+      delete MODULE_REGISTRY[travelFuelModuleId]
+    } else {
+      MODULE_REGISTRY[travelFuelModuleId] = originalTravelFuelModule
+    }
     teardownJSDOM()
   })
 
   beforeEach(() => {
     mockCalculateTravelExpenses.mock.resetCalls()
+    mockCalculateRefuelCost.mock.resetCalls()
     mockCalculateGuaranteedDailyCost.mock.resetCalls()
     mockCalculateTravelExpenses.mock.mockImplementation(() => ({
       dist: 100,
@@ -315,6 +326,61 @@ describe('useTravelLogic', () => {
       assert.equal(updateArg.money, 900)
       assert.equal(updateArg.van.fuel, 100)
     })
+  })
+
+  test('passes active asset modifiers into travel and refuel costs', () => {
+    MODULE_REGISTRY[travelFuelModuleId] = {
+      id: travelFuelModuleId,
+      ownerKind: 'tourbus_chassis',
+      slotType: 'tb_roof',
+      flavor: 'legit',
+      cost: 100,
+      installCost: 10,
+      removalRefundFraction: 0.5,
+      boni: { fuelMultiplier: 0.5 },
+      unlock: {},
+      imagePromptKey: 'test_travel_fuel'
+    }
+    const asset = {
+      id: 'asset_travel',
+      kind: 'tourbus_chassis',
+      chassisFlavor: 'legit',
+      chassisTier: 1,
+      condition: 100,
+      baseUpkeep: 0,
+      baseDailyRevenue: 0,
+      slots: [
+        {
+          id: 'slot_fuel',
+          slotType: 'tb_roof',
+          position: { x: 0, y: 0 },
+          installedModuleId: travelFuelModuleId
+        }
+      ],
+      acquiredOnDay: 1,
+      acquisitionMode: 'cash',
+      baseRiskEventChance: 0
+    }
+    const { result, targetNode } = setupTravelScenario(useTravelLogic, {
+      assets: [asset]
+    })
+
+    act(() => {
+      result.current.handleTravel(targetNode)
+    })
+    act(() => {
+      result.current.handleRefuel()
+    })
+
+    const travelCall = mockCalculateTravelExpenses.mock.calls.find(
+      call => call.arguments[4] !== undefined
+    )
+    assert.ok(travelCall)
+    assert.equal(travelCall.arguments[4].fuelMultiplier, 0.5)
+    assert.equal(
+      mockCalculateRefuelCost.mock.calls[0].arguments[1].fuelMultiplier,
+      0.5
+    )
   })
 
   test('handleRepair fixes van and deducts money', () => {

@@ -212,6 +212,7 @@ export type InstallModuleFailureReason =
   | 'LOCKED'
   | 'EXCLUSIVITY'
   | 'MAX_PER_ASSET'
+  | 'INSUFFICIENT_FUNDS'
 
 export interface NewSlotEntry {
   slotType: SlotType

@@ -4,7 +4,7 @@ import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 import { getRepairImagePrompt } from '../../utils/imageGen'
 import { REPAIR_COST_PER_POINT } from '../../utils/assetConfig'
 import { formatCurrency } from '../../utils/numberUtils'
-import { useGameActions } from '../../context/GameState'
+import { useGameActions, useGameSelector } from '../../context/GameState'
 import type { LongTermAsset } from '../../types/assets'
 
 interface Props {
@@ -16,6 +16,7 @@ interface Props {
 export const RepairConfirmModal = ({ asset, isOpen, onClose }: Props) => {
   const { t, i18n } = useTranslation(['assets'])
   const { repairChassis } = useGameActions()
+  const money = useGameSelector(state => state.player.money)
   const cost = Math.max(0, (100 - asset.condition) * REPAIR_COST_PER_POINT)
 
   return (
@@ -56,7 +57,7 @@ export const RepairConfirmModal = ({ asset, isOpen, onClose }: Props) => {
               repairChassis(asset.id)
               onClose()
             }}
-            disabled={cost === 0}
+            disabled={cost === 0 || money < cost}
             className='border-2 px-3 py-1 disabled:opacity-40'
             style={{
               background: 'var(--section-accent, var(--color-toxic-green))',

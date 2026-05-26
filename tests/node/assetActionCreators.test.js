@@ -290,6 +290,33 @@ describe('installModule', () => {
     assert.equal(action.payload.reason, 'EXCLUSIVITY')
   })
 
+  it('returns FAILED for insufficient install funds', () => {
+    registerTestModule('install_too_expensive', {
+      cost: 500,
+      installCost: 50
+    })
+    const asset = makeAsset({
+      slots: [
+        {
+          id: 'slot_1',
+          slotType: 'tb_roof',
+          position: { x: 0, y: 0 },
+          installedModuleId: null
+        }
+      ]
+    })
+    const action = installModule(
+      {
+        assetId: 'asset_1',
+        slotId: 'slot_1',
+        moduleId: 'install_too_expensive'
+      },
+      makeState({ player: { money: 100 }, assets: [asset] })
+    )
+    assert.equal(action.type, ActionTypes.INSTALL_MODULE_FAILED)
+    assert.equal(action.payload.reason, 'INSUFFICIENT_FUNDS')
+  })
+
   it('pre-generates newSlotIds for addsSlots modules', () => {
     registerTestModule('install_with_addsSlots', {
       slotType: 'tb_trailer_mount',
@@ -394,6 +421,32 @@ describe('upgradeChassisTier', () => {
     )
     assert.equal(action, null)
   })
+
+  it('returns null when upgrade funds are insufficient', () => {
+    CHASSIS_CONFIG.tourbus_chassis.legit[1] = {
+      price: 4000,
+      upkeep: 20,
+      revenue: 0,
+      slots: ['tb_roof'],
+      baseRiskEventChance: 0.005
+    }
+    CHASSIS_CONFIG.tourbus_chassis.legit[2] = {
+      price: 9000,
+      upkeep: 35,
+      revenue: 0,
+      slots: ['tb_roof', 'tb_front'],
+      baseRiskEventChance: 0.005
+    }
+    const action = upgradeChassisTier(
+      'asset_1',
+      2,
+      makeState({
+        player: { money: 100 },
+        assets: [makeAsset({ chassisTier: 1 })]
+      })
+    )
+    assert.equal(action, null)
+  })
 })
 
 describe('startCrowdfund / resolveCrowdfund / sellChassis / repairChassis / removeModule', () => {
@@ -430,9 +483,26 @@ describe('startCrowdfund / resolveCrowdfund / sellChassis / repairChassis / remo
     assert.equal(action.payload.newAssetId, undefined)
   })
 
+  it('repairChassis returns null when repair funds are insufficient', () => {
+    const action = repairChassis(
+      'asset_1',
+      makeState({
+        player: { money: 10 },
+        assets: [makeAsset({ condition: 50 })]
+      })
+    )
+    assert.equal(action, null)
+  })
+
   it('sellChassis / repairChassis / removeModule shape', () => {
+    const repairState = makeState({
+      assets: [makeAsset({ id: 'a1', condition: 90 })]
+    })
     assert.equal(sellChassis('a1').type, ActionTypes.SELL_CHASSIS)
-    assert.equal(repairChassis('a1').type, ActionTypes.REPAIR_CHASSIS)
+    assert.equal(
+      repairChassis('a1', repairState).type,
+      ActionTypes.REPAIR_CHASSIS
+    )
     assert.equal(removeModule('a1', 's1').type, ActionTypes.REMOVE_MODULE)
   })
 })

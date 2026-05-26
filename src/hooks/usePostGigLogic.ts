@@ -13,6 +13,7 @@ export const usePostGigLogic = () => {
   const gigModifiers = useGameSelector(state => state.gigModifiers)
   const activeEvent = useGameSelector(state => state.activeEvent)
   const band = useGameSelector(state => state.band)
+  const assets = useGameSelector(state => state.assets)
   const social = useGameSelector(state => state.social)
   const lastGigStats = useGameSelector(state => state.lastGigStats)
   const reputationByRegion = useGameSelector(state => state.reputationByRegion)
@@ -52,6 +53,7 @@ export const usePostGigLogic = () => {
       gigModifiers,
       activeEvent,
       band,
+      assets,
       social,
       lastGigStats,
       reputationByRegion,
