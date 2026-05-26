@@ -28,3 +28,10 @@
 - `sections/TourbusVehicleView.tsx` renders a 16:9 `GeneratedImagePanel` background with absolutely-positioned hotspot buttons sourced from `TOURBUS_SLOT_POSITIONS`. Slots whose `slotType` has no position entry are skipped (sanity guard).
 - `tb_trailer_addon` slots are NOT rendered on the van — they belong to `sections/TourbusTrailerOverlay.tsx`, which mounts only when `tb_trailer_hitch` is installed. On `md+` it docks left of the van as an absolute overlay; under `md` it flows below the van so it doesn't overflow narrow viewports.
 - All hotspot borders/buttons use `var(--section-accent, var(--color-toxic-green))` for consistent fallback when the scene root is absent. Hotspot size scales `w-9/h-9 → sm:w-12 → md:w-16` so hotspots stay reachable on phones without dominating the 16:9 background.
+
+## Studio
+
+- `sections/StudioSection.tsx` is the entry point; it registers in `SECTION_VIEWS.studio_chassis` from `sectionRegistry.ts` with accent `var(--color-electric-blue)`.
+- `sections/StudioFloorplanView.tsx` renders a 4:3 isometric studio background with rectangle zone overlays sourced from `STUDIO_SLOT_ZONES` — dashed borders instead of round point hotspots, matching the room-layout metaphor (zones, not points).
+- Zone rectangles use `top-left = (x - w/2, y - h/2)` and `width/height = (w, h)` after percent conversion.
+- Installed-module thumbnails route through `GeneratedImagePanel` with `aspectRatio='1:1'` + `variant='hotspot'` — do NOT introduce raw `<img>` tags here; the project's GeneratedImagePanel-is-the-only-Pollinations-consumer rule applies.
