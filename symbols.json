@@ -9134,6 +9134,16 @@
         "type": "const"
       }
     ],
+    "RoadieCar": [
+      {
+        "isDefault": false,
+        "name": "RoadieCar",
+        "path": "src/components/stage/RoadieTrafficManager.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
     "RoadieControls": [
       {
         "isDefault": false,
