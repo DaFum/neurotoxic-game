@@ -58,8 +58,14 @@ export const BandhausCrossSectionView = ({ asset, onSlotClick }: Props) => {
             {installed && (
               <GeneratedImagePanel
                 prompt={getModuleImagePrompt(installed)}
-                alt={installed}
-                aspectRatio={isMural ? '4:3' : '1:1'}
+                alt={t(`assets:module.${installed}.name`, {
+                  defaultValue: installed
+                })}
+                // Mural slot is wide-flat (zone w=0.8, h=0.15 → roughly 4:1).
+                // 21:9 is the closest available aspect ratio to the actual
+                // container's 4:1 — anything narrower causes a vertical
+                // squish from the panel's internal CSS aspect-ratio rule.
+                aspectRatio={isMural ? '21:9' : '1:1'}
                 variant='hotspot'
                 sizeHint={
                   isMural
