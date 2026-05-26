@@ -21,3 +21,9 @@
 
 - `tourbusModules.test.js` enforces: 17 tourbus modules registered, every chassis slot type (except dynamic `tb_trailer_addon`) has at least one compatible module, all `imagePromptKey` references resolve in `MODULE_PROMPTS`, and `tb_trailer_hitch` anti-stacking shape (`slotType` vs `addsSlots[0].slotType`, `maxPerAsset === 1`).
 - `tourbusAntiStacking.test.js` runs four end-to-end reducer scenarios via real action creators: hitch install grows the slot set by two `tb_trailer_addon` slots; hitch install into an addon slot fails with `SLOT_TYPE_MISMATCH`; a second hitch install on the same mount fails with `SLOT_OCCUPIED`; and stacking remains capped (no recursive expansion). Test stubs two temporary `tb_trailer_addon`-compatible modules in `before()`/`after()` since no production module declares that slotType — preserve the snapshot/restore pattern when adding new tourbus tests.
+
+## Studio
+
+- `studioModules.test.js` enforces: 14 studio modules registered, every chassis slot type has a compatible module, all `imagePromptKey` references resolve in `MODULE_PROMPTS` via `Object.hasOwn`, and `st_pro_tools_hd.boni.enablesReRecording === true`.
+- `studioEconomyIntegration.test.js` verifies `songQualityBonus` additive stacking, the `enablesReRecording` modifier flag, and the broken-asset boni-neutralization guard (condition < 20 → `{}` from `getAssetAggregateBoni`).
+- `studioRiskEvents.test.js` verifies DIY modules surface their `riskEventTypes` through `rollAssetRiskEvents` and that the fallback for clean (no `riskEventTypes`) modules is `'fire'` (not the old `'foreclosure'`).

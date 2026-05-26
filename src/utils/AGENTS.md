@@ -87,3 +87,9 @@ baseline instead of duplicating formulas.
 - `assetSections/tourbusModules.ts` registers 17 modules via side-effect import from `assetRegistryStore.ts` (the underlying registry; `assetModuleRegistry.ts` re-exports and triggers section imports). Editing tourbus modules must mutate `MODULE_REGISTRY` / `MODULE_PROMPTS` inside this file only.
 - Trailer anti-stacking: `tb_trailer_hitch` has `slotType: 'tb_trailer_mount'` and adds `tb_trailer_addon` slots — different slot types prevent self-stacking. `maxPerAsset: 1` is a belt-and-suspenders backup. Adding any new module that declares both `slotType: X` and `addsSlots: [{ slotType: X, ... }]` is forbidden and will be rejected by registry invariant tests.
 - Trailer detection in UI uses `asset.slots.some(s => s.installedModuleId === 'tb_trailer_hitch')` — no `MODULE_REGISTRY` lookup required.
+
+## Studio
+
+- `assetSections/studioConfig.ts` exports `STUDIO_T1_SLOTS`, `STUDIO_T2_SLOTS`, `STUDIO_T3_SLOTS` (`as const` tuples) and `STUDIO_SLOT_ZONES: Partial<Record<SlotType, {x, y, w, h}>>`. Zones are rectangles (centre + size, normalised 0..1 over a 4:3 background) — unlike tourbus's point hotspots — so callers compute the rectangle top-left as `(x - w/2, y - h/2)`.
+- `assetSections/studioModules.ts` registers 14 modules via side-effect import from `assetRegistryStore.ts`. DIY studio modules with `riskEventTypes` (`copyright_strike` from `st_cracked_daw_bundle`, `paranormal` from `st_haunted_reverb_chamber`, `police_check` from `st_stolen_russian_compressors`) actually feed `rollAssetRiskEvents` — verified by `studioRiskEvents.test.js`.
+- `st_pro_tools_hd` exposes `boni.enablesReRecording: true`. This flag is surfaced by `getActiveAssetModifiers` for the future song-reducer hook (re-recording logic itself is out of scope of the studio section).
