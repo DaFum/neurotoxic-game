@@ -12,7 +12,8 @@ export const GAME_PHASES = Object.freeze({
   CREDITS: 'CREDITS',
   GAMEOVER: 'GAMEOVER',
   INTRO: 'INTRO',
-  CLINIC: 'CLINIC'
+  CLINIC: 'CLINIC',
+  ASSETS: 'ASSETS'
 } as const satisfies Record<string, string>)
 
 export const ALLOWED_SCENE_VALUES = Object.freeze(

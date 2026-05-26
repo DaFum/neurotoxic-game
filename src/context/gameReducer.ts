@@ -5,6 +5,19 @@
  */
 
 import { ActionTypes } from './actionTypes'
+import {
+  handlePurchaseChassis,
+  handleInstallModule,
+  handleRemoveModule,
+  handleUpgradeChassisTier,
+  handleSellChassis,
+  handleRepairChassis,
+  handleStartCrowdfund,
+  handleResolveCrowdfund,
+  handleAssetForeclosed,
+  handleAssetRiskEventTriggered,
+  handleAssetFailedAction
+} from './reducers/assetReducer'
 import { logger } from '../utils/logger'
 import { assertNever } from '../utils/assertNever'
 import type { GameAction, GameState } from '../types'
@@ -155,7 +168,20 @@ const reducerMap: ReducerMap = {
   [ActionTypes.BLOOD_BANK_DONATE]: handleBloodBankDonate,
   [ActionTypes.SET_PENDING_BANDHQ_OPEN]: handleSetPendingBandHQOpen,
   [ActionTypes.SET_PENDING_SUPPLY_STOP_INVENTORY]:
-    handleSetPendingSupplyStopInventory
+    handleSetPendingSupplyStopInventory,
+  [ActionTypes.PURCHASE_CHASSIS]: handlePurchaseChassis,
+  [ActionTypes.PURCHASE_CHASSIS_FAILED]: handleAssetFailedAction,
+  [ActionTypes.UPGRADE_CHASSIS_TIER]: handleUpgradeChassisTier,
+  [ActionTypes.SELL_CHASSIS]: handleSellChassis,
+  [ActionTypes.SELL_CHASSIS_FAILED]: handleAssetFailedAction,
+  [ActionTypes.REPAIR_CHASSIS]: handleRepairChassis,
+  [ActionTypes.INSTALL_MODULE]: handleInstallModule,
+  [ActionTypes.INSTALL_MODULE_FAILED]: handleAssetFailedAction,
+  [ActionTypes.REMOVE_MODULE]: handleRemoveModule,
+  [ActionTypes.START_CROWDFUND]: handleStartCrowdfund,
+  [ActionTypes.RESOLVE_CROWDFUND]: handleResolveCrowdfund,
+  [ActionTypes.ASSET_FORECLOSED]: handleAssetForeclosed,
+  [ActionTypes.ASSET_RISK_EVENT_TRIGGERED]: handleAssetRiskEventTriggered
 }
 
 /**

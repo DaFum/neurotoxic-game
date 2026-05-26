@@ -104,6 +104,15 @@ export interface GameState {
   pendingBandHQOpen: boolean
   pendingSupplyStopInventory: PurchaseItem[] | null
   completedMilestones: string[]
+  // Long-term asset system (see docs/superpowers/specs/2026-05-24-long-term-assets-design.md)
+  assets: import('./assets').LongTermAsset[]
+  liabilities: import('./assets').Liability[]
+  crowdfundCampaigns: import('./assets').CrowdfundCampaign[]
+  /**
+   * Persisted seed for deterministic asset-tick RNG. Action creators (notably
+   * `advanceDay`) read this to pre-roll a `dayRngStream` for the reducer.
+   */
+  rngSeed: number
 }
 
 export type RawLoadedGame = UnknownRecord
@@ -139,7 +148,10 @@ export type GameAction =
   | Action<ActionTypes['APPLY_EVENT_DELTA'], EventDeltaPayload>
   | Action<ActionTypes['POP_PENDING_EVENT']>
   | Action<ActionTypes['CONSUME_ITEM'], string>
-  | Action<ActionTypes['ADVANCE_DAY']>
+  | Action<
+      ActionTypes['ADVANCE_DAY'],
+      { dayRngStream: number[]; nextRngSeed: number }
+    >
   | Action<ActionTypes['ADD_COOLDOWN'], string>
   | Action<ActionTypes['START_TRAVEL_MINIGAME'], { targetNodeId: string }>
   | Action<
@@ -193,6 +205,51 @@ export type GameAction =
   | Action<
       ActionTypes['SET_PENDING_SUPPLY_STOP_INVENTORY'],
       PurchaseItem[] | null
+    >
+  // Long-term assets (Plan 1)
+  | Action<
+      ActionTypes['PURCHASE_CHASSIS'],
+      import('./assets').PurchaseChassisPayload
+    >
+  | Action<
+      ActionTypes['PURCHASE_CHASSIS_FAILED'],
+      { reason: import('./assets').PurchaseFailureReason }
+    >
+  | Action<
+      ActionTypes['UPGRADE_CHASSIS_TIER'],
+      import('./assets').UpgradeChassisTierPayload
+    >
+  | Action<ActionTypes['SELL_CHASSIS'], { assetId: string }>
+  | Action<
+      ActionTypes['SELL_CHASSIS_FAILED'],
+      { assetId: string; reason: 'LIABILITY_EXCEEDS_VALUE' }
+    >
+  | Action<ActionTypes['REPAIR_CHASSIS'], { assetId: string }>
+  | Action<
+      ActionTypes['INSTALL_MODULE'],
+      import('./assets').InstallModulePayload
+    >
+  | Action<
+      ActionTypes['INSTALL_MODULE_FAILED'],
+      { reason: import('./assets').InstallModuleFailureReason }
+    >
+  | Action<ActionTypes['REMOVE_MODULE'], { assetId: string; slotId: string }>
+  | Action<
+      ActionTypes['START_CROWDFUND'],
+      { campaign: import('./assets').CrowdfundCampaign }
+    >
+  | Action<
+      ActionTypes['RESOLVE_CROWDFUND'],
+      import('./assets').ResolveCrowdfundPayload
+    >
+  | Action<ActionTypes['ASSET_FORECLOSED'], { assetId: string }>
+  | Action<
+      ActionTypes['ASSET_RISK_EVENT_TRIGGERED'],
+      {
+        assetId: string
+        eventType: import('./assets').RiskEventType
+        conditionLoss: number
+      }
     >
 
 export * from './player'

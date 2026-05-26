@@ -61,3 +61,29 @@ baseline instead of duplicating formulas.
 ## triggerEvent
 
 - The `triggerEvent` callback across utilities uses the signature `(category: string, triggerPoint?: string) => boolean`. It returns `true` only after an event is selected, processed, and set active; `false` means no event was triggered.
+
+## Long-Term Assets
+
+- `CHASSIS_CONFIG` (`assetConfig.ts`) is the single source of chassis prices/upkeep. DIY variants are derived programmatically via `buildDiyTier`, never hand-entered. Each kind/flavor/tier holds a unique object instance (built via the `makeEmpty*` factories), and `buildDiyTier` clones `legit.slots` (`[...legit.slots]`) so DIY tiers don't share the legit array; a section plan mutating `tourbus_chassis.legit[1].slots` cannot leak into other tiers/kinds.
+- Once `CHASSIS_CONFIG.diy[tier]` is populated, consumers (e.g. `processCrowdfundTick`) MUST read `CHASSIS_CONFIG[kind][flavor][tier]` directly. Do not rebuild it via `buildDiyTier(legitTier)` at consumption time — that recomputes from legit even if a section plan tuned the DIY tier independently.
+- `MODULE_REGISTRY` (`assetModuleRegistry.ts`) is populated by section plans via side-effect imports; foundation leaves it empty. Anti-stacking invariant tested in `assetModuleRegistry.test.js`: no module may have `slotType === addsSlots[i].slotType` (would enable infinite self-stacking).
+- `MODULE_PROMPTS` is keyed by `AssetModule.imagePromptKey` (multiple modules may share a key). A test enforces that every module's key exists in the map.
+- `NEUTRAL_ASSET_MODIFIERS` (`assetSelectors.ts`) is the identity for `AssetModifiers` aggregation: multipliers = 1.0, additives = 0, flags = false. Economy functions accept the modifiers parameter as optional with this default.
+- `getActiveAssetModifiers` aggregates multipliers with `!== undefined` checks (not truthy) so a legit `fuelMultiplier: 0` ("free fuel") still applies; truthy guards would silently drop it.
+- `getTotalDailyObligations` = `calculateGuaranteedDailyCost + assetUpkeep − assetRevenue + liabilityPayments`. This is the SoT for the bankruptcy check.
+- `getTotalDebt(state)` = sum of `liability.principalRemaining`. UI top bars (e.g. `AssetsTopBar`) must use this selector — never reduce `state.liabilities` inline.
+- `seededRng.ts` (`mulberry32`, `createRngStream`, `nextSeed`): the RNG stream is pre-rolled in the `advanceDay` action creator (sized via `RNG_ROLLS_PER_ASSET × assetCount + RNG_BASE_BUFFER`) and consumed deterministically by `rollAssetRiskEvents`. Reducers must never generate random values directly.
+- Fame lives on `state.player.fame` (canonical, per `src/types/player.d.ts`). Asset ticks and action creators MUST read/write fame through `state.player` — `state.band` has no `fame` field, and assigning to `state.band.fame` no-ops silently while corrupting the round-trip.
+- `processLiabilityTick` deduplicates `FORECLOSURE_FAME_PENALTY` per asset via the `foreclosedAssetIds` set: when an asset has multiple liabilities (loan + future top-up), the penalty fires exactly once on the day the asset is first foreclosed.
+- `resolveCrowdfundProbability(fame, scenePresence, target)` is exported from `assetTicks.ts` and is the SoT for the crowdfund odds formula. `CrowdfundSetupModal` uses it for its preview AND passes the computed value into `startCrowdfund` as `plannedSuccessProbability`; the action creator stamps it on the campaign, and `processCrowdfundTick` resolves `roll < probability`. Tune the formula in one place and both surfaces stay aligned.
+- `economyEngine.calculateMerchIncome`: `merchCapacityBonus` is a carry-cap modifier (raises the restock ceiling), NOT phantom sellable stock. At gig time, `sold = min(desired, inventoryCount)` — do not add `capacityBonus` to the sell-time allocation.
+- `loanProfiles.computeAmortization` short-circuits to 0 on non-finite inputs or `termDays <= 0`. Callers can rely on a safe numeric return; do not pre-guard inputs at every call site.
+- `appendImageSize(url, w, h)` in `imageGen.ts` is query-safe (handles `?` vs `&` insertion). Use it instead of `url + '&width=...'`.
+- `loanProfiles.ts`: `computeAmortization` takes `annualInterestRate` (not daily); it divides by 365 internally.
+
+## Tourbus
+
+- `assetSections/tourbusConfig.ts` exports `TOURBUS_T1_SLOTS`, `TOURBUS_T2_SLOTS`, `TOURBUS_T3_SLOTS` (`as const` tuples) and `TOURBUS_SLOT_POSITIONS: Partial<Record<SlotType, {x,y}>>` — callers must handle `undefined` (the partial typing is intentional, only Tourbus slot types are populated).
+- `assetSections/tourbusModules.ts` registers 17 modules via side-effect import from `assetRegistryStore.ts` (the underlying registry; `assetModuleRegistry.ts` re-exports and triggers section imports). Editing tourbus modules must mutate `MODULE_REGISTRY` / `MODULE_PROMPTS` inside this file only.
+- Trailer anti-stacking: `tb_trailer_hitch` has `slotType: 'tb_trailer_mount'` and adds `tb_trailer_addon` slots — different slot types prevent self-stacking. `maxPerAsset: 1` is a belt-and-suspenders backup. Adding any new module that declares both `slotType: X` and `addsSlots: [{ slotType: X, ... }]` is forbidden and will be rejected by registry invariant tests.
+- Trailer detection in UI uses `asset.slots.some(s => s.installedModuleId === 'tb_trailer_hitch')` — no `MODULE_REGISTRY` lookup required.

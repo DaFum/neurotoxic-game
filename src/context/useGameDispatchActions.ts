@@ -41,7 +41,7 @@ import {
   createSetGigModifiersAction,
   createResetStateAction,
   createConsumeItemAction,
-  createAdvanceDayAction,
+  advanceDay as advanceDayAction,
   createStartTravelMinigameAction,
   createCompleteTravelMinigameAction,
   createStartRoadieMinigameAction,
@@ -70,6 +70,15 @@ import {
   createSetPendingSupplyStopInventoryAction,
   toggleNeuroDecimator as createToggleNeuroDecimatorAction
 } from './actionCreators'
+import {
+  purchaseChassis as purchaseChassisAction,
+  upgradeChassisTier as upgradeChassisTierAction,
+  sellChassis as sellChassisAction,
+  repairChassis as repairChassisAction,
+  installModule as installModuleAction,
+  removeModule as removeModuleAction,
+  startCrowdfund as startCrowdfundAction
+} from './assetActionCreators'
 
 export type GameDispatchActions = {
   changeScene: (scene: Parameters<typeof createChangeSceneAction>[0]) => void
@@ -190,6 +199,21 @@ export type GameDispatchActions = {
   moveRivalBand: () => void
   checkRivalEncounter: () => void
   updateRivalBand: (patch: Partial<RivalBandState>) => void
+
+  // Long-term asset actions — every helper takes the resolved input and
+  // delegates to the asset action creators. Failures surface as typed
+  // *_FAILED actions which the reducer handles as no-ops; the dispatch
+  // boundary tracks them so middleware can translate to toasts in future.
+  purchaseChassis: (input: Parameters<typeof purchaseChassisAction>[0]) => void
+  upgradeChassisTier: (
+    assetId: string,
+    targetTier: import('../types/assets').ChassisTier
+  ) => void
+  sellChassis: (assetId: string) => void
+  repairChassis: (assetId: string) => void
+  installModule: (input: Parameters<typeof installModuleAction>[0]) => void
+  removeModule: (assetId: string, slotId: string) => void
+  startCrowdfund: (input: Parameters<typeof startCrowdfundAction>[0]) => void
 }
 
 interface UseGameDispatchActionsProps {
@@ -331,7 +355,7 @@ export function useGameDispatchActions({
     const currentState = stateRef.current
     const nextDay = currentState.player.day + 1
     try {
-      dispatch(createAdvanceDayAction())
+      dispatch(advanceDayAction(currentState))
     } catch (error) {
       handleError(
         new StateError('Failed to advance day', {
@@ -592,6 +616,57 @@ export function useGameDispatchActions({
     [dispatch]
   )
 
+  // Asset dispatch wrappers — each reads the current state via stateRef so
+  // the snapshot used for validation matches the one the reducer sees.
+  const purchaseChassis = useCallback(
+    (input: Parameters<typeof purchaseChassisAction>[0]) => {
+      dispatch(purchaseChassisAction(input, stateRef.current))
+    },
+    [dispatch, stateRef]
+  )
+  const upgradeChassisTier = useCallback(
+    (assetId: string, targetTier: import('../types/assets').ChassisTier) => {
+      const action = upgradeChassisTierAction(
+        assetId,
+        targetTier,
+        stateRef.current
+      )
+      if (action) dispatch(action)
+    },
+    [dispatch, stateRef]
+  )
+  const sellChassis = useCallback(
+    (assetId: string) => {
+      dispatch(sellChassisAction(assetId))
+    },
+    [dispatch]
+  )
+  const repairChassis = useCallback(
+    (assetId: string) => {
+      dispatch(repairChassisAction(assetId))
+    },
+    [dispatch]
+  )
+  const installModule = useCallback(
+    (input: Parameters<typeof installModuleAction>[0]) => {
+      dispatch(installModuleAction(input, stateRef.current))
+    },
+    [dispatch, stateRef]
+  )
+  const removeModule = useCallback(
+    (assetId: string, slotId: string) => {
+      dispatch(removeModuleAction(assetId, slotId))
+    },
+    [dispatch]
+  )
+  const startCrowdfund = useCallback(
+    (input: Parameters<typeof startCrowdfundAction>[0]) => {
+      const action = startCrowdfundAction(input)
+      if (action) dispatch(action)
+    },
+    [dispatch]
+  )
+
   return useMemo(
     () => ({
       changeScene,
@@ -643,7 +718,14 @@ export function useGameDispatchActions({
       checkRivalEncounter,
       updateRivalBand,
       setPendingBandHQOpen,
-      setPendingSupplyStopInventory
+      setPendingSupplyStopInventory,
+      purchaseChassis,
+      upgradeChassisTier,
+      sellChassis,
+      repairChassis,
+      installModule,
+      removeModule,
+      startCrowdfund
     }),
     [
       changeScene,
@@ -695,7 +777,14 @@ export function useGameDispatchActions({
       checkRivalEncounter,
       updateRivalBand,
       setPendingBandHQOpen,
-      setPendingSupplyStopInventory
+      setPendingSupplyStopInventory,
+      purchaseChassis,
+      upgradeChassisTier,
+      sellChassis,
+      repairChassis,
+      installModule,
+      removeModule,
+      startCrowdfund
     ]
   )
 }

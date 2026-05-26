@@ -1,4 +1,5 @@
 {
+  "action_cancel": "CANCEL",
   "action_clear": "CLEAR",
   "action_close": "CLOSE",
   "aria.shortcutsHelp": "Toggle keyboard shortcuts help",
@@ -1066,6 +1067,7 @@
   "menu.clinic_desc": "Heal members",
   "menu.close": "CLOSE MENU",
   "menu.darkweb_desc": "Leak new tracks",
+  "menu.assets_desc": "Long-term assets & finances",
   "menu.hq_desc": "Manage members & gear",
   "menu.inventory": "INVENTORY",
   "menu.logistics": "LOGISTICS",
@@ -1229,6 +1231,7 @@
   "offline.offlineReady": "App ready to work offline",
   "offline.reload": "Reload",
   "overload.toxic": "TOXIC OVERLOAD",
+  "overworld.assets_hub_button": "INVESTMENTS",
   "overworld.band_hq_button": "BAND HQ",
   "overworld.band_status": "Band Status",
   "overworld.career_distance": "KM",

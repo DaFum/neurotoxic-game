@@ -102,6 +102,7 @@ export interface SocialEngineGameState {
     zealotry?: number
     activeDeals?: unknown[]
     brandReputation?: Record<string, number>
+    scenePresence?: number
     [key: string]: unknown
   }
   currentGig?: { id?: string; [key: string]: unknown } | null
@@ -155,6 +156,7 @@ export interface SocialState extends UnknownRecord {
   activeDeals: UnknownRecord[]
   brandReputation: Record<string, number>
   influencers: Record<string, UnknownRecord>
+  scenePresence?: number
 }
 
 export interface PostResult {

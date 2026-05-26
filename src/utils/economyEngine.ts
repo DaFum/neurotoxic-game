@@ -1,3 +1,5 @@
+import { NEUTRAL_ASSET_MODIFIERS } from './assetSelectors'
+import type { AssetModifiers } from '../types/assets'
 import { logger } from './logger'
 import { clamp0to100 } from './gameStateUtils'
 import { toFiniteNumber } from './numberUtils'
@@ -269,7 +271,8 @@ export const calculateMerchIncome = (
   gigStats: GigStatsLike = {},
   modifiers: GigModifiers = {},
   bandInventory: BandInventoryLike = {},
-  context: EconomyContext = {}
+  context: EconomyContext = {},
+  assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS
 ) => {
   gigStats = gigStats || {}
   modifiers = modifiers || {}
@@ -402,6 +405,8 @@ export const calculateMerchIncome = (
   const soldItems: Record<string, number> = {}
   let totalRevenue = 0
   const sortedKeys = SORTED_MERCH_KEYS
+  // merchCapacityBonus is a carry-cap modifier (raises restock ceiling),
+  // NOT phantom stock. Selling is bounded by actual on-hand inventory.
 
   for (const key of sortedKeys) {
     const share = (rawShare[key] ?? 0) / totalRawShare
@@ -413,13 +418,21 @@ export const calculateMerchIncome = (
     const sold = Math.min(desired, inventoryCount)
     if (sold > 0) {
       soldItems[key] = sold
-      const price =
+      const basePrice =
         priceByKey[key] ??
         (MERCH_PROFILES as Record<string, MerchItemProfile>)[key]
           ?.defaultPrice ??
         0
-      const itemRevenue = sold * price
+
+      // assetModifiers.avgMerchSalePriceBonus is a multiplicative bonus
+      // expressed as +X (e.g. 0.10 = +10%). Apply at the line-item level,
+      // then floor — multiplying sold × modifiedPrice and flooring once
+      // preserves precision better than flooring per-unit.
+      const itemRevenue = Math.floor(
+        sold * basePrice * (1 + (assetModifiers.avgMerchSalePriceBonus ?? 0))
+      )
       totalRevenue += itemRevenue
+
       breakdownItems.push({
         labelKey: `economy:gigIncome.merchSales.${key}.label`,
         value: itemRevenue,
@@ -468,7 +481,8 @@ const calculateDistance = (nodeA: unknown, nodeB: unknown = null) => {
 export const calculateFuelCost = (
   dist: number,
   playerState: Pick<PlayerState, 'van'> | null = null,
-  bandState: Pick<BandState, 'members'> | null = null
+  bandState: Pick<BandState, 'members'> | null = null,
+  assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS
 ) => {
   if (dist < 0) return { fuelLiters: 0, fuelCost: 0 }
 
@@ -490,7 +504,9 @@ export const calculateFuelCost = (
   }
 
   const fuelCost = Math.floor(
-    fuelLiters * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE
+    fuelLiters *
+      EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE *
+      (assetModifiers.fuelMultiplier ?? 1.0)
   )
 
   return { fuelLiters, fuelCost }
@@ -534,10 +550,16 @@ export const calculateTravelExpenses = (
   node: unknown,
   fromNode: unknown = null,
   playerState: Pick<PlayerState, 'fameLevel' | 'money' | 'van'> | null = null,
-  bandState: Pick<BandState, 'members'> | null = null
+  bandState: Pick<BandState, 'members'> | null = null,
+  assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS
 ) => {
   const dist = calculateDistance(node, fromNode)
-  const { fuelLiters } = calculateFuelCost(dist, playerState, bandState)
+  const { fuelLiters } = calculateFuelCost(
+    dist,
+    playerState,
+    bandState,
+    assetModifiers
+  )
 
   const bandSize = bandState?.members?.length || 3
   const fameLevel = playerState?.fameLevel || 0
@@ -567,12 +589,21 @@ export const calculateTravelExpenses = (
  * @param {number} currentFuel - Current fuel level.
  * @returns {number} Cost in euros.
  */
-export const calculateRefuelCost = (currentFuel: number) => {
+export const calculateRefuelCost = (
+  currentFuel: number,
+  assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS
+) => {
   const missing = Math.max(
     0,
     EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL - currentFuel
   )
-  return Math.ceil(missing * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE)
+  return Math.ceil(
+    missing *
+      EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE *
+      // Nullish fallback (not truthy) so a legitimate fuelMultiplier === 0
+      // applies as zero rather than collapsing to 1.
+      (assetModifiers.fuelMultiplier ?? 1)
+  )
 }
 
 /**
@@ -787,15 +818,18 @@ export const calculateGigExpenses = (modifiers: GigModifiers = {}) => {
  * @param {object|number} params.playerStateOrFame - Player state object or just fame (number) for legacy support
  * @param {object} params.gigStats - Detailed gig stats (misses, peakHype, etc)
  */
-export const calculateGigFinancials = ({
-  gigData,
-  performanceScore,
-  modifiers,
-  bandInventory,
-  playerState,
-  gigStats,
-  context = {}
-}: GigFinancialParams) => {
+export const calculateGigFinancials = (
+  {
+    gigData,
+    performanceScore,
+    modifiers,
+    bandInventory,
+    playerState,
+    gigStats,
+    context = {}
+  }: GigFinancialParams,
+  assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS
+) => {
   const playerFame = playerState?.fame ?? 0
 
   logger.debug('Economy', 'Calculating Gig Financials', {
@@ -865,7 +899,8 @@ export const calculateGigFinancials = ({
     gigStats,
     modifiers,
     bandInventory,
-    context
+    context,
+    assetModifiers
   )
   report.income.breakdown.push(...merch.breakdownItems)
   report.income.total += merch.revenue
@@ -914,6 +949,22 @@ export const calculateGigFinancials = ({
   if (sponsorshipBonuses.incomeItems.length > 0) {
     report.income.breakdown.push(...sponsorshipBonuses.incomeItems)
     report.income.total += sponsorshipBonuses.totalBonus
+  }
+
+  if (assetModifiers.tipBonusGigs && assetModifiers.tipBonusGigs > 0) {
+    // tipBonusGigs is a decimal fraction (0.10 = 10%); apply directly to
+    // income.total.
+    const tipBonus = Math.floor(
+      report.income.total * assetModifiers.tipBonusGigs
+    )
+    if (tipBonus > 0) {
+      report.income.breakdown.push({
+        labelKey: 'economy:gigIncome.tipBonus.label',
+        value: tipBonus,
+        detailKey: 'economy:gigIncome.tipBonus.detail'
+      })
+      report.income.total += tipBonus
+    }
   }
 
   // 7. Management Cut (fame-progressive: 0% at fame=0, full 15% at fame≥200)
