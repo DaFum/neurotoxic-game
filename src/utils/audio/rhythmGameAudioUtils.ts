@@ -377,13 +377,17 @@ const playAudioForSong = async (
   onSongEnded: () => Promise<void> | void,
   rng: RandomFn
 ): Promise<RhythmNote[]> => {
-  let bgAudioStarted = await playOggBuffer(currentSong, notes, onSongEnded)
+  let bgAudioStarted = false
 
-  if (!bgAudioStarted) {
+  if (currentSong.sourceOgg || currentSong.sourceMid) {
+    bgAudioStarted = await playOggBuffer(currentSong, notes, onSongEnded)
+  }
+
+  if (!bgAudioStarted && currentSong.sourceMid) {
     bgAudioStarted = await playMidiSynthesis(currentSong, notes, onSongEnded)
   }
 
-  if (!bgAudioStarted) {
+  if (!bgAudioStarted && notes.length > 0) {
     bgAudioStarted = await playNoteDataSynthesis(
       currentSong,
       notes,
