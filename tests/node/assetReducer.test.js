@@ -37,7 +37,7 @@ test.after(() => {
 })
 
 const mockState = {
-  player: { money: 1000, day: 10 },
+  player: { money: 4000, day: 10 },
   band: { fame: 100 },
   assets: [],
   liabilities: [],

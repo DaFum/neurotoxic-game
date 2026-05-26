@@ -41,7 +41,6 @@ export const AssetsScene = () => {
 
   const activeView = SECTION_VIEWS[active]
   const accent = activeView?.accent ?? DEFAULT_SECTION_ACCENT
-  const activeTab = TABS.find(tab => tab.key === active) ?? TABS[0]
 
   // The CSS variable cascades to every descendant via inline style; modals
   // and panels nested under the scene root read it via
