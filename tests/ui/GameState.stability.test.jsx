@@ -3,7 +3,8 @@ import { renderHook, act } from '@testing-library/react'
 import {
   GameStateProvider,
   useGameActions,
-  useGameSelector
+  useGameSelector,
+  useGameDispatch
 } from '../../src/context/GameState.tsx'
 
 beforeEach(() => {
@@ -68,5 +69,19 @@ describe('useGameSelector slice stability', () => {
     })
 
     expect(result.current.player).toBe(firstPlayer)
+  })
+})
+
+describe('hook bounds', () => {
+  it('throws an error if used outside of GameStateProvider', () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    try {
+      expect(() => renderHook(() => useGameDispatch())).toThrow('useGameDispatch must be used within GameStateProvider')
+      expect(() => renderHook(() => useGameActions())).toThrow('useGameActions must be used within GameStateProvider')
+      expect(() => renderHook(() => useGameSelector(state => state.player))).toThrow('useGameSelector must be used within GameStateProvider')
+    } finally {
+      consoleError.mockRestore()
+    }
   })
 })
