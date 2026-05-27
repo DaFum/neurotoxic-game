@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { resolveEvent } from '../../src/domain/eventResolver.ts'
-import { createSetActiveEventAction } from '../../src/context/actionCreators.ts'
+import { resolveEvent } from '../../../src/domain/eventResolver.ts'
+import { createSetActiveEventAction } from '../../../src/context/actionCreators.ts'
 
 const buildState = (overrides = {}) => ({
   player: {
