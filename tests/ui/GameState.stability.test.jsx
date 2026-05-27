@@ -76,10 +76,12 @@ describe('hook bounds', () => {
   it('throws an error if used outside of GameStateProvider', () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
 
-    expect(() => renderHook(() => useGameDispatch())).toThrow('useGameDispatch must be used within GameStateProvider')
-    expect(() => renderHook(() => useGameActions())).toThrow('useGameActions must be used within GameStateProvider')
-    expect(() => renderHook(() => useGameSelector(state => state.player))).toThrow('useGameSelector must be used within GameStateProvider')
-
-    consoleError.mockRestore()
+    try {
+      expect(() => renderHook(() => useGameDispatch())).toThrow('useGameDispatch must be used within GameStateProvider')
+      expect(() => renderHook(() => useGameActions())).toThrow('useGameActions must be used within GameStateProvider')
+      expect(() => renderHook(() => useGameSelector(state => state.player))).toThrow('useGameSelector must be used within GameStateProvider')
+    } finally {
+      consoleError.mockRestore()
+    }
   })
 })
