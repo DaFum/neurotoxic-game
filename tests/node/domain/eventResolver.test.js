@@ -279,7 +279,10 @@ test('resolveEvent: choice with invalid deadlineOffset logs warning and ignores 
     effect: {
       type: 'flag',
       flag: 'addQuest',
-      value: [{ id: 'q3', deadlineOffset: 'abc' }, { id: 'q4', deadlineOffset: '' }]
+      value: [
+        { id: 'q3', deadlineOffset: 'abc' },
+        { id: 'q4', deadlineOffset: '' }
+      ]
     }
   }
   const state = buildState()
@@ -317,7 +320,13 @@ test('resolveEvent: includes activeEvent context in toasts', () => {
     description: 'context desc',
     effect: { type: 'resource', resource: 'money', value: 0 }
   }
-  const state = buildState({ activeEvent: { id: 'evt_context', titleKey: 'test', context: { foo: 'bar' } } })
+  const state = buildState({
+    activeEvent: {
+      id: 'evt_context',
+      titleKey: 'test',
+      context: { foo: 'bar' }
+    }
+  })
   const { sideEffects } = resolveEvent(choice, state)
 
   const toastEffect = sideEffects.find(e => e.type === 'outcomeToast')
@@ -384,7 +393,9 @@ test('resolveEvent: remaps addStoryFlag for gameOver', () => {
   }
   const state = buildState()
   const { sideEffects } = resolveEvent(choice, state)
-  const gameOver = sideEffects.find(e => e.type === 'changeScene' && e.scene === 'GAMEOVER')
+  const gameOver = sideEffects.find(
+    e => e.type === 'changeScene' && e.scene === 'GAMEOVER'
+  )
   assert.ok(gameOver)
 })
 

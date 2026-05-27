@@ -15,6 +15,7 @@ Jede der vier Sektionen bekommt ein **eigenständiges visuelles Design** (Vehike
 ## 2. Scope
 
 **In Scope**
+
 - Vier Asset-Kategorien (Tourbus, Studio, Bandhaus, Merch-Werkstatt)
 - Chassis mit 3 Tiers → bestimmt Slot-Anzahl und -Typen
 - Modul-Pool pro Kategorie (12–18 Module pro Sektion)
@@ -29,6 +30,7 @@ Jede der vier Sektionen bekommt ein **eigenständiges visuelles Design** (Vehike
 - `shouldTriggerBankruptcy`-Erweiterung um Asset-Upkeep und Verbindlichkeiten
 
 **Out of Scope (Folge-Specs)**
+
 - Retrofit bestehender Modals/Katalog-Items mit Bildern
 - Konkurrenzbands, dynamische Marktpreise
 - Eigene Venues kaufen
@@ -62,26 +64,49 @@ export type AcquisitionMode = 'cash' | 'loan' | 'crowdfund'
 // Ein Modul mit slotType X passt nur in Slots mit slotType X.
 export type SlotType =
   // Tourbus
-  | 'tb_roof' | 'tb_front' | 'tb_side' | 'tb_interior_driver'
-  | 'tb_interior_cabin' | 'tb_audio' | 'tb_decal'
-  | 'tb_trailer_mount'   // Slot, in den der Anhänger-Modul installiert wird (Chassis-Slot, 1 pro Chassis)
-  | 'tb_trailer_addon'   // Slots, die durch installierten Trailer hinzukommen — Trailer-Modul passt NICHT in diese
+  | 'tb_roof'
+  | 'tb_front'
+  | 'tb_side'
+  | 'tb_interior_driver'
+  | 'tb_interior_cabin'
+  | 'tb_audio'
+  | 'tb_decal'
+  | 'tb_trailer_mount' // Slot, in den der Anhänger-Modul installiert wird (Chassis-Slot, 1 pro Chassis)
+  | 'tb_trailer_addon' // Slots, die durch installierten Trailer hinzukommen — Trailer-Modul passt NICHT in diese
   // Studio
-  | 'st_control' | 'st_outboard' | 'st_mic' | 'st_monitoring'
-  | 'st_treatment' | 'st_software' | 'st_vibe' | 'st_iso'
+  | 'st_control'
+  | 'st_outboard'
+  | 'st_mic'
+  | 'st_monitoring'
+  | 'st_treatment'
+  | 'st_software'
+  | 'st_vibe'
+  | 'st_iso'
   // Bandhaus
-  | 'bh_stage' | 'bh_sleeping' | 'bh_kitchen' | 'bh_lounge'
-  | 'bh_backyard' | 'bh_security' | 'bh_identity' | 'bh_secret'
+  | 'bh_stage'
+  | 'bh_sleeping'
+  | 'bh_kitchen'
+  | 'bh_lounge'
+  | 'bh_backyard'
+  | 'bh_security'
+  | 'bh_identity'
+  | 'bh_secret'
   // Merch-Werkstatt
-  | 'mw_print' | 'mw_drying' | 'mw_cutting' | 'mw_packaging'
-  | 'mw_storage' | 'mw_specialty' | 'mw_sales' | 'mw_automation'
+  | 'mw_print'
+  | 'mw_drying'
+  | 'mw_cutting'
+  | 'mw_packaging'
+  | 'mw_storage'
+  | 'mw_specialty'
+  | 'mw_sales'
+  | 'mw_automation'
 
 export interface AssetSlot {
   id: string
   slotType: SlotType
-  position: { x: number; y: number }   // 0..1, normalisiert über Background-Bild
+  position: { x: number; y: number } // 0..1, normalisiert über Background-Bild
   installedModuleId: string | null
-  addedByModuleId?: string             // bei dynamisch hinzugefügten Slots
+  addedByModuleId?: string // bei dynamisch hinzugefügten Slots
 }
 
 export interface AssetBoni {
@@ -98,11 +123,11 @@ export interface AssetBoni {
   travelStaminaRegen?: number
   merchCapacityBonus?: number
   songQualityBonus?: number
-  avgMerchSalePriceBonus?: number      // multiplikativ als +X%
+  avgMerchSalePriceBonus?: number // multiplikativ als +X%
   famePassivePerDay?: number
   bandMoodPerDay?: number
   tipBonusGigs?: number
-  baseRiskChanceMultiplier?: number    // Default 1.0
+  baseRiskChanceMultiplier?: number // Default 1.0
   // Flags (Default false)
   infightingDamper?: boolean
   enablesReRecording?: boolean
@@ -110,7 +135,7 @@ export interface AssetBoni {
   enablesBulkProduction?: boolean
   reducesTheftRiskTravel?: boolean
   // Modulare Risiko-Modifikation
-  diyRiskMultiplier?: number           // 1.0 Default, mit existierenden DIY-Risiken multipliziert
+  diyRiskMultiplier?: number // 1.0 Default, mit existierenden DIY-Risiken multipliziert
 }
 
 export interface ModuleUnlockReq {
@@ -119,9 +144,9 @@ export interface ModuleUnlockReq {
   minMoney?: number
   minScenePresence?: number
   minChassisTier?: ChassisTier
-  requiredStoryFlags?: string[]        // ALLE Flags müssen gesetzt sein
+  requiredStoryFlags?: string[] // ALLE Flags müssen gesetzt sein
   requiredMemberSkill?: {
-    memberId?: string                  // wenn fehlend: jedes Member mit Skill genügt
+    memberId?: string // wenn fehlend: jedes Member mit Skill genügt
     skill: string
     tier: number
   }
@@ -131,22 +156,22 @@ export interface ModuleUnlockReq {
 }
 
 export interface AssetModule {
-  id: string                            // stabile lower_snake-ID, z.B. 'tb_solar_panel'
+  id: string // stabile lower_snake-ID, z.B. 'tb_solar_panel'
   ownerKind: AssetKind
   slotType: SlotType
   flavor: AssetFlavor
   cost: number
   installCost: number
-  removalRefundFraction: number         // 0..1, beim Ausbau erstattet
+  removalRefundFraction: number // 0..1, beim Ausbau erstattet
   boni: AssetBoni
   unlock: ModuleUnlockReq
-  exclusiveWithGroup?: string           // gleicher Key auf zwei Modulen → gegenseitiger Ausschluss
+  exclusiveWithGroup?: string // gleicher Key auf zwei Modulen → gegenseitiger Ausschluss
   addsSlots?: Array<{ slotType: SlotType; count: number }>
   // Constraint: ein Modul mit slotType=X UND addsSlots-Eintrag mit slotType=X
   // wird vom Modul-Validator zur Build-Zeit abgelehnt (verhindert Selbst-Stacking)
-  maxPerAsset?: number                  // optionaler Hard-Cap, Default 1
+  maxPerAsset?: number // optionaler Hard-Cap, Default 1
   riskEventTypes?: RiskEventType[]
-  imagePromptKey: string                // Schlüssel in MODULE_PROMPTS (mehrere Module dürfen ihn teilen)
+  imagePromptKey: string // Schlüssel in MODULE_PROMPTS (mehrere Module dürfen ihn teilen)
 }
 
 export interface LongTermAsset {
@@ -154,7 +179,7 @@ export interface LongTermAsset {
   kind: AssetKind
   chassisFlavor: AssetFlavor
   chassisTier: ChassisTier
-  condition: number                     // 0..100
+  condition: number // 0..100
   baseUpkeep: number
   baseDailyRevenue: number
   slots: AssetSlot[]
@@ -185,7 +210,7 @@ export interface CrowdfundCampaign {
   targetAmount: number
   fameStake: number
   daysRemaining: number
-  plannedSuccessRoll: number             // 0..1, deterministisch beim START gezogen (§8.6)
+  plannedSuccessRoll: number // 0..1, deterministisch beim START gezogen (§8.6)
   // resolvedOutcome ist undefined solange daysRemaining > 0.
   // processCrowdfundTick setzt den Wert bei daysRemaining === 0,
   // wendet die Folgen an und entfernt den Eintrag im selben Tick.
@@ -193,8 +218,14 @@ export interface CrowdfundCampaign {
 }
 
 export type RiskEventType =
-  | 'eviction' | 'fire' | 'theft' | 'police_check'
-  | 'copyright_strike' | 'raid' | 'scam_or_bust' | 'paranormal'
+  | 'eviction'
+  | 'fire'
+  | 'theft'
+  | 'police_check'
+  | 'copyright_strike'
+  | 'raid'
+  | 'scam_or_bust'
+  | 'paranormal'
   | 'foreclosure'
 ```
 
@@ -234,6 +265,7 @@ Ein Build-Time-Test (`assetModuleRegistry.test.js`) prüft, dass kein Modul glei
 ### 3.5 Flavor-Mixing-Regel
 
 Modul-Flavor und Chassis-Flavor müssen **nicht** übereinstimmen. Begründungen:
+
 - Lore-konsistent: ein besetztes Bandhaus mit professioneller PA-Anlage ist plausibel
 - Strategische Tiefe: DIY-Chassis + legit-Module wird zum echten Spar-Build mit Wachstumspfad
 - Verhindert "Sackgassen"-Pfade, in denen ein günstiger DIY-Einstieg später unupgradeable wird
@@ -246,9 +278,22 @@ Action-Creator validiert nur Slot-Typ, Unlock, `exclusiveWithGroup` und `maxPerA
 
 ```ts
 // Slot-Listen als benannte Konstanten, damit Tier-N alle Tier-(N-1)-Slots erbt
-const TOURBUS_T1_SLOTS = ['tb_roof','tb_front','tb_interior_driver','tb_audio'] as const
-const TOURBUS_T2_SLOTS = [...TOURBUS_T1_SLOTS, 'tb_side','tb_interior_cabin'] as const
-const TOURBUS_T3_SLOTS = [...TOURBUS_T2_SLOTS, 'tb_decal','tb_trailer_mount'] as const
+const TOURBUS_T1_SLOTS = [
+  'tb_roof',
+  'tb_front',
+  'tb_interior_driver',
+  'tb_audio'
+] as const
+const TOURBUS_T2_SLOTS = [
+  ...TOURBUS_T1_SLOTS,
+  'tb_side',
+  'tb_interior_cabin'
+] as const
+const TOURBUS_T3_SLOTS = [
+  ...TOURBUS_T2_SLOTS,
+  'tb_decal',
+  'tb_trailer_mount'
+] as const
 // (Analoge Konstanten für Studio, Bandhaus, Workshop)
 
 // DIY-Multiplikatoren werden programmatisch auf legit-Werte angewandt
@@ -261,29 +306,54 @@ const buildDiyTier = (legit: ChassisTierConfig): ChassisTierConfig => ({
   upkeep: Math.round(legit.upkeep * DIY_UPKEEP_MULT),
   revenue: legit.revenue,
   slots: legit.slots,
-  baseRiskEventChance: DIY_RISK,
+  baseRiskEventChance: DIY_RISK
 })
 
 export const CHASSIS_CONFIG = {
   tourbus_chassis: {
     legit: {
-      1: { price: 4000,  upkeep: 20, revenue: 0, slots: TOURBUS_T1_SLOTS, baseRiskEventChance: 0.005 },
-      2: { price: 9000,  upkeep: 35, revenue: 0, slots: TOURBUS_T2_SLOTS, baseRiskEventChance: 0.005 },
-      3: { price: 18000, upkeep: 55, revenue: 0, slots: TOURBUS_T3_SLOTS, baseRiskEventChance: 0.005 },
+      1: {
+        price: 4000,
+        upkeep: 20,
+        revenue: 0,
+        slots: TOURBUS_T1_SLOTS,
+        baseRiskEventChance: 0.005
+      },
+      2: {
+        price: 9000,
+        upkeep: 35,
+        revenue: 0,
+        slots: TOURBUS_T2_SLOTS,
+        baseRiskEventChance: 0.005
+      },
+      3: {
+        price: 18000,
+        upkeep: 55,
+        revenue: 0,
+        slots: TOURBUS_T3_SLOTS,
+        baseRiskEventChance: 0.005
+      }
     },
     diy: {
       1: buildDiyTier(/* tourbus legit 1 */),
       2: buildDiyTier(/* tourbus legit 2 */),
-      3: buildDiyTier(/* tourbus legit 3 */),
-    },
+      3: buildDiyTier(/* tourbus legit 3 */)
+    }
   },
-  studio_chassis: { /* analog mit STUDIO_*_SLOTS */ },
-  bandhaus_chassis: { /* analog mit BANDHAUS_*_SLOTS */ },
-  merch_workshop_chassis: { /* analog mit WORKSHOP_*_SLOTS */ },
+  studio_chassis: {
+    /* analog mit STUDIO_*_SLOTS */
+  },
+  bandhaus_chassis: {
+    /* analog mit BANDHAUS_*_SLOTS */
+  },
+  merch_workshop_chassis: {
+    /* analog mit WORKSHOP_*_SLOTS */
+  }
 } as const satisfies Record<AssetKind, ChassisKindConfig>
 ```
 
 Slot-Anzahlen pro Tier:
+
 - Tourbus: 4 / 6 / 8
 - Studio: 3 / 5 / 8
 - Bandhaus: 3 / 5 / 8
@@ -302,88 +372,88 @@ Damit Module 1:1 in Code übersetzbar sind, verwenden alle Pool-Tabellen ein ein
 
 ### 4.3 Modul-Pool — Tourbus
 
-| ID | Slot | Flavor | Boni | Unlock & Constraints |
-|---|---|---|---|---|
-| `tb_solar_panel` | tb_roof | legit | `{ fuelMultiplier: 0.85 }` | `{ minFame: 30 }` |
-| `tb_roof_rack` | tb_roof | legit | `{ merchCapacityBonus: 30 }` | — |
-| `tb_subwoofer_stack` | tb_audio | diy | `{ tipBonusGigs: 0.10 }` | `{ minFame: 20 }`, exclusive: `tb_power_hog` |
-| `tb_vintage_stereo` | tb_audio | legit | `{ bandMoodPerDay: 2 }` | `{ requiredStoryFlags: ['found_record_collection'] }` |
-| `tb_alloy_rims` | tb_decal | legit | `{ famePassivePerDay: 0.5 }` | `{ minMoney: 1500 }` |
-| `tb_fox_tail` | tb_decal | diy | `{ famePassivePerDay: 0.2 }` | `{ minFame: 10 }` |
-| `tb_neon_underglow` | tb_decal | diy | `{ famePassivePerDay: 0.4 }` | `{ requiredStoryFlags: ['underground_show'] }` |
-| `tb_racing_seats` | tb_interior_driver | legit | `{ staminaRegenBonusPerDay: 3 }` | — |
-| `tb_sleeping_bunks` | tb_interior_cabin | legit | `{ travelStaminaRegen: 5 }` | `{ minChassisTier: 2 }` |
-| `tb_mini_fridge` | tb_interior_cabin | legit | `{ bandMoodPerDay: 1 }` | `{ minMoney: 600 }` |
-| `tb_espresso_machine` | tb_interior_cabin | legit | `{ travelStaminaRegen: 3 }` | `{ requiredMemberSkill: { skill: 'barista', tier: 1 } }` |
-| `tb_cb_radio_mesh` | tb_front | legit | `{ fuelMultiplier: 0.95 }` | `{ requiredMemberSkill: { skill: 'tech', tier: 1 } }` |
-| `tb_gps_jammer` | tb_front | diy | `{ diyRiskMultiplier: 0.5 }` (Polizei-Risiko) | `{ requiredMemberSkill: { skill: 'tech', tier: 3 } }` |
-| `tb_trailer_hitch` | tb_trailer_mount | legit | `{ merchCapacityBonus: 50 }`, `addsSlots: [{ slotType: 'tb_trailer_addon', count: 2 }]` | `{ minFame: 40, minChassisTier: 3 }`, `maxPerAsset: 1` |
-| `tb_fake_police_lights` | tb_front | diy | `{ tipBonusGigs: 0.05 }`, `riskEventTypes: ['police_check']` | `{ minFame: 30 }` |
-| `tb_smoke_screen` | tb_front | diy | `{ reducesTheftRiskTravel: true }` | `{ requiredMemberSkill: { skill: 'tech', tier: 2 } }` |
-| `tb_side_graphics` | tb_side | legit | `{ famePassivePerDay: 0.3 }` | `{ minChassisTier: 2 }` |
+| ID                      | Slot               | Flavor | Boni                                                                                    | Unlock & Constraints                                     |
+| ----------------------- | ------------------ | ------ | --------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| `tb_solar_panel`        | tb_roof            | legit  | `{ fuelMultiplier: 0.85 }`                                                              | `{ minFame: 30 }`                                        |
+| `tb_roof_rack`          | tb_roof            | legit  | `{ merchCapacityBonus: 30 }`                                                            | —                                                        |
+| `tb_subwoofer_stack`    | tb_audio           | diy    | `{ tipBonusGigs: 0.10 }`                                                                | `{ minFame: 20 }`, exclusive: `tb_power_hog`             |
+| `tb_vintage_stereo`     | tb_audio           | legit  | `{ bandMoodPerDay: 2 }`                                                                 | `{ requiredStoryFlags: ['found_record_collection'] }`    |
+| `tb_alloy_rims`         | tb_decal           | legit  | `{ famePassivePerDay: 0.5 }`                                                            | `{ minMoney: 1500 }`                                     |
+| `tb_fox_tail`           | tb_decal           | diy    | `{ famePassivePerDay: 0.2 }`                                                            | `{ minFame: 10 }`                                        |
+| `tb_neon_underglow`     | tb_decal           | diy    | `{ famePassivePerDay: 0.4 }`                                                            | `{ requiredStoryFlags: ['underground_show'] }`           |
+| `tb_racing_seats`       | tb_interior_driver | legit  | `{ staminaRegenBonusPerDay: 3 }`                                                        | —                                                        |
+| `tb_sleeping_bunks`     | tb_interior_cabin  | legit  | `{ travelStaminaRegen: 5 }`                                                             | `{ minChassisTier: 2 }`                                  |
+| `tb_mini_fridge`        | tb_interior_cabin  | legit  | `{ bandMoodPerDay: 1 }`                                                                 | `{ minMoney: 600 }`                                      |
+| `tb_espresso_machine`   | tb_interior_cabin  | legit  | `{ travelStaminaRegen: 3 }`                                                             | `{ requiredMemberSkill: { skill: 'barista', tier: 1 } }` |
+| `tb_cb_radio_mesh`      | tb_front           | legit  | `{ fuelMultiplier: 0.95 }`                                                              | `{ requiredMemberSkill: { skill: 'tech', tier: 1 } }`    |
+| `tb_gps_jammer`         | tb_front           | diy    | `{ diyRiskMultiplier: 0.5 }` (Polizei-Risiko)                                           | `{ requiredMemberSkill: { skill: 'tech', tier: 3 } }`    |
+| `tb_trailer_hitch`      | tb_trailer_mount   | legit  | `{ merchCapacityBonus: 50 }`, `addsSlots: [{ slotType: 'tb_trailer_addon', count: 2 }]` | `{ minFame: 40, minChassisTier: 3 }`, `maxPerAsset: 1`   |
+| `tb_fake_police_lights` | tb_front           | diy    | `{ tipBonusGigs: 0.05 }`, `riskEventTypes: ['police_check']`                            | `{ minFame: 30 }`                                        |
+| `tb_smoke_screen`       | tb_front           | diy    | `{ reducesTheftRiskTravel: true }`                                                      | `{ requiredMemberSkill: { skill: 'tech', tier: 2 } }`    |
+| `tb_side_graphics`      | tb_side            | legit  | `{ famePassivePerDay: 0.3 }`                                                            | `{ minChassisTier: 2 }`                                  |
 
 (17 Module für 4–8 Chassis-Slots + 2 Trailer-Addon-Slots; jeder Chassis-Slot-Typ hat mindestens ein kompatibles Modul)
 
 ### 4.4 Modul-Pool — Studio
 
-| ID | Slot | Flavor | Boni | Unlock & Constraints |
-|---|---|---|---|---|
-| `st_ssl_console` | st_control | legit | `{ songQualityBonus: 0.20 }` | `{ minMoney: 8000 }` |
-| `st_diy_mixer` | st_control | diy | `{ songCostMultiplier: 0.80 }` | — |
-| `st_u87_mic` | st_mic | legit | `{ songQualityBonus: 0.08 }` | `{ minFame: 25 }` |
-| `st_dynamic_workhorse_mic` | st_mic | legit | `{ songCostMultiplier: 0.92 }` | — |
-| `st_stolen_russian_compressors` | st_outboard | diy | `{ songQualityBonus: 0.10 }`, `riskEventTypes: ['police_check']` | `{ requiredMemberSkill: { skill: 'tech', tier: 2 } }` |
-| `st_tape_echo_handbuilt` | st_outboard | diy | `{ songQualityBonus: 0.06 }` | `{ requiredMemberSkill: { skill: 'tech', tier: 2 } }` |
-| `st_ns10_monitors` | st_monitoring | legit | `{ songQualityBonus: 0.05 }` | — |
-| `st_auralex_treatment` | st_treatment | legit | `{ songCostMultiplier: 0.95 }` | `{ minMoney: 1200 }` |
-| `st_haunted_reverb_chamber` | st_treatment | diy | `{ songQualityBonus: 0.12 }`, `riskEventTypes: ['paranormal']` | `{ requiredStoryFlags: ['old_basement_secret'] }` |
-| `st_pro_tools_hd` | st_software | legit | `{ enablesReRecording: true }` | `{ minMoney: 3500 }` |
-| `st_cracked_daw_bundle` | st_software | diy | `{ songCostMultiplier: 0.50 }`, `riskEventTypes: ['copyright_strike']` | — |
-| `st_iso_booth` | st_iso | legit | `{ songQualityBonus: 0.06 }` | `{ minChassisTier: 3 }` |
-| `st_vintage_synth_corner` | st_vibe | legit | `{ songQualityBonus: 0.05 }` | `{ minFame: 50 }` |
-| `st_lava_lamp_beer_fridge` | st_vibe | diy | `{ bandMoodPerDay: 1 }` | — |
+| ID                              | Slot          | Flavor | Boni                                                                   | Unlock & Constraints                                  |
+| ------------------------------- | ------------- | ------ | ---------------------------------------------------------------------- | ----------------------------------------------------- |
+| `st_ssl_console`                | st_control    | legit  | `{ songQualityBonus: 0.20 }`                                           | `{ minMoney: 8000 }`                                  |
+| `st_diy_mixer`                  | st_control    | diy    | `{ songCostMultiplier: 0.80 }`                                         | —                                                     |
+| `st_u87_mic`                    | st_mic        | legit  | `{ songQualityBonus: 0.08 }`                                           | `{ minFame: 25 }`                                     |
+| `st_dynamic_workhorse_mic`      | st_mic        | legit  | `{ songCostMultiplier: 0.92 }`                                         | —                                                     |
+| `st_stolen_russian_compressors` | st_outboard   | diy    | `{ songQualityBonus: 0.10 }`, `riskEventTypes: ['police_check']`       | `{ requiredMemberSkill: { skill: 'tech', tier: 2 } }` |
+| `st_tape_echo_handbuilt`        | st_outboard   | diy    | `{ songQualityBonus: 0.06 }`                                           | `{ requiredMemberSkill: { skill: 'tech', tier: 2 } }` |
+| `st_ns10_monitors`              | st_monitoring | legit  | `{ songQualityBonus: 0.05 }`                                           | —                                                     |
+| `st_auralex_treatment`          | st_treatment  | legit  | `{ songCostMultiplier: 0.95 }`                                         | `{ minMoney: 1200 }`                                  |
+| `st_haunted_reverb_chamber`     | st_treatment  | diy    | `{ songQualityBonus: 0.12 }`, `riskEventTypes: ['paranormal']`         | `{ requiredStoryFlags: ['old_basement_secret'] }`     |
+| `st_pro_tools_hd`               | st_software   | legit  | `{ enablesReRecording: true }`                                         | `{ minMoney: 3500 }`                                  |
+| `st_cracked_daw_bundle`         | st_software   | diy    | `{ songCostMultiplier: 0.50 }`, `riskEventTypes: ['copyright_strike']` | —                                                     |
+| `st_iso_booth`                  | st_iso        | legit  | `{ songQualityBonus: 0.06 }`                                           | `{ minChassisTier: 3 }`                               |
+| `st_vintage_synth_corner`       | st_vibe       | legit  | `{ songQualityBonus: 0.05 }`                                           | `{ minFame: 50 }`                                     |
+| `st_lava_lamp_beer_fridge`      | st_vibe       | diy    | `{ bandMoodPerDay: 1 }`                                                | —                                                     |
 
 ### 4.5 Modul-Pool — Bandhaus
 
-| ID | Slot | Flavor | Boni | Unlock & Constraints |
-|---|---|---|---|---|
-| `bh_pro_pa_system` | bh_stage | legit | `{ trainingCostMultiplier: 0.85 }` | `{ minMoney: 2200 }` |
-| `bh_salvaged_pa` | bh_stage | diy | `{ trainingCostMultiplier: 0.95 }` | — |
-| `bh_soundproofing` | bh_stage | legit | `{ infightingDamper: true }` | — |
-| `bh_bunk_beds` | bh_sleeping | legit | `{ staminaRegenBonusPerDay: 3 }` | — |
-| `bh_stocked_kitchen` | bh_kitchen | legit | `{ staminaRegenBonusPerDay: 2, bandMoodPerDay: 1 }` | `{ minMoney: 800 }` |
-| `bh_weed_garden` | bh_backyard | diy | `{ bandMoodPerDay: 2 }`, `riskEventTypes: ['raid']` | — |
-| `bh_bouncer_dog` | bh_security | legit | `{ baseRiskChanceMultiplier: 0.5 }` | `{ minFame: 40 }` |
-| `bh_security_cam_mesh` | bh_security | legit | `{ baseRiskChanceMultiplier: 0.7 }` (theft-fokus) | `{ minMoney: 800 }` |
-| `bh_wall_mural` | bh_identity | legit | `{ famePassivePerDay: 0.5 }` | `{ requiredStoryFlags: ['saved_local_venue'] }` |
-| `bh_basement_bar` | bh_lounge | legit | `{ baseDailyRevenueDelta: 25 }` | `{ minFame: 60 }` |
-| `bh_hot_tub` | bh_lounge | legit | `{ bandMoodPerDay: 2, infightingDamper: true }` | `{ minMoney: 4000 }` |
-| `bh_art_sublet` | bh_identity | legit | `{ baseDailyRevenueDelta: 35 }` | `{ minFame: 30, minScenePresence: 25 }` |
-| `bh_zine_library` | bh_lounge | diy | `{ bandMoodPerDay: 0.5, famePassivePerDay: 0.1 }` | — |
-| `bh_vinyl_press_corner` | bh_secret | diy | `{ merchCapacityBonus: 50, baseDailyRevenueDelta: 20 }` | `{ minFame: 70 }` |
-| `bh_pirate_radio_antenna` | bh_secret | diy | `{ famePassivePerDay: 1.0 }`, `riskEventTypes: ['police_check']` | `{ requiredMemberSkill: { skill: 'tech', tier: 2 } }` |
-| `bh_squat_dog` | bh_security | diy | `{ baseRiskChanceMultiplier: 0.7 }`, `cost: 0` | — |
+| ID                        | Slot        | Flavor | Boni                                                             | Unlock & Constraints                                  |
+| ------------------------- | ----------- | ------ | ---------------------------------------------------------------- | ----------------------------------------------------- |
+| `bh_pro_pa_system`        | bh_stage    | legit  | `{ trainingCostMultiplier: 0.85 }`                               | `{ minMoney: 2200 }`                                  |
+| `bh_salvaged_pa`          | bh_stage    | diy    | `{ trainingCostMultiplier: 0.95 }`                               | —                                                     |
+| `bh_soundproofing`        | bh_stage    | legit  | `{ infightingDamper: true }`                                     | —                                                     |
+| `bh_bunk_beds`            | bh_sleeping | legit  | `{ staminaRegenBonusPerDay: 3 }`                                 | —                                                     |
+| `bh_stocked_kitchen`      | bh_kitchen  | legit  | `{ staminaRegenBonusPerDay: 2, bandMoodPerDay: 1 }`              | `{ minMoney: 800 }`                                   |
+| `bh_weed_garden`          | bh_backyard | diy    | `{ bandMoodPerDay: 2 }`, `riskEventTypes: ['raid']`              | —                                                     |
+| `bh_bouncer_dog`          | bh_security | legit  | `{ baseRiskChanceMultiplier: 0.5 }`                              | `{ minFame: 40 }`                                     |
+| `bh_security_cam_mesh`    | bh_security | legit  | `{ baseRiskChanceMultiplier: 0.7 }` (theft-fokus)                | `{ minMoney: 800 }`                                   |
+| `bh_wall_mural`           | bh_identity | legit  | `{ famePassivePerDay: 0.5 }`                                     | `{ requiredStoryFlags: ['saved_local_venue'] }`       |
+| `bh_basement_bar`         | bh_lounge   | legit  | `{ baseDailyRevenueDelta: 25 }`                                  | `{ minFame: 60 }`                                     |
+| `bh_hot_tub`              | bh_lounge   | legit  | `{ bandMoodPerDay: 2, infightingDamper: true }`                  | `{ minMoney: 4000 }`                                  |
+| `bh_art_sublet`           | bh_identity | legit  | `{ baseDailyRevenueDelta: 35 }`                                  | `{ minFame: 30, minScenePresence: 25 }`               |
+| `bh_zine_library`         | bh_lounge   | diy    | `{ bandMoodPerDay: 0.5, famePassivePerDay: 0.1 }`                | —                                                     |
+| `bh_vinyl_press_corner`   | bh_secret   | diy    | `{ merchCapacityBonus: 50, baseDailyRevenueDelta: 20 }`          | `{ minFame: 70 }`                                     |
+| `bh_pirate_radio_antenna` | bh_secret   | diy    | `{ famePassivePerDay: 1.0 }`, `riskEventTypes: ['police_check']` | `{ requiredMemberSkill: { skill: 'tech', tier: 2 } }` |
+| `bh_squat_dog`            | bh_security | diy    | `{ baseRiskChanceMultiplier: 0.7 }`, `cost: 0`                   | —                                                     |
 
 ### 4.6 Modul-Pool — Merch-Werkstatt
 
-| ID | Slot | Flavor | Boni | Unlock & Constraints |
-|---|---|---|---|---|
-| `mw_4color_carousel` | mw_print | legit | `{ merchCostMultiplier: 0.75 }` | `{ minMoney: 3500 }` |
-| `mw_manual_press` | mw_print | diy | `{ merchCostMultiplier: 0.90 }` | — |
-| `mw_eco_ink_supply` | mw_print | legit | `{ avgMerchSalePriceBonus: 0.03 }` | `{ minScenePresence: 40 }`, `requiredOtherModuleInstalled: 'mw_4color_carousel' OR 'mw_manual_press'` (siehe §5.2 OR-Modellierung) |
-| `mw_conveyor_dryer` | mw_drying | legit | `{ merchCapacityBonus: 30 }` | `{ minMoney: 1500 }` |
-| `mw_heat_press_box` | mw_drying | diy | `{ merchCostMultiplier: 0.95 }` | — |
-| `mw_vinyl_cutter` | mw_cutting | legit | `{ enablesLimitedEditions: true }` | `{ minMoney: 1200 }` |
-| `mw_embroidery_machine` | mw_cutting | legit | `{ avgMerchSalePriceBonus: 0.05 }` | `{ minFame: 30 }` |
-| `mw_badge_press` | mw_specialty | legit | `{ avgMerchSalePriceBonus: 0.03 }` | — |
-| `mw_hot_foil_station` | mw_specialty | legit | `{ avgMerchSalePriceBonus: 0.10 }` | `{ minFame: 50 }` |
-| `mw_cassette_dubber` | mw_specialty | diy | `{ baseDailyRevenueDelta: 20 }` | `{ requiredStoryFlags: ['tape_culture_revival'] }` |
-| `mw_sticker_bot` | mw_specialty | legit | `{ baseDailyRevenueDelta: 10 }` | — |
-| `mw_storage_racks` | mw_storage | legit | `{ merchCapacityBonus: 60 }` | — |
-| `mw_mailorder_script` | mw_automation | legit | `{ baseDailyRevenueDelta: 30 }` | `{ requiredMemberSkill: { skill: 'tech', tier: 1 } }` |
-| `mw_bandcamp_bot` | mw_sales | legit | `{ baseDailyRevenueDelta: 25 }` | `{ minFame: 20 }` |
-| `mw_darkweb_vendor` | mw_sales | diy | `{ baseDailyRevenueDelta: 50 }`, `riskEventTypes: ['scam_or_bust','police_check']` | `{ requiredMemberSkill: { skill: 'tech', tier: 3 } }` |
-| `mw_hype_drop_machine` | mw_automation | legit | `{ avgMerchSalePriceBonus: 0.08 }` (Gig-Tage) | `{ minFame: 70 }` |
+| ID                      | Slot          | Flavor | Boni                                                                               | Unlock & Constraints                                                                                                               |
+| ----------------------- | ------------- | ------ | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `mw_4color_carousel`    | mw_print      | legit  | `{ merchCostMultiplier: 0.75 }`                                                    | `{ minMoney: 3500 }`                                                                                                               |
+| `mw_manual_press`       | mw_print      | diy    | `{ merchCostMultiplier: 0.90 }`                                                    | —                                                                                                                                  |
+| `mw_eco_ink_supply`     | mw_print      | legit  | `{ avgMerchSalePriceBonus: 0.03 }`                                                 | `{ minScenePresence: 40 }`, `requiredOtherModuleInstalled: 'mw_4color_carousel' OR 'mw_manual_press'` (siehe §5.2 OR-Modellierung) |
+| `mw_conveyor_dryer`     | mw_drying     | legit  | `{ merchCapacityBonus: 30 }`                                                       | `{ minMoney: 1500 }`                                                                                                               |
+| `mw_heat_press_box`     | mw_drying     | diy    | `{ merchCostMultiplier: 0.95 }`                                                    | —                                                                                                                                  |
+| `mw_vinyl_cutter`       | mw_cutting    | legit  | `{ enablesLimitedEditions: true }`                                                 | `{ minMoney: 1200 }`                                                                                                               |
+| `mw_embroidery_machine` | mw_cutting    | legit  | `{ avgMerchSalePriceBonus: 0.05 }`                                                 | `{ minFame: 30 }`                                                                                                                  |
+| `mw_badge_press`        | mw_specialty  | legit  | `{ avgMerchSalePriceBonus: 0.03 }`                                                 | —                                                                                                                                  |
+| `mw_hot_foil_station`   | mw_specialty  | legit  | `{ avgMerchSalePriceBonus: 0.10 }`                                                 | `{ minFame: 50 }`                                                                                                                  |
+| `mw_cassette_dubber`    | mw_specialty  | diy    | `{ baseDailyRevenueDelta: 20 }`                                                    | `{ requiredStoryFlags: ['tape_culture_revival'] }`                                                                                 |
+| `mw_sticker_bot`        | mw_specialty  | legit  | `{ baseDailyRevenueDelta: 10 }`                                                    | —                                                                                                                                  |
+| `mw_storage_racks`      | mw_storage    | legit  | `{ merchCapacityBonus: 60 }`                                                       | —                                                                                                                                  |
+| `mw_mailorder_script`   | mw_automation | legit  | `{ baseDailyRevenueDelta: 30 }`                                                    | `{ requiredMemberSkill: { skill: 'tech', tier: 1 } }`                                                                              |
+| `mw_bandcamp_bot`       | mw_sales      | legit  | `{ baseDailyRevenueDelta: 25 }`                                                    | `{ minFame: 20 }`                                                                                                                  |
+| `mw_darkweb_vendor`     | mw_sales      | diy    | `{ baseDailyRevenueDelta: 50 }`, `riskEventTypes: ['scam_or_bust','police_check']` | `{ requiredMemberSkill: { skill: 'tech', tier: 3 } }`                                                                              |
+| `mw_hype_drop_machine`  | mw_automation | legit  | `{ avgMerchSalePriceBonus: 0.08 }` (Gig-Tage)                                      | `{ minFame: 70 }`                                                                                                                  |
 
 Alle Module: `MODULE_REGISTRY: Record<string, AssetModule>` in `src/utils/assetModuleRegistry.ts`, eingefroren via `as const satisfies`.
 
@@ -410,6 +480,7 @@ Alle Module: `MODULE_REGISTRY: Record<string, AssetModule>` in `src/utils/assetM
 ### 5.2 Action-Creators (`assetActionCreators.ts`)
 
 Allgemeine Regeln:
+
 - Normalisieren via `finiteNumberOr`
 - Strippen Prototyp-Keys via `Object.hasOwn`
 - Validieren gegen Konfig
@@ -417,11 +488,13 @@ Allgemeine Regeln:
 - **IDs werden im Action-Creator generiert**, nicht im Reducer (Reducer-Purity-Constraint). Bei `INSTALL_MODULE` mit einem Modul, dessen `addsSlots` Einträge enthält, generiert der Action-Creator pro Eintrag die Slot-Objekte (`{ slotType, id }`) — `slotType` aus `module.addsSlots[i].slotType`, `id` via `getSafeUUID()` — und übergibt sie als `newSlotIds: Array<{ slotType: SlotType; id: string }>` im Payload. Der Reducer setzt die Slots 1:1 in `asset.slots` ein
 
 `PURCHASE_CHASSIS`-Validierung:
+
 - DIY-Chassis + `mode: 'loan'` → returnt `{ type: 'PURCHASE_CHASSIS_FAILED', reason: 'DIY_LOAN_NOT_ALLOWED' }`. UI deaktiviert die Loan-Option für DIY zusätzlich proaktiv, der Action-Creator ist der zweite Verteidigungsring
 - Fehlende Money → `PURCHASE_CHASSIS_FAILED` mit `reason: 'INSUFFICIENT_FUNDS'`
 - Reducer behandelt `PURCHASE_CHASSIS_FAILED` mit Toast-Dispatch, kein State-Change
 
 `INSTALL_MODULE`-Validierung im Action-Creator:
+
 - Modul existiert in `MODULE_REGISTRY`
 - Slot existiert auf dem Asset und ist leer
 - `module.slotType === slot.slotType`
@@ -436,6 +509,7 @@ Allgemeine Regeln:
 `src/context/reducers/assetReducer.ts`, eingehängt in `gameReducer.ts`. `assertNever(action as never)` in Default-Branch.
 
 **`UPGRADE_CHASSIS_TIER`-Semantik:**
+
 - Neue Tier-Slots werden hinzugefügt (Aktion-Creator generiert IDs)
 - Bestehende Module bleiben installiert (Tier-Upgrade ist additiv, niemals entfernt es Slots im aktuellen Design)
 - `condition` bleibt erhalten
@@ -443,11 +517,13 @@ Allgemeine Regeln:
 - Kein Tier-Downgrade unterstützt (out of scope)
 
 **`SELL_CHASSIS`-Semantik:**
+
 - Alle installierten Module werden automatisch entfernt; ihr `removalRefundFraction * cost` fließt in den Verkaufserlös
 - Chassis-Verkaufspreis: `purchasePrice * conditionFactor * depreciationFactor` mit `conditionFactor = condition / 100`, `depreciationFactor = max(0.4, 1 - daysOwned/365 * 0.4)` (Konstante, Balancing-Platzhalter)
 - Offene `Liability` mit `assetId === asset.id` wird sofort fällig: `liability.principalRemaining` wird vom Verkaufserlös abgezogen. Bleibt ein positiver Betrag → fließt ins `money`. Negativ → `SELL_CHASSIS_FAILED` mit `reason: 'LIABILITY_EXCEEDS_VALUE'`, kein State-Change
 
 **`REPAIR_CHASSIS`-Semantik:**
+
 - Module bleiben installiert während Reparatur
 - Kosten: `(100 - condition) * REPAIR_COST_PER_POINT` (Konstante, Platzhalter 8€/Punkt)
 - Setzt `condition` auf 100 (volle Reparatur in einem Schritt — vereinfacht UX und Reducer)
@@ -469,6 +545,7 @@ Alle Sub-Ticks: reine Funktionen in `src/utils/assetTicks.ts`. `processAssetTick
 ### 5.5 RNG-Quelle (Reducer-Purity)
 
 `rollAssetRiskEvents` braucht Determinismus. Vorgehen:
+
 - `state.rngSeed: number` als neues persistiertes Feld (initialisiert beim Spielstart)
 - `ADVANCE_DAY`-Action-Payload erhält Feld `dayRngStream: number[]` (vom Action-Creator vorberechnet — N Zufallszahlen, eine pro potentiellem RNG-Punkt im Tick)
 - Action-Creator `advanceDay()` zieht aus einem zentralen Seeded-RNG (per `mulberry32` oder `seedrandom`-Wrapper über `state.rngSeed`), berechnet N Zufallszahlen, und inkrementiert den persistierten Seed
@@ -518,29 +595,34 @@ export const NEUTRAL_ASSET_MODIFIERS: AssetModifiers = {
     enablesReRecording: false,
     enablesLimitedEditions: false,
     enablesBulkProduction: false,
-    reducesTheftRiskTravel: false,
-  },
+    reducesTheftRiskTravel: false
+  }
 }
 
 export function getInstalledModules(asset: LongTermAsset): AssetModule[]
 export function getAssetAggregateBoni(asset: LongTermAsset): AssetBoni
 export function getAssetTotalUpkeep(asset: LongTermAsset): number
-  // = asset.baseUpkeep + (getAssetAggregateBoni(asset).upkeepDelta ?? 0)
+// = asset.baseUpkeep + (getAssetAggregateBoni(asset).upkeepDelta ?? 0)
 export function getAssetTotalDailyRevenue(asset: LongTermAsset): number
-  // = (asset.baseDailyRevenue + (getAssetAggregateBoni(asset).baseDailyRevenueDelta ?? 0)) * (asset.condition / 100)
+// = (asset.baseDailyRevenue + (getAssetAggregateBoni(asset).baseDailyRevenueDelta ?? 0)) * (asset.condition / 100)
 export function getActiveAssetModifiers(assets: LongTermAsset[]): AssetModifiers
 export function getTotalDailyObligations(state: GameState): number
-  // siehe §5.6
+// siehe §5.6
 export function isModuleUnlocked(module: AssetModule, state: GameState): boolean
-export function getModulePoolForAsset(asset: LongTermAsset, state: GameState):
-  Array<{ module: AssetModule; unlocked: boolean; lockReasons: string[] }>
-export function getSlotConflicts(asset: LongTermAsset, moduleId: string):
-  { canInstall: boolean; conflictingModuleIds: string[] }
+export function getModulePoolForAsset(
+  asset: LongTermAsset,
+  state: GameState
+): Array<{ module: AssetModule; unlocked: boolean; lockReasons: string[] }>
+export function getSlotConflicts(
+  asset: LongTermAsset,
+  moduleId: string
+): { canInstall: boolean; conflictingModuleIds: string[] }
 ```
 
 Aggregation: multiplikative Felder werden multipliziert (Identity 1.0), additive summiert (Identity 0), Flags ge-`OR`-t. Module mit Asset-condition < 20 werden ignoriert. Defaults entsprechen `NEUTRAL_ASSET_MODIFIERS`.
 
 Bestehende Economy-Funktionen nehmen einen `AssetModifiers`-Parameter mit `NEUTRAL_ASSET_MODIFIERS` als Default. **Konkret zu erweiternde Funktionen** in `src/utils/economyEngine.ts`:
+
 - `calculateFuelCost` — `fuelMultiplier`
 - `calculateMerchIncome` — `merchCostMultiplier`, `avgMerchSalePriceBonus`, `merchCapacityBonus`
 - `calculateGigFinancials` — `tipBonusGigs`
@@ -624,8 +706,8 @@ interface GeneratedImagePanelProps {
   className?: string
   onLoad?: () => void
   variant?: 'card' | 'inline' | 'hotspot'
-  seedOverride?: number       // siehe §8.4
-  sizeHint?: { width: number; height: number }  // wird an Pollinations als Query-Param weitergereicht
+  seedOverride?: number // siehe §8.4
+  sizeHint?: { width: number; height: number } // wird an Pollinations als Query-Param weitergereicht
 }
 ```
 
@@ -686,42 +768,43 @@ export const getTrailerImagePrompt = (flavor: AssetFlavor): string
 
 ### 8.5 Bild-Stellen
 
-| Komponente | Helper | Aspect |
-|---|---|---|
-| `TourbusVehicleView` Background | `getSectionBackgroundPrompt('tourbus_chassis', flavor)` | 16:9 |
-| Tourbus Trailer-Overlay | `getTrailerImagePrompt(flavor)` | 16:9 |
-| `StudioFloorplanView` Background | `getSectionBackgroundPrompt('studio_chassis', flavor)` | 4:3 |
-| `BandhausCrossSectionView` Background | `getSectionBackgroundPrompt('bandhaus_chassis', flavor)` | 3:4 |
-| `WorkshopProductionLineView` Background | `getSectionBackgroundPrompt('merch_workshop_chassis', flavor)` | 21:9 |
-| Slot-Hotspot installiertes Modul | `getModuleImagePrompt(moduleId)` | 1:1 |
-| `ModulePickerModal` pro Modul | `getModuleImagePrompt(moduleId)` | 1:1 |
-| `ChassisAcquisitionModal` Tier-Vorschau | `getChassisImagePrompt(...)` | 16:9 |
-| `LoanProfileModal` | `getLoanProfileImagePrompt(profileId)` | 1:1 |
-| `CrowdfundSetupModal` | `getCrowdfundImagePrompt(...)` | 16:9 |
-| `CrowdfundCampaignCard` | `getCrowdfundImagePrompt(...)` | 4:3 |
-| `RepairConfirmModal` | `getRepairImagePrompt(...)` | 16:9 |
-| `SellConfirmModal` | `getChassisImagePrompt(...)` | 16:9 |
-| `RiskEventModal` | `getRiskEventImagePrompt(eventType)` | 16:9 |
-| `ForeclosureModal` | `getRiskEventImagePrompt('foreclosure')` | 16:9 |
+| Komponente                              | Helper                                                         | Aspect |
+| --------------------------------------- | -------------------------------------------------------------- | ------ |
+| `TourbusVehicleView` Background         | `getSectionBackgroundPrompt('tourbus_chassis', flavor)`        | 16:9   |
+| Tourbus Trailer-Overlay                 | `getTrailerImagePrompt(flavor)`                                | 16:9   |
+| `StudioFloorplanView` Background        | `getSectionBackgroundPrompt('studio_chassis', flavor)`         | 4:3    |
+| `BandhausCrossSectionView` Background   | `getSectionBackgroundPrompt('bandhaus_chassis', flavor)`       | 3:4    |
+| `WorkshopProductionLineView` Background | `getSectionBackgroundPrompt('merch_workshop_chassis', flavor)` | 21:9   |
+| Slot-Hotspot installiertes Modul        | `getModuleImagePrompt(moduleId)`                               | 1:1    |
+| `ModulePickerModal` pro Modul           | `getModuleImagePrompt(moduleId)`                               | 1:1    |
+| `ChassisAcquisitionModal` Tier-Vorschau | `getChassisImagePrompt(...)`                                   | 16:9   |
+| `LoanProfileModal`                      | `getLoanProfileImagePrompt(profileId)`                         | 1:1    |
+| `CrowdfundSetupModal`                   | `getCrowdfundImagePrompt(...)`                                 | 16:9   |
+| `CrowdfundCampaignCard`                 | `getCrowdfundImagePrompt(...)`                                 | 4:3    |
+| `RepairConfirmModal`                    | `getRepairImagePrompt(...)`                                    | 16:9   |
+| `SellConfirmModal`                      | `getChassisImagePrompt(...)`                                   | 16:9   |
+| `RiskEventModal`                        | `getRiskEventImagePrompt(eventType)`                           | 16:9   |
+| `ForeclosureModal`                      | `getRiskEventImagePrompt('foreclosure')`                       | 16:9   |
 
 ### 8.6 Crowdfund-Resolution — Formel-Template
 
 Auswertung in `processCrowdfundTick` bei `daysRemaining === 0`. Formel-Template (Konstanten als Platzhalter):
 
 ```ts
-const BASE_PROBABILITY = 0.30
-const FAME_FACTOR = 0.40       // gewichtet fame / targetAmount-Ratio
-const SCENE_FACTOR = 0.20      // gewichtet scenePresence / 100
-const COST_PENALTY = 0.10      // pro 10k EUR Ziel
+const BASE_PROBABILITY = 0.3
+const FAME_FACTOR = 0.4 // gewichtet fame / targetAmount-Ratio
+const SCENE_FACTOR = 0.2 // gewichtet scenePresence / 100
+const COST_PENALTY = 0.1 // pro 10k EUR Ziel
 const MIN_P = 0.05
-const MAX_P = 0.90
+const MAX_P = 0.9
 
 successProbability = clamp(
-  BASE_PROBABILITY
-  + (state.band.fame / Math.max(1, targetAmount / 100)) * FAME_FACTOR
-  + (state.band.scenePresence / 100) * SCENE_FACTOR
-  - (targetAmount / 10000) * COST_PENALTY,
-  MIN_P, MAX_P
+  BASE_PROBABILITY +
+    (state.band.fame / Math.max(1, targetAmount / 100)) * FAME_FACTOR +
+    (state.band.scenePresence / 100) * SCENE_FACTOR -
+    (targetAmount / 10000) * COST_PENALTY,
+  MIN_P,
+  MAX_P
 )
 ```
 
@@ -786,6 +869,7 @@ assets.purchaseFailed.liability_exceeds_value
 ```
 
 **Regeln**
+
 - Modul-Namen/-Beschreibungen vollständig in Subkeys lokalisiert
 - EN + DE simultan; CI-Lauf via `i18n-consistency-checker`-Skill nach Implementierung
 - Currency immer via `formatCurrency(value, i18n.language, signDisplay)`
@@ -795,6 +879,7 @@ assets.purchaseFailed.liability_exceeds_value
 ## 10. Tests
 
 **node:test** (`tests/node/`)
+
 - `assetsReducer.test.js` — `PURCHASE_CHASSIS` alle 3 modes; `PURCHASE_CHASSIS_FAILED` bei DIY+loan; `INSTALL_MODULE`-Validierung (Slot-Typ-Mismatch, gelocktes Modul, Exclusivity, maxPerAsset); `REMOVE_MODULE` mit Refund
 - `assetModuleRegistry.test.js` — jedes Modul hat `imagePromptKey` mit Eintrag in `MODULE_PROMPTS`; jedes Modul referenziert gültigen `SlotType`; kein Modul mit `slotType === addsSlots[i].slotType` (Anti-Stacking-Test)
 - `assetTicks.test.js` — `processAssetTick` Determinismus; condition-Decay; condition floor (>=0); condition<20 neutralisiert Boni
@@ -810,6 +895,7 @@ assets.purchaseFailed.liability_exceeds_value
 - `playwright-screenshot-fixture-validation.test.js` — `BASE_STATE` enthält neue Felder inkl. `rngSeed`
 
 **Vitest** (`tests/ui/`)
+
 - `AssetsScene.test.tsx` — Tab-Wechsel, Top-Bar aggregiert über Assets
 - `TourbusVehicleView.test.tsx` — Hotspot-Positionierung, Klick öffnet Picker, Trailer-Overlay erscheint wenn Hitch installiert
 - `StudioFloorplanView.test.tsx`, `BandhausCrossSectionView.test.tsx`, `WorkshopProductionLineView.test.tsx` — Klick-Mapping
@@ -819,6 +905,7 @@ assets.purchaseFailed.liability_exceeds_value
 - `i18next`-Mocks inkl. `initReactI18next: { type: '3rdParty', init: () => {} }`
 
 **Golden-Path-Erweiterung**: zwei Varianten zum bestehenden Cycle-Test:
+
 1. "Loan-Pfad": Spieler nimmt Loan auf Chassis, installiert Module, voller Spielzyklus, Tilgung läuft, kein Bankrott
 2. "Crowdfund-Pfad": Spieler startet Crowdfund, Kampagne wartet, Resolution bei `daysRemaining=0`, Asset erscheint im State
 3. "Risk-Event-Pfad": DIY-Modul installiert, RNG-Stream so vorbereitet, dass Risk-Event triggert, `ASSET_RISK_EVENT_TRIGGERED` wird dispatched, State korrekt
@@ -846,18 +933,18 @@ assets.purchaseFailed.liability_exceeds_value
 
 1. Typen, `CHASSIS_CONFIG`, `MODULE_REGISTRY`, `MODULE_PROMPTS`, `loanProfiles`
 2. Sanitizer + State-Init + `BASE_STATE`-Fixture
-2.5. Migration-Test: alte Saves laden mit leeren Arrays
+   2.5. Migration-Test: alte Saves laden mit leeren Arrays
 3. Action-Types + Action-Creators (inkl. Install-Validierung und ID-Generation)
 4. Reducer + Tick-Funktionen + Selektoren + RNG-Stream
-4.5. Sanitization-Verification: Sanitizer gegen korrupte Test-Daten
+   4.5. Sanitization-Verification: Sanitizer gegen korrupte Test-Daten
 5. Economy-Engine-Erweiterung (`calculateFuelCost`, `calculateMerchIncome`, `calculateGigFinancials`, Song- und Training-Kosten-Funktionen)
 6. `GeneratedImagePanel` + Prompt-Helper + Seed-Strategie
 7. `AssetsScene` Hub + Tab-Routing
-7.5. Locale-Struktur (EN + DE, Asset-Grundkeys, ohne Modul-IDs)
+   7.5. Locale-Struktur (EN + DE, Asset-Grundkeys, ohne Modul-IDs)
 8. Vier Sektion-Views (Tourbus zuerst als Referenz)
 9. Gemeinsame Modale (`ModulePickerModal`, `ChassisAcquisitionModal`, etc.)
 10. Locale-Vervollständigung (alle Modul-IDs, alle Unlock-Templates)
-10.5. `i18n-consistency-checker`-Lauf, EN/DE-Parität
+    10.5. `i18n-consistency-checker`-Lauf, EN/DE-Parität
 11. Tests (Action-Creators → Reducer → Selektoren → Views → Modale)
 12. Golden-Path-Test-Erweiterung (Loan, Crowdfund, Risk-Event, Trailer-Stacking)
 13. Performance-Validierung (Modul-Picker-Open, Hub-Tab-Wechsel)

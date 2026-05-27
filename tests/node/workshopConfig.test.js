@@ -9,28 +9,27 @@ import {
 
 describe('WORKSHOP_SLOT_ZONES', () => {
   it('defines tier slot progression for the merch workshop', () => {
-    assert.deepEqual([...WORKSHOP_T1_SLOTS], [
-      'mw_print',
-      'mw_drying',
-      'mw_storage'
-    ])
-    assert.deepEqual([...WORKSHOP_T2_SLOTS], [
-      'mw_print',
-      'mw_drying',
-      'mw_storage',
-      'mw_cutting',
-      'mw_packaging'
-    ])
-    assert.deepEqual([...WORKSHOP_T3_SLOTS], [
-      'mw_print',
-      'mw_drying',
-      'mw_storage',
-      'mw_cutting',
-      'mw_packaging',
-      'mw_specialty',
-      'mw_sales',
-      'mw_automation'
-    ])
+    assert.deepEqual(
+      [...WORKSHOP_T1_SLOTS],
+      ['mw_print', 'mw_drying', 'mw_storage']
+    )
+    assert.deepEqual(
+      [...WORKSHOP_T2_SLOTS],
+      ['mw_print', 'mw_drying', 'mw_storage', 'mw_cutting', 'mw_packaging']
+    )
+    assert.deepEqual(
+      [...WORKSHOP_T3_SLOTS],
+      [
+        'mw_print',
+        'mw_drying',
+        'mw_storage',
+        'mw_cutting',
+        'mw_packaging',
+        'mw_specialty',
+        'mw_sales',
+        'mw_automation'
+      ]
+    )
   })
 
   it('maps every workshop slot type to a normalized production-line zone', () => {
@@ -65,7 +64,10 @@ describe('WORKSHOP_SLOT_ZONES', () => {
       const previous = WORKSHOP_SLOT_ZONES[mainLine[i - 1]]
       const current = WORKSHOP_SLOT_ZONES[mainLine[i]]
       assert.ok(previous && current)
-      assert.ok(current.x > previous.x, `${current} should be right of ${previous}`)
+      assert.ok(
+        current.x > previous.x,
+        `${current} should be right of ${previous}`
+      )
       assert.equal(current.y, 0.5, `${current} should stay on main line`)
     }
   })

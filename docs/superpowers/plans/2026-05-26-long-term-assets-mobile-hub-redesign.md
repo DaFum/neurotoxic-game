@@ -202,7 +202,11 @@ Create `src/components/assets/assetsHub.css`:
   min-height: 100%;
   font-family: var(--asset-font-control);
   background:
-    linear-gradient(135deg, rgb(var(--color-void-black-rgb) / 96%), rgb(var(--color-void-black-rgb) / 82%)),
+    linear-gradient(
+      135deg,
+      rgb(var(--color-void-black-rgb) / 96%),
+      rgb(var(--color-void-black-rgb) / 82%)
+    ),
     repeating-linear-gradient(
       45deg,
       rgb(var(--color-toxic-green-rgb) / 7%) 0,
@@ -225,7 +229,11 @@ Create `src/components/assets/assetsHub.css`:
 .assets-hub-panel {
   border: 2px solid var(--section-accent, var(--color-toxic-green));
   background:
-    linear-gradient(180deg, rgb(var(--color-void-black-rgb) / 88%), rgb(var(--color-void-black-rgb) / 96%)),
+    linear-gradient(
+      180deg,
+      rgb(var(--color-void-black-rgb) / 88%),
+      rgb(var(--color-void-black-rgb) / 96%)
+    ),
     repeating-linear-gradient(
       90deg,
       rgb(var(--color-star-white-rgb) / 5%) 0,
@@ -333,9 +341,7 @@ vi.mock('react-i18next', () => ({
 describe('AssetsBottomTabs', () => {
   it('renders accessible section tabs and switches sections', () => {
     const onSelect = vi.fn()
-    render(
-      <AssetsBottomTabs active='tourbus_chassis' onSelect={onSelect} />
-    )
+    render(<AssetsBottomTabs active='tourbus_chassis' onSelect={onSelect} />)
 
     expect(
       screen.getByRole('tablist', { name: 'Asset sections' })
@@ -358,10 +364,7 @@ describe('AssetsBottomTabs', () => {
     )
 
     const workshop = screen.getByRole('tab', { name: /Workshop/ })
-    expect(workshop).toHaveAttribute(
-      'id',
-      'assets-tab-merch_workshop_chassis'
-    )
+    expect(workshop).toHaveAttribute('id', 'assets-tab-merch_workshop_chassis')
     expect(workshop).toHaveAttribute(
       'aria-controls',
       'assets-panel-merch_workshop_chassis'
@@ -637,7 +640,9 @@ export const AssetsStatusStrip = () => {
   const money = useGameSelector(state => state.player.money)
   const obligations = useGameSelector(getTotalDailyObligations)
   const totalDebt = useGameSelector(getTotalDebt)
-  const campaignCount = useGameSelector(state => state.crowdfundCampaigns.length)
+  const campaignCount = useGameSelector(
+    state => state.crowdfundCampaigns.length
+  )
 
   return (
     <header className='assets-hub-panel assets-hub-reveal mx-2 mt-2 overflow-hidden sm:mx-4'>
@@ -831,7 +836,9 @@ interface AssetSlotActionListProps {
   onSlotClick: (slotId: string) => void
 }
 
-const getConditionState = (condition: number): 'good' | 'warning' | 'broken' => {
+const getConditionState = (
+  condition: number
+): 'good' | 'warning' | 'broken' => {
   if (condition < 20) return 'broken'
   if (condition < 50) return 'warning'
   return 'good'
@@ -894,7 +901,8 @@ export const AssetSlotActionList = ({
               )}
               {isDamaged && (
                 <p className='mt-1 text-[0.65rem] uppercase text-[var(--color-warning-yellow)]'>
-                  {t('assets:hub.slotState.damaged')}: {t(`assets:condition.${conditionState}`)}
+                  {t('assets:hub.slotState.damaged')}:{' '}
+                  {t(`assets:condition.${conditionState}`)}
                 </p>
               )}
             </div>
@@ -905,8 +913,10 @@ export const AssetSlotActionList = ({
               className='assets-hub-control min-h-11 self-center border-2 px-3 py-2 text-xs uppercase'
               style={{
                 borderColor: 'var(--section-accent)',
-                background: moduleName === null ? 'var(--section-accent)' : 'transparent',
-                color: moduleName === null ? 'var(--color-void-black)' : 'inherit'
+                background:
+                  moduleName === null ? 'var(--section-accent)' : 'transparent',
+                color:
+                  moduleName === null ? 'var(--color-void-black)' : 'inherit'
               }}
             >
               {moduleName === null
@@ -1045,7 +1055,9 @@ export const AssetSectionDeck = ({
               {t(`assets:kind.${asset.kind}`)}
             </h2>
             <p className='assets-hub-control truncate text-[0.65rem] uppercase opacity-70'>
-              {t(`assets:flavor.${asset.chassisFlavor}`)} / {t(`assets:chassisTier.${asset.chassisTier}`)} / {t(`assets:mode.${asset.acquisitionMode}`)}
+              {t(`assets:flavor.${asset.chassisFlavor}`)} /{' '}
+              {t(`assets:chassisTier.${asset.chassisTier}`)} /{' '}
+              {t(`assets:mode.${asset.acquisitionMode}`)}
             </p>
           </div>
           <span className='assets-hub-control shrink-0 border-2 px-2 py-1 text-xs uppercase'>
@@ -1149,7 +1161,9 @@ export const AssetSectionPanel = ({
             {t(`assets:kind.${kind}`)}
           </h2>
           <p className='assets-hub-control mt-1 text-sm opacity-70'>
-            {t(`assets:section.${kind === 'tourbus_chassis' ? 'tourbus' : kind === 'studio_chassis' ? 'studio' : kind === 'bandhaus_chassis' ? 'bandhaus' : 'workshop'}.description`)}
+            {t(
+              `assets:section.${kind === 'tourbus_chassis' ? 'tourbus' : kind === 'studio_chassis' ? 'studio' : kind === 'bandhaus_chassis' ? 'bandhaus' : 'workshop'}.description`
+            )}
           </p>
           <button
             type='button'
@@ -1336,7 +1350,7 @@ vi.mock('react-i18next', () => ({
     t: (key: string, options?: { defaultValue?: string }) =>
       key === 'assets:section.tourbus.alt'
         ? 'Localized tourbus side view'
-        : options?.defaultValue ?? key
+        : (options?.defaultValue ?? key)
   })
 }))
 
@@ -1744,26 +1758,26 @@ Expected: FAIL because asset modals do not pass `assets-modal-sheet`.
 Change each asset modal `Modal` call to include the class:
 
 ```tsx
-className='assets-modal-sheet max-w-3xl'
+className = 'assets-modal-sheet max-w-3xl'
 ```
 
 Use the existing max width per file:
 
 ```tsx
 // ModulePickerModal.tsx
-className='assets-modal-sheet max-w-3xl'
+className = 'assets-modal-sheet max-w-3xl'
 
 // ChassisAcquisitionModal.tsx
-className='assets-modal-sheet max-w-2xl'
+className = 'assets-modal-sheet max-w-2xl'
 
 // RepairConfirmModal.tsx
-className='assets-modal-sheet max-w-lg'
+className = 'assets-modal-sheet max-w-lg'
 
 // SellConfirmModal.tsx
-className='assets-modal-sheet max-w-lg'
+className = 'assets-modal-sheet max-w-lg'
 
 // CrowdfundSetupModal.tsx
-className='assets-modal-sheet max-w-lg'
+className = 'assets-modal-sheet max-w-lg'
 ```
 
 - [ ] **Step 4: Keep existing modal content intact**
@@ -1771,13 +1785,13 @@ className='assets-modal-sheet max-w-lg'
 Do not change reducer calls or acquisition logic. Only className and small mobile spacing classes are in scope. If a modal button is shorter than 44px on mobile, change button classes from:
 
 ```tsx
-className='border-2 px-3 py-1'
+className = 'border-2 px-3 py-1'
 ```
 
 to:
 
 ```tsx
-className='min-h-11 border-2 px-3 py-2'
+className = 'min-h-11 border-2 px-3 py-2'
 ```
 
 - [ ] **Step 5: Run modal tests and typecheck**
@@ -1922,7 +1936,8 @@ Keep fixes CSS-first. Example acceptable patch if bottom tabs cover content:
 Example acceptable patch if slot rows crowd at 360px:
 
 ```tsx
-className='assets-hub-panel grid grid-cols-1 gap-2 px-2 py-2 min-[390px]:grid-cols-[1fr_auto]'
+className =
+  'assets-hub-panel grid grid-cols-1 gap-2 px-2 py-2 min-[390px]:grid-cols-[1fr_auto]'
 ```
 
 - [ ] **Step 6: Re-run focused tests after visual patches**

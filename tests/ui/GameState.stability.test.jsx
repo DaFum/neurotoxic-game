@@ -51,6 +51,33 @@ describe('useGameActions referential stability', () => {
   })
 })
 
+describe('useGameSelector correctness', () => {
+  it('returns the exact value requested by the selector function', () => {
+    const { result } = renderHook(
+      () => useGameSelector(state => state.player.money),
+      { wrapper }
+    )
+    expect(typeof result.current).toBe('number')
+  })
+
+  it('updates the returned value when the selected state changes', () => {
+    const { result } = renderHook(
+      () => ({
+        money: useGameSelector(state => state.player.money),
+        actions: useGameActions()
+      }),
+      { wrapper }
+    )
+
+    const initialMoney = result.current.money
+    act(() => {
+      result.current.actions.updatePlayer({ money: initialMoney + 100 })
+    })
+
+    expect(result.current.money).toBe(initialMoney + 100)
+  })
+})
+
 describe('useGameSelector slice stability', () => {
   it('returns the same slice reference when unrelated state changes', () => {
     const { result } = renderHook(
@@ -77,9 +104,15 @@ describe('hook bounds', () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
 
     try {
-      expect(() => renderHook(() => useGameDispatch())).toThrow('useGameDispatch must be used within GameStateProvider')
-      expect(() => renderHook(() => useGameActions())).toThrow('useGameActions must be used within GameStateProvider')
-      expect(() => renderHook(() => useGameSelector(state => state.player))).toThrow('useGameSelector must be used within GameStateProvider')
+      expect(() => renderHook(() => useGameDispatch())).toThrow(
+        'useGameDispatch must be used within GameStateProvider'
+      )
+      expect(() => renderHook(() => useGameActions())).toThrow(
+        'useGameActions must be used within GameStateProvider'
+      )
+      expect(() =>
+        renderHook(() => useGameSelector(state => state.player))
+      ).toThrow('useGameSelector must be used within GameStateProvider')
     } finally {
       consoleError.mockRestore()
     }

@@ -399,9 +399,7 @@ const RegionalStandingSection = ({
           })}
         </div>
       ) : (
-        <div className='space-y-1'>
-          {regionalRows}
-        </div>
+        <div className='space-y-1'>{regionalRows}</div>
       )}
       {venueBlacklist.length > 0 && (
         <div className='mt-2 pt-2 border-t border-ash-gray/20'>
