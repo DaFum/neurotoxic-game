@@ -98,6 +98,18 @@ test('QuestLifecycle', async (t) => {
       assert.equal(nextState.toasts[0].messageKey, 'ui:toast.quest_complete_harmony')
     })
 
+    await t.test('applies skill point reward with randomIdx and missing baseStats', () => {
+      const state = {
+        activeQuests: [{ id: 'q1', label: 'Skill Quest', rewardType: 'skill_point', rewardData: {} }],
+        band: { members: [{ name: 'A', skill: 5 }] },
+        toasts: []
+      }
+      const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1', randomIdx: 0 })
+      assert.equal(nextState.band.members[0].baseStats.skill, 6)
+      assert.equal(nextState.toasts.length, 1)
+      assert.equal(nextState.toasts[0].messageKey, 'ui:toast.quest_complete_skill')
+    })
+
     await t.test('applies skill point reward', () => {
       const state = {
         activeQuests: [{ id: 'q1', label: 'Skill Quest', rewardType: 'skill_point', rewardData: { memberIndex: 1 } }],
@@ -131,6 +143,12 @@ test('QuestLifecycle', async (t) => {
   })
 
   await t.test('advanceQuest', async (t) => {
+    await t.test('returns original state if activeQuests is missing', () => {
+      const state = {}
+      const nextState = QuestLifecycle.advanceQuest(state, { questId: 'q1' })
+      assert.equal(nextState, state)
+    })
+
     await t.test('advances progress', () => {
       const state = { activeQuests: [{ id: 'q1', progress: 0, required: 5 }] }
       const nextState = QuestLifecycle.advanceQuest(state, { questId: 'q1', amount: 2 })
@@ -175,6 +193,15 @@ test('QuestLifecycle', async (t) => {
       assert.equal(nextState.band.harmony, 30)
       assert.equal(nextState.toasts.length, 1)
       assert.equal(nextState.toasts[0].messageKey, 'ui:toast.quest_failed')
+    })
+
+    await t.test('returns original state if no quests are expired', () => {
+      const state = {
+        player: { day: 5 },
+        activeQuests: [{ id: 'q1', deadline: 10 }]
+      }
+      const nextState = QuestLifecycle.checkDeadlines(state)
+      assert.equal(nextState, state)
     })
   })
 })
