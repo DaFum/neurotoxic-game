@@ -39,7 +39,7 @@ export const MainMenuNameInputPrompt = ({
       title={t('ui:identity_required')}
       onClose={onClose}
       className='max-w-md'
-      aria-label={t('ui:identity_required')}
+      ariaLabel={t('ui:identity_required')}
     >
       <div className='flex flex-col gap-4'>
         <label
@@ -55,12 +55,12 @@ export const MainMenuNameInputPrompt = ({
           value={playerNameInput}
           onChange={handleNameChange}
           placeholder={t('ui:enter_name_placeholder')}
-          className='bg-void-black border border-toxic-green p-2 text-toxic-green font-mono text-lg focus:outline-none focus:ring-1 focus:ring-toxic-green uppercase'
+          className='bg-void-black border border-toxic-green p-2 text-toxic-green font-mono text-base sm:text-lg focus:outline-none focus:ring-1 focus:ring-toxic-green uppercase min-w-0'
           maxLength={20}
           onKeyDown={handleKeyDown}
           aria-label={t('ui:enter_alias_desc')}
         />
-        <GlitchButton onClick={handleNameSubmit}>
+        <GlitchButton onClick={handleNameSubmit} className='w-full'>
           {t('ui:confirm_identity')}
         </GlitchButton>
       </div>

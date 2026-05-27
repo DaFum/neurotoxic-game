@@ -22,6 +22,39 @@ describe('Modal Component', () => {
     expect(getByText('Modal Content')).toBeInTheDocument()
   })
 
+  test('uses the rendered title as the accessible dialog name when ariaLabel is absent', () => {
+    const { getByRole } = render(
+      <Modal isOpen={true} onClose={() => {}} title='Fallback Title'>
+        <div>Modal Content</div>
+      </Modal>
+    )
+
+    const heading = getByRole('heading', { name: 'Fallback Title' })
+    const dialog = getByRole('dialog')
+
+    expect(heading.id).not.toBe('')
+    expect(dialog).not.toHaveAttribute('aria-label')
+    expect(dialog).toHaveAttribute('aria-labelledby', heading.id)
+  })
+
+  test('uses the explicit ariaLabel instead of the title fallback', () => {
+    const { getByRole } = render(
+      <Modal
+        isOpen={true}
+        onClose={() => {}}
+        title='Visible Title'
+        ariaLabel='Explicit Dialog Label'
+      >
+        <div>Modal Content</div>
+      </Modal>
+    )
+
+    const dialog = getByRole('dialog')
+
+    expect(dialog).toHaveAttribute('aria-label', 'Explicit Dialog Label')
+    expect(dialog).not.toHaveAttribute('aria-labelledby')
+  })
+
   test('constrains the dialog to the mobile viewport', () => {
     const { getByRole } = render(
       <Modal isOpen={true} onClose={() => {}}>
@@ -31,6 +64,24 @@ describe('Modal Component', () => {
 
     expect(getByRole('dialog')).toHaveClass('max-h-[calc(100svh-1rem)]')
     expect(getByRole('dialog')).not.toHaveClass('overflow-hidden')
+  })
+
+  test('keeps mobile gutters and close control inside the viewport', () => {
+    const { getByRole } = render(
+      <Modal isOpen={true} onClose={() => {}} title='Mobile Title'>
+        <div>Modal Content</div>
+      </Modal>
+    )
+
+    const dialog = getByRole('dialog')
+    const overlay = dialog.parentElement
+    const closeButton = getByRole('button', { name: /close/i })
+
+    expect(overlay).toHaveClass('p-3')
+    expect(dialog).toHaveClass('w-[min(calc(100vw-1.5rem),100%)]')
+    expect(dialog).toHaveClass('shadow-[4px_4px_0px_var(--color-toxic-green)]')
+    expect(closeButton.parentElement).toHaveClass('top-2')
+    expect(closeButton.parentElement).toHaveClass('right-2')
   })
 
   test('keeps clipping and scrolling on the inner content layer', () => {

@@ -45,9 +45,10 @@ test('SocialPhase renders correctly and calls onSelect', async () => {
 
   expect(screen.getByText('Post Insta')).toBeInTheDocument()
 
-  // Verify that SocialPhase correctly wires contentClassName='space-y-6' to the Panel mock
+  // Verify that SocialPhase wires mobile-first spacing to the Panel mock.
   const panelContent = screen.getByTestId('panel-content')
-  expect(panelContent).toHaveClass('space-y-6')
+  expect(panelContent).toHaveClass('space-y-4')
+  expect(panelContent).toHaveClass('sm:space-y-6')
 
   const button = screen.getByRole('button', {
     name: /Post Insta/i

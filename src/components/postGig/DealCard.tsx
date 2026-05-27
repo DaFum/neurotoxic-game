@@ -115,7 +115,7 @@ const isDeal = (value: unknown): value is DealCardProps['deal'] => {
 }
 
 const DealImage = memo(({ alignment, name }: DealImageProps) => (
-  <div className='shrink-0 w-24 h-24 border border-current opacity-80 overflow-hidden'>
+  <div className='shrink-0 w-20 h-20 sm:w-24 sm:h-24 border border-current opacity-80 overflow-hidden'>
     <img
       src={resolveGenImageUrl(getAlignmentMetadata(alignment).imagePrompt)}
       alt={name}
@@ -141,10 +141,10 @@ const DealInfo = memo(
     const flavor = displayDeal.flavor
 
     return (
-      <div className='flex-1'>
-        <div className='flex items-baseline gap-3 flex-wrap'>
+      <div className='flex-1 min-w-0'>
+        <div className='flex items-baseline gap-2 sm:gap-3 flex-wrap'>
           <div
-            className={`font-bold text-lg ${isRevoked ? 'text-blood-red line-through' : 'text-toxic-green'}`}
+            className={`font-bold text-base sm:text-lg break-words ${isRevoked ? 'text-blood-red line-through' : 'text-toxic-green'}`}
           >
             {displayDeal.name}
           </div>
@@ -176,7 +176,7 @@ const DealInfo = memo(
         </div>
 
         {flavor && (
-          <div className='text-[11px] font-mono text-electric-blue/80 mt-1'>
+          <div className='text-[11px] font-mono text-electric-blue/80 mt-1 break-words'>
             {t('economy:brandFlavor.campaignLabel', {
               defaultValue: 'Campaign'
             })}
@@ -203,12 +203,12 @@ const DealInfo = memo(
           </div>
         )}
 
-        <div className='text-xs text-ash-gray italic mb-2'>
+        <div className='text-xs text-ash-gray italic mb-2 break-words'>
           {displayDeal.description}
         </div>
 
         {flavor && (
-          <div className='text-[11px] mb-2 border-l-2 border-toxic-green/60 pl-2'>
+          <div className='text-[11px] mb-2 border-l-2 border-toxic-green/60 pl-2 break-words'>
             <div className='text-toxic-green/90 italic'>
               “{t(flavor.taglineKey, { defaultValue: flavor.taglineDefault })}”
             </div>
@@ -217,7 +217,7 @@ const DealInfo = memo(
             </div>
           </div>
         )}
-        <div className='text-xs font-mono grid grid-cols-2 gap-x-4 gap-y-1 text-star-white/80'>
+        <div className='text-xs font-mono grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-star-white/80 break-words'>
           <div>
             💰 {t('ui:deals.upfront', { defaultValue: 'Upfront' })}:{' '}
             {formatCurrency(displayDeal.offer.upfront, i18n?.language ?? 'en')}
@@ -294,12 +294,12 @@ const DealActions = memo(
     const negotiationStatus = getNegotiationStatus(negotiationState)
 
     return (
-      <div className='flex flex-col gap-2 ml-4 z-10 min-w-[140px]'>
+      <div className='flex flex-col gap-2 z-10 w-full sm:w-auto sm:min-w-[140px] sm:ml-4'>
         {!isRevoked ? (
           <>
             <ActionButton
               onClick={() => handleAcceptDeal(displayDeal)}
-              className='bg-toxic-green text-void-black font-bold uppercase hover:scale-105'
+              className='w-full min-h-11 bg-toxic-green text-void-black font-bold uppercase hover:scale-105'
             >
               {t('ui:deals.accept', { defaultValue: 'ACCEPT' })}
             </ActionButton>
@@ -307,7 +307,7 @@ const DealActions = memo(
               <button
                 type='button'
                 onClick={() => handleNegotiationStart(deal)}
-                className='px-4 py-1.5 border border-warning-yellow text-warning-yellow text-xs font-bold uppercase hover:bg-warning-yellow hover:text-void-black transition-colors'
+                className='w-full min-h-11 px-4 py-2 border border-warning-yellow text-warning-yellow text-xs font-bold uppercase hover:bg-warning-yellow hover:text-void-black transition-colors'
               >
                 {t('ui:deals.negotiate', { defaultValue: 'NEGOTIATE' })}
               </button>
@@ -354,16 +354,16 @@ export const DealCard = memo(
 
     return (
       <div
-        className={`border-2 border-toxic-green p-4 flex justify-between items-center group transition-colors relative overflow-hidden ${isRevoked ? 'bg-blood-red/20 border-blood-red grayscale opacity-50' : 'bg-void-black/80 hover:bg-toxic-green/10'}`}
+        className={`border-2 border-toxic-green p-3 sm:p-4 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 group transition-colors relative overflow-hidden ${isRevoked ? 'bg-blood-red/20 border-blood-red grayscale opacity-50' : 'bg-void-black/80 hover:bg-toxic-green/10'}`}
       >
         {/* Background Alignment Watermark */}
         <div
-          className={`absolute -right-4 -bottom-4 text-9xl opacity-5 font-black pointer-events-none select-none ${getAlignmentMetadata(displayDeal.alignment).colorClass}`}
+          className={`absolute -right-4 -bottom-4 text-8xl sm:text-9xl opacity-5 font-black pointer-events-none select-none ${getAlignmentMetadata(displayDeal.alignment).colorClass}`}
         >
           {displayDeal.alignment?.[0]}
         </div>
 
-        <div className='flex-1 z-10 flex gap-4 items-start'>
+        <div className='flex-1 min-w-0 z-10 flex gap-3 sm:gap-4 items-start'>
           <DealImage
             alignment={localizedDisplayDeal.alignment}
             name={localizedDisplayDeal.name}

@@ -9,6 +9,17 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const LOCALES_ROOT = path.join(__dirname, '..', '..', 'public', 'locales')
+const MERCH_SALE_KEYS = [
+  'patches',
+  'shirts',
+  'hoodies',
+  'vinyl',
+  'cds',
+  'neuro_cutting_board',
+  'neuro_lunchbox',
+  'neuro_mug',
+  'neuro_bowl'
+]
 
 const hasKeyOrPrefix = (obj, prefix) => {
   if (!obj || typeof obj !== 'object') return false
@@ -104,6 +115,34 @@ test('Full locale validation tests', async t => {
             }
           }
         })
+      }
+    }
+  )
+
+  await t.test(
+    'economy merch item labels exist for dynamic post-gig breakdowns',
+    async () => {
+      for (const locale of LOCALES) {
+        const localeData = allData.get(`${locale}/economy`)
+        if (!localeData) continue
+        const entryMap = new Map(
+          localeData.entries.map(entry => [entry.key, entry.value])
+        )
+
+        for (const key of MERCH_SALE_KEYS) {
+          const labelKey = `gigIncome.merchSales.${key}.label`
+          const value = entryMap.get(labelKey)
+          assert.equal(
+            typeof value,
+            'string',
+            `${locale}/economy.json missing ${labelKey}`
+          )
+          assert.notEqual(
+            value.trim(),
+            '',
+            `${locale}/economy.json ${labelKey} must be non-empty`
+          )
+        }
       }
     }
   )

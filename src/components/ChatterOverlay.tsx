@@ -255,8 +255,8 @@ ChatterMessage.displayName = 'ChatterMessage'
  * - OVERWORLD: bottom-left near the bus / event log area
  * - All other scenes: bottom-center of the window
  *
- * Desktop uses --z-chatter so chatter stays above scene chrome.
- * Mobile lowers chatter below touch menus and dialogs so it cannot cover controls.
+ * Desktop uses --z-chatter above opaque scene roots and below modal chrome.
+ * Mobile lowers chatter further below touch menus and dialogs.
  *
  * Visual style adapts per scene — different border colors, accent bars, and icons.
  *

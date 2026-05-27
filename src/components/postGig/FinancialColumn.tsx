@@ -32,18 +32,18 @@ export const FinancialColumn = React.memo(
         transition={{ delay }}
       >
         <h3
-          className={`text-lg border-b-2 ${borderClass} mb-4 pb-2 tracking-widest font-mono ${colorClass}`}
+          className={`text-base sm:text-lg border-b-2 ${borderClass} mb-3 sm:mb-4 pb-2 tracking-widest font-mono break-words ${colorClass}`}
         >
           {t(titleKey)}
         </h3>
         <FinancialList items={items} type={type} />
         <div
-          className={`mt-4 pt-2 border-t ${borderLightClass} flex justify-between font-bold ${colorClass}`}
+          className={`mt-4 pt-2 border-t ${borderLightClass} flex items-start justify-between gap-3 font-bold ${colorClass}`}
         >
-          <span className='text-sm tracking-wider'>
+          <span className='min-w-0 text-sm tracking-wider break-words'>
             {t('economy:postGig.total')}
           </span>
-          <span className='tabular-nums'>
+          <span className='shrink-0 text-right tabular-nums'>
             {formatSignedFinancialAmount(total, type, i18n?.language)}
           </span>
         </div>

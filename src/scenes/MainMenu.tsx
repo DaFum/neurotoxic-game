@@ -43,7 +43,7 @@ export const MainMenu = () => {
   } = useMainMenu()
 
   return (
-    <div className='flex flex-col items-center justify-center h-full w-full bg-void-black z-50 relative overflow-hidden'>
+    <div className='flex flex-col items-center justify-center h-full w-full bg-void-black z-50 relative overflow-y-auto overflow-x-hidden px-4 py-8'>
       {showExistingSavePrompt && (
         <MainMenuExistingSavePrompt
           onLoad={handleLoadExistingFromPrompt}
@@ -83,13 +83,13 @@ export const MainMenu = () => {
 
       {showHQ && <BandHQ onClose={closeHQ} />}
 
-      <div className='relative z-10 flex flex-col items-center'>
+      <div className='relative z-10 flex w-full max-w-md flex-col items-center'>
         <motion.h1
           initial={{ scale: 0.8, opacity: 0, y: -20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
           data-text='NEUROTOXIC'
-          className="title-ghost text-6xl md:text-9xl text-center text-transparent bg-clip-text bg-gradient-to-b from-toxic-green to-toxic-green-dark font-['Metal_Mania'] animate-neon-flicker mb-2"
+          className="title-ghost text-5xl sm:text-6xl md:text-9xl text-center text-transparent bg-clip-text bg-gradient-to-b from-toxic-green to-toxic-green-dark font-['Metal_Mania'] animate-neon-flicker mb-2 break-words"
           style={{
             WebkitTextStroke: '2px var(--color-toxic-green)',
             filter: 'drop-shadow(0 0 18px var(--color-toxic-green-glow))'
@@ -118,7 +118,7 @@ export const MainMenu = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1 }}
-          className='mb-10 px-3 py-1 border border-toxic-green/30 text-[10px] font-mono text-toxic-green/60 tracking-widest'
+          className='mb-8 sm:mb-10 px-3 py-1 border border-toxic-green/30 text-[10px] font-mono text-toxic-green/60 tracking-widest'
         >
           v3.0 // EARLY ACCESS
         </motion.div>
@@ -128,12 +128,12 @@ export const MainMenu = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.8 }}
-          className='flex flex-col gap-3'
+          className='flex w-full max-w-xs flex-col gap-3'
         >
           <GlitchButton
             onClick={handleStartTour}
             isLoading={isStarting}
-            className='relative z-20'
+            className='relative z-20 w-full'
           >
             {t('ui:start_game')}
           </GlitchButton>
@@ -141,14 +141,14 @@ export const MainMenu = () => {
           <GlitchButton
             onClick={handleLoad}
             isLoading={isLoadingGame}
-            className='relative z-20 border-blood-red text-blood-red hover:bg-blood-red hover:shadow-[4px_4px_0px_var(--color-toxic-green)]'
+            className='relative z-20 w-full border-blood-red text-blood-red hover:bg-blood-red hover:shadow-[4px_4px_0px_var(--color-toxic-green)]'
           >
             {t('ui:load_game')}
           </GlitchButton>
 
           <GlitchButton
             onClick={openHQ}
-            className='relative z-20 border-warning-yellow text-warning-yellow hover:bg-warning-yellow hover:shadow-[4px_4px_0px_var(--color-toxic-green)]'
+            className='relative z-20 w-full border-warning-yellow text-warning-yellow hover:bg-warning-yellow hover:shadow-[4px_4px_0px_var(--color-toxic-green)]'
           >
             {t('ui:band_hq')}
           </GlitchButton>
@@ -158,17 +158,23 @@ export const MainMenu = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.2 }}
-          className='flex flex-col gap-4 mt-6 items-center'
+          className='flex w-full max-w-xs flex-col gap-4 mt-6 items-center'
         >
-          <div className='flex flex-wrap justify-center gap-4'>
-            <GlitchButton onClick={() => setShowSocials(true)}>
+          <div className='flex w-full flex-wrap justify-center gap-3 sm:gap-4'>
+            <GlitchButton
+              onClick={() => setShowSocials(true)}
+              className='flex-1'
+            >
               {t('ui:socials')}
             </GlitchButton>
-            <GlitchButton onClick={handleCredits}>
+            <GlitchButton onClick={handleCredits} className='flex-1'>
               {t('ui:credits')}
             </GlitchButton>
           </div>
-          <GlitchButton onClick={() => setShowFeatures(true)}>
+          <GlitchButton
+            onClick={() => setShowFeatures(true)}
+            className='w-full'
+          >
             {t('ui:features.button')}
           </GlitchButton>
         </motion.div>
@@ -184,10 +190,10 @@ export const MainMenu = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.5 }}
-        className='absolute bottom-6 flex flex-col items-center gap-1 z-10'
+        className='absolute bottom-4 sm:bottom-6 flex w-full flex-col items-center gap-1 z-10 px-4'
       >
         <div className='w-32 h-[1px] bg-gradient-to-r from-transparent via-ash-gray/50 to-transparent' />
-        <div className='text-ash-gray/60 text-[10px] font-mono tracking-widest'>
+        <div className='text-center text-ash-gray/60 text-[10px] font-mono tracking-widest'>
           © 2026 NEUROTOXIC // DEATH GRINDCORE FROM STENDAL
         </div>
       </motion.div>

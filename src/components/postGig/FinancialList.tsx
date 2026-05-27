@@ -17,11 +17,13 @@ export const FinancialList = ({ items, type }: FinancialListProps) => {
             initial={{ opacity: 0, x: type === 'income' ? -10 : 10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3 + i * 0.1 }}
-            className='flex justify-between items-center'
+            className='flex items-start justify-between gap-3'
           >
-            <span className='text-star-white/70'>{t(item.labelKey)}</span>
+            <span className='min-w-0 text-star-white/70 break-words'>
+              {t(item.labelKey)}
+            </span>
             <span
-              className={`${getFinancialColors(type).text} font-bold tabular-nums`}
+              className={`${getFinancialColors(type).text} shrink-0 text-right font-bold tabular-nums`}
             >
               {formatSignedFinancialAmount(item.value, type, i18n?.language)}
             </span>

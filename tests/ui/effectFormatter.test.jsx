@@ -104,6 +104,31 @@ test('generateEffectText skips exact zero values to prevent redundant logs', () 
   expect(result).toBe('')
 })
 
+test('generateEffectText translates namespaced quest labels in addQuest effect text', () => {
+  const mockT = vi.fn((key, options) => {
+    if (key === 'events:quest_sponsor_demand.label') {
+      return 'Bizarre Forderung des Sponsors'
+    }
+    return options?.defaultValue ?? key
+  })
+  const delta = {
+    flags: {
+      addQuest: {
+        id: 'quest_sponsor_demand',
+        label: 'events:quest_sponsor_demand.label'
+      }
+    }
+  }
+
+  const result = generateEffectText(delta, mockT)
+
+  expect(result).toBe('Effects: New Quest: Bizarre Forderung des Sponsors')
+  expect(mockT).toHaveBeenCalledWith(
+    'events:quest_sponsor_demand.label',
+    expect.objectContaining({ defaultValue: 'quest_sponsor_demand' })
+  )
+})
+
 test('generateEffectText handles empty or null deltas safely', () => {
   const mockT = vi.fn(key => key)
 

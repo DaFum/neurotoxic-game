@@ -63,6 +63,17 @@ test('DealsPhase renders no deals message if empty', () => {
   expect(handleSkip).toHaveBeenCalledTimes(1)
 })
 
+test('DealsPhase keeps the reject action touch-sized on mobile', () => {
+  render(<DealsPhase offers={[]} onSkip={vi.fn()} onAccept={vi.fn()} />)
+
+  const rejectButton = screen.getByRole('button', {
+    name: /Reject All Offers & Continue/i
+  })
+  expect(rejectButton).toHaveClass('min-h-11')
+  expect(rejectButton).toHaveClass('w-full')
+  expect(rejectButton).toHaveClass('sm:w-auto')
+})
+
 test('DealsPhase renders offers and handles negotiation', async () => {
   const handleAccept = vi.fn()
   const mockOffers = [

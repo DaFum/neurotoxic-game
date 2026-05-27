@@ -85,6 +85,19 @@ describe('GlitchButton', () => {
     expect(button.className).toContain('touch-manipulation')
   })
 
+  it('allows long labels to wrap inside narrow mobile layouts', () => {
+    const { container } = render(
+      <GlitchButton onClick={() => {}}>
+        Extremely Long Button Label
+      </GlitchButton>
+    )
+    const button = container.querySelector('button')
+
+    expect(button.className).toContain('max-w-full')
+    expect(button.className).toContain('whitespace-normal')
+    expect(button.className).toContain('[overflow-wrap:anywhere]')
+  })
+
   it('applies owned variant style correctly', () => {
     const { container } = render(
       <GlitchButton onClick={() => {}} variant='owned' disabled>

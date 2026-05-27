@@ -53,6 +53,30 @@ export const generateEffectText = (
     }
   }
 
+  const translateMaybeKey = (value: string, fallback: string) =>
+    t(value, { defaultValue: fallback })
+
+  const getQuestLabel = (quest: unknown) => {
+    if (!quest || typeof quest !== 'object') {
+      const raw = String(quest)
+      return translateMaybeKey(raw, raw)
+    }
+
+    const record = quest as UnknownRecord
+    const rawTitle = typeof record.title === 'string' ? record.title : ''
+    const rawLabel = typeof record.label === 'string' ? record.label : ''
+    const id = typeof record.id === 'string' ? record.id : 'ui:quest.unknown'
+    const labelSource = rawTitle || rawLabel || id
+    const fallback =
+      rawTitle && !rawTitle.includes(':')
+        ? rawTitle
+        : rawLabel && !rawLabel.includes(':')
+          ? rawLabel
+          : id
+
+    return translateMaybeKey(labelSource, fallback)
+  }
+
   // Player
   if (delta.player) {
     addCurrencyLine(delta.player.money, 'ui:stats.money', 'Money')
@@ -143,13 +167,7 @@ export const generateEffectText = (
         ? delta.flags.addQuest
         : [delta.flags.addQuest]
       quests.forEach((q: unknown) => {
-        const questLabel =
-          typeof q === 'object' && q !== null
-            ? ((q as UnknownRecord).title ??
-              t(String((q as UnknownRecord).id ?? 'ui:quest.unknown'), {
-                defaultValue: String((q as UnknownRecord).label ?? '')
-              }))
-            : t(String(q), { defaultValue: String(q) })
+        const questLabel = getQuestLabel(q)
         lines.push(
           `${t('ui:event.new_quest', { defaultValue: 'New Quest' })}: ${questLabel}`
         )

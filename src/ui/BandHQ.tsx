@@ -46,7 +46,7 @@ const HQTabButton = ({ tab, isActive, label, onClick }: HQTabButtonProps) => (
     id={`tab-${tab.id}`}
     onClick={onClick}
     disabled={tab.isLocked}
-    className={`flex-1 w-full min-w-[120px] py-3 px-4 text-center text-sm font-bold tracking-[0.1em] uppercase transition-all duration-150 font-mono flex justify-center items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset
+    className={`flex-1 w-full min-w-[6.5rem] sm:min-w-[120px] py-2 sm:py-3 px-3 sm:px-4 text-center text-xs sm:text-sm font-bold tracking-[0.1em] uppercase transition-all duration-150 font-mono flex justify-center items-center gap-2 whitespace-normal break-words [overflow-wrap:anywhere] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset
       ${tab.isLocked ? 'opacity-50 grayscale' : ''}
       ${
         isActive
@@ -133,7 +133,7 @@ export const BandHQ = ({ onClose, className = '' }: BandHQProps) => {
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${className}`}
+      className={`fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 ${className}`}
     >
       {/* Backdrop */}
       <div
@@ -150,14 +150,22 @@ export const BandHQ = ({ onClose, className = '' }: BandHQProps) => {
         }}
       />
 
-      <div className='relative z-50 w-full max-w-5xl h-[90vh] border-4 border-toxic-green bg-void-black flex flex-col shadow-[8px_8px_0px_var(--color-toxic-green)]'>
+      <div
+        className='relative z-50 w-full max-w-5xl h-[calc(100svh-1rem)] max-h-[calc(100svh-1rem)] sm:h-[90vh] border-4 border-toxic-green bg-void-black flex flex-col overflow-hidden shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)]'
+        role='dialog'
+        aria-modal='true'
+        aria-labelledby='band-hq-title'
+      >
         {/* Header */}
-        <div className='flex justify-between items-center p-6 border-b-4 border-toxic-green bg-void-black'>
-          <div>
-            <h2 className="text-4xl text-toxic-green font-['Metal_Mania'] drop-shadow-[0_0_5px_var(--color-toxic-green)]">
+        <div className='flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 p-3 sm:p-6 border-b-4 border-toxic-green bg-void-black'>
+          <div className='min-w-0'>
+            <h2
+              id='band-hq-title'
+              className="text-3xl sm:text-4xl text-toxic-green font-['Metal_Mania'] drop-shadow-[0_0_5px_var(--color-toxic-green)]"
+            >
               {t('ui:hq.title', { defaultValue: 'BAND HQ' })}
             </h2>
-            <p className='text-ash-gray text-sm font-mono uppercase tracking-widest'>
+            <p className='text-ash-gray text-xs sm:text-sm font-mono uppercase tracking-widest break-words'>
               {t('venues:stendal_proberaum.name')} |{' '}
               {t('ui:ui.day', { defaultValue: 'Day' })} {player.day}
             </p>
@@ -165,7 +173,7 @@ export const BandHQ = ({ onClose, className = '' }: BandHQProps) => {
           <button
             type='button'
             onClick={onClose}
-            className='px-6 py-2 border-2 border-blood-red text-blood-red font-bold hover:bg-blood-red hover:text-void-black transition-colors duration-200 uppercase font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blood-red focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
+            className='w-full sm:w-auto px-4 sm:px-6 py-3 sm:py-2 border-2 border-blood-red text-blood-red font-bold hover:bg-blood-red hover:text-void-black transition-colors duration-200 uppercase font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blood-red focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
           >
             {t('ui:hq.leave', { defaultValue: 'LEAVE [ESC]' })}
           </button>
@@ -177,7 +185,7 @@ export const BandHQ = ({ onClose, className = '' }: BandHQProps) => {
           aria-label={t('ui:hq.sectionsLabel', {
             defaultValue: 'Band HQ Sections'
           })}
-          className='flex border-b-4 border-toxic-green overflow-x-auto touch-pan-x'
+          className='flex shrink-0 border-b-4 border-toxic-green overflow-x-auto touch-pan-x scrollbar-hidden'
         >
           {/* Tabs */}
           {[
@@ -233,7 +241,7 @@ export const BandHQ = ({ onClose, className = '' }: BandHQProps) => {
           id={`panel-${currentTab}`}
           aria-labelledby={`tab-${currentTab}`}
           tabIndex={0}
-          className='flex-1 min-h-0 overflow-y-auto p-6 custom-scrollbar focus-visible:outline-none touch-pan-y'
+          className='flex-1 min-h-0 overflow-y-auto p-3 sm:p-6 custom-scrollbar focus-visible:outline-none touch-pan-y'
         >
           <Suspense
             fallback={
