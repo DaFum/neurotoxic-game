@@ -1121,6 +1121,10 @@ import { ModulePickerModal } from './ModulePickerModal'
 import { RepairConfirmModal } from './RepairConfirmModal'
 import { SellConfirmModal } from './SellConfirmModal'
 import { AssetSectionDeck } from './AssetSectionDeck'
+import { ASSET_SECTION_TABS } from './sectionTabs'
+
+const getSectionShortLabel = (kind: AssetKind) =>
+  ASSET_SECTION_TABS.find(t => t.key === kind)?.shortLabel ?? 'tourbus'
 
 interface AssetSectionPanelProps {
   kind: AssetKind
@@ -1161,9 +1165,7 @@ export const AssetSectionPanel = ({
             {t(`assets:kind.${kind}`)}
           </h2>
           <p className='assets-hub-control mt-1 text-sm opacity-70'>
-            {t(
-              `assets:section.${kind === 'tourbus_chassis' ? 'tourbus' : kind === 'studio_chassis' ? 'studio' : kind === 'bandhaus_chassis' ? 'bandhaus' : 'workshop'}.description`
-            )}
+            {t(`assets:section.${getSectionShortLabel(kind)}.description`)}
           </p>
           <button
             type='button'

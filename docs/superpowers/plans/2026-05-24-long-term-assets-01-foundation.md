@@ -349,7 +349,7 @@ export const createRngStream = (seed: number, length: number): number[] => {
 }
 
 export const nextSeed = (seed: number): number =>
-  (mulberry32(seed)() * 2 ** 32) | 0
+  (mulberry32(seed)() * 2 ** 32) >>> 0
 ```
 
 - [ ] **Step 3: Test grün. Commit** — `feat(assets): add seeded RNG helpers`
@@ -877,8 +877,8 @@ export const sanitizeCrowdfundCampaigns = (
     out.push({
       id: clean.id,
       assetSpec: {
-        kind: spec.kind as any,
-        flavor: spec.flavor as any,
+        kind: spec.kind as unknown as AssetKind,
+        flavor: spec.flavor as unknown as AssetFlavor,
         chassisTier: spec.chassisTier as 1 | 2 | 3
       },
       targetAmount: finiteNumberOr(clean.targetAmount, 0),
@@ -1364,12 +1364,14 @@ export const getAssetAggregateBoni = (asset: LongTermAsset): AssetBoni => {
       if (typeof v === 'number') {
         const current = agg[key] as number | undefined
         if (key.endsWith('Multiplier') || key === 'diyRiskMultiplier') {
-          ;(agg as any)[key] = (current ?? 1.0) * v
+          ;(agg as unknown as Record<string, number>)[key] =
+            (current ?? 1.0) * v
         } else {
-          ;(agg as any)[key] = (current ?? 0) + v
+          ;(agg as unknown as Record<string, number>)[key] = (current ?? 0) + v
         }
       } else if (typeof v === 'boolean') {
-        ;(agg as any)[key] = (agg as any)[key] || v
+        ;(agg as unknown as Record<string, boolean>)[key] =
+          (agg as unknown as Record<string, boolean>)[key] || v
       }
     }
   }
@@ -1394,12 +1396,14 @@ export const getActiveAssetModifiers = (
   for (const a of assets) {
     if (a.condition < 20) continue
     const b = getAssetAggregateBoni(a)
-    if (b.fuelMultiplier) m.fuelMultiplier *= b.fuelMultiplier
-    if (b.merchCostMultiplier) m.merchCostMultiplier *= b.merchCostMultiplier
-    if (b.songCostMultiplier) m.songCostMultiplier *= b.songCostMultiplier
-    if (b.trainingCostMultiplier)
+    if (b.fuelMultiplier !== undefined) m.fuelMultiplier *= b.fuelMultiplier
+    if (b.merchCostMultiplier !== undefined)
+      m.merchCostMultiplier *= b.merchCostMultiplier
+    if (b.songCostMultiplier !== undefined)
+      m.songCostMultiplier *= b.songCostMultiplier
+    if (b.trainingCostMultiplier !== undefined)
       m.trainingCostMultiplier *= b.trainingCostMultiplier
-    if (b.baseRiskChanceMultiplier)
+    if (b.baseRiskChanceMultiplier !== undefined)
       m.baseRiskChanceMultiplier *= b.baseRiskChanceMultiplier
     m.staminaRegenBonusPerDay += b.staminaRegenBonusPerDay ?? 0
     m.travelStaminaRegen += b.travelStaminaRegen ?? 0
