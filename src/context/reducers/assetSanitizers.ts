@@ -1,4 +1,4 @@
-import { finiteNumberOr, isPlainObject } from '../../utils/gameStateUtils'
+import { finiteNumberOr, isLooseRecord } from '../../utils/gameStateUtils'
 import { MODULE_REGISTRY } from '../../utils/assetModuleRegistry'
 import { CHASSIS_CONFIG } from '../../utils/assetConfig'
 import type {
@@ -91,10 +91,10 @@ const clampCondition = (value: number): number => {
 }
 
 const sanitizePosition = (raw: unknown): { x: number; y: number } => {
-  if (!isPlainObject(raw)) return { x: 0, y: 0 }
+  if (!isLooseRecord(raw)) return { x: 0, y: 0 }
   return {
-    x: finiteNumberOr(raw.x, 0),
-    y: finiteNumberOr(raw.y, 0)
+    x: Object.hasOwn(raw, 'x') ? finiteNumberOr(raw.x, 0) : 0,
+    y: Object.hasOwn(raw, 'y') ? finiteNumberOr(raw.y, 0) : 0
   }
 }
 
@@ -102,7 +102,7 @@ const sanitizeSlot = (
   raw: unknown,
   seenModuleIds: Set<string>
 ): AssetSlot | null => {
-  if (!isPlainObject(raw)) return null
+  if (!isLooseRecord(raw)) return null
   const clean = stripHostileKeys(raw)
   if (typeof clean.id !== 'string' || clean.id.length === 0) return null
   if (!isValidSlotType(clean.slotType)) return null
@@ -178,7 +178,7 @@ export const sanitizeAssets = (raw: unknown): LongTermAsset[] => {
   const out: LongTermAsset[] = []
   const seenIds = new Set<string>()
   for (const item of raw) {
-    if (!isPlainObject(item)) continue
+    if (!isLooseRecord(item)) continue
     const clean = stripHostileKeys(item)
     if (typeof clean.id !== 'string' || seenIds.has(clean.id)) continue
     if (!VALID_KINDS.has(clean.kind as string)) continue
@@ -229,7 +229,7 @@ export const sanitizeLiabilities = (
   const out: Liability[] = []
   const seenIds = new Set<string>()
   for (const item of raw) {
-    if (!isPlainObject(item)) continue
+    if (!isLooseRecord(item)) continue
     const clean = stripHostileKeys(item)
     if (typeof clean.id !== 'string' || seenIds.has(clean.id)) continue
     if (!VALID_SOURCES.has(clean.source as string)) continue
@@ -265,10 +265,10 @@ export const sanitizeCrowdfundCampaigns = (
   const out: CrowdfundCampaign[] = []
   const seenIds = new Set<string>()
   for (const item of raw) {
-    if (!isPlainObject(item)) continue
+    if (!isLooseRecord(item)) continue
     const clean = stripHostileKeys(item)
     if (typeof clean.id !== 'string' || seenIds.has(clean.id)) continue
-    if (!isPlainObject(clean.assetSpec)) continue
+    if (!isLooseRecord(clean.assetSpec)) continue
     const spec = stripHostileKeys(clean.assetSpec)
     if (!VALID_KINDS.has(spec.kind as string)) continue
     if (!VALID_FLAVORS.has(spec.flavor as string)) continue

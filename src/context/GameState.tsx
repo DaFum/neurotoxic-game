@@ -10,7 +10,7 @@ import {
 import { useTranslation } from 'react-i18next'
 import { logger, isValidLogLevel } from '../utils/logger'
 import { getUnlocks } from '../utils/unlockManager'
-import { isPlainObject, safeJsonParse } from '../utils/gameStateUtils'
+import { isLooseRecord, safeJsonParse } from '../utils/gameStateUtils'
 import { useLeaderboardSync } from '../hooks/useLeaderboardSync'
 import { safeStorage, safeStorageNoFallback } from '../utils/storage'
 
@@ -112,7 +112,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
             const saved = localStorage.getItem(SAVE_KEY)
             if (!saved) return null
             const parsed: unknown = safeJsonParse(saved)
-            return isPlainObject(parsed) ? parsed : null
+            return isLooseRecord(parsed) ? parsed : null
           } catch (err) {
             logger.error('GameState', 'Failed to parse injected state', err)
             return null

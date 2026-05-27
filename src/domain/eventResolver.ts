@@ -1,5 +1,5 @@
 import { resolveEventChoice } from '../utils/eventEngine'
-import { isPlainObject } from '../utils/gameStateUtils'
+import { isLooseRecord } from '../utils/gameStateUtils'
 import { logger } from '../utils/logger'
 import { gameReducer } from '../context/gameReducer'
 import { GAME_PHASES } from '../context/gameConstants'
@@ -45,7 +45,8 @@ type EventResolution = {
 }
 
 const isQuestStateLike = (value: unknown): value is QuestState =>
-  isPlainObject(value) &&
+  isLooseRecord(value) &&
+  Object.hasOwn(value, 'id') &&
   typeof (value as Record<string, unknown>).id === 'string'
 
 function buildQuestActions(quests: unknown, currentDay: number): GameAction[] {
@@ -135,16 +136,16 @@ export function resolveEvent(
   if (flags.addStoryFlag) {
     if (
       flags.addStoryFlag === 'addQuest' &&
-      isPlainObject(result) &&
+      isLooseRecord(result) &&
       Object.hasOwn(result as object, 'value')
     ) {
-      flags.addQuest = (result as Record<string, unknown>).value
+      flags.addQuest = result.value
     } else if (
       flags.addStoryFlag === 'unlock' &&
-      isPlainObject(result) &&
+      isLooseRecord(result) &&
       Object.hasOwn(result as object, 'value')
     ) {
-      flags.unlock = (result as Record<string, unknown>).value
+      flags.unlock = result.value
     } else if (flags.addStoryFlag === 'gameOver') {
       flags.gameOver = true
     }
@@ -153,7 +154,7 @@ export function resolveEvent(
   const actions: GameAction[] = []
   const sideEffects: SideEffect[] = []
 
-  const activeEventContext = isPlainObject(state.activeEvent?.context)
+  const activeEventContext = isLooseRecord(state.activeEvent?.context)
     ? (state.activeEvent.context as Record<string, unknown>)
     : {}
 

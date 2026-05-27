@@ -7,7 +7,7 @@ import {
   clampPlayerMoney,
   calculateFameLevel,
   clampControversyLevel,
-  isPlainObject
+  isLooseRecord
 } from '../utils/gameStateUtils'
 import { QUEST_PROVE_YOURSELF } from '../data/questsConstants'
 import { hasActiveQuest } from '../utils/questUtils'
@@ -231,8 +231,8 @@ export const QuestLifecycle = {
     for (let i = 0; i < nextState.activeQuests.length; i++) {
       const quest = nextState.activeQuests[i]
       if (!quest) continue
-      const penalty = isPlainObject(quest.failurePenalty)
-        ? (quest.failurePenalty as Record<string, unknown>)
+      const penalty = isLooseRecord(quest.failurePenalty)
+        ? Object.assign(Object.create(null), quest.failurePenalty)
         : undefined
 
       if (
@@ -241,10 +241,15 @@ export const QuestLifecycle = {
       ) {
         hasExpired = true
         if (penalty) {
-          const socialPenalty = isPlainObject(penalty.social)
-            ? (penalty.social as Record<string, unknown>)
-            : undefined
-          if (socialPenalty?.controversyLevel != null) {
+          const socialPenalty =
+            Object.hasOwn(penalty, 'social') && isLooseRecord(penalty.social)
+              ? Object.assign(Object.create(null), penalty.social)
+              : undefined
+          if (
+            socialPenalty &&
+            Object.hasOwn(socialPenalty, 'controversyLevel') &&
+            socialPenalty.controversyLevel != null
+          ) {
             // Deep clone before mutating
             nextState.social = { ...nextState.social }
             const controversyDelta = Number(socialPenalty.controversyLevel)
@@ -255,10 +260,15 @@ export const QuestLifecycle = {
               (nextState.social.controversyLevel ?? 0) + validPenalty
             )
           }
-          const bandPenalty = isPlainObject(penalty.band)
-            ? (penalty.band as Record<string, unknown>)
-            : undefined
-          if (bandPenalty?.harmony != null) {
+          const bandPenalty =
+            Object.hasOwn(penalty, 'band') && isLooseRecord(penalty.band)
+              ? Object.assign(Object.create(null), penalty.band)
+              : undefined
+          if (
+            bandPenalty &&
+            Object.hasOwn(bandPenalty, 'harmony') &&
+            bandPenalty.harmony != null
+          ) {
             // Deep clone before mutating
             nextState.band = { ...nextState.band }
             const harmonyDelta = Number(bandPenalty.harmony)

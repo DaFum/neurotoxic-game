@@ -6459,15 +6459,6 @@
         "type": "const"
       }
     ],
-    "isPlainObject": [
-      {
-        "isDefault": false,
-        "name": "isPlainObject",
-        "path": "src/utils/gameStateUtils.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
     "isPlainRecord": [
       {
         "exportPath": "src/utils/gameStateUtils.ts",
