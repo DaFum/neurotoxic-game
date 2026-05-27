@@ -166,7 +166,7 @@ test('QuestLifecycle', async (t) => {
     await t.test('applies fame reward with missing player object handling', () => {
       const state = {
         activeQuests: [{ id: 'q1', rewardType: 'fame', rewardData: { fame: 50 } }],
-        player: {}
+        player: undefined
       }
       const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
       assert.equal(nextState.player.fame, 50)

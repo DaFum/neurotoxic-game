@@ -76,7 +76,7 @@ export const QuestLifecycle = {
       })
     } else if (quest.rewardType === 'fame' && quest.rewardData?.fame) {
       const rawFameReward = Number(quest.rewardData.fame) || 0
-      const previousFame = nextState.player.fame ?? 0
+      const previousFame = nextState.player?.fame ?? 0
       const newFame = clampPlayerFame(previousFame + rawFameReward)
       const appliedDelta = newFame - previousFame
       nextState.player = {
