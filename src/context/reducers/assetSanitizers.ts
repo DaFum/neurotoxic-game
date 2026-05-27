@@ -158,19 +158,40 @@ const sanitizeSlots = (raw: unknown): AssetSlot[] => {
   if (!Array.isArray(raw)) return []
   const out: AssetSlot[] = []
   const seenModuleIds = new Set<string>()
+  const installedModuleIds = new Set<string>()
+  let hasDynamicSlots = false
+
   for (const entry of raw) {
     const slot = sanitizeSlot(entry, seenModuleIds)
-    if (slot !== null) out.push(slot)
+    if (slot !== null) {
+      out.push(slot)
+      if (slot.installedModuleId !== null) {
+        installedModuleIds.add(slot.installedModuleId)
+      }
+      if (slot.addedByModuleId !== undefined) {
+        hasDynamicSlots = true
+      }
+    }
   }
+
+  if (!hasDynamicSlots) {
+    return out
+  }
+
   // Drop child-slots whose parent module is no longer installed on this asset.
-  const installedModuleIds = new Set(
-    out.map(s => s.installedModuleId).filter((id): id is string => id !== null)
-  )
-  return out.filter(
-    s =>
+  // ⚡ BOLT OPTIMIZATION: Replaced chained .map().filter() with a single-pass loop.
+  // Why: Eliminates intermediate array allocations and a second O(N) pass.
+  // Impact: Reduces garbage collection overhead during asset sanitization.
+  const finalOut: AssetSlot[] = []
+  for (const s of out) {
+    if (
       s.addedByModuleId === undefined ||
       installedModuleIds.has(s.addedByModuleId)
-  )
+    ) {
+      finalOut.push(s)
+    }
+  }
+  return finalOut
 }
 
 export const sanitizeAssets = (raw: unknown): LongTermAsset[] => {

@@ -145,3 +145,7 @@
 ## 2026-05-25 - Prevent Set reallocation overhead in CableList
 **Learning:** Recreating objects like Sets inside a functional component body based on props forces the Set to re-allocate and garbage collect on every React render. Object.values(obj).filter() chained with Set creation compound this overhead because it creates multiple intermediate arrays along the way.
 **Action:** When a set or collection is derived from props, wrap it in useMemo to prevent reallocation overhead when unrelated props trigger re-renders. Use a for...in loop inside the useMemo to avoid intermediate array allocations.
+
+## 2026-05-26 - Array Mapping and Filtering in Sanitizers
+**Learning:** Chaining .map().filter() creates multiple intermediate array allocations that add up to significant GC pressure on hot paths like sanitizers.
+**Action:** Replace array iteration method chains with procedural for loops to directly construct the filtered/mapped lists in a single pass.
