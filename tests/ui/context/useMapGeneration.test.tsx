@@ -3,6 +3,9 @@ import { renderHook, act } from '@testing-library/react'
 import { useMapGeneration } from '../../../src/context/useMapGeneration'
 import { MapGenerator } from '../../../src/utils/mapGenerator'
 import { GAME_PHASES } from '../../../src/context/gameConstants'
+import type { GameMap } from '../../../src/types'
+import type { TFunction } from 'i18next'
+import type { MutableRefObject } from 'react'
 import { setupJSDOM } from '../../testUtils'
 import { handleError } from '../../../src/utils/errorHandler'
 
@@ -21,8 +24,8 @@ vi.mock('../../../src/utils/errorHandler', () => {
   return {
     handleError: vi.fn(),
     StateError: class StateError extends Error {
-      details: any
-      constructor(message: string, details: any) {
+      details: Record<string, unknown>
+      constructor(message: string, details: Record<string, unknown>) {
         super(message)
         this.details = details
       }
@@ -32,9 +35,13 @@ vi.mock('../../../src/utils/errorHandler', () => {
 
 describe('useMapGeneration', () => {
   const mockDispatch = vi.fn()
-  const mockTRef = {
-    current: vi.fn().mockImplementation((key, options) => options?.defaultValue || key)
-  }
+  const mockTRef: MutableRefObject<TFunction> = {
+    current: vi
+      .fn()
+      .mockImplementation(
+        (key, options) => options?.defaultValue || key
+      ) as unknown as TFunction
+  } as MutableRefObject<TFunction>
 
   beforeEach(() => {
     setupJSDOM()
@@ -51,13 +58,15 @@ describe('useMapGeneration', () => {
     const mockGeneratedMap = { id: 'mock-map', nodes: [], connections: [] }
 
     // Override the mock for this test specifically
-    const generateMapSpy = vi.spyOn(MapGenerator.prototype, 'generateMap').mockReturnValue(mockGeneratedMap as any)
+    const generateMapSpy = vi
+      .spyOn(MapGenerator.prototype, 'generateMap')
+      .mockReturnValue(mockGeneratedMap as GameMap)
 
     renderHook(() =>
       useMapGeneration({
         gameMap: null,
         dispatch: mockDispatch,
-        tRef: mockTRef as any
+        tRef: mockTRef
       })
     )
 
@@ -76,9 +85,9 @@ describe('useMapGeneration', () => {
 
     renderHook(() =>
       useMapGeneration({
-        gameMap: mockGameMap as any,
+        gameMap: mockGameMap as GameMap,
         dispatch: mockDispatch,
-        tRef: mockTRef as any
+        tRef: mockTRef
       })
     )
 
@@ -87,20 +96,24 @@ describe('useMapGeneration', () => {
   })
 
   it('should handle map generation failure and schedule retry', () => {
-    const generateMapSpy = vi.spyOn(MapGenerator.prototype, 'generateMap').mockImplementation(() => {
-      throw new Error('Generation failed')
-    })
+    const generateMapSpy = vi
+      .spyOn(MapGenerator.prototype, 'generateMap')
+      .mockImplementation(() => {
+        throw new Error('Generation failed')
+      })
 
     renderHook(() =>
       useMapGeneration({
         gameMap: null,
         dispatch: mockDispatch,
-        tRef: mockTRef as any
+        tRef: mockTRef
       })
     )
 
     expect(handleError).toHaveBeenCalled()
-    expect(mockDispatch).not.toHaveBeenCalledWith(expect.objectContaining({ type: 'SET_MAP' }))
+    expect(mockDispatch).not.toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'SET_MAP' })
+    )
 
     // Initial attempt throws, schedules retry
     expect(generateMapSpy).toHaveBeenCalledTimes(1)
@@ -115,15 +128,17 @@ describe('useMapGeneration', () => {
   })
 
   it('should return to menu after max retries', () => {
-    const generateMapSpy = vi.spyOn(MapGenerator.prototype, 'generateMap').mockImplementation(() => {
-      throw new Error('Generation failed')
-    })
+    const generateMapSpy = vi
+      .spyOn(MapGenerator.prototype, 'generateMap')
+      .mockImplementation(() => {
+        throw new Error('Generation failed')
+      })
 
     renderHook(() =>
       useMapGeneration({
         gameMap: null,
         dispatch: mockDispatch,
-        tRef: mockTRef as any
+        tRef: mockTRef
       })
     )
 
@@ -162,15 +177,17 @@ describe('useMapGeneration', () => {
   })
 
   it('resetMapGenerationRetries should reset attempts and clear scheduled retries', () => {
-    const generateMapSpy = vi.spyOn(MapGenerator.prototype, 'generateMap').mockImplementation(() => {
-      throw new Error('Generation failed')
-    })
+    const generateMapSpy = vi
+      .spyOn(MapGenerator.prototype, 'generateMap')
+      .mockImplementation(() => {
+        throw new Error('Generation failed')
+      })
 
     const { result } = renderHook(() =>
       useMapGeneration({
         gameMap: null,
         dispatch: mockDispatch,
-        tRef: mockTRef as any
+        tRef: mockTRef
       })
     )
 
