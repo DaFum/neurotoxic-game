@@ -145,6 +145,9 @@ vi.mock('../../src/context/GameState', () => ({
 const { PreGig } = await import('../../src/scenes/PreGig.tsx')
 const { __testInternals } = await import('../../src/hooks/usePreGigLogic')
 const { getSafeRandom } = await import('../../src/utils/crypto')
+const { resolveMerchRestockCost } = await import(
+  '../../src/utils/merchUtils'
+)
 
 const makeAssetWithModule = ({
   kind = 'tourbus_chassis',
@@ -184,7 +187,7 @@ describe('PreGig', () => {
     expect(__testInternals?.resolveBandMeetingCost(-2)).toBe(0)
 
     expect(
-      __testInternals?.resolveMerchRestockCost({
+      resolveMerchRestockCost({
         itemCost: 150,
         merchCostMultiplier: Number.NaN,
         restockAmount: 5,
@@ -192,7 +195,7 @@ describe('PreGig', () => {
       })
     ).toBe(30)
     expect(
-      __testInternals?.resolveMerchRestockCost({
+      resolveMerchRestockCost({
         itemCost: 150,
         merchCostMultiplier: -1,
         restockAmount: 5,
@@ -200,7 +203,7 @@ describe('PreGig', () => {
       })
     ).toBe(0)
     expect(
-      __testInternals?.resolveMerchRestockCost({
+      resolveMerchRestockCost({
         itemCost: 150,
         merchCostMultiplier: 1,
         restockAmount: Number.NaN,

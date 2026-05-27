@@ -57,18 +57,11 @@ export const __testInternals:
   | {
       resetLastMinigameFallback: () => void
       resolveBandMeetingCost: (trainingCostMultiplier: unknown) => number
-      resolveMerchRestockCost: (input: {
-        itemCost: unknown
-        merchCostMultiplier: unknown
-        restockAmount: unknown
-        bundleAmount: unknown
-      }) => number
     }
   | undefined = isTestRuntime
   ? {
       resetLastMinigameFallback,
-      resolveBandMeetingCost,
-      resolveMerchRestockCost
+      resolveBandMeetingCost
     }
   : undefined
 
