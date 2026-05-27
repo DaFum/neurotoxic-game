@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { QuestLifecycle } from '../../../src/domain/questLifecycle'
-import { QUEST_PROVE_YOURSELF } from '../../../src/data/questsConstants'
+import { QuestLifecycle } from '../../../src/domain/questLifecycle.js'
+import { QUEST_PROVE_YOURSELF } from '../../../src/data/questsConstants.js'
 
 test('QuestLifecycle', async (t) => {
   await t.test('addQuest', async (t) => {
@@ -41,6 +41,16 @@ test('QuestLifecycle', async (t) => {
       assert.equal(nextState, state)
     })
 
+    await t.test('handles quest array containing matching id but is null somehow (simulated via mock findIndex)', () => {
+       const state = { activeQuests: [{ id: 'q1' }] }
+       state.activeQuests.findIndex = () => 0
+       // We replace the item with null so the findIndex matches 0 but quest is falsy
+       const origItem = state.activeQuests[0]
+       state.activeQuests[0] = null
+       const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
+       assert.equal(nextState, state)
+    })
+
     await t.test('removes quest from activeQuests and adds generic toast', () => {
       const state = { activeQuests: [{ id: 'q1', label: 'Test Quest' }], toasts: [] }
       const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
@@ -61,6 +71,56 @@ test('QuestLifecycle', async (t) => {
       assert.equal(nextState.toasts[0].messageKey, 'ui:toast.quest_complete_money')
     })
 
+    await t.test('handles negative money applied via clamping', () => {
+      const state = {
+        activeQuests: [{ id: 'q1', label: 'Money Quest', moneyReward: 100 }],
+        player: { money: -50 } // clamped
+      }
+      const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
+      assert.equal(nextState.player.money, 50)
+    })
+
+    await t.test('handles missing player money and toasts', () => {
+      const state = {
+        activeQuests: [{ id: 'q1', moneyReward: 100 }]
+      }
+      const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
+      assert.equal(nextState.player.money, 100)
+      assert.equal(nextState.toasts.length, 1)
+    })
+
+    await t.test('handles missing player object for money reward', () => {
+      const state = {
+        activeQuests: [{ id: 'q1', moneyReward: 100 }],
+        player: undefined
+      }
+      const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
+      assert.equal(nextState.player.money, 100)
+    })
+
+    await t.test('does not toast if money delta is 0', () => {
+      const state = {
+        activeQuests: [{ id: 'q1', moneyReward: 0 }],
+        player: { money: 100 },
+        toasts: []
+      }
+      const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
+      assert.equal(nextState.player.money, 100)
+      assert.equal(nextState.toasts.length, 1) // Only generic toast
+      assert.equal(nextState.toasts[0].messageKey, 'ui:toast.quest_complete')
+    })
+
+    await t.test('does not add generic toast if there is a money toast', () => {
+      const state = {
+        activeQuests: [{ id: 'q1', moneyReward: 100 }],
+        player: { money: 100 },
+        toasts: []
+      }
+      const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
+      assert.equal(nextState.toasts.length, 1)
+      assert.equal(nextState.toasts[0].messageKey, 'ui:toast.quest_complete_money')
+    })
+
     await t.test('applies item reward', () => {
       const state = {
         activeQuests: [{ id: 'q1', label: 'Item Quest', rewardType: 'item', rewardData: { item: 'guitar' } }],
@@ -71,6 +131,23 @@ test('QuestLifecycle', async (t) => {
       assert.equal(nextState.band.inventory['guitar'], true)
       assert.equal(nextState.toasts.length, 1)
       assert.equal(nextState.toasts[0].messageKey, 'ui:toast.quest_complete_item')
+    })
+
+    await t.test('applies item reward with missing band inventory', () => {
+      const state = {
+        activeQuests: [{ id: 'q1', rewardType: 'item', rewardData: { item: 'guitar' } }]
+      }
+      const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
+      assert.equal(nextState.band.inventory['guitar'], true)
+    })
+
+    await t.test('applies item reward with missing band and missing item key handles properly', () => {
+      const state = {
+        activeQuests: [{ id: 'q1', rewardType: 'item', rewardData: {} }]
+      }
+      const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
+      assert.equal(nextState.band, undefined)
+      assert.equal(nextState.toasts[0].messageKey, 'ui:toast.quest_complete')
     })
 
     await t.test('applies fame reward', () => {
@@ -86,6 +163,43 @@ test('QuestLifecycle', async (t) => {
       assert.equal(nextState.toasts[0].messageKey, 'ui:toast.quest_complete_fame')
     })
 
+    await t.test('applies fame reward with missing player object handling', () => {
+      const state = {
+        activeQuests: [{ id: 'q1', rewardType: 'fame', rewardData: { fame: 50 } }],
+        player: {}
+      }
+      const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
+      assert.equal(nextState.player.fame, 50)
+    })
+
+    await t.test('applies fame reward with invalid fame string', () => {
+      const state = {
+        activeQuests: [{ id: 'q1', rewardType: 'fame', rewardData: { fame: 'NaN' } }],
+        player: { fame: 10 }
+      }
+      const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
+      assert.equal(nextState.player.fame, 10)
+    })
+
+    await t.test('does not toast if fame delta is 0', () => {
+      const state = {
+        activeQuests: [{ id: 'q1', rewardType: 'fame', rewardData: { fame: 0 } }],
+        player: { fame: 100 },
+        toasts: []
+      }
+      const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
+      assert.equal(nextState.toasts[0].messageKey, 'ui:toast.quest_complete')
+    })
+
+    await t.test('ignores fame reward if rewardData is falsy', () => {
+      const state = {
+        activeQuests: [{ id: 'q1', rewardType: 'fame', rewardData: null }],
+        player: { fame: 10 }
+      }
+      const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
+      assert.equal(nextState.player.fame, 10)
+    })
+
     await t.test('applies harmony reward', () => {
       const state = {
         activeQuests: [{ id: 'q1', label: 'Harmony Quest', rewardType: 'harmony', rewardData: { harmony: 20 } }],
@@ -96,6 +210,40 @@ test('QuestLifecycle', async (t) => {
       assert.equal(nextState.band.harmony, 70)
       assert.equal(nextState.toasts.length, 1)
       assert.equal(nextState.toasts[0].messageKey, 'ui:toast.quest_complete_harmony')
+    })
+
+    await t.test('applies harmony reward with missing band', () => {
+      const state = {
+        activeQuests: [{ id: 'q1', rewardType: 'harmony', rewardData: { harmony: 20 } }]
+      }
+      const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
+      assert.equal(nextState.band.harmony, 21)
+    })
+
+    await t.test('applies harmony reward with invalid string falling back to 0', () => {
+      const state = {
+        activeQuests: [{ id: 'q1', rewardType: 'harmony', rewardData: { harmony: 'NaN' } }],
+        band: { harmony: 10 }
+      }
+      const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
+      assert.equal(nextState.band.harmony, 10)
+    })
+
+    await t.test('does not toast if harmony delta is 0', () => {
+      const state = {
+        activeQuests: [{ id: 'q1', rewardType: 'harmony', rewardData: { harmony: 0 } }],
+        band: { harmony: 50 }
+      }
+      const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
+      assert.equal(nextState.toasts[0].messageKey, 'ui:toast.quest_complete')
+    })
+
+    await t.test('applies skill point reward with missing band does nothing', () => {
+      const state = {
+        activeQuests: [{ id: 'q1', rewardType: 'skill_point' }]
+      }
+      const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
+      assert.equal(nextState.band, undefined)
     })
 
     await t.test('applies skill point reward with randomIdx and missing baseStats', () => {
@@ -110,7 +258,62 @@ test('QuestLifecycle', async (t) => {
       assert.equal(nextState.toasts[0].messageKey, 'ui:toast.quest_complete_skill')
     })
 
-    await t.test('applies skill point reward', () => {
+    await t.test('applies skill point reward fallback 0 for missing memberIndex and randomIdx', () => {
+      const state = {
+        activeQuests: [{ id: 'q1', rewardType: 'skill_point', rewardData: {} }],
+        band: { members: [{ name: 'A', skill: 5 }, { name: 'B', skill: 5 }] },
+      }
+      const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
+      assert.equal(nextState.band.members[0].baseStats.skill, 6)
+      assert.equal(nextState.band.members[1].baseStats?.skill, undefined)
+    })
+
+    await t.test('applies skill point reward with invalid string memberIndex falling back to randomIdx / 0', () => {
+      const state = {
+        activeQuests: [{ id: 'q1', rewardType: 'skill_point', rewardData: { memberIndex: 'NaN' } }],
+        band: { members: [{ skill: 10 }] }
+      }
+      const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
+      assert.equal(nextState.band.members[0].baseStats.skill, 11)
+    })
+
+    await t.test('applies skill point reward with index clamped out of bounds (high)', () => {
+      const state = {
+        activeQuests: [{ id: 'q1', rewardType: 'skill_point', rewardData: { memberIndex: 10 } }],
+        band: { members: [{ skill: 1 }, { skill: 1 }] }
+      }
+      const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
+      assert.equal(nextState.band.members[1].baseStats.skill, 2)
+    })
+
+    await t.test('applies skill point reward with index clamped out of bounds (low)', () => {
+      const state = {
+        activeQuests: [{ id: 'q1', rewardType: 'skill_point', rewardData: { memberIndex: -5 } }],
+        band: { members: [{ skill: 1 }, { skill: 1 }] }
+      }
+      const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
+      assert.equal(nextState.band.members[0].baseStats.skill, 2)
+    })
+
+    await t.test('applies skill point reward and handles non-finite existing skill', () => {
+      const state = {
+        activeQuests: [{ id: 'q1', rewardType: 'skill_point', rewardData: { memberIndex: 0 } }],
+        band: { members: [{ name: 'A', skill: NaN }] }
+      }
+      const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
+      assert.equal(nextState.band.members[0].baseStats.skill, 1)
+    })
+
+    await t.test('does nothing for skill point reward if originalMembers is empty', () => {
+      const state = {
+        activeQuests: [{ id: 'q1', rewardType: 'skill_point', rewardData: { memberIndex: 0 } }],
+        band: { members: [] }
+      }
+      const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
+      assert.deepEqual(nextState.band.members, [])
+    })
+
+    await t.test('applies skill point reward properly', () => {
       const state = {
         activeQuests: [{ id: 'q1', label: 'Skill Quest', rewardType: 'skill_point', rewardData: { memberIndex: 1 } }],
         band: { members: [{ name: 'A', skill: 5 }, { name: 'B', skill: 5, baseStats: { skill: 5 } }] },
@@ -130,6 +333,15 @@ test('QuestLifecycle', async (t) => {
       assert.deepEqual(nextState.activeStoryFlags, ['flag_unlocked'])
     })
 
+    await t.test('handles rewardFlag with missing activeStoryFlags', () => {
+      const state = {
+        activeQuests: [{ id: 'q1', rewardFlag: 'flag1' }],
+        activeStoryFlags: undefined
+      }
+      const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
+      assert.deepEqual(nextState.activeStoryFlags, ['flag1'])
+    })
+
     await t.test('handles hardcoded QUEST_PROVE_YOURSELF', () => {
       const state = {
         activeQuests: [{ id: QUEST_PROVE_YOURSELF }],
@@ -140,6 +352,27 @@ test('QuestLifecycle', async (t) => {
       assert.deepEqual(nextState.venueBlacklist, ['v3'])
       assert.equal(nextState.player.stats.proveYourselfMode, false)
     })
+
+    await t.test('handles hardcoded QUEST_PROVE_YOURSELF with undefined venueBlacklist fallback', () => {
+      const state = {
+        activeQuests: [{ id: QUEST_PROVE_YOURSELF }],
+        venueBlacklist: undefined,
+        player: { stats: { proveYourselfMode: true } }
+      }
+      const nextState = QuestLifecycle.completeQuest(state, { questId: QUEST_PROVE_YOURSELF })
+      assert.deepEqual(nextState.venueBlacklist, [])
+    })
+
+    await t.test('handles hardcoded QUEST_PROVE_YOURSELF with no venueBlacklist property at all', () => {
+      const state = {
+        activeQuests: [{ id: QUEST_PROVE_YOURSELF }],
+        player: { stats: { proveYourselfMode: true } }
+      }
+      const nextState = QuestLifecycle.completeQuest(state, { questId: QUEST_PROVE_YOURSELF })
+      assert.deepEqual(nextState.venueBlacklist, [])
+    })
+
+
   })
 
   await t.test('advanceQuest', async (t) => {
@@ -149,10 +382,40 @@ test('QuestLifecycle', async (t) => {
       assert.equal(nextState, state)
     })
 
+    await t.test('does not advance progress if required is not a number', () => {
+      const state = { activeQuests: [{ id: 'q1', progress: 0 }] }
+      const nextState = QuestLifecycle.advanceQuest(state, { questId: 'q1', amount: 2 })
+      assert.equal(nextState.activeQuests[0].progress, 0)
+    })
+
     await t.test('advances progress', () => {
       const state = { activeQuests: [{ id: 'q1', progress: 0, required: 5 }] }
       const nextState = QuestLifecycle.advanceQuest(state, { questId: 'q1', amount: 2 })
       assert.equal(nextState.activeQuests[0].progress, 2)
+    })
+
+    await t.test('advances progress when progress is missing', () => {
+      const state = { activeQuests: [{ id: 'q1', required: 5 }] }
+      const nextState = QuestLifecycle.advanceQuest(state, { questId: 'q1', amount: 2 })
+      assert.equal(nextState.activeQuests[0].progress, 2)
+    })
+
+    await t.test('advances progress with default amount 1', () => {
+      const state = { activeQuests: [{ id: 'q1', progress: 0, required: 5 }] }
+      const nextState = QuestLifecycle.advanceQuest(state, { questId: 'q1' })
+      assert.equal(nextState.activeQuests[0].progress, 1)
+    })
+
+    await t.test('advances progress with amount null falling back to 1', () => {
+      const state = { activeQuests: [{ id: 'q1', progress: 0, required: 5 }] }
+      const nextState = QuestLifecycle.advanceQuest(state, { questId: 'q1', amount: null })
+      assert.equal(nextState.activeQuests[0].progress, 1)
+    })
+
+    await t.test('does not advance if id does not match', () => {
+      const state = { activeQuests: [{ id: 'q2', progress: 0, required: 5 }] }
+      const nextState = QuestLifecycle.advanceQuest(state, { questId: 'q1', amount: 1 })
+      assert.equal(nextState.activeQuests[0].progress, 0)
     })
 
     await t.test('completes quest when progress reaches required', () => {
@@ -164,6 +427,12 @@ test('QuestLifecycle', async (t) => {
   })
 
   await t.test('checkDeadlines', async (t) => {
+    await t.test('handles missing activeQuests', () => {
+        const state = {}
+        const nextState = QuestLifecycle.checkDeadlines(state)
+        assert.equal(nextState, state)
+    })
+
     await t.test('fails expired quests and applies penalties', () => {
       const state = {
         player: { day: 10 },
@@ -193,6 +462,95 @@ test('QuestLifecycle', async (t) => {
       assert.equal(nextState.band.harmony, 30)
       assert.equal(nextState.toasts.length, 1)
       assert.equal(nextState.toasts[0].messageKey, 'ui:toast.quest_failed')
+    })
+
+    await t.test('fails expired quests with invalid penalties', () => {
+      const state = {
+        player: { day: 10 },
+        social: { controversyLevel: 5 },
+        band: { harmony: 50 },
+        activeQuests: [
+          {
+            id: 'q1',
+            deadline: 9,
+            failurePenalty: {
+              social: 'invalid', // not a record
+              band: null // not a record
+            }
+          },
+          {
+            id: 'q2',
+            deadline: 9,
+            failurePenalty: {
+              social: { controversyLevel: 'NaN' }
+            }
+          }
+        ]
+      }
+      const nextState = QuestLifecycle.checkDeadlines(state)
+      assert.equal(nextState.activeQuests.length, 0)
+      assert.equal(nextState.social.controversyLevel, 5) // no change due to invalid number
+      assert.equal(nextState.band.harmony, 50) // no change
+      assert.equal(nextState.toasts.length, 2)
+    })
+
+    await t.test('handles expired quests missing harmony or controversyLevel penalties explicitly', () => {
+      const state = {
+        player: { day: 10 },
+        social: { controversyLevel: 5 },
+        band: { harmony: 50 },
+        activeQuests: [
+          {
+            id: 'q1',
+            deadline: 9,
+            failurePenalty: {
+              social: { controversyLevel: null }, // explicit null should be ignored
+              band: { harmony: 'NaN' } // invalid number should default to 0
+            }
+          }
+        ]
+      }
+      const nextState = QuestLifecycle.checkDeadlines(state)
+      assert.equal(nextState.activeQuests.length, 0)
+      assert.equal(nextState.social.controversyLevel, 5)
+      assert.equal(nextState.band.harmony, 50)
+    })
+
+    await t.test('skips falsy quests in activeQuests during checkDeadlines', () => {
+      const state = {
+        player: { day: 10 },
+        activeQuests: [undefined, { id: 'q1', deadline: 12 }],
+      }
+      const nextState = QuestLifecycle.checkDeadlines(state)
+      assert.equal(nextState, state) // no expired quests, returns original state
+    })
+
+    await t.test('applies penalties when previous stats are missing', () => {
+      const state = {
+        player: { day: 10 },
+        social: {}, // Missing controversyLevel
+        band: {}, // Missing harmony
+        activeQuests: [
+          {
+            id: 'q1',
+            deadline: 9,
+            failurePenalty: {
+              social: { controversyLevel: 10 },
+              band: { harmony: -20 }
+            }
+          }
+        ]
+      }
+      const nextState = QuestLifecycle.checkDeadlines(state)
+      assert.equal(nextState.activeQuests.length, 0)
+      assert.equal(nextState.social.controversyLevel, 10)
+      assert.equal(nextState.band.harmony, 1) // clampBandHarmony clamps to 1 minimum
+    })
+
+    await t.test('handles falsy deadline check in checkDeadlines', () => {
+        const state = { player: { day: 10 }, activeQuests: [{ id: 'q1', deadline: undefined }] }
+        const nextState = QuestLifecycle.checkDeadlines(state)
+        assert.equal(nextState, state)
     })
 
     await t.test('returns original state if no quests are expired', () => {
