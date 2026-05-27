@@ -44,16 +44,14 @@ describe('useMapGeneration', () => {
 
   afterEach(() => {
     vi.useRealTimers()
+    vi.restoreAllMocks()
   })
 
   it('should generate a map and dispatch createSetMapAction if gameMap is null', () => {
     const mockGeneratedMap = { id: 'mock-map', nodes: [], connections: [] }
 
     // Override the mock for this test specifically
-    const generateMapMock = vi.fn().mockReturnValue(mockGeneratedMap)
-
-    // @ts-ignore
-    MapGenerator.prototype.generateMap = generateMapMock
+    const generateMapSpy = vi.spyOn(MapGenerator.prototype, 'generateMap').mockReturnValue(mockGeneratedMap as any)
 
     renderHook(() =>
       useMapGeneration({
@@ -63,7 +61,7 @@ describe('useMapGeneration', () => {
       })
     )
 
-    expect(generateMapMock).toHaveBeenCalled()
+    expect(generateMapSpy).toHaveBeenCalled()
 
     // Check if dispatch was called with correct action
     expect(mockDispatch).toHaveBeenCalledWith({
@@ -74,9 +72,7 @@ describe('useMapGeneration', () => {
 
   it('should not generate a map if gameMap is already provided', () => {
     const mockGameMap = { id: 'existing-map', nodes: [], connections: [] }
-    const generateMapMock = vi.fn()
-    // @ts-ignore
-    MapGenerator.prototype.generateMap = generateMapMock
+    const generateMapSpy = vi.spyOn(MapGenerator.prototype, 'generateMap')
 
     renderHook(() =>
       useMapGeneration({
@@ -86,16 +82,14 @@ describe('useMapGeneration', () => {
       })
     )
 
-    expect(generateMapMock).not.toHaveBeenCalled()
+    expect(generateMapSpy).not.toHaveBeenCalled()
     expect(mockDispatch).not.toHaveBeenCalled()
   })
 
   it('should handle map generation failure and schedule retry', () => {
-    const generateMapMock = vi.fn().mockImplementation(() => {
+    const generateMapSpy = vi.spyOn(MapGenerator.prototype, 'generateMap').mockImplementation(() => {
       throw new Error('Generation failed')
     })
-    // @ts-ignore
-    MapGenerator.prototype.generateMap = generateMapMock
 
     renderHook(() =>
       useMapGeneration({
@@ -109,7 +103,7 @@ describe('useMapGeneration', () => {
     expect(mockDispatch).not.toHaveBeenCalledWith(expect.objectContaining({ type: 'SET_MAP' }))
 
     // Initial attempt throws, schedules retry
-    expect(generateMapMock).toHaveBeenCalledTimes(1)
+    expect(generateMapSpy).toHaveBeenCalledTimes(1)
 
     // Advance timers for first retry (increment action)
     act(() => {
@@ -117,15 +111,13 @@ describe('useMapGeneration', () => {
     })
 
     // Component re-renders and should attempt again
-    expect(generateMapMock).toHaveBeenCalledTimes(2)
+    expect(generateMapSpy).toHaveBeenCalledTimes(2)
   })
 
   it('should return to menu after max retries', () => {
-    const generateMapMock = vi.fn().mockImplementation(() => {
+    const generateMapSpy = vi.spyOn(MapGenerator.prototype, 'generateMap').mockImplementation(() => {
       throw new Error('Generation failed')
     })
-    // @ts-ignore
-    MapGenerator.prototype.generateMap = generateMapMock
 
     renderHook(() =>
       useMapGeneration({
@@ -142,12 +134,9 @@ describe('useMapGeneration', () => {
     act(() => {
       vi.advanceTimersByTime(250)
     })
-    act(() => {
-      vi.advanceTimersByTime(250)
-    })
 
     // Should have tried 3 times total (1 initial + 2 retries)
-    expect(generateMapMock).toHaveBeenCalledTimes(3)
+    expect(generateMapSpy).toHaveBeenCalledTimes(3)
 
     // Verify it returned to menu
     expect(mockDispatch).toHaveBeenCalledWith({
@@ -172,20 +161,29 @@ describe('useMapGeneration', () => {
     )
   })
 
-  it('resetMapGenerationRetries should reset attempts', () => {
+  it('resetMapGenerationRetries should reset attempts and clear scheduled retries', () => {
+    const generateMapSpy = vi.spyOn(MapGenerator.prototype, 'generateMap').mockImplementation(() => {
+      throw new Error('Generation failed')
+    })
+
     const { result } = renderHook(() =>
       useMapGeneration({
-        gameMap: { id: 'existing' } as any, // Prevent immediate generation
+        gameMap: null,
         dispatch: mockDispatch,
         tRef: mockTRef as any
       })
     )
 
+    expect(generateMapSpy).toHaveBeenCalledTimes(1)
+
     act(() => {
       result.current.resetMapGenerationRetries()
     })
 
-    // Just testing that the function doesn't crash as it manages internal state
-    expect(typeof result.current.resetMapGenerationRetries).toBe('function')
+    act(() => {
+      vi.advanceTimersByTime(250)
+    })
+
+    expect(generateMapSpy).toHaveBeenCalledTimes(1)
   })
 })
