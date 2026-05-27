@@ -22,6 +22,39 @@ describe('Modal Component', () => {
     expect(getByText('Modal Content')).toBeInTheDocument()
   })
 
+  test('uses the rendered title as the accessible dialog name when ariaLabel is absent', () => {
+    const { getByRole } = render(
+      <Modal isOpen={true} onClose={() => {}} title='Fallback Title'>
+        <div>Modal Content</div>
+      </Modal>
+    )
+
+    const heading = getByRole('heading', { name: 'Fallback Title' })
+    const dialog = getByRole('dialog')
+
+    expect(heading.id).not.toBe('')
+    expect(dialog).not.toHaveAttribute('aria-label')
+    expect(dialog).toHaveAttribute('aria-labelledby', heading.id)
+  })
+
+  test('uses the explicit ariaLabel instead of the title fallback', () => {
+    const { getByRole } = render(
+      <Modal
+        isOpen={true}
+        onClose={() => {}}
+        title='Visible Title'
+        ariaLabel='Explicit Dialog Label'
+      >
+        <div>Modal Content</div>
+      </Modal>
+    )
+
+    const dialog = getByRole('dialog')
+
+    expect(dialog).toHaveAttribute('aria-label', 'Explicit Dialog Label')
+    expect(dialog).not.toHaveAttribute('aria-labelledby')
+  })
+
   test('constrains the dialog to the mobile viewport', () => {
     const { getByRole } = render(
       <Modal isOpen={true} onClose={() => {}}>

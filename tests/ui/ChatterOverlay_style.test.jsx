@@ -3,6 +3,14 @@ import { render } from '@testing-library/react'
 import { readFileSync } from 'node:fs'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 
+const readZIndexToken = (css, token) => {
+  const match = css.match(new RegExp(`--z-${token}:\\s*(\\d+);`))
+
+  expect(match, `Missing --z-${token}`).not.toBeNull()
+
+  return Number(match[1])
+}
+
 // Mock data to prevent network or other issues
 vi.mock('../../src/data/chatter', () => ({
   getRandomChatter: () => null,
@@ -38,10 +46,11 @@ test('ChatterOverlay uses responsive stacking classes', async () => {
   expect(container.className).toContain('max-sm:z-(--z-chatter-mobile)')
 }, 15000)
 
-test('desktop chatter remains below modal overlays and fixed action chrome', () => {
+test('desktop chatter stays above opaque scene roots and below modal overlays', () => {
   const css = readFileSync('src/index.css', 'utf8')
+  const chatterZ = readZIndexToken(css, 'chatter')
+  const modalZ = readZIndexToken(css, 'modal')
 
-  expect(css).toContain('--z-modal: 100;')
-  expect(css).toContain('--z-hud: 50;')
-  expect(css).toContain('--z-chatter: 45;')
+  expect(chatterZ).toBeGreaterThan(50)
+  expect(chatterZ).toBeLessThan(modalZ)
 })

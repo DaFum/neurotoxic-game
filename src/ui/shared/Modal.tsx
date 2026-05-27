@@ -3,7 +3,7 @@
  * @module Modal
  */
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useId, useRef } from 'react'
 import type { ReactNode, MouseEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { UIFrameCorner } from './Icons'
@@ -39,7 +39,10 @@ export const Modal = ({
   className = 'max-w-md'
 }: ModalProps) => {
   const dialogRef = useRef<HTMLDivElement | null>(null)
+  const titleId = useId()
   const { t } = useTranslation(['ui'])
+  const dialogAriaLabel = ariaLabel || undefined
+  const dialogAriaLabelledBy = dialogAriaLabel ? undefined : title ? titleId : undefined
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -83,7 +86,8 @@ export const Modal = ({
         className={`relative w-[min(calc(100vw-1.5rem),100%)] sm:w-full max-h-[calc(100svh-1rem)] border-4 border-toxic-green p-3 sm:p-6 bg-void-black shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)] cursor-auto focus:outline-none group ${className}`}
         role='dialog'
         aria-modal='true'
-        aria-label={ariaLabel}
+        aria-label={dialogAriaLabel}
+        aria-labelledby={dialogAriaLabelledBy}
         tabIndex={-1}
       >
         {/* Brutalist Frame Corners */}
@@ -113,7 +117,10 @@ export const Modal = ({
 
         <div className={`relative z-10 ${contentClassName}`}>
           {title && (
-            <h2 className='text-2xl sm:text-3xl font-display text-toxic-green mb-4 uppercase tracking-widest text-center pr-10 sm:pr-0 break-words'>
+            <h2
+              id={titleId}
+              className='text-2xl sm:text-3xl font-display text-toxic-green mb-4 uppercase tracking-widest text-center pr-10 sm:pr-0 break-words'
+            >
               {title}
             </h2>
           )}
