@@ -719,7 +719,7 @@ describe('GameState Context - Save/Load', () => {
           {
             id: 'loaded_campaign',
             assetSpec: {
-              kind: 'tourbus_chassis',
+              kind: 'studio_chassis',
               flavor: 'legit',
               chassisTier: 1
             },

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { DEFAULT_MERCH_PRICES } from '../../utils/economyEngine'
 import { finiteNumberOr } from '../../utils/gameStateUtils'
 import { formatCurrency } from '../../utils/numberUtils'
+import { resolveMerchRestockCost } from '../../utils/merchUtils'
 import { HQ_ITEMS_BY_MERCH_KEY } from '../../data/hqItems'
 
 interface MerchStrategyBlockProps {
@@ -102,29 +103,6 @@ const MerchItemRow: React.FC<MerchItemRowProps> = ({
   )
 }
 
-const resolveMerchRestockCost = ({
-  itemCost,
-  restockCostMultiplier,
-  restockAmount,
-  bundleAmount
-}: {
-  itemCost: unknown
-  restockCostMultiplier: unknown
-  restockAmount: unknown
-  bundleAmount: unknown
-}): number => {
-  const safeItemCost = Math.max(0, finiteNumberOr(itemCost, 50))
-  const safeMultiplier = Math.max(0, finiteNumberOr(restockCostMultiplier, 1))
-  const safeRestockAmount = Math.max(0, finiteNumberOr(restockAmount, 0))
-  const safeBundleAmount = Math.max(1, finiteNumberOr(bundleAmount, 10))
-  const cappedRestockAmount = Math.min(safeRestockAmount, safeBundleAmount)
-
-  if (cappedRestockAmount <= 0) return 0
-
-  const fullBundleCost = Math.ceil(safeItemCost * safeMultiplier)
-  return Math.ceil(fullBundleCost * (cappedRestockAmount / safeBundleAmount))
-}
-
 const BASE_MERCH_CAPACITY = 100
 
 const getMerchBundleAmount = (
@@ -190,7 +168,7 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
         )
         const restockCost = resolveMerchRestockCost({
           itemCost: itemDef?.cost ?? 50,
-          restockCostMultiplier,
+          merchCostMultiplier: restockCostMultiplier,
           restockAmount,
           bundleAmount
         })

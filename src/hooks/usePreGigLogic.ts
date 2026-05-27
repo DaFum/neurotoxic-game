@@ -25,6 +25,7 @@ import {
 } from '../utils/gameStateUtils'
 import { getGigModifiers } from '../utils/simulationUtils'
 import { getActiveAssetModifiers } from '../utils/assetSelectors'
+import { resolveMerchRestockCost } from '../utils/merchUtils'
 import { audioService, getSongId } from '../utils/audio/audioEngine'
 import { handleError } from '../utils/errorHandler'
 import { getSafeRandom, getSafeUUID } from '../utils/crypto'
@@ -49,29 +50,6 @@ const resolveBandMeetingCost = (trainingCostMultiplier: unknown): number => {
   return Math.ceil(Math.max(0, BAND_MEETING_COST * safeMultiplier))
 }
 
-const resolveMerchRestockCost = ({
-  itemCost,
-  merchCostMultiplier,
-  restockAmount,
-  bundleAmount
-}: {
-  itemCost: unknown
-  merchCostMultiplier: unknown
-  restockAmount: unknown
-  bundleAmount: unknown
-}): number => {
-  const safeItemCost = Math.max(0, finiteNumberOr(itemCost, 50))
-  const safeMultiplier = Math.max(0, finiteNumberOr(merchCostMultiplier, 1))
-  const safeRestockAmount = Math.max(0, finiteNumberOr(restockAmount, 0))
-  const safeBundleAmount = Math.max(1, finiteNumberOr(bundleAmount, 10))
-  const cappedRestockAmount = Math.min(safeRestockAmount, safeBundleAmount)
-
-  if (cappedRestockAmount <= 0) return 0
-
-  const fullBundleCost = Math.ceil(safeItemCost * safeMultiplier)
-  return Math.ceil(fullBundleCost * (cappedRestockAmount / safeBundleAmount))
-}
-
 const isTestRuntime =
   typeof process !== 'undefined' && process.env?.NODE_ENV === 'test'
 
@@ -79,18 +57,11 @@ export const __testInternals:
   | {
       resetLastMinigameFallback: () => void
       resolveBandMeetingCost: (trainingCostMultiplier: unknown) => number
-      resolveMerchRestockCost: (input: {
-        itemCost: unknown
-        merchCostMultiplier: unknown
-        restockAmount: unknown
-        bundleAmount: unknown
-      }) => number
     }
   | undefined = isTestRuntime
   ? {
       resetLastMinigameFallback,
-      resolveBandMeetingCost,
-      resolveMerchRestockCost
+      resolveBandMeetingCost
     }
   : undefined
 
