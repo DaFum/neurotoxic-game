@@ -631,14 +631,10 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
 
 const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
   const playerData = isLooseRecord(loadedPlayer)
-    ? Object.assign({}, loadedPlayer)
+    ? Object.assign(Object.create(null), loadedPlayer)
     : {}
-  const vanData = isLooseRecord(playerData.van)
-    ? Object.assign({}, playerData.van)
-    : {}
-  const statsData = isLooseRecord(playerData.stats)
-    ? Object.assign({}, playerData.stats)
-    : {}
+  const vanData = isLooseRecord(playerData.van) ? playerData.van : {}
+  const statsData = isLooseRecord(playerData.stats) ? playerData.stats : {}
 
   const rawPlayer: PlayerState = {
     ...DEFAULT_PLAYER_STATE,
@@ -770,7 +766,7 @@ const parseNumericStats = (
 
 const sanitizeBand = (loadedBand: unknown): BandState => {
   const bandData = isLooseRecord(loadedBand)
-    ? Object.assign({}, loadedBand)
+    ? Object.assign(Object.create(null), loadedBand)
     : {}
   const rawBand: BandState = {
     ...DEFAULT_BAND_STATE,
@@ -788,7 +784,10 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
       ...DEFAULT_BAND_STATE.performance,
       ...(isLooseRecord(bandData.performance)
         ? (() => {
-            const perfData = Object.assign({}, bandData.performance)
+            const perfData = Object.assign(
+              Object.create(null),
+              bandData.performance
+            )
             return {
               guitarDifficulty: finiteNumberOr(
                 perfData.guitarDifficulty,
@@ -920,7 +919,7 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
     ? bandData.members
     : DEFAULT_BAND_STATE.members
   const validatedMembers: BandMember[] = memberSource.flatMap(
-    (rawMember, i) => {
+    (rawMember: unknown, i: number) => {
       if (!isLooseRecord(rawMember)) return []
       const m = rawMember
       const id =
@@ -1151,7 +1150,7 @@ const sanitizeSocial = (value: unknown): SocialState => {
     influencers: { ...DEFAULT_SOCIAL_STATE.influencers }
   }
   if (!isLooseRecord(value)) return sanitized
-  const safeValue = Object.assign({}, value)
+  const safeValue = Object.assign(Object.create(null), value)
 
   for (const key of [
     'instagram',
@@ -1191,7 +1190,7 @@ const sanitizeSocial = (value: unknown): SocialState => {
   }
 
   if (Array.isArray(safeValue.activeDeals)) {
-    sanitized.activeDeals = safeValue.activeDeals.flatMap(deal => {
+    sanitized.activeDeals = safeValue.activeDeals.flatMap((deal: unknown) => {
       const copied = copySafePrimitiveObject(deal)
       if (
         !copied ||
