@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { MerchStrategyBlock } from '../../src/components/pregig/MerchStrategyBlock'
 
@@ -39,5 +39,28 @@ describe('MerchStrategyBlock', () => {
     expect(
       container.querySelector('[title="Cost: 30 EUR (+5)"]')
     ).toBeInTheDocument()
+  })
+
+  it('disables restock controls when no capacity remains', () => {
+    const onRestock = vi.fn()
+
+    render(
+      <MerchStrategyBlock
+        bandInventory={{ shirts: 100 }}
+        customPrices={{}}
+        onUpdatePrice={vi.fn()}
+        onRestock={onRestock}
+        restockCostMultiplier={1}
+        merchCapacityBonus={0}
+      />
+    )
+
+    const restockButtons = screen.getAllByRole('button', { name: 'Restock' })
+    expect(restockButtons.length).toBeGreaterThan(0)
+    expect(restockButtons[0]).toBeDisabled()
+
+    fireEvent.click(restockButtons[0])
+
+    expect(onRestock).not.toHaveBeenCalled()
   })
 })

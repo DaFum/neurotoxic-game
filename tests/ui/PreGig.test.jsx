@@ -87,6 +87,23 @@ vi.mock('../../src/utils/economyEngine', () => ({
     catering: 60,
     guestlist: 80
   },
+  calculateGigModifierCost: (key, assetModifiers = {}) => {
+    const costs = {
+      soundcheck: 50,
+      promo: 100,
+      merch: 75,
+      catering: 60,
+      guestlist: 80
+    }
+    const baseCost = costs[key] ?? 0
+    if (key !== 'soundcheck') return baseCost
+    const multiplier =
+      typeof assetModifiers.songCostMultiplier === 'number' &&
+      Number.isFinite(assetModifiers.songCostMultiplier)
+        ? Math.max(0, assetModifiers.songCostMultiplier)
+        : 1
+    return Math.ceil(baseCost * multiplier)
+  },
   DEFAULT_MERCH_PRICES: {
     shirts: 20,
     hoodies: 45,
@@ -157,6 +174,39 @@ const makeAssetWithModule = ({
 describe('PreGig', () => {
   test('exposes minigame fallback reset only through test internals', () => {
     expect(__testInternals?.resetLastMinigameFallback).toBeTypeOf('function')
+  })
+
+  test('pre-gig economy internals sanitize invalid asset multipliers', () => {
+    expect(__testInternals?.resolveBandMeetingCost(Number.NaN)).toBe(50)
+    expect(
+      __testInternals?.resolveBandMeetingCost(Number.POSITIVE_INFINITY)
+    ).toBe(50)
+    expect(__testInternals?.resolveBandMeetingCost(-2)).toBe(0)
+
+    expect(
+      __testInternals?.resolveMerchRestockCost({
+        itemCost: 150,
+        merchCostMultiplier: Number.NaN,
+        restockAmount: 5,
+        bundleAmount: 25
+      })
+    ).toBe(30)
+    expect(
+      __testInternals?.resolveMerchRestockCost({
+        itemCost: 150,
+        merchCostMultiplier: -1,
+        restockAmount: 5,
+        bundleAmount: 25
+      })
+    ).toBe(0)
+    expect(
+      __testInternals?.resolveMerchRestockCost({
+        itemCost: 150,
+        merchCostMultiplier: 1,
+        restockAmount: Number.NaN,
+        bundleAmount: 25
+      })
+    ).toBe(0)
   })
 
   test('guards test internals runtime detection for browsers without process', async () => {
@@ -416,6 +466,31 @@ describe('PreGig', () => {
       'error'
     )
     expect(mockUseGameState.setGigModifiers).not.toHaveBeenCalled()
+  })
+
+  test('song cost multiplier lowers soundcheck budget gate', async () => {
+    mockUseGameState.player.money = 45
+    mockUseGameState.gigModifiers = {}
+    mockUseGameState.assets = [
+      makeAssetWithModule({
+        kind: 'studio_chassis',
+        slotType: 'st_control',
+        moduleId: 'st_diy_mixer'
+      })
+    ]
+
+    const { findByText } = render(React.createElement(PreGig))
+
+    const soundcheckBtn = await findByText(/Soundcheck/i)
+    fireEvent.click(soundcheckBtn)
+
+    expect(mockUseGameState.setGigModifiers).toHaveBeenCalledWith({
+      soundcheck: true
+    })
+    expect(mockUseGameState.addToast).not.toHaveBeenCalledWith(
+      'ui:pregig.toasts.noMoneyUpgrade',
+      'error'
+    )
   })
 
   test('allows toggling modifier off regardless of budget', async () => {

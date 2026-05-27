@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert'
 import {
   calculateFuelCost,
+  calculateGigModifierCost,
   calculateMerchIncome,
   calculateGigFinancials,
   calculateRefuelCost
@@ -139,4 +140,125 @@ test('Economy Asset Modifiers', async t => {
     )
     assert.ok(hasTipItem, 'Should have tip bonus breakdown item')
   })
+
+  await t.test('calculateGigFinancials applies songQualityBonus', () => {
+    const params = {
+      gigData: { capacity: 150, price: 12, pay: 100, name: 'Test Gig' },
+      performanceScore: 45,
+      modifiers: { merch: true },
+      bandInventory: {
+        shirts: 50,
+        hoodies: 25,
+        cds: 30,
+        patches: 80,
+        vinyl: 20
+      },
+      gigStats: { peakHype: 50, misses: 0 }
+    }
+    const legacy = calculateGigFinancials(params, NEUTRAL_ASSET_MODIFIERS)
+    const modified = calculateGigFinancials(params, {
+      ...NEUTRAL_ASSET_MODIFIERS,
+      songQualityBonus: 0.25
+    })
+
+    assert.ok(
+      modified.income.total > legacy.income.total,
+      'Song quality bonus should improve performance-sensitive income'
+    )
+  })
+
+  await t.test(
+    'calculateGigModifierCost applies songCostMultiplier to soundcheck',
+    () => {
+      const legacy = calculateGigModifierCost(
+        'soundcheck',
+        NEUTRAL_ASSET_MODIFIERS
+      )
+      const modified = calculateGigModifierCost('soundcheck', {
+        ...NEUTRAL_ASSET_MODIFIERS,
+        songCostMultiplier: 0.5
+      })
+
+      assert.strictEqual(modified, Math.ceil(legacy * 0.5))
+      assert.strictEqual(
+        calculateGigModifierCost('promo', {
+          ...NEUTRAL_ASSET_MODIFIERS,
+          songCostMultiplier: 0.5
+        }),
+        calculateGigModifierCost('promo', NEUTRAL_ASSET_MODIFIERS),
+        'Song cost multiplier should only affect song-prep costs'
+      )
+    }
+  )
+
+  await t.test('calculateGigFinancials applies enablesReRecording', () => {
+    const params = {
+      gigData: { capacity: 150, price: 12, pay: 100, name: 'Test Gig' },
+      performanceScore: 45,
+      modifiers: { merch: true },
+      bandInventory: {
+        shirts: 50,
+        hoodies: 25,
+        cds: 30,
+        patches: 80,
+        vinyl: 20
+      },
+      gigStats: { peakHype: 50, misses: 0 }
+    }
+    const legacy = calculateGigFinancials(params, NEUTRAL_ASSET_MODIFIERS)
+    const modified = calculateGigFinancials(params, {
+      ...NEUTRAL_ASSET_MODIFIERS,
+      flags: {
+        ...NEUTRAL_ASSET_MODIFIERS.flags,
+        enablesReRecording: true
+      }
+    })
+
+    assert.ok(
+      modified.income.total > legacy.income.total,
+      'Re-recording should improve the existing quality-sensitive income path'
+    )
+  })
+
+  await t.test(
+    'calculateMerchIncome applies enablesLimitedEditions as a merch price lift',
+    () => {
+      const inventory = {
+        shirts: 50,
+        hoodies: 25,
+        cds: 30,
+        patches: 80,
+        vinyl: 20
+      }
+      const legacy = calculateMerchIncome(
+        120,
+        80,
+        { peakHype: 70, misses: 0 },
+        { merch: true },
+        inventory,
+        {},
+        NEUTRAL_ASSET_MODIFIERS
+      )
+      const modified = calculateMerchIncome(
+        120,
+        80,
+        { peakHype: 70, misses: 0 },
+        { merch: true },
+        inventory,
+        {},
+        {
+          ...NEUTRAL_ASSET_MODIFIERS,
+          flags: {
+            ...NEUTRAL_ASSET_MODIFIERS.flags,
+            enablesLimitedEditions: true
+          }
+        }
+      )
+
+      assert.ok(
+        modified.revenue > legacy.revenue,
+        'Limited editions should raise merch revenue'
+      )
+    }
+  )
 })

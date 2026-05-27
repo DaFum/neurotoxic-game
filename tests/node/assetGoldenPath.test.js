@@ -191,16 +191,19 @@ describe('Asset golden path — crowdfund start → resolution', () => {
 
     // Build a campaign that resolves on next advanceDay (daysRemaining: 1
     // → tick subtracts 1 → 0 → resolve)
-    const startAction = startCrowdfund({
-      kind: 'tourbus_chassis',
-      flavor: 'legit',
-      tier: 1,
-      targetAmount: 4000,
-      fameStake: 20,
-      daysRemaining: 1,
-      plannedSuccessRoll: 0.1,
-      plannedSuccessProbability: 0.9
-    })
+    const startAction = startCrowdfund(
+      {
+        kind: 'tourbus_chassis',
+        flavor: 'legit',
+        tier: 1,
+        targetAmount: 4000,
+        fameStake: 20,
+        daysRemaining: 1,
+        plannedSuccessRoll: 0.1,
+        plannedSuccessProbability: 0.9
+      },
+      state
+    )
     assert.equal(startAction.type, ActionTypes.START_CROWDFUND)
     // Materialized ids were stamped by the action creator (Task 11-13 fix).
     assert.equal(
@@ -233,16 +236,19 @@ describe('Asset golden path — crowdfund start → resolution', () => {
     setupConfig()
     let state = seedState()
 
-    const startAction = startCrowdfund({
-      kind: 'tourbus_chassis',
-      flavor: 'legit',
-      tier: 1,
-      targetAmount: 4000,
-      fameStake: 30,
-      daysRemaining: 1,
-      plannedSuccessRoll: 0.95,
-      plannedSuccessProbability: 0.1 // roll >= probability → fail
-    })
+    const startAction = startCrowdfund(
+      {
+        kind: 'tourbus_chassis',
+        flavor: 'legit',
+        tier: 1,
+        targetAmount: 4000,
+        fameStake: 30,
+        daysRemaining: 1,
+        plannedSuccessRoll: 0.95,
+        plannedSuccessProbability: 0.1 // roll >= probability → fail
+      },
+      state
+    )
     state = gameReducer(state, startAction)
 
     // Crowdfund failure path: assert no asset was created and the campaign

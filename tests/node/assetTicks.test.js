@@ -6,7 +6,7 @@ import {
   processCrowdfundTick,
   rollAssetRiskEvents
 } from '../../src/utils/assetTicks.ts'
-import '../../src/utils/assetModuleRegistry.ts'
+import { MODULE_REGISTRY } from '../../src/utils/assetModuleRegistry.ts'
 
 test('processAssetTick - condition decay and condition floor at 0', () => {
   const state = {
@@ -269,4 +269,48 @@ test('rollAssetRiskEvents - deterministic risk event triggering', () => {
   const result = rollAssetRiskEvents(state, stream, 0)
   assert.strictEqual(result.cursor, 1)
   assert.strictEqual(result.state.assets[0].condition, 85)
+})
+
+test('rollAssetRiskEvents - reducesTheftRiskTravel removes theft from event selection', () => {
+  const moduleId = 'test_theft_reducer'
+  const original = MODULE_REGISTRY[moduleId]
+  MODULE_REGISTRY[moduleId] = {
+    id: moduleId,
+    ownerKind: 'tourbus_chassis',
+    slotType: 'tb_front',
+    flavor: 'diy',
+    cost: 1,
+    installCost: 0,
+    removalRefundFraction: 0,
+    boni: { reducesTheftRiskTravel: true },
+    unlock: {},
+    riskEventTypes: ['theft'],
+    imagePromptKey: 'tb_smoke_screen'
+  }
+
+  try {
+    const state = {
+      assets: [
+        {
+          id: 'a1',
+          condition: 100,
+          baseRiskEventChance: 1,
+          slots: [
+            { slotType: 'tb_front', id: 's1', installedModuleId: moduleId }
+          ]
+        }
+      ]
+    }
+    const result = rollAssetRiskEvents(state, [0, 0], 0)
+
+    assert.strictEqual(result.events.length, 1)
+    assert.notStrictEqual(result.events[0].eventType, 'theft')
+    assert.strictEqual(result.events[0].eventType, 'fire')
+  } finally {
+    if (original) {
+      MODULE_REGISTRY[moduleId] = original
+    } else {
+      delete MODULE_REGISTRY[moduleId]
+    }
+  }
 })

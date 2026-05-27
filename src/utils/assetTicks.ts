@@ -332,6 +332,9 @@ export const rollAssetRiskEvents = (
         for (const t of mod.riskEventTypes) riskEventTypes.add(t)
       }
     }
+    if (boni.reducesTheftRiskTravel) {
+      riskEventTypes.delete('theft')
+    }
 
     const typesArray = Array.from(riskEventTypes)
     // Default to 'fire' as a generic catch-all when no module exposes a

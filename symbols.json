@@ -1658,6 +1658,15 @@
         "type": "const"
       }
     ],
+    "calculateGigModifierCost": [
+      {
+        "isDefault": false,
+        "name": "calculateGigModifierCost",
+        "path": "src/utils/economyEngine.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "calculateGigPhysics": [
       {
         "isDefault": false,

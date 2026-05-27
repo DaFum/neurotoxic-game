@@ -542,7 +542,7 @@ describe('upgradeChassisTier', () => {
 })
 
 describe('startCrowdfund / resolveCrowdfund / sellChassis / repairChassis / removeModule', () => {
-  it('startCrowdfund stamps a uuid id and copies fields', () => {
+  it('startCrowdfund returns null when state is omitted', () => {
     const action = startCrowdfund({
       kind: 'tourbus_chassis',
       flavor: 'legit',
@@ -553,6 +553,24 @@ describe('startCrowdfund / resolveCrowdfund / sellChassis / repairChassis / remo
       plannedSuccessRoll: 0.42,
       plannedSuccessProbability: 0.5
     })
+
+    assert.equal(action, null)
+  })
+
+  it('startCrowdfund stamps a uuid id and copies fields', () => {
+    const action = startCrowdfund(
+      {
+        kind: 'tourbus_chassis',
+        flavor: 'legit',
+        tier: 1,
+        targetAmount: 5000,
+        fameStake: 50,
+        daysRemaining: 14,
+        plannedSuccessRoll: 0.42,
+        plannedSuccessProbability: 0.5
+      },
+      makeState()
+    )
     assert.equal(action.type, ActionTypes.START_CROWDFUND)
     assert.equal(action.payload.campaign.plannedSuccessRoll, 0.42)
     assert.equal(typeof action.payload.campaign.id, 'string')

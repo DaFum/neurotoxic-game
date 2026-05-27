@@ -37,6 +37,20 @@ export const MODIFIER_COSTS = {
   guestlist: 50
 }
 
+export const calculateGigModifierCost = (
+  key: keyof typeof MODIFIER_COSTS,
+  assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS
+): number => {
+  const baseCost = MODIFIER_COSTS[key] ?? 0
+  if (key !== 'soundcheck') return baseCost
+
+  const songCostMultiplier = Math.max(
+    0,
+    toFiniteNumber(assetModifiers.songCostMultiplier, 1)
+  )
+  return Math.ceil(baseCost * songCostMultiplier)
+}
+
 const BAR_RATE_VIP = 0.3
 
 export { DEFAULT_MERCH_PRICES }
@@ -428,8 +442,15 @@ export const calculateMerchIncome = (
       // expressed as +X (e.g. 0.10 = +10%). Apply at the line-item level,
       // then floor — multiplying sold × modifiedPrice and flooring once
       // preserves precision better than flooring per-unit.
+      const salePriceBonus = Math.max(
+        0,
+        toFiniteNumber(assetModifiers.avgMerchSalePriceBonus, 0)
+      )
+      const limitedEditionBonus = assetModifiers.flags?.enablesLimitedEditions
+        ? 0.1
+        : 0
       const itemRevenue = Math.floor(
-        sold * basePrice * (1 + (assetModifiers.avgMerchSalePriceBonus ?? 0))
+        sold * basePrice * (1 + salePriceBonus + limitedEditionBonus)
       )
       totalRevenue += itemRevenue
 
@@ -749,7 +770,10 @@ export const calculateSponsorshipBonuses = (gigStats: GigStatsLike = {}) => {
 /**
  * Calculates expenses for the gig.
  */
-export const calculateGigExpenses = (modifiers: GigModifiers = {}) => {
+export const calculateGigExpenses = (
+  modifiers: GigModifiers = {},
+  assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS
+) => {
   modifiers = modifiers || {}
   const expenses: { total: number; breakdown: FinancialBreakdownItem[] } = {
     total: 0,
@@ -761,48 +785,53 @@ export const calculateGigExpenses = (modifiers: GigModifiers = {}) => {
 
   // Modifiers (Budget items)
   if (modifiers.catering) {
+    const cost = calculateGigModifierCost('catering', assetModifiers)
     expenses.breakdown.push({
       labelKey: 'economy:gigExpenses.catering.label',
-      value: MODIFIER_COSTS.catering,
+      value: cost,
       detailKey: 'economy:gigExpenses.catering.detail'
     })
-    expenses.total += MODIFIER_COSTS.catering
+    expenses.total += cost
   }
 
   if (modifiers.promo) {
+    const cost = calculateGigModifierCost('promo', assetModifiers)
     expenses.breakdown.push({
       labelKey: 'economy:gigExpenses.socialAds.label',
-      value: MODIFIER_COSTS.promo,
+      value: cost,
       detailKey: 'economy:gigExpenses.socialAds.detail'
     })
-    expenses.total += MODIFIER_COSTS.promo
+    expenses.total += cost
   }
 
   if (modifiers.merch) {
+    const cost = calculateGigModifierCost('merch', assetModifiers)
     expenses.breakdown.push({
       labelKey: 'economy:gigExpenses.merchStand.label',
-      value: MODIFIER_COSTS.merch,
+      value: cost,
       detailKey: 'economy:gigExpenses.merchStand.detail'
     })
-    expenses.total += MODIFIER_COSTS.merch
+    expenses.total += cost
   }
 
   if (modifiers.soundcheck) {
+    const cost = calculateGigModifierCost('soundcheck', assetModifiers)
     expenses.breakdown.push({
       labelKey: 'economy:gigExpenses.soundcheck.label',
-      value: MODIFIER_COSTS.soundcheck,
+      value: cost,
       detailKey: 'economy:gigExpenses.soundcheck.detail'
     })
-    expenses.total += MODIFIER_COSTS.soundcheck
+    expenses.total += cost
   }
 
   if (modifiers.guestlist) {
+    const cost = calculateGigModifierCost('guestlist', assetModifiers)
     expenses.breakdown.push({
       labelKey: 'economy:gigExpenses.guestList.label',
-      value: MODIFIER_COSTS.guestlist,
+      value: cost,
       detailKey: 'economy:gigExpenses.guestList.detail'
     })
-    expenses.total += MODIFIER_COSTS.guestlist
+    expenses.total += cost
   }
 
   return expenses
@@ -831,6 +860,12 @@ export const calculateGigFinancials = (
   assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS
 ) => {
   const playerFame = playerState?.fame ?? 0
+  const totalSongQualityBonus =
+    Math.max(0, toFiniteNumber(assetModifiers.songQualityBonus, 0)) +
+    (assetModifiers.flags?.enablesReRecording ? 0.2 : 0)
+  const effectivePerformanceScore = clamp0to100(
+    toFiniteNumber(performanceScore, 0) + totalSongQualityBonus * 100
+  )
 
   logger.debug('Economy', 'Calculating Gig Financials', {
     gig: gigData.name,
@@ -895,7 +930,7 @@ export const calculateGigFinancials = (
   // 4. Merch Sales
   const merch = calculateMerchIncome(
     tickets.ticketsSold,
-    performanceScore,
+    effectivePerformanceScore,
     gigStats,
     modifiers,
     bandInventory,
@@ -918,7 +953,10 @@ export const calculateGigFinancials = (
     costModifiers.promo = false
   }
 
-  const operationalExpenses = calculateGigExpenses(costModifiers)
+  const operationalExpenses = calculateGigExpenses(
+    costModifiers,
+    assetModifiers
+  )
   report.expenses.breakdown.push(...operationalExpenses.breakdown)
   report.expenses.total += operationalExpenses.total
 

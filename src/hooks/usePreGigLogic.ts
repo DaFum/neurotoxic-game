@@ -14,7 +14,10 @@ import type { AssetModifiers } from '../types/assets'
 import { useTranslation } from 'react-i18next'
 import { useGameActions, useGameSelector } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
-import { MODIFIER_COSTS } from '../utils/economyEngine'
+import {
+  MODIFIER_COSTS,
+  calculateGigModifierCost
+} from '../utils/economyEngine'
 import {
   clampPlayerMoney,
   clampBandHarmony,
@@ -38,15 +41,58 @@ const resetLastMinigameFallback = (): void => {
   lastMinigameFallback = null
 }
 
+const BAND_MEETING_COST = 50
+const BASE_MERCH_CAPACITY = 100
+
+const resolveBandMeetingCost = (trainingCostMultiplier: unknown): number => {
+  const safeMultiplier = Math.max(0, finiteNumberOr(trainingCostMultiplier, 1))
+  return Math.ceil(Math.max(0, BAND_MEETING_COST * safeMultiplier))
+}
+
+const resolveMerchRestockCost = ({
+  itemCost,
+  merchCostMultiplier,
+  restockAmount,
+  bundleAmount
+}: {
+  itemCost: unknown
+  merchCostMultiplier: unknown
+  restockAmount: unknown
+  bundleAmount: unknown
+}): number => {
+  const safeItemCost = Math.max(0, finiteNumberOr(itemCost, 50))
+  const safeMultiplier = Math.max(0, finiteNumberOr(merchCostMultiplier, 1))
+  const safeRestockAmount = Math.max(0, finiteNumberOr(restockAmount, 0))
+  const safeBundleAmount = Math.max(1, finiteNumberOr(bundleAmount, 10))
+  const cappedRestockAmount = Math.min(safeRestockAmount, safeBundleAmount)
+
+  if (cappedRestockAmount <= 0) return 0
+
+  const fullBundleCost = Math.ceil(safeItemCost * safeMultiplier)
+  return Math.ceil(fullBundleCost * (cappedRestockAmount / safeBundleAmount))
+}
+
 const isTestRuntime =
   typeof process !== 'undefined' && process.env?.NODE_ENV === 'test'
 
 export const __testInternals:
-  | { resetLastMinigameFallback: () => void }
-  | undefined = isTestRuntime ? { resetLastMinigameFallback } : undefined
-
-const BAND_MEETING_COST = 50
-const BASE_MERCH_CAPACITY = 100
+  | {
+      resetLastMinigameFallback: () => void
+      resolveBandMeetingCost: (trainingCostMultiplier: unknown) => number
+      resolveMerchRestockCost: (input: {
+        itemCost: unknown
+        merchCostMultiplier: unknown
+        restockAmount: unknown
+        bundleAmount: unknown
+      }) => number
+    }
+  | undefined = isTestRuntime
+  ? {
+      resetLastMinigameFallback,
+      resolveBandMeetingCost,
+      resolveMerchRestockCost
+    }
+  : undefined
 
 const getMerchBundleAmount = (
   itemDef: typeof HQ_ITEMS_BY_MERCH_KEY extends ReadonlyMap<string, infer T>
@@ -114,42 +160,6 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     [t]
   )
 
-  const GIG_MODIFIER_OPTIONS = useMemo<ModifierOption[]>(
-    () => [
-      {
-        key: 'soundcheck',
-        label: typedT('ui:pregig.modifiers.soundcheck.label'),
-        cost: MODIFIER_COSTS.soundcheck,
-        desc: typedT('ui:pregig.modifiers.soundcheck.desc')
-      },
-      {
-        key: 'promo',
-        label: typedT('ui:pregig.modifiers.promo.label'),
-        cost: MODIFIER_COSTS.promo,
-        desc: typedT('ui:pregig.modifiers.promo.desc')
-      },
-      {
-        key: 'merch',
-        label: typedT('ui:pregig.modifiers.merch.label'),
-        cost: MODIFIER_COSTS.merch,
-        desc: typedT('ui:pregig.modifiers.merch.desc')
-      },
-      {
-        key: 'catering',
-        label: typedT('ui:pregig.modifiers.catering.label'),
-        cost: MODIFIER_COSTS.catering,
-        desc: typedT('ui:pregig.modifiers.catering.desc')
-      },
-      {
-        key: 'guestlist',
-        label: typedT('ui:pregig.modifiers.guestlist.label'),
-        cost: MODIFIER_COSTS.guestlist,
-        desc: typedT('ui:pregig.modifiers.guestlist.desc')
-      }
-    ],
-    [typedT]
-  )
-
   const currentGig = useGameSelector(state => state.currentGig)
   const setlist = useGameSelector(state => state.setlist)
   const gigModifiers = useGameSelector(state => state.gigModifiers)
@@ -174,8 +184,43 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     () => getActiveAssetModifiers(assets ?? []),
     [assets]
   )
+  const GIG_MODIFIER_OPTIONS = useMemo<ModifierOption[]>(
+    () => [
+      {
+        key: 'soundcheck',
+        label: typedT('ui:pregig.modifiers.soundcheck.label'),
+        cost: calculateGigModifierCost('soundcheck', assetModifiers),
+        desc: typedT('ui:pregig.modifiers.soundcheck.desc')
+      },
+      {
+        key: 'promo',
+        label: typedT('ui:pregig.modifiers.promo.label'),
+        cost: calculateGigModifierCost('promo', assetModifiers),
+        desc: typedT('ui:pregig.modifiers.promo.desc')
+      },
+      {
+        key: 'merch',
+        label: typedT('ui:pregig.modifiers.merch.label'),
+        cost: calculateGigModifierCost('merch', assetModifiers),
+        desc: typedT('ui:pregig.modifiers.merch.desc')
+      },
+      {
+        key: 'catering',
+        label: typedT('ui:pregig.modifiers.catering.label'),
+        cost: calculateGigModifierCost('catering', assetModifiers),
+        desc: typedT('ui:pregig.modifiers.catering.desc')
+      },
+      {
+        key: 'guestlist',
+        label: typedT('ui:pregig.modifiers.guestlist.label'),
+        cost: calculateGigModifierCost('guestlist', assetModifiers),
+        desc: typedT('ui:pregig.modifiers.guestlist.desc')
+      }
+    ],
+    [assetModifiers, typedT]
+  )
   const adjustedBandMeetingCost = useMemo(
-    () => Math.ceil(BAND_MEETING_COST * assetModifiers.trainingCostMultiplier),
+    () => resolveBandMeetingCost(assetModifiers.trainingCostMultiplier),
     [assetModifiers.trainingCostMultiplier]
   )
 
@@ -200,20 +245,28 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
       const bundleAmount = getMerchBundleAmount(itemDef)
       const currentInventory = band.inventory ?? {}
       const merchCapacity =
-        BASE_MERCH_CAPACITY + Math.max(0, assetModifiers.merchCapacityBonus)
-      const remainingCapacity =
+        BASE_MERCH_CAPACITY +
+        Math.max(0, finiteNumberOr(assetModifiers.merchCapacityBonus, 0))
+      const remainingCapacity = Math.max(
+        0,
         merchCapacity - getTotalMerchStock(currentInventory)
+      )
 
       if (remainingCapacity <= 0) {
         addToast(typedT('ui:pregig.toasts.merchCapacityFull'), 'error')
         return
       }
 
-      const restockAmount = Math.min(bundleAmount, remainingCapacity)
-      const fullBundleCost = Math.ceil(
-        itemDef.cost * assetModifiers.merchCostMultiplier
+      const restockAmount = Math.max(
+        0,
+        Math.min(bundleAmount, remainingCapacity)
       )
-      const cost = Math.ceil(fullBundleCost * (restockAmount / bundleAmount))
+      const cost = resolveMerchRestockCost({
+        itemCost: itemDef.cost,
+        merchCostMultiplier: assetModifiers.merchCostMultiplier,
+        restockAmount,
+        bundleAmount
+      })
       if (player.money < cost) {
         addToast(typedT('ui:pregig.toasts.noMoneyUpgrade'), 'error')
         return
@@ -344,16 +397,19 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     let acc = 0
     for (const key in gigModifiers) {
       if (Object.hasOwn(gigModifiers, key) && gigModifiers[key]) {
-        acc += MODIFIER_COSTS[key as keyof typeof MODIFIER_COSTS] ?? 0
+        acc += calculateGigModifierCost(
+          key as keyof typeof MODIFIER_COSTS,
+          assetModifiers
+        )
       }
     }
     return acc
-  }, [gigModifiers])
+  }, [assetModifiers, gigModifiers])
 
   const toggleModifier = useCallback(
     (key: keyof typeof MODIFIER_COSTS) => {
       const isActive = gigModifiers[key]
-      const cost = MODIFIER_COSTS[key] ?? 0
+      const cost = calculateGigModifierCost(key, assetModifiers)
 
       if (!isActive) {
         const projectedTotal = calculatedBudget + cost
@@ -367,6 +423,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     },
     [
       gigModifiers,
+      assetModifiers,
       calculatedBudget,
       player.money,
       addToast,

@@ -351,7 +351,7 @@ export interface StartCrowdfundInput {
 
 export const startCrowdfund = (
   raw: StartCrowdfundInput,
-  state?: Pick<GameState, 'assets' | 'crowdfundCampaigns'>
+  state: Pick<GameState, 'assets' | 'crowdfundCampaigns'>
 ): StartCrowdfundAction | null => {
   if (
     !VALID_KINDS.has(raw.kind) ||
@@ -360,7 +360,7 @@ export const startCrowdfund = (
   ) {
     return null
   }
-  if (state && hasActiveAssetAcquisition(state, raw.kind)) {
+  if (!state || hasActiveAssetAcquisition(state, raw.kind)) {
     return null
   }
   // Pre-generate the materialized-asset ids here so processCrowdfundTick
