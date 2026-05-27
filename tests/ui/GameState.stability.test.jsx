@@ -57,7 +57,7 @@ describe('useGameSelector correctness', () => {
       () => useGameSelector(state => state.player.money),
       { wrapper }
     )
-    expect(typeof result.current).toBe('number')
+    expect(result.current).toBe(500)
   })
 
   it('updates the returned value when the selected state changes', () => {
