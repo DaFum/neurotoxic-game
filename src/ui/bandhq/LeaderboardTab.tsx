@@ -97,28 +97,22 @@ export const LeaderboardTab = () => {
         for (let i = 0; i < data.length; i++) {
           const entry = data[i]
           if (typeof entry === 'object' && entry !== null) {
+            const item = entry as Partial<LeaderboardEntry>
             sanitizedEntries.push({
-              rank:
-                typeof (entry as Partial<LeaderboardEntry>).rank === 'number'
-                  ? (entry as Partial<LeaderboardEntry>).rank!
-                  : 0,
+              rank: typeof item.rank === 'number' ? item.rank : 0,
               playerId:
-                typeof (entry as Partial<LeaderboardEntry>).playerId ===
-                'string'
-                  ? (entry as Partial<LeaderboardEntry>).playerId!
+                typeof item.playerId === 'string'
+                  ? item.playerId
                   : `unknown-player-${i}`,
               playerName:
-                typeof (entry as Partial<LeaderboardEntry>).playerName ===
-                'string'
-                  ? (entry as Partial<LeaderboardEntry>).playerName!
+                typeof item.playerName === 'string'
+                  ? item.playerName
                   : t('ui:leaderboard.unknownPlayer', {
                       defaultValue: 'Unknown'
                     }),
               score:
-                typeof (entry as Partial<LeaderboardEntry>).score ===
-                  'number' &&
-                Number.isFinite((entry as Partial<LeaderboardEntry>).score)
-                  ? (entry as Partial<LeaderboardEntry>).score!
+                typeof item.score === 'number' && Number.isFinite(item.score)
+                  ? item.score
                   : 0
             })
           }
