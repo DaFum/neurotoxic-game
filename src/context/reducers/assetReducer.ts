@@ -16,6 +16,7 @@ import {
 } from '../../utils/assetConfig'
 import { LOAN_PROFILES, computeAmortization } from '../../utils/loanProfiles'
 import { MODULE_REGISTRY } from '../../utils/assetModuleRegistry'
+import { hasActiveAssetAcquisition } from '../../utils/assetSelectors'
 
 export const handlePurchaseChassis = (
   state: GameState,
@@ -23,6 +24,8 @@ export const handlePurchaseChassis = (
 ): GameState => {
   const { id, kind, flavor, tier, mode, slotIds, loanProfileId, today } =
     payload
+
+  if (hasActiveAssetAcquisition(state, kind)) return state
 
   // CHASSIS_CONFIG is fully typed — Record<AssetKind, ChassisKindConfig> with
   // ChassisFlavorConfig nested under each flavor. Direct access without
@@ -360,6 +363,9 @@ export const handleStartCrowdfund = (
   state: GameState,
   payload: { campaign: import('../../types/assets').CrowdfundCampaign }
 ): GameState => {
+  if (hasActiveAssetAcquisition(state, payload.campaign.assetSpec.kind)) {
+    return state
+  }
   return {
     ...state,
     crowdfundCampaigns: [...(state.crowdfundCampaigns || []), payload.campaign]
@@ -384,6 +390,12 @@ export const handleResolveCrowdfund = (
   let nextAssets = state.assets || []
 
   if (outcome === 'success') {
+    if (nextAssets.some(asset => asset.kind === campaign.assetSpec.kind)) {
+      return {
+        ...state,
+        crowdfundCampaigns: nextCampaigns
+      }
+    }
     nextFame += campaign.fameStake
 
     if (newAssetId && newSlotIds) {

@@ -10,12 +10,18 @@ import type { RhythmSetlistEntry } from '../types/rhythmGame'
 import type { Song } from '../types/audio'
 import type { ActiveEffectEntry } from '../types/components'
 import type { TranslationCallback } from '../types/callbacks'
+import type { AssetModifiers } from '../types/assets'
 import { useTranslation } from 'react-i18next'
 import { useGameActions, useGameSelector } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
 import { MODIFIER_COSTS } from '../utils/economyEngine'
-import { clampPlayerMoney, clampBandHarmony } from '../utils/gameStateUtils'
+import {
+  clampPlayerMoney,
+  clampBandHarmony,
+  finiteNumberOr
+} from '../utils/gameStateUtils'
 import { getGigModifiers } from '../utils/simulationUtils'
+import { getActiveAssetModifiers } from '../utils/assetSelectors'
 import { audioService, getSongId } from '../utils/audio/audioEngine'
 import { handleError } from '../utils/errorHandler'
 import { getSafeRandom, getSafeUUID } from '../utils/crypto'
@@ -40,6 +46,34 @@ export const __testInternals:
   | undefined = isTestRuntime ? { resetLastMinigameFallback } : undefined
 
 const BAND_MEETING_COST = 50
+const BASE_MERCH_CAPACITY = 100
+
+const getMerchBundleAmount = (
+  itemDef: typeof HQ_ITEMS_BY_MERCH_KEY extends ReadonlyMap<string, infer T>
+    ? T
+    : never
+): number => {
+  const effect = itemDef.effect
+  if (
+    effect &&
+    typeof effect === 'object' &&
+    Object.hasOwn(effect, 'value') &&
+    typeof effect.value === 'number' &&
+    Number.isFinite(effect.value) &&
+    effect.value > 0
+  ) {
+    return effect.value
+  }
+  return 10
+}
+
+const getTotalMerchStock = (inventory: Record<string, unknown>): number => {
+  let total = 0
+  for (const merchKey of HQ_ITEMS_BY_MERCH_KEY.keys()) {
+    total += finiteNumberOr(inventory[merchKey], 0)
+  }
+  return Math.max(0, total)
+}
 
 export type ModifierOption = {
   key: keyof typeof MODIFIER_COSTS
@@ -60,6 +94,7 @@ export interface PreGigLogicReturn {
   setlist: RhythmSetlistEntry[]
   gigModifiers: GigModifiers
   currentModifiers: { activeEffects: ActiveEffectEntry[] }
+  assetModifiers: AssetModifiers
   selectedSongIds: Set<string>
   calculatedBudget: number
   isStarting: boolean
@@ -121,6 +156,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
   const player = useGameSelector(state => state.player)
   const activeEvent = useGameSelector(state => state.activeEvent)
   const band = useGameSelector(state => state.band)
+  const assets = useGameSelector(state => state.assets)
   const isScreenshotMode = useGameSelector(state => state.isScreenshotMode)
   const {
     changeScene,
@@ -134,6 +170,14 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     startKabelsalatMinigame,
     startAmpCalibration
   } = useGameActions()
+  const assetModifiers = useMemo(
+    () => getActiveAssetModifiers(assets ?? []),
+    [assets]
+  )
+  const adjustedBandMeetingCost = useMemo(
+    () => Math.ceil(BAND_MEETING_COST * assetModifiers.trainingCostMultiplier),
+    [assetModifiers.trainingCostMultiplier]
+  )
 
   const handleUpdateMerchPrice = useCallback(
     (merchKey: string, newPrice: number) => {
@@ -153,7 +197,23 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
       const itemDef = HQ_ITEMS_BY_MERCH_KEY.get(merchKey)
       if (!itemDef) return
 
-      const cost = itemDef.cost
+      const bundleAmount = getMerchBundleAmount(itemDef)
+      const currentInventory = band.inventory ?? {}
+      const merchCapacity =
+        BASE_MERCH_CAPACITY + Math.max(0, assetModifiers.merchCapacityBonus)
+      const remainingCapacity =
+        merchCapacity - getTotalMerchStock(currentInventory)
+
+      if (remainingCapacity <= 0) {
+        addToast(typedT('ui:pregig.toasts.merchCapacityFull'), 'error')
+        return
+      }
+
+      const restockAmount = Math.min(bundleAmount, remainingCapacity)
+      const fullBundleCost = Math.ceil(
+        itemDef.cost * assetModifiers.merchCostMultiplier
+      )
+      const cost = Math.ceil(fullBundleCost * (restockAmount / bundleAmount))
       if (player.money < cost) {
         addToast(typedT('ui:pregig.toasts.noMoneyUpgrade'), 'error')
         return
@@ -171,11 +231,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
           ...prevBand,
           inventory: {
             ...currentInventory,
-            [merchKey]:
-              currentAmount +
-              (typeof itemDef.effect?.value === 'number'
-                ? itemDef.effect.value
-                : 10)
+            [merchKey]: currentAmount + restockAmount
           }
         }
       })
@@ -185,7 +241,16 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
         'success'
       )
     },
-    [player.money, updatePlayer, updateBand, addToast, typedT]
+    [
+      player.money,
+      band.inventory,
+      assetModifiers.merchCapacityBonus,
+      assetModifiers.merchCostMultiplier,
+      updatePlayer,
+      updateBand,
+      addToast,
+      typedT
+    ]
   )
 
   const [isStarting, setIsStarting] = useState(false)
@@ -215,7 +280,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
   }, [currentGig, changeScene, addToast])
 
   const handleBandMeeting = useCallback(() => {
-    const cost = BAND_MEETING_COST
+    const cost = adjustedBandMeetingCost
     if (player.money < cost) {
       addToast(typedT('ui:pregig.toasts.noMoneySnacks'), 'error')
       return
@@ -242,7 +307,15 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
       typedT('ui:pregig.toasts.meetingHeld', { amount: appliedDelta }),
       'success'
     )
-  }, [player.money, addToast, typedT, updatePlayer, band.harmony, updateBand])
+  }, [
+    adjustedBandMeetingCost,
+    player.money,
+    addToast,
+    typedT,
+    updatePlayer,
+    band.harmony,
+    updateBand
+  ])
 
   const hasRunRef = useRef(false)
   useEffect(() => {
@@ -386,11 +459,12 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     setlist,
     gigModifiers,
     currentModifiers,
+    assetModifiers,
     selectedSongIds,
     calculatedBudget,
     isStarting,
     GIG_MODIFIER_OPTIONS,
-    BAND_MEETING_COST,
+    BAND_MEETING_COST: adjustedBandMeetingCost,
     handleBandMeeting,
     toggleSong,
     toggleModifier,

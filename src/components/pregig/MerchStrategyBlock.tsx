@@ -9,6 +9,7 @@ interface MerchStrategyBlockProps {
   customPrices: Record<string, number>
   onUpdatePrice: (merchKey: string, newPrice: number) => void
   onRestock: (merchKey: string) => void
+  restockCostMultiplier?: number
 }
 
 interface MerchItem {
@@ -92,7 +93,8 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
   bandInventory,
   customPrices,
   onUpdatePrice,
-  onRestock
+  onRestock,
+  restockCostMultiplier = 1
 }) => {
   const { t, i18n } = useTranslation(['economy', 'ui'])
 
@@ -107,7 +109,9 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
             ? (bandInventory[key] as number)
             : 0
 
-        const restockCost = HQ_ITEMS_BY_MERCH_KEY.get(key)?.cost ?? 50 // fallback
+        const restockCost = Math.ceil(
+          (HQ_ITEMS_BY_MERCH_KEY.get(key)?.cost ?? 50) * restockCostMultiplier
+        )
 
         items.push({
           key,
@@ -122,7 +126,7 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
       }
     }
     return items
-  }, [bandInventory, customPrices, t])
+  }, [bandInventory, customPrices, restockCostMultiplier, t])
 
   return (
     <div className='bg-(--color-void-black) border-2 border-(--color-toxic-green) p-4 flex flex-col gap-4'>

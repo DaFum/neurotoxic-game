@@ -154,3 +154,16 @@ test('calculatePostGigStateUpdates rejects malformed active deal remainingGigs',
     /Invalid remainingGigs for active deal deal_bad_remaining: soon/
   )
 })
+
+test('calculatePostGigStateUpdates grows scene presence after post-gig activity', () => {
+  const updates = calculatePostGigStateUpdates({
+    ...buildPostGigParams({
+      social: { scenePresence: 24 },
+      result: { followers: 10, success: true }
+    }),
+    perfScore: 80,
+    lastGigStats: { accuracy: 0, maxCombo: 0, score: 0 }
+  })
+
+  assert.equal(updates.updatedSocial.scenePresence, 29)
+})

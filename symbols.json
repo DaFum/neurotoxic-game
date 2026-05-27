@@ -5996,6 +5996,15 @@
         "type": "const"
       }
     ],
+    "hasActiveAssetAcquisition": [
+      {
+        "isDefault": false,
+        "name": "hasActiveAssetAcquisition",
+        "path": "src/utils/assetSelectors.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "hasActiveQuest": [
       {
         "isDefault": false,
@@ -10999,6 +11008,15 @@
         "source": "local",
         "type": "interface",
         "typeOnly": true
+      }
+    ],
+    "UpgradeConfirmModal": [
+      {
+        "isDefault": false,
+        "name": "UpgradeConfirmModal",
+        "path": "src/components/assets/UpgradeConfirmModal.tsx",
+        "source": "local",
+        "type": "const"
       }
     ],
     "UpgradesTab": [

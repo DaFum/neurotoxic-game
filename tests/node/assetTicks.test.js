@@ -6,6 +6,7 @@ import {
   processCrowdfundTick,
   rollAssetRiskEvents
 } from '../../src/utils/assetTicks.ts'
+import '../../src/utils/assetModuleRegistry.ts'
 
 test('processAssetTick - condition decay and condition floor at 0', () => {
   const state = {
@@ -30,6 +31,65 @@ test('processAssetTick - condition decay and condition floor at 0', () => {
   const next = processAssetTick(state)
   assert.strictEqual(next.assets[0].condition, 0)
   assert.strictEqual(next.assets[1].condition, 9.7)
+})
+
+test('processAssetTick - applies passive fame, mood, and stamina asset boni', () => {
+  const state = {
+    assets: [
+      {
+        id: 'bandhaus_1',
+        kind: 'bandhaus_chassis',
+        chassisFlavor: 'legit',
+        chassisTier: 3,
+        condition: 100,
+        baseDailyRevenue: 0,
+        baseUpkeep: 0,
+        baseRiskEventChance: 0,
+        acquiredOnDay: 1,
+        acquisitionMode: 'cash',
+        slots: [
+          {
+            slotType: 'bh_sleeping',
+            id: 's_sleep',
+            position: { x: 0, y: 0 },
+            installedModuleId: 'bh_bunk_beds'
+          },
+          {
+            slotType: 'bh_backyard',
+            id: 's_yard',
+            position: { x: 0, y: 0 },
+            installedModuleId: 'bh_weed_garden'
+          },
+          {
+            slotType: 'bh_secret',
+            id: 's_secret',
+            position: { x: 0, y: 0 },
+            installedModuleId: 'bh_pirate_radio_antenna'
+          }
+        ]
+      }
+    ],
+    player: { money: 100, fame: 399, fameLevel: 0 },
+    band: {
+      members: [
+        {
+          id: 'matze',
+          mood: 10,
+          stamina: 10,
+          staminaMax: 20,
+          traits: {},
+          relationships: {}
+        }
+      ]
+    }
+  }
+
+  const next = processAssetTick(state)
+
+  assert.strictEqual(next.player.fame, 400)
+  assert.strictEqual(next.player.fameLevel, 1)
+  assert.strictEqual(next.band.members[0].mood, 12)
+  assert.strictEqual(next.band.members[0].stamina, 13)
 })
 
 test('processLiabilityTick - liability default counter increment and trigger at 7 days', () => {
@@ -108,6 +168,90 @@ test('processCrowdfundTick - failed resolution subtracts fameStake', () => {
   assert.strictEqual(next.player.money, 100, 'no money awarded on fail')
   assert.strictEqual(next.player.fame, 10, 'fame stake deducted')
   assert.strictEqual(next.assets.length, 0, 'no asset created on fail')
+})
+
+test('processCrowdfundTick - drops campaigns for sections with existing assets', () => {
+  const state = {
+    crowdfundCampaigns: [
+      {
+        id: 'c1',
+        daysRemaining: 1,
+        plannedSuccessRoll: 0.1,
+        plannedSuccessProbability: 0.9,
+        materializedAssetId: 'mat_a1',
+        materializedSlotIds: [],
+        targetAmount: 4000,
+        fameStake: 50,
+        assetSpec: {
+          kind: 'tourbus_chassis',
+          flavor: 'legit',
+          chassisTier: 1
+        }
+      }
+    ],
+    player: { money: 100, fame: 30, day: 5 },
+    assets: [
+      {
+        id: 'a1',
+        kind: 'tourbus_chassis',
+        condition: 100,
+        baseDailyRevenue: 0,
+        baseUpkeep: 0,
+        slots: []
+      }
+    ]
+  }
+  const next = processCrowdfundTick(state)
+
+  assert.strictEqual(next.assets.length, 1)
+  assert.strictEqual(next.crowdfundCampaigns.length, 0)
+  assert.strictEqual(next.player.money, 100)
+  assert.strictEqual(next.player.fame, 30)
+})
+
+test('processCrowdfundTick - keeps only one pending campaign per section', () => {
+  const state = {
+    crowdfundCampaigns: [
+      {
+        id: 'c1',
+        daysRemaining: 3,
+        plannedSuccessRoll: 0.1,
+        plannedSuccessProbability: 0.9,
+        materializedAssetId: 'mat_a1',
+        materializedSlotIds: [],
+        targetAmount: 4000,
+        fameStake: 50,
+        assetSpec: {
+          kind: 'tourbus_chassis',
+          flavor: 'legit',
+          chassisTier: 1
+        }
+      },
+      {
+        id: 'c2',
+        daysRemaining: 3,
+        plannedSuccessRoll: 0.2,
+        plannedSuccessProbability: 0.9,
+        materializedAssetId: 'mat_a2',
+        materializedSlotIds: [],
+        targetAmount: 4000,
+        fameStake: 50,
+        assetSpec: {
+          kind: 'tourbus_chassis',
+          flavor: 'diy',
+          chassisTier: 1
+        }
+      }
+    ],
+    player: { money: 100, fame: 30, day: 5 },
+    assets: []
+  }
+  const next = processCrowdfundTick(state)
+
+  assert.deepStrictEqual(
+    next.crowdfundCampaigns.map(campaign => campaign.id),
+    ['c1']
+  )
 })
 
 test('rollAssetRiskEvents - deterministic risk event triggering', () => {

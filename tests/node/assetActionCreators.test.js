@@ -81,7 +81,8 @@ const makeState = (overrides = {}) => ({
   social: { ...overrides.social },
   activeStoryFlags: overrides.activeStoryFlags ?? [],
   assets: overrides.assets ?? [],
-  liabilities: overrides.liabilities ?? []
+  liabilities: overrides.liabilities ?? [],
+  crowdfundCampaigns: overrides.crowdfundCampaigns ?? []
 })
 
 const makeAsset = (overrides = {}) => ({
@@ -96,6 +97,24 @@ const makeAsset = (overrides = {}) => ({
   acquiredOnDay: 1,
   acquisitionMode: 'cash',
   baseRiskEventChance: 0.005,
+  ...overrides
+})
+
+const makeCampaign = (overrides = {}) => ({
+  id: 'camp_1',
+  assetSpec: {
+    kind: 'tourbus_chassis',
+    flavor: 'legit',
+    chassisTier: 1,
+    ...overrides.assetSpec
+  },
+  targetAmount: 4000,
+  fameStake: 20,
+  daysRemaining: 14,
+  plannedSuccessRoll: 0.4,
+  plannedSuccessProbability: 0.5,
+  materializedAssetId: 'campaign_asset',
+  materializedSlotIds: [],
   ...overrides
 })
 
@@ -135,6 +154,26 @@ describe('purchaseChassis', () => {
     )
     assert.equal(action.type, ActionTypes.PURCHASE_CHASSIS_FAILED)
     assert.equal(action.payload.reason, 'INSUFFICIENT_FUNDS')
+  })
+
+  it('returns FAILED when an asset already exists for the section', () => {
+    setupTourbusT1()
+    const action = purchaseChassis(
+      { kind: 'tourbus_chassis', flavor: 'legit', tier: 1, mode: 'cash' },
+      makeState({ assets: [makeAsset()] })
+    )
+    assert.equal(action.type, ActionTypes.PURCHASE_CHASSIS_FAILED)
+    assert.equal(action.payload.reason, 'ACQUISITION_ALREADY_ACTIVE')
+  })
+
+  it('returns FAILED when a campaign is already pending for the section', () => {
+    setupTourbusT1()
+    const action = purchaseChassis(
+      { kind: 'tourbus_chassis', flavor: 'legit', tier: 1, mode: 'cash' },
+      makeState({ crowdfundCampaigns: [makeCampaign()] })
+    )
+    assert.equal(action.type, ActionTypes.PURCHASE_CHASSIS_FAILED)
+    assert.equal(action.payload.reason, 'ACQUISITION_ALREADY_ACTIVE')
   })
 
   it('returns FAILED for unknown loan profile', () => {
@@ -238,6 +277,31 @@ describe('installModule', () => {
       { assetId: 'asset_1', slotId: 'slot_1', moduleId: 'install_locked' },
       makeState({ assets: [asset] })
     )
+    assert.equal(action.payload.reason, 'LOCKED')
+  })
+
+  it('returns FAILED when the asset chassis tier does not satisfy the module unlock', () => {
+    registerTestModule('install_tier_locked', {
+      unlock: { minChassisTier: 2 }
+    })
+    const asset = makeAsset({
+      chassisTier: 1,
+      slots: [
+        {
+          id: 'slot_1',
+          slotType: 'tb_roof',
+          position: { x: 0, y: 0 },
+          installedModuleId: null
+        }
+      ]
+    })
+
+    const action = installModule(
+      { assetId: 'asset_1', slotId: 'slot_1', moduleId: 'install_tier_locked' },
+      makeState({ assets: [asset] })
+    )
+
+    assert.equal(action.type, ActionTypes.INSTALL_MODULE_FAILED)
     assert.equal(action.payload.reason, 'LOCKED')
   })
 
@@ -458,11 +522,46 @@ describe('startCrowdfund / resolveCrowdfund / sellChassis / repairChassis / remo
       targetAmount: 5000,
       fameStake: 50,
       daysRemaining: 14,
-      plannedSuccessRoll: 0.42
+      plannedSuccessRoll: 0.42,
+      plannedSuccessProbability: 0.5
     })
     assert.equal(action.type, ActionTypes.START_CROWDFUND)
     assert.equal(action.payload.campaign.plannedSuccessRoll, 0.42)
     assert.equal(typeof action.payload.campaign.id, 'string')
+  })
+
+  it('startCrowdfund returns null when an asset already exists for the section', () => {
+    const action = startCrowdfund(
+      {
+        kind: 'tourbus_chassis',
+        flavor: 'legit',
+        tier: 1,
+        targetAmount: 5000,
+        fameStake: 50,
+        daysRemaining: 14,
+        plannedSuccessRoll: 0.42,
+        plannedSuccessProbability: 0.5
+      },
+      makeState({ assets: [makeAsset()] })
+    )
+    assert.equal(action, null)
+  })
+
+  it('startCrowdfund returns null when a campaign is already pending for the section', () => {
+    const action = startCrowdfund(
+      {
+        kind: 'tourbus_chassis',
+        flavor: 'legit',
+        tier: 1,
+        targetAmount: 5000,
+        fameStake: 50,
+        daysRemaining: 14,
+        plannedSuccessRoll: 0.42,
+        plannedSuccessProbability: 0.5
+      },
+      makeState({ crowdfundCampaigns: [makeCampaign()] })
+    )
+    assert.equal(action, null)
   })
 
   it('resolveCrowdfund(success) generates asset + slot ids', () => {

@@ -7,6 +7,7 @@ import { getChassisImagePrompt } from '../../utils/imageGen'
 import { CHASSIS_CONFIG } from '../../utils/assetConfig'
 import { LOAN_PROFILES, type LoanProfileId } from '../../utils/loanProfiles'
 import { formatCurrency } from '../../utils/numberUtils'
+import { hasActiveAssetAcquisition } from '../../utils/assetSelectors'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import type {
   AcquisitionMode,
@@ -38,6 +39,9 @@ const MODES: readonly AcquisitionMode[] = ['cash', 'loan', 'crowdfund']
 export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
   const { t, i18n } = useTranslation(['assets'])
   const money = useGameSelector(s => s.player.money)
+  const acquisitionBlocked = useGameSelector(s =>
+    hasActiveAssetAcquisition(s, kind)
+  )
   const { purchaseChassis } = useGameActions()
 
   const [flavor, setFlavor] = useState<AssetFlavor>('legit')
@@ -52,6 +56,7 @@ export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
   const insufficient = mode === 'cash' && money < price
 
   const onConfirm = () => {
+    if (acquisitionBlocked) return
     if (mode === 'crowdfund') {
       setShowCrowdfundSetup(true)
       return
@@ -138,7 +143,12 @@ export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
               <button
                 type='button'
                 onClick={onConfirm}
-                disabled={diyLoanBlocked || insufficient || price === 0}
+                disabled={
+                  acquisitionBlocked ||
+                  diyLoanBlocked ||
+                  insufficient ||
+                  price === 0
+                }
                 className='min-h-11 border-2 px-3 py-2 disabled:opacity-40'
                 style={{
                   background: 'var(--section-accent, var(--color-toxic-green))',
@@ -153,6 +163,11 @@ export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
           {diyLoanBlocked && (
             <p style={{ color: 'var(--color-blood)' }}>
               {t('assets:purchaseFailed.diy_loan_not_allowed')}
+            </p>
+          )}
+          {acquisitionBlocked && (
+            <p style={{ color: 'var(--color-warning-yellow)' }}>
+              {t('assets:purchaseFailed.acquisition_already_active')}
             </p>
           )}
           {insufficient && (

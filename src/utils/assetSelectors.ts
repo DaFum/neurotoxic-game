@@ -1,6 +1,7 @@
 import type { GameState } from '../types'
 import type {
   AssetBoni,
+  AssetKind,
   AssetModifiers,
   AssetModule,
   LongTermAsset,
@@ -102,6 +103,19 @@ export const getAssetTotalDailyRevenue = (asset: LongTermAsset): number => {
   return (base + delta) * (asset.condition / 100)
 }
 
+export const hasActiveAssetAcquisition = (
+  state: Pick<GameState, 'assets' | 'crowdfundCampaigns'>,
+  kind: AssetKind
+): boolean => {
+  const assets = Array.isArray(state.assets) ? state.assets : []
+  if (assets.some(asset => asset.kind === kind)) return true
+
+  const campaigns = Array.isArray(state.crowdfundCampaigns)
+    ? state.crowdfundCampaigns
+    : []
+  return campaigns.some(campaign => campaign.assetSpec.kind === kind)
+}
+
 /**
  * Aggregates modifiers from all assets in the state. Returns
  * NEUTRAL_ASSET_MODIFIERS when no assets exist or all are broken.
@@ -176,6 +190,41 @@ export const getTotalDailyObligations = (state: GameState): number => {
   return base + assetUpkeep - assetRevenue + liabilityPayments
 }
 
+const SKILL_ALIASES: Record<string, readonly string[]> = {
+  tech: ['tech', 'technical']
+}
+
+const readFiniteNumber = (source: unknown, key: string): number | undefined => {
+  if (!source || typeof source !== 'object') return undefined
+  const record = source as Record<string, unknown>
+  if (!Object.hasOwn(record, key)) return undefined
+  const value = record[key]
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined
+}
+
+const readMemberSkillValue = (
+  member: unknown,
+  skill: string
+): number | undefined => {
+  if (!member || typeof member !== 'object') return undefined
+  const record = member as Record<string, unknown>
+  const skillKeys = SKILL_ALIASES[skill] ?? [skill]
+
+  for (const key of skillKeys) {
+    const legacySkill = readFiniteNumber(record.skills, key)
+    if (legacySkill !== undefined) return legacySkill
+  }
+  for (const key of skillKeys) {
+    const baseStat = readFiniteNumber(record.baseStats, key)
+    if (baseStat !== undefined) return baseStat
+  }
+  for (const key of skillKeys) {
+    const topLevelStat = readFiniteNumber(record, key)
+    if (topLevelStat !== undefined) return topLevelStat
+  }
+  return undefined
+}
+
 const memberHasSkill = (
   state: GameState,
   skill: string,
@@ -186,8 +235,7 @@ const memberHasSkill = (
     ? state.band.members.filter((m: { id?: string }) => m.id === memberId)
     : state.band.members
   for (const m of candidates) {
-    const skills = (m as { skills?: Record<string, number> }).skills
-    if (skills && (skills[skill] ?? 0) >= tier) return true
+    if ((readMemberSkillValue(m, skill) ?? 0) >= tier) return true
   }
   return false
 }

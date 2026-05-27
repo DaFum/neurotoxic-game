@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { LongTermAsset } from '../../types/assets'
+import type { ChassisTier, LongTermAsset } from '../../types/assets'
 import { AssetSlotActionList } from './AssetSlotActionList'
 
 interface AssetSectionDeckProps {
@@ -8,18 +8,24 @@ interface AssetSectionDeckProps {
   hero: ReactNode
   onSlotClick: (slotId: string) => void
   onRepair: () => void
+  onUpgrade: () => void
   onSell: () => void
 }
+
+const getNextTier = (tier: ChassisTier): ChassisTier | null =>
+  tier < 3 ? ((tier + 1) as ChassisTier) : null
 
 export const AssetSectionDeck = ({
   asset,
   hero,
   onSlotClick,
   onRepair,
+  onUpgrade,
   onSell
 }: AssetSectionDeckProps) => {
   const { t } = useTranslation(['assets'])
   const needsRepair = asset.condition < 50
+  const canUpgrade = getNextTier(asset.chassisTier) !== null
 
   return (
     <article className='grid gap-3 lg:grid-cols-[minmax(0,1.15fr)_minmax(22rem,0.85fr)]'>
@@ -51,7 +57,9 @@ export const AssetSectionDeck = ({
             className='assets-hub-control min-h-11 border-2 px-2 py-2 text-xs uppercase disabled:opacity-40'
             style={{
               borderColor: 'var(--section-accent, var(--color-toxic-green))',
-              background: needsRepair ? 'var(--section-accent, var(--color-toxic-green))' : 'transparent',
+              background: needsRepair
+                ? 'var(--section-accent, var(--color-toxic-green))'
+                : 'transparent',
               color: needsRepair ? 'var(--color-void-black)' : 'inherit'
             }}
           >
@@ -59,8 +67,16 @@ export const AssetSectionDeck = ({
           </button>
           <button
             type='button'
-            className='assets-hub-control min-h-11 border-2 px-2 py-2 text-xs uppercase opacity-60'
-            disabled
+            onClick={onUpgrade}
+            disabled={!canUpgrade}
+            className='assets-hub-control min-h-11 border-2 px-2 py-2 text-xs uppercase disabled:opacity-40'
+            style={{
+              borderColor: 'var(--section-accent, var(--color-toxic-green))',
+              background: canUpgrade
+                ? 'var(--section-accent, var(--color-toxic-green))'
+                : 'transparent',
+              color: canUpgrade ? 'var(--color-void-black)' : 'inherit'
+            }}
           >
             {t('assets:actions.upgrade')}
           </button>
@@ -68,7 +84,9 @@ export const AssetSectionDeck = ({
             type='button'
             onClick={onSell}
             className='assets-hub-control min-h-11 border-2 px-2 py-2 text-xs uppercase'
-            style={{ borderColor: 'var(--section-accent, var(--color-toxic-green))' }}
+            style={{
+              borderColor: 'var(--section-accent, var(--color-toxic-green))'
+            }}
           >
             {t('assets:actions.sell')}
           </button>

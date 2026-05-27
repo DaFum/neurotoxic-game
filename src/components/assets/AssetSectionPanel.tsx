@@ -9,6 +9,7 @@ import { LiabilitiesPanel } from './LiabilitiesPanel'
 import { ModulePickerModal } from './ModulePickerModal'
 import { RepairConfirmModal } from './RepairConfirmModal'
 import { SellConfirmModal } from './SellConfirmModal'
+import { UpgradeConfirmModal } from './UpgradeConfirmModal'
 
 const SECTION_LABELS = {
   tourbus_chassis: 'tourbus',
@@ -48,8 +49,11 @@ export const AssetSectionPanel = ({
     slotId: string
   } | null>(null)
   const [repairAsset, setRepairAsset] = useState<LongTermAsset | null>(null)
+  const [upgradeAsset, setUpgradeAsset] = useState<LongTermAsset | null>(null)
   const [sellAsset, setSellAsset] = useState<LongTermAsset | null>(null)
   const [acquireOpen, setAcquireOpen] = useState(false)
+  const acquisitionBlocked =
+    sectionAssets.length > 0 || sectionCampaigns.length > 0
 
   return (
     <div className='flex flex-col gap-4 pb-24 sm:pb-4'>
@@ -63,8 +67,11 @@ export const AssetSectionPanel = ({
           </p>
           <button
             type='button'
-            onClick={() => setAcquireOpen(true)}
-            className='assets-hub-control mt-3 min-h-11 border-2 px-4 py-2 text-xs uppercase'
+            onClick={() => {
+              if (!acquisitionBlocked) setAcquireOpen(true)
+            }}
+            disabled={acquisitionBlocked}
+            className='assets-hub-control mt-3 min-h-11 border-2 px-4 py-2 text-xs uppercase disabled:opacity-40'
             style={{
               borderColor: 'var(--section-accent)',
               background: 'var(--section-accent)',
@@ -73,6 +80,14 @@ export const AssetSectionPanel = ({
           >
             {t('assets:hub.actions.acquire')}
           </button>
+          {acquisitionBlocked && (
+            <p
+              className='assets-hub-control mt-2 text-xs'
+              style={{ color: 'var(--color-warning-yellow)' }}
+            >
+              {t('assets:purchaseFailed.acquisition_already_active')}
+            </p>
+          )}
         </section>
       ) : (
         sectionAssets.map(asset => (
@@ -82,6 +97,7 @@ export const AssetSectionPanel = ({
             hero={renderHero(asset, slotId => setPicker({ asset, slotId }))}
             onSlotClick={slotId => setPicker({ asset, slotId })}
             onRepair={() => setRepairAsset(asset)}
+            onUpgrade={() => setUpgradeAsset(asset)}
             onSell={() => setSellAsset(asset)}
           />
         ))
@@ -123,6 +139,13 @@ export const AssetSectionPanel = ({
           asset={repairAsset}
           isOpen
           onClose={() => setRepairAsset(null)}
+        />
+      )}
+      {upgradeAsset && (
+        <UpgradeConfirmModal
+          asset={upgradeAsset}
+          isOpen
+          onClose={() => setUpgradeAsset(null)}
         />
       )}
       {sellAsset && (

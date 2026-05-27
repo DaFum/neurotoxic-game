@@ -34,6 +34,7 @@ export const PreGig = () => {
     isStarting,
     GIG_MODIFIER_OPTIONS,
     BAND_MEETING_COST,
+    assetModifiers,
     handleBandMeeting,
     toggleSong,
     toggleModifier,
@@ -96,6 +97,7 @@ export const PreGig = () => {
             customPrices={band.merchPrices || {}}
             onUpdatePrice={handleUpdateMerchPrice}
             onRestock={handleRestockMerch}
+            restockCostMultiplier={assetModifiers.merchCostMultiplier}
           />
         )}
       </div>

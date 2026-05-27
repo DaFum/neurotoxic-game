@@ -1381,6 +1381,7 @@
   "pregig.toasts.harmonyLow": "Band harmony too low to perform!",
   "pregig.toasts.meetingHeld": "Meeting held. Vibes +{{amount}}.",
   "pregig.toasts.meetingHeldMax": "Meeting held. Harmony already maxed out.",
+  "pregig.toasts.merchCapacityFull": "Merch storage is full.",
   "pregig.toasts.noGig": "No gig active! Returning to map.",
   "pregig.toasts.noMoneySnacks": "Not enough money for snacks!",
   "pregig.toasts.noMoneyUpgrade": "Not enough money for this upgrade!",

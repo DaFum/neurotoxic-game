@@ -51,7 +51,7 @@ describe('AssetsStatusStrip', () => {
     expect(screen.getByText('Cash')).toBeInTheDocument()
     expect(screen.getByText('1234 EUR')).toBeInTheDocument()
     expect(screen.getByText('Daily')).toBeInTheDocument()
-    expect(screen.getByText('+37 EUR')).toBeInTheDocument()
+    expect(screen.getByText('-37 EUR')).toBeInTheDocument()
     expect(screen.getByText('Debt')).toBeInTheDocument()
     expect(screen.getByText('450 EUR')).toBeInTheDocument()
     expect(screen.getByText('Campaigns')).toBeInTheDocument()

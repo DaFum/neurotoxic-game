@@ -331,7 +331,8 @@ export const useTravelLogic = ({
         band,
         node,
         fuelLiters,
-        totalCost
+        totalCost,
+        assetModifiers
       })
 
       updatePlayer(updates.nextPlayer)

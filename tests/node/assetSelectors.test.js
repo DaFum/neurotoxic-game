@@ -327,6 +327,57 @@ describe('isModuleUnlocked', () => {
       false
     )
   })
+
+  it('checks real band member baseStats/top-level stats for skill requirements', () => {
+    registerTestModule('test_real_member_stats', {
+      unlock: { requiredMemberSkill: { skill: 'tech', tier: 2 } }
+    })
+
+    const state = makeState({
+      band: {
+        members: [
+          {
+            id: 'matze',
+            mood: 50,
+            stamina: 50,
+            traits: {},
+            relationships: {},
+            baseStats: { technical: 2 },
+            technical: 1
+          }
+        ]
+      }
+    })
+
+    assert.equal(
+      isModuleUnlocked(MODULE_REGISTRY.test_real_member_stats, state),
+      true
+    )
+  })
+
+  it('keeps production asset skill unlocks tied to reachable member stats', () => {
+    const reachableSkills = new Set([
+      'skill',
+      'charisma',
+      'technical',
+      'tech',
+      'stamina',
+      'mood',
+      'improv',
+      'composition',
+      'luck'
+    ])
+
+    for (const module of Object.values(MODULE_REGISTRY)) {
+      const skill = module.unlock.requiredMemberSkill?.skill
+      if (skill === undefined) continue
+      assert.equal(
+        reachableSkills.has(skill),
+        true,
+        `${module.id} requires unreachable member skill "${skill}"`
+      )
+    }
+  })
 })
 
 describe('getLockReasons', () => {

@@ -132,7 +132,7 @@ const MODULES: readonly AssetModule[] = [
     installCost: 40,
     removalRefundFraction: 0.5,
     boni: { travelStaminaRegen: 3 },
-    unlock: { requiredMemberSkill: { skill: 'barista', tier: 1 } },
+    unlock: { requiredMemberSkill: { skill: 'charisma', tier: 1 } },
     imagePromptKey: 'tb_espresso_machine'
   },
   {

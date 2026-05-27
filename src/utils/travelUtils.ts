@@ -1,7 +1,13 @@
 import { normalizeVenueId } from './mapUtils'
 import { getCityKeyFromVenueId } from './mapGenerator'
-import { clampPlayerMoney, clampBandHarmony } from './gameStateUtils'
+import {
+  clampPlayerMoney,
+  clampBandHarmony,
+  clampMemberStamina,
+  finiteNumberOr
+} from './gameStateUtils'
 import type { BandState, MapNode, PlayerState, Venue } from '../types'
+import type { AssetModifiers } from '../types/assets'
 import type { TranslationCallback } from '../types/callbacks'
 
 interface VenueLike extends Partial<Venue> {
@@ -24,6 +30,7 @@ interface TravelArrivalUpdateInput {
   node: MapNode & { venue?: unknown }
   fuelLiters: number
   totalCost: number
+  assetModifiers?: Pick<AssetModifiers, 'travelStaminaRegen'>
 }
 
 interface TravelArrivalUpdates {
@@ -252,7 +259,8 @@ export const getTravelArrivalUpdates = ({
   band,
   node,
   fuelLiters,
-  totalCost
+  totalCost,
+  assetModifiers
 }: TravelArrivalUpdateInput): TravelArrivalUpdates => {
   const nextPlayer = {
     money: clampPlayerMoney((player.money ?? 0) - totalCost),
@@ -266,10 +274,25 @@ export const getTravelArrivalUpdates = ({
     totalTravels: (player.totalTravels ?? 0) + 1
   }
 
-  let nextBand = null
+  const bandPatch: Partial<BandState> = {}
   if (band?.harmonyRegenTravel) {
-    nextBand = { harmony: clampBandHarmony((band.harmony ?? 0) + 5) }
+    bandPatch.harmony = clampBandHarmony((band.harmony ?? 0) + 5)
   }
+  const travelStaminaRegen = finiteNumberOr(
+    assetModifiers?.travelStaminaRegen,
+    0
+  )
+  if (travelStaminaRegen > 0 && Array.isArray(band?.members)) {
+    bandPatch.members = band.members.map(member => ({
+      ...member,
+      stamina: clampMemberStamina(
+        finiteNumberOr(member.stamina, 0) + travelStaminaRegen,
+        finiteNumberOr(member.staminaMax, 100)
+      )
+    }))
+  }
+
+  const nextBand = Object.keys(bandPatch).length > 0 ? bandPatch : null
 
   return { nextPlayer, nextBand }
 }

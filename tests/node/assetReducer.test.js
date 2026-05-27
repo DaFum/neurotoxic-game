@@ -7,6 +7,7 @@ import {
   handleUpgradeChassisTier,
   handleRepairChassis,
   handleResolveCrowdfund,
+  handleStartCrowdfund,
   handleAssetFailedAction
 } from '../../src/context/reducers/assetReducer.ts'
 import { CHASSIS_CONFIG } from '../../src/utils/assetConfig.ts'
@@ -50,6 +51,24 @@ const mockState = {
   crowdfundCampaigns: []
 }
 
+const makeCampaign = (overrides = {}) => ({
+  id: 'camp_1',
+  assetSpec: {
+    kind: 'tourbus_chassis',
+    flavor: 'legit',
+    chassisTier: 1,
+    ...overrides.assetSpec
+  },
+  targetAmount: 4000,
+  fameStake: 20,
+  daysRemaining: 14,
+  plannedSuccessRoll: 0.4,
+  plannedSuccessProbability: 0.5,
+  materializedAssetId: 'campaign_asset',
+  materializedSlotIds: [],
+  ...overrides
+})
+
 test('handlePurchaseChassis - happy path cash', () => {
   const kind = 'tourbus_chassis'
   const configTier = CHASSIS_CONFIG[kind].legit[1]
@@ -67,6 +86,88 @@ test('handlePurchaseChassis - happy path cash', () => {
 
   const next = handlePurchaseChassis(mockState, payload)
   assert.strictEqual(next.assets[0].id, 'a1')
+})
+
+test('handlePurchaseChassis - rejects when a campaign is pending for the same section', () => {
+  const kind = 'tourbus_chassis'
+  const configTier = CHASSIS_CONFIG[kind].legit[1]
+  const slotIds = configTier.slots.map((_, i) => `slot_${i}`)
+  const startState = {
+    ...mockState,
+    crowdfundCampaigns: [makeCampaign()]
+  }
+
+  const next = handlePurchaseChassis(startState, {
+    id: 'a1',
+    kind,
+    flavor: 'legit',
+    tier: 1,
+    mode: 'cash',
+    slotIds,
+    today: mockState.player.day
+  })
+
+  assert.strictEqual(next, startState)
+})
+
+test('handleStartCrowdfund - rejects when an asset already exists for the same section', () => {
+  const startState = {
+    ...mockState,
+    assets: [
+      {
+        id: 'a1',
+        kind: 'tourbus_chassis',
+        chassisFlavor: 'legit',
+        chassisTier: 1,
+        condition: 100,
+        baseUpkeep: 20,
+        baseDailyRevenue: 0,
+        slots: [],
+        acquiredOnDay: 1,
+        acquisitionMode: 'cash',
+        baseRiskEventChance: 0.005
+      }
+    ]
+  }
+
+  const next = handleStartCrowdfund(startState, {
+    campaign: makeCampaign()
+  })
+
+  assert.strictEqual(next, startState)
+})
+
+test('handleResolveCrowdfund - drops success when section asset already exists', () => {
+  const startState = {
+    ...mockState,
+    assets: [
+      {
+        id: 'a1',
+        kind: 'tourbus_chassis',
+        chassisFlavor: 'legit',
+        chassisTier: 1,
+        condition: 100,
+        baseUpkeep: 20,
+        baseDailyRevenue: 0,
+        slots: [],
+        acquiredOnDay: 1,
+        acquisitionMode: 'cash',
+        baseRiskEventChance: 0.005
+      }
+    ],
+    crowdfundCampaigns: [makeCampaign()]
+  }
+
+  const next = handleResolveCrowdfund(startState, {
+    campaignId: 'camp_1',
+    outcome: 'success',
+    newAssetId: 'a2',
+    newSlotIds: []
+  })
+
+  assert.strictEqual(next.assets.length, 1)
+  assert.strictEqual(next.player.fame, startState.player.fame)
+  assert.strictEqual(next.crowdfundCampaigns.length, 0)
 })
 
 test('handleInstallModule - happy path', () => {

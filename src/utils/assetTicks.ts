@@ -1,4 +1,5 @@
 import type { GameState } from '../types/game'
+import type { BandMember } from '../types/band'
 import type {
   CrowdfundCampaign,
   Liability,
@@ -10,6 +11,12 @@ import {
   getAssetTotalDailyRevenue,
   getAssetAggregateBoni
 } from './assetSelectors'
+import {
+  calculateFameLevel,
+  clampMemberMood,
+  clampMemberStamina,
+  finiteNumberOr
+} from './gameStateUtils'
 import { MODULE_REGISTRY } from './assetModuleRegistry'
 import {
   CHASSIS_CONFIG,
@@ -51,23 +58,70 @@ export const processAssetTick = (state: GameState): GameState => {
   if (!state.assets || state.assets.length === 0) return state
 
   let moneyDelta = 0
+  let fameDelta = 0
+  let moodDelta = 0
+  let staminaDelta = 0
 
   const nextAssets = state.assets.map((asset: LongTermAsset) => {
+    const boni = getAssetAggregateBoni(asset)
     const condition = Math.max(
       0,
       Math.min(100, asset.condition - CONDITION_DECAY_PER_DAY)
     )
     moneyDelta += getAssetTotalDailyRevenue(asset) - getAssetTotalUpkeep(asset)
+    fameDelta += boni.famePassivePerDay ?? 0
+    moodDelta += boni.bandMoodPerDay ?? 0
+    staminaDelta += boni.staminaRegenBonusPerDay ?? 0
     return { ...asset, condition }
   })
+
+  const currentFame = finiteNumberOr(state.player.fame, 0)
+  const nextFame = Math.max(0, currentFame + fameDelta)
+  const nextPlayer =
+    fameDelta !== 0
+      ? {
+          ...state.player,
+          money: state.player.money + moneyDelta,
+          fame: nextFame,
+          fameLevel: calculateFameLevel(nextFame)
+        }
+      : {
+          ...state.player,
+          money: state.player.money + moneyDelta
+        }
+
+  const nextBand =
+    (moodDelta !== 0 || staminaDelta !== 0) &&
+    state.band &&
+    Array.isArray(state.band.members)
+      ? {
+          ...state.band,
+          members: state.band.members.map((member: BandMember) => ({
+            ...member,
+            ...(moodDelta !== 0
+              ? {
+                  mood: clampMemberMood(
+                    finiteNumberOr(member.mood, 0) + moodDelta
+                  )
+                }
+              : {}),
+            ...(staminaDelta !== 0
+              ? {
+                  stamina: clampMemberStamina(
+                    finiteNumberOr(member.stamina, 0) + staminaDelta,
+                    finiteNumberOr(member.staminaMax, 100)
+                  )
+                }
+              : {})
+          }))
+        }
+      : state.band
 
   return {
     ...state,
     assets: nextAssets,
-    player: {
-      ...state.player,
-      money: state.player.money + moneyDelta
-    }
+    player: nextPlayer,
+    ...(nextBand !== state.band ? { band: nextBand } : {})
   }
 }
 
@@ -142,10 +196,18 @@ export const processCrowdfundTick = (state: GameState): GameState => {
 
   const remaining: CrowdfundCampaign[] = []
   const newAssets: LongTermAsset[] = []
+  const unavailableKinds = new Set(
+    (state.assets ?? []).map(asset => asset.kind)
+  )
+  const seenCampaignKinds = new Set<CrowdfundCampaign['assetSpec']['kind']>()
   let money = state.player.money
   let fame = state.player.fame
 
   for (const campaign of state.crowdfundCampaigns) {
+    const { kind, flavor, chassisTier } = campaign.assetSpec
+    if (unavailableKinds.has(kind) || seenCampaignKinds.has(kind)) continue
+    seenCampaignKinds.add(kind)
+
     const daysRemaining = campaign.daysRemaining - 1
     if (daysRemaining > 0) {
       remaining.push({ ...campaign, daysRemaining })
@@ -169,7 +231,6 @@ export const processCrowdfundTick = (state: GameState): GameState => {
       // upkeep / slot list stay in sync with whatever the section plan
       // configured — recomputing via buildDiyTier here would drift if
       // CHASSIS_CONFIG.diy were ever tuned independently of legit.
-      const { kind, flavor, chassisTier } = campaign.assetSpec
       const cfgTier = CHASSIS_CONFIG[kind][flavor][chassisTier]
       newAssets.push({
         id: campaign.materializedAssetId,
@@ -194,6 +255,7 @@ export const processCrowdfundTick = (state: GameState): GameState => {
         acquisitionMode: 'crowdfund',
         baseRiskEventChance: cfgTier.baseRiskEventChance
       })
+      unavailableKinds.add(kind)
     } else {
       fame = Math.max(0, fame - campaign.fameStake)
     }

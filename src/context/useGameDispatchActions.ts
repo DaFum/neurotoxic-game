@@ -662,10 +662,10 @@ export function useGameDispatchActions({
   )
   const startCrowdfund = useCallback(
     (input: Parameters<typeof startCrowdfundAction>[0]) => {
-      const action = startCrowdfundAction(input)
+      const action = startCrowdfundAction(input, stateRef.current)
       if (action) dispatch(action)
     },
-    [dispatch]
+    [dispatch, stateRef]
   )
 
   return useMemo(

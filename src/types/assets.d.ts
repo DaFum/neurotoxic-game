@@ -202,6 +202,7 @@ export type PurchaseFailureReason =
   | 'INSUFFICIENT_FUNDS'
   | 'UNKNOWN_KIND_OR_TIER'
   | 'LOAN_PROFILE_INELIGIBLE'
+  | 'ACQUISITION_ALREADY_ACTIVE'
 
 export type InstallModuleFailureReason =
   | 'UNKNOWN_MODULE'
