@@ -4,6 +4,7 @@ import { Modal } from '../../ui/shared/Modal'
 import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 import { getModuleImagePrompt } from '../../utils/imageGen'
 import { formatCurrency } from '../../utils/numberUtils'
+import { MODULE_REGISTRY } from '../../utils/assetModuleRegistry'
 import {
   getModulePoolForAsset,
   getSlotConflicts,
@@ -47,7 +48,11 @@ const formatLockReason = (
       })
     case 'otherModule':
       return t('assets:module.unlock.otherModule', {
-        moduleRefs: (reason.refs ?? []).join(', ')
+        moduleRefs: (reason.refs ?? [])
+          .map(moduleId =>
+            t(`assets:module.${moduleId}.name`, { defaultValue: moduleId })
+          )
+          .join(', ')
       })
   }
 }
@@ -70,7 +75,7 @@ export const ModulePickerModal = ({
   const activeStoryFlags = useGameSelector(s => s.activeStoryFlags)
   const band = useGameSelector(s => s.band)
   const assets = useGameSelector(s => s.assets)
-  const { installModule } = useGameActions()
+  const { installModule, removeModule } = useGameActions()
   const slot = useMemo(
     () => asset.slots.find(s => s.id === slotId),
     [asset, slotId]
@@ -94,6 +99,20 @@ export const ModulePickerModal = ({
 
   if (!slot) return null
 
+  const installedModuleId = slot.installedModuleId
+  const installedModule =
+    installedModuleId === null ? undefined : MODULE_REGISTRY[installedModuleId]
+  const removalRefund = installedModule
+    ? installedModule.cost * installedModule.removalRefundFraction
+    : 0
+  const removalBlocked =
+    installedModuleId !== null &&
+    asset.slots.some(
+      assetSlot =>
+        assetSlot.addedByModuleId === installedModuleId &&
+        assetSlot.installedModuleId !== null
+    )
+
   return (
     <Modal
       isOpen={isOpen}
@@ -102,108 +121,172 @@ export const ModulePickerModal = ({
       className='assets-modal-sheet max-w-3xl'
     >
       <div className='flex flex-col gap-3 p-4 font-mono text-sm'>
-        {pool.length === 0 && (
+        {installedModuleId !== null && (
+          <div
+            className='flex gap-3 border-2 p-2'
+            style={{ borderColor: 'var(--section-accent)' }}
+          >
+            {installedModule && (
+              <div className='w-24 shrink-0'>
+                <GeneratedImagePanel
+                  prompt={getModuleImagePrompt(installedModule.id)}
+                  alt={t(`assets:module.${installedModule.id}.name`, {
+                    defaultValue: installedModule.id
+                  })}
+                  aspectRatio='1:1'
+                  sizeHint={{ width: 128, height: 128 }}
+                />
+              </div>
+            )}
+            <div className='flex flex-1 flex-col gap-1'>
+              <strong>
+                {installedModule
+                  ? t(`assets:module.${installedModule.id}.name`, {
+                      defaultValue: installedModule.id
+                    })
+                  : installedModuleId}
+              </strong>
+              {installedModule && (
+                <span className='text-xs opacity-60'>
+                  {t(`assets:module.${installedModule.id}.description`, {
+                    defaultValue: ''
+                  })}
+                </span>
+              )}
+              <span className='text-xs'>
+                {t('assets:modulePicker.removeRefund', {
+                  amount: formatCurrency(removalRefund, i18n.language)
+                })}
+              </span>
+              <p className='text-xs opacity-70'>
+                {t('assets:actions.removeModuleConfirm', {
+                  amount: formatCurrency(removalRefund, i18n.language)
+                })}
+              </p>
+              <button
+                type='button'
+                onClick={() => {
+                  removeModule(asset.id, slot.id)
+                  onClose()
+                }}
+                disabled={removalBlocked}
+                className='mt-1 min-h-11 self-start border-2 px-2 py-2 disabled:opacity-30'
+                style={{
+                  background: removalBlocked
+                    ? 'transparent'
+                    : 'var(--section-accent)',
+                  color: removalBlocked ? 'inherit' : 'var(--color-void)'
+                }}
+              >
+                {t('assets:actions.remove')}
+              </button>
+            </div>
+          </div>
+        )}
+        {installedModuleId === null && pool.length === 0 && (
           <p className='opacity-60'>
             {t('assets:modulePicker.noModulesAvailable')}
           </p>
         )}
-        <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
-          {pool.map(({ module, unlocked, lockReasons }) => {
-            const conflict = getSlotConflicts(asset, module.id)
-            const installCost = module.cost + module.installCost
-            const insufficientFunds = money < installCost
-            const blocked =
-              !unlocked || !conflict.canInstall || insufficientFunds
-            return (
-              <div
-                key={module.id}
-                className='flex gap-3 border-2 p-2'
-                style={{ borderColor: 'var(--section-accent)' }}
-              >
-                <div className='w-24 shrink-0'>
-                  <GeneratedImagePanel
-                    prompt={getModuleImagePrompt(module.id)}
-                    alt={t(`assets:module.${module.id}.name`, {
-                      defaultValue: module.id
-                    })}
-                    aspectRatio='1:1'
-                    sizeHint={{ width: 128, height: 128 }}
-                  />
-                </div>
-                <div className='flex flex-1 flex-col gap-1'>
-                  <strong>
-                    {t(`assets:module.${module.id}.name`, {
-                      defaultValue: module.id
-                    })}
-                  </strong>
-                  <span className='text-xs opacity-60'>
-                    {t(`assets:module.${module.id}.description`, {
-                      defaultValue: ''
-                    })}
-                  </span>
-                  <span className='text-xs'>
-                    {t('assets:modulePicker.installCost', {
-                      amount: formatCurrency(installCost, i18n.language)
-                    })}
-                  </span>
-                  {lockReasons.length > 0 && (
-                    <ul
-                      className='text-xs'
-                      style={{ color: 'var(--color-blood)' }}
-                    >
-                      {lockReasons.map(r => (
-                        <li
-                          key={`${r.kind}-${r.ref ?? ''}-${r.amount ?? ''}-${r.refs?.join(',') ?? ''}`}
-                        >
-                          {formatLockReason(r, t)}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                  {!conflict.canInstall && (
-                    <span
-                      className='text-xs'
-                      style={{ color: 'var(--color-warning-yellow)' }}
-                    >
-                      {t('assets:modulePicker.exclusivityConflict', {
-                        otherName: conflict.conflictingModuleIds.join(', ')
+        {installedModuleId === null && (
+          <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
+            {pool.map(({ module, unlocked, lockReasons }) => {
+              const conflict = getSlotConflicts(asset, module.id)
+              const installCost = module.cost + module.installCost
+              const insufficientFunds = money < installCost
+              const blocked =
+                !unlocked || !conflict.canInstall || insufficientFunds
+              return (
+                <div
+                  key={module.id}
+                  className='flex gap-3 border-2 p-2'
+                  style={{ borderColor: 'var(--section-accent)' }}
+                >
+                  <div className='w-24 shrink-0'>
+                    <GeneratedImagePanel
+                      prompt={getModuleImagePrompt(module.id)}
+                      alt={t(`assets:module.${module.id}.name`, {
+                        defaultValue: module.id
+                      })}
+                      aspectRatio='1:1'
+                      sizeHint={{ width: 128, height: 128 }}
+                    />
+                  </div>
+                  <div className='flex flex-1 flex-col gap-1'>
+                    <strong>
+                      {t(`assets:module.${module.id}.name`, {
+                        defaultValue: module.id
+                      })}
+                    </strong>
+                    <span className='text-xs opacity-60'>
+                      {t(`assets:module.${module.id}.description`, {
+                        defaultValue: ''
                       })}
                     </span>
-                  )}
-                  {insufficientFunds && (
-                    <span
-                      className='text-xs'
-                      style={{ color: 'var(--color-blood)' }}
-                    >
-                      {t('assets:modulePicker.insufficientFunds')}
+                    <span className='text-xs'>
+                      {t('assets:modulePicker.installCost', {
+                        amount: formatCurrency(installCost, i18n.language)
+                      })}
                     </span>
-                  )}
-                  <button
-                    type='button'
-                    onClick={() => {
-                      installModule({
-                        assetId: asset.id,
-                        slotId: slot.id,
-                        moduleId: module.id
-                      })
-                      onClose()
-                    }}
-                    disabled={blocked}
-                    className='mt-1 min-h-11 self-start border-2 px-2 py-2 disabled:opacity-30'
-                    style={{
-                      background: blocked
-                        ? 'transparent'
-                        : 'var(--section-accent)',
-                      color: blocked ? 'inherit' : 'var(--color-void)'
-                    }}
-                  >
-                    {t('assets:actions.install')}
-                  </button>
+                    {lockReasons.length > 0 && (
+                      <ul
+                        className='text-xs'
+                        style={{ color: 'var(--color-blood)' }}
+                      >
+                        {lockReasons.map(r => (
+                          <li
+                            key={`${r.kind}-${r.ref ?? ''}-${r.amount ?? ''}-${r.refs?.join(',') ?? ''}`}
+                          >
+                            {formatLockReason(r, t)}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    {!conflict.canInstall && (
+                      <span
+                        className='text-xs'
+                        style={{ color: 'var(--color-warning-yellow)' }}
+                      >
+                        {t('assets:modulePicker.exclusivityConflict', {
+                          otherName: conflict.conflictingModuleIds.join(', ')
+                        })}
+                      </span>
+                    )}
+                    {insufficientFunds && (
+                      <span
+                        className='text-xs'
+                        style={{ color: 'var(--color-blood)' }}
+                      >
+                        {t('assets:modulePicker.insufficientFunds')}
+                      </span>
+                    )}
+                    <button
+                      type='button'
+                      onClick={() => {
+                        installModule({
+                          assetId: asset.id,
+                          slotId: slot.id,
+                          moduleId: module.id
+                        })
+                        onClose()
+                      }}
+                      disabled={blocked}
+                      className='mt-1 min-h-11 self-start border-2 px-2 py-2 disabled:opacity-30'
+                      style={{
+                        background: blocked
+                          ? 'transparent'
+                          : 'var(--section-accent)',
+                        color: blocked ? 'inherit' : 'var(--color-void)'
+                      }}
+                    >
+                      {t('assets:actions.install')}
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )
-          })}
-        </div>
+              )
+            })}
+          </div>
+        )}
       </div>
     </Modal>
   )

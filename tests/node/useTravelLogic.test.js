@@ -305,6 +305,30 @@ describe('useTravelLogic', () => {
     assert.equal(props.saveGame.mock.calls.length, 1)
   })
 
+  test('onTravelComplete applies travel band patch before advancing the day', () => {
+    const dispatchOrder = []
+    const updateBand = mock.fn(() => dispatchOrder.push('updateBand'))
+    const advanceDay = mock.fn(() => dispatchOrder.push('advanceDay'))
+    const { result, targetNode } = setupTravelScenario(useTravelLogic, {
+      band: { members: [], harmony: 50, harmonyRegenTravel: true },
+      updateBand,
+      advanceDay
+    })
+
+    act(() => {
+      result.current.handleTravel(targetNode)
+    })
+    act(() => {
+      result.current.handleTravel(targetNode)
+    })
+
+    act(() => {
+      result.current.onTravelComplete()
+    })
+
+    assert.deepEqual(dispatchOrder.slice(0, 2), ['updateBand', 'advanceDay'])
+  })
+
   test('onTravelComplete moves and checks rival through named dispatch actions', () => {
     const moveRivalBand = mock.fn()
     const checkRivalEncounter = mock.fn()

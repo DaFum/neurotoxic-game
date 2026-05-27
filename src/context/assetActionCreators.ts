@@ -20,13 +20,17 @@
 
 import { ActionTypes } from './actionTypes'
 import {
+  calculateChassisUpgradeCost,
   CHASSIS_CONFIG,
-  REPAIR_COST_PER_POINT,
-  UPGRADE_OVERHEAD
+  REPAIR_COST_PER_POINT
 } from '../utils/assetConfig'
 import { MODULE_REGISTRY } from '../utils/assetModuleRegistry'
 import { LOAN_PROFILES, type LoanProfileId } from '../utils/loanProfiles'
-import { getSlotConflicts, isModuleUnlocked } from '../utils/assetSelectors'
+import {
+  getSlotConflicts,
+  hasActiveAssetAcquisition,
+  getLockReasons
+} from '../utils/assetSelectors'
 import { finiteNumberOr } from '../utils/gameStateUtils'
 import { getSafeUUID } from '../utils/crypto'
 import type { GameState, GameAction } from '../types'
@@ -153,6 +157,9 @@ export const purchaseChassis = (
   if (!cfg || cfg.price <= 0) {
     return fail('UNKNOWN_KIND_OR_TIER')
   }
+  if (hasActiveAssetAcquisition(state, raw.kind)) {
+    return fail('ACQUISITION_ALREADY_ACTIVE')
+  }
   if (raw.mode === 'cash' && state.player.money < cfg.price) {
     return fail('INSUFFICIENT_FUNDS')
   }
@@ -223,7 +230,7 @@ export const installModule = (
   if (!slot) return fail('UNKNOWN_SLOT')
   if (slot.installedModuleId !== null) return fail('SLOT_OCCUPIED')
   if (slot.slotType !== module.slotType) return fail('SLOT_TYPE_MISMATCH')
-  if (!isModuleUnlocked(module, state)) return fail('LOCKED')
+  if (getLockReasons(module, state, asset).length > 0) return fail('LOCKED')
   const conflicts = getSlotConflicts(asset, raw.moduleId)
   if (!conflicts.canInstall) return fail('EXCLUSIVITY')
   const cap = module.maxPerAsset ?? 1
@@ -274,7 +281,7 @@ export const upgradeChassisTier = (
   const currentCfg =
     CHASSIS_CONFIG[asset.kind]?.[asset.chassisFlavor]?.[asset.chassisTier]
   if (!currentCfg) return null
-  const upgradeCost = targetCfg.price - currentCfg.price + UPGRADE_OVERHEAD
+  const upgradeCost = calculateChassisUpgradeCost(currentCfg, targetCfg)
   if (state.player.money < upgradeCost) return null
 
   // Count existing chassis-tier slots per slotType (skip dynamically-added
@@ -343,13 +350,17 @@ export interface StartCrowdfundInput {
 }
 
 export const startCrowdfund = (
-  raw: StartCrowdfundInput
+  raw: StartCrowdfundInput,
+  state: Pick<GameState, 'assets' | 'crowdfundCampaigns'>
 ): StartCrowdfundAction | null => {
   if (
     !VALID_KINDS.has(raw.kind) ||
     !VALID_FLAVORS.has(raw.flavor) ||
     !VALID_TIERS.has(raw.tier)
   ) {
+    return null
+  }
+  if (!state || hasActiveAssetAcquisition(state, raw.kind)) {
     return null
   }
   // Pre-generate the materialized-asset ids here so processCrowdfundTick

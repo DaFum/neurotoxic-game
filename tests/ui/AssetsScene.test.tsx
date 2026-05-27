@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AssetsScene } from '../../src/components/assets/AssetsScene'
 
 const mockChangeScene = vi.fn()
@@ -12,6 +12,22 @@ const mockState = vi.hoisted(() => ({
   crowdfundCampaigns: []
 }))
 
+const pendingTourbusCampaign = {
+  id: 'camp_1',
+  assetSpec: {
+    kind: 'tourbus_chassis',
+    flavor: 'legit',
+    chassisTier: 1
+  },
+  targetAmount: 4000,
+  fameStake: 20,
+  daysRemaining: 14,
+  plannedSuccessRoll: 0.4,
+  plannedSuccessProbability: 0.5,
+  materializedAssetId: 'campaign_asset',
+  materializedSlotIds: []
+}
+
 vi.mock('../../src/context/GameState', () => ({
   useGameActions: () => ({ changeScene: mockChangeScene }),
   useGameSelector: (selector: (state: typeof mockState) => unknown) =>
@@ -20,7 +36,10 @@ vi.mock('../../src/context/GameState', () => ({
 
 vi.mock('../../src/utils/assetSelectors', () => ({
   getTotalDailyObligations: () => 0,
-  getTotalDebt: () => 0
+  getTotalDebt: () => 0,
+  hasActiveAssetAcquisition: (state: typeof mockState, kind: string): boolean =>
+    state.assets.some(asset => asset.kind === kind) ||
+    state.crowdfundCampaigns.some(campaign => campaign.assetSpec.kind === kind)
 }))
 
 vi.mock('../../src/utils/numberUtils', () => ({
@@ -57,6 +76,8 @@ vi.mock('react-i18next', () => ({
         'assets:hub.actions.acquire': 'Acquire',
         'assets:hub.finance.title': 'Finance',
         'assets:hub.finance.noCampaigns': 'No active campaigns',
+        'assets:purchaseFailed.acquisition_already_active':
+          'Acquisition already in progress',
         'assets:liability.paymentDue': 'Payment due: -'
       }
       return labels[key] ?? key
@@ -65,6 +86,14 @@ vi.mock('react-i18next', () => ({
 }))
 
 describe('AssetsScene', () => {
+  beforeEach(() => {
+    mockState.player = { money: 1000 }
+    mockState.assets = []
+    mockState.liabilities = []
+    mockState.crowdfundCampaigns = []
+    mockChangeScene.mockClear()
+  })
+
   it('renders mobile shell with preserved tab ids and panel ids', () => {
     render(<AssetsScene />)
 
@@ -87,5 +116,16 @@ describe('AssetsScene', () => {
       'id',
       'assets-panel-studio_chassis'
     )
+  })
+
+  it('does not allow a second acquisition while a section campaign is pending', () => {
+    mockState.crowdfundCampaigns = [pendingTourbusCampaign]
+
+    render(<AssetsScene />)
+
+    expect(screen.getByRole('button', { name: 'Acquire' })).toBeDisabled()
+    expect(
+      screen.getByText('Acquisition already in progress')
+    ).toBeInTheDocument()
   })
 })

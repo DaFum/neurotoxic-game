@@ -1493,7 +1493,8 @@ export const handleLoadGame = (
     assets: sanitizedAssets,
     liabilities: sanitizedLiabilities,
     crowdfundCampaigns: sanitizeCrowdfundCampaigns(
-      loadedState.crowdfundCampaigns
+      loadedState.crowdfundCampaigns,
+      sanitizedAssets
     ),
     rngSeed: sanitizeRngSeed(loadedState.rngSeed)
   }

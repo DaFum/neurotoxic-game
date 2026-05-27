@@ -1,4 +1,4 @@
-import { describe, it } from 'node:test'
+import { after, describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   getActiveAssetModifiers,
@@ -16,6 +16,16 @@ import {
   MODULE_PROMPTS,
   MODULE_REGISTRY
 } from '../../src/utils/assetModuleRegistry.ts'
+
+const registrySnapshot = structuredClone(MODULE_REGISTRY)
+const promptsSnapshot = structuredClone(MODULE_PROMPTS)
+
+after(() => {
+  for (const key of Object.keys(MODULE_REGISTRY)) delete MODULE_REGISTRY[key]
+  Object.assign(MODULE_REGISTRY, registrySnapshot)
+  for (const key of Object.keys(MODULE_PROMPTS)) delete MODULE_PROMPTS[key]
+  Object.assign(MODULE_PROMPTS, promptsSnapshot)
+})
 
 const registerTestModule = (id, override = {}) => {
   const base = {
@@ -326,6 +336,57 @@ describe('isModuleUnlocked', () => {
       isModuleUnlocked(MODULE_REGISTRY.test_or, stateWithNeither),
       false
     )
+  })
+
+  it('checks real band member baseStats/top-level stats for skill requirements', () => {
+    registerTestModule('test_real_member_stats', {
+      unlock: { requiredMemberSkill: { skill: 'tech', tier: 2 } }
+    })
+
+    const state = makeState({
+      band: {
+        members: [
+          {
+            id: 'matze',
+            mood: 50,
+            stamina: 50,
+            traits: {},
+            relationships: {},
+            baseStats: { technical: 2 },
+            technical: 1
+          }
+        ]
+      }
+    })
+
+    assert.equal(
+      isModuleUnlocked(MODULE_REGISTRY.test_real_member_stats, state),
+      true
+    )
+  })
+
+  it('keeps production asset skill unlocks tied to reachable member stats', () => {
+    const reachableSkills = new Set([
+      'skill',
+      'charisma',
+      'technical',
+      'tech',
+      'stamina',
+      'mood',
+      'improv',
+      'composition',
+      'luck'
+    ])
+
+    for (const module of Object.values(MODULE_REGISTRY)) {
+      const skill = module.unlock.requiredMemberSkill?.skill
+      if (skill === undefined) continue
+      assert.equal(
+        reachableSkills.has(skill),
+        true,
+        `${module.id} requires unreachable member skill "${skill}"`
+      )
+    }
   })
 })
 

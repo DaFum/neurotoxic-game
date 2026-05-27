@@ -313,6 +313,12 @@ export const calculatePostGigStateUpdates = (
   const boundedZealotry = clamp0to100(
     toFiniteNumber(social.zealotry, 0) + (result.zealotryChange ?? 0)
   )
+  const scenePresenceGain = Math.max(
+    1,
+    Math.floor(toFiniteNumber(perfScore, 0) / 20) +
+      (result.success ? 1 : 0) +
+      gigViralBonus
+  )
 
   const updatedSocial: Partial<GameState['social']> = {
     [result.platform]: Math.max(
@@ -333,6 +339,9 @@ export const calculatePostGigStateUpdates = (
       toFiniteNumber(social.loyalty, 0) + (result.loyaltyChange ?? 0)
     ),
     zealotry: boundedZealotry,
+    scenePresence: clamp0to100(
+      toFiniteNumber(social.scenePresence, 0) + scenePresenceGain
+    ),
     reputationCooldown:
       result.reputationCooldownSet !== undefined
         ? result.reputationCooldownSet

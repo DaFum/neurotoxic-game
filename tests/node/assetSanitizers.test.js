@@ -265,6 +265,74 @@ describe('sanitizeCrowdfundCampaigns', () => {
     ])
     assert.equal(out.length, 0)
   })
+
+  it('drops campaigns for sections that already have an asset', () => {
+    const out = sanitizeCrowdfundCampaigns(
+      [
+        {
+          id: 'c1',
+          assetSpec: {
+            kind: 'tourbus_chassis',
+            flavor: 'legit',
+            chassisTier: 1
+          },
+          targetAmount: 4000,
+          fameStake: 50,
+          daysRemaining: 14,
+          plannedSuccessRoll: 0.4
+        }
+      ],
+      [validAsset()]
+    )
+
+    assert.equal(out.length, 0)
+  })
+
+  it('keeps only one campaign per asset section', () => {
+    const out = sanitizeCrowdfundCampaigns([
+      {
+        id: 'c1',
+        assetSpec: {
+          kind: 'tourbus_chassis',
+          flavor: 'legit',
+          chassisTier: 1
+        },
+        targetAmount: 4000,
+        fameStake: 50,
+        daysRemaining: 14,
+        plannedSuccessRoll: 0.4
+      },
+      {
+        id: 'c2',
+        assetSpec: {
+          kind: 'tourbus_chassis',
+          flavor: 'diy',
+          chassisTier: 1
+        },
+        targetAmount: 2000,
+        fameStake: 20,
+        daysRemaining: 14,
+        plannedSuccessRoll: 0.5
+      },
+      {
+        id: 'c3',
+        assetSpec: {
+          kind: 'studio_chassis',
+          flavor: 'legit',
+          chassisTier: 1
+        },
+        targetAmount: 6000,
+        fameStake: 20,
+        daysRemaining: 14,
+        plannedSuccessRoll: 0.3
+      }
+    ])
+
+    assert.deepEqual(
+      out.map(campaign => campaign.id),
+      ['c1', 'c3']
+    )
+  })
 })
 
 describe('sanitizeRngSeed', () => {

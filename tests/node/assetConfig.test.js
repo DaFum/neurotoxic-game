@@ -2,10 +2,12 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   buildDiyTier,
+  calculateChassisUpgradeCost,
   CHASSIS_CONFIG,
   DIY_PRICE_MULT,
   DIY_RISK,
   DIY_UPKEEP_MULT,
+  getNextChassisTier,
   REPAIR_COST_PER_POINT,
   UPGRADE_OVERHEAD
 } from '../../src/utils/assetConfig.ts'
@@ -50,6 +52,33 @@ describe('Asset constants', () => {
   it('REPAIR_COST_PER_POINT is a positive number', () => {
     assert.equal(typeof REPAIR_COST_PER_POINT, 'number')
     assert.ok(REPAIR_COST_PER_POINT > 0)
+  })
+})
+
+describe('chassis upgrade helpers', () => {
+  it('returns the next tier until the max tier is reached', () => {
+    assert.equal(getNextChassisTier(1), 2)
+    assert.equal(getNextChassisTier(2), 3)
+    assert.equal(getNextChassisTier(3), null)
+  })
+
+  it('clamps upgrade cost to zero when tier pricing is inverted', () => {
+    const current = {
+      price: 9000,
+      upkeep: 20,
+      revenue: 0,
+      slots: ['tb_roof'],
+      baseRiskEventChance: 0.005
+    }
+    const target = {
+      price: 1000,
+      upkeep: 35,
+      revenue: 0,
+      slots: ['tb_roof', 'tb_front'],
+      baseRiskEventChance: 0.005
+    }
+
+    assert.equal(calculateChassisUpgradeCost(current, target), 0)
   })
 })
 

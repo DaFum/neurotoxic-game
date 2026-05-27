@@ -118,5 +118,34 @@ describe('travelUtils', () => {
 
       assert.strictEqual(result.nextBand.harmony, 100)
     })
+
+    test('applies asset travel stamina regeneration to band members', () => {
+      const player = { money: 1000, van: { fuel: 50 } }
+      const band = {
+        harmony: 50,
+        members: [
+          {
+            id: 'matze',
+            mood: 50,
+            stamina: 18,
+            staminaMax: 20,
+            traits: {},
+            relationships: {}
+          }
+        ]
+      }
+      const node = { id: 'node_1', venue: 'venue_1' }
+
+      const result = getTravelArrivalUpdates({
+        player,
+        band,
+        node,
+        fuelLiters: 5,
+        totalCost: 50,
+        assetModifiers: { travelStaminaRegen: 5 }
+      })
+
+      assert.strictEqual(result.nextBand.members[0].stamina, 20)
+    })
   })
 })

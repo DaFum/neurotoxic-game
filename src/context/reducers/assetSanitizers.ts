@@ -280,11 +280,14 @@ export const sanitizeLiabilities = (
 }
 
 export const sanitizeCrowdfundCampaigns = (
-  raw: unknown
+  raw: unknown,
+  activeAssets: ReadonlyArray<Pick<LongTermAsset, 'kind'>> = []
 ): CrowdfundCampaign[] => {
   if (!Array.isArray(raw)) return []
   const out: CrowdfundCampaign[] = []
   const seenIds = new Set<string>()
+  const unavailableKinds = new Set(activeAssets.map(asset => asset.kind))
+  const seenKinds = new Set<CrowdfundCampaign['assetSpec']['kind']>()
   for (const item of raw) {
     if (!isLooseRecord(item)) continue
     const clean = stripHostileKeys(item)
@@ -295,6 +298,8 @@ export const sanitizeCrowdfundCampaigns = (
     if (!VALID_FLAVORS.has(spec.flavor as string)) continue
     const tier = Number(spec.chassisTier)
     if (!VALID_TIERS.has(tier)) continue
+    const kind = spec.kind as CrowdfundCampaign['assetSpec']['kind']
+    if (unavailableKinds.has(kind) || seenKinds.has(kind)) continue
 
     const outcome = clean.resolvedOutcome
     // Materialized ids are required fields on the type (so processCrowdfundTick
@@ -314,7 +319,7 @@ export const sanitizeCrowdfundCampaigns = (
     const result: CrowdfundCampaign = {
       id: clean.id,
       assetSpec: {
-        kind: spec.kind as CrowdfundCampaign['assetSpec']['kind'],
+        kind,
         flavor: spec.flavor as AssetFlavor,
         chassisTier: tier as ChassisTier
       },
@@ -341,6 +346,7 @@ export const sanitizeCrowdfundCampaigns = (
     }
     out.push(result)
     seenIds.add(clean.id)
+    seenKinds.add(kind)
   }
   return out
 }

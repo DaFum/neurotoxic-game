@@ -87,6 +87,23 @@ vi.mock('../../src/utils/economyEngine', () => ({
     catering: 60,
     guestlist: 80
   },
+  calculateGigModifierCost: (key, assetModifiers = {}) => {
+    const costs = {
+      soundcheck: 50,
+      promo: 100,
+      merch: 75,
+      catering: 60,
+      guestlist: 80
+    }
+    const baseCost = costs[key] ?? 0
+    if (key !== 'soundcheck') return baseCost
+    const multiplier =
+      typeof assetModifiers.songCostMultiplier === 'number' &&
+      Number.isFinite(assetModifiers.songCostMultiplier)
+        ? Math.max(0, assetModifiers.songCostMultiplier)
+        : 1
+    return Math.ceil(baseCost * multiplier)
+  },
   DEFAULT_MERCH_PRICES: {
     shirts: 20,
     hoodies: 45,
@@ -113,6 +130,7 @@ const mockUseGameState = {
   band: { harmony: 50, inventory: { shirts: 10 }, merchPrices: {} },
   updateBand: vi.fn(),
   addToast: vi.fn(),
+  assets: [],
   startRoadieMinigame: vi.fn(),
   startKabelsalatMinigame: vi.fn(),
   startAmpCalibration: vi.fn()
@@ -128,9 +146,67 @@ const { PreGig } = await import('../../src/scenes/PreGig.tsx')
 const { __testInternals } = await import('../../src/hooks/usePreGigLogic')
 const { getSafeRandom } = await import('../../src/utils/crypto')
 
+const makeAssetWithModule = ({
+  kind = 'tourbus_chassis',
+  slotType = 'tb_roof',
+  moduleId
+}) => ({
+  id: `asset_${moduleId}`,
+  kind,
+  chassisFlavor: 'legit',
+  chassisTier: 3,
+  condition: 100,
+  baseUpkeep: 0,
+  baseDailyRevenue: 0,
+  baseRiskEventChance: 0,
+  acquiredOnDay: 1,
+  acquisitionMode: 'cash',
+  slots: [
+    {
+      id: `slot_${moduleId}`,
+      slotType,
+      position: { x: 0, y: 0 },
+      installedModuleId: moduleId
+    }
+  ]
+})
+
 describe('PreGig', () => {
   test('exposes minigame fallback reset only through test internals', () => {
     expect(__testInternals?.resetLastMinigameFallback).toBeTypeOf('function')
+  })
+
+  test('pre-gig economy internals sanitize invalid asset multipliers', () => {
+    expect(__testInternals?.resolveBandMeetingCost(Number.NaN)).toBe(50)
+    expect(
+      __testInternals?.resolveBandMeetingCost(Number.POSITIVE_INFINITY)
+    ).toBe(50)
+    expect(__testInternals?.resolveBandMeetingCost(-2)).toBe(0)
+
+    expect(
+      __testInternals?.resolveMerchRestockCost({
+        itemCost: 150,
+        merchCostMultiplier: Number.NaN,
+        restockAmount: 5,
+        bundleAmount: 25
+      })
+    ).toBe(30)
+    expect(
+      __testInternals?.resolveMerchRestockCost({
+        itemCost: 150,
+        merchCostMultiplier: -1,
+        restockAmount: 5,
+        bundleAmount: 25
+      })
+    ).toBe(0)
+    expect(
+      __testInternals?.resolveMerchRestockCost({
+        itemCost: 150,
+        merchCostMultiplier: 1,
+        restockAmount: Number.NaN,
+        bundleAmount: 25
+      })
+    ).toBe(0)
   })
 
   test('guards test internals runtime detection for browsers without process', async () => {
@@ -152,6 +228,7 @@ describe('PreGig', () => {
     // Restore default state
     mockUseGameState.player = { money: 1000 }
     mockUseGameState.gigModifiers = {}
+    mockUseGameState.assets = []
 
     // Clean up sessionStorage state to ensure isolated tests
     try {
@@ -304,6 +381,26 @@ describe('PreGig', () => {
     )
   })
 
+  test('band meeting cost uses asset training cost multiplier', async () => {
+    mockUseGameState.player.money = 500
+    mockUseGameState.band.harmony = 50
+    mockUseGameState.assets = [
+      makeAssetWithModule({
+        kind: 'bandhaus_chassis',
+        slotType: 'bh_stage',
+        moduleId: 'bh_pro_pa_system'
+      })
+    ]
+
+    const { findByText } = render(React.createElement(PreGig))
+
+    const meetingBtn = await findByText(/ui:pregig.bandMeeting.label/i)
+    fireEvent.click(meetingBtn)
+
+    expect(mockUseGameState.updatePlayer).toHaveBeenCalledWith({ money: 457 })
+    expect(mockUseGameState.updateBand).toHaveBeenCalledWith({ harmony: 65 })
+  })
+
   test('band meeting fails when insufficient money', async () => {
     mockUseGameState.player.money = 30
 
@@ -369,6 +466,31 @@ describe('PreGig', () => {
       'error'
     )
     expect(mockUseGameState.setGigModifiers).not.toHaveBeenCalled()
+  })
+
+  test('song cost multiplier lowers soundcheck budget gate', async () => {
+    mockUseGameState.player.money = 45
+    mockUseGameState.gigModifiers = {}
+    mockUseGameState.assets = [
+      makeAssetWithModule({
+        kind: 'studio_chassis',
+        slotType: 'st_control',
+        moduleId: 'st_diy_mixer'
+      })
+    ]
+
+    const { findByText } = render(React.createElement(PreGig))
+
+    const soundcheckBtn = await findByText(/Soundcheck/i)
+    fireEvent.click(soundcheckBtn)
+
+    expect(mockUseGameState.setGigModifiers).toHaveBeenCalledWith({
+      soundcheck: true
+    })
+    expect(mockUseGameState.addToast).not.toHaveBeenCalledWith(
+      'ui:pregig.toasts.noMoneyUpgrade',
+      'error'
+    )
   })
 
   test('allows toggling modifier off regardless of budget', async () => {
@@ -533,5 +655,72 @@ describe('PreGig', () => {
     // Restock must do both: deduct money AND add inventory
     expect(mockUseGameState.updatePlayer).toHaveBeenCalled()
     expect(mockUseGameState.updateBand).toHaveBeenCalled()
+  })
+
+  test('merch restock cost uses asset merch cost multiplier', async () => {
+    mockUseGameState.band = {
+      harmony: 50,
+      inventory: { shirts: 0 },
+      merchPrices: {}
+    }
+    mockUseGameState.player = { money: 500 }
+    mockUseGameState.assets = [
+      makeAssetWithModule({
+        kind: 'merch_workshop_chassis',
+        slotType: 'mw_print',
+        moduleId: 'mw_4color_carousel'
+      })
+    ]
+
+    const { findByText, findAllByText } = render(React.createElement(PreGig))
+
+    const merchTabBtn = await findByText(/ui:pregig.tabs.merch/i)
+    fireEvent.click(merchTabBtn)
+    await findByText(/ui:pregig.merchStrategy.title/i)
+
+    const restockBtns = await findAllByText(/ui:pregig.merchStrategy.restock/i)
+    fireEvent.click(restockBtns[0])
+
+    expect(mockUseGameState.updatePlayer).toHaveBeenCalledWith({ money: 387 })
+  })
+
+  test('merch capacity blocks restock until an asset raises the ceiling', async () => {
+    mockUseGameState.band = {
+      harmony: 50,
+      inventory: { shirts: 100 },
+      merchPrices: {}
+    }
+    mockUseGameState.player = { money: 500 }
+
+    const { findByText, findAllByText, rerender } = render(
+      React.createElement(PreGig)
+    )
+
+    const merchTabBtn = await findByText(/ui:pregig.tabs.merch/i)
+    fireEvent.click(merchTabBtn)
+    await findByText(/ui:pregig.merchStrategy.title/i)
+    let restockBtns = await findAllByText(/ui:pregig.merchStrategy.restock/i)
+    fireEvent.click(restockBtns[0])
+
+    expect(mockUseGameState.updatePlayer).not.toHaveBeenCalled()
+    expect(mockUseGameState.addToast).toHaveBeenCalledWith(
+      'ui:pregig.toasts.merchCapacityFull',
+      'error'
+    )
+
+    mockUseGameState.updatePlayer.mockClear()
+    mockUseGameState.addToast.mockClear()
+    mockUseGameState.assets = [
+      makeAssetWithModule({
+        slotType: 'tb_roof',
+        moduleId: 'tb_roof_rack'
+      })
+    ]
+
+    rerender(React.createElement(PreGig))
+    restockBtns = await findAllByText(/ui:pregig.merchStrategy.restock/i)
+    fireEvent.click(restockBtns[0])
+
+    expect(mockUseGameState.updatePlayer).toHaveBeenCalledWith({ money: 350 })
   })
 })

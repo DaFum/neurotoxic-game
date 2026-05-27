@@ -220,6 +220,48 @@ test('eventEngine.selectEvent does not dampen non-random band events even at low
   }
 })
 
+test('eventEngine.selectEvent dampens conflict events when infightingDamper is active', () => {
+  const MOCK_POOL = [
+    {
+      id: 'toxic_infighting',
+      trigger: 'random',
+      category: 'band',
+      tags: ['conflict'],
+      chance: 0.4
+    }
+  ]
+  const baseState = { band: { harmony: 80 }, activeStoryFlags: [] }
+  const dampenedState = {
+    ...baseState,
+    assets: [
+      {
+        condition: 100,
+        slots: [{ installedModuleId: 'bh_soundproofing' }]
+      }
+    ]
+  }
+
+  mockSecureRandom.mock.mockImplementation(() => 0.3)
+
+  try {
+    const normalSelected = eventEngine.selectEvent(
+      MOCK_POOL,
+      baseState,
+      'random'
+    )
+    assert.equal(normalSelected?.id, 'toxic_infighting')
+
+    const dampenedSelected = eventEngine.selectEvent(
+      MOCK_POOL,
+      dampenedState,
+      'random'
+    )
+    assert.equal(dampenedSelected, null)
+  } finally {
+    mockSecureRandom.mock.mockImplementation(() => 0.5)
+  }
+})
+
 test('eventEngine.selectEvent respects cooldowns', () => {
   const state = buildGameState({ eventCooldowns: ['event_cooldown'] })
   const selected = eventEngine.selectEvent(

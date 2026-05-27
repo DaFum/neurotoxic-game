@@ -1523,6 +1523,15 @@
         "type": "const"
       }
     ],
+    "calculateChassisUpgradeCost": [
+      {
+        "isDefault": false,
+        "name": "calculateChassisUpgradeCost",
+        "path": "src/utils/assetConfig.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "calculateClinicCost": [
       {
         "isDefault": false,
@@ -1644,6 +1653,15 @@
       {
         "isDefault": false,
         "name": "calculateGigFinancials",
+        "path": "src/utils/economyEngine.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "calculateGigModifierCost": [
+      {
+        "isDefault": false,
+        "name": "calculateGigModifierCost",
         "path": "src/utils/economyEngine.ts",
         "source": "local",
         "type": "const"
@@ -4974,6 +4992,15 @@
         "type": "const"
       }
     ],
+    "getNextChassisTier": [
+      {
+        "isDefault": false,
+        "name": "getNextChassisTier",
+        "path": "src/utils/assetConfig.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "getNodeVisibility": [
       {
         "isDefault": false,
@@ -5992,6 +6019,15 @@
         "isDefault": false,
         "name": "handleUseContraband",
         "path": "src/context/reducers/bandReducer.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "hasActiveAssetAcquisition": [
+      {
+        "isDefault": false,
+        "name": "hasActiveAssetAcquisition",
+        "path": "src/utils/assetSelectors.ts",
         "source": "local",
         "type": "const"
       }
@@ -10999,6 +11035,15 @@
         "source": "local",
         "type": "interface",
         "typeOnly": true
+      }
+    ],
+    "UpgradeConfirmModal": [
+      {
+        "isDefault": false,
+        "name": "UpgradeConfirmModal",
+        "path": "src/components/assets/UpgradeConfirmModal.tsx",
+        "source": "local",
+        "type": "const"
       }
     ],
     "UpgradesTab": [

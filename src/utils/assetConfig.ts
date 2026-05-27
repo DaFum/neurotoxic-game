@@ -47,6 +47,17 @@ export const DIY_RISK = 0.03
  */
 export const UPGRADE_OVERHEAD = 500
 
+export const getNextChassisTier = (tier: ChassisTier): ChassisTier | null =>
+  tier < 3 ? ((tier + 1) as ChassisTier) : null
+
+export const calculateChassisUpgradeCost = (
+  currentConfig: Pick<ChassisTierConfig, 'price'>,
+  targetConfig: Pick<ChassisTierConfig, 'price'>
+): number => {
+  const rawCost = targetConfig.price - currentConfig.price + UPGRADE_OVERHEAD
+  return Number.isFinite(rawCost) ? Math.max(0, rawCost) : 0
+}
+
 /**
  * EUR cost per missing condition point to repair an asset back to 100. Repair
  * is a single-shot action (no partial repairs).

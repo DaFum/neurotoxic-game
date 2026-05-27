@@ -1,5 +1,93 @@
+import type { GameState } from '../../types'
+
+const storyFlagNotSet =
+  (flag: string) =>
+  (state: GameState): boolean =>
+    !Array.isArray(state.activeStoryFlags) ||
+    !state.activeStoryFlags.includes(flag)
+
 // Band Events
 export const BAND_EVENTS = [
+  {
+    id: 'asset_story_found_record_collection',
+    category: 'band',
+    title: 'events:asset_story_found_record_collection.title',
+    description: 'events:asset_story_found_record_collection.desc',
+    trigger: 'random',
+    chance: 0.02,
+    condition: storyFlagNotSet('found_record_collection'),
+    options: [
+      {
+        label: 'events:asset_story_found_record_collection.opt1.label',
+        effect: { type: 'flag', flag: 'found_record_collection' },
+        outcomeText: 'events:asset_story_found_record_collection.opt1.outcome'
+      }
+    ]
+  },
+  {
+    id: 'asset_story_underground_show',
+    category: 'band',
+    title: 'events:asset_story_underground_show.title',
+    description: 'events:asset_story_underground_show.desc',
+    trigger: 'random',
+    chance: 0.02,
+    condition: storyFlagNotSet('underground_show'),
+    options: [
+      {
+        label: 'events:asset_story_underground_show.opt1.label',
+        effect: { type: 'flag', flag: 'underground_show' },
+        outcomeText: 'events:asset_story_underground_show.opt1.outcome'
+      }
+    ]
+  },
+  {
+    id: 'asset_story_old_basement_secret',
+    category: 'band',
+    title: 'events:asset_story_old_basement_secret.title',
+    description: 'events:asset_story_old_basement_secret.desc',
+    trigger: 'random',
+    chance: 0.02,
+    condition: storyFlagNotSet('old_basement_secret'),
+    options: [
+      {
+        label: 'events:asset_story_old_basement_secret.opt1.label',
+        effect: { type: 'flag', flag: 'old_basement_secret' },
+        outcomeText: 'events:asset_story_old_basement_secret.opt1.outcome'
+      }
+    ]
+  },
+  {
+    id: 'asset_story_saved_local_venue',
+    category: 'band',
+    title: 'events:asset_story_saved_local_venue.title',
+    description: 'events:asset_story_saved_local_venue.desc',
+    trigger: 'random',
+    chance: 0.02,
+    condition: storyFlagNotSet('saved_local_venue'),
+    options: [
+      {
+        label: 'events:asset_story_saved_local_venue.opt1.label',
+        effect: { type: 'flag', flag: 'saved_local_venue' },
+        outcomeText: 'events:asset_story_saved_local_venue.opt1.outcome'
+      }
+    ]
+  },
+  {
+    id: 'asset_story_tape_culture_revival',
+    category: 'band',
+    title: 'events:asset_story_tape_culture_revival.title',
+    description: 'events:asset_story_tape_culture_revival.desc',
+    trigger: 'random',
+    chance: 0.02,
+    condition: storyFlagNotSet('tape_culture_revival'),
+    options: [
+      {
+        label: 'events:asset_story_tape_culture_revival.opt1.label',
+        effect: { type: 'flag', flag: 'tape_culture_revival' },
+        outcomeText: 'events:asset_story_tape_culture_revival.opt1.outcome'
+      }
+    ]
+  },
   {
     id: 'internal_dispute',
     category: 'band',

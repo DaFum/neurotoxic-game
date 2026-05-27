@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DEFAULT_MERCH_PRICES } from '../../utils/economyEngine'
+import { finiteNumberOr } from '../../utils/gameStateUtils'
 import { formatCurrency } from '../../utils/numberUtils'
 import { HQ_ITEMS_BY_MERCH_KEY } from '../../data/hqItems'
 
@@ -9,6 +10,8 @@ interface MerchStrategyBlockProps {
   customPrices: Record<string, number>
   onUpdatePrice: (merchKey: string, newPrice: number) => void
   onRestock: (merchKey: string) => void
+  restockCostMultiplier?: number
+  merchCapacityBonus?: number
 }
 
 interface MerchItem {
@@ -18,6 +21,7 @@ interface MerchItem {
   currentPrice: number
   defaultPrice: number
   restockCost: number
+  restockAmount: number
 }
 
 interface MerchItemRowProps {
@@ -34,70 +38,141 @@ const MerchItemRow: React.FC<MerchItemRowProps> = ({
   onUpdatePrice,
   onRestock,
   t
-}) => (
-  <div className='flex justify-between items-center bg-(--color-charcoal-gray) p-3 border border-(--color-concrete-gray)'>
-    <div className='flex flex-col'>
-      <span className='text-(--color-toxic-green) font-mono uppercase'>
-        {item.name}
-      </span>
-      <span className='text-(--color-ash-gray) font-mono text-sm'>
-        {t('ui:pregig.merchStrategy.stock', { count: item.stock })}
-      </span>
-    </div>
+}) => {
+  const restockDisabled = item.restockAmount <= 0
 
-    <div className='flex items-center gap-4'>
-      <div className='flex items-center gap-2'>
-        <button
-          type='button'
-          aria-label={t('ui:pregig.merchStrategy.decreasePrice', {
-            item: item.name
-          })}
-          onClick={() =>
-            onUpdatePrice(item.key, Math.max(1, item.currentPrice - 1))
-          }
-          className='bg-(--color-concrete-gray) hover:bg-(--color-steel-gray) p-1 text-(--color-toxic-green)'
-        >
-          -
-        </button>
-        <span className='text-(--color-toxic-green) font-mono w-8 text-center'>
-          {formatCurrency(item.currentPrice, language)}
+  return (
+    <div className='flex justify-between items-center bg-(--color-charcoal-gray) p-3 border border-(--color-concrete-gray)'>
+      <div className='flex flex-col'>
+        <span className='text-(--color-toxic-green) font-mono uppercase'>
+          {item.name}
         </span>
-        <button
-          type='button'
-          aria-label={t('ui:pregig.merchStrategy.increasePrice', {
-            item: item.name
-          })}
-          onClick={() => onUpdatePrice(item.key, item.currentPrice + 1)}
-          className='bg-(--color-concrete-gray) hover:bg-(--color-steel-gray) p-1 text-(--color-toxic-green)'
-        >
-          +
-        </button>
+        <span className='text-(--color-ash-gray) font-mono text-sm'>
+          {t('ui:pregig.merchStrategy.stock', { count: item.stock })}
+        </span>
       </div>
 
-      <button
-        type='button'
-        onClick={() => onRestock(item.key)}
-        className='bg-(--color-toxic-green) text-(--color-void-black) font-mono px-3 py-1 uppercase text-sm hover:opacity-80 transition-colors'
-        title={t('ui:pregig.merchStrategy.restockCost', {
-          cost: item.restockCost
-        })}
-      >
-        {t('ui:pregig.merchStrategy.restock')}
-      </button>
+      <div className='flex items-center gap-4'>
+        <div className='flex items-center gap-2'>
+          <button
+            type='button'
+            aria-label={t('ui:pregig.merchStrategy.decreasePrice', {
+              item: item.name
+            })}
+            onClick={() =>
+              onUpdatePrice(item.key, Math.max(1, item.currentPrice - 1))
+            }
+            className='bg-(--color-concrete-gray) hover:bg-(--color-steel-gray) p-1 text-(--color-toxic-green)'
+          >
+            -
+          </button>
+          <span className='text-(--color-toxic-green) font-mono w-8 text-center'>
+            {formatCurrency(item.currentPrice, language)}
+          </span>
+          <button
+            type='button'
+            aria-label={t('ui:pregig.merchStrategy.increasePrice', {
+              item: item.name
+            })}
+            onClick={() => onUpdatePrice(item.key, item.currentPrice + 1)}
+            className='bg-(--color-concrete-gray) hover:bg-(--color-steel-gray) p-1 text-(--color-toxic-green)'
+          >
+            +
+          </button>
+        </div>
+
+        <button
+          type='button'
+          onClick={() => {
+            if (restockDisabled) return
+            onRestock(item.key)
+          }}
+          disabled={restockDisabled}
+          aria-disabled={restockDisabled}
+          className='bg-(--color-toxic-green) text-(--color-void-black) font-mono px-3 py-1 uppercase text-sm hover:opacity-80 transition-colors disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:opacity-40'
+          title={t('ui:pregig.merchStrategy.restockCost', {
+            amount: item.restockAmount,
+            cost: formatCurrency(item.restockCost, language)
+          })}
+        >
+          {t('ui:pregig.merchStrategy.restock')}
+        </button>
+      </div>
     </div>
-  </div>
-)
+  )
+}
+
+const resolveMerchRestockCost = ({
+  itemCost,
+  restockCostMultiplier,
+  restockAmount,
+  bundleAmount
+}: {
+  itemCost: unknown
+  restockCostMultiplier: unknown
+  restockAmount: unknown
+  bundleAmount: unknown
+}): number => {
+  const safeItemCost = Math.max(0, finiteNumberOr(itemCost, 50))
+  const safeMultiplier = Math.max(0, finiteNumberOr(restockCostMultiplier, 1))
+  const safeRestockAmount = Math.max(0, finiteNumberOr(restockAmount, 0))
+  const safeBundleAmount = Math.max(1, finiteNumberOr(bundleAmount, 10))
+  const cappedRestockAmount = Math.min(safeRestockAmount, safeBundleAmount)
+
+  if (cappedRestockAmount <= 0) return 0
+
+  const fullBundleCost = Math.ceil(safeItemCost * safeMultiplier)
+  return Math.ceil(fullBundleCost * (cappedRestockAmount / safeBundleAmount))
+}
+
+const BASE_MERCH_CAPACITY = 100
+
+const getMerchBundleAmount = (
+  itemDef: typeof HQ_ITEMS_BY_MERCH_KEY extends ReadonlyMap<string, infer T>
+    ? T
+    : never
+): number => {
+  const effect = itemDef.effect
+  if (
+    effect &&
+    typeof effect === 'object' &&
+    Object.hasOwn(effect, 'value') &&
+    typeof effect.value === 'number' &&
+    Number.isFinite(effect.value) &&
+    effect.value > 0
+  ) {
+    return effect.value
+  }
+  return 10
+}
+
+const getTotalMerchStock = (inventory: Record<string, unknown>): number => {
+  let total = 0
+  for (const merchKey of HQ_ITEMS_BY_MERCH_KEY.keys()) {
+    const value = inventory[merchKey]
+    total += typeof value === 'number' && Number.isFinite(value) ? value : 0
+  }
+  return Math.max(0, total)
+}
 
 export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
   bandInventory,
   customPrices,
   onUpdatePrice,
-  onRestock
+  onRestock,
+  restockCostMultiplier = 1,
+  merchCapacityBonus = 0
 }) => {
   const { t, i18n } = useTranslation(['economy', 'ui'])
 
   const merchItems = useMemo(() => {
     const items: MerchItem[] = []
+    const merchCapacity =
+      BASE_MERCH_CAPACITY + Math.max(0, finiteNumberOr(merchCapacityBonus, 0))
+    const remainingCapacity = Math.max(
+      0,
+      merchCapacity - getTotalMerchStock(bandInventory)
+    )
     for (const key in DEFAULT_MERCH_PRICES) {
       if (Object.hasOwn(DEFAULT_MERCH_PRICES, key)) {
         const defaultPrice = DEFAULT_MERCH_PRICES[key] ?? 10
@@ -107,7 +182,18 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
             ? (bandInventory[key] as number)
             : 0
 
-        const restockCost = HQ_ITEMS_BY_MERCH_KEY.get(key)?.cost ?? 50 // fallback
+        const itemDef = HQ_ITEMS_BY_MERCH_KEY.get(key)
+        const bundleAmount = itemDef ? getMerchBundleAmount(itemDef) : 10
+        const restockAmount = Math.max(
+          0,
+          Math.min(bundleAmount, remainingCapacity)
+        )
+        const restockCost = resolveMerchRestockCost({
+          itemCost: itemDef?.cost ?? 50,
+          restockCostMultiplier,
+          restockAmount,
+          bundleAmount
+        })
 
         items.push({
           key,
@@ -117,12 +203,19 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
           stock,
           currentPrice,
           defaultPrice,
-          restockCost
+          restockCost,
+          restockAmount
         })
       }
     }
     return items
-  }, [bandInventory, customPrices, t])
+  }, [
+    bandInventory,
+    customPrices,
+    merchCapacityBonus,
+    restockCostMultiplier,
+    t
+  ])
 
   return (
     <div className='bg-(--color-void-black) border-2 border-(--color-toxic-green) p-4 flex flex-col gap-4'>

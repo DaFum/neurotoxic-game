@@ -23,7 +23,11 @@ vi.mock('../../src/utils/assetSelectors', () => ({
 
 vi.mock('../../src/utils/numberUtils', () => ({
   formatCurrency: (value: number, _language?: string, sign?: string) =>
-    sign === 'always' && value > 0 ? `+${value} EUR` : `${value} EUR`
+    sign === 'always'
+      ? value >= 0
+        ? `+${value} EUR`
+        : `${value} EUR`
+      : `${value} EUR`
 }))
 
 vi.mock('react-i18next', () => ({
@@ -51,7 +55,7 @@ describe('AssetsStatusStrip', () => {
     expect(screen.getByText('Cash')).toBeInTheDocument()
     expect(screen.getByText('1234 EUR')).toBeInTheDocument()
     expect(screen.getByText('Daily')).toBeInTheDocument()
-    expect(screen.getByText('+37 EUR')).toBeInTheDocument()
+    expect(screen.getByText('-37 EUR')).toBeInTheDocument()
     expect(screen.getByText('Debt')).toBeInTheDocument()
     expect(screen.getByText('450 EUR')).toBeInTheDocument()
     expect(screen.getByText('Campaigns')).toBeInTheDocument()

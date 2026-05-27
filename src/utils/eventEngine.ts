@@ -5,6 +5,7 @@ import { logger } from './logger'
 import { secureRandom } from './crypto'
 import { bandHasTrait } from './traitUtils'
 import { calculateAppliedDelta } from './gameStateUtils'
+import { MODULE_REGISTRY } from './assetModuleRegistry'
 import { StateError } from './errorHandler'
 import type { GameEvent, GameState } from '../types'
 
@@ -72,6 +73,10 @@ export type EngineGameState = {
     tags?: string[]
     context?: Record<string, unknown>
   }
+  assets?: Array<{
+    condition?: number
+    slots?: Array<{ installedModuleId?: string | null }>
+  }>
   [key: string]: unknown
 }
 
@@ -157,8 +162,36 @@ const resolveTemplateString = (
 
 const HARMONY_DEATH_SPIRAL_THRESHOLD = 30
 const HARMONY_DEATH_SPIRAL_DAMPEN_FACTOR = 0.5
+const INFIGHTING_DAMPER_CHANCE_FACTOR = 0.5
 
 const eventPoolMapCache = new WeakMap()
+
+const hasInstalledAssetFlag = (
+  gameState: EngineGameState,
+  flag: 'infightingDamper'
+): boolean => {
+  const assets = Array.isArray(gameState.assets) ? gameState.assets : []
+  for (const asset of assets) {
+    if (!asset || typeof asset !== 'object') continue
+    if (
+      typeof asset.condition === 'number' &&
+      Number.isFinite(asset.condition) &&
+      asset.condition < 20
+    ) {
+      continue
+    }
+
+    const slots = Array.isArray(asset.slots) ? asset.slots : []
+    for (const slot of slots) {
+      const moduleId = slot?.installedModuleId
+      if (typeof moduleId !== 'string') continue
+      if (!Object.hasOwn(MODULE_REGISTRY, moduleId)) continue
+      const module = MODULE_REGISTRY[moduleId]
+      if (module?.boni?.[flag] === true) return true
+    }
+  }
+  return false
+}
 
 const getEventMapForPool = (
   pool: EngineEvent[]
@@ -248,6 +281,10 @@ const selectEvent = (
 
   // 4. Story Flag Weighting & Selection
   const shuffled = [...eligibleEvents]
+  const infightingDamperActive = hasInstalledAssetFlag(
+    gameState,
+    'infightingDamper'
+  )
 
   // Fisher-Yates shuffle for unbiased randomness and better performance
   for (let i = shuffled.length - 1; i > 0; i--) {
@@ -278,6 +315,10 @@ const selectEvent = (
       (gameState.band?.harmony ?? 100) < HARMONY_DEATH_SPIRAL_THRESHOLD
     ) {
       chance *= HARMONY_DEATH_SPIRAL_DAMPEN_FACTOR
+    }
+
+    if (infightingDamperActive && event.tags?.includes('conflict')) {
+      chance *= INFIGHTING_DAMPER_CHANCE_FACTOR
     }
 
     if (rng() < chance) {

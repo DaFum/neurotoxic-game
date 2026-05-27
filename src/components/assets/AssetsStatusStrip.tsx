@@ -66,7 +66,7 @@ export const AssetsStatusStrip = () => {
         />
         <StatusCell
           label={t('assets:hub.status.daily')}
-          value={formatCurrency(obligations, i18n.language, 'always')}
+          value={formatCurrency(-obligations, i18n.language, 'always')}
           tone={obligations > 0 ? 'danger' : 'good'}
         />
         <StatusCell
