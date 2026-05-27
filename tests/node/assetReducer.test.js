@@ -252,6 +252,50 @@ test('handleUpgradeChassisTier - rejects insufficient funds', () => {
   assert.strictEqual(next, startState)
 })
 
+test('handleUpgradeChassisTier - never credits money for inverted tier prices', () => {
+  CHASSIS_CONFIG.tourbus_chassis.legit[1] = {
+    price: 9000,
+    upkeep: 20,
+    revenue: 0,
+    slots: ['tb_roof'],
+    baseRiskEventChance: 0.005
+  }
+  CHASSIS_CONFIG.tourbus_chassis.legit[2] = {
+    price: 1000,
+    upkeep: 35,
+    revenue: 0,
+    slots: ['tb_roof', 'tb_front'],
+    baseRiskEventChance: 0.005
+  }
+  const startState = {
+    ...mockState,
+    player: { ...mockState.player, money: 0 },
+    assets: [
+      {
+        id: 'a1',
+        kind: 'tourbus_chassis',
+        chassisFlavor: 'legit',
+        chassisTier: 1,
+        condition: 100,
+        baseUpkeep: 20,
+        baseDailyRevenue: 0,
+        slots: [{ id: 's1', slotType: 'tb_roof', installedModuleId: null }],
+        acquiredOnDay: 1,
+        acquisitionMode: 'cash',
+        baseRiskEventChance: 0.005
+      }
+    ]
+  }
+
+  const next = handleUpgradeChassisTier(startState, {
+    assetId: 'a1',
+    targetTier: 2,
+    newSlotIds: [{ id: 's2', slotType: 'tb_front' }]
+  })
+
+  assert.strictEqual(next.player.money, 0)
+})
+
 test('handleRepairChassis - rejects insufficient funds', () => {
   const startState = {
     ...mockState,

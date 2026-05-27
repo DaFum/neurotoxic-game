@@ -4,7 +4,8 @@ import {
   clampPlayerMoney,
   clampBandHarmony,
   clampMemberStamina,
-  finiteNumberOr
+  finiteNumberOr,
+  isEmptyObject
 } from './gameStateUtils'
 import type { BandState, MapNode, PlayerState, Venue } from '../types'
 import type { AssetModifiers } from '../types/assets'
@@ -292,7 +293,7 @@ export const getTravelArrivalUpdates = ({
     }))
   }
 
-  const nextBand = Object.keys(bandPatch).length > 0 ? bandPatch : null
+  const nextBand = !isEmptyObject(bandPatch) ? bandPatch : null
 
   return { nextPlayer, nextBand }
 }

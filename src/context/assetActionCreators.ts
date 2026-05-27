@@ -20,9 +20,9 @@
 
 import { ActionTypes } from './actionTypes'
 import {
+  calculateChassisUpgradeCost,
   CHASSIS_CONFIG,
-  REPAIR_COST_PER_POINT,
-  UPGRADE_OVERHEAD
+  REPAIR_COST_PER_POINT
 } from '../utils/assetConfig'
 import { MODULE_REGISTRY } from '../utils/assetModuleRegistry'
 import { LOAN_PROFILES, type LoanProfileId } from '../utils/loanProfiles'
@@ -281,7 +281,7 @@ export const upgradeChassisTier = (
   const currentCfg =
     CHASSIS_CONFIG[asset.kind]?.[asset.chassisFlavor]?.[asset.chassisTier]
   if (!currentCfg) return null
-  const upgradeCost = targetCfg.price - currentCfg.price + UPGRADE_OVERHEAD
+  const upgradeCost = calculateChassisUpgradeCost(currentCfg, targetCfg)
   if (state.player.money < upgradeCost) return null
 
   // Count existing chassis-tier slots per slotType (skip dynamically-added

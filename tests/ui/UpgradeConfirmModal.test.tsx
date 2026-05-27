@@ -1,12 +1,16 @@
 import { fireEvent, render, screen } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { UpgradeConfirmModal } from '../../src/components/assets/UpgradeConfirmModal'
+import { CHASSIS_CONFIG } from '../../src/utils/assetConfig'
 import type { LongTermAsset } from '../../src/types/assets'
 
 const mockUpgradeChassisTier = vi.fn()
 const mockState = vi.hoisted(() => ({
   player: { money: 10000 }
 }))
+const originalTourbusLegitConfig = structuredClone(
+  CHASSIS_CONFIG.tourbus_chassis.legit
+)
 
 const asset: LongTermAsset = {
   id: 'asset-1',
@@ -78,6 +82,12 @@ describe('UpgradeConfirmModal', () => {
     mockUpgradeChassisTier.mockClear()
   })
 
+  afterEach(() => {
+    CHASSIS_CONFIG.tourbus_chassis.legit = structuredClone(
+      originalTourbusLegitConfig
+    )
+  })
+
   it('upgrades to the next chassis tier after confirmation', () => {
     const onClose = vi.fn()
     render(<UpgradeConfirmModal asset={asset} isOpen onClose={onClose} />)
@@ -95,5 +105,22 @@ describe('UpgradeConfirmModal', () => {
 
     expect(screen.getByRole('button', { name: 'Upgrade' })).toBeDisabled()
     expect(screen.getByText('Not enough money.')).toBeInTheDocument()
+  })
+
+  it('uses the clamped upgrade cost for affordability checks', () => {
+    mockState.player.money = -1
+    CHASSIS_CONFIG.tourbus_chassis.legit[1] = {
+      ...CHASSIS_CONFIG.tourbus_chassis.legit[1],
+      price: 9000
+    }
+    CHASSIS_CONFIG.tourbus_chassis.legit[2] = {
+      ...CHASSIS_CONFIG.tourbus_chassis.legit[2],
+      price: 1000
+    }
+
+    render(<UpgradeConfirmModal asset={asset} isOpen onClose={vi.fn()} />)
+
+    expect(screen.getByText('Confirm upgrade for 0 EUR?')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Upgrade' })).toBeDisabled()
   })
 })

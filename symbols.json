@@ -1523,6 +1523,15 @@
         "type": "const"
       }
     ],
+    "calculateChassisUpgradeCost": [
+      {
+        "isDefault": false,
+        "name": "calculateChassisUpgradeCost",
+        "path": "src/utils/assetConfig.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "calculateClinicCost": [
       {
         "isDefault": false,
@@ -4970,6 +4979,15 @@
         "isDefault": false,
         "name": "getModulePoolForAsset",
         "path": "src/utils/assetSelectors.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "getNextChassisTier": [
+      {
+        "isDefault": false,
+        "name": "getNextChassisTier",
+        "path": "src/utils/assetConfig.ts",
         "source": "local",
         "type": "const"
       }

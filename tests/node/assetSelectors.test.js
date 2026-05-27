@@ -1,4 +1,4 @@
-import { describe, it } from 'node:test'
+import { after, describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   getActiveAssetModifiers,
@@ -16,6 +16,16 @@ import {
   MODULE_PROMPTS,
   MODULE_REGISTRY
 } from '../../src/utils/assetModuleRegistry.ts'
+
+const registrySnapshot = structuredClone(MODULE_REGISTRY)
+const promptsSnapshot = structuredClone(MODULE_PROMPTS)
+
+after(() => {
+  for (const key of Object.keys(MODULE_REGISTRY)) delete MODULE_REGISTRY[key]
+  Object.assign(MODULE_REGISTRY, registrySnapshot)
+  for (const key of Object.keys(MODULE_PROMPTS)) delete MODULE_PROMPTS[key]
+  Object.assign(MODULE_PROMPTS, promptsSnapshot)
+})
 
 const registerTestModule = (id, override = {}) => {
   const base = {

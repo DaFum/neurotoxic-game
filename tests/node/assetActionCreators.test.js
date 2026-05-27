@@ -511,6 +511,34 @@ describe('upgradeChassisTier', () => {
     )
     assert.equal(action, null)
   })
+
+  it('uses clamped upgrade cost for insufficient-funds validation', () => {
+    CHASSIS_CONFIG.tourbus_chassis.legit[1] = {
+      price: 9000,
+      upkeep: 20,
+      revenue: 0,
+      slots: ['tb_roof'],
+      baseRiskEventChance: 0.005
+    }
+    CHASSIS_CONFIG.tourbus_chassis.legit[2] = {
+      price: 1000,
+      upkeep: 35,
+      revenue: 0,
+      slots: ['tb_roof', 'tb_front'],
+      baseRiskEventChance: 0.005
+    }
+
+    const action = upgradeChassisTier(
+      'asset_1',
+      2,
+      makeState({
+        player: { money: -1 },
+        assets: [makeAsset({ chassisTier: 1 })]
+      })
+    )
+
+    assert.equal(action, null)
+  })
 })
 
 describe('startCrowdfund / resolveCrowdfund / sellChassis / repairChassis / removeModule', () => {

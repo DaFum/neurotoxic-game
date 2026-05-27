@@ -2,10 +2,14 @@ import { useTranslation } from 'react-i18next'
 import { Modal } from '../../ui/shared/Modal'
 import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 import { getChassisImagePrompt } from '../../utils/imageGen'
-import { CHASSIS_CONFIG, UPGRADE_OVERHEAD } from '../../utils/assetConfig'
+import {
+  calculateChassisUpgradeCost,
+  CHASSIS_CONFIG,
+  getNextChassisTier
+} from '../../utils/assetConfig'
 import { formatCurrency } from '../../utils/numberUtils'
 import { useGameActions, useGameSelector } from '../../context/GameState'
-import type { ChassisTier, LongTermAsset } from '../../types/assets'
+import type { LongTermAsset } from '../../types/assets'
 
 interface Props {
   asset: LongTermAsset
@@ -13,15 +17,12 @@ interface Props {
   onClose: () => void
 }
 
-const getNextTier = (tier: ChassisTier): ChassisTier | null =>
-  tier < 3 ? ((tier + 1) as ChassisTier) : null
-
 export const UpgradeConfirmModal = ({ asset, isOpen, onClose }: Props) => {
   const { t, i18n } = useTranslation(['assets'])
   const { upgradeChassisTier } = useGameActions()
   const money = useGameSelector(state => state.player.money)
 
-  const nextTier = getNextTier(asset.chassisTier)
+  const nextTier = getNextChassisTier(asset.chassisTier)
   const currentConfig =
     CHASSIS_CONFIG[asset.kind]?.[asset.chassisFlavor]?.[asset.chassisTier]
   const targetConfig =
@@ -30,7 +31,7 @@ export const UpgradeConfirmModal = ({ asset, isOpen, onClose }: Props) => {
       : CHASSIS_CONFIG[asset.kind]?.[asset.chassisFlavor]?.[nextTier]
   const cost =
     currentConfig && targetConfig
-      ? targetConfig.price - currentConfig.price + UPGRADE_OVERHEAD
+      ? calculateChassisUpgradeCost(currentConfig, targetConfig)
       : 0
   const insufficient = nextTier !== null && money < cost
   const blocked =
@@ -62,7 +63,7 @@ export const UpgradeConfirmModal = ({ asset, isOpen, onClose }: Props) => {
         )}
         <p>
           {t('assets:actions.upgradeConfirm', {
-            amount: formatCurrency(Math.max(0, cost), i18n.language)
+            amount: formatCurrency(cost, i18n.language)
           })}
         </p>
         {insufficient && (

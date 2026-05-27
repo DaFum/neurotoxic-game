@@ -1352,7 +1352,7 @@
   "pregig.merchStrategy.decreasePrice": "Decrease price for {{item}}",
   "pregig.merchStrategy.increasePrice": "Increase price for {{item}}",
   "pregig.merchStrategy.restock": "Restock",
-  "pregig.merchStrategy.restockCost": "Cost: {{cost}}",
+  "pregig.merchStrategy.restockCost": "Cost: {{cost}} (+{{amount}})",
   "pregig.merchStrategy.stock": "Stock: {{count}}",
   "pregig.merchStrategy.title": "Merch Strategy",
   "pregig.modifiers.catering.desc": "Counters Tired Band Penalty",

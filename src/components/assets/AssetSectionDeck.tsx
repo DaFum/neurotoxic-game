@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { ChassisTier, LongTermAsset } from '../../types/assets'
+import type { LongTermAsset } from '../../types/assets'
+import { getNextChassisTier } from '../../utils/assetConfig'
 import { AssetSlotActionList } from './AssetSlotActionList'
 
 interface AssetSectionDeckProps {
@@ -12,9 +13,6 @@ interface AssetSectionDeckProps {
   onSell: () => void
 }
 
-const getNextTier = (tier: ChassisTier): ChassisTier | null =>
-  tier < 3 ? ((tier + 1) as ChassisTier) : null
-
 export const AssetSectionDeck = ({
   asset,
   hero,
@@ -25,7 +23,7 @@ export const AssetSectionDeck = ({
 }: AssetSectionDeckProps) => {
   const { t } = useTranslation(['assets'])
   const needsRepair = asset.condition < 50
-  const canUpgrade = getNextTier(asset.chassisTier) !== null
+  const canUpgrade = getNextChassisTier(asset.chassisTier) !== null
 
   return (
     <article className='grid gap-3 lg:grid-cols-[minmax(0,1.15fr)_minmax(22rem,0.85fr)]'>

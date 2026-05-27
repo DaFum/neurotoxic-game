@@ -1352,7 +1352,7 @@
   "pregig.merchStrategy.decreasePrice": "Preis senken für {{item}}",
   "pregig.merchStrategy.increasePrice": "Preis erhöhen für {{item}}",
   "pregig.merchStrategy.restock": "Vorrat auffüllen",
-  "pregig.merchStrategy.restockCost": "Kosten: {{cost}}",
+  "pregig.merchStrategy.restockCost": "Kosten: {{cost}} (+{{amount}})",
   "pregig.merchStrategy.stock": "Bestand: {{count}}",
   "pregig.merchStrategy.title": "Merch-Strategie",
   "pregig.modifiers.catering.desc": "Kontert müde Band",

@@ -1,1 +1,8 @@
-ToDo: Vollständiges integrieren von songCostMultiplier, songQualityBonus, enablesReRecording, enablesLimitedEditions, reducesTheftRiskTravel, infightingDamper. Dafür gibt es im aktuellen Spiel noch keinen konkreten Song-Recording-, Limited-Edition-, Travel-Theft- oder Infighting-Verbraucher. Diese Werte müssen entweder in die bestehenden Verbraucher integriert oder neue Verbraucher erstellt werden, um sie zu nutzen.
+Asset modifier integration debt is tracked in GitHub issues:
+
+- songCostMultiplier: https://github.com/DaFum/neurotoxic-game/issues/1802
+- songQualityBonus: https://github.com/DaFum/neurotoxic-game/issues/1803
+- enablesReRecording: https://github.com/DaFum/neurotoxic-game/issues/1804
+- enablesLimitedEditions: https://github.com/DaFum/neurotoxic-game/issues/1805
+- reducesTheftRiskTravel: https://github.com/DaFum/neurotoxic-game/issues/1806
+- infightingDamper: https://github.com/DaFum/neurotoxic-game/issues/1807

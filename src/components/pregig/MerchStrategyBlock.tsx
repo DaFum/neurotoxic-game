@@ -10,6 +10,7 @@ interface MerchStrategyBlockProps {
   onUpdatePrice: (merchKey: string, newPrice: number) => void
   onRestock: (merchKey: string) => void
   restockCostMultiplier?: number
+  merchCapacityBonus?: number
 }
 
 interface MerchItem {
@@ -19,6 +20,7 @@ interface MerchItem {
   currentPrice: number
   defaultPrice: number
   restockCost: number
+  restockAmount: number
 }
 
 interface MerchItemRowProps {
@@ -80,7 +82,8 @@ const MerchItemRow: React.FC<MerchItemRowProps> = ({
         onClick={() => onRestock(item.key)}
         className='bg-(--color-toxic-green) text-(--color-void-black) font-mono px-3 py-1 uppercase text-sm hover:opacity-80 transition-colors'
         title={t('ui:pregig.merchStrategy.restockCost', {
-          cost: item.restockCost
+          amount: item.restockAmount,
+          cost: formatCurrency(item.restockCost, language)
         })}
       >
         {t('ui:pregig.merchStrategy.restock')}
@@ -89,17 +92,53 @@ const MerchItemRow: React.FC<MerchItemRowProps> = ({
   </div>
 )
 
+const BASE_MERCH_CAPACITY = 100
+
+const getMerchBundleAmount = (
+  itemDef: typeof HQ_ITEMS_BY_MERCH_KEY extends ReadonlyMap<string, infer T>
+    ? T
+    : never
+): number => {
+  const effect = itemDef.effect
+  if (
+    effect &&
+    typeof effect === 'object' &&
+    Object.hasOwn(effect, 'value') &&
+    typeof effect.value === 'number' &&
+    Number.isFinite(effect.value) &&
+    effect.value > 0
+  ) {
+    return effect.value
+  }
+  return 10
+}
+
+const getTotalMerchStock = (inventory: Record<string, unknown>): number => {
+  let total = 0
+  for (const merchKey of HQ_ITEMS_BY_MERCH_KEY.keys()) {
+    const value = inventory[merchKey]
+    total += typeof value === 'number' && Number.isFinite(value) ? value : 0
+  }
+  return Math.max(0, total)
+}
+
 export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
   bandInventory,
   customPrices,
   onUpdatePrice,
   onRestock,
-  restockCostMultiplier = 1
+  restockCostMultiplier = 1,
+  merchCapacityBonus = 0
 }) => {
   const { t, i18n } = useTranslation(['economy', 'ui'])
 
   const merchItems = useMemo(() => {
     const items: MerchItem[] = []
+    const merchCapacity = BASE_MERCH_CAPACITY + Math.max(0, merchCapacityBonus)
+    const remainingCapacity = Math.max(
+      0,
+      merchCapacity - getTotalMerchStock(bandInventory)
+    )
     for (const key in DEFAULT_MERCH_PRICES) {
       if (Object.hasOwn(DEFAULT_MERCH_PRICES, key)) {
         const defaultPrice = DEFAULT_MERCH_PRICES[key] ?? 10
@@ -109,9 +148,16 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
             ? (bandInventory[key] as number)
             : 0
 
-        const restockCost = Math.ceil(
-          (HQ_ITEMS_BY_MERCH_KEY.get(key)?.cost ?? 50) * restockCostMultiplier
+        const itemDef = HQ_ITEMS_BY_MERCH_KEY.get(key)
+        const bundleAmount = itemDef ? getMerchBundleAmount(itemDef) : 10
+        const restockAmount = Math.min(bundleAmount, remainingCapacity)
+        const fullBundleCost = Math.ceil(
+          (itemDef?.cost ?? 50) * restockCostMultiplier
         )
+        const restockCost =
+          restockAmount > 0
+            ? Math.ceil(fullBundleCost * (restockAmount / bundleAmount))
+            : 0
 
         items.push({
           key,
@@ -121,12 +167,19 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
           stock,
           currentPrice,
           defaultPrice,
-          restockCost
+          restockCost,
+          restockAmount
         })
       }
     }
     return items
-  }, [bandInventory, customPrices, restockCostMultiplier, t])
+  }, [
+    bandInventory,
+    customPrices,
+    merchCapacityBonus,
+    restockCostMultiplier,
+    t
+  ])
 
   return (
     <div className='bg-(--color-void-black) border-2 border-(--color-toxic-green) p-4 flex flex-col gap-4'>

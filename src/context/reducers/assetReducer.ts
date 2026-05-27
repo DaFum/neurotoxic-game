@@ -9,8 +9,8 @@ import type {
   Liability
 } from '../../types/assets'
 import {
+  calculateChassisUpgradeCost,
   CHASSIS_CONFIG,
-  UPGRADE_OVERHEAD,
   REPAIR_COST_PER_POINT,
   buildDiyTier
 } from '../../utils/assetConfig'
@@ -241,8 +241,10 @@ export const handleUpgradeChassisTier = (
   const targetConfigTier =
     CHASSIS_CONFIG[targetAsset.kind]?.[targetAsset.chassisFlavor]?.[targetTier]
   if (!currentConfigTier || !targetConfigTier) return state
-  const upgradeCost =
-    targetConfigTier.price - currentConfigTier.price + UPGRADE_OVERHEAD
+  const upgradeCost = calculateChassisUpgradeCost(
+    currentConfigTier,
+    targetConfigTier
+  )
   if (state.player.money < upgradeCost) return state
 
   const nextAssets = state.assets.map(asset => {

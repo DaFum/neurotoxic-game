@@ -99,7 +99,7 @@ export interface PreGigLogicReturn {
   calculatedBudget: number
   isStarting: boolean
   GIG_MODIFIER_OPTIONS: ModifierOption[]
-  BAND_MEETING_COST: number
+  bandMeetingCost: number
   handleBandMeeting: () => void
   toggleSong: (song: Song) => void
   toggleModifier: (key: keyof typeof MODIFIER_COSTS) => void
@@ -464,7 +464,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     calculatedBudget,
     isStarting,
     GIG_MODIFIER_OPTIONS,
-    BAND_MEETING_COST: adjustedBandMeetingCost,
+    bandMeetingCost: adjustedBandMeetingCost,
     handleBandMeeting,
     toggleSong,
     toggleModifier,

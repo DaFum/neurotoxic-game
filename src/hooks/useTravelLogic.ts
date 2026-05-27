@@ -336,16 +336,16 @@ export const useTravelLogic = ({
       })
 
       updatePlayer(updates.nextPlayer)
+      // Apply travel-only band changes before the day tick so daily passive
+      // stamina/mood updates compose with them instead of being overwritten.
+      if (updates.nextBand) {
+        updateBand(updates.nextBand)
+      }
       advanceDay()
 
       // Autosave
       if (saveGame) {
         saveGame()
-      }
-
-      // Harmony regen while traveling (enabled by Mobile Studio / van_sound_system)
-      if (updates.nextBand) {
-        updateBand(updates.nextBand)
       }
 
       setIsTraveling(false)
