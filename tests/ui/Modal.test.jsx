@@ -33,6 +33,24 @@ describe('Modal Component', () => {
     expect(getByRole('dialog')).not.toHaveClass('overflow-hidden')
   })
 
+  test('keeps mobile gutters and close control inside the viewport', () => {
+    const { getByRole } = render(
+      <Modal isOpen={true} onClose={() => {}} title='Mobile Title'>
+        <div>Modal Content</div>
+      </Modal>
+    )
+
+    const dialog = getByRole('dialog')
+    const overlay = dialog.parentElement
+    const closeButton = getByRole('button', { name: /close/i })
+
+    expect(overlay).toHaveClass('p-3')
+    expect(dialog).toHaveClass('w-[min(calc(100vw-1.5rem),100%)]')
+    expect(dialog).toHaveClass('shadow-[4px_4px_0px_var(--color-toxic-green)]')
+    expect(closeButton.parentElement).toHaveClass('top-2')
+    expect(closeButton.parentElement).toHaveClass('right-2')
+  })
+
   test('keeps clipping and scrolling on the inner content layer', () => {
     const { getByText } = render(
       <Modal isOpen={true} onClose={() => {}}>

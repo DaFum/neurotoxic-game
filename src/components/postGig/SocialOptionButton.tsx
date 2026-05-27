@@ -38,7 +38,7 @@ export const SocialOptionButton = memo(function SocialOptionButton({
     >
       <ActionButton
         onClick={handleClick}
-        className='flex flex-col h-full items-start justify-start p-4 min-h-[180px] text-left relative overflow-hidden w-full group'
+        className='flex flex-col h-full items-start justify-start p-3 sm:p-4 min-h-[160px] sm:min-h-[180px] text-left relative overflow-hidden w-full group'
       >
         {/* Background Image Watermark */}
         <div
@@ -48,30 +48,30 @@ export const SocialOptionButton = memo(function SocialOptionButton({
           }}
         />
 
-        <div className='flex justify-between items-start mb-2 w-full z-10 relative bg-void-black/80 p-1.5 rounded'>
-          <div className='font-bold text-lg leading-tight pr-2 transition-colors text-star-white drop-shadow-md'>
+        <div className='flex justify-between items-start gap-2 mb-2 w-full z-10 relative bg-void-black/80 p-1.5 rounded'>
+          <div className='min-w-0 font-bold text-base sm:text-lg leading-tight break-words transition-colors text-star-white drop-shadow-md'>
             {t(`ui:postOptions.${opt.id}.name`, { defaultValue: opt.name })}
           </div>
-          <div className='flex gap-1 text-sm px-1 rounded backdrop-blur-sm'>
+          <div className='flex shrink-0 flex-wrap justify-end gap-1 text-sm px-1 rounded backdrop-blur-sm'>
             {opt.badges?.map((b: string) => (
               <span key={b}>{b}</span>
             ))}
           </div>
         </div>
         <div className='text-xs text-star-white font-mono space-y-1 mb-2 w-full z-10 relative bg-void-black/80 p-1.5 rounded'>
-          <div className='flex justify-between border-b border-ash-gray/20 pb-1'>
+          <div className='flex justify-between gap-3 border-b border-ash-gray/20 pb-1'>
             <span className='text-ash-gray drop-shadow-md'>
               {t('economy:social.platform', { defaultValue: 'Platform' })}
             </span>
-            <span className='text-star-white drop-shadow-md'>
+            <span className='text-right text-star-white drop-shadow-md break-words'>
               {opt.platform || ''}
             </span>
           </div>
-          <div className='flex justify-between pt-1'>
+          <div className='flex justify-between gap-3 pt-1'>
             <span className='text-ash-gray drop-shadow-md'>
               {t('economy:social.category', { defaultValue: 'Category' })}
             </span>
-            <span className='text-star-white drop-shadow-md'>
+            <span className='text-right text-star-white drop-shadow-md break-words'>
               {opt.category
                 ? t(`economy:social.categories.${opt.category}`, {
                     defaultValue: opt.category

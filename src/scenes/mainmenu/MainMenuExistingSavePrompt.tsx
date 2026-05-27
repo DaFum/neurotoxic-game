@@ -23,16 +23,16 @@ export const MainMenuExistingSavePrompt = ({
         <p className='text-ash-gray font-mono text-sm'>
           {t('ui:mainMenu.existingSave.desc')}
         </p>
-        <div className='flex gap-2 justify-end'>
+        <div className='flex flex-col sm:flex-row gap-2 justify-end'>
           <GlitchButton
             onClick={onLoad}
-            className='border-toxic-green text-toxic-green'
+            className='w-full sm:w-auto border-toxic-green text-toxic-green'
           >
             {t('ui:mainMenu.existingSave.load')}
           </GlitchButton>
           <GlitchButton
             onClick={onStartNew}
-            className='border-blood-red text-blood-red'
+            className='w-full sm:w-auto border-blood-red text-blood-red'
           >
             {t('ui:mainMenu.existingSave.startNew')}
           </GlitchButton>

@@ -164,6 +164,41 @@ describe('CompletePhase', () => {
     expect(mockContinue).toHaveBeenCalledOnce()
   })
 
+  test('uses mobile-safe spacing and full-width actions', async () => {
+    const mockContinue = vi.fn()
+    const mockSpinStory = vi.fn()
+
+    render(
+      <CompletePhase
+        result={mockResult}
+        onContinue={mockContinue}
+        onSpinStory={mockSpinStory}
+        player={mockPlayer}
+        social={mockSocial}
+      />
+    )
+
+    const completePanel = screen.getByTestId('post-gig-complete')
+    expect(completePanel).toHaveClass('min-h-[320px]')
+    expect(completePanel).toHaveClass('sm:min-h-[400px]')
+    expect(completePanel).toHaveClass('p-3')
+    expect(completePanel).toHaveClass('sm:p-6')
+
+    const spinButton = screen.getByRole('button', {
+      name: /Spin Story/i
+    })
+    expect(spinButton).toHaveClass('w-full')
+    expect(spinButton).toHaveClass('sm:w-auto')
+    expect(spinButton).toHaveClass('min-h-11')
+
+    const continueButton = screen.getByRole('button', {
+      name: /Back to Tour/i
+    })
+    expect(continueButton).toHaveClass('w-full')
+    expect(continueButton).toHaveClass('sm:w-auto')
+    expect(continueButton).toHaveClass('min-h-11')
+  })
+
   test('shows spin story button when player has PR manager and high controversy', async () => {
     const mockContinue = vi.fn()
     const mockSpinStory = vi.fn()

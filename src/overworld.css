@@ -1435,10 +1435,10 @@
   .map-wrap {
     order: 3;
     width: 100%;
-    height: calc(100svh - 92px);
+    height: clamp(420px, 58svh, 620px);
     max-width: none;
     max-height: none;
-    min-height: 620px;
+    min-height: 420px;
     border-width: 3px;
   }
 
@@ -1464,6 +1464,8 @@
 
   .menu-panel {
     width: 100%;
+    max-height: min(70svh, 560px);
+    overflow-y: auto;
   }
 
   .ow-menu button {

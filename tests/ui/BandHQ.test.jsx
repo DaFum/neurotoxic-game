@@ -102,4 +102,23 @@ describe('BandHQ UI tests', () => {
     await user.click(shopTab)
     expect(screen.getByRole('tabpanel', { name: /shop/i })).toBeVisible()
   })
+
+  test('uses a mobile-safe dialog shell and stacked header controls', () => {
+    const props = { onClose: () => {} }
+    render(React.createElement(BandHQ, props))
+
+    const dialog = screen.getByRole('dialog', { name: /band hq/i })
+    const leaveButton = screen.getByRole('button', { name: /leave/i })
+    const tablist = screen.getByRole('tablist', {
+      name: /band hq sections/i
+    })
+
+    expect(dialog).toHaveClass('h-[calc(100svh-1rem)]')
+    expect(dialog).toHaveClass('max-h-[calc(100svh-1rem)]')
+    expect(dialog).toHaveClass('shadow-[4px_4px_0px_var(--color-toxic-green)]')
+    expect(leaveButton).toHaveClass('w-full')
+    expect(leaveButton).toHaveClass('sm:w-auto')
+    expect(tablist).toHaveClass('shrink-0')
+    expect(tablist).toHaveClass('scrollbar-hidden')
+  })
 })

@@ -36,10 +36,9 @@ afterEach(() => {
 // ---------------------------------------------------------------------------
 describe('NetResult', () => {
   it('shows positive net with toxic-green color class', () => {
-    const { container } = render(<NetResult net={250} />)
+    render(<NetResult net={250} />)
 
-    const netEl = container.querySelector('.text-5xl')
-    expect(netEl).not.toBeNull()
+    const netEl = screen.getByTestId('post-gig-net-result-value')
     expect(netEl.className).toContain('text-toxic-green')
     expect(netEl.className).not.toContain('text-blood-red')
     // Some text content is rendered
@@ -47,22 +46,29 @@ describe('NetResult', () => {
   })
 
   it('shows negative net with blood-red color class', () => {
-    const { container } = render(<NetResult net={-80} />)
+    render(<NetResult net={-80} />)
 
-    const netEl = container.querySelector('.text-5xl')
-    expect(netEl).not.toBeNull()
+    const netEl = screen.getByTestId('post-gig-net-result-value')
     expect(netEl.className).toContain('text-blood-red')
     expect(netEl.className).not.toContain('text-toxic-green')
     expect(netEl.textContent).toBeTruthy()
   })
 
   it('shows zero net with currency format and toxic-green color class (non-negative)', () => {
-    const { container } = render(<NetResult net={0} />)
+    render(<NetResult net={0} />)
 
     // net >= 0 path uses toxic-green
-    const netEl = container.querySelector('.text-5xl')
-    expect(netEl).not.toBeNull()
+    const netEl = screen.getByTestId('post-gig-net-result-value')
     expect(netEl.className).toContain('text-toxic-green')
+  })
+
+  it('uses responsive sizing for the large net value', () => {
+    render(<NetResult net={250} />)
+
+    const netEl = screen.getByTestId('post-gig-net-result-value')
+    expect(netEl).toHaveClass('text-3xl')
+    expect(netEl).toHaveClass('sm:text-5xl')
+    expect(netEl).toHaveClass('break-words')
   })
 
   it('renders the NET PROFIT label', () => {

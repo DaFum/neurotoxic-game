@@ -121,3 +121,32 @@ test('DealCard translates by id even when name is dynamically generated', () => 
   expect(screen.getByText('Toxischer Energy-Drink')).toBeInTheDocument()
   expect(screen.queryByText('Toxic Rush Energy')).not.toBeInTheDocument()
 })
+
+test('DealCard stacks content and actions on narrow screens', () => {
+  const { container } = render(
+    <DealCard
+      deal={{
+        id: 'mobile_deal',
+        name: 'Mobile Deal',
+        description: 'Responsive sponsorship card',
+        offer: { upfront: 1000, duration: 3 }
+      }}
+      brandReputation={{}}
+      handleAcceptDeal={vi.fn()}
+      handleNegotiationStart={vi.fn()}
+    />
+  )
+
+  const card = container.firstElementChild
+  expect(card).toHaveClass('flex-col')
+  expect(card).toHaveClass('sm:flex-row')
+  expect(card).toHaveClass('gap-4')
+
+  const acceptButton = screen.getByRole('button', { name: 'ACCEPT' })
+  expect(acceptButton).toHaveClass('w-full')
+  expect(acceptButton).toHaveClass('min-h-11')
+
+  const negotiateButton = screen.getByRole('button', { name: 'NEGOTIATE' })
+  expect(negotiateButton).toHaveClass('w-full')
+  expect(negotiateButton).toHaveClass('min-h-11')
+})

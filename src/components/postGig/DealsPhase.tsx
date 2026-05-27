@@ -21,9 +21,9 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }: DealsPhaseProps) => {
   } = useDealNegotiation({ onAccept })
 
   return (
-    <div className='space-y-6'>
-      <div className='text-center mb-4'>
-        <h3 className='text-xl font-mono tracking-widest text-warning-yellow'>
+    <div className='space-y-4 sm:space-y-6'>
+      <div className='text-center mb-2 sm:mb-4'>
+        <h3 className='text-lg sm:text-xl font-mono tracking-widest text-warning-yellow break-words'>
           {t('ui:deals.incomingOffers', {
             defaultValue: 'INCOMING BRAND OFFERS'
           })}
@@ -35,7 +35,7 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }: DealsPhaseProps) => {
         </div>
       </div>
 
-      <div className='grid grid-cols-1 gap-4'>
+      <div className='grid grid-cols-1 gap-3 sm:gap-4'>
         {offers.map(deal => (
           <DealCard
             key={deal.id}
@@ -52,7 +52,7 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }: DealsPhaseProps) => {
         <button
           type='button'
           onClick={onSkip}
-          className='text-sm text-ash-gray hover:text-star-white underline decoration-dotted'
+          className='min-h-11 w-full sm:w-auto px-4 py-2 border border-ash-gray/40 text-sm text-ash-gray hover:text-star-white hover:border-star-white transition-colors'
         >
           {t('ui:deals.rejectAll', {
             defaultValue: 'Reject All Offers & Continue >'

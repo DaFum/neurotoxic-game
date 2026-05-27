@@ -41,7 +41,7 @@ export const SideEffectsSummary = ({
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay: 0.8 }}
-      className='mb-8 flex flex-col items-center gap-2 font-mono text-sm'
+      className='mb-6 sm:mb-8 flex flex-col items-center gap-2 font-mono text-sm text-center break-words'
     >
       {result.moneyChange != null ? (
         <div className={getDeltaColorClass(result.moneyChange)}>
@@ -92,7 +92,7 @@ export const SideEffectsSummary = ({
               })}
           {result.staminaChange != null ? (
             <span
-              className={`${getDeltaColorClass(result.staminaChange)} ml-2`}
+              className={`${getDeltaColorClass(result.staminaChange)} ml-2 inline-block`}
             >
               {result.staminaChange > 0 ? '+' : ''}
               {result.staminaChange}{' '}
@@ -100,7 +100,9 @@ export const SideEffectsSummary = ({
             </span>
           ) : null}
           {result.moodChange != null ? (
-            <span className={`${getDeltaColorClass(result.moodChange)} ml-2`}>
+            <span
+              className={`${getDeltaColorClass(result.moodChange)} ml-2 inline-block`}
+            >
               {result.moodChange > 0 ? '+' : ''}
               {result.moodChange}{' '}
               {t('ui:postGig.mood', { defaultValue: 'Mood' })}

@@ -19,18 +19,18 @@ export const SocialPhase = ({
 }: SocialPhaseProps) => {
   const { t } = useTranslation()
   return (
-    <Panel contentClassName='space-y-6'>
+    <Panel contentClassName='space-y-4 sm:space-y-6'>
       {/* Zealotry Gauge UI */}
       <ZealotryGauge zealotryLevel={zealotryLevel} />
 
-      <div className='text-center mb-2'>
-        <h3 className='text-xl font-mono tracking-widest'>
+      <div className='text-center mb-1 sm:mb-2'>
+        <h3 className='text-lg sm:text-xl font-mono tracking-widest break-words'>
           {t('economy:social.postToSocial', {
             defaultValue: 'POST TO SOCIAL MEDIA'
           })}
         </h3>
         {trend && (
-          <div className='text-sm text-toxic-green tracking-widest mt-1 font-bold animate-pulse'>
+          <div className='text-xs sm:text-sm text-toxic-green tracking-widest mt-1 font-bold animate-pulse break-words'>
             {t('economy:social.currentTrend', {
               defaultValue: 'CURRENT TREND:'
             })}{' '}
@@ -43,7 +43,7 @@ export const SocialPhase = ({
           })}
         </div>
       </div>
-      <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4'>
+      <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4'>
         {options.map((opt, i: number) => (
           <SocialOptionButton
             key={opt.id}

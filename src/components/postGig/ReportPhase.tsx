@@ -22,8 +22,11 @@ export const ReportPhase = ({ financials, onNext }: ReportPhaseProps) => {
   }
 
   return (
-    <div className='space-y-6'>
-      <div className='grid grid-cols-2 gap-8'>
+    <div className='space-y-4 sm:space-y-6'>
+      <div
+        data-testid='post-gig-financial-grid'
+        className='grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8'
+      >
         {/* Income Column */}
         <FinancialColumn
           titleKey='economy:postGig.income'
@@ -57,7 +60,7 @@ export const ReportPhase = ({ financials, onNext }: ReportPhaseProps) => {
         <ActionButton
           onClick={onNext}
           variant='primary'
-          className='px-8 py-3 text-void-black'
+          className='w-full sm:w-auto min-h-11 px-6 sm:px-8 py-3 text-void-black'
         >
           {t('economy:postGig.continueToSocials')}
         </ActionButton>

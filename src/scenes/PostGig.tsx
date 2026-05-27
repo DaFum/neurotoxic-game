@@ -45,8 +45,8 @@ export const PostGig = () => {
   } = usePostGigLogic()
   if (!financials)
     return (
-      <div className='w-full h-full flex flex-col items-center justify-center bg-void-black'>
-        <div className="text-3xl text-toxic-green font-['Metal_Mania'] animate-pulse tracking-widest">
+      <div className='w-full h-full flex flex-col items-center justify-center bg-void-black px-4 text-center'>
+        <div className="text-2xl sm:text-3xl text-toxic-green font-['Metal_Mania'] animate-pulse tracking-widest">
           {t('ui:postGig.tallyingReceipts', {
             defaultValue: 'TALLYING RECEIPTS...'
           })}
@@ -55,20 +55,24 @@ export const PostGig = () => {
     )
 
   return (
-    <div className='w-full h-full flex flex-col items-center justify-center p-8 bg-void-black text-star-white relative'>
+    <div
+      data-testid='post-gig-screen'
+      className='w-full h-full overflow-y-auto overflow-x-hidden flex flex-col items-center justify-start sm:justify-center p-3 sm:p-6 lg:p-8 bg-void-black text-star-white relative'
+    >
       <div
-        className='absolute inset-0 opacity-20 bg-cover bg-center'
+        className='absolute inset-0 opacity-20 bg-cover bg-center pointer-events-none'
         style={{
           backgroundImage: `url("${resolveGenImageUrl(IMG_PROMPTS.POST_GIG_BG)}")`
         }}
       />
 
       <motion.div
+        data-testid='post-gig-panel'
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className='max-w-4xl w-full border-4 border-toxic-green p-8 bg-void-black relative z-10 shadow-[0_0_50px_var(--color-toxic-green-glow)] flex flex-col gap-6'
+        className='max-w-4xl w-full sm:max-h-[calc(100svh-3rem)] border-4 border-toxic-green p-3 sm:p-6 lg:p-8 bg-void-black relative z-10 shadow-[0_0_24px_var(--color-toxic-green-glow)] sm:shadow-[0_0_50px_var(--color-toxic-green-glow)] flex flex-col gap-4 sm:gap-6 overflow-visible sm:overflow-y-auto'
       >
-        <h2 className="text-5xl text-center font-['Metal_Mania'] text-toxic-green mb-2 text-shadow-[0_0_10px_var(--color-toxic-green)]">
+        <h2 className="text-3xl sm:text-5xl text-center font-['Metal_Mania'] text-toxic-green mb-1 sm:mb-2 break-words text-shadow-[0_0_10px_var(--color-toxic-green)]">
           {t(phaseTitleKey, { defaultValue: phaseTitleDefault })}
         </h2>
 

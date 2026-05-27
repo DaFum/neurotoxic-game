@@ -260,6 +260,27 @@ describe('PostGig Component - Phase Management', () => {
     expect(screen.getByText(/TALLYING RECEIPTS/i)).toBeInTheDocument()
   })
 
+  it('uses a scrollable responsive shell for narrow screens', () => {
+    render(<PostGig />)
+
+    const screenEl = screen.getByTestId('post-gig-screen')
+    expect(screenEl).toHaveClass('overflow-y-auto')
+    expect(screenEl).toHaveClass('p-3')
+    expect(screenEl).toHaveClass('sm:p-6')
+    expect(screenEl).toHaveClass('justify-start')
+    expect(screenEl).toHaveClass('sm:justify-center')
+
+    const panel = screen.getByTestId('post-gig-panel')
+    expect(panel).toHaveClass('p-3')
+    expect(panel).toHaveClass('sm:p-6')
+    expect(panel).toHaveClass('gap-4')
+    expect(panel).toHaveClass('sm:gap-6')
+    expect(panel.className).toContain('sm:max-h-[calc(100svh-3rem)]')
+
+    expect(screen.getByText('GIG REPORT')).toHaveClass('text-3xl')
+    expect(screen.getByText('GIG REPORT')).toHaveClass('sm:text-5xl')
+  })
+
   it('triggers events on mount when no active event', () => {
     render(<PostGig />)
     expect(mockTriggerEvent).toHaveBeenCalledWith('financial', 'post_gig')

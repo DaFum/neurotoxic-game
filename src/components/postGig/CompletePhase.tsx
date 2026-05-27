@@ -35,7 +35,10 @@ export const CompletePhase = ({
   }
 
   return (
-    <div className='relative min-h-[400px] flex flex-col items-center justify-center p-8 border border-ash-gray/20 rounded overflow-hidden'>
+    <div
+      data-testid='post-gig-complete'
+      className='relative min-h-[320px] sm:min-h-[400px] flex flex-col items-center justify-center p-3 sm:p-6 lg:p-8 border border-ash-gray/20 rounded overflow-hidden'
+    >
       {/* Background Image Watermark */}
       <div
         className='absolute inset-0 opacity-20 bg-cover bg-center mix-blend-screen pointer-events-none z-0'
@@ -46,13 +49,13 @@ export const CompletePhase = ({
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className='text-center py-4 relative z-10'
+        className='text-center py-2 sm:py-4 relative z-10 w-full max-w-xl'
       >
         <motion.h3
           initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
-          className={`text-4xl font-display mb-4 ${
+          className={`text-3xl sm:text-4xl font-display mb-3 sm:mb-4 break-words ${
             result.success === true
               ? 'text-toxic-green drop-shadow-[0_0_20px_var(--color-toxic-green)] animate-neon-flicker'
               : 'text-blood-red'
@@ -66,7 +69,7 @@ export const CompletePhase = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className='mb-6 text-ash-gray font-mono max-w-md mx-auto'
+          className='mb-4 sm:mb-6 text-ash-gray font-mono max-w-md mx-auto break-words'
         >
           {result.message ?? ''}
         </motion.p>
@@ -74,7 +77,7 @@ export const CompletePhase = ({
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
-          className={`text-3xl font-bold mb-8 tabular-nums font-mono ${
+          className={`text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 tabular-nums font-mono break-words ${
             (result.totalFollowers ?? 0) > 0
               ? 'text-toxic-green'
               : 'text-blood-red'
@@ -96,13 +99,13 @@ export const CompletePhase = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.9 }}
-          className='flex flex-col gap-4 items-center'
+          className='flex w-full flex-col gap-3 sm:gap-4 items-stretch sm:items-center'
         >
           {hasPR && isHighControversy && onSpinStory && (
             <ActionButton
               onClick={onSpinStory}
               disabled={isProcessingAction}
-              className='bg-blood-red text-star-white px-6 py-2 border-2 border-blood-red hover:bg-star-white hover:text-blood-red disabled:opacity-50'
+              className='w-full sm:w-auto min-h-11 bg-blood-red text-star-white px-6 py-2 border-2 border-blood-red hover:bg-star-white hover:text-blood-red disabled:opacity-50'
             >
               {t('ui:postGig.spinStory', {
                 cost: formatCurrency(
@@ -120,7 +123,7 @@ export const CompletePhase = ({
             onClick={onContinue}
             disabled={isProcessingAction}
             variant='primary'
-            className='px-8 py-3 text-void-black disabled:opacity-50'
+            className='w-full sm:w-auto min-h-11 px-6 sm:px-8 py-3 text-void-black disabled:opacity-50'
           >
             {isProcessingAction
               ? t('ui:postGig.processing', { defaultValue: 'Processing...' })

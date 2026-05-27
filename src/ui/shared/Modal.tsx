@@ -23,6 +23,7 @@ type ModalProps = {
   isOpen: boolean
   onClose: () => void
   title?: string
+  ariaLabel?: string
   children?: ReactNode
   contentClassName?: string
   className?: string
@@ -32,6 +33,7 @@ export const Modal = ({
   isOpen,
   onClose,
   title,
+  ariaLabel,
   children,
   contentClassName = 'flex-1 min-h-0 flex flex-col max-h-[calc(100svh-3rem)] sm:max-h-[calc(100svh-4rem)] overflow-y-auto overflow-x-hidden',
   className = 'max-w-md'
@@ -71,16 +73,17 @@ export const Modal = ({
 
   return (
     <div
-      className='fixed inset-0 z-50 flex items-center justify-center bg-void-black/90 cursor-pointer p-2 sm:p-4'
+      className='fixed inset-0 z-50 flex items-center justify-center bg-void-black/90 cursor-pointer p-3 sm:p-4'
       onClick={(e: MouseEvent<HTMLDivElement>) => {
         if (e.target === e.currentTarget) onClose()
       }}
     >
       <div
         ref={dialogRef}
-        className={`relative w-full max-h-[calc(100svh-1rem)] border-4 border-toxic-green p-4 sm:p-6 bg-void-black shadow-[8px_8px_0px_var(--color-toxic-green)] cursor-auto focus:outline-none group ${className}`}
+        className={`relative w-[min(calc(100vw-1.5rem),100%)] sm:w-full max-h-[calc(100svh-1rem)] border-4 border-toxic-green p-3 sm:p-6 bg-void-black shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)] cursor-auto focus:outline-none group ${className}`}
         role='dialog'
         aria-modal='true'
+        aria-label={ariaLabel}
         tabIndex={-1}
       >
         {/* Brutalist Frame Corners */}
@@ -91,7 +94,7 @@ export const Modal = ({
 
         <Tooltip
           content={t('ui:closeModal')}
-          className='absolute -top-2 -right-2 sm:-top-3 sm:-right-3 z-20'
+          className='absolute top-2 right-2 sm:-top-3 sm:-right-3 z-20'
         >
           <button
             type='button'
@@ -110,7 +113,7 @@ export const Modal = ({
 
         <div className={`relative z-10 ${contentClassName}`}>
           {title && (
-            <h2 className='text-3xl font-display text-toxic-green mb-4 uppercase tracking-widest text-center'>
+            <h2 className='text-2xl sm:text-3xl font-display text-toxic-green mb-4 uppercase tracking-widest text-center pr-10 sm:pr-0 break-words'>
               {title}
             </h2>
           )}
