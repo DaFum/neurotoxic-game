@@ -252,3 +252,219 @@ test('resolveEvent: explicitly empty outcomeText/description strings are preserv
     'should not emit outcomeToast when both strings are empty'
   )
 })
+
+// --- quest flag: string deadlineOffset ---
+test('resolveEvent: choice with string deadlineOffset parses correctly', () => {
+  const choice = {
+    label: 'Accept quest string offset',
+    outcomeText: '',
+    effect: {
+      type: 'flag',
+      flag: 'addQuest',
+      value: [{ id: 'q2', deadlineOffset: ' 7 ' }]
+    }
+  }
+  const state = buildState()
+  const { actions } = resolveEvent(choice, state)
+  const questActions = actions.filter(a => a.type === 'ADD_QUEST')
+  assert.equal(questActions.length, 1)
+  assert.equal(questActions[0].payload.deadline, 10) // day 3 + 7
+})
+
+// --- quest flag: invalid deadlineOffset ---
+test('resolveEvent: choice with invalid deadlineOffset logs warning and ignores offset', () => {
+  const choice = {
+    label: 'Accept quest invalid offset',
+    outcomeText: '',
+    effect: {
+      type: 'flag',
+      flag: 'addQuest',
+      value: [{ id: 'q3', deadlineOffset: 'abc' }, { id: 'q4', deadlineOffset: '' }]
+    }
+  }
+  const state = buildState()
+  const { actions } = resolveEvent(choice, state)
+  const questActions = actions.filter(a => a.type === 'ADD_QUEST')
+  assert.equal(questActions.length, 2)
+  assert.equal(questActions[0].payload.id, 'q3')
+  assert.ok(!Object.hasOwn(questActions[0].payload, 'deadline')) // no deadline added
+  assert.equal(questActions[1].payload.id, 'q4')
+  assert.ok(!Object.hasOwn(questActions[1].payload, 'deadline'))
+})
+
+// --- quest flag: malformed quest ---
+test('resolveEvent: choice with malformed quest skips quest', () => {
+  const choice = {
+    label: 'Accept malformed quest',
+    outcomeText: '',
+    effect: {
+      type: 'flag',
+      flag: 'addQuest',
+      value: [{ deadlineOffset: 5 }, { id: 123 }]
+    }
+  }
+  const state = buildState()
+  const { actions } = resolveEvent(choice, state)
+  const questActions = actions.filter(a => a.type === 'ADD_QUEST')
+  assert.equal(questActions.length, 0)
+})
+
+// --- activeEvent context ---
+test('resolveEvent: includes activeEvent context in toasts', () => {
+  const choice = {
+    label: 'Test context',
+    outcomeText: 'event:outcome_context',
+    description: 'context desc',
+    effect: { type: 'resource', resource: 'money', value: 0 }
+  }
+  const state = buildState({ activeEvent: { id: 'evt_context', titleKey: 'test', context: { foo: 'bar' } } })
+  const { sideEffects } = resolveEvent(choice, state)
+
+  const toastEffect = sideEffects.find(e => e.type === 'outcomeToast')
+  assert.ok(toastEffect)
+  assert.deepEqual(toastEffect.context, { foo: 'bar' })
+})
+
+// --- addStoryFlag remap ---
+test('resolveEvent: remaps addStoryFlag for addQuest', () => {
+  const choice = {
+    label: 'Story Quest',
+    outcomeText: '',
+    effect: {
+      type: 'flag',
+      flag: 'addStoryFlag',
+      value: 'addQuest'
+    },
+    _precomputedResult: {
+      delta: { flags: { addStoryFlag: 'addQuest' } },
+      result: { value: [{ id: 'storyQuest' }] }
+    }
+  }
+  const state = buildState()
+  const { actions } = resolveEvent(choice, state)
+  const questActions = actions.filter(a => a.type === 'ADD_QUEST')
+  assert.equal(questActions.length, 1)
+  assert.equal(questActions[0].payload.id, 'storyQuest')
+})
+
+test('resolveEvent: remaps addStoryFlag for unlock', () => {
+  const choice = {
+    label: 'Story Unlock',
+    outcomeText: '',
+    effect: {
+      type: 'flag',
+      flag: 'addStoryFlag',
+      value: 'unlock'
+    },
+    _precomputedResult: {
+      delta: { flags: { addStoryFlag: 'unlock' } },
+      result: { value: 'storyUnlock' }
+    }
+  }
+  const state = buildState()
+  const { actions } = resolveEvent(choice, state)
+  const unlockAction = actions.find(a => a.type === 'ADD_UNLOCK')
+  assert.ok(unlockAction)
+  assert.equal(unlockAction.payload, 'storyunlock')
+})
+
+test('resolveEvent: remaps addStoryFlag for gameOver', () => {
+  const choice = {
+    label: 'Story GameOver',
+    outcomeText: '',
+    effect: {
+      type: 'flag',
+      flag: 'addStoryFlag',
+      value: 'gameOver'
+    },
+    _precomputedResult: {
+      delta: { flags: { addStoryFlag: 'gameOver' } },
+      result: { value: true }
+    }
+  }
+  const state = buildState()
+  const { sideEffects } = resolveEvent(choice, state)
+  const gameOver = sideEffects.find(e => e.type === 'changeScene' && e.scene === 'GAMEOVER')
+  assert.ok(gameOver)
+})
+
+test('resolveEvent: no quests if flags.addQuest is not array', () => {
+  const choice = {
+    label: 'Bad quests array',
+    outcomeText: '',
+    _precomputedResult: {
+      delta: { flags: { addQuest: { id: 'not_array' } } },
+      result: null
+    }
+  }
+  const state = buildState()
+  const { actions } = resolveEvent(choice, state)
+  const questActions = actions.filter(a => a.type === 'ADD_QUEST')
+  assert.equal(questActions.length, 0)
+})
+
+test('resolveEvent: fallback resolution uses choice/resolution correctly', () => {
+  const choice = {
+    label: 'Fallback text',
+    outcomeText: 'choice_text',
+    description: undefined,
+    _precomputedResult: {
+      outcomeText: 'should_be_ignored',
+      description: 'resolution_desc',
+      delta: null
+    }
+  }
+  const state = buildState()
+  const { outcomeText, description } = resolveEvent(choice, state)
+  assert.equal(outcomeText, 'choice_text')
+  assert.equal(description, 'resolution_desc')
+})
+
+test('resolveEvent: choice missing outcomeText and resolution has outcomeText', () => {
+  const choice = {
+    label: 'Fallback text',
+    // outcomeText is undefined in choice, resolution has it
+    description: undefined,
+    _precomputedResult: {
+      outcomeText: 'resolution_outcome',
+      description: 'resolution_desc',
+      delta: null
+    }
+  }
+  const state = buildState()
+  const { outcomeText, description } = resolveEvent(choice, state)
+  assert.equal(outcomeText, 'resolution_outcome')
+  assert.equal(description, 'resolution_desc')
+})
+
+test('resolveEvent: resolves event choice without precomputed result', () => {
+  const choice = {
+    label: 'Dynamic resolution',
+    outcomeText: 'dynamic',
+    effect: { type: 'resource', resource: 'money', value: 10 }
+  }
+  const state = buildState()
+  // No _precomputedResult here, it will hit resolveEventChoice
+  const { actions, outcomeText } = resolveEvent(choice, state)
+  const deltaAction = actions.find(a => a.type === 'APPLY_EVENT_DELTA')
+  assert.ok(deltaAction)
+  assert.equal(deltaAction.payload.player.money, 10)
+  assert.equal(outcomeText, 'dynamic')
+})
+
+test('resolveEvent: choice missing outcomeText and resolution has outcomeText missing', () => {
+  const choice = {
+    label: 'Fallback text completely missing',
+    // outcomeText is undefined in choice
+    description: undefined,
+    _precomputedResult: {
+      // outcomeText is undefined in resolution too
+      description: undefined,
+      delta: null
+    }
+  }
+  const state = buildState()
+  const { outcomeText, description } = resolveEvent(choice, state)
+  assert.equal(outcomeText, '')
+  assert.equal(description, '')
+})

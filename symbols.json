@@ -8827,6 +8827,15 @@
         "type": "const"
       }
     ],
+    "resolveMerchRestockCost": [
+      {
+        "isDefault": false,
+        "name": "resolveMerchRestockCost",
+        "path": "src/utils/merchUtils.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "resolvePost": [
       {
         "isDefault": false,
