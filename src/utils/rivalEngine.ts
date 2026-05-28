@@ -42,18 +42,7 @@ export const moveRivalBand = (
     return rivalBand
   }
 
-  // Find gig nodes
-  const allGigNodes: GameMap['nodes'][string][] = []
-  for (const key in gameMap.nodes) {
-    if (Object.hasOwn(gameMap.nodes, key)) {
-      const node = gameMap.nodes[key]
-      if (node && node.type === 'GIG') {
-        allGigNodes.push(node)
-      }
-    }
-  }
-
-  let possibleNodes: typeof allGigNodes = []
+  let possibleNodes: GameMap['nodes'][string][] = []
 
   if (rivalBand.currentLocationId && gameMap.connections) {
     // ⚡ BOLT OPTIMIZATION: Replaced chained .filter().map() with a single-pass loop.
@@ -69,11 +58,23 @@ export const moveRivalBand = (
       }
     }
 
-    possibleNodes = allGigNodes.filter(n => connectedNodeIds.has(n.id))
+    for (const id of connectedNodeIds) {
+      const node = gameMap.nodes[id]
+      if (node && node.type === 'GIG') {
+        possibleNodes.push(node)
+      }
+    }
   }
 
   if (possibleNodes.length === 0) {
-    possibleNodes = allGigNodes
+    for (const key in gameMap.nodes) {
+      if (Object.hasOwn(gameMap.nodes, key)) {
+        const node = gameMap.nodes[key]
+        if (node && node.type === 'GIG') {
+          possibleNodes.push(node)
+        }
+      }
+    }
   }
 
   if (possibleNodes.length > 0) {
