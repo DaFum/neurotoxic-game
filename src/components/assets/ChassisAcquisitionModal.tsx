@@ -88,14 +88,14 @@ export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
           />
 
           <div className='flex flex-col gap-3 sm:flex-row sm:gap-4'>
-            <ChoiceGroup
+            <ChoiceGroup<AssetFlavor>
               label={t('assets:flavor.legit')}
               options={FLAVORS}
               value={flavor}
               onChange={setFlavor}
               renderLabel={f => t(`assets:flavor.${f}`)}
             />
-            <ChoiceGroup
+            <ChoiceGroup<ChassisTier>
               label={t('assets:chassisAcquisition.tier')}
               options={TIERS}
               value={tier}
@@ -104,7 +104,7 @@ export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
             />
           </div>
 
-          <ChoiceGroup
+          <ChoiceGroup<AcquisitionMode>
             label={t('assets:chassisAcquisition.mode')}
             options={MODES}
             value={mode}
@@ -114,7 +114,7 @@ export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
           />
 
           {mode === 'loan' && (
-            <ChoiceGroup
+            <ChoiceGroup<LoanProfileId>
               label={t('assets:chassisAcquisition.loanProfile')}
               options={Object.keys(LOAN_PROFILES) as LoanProfileId[]}
               value={loanProfile}

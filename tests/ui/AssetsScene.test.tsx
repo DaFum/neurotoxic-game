@@ -1,6 +1,12 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AssetsScene } from '../../src/components/assets/AssetsScene'
+import type {
+  AssetKind,
+  CrowdfundCampaign,
+  LongTermAsset,
+  RiskEventDescriptor
+} from '../../src/types/assets'
 
 const mockChangeScene = vi.fn()
 const mockDismissForeclosureNotice = vi.fn()
@@ -9,14 +15,14 @@ const mockState = vi.hoisted(() => ({
   player: { money: 1000 },
   band: {},
   social: {},
-  assets: [],
+  assets: [] as LongTermAsset[],
   liabilities: [],
-  crowdfundCampaigns: [],
-  pendingForeclosureNotices: [],
-  pendingRiskEvent: null
+  crowdfundCampaigns: [] as CrowdfundCampaign[],
+  pendingForeclosureNotices: [] as AssetKind[],
+  pendingRiskEvent: null as RiskEventDescriptor | null
 }))
 
-const pendingTourbusCampaign = {
+const pendingTourbusCampaign: CrowdfundCampaign = {
   id: 'camp_1',
   assetSpec: {
     kind: 'tourbus_chassis',

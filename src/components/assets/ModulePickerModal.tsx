@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { Modal } from '../../ui/shared/Modal'
 import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 import { getModuleImagePrompt } from '../../utils/imageGen'
@@ -22,7 +23,7 @@ interface Props {
 
 const formatLockReason = (
   reason: LockReason,
-  t: (k: string, opts?: object) => string
+  t: TFunction<readonly ['assets'], undefined>
 ): string => {
   switch (reason.kind) {
     case 'fame':
