@@ -11,8 +11,7 @@ import type {
 import {
   calculateChassisUpgradeCost,
   CHASSIS_CONFIG,
-  REPAIR_COST_PER_POINT,
-  buildDiyTier
+  REPAIR_COST_PER_POINT
 } from '../../utils/assetConfig'
 import { LOAN_PROFILES, computeAmortization } from '../../utils/loanProfiles'
 import { MODULE_REGISTRY } from '../../utils/assetModuleRegistry'
@@ -30,8 +29,8 @@ export const handlePurchaseChassis = (
   // CHASSIS_CONFIG is fully typed — Record<AssetKind, ChassisKindConfig> with
   // ChassisFlavorConfig nested under each flavor. Direct access without
   // `any` casts; if the action-creator validation passed, the entry exists.
-  const legitTier = CHASSIS_CONFIG[kind].legit[tier]
-  const configTier = flavor === 'legit' ? legitTier : buildDiyTier(legitTier)
+  const configTier = CHASSIS_CONFIG[kind]?.[flavor]?.[tier]
+  if (!configTier) return state
 
   // Bounds-check slotIds: if the action creator under-allocated ids, we
   // generate a deterministic synthetic id so the asset stays consistent
@@ -297,9 +296,9 @@ export const handleSellChassis = (
   const conditionFactor = asset.condition / 100
   const depreciation = Math.max(0.4, 1 - (daysOwned / 365) * 0.4)
 
-  const legitTier = CHASSIS_CONFIG[asset.kind].legit[asset.chassisTier]
   const configTier =
-    asset.chassisFlavor === 'legit' ? legitTier : buildDiyTier(legitTier)
+    CHASSIS_CONFIG[asset.kind]?.[asset.chassisFlavor]?.[asset.chassisTier]
+  if (!configTier) return state
 
   let moduleRefunds = 0
   asset.slots.forEach(slot => {
