@@ -42,7 +42,11 @@ export const Modal = ({
   const titleId = useId()
   const { t } = useTranslation(['ui'])
   const dialogAriaLabel = ariaLabel || undefined
-  const dialogAriaLabelledBy = dialogAriaLabel ? undefined : title ? titleId : undefined
+  const dialogAriaLabelledBy = dialogAriaLabel
+    ? undefined
+    : title
+      ? titleId
+      : undefined
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

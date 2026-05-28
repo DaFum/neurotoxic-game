@@ -145,9 +145,7 @@ vi.mock('../../src/context/GameState', () => ({
 const { PreGig } = await import('../../src/scenes/PreGig.tsx')
 const { __testInternals } = await import('../../src/hooks/usePreGigLogic')
 const { getSafeRandom } = await import('../../src/utils/crypto')
-const { resolveMerchRestockCost } = await import(
-  '../../src/utils/merchUtils'
-)
+const { resolveMerchRestockCost } = await import('../../src/utils/merchUtils')
 
 const makeAssetWithModule = ({
   kind = 'tourbus_chassis',
