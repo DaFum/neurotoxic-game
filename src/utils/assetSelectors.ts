@@ -477,16 +477,18 @@ export const getTotalDebt = (state: GameState): number => {
   return state.liabilities.reduce((sum, l) => sum + l.principalRemaining, 0)
 }
 
-let lastLiabilitiesForMap: Liability[] | null = null
+const EMPTY_LIABILITIES: readonly Liability[] = []
+let lastLiabilitiesForMap: readonly Liability[] | null = null
 let liabilitiesMapCache: Map<string, Liability> | null = null
 
 export const selectLiabilitiesMap = (
   state: GameState
 ): Map<string, Liability> => {
-  if (state.liabilities !== lastLiabilitiesForMap || !liabilitiesMapCache) {
-    lastLiabilitiesForMap = state.liabilities
+  const liabilities = state.liabilities || EMPTY_LIABILITIES
+  if (liabilities !== lastLiabilitiesForMap || !liabilitiesMapCache) {
+    lastLiabilitiesForMap = liabilities
     const map = new Map<string, Liability>()
-    for (const l of state.liabilities) {
+    for (const l of liabilities) {
       map.set(l.assetId, l)
     }
     liabilitiesMapCache = map
