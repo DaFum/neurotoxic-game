@@ -225,7 +225,7 @@ describe('purchaseChassis', () => {
       makeState()
     )
     assert.equal(action.type, ActionTypes.PURCHASE_CHASSIS_FAILED)
-    assert.equal(action.reason, 'unknown_flavor')
+    assert.equal(action.payload.reason, 'unknown_flavor')
   })
 })
 

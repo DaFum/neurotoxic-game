@@ -142,7 +142,7 @@ export const purchaseChassis = (
   })
 
   if (!VALID_FLAVORS.has(raw.flavor)) {
-    return { type: ActionTypes.PURCHASE_CHASSIS_FAILED, reason: 'unknown_flavor' } as any
+    return fail('unknown_flavor')
   }
 
   if (
