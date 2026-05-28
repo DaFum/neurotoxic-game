@@ -141,6 +141,9 @@ test('processCrowdfundTick - successful resolution awards money/fame and creates
   // Rewards applied.
   assert.strictEqual(next.player.money, 4100)
   assert.strictEqual(next.player.fame, 80)
+  assert.strictEqual(next.assets.length, 1)
+  assert.strictEqual(next.assets[0].id, 'mat_a1')
+  assert.strictEqual(next.assets[0].acquisitionMode, 'crowdfund')
 })
 
 test('processCrowdfundTick - failed resolution subtracts fameStake', () => {

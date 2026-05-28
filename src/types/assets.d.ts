@@ -251,14 +251,6 @@ export interface InstallModulePayload {
   newSlotIds?: NewSlotEntry[]
 }
 
-export interface ResolveCrowdfundPayload {
-  campaignId: string
-  outcome: 'success' | 'fail'
-  /** When success: pre-generated asset id and slot ids for the newly created chassis. */
-  newAssetId?: string
-  newSlotIds?: NewSlotEntry[]
-}
-
 export interface AssetModifiers {
   fuelMultiplier: number
   merchCostMultiplier: number

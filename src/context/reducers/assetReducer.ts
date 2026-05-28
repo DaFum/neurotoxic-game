@@ -3,7 +3,6 @@ import type {
   PurchaseChassisPayload,
   InstallModulePayload,
   UpgradeChassisTierPayload,
-  ResolveCrowdfundPayload,
   LongTermAsset,
   AssetSlot,
   Liability
@@ -370,78 +369,6 @@ export const handleStartCrowdfund = (
   return {
     ...state,
     crowdfundCampaigns: [...(state.crowdfundCampaigns || []), payload.campaign]
-  }
-}
-
-export const handleResolveCrowdfund = (
-  state: GameState,
-  payload: ResolveCrowdfundPayload
-): GameState => {
-  const { campaignId, outcome, newAssetId, newSlotIds } = payload
-  if (!state.crowdfundCampaigns) return state
-
-  const campaign = state.crowdfundCampaigns.find(c => c.id === campaignId)
-  if (!campaign) return state
-
-  const nextCampaigns = state.crowdfundCampaigns.filter(
-    c => c.id !== campaignId
-  )
-
-  let nextFame = state.player.fame
-  let nextAssets = state.assets || []
-
-  if (outcome === 'success') {
-    if (nextAssets.some(asset => asset.kind === campaign.assetSpec.kind)) {
-      return {
-        ...state,
-        crowdfundCampaigns: nextCampaigns
-      }
-    }
-    nextFame += campaign.fameStake
-
-    if (newAssetId && newSlotIds) {
-      const configTier =
-        CHASSIS_CONFIG[campaign.assetSpec.kind]?.[campaign.assetSpec.flavor]?.[
-          campaign.assetSpec.chassisTier
-        ]
-      if (!configTier) return state
-
-      const slots: AssetSlot[] = configTier.slots.map((slotType, i) => ({
-        // Same bounds-check as PURCHASE_CHASSIS: fall back to a deterministic
-        // synthetic id if newSlotIds is short.
-        id: newSlotIds[i]?.id ?? `${newAssetId}_slot_${i}`,
-        slotType,
-        position: { x: 0, y: 0 },
-        installedModuleId: null
-      }))
-
-      const asset: LongTermAsset = {
-        id: newAssetId,
-        kind: campaign.assetSpec.kind,
-        chassisFlavor: campaign.assetSpec.flavor,
-        chassisTier: campaign.assetSpec.chassisTier,
-        condition: 100,
-        baseUpkeep: configTier.upkeep,
-        baseDailyRevenue: configTier.revenue,
-        slots,
-        acquiredOnDay: state.player.day,
-        acquisitionMode: 'crowdfund',
-        baseRiskEventChance: configTier.baseRiskEventChance
-      }
-      nextAssets = [...nextAssets, asset]
-    }
-  } else {
-    nextFame = Math.max(0, nextFame - campaign.fameStake)
-  }
-
-  return {
-    ...state,
-    player: {
-      ...state.player,
-      fame: nextFame
-    },
-    assets: nextAssets,
-    crowdfundCampaigns: nextCampaigns
   }
 }
 

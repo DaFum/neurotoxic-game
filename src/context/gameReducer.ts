@@ -13,7 +13,6 @@ import {
   handleSellChassis,
   handleRepairChassis,
   handleStartCrowdfund,
-  handleResolveCrowdfund,
   handleAssetForeclosed,
   handleAssetRiskEventTriggered,
   handleAssetFailedAction
@@ -180,7 +179,6 @@ const reducerMap: ReducerMap = {
   [ActionTypes.INSTALL_MODULE_FAILED]: handleAssetFailedAction,
   [ActionTypes.REMOVE_MODULE]: handleRemoveModule,
   [ActionTypes.START_CROWDFUND]: handleStartCrowdfund,
-  [ActionTypes.RESOLVE_CROWDFUND]: handleResolveCrowdfund,
   [ActionTypes.ASSET_FORECLOSED]: handleAssetForeclosed,
   [ActionTypes.ASSET_RISK_EVENT_TRIGGERED]: handleAssetRiskEventTriggered
 }

@@ -5,7 +5,6 @@ import {
   purchaseChassis,
   removeModule,
   repairChassis,
-  resolveCrowdfund,
   sellChassis,
   startCrowdfund,
   upgradeChassisTier
@@ -550,7 +549,7 @@ describe('upgradeChassisTier', () => {
   })
 })
 
-describe('startCrowdfund / resolveCrowdfund / sellChassis / repairChassis / removeModule', () => {
+describe('startCrowdfund / sellChassis / repairChassis / removeModule', () => {
   it('startCrowdfund returns null when state is omitted', () => {
     const action = startCrowdfund({
       kind: 'tourbus_chassis',
@@ -617,24 +616,6 @@ describe('startCrowdfund / resolveCrowdfund / sellChassis / repairChassis / remo
       makeState({ crowdfundCampaigns: [makeCampaign()] })
     )
     assert.equal(action, null)
-  })
-
-  it('resolveCrowdfund(success) generates asset + slot ids', () => {
-    setupTourbusT1()
-    const action = resolveCrowdfund('camp_1', 'success', {
-      kind: 'tourbus_chassis',
-      flavor: 'legit',
-      tier: 1
-    })
-    assert.equal(action.payload.outcome, 'success')
-    assert.equal(typeof action.payload.newAssetId, 'string')
-    assert.equal(action.payload.newSlotIds.length, 2)
-  })
-
-  it('resolveCrowdfund(fail) omits asset/slot ids', () => {
-    const action = resolveCrowdfund('camp_1', 'fail')
-    assert.equal(action.payload.outcome, 'fail')
-    assert.equal(action.payload.newAssetId, undefined)
   })
 
   it('repairChassis returns null when repair funds are insufficient', () => {

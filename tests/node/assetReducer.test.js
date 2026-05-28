@@ -7,7 +7,6 @@ import {
   handleUpgradeChassisTier,
   handleSellChassis,
   handleRepairChassis,
-  handleResolveCrowdfund,
   handleStartCrowdfund,
   handleAssetFailedAction
 } from '../../src/context/reducers/assetReducer.ts'
@@ -183,39 +182,6 @@ test('handleStartCrowdfund - rejects when an asset already exists for the same s
   })
 
   assert.strictEqual(next, startState)
-})
-
-test('handleResolveCrowdfund - drops success when section asset already exists', () => {
-  const startState = {
-    ...mockState,
-    assets: [
-      {
-        id: 'a1',
-        kind: 'tourbus_chassis',
-        chassisFlavor: 'legit',
-        chassisTier: 1,
-        condition: 100,
-        baseUpkeep: 20,
-        baseDailyRevenue: 0,
-        slots: [],
-        acquiredOnDay: 1,
-        acquisitionMode: 'cash',
-        baseRiskEventChance: 0.005
-      }
-    ],
-    crowdfundCampaigns: [makeCampaign()]
-  }
-
-  const next = handleResolveCrowdfund(startState, {
-    campaignId: 'camp_1',
-    outcome: 'success',
-    newAssetId: 'a2',
-    newSlotIds: []
-  })
-
-  assert.strictEqual(next.assets.length, 1)
-  assert.strictEqual(next.player.fame, startState.player.fame)
-  assert.strictEqual(next.crowdfundCampaigns.length, 0)
 })
 
 test('handleInstallModule - happy path', () => {
@@ -419,61 +385,6 @@ test('handleSellChassis - uses direct DIY config price', () => {
   const next = handleSellChassis(startState, { assetId: 'a1' })
 
   assert.strictEqual(next.player.money, mockState.player.money + 1234)
-})
-
-test('handleResolveCrowdfund - updates player fame and uses direct DIY config', () => {
-  CHASSIS_CONFIG.tourbus_chassis.legit[1] = {
-    price: 4000,
-    upkeep: 20,
-    revenue: 0,
-    slots: ['tb_roof'],
-    baseRiskEventChance: 0.005
-  }
-  CHASSIS_CONFIG.tourbus_chassis.diy[1] = {
-    price: 1500,
-    upkeep: 7,
-    revenue: 11,
-    slots: ['tb_roof', 'tb_front'],
-    baseRiskEventChance: 0.07
-  }
-  const startState = {
-    ...mockState,
-    player: { ...mockState.player, fame: 10 },
-    band: { ...mockState.band, fame: 99 },
-    crowdfundCampaigns: [
-      {
-        id: 'camp_1',
-        assetSpec: {
-          kind: 'tourbus_chassis',
-          flavor: 'diy',
-          chassisTier: 1
-        },
-        targetAmount: 1500,
-        fameStake: 7,
-        daysRemaining: 0,
-        plannedSuccessRoll: 0.1,
-        plannedSuccessProbability: 0.5,
-        materializedAssetId: 'new_asset',
-        materializedSlotIds: ['s1', 's2']
-      }
-    ]
-  }
-
-  const next = handleResolveCrowdfund(startState, {
-    campaignId: 'camp_1',
-    outcome: 'success',
-    newAssetId: 'new_asset',
-    newSlotIds: [
-      { id: 's1', slotType: 'tb_roof' },
-      { id: 's2', slotType: 'tb_front' }
-    ]
-  })
-
-  assert.strictEqual(next.player.fame, 17)
-  assert.strictEqual(next.band.fame, 99)
-  assert.strictEqual(next.assets[0].baseUpkeep, 7)
-  assert.strictEqual(next.assets[0].baseDailyRevenue, 11)
-  assert.strictEqual(next.assets[0].slots.length, 2)
 })
 
 test('handleAssetFailedAction - is no-op', () => {

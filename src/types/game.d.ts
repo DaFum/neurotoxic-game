@@ -238,10 +238,6 @@ export type GameAction =
       ActionTypes['START_CROWDFUND'],
       { campaign: import('./assets').CrowdfundCampaign }
     >
-  | Action<
-      ActionTypes['RESOLVE_CROWDFUND'],
-      import('./assets').ResolveCrowdfundPayload
-    >
   | Action<ActionTypes['ASSET_FORECLOSED'], { assetId: string }>
   | Action<
       ActionTypes['ASSET_RISK_EVENT_TRIGGERED'],

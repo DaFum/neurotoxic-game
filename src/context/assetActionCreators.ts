@@ -77,10 +77,6 @@ type StartCrowdfundAction = Extract2<
   GameAction,
   typeof ActionTypes.START_CROWDFUND
 >
-type ResolveCrowdfundAction = Extract2<
-  GameAction,
-  typeof ActionTypes.RESOLVE_CROWDFUND
->
 type AssetForeclosedAction = Extract2<
   GameAction,
   typeof ActionTypes.ASSET_FORECLOSED
@@ -406,46 +402,6 @@ export const startCrowdfund = (
           Math.min(0.95, finiteNumberOr(raw.plannedSuccessProbability, 0.5))
         )
       }
-    }
-  }
-}
-
-export const resolveCrowdfund = (
-  campaignId: string,
-  outcome: 'success' | 'fail',
-  /** Provided when outcome === 'success' to pre-generate the resulting asset's ids. */
-  successContext?: {
-    kind: AssetKind
-    flavor: AssetFlavor
-    tier: ChassisTier
-  }
-): ResolveCrowdfundAction => {
-  if (outcome === 'fail' || !successContext) {
-    return {
-      type: ActionTypes.RESOLVE_CROWDFUND,
-      payload: { campaignId, outcome }
-    }
-  }
-  const targetCfg =
-    CHASSIS_CONFIG[successContext.kind]?.[successContext.flavor]?.[
-      successContext.tier
-    ]
-  if (!targetCfg) {
-    return {
-      type: ActionTypes.RESOLVE_CROWDFUND,
-      payload: { campaignId, outcome: 'fail' }
-    }
-  }
-  return {
-    type: ActionTypes.RESOLVE_CROWDFUND,
-    payload: {
-      campaignId,
-      outcome: 'success',
-      newAssetId: getSafeUUID(),
-      newSlotIds: targetCfg.slots.map(slotType => ({
-        slotType,
-        id: getSafeUUID()
-      }))
     }
   }
 }

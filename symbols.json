@@ -5771,15 +5771,6 @@
         "type": "const"
       }
     ],
-    "handleResolveCrowdfund": [
-      {
-        "isDefault": false,
-        "name": "handleResolveCrowdfund",
-        "path": "src/context/reducers/assetReducer.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
     "handleSellChassis": [
       {
         "isDefault": false,
@@ -8761,25 +8752,6 @@
         "path": "src/utils/audio/playbackUtils.ts",
         "source": "local",
         "type": "const"
-      }
-    ],
-    "resolveCrowdfund": [
-      {
-        "isDefault": false,
-        "name": "resolveCrowdfund",
-        "path": "src/context/assetActionCreators.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
-    "ResolveCrowdfundPayload": [
-      {
-        "isDefault": false,
-        "name": "ResolveCrowdfundPayload",
-        "path": "src/types/assets.d.ts",
-        "source": "local",
-        "type": "interface",
-        "typeOnly": true
       }
     ],
     "resolveCrowdfundProbability": [
