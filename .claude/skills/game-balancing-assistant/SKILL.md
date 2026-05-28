@@ -5,9 +5,15 @@ description: analyze and tune game balance. Trigger when adjusting difficulty, e
 
 # Game Balancing Assistant
 
+## Overview
+
 Tune the game's economy, difficulty, and progression curves.
 
-## Workflow
+## When to Use
+
+- Trigger when adjusting difficulty, economy, progression, or event effects.
+
+## Quick Reference
 
 1.  **Identify the Lever**
     Determine which system needs adjustment:
@@ -35,6 +41,16 @@ Tune the game's economy, difficulty, and progression curves.
 - **Economy**: Inflation is bad. Ensure sinks (Fuel, Repairs) scale with Sources (Gigs).
 - **Difficulty**: Smooth curves. Avoid difficulty spikes unless intentional (Bosses).
 - **Events**: Risk-Reward must be balanced. High reward events should have high failure risks.
+
+## Common Mistakes
+
+- Changing economy values without running a simulation or mental model of the compounding effects.
+- Adjusting difficulty isolated from other interdependent variables (e.g. changing venue costs without checking gig payouts).
+
+## Red Flags - STOP and Start Over
+
+- Making massive numerical swings instead of iterative, measured tweaks.
+- Removing hard constraints (like clamping to 0) in reducers instead of fixing the math upstream in action creators.
 
 ## Example
 

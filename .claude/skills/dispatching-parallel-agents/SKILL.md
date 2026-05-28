@@ -46,7 +46,7 @@ digraph when_to_use {
 - Need to understand full system state
 - Agents would interfere with each other
 
-## The Pattern
+## Quick Reference
 
 ### 1. Identify Independent Domains
 
@@ -172,6 +172,12 @@ Agent 3 → Fix tool-approval-race-conditions.test.ts
 2. **Focus** - Each agent has narrow scope, less context to track
 3. **Independence** - Agents don't interfere with each other
 4. **Speed** - 3 problems solved in time of 1
+
+## Red Flags - STOP and Start Over
+
+- Dispatching parallel agents for tasks that share state or have sequential dependencies.
+- Giving subagents vague goals like "fix the bugs" instead of isolating them to specific files.
+- Ignoring subagent context limits by failing to restrict their scope.
 
 ## Verification
 

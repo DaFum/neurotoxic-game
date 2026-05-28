@@ -5,15 +5,9 @@ description: diagnose and fix asset loading issues. Trigger when assets fail to 
 
 # Asset Pipeline Verifier
 
-## Overview
-
 Diagnose and resolve asset loading failures in the Vite build pipeline.
 
-## When to Use
-
-- Trigger when assets fail to load (404), have incorrect MIME types, or when paths are undefined.
-
-## Quick Reference
+## Workflow
 
 1.  **Identify the Loading Pattern**
     Determine if the asset is bundled (imported in JS) or static (in `public/`).
@@ -35,7 +29,7 @@ Diagnose and resolve asset loading failures in the Vite build pipeline.
 4.  **Check Configuration**
     Inspect `vite.config.js` for `assetsInclude` or base path configuration if issues persist.
 
-## Common Mistakes
+## Common Issues & Fixes
 
 ### 404 on Production Build
 
@@ -62,10 +56,3 @@ Diagnose and resolve asset loading failures in the Vite build pipeline.
 "The file `src/assets/song1.midi` is missing, but referenced in `rhythm_songs.json`. Please add the file or remove the reference."
 
 _Skill sync: compatible with React 19.2.6 / Vite 8.0.10 / Tailwind 4.2.4 baseline as of 2026-05-20._
-
-
-## Red Flags - STOP and Start Over
-
-- Fixing an asset path by hardcoding `/public` in the code
-- Using dynamic string concatenation for imports instead of `import.meta.glob`
-- Ignoring the `vite.config.js` when assets are fundamentally missing

@@ -9,11 +9,15 @@ description: Use when implementation is complete, all tests pass, and you need t
 
 Guide completion of development work by presenting clear options and handling chosen workflow.
 
+## When to Use
+
+- Use when implementation is complete, all tests pass, and you need to decide how to integrate the work by presenting structured options for merge, PR, or cleanup.
+
 **Core principle:** Verify tests → Present options → Execute choice → Clean up.
 
 **Announce at start:** "I'm using the finishing-a-development-branch skill to complete this work."
 
-## The Process
+## Quick Reference
 
 ### Step 1: Verify Tests
 
@@ -185,7 +189,7 @@ git worktree remove <worktree-path>
 - **Problem:** Accidentally delete work
 - **Fix:** Require typed "discard" confirmation
 
-## Red Flags
+## Red Flags - STOP and Start Over
 
 **Never:**
 

@@ -5,9 +5,15 @@ description: enforce pinned dependency versions. Trigger when asked to upgrade p
 
 # Dependency Pin Guard
 
+## Overview
+
 Strictly enforce pinned versions for critical dependencies to ensure stability and compatibility.
 
-## Pinned Versions
+## When to Use
+
+- Trigger when asked to upgrade packages, install new dependencies, or when reviewing package.json changes.
+
+## Quick Reference (Pinned Versions)
 
 | Package       | Pinned Major | Policy              |
 | ------------- | ------------ | ------------------- |
@@ -20,7 +26,7 @@ Strictly enforce pinned versions for critical dependencies to ensure stability a
 | Pixi.js       | 8.x          | **BLOCK** v9+       |
 | Node.js       | >= 22.13.0   | **BLOCK** < 22.13.0 |
 
-## Workflow
+## Quick Reference (Workflow)
 
 1.  **Check `package.json`**
     Compare proposed changes against the pinned table.
@@ -34,6 +40,16 @@ Strictly enforce pinned versions for critical dependencies to ensure stability a
 
 3.  **Validate Node Version**
     Ensure `.nvmrc` and `engines` both require Node >= 22.13.0.
+
+## Common Mistakes
+
+- Upgrading packages without explicitly checking the pinned versions table.
+- Relying on `npm update` instead of `pnpm` which can break the lockfile consistency.
+
+## Red Flags - STOP and Start Over
+
+- Running bulk updates (e.g., `pnpm update -i`) without targeted constraints.
+- Modifying `package.json` to bump major versions of core libraries (React, Vite, Pixi) without explicit architectural authorization.
 
 ## Example
 

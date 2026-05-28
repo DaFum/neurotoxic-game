@@ -9,11 +9,15 @@ description: Use when you have a written implementation plan to execute in a sep
 
 Load plan, review critically, execute all tasks, report when complete.
 
+## When to Use
+
+- Use when you have a written implementation plan to execute in a separate session with review checkpoints.
+
 **Announce at start:** "I'm using the executing-plans skill to implement this plan."
 
 **Note:** Tell your human partner that Superpowers works much better with access to subagents. The quality of its work will be significantly higher if run on a platform with subagent support (such as Claude Code or Codex). If subagents are available, use superpowers:subagent-driven-development instead of this skill.
 
-## The Process
+## Quick Reference
 
 ### Step 1: Load and Review Plan
 
@@ -58,6 +62,16 @@ After all tasks complete and verified:
 - Fundamental approach needs rethinking
 
 **Don't force through blockers** - stop and ask.
+
+## Common Mistakes
+
+- Failing to actively check off tasks in the plan or updating the plan sequentially.
+- Treating the plan as infallible rather than applying engineering judgment when encountering unexpected errors.
+
+## Red Flags - STOP and Start Over
+
+- Deviating from the written plan to explore unrelated refactors without updating the plan first.
+- Moving to the next step without actively verifying the current step's outcome via test runs or bash commands.
 
 ## Remember
 
