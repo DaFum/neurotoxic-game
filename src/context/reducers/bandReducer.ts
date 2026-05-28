@@ -22,6 +22,10 @@ import type {
   UpdateBandPayload
 } from '../../types'
 
+// Guards reducer-boundary numeric payloads against NaN and Infinity.
+const isSafeNumber = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value)
+
 /**
  * Handles band update actions
  * Clamps band.harmony to valid range 1-100
@@ -49,7 +53,7 @@ export const handleUpdateBand = (
   const safeUpdates: Record<string, unknown> = { ...updates }
   if (Object.hasOwn(safeUpdates, 'harmony')) {
     safeUpdates.harmony = clampBandHarmony(
-      typeof safeUpdates.harmony === 'number'
+      isSafeNumber(safeUpdates.harmony)
         ? safeUpdates.harmony
         : state.band.harmony
     )
@@ -98,12 +102,37 @@ export const handleUpdateBand = (
         next = { ...(patch as BandMember), id }
       }
       if (!next) continue
-      if (typeof next.stamina === 'number') {
-        const maxStamina =
-          typeof next.staminaMax === 'number' ? next.staminaMax : undefined
+      if (Object.hasOwn(patch, 'stamina') && !isSafeNumber(next.stamina)) {
+        if (existing && isSafeNumber(existing.stamina)) {
+          next.stamina = existing.stamina
+        } else {
+          delete (next as Partial<BandMember>).stamina
+        }
+      }
+      if (
+        Object.hasOwn(patch, 'staminaMax') &&
+        !isSafeNumber(next.staminaMax)
+      ) {
+        if (existing && isSafeNumber(existing.staminaMax)) {
+          next.staminaMax = existing.staminaMax
+        } else {
+          delete (next as Partial<BandMember>).staminaMax
+        }
+      }
+      if (isSafeNumber(next.stamina)) {
+        const maxStamina = isSafeNumber(next.staminaMax)
+          ? next.staminaMax
+          : undefined
         next.stamina = clampMemberStamina(next.stamina, maxStamina)
       }
-      if (typeof next.mood === 'number') {
+      if (Object.hasOwn(patch, 'mood') && !isSafeNumber(next.mood)) {
+        if (existing && isSafeNumber(existing.mood)) {
+          next.mood = existing.mood
+        } else {
+          delete (next as Partial<BandMember>).mood
+        }
+      }
+      if (isSafeNumber(next.mood)) {
         next.mood = clampMemberMood(next.mood)
       }
       if (typeof next.id === 'string') {
