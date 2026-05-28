@@ -42,7 +42,7 @@ export const moveRivalBand = (
     return rivalBand
   }
 
-  let possibleNodes: GameMap['nodes'][string][] = []
+  const possibleNodes: GameMap['nodes'][string][] = []
 
   if (rivalBand.currentLocationId && gameMap.connections) {
     // ⚡ BOLT OPTIMIZATION: Replaced chained .filter().map() with a single-pass loop.

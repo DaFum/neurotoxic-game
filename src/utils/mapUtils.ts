@@ -137,8 +137,7 @@ export const checkSoftlock = (
 
   const playerStateForTravel = {
     money: typeof player.money === 'number' ? player.money : 0,
-    fameLevel:
-      typeof player.fameLevel === 'number' ? player.fameLevel : 0,
+    fameLevel: typeof player.fameLevel === 'number' ? player.fameLevel : 0,
     van: {
       fuel: currentFuel,
       condition: typeof van?.condition === 'number' ? van.condition : 100,
