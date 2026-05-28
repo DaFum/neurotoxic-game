@@ -170,7 +170,7 @@ export const AmpControls = memo(function AmpControls({
             type='button'
             onClick={purgeInterference}
             disabled={!interference || interference < 1}
-            className='px-6 py-2 font-mono font-bold uppercase border-2 transition-all duration-150 bg-blood-red text-void-black border-blood-red hover:bg-void-black hover:text-blood-red shadow-[0_0_15px_var(--color-blood-red)] disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blood-red focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
+            className='px-6 py-2 font-mono font-bold uppercase border-2 transition-all duration-150 bg-blood-red text-star-white border-blood-red hover:bg-void-black hover:text-blood-red shadow-[0_0_15px_var(--color-blood-red)] disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blood-red focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
             aria-label={t('ui:minigames.amp.controls.purge', {
               defaultValue: 'Purge Signal'
             })}
