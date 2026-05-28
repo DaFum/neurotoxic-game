@@ -203,7 +203,7 @@ export type PurchaseFailureReason =
   | 'UNKNOWN_KIND_OR_TIER'
   | 'LOAN_PROFILE_INELIGIBLE'
   | 'ACQUISITION_ALREADY_ACTIVE'
-  | 'unknown_flavor'
+  | 'UNKNOWN_FLAVOR'
 
 export type InstallModuleFailureReason =
   | 'UNKNOWN_MODULE'

@@ -142,7 +142,7 @@ export const purchaseChassis = (
   })
 
   if (!VALID_FLAVORS.has(raw.flavor)) {
-    return fail('unknown_flavor')
+    return fail('UNKNOWN_FLAVOR')
   }
 
   if (
