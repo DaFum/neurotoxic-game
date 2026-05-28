@@ -135,6 +135,23 @@ export const checkSoftlock = (
     ? gameMap.connections
     : []
 
+  const playerStateForTravel = {
+    money: typeof player.money === 'number' ? player.money : 0,
+    fameLevel:
+      typeof player.fameLevel === 'number' ? player.fameLevel : 0,
+    van: {
+      fuel: currentFuel,
+      condition: typeof van?.condition === 'number' ? van.condition : 100,
+      upgrades: Array.isArray(van?.upgrades)
+        ? van.upgrades.filter(
+            (upgrade): upgrade is string => typeof upgrade === 'string'
+          )
+        : [],
+      breakdownChance:
+        typeof van?.breakdownChance === 'number' ? van.breakdownChance : 0
+    }
+  }
+
   let canReachAny = false
   for (let i = 0; i < connections.length; i++) {
     const c = connections[i]
@@ -142,22 +159,6 @@ export const checkSoftlock = (
     if (c.from === player.currentNodeId && typeof c.to === 'string') {
       const n = nodes[c.to]
       if (n) {
-        const playerStateForTravel = {
-          money: typeof player.money === 'number' ? player.money : 0,
-          fameLevel:
-            typeof player.fameLevel === 'number' ? player.fameLevel : 0,
-          van: {
-            fuel: currentFuel,
-            condition: typeof van?.condition === 'number' ? van.condition : 100,
-            upgrades: Array.isArray(van?.upgrades)
-              ? van.upgrades.filter(
-                  (upgrade): upgrade is string => typeof upgrade === 'string'
-                )
-              : [],
-            breakdownChance:
-              typeof van?.breakdownChance === 'number' ? van.breakdownChance : 0
-          }
-        }
         const { fuelLiters } = calculateTravelExpenses(
           n,
           currentNode,
