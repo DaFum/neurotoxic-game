@@ -1,17 +1,3 @@
-/* CRT */
-.crt {
-  position: fixed;
-  inset: 0;
-  z-index: 30;
-  pointer-events: none;
-  background: repeating-linear-gradient(
-    0deg,
-    rgb(var(--color-void-black-rgb) / 13%) 0,
-    rgb(var(--color-void-black-rgb) / 13%) 1px,
-    transparent 1px,
-    transparent 3px
-  );
-}
 @keyframes scan-overworld {
   0% {
     top: -4px;
@@ -115,7 +101,7 @@
 }
 .ow-panel {
   background: rgb(var(--color-void-black-rgb) / 92%);
-  border: 1px solid rgb(var(--color-toxic-green-rgb) / 60%);
+  border: 2px solid rgb(var(--color-toxic-green-rgb) / 60%);
   backdrop-filter: blur(4px);
   padding: 10px;
   color: var(--color-toxic-green);
@@ -469,28 +455,12 @@
   width: 100%;
   height: 100%;
   max-width: 1152px;
-  max-height: calc(100vh - 220px);
+  max-height: calc(100svh - 220px);
   border: 4px solid var(--color-toxic-green);
   background: rgb(var(--color-void-black-rgb) / 85%);
-  border-radius: 8px;
   box-shadow: 0 0 50px rgb(var(--color-toxic-green-rgb) / 12%);
   overflow: hidden;
   flex-shrink: 0;
-}
-.map-svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-.map-terrain {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  opacity: 0.18;
 }
 
 /* Map nodes */
@@ -519,46 +489,6 @@
 .map-node.clickable:hover .hex-wrap {
   transform: scale(1.2);
   z-index: 60;
-}
-.hex-crosshair {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-.map-node:hover .hex-crosshair {
-  opacity: 1;
-}
-.ch {
-  position: absolute;
-  background: var(--color-toxic-green);
-}
-.ch-t,
-.ch-b {
-  width: 1px;
-  height: 12px;
-  left: 50%;
-  margin-left: -0.5px;
-}
-.ch-t {
-  top: -8px;
-}
-.ch-b {
-  bottom: -8px;
-}
-.ch-l,
-.ch-r {
-  height: 1px;
-  width: 12px;
-  top: 50%;
-  margin-top: -0.5px;
-}
-.ch-l {
-  left: -8px;
-}
-.ch-r {
-  right: -8px;
 }
 .glyph {
   position: absolute;
@@ -1017,169 +947,6 @@
   opacity: 0.5;
 }
 
-/* GlitchButton */
-.ow-gbtn {
-  position: relative;
-  padding: 8px 16px;
-  background: var(--color-void-black);
-  font-family: 'Metal Mania', cursive;
-  font-weight: bold;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  transition: all 0.1s;
-  cursor: pointer;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  white-space: nowrap;
-}
-.ow-gbtn:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
-}
-.ow-gbtn.p {
-  border: 2px solid var(--color-toxic-green);
-  color: var(--color-toxic-green);
-}
-.ow-gbtn.p:not(:disabled):hover {
-  background: var(--color-toxic-green);
-  color: var(--color-void-black);
-  transform: translate(1px, -1px);
-  box-shadow: 4px 4px 0 var(--color-blood-red);
-}
-.ow-gbtn.w {
-  border: 2px solid var(--color-warning-yellow);
-  color: var(--color-warning-yellow);
-}
-.ow-gbtn.w:not(:disabled):hover {
-  background: var(--color-warning-yellow);
-  color: var(--color-void-black);
-  transform: translate(1px, -1px);
-  box-shadow: 4px 4px 0 var(--color-toxic-green);
-}
-.ow-gbtn.d {
-  border: 2px solid var(--color-blood-red);
-  color: var(--color-star-white);
-}
-.ow-gbtn.d:not(:disabled):hover {
-  background: var(--color-blood-red);
-  color: var(--color-void-black);
-  transform: translate(1px, -1px);
-  box-shadow: 4px 4px 0 var(--color-toxic-green);
-}
-.ow-gbtn:disabled .ow-gbtn-s {
-  opacity: 0.1;
-  background-image: repeating-linear-gradient(
-    45deg,
-    transparent,
-    transparent 4px,
-    var(--color-ash-gray) 4px,
-    var(--color-ash-gray) 6px
-  );
-}
-.ow-gbtn-s {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-.ow-gbtn-g {
-  position: absolute;
-  inset: 0;
-  background: var(--color-star-white);
-  opacity: 0;
-  mix-blend-mode: difference;
-  pointer-events: none;
-  transition: opacity 0.1s;
-}
-.ow-gbtn:not(:disabled):hover .ow-gbtn-g {
-  opacity: 0.1;
-}
-
-/* ── NEW: Rich tooltip ── */
-.ow-rich-tip {
-  position: absolute;
-  bottom: calc(100% + 14px);
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgb(var(--color-void-black-rgb) / 98%);
-  border: 1px solid var(--nc, var(--color-toxic-green));
-  min-width: 160px;
-  z-index: 80;
-  pointer-events: none;
-  box-shadow: 0 0 20px rgb(var(--color-toxic-green-rgb) / 20%);
-}
-.ow-rt-head {
-  padding: 8px 10px 6px;
-  border-bottom: 1px solid rgb(var(--color-star-white-rgb) / 8%);
-}
-.ow-rt-type {
-  font-size: 7px;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: var(--nc, var(--color-toxic-green));
-  opacity: 0.7;
-  margin-bottom: 2px;
-}
-.ow-rt-name {
-  font-family: 'Metal Mania', cursive;
-  font-size: 15px;
-  color: var(--nc, var(--color-toxic-green));
-  text-shadow: 0 0 10px var(--nc, var(--color-toxic-green));
-  line-height: 1.1;
-}
-.ow-rt-sub {
-  font-size: 8px;
-  color: var(--color-ash-gray);
-  margin-top: 2px;
-}
-.ow-rt-stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 1px;
-  background: rgb(var(--color-star-white-rgb) / 4%);
-}
-.ow-rt-stat {
-  padding: 6px 8px;
-  background: rgb(var(--color-void-black-rgb) / 95%);
-}
-.ow-rt-stat-label {
-  font-size: 7px;
-  color: var(--color-ash-gray);
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  margin-bottom: 2px;
-}
-.ow-rt-stat-val {
-  font-size: 12px;
-  font-weight: bold;
-  color: var(--color-star-white);
-}
-.ow-rt-foot {
-  padding: 5px 10px;
-  font-size: 8px;
-  border-top: 1px solid rgb(var(--color-star-white-rgb) / 5%);
-}
-.ow-rt-hint {
-  color: var(--color-ash-gray);
-}
-.ow-rt-confirm {
-  color: var(--color-warning-yellow);
-  font-weight: bold;
-}
-@keyframes blink-conf {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.2;
-  }
-}
-.ow-rt-confirm {
-  animation: blink-conf 0.8s step-end infinite;
-}
 /* ── NEW: Zone regions ── */
 .zones-svg {
   position: absolute;
@@ -1435,11 +1202,11 @@
   .map-wrap {
     order: 3;
     width: 100%;
-    height: clamp(420px, 58svh, 620px);
+    height: clamp(320px, 52svh, 620px);
     max-width: none;
     max-height: none;
-    min-height: 420px;
-    border-width: 3px;
+    min-height: 320px;
+    border-width: 4px;
   }
 
   .event-log {
@@ -1495,24 +1262,16 @@
 
   .hud,
   .map-wrap,
-  .ow-menu,
-  .ow-backdrop {
+  .ow-menu {
     touch-action: manipulation;
   }
 
   .icon-btn,
-  .radio-btn,
-  .ow-modal-x {
+  .radio-btn {
     min-width: 44px;
     min-height: 44px;
   }
 
-  .hud-btns .ow-gbtn {
-    min-width: 44px !important;
-    min-height: 44px !important;
-  }
-
-  .ow-gbtn,
   .menu-cat-btn,
   .menu-back-btn,
   .menu-sub-item {
@@ -1543,7 +1302,6 @@
     line-height: 1.25;
   }
 
-  .ow-rich-tip,
   .group-hover\:block {
     pointer-events: none;
   }
@@ -1587,178 +1345,23 @@
   pointer-events: none;
   z-index: 1;
 }
-/* ── NEW: Modal depth ── */
-.ow-quest-item {
-  padding: 12px 0;
-  border-bottom: 1px solid rgb(var(--color-star-white-rgb) / 5%);
-}
-.ow-quest-item:last-child {
-  border-bottom: none;
-}
-.ow-quest-name {
-  font-family: 'Metal Mania', cursive;
-  font-size: 15px;
-  color: var(--color-toxic-green);
-  margin-bottom: 2px;
-}
-.ow-quest-desc {
-  font-size: 9px;
-  color: var(--color-ash-gray);
-  margin-bottom: 6px;
-}
-.ow-quest-prog-wrap {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
-}
-.ow-quest-prog-track {
-  flex: 1;
-  height: 5px;
-  background: var(--color-void-black);
-  border: 1px solid var(--color-ash-gray);
-  overflow: hidden;
-}
-.ow-quest-prog-fill {
-  height: 100%;
-  background: var(--color-toxic-green);
-  transition: width 0.5s;
-}
-.ow-quest-prog-pct {
-  font-size: 9px;
-  color: var(--color-toxic-green);
-  width: 28px;
-  text-align: right;
-}
-.ow-quest-reward {
-  font-size: 8px;
-  color: var(--color-warning-yellow);
-  letter-spacing: 1px;
-}
-.ow-stash-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-top: 4px;
-}
-.ow-stash-item {
-  border: 1px solid rgb(var(--color-ash-gray-rgb) / 40%);
-  padding: 10px;
-  background: rgb(var(--color-star-white-rgb) / 2%);
-}
-.ow-stash-item-name {
-  font-family: 'Metal Mania', cursive;
-  font-size: 13px;
-  color: var(--color-star-white);
-  margin-bottom: 4px;
-}
-.ow-stash-item-meta {
-  display: flex;
-  justify-content: space-between;
-  font-size: 9px;
-}
-.ow-refuel-preview {
-  background: rgb(var(--color-warning-yellow-rgb) / 5%);
-  border: 1px solid rgb(var(--color-warning-yellow-rgb) / 20%);
-  padding: 12px;
-  margin: 12px 0;
-}
-.ow-refuel-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 10px;
-  padding: 4px 0;
-}
-.ow-refuel-total {
-  border-top: 1px solid rgb(var(--color-warning-yellow-rgb) / 30%);
-  margin-top: 4px;
-  padding-top: 6px;
-  font-size: 13px;
-  font-weight: bold;
-  color: var(--color-warning-yellow);
-}
 
-/* Modal */
-.ow-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 200;
-  background: rgb(var(--color-void-black-rgb) / 78%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-}
-.ow-modal {
-  background: var(--color-void-black);
-  border: 2px solid var(--color-toxic-green);
-  padding: 24px;
-  max-width: 540px;
-  width: 100%;
-  max-height: 85vh;
-  overflow-y: auto;
-  box-shadow: 0 0 40px rgb(var(--color-toxic-green-rgb) / 20%);
-  position: relative;
-}
-.ow-modal-title {
-  font-family: 'Metal Mania', cursive;
-  font-size: 28px;
-  color: var(--color-toxic-green);
-  text-shadow: 0 0 16px var(--color-toxic-green);
-  margin-bottom: 4px;
-}
-.ow-modal-sub {
-  font-size: 9px;
-  color: var(--color-ash-gray);
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  margin-bottom: 16px;
-  border-bottom: 1px solid rgb(var(--color-toxic-green-rgb) / 20%);
-  padding-bottom: 12px;
-}
-.ow-modal-x {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: none;
-  border: 1px solid var(--color-ash-gray);
-  color: var(--color-ash-gray);
-  width: 24px;
-  height: 24px;
-  cursor: pointer;
-  font-size: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-}
-.ow-modal-x:hover {
-  border-color: var(--color-toxic-green);
-  color: var(--color-toxic-green);
-}
-.ow-modal-sec-title {
-  font-size: 9px;
-  color: var(--color-ash-gray);
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  margin-bottom: 8px;
-  border-bottom: 1px solid rgb(var(--color-ash-gray-rgb) / 30%);
-  padding-bottom: 4px;
-  margin-top: 16px;
-}
-.ow-modal-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 0;
-  border-bottom: 1px solid rgb(var(--color-star-white-rgb) / 4%);
-  font-size: 10px;
-}
-.ow-modal-row-label {
-  color: var(--color-ash-gray);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-.ow-modal-row-val {
-  color: var(--color-star-white);
+@media (prefers-reduced-motion: reduce) {
+  .scan,
+  .glitch-on .map-wrap,
+  .glitch-on .ow-title,
+  .radio-dot,
+  .node-van,
+  .confirm-lbl,
+  .n-reachable .hex-wrap,
+  .n-pending,
+  .el-cursor,
+  .n-unlocked .hex-wrap,
+  .g-hue .map-wrap,
+  .g-pixel .map-wrap,
+  .money-anim-up,
+  .money-anim-down,
+  .ow-panel.fuel-warn {
+    animation: none !important;
+  }
 }

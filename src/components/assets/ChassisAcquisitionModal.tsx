@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Modal } from '../../ui/shared/Modal'
 import { Tooltip } from '../../ui/shared/Tooltip'
+import { ActionButton } from '../../ui/shared/ActionButton'
 import { CrowdfundSetupModal } from './CrowdfundSetupModal'
 import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 import { getChassisImagePrompt } from '../../utils/imageGen'
@@ -135,13 +136,12 @@ export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
               {formatCurrency(price, i18n.language)}
             </span>
             <div className='flex gap-2'>
-              <button
-                type='button'
+              <ActionButton
                 onClick={onClose}
-                className='min-h-11 border-2 px-3 py-2'
+                className='bg-void-black text-ash-gray border-2 border-ash-gray px-3 py-2 text-sm hover:bg-ash-gray hover:text-void-black'
               >
                 {t('ui:action_cancel')}
-              </button>
+              </ActionButton>
               <Tooltip
                 content={
                   acquisitionBlocked
@@ -153,8 +153,7 @@ export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
                         : undefined
                 }
               >
-                <button
-                  type='button'
+                <ActionButton
                   onClick={onConfirm}
                   disabled={
                     acquisitionBlocked ||
@@ -162,15 +161,15 @@ export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
                     insufficient ||
                     price === 0
                   }
-                  className='min-h-11 border-2 px-3 py-2 disabled:opacity-40'
+                  className='px-3 py-2 text-sm disabled:opacity-40'
                   style={{
                     background:
                       'var(--section-accent, var(--color-toxic-green))',
-                    color: 'var(--color-void)'
+                    color: 'var(--color-void-black)'
                   }}
                 >
                   {t('assets:actions.purchase')}
-                </button>
+                </ActionButton>
               </Tooltip>
             </div>
           </div>

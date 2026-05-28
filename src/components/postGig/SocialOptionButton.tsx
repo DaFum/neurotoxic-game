@@ -48,17 +48,17 @@ export const SocialOptionButton = memo(function SocialOptionButton({
           }}
         />
 
-        <div className='flex justify-between items-start gap-2 mb-2 w-full z-10 relative bg-void-black/80 p-1.5 rounded'>
+        <div className='flex justify-between items-start gap-2 mb-2 w-full z-10 relative bg-void-black/80 p-1.5'>
           <div className='min-w-0 font-bold text-base sm:text-lg leading-tight break-words transition-colors text-star-white drop-shadow-md'>
             {t(`ui:postOptions.${opt.id}.name`, { defaultValue: opt.name })}
           </div>
-          <div className='flex shrink-0 flex-wrap justify-end gap-1 text-sm px-1 rounded backdrop-blur-sm'>
+          <div className='flex shrink-0 flex-wrap justify-end gap-1 text-sm px-1 backdrop-blur-sm'>
             {opt.badges?.map((b: string) => (
               <span key={b}>{b}</span>
             ))}
           </div>
         </div>
-        <div className='text-xs text-star-white font-mono space-y-1 mb-2 w-full z-10 relative bg-void-black/80 p-1.5 rounded'>
+        <div className='text-xs text-star-white font-mono space-y-1 mb-2 w-full z-10 relative bg-void-black/80 p-1.5'>
           <div className='flex justify-between gap-3 border-b border-ash-gray/20 pb-1'>
             <span className='text-ash-gray drop-shadow-md'>
               {t('economy:social.platform', { defaultValue: 'Platform' })}

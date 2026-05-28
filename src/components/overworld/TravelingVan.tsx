@@ -16,7 +16,7 @@ export const TravelingVan = React.memo(
 
     return (
       <motion.div
-        className='absolute z-[60] pointer-events-none'
+        className='absolute z-(--z-chatter) pointer-events-none'
         initial={{
           left: `${currentNode.x}%`,
           top: `${currentNode.y}%`

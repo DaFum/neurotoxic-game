@@ -52,10 +52,10 @@ export const PreGig = () => {
       />
 
       <div className='w-full max-w-5xl relative z-10'>
-        <div className='flex gap-4 border-b border-(--color-concrete-gray) pb-2 mb-4'>
+        <div className='flex gap-4 border-b border-concrete-gray pb-2 mb-4'>
           <button
             type='button'
-            className={`font-mono uppercase px-4 py-2 ${activeTab === 'logistics' ? 'bg-(--color-toxic-green) text-(--color-void-black)' : 'text-(--color-ash-gray) hover:text-(--color-toxic-green)'}`}
+            className={`font-mono uppercase px-4 py-2 ${activeTab === 'logistics' ? 'bg-toxic-green text-void-black' : 'text-ash-gray hover:text-toxic-green'}`}
             aria-pressed={activeTab === 'logistics'}
             onClick={() => setActiveTab('logistics')}
           >
@@ -63,7 +63,7 @@ export const PreGig = () => {
           </button>
           <button
             type='button'
-            className={`font-mono uppercase px-4 py-2 ${activeTab === 'merch' ? 'bg-(--color-toxic-green) text-(--color-void-black)' : 'text-(--color-ash-gray) hover:text-(--color-toxic-green)'}`}
+            className={`font-mono uppercase px-4 py-2 ${activeTab === 'merch' ? 'bg-toxic-green text-void-black' : 'text-ash-gray hover:text-toxic-green'}`}
             aria-pressed={activeTab === 'merch'}
             onClick={() => setActiveTab('merch')}
           >
@@ -72,7 +72,7 @@ export const PreGig = () => {
         </div>
 
         {activeTab === 'logistics' ? (
-          <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 h-auto lg:h-[58vh]'>
+          <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 h-auto lg:h-[58svh]'>
             <GigModifiersBlock
               t={t}
               gigModifierOptions={GIG_MODIFIER_OPTIONS}

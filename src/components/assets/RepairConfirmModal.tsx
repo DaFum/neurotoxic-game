@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Modal } from '../../ui/shared/Modal'
 import { Tooltip } from '../../ui/shared/Tooltip'
+import { ActionButton } from '../../ui/shared/ActionButton'
 import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 import { getRepairImagePrompt } from '../../utils/imageGen'
 import { REPAIR_COST_PER_POINT } from '../../utils/assetConfig'
@@ -45,13 +46,12 @@ export const RepairConfirmModal = ({ asset, isOpen, onClose }: Props) => {
           })}
         </p>
         <div className='flex justify-end gap-2'>
-          <button
-            type='button'
+          <ActionButton
             onClick={onClose}
-            className='min-h-11 border-2 px-3 py-2'
+            className='bg-void-black text-ash-gray border-2 border-ash-gray px-3 py-2 text-sm hover:bg-ash-gray hover:text-void-black'
           >
             {t('ui:action_cancel')}
-          </button>
+          </ActionButton>
           <Tooltip
             content={
               money < cost
@@ -59,21 +59,20 @@ export const RepairConfirmModal = ({ asset, isOpen, onClose }: Props) => {
                 : undefined
             }
           >
-            <button
-              type='button'
+            <ActionButton
               onClick={() => {
                 repairChassis(asset.id)
                 onClose()
               }}
               disabled={cost === 0 || money < cost}
-              className='min-h-11 border-2 px-3 py-2 disabled:opacity-40'
+              className='px-3 py-2 text-sm disabled:opacity-40'
               style={{
                 background: 'var(--section-accent, var(--color-toxic-green))',
-                color: 'var(--color-void)'
+                color: 'var(--color-void-black)'
               }}
             >
               {t('assets:actions.repair')}
-            </button>
+            </ActionButton>
           </Tooltip>
         </div>
       </div>

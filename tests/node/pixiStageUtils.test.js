@@ -28,6 +28,21 @@ test('buildRhythmLayout derives lane and hit line positions', () => {
   assert.equal(layout.rhythmOffsetY, screenHeight * rhythmOffsetRatio)
 })
 
+test('buildRhythmLayout clamps rhythm lanes inside narrow screens', () => {
+  const screenWidth = 320
+  const screenHeight = 600
+
+  const layout = buildRhythmLayout({ screenWidth, screenHeight })
+  const laneCount = 3
+  const laneGap = 20
+  const renderedLaneWidth =
+    layout.laneWidth * laneCount + laneGap * (laneCount - 1)
+
+  assert.equal(layout.startX, 0)
+  assert.ok(layout.laneTotalWidth <= screenWidth)
+  assert.ok(renderedLaneWidth <= screenWidth)
+})
+
 test('stageRenderUtils keeps rhythm layout constants internal', async () => {
   const moduleExports =
     await import('../../src/components/stage/stageRenderUtils')

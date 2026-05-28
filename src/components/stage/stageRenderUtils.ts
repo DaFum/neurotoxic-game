@@ -42,7 +42,7 @@ const colorCache = new Map<string, number>()
  */
 export const getPixiColorFromToken = (
   tokenName: string,
-  defaultHexFallback = '#ffffff'
+  defaultHexFallback = BRAND_COLOR_HEX['star-white']
 ): number => {
   const canReadCssVariables =
     typeof window !== 'undefined' &&
@@ -56,7 +56,10 @@ export const getPixiColorFromToken = (
 
   const cacheKey = `${tokenName}-${defaultHexFallback}`
   if (colorCache.has(cacheKey)) {
-    return colorCache.get(cacheKey) ?? Number.parseInt('ffffff', 16)
+    const cachedColor = colorCache.get(cacheKey)
+    if (cachedColor !== undefined) {
+      return cachedColor
+    }
   }
 
   const fallbackColor = PIXI_TOKEN_FALLBACKS[tokenName] ?? defaultHexFallback
@@ -172,10 +175,12 @@ const calculateLaneStartX = ({
 }: {
   screenWidth: number
   laneTotalWidth: number
-}) => (screenWidth - laneTotalWidth) / 2
+}) => Math.max(0, (screenWidth - laneTotalWidth) / 2)
 
 const LANE_TOTAL_WIDTH = 360
 const LANE_WIDTH = 100
+const LANE_GAP = 20
+const LANE_COUNT = 3
 const LANE_HEIGHT_RATIO = 0.4
 const LANE_STROKE_WIDTH = 2
 const HIT_LINE_HEIGHT = 20
@@ -186,6 +191,8 @@ const RHYTHM_OFFSET_RATIO = 0.6
 const RHYTHM_LAYOUT = Object.freeze({
   laneTotalWidth: LANE_TOTAL_WIDTH,
   laneWidth: LANE_WIDTH,
+  laneGap: LANE_GAP,
+  laneCount: LANE_COUNT,
   laneHeightRatio: LANE_HEIGHT_RATIO,
   laneStrokeWidth: LANE_STROKE_WIDTH,
   hitLineHeight: HIT_LINE_HEIGHT,
@@ -207,7 +214,7 @@ export const CROWD_LAYOUT = Object.freeze({
  * @param {object} params - Layout inputs.
  * @param {number} params.screenWidth - Current screen width.
  * @param {number} params.screenHeight - Current screen height.
- * @returns {{startX: number, laneWidth: number, laneHeight: number, laneStrokeWidth: number, hitLineY: number, hitLineHeight: number, hitLineStrokeWidth: number, rhythmOffsetY: number, laneTotalWidth: number}} Layout metrics.
+ * @returns {{startX: number, laneWidth: number, laneGap: number, laneHeight: number, laneStrokeWidth: number, hitLineY: number, hitLineHeight: number, hitLineStrokeWidth: number, rhythmOffsetY: number, laneTotalWidth: number}} Layout metrics.
  */
 export const buildRhythmLayout = ({
   screenWidth,
@@ -218,6 +225,7 @@ export const buildRhythmLayout = ({
 }): {
   startX: number
   laneWidth: number
+  laneGap: number
   laneHeight: number
   laneStrokeWidth: number
   hitLineY: number
@@ -226,14 +234,19 @@ export const buildRhythmLayout = ({
   rhythmOffsetY: number
   laneTotalWidth: number
 } => {
-  const laneTotalWidth = RHYTHM_LAYOUT.laneTotalWidth
+  const layoutScale = Math.min(
+    1,
+    Math.max(0, screenWidth) / RHYTHM_LAYOUT.laneTotalWidth
+  )
+  const laneTotalWidth = RHYTHM_LAYOUT.laneTotalWidth * layoutScale
   const startX = calculateLaneStartX({ screenWidth, laneTotalWidth })
   const laneHeight = screenHeight * RHYTHM_LAYOUT.laneHeightRatio
   const hitLineY = laneHeight - RHYTHM_LAYOUT.hitLineOffset
 
   return {
     startX,
-    laneWidth: RHYTHM_LAYOUT.laneWidth,
+    laneWidth: RHYTHM_LAYOUT.laneWidth * layoutScale,
+    laneGap: RHYTHM_LAYOUT.laneGap * layoutScale,
     laneHeight,
     laneStrokeWidth: RHYTHM_LAYOUT.laneStrokeWidth,
     hitLineY,

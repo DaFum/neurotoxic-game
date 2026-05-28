@@ -4,6 +4,7 @@ import assert from 'node:assert/strict'
 const mockBuildRhythmLayout = mock.fn(() => ({
   startX: 100,
   laneWidth: 100,
+  laneGap: 20,
   laneHeight: 300,
   laneStrokeWidth: 2,
   hitLineY: 240,

@@ -3,15 +3,17 @@
  * @module ActionButton
  */
 
-import { memo, type ReactNode, type MouseEventHandler, type Ref } from 'react'
+import {
+  memo,
+  type ComponentPropsWithoutRef,
+  type ReactNode,
+  type Ref
+} from 'react'
 
-interface ActionButtonProps {
+type ActionButtonProps = ComponentPropsWithoutRef<'button'> & {
   children: ReactNode
-  onClick?: MouseEventHandler<HTMLButtonElement>
-  type?: 'button' | 'submit' | 'reset'
-  className?: string
   ref?: Ref<HTMLButtonElement>
-  [key: string]: unknown
+  variant?: string
 }
 
 /**
@@ -24,6 +26,7 @@ export const ActionButton = memo(
     type = 'button',
     className = '',
     ref,
+    variant: _variant,
     ...rest
   }: ActionButtonProps) => (
     <button

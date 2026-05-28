@@ -28,7 +28,7 @@ export default function ReloadPrompt() {
     <div className='ReloadPrompt-container'>
       <div
         role='status'
-        className='ReloadPrompt-toast bg-void-black border-2 border-toxic-green text-toxic-green p-4 font-mono'
+        className='ReloadPrompt-toast bg-void-black border-2 border-toxic-green text-toxic-green p-4 font-mono shadow-[4px_4px_0px_var(--color-toxic-green)]'
       >
         <div className='ReloadPrompt-message mb-2'>
           {offlineReady ? (
@@ -41,7 +41,7 @@ export default function ReloadPrompt() {
           {needRefresh && (
             <button
               type='button'
-              className='ReloadPrompt-toast-button border border-toxic-green px-3 py-1 hover:bg-toxic-green hover:text-void-black transition-colors focus-visible:ring-toxic-green focus-visible:ring-offset-void-black'
+              className='ReloadPrompt-toast-button min-h-11 border-2 border-toxic-green px-4 py-2 hover:bg-toxic-green hover:text-void-black transition-colors focus-visible:ring-toxic-green focus-visible:ring-offset-void-black'
               onClick={() => updateServiceWorker(true)}
             >
               {t('ui:offline.reload')}
@@ -49,7 +49,7 @@ export default function ReloadPrompt() {
           )}
           <button
             type='button'
-            className='ReloadPrompt-toast-button border border-toxic-green px-3 py-1 hover:bg-toxic-green hover:text-void-black transition-colors focus-visible:ring-toxic-green focus-visible:ring-offset-void-black'
+            className='ReloadPrompt-toast-button min-h-11 border-2 border-toxic-green px-4 py-2 hover:bg-toxic-green hover:text-void-black transition-colors focus-visible:ring-toxic-green focus-visible:ring-offset-void-black'
             onClick={close}
           >
             {t('ui:offline.close')}

@@ -40,7 +40,7 @@ export const LiabilitiesPanel = () => {
             {t('assets:liability.termDays', { count: l.termDaysRemaining })})
           </span>
           {l.defaultCounter > 0 && (
-            <span style={{ color: 'var(--color-blood)' }}>
+            <span style={{ color: 'var(--color-blood-red)' }}>
               {t('assets:loan.defaultWarning', {
                 daysLeft: Math.max(0, 7 - l.defaultCounter)
               })}

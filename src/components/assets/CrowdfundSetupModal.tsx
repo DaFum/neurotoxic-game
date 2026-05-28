@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Modal } from '../../ui/shared/Modal'
+import { ActionButton } from '../../ui/shared/ActionButton'
 import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 import { getCrowdfundImagePrompt } from '../../utils/imageGen'
 import { formatCurrency } from '../../utils/numberUtils'
@@ -109,24 +110,22 @@ export const CrowdfundSetupModal = ({
           {t('assets:crowdfund.chance')}
         </p>
         <div className='flex justify-end gap-2'>
-          <button
-            type='button'
+          <ActionButton
             onClick={onClose}
-            className='min-h-11 border-2 px-3 py-2'
+            className='bg-void-black text-ash-gray border-2 border-ash-gray px-3 py-2 text-sm hover:bg-ash-gray hover:text-void-black'
           >
             {t('ui:action_cancel')}
-          </button>
-          <button
-            type='button'
+          </ActionButton>
+          <ActionButton
             onClick={onConfirm}
-            className='min-h-11 border-2 px-3 py-2'
+            className='px-3 py-2 text-sm'
             style={{
               background: 'var(--section-accent)',
-              color: 'var(--color-void)'
+              color: 'var(--color-void-black)'
             }}
           >
             {t('assets:crowdfund.setup')}
-          </button>
+          </ActionButton>
         </div>
       </div>
     </Modal>

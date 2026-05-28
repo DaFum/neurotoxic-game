@@ -43,12 +43,12 @@ const MerchItemRow: React.FC<MerchItemRowProps> = ({
   const restockDisabled = item.restockAmount <= 0
 
   return (
-    <div className='flex justify-between items-center bg-(--color-charcoal-gray) p-3 border border-(--color-concrete-gray)'>
+    <div className='flex justify-between items-center bg-charcoal-gray p-3 border border-concrete-gray'>
       <div className='flex flex-col'>
-        <span className='text-(--color-toxic-green) font-mono uppercase'>
+        <span className='text-toxic-green font-mono uppercase'>
           {item.name}
         </span>
-        <span className='text-(--color-ash-gray) font-mono text-sm'>
+        <span className='text-ash-gray font-mono text-sm'>
           {t('ui:pregig.merchStrategy.stock', { count: item.stock })}
         </span>
       </div>
@@ -63,11 +63,11 @@ const MerchItemRow: React.FC<MerchItemRowProps> = ({
             onClick={() =>
               onUpdatePrice(item.key, Math.max(1, item.currentPrice - 1))
             }
-            className='bg-(--color-concrete-gray) hover:bg-(--color-steel-gray) p-1 text-(--color-toxic-green)'
+            className='bg-concrete-gray hover:bg-steel-gray p-1 text-toxic-green'
           >
             -
           </button>
-          <span className='text-(--color-toxic-green) font-mono w-8 text-center'>
+          <span className='text-toxic-green font-mono w-8 text-center'>
             {formatCurrency(item.currentPrice, language)}
           </span>
           <button
@@ -76,7 +76,7 @@ const MerchItemRow: React.FC<MerchItemRowProps> = ({
               item: item.name
             })}
             onClick={() => onUpdatePrice(item.key, item.currentPrice + 1)}
-            className='bg-(--color-concrete-gray) hover:bg-(--color-steel-gray) p-1 text-(--color-toxic-green)'
+            className='bg-concrete-gray hover:bg-steel-gray p-1 text-toxic-green'
           >
             +
           </button>
@@ -90,7 +90,7 @@ const MerchItemRow: React.FC<MerchItemRowProps> = ({
           }}
           disabled={restockDisabled}
           aria-disabled={restockDisabled}
-          className='bg-(--color-toxic-green) text-(--color-void-black) font-mono px-3 py-1 uppercase text-sm hover:opacity-80 transition-colors disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:opacity-40'
+          className='bg-toxic-green text-void-black font-mono px-3 py-1 uppercase text-sm hover:opacity-80 transition-colors disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:opacity-40'
           title={t('ui:pregig.merchStrategy.restockCost', {
             amount: item.restockAmount,
             cost: formatCurrency(item.restockCost, language)
@@ -196,8 +196,8 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
   ])
 
   return (
-    <div className='bg-(--color-void-black) border-2 border-(--color-toxic-green) p-4 flex flex-col gap-4'>
-      <h3 className='text-(--color-toxic-green) font-mono text-xl uppercase tracking-widest border-b border-(--color-toxic-green) pb-2'>
+    <div className='bg-void-black border-2 border-toxic-green p-4 flex flex-col gap-4'>
+      <h3 className='text-toxic-green font-mono text-xl uppercase tracking-widest border-b border-toxic-green pb-2'>
         {t('ui:pregig.merchStrategy.title', { defaultValue: 'Merch Strategy' })}
       </h3>
 

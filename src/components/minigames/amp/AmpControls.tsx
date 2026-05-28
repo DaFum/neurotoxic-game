@@ -99,7 +99,7 @@ export const AmpControls = memo(function AmpControls({
         <button
           type='button'
           onClick={handleFineTuneDown}
-          className='w-12 h-12 flex items-center justify-center bg-void-black border-2 border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black active:scale-95 transition-colors font-bold text-xl rounded focus:outline-none focus:ring-2 focus:ring-toxic-green focus:ring-offset-2 focus:ring-offset-void-black'
+          className='w-12 h-12 flex items-center justify-center bg-void-black border-2 border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black active:scale-95 transition-colors font-bold text-xl focus:outline-none focus:ring-2 focus:ring-toxic-green focus:ring-offset-2 focus:ring-offset-void-black'
           aria-label={t('ui:minigames.amp.controls.fineTuneDown', {
             defaultValue: 'Fine tune down'
           })}
@@ -131,7 +131,7 @@ export const AmpControls = memo(function AmpControls({
         <button
           type='button'
           onClick={handleFineTuneUp}
-          className='w-12 h-12 flex items-center justify-center bg-void-black border-2 border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black active:scale-95 transition-colors font-bold text-xl rounded focus:outline-none focus:ring-2 focus:ring-toxic-green focus:ring-offset-2 focus:ring-offset-void-black'
+          className='w-12 h-12 flex items-center justify-center bg-void-black border-2 border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black active:scale-95 transition-colors font-bold text-xl focus:outline-none focus:ring-2 focus:ring-toxic-green focus:ring-offset-2 focus:ring-offset-void-black'
           aria-label={t('ui:minigames.amp.controls.fineTuneUp', {
             defaultValue: 'Fine tune up'
           })}
