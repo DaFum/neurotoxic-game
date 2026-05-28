@@ -349,7 +349,7 @@ export const createRngStream = (seed: number, length: number): number[] => {
 }
 
 export const nextSeed = (seed: number): number =>
-  (mulberry32(seed)() * 2 ** 32) >>> 0
+  (mulberry32(seed)() * 2 ** 32) | 0
 ```
 
 - [ ] **Step 3: Test grün. Commit** — `feat(assets): add seeded RNG helpers`
@@ -877,8 +877,8 @@ export const sanitizeCrowdfundCampaigns = (
     out.push({
       id: clean.id,
       assetSpec: {
-        kind: spec.kind as unknown as AssetKind,
-        flavor: spec.flavor as unknown as AssetFlavor,
+        kind: spec.kind as any,
+        flavor: spec.flavor as any,
         chassisTier: spec.chassisTier as 1 | 2 | 3
       },
       targetAmount: finiteNumberOr(clean.targetAmount, 0),
@@ -1396,14 +1396,12 @@ export const getActiveAssetModifiers = (
   for (const a of assets) {
     if (a.condition < 20) continue
     const b = getAssetAggregateBoni(a)
-    if (b.fuelMultiplier !== undefined) m.fuelMultiplier *= b.fuelMultiplier
-    if (b.merchCostMultiplier !== undefined)
-      m.merchCostMultiplier *= b.merchCostMultiplier
-    if (b.songCostMultiplier !== undefined)
-      m.songCostMultiplier *= b.songCostMultiplier
-    if (b.trainingCostMultiplier !== undefined)
+    if (b.fuelMultiplier) m.fuelMultiplier *= b.fuelMultiplier
+    if (b.merchCostMultiplier) m.merchCostMultiplier *= b.merchCostMultiplier
+    if (b.songCostMultiplier) m.songCostMultiplier *= b.songCostMultiplier
+    if (b.trainingCostMultiplier)
       m.trainingCostMultiplier *= b.trainingCostMultiplier
-    if (b.baseRiskChanceMultiplier !== undefined)
+    if (b.baseRiskChanceMultiplier)
       m.baseRiskChanceMultiplier *= b.baseRiskChanceMultiplier
     m.staminaRegenBonusPerDay += b.staminaRegenBonusPerDay ?? 0
     m.travelStaminaRegen += b.travelStaminaRegen ?? 0

@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { Modal } from '../../ui/shared/Modal'
+import { Tooltip } from '../../ui/shared/Tooltip'
 import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 import { getChassisImagePrompt } from '../../utils/imageGen'
 import {
@@ -79,22 +80,30 @@ export const UpgradeConfirmModal = ({ asset, isOpen, onClose }: Props) => {
           >
             {t('ui:action_cancel')}
           </button>
-          <button
-            type='button'
-            onClick={() => {
-              if (nextTier === null) return
-              upgradeChassisTier(asset.id, nextTier)
-              onClose()
-            }}
-            disabled={blocked}
-            className='min-h-11 border-2 px-3 py-2 disabled:opacity-40'
-            style={{
-              background: 'var(--section-accent, var(--color-toxic-green))',
-              color: 'var(--color-void)'
-            }}
+          <Tooltip
+            content={
+              insufficient
+                ? t('assets:purchaseFailed.insufficient_funds')
+                : undefined
+            }
           >
-            {t('assets:actions.upgrade')}
-          </button>
+            <button
+              type='button'
+              onClick={() => {
+                if (nextTier === null) return
+                upgradeChassisTier(asset.id, nextTier)
+                onClose()
+              }}
+              disabled={blocked}
+              className='min-h-11 border-2 px-3 py-2 disabled:opacity-40'
+              style={{
+                background: 'var(--section-accent, var(--color-toxic-green))',
+                color: 'var(--color-void)'
+              }}
+            >
+              {t('assets:actions.upgrade')}
+            </button>
+          </Tooltip>
         </div>
       </div>
     </Modal>

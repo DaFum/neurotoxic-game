@@ -1165,7 +1165,9 @@ export const AssetSectionPanel = ({
             {t(`assets:kind.${kind}`)}
           </h2>
           <p className='assets-hub-control mt-1 text-sm opacity-70'>
-            {t(`assets:section.${getSectionShortLabel(kind)}.description`)}
+            {t(
+              `assets:section.${kind === 'tourbus_chassis' ? 'tourbus' : kind === 'studio_chassis' ? 'studio' : kind === 'bandhaus_chassis' ? 'bandhaus' : 'workshop'}.description`
+            )}
           </p>
           <button
             type='button'

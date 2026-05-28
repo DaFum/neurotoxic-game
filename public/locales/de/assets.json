@@ -52,6 +52,8 @@
   "actions.repair": "Reparieren",
   "actions.upgradeConfirm": "Upgrade f\u00fcr {{amount}} best\u00e4tigen?",
   "actions.repairConfirm": "Reparieren f\u00fcr {{amount}}?",
+  "actions.notDamaged": "Keine Reparaturen n\u00f6tig",
+  "actions.maxTier": "Maximales Level erreicht",
   "actions.sellConfirm": "F\u00fcr {{amount}} verkaufen?",
   "actions.removeModuleConfirm": "Modul entfernen (R\u00fcckerstattung {{amount}})?",
   "condition.good": "Gut",
