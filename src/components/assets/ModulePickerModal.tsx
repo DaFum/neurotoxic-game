@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { Modal } from '../../ui/shared/Modal'
 import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 import { getModuleImagePrompt } from '../../utils/imageGen'
@@ -22,7 +23,7 @@ interface Props {
 
 const formatLockReason = (
   reason: LockReason,
-  t: (k: string, opts?: object) => string
+  t: TFunction<readonly ['assets'], undefined>
 ): string => {
   switch (reason.kind) {
     case 'fame':
@@ -175,7 +176,7 @@ export const ModulePickerModal = ({
                   background: removalBlocked
                     ? 'transparent'
                     : 'var(--section-accent)',
-                  color: removalBlocked ? 'inherit' : 'var(--color-void)'
+                  color: removalBlocked ? 'inherit' : 'var(--color-void-black)'
                 }}
               >
                 {t('assets:actions.remove')}
@@ -231,7 +232,7 @@ export const ModulePickerModal = ({
                     {lockReasons.length > 0 && (
                       <ul
                         className='text-xs'
-                        style={{ color: 'var(--color-blood)' }}
+                        style={{ color: 'var(--color-blood-red)' }}
                       >
                         {lockReasons.map(r => (
                           <li
@@ -255,7 +256,7 @@ export const ModulePickerModal = ({
                     {insufficientFunds && (
                       <span
                         className='text-xs'
-                        style={{ color: 'var(--color-blood)' }}
+                        style={{ color: 'var(--color-blood-red)' }}
                       >
                         {t('assets:modulePicker.insufficientFunds')}
                       </span>
@@ -276,7 +277,7 @@ export const ModulePickerModal = ({
                         background: blocked
                           ? 'transparent'
                           : 'var(--section-accent)',
-                        color: blocked ? 'inherit' : 'var(--color-void)'
+                        color: blocked ? 'inherit' : 'var(--color-void-black)'
                       }}
                     >
                       {t('assets:actions.install')}

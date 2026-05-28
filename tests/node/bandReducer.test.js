@@ -50,6 +50,56 @@ describe('bandReducer', () => {
       assert.strictEqual(nextState.band.harmony, 1)
     })
 
+    it('should retain existing member numeric values for non-finite patches', () => {
+      baseState.band.members = [
+        {
+          id: 'm1',
+          name: 'Matze',
+          traits: {},
+          stamina: 80,
+          staminaMax: 120,
+          mood: 60
+        }
+      ]
+
+      const nextState = handleUpdateBand(baseState, {
+        members: [
+          {
+            id: 'm1',
+            stamina: NaN,
+            staminaMax: Infinity,
+            mood: -Infinity
+          }
+        ]
+      })
+
+      assert.strictEqual(nextState.band.members[0].stamina, 80)
+      assert.strictEqual(nextState.band.members[0].staminaMax, 120)
+      assert.strictEqual(nextState.band.members[0].mood, 60)
+    })
+
+    it('should default new member numeric values for non-finite patches', () => {
+      const nextState = handleUpdateBand(baseState, {
+        members: [
+          {
+            id: 'm2',
+            name: 'Lars',
+            stamina: NaN,
+            staminaMax: Infinity,
+            mood: -Infinity
+          }
+        ]
+      })
+
+      const newMember = nextState.band.members.find(
+        member => member.id === 'm2'
+      )
+      assert.ok(newMember)
+      assert.strictEqual(newMember.stamina, 100)
+      assert.strictEqual(newMember.staminaMax, 100)
+      assert.strictEqual(newMember.mood, 50)
+    })
+
     it('should safely ignore invalid payloads', () => {
       const invalidPayloads = [null, undefined, [], 'string', 123]
 

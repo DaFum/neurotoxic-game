@@ -68,6 +68,8 @@ import {
   createAddVenueBlacklistAction,
   createSetPendingBandHQOpenAction,
   createSetPendingSupplyStopInventoryAction,
+  dismissForeclosureNotice as dismissForeclosureNoticeAction,
+  createSetPendingRiskEventAction,
   toggleNeuroDecimator as createToggleNeuroDecimatorAction
 } from './actionCreators'
 import {
@@ -194,6 +196,12 @@ export type GameDispatchActions = {
   setPendingBandHQOpen: (isOpen: boolean) => void
   setPendingSupplyStopInventory: (
     inventory: GameState['pendingSupplyStopInventory']
+  ) => void
+  dismissForeclosureNotice: (
+    kind: Parameters<typeof dismissForeclosureNoticeAction>[0]
+  ) => void
+  setPendingRiskEvent: (
+    event: Parameters<typeof createSetPendingRiskEventAction>[0]
   ) => void
   spawnRivalBand: () => void
   moveRivalBand: () => void
@@ -570,6 +578,20 @@ export function useGameDispatchActions({
     [dispatch]
   )
 
+  const dismissForeclosureNotice = useCallback(
+    (kind: Parameters<typeof dismissForeclosureNoticeAction>[0]) =>
+      dispatch(dismissForeclosureNoticeAction(kind)),
+    [dispatch]
+  )
+
+  const setPendingRiskEvent = useCallback(
+    (event: Parameters<typeof createSetPendingRiskEventAction>[0]) => {
+      const action = createSetPendingRiskEventAction(event)
+      if (action) dispatch(action)
+    },
+    [dispatch]
+  )
+
   const endGig = useCallback(() => {
     const currentState = stateRef.current
     if (currentState.currentGig?.isPractice) {
@@ -720,6 +742,8 @@ export function useGameDispatchActions({
       updateRivalBand,
       setPendingBandHQOpen,
       setPendingSupplyStopInventory,
+      dismissForeclosureNotice,
+      setPendingRiskEvent,
       purchaseChassis,
       upgradeChassisTier,
       sellChassis,
@@ -779,6 +803,8 @@ export function useGameDispatchActions({
       updateRivalBand,
       setPendingBandHQOpen,
       setPendingSupplyStopInventory,
+      dismissForeclosureNotice,
+      setPendingRiskEvent,
       purchaseChassis,
       upgradeChassisTier,
       sellChassis,

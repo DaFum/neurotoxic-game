@@ -3,26 +3,35 @@ import { MODULE_REGISTRY } from '../../utils/assetModuleRegistry'
 import { CHASSIS_CONFIG } from '../../utils/assetConfig'
 import type {
   AssetFlavor,
+  AssetKind,
   AssetSlot,
   AcquisitionMode,
   ChassisTier,
   CrowdfundCampaign,
   Liability,
   LongTermAsset,
+  RiskEventDescriptor,
+  RiskEventType,
   SlotType
 } from '../../types/assets'
 
-const VALID_KINDS: ReadonlySet<string> = new Set([
-  'tourbus_chassis',
-  'studio_chassis',
-  'bandhaus_chassis',
-  'merch_workshop_chassis'
-])
+const VALID_KINDS: ReadonlySet<string> = new Set(Object.keys(CHASSIS_CONFIG))
 const VALID_FLAVORS: ReadonlySet<string> = new Set(['legit', 'diy'])
 const VALID_MODES: ReadonlySet<string> = new Set(['cash', 'loan', 'crowdfund'])
 const VALID_SOURCES: ReadonlySet<string> = new Set(['loan', 'crowdfund'])
 const VALID_TIERS: ReadonlySet<number> = new Set([1, 2, 3])
 const VALID_OUTCOMES: ReadonlySet<string> = new Set(['success', 'fail'])
+const VALID_RISK_EVENT_TYPES: ReadonlySet<string> = new Set([
+  'eviction',
+  'fire',
+  'theft',
+  'police_check',
+  'copyright_strike',
+  'raid',
+  'scam_or_bust',
+  'paranormal',
+  'foreclosure'
+])
 
 // Mirror of the SlotType union in src/types/assets.d.ts. Persisted payloads
 // (save files, hostile input) must be cross-checked against this allow-list
@@ -69,6 +78,43 @@ const VALID_SLOT_TYPES: ReadonlySet<string> = new Set([
 
 const isValidSlotType = (value: unknown): value is SlotType =>
   typeof value === 'string' && VALID_SLOT_TYPES.has(value)
+
+export const sanitizeAssetKinds = (raw: unknown): AssetKind[] => {
+  if (!Array.isArray(raw)) return []
+  const out: AssetKind[] = []
+  for (const item of raw) {
+    if (typeof item !== 'string' || !VALID_KINDS.has(item)) continue
+    const kind = item as AssetKind
+    if (!out.includes(kind)) out.push(kind)
+  }
+  return out
+}
+
+export const sanitizeRiskEventDescriptor = (
+  raw: unknown
+): RiskEventDescriptor | null => {
+  if (!isLooseRecord(raw)) return null
+  const clean = stripHostileKeys(raw)
+  if (typeof clean.assetId !== 'string') return null
+  if (
+    typeof clean.eventType !== 'string' ||
+    !VALID_RISK_EVENT_TYPES.has(clean.eventType)
+  ) {
+    return null
+  }
+  if (
+    typeof clean.conditionLoss !== 'number' ||
+    !Number.isFinite(clean.conditionLoss)
+  ) {
+    return null
+  }
+
+  return {
+    assetId: clean.assetId,
+    eventType: clean.eventType as RiskEventType,
+    conditionLoss: clean.conditionLoss
+  }
+}
 
 const HOSTILE_KEYS = ['__proto__', 'constructor', 'prototype']
 

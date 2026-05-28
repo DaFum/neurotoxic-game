@@ -260,6 +260,8 @@ const initialState: GameState = {
   unlocks: [],
   pendingBandHQOpen: false,
   pendingSupplyStopInventory: null,
+  pendingForeclosureNotices: [],
+  pendingRiskEvent: null,
   completedMilestones: [],
   assets: [],
   liabilities: [],
@@ -309,6 +311,8 @@ export const createInitialState = (
   unlocks: Array.isArray(persistedData.unlocks)
     ? [...persistedData.unlocks]
     : [],
+  pendingForeclosureNotices: [],
+  pendingRiskEvent: null,
   assets: [],
   liabilities: [],
   crowdfundCampaigns: [],

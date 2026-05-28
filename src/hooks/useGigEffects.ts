@@ -8,6 +8,9 @@ type GigVisualStats = {
   overload: number
 }
 
+// Deliberate test seams: these pure/DOM helpers stay exported so focused tests
+// can pin visual-effect behavior without driving the full hook lifecycle.
+
 /**
  * Calculates chaos visual filter styles based on stats.
  * @param {boolean} isToxicMode

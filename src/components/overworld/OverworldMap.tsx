@@ -145,7 +145,7 @@ const RivalMarker = ({
     <img
       src={rivalVanUrl}
       alt={label}
-      className='w-10 h-8 object-contain drop-shadow-[0_0_8px_var(--color-toxic-red)] opacity-90'
+      className='w-10 h-8 object-contain drop-shadow-[0_0_8px_var(--color-blood-red-bright)] opacity-90'
     />
   </div>
 )

@@ -3,20 +3,20 @@ import type {
   PurchaseChassisPayload,
   InstallModulePayload,
   UpgradeChassisTierPayload,
-  ResolveCrowdfundPayload,
   LongTermAsset,
   AssetSlot,
-  Liability
+  Liability,
+  AssetKind
 } from '../../types/assets'
 import {
   calculateChassisUpgradeCost,
   CHASSIS_CONFIG,
-  REPAIR_COST_PER_POINT,
-  buildDiyTier
+  REPAIR_COST_PER_POINT
 } from '../../utils/assetConfig'
 import { LOAN_PROFILES, computeAmortization } from '../../utils/loanProfiles'
 import { MODULE_REGISTRY } from '../../utils/assetModuleRegistry'
 import { hasActiveAssetAcquisition } from '../../utils/assetSelectors'
+import { finiteNumberOr } from '../../utils/gameStateUtils'
 
 export const handlePurchaseChassis = (
   state: GameState,
@@ -30,8 +30,8 @@ export const handlePurchaseChassis = (
   // CHASSIS_CONFIG is fully typed — Record<AssetKind, ChassisKindConfig> with
   // ChassisFlavorConfig nested under each flavor. Direct access without
   // `any` casts; if the action-creator validation passed, the entry exists.
-  const legitTier = CHASSIS_CONFIG[kind].legit[tier]
-  const configTier = flavor === 'legit' ? legitTier : buildDiyTier(legitTier)
+  const configTier = CHASSIS_CONFIG[kind]?.[flavor]?.[tier]
+  if (!configTier) return state
 
   // Bounds-check slotIds: if the action creator under-allocated ids, we
   // generate a deterministic synthetic id so the asset stays consistent
@@ -290,16 +290,24 @@ export const handleSellChassis = (
   const asset = state.assets.find(a => a.id === assetId)
   if (!asset) return state
 
-  const liability = state.liabilities.find(l => l.assetId === assetId)
-  const principalRemaining = liability?.principalRemaining ?? 0
+  const assetLiabilities = state.liabilities.filter(l => l.assetId === assetId)
+  const rawTotalPrincipalRemaining = assetLiabilities.reduce(
+    (sum, liability) =>
+      sum + Math.max(0, finiteNumberOr(liability.principalRemaining, 0)),
+    0
+  )
+  const totalPrincipalRemaining = Math.max(
+    0,
+    finiteNumberOr(rawTotalPrincipalRemaining, 0)
+  )
 
   const daysOwned = Math.max(0, state.player.day - asset.acquiredOnDay)
   const conditionFactor = asset.condition / 100
   const depreciation = Math.max(0.4, 1 - (daysOwned / 365) * 0.4)
 
-  const legitTier = CHASSIS_CONFIG[asset.kind].legit[asset.chassisTier]
   const configTier =
-    asset.chassisFlavor === 'legit' ? legitTier : buildDiyTier(legitTier)
+    CHASSIS_CONFIG[asset.kind]?.[asset.chassisFlavor]?.[asset.chassisTier]
+  if (!configTier) return state
 
   let moduleRefunds = 0
   asset.slots.forEach(slot => {
@@ -314,11 +322,11 @@ export const handleSellChassis = (
   const gross =
     configTier.price * conditionFactor * depreciation + moduleRefunds
 
-  if (gross < principalRemaining) {
+  if (gross < totalPrincipalRemaining) {
     return state
   }
 
-  const net = gross - principalRemaining
+  const net = gross - totalPrincipalRemaining
 
   return {
     ...state,
@@ -374,78 +382,6 @@ export const handleStartCrowdfund = (
   }
 }
 
-export const handleResolveCrowdfund = (
-  state: GameState,
-  payload: ResolveCrowdfundPayload
-): GameState => {
-  const { campaignId, outcome, newAssetId, newSlotIds } = payload
-  if (!state.crowdfundCampaigns) return state
-
-  const campaign = state.crowdfundCampaigns.find(c => c.id === campaignId)
-  if (!campaign) return state
-
-  const nextCampaigns = state.crowdfundCampaigns.filter(
-    c => c.id !== campaignId
-  )
-
-  let nextFame = state.player.fame
-  let nextAssets = state.assets || []
-
-  if (outcome === 'success') {
-    if (nextAssets.some(asset => asset.kind === campaign.assetSpec.kind)) {
-      return {
-        ...state,
-        crowdfundCampaigns: nextCampaigns
-      }
-    }
-    nextFame += campaign.fameStake
-
-    if (newAssetId && newSlotIds) {
-      const configTier =
-        CHASSIS_CONFIG[campaign.assetSpec.kind]?.[campaign.assetSpec.flavor]?.[
-          campaign.assetSpec.chassisTier
-        ]
-      if (!configTier) return state
-
-      const slots: AssetSlot[] = configTier.slots.map((slotType, i) => ({
-        // Same bounds-check as PURCHASE_CHASSIS: fall back to a deterministic
-        // synthetic id if newSlotIds is short.
-        id: newSlotIds[i]?.id ?? `${newAssetId}_slot_${i}`,
-        slotType,
-        position: { x: 0, y: 0 },
-        installedModuleId: null
-      }))
-
-      const asset: LongTermAsset = {
-        id: newAssetId,
-        kind: campaign.assetSpec.kind,
-        chassisFlavor: campaign.assetSpec.flavor,
-        chassisTier: campaign.assetSpec.chassisTier,
-        condition: 100,
-        baseUpkeep: configTier.upkeep,
-        baseDailyRevenue: configTier.revenue,
-        slots,
-        acquiredOnDay: state.player.day,
-        acquisitionMode: 'crowdfund',
-        baseRiskEventChance: configTier.baseRiskEventChance
-      }
-      nextAssets = [...nextAssets, asset]
-    }
-  } else {
-    nextFame = Math.max(0, nextFame - campaign.fameStake)
-  }
-
-  return {
-    ...state,
-    player: {
-      ...state.player,
-      fame: nextFame
-    },
-    assets: nextAssets,
-    crowdfundCampaigns: nextCampaigns
-  }
-}
-
 export const handleAssetForeclosed = (
   state: GameState,
   payload: { assetId: string }
@@ -457,32 +393,15 @@ export const handleAssetForeclosed = (
   }
 }
 
-export const handleAssetRiskEventTriggered = (
+export const handleDismissForeclosureNotice = (
   state: GameState,
-  payload: {
-    assetId: string
-    eventType: import('../../types/assets').RiskEventType
-    conditionLoss?: number
-  }
+  payload: { kind: AssetKind }
 ): GameState => {
-  if (!state.assets) return state
-  // Use the payload's severity (action creator runs it through finiteNumberOr
-  // already) and fall back to 0 if a legacy/malformed payload omits it —
-  // never NaN, never the old hard-coded 15.
-  const loss = Number.isFinite(payload.conditionLoss)
-    ? (payload.conditionLoss as number)
-    : 0
-  const nextAssets = state.assets.map(asset => {
-    if (asset.id !== payload.assetId) return asset
-    return {
-      ...asset,
-      condition: Math.max(0, Math.min(100, asset.condition - loss))
-    }
-  })
-
   return {
     ...state,
-    assets: nextAssets
+    pendingForeclosureNotices: (state.pendingForeclosureNotices ?? []).filter(
+      kind => kind !== payload.kind
+    )
   }
 }
 

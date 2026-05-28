@@ -34,8 +34,10 @@ const hasKeyOrPrefix = (obj, prefix) => {
 }
 
 test('Full locale validation tests', async t => {
-  const locales = await fs.readdir(LOCALES_ROOT)
-  const LOCALES = locales.filter(l => !l.startsWith('.'))
+  const localeEntries = await fs.readdir(LOCALES_ROOT, { withFileTypes: true })
+  const LOCALES = localeEntries
+    .filter(entry => entry.isDirectory() && !entry.name.startsWith('.'))
+    .map(entry => entry.name)
   const enFiles = await fs.readdir(path.join(LOCALES_ROOT, 'en'))
   const NAMESPACES = enFiles
     .filter(f => f.endsWith('.json'))

@@ -60,9 +60,9 @@ export const GeneratedImagePanel = ({
 
   const style: CSSProperties = {
     aspectRatio: ASPECT_CSS[aspectRatio],
-    background: 'var(--color-void)',
+    background: 'var(--color-void-black)',
     border: '2px solid var(--section-accent, var(--color-toxic-green))',
-    boxShadow: '4px 4px 0 var(--color-void)',
+    boxShadow: '4px 4px 0 var(--color-void-black)',
     position: 'relative',
     overflow: 'hidden'
   }

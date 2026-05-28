@@ -36,8 +36,8 @@ type RawSong = {
 
 /**
  * Transform a raw rhythm_songs JSON object into the SONGS_DB array format.
- * Exported so tests can invoke the transformation with controlled fixture data
- * without needing to mock the JSON module.
+ * Deliberate test seam: exported so tests can invoke the transformation with
+ * controlled fixture data without needing to mock the JSON module.
  */
 export function transformSongsData(rawSongs: Record<string, RawSong>): Song[] {
   return Object.entries(rawSongs).map(([key, song]) => {

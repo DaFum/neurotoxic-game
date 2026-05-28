@@ -195,6 +195,12 @@ export type RiskEventType =
   | 'paranormal'
   | 'foreclosure'
 
+export interface RiskEventDescriptor {
+  assetId: string
+  eventType: RiskEventType
+  conditionLoss: number
+}
+
 // === Action payloads ===
 
 export type PurchaseFailureReason =
@@ -248,14 +254,6 @@ export interface InstallModulePayload {
   slotId: string
   moduleId: string
   /** Pre-generated ids for slots added by the module via `addsSlots`. */
-  newSlotIds?: NewSlotEntry[]
-}
-
-export interface ResolveCrowdfundPayload {
-  campaignId: string
-  outcome: 'success' | 'fail'
-  /** When success: pre-generated asset id and slot ids for the newly created chassis. */
-  newAssetId?: string
   newSlotIds?: NewSlotEntry[]
 }
 

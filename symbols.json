@@ -2,6 +2,7 @@
   "knownSymbols": {
     "AcquisitionMode": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "AcquisitionMode",
         "path": "src/types/assets.d.ts",
@@ -499,6 +500,7 @@
     ],
     "AssetBoni": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "AssetBoni",
         "path": "src/types/assets.d.ts",
@@ -509,6 +511,7 @@
     ],
     "AssetFlavor": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "AssetFlavor",
         "path": "src/types/assets.d.ts",
@@ -528,6 +531,7 @@
     ],
     "AssetKind": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "AssetKind",
         "path": "src/types/assets.d.ts",
@@ -538,6 +542,7 @@
     ],
     "AssetModifiers": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "AssetModifiers",
         "path": "src/types/assets.d.ts",
@@ -548,21 +553,13 @@
     ],
     "AssetModule": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "AssetModule",
         "path": "src/types/assets.d.ts",
         "source": "local",
         "type": "interface",
         "typeOnly": true
-      }
-    ],
-    "assetRiskEventTriggered": [
-      {
-        "isDefault": false,
-        "name": "assetRiskEventTriggered",
-        "path": "src/context/assetActionCreators.ts",
-        "source": "local",
-        "type": "const"
       }
     ],
     "AssetsBottomTabs": [
@@ -604,6 +601,7 @@
     ],
     "AssetSlot": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "AssetSlot",
         "path": "src/types/assets.d.ts",
@@ -2077,6 +2075,7 @@
     ],
     "ChassisTier": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "ChassisTier",
         "path": "src/types/assets.d.ts",
@@ -2173,7 +2172,7 @@
       {
         "isDefault": false,
         "name": "checkCollision",
-        "path": "src/hooks/minigames/useRoadieLogic.ts",
+        "path": "src/utils/minigames/roadieUtils.ts",
         "source": "local",
         "type": "function"
       }
@@ -2689,15 +2688,6 @@
         "type": "const"
       }
     ],
-    "CONNECTOR_TYPES": [
-      {
-        "isDefault": false,
-        "name": "CONNECTOR_TYPES",
-        "path": "src/scenes/kabelsalat/kabelsalatConstants.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
     "ConnectorType": [
       {
         "isDefault": false,
@@ -3196,6 +3186,15 @@
         "type": "const"
       }
     ],
+    "createSetPendingRiskEventAction": [
+      {
+        "isDefault": false,
+        "name": "createSetPendingRiskEventAction",
+        "path": "src/context/actionCreators.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "createSetPendingSupplyStopInventoryAction": [
       {
         "isDefault": false,
@@ -3425,6 +3424,7 @@
     ],
     "CrowdfundCampaign": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "CrowdfundCampaign",
         "path": "src/types/assets.d.ts",
@@ -3847,6 +3847,15 @@
         "isDefault": false,
         "name": "disableCorruptionBurstAudio",
         "path": "src/utils/audio/playback.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "dismissForeclosureNotice": [
+      {
+        "isDefault": false,
+        "name": "dismissForeclosureNotice",
+        "path": "src/context/actionCreators.ts",
         "source": "local",
         "type": "const"
       }
@@ -4353,9 +4362,10 @@
     ],
     "finiteNumberOr": [
       {
+        "exportPath": "src/utils/gameStateUtils.ts",
         "isDefault": false,
         "name": "finiteNumberOr",
-        "path": "src/utils/gameStateUtils.ts",
+        "path": "src/utils/finiteNumber.ts",
         "source": "local",
         "type": "const"
       }
@@ -5492,15 +5502,6 @@
         "type": "const"
       }
     ],
-    "handleAssetRiskEventTriggered": [
-      {
-        "isDefault": false,
-        "name": "handleAssetRiskEventTriggered",
-        "path": "src/context/reducers/assetReducer.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
     "handleBloodBankDonate": [
       {
         "isDefault": false,
@@ -5604,7 +5605,7 @@
       {
         "isDefault": false,
         "name": "handleCrash",
-        "path": "src/hooks/minigames/useRoadieLogic.ts",
+        "path": "src/utils/minigames/roadieUtils.ts",
         "source": "local",
         "type": "function"
       }
@@ -5622,9 +5623,18 @@
       {
         "isDefault": false,
         "name": "handleDelivery",
-        "path": "src/hooks/minigames/useRoadieLogic.ts",
+        "path": "src/utils/minigames/roadieUtils.ts",
         "source": "local",
         "type": "function"
+      }
+    ],
+    "handleDismissForeclosureNotice": [
+      {
+        "isDefault": false,
+        "name": "handleDismissForeclosureNotice",
+        "path": "src/context/reducers/assetReducer.ts",
+        "source": "local",
+        "type": "const"
       }
     ],
     "handleError": [
@@ -5712,7 +5722,7 @@
       {
         "isDefault": false,
         "name": "handlePickup",
-        "path": "src/hooks/minigames/useRoadieLogic.ts",
+        "path": "src/utils/minigames/roadieUtils.ts",
         "source": "local",
         "type": "function"
       }
@@ -5780,15 +5790,6 @@
         "type": "const"
       }
     ],
-    "handleResolveCrowdfund": [
-      {
-        "isDefault": false,
-        "name": "handleResolveCrowdfund",
-        "path": "src/context/reducers/assetReducer.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
     "handleSellChassis": [
       {
         "isDefault": false,
@@ -5847,6 +5848,15 @@
       {
         "isDefault": false,
         "name": "handleSetPendingBandHQOpen",
+        "path": "src/context/reducers/systemReducer.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "handleSetPendingRiskEvent": [
+      {
+        "isDefault": false,
+        "name": "handleSetPendingRiskEvent",
         "path": "src/context/reducers/systemReducer.ts",
         "source": "local",
         "type": "const"
@@ -6337,6 +6347,7 @@
     ],
     "InstallModuleFailureReason": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "InstallModuleFailureReason",
         "path": "src/types/assets.d.ts",
@@ -6357,6 +6368,7 @@
     ],
     "InstallModulePayload": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "InstallModulePayload",
         "path": "src/types/assets.d.ts",
@@ -6690,6 +6702,7 @@
     ],
     "Liability": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "Liability",
         "path": "src/types/assets.d.ts",
@@ -6851,6 +6864,7 @@
     ],
     "LongTermAsset": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "LongTermAsset",
         "path": "src/types/assets.d.ts",
@@ -7309,6 +7323,7 @@
     ],
     "ModuleUnlockReq": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "ModuleUnlockReq",
         "path": "src/types/assets.d.ts",
@@ -7467,6 +7482,7 @@
     ],
     "NewSlotEntry": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "NewSlotEntry",
         "path": "src/types/assets.d.ts",
@@ -8362,6 +8378,7 @@
     ],
     "PurchaseChassisPayload": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "PurchaseChassisPayload",
         "path": "src/types/assets.d.ts",
@@ -8372,6 +8389,7 @@
     ],
     "PurchaseFailureReason": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "PurchaseFailureReason",
         "path": "src/types/assets.d.ts",
@@ -8772,25 +8790,6 @@
         "type": "const"
       }
     ],
-    "resolveCrowdfund": [
-      {
-        "isDefault": false,
-        "name": "resolveCrowdfund",
-        "path": "src/context/assetActionCreators.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
-    "ResolveCrowdfundPayload": [
-      {
-        "isDefault": false,
-        "name": "ResolveCrowdfundPayload",
-        "path": "src/types/assets.d.ts",
-        "source": "local",
-        "type": "interface",
-        "typeOnly": true
-      }
-    ],
     "resolveCrowdfundProbability": [
       {
         "isDefault": false,
@@ -9051,9 +9050,10 @@
     ],
     "RiskEventDescriptor": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "RiskEventDescriptor",
-        "path": "src/utils/assetTicks.ts",
+        "path": "src/types/assets.d.ts",
         "source": "local",
         "type": "interface",
         "typeOnly": true
@@ -9070,6 +9070,7 @@
     ],
     "RiskEventType": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "RiskEventType",
         "path": "src/types/assets.d.ts",
@@ -9180,6 +9181,16 @@
         "typeOnly": true
       }
     ],
+    "RoadieCarryingItem": [
+      {
+        "isDefault": false,
+        "name": "RoadieCarryingItem",
+        "path": "src/utils/minigames/roadieUtils.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
     "RoadieControls": [
       {
         "isDefault": false,
@@ -9220,6 +9231,16 @@
         "typeOnly": true
       }
     ],
+    "RoadieLogicState": [
+      {
+        "isDefault": false,
+        "name": "RoadieLogicState",
+        "path": "src/utils/minigames/roadieUtils.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
     "RoadiePlayerManager": [
       {
         "isDefault": false,
@@ -9246,6 +9267,26 @@
         "path": "src/scenes/RoadieRunScene.tsx",
         "source": "local",
         "type": "const"
+      }
+    ],
+    "RoadieSpawner": [
+      {
+        "isDefault": false,
+        "name": "RoadieSpawner",
+        "path": "src/utils/minigames/roadieUtils.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
+    "RoadieTrafficCar": [
+      {
+        "isDefault": false,
+        "name": "RoadieTrafficCar",
+        "path": "src/utils/minigames/roadieUtils.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
       }
     ],
     "RoadieTrafficManager": [
@@ -9340,6 +9381,15 @@
         "type": "function"
       }
     ],
+    "sanitizeAssetKinds": [
+      {
+        "isDefault": false,
+        "name": "sanitizeAssetKinds",
+        "path": "src/context/reducers/assetSanitizers.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "sanitizeAssets": [
       {
         "isDefault": false,
@@ -9372,6 +9422,15 @@
         "isDefault": false,
         "name": "sanitizeLoadedToast",
         "path": "src/context/reducers/toastSanitizers.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "sanitizeRiskEventDescriptor": [
+      {
+        "isDefault": false,
+        "name": "sanitizeRiskEventDescriptor",
+        "path": "src/context/reducers/assetSanitizers.ts",
         "source": "local",
         "type": "const"
       }
@@ -9818,6 +9877,7 @@
     ],
     "SlotType": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "SlotType",
         "path": "src/types/assets.d.ts",
@@ -11038,6 +11098,7 @@
     ],
     "UpgradeChassisTierPayload": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "UpgradeChassisTierPayload",
         "path": "src/types/assets.d.ts",
@@ -11236,6 +11297,15 @@
         "path": "src/context/useEventSystem.ts",
         "source": "local",
         "type": "function"
+      }
+    ],
+    "useForeclosureModal": [
+      {
+        "isDefault": false,
+        "name": "useForeclosureModal",
+        "path": "src/hooks/useForeclosureModal.ts",
+        "source": "local",
+        "type": "const"
       }
     ],
     "useGameActions": [

@@ -98,6 +98,40 @@ describe('playerReducer', () => {
           assert.strictEqual(newState.player.money, 100)
         })
       })
+
+      for (const value of [
+        Number.NaN,
+        Number.POSITIVE_INFINITY,
+        Number.NEGATIVE_INFINITY
+      ]) {
+        it(`should retain money for non-finite object payload ${String(value)}`, () => {
+          const newState = handleUpdatePlayer(initialState, { money: value })
+          assert.strictEqual(newState.player.money, initialState.player.money)
+          assert.strictEqual(newState.player.fame, initialState.player.fame)
+        })
+
+        it(`should retain money for non-finite function payload ${String(value)}`, () => {
+          const newState = handleUpdatePlayer(initialState, () => ({
+            money: value
+          }))
+          assert.strictEqual(newState.player.money, initialState.player.money)
+          assert.strictEqual(newState.player.fame, initialState.player.fame)
+        })
+
+        it(`should retain fame for non-finite object payload ${String(value)}`, () => {
+          const newState = handleUpdatePlayer(initialState, { fame: value })
+          assert.strictEqual(newState.player.money, initialState.player.money)
+          assert.strictEqual(newState.player.fame, initialState.player.fame)
+        })
+
+        it(`should retain fame for non-finite function payload ${String(value)}`, () => {
+          const newState = handleUpdatePlayer(initialState, () => ({
+            fame: value
+          }))
+          assert.strictEqual(newState.player.money, initialState.player.money)
+          assert.strictEqual(newState.player.fame, initialState.player.fame)
+        })
+      }
     })
 
     describe('Dispatch Paths', () => {

@@ -25,7 +25,7 @@ export const ClinicScene = () => {
         className='absolute inset-0 pointer-events-none'
         style={{
           backgroundImage:
-            'radial-gradient(circle at center, var(--color-toxic-green-5) 0%, var(--color-void-black-90) 100%)'
+            'radial-gradient(circle at center, var(--color-toxic-green-5) 0%, rgb(var(--color-void-black-rgb) / 90%) 100%)'
         }}
       />
 

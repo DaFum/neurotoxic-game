@@ -8,6 +8,7 @@ import { RNG_BASE_BUFFER, RNG_ROLLS_PER_ASSET } from '../utils/assetConfig'
 
 import { ActionTypes } from './actionTypes'
 import { getSafeUUID } from '../utils/crypto'
+import { sanitizeRiskEventDescriptor } from './reducers/assetSanitizers'
 import type { RivalBandState } from '../types'
 import {
   clampPlayerMoney,
@@ -44,6 +45,7 @@ import type {
   DarkWebLeakPayload,
   PurchaseItem
 } from '../types'
+import type { AssetKind, RiskEventDescriptor } from '../types/assets'
 
 /**
  * Sanitizes a payload by clamping listed numeric fields to non-negative values
@@ -862,6 +864,38 @@ export const createSetPendingSupplyStopInventoryAction = (
   type: ActionTypes.SET_PENDING_SUPPLY_STOP_INVENTORY,
   payload: Array.isArray(inventory) ? inventory : null
 })
+
+export const dismissForeclosureNotice = (
+  kind: AssetKind
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.DISMISS_FORECLOSURE_NOTICE }
+> => ({
+  type: ActionTypes.DISMISS_FORECLOSURE_NOTICE,
+  payload: { kind }
+})
+
+export const createSetPendingRiskEventAction = (
+  event: RiskEventDescriptor | null
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.SET_PENDING_RISK_EVENT }
+> | null => {
+  if (event === null) {
+    return {
+      type: ActionTypes.SET_PENDING_RISK_EVENT,
+      payload: null
+    }
+  }
+
+  const nextEvent = sanitizeRiskEventDescriptor(event)
+  if (!nextEvent) return null
+
+  return {
+    type: ActionTypes.SET_PENDING_RISK_EVENT,
+    payload: nextEvent
+  }
+}
 
 /**
  * Creates an action to donate blood to the void clinic.

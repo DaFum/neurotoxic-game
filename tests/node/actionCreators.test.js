@@ -44,7 +44,9 @@ import {
   createPirateBroadcastAction,
   createBloodBankDonateAction,
   createDarkWebLeakAction,
-  createMerchPressAction
+  createMerchPressAction,
+  dismissForeclosureNotice,
+  createSetPendingRiskEventAction
 } from '../../src/context/actionCreators'
 import { ActionTypes } from '../../src/context/gameReducer'
 
@@ -254,6 +256,31 @@ describe('Action Creators', () => {
           memberId: 'matze'
         }
       }
+    },
+    {
+      name: 'dismissForeclosureNotice',
+      call: () => dismissForeclosureNotice('tourbus_chassis'),
+      expected: {
+        type: ActionTypes.DISMISS_FORECLOSURE_NOTICE,
+        payload: { kind: 'tourbus_chassis' }
+      }
+    },
+    {
+      name: 'createSetPendingRiskEventAction',
+      call: () =>
+        createSetPendingRiskEventAction({
+          assetId: 'asset_1',
+          eventType: 'fire',
+          conditionLoss: 15
+        }),
+      expected: {
+        type: ActionTypes.SET_PENDING_RISK_EVENT,
+        payload: {
+          assetId: 'asset_1',
+          eventType: 'fire',
+          conditionLoss: 15
+        }
+      }
     }
   ]
 
@@ -261,6 +288,27 @@ describe('Action Creators', () => {
     describe(name, () => {
       it('creates correct action', () => {
         assert.deepStrictEqual(call(), expected)
+      })
+    })
+  })
+
+  describe('createSetPendingRiskEventAction validation', () => {
+    it('drops invalid non-null payloads instead of clearing pending state', () => {
+      assert.equal(createSetPendingRiskEventAction('bad'), null)
+      assert.equal(
+        createSetPendingRiskEventAction({
+          assetId: 'asset_1',
+          eventType: 'fire',
+          conditionLoss: Number.NEGATIVE_INFINITY
+        }),
+        null
+      )
+    })
+
+    it('creates an explicit clear action for null payloads', () => {
+      assert.deepStrictEqual(createSetPendingRiskEventAction(null), {
+        type: ActionTypes.SET_PENDING_RISK_EVENT,
+        payload: null
       })
     })
   })

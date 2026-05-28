@@ -88,14 +88,14 @@ export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
           />
 
           <div className='flex flex-col gap-3 sm:flex-row sm:gap-4'>
-            <ChoiceGroup
+            <ChoiceGroup<AssetFlavor>
               label={t('assets:flavor.legit')}
               options={FLAVORS}
               value={flavor}
               onChange={setFlavor}
               renderLabel={f => t(`assets:flavor.${f}`)}
             />
-            <ChoiceGroup
+            <ChoiceGroup<ChassisTier>
               label={t('assets:chassisAcquisition.tier')}
               options={TIERS}
               value={tier}
@@ -104,7 +104,7 @@ export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
             />
           </div>
 
-          <ChoiceGroup
+          <ChoiceGroup<AcquisitionMode>
             label={t('assets:chassisAcquisition.mode')}
             options={MODES}
             value={mode}
@@ -114,7 +114,7 @@ export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
           />
 
           {mode === 'loan' && (
-            <ChoiceGroup
+            <ChoiceGroup<LoanProfileId>
               label={t('assets:chassisAcquisition.loanProfile')}
               options={Object.keys(LOAN_PROFILES) as LoanProfileId[]}
               value={loanProfile}
@@ -152,7 +152,7 @@ export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
                 className='min-h-11 border-2 px-3 py-2 disabled:opacity-40'
                 style={{
                   background: 'var(--section-accent, var(--color-toxic-green))',
-                  color: 'var(--color-void)'
+                  color: 'var(--color-void-black)'
                 }}
               >
                 {t('assets:actions.purchase')}
@@ -161,7 +161,7 @@ export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
           </div>
 
           {diyLoanBlocked && (
-            <p style={{ color: 'var(--color-blood)' }}>
+            <p style={{ color: 'var(--color-blood-red)' }}>
               {t('assets:purchaseFailed.diy_loan_not_allowed')}
             </p>
           )}
@@ -171,7 +171,7 @@ export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
             </p>
           )}
           {insufficient && (
-            <p style={{ color: 'var(--color-blood)' }}>
+            <p style={{ color: 'var(--color-blood-red)' }}>
               {t('assets:purchaseFailed.insufficient_funds')}
             </p>
           )}
@@ -228,7 +228,7 @@ const ChoiceGroup = <T extends string | number>({
               background: isActive
                 ? 'var(--section-accent, var(--color-toxic-green))'
                 : 'transparent',
-              color: isActive ? 'var(--color-void)' : 'inherit',
+              color: isActive ? 'var(--color-void-black)' : 'inherit',
               borderColor: isActive
                 ? 'var(--section-accent, var(--color-toxic-green))'
                 : 'var(--color-toxic-green)'
