@@ -3,6 +3,7 @@
 ## Data
 
 - Avoid broad fallback chatter in `GIG`; it can mask missing scene-specific conditions.
+- Default chatter scenes are `MENU`, `OVERWORLD`, `PREGIG`, and `POSTGIG`; `GIG` needs explicit conditional entries.
 - `CHATTER_DB` entries must never use `weight: 0` — `tests/node/chatterWeights.test.js` rejects them (dead in the weighted picker). To disable a line, remove it or gate it with a `condition`.
 
 ## Locale JSON

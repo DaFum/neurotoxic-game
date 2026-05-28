@@ -9,4 +9,5 @@
 ## Long-Term Assets
 
 - `GeneratedImagePanel` is the only component that loads Pollinations URLs. UI consumers pass `prompt` and optional `sizeHint`; URL resolution, offline fallback, and the `onError` recursion guard are encapsulated. Don't bypass it with raw `<img src={resolveGenImageUrl(...)}>` — the panel handles cleanup and the `--section-accent`-aware border.
+- `GeneratedImagePanel` fallback/background styles must use defined tokens such as `--color-void-black`; `--color-void` is not defined.
 - Section views (registered in `src/components/assets/sectionRegistry.ts`) set `--section-accent` once on the scene root; downstream components in `src/components/assets/` read it via `var(--section-accent, var(--color-toxic-green))`. No prop drilling.

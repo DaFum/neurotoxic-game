@@ -10,7 +10,7 @@
 
 ## Long-Term Assets
 
-- Asset tests live in `assetsReducer`/`assetReducer`, `assetTicks`, `assetSelectors`, `assetSanitizers`, `assetActionCreators`, `assetConfig`, `assetImagePrompts`, `assetModuleRegistry`, `loanProfiles`, `seededRng`, `economyAssetModifiers`, `advanceDayAssetIntegration`, and `assetGoldenPath`. RNG-sensitive tests construct `dayRngStream` arrays explicitly so the test can pin which assets trigger risk events.
+- Asset tests live in `assetReducer`, `assetTicks`, `assetSelectors`, `assetSanitizers`, `assetActionCreators`, `assetConfig`, `assetImagePrompts`, `assetModuleRegistry`, `loanProfiles`, `seededRng`, `economyAssetModifiers`, `advanceDayAssetIntegration`, and `assetGoldenPath`. RNG-sensitive tests construct `dayRngStream` arrays explicitly so the test can pin which assets trigger risk events.
 - `assetModuleRegistry.test.js` enforces the anti-stacking and prompt-key invariants at build time. Any new module added by section plans must pass these.
 - Tests that mutate `MODULE_REGISTRY` / `CHASSIS_CONFIG` / `MODULE_PROMPTS` (e.g., `assetReducer.test.js`, `assetActionCreators.test.js`, `assetGoldenPath.test.js`) MUST snapshot the original values (`structuredClone`) at file scope and restore via `after(...)` — these are module-scoped mutable maps shared across the test process, so mutations leak between sibling test files without a teardown.
 - Prompt-key membership checks use `Object.hasOwn(MODULE_PROMPTS, m.imagePromptKey)` — not `assert.ok(MODULE_PROMPTS[key], ...)`. The truthy form fails on valid but falsy values, and `Object.hasOwn` is the project convention for untrusted property checks.

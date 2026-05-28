@@ -7,12 +7,14 @@
 - `AssetsStatusStrip` shows liquidity, net daily obligations, outstanding debt, and active crowdfund campaigns. It computes obligations via `getTotalDailyObligations` and debt via `getTotalDebt` from `src/utils/assetSelectors.ts` — do not recompute the formulas inline.
 - `AssetsBottomTabs` owns the section tablist. Tabs and the active tabpanel are linked via `id={`assets-tab-${kind}`}` ↔ `aria-controls`/`aria-labelledby`. Preserve those ids when restructuring the hub.
 - Slot hotspots use the shared `--color-hotspot-bg` token (defined in `src/index.css`) for their empty-state background. Don't reintroduce `rgba(0,0,0,0.5)` literals in TSX.
+- Asset UI styles must use defined color tokens such as `--color-void-black` and `--color-blood-red`; `--color-void` and `--color-blood` are not aliases in `src/index.css`.
 - `AssetSectionPanel` and `AssetSectionDeck` provide the shared section shell; section entry points should stay thin wrappers that pass `kind` and a hero renderer. `AssetSlotActionList` is the compact slot-management surface beside/below the hero.
 - Mobile layout: section navigation is the sticky bottom tab bar; labels must wrap without horizontal overflow. The trailer overlay stacks beneath the van under `md`. Section views should be authored relative-positioned so trailer-like sub-panels can collapse into flow on small viewports.
 
 ## Shared Modals
 
 - `ChassisAcquisitionModal`, `LoanProfileModal`, `CrowdfundSetupModal`, `CrowdfundCampaignCard`, `LiabilitiesPanel`, `RepairConfirmModal`, `SellConfirmModal`, `RiskEventModal`, `ForeclosureModal`, and `ModulePickerModal` are sektion-agnostic. They take an asset (or slot) via props and dispatch through `useGameActions()` helpers (`purchaseChassis`, `installModule`, `sellChassis`, etc.).
+- `RiskEventModal` and `ForeclosureModal` are reusable surfaces, not automatically mounted by the daily tick today. If wiring richer feedback, add explicit owner state in the hub/scene instead of assuming `processLiabilityTick` or `rollAssetRiskEvents` opens a modal.
 - DIY+loan is disabled in the UI (`ChassisAcquisitionModal`) as the first defense; the action creator returns `PURCHASE_CHASSIS_FAILED` as the second.
 - `SellConfirmModal` previews the depreciation formula matching `handleSellChassis`. Keep them aligned — the reducer remains authoritative.
 - `ModulePickerModal` filters `getModulePoolForAsset` by the active slot's `slotType`, surfaces `lockReasons` as structured badges, and blocks install on `exclusiveWithGroup` conflicts. It subscribes to narrow state slices (`player.fame`, `player.money`, `social.scenePresence`, `activeStoryFlags`, `band`, `assets`) and rebuilds a synthetic composite for `getModulePoolForAsset` so the modal does NOT re-render on every unrelated state change. Add a new slice to the selector set when adding a new `LockReason` branch.

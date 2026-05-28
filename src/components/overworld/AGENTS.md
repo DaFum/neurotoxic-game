@@ -8,6 +8,7 @@
 ## Map State
 
 - `cityTraits` for map nodes must be derived from `normalizeVenueId(node.venueId ?? node.venue)` and `getCityKeyFromVenueId(...)` from `src/utils/mapGenerator.ts`. `node.venue.city` does not exist; an empty city key should pass `undefined`.
+- `OverworldMap` SVG/CSS fallbacks must use defined brand tokens from `BRAND_COLOR_HEX` / `src/index.css`. `--color-toxic-red` is not a valid token; use an existing red token such as `--color-blood-red` or add the new token to `brandColors.ts` and CSS together.
 
 ## Modals
 
