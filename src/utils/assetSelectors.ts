@@ -5,7 +5,8 @@ import type {
   AssetModifiers,
   AssetModule,
   LongTermAsset,
-  ModuleUnlockReq
+  ModuleUnlockReq,
+  Liability
 } from '../types/assets'
 import { MODULE_REGISTRY } from './assetModuleRegistry'
 import { calculateGuaranteedDailyCost } from './economyEngine'
@@ -474,4 +475,21 @@ export const getModulePoolForAsset = (
 
 export const getTotalDebt = (state: GameState): number => {
   return state.liabilities.reduce((sum, l) => sum + l.principalRemaining, 0)
+}
+
+let lastLiabilitiesForMap: Liability[] | null = null
+let liabilitiesMapCache: Map<string, Liability> | null = null
+
+export const selectLiabilitiesMap = (
+  state: GameState
+): Map<string, Liability> => {
+  if (state.liabilities !== lastLiabilitiesForMap || !liabilitiesMapCache) {
+    lastLiabilitiesForMap = state.liabilities
+    const map = new Map<string, Liability>()
+    for (const l of state.liabilities) {
+      map.set(l.assetId, l)
+    }
+    liabilitiesMapCache = map
+  }
+  return liabilitiesMapCache
 }
