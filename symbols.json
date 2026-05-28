@@ -3833,6 +3833,15 @@
         "type": "const"
       }
     ],
+    "dismissForeclosureNotice": [
+      {
+        "isDefault": false,
+        "name": "dismissForeclosureNotice",
+        "path": "src/context/actionCreators.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "Dispatch": [
       {
         "isDefault": false,
@@ -5598,6 +5607,15 @@
         "path": "src/utils/minigames/roadieUtils.ts",
         "source": "local",
         "type": "function"
+      }
+    ],
+    "handleDismissForeclosureNotice": [
+      {
+        "isDefault": false,
+        "name": "handleDismissForeclosureNotice",
+        "path": "src/context/reducers/assetReducer.ts",
+        "source": "local",
+        "type": "const"
       }
     ],
     "handleError": [
@@ -9325,6 +9343,15 @@
         "type": "function"
       }
     ],
+    "sanitizeAssetKinds": [
+      {
+        "isDefault": false,
+        "name": "sanitizeAssetKinds",
+        "path": "src/context/reducers/assetSanitizers.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "sanitizeAssets": [
       {
         "isDefault": false,
@@ -11221,6 +11248,15 @@
         "path": "src/context/useEventSystem.ts",
         "source": "local",
         "type": "function"
+      }
+    ],
+    "useForeclosureModal": [
+      {
+        "isDefault": false,
+        "name": "useForeclosureModal",
+        "path": "src/hooks/useForeclosureModal.ts",
+        "source": "local",
+        "type": "const"
       }
     ],
     "useGameActions": [

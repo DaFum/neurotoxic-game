@@ -3,6 +3,7 @@ import type { RhythmSetlistEntry } from './rhythmGame'
 import type { GAME_PHASES } from '../context/gameConstants'
 import type { UpdateSocialPayload } from './social'
 import type { PurchaseItem } from './components'
+import type { AssetKind } from './assets'
 
 export type RelationshipChange = {
   member1: string
@@ -103,6 +104,7 @@ export interface GameState {
   unlocks: string[]
   pendingBandHQOpen: boolean
   pendingSupplyStopInventory: PurchaseItem[] | null
+  pendingForeclosureNotices: AssetKind[]
   completedMilestones: string[]
   // Long-term asset system (see docs/superpowers/specs/2026-05-24-long-term-assets-design.md)
   assets: import('./assets').LongTermAsset[]
@@ -206,6 +208,7 @@ export type GameAction =
       ActionTypes['SET_PENDING_SUPPLY_STOP_INVENTORY'],
       PurchaseItem[] | null
     >
+  | Action<ActionTypes['DISMISS_FORECLOSURE_NOTICE'], { kind: AssetKind }>
   // Long-term assets (Plan 1)
   | Action<
       ActionTypes['PURCHASE_CHASSIS'],

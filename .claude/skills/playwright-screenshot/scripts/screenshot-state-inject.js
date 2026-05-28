@@ -190,6 +190,7 @@ export const BASE_STATE = {
   unlocks: [],
   pendingBandHQOpen: false,
   pendingSupplyStopInventory: null,
+  pendingForeclosureNotices: [],
   completedMilestones: [],
   // Long-term asset system (Plan 1 Task 7)
   assets: [],

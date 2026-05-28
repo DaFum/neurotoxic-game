@@ -44,7 +44,8 @@ import {
   createPirateBroadcastAction,
   createBloodBankDonateAction,
   createDarkWebLeakAction,
-  createMerchPressAction
+  createMerchPressAction,
+  dismissForeclosureNotice
 } from '../../src/context/actionCreators'
 import { ActionTypes } from '../../src/context/gameReducer'
 
@@ -253,6 +254,14 @@ describe('Action Creators', () => {
           contrabandId: 'c_void_energy',
           memberId: 'matze'
         }
+      }
+    },
+    {
+      name: 'dismissForeclosureNotice',
+      call: () => dismissForeclosureNotice('tourbus_chassis'),
+      expected: {
+        type: ActionTypes.DISMISS_FORECLOSURE_NOTICE,
+        payload: { kind: 'tourbus_chassis' }
       }
     }
   ]

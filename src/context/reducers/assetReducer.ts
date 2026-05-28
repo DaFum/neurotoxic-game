@@ -5,7 +5,8 @@ import type {
   UpgradeChassisTierPayload,
   LongTermAsset,
   AssetSlot,
-  Liability
+  Liability,
+  AssetKind
 } from '../../types/assets'
 import {
   calculateChassisUpgradeCost,
@@ -380,6 +381,18 @@ export const handleAssetForeclosed = (
     ...state,
     assets: state.assets.filter(a => a.id !== payload.assetId),
     liabilities: state.liabilities.filter(l => l.assetId !== payload.assetId)
+  }
+}
+
+export const handleDismissForeclosureNotice = (
+  state: GameState,
+  payload: { kind: AssetKind }
+): GameState => {
+  return {
+    ...state,
+    pendingForeclosureNotices: (state.pendingForeclosureNotices ?? []).filter(
+      kind => kind !== payload.kind
+    )
   }
 }
 

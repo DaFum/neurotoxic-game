@@ -553,6 +553,12 @@ test('systemReducer - LOAD_GAME', async t => {
       setlist: ['song-a', 7, { songId: 'song-b' }, null],
       activeStoryFlags: ['flag-a', 4],
       pendingEvents: ['event-a', {}],
+      pendingForeclosureNotices: [
+        'tourbus_chassis',
+        'bad_kind',
+        'tourbus_chassis',
+        7
+      ],
       eventCooldowns: ['cooldown-a', false],
       reputationByRegion: {
         berlin: 10,
@@ -596,6 +602,7 @@ test('systemReducer - LOAD_GAME', async t => {
     assert.deepEqual(nextState.setlist, ['song-a', { songId: 'song-b' }])
     assert.deepEqual(nextState.activeStoryFlags, ['flag-a'])
     assert.deepEqual(nextState.pendingEvents, ['event-a'])
+    assert.deepEqual(nextState.pendingForeclosureNotices, ['tourbus_chassis'])
     assert.deepEqual(nextState.eventCooldowns, ['cooldown-a'])
     assert.deepEqual(nextState.reputationByRegion, { berlin: 10 })
     assert.deepEqual(nextState.npcs, {

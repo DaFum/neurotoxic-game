@@ -2,9 +2,11 @@ import { useState, type CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameActions } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
+import { useForeclosureModal } from '../../hooks/useForeclosureModal'
 import type { AssetKind } from '../../types/assets'
 import { AssetsBottomTabs } from './AssetsBottomTabs'
 import { AssetsStatusStrip } from './AssetsStatusStrip'
+import { ForeclosureModal } from './ForeclosureModal'
 import { ASSET_SECTION_TABS } from './sectionTabs'
 import { DEFAULT_SECTION_ACCENT, SECTION_VIEWS } from './sectionRegistry'
 import './assetsHub.css'
@@ -25,12 +27,16 @@ import './assetsHub.css'
 export const AssetsScene = () => {
   const { t } = useTranslation(['assets'])
   const { changeScene } = useGameActions()
+  const foreclosureModal = useForeclosureModal()
   const [active, setActive] = useState<AssetKind>('tourbus_chassis')
 
   const activeView = SECTION_VIEWS[active]
   const accent = activeView?.accent ?? DEFAULT_SECTION_ACCENT
   const activeTab =
     ASSET_SECTION_TABS.find(tab => tab.key === active) ?? ASSET_SECTION_TABS[0]
+  const foreclosureAssetLabel = foreclosureModal.currentKind
+    ? t(`assets:kind.${foreclosureModal.currentKind}`)
+    : undefined
 
   // The CSS variable cascades to every descendant via inline style; modals
   // and panels nested under the scene root read it via
@@ -80,6 +86,12 @@ export const AssetsScene = () => {
       </section>
 
       <AssetsBottomTabs active={active} onSelect={setActive} />
+
+      <ForeclosureModal
+        isOpen={foreclosureModal.isOpen}
+        assetLabel={foreclosureAssetLabel}
+        onClose={foreclosureModal.dismiss}
+      />
     </div>
   )
 }

@@ -3,6 +3,7 @@ import { MODULE_REGISTRY } from '../../utils/assetModuleRegistry'
 import { CHASSIS_CONFIG } from '../../utils/assetConfig'
 import type {
   AssetFlavor,
+  AssetKind,
   AssetSlot,
   AcquisitionMode,
   ChassisTier,
@@ -69,6 +70,17 @@ const VALID_SLOT_TYPES: ReadonlySet<string> = new Set([
 
 const isValidSlotType = (value: unknown): value is SlotType =>
   typeof value === 'string' && VALID_SLOT_TYPES.has(value)
+
+export const sanitizeAssetKinds = (raw: unknown): AssetKind[] => {
+  if (!Array.isArray(raw)) return []
+  const out: AssetKind[] = []
+  for (const item of raw) {
+    if (typeof item !== 'string' || !VALID_KINDS.has(item)) continue
+    const kind = item as AssetKind
+    if (!out.includes(kind)) out.push(kind)
+  }
+  return out
+}
 
 const HOSTILE_KEYS = ['__proto__', 'constructor', 'prototype']
 

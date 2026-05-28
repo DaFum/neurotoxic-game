@@ -44,6 +44,7 @@ import type {
   DarkWebLeakPayload,
   PurchaseItem
 } from '../types'
+import type { AssetKind } from '../types/assets'
 
 /**
  * Sanitizes a payload by clamping listed numeric fields to non-negative values
@@ -861,6 +862,16 @@ export const createSetPendingSupplyStopInventoryAction = (
 > => ({
   type: ActionTypes.SET_PENDING_SUPPLY_STOP_INVENTORY,
   payload: Array.isArray(inventory) ? inventory : null
+})
+
+export const dismissForeclosureNotice = (
+  kind: AssetKind
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.DISMISS_FORECLOSURE_NOTICE }
+> => ({
+  type: ActionTypes.DISMISS_FORECLOSURE_NOTICE,
+  payload: { kind }
 })
 
 /**

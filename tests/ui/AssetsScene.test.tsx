@@ -3,13 +3,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AssetsScene } from '../../src/components/assets/AssetsScene'
 
 const mockChangeScene = vi.fn()
+const mockDismissForeclosureNotice = vi.fn()
 const mockState = vi.hoisted(() => ({
   player: { money: 1000 },
   band: {},
   social: {},
   assets: [],
   liabilities: [],
-  crowdfundCampaigns: []
+  crowdfundCampaigns: [],
+  pendingForeclosureNotices: []
 }))
 
 const pendingTourbusCampaign = {
@@ -29,7 +31,10 @@ const pendingTourbusCampaign = {
 }
 
 vi.mock('../../src/context/GameState', () => ({
-  useGameActions: () => ({ changeScene: mockChangeScene }),
+  useGameActions: () => ({
+    changeScene: mockChangeScene,
+    dismissForeclosureNotice: mockDismissForeclosureNotice
+  }),
   useGameSelector: (selector: (state: typeof mockState) => unknown) =>
     selector(mockState)
 }))
@@ -76,8 +81,12 @@ vi.mock('react-i18next', () => ({
         'assets:hub.actions.acquire': 'Acquire',
         'assets:hub.finance.title': 'Finance',
         'assets:hub.finance.noCampaigns': 'No active campaigns',
+        'assets:foreclosure': 'Foreclosure',
+        'ui:closeModal': 'Close modal',
+        'ui:action_close': 'Close',
         'assets:purchaseFailed.acquisition_already_active':
           'Acquisition already in progress',
+        'assets:liability.foreclosureNotice': 'Foreclosure notice issued.',
         'assets:liability.paymentDue': 'Payment due: -'
       }
       return labels[key] ?? key
@@ -91,7 +100,9 @@ describe('AssetsScene', () => {
     mockState.assets = []
     mockState.liabilities = []
     mockState.crowdfundCampaigns = []
+    mockState.pendingForeclosureNotices = []
     mockChangeScene.mockClear()
+    mockDismissForeclosureNotice.mockClear()
   })
 
   it('renders mobile shell with preserved tab ids and panel ids', () => {
@@ -127,5 +138,20 @@ describe('AssetsScene', () => {
     expect(
       screen.getByText('Acquisition already in progress')
     ).toBeInTheDocument()
+  })
+
+  it('renders and dismisses the pending foreclosure notice', () => {
+    mockState.pendingForeclosureNotices = ['tourbus_chassis']
+
+    render(<AssetsScene />)
+
+    expect(screen.getByRole('dialog', { name: 'Foreclosure' })).toBeVisible()
+    expect(
+      screen.getByText('Foreclosure notice issued. (Tourbus)')
+    ).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }))
+
+    expect(mockDismissForeclosureNotice).toHaveBeenCalledWith('tourbus_chassis')
   })
 })

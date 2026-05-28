@@ -70,6 +70,7 @@ import { getSafeRandom } from '../../utils/crypto'
 import { ALLOWED_TOAST_TYPES, sanitizeLoadedToast } from './toastSanitizers'
 import {
   sanitizeAssets,
+  sanitizeAssetKinds,
   sanitizeCrowdfundCampaigns,
   sanitizeLiabilities,
   sanitizeRngSeed
@@ -1460,6 +1461,9 @@ export const handleLoadGame = (
     setlist: sanitizeSetlist(loadedState.setlist),
     activeStoryFlags: sanitizeStringArray(loadedState.activeStoryFlags),
     pendingEvents: sanitizeStringArray(loadedState.pendingEvents),
+    pendingForeclosureNotices: sanitizeAssetKinds(
+      loadedState.pendingForeclosureNotices
+    ),
     eventCooldowns: sanitizeStringArray(loadedState.eventCooldowns),
     activeEvent: sanitizeActiveEvent(loadedState.activeEvent),
     toasts: sanitizeToasts(loadedState.toasts),
@@ -1768,7 +1772,22 @@ export const handleAdvanceDay = (
   }
 ): GameState => {
   let nextStatePre = processAssetTick(state)
-  nextStatePre = processLiabilityTick(nextStatePre)
+  const liabilityTick = processLiabilityTick(nextStatePre)
+  nextStatePre = liabilityTick.state
+  if (liabilityTick.foreclosedKinds.length > 0) {
+    const pendingForeclosureNotices = [
+      ...(nextStatePre.pendingForeclosureNotices ?? [])
+    ]
+    for (const kind of liabilityTick.foreclosedKinds) {
+      if (!pendingForeclosureNotices.includes(kind)) {
+        pendingForeclosureNotices.push(kind)
+      }
+    }
+    nextStatePre = {
+      ...nextStatePre,
+      pendingForeclosureNotices
+    }
+  }
   nextStatePre = processCrowdfundTick(nextStatePre)
   if (payload?.dayRngStream) {
     const { state: s, events } = rollAssetRiskEvents(

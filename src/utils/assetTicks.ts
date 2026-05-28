@@ -4,6 +4,7 @@ import type {
   CrowdfundCampaign,
   Liability,
   LongTermAsset,
+  AssetKind,
   RiskEventType
 } from '../types/assets'
 import {
@@ -129,8 +130,12 @@ export const processAssetTick = (state: GameState): GameState => {
  * Settles liability payments. On shortfall, increments defaultCounter; on
  * 7-day default, removes the asset (foreclosure) and applies a fame penalty.
  */
-export const processLiabilityTick = (state: GameState): GameState => {
-  if (!state.liabilities || state.liabilities.length === 0) return state
+export const processLiabilityTick = (
+  state: GameState
+): { state: GameState; foreclosedKinds: AssetKind[] } => {
+  if (!state.liabilities || state.liabilities.length === 0) {
+    return { state, foreclosedKinds: [] }
+  }
   let currentMoney = state.player.money
   let nextFame = state.player.fame
   const nextLiabilities: Liability[] = []
@@ -174,12 +179,24 @@ export const processLiabilityTick = (state: GameState): GameState => {
   const finalLiabilities = nextLiabilities.filter(
     l => !foreclosedAssetIds.has(l.assetId)
   )
+  const foreclosedKinds: AssetKind[] = []
+  for (const asset of state.assets || []) {
+    if (
+      foreclosedAssetIds.has(asset.id) &&
+      !foreclosedKinds.includes(asset.kind)
+    ) {
+      foreclosedKinds.push(asset.kind)
+    }
+  }
 
   return {
-    ...state,
-    player: { ...state.player, money: currentMoney, fame: nextFame },
-    assets: nextAssets,
-    liabilities: finalLiabilities
+    state: {
+      ...state,
+      player: { ...state.player, money: currentMoney, fame: nextFame },
+      assets: nextAssets,
+      liabilities: finalLiabilities
+    },
+    foreclosedKinds
   }
 }
 
