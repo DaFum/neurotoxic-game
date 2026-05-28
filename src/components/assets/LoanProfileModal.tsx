@@ -12,8 +12,8 @@ interface Props {
 
 /**
  * Standalone profile picker. The acquisition modal embeds its own profile
- * select inline; this modal stays available as a reusable surface (e.g., for
- * a future refinance flow) without duplicating the embedded UI.
+ * select inline; this modal is intentionally kept as a reusable asset-finance
+ * surface for a future refinance flow without duplicating the embedded UI.
  */
 export const LoanProfileModal = ({ isOpen, onClose, onSelect }: Props) => {
   const { t } = useTranslation(['assets'])

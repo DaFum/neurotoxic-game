@@ -333,11 +333,11 @@ function scheduleSongPlayback(
  * @param {object} song - The song object containing `notes` and `bpm`.
  * @param {number} [delay=0] - Delay in seconds before starting.
  */
-function toFiniteNumber(v: unknown, fallback: number): number {
+function parseFiniteNumber(v: unknown, fallback: number): number {
   if (isFiniteNumber(v)) return v
   if (typeof v === 'string' && v.trim() !== '') {
     const num = Number(v)
-    if (!Number.isNaN(num)) return num
+    if (Number.isFinite(num)) return num
   }
   return fallback
 }
@@ -386,8 +386,8 @@ function getSongContext(song: unknown) {
 }
 
 function parseSongParameters(sObj: Record<string, unknown>) {
-  const bpm = Math.max(1, toFiniteNumber(sObj.bpm, 120))
-  const tpb = Math.max(1, toFiniteNumber(sObj.tpb, 480))
+  const bpm = Math.max(1, parseFiniteNumber(sObj.bpm, 120))
+  const tpb = Math.max(1, parseFiniteNumber(sObj.tpb, 480))
   const notes = Array.isArray(sObj.notes)
     ? (sObj.notes as SongLikeNote[])
     : undefined

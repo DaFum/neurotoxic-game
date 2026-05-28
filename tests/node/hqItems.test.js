@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { HQ_ITEMS } from '../../src/data/hqItems'
+import { ALL_HQ_ITEMS, HQ_ITEMS } from '../../src/data/hqItems'
 
 describe('HQ Items Data Integrity', () => {
   const itemIds = new Set()
@@ -77,5 +77,15 @@ describe('HQ Items Data Integrity', () => {
     HQ_ITEMS.hq.forEach(item => {
       validateItem(item, 'hq')
     })
+  })
+
+  it('exposes ALL_HQ_ITEMS as the flat item iteration contract', () => {
+    const flattened = Object.values(HQ_ITEMS).flat()
+
+    assert.equal(ALL_HQ_ITEMS.length, flattened.length)
+    assert.deepEqual(
+      ALL_HQ_ITEMS.map(item => item.id).sort(),
+      flattened.map(item => item.id).sort()
+    )
   })
 })

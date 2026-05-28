@@ -4362,9 +4362,10 @@
     ],
     "finiteNumberOr": [
       {
+        "exportPath": "src/utils/gameStateUtils.ts",
         "isDefault": false,
         "name": "finiteNumberOr",
-        "path": "src/utils/gameStateUtils.ts",
+        "path": "src/utils/finiteNumber.ts",
         "source": "local",
         "type": "const"
       }
