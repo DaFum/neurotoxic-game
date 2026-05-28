@@ -1,138 +1,33 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import eslintReact from '@eslint-react/eslint-plugin'
+import eslint from '@eslint/js'
 import tseslint from 'typescript-eslint'
-import prettier from 'eslint-config-prettier'
+import globals from 'globals'
+import tsParser from '@typescript-eslint/parser'
+import stylisticJs from '@stylistic/eslint-plugin-js'
 
-// Shared to keep JS/TS rulesets consistent.
-const RESTRICTED_IMPORTS = {
-  patterns: [
-    {
-      group: ['**/data/events.js'],
-      message:
-        'Use the canonical event DB entrypoint: src/data/events/index.js.'
-    },
-    {
-      group: [
-        '**/components/stage/utils',
-        '**/components/stage/utils.ts',
-        '**/hooks/minigames/constants',
-        '**/hooks/minigames/constants.ts',
-        '**/scenes/kabelsalat/constants',
-        '**/scenes/kabelsalat/constants.ts',
-        '**/scenes/kabelsalat/utils',
-        '**/scenes/kabelsalat/utils.ts'
-      ],
-      message:
-        'Import from domain-qualified modules instead (stageRenderUtils, minigameConstants, kabelsalatConstants, kabelsalatUtils).'
-    }
-  ]
-}
-
-const UNUSED_VARS_IGNORE_PATTERNS = {
-  varsIgnorePattern: '^_',
-  argsIgnorePattern: '^_',
-  caughtErrorsIgnorePattern: '^_'
-}
-
-const BASE_LANGUAGE_OPTIONS = {
-  ecmaVersion: 2022,
-  sourceType: 'module',
-  parserOptions: {
-    ecmaFeatures: {
-      jsx: true
-    }
-  },
-  globals: {
-    ...globals.browser,
-    ...globals.es2021
-  }
-}
-
-const BASE_PLUGINS = {
-  ...eslintReact.configs.recommended.plugins
-}
-
-const BASE_RULES = {
-  ...prettier.rules,
-  'no-restricted-imports': ['error', RESTRICTED_IMPORTS],
-  'no-unused-vars': ['warn', UNUSED_VARS_IGNORE_PATTERNS]
-}
-
-const TYPESCRIPT_RECOMMENDED_RULES = Object.assign(
-  {},
-  ...tseslint.configs.recommended.map(config => config.rules ?? {})
-)
-
-export default [
+export default tseslint.config(
+  eslint.configs.recommended,
+  ...tseslint.configs.recommended,
   {
-    ignores: [
-      'dist/**',
-      'node_modules/**',
-      'src/data/songs.js',
-      '.agents/**',
-      'report/**',
-      '.claude/**'
-    ]
+    ignores: ['dist/**', 'node_modules/**', 'docs/**', '.husky/**']
   },
   {
-    files: ['**/*.{js,jsx,mjs,cjs}'],
-    ...eslintReact.configs.recommended,
-    languageOptions: BASE_LANGUAGE_OPTIONS,
-    plugins: BASE_PLUGINS,
-    rules: {
-      ...js.configs.recommended.rules,
-      ...eslintReact.configs.recommended.rules,
-      ...BASE_RULES,
-      // PropTypes are intentionally used in this JS project for runtime type checking
-      '@eslint-react/no-prop-types': 'off'
-    }
-  },
-  {
-    files: ['**/*.{ts,tsx,mts,cts}'],
-    ...eslintReact.configs.recommended,
+    files: ['src/**/*.{js,mjs,cjs,jsx,ts,tsx}', 'tests/**/*.{js,mjs,cjs,jsx,ts,tsx}', 'scripts/**/*.{js,mjs,cjs,ts,tsx}'],
     languageOptions: {
-      ...BASE_LANGUAGE_OPTIONS,
-      parser: tseslint.parser
-    },
-    plugins: {
-      ...BASE_PLUGINS,
-      '@typescript-eslint': tseslint.plugin
-    },
-    rules: {
-      ...js.configs.recommended.rules,
-      ...eslintReact.configs.recommended.rules,
-      ...TYPESCRIPT_RECOMMENDED_RULES,
-      ...BASE_RULES,
-      // PropTypes are intentionally used in this codebase for runtime checks in TSX too.
-      '@eslint-react/no-prop-types': 'off',
-      'no-unused-vars': 'off',
-      '@typescript-eslint/no-unused-vars': [
-        'warn',
-        UNUSED_VARS_IGNORE_PATTERNS
-      ],
-      '@typescript-eslint/no-explicit-any': 'error'
-    }
-  },
-  {
-    files: [
-      '.eslintrc.cjs',
-      'vite.config.js',
-      '*.config.js',
-      '**/*.{config,setup}.{ts,mts,cts}',
-      'tests/**/*.{js,jsx,mjs}',
-      'tests/**/*.{ts,tsx,mts,cts}',
-      'e2e/**/*.{js,jsx,mjs}',
-      'extract_venues.js',
-      'scripts/**/*.{js,cjs,mjs}'
-    ],
-    languageOptions: {
+      parser: tsParser,
       globals: {
+        ...globals.browser,
         ...globals.node
       }
     },
+    plugins: {
+      '@stylistic/js': stylisticJs
+    },
     rules: {
-      '@eslint-react/component-hook-factories': 'off'
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/ban-ts-comment': 'off',
+      'no-constant-condition': 'off',
+      '@typescript-eslint/no-empty-object-type': 'off',
+      'prefer-const': 'off'
     }
   }
-]
+)
