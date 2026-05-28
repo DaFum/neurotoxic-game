@@ -13,14 +13,14 @@ import {
   handleSellChassis,
   handleRepairChassis,
   handleStartCrowdfund,
-  handleResolveCrowdfund,
   handleAssetForeclosed,
-  handleAssetRiskEventTriggered,
+  handleDismissForeclosureNotice,
   handleAssetFailedAction
 } from './reducers/assetReducer'
 import { logger } from '../utils/logger'
 import { assertNever } from '../utils/assertNever'
 import type { GameAction, GameState } from '../types'
+import type { AssetKind } from '../types/assets'
 import { handleChangeScene } from './reducers/sceneReducer'
 import { handleUpdatePlayer } from './reducers/playerReducer'
 import { bandReducer } from './reducers/bandReducer'
@@ -73,7 +73,8 @@ import {
   handleAdvanceDay,
   handleAddUnlock,
   handleSetPendingBandHQOpen,
-  handleSetPendingSupplyStopInventory
+  handleSetPendingSupplyStopInventory,
+  handleSetPendingRiskEvent
 } from './reducers/systemReducer'
 import { handleTradeVoidItem } from './reducers/tradeReducer'
 import {
@@ -170,6 +171,8 @@ const reducerMap: ReducerMap = {
   [ActionTypes.SET_PENDING_BANDHQ_OPEN]: handleSetPendingBandHQOpen,
   [ActionTypes.SET_PENDING_SUPPLY_STOP_INVENTORY]:
     handleSetPendingSupplyStopInventory,
+  [ActionTypes.DISMISS_FORECLOSURE_NOTICE]: handleDismissForeclosureNotice,
+  [ActionTypes.SET_PENDING_RISK_EVENT]: handleSetPendingRiskEvent,
   [ActionTypes.PURCHASE_CHASSIS]: handlePurchaseChassis,
   [ActionTypes.PURCHASE_CHASSIS_FAILED]: handleAssetFailedAction,
   [ActionTypes.UPGRADE_CHASSIS_TIER]: handleUpgradeChassisTier,
@@ -180,9 +183,7 @@ const reducerMap: ReducerMap = {
   [ActionTypes.INSTALL_MODULE_FAILED]: handleAssetFailedAction,
   [ActionTypes.REMOVE_MODULE]: handleRemoveModule,
   [ActionTypes.START_CROWDFUND]: handleStartCrowdfund,
-  [ActionTypes.RESOLVE_CROWDFUND]: handleResolveCrowdfund,
-  [ActionTypes.ASSET_FORECLOSED]: handleAssetForeclosed,
-  [ActionTypes.ASSET_RISK_EVENT_TRIGGERED]: handleAssetRiskEventTriggered
+  [ActionTypes.ASSET_FORECLOSED]: handleAssetForeclosed
 }
 
 /**
@@ -214,9 +215,26 @@ function runHandledAction<K extends HandledActionTypes>(
 const applyZeroConditionForeclosures = (state: GameState): GameState => {
   const assets = Array.isArray(state.assets) ? state.assets : []
   let nextState = state
+  const foreclosedKinds: AssetKind[] = []
   for (const asset of assets) {
     if (asset.condition !== 0) continue
+    foreclosedKinds.push(asset.kind)
     nextState = runHandledAction(nextState, assetForeclosed(asset.id))
+  }
+  if (foreclosedKinds.length === 0) return nextState
+
+  const pendingForeclosureNotices = [
+    ...(nextState.pendingForeclosureNotices ?? [])
+  ]
+  for (const kind of foreclosedKinds) {
+    if (!pendingForeclosureNotices.includes(kind)) {
+      pendingForeclosureNotices.push(kind)
+    }
+  }
+
+  nextState = {
+    ...nextState,
+    pendingForeclosureNotices
   }
   return nextState
 }

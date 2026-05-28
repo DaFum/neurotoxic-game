@@ -11,8 +11,10 @@ const __dirname = path.dirname(__filename)
 const LOCALES_ROOT = path.join(__dirname, '..', '..', 'public', 'locales')
 
 test('Smoke tests for locales', async t => {
-  const locales = await fs.readdir(LOCALES_ROOT)
-  const LOCALES = locales.filter(l => !l.startsWith('.'))
+  const localeEntries = await fs.readdir(LOCALES_ROOT, { withFileTypes: true })
+  const LOCALES = localeEntries
+    .filter(entry => entry.isDirectory() && !entry.name.startsWith('.'))
+    .map(entry => entry.name)
 
   for (const locale of LOCALES) {
     const localeDir = path.join(LOCALES_ROOT, locale)

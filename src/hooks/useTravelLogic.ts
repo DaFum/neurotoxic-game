@@ -9,8 +9,7 @@ import {
   calculateTravelExpenses,
   calculateRefuelCost,
   calculateRepairCost,
-  EXPENSE_CONSTANTS,
-  calculateGuaranteedDailyCost
+  EXPENSE_CONSTANTS
 } from '../utils/economyEngine'
 import {
   isConnected as isConnectedUtil,
@@ -41,7 +40,11 @@ import { clampPlayerMoney } from '../utils/gameStateUtils'
 import { translateLocation } from '../utils/locationI18n'
 import { VENUES_BY_ID } from '../data/venues'
 import { getTravelArrivalUpdates } from '../utils/travelUtils'
-import { getActiveAssetModifiers } from '../utils/assetSelectors'
+import {
+  getActiveAssetModifiers,
+  getTotalDailyObligations
+} from '../utils/assetSelectors'
+import type { Liability } from '../types/assets'
 import type {
   BandState,
   GameMap,
@@ -57,6 +60,7 @@ type TravelLogicParams = {
   player: PlayerState
   band: BandState
   assets: GameState['assets']
+  liabilities: GameState['liabilities']
   social: SocialState
   gameMap: GameMap | null
   updatePlayer: (updates: Partial<PlayerState>) => void
@@ -107,6 +111,7 @@ export const useTravelLogic = ({
   player,
   band,
   assets,
+  liabilities,
   social,
   gameMap,
   updatePlayer,
@@ -139,6 +144,7 @@ export const useTravelLogic = ({
   const playerRef = useRef(player)
   const bandRef = useRef(band)
   const assetsRef = useRef(assets)
+  const liabilitiesRef = useRef<Liability[]>(liabilities)
   const socialRef = useRef(social)
   const gameMapRef = useRef(gameMap)
   const reputationByRegionRef = useRef(reputationByRegion)
@@ -156,6 +162,7 @@ export const useTravelLogic = ({
     playerRef.current = player
     bandRef.current = band
     assetsRef.current = assets
+    liabilitiesRef.current = liabilities
     socialRef.current = social
     gameMapRef.current = gameMap
     reputationByRegionRef.current = reputationByRegion
@@ -166,6 +173,7 @@ export const useTravelLogic = ({
     player,
     band,
     assets,
+    liabilities,
     social,
     gameMap,
     reputationByRegion,
@@ -254,7 +262,9 @@ export const useTravelLogic = ({
     (explicitNode: MapNode | null = null) => {
       const player = playerRef.current
       const band = bandRef.current
-      const assetModifiers = getActiveAssetModifiers(assetsRef.current)
+      const assets = assetsRef.current
+      const liabilities = liabilitiesRef.current
+      const assetModifiers = getActiveAssetModifiers(assets)
       const social = socialRef.current
       const gameMap = gameMapRef.current
 
@@ -300,7 +310,13 @@ export const useTravelLogic = ({
         band,
         assetModifiers
       )
-      const dailyCost = calculateGuaranteedDailyCost(player, band, social)
+      const dailyCost = getTotalDailyObligations({
+        player,
+        band,
+        social,
+        assets,
+        liabilities
+      } as GameState)
       const totalCashImpact = totalCost + dailyCost
 
       // Affordability check
@@ -493,7 +509,9 @@ export const useTravelLogic = ({
 
       const player = playerRef.current
       const band = bandRef.current
-      const assetModifiers = getActiveAssetModifiers(assetsRef.current)
+      const assets = assetsRef.current
+      const liabilities = liabilitiesRef.current
+      const assetModifiers = getActiveAssetModifiers(assets)
       const social = socialRef.current
       const gameMap = gameMapRef.current
 
@@ -618,7 +636,13 @@ export const useTravelLogic = ({
         band,
         assetModifiers
       )
-      const dailyCost = calculateGuaranteedDailyCost(player, band, social)
+      const dailyCost = getTotalDailyObligations({
+        player,
+        band,
+        social,
+        assets,
+        liabilities
+      } as GameState)
       const totalCashImpact = totalCost + dailyCost
 
       const resourceCheck = checkTravelResources(

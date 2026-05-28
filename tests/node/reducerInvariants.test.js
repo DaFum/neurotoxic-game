@@ -290,11 +290,14 @@ describe('handleUpdateBand invariants', () => {
     assert.deepEqual(violations, [])
   })
 
-  it('clamps harmony to 1 on NaN input', () => {
-    const next = handleUpdateBand(state, { harmony: NaN })
-    assert.strictEqual(next.band.harmony, 1)
-    const violations = checkInvariants(next)
-    assert.deepEqual(violations, [])
+  it('retains existing harmony on non-finite input', () => {
+    state.band.harmony = 42
+    for (const harmony of [NaN, Infinity, -Infinity]) {
+      const next = handleUpdateBand(state, { harmony })
+      assert.strictEqual(next.band.harmony, 42)
+      const violations = checkInvariants(next)
+      assert.deepEqual(violations, [])
+    }
   })
 
   it('boundary: harmony at exactly 1 stays 1', () => {

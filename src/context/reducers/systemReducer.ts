@@ -70,10 +70,13 @@ import { getSafeRandom } from '../../utils/crypto'
 import { ALLOWED_TOAST_TYPES, sanitizeLoadedToast } from './toastSanitizers'
 import {
   sanitizeAssets,
+  sanitizeAssetKinds,
   sanitizeCrowdfundCampaigns,
   sanitizeLiabilities,
+  sanitizeRiskEventDescriptor,
   sanitizeRngSeed
 } from './assetSanitizers'
+import type { RiskEventDescriptor } from '../../types/assets'
 
 const ALLOWED_MINIGAME_TYPES = new Set<MinigameType>(
   Object.values(MINIGAME_TYPES)
@@ -1460,6 +1463,10 @@ export const handleLoadGame = (
     setlist: sanitizeSetlist(loadedState.setlist),
     activeStoryFlags: sanitizeStringArray(loadedState.activeStoryFlags),
     pendingEvents: sanitizeStringArray(loadedState.pendingEvents),
+    pendingForeclosureNotices: sanitizeAssetKinds(
+      loadedState.pendingForeclosureNotices
+    ),
+    pendingRiskEvent: sanitizeRiskEventDescriptor(loadedState.pendingRiskEvent),
     eventCooldowns: sanitizeStringArray(loadedState.eventCooldowns),
     activeEvent: sanitizeActiveEvent(loadedState.activeEvent),
     toasts: sanitizeToasts(loadedState.toasts),
@@ -1768,7 +1775,22 @@ export const handleAdvanceDay = (
   }
 ): GameState => {
   let nextStatePre = processAssetTick(state)
-  nextStatePre = processLiabilityTick(nextStatePre)
+  const liabilityTick = processLiabilityTick(nextStatePre)
+  nextStatePre = liabilityTick.state
+  if (liabilityTick.foreclosedKinds.length > 0) {
+    const pendingForeclosureNotices = [
+      ...(nextStatePre.pendingForeclosureNotices ?? [])
+    ]
+    for (const kind of liabilityTick.foreclosedKinds) {
+      if (!pendingForeclosureNotices.includes(kind)) {
+        pendingForeclosureNotices.push(kind)
+      }
+    }
+    nextStatePre = {
+      ...nextStatePre,
+      pendingForeclosureNotices
+    }
+  }
   nextStatePre = processCrowdfundTick(nextStatePre)
   if (payload?.dayRngStream) {
     const { state: s, events } = rollAssetRiskEvents(
@@ -1799,6 +1821,13 @@ export const handleAdvanceDay = (
         nextStatePre = {
           ...nextStatePre,
           toasts: [...(nextStatePre.toasts ?? []), ...newToasts]
+        }
+      }
+      const firstEvent = events[0]
+      if (firstEvent && nextStatePre.pendingRiskEvent === null) {
+        nextStatePre = {
+          ...nextStatePre,
+          pendingRiskEvent: firstEvent
         }
       }
     }
@@ -1909,5 +1938,33 @@ export const handleSetPendingSupplyStopInventory = (
   return {
     ...state,
     pendingSupplyStopInventory: nextInventory
+  }
+}
+
+export const handleSetPendingRiskEvent = (
+  state: GameState,
+  event: RiskEventDescriptor | null
+): GameState => {
+  if (event === null) {
+    if (state.pendingRiskEvent === null) return state
+    return {
+      ...state,
+      pendingRiskEvent: null
+    }
+  }
+
+  const nextEvent = sanitizeRiskEventDescriptor(event)
+  if (!nextEvent) return state
+  if (
+    state.pendingRiskEvent?.assetId === nextEvent.assetId &&
+    state.pendingRiskEvent.eventType === nextEvent.eventType &&
+    state.pendingRiskEvent.conditionLoss === nextEvent.conditionLoss
+  ) {
+    return state
+  }
+
+  return {
+    ...state,
+    pendingRiskEvent: nextEvent
   }
 }

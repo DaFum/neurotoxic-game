@@ -43,7 +43,7 @@ export const RiskEventModal = ({ eventType, isOpen, onClose }: Props) => {
             className='border-2 px-3 py-1'
             style={{
               background: 'var(--section-accent, var(--color-toxic-green))',
-              color: 'var(--color-void)'
+              color: 'var(--color-void-black)'
             }}
           >
             {t('ui:action_close', { defaultValue: 'Close' })}

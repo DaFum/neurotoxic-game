@@ -4,6 +4,7 @@
 
 - `RelationshipChange` (`member1`, `member2`, `change`, optional `source` and `timestamp`) is exported from `src/types/game.d.ts`. Do not redefine it locally in `gameStateUtils.ts` or other consumers.
 - If a local `RelationshipChange`-shaped clone already exists, replace it with the shared import and remove the duplicate in the same change.
+- `EventDelta` (`src/types/events.d.ts`) is shared with `eventEngine.ts`, `gameStateUtils.ts`, and `EventDeltaPayload` (`actions.d.ts`). Its `player`, `band`, `social`, and `flags` containers are required; callers initialize each as `{}`. `EventDeltaPayload` only adds `activeStoryFlags` and `pendingEvents`; do not redeclare the containers.
 
 ## Social Contracts
 

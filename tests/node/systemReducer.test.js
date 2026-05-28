@@ -10,7 +10,8 @@ import {
   handleAdvanceDay,
   handleAddUnlock,
   handleSetPendingBandHQOpen,
-  handleSetPendingSupplyStopInventory
+  handleSetPendingSupplyStopInventory,
+  handleSetPendingRiskEvent
 } from '../../src/context/reducers/systemReducer'
 import { createInitialState } from '../../src/context/initialState'
 import { GAME_PHASES } from '../../src/context/gameConstants'
@@ -553,6 +554,12 @@ test('systemReducer - LOAD_GAME', async t => {
       setlist: ['song-a', 7, { songId: 'song-b' }, null],
       activeStoryFlags: ['flag-a', 4],
       pendingEvents: ['event-a', {}],
+      pendingForeclosureNotices: [
+        'tourbus_chassis',
+        'bad_kind',
+        'tourbus_chassis',
+        7
+      ],
       eventCooldowns: ['cooldown-a', false],
       reputationByRegion: {
         berlin: 10,
@@ -596,6 +603,7 @@ test('systemReducer - LOAD_GAME', async t => {
     assert.deepEqual(nextState.setlist, ['song-a', { songId: 'song-b' }])
     assert.deepEqual(nextState.activeStoryFlags, ['flag-a'])
     assert.deepEqual(nextState.pendingEvents, ['event-a'])
+    assert.deepEqual(nextState.pendingForeclosureNotices, ['tourbus_chassis'])
     assert.deepEqual(nextState.eventCooldowns, ['cooldown-a'])
     assert.deepEqual(nextState.reputationByRegion, { berlin: 10 })
     assert.deepEqual(nextState.npcs, {
@@ -901,6 +909,32 @@ test('systemReducer - ADD_TOAST', () => {
   })
 })
 
+test('systemReducer - LOAD_GAME sanitizes pending risk event descriptors', () => {
+  const initialState = createInitialState()
+
+  const validState = handleLoadGame(initialState, {
+    pendingRiskEvent: {
+      assetId: 'asset_1',
+      eventType: 'fire',
+      conditionLoss: 15
+    }
+  })
+  assert.deepEqual(validState.pendingRiskEvent, {
+    assetId: 'asset_1',
+    eventType: 'fire',
+    conditionLoss: 15
+  })
+
+  const invalidState = handleLoadGame(initialState, {
+    pendingRiskEvent: {
+      assetId: 'asset_1',
+      eventType: 'bad_event',
+      conditionLoss: Number.POSITIVE_INFINITY
+    }
+  })
+  assert.equal(invalidState.pendingRiskEvent, null)
+})
+
 test('systemReducer - REMOVE_TOAST', () => {
   const state = { toasts: [{ id: '1' }, { id: '2' }, { id: '3' }] }
 
@@ -974,6 +1008,54 @@ test('systemReducer - pending modal state', async t => {
       assert.equal(handleSetPendingSupplyStopInventory(state, null), state)
     }
   )
+
+  await t.test('sets and clears pending risk event state', () => {
+    const state = { ...createInitialState(), pendingRiskEvent: null }
+    const pendingRiskEvent = {
+      assetId: 'asset_1',
+      eventType: 'fire',
+      conditionLoss: 15
+    }
+
+    const nextState = handleSetPendingRiskEvent(state, pendingRiskEvent)
+
+    assert.deepEqual(nextState.pendingRiskEvent, pendingRiskEvent)
+    assert.equal(
+      handleSetPendingRiskEvent(nextState, pendingRiskEvent),
+      nextState
+    )
+    assert.equal(handleSetPendingRiskEvent(state, null), state)
+    assert.equal(
+      handleSetPendingRiskEvent(nextState, null).pendingRiskEvent,
+      null
+    )
+  })
+
+  await t.test('rejects malformed pending risk event payloads', () => {
+    const state = { ...createInitialState(), pendingRiskEvent: null }
+    const invalidPayloads = [
+      [],
+      { assetId: 'asset_1', eventType: 'fire', conditionLoss: Infinity },
+      { assetId: 'asset_1', eventType: 'bad_event', conditionLoss: 15 },
+      { eventType: 'fire', conditionLoss: 15 }
+    ]
+
+    for (const payload of invalidPayloads) {
+      assert.equal(handleSetPendingRiskEvent(state, payload), state)
+    }
+
+    const hostilePayload = JSON.parse(
+      '{"assetId":"asset_1","eventType":"fire","conditionLoss":15,"__proto__":{"polluted":true}}'
+    )
+    const nextState = handleSetPendingRiskEvent(state, hostilePayload)
+
+    assert.deepEqual(nextState.pendingRiskEvent, {
+      assetId: 'asset_1',
+      eventType: 'fire',
+      conditionLoss: 15
+    })
+    assert.equal(Object.hasOwn(nextState.pendingRiskEvent, '__proto__'), false)
+  })
 })
 
 test('systemReducer - ADVANCE_DAY core logic', async t => {
@@ -1014,6 +1096,55 @@ test('systemReducer - ADVANCE_DAY core logic', async t => {
       // calculateDailyUpdates increments day
       assert.equal(nextState.player.day, 2)
       assert.deepEqual(nextState.eventCooldowns, [])
+    }
+  )
+
+  await t.test(
+    'preserves an existing pending risk event during daily rolls',
+    () => {
+      const initialState = createInitialState()
+      const pendingRiskEvent = {
+        assetId: 'existing_asset',
+        eventType: 'theft',
+        conditionLoss: 25
+      }
+      const currentState = {
+        ...initialState,
+        player: {
+          ...initialState.player,
+          day: 1
+        },
+        assets: [
+          {
+            id: 'new_asset',
+            kind: 'tourbus_chassis',
+            chassisFlavor: 'legit',
+            chassisTier: 1,
+            condition: 100,
+            baseUpkeep: 0,
+            baseDailyRevenue: 0,
+            slots: [],
+            acquiredOnDay: 1,
+            acquisitionMode: 'cash',
+            baseRiskEventChance: 1
+          }
+        ],
+        pendingRiskEvent,
+        toasts: [],
+        activeQuests: []
+      }
+
+      const nextState = handleAdvanceDay(currentState, {
+        dayRngStream: [0],
+        nextRngSeed: initialState.rngSeed,
+        rng: () => 0.5
+      })
+
+      assert.deepEqual(nextState.pendingRiskEvent, pendingRiskEvent)
+      assert.equal(
+        nextState.toasts.at(-1)?.messageKey,
+        'assets:risk.event.fire'
+      )
     }
   )
 })

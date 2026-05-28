@@ -5,8 +5,8 @@ import {
   handleInstallModule,
   handleRemoveModule,
   handleUpgradeChassisTier,
+  handleSellChassis,
   handleRepairChassis,
-  handleResolveCrowdfund,
   handleStartCrowdfund,
   handleAssetFailedAction
 } from '../../src/context/reducers/assetReducer.ts'
@@ -14,33 +14,51 @@ import { CHASSIS_CONFIG } from '../../src/utils/assetConfig.ts'
 import { MODULE_REGISTRY } from '../../src/utils/assetModuleRegistry.ts'
 
 // MODULE_REGISTRY is a mutable shared module-scoped object. To prevent
-// pollution into other test files run in the same process, snapshot the
-// original 'test_mod' entry (if any) and restore it after every test below.
-// If the entry didn't exist, we delete the injected one.
-const originalTestMod = MODULE_REGISTRY['test_mod']
+// pollution into other test files run in the same process, snapshot the full
+// registry and restore it after every test below.
+const originalModuleRegistry = structuredClone(MODULE_REGISTRY)
 const originalChassisConfig = structuredClone(CHASSIS_CONFIG)
-// @ts-expect-error test mock — minimal AssetModule shape
-MODULE_REGISTRY['test_mod'] = {
-  id: 'test_mod',
-  ownerKind: 'tourbus_chassis',
-  slotType: 'tb_roof',
-  flavor: 'legit',
-  cost: 100,
-  installCost: 50,
-  removalRefundFraction: 0.5,
-  boni: {},
-  unlock: {},
-  imagePromptKey: 'test'
+
+const restoreChassisConfig = () => {
+  for (const k of Object.keys(CHASSIS_CONFIG)) delete CHASSIS_CONFIG[k]
+  Object.assign(CHASSIS_CONFIG, structuredClone(originalChassisConfig))
 }
 
-test.after(() => {
-  for (const k of Object.keys(CHASSIS_CONFIG)) delete CHASSIS_CONFIG[k]
-  Object.assign(CHASSIS_CONFIG, originalChassisConfig)
-  if (originalTestMod === undefined) {
-    delete MODULE_REGISTRY['test_mod']
-  } else {
-    MODULE_REGISTRY['test_mod'] = originalTestMod
+const restoreModuleRegistry = () => {
+  for (const k of Object.keys(MODULE_REGISTRY)) delete MODULE_REGISTRY[k]
+  Object.assign(MODULE_REGISTRY, structuredClone(originalModuleRegistry))
+}
+
+const installTestModule = () => {
+  // @ts-expect-error test mock — minimal AssetModule shape
+  MODULE_REGISTRY['test_mod'] = {
+    id: 'test_mod',
+    ownerKind: 'tourbus_chassis',
+    slotType: 'tb_roof',
+    flavor: 'legit',
+    cost: 100,
+    installCost: 50,
+    removalRefundFraction: 0.5,
+    boni: {},
+    unlock: {},
+    imagePromptKey: 'test'
   }
+}
+
+test.beforeEach(() => {
+  restoreChassisConfig()
+  restoreModuleRegistry()
+  installTestModule()
+})
+
+test.afterEach(() => {
+  restoreChassisConfig()
+  restoreModuleRegistry()
+})
+
+test.after(() => {
+  restoreChassisConfig()
+  restoreModuleRegistry()
 })
 
 const mockState = {
@@ -86,6 +104,40 @@ test('handlePurchaseChassis - happy path cash', () => {
 
   const next = handlePurchaseChassis(mockState, payload)
   assert.strictEqual(next.assets[0].id, 'a1')
+})
+
+test('handlePurchaseChassis - uses direct DIY config values', () => {
+  const kind = 'tourbus_chassis'
+  CHASSIS_CONFIG[kind].legit[1] = {
+    price: 4000,
+    upkeep: 20,
+    revenue: 0,
+    slots: ['tb_roof'],
+    baseRiskEventChance: 0.005
+  }
+  CHASSIS_CONFIG[kind].diy[1] = {
+    price: 1500,
+    upkeep: 7,
+    revenue: 11,
+    slots: ['tb_roof', 'tb_front'],
+    baseRiskEventChance: 0.07
+  }
+  const configTier = CHASSIS_CONFIG[kind].diy[1]
+  const slotIds = configTier.slots.map((_, i) => `slot_${i}`)
+
+  const next = handlePurchaseChassis(mockState, {
+    id: 'a1',
+    kind,
+    flavor: 'diy',
+    tier: 1,
+    mode: 'cash',
+    slotIds,
+    today: mockState.player.day
+  })
+
+  assert.strictEqual(next.assets[0].baseUpkeep, 7)
+  assert.strictEqual(next.assets[0].baseDailyRevenue, 11)
+  assert.strictEqual(next.assets[0].baseRiskEventChance, 0.07)
 })
 
 test('handlePurchaseChassis - rejects when a campaign is pending for the same section', () => {
@@ -135,39 +187,6 @@ test('handleStartCrowdfund - rejects when an asset already exists for the same s
   })
 
   assert.strictEqual(next, startState)
-})
-
-test('handleResolveCrowdfund - drops success when section asset already exists', () => {
-  const startState = {
-    ...mockState,
-    assets: [
-      {
-        id: 'a1',
-        kind: 'tourbus_chassis',
-        chassisFlavor: 'legit',
-        chassisTier: 1,
-        condition: 100,
-        baseUpkeep: 20,
-        baseDailyRevenue: 0,
-        slots: [],
-        acquiredOnDay: 1,
-        acquisitionMode: 'cash',
-        baseRiskEventChance: 0.005
-      }
-    ],
-    crowdfundCampaigns: [makeCampaign()]
-  }
-
-  const next = handleResolveCrowdfund(startState, {
-    campaignId: 'camp_1',
-    outcome: 'success',
-    newAssetId: 'a2',
-    newSlotIds: []
-  })
-
-  assert.strictEqual(next.assets.length, 1)
-  assert.strictEqual(next.player.fame, startState.player.fame)
-  assert.strictEqual(next.crowdfundCampaigns.length, 0)
 })
 
 test('handleInstallModule - happy path', () => {
@@ -334,7 +353,7 @@ test('handleRemoveModule - cleans up added child slots and refunds', () => {
   assert.strictEqual(next.player.money, mockState.player.money + 50)
 })
 
-test('handleResolveCrowdfund - updates player fame and uses direct DIY config', () => {
+test('handleSellChassis - uses direct DIY config price', () => {
   CHASSIS_CONFIG.tourbus_chassis.legit[1] = {
     price: 4000,
     upkeep: 20,
@@ -343,7 +362,7 @@ test('handleResolveCrowdfund - updates player fame and uses direct DIY config', 
     baseRiskEventChance: 0.005
   }
   CHASSIS_CONFIG.tourbus_chassis.diy[1] = {
-    price: 1500,
+    price: 1234,
     upkeep: 7,
     revenue: 11,
     slots: ['tb_roof', 'tb_front'],
@@ -351,42 +370,102 @@ test('handleResolveCrowdfund - updates player fame and uses direct DIY config', 
   }
   const startState = {
     ...mockState,
-    player: { ...mockState.player, fame: 10 },
-    band: { ...mockState.band, fame: 99 },
-    crowdfundCampaigns: [
+    assets: [
       {
-        id: 'camp_1',
-        assetSpec: {
-          kind: 'tourbus_chassis',
-          flavor: 'diy',
-          chassisTier: 1
-        },
-        targetAmount: 1500,
-        fameStake: 7,
-        daysRemaining: 0,
-        plannedSuccessRoll: 0.1,
-        plannedSuccessProbability: 0.5,
-        materializedAssetId: 'new_asset',
-        materializedSlotIds: ['s1', 's2']
+        id: 'a1',
+        kind: 'tourbus_chassis',
+        chassisFlavor: 'diy',
+        chassisTier: 1,
+        condition: 100,
+        baseUpkeep: 7,
+        baseDailyRevenue: 11,
+        slots: [],
+        acquiredOnDay: mockState.player.day,
+        acquisitionMode: 'cash',
+        baseRiskEventChance: 0.07
       }
     ]
   }
 
-  const next = handleResolveCrowdfund(startState, {
-    campaignId: 'camp_1',
-    outcome: 'success',
-    newAssetId: 'new_asset',
-    newSlotIds: [
-      { id: 's1', slotType: 'tb_roof' },
-      { id: 's2', slotType: 'tb_front' }
-    ]
-  })
+  const next = handleSellChassis(startState, { assetId: 'a1' })
 
-  assert.strictEqual(next.player.fame, 17)
-  assert.strictEqual(next.band.fame, 99)
-  assert.strictEqual(next.assets[0].baseUpkeep, 7)
-  assert.strictEqual(next.assets[0].baseDailyRevenue, 11)
-  assert.strictEqual(next.assets[0].slots.length, 2)
+  assert.strictEqual(next.player.money, mockState.player.money + 1234)
+})
+
+test('handleSellChassis - pays off all liabilities for the sold asset', () => {
+  const configTier = CHASSIS_CONFIG.tourbus_chassis.legit[1]
+  const startState = {
+    ...mockState,
+    assets: [
+      {
+        id: 'a1',
+        kind: 'tourbus_chassis',
+        chassisFlavor: 'legit',
+        chassisTier: 1,
+        condition: 100,
+        baseUpkeep: configTier.upkeep,
+        baseDailyRevenue: configTier.revenue,
+        slots: [],
+        acquiredOnDay: mockState.player.day,
+        acquisitionMode: 'loan',
+        baseRiskEventChance: configTier.baseRiskEventChance
+      }
+    ],
+    liabilities: [
+      { id: 'loan_1', assetId: 'a1', principalRemaining: 300 },
+      { id: 'loan_2', assetId: 'a1', principalRemaining: 400 },
+      { id: 'loan_other', assetId: 'other_asset', principalRemaining: 250 }
+    ]
+  }
+
+  const next = handleSellChassis(startState, { assetId: 'a1' })
+
+  assert.strictEqual(
+    next.player.money,
+    mockState.player.money + configTier.price - 700
+  )
+  assert.deepStrictEqual(
+    next.liabilities.map(liability => liability.id),
+    ['loan_other']
+  )
+})
+
+test('handleSellChassis - ignores non-finite liability principal when computing payoff', () => {
+  const configTier = CHASSIS_CONFIG.tourbus_chassis.legit[1]
+  const startState = {
+    ...mockState,
+    assets: [
+      {
+        id: 'a1',
+        kind: 'tourbus_chassis',
+        chassisFlavor: 'legit',
+        chassisTier: 1,
+        condition: 100,
+        baseUpkeep: configTier.upkeep,
+        baseDailyRevenue: configTier.revenue,
+        slots: [],
+        acquiredOnDay: mockState.player.day,
+        acquisitionMode: 'loan',
+        baseRiskEventChance: configTier.baseRiskEventChance
+      }
+    ],
+    liabilities: [
+      { id: 'loan_1', assetId: 'a1', principalRemaining: 300 },
+      { id: 'loan_nan', assetId: 'a1', principalRemaining: Number.NaN },
+      {
+        id: 'loan_inf',
+        assetId: 'a1',
+        principalRemaining: Number.POSITIVE_INFINITY
+      }
+    ]
+  }
+
+  const next = handleSellChassis(startState, { assetId: 'a1' })
+
+  assert.strictEqual(
+    next.player.money,
+    mockState.player.money + configTier.price - 300
+  )
 })
 
 test('handleAssetFailedAction - is no-op', () => {

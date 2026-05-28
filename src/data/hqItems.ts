@@ -728,6 +728,7 @@ export const HQ_ITEMS = {
 
 /**
  * Flattened list of every HQ item across all categories.
+ * Deliberate public utility for consumers that need flat iteration.
  * Precomputed once at module load to avoid repeated `Object.values(HQ_ITEMS).flat()` calls.
  */
 export const ALL_HQ_ITEMS = Object.values(HQ_ITEMS).flat()

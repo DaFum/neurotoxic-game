@@ -219,17 +219,22 @@ export const ContrabandStash = ({
 
   const renderedStashCards = useMemo(() => {
     if (!Array.isArray(stash)) return []
-    return stash
-      .filter(isStashItem)
-      .map(item => (
-        <StashCard
-          key={item.instanceId ?? `migrated-${item.id}`}
-          item={item}
-          selectedMember={selectedMember}
-          onUseItem={makeUseItem(item.instanceId ?? item.id, item)}
-          t={t}
-        />
-      ))
+    const cards = []
+    for (let i = 0; i < stash.length; i++) {
+      const item = stash[i]
+      if (isStashItem(item)) {
+        cards.push(
+          <StashCard
+            key={item.instanceId ?? `migrated-${item.id}`}
+            item={item}
+            selectedMember={selectedMember}
+            onUseItem={makeUseItem(item.instanceId ?? item.id, item)}
+            t={t}
+          />
+        )
+      }
+    }
+    return cards
   }, [stash, selectedMember, makeUseItem, t])
 
   if (

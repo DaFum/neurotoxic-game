@@ -1,5 +1,6 @@
 import { hasTrait } from './traitUtils'
 import { EXPENSE_CONSTANTS } from './economyEngine'
+import { finiteNumberOr } from './finiteNumber'
 import { logger } from './logger'
 import { isForbiddenKey, isLooseRecord } from './objectUtils'
 import type {
@@ -9,6 +10,8 @@ import type {
   StashEntry,
   EventDelta
 } from '../types'
+
+export { finiteNumberOr } from './finiteNumber'
 
 /**
  * Clamps a value to be at least 0.
@@ -103,16 +106,6 @@ export const clampMemberStamina = (
  * @returns {number} Clamped mood value.
  */
 export const clampMemberMood = (mood: number): number => clamp0to100(mood)
-
-/**
- * Returns `value` when it is a finite number, else `fallback`. Use this at
- * the boundary between persisted/legacy state and arithmetic-then-clamp paths
- * (`clampMemberMood(member.mood + delta)`), where a missing or `NaN` input
- * would otherwise short-circuit a `Number.isFinite` guard inside the clamp
- * and silently zero the result.
- */
-export const finiteNumberOr = (value: unknown, fallback: number): number =>
-  typeof value === 'number' && Number.isFinite(value) ? value : fallback
 
 /**
  * Maps a 0..100 percentage onto an N-step integer scale (0..steps).

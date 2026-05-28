@@ -7,6 +7,7 @@ import {
   rollAssetRiskEvents
 } from '../../src/utils/assetTicks.ts'
 import { MODULE_REGISTRY } from '../../src/utils/assetModuleRegistry.ts'
+import { calculateFameLevel } from '../../src/utils/gameStateUtils.ts'
 
 test('processAssetTick - condition decay and condition floor at 0', () => {
   const state = {
@@ -94,7 +95,7 @@ test('processAssetTick - applies passive fame, mood, and stamina asset boni', ()
 
 test('processLiabilityTick - liability default counter increment and trigger at 7 days', () => {
   const state = {
-    assets: [{ id: 'a1', condition: 100, slots: [] }],
+    assets: [{ id: 'a1', kind: 'tourbus_chassis', condition: 100, slots: [] }],
     liabilities: [
       {
         id: 'l1',
@@ -107,10 +108,15 @@ test('processLiabilityTick - liability default counter increment and trigger at 
     ],
     player: { money: 10, fame: 50 }
   }
-  const next = processLiabilityTick(state)
+  const { state: next, foreclosedKinds } = processLiabilityTick(state)
   assert.strictEqual(next.assets.length, 0)
   assert.strictEqual(next.liabilities.length, 0)
   assert.ok(next.player.fame < 50)
+  assert.strictEqual(
+    next.player.fameLevel,
+    calculateFameLevel(next.player.fame)
+  )
+  assert.deepStrictEqual(foreclosedKinds, ['tourbus_chassis'])
 })
 
 test('processCrowdfundTick - successful resolution awards money/fame and creates asset', () => {
@@ -141,6 +147,9 @@ test('processCrowdfundTick - successful resolution awards money/fame and creates
   // Rewards applied.
   assert.strictEqual(next.player.money, 4100)
   assert.strictEqual(next.player.fame, 80)
+  assert.strictEqual(next.assets.length, 1)
+  assert.strictEqual(next.assets[0].id, 'mat_a1')
+  assert.strictEqual(next.assets[0].acquisitionMode, 'crowdfund')
 })
 
 test('processCrowdfundTick - failed resolution subtracts fameStake', () => {

@@ -1,6 +1,7 @@
 import { beforeEach, mock } from 'node:test'
 import assert from 'node:assert/strict'
 import { renderHook } from '@testing-library/react'
+import { MODULE_REGISTRY } from '../src/utils/assetModuleRegistry.ts'
 
 // Mocks
 const mockCalculateTravelExpenses = mock.fn()
@@ -39,6 +40,63 @@ const guaranteedDailyCostDefault = (player, band, social = 0) => {
 
 const mockCalculateGuaranteedDailyCost = mock.fn(guaranteedDailyCostDefault)
 
+const finiteNumberOrZero = value =>
+  typeof value === 'number' && Number.isFinite(value) ? value : 0
+
+const getActiveAssetModifiersDefault = assets => {
+  const modifiers = { fuelMultiplier: 1 }
+  const assetList = Array.isArray(assets) ? assets : []
+
+  for (const asset of assetList) {
+    if ((asset?.condition ?? 100) < 20) continue
+    const slots = Array.isArray(asset?.slots) ? asset.slots : []
+    for (const slot of slots) {
+      const installedModuleId = slot?.installedModuleId
+      if (!installedModuleId) continue
+      const module = MODULE_REGISTRY[installedModuleId]
+      const fuelMultiplier = module?.boni?.fuelMultiplier
+      if (
+        typeof fuelMultiplier === 'number' &&
+        Number.isFinite(fuelMultiplier)
+      ) {
+        modifiers.fuelMultiplier *= fuelMultiplier
+      }
+    }
+  }
+
+  return modifiers
+}
+
+const mockGetActiveAssetModifiers = mock.fn(getActiveAssetModifiersDefault)
+
+const getTotalDailyObligationsDefault = state => {
+  const base = mockCalculateGuaranteedDailyCost(
+    state?.player,
+    state?.band,
+    state?.social
+  )
+  const assets = Array.isArray(state?.assets) ? state.assets : []
+  const liabilities = Array.isArray(state?.liabilities) ? state.liabilities : []
+
+  let assetUpkeep = 0
+  let assetRevenue = 0
+  for (const asset of assets) {
+    assetUpkeep += finiteNumberOrZero(asset?.baseUpkeep)
+    if ((asset?.condition ?? 100) >= 20) {
+      assetRevenue += finiteNumberOrZero(asset?.baseDailyRevenue)
+    }
+  }
+
+  let liabilityPayments = 0
+  for (const liability of liabilities) {
+    liabilityPayments += finiteNumberOrZero(liability?.dailyPayment)
+  }
+
+  return base + assetUpkeep - assetRevenue + liabilityPayments
+}
+
+const mockGetTotalDailyObligations = mock.fn(getTotalDailyObligationsDefault)
+
 let ensureAudioContextResult = true
 
 const ensureAudioContextDefault = async () => ensureAudioContextResult
@@ -71,6 +129,13 @@ mock.module(new URL('../src/utils/economyEngine.ts', import.meta.url).href, {
     calculateRoadieMinigameResult: mock.fn(),
     EXPENSE_CONSTANTS: mockExpenseConstants,
     calculateGuaranteedDailyCost: mockCalculateGuaranteedDailyCost
+  }
+})
+
+mock.module(new URL('../src/utils/assetSelectors.ts', import.meta.url).href, {
+  namedExports: {
+    getActiveAssetModifiers: mockGetActiveAssetModifiers,
+    getTotalDailyObligations: mockGetTotalDailyObligations
   }
 })
 
@@ -118,6 +183,14 @@ export const resetTravelLogicMockState = () => {
     guaranteedDailyCostDefault
   )
   mockCalculateGuaranteedDailyCost.mock.resetCalls()
+  mockGetActiveAssetModifiers.mock.mockImplementation(
+    getActiveAssetModifiersDefault
+  )
+  mockGetActiveAssetModifiers.mock.resetCalls()
+  mockGetTotalDailyObligations.mock.mockImplementation(
+    getTotalDailyObligationsDefault
+  )
+  mockGetTotalDailyObligations.mock.resetCalls()
   mockCalculateRefuelCost.mock.mockImplementation(calculateRefuelCostDefault)
   mockCalculateRefuelCost.mock.resetCalls()
   mockAudioManager.ensureAudioContext.mock.mockImplementation(
@@ -139,6 +212,7 @@ export const mockTravelLogicDependencies = {
   mockCalculateRefuelCost,
   mockAudioManager,
   mockCalculateGuaranteedDailyCost,
+  mockGetTotalDailyObligations,
   mockLogger,
   mockHandleError,
   setEnsureAudioContextResult: value => {
@@ -164,6 +238,7 @@ export const createTravelLogicProps = (overrides = {}) => ({
   },
   band: { members: [], harmony: 50 },
   assets: [],
+  liabilities: [],
   gameMap: {
     nodes: {
       node_start: {

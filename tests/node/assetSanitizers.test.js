@@ -2,10 +2,12 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   sanitizeAssets,
+  sanitizeAssetKinds,
   sanitizeCrowdfundCampaigns,
   sanitizeLiabilities,
   sanitizeRngSeed
 } from '../../src/context/reducers/assetSanitizers.ts'
+import { CHASSIS_CONFIG } from '../../src/utils/assetConfig.ts'
 
 const validAsset = (overrides = {}) => ({
   id: 'asset_1',
@@ -23,6 +25,20 @@ const validAsset = (overrides = {}) => ({
 })
 
 describe('sanitizeAssets', () => {
+  it('sanitizes asset kind lists against configured chassis kinds', () => {
+    const configuredKinds = Object.keys(CHASSIS_CONFIG)
+
+    assert.deepEqual(
+      sanitizeAssetKinds([
+        configuredKinds[0],
+        'not_a_real_kind',
+        configuredKinds[0],
+        configuredKinds[1]
+      ]),
+      [configuredKinds[0], configuredKinds[1]]
+    )
+  })
+
   it('accepts a fully valid asset', () => {
     const out = sanitizeAssets([validAsset()])
     assert.equal(out.length, 1)

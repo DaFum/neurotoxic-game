@@ -1,3 +1,9 @@
+/**
+ * Raw venue chatter table.
+ *
+ * Runtime consumers should use `VENUE_CHATTER_LOOKUP`; this remains exported
+ * as a deliberate test seam for locale and data-contract coverage.
+ */
 export const VENUE_CHATTER_DB = [
   // STENDAL / TANGERMÜNDE / MAGDEBURG
   {

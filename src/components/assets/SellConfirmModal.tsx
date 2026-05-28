@@ -71,7 +71,7 @@ export const SellConfirmModal = ({ asset, isOpen, onClose }: Props) => {
             onClick={onClose}
             className='min-h-11 border-2 px-3 py-2'
           >
-            {t('ui:action_cancel', { defaultValue: 'Cancel' })}
+            {t('ui:action_cancel')}
           </button>
           <Tooltip
             content={

@@ -29,14 +29,15 @@ export const handleUpdatePlayer = <TState extends WithPlayer>(
   const safeUpdates = { ...updates }
   if (Object.hasOwn(safeUpdates, 'money')) {
     safeUpdates.money = clampPlayerMoney(
-      typeof safeUpdates.money === 'number'
+      typeof safeUpdates.money === 'number' &&
+        Number.isFinite(safeUpdates.money)
         ? safeUpdates.money
         : state.player.money
     )
   }
   if (Object.hasOwn(safeUpdates, 'fame')) {
     const nextFame =
-      typeof safeUpdates.fame === 'number'
+      typeof safeUpdates.fame === 'number' && Number.isFinite(safeUpdates.fame)
         ? safeUpdates.fame
         : state.player.fame
     const clampedFame = clampPlayerFame(nextFame)

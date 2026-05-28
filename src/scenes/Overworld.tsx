@@ -31,6 +31,7 @@ export const Overworld = () => {
   const gameMap = useGameSelector(state => state.gameMap)
   const band = useGameSelector(state => state.band)
   const assets = useGameSelector(state => state.assets)
+  const liabilities = useGameSelector(state => state.liabilities)
   const social = useGameSelector(state => state.social)
   const reputationByRegion = useGameSelector(state => state.reputationByRegion)
   const venueBlacklist = useGameSelector(state => state.venueBlacklist)
@@ -121,6 +122,7 @@ export const Overworld = () => {
     player,
     band,
     assets,
+    liabilities,
     social,
     gameMap,
     reputationByRegion,

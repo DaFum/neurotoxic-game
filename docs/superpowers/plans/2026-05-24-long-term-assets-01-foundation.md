@@ -1364,12 +1364,14 @@ export const getAssetAggregateBoni = (asset: LongTermAsset): AssetBoni => {
       if (typeof v === 'number') {
         const current = agg[key] as number | undefined
         if (key.endsWith('Multiplier') || key === 'diyRiskMultiplier') {
-          ;(agg as any)[key] = (current ?? 1.0) * v
+          ;(agg as unknown as Record<string, number>)[key] =
+            (current ?? 1.0) * v
         } else {
-          ;(agg as any)[key] = (current ?? 0) + v
+          ;(agg as unknown as Record<string, number>)[key] = (current ?? 0) + v
         }
       } else if (typeof v === 'boolean') {
-        ;(agg as any)[key] = (agg as any)[key] || v
+        ;(agg as unknown as Record<string, boolean>)[key] =
+          (agg as unknown as Record<string, boolean>)[key] || v
       }
     }
   }

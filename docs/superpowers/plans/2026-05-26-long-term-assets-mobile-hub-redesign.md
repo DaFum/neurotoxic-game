@@ -1121,6 +1121,10 @@ import { ModulePickerModal } from './ModulePickerModal'
 import { RepairConfirmModal } from './RepairConfirmModal'
 import { SellConfirmModal } from './SellConfirmModal'
 import { AssetSectionDeck } from './AssetSectionDeck'
+import { ASSET_SECTION_TABS } from './sectionTabs'
+
+const getSectionShortLabel = (kind: AssetKind) =>
+  ASSET_SECTION_TABS.find(t => t.key === kind)?.shortLabel ?? 'tourbus'
 
 interface AssetSectionPanelProps {
   kind: AssetKind

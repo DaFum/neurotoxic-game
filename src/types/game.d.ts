@@ -3,6 +3,7 @@ import type { RhythmSetlistEntry } from './rhythmGame'
 import type { GAME_PHASES } from '../context/gameConstants'
 import type { UpdateSocialPayload } from './social'
 import type { PurchaseItem } from './components'
+import type { AssetKind, RiskEventDescriptor } from './assets'
 
 export type RelationshipChange = {
   member1: string
@@ -103,6 +104,8 @@ export interface GameState {
   unlocks: string[]
   pendingBandHQOpen: boolean
   pendingSupplyStopInventory: PurchaseItem[] | null
+  pendingForeclosureNotices: AssetKind[]
+  pendingRiskEvent: RiskEventDescriptor | null
   completedMilestones: string[]
   // Long-term asset system (see docs/superpowers/specs/2026-05-24-long-term-assets-design.md)
   assets: import('./assets').LongTermAsset[]
@@ -206,6 +209,8 @@ export type GameAction =
       ActionTypes['SET_PENDING_SUPPLY_STOP_INVENTORY'],
       PurchaseItem[] | null
     >
+  | Action<ActionTypes['DISMISS_FORECLOSURE_NOTICE'], { kind: AssetKind }>
+  | Action<ActionTypes['SET_PENDING_RISK_EVENT'], RiskEventDescriptor | null>
   // Long-term assets (Plan 1)
   | Action<
       ActionTypes['PURCHASE_CHASSIS'],
@@ -238,19 +243,7 @@ export type GameAction =
       ActionTypes['START_CROWDFUND'],
       { campaign: import('./assets').CrowdfundCampaign }
     >
-  | Action<
-      ActionTypes['RESOLVE_CROWDFUND'],
-      import('./assets').ResolveCrowdfundPayload
-    >
   | Action<ActionTypes['ASSET_FORECLOSED'], { assetId: string }>
-  | Action<
-      ActionTypes['ASSET_RISK_EVENT_TRIGGERED'],
-      {
-        assetId: string
-        eventType: import('./assets').RiskEventType
-        conditionLoss: number
-      }
-    >
 
 export * from './player'
 export * from './band'

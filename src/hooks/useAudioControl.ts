@@ -9,6 +9,9 @@ import type {
   UseAudioControlResult
 } from '../types/audio'
 
+// Deliberate test seams: these helpers stay exported so audio-control behavior
+// can be tested with mock managers without coupling tests to React scheduling.
+
 export const executeAudioAction = (
   manager: AudioManagerLike,
   methodName: keyof AudioManagerLike,
