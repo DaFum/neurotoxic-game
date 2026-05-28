@@ -1,6 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameSelector } from '../../context/GameState'
+import { Tooltip } from '../../ui/shared'
 import type { AssetKind, LongTermAsset } from '../../types/assets'
 import { AssetSectionDeck } from './AssetSectionDeck'
 import { ChassisAcquisitionModal } from './ChassisAcquisitionModal'
@@ -65,21 +66,29 @@ export const AssetSectionPanel = ({
           <p className='assets-hub-control mt-1 text-sm opacity-70'>
             {t(`assets:section.${SECTION_LABELS[kind]}.description`)}
           </p>
-          <button
-            type='button'
-            onClick={() => {
-              if (!acquisitionBlocked) setAcquireOpen(true)
-            }}
-            disabled={acquisitionBlocked}
-            className='assets-hub-control mt-3 min-h-11 border-2 px-4 py-2 text-xs uppercase disabled:opacity-40'
-            style={{
-              borderColor: 'var(--section-accent)',
-              background: 'var(--section-accent)',
-              color: 'var(--color-void-black)'
-            }}
+          <Tooltip
+            content={
+              acquisitionBlocked
+                ? t('assets:purchaseFailed.acquisition_already_active')
+                : undefined
+            }
           >
-            {t('assets:hub.actions.acquire')}
-          </button>
+            <button
+              type='button'
+              onClick={() => {
+                if (!acquisitionBlocked) setAcquireOpen(true)
+              }}
+              disabled={acquisitionBlocked}
+              className='assets-hub-control mt-3 min-h-11 border-2 px-4 py-2 text-xs uppercase disabled:opacity-40'
+              style={{
+                borderColor: 'var(--section-accent)',
+                background: 'var(--section-accent)',
+                color: 'var(--color-void-black)'
+              }}
+            >
+              {t('assets:hub.actions.acquire')}
+            </button>
+          </Tooltip>
           {acquisitionBlocked && (
             <p
               className='assets-hub-control mt-2 text-xs'

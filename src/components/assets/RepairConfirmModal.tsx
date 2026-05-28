@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { Modal } from '../../ui/shared/Modal'
+import { Tooltip } from '../../ui/shared/Tooltip'
 import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 import { getRepairImagePrompt } from '../../utils/imageGen'
 import { REPAIR_COST_PER_POINT } from '../../utils/assetConfig'
@@ -51,21 +52,29 @@ export const RepairConfirmModal = ({ asset, isOpen, onClose }: Props) => {
           >
             {t('ui:action_cancel', { defaultValue: 'Cancel' })}
           </button>
-          <button
-            type='button'
-            onClick={() => {
-              repairChassis(asset.id)
-              onClose()
-            }}
-            disabled={cost === 0 || money < cost}
-            className='min-h-11 border-2 px-3 py-2 disabled:opacity-40'
-            style={{
-              background: 'var(--section-accent, var(--color-toxic-green))',
-              color: 'var(--color-void)'
-            }}
+          <Tooltip
+            content={
+              money < cost
+                ? t('assets:purchaseFailed.insufficient_funds')
+                : undefined
+            }
           >
-            {t('assets:actions.repair')}
-          </button>
+            <button
+              type='button'
+              onClick={() => {
+                repairChassis(asset.id)
+                onClose()
+              }}
+              disabled={cost === 0 || money < cost}
+              className='min-h-11 border-2 px-3 py-2 disabled:opacity-40'
+              style={{
+                background: 'var(--section-accent, var(--color-toxic-green))',
+                color: 'var(--color-void)'
+              }}
+            >
+              {t('assets:actions.repair')}
+            </button>
+          </Tooltip>
         </div>
       </div>
     </Modal>

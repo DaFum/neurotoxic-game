@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { Modal } from '../../ui/shared/Modal'
+import { Tooltip } from '../../ui/shared/Tooltip'
 import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 import { getChassisImagePrompt } from '../../utils/imageGen'
 import { CHASSIS_CONFIG } from '../../utils/assetConfig'
@@ -72,21 +73,29 @@ export const SellConfirmModal = ({ asset, isOpen, onClose }: Props) => {
           >
             {t('ui:action_cancel', { defaultValue: 'Cancel' })}
           </button>
-          <button
-            type='button'
-            onClick={() => {
-              sellChassis(asset.id)
-              onClose()
-            }}
-            disabled={blocked}
-            className='min-h-11 border-2 px-3 py-2 disabled:opacity-40'
-            style={{
-              background: 'var(--section-accent, var(--color-toxic-green))',
-              color: 'var(--color-void)'
-            }}
+          <Tooltip
+            content={
+              blocked
+                ? t('assets:sellFailed.liability_exceeds_value')
+                : undefined
+            }
           >
-            {t('assets:actions.sell')}
-          </button>
+            <button
+              type='button'
+              onClick={() => {
+                sellChassis(asset.id)
+                onClose()
+              }}
+              disabled={blocked}
+              className='min-h-11 border-2 px-3 py-2 disabled:opacity-40'
+              style={{
+                background: 'var(--section-accent, var(--color-toxic-green))',
+                color: 'var(--color-void)'
+              }}
+            >
+              {t('assets:actions.sell')}
+            </button>
+          </Tooltip>
         </div>
       </div>
     </Modal>

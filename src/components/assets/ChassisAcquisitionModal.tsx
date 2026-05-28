@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Modal } from '../../ui/shared/Modal'
+import { Tooltip } from '../../ui/shared/Tooltip'
 import { CrowdfundSetupModal } from './CrowdfundSetupModal'
 import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 import { getChassisImagePrompt } from '../../utils/imageGen'
@@ -111,6 +112,7 @@ export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
             onChange={setMode}
             renderLabel={m => t(`assets:mode.${m}`)}
             disabledOption={flavor === 'diy' ? 'loan' : undefined}
+            disabledReason={t('assets:purchaseFailed.diy_loan_not_allowed')}
           />
 
           {mode === 'loan' && (
@@ -140,23 +142,36 @@ export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
               >
                 {t('ui:action_cancel', { defaultValue: 'Cancel' })}
               </button>
-              <button
-                type='button'
-                onClick={onConfirm}
-                disabled={
-                  acquisitionBlocked ||
-                  diyLoanBlocked ||
-                  insufficient ||
-                  price === 0
+              <Tooltip
+                content={
+                  acquisitionBlocked
+                    ? t('assets:purchaseFailed.acquisition_already_active')
+                    : diyLoanBlocked
+                      ? t('assets:purchaseFailed.diy_loan_not_allowed')
+                      : insufficient
+                        ? t('assets:purchaseFailed.insufficient_funds')
+                        : undefined
                 }
-                className='min-h-11 border-2 px-3 py-2 disabled:opacity-40'
-                style={{
-                  background: 'var(--section-accent, var(--color-toxic-green))',
-                  color: 'var(--color-void)'
-                }}
               >
-                {t('assets:actions.purchase')}
-              </button>
+                <button
+                  type='button'
+                  onClick={onConfirm}
+                  disabled={
+                    acquisitionBlocked ||
+                    diyLoanBlocked ||
+                    insufficient ||
+                    price === 0
+                  }
+                  className='min-h-11 border-2 px-3 py-2 disabled:opacity-40'
+                  style={{
+                    background:
+                      'var(--section-accent, var(--color-toxic-green))',
+                    color: 'var(--color-void)'
+                  }}
+                >
+                  {t('assets:actions.purchase')}
+                </button>
+              </Tooltip>
             </div>
           </div>
 
@@ -201,6 +216,7 @@ interface ChoiceGroupProps<T extends string | number> {
   onChange: (v: T) => void
   renderLabel: (v: T) => string
   disabledOption?: T
+  disabledReason?: string
 }
 
 const ChoiceGroup = <T extends string | number>({
@@ -209,7 +225,8 @@ const ChoiceGroup = <T extends string | number>({
   value,
   onChange,
   renderLabel,
-  disabledOption
+  disabledOption,
+  disabledReason
 }: ChoiceGroupProps<T>) => (
   <div className='flex min-w-0 flex-1 flex-col gap-1'>
     <span className='text-xs uppercase opacity-60'>{label}</span>
@@ -217,7 +234,7 @@ const ChoiceGroup = <T extends string | number>({
       {options.map(opt => {
         const isActive = opt === value
         const isDisabled = opt === disabledOption
-        return (
+        const btn = (
           <button
             key={String(opt)}
             type='button'
@@ -236,6 +253,13 @@ const ChoiceGroup = <T extends string | number>({
           >
             {renderLabel(opt)}
           </button>
+        )
+        return isDisabled && disabledReason ? (
+          <Tooltip key={String(opt)} content={disabledReason}>
+            {btn}
+          </Tooltip>
+        ) : (
+          btn
         )
       })}
     </div>

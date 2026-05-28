@@ -139,13 +139,18 @@
 
 **Learning:** Combining `.map()` and `.filter()` in frequently called reducers (like `bandReducer`'s `applyContrabandEffect`) and render loops (like `BrandDealsTab`) creates intermediate array allocations that add up to significant GC pressure on hot paths.
 **Action:** Replaced array iteration method chains with procedural `for` loops to directly construct the filtered/mapped lists in a single pass. Specifically, in `applyContrabandEffect`, avoiding mapping over all members when only one member is updated avoids unnecessary object clones and array allocations. In `BrandDealsTab`, mapping active deals directly to `Set` values avoids intermediate tuple array creation.
+
 ## 2025-02-23 - Prevent Redundant Array Allocation in Object Aggregations
+
 **Learning:** Sequential calls to `Object.values(obj).reduce(...)` directly after iterating to build the object create unnecessary intermediate arrays and a second O(N) pass, degrading performance.
 **Action:** Always compute running totals concurrently within the same initialization loop that populates the dictionary/object to eliminate redundant passes and memory allocations.
+
 ## 2026-05-25 - Prevent Set reallocation overhead in CableList
+
 **Learning:** Recreating objects like Sets inside a functional component body based on props forces the Set to re-allocate and garbage collect on every React render. Object.values(obj).filter() chained with Set creation compound this overhead because it creates multiple intermediate arrays along the way.
 **Action:** When a set or collection is derived from props, wrap it in useMemo to prevent reallocation overhead when unrelated props trigger re-renders. Use a for...in loop inside the useMemo to avoid intermediate array allocations.
 
 ## 2026-05-26 - Array Mapping and Filtering in Sanitizers
+
 **Learning:** Chaining .map().filter() creates multiple intermediate array allocations that add up to significant GC pressure on hot paths like sanitizers.
 **Action:** Replace array iteration method chains with procedural for loops to directly construct the filtered/mapped lists in a single pass.

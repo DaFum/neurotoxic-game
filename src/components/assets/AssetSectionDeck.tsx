@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import type { LongTermAsset } from '../../types/assets'
 import { getNextChassisTier } from '../../utils/assetConfig'
 import { AssetSlotActionList } from './AssetSlotActionList'
+import { Tooltip } from '../../ui/shared'
 
 interface AssetSectionDeckProps {
   asset: LongTermAsset
@@ -48,36 +49,44 @@ export const AssetSectionDeck = ({
 
       <div className='flex min-w-0 flex-col gap-3'>
         <div className='assets-hub-reveal grid grid-cols-3 gap-2'>
-          <button
-            type='button'
-            onClick={onRepair}
-            disabled={!needsRepair}
-            className='assets-hub-control min-h-11 border-2 px-2 py-2 text-xs uppercase disabled:opacity-40'
-            style={{
-              borderColor: 'var(--section-accent, var(--color-toxic-green))',
-              background: needsRepair
-                ? 'var(--section-accent, var(--color-toxic-green))'
-                : 'transparent',
-              color: needsRepair ? 'var(--color-void-black)' : 'inherit'
-            }}
+          <Tooltip
+            content={!needsRepair ? t('assets:actions.notDamaged') : undefined}
           >
-            {t('assets:actions.repair')}
-          </button>
-          <button
-            type='button'
-            onClick={onUpgrade}
-            disabled={!canUpgrade}
-            className='assets-hub-control min-h-11 border-2 px-2 py-2 text-xs uppercase disabled:opacity-40'
-            style={{
-              borderColor: 'var(--section-accent, var(--color-toxic-green))',
-              background: canUpgrade
-                ? 'var(--section-accent, var(--color-toxic-green))'
-                : 'transparent',
-              color: canUpgrade ? 'var(--color-void-black)' : 'inherit'
-            }}
+            <button
+              type='button'
+              onClick={onRepair}
+              disabled={!needsRepair}
+              className='assets-hub-control min-h-11 border-2 px-2 py-2 text-xs uppercase disabled:opacity-40'
+              style={{
+                borderColor: 'var(--section-accent, var(--color-toxic-green))',
+                background: needsRepair
+                  ? 'var(--section-accent, var(--color-toxic-green))'
+                  : 'transparent',
+                color: needsRepair ? 'var(--color-void-black)' : 'inherit'
+              }}
+            >
+              {t('assets:actions.repair')}
+            </button>
+          </Tooltip>
+          <Tooltip
+            content={!canUpgrade ? t('assets:actions.maxTier') : undefined}
           >
-            {t('assets:actions.upgrade')}
-          </button>
+            <button
+              type='button'
+              onClick={onUpgrade}
+              disabled={!canUpgrade}
+              className='assets-hub-control min-h-11 border-2 px-2 py-2 text-xs uppercase disabled:opacity-40'
+              style={{
+                borderColor: 'var(--section-accent, var(--color-toxic-green))',
+                background: canUpgrade
+                  ? 'var(--section-accent, var(--color-toxic-green))'
+                  : 'transparent',
+                color: canUpgrade ? 'var(--color-void-black)' : 'inherit'
+              }}
+            >
+              {t('assets:actions.upgrade')}
+            </button>
+          </Tooltip>
           <button
             type='button'
             onClick={onSell}
