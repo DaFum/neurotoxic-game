@@ -5,9 +5,15 @@ description: enforce brutalist UI design system. Trigger when creating or modify
 
 # Brutalist UI Convention Keeper
 
+## Overview
+
 Enforce the strict "Brutalist" design system across the application.
 
-## Core Rules
+## When to Use
+
+- Trigger when creating or modifying UI components. Checks for correct colors, borders, shadows, and Tailwind v4 usage.
+
+## Quick Reference (Core Rules)
 
 1.  **No Rounded Corners**: `rounded-none` always.
 2.  **Thick Borders**: `border-2` or `border-4`.
@@ -19,7 +25,7 @@ Enforce the strict "Brutalist" design system across the application.
     - `border-blood-red` (for borders) or `var(--color-toxic-green)` (for inline shadows)
     - Keep all color tokens in CSS variables / CSS Variables; never hardcode colors.
 
-## Workflow
+## Quick Reference
 
 1.  **Check Styling**
     Inspect the component's class names.
@@ -44,6 +50,8 @@ Enforce the strict "Brutalist" design system across the application.
 
 **Input**: "Create a modal for the settings."
 
+## Common Mistakes
+
 **Incorrect Output**:
 
 ```jsx
@@ -63,3 +71,10 @@ Enforce the strict "Brutalist" design system across the application.
 ```
 
 _Skill sync: compatible with React 19.2.6 / Vite 8.0.10 / Tailwind 4.2.4 baseline as of 2026-05-20._
+
+
+## Red Flags - STOP and Start Over
+
+- Using rounded corners (`rounded-md`, `rounded-lg`) anywhere in the application
+- Using soft shadows instead of hard offset shadows
+- Hardcoding hex colors instead of using CSS variable tokens from `@theme`

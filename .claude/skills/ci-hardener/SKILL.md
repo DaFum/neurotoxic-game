@@ -5,9 +5,15 @@ description: improve CI reliability, speed, and clarity. Trigger when CI is slow
 
 # CI Hardener
 
+## Overview
+
 Optimize and harden Continuous Integration (CI) workflows.
 
-## Workflow
+## When to Use
+
+- Trigger when CI is slow, flaky, fails silently, or needs optimization. Focus on GitHub Actions workflows.
+
+## Quick Reference
 
 1.  **Audit Current Workflows**
     List all workflows in `.github/workflows/`. Identify:
@@ -29,7 +35,7 @@ Optimize and harden Continuous Integration (CI) workflows.
 4.  **Verify**
     Ensure the changes are valid YAML and follow GitHub Actions syntax.
 
-## Checklist
+## Common Mistakes
 
 - [ ] `timeout-minutes` is set.
 - [ ] `concurrency` is set for PRs.
@@ -63,3 +69,15 @@ jobs:
 "Added `pnpm/action-setup` with caching to the install step. This will speed up subsequent runs by reusing the pnpm cache."
 
 _Skill sync: compatible with React 19.2.6 / Vite 8.0.10 / Tailwind 4.2.4 baseline as of 2026-05-20._
+
+
+## Common Mistakes
+
+- Increasing timeouts without addressing the root cause
+- Ignoring parallelization opportunities
+- Running tests on stale code without frozen lockfiles
+
+## Red Flags - STOP and Start Over
+
+- Attempting to optimize CI workflows by blindly increasing timeouts
+- Treating flaky tests by adding sleeps instead of addressing the root race condition

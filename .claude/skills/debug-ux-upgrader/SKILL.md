@@ -5,9 +5,15 @@ description: add debug tools, overlays, and logging. Trigger when asking for dia
 
 # Debug UX Upgrader
 
+## Overview
+
 Enhance the application with developer-facing diagnostic tools.
 
-## Workflow
+## When to Use
+
+- Trigger when asking for diagnostics, visualizations, or dev-tools. Use existing logger and debug viewer.
+
+## Quick Reference
 
 1.  **Determine the Tooling Type**
     - **Visual Overlay**: Real-time stats (FPS, state). Add to `DebugLogViewer` or a new overlay.
@@ -50,3 +56,15 @@ Enhance the application with developer-facing diagnostic tools.
 "Added coordinate logging to the player loop. Enable 'Player' category in DebugLogViewer to see it."
 
 _Skill sync: compatible with React 19.2.6 / Vite 8.0.10 / Tailwind 4.2.4 baseline as of 2026-05-20._
+
+
+## Common Mistakes
+
+- Using `console.log` directly instead of the structured `logger` utility
+- Rendering debug tools without a high `z-index`, causing them to be hidden by modals
+- Failing to guard debug overlays behind `import.meta.env.DEV` checks
+
+## Red Flags - STOP and Start Over
+
+- Leaving dev-tools and visual debuggers enabled in production builds
+- Building complex custom logging frameworks instead of leveraging the existing tools

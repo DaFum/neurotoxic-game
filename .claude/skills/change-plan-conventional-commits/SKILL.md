@@ -5,9 +5,15 @@ description: plan code changes and draft commit messages. Trigger when preparing
 
 # Change Plan & Conventional Commits
 
+## Overview
+
 Create a structured plan for code changes and draft compliant commit messages.
 
-## Workflow
+## When to Use
+
+- Trigger when preparing to modify code, refactor, or fix bugs.
+
+## Quick Reference
 
 1.  **Analyze the Request**
     Identify the scope: is it a feature, fix, refactor, or chore?
@@ -60,3 +66,15 @@ Create a structured plan for code changes and draft compliant commit messages.
     ```
 
 _Skill sync: compatible with React 19.2.6 / Vite 8.0.10 / Tailwind 4.2.4 baseline as of 2026-05-20._
+
+
+## Common Mistakes
+
+- Using vague commit descriptions like 'fixed bugs'
+- Committing multiple unrelated features in a single commit
+- Mixing `feat` and `refactor` in the same commit without isolating them
+
+## Red Flags - STOP and Start Over
+
+- Writing a commit message that lacks a conventional type (e.g., feat, fix, chore)
+- Providing a commit description that explains 'what' the code does instead of 'why' the change was made

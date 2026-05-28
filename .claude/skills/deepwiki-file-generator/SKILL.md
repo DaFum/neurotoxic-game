@@ -11,17 +11,15 @@ description: >
 
 # DeepWiki wiki.json Generator
 
+## Overview
+
 Generate `.devin/wiki.json` files that steer Devin's DeepWiki documentation generation for repositories.
 
-## When This Skill Applies
+## When to Use
 
-- User wants to create a new `.devin/wiki.json` for a repository
-- User wants to improve an existing `.devin/wiki.json`
-- User's DeepWiki is missing important parts of their codebase
-- User wants to restructure their auto-generated wiki
-- User mentions DeepWiki, Devin wiki, or repository documentation steering
+- Use when the user mentions DeepWiki, wiki.json, Devin wiki, repository documentation generation, or wants to control how their codebase gets auto-documented.
 
-## Workflow
+## Quick Reference
 
 ### Step 1: Determine Context
 
@@ -257,7 +255,7 @@ Organize around user-facing concerns:
 
 ---
 
-## Troubleshooting
+## Common Mistakes
 
 | Problem                                 | Likely Cause                        | Solution                                                                             |
 | --------------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------ |
@@ -275,3 +273,10 @@ Organize around user-facing concerns:
 - [Official DeepWiki Documentation](https://docs.devin.ai/work-with-devin/deepwiki)
 - Public repos can use [deepwiki.com](https://deepwiki.com/) — replace `github.com` with `deepwiki.com` in any repo URL
 - For private repos, DeepWiki is available through [Devin](https://app.devin.ai/wiki)
+
+
+## Red Flags - STOP and Start Over
+
+- Generating a flat list of pages without any hierarchical structure
+- Adding deeply nested structures (DeepWiki struggles beyond 2 levels)
+- Forgetting to include glob patterns in `sources` that actually capture the repository's files
