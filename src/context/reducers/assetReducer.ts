@@ -16,6 +16,7 @@ import {
 import { LOAN_PROFILES, computeAmortization } from '../../utils/loanProfiles'
 import { MODULE_REGISTRY } from '../../utils/assetModuleRegistry'
 import { hasActiveAssetAcquisition } from '../../utils/assetSelectors'
+import { finiteNumberOr } from '../../utils/gameStateUtils'
 
 export const handlePurchaseChassis = (
   state: GameState,
@@ -290,9 +291,14 @@ export const handleSellChassis = (
   if (!asset) return state
 
   const assetLiabilities = state.liabilities.filter(l => l.assetId === assetId)
-  const totalPrincipalRemaining = assetLiabilities.reduce(
-    (sum, liability) => sum + liability.principalRemaining,
+  const rawTotalPrincipalRemaining = assetLiabilities.reduce(
+    (sum, liability) =>
+      sum + Math.max(0, finiteNumberOr(liability.principalRemaining, 0)),
     0
+  )
+  const totalPrincipalRemaining = Math.max(
+    0,
+    finiteNumberOr(rawTotalPrincipalRemaining, 0)
   )
 
   const daysOwned = Math.max(0, state.player.day - asset.acquiredOnDay)

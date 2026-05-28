@@ -430,6 +430,44 @@ test('handleSellChassis - pays off all liabilities for the sold asset', () => {
   )
 })
 
+test('handleSellChassis - ignores non-finite liability principal when computing payoff', () => {
+  const configTier = CHASSIS_CONFIG.tourbus_chassis.legit[1]
+  const startState = {
+    ...mockState,
+    assets: [
+      {
+        id: 'a1',
+        kind: 'tourbus_chassis',
+        chassisFlavor: 'legit',
+        chassisTier: 1,
+        condition: 100,
+        baseUpkeep: configTier.upkeep,
+        baseDailyRevenue: configTier.revenue,
+        slots: [],
+        acquiredOnDay: mockState.player.day,
+        acquisitionMode: 'loan',
+        baseRiskEventChance: configTier.baseRiskEventChance
+      }
+    ],
+    liabilities: [
+      { id: 'loan_1', assetId: 'a1', principalRemaining: 300 },
+      { id: 'loan_nan', assetId: 'a1', principalRemaining: Number.NaN },
+      {
+        id: 'loan_inf',
+        assetId: 'a1',
+        principalRemaining: Number.POSITIVE_INFINITY
+      }
+    ]
+  }
+
+  const next = handleSellChassis(startState, { assetId: 'a1' })
+
+  assert.strictEqual(
+    next.player.money,
+    mockState.player.money + configTier.price - 300
+  )
+})
+
 test('handleAssetFailedAction - is no-op', () => {
   const next = handleAssetFailedAction(mockState)
   assert.strictEqual(next, mockState)
