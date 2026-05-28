@@ -66,29 +66,39 @@ export const AssetSectionPanel = ({
           <p className='assets-hub-control mt-1 text-sm opacity-70'>
             {t(`assets:section.${SECTION_LABELS[kind]}.description`)}
           </p>
-          <Tooltip
-            content={
-              acquisitionBlocked
-                ? t('assets:purchaseFailed.acquisition_already_active')
-                : undefined
-            }
-          >
+          {acquisitionBlocked ? (
+            <Tooltip
+              content={t('assets:purchaseFailed.acquisition_already_active')}
+            >
+              <button
+                type='button'
+                disabled={true}
+                className='assets-hub-control mt-3 min-h-11 border-2 px-4 py-2 text-xs uppercase disabled:opacity-40'
+                style={{
+                  borderColor:
+                    'var(--section-accent, var(--color-toxic-green))',
+                  background: 'var(--section-accent, var(--color-toxic-green))',
+                  color: 'var(--color-void-black)'
+                }}
+              >
+                {t('assets:hub.actions.acquire')}
+              </button>
+            </Tooltip>
+          ) : (
             <button
               type='button'
-              onClick={() => {
-                if (!acquisitionBlocked) setAcquireOpen(true)
-              }}
-              disabled={acquisitionBlocked}
+              onClick={() => setAcquireOpen(true)}
+              disabled={false}
               className='assets-hub-control mt-3 min-h-11 border-2 px-4 py-2 text-xs uppercase disabled:opacity-40'
               style={{
-                borderColor: 'var(--section-accent)',
-                background: 'var(--section-accent)',
+                borderColor: 'var(--section-accent, var(--color-toxic-green))',
+                background: 'var(--section-accent, var(--color-toxic-green))',
                 color: 'var(--color-void-black)'
               }}
             >
               {t('assets:hub.actions.acquire')}
             </button>
-          </Tooltip>
+          )}
           {acquisitionBlocked && (
             <p
               className='assets-hub-control mt-2 text-xs'

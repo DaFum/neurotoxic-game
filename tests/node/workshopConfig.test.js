@@ -66,9 +66,13 @@ describe('WORKSHOP_SLOT_ZONES', () => {
       assert.ok(previous && current)
       assert.ok(
         current.x > previous.x,
-        `${current} should be right of ${previous}`
+        `slot ${mainLine[i]} (x=${current.x}) should be right of slot ${mainLine[i - 1]} (x=${previous.x})`
       )
-      assert.equal(current.y, 0.5, `${current} should stay on main line`)
+      assert.equal(
+        current.y,
+        0.5,
+        `slot ${mainLine[i]} should stay on main line`
+      )
     }
   })
 

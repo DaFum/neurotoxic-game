@@ -1,0 +1,4 @@
+## 2026-05-28 - Tooltips on disabled elements
+**Learning:** React native disabled elements do not fire pointer events like onMouseEnter, which means tooltips on standard disabled buttons don't fire without wrappers. The `Tooltip` component handles this automatically by wrapping disabled inputs in a tab/hover friendly \`<span>\`, BUT rendering an empty \`Tooltip\` shell conditionally based on its content (e.g., \`<Tooltip content={undefined}>\`) breaks accessibility. Always conditionally render the *Tooltip component itself*, rather than relying on it to disappear when its content prop is falsy, to ensure native \`aria-labels\` and screen-reader behaviors aren't overridden by ghost wrappers.
+
+**Action:** Only wrap elements in a \`Tooltip\` when a tooltip should genuinely be present. Do not use ternary logic to pass \`undefined\` to the \`content\` prop.
