@@ -16,7 +16,7 @@ export const CreditEntry = React.memo(
         transition={{ delay }}
         className='flex flex-col gap-2'
       >
-        <span className='text-ash-gray/60 text-[10px] font-mono tracking-[0.4em] uppercase'>
+        <span className='text-ash-gray text-[10px] font-mono tracking-[0.4em] uppercase'>
           {role}
         </span>
         <span className='text-star-white text-2xl font-bold font-[Metal_Mania] tracking-wide'>

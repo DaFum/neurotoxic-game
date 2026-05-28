@@ -193,7 +193,7 @@ export const MainMenu = () => {
         className='absolute bottom-4 sm:bottom-6 flex w-full flex-col items-center gap-1 z-10 px-4'
       >
         <div className='w-32 h-[1px] bg-gradient-to-r from-transparent via-ash-gray/50 to-transparent' />
-        <div className='text-center text-ash-gray/60 text-[10px] font-mono tracking-widest'>
+        <div className='text-center text-ash-gray text-[10px] font-mono tracking-widest'>
           © 2026 NEUROTOXIC // DEATH GRINDCORE FROM STENDAL
         </div>
       </motion.div>

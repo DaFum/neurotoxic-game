@@ -116,7 +116,7 @@ export const GigModifiersBlock = ({
             ))}
           </ul>
         ) : (
-          <div className='text-[10px] text-ash-gray/50 italic'>
+          <div className='text-[10px] text-ash-gray italic'>
             {t('ui:pregig.noModifiers')}
           </div>
         )}
