@@ -589,9 +589,12 @@ const buildEligibilityPool = (ctx: DealMatchContext): PoolEntry[] => {
   // Tier 2: probe sponsoring — lowest-bar deals regardless of trend/trait.
   // Pick the catalog entries with the smallest follower requirement to keep
   // them plausible for a brand-new band.
-  const remaining = [...BRAND_DEALS_BY_ID.values()].filter(
-    deal => !seen.has(deal.id)
-  )
+  const remaining: BrandDeal[] = []
+  for (const deal of BRAND_DEALS_BY_ID.values()) {
+    if (!seen.has(deal.id)) {
+      remaining.push(deal)
+    }
+  }
   remaining.sort((a, b) => a.requirements.followers - b.requirements.followers)
   for (const deal of remaining) {
     if (pool.length >= 3) break
