@@ -5,6 +5,7 @@ import type {
   Liability,
   LongTermAsset,
   AssetKind,
+  RiskEventDescriptor,
   RiskEventType
 } from '../types/assets'
 import {
@@ -288,12 +289,6 @@ export const processCrowdfundTick = (state: GameState): GameState => {
     assets: [...(state.assets ?? []), ...newAssetsWithDay],
     crowdfundCampaigns: remaining
   }
-}
-
-export interface RiskEventDescriptor {
-  assetId: string
-  eventType: RiskEventType
-  conditionLoss: number
 }
 
 export interface RollAssetRiskEventsResult {

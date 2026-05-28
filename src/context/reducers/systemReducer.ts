@@ -73,8 +73,10 @@ import {
   sanitizeAssetKinds,
   sanitizeCrowdfundCampaigns,
   sanitizeLiabilities,
+  sanitizeRiskEventDescriptor,
   sanitizeRngSeed
 } from './assetSanitizers'
+import type { RiskEventDescriptor } from '../../types/assets'
 
 const ALLOWED_MINIGAME_TYPES = new Set<MinigameType>(
   Object.values(MINIGAME_TYPES)
@@ -1464,6 +1466,7 @@ export const handleLoadGame = (
     pendingForeclosureNotices: sanitizeAssetKinds(
       loadedState.pendingForeclosureNotices
     ),
+    pendingRiskEvent: sanitizeRiskEventDescriptor(loadedState.pendingRiskEvent),
     eventCooldowns: sanitizeStringArray(loadedState.eventCooldowns),
     activeEvent: sanitizeActiveEvent(loadedState.activeEvent),
     toasts: sanitizeToasts(loadedState.toasts),
@@ -1820,6 +1823,13 @@ export const handleAdvanceDay = (
           toasts: [...(nextStatePre.toasts ?? []), ...newToasts]
         }
       }
+      const firstEvent = events[0]
+      if (firstEvent) {
+        nextStatePre = {
+          ...nextStatePre,
+          pendingRiskEvent: firstEvent
+        }
+      }
     }
   }
   const rngSeed = payload?.nextRngSeed ?? nextStatePre.rngSeed
@@ -1928,5 +1938,21 @@ export const handleSetPendingSupplyStopInventory = (
   return {
     ...state,
     pendingSupplyStopInventory: nextInventory
+  }
+}
+
+export const handleSetPendingRiskEvent = (
+  state: GameState,
+  event: RiskEventDescriptor | null
+): GameState => {
+  const nextEvent =
+    event !== null && typeof event === 'object' && !Array.isArray(event)
+      ? event
+      : null
+  if (state.pendingRiskEvent === nextEvent) return state
+
+  return {
+    ...state,
+    pendingRiskEvent: nextEvent
   }
 }

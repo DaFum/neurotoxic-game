@@ -244,6 +244,66 @@ test('Game reducer dismisses foreclosure notices by kind', () => {
   assert.deepEqual(nextState.pendingForeclosureNotices, ['studio_chassis'])
 })
 
+test('AdvanceDay handler records the first fired asset risk event', () => {
+  const baseState = createInitialState()
+  const initialState = {
+    ...baseState,
+    currentScene: GAME_PHASES.OVERWORLD,
+    player: {
+      ...baseState.player,
+      money: 1000,
+      day: 10,
+      eventsTriggeredToday: 0
+    },
+    assets: [
+      {
+        id: 'risk_asset_1',
+        kind: 'tourbus_chassis',
+        chassisFlavor: 'legit',
+        chassisTier: 1,
+        condition: 100,
+        baseDailyRevenue: 0,
+        baseUpkeep: 0,
+        baseRiskEventChance: 1,
+        slots: [],
+        acquiredOnDay: 1,
+        acquisitionMode: 'cash'
+      },
+      {
+        id: 'risk_asset_2',
+        kind: 'studio_chassis',
+        chassisFlavor: 'legit',
+        chassisTier: 1,
+        condition: 100,
+        baseDailyRevenue: 0,
+        baseUpkeep: 0,
+        baseRiskEventChance: 1,
+        slots: [],
+        acquiredOnDay: 1,
+        acquisitionMode: 'cash'
+      }
+    ],
+    liabilities: [],
+    crowdfundCampaigns: [],
+    rngSeed: 12345
+  }
+
+  const nextState = handleAdvanceDay(initialState, {
+    dayRngStream: [0, 0],
+    nextRngSeed: 54321
+  })
+
+  assert.deepEqual(nextState.pendingRiskEvent, {
+    assetId: 'risk_asset_1',
+    eventType: 'fire',
+    conditionLoss: 15
+  })
+  assert.equal(
+    nextState.toasts.filter(toast => toast.type === 'warning').length,
+    2
+  )
+})
+
 test('AdvanceDay Integration - bankruptcy uses total daily obligations', () => {
   const initialState = {
     currentScene: GAME_PHASES.OVERWORLD,

@@ -10,6 +10,8 @@ import type {
   CrowdfundCampaign,
   Liability,
   LongTermAsset,
+  RiskEventDescriptor,
+  RiskEventType,
   SlotType
 } from '../../types/assets'
 
@@ -24,6 +26,17 @@ const VALID_MODES: ReadonlySet<string> = new Set(['cash', 'loan', 'crowdfund'])
 const VALID_SOURCES: ReadonlySet<string> = new Set(['loan', 'crowdfund'])
 const VALID_TIERS: ReadonlySet<number> = new Set([1, 2, 3])
 const VALID_OUTCOMES: ReadonlySet<string> = new Set(['success', 'fail'])
+const VALID_RISK_EVENT_TYPES: ReadonlySet<string> = new Set([
+  'eviction',
+  'fire',
+  'theft',
+  'police_check',
+  'copyright_strike',
+  'raid',
+  'scam_or_bust',
+  'paranormal',
+  'foreclosure'
+])
 
 // Mirror of the SlotType union in src/types/assets.d.ts. Persisted payloads
 // (save files, hostile input) must be cross-checked against this allow-list
@@ -80,6 +93,32 @@ export const sanitizeAssetKinds = (raw: unknown): AssetKind[] => {
     if (!out.includes(kind)) out.push(kind)
   }
   return out
+}
+
+export const sanitizeRiskEventDescriptor = (
+  raw: unknown
+): RiskEventDescriptor | null => {
+  if (!isLooseRecord(raw)) return null
+  const clean = stripHostileKeys(raw)
+  if (typeof clean.assetId !== 'string') return null
+  if (
+    typeof clean.eventType !== 'string' ||
+    !VALID_RISK_EVENT_TYPES.has(clean.eventType)
+  ) {
+    return null
+  }
+  if (
+    typeof clean.conditionLoss !== 'number' ||
+    !Number.isFinite(clean.conditionLoss)
+  ) {
+    return null
+  }
+
+  return {
+    assetId: clean.assetId,
+    eventType: clean.eventType as RiskEventType,
+    conditionLoss: clean.conditionLoss
+  }
 }
 
 const HOSTILE_KEYS = ['__proto__', 'constructor', 'prototype']

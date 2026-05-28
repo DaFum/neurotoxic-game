@@ -4,6 +4,7 @@ import { AssetsScene } from '../../src/components/assets/AssetsScene'
 
 const mockChangeScene = vi.fn()
 const mockDismissForeclosureNotice = vi.fn()
+const mockSetPendingRiskEvent = vi.fn()
 const mockState = vi.hoisted(() => ({
   player: { money: 1000 },
   band: {},
@@ -11,7 +12,8 @@ const mockState = vi.hoisted(() => ({
   assets: [],
   liabilities: [],
   crowdfundCampaigns: [],
-  pendingForeclosureNotices: []
+  pendingForeclosureNotices: [],
+  pendingRiskEvent: null
 }))
 
 const pendingTourbusCampaign = {
@@ -33,7 +35,8 @@ const pendingTourbusCampaign = {
 vi.mock('../../src/context/GameState', () => ({
   useGameActions: () => ({
     changeScene: mockChangeScene,
-    dismissForeclosureNotice: mockDismissForeclosureNotice
+    dismissForeclosureNotice: mockDismissForeclosureNotice,
+    setPendingRiskEvent: mockSetPendingRiskEvent
   }),
   useGameSelector: (selector: (state: typeof mockState) => unknown) =>
     selector(mockState)
@@ -82,6 +85,7 @@ vi.mock('react-i18next', () => ({
         'assets:hub.finance.title': 'Finance',
         'assets:hub.finance.noCampaigns': 'No active campaigns',
         'assets:foreclosure': 'Foreclosure',
+        'assets:risk.event.fire': 'Fire',
         'ui:closeModal': 'Close modal',
         'ui:action_close': 'Close',
         'assets:purchaseFailed.acquisition_already_active':
@@ -101,8 +105,10 @@ describe('AssetsScene', () => {
     mockState.liabilities = []
     mockState.crowdfundCampaigns = []
     mockState.pendingForeclosureNotices = []
+    mockState.pendingRiskEvent = null
     mockChangeScene.mockClear()
     mockDismissForeclosureNotice.mockClear()
+    mockSetPendingRiskEvent.mockClear()
   })
 
   it('renders mobile shell with preserved tab ids and panel ids', () => {
@@ -153,5 +159,21 @@ describe('AssetsScene', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Close' }))
 
     expect(mockDismissForeclosureNotice).toHaveBeenCalledWith('tourbus_chassis')
+  })
+
+  it('renders and clears the pending risk event modal', async () => {
+    mockState.pendingRiskEvent = {
+      assetId: 'asset_1',
+      eventType: 'fire',
+      conditionLoss: 15
+    }
+
+    render(<AssetsScene />)
+
+    expect(await screen.findByRole('dialog', { name: 'Fire' })).toBeVisible()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }))
+
+    expect(mockSetPendingRiskEvent).toHaveBeenCalledWith(null)
   })
 })

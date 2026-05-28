@@ -2,6 +2,7 @@
   "knownSymbols": {
     "AcquisitionMode": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "AcquisitionMode",
         "path": "src/types/assets.d.ts",
@@ -499,6 +500,7 @@
     ],
     "AssetBoni": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "AssetBoni",
         "path": "src/types/assets.d.ts",
@@ -509,6 +511,7 @@
     ],
     "AssetFlavor": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "AssetFlavor",
         "path": "src/types/assets.d.ts",
@@ -528,6 +531,7 @@
     ],
     "AssetKind": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "AssetKind",
         "path": "src/types/assets.d.ts",
@@ -538,6 +542,7 @@
     ],
     "AssetModifiers": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "AssetModifiers",
         "path": "src/types/assets.d.ts",
@@ -548,6 +553,7 @@
     ],
     "AssetModule": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "AssetModule",
         "path": "src/types/assets.d.ts",
@@ -595,6 +601,7 @@
     ],
     "AssetSlot": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "AssetSlot",
         "path": "src/types/assets.d.ts",
@@ -2068,6 +2075,7 @@
     ],
     "ChassisTier": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "ChassisTier",
         "path": "src/types/assets.d.ts",
@@ -3178,6 +3186,15 @@
         "type": "const"
       }
     ],
+    "createSetPendingRiskEventAction": [
+      {
+        "isDefault": false,
+        "name": "createSetPendingRiskEventAction",
+        "path": "src/context/actionCreators.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "createSetPendingSupplyStopInventoryAction": [
       {
         "isDefault": false,
@@ -3407,6 +3424,7 @@
     ],
     "CrowdfundCampaign": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "CrowdfundCampaign",
         "path": "src/types/assets.d.ts",
@@ -5834,6 +5852,15 @@
         "type": "const"
       }
     ],
+    "handleSetPendingRiskEvent": [
+      {
+        "isDefault": false,
+        "name": "handleSetPendingRiskEvent",
+        "path": "src/context/reducers/systemReducer.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "handleSetPendingSupplyStopInventory": [
       {
         "isDefault": false,
@@ -6319,6 +6346,7 @@
     ],
     "InstallModuleFailureReason": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "InstallModuleFailureReason",
         "path": "src/types/assets.d.ts",
@@ -6339,6 +6367,7 @@
     ],
     "InstallModulePayload": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "InstallModulePayload",
         "path": "src/types/assets.d.ts",
@@ -6672,6 +6701,7 @@
     ],
     "Liability": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "Liability",
         "path": "src/types/assets.d.ts",
@@ -6833,6 +6863,7 @@
     ],
     "LongTermAsset": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "LongTermAsset",
         "path": "src/types/assets.d.ts",
@@ -7291,6 +7322,7 @@
     ],
     "ModuleUnlockReq": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "ModuleUnlockReq",
         "path": "src/types/assets.d.ts",
@@ -7449,6 +7481,7 @@
     ],
     "NewSlotEntry": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "NewSlotEntry",
         "path": "src/types/assets.d.ts",
@@ -8344,6 +8377,7 @@
     ],
     "PurchaseChassisPayload": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "PurchaseChassisPayload",
         "path": "src/types/assets.d.ts",
@@ -8354,6 +8388,7 @@
     ],
     "PurchaseFailureReason": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "PurchaseFailureReason",
         "path": "src/types/assets.d.ts",
@@ -9014,9 +9049,10 @@
     ],
     "RiskEventDescriptor": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "RiskEventDescriptor",
-        "path": "src/utils/assetTicks.ts",
+        "path": "src/types/assets.d.ts",
         "source": "local",
         "type": "interface",
         "typeOnly": true
@@ -9033,6 +9069,7 @@
     ],
     "RiskEventType": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "RiskEventType",
         "path": "src/types/assets.d.ts",
@@ -9384,6 +9421,15 @@
         "isDefault": false,
         "name": "sanitizeLoadedToast",
         "path": "src/context/reducers/toastSanitizers.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "sanitizeRiskEventDescriptor": [
+      {
+        "isDefault": false,
+        "name": "sanitizeRiskEventDescriptor",
+        "path": "src/context/reducers/assetSanitizers.ts",
         "source": "local",
         "type": "const"
       }
@@ -9830,6 +9876,7 @@
     ],
     "SlotType": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "SlotType",
         "path": "src/types/assets.d.ts",
@@ -11050,6 +11097,7 @@
     ],
     "UpgradeChassisTierPayload": [
       {
+        "exportPath": "src/types/index.ts",
         "isDefault": false,
         "name": "UpgradeChassisTierPayload",
         "path": "src/types/assets.d.ts",

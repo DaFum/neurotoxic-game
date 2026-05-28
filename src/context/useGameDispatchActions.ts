@@ -69,6 +69,7 @@ import {
   createSetPendingBandHQOpenAction,
   createSetPendingSupplyStopInventoryAction,
   dismissForeclosureNotice as dismissForeclosureNoticeAction,
+  createSetPendingRiskEventAction,
   toggleNeuroDecimator as createToggleNeuroDecimatorAction
 } from './actionCreators'
 import {
@@ -198,6 +199,9 @@ export type GameDispatchActions = {
   ) => void
   dismissForeclosureNotice: (
     kind: Parameters<typeof dismissForeclosureNoticeAction>[0]
+  ) => void
+  setPendingRiskEvent: (
+    event: Parameters<typeof createSetPendingRiskEventAction>[0]
   ) => void
   spawnRivalBand: () => void
   moveRivalBand: () => void
@@ -580,6 +584,12 @@ export function useGameDispatchActions({
     [dispatch]
   )
 
+  const setPendingRiskEvent = useCallback(
+    (event: Parameters<typeof createSetPendingRiskEventAction>[0]) =>
+      dispatch(createSetPendingRiskEventAction(event)),
+    [dispatch]
+  )
+
   const endGig = useCallback(() => {
     const currentState = stateRef.current
     if (currentState.currentGig?.isPractice) {
@@ -731,6 +741,7 @@ export function useGameDispatchActions({
       setPendingBandHQOpen,
       setPendingSupplyStopInventory,
       dismissForeclosureNotice,
+      setPendingRiskEvent,
       purchaseChassis,
       upgradeChassisTier,
       sellChassis,
@@ -791,6 +802,7 @@ export function useGameDispatchActions({
       setPendingBandHQOpen,
       setPendingSupplyStopInventory,
       dismissForeclosureNotice,
+      setPendingRiskEvent,
       purchaseChassis,
       upgradeChassisTier,
       sellChassis,

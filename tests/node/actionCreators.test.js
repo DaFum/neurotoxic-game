@@ -45,7 +45,8 @@ import {
   createBloodBankDonateAction,
   createDarkWebLeakAction,
   createMerchPressAction,
-  dismissForeclosureNotice
+  dismissForeclosureNotice,
+  createSetPendingRiskEventAction
 } from '../../src/context/actionCreators'
 import { ActionTypes } from '../../src/context/gameReducer'
 
@@ -263,6 +264,23 @@ describe('Action Creators', () => {
         type: ActionTypes.DISMISS_FORECLOSURE_NOTICE,
         payload: { kind: 'tourbus_chassis' }
       }
+    },
+    {
+      name: 'createSetPendingRiskEventAction',
+      call: () =>
+        createSetPendingRiskEventAction({
+          assetId: 'asset_1',
+          eventType: 'fire',
+          conditionLoss: 15
+        }),
+      expected: {
+        type: ActionTypes.SET_PENDING_RISK_EVENT,
+        payload: {
+          assetId: 'asset_1',
+          eventType: 'fire',
+          conditionLoss: 15
+        }
+      }
     }
   ]
 
@@ -270,6 +288,15 @@ describe('Action Creators', () => {
     describe(name, () => {
       it('creates correct action', () => {
         assert.deepStrictEqual(call(), expected)
+      })
+    })
+  })
+
+  describe('createSetPendingRiskEventAction validation', () => {
+    it('coerces non-object payloads to null', () => {
+      assert.deepStrictEqual(createSetPendingRiskEventAction('bad'), {
+        type: ActionTypes.SET_PENDING_RISK_EVENT,
+        payload: null
       })
     })
   })

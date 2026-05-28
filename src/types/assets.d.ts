@@ -195,6 +195,12 @@ export type RiskEventType =
   | 'paranormal'
   | 'foreclosure'
 
+export interface RiskEventDescriptor {
+  assetId: string
+  eventType: RiskEventType
+  conditionLoss: number
+}
+
 // === Action payloads ===
 
 export type PurchaseFailureReason =

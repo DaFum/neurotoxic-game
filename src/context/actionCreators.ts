@@ -44,7 +44,7 @@ import type {
   DarkWebLeakPayload,
   PurchaseItem
 } from '../types'
-import type { AssetKind } from '../types/assets'
+import type { AssetKind, RiskEventDescriptor } from '../types/assets'
 
 /**
  * Sanitizes a payload by clamping listed numeric fields to non-negative values
@@ -872,6 +872,19 @@ export const dismissForeclosureNotice = (
 > => ({
   type: ActionTypes.DISMISS_FORECLOSURE_NOTICE,
   payload: { kind }
+})
+
+export const createSetPendingRiskEventAction = (
+  event: RiskEventDescriptor | null
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.SET_PENDING_RISK_EVENT }
+> => ({
+  type: ActionTypes.SET_PENDING_RISK_EVENT,
+  payload:
+    event !== null && typeof event === 'object' && !Array.isArray(event)
+      ? event
+      : null
 })
 
 /**

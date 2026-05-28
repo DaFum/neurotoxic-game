@@ -1,12 +1,13 @@
-import { useState, type CSSProperties } from 'react'
+import { useCallback, useEffect, useState, type CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useGameActions } from '../../context/GameState'
+import { useGameActions, useGameSelector } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
 import { useForeclosureModal } from '../../hooks/useForeclosureModal'
 import type { AssetKind } from '../../types/assets'
 import { AssetsBottomTabs } from './AssetsBottomTabs'
 import { AssetsStatusStrip } from './AssetsStatusStrip'
 import { ForeclosureModal } from './ForeclosureModal'
+import { RiskEventModal } from './RiskEventModal'
 import { ASSET_SECTION_TABS } from './sectionTabs'
 import { DEFAULT_SECTION_ACCENT, SECTION_VIEWS } from './sectionRegistry'
 import './assetsHub.css'
@@ -26,9 +27,13 @@ import './assetsHub.css'
 
 export const AssetsScene = () => {
   const { t } = useTranslation(['assets'])
-  const { changeScene } = useGameActions()
+  const pendingRiskEvent = useGameSelector(state => state.pendingRiskEvent)
+  const { changeScene, setPendingRiskEvent } = useGameActions()
   const foreclosureModal = useForeclosureModal()
   const [active, setActive] = useState<AssetKind>('tourbus_chassis')
+  const [isRiskEventOpen, setRiskEventOpen] = useState(
+    Boolean(pendingRiskEvent)
+  )
 
   const activeView = SECTION_VIEWS[active]
   const accent = activeView?.accent ?? DEFAULT_SECTION_ACCENT
@@ -37,6 +42,15 @@ export const AssetsScene = () => {
   const foreclosureAssetLabel = foreclosureModal.currentKind
     ? t(`assets:kind.${foreclosureModal.currentKind}`)
     : undefined
+
+  useEffect(() => {
+    setRiskEventOpen(Boolean(pendingRiskEvent))
+  }, [pendingRiskEvent])
+
+  const closeRiskEventModal = useCallback(() => {
+    setRiskEventOpen(false)
+    setPendingRiskEvent(null)
+  }, [setPendingRiskEvent])
 
   // The CSS variable cascades to every descendant via inline style; modals
   // and panels nested under the scene root read it via
@@ -84,6 +98,14 @@ export const AssetsScene = () => {
           </p>
         )}
       </section>
+
+      {pendingRiskEvent ? (
+        <RiskEventModal
+          eventType={pendingRiskEvent.eventType}
+          isOpen={isRiskEventOpen}
+          onClose={closeRiskEventModal}
+        />
+      ) : null}
 
       <AssetsBottomTabs active={active} onSelect={setActive} />
 

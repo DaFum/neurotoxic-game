@@ -10,7 +10,8 @@ import {
   handleAdvanceDay,
   handleAddUnlock,
   handleSetPendingBandHQOpen,
-  handleSetPendingSupplyStopInventory
+  handleSetPendingSupplyStopInventory,
+  handleSetPendingRiskEvent
 } from '../../src/context/reducers/systemReducer'
 import { createInitialState } from '../../src/context/initialState'
 import { GAME_PHASES } from '../../src/context/gameConstants'
@@ -908,6 +909,32 @@ test('systemReducer - ADD_TOAST', () => {
   })
 })
 
+test('systemReducer - LOAD_GAME sanitizes pending risk event descriptors', () => {
+  const initialState = createInitialState()
+
+  const validState = handleLoadGame(initialState, {
+    pendingRiskEvent: {
+      assetId: 'asset_1',
+      eventType: 'fire',
+      conditionLoss: 15
+    }
+  })
+  assert.deepEqual(validState.pendingRiskEvent, {
+    assetId: 'asset_1',
+    eventType: 'fire',
+    conditionLoss: 15
+  })
+
+  const invalidState = handleLoadGame(initialState, {
+    pendingRiskEvent: {
+      assetId: 'asset_1',
+      eventType: 'bad_event',
+      conditionLoss: Number.POSITIVE_INFINITY
+    }
+  })
+  assert.equal(invalidState.pendingRiskEvent, null)
+})
+
 test('systemReducer - REMOVE_TOAST', () => {
   const state = { toasts: [{ id: '1' }, { id: '2' }, { id: '3' }] }
 
@@ -981,6 +1008,28 @@ test('systemReducer - pending modal state', async t => {
       assert.equal(handleSetPendingSupplyStopInventory(state, null), state)
     }
   )
+
+  await t.test('sets and clears pending risk event state', () => {
+    const state = { ...createInitialState(), pendingRiskEvent: null }
+    const pendingRiskEvent = {
+      assetId: 'asset_1',
+      eventType: 'fire',
+      conditionLoss: 15
+    }
+
+    const nextState = handleSetPendingRiskEvent(state, pendingRiskEvent)
+
+    assert.deepEqual(nextState.pendingRiskEvent, pendingRiskEvent)
+    assert.equal(
+      handleSetPendingRiskEvent(nextState, pendingRiskEvent),
+      nextState
+    )
+    assert.equal(handleSetPendingRiskEvent(state, null), state)
+    assert.equal(
+      handleSetPendingRiskEvent(nextState, null).pendingRiskEvent,
+      null
+    )
+  })
 })
 
 test('systemReducer - ADVANCE_DAY core logic', async t => {

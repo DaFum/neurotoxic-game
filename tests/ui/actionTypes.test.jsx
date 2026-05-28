@@ -64,7 +64,8 @@ describe('ActionTypes', () => {
       'REMOVE_MODULE',
       'START_CROWDFUND',
       'ASSET_FORECLOSED',
-      'DISMISS_FORECLOSURE_NOTICE'
+      'DISMISS_FORECLOSURE_NOTICE',
+      'SET_PENDING_RISK_EVENT'
     ]
 
     expectedTypes.forEach(type => {
