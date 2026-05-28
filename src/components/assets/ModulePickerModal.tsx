@@ -175,7 +175,7 @@ export const ModulePickerModal = ({
                   background: removalBlocked
                     ? 'transparent'
                     : 'var(--section-accent)',
-                  color: removalBlocked ? 'inherit' : 'var(--color-void)'
+                  color: removalBlocked ? 'inherit' : 'var(--color-void-black)'
                 }}
               >
                 {t('assets:actions.remove')}
@@ -231,7 +231,7 @@ export const ModulePickerModal = ({
                     {lockReasons.length > 0 && (
                       <ul
                         className='text-xs'
-                        style={{ color: 'var(--color-blood)' }}
+                        style={{ color: 'var(--color-blood-red)' }}
                       >
                         {lockReasons.map(r => (
                           <li
@@ -255,7 +255,7 @@ export const ModulePickerModal = ({
                     {insufficientFunds && (
                       <span
                         className='text-xs'
-                        style={{ color: 'var(--color-blood)' }}
+                        style={{ color: 'var(--color-blood-red)' }}
                       >
                         {t('assets:modulePicker.insufficientFunds')}
                       </span>
@@ -276,7 +276,7 @@ export const ModulePickerModal = ({
                         background: blocked
                           ? 'transparent'
                           : 'var(--section-accent)',
-                        color: blocked ? 'inherit' : 'var(--color-void)'
+                        color: blocked ? 'inherit' : 'var(--color-void-black)'
                       }}
                     >
                       {t('assets:actions.install')}
