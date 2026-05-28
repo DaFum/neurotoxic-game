@@ -138,6 +138,7 @@ export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
             <div className='flex gap-2'>
               <ActionButton
                 onClick={onClose}
+                variant='custom'
                 className='bg-void-black text-ash-gray border-2 border-ash-gray px-3 py-2 text-sm hover:bg-ash-gray hover:text-void-black'
               >
                 {t('ui:action_cancel')}
@@ -161,6 +162,7 @@ export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
                     insufficient ||
                     price === 0
                   }
+                  variant='custom'
                   className='px-3 py-2 text-sm disabled:opacity-40'
                   style={{
                     background:

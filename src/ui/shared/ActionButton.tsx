@@ -26,22 +26,30 @@ export const ActionButton = memo(
     type = 'button',
     className = '',
     ref,
-    variant: _variant,
+    variant = 'primary',
     ...rest
-  }: ActionButtonProps) => (
-    <button
-      ref={ref}
-      type={type}
-      onClick={onClick}
-      className={`px-8 py-4 min-h-11 bg-toxic-green text-void-black font-bold uppercase
-                touch-manipulation text-center
-                hover:scale-105 hover:bg-toxic-green-bright transition
+  }: ActionButtonProps) => {
+    const baseStyles = `min-h-11 font-bold uppercase
+                touch-manipulation text-center transition
                 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-toxic-green-20
-                disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:bg-toxic-green
-                ${className}`}
-      {...rest}
-    >
-      {children}
-    </button>
-  )
+                disabled:opacity-50 disabled:cursor-not-allowed`
+    const variantStyles =
+      variant === 'primary'
+        ? `px-8 py-4 bg-toxic-green text-void-black
+                hover:scale-105 hover:bg-toxic-green-bright
+                disabled:hover:scale-100 disabled:hover:bg-toxic-green`
+        : ''
+
+    return (
+      <button
+        ref={ref}
+        type={type}
+        onClick={onClick}
+        className={`${baseStyles} ${variantStyles} ${className}`}
+        {...rest}
+      >
+        {children}
+      </button>
+    )
+  }
 )

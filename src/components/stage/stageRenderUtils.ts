@@ -55,11 +55,9 @@ export const getPixiColorFromToken = (
   }
 
   const cacheKey = `${tokenName}-${defaultHexFallback}`
-  if (colorCache.has(cacheKey)) {
-    const cachedColor = colorCache.get(cacheKey)
-    if (cachedColor !== undefined) {
-      return cachedColor
-    }
+  const cachedColor = colorCache.get(cacheKey)
+  if (cachedColor !== undefined) {
+    return cachedColor
   }
 
   const fallbackColor = PIXI_TOKEN_FALLBACKS[tokenName] ?? defaultHexFallback

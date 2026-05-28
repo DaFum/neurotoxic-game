@@ -76,6 +76,7 @@ export const UpgradeConfirmModal = ({ asset, isOpen, onClose }: Props) => {
         <div className='flex justify-end gap-2'>
           <ActionButton
             onClick={onClose}
+            variant='custom'
             className='bg-void-black text-ash-gray border-2 border-ash-gray px-3 py-2 text-sm hover:bg-ash-gray hover:text-void-black'
           >
             {t('ui:action_cancel')}
@@ -94,6 +95,7 @@ export const UpgradeConfirmModal = ({ asset, isOpen, onClose }: Props) => {
                 onClose()
               }}
               disabled={blocked}
+              variant='custom'
               className='px-3 py-2 text-sm disabled:opacity-40'
               style={{
                 background: 'var(--section-accent, var(--color-toxic-green))',
