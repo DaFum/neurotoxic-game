@@ -1945,11 +1945,23 @@ export const handleSetPendingRiskEvent = (
   state: GameState,
   event: RiskEventDescriptor | null
 ): GameState => {
-  const nextEvent =
-    event !== null && typeof event === 'object' && !Array.isArray(event)
-      ? event
-      : null
-  if (state.pendingRiskEvent === nextEvent) return state
+  if (event === null) {
+    if (state.pendingRiskEvent === null) return state
+    return {
+      ...state,
+      pendingRiskEvent: null
+    }
+  }
+
+  const nextEvent = sanitizeRiskEventDescriptor(event)
+  if (!nextEvent) return state
+  if (
+    state.pendingRiskEvent?.assetId === nextEvent.assetId &&
+    state.pendingRiskEvent.eventType === nextEvent.eventType &&
+    state.pendingRiskEvent.conditionLoss === nextEvent.conditionLoss
+  ) {
+    return state
+  }
 
   return {
     ...state,

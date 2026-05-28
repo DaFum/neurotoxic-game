@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { LoanProfileModal } from '../../src/components/assets/LoanProfileModal'
 import { LOAN_PROFILES } from '../../src/utils/loanProfiles'
+import type { HTMLAttributes } from 'react'
 
 const profileLabels: Record<string, string> = {
   'assets.loan.profile.shortTerm': 'Short term',
@@ -12,8 +13,21 @@ const profileLabels: Record<string, string> = {
 }
 
 vi.mock('../../src/ui/shared/GeneratedImagePanel', () => ({
-  GeneratedImagePanel: ({ alt }: { alt: string }) => (
-    <div data-testid='loan-profile-image'>{alt}</div>
+  GeneratedImagePanel: ({
+    alt,
+    prompt: _prompt,
+    aspectRatio: _aspectRatio,
+    sizeHint: _sizeHint,
+    ...rest
+  }: {
+    alt: string
+    prompt?: string
+    aspectRatio?: string
+    sizeHint?: unknown
+  } & HTMLAttributes<HTMLDivElement>) => (
+    <div {...rest} data-testid='loan-profile-image'>
+      {alt}
+    </div>
   )
 }))
 

@@ -55,6 +55,7 @@ test('toFiniteNumber - returns finite numbers and falls back for non-finite valu
   assert.equal(toFiniteNumber(12, 99), 12)
   assert.equal(toFiniteNumber(Number.NaN, 99), 99)
   assert.equal(toFiniteNumber(Number.POSITIVE_INFINITY, 99), 99)
+  assert.equal(toFiniteNumber(Number.NEGATIVE_INFINITY, 99), 99)
   assert.equal(toFiniteNumber('12', 99), 99)
 })
 

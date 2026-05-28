@@ -7,6 +7,7 @@ import {
   rollAssetRiskEvents
 } from '../../src/utils/assetTicks.ts'
 import { MODULE_REGISTRY } from '../../src/utils/assetModuleRegistry.ts'
+import { calculateFameLevel } from '../../src/utils/gameStateUtils.ts'
 
 test('processAssetTick - condition decay and condition floor at 0', () => {
   const state = {
@@ -111,6 +112,10 @@ test('processLiabilityTick - liability default counter increment and trigger at 
   assert.strictEqual(next.assets.length, 0)
   assert.strictEqual(next.liabilities.length, 0)
   assert.ok(next.player.fame < 50)
+  assert.strictEqual(
+    next.player.fameLevel,
+    calculateFameLevel(next.player.fame)
+  )
   assert.deepStrictEqual(foreclosedKinds, ['tourbus_chassis'])
 })
 

@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useState, type CSSProperties } from 'react'
+import { useCallback, useState, type CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
 import { useForeclosureModal } from '../../hooks/useForeclosureModal'
-import type { AssetKind } from '../../types/assets'
+import type { AssetKind, RiskEventDescriptor } from '../../types/assets'
 import { AssetsBottomTabs } from './AssetsBottomTabs'
 import { AssetsStatusStrip } from './AssetsStatusStrip'
 import { ForeclosureModal } from './ForeclosureModal'
@@ -31,9 +31,10 @@ export const AssetsScene = () => {
   const { changeScene, setPendingRiskEvent } = useGameActions()
   const foreclosureModal = useForeclosureModal()
   const [active, setActive] = useState<AssetKind>('tourbus_chassis')
-  const [isRiskEventOpen, setRiskEventOpen] = useState(
-    Boolean(pendingRiskEvent)
-  )
+  const [lastRiskEvent, setLastRiskEvent] =
+    useState<RiskEventDescriptor | null>(null)
+  const activeRiskEvent = pendingRiskEvent ?? lastRiskEvent
+  const isRiskEventOpen = Boolean(pendingRiskEvent)
 
   const activeView = SECTION_VIEWS[active]
   const accent = activeView?.accent ?? DEFAULT_SECTION_ACCENT
@@ -43,14 +44,10 @@ export const AssetsScene = () => {
     ? t(`assets:kind.${foreclosureModal.currentKind}`)
     : undefined
 
-  useEffect(() => {
-    setRiskEventOpen(Boolean(pendingRiskEvent))
-  }, [pendingRiskEvent])
-
   const closeRiskEventModal = useCallback(() => {
-    setRiskEventOpen(false)
+    if (activeRiskEvent) setLastRiskEvent(activeRiskEvent)
     setPendingRiskEvent(null)
-  }, [setPendingRiskEvent])
+  }, [activeRiskEvent, setPendingRiskEvent])
 
   // The CSS variable cascades to every descendant via inline style; modals
   // and panels nested under the scene root read it via
@@ -99,9 +96,9 @@ export const AssetsScene = () => {
         )}
       </section>
 
-      {pendingRiskEvent ? (
+      {activeRiskEvent ? (
         <RiskEventModal
-          eventType={pendingRiskEvent.eventType}
+          eventType={activeRiskEvent.eventType}
           isOpen={isRiskEventOpen}
           onClose={closeRiskEventModal}
         />

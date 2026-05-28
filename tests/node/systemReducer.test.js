@@ -1030,6 +1030,32 @@ test('systemReducer - pending modal state', async t => {
       null
     )
   })
+
+  await t.test('rejects malformed pending risk event payloads', () => {
+    const state = { ...createInitialState(), pendingRiskEvent: null }
+    const invalidPayloads = [
+      [],
+      { assetId: 'asset_1', eventType: 'fire', conditionLoss: Infinity },
+      { assetId: 'asset_1', eventType: 'bad_event', conditionLoss: 15 },
+      { eventType: 'fire', conditionLoss: 15 }
+    ]
+
+    for (const payload of invalidPayloads) {
+      assert.equal(handleSetPendingRiskEvent(state, payload), state)
+    }
+
+    const hostilePayload = JSON.parse(
+      '{"assetId":"asset_1","eventType":"fire","conditionLoss":15,"__proto__":{"polluted":true}}'
+    )
+    const nextState = handleSetPendingRiskEvent(state, hostilePayload)
+
+    assert.deepEqual(nextState.pendingRiskEvent, {
+      assetId: 'asset_1',
+      eventType: 'fire',
+      conditionLoss: 15
+    })
+    assert.equal(Object.hasOwn(nextState.pendingRiskEvent, '__proto__'), false)
+  })
 })
 
 test('systemReducer - ADVANCE_DAY core logic', async t => {

@@ -15,12 +15,7 @@ import type {
   SlotType
 } from '../../types/assets'
 
-const VALID_KINDS: ReadonlySet<string> = new Set([
-  'tourbus_chassis',
-  'studio_chassis',
-  'bandhaus_chassis',
-  'merch_workshop_chassis'
-])
+const VALID_KINDS: ReadonlySet<string> = new Set(Object.keys(CHASSIS_CONFIG))
 const VALID_FLAVORS: ReadonlySet<string> = new Set(['legit', 'diy'])
 const VALID_MODES: ReadonlySet<string> = new Set(['cash', 'loan', 'crowdfund'])
 const VALID_SOURCES: ReadonlySet<string> = new Set(['loan', 'crowdfund'])

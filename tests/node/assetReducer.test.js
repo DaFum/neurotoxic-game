@@ -14,10 +14,9 @@ import { CHASSIS_CONFIG } from '../../src/utils/assetConfig.ts'
 import { MODULE_REGISTRY } from '../../src/utils/assetModuleRegistry.ts'
 
 // MODULE_REGISTRY is a mutable shared module-scoped object. To prevent
-// pollution into other test files run in the same process, snapshot the
-// original 'test_mod' entry (if any) and restore it after every test below.
-// If the entry didn't exist, we delete the injected one.
-const originalTestMod = MODULE_REGISTRY['test_mod']
+// pollution into other test files run in the same process, snapshot the full
+// registry and restore it after every test below.
+const originalModuleRegistry = structuredClone(MODULE_REGISTRY)
 const originalChassisConfig = structuredClone(CHASSIS_CONFIG)
 
 const restoreChassisConfig = () => {
@@ -25,35 +24,41 @@ const restoreChassisConfig = () => {
   Object.assign(CHASSIS_CONFIG, structuredClone(originalChassisConfig))
 }
 
-// @ts-expect-error test mock — minimal AssetModule shape
-MODULE_REGISTRY['test_mod'] = {
-  id: 'test_mod',
-  ownerKind: 'tourbus_chassis',
-  slotType: 'tb_roof',
-  flavor: 'legit',
-  cost: 100,
-  installCost: 50,
-  removalRefundFraction: 0.5,
-  boni: {},
-  unlock: {},
-  imagePromptKey: 'test'
+const restoreModuleRegistry = () => {
+  for (const k of Object.keys(MODULE_REGISTRY)) delete MODULE_REGISTRY[k]
+  Object.assign(MODULE_REGISTRY, structuredClone(originalModuleRegistry))
+}
+
+const installTestModule = () => {
+  // @ts-expect-error test mock — minimal AssetModule shape
+  MODULE_REGISTRY['test_mod'] = {
+    id: 'test_mod',
+    ownerKind: 'tourbus_chassis',
+    slotType: 'tb_roof',
+    flavor: 'legit',
+    cost: 100,
+    installCost: 50,
+    removalRefundFraction: 0.5,
+    boni: {},
+    unlock: {},
+    imagePromptKey: 'test'
+  }
 }
 
 test.beforeEach(() => {
   restoreChassisConfig()
+  restoreModuleRegistry()
+  installTestModule()
 })
 
 test.afterEach(() => {
   restoreChassisConfig()
+  restoreModuleRegistry()
 })
 
 test.after(() => {
   restoreChassisConfig()
-  if (originalTestMod === undefined) {
-    delete MODULE_REGISTRY['test_mod']
-  } else {
-    MODULE_REGISTRY['test_mod'] = originalTestMod
-  }
+  restoreModuleRegistry()
 })
 
 const mockState = {
@@ -385,6 +390,44 @@ test('handleSellChassis - uses direct DIY config price', () => {
   const next = handleSellChassis(startState, { assetId: 'a1' })
 
   assert.strictEqual(next.player.money, mockState.player.money + 1234)
+})
+
+test('handleSellChassis - pays off all liabilities for the sold asset', () => {
+  const configTier = CHASSIS_CONFIG.tourbus_chassis.legit[1]
+  const startState = {
+    ...mockState,
+    assets: [
+      {
+        id: 'a1',
+        kind: 'tourbus_chassis',
+        chassisFlavor: 'legit',
+        chassisTier: 1,
+        condition: 100,
+        baseUpkeep: configTier.upkeep,
+        baseDailyRevenue: configTier.revenue,
+        slots: [],
+        acquiredOnDay: mockState.player.day,
+        acquisitionMode: 'loan',
+        baseRiskEventChance: configTier.baseRiskEventChance
+      }
+    ],
+    liabilities: [
+      { id: 'loan_1', assetId: 'a1', principalRemaining: 300 },
+      { id: 'loan_2', assetId: 'a1', principalRemaining: 400 },
+      { id: 'loan_other', assetId: 'other_asset', principalRemaining: 250 }
+    ]
+  }
+
+  const next = handleSellChassis(startState, { assetId: 'a1' })
+
+  assert.strictEqual(
+    next.player.money,
+    mockState.player.money + configTier.price - 700
+  )
+  assert.deepStrictEqual(
+    next.liabilities.map(liability => liability.id),
+    ['loan_other']
+  )
 })
 
 test('handleAssetFailedAction - is no-op', () => {

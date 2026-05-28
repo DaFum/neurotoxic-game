@@ -193,7 +193,12 @@ export const processLiabilityTick = (
   return {
     state: {
       ...state,
-      player: { ...state.player, money: currentMoney, fame: nextFame },
+      player: {
+        ...state.player,
+        money: currentMoney,
+        fame: nextFame,
+        fameLevel: calculateFameLevel(nextFame)
+      },
       assets: nextAssets,
       liabilities: finalLiabilities
     },

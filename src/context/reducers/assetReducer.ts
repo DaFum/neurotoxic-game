@@ -289,8 +289,11 @@ export const handleSellChassis = (
   const asset = state.assets.find(a => a.id === assetId)
   if (!asset) return state
 
-  const liability = state.liabilities.find(l => l.assetId === assetId)
-  const principalRemaining = liability?.principalRemaining ?? 0
+  const assetLiabilities = state.liabilities.filter(l => l.assetId === assetId)
+  const totalPrincipalRemaining = assetLiabilities.reduce(
+    (sum, liability) => sum + liability.principalRemaining,
+    0
+  )
 
   const daysOwned = Math.max(0, state.player.day - asset.acquiredOnDay)
   const conditionFactor = asset.condition / 100
@@ -313,11 +316,11 @@ export const handleSellChassis = (
   const gross =
     configTier.price * conditionFactor * depreciation + moduleRefunds
 
-  if (gross < principalRemaining) {
+  if (gross < totalPrincipalRemaining) {
     return state
   }
 
-  const net = gross - principalRemaining
+  const net = gross - totalPrincipalRemaining
 
   return {
     ...state,

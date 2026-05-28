@@ -79,6 +79,7 @@ describe('useTravelLogic', () => {
   })
 
   beforeEach(() => {
+    resetTravelLogicMockState()
     mockCalculateTravelExpenses.mock.resetCalls()
     mockCalculateRefuelCost.mock.resetCalls()
     mockCalculateGuaranteedDailyCost.mock.resetCalls()
