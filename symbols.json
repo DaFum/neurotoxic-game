@@ -9527,6 +9527,15 @@
         "type": "const"
       }
     ],
+    "selectLiabilitiesMap": [
+      {
+        "isDefault": false,
+        "name": "selectLiabilitiesMap",
+        "path": "src/utils/assetSelectors.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "selectRandomItem": [
       {
         "exportPath": "src/utils/audio/audioEngine.ts",
