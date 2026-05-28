@@ -26,6 +26,7 @@ const {
   mockCalculateRefuelCost,
   mockAudioManager,
   mockCalculateGuaranteedDailyCost,
+  mockGetTotalDailyObligations,
   mockLogger,
   mockHandleError,
   setEnsureAudioContextResult
@@ -33,6 +34,33 @@ const {
 
 const travelFuelModuleId = 'test_travel_fuel_discount'
 const originalTravelFuelModule = MODULE_REGISTRY[travelFuelModuleId]
+
+const createObligationAsset = overrides => ({
+  id: 'asset_obligation',
+  kind: 'tourbus_chassis',
+  chassisFlavor: 'legit',
+  chassisTier: 1,
+  condition: 100,
+  baseUpkeep: 40,
+  baseDailyRevenue: 10,
+  slots: [],
+  acquiredOnDay: 1,
+  acquisitionMode: 'cash',
+  baseRiskEventChance: 0,
+  ...overrides
+})
+
+const createLiability = overrides => ({
+  id: 'liability_obligation',
+  source: 'loan',
+  assetId: 'asset_obligation',
+  principalRemaining: 1000,
+  interestRate: 0.05,
+  dailyPayment: 25,
+  termDaysRemaining: 60,
+  defaultCounter: 0,
+  ...overrides
+})
 
 const { useTravelLogic } = await setupTravelLogicTest()
 
@@ -54,6 +82,7 @@ describe('useTravelLogic', () => {
     mockCalculateTravelExpenses.mock.resetCalls()
     mockCalculateRefuelCost.mock.resetCalls()
     mockCalculateGuaranteedDailyCost.mock.resetCalls()
+    mockGetTotalDailyObligations.mock.resetCalls()
     mockCalculateTravelExpenses.mock.mockImplementation(() => ({
       dist: 100,
       totalCost: 50,
@@ -111,7 +140,9 @@ describe('useTravelLogic', () => {
         van: { fuel: 50, condition: 80 },
         totalTravels: 0
       },
-      band: { members: [{}, {}, {}], harmony: 50 }
+      band: { members: [{}, {}, {}], harmony: 50 },
+      assets: [createObligationAsset()],
+      liabilities: [createLiability()]
     })
 
     act(() => {
@@ -120,13 +151,13 @@ describe('useTravelLogic', () => {
 
     const toastMessage = props.addToast.mock.calls[0].arguments[0]
     assert.match(toastMessage, /Travel Costs: €50/)
-    assert.match(toastMessage, /Daily Upkeep: €155/)
-    assert.match(toastMessage, /Total Cash Impact: €205/)
+    assert.match(toastMessage, /Daily Upkeep: €210/)
+    assert.match(toastMessage, /Total Cash Impact: €260/)
   })
 
-  test('handleTravel confirmation passes social state into guaranteed daily cost', () => {
-    mockCalculateGuaranteedDailyCost.mock.mockImplementation(
-      (_player, _band, social = {}) => (social.youtube >= 10000 ? 42 : 155)
+  test('handleTravel confirmation passes social state into total daily obligations', () => {
+    mockGetTotalDailyObligations.mock.mockImplementation(state =>
+      state.social.youtube >= 10000 ? 42 : 155
     )
     const social = { youtube: 20000 }
     const { result, props, targetNode } = setupTravelScenario(useTravelLogic, {
@@ -146,7 +177,7 @@ describe('useTravelLogic', () => {
     })
 
     assert.equal(
-      mockCalculateGuaranteedDailyCost.mock.calls[0].arguments[2],
+      mockGetTotalDailyObligations.mock.calls[0].arguments[0].social,
       social
     )
     const toastMessage = props.addToast.mock.calls[0].arguments[0]
@@ -154,9 +185,9 @@ describe('useTravelLogic', () => {
     assert.match(toastMessage, /Total Cash Impact: €92/)
   })
 
-  test('onTravelComplete passes social state into guaranteed daily cost', () => {
-    mockCalculateGuaranteedDailyCost.mock.mockImplementation(
-      (_player, _band, social = {}) => (social.youtube >= 10000 ? 42 : 155)
+  test('onTravelComplete passes social state into total daily obligations', () => {
+    mockGetTotalDailyObligations.mock.mockImplementation(state =>
+      state.social.youtube >= 10000 ? 42 : 155
     )
     const social = { youtube: 20000 }
     const { result, targetNode } = setupTravelScenario(useTravelLogic, {
@@ -176,26 +207,28 @@ describe('useTravelLogic', () => {
     })
 
     assert.equal(
-      mockCalculateGuaranteedDailyCost.mock.calls[0].arguments[2],
+      mockGetTotalDailyObligations.mock.calls[0].arguments[0].social,
       social
     )
   })
 
-  test('resetTravelLogicMockState restores guaranteed daily cost default implementation', () => {
-    mockCalculateGuaranteedDailyCost.mock.mockImplementation(() => 999)
+  test('resetTravelLogicMockState restores total daily obligations default implementation', () => {
+    mockGetTotalDailyObligations.mock.mockImplementation(() => 999)
     resetTravelLogicMockState()
 
-    const defaultCost = mockCalculateGuaranteedDailyCost(
-      { fameLevel: 2 },
-      { members: [{}, {}] },
-      7
-    )
+    const defaultCost = mockGetTotalDailyObligations({
+      player: { fameLevel: 2 },
+      band: { members: [{}, {}] },
+      social: {},
+      assets: [createObligationAsset()],
+      liabilities: [createLiability({ dailyPayment: 17 })]
+    })
 
     assert.equal(
       defaultCost,
-      62 + 2 * 8 + Math.floor(Math.pow(2, 1.4) * 15) + 7
+      62 + 2 * 8 + Math.floor(Math.pow(2, 1.4) * 15) + 40 - 10 + 17
     )
-    assert.equal(mockCalculateGuaranteedDailyCost.mock.calls.length, 1)
+    assert.equal(mockGetTotalDailyObligations.mock.calls.length, 1)
   })
 
   test('resetTravelLogicMockState restores refuel cost default implementation', () => {
@@ -234,6 +267,41 @@ describe('useTravelLogic', () => {
     const defaults = createTravelLogicProps()
     const { result, props, targetNode } = setupTravelScenario(useTravelLogic, {
       player: { ...defaults.player, money: 10 }
+    })
+
+    act(() => {
+      result.current.handleTravel(targetNode)
+    })
+
+    assertTravelPrevented(result, props, /Not enough money/)
+  })
+
+  test('handleTravel includes liability payments in affordability check', () => {
+    const defaults = createTravelLogicProps()
+    const { result, props, targetNode } = setupTravelScenario(useTravelLogic, {
+      player: { ...defaults.player, money: 150 },
+      band: { members: [{}, {}, {}], harmony: 50 },
+      liabilities: [createLiability({ dailyPayment: 25 })]
+    })
+
+    act(() => {
+      result.current.handleTravel(targetNode)
+    })
+
+    assertTravelPrevented(result, props, /Not enough money/)
+  })
+
+  test('handleTravel includes asset upkeep and revenue in affordability check', () => {
+    const defaults = createTravelLogicProps()
+    const { result, props, targetNode } = setupTravelScenario(useTravelLogic, {
+      player: { ...defaults.player, money: 150 },
+      band: { members: [{}, {}, {}], harmony: 50 },
+      assets: [
+        createObligationAsset({
+          baseUpkeep: 40,
+          baseDailyRevenue: 10
+        })
+      ]
     })
 
     act(() => {
