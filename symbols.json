@@ -556,15 +556,6 @@
         "typeOnly": true
       }
     ],
-    "assetRiskEventTriggered": [
-      {
-        "isDefault": false,
-        "name": "assetRiskEventTriggered",
-        "path": "src/context/assetActionCreators.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
     "AssetsBottomTabs": [
       {
         "isDefault": false,
@@ -5478,15 +5469,6 @@
       {
         "isDefault": false,
         "name": "handleAssetForeclosed",
-        "path": "src/context/reducers/assetReducer.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
-    "handleAssetRiskEventTriggered": [
-      {
-        "isDefault": false,
-        "name": "handleAssetRiskEventTriggered",
         "path": "src/context/reducers/assetReducer.ts",
         "source": "local",
         "type": "const"

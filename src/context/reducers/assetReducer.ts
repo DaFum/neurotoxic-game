@@ -383,33 +383,4 @@ export const handleAssetForeclosed = (
   }
 }
 
-export const handleAssetRiskEventTriggered = (
-  state: GameState,
-  payload: {
-    assetId: string
-    eventType: import('../../types/assets').RiskEventType
-    conditionLoss?: number
-  }
-): GameState => {
-  if (!state.assets) return state
-  // Use the payload's severity (action creator runs it through finiteNumberOr
-  // already) and fall back to 0 if a legacy/malformed payload omits it —
-  // never NaN, never the old hard-coded 15.
-  const loss = Number.isFinite(payload.conditionLoss)
-    ? (payload.conditionLoss as number)
-    : 0
-  const nextAssets = state.assets.map(asset => {
-    if (asset.id !== payload.assetId) return asset
-    return {
-      ...asset,
-      condition: Math.max(0, Math.min(100, asset.condition - loss))
-    }
-  })
-
-  return {
-    ...state,
-    assets: nextAssets
-  }
-}
-
 export const handleAssetFailedAction = (state: GameState): GameState => state

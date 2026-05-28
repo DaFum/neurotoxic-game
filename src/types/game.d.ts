@@ -239,14 +239,6 @@ export type GameAction =
       { campaign: import('./assets').CrowdfundCampaign }
     >
   | Action<ActionTypes['ASSET_FORECLOSED'], { assetId: string }>
-  | Action<
-      ActionTypes['ASSET_RISK_EVENT_TRIGGERED'],
-      {
-        assetId: string
-        eventType: import('./assets').RiskEventType
-        conditionLoss: number
-      }
-    >
 
 export * from './player'
 export * from './band'

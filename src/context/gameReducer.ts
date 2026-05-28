@@ -14,7 +14,6 @@ import {
   handleRepairChassis,
   handleStartCrowdfund,
   handleAssetForeclosed,
-  handleAssetRiskEventTriggered,
   handleAssetFailedAction
 } from './reducers/assetReducer'
 import { logger } from '../utils/logger'
@@ -179,8 +178,7 @@ const reducerMap: ReducerMap = {
   [ActionTypes.INSTALL_MODULE_FAILED]: handleAssetFailedAction,
   [ActionTypes.REMOVE_MODULE]: handleRemoveModule,
   [ActionTypes.START_CROWDFUND]: handleStartCrowdfund,
-  [ActionTypes.ASSET_FORECLOSED]: handleAssetForeclosed,
-  [ActionTypes.ASSET_RISK_EVENT_TRIGGERED]: handleAssetRiskEventTriggered
+  [ActionTypes.ASSET_FORECLOSED]: handleAssetForeclosed
 }
 
 /**

@@ -81,10 +81,6 @@ type AssetForeclosedAction = Extract2<
   GameAction,
   typeof ActionTypes.ASSET_FORECLOSED
 >
-type AssetRiskEventAction = Extract2<
-  GameAction,
-  typeof ActionTypes.ASSET_RISK_EVENT_TRIGGERED
->
 
 const VALID_KINDS: ReadonlySet<string> = new Set([
   'tourbus_chassis',
@@ -409,17 +405,4 @@ export const startCrowdfund = (
 export const assetForeclosed = (assetId: string): AssetForeclosedAction => ({
   type: ActionTypes.ASSET_FORECLOSED,
   payload: { assetId }
-})
-
-export const assetRiskEventTriggered = (
-  assetId: string,
-  eventType: AssetRiskEventAction['payload']['eventType'],
-  conditionLoss: number
-): AssetRiskEventAction => ({
-  type: ActionTypes.ASSET_RISK_EVENT_TRIGGERED,
-  payload: {
-    assetId,
-    eventType,
-    conditionLoss: finiteNumberOr(conditionLoss, 0)
-  }
 })

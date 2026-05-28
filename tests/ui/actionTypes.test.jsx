@@ -63,8 +63,7 @@ describe('ActionTypes', () => {
       'INSTALL_MODULE_FAILED',
       'REMOVE_MODULE',
       'START_CROWDFUND',
-      'ASSET_FORECLOSED',
-      'ASSET_RISK_EVENT_TRIGGERED'
+      'ASSET_FORECLOSED'
     ]
 
     expectedTypes.forEach(type => {
