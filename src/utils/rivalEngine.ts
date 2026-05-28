@@ -42,7 +42,7 @@ export const moveRivalBand = (
     return rivalBand
   }
 
-  let possibleNodes: GameMap['nodes'][string][] = []
+  const possibleNodes: GameMap['nodes'][string][] = []
 
   if (rivalBand.currentLocationId && gameMap.connections) {
     // ⚡ BOLT OPTIMIZATION: Replaced chained .filter().map() with a single-pass loop.
@@ -51,17 +51,19 @@ export const moveRivalBand = (
     const currentLocationId = rivalBand.currentLocationId
     const connectedNodeIds = new Set<string>()
     for (const c of gameMap.connections) {
-      if (c.from === currentLocationId) {
-        connectedNodeIds.add(c.to)
-      } else if (c.to === currentLocationId) {
-        connectedNodeIds.add(c.from)
-      }
-    }
+      const targetId =
+        c.from === currentLocationId
+          ? c.to
+          : c.to === currentLocationId
+            ? c.from
+            : undefined
 
-    for (const id of connectedNodeIds) {
-      const node = gameMap.nodes[id]
-      if (node && node.type === 'GIG') {
-        possibleNodes.push(node)
+      if (targetId && !connectedNodeIds.has(targetId)) {
+        connectedNodeIds.add(targetId)
+        const node = gameMap.nodes[targetId]
+        if (node && node.type === 'GIG') {
+          possibleNodes.push(node)
+        }
       }
     }
   }
