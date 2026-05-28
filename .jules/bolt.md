@@ -149,3 +149,6 @@
 ## 2026-05-26 - Array Mapping and Filtering in Sanitizers
 **Learning:** Chaining .map().filter() creates multiple intermediate array allocations that add up to significant GC pressure on hot paths like sanitizers.
 **Action:** Replace array iteration method chains with procedural for loops to directly construct the filtered/mapped lists in a single pass.
+## 2026-05-26 - Eliminate Callback Iteration Overheads with for loops
+**Learning:** Functional array methods like `.reduce()` have significant overhead in hot paths (like audio/MIDI processing) due to continuous callback execution and potential intermediate allocations.
+**Action:** Prefer standard `for` loops when processing arrays in high-frequency engine domains. This saves closure invocations and increases overall throughput.

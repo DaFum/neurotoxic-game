@@ -21,18 +21,17 @@ const sanitizeEffectOptions = (
 ): Record<string, string | number | boolean | null> => {
   if (!options) return {}
   const sanitized: Record<string, string | number | boolean | null> = {}
-  const entries = Object.entries(options)
-  for (let i = 0; i < entries.length; i++) {
-    const entry = entries[i]
-    if (!entry) continue
-    const [key, value] = entry
-    if (
-      typeof value === 'string' ||
-      (typeof value === 'number' && Number.isFinite(value)) ||
-      typeof value === 'boolean' ||
-      value === null
-    ) {
-      sanitized[key] = value
+  for (const key in options) {
+    if (Object.hasOwn(options, key)) {
+      const value = options[key]
+      if (
+        typeof value === 'string' ||
+        (typeof value === 'number' && Number.isFinite(value)) ||
+        typeof value === 'boolean' ||
+        value === null
+      ) {
+        sanitized[key] = value
+      }
     }
   }
   return sanitized

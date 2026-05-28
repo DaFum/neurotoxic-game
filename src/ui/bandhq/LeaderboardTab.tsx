@@ -93,30 +93,30 @@ export const LeaderboardTab = () => {
           throw new Error('Invalid leaderboard payload')
         }
 
-        const sanitizedEntries = data
-          .filter(
-            (
-              entry
-            ): entry is Partial<LeaderboardEntry> & Record<string, unknown> =>
-              typeof entry === 'object' && entry !== null
-          )
-          .map((entry, index) => ({
-            rank: typeof entry.rank === 'number' ? entry.rank : 0,
-            playerId:
-              typeof entry.playerId === 'string'
-                ? entry.playerId
-                : `unknown-player-${index}`,
-            playerName:
-              typeof entry.playerName === 'string'
-                ? entry.playerName
-                : t('ui:leaderboard.unknownPlayer', {
-                    defaultValue: 'Unknown'
-                  }),
-            score:
-              typeof entry.score === 'number' && Number.isFinite(entry.score)
-                ? entry.score
-                : 0
-          }))
+        const sanitizedEntries = []
+        for (let i = 0; i < data.length; i++) {
+          const entry = data[i]
+          if (typeof entry === 'object' && entry !== null) {
+            const item = entry as Partial<LeaderboardEntry>
+            sanitizedEntries.push({
+              rank: typeof item.rank === 'number' ? item.rank : 0,
+              playerId:
+                typeof item.playerId === 'string'
+                  ? item.playerId
+                  : `unknown-player-${i}`,
+              playerName:
+                typeof item.playerName === 'string'
+                  ? item.playerName
+                  : t('ui:leaderboard.unknownPlayer', {
+                      defaultValue: 'Unknown'
+                    }),
+              score:
+                typeof item.score === 'number' && Number.isFinite(item.score)
+                  ? item.score
+                  : 0
+            })
+          }
+        }
 
         setRankings(sanitizedEntries)
       } catch (fetchError: unknown) {
