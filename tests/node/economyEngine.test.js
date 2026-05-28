@@ -900,9 +900,46 @@ test('calculateVenueSplit gracefully handles missing/undefined params', () => {
   assert.ok(result.amount >= 0)
 })
 
-test('calculateGuarantee gracefully handles missing/undefined params', () => {
-  const result = calculateGuarantee(undefined)
-  assert.ok(result.amount >= 0)
+test('calculateGuarantee handles various pay scenarios', async t => {
+  await t.test('gracefully handles missing/undefined params', () => {
+    const result = calculateGuarantee(undefined)
+    assert.strictEqual(result.amount, 0)
+    assert.strictEqual(result.incomeItem, null)
+  })
+
+  await t.test('returns correct amount and incomeItem for positive pay', () => {
+    const result = calculateGuarantee({ pay: 500 })
+    assert.strictEqual(result.amount, 500)
+    assert.ok(result.incomeItem)
+    assert.strictEqual(result.incomeItem.value, 500)
+    assert.strictEqual(result.incomeItem.labelKey, 'economy:gigIncome.guarantee.label')
+  })
+
+  await t.test('returns zero and null incomeItem for zero pay', () => {
+    const result = calculateGuarantee({ pay: 0 })
+    assert.strictEqual(result.amount, 0)
+    assert.strictEqual(result.incomeItem, null)
+  })
+
+  await t.test('returns zero and null incomeItem for negative pay', () => {
+    const result = calculateGuarantee({ pay: -100 })
+    assert.strictEqual(result.amount, 0)
+    assert.strictEqual(result.incomeItem, null)
+  })
+
+  await t.test('handles Infinity gracefully by coercing to zero', () => {
+    const result = calculateGuarantee({ pay: Infinity })
+    assert.ok(Number.isFinite(result.amount))
+    assert.strictEqual(result.amount, 0)
+    assert.strictEqual(result.incomeItem, null)
+  })
+
+  await t.test('handles NaN gracefully by coercing to zero', () => {
+    const result = calculateGuarantee({ pay: NaN })
+    assert.ok(Number.isFinite(result.amount))
+    assert.strictEqual(result.amount, 0)
+    assert.strictEqual(result.incomeItem, null)
+  })
 })
 
 test('calculateBarCut gracefully handles missing/undefined params', () => {
