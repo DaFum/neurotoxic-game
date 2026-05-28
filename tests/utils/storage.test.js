@@ -3,16 +3,13 @@ import assert from 'node:assert/strict'
 import { setSafeStorageItem } from '../../src/utils/storage'
 import { handleError, StorageError } from '../../src/utils/errorHandler'
 
-vi.mock('../../src/utils/errorHandler', () => ({
-  handleError: vi.fn(),
-  StorageError: class StorageError extends Error {
-    constructor(message, options) {
-      super(message)
-      this.name = 'StorageError'
-      this.options = options
-    }
+vi.mock('../../src/utils/errorHandler', async () => {
+  const actual = await vi.importActual('../../src/utils/errorHandler')
+  return {
+    ...actual,
+    handleError: vi.fn()
   }
-}))
+})
 
 describe('storage', () => {
   describe('setSafeStorageItem', () => {
@@ -22,14 +19,14 @@ describe('storage', () => {
       mockStorage = {
         setItem: vi.fn()
       }
-      global.window = {
+      vi.stubGlobal('window', {
         localStorage: mockStorage
-      }
+      })
       vi.clearAllMocks()
     })
 
     afterEach(() => {
-      delete global.window
+      vi.unstubAllGlobals()
     })
 
     it('sets JSON stringified item in localStorage', () => {
@@ -40,7 +37,7 @@ describe('storage', () => {
     })
 
     it('does nothing if storage is unavailable', () => {
-      delete global.window
+      vi.stubGlobal('window', undefined)
       setSafeStorageItem('testKey', 'value')
       assert.strictEqual(mockStorage.setItem.mock.calls.length, 0)
     })
@@ -58,7 +55,7 @@ describe('storage', () => {
 
       assert.ok(errorArg instanceof StorageError)
       assert.strictEqual(errorArg.message, 'Storage write failed for "testKey"')
-      assert.strictEqual(errorArg.options.originalError, 'QuotaExceededError')
+      assert.strictEqual(errorArg.context.originalError, 'QuotaExceededError')
 
       assert.deepEqual(optionsArg, { silent: true })
     })
