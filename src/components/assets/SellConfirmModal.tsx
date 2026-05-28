@@ -7,6 +7,7 @@ import { getChassisImagePrompt } from '../../utils/imageGen'
 import { CHASSIS_CONFIG } from '../../utils/assetConfig'
 import { formatCurrency } from '../../utils/numberUtils'
 import { useGameActions, useGameSelector } from '../../context/GameState'
+import { selectLiabilitiesMap } from '../../utils/assetSelectors'
 import type { LongTermAsset } from '../../types/assets'
 
 interface Props {
@@ -25,7 +26,7 @@ export const SellConfirmModal = ({ asset, isOpen, onClose }: Props) => {
   const { sellChassis } = useGameActions()
   const day = useGameSelector(s => s.player.day)
   const liability = useGameSelector(s =>
-    s.liabilities.find(l => l.assetId === asset.id)
+    selectLiabilitiesMap(s).get(asset.id)
   )
 
   const cfg =
