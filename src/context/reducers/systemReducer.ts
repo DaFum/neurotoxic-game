@@ -1824,7 +1824,7 @@ export const handleAdvanceDay = (
         }
       }
       const firstEvent = events[0]
-      if (firstEvent) {
+      if (firstEvent && nextStatePre.pendingRiskEvent === null) {
         nextStatePre = {
           ...nextStatePre,
           pendingRiskEvent: firstEvent

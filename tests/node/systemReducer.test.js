@@ -1098,4 +1098,53 @@ test('systemReducer - ADVANCE_DAY core logic', async t => {
       assert.deepEqual(nextState.eventCooldowns, [])
     }
   )
+
+  await t.test(
+    'preserves an existing pending risk event during daily rolls',
+    () => {
+      const initialState = createInitialState()
+      const pendingRiskEvent = {
+        assetId: 'existing_asset',
+        eventType: 'theft',
+        conditionLoss: 25
+      }
+      const currentState = {
+        ...initialState,
+        player: {
+          ...initialState.player,
+          day: 1
+        },
+        assets: [
+          {
+            id: 'new_asset',
+            kind: 'tourbus_chassis',
+            chassisFlavor: 'legit',
+            chassisTier: 1,
+            condition: 100,
+            baseUpkeep: 0,
+            baseDailyRevenue: 0,
+            slots: [],
+            acquiredOnDay: 1,
+            acquisitionMode: 'cash',
+            baseRiskEventChance: 1
+          }
+        ],
+        pendingRiskEvent,
+        toasts: [],
+        activeQuests: []
+      }
+
+      const nextState = handleAdvanceDay(currentState, {
+        dayRngStream: [0],
+        nextRngSeed: initialState.rngSeed,
+        rng: () => 0.5
+      })
+
+      assert.deepEqual(nextState.pendingRiskEvent, pendingRiskEvent)
+      assert.equal(
+        nextState.toasts.at(-1)?.messageKey,
+        'assets:risk.event.fire'
+      )
+    }
+  )
 })

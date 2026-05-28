@@ -585,8 +585,10 @@ export function useGameDispatchActions({
   )
 
   const setPendingRiskEvent = useCallback(
-    (event: Parameters<typeof createSetPendingRiskEventAction>[0]) =>
-      dispatch(createSetPendingRiskEventAction(event)),
+    (event: Parameters<typeof createSetPendingRiskEventAction>[0]) => {
+      const action = createSetPendingRiskEventAction(event)
+      if (action) dispatch(action)
+    },
     [dispatch]
   )
 

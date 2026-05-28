@@ -293,8 +293,20 @@ describe('Action Creators', () => {
   })
 
   describe('createSetPendingRiskEventAction validation', () => {
-    it('coerces non-object payloads to null', () => {
-      assert.deepStrictEqual(createSetPendingRiskEventAction('bad'), {
+    it('drops invalid non-null payloads instead of clearing pending state', () => {
+      assert.equal(createSetPendingRiskEventAction('bad'), null)
+      assert.equal(
+        createSetPendingRiskEventAction({
+          assetId: 'asset_1',
+          eventType: 'fire',
+          conditionLoss: Number.NEGATIVE_INFINITY
+        }),
+        null
+      )
+    })
+
+    it('creates an explicit clear action for null payloads', () => {
+      assert.deepStrictEqual(createSetPendingRiskEventAction(null), {
         type: ActionTypes.SET_PENDING_RISK_EVENT,
         payload: null
       })

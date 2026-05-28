@@ -8,6 +8,7 @@ import { RNG_BASE_BUFFER, RNG_ROLLS_PER_ASSET } from '../utils/assetConfig'
 
 import { ActionTypes } from './actionTypes'
 import { getSafeUUID } from '../utils/crypto'
+import { sanitizeRiskEventDescriptor } from './reducers/assetSanitizers'
 import type { RivalBandState } from '../types'
 import {
   clampPlayerMoney,
@@ -879,13 +880,22 @@ export const createSetPendingRiskEventAction = (
 ): Extract<
   GameAction,
   { type: typeof ActionTypes.SET_PENDING_RISK_EVENT }
-> => ({
-  type: ActionTypes.SET_PENDING_RISK_EVENT,
-  payload:
-    event !== null && typeof event === 'object' && !Array.isArray(event)
-      ? event
-      : null
-})
+> | null => {
+  if (event === null) {
+    return {
+      type: ActionTypes.SET_PENDING_RISK_EVENT,
+      payload: null
+    }
+  }
+
+  const nextEvent = sanitizeRiskEventDescriptor(event)
+  if (!nextEvent) return null
+
+  return {
+    type: ActionTypes.SET_PENDING_RISK_EVENT,
+    payload: nextEvent
+  }
+}
 
 /**
  * Creates an action to donate blood to the void clinic.

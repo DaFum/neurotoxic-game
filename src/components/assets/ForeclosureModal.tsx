@@ -32,7 +32,7 @@ export const ForeclosureModal = ({ assetLabel, isOpen, onClose }: Props) => {
           aspectRatio='16:9'
           sizeHint={{ width: 640, height: 360 }}
         />
-        <p style={{ color: 'var(--color-blood)' }}>
+        <p style={{ color: 'var(--color-blood-red)' }}>
           {t('assets:liability.foreclosureNotice')}
           {assetLabel ? ` (${assetLabel})` : ''}
         </p>
@@ -42,8 +42,8 @@ export const ForeclosureModal = ({ assetLabel, isOpen, onClose }: Props) => {
             onClick={onClose}
             className='border-2 px-3 py-1'
             style={{
-              background: 'var(--color-blood)',
-              color: 'var(--color-void)'
+              background: 'var(--color-blood-red)',
+              color: 'var(--color-void-black)'
             }}
           >
             {t('ui:action_close', { defaultValue: 'Close' })}
