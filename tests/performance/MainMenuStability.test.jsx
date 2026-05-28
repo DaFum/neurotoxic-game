@@ -42,6 +42,7 @@ vi.mock('../../src/ui/BandHQ', () => ({
   BandHQ: () => <div />
 }))
 vi.mock('framer-motion', () => ({
+  useReducedMotion: () => false,
   motion: {
     div: ({ children, ...props }) => <div {...props}>{children}</div>,
     h1: ({ children, ...props }) => <h1 {...props}>{children}</h1>,

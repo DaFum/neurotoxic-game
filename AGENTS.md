@@ -67,6 +67,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 - Use the relevant installed Superpowers workflow skill before any repo action that changes code, tests, tooling, docs, config, git history, or agent instructions. Repo action means editing files, running write/generation commands, changing dependencies, or running git operations that affect repository state.
 - Read only the relevant nested `AGENTS.md` files before editing; nested files add scope rules and override root guidance when more specific.
+- Before finishing any repo change, check whether the change reveals a durable instruction that belongs in an `AGENTS.md`; update only the relevant scope file when the instruction is non-obvious, repo-specific, and likely to prevent future mistakes.
 
 ## Critical Commands
 

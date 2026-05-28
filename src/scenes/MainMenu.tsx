@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { useBandHQModal } from '../hooks/useBandHQModal'
 import { GlitchButton } from '../ui/GlitchButton'
 import { BandHQ } from '../ui/BandHQ'
@@ -18,6 +18,7 @@ import { useNetworkStatus } from '../hooks/useNetworkStatus'
 export const MainMenu = () => {
   const { showHQ, openHQ, closeHQ } = useBandHQModal()
   const isOnline = useNetworkStatus()
+  const prefersReducedMotion = useReducedMotion()
 
   const {
     t,
@@ -43,7 +44,7 @@ export const MainMenu = () => {
   } = useMainMenu()
 
   return (
-    <div className='flex flex-col items-center justify-center h-full w-full bg-void-black z-50 relative overflow-y-auto overflow-x-hidden px-4 py-8'>
+    <div className='flex flex-col items-center justify-center h-full w-full bg-void-black z-50 relative overflow-y-auto overflow-x-hidden p-3 sm:p-6 lg:p-8'>
       {showExistingSavePrompt && (
         <MainMenuExistingSavePrompt
           onLoad={handleLoadExistingFromPrompt}
@@ -69,7 +70,7 @@ export const MainMenu = () => {
           backgroundImage: `url("${resolveGenImageUrl(IMG_PROMPTS.MAIN_MENU_BG, isOnline)}")`
         }}
       />
-      <div className='absolute inset-0 z-0 bg-gradient-to-b from-black/0 to-black/90 pointer-events-none' />
+      <div className='absolute inset-0 z-0 bg-gradient-to-b from-void-black/0 to-void-black/90 pointer-events-none' />
 
       {/* Atmosphere: slow scanning bar */}
       <div
@@ -85,9 +86,15 @@ export const MainMenu = () => {
 
       <div className='relative z-10 flex w-full max-w-md flex-col items-center'>
         <motion.h1
-          initial={{ scale: 0.8, opacity: 0, y: -20 }}
+          initial={
+            prefersReducedMotion ? false : { scale: 0.8, opacity: 0, y: -20 }
+          }
           animate={{ scale: 1, opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: 'easeOut' }}
+          transition={
+            prefersReducedMotion
+              ? { duration: 0 }
+              : { duration: 0.8, ease: 'easeOut' }
+          }
           data-text='NEUROTOXIC'
           className="title-ghost text-5xl sm:text-6xl md:text-9xl text-center text-transparent bg-clip-text bg-gradient-to-b from-toxic-green to-toxic-green-dark font-['Metal_Mania'] animate-neon-flicker mb-2 break-words"
           style={{
@@ -100,34 +107,48 @@ export const MainMenu = () => {
 
         <AnimatedDivider
           width='100%'
-          transition={{ duration: 0.6, delay: 0.4 }}
+          transition={
+            prefersReducedMotion
+              ? { duration: 0 }
+              : { duration: 0.6, delay: 0.4 }
+          }
           className='bg-gradient-to-r from-transparent via-toxic-green to-transparent mb-4 max-w-md'
         />
 
         {/* jscpd:ignore-start */}
         <AnimatedSubtitle
-          initial={{ opacity: 0, letterSpacing: '0.5em' }}
+          initial={
+            prefersReducedMotion
+              ? false
+              : { opacity: 0, letterSpacing: '0.5em' }
+          }
           animate={{ opacity: 1, letterSpacing: '0.3em' }}
-          transition={{ duration: 1, delay: 0.6 }}
+          transition={
+            prefersReducedMotion ? { duration: 0 } : { duration: 1, delay: 0.6 }
+          }
           className='text-lg md:text-2xl text-toxic-green/80 mb-2 font-[Courier_New] text-center'
         >
           {t('ui:mainMenu.subtitle.grindTheVoid')}
         </AnimatedSubtitle>
 
         <motion.div
-          initial={{ opacity: 0 }}
+          initial={prefersReducedMotion ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1 }}
+          transition={prefersReducedMotion ? { duration: 0 } : { delay: 1 }}
           className='mb-8 sm:mb-10 px-3 py-1 border border-toxic-green/30 text-[10px] font-mono text-toxic-green/60 tracking-widest'
         >
-          v3.0 // EARLY ACCESS
+          {'v3.0 // EARLY ACCESS'}
         </motion.div>
         {/* jscpd:ignore-end */}
 
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.8 }}
+          transition={
+            prefersReducedMotion
+              ? { duration: 0 }
+              : { duration: 0.5, delay: 0.8 }
+          }
           className='flex w-full max-w-xs flex-col gap-3'
         >
           <GlitchButton
@@ -155,9 +176,9 @@ export const MainMenu = () => {
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0 }}
+          initial={prefersReducedMotion ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1.2 }}
+          transition={prefersReducedMotion ? { duration: 0 } : { delay: 1.2 }}
           className='flex w-full max-w-xs flex-col gap-4 mt-6 items-center'
         >
           <div className='flex w-full flex-wrap justify-center gap-3 sm:gap-4'>
@@ -187,13 +208,13 @@ export const MainMenu = () => {
       {showSocials && <MainMenuSocials onClose={() => setShowSocials(false)} />}
 
       <motion.div
-        initial={{ opacity: 0 }}
+        initial={prefersReducedMotion ? false : { opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 1.5 }}
+        transition={prefersReducedMotion ? { duration: 0 } : { delay: 1.5 }}
         className='absolute bottom-4 sm:bottom-6 flex w-full flex-col items-center gap-1 z-10 px-4'
       >
         <div className='w-32 h-[1px] bg-gradient-to-r from-transparent via-ash-gray/50 to-transparent' />
-        <div className='text-center text-ash-gray/60 text-[10px] font-mono tracking-widest'>
+        <div className='text-center text-ash-gray text-[10px] font-mono tracking-widest'>
           © 2026 NEUROTOXIC // DEATH GRINDCORE FROM STENDAL
         </div>
       </motion.div>

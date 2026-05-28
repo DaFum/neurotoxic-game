@@ -20,16 +20,10 @@ export const GameOverButtons = ({
       transition={{ delay: 2 }}
       className='flex gap-4 relative z-10'
     >
-      <GlitchButton
-        onClick={onRetry}
-        className='border-star-white text-star-white'
-      >
+      <GlitchButton onClick={onRetry} variant='primary'>
         {t('ui:gameOver.loadLastSave')}
       </GlitchButton>
-      <GlitchButton
-        onClick={onReturnToMenu}
-        className='border-blood-red text-blood-red'
-      >
+      <GlitchButton onClick={onReturnToMenu} variant='danger'>
         {t('ui:gameOver.returnToMenu')}
       </GlitchButton>
     </motion.div>

@@ -4,8 +4,6 @@ import type { RefObject } from 'react'
 import { buildRhythmLayout } from './stageRenderUtils'
 import { LaneRenderer } from './LaneRenderer'
 
-const LANE_GAP = 20
-
 export class LaneManager {
   app: Application
   stageContainer: Container
@@ -60,7 +58,7 @@ export class LaneManager {
     for (let index = 0, len = lanes.length; index < len; index++) {
       const lane = lanes[index]
       if (!lane || !this.laneLayout) continue
-      const laneX = startX + index * (laneWidth + LANE_GAP)
+      const laneX = startX + index * (laneWidth + this.laneLayout.laneGap)
       // Side-effect: Mutating gameState lanes with render position for NoteManager
       lane.renderX = laneX
 
@@ -139,7 +137,8 @@ export class LaneManager {
     for (let index = 0, len = lanes.length; index < len; index++) {
       const lane = lanes[index]
       if (!lane) continue
-      lane.renderX = startX + index * (this.laneLayout.laneWidth + LANE_GAP)
+      lane.renderX =
+        startX + index * (this.laneLayout.laneWidth + this.laneLayout.laneGap)
     }
     return true
   }

@@ -76,7 +76,7 @@ export const KabelsalatBoard: FC<KabelsalatBoardProps> = ({
             <button
               type='button'
               onClick={purgeVoidSurge}
-              className='mt-2 px-3 py-1 bg-void-black text-xs text-cosmic-purple border border-cosmic-purple hover:bg-cosmic-purple hover:text-void-black transition-colors font-bold tracking-wider'
+              className='mt-2 px-3 py-1 bg-void-black text-xs text-void-purple border border-void-purple hover:bg-cosmic-purple hover:text-void-black transition-colors font-bold tracking-wider'
             >
               {t('ui:minigames.kabelsalat.purgeAnomaly')}
             </button>

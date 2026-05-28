@@ -13,8 +13,8 @@ export const ZealotryGauge = memo(
     if (zealotryLevel <= 0) return null
 
     return (
-      <div className='flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-4 p-3 bg-blood-red/10 border border-blood-red/30 rounded relative overflow-hidden'>
-        <div className='w-12 h-12 shrink-0 border border-blood-red/50 rounded overflow-hidden'>
+      <div className='flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-4 p-3 bg-blood-red/10 border-2 border-blood-red/50 relative overflow-hidden'>
+        <div className='w-12 h-12 shrink-0 border-2 border-blood-red/50 overflow-hidden'>
           <img
             src={resolveGenImageUrl(IMG_PROMPTS.ZEALOTRY_CULT)}
             alt={t('ui:postGig.socialPhase.altZealotryCult', {
@@ -30,11 +30,11 @@ export const ZealotryGauge = memo(
                 defaultValue: 'CULT ZEALOTRY'
               })}
             </span>
-            <span className='shrink-0 text-xs font-mono text-blood-red/80'>
+            <span className='shrink-0 text-xs font-mono text-blood-red-bright'>
               {zealotryLevel}%
             </span>
           </div>
-          <div className='w-full bg-void-black/50 h-2 rounded overflow-hidden'>
+          <div className='w-full bg-void-black/50 h-2 overflow-hidden'>
             <div
               className='bg-blood-red h-full transition-all duration-500'
               style={{
@@ -43,7 +43,7 @@ export const ZealotryGauge = memo(
             />
           </div>
           {zealotryLevel >= ZEALOTRY_PROMO_THRESHOLD && (
-            <div className='text-[10px] text-blood-red/80 mt-1 uppercase animate-pulse break-words'>
+            <div className='text-[10px] text-blood-red-bright mt-1 uppercase animate-pulse break-words'>
               {t('economy:social.zealotryWarning', {
                 defaultValue:
                   'WARNING: FANS ARE BECOMING RADICALIZED. POLICE RAID RISK INCREASED.'

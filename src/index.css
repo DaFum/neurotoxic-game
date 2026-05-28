@@ -159,23 +159,11 @@ body {
 
 #root {
   width: 100vw;
-  height: 100vh;
+  height: 100dvh;
+  min-height: 100svh;
   display: flex;
   justify-content: center;
   align-items: center;
-}
-
-/* Global Utility Classes */
-.text-toxic {
-  color: var(--color-toxic-green);
-}
-
-.text-blood {
-  color: var(--color-blood-red-bright);
-}
-
-.bg-void {
-  background-color: var(--color-void-black);
 }
 /* ── Dreckiges CRT Overlay mit Vignette ── */
 .crt-overlay {
@@ -739,7 +727,7 @@ input[type='range'].vol-slider::-moz-range-thumb:hover {
   top: 0;
   left: 0;
   width: 100vw;
-  height: 100vh;
+  height: 100dvh;
   pointer-events: none;
   z-index: var(--z-crt);
   opacity: 0.05;
@@ -888,7 +876,7 @@ input[type='range'].vol-slider::-moz-range-thumb:hover {
     opacity: 0.4;
   }
   100% {
-    transform: translateY(100vh);
+    transform: translateY(100dvh);
     opacity: 0;
   }
 }
@@ -914,10 +902,26 @@ input[type='range'].vol-slider::-moz-range-thumb:hover {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .crt-overlay,
+  .crt-overlay::after,
+  .scene-enter,
+  .animate-credits-scroll,
+  .animate-pulse-glow,
+  .animate-doom-zoom,
+  .animate-neon-flicker,
+  .animate-confirm-pulse,
+  .toxic-border-flash,
+  .typing-text,
+  .glitch-text::before,
+  .glitch-text::after,
   .animate-chromatic-flicker,
   .animate-grain,
   .animate-scan-bar {
-    animation: none;
+    animation: none !important;
+  }
+
+  .animate-credits-scroll {
+    transform: none;
   }
 }
 

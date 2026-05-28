@@ -104,7 +104,7 @@ const MapNodeTooltip = memo(
   }: MapNodeTooltipProps) => {
     return (
       <div
-        className={`${isPendingConfirm ? 'block' : 'hidden group-hover:block group-focus:block'} absolute top-full mt-2 bg-void-black/90 border border-toxic-green p-2 z-50 whitespace-nowrap pointer-events-none`}
+        className={`${isPendingConfirm ? 'block' : 'hidden group-hover:block group-focus:block'} absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-void-black/90 border border-toxic-green p-2 z-50 w-max max-w-[min(18rem,calc(100vw-2rem))] whitespace-normal break-words text-left pointer-events-none`}
       >
         <div className='font-bold text-toxic-green'>{nodeLocationName}</div>
 
@@ -169,7 +169,7 @@ const MapNodeTooltip = memo(
           </div>
         )}
         {node.type === 'SPECIAL' && (
-          <div className='text-[10px] text-purple-glow font-mono'>
+          <div className='text-[10px] text-void-purple font-mono'>
             {t('ui:map.mystery_desc')}
           </div>
         )}

@@ -21,7 +21,7 @@ export const PauseButton = memo(function PauseButton({
         <button
           type='button'
           onClick={onTogglePause}
-          className={`bg-void-black/80 border border-toxic-green text-toxic-green p-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green ${isGameOver ? 'opacity-50 pointer-events-none cursor-not-allowed' : 'hover:bg-toxic-green hover:text-void-black'}`}
+          className={`bg-void-black/80 border-2 border-toxic-green text-toxic-green w-11 h-11 flex items-center justify-center transition-all touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green ${isGameOver ? 'opacity-50 pointer-events-none cursor-not-allowed' : 'hover:bg-toxic-green hover:text-void-black'}`}
           aria-label={t('ui:gig.pauseAria', { defaultValue: 'Pause Game' })}
           disabled={isGameOver}
         >
@@ -31,7 +31,7 @@ export const PauseButton = memo(function PauseButton({
             viewBox='0 0 24 24'
             strokeWidth={1.5}
             stroke='currentColor'
-            className='w-8 h-8'
+            className='w-5 h-5'
             aria-hidden='true'
           >
             <path

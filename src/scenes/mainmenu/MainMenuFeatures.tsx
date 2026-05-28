@@ -124,7 +124,7 @@ const FeatureTable = ({ headers, rows, title }: FeatureTableProps) => {
                   return (
                     <td
                       key={dataStableKey}
-                      className={`p-2 ${cell === rowKey ? 'text-toxic-green/90 whitespace-nowrap align-top font-bold' : 'text-ash-gray align-top'}`}
+                      className={`p-2 ${cell === rowKey ? 'max-w-32 sm:max-w-none text-toxic-green/90 whitespace-normal sm:whitespace-nowrap break-words align-top font-bold' : 'text-ash-gray align-top'}`}
                     >
                       {t(cell)}
                     </td>

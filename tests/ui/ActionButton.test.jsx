@@ -25,6 +25,27 @@ test('ActionButton applies custom classes and type', () => {
   expect(button).toHaveClass('custom-class')
 })
 
+test('ActionButton custom variant does not include primary visual classes', () => {
+  render(
+    <ActionButton
+      variant='custom'
+      className='px-3 py-2 bg-void-black text-ash-gray'
+    >
+      Custom
+    </ActionButton>
+  )
+
+  const button = screen.getByRole('button', { name: 'Custom' })
+  expect(button).toHaveClass('px-3')
+  expect(button).toHaveClass('py-2')
+  expect(button).toHaveClass('bg-void-black')
+  expect(button).toHaveClass('text-ash-gray')
+  expect(button).not.toHaveClass('px-8')
+  expect(button).not.toHaveClass('py-4')
+  expect(button).not.toHaveClass('bg-toxic-green')
+  expect(button).not.toHaveClass('text-void-black')
+})
+
 test('ActionButton passes through additional props and uses ref', () => {
   const mockRef = vi.fn()
   render(

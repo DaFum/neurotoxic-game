@@ -64,7 +64,7 @@ export const IntroVideo = () => {
   }, [handleEnd])
 
   return (
-    <div className='relative w-full h-full bg-void-black overflow-hidden flex items-center justify-center z-[100]'>
+    <div className='relative w-full h-full bg-void-black overflow-hidden flex items-center justify-center z-(--z-modal)'>
       {isVideoSupported && (
         <video
           ref={videoRef}

@@ -37,7 +37,7 @@ export const CompletePhase = ({
   return (
     <div
       data-testid='post-gig-complete'
-      className='relative min-h-[320px] sm:min-h-[400px] flex flex-col items-center justify-center p-3 sm:p-6 lg:p-8 border border-ash-gray/20 rounded overflow-hidden'
+      className='relative min-h-[320px] sm:min-h-[400px] flex flex-col items-center justify-center p-3 sm:p-6 lg:p-8 border-2 border-ash-gray/40 overflow-hidden'
     >
       {/* Background Image Watermark */}
       <div
@@ -122,7 +122,6 @@ export const CompletePhase = ({
           <ActionButton
             onClick={onContinue}
             disabled={isProcessingAction}
-            variant='primary'
             className='w-full sm:w-auto min-h-11 px-6 sm:px-8 py-3 text-void-black disabled:opacity-50'
           >
             {isProcessingAction

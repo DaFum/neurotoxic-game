@@ -19,7 +19,7 @@ export const ClinicScene = () => {
   if (!player || !band) return null
 
   return (
-    <div className='w-full h-full bg-void-black relative overflow-hidden flex flex-col items-center justify-center p-2 sm:p-8'>
+    <div className='w-full h-full bg-void-black relative overflow-hidden flex flex-col items-center justify-center p-3 sm:p-6 lg:p-8'>
       {/* Background Ambience */}
       <div
         className='absolute inset-0 pointer-events-none'

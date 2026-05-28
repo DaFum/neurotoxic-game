@@ -9,7 +9,7 @@ export const SkipButton = ({ onSkip }: SkipButtonProps) => {
   const { t } = useTranslation()
 
   return (
-    <div className='absolute bottom-8 right-8 z-50 opacity-80 hover:opacity-100 transition-opacity'>
+    <div className='absolute bottom-[max(2rem,env(safe-area-inset-bottom))] right-[max(2rem,env(safe-area-inset-right))] z-50 opacity-80 hover:opacity-100 transition-opacity'>
       <GlitchButton onClick={onSkip}>{t('ui:intro_skip')}</GlitchButton>
     </div>
   )

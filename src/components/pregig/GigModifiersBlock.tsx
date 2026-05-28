@@ -62,7 +62,7 @@ export const GigModifiersBlock = ({
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 0.2 }}
-      className='border-2 border-ash-gray/40 p-4 bg-void-black/70 backdrop-blur-sm overflow-y-auto max-h-[38vh] sm:max-h-[42vh] lg:max-h-none'
+      className='border-2 border-ash-gray/40 p-4 bg-void-black/70 backdrop-blur-sm overflow-y-auto max-h-[38svh] sm:max-h-[42svh] lg:max-h-none'
     >
       <h3 className='text-sm text-toxic-green mb-3 tracking-widest font-mono border-b border-toxic-green/30 pb-2'>
         {t('ui:pregig.allocation')}
@@ -116,7 +116,7 @@ export const GigModifiersBlock = ({
             ))}
           </ul>
         ) : (
-          <div className='text-[10px] text-ash-gray/50 italic'>
+          <div className='text-[10px] text-ash-gray italic'>
             {t('ui:pregig.noModifiers')}
           </div>
         )}

@@ -99,7 +99,7 @@ export const AmpControls = memo(function AmpControls({
         <button
           type='button'
           onClick={handleFineTuneDown}
-          className='w-12 h-12 flex items-center justify-center bg-void-black border-2 border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black active:scale-95 transition-colors font-bold text-xl rounded focus:outline-none focus:ring-2 focus:ring-toxic-green focus:ring-offset-2 focus:ring-offset-void-black'
+          className='w-12 h-12 flex items-center justify-center bg-void-black border-2 border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black active:scale-95 transition-colors font-bold text-xl focus:outline-none focus:ring-2 focus:ring-toxic-green focus:ring-offset-2 focus:ring-offset-void-black'
           aria-label={t('ui:minigames.amp.controls.fineTuneDown', {
             defaultValue: 'Fine tune down'
           })}
@@ -131,7 +131,7 @@ export const AmpControls = memo(function AmpControls({
         <button
           type='button'
           onClick={handleFineTuneUp}
-          className='w-12 h-12 flex items-center justify-center bg-void-black border-2 border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black active:scale-95 transition-colors font-bold text-xl rounded focus:outline-none focus:ring-2 focus:ring-toxic-green focus:ring-offset-2 focus:ring-offset-void-black'
+          className='w-12 h-12 flex items-center justify-center bg-void-black border-2 border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black active:scale-95 transition-colors font-bold text-xl focus:outline-none focus:ring-2 focus:ring-toxic-green focus:ring-offset-2 focus:ring-offset-void-black'
           aria-label={t('ui:minigames.amp.controls.fineTuneUp', {
             defaultValue: 'Fine tune up'
           })}
@@ -170,7 +170,7 @@ export const AmpControls = memo(function AmpControls({
             type='button'
             onClick={purgeInterference}
             disabled={!interference || interference < 1}
-            className='px-6 py-2 font-mono font-bold uppercase border-2 transition-all duration-150 bg-blood-red text-void-black border-blood-red hover:bg-void-black hover:text-blood-red shadow-[0_0_15px_var(--color-blood-red)] disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blood-red focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
+            className='px-6 py-2 font-mono font-bold uppercase border-2 transition-all duration-150 bg-blood-red text-star-white border-blood-red hover:bg-void-black hover:text-blood-red shadow-[0_0_15px_var(--color-blood-red)] disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blood-red focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
             aria-label={t('ui:minigames.amp.controls.purge', {
               defaultValue: 'Purge Signal'
             })}

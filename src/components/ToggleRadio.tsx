@@ -38,14 +38,14 @@ export const ToggleRadio = memo(() => {
       <button
         type='button'
         onClick={toggle}
-        className='bg-void-black border border-toxic-green text-toxic-green w-11 h-11 sm:w-8 sm:h-8 flex items-center justify-center hover:bg-toxic-green/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green touch-manipulation'
+        className='bg-void-black border-2 border-toxic-green text-toxic-green w-11 h-11 flex items-center justify-center hover:bg-toxic-green hover:text-void-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green touch-manipulation'
         aria-label={label}
         aria-pressed={isPlaying}
       >
         {isPlaying ? (
           <span className='text-xl font-bold font-mono'>■</span>
         ) : (
-          <RazorPlayIcon className='w-5 h-5 text-toxic-green' />
+          <RazorPlayIcon className='w-5 h-5 text-current' />
         )}
       </button>
     </Tooltip>

@@ -53,7 +53,7 @@ const SongRow = memo(function SongRow({
           isSelected
             ? 'border-toxic-green bg-toxic-green/10 text-toxic-green shadow-[0_0_8px_var(--color-toxic-green-20)]'
             : isLocked
-              ? 'border-blood-red/30 bg-blood-red/10 text-blood-red/50 opacity-50'
+              ? 'border-blood-red/50 bg-blood-red/10 text-blood-red-bright'
               : 'border-ash-gray/20 hover:border-star-white/40 text-ash-gray'
         }`}
     >
@@ -123,7 +123,7 @@ export const SetlistBlock = ({
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 0.2 }}
-      className='border-2 border-ash-gray/40 p-4 bg-void-black/70 backdrop-blur-sm flex flex-col max-h-[48vh] sm:max-h-[52vh] lg:max-h-none'
+      className='border-2 border-ash-gray/40 p-4 bg-void-black/70 backdrop-blur-sm flex flex-col max-h-[48svh] sm:max-h-[52svh] lg:max-h-none'
     >
       <h3 className='text-sm text-toxic-green mb-3 tracking-widest font-mono border-b border-toxic-green/30 pb-2 flex justify-between'>
         <span>{t('ui:pregig.setlist')}</span>

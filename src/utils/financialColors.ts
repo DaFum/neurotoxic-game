@@ -7,13 +7,13 @@ interface FinancialColorClasses {
 }
 
 const INCOME_COLORS: FinancialColorClasses = {
-  text: 'text-toxic-green',
-  border: 'border-toxic-green',
-  borderLight: 'border-toxic-green/40'
+  text: 'text-warning-yellow',
+  border: 'border-warning-yellow',
+  borderLight: 'border-warning-yellow/40'
 }
 
 const EXPENSE_COLORS: FinancialColorClasses = {
-  text: 'text-blood-red',
+  text: 'text-blood-red-bright',
   border: 'border-blood-red',
   borderLight: 'border-blood-red/40'
 }

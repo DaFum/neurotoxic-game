@@ -135,7 +135,7 @@ export const MinigameSceneFrame = <TState,>({
       </div>
 
       {settings?.crtEnabled && (
-        <div className='crt-overlay pointer-events-none fixed inset-0 z-500' />
+        <div className='crt-overlay pointer-events-none fixed inset-0 z-(--z-crt)' />
       )}
 
       {/* Custom UI Elements (HUD, Controls) */}

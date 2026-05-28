@@ -34,7 +34,7 @@ const BLOOD_RED_BASE = {
   accent: 'var(--color-blood-red)',
   accentGlow: 'var(--color-blood-red-20)',
   borderColor: 'border-blood-red',
-  labelColor: 'text-blood-red',
+  labelColor: 'text-blood-red-bright',
   barColor: 'bg-blood-red'
 }
 
@@ -96,7 +96,7 @@ const SCENE_STYLES: Record<string, SceneStyle> = {
   },
   [GAME_PHASES.CLINIC]: {
     ...TOXIC_GREEN_BASE,
-    speakerColor: 'text-blood-red',
+    speakerColor: 'text-blood-red-bright',
     icon: '\uD83E\uDE78'
   }
 }
@@ -132,15 +132,15 @@ const ChatterMessageHeader = memo(
   ({ sceneStyle, sceneLabel, speaker }: ChatterMessageHeaderProps) => (
     <div className='pl-3 pr-2 py-1.5 border-b border-ash-gray/20 flex items-center justify-between gap-2'>
       <div className='flex items-center gap-1.5'>
-        <span className='text-[10px]'>{sceneStyle.icon}</span>
+        <span className='text-xs'>{sceneStyle.icon}</span>
         <p
-          className={`text-[10px] uppercase tracking-[0.18em] font-bold ${sceneStyle.labelColor} ${FONT_UI_CLASS}`}
+          className={`text-xs uppercase tracking-widest font-bold ${sceneStyle.labelColor} ${FONT_UI_CLASS}`}
         >
           {sceneLabel}
         </p>
       </div>
       <p
-        className={`text-[10px] font-bold uppercase tracking-[0.14em] ${sceneStyle.speakerColor} ${FONT_UI_CLASS}`}
+        className={`text-xs font-bold uppercase tracking-widest ${sceneStyle.speakerColor} ${FONT_UI_CLASS}`}
       >
         {speaker}
       </p>
