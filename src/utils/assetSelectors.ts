@@ -68,17 +68,20 @@ export const getAssetAggregateBoni = (asset: LongTermAsset): AssetBoni => {
   if (asset.condition < BROKEN_THRESHOLD) return {}
   const agg: AssetBoni = {}
   for (const m of getInstalledModules(asset)) {
-    for (const [k, v] of Object.entries(m.boni)) {
-      const key = k as keyof AssetBoni
-      if (typeof v === 'number') {
-        const current = agg[key] as number | undefined
-        if (key.endsWith('Multiplier') || key === 'diyRiskMultiplier') {
-          ;(agg as Record<string, unknown>)[key] = (current ?? 1.0) * v
-        } else {
-          ;(agg as Record<string, unknown>)[key] = (current ?? 0) + v
+    for (const k in m.boni) {
+      if (Object.hasOwn(m.boni, k)) {
+        const v = m.boni[k as keyof AssetBoni]
+        const key = k as keyof AssetBoni
+        if (typeof v === 'number') {
+          const current = agg[key] as number | undefined
+          if (key.endsWith('Multiplier') || key === 'diyRiskMultiplier') {
+            ;(agg as Record<string, unknown>)[key] = (current ?? 1.0) * v
+          } else {
+            ;(agg as Record<string, unknown>)[key] = (current ?? 0) + v
+          }
+        } else if (typeof v === 'boolean') {
+          ;(agg as Record<string, unknown>)[key] = Boolean(agg[key]) || v
         }
-      } else if (typeof v === 'boolean') {
-        ;(agg as Record<string, unknown>)[key] = Boolean(agg[key]) || v
       }
     }
   }
@@ -430,5 +433,10 @@ export const getModulePoolForAsset = (
 }
 
 export const getTotalDebt = (state: GameState): number => {
-  return state.liabilities.reduce((sum, l) => sum + l.principalRemaining, 0)
+  let sum = 0
+  const liabilities = state.liabilities
+  for (const l of liabilities) {
+    sum += l.principalRemaining
+  }
+  return sum
 }

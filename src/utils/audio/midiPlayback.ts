@@ -348,14 +348,16 @@ function isTempoEvent(e: unknown): e is Record<string, unknown> {
 function sanitizeTempoEvents(
   rawTempo: unknown[]
 ): { tick: number; usPerBeat: number }[] {
-  return rawTempo.reduce<{ tick: number; usPerBeat: number }[]>((acc, e) => {
+  const result: { tick: number; usPerBeat: number }[] = []
+  for (let i = 0; i < rawTempo.length; i++) {
+    const e = rawTempo[i]
     if (isTempoEvent(e)) {
       if (typeof e.tick === 'number' && typeof e.usPerBeat === 'number') {
-        acc.push({ tick: e.tick, usPerBeat: e.usPerBeat })
+        result.push({ tick: e.tick, usPerBeat: e.usPerBeat })
       }
     }
-    return acc
-  }, [])
+  }
+  return result
 }
 
 function extractTempoMap(
@@ -612,11 +614,15 @@ function processMidiTrackNotes(
   notes: ParsedMidiNote[],
   percussionTrack: boolean
 ): ProcessedMidiEvent[] {
-  return notes.reduce<ProcessedMidiEvent[]>((acc, note) => {
-    const evt = createProcessedMidiEvent(note, percussionTrack)
-    if (evt) acc.push(evt)
-    return acc
-  }, [])
+  const result: ProcessedMidiEvent[] = []
+  for (let i = 0; i < notes.length; i++) {
+    const note = notes[i]
+    if (note) {
+      const evt = createProcessedMidiEvent(note, percussionTrack)
+      if (evt) result.push(evt)
+    }
+  }
+  return result
 }
 
 function getClampedDuration(dur: unknown): number {
@@ -710,11 +716,15 @@ function createMidiParts(
   const synths = getSynthsContext(useCleanPlayback)
   const tracks = Array.isArray(midi?.tracks) ? midi.tracks : []
 
-  return tracks.reduce<Tone.Part<unknown>[]>((acc, track) => {
-    const part = createTrackPart(track, synths)
-    if (part) acc.push(part)
-    return acc
-  }, [])
+  const parts: Tone.Part<unknown>[] = []
+  for (let i = 0; i < tracks.length; i++) {
+    const track = tracks[i]
+    if (track) {
+      const part = createTrackPart(track, synths)
+      if (part) parts.push(part)
+    }
+  }
+  return parts
 }
 
 /**
