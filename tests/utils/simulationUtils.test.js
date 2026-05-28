@@ -1,5 +1,4 @@
-import { describe, it } from 'vitest'
-import assert from 'node:assert/strict'
+import { describe, it, expect } from 'vitest'
 import { calculateGigPhysics } from '../../src/utils/simulationUtils'
 import { CHARACTERS } from '../../src/data/characters'
 
@@ -9,11 +8,11 @@ describe('calculateGigPhysics', () => {
     const song = { bpm: 100, difficulty: 2 }
     const result = calculateGigPhysics(bandState, song)
 
-    assert.deepEqual(result.hitWindows, { guitar: 120, drums: 120, bass: 120 })
-    assert.equal(result.speedModifier, 0.8) // Avg stamina is 0 < 40 -> 0.8
-    assert.deepEqual(result.multipliers, { guitar: 1.0, drums: 1.0, bass: 1.0 })
-    assert.equal(result.avgStamina, 0)
-    assert.equal(result.hasPerfektionist, false)
+    expect(result.hitWindows).toEqual({ guitar: 120, drums: 120, bass: 120 })
+    expect(result.speedModifier).toBe(0.8) // Avg stamina is 0 < 40 -> 0.8
+    expect(result.multipliers).toEqual({ guitar: 1.0, drums: 1.0, bass: 1.0 })
+    expect(result.avgStamina).toBe(0)
+    expect(result.hasPerfektionist).toBe(false)
   })
 
   it('calculates hit windows based on skill (direct and baseStats)', () => {
@@ -28,9 +27,9 @@ describe('calculateGigPhysics', () => {
     const result = calculateGigPhysics(bandState, song)
 
     // Formula: Base 120ms + (Skill * 4ms)
-    assert.equal(result.hitWindows.guitar, 120 + 5 * 4)
-    assert.equal(result.hitWindows.drums, 120 + 7 * 4)
-    assert.equal(result.hitWindows.bass, 120 + 3 * 4)
+    expect(result.hitWindows.guitar).toBe(120 + 5 * 4)
+    expect(result.hitWindows.drums).toBe(120 + 7 * 4)
+    expect(result.hitWindows.bass).toBe(120 + 3 * 4)
   })
 
   it('applies Virtuoso trait (Matze) for hit window bonus', () => {
@@ -41,7 +40,7 @@ describe('calculateGigPhysics', () => {
     }
     const song = { bpm: 120 }
     const result = calculateGigPhysics(bandState, song)
-    assert.equal(result.hitWindows.guitar, (120 + 5 * 4) * 1.1)
+    expect(result.hitWindows.guitar).toBe((120 + 5 * 4) * 1.1)
   })
 
   it('calculates scroll speed based on stamina (drag effect)', () => {
@@ -53,8 +52,20 @@ describe('calculateGigPhysics', () => {
     }
     const song = { bpm: 120 }
     const result = calculateGigPhysics(bandState, song)
-    assert.equal(result.avgStamina, 35)
-    assert.equal(result.speedModifier, 0.8) // < 40
+    expect(result.avgStamina).toBe(35)
+    expect(result.speedModifier).toBe(0.8) // < 40
+  })
+
+  it('calculates scroll speed based on stamina (boundary at exactly 40)', () => {
+    const bandState = {
+      members: [
+        { name: CHARACTERS.MATZE.name, stamina: 40 }
+      ]
+    }
+    const song = { bpm: 120 }
+    const result = calculateGigPhysics(bandState, song)
+    expect(result.avgStamina).toBe(40)
+    expect(result.speedModifier).toBe(1.0) // >= 40
   })
 
   it('calculates scroll speed based on stamina (normal speed)', () => {
@@ -66,8 +77,8 @@ describe('calculateGigPhysics', () => {
     }
     const song = { bpm: 120 }
     const result = calculateGigPhysics(bandState, song)
-    assert.equal(result.avgStamina, 45)
-    assert.equal(result.speedModifier, 1.0) // >= 40
+    expect(result.avgStamina).toBe(45)
+    expect(result.speedModifier).toBe(1.0) // >= 40
   })
 
   it('applies Marius blast_machine trait on fast songs', () => {
@@ -78,7 +89,18 @@ describe('calculateGigPhysics', () => {
     }
     const song = { bpm: 170 } // > 160 is fast
     const result = calculateGigPhysics(bandState, song)
-    assert.equal(result.multipliers.drums, 1.5)
+    expect(result.multipliers.drums).toBe(1.5)
+  })
+
+  it('does not apply Marius blast_machine trait on slow songs', () => {
+    const bandState = {
+      members: [
+        { name: CHARACTERS.MARIUS.name, traits: { 'blast_machine': { id: 'blast_machine' } } }
+      ]
+    }
+    const song = { bpm: 120 } // <= 160 is not fast
+    const result = calculateGigPhysics(bandState, song)
+    expect(result.multipliers.drums).toBe(1.0)
   })
 
   it('applies Lars melodic_genius trait on slow songs', () => {
@@ -89,7 +111,18 @@ describe('calculateGigPhysics', () => {
     }
     const song = { bpm: 110 } // < 120 is slow
     const result = calculateGigPhysics(bandState, song)
-    assert.equal(result.hitWindows.bass, (120 + 5 * 4) * 1.15)
+    expect(result.hitWindows.bass).toBe((120 + 5 * 4) * 1.15)
+  })
+
+  it('does not apply Lars melodic_genius trait on fast songs', () => {
+    const bandState = {
+      members: [
+        { name: CHARACTERS.LARS.name, skill: 5, traits: { 'melodic_genius': { id: 'melodic_genius' } } }
+      ]
+    }
+    const song = { bpm: 130 } // >= 120 is not slow
+    const result = calculateGigPhysics(bandState, song)
+    expect(result.hitWindows.bass).toBe(120 + 5 * 4)
   })
 
   it('applies Matze tech_wizard trait on technical songs', () => {
@@ -100,7 +133,18 @@ describe('calculateGigPhysics', () => {
     }
     const song = { bpm: 120, difficulty: 4 } // > 3 is technical
     const result = calculateGigPhysics(bandState, song)
-    assert.equal(result.multipliers.guitar, 1.15)
+    expect(result.multipliers.guitar).toBe(1.15)
+  })
+
+  it('does not apply Matze tech_wizard trait on easy songs', () => {
+    const bandState = {
+      members: [
+        { name: CHARACTERS.MATZE.name, traits: { 'tech_wizard': { id: 'tech_wizard' } } }
+      ]
+    }
+    const song = { bpm: 120, difficulty: 2 } // <= 3 is not technical
+    const result = calculateGigPhysics(bandState, song)
+    expect(result.multipliers.guitar).toBe(1.0)
   })
 
   it('applies multiple modifiers and trait multipliers', () => {
@@ -114,13 +158,13 @@ describe('calculateGigPhysics', () => {
     const song = { bpm: 130, difficulty: 2 }
     const result = calculateGigPhysics(bandState, song)
 
-    assert.equal(result.multipliers.guitar, 1.1)
-    assert.equal(result.multipliers.drums, 1.1)
-    assert.equal(result.multipliers.bass, 1.1)
+    expect(result.multipliers.guitar).toBe(1.1)
+    expect(result.multipliers.drums).toBe(1.1)
+    expect(result.multipliers.bass).toBe(1.1)
 
-    assert.equal(result.hitWindows.guitar, (120 + 5 * 4) + 5)
-    assert.equal(result.hitWindows.drums, 120 + 5)
-    assert.equal(result.hitWindows.bass, (120 + 5 * 4) + 5)
-    assert.equal(result.hasPerfektionist, true)
+    expect(result.hitWindows.guitar).toBe((120 + 5 * 4) + 5)
+    expect(result.hitWindows.drums).toBe(120 + 5)
+    expect(result.hitWindows.bass).toBe((120 + 5 * 4) + 5)
+    expect(result.hasPerfektionist).toBe(true)
   })
 })
