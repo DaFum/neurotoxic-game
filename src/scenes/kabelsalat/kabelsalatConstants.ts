@@ -93,5 +93,3 @@ export const INITIAL_SOCKET_ORDER = [
   'synth'
 ] as const
 export const TIME_LIMIT = 25
-
-export const CONNECTOR_TYPES = [...new Set(CABLES.map(c => c.type))]

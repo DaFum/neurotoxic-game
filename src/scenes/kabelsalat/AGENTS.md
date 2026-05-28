@@ -4,7 +4,6 @@
 
 - Keep `forceAdvance(isPowered: boolean)` typed end-to-end through hooks and consumers.
 - Preserve socket-order literals with `as const`; do not widen to `string[]`.
-- `CONNECTOR_TYPES` is derived from the `CABLES` array; do not maintain a parallel hard-coded list.
 
 ## Transitions
 
