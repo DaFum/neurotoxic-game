@@ -1,15 +1,21 @@
 import { useRef, useCallback, useEffect, useState } from 'react'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
-import { audioService } from '../../utils/audio/audioEngine'
-import { isEmptyObject, clamp0to100 } from '../../utils/gameStateUtils'
+import { isEmptyObject } from '../../utils/gameStateUtils'
+import {
+  checkCollision,
+  handleCrash,
+  handlePickup,
+  handleDelivery,
+  type RoadieCarryingItem,
+  type RoadieLogicState
+} from '../../utils/minigames/roadieUtils'
 import {
   ROADIE_GRID_WIDTH,
   ROADIE_GRID_HEIGHT,
   ROADIE_MOVE_COOLDOWN_BASE
 } from './minigameConstants'
 import { hashString } from '../../utils/stringUtils'
-import type { RoadieRenderState } from '../../components/stage/RoadiePlayerManager'
 
 const TRAFFIC_ROWS = [1, 2, 3, 4, 5, 6]
 // Speed: 0.01 cells/ms = 10 cells/sec. Grid is 12 wide. 1.2 sec to cross.
@@ -17,79 +23,6 @@ const TRAFFIC_ROWS = [1, 2, 3, 4, 5, 6]
 // Slow trucks: 0.005
 const TRAFFIC_SPEEDS = [0.005, -0.009, 0.012, -0.007, 0.015, -0.01]
 const CAR_SPAWN_RATES = [2500, 2200, 1600, 2800, 1400, 2000] // Slightly denser
-
-type RoadieCarryingItem = {
-  id: string
-  type: string
-  weight: number
-}
-
-type RoadieTrafficCar = {
-  id: string
-  textureHash: number
-  row: number
-  x: number
-  speed: number
-  width: number
-}
-
-type RoadieSpawner = {
-  row: number
-  timer: number
-  rate: number
-  speed: number
-}
-
-type RoadieLogicState = RoadieRenderState & {
-  carrying: RoadieCarryingItem | null
-  itemsToDeliver: RoadieCarryingItem[]
-  itemsDelivered: RoadieCarryingItem[]
-  contrabandCount: number
-  traffic: RoadieTrafficCar[]
-  lastMoveTime: number
-  isGameOver: boolean
-  spawners: RoadieSpawner[]
-}
-
-// --- Extracted Game Logic ---
-
-export function checkCollision(
-  car: RoadieTrafficCar,
-  playerPos: RoadieLogicState['playerPos']
-) {
-  if (car.row !== playerPos.y) return false
-
-  const pLeft = playerPos.x + 0.1
-  const pRight = playerPos.x + 0.9
-  const cLeft = car.x
-  const cRight = car.x + car.width
-
-  return pLeft < cRight && pRight > cLeft
-}
-
-export function handleCrash(
-  game: RoadieLogicState,
-  onGameOver: (damage: number) => void
-) {
-  audioService.playSFX('crash')
-
-  if (game.carrying) {
-    game.equipmentDamage = clamp0to100(game.equipmentDamage + 10)
-
-    if (game.equipmentDamage >= 100) {
-      game.isGameOver = true
-      game.playerPos.y = 0
-      game.playerPos.x = 6
-      onGameOver(100)
-    } else {
-      game.playerPos.y = 0
-      game.playerPos.x = 6
-    }
-  } else {
-    game.playerPos.y = 0
-    game.playerPos.x = 6
-  }
-}
 
 function spawnTraffic(game: RoadieLogicState, deltaMS: number) {
   for (let i = 0, len = game.spawners.length; i < len; i++) {
@@ -152,40 +85,6 @@ function processTraffic(
   }
   return crashed
 }
-
-export function handlePickup(game: RoadieLogicState) {
-  if (
-    game.playerPos.y === 0 &&
-    !game.carrying &&
-    game.itemsToDeliver.length > 0
-  ) {
-    game.carrying = game.itemsToDeliver.shift() ?? null
-    audioService.playSFX('pickup')
-  }
-}
-
-export function handleDelivery(
-  game: RoadieLogicState,
-  onGameOver: (equipmentDamage: number, contrabandDelivered?: number) => void
-) {
-  if (game.playerPos.y === ROADIE_GRID_HEIGHT - 1 && game.carrying) {
-    game.itemsDelivered.push(game.carrying)
-
-    if (game.carrying.type === 'CONTRABAND') {
-      game.contrabandCount = (game.contrabandCount ?? 0) + 1
-    }
-
-    game.carrying = null
-    audioService.playSFX('deliver')
-
-    if (game.itemsToDeliver.length === 0) {
-      game.isGameOver = true
-      onGameOver(game.equipmentDamage, game.contrabandCount ?? 0)
-    }
-  }
-}
-
-// --- End Extracted Game Logic ---
 
 export const useRoadieLogic = () => {
   const currentScene = useGameSelector(state => state.currentScene)

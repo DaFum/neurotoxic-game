@@ -4,7 +4,7 @@ import {
   handleCrash,
   handlePickup,
   handleDelivery
-} from '../../../src/hooks/minigames/useRoadieLogic.ts'
+} from '../../../src/utils/minigames/roadieUtils.ts'
 import { ROADIE_GRID_HEIGHT } from '../../../src/hooks/minigames/minigameConstants.ts'
 
 vi.mock('../../../src/utils/audio/AudioManager.ts', () => ({

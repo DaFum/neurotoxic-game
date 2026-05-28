@@ -2173,7 +2173,7 @@
       {
         "isDefault": false,
         "name": "checkCollision",
-        "path": "src/hooks/minigames/useRoadieLogic.ts",
+        "path": "src/utils/minigames/roadieUtils.ts",
         "source": "local",
         "type": "function"
       }
@@ -2685,15 +2685,6 @@
         "isDefault": false,
         "name": "ConnectionPaths",
         "path": "src/scenes/kabelsalat/components/ConnectionPaths.tsx",
-        "source": "local",
-        "type": "const"
-      }
-    ],
-    "CONNECTOR_TYPES": [
-      {
-        "isDefault": false,
-        "name": "CONNECTOR_TYPES",
-        "path": "src/scenes/kabelsalat/kabelsalatConstants.ts",
         "source": "local",
         "type": "const"
       }
@@ -5604,7 +5595,7 @@
       {
         "isDefault": false,
         "name": "handleCrash",
-        "path": "src/hooks/minigames/useRoadieLogic.ts",
+        "path": "src/utils/minigames/roadieUtils.ts",
         "source": "local",
         "type": "function"
       }
@@ -5622,7 +5613,7 @@
       {
         "isDefault": false,
         "name": "handleDelivery",
-        "path": "src/hooks/minigames/useRoadieLogic.ts",
+        "path": "src/utils/minigames/roadieUtils.ts",
         "source": "local",
         "type": "function"
       }
@@ -5712,7 +5703,7 @@
       {
         "isDefault": false,
         "name": "handlePickup",
-        "path": "src/hooks/minigames/useRoadieLogic.ts",
+        "path": "src/utils/minigames/roadieUtils.ts",
         "source": "local",
         "type": "function"
       }
@@ -9180,6 +9171,16 @@
         "typeOnly": true
       }
     ],
+    "RoadieCarryingItem": [
+      {
+        "isDefault": false,
+        "name": "RoadieCarryingItem",
+        "path": "src/utils/minigames/roadieUtils.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
     "RoadieControls": [
       {
         "isDefault": false,
@@ -9220,6 +9221,16 @@
         "typeOnly": true
       }
     ],
+    "RoadieLogicState": [
+      {
+        "isDefault": false,
+        "name": "RoadieLogicState",
+        "path": "src/utils/minigames/roadieUtils.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
     "RoadiePlayerManager": [
       {
         "isDefault": false,
@@ -9246,6 +9257,26 @@
         "path": "src/scenes/RoadieRunScene.tsx",
         "source": "local",
         "type": "const"
+      }
+    ],
+    "RoadieSpawner": [
+      {
+        "isDefault": false,
+        "name": "RoadieSpawner",
+        "path": "src/utils/minigames/roadieUtils.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
+    "RoadieTrafficCar": [
+      {
+        "isDefault": false,
+        "name": "RoadieTrafficCar",
+        "path": "src/utils/minigames/roadieUtils.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
       }
     ],
     "RoadieTrafficManager": [
