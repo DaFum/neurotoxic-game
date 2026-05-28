@@ -218,6 +218,15 @@ describe('purchaseChassis', () => {
     assert.equal(action.type, ActionTypes.PURCHASE_CHASSIS_FAILED)
     assert.equal(action.payload.reason, 'UNKNOWN_KIND_OR_TIER')
   })
+
+  it('returns FAILED for unknown flavor', () => {
+    const action = purchaseChassis(
+      { kind: 'studio_chassis', flavor: 'fake_flavor', tier: 1, mode: 'cash' },
+      makeState()
+    )
+    assert.equal(action.type, ActionTypes.PURCHASE_CHASSIS_FAILED)
+    assert.equal(action.payload.reason, 'UNKNOWN_FLAVOR')
+  })
 })
 
 describe('installModule', () => {

@@ -141,9 +141,12 @@ export const purchaseChassis = (
     payload: { reason }
   })
 
+  if (!VALID_FLAVORS.has(raw.flavor)) {
+    return fail('UNKNOWN_FLAVOR')
+  }
+
   if (
     !VALID_KINDS.has(raw.kind) ||
-    !VALID_FLAVORS.has(raw.flavor) ||
     !VALID_TIERS.has(raw.tier) ||
     !VALID_MODES.has(raw.mode)
   ) {
