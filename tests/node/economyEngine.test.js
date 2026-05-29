@@ -645,7 +645,7 @@ test('calculateRefuelCost calculates correctly', () => {
   assert.equal(calculateRefuelCost(120), 0)
 })
 
-test('calculateRepairCost handles normal and edge cases', async (t) => {
+test('calculateRepairCost handles normal and edge cases', async t => {
   await t.test('calculates correct cost for partial condition', () => {
     // Current condition = 80. Missing = 20. Cost = 20 * 6 = 120
     const cost = calculateRepairCost(80)
@@ -659,9 +659,12 @@ test('calculateRepairCost handles normal and edge cases', async (t) => {
     assert.equal(calculateRepairCost(100), 0)
   })
 
-  await t.test('handles over-repaired condition (> 100) gracefully by returning 0', () => {
-    assert.equal(calculateRepairCost(120), 0)
-  })
+  await t.test(
+    'handles over-repaired condition (> 100) gracefully by returning 0',
+    () => {
+      assert.equal(calculateRepairCost(120), 0)
+    }
+  )
 
   await t.test('handles completely broken condition (0)', () => {
     const expected = Math.ceil(
@@ -670,12 +673,9 @@ test('calculateRepairCost handles normal and edge cases', async (t) => {
     assert.equal(calculateRepairCost(0), expected)
   })
 
-  await t.test('handles negative condition gracefully', () => {
-    // Treats negative condition as 0 condition to repair (100 missing)
-    // Wait, the code says: const missing = Math.max(0, 100 - currentCondition)
-    // If currentCondition = -10, missing = Math.max(0, 110) = 110.
+  await t.test('handles negative condition gracefully by clamping to 0', () => {
     const expected = Math.ceil(
-      110 * EXPENSE_CONSTANTS.TRANSPORT.REPAIR_COST_PER_UNIT
+      100 * EXPENSE_CONSTANTS.TRANSPORT.REPAIR_COST_PER_UNIT
     )
     assert.equal(calculateRepairCost(-10), expected)
   })
@@ -944,7 +944,10 @@ test('calculateGuarantee handles various pay scenarios', async t => {
     assert.strictEqual(result.amount, 500)
     assert.ok(result.incomeItem)
     assert.strictEqual(result.incomeItem.value, 500)
-    assert.strictEqual(result.incomeItem.labelKey, 'economy:gigIncome.guarantee.label')
+    assert.strictEqual(
+      result.incomeItem.labelKey,
+      'economy:gigIncome.guarantee.label'
+    )
   })
 
   await t.test('returns zero and null incomeItem for zero pay', () => {
