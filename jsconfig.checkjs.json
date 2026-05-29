@@ -7,9 +7,12 @@
   },
   "include": [
     "src/context/**/*",
-    "src/hooks/rhythmGame/**/*",
-    "src/utils/audio/**/*",
-    "src/ui/bandhq/**/*",
+    "src/components/**/*",
+    "src/hooks/**/*",
+    "src/utils/**/*",
+    "src/ui/**/*",
+    "src/data/**/*",
+    "src/scenes/**/*",
     "src/types/**/*.d.ts"
   ]
 }
