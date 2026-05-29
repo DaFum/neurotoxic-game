@@ -119,7 +119,10 @@ export const SetlistBlock = ({
 }: SetlistBlockProps) => {
   const { t } = useTranslation('ui')
   const selectedSongs = setlist
-    .map(entry => songsDict[getSongId(entry)])
+    .map(entry => {
+      const songId = getSongId(entry)
+      return songId ? songsDict[songId] : undefined
+    })
     .filter((song): song is Song => Boolean(song))
   const densityBars = buildSetlistChartDensity(selectedSongs)
   const densityTotal = densityBars.reduce((sum, bar) => sum + bar.count, 0)
