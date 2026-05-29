@@ -53,6 +53,19 @@ const ecoInkModule: AssetModule = {
   imagePromptKey: 'mw_eco_ink_supply'
 }
 
+const storyLockedModule: AssetModule = {
+  id: 'tb_vintage_stereo',
+  ownerKind: 'tourbus_chassis',
+  slotType: 'tb_audio',
+  flavor: 'legit',
+  cost: 650,
+  installCost: 0,
+  removalRefundFraction: 0.2,
+  boni: { bandMoodPerDay: 2 },
+  unlock: { requiredStoryFlags: ['found_record_collection'] },
+  imagePromptKey: 'tb_vintage_stereo'
+}
+
 const workshopAsset: LongTermAsset = {
   id: 'workshop-1',
   kind: 'merch_workshop_chassis',
@@ -125,6 +138,8 @@ vi.mock('react-i18next', () => ({
         'assets:modulePicker.title': 'Choose a module',
         'assets:module.tb_subwoofer_stack.name': 'Subwoofer Stack',
         'assets:module.tb_subwoofer_stack.description': '+10% tips at gigs',
+        'assets:module.tb_vintage_stereo.name': 'Vintage Stereo',
+        'assets:module.tb_vintage_stereo.description': '+2 mood per day',
         'assets:module.mw_eco_ink_supply.name': 'Eco-ink supply',
         'assets:module.mw_eco_ink_supply.description': '+3% avg merch price',
         'assets:module.mw_4color_carousel.name': '4-color carousel',
@@ -133,6 +148,8 @@ vi.mock('react-i18next', () => ({
         'assets:actions.removeModuleConfirm': `Remove module (refund ${opts?.amount})?`,
         'assets:modulePicker.installCost': `Install cost: ${opts?.amount}`,
         'assets:module.unlock.otherModule': `Requires module: ${opts?.moduleRefs}`,
+        'assets:module.unlock.story': `Requires story progress: ${opts?.flag}`,
+        'assets:storyFlag.found_record_collection': 'Found record collection',
         'assets:actions.remove': 'Remove',
         'assets:actions.install': 'Install'
       }
@@ -198,5 +215,46 @@ describe('ModulePickerModal remove flow', () => {
     ).toBeInTheDocument()
     expect(screen.queryByText(/mw_4color_carousel/)).not.toBeInTheDocument()
     expect(screen.queryByText(/mw_manual_press/)).not.toBeInTheDocument()
+  })
+
+  it('renders story lock reasons with localized flag names', () => {
+    mockGetModulePoolForAsset.mockReturnValue([
+      {
+        module: storyLockedModule,
+        unlocked: false,
+        lockReasons: [
+          {
+            kind: 'story',
+            ref: 'found_record_collection'
+          }
+        ]
+      }
+    ])
+
+    render(
+      <ModulePickerModal
+        asset={{
+          ...asset,
+          slots: [
+            {
+              id: 'audio-slot',
+              slotType: 'tb_audio',
+              position: { x: 0, y: 0 },
+              installedModuleId: null
+            }
+          ]
+        }}
+        slotId='audio-slot'
+        isOpen
+        onClose={vi.fn()}
+      />
+    )
+
+    expect(
+      screen.getByText('Requires story progress: Found record collection')
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByText(/found_record_collection/)
+    ).not.toBeInTheDocument()
   })
 })

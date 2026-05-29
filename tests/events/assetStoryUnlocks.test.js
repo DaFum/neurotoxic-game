@@ -1,7 +1,21 @@
 import { describe, test } from 'node:test'
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import { ALL_RAW_EVENTS } from '../../src/data/events/index'
 import { MODULE_REGISTRY } from '../../src/utils/assetModuleRegistry.ts'
+
+const readAssetsLocale = locale =>
+  JSON.parse(readFileSync(`public/locales/${locale}/assets.json`, 'utf8'))
+
+const collectRequiredStoryFlags = () => {
+  const flags = new Set()
+  for (const module of Object.values(MODULE_REGISTRY)) {
+    for (const flag of module.unlock.requiredStoryFlags ?? []) {
+      flags.add(flag)
+    }
+  }
+  return [...flags]
+}
 
 const collectEffectFlags = effect => {
   if (!effect || typeof effect !== 'object') return []
@@ -57,6 +71,25 @@ describe('asset story unlock reachability', () => {
       assert.equal(eventAddsFlag(event, flag), true)
       assert.equal(event.condition({ activeStoryFlags: [] }), true)
       assert.equal(event.condition({ activeStoryFlags: [flag] }), false)
+    }
+  })
+
+  test('every asset story-flag unlock has localized display text', () => {
+    const locales = {
+      en: readAssetsLocale('en'),
+      de: readAssetsLocale('de')
+    }
+
+    for (const flag of collectRequiredStoryFlags()) {
+      const key = `storyFlag.${flag}`
+      for (const [locale, entries] of Object.entries(locales)) {
+        assert.equal(
+          typeof entries[key],
+          'string',
+          `${locale}/assets.json missing ${key}`
+        )
+        assert.notEqual(entries[key].trim(), '')
+      }
     }
   })
 })

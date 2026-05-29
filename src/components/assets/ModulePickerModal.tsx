@@ -34,8 +34,11 @@ const formatLockReason = (
       return t('assets:module.unlock.scene', { amount: reason.amount })
     case 'chassisTier':
       return t('assets:module.unlock.chassisTier', { tier: reason.amount })
-    case 'story':
-      return t('assets:module.unlock.story', { flag: reason.ref })
+    case 'story': {
+      const flag = reason.ref ?? ''
+      const flagLabel = t(`assets:storyFlag.${flag}`, { defaultValue: flag })
+      return t('assets:module.unlock.story', { flag: flagLabel })
+    }
     case 'skill':
       return t('assets:module.unlock.skill', {
         member: reason.ref,
