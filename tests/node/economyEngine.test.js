@@ -645,17 +645,49 @@ test('calculateRefuelCost calculates correctly', () => {
   assert.equal(calculateRefuelCost(120), 0)
 })
 
-test('calculateRepairCost calculates correctly', () => {
-  // Max condition = 100, Cost = 3
-  // Current condition = 80. Missing = 20. Cost = 20 * 3 = 60
-  const cost = calculateRepairCost(80)
-  const expected = Math.ceil(
-    20 * EXPENSE_CONSTANTS.TRANSPORT.REPAIR_COST_PER_UNIT
-  )
-  assert.equal(cost, expected)
+test('calculateRepairCost handles normal and edge cases', async (t) => {
+  await t.test('calculates correct cost for partial condition', () => {
+    // Current condition = 80. Missing = 20. Cost = 20 * 6 = 120
+    const cost = calculateRepairCost(80)
+    const expected = Math.ceil(
+      20 * EXPENSE_CONSTANTS.TRANSPORT.REPAIR_COST_PER_UNIT
+    )
+    assert.equal(cost, expected)
+  })
 
-  // Current condition = 100. Cost = 0.
-  assert.equal(calculateRepairCost(100), 0)
+  await t.test('returns 0 when condition is already 100', () => {
+    assert.equal(calculateRepairCost(100), 0)
+  })
+
+  await t.test('handles over-repaired condition (> 100) gracefully by returning 0', () => {
+    assert.equal(calculateRepairCost(120), 0)
+  })
+
+  await t.test('handles completely broken condition (0)', () => {
+    const expected = Math.ceil(
+      100 * EXPENSE_CONSTANTS.TRANSPORT.REPAIR_COST_PER_UNIT
+    )
+    assert.equal(calculateRepairCost(0), expected)
+  })
+
+  await t.test('handles negative condition gracefully', () => {
+    // Treats negative condition as 0 condition to repair (100 missing)
+    // Wait, the code says: const missing = Math.max(0, 100 - currentCondition)
+    // If currentCondition = -10, missing = Math.max(0, 110) = 110.
+    const expected = Math.ceil(
+      110 * EXPENSE_CONSTANTS.TRANSPORT.REPAIR_COST_PER_UNIT
+    )
+    assert.equal(calculateRepairCost(-10), expected)
+  })
+
+  await t.test('handles NaN condition gracefully', () => {
+    assert.equal(calculateRepairCost(NaN), 0)
+  })
+
+  await t.test('handles Infinity condition gracefully', () => {
+    // Math.max(0, 100 - Infinity) -> Math.max(0, -Infinity) -> 0
+    assert.equal(calculateRepairCost(Infinity), 0)
+  })
 })
 
 test('calculateFuelCost applies road_warrior trait discount', () => {
