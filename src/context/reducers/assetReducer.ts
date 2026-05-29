@@ -338,7 +338,7 @@ export const handleSellChassis = (
   return {
     ...state,
     assets: state.assets.filter(a => a.id !== assetId),
-    liabilities: state.liabilities.filter(l => l.assetId !== assetId),
+    liabilities: (state.liabilities || []).filter(l => l.assetId !== assetId),
     player: {
       ...state.player,
       money: state.player.money + net
@@ -396,7 +396,7 @@ export const handleAssetForeclosed = (
   return {
     ...state,
     assets: state.assets.filter(a => a.id !== payload.assetId),
-    liabilities: state.liabilities.filter(l => l.assetId !== payload.assetId)
+    liabilities: (state.liabilities || []).filter(l => l.assetId !== payload.assetId)
   }
 }
 
