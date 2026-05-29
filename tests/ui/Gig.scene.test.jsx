@@ -197,7 +197,7 @@ describe('Gig Scene Component', () => {
 
       // Low diff
       useGameState.mockReturnValue({
-        currentGig: { id: 'gig', name: 'Small Venue', diff: 1 },
+        currentGig: { id: 'gig', name: 'Small Venue', difficulty: 1 },
         changeScene: mockChangeScene,
         addToast: mockAddToast,
         setActiveEvent: mockSetActiveEvent,
@@ -213,7 +213,7 @@ describe('Gig Scene Component', () => {
 
       // High diff
       useGameState.mockReturnValue({
-        currentGig: { id: 'gig', name: 'Big Stadium', diff: 6 },
+        currentGig: { id: 'gig', name: 'Big Stadium', difficulty: 6 },
         changeScene: mockChangeScene,
         addToast: mockAddToast,
         setActiveEvent: mockSetActiveEvent,

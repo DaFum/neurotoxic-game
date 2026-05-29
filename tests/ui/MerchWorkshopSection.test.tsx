@@ -10,6 +10,8 @@ const mockState = vi.hoisted(() => ({
   liabilities: []
 }))
 
+const mockRefinanceLiability = vi.hoisted(() => vi.fn())
+
 const capturedProductionLineProps = vi.hoisted(
   () =>
     [] as Array<{
@@ -19,6 +21,9 @@ const capturedProductionLineProps = vi.hoisted(
 )
 
 vi.mock('../../src/context/GameState', () => ({
+  useGameActions: () => ({
+    refinanceLiability: mockRefinanceLiability
+  }),
   useGameSelector: (selector: (state: typeof mockState) => unknown) =>
     selector(mockState)
 }))
@@ -91,7 +96,10 @@ vi.mock('../../src/components/assets/ChassisAcquisitionModal', () => ({
 
 vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },
-  useTranslation: () => ({ t: (key: string) => key })
+  useTranslation: () => ({
+    t: (key: string) => key,
+    i18n: { language: 'en', changeLanguage: vi.fn(), options: {} }
+  })
 }))
 
 const mockAsset = (id: string, kind: LongTermAsset['kind']): LongTermAsset => ({
@@ -121,6 +129,7 @@ describe('MerchWorkshopSection', () => {
   beforeEach(() => {
     mockState.assets = []
     capturedProductionLineProps.length = 0
+    mockRefinanceLiability.mockClear()
     vi.clearAllMocks()
   })
 

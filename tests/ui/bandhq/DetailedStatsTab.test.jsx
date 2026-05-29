@@ -15,7 +15,8 @@ vi.mock('react-i18next', () => ({
         'ui:ui.day': 'Tag'
       }
       return translations[key] ?? options?.defaultValue ?? key
-    }
+    },
+    i18n: { language: 'en', changeLanguage: vi.fn(), options: {} }
   })
 }))
 

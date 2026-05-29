@@ -18,6 +18,10 @@
 
 - Audio mocks must target the central export module: `vi.mock('.../utils/audio/audioEngine', …)` (or equivalent `mock.module` for `node:test`) and must include **both** `audioManager` and `audioService` in `namedExports`. Mocking `AudioManager.ts` or `audioService.ts` directly no longer intercepts callers, which all import from `audioEngine`. Hoisted fixtures should share one listener set so `audioService` and `audioManager` stay observably linked.
 
+## Mock gotchas: i18n
+
+- Local `react-i18next` mocks for UI tests must return the `i18n` shape when the subject renders localized numbers or currency, e.g. `i18n: { language: 'en', changeLanguage: vi.fn(), options: {} }`.
+
 ## Mock gotchas: node:test modules
 
 - `node:test` `mock.module(...)` options must use `namedExports:`, not the `exports:` shorthand. The `exports:` form was added in Node v25.9.0 and silently fails on CI's Node v22 (transitive mocks become no-ops without erroring).

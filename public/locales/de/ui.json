@@ -1018,6 +1018,7 @@
   "mainMenu.existingSave.load": "BESTEHENDEN LADEN",
   "mainMenu.existingSave.startNew": "NEUE TOUR STARTEN",
   "mainMenu.existingSave.title": "SPIELSTAND GEFUNDEN",
+  "mainMenu.footer": "© 2026 NEUROTOXIC // DEATH GRINDCORE FROM STENDAL",
   "mainMenu.subtitle.grindTheVoid": "Grind The Void",
   "mainMenu.versionBadge": "v3.0 // EARLY ACCESS",
   "map.cancellationRisk": "⚠ Absagerisiko: {{pct}}% (1-in-{{freq}} Chance)",

@@ -137,7 +137,9 @@ export const MainMenu = () => {
           transition={prefersReducedMotion ? { duration: 0 } : { delay: 1 }}
           className='mb-8 sm:mb-10 px-3 py-1 border border-toxic-green/30 text-[10px] font-mono text-toxic-green/60 tracking-widest'
         >
-          {t('ui:mainMenu.versionBadge')}
+          {t('ui:mainMenu.versionBadge', {
+            defaultValue: 'v3.0 // EARLY ACCESS'
+          })}
         </motion.div>
         {/* jscpd:ignore-end */}
 
@@ -215,7 +217,9 @@ export const MainMenu = () => {
       >
         <div className='w-32 h-[1px] bg-gradient-to-r from-transparent via-ash-gray/50 to-transparent' />
         <div className='text-center text-ash-gray text-[10px] font-mono tracking-widest'>
-          {t('ui:creditFooter.subtitle')}
+          {t('ui:mainMenu.footer', {
+            defaultValue: '© 2026 NEUROTOXIC // DEATH GRINDCORE FROM STENDAL'
+          })}
         </div>
       </motion.div>
     </div>

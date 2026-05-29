@@ -15,7 +15,10 @@ vi.mock('../../src/context/GameState', () => ({
 }))
 
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: key => key }),
+  useTranslation: () => ({
+    t: key => key,
+    i18n: { language: 'en', changeLanguage: vi.fn(), options: {} }
+  }),
   initReactI18next: { type: '3rdParty', init: () => {} }
 }))
 
