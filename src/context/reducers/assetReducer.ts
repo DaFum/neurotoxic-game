@@ -301,7 +301,7 @@ export const handleSellChassis = (
   if (state.liabilities) {
     for (let i = 0; i < state.liabilities.length; i++) {
       const l = state.liabilities[i]
-      if (l.assetId === assetId) {
+      if (l && l.assetId === assetId) {
         rawTotalPrincipalRemaining += Math.max(
           0,
           finiteNumberOr(l.principalRemaining, 0)

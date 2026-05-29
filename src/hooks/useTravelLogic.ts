@@ -107,6 +107,35 @@ const TRAVEL_ANIMATION_TIMEOUT_MS = 1510
  * @param {Function} [params.onShowHQ] - Callback when HQ should be shown
  * @returns {Object} Travel state and handlers
  */
+function calculateTravelCostsAndImpact(
+  node: MapNode,
+  currentStartNode: MapNode | undefined,
+  player: PlayerState,
+  band: BandState,
+  social: SocialState,
+  assets: GameState['assets'],
+  liabilities: GameState['liabilities'],
+  assetModifiers: ReturnType<typeof getActiveAssetModifiers>
+) {
+  const { dist, totalCost, fuelLiters } = calculateTravelExpenses(
+    node,
+    currentStartNode,
+    player,
+    band,
+    assetModifiers
+  )
+  const dailyCost = getTotalDailyObligations({
+    player,
+    band,
+    social,
+    assets,
+    liabilities
+  } as GameState)
+  const totalCashImpact = totalCost + dailyCost
+
+  return { dist, totalCost, fuelLiters, dailyCost, totalCashImpact }
+}
+
 export const useTravelLogic = ({
   player,
   band,
@@ -303,21 +332,16 @@ export const useTravelLogic = ({
       const currentStartNode = gameMap?.nodes[player.currentNodeId]
 
       // Calculate and validate costs
-      const { fuelLiters, totalCost } = calculateTravelExpenses(
+      const { fuelLiters, totalCost, totalCashImpact } = calculateTravelCostsAndImpact(
         node,
         currentStartNode,
         player,
         band,
-        assetModifiers
-      )
-      const dailyCost = getTotalDailyObligations({
-        player,
-        band,
         social,
         assets,
-        liabilities
-      } as GameState)
-      const totalCashImpact = totalCost + dailyCost
+        liabilities,
+        assetModifiers
+      )
 
       // Affordability check
       const resourceCheck = checkTravelResources(
@@ -629,21 +653,16 @@ export const useTravelLogic = ({
       }
 
       // Calculate costs
-      const { dist, totalCost, fuelLiters } = calculateTravelExpenses(
+      const { dist, totalCost, fuelLiters, dailyCost, totalCashImpact } = calculateTravelCostsAndImpact(
         node,
         currentStartNode,
         player,
         band,
-        assetModifiers
-      )
-      const dailyCost = getTotalDailyObligations({
-        player,
-        band,
         social,
         assets,
-        liabilities
-      } as GameState)
-      const totalCashImpact = totalCost + dailyCost
+        liabilities,
+        assetModifiers
+      )
 
       const resourceCheck = checkTravelResources(
         totalCashImpact,
