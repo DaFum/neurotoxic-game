@@ -33,7 +33,6 @@ export const AssetSlotButton = ({
 
   return (
     <button
-      key={id}
       type='button'
       aria-label={
         ariaLabel ?? getSlotButtonAriaLabel(t, slotType, installedModuleId)

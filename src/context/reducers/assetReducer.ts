@@ -301,7 +301,7 @@ export const handleSellChassis = (
   if (state.liabilities) {
     for (let i = 0; i < state.liabilities.length; i++) {
       const l = state.liabilities[i]
-      if (l.assetId === assetId) {
+      if (l && l.assetId === assetId) {
         rawTotalPrincipalRemaining += Math.max(
           0,
           finiteNumberOr(l.principalRemaining, 0)
@@ -460,7 +460,9 @@ export const handleAssetForeclosed = (
   return {
     ...state,
     assets: state.assets.filter(a => a.id !== payload.assetId),
-    liabilities: (state.liabilities || []).filter(l => l.assetId !== payload.assetId)
+    liabilities: (state.liabilities || []).filter(
+      l => l.assetId !== payload.assetId
+    )
   }
 }
 
