@@ -299,9 +299,8 @@ export const handleSellChassis = (
   // ⚡ BOLT OPTIMIZATION: Replaced chained .filter().reduce() with a single-pass loop to eliminate intermediate array allocations on hot paths.
   let rawTotalPrincipalRemaining = 0
   if (state.liabilities) {
-    for (let i = 0; i < state.liabilities.length; i++) {
-      const l = state.liabilities[i]
-      if (l && l.assetId === assetId) {
+    for (const l of state.liabilities) {
+      if (l.assetId === assetId) {
         rawTotalPrincipalRemaining += Math.max(
           0,
           finiteNumberOr(l.principalRemaining, 0)
