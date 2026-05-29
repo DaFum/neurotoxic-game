@@ -692,7 +692,7 @@ export const calculateVenueSplit = (
  */
 export const calculateGuarantee = (gigData: GigEconomyData = {}) => {
   gigData = gigData || {}
-  const pay = Math.max(0, gigData.pay || 0)
+  const pay = Math.max(0, toFiniteNumber(gigData.pay, 0))
   if (pay > 0) {
     return {
       amount: pay,
