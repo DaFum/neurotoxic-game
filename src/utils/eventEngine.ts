@@ -4,7 +4,7 @@ import { EVENT_STRINGS } from '../data/events/constants'
 import { logger } from './logger'
 import { secureRandom } from './crypto'
 import { bandHasTrait } from './traitUtils'
-import { calculateAppliedDelta } from './gameStateUtils'
+import { calculateAppliedDelta, finiteNumberOr } from './gameStateUtils'
 import { MODULE_REGISTRY } from './assetModuleRegistry'
 import { StateError } from './errorHandler'
 import type { GameEvent, GameState } from '../types'
@@ -80,8 +80,7 @@ export type EngineGameState = {
   [key: string]: unknown
 }
 
-const asNumber = (value: unknown): number =>
-  typeof value === 'number' ? value : 0
+const asNumber = (value: unknown): number => finiteNumberOr(value, 0)
 
 const toStringArray = (value: string[] | Set<string> | undefined): string[] => {
   if (!value) return []
@@ -547,7 +546,7 @@ const computeSkillCheckValue = (
   if (!gameState.band) return 0
 
   const bandStat = gameState.band[stat]
-  if (typeof bandStat === 'number') return bandStat / 10
+  if (typeof bandStat === 'number') return finiteNumberOr(bandStat, 0) / 10
 
   const members = Array.isArray(gameState.band.members)
     ? gameState.band.members

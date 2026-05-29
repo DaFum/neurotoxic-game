@@ -42,17 +42,22 @@ export const useKabelsalatShuffle = (
 
         for (let i = shuffled.length - 1; i > 0; i--) {
           const j = Math.floor(randomFn() * (i + 1))
-          ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+          const current = shuffled[i]
+          const swap = shuffled[j]
+          if (current === undefined || swap === undefined) continue
+          shuffled[i] = swap
+          shuffled[j] = current
         }
 
         let shuffleIndex = 0
-        const newOrder = new Array(prevOrder.length)
+        const newOrder = [...prevOrder]
         for (let i = 0; i < prevOrder.length; i++) {
           const id = prevOrder[i]
+          if (id === undefined) continue
           if (connections[id]) {
             newOrder[i] = id
           } else {
-            newOrder[i] = shuffled[shuffleIndex++]
+            newOrder[i] = shuffled[shuffleIndex++] ?? id
           }
         }
         return newOrder

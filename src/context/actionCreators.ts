@@ -7,7 +7,8 @@ import { RNG_BASE_BUFFER, RNG_ROLLS_PER_ASSET } from '../utils/assetConfig'
  */
 
 import { ActionTypes } from './actionTypes'
-import { getSafeUUID } from '../utils/crypto'
+import { getSafeUUID, secureRandom } from '../utils/crypto'
+import { generateRivalBand, moveRivalBand } from '../utils/rivalEngine'
 import { sanitizeRiskEventDescriptor } from './reducers/assetSanitizers'
 import type { RivalBandState } from '../types'
 import {
@@ -622,18 +623,22 @@ export const createCompleteAmpCalibrationAction = (
   }
 }
 
-export const createSpawnRivalBandAction = (): Extract<
-  GameAction,
-  { type: typeof ActionTypes.SPAWN_RIVAL_BAND }
-> => ({
-  type: ActionTypes.SPAWN_RIVAL_BAND
-})
+export const createSpawnRivalBandAction = (
+  state: GameState
+): Extract<GameAction, { type: typeof ActionTypes.SPAWN_RIVAL_BAND }> => {
+  const day = Number.isFinite(state.player?.day) ? state.player.day : 1
+  return {
+    type: ActionTypes.SPAWN_RIVAL_BAND,
+    payload: { rivalBand: generateRivalBand(day, secureRandom) }
+  }
+}
 
-export const createMoveRivalBandAction = (): Extract<
-  GameAction,
-  { type: typeof ActionTypes.MOVE_RIVAL_BAND }
-> => ({
-  type: ActionTypes.MOVE_RIVAL_BAND
+export const createMoveRivalBandAction = (
+  rivalBand: RivalBandState,
+  gameMap: GameMap
+): Extract<GameAction, { type: typeof ActionTypes.MOVE_RIVAL_BAND }> => ({
+  type: ActionTypes.MOVE_RIVAL_BAND,
+  payload: { rivalBand: moveRivalBand(rivalBand, gameMap, secureRandom) }
 })
 
 export const createCheckRivalEncounterAction = (): Extract<
@@ -802,6 +807,8 @@ export const createClinicHealAction = (
 /**
  * Creates an action to enhance a band member in the Void Clinic.
  * Cost is computed by the reducer from CLINIC_CONFIG and clinicVisits.
+ * Payload is passed through because the reducer derives and clamps every
+ * numeric effect; the creator only carries IDs and an optional toast.
  * @param {Object} payload
  * @param {string} payload.memberId - The ID of the band member.
  * @param {string} payload.type - Must be 'enhance'. Used by the reducer to compute cost.

@@ -36,7 +36,7 @@ export const useMerchPress = () => {
     const harmonyCost = isFailure ? config.harmonyCostOnFail : 0
 
     const successToast = {
-      message: isFailure
+      messageKey: isFailure
         ? 'ui:merch_press.failure_toast'
         : 'ui:merch_press.success_toast',
       type: isFailure ? 'warning' : 'success'

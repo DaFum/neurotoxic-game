@@ -588,6 +588,7 @@ test('systemReducer - LOAD_GAME', async t => {
         score: 100,
         accuracy: Number.NaN,
         combo: 7,
+        maxCombo: 11,
         injected: 'drop me'
       },
       venueBlacklist: ['venues:venue-1.name', 7],
@@ -618,7 +619,11 @@ test('systemReducer - LOAD_GAME', async t => {
       name: 'Venue',
       difficulty: 3
     })
-    assert.deepEqual(nextState.lastGigStats, { score: 100, combo: 7 })
+    assert.deepEqual(nextState.lastGigStats, {
+      score: 100,
+      combo: 7,
+      maxCombo: 11
+    })
     assert.deepEqual(nextState.venueBlacklist, ['venue-1'])
     assert.deepEqual(nextState.activeQuests, [{ id: 'q1', progress: 2 }])
     assert.deepEqual(nextState.unlocks, ['u1'])

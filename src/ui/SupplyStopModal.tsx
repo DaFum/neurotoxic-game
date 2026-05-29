@@ -3,8 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useGameSelector, useGameActions } from '../context/GameState'
 import { ShopItem } from './bandhq/ShopItem'
 import { usePurchaseLogic } from './bandhq/hooks/usePurchaseLogic'
-import { toFiniteNumber } from '../utils/numberUtils'
-import { calculateFameLevel } from '../utils/gameStateUtils'
+import { calculateFameLevel, finiteNumberOr } from '../utils/gameStateUtils'
 import type { CatalogItem, PurchaseItem } from '../types/components'
 import type { PlayerPatch } from '../types/purchase'
 
@@ -30,7 +29,7 @@ export const SupplyStopModal: React.FC<SupplyStopModalProps> = ({
       // The shared purchase hook builds the normal cost/effect patch first.
       // Supply Stops then apply their bounded reputation penalty to that final
       // fame value so purchase effects and black-market risk stay atomic.
-      const currentFame = toFiniteNumber(playerPatch.fame ?? player.fame, 0)
+      const currentFame = finiteNumberOr(playerPatch.fame ?? player.fame, 0)
       const nextFame = Math.max(0, currentFame - BLACK_MARKET_FAME_LOSS)
       fameLostRef.current = currentFame - nextFame
 

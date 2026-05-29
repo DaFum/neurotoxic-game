@@ -341,6 +341,7 @@ export const OverworldMap = React.memo(
       for (const key in gameMap.nodes) {
         if (!Object.hasOwn(gameMap.nodes, key)) continue
         const node = gameMap.nodes[key as keyof typeof gameMap.nodes]
+        if (!node) continue
         const isCurrent = node.id === player.currentNodeId
         const hasRival = rivalBand?.currentLocationId === node.id
         const visibility = getNodeVisibility(node.layer, currentLayer)

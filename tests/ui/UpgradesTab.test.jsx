@@ -5,7 +5,8 @@ import { UpgradesTab } from '../../src/ui/bandhq/UpgradesTab.tsx'
 vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },
   useTranslation: () => ({
-    t: (key, options) => options?.defaultValue || key
+    t: (key, options) => options?.defaultValue || key,
+    i18n: { language: 'en', changeLanguage: vi.fn(), options: {} }
   })
 }))
 

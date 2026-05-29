@@ -39,7 +39,7 @@ export const DarkWebLeakModal = ({
         <div className='flex flex-col gap-1 text-sm bg-black/50 p-2 border border-toxic-green/50'>
           <div className='text-blood-red'>
             {t('ui:dark_web_leak.cost', { defaultValue: 'COST:' })}{' '}
-            {formatCurrency(config.COST, i18n?.language)}
+            {formatCurrency(config.COST, i18n.language)}
           </div>
           <div className='text-stamina-green'>
             {t('ui:dark_web_leak.fame', { defaultValue: 'FAME:' })} +

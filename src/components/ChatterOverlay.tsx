@@ -101,7 +101,8 @@ const SCENE_STYLES: Record<string, SceneStyle> = {
   }
 }
 
-const DEFAULT_STYLE = SCENE_STYLES[GAME_PHASES.MENU]
+const DEFAULT_STYLE: SceneStyle =
+  SCENE_STYLES[GAME_PHASES.MENU] ?? OVERWORLD_STYLE
 
 interface ChatterMessageHeaderProps {
   sceneStyle: SceneStyle

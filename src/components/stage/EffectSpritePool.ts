@@ -60,7 +60,7 @@ export class EffectSpritePool {
   dispose(): void {
     // Destroy pool
     for (let i = 0; i < this.spritePool.length; i++) {
-      this.spritePool[i].destroy()
+      this.spritePool[i]?.destroy()
     }
     this.spritePool = []
     this.container = null

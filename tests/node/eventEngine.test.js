@@ -327,6 +327,21 @@ test('eventEngine.resolveChoice handles skill checks (failure)', () => {
   assert.equal(result.value, -5)
 })
 
+test('eventEngine.resolveChoice ignores non-finite band stats for skill checks', () => {
+  const option = {
+    skillCheck: {
+      stat: 'skill',
+      threshold: 100,
+      success: { type: 'stat', stat: 'fame', value: 10 },
+      failure: { type: 'stat', stat: 'fame', value: -5 }
+    }
+  }
+  const state = buildGameState({ band: { skill: Number.POSITIVE_INFINITY } })
+  const result = eventEngine.resolveChoice(option, state, () => 0)
+
+  assert.equal(result.outcome, 'failure')
+})
+
 test('eventEngine.resolveChoice throws StateError for sparse band members', () => {
   const option = {
     skillCheck: {
@@ -443,6 +458,21 @@ test('eventEngine.processOptions does not add spare tire option without inventor
     !spareTireOption,
     'Should not have spare tire option without inventory'
   )
+})
+
+test('eventEngine.applyResult treats non-finite numeric effects as zero', () => {
+  const delta = eventEngine.applyResult({
+    type: 'composite',
+    effects: [
+      { type: 'resource', resource: 'money', value: Number.POSITIVE_INFINITY },
+      { type: 'stat', stat: 'fame', value: Number.NEGATIVE_INFINITY },
+      { type: 'stat', stat: 'skill', value: Number.NaN }
+    ]
+  })
+
+  assert.equal(delta.player.money, 0)
+  assert.equal(delta.player.fame, 0)
+  assert.equal(delta.band.skill, 0)
 })
 
 // Parametrized: applyResult stat and resource effects

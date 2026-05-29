@@ -14,3 +14,4 @@
 ## Gotchas
 
 - Band-meeting / harmony-restore actions must guard `band.harmony >= 100` and early-return with a "maxed out" info toast before deducting cost; the reducer clamp would otherwise swallow the spend with no benefit.
+- The note-density preview represents the full selected setlist. Aggregate all selected songs; do not derive the chart from only `setlist[0]`.

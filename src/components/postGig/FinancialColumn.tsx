@@ -44,7 +44,7 @@ export const FinancialColumn = React.memo(
             {t('economy:postGig.total')}
           </span>
           <span className='shrink-0 text-right tabular-nums'>
-            {formatSignedFinancialAmount(total, type, i18n?.language)}
+            {formatSignedFinancialAmount(total, type, i18n.language)}
           </span>
         </div>
       </motion.div>

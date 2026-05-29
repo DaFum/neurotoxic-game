@@ -6,7 +6,9 @@ describe('assertNever', () => {
     expect(() => assertNever('foo')).toThrow(/Unhandled action type: unknown/)
     expect(() => assertNever(123)).toThrow(/Unhandled action type: unknown/)
     expect(() => assertNever(null)).toThrow(/Unhandled action type: unknown/)
-    expect(() => assertNever(undefined)).toThrow(/Unhandled action type: unknown/)
+    expect(() => assertNever(undefined)).toThrow(
+      /Unhandled action type: unknown/
+    )
   })
 
   it('throws an error with the action type if an object with a type property is passed', () => {

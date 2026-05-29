@@ -2,6 +2,7 @@ import type { GameState } from '../../types/game'
 import type {
   PurchaseChassisPayload,
   InstallModulePayload,
+  RefinanceLiabilityPayload,
   UpgradeChassisTierPayload,
   LongTermAsset,
   AssetSlot,
@@ -13,7 +14,12 @@ import {
   CHASSIS_CONFIG,
   REPAIR_COST_PER_POINT
 } from '../../utils/assetConfig'
-import { LOAN_PROFILES, computeAmortization } from '../../utils/loanProfiles'
+import {
+  LOAN_PROFILES,
+  calculateRefinanceFee,
+  computeAmortization,
+  isLoanProfileEligible
+} from '../../utils/loanProfiles'
 import { MODULE_REGISTRY } from '../../utils/assetModuleRegistry'
 import { hasActiveAssetAcquisition } from '../../utils/assetSelectors'
 import { finiteNumberOr } from '../../utils/gameStateUtils'
@@ -366,6 +372,64 @@ export const handleRepairChassis = (
       ...state.player,
       money: state.player.money - repairCost
     }
+  }
+}
+
+export const handleRefinanceLiability = (
+  state: GameState,
+  payload: RefinanceLiabilityPayload
+): GameState => {
+  const profile =
+    LOAN_PROFILES[
+      payload.loanProfileId as import('../../utils/loanProfiles').LoanProfileId
+    ]
+  if (!profile) return state
+  if (
+    !isLoanProfileEligible(profile, {
+      fame: state.player.fame,
+      scenePresence: state.social?.scenePresence ?? 0
+    })
+  ) {
+    return state
+  }
+
+  const targetLiability = state.liabilities.find(
+    liability =>
+      liability.id === payload.liabilityId && liability.source === 'loan'
+  )
+  if (!targetLiability) return state
+  if (finiteNumberOr(targetLiability.defaultCounter, 0) > 0) return state
+
+  const principal = Math.max(
+    0,
+    finiteNumberOr(targetLiability.principalRemaining, 0)
+  )
+  const fee = calculateRefinanceFee(principal)
+  if (state.player.money < fee) return state
+
+  const liabilities = state.liabilities.map(liability => {
+    if (liability.id !== payload.liabilityId) return liability
+
+    return {
+      ...liability,
+      interestRate: profile.interestRate,
+      dailyPayment: computeAmortization(
+        principal,
+        profile.interestRate,
+        profile.termDays
+      ),
+      termDaysRemaining: profile.termDays,
+      defaultCounter: 0
+    }
+  })
+
+  return {
+    ...state,
+    player: {
+      ...state.player,
+      money: state.player.money - fee
+    },
+    liabilities
   }
 }
 

@@ -8,34 +8,35 @@ interface Props {
   isOpen: boolean
   onClose: () => void
   onSelect: (profile: LoanProfileId) => void
+  title?: string
 }
 
-/**
- * Standalone profile picker. The acquisition modal embeds its own profile
- * select inline; this modal is intentionally kept as a reusable asset-finance
- * surface for a future refinance flow without duplicating the embedded UI.
- */
-export const LoanProfileModal = ({ isOpen, onClose, onSelect }: Props) => {
+interface LoanProfileChoiceGridProps {
+  value?: LoanProfileId
+  onSelect: (profile: LoanProfileId) => void
+}
+
+export const LoanProfileChoiceGrid = ({
+  value,
+  onSelect
+}: LoanProfileChoiceGridProps) => {
   const { t } = useTranslation(['assets'])
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={t('assets:mode.loan')}
-      className='max-w-2xl'
-    >
-      <div className='grid grid-cols-1 gap-3 p-4 font-mono text-sm sm:grid-cols-2'>
-        {Object.values(LOAN_PROFILES).map(profile => (
+    <div className='grid grid-cols-1 gap-3 font-mono text-sm sm:grid-cols-2'>
+      {Object.values(LOAN_PROFILES).map(profile => {
+        const isActive = value === profile.id
+        return (
           <button
             key={profile.id}
             type='button'
-            onClick={() => {
-              onSelect(profile.id)
-              onClose()
-            }}
+            onClick={() => onSelect(profile.id)}
             className='flex gap-2 border-2 p-2 text-left'
             style={{
-              borderColor: 'var(--section-accent, var(--color-toxic-green))'
+              background: isActive
+                ? 'var(--section-accent, var(--color-toxic-green))'
+                : 'transparent',
+              borderColor: 'var(--section-accent, var(--color-toxic-green))',
+              color: isActive ? 'var(--color-void-black)' : 'inherit'
             }}
           >
             <div className='w-16 shrink-0'>
@@ -56,7 +57,33 @@ export const LoanProfileModal = ({ isOpen, onClose, onSelect }: Props) => {
               </span>
             </div>
           </button>
-        ))}
+        )
+      })}
+    </div>
+  )
+}
+
+export const LoanProfileModal = ({
+  isOpen,
+  onClose,
+  onSelect,
+  title
+}: Props) => {
+  const { t } = useTranslation(['assets'])
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={title ?? t('assets:mode.loan')}
+      className='max-w-2xl'
+    >
+      <div className='p-4'>
+        <LoanProfileChoiceGrid
+          onSelect={profile => {
+            onSelect(profile)
+            onClose()
+          }}
+        />
       </div>
     </Modal>
   )

@@ -32,6 +32,7 @@ function updateOverlayNodes(
   // 1. Update existing nodes and add new ones
   for (let i = 0; i < projectiles.length; i++) {
     const p = projectiles[i]
+    if (!p) continue
     seenIds.add(p.id)
     let node = nodeCache.get(p.id)
 

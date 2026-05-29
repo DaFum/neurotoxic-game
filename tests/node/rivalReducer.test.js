@@ -5,11 +5,50 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { handleUpdateRivalBand } from '../../src/context/reducers/rivalReducer.ts'
+import {
+  handleMoveRivalBand,
+  handleSpawnRivalBand,
+  handleUpdateRivalBand
+} from '../../src/context/reducers/rivalReducer.ts'
 import { createUpdateRivalBandAction } from '../../src/context/actionCreators.ts'
 import { ActionTypes } from '../../src/context/actionTypes.ts'
 
 describe('rivalReducer', () => {
+  describe('precomputed rival payloads', () => {
+    it('uses the action payload when spawning a rival band', () => {
+      const rivalBand = {
+        id: 'payload_rival',
+        name: 'Payload Rival',
+        alignment: 'NEUTRAL',
+        powerLevel: 12,
+        currentLocationId: 'node_a'
+      }
+      const next = handleSpawnRivalBand(
+        { rivalBand: null, player: { day: 3 } },
+        { rivalBand }
+      )
+
+      assert.equal(next.rivalBand, rivalBand)
+    })
+
+    it('uses the action payload when moving a rival band', () => {
+      const oldRival = {
+        id: 'rival_1',
+        name: 'Rival',
+        alignment: 'NEUTRAL',
+        powerLevel: 10,
+        currentLocationId: 'node_a'
+      }
+      const movedRival = { ...oldRival, currentLocationId: 'node_b' }
+      const next = handleMoveRivalBand(
+        { rivalBand: oldRival, gameMap: { nodes: {}, edges: [] } },
+        { rivalBand: movedRival }
+      )
+
+      assert.equal(next.rivalBand, movedRival)
+    })
+  })
+
   describe('handleUpdateRivalBand', () => {
     it('merges sanitized patch fields into existing rivalBand', () => {
       const initialState = {

@@ -48,6 +48,29 @@ test('milestones do not store raw action objects or raw toast actions', () => {
   assert.match(reducer, /createAddToastAction/)
 })
 
+test('milestone toast labels use namespaced flat ui keys', () => {
+  const milestones = readSource('src/data/milestones/milestones.ts')
+  const enUi = JSON.parse(readSource('public/locales/en/ui.json'))
+  const deUi = JSON.parse(readSource('public/locales/de/ui.json'))
+  const labelKeys = [...milestones.matchAll(/labelKey:\s*'([^']+)'/g)].map(
+    match => match[1]
+  )
+
+  assert.ok(labelKeys.length > 0, 'expected milestone label keys')
+  for (const labelKey of labelKeys) {
+    assert.match(labelKey, /^ui:milestones\.[\w_]+$/)
+    const key = labelKey.slice('ui:'.length)
+    for (const [locale, entries] of Object.entries({ en: enUi, de: deUi })) {
+      assert.equal(
+        typeof entries[key],
+        'string',
+        `${locale}/ui.json missing ${key}`
+      )
+      assert.notEqual(entries[key].trim(), '')
+    }
+  }
+})
+
 test('supply stop purchases route through Band HQ purchase logic', () => {
   const source = readSource('src/ui/SupplyStopModal.tsx')
   assert.match(source, /usePurchaseLogic/)

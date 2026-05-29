@@ -23,33 +23,62 @@ export const LOAN_PROFILES: Record<LoanProfileId, LoanProfile> = {
     id: 'shortTerm',
     termDays: 60,
     interestRate: 0.08,
-    labelKey: 'assets.loan.profile.shortTerm'
+    labelKey: 'assets:loan.profile.shortTerm'
   },
   mediumTerm: {
     id: 'mediumTerm',
     termDays: 120,
     interestRate: 0.06,
-    labelKey: 'assets.loan.profile.mediumTerm'
+    labelKey: 'assets:loan.profile.mediumTerm'
   },
   longTerm: {
     id: 'longTerm',
     termDays: 180,
     interestRate: 0.04,
-    labelKey: 'assets.loan.profile.longTerm'
+    labelKey: 'assets:loan.profile.longTerm'
   },
   loanShark: {
     id: 'loanShark',
     termDays: 30,
     interestRate: 0.2,
-    labelKey: 'assets.loan.profile.loanShark'
+    labelKey: 'assets:loan.profile.loanShark'
   },
   coop: {
     id: 'coop',
     termDays: 240,
     interestRate: 0.02,
-    labelKey: 'assets.loan.profile.coop',
+    labelKey: 'assets:loan.profile.coop',
     minScenePresenceRequired: 50
   }
+}
+
+export const REFINANCE_FEE_RATE = 0.02
+
+export const isLoanProfileEligible = (
+  profile: LoanProfile,
+  values: { fame: number; scenePresence: number }
+): boolean => {
+  if (!Number.isFinite(values.fame) || !Number.isFinite(values.scenePresence)) {
+    return false
+  }
+  if (
+    profile.minFameRequired !== undefined &&
+    values.fame < profile.minFameRequired
+  ) {
+    return false
+  }
+  if (
+    profile.minScenePresenceRequired !== undefined &&
+    values.scenePresence < profile.minScenePresenceRequired
+  ) {
+    return false
+  }
+  return true
+}
+
+export const calculateRefinanceFee = (principal: number): number => {
+  if (!Number.isFinite(principal) || principal <= 0) return 0
+  return Math.ceil(principal * REFINANCE_FEE_RATE)
 }
 
 /**

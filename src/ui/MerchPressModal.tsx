@@ -176,7 +176,7 @@ function MerchPressCostsAndGains({
           {t('ui:merch_press.cost_label', { defaultValue: 'COST' })}
         </span>
         <span className='text-xl font-display text-blood-red'>
-          {formatCurrency(config.cost, i18n?.language)}
+          {formatCurrency(config.cost, i18n.language)}
         </span>
       </div>
       <div className='bg-void-black border border-toxic-green-20 p-3 flex flex-col items-center justify-center relative overflow-hidden group'>
@@ -251,8 +251,8 @@ function MerchPressCurrentStats({
             <span
               className={`${isAffordable ? 'text-toxic-green' : 'text-blood-red'}`}
             >
-              {formatCurrency(player?.money ?? 0, i18n?.language)} /{' '}
-              {formatCurrency(config.cost, i18n?.language)}
+              {formatCurrency(player?.money ?? 0, i18n.language)} /{' '}
+              {formatCurrency(config.cost, i18n.language)}
             </span>
           </div>
           <ProgressBar

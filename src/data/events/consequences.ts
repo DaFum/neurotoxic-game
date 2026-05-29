@@ -1,6 +1,6 @@
 import type { GameState } from '../../types'
 import { hasStateItem } from '../../utils/gameStateUtils'
-import { toFiniteNumber } from '../../utils/numberUtils'
+import { finiteNumberOr } from '../../utils/finiteNumber'
 
 /**
  * Consequences Event Pool
@@ -248,7 +248,7 @@ export const CONSEQUENCE_EVENTS = [
     trigger: 'travel',
     chance: 0.8,
     condition: (state: GameState) => {
-      const harmony = toFiniteNumber(state.band?.harmony, 0)
+      const harmony = finiteNumberOr(state.band?.harmony, 0)
       const egoFocus = state.social?.egoFocus || null
       const flags = state.activeStoryFlags || []
       return (

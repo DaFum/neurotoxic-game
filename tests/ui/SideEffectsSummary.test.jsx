@@ -6,6 +6,7 @@ test('SideEffectsSummary shows zero deltas for stamina and mood when provided', 
   render(
     <SideEffectsSummary
       result={{ staminaChange: 0, moodChange: 0 }}
+      i18n={{ language: 'en' }}
       t={(key, options) => options?.defaultValue ?? key}
     />
   )

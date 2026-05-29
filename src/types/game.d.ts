@@ -178,8 +178,8 @@ export type GameAction =
         hijacksOverridden: number
       }
     >
-  | Action<ActionTypes['SPAWN_RIVAL_BAND']>
-  | Action<ActionTypes['MOVE_RIVAL_BAND']>
+  | Action<ActionTypes['SPAWN_RIVAL_BAND'], SpawnRivalBandPayload>
+  | Action<ActionTypes['MOVE_RIVAL_BAND'], MoveRivalBandPayload>
   | Action<ActionTypes['UPDATE_RIVAL_BAND'], Partial<RivalBandState>>
   | Action<ActionTypes['CHECK_RIVAL_ENCOUNTER']>
   | Action<ActionTypes['UNLOCK_TRAIT'], { memberId: string; traitId: string }>
@@ -230,6 +230,14 @@ export type GameAction =
       { assetId: string; reason: 'LIABILITY_EXCEEDS_VALUE' }
     >
   | Action<ActionTypes['REPAIR_CHASSIS'], { assetId: string }>
+  | Action<
+      ActionTypes['REFINANCE_LIABILITY'],
+      import('./assets').RefinanceLiabilityPayload
+    >
+  | Action<
+      ActionTypes['REFINANCE_LIABILITY_FAILED'],
+      { reason: import('./assets').RefinanceFailureReason }
+    >
   | Action<
       ActionTypes['INSTALL_MODULE'],
       import('./assets').InstallModulePayload

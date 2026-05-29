@@ -1056,16 +1056,6 @@
         "source": "external"
       }
     ],
-    "BiohazardIcon": [
-      {
-        "exportPath": "src/ui/shared/index.tsx",
-        "isDefault": false,
-        "name": "BiohazardIcon",
-        "path": "src/ui/shared/BrutalistUI.tsx",
-        "source": "local",
-        "type": "const"
-      }
-    ],
     "BlockMeter": [
       {
         "exportPath": "src/ui/shared/index.tsx",
@@ -1270,46 +1260,6 @@
         "typeOnly": true
       }
     ],
-    "BrutalFader": [
-      {
-        "exportPath": "src/ui/shared/index.tsx",
-        "isDefault": false,
-        "name": "BrutalFader",
-        "path": "src/ui/shared/BrutalistUI.tsx",
-        "source": "local",
-        "type": "const"
-      }
-    ],
-    "BrutalSlot": [
-      {
-        "exportPath": "src/ui/shared/index.tsx",
-        "isDefault": false,
-        "name": "BrutalSlot",
-        "path": "src/ui/shared/BrutalistUI.tsx",
-        "source": "local",
-        "type": "const"
-      }
-    ],
-    "BrutalTabs": [
-      {
-        "exportPath": "src/ui/shared/index.tsx",
-        "isDefault": false,
-        "name": "BrutalTabs",
-        "path": "src/ui/shared/BrutalistUI.tsx",
-        "source": "local",
-        "type": "const"
-      }
-    ],
-    "BrutalToggle": [
-      {
-        "exportPath": "src/ui/shared/index.tsx",
-        "isDefault": false,
-        "name": "BrutalToggle",
-        "path": "src/ui/shared/BrutalistUI.tsx",
-        "source": "local",
-        "type": "const"
-      }
-    ],
     "buildAssetUrlMap": [
       {
         "isDefault": false,
@@ -1380,6 +1330,24 @@
         "isDefault": false,
         "name": "buildRhythmLayout",
         "path": "src/components/stage/stageRenderUtils.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "buildSetlistChartDensity": [
+      {
+        "isDefault": false,
+        "name": "buildSetlistChartDensity",
+        "path": "src/utils/chartDensity.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "buildSongChartDensity": [
+      {
+        "isDefault": false,
+        "name": "buildSongChartDensity",
+        "path": "src/utils/chartDensity.ts",
         "source": "local",
         "type": "const"
       }
@@ -1785,6 +1753,15 @@
         "type": "const"
       }
     ],
+    "calculateRefinanceFee": [
+      {
+        "isDefault": false,
+        "name": "calculateRefinanceFee",
+        "path": "src/utils/loanProfiles.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "calculateRefuelCost": [
       {
         "isDefault": false,
@@ -2030,6 +2007,16 @@
         "isDefault": false,
         "name": "CharacterTrait",
         "path": "src/types/npc.d.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
+      }
+    ],
+    "ChartDensityBar": [
+      {
+        "isDefault": false,
+        "name": "ChartDensityBar",
+        "path": "src/utils/chartDensity.ts",
         "source": "local",
         "type": "interface",
         "typeOnly": true
@@ -2763,16 +2750,6 @@
         "type": "const"
       }
     ],
-    "CorporateSeal": [
-      {
-        "exportPath": "src/ui/shared/index.tsx",
-        "isDefault": false,
-        "name": "CorporateSeal",
-        "path": "src/ui/shared/BrutalistUI.tsx",
-        "source": "local",
-        "type": "const"
-      }
-    ],
     "CorruptionMeter": [
       {
         "isDefault": false,
@@ -3398,16 +3375,6 @@
         "exportPath": "src/ui/shared/index.tsx",
         "isDefault": false,
         "name": "CrisisModal",
-        "path": "src/ui/shared/BrutalistUI.tsx",
-        "source": "local",
-        "type": "const"
-      }
-    ],
-    "CrosshairIcon": [
-      {
-        "exportPath": "src/ui/shared/index.tsx",
-        "isDefault": false,
-        "name": "CrosshairIcon",
         "path": "src/ui/shared/BrutalistUI.tsx",
         "source": "local",
         "type": "const"
@@ -4637,16 +4604,6 @@
         "type": "const"
       }
     ],
-    "GearIcon": [
-      {
-        "exportPath": "src/ui/shared/index.tsx",
-        "isDefault": false,
-        "name": "GearIcon",
-        "path": "src/ui/shared/BrutalistUI.tsx",
-        "source": "local",
-        "type": "const"
-      }
-    ],
     "generateBrandName": [
       {
         "exportPath": "src/utils/socialEngine.ts",
@@ -5565,15 +5522,6 @@
         "type": "const"
       }
     ],
-    "handleCompleteQuest": [
-      {
-        "isDefault": false,
-        "name": "handleCompleteQuest",
-        "path": "src/context/reducers/questReducer.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
     "handleCompleteRoadieMinigame": [
       {
         "isDefault": false,
@@ -5642,15 +5590,6 @@
         "isDefault": false,
         "name": "handleError",
         "path": "src/utils/errorHandler.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
-    "handleFailQuests": [
-      {
-        "isDefault": false,
-        "name": "handleFailQuests",
-        "path": "src/context/reducers/questReducer.ts",
         "source": "local",
         "type": "const"
       }
@@ -5749,6 +5688,15 @@
       {
         "isDefault": false,
         "name": "handlePurchaseChassis",
+        "path": "src/context/reducers/assetReducer.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "handleRefinanceLiability": [
+      {
+        "isDefault": false,
+        "name": "handleRefinanceLiability",
         "path": "src/context/reducers/assetReducer.ts",
         "source": "local",
         "type": "const"
@@ -6180,16 +6128,6 @@
         "typeOnly": true
       }
     ],
-    "HexBorder": [
-      {
-        "exportPath": "src/ui/shared/index.tsx",
-        "isDefault": false,
-        "name": "HexBorder",
-        "path": "src/ui/shared/BrutalistUI.tsx",
-        "source": "local",
-        "type": "const"
-      }
-    ],
     "HexNode": [
       {
         "exportPath": "src/ui/shared/index.tsx",
@@ -6432,6 +6370,15 @@
         "type": "const"
       }
     ],
+    "isFiniteNumber": [
+      {
+        "isDefault": false,
+        "name": "isFiniteNumber",
+        "path": "src/utils/finiteNumber.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "isForbiddenKey": [
       {
         "exportPath": "src/utils/gameStateUtils.ts",
@@ -6474,6 +6421,15 @@
         "isDefault": false,
         "name": "isLifecycleRaceError",
         "path": "src/components/stage/StageLifecycleUtils.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "isLoanProfileEligible": [
+      {
+        "isDefault": false,
+        "name": "isLoanProfileEligible",
+        "path": "src/utils/loanProfiles.ts",
         "source": "local",
         "type": "const"
       }
@@ -6540,16 +6496,6 @@
         "isDefault": false,
         "name": "isValidLogLevel",
         "path": "src/utils/logger.ts",
-        "source": "local",
-        "type": "const"
-      }
-    ],
-    "isValidMidiNote": [
-      {
-        "exportPath": "src/utils/audio/audioEngine.ts",
-        "isDefault": false,
-        "name": "isValidMidiNote",
-        "path": "src/utils/audio/midiUtils.ts",
         "source": "local",
         "type": "const"
       }
@@ -6775,6 +6721,15 @@
         "source": "local",
         "type": "interface",
         "typeOnly": true
+      }
+    ],
+    "LoanProfileChoiceGrid": [
+      {
+        "isDefault": false,
+        "name": "LoanProfileChoiceGrid",
+        "path": "src/components/assets/LoanProfileModal.tsx",
+        "source": "local",
+        "type": "const"
       }
     ],
     "LoanProfileId": [
@@ -7332,16 +7287,6 @@
         "typeOnly": true
       }
     ],
-    "MoneyIcon": [
-      {
-        "exportPath": "src/ui/shared/index.tsx",
-        "isDefault": false,
-        "name": "MoneyIcon",
-        "path": "src/ui/shared/BrutalistUI.tsx",
-        "source": "local",
-        "type": "const"
-      }
-    ],
     "motion": [
       {
         "isDefault": false,
@@ -7375,6 +7320,17 @@
         "path": "src/utils/rivalEngine.ts",
         "source": "local",
         "type": "const"
+      }
+    ],
+    "MoveRivalBandPayload": [
+      {
+        "exportPath": "src/types/game.d.ts",
+        "isDefault": false,
+        "name": "MoveRivalBandPayload",
+        "path": "src/types/actions.d.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
       }
     ],
     "mulberry32": [
@@ -8579,6 +8535,46 @@
         "path": "src/utils/objectUtils.ts",
         "source": "local",
         "type": "type",
+        "typeOnly": true
+      }
+    ],
+    "REFINANCE_FEE_RATE": [
+      {
+        "isDefault": false,
+        "name": "REFINANCE_FEE_RATE",
+        "path": "src/utils/loanProfiles.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "RefinanceFailureReason": [
+      {
+        "exportPath": "src/types/index.ts",
+        "isDefault": false,
+        "name": "RefinanceFailureReason",
+        "path": "src/types/assets.d.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
+    "refinanceLiability": [
+      {
+        "isDefault": false,
+        "name": "refinanceLiability",
+        "path": "src/context/assetActionCreators.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "RefinanceLiabilityPayload": [
+      {
+        "exportPath": "src/types/index.ts",
+        "isDefault": false,
+        "name": "RefinanceLiabilityPayload",
+        "path": "src/types/assets.d.ts",
+        "source": "local",
+        "type": "interface",
         "typeOnly": true
       }
     ],
@@ -9865,16 +9861,6 @@
         "type": "const"
       }
     ],
-    "SkullIcon": [
-      {
-        "exportPath": "src/ui/shared/index.tsx",
-        "isDefault": false,
-        "name": "SkullIcon",
-        "path": "src/ui/shared/BrutalistUI.tsx",
-        "source": "local",
-        "type": "const"
-      }
-    ],
     "SLOT_XS": [
       {
         "isDefault": false,
@@ -10099,6 +10085,17 @@
         "type": "const"
       }
     ],
+    "SpawnRivalBandPayload": [
+      {
+        "exportPath": "src/types/game.d.ts",
+        "isDefault": false,
+        "name": "SpawnRivalBandPayload",
+        "path": "src/types/actions.d.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
+      }
+    ],
     "SPECIAL_EVENTS": [
       {
         "isDefault": false,
@@ -10244,16 +10241,6 @@
         "source": "local",
         "type": "interface",
         "typeOnly": true
-      }
-    ],
-    "StatBlock": [
-      {
-        "exportPath": "src/ui/shared/index.tsx",
-        "isDefault": false,
-        "name": "StatBlock",
-        "path": "src/ui/shared/BrutalistUI.tsx",
-        "source": "local",
-        "type": "const"
       }
     ],
     "StatBox": [
@@ -10551,15 +10538,6 @@
         "source": "local",
         "type": "interface",
         "typeOnly": true
-      }
-    ],
-    "toFiniteNumber": [
-      {
-        "isDefault": false,
-        "name": "toFiniteNumber",
-        "path": "src/utils/numberUtils.ts",
-        "source": "local",
-        "type": "const"
       }
     ],
     "ToggleBooleanCallback": [
@@ -12008,16 +11986,6 @@
         "typeOnly": true
       }
     ],
-    "VoidLoader": [
-      {
-        "exportPath": "src/ui/shared/index.tsx",
-        "isDefault": false,
-        "name": "VoidLoader",
-        "path": "src/ui/shared/BrutalistUI.tsx",
-        "source": "local",
-        "type": "const"
-      }
-    ],
     "VoidSkullIcon": [
       {
         "exportPath": "src/ui/shared/index.tsx",
@@ -12054,16 +12022,6 @@
         "isDefault": false,
         "name": "VolumeSlider",
         "path": "src/ui/shared/VolumeSlider.tsx",
-        "source": "local",
-        "type": "const"
-      }
-    ],
-    "WarningStripe": [
-      {
-        "exportPath": "src/ui/shared/index.tsx",
-        "isDefault": false,
-        "name": "WarningStripe",
-        "path": "src/ui/shared/BrutalistUI.tsx",
         "source": "local",
         "type": "const"
       }

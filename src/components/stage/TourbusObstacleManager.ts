@@ -61,6 +61,7 @@ export class TourbusObstacleManager {
 
     for (let i = 0, len = state.obstacles.length; i < len; i++) {
       const obs = state.obstacles[i]
+      if (!obs) continue
       this.currentIds.add(obs.id)
       let sprite = this.obstacleMap.get(obs.id)
 
@@ -117,6 +118,7 @@ export class TourbusObstacleManager {
         sprite.hasExploded = false
         sprite.alpha = 1
       }
+      if (!sprite) continue
 
       // Update position
       const x = obs.lane * laneWidth + laneWidth / 2

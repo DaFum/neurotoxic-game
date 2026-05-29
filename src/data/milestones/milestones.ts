@@ -8,6 +8,8 @@ import {
   createUpdatePlayerAction,
   createUpdateSocialAction
 } from '../../context/actionCreators'
+import i18n from '../../i18n'
+import { formatCurrency } from '../../utils/numberUtils'
 import type { GameState, GameAction } from '../../types'
 
 export interface Milestone {
@@ -15,6 +17,7 @@ export interface Milestone {
   condition: (state: GameState) => boolean
   createRewardAction?: () => GameAction
   labelKey: string
+  createLabelOptions?: () => Record<string, unknown>
 }
 
 const totalFollowers = (social: GameState['social']): number =>
@@ -29,7 +32,7 @@ export const MILESTONES = [
       createUpdatePlayerAction((prev: GameState['player']) => ({
         money: prev.money + 100
       })),
-    labelKey: 'milestones.survive_1_week'
+    labelKey: 'ui:milestones.survive_1_week'
   },
   {
     id: 'survive_2_weeks',
@@ -38,7 +41,7 @@ export const MILESTONES = [
       createUpdatePlayerAction((prev: GameState['player']) => ({
         money: prev.money + 250
       })),
-    labelKey: 'milestones.survive_2_weeks'
+    labelKey: 'ui:milestones.survive_2_weeks'
   },
   {
     id: 'survive_1_month',
@@ -48,7 +51,7 @@ export const MILESTONES = [
         money: prev.money + 500,
         fame: prev.fame + 25
       })),
-    labelKey: 'milestones.survive_1_month'
+    labelKey: 'ui:milestones.survive_1_month'
   },
   {
     id: 'survive_100_days',
@@ -58,7 +61,7 @@ export const MILESTONES = [
         money: prev.money + 2000,
         fame: prev.fame + 100
       })),
-    labelKey: 'milestones.survive_100_days'
+    labelKey: 'ui:milestones.survive_100_days'
   },
 
   // === Gigs / Performance ===
@@ -70,7 +73,7 @@ export const MILESTONES = [
         tiktok: prev.tiktok + 10,
         instagram: prev.instagram + 10
       })),
-    labelKey: 'milestones.first_gig_done'
+    labelKey: 'ui:milestones.first_gig_done'
   },
   {
     id: 'flawless_gig',
@@ -82,7 +85,7 @@ export const MILESTONES = [
         fame: prev.fame + 50,
         money: prev.money + 250
       })),
-    labelKey: 'milestones.flawless_gig'
+    labelKey: 'ui:milestones.flawless_gig'
   },
   {
     id: 'big_combo',
@@ -92,7 +95,7 @@ export const MILESTONES = [
         viral: prev.viral + 5,
         tiktok: prev.tiktok + 25
       })),
-    labelKey: 'milestones.big_combo'
+    labelKey: 'ui:milestones.big_combo'
   },
 
   // === Money / Wealth ===
@@ -103,7 +106,10 @@ export const MILESTONES = [
       createUpdateBandAction((prev: GameState['band']) => ({
         luck: prev.luck + 5
       })),
-    labelKey: 'milestones.wealth_starter'
+    labelKey: 'ui:milestones.wealth_starter',
+    createLabelOptions: () => ({
+      amount: formatCurrency(1000, i18n.language)
+    })
   },
   {
     id: 'wealth_established',
@@ -112,7 +118,10 @@ export const MILESTONES = [
       createUpdatePlayerAction((prev: GameState['player']) => ({
         fame: prev.fame + 50
       })),
-    labelKey: 'milestones.wealth_established'
+    labelKey: 'ui:milestones.wealth_established',
+    createLabelOptions: () => ({
+      amount: formatCurrency(5000, i18n.language)
+    })
   },
   {
     id: 'wealth_baron',
@@ -121,7 +130,10 @@ export const MILESTONES = [
       createUpdatePlayerAction((prev: GameState['player']) => ({
         fame: prev.fame + 200
       })),
-    labelKey: 'milestones.wealth_baron'
+    labelKey: 'ui:milestones.wealth_baron',
+    createLabelOptions: () => ({
+      amount: formatCurrency(25000, i18n.language)
+    })
   },
 
   // === Fame ===
@@ -133,7 +145,7 @@ export const MILESTONES = [
         tiktok: prev.tiktok + 100,
         instagram: prev.instagram + 100
       })),
-    labelKey: 'milestones.fame_rising'
+    labelKey: 'ui:milestones.fame_rising'
   },
   {
     id: 'fame_legend',
@@ -142,7 +154,7 @@ export const MILESTONES = [
       createUpdatePlayerAction((prev: GameState['player']) => ({
         money: prev.money + 1000
       })),
-    labelKey: 'milestones.fame_legend'
+    labelKey: 'ui:milestones.fame_legend'
   },
 
   // === Social Reach ===
@@ -153,7 +165,7 @@ export const MILESTONES = [
       createUpdatePlayerAction((prev: GameState['player']) => ({
         money: prev.money + 500
       })),
-    labelKey: 'milestones.social_influencer'
+    labelKey: 'ui:milestones.social_influencer'
   },
   {
     id: 'social_megastar',
@@ -163,7 +175,7 @@ export const MILESTONES = [
         viral: prev.viral + 25,
         zealotry: prev.zealotry + 10
       })),
-    labelKey: 'milestones.social_megastar'
+    labelKey: 'ui:milestones.social_megastar'
   },
   {
     id: 'gone_viral',
@@ -172,7 +184,7 @@ export const MILESTONES = [
       createUpdatePlayerAction((prev: GameState['player']) => ({
         fame: prev.fame + 100
       })),
-    labelKey: 'milestones.gone_viral'
+    labelKey: 'ui:milestones.gone_viral'
   },
   {
     id: 'cult_following',
@@ -182,14 +194,14 @@ export const MILESTONES = [
         newsletter: prev.newsletter + 250,
         loyalty: prev.loyalty + 10
       })),
-    labelKey: 'milestones.cult_following'
+    labelKey: 'ui:milestones.cult_following'
   },
 
   // === Band ===
   {
     id: 'high_harmony',
     condition: (state: GameState) => state.band.harmony >= 90,
-    labelKey: 'milestones.high_harmony'
+    labelKey: 'ui:milestones.high_harmony'
   },
   {
     id: 'perfect_harmony',
@@ -198,7 +210,7 @@ export const MILESTONES = [
       createUpdatePlayerAction((prev: GameState['player']) => ({
         fame: prev.fame + 75
       })),
-    labelKey: 'milestones.perfect_harmony'
+    labelKey: 'ui:milestones.perfect_harmony'
   },
   {
     id: 'full_band',
@@ -207,7 +219,7 @@ export const MILESTONES = [
       createUpdateBandAction((prev: GameState['band']) => ({
         harmony: prev.harmony + 10
       })),
-    labelKey: 'milestones.full_band'
+    labelKey: 'ui:milestones.full_band'
   },
   {
     id: 'peacekeeper',
@@ -216,7 +228,7 @@ export const MILESTONES = [
       createUpdateBandAction((prev: GameState['band']) => ({
         harmony: prev.harmony + 15
       })),
-    labelKey: 'milestones.peacekeeper'
+    labelKey: 'ui:milestones.peacekeeper'
   },
 
   // === Road / Travel ===
@@ -227,7 +239,7 @@ export const MILESTONES = [
       createUpdatePlayerAction((prev: GameState['player']) => ({
         money: prev.money + 200
       })),
-    labelKey: 'milestones.road_warrior'
+    labelKey: 'ui:milestones.road_warrior'
   },
   {
     id: 'road_legend',
@@ -237,7 +249,7 @@ export const MILESTONES = [
         money: prev.money + 750,
         fame: prev.fame + 50
       })),
-    labelKey: 'milestones.road_legend'
+    labelKey: 'ui:milestones.road_legend'
   },
 
   // === Stage Presence & HQ ===
@@ -249,7 +261,7 @@ export const MILESTONES = [
         tiktok: prev.tiktok + 200,
         viral: prev.viral + 10
       })),
-    labelKey: 'milestones.stage_diver'
+    labelKey: 'ui:milestones.stage_diver'
   },
   {
     id: 'hq_builder',
@@ -258,7 +270,7 @@ export const MILESTONES = [
       createUpdateBandAction((prev: GameState['band']) => ({
         luck: prev.luck + 5
       })),
-    labelKey: 'milestones.hq_builder'
+    labelKey: 'ui:milestones.hq_builder'
   },
   {
     id: 'van_tuned',
@@ -267,7 +279,7 @@ export const MILESTONES = [
       createUpdatePlayerAction((prev: GameState['player']) => ({
         money: prev.money + 250
       })),
-    labelKey: 'milestones.van_tuned'
+    labelKey: 'ui:milestones.van_tuned'
   },
 
   // === Resilience ===
@@ -278,7 +290,7 @@ export const MILESTONES = [
       createUpdateBandAction((prev: GameState['band']) => ({
         harmony: prev.harmony + 5
       })),
-    labelKey: 'milestones.clinic_survivor'
+    labelKey: 'ui:milestones.clinic_survivor'
   },
 
   // === Meta ===
@@ -290,7 +302,7 @@ export const MILESTONES = [
         fame: prev.fame + 50,
         money: prev.money + 300
       })),
-    labelKey: 'milestones.collector'
+    labelKey: 'ui:milestones.collector'
   },
   {
     id: 'milestone_chaser',
@@ -300,6 +312,6 @@ export const MILESTONES = [
         money: prev.money + 1000,
         fame: prev.fame + 100
       })),
-    labelKey: 'milestones.milestone_chaser'
+    labelKey: 'ui:milestones.milestone_chaser'
   }
 ] satisfies readonly Milestone[]

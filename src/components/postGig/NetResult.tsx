@@ -13,10 +13,10 @@ export const NetResult = React.memo(({ net }: NetResultProps) => {
 
   const getNetString = () => {
     if (net > 0)
-      return formatSignedFinancialAmount(net, 'income', i18n?.language)
+      return formatSignedFinancialAmount(net, 'income', i18n.language)
     if (net < 0)
-      return formatSignedFinancialAmount(net, 'expense', i18n?.language)
-    return formatCurrency(0, i18n?.language)
+      return formatSignedFinancialAmount(net, 'expense', i18n.language)
+    return formatCurrency(0, i18n.language)
   }
 
   return (

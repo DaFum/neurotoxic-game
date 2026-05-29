@@ -120,13 +120,13 @@ const mockGetNoteName = mock.fn(midi => {
 })
 
 // We need to allow other exports to pass through if needed, or mock them all.
-// procedural.js uses: isPercussionTrack, isValidMidiNote, normalizeMidiPitch, getNoteName
+// procedural.js uses: isPercussionTrack, normalizeMidiPitch, getNoteName
 mock.module(
   new URL('../../src/utils/audio/midiUtils.ts', import.meta.url).href,
   {
     namedExports: {
       isPercussionTrack: mock.fn(() => false),
-      isValidMidiNote: mock.fn(() => true),
+      buildMidiTrackEvents: mock.fn(() => []),
       normalizeMidiPitch: mock.fn(n => (typeof n === 'number' ? n : n.midi)),
       getNoteName: mockGetNoteName
     }

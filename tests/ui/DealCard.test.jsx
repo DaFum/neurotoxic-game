@@ -11,7 +11,8 @@ vi.mock('react-i18next', () => ({
         'economy:brandDeals.energy_drink_cx.name': 'Toxischer Energy-Drink'
       }
       return translations[key] ?? options?.defaultValue ?? key
-    }
+    },
+    i18n: { language: 'en', changeLanguage: vi.fn(), options: {} }
   }),
   initReactI18next: { type: '3rdParty', init: () => {} }
 }))

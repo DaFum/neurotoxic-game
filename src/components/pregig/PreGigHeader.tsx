@@ -6,7 +6,7 @@ import type { TranslationCallback } from '../../types/callbacks'
 
 type PreGigHeaderProps = {
   t: TranslationCallback
-  i18n: { language?: string }
+  i18n: { language: string }
   currentGig: Venue | null
   player: Pick<PlayerState, 'money'>
   calculatedBudget: number
@@ -31,14 +31,14 @@ export const PreGigHeader = React.memo(
           <span>
             {t('ui:pregig.budget')}{' '}
             <span className='text-toxic-green font-bold tabular-nums'>
-              {formatCurrency(player.money, i18n?.language)}
+              {formatCurrency(player.money, i18n.language)}
             </span>
           </span>
           <span className='text-ash-gray/30'>|</span>
           <span>
             {t('ui:pregig.costs')}{' '}
             <span className='text-blood-red font-bold tabular-nums'>
-              {formatCurrency(-Math.abs(calculatedBudget), i18n?.language)}
+              {formatCurrency(-Math.abs(calculatedBudget), i18n.language)}
             </span>
           </span>
         </div>

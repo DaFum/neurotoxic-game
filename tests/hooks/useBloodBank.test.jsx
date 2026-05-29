@@ -134,7 +134,7 @@ describe('useBloodBank', () => {
       staminaCost: 30,
       controversyGain: 5,
       successToast: {
-        message: 'ui:blood_bank.success_toast',
+        messageKey: 'ui:blood_bank.success_toast',
         type: 'success'
       }
     })

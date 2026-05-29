@@ -1,6 +1,7 @@
 import type { TranslationCallback } from '../types/callbacks'
 import type { UnknownRecord } from '../types'
 import { formatCurrency } from './numberUtils'
+import { isFiniteNumber } from './finiteNumber'
 
 type EffectDelta = {
   [key: string]: unknown
@@ -34,7 +35,7 @@ export const generateEffectText = (
     defaultValue: string,
     unit = ''
   ) => {
-    if (typeof value === 'number' && value !== 0) {
+    if (isFiniteNumber(value) && value !== 0) {
       lines.push(
         `${t(tKey, { defaultValue })}: ${value > 0 ? '+' : ''}${value}${unit}`
       )
@@ -46,7 +47,7 @@ export const generateEffectText = (
     tKey: string,
     defaultValue: string
   ) => {
-    if (typeof value === 'number' && Number.isFinite(value) && value !== 0) {
+    if (isFiniteNumber(value) && value !== 0) {
       lines.push(
         `${t(tKey, { defaultValue })}: ${formatCurrency(value, language, 'always')}`
       )
@@ -120,18 +121,18 @@ export const generateEffectText = (
       if (Array.isArray(delta.band.membersDelta)) {
         for (let i = 0; i < delta.band.membersDelta.length; i++) {
           const memberDelta = delta.band.membersDelta[i]
-          if (typeof memberDelta?.moodChange === 'number') {
+          if (isFiniteNumber(memberDelta?.moodChange)) {
             totalMoodChange += memberDelta.moodChange
           }
-          if (typeof memberDelta?.staminaChange === 'number') {
+          if (isFiniteNumber(memberDelta?.staminaChange)) {
             totalStaminaChange += memberDelta.staminaChange
           }
         }
       } else {
-        if (typeof delta.band.membersDelta.moodChange === 'number') {
+        if (isFiniteNumber(delta.band.membersDelta.moodChange)) {
           totalMoodChange = delta.band.membersDelta.moodChange
         }
-        if (typeof delta.band.membersDelta.staminaChange === 'number') {
+        if (isFiniteNumber(delta.band.membersDelta.staminaChange)) {
           totalStaminaChange = delta.band.membersDelta.staminaChange
         }
       }
@@ -145,8 +146,9 @@ export const generateEffectText = (
   if (delta.band?.inventory) {
     const inventory = delta.band.inventory
     for (const key of Object.keys(inventory)) {
+      if (!Object.hasOwn(inventory, key)) continue
       const qty = inventory[key]
-      if (typeof qty === 'number' && qty !== 0) {
+      if (isFiniteNumber(qty) && qty !== 0) {
         lines.push(
           `${t(`items:${key}`, { defaultValue: key })}: ${
             qty > 0 ? '+' : ''

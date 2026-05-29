@@ -206,7 +206,7 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
           <MerchItemRow
             key={item.key}
             item={item}
-            language={i18n?.language ?? 'en'}
+            language={i18n.language}
             onUpdatePrice={onUpdatePrice}
             onRestock={onRestock}
             t={t}

@@ -1,7 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Modal } from '../../ui/shared/Modal'
-import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
-import { getRiskEventImagePrompt } from '../../utils/imageGen'
+import { CrisisModal } from '../../ui/shared'
 
 interface Props {
   // Optional kind label — sections may pass a pre-resolved
@@ -19,37 +17,24 @@ interface Props {
 export const ForeclosureModal = ({ assetLabel, isOpen, onClose }: Props) => {
   const { t } = useTranslation(['assets', 'ui'])
   return (
-    <Modal
+    <CrisisModal
       isOpen={isOpen}
       onClose={onClose}
       title={t('assets:foreclosure')}
-      className='max-w-lg'
-    >
-      <div className='flex flex-col gap-3 p-4 font-mono text-sm'>
-        <GeneratedImagePanel
-          prompt={getRiskEventImagePrompt('foreclosure')}
-          alt={t('assets:foreclosure')}
-          aspectRatio='16:9'
-          sizeHint={{ width: 640, height: 360 }}
-        />
-        <p style={{ color: 'var(--color-blood-red)' }}>
-          {t('assets:liability.foreclosureNotice')}
-          {assetLabel ? ` (${assetLabel})` : ''}
-        </p>
-        <div className='flex justify-end'>
-          <button
-            type='button'
-            onClick={onClose}
-            className='border-2 px-3 py-1'
-            style={{
-              background: 'var(--color-blood-red)',
-              color: 'var(--color-void-black)'
-            }}
-          >
-            {t('ui:action_close', { defaultValue: 'Close' })}
-          </button>
-        </div>
-      </div>
-    </Modal>
+      description={
+        assetLabel
+          ? t('assets:liability.foreclosureNoticeWithAsset', {
+              asset: assetLabel
+            })
+          : t('assets:liability.foreclosureNotice')
+      }
+      actions={[
+        {
+          label: t('ui:action_close', { defaultValue: 'Close' }),
+          variant: 'danger',
+          onClick: onClose
+        }
+      ]}
+    />
   )
 }

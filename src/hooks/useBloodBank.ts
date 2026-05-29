@@ -54,7 +54,7 @@ export const useBloodBank = () => {
       if (isMarrow ? !canDonateMarrow : !canDonate) return
 
       const successToast = {
-        message: isMarrow
+        messageKey: isMarrow
           ? 'ui:blood_bank.marrow_success_toast'
           : 'ui:blood_bank.success_toast',
         type: 'success' as const

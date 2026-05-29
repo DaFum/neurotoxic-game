@@ -36,7 +36,10 @@ vi.mock('../../src/utils/imageGen', () => ({
 
 vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },
-  useTranslation: () => ({ t: (k, o) => o?.defaultValue || k })
+  useTranslation: () => ({
+    t: (k, o) => o?.defaultValue || k,
+    i18n: { language: 'en', changeLanguage: vi.fn(), options: {} }
+  })
 }))
 
 vi.mock('../../src/data/hqItems', () => ({

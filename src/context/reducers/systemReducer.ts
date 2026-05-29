@@ -1381,6 +1381,7 @@ const sanitizeLastGigStats = (value: unknown): GameState['lastGigStats'] => {
     'misses',
     'accuracy',
     'combo',
+    'maxCombo',
     'health',
     'overload'
   ]) {

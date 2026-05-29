@@ -26,14 +26,6 @@ export const normalizeMidiPitch = (note: unknown): number | null => {
 }
 
 /**
- * Validates whether a MIDI note has a usable pitch for scheduling.
- * @param {object} note - Note payload from the MIDI parser.
- * @returns {boolean} True if the note contains a finite MIDI pitch.
- */
-export const isValidMidiNote = (note: unknown): boolean =>
-  normalizeMidiPitch(note) !== null
-
-/**
  * Builds normalized MIDI track events from raw notes.
  * @param {Array} notes - Note list from the MIDI parser.
  * @param {boolean} percussionTrack - Whether the track is percussion.

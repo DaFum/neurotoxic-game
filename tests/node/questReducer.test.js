@@ -2,12 +2,14 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
   handleAddQuest,
-  handleCompleteQuest,
-  handleAdvanceQuest,
-  handleFailQuests
+  handleAdvanceQuest
 } from '../../src/context/reducers/questReducer'
+import { QuestLifecycle } from '../../src/domain/questLifecycle'
 import { ActionTypes } from '../../src/context/actionTypes'
 import { gameReducer } from '../../src/context/gameReducer'
+
+const handleCompleteQuest = QuestLifecycle.completeQuest
+const handleFailQuests = QuestLifecycle.checkDeadlines
 
 test('questReducer - handleAddQuest', async t => {
   await t.test('adds a new quest when none exists', () => {

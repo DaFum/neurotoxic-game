@@ -1,6 +1,5 @@
 import { BALANCE_CONSTANTS } from './gameStateUtils'
 import { calculateGigFinancials } from './economyEngine'
-import { toFiniteNumber } from './numberUtils'
 import { generatePostOptions } from './socialEngine'
 
 import {
@@ -65,8 +64,8 @@ const applyClampedMoneyDelta = (
   currentMoney: number,
   delta: number
 ): { nextMoney: number; appliedDelta: number } => {
-  const prevMoney = toFiniteNumber(currentMoney, 0)
-  const safeDelta = toFiniteNumber(delta, 0)
+  const prevMoney = finiteNumberOr(currentMoney, 0)
+  const safeDelta = finiteNumberOr(delta, 0)
   const nextMoney = clampPlayerMoney(prevMoney + safeDelta)
   return { nextMoney, appliedDelta: nextMoney - prevMoney }
 }
@@ -106,7 +105,7 @@ const normalizeInfluencerUpdate = (
     throw new Error('Invalid influencerUpdate: id must be a string')
   }
 
-  const scoreChange = toFiniteNumber(update.scoreChange, Number.NaN)
+  const scoreChange = finiteNumberOr(update.scoreChange, Number.NaN)
   if (!Number.isFinite(scoreChange)) {
     throw new Error(
       `Invalid influencerUpdate scoreChange for ${update.id}: ${String(
@@ -160,7 +159,7 @@ const normalizeResolvedPost = (
     ...raw,
     platform,
     success: raw.success === true,
-    followers: toFiniteNumber(raw.followers),
+    followers: finiteNumberOr(raw.followers, 0),
     message: typeof raw.message === 'string' ? raw.message : '',
     moneyChange: normalizeNumericDelta(raw.moneyChange, 'moneyChange'),
     harmonyChange: normalizeNumericDelta(raw.harmonyChange, 'harmonyChange'),
@@ -243,10 +242,10 @@ export const calculatePostGigStateUpdates = (
   const organicGrowth = calculateSocialGrowth(
     result.platform,
     perfScore ?? 0,
-    toFiniteNumber(social[result.platform], 0),
+    finiteNumberOr(social[result.platform], 0),
     isGigViral,
-    toFiniteNumber(social.controversyLevel, 0),
-    toFiniteNumber(social.loyalty, 0)
+    finiteNumberOr(social.controversyLevel, 0),
+    finiteNumberOr(social.loyalty, 0)
   )
   const totalFollowers = result.followers + organicGrowth
   const finalResult = { ...result, totalFollowers }
@@ -311,11 +310,11 @@ export const calculatePostGigStateUpdates = (
   }
 
   const boundedZealotry = clamp0to100(
-    toFiniteNumber(social.zealotry, 0) + (result.zealotryChange ?? 0)
+    finiteNumberOr(social.zealotry, 0) + (result.zealotryChange ?? 0)
   )
   const scenePresenceGain = Math.max(
     1,
-    Math.floor(toFiniteNumber(perfScore, 0) / 20) +
+    Math.floor(finiteNumberOr(perfScore, 0) / 20) +
       (result.success ? 1 : 0) +
       gigViralBonus
   )
@@ -323,24 +322,24 @@ export const calculatePostGigStateUpdates = (
   const updatedSocial: Partial<GameState['social']> = {
     [result.platform]: Math.max(
       0,
-      toFiniteNumber(social[result.platform], 0) + totalFollowers
+      finiteNumberOr(social[result.platform], 0) + totalFollowers
     ),
     viral: Math.max(
       0,
-      toFiniteNumber(social.viral, 0) + (result.success ? 1 : 0) + gigViralBonus
+      finiteNumberOr(social.viral, 0) + (result.success ? 1 : 0) + gigViralBonus
     ),
     lastGigDay: player.day,
     lastGigDifficulty: currentGig?.diff ?? currentGig?.difficulty ?? 1,
     controversyLevel: clampControversyLevel(
-      toFiniteNumber(social.controversyLevel, 0) +
+      finiteNumberOr(social.controversyLevel, 0) +
         (result.controversyChange ?? 0)
     ),
     loyalty: clampLoyalty(
-      toFiniteNumber(social.loyalty, 0) + (result.loyaltyChange ?? 0)
+      finiteNumberOr(social.loyalty, 0) + (result.loyaltyChange ?? 0)
     ),
     zealotry: boundedZealotry,
     scenePresence: clamp0to100(
-      toFiniteNumber(social.scenePresence, 0) + scenePresenceGain
+      finiteNumberOr(social.scenePresence, 0) + scenePresenceGain
     ),
     reputationCooldown:
       result.reputationCooldownSet !== undefined
@@ -429,7 +428,10 @@ export const calculatePostGigStateUpdates = (
           ...currentInfluencer,
           score: Math.min(
             100,
-            Math.max(0, toFiniteNumber(currentInfluencer.score) + scoreChange)
+            Math.max(
+              0,
+              finiteNumberOr(currentInfluencer.score, 0) + scoreChange
+            )
           )
         }
       }
@@ -450,7 +452,7 @@ export const calculatePostGigStateUpdates = (
       ) {
         updatedSocial[platformId] = Math.max(
           0,
-          toFiniteNumber(social[platformId]) + delta
+          finiteNumberOr(social[platformId], 0) + delta
         )
       }
     }

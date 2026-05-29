@@ -286,7 +286,7 @@ export const BloodBankModal = ({
                 canDonate={canDonate}
                 onDonate={() => onDonate('blood')}
                 t={t}
-                language={i18n?.language ?? 'en'}
+                language={i18n.language}
               />
               <DonationCard
                 variant='marrow'
@@ -294,7 +294,7 @@ export const BloodBankModal = ({
                 canDonate={canDonateMarrow}
                 onDonate={() => onDonate('marrow')}
                 t={t}
-                language={i18n?.language ?? 'en'}
+                language={i18n.language}
               />
             </div>
           </div>

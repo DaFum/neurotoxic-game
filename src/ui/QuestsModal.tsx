@@ -250,7 +250,7 @@ const QuestItem = memo(
               {t('ui:quests.moneyReward', {
                 amount: formatCurrency(
                   quest.moneyReward,
-                  i18n?.language,
+                  i18n.language,
                   'always'
                 )
               })}

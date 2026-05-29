@@ -62,7 +62,7 @@ describe('TourbusTrailerOverlay', () => {
       }
     ])
     render(<TourbusTrailerOverlay asset={asset} onSlotClick={onSlotClick} />)
-    const button = screen.getByRole('button', { name: 'slot tb_trailer_addon' })
+    const button = screen.getByRole('button', { name: 'slot tb trailer addon' })
     fireEvent.click(button)
     expect(onSlotClick).toHaveBeenCalledWith('trailer-slot-abc')
   })

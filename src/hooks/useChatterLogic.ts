@@ -28,7 +28,7 @@ const resolveSpeaker = (
   const memberNames = []
   if (bandMembers) {
     for (let i = 0; i < bandMembers.length; i++) {
-      const name = bandMembers[i].name
+      const name = bandMembers[i]?.name
       if (typeof name === 'string') {
         memberNames.push(name)
       }
@@ -36,7 +36,10 @@ const resolveSpeaker = (
   }
   if (memberNames.length > 0) {
     const roll = getSafeRandom()
-    return memberNames[Math.floor(roll * memberNames.length)]
+    return (
+      memberNames[Math.floor(roll * memberNames.length)] ??
+      t('ui:chatter_labels.default_speaker', { defaultValue: 'Band' })
+    )
   }
   return t('ui:chatter_labels.default_speaker', { defaultValue: 'Band' })
 }

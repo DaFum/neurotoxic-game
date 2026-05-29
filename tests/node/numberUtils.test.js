@@ -1,10 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import {
-  formatNumber,
-  formatCurrency,
-  toFiniteNumber
-} from '../../src/utils/numberUtils'
+import { formatNumber, formatCurrency } from '../../src/utils/numberUtils'
+import { finiteNumberOr } from '../../src/utils/finiteNumber'
 
 // --- formatNumber ---
 
@@ -51,12 +48,12 @@ test('formatNumber - handles edge cases gracefully', () => {
   assert.equal(formatNumber(undefined), 'NaN')
 })
 
-test('toFiniteNumber - returns finite numbers and falls back for non-finite values', () => {
-  assert.equal(toFiniteNumber(12, 99), 12)
-  assert.equal(toFiniteNumber(Number.NaN, 99), 99)
-  assert.equal(toFiniteNumber(Number.POSITIVE_INFINITY, 99), 99)
-  assert.equal(toFiniteNumber(Number.NEGATIVE_INFINITY, 99), 99)
-  assert.equal(toFiniteNumber('12', 99), 99)
+test('finiteNumberOr - returns finite numbers and falls back for non-finite values', () => {
+  assert.equal(finiteNumberOr(12, 99), 12)
+  assert.equal(finiteNumberOr(Number.NaN, 99), 99)
+  assert.equal(finiteNumberOr(Number.POSITIVE_INFINITY, 99), 99)
+  assert.equal(finiteNumberOr(Number.NEGATIVE_INFINITY, 99), 99)
+  assert.equal(finiteNumberOr('12', 99), 99)
 })
 
 // --- formatCurrency ---

@@ -211,6 +211,13 @@ export type PurchaseFailureReason =
   | 'ACQUISITION_ALREADY_ACTIVE'
   | 'UNKNOWN_FLAVOR'
 
+export type RefinanceFailureReason =
+  | 'UNKNOWN_LIABILITY'
+  | 'UNKNOWN_KIND_OR_TIER'
+  | 'LOAN_PROFILE_INELIGIBLE'
+  | 'INSUFFICIENT_FUNDS'
+  | 'LOAN_IN_DEFAULT'
+
 export type InstallModuleFailureReason =
   | 'UNKNOWN_MODULE'
   | 'UNKNOWN_ASSET'
@@ -255,6 +262,12 @@ export interface InstallModulePayload {
   moduleId: string
   /** Pre-generated ids for slots added by the module via `addsSlots`. */
   newSlotIds?: NewSlotEntry[]
+}
+
+export interface RefinanceLiabilityPayload {
+  liabilityId: string
+  loanProfileId: string
+  fee: number
 }
 
 export interface AssetModifiers {

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { getSongId } from '../../utils/audio/audioEngine'
 import { Tooltip } from '../../ui/shared/Tooltip'
+import { buildSetlistChartDensity } from '../../utils/chartDensity'
 import type { RhythmSetlistEntry } from '../../types/rhythmGame'
 import type { Song } from '../../types/audio'
 
@@ -117,6 +118,18 @@ export const SetlistBlock = ({
   toggleSong
 }: SetlistBlockProps) => {
   const { t } = useTranslation('ui')
+  const selectedSongs = setlist
+    .map(entry => {
+      const songId = getSongId(entry)
+      return songId ? songsDict[songId] : undefined
+    })
+    .filter((song): song is Song => Boolean(song))
+  const densityBars = buildSetlistChartDensity(selectedSongs)
+  const densityTotal = densityBars.reduce((sum, bar) => sum + bar.count, 0)
+  const densityPeak = densityBars.reduce(
+    (peak, bar) => Math.max(peak, bar.count),
+    0
+  )
 
   return (
     <motion.div
@@ -153,28 +166,37 @@ export const SetlistBlock = ({
         })}
       </div>
 
-      <div className='mt-3 h-14 border-t border-ash-gray/20 pt-2 flex items-end justify-between gap-1'>
-        {setlist.map((s, i) => {
-          const id = getSongId(s) ?? `slot-${i}`
-          const songData = songsDict[id] ?? {
-            energy: { peak: 50 }
-          }
-          const peak = songData.energy?.peak ?? 50
-          return (
-            <motion.div
-              key={id}
-              initial={{ height: 0 }}
-              animate={{ height: `${peak}%` }}
-              transition={{ duration: 0.4, delay: i * 0.1 }}
-              className='flex-1 bg-gradient-to-t from-toxic-green to-toxic-green/40 relative group cursor-default'
-            >
-              <div className='absolute -top-4 left-0 text-[10px] w-full text-center opacity-0 group-hover:opacity-100 transition-opacity text-star-white tabular-nums'>
-                {peak}%
-              </div>
-            </motion.div>
-          )
-        })}
-        {setlist.length === 0 && (
+      <div className='mt-3 h-16 border-t border-ash-gray/20 pt-2 flex flex-col gap-1'>
+        {selectedSongs.length > 0 ? (
+          <>
+            <div className='flex items-center justify-between text-[9px] font-mono uppercase tracking-wider text-ash-gray/60'>
+              <span>{t('ui:pregig.noteDensity')}</span>
+              {import.meta.env.DEV && (
+                <span>
+                  {t('ui:pregig.chartDebug', {
+                    notes: densityTotal,
+                    peak: densityPeak
+                  })}
+                </span>
+              )}
+            </div>
+            <div className='flex min-h-0 flex-1 items-end justify-between gap-1'>
+              {densityBars.map((bar, i) => (
+                <motion.div
+                  key={`setlist-${bar.timestamp}`}
+                  initial={{ height: 0 }}
+                  animate={{ height: `${Math.max(8, bar.intensity * 100)}%` }}
+                  transition={{ duration: 0.25, delay: i * 0.015 }}
+                  className='flex-1 bg-gradient-to-t from-toxic-green to-toxic-green/40 relative group cursor-default'
+                >
+                  <div className='absolute -top-4 left-0 text-[10px] w-full text-center opacity-0 group-hover:opacity-100 transition-opacity text-star-white tabular-nums'>
+                    {bar.count}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </>
+        ) : (
           <div className='text-ash-gray/30 text-[10px] w-full text-center font-mono'>
             {t('ui:pregig.selectPreview')}
           </div>

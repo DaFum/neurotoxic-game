@@ -4,10 +4,11 @@ import { Modal } from '../../ui/shared/Modal'
 import { Tooltip } from '../../ui/shared/Tooltip'
 import { ActionButton } from '../../ui/shared/ActionButton'
 import { CrowdfundSetupModal } from './CrowdfundSetupModal'
+import { LoanProfileChoiceGrid } from './LoanProfileModal'
 import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 import { getChassisImagePrompt } from '../../utils/imageGen'
 import { CHASSIS_CONFIG } from '../../utils/assetConfig'
-import { LOAN_PROFILES, type LoanProfileId } from '../../utils/loanProfiles'
+import type { LoanProfileId } from '../../utils/loanProfiles'
 import { formatCurrency } from '../../utils/numberUtils'
 import { hasActiveAssetAcquisition } from '../../utils/assetSelectors'
 import { useGameActions, useGameSelector } from '../../context/GameState'
@@ -117,13 +118,15 @@ export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
           />
 
           {mode === 'loan' && (
-            <ChoiceGroup<LoanProfileId>
-              label={t('assets:chassisAcquisition.loanProfile')}
-              options={Object.keys(LOAN_PROFILES) as LoanProfileId[]}
-              value={loanProfile}
-              onChange={setLoanProfile}
-              renderLabel={p => t(`assets:loan.profile.${p}`)}
-            />
+            <div className='flex flex-col gap-1'>
+              <span className='text-xs uppercase opacity-60'>
+                {t('assets:chassisAcquisition.loanProfile')}
+              </span>
+              <LoanProfileChoiceGrid
+                value={loanProfile}
+                onSelect={setLoanProfile}
+              />
+            </div>
           )}
 
           <div

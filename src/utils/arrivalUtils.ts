@@ -171,9 +171,10 @@ export const handleNodeArrival = (
     }
     case 'REST_STOP': {
       const members = band?.members ?? []
-      const newMembers = new Array(members.length)
+      const newMembers = [...members]
       for (let i = 0; i < members.length; i++) {
         const m = members[i]
+        if (!m) continue
         const newStamina = clampMemberStamina(
           finiteNumberOr(m.stamina, 0) + 20,
           finiteNumberOr(m.staminaMax, 100)
