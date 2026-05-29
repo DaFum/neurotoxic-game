@@ -32,10 +32,6 @@ export const useGigVisuals = ({
       currentGig?.name?.includes('Open Air')
     )
       bgPrompt = IMG_PROMPTS.VENUE_FESTIVAL
-    else if (typeof currentGig?.diff === 'number' && currentGig.diff <= 2)
-      bgPrompt = IMG_PROMPTS.VENUE_DIVE_BAR
-    else if (typeof currentGig?.diff === 'number' && currentGig.diff >= 5)
-      bgPrompt = IMG_PROMPTS.VENUE_GALACTIC
     else if (
       typeof currentGig?.difficulty === 'number' &&
       currentGig.difficulty <= 2
@@ -48,7 +44,7 @@ export const useGigVisuals = ({
       bgPrompt = IMG_PROMPTS.VENUE_GALACTIC
 
     return resolveGenImageUrl(bgPrompt, isOnline)
-  }, [currentGig?.name, currentGig?.difficulty, currentGig?.diff, isOnline])
+  }, [currentGig?.name, currentGig?.difficulty, isOnline])
 
   // Character Images based on Harmony
   const { matzeUrl, mariusUrl, larsUrl } = useMemo(() => {

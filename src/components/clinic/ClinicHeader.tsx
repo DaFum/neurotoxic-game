@@ -19,7 +19,7 @@ export const ClinicHeader = ({ player }: ClinicHeaderProps) => {
       <div className='flex gap-4 mt-4 text-xs font-mono text-star-white'>
         <span>
           {t('ui:clinic.funds', { defaultValue: 'FUNDS:' })}{' '}
-          {formatCurrency(player.money ?? 0, i18n?.language ?? 'en')}
+          {formatCurrency(player.money ?? 0, i18n.language)}
         </span>
         <span>
           {t('ui:clinic.fame', { defaultValue: 'FAME:' })} {player.fame}

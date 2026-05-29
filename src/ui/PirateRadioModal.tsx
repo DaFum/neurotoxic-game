@@ -127,7 +127,7 @@ export const PirateRadioModal = memo(
                 label={t('ui:pirate_radio.cost', {
                   defaultValue: 'COST (BRIBES/TECH)'
                 })}
-                value={formatCurrency(config.COST, i18n?.language)}
+                value={formatCurrency(config.COST, i18n.language)}
                 valueClass={
                   (player?.money ?? 0) >= config.COST
                     ? 'text-ash-gray'

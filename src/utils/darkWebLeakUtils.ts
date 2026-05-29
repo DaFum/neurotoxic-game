@@ -4,6 +4,7 @@ import type {
   BandState,
   DarkWebLeakConfig
 } from '../types'
+import { isFiniteNumber } from './finiteNumber'
 
 export const checkHasLeakedToday = (
   social: Partial<SocialState> | undefined | null,
@@ -11,9 +12,6 @@ export const checkHasLeakedToday = (
 ) => {
   return social?.lastDarkWebLeakDay === currentDay
 }
-
-const isFiniteNumber = (value: unknown): value is number =>
-  typeof value === 'number' && Number.isFinite(value)
 
 export const validateDarkWebLeak = (
   social: Partial<SocialState> | undefined | null,

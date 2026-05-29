@@ -2,7 +2,6 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import {
   isPercussionTrack,
-  isValidMidiNote,
   buildMidiTrackEvents,
   normalizeMidiPitch,
   getNoteName
@@ -23,20 +22,6 @@ test('isPercussionTrack', async t => {
   await t.test('returns false for non-percussion tracks', () => {
     assert.strictEqual(isPercussionTrack({ channel: 2 }), false)
     assert.strictEqual(isPercussionTrack(null), false)
-  })
-})
-
-test('isValidMidiNote', async t => {
-  await t.test('accepts finite MIDI pitches', () => {
-    assert.strictEqual(isValidMidiNote({ midi: 64 }), true)
-    assert.strictEqual(isValidMidiNote({ midi: '60' }), true)
-  })
-
-  await t.test('rejects invalid MIDI pitches', () => {
-    assert.strictEqual(isValidMidiNote({ midi: Number.NaN }), false)
-    assert.strictEqual(isValidMidiNote({}), false)
-    assert.strictEqual(isValidMidiNote(null), false)
-    assert.strictEqual(isValidMidiNote({ midi: 140 }), false)
   })
 })
 

@@ -8,6 +8,8 @@ import {
   createUpdatePlayerAction,
   createUpdateSocialAction
 } from '../../context/actionCreators'
+import i18n from '../../i18n'
+import { formatCurrency } from '../../utils/numberUtils'
 import type { GameState, GameAction } from '../../types'
 
 export interface Milestone {
@@ -15,6 +17,7 @@ export interface Milestone {
   condition: (state: GameState) => boolean
   createRewardAction?: () => GameAction
   labelKey: string
+  createLabelOptions?: () => Record<string, unknown>
 }
 
 const totalFollowers = (social: GameState['social']): number =>
@@ -103,7 +106,10 @@ export const MILESTONES = [
       createUpdateBandAction((prev: GameState['band']) => ({
         luck: prev.luck + 5
       })),
-    labelKey: 'milestones.wealth_starter'
+    labelKey: 'milestones.wealth_starter',
+    createLabelOptions: () => ({
+      amount: formatCurrency(1000, i18n.language)
+    })
   },
   {
     id: 'wealth_established',
@@ -112,7 +118,10 @@ export const MILESTONES = [
       createUpdatePlayerAction((prev: GameState['player']) => ({
         fame: prev.fame + 50
       })),
-    labelKey: 'milestones.wealth_established'
+    labelKey: 'milestones.wealth_established',
+    createLabelOptions: () => ({
+      amount: formatCurrency(5000, i18n.language)
+    })
   },
   {
     id: 'wealth_baron',
@@ -121,7 +130,10 @@ export const MILESTONES = [
       createUpdatePlayerAction((prev: GameState['player']) => ({
         fame: prev.fame + 200
       })),
-    labelKey: 'milestones.wealth_baron'
+    labelKey: 'milestones.wealth_baron',
+    createLabelOptions: () => ({
+      amount: formatCurrency(25000, i18n.language)
+    })
   },
 
   // === Fame ===

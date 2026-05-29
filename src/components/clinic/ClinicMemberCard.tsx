@@ -87,7 +87,7 @@ export const ClinicMemberCard = ({
             >
               {t('ui:clinic.heal_button', {
                 defaultValue: 'HEAL ({{cost}})',
-                cost: formatCurrency(healCostMoney, i18n?.language)
+                cost: formatCurrency(healCostMoney, i18n.language)
               })}
             </GlitchButton>
           )}

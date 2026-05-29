@@ -20,27 +20,18 @@ export const Credits = () => {
   )
 
   const credits = [
-    { role: 'VOCAL CODE VOMIT', name: 'Jules "Agent of Segfaults" Agent' },
+    { role: t('ui:credits.role.code'), name: t('ui:credits.name.code') },
+    { role: t('ui:credits.role.audio'), name: t('ui:credits.name.audio') },
     {
-      role: 'AUDIO ENGINE ERADICATION',
-      name: 'Tone.js // Blastbeat Buffer Overflow'
+      role: t('ui:credits.role.rendering'),
+      name: t('ui:credits.name.rendering')
     },
     {
-      role: 'RENDERING RAZORSTORM',
-      name: 'Pixi.js // Retina Shredder Edition'
+      role: t('ui:credits.role.animation'),
+      name: t('ui:credits.name.animation')
     },
-    {
-      role: 'SPASM ANIMATION RITUALS',
-      name: 'Framer Motion // Framegrind Frenzy'
-    },
-    {
-      role: 'TEXTURE FLESHMELT',
-      name: 'Mutierte Generated AI Assets aus dem Void'
-    },
-    {
-      role: 'SPECIAL THANKS IN CAPS OF GORE',
-      name: 'THE USERS // CLICK TILL SYSTEM DECAYS'
-    }
+    { role: t('ui:credits.role.assets'), name: t('ui:credits.name.assets') },
+    { role: t('ui:credits.role.thanks'), name: t('ui:credits.name.thanks') }
   ]
 
   return (

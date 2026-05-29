@@ -25,7 +25,12 @@ import {
   REPAIR_COST_PER_POINT
 } from '../utils/assetConfig'
 import { MODULE_REGISTRY } from '../utils/assetModuleRegistry'
-import { LOAN_PROFILES, type LoanProfileId } from '../utils/loanProfiles'
+import {
+  LOAN_PROFILES,
+  calculateRefinanceFee,
+  isLoanProfileEligible,
+  type LoanProfileId
+} from '../utils/loanProfiles'
 import {
   getSlotConflicts,
   hasActiveAssetAcquisition,
@@ -42,6 +47,7 @@ import type {
   InstallModuleFailureReason,
   NewSlotEntry,
   PurchaseFailureReason,
+  RefinanceFailureReason,
   SlotType
 } from '../types/assets'
 
@@ -72,6 +78,14 @@ type SellChassisAction = Extract2<GameAction, typeof ActionTypes.SELL_CHASSIS>
 type RepairChassisAction = Extract2<
   GameAction,
   typeof ActionTypes.REPAIR_CHASSIS
+>
+type RefinanceLiabilityAction = Extract2<
+  GameAction,
+  typeof ActionTypes.REFINANCE_LIABILITY
+>
+type RefinanceLiabilityFailedAction = Extract2<
+  GameAction,
+  typeof ActionTypes.REFINANCE_LIABILITY_FAILED
 >
 type StartCrowdfundAction = Extract2<
   GameAction,
@@ -163,14 +177,10 @@ export const purchaseChassis = (
     const profile = LOAN_PROFILES[raw.loanProfileId]
     if (!profile) return fail('UNKNOWN_KIND_OR_TIER')
     if (
-      profile.minFameRequired !== undefined &&
-      state.player.fame < profile.minFameRequired
-    ) {
-      return fail('LOAN_PROFILE_INELIGIBLE')
-    }
-    if (
-      profile.minScenePresenceRequired !== undefined &&
-      (state.social?.scenePresence ?? 0) < profile.minScenePresenceRequired
+      !isLoanProfileEligible(profile, {
+        fame: state.player.fame,
+        scenePresence: state.social?.scenePresence ?? 0
+      })
     ) {
       return fail('LOAN_PROFILE_INELIGIBLE')
     }
@@ -325,6 +335,48 @@ export const repairChassis = (
   return {
     type: ActionTypes.REPAIR_CHASSIS,
     payload: { assetId }
+  }
+}
+
+export const refinanceLiability = (
+  liabilityId: string,
+  loanProfileId: LoanProfileId,
+  state: GameState
+): RefinanceLiabilityAction | RefinanceLiabilityFailedAction => {
+  const fail = (
+    reason: RefinanceFailureReason
+  ): RefinanceLiabilityFailedAction => ({
+    type: ActionTypes.REFINANCE_LIABILITY_FAILED,
+    payload: { reason }
+  })
+
+  const liability = state.liabilities.find(l => l.id === liabilityId)
+  if (!liability || liability.source !== 'loan') {
+    return fail('UNKNOWN_LIABILITY')
+  }
+
+  const profile = LOAN_PROFILES[loanProfileId]
+  if (!profile) return fail('UNKNOWN_KIND_OR_TIER')
+  if (
+    !isLoanProfileEligible(profile, {
+      fame: state.player.fame,
+      scenePresence: state.social?.scenePresence ?? 0
+    })
+  ) {
+    return fail('LOAN_PROFILE_INELIGIBLE')
+  }
+
+  const principal = finiteNumberOr(liability.principalRemaining, 0)
+  const fee = calculateRefinanceFee(principal)
+  if (state.player.money < fee) return fail('INSUFFICIENT_FUNDS')
+
+  return {
+    type: ActionTypes.REFINANCE_LIABILITY,
+    payload: {
+      liabilityId,
+      loanProfileId,
+      fee
+    }
   }
 }
 

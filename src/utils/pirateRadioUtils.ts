@@ -1,4 +1,5 @@
 import { clampPlayerMoney, clampBandHarmony } from './gameStateUtils'
+import { isFiniteNumber } from './finiteNumber'
 
 export const checkHasBroadcastedToday = (
   social: { lastPirateBroadcastDay?: unknown } | null | undefined,
@@ -8,9 +9,6 @@ export const checkHasBroadcastedToday = (
   return social.lastPirateBroadcastDay === playerDay
 }
 
-const readFiniteNumber = (value: unknown): number | null =>
-  typeof value === 'number' && Number.isFinite(value) ? value : null
-
 export const validatePirateBroadcast = (
   social: { lastPirateBroadcastDay?: unknown } | null | undefined,
   player: { day?: unknown; money?: unknown } | null | undefined,
@@ -19,11 +17,13 @@ export const validatePirateBroadcast = (
 ): boolean => {
   if (!social || !player || !band || !config) return false
 
-  const day = readFiniteNumber(player.day)
-  const money = readFiniteNumber(player.money)
-  const harmony = readFiniteNumber(band.harmony)
-  const cost = readFiniteNumber(config.COST)
-  const harmonyCost = readFiniteNumber(config.HARMONY_COST)
+  const day = isFiniteNumber(player.day) ? player.day : null
+  const money = isFiniteNumber(player.money) ? player.money : null
+  const harmony = isFiniteNumber(band.harmony) ? band.harmony : null
+  const cost = isFiniteNumber(config.COST) ? config.COST : null
+  const harmonyCost = isFiniteNumber(config.HARMONY_COST)
+    ? config.HARMONY_COST
+    : null
   if (
     day === null ||
     money === null ||

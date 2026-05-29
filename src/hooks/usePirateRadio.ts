@@ -60,7 +60,7 @@ export const usePirateRadio = () => {
       controversyGain: PIRATE_RADIO_CONFIG.CONTROVERSY_GAIN,
       harmonyCost: PIRATE_RADIO_CONFIG.HARMONY_COST,
       successToast: {
-        message: 'ui:pirate_radio.success',
+        messageKey: 'ui:pirate_radio.success',
         type: 'success'
       }
     })

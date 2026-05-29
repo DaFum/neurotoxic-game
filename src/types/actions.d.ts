@@ -87,3 +87,11 @@ export interface EventDeltaPayload extends EventDelta {
   activeStoryFlags?: string[]
   pendingEvents?: string[]
 }
+
+export interface SpawnRivalBandPayload {
+  rivalBand: RivalBandState
+}
+
+export interface MoveRivalBandPayload {
+  rivalBand: RivalBandState
+}

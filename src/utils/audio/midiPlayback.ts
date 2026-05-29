@@ -15,7 +15,11 @@ import {
   prepareTransportPlayback,
   getBaseAssetPath
 } from './playbackUtils'
-import { isPercussionTrack, normalizeMidiPitch, getNoteName } from './midiUtils'
+import {
+  isPercussionTrack,
+  buildMidiTrackEvents,
+  getNoteName
+} from './midiUtils'
 import { playDrumNote } from './drumMappings'
 
 type MaybeMidiModule = {
@@ -44,16 +48,8 @@ type ProcessedSongEvent = {
   lane: string
 }
 
-type ParsedMidiNote = {
-  time: number
-  duration?: number | string | null
-  velocity?: number | null
-  midi?: number
-  name?: string
-}
-
 type ParsedMidiTrack = {
-  notes?: ParsedMidiNote[]
+  notes?: unknown
   channel?: number
   instrument?: { family?: string; name?: string; percussion?: boolean }
   [key: string]: unknown
@@ -583,46 +579,10 @@ function parseMidiData(arrayBuffer: ArrayBuffer): unknown | null {
 type ProcessedMidiEvent = {
   time: number
   midiPitch: number
-  duration?: number | string | null
-  velocity?: number | null
+  duration?: unknown
+  velocity?: unknown
   percussionTrack: boolean
   frequencyNote?: string | null
-}
-
-function createProcessedMidiEvent(
-  note: ParsedMidiNote,
-  percussionTrack: boolean
-): ProcessedMidiEvent | null {
-  if (!Number.isFinite(note.time) || note.time < 0) return null
-  const midiPitch = normalizeMidiPitch(note)
-  if (midiPitch == null) return null
-
-  const evt: ProcessedMidiEvent = {
-    time: note.time,
-    midiPitch,
-    duration: note.duration,
-    velocity: note.velocity,
-    percussionTrack
-  }
-
-  if (!percussionTrack) {
-    evt.frequencyNote = getNoteName(midiPitch)
-  }
-  return evt
-}
-
-function processMidiTrackNotes(
-  notes: ParsedMidiNote[],
-  percussionTrack: boolean
-): ProcessedMidiEvent[] {
-  const result: ProcessedMidiEvent[] = []
-  for (let i = 0; i < notes.length; i++) {
-    const note = notes[i]
-    if (!note) continue
-    const evt = createProcessedMidiEvent(note, percussionTrack)
-    if (evt) result.push(evt)
-  }
-  return result
 }
 
 function getClampedDuration(dur: unknown): number {
@@ -685,8 +645,13 @@ function createTrackPart(
   track: ParsedMidiTrack,
   synths: SynthsContext
 ): Tone.Part<unknown> | null {
-  const notes = Array.isArray(track.notes) ? track.notes : []
-  const events = processMidiTrackNotes(notes, isPercussionTrack(track))
+  const events = buildMidiTrackEvents(
+    track.notes,
+    isPercussionTrack(track)
+  ).map(event => ({
+    ...event,
+    frequencyNote: event.percussionTrack ? null : getNoteName(event.midiPitch)
+  }))
   if (events.length === 0) return null
 
   const trackPart = new Tone.Part((time: number, value: ProcessedMidiEvent) => {

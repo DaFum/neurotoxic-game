@@ -64,7 +64,7 @@ vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },
   useTranslation: () => ({
     i18n: { language: 'en' },
-    t: (key: string) => {
+    t: (key: string, options?: Record<string, string>) => {
       const labels: Record<string, string> = {
         'assets:scene.title': 'Investments',
         'assets:scene.subtitle': 'Long-term assets and finances',
@@ -97,9 +97,12 @@ vi.mock('react-i18next', () => ({
         'assets:purchaseFailed.acquisition_already_active':
           'Acquisition already in progress',
         'assets:liability.foreclosureNotice': 'Foreclosure notice issued.',
+        'assets:liability.foreclosureNoticeWithAsset':
+          'Foreclosure notice issued. {{asset}} was removed.',
         'assets:liability.paymentDue': 'Payment due: -'
       }
-      return labels[key] ?? key
+      const label = labels[key] ?? key
+      return options?.asset ? label.replace('{{asset}}', options.asset) : label
     }
   })
 }))
@@ -159,7 +162,7 @@ describe('AssetsScene', () => {
 
     expect(screen.getByRole('dialog', { name: 'Foreclosure' })).toBeVisible()
     expect(
-      screen.getByText('Foreclosure notice issued. (Tourbus)')
+      screen.getByText('Foreclosure notice issued. Tourbus was removed.')
     ).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: 'Close' }))

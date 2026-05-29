@@ -12,6 +12,7 @@ import {
   handleUpgradeChassisTier,
   handleSellChassis,
   handleRepairChassis,
+  handleRefinanceLiability,
   handleStartCrowdfund,
   handleAssetForeclosed,
   handleDismissForeclosureNotice,
@@ -179,6 +180,8 @@ const reducerMap: ReducerMap = {
   [ActionTypes.SELL_CHASSIS]: handleSellChassis,
   [ActionTypes.SELL_CHASSIS_FAILED]: handleAssetFailedAction,
   [ActionTypes.REPAIR_CHASSIS]: handleRepairChassis,
+  [ActionTypes.REFINANCE_LIABILITY]: handleRefinanceLiability,
+  [ActionTypes.REFINANCE_LIABILITY_FAILED]: handleAssetFailedAction,
   [ActionTypes.INSTALL_MODULE]: handleInstallModule,
   [ActionTypes.INSTALL_MODULE_FAILED]: handleAssetFailedAction,
   [ActionTypes.REMOVE_MODULE]: handleRemoveModule,
@@ -307,7 +310,8 @@ export const gameReducer = (
           nextState,
           createAddToastAction({
             type: 'info',
-            messageKey: milestone.labelKey
+            messageKey: milestone.labelKey,
+            options: milestone.createLabelOptions?.()
           })
         )
       }

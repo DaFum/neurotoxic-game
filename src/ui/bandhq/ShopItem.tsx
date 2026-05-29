@@ -37,7 +37,7 @@ export const ShopItem = React.memo(
       const safe = Number.isFinite(v) ? v : 0
       return item.currency === 'fame'
         ? `${safe} ★`
-        : formatCurrency(safe, i18n?.language)
+        : formatCurrency(safe, i18n.language)
     }
     const hasDiscount =
       adjustedCost !== undefined &&

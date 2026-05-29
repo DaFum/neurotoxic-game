@@ -138,6 +138,20 @@ describe('mapUtils', () => {
       assert.equal(checkSoftlock(gameMap, player), true)
     })
 
+    test('treats non-finite fuel as empty when checking reachable neighbors', () => {
+      mockCalculateTravelExpenses.mock.mockImplementation(() => ({
+        fuelLiters: 30
+      }))
+      mockCalculateRefuelCost.mock.mockImplementation(() => 50)
+      const player = {
+        currentNodeId: 'A',
+        van: { fuel: Number.POSITIVE_INFINITY },
+        money: 40
+      }
+
+      assert.equal(checkSoftlock(gameMap, player), true)
+    })
+
     test('returns false if current node is GIG even if stranded otherwise', () => {
       mockCalculateTravelExpenses.mock.mockImplementation(() => ({
         fuelLiters: 30

@@ -59,6 +59,8 @@ describe('ActionTypes', () => {
       'SELL_CHASSIS',
       'SELL_CHASSIS_FAILED',
       'REPAIR_CHASSIS',
+      'REFINANCE_LIABILITY',
+      'REFINANCE_LIABILITY_FAILED',
       'INSTALL_MODULE',
       'INSTALL_MODULE_FAILED',
       'REMOVE_MODULE',

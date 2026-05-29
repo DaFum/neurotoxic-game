@@ -41,7 +41,7 @@ const GigModifierButton = memo(
           <span className='text-[10px] opacity-70'>{item.desc}</span>
         </span>
         <span className='font-mono text-sm font-bold tabular-nums'>
-          {formatCurrency(item.cost, i18n?.language)}
+          {formatCurrency(item.cost, i18n.language)}
         </span>
         {!isActive && (
           <div className='absolute inset-0 bg-white/5 translate-x-[-100%] group-hover:animate-[shimmer_0.8s_ease-out] skew-x-12 pointer-events-none' />

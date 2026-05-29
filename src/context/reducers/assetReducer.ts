@@ -2,6 +2,7 @@ import type { GameState } from '../../types/game'
 import type {
   PurchaseChassisPayload,
   InstallModulePayload,
+  RefinanceLiabilityPayload,
   UpgradeChassisTierPayload,
   LongTermAsset,
   AssetSlot,
@@ -366,6 +367,55 @@ export const handleRepairChassis = (
       ...state.player,
       money: state.player.money - repairCost
     }
+  }
+}
+
+export const handleRefinanceLiability = (
+  state: GameState,
+  payload: RefinanceLiabilityPayload
+): GameState => {
+  const profile =
+    LOAN_PROFILES[
+      payload.loanProfileId as import('../../utils/loanProfiles').LoanProfileId
+    ]
+  if (!profile) return state
+
+  const fee = Math.max(0, finiteNumberOr(payload.fee, 0))
+  if (state.player.money < fee) return state
+
+  let refinanced = false
+  const liabilities = state.liabilities.map(liability => {
+    if (liability.id !== payload.liabilityId || liability.source !== 'loan') {
+      return liability
+    }
+
+    const principal = Math.max(
+      0,
+      finiteNumberOr(liability.principalRemaining, 0)
+    )
+    refinanced = true
+    return {
+      ...liability,
+      interestRate: profile.interestRate,
+      dailyPayment: computeAmortization(
+        principal,
+        profile.interestRate,
+        profile.termDays
+      ),
+      termDaysRemaining: profile.termDays,
+      defaultCounter: 0
+    }
+  })
+
+  if (!refinanced) return state
+
+  return {
+    ...state,
+    player: {
+      ...state.player,
+      money: state.player.money - fee
+    },
+    liabilities
   }
 }
 

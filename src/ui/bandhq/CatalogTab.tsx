@@ -55,7 +55,7 @@ export const CatalogTab = ({
                 isCurrency: false
               }
           const display = meta.isCurrency
-            ? formatCurrency(value, i18n?.language)
+            ? formatCurrency(value, i18n.language)
             : `${value}${meta.suffix}`
           return (
             <span key={key}>

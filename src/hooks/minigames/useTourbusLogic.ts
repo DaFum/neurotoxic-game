@@ -216,15 +216,7 @@ export const useTourbusLogic = () => {
 
       // Sync UI occasionally
       setUiState(prev => {
-        // Optimize updates to avoid React thrashing
         const distDiff = Math.abs(prev.distance - game.distance)
-
-        // SFX Triggers moved to main update loop to avoid double-fire in Strict Mode
-
-        // Check items collected logic requires separate tracking or relying on game loop event
-        // Since itemsCollected is an array, we can track length in UI state or just fire here?
-        // Mutable game state doesn't allow "diff" easily unless we store prev in ref.
-        // But here we are inside update loop. We know if we just collided.
 
         if (
           distDiff > 50 ||

@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 import { MainMenu } from '../scenes/MainMenu.tsx'
 import { GAME_PHASES, MINIGAME_TYPES } from '../context/gameConstants'
+import type { MinigameType } from '../types/game'
 
 const ClinicScene = lazy(() =>
   import('../scenes/ClinicScene.tsx').then(m => ({ default: m.ClinicScene }))
@@ -54,7 +55,6 @@ const AssetsScene = lazy(() =>
 )
 
 type ScenePhase = (typeof GAME_PHASES)[keyof typeof GAME_PHASES]
-type MinigameType = (typeof MINIGAME_TYPES)[keyof typeof MINIGAME_TYPES]
 
 interface SceneRouterProps {
   currentScene: ScenePhase

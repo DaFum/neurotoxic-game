@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react'
-import type { UnknownRecord } from '../types'
+import type { ContrabandStashItem, UnknownRecord } from '../types'
 import { Modal, Panel, AnimatedDivider, ActionButton } from './shared/index.tsx'
 import { useTranslation } from 'react-i18next'
 
@@ -21,7 +21,7 @@ interface ContrabandStashProps {
   members?: UnknownRecord[]
   selectedMember?: string | null
   setSelectedMember?: (id: string) => void
-  handleUseItem?: (instanceId: string, item: StashItem) => void
+  handleUseItem?: (instanceId: string, item: DisplayStashItem) => void
   onClose?: () => void
 }
 
@@ -30,12 +30,9 @@ type BandMemberItem = {
   name?: string
 }
 
-type StashItem = {
+type DisplayStashItem = ContrabandStashItem & {
   id: string
-  instanceId?: string
-  effectType?: string
   rarity?: string
-  type?: string
   duration?: number
   imagePrompt?: string
   description?: string
@@ -52,7 +49,7 @@ const isBandMember = (value: unknown): value is BandMemberItem => {
   )
 }
 
-const isStashItem = (value: unknown): value is StashItem => {
+const isStashItem = (value: unknown): value is DisplayStashItem => {
   if (!value || typeof value !== 'object') return false
   const obj = value as Record<string, unknown>
   return typeof obj.id === 'string' && typeof obj.description === 'string'
@@ -72,7 +69,7 @@ const getRarityClass = (rarity: string | undefined): string => {
 }
 
 interface StashCardProps {
-  item: StashItem
+  item: DisplayStashItem
   selectedMember?: string | null
   onUseItem: () => void
   t: ReturnType<typeof useTranslation>['t']
@@ -212,7 +209,7 @@ export const ContrabandStash = ({
   )
 
   const makeUseItem = useCallback(
-    (instanceId: string, item: StashItem) => () =>
+    (instanceId: string, item: DisplayStashItem) => () =>
       handleUseItem?.(instanceId, item),
     [handleUseItem]
   )

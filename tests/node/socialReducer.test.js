@@ -40,6 +40,23 @@ describe('socialReducer', () => {
       assert.strictEqual(nextState.social.loyalty, 15)
     })
 
+    it('should clamp direct loyalty updates', () => {
+      const nextHigh = handleUpdateSocial(baseState, { loyalty: 150 })
+      const nextLow = handleUpdateSocial(baseState, { loyalty: -10 })
+
+      assert.strictEqual(nextHigh.social.loyalty, 100)
+      assert.strictEqual(nextLow.social.loyalty, 0)
+    })
+
+    it('should clamp functional loyalty updates', () => {
+      baseState.social.loyalty = 95
+      const nextState = handleUpdateSocial(baseState, prev => ({
+        loyalty: prev.loyalty + 10
+      }))
+
+      assert.strictEqual(nextState.social.loyalty, 100)
+    })
+
     it('should ignore invalid trend updates', () => {
       const payload = { trend: 'invalid_trend', loyalty: 20 }
       const nextState = handleUpdateSocial(baseState, payload)

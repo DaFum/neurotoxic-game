@@ -10,6 +10,7 @@ import type {
 } from '../types/assets'
 import { MODULE_REGISTRY } from './assetModuleRegistry'
 import { calculateGuaranteedDailyCost } from './economyEngine'
+import { isFiniteNumber } from './finiteNumber'
 
 /**
  * Identity element for AssetModifiers aggregation. Multiplicative fields
@@ -238,12 +239,15 @@ const SKILL_ALIASES: Record<string, readonly string[]> = {
   tech: ['tech', 'technical']
 }
 
-const readFiniteNumber = (source: unknown, key: string): number | undefined => {
+const readOwnFiniteNumber = (
+  source: unknown,
+  key: string
+): number | undefined => {
   if (!source || typeof source !== 'object') return undefined
   const record = source as Record<string, unknown>
   if (!Object.hasOwn(record, key)) return undefined
   const value = record[key]
-  return typeof value === 'number' && Number.isFinite(value) ? value : undefined
+  return isFiniteNumber(value) ? value : undefined
 }
 
 const readMemberSkillValue = (
@@ -255,15 +259,15 @@ const readMemberSkillValue = (
   const skillKeys = SKILL_ALIASES[skill] ?? [skill]
 
   for (const key of skillKeys) {
-    const legacySkill = readFiniteNumber(record.skills, key)
+    const legacySkill = readOwnFiniteNumber(record.skills, key)
     if (legacySkill !== undefined) return legacySkill
   }
   for (const key of skillKeys) {
-    const baseStat = readFiniteNumber(record.baseStats, key)
+    const baseStat = readOwnFiniteNumber(record.baseStats, key)
     if (baseStat !== undefined) return baseStat
   }
   for (const key of skillKeys) {
-    const topLevelStat = readFiniteNumber(record, key)
+    const topLevelStat = readOwnFiniteNumber(record, key)
     if (topLevelStat !== undefined) return topLevelStat
   }
   return undefined

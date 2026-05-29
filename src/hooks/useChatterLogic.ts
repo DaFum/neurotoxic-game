@@ -28,7 +28,7 @@ const resolveSpeaker = (
   const memberNames = []
   if (bandMembers) {
     for (let i = 0; i < bandMembers.length; i++) {
-      const name = bandMembers[i].name
+      const name = bandMembers[i]?.name
       if (typeof name === 'string') {
         memberNames.push(name)
       }

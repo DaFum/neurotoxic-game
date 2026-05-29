@@ -19,7 +19,7 @@
 
 ## Gig Stats Alignment
 
-- `GameState.lastGigStats` and the `SET_LAST_GIG_STATS` payload must expose matching optional fields: `score`, `misses`, `accuracy`, `combo`, `health`, `overload`.
+- `GameState.lastGigStats` and the `SET_LAST_GIG_STATS` payload must expose matching optional fields: `score`, `misses`, `accuracy`, `combo`, `maxCombo`, `health`, `overload`.
 
 ## Long-Term Assets
 

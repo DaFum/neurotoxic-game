@@ -11,6 +11,7 @@ import type {
   DealActionsProps,
   DealCardProps
 } from '../../types/components'
+import type { BrandAlignment } from '../../types/social'
 
 const getNegotiationStatus = (value: unknown): string | undefined => {
   if (
@@ -23,8 +24,6 @@ const getNegotiationStatus = (value: unknown): string | undefined => {
   }
   return undefined
 }
-
-type BrandAlignment = (typeof BRAND_ALIGNMENTS)[keyof typeof BRAND_ALIGNMENTS]
 
 type AlignmentMetadata = {
   imagePrompt: string
@@ -220,7 +219,7 @@ const DealInfo = memo(
         <div className='text-xs font-mono grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-star-white/80 break-words'>
           <div>
             💰 {t('ui:deals.upfront', { defaultValue: 'Upfront' })}:{' '}
-            {formatCurrency(displayDeal.offer.upfront, i18n?.language ?? 'en')}
+            {formatCurrency(displayDeal.offer.upfront, i18n.language)}
           </div>
           <div>
             📅 {t('ui:deals.duration', { defaultValue: 'Duration' })}:{' '}
@@ -230,7 +229,7 @@ const DealInfo = memo(
           {displayDeal.offer.perGig != null && (
             <div>
               💵 {t('ui:deals.perGig', { defaultValue: 'Per Gig' })}:{' '}
-              {formatCurrency(displayDeal.offer.perGig, i18n?.language ?? 'en')}
+              {formatCurrency(displayDeal.offer.perGig, i18n.language)}
             </div>
           )}
           {displayDeal.offer.item != null && (

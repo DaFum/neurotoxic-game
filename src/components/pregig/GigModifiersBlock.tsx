@@ -92,7 +92,7 @@ export const GigModifiersBlock = ({
               </span>
             </span>
             <span className='font-mono text-sm font-bold tabular-nums'>
-              {formatCurrency(bandMeetingCost, i18n?.language)}
+              {formatCurrency(bandMeetingCost, i18n.language)}
             </span>
           </button>
         </div>

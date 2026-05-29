@@ -1,4 +1,5 @@
 import { calculateRefuelCost, calculateTravelExpenses } from './economyEngine'
+import { finiteNumberOr } from './finiteNumber'
 import type { BandState } from '../types'
 
 type MapConnection = { from?: unknown; to?: unknown }
@@ -120,7 +121,7 @@ export const checkSoftlock = (
           breakdownChance?: unknown
         })
       : undefined
-  const currentFuel = typeof van?.fuel === 'number' ? van.fuel : 0
+  const currentFuel = finiteNumberOr(van?.fuel, 0)
   const nodes = gameMap.nodes ?? {}
   const currentNode = nodes[player.currentNodeId]
   const bandStateForTravel = (
@@ -136,18 +137,17 @@ export const checkSoftlock = (
     : []
 
   const playerStateForTravel = {
-    money: typeof player.money === 'number' ? player.money : 0,
-    fameLevel: typeof player.fameLevel === 'number' ? player.fameLevel : 0,
+    money: finiteNumberOr(player.money, 0),
+    fameLevel: finiteNumberOr(player.fameLevel, 0),
     van: {
       fuel: currentFuel,
-      condition: typeof van?.condition === 'number' ? van.condition : 100,
+      condition: finiteNumberOr(van?.condition, 100),
       upgrades: Array.isArray(van?.upgrades)
         ? van.upgrades.filter(
             (upgrade): upgrade is string => typeof upgrade === 'string'
           )
         : [],
-      breakdownChance:
-        typeof van?.breakdownChance === 'number' ? van.breakdownChance : 0
+      breakdownChance: finiteNumberOr(van?.breakdownChance, 0)
     }
   }
 
@@ -176,10 +176,7 @@ export const checkSoftlock = (
   // EXCEPTION: If current node is a GIG, player can earn money, so not stranded.
   if (!canReachAny && currentNode?.type !== 'GIG') {
     const refuelCost = calculateRefuelCost(currentFuel)
-    const playerMoney = Math.max(
-      0,
-      typeof player.money === 'number' ? player.money : 0
-    )
+    const playerMoney = Math.max(0, finiteNumberOr(player.money, 0))
     return playerMoney < refuelCost
   }
   return false

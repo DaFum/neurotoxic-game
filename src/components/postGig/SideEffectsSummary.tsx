@@ -14,7 +14,7 @@ type SideEffectsResult = {
 
 type SideEffectsSummaryProps = {
   result: SideEffectsResult
-  i18n?: { language?: string }
+  i18n: { language: string }
   t: TFunction
 }
 
@@ -45,7 +45,7 @@ export const SideEffectsSummary = ({
     >
       {result.moneyChange != null ? (
         <div className={getDeltaColorClass(result.moneyChange)}>
-          💰 {formatCurrency(result.moneyChange, i18n?.language, 'always')}
+          💰 {formatCurrency(result.moneyChange, i18n.language, 'always')}
         </div>
       ) : null}
 

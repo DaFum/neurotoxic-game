@@ -195,7 +195,6 @@ mock.module(
   {
     namedExports: {
       isPercussionTrack: mock.fn(),
-      isValidMidiNote: mock.fn(),
       buildMidiTrackEvents: mock.fn(),
       normalizeMidiPitch: mock.fn(),
       getNoteName: mock.fn(n => n)

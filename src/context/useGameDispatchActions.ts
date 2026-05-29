@@ -77,6 +77,7 @@ import {
   upgradeChassisTier as upgradeChassisTierAction,
   sellChassis as sellChassisAction,
   repairChassis as repairChassisAction,
+  refinanceLiability as refinanceLiabilityAction,
   installModule as installModuleAction,
   removeModule as removeModuleAction,
   startCrowdfund as startCrowdfundAction
@@ -219,6 +220,10 @@ export type GameDispatchActions = {
   ) => void
   sellChassis: (assetId: string) => void
   repairChassis: (assetId: string) => void
+  refinanceLiability: (
+    liabilityId: string,
+    loanProfileId: import('../utils/loanProfiles').LoanProfileId
+  ) => void
   installModule: (input: Parameters<typeof installModuleAction>[0]) => void
   removeModule: (assetId: string, slotId: string) => void
   startCrowdfund: (input: Parameters<typeof startCrowdfundAction>[0]) => void
@@ -547,14 +552,17 @@ export function useGameDispatchActions({
   )
 
   const spawnRivalBand = useCallback(
-    () => dispatch(createSpawnRivalBandAction()),
-    [dispatch]
+    () => dispatch(createSpawnRivalBandAction(stateRef.current)),
+    [dispatch, stateRef]
   )
 
-  const moveRivalBand = useCallback(
-    () => dispatch(createMoveRivalBandAction()),
-    [dispatch]
-  )
+  const moveRivalBand = useCallback(() => {
+    const currentState = stateRef.current
+    if (!currentState.rivalBand || !currentState.gameMap) return
+    dispatch(
+      createMoveRivalBandAction(currentState.rivalBand, currentState.gameMap)
+    )
+  }, [dispatch, stateRef])
 
   const checkRivalEncounter = useCallback(
     () => dispatch(createCheckRivalEncounterAction()),
@@ -670,6 +678,17 @@ export function useGameDispatchActions({
     },
     [dispatch, stateRef]
   )
+  const refinanceLiability = useCallback(
+    (
+      liabilityId: string,
+      loanProfileId: import('../utils/loanProfiles').LoanProfileId
+    ) => {
+      dispatch(
+        refinanceLiabilityAction(liabilityId, loanProfileId, stateRef.current)
+      )
+    },
+    [dispatch, stateRef]
+  )
   const installModule = useCallback(
     (input: Parameters<typeof installModuleAction>[0]) => {
       dispatch(installModuleAction(input, stateRef.current))
@@ -748,6 +767,7 @@ export function useGameDispatchActions({
       upgradeChassisTier,
       sellChassis,
       repairChassis,
+      refinanceLiability,
       installModule,
       removeModule,
       startCrowdfund
@@ -809,6 +829,7 @@ export function useGameDispatchActions({
       upgradeChassisTier,
       sellChassis,
       repairChassis,
+      refinanceLiability,
       installModule,
       removeModule,
       startCrowdfund

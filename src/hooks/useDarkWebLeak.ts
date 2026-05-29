@@ -6,6 +6,7 @@ import {
   checkHasLeakedToday,
   validateDarkWebLeak
 } from '../utils/darkWebLeakUtils'
+import { logger } from '../utils/logger'
 
 export const DARK_WEB_LEAK_CONFIG: DarkWebLeakConfig = {
   COST: 500,
@@ -27,12 +28,22 @@ export const useDarkWebLeak = () => {
   const closeDarkWebLeak = useCallback(() => setShowDarkWebLeak(false), [])
 
   const hasLeakedToday = checkHasLeakedToday(social, player.day)
-  const canLeak = validateDarkWebLeak(
-    social,
-    player,
-    band,
-    DARK_WEB_LEAK_CONFIG
-  )
+  let canLeak = false
+  try {
+    canLeak = validateDarkWebLeak(social, player, band, DARK_WEB_LEAK_CONFIG)
+  } catch (error) {
+    logger.error(
+      'DarkWebLeak',
+      'validateDarkWebLeak failed while deriving canLeak',
+      {
+        error,
+        social,
+        playerDay: player.day,
+        config: DARK_WEB_LEAK_CONFIG
+      }
+    )
+    canLeak = false
+  }
 
   const triggerLeak = useCallback(() => {
     if (!canLeak || checkHasLeakedToday(social, player.day)) return

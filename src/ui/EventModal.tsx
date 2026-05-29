@@ -197,9 +197,9 @@ export const EventModal = ({
     outcome?._precomputedResult?.delta
   const memoizedEffectText = useMemo(() => {
     return precomputedDelta
-      ? generateEffectText(precomputedDelta, t, i18n?.language)
+      ? generateEffectText(precomputedDelta, t, i18n.language)
       : ''
-  }, [precomputedDelta, t, i18n?.language])
+  }, [precomputedDelta, t, i18n.language])
 
   const outcomeMessage = useMemo(() => {
     if (!outcome || !event) return ''

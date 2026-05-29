@@ -163,7 +163,7 @@ export const HUD = memo(() => {
             <span
               className={`text-sm font-bold tabular-nums ${player.money < 40 ? 'text-blood-red' : ''}`}
             >
-              {formatCurrency(player.money, i18n?.language)}
+              {formatCurrency(player.money, i18n.language)}
             </span>
           </div>
           <div className='flex items-center gap-2 mb-2'>

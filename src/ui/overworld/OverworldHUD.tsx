@@ -291,7 +291,7 @@ export const OverworldHUD = React.memo(
                 className={`money-val ${moneyAnim} ${(player.money ?? 0) < 40 ? 'low' : ''}`}
                 style={{ color: 'var(--color-warning-yellow)' }}
               >
-                {formatCurrency(displayMoney, i18n?.language)}
+                {formatCurrency(displayMoney, i18n.language)}
               </span>
             </div>
             <div className='loc-row'>

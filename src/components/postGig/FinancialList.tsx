@@ -25,7 +25,7 @@ export const FinancialList = ({ items, type }: FinancialListProps) => {
             <span
               className={`${getFinancialColors(type).text} shrink-0 text-right font-bold tabular-nums`}
             >
-              {formatSignedFinancialAmount(item.value, type, i18n?.language)}
+              {formatSignedFinancialAmount(item.value, type, i18n.language)}
             </span>
           </motion.li>
         )

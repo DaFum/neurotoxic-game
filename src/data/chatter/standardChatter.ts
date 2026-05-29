@@ -1,5 +1,6 @@
 import type { GameState } from '../../types'
 import { GAME_PHASES } from '../../context/gameConstants'
+import { isFiniteNumber } from '../../utils/finiteNumber'
 
 const getBandStat = (
   state: GameState,
@@ -46,9 +47,6 @@ const isPlayerInCity = (state: GameState, citySlug: string) => {
   // e.g. `berlin_end_venue`; treat those as city matches too.
   return location.startsWith(`${citySlug}_`)
 }
-
-const isFiniteNumber = (value: unknown): value is number =>
-  typeof value === 'number' && Number.isFinite(value)
 
 const getInventoryAmount = (
   inventory: Record<string, unknown> | undefined,

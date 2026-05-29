@@ -22,7 +22,7 @@ export const StatsTab = ({ player, band, social }: StatsTabProps) => {
           <div className='grid grid-cols-2 gap-4'>
             <StatBox
               label={t('ui:stats.funds', { defaultValue: 'Funds' })}
-              value={formatCurrency(player.money ?? 0, i18n?.language)}
+              value={formatCurrency(player.money ?? 0, i18n.language)}
               icon='€'
             />
             <StatBox

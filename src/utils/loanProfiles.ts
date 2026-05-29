@@ -52,6 +52,32 @@ export const LOAN_PROFILES: Record<LoanProfileId, LoanProfile> = {
   }
 }
 
+export const REFINANCE_FEE_RATE = 0.02
+
+export const isLoanProfileEligible = (
+  profile: LoanProfile,
+  values: { fame: number; scenePresence: number }
+): boolean => {
+  if (
+    profile.minFameRequired !== undefined &&
+    values.fame < profile.minFameRequired
+  ) {
+    return false
+  }
+  if (
+    profile.minScenePresenceRequired !== undefined &&
+    values.scenePresence < profile.minScenePresenceRequired
+  ) {
+    return false
+  }
+  return true
+}
+
+export const calculateRefinanceFee = (principal: number): number => {
+  if (!Number.isFinite(principal) || principal <= 0) return 0
+  return Math.ceil(principal * REFINANCE_FEE_RATE)
+}
+
 /**
  * Computes the fixed daily payment for an amortizing loan.
  *

@@ -1,7 +1,5 @@
 import type { BandState } from '../types'
-
-const isFiniteNumber = (value: unknown): value is number =>
-  typeof value === 'number' && Number.isFinite(value)
+import { isFiniteNumber } from './finiteNumber'
 
 export const validateBloodBankDonation = (
   band: Partial<BandState> | undefined | null,

@@ -2,7 +2,7 @@ import { NEUTRAL_ASSET_MODIFIERS } from './assetSelectors'
 import type { AssetModifiers } from '../types/assets'
 import { logger } from './logger'
 import { clamp0to100 } from './gameStateUtils'
-import { toFiniteNumber } from './numberUtils'
+import { finiteNumberOr } from './finiteNumber'
 import { bandHasTrait } from './traitUtils'
 import { calculateZealotryEffects } from './socialEngine'
 import {
@@ -13,7 +13,13 @@ import {
   type CityGenre,
   type SpendingProfile
 } from '../data/merch'
-import type { BandState, PlayerState, SocialState, Venue } from '../types'
+import type {
+  BandState,
+  PlayerState,
+  SocialState,
+  Venue,
+  GigModifiers
+} from '../types'
 import type { CityTraitState } from '../types/game'
 import type {
   FinancialBreakdownItem,
@@ -46,7 +52,7 @@ export const calculateGigModifierCost = (
 
   const songCostMultiplier = Math.max(
     0,
-    toFiniteNumber(assetModifiers.songCostMultiplier, 1)
+    finiteNumberOr(assetModifiers.songCostMultiplier, 1)
   )
   return Math.ceil(baseCost * songCostMultiplier)
 }
@@ -59,8 +65,6 @@ const BAR_RATE_NORMAL = 0.15
 const AVG_SPEND_PER_PERSON_AT_BAR = 5
 export const ZEALOTRY_PROMO_THRESHOLD = 80
 
-type EconomyRecord = Record<string, unknown>
-
 type GigEconomyData = Partial<
   Pick<Venue, 'capacity' | 'diff' | 'difficulty' | 'name'>
 > & {
@@ -68,9 +72,6 @@ type GigEconomyData = Partial<
   pay?: number
   [key: string]: unknown
 }
-
-type GigModifiers = Partial<Record<keyof typeof MODIFIER_COSTS, boolean>> &
-  EconomyRecord
 
 type EconomyContext = {
   daysSinceLastGig?: number
@@ -121,7 +122,7 @@ type MapPoint = {
 type GigFinancialParams = {
   gigData: GigEconomyData
   performanceScore: number
-  modifiers: GigModifiers
+  modifiers: Partial<GigModifiers>
   bandInventory: BandInventoryLike
   playerState?: Pick<PlayerState, 'fame'> | null
   gigStats: GigStatsLike
@@ -188,7 +189,7 @@ const TRAVEL_LOGISTICS_CASH_CAP = 45
 export const calculateTicketIncome = (
   gigData: GigEconomyData = {},
   playerFame = 0,
-  modifiers: GigModifiers = {},
+  modifiers: Partial<GigModifiers> = {},
   context: EconomyContext = {}
 ) => {
   gigData = gigData || {}
@@ -197,7 +198,7 @@ export const calculateTicketIncome = (
   // Base draw is ~30%. Fame fills the rest.
   const baseDrawRatio = TICKET_SALES_CONSTANTS.BASE_DRAW_RATIO
   // Fame needs to be ~8x capacity to fill it easily
-  const baseCapacity = Math.max(0, toFiniteNumber(gigData.capacity, 0))
+  const baseCapacity = Math.max(0, finiteNumberOr(gigData.capacity, 0))
   const safeCapacity = Math.max(1, baseCapacity) // Prevent division by zero or negative
 
   // Logarithmic fame scaling: fame matters more at low levels, flattens at high levels.
@@ -233,7 +234,7 @@ export const calculateTicketIncome = (
   }
 
   // Controversy attendance penalty: -1% per point above 40, max -30%
-  const controversyLevel = toFiniteNumber(context.controversyLevel, 0)
+  const controversyLevel = finiteNumberOr(context.controversyLevel, 0)
   if (controversyLevel >= 40) {
     fillRate -= Math.min(0.3, (controversyLevel - 40) * 0.01)
   }
@@ -283,7 +284,7 @@ export const calculateMerchIncome = (
   ticketsSold = 0,
   performanceScore = 0,
   gigStats: GigStatsLike = {},
-  modifiers: GigModifiers = {},
+  modifiers: Partial<GigModifiers> = {},
   bandInventory: BandInventoryLike = {},
   context: EconomyContext = {},
   assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS
@@ -317,8 +318,8 @@ export const calculateMerchIncome = (
 
   // Loyalty converts to merch sales during controversy
   if (
-    toFiniteNumber(context?.controversyLevel, 0) >= 40 &&
-    toFiniteNumber(context?.loyalty, 0) >= 20
+    finiteNumberOr(context?.controversyLevel, 0) >= 40 &&
+    finiteNumberOr(context?.loyalty, 0) >= 20
   ) {
     const loyalty = typeof context.loyalty === 'number' ? context.loyalty : 0
     const loyaltyBuyBonus = Math.min(0.15, (loyalty / 100) * 0.2)
@@ -444,7 +445,7 @@ export const calculateMerchIncome = (
       // preserves precision better than flooring per-unit.
       const salePriceBonus = Math.max(
         0,
-        toFiniteNumber(assetModifiers.avgMerchSalePriceBonus, 0)
+        finiteNumberOr(assetModifiers.avgMerchSalePriceBonus, 0)
       )
       const limitedEditionBonus = assetModifiers.flags?.enablesLimitedEditions
         ? 0.1
@@ -596,7 +597,7 @@ export const calculateTravelExpenses = (
   const fameLogistics = Math.floor(fameLevel * TRAVEL_LOGISTICS_PER_FAME_LEVEL)
   const cashReserveFee = Math.min(
     TRAVEL_LOGISTICS_CASH_CAP,
-    Math.floor(toFiniteNumber(playerState?.money, 0) / 1000) * 5
+    Math.floor(finiteNumberOr(playerState?.money, 0) / 1000) * 5
   )
   const logisticsCost =
     TRAVEL_LOGISTICS_BASE + distanceLogistics + fameLogistics + cashReserveFee
@@ -633,7 +634,7 @@ export const calculateRefuelCost = (
  * @returns {number} Cost in euros.
  */
 export const calculateRepairCost = (currentCondition: number) => {
-  const safeCondition = clamp0to100(toFiniteNumber(currentCondition, 100))
+  const safeCondition = clamp0to100(finiteNumberOr(currentCondition, 100))
   const missing = 100 - safeCondition
   return Math.ceil(missing * EXPENSE_CONSTANTS.TRANSPORT.REPAIR_COST_PER_UNIT)
 }
@@ -693,7 +694,7 @@ export const calculateVenueSplit = (
  */
 export const calculateGuarantee = (gigData: GigEconomyData = {}) => {
   gigData = gigData || {}
-  const pay = Math.max(0, toFiniteNumber(gigData.pay, 0))
+  const pay = Math.max(0, finiteNumberOr(gigData.pay, 0))
   if (pay > 0) {
     return {
       amount: pay,
@@ -712,7 +713,7 @@ export const calculateGuarantee = (gigData: GigEconomyData = {}) => {
  */
 export const calculateBarCut = (
   ticketsSold = 0,
-  modifiers: GigModifiers = {}
+  modifiers: Partial<GigModifiers> = {}
 ) => {
   modifiers = modifiers || {}
   const barRate = modifiers.guestlist ? BAR_RATE_VIP : BAR_RATE_NORMAL
@@ -772,7 +773,7 @@ export const calculateSponsorshipBonuses = (gigStats: GigStatsLike = {}) => {
  * Calculates expenses for the gig.
  */
 export const calculateGigExpenses = (
-  modifiers: GigModifiers = {},
+  modifiers: Partial<GigModifiers> = {},
   assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS
 ) => {
   modifiers = modifiers || {}
@@ -862,10 +863,10 @@ export const calculateGigFinancials = (
 ) => {
   const playerFame = playerState?.fame ?? 0
   const totalSongQualityBonus =
-    Math.max(0, toFiniteNumber(assetModifiers.songQualityBonus, 0)) +
+    Math.max(0, finiteNumberOr(assetModifiers.songQualityBonus, 0)) +
     (assetModifiers.flags?.enablesReRecording ? 0.2 : 0)
   const effectivePerformanceScore = clamp0to100(
-    toFiniteNumber(performanceScore, 0) + totalSongQualityBonus * 100
+    finiteNumberOr(performanceScore, 0) + totalSongQualityBonus * 100
   )
 
   logger.debug('Economy', 'Calculating Gig Financials', {

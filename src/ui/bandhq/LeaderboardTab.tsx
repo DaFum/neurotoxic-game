@@ -279,17 +279,14 @@ export const LeaderboardTab = () => {
                       </td>
                       <td className='py-2 px-2 text-right text-toxic-green'>
                         {view === 'BALANCE'
-                          ? formatCurrency(entry.score, i18n?.language)
+                          ? formatCurrency(entry.score, i18n.language)
                           : view === 'DISTANCE'
                             ? t('ui:leaderboard.col_value_km', {
-                                value: formatNumber(
-                                  entry.score,
-                                  i18n?.language
-                                ),
+                                value: formatNumber(entry.score, i18n.language),
                                 unit: t('ui:unit.km', { defaultValue: 'km' }),
-                                defaultValue: `${formatNumber(entry.score, i18n?.language)} km`
+                                defaultValue: `${formatNumber(entry.score, i18n.language)} km`
                               })
-                            : formatNumber(entry.score, i18n?.language)}
+                            : formatNumber(entry.score, i18n.language)}
                       </td>
                     </tr>
                   )

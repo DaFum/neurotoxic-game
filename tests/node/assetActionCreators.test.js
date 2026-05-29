@@ -5,6 +5,7 @@ import {
   purchaseChassis,
   removeModule,
   repairChassis,
+  refinanceLiability,
   sellChassis,
   startCrowdfund,
   upgradeChassisTier
@@ -639,5 +640,58 @@ describe('startCrowdfund / sellChassis / repairChassis / removeModule', () => {
       ActionTypes.REPAIR_CHASSIS
     )
     assert.equal(removeModule('a1', 's1').type, ActionTypes.REMOVE_MODULE)
+  })
+
+  it('refinanceLiability creates a refinance action with a fee', () => {
+    const action = refinanceLiability(
+      'loan_1',
+      'longTerm',
+      makeState({
+        liabilities: [
+          {
+            id: 'loan_1',
+            source: 'loan',
+            assetId: 'asset_1',
+            principalRemaining: 1000,
+            interestRate: 0.08,
+            dailyPayment: 20,
+            termDaysRemaining: 40,
+            defaultCounter: 2
+          }
+        ]
+      })
+    )
+
+    assert.equal(action.type, ActionTypes.REFINANCE_LIABILITY)
+    assert.deepEqual(action.payload, {
+      liabilityId: 'loan_1',
+      loanProfileId: 'longTerm',
+      fee: 20
+    })
+  })
+
+  it('refinanceLiability rejects ineligible profiles', () => {
+    const action = refinanceLiability(
+      'loan_1',
+      'coop',
+      makeState({
+        social: { scenePresence: 0 },
+        liabilities: [
+          {
+            id: 'loan_1',
+            source: 'loan',
+            assetId: 'asset_1',
+            principalRemaining: 1000,
+            interestRate: 0.08,
+            dailyPayment: 20,
+            termDaysRemaining: 40,
+            defaultCounter: 0
+          }
+        ]
+      })
+    )
+
+    assert.equal(action.type, ActionTypes.REFINANCE_LIABILITY_FAILED)
+    assert.equal(action.payload.reason, 'LOAN_PROFILE_INELIGIBLE')
   })
 })
