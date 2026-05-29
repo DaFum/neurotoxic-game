@@ -25,7 +25,9 @@ export const SellConfirmModal = ({ asset, isOpen, onClose }: Props) => {
   const { t, i18n } = useTranslation(['assets'])
   const { sellChassis } = useGameActions()
   const day = useGameSelector(s => s.player.day)
-  const liability = useGameSelector(s => selectLiabilitiesMap(s).get(asset.id))
+  const liability = useGameSelector(s =>
+    selectLiabilitiesMap(s).get(asset.id)
+  )
 
   const cfg =
     CHASSIS_CONFIG[asset.kind]?.[asset.chassisFlavor]?.[asset.chassisTier]
