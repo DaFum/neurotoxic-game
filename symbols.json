@@ -11475,15 +11475,6 @@
         "type": "const"
       }
     ],
-    "useMapAssets": [
-      {
-        "isDefault": false,
-        "name": "useMapAssets",
-        "path": "src/components/overworld/hooks/useMapAssets.ts",
-        "source": "local",
-        "type": "function"
-      }
-    ],
     "useMapGeneration": [
       {
         "isDefault": false,
