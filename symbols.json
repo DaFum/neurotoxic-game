@@ -4932,6 +4932,15 @@
         "type": "const"
       }
     ],
+    "getMerchBundleAmount": [
+      {
+        "isDefault": false,
+        "name": "getMerchBundleAmount",
+        "path": "src/utils/merchUtils.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "getMessyPath": [
       {
         "isDefault": false,
@@ -5206,6 +5215,15 @@
         "isDefault": false,
         "name": "getTotalDebt",
         "path": "src/utils/assetSelectors.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "getTotalMerchStock": [
+      {
+        "isDefault": false,
+        "name": "getTotalMerchStock",
+        "path": "src/utils/merchUtils.ts",
         "source": "local",
         "type": "const"
       }
@@ -6190,6 +6208,16 @@
         "path": "src/data/hqItems.ts",
         "source": "local",
         "type": "const"
+      }
+    ],
+    "HQItemDef": [
+      {
+        "isDefault": false,
+        "name": "HQItemDef",
+        "path": "src/utils/merchUtils.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
       }
     ],
     "HTMLAttributes": [
