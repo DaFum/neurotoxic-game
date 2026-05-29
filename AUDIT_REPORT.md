@@ -52,13 +52,13 @@ zero asymmetry)**. The findings below are concentrated in a few real bugs, orpha
 
 ### MED
 
-- **`buildMidiTrackEvents`** — [midiUtils.ts:42](src/utils/audio/midiUtils.ts:42), tested but unused; `midiPlayback.ts` rolls its own inline `processMidiTrackNotes`. Parallel/superseded MIDI-event builder. → **DELETE** or **INTEGRATE**.
+- **`buildMidiTrackEvents`** — [midiUtils.ts:42](src/utils/audio/midiUtils.ts:42), tested but unused; `midiPlayback.ts` rolls its own inline `processMidiTrackNotes`. Parallel/superseded MIDI-event builder. (Also missing integration — see §5.) → **DELETE** or **INTEGRATE**.
 - **`CrisisModal`** — [BrutalistUI.tsx:977](src/ui/shared/BrutalistUI.tsx:977), exported + barreled, no consumers. → **DELETE** or **WIRE-UP**.
 - **`BrutalSlot`** — [BrutalistUI.tsx:1183](src/ui/shared/BrutalistUI.tsx:1183), no consumers. → **DELETE**.
 - **`VoidLoader`** — [BrutalistUI.tsx:1226](src/ui/shared/BrutalistUI.tsx:1226), no consumers (App uses its own `SceneLoadingFallback`). → **DELETE**.
 - **`StatBlock`** — [BrutalistUI.tsx:896](src/ui/shared/BrutalistUI.tsx:896), no consumers. → **DELETE**.
 - **`BrutalTabs`** — [BrutalistUI.tsx:837](src/ui/shared/BrutalistUI.tsx:837), no consumers (BandHQ rolls its own `HQTabButton`). → **DELETE**.
-- **`LoanProfileModal`** — [LoanProfileModal.tsx:18](src/components/assets/LoanProfileModal.tsx:18), no import/mount/test; docstring admits "kept for a future refinance flow." → **WIRE-UP** or **DELETE** (recoverable from git).
+- **`LoanProfileModal`** — [LoanProfileModal.tsx:18](src/components/assets/LoanProfileModal.tsx:18), no import/mount/test; docstring admits "kept for a future refinance flow." (Also a duplicate — see §1.) → **WIRE-UP** or **DELETE** (recoverable from git).
 
 ### LOW
 
@@ -68,7 +68,7 @@ zero asymmetry)**. The findings below are concentrated in a few real bugs, orpha
 - **`clearCache`** — [unlockManager.ts:20](src/utils/unlockManager.ts:20), referenced only in tests. → **KEEP** if intentional test seam, else **DELETE**.
 - **`handleCompleteQuest` / `handleFailQuests`** — [questReducer.ts:12-14](src/context/reducers/questReducer.ts:12), re-exports of `QuestLifecycle.*` with no production importer (consumers call `QuestLifecycle.*` directly). → **DELETE** re-exports or test against the lifecycle module.
 - **`handleUpdateBand`** — [bandReducer.ts:40](src/context/reducers/bandReducer.ts:40), named export unused outside tests (routed internally via the reducer switch). → drop `export` if no test contract relies on it.
-- Orphaned locale keys (no `t()` ref, dynamic prefixes checked first), all in `events.json` EN+DE: **`gear_theft.opt3.label/.outcome/.d_6b9d`**, **`gear_theft.opt2.d_8026`**, **`van_breakdown_tire.opt2.d_bb01`** (source `gear_theft` has no opt3; these sub-keys are unreferenced). → **DELETE** (EN+DE together).
+- Orphaned locale keys (no `t()` ref, dynamic prefixes checked first), all in `events.json` EN+DE: **`gear_theft.opt3.label/.outcome/.d_6b9d`**, **`gear_theft.opt2.d_8026`**, **`van_breakdown_tire.opt2.d_bb01`** (source `gear_theft` has no opt3; these sub-keys are unreferenced). (`gear_theft.opt3.*` also dead code — see §4.) → **DELETE** (EN+DE together).
 
 ---
 
@@ -138,6 +138,13 @@ zero asymmetry)**. The findings below are concentrated in a few real bugs, orpha
 | 4. Dead / Unreachable      | 0     | 0      | 3      | 3      |
 | 5. Missing Integration     | 0     | 2      | 0      | 2      |
 | **Total**                  | **0** | **19** | **34** | **53** |
+
+> **Counting notes:** **KEEP** items — intentional patterns flagged for awareness only (the
+> `createUpdatePlayerAction ↔ handleUpdatePlayer` clamp duplication in §1, the `handleAdvanceDay` `rng`
+> test seam in §4) — are **excluded** from these totals. Findings that span categories are counted **once
+> per category** and cross-linked with "(also §N)"; three items appear in two categories each
+> (`buildMidiTrackEvents` §2+§5, `LoanProfileModal` §1+§2, `gear_theft.opt3.*` §2+§4), so the
+> **unique-finding count is ~50**.
 
 No HIGH-severity findings: there are no crashes, security holes, or broken core-loop transitions. The most
 impactful items are localized behavioral bugs and architectural drift.

@@ -24,6 +24,10 @@ The codebase is **unusually disciplined on raw color hygiene**. Verified by grep
 | 7   | Dead / unreachable styles  |      0 |     18 |     30 |      48 |
 |     | **Total**                  | **11** | **84** | **62** | **157** |
 
+> **Counting notes:** Each finding is counted once, in its primary category. Items referenced from another
+> section's prose (e.g. a dead token also cited in the top-10 summary) are not re-counted. Positives and the
+> "Changes since prior audit" list are not findings and are excluded from the totals.
+
 ### Top 10 highest-impact items
 
 1. **`EventModal.tsx:245` & `QuestsModal.tsx:303` hardcode `z-[100]`** — duplicates `--z-modal:100`. (Cat 4, HIGH)
