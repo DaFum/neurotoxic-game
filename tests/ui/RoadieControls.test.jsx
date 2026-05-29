@@ -123,7 +123,7 @@ describe('RoadieControls touch input', () => {
       />
     )
 
-    const dpad = screen.getByRole('button', { name: 'Move Up' }).parentElement
+    const dpad = screen.getByRole('button', { name: 'ui:moveUp' }).parentElement
     expect(dpad).toHaveClass('hidden')
     expect(dpad).not.toHaveClass('md:hidden')
 
@@ -139,7 +139,7 @@ describe('RoadieControls touch input', () => {
     )
 
     expect(
-      screen.getByRole('button', { name: 'Move Up' }).parentElement
+      screen.getByRole('button', { name: 'ui:moveUp' }).parentElement
     ).toHaveClass('md:grid')
   })
 })
