@@ -1098,6 +1098,7 @@ test('calculateSponsorshipBonuses handles different gig stats scenarios', async 
       result.incomeItems[0].labelKey,
       'economy:gigIncome.techSponsor.label'
     )
+    assert.strictEqual(result.incomeItems[0].value, 200)
   })
 
   await t.test('applies beer sponsor bonus if peakHype >= 100', () => {
@@ -1108,11 +1109,22 @@ test('calculateSponsorshipBonuses handles different gig stats scenarios', async 
       result.incomeItems[0].labelKey,
       'economy:gigIncome.beerSponsor.label'
     )
+    assert.strictEqual(result.incomeItems[0].value, 150)
   })
 
   await t.test('applies both bonuses if both conditions are met', () => {
     const result = calculateSponsorshipBonuses({ misses: 0, peakHype: 100 })
     assert.strictEqual(result.totalBonus, 350)
     assert.strictEqual(result.incomeItems.length, 2)
+    assert.strictEqual(
+      result.incomeItems[0].labelKey,
+      'economy:gigIncome.techSponsor.label'
+    )
+    assert.strictEqual(result.incomeItems[0].value, 200)
+    assert.strictEqual(
+      result.incomeItems[1].labelKey,
+      'economy:gigIncome.beerSponsor.label'
+    )
+    assert.strictEqual(result.incomeItems[1].value, 150)
   })
 })
