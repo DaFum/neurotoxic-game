@@ -35,7 +35,11 @@ describe('calculateGigPhysics', () => {
   it('applies Virtuoso trait (Matze) for hit window bonus', () => {
     const bandState = {
       members: [
-        { name: CHARACTERS.MATZE.name, skill: 5, traits: { 'virtuoso': { id: 'virtuoso' } } }
+        {
+          name: CHARACTERS.MATZE.name,
+          skill: 5,
+          traits: { virtuoso: { id: 'virtuoso' } }
+        }
       ]
     }
     const song = { bpm: 120 }
@@ -58,9 +62,7 @@ describe('calculateGigPhysics', () => {
 
   it('calculates scroll speed based on stamina (boundary at exactly 40)', () => {
     const bandState = {
-      members: [
-        { name: CHARACTERS.MATZE.name, stamina: 40 }
-      ]
+      members: [{ name: CHARACTERS.MATZE.name, stamina: 40 }]
     }
     const song = { bpm: 120 }
     const result = calculateGigPhysics(bandState, song)
@@ -84,7 +86,10 @@ describe('calculateGigPhysics', () => {
   it('applies Marius blast_machine trait on fast songs', () => {
     const bandState = {
       members: [
-        { name: CHARACTERS.MARIUS.name, traits: { 'blast_machine': { id: 'blast_machine' } } }
+        {
+          name: CHARACTERS.MARIUS.name,
+          traits: { blast_machine: { id: 'blast_machine' } }
+        }
       ]
     }
     const song = { bpm: 170 } // > 160 is fast
@@ -95,7 +100,10 @@ describe('calculateGigPhysics', () => {
   it('does not apply Marius blast_machine trait on slow songs', () => {
     const bandState = {
       members: [
-        { name: CHARACTERS.MARIUS.name, traits: { 'blast_machine': { id: 'blast_machine' } } }
+        {
+          name: CHARACTERS.MARIUS.name,
+          traits: { blast_machine: { id: 'blast_machine' } }
+        }
       ]
     }
     const song = { bpm: 120 } // <= 160 is not fast
@@ -106,7 +114,11 @@ describe('calculateGigPhysics', () => {
   it('applies Lars melodic_genius trait on slow songs', () => {
     const bandState = {
       members: [
-        { name: CHARACTERS.LARS.name, skill: 5, traits: { 'melodic_genius': { id: 'melodic_genius' } } }
+        {
+          name: CHARACTERS.LARS.name,
+          skill: 5,
+          traits: { melodic_genius: { id: 'melodic_genius' } }
+        }
       ]
     }
     const song = { bpm: 110 } // < 120 is slow
@@ -117,7 +129,11 @@ describe('calculateGigPhysics', () => {
   it('does not apply Lars melodic_genius trait on fast songs', () => {
     const bandState = {
       members: [
-        { name: CHARACTERS.LARS.name, skill: 5, traits: { 'melodic_genius': { id: 'melodic_genius' } } }
+        {
+          name: CHARACTERS.LARS.name,
+          skill: 5,
+          traits: { melodic_genius: { id: 'melodic_genius' } }
+        }
       ]
     }
     const song = { bpm: 130 } // >= 120 is not slow
@@ -128,7 +144,10 @@ describe('calculateGigPhysics', () => {
   it('applies Matze tech_wizard trait on technical songs', () => {
     const bandState = {
       members: [
-        { name: CHARACTERS.MATZE.name, traits: { 'tech_wizard': { id: 'tech_wizard' } } }
+        {
+          name: CHARACTERS.MATZE.name,
+          traits: { tech_wizard: { id: 'tech_wizard' } }
+        }
       ]
     }
     const song = { bpm: 120, difficulty: 4 } // > 3 is technical
@@ -139,7 +158,10 @@ describe('calculateGigPhysics', () => {
   it('does not apply Matze tech_wizard trait on easy songs', () => {
     const bandState = {
       members: [
-        { name: CHARACTERS.MATZE.name, traits: { 'tech_wizard': { id: 'tech_wizard' } } }
+        {
+          name: CHARACTERS.MATZE.name,
+          traits: { tech_wizard: { id: 'tech_wizard' } }
+        }
       ]
     }
     const song = { bpm: 120, difficulty: 2 } // <= 3 is not technical
@@ -150,9 +172,26 @@ describe('calculateGigPhysics', () => {
   it('applies multiple modifiers and trait multipliers', () => {
     const bandState = {
       members: [
-        { name: CHARACTERS.MATZE.name, skill: 5, traits: { 'gear_nerd': { id: 'gear_nerd' }, 'perfektionist': { id: 'perfektionist' } } },
-        { name: CHARACTERS.MARIUS.name, traits: { 'party_animal': { id: 'party_animal' } } },
-        { name: CHARACTERS.LARS.name, skill: 5, traits: { 'social_manager': { id: 'social_manager' }, 'bandleader': { id: 'bandleader' } } }
+        {
+          name: CHARACTERS.MATZE.name,
+          skill: 5,
+          traits: {
+            gear_nerd: { id: 'gear_nerd' },
+            perfektionist: { id: 'perfektionist' }
+          }
+        },
+        {
+          name: CHARACTERS.MARIUS.name,
+          traits: { party_animal: { id: 'party_animal' } }
+        },
+        {
+          name: CHARACTERS.LARS.name,
+          skill: 5,
+          traits: {
+            social_manager: { id: 'social_manager' },
+            bandleader: { id: 'bandleader' }
+          }
+        }
       ]
     }
     const song = { bpm: 130, difficulty: 2 }
@@ -162,9 +201,9 @@ describe('calculateGigPhysics', () => {
     expect(result.multipliers.drums).toBe(1.1)
     expect(result.multipliers.bass).toBe(1.1)
 
-    expect(result.hitWindows.guitar).toBe((120 + 5 * 4) + 5)
+    expect(result.hitWindows.guitar).toBe(120 + 5 * 4 + 5)
     expect(result.hitWindows.drums).toBe(120 + 5)
-    expect(result.hitWindows.bass).toBe((120 + 5 * 4) + 5)
+    expect(result.hitWindows.bass).toBe(120 + 5 * 4 + 5)
     expect(result.hasPerfektionist).toBe(true)
   })
 })

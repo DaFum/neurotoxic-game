@@ -33,7 +33,10 @@ describe('storage', () => {
       setSafeStorageItem('testKey', { foo: 'bar' })
       assert.strictEqual(mockStorage.setItem.mock.calls.length, 1)
       assert.strictEqual(mockStorage.setItem.mock.calls[0][0], 'testKey')
-      assert.strictEqual(mockStorage.setItem.mock.calls[0][1], JSON.stringify({ foo: 'bar' }))
+      assert.strictEqual(
+        mockStorage.setItem.mock.calls[0][1],
+        JSON.stringify({ foo: 'bar' })
+      )
     })
 
     it('does nothing if storage is unavailable', () => {
