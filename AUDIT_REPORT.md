@@ -32,7 +32,7 @@ zero asymmetry)**. The findings below are concentrated in a few real bugs, orpha
 
 - **`MinigameType`** — [SceneRouter.tsx:57](src/components/SceneRouter.tsx:57) re-derives `(typeof MINIGAME_TYPES)[…]` while the canonical union lives at [game.d.ts:49](src/types/game.d.ts:49). Two definitions of one union; can drift. → **MERGE** (import shared type).
 - **`GigModifiers`** — local `type GigModifiers = Partial<Record<keyof typeof MODIFIER_COSTS, boolean>> & EconomyRecord` at [economyEngine.ts:72](src/utils/economyEngine.ts:72) shadows the canonical interface at [gig.d.ts:1](src/types/gig.d.ts:1). → **MERGE**.
-- **`LoanProfileModal`** — [LoanProfileModal.tsx:18](src/components/assets/LoanProfileModal.tsx:18) re-implements the `LOAN_PROFILES`-mapped profile-select UI already rendered inline in [ChassisAcquisitionModal.tsx](src/components/assets/ChassisAcquisitionModal.tsx). (Also an orphan — see §2.) → **MERGE** the picker into one shared sub-component, or **DELETE**.
+- **`LoanProfileModal`** — [LoanProfileModal.tsx:18](src/components/assets/LoanProfileModal.tsx:18) re-implements the `LOAN_PROFILES`-mapped profile-select UI already rendered inline in [ChassisAcquisitionModal.tsx](src/components/assets/ChassisAcquisitionModal.tsx). (Also an orphan — see §2.) → **MERGE**: extract the profile-list into one shared sub-component consumed by both `ChassisAcquisitionModal` and the new refinance flow (§2), so acquisition and refinancing render an identical, single-source picker.
 - **`isFiniteNumber`** — byte-identical private type-guard duplicated at [bloodBankUtils.ts:3](src/utils/bloodBankUtils.ts:3) and [darkWebLeakUtils.ts:15](src/utils/darkWebLeakUtils.ts:15) (a 3rd copy in `data/chatter/standardChatter.ts:50`). CLAUDE.md forbids private copies. → **MERGE** to shared `finiteNumber.ts`.
 
 ### LOW
@@ -52,13 +52,13 @@ zero asymmetry)**. The findings below are concentrated in a few real bugs, orpha
 
 ### MED
 
-- **`buildMidiTrackEvents`** — [midiUtils.ts:42](src/utils/audio/midiUtils.ts:42), tested but unused; `midiPlayback.ts` rolls its own inline `processMidiTrackNotes`. Parallel/superseded MIDI-event builder. (Also missing integration — see §5.) → **DELETE** or **INTEGRATE**.
-- **`CrisisModal`** — [BrutalistUI.tsx:977](src/ui/shared/BrutalistUI.tsx:977), exported + barreled, no consumers. → **DELETE** or **WIRE-UP**.
+- **`buildMidiTrackEvents`** — [midiUtils.ts:42](src/utils/audio/midiUtils.ts:42), tested but unused; `midiPlayback.ts` rolls its own inline `processMidiTrackNotes`. Parallel/superseded MIDI-event builder. (Also missing integration — see §5.) → **INTEGRATE**: make it the single MIDI→event source by replacing `midiPlayback.ts`'s inline `processMidiTrackNotes`, then reuse its already-tested structured output to drive a **PreGig "note-density / difficulty preview"** for the upcoming song — a tiny sparkline of where the chart spikes — plus a dev chart-debug overlay. Turns a tested-but-idle util into player-facing value.
+- **`CrisisModal`** — [BrutalistUI.tsx:977](src/ui/shared/BrutalistUI.tsx:977), exported + barreled, no consumers. → **WIRE-UP**: promote high-stakes moments out of dismissible toasts into this blocking modal. Drive it from the asset risk-event / foreclosure path ([RiskEventModal.tsx](src/components/assets/RiskEventModal.tsx), `ASSET_FORECLOSED`) and bankruptcy-warning flow, seeded by the already-present band-crisis data in [crisis.json](src/schemas/crisis.json). A looming foreclosure or a band-meltdown then gets a dramatic full-screen "CRISIS" beat with a forced choice — exactly the brutalist tension the primitive was designed for — instead of a toast the player can ignore.
 - **`BrutalSlot`** — [BrutalistUI.tsx:1183](src/ui/shared/BrutalistUI.tsx:1183), no consumers. → **DELETE**.
 - **`VoidLoader`** — [BrutalistUI.tsx:1226](src/ui/shared/BrutalistUI.tsx:1226), no consumers (App uses its own `SceneLoadingFallback`). → **DELETE**.
 - **`StatBlock`** — [BrutalistUI.tsx:896](src/ui/shared/BrutalistUI.tsx:896), no consumers. → **DELETE**.
 - **`BrutalTabs`** — [BrutalistUI.tsx:837](src/ui/shared/BrutalistUI.tsx:837), no consumers (BandHQ rolls its own `HQTabButton`). → **DELETE**.
-- **`LoanProfileModal`** — [LoanProfileModal.tsx:18](src/components/assets/LoanProfileModal.tsx:18), no import/mount/test; docstring admits "kept for a future refinance flow." (Also a duplicate — see §1.) → **WIRE-UP** or **DELETE** (recoverable from git).
+- **`LoanProfileModal`** — [LoanProfileModal.tsx:18](src/components/assets/LoanProfileModal.tsx:18), no import/mount/test; docstring admits "kept for a future refinance flow." (Also a duplicate — see §1.) → **WIRE-UP**: ship the refinance flow it was built for. Add a "Refinance" action to [LiabilitiesPanel.tsx](src/components/assets/LiabilitiesPanel.tsx) that opens this modal to swap a liability's `LoanProfile` for a better one — reusing the existing `state.player.fame` / `scenePresence` eligibility gate — charging a fee and re-amortizing via `computeAmortization` ([loanProfiles.ts](src/utils/loanProfiles.ts)). Converts dead UI into a real debt-management mechanic and a fame-progression reward (better fame unlocks cheaper refinancing).
 
 ### LOW
 
@@ -119,7 +119,7 @@ zero asymmetry)**. The findings below are concentrated in a few real bugs, orpha
 ### MED
 
 - **`big_combo` milestone breaks after save/reload** — [milestones.ts:89](src/data/milestones/milestones.ts:89) reads `state.lastGigStats?.maxCombo`, but `sanitizeLastGigStats` ([systemReducer.ts:1379](src/context/reducers/systemReducer.ts:1379)) preserves only `score/misses/accuracy/combo/health/overload` — **`maxCombo` is dropped on `LOAD_GAME`**. Works in-session (snapshot writes `maxCombo`), but after any reload `maxCombo` is `undefined → 0`, so the milestone can never fire. `postGigUtils.ts:225` already works around it with `maxCombo ?? combo`. **Verified by reading source.** → **FIX** (add `maxCombo` to the preserved keys, or standardize snapshot/milestone on `combo`).
-- **`buildMidiTrackEvents` never wired** — fully built + tested MIDI-event builder that `midiPlayback.ts` doesn't consume (rolls its own). → **INTEGRATE** or **DELETE** (also §2).
+- **`buildMidiTrackEvents` never wired** — fully built + tested MIDI-event builder that `midiPlayback.ts` doesn't consume (rolls its own). (Also orphaned — see §2.) → **INTEGRATE**: route it into the rhythm-game chart pipeline so note charts are **generated from MIDI** rather than hand-authored, and surface the same event stream as the PreGig difficulty/note-density preview described in §2.
 
 > No other built-but-unwired features. Every scene is mounted by `SceneRouter` (← `App.tsx`); every overworld
 > modal is rendered via `OverworldModals.tsx` + `useOverworldModals`; every exported hook has a live caller;
@@ -155,9 +155,9 @@ impactful items are localized behavioral bugs and architectural drift.
 2. **`handleUpdateSocial` skips `loyalty` clamp** — out-of-range loyalty accepted unclamped ([socialReducer.ts:140](src/context/reducers/socialReducer.ts:140)). **FIX.**
 3. **`asNumber` lets `Infinity` into money/fuel/fame deltas** ([eventEngine.ts:83](src/utils/eventEngine.ts:83)). **FIX.**
 4. **`checkSoftlock` masks softlocks on non-finite van fuel** ([mapUtils.ts:123](src/utils/mapUtils.ts:123)). **FIX.**
-5. **`buildMidiTrackEvents` parallel/unused MIDI path** ([midiUtils.ts:42](src/utils/audio/midiUtils.ts:42)). **INTEGRATE/DELETE.**
-6. **`LoanProfileModal` orphan + duplicate of inline picker** ([LoanProfileModal.tsx:18](src/components/assets/LoanProfileModal.tsx:18)). **WIRE-UP/DELETE.**
-7. **10 orphaned `BrutalistUI` primitives** (`CrisisModal`, `BrutalSlot`, `VoidLoader`, `StatBlock`, `BrutalTabs`, + 5 icons) ([BrutalistUI.tsx](src/ui/shared/BrutalistUI.tsx)). **DELETE.**
+5. **`buildMidiTrackEvents` parallel/unused MIDI path** ([midiUtils.ts:42](src/utils/audio/midiUtils.ts:42)). **INTEGRATE** (single MIDI→event source + PreGig note-density preview / MIDI-generated charts).
+6. **`LoanProfileModal` orphan + duplicate of inline picker** ([LoanProfileModal.tsx:18](src/components/assets/LoanProfileModal.tsx:18)). **WIRE-UP** (ship the refinance flow on `LiabilitiesPanel`).
+7. **10 orphaned `BrutalistUI` primitives** ([BrutalistUI.tsx](src/ui/shared/BrutalistUI.tsx)): **WIRE-UP `CrisisModal`** to the foreclosure/bankruptcy + `crisis.json` flow (§2); **DELETE** the rest (`BrutalSlot`, `VoidLoader`, `StatBlock`, `BrutalTabs`, + 5 icons).
 8. **`MinigameType` / `GigModifiers` type clones** drift-risk vs canonical `src/types` ([SceneRouter.tsx:57](src/components/SceneRouter.tsx:57), [economyEngine.ts:72](src/utils/economyEngine.ts:72)). **MERGE.**
 9. **Hardcoded user-facing strings** — `Credits` roles, `MainMenu` footer/version badge, `TourbusTrailerOverlay` alt — not i18n'd / no DE ([Credits.tsx:22](src/scenes/Credits.tsx:22), [MainMenu.tsx:140](src/scenes/MainMenu.tsx:140)). **FIX.**
 10. **`rivalReducer` impurity + hardcoded English toast** — RNG/UUID in reducer, baked English `message` ([rivalReducer.ts:5](src/context/reducers/rivalReducer.ts:5)). **FIX.**
