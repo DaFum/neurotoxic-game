@@ -1,10 +1,11 @@
-import { useCallback, MutableRefObject } from 'react'
+import { useCallback } from 'react'
+import type { MutableRefObject } from 'react'
 import type { TFunction } from 'i18next'
 import { handleError } from '../../../utils/errorHandler'
 import { audioService } from '../../../utils/audio/audioEngine'
 
 export const useMainMenuAudio = (
-  isMountedRef: React.MutableRefObject<boolean>,
+  isMountedRef: MutableRefObject<boolean>,
   addToast: (message: string, type?: 'info' | 'error' | 'success') => void,
   tRef: MutableRefObject<TFunction>
 ) => {
