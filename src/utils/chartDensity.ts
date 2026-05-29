@@ -51,7 +51,8 @@ export const buildSongChartDensity = (
       safeBucketCount - 1,
       Math.max(0, Math.floor((event.time / duration) * safeBucketCount))
     )
-    counts[index] += 1
+    const current = counts[index]
+    if (current !== undefined) counts[index] = current + 1
   }
 
   const peak = Math.max(1, ...counts)

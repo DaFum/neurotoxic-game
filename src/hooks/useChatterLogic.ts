@@ -36,7 +36,10 @@ const resolveSpeaker = (
   }
   if (memberNames.length > 0) {
     const roll = getSafeRandom()
-    return memberNames[Math.floor(roll * memberNames.length)]
+    return (
+      memberNames[Math.floor(roll * memberNames.length)] ??
+      t('ui:chatter_labels.default_speaker', { defaultValue: 'Band' })
+    )
   }
   return t('ui:chatter_labels.default_speaker', { defaultValue: 'Band' })
 }

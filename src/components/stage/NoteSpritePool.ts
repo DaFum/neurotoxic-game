@@ -168,7 +168,7 @@ export class NoteSpritePool {
   dispose(): void {
     // Destroy pooled sprites
     for (let i = 0; i < this.spritePool.length; i++) {
-      this.spritePool[i].destroy()
+      this.spritePool[i]?.destroy()
     }
     this.spritePool = []
     this.container = null

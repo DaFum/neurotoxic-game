@@ -27,7 +27,7 @@ type LogEntry = (typeof logger.logs)[number]
 const LogRow = ({ log }: { log: LogEntry }) => (
   <div className='flex gap-2 hover:bg-star-white/5'>
     <span className='text-ash-gray shrink-0'>
-      [{log.timestamp.split('T')[1].slice(0, 8)}]
+      [{log.timestamp.split('T')[1]?.slice(0, 8) ?? log.timestamp.slice(0, 8)}]
     </span>
     <span className={`font-bold w-12 shrink-0 ${getLevelColor(log.level)}`}>
       {log.level}

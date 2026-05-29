@@ -10,6 +10,7 @@ import { usePreGigLogic } from '../hooks/usePreGigLogic'
 const SONGS_DICT = Object.create(null)
 for (let i = 0; i < SONGS_DB.length; i++) {
   const song = SONGS_DB[i]
+  if (!song) continue
   SONGS_DICT[song.id] = song
 }
 

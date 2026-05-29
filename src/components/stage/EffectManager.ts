@@ -57,7 +57,7 @@ export class EffectManager {
   _evictOldestEffect(): void {
     // O(1) removal of the oldest effect (which is always at headIndex)
     const oldest = this.activeEffects[this.headIndex]
-    this.spritePool.releaseSprite(oldest)
+    this.spritePool.releaseSprite(oldest ?? null)
     this.activeEffects[this.headIndex] = null
 
     this.headIndex = (this.headIndex + 1) % EffectManager.MAX_ACTIVE_EFFECTS
@@ -110,7 +110,7 @@ export class EffectManager {
         (this.headIndex + count - 1) % EffectManager.MAX_ACTIVE_EFFECTS
       const lastEffect = this.activeEffects[lastValidIdx]
 
-      this.activeEffects[idx] = lastEffect
+      this.activeEffects[idx] = lastEffect ?? null
       this.activeEffects[lastValidIdx] = null
 
       this.tailIndex = lastValidIdx

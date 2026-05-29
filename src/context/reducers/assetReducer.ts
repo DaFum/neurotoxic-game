@@ -14,7 +14,12 @@ import {
   CHASSIS_CONFIG,
   REPAIR_COST_PER_POINT
 } from '../../utils/assetConfig'
-import { LOAN_PROFILES, computeAmortization } from '../../utils/loanProfiles'
+import {
+  LOAN_PROFILES,
+  calculateRefinanceFee,
+  computeAmortization,
+  isLoanProfileEligible
+} from '../../utils/loanProfiles'
 import { MODULE_REGISTRY } from '../../utils/assetModuleRegistry'
 import { hasActiveAssetAcquisition } from '../../utils/assetSelectors'
 import { finiteNumberOr } from '../../utils/gameStateUtils'
@@ -379,22 +384,32 @@ export const handleRefinanceLiability = (
       payload.loanProfileId as import('../../utils/loanProfiles').LoanProfileId
     ]
   if (!profile) return state
+  if (
+    !isLoanProfileEligible(profile, {
+      fame: state.player.fame,
+      scenePresence: state.social?.scenePresence ?? 0
+    })
+  ) {
+    return state
+  }
 
-  const fee = Math.max(0, finiteNumberOr(payload.fee, 0))
+  const targetLiability = state.liabilities.find(
+    liability =>
+      liability.id === payload.liabilityId && liability.source === 'loan'
+  )
+  if (!targetLiability) return state
+  if (finiteNumberOr(targetLiability.defaultCounter, 0) > 0) return state
+
+  const principal = Math.max(
+    0,
+    finiteNumberOr(targetLiability.principalRemaining, 0)
+  )
+  const fee = calculateRefinanceFee(principal)
   if (state.player.money < fee) return state
 
-  let refinanced = false
   const liabilities = state.liabilities.map(liability => {
-    if (liability.id !== payload.liabilityId || liability.source !== 'loan') {
-      return liability
-    }
-    if (finiteNumberOr(liability.defaultCounter, 0) > 0) return liability
+    if (liability.id !== payload.liabilityId) return liability
 
-    const principal = Math.max(
-      0,
-      finiteNumberOr(liability.principalRemaining, 0)
-    )
-    refinanced = true
     return {
       ...liability,
       interestRate: profile.interestRate,
@@ -407,8 +422,6 @@ export const handleRefinanceLiability = (
       defaultCounter: 0
     }
   })
-
-  if (!refinanced) return state
 
   return {
     ...state,

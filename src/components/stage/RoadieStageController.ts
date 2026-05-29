@@ -120,7 +120,7 @@ class RoadieStageController extends BaseStageController<RoadieStageState> {
 
       if (this.isDisposed) return
 
-      this.textures.roadie = loaded.roadie
+      this.textures.roadie = loaded.roadie ?? null
       const cars = []
       if (loaded.carA) cars.push(loaded.carA)
       if (loaded.carB) cars.push(loaded.carB)

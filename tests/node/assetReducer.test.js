@@ -63,7 +63,7 @@ test.after(() => {
 })
 
 const mockState = {
-  player: { money: 1000, day: 10 },
+  player: { money: 1000, day: 10, fame: 100 },
   band: { fame: 100 },
   assets: [],
   liabilities: [],
@@ -526,6 +526,61 @@ test('handleRefinanceLiability - rejects loans already in default countdown', ()
   const next = handleRefinanceLiability(startState, {
     liabilityId: 'loan_1',
     loanProfileId: 'longTerm',
+    fee: 20
+  })
+
+  assert.strictEqual(next, startState)
+})
+
+test('handleRefinanceLiability - derives fee from principal instead of trusting payload', () => {
+  const startState = {
+    ...mockState,
+    player: { ...mockState.player, money: 1000 },
+    liabilities: [
+      {
+        id: 'loan_1',
+        source: 'loan',
+        assetId: 'asset_1',
+        principalRemaining: 1000,
+        interestRate: 0.08,
+        dailyPayment: 20,
+        termDaysRemaining: 40,
+        defaultCounter: 0
+      }
+    ]
+  }
+
+  const next = handleRefinanceLiability(startState, {
+    liabilityId: 'loan_1',
+    loanProfileId: 'longTerm',
+    fee: 0
+  })
+
+  assert.strictEqual(next.player.money, 980)
+})
+
+test('handleRefinanceLiability - rejects ineligible loan profile payloads', () => {
+  const startState = {
+    ...mockState,
+    player: { ...mockState.player, money: 1000, fame: 0 },
+    social: { scenePresence: 0 },
+    liabilities: [
+      {
+        id: 'loan_1',
+        source: 'loan',
+        assetId: 'asset_1',
+        principalRemaining: 1000,
+        interestRate: 0.08,
+        dailyPayment: 20,
+        termDaysRemaining: 40,
+        defaultCounter: 0
+      }
+    ]
+  }
+
+  const next = handleRefinanceLiability(startState, {
+    liabilityId: 'loan_1',
+    loanProfileId: 'coop',
     fee: 20
   })
 

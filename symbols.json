@@ -1334,6 +1334,15 @@
         "type": "const"
       }
     ],
+    "buildSetlistChartDensity": [
+      {
+        "isDefault": false,
+        "name": "buildSetlistChartDensity",
+        "path": "src/utils/chartDensity.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "buildSongChartDensity": [
       {
         "isDefault": false,
