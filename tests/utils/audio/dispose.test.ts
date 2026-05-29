@@ -21,6 +21,11 @@ describe('safeDispose', () => {
     expect(result).toBeNull()
   })
 
+  it('returns null when passed undefined', () => {
+    const result = safeDispose(undefined)
+    expect(result).toBeNull()
+  })
+
   it('returns null when passed an object without a dispose function', () => {
     const result = safeDispose({ notDispose: () => {} })
     expect(result).toBeNull()
