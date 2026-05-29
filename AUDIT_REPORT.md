@@ -130,14 +130,14 @@ zero asymmetry)**. The findings below are concentrated in a few real bugs, orpha
 
 ## Summary
 
-| Category | HIGH | MED | LOW | Total |
-|---|---|---|---|---|
-| 1. Duplicates | 0 | 4 | 5 | 9 |
-| 2. Orphaned / Unintegrated | 0 | 7 | 12 | 19 |
-| 3. Inconsistencies | 0 | 6 | 14 | 20 |
-| 4. Dead / Unreachable | 0 | 0 | 3 | 3 |
-| 5. Missing Integration | 0 | 2 | 0 | 2 |
-| **Total** | **0** | **19** | **34** | **53** |
+| Category                   | HIGH  | MED    | LOW    | Total  |
+| -------------------------- | ----- | ------ | ------ | ------ |
+| 1. Duplicates              | 0     | 4      | 5      | 9      |
+| 2. Orphaned / Unintegrated | 0     | 7      | 12     | 19     |
+| 3. Inconsistencies         | 0     | 6      | 14     | 20     |
+| 4. Dead / Unreachable      | 0     | 0      | 3      | 3      |
+| 5. Missing Integration     | 0     | 2      | 0      | 2      |
+| **Total**                  | **0** | **19** | **34** | **53** |
 
 No HIGH-severity findings: there are no crashes, security holes, or broken core-loop transitions. The most
 impactful items are localized behavioral bugs and architectural drift.
