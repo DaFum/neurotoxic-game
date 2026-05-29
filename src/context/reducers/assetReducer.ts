@@ -461,7 +461,7 @@ export const handleAssetForeclosed = (
     ...state,
     assets: state.assets.filter(a => a.id !== payload.assetId),
     liabilities: (state.liabilities || []).filter(
-      l => l.assetId !== payload.assetId
+      l => !l || l.assetId !== payload.assetId
     )
   }
 }

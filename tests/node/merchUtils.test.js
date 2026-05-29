@@ -21,7 +21,11 @@ test('getMerchBundleAmount', async t => {
 
 test('getTotalMerchStock', async t => {
   await t.test('returns total stock correctly', () => {
+    const inv = { shirts: 10, hoodies: 15, invalid: 'hello' }
+    assert.strictEqual(getTotalMerchStock(inv), 25)
+  })
+  await t.test('returns 0 if no keys overlap', () => {
     const inv = { hq_merch_shirts: 10, hq_merch_posters: 15, invalid: 'hello' }
-    assert.strictEqual(getTotalMerchStock(inv), 0) // No keys overlap with test data. The items in hqItems.ts have specific keys like `shirts`.
+    assert.strictEqual(getTotalMerchStock(inv), 0)
   })
 })
