@@ -290,12 +290,19 @@ export const handleSellChassis = (
   const asset = state.assets.find(a => a.id === assetId)
   if (!asset) return state
 
-  const assetLiabilities = state.liabilities.filter(l => l.assetId === assetId)
-  const rawTotalPrincipalRemaining = assetLiabilities.reduce(
-    (sum, liability) =>
-      sum + Math.max(0, finiteNumberOr(liability.principalRemaining, 0)),
-    0
-  )
+  // ⚡ BOLT OPTIMIZATION: Replaced chained .filter().reduce() with a single-pass loop to eliminate intermediate array allocations on hot paths.
+  let rawTotalPrincipalRemaining = 0
+  if (state.liabilities) {
+    for (let i = 0; i < state.liabilities.length; i++) {
+      const l = state.liabilities[i]
+      if (l.assetId === assetId) {
+        rawTotalPrincipalRemaining += Math.max(
+          0,
+          finiteNumberOr(l.principalRemaining, 0)
+        )
+      }
+    }
+  }
   const totalPrincipalRemaining = Math.max(
     0,
     finiteNumberOr(rawTotalPrincipalRemaining, 0)

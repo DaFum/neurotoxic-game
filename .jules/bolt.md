@@ -159,3 +159,7 @@
 
 **Learning:** Functional array methods like `.reduce()` have significant overhead in hot paths (like audio/MIDI processing) due to continuous callback execution and potential intermediate allocations.
 **Action:** Prefer standard `for` loops when processing arrays in high-frequency engine domains. This saves closure invocations and increases overall throughput.
+
+## 2024-05-29 - Array Map/Filter/Reduce in Hot Paths
+**Learning:** Replaced chained `.filter().reduce()` and `.filter().forEach()` loops with single-pass `for` loops in hot logic paths like `assetReducer.ts` and `useClinicLogic.ts`. Those methods create intermediate arrays which adds memory pressure and increases GC pause times.
+**Action:** Always prefer basic `for` loop iterations with accumulators or early returns over array chaining on heavily used data paths.

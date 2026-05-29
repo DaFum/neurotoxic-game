@@ -145,12 +145,15 @@ export const useClinicLogic = (): {
   const currentVisits = player?.clinicVisits ?? 0
 
   const membersMap = useMemo(() => {
+    // ⚡ BOLT OPTIMIZATION: Replaced chained .filter().forEach() with a single-pass loop to avoid intermediate array allocations.
     const map = new Map<string, BandMember>()
-    ;(band?.members ?? [])
-      .filter((m: BandMember): m is BandMember & { id: string } => !!m.id)
-      .forEach((m: BandMember & { id: string }) => {
+    const members = band?.members ?? []
+    for (let i = 0; i < members.length; i++) {
+      const m = members[i]
+      if (m && m.id) {
         map.set(m.id, m)
-      })
+      }
+    }
     return map
   }, [band?.members])
 
