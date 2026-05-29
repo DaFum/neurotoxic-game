@@ -201,17 +201,15 @@ test('getAcceptDealSocialUpdateFactory updates activeDeals with remaining gigs b
 
 test('getAcceptDealSocialUpdateFactory applies and clamps loyalty and controversy penalties', () => {
   const deal = {
-    penalty: { loyalty: 10, controversy: 20 },
+    penalty: { loyalty: -10, controversy: 20 },
     offer: { duration: 5 }
   }
   const updateFactory = getAcceptDealSocialUpdateFactory(deal)
-
-  const prevSocial = buildSocial({ loyalty: 5, controversyLevel: 50 })
+  const prevSocial = buildSocial({ loyalty: 15, controversyLevel: 50 })
   const updates = updateFactory(prevSocial)
-  assert.equal(updates.loyalty, 15)
+  assert.equal(updates.loyalty, 5)
   assert.equal(updates.controversyLevel, 70)
-
-  const prevSocial2 = buildSocial({ loyalty: -15, controversyLevel: 90 })
+  const prevSocial2 = buildSocial({ loyalty: 5, controversyLevel: 90 })
   const updates2 = updateFactory(prevSocial2)
   assert.equal(updates2.loyalty, 0)
   assert.equal(updates2.controversyLevel, 100)
@@ -232,20 +230,18 @@ test('getAcceptDealSocialUpdateFactory updates brand reputation and opposing ali
 
 test('getAcceptDealSocialUpdateFactory handles missing social state values gracefully', () => {
   const deal = {
-    penalty: { loyalty: 10, controversy: 20 },
+    penalty: { loyalty: -10, controversy: 20 },
     alignment: 'CORPORATE',
     offer: { duration: 5 }
   }
   const updateFactory = getAcceptDealSocialUpdateFactory(deal)
-
   const prevSocial = buildSocial({
     loyalty: undefined,
     controversyLevel: undefined,
     brandReputation: undefined
   })
   const updates = updateFactory(prevSocial)
-
-  assert.equal(updates.loyalty, 10)
+  assert.equal(updates.loyalty, 0)
   assert.equal(updates.controversyLevel, 20)
   assert.equal(updates.brandReputation.CORPORATE, 5)
   assert.equal(updates.brandReputation.INDIE, 0)
