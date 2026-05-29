@@ -1,6 +1,9 @@
 import { test, describe, afterEach } from 'node:test'
 import assert from 'node:assert/strict'
-import { isImageGenerationAvailable } from '../../src/utils/imageGen.ts'
+import {
+  isImageGenerationAvailable,
+  getGeneratedImageFallbackUrl
+} from '../../src/utils/imageGen.ts'
 
 describe('isImageGenerationAvailable', () => {
   test('should return true when isOnline is explicitly true', () => {
@@ -12,7 +15,10 @@ describe('isImageGenerationAvailable', () => {
   })
 
   describe('when isOnline is not provided (undefined)', () => {
-    const originalDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'navigator')
+    const originalDescriptor = Object.getOwnPropertyDescriptor(
+      globalThis,
+      'navigator'
+    )
 
     afterEach(() => {
       if (originalDescriptor) {
@@ -46,5 +52,14 @@ describe('isImageGenerationAvailable', () => {
       })
       assert.equal(isImageGenerationAvailable(), false)
     })
+  })
+})
+
+describe('getGeneratedImageFallbackUrl', () => {
+  test('should return the correct offline fallback SVG string', () => {
+    assert.equal(
+      getGeneratedImageFallbackUrl(),
+      '/images/generated-offline-fallback.svg'
+    )
   })
 })
