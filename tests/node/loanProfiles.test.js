@@ -2,7 +2,8 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   LOAN_PROFILES,
-  computeAmortization
+  computeAmortization,
+  isLoanProfileEligible
 } from '../../src/utils/loanProfiles.ts'
 
 describe('LOAN_PROFILES', () => {
@@ -50,5 +51,24 @@ describe('computeAmortization', () => {
     const cheap = computeAmortization(10000, 0.02, 100)
     const expensive = computeAmortization(10000, 0.2, 100)
     assert.ok(expensive > cheap, 'high rate should pay more per day')
+  })
+})
+
+describe('isLoanProfileEligible', () => {
+  it('rejects non-finite gate values', () => {
+    assert.equal(
+      isLoanProfileEligible(LOAN_PROFILES.coop, {
+        fame: Number.NaN,
+        scenePresence: 50
+      }),
+      false
+    )
+    assert.equal(
+      isLoanProfileEligible(LOAN_PROFILES.coop, {
+        fame: 0,
+        scenePresence: Number.POSITIVE_INFINITY
+      }),
+      false
+    )
   })
 })

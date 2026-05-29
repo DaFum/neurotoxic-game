@@ -1,5 +1,4 @@
 import type { GameState, RivalBandState, ToastPayload } from '../../types'
-import { generateRivalBand, moveRivalBand } from '../../utils/rivalEngine'
 import { getSafeUUID } from '../../utils/crypto'
 import type {
   SpawnRivalBandPayload,

@@ -2,12 +2,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { MerchWorkshopSection } from '../../src/components/assets/sections/MerchWorkshopSection'
 import { SECTION_VIEWS } from '../../src/components/assets/sectionRegistry'
-import type { LongTermAsset, SlotType } from '../../src/types/assets'
+import type { Liability, LongTermAsset, SlotType } from '../../src/types/assets'
 
 const mockState = vi.hoisted(() => ({
   assets: [] as LongTermAsset[],
   crowdfundCampaigns: [],
-  liabilities: []
+  liabilities: [] as Liability[]
 }))
 
 const mockRefinanceLiability = vi.hoisted(() => vi.fn())
@@ -97,7 +97,7 @@ vi.mock('../../src/components/assets/ChassisAcquisitionModal', () => ({
 vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },
   useTranslation: () => ({
-    t: (key: string) => key,
+    t: (key: string) => (key === 'assets:mode.loan' ? 'Loan' : key),
     i18n: { language: 'en', changeLanguage: vi.fn(), options: {} }
   })
 }))
@@ -128,6 +128,7 @@ const mockAsset = (id: string, kind: LongTermAsset['kind']): LongTermAsset => ({
 describe('MerchWorkshopSection', () => {
   beforeEach(() => {
     mockState.assets = []
+    mockState.liabilities = []
     capturedProductionLineProps.length = 0
     mockRefinanceLiability.mockClear()
     vi.clearAllMocks()
@@ -184,5 +185,25 @@ describe('MerchWorkshopSection', () => {
     expect(screen.getByTestId('acquire-modal')).toHaveTextContent(
       'merch_workshop_chassis'
     )
+  })
+
+  it('translates liability source labels', () => {
+    mockState.assets = [mockAsset('workshop-1', 'merch_workshop_chassis')]
+    mockState.liabilities = [
+      {
+        id: 'liability-1',
+        source: 'loan',
+        assetId: 'workshop-1',
+        principalRemaining: 1000,
+        interestRate: 0.08,
+        dailyPayment: 50,
+        termDaysRemaining: 20,
+        defaultCounter: 0
+      }
+    ]
+
+    render(<MerchWorkshopSection />)
+
+    expect(screen.getByText('Loan')).toBeInTheDocument()
   })
 })

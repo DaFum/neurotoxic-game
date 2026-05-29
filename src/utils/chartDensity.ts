@@ -3,14 +3,14 @@ import { isFiniteNumber } from './finiteNumber'
 import type { Song } from '../types/audio'
 
 export interface ChartDensityBar {
+  timestamp: number
   count: number
   intensity: number
 }
 
 const toMidiTime = (tick: unknown, tpb: number, bpm: number): number | null => {
-  const numericTick = Number(tick)
-  if (!Number.isFinite(numericTick) || numericTick < 0) return null
-  return (numericTick / tpb) * (60 / bpm)
+  if (!isFiniteNumber(tick) || tick < 0) return null
+  return (tick / tpb) * (60 / bpm)
 }
 
 export const buildSongChartDensity = (
@@ -55,7 +55,8 @@ export const buildSongChartDensity = (
   }
 
   const peak = Math.max(1, ...counts)
-  return counts.map(count => ({
+  return counts.map((count, index) => ({
+    timestamp: (index / safeBucketCount) * duration,
     count,
     intensity: count / peak
   }))

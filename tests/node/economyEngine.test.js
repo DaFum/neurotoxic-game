@@ -681,12 +681,24 @@ test('calculateRepairCost handles normal and edge cases', async t => {
   })
 
   await t.test('handles NaN condition gracefully', () => {
-    assert.equal(calculateRepairCost(NaN), 0)
+    const expected = Math.ceil(
+      100 * EXPENSE_CONSTANTS.TRANSPORT.REPAIR_COST_PER_UNIT
+    )
+    assert.equal(calculateRepairCost(NaN), expected)
   })
 
   await t.test('handles Infinity condition gracefully', () => {
-    // Math.max(0, 100 - Infinity) -> Math.max(0, -Infinity) -> 0
-    assert.equal(calculateRepairCost(Infinity), 0)
+    const expected = Math.ceil(
+      100 * EXPENSE_CONSTANTS.TRANSPORT.REPAIR_COST_PER_UNIT
+    )
+    assert.equal(calculateRepairCost(Infinity), expected)
+  })
+
+  await t.test('handles missing condition conservatively', () => {
+    const expected = Math.ceil(
+      100 * EXPENSE_CONSTANTS.TRANSPORT.REPAIR_COST_PER_UNIT
+    )
+    assert.equal(calculateRepairCost(undefined), expected)
   })
 })
 

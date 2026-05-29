@@ -26,28 +26,36 @@ export const TourbusTrailerOverlay = ({ asset, onSlotClick }: Props) => {
         aspectRatio='16:9'
         sizeHint={{ width: 640, height: 360 }}
       />
-      {addonSlots.map((slot, i) => (
-        <button
-          key={slot.id}
-          type='button'
-          aria-label={t('ui:assets.tourbus.trailer_slot', {
-            slotType: slot.slotType,
-            defaultValue: `slot ${slot.slotType}`
-          })}
-          onClick={() => onSlotClick(slot.id)}
-          className='absolute h-9 w-9 -translate-x-1/2 -translate-y-1/2 sm:h-12 sm:w-12'
-          style={{
-            left: `${30 + i * 30}%`,
-            top: '50%',
-            border:
-              '2px dashed var(--section-accent, var(--color-toxic-green))',
-            background: 'var(--color-hotspot-bg)',
-            color: 'var(--section-accent, var(--color-toxic-green))'
-          }}
-        >
-          +
-        </button>
-      ))}
+      {addonSlots.map((slot, i) => {
+        const translatedSlotType = t(
+          `ui:assets.tourbus.slotType.${slot.slotType}`,
+          {
+            defaultValue: slot.slotType.replaceAll('_', ' ')
+          }
+        )
+        return (
+          <button
+            key={slot.id}
+            type='button'
+            aria-label={t('ui:assets.tourbus.trailer_slot', {
+              slotType: translatedSlotType,
+              defaultValue: `slot ${translatedSlotType}`
+            })}
+            onClick={() => onSlotClick(slot.id)}
+            className='absolute h-9 w-9 -translate-x-1/2 -translate-y-1/2 sm:h-12 sm:w-12'
+            style={{
+              left: `${30 + i * 30}%`,
+              top: '50%',
+              border:
+                '2px dashed var(--section-accent, var(--color-toxic-green))',
+              background: 'var(--color-hotspot-bg)',
+              color: 'var(--section-accent, var(--color-toxic-green))'
+            }}
+          >
+            +
+          </button>
+        )
+      })}
     </div>
   )
 }

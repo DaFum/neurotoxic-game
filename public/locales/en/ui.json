@@ -166,6 +166,7 @@
   "day_advance": "Day {{day}}: Living Costs Deducted.",
   "assets.tourbus.trailer_alt": "Trailer",
   "assets.tourbus.trailer_slot": "Trailer slot {{slotType}}",
+  "assets.tourbus.slotType.tb_trailer_addon": "trailer add-on",
   "deals.accept": "ACCEPT",
   "deals.aggressive": "AGGRESSIVE (High Risk)",
   "deals.aggressiveDesc": "Demand +50% upfront. Failure loses the deal completely.",

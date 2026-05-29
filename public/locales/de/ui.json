@@ -166,6 +166,7 @@
   "day_advance": "Tag {{day}}: Lebenshaltungskosten abgezogen.",
   "assets.tourbus.trailer_alt": "Anhänger",
   "assets.tourbus.trailer_slot": "Anhänger-Slot {{slotType}}",
+  "assets.tourbus.slotType.tb_trailer_addon": "Anhänger-Addon",
   "deals.accept": "ANNEHMEN",
   "deals.aggressive": "AGGRESSIV (Hohes Risiko)",
   "deals.aggressiveDesc": "Verlange +50% Vorschuss. Misserfolg verliert den Deal komplett.",

@@ -58,6 +58,9 @@ export const isLoanProfileEligible = (
   profile: LoanProfile,
   values: { fame: number; scenePresence: number }
 ): boolean => {
+  if (!Number.isFinite(values.fame) || !Number.isFinite(values.scenePresence)) {
+    return false
+  }
   if (
     profile.minFameRequired !== undefined &&
     values.fame < profile.minFameRequired

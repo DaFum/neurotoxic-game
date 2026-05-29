@@ -181,7 +181,7 @@ export const SetlistBlock = ({
             <div className='flex min-h-0 flex-1 items-end justify-between gap-1'>
               {densityBars.map((bar, i) => (
                 <motion.div
-                  key={`${firstSelectedId}-${i}`}
+                  key={`${firstSelectedId}-${bar.timestamp}`}
                   initial={{ height: 0 }}
                   animate={{ height: `${Math.max(8, bar.intensity * 100)}%` }}
                   transition={{ duration: 0.25, delay: i * 0.015 }}

@@ -48,7 +48,9 @@ export const LiabilitiesPanel = () => {
                 borderColor: 'var(--section-accent, var(--color-toxic-green))'
               }}
             >
-              <span className='opacity-70'>{l.source}</span>
+              <span className='opacity-70'>
+                {t(`assets:mode.${l.source}`, { defaultValue: l.source })}
+              </span>
               <span>
                 {t('assets:loan.dailyPayment', {
                   amount: formatCurrency(l.dailyPayment, i18n.language)
