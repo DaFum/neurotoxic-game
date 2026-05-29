@@ -11,7 +11,9 @@ test('rhythm hook uses audioEngine facade for audio orchestration helpers', () =
 })
 
 test('offline overworld SVG copy and colors are tokenized/i18n-driven', () => {
-  const source = readSource('src/components/overworld/OverworldMap.tsx')
+  const source = readSource(
+    'src/components/overworld/hooks/useOverworldUrls.ts'
+  )
   const css = readSource('src/index.css')
   assert.match(source, /const SVG_TOKEN_FALLBACKS = /)
   assert.match(source, /getComputedStyle\(document\.documentElement\)/)
@@ -35,7 +37,9 @@ test('offline overworld SVG copy and colors are tokenized/i18n-driven', () => {
 })
 
 test('offline overworld SVG memo refreshes when translation callback changes', () => {
-  const source = readSource('src/components/overworld/OverworldMap.tsx')
+  const source = readSource(
+    'src/components/overworld/hooks/useOverworldUrls.ts'
+  )
   assert.match(source, /\}, \[isOnlineNetwork, t\]\)/)
 })
 

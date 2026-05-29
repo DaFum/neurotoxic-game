@@ -11475,6 +11475,15 @@
         "type": "const"
       }
     ],
+    "useMapAssets": [
+      {
+        "isDefault": false,
+        "name": "useMapAssets",
+        "path": "src/components/overworld/hooks/useMapAssets.ts",
+        "source": "local",
+        "type": "function"
+      }
+    ],
     "useMapGeneration": [
       {
         "isDefault": false,
@@ -11526,6 +11535,16 @@
         "isDefault": false,
         "name": "useOverworldSave",
         "path": "src/hooks/overworld/useOverworldSave.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "useOverworldUrls": [
+      {
+        "exportPath": "src/components/overworld/hooks/index.ts",
+        "isDefault": false,
+        "name": "useOverworldUrls",
+        "path": "src/components/overworld/hooks/useOverworldUrls.ts",
         "source": "local",
         "type": "const"
       }
