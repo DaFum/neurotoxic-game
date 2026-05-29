@@ -4,7 +4,8 @@ import {
   pickRarity,
   pickRandomContrabandByRarity,
   computeDropChance,
-  MAX_DROP_CHANCE
+  MAX_DROP_CHANCE,
+  DROP_BASE_CHANCE
 } from '../../src/utils/contrabandUtils'
 
 describe('Contraband Utils', () => {
@@ -44,6 +45,24 @@ describe('Contraband Utils', () => {
     it('clamps the chance to the max drop chance', () => {
       const chance = computeDropChance(0.15, 1000)
       assert.equal(chance, MAX_DROP_CHANCE)
+    })
+
+    it('uses default parameters when called with no arguments', () => {
+      const chance = computeDropChance()
+      assert.equal(chance, DROP_BASE_CHANCE)
+    })
+
+    it('clamps the chance to 0 when luck is highly negative', () => {
+      const chance = computeDropChance(0, -1)
+      assert.equal(chance, 0)
+    })
+
+    it('safely handles falsy or undefined luck values', () => {
+      const chanceWithUndefined = computeDropChance(0.15, undefined)
+      assert.equal(chanceWithUndefined, 0.15)
+
+      const chanceWithNull = computeDropChance(0.15, null)
+      assert.equal(chanceWithNull, 0.15)
     })
   })
 })
