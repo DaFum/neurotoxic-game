@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import {
   pickRarity,
   pickRandomContrabandByRarity,
+  pickRandomContraband,
   computeDropChance,
   MAX_DROP_CHANCE,
   DROP_BASE_CHANCE
@@ -15,9 +16,42 @@ describe('Contraband Utils', () => {
       assert.equal(pickRarity(rng), 'common')
     })
 
+    it('returns uncommon when rng returns 0.70', () => {
+      const rng = () => 0.7
+      assert.equal(pickRarity(rng), 'uncommon')
+    })
+
+    it('returns rare when rng returns 0.95', () => {
+      const rng = () => 0.95
+      assert.equal(pickRarity(rng), 'rare')
+    })
+
     it('returns a higher rarity when rng is near 1', () => {
       const rng = () => 0.9999
       assert.equal(pickRarity(rng), 'epic')
+    })
+
+    it('returns common as fallback for unexpected rng > 1', () => {
+      const rng = () => 1.5
+      assert.equal(pickRarity(rng), 'common')
+    })
+
+    it('works with default rng', () => {
+      const rarity = pickRarity()
+      assert.ok(['common', 'uncommon', 'rare', 'epic'].includes(rarity))
+    })
+  })
+
+  describe('pickRandomContraband', () => {
+    it('returns a contraband ID using weighted rarity', () => {
+      const rng = () => 0.5
+      const id = pickRandomContraband(rng)
+      assert.ok(typeof id === 'string')
+    })
+
+    it('works with default rng', () => {
+      const id = pickRandomContraband()
+      assert.ok(typeof id === 'string' || id === null)
     })
   })
 
