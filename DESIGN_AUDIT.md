@@ -35,7 +35,7 @@ The codebase is **unusually disciplined on raw color hygiene**. Verified by grep
 7. **Nine HUD components hardcode raw `z-50/40/20/10/0`** duplicating `--z-*` tokens the root `GigHUD`/`PixiStage` already reference via `z-(--z-…)`. (Cat 4, HIGH/MED)
 8. **Modal chrome is not standardized** — border width (`border-4` vs `border-2`), max-width (`lg`/`2xl`/`4xl`), padding (`p-8`/`p-6`/`p-4`), backdrop opacity (`/80` vs `/90`, blur present/absent), shadow (`40px-glow` vs `30px-20`). Strong case for a shared modal shell. (Cat 6, HIGH)
 9. **One font family written three ways** — `font-['Metal_Mania']`, `font-[Metal_Mania]`, and `font-display`/`font-ui` aliases — none use the native `font-display` token, so the `cursive` fallback in `--font-display` is dropped. (Cat 4/6, MED)
-10. **~30 dead selectors in `overworld.css`** (entire map-node render path + `.scan`/`.noise`/`.radio*`) plus **16 dead `@theme` tokens** and **4 dead keyframes**. (Cat 7, MED)
+10. **~30 dead selectors in `overworld.css`** (entire map-node render path + `.scan`/`.noise`/`.radio*`) plus **14 dead `@theme` tokens** and **4 dead keyframes**. (Cat 7, MED)
 
 ### Changes since prior audit (2026-05-28)
 
@@ -445,7 +445,7 @@ Usage = grep count across `src/**`. **UNUSED** = only its own definition exists.
 | `--z-hud/-modal/-tutorial/-chatter/-chatter-mobile`  | USED                                             |
 | `--z-crt/-debug/-toast/-crash`                       | USED                                             |
 
-**Dead tokens to consider removing (16):** `--color-toxic-green-light`, `--color-toxic-green-mutated`, `--color-void-blue`, `--color-purple-glow`, `--color-warning-orange`, `--color-overlay`, `--color-panel-bg`, `--color-disabled-bg`, `--color-disabled-text`, `--color-disabled-border`, `--color-shadow-overlay-strong`, `--font-code`, `--color-rust-orange`, `--color-rust-orange-bright`. None appear in `BRAND_COLOR_HEX`, so removal is low-risk — but coordinate with any inline-style consumers first (`CLAUDE.md` requires `BRAND_COLOR_HEX` ↔ `index.css` sync).
+**Dead tokens to consider removing (14):** `--color-toxic-green-light`, `--color-toxic-green-mutated`, `--color-void-blue`, `--color-purple-glow`, `--color-warning-orange`, `--color-overlay`, `--color-panel-bg`, `--color-disabled-bg`, `--color-disabled-text`, `--color-disabled-border`, `--color-shadow-overlay-strong`, `--font-code`, `--color-rust-orange`, `--color-rust-orange-bright`. None appear in `BRAND_COLOR_HEX`, so removal is low-risk — but coordinate with any inline-style consumers first (`CLAUDE.md` requires `BRAND_COLOR_HEX` ↔ `index.css` sync).
 
 ---
 

@@ -22,7 +22,7 @@ no `any`/`@ts-ignore` at boundaries, no payloadless `createAdvanceDayAction()` c
 present in `gameReducer` + `bandReducer`, all four minigame completion handlers preserve `currentScene`,
 prototype-pollution branches return identical references, and **i18n EN↔DE parity is exact (3,128 keys,
 zero asymmetry)**. The findings below are concentrated in a few real bugs, orphaned UI primitives, and
-`typeof === 'number'` boundary nits.
+`typeof x === 'number'` boundary nits.
 
 ---
 
