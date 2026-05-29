@@ -13,16 +13,16 @@ The codebase is **unusually disciplined on raw color hygiene**. Verified by grep
 
 ### Counts per category
 
-| # | Category | HIGH | MED | LOW | Total |
-|---|----------|-----:|----:|----:|------:|
-| 1 | Color violations | 2 | 26 | 2 | 30 |
-| 2 | Responsive / breakpoint | 4 | 7 | 4 | 15 |
-| 3 | Sizing & spacing | 0 | 13 | 16 | 29 |
-| 4 | Tailwind v4 / token syntax | 2 | 5 | 3 | 10 |
-| 5 | Cross-platform / device | 0 | 4 | 2 | 6 |
-| 6 | Consistency across scenes | 3 | 11 | 5 | 19 |
-| 7 | Dead / unreachable styles | 0 | 18 | 30 | 48 |
-| | **Total** | **11** | **84** | **62** | **157** |
+| #   | Category                   |   HIGH |    MED |    LOW |   Total |
+| --- | -------------------------- | -----: | -----: | -----: | ------: |
+| 1   | Color violations           |      2 |     26 |      2 |      30 |
+| 2   | Responsive / breakpoint    |      4 |      7 |      4 |      15 |
+| 3   | Sizing & spacing           |      0 |     13 |     16 |      29 |
+| 4   | Tailwind v4 / token syntax |      2 |      5 |      3 |      10 |
+| 5   | Cross-platform / device    |      0 |      4 |      2 |       6 |
+| 6   | Consistency across scenes  |      3 |     11 |      5 |      19 |
+| 7   | Dead / unreachable styles  |      0 |     18 |     30 |      48 |
+|     | **Total**                  | **11** | **84** | **62** | **157** |
 
 ### Top 10 highest-impact items
 
@@ -38,7 +38,9 @@ The codebase is **unusually disciplined on raw color hygiene**. Verified by grep
 10. **~30 dead selectors in `overworld.css`** (entire map-node render path + `.scan`/`.noise`/`.radio*`) plus **16 dead `@theme` tokens** and **4 dead keyframes**. (Cat 7, MED)
 
 ### Changes since prior audit (2026-05-28)
+
 Several HIGH items from the previous `DESIGN_AUDIT.md` are now **fixed** and intentionally not re-listed:
+
 - Invented aliases `--color-void` / `--color-blood` in asset modals — **gone** (grep confirms only `--color-void-black` / `--color-blood-red`).
 - `#root` `100vh` — now `100dvh` + `min-height: 100svh` (`index.css:160-167`).
 - Rhythm-lane fixed 360px / negative `startX` — `buildRhythmLayout` now clamps `layoutScale = min(1, max(0,w)/360)` and `startX = max(0, …)` (`stageRenderUtils.ts:176,235-240`).
@@ -52,13 +54,16 @@ Several HIGH items from the previous `DESIGN_AUDIT.md` are now **fixed** and int
 > Verified via `Grep`: `#[0-9a-fA-F]{3,8}`, `(rgb|hsl)\(`, `0x[0-9a-fA-F]{3,8}`, `\[(#|rgb|hsl)`, default-palette utilities, `(fill|stroke)="#"`, and `--color-(void|blood|toxic-red)\b`. No raw brand-color literals or invented aliases exist — findings are non-idiomatic token-syntax, two default-palette `white` usages, and contrast.
 
 ### HIGH
+
 ```
 HIGH | src/ui/GigModifierButton.tsx:47 | bg-white/5 | Tailwind default-palette `white` (use bg-star-white/5) | REPLACE-WITH-TOKEN
 HIGH | src/ui/SupplyStopModal.tsx:76 | hover:text-white | default-palette `white` (use text-star-white) | REPLACE-WITH-TOKEN
 ```
 
 ### MED — `ContrabandStash.tsx` arbitrary `*-(--color-*)` form (native utilities exist)
+
 Single file-wide outlier; every other audited file uses native `@theme` utilities. Replace `bg-(--color-x)`→`bg-x`, `text-(--color-x)`→`text-x`, etc.
+
 ```
 MED | src/ui/ContrabandStash.tsx:64 | text-(--color-ash-gray) | use text-ash-gray | REPLACE-WITH-TOKEN
 MED | src/ui/ContrabandStash.tsx:66 | text-(--color-electric-blue) | use text-electric-blue | REPLACE-WITH-TOKEN
@@ -84,18 +89,21 @@ MED | src/ui/ContrabandStash.tsx:303 | text-(--color-ash-gray) border-(--color-t
 ```
 
 ### MED — contrast (WCAG AA: 4.5:1 normal text, 3:1 large)
+
 ```
 MED | (palette) blood-red #cc0000 on void-black #0a0a0a | ~3.4:1 | passes AA for large text only; fails for normal text. Used for normal-size text in ContrabandStash:165 (text-xs), OverworldHUD crit/low labels, asset-modal warnings (`<p style={{color:'var(--color-blood-red)'}}>` in ForeclosureModal/ChassisAcquisitionModal/LiabilitiesPanel/SellConfirm/UpgradeConfirm), overworld.css .el-msg.t-warn | FIX-CONTRAST
 MED | (palette) cosmic-purple #6600cc on void-black #0a0a0a | ~2.3:1 | fails AA at all sizes; used as text color in overworld.css:708 `.el-msg.t-special` (event-log "special" entries) | FIX-CONTRAST
 ```
 
 ### MED — other syntax / consistency
+
 ```
 MED | src/components/assets/AssetsStatusStrip.tsx:61 | divide-[rgb(var(--color-ash-gray-rgb)_/_35%)] | token-based but verbose arbitrary form; divide-ash-gray/35 is cleaner | REPLACE-WITH-TOKEN
 MED | src/ui/bandhq/BrandDealsTab.tsx:45 | shadow-[0_0_15px_var(--color-toxic-green)] | active-deal glow diverges from sibling tab cards (no glow); token correct but inconsistent | NORMALIZE-SCALE
 ```
 
 ### LOW
+
 ```
 LOW | src/ui/EventModal.tsx:254 | rgb(var(--color-void-black-rgb) / 50%) inline | token-based (idiomatic); a defined --color-shadow-overlay covers similar intent | REMOVE-HARDCODE
 LOW | src/assets/react.svg:1 | fill="#..." | stock Vite logo asset, not brand UI | (informational)
@@ -106,6 +114,7 @@ LOW | src/assets/react.svg:1 | fill="#..." | stock Vite logo asset, not brand UI
 ## 2. Responsive / Breakpoint Issues
 
 ### HIGH
+
 ```
 HIGH | src/ui/QuestsModal.tsx:311 | max-h-[90vh] | uses vh not dvh/svh; mobile chrome clips modal | WIRE-RESPONSIVE
 HIGH | src/ui/PirateRadioModal.tsx:64 | max-h-[85vh] | uses vh not dvh/svh | WIRE-RESPONSIVE
@@ -114,6 +123,7 @@ HIGH | src/ui/EventModal.tsx:259-270 | max-w-lg ... p-8 (no max-h, no overflow) 
 ```
 
 ### MED
+
 ```
 MED | src/scenes/KabelsalatScene.tsx:29 | min-h-screen | vh-based; prefer min-h-[100svh] (root uses dvh/svh) | WIRE-RESPONSIVE
 MED | src/scenes/mainmenu/MainMenuSocials.tsx:23 | max-h-[80vh] | scrollable modal in vh; use dvh/svh | WIRE-RESPONSIVE
@@ -125,6 +135,7 @@ MED | src/index.css:904 (@media reduced-motion) | incomplete animation coverage 
 ```
 
 ### LOW
+
 ```
 LOW | src/components/minigames/tourbus/TourbusHUD.tsx:8 | absolute top-4 left-4 text-2xl | no mobile sizing variant | ADD-BREAKPOINT
 LOW | src/components/minigames/roadie/RoadieHUD.tsx:9 | absolute top-4 left-4 text-xl | no mobile sizing variant | ADD-BREAKPOINT
@@ -139,6 +150,7 @@ LOW | src/ui/overworld/EventLog.tsx:105 | absolute bottom-8 left-8 | fixed inset
 ## 3. Sizing & Spacing Inconsistency
 
 ### MED
+
 ```
 MED | src/components/minigames/amp/AmpHUD.tsx:35,68,137 | h-2 width-% bars | hand-rolled thin meters instead of shared BlockMeter (h-6 block style) used by HealthBar/OverloadMeter/CorruptionMeter | NORMALIZE-SCALE
 MED | src/components/postGig/DealCard.tsx:153,161,169,179,211,215,254,317 | text-[10px]/text-[11px] | pervasive off-scale font sizes | NORMALIZE-SCALE
@@ -156,6 +168,7 @@ MED | src/ui/bandhq/VoidTraderTab.tsx:131 | min-w-[120px] | magic-number min-wid
 ```
 
 ### LOW
+
 ```
 LOW | src/ui/HUD.tsx:51,70,92,195,218,284,294,297,327,339,347,359,375 | text-[11px]/[10px]/[9px] | dense cluster of off-scale font sizes | NORMALIZE-SCALE
 LOW | src/ui/EventModal.tsx:75,266,324 | text-[10px] | off-scale (use text-xs) | NORMALIZE-SCALE
@@ -182,12 +195,14 @@ LOW | (systemic) | no --text-*/--space-* scale in @theme | no defined type/spaci
 > `@import "tailwindcss"` is used correctly (no `@tailwind base/components/utilities`). No `bg-[var(--…)]` (v3 arbitrary-var) forms exist. Violations are hardcoded z-index and arbitrary forms where a native `@theme` utility exists.
 
 ### HIGH
+
 ```
 HIGH | src/ui/EventModal.tsx:245 | z-[100] | duplicates --z-modal:100; use z-(--z-modal) | REPLACE-WITH-TOKEN
 HIGH | src/ui/QuestsModal.tsx:303 | z-[100] | duplicates --z-modal:100; use z-(--z-modal) | REPLACE-WITH-TOKEN
 ```
 
 ### MED
+
 ```
 MED | src/ui/MerchPressModal.tsx:54 | z-50 | modal should be z-(--z-modal); sits below z-100 modals → stacking bug | REPLACE-WITH-TOKEN
 MED | src/ui/PirateRadioModal.tsx:59 | z-50 | modal should be z-(--z-modal) | REPLACE-WITH-TOKEN
@@ -197,6 +212,7 @@ MED | (codebase-wide) | font-[Metal_Mania] vs font-['Metal_Mania'] vs font-displ
 ```
 
 ### LOW
+
 ```
 LOW | src/components/hud/ToxicModeFlash.tsx:12 | z-0 | raw z-0 (no token); inconsistent with token-based stacking | REPLACE-WITH-TOKEN
 LOW | src/ui/shared/Tooltip.tsx:175 | z-50 | duplicates --z-hud; use z-(--z-hud) | REPLACE-WITH-TOKEN
@@ -204,6 +220,7 @@ LOW | src/overworld.css:14,27,99,361,422,431,491,551,615 | z-index: 29/28/40/50/
 ```
 
 #### Full hardcoded-z roster (all duplicate a `--z-*` value)
+
 ```
 HIGH | src/components/hud/GameOverOverlay.tsx:15 | z-50 → z-(--z-hud) (modal-level; consider --z-modal)
 HIGH | src/components/hud/PauseButton.tsx:17 | z-50 → z-(--z-hud)
@@ -231,6 +248,7 @@ LOW  | src/scenes/kabelsalat/components/KabelsalatBoard.tsx:65,101 | z-20/z-10 (
 ## 5. Cross-Platform / Device Gaps
 
 ### MED — touch targets < 44×44px
+
 ```
 MED | src/ui/bandhq/VoidTraderTab.tsx:131 | py-1 px-4 min-w-[120px] | trade button ~28px tall, below 44px touch minimum | WIRE-RESPONSIVE
 MED | src/ui/bandhq/ShopItem.tsx:171,185 | GlitchButton size='sm' min-w-[80px] | BUY/OWNED below 44px, no responsive bump | WIRE-RESPONSIVE
@@ -239,6 +257,7 @@ MED | src/components/hud/CorruptionMeter.tsx:18 | "BURST ARMED" literal | Englis
 ```
 
 ### LOW
+
 ```
 LOW | src/components/assets/{LoanProfileModal,ForeclosureModal,RiskEventModal}.tsx:25/26/29 | max-w-* (no assets-modal-sheet) | 3 asset modals skip the shared mobile bottom-sheet class (safe-area + svh) used by the other 6 | WIRE-RESPONSIVE
 LOW | src/components/hud/HealthBar.tsx:19 | 100vw (see Cat 2) | DPR/dynamic-viewport horizontal overflow risk | WIRE-RESPONSIVE
@@ -251,6 +270,7 @@ LOW | src/components/hud/HealthBar.tsx:19 | 100vw (see Cat 2) | DPR/dynamic-view
 ## 6. Consistency Across Scenes
 
 ### HIGH
+
 ```
 HIGH | EventModal:262 / QuestsModal:311 / MerchPressModal:60 / PirateRadioModal:64 | border-2 vs border-4 vs border-2 vs border-2 | QuestsModal uses border-4; others border-2 — inconsistent modal border weight | NORMALIZE-SCALE
 HIGH | EventModal:245 z-[100] / QuestsModal:303 z-[100] / MerchPressModal:54 z-50 / PirateRadioModal:59 z-50 | two modals at 100, two at 50 → can stack incorrectly relative to each other | REPLACE-WITH-TOKEN
@@ -258,6 +278,7 @@ HIGH | DealCard:153,161 / QuestsModal:210,248,261 / ContrabandStash:111,131,271 
 ```
 
 ### MED
+
 ```
 MED | EventModal max-w-lg / QuestsModal max-w-2xl / MerchPress max-w-lg / PirateRadio max-w-lg / ContrabandStash max-w-4xl | divergent modal max-width, no shared convention | NORMALIZE-SCALE
 MED | EventModal p-8 / QuestsModal p-6 / MerchPress p-6 / PirateRadio p-4 sm:p-6 | divergent modal body padding | NORMALIZE-SCALE
@@ -273,6 +294,7 @@ MED | bandhq headings: StatsTab/GlossaryTab h3 border-b underline vs VoidTraderT
 ```
 
 ### LOW
+
 ```
 LOW | src/components/postGig/FinancialColumn.tsx:35,41 | border-b-2 then border-t (1px) | mixes border-2 and 1px within one component | NORMALIZE-SCALE
 LOW | src/components/postGig/NegotiationModal.tsx:12,22,33 | border (1px) primary buttons | rest of postGig uses border-2 | NORMALIZE-SCALE
@@ -288,6 +310,7 @@ LOW | HUD panels shadow-[4px_4px_0px] (hard) vs modals shadow-[0_0_30px] (glow) 
 ## 7. Dead / Unreachable Styles
 
 ### Dead `@theme` tokens — definition-only, zero references (verified by Grep)
+
 ```
 MED | src/index.css:23  | --color-toxic-green-mutated   | UNUSED
 MED | src/index.css:20  | --color-toxic-green-light     | UNUSED
@@ -306,6 +329,7 @@ MED | src/index.css:63  | --color-rust-orange-bright    | UNUSED
 ```
 
 ### Dead keyframes / classes in `index.css`
+
 ```
 MED | src/index.css:331 | @keyframes type-cursor | DEAD — "Typewriter flicker", never wired
 MED | src/index.css:343 | @keyframes score-flash | DEAD — never referenced
@@ -316,7 +340,9 @@ LOW | src/index.css:914 | .typing-text (in reduced-motion list) | ORPHAN — ref
 ```
 
 ### Dead selectors in `overworld.css` (map-node render path migrated to `MapNodeView`/`TravelingVan` Tailwind markup)
+
 > Verified: `hex-wrap`, `node-van`, `travel-path`, `particles-canvas`, `radio-dot`, `zones-svg`, `.scan`, `.noise` have **zero** references in any `.tsx/.jsx`. Only `map-node` is still applied (MapNodeView:303) and it supplies its own Tailwind layout, so the descendant rules are dead.
+
 ```
 MED | overworld.css:1    | @keyframes scan-overworld | DEAD (consumed only by dead .scan)
 MED | overworld.css:9    | .scan                     | DEAD — no scan overlay rendered
@@ -345,6 +371,7 @@ LOW | overworld.css:1325 | .travel-path              | DEAD
 LOW | overworld.css:1331 | @keyframes path-draw      | DEAD
 LOW | overworld.css:1340 | .particles-canvas         | DEAD
 ```
+
 > **Live in `overworld.css` (do NOT remove):** `.scene`, `.hud`+`.hud-*`, `.ow-panel`/`.ow-title`/`.ow-status*`, `.map-wrap`, all `.menu-*`, `.event-log`/`.el-*`+`@keyframes cursor-blink`, `.shortcuts-panel`/`.sc-*`, `.band-*`/`.mbr-*`/`.bar-*`/`.harmony-*`/`.van-*`/`.mini-*`/`.career-*`/`.money-*`/`.loc-*`, `.mbr-crit/.mbr-low/.mbr-status-dot`, `.money-anim-up/-down`, `.ow-panel.fuel-warn`, and the `.glitch-on/.g-hue/.g-pixel` family (applied by `useGlitchEffect.ts`).
 
 > No commented-out style blocks or permanently-false-flag style branches were found.
@@ -355,68 +382,68 @@ LOW | overworld.css:1340 | .particles-canvas         | DEAD
 
 Usage = grep count across `src/**`. **UNUSED** = only its own definition exists.
 
-| Token | Verdict |
-|---|---|
-| `--color-toxic-green` | USED (112+ TSX) |
-| `--color-toxic-green-rgb` | USED (CSS-only, ~28) |
-| `--color-toxic-green-dark` | RARE (1 — MainMenu) |
-| `--color-toxic-green-light` | **UNUSED** |
-| `--color-toxic-green-bright` | USED |
-| `--color-toxic-green-mutated` | **UNUSED** |
-| `--color-toxic-green-glow` | USED |
-| `--color-toxic-green-50/-20/-10/-5` | USED (`-5` CSS-only/RARE) |
-| `--color-void-black` | USED (279) |
-| `--color-void-black-50` | RARE (1 — BrutalistUI) |
-| `--color-void-black-rgb` | USED (CSS-only) |
-| `--color-hotspot-bg` | USED (assets) |
-| `--color-shadow-black` | USED |
-| `--color-concrete-gray` | USED |
-| `--color-ash-gray` / `-rgb` | USED (238) |
-| `--color-abyss-black` | RARE (2) |
-| `--color-charcoal-gray` | RARE (2) |
-| `--color-steel-gray` | RARE (2) |
-| `--color-blood-red` / `-rgb` | USED (115) |
-| `--color-blood-red-bright` | USED |
-| `--color-blood-red-dark` | RARE (1) |
-| `--color-blood-red-glow` | RARE (CSS-only) |
-| `--color-blood-red-20` | USED |
-| `--color-rust-orange` | **UNUSED** |
-| `--color-rust-orange-bright` | **UNUSED** |
-| `--color-warning-yellow` / `-rgb` | USED (165) |
-| `--color-warning-yellow-50/-30/-20` | `-50`/`-30` CSS-only RARE; `-20` USED |
-| `--color-rhythm-guitar/-drums/-bass` | RARE (2 each) |
-| `--color-cosmic-purple` | USED (13) |
-| `--color-cosmic-purple-glow` | RARE (CSS-only) |
-| `--color-void-purple` | USED (~4) |
-| `--color-void-blue` | **UNUSED** |
-| `--color-star-white` / `-rgb` | USED (115) |
-| `--color-neon-cyan` | USED (CSS-only, 11) |
-| `--color-purple-glow` | **UNUSED** (dup) |
-| `--color-electric-blue` / `-20` / `-10` | USED (23) |
-| `--color-hot-pink` | RARE (1 — DealCard) |
-| `--color-alert-amber` | RARE (1 — ContrabandStash) |
-| `--color-success-green` | USED (8) |
-| `--color-error-red` | USED (5) |
-| `--color-warning-orange` | **UNUSED** |
-| `--color-info-blue` | USED (7) |
-| `--color-fuel-yellow` | USED (9) |
-| `--color-condition-blue` | USED (7) |
-| `--color-stamina-green` | USED (8) |
-| `--color-mood-pink` | USED (8) |
-| `--color-roadie-grass` / `--color-roadie-venue-blue` | RARE (1 each) |
-| `--color-panel-bg` | **UNUSED** |
-| `--color-disabled-bg/-text/-border` | **UNUSED** (all 3) |
-| `--color-shadow-overlay` | RARE (1 — ToastOverlay) |
-| `--color-shadow-overlay-strong` | **UNUSED** |
-| `--color-overlay` | **UNUSED** |
-| `--font-display` | USED (15) |
-| `--font-ui` | USED (5) |
-| `--font-code` | **UNUSED** |
-| `--font-script` | RARE (CSS-only; consumer `.font-script` is dead) |
-| `--font-asset-display` / `--font-asset-control` | USED (assetsHub.css) |
-| `--z-stage-bg/-stage/-stage-overlay/-stage-controls` | USED |
-| `--z-hud/-modal/-tutorial/-chatter/-chatter-mobile` | USED |
-| `--z-crt/-debug/-toast/-crash` | USED |
+| Token                                                | Verdict                                          |
+| ---------------------------------------------------- | ------------------------------------------------ |
+| `--color-toxic-green`                                | USED (112+ TSX)                                  |
+| `--color-toxic-green-rgb`                            | USED (CSS-only, ~28)                             |
+| `--color-toxic-green-dark`                           | RARE (1 — MainMenu)                              |
+| `--color-toxic-green-light`                          | **UNUSED**                                       |
+| `--color-toxic-green-bright`                         | USED                                             |
+| `--color-toxic-green-mutated`                        | **UNUSED**                                       |
+| `--color-toxic-green-glow`                           | USED                                             |
+| `--color-toxic-green-50/-20/-10/-5`                  | USED (`-5` CSS-only/RARE)                        |
+| `--color-void-black`                                 | USED (279)                                       |
+| `--color-void-black-50`                              | RARE (1 — BrutalistUI)                           |
+| `--color-void-black-rgb`                             | USED (CSS-only)                                  |
+| `--color-hotspot-bg`                                 | USED (assets)                                    |
+| `--color-shadow-black`                               | USED                                             |
+| `--color-concrete-gray`                              | USED                                             |
+| `--color-ash-gray` / `-rgb`                          | USED (238)                                       |
+| `--color-abyss-black`                                | RARE (2)                                         |
+| `--color-charcoal-gray`                              | RARE (2)                                         |
+| `--color-steel-gray`                                 | RARE (2)                                         |
+| `--color-blood-red` / `-rgb`                         | USED (115)                                       |
+| `--color-blood-red-bright`                           | USED                                             |
+| `--color-blood-red-dark`                             | RARE (1)                                         |
+| `--color-blood-red-glow`                             | RARE (CSS-only)                                  |
+| `--color-blood-red-20`                               | USED                                             |
+| `--color-rust-orange`                                | **UNUSED**                                       |
+| `--color-rust-orange-bright`                         | **UNUSED**                                       |
+| `--color-warning-yellow` / `-rgb`                    | USED (165)                                       |
+| `--color-warning-yellow-50/-30/-20`                  | `-50`/`-30` CSS-only RARE; `-20` USED            |
+| `--color-rhythm-guitar/-drums/-bass`                 | RARE (2 each)                                    |
+| `--color-cosmic-purple`                              | USED (13)                                        |
+| `--color-cosmic-purple-glow`                         | RARE (CSS-only)                                  |
+| `--color-void-purple`                                | USED (~4)                                        |
+| `--color-void-blue`                                  | **UNUSED**                                       |
+| `--color-star-white` / `-rgb`                        | USED (115)                                       |
+| `--color-neon-cyan`                                  | USED (CSS-only, 11)                              |
+| `--color-purple-glow`                                | **UNUSED** (dup)                                 |
+| `--color-electric-blue` / `-20` / `-10`              | USED (23)                                        |
+| `--color-hot-pink`                                   | RARE (1 — DealCard)                              |
+| `--color-alert-amber`                                | RARE (1 — ContrabandStash)                       |
+| `--color-success-green`                              | USED (8)                                         |
+| `--color-error-red`                                  | USED (5)                                         |
+| `--color-warning-orange`                             | **UNUSED**                                       |
+| `--color-info-blue`                                  | USED (7)                                         |
+| `--color-fuel-yellow`                                | USED (9)                                         |
+| `--color-condition-blue`                             | USED (7)                                         |
+| `--color-stamina-green`                              | USED (8)                                         |
+| `--color-mood-pink`                                  | USED (8)                                         |
+| `--color-roadie-grass` / `--color-roadie-venue-blue` | RARE (1 each)                                    |
+| `--color-panel-bg`                                   | **UNUSED**                                       |
+| `--color-disabled-bg/-text/-border`                  | **UNUSED** (all 3)                               |
+| `--color-shadow-overlay`                             | RARE (1 — ToastOverlay)                          |
+| `--color-shadow-overlay-strong`                      | **UNUSED**                                       |
+| `--color-overlay`                                    | **UNUSED**                                       |
+| `--font-display`                                     | USED (15)                                        |
+| `--font-ui`                                          | USED (5)                                         |
+| `--font-code`                                        | **UNUSED**                                       |
+| `--font-script`                                      | RARE (CSS-only; consumer `.font-script` is dead) |
+| `--font-asset-display` / `--font-asset-control`      | USED (assetsHub.css)                             |
+| `--z-stage-bg/-stage/-stage-overlay/-stage-controls` | USED                                             |
+| `--z-hud/-modal/-tutorial/-chatter/-chatter-mobile`  | USED                                             |
+| `--z-crt/-debug/-toast/-crash`                       | USED                                             |
 
 **Dead tokens to consider removing (16):** `--color-toxic-green-light`, `--color-toxic-green-mutated`, `--color-void-blue`, `--color-purple-glow`, `--color-warning-orange`, `--color-overlay`, `--color-panel-bg`, `--color-disabled-bg`, `--color-disabled-text`, `--color-disabled-border`, `--color-shadow-overlay-strong`, `--font-code`, `--color-rust-orange`, `--color-rust-orange-bright`. None appear in `BRAND_COLOR_HEX`, so removal is low-risk — but coordinate with any inline-style consumers first (`CLAUDE.md` requires `BRAND_COLOR_HEX` ↔ `index.css` sync).
 
@@ -426,17 +453,17 @@ Usage = grep count across `src/**`. **UNUSED** = only its own definition exists.
 
 Every hex / `rgb()` / `hsl()` / default-palette literal found **outside** the sanctioned `src/utils/brandColors.ts` and `src/index.css`:
 
-| File:line | Literal | Sanctioned? | Note |
-|---|---|---|---|
-| src/ui/GigModifierButton.tsx:47 | `bg-white/5` | ❌ | default-palette `white` — use `bg-star-white/5` |
-| src/ui/SupplyStopModal.tsx:76 | `hover:text-white` | ❌ | default-palette `white` — use `text-star-white` |
-| src/assets/react.svg:1 | `fill="#..."` | ⚠️ | stock Vite logo asset, not brand UI |
-| src/scenes/ClinicScene.tsx:28 | `rgb(var(--color-void-black-rgb) / 90%)` | ✅ | token-based opacity (idiomatic) |
-| src/scenes/gameover/GameOverBackground.tsx:32 | `rgb(var(--color-blood-red-rgb) / 0.18)` | ✅ | token-based opacity |
-| src/components/assets/AssetsStatusStrip.tsx:61 | `divide-[rgb(var(--color-ash-gray-rgb)_/_35%)]` | ✅ | token-based (verbose form — Cat 1 MED) |
-| src/components/assets/AssetsBottomTabs.tsx:39,42 | `rgb(var(--color-ash-gray-rgb) / 45%)` etc. | ✅ | token-based opacity (inline style) |
-| src/ui/EventModal.tsx:254 | `rgb(var(--color-void-black-rgb) / 50%)` | ✅ | token-based opacity |
-| src/overworld.css / assetsHub.css | `rgb(var(--color-*-rgb) / N%)` (many) | ✅ | documented RGB-triplet opacity pattern |
+| File:line                                        | Literal                                         | Sanctioned? | Note                                            |
+| ------------------------------------------------ | ----------------------------------------------- | ----------- | ----------------------------------------------- |
+| src/ui/GigModifierButton.tsx:47                  | `bg-white/5`                                    | ❌          | default-palette `white` — use `bg-star-white/5` |
+| src/ui/SupplyStopModal.tsx:76                    | `hover:text-white`                              | ❌          | default-palette `white` — use `text-star-white` |
+| src/assets/react.svg:1                           | `fill="#..."`                                   | ⚠️          | stock Vite logo asset, not brand UI             |
+| src/scenes/ClinicScene.tsx:28                    | `rgb(var(--color-void-black-rgb) / 90%)`        | ✅          | token-based opacity (idiomatic)                 |
+| src/scenes/gameover/GameOverBackground.tsx:32    | `rgb(var(--color-blood-red-rgb) / 0.18)`        | ✅          | token-based opacity                             |
+| src/components/assets/AssetsStatusStrip.tsx:61   | `divide-[rgb(var(--color-ash-gray-rgb)_/_35%)]` | ✅          | token-based (verbose form — Cat 1 MED)          |
+| src/components/assets/AssetsBottomTabs.tsx:39,42 | `rgb(var(--color-ash-gray-rgb) / 45%)` etc.     | ✅          | token-based opacity (inline style)              |
+| src/ui/EventModal.tsx:254                        | `rgb(var(--color-void-black-rgb) / 50%)`        | ✅          | token-based opacity                             |
+| src/overworld.css / assetsHub.css                | `rgb(var(--color-*-rgb) / N%)` (many)           | ✅          | documented RGB-triplet opacity pattern          |
 
 **Conclusion:** apart from two default-palette `white` usages and the stock SVG asset, there are **no hardcoded brand-color literals** anywhere in the UI source. Every other `rgb(...)` resolves a defined `--color-*-rgb` triplet token (the sanctioned opacity pattern).
 
