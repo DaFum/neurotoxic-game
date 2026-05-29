@@ -48,7 +48,7 @@ export const RoadieTouchSurface = memo(function RoadieTouchSurface({
         y: event.clientY
       }
       try {
-        event.currentTarget.setPointerCapture?.(event.pointerId)
+        event.currentTarget.setPointerCapture(event.pointerId)
       } catch {
         // Pointer capture is best-effort; synthetic or unsupported events still move.
       }
