@@ -1,8 +1,7 @@
 import { NEUTRAL_ASSET_MODIFIERS } from './assetSelectors'
 import type { AssetModifiers } from '../types/assets'
 import { logger } from './logger'
-import { clamp0to100 } from './gameStateUtils'
-import { finiteNumberOr } from './finiteNumber'
+import { clamp0to100, finiteNumberOr } from './gameStateUtils'
 import { bandHasTrait } from './traitUtils'
 import { calculateZealotryEffects } from './socialEngine'
 import {
