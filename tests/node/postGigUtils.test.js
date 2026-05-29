@@ -3,7 +3,9 @@ import assert from 'node:assert/strict'
 import {
   applyPostGigPerformancePenalty,
   calculateExcessMissMoneyPenalty,
-  calculatePostGigStateUpdates
+  calculatePostGigStateUpdates,
+  getSpinStorySocialUpdateFactory,
+  SPIN_STORY_CONTROVERSY_REDUCTION
 } from '../../src/utils/postGigUtils'
 
 const buildFinancials = () => ({
@@ -166,4 +168,23 @@ test('calculatePostGigStateUpdates grows scene presence after post-gig activity'
   })
 
   assert.equal(updates.updatedSocial.scenePresence, 29)
+})
+
+test('getSpinStorySocialUpdateFactory decreases controversyLevel correctly', () => {
+  const updateFactory = getSpinStorySocialUpdateFactory()
+
+  // Case 1: normal reduction when above SPIN_STORY_CONTROVERSY_REDUCTION
+  const prevSocial1 = buildSocial({ controversyLevel: 50 })
+  const result1 = updateFactory(prevSocial1)
+  assert.equal(result1.controversyLevel, 50 - SPIN_STORY_CONTROVERSY_REDUCTION)
+
+  // Case 2: clamped to 0 when below SPIN_STORY_CONTROVERSY_REDUCTION
+  const prevSocial2 = buildSocial({ controversyLevel: 10 })
+  const result2 = updateFactory(prevSocial2)
+  assert.equal(result2.controversyLevel, 0)
+
+  // Case 3: defaults to 0 when controversyLevel is undefined
+  const prevSocial3 = buildSocial({ controversyLevel: undefined })
+  const result3 = updateFactory(prevSocial3)
+  assert.equal(result3.controversyLevel, 0)
 })
