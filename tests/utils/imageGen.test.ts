@@ -20,24 +20,21 @@ describe('imageGen utilities', () => {
   describe('getGenImageUrl', () => {
     test('generates correct url for simple description', () => {
       const url = getGenImageUrl('cyber punk')
-      assert.strictEqual(
-        url,
+      expect(url).toBe(
         'https://gen.pollinations.ai/image/cyber%20punk?model=flux&seed=666&key=pk_xDL8u2ty4Sxucaa3&='
       )
     })
 
     test('generates correct url for complex description with special characters', () => {
       const url = getGenImageUrl('hello world / ? & =')
-      assert.strictEqual(
-        url,
+      expect(url).toBe(
         'https://gen.pollinations.ai/image/hello%20world%20%2F%20%3F%20%26%20%3D?model=flux&seed=666&key=pk_xDL8u2ty4Sxucaa3&='
       )
     })
 
     test('generates correct url for empty description', () => {
       const url = getGenImageUrl('')
-      assert.strictEqual(
-        url,
+      expect(url).toBe(
         'https://gen.pollinations.ai/image/?model=flux&seed=666&key=pk_xDL8u2ty4Sxucaa3&='
       )
     })
