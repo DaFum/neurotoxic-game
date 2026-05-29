@@ -206,4 +206,26 @@ describe('MerchWorkshopSection', () => {
 
     expect(screen.getByText('Loan')).toBeInTheDocument()
   })
+
+  it('does not offer refinance for loans in default countdown', () => {
+    mockState.assets = [mockAsset('workshop-1', 'merch_workshop_chassis')]
+    mockState.liabilities = [
+      {
+        id: 'liability-1',
+        source: 'loan',
+        assetId: 'workshop-1',
+        principalRemaining: 1000,
+        interestRate: 0.08,
+        dailyPayment: 50,
+        termDaysRemaining: 20,
+        defaultCounter: 2
+      }
+    ]
+
+    render(<MerchWorkshopSection />)
+
+    expect(
+      screen.queryByRole('button', { name: /assets:loan\.refinance/ })
+    ).not.toBeInTheDocument()
+  })
 })

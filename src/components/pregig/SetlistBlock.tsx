@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { getSongId } from '../../utils/audio/audioEngine'
 import { Tooltip } from '../../ui/shared/Tooltip'
-import { buildSongChartDensity } from '../../utils/chartDensity'
+import { buildSetlistChartDensity } from '../../utils/chartDensity'
 import type { RhythmSetlistEntry } from '../../types/rhythmGame'
 import type { Song } from '../../types/audio'
 
@@ -118,11 +118,10 @@ export const SetlistBlock = ({
   toggleSong
 }: SetlistBlockProps) => {
   const { t } = useTranslation('ui')
-  const firstSelectedId = setlist.length > 0 ? getSongId(setlist[0]) : null
-  const firstSelectedSong = firstSelectedId ? songsDict[firstSelectedId] : null
-  const densityBars = firstSelectedSong
-    ? buildSongChartDensity(firstSelectedSong)
-    : []
+  const selectedSongs = setlist
+    .map(entry => songsDict[getSongId(entry)])
+    .filter((song): song is Song => Boolean(song))
+  const densityBars = buildSetlistChartDensity(selectedSongs)
   const densityTotal = densityBars.reduce((sum, bar) => sum + bar.count, 0)
   const densityPeak = densityBars.reduce(
     (peak, bar) => Math.max(peak, bar.count),
@@ -165,7 +164,7 @@ export const SetlistBlock = ({
       </div>
 
       <div className='mt-3 h-16 border-t border-ash-gray/20 pt-2 flex flex-col gap-1'>
-        {firstSelectedSong ? (
+        {selectedSongs.length > 0 ? (
           <>
             <div className='flex items-center justify-between text-[9px] font-mono uppercase tracking-wider text-ash-gray/60'>
               <span>{t('ui:pregig.noteDensity')}</span>
@@ -181,7 +180,7 @@ export const SetlistBlock = ({
             <div className='flex min-h-0 flex-1 items-end justify-between gap-1'>
               {densityBars.map((bar, i) => (
                 <motion.div
-                  key={`${firstSelectedId}-${bar.timestamp}`}
+                  key={`setlist-${bar.timestamp}`}
                   initial={{ height: 0 }}
                   animate={{ height: `${Math.max(8, bar.intensity * 100)}%` }}
                   transition={{ duration: 0.25, delay: i * 0.015 }}

@@ -487,7 +487,7 @@ test('handleRefinanceLiability - re-amortizes loan and charges fee', () => {
         interestRate: 0.08,
         dailyPayment: 20,
         termDaysRemaining: 40,
-        defaultCounter: 3
+        defaultCounter: 0
       }
     ]
   }
@@ -503,4 +503,31 @@ test('handleRefinanceLiability - re-amortizes loan and charges fee', () => {
   assert.strictEqual(next.liabilities[0].termDaysRemaining, 180)
   assert.strictEqual(next.liabilities[0].defaultCounter, 0)
   assert.ok(next.liabilities[0].dailyPayment < 20)
+})
+
+test('handleRefinanceLiability - rejects loans already in default countdown', () => {
+  const startState = {
+    ...mockState,
+    player: { ...mockState.player, money: 1000 },
+    liabilities: [
+      {
+        id: 'loan_1',
+        source: 'loan',
+        assetId: 'asset_1',
+        principalRemaining: 1000,
+        interestRate: 0.08,
+        dailyPayment: 20,
+        termDaysRemaining: 40,
+        defaultCounter: 3
+      }
+    ]
+  }
+
+  const next = handleRefinanceLiability(startState, {
+    liabilityId: 'loan_1',
+    loanProfileId: 'longTerm',
+    fee: 20
+  })
+
+  assert.strictEqual(next, startState)
 })

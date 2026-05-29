@@ -7,6 +7,7 @@ import {
   calculateRefinanceFee,
   type LoanProfileId
 } from '../../utils/loanProfiles'
+import { finiteNumberOr } from '../../utils/gameStateUtils'
 
 /**
  * Lightweight read-only list of every outstanding liability with the most
@@ -40,6 +41,8 @@ export const LiabilitiesPanel = () => {
       <ul className='flex flex-col gap-1 font-mono text-xs'>
         {liabilities.map(l => {
           const refinanceFee = calculateRefinanceFee(l.principalRemaining)
+          const defaultCounter = finiteNumberOr(l.defaultCounter, 0)
+          const canRefinance = l.source === 'loan' && defaultCounter <= 0
           return (
             <li
               key={l.id}
@@ -63,14 +66,14 @@ export const LiabilitiesPanel = () => {
                 })}
                 )
               </span>
-              {l.defaultCounter > 0 && (
+              {defaultCounter > 0 && (
                 <span style={{ color: 'var(--color-blood-red)' }}>
                   {t('assets:loan.defaultWarning', {
-                    daysLeft: Math.max(0, 7 - l.defaultCounter)
+                    daysLeft: Math.max(0, 7 - defaultCounter)
                   })}
                 </span>
               )}
-              {l.source === 'loan' && (
+              {canRefinance && (
                 <button
                   type='button'
                   onClick={() => setRefinanceTargetId(l.id)}

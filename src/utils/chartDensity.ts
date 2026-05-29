@@ -61,3 +61,25 @@ export const buildSongChartDensity = (
     intensity: count / peak
   }))
 }
+
+export const buildSetlistChartDensity = (
+  songs: Array<Pick<Song, 'notes' | 'tpb' | 'bpm' | 'duration'>>,
+  bucketCount = 16
+): ChartDensityBar[] => {
+  const densitySets = songs
+    .map(song => buildSongChartDensity(song, bucketCount))
+    .filter(bars => bars.length > 0)
+  const firstSet = densitySets[0]
+  if (!firstSet) return []
+
+  const counts = firstSet.map((_, index) =>
+    densitySets.reduce((sum, bars) => sum + (bars[index]?.count ?? 0), 0)
+  )
+  const peak = Math.max(1, ...counts)
+
+  return counts.map((count, index) => ({
+    timestamp: firstSet[index]?.timestamp ?? index,
+    count,
+    intensity: count / peak
+  }))
+}

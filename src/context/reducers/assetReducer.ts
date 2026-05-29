@@ -388,6 +388,7 @@ export const handleRefinanceLiability = (
     if (liability.id !== payload.liabilityId || liability.source !== 'loan') {
       return liability
     }
+    if (finiteNumberOr(liability.defaultCounter, 0) > 0) return liability
 
     const principal = Math.max(
       0,

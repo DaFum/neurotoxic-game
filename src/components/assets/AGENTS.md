@@ -20,6 +20,7 @@
 - `ModulePickerModal` filters `getModulePoolForAsset` by the active slot's `slotType`, surfaces `lockReasons` as structured badges, and blocks install on `exclusiveWithGroup` conflicts. It subscribes to narrow state slices (`player.fame`, `player.money`, `social.scenePresence`, `activeStoryFlags`, `band`, `assets`) and rebuilds a synthetic composite for `getModulePoolForAsset` so the modal does NOT re-render on every unrelated state change. Add a new slice to the selector set when adding a new `LockReason` branch.
 - `CrowdfundSetupModal` computes the success probability via `resolveCrowdfundProbability(fame, scenePresence, target)` (exported from `assetTicks.ts`) and passes it as `plannedSuccessProbability` into `startCrowdfund`. The action creator clamps it into `[0.05, 0.95]` and stamps it onto the campaign; `processCrowdfundTick` resolves success when `plannedSuccessRoll < plannedSuccessProbability`. The displayed odds ARE the realized odds — never replace the formula on one side without the other. `plannedSuccessRoll` itself is drawn from `mulberry32(rngSeed ^ fameStake ^ days)` for per-campaign determinism inside a session.
 - `CrowdfundSetupModal` fame-stake slider is capped at the player's current `fame` (no `Math.max(20, fame)` floor — that allowed staking phantom fame); the initial state is `Math.min(20, fame)` for the same reason.
+- Loans in default countdown (`defaultCounter > 0`) cannot be refinanced. Keep the UI, action creator, and reducer aligned so refinancing does not erase foreclosure pressure.
 
 ## Module Picker Performance
 

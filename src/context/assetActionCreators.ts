@@ -354,6 +354,9 @@ export const refinanceLiability = (
   if (!liability || liability.source !== 'loan') {
     return fail('UNKNOWN_LIABILITY')
   }
+  if (finiteNumberOr(liability.defaultCounter, 0) > 0) {
+    return fail('LOAN_IN_DEFAULT')
+  }
 
   const profile = LOAN_PROFILES[loanProfileId]
   if (!profile) return fail('UNKNOWN_KIND_OR_TIER')

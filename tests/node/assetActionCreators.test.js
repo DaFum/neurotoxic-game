@@ -656,7 +656,7 @@ describe('startCrowdfund / sellChassis / repairChassis / removeModule', () => {
             interestRate: 0.08,
             dailyPayment: 20,
             termDaysRemaining: 40,
-            defaultCounter: 2
+            defaultCounter: 0
           }
         ]
       })
@@ -668,6 +668,30 @@ describe('startCrowdfund / sellChassis / repairChassis / removeModule', () => {
       loanProfileId: 'longTerm',
       fee: 20
     })
+  })
+
+  it('refinanceLiability rejects loans already in default countdown', () => {
+    const action = refinanceLiability(
+      'loan_1',
+      'longTerm',
+      makeState({
+        liabilities: [
+          {
+            id: 'loan_1',
+            source: 'loan',
+            assetId: 'asset_1',
+            principalRemaining: 1000,
+            interestRate: 0.08,
+            dailyPayment: 20,
+            termDaysRemaining: 40,
+            defaultCounter: 2
+          }
+        ]
+      })
+    )
+
+    assert.equal(action.type, ActionTypes.REFINANCE_LIABILITY_FAILED)
+    assert.equal(action.payload.reason, 'LOAN_IN_DEFAULT')
   })
 
   it('refinanceLiability rejects ineligible profiles', () => {

@@ -216,6 +216,7 @@ export type RefinanceFailureReason =
   | 'UNKNOWN_KIND_OR_TIER'
   | 'LOAN_PROFILE_INELIGIBLE'
   | 'INSUFFICIENT_FUNDS'
+  | 'LOAN_IN_DEFAULT'
 
 export type InstallModuleFailureReason =
   | 'UNKNOWN_MODULE'
