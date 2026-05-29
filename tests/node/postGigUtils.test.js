@@ -4,6 +4,7 @@ import {
   applyPostGigPerformancePenalty,
   calculateExcessMissMoneyPenalty,
   calculatePostGigStateUpdates,
+  getAcceptDealSocialUpdateFactory,
   getSpinStorySocialUpdateFactory,
   SPIN_STORY_CONTROVERSY_REDUCTION
 } from '../../src/utils/postGigUtils'
@@ -187,4 +188,61 @@ test('getSpinStorySocialUpdateFactory decreases controversyLevel correctly', () 
   const prevSocial3 = buildSocial({ controversyLevel: undefined })
   const result3 = updateFactory(prevSocial3)
   assert.equal(result3.controversyLevel, 0)
+})
+
+test('getAcceptDealSocialUpdateFactory updates activeDeals with remaining gigs based on duration', () => {
+  const deal = { offer: { duration: 5 } }
+  const updateFactory = getAcceptDealSocialUpdateFactory(deal)
+  const prevSocial = buildSocial({})
+  const updates = updateFactory(prevSocial)
+  assert.equal(updates.activeDeals.length, 1)
+  assert.equal(updates.activeDeals[0].remainingGigs, 5)
+})
+
+test('getAcceptDealSocialUpdateFactory applies and clamps loyalty and controversy penalties', () => {
+  const deal = {
+    penalty: { loyalty: -10, controversy: 20 },
+    offer: { duration: 5 }
+  }
+  const updateFactory = getAcceptDealSocialUpdateFactory(deal)
+  const prevSocial = buildSocial({ loyalty: 15, controversyLevel: 50 })
+  const updates = updateFactory(prevSocial)
+  assert.equal(updates.loyalty, 5)
+  assert.equal(updates.controversyLevel, 70)
+  const prevSocial2 = buildSocial({ loyalty: 5, controversyLevel: 90 })
+  const updates2 = updateFactory(prevSocial2)
+  assert.equal(updates2.loyalty, 0)
+  assert.equal(updates2.controversyLevel, 100)
+})
+
+test('getAcceptDealSocialUpdateFactory updates brand reputation and opposing alignment', () => {
+  const deal = { alignment: 'CORPORATE', offer: { duration: 5 } }
+  const updateFactory = getAcceptDealSocialUpdateFactory(deal)
+
+  const prevSocial = buildSocial({
+    brandReputation: { CORPORATE: 10, INDIE: 20 }
+  })
+  const updates = updateFactory(prevSocial)
+
+  assert.equal(updates.brandReputation.CORPORATE, 15)
+  assert.equal(updates.brandReputation.INDIE, 17)
+})
+
+test('getAcceptDealSocialUpdateFactory handles missing social state values gracefully', () => {
+  const deal = {
+    penalty: { loyalty: -10, controversy: 20 },
+    alignment: 'CORPORATE',
+    offer: { duration: 5 }
+  }
+  const updateFactory = getAcceptDealSocialUpdateFactory(deal)
+  const prevSocial = buildSocial({
+    loyalty: undefined,
+    controversyLevel: undefined,
+    brandReputation: undefined
+  })
+  const updates = updateFactory(prevSocial)
+  assert.equal(updates.loyalty, 0)
+  assert.equal(updates.controversyLevel, 20)
+  assert.equal(updates.brandReputation.CORPORATE, 5)
+  assert.equal(updates.brandReputation.INDIE, 0)
 })
