@@ -23,31 +23,31 @@ export const LOAN_PROFILES: Record<LoanProfileId, LoanProfile> = {
     id: 'shortTerm',
     termDays: 60,
     interestRate: 0.08,
-    labelKey: 'assets.loan.profile.shortTerm'
+    labelKey: 'assets:loan.profile.shortTerm'
   },
   mediumTerm: {
     id: 'mediumTerm',
     termDays: 120,
     interestRate: 0.06,
-    labelKey: 'assets.loan.profile.mediumTerm'
+    labelKey: 'assets:loan.profile.mediumTerm'
   },
   longTerm: {
     id: 'longTerm',
     termDays: 180,
     interestRate: 0.04,
-    labelKey: 'assets.loan.profile.longTerm'
+    labelKey: 'assets:loan.profile.longTerm'
   },
   loanShark: {
     id: 'loanShark',
     termDays: 30,
     interestRate: 0.2,
-    labelKey: 'assets.loan.profile.loanShark'
+    labelKey: 'assets:loan.profile.loanShark'
   },
   coop: {
     id: 'coop',
     termDays: 240,
     interestRate: 0.02,
-    labelKey: 'assets.loan.profile.coop',
+    labelKey: 'assets:loan.profile.coop',
     minScenePresenceRequired: 50
   }
 }

@@ -5,11 +5,11 @@ import { LOAN_PROFILES } from '../../src/utils/loanProfiles'
 import type { HTMLAttributes } from 'react'
 
 const profileLabels: Record<string, string> = {
-  'assets.loan.profile.shortTerm': 'Short term',
-  'assets.loan.profile.mediumTerm': 'Medium term',
-  'assets.loan.profile.longTerm': 'Long term',
-  'assets.loan.profile.loanShark': 'Loan shark',
-  'assets.loan.profile.coop': 'Co-op'
+  'assets:loan.profile.shortTerm': 'Short term',
+  'assets:loan.profile.mediumTerm': 'Medium term',
+  'assets:loan.profile.longTerm': 'Long term',
+  'assets:loan.profile.loanShark': 'Loan shark',
+  'assets:loan.profile.coop': 'Co-op'
 }
 
 vi.mock('../../src/ui/shared/GeneratedImagePanel', () => ({

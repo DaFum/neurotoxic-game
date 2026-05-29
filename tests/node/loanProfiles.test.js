@@ -1,10 +1,14 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import {
   LOAN_PROFILES,
   computeAmortization,
   isLoanProfileEligible
 } from '../../src/utils/loanProfiles.ts'
+
+const readLocale = locale =>
+  JSON.parse(readFileSync(`public/locales/${locale}/assets.json`, 'utf8'))
 
 describe('LOAN_PROFILES', () => {
   it('all five profiles defined and no extras', () => {
@@ -27,6 +31,26 @@ describe('LOAN_PROFILES', () => {
 
   it('coop has scene presence requirement', () => {
     assert.equal(LOAN_PROFILES.coop.minScenePresenceRequired, 50)
+  })
+
+  it('profile labels resolve through the assets namespace', () => {
+    const locales = {
+      en: readLocale('en'),
+      de: readLocale('de')
+    }
+
+    for (const profile of Object.values(LOAN_PROFILES)) {
+      assert.match(profile.labelKey, /^assets:/, `${profile.id} labelKey`)
+      const key = profile.labelKey.slice('assets:'.length)
+      for (const [locale, entries] of Object.entries(locales)) {
+        assert.equal(
+          typeof entries[key],
+          'string',
+          `${locale}/assets.json missing ${key}`
+        )
+        assert.notEqual(entries[key].trim(), '')
+      }
+    }
   })
 })
 
