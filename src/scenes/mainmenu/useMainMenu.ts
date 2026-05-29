@@ -1,12 +1,12 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
-import { handleError } from '../../utils/errorHandler'
+import { useEffect, useRef, useCallback } from 'react'
 import { safeStorageOperation } from '../../utils/storage'
 import { getSafeUUID } from '../../utils/crypto'
 import { useTranslation } from 'react-i18next'
 import { useGameActions } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
-import { audioService } from '../../utils/audio/audioEngine'
 import { enterFullscreen } from '../../utils/fullscreen'
+import { useMainMenuState } from './hooks/useMainMenuState'
+import { useMainMenuAudio } from './hooks/useMainMenuAudio'
 
 export const useMainMenu = () => {
   const { t } = useTranslation()
@@ -18,76 +18,26 @@ export const useMainMenu = () => {
   const { changeScene, loadGame, addToast, resetState, updatePlayer } =
     useGameActions()
 
-  const isMountedRef = useRef(true)
-  const [isStarting, setIsStarting] = useState(false)
-  const [isLoadingGame, setIsLoadingGame] = useState(false)
-  const [showNameInput, setShowNameInput] = useState(false)
-  const [playerNameInput, setPlayerNameInput] = useState('')
-  const [showSocials, setShowSocials] = useState(false)
-  const [showFeatures, setShowFeatures] = useState(false)
-  const [showExistingSavePrompt, setShowExistingSavePrompt] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const {
+    isMountedRef,
+    isStarting,
+    setIsStarting,
+    isLoadingGame,
+    setIsLoadingGame,
+    showNameInput,
+    setShowNameInput,
+    playerNameInput,
+    setPlayerNameInput,
+    showSocials,
+    setShowSocials,
+    showFeatures,
+    setShowFeatures,
+    showExistingSavePrompt,
+    setShowExistingSavePrompt,
+    inputRef
+  } = useMainMenuState()
 
-  useEffect(() => {
-    isMountedRef.current = true
-    return () => {
-      isMountedRef.current = false
-    }
-  }, [])
-
-  useEffect(() => {
-    if (showNameInput) {
-      inputRef.current?.focus()
-    }
-  }, [showNameInput])
-
-  const reportAudioIssue = useCallback(
-    (error: unknown, fallbackMessage: string) => {
-      if (!isMountedRef.current) return
-      try {
-        handleError(error, { addToast, fallbackMessage })
-      } catch {
-        // Never block scene transitions on toast/reporting failures.
-      }
-    },
-    [addToast]
-  )
-
-  const startAmbientSafely = useCallback(() => {
-    void audioService.startAmbient().catch(err => {
-      reportAudioIssue(
-        err,
-        tRef.current('ui:errors.ambient_start_failed', {
-          defaultValue: 'Failed to start ambient audio'
-        })
-      )
-    })
-  }, [reportAudioIssue])
-
-  const initializeAudio = useCallback(() => {
-    void audioService
-      .ensureAudioContext()
-      .then(success => {
-        if (success) {
-          startAmbientSafely()
-        } else {
-          reportAudioIssue(
-            new Error('Audio unlock failed'),
-            tRef.current('ui:errors.audio_init_failed', {
-              defaultValue: 'Audio initialization failed'
-            })
-          )
-        }
-      })
-      .catch(err =>
-        reportAudioIssue(
-          err,
-          tRef.current('ui:errors.audio_init_failed', {
-            defaultValue: 'Audio initialization failed'
-          })
-        )
-      )
-  }, [reportAudioIssue, startAmbientSafely])
+  const { initializeAudio } = useMainMenuAudio(isMountedRef, addToast, tRef)
 
   const proceedToTour = useCallback(() => {
     setIsStarting(true)
