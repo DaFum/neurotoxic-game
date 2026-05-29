@@ -633,7 +633,8 @@ export const calculateRefuelCost = (
  * @returns {number} Cost in euros.
  */
 export const calculateRepairCost = (currentCondition: number) => {
-  const missing = Math.max(0, 100 - currentCondition)
+  const safeCondition = clamp0to100(toFiniteNumber(currentCondition, 100))
+  const missing = 100 - safeCondition
   return Math.ceil(missing * EXPENSE_CONSTANTS.TRANSPORT.REPAIR_COST_PER_UNIT)
 }
 
