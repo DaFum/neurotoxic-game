@@ -58,12 +58,12 @@ const ToggleSwitchComponent = ({
           className={`w-full h-full absolute inset-0 bg-toxic-green transition-opacity duration-150 ${isOn ? 'opacity-20' : 'opacity-0'}`}
         ></div>
         <div
-          className={`w-5 h-full bg-toxic-green transition-transform duration-100 z-10 ${isOn ? 'translate-x-8' : 'translate-x-0'}`}
+          className={`w-5 h-full bg-toxic-green transition-transform duration-100 relative z-1 ${isOn ? 'translate-x-8' : 'translate-x-0'}`}
         >
           <div className='w-[2px] h-full bg-void-black mx-auto opacity-50'></div>
         </div>
         <span
-          className={`absolute text-[10px] font-bold z-0 ${isOn ? 'left-2 text-toxic-green' : 'right-2 text-toxic-green/50'}`}
+          className={`absolute z-0 text-[10px] font-bold ${isOn ? 'left-2 text-toxic-green' : 'right-2 text-toxic-green/50'}`}
         >
           {isOn ? t('ui:toggle.on') : t('ui:toggle.off')}
         </span>

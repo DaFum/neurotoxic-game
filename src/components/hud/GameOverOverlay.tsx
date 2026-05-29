@@ -16,7 +16,7 @@ export const GameOverOverlay = memo(function GameOverOverlay({
       role='alert'
       aria-live='assertive'
     >
-      <h1 className='text-7xl text-blood-red font-[Metal_Mania] animate-doom-zoom'>
+      <h1 className='text-7xl text-blood-red font-display animate-doom-zoom'>
         {t('ui:game-over.booed-off-stage', { defaultValue: 'BOOED OFF STAGE' })}
       </h1>
       <div className='mt-4 text-ash-gray font-mono text-sm animate-pulse tracking-widest'>

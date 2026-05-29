@@ -86,12 +86,12 @@ const ToastItem = memo(({ toast, removeToast, style }: ToastItemProps) => {
     >
       <div className='flex items-start gap-3 px-3 py-2.5'>
         <span
-          className={`shrink-0 mt-0.5 text-sm font-bold font-[Courier_New] ${style.text}`}
+          className={`shrink-0 mt-0.5 text-sm font-bold font-ui ${style.text}`}
           aria-hidden='true'
         >
           {style.icon}
         </span>
-        <p className={`font-[Courier_New] text-sm leading-snug ${style.text}`}>
+        <p className={`font-ui text-sm leading-snug ${style.text}`}>
           {String(renderToastMessage(toast, t) ?? '')}
         </p>
       </div>

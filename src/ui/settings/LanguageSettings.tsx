@@ -7,7 +7,7 @@ export const LanguageSettings = memo(function LanguageSettings() {
 
   return (
     <div>
-      <h2 className='font-[Metal_Mania] text-4xl uppercase text-toxic-green mb-6 border-b border-ash-gray pb-2'>
+      <h2 className='font-display text-4xl uppercase text-toxic-green mb-6 border-b border-ash-gray pb-2'>
         {t('ui:language')}
       </h2>
       <div className='flex gap-4'>

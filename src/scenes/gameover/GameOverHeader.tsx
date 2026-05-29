@@ -21,7 +21,7 @@ export const GameOverHeader = React.memo(() => {
 
       <h1
         data-text={t('ui:gameOver.soldOut')}
-        className='title-ghost text-8xl md:text-9xl text-blood-red font-[Metal_Mania] mb-2 animate-doom-zoom animate-chromatic-flicker relative z-10'
+        className='title-ghost text-8xl md:text-9xl text-blood-red font-display mb-2 animate-doom-zoom animate-chromatic-flicker relative z-10'
       >
         {t('ui:gameOver.soldOut')}
       </h1>
