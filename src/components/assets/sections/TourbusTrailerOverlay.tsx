@@ -14,7 +14,7 @@ interface Props {
  * Mounted by `TourbusVehicleView` only when `tb_trailer_hitch` is installed.
  */
 export const TourbusTrailerOverlay = ({ asset, onSlotClick }: Props) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation('ui')
   const addonSlots = asset.slots.filter(s => s.slotType === 'tb_trailer_addon')
   return (
     <div className='relative w-full md:absolute md:left-[-30%] md:top-[20%] md:w-[30%]'>
