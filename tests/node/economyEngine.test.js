@@ -1082,3 +1082,49 @@ test('calculateMerchIncome with identical custom prices equals default behaviour
     'Setting default price explicitly should produce same revenue'
   )
 })
+
+test('calculateSponsorshipBonuses handles different gig stats scenarios', async t => {
+  await t.test('returns zero bonus if conditions are not met', () => {
+    const result = calculateSponsorshipBonuses({ misses: 5, peakHype: 50 })
+    assert.strictEqual(result.totalBonus, 0)
+    assert.deepEqual(result.incomeItems, [])
+  })
+
+  await t.test('applies tech sponsor bonus if misses === 0', () => {
+    const result = calculateSponsorshipBonuses({ misses: 0, peakHype: 50 })
+    assert.strictEqual(result.totalBonus, 200)
+    assert.strictEqual(result.incomeItems.length, 1)
+    assert.strictEqual(
+      result.incomeItems[0].labelKey,
+      'economy:gigIncome.techSponsor.label'
+    )
+    assert.strictEqual(result.incomeItems[0].value, 200)
+  })
+
+  await t.test('applies beer sponsor bonus if peakHype >= 100', () => {
+    const result = calculateSponsorshipBonuses({ misses: 5, peakHype: 120 })
+    assert.strictEqual(result.totalBonus, 150)
+    assert.strictEqual(result.incomeItems.length, 1)
+    assert.strictEqual(
+      result.incomeItems[0].labelKey,
+      'economy:gigIncome.beerSponsor.label'
+    )
+    assert.strictEqual(result.incomeItems[0].value, 150)
+  })
+
+  await t.test('applies both bonuses if both conditions are met', () => {
+    const result = calculateSponsorshipBonuses({ misses: 0, peakHype: 100 })
+    assert.strictEqual(result.totalBonus, 350)
+    assert.strictEqual(result.incomeItems.length, 2)
+    assert.strictEqual(
+      result.incomeItems[0].labelKey,
+      'economy:gigIncome.techSponsor.label'
+    )
+    assert.strictEqual(result.incomeItems[0].value, 200)
+    assert.strictEqual(
+      result.incomeItems[1].labelKey,
+      'economy:gigIncome.beerSponsor.label'
+    )
+    assert.strictEqual(result.incomeItems[1].value, 150)
+  })
+})
