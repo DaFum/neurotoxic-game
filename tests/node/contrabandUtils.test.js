@@ -45,5 +45,23 @@ describe('Contraband Utils', () => {
       const chance = computeDropChance(0.15, 1000)
       assert.equal(chance, MAX_DROP_CHANCE)
     })
+
+    it('uses default parameters when called with no arguments', () => {
+      const chance = computeDropChance()
+      assert.equal(chance, 0.15)
+    })
+
+    it('clamps the chance to 0 when luck is highly negative', () => {
+      const chance = computeDropChance(0.15, -100)
+      assert.equal(chance, 0)
+    })
+
+    it('safely handles falsy or undefined luck values', () => {
+      const chanceWithUndefined = computeDropChance(0.15, undefined)
+      assert.equal(chanceWithUndefined, 0.15)
+
+      const chanceWithNull = computeDropChance(0.15, null)
+      assert.equal(chanceWithNull, 0.15)
+    })
   })
 })
