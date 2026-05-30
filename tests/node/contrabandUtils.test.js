@@ -44,10 +44,37 @@ describe('Contraband Utils', () => {
   })
 
   describe('pickRandomContraband', () => {
-    it('returns a contraband ID using weighted rarity', () => {
-      const rng = () => 0.5
-      const id = pickRandomContraband(rng)
-      assert.ok(typeof id === 'string')
+    it('uses rng for both rarity and item selection', () => {
+      const pool = CONTRABAND_BY_RARITY.common
+      const expectedId = pool[pool.length - 1].id
+
+      // First call (rarity) gets 0 (common)
+      // Second call (item selection) gets a value that dynamically targets the last item
+      const lastItemRng = (pool.length - 0.5) / pool.length
+      const values = [0, lastItemRng]
+      let callCount = 0
+      const statefulRng = () => values[callCount++]
+
+      const id = pickRandomContraband(statefulRng)
+
+      assert.equal(callCount, 2, 'rng should be called twice')
+      assert.equal(id, expectedId, 'should return the last common item')
+    })
+
+    it('can pick an epic item if rng dictates', () => {
+      // First call (rarity) gets 0.9999 (epic)
+      // Second call (item selection) gets 0 (first item)
+      const values = [0.9999, 0]
+      let callCount = 0
+      const statefulRng = () => values[callCount++]
+
+      const pool = CONTRABAND_BY_RARITY.epic
+      const expectedId = pool[0].id
+
+      const id = pickRandomContraband(statefulRng)
+
+      assert.equal(callCount, 2, 'rng should be called twice')
+      assert.equal(id, expectedId, 'should return the first epic item')
     })
 
     it('works with default rng', () => {
