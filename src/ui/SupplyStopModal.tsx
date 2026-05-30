@@ -67,8 +67,8 @@ export const SupplyStopModal: React.FC<SupplyStopModalProps> = ({
   }
 
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center bg-void-black/90 backdrop-blur-sm p-4'>
-      <div className='relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-void-black border border-toxic-green shadow-[0_0_20px_var(--color-toxic-green-10)] p-6'>
+    <div className='fixed inset-0 z-(--z-modal) flex items-center justify-center bg-void-black/90 backdrop-blur-sm p-4'>
+      <div className='relative w-full max-w-4xl max-h-[calc(100svh-4rem)] overflow-y-auto border-4 border-toxic-green p-3 sm:p-6 bg-void-black shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)]'>
         <button
           type='button'
           onClick={onClose}

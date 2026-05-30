@@ -51,13 +51,13 @@ export const MerchPressModal = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-void-black/90 backdrop-blur-sm'
+        className='fixed inset-0 z-(--z-modal) flex items-center justify-center p-4 bg-void-black/90 backdrop-blur-sm'
       >
         <motion.div
           initial={{ scale: 0.95, y: 20 }}
           animate={{ scale: 1, y: 0 }}
           exit={{ scale: 0.95, y: 20 }}
-          className='relative w-full max-w-lg bg-void-black border-2 border-toxic-green shadow-[0_0_30px_var(--color-toxic-green-20)] overflow-hidden'
+          className='relative w-full max-w-lg border-4 border-toxic-green p-3 sm:p-6 bg-void-black shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)] overflow-hidden'
         >
           {/* Background Image with Overlay */}
           <div

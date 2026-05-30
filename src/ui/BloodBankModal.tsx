@@ -214,7 +214,7 @@ export const BloodBankModal = ({
   return (
     <div
       ref={modalRef}
-      className='fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 outline-none focus-visible:outline-none'
+      className='fixed inset-0 z-(--z-modal) flex items-center justify-center p-2 sm:p-4 outline-none focus-visible:outline-none'
       role='dialog'
       aria-modal='true'
       aria-labelledby='blood-bank-title'
@@ -230,7 +230,7 @@ export const BloodBankModal = ({
 
       <div
         data-testid='blood-bank-sheet'
-        className='relative z-50 w-full max-w-4xl max-h-[calc(100svh-1rem)] border-4 border-blood-red bg-void-black flex flex-col shadow-[0_0_30px_var(--color-blood-red)] sm:shadow-[0_0_50px_var(--color-blood-red)] overflow-hidden'
+        className='relative z-(--z-modal) w-full max-w-4xl max-h-[calc(100svh-1rem)] border-4 border-blood-red bg-void-black flex flex-col shadow-[4px_4px_0px_var(--color-blood-red)] sm:shadow-[8px_8px_0px_var(--color-blood-red)] overflow-hidden p-3 sm:p-6'
       >
         {/* Background Image */}
         <div
@@ -246,7 +246,7 @@ export const BloodBankModal = ({
             <div className='min-w-0'>
               <h2
                 id='blood-bank-title'
-                className="text-3xl sm:text-4xl text-blood-red font-['Metal_Mania'] drop-shadow-[0_0_5px_var(--color-blood-red)] uppercase"
+                className='text-3xl sm:text-4xl text-blood-red font-display drop-shadow-[0_0_5px_var(--color-blood-red)] uppercase'
               >
                 {t('ui:blood_bank.title', { defaultValue: 'THE VOID CLINIC' })}
               </h2>

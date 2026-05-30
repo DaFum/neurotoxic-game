@@ -69,7 +69,7 @@ const DebugLogViewerContent = ({
       className={`fixed inset-0 pointer-events-none flex flex-col justify-end ${className}`}
       style={{ zIndex: 'var(--z-debug)' }}
     >
-      <div className='pointer-events-auto bg-void-black/90 border-t-2 border-toxic-green h-[40vh] flex flex-col font-mono text-xs'>
+      <div className='pointer-events-auto bg-void-black/90 border-t-2 border-toxic-green h-[40svh] flex flex-col font-mono text-xs'>
         {/* Toolbar */}
         <div className='flex justify-between items-center p-2 bg-shadow-black border-b border-ash-gray'>
           <div className='flex gap-2'>

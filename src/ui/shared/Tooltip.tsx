@@ -172,7 +172,7 @@ export const Tooltip = ({
         <div
           id={tooltipId}
           role='tooltip'
-          className={`pointer-events-none absolute left-1/2 -translate-x-1/2 w-48 p-2 bg-void-black border border-ash-gray shadow-lg z-50 text-xs text-star-white ${position === 'bottom' ? 'top-full mt-2' : 'bottom-full mb-2'}`}
+          className={`pointer-events-none absolute left-1/2 -translate-x-1/2 w-48 p-2 bg-void-black border border-ash-gray shadow-lg z-(--z-toast) text-xs text-star-white ${position === 'bottom' ? 'top-full mt-2' : 'bottom-full mb-2'}`}
         >
           {content}
         </div>

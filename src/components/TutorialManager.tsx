@@ -42,7 +42,7 @@ export const TutorialManager = () => {
               })}
             </div>
 
-            <h3 className='text-xl text-star-white font-[Metal_Mania] mb-2'>
+            <h3 className='text-xl text-star-white font-display mb-2'>
               {content.title}
             </h3>
             <p className='text-ash-gray font-mono text-sm mb-4 leading-relaxed'>
