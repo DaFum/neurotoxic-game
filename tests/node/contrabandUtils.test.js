@@ -8,6 +8,7 @@ import {
   MAX_DROP_CHANCE,
   DROP_BASE_CHANCE
 } from '../../src/utils/contrabandUtils'
+import { CONTRABAND_BY_RARITY } from '../../src/data/contraband'
 
 describe('Contraband Utils', () => {
   describe('pickRarity', () => {
@@ -60,6 +61,24 @@ describe('Contraband Utils', () => {
       const rng = () => 0.5
       const id = pickRandomContrabandByRarity('common', rng)
       assert.ok(typeof id === 'string')
+    })
+
+    it('returns the first item when rng is 0', () => {
+      const rng = () => 0
+      const id = pickRandomContrabandByRarity('common', rng)
+      assert.equal(id, CONTRABAND_BY_RARITY.common[0].id)
+    })
+
+    it('returns the last item when rng is near 1', () => {
+      const rng = () => 0.9999
+      const pool = CONTRABAND_BY_RARITY.common
+      const id = pickRandomContrabandByRarity('common', rng)
+      assert.equal(id, pool[pool.length - 1].id)
+    })
+
+    it('works with default rng', () => {
+      const id = pickRandomContrabandByRarity('common')
+      assert.ok(typeof id === 'string' || id === null)
     })
 
     it('returns null for an empty/unknown rarity pool', () => {
