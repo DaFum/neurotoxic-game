@@ -68,7 +68,14 @@ export const useMainMenu = () => {
 
     // Audio setup is fire-and-forget — never blocks scene transitions.
     initializeAudio()
-  }, [resetState, changeScene, initializeAudio, updatePlayer])
+  }, [
+    resetState,
+    changeScene,
+    initializeAudio,
+    updatePlayer,
+    isMountedRef,
+    setIsStarting
+  ])
 
   const startNewTourFlow = useCallback(() => {
     // Check for existing player identity
@@ -89,7 +96,7 @@ export const useMainMenu = () => {
       playerName: savedPlayerName
     })
     void proceedToTour()
-  }, [proceedToTour, updatePlayer])
+  }, [proceedToTour, updatePlayer, setShowNameInput])
 
   const handleStartTour = useCallback(() => {
     const savedGameExists = !!safeStorageOperation('checkSaveExists', () =>
@@ -102,7 +109,7 @@ export const useMainMenu = () => {
 
     startNewTourFlow()
     void enterFullscreen()
-  }, [startNewTourFlow])
+  }, [startNewTourFlow, setShowExistingSavePrompt])
 
   const handleNameSubmit = useCallback(() => {
     if (!playerNameInput.trim()) {
@@ -132,7 +139,7 @@ export const useMainMenu = () => {
 
     setShowNameInput(false)
     void proceedToTour()
-  }, [playerNameInput, addToast, proceedToTour, updatePlayer])
+  }, [playerNameInput, addToast, proceedToTour, updatePlayer, setShowNameInput])
 
   /**
    * Handles loading a saved game.
@@ -159,24 +166,34 @@ export const useMainMenu = () => {
 
     // Audio is fire-and-forget; Overworld re-syncs audio.
     initializeAudio()
-  }, [loadGame, addToast, changeScene, initializeAudio])
+  }, [
+    loadGame,
+    addToast,
+    changeScene,
+    initializeAudio,
+    isMountedRef,
+    setIsLoadingGame
+  ])
 
   const handleCredits = useCallback(
     () => changeScene(GAME_PHASES.CREDITS),
     [changeScene]
   )
-  const closeNameInput = useCallback(() => setShowNameInput(false), [])
+  const closeNameInput = useCallback(
+    () => setShowNameInput(false),
+    [setShowNameInput]
+  )
 
   const handleStartNewAnyway = useCallback(() => {
     void enterFullscreen()
     setShowExistingSavePrompt(false)
     startNewTourFlow()
-  }, [startNewTourFlow])
+  }, [startNewTourFlow, setShowExistingSavePrompt])
 
   const handleLoadExistingFromPrompt = useCallback(() => {
     setShowExistingSavePrompt(false)
     void handleLoad()
-  }, [handleLoad])
+  }, [handleLoad, setShowExistingSavePrompt])
 
   return {
     t,
