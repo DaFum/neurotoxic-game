@@ -4,6 +4,7 @@ import { withTranslation } from 'react-i18next'
 import { GlitchButton } from './GlitchButton'
 import { VoidSkullIcon } from './shared/Icons'
 import { handleError } from '../utils/errorHandler'
+import { logger } from '../utils/logger'
 
 type CrashHandlerProps = {
   children: ReactNode
@@ -43,7 +44,7 @@ class ErrorBoundaryComponent extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    console.error('[CrashHandler caught]', error, errorInfo)
+    logger.error('CrashHandler', '[CrashHandler caught]', { error, errorInfo })
     handleError(error, { source: 'CrashHandler', errorInfo })
     this.setState({ errorInfo })
   }
