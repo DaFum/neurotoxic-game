@@ -20,7 +20,7 @@ export const MainMenuSocials = ({ onClose }: { onClose: () => void }) => {
       title={t('ui:socials')}
       contentClassName=''
     >
-      <div className='flex flex-col gap-3 sm:gap-4 max-w-md w-full mx-auto max-h-[80vh] overflow-y-auto overflow-x-hidden custom-scrollbar pr-1 sm:pr-2 pb-1'>
+      <div className='flex flex-col gap-3 sm:gap-4 max-w-md w-full mx-auto max-h-[calc(100svh-4rem)] overflow-y-auto overflow-x-hidden custom-scrollbar pr-1 sm:pr-2 pb-1'>
         <UplinkButton
           title={t('ui:social_links.game.title')}
           subtitle={t('ui:social_links.game.subtitle')}

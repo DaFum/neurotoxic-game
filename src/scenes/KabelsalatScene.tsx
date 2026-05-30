@@ -26,7 +26,7 @@ export const KabelsalatScene = () => {
 
   return (
     <div
-      className={`flex flex-col items-center justify-center w-full min-h-screen relative p-4 ${!bgTextureUrl ? 'opacity-0' : 'opacity-100 transition-opacity duration-300'}`}
+      className={`flex flex-col items-center justify-center w-full min-h-[100svh] relative p-4 ${!bgTextureUrl ? 'opacity-0' : 'opacity-100 transition-opacity duration-300'}`}
       style={
         bgTextureUrl
           ? { backgroundImage: `url(${bgTextureUrl})`, backgroundSize: 'cover' }

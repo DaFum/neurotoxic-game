@@ -87,7 +87,7 @@ export const buildSetlistChartDensity = (
     const bars = densitySets[i]
     if (!bars) continue
     for (let j = 0; j < numBuckets; j++) {
-      counts[j] += bars[j].count
+      counts[j] += bars[j]?.count ?? 0
     }
   }
 

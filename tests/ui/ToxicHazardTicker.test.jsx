@@ -36,7 +36,7 @@ describe('ToxicHazardTicker', () => {
   test('wrapper has high z-index to appear above game elements', () => {
     const { container } = render(<ToxicHazardTicker isToxicMode={true} />)
     const wrapper = container.firstChild
-    expect(wrapper.className).toContain('z-20')
+    expect(wrapper.className).toContain('z-(--z-stage-overlay)')
   })
 
   test('does not render HazardTicker when isToxicMode is false (no ticker in DOM)', () => {

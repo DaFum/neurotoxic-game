@@ -44,7 +44,7 @@ const GigModifierButton = memo(
           {formatCurrency(item.cost, i18n.language)}
         </span>
         {!isActive && (
-          <div className='absolute inset-0 bg-white/5 translate-x-[-100%] group-hover:animate-[shimmer_0.8s_ease-out] skew-x-12 pointer-events-none' />
+          <div className='absolute inset-0 bg-star-white/5 translate-x-[-100%] group-hover:animate-[shimmer_0.8s_ease-out] skew-x-12 pointer-events-none' />
         )}
       </button>
     )

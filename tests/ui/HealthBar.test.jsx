@@ -16,7 +16,7 @@ describe('HealthBar', () => {
 
     // Structural / CSS checks
     const wrapper = container.firstChild
-    expect(wrapper.className).toContain('z-10')
+    expect(wrapper.className).toContain('z-(--z-stage-overlay)')
     expect(wrapper.className).toContain('absolute')
     expect(wrapper.className).toContain('sm:bottom-20')
     expect(wrapper.className).toContain('bottom-14')
