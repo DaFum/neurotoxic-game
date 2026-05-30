@@ -49,6 +49,7 @@ export class CrowdManager {
   }
 
   // Backwards compatibility alias for consumers that directly read/write crowdManager.textures.*
+  // Explicit return type retained for compilation performance and public API contract per PR review.
   get textures(): CrowdTextures {
     return this.textureManager.textures
   }
