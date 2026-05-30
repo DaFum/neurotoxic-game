@@ -58,7 +58,7 @@ const ToggleSwitchComponent = ({
           className={`w-full h-full absolute inset-0 bg-toxic-green transition-opacity duration-150 ${isOn ? 'opacity-20' : 'opacity-0'}`}
         ></div>
         <div
-          className={`w-5 h-full bg-toxic-green transition-transform duration-100 relative z-1 ${isOn ? 'translate-x-8' : 'translate-x-0'}`}
+          className={`w-5 h-full bg-toxic-green transition-transform duration-100 relative z-10 ${isOn ? 'translate-x-8' : 'translate-x-0'}`}
         >
           <div className='w-[2px] h-full bg-void-black mx-auto opacity-50'></div>
         </div>
