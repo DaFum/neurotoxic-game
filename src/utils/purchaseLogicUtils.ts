@@ -148,14 +148,11 @@ export const buildVanWithUpgrade = (
   const currentUpgrades = van?.upgrades
 
   if (currentUpgrades) {
-    const len = currentUpgrades.length
-    for (let i = 0; i < len; i++) {
-      if (currentUpgrades[i] === upgradeId) {
-        return van ?? {}
-      }
+    if (currentUpgrades.includes(upgradeId)) {
+      return van ?? {}
     }
     return {
-      ...(van ?? {}),
+      ...van,
       upgrades: [...currentUpgrades, upgradeId]
     }
   }
