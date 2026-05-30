@@ -44,9 +44,9 @@ export const buildSongChartDensity = (
   if (isFiniteNumber(song.duration) && song.duration > 0) {
     duration = song.duration
   } else {
-    for (let i = 0; i < events.length; i++) {
-      if (events[i].time > duration) {
-        duration = events[i].time
+    for (const event of events) {
+      if (event.time > duration) {
+        duration = event.time
       }
     }
   }
