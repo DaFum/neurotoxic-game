@@ -176,7 +176,7 @@ export const handleRemoveModule = (
 
   // ⚡ BOLT OPTIMIZATION: Replaced O(N) array methods (.find, .some, .map, .filter)
   // with procedural loops to avoid intermediate array allocations and reduce GC pressure.
-  let targetAsset = null
+  let targetAsset: LongTermAsset | null = null
   let targetAssetIndex = -1
   for (let i = 0; i < state.assets.length; i++) {
     if (state.assets[i].id === assetId) {
@@ -193,7 +193,7 @@ export const handleRemoveModule = (
   // to uninstall children first.
   if (!targetAsset) return state
 
-  let targetSlot = null
+  let targetSlot: AssetSlot | null = null
   for (let i = 0; i < targetAsset.slots.length; i++) {
     if (targetAsset.slots[i].id === slotId) {
       targetSlot = targetAsset.slots[i]
@@ -225,7 +225,7 @@ export const handleRemoveModule = (
     }
   }
 
-  const nextSlots = []
+  const nextSlots: AssetSlot[] = []
   for (let i = 0; i < targetAsset.slots.length; i++) {
     const slot = targetAsset.slots[i]
     if (removedModuleId && slot.addedByModuleId === removedModuleId) {
