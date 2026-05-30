@@ -1,6 +1,5 @@
-import { memo, type ChangeEvent, type KeyboardEvent } from 'react'
+import { memo, useCallback, type ChangeEvent, type KeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useCallback } from 'react'
 import type { AmpControlsProps } from '../../../types/components'
 import { clampAmpDial } from '../../../utils/gameStateUtils'
 
