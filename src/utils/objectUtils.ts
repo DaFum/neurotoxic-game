@@ -87,7 +87,7 @@ export const sanitizeTraversableValue = (
  * @param text The JSON string to parse
  * @returns The parsed object, safely filtered
  */
-export const safeJsonParse = <T = unknown>(text: string): T => {
+export const safeJsonParse = (text: string): unknown => {
   return JSON.parse(text, (key: string, value: unknown) => {
     if (isForbiddenKey(key)) return undefined
     return value
