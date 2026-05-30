@@ -491,13 +491,15 @@ let assetsMapCache: Map<string, LongTermAsset> | null = null
 
 export const selectAssetsMap = (
   state: Pick<GameState, 'assets'>
-): Map<string, LongTermAsset> => {
+): ReadonlyMap<string, LongTermAsset> => {
   const assets = state.assets || EMPTY_ASSETS
   if (assets !== lastAssetsForMap || !assetsMapCache) {
     lastAssetsForMap = assets
     const map = new Map<string, LongTermAsset>()
     for (const a of assets) {
-      map.set(a.id, a)
+      if (!map.has(a.id)) {
+        map.set(a.id, a)
+      }
     }
     assetsMapCache = map
   }
