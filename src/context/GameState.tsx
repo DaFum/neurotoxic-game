@@ -10,7 +10,8 @@ import {
 import { useTranslation } from 'react-i18next'
 import { logger, isValidLogLevel } from '../utils/logger'
 import { getUnlocks } from '../utils/unlockManager'
-import { isLooseRecord, safeJsonParse } from '../utils/gameStateUtils'
+import { isLooseRecord } from '../utils/gameStateUtils'
+import { safeJsonParse } from '../utils/objectUtils'
 import { useLeaderboardSync } from '../hooks/useLeaderboardSync'
 import { safeStorage, safeStorageNoFallback } from '../utils/storage'
 

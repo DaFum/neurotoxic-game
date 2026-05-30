@@ -392,12 +392,6 @@ export const hasForbiddenKeys = (obj: Record<string, unknown>): boolean => {
  * @param text The JSON string to parse
  * @returns The parsed object, safely filtered
  */
-export const safeJsonParse = <T = unknown>(text: string): T => {
-  return JSON.parse(text, (key: string, value: unknown) => {
-    if (isForbiddenKey(key)) return undefined
-    return value
-  })
-}
 
 /**
  * Applies event delta changes to the current game state.

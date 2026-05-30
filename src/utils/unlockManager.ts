@@ -1,5 +1,5 @@
 import { safeStorageOperation } from './storage'
-import { safeJsonParse } from './gameStateUtils'
+import { safeJsonParse } from './objectUtils'
 
 /**
  * Persistence layer for earned unlock IDs.

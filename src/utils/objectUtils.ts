@@ -79,3 +79,10 @@ export const sanitizeTraversableValue = (
 
   return options.transformLeaf ? options.transformLeaf(value) : value
 }
+
+export const safeJsonParse = <T = unknown>(text: string): T => {
+  return JSON.parse(text, (key: string, value: unknown) => {
+    if (isForbiddenKey(key)) return undefined
+    return value
+  })
+}
