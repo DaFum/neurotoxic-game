@@ -485,6 +485,27 @@ const EMPTY_LIABILITIES: readonly Liability[] = []
 let lastLiabilitiesForMap: readonly Liability[] | null = null
 let liabilitiesMapCache: Map<string, Liability> | null = null
 
+const EMPTY_ASSETS: readonly LongTermAsset[] = []
+let lastAssetsForMap: readonly LongTermAsset[] | null = null
+let assetsMapCache: Map<string, LongTermAsset> | null = null
+
+export const selectAssetsMap = (
+  state: Pick<GameState, 'assets'>
+): ReadonlyMap<string, LongTermAsset> => {
+  const assets = state.assets || EMPTY_ASSETS
+  if (assets !== lastAssetsForMap || !assetsMapCache) {
+    lastAssetsForMap = assets
+    const map = new Map<string, LongTermAsset>()
+    for (const a of assets) {
+      if (!map.has(a.id)) {
+        map.set(a.id, a)
+      }
+    }
+    assetsMapCache = map
+  }
+  return assetsMapCache
+}
+
 export const selectLiabilitiesMap = (
   state: GameState
 ): Map<string, Liability> => {
