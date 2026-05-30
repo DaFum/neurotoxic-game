@@ -91,7 +91,7 @@ const DebugLogViewerContent = ({
               onClick={() => {
                 if (import.meta.env.DEV) {
                   // DEV-only debugging dump
-                  console.info(logger.dump())
+                  console.info(logger.logs)
                 }
               }}
               className='text-ash-gray hover:text-star-white hover:bg-void-black px-2 border-2 border-ash-gray uppercase shadow-[4px_4px_0px_var(--color-ash-gray)] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ash-gray focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
