@@ -40,10 +40,16 @@ export const buildSongChartDensity = (
   }
 
   const events = buildMidiTrackEvents(midiNotes)
-  const duration =
-    isFiniteNumber(song.duration) && song.duration > 0
-      ? song.duration
-      : Math.max(1, ...events.map(event => event.time))
+  let duration = 1
+  if (isFiniteNumber(song.duration) && song.duration > 0) {
+    duration = song.duration
+  } else {
+    for (let i = 0; i < events.length; i++) {
+      if (events[i].time > duration) {
+        duration = events[i].time
+      }
+    }
+  }
   const counts = Array.from({ length: safeBucketCount }, () => 0)
 
   for (const event of events) {
