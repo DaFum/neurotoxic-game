@@ -6,7 +6,8 @@
 
 import { CHARACTERS } from '../data/characters'
 import { LOG_LEVELS, isValidLogLevel } from '../utils/logger'
-import { isLooseRecord, safeJsonParse } from '../utils/gameStateUtils'
+import { isLooseRecord } from '../utils/gameStateUtils'
+import { safeJsonParse } from '../utils/objectUtils'
 import { DEFAULT_MINIGAME_STATE, GAME_PHASES } from './gameConstants'
 import { normalizeTraitMap } from '../utils/traitUtils'
 import type {

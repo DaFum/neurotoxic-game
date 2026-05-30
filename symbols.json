@@ -9408,9 +9408,10 @@
     ],
     "safeJsonParse": [
       {
+        "exportPath": "src/utils/gameStateUtils.ts",
         "isDefault": false,
         "name": "safeJsonParse",
-        "path": "src/utils/gameStateUtils.ts",
+        "path": "src/utils/objectUtils.ts",
         "source": "local",
         "type": "const"
       }

@@ -9,6 +9,7 @@ import {
   StorageError,
   runSafeStorageOperation
 } from './errorHandler'
+import { safeJsonParse } from './objectUtils'
 
 export function safeStorageOperation<T>(operation: string, fn: () => T): T
 export function safeStorageOperation<T>(
@@ -77,7 +78,7 @@ export function getSafeStorageItem<T>(key: string, fallback: T): T {
   if (raw === null) return fallback
 
   try {
-    const parsed = JSON.parse(raw)
+    const parsed = safeJsonParse(raw)
     if (parsed === null || parsed === undefined) return fallback
     return parsed as T
   } catch (error) {
