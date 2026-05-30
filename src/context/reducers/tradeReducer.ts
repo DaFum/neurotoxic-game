@@ -8,7 +8,8 @@ import {
 } from '../../utils/gameStateUtils'
 import {
   isLooseRecord,
-  sanitizeTraversableValue
+  sanitizeTraversableValue,
+  safeJsonParse
 } from '../../utils/objectUtils'
 import { addContrabandHelper } from './bandReducer'
 import { getSafeUUID } from '../../utils/crypto'
@@ -135,7 +136,7 @@ export const handleTradeVoidItem = (
           const firstPipeIdx = enrichedMessage.indexOf('|')
           const key = enrichedMessage.slice(0, firstPipeIdx)
           const jsonStr = enrichedMessage.slice(firstPipeIdx + 1)
-          const parsedContext = JSON.parse(jsonStr)
+          const parsedContext = safeJsonParse(jsonStr)
           if (isLooseRecord(parsedContext)) {
             const rawContext = parsedContext as Record<string, unknown>
             const finalSafeContext = sanitizeContextValue(rawContext) as Record<
