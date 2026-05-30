@@ -145,15 +145,25 @@ export const buildVanWithUpgrade = (
   van: Partial<PlayerState['van']> | undefined,
   upgradeId: string
 ): Partial<PlayerState['van']> => {
-  const currentUpgrades = van?.upgrades ?? []
+  const currentUpgrades = van?.upgrades
 
-  if (!currentUpgrades.includes(upgradeId)) {
+  if (currentUpgrades) {
+    const len = currentUpgrades.length
+    for (let i = 0; i < len; i++) {
+      if (currentUpgrades[i] === upgradeId) {
+        return van ?? {}
+      }
+    }
     return {
       ...(van ?? {}),
       upgrades: [...currentUpgrades, upgradeId]
     }
   }
-  return van ?? {}
+
+  return {
+    ...(van ?? {}),
+    upgrades: [upgradeId]
+  }
 }
 
 /**

@@ -619,6 +619,25 @@
         "type": "const"
       }
     ],
+    "AssetSlotButton": [
+      {
+        "isDefault": false,
+        "name": "AssetSlotButton",
+        "path": "src/components/assets/shared/AssetSlotButton.tsx",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "AssetSlotButtonProps": [
+      {
+        "isDefault": false,
+        "name": "AssetSlotButtonProps",
+        "path": "src/components/assets/shared/AssetSlotButton.tsx",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
+      }
+    ],
     "AssetsScene": [
       {
         "isDefault": false,
@@ -9235,6 +9254,15 @@
         "typeOnly": true
       }
     ],
+    "RoadieDPad": [
+      {
+        "isDefault": false,
+        "name": "RoadieDPad",
+        "path": "src/components/minigames/roadie/RoadieDPad.tsx",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "RoadieHUD": [
       {
         "isDefault": false,
@@ -9301,6 +9329,15 @@
         "source": "local",
         "type": "type",
         "typeOnly": true
+      }
+    ],
+    "RoadieTouchSurface": [
+      {
+        "isDefault": false,
+        "name": "RoadieTouchSurface",
+        "path": "src/components/minigames/roadie/RoadieTouchSurface.tsx",
+        "source": "local",
+        "type": "const"
       }
     ],
     "RoadieTrafficCar": [
