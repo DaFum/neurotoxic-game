@@ -25,7 +25,11 @@ import {
 } from '../utils/gameStateUtils'
 import { getGigModifiers } from '../utils/simulationUtils'
 import { getActiveAssetModifiers } from '../utils/assetSelectors'
-import { resolveMerchRestockCost } from '../utils/merchUtils'
+import {
+  resolveMerchRestockCost,
+  getMerchBundleAmount,
+  getTotalMerchStock
+} from '../utils/merchUtils'
 import { audioService, getSongId } from '../utils/audio/audioEngine'
 import { handleError } from '../utils/errorHandler'
 import { getSafeRandom, getSafeUUID } from '../utils/crypto'
@@ -64,33 +68,6 @@ export const __testInternals:
       resolveBandMeetingCost
     }
   : undefined
-
-const getMerchBundleAmount = (
-  itemDef: typeof HQ_ITEMS_BY_MERCH_KEY extends ReadonlyMap<string, infer T>
-    ? T
-    : never
-): number => {
-  const effect = itemDef.effect
-  if (
-    effect &&
-    typeof effect === 'object' &&
-    Object.hasOwn(effect, 'value') &&
-    typeof effect.value === 'number' &&
-    Number.isFinite(effect.value) &&
-    effect.value > 0
-  ) {
-    return effect.value
-  }
-  return 10
-}
-
-const getTotalMerchStock = (inventory: Record<string, unknown>): number => {
-  let total = 0
-  for (const merchKey of HQ_ITEMS_BY_MERCH_KEY.keys()) {
-    total += finiteNumberOr(inventory[merchKey], 0)
-  }
-  return Math.max(0, total)
-}
 
 export type ModifierOption = {
   key: keyof typeof MODIFIER_COSTS
