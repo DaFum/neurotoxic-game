@@ -79,3 +79,17 @@ export const sanitizeTraversableValue = (
 
   return options.transformLeaf ? options.transformLeaf(value) : value
 }
+
+/**
+ * A secure wrapper around JSON.parse that uses a reviver to strip out
+ * potentially dangerous keys associated with prototype pollution.
+ *
+ * @param text The JSON string to parse
+ * @returns The parsed object, safely filtered
+ */
+export const safeJsonParse = <T = unknown>(text: string): T => {
+  return JSON.parse(text, (key: string, value: unknown) => {
+    if (isForbiddenKey(key)) return undefined
+    return value
+  })
+}

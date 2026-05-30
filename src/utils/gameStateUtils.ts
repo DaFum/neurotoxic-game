@@ -2,7 +2,7 @@ import { hasTrait } from './traitUtils'
 import { EXPENSE_CONSTANTS } from './economyEngine'
 import { finiteNumberOr } from './finiteNumber'
 import { logger } from './logger'
-import { isForbiddenKey, isLooseRecord } from './objectUtils'
+import { isForbiddenKey, isLooseRecord, safeJsonParse } from './objectUtils'
 import type {
   BandMember,
   GameState,
@@ -383,20 +383,6 @@ export const hasForbiddenKeys = (obj: Record<string, unknown>): boolean => {
     Object.hasOwn(obj, 'constructor') ||
     Object.hasOwn(obj, 'prototype')
   )
-}
-
-/**
- * A secure wrapper around JSON.parse that uses a reviver to strip out
- * potentially dangerous keys associated with prototype pollution.
- *
- * @param text The JSON string to parse
- * @returns The parsed object, safely filtered
- */
-export const safeJsonParse = <T = unknown>(text: string): T => {
-  return JSON.parse(text, (key: string, value: unknown) => {
-    if (isForbiddenKey(key)) return undefined
-    return value
-  })
 }
 
 /**
@@ -1311,3 +1297,5 @@ export const normalizeSetlistForSave = (
   }
   return result
 }
+
+export { safeJsonParse }

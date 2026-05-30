@@ -9,7 +9,7 @@ import {
   StorageError,
   runSafeStorageOperation
 } from './errorHandler'
-import { safeJsonParse } from './gameStateUtils'
+import { safeJsonParse } from './objectUtils'
 
 export function safeStorageOperation<T>(operation: string, fn: () => T): T
 export function safeStorageOperation<T>(
