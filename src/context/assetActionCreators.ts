@@ -34,7 +34,8 @@ import {
 import {
   getSlotConflicts,
   hasActiveAssetAcquisition,
-  getLockReasons
+  getLockReasons,
+  selectAssetsMap
 } from '../utils/assetSelectors'
 import { finiteNumberOr } from '../utils/gameStateUtils'
 import { getSafeUUID } from '../utils/crypto'
@@ -229,7 +230,7 @@ export const installModule = (
 
   const module = MODULE_REGISTRY[raw.moduleId]
   if (!module) return fail('UNKNOWN_MODULE')
-  const asset = state.assets.find(a => a.id === raw.assetId)
+  const asset = selectAssetsMap(state).get(raw.assetId)
   if (!asset) return fail('UNKNOWN_ASSET')
   const slot = asset.slots.find(s => s.id === raw.slotId)
   if (!slot) return fail('UNKNOWN_SLOT')
@@ -277,7 +278,7 @@ export const upgradeChassisTier = (
   targetTier: ChassisTier,
   state: GameState
 ): UpgradeChassisTierAction | null => {
-  const asset = state.assets.find(a => a.id === assetId)
+  const asset = selectAssetsMap(state).get(assetId)
   if (!asset) return null
   if (asset.chassisTier >= targetTier) return null
   const targetCfg =
@@ -324,7 +325,7 @@ export const repairChassis = (
   assetId: string,
   state: GameState
 ): RepairChassisAction | null => {
-  const asset = state.assets.find(a => a.id === assetId)
+  const asset = selectAssetsMap(state).get(assetId)
   if (!asset) return null
   const repairCost = Math.max(
     0,

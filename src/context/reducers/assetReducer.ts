@@ -179,8 +179,9 @@ export const handleRemoveModule = (
   let targetAsset: LongTermAsset | null = null
   let targetAssetIndex = -1
   for (let i = 0; i < state.assets.length; i++) {
-    if (state.assets[i].id === assetId) {
-      targetAsset = state.assets[i]
+    const asset = state.assets[i]
+    if (asset && asset.id === assetId) {
+      targetAsset = asset
       targetAssetIndex = i
       break
     }
@@ -195,8 +196,9 @@ export const handleRemoveModule = (
 
   let targetSlot: AssetSlot | null = null
   for (let i = 0; i < targetAsset.slots.length; i++) {
-    if (targetAsset.slots[i].id === slotId) {
-      targetSlot = targetAsset.slots[i]
+    const slot = targetAsset.slots[i]
+    if (slot && slot.id === slotId) {
+      targetSlot = slot
       break
     }
   }
@@ -207,6 +209,7 @@ export const handleRemoveModule = (
     for (let i = 0; i < targetAsset.slots.length; i++) {
       const s = targetAsset.slots[i]
       if (
+        s &&
         s.addedByModuleId === removedModuleId &&
         Boolean(s.installedModuleId)
       ) {
@@ -228,6 +231,7 @@ export const handleRemoveModule = (
   const nextSlots: AssetSlot[] = []
   for (let i = 0; i < targetAsset.slots.length; i++) {
     const slot = targetAsset.slots[i]
+    if (!slot) continue
     if (removedModuleId && slot.addedByModuleId === removedModuleId) {
       continue
     }
