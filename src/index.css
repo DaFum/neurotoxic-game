@@ -826,15 +826,12 @@ input[type='range'].vol-slider::-moz-range-thumb:hover {
   .crt-overlay::after,
   .scene-enter,
   .animate-credits-scroll,
+  .animate-fuel-warning,
   .animate-pulse-glow,
   .animate-pulse,
   .animate-spin,
   .animate-bounce,
   .animate-ping,
-  .transition-all,
-  .transition-colors,
-  .transition-opacity,
-  .transition-transform,
   .animate-doom-zoom,
   .animate-neon-flicker,
   .animate-confirm-pulse,
@@ -850,6 +847,12 @@ input[type='range'].vol-slider::-moz-range-thumb:hover {
 
   .animate-credits-scroll {
     transform: none;
+  }
+  .transition-all,
+  .transition-colors,
+  .transition-opacity,
+  .transition-transform {
+    transition: none !important;
   }
 }
 

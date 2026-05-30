@@ -383,10 +383,6 @@
   flex-shrink: 0;
 }
 
-/* Map nodes */
-
-
-
 .glyph {
   position: absolute;
   inset: 0;
@@ -397,22 +393,12 @@
   pointer-events: none;
   transition: all 0.2s;
 }
-@keyframes vanbob {
-  0%,
-  100% {
-    transform: translateX(-50%) translateY(0);
-  }
+
   50% {
     transform: translateX(-50%) translateY(-5px);
   }
 }
 
-
-/* Node states */
-
-
-
-/* Traveling van */
 
 /* Event log - improved */
 .event-log {
