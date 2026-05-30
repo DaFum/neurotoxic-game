@@ -368,8 +368,8 @@ export const OverworldHUD = React.memo(
           </div>
           <div className='hud-btns pointer-events-auto'>
             <Tooltip
-              content={t('ui:button.shortcuts', {
-                defaultValue: 'Shortcuts (?, h)'
+              content={t('ui:overworld.shortcuts.help', {
+                defaultValue: 'Toggle Help'
               })}
             >
               <GlitchButton
