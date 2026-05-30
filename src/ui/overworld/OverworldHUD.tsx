@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { GlitchButton } from '../GlitchButton'
+import { Tooltip } from '../shared'
 import { useTranslation } from 'react-i18next'
 import { type BandState, type PlayerState } from '../../types'
 import { translateLocation } from '../../utils/locationI18n'
@@ -366,19 +367,25 @@ export const OverworldHUD = React.memo(
             </div>
           </div>
           <div className='hud-btns pointer-events-auto'>
-            <GlitchButton
-              className='!w-11 !h-11 sm:!w-[30px] sm:!h-[30px] !p-0'
-              variant={showSC ? 'warning' : 'primary'}
-              size='sm'
-              onClick={() => setShowSC(s => !s)}
-              aria-label={t('ui:overworld.shortcuts.help', {
+            <Tooltip
+              content={t('ui:overworld.shortcuts.help', {
                 defaultValue: 'Toggle Help'
               })}
-              aria-pressed={showSC}
-              aria-controls={shortcutsPanelId}
             >
-              ?
-            </GlitchButton>
+              <GlitchButton
+                className='!w-11 !h-11 sm:!w-[30px] sm:!h-[30px] !p-0'
+                variant={showSC ? 'warning' : 'primary'}
+                size='sm'
+                onClick={() => setShowSC(s => !s)}
+                aria-label={t('ui:overworld.shortcuts.help', {
+                  defaultValue: 'Toggle Help'
+                })}
+                aria-pressed={showSC}
+                aria-controls={shortcutsPanelId}
+              >
+                ?
+              </GlitchButton>
+            </Tooltip>
           </div>
           {showSC && (
             <section
