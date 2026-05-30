@@ -43,8 +43,11 @@ class ErrorBoundaryComponent extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    console.error('[CrashHandler caught]', error, errorInfo)
-    handleError(error, { source: 'CrashHandler', errorInfo })
+    handleError(error, {
+      source: 'CrashHandler',
+      errorInfo,
+      severity: 'critical'
+    })
     this.setState({ errorInfo })
   }
 
