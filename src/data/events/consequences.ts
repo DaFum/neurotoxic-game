@@ -275,7 +275,16 @@ export const CONSEQUENCE_EVENTS = [
           type: 'composite',
           effects: [
             { type: 'stat', stat: 'score', value: -1000 },
-            { type: 'game_over' }
+            {
+              type: 'composite',
+              effects: [
+                { type: 'stat', stat: 'harmony', value: -25 },
+                { type: 'stat', stat: 'controversyLevel', value: 10 },
+                { type: 'stat', stat: 'loyalty', value: -15 },
+                { type: 'flag', flag: 'ego_crisis_failed' },
+                { type: 'cooldown', eventId: 'ego_management_retry', value: 10 }
+              ]
+            }
           ]
         },
         outcomeText: 'events:consequences_ego_breakup_threat.opt2.outcome'

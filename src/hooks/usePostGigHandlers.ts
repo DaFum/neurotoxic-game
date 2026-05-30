@@ -429,7 +429,12 @@ export const usePostGigHandlers = ({
           progress: 0,
           required: 1,
           rewardFlag: 'ego_crisis_resolved',
-          failurePenalty: { type: 'game_over' }
+          failurePenalty: {
+            band: { harmony: -25 },
+            social: { controversyLevel: 10, loyalty: -15 },
+            flags: ['ego_crisis_failed'],
+            cooldowns: [{ id: 'ego_management_retry', days: 10 }]
+          }
         })
       }
 

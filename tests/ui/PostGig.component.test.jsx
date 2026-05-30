@@ -771,7 +771,9 @@ describe('PostGig Component - Complete Phase', () => {
           id: 'quest_ego_management',
           deadline: 10,
           required: 1,
-          failurePenalty: { type: 'game_over' }
+          failurePenalty: expect.objectContaining({
+            flags: ['ego_crisis_failed']
+          })
         })
       )
 

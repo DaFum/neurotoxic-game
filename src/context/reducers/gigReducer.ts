@@ -12,10 +12,10 @@ import { handleAddVenueBlacklist } from './socialReducer'
 import { QuestLifecycle } from '../../domain/questLifecycle'
 import {
   QUEST_PROVE_YOURSELF,
-  QUEST_EGO_MANAGEMENT,
-  QUEST_APOLOGY_TOUR
+  QUEST_EGO_MANAGEMENT
 } from '../../data/questsConstants'
 import { hasActiveQuest } from '../../utils/questUtils'
+import { QuestProgress } from '../../utils/questProgress'
 import { normalizeSetlistForSave } from '../../utils/gameStateUtils'
 
 const MIN_REPUTATION = -100
@@ -199,24 +199,27 @@ export const handleSetLastGigStats = (
     }
 
     nextState = handleRecordGoodShow(nextState)
-    if (
-      hasActiveQuest(nextState.activeQuests, QUEST_APOLOGY_TOUR) &&
-      capacity !== null &&
-      capacity <= 300
-    ) {
-      nextState = QuestLifecycle.advanceQuest(nextState, {
-        questId: QUEST_APOLOGY_TOUR,
-        amount: 1
-      })
-    }
-    if (
-      hasActiveQuest(nextState.activeQuests, QUEST_PROVE_YOURSELF) &&
-      capacity !== null &&
-      capacity <= 150
-    ) {
-      nextState = QuestLifecycle.advanceQuest(nextState, {
-        questId: QUEST_PROVE_YOURSELF,
-        amount: 1
+    nextState = QuestProgress.applyEvent(nextState, {
+      type: 'gig_completed',
+      score,
+      capacity: capacity ?? 0,
+      venueId: state.currentGig?.id ?? '',
+      region: location
+    })
+    nextState = QuestProgress.applyEvent(nextState, {
+      type: 'good_gig',
+      score,
+      capacity: capacity ?? 0,
+      venueId: state.currentGig?.id ?? '',
+      region: location
+    })
+    if (capacity !== null && capacity <= 300) {
+      nextState = QuestProgress.applyEvent(nextState, {
+        type: 'small_venue_good_gig',
+        score,
+        capacity,
+        venueId: state.currentGig?.id ?? '',
+        region: location
       })
     }
   }
