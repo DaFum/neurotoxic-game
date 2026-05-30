@@ -538,10 +538,9 @@ export const applyUnlockHQ = (
     : Array.isArray(player.hqUpgrades)
       ? player.hqUpgrades.map(String)
       : []
-  const hqUpgradesSet = new Set(currentHqUpgrades)
   const nextPlayerPatch: PlayerPatch = {
     ...playerPatch,
-    hqUpgrades: hqUpgradesSet.has(itemId)
+    hqUpgrades: currentHqUpgrades.includes(itemId)
       ? [...currentHqUpgrades]
       : [...currentHqUpgrades, itemId]
   }
