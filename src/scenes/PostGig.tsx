@@ -46,7 +46,7 @@ export const PostGig = () => {
   if (!financials)
     return (
       <div className='w-full h-full flex flex-col items-center justify-center bg-void-black px-4 text-center'>
-        <div className="text-2xl sm:text-3xl text-toxic-green font-['Metal_Mania'] animate-pulse tracking-widest">
+        <div className='text-2xl sm:text-3xl text-toxic-green font-display animate-pulse tracking-widest'>
           {t('ui:postGig.tallyingReceipts', {
             defaultValue: 'TALLYING RECEIPTS...'
           })}
@@ -72,13 +72,13 @@ export const PostGig = () => {
         animate={{ scale: 1, opacity: 1 }}
         className='max-w-4xl w-full max-h-[calc(100svh-1.5rem)] sm:max-h-[calc(100svh-3rem)] border-4 border-toxic-green p-3 sm:p-6 lg:p-8 bg-void-black relative z-10 shadow-[0_0_24px_var(--color-toxic-green-glow)] sm:shadow-[0_0_50px_var(--color-toxic-green-glow)] flex flex-col gap-4 sm:gap-6 overflow-y-auto'
       >
-        <h2 className="text-3xl sm:text-5xl text-center font-['Metal_Mania'] text-toxic-green mb-1 sm:mb-2 break-words text-shadow-[0_0_10px_var(--color-toxic-green)]">
+        <h2 className='text-3xl sm:text-5xl text-center font-display text-toxic-green mb-1 sm:mb-2 break-words text-shadow-[0_0_10px_var(--color-toxic-green)]'>
           {t(phaseTitleKey, { defaultValue: phaseTitleDefault })}
         </h2>
 
         <Suspense
           fallback={
-            <div className="text-toxic-green font-['Metal_Mania'] text-xl animate-pulse text-center">
+            <div className='text-toxic-green font-display text-xl animate-pulse text-center'>
               {t('ui:loading', 'LOADING...')}
             </div>
           }

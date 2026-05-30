@@ -96,7 +96,7 @@ export const MainMenu = () => {
               : { duration: 0.8, ease: 'easeOut' }
           }
           data-text='NEUROTOXIC'
-          className="title-ghost text-5xl sm:text-6xl md:text-9xl text-center text-transparent bg-clip-text bg-gradient-to-b from-toxic-green to-toxic-green-dark font-['Metal_Mania'] animate-neon-flicker mb-2 break-words"
+          className='title-ghost text-5xl sm:text-6xl md:text-9xl text-center text-transparent bg-clip-text bg-gradient-to-b from-toxic-green to-toxic-green-dark font-display animate-neon-flicker mb-2 break-words'
           style={{
             WebkitTextStroke: '2px var(--color-toxic-green)',
             filter: 'drop-shadow(0 0 18px var(--color-toxic-green-glow))'
@@ -126,7 +126,7 @@ export const MainMenu = () => {
           transition={
             prefersReducedMotion ? { duration: 0 } : { duration: 1, delay: 0.6 }
           }
-          className='text-lg md:text-2xl text-toxic-green/80 mb-2 font-[Courier_New] text-center'
+          className='text-lg md:text-2xl text-toxic-green/80 mb-2 font-ui text-center'
         >
           {t('ui:mainMenu.subtitle.grindTheVoid')}
         </AnimatedSubtitle>

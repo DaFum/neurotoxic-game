@@ -343,8 +343,10 @@ export const handleSellChassis = (
 
   return {
     ...state,
-    assets: state.assets.filter(a => a.id !== assetId),
-    liabilities: (state.liabilities || []).filter(l => l.assetId !== assetId),
+    assets: state.assets.filter(a => a && a.id !== assetId),
+    liabilities: (state.liabilities || []).filter(
+      l => l && l.assetId !== assetId
+    ),
     player: {
       ...state.player,
       money: state.player.money + net

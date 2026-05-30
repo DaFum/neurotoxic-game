@@ -56,16 +56,16 @@ export const PirateRadioModal = memo(
     const band = useGameSelector(state => state.band)
 
     return (
-      <div className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-void-black/90 backdrop-blur-sm'>
+      <div className='fixed inset-0 z-(--z-modal) flex items-center justify-center p-4 bg-void-black/90 backdrop-blur-sm'>
         <motion.div
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.95, opacity: 0 }}
-          className={`bg-void-black border-2 border-toxic-green p-4 sm:p-6 max-w-lg w-full max-h-[85vh] shadow-[0_0_30px_var(--color-toxic-green-20)] flex flex-col ${contentClassName}`}
+          className={`border-4 border-toxic-green p-3 sm:p-6 bg-void-black shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)] max-w-lg w-full max-h-[calc(100svh-4rem)] flex flex-col ${contentClassName}`}
         >
           <div className='flex justify-between items-start border-b-2 border-toxic-green/50 pb-4 shrink-0'>
             <h2
-              className='text-2xl sm:text-3xl font-[Metal_Mania] text-toxic-green glitch-text'
+              className='text-2xl sm:text-3xl font-display text-toxic-green glitch-text'
               data-text={t('ui:pirate_radio.title', {
                 defaultValue: 'PIRATE RADIO BROADCAST'
               })}

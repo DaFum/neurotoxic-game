@@ -69,7 +69,7 @@ export const StatBox = memo(function StatBox({
       <UIFrameCorner className='absolute bottom-0 right-0 w-3 h-3 text-steel-gray rotate-180 opacity-30 transition-opacity group-hover:opacity-60' />
       <UIFrameCorner className='absolute bottom-0 left-0 w-3 h-3 text-steel-gray -rotate-90 opacity-30 transition-opacity group-hover:opacity-60' />
 
-      <div className='relative z-10 flex flex-col items-center'>
+      <div className='relative flex flex-col items-center'>
         <div className='text-2xl mb-1 text-toxic-green-bright'>{icon}</div>
         <div className='text-xl font-bold text-star-white font-mono'>
           {value}
@@ -197,7 +197,7 @@ export const Panel = memo(function Panel({
       <UIFrameCorner className='absolute bottom-0 right-0 w-6 h-6 text-steel-gray rotate-180 opacity-30 transition-opacity group-hover:opacity-60' />
       <UIFrameCorner className='absolute bottom-0 left-0 w-6 h-6 text-steel-gray -rotate-90 opacity-30 transition-opacity group-hover:opacity-60' />
 
-      <div className='relative z-10 flex-1 min-h-0 flex flex-col'>
+      <div className='relative flex-1 min-h-0 flex flex-col'>
         {title && (
           <h3 className='text-toxic-green text-sm font-bold mb-3 border-b border-ash-gray/40 pb-1 font-mono uppercase tracking-wider'>
             {title}

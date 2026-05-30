@@ -67,7 +67,7 @@ const MenuHeader = React.memo(
     t: import('../../types/callbacks').TranslationCallback
   }) => (
     <div className='menu-panel-hdr flex items-center justify-between px-3.5 py-2.5 border-b border-toxic-green/20 bg-toxic-green/5'>
-      <div className='menu-panel-title font-[Metal_Mania] text-[15px] text-toxic-green tracking-[2px] drop-shadow-[0_0_8px_var(--color-toxic-green)] flex items-center gap-2'>
+      <div className='menu-panel-title font-display text-[15px] text-toxic-green tracking-[2px] drop-shadow-[0_0_8px_var(--color-toxic-green)] flex items-center gap-2'>
         {cat ? (
           <>
             <span style={{ color: cat.color }}>{cat.icon}</span>
@@ -118,7 +118,7 @@ const MenuCategoryList = React.memo(
                 {c.icon}
               </span>
               <span
-                className='menu-cat-label font-[Metal_Mania] text-[14px] tracking-[1px]'
+                className='menu-cat-label font-display text-[14px] tracking-[1px]'
                 style={{ color: c.color }}
               >
                 {c.label}
@@ -192,7 +192,7 @@ const MenuSubmenu = React.memo(
                   {item.icon}
                 </span>
                 <div className='text-left'>
-                  <div className='menu-sub-label font-[Metal_Mania] text-[13px] tracking-[1px]'>
+                  <div className='menu-sub-label font-display text-[13px] tracking-[1px]'>
                     [{item.label}]
                   </div>
                   <div className='menu-sub-desc text-[8px] opacity-55 font-mono tracking-[0.5px] mt-[1px]'>
@@ -529,7 +529,7 @@ export const OverworldMenu = React.memo(
     return (
       <div
         ref={menuRootRef}
-        className='ow-menu absolute bottom-8 right-8 z-50 pointer-events-auto flex flex-col gap-2 items-end'
+        className='ow-menu absolute bottom-8 right-8 z-(--z-hud) pointer-events-auto flex flex-col gap-2 items-end'
       >
         {isMenuOpen && (
           <div className='menu-panel'>
