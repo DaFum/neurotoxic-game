@@ -9588,6 +9588,15 @@
         "type": "const"
       }
     ],
+    "selectAssetsMap": [
+      {
+        "isDefault": false,
+        "name": "selectAssetsMap",
+        "path": "src/utils/assetSelectors.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "selectLiabilitiesMap": [
       {
         "isDefault": false,
