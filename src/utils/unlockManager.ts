@@ -1,4 +1,5 @@
 import { safeStorageOperation } from './storage'
+import { safeJsonParse } from './gameStateUtils'
 
 /**
  * Persistence layer for earned unlock IDs.
@@ -46,7 +47,7 @@ export const getUnlocks = (): string[] => {
 
       let parsed: unknown
       try {
-        parsed = JSON.parse(currentRaw)
+        parsed = safeJsonParse(currentRaw)
       } catch (_e) {
         return []
       }
