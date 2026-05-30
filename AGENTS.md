@@ -147,3 +147,5 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - DIY chassis can only be acquired via `cash` or `crowdfund`. The UI disables the loan option for DIY; the action creator returns `PURCHASE_CHASSIS_FAILED` as the second defense.
 - Bankruptcy must consult `getTotalDailyObligations(state)` from `src/utils/assetSelectors.ts` (not `calculateGuaranteedDailyCost` directly) — that selector folds in asset upkeep, asset revenue, and liability payments.
 - Asset reducers (`src/context/reducers/assetReducer.ts`) and tick functions (`src/utils/assetTicks.ts`) are pure. Pre-generate UUIDs (slot ids, crowdfund-materialized asset id) in action creators; the reducer reads them from the payload.
+
+- Explicit return types on public members and getters of exported classes must be preserved to maintain clear public API contracts, prevent accidental type leakage, and improve TypeScript compilation performance. Do not remove them to rely on implicit type inference, even if a linter incorrectly flags their imported type as 'unused'.

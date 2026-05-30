@@ -6,7 +6,7 @@ import {
   getPixiColorFromToken
 } from './stageRenderUtils'
 import { getSafeRandom } from '../../utils/crypto'
-import { CrowdTextureManager } from './CrowdTextureManager'
+import { CrowdTextureManager, type CrowdTextures } from './CrowdTextureManager'
 
 type CrowdColors = {
   toxicGreen: number
@@ -49,7 +49,8 @@ export class CrowdManager {
   }
 
   // Backwards compatibility alias for consumers that directly read/write crowdManager.textures.*
-  get textures() {
+  // Explicit return type retained for compilation performance and public API contract per PR review.
+  get textures(): CrowdTextures {
     return this.textureManager.textures
   }
 
