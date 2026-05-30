@@ -12,7 +12,7 @@ export const ControlsHint = memo(function ControlsHint() {
 
   return (
     <div
-      className='absolute bottom-2 sm:bottom-3 w-full flex justify-center gap-3 sm:gap-8 z-10 pointer-events-none'
+      className='absolute bottom-2 sm:bottom-3 w-full flex justify-center gap-3 sm:gap-8 z-(--z-stage-bg) pointer-events-none'
       role='group'
       aria-label={t('ui:gig.controlsHint', { defaultValue: 'Game Controls' })}
     >

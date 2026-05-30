@@ -13,8 +13,8 @@ export const OverloadWarning = memo(function OverloadWarning({
   if (overload <= 90 && !isToxicMode) return null
 
   return (
-    <div className='absolute top-1/4 right-8 z-20 opacity-50 pointer-events-none'>
-      <VoidSkullIcon className='w-32 h-32 text-blood-red animate-pulse' />
+    <div className='absolute top-1/4 right-4 sm:right-8 z-(--z-stage-overlay) opacity-50 pointer-events-none'>
+      <VoidSkullIcon className='w-16 h-16 sm:w-32 sm:h-32 text-blood-red animate-pulse' />
     </div>
   )
 })

@@ -12,7 +12,7 @@ export const GameOverOverlay = memo(function GameOverOverlay({
   if (!isGameOver) return null
   return (
     <div
-      className='absolute inset-0 z-50 bg-void-black/90 flex flex-col items-center justify-center pointer-events-none'
+      className='absolute inset-0 z-(--z-modal) bg-void-black/90 flex flex-col items-center justify-center pointer-events-none'
       role='alert'
       aria-live='assertive'
     >

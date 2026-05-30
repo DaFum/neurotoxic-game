@@ -954,6 +954,9 @@
   "hq.voidTraderLockedTooltip": "Requires 30 Controversy to unlock",
   "hqNavigation": "HQ Navigation",
   "hud.bandHarmony": "Band Harmony",
+  "hud.burst_armed": "BURST ARMED",
+  "hud.decibel_corruption": "DECIBEL CORRUPTION",
+
   "hud.day": "Day",
   "hud.decimatorActive": "DECIMATOR: ON",
   "hud.decimatorInactive": "DECIMATOR: OFF",

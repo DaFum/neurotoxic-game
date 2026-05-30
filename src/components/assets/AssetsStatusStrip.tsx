@@ -58,7 +58,7 @@ export const AssetsStatusStrip = () => {
           {t('assets:scene.subtitle')}
         </span>
       </div>
-      <div className='grid grid-cols-4 divide-x divide-[rgb(var(--color-ash-gray-rgb)_/_35%)]'>
+      <div className='grid grid-cols-4 divide-x divide-ash-gray/35'>
         <StatusCell
           label={t('assets:hub.status.cash')}
           value={formatCurrency(money, i18n.language)}

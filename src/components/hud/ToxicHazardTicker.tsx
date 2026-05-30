@@ -14,7 +14,7 @@ export const ToxicHazardTicker = memo(function ToxicHazardTicker({
   if (!isToxicMode) return null
 
   return (
-    <div className='absolute top-0 w-full z-20'>
+    <div className='absolute top-0 w-full z-(--z-stage-overlay)'>
       <HazardTicker
         message={t(
           'ui:hazard.toxicOverload',

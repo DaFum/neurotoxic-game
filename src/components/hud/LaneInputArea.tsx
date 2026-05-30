@@ -71,7 +71,7 @@ export const LaneInputArea = memo(function LaneInputArea({
   const { t } = useTranslation(['ui'])
 
   return (
-    <div className='absolute inset-0 z-40 flex pb-20 sm:pb-16 pt-28 sm:pt-32 pointer-events-none'>
+    <div className='absolute inset-0 z-(--z-stage-controls) flex pb-20 sm:pb-16 pt-28 sm:pt-32 pointer-events-none'>
       {LANES.map(lane => (
         <LaneInputZone
           key={lane.id}

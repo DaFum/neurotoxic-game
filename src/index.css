@@ -17,10 +17,8 @@
   --color-toxic-green: #00ff41;
   --color-toxic-green-rgb: 0 255 65;
   --color-toxic-green-dark: #00cc33;
-  --color-toxic-green-light: #33ff66;
   /* Neu: Für extreme Highlights und düstere Schatten */
   --color-toxic-green-bright: #66ff8c;
-  --color-toxic-green-mutated: #0a290a;
   --color-toxic-green-glow: rgb(0 255 65 / 60%);
   --color-toxic-green-50: rgb(0 255 65 / 50%);
   --color-toxic-green-20: rgb(0 255 65 / 20%);
@@ -57,10 +55,7 @@
   --color-blood-red-dark: #660000;
   --color-blood-red-glow: rgb(255 0 0 / 60%);
   --color-blood-red-20: rgb(204 0 0 / 20%);
-
-  --color-rust-orange: #cc5500;
   /* Neu: Hellerer Rost für Buttons/Interaktionen */
-  --color-rust-orange-bright: #ff6a00;
 
   --color-warning-yellow: #ffcc00;
   --color-warning-yellow-rgb: 255 204 0;
@@ -78,13 +73,11 @@
      ========================================= */
   --color-cosmic-purple: #6600cc;
   --color-void-purple: #ff00ff;
-  --color-void-blue: #0033cc;
   --color-star-white: #ffffff;
   --color-star-white-rgb: 255 255 255;
   /* Neu: Cyanspäher für den perfekten Chromatic Aberration/Glitch Effekt */
   --color-neon-cyan: #00ffff;
   --color-cosmic-purple-glow: rgb(102 0 204 / 50%);
-  --color-purple-glow: rgb(102 0 204 / 50%);
 
   /* =========================================
      ERWEITERTE AKZENTFARBEN (UI & Contraband)
@@ -100,7 +93,6 @@
      ========================================= */
   --color-success-green: var(--color-toxic-green);
   --color-error-red: #ff0033;
-  --color-warning-orange: #ff9900;
   --color-info-blue: #0099ff;
 
   --color-fuel-yellow: #eab308;
@@ -114,20 +106,13 @@
   /* =========================================
      UI KOMPONENTEN
      ========================================= */
-  --color-panel-bg: rgb(10 10 10 / 40%);
-  --color-disabled-bg: var(--color-concrete-gray);
-  --color-disabled-text: var(--color-ash-gray);
-  --color-disabled-border: var(--color-ash-gray);
   --color-shadow-overlay: rgb(10 10 10 / 40%);
-  --color-shadow-overlay-strong: rgb(10 10 10 / 70%);
-  --color-overlay: rgb(0 0 0 / 80%);
 
   /* =========================================
      TYPOGRAFIE & Z-INDEX (Nativer T4 Support)
      ========================================= */
   --font-display: 'Metal Mania', cursive;
   --font-ui: 'Courier New', monospace;
-  --font-code: 'Courier New', monospace;
   --font-script: 'Brush Script MT', 'Lucida Handwriting', cursive;
   --font-asset-display: 'Staatliches', var(--font-display);
   --font-asset-control: 'Azeret Mono', var(--font-ui);
@@ -328,40 +313,11 @@ button {
 }
 
 /* Typewriter flicker for subtitles */
-@keyframes type-cursor {
-  0%,
-  100% {
-    border-color: var(--color-toxic-green);
-  }
-
-  50% {
-    border-color: transparent;
-  }
-}
 
 /* Score count-up flash */
-@keyframes score-flash {
-  0% {
-    color: var(--color-star-white);
-    text-shadow: 0 0 20px var(--color-star-white);
-  }
-
-  100% {
-    color: var(--color-toxic-green);
-    text-shadow: 0 0 10px var(--color-toxic-green);
-  }
-}
 
 /* Stat bar fill */
-@keyframes bar-fill {
-  0% {
-    width: 0%;
-  }
-}
 
-.animate-bar-fill {
-  animation: bar-fill 0.8s ease-out;
-}
 
 /* Dramatic zoom for Game Over */
 @keyframes doom-zoom {
@@ -433,16 +389,6 @@ button {
 }
 
 /* Van bounce for HUD */
-@keyframes hud-bounce {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-2px);
-  }
-}
 
 /* Fuel gauge low warning */
 @keyframes fuel-warning {
@@ -676,33 +622,7 @@ input[type='range'].vol-slider::-moz-range-thumb:hover {
   }
 }
 
-@keyframes drop {
-  0% {
-    transform: translate(-50%, -20px);
-    opacity: 0;
-  }
-  10% {
-    opacity: 1;
-  }
-  90% {
-    opacity: 1;
-  }
-  100% {
-    transform: translate(-50%, 180px);
-    opacity: 0;
-  }
-}
 
-@keyframes slide-in {
-  0% {
-    transform: translateX(-10px);
-    opacity: 0;
-  }
-  100% {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
 
 @keyframes marquee {
   0% {
@@ -906,12 +826,16 @@ input[type='range'].vol-slider::-moz-range-thumb:hover {
   .crt-overlay::after,
   .scene-enter,
   .animate-credits-scroll,
+  .animate-fuel-warning,
   .animate-pulse-glow,
+  .animate-pulse,
+  .animate-spin,
+  .animate-bounce,
+  .animate-ping,
   .animate-doom-zoom,
   .animate-neon-flicker,
   .animate-confirm-pulse,
   .toxic-border-flash,
-  .typing-text,
   .glitch-text::before,
   .glitch-text::after,
   .animate-chromatic-flicker,
@@ -923,8 +847,11 @@ input[type='range'].vol-slider::-moz-range-thumb:hover {
   .animate-credits-scroll {
     transform: none;
   }
+  .transition-all,
+  .transition-colors,
+  .transition-opacity,
+  .transition-transform {
+    transition: none !important;
+  }
 }
 
-.font-script {
-  font-family: 'Brush Script MT', 'Lucida Handwriting', cursive;
-}

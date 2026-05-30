@@ -155,7 +155,7 @@ export const MainMenuFeatures = ({ onClose }: { onClose: () => void }) => {
       title={t('ui:features.title')}
       contentClassName=''
     >
-      <div className='flex flex-col gap-6 w-full mx-auto max-h-[80vh] overflow-y-auto overflow-x-hidden custom-scrollbar pr-2 sm:pr-4 pb-4'>
+      <div className='flex flex-col gap-6 w-full mx-auto max-h-[calc(100svh-4rem)] overflow-y-auto overflow-x-hidden custom-scrollbar pr-2 sm:pr-4 pb-4'>
         {featureList.map(section => (
           <div key={section.title} className='flex flex-col gap-2'>
             <h3 className='text-toxic-green font-mono text-xl md:text-2xl uppercase tracking-widest border-b border-toxic-green/30 pb-1'>
