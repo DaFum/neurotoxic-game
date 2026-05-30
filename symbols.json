@@ -11503,6 +11503,24 @@
         "type": "const"
       }
     ],
+    "useMainMenuAudio": [
+      {
+        "isDefault": false,
+        "name": "useMainMenuAudio",
+        "path": "src/scenes/mainmenu/hooks/useMainMenuAudio.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "useMainMenuState": [
+      {
+        "isDefault": false,
+        "name": "useMainMenuState",
+        "path": "src/scenes/mainmenu/hooks/useMainMenuState.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "useMapGeneration": [
       {
         "isDefault": false,

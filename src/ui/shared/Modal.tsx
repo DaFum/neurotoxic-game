@@ -80,7 +80,7 @@ export const Modal = ({
 
   return (
     <div
-      className='fixed inset-0 z-50 flex items-center justify-center bg-void-black/90 cursor-pointer p-3 sm:p-4'
+      className='fixed inset-0 z-(--z-modal) flex items-center justify-center bg-void-black/90 cursor-pointer p-3 sm:p-4'
       onClick={(e: MouseEvent<HTMLDivElement>) => {
         if (e.target === e.currentTarget) onClose()
       }}

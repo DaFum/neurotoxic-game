@@ -242,7 +242,7 @@ export const EventModal = ({
       role='dialog'
       aria-modal='true'
       aria-labelledby='event-title'
-      className={`fixed inset-0 z-[100] flex items-center justify-center p-4 ${className}`}
+      className={`fixed inset-0 z-(--z-modal) flex items-center justify-center p-4 ${className}`}
     >
       {/* Backdrop */}
       <div className='absolute inset-0 bg-void-black/80 backdrop-blur-sm'></div>
@@ -259,7 +259,7 @@ export const EventModal = ({
       <motion.div
         initial={{ scale: 0.9, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
-        className='relative w-full max-w-lg border-2 border-toxic-green bg-void-black shadow-[0_0_40px_var(--color-toxic-green-glow)] animate-[glitch-anim_0.2s_ease-in-out]'
+        className='relative w-full max-w-lg border-4 border-toxic-green p-3 sm:p-6 bg-void-black shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)] animate-[glitch-anim_0.2s_ease-in-out]'
       >
         {/* Hardware details */}
         <div className='absolute top-0 left-0 w-full h-1 bg-toxic-green'></div>
@@ -267,7 +267,7 @@ export const EventModal = ({
           {t('ui:event.severity.critical')}
         </div>
 
-        <div className='p-8 flex flex-col gap-6'>
+        <div className='flex flex-col gap-6 max-h-[calc(100svh-4rem)] overflow-y-auto custom-scrollbar'>
           <div className='flex items-start gap-4 border-b border-toxic-green/30 pb-6'>
             {event.category === 'special' ? (
               <VoidSkullIcon className='w-12 h-12 text-toxic-green animate-pulse shrink-0 mt-1' />

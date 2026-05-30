@@ -18,7 +18,7 @@ export const AudioLockedOverlay = memo(
       >
         <h2
           id='audio-locked-title'
-          className="text-4xl text-toxic-green font-['Metal_Mania'] mb-8 animate-pulse text-center"
+          className='text-4xl text-toxic-green font-display mb-8 animate-pulse text-center'
         >
           {t('ui:gig.systemLocked', { defaultValue: 'SYSTEM LOCKED' })}
         </h2>

@@ -7,7 +7,7 @@ export const ClinicHeader = ({ player }: ClinicHeaderProps) => {
 
   return (
     <header className='border-b border-toxic-green/50 pb-4 shrink-0'>
-      <h2 className='text-2xl sm:text-3xl text-toxic-green font-[Metal_Mania] tracking-widest uppercase'>
+      <h2 className='text-2xl sm:text-3xl text-toxic-green font-display tracking-widest uppercase'>
         {t('ui:clinic.title', { defaultValue: 'THE VOID CLINIC' })}
       </h2>
       <p className='text-sm text-ash-gray mt-2 font-mono'>

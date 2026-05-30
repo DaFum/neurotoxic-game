@@ -20,7 +20,7 @@ export const PreGigHeader = React.memo(
         animate={{ opacity: 1, y: 0 }}
         className='text-center mb-4 sm:mb-6 w-full max-w-4xl'
       >
-        <h2 className="text-3xl sm:text-4xl text-toxic-green font-['Metal_Mania'] mb-2">
+        <h2 className='text-3xl sm:text-4xl text-toxic-green font-display mb-2'>
           {t('ui:pregig.title')}
         </h2>
         <div className='w-48 h-[1px] bg-gradient-to-r from-transparent via-toxic-green to-transparent mx-auto mb-3' />
