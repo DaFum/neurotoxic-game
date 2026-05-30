@@ -78,7 +78,7 @@ describe('Contraband Utils', () => {
 
     it('works with default rng', () => {
       const id = pickRandomContrabandByRarity('common')
-      assert.ok(typeof id === 'string' || id === null)
+      assert.ok(typeof id === 'string')
     })
 
     it('returns null for an empty/unknown rarity pool', () => {
