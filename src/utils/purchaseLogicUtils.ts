@@ -502,7 +502,7 @@ export const applyUnlockUpgrade = (
   const upgradeIdStr = String(upgradeId)
   const currentUpgrades = playerVan?.upgrades ?? []
 
-  if (new Set(currentUpgrades).has(upgradeIdStr)) {
+  if (currentUpgrades.includes(upgradeIdStr)) {
     return playerPatch
   }
 
