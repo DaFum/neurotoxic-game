@@ -174,46 +174,72 @@ export const handleRemoveModule = (
   const { assetId, slotId } = payload
   if (!state.assets) return state
 
+  // ⚡ BOLT OPTIMIZATION: Replaced O(N) array methods (.find, .some, .map, .filter)
+  // with procedural loops to avoid intermediate array allocations and reduce GC pressure.
+  let targetAsset: LongTermAsset | null = null
+  let targetAssetIndex = -1
+  for (let i = 0; i < state.assets.length; i++) {
+    if (state.assets[i].id === assetId) {
+      targetAsset = state.assets[i]
+      targetAssetIndex = i
+      break
+    }
+  }
+
   // Reject the removal if any child slot the module added is still occupied.
   // Silently destroying the installed children (and their refund eligibility)
   // would let players turbo-launder modules: install hitch → install trailer
   // addons → remove hitch → addons vanish without refund. Force the player
   // to uninstall children first.
-  const targetAsset = state.assets.find(a => a.id === assetId)
   if (!targetAsset) return state
-  const targetSlot = targetAsset.slots.find(s => s.id === slotId)
+
+  let targetSlot: AssetSlot | null = null
+  for (let i = 0; i < targetAsset.slots.length; i++) {
+    if (targetAsset.slots[i].id === slotId) {
+      targetSlot = targetAsset.slots[i]
+      break
+    }
+  }
+
   const removedModuleId = targetSlot?.installedModuleId ?? null
   if (removedModuleId) {
-    const blocked = targetAsset.slots.some(
-      s => s.addedByModuleId === removedModuleId && Boolean(s.installedModuleId)
-    )
+    let blocked = false
+    for (let i = 0; i < targetAsset.slots.length; i++) {
+      const s = targetAsset.slots[i]
+      if (
+        s.addedByModuleId === removedModuleId &&
+        Boolean(s.installedModuleId)
+      ) {
+        blocked = true
+        break
+      }
+    }
     if (blocked) return state
   }
 
   let refund = 0
-  const nextAssets = state.assets.map(asset => {
-    if (asset.id !== assetId) return asset
-
-    if (targetSlot && targetSlot.installedModuleId) {
-      const moduleInfo = MODULE_REGISTRY[targetSlot.installedModuleId]
-      if (moduleInfo) {
-        refund = moduleInfo.cost * moduleInfo.removalRefundFraction
-      }
+  if (targetSlot && targetSlot.installedModuleId) {
+    const moduleInfo = MODULE_REGISTRY[targetSlot.installedModuleId]
+    if (moduleInfo) {
+      refund = moduleInfo.cost * moduleInfo.removalRefundFraction
     }
+  }
 
-    let nextSlots = asset.slots.map(slot => {
-      if (slot.id === slotId) {
-        return { ...slot, installedModuleId: null }
-      }
-      return slot
-    })
-
-    if (removedModuleId) {
-      nextSlots = nextSlots.filter(s => s.addedByModuleId !== removedModuleId)
+  const nextSlots: AssetSlot[] = []
+  for (let i = 0; i < targetAsset.slots.length; i++) {
+    const slot = targetAsset.slots[i]
+    if (removedModuleId && slot.addedByModuleId === removedModuleId) {
+      continue
     }
+    if (slot.id === slotId) {
+      nextSlots.push({ ...slot, installedModuleId: null })
+    } else {
+      nextSlots.push(slot)
+    }
+  }
 
-    return { ...asset, slots: nextSlots }
-  })
+  const nextAssets = [...state.assets]
+  nextAssets[targetAssetIndex] = { ...targetAsset, slots: nextSlots }
 
   return {
     ...state,
