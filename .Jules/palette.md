@@ -1,3 +1,3 @@
 ## 2025-05-30 - [Missing Tooltips for Icon-Only Actions]
 **Learning:** Icon-only buttons (like the `?` shortcuts toggle in OverworldHUD) often lack visual hover feedback to explain their purpose to sighted users, despite having proper `aria-label`s for screen readers. The `Tooltip` component from `src/ui/shared` is standard practice across the HUD for resolving this.
-**Action:** When inspecting or adding icon-only buttons, systematically wrap them in the existing `Tooltip` component, ensuring the `content` string matches or closely aligns with the `aria-label` for consistency across all user types.
+**Action:** When inspecting or adding icon-only buttons, systematically wrap them in the existing `Tooltip` component. Ensure the `content` string provides additional context (such as keyboard shortcuts) or is distinct from the `aria-label` to avoid redundant screen reader announcements.
