@@ -836,7 +836,6 @@ input[type='range'].vol-slider::-moz-range-thumb:hover {
   .animate-neon-flicker,
   .animate-confirm-pulse,
   .toxic-border-flash,
-  .typing-text,
   .glitch-text::before,
   .glitch-text::after,
   .animate-chromatic-flicker,
@@ -856,6 +855,3 @@ input[type='range'].vol-slider::-moz-range-thumb:hover {
   }
 }
 
-.font-script {
-  font-family: 'Brush Script MT', 'Lucida Handwriting', cursive;
-}

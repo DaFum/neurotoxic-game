@@ -13,16 +13,16 @@ export const CorruptionMeter = memo(function CorruptionMeter({
   corruptionLevel,
   isCorruptionBurstActive
 }: CorruptionMeterProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation('ui')
   return (
     <div className='mt-3 w-48 bg-void-black/80 p-2 border border-blood-red/30 backdrop-blur-sm'>
       {isCorruptionBurstActive ? (
         <div className='text-blood-red font-bold text-sm tracking-widest text-center animate-pulse'>
-          {t('hud.burst_armed', 'BURST ARMED')}
+          {t('ui:hud.burst_armed')}
         </div>
       ) : (
         <BlockMeter
-          label={t('hud.decibel_corruption', 'DECIBEL CORRUPTION')}
+          label={t('ui:hud.decibel_corruption')}
           value={normalizePercentageToScale(corruptionLevel, 10)}
           max={10}
           isDanger={corruptionLevel > 80}
