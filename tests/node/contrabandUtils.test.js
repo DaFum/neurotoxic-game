@@ -45,14 +45,15 @@ describe('Contraband Utils', () => {
 
   describe('pickRandomContraband', () => {
     it('uses rng for both rarity and item selection', () => {
-      // First call (rarity) gets 0 (common)
-      // Second call (item selection) gets 0.9999 (last item)
-      const values = [0, 0.9999]
-      let callCount = 0
-      const statefulRng = () => values[callCount++]
-
       const pool = CONTRABAND_BY_RARITY.common
       const expectedId = pool[pool.length - 1].id
+
+      // First call (rarity) gets 0 (common)
+      // Second call (item selection) gets a value that dynamically targets the last item
+      const lastItemRng = (pool.length - 0.5) / pool.length
+      const values = [0, lastItemRng]
+      let callCount = 0
+      const statefulRng = () => values[callCount++]
 
       const id = pickRandomContraband(statefulRng)
 
@@ -61,9 +62,9 @@ describe('Contraband Utils', () => {
     })
 
     it('can pick an epic item if rng dictates', () => {
-      // First call (rarity) gets 0.99 (epic)
+      // First call (rarity) gets 0.9999 (epic)
       // Second call (item selection) gets 0 (first item)
-      const values = [0.99, 0]
+      const values = [0.9999, 0]
       let callCount = 0
       const statefulRng = () => values[callCount++]
 
