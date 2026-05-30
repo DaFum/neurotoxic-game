@@ -84,7 +84,7 @@ export const checkTraitUnlocks = (
 
     // Blast Machine (Marius): Fast song (>160 BPM) && Max Combo > 50
     if (Marius && !hasTrait(Marius, 'blast_machine')) {
-      const isFast = typeof song?.bpm === 'number' && song.bpm > 160
+      const isFast = typeof song?.bpm === 'number' && song?.bpm > 160
       if (isFast && maxCombo > 50) {
         newUnlocks.push({ memberId: Marius.name, traitId: 'blast_machine' })
       }
@@ -92,7 +92,7 @@ export const checkTraitUnlocks = (
 
     // Melodic Genius (Lars): Slow Song (<120 BPM) && Max Combo > 30
     if (Lars && !hasTrait(Lars, 'melodic_genius')) {
-      const isSlow = typeof song?.bpm === 'number' && song.bpm < 120
+      const isSlow = typeof song?.bpm === 'number' && song?.bpm < 120
       if (isSlow && maxCombo > 30) {
         newUnlocks.push({ memberId: Lars.name, traitId: 'melodic_genius' })
       }
