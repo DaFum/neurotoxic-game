@@ -1,6 +1,5 @@
 /// <reference types="vite/client" />
 import { getSafeUUID } from './crypto'
-import { getSafeStorageItem, setSafeStorageItem } from './storage'
 
 /**
  * Log levels for the application.
@@ -37,10 +36,26 @@ export class Logger {
     this.listeners = []
 
     // Load preference if available
-    const savedLevel = getSafeStorageItem<number | null>(
-      'neurotoxic_log_level',
-      null
-    )
+    let savedLevel: number | null = null
+    try {
+      const storage =
+        typeof window !== 'undefined'
+          ? window.localStorage
+          : typeof globalThis !== 'undefined'
+            ? globalThis.localStorage
+            : null
+      if (storage) {
+        const raw = storage.getItem('neurotoxic_log_level')
+        if (raw !== null) {
+          const parsed = parseInt(raw, 10)
+          if (!isNaN(parsed)) {
+            savedLevel = parsed
+          }
+        }
+      }
+    } catch (_e) {
+      // Ignore errors (SecurityError, etc.)
+    }
     if (savedLevel !== null && isValidLogLevel(savedLevel)) {
       this.minLevel = savedLevel
     }
@@ -56,7 +71,19 @@ export class Logger {
       return
     }
     this.minLevel = level
-    setSafeStorageItem('neurotoxic_log_level', level)
+    try {
+      const storage =
+        typeof window !== 'undefined'
+          ? window.localStorage
+          : typeof globalThis !== 'undefined'
+            ? globalThis.localStorage
+            : null
+      if (storage) {
+        storage.setItem('neurotoxic_log_level', level.toString())
+      }
+    } catch (_e) {
+      // Ignore errors
+    }
   }
 
   /**

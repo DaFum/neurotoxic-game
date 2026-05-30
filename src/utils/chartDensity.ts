@@ -79,14 +79,33 @@ export const buildSetlistChartDensity = (
   const firstSet = densitySets[0]
   if (!firstSet) return []
 
-  const counts = firstSet.map((_, index) =>
-    densitySets.reduce((sum, bars) => sum + (bars[index]?.count ?? 0), 0)
-  )
-  const peak = Math.max(1, ...counts)
+  const numBuckets = firstSet.length
+  const counts = new Array(numBuckets).fill(0)
+  const numSets = densitySets.length
 
-  return counts.map((count, index) => ({
-    timestamp: firstSet[index]?.timestamp ?? index,
-    count,
-    intensity: count / peak
-  }))
+  for (let i = 0; i < numSets; i++) {
+    const bars = densitySets[i]
+    if (!bars) continue
+    for (let j = 0; j < numBuckets; j++) {
+      counts[j] += bars[j].count
+    }
+  }
+
+  let peak = 1
+  for (let i = 0; i < numBuckets; i++) {
+    const currentCount = counts[i] ?? 0
+    if (currentCount > peak) peak = currentCount
+  }
+
+  const result = new Array(numBuckets)
+  for (let index = 0; index < numBuckets; index++) {
+    const count = counts[index] ?? 0
+    result[index] = {
+      timestamp: firstSet[index]?.timestamp ?? index,
+      count,
+      intensity: count / peak
+    }
+  }
+
+  return result
 }
