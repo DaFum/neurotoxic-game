@@ -80,7 +80,7 @@ const StashCard = ({ item, selectedMember, onUseItem, t }: StashCardProps) => {
     item.effectType === 'stamina' || item.effectType === 'mood'
   const typeBadgeClass =
     item.type === 'consumable'
-      ? 'border-blood-red text-blood-red bg-blood-red-20'
+      ? 'border-blood-red text-error-red bg-blood-red-20'
       : 'border-electric-blue text-electric-blue bg-electric-blue-20'
 
   return (
@@ -159,7 +159,7 @@ const StashCard = ({ item, selectedMember, onUseItem, t }: StashCardProps) => {
         !selectedMember &&
         !item.applied &&
         item.type === 'consumable' ? (
-          <p className='text-blood-red text-xs mb-2 italic'>
+          <p className='text-error-red text-xs mb-2 italic'>
             {t('ui:contraband.requiresTarget', {
               defaultValue: 'Requires target member.'
             })}

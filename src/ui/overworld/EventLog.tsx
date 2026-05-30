@@ -102,7 +102,7 @@ export const EventLog = React.memo(({ t, day, locationId }: EventLogProps) => {
     entry.kind === 'location_secured' ? 'travel' : 'system'
 
   return (
-    <div className='event-log absolute bottom-8 left-8 z-(--z-stage-overlay) pointer-events-none'>
+    <div className='event-log absolute bottom-4 left-4 sm:bottom-8 sm:left-8 z-(--z-stage-overlay) pointer-events-none'>
       <div className='el-header'>
         <span className='el-title'>
           {'// '}

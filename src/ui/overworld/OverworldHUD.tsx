@@ -99,19 +99,19 @@ const getMemberStatus = (m: Member): MemberStatus => {
 }
 
 const STATUS_DOT_COLOR = {
-  crit: 'var(--color-blood-red)',
+  crit: 'var(--color-error-red)',
   low: 'var(--color-warning-yellow)',
   ok: 'var(--color-toxic-green)'
 } as const satisfies Record<MemberStatus, string>
 
 const getMoodColor = (mood: number) => {
-  if (mood < 30) return 'var(--color-blood-red)'
+  if (mood < 30) return 'var(--color-error-red)'
   if (mood < 50) return 'var(--color-warning-yellow)'
   return 'var(--color-mood-pink)'
 }
 
 const getStaminaColor = (stamina: number) => {
-  if (stamina < 20) return 'var(--color-blood-red)'
+  if (stamina < 20) return 'var(--color-error-red)'
   if (stamina < 35) return 'var(--color-warning-yellow)'
   return 'var(--color-toxic-green)'
 }
@@ -307,7 +307,7 @@ export const OverworldHUD = React.memo(
                 value={vanFuel}
                 isLow={fuelLow}
                 icon='⛽'
-                lowColor='var(--color-blood-red)'
+                lowColor='var(--color-error-red)'
                 normalColor='var(--color-warning-yellow)'
                 notAvailableLabel={t('ui:overworld.notAvailable', {
                   defaultValue: 'N/A'
@@ -317,7 +317,7 @@ export const OverworldHUD = React.memo(
                 value={vanCondition}
                 isLow={condLow}
                 icon='🔧'
-                lowColor='var(--color-blood-red)'
+                lowColor='var(--color-error-red)'
                 normalColor='var(--color-condition-blue)'
                 notAvailableLabel={t('ui:overworld.notAvailable', {
                   defaultValue: 'N/A'
@@ -327,7 +327,7 @@ export const OverworldHUD = React.memo(
                 <div
                   style={{
                     fontSize: 8,
-                    color: 'var(--color-blood-red)',
+                    color: 'var(--color-error-red)',
                     letterSpacing: '2px',
                     textTransform: 'uppercase',
                     marginTop: 2,
@@ -429,7 +429,7 @@ export const OverworldHUD = React.memo(
                       width: `${band.harmony ?? 0}%`,
                       background:
                         (band.harmony ?? 0) < 40
-                          ? 'var(--color-blood-red)'
+                          ? 'var(--color-error-red)'
                           : 'var(--color-toxic-green)'
                     }}
                   />
@@ -439,7 +439,7 @@ export const OverworldHUD = React.memo(
                     fontSize: 10,
                     color:
                       (band.harmony ?? 0) < 40
-                        ? 'var(--color-blood-red)'
+                        ? 'var(--color-error-red)'
                         : 'var(--color-toxic-green)',
                     width: 28,
                     textAlign: 'right'

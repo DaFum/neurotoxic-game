@@ -172,10 +172,10 @@ function MerchPressCostsAndGains({
     <div className='grid grid-cols-2 gap-4'>
       <div className='bg-void-black border border-blood-red-20 p-3 flex flex-col items-center justify-center relative overflow-hidden group'>
         <div className='absolute inset-0 bg-blood-red-20 opacity-0 group-hover:opacity-100 transition-opacity' />
-        <span className='text-xs text-blood-red mb-1 uppercase tracking-widest'>
+        <span className='text-xs text-error-red mb-1 uppercase tracking-widest'>
           {t('ui:merch_press.cost_label', { defaultValue: 'COST' })}
         </span>
-        <span className='text-xl font-display text-blood-red'>
+        <span className='text-xl font-display text-error-red'>
           {formatCurrency(config.cost, i18n.language)}
         </span>
       </div>
@@ -205,7 +205,7 @@ type MerchPressRiskWarningProps = {
 function MerchPressRiskWarning({ config, t }: MerchPressRiskWarningProps) {
   return (
     <div className='bg-blood-red-20 border border-blood-red-20 p-4 mt-4'>
-      <p className='text-blood-red text-sm text-center font-bold'>
+      <p className='text-error-red text-sm text-center font-bold'>
         {t('ui:merch_press.risk_warning', {
           risk: config.failChance * 100,
           harmonyCostOnFail: config.harmonyCostOnFail,
@@ -249,7 +249,7 @@ function MerchPressCurrentStats({
               {t('ui:stats.money', { defaultValue: 'FUNDS' })}
             </span>
             <span
-              className={`${isAffordable ? 'text-toxic-green' : 'text-blood-red'}`}
+              className={`${isAffordable ? 'text-toxic-green' : 'text-error-red'}`}
             >
               {formatCurrency(player?.money ?? 0, i18n.language)} /{' '}
               {formatCurrency(config.cost, i18n.language)}
@@ -272,7 +272,7 @@ function MerchPressCurrentStats({
               {t('ui:stats.harmony', { defaultValue: 'HARMONY' })}
             </span>
             <span
-              className={`${hasEnoughHarmony ? 'text-toxic-green' : 'text-blood-red'}`}
+              className={`${hasEnoughHarmony ? 'text-toxic-green' : 'text-error-red'}`}
             >
               {band?.harmony ?? 0}%
             </span>

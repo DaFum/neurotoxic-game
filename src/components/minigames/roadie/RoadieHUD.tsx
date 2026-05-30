@@ -6,7 +6,7 @@ export const RoadieHUD = memo(function RoadieHUD({ uiState }: RoadieHUDProps) {
   const { t } = useTranslation(['ui'])
 
   return (
-    <div className='absolute top-4 left-4 z-(--z-stage-overlay) text-star-white font-mono pointer-events-none bg-void-black/50 p-2 border border-star-white/20'>
+    <div className='absolute scale-75 sm:scale-100 origin-top-left top-4 left-4 z-(--z-stage-overlay) text-star-white font-mono pointer-events-none bg-void-black/50 p-2 border border-star-white/20'>
       <h2 className='text-xl text-toxic-green'>
         {t('ui:roadieRun.hud.title')}
       </h2>

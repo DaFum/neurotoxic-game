@@ -37,7 +37,7 @@ export const DarkWebLeakModal = ({
           })}
         </p>
         <div className='flex flex-col gap-1 text-sm bg-black/50 p-2 border border-toxic-green/50'>
-          <div className='text-blood-red'>
+          <div className='text-error-red'>
             {t('ui:dark_web_leak.cost', { defaultValue: 'COST:' })}{' '}
             {formatCurrency(config.COST, i18n.language)}
           </div>
@@ -55,7 +55,7 @@ export const DarkWebLeakModal = ({
             })}{' '}
             +{config.CONTROVERSY_GAIN}
           </div>
-          <div className='text-blood-red'>
+          <div className='text-error-red'>
             {t('ui:dark_web_leak.harmony_cost', {
               defaultValue: 'HARMONY COST:'
             })}{' '}
@@ -63,7 +63,7 @@ export const DarkWebLeakModal = ({
           </div>
         </div>
         {hasLeakedToday && (
-          <p className='text-blood-red text-sm font-bold border border-blood-red p-1 text-center'>
+          <p className='text-error-red text-sm font-bold border border-blood-red p-1 text-center'>
             {t('ui:dark_web_leak.leaked_today', {
               defaultValue: 'Data leaked for today.'
             })}

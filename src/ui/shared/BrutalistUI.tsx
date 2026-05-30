@@ -38,6 +38,7 @@ interface DeadmanButtonProps {
 }
 
 interface CrisisModalProps {
+  className?: string
   isOpen: boolean
   onClose?: () => void
   title?: string
@@ -338,7 +339,14 @@ export const BlockMeter = memo(
 
 // 3. Brutalist Tabs
 export const CrisisModal = memo(
-  ({ isOpen, onClose, title, description, actions }: CrisisModalProps) => {
+  ({
+    isOpen,
+    onClose,
+    title,
+    description,
+    actions,
+    className
+  }: CrisisModalProps) => {
     const { t } = useTranslation(['ui'])
     const titleId = useId()
     if (!isOpen) return null
@@ -394,7 +402,9 @@ export const CrisisModal = memo(
         ></div>
 
         {/* Modal Box */}
-        <div className='relative w-full max-w-lg border-2 border-toxic-green bg-void-black shadow-[0_0_40px_var(--color-toxic-green-glow)] animate-[glitch-anim_0.2s_ease-in-out]'>
+        <div
+          className={`relative w-full max-w-lg border-2 border-toxic-green bg-void-black shadow-[0_0_40px_var(--color-toxic-green-glow)] animate-[glitch-anim_0.2s_ease-in-out] ${className || ''}`}
+        >
           {/* Hardware details */}
           <div className='absolute top-0 left-0 w-full h-1 bg-toxic-green'></div>
           <div className='absolute top-0 left-2 w-16 h-4 bg-toxic-green text-void-black text-[10px] font-bold text-center leading-4 uppercase'>

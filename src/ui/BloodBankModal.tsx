@@ -21,7 +21,7 @@ const DonationCosts = ({
   pulseCosts?: boolean
   t: ReturnType<typeof useTranslation>['t']
 }) => {
-  const costValueClass = `text-blood-red font-bold${pulseCosts ? ' animate-pulse' : ''}`
+  const costValueClass = `text-error-red font-bold${pulseCosts ? ' animate-pulse' : ''}`
   return (
     <div className='flex flex-col gap-1 text-sm font-mono'>
       <div className='flex justify-between items-center'>
@@ -40,7 +40,7 @@ const DonationCosts = ({
         <span className='text-ash-gray'>
           {t('ui:blood_bank.cost_controversy', { defaultValue: 'CONTROVERSY' })}
         </span>
-        <span className='text-blood-red font-bold'>
+        <span className='text-error-red font-bold'>
           +{config.controversyGain}
         </span>
       </div>
@@ -101,10 +101,10 @@ type DonationVariantConfig = {
 const DONATION_VARIANTS = {
   blood: {
     container: 'border-2 border-blood-red',
-    title: 'text-blood-red border-b border-blood-red',
-    warning: 'text-blood-red',
+    title: 'text-error-red border-b border-blood-red',
+    warning: 'text-error-red',
     buttonEnabled:
-      'bg-blood-red text-void-black border-blood-red hover:bg-void-black hover:text-blood-red shadow-[0_0_15px_var(--color-blood-red)]',
+      'bg-blood-red text-void-black border-blood-red hover:bg-void-black hover:text-error-red shadow-[0_0_15px_var(--color-blood-red)]',
     titleKey: 'ui:blood_bank.blood_title',
     titleDefault: 'BLOOD DONATION',
     actionKey: 'ui:blood_bank.action',
@@ -246,7 +246,7 @@ export const BloodBankModal = ({
             <div className='min-w-0'>
               <h2
                 id='blood-bank-title'
-                className='text-3xl sm:text-4xl text-blood-red font-display drop-shadow-[0_0_5px_var(--color-blood-red)] uppercase'
+                className='text-3xl sm:text-4xl text-error-red font-display drop-shadow-[0_0_5px_var(--color-blood-red)] uppercase'
               >
                 {t('ui:blood_bank.title', { defaultValue: 'THE VOID CLINIC' })}
               </h2>
@@ -259,7 +259,7 @@ export const BloodBankModal = ({
             <button
               type='button'
               onClick={onClose}
-              className='w-full sm:w-auto px-4 py-3 sm:py-2 border-2 border-blood-red text-blood-red font-bold hover:bg-blood-red hover:text-void-black transition-colors uppercase font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blood-red focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
+              className='w-full sm:w-auto px-4 py-3 sm:py-2 border-2 border-blood-red text-error-red font-bold hover:bg-blood-red hover:text-void-black transition-colors uppercase font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blood-red focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
             >
               {t('ui:hq.leave', { defaultValue: 'LEAVE [ESC]' })}
             </button>

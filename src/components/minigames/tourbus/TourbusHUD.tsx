@@ -5,7 +5,7 @@ export const TourbusHUD = ({ distance, damage }: TourbusHUDProps) => {
   const { t } = useTranslation('minigame')
 
   return (
-    <div className='absolute top-4 left-4 z-(--z-stage-overlay) text-star-white font-mono pointer-events-none'>
+    <div className='absolute scale-75 sm:scale-100 origin-top-left top-4 left-4 z-(--z-stage-overlay) text-star-white font-mono pointer-events-none'>
       <h2 className='text-2xl text-toxic-green'>
         {t('minigame:tourbus.title', { defaultValue: 'TOURBUS TERROR' })}
       </h2>
