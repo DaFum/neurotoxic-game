@@ -31,20 +31,14 @@ export const resolveSongPlaybackWindow = (
   excerptEndMs: number | null
   excerptDurationMs: number
 } => {
-  const rawDefaultMs = options.defaultDurationMs
-  const defaultDurationMs = typeof rawDefaultMs === 'number' && Number.isFinite(rawDefaultMs)
-    ? Math.max(0, rawDefaultMs)
-    : 0
+  const getFiniteNumber = <T>(val: unknown, fallback: T): number | T =>
+    typeof val === 'number' && Number.isFinite(val)
+      ? Math.max(0, val)
+      : fallback
 
-  const rawStartMs = song?.excerptStartMs
-  const excerptStartMs = typeof rawStartMs === 'number' && Number.isFinite(rawStartMs)
-    ? Math.max(0, rawStartMs)
-    : 0
-
-  const rawEndMs = song?.excerptEndMs
-  const excerptEndMs = typeof rawEndMs === 'number' && Number.isFinite(rawEndMs)
-    ? Math.max(0, rawEndMs)
-    : null
+  const defaultDurationMs = getFiniteNumber(options.defaultDurationMs, 0)
+  const excerptStartMs = getFiniteNumber(song?.excerptStartMs, 0)
+  const excerptEndMs = getFiniteNumber(song?.excerptEndMs, null)
 
   const derivedDurationMs =
     excerptEndMs != null &&
@@ -53,20 +47,13 @@ export const resolveSongPlaybackWindow = (
       ? excerptEndMs - excerptStartMs
       : null
 
-  const rawExplicitMs = song?.excerptDurationMs
-  const explicitDurationMs = typeof rawExplicitMs === 'number' && Number.isFinite(rawExplicitMs)
-    ? Math.max(0, rawExplicitMs)
-    : null
-
-  const rawAuthoredMs = song?.durationMs
-  const authoredDurationMs = typeof rawAuthoredMs === 'number' && Number.isFinite(rawAuthoredMs)
-    ? Math.max(0, rawAuthoredMs)
-    : null
+  const explicitDurationMs = getFiniteNumber(song?.excerptDurationMs, null)
+  const authoredDurationMs = getFiniteNumber(song?.durationMs, null)
 
   const excerptDurationMs = (derivedDurationMs ??
     explicitDurationMs ??
     authoredDurationMs ??
-    defaultDurationMs)
+    defaultDurationMs) as number
 
   return { excerptStartMs, excerptEndMs, excerptDurationMs }
 }
