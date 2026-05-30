@@ -11576,6 +11576,16 @@
         "type": "const"
       }
     ],
+    "useOverworldUrls": [
+      {
+        "exportPath": "src/components/overworld/hooks/index.ts",
+        "isDefault": false,
+        "name": "useOverworldUrls",
+        "path": "src/components/overworld/hooks/useOverworldUrls.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "usePersistence": [
       {
         "isDefault": false,
