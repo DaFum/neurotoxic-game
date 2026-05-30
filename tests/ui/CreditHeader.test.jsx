@@ -13,6 +13,6 @@ describe('CreditHeader Component', () => {
     // Check that it has the expected classes
     expect(heading).toHaveClass('animate-neon-flicker')
     expect(heading).toHaveClass('text-toxic-green')
-    expect(heading).toHaveClass('font-[Metal_Mania]')
+    expect(heading).toHaveClass('font-display')
   })
 })

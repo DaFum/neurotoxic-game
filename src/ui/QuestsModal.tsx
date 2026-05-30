@@ -207,7 +207,7 @@ const QuestItem = memo(
           </h3>
           {timeRemaining !== null && (
             <div
-              className={`flex items-center gap-1 text-xs font-mono px-2 py-1 rounded ${timeRemaining <= 2 ? 'bg-blood-red/20 text-blood-red' : 'bg-fuel-yellow/10 text-fuel-yellow'}`}
+              className={`flex items-center gap-1 text-xs font-mono px-2 py-1 ${timeRemaining <= 2 ? 'bg-blood-red/20 text-blood-red' : 'bg-fuel-yellow/10 text-fuel-yellow'}`}
             >
               <IconClock className='w-3 h-3' />
               <span>
@@ -245,7 +245,7 @@ const QuestItem = memo(
           </span>
 
           {typeof quest.moneyReward === 'number' && quest.moneyReward > 0 && (
-            <span className='inline-flex items-center gap-1 bg-fuel-yellow/10 text-fuel-yellow px-2 py-1 text-xs font-mono rounded'>
+            <span className='inline-flex items-center gap-1 bg-fuel-yellow/10 text-fuel-yellow px-2 py-1 text-xs font-mono '>
               <IconCoin className='w-3 h-3' />{' '}
               {t('ui:quests.moneyReward', {
                 amount: formatCurrency(
@@ -258,7 +258,7 @@ const QuestItem = memo(
           )}
 
           {quest.rewardType && (
-            <span className='inline-flex items-center gap-1 bg-toxic-green/10 text-toxic-green px-2 py-1 text-xs font-mono rounded'>
+            <span className='inline-flex items-center gap-1 bg-toxic-green/10 text-toxic-green px-2 py-1 text-xs font-mono '>
               {getRewardIcon(quest.rewardType)}
               {getRewardText(quest, t)}
             </span>
@@ -300,7 +300,7 @@ export const QuestsModal = ({
   return (
     <AnimatePresence>
       <motion.div
-        className='fixed inset-0 z-[100] flex items-center justify-center bg-void-black/80 p-4'
+        className='fixed inset-0 z-(--z-modal) flex items-center justify-center bg-void-black/80 p-4'
         variants={overlayVariants}
         initial='hidden'
         animate='visible'
@@ -308,13 +308,13 @@ export const QuestsModal = ({
         onClick={onClose}
       >
         <motion.div
-          className='relative w-full max-w-2xl bg-void-black border-4 border-toxic-green shadow-[0_0_30px_var(--color-toxic-green-20)] p-6 max-h-[90vh] overflow-y-auto'
+          className='relative w-full max-w-2xl border-4 border-toxic-green p-3 sm:p-6 bg-void-black shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)] max-h-[calc(100svh-4rem)] overflow-y-auto'
           variants={modalVariants}
           onClick={(e: MouseEvent<HTMLDivElement>) => e.stopPropagation()}
         >
           {/* Header */}
           <div className='flex justify-between items-center mb-6 border-b border-toxic-green pb-2'>
-            <h2 className='text-3xl font-[Metal_Mania] text-toxic-green tracking-wider drop-shadow-[0_0_8px_var(--color-toxic-green)]'>
+            <h2 className='text-3xl font-display text-toxic-green tracking-wider drop-shadow-[0_0_8px_var(--color-toxic-green)]'>
               {t('ui:quests.title')}
             </h2>
             <button

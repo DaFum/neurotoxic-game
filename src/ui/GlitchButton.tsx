@@ -81,7 +81,7 @@ export const GlitchButton = ({
       aria-busy={isLoading}
       className={`
         relative ${sizeClasses[size]} min-w-11 min-h-11 bg-void-black
-        font-[Metal_Mania] font-bold uppercase tracking-widest
+        font-display font-bold uppercase tracking-widest
         touch-manipulation text-center leading-tight max-w-full whitespace-normal break-words [overflow-wrap:anywhere]
         transition-all duration-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-toxic-green-20
         group
@@ -91,7 +91,7 @@ export const GlitchButton = ({
       {...props}
     >
       <span
-        className={`relative z-10 flex min-w-0 max-w-full items-center justify-center gap-2 whitespace-normal break-words [overflow-wrap:anywhere] ${
+        className={`relative z-(--z-hud) flex min-w-0 max-w-full items-center justify-center gap-2 whitespace-normal break-words [overflow-wrap:anywhere] ${
           isIntervention ? '' : 'group-hover:animate-pulse'
         } ${isLoading ? 'opacity-0' : 'opacity-100'}`}
       >
@@ -100,7 +100,7 @@ export const GlitchButton = ({
 
       {isLoading && (
         <span
-          className='absolute inset-0 flex items-center justify-center z-20'
+          className='absolute inset-0 flex items-center justify-center z-(--z-hud)'
           aria-hidden='true'
         >
           <Loader2 className='animate-spin w-5 h-5' aria-hidden='true' />

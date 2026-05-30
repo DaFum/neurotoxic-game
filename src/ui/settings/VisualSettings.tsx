@@ -15,11 +15,11 @@ export const VisualSettings = memo(function VisualSettings({
 
   return (
     <div>
-      <h2 className='font-[Metal_Mania] text-4xl uppercase text-toxic-green mb-6 border-b border-ash-gray pb-2'>
+      <h2 className='font-display text-4xl uppercase text-toxic-green mb-6 border-b border-ash-gray pb-2'>
         {t('ui:visual_interface')}
       </h2>
       <div className='flex items-center justify-between'>
-        <span className='font-[Courier_New] text-sm uppercase tracking-wide text-ash-gray'>
+        <span className='font-ui text-sm uppercase tracking-wide text-ash-gray'>
           {t('ui:crt_effect')}
         </span>
         <ToggleSwitch
