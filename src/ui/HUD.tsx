@@ -149,7 +149,7 @@ export const HUD = memo(() => {
   const condition = player.van?.condition ?? 100
 
   return (
-    <div className='absolute top-0 left-0 w-full p-3 flex justify-between items-start pointer-events-none z-40 text-xs font-mono'>
+    <div className='absolute top-0 left-0 w-full p-3 flex justify-between items-start pointer-events-none z-(--z-hud) text-xs font-mono'>
       {/* Left Panel - Player Info */}
       <div className='flex flex-col gap-2'>
         <div className='bg-void-black border-2 border-toxic-green p-2.5 text-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)]'>

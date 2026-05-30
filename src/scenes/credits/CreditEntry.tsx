@@ -19,7 +19,7 @@ export const CreditEntry = React.memo(
         <span className='text-ash-gray text-[10px] font-mono tracking-[0.4em] uppercase'>
           {role}
         </span>
-        <span className='text-star-white text-2xl font-bold font-[Metal_Mania] tracking-wide'>
+        <span className='text-star-white text-2xl font-bold font-display tracking-wide'>
           {name}
         </span>
         <div className='w-16 h-[1px] bg-ash-gray/20 mx-auto mt-2' />

@@ -88,7 +88,7 @@ export const GlossaryTab = () => {
                 <h4 className='text-star-white font-bold font-mono text-lg flex items-center gap-2'>
                   {t(entry.termKey)}
                   {liveValue !== null && (
-                    <span className='text-toxic-green text-sm px-2 py-1 bg-toxic-green/10 rounded'>
+                    <span className='text-toxic-green text-sm px-2 py-1 bg-toxic-green/10 '>
                       [{t('ui:glossary.liveValue', { defaultValue: 'Live' })}:{' '}
                       {liveValue}]
                     </span>

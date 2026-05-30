@@ -149,7 +149,7 @@ const DealInfo = memo(
           </div>
           {displayDeal.alignment && (
             <span
-              className={`text-[10px] font-mono border border-current px-1 rounded ${alignmentMetadata.colorClass}`}
+              className={`text-[10px] font-mono border border-current px-1 ${alignmentMetadata.colorClass}`}
             >
               {t(alignmentMetadata.badgeKey, {
                 defaultValue: alignmentMetadata.defaultLabel
@@ -157,7 +157,7 @@ const DealInfo = memo(
             </span>
           )}
           {flavor && flavor.variant !== 'standard' && (
-            <span className='text-[10px] font-mono border border-electric-blue/60 text-electric-blue px-1 rounded'>
+            <span className='text-[10px] font-mono border border-electric-blue/60 text-electric-blue px-1 '>
               {t(flavor.variantLabelKey, {
                 defaultValue: flavor.variantLabelDefault
               })}
