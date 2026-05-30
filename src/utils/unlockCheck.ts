@@ -84,8 +84,7 @@ export const checkTraitUnlocks = (
 
     // Blast Machine (Marius): Fast song (>160 BPM) && Max Combo > 50
     if (Marius && !hasTrait(Marius, 'blast_machine')) {
-      const isFast =
-        typeof song?.bpm === 'number' && (song!.bpm as number) > 160
+      const isFast = typeof song?.bpm === 'number' && song.bpm > 160
       if (isFast && maxCombo > 50) {
         newUnlocks.push({ memberId: Marius.name, traitId: 'blast_machine' })
       }
