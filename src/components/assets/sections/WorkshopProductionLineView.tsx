@@ -1,12 +1,9 @@
 import { useTranslation } from 'react-i18next'
 import { GeneratedImagePanel } from '../../../ui/shared/GeneratedImagePanel'
-import {
-  getSectionBackgroundPrompt,
-  getModuleImagePrompt
-} from '../../../utils/imageGen'
+import { getSectionBackgroundPrompt } from '../../../utils/imageGen'
 import { WORKSHOP_SLOT_ZONES } from '../../../utils/assetSections/workshopConfig'
 import { formatSlotZonePercent } from '../../../utils/assetSections/slotLayout'
-import { getSlotButtonAriaLabel } from './slotLabels'
+import { AssetSlotButton } from '../shared/AssetSlotButton'
 import type { LongTermAsset } from '../../../types/assets'
 
 interface Props {
@@ -46,12 +43,12 @@ export const WorkshopProductionLineView = ({ asset, onSlotClick }: Props) => {
         if (!zone) return null
         const installed = slot.installedModuleId
         return (
-          <button
+          <AssetSlotButton
             key={slot.id}
-            type='button'
-            aria-label={getSlotButtonAriaLabel(t, slot.slotType, installed)}
-            onClick={() => onSlotClick(slot.id)}
-            className='absolute'
+            id={slot.id}
+            slotType={slot.slotType}
+            installedModuleId={installed}
+            onClick={onSlotClick}
             style={{
               left: formatSlotZonePercent((zone.x - zone.w / 2) * 100),
               top: formatSlotZonePercent((zone.y - zone.h / 2) * 100),
@@ -59,23 +56,9 @@ export const WorkshopProductionLineView = ({ asset, onSlotClick }: Props) => {
               height: formatSlotZonePercent(zone.h * 100),
               border:
                 '2px dashed var(--section-accent, var(--color-warning-yellow))',
-              background: installed ? 'transparent' : 'var(--color-hotspot-bg)',
-              cursor: 'pointer'
+              background: installed ? 'transparent' : 'var(--color-hotspot-bg)'
             }}
-          >
-            {installed && (
-              <GeneratedImagePanel
-                prompt={getModuleImagePrompt(installed)}
-                alt={t(`assets:module.${installed}.name`, {
-                  defaultValue: installed
-                })}
-                aspectRatio='1:1'
-                variant='hotspot'
-                sizeHint={{ width: 256, height: 256 }}
-                className='h-full w-full'
-              />
-            )}
-          </button>
+          />
         )
       })}
     </div>

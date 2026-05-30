@@ -1,12 +1,9 @@
 import { useTranslation } from 'react-i18next'
 import { GeneratedImagePanel } from '../../../ui/shared/GeneratedImagePanel'
-import {
-  getSectionBackgroundPrompt,
-  getModuleImagePrompt
-} from '../../../utils/imageGen'
+import { getSectionBackgroundPrompt } from '../../../utils/imageGen'
 import { BANDHAUS_SLOT_ZONES } from '../../../utils/assetSections/bandhausConfig'
 import { formatSlotZonePercent } from '../../../utils/assetSections/slotLayout'
-import { getSlotButtonAriaLabel } from './slotLabels'
+import { AssetSlotButton } from '../shared/AssetSlotButton'
 import type { LongTermAsset } from '../../../types/assets'
 
 interface Props {
@@ -40,12 +37,18 @@ export const BandhausCrossSectionView = ({ asset, onSlotClick }: Props) => {
         const background =
           installed && !isMural ? 'transparent' : 'var(--color-hotspot-bg)'
         return (
-          <button
+          <AssetSlotButton
             key={slot.id}
-            type='button'
-            aria-label={getSlotButtonAriaLabel(t, slot.slotType, installed)}
-            onClick={() => onSlotClick(slot.id)}
-            className='absolute'
+            id={slot.id}
+            slotType={slot.slotType}
+            installedModuleId={installed}
+            onClick={onSlotClick}
+            imageAspectRatio={isMural ? '21:9' : '1:1'}
+            imageSizeHint={
+              isMural
+                ? { width: 512, height: 128 }
+                : { width: 256, height: 256 }
+            }
             style={{
               left: formatSlotZonePercent((zone.x - zone.w / 2) * 100),
               top: formatSlotZonePercent((zone.y - zone.h / 2) * 100),
@@ -53,31 +56,9 @@ export const BandhausCrossSectionView = ({ asset, onSlotClick }: Props) => {
               height: formatSlotZonePercent(zone.h * 100),
               border:
                 '2px dashed var(--section-accent, var(--color-cosmic-purple))',
-              background,
-              cursor: 'pointer'
+              background
             }}
-          >
-            {installed && (
-              <GeneratedImagePanel
-                prompt={getModuleImagePrompt(installed)}
-                alt={t(`assets:module.${installed}.name`, {
-                  defaultValue: installed
-                })}
-                // Mural slot is wide-flat (zone w=0.8, h=0.15 → roughly 4:1).
-                // 21:9 is the closest available aspect ratio to the actual
-                // container's 4:1 — anything narrower causes a vertical
-                // squish from the panel's internal CSS aspect-ratio rule.
-                aspectRatio={isMural ? '21:9' : '1:1'}
-                variant='hotspot'
-                sizeHint={
-                  isMural
-                    ? { width: 512, height: 128 }
-                    : { width: 256, height: 256 }
-                }
-                className='h-full w-full'
-              />
-            )}
-          </button>
+          />
         )
       })}
     </div>

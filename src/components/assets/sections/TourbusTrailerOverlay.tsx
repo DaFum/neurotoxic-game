@@ -2,6 +2,7 @@ import { GeneratedImagePanel } from '../../../ui/shared/GeneratedImagePanel'
 import { getTrailerImagePrompt } from '../../../utils/imageGen'
 import type { LongTermAsset } from '../../../types/assets'
 import { useTranslation } from 'react-i18next'
+import { AssetSlotButton } from '../shared/AssetSlotButton'
 
 interface Props {
   asset: LongTermAsset
@@ -34,14 +35,16 @@ export const TourbusTrailerOverlay = ({ asset, onSlotClick }: Props) => {
           }
         )
         return (
-          <button
+          <AssetSlotButton
             key={slot.id}
-            type='button'
-            aria-label={t('ui:assets.tourbus.trailer_slot', {
+            id={slot.id}
+            slotType={slot.slotType}
+            installedModuleId={slot.installedModuleId}
+            onClick={onSlotClick}
+            ariaLabel={t('ui:assets.tourbus.trailer_slot', {
               slotType: translatedSlotType,
               defaultValue: `slot ${translatedSlotType}`
             })}
-            onClick={() => onSlotClick(slot.id)}
             className='absolute h-9 w-9 -translate-x-1/2 -translate-y-1/2 sm:h-12 sm:w-12'
             style={{
               left: `${30 + i * 30}%`,
@@ -53,7 +56,7 @@ export const TourbusTrailerOverlay = ({ asset, onSlotClick }: Props) => {
             }}
           >
             +
-          </button>
+          </AssetSlotButton>
         )
       })}
     </div>
