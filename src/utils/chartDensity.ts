@@ -87,7 +87,7 @@ export const buildSetlistChartDensity = (
     const bars = densitySets[i]
     if (!bars) continue
     for (let j = 0; j < numBuckets; j++) {
-      counts[j] += bars[j]?.count ?? 0
+      counts[j] += bars[j].count
     }
   }
 
@@ -100,7 +100,7 @@ export const buildSetlistChartDensity = (
   for (let index = 0; index < numBuckets; index++) {
     const count = counts[index]
     result[index] = {
-      timestamp: firstSet[index]?.timestamp ?? index,
+      timestamp: firstSet[index].timestamp,
       count,
       intensity: count / peak
     }
