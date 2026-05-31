@@ -1300,9 +1300,11 @@ export const normalizeSetlistForSave = (
 
 export { safeJsonParse }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const isOnCooldown = (
-  gameState: any,
+  gameState: {
+    eventCooldowns?: string[] | Set<string>
+    player?: { day?: number }
+  },
   eventId: string,
   contextId: string = ''
 ): boolean => {
