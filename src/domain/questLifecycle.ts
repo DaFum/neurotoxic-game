@@ -27,6 +27,26 @@ export const QuestLifecycle = {
       ? { ...(definition as Partial<QuestState>), ...quest }
       : { ...quest }
 
+    // Repeat-policy gating: refuse to re-add quests that their policy forbids.
+    const repeatPolicy = merged.repeatPolicy
+    if (repeatPolicy === 'never') {
+      if (state.completedQuestIds?.includes(quest.id)) return state
+      const activeFlags = state.activeStoryFlags ?? []
+      const completionFlags = [
+        ...(merged.completionFlags ?? []),
+        ...(merged.rewardFlag ? [merged.rewardFlag] : [])
+      ]
+      if (completionFlags.some(flag => activeFlags.includes(flag))) {
+        return state
+      }
+    } else if (repeatPolicy === 'cooldown') {
+      const currentDay = finiteNumberOr(state.player?.day, 0)
+      const onCooldown = (state.questCooldowns ?? []).some(
+        cd => cd.questId === quest.id && cd.expiresOnDay > currentDay
+      )
+      if (onCooldown) return state
+    }
+
     // Compute an absolute deadline from a relative offset when one was not
     // already supplied (event-triggered quests pre-compute it in eventResolver).
     if (merged.deadline == null && merged.deadlineOffset != null) {
@@ -202,6 +222,39 @@ export const QuestLifecycle = {
 
     // Toast
     nextState.toasts = [...(nextState.toasts ?? []), ...generatedToasts]
+
+    // Track completion so repeatPolicy:'never' quests can be blocked later.
+    if (!nextState.completedQuestIds?.includes(quest.id)) {
+      nextState.completedQuestIds = [
+        ...(nextState.completedQuestIds ?? []),
+        quest.id
+      ]
+    }
+
+    // Clear transient story flags tied to this quest being active.
+    if (Array.isArray(quest.clearFlagsOnComplete)) {
+      const toClear = new Set(quest.clearFlagsOnComplete)
+      nextState.activeStoryFlags = (nextState.activeStoryFlags ?? []).filter(
+        f => !toClear.has(f)
+      )
+    }
+
+    // Cooldown-policy quests start a re-add cooldown on completion.
+    const definition = getQuestDefinition(quest.id) as
+      | Partial<QuestState>
+      | undefined
+    const repeatPolicy = quest.repeatPolicy ?? definition?.repeatPolicy
+    const cooldownDays = finiteNumberOr(
+      quest.cooldownDays ?? definition?.cooldownDays,
+      0
+    )
+    if (repeatPolicy === 'cooldown' && cooldownDays > 0) {
+      const currentDay = finiteNumberOr(nextState.player?.day, 0)
+      nextState.questCooldowns = [
+        ...(nextState.questCooldowns ?? []),
+        { questId: quest.id, expiresOnDay: currentDay + cooldownDays }
+      ]
+    }
 
     // Hardcoded old quest logic
     if (quest.id === QUEST_PROVE_YOURSELF) {
