@@ -39,12 +39,16 @@ export const QuestProgress = {
     if (!nextState.activeQuests) return nextState
 
     for (const quest of nextState.activeQuests) {
-      const registryEntry = (
-        QUEST_REGISTRY as Record<string, { progressSource?: string }>
-      )[quest.id]
+      const registryEntry =
+        QUEST_REGISTRY[quest.id as keyof typeof QUEST_REGISTRY]
       if (!registryEntry) continue
 
-      const progressSource = registryEntry.progressSource
+      // Widen narrowed literal to the full event-source union: not every entry
+      // in QUEST_REGISTRY exercises every progressSource today, but the dispatch
+      // switch must remain exhaustive for new registry entries.
+      const progressSource = registryEntry.progressSource as
+        | QuestProgressEvent['type']
+        | undefined
       if (!progressSource) continue
 
       let amount = 0
@@ -63,16 +67,26 @@ export const QuestProgress = {
           if (event.type === 'social_post') amount = 1
           break
         case 'followers_gained':
-          if (event.type === 'followers_gained') amount = event.amount
+          if (
+            event.type === 'followers_gained' &&
+            Number.isFinite(event.amount)
+          )
+            amount = event.amount
           break
         case 'fame_gained':
-          if (event.type === 'fame_gained') amount = event.amount
+          if (event.type === 'fame_gained' && Number.isFinite(event.amount))
+            amount = event.amount
           break
         case 'money_earned':
-          if (event.type === 'money_earned') amount = event.amount
+          if (event.type === 'money_earned' && Number.isFinite(event.amount))
+            amount = event.amount
           break
         case 'harmony_recovered':
-          if (event.type === 'harmony_recovered') amount = event.amount
+          if (
+            event.type === 'harmony_recovered' &&
+            Number.isFinite(event.amount)
+          )
+            amount = event.amount
           break
         case 'item_collected':
           if (event.type === 'item_collected') amount = 1

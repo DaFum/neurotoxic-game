@@ -105,7 +105,7 @@ export const QUEST_REGISTRY = {
     rewardData: { memberIndex: 0 },
     moneyReward: 0,
     failurePenalty: {
-      social: { fame: -15 }
+      social: { loyalty: -15 }
     }
   }
 } as const satisfies Record<string, Partial<QuestState>>

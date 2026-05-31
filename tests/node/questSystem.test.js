@@ -35,62 +35,43 @@ describe('Quest System Registry Validation', () => {
 
   it('should ensure repeatPolicy never quests do not restart', () => {
     for (const [id, quest] of Object.entries(QUEST_REGISTRY)) {
-      if (quest.repeatPolicy === 'never') {
-        let state = getBaseState()
+      if (quest.repeatPolicy !== 'never') continue
+      let state = getBaseState()
 
-        // Start the quest
-        state = QuestLifecycle.addQuest(state, {
-          id: id,
-          deadline: state.player.day + 10,
-          required: quest.required || 1
-        })
+      state = QuestLifecycle.addQuest(state, {
+        id,
+        deadline: state.player.day + 10,
+        required: quest.required || 1,
+        rewardFlag: quest.rewardFlag
+      })
+      assert.ok(
+        state.activeQuests.find(q => q.id === id),
+        `Quest ${id} should be started`
+      )
 
-        let found = state.activeQuests.find(q => q.id === id)
-        assert.ok(found, `Quest ${id} should be started`)
+      if (quest.rewardFlag) {
+        state.activeStoryFlags.push(quest.rewardFlag)
+      }
+      state = QuestLifecycle.completeQuest(state, { questId: id })
+      assert.ok(
+        !state.activeQuests.find(q => q.id === id),
+        `Quest ${id} should be removed after completion`
+      )
 
-        // Add the reward flag manually to simulate quest completion if the quest definition specifies it
-        if (quest.rewardFlag) {
-          state.activeStoryFlags.push(quest.rewardFlag)
-        }
-
-        // Complete the quest
-        state = QuestLifecycle.completeQuest(state, { questId: id })
-
-        found = state.activeQuests.find(q => q.id === id)
-        assert.ok(!found, `Quest ${id} should be completed/removed`)
-
-        // Try starting it again
-        // We simulate the game engine refusing to start a never-repeat quest by checking completion flags
-        if (
-          quest.rewardFlag &&
-          state.activeStoryFlags.includes(quest.rewardFlag)
-        ) {
-          // Logic usually handled by eventEngine condition
-        } else {
-          state = QuestLifecycle.addQuest(state, {
-            id: id,
-            deadline: state.player.day + 10,
-            required: quest.required || 1
-          })
-        }
-
-        // Let's assert that the reward flag was set, preventing the addition
-        if (quest.rewardFlag) {
-          assert.ok(
-            state.activeStoryFlags.includes(quest.rewardFlag),
-            `Quest ${id} should have set its reward flag`
-          )
-          const shouldBeBlocked = state.activeStoryFlags.includes(
-            quest.rewardFlag
-          )
-          assert.ok(
-            shouldBeBlocked,
-            `Quest ${id} should not restart because repeatPolicy is never`
-          )
-        } else {
-          // if no reward flag, it's just a theoretical test
-          assert.ok(true, 'Tested theoretically')
-        }
+      // QuestLifecycle.addQuest itself does not enforce repeatPolicy: 'never';
+      // restart prevention happens upstream via persistent rewardFlag checks in
+      // eventEngine conditions. The contract this test enforces: every
+      // never-repeat quest exposes a stable upstream gate.
+      if (quest.rewardFlag) {
+        assert.ok(
+          state.activeStoryFlags.includes(quest.rewardFlag),
+          `Quest ${id}: rewardFlag must persist so upstream gates block restart`
+        )
+      } else {
+        assert.ok(
+          quest.rewardType,
+          `Quest ${id} (repeatPolicy: 'never') must define rewardFlag or rewardType so upstream code can detect prior completion`
+        )
       }
     }
   })

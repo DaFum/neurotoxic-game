@@ -802,7 +802,13 @@ describe('usePostGigLogic', () => {
         expect.objectContaining({
           id: 'quest_apology_tour',
           deadline: 19,
-          required: 3
+          required: 3,
+          failurePenalty: expect.objectContaining({
+            flags: ['apology_tour_failed'],
+            band: { harmony: -20 },
+            social: { controversyLevel: 25 },
+            cooldowns: [{ id: 'apology_tour_retry', days: 14 }]
+          })
         })
       )
       expect(mockAddToast).toHaveBeenCalledWith(

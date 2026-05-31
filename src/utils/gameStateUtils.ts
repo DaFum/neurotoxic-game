@@ -1310,7 +1310,7 @@ export const isOnCooldown = (
 ): boolean => {
   if (!gameState.eventCooldowns) return false
 
-  const currentDay = gameState.player?.day || 0
+  const currentDay = gameState.player?.day ?? 0
 
   const cooldowns = Array.isArray(gameState.eventCooldowns)
     ? gameState.eventCooldowns

@@ -80,6 +80,9 @@ type TravelLogicParams = {
   onStartTravelMinigame?: (nodeId: string) => void
   moveRivalBand?: () => void
   checkRivalEncounter?: () => void
+  applyQuestEvent?: (
+    event: import('../utils/questProgress').QuestProgressEvent
+  ) => void
 }
 
 /**
@@ -157,7 +160,8 @@ export const useTravelLogic = ({
   onShowSupplyStop,
   onStartTravelMinigame,
   moveRivalBand,
-  checkRivalEncounter
+  checkRivalEncounter,
+  applyQuestEvent
 }: TravelLogicParams) => {
   const [isTraveling, setIsTraveling] = useState(false)
   const [travelTarget, setTravelTarget] = useState<MapNode | null>(null)
@@ -332,16 +336,17 @@ export const useTravelLogic = ({
       const currentStartNode = gameMap?.nodes[player.currentNodeId]
 
       // Calculate and validate costs
-      const { fuelLiters, totalCost, totalCashImpact } = calculateTravelCostsAndImpact(
-        node,
-        currentStartNode,
-        player,
-        band,
-        social,
-        assets,
-        liabilities,
-        assetModifiers
-      )
+      const { fuelLiters, totalCost, totalCashImpact } =
+        calculateTravelCostsAndImpact(
+          node,
+          currentStartNode,
+          player,
+          band,
+          social,
+          assets,
+          liabilities,
+          assetModifiers
+        )
 
       // Affordability check
       const resourceCheck = checkTravelResources(
@@ -383,6 +388,11 @@ export const useTravelLogic = ({
       }
       advanceDay()
 
+      applyQuestEvent?.({
+        type: 'travel_completed',
+        region: node.venue?.city ?? node.id ?? ''
+      })
+
       // Autosave
       if (saveGame) {
         saveGame()
@@ -416,7 +426,8 @@ export const useTravelLogic = ({
       triggerEvent,
       advanceDay,
       addToast,
-      handleNodeArrivalCallback
+      handleNodeArrivalCallback,
+      applyQuestEvent
     ]
   )
 
@@ -653,16 +664,17 @@ export const useTravelLogic = ({
       }
 
       // Calculate costs
-      const { dist, totalCost, fuelLiters, dailyCost, totalCashImpact } = calculateTravelCostsAndImpact(
-        node,
-        currentStartNode,
-        player,
-        band,
-        social,
-        assets,
-        liabilities,
-        assetModifiers
-      )
+      const { dist, totalCost, fuelLiters, dailyCost, totalCashImpact } =
+        calculateTravelCostsAndImpact(
+          node,
+          currentStartNode,
+          player,
+          band,
+          social,
+          assets,
+          liabilities,
+          assetModifiers
+        )
 
       const resourceCheck = checkTravelResources(
         totalCashImpact,

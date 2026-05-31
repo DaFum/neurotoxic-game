@@ -4,7 +4,11 @@ import { EVENT_STRINGS } from '../data/events/constants'
 import { logger } from './logger'
 import { secureRandom } from './crypto'
 import { bandHasTrait } from './traitUtils'
-import { calculateAppliedDelta, finiteNumberOr } from './gameStateUtils'
+import {
+  calculateAppliedDelta,
+  finiteNumberOr,
+  isOnCooldown as isOnCooldownShared
+} from './gameStateUtils'
 import { MODULE_REGISTRY } from './assetModuleRegistry'
 import { StateError } from './errorHandler'
 import type { GameEvent, GameState } from '../types'
@@ -219,7 +223,7 @@ const selectEvent = (
   const eventCooldowns = toStringArray(gameState.eventCooldowns)
   const activeStoryFlags = toStringArray(gameState.activeStoryFlags)
   const pendingEvents = toStringArray(gameState.pendingEvents)
-  const currentDay = gameState.player?.day || 0
+  const currentDay = gameState.player?.day ?? 0
   const activeCooldowns: string[] = []
   for (const cd of eventCooldowns) {
     const [key, expiryStr] = cd.split(':')
@@ -502,7 +506,7 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
   ) => {
     if (typeof eff.eventId === 'string' && eff.eventId.length > 0) {
       if (typeof eff.value === 'number' && eff.value > 0) {
-        const currentDay = gameState?.player?.day || 0
+        const currentDay = gameState?.player?.day ?? 0
         const expiryDay = (currentDay as number) + eff.value
         delta.flags.addCooldown = `${eff.eventId}:${expiryDay}`
       } else {
@@ -619,39 +623,7 @@ const resolveSkillCheckFailure = (
   return { ...failure, outcome: 'failure' }
 }
 
-export const isOnCooldown = (
-  gameState: EngineGameState,
-  eventId: string,
-  contextId: string = ''
-): boolean => {
-  if (!gameState.eventCooldowns) return false
-
-  const currentDay = gameState.player?.day || 0
-
-  const cooldowns = Array.isArray(gameState.eventCooldowns)
-    ? gameState.eventCooldowns
-    : Array.from(gameState.eventCooldowns)
-
-  for (const cd of cooldowns) {
-    const [key, expiryStr] = cd.split(':')
-    if (!key) continue
-
-    // Exact match
-    const isMatch =
-      (contextId && key === `${eventId}_${contextId}`) || key === eventId
-    if (isMatch) {
-      if (expiryStr) {
-        const expiry = parseInt(expiryStr, 10)
-        if (!isNaN(expiry) && (currentDay as number) < expiry) {
-          return true
-        }
-      } else {
-        return true // No expiry means forever or legacy
-      }
-    }
-  }
-  return false
-}
+export const isOnCooldown = isOnCooldownShared
 
 export const eventEngine = {
   handleError(err: unknown, eventId?: string) {

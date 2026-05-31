@@ -415,7 +415,9 @@ export const usePostGigHandlers = ({
           rewardFlag: 'apology_tour_complete',
           failurePenalty: {
             social: { controversyLevel: 25 },
-            band: { harmony: -20 }
+            band: { harmony: -20 },
+            flags: ['apology_tour_failed'],
+            cooldowns: [{ id: 'apology_tour_retry', days: 14 }]
           }
         })
       }
