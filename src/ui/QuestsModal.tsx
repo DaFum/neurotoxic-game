@@ -156,6 +156,34 @@ const getRewardIcon = (type: string) => {
   }
 }
 
+// Human-readable failure-penalty chips derived from the quest's penalty config.
+const getPenaltyTexts = (
+  quest: QuestDisplayState,
+  t: (key: string, options?: Record<string, unknown>) => string
+): string[] => {
+  const penalty = quest.failurePenalty
+  if (!penalty || typeof penalty !== 'object') return []
+  const p = penalty as Record<string, unknown>
+  const social = (p.social ?? {}) as Record<string, unknown>
+  const band = (p.band ?? {}) as Record<string, unknown>
+  const texts: string[] = []
+  if (typeof band.harmony === 'number' && band.harmony !== 0) {
+    texts.push(t('ui:quests.penalty.harmony', { count: band.harmony }))
+  }
+  if (
+    typeof social.controversyLevel === 'number' &&
+    social.controversyLevel !== 0
+  ) {
+    texts.push(
+      t('ui:quests.penalty.controversy', { count: social.controversyLevel })
+    )
+  }
+  if (typeof social.loyalty === 'number' && social.loyalty !== 0) {
+    texts.push(t('ui:quests.penalty.loyalty', { count: social.loyalty }))
+  }
+  return texts
+}
+
 const questItemVariants = {
   hidden: { opacity: 0, x: -20 },
   visible: { opacity: 1, x: 0, transition: { duration: 0.3 } }
@@ -192,6 +220,8 @@ const QuestItem = memo(
     const timeRemaining =
       quest.deadline != null ? Math.max(0, quest.deadline - currentDay) : null
 
+    const penaltyTexts = getPenaltyTexts(quest, t)
+
     return (
       <motion.div
         key={quest.id}
@@ -202,9 +232,25 @@ const QuestItem = memo(
         className={`p-4 border-l-4 ${isOverdue ? 'border-blood-red' : 'border-toxic-green'} bg-ash-gray/5`}
       >
         <div className='flex justify-between items-start mb-2'>
-          <h3 className='text-xl font-bold text-star-white uppercase tracking-wide'>
-            {quest.label ? t(quest.label) : ''}
-          </h3>
+          <div className='flex flex-col gap-1'>
+            <h3 className='text-xl font-bold text-star-white uppercase tracking-wide'>
+              {quest.label ? t(quest.label) : ''}
+            </h3>
+            <div className='flex flex-wrap gap-1'>
+              {quest.kind && (
+                <span className='inline-block bg-toxic-green/10 text-toxic-green px-2 py-0.5 text-[10px] font-mono uppercase tracking-wide'>
+                  {t(`ui:quests.kind.${quest.kind}`)}
+                </span>
+              )}
+              {quest.repeatPolicy && (
+                <span className='inline-block bg-ash-gray/10 text-ash-gray px-2 py-0.5 text-[10px] font-mono uppercase tracking-wide'>
+                  {quest.repeatPolicy === 'never'
+                    ? t('ui:quests.oneTime')
+                    : t('ui:quests.repeatable')}
+                </span>
+              )}
+            </div>
+          </div>
           {timeRemaining !== null && (
             <div
               className={`flex items-center gap-1 text-xs font-mono px-2 py-1 ${timeRemaining <= 2 ? 'bg-blood-red/20 text-blood-red' : 'bg-fuel-yellow/10 text-fuel-yellow'}`}
@@ -220,9 +266,15 @@ const QuestItem = memo(
           )}
         </div>
 
-        <p className='text-sm text-ash-gray mb-4 font-mono'>
+        <p className='text-sm text-ash-gray mb-2 font-mono'>
           {quest.description ? t(quest.description) : ''}
         </p>
+
+        {quest.progressSource && (
+          <p className='text-xs text-toxic-green/80 mb-3 font-mono italic'>
+            {t(`ui:quests.progressSource.${quest.progressSource}`)}
+          </p>
+        )}
 
         <div className='mb-3'>
           <div className='flex justify-between text-xs text-ash-gray mb-1 font-mono'>
@@ -264,6 +316,22 @@ const QuestItem = memo(
             </span>
           )}
         </div>
+
+        {penaltyTexts.length > 0 && (
+          <div className='flex flex-wrap gap-2 mt-3'>
+            <span className='text-xs text-blood-red uppercase font-bold mr-2 self-center'>
+              {t('ui:quests.penalty.label')}
+            </span>
+            {penaltyTexts.map(text => (
+              <span
+                key={text}
+                className='inline-flex items-center gap-1 bg-blood-red/10 text-blood-red px-2 py-1 text-xs font-mono'
+              >
+                {text}
+              </span>
+            ))}
+          </div>
+        )}
       </motion.div>
     )
   }
