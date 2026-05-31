@@ -435,22 +435,26 @@ export const usePostGigHandlers = ({
       // no inline duplication; the reducer also re-merges defaults defensively.
       if (activeStoryFlags?.includes('cancel_quest_active')) {
         const def = getQuestDefinition(QUEST_APOLOGY_TOUR)
-        addQuest({
-          ...def,
-          id: QUEST_APOLOGY_TOUR,
-          deadline: player.day + finiteNumberOr(def?.deadlineOffset, 0),
-          progress: 0
-        })
+        if (def) {
+          addQuest({
+            ...def,
+            id: QUEST_APOLOGY_TOUR,
+            deadline: player.day + finiteNumberOr(def.deadlineOffset, 0),
+            progress: 0
+          })
+        }
       }
 
       if (activeStoryFlags?.includes('breakup_quest_active')) {
         const def = getQuestDefinition(QUEST_EGO_MANAGEMENT)
-        addQuest({
-          ...def,
-          id: QUEST_EGO_MANAGEMENT,
-          deadline: player.day + finiteNumberOr(def?.deadlineOffset, 0),
-          progress: 0
-        })
+        if (def) {
+          addQuest({
+            ...def,
+            id: QUEST_EGO_MANAGEMENT,
+            deadline: player.day + finiteNumberOr(def.deadlineOffset, 0),
+            progress: 0
+          })
+        }
       }
 
       submitLeaderboardScores({

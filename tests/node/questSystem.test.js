@@ -130,6 +130,11 @@ describe('Quest System Registry Validation', () => {
   })
 
   it('should ensure repeatPolicy never quests do not restart', () => {
+    // Contract: QuestLifecycle.addQuest enforces repeatPolicy: 'never' by
+    // refusing re-add once the id is in completedQuestIds or an active
+    // rewardFlag / completion flag is present. We start the quest, complete
+    // it, then attempt to add it again and assert the active list does NOT
+    // contain a fresh instance with progress 0.
     for (const [id, quest] of Object.entries(QUEST_REGISTRY)) {
       if (quest.repeatPolicy !== 'never') continue
       let state = getBaseState()
@@ -145,30 +150,31 @@ describe('Quest System Registry Validation', () => {
         `Quest ${id} should be started`
       )
 
-      if (quest.rewardFlag) {
-        state.activeStoryFlags.push(quest.rewardFlag)
-      }
       state = QuestLifecycle.completeQuest(state, { questId: id })
       assert.ok(
         !state.activeQuests.find(q => q.id === id),
         `Quest ${id} should be removed after completion`
       )
+      assert.ok(
+        state.completedQuestIds?.includes(id),
+        `Quest ${id} should be tracked in completedQuestIds`
+      )
 
-      // QuestLifecycle.addQuest itself does not enforce repeatPolicy: 'never';
-      // restart prevention happens upstream via persistent rewardFlag checks in
-      // eventEngine conditions. The contract this test enforces: every
-      // never-repeat quest exposes a stable upstream gate.
-      if (quest.rewardFlag) {
-        assert.ok(
-          state.activeStoryFlags.includes(quest.rewardFlag),
-          `Quest ${id}: rewardFlag must persist so upstream gates block restart`
-        )
-      } else {
-        assert.ok(
-          quest.rewardType,
-          `Quest ${id} (repeatPolicy: 'never') must define rewardFlag or rewardType so upstream code can detect prior completion`
-        )
-      }
+      // Attempt to re-add. addQuest must refuse: the active list must not
+      // gain a fresh (progress 0) instance of the original id.
+      const beforeReadd = state.activeQuests.filter(q => q.id === id).length
+      state = QuestLifecycle.addQuest(state, {
+        id,
+        deadline: state.player.day + 10,
+        required: quest.required || 1,
+        rewardFlag: quest.rewardFlag
+      })
+      const afterReadd = state.activeQuests.filter(q => q.id === id).length
+      assert.equal(
+        afterReadd,
+        beforeReadd,
+        `Quest ${id} (repeatPolicy: 'never') was re-added after completion`
+      )
     }
   })
 })

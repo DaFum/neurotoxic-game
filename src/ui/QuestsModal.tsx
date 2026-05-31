@@ -162,10 +162,15 @@ const getPenaltyTexts = (
   t: (key: string, options?: Record<string, unknown>) => string
 ): string[] => {
   const penalty = quest.failurePenalty
-  if (!penalty || typeof penalty !== 'object') return []
+  if (!penalty || typeof penalty !== 'object' || Array.isArray(penalty))
+    return []
   const p = penalty as Record<string, unknown>
-  const social = (p.social ?? {}) as Record<string, unknown>
-  const band = (p.band ?? {}) as Record<string, unknown>
+  const pickRecord = (v: unknown): Record<string, unknown> =>
+    v && typeof v === 'object' && !Array.isArray(v)
+      ? (v as Record<string, unknown>)
+      : {}
+  const social = pickRecord(p.social)
+  const band = pickRecord(p.band)
   const texts: string[] = []
   if (typeof band.harmony === 'number' && band.harmony !== 0) {
     texts.push(t('ui:quests.penalty.harmony', { count: band.harmony }))

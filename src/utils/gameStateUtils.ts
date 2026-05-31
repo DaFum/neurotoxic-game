@@ -845,7 +845,10 @@ export const applyEventDelta = (
 
     if (scoreDelta !== 0) {
       const boundedScore = clampNonNegative(nextPlayer.score)
-      nextPlayer.score = boundedScore + scoreDelta
+      // Match calculateAppliedDelta: score is non-negative. A large negative
+      // delta (e.g. -1000 from ego-breakup consequences) must not drive
+      // player.score below 0.
+      nextPlayer.score = Math.max(0, boundedScore + scoreDelta)
     }
 
     // Player Stats

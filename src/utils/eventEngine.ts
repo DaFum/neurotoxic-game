@@ -223,13 +223,13 @@ const selectEvent = (
   const eventCooldowns = toStringArray(gameState.eventCooldowns)
   const activeStoryFlags = toStringArray(gameState.activeStoryFlags)
   const pendingEvents = toStringArray(gameState.pendingEvents)
-  const currentDay = gameState.player?.day ?? 0
+  const currentDay = finiteNumberOr(gameState.player?.day, 0)
   const activeCooldowns: string[] = []
   for (const cd of eventCooldowns) {
     const [key, expiryStr] = cd.split(':')
     if (expiryStr) {
       const expiry = parseInt(expiryStr, 10)
-      if (!isNaN(expiry) && (currentDay as number) < expiry) {
+      if (!isNaN(expiry) && currentDay < expiry) {
         if (key) activeCooldowns.push(key)
       }
     } else {
@@ -506,8 +506,8 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
   ) => {
     if (typeof eff.eventId === 'string' && eff.eventId.length > 0) {
       if (typeof eff.value === 'number' && eff.value > 0) {
-        const currentDay = gameState?.player?.day ?? 0
-        const expiryDay = (currentDay as number) + eff.value
+        const currentDay = finiteNumberOr(gameState?.player?.day, 0)
+        const expiryDay = currentDay + eff.value
         delta.flags.addCooldown = `${eff.eventId}:${expiryDay}`
       } else {
         delta.flags.addCooldown = eff.eventId

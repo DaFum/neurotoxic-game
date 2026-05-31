@@ -46,7 +46,6 @@ export const QUEST_REGISTRY = {
     repeatPolicy: 'never',
     progressSource: 'harmony_recovered',
     required: 1,
-    cooldownDays: 10,
     rewardFlag: 'ego_crisis_resolved',
     followupQuestId: 'quest_band_pact',
     failurePenalty: {
