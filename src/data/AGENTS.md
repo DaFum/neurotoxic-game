@@ -5,6 +5,12 @@
 - Data IDs are contracts. Keep IDs stable and update dependent lookup maps/tests when adding or renaming entries.
 - Event condition arrows require explicit `(state: GameState) =>` annotations.
 
+## Quests
+
+- `QUEST_REGISTRY` (`questRegistry.ts`) is the single source of truth for quest config (`kind`, `repeatPolicy`, `progressSource`, `required`, `deadlineOffset`, `cooldownDays`, `failurePenalty`, reward/flag fields). It is `as const satisfies Record<string, Partial<QuestState>>` — extend `QuestState` in `src/types/quest.d.ts` before adding a new field. Do NOT re-declare quest config inline: `QUEST_EVENTS` effects and `usePostGigHandlers` pass `{ id }` (or build from `getQuestDefinition`), and `QuestLifecycle.addQuest` merges registry defaults under the payload and computes `deadline` from `deadlineOffset`.
+- Repeat policy is enforced in `QuestLifecycle.addQuest`: `'never'` is blocked once the id is in `completedQuestIds` or a completion/reward flag is active; `'cooldown'` is blocked while an unexpired `questCooldowns` entry exists. `completeQuest` records `completedQuestIds`, clears `clearFlagsOnComplete`, and opens cooldowns; `checkDeadlines` applies failure penalties (controversy/harmony/loyalty), pushes `failurePenalty.flags`, clears `clearFlagsOnFail`, and records re-add cooldowns keyed by quest id. Cooldowns expire in `handleAdvanceDay`.
+- Quest progress is event-driven via `QuestProgress.applyEvent` (`src/utils/questProgress.ts`, `APPLY_QUEST_EVENT`). The `small_venue_good_gig` capacity (≤300) gate lives at the dispatch site in `gigReducer`, not in `applyEvent`. `quest_ego_management` still auto-completes via the `harmony >= 50` check in `gigReducer` (harmony quests are threshold-based, not accumulation). Validate registry shape with `tests/node/questSystem.test.js` and lifecycle/progress with `tests/node/domain/questLifecycle.test.js`.
+
 ## HQ Items
 
 - In `src/data/hqItems.ts`, each item uses a singular `effect` property, not `effects`.
