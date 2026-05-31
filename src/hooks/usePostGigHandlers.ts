@@ -173,7 +173,10 @@ export const usePostGigHandlers = ({
         if (appliedHarmonyDelta > 0) {
           applyQuestEvent({
             type: 'harmony_recovered',
-            amount: appliedHarmonyDelta
+            amount: appliedHarmonyDelta,
+            newHarmony: clampBandHarmony(
+              finiteNumberOr(band?.harmony, 0) + appliedHarmonyDelta
+            )
           })
         }
 

@@ -28,7 +28,7 @@ export type QuestProgressEvent =
   | { type: 'followers_gained'; amount: number }
   | { type: 'fame_gained'; amount: number }
   | { type: 'money_earned'; amount: number }
-  | { type: 'harmony_recovered'; amount: number }
+  | { type: 'harmony_recovered'; amount: number; newHarmony?: number }
   | { type: 'item_collected'; itemId: string }
   | { type: 'brand_deal_completed'; dealId: string }
   | { type: 'travel_completed'; region: string }
@@ -50,6 +50,23 @@ export const QuestProgress = {
         | QuestProgressEvent['type']
         | undefined
       if (!progressSource) continue
+
+      // Harmony quests are threshold-based, not accumulation-based: progress is
+      // the current band harmony level and completion fires when it reaches the
+      // quest's `required` threshold. When an event carries `newHarmony`, route
+      // it through setQuestProgress (absolute set + threshold completion).
+      if (
+        progressSource === 'harmony_recovered' &&
+        event.type === 'harmony_recovered' &&
+        typeof event.newHarmony === 'number' &&
+        Number.isFinite(event.newHarmony)
+      ) {
+        nextState = QuestLifecycle.setQuestProgress(nextState, {
+          questId: quest.id,
+          progress: event.newHarmony
+        })
+        continue
+      }
 
       let amount = 0
 

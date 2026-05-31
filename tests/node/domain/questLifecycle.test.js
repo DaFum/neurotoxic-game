@@ -843,6 +843,62 @@ test('QuestLifecycle', async t => {
       const q = next.activeQuests.find(q => q.id === 'quest_viral_dance')
       assert.equal(q.progress ?? 0, 0)
     })
+
+    await t.test(
+      'harmony_recovered with newHarmony sets threshold progress without completing below target',
+      () => {
+        // quest_harmony_project required 75 in the registry
+        const state = baseState({
+          id: 'quest_harmony_project',
+          progress: 0,
+          required: 75
+        })
+        const next = QuestProgress.applyEvent(state, {
+          type: 'harmony_recovered',
+          amount: 5,
+          newHarmony: 60
+        })
+        const q = next.activeQuests.find(q => q.id === 'quest_harmony_project')
+        assert.ok(q, 'quest should still be active below threshold')
+        assert.equal(q.progress, 60)
+      }
+    )
+
+    await t.test(
+      'harmony_recovered completes the quest when newHarmony reaches the threshold',
+      () => {
+        const state = baseState({
+          id: 'quest_harmony_project',
+          progress: 60,
+          required: 75
+        })
+        const next = QuestProgress.applyEvent(state, {
+          type: 'harmony_recovered',
+          amount: 0,
+          newHarmony: 80
+        })
+        assert.equal(
+          next.activeQuests.find(q => q.id === 'quest_harmony_project'),
+          undefined
+        )
+        assert.ok(next.completedQuestIds.includes('quest_harmony_project'))
+      }
+    )
+
+    await t.test('setQuestProgress never lowers existing progress', () => {
+      const state = baseState({
+        id: 'quest_harmony_project',
+        progress: 70,
+        required: 75
+      })
+      const next = QuestProgress.applyEvent(state, {
+        type: 'harmony_recovered',
+        amount: 0,
+        newHarmony: 40
+      })
+      const q = next.activeQuests.find(q => q.id === 'quest_harmony_project')
+      assert.equal(q.progress, 70)
+    })
   })
 
   await t.test('repeat policy enforcement', async t => {

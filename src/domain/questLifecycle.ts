@@ -342,6 +342,39 @@ export const QuestLifecycle = {
     return nextState
   },
 
+  /**
+   * Sets a quest's progress to an absolute value (monotonic — never lowers it),
+   * capped at `required`, and completes the quest when the cap is reached. Used
+   * for threshold-style sources such as harmony recovery, where progress is the
+   * current stat level rather than an accumulated count.
+   */
+  setQuestProgress: (
+    state: GameState,
+    { questId, progress }: { questId: string; progress: number }
+  ): GameState => {
+    const nextState = { ...state }
+    if (!nextState.activeQuests) return state
+
+    let questCompleted = false
+    nextState.activeQuests = nextState.activeQuests.map(q => {
+      if (q.id !== questId) return q
+      const required = q.required
+      const prev = q.progress ?? 0
+      const next = Math.max(prev, finiteNumberOr(progress, prev))
+      const capped =
+        typeof required === 'number' ? Math.min(required, next) : next
+      if (typeof required === 'number' && capped >= required) {
+        questCompleted = true
+      }
+      return { ...q, progress: capped }
+    })
+
+    if (questCompleted) {
+      return QuestLifecycle.completeQuest(nextState, { questId })
+    }
+    return nextState
+  },
+
   checkDeadlines: (state: GameState): GameState => {
     const nextState = { ...state }
     if (!nextState.activeQuests) return state

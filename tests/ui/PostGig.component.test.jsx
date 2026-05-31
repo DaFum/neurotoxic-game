@@ -778,7 +778,7 @@ describe('PostGig Component - Complete Phase', () => {
         expect.objectContaining({
           id: 'quest_ego_management',
           deadline: 10,
-          required: 1,
+          required: 50,
           failurePenalty: expect.objectContaining({
             flags: ['ego_crisis_failed'],
             band: { harmony: -25 },

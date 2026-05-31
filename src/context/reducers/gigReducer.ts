@@ -10,10 +10,7 @@ import { GAME_PHASES } from '../gameConstants'
 import { isForbiddenKey } from '../../utils/gameStateUtils'
 import { handleAddVenueBlacklist } from './socialReducer'
 import { QuestLifecycle } from '../../domain/questLifecycle'
-import {
-  QUEST_PROVE_YOURSELF,
-  QUEST_EGO_MANAGEMENT
-} from '../../data/questsConstants'
+import { QUEST_PROVE_YOURSELF } from '../../data/questsConstants'
 import { hasActiveQuest } from '../../utils/questUtils'
 import { QuestProgress } from '../../utils/questProgress'
 import { normalizeSetlistForSave } from '../../utils/gameStateUtils'
@@ -238,16 +235,14 @@ export const handleSetLastGigStats = (
     ]
   }
 
-  // Ego management quest auto-complete
-  const hasEgoQuest = hasActiveQuest(
-    nextState.activeQuests,
-    QUEST_EGO_MANAGEMENT
-  )
-  if (hasEgoQuest && nextState.band.harmony >= 50) {
-    nextState = QuestLifecycle.completeQuest(nextState, {
-      questId: QUEST_EGO_MANAGEMENT
-    })
-  }
+  // Harmony-threshold quests (ego management, harmony project, …) advance
+  // toward / complete at their required harmony level. Driven generically via
+  // the harmony_recovered progress source rather than a hardcoded quest id.
+  nextState = QuestProgress.applyEvent(nextState, {
+    type: 'harmony_recovered',
+    amount: 0,
+    newHarmony: nextState.band.harmony
+  })
 
   return nextState
 }

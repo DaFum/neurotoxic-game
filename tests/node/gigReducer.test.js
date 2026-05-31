@@ -212,8 +212,10 @@ describe('gigReducer', () => {
 
     it('should auto-complete ego management quest on high harmony', () => {
       baseState.band.harmony = 60
+      // required: 50 mirrors what addQuest merges from QUEST_REGISTRY; the
+      // harmony-threshold completion is now data-driven, not hardcoded.
       baseState.activeQuests = [
-        { id: 'quest_ego_management', completed: false }
+        { id: 'quest_ego_management', required: 50, progress: 0 }
       ]
       const payload = { score: 50 }
       const nextState = handleSetLastGigStats(baseState, payload)
