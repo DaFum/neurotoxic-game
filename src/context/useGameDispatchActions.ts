@@ -58,6 +58,7 @@ import {
   createUnlockTraitAction,
   createAddQuestAction,
   createAdvanceQuestAction,
+  createApplyQuestEventAction,
   createUseContrabandAction,
   createClinicHealAction,
   createClinicEnhanceAction,
