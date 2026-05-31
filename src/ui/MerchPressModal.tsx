@@ -1,3 +1,5 @@
+import { IconClose } from './shared/Icons'
+
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { GlitchButton } from './GlitchButton'
@@ -57,7 +59,7 @@ export const MerchPressModal = ({
           initial={{ scale: 0.95, y: 20 }}
           animate={{ scale: 1, y: 0 }}
           exit={{ scale: 0.95, y: 20 }}
-          className='relative w-full max-w-lg border-4 border-toxic-green p-3 sm:p-6 bg-void-black shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)] max-h-[calc(100svh-4rem)] overflow-y-auto overflow-x-hidden custom-scrollbar'
+          className='relative w-full max-w-4xl border-4 border-toxic-green p-3 sm:p-6 bg-void-black shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)] max-h-[calc(100svh-4rem)] overflow-y-auto overflow-x-hidden custom-scrollbar'
         >
           {/* Background Image with Overlay */}
           <div
@@ -150,7 +152,7 @@ function MerchPressHeader({ onClose, t }: MerchPressHeaderProps) {
           className='text-toxic-green hover:text-star-white transition-colors p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
           aria-label={t('ui:menu.close')}
         >
-          [X]
+          <IconClose />
         </button>
       </Tooltip>
     </div>

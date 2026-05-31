@@ -10,7 +10,7 @@ export const CreditFooter = React.memo(() => {
           defaultValue: 'NEUROTOXIC: GRIND THE VOID v3.0'
         })}
       </div>
-      <div className='text-ash-gray text-[10px] font-mono mt-2'>
+      <div className='text-ash-gray text-xs font-mono mt-2'>
         {t('ui:creditFooter.subtitle', {
           defaultValue: 'DEATH GRINDCORE FROM STENDAL // 2026'
         })}

@@ -32,7 +32,7 @@
   }
   70% {
     text-shadow:
-      3px 0 var(--color-blood-red),
+      3px 0 var(--color-error-red),
       -3px 0 var(--color-neon-cyan);
   }
 }
@@ -654,7 +654,7 @@
 .menu-sub-item.v-p:hover:not(:disabled) {
   background: rgb(var(--color-toxic-green-rgb) / 10%);
   border-color: var(--color-toxic-green);
-  box-shadow: 2px 2px 0 var(--color-blood-red);
+  box-shadow: 2px 2px 0 var(--color-error-red);
 }
 .menu-sub-item.v-w {
   border-color: rgb(var(--color-warning-yellow-rgb) / 30%);
@@ -671,7 +671,7 @@
 }
 .menu-sub-item.v-d:hover:not(:disabled) {
   background: rgb(var(--color-blood-red-rgb) / 15%);
-  border-color: var(--color-blood-red);
+  border-color: var(--color-error-red);
   box-shadow: 2px 2px 0 var(--color-toxic-green);
 }
 .menu-sub-item-left {
@@ -769,7 +769,7 @@
     border-color: rgb(var(--color-toxic-green-rgb) / 60%);
   }
   50% {
-    border-color: var(--color-blood-red);
+    border-color: var(--color-error-red);
     box-shadow: 0 0 12px rgb(var(--color-blood-red-rgb) / 40%);
   }
 }
@@ -972,12 +972,6 @@
 
 
 
-  .node-lbl {
-    max-width: 76px;
-    font-size: 8px;
-    white-space: normal;
-    overflow-wrap: anywhere;
-  }
 }
 @media (max-width: 640px), (pointer: coarse) {
   .scene {
@@ -1008,22 +1002,14 @@
   }
 
 
-  .hex-wrap {
-    width: 56px;
-    height: 56px;
-  }
 
-  .node-lbl,
-  .node-badge {
-    line-height: 1.25;
-  }
 
   .group-hover\:block {
     pointer-events: none;
   }
 }
 .mbr-crit {
-  color: var(--color-blood-red) !important;
+  color: var(--color-error-red) !important;
   font-weight: bold;
 }
 .mbr-low {
@@ -1041,7 +1027,6 @@
 @media (prefers-reduced-motion: reduce) {
   .glitch-on .map-wrap,
   .glitch-on .ow-title,
-  .node-van,
   .g-hue .map-wrap,
   .g-pixel .map-wrap,
   .money-anim-up,

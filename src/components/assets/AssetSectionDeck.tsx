@@ -34,7 +34,7 @@ export const AssetSectionDeck = ({
             <h2 className='assets-hub-title truncate text-xl uppercase sm:text-2xl'>
               {t(`assets:kind.${asset.kind}`)}
             </h2>
-            <p className='assets-hub-control truncate text-[0.65rem] uppercase opacity-70'>
+            <p className='assets-hub-control truncate text-xs uppercase opacity-70'>
               {t(`assets:flavor.${asset.chassisFlavor}`)} /{' '}
               {t(`assets:chassisTier.${asset.chassisTier}`)} /{' '}
               {t(`assets:mode.${asset.acquisitionMode}`)}

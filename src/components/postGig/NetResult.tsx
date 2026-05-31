@@ -26,7 +26,7 @@ export const NetResult = React.memo(({ net }: NetResultProps) => {
       transition={{ delay: 0.8, type: 'spring' }}
       className='text-center py-4 sm:py-6 border-y-2 border-ash-gray/30'
     >
-      <div className='text-[10px] text-ash-gray tracking-widest mb-2'>
+      <div className='text-xs text-ash-gray tracking-widest mb-2'>
         {t('economy:postGig.netProfit')}
       </div>
       <div

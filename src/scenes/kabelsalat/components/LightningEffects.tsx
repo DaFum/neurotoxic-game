@@ -15,7 +15,7 @@ export const LightningEffects: FC<{ lightningSeeds: LightningSeed[] }> = ({
         fill='none'
         stroke='var(--color-warning-yellow)'
         strokeWidth={seed.w}
-        className='animate-[flash_0.05s_infinite]'
+        className='motion-safe:animate-[flash_0.05s_infinite]'
         style={{
           filter: 'drop-shadow(0 0 20px var(--color-warning-yellow))'
         }}

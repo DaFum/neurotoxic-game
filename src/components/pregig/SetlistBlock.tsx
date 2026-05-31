@@ -62,12 +62,12 @@ const SongRow = memo(function SongRow({
         <div className='font-bold text-sm'>
           {song.name}{' '}
           {isLocked && (
-            <span className='text-[10px] text-blood-red ml-2 border border-blood-red/50 px-1'>
+            <span className='text-xs text-blood-red ml-2 border border-blood-red/50 px-1'>
               {t('ui:pregig.locked')}
             </span>
           )}
         </div>
-        <div className='text-[10px] font-mono mt-0.5 flex gap-2'>
+        <div className='text-xs font-mono mt-0.5 flex gap-2'>
           <span>{t('ui:seconds', { count: song.duration })}</span>
           <span className='text-ash-gray/40'>|</span>
           <span>
@@ -77,7 +77,7 @@ const SongRow = memo(function SongRow({
       </div>
       <div className='flex flex-col items-end gap-1'>
         <div className='flex items-center gap-1.5'>
-          <span className='text-[9px] text-ash-gray/50 uppercase tracking-wider'>
+          <span className='text-xxs text-ash-gray/50 uppercase tracking-wider'>
             {t('ui:pregig.nrg')}
           </span>
           <div className='w-14 h-1.5 bg-shadow-black overflow-hidden border border-ash-gray/20'>
@@ -88,7 +88,7 @@ const SongRow = memo(function SongRow({
           </div>
         </div>
         {isSelected && (
-          <span className='text-[9px] text-toxic-green tracking-wider'>
+          <span className='text-xxs text-toxic-green tracking-wider'>
             {t('ui:pregig.selected')}
           </span>
         )}
@@ -169,7 +169,7 @@ export const SetlistBlock = ({
       <div className='mt-3 h-16 border-t border-ash-gray/20 pt-2 flex flex-col gap-1'>
         {selectedSongs.length > 0 ? (
           <>
-            <div className='flex items-center justify-between text-[9px] font-mono uppercase tracking-wider text-ash-gray/60'>
+            <div className='flex items-center justify-between text-xxs font-mono uppercase tracking-wider text-ash-gray/60'>
               <span>{t('ui:pregig.noteDensity')}</span>
               {import.meta.env.DEV && (
                 <span>
@@ -189,7 +189,7 @@ export const SetlistBlock = ({
                   transition={{ duration: 0.25, delay: i * 0.015 }}
                   className='flex-1 bg-gradient-to-t from-toxic-green to-toxic-green/40 relative group cursor-default'
                 >
-                  <div className='absolute -top-4 left-0 text-[10px] w-full text-center opacity-0 group-hover:opacity-100 transition-opacity text-star-white tabular-nums'>
+                  <div className='absolute -top-4 left-0 text-xs w-full text-center opacity-0 group-hover:opacity-100 transition-opacity text-star-white tabular-nums'>
                     {bar.count}
                   </div>
                 </motion.div>
@@ -197,7 +197,7 @@ export const SetlistBlock = ({
             </div>
           </>
         ) : (
-          <div className='text-ash-gray/30 text-[10px] w-full text-center font-mono'>
+          <div className='text-ash-gray/30 text-xs w-full text-center font-mono'>
             {t('ui:pregig.selectPreview')}
           </div>
         )}

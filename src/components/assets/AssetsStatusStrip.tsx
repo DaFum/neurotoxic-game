@@ -26,7 +26,7 @@ const StatusCell = ({
 
   return (
     <div className='min-w-0 border-l-2 px-2 py-1 first:border-l-0 sm:px-3'>
-      <span className='block truncate text-[0.62rem] uppercase opacity-60'>
+      <span className='block truncate text-xxs uppercase opacity-60'>
         {label}
       </span>
       <strong
@@ -54,7 +54,7 @@ export const AssetsStatusStrip = () => {
         <h1 className='assets-hub-title truncate text-lg uppercase sm:text-2xl'>
           {t('assets:scene.title')}
         </h1>
-        <span className='assets-hub-control text-[0.62rem] uppercase opacity-60'>
+        <span className='assets-hub-control text-xxs uppercase opacity-60'>
           {t('assets:scene.subtitle')}
         </span>
       </div>

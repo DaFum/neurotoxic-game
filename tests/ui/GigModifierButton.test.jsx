@@ -42,7 +42,7 @@ test('GigModifierButton applies active states correctly', () => {
 
   // Shimmer div should NOT be present when active
   const shimmer = container.querySelector(
-    '.group-hover\\:animate-\\[shimmer_0\\.8s_ease-out\\]'
+    '.motion-safe\\:group-hover\\:animate-\\[shimmer_0\\.8s_ease-out\\]'
   )
   expect(shimmer).toBeNull()
 })
@@ -58,7 +58,7 @@ test('GigModifierButton applies inactive states correctly', () => {
 
   // Shimmer div SHOULD be present when inactive
   const shimmer = container.querySelector(
-    '.group-hover\\:animate-\\[shimmer_0\\.8s_ease-out\\]'
+    '.motion-safe\\:group-hover\\:animate-\\[shimmer_0\\.8s_ease-out\\]'
   )
   expect(shimmer).toBeInTheDocument()
 })

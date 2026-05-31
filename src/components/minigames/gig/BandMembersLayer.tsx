@@ -12,12 +12,12 @@ export const BandMembersLayer = memo(
     const { t } = useTranslation()
 
     return (
-      <div className='absolute inset-0 z-10 pointer-events-none'>
+      <div className='absolute inset-0 z-(--z-crt) pointer-events-none'>
         {/* Matze (Guitar) - Left */}
         <div
           id='band-member-0'
           ref={setBandMemberRef(0)}
-          className='absolute left-[9%] sm:left-[15%] top-[34%] sm:top-[30%] w-20 h-32 sm:w-32 sm:h-48 transition-transform duration-100'
+          className='absolute left-1/10 sm:left-1/6 top-1/3 sm:top-1/3 w-20 h-32 sm:w-32 sm:h-48 transition-transform duration-100'
         >
           <img
             src={matzeUrl}
@@ -29,7 +29,7 @@ export const BandMembersLayer = memo(
         <div
           id='band-member-1'
           ref={setBandMemberRef(1)}
-          className='absolute left-[50%] top-[18%] sm:top-[20%] -translate-x-1/2 w-24 h-24 sm:w-40 sm:h-40 transition-transform duration-100'
+          className='absolute left-1/2 top-1/5 sm:top-1/5 -translate-x-1/2 w-24 h-24 sm:w-40 sm:h-40 transition-transform duration-100'
         >
           <img
             src={mariusUrl}
@@ -41,7 +41,7 @@ export const BandMembersLayer = memo(
         <div
           id='band-member-2'
           ref={setBandMemberRef(2)}
-          className='absolute right-[9%] sm:right-[15%] top-[34%] sm:top-[30%] w-20 h-32 sm:w-32 sm:h-48 transition-transform duration-100'
+          className='absolute right-1/10 sm:right-1/6 top-1/3 sm:top-1/3 w-20 h-32 sm:w-32 sm:h-48 transition-transform duration-100'
         >
           <img
             src={larsUrl}

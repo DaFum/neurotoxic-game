@@ -1,3 +1,7 @@
+@theme {
+  --text-xxs: 0.625rem;
+  --text-xxs--line-height: 0.875rem;
+}
 /* stylelint-disable-next-line import-notation */
 @import 'tailwindcss';
 @import './overworld.css';
@@ -343,18 +347,6 @@ button {
   animation: doom-zoom 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Stagger children fade in */
-@keyframes stagger-in {
-  0% {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
 /* Neon text flicker */
 @keyframes neon-flicker {

@@ -16,13 +16,13 @@ export const CreditEntry = React.memo(
         transition={{ delay }}
         className='flex flex-col gap-2'
       >
-        <span className='text-ash-gray text-[10px] font-mono tracking-[0.4em] uppercase'>
+        <span className='text-ash-gray text-xs font-mono tracking-[0.4em] uppercase'>
           {role}
         </span>
         <span className='text-star-white text-2xl font-bold font-display tracking-wide'>
           {name}
         </span>
-        <div className='w-16 h-[1px] bg-ash-gray/20 mx-auto mt-2' />
+        <div className='w-16 h-px bg-ash-gray/20 mx-auto mt-2' />
       </motion.div>
     )
   }

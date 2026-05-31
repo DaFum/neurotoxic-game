@@ -19,9 +19,9 @@ export const ControlsHint = memo(function ControlsHint() {
       {LANES.map(({ id, key }) => (
         <div
           key={id}
-          className='flex items-center gap-1 sm:gap-1.5 text-ash-gray font-mono text-[10px] sm:text-xs'
+          className='flex items-center gap-1 sm:gap-1.5 text-ash-gray font-mono text-xs sm:text-xs'
         >
-          <kbd className='border border-ash-gray/30 px-1.5 py-0.5 text-[10px] font-sans'>
+          <kbd className='border border-ash-gray/30 px-1.5 py-0.5 text-xs font-sans'>
             {key}
           </kbd>
           <span className='uppercase tracking-wider max-sm:hidden'>

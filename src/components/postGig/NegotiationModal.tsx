@@ -9,7 +9,7 @@ const TACTICS = [
   {
     id: 'SAFE',
     containerClass:
-      'w-full min-h-11 p-3 border border-toxic-green hover:bg-toxic-green/20 text-left group transition-all',
+      'w-full min-h-11 p-3 border-2 border-toxic-green hover:bg-toxic-green/20 text-left group transition-all',
     titleClass: 'text-toxic-green font-bold mb-1 break-words',
     titleKey: 'ui:deals.safe',
     titleDefault: 'SAFE (Low Risk)',
@@ -19,7 +19,7 @@ const TACTICS = [
   {
     id: 'PERSUASIVE',
     containerClass:
-      'w-full min-h-11 p-3 border border-electric-blue hover:bg-electric-blue/20 text-left group transition-all',
+      'w-full min-h-11 p-3 border-2 border-electric-blue hover:bg-electric-blue/20 text-left group transition-all',
     titleClass: 'text-electric-blue font-bold mb-1 break-words',
     titleKey: 'ui:deals.persuasive',
     titleDefault: 'PERSUASIVE (Medium Risk)',
@@ -30,7 +30,7 @@ const TACTICS = [
   {
     id: 'AGGRESSIVE',
     containerClass:
-      'w-full min-h-11 p-3 border border-blood-red hover:bg-blood-red/20 text-left group transition-all',
+      'w-full min-h-11 p-3 border-2 border-blood-red hover:bg-blood-red/20 text-left group transition-all',
     titleClass: 'text-blood-red font-bold mb-1 break-words',
     titleKey: 'ui:deals.aggressive',
     titleDefault: 'AGGRESSIVE (High Risk)',

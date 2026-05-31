@@ -57,7 +57,7 @@ export const AssetSlotActionList = ({
                 >
                   {slotName}
                 </strong>
-                <span className='shrink-0 border px-1 text-[0.62rem] uppercase opacity-70'>
+                <span className='shrink-0 border px-1 text-xxs uppercase opacity-70'>
                   {stateLabel}
                 </span>
               </div>
@@ -74,7 +74,7 @@ export const AssetSlotActionList = ({
                 </p>
               )}
               {isDamaged && (
-                <p className='mt-1 text-[0.65rem] uppercase text-warning-yellow'>
+                <p className='mt-1 text-xs uppercase text-warning-yellow'>
                   {t('assets:hub.slotState.damaged')}:{' '}
                   {t(`assets:condition.${conditionState}`)}
                 </p>

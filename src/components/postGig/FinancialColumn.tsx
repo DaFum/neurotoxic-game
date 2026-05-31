@@ -38,7 +38,7 @@ export const FinancialColumn = React.memo(
         </h3>
         <FinancialList items={items} type={type} />
         <div
-          className={`mt-4 pt-2 border-t ${borderLightClass} flex items-start justify-between gap-3 font-bold ${colorClass}`}
+          className={`mt-4 pt-2 border-t-2 ${borderLightClass} flex items-start justify-between gap-3 font-bold ${colorClass}`}
         >
           <span className='min-w-0 text-sm tracking-wider break-words'>
             {t('economy:postGig.total')}

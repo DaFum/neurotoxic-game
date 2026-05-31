@@ -87,7 +87,7 @@ export const GigModifiersBlock = ({
               <span className='font-bold text-sm'>
                 {t('ui:pregig.bandMeeting.label')}
               </span>
-              <span className='text-[10px] opacity-70'>
+              <span className='text-xs opacity-70'>
                 {t('ui:pregig.bandMeeting.desc')}
               </span>
             </span>
@@ -100,7 +100,7 @@ export const GigModifiersBlock = ({
 
       {/* Active Modifiers Display */}
       <div className='mt-3 p-3 bg-toxic-green/5 border border-toxic-green/30'>
-        <h4 className='text-[10px] font-bold text-toxic-green mb-2 tracking-widest'>
+        <h4 className='text-xs font-bold text-toxic-green mb-2 tracking-widest'>
           {t('ui:pregig.activeModifiers')}
         </h4>
         {currentModifiers.activeEffects.length > 0 ? (
@@ -116,7 +116,7 @@ export const GigModifiersBlock = ({
             ))}
           </ul>
         ) : (
-          <div className='text-[10px] text-ash-gray italic'>
+          <div className='text-xs text-ash-gray italic'>
             {t('ui:pregig.noModifiers')}
           </div>
         )}

@@ -72,7 +72,7 @@ const EventOptionButton = ({
 
       <div className='flex flex-col items-end text-right'>
         {option.skillCheck && (
-          <span className='inline-block mt-1 text-[10px] text-warning-yellow'>
+          <span className='inline-block mt-1 text-xs text-warning-yellow'>
             [{'⚔'} {t('ui:skillCheck')}]
           </span>
         )}
@@ -259,11 +259,11 @@ export const EventModal = ({
       <motion.div
         initial={{ scale: 0.9, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
-        className='relative w-full max-w-lg border-4 border-toxic-green p-3 sm:p-6 bg-void-black shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)] animate-[glitch-anim_0.2s_ease-in-out]'
+        className='relative w-full max-w-4xl border-4 border-toxic-green p-3 sm:p-6 bg-void-black shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)] motion-safe:animate-[glitch-anim_0.2s_ease-in-out]'
       >
         {/* Hardware details */}
         <div className='absolute top-0 left-0 w-full h-1 bg-toxic-green'></div>
-        <div className='absolute top-0 left-2 px-2 h-4 bg-toxic-green text-void-black text-[10px] font-bold text-center leading-4 uppercase'>
+        <div className='absolute top-0 left-2 px-2 h-4 bg-toxic-green text-void-black text-xs font-bold text-center leading-4 uppercase'>
           {t('ui:event.severity.critical')}
         </div>
 
@@ -321,7 +321,7 @@ export const EventModal = ({
           ) : (
             <>
               {/* Keyboard hint */}
-              <p className='text-[10px] text-ash-gray font-mono uppercase tracking-widest text-center'>
+              <p className='text-xs text-ash-gray font-mono uppercase tracking-widest text-center'>
                 {t('ui:keyboardHint', { count: eventOptions.length })}
               </p>
 

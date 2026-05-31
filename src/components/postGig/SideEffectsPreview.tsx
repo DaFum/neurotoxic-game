@@ -15,7 +15,7 @@ export const SideEffectsPreview = memo(
     if (!hasHighVariance && !hasConsistentGrowth) return null
 
     return (
-      <div className='mt-auto pt-2 text-[10px] uppercase font-mono tracking-wider w-full z-10 relative'>
+      <div className='mt-auto pt-2 text-xs uppercase font-mono tracking-wider w-full z-10 relative'>
         <div className='flex flex-wrap gap-2'>
           {hasHighVariance && (
             <span className='text-blood-red'>

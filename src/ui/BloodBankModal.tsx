@@ -303,7 +303,7 @@ export const BloodBankModal = ({
           <div className='p-3 sm:p-6 border-t-4 border-blood-red bg-void-black/80 flex flex-col sm:flex-row justify-end gap-3 sm:gap-4'>
             <ActionButton
               onClick={onClose}
-              className='w-full sm:w-auto min-w-[120px] border-ash-gray text-ash-gray hover:text-void-black hover:bg-ash-gray'
+              className='w-full sm:w-auto min-w-32 border-ash-gray text-ash-gray hover:text-void-black hover:bg-ash-gray'
             >
               {t('ui:cancel', { defaultValue: 'CANCEL' })}
             </ActionButton>

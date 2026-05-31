@@ -38,7 +38,7 @@ export const SocialOptionButton = memo(function SocialOptionButton({
     >
       <ActionButton
         onClick={handleClick}
-        className='flex flex-col h-full items-start justify-start p-3 sm:p-4 min-h-[160px] sm:min-h-[180px] text-left relative overflow-hidden w-full group'
+        className='flex flex-col h-full items-start justify-start p-3 sm:p-4 min-h-40 sm:min-h-48 text-left relative overflow-hidden w-full group'
       >
         {/* Background Image Watermark */}
         <div

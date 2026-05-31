@@ -86,7 +86,7 @@ export const VoidTraderTab = ({
           return (
             <div
               key={item.id}
-              className='border border-toxic-green/20 bg-void-black/60 p-4 flex flex-col justify-between group hover:border-toxic-green/50 transition-colors'
+              className='border-2 border-ash-gray/30 bg-void-black/80 p-4 flex flex-col justify-between group hover:border-toxic-green/50 transition-colors'
             >
               <div className='flex items-start gap-4 mb-4'>
                 <div className='w-16 h-16 border border-toxic-green/30 bg-void-black flex items-center justify-center shrink-0'>
@@ -101,7 +101,7 @@ export const VoidTraderTab = ({
                       {t(item.name)}
                     </h4>
                     <span
-                      className={`text-[10px] uppercase tracking-wider px-2 py-0.5 border ${item.rarity === 'epic' ? 'border-blood-red text-blood-red' : 'border-toxic-green text-toxic-green'}`}
+                      className={`text-xs uppercase tracking-wider px-2 py-0.5 border ${item.rarity === 'epic' ? 'border-error-red text-error-red' : 'border-toxic-green text-toxic-green'}`}
                     >
                       {t(`ui:rarity.${item.rarity}`, {
                         defaultValue: item.rarity
@@ -128,7 +128,7 @@ export const VoidTraderTab = ({
                   variant='primary'
                   onClick={() => handleTrade(item)}
                   disabled={disabled}
-                  className='text-xs min-h-[44px] py-2 px-4 min-w-[120px]'
+                  className='text-xs min-h-11 py-2 px-4 min-w-32'
                 >
                   {isProcessingThis
                     ? t('ui:loading', { defaultValue: 'PROCESSING...' })

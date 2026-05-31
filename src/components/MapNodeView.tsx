@@ -80,7 +80,7 @@ const CancellationBadge = memo(
             : 'text-toxic-green'
 
     return (
-      <div className={`text-[10px] font-mono mt-1 ${badgeClass}`}>
+      <div className={`text-xs font-mono mt-1 ${badgeClass}`}>
         {t('ui:map.cancellationRisk', {
           defaultValue: '⚠ Cancel risk: {{pct}}% (1-in-{{freq}} chance)',
           pct,
@@ -109,8 +109,8 @@ const MapNodeTooltip = memo(
         <div className='font-bold text-toxic-green'>{nodeLocationName}</div>
 
         {cityTraits && (
-          <div className='mt-1 mb-2 pt-1 border-t border-toxic-green/30 text-[10px] text-ash-gray font-mono flex flex-col gap-0.5'>
-            <div className='text-toxic-green/80 font-bold uppercase tracking-wider text-[9px] mb-0.5'>
+          <div className='mt-1 mb-2 pt-1 border-t border-toxic-green/30 text-xs text-ash-gray font-mono flex flex-col gap-0.5'>
+            <div className='text-toxic-green/80 font-bold uppercase tracking-wider text-xxs mb-0.5'>
               {t('ui:map.intel.title')}
             </div>
             <div>
@@ -141,7 +141,7 @@ const MapNodeTooltip = memo(
         {(node.type === 'GIG' ||
           node.type === 'FESTIVAL' ||
           node.type === 'FINALE') && (
-          <div className='text-[10px] text-ash-gray font-mono'>
+          <div className='text-xs text-ash-gray font-mono'>
             {node.type === 'FESTIVAL' && (
               <div className='text-warning-yellow font-bold mb-1'>
                 {t('ui:map.festival')}
@@ -164,22 +164,22 @@ const MapNodeTooltip = memo(
             <CancellationBadge harmony={harmony} t={t} />
           )}
         {node.type === 'REST_STOP' && (
-          <div className='text-[10px] text-warning-yellow font-mono'>
+          <div className='text-xs text-warning-yellow font-mono'>
             {t('ui:map.rest_stop_desc')}
           </div>
         )}
         {node.type === 'SPECIAL' && (
-          <div className='text-[10px] text-void-purple font-mono'>
+          <div className='text-xs text-void-purple font-mono'>
             {t('ui:map.mystery_desc')}
           </div>
         )}
         {node.type === 'FINALE' && (
-          <div className='text-[10px] text-warning-yellow font-mono font-bold'>
+          <div className='text-xs text-warning-yellow font-mono font-bold'>
             {t('ui:map.finale_desc')}
           </div>
         )}
         {node.type === 'supplyStop' && (
-          <div className='text-[10px] text-toxic-green font-mono'>
+          <div className='text-xs text-toxic-green font-mono'>
             {t('ui:map.supply_stop_desc', { defaultValue: 'Supply Stop' })}
           </div>
         )}
@@ -332,8 +332,8 @@ export const MapNodeView = memo(
         >
           <div className='absolute top-0 left-1/2 w-[1px] h-4 bg-toxic-green -translate-x-1/2 -translate-y-2'></div>
           <div className='absolute bottom-0 left-1/2 w-[1px] h-4 bg-toxic-green -translate-x-1/2 translate-y-2'></div>
-          <div className='absolute left-0 top-1/2 w-4 h-[1px] bg-toxic-green -translate-y-1/2 -translate-x-2'></div>
-          <div className='absolute right-0 top-1/2 w-4 h-[1px] bg-toxic-green -translate-y-1/2 translate-x-2'></div>
+          <div className='absolute left-0 top-1/2 w-4 h-px bg-toxic-green -translate-y-1/2 -translate-x-2'></div>
+          <div className='absolute right-0 top-1/2 w-4 h-px bg-toxic-green -translate-y-1/2 translate-x-2'></div>
         </div>
 
         {isCurrent && !isTraveling && (
@@ -366,13 +366,13 @@ export const MapNodeView = memo(
           </div>
         </motion.div>
 
-        <div className='text-[9px] font-bold uppercase tracking-wide text-ash-gray mt-1 pointer-events-none'>
+        <div className='text-xxs font-bold uppercase tracking-wide text-ash-gray mt-1 pointer-events-none'>
           {getNodeTypeLabel(t, node.type)}
         </div>
 
         {/* Pending confirmation label */}
         {isPendingConfirm && (
-          <div className='absolute top-0 left-1/2 -translate-x-1/2 text-warning-yellow text-[10px] font-bold whitespace-nowrap pointer-events-none animate-pulse bg-void-black/80 px-1.5 py-0.5 border border-warning-yellow z-(--z-stage)'>
+          <div className='absolute top-0 left-1/2 -translate-x-1/2 text-warning-yellow text-xs font-bold whitespace-nowrap pointer-events-none animate-pulse bg-void-black/80 px-1.5 py-0.5 border border-warning-yellow z-(--z-stage)'>
             {t('ui:map.confirm_q')}
           </div>
         )}
@@ -380,7 +380,7 @@ export const MapNodeView = memo(
         {/* Node Label (Always visible, matching BrutalistUI style) */}
         <div className='mt-2 flex flex-col items-center z-(--z-stage-bg) pointer-events-none'>
           <span
-            className={`text-[10px] font-bold tracking-widest uppercase text-center transition-colors ${isHoveredLocal || isPendingConfirm ? 'text-star-white' : 'text-toxic-green'}`}
+            className={`text-xs font-bold tracking-widest uppercase text-center transition-colors ${isHoveredLocal || isPendingConfirm ? 'text-star-white' : 'text-toxic-green'}`}
           >
             {nodeLocationName}
           </span>

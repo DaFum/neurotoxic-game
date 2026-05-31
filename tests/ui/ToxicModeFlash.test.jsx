@@ -34,9 +34,9 @@ describe('ToxicModeFlash', () => {
     expect(container.firstChild.className).toContain('pointer-events-none')
   })
 
-  test('flash div has z-0 to remain behind other elements', () => {
+  test('flash div has z-(--z-base) to remain behind other elements', () => {
     const { container } = render(<ToxicModeFlash isToxicMode={true} />)
-    expect(container.firstChild.className).toContain('z-0')
+    expect(container.firstChild.className).toContain('z-(--z-base)')
   })
 
   test('transitions from false to true (rerender shows flash)', () => {

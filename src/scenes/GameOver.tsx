@@ -33,7 +33,7 @@ export const GameOver = () => {
   }
 
   return (
-    <div className='flex flex-col items-center justify-center h-full w-full bg-void-black z-50 text-center p-8 relative overflow-hidden'>
+    <div className='flex flex-col items-center justify-center h-full w-full bg-void-black z-(--z-overlay) text-center p-8 relative overflow-hidden'>
       <GameOverBackground />
       <GameOverHeader />
       <GameOverStats player={player} />

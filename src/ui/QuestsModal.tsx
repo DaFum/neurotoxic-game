@@ -1,3 +1,4 @@
+import { IconClose } from './shared/Icons'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ProgressBar } from './shared/index.tsx'
 import { GlitchButton } from './GlitchButton.tsx'
@@ -98,15 +99,6 @@ const IconCube = makeIcon(
     strokeLinejoin='round'
   />
 )
-const IconClose = makeIcon(
-  <path
-    strokeLinecap='round'
-    strokeLinejoin='round'
-    strokeWidth='2'
-    d='M6 18L18 6M6 6l12 12'
-  />,
-  { fill: 'none', stroke: 'currentColor' }
-)
 
 type QuestDisplayState = QuestState & {
   description?: string
@@ -146,7 +138,7 @@ const getRewardIcon = (type: string) => {
     case 'fans':
       return <IconStar className='w-4 h-4 text-stamina-green' />
     case 'skill_point':
-      return <IconFire className='w-4 h-4 text-blood-red' />
+      return <IconFire className='w-4 h-4 text-error-red' />
     case 'harmony':
       return <IconThumbUp className='w-4 h-4 text-toxic-green' />
     case 'money':
@@ -207,7 +199,7 @@ const QuestItem = memo(
           </h3>
           {timeRemaining !== null && (
             <div
-              className={`flex items-center gap-1 text-xs font-mono px-2 py-1 ${timeRemaining <= 2 ? 'bg-blood-red/20 text-blood-red' : 'bg-fuel-yellow/10 text-fuel-yellow'}`}
+              className={`flex items-center gap-1 text-xs font-mono px-2 py-1 ${timeRemaining <= 2 ? 'bg-blood-red/20 text-error-red' : 'bg-fuel-yellow/10 text-fuel-yellow'}`}
             >
               <IconClock className='w-3 h-3' />
               <span>
@@ -300,7 +292,7 @@ export const QuestsModal = ({
   return (
     <AnimatePresence>
       <motion.div
-        className='fixed inset-0 z-(--z-modal) flex items-center justify-center bg-void-black/80 p-4'
+        className='fixed inset-0 z-(--z-modal) flex items-center justify-center bg-void-black/80 backdrop-blur-sm p-4'
         variants={overlayVariants}
         initial='hidden'
         animate='visible'
@@ -308,7 +300,7 @@ export const QuestsModal = ({
         onClick={onClose}
       >
         <motion.div
-          className='relative w-full max-w-2xl border-4 border-toxic-green p-3 sm:p-6 bg-void-black shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)] max-h-[calc(100svh-4rem)] overflow-y-auto'
+          className='relative w-full max-w-4xl border-4 border-toxic-green p-3 sm:p-6 bg-void-black shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)] max-h-[calc(100svh-4rem)] overflow-y-auto'
           variants={modalVariants}
           onClick={(e: MouseEvent<HTMLDivElement>) => e.stopPropagation()}
         >
@@ -320,10 +312,10 @@ export const QuestsModal = ({
             <button
               type='button'
               onClick={onClose}
-              className='text-ash-gray hover:text-blood-red transition-colors p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blood-red focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
+              className='text-ash-gray hover:text-error-red transition-colors p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error-red focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
               aria-label={t('ui:quests.closeButton')}
             >
-              <IconClose className='w-6 h-6' />
+              <IconClose />
             </button>
           </div>
 
