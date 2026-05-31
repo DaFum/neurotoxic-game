@@ -1443,6 +1443,8 @@
   "quests.proveYourself.title": "PROVE YOURSELF",
   "quests.repeatable": "Repeatable",
   "quests.rewards": "Rewards:",
+  "quests.scope.region": "Region: {{scope}}",
+  "quests.scope.venue": "Venue: {{scope}}",
   "quests.title": "ACTIVE QUESTS",
   "radio.play": "Play/Resume Radio",
   "radio.stop": "Stop Radio",

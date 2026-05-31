@@ -1442,6 +1442,8 @@
   "quests.proveYourself.title": "BEWEIS ES ALLEN",
   "quests.repeatable": "Wiederholbar",
   "quests.rewards": "Belohnungen:",
+  "quests.scope.region": "Region: {{scope}}",
+  "quests.scope.venue": "Venue: {{scope}}",
   "quests.title": "AKTIVE QUESTS",
   "radio.play": "Radio abspielen/fortsetzen",
   "radio.stop": "Radio stoppen",

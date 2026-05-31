@@ -184,6 +184,24 @@ const getPenaltyTexts = (
   return texts
 }
 
+// Display order: story first, then by ascending deadline (no deadline last),
+// then repeatables. Stable for equal keys so React doesn't churn.
+const KIND_RANK: Record<string, number> = {
+  story: 0,
+  side: 1,
+  repeatable: 2,
+  tutorial: 3
+}
+const sortQuests = (quests: QuestDisplayState[]): QuestDisplayState[] =>
+  [...quests].sort((a, b) => {
+    const rankA = KIND_RANK[a.kind ?? 'side'] ?? 1
+    const rankB = KIND_RANK[b.kind ?? 'side'] ?? 1
+    if (rankA !== rankB) return rankA - rankB
+    const da = a.deadline ?? Number.POSITIVE_INFINITY
+    const db = b.deadline ?? Number.POSITIVE_INFINITY
+    return da - db
+  })
+
 const questItemVariants = {
   hidden: { opacity: 0, x: -20 },
   visible: { opacity: 1, x: 0, transition: { duration: 0.3 } }
@@ -247,6 +265,16 @@ const QuestItem = memo(
                   {quest.repeatPolicy === 'never'
                     ? t('ui:quests.oneTime')
                     : t('ui:quests.repeatable')}
+                </span>
+              )}
+              {quest.scopeKey && (
+                <span className='inline-block bg-fuel-yellow/10 text-fuel-yellow px-2 py-0.5 text-[10px] font-mono uppercase tracking-wide'>
+                  {t(
+                    quest.repeatPolicy === 'perVenue'
+                      ? 'ui:quests.scope.venue'
+                      : 'ui:quests.scope.region',
+                    { scope: quest.scopeKey }
+                  )}
                 </span>
               )}
             </div>
@@ -405,15 +433,17 @@ export const QuestsModal = ({
             </div>
           ) : (
             <div className='space-y-6'>
-              {activeQuests.map((quest: QuestDisplayState, index: number) => (
-                <QuestItem
-                  key={quest.id}
-                  quest={quest}
-                  index={index}
-                  currentDay={player.day}
-                  variants={questItemVariants}
-                />
-              ))}
+              {sortQuests(activeQuests).map(
+                (quest: QuestDisplayState, index: number) => (
+                  <QuestItem
+                    key={quest.id}
+                    quest={quest}
+                    index={index}
+                    currentDay={player.day}
+                    variants={questItemVariants}
+                  />
+                )
+              )}
             </div>
           )}
 
