@@ -117,7 +117,7 @@ export const PirateRadioModal = memo(
               />
             </div>
 
-            <div className='bg-void-black/50 border border-blood-red/30 p-4 space-y-2'>
+            <div className='bg-void-black/50 border border-error-red/30 p-4 space-y-2'>
               <h3 className='text-error-red font-bold mb-2'>
                 {t('ui:pirate_radio.required_offering', {
                   defaultValue: '[ REQUIRED OFFERING ]'
