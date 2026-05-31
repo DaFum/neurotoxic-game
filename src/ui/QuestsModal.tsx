@@ -312,7 +312,7 @@ export const QuestsModal = ({
             <button
               type='button'
               onClick={onClose}
-              className='text-ash-gray hover:text-error-red transition-colors p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error-red focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
+              className='text-ash-gray hover:text-error-red transition-colors p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blood-red focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
               aria-label={t('ui:quests.closeButton')}
             >
               <IconClose />

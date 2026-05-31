@@ -173,7 +173,7 @@ export const BandHQ = ({ onClose, className = '' }: BandHQProps) => {
           <button
             type='button'
             onClick={onClose}
-            className='w-full sm:w-auto px-4 sm:px-6 py-3 sm:py-2 border-2 border-blood-red text-blood-red font-bold hover:bg-blood-red hover:text-void-black transition-colors duration-200 uppercase font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error-red focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
+            className='w-full sm:w-auto px-4 sm:px-6 py-3 sm:py-2 border-2 border-blood-red text-blood-red font-bold hover:bg-blood-red hover:text-void-black transition-colors duration-200 uppercase font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blood-red focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
           >
             {t('ui:hq.leave', { defaultValue: 'LEAVE [ESC]' })}
           </button>

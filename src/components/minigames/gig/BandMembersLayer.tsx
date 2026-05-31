@@ -12,7 +12,7 @@ export const BandMembersLayer = memo(
     const { t } = useTranslation()
 
     return (
-      <div className='absolute inset-0 z-(--z-crt) pointer-events-none'>
+      <div className='absolute inset-0 z-10 pointer-events-none'>
         {/* Matze (Guitar) - Left */}
         <div
           id='band-member-0'

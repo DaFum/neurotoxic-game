@@ -314,7 +314,7 @@ export const UIFrameCorner = memo(function UIFrameCorner({
 })
 
 export const IconClose = memo(function IconClose({
-  className = ''
+  className = 'w-6 h-6'
 }: IconProps) {
   return (
     <svg

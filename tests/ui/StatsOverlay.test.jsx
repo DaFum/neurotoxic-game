@@ -39,9 +39,9 @@ test('StatsOverlay renders all child components with correct props', () => {
   render(<StatsOverlay {...props} />)
 
   const overlay = screen.getByTestId('score-display').closest('.absolute')
-  expect(overlay).toHaveClass('sm:top-20')
-  expect(overlay).toHaveClass('sm:left-4')
-  expect(overlay).toHaveClass('sm:scale-100')
+  expect(overlay).toHaveClass('max-sm:top-20')
+  expect(overlay).toHaveClass('max-sm:left-2')
+  expect(overlay).toHaveClass('max-sm:scale-75')
 
   const scoreDisplay = screen.getByTestId('score-display')
   expect(scoreDisplay).toHaveTextContent('Score: 12345')

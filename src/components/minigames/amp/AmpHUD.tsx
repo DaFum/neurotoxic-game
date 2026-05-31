@@ -1,4 +1,3 @@
-import { BlockMeter } from '../../../ui/shared'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { AmpHUDProps } from '../../../types/components'
@@ -17,30 +16,28 @@ function VoidResonanceIndicator({
 
   return (
     <div className='mt-2 w-48'>
-      <BlockMeter
-        label={
-          isAnomalyActive
-            ? String(
-                t('ui:minigames.amp.hud.anomaly', {
-                  defaultValue: 'VOID ANOMALY DETECTED'
-                })
-              )
-            : String(
-                t('ui:minigames.amp.hud.resonance', {
-                  defaultValue: 'VOID RESONANCE'
-                })
-              )
-        }
-        value={Math.floor(voidResonance)}
-        max={100}
-        colorClass='bg-electric-blue'
-        textClass={
-          isAnomalyActive
-            ? 'text-electric-blue motion-safe:animate-pulse font-bold'
-            : 'text-ash-gray'
-        }
-        borderClass='border-electric-blue shadow-[0_0_5px_var(--color-electric-blue)]'
-      />
+      <div className='flex justify-between items-center mb-1'>
+        <span
+          className={`uppercase text-xs ${isAnomalyActive ? 'text-electric-blue motion-safe:animate-pulse font-bold' : 'text-ash-gray'}`}
+        >
+          {isAnomalyActive
+            ? t('ui:minigames.amp.hud.anomaly', {
+                defaultValue: 'VOID ANOMALY DETECTED'
+              })
+            : t('ui:minigames.amp.hud.resonance', {
+                defaultValue: 'VOID RESONANCE'
+              })}
+        </span>
+        <span className='text-electric-blue text-xs'>
+          {Math.floor(voidResonance)}%
+        </span>
+      </div>
+      <div className='h-2 w-full bg-void-black border border-electric-blue overflow-hidden shadow-[0_0_5px_var(--color-electric-blue)]'>
+        <div
+          className={`h-full bg-electric-blue transition-all duration-100 ${isAnomalyActive ? 'motion-safe:animate-pulse' : ''}`}
+          style={{ width: `${voidResonance}%` }}
+        />
+      </div>
     </div>
   )
 }
@@ -52,25 +49,28 @@ function HeatIndicator({
 }: IndicatorProps & { heat: number; isOverheat: boolean }) {
   return (
     <div className='mt-2 w-48'>
-      <BlockMeter
-        label={
-          isOverheat
-            ? String(
-                t('ui:minigames.amp.hud.overheat', {
-                  defaultValue: 'OVERHEAT!'
-                })
-              )
-            : String(t('ui:minigames.amp.hud.heat', { defaultValue: 'HEAT' }))
-        }
-        value={Math.floor(heat)}
-        max={100}
-        isDanger={isOverheat}
-        colorClass={
-          isOverheat
-            ? 'bg-error-red motion-safe:animate-pulse'
-            : 'bg-warning-yellow'
-        }
-      />
+      <div className='flex justify-between items-center mb-1'>
+        <span
+          className={`uppercase text-xs ${isOverheat ? 'text-error-red motion-safe:animate-pulse font-bold' : 'text-ash-gray'}`}
+        >
+          {isOverheat
+            ? t('ui:minigames.amp.hud.overheat', {
+                defaultValue: 'OVERHEAT!'
+              })
+            : t('ui:minigames.amp.hud.heat', { defaultValue: 'HEAT' })}
+        </span>
+        <span
+          className={`text-xs ${isOverheat ? 'text-error-red' : 'text-warning-yellow'}`}
+        >
+          {Math.floor(heat)}%
+        </span>
+      </div>
+      <div className='h-2 w-full bg-void-black border border-ash-gray overflow-hidden'>
+        <div
+          className={`h-full transition-all duration-100 ${isOverheat ? 'bg-error-red motion-safe:animate-pulse' : 'bg-warning-yellow'}`}
+          style={{ width: `${heat}%` }}
+        />
+      </div>
     </div>
   )
 }
@@ -124,19 +124,22 @@ function InterferenceIndicator({
 
   return (
     <div className='mt-2 w-48'>
-      <BlockMeter
-        label={String(
-          t('ui:minigames.amp.hud.interference', {
+      <div className='flex justify-between items-center mb-1'>
+        <span className='uppercase text-xs text-error-red motion-safe:animate-pulse font-bold'>
+          {t('ui:minigames.amp.hud.interference', {
             defaultValue: 'INTERFERENCE'
-          })
-        )}
-        value={Math.floor(interference)}
-        max={100}
-        isDanger={true}
-        colorClass='bg-error-red'
-        borderClass='border-error-red shadow-[0_0_5px_var(--color-error-red)]'
-        textClass='text-error-red motion-safe:animate-pulse font-bold'
-      />
+          })}
+        </span>
+        <span className='text-error-red text-xs'>
+          {Math.floor(interference)}%
+        </span>
+      </div>
+      <div className='h-2 w-full bg-void-black border border-error-red overflow-hidden shadow-[0_0_5px_var(--color-error-red)]'>
+        <div
+          className='h-full bg-error-red transition-all duration-100'
+          style={{ width: `${interference}%` }}
+        />
+      </div>
     </div>
   )
 }

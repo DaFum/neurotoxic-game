@@ -1027,11 +1027,4 @@
 @media (prefers-reduced-motion: reduce) {
   .glitch-on .map-wrap,
   .glitch-on .ow-title,
-  .g-hue .map-wrap,
-  .g-pixel .map-wrap,
-  .money-anim-up,
-  .money-anim-down,
-  .ow-panel.fuel-warn {
-    animation: none !important;
-  }
 }

@@ -1,7 +1,3 @@
-@theme {
-  --text-xxs: 0.625rem;
-  --text-xxs--line-height: 0.875rem;
-}
 /* stylelint-disable-next-line import-notation */
 @import 'tailwindcss';
 @import './overworld.css';
@@ -15,6 +11,10 @@
 @source './**/*.{js,ts,jsx,tsx}';
 
 @theme {
+  --text-xxs: 0.625rem;
+  --text-xxs--line-height: 0.875rem;
+  --z-base: 0;
+  --z-overlay: 50;
   /* =========================================
      NEUROTOXIC GRÜN (Base & Erweiterung)
      ========================================= */
@@ -346,7 +346,6 @@ button {
 .animate-doom-zoom {
   animation: doom-zoom 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
-
 
 /* Neon text flicker */
 @keyframes neon-flicker {
