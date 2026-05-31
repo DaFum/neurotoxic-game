@@ -52,7 +52,7 @@ export const QuestLifecycle = {
       const scopeKey =
         quest.scopeKey ??
         (repeatPolicy === 'perVenue'
-          ? state.currentGig?.id
+          ? (state.currentGig?.id ?? state.player?.currentNodeId)
           : state.player?.location)
       if (typeof scopeKey !== 'string' || scopeKey.length === 0) {
         // Without a scope we cannot uniquely track completion — refuse rather

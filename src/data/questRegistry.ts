@@ -122,6 +122,35 @@ export const QUEST_REGISTRY = {
       band: { harmony: -10 }
     }
   },
+  quest_venue_residency: {
+    kind: 'repeatable',
+    label: 'ui:quests.venueResidency.title',
+    description: 'ui:quests.venueResidency.description',
+    deadlineOffset: 21,
+    repeatPolicy: 'perVenue',
+    progressSource: 'good_gig',
+    required: 3,
+    rewardType: 'fans',
+    rewardData: { fans: 200 },
+    moneyReward: 250,
+    failurePenalty: {
+      social: { loyalty: -5 }
+    }
+  },
+  quest_region_takeover: {
+    kind: 'repeatable',
+    label: 'ui:quests.regionTakeover.title',
+    description: 'ui:quests.regionTakeover.description',
+    deadlineOffset: 30,
+    repeatPolicy: 'perRegion',
+    progressSource: 'good_gig',
+    required: 5,
+    rewardType: 'fame',
+    rewardData: { fame: 400 },
+    failurePenalty: {
+      social: { controversyLevel: 5 }
+    }
+  },
   quest_drama_post: {
     kind: 'repeatable',
     label: 'ui:quests.dramaPost.title',

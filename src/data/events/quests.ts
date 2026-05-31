@@ -131,6 +131,54 @@ export const QUEST_EVENTS = [
     ]
   },
   {
+    id: 'quest_trigger_venue_residency',
+    category: 'gig',
+    title: 'events:quest_trigger_venue_residency.title',
+    description: 'events:quest_trigger_venue_residency.desc',
+    trigger: 'random',
+    chance: 0.06,
+    condition: (state: GameState) =>
+      (!state.activeQuests || state.activeQuests.length === 0) &&
+      typeof state.player?.currentNodeId === 'string' &&
+      state.player.currentNodeId.length > 0,
+    options: [
+      {
+        label: 'events:quest_trigger_venue_residency.opt1.label',
+        effect: { type: 'quest', quest: { id: 'quest_venue_residency' } },
+        outcomeText: 'events:quest_trigger_venue_residency.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_venue_residency.opt2.label',
+        effect: { type: 'stat', stat: 'fame', value: 5 },
+        outcomeText: 'events:quest_trigger_venue_residency.opt2.outcome'
+      }
+    ]
+  },
+  {
+    id: 'quest_trigger_region_takeover',
+    category: 'gig',
+    title: 'events:quest_trigger_region_takeover.title',
+    description: 'events:quest_trigger_region_takeover.desc',
+    trigger: 'random',
+    chance: 0.05,
+    condition: (state: GameState) =>
+      (!state.activeQuests || state.activeQuests.length === 0) &&
+      typeof state.player?.location === 'string' &&
+      state.player.location.length > 0,
+    options: [
+      {
+        label: 'events:quest_trigger_region_takeover.opt1.label',
+        effect: { type: 'quest', quest: { id: 'quest_region_takeover' } },
+        outcomeText: 'events:quest_trigger_region_takeover.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_region_takeover.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -3 },
+        outcomeText: 'events:quest_trigger_region_takeover.opt2.outcome'
+      }
+    ]
+  },
+  {
     id: 'quest_trigger_drama_post',
     category: 'band',
     title: 'events:quest_trigger_drama_post.title',
