@@ -8,6 +8,7 @@ import { finiteNumberOr } from '../../utils/finiteNumber'
 
 import { QUEST_APOLOGY_TOUR } from '../questsConstants'
 import { hasActiveQuest } from '../../utils/questUtils'
+import { isOnCooldown } from '../../utils/eventEngine'
 
 export const CONSEQUENCE_EVENTS = [
   {

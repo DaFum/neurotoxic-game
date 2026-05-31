@@ -501,18 +501,13 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
     gameState: EngineGameState | null = null
   ) => {
     if (typeof eff.eventId === 'string' && eff.eventId.length > 0) {
-      const currentDay = gameState?.player?.day || 0
-      let durationDays = 0
-      if (typeof eff.value === 'number') {
-        durationDays = eff.value
+      if (typeof eff.value === 'number' && eff.value > 0) {
+        const currentDay = gameState?.player?.day || 0
+        const expiryDay = (currentDay as number) + eff.value
+        delta.flags.addCooldown = `${eff.eventId}:${expiryDay}`
+      } else {
+        delta.flags.addCooldown = eff.eventId
       }
-
-      const expiryDay = (currentDay as number) + durationDays
-      // In the absence of a distinct context/actor property on eff, we just store it.
-      // If the caller provides context or a specific key, they'd construct it or we can just append it here.
-      // We will append :expiryDay
-
-      delta.flags.addCooldown = `${eff.eventId}:${expiryDay}`
     }
   },
   social_set: (eff: EffectShape, delta: EventDelta) => {
