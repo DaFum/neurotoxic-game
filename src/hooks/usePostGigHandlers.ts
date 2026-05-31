@@ -170,6 +170,12 @@ export const usePostGigHandlers = ({
             appliedHarmonyDelta > 0 ? 'success' : 'error'
           )
         }
+        if (appliedHarmonyDelta > 0) {
+          applyQuestEvent({
+            type: 'harmony_recovered',
+            amount: appliedHarmonyDelta
+          })
+        }
 
         if (appliedMoneyDelta !== 0) {
           updatePlayer({ money: nextMoney })
