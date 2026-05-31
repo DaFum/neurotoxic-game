@@ -129,5 +129,72 @@ export const QUEST_EVENTS = [
         outcomeText: 'events:quest_trigger_local_legend.opt2.outcome'
       }
     ]
+  },
+  {
+    id: 'quest_trigger_drama_post',
+    category: 'band',
+    title: 'events:quest_trigger_drama_post.title',
+    description: 'events:quest_trigger_drama_post.desc',
+    trigger: 'random',
+    chance: 0.06,
+    condition: (state: GameState) =>
+      !state.activeQuests || state.activeQuests.length === 0,
+    options: [
+      {
+        label: 'events:quest_trigger_drama_post.opt1.label',
+        effect: { type: 'quest', quest: { id: 'quest_drama_post' } },
+        outcomeText: 'events:quest_trigger_drama_post.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_drama_post.opt2.label',
+        effect: { type: 'stat', stat: 'fame', value: -5 },
+        outcomeText: 'events:quest_trigger_drama_post.opt2.outcome'
+      }
+    ]
+  },
+  {
+    id: 'quest_trigger_premium_endorsement',
+    category: 'financial',
+    title: 'events:quest_trigger_premium_endorsement.title',
+    description: 'events:quest_trigger_premium_endorsement.desc',
+    trigger: 'random',
+    chance: 0.04,
+    condition: (state: GameState) =>
+      (!state.activeQuests || state.activeQuests.length === 0) &&
+      finiteNumberOr(state.player?.fame, 0) >= 200,
+    options: [
+      {
+        label: 'events:quest_trigger_premium_endorsement.opt1.label',
+        effect: { type: 'quest', quest: { id: 'quest_premium_endorsement' } },
+        outcomeText: 'events:quest_trigger_premium_endorsement.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_premium_endorsement.opt2.label',
+        effect: { type: 'stat', stat: 'money', value: 100 },
+        outcomeText: 'events:quest_trigger_premium_endorsement.opt2.outcome'
+      }
+    ]
+  },
+  {
+    id: 'quest_trigger_community_outreach',
+    category: 'band',
+    title: 'events:quest_trigger_community_outreach.title',
+    description: 'events:quest_trigger_community_outreach.desc',
+    trigger: 'random',
+    chance: 0.08,
+    condition: (state: GameState) =>
+      !state.activeQuests || state.activeQuests.length === 0,
+    options: [
+      {
+        label: 'events:quest_trigger_community_outreach.opt1.label',
+        effect: { type: 'quest', quest: { id: 'quest_community_outreach' } },
+        outcomeText: 'events:quest_trigger_community_outreach.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_community_outreach.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -3 },
+        outcomeText: 'events:quest_trigger_community_outreach.opt2.outcome'
+      }
+    ]
   }
 ]

@@ -226,10 +226,17 @@ test('Quest completion paths through gig reducer work correctly', () => {
     venueId: 'test_venue'
   })
 
+  // Completing a story quest with a registry followupQuestId queues the
+  // followup automatically (apology_tour → sincere_redemption).
   assert.strictEqual(
     nextState.activeQuests.length,
-    0,
-    'Completed quest should be removed'
+    1,
+    'Original quest removed, follow-up queued'
+  )
+  assert.strictEqual(
+    nextState.activeQuests[0].id,
+    'quest_sincere_redemption',
+    'Follow-up quest should be the registry-defined one'
   )
   assert.strictEqual(nextState.player.money, 200, 'Reward should be applied')
   assert.ok(

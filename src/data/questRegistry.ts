@@ -122,6 +122,54 @@ export const QUEST_REGISTRY = {
       band: { harmony: -10 }
     }
   },
+  quest_drama_post: {
+    kind: 'repeatable',
+    label: 'ui:quests.dramaPost.title',
+    description: 'ui:quests.dramaPost.description',
+    deadlineOffset: 4,
+    repeatPolicy: 'cooldown',
+    progressSource: 'followers_gained',
+    required: 300,
+    cooldownDays: 5,
+    rewardType: 'money',
+    rewardData: { money: 150 },
+    moneyReward: 150,
+    failurePenalty: {
+      social: { controversyLevel: 5 }
+    }
+  },
+  quest_premium_endorsement: {
+    kind: 'repeatable',
+    label: 'ui:quests.premiumEndorsement.title',
+    description: 'ui:quests.premiumEndorsement.description',
+    deadlineOffset: 14,
+    repeatPolicy: 'cooldown',
+    progressSource: 'brand_deal_completed',
+    required: 3,
+    cooldownDays: 21,
+    rewardType: 'money',
+    rewardData: { money: 1500 },
+    moneyReward: 1500,
+    failurePenalty: {
+      social: { loyalty: -10 },
+      cooldowns: [{ id: 'quest_premium_endorsement_retry', days: 30 }]
+    }
+  },
+  quest_community_outreach: {
+    kind: 'repeatable',
+    label: 'ui:quests.communityOutreach.title',
+    description: 'ui:quests.communityOutreach.description',
+    deadlineOffset: 6,
+    repeatPolicy: 'cooldown',
+    progressSource: 'social_post',
+    required: 4,
+    cooldownDays: 7,
+    rewardType: 'fans',
+    rewardData: { fans: 100 },
+    failurePenalty: {
+      social: { loyalty: -5 }
+    }
+  },
   quest_back_from_pit: {
     kind: 'story',
     label: 'ui:quests.backFromPit.title',
