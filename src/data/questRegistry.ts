@@ -1,6 +1,6 @@
 import { QuestState } from '../types/quest'
 
-export const QUEST_REGISTRY: Record<string, Partial<QuestState>> = {
+export const QUEST_REGISTRY = {
   quest_prove_yourself: {
     kind: 'story',
     repeatPolicy: 'never',
@@ -108,4 +108,4 @@ export const QUEST_REGISTRY: Record<string, Partial<QuestState>> = {
       social: { fame: -15 }
     }
   }
-}
+} as const satisfies Record<string, Partial<QuestState>>

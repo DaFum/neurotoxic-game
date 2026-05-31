@@ -39,7 +39,9 @@ export const QuestProgress = {
     if (!nextState.activeQuests) return nextState
 
     for (const quest of nextState.activeQuests) {
-      const registryEntry = QUEST_REGISTRY[quest.id]
+      const registryEntry = (
+        QUEST_REGISTRY as Record<string, { progressSource?: string }>
+      )[quest.id]
       if (!registryEntry) continue
 
       const progressSource = registryEntry.progressSource

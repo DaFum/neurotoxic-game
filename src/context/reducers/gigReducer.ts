@@ -162,6 +162,14 @@ export const handleSetLastGigStats = (
       ? state.currentGig.capacity
       : null
 
+  nextState = QuestProgress.applyEvent(nextState, {
+    type: 'gig_completed',
+    score,
+    capacity: capacity ?? 0,
+    venueId: state.currentGig?.id ?? '',
+    region: location
+  })
+
   if (score < 30) {
     if (!isForbiddenKey(location)) {
       nextState.reputationByRegion[location] = Math.max(
@@ -199,13 +207,6 @@ export const handleSetLastGigStats = (
     }
 
     nextState = handleRecordGoodShow(nextState)
-    nextState = QuestProgress.applyEvent(nextState, {
-      type: 'gig_completed',
-      score,
-      capacity: capacity ?? 0,
-      venueId: state.currentGig?.id ?? '',
-      region: location
-    })
     nextState = QuestProgress.applyEvent(nextState, {
       type: 'good_gig',
       score,
