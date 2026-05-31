@@ -1,6 +1,8 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { QuestLifecycle } from '../../../src/domain/questLifecycle.js'
+import { QuestProgress } from '../../../src/utils/questProgress.ts'
+import { QUEST_REGISTRY } from '../../../src/data/questRegistry.ts'
 import { QUEST_PROVE_YOURSELF } from '../../../src/data/questsConstants.js'
 
 test('QuestLifecycle', async t => {
@@ -761,5 +763,239 @@ test('QuestLifecycle', async t => {
       const nextState = QuestLifecycle.checkDeadlines(state)
       assert.equal(nextState, state)
     })
+  })
+
+  await t.test('QuestProgress.applyEvent', async t => {
+    const baseState = quest => ({
+      player: { day: 1 },
+      activeQuests: [quest],
+      activeStoryFlags: [],
+      completedQuestIds: [],
+      questCooldowns: []
+    })
+
+    await t.test('advances a quest whose progressSource matches', () => {
+      // pick_of_destiny -> good_gig, required 3
+      const state = baseState({
+        id: 'quest_pick_of_destiny',
+        progress: 0,
+        required: 3
+      })
+      const next = QuestProgress.applyEvent(state, {
+        type: 'good_gig',
+        score: 80,
+        capacity: 100,
+        venueId: 'v',
+        region: 'r'
+      })
+      const q = next.activeQuests.find(q => q.id === 'quest_pick_of_destiny')
+      assert.equal(q.progress, 1)
+    })
+
+    await t.test('does not advance a non-matching progressSource', () => {
+      // prove_yourself -> small_venue_good_gig; a plain good_gig must not count
+      const state = baseState({
+        id: 'quest_prove_yourself',
+        progress: 0,
+        required: 4
+      })
+      const next = QuestProgress.applyEvent(state, {
+        type: 'good_gig',
+        score: 80,
+        capacity: 100,
+        venueId: 'v',
+        region: 'r'
+      })
+      const q = next.activeQuests.find(q => q.id === 'quest_prove_yourself')
+      assert.equal(q.progress ?? 0, 0)
+    })
+
+    await t.test('auto-completes when progress reaches required', () => {
+      let state = baseState({
+        id: 'quest_pick_of_destiny',
+        progress: 2,
+        required: 3
+      })
+      state = QuestProgress.applyEvent(state, {
+        type: 'good_gig',
+        score: 80,
+        capacity: 100,
+        venueId: 'v',
+        region: 'r'
+      })
+      assert.equal(
+        state.activeQuests.find(q => q.id === 'quest_pick_of_destiny'),
+        undefined
+      )
+      assert.ok(state.completedQuestIds.includes('quest_pick_of_destiny'))
+    })
+
+    await t.test('ignores non-finite amounts', () => {
+      const state = baseState({
+        id: 'quest_viral_dance',
+        progress: 0,
+        required: 500
+      })
+      const next = QuestProgress.applyEvent(state, {
+        type: 'followers_gained',
+        amount: Number.NaN
+      })
+      const q = next.activeQuests.find(q => q.id === 'quest_viral_dance')
+      assert.equal(q.progress ?? 0, 0)
+    })
+  })
+
+  await t.test('repeat policy enforcement', async t => {
+    await t.test('never quests are blocked once completed', () => {
+      let state = {
+        player: { day: 1 },
+        activeQuests: [],
+        activeStoryFlags: [],
+        completedQuestIds: [],
+        questCooldowns: []
+      }
+      // pick_of_destiny is repeatPolicy 'never'
+      state = QuestLifecycle.addQuest(state, { id: 'quest_pick_of_destiny' })
+      assert.equal(state.activeQuests.length, 1)
+      state = QuestLifecycle.completeQuest(state, {
+        questId: 'quest_pick_of_destiny'
+      })
+      assert.ok(state.completedQuestIds.includes('quest_pick_of_destiny'))
+      // Re-add must be refused
+      state = QuestLifecycle.addQuest(state, { id: 'quest_pick_of_destiny' })
+      assert.equal(
+        state.activeQuests.find(q => q.id === 'quest_pick_of_destiny'),
+        undefined
+      )
+    })
+
+    await t.test(
+      'never quests are blocked while completion flag is active',
+      () => {
+        const state = {
+          player: { day: 1 },
+          activeQuests: [],
+          // ego_crisis_resolved is ego_management's rewardFlag
+          activeStoryFlags: ['ego_crisis_resolved'],
+          completedQuestIds: [],
+          questCooldowns: []
+        }
+        const next = QuestLifecycle.addQuest(state, {
+          id: 'quest_ego_management'
+        })
+        assert.equal(next, state)
+      }
+    )
+
+    await t.test('cooldown quests are blocked during the window', () => {
+      const state = {
+        player: { day: 5 },
+        activeQuests: [],
+        activeStoryFlags: [],
+        completedQuestIds: [],
+        questCooldowns: [{ questId: 'quest_viral_dance', expiresOnDay: 10 }]
+      }
+      const next = QuestLifecycle.addQuest(state, { id: 'quest_viral_dance' })
+      assert.equal(next, state)
+    })
+
+    await t.test('cooldown expiry allows re-add', () => {
+      const state = {
+        player: { day: 11 },
+        activeQuests: [],
+        activeStoryFlags: [],
+        completedQuestIds: [],
+        questCooldowns: [{ questId: 'quest_viral_dance', expiresOnDay: 10 }]
+      }
+      const next = QuestLifecycle.addQuest(state, { id: 'quest_viral_dance' })
+      assert.ok(next.activeQuests.find(q => q.id === 'quest_viral_dance'))
+    })
+
+    await t.test('completing a cooldown quest opens a re-add window', () => {
+      let state = {
+        player: { day: 3 },
+        activeQuests: [{ id: 'quest_viral_dance', progress: 1, required: 1 }],
+        activeStoryFlags: [],
+        completedQuestIds: [],
+        questCooldowns: []
+      }
+      state = QuestLifecycle.completeQuest(state, {
+        questId: 'quest_viral_dance'
+      })
+      const cd = state.questCooldowns.find(
+        c => c.questId === 'quest_viral_dance'
+      )
+      assert.ok(cd, 'expected a quest cooldown entry')
+      // cooldownDays is 7 in the registry
+      assert.equal(cd.expiresOnDay, 10)
+    })
+  })
+
+  await t.test('failure penalty handling', async t => {
+    const makeExpiredState = penalty => ({
+      player: { day: 10 },
+      social: { loyalty: 50, controversyLevel: 0 },
+      band: { harmony: 50 },
+      activeStoryFlags: ['side_active'],
+      questCooldowns: [],
+      activeQuests: [
+        {
+          id: 'q_fail',
+          deadline: 5,
+          clearFlagsOnFail: ['side_active'],
+          failurePenalty: penalty
+        }
+      ]
+    })
+
+    await t.test('applies social.loyalty penalty', () => {
+      const next = QuestLifecycle.checkDeadlines(
+        makeExpiredState({ social: { loyalty: -15 } })
+      )
+      assert.equal(next.social.loyalty, 35)
+    })
+
+    await t.test('pushes failure flags and clears clearFlagsOnFail', () => {
+      const next = QuestLifecycle.checkDeadlines(
+        makeExpiredState({ flags: ['side_failed'] })
+      )
+      assert.ok(next.activeStoryFlags.includes('side_failed'))
+      assert.ok(!next.activeStoryFlags.includes('side_active'))
+    })
+
+    await t.test('records cooldown entries keyed by quest id', () => {
+      const next = QuestLifecycle.checkDeadlines(
+        makeExpiredState({ cooldowns: [{ id: 'retry', days: 7 }] })
+      )
+      const cd = next.questCooldowns.find(c => c.questId === 'q_fail')
+      assert.ok(cd)
+      assert.equal(cd.expiresOnDay, 17)
+    })
+
+    await t.test(
+      'ego_management failure applies structured penalty without game over',
+      () => {
+        const state = {
+          player: { day: 10 },
+          social: { loyalty: 50, controversyLevel: 0 },
+          band: { harmony: 50 },
+          activeStoryFlags: [],
+          questCooldowns: [],
+          activeQuests: [
+            {
+              id: 'quest_ego_management',
+              deadline: 5,
+              failurePenalty: QUEST_REGISTRY.quest_ego_management.failurePenalty
+            }
+          ]
+        }
+        const next = QuestLifecycle.checkDeadlines(state)
+        assert.equal(next.gameOver, undefined)
+        assert.equal(next.band.harmony, 25)
+        assert.equal(next.social.loyalty, 35)
+        assert.equal(next.social.controversyLevel, 10)
+        assert.ok(next.activeStoryFlags.includes('ego_crisis_failed'))
+      }
+    )
   })
 })

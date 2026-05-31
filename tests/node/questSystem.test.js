@@ -33,6 +33,24 @@ describe('Quest System Registry Validation', () => {
     }
   })
 
+  it('should ensure every quest declares kind and repeatPolicy', () => {
+    for (const [id, quest] of Object.entries(QUEST_REGISTRY)) {
+      assert.ok(quest.kind, `Quest ${id} is missing kind`)
+      assert.ok(quest.repeatPolicy, `Quest ${id} is missing repeatPolicy`)
+    }
+  })
+
+  it('should ensure cooldown-policy quests define cooldownDays > 0', () => {
+    for (const [id, quest] of Object.entries(QUEST_REGISTRY)) {
+      if (quest.repeatPolicy === 'cooldown') {
+        assert.ok(
+          typeof quest.cooldownDays === 'number' && quest.cooldownDays > 0,
+          `Quest ${id} uses repeatPolicy 'cooldown' but has no positive cooldownDays`
+        )
+      }
+    }
+  })
+
   it('should ensure repeatPolicy never quests do not restart', () => {
     for (const [id, quest] of Object.entries(QUEST_REGISTRY)) {
       if (quest.repeatPolicy !== 'never') continue
