@@ -170,8 +170,8 @@ function MerchPressCostsAndGains({
 }: MerchPressCostsAndGainsProps) {
   return (
     <div className='grid grid-cols-2 gap-4'>
-      <div className='bg-void-black border border-blood-red-20 p-3 flex flex-col items-center justify-center relative overflow-hidden group'>
-        <div className='absolute inset-0 bg-blood-red-20 opacity-0 group-hover:opacity-100 transition-opacity' />
+      <div className='bg-void-black border border-error-red/20 p-3 flex flex-col items-center justify-center relative overflow-hidden group'>
+        <div className='absolute inset-0 bg-error-red/20 opacity-0 group-hover:opacity-100 transition-opacity' />
         <span className='text-xs text-error-red mb-1 uppercase tracking-widest'>
           {t('ui:merch_press.cost_label', { defaultValue: 'COST' })}
         </span>
@@ -204,7 +204,7 @@ type MerchPressRiskWarningProps = {
 
 function MerchPressRiskWarning({ config, t }: MerchPressRiskWarningProps) {
   return (
-    <div className='bg-blood-red-20 border border-blood-red-20 p-4 mt-4'>
+    <div className='bg-error-red/20 border border-error-red/20 p-4 mt-4'>
       <p className='text-error-red text-sm text-center font-bold'>
         {t('ui:merch_press.risk_warning', {
           risk: config.failChance * 100,

@@ -63,7 +63,7 @@ export const DarkWebLeakModal = ({
           </div>
         </div>
         {hasLeakedToday && (
-          <p className='text-error-red text-sm font-bold border border-blood-red p-1 text-center'>
+          <p className='text-error-red text-sm font-bold border border-error-red p-1 text-center'>
             {t('ui:dark_web_leak.leaked_today', {
               defaultValue: 'Data leaked for today.'
             })}
