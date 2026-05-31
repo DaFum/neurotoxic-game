@@ -193,7 +193,8 @@ describe('PostGig Leaderboard Submission', () => {
     reputationByRegion: {},
     assets: [],
     setlist: [],
-    addQuest: vi.fn()
+    addQuest: vi.fn(),
+    applyQuestEvent: vi.fn()
   })
 
   beforeEach(() => {

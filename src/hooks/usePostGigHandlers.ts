@@ -87,6 +87,9 @@ export interface UsePostGigHandlersProps {
       typeof import('../context/actionCreators').createAddQuestAction
     >[0]
   ) => void
+  applyQuestEvent: (
+    event: import('../utils/questProgress').QuestProgressEvent
+  ) => void
   setPhase: (phase: 'REPORT' | 'SOCIAL' | 'DEALS' | 'COMPLETE') => void
   setPostResult: (result: PostResult) => void
   setBrandOffers: (offers: BrandDeal[]) => void
@@ -111,6 +114,7 @@ export const usePostGigHandlers = ({
   addToast,
   changeScene,
   addQuest,
+  applyQuestEvent,
   setPhase,
   setPostResult,
   setBrandOffers,
@@ -196,6 +200,11 @@ export const usePostGigHandlers = ({
 
         updateSocial(updatedSocial)
 
+        const followersGained = finiteNumberOr(finalResult.followers, 0)
+        if (followersGained > 0) {
+          applyQuestEvent({ type: 'followers_gained', amount: followersGained })
+        }
+
         const playerUpdated = { ...player, money: nextMoney }
         // Generate brand offers with UPDATED state (Post-Social-Update)
         const updatedGameState = {
@@ -228,6 +237,7 @@ export const usePostGigHandlers = ({
       updateBand,
       updatePlayer,
       unlockTrait,
+      applyQuestEvent,
       addToast,
       currentGig,
       t,
@@ -256,6 +266,8 @@ export const usePostGigHandlers = ({
 
         const socialUpdateFactory = getAcceptDealSocialUpdateFactory(deal)
         updateSocial(socialUpdateFactory)
+
+        applyQuestEvent({ type: 'brand_deal_completed', dealId: deal.id })
 
         const moneyText =
           appliedMoneyDelta === 0
@@ -290,6 +302,7 @@ export const usePostGigHandlers = ({
       updatePlayer,
       updateBand,
       updateSocial,
+      applyQuestEvent,
       addToast,
       t,
       setBrandOffers,
@@ -393,6 +406,11 @@ export const usePostGigHandlers = ({
         lastGigNodeId: player.currentNodeId
       })
 
+      const fameGain = stats.newFame - finiteNumberOr(player.fame, 0)
+      if (fameGain > 0) {
+        applyQuestEvent({ type: 'fame_gained', amount: fameGain })
+      }
+
       if (band.inventory?.neurotoxicPedal) {
         updateBand((prevBand: BandState) => {
           const currentHarmony = prevBand.harmony ?? 100
@@ -480,6 +498,7 @@ export const usePostGigHandlers = ({
     changeScene,
     activeStoryFlags,
     addQuest,
+    applyQuestEvent,
     setlist,
     band,
     t

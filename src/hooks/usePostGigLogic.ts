@@ -30,7 +30,8 @@ export const usePostGigLogic = () => {
     addToast,
     changeScene,
     unlockTrait,
-    addQuest
+    addQuest,
+    applyQuestEvent
   } = useGameActions()
 
   // 1. Core State
@@ -89,6 +90,7 @@ export const usePostGigLogic = () => {
     addToast,
     changeScene,
     addQuest,
+    applyQuestEvent,
     setPhase,
     setPostResult,
     setBrandOffers,

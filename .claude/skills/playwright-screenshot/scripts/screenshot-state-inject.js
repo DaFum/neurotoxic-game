@@ -185,6 +185,8 @@ export const BASE_STATE = {
   eventCooldowns: [],
   venueBlacklist: [],
   activeQuests: [],
+  questCooldowns: [],
+  completedQuestIds: [],
   reputationByRegion: {},
   npcs: {},
   unlocks: [],

@@ -144,6 +144,7 @@ const mockAddToast = vi.fn()
 const mockSaveGame = vi.fn()
 const mockUnlockTrait = vi.fn()
 const mockAddQuest = vi.fn()
+const mockApplyQuestEvent = vi.fn()
 
 // Shared base state factory
 const createBaseState = (overrides = {}) => ({
@@ -198,6 +199,7 @@ const createBaseState = (overrides = {}) => ({
   reputationByRegion: { berlin: 50 },
   setlist: [],
   addQuest: mockAddQuest,
+  applyQuestEvent: mockApplyQuestEvent,
   ...overrides
 })
 

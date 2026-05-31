@@ -107,6 +107,7 @@ describe('usePostGigLogic', () => {
   const mockSaveGame = vi.fn()
   const mockUnlockTrait = vi.fn()
   const mockAddQuest = vi.fn()
+  const mockApplyQuestEvent = vi.fn()
 
   const getBaseState = (overrides = {}) => ({
     currentGig: { songId: 'test_song', venue: 'Test Venue', payout: 500 },
@@ -157,6 +158,7 @@ describe('usePostGigLogic', () => {
     reputationByRegion: { berlin: 50 },
     setlist: [],
     addQuest: mockAddQuest,
+    applyQuestEvent: mockApplyQuestEvent,
     ...overrides
   })
 

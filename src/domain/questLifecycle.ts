@@ -7,6 +7,7 @@ import {
   clampPlayerMoney,
   calculateFameLevel,
   clampControversyLevel,
+  clampLoyalty,
   finiteNumberOr,
   isLooseRecord
 } from '../utils/gameStateUtils'
@@ -255,6 +256,10 @@ export const QuestLifecycle = {
     let hasExpired = false
     const newActiveQuests: QuestState[] = []
     const newToasts: ToastPayload[] = []
+    const flagsToAdd: string[] = []
+    const flagsToRemove = new Set<string>()
+    const cooldownsToAdd: GameState['questCooldowns'] = []
+    const currentDay = finiteNumberOr(nextState.player?.day, 0)
 
     for (let i = 0; i < nextState.activeQuests.length; i++) {
       const quest = nextState.activeQuests[i]
@@ -288,6 +293,18 @@ export const QuestLifecycle = {
               (nextState.social.controversyLevel ?? 0) + validPenalty
             )
           }
+          if (
+            socialPenalty &&
+            Object.hasOwn(socialPenalty, 'loyalty') &&
+            socialPenalty.loyalty != null
+          ) {
+            nextState.social = { ...nextState.social }
+            const loyaltyDelta = Number(socialPenalty.loyalty)
+            nextState.social.loyalty = clampLoyalty(
+              (nextState.social.loyalty ?? 0) +
+                (Number.isFinite(loyaltyDelta) ? loyaltyDelta : 0)
+            )
+          }
           const bandPenalty =
             Object.hasOwn(penalty, 'band') && isLooseRecord(penalty.band)
               ? Object.assign(Object.create(null), penalty.band)
@@ -305,7 +322,39 @@ export const QuestLifecycle = {
                 (Number.isFinite(harmonyDelta) ? harmonyDelta : 0)
             )
           }
+
+          // Failure story flags (existing schema: failurePenalty.flags).
+          if (Array.isArray(penalty.flags)) {
+            for (const flag of penalty.flags) {
+              if (typeof flag === 'string' && flag.length > 0) {
+                flagsToAdd.push(flag)
+              }
+            }
+          }
+
+          // Re-add cooldown: gate re-adding this quest by quest id so the
+          // repeatPolicy:'cooldown' check honors a post-failure window.
+          if (Array.isArray(penalty.cooldowns)) {
+            for (const cd of penalty.cooldowns) {
+              if (!isLooseRecord(cd)) continue
+              const days = finiteNumberOr(cd.days, Number.NaN)
+              if (Number.isFinite(days)) {
+                cooldownsToAdd.push({
+                  questId: quest.id,
+                  expiresOnDay: currentDay + days
+                })
+              }
+            }
+          }
         }
+
+        // Clear story flags that should not persist past failure.
+        if (Array.isArray(quest.clearFlagsOnFail)) {
+          for (const flag of quest.clearFlagsOnFail) {
+            if (typeof flag === 'string') flagsToRemove.add(flag)
+          }
+        }
+
         newToasts.push({
           id: `${quest.id}-fail`,
           messageKey: 'ui:toast.quest_failed',
@@ -322,6 +371,23 @@ export const QuestLifecycle = {
     nextState.activeQuests = newActiveQuests
     if (newToasts.length > 0) {
       nextState.toasts = [...(nextState.toasts ?? []), ...newToasts]
+    }
+
+    if (flagsToAdd.length > 0 || flagsToRemove.size > 0) {
+      const baseFlags = (nextState.activeStoryFlags ?? []).filter(
+        f => !flagsToRemove.has(f)
+      )
+      for (const flag of flagsToAdd) {
+        if (!baseFlags.includes(flag)) baseFlags.push(flag)
+      }
+      nextState.activeStoryFlags = baseFlags
+    }
+
+    if (cooldownsToAdd.length > 0) {
+      nextState.questCooldowns = [
+        ...(nextState.questCooldowns ?? []),
+        ...cooldownsToAdd
+      ]
     }
 
     return nextState

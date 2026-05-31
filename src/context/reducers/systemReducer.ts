@@ -1415,6 +1415,18 @@ const sanitizeActiveQuests = (value: unknown): GameState['activeQuests'] => {
   })
 }
 
+const sanitizeQuestCooldowns = (
+  value: unknown
+): GameState['questCooldowns'] => {
+  if (!Array.isArray(value)) return []
+  return value.flatMap(entry => {
+    if (!isLooseRecord(entry) || typeof entry.questId !== 'string') return []
+    const expiresOnDay = finiteOptionalNumber(entry.expiresOnDay)
+    if (expiresOnDay === undefined) return []
+    return [{ questId: entry.questId, expiresOnDay }]
+  })
+}
+
 /**
  * Handles game load with migration and validation
  * @param {Object} state - Current state
@@ -1476,6 +1488,8 @@ export const handleLoadGame = (
     ),
     venueBlacklist: sanitizeStringArray(loadedState.venueBlacklist),
     activeQuests: sanitizeActiveQuests(loadedState.activeQuests),
+    questCooldowns: sanitizeQuestCooldowns(loadedState.questCooldowns),
+    completedQuestIds: sanitizeStringArray(loadedState.completedQuestIds),
     npcs: sanitizeNpcs(loadedState.npcs),
     gigModifiers: sanitizeGigModifiers(loadedState.gigModifiers),
     currentScene: GAME_PHASES.OVERWORLD,
@@ -1872,12 +1886,20 @@ export const handleAdvanceDay = (
 
   const newTrend = generateDailyTrend(rng)
 
+  // Expire quest cooldowns whose window has elapsed (mirrors the deadline check
+  // pattern). Entries are kept while expiresOnDay is still in the future.
+  const currentDay = finiteNumberOr(nextPlayer.day, 0)
+  const activeQuestCooldowns = (state.questCooldowns ?? []).filter(
+    cd => cd.expiresOnDay > currentDay
+  )
+
   let nextState: GameState = {
     ...state,
     player: nextPlayer,
     band: finalBandState,
     social: { ...social, trend: newTrend },
     eventCooldowns: [],
+    questCooldowns: activeQuestCooldowns,
     toasts: traitResult.toasts
   }
 
