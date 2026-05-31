@@ -131,6 +131,78 @@ export const QUEST_EVENTS = [
     ]
   },
   {
+    id: 'quest_trigger_tourbus_inspection',
+    category: 'transport',
+    title: 'events:quest_trigger_tourbus_inspection.title',
+    description: 'events:quest_trigger_tourbus_inspection.desc',
+    trigger: 'random',
+    chance: 0.07,
+    condition: (state: GameState) =>
+      (!state.activeQuests || state.activeQuests.length === 0) &&
+      Array.isArray(state.assets) &&
+      state.assets.some(a => a.kind === 'tourbus_chassis'),
+    options: [
+      {
+        label: 'events:quest_trigger_tourbus_inspection.opt1.label',
+        effect: { type: 'quest', quest: { id: 'quest_tourbus_inspection' } },
+        outcomeText: 'events:quest_trigger_tourbus_inspection.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_tourbus_inspection.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:quest_trigger_tourbus_inspection.opt2.outcome'
+      }
+    ]
+  },
+  {
+    id: 'quest_trigger_studio_demo',
+    category: 'special',
+    title: 'events:quest_trigger_studio_demo.title',
+    description: 'events:quest_trigger_studio_demo.desc',
+    trigger: 'random',
+    chance: 0.06,
+    condition: (state: GameState) =>
+      (!state.activeQuests || state.activeQuests.length === 0) &&
+      Array.isArray(state.assets) &&
+      state.assets.some(a => a.kind === 'studio_chassis'),
+    options: [
+      {
+        label: 'events:quest_trigger_studio_demo.opt1.label',
+        effect: { type: 'quest', quest: { id: 'quest_studio_demo' } },
+        outcomeText: 'events:quest_trigger_studio_demo.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_studio_demo.opt2.label',
+        effect: { type: 'stat', stat: 'fame', value: 3 },
+        outcomeText: 'events:quest_trigger_studio_demo.opt2.outcome'
+      }
+    ]
+  },
+  {
+    id: 'quest_trigger_merch_rush',
+    category: 'financial',
+    title: 'events:quest_trigger_merch_rush.title',
+    description: 'events:quest_trigger_merch_rush.desc',
+    trigger: 'random',
+    chance: 0.07,
+    condition: (state: GameState) =>
+      (!state.activeQuests || state.activeQuests.length === 0) &&
+      Array.isArray(state.assets) &&
+      state.assets.some(a => a.kind === 'merch_workshop_chassis'),
+    options: [
+      {
+        label: 'events:quest_trigger_merch_rush.opt1.label',
+        effect: { type: 'quest', quest: { id: 'quest_merch_rush' } },
+        outcomeText: 'events:quest_trigger_merch_rush.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_merch_rush.opt2.label',
+        effect: { type: 'stat', stat: 'money', value: 50 },
+        outcomeText: 'events:quest_trigger_merch_rush.opt2.outcome'
+      }
+    ]
+  },
+  {
     id: 'quest_trigger_venue_residency',
     category: 'gig',
     title: 'events:quest_trigger_venue_residency.title',

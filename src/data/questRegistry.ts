@@ -122,6 +122,53 @@ export const QUEST_REGISTRY = {
       band: { harmony: -10 }
     }
   },
+  quest_tourbus_inspection: {
+    kind: 'side',
+    label: 'ui:quests.tourbusInspection.title',
+    description: 'ui:quests.tourbusInspection.description',
+    deadlineOffset: 7,
+    repeatPolicy: 'cooldown',
+    progressSource: 'travel_completed',
+    required: 2,
+    cooldownDays: 14,
+    rewardType: 'money',
+    rewardData: { money: 300 },
+    moneyReward: 300,
+    failurePenalty: {
+      band: { harmony: -5 }
+    }
+  },
+  quest_studio_demo: {
+    kind: 'side',
+    label: 'ui:quests.studioDemo.title',
+    description: 'ui:quests.studioDemo.description',
+    deadlineOffset: 14,
+    repeatPolicy: 'cooldown',
+    progressSource: 'good_gig',
+    required: 2,
+    cooldownDays: 21,
+    rewardType: 'fame',
+    rewardData: { fame: 250 },
+    failurePenalty: {
+      social: { controversyLevel: 3 }
+    }
+  },
+  quest_merch_rush: {
+    kind: 'side',
+    label: 'ui:quests.merchRush.title',
+    description: 'ui:quests.merchRush.description',
+    deadlineOffset: 6,
+    repeatPolicy: 'cooldown',
+    progressSource: 'gig_completed',
+    required: 3,
+    cooldownDays: 10,
+    rewardType: 'money',
+    rewardData: { money: 400 },
+    moneyReward: 400,
+    failurePenalty: {
+      social: { loyalty: -3 }
+    }
+  },
   quest_venue_residency: {
     kind: 'repeatable',
     label: 'ui:quests.venueResidency.title',
