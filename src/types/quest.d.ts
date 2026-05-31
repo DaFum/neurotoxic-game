@@ -37,6 +37,7 @@ export interface QuestState extends UnknownRecord {
   failurePenalty?: UnknownRecord
 
   kind?: QuestKind
+  status?: QuestStatus
   repeatPolicy?: QuestRepeatPolicy
   progressSource?: QuestProgressSource
   startFlags?: string[]
@@ -44,4 +45,14 @@ export interface QuestState extends UnknownRecord {
   failureFlags?: string[]
   clearFlagsOnComplete?: string[]
   clearFlagsOnFail?: string[]
+  cooldownDays?: number
+}
+
+/**
+ * Tracks a `repeatPolicy: 'cooldown'` quest that may not be re-added until
+ * the in-game day reaches `expiresOnDay`.
+ */
+export interface QuestCooldown {
+  questId: string
+  expiresOnDay: number
 }

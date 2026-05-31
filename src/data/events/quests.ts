@@ -16,17 +16,8 @@ export const QUEST_EVENTS = [
         label: 'events:quest_trigger_pick_of_destiny.opt1.label',
         effect: {
           type: 'quest',
-          quest: {
-            id: 'quest_pick_of_destiny',
-            label: 'events:quest_pick_of_destiny.label',
-            description: 'events:quest_pick_of_destiny.desc',
-            deadlineOffset: 15,
-            progress: 0,
-            required: 3,
-            rewardType: 'item',
-            rewardData: { item: 'lucky_pick' }, // We'll add this item later or use a generic one
-            moneyReward: 200
-          }
+          // Config lives in QUEST_REGISTRY; addQuest merges defaults by id.
+          quest: { id: 'quest_pick_of_destiny' }
         },
         outcomeText: 'events:quest_trigger_pick_of_destiny.opt1.outcome'
       },
@@ -52,17 +43,7 @@ export const QUEST_EVENTS = [
         label: 'events:quest_trigger_viral_dance.opt1.label',
         effect: {
           type: 'quest',
-          quest: {
-            id: 'quest_viral_dance',
-            label: 'events:quest_viral_dance.label',
-            description: 'events:quest_viral_dance.desc',
-            deadlineOffset: 5,
-            progress: 0,
-            required: 500,
-            rewardType: 'fame',
-            rewardData: { fame: 500 },
-            moneyReward: 0
-          }
+          quest: { id: 'quest_viral_dance' }
         },
         outcomeText: 'events:quest_trigger_viral_dance.opt1.outcome'
       },
@@ -87,17 +68,7 @@ export const QUEST_EVENTS = [
         label: 'events:quest_trigger_sponsor_demand.opt1.label',
         effect: {
           type: 'quest',
-          quest: {
-            id: 'quest_sponsor_demand',
-            label: 'events:quest_sponsor_demand.label',
-            description: 'events:quest_sponsor_demand.desc',
-            deadlineOffset: 7,
-            progress: 0,
-            required: 2,
-            rewardType: 'item',
-            rewardData: { item: 'energy_drink' },
-            moneyReward: 500
-          }
+          quest: { id: 'quest_sponsor_demand' }
         },
         outcomeText: 'events:quest_trigger_sponsor_demand.opt1.outcome'
       },
@@ -123,17 +94,7 @@ export const QUEST_EVENTS = [
         label: 'events:quest_trigger_harmony_project.opt1.label',
         effect: {
           type: 'quest',
-          quest: {
-            id: 'quest_harmony_project',
-            label: 'events:quest_harmony_project.label',
-            description: 'events:quest_harmony_project.desc',
-            deadlineOffset: 4,
-            progress: 0,
-            required: 1,
-            rewardType: 'harmony',
-            rewardData: { harmony: 20 },
-            moneyReward: 0
-          }
+          quest: { id: 'quest_harmony_project' }
         },
         outcomeText: 'events:quest_trigger_harmony_project.opt1.outcome'
       },
@@ -158,17 +119,7 @@ export const QUEST_EVENTS = [
         label: 'events:quest_trigger_local_legend.opt1.label',
         effect: {
           type: 'quest',
-          quest: {
-            id: 'quest_local_legend',
-            label: 'events:quest_local_legend.label',
-            description: 'events:quest_local_legend.desc',
-            deadlineOffset: 10,
-            progress: 0,
-            required: 500,
-            rewardType: 'skill_point',
-            rewardData: { memberIndex: 0 }, // We'll distribute to random member in reducer
-            moneyReward: 0
-          }
+          quest: { id: 'quest_local_legend' }
         },
         outcomeText: 'events:quest_trigger_local_legend.opt1.outcome'
       },

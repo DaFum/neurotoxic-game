@@ -20,12 +20,14 @@ import {
   QUEST_APOLOGY_TOUR,
   QUEST_EGO_MANAGEMENT
 } from '../data/questsConstants'
+import { getQuestDefinition } from '../data/questRegistry'
 import {
   clampPlayerMoney,
   clampPlayerFame,
   clampBandHarmony,
   calculateFameLevel,
   calculateFameGain,
+  finiteNumberOr,
   BALANCE_CONSTANTS
 } from '../utils/gameStateUtils'
 import { logger } from '../utils/logger'
@@ -404,39 +406,26 @@ export const usePostGigHandlers = ({
         })
       }
 
+      // Quest config (label/deadline/penalty) is owned by QUEST_REGISTRY.
+      // We build the dispatch payload from the registry definition so there is
+      // no inline duplication; the reducer also re-merges defaults defensively.
       if (activeStoryFlags?.includes('cancel_quest_active')) {
+        const def = getQuestDefinition(QUEST_APOLOGY_TOUR)
         addQuest({
+          ...def,
           id: QUEST_APOLOGY_TOUR,
-          label: 'ui:quests.postgig.apologyTour.title',
-          description: 'ui:quests.postgig.apologyTour.description',
-          deadline: player.day + 14,
-          progress: 0,
-          required: 3,
-          rewardFlag: 'apology_tour_complete',
-          failurePenalty: {
-            social: { controversyLevel: 25 },
-            band: { harmony: -20 },
-            flags: ['apology_tour_failed'],
-            cooldowns: [{ id: 'apology_tour_retry', days: 14 }]
-          }
+          deadline: player.day + finiteNumberOr(def?.deadlineOffset, 0),
+          progress: 0
         })
       }
 
       if (activeStoryFlags?.includes('breakup_quest_active')) {
+        const def = getQuestDefinition(QUEST_EGO_MANAGEMENT)
         addQuest({
+          ...def,
           id: QUEST_EGO_MANAGEMENT,
-          label: 'ui:quests.postgig.saveTheBand.title',
-          description: 'ui:quests.postgig.saveTheBand.description',
-          deadline: player.day + 5,
-          progress: 0,
-          required: 1,
-          rewardFlag: 'ego_crisis_resolved',
-          failurePenalty: {
-            band: { harmony: -25 },
-            social: { controversyLevel: 10, loyalty: -15 },
-            flags: ['ego_crisis_failed'],
-            cooldowns: [{ id: 'ego_management_retry', days: 10 }]
-          }
+          deadline: player.day + finiteNumberOr(def?.deadlineOffset, 0),
+          progress: 0
         })
       }
 

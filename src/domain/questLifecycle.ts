@@ -7,15 +7,43 @@ import {
   clampPlayerMoney,
   calculateFameLevel,
   clampControversyLevel,
+  finiteNumberOr,
   isLooseRecord
 } from '../utils/gameStateUtils'
 import { QUEST_PROVE_YOURSELF } from '../data/questsConstants'
+import { getQuestDefinition } from '../data/questRegistry'
 import { hasActiveQuest } from '../utils/questUtils'
 
 export const QuestLifecycle = {
   addQuest: (state: GameState, quest: QuestState): GameState => {
     if (hasActiveQuest(state.activeQuests, quest.id)) return state
-    return { ...state, activeQuests: [...(state.activeQuests || []), quest] }
+
+    // Merge static registry defaults under the provided payload so callers can
+    // dispatch `{ id }` and inherit label/deadline/penalty config, while inline
+    // overrides still win.
+    const definition = getQuestDefinition(quest.id)
+    const merged: QuestState = definition
+      ? { ...(definition as Partial<QuestState>), ...quest }
+      : { ...quest }
+
+    // Compute an absolute deadline from a relative offset when one was not
+    // already supplied (event-triggered quests pre-compute it in eventResolver).
+    if (merged.deadline == null && merged.deadlineOffset != null) {
+      const offset = finiteNumberOr(merged.deadlineOffset, Number.NaN)
+      if (Number.isFinite(offset)) {
+        const currentDay = finiteNumberOr(state.player?.day, 0)
+        merged.deadline = currentDay + offset
+      }
+    }
+    delete merged.deadlineOffset
+
+    // Registry-managed quests start at progress 0; ad-hoc quests are left as-is.
+    if (definition && merged.progress == null) merged.progress = 0
+
+    return {
+      ...state,
+      activeQuests: [...(state.activeQuests || []), merged]
+    }
   },
 
   completeQuest: (

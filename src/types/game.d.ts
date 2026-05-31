@@ -96,6 +96,8 @@ export interface GameState {
   eventCooldowns: string[]
   venueBlacklist: string[]
   activeQuests: QuestState[]
+  questCooldowns: QuestCooldown[]
+  completedQuestIds: string[]
   reputationByRegion: Record<string, number>
   settings: GameSettings
   npcs: Record<string, CharacterProfile>

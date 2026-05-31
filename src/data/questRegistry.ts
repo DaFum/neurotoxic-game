@@ -3,6 +3,8 @@ import { QuestState } from '../types/quest'
 export const QUEST_REGISTRY = {
   quest_prove_yourself: {
     kind: 'story',
+    label: 'ui:quests.proveYourself.title',
+    deadlineOffset: 20,
     repeatPolicy: 'never',
     progressSource: 'small_venue_good_gig',
     required: 4,
@@ -18,6 +20,9 @@ export const QUEST_REGISTRY = {
   },
   quest_apology_tour: {
     kind: 'story',
+    label: 'ui:quests.postgig.apologyTour.title',
+    description: 'ui:quests.postgig.apologyTour.description',
+    deadlineOffset: 14,
     repeatPolicy: 'never',
     progressSource: 'small_venue_good_gig',
     required: 3,
@@ -33,9 +38,13 @@ export const QUEST_REGISTRY = {
   },
   quest_ego_management: {
     kind: 'story',
+    label: 'ui:quests.postgig.saveTheBand.title',
+    description: 'ui:quests.postgig.saveTheBand.description',
+    deadlineOffset: 5,
     repeatPolicy: 'never',
     progressSource: 'harmony_recovered',
     required: 1,
+    cooldownDays: 10,
     rewardFlag: 'ego_crisis_resolved',
     failurePenalty: {
       band: { harmony: -25 },
@@ -48,6 +57,9 @@ export const QUEST_REGISTRY = {
   },
   quest_pick_of_destiny: {
     kind: 'side',
+    label: 'events:quest_pick_of_destiny.label',
+    description: 'events:quest_pick_of_destiny.desc',
+    deadlineOffset: 15,
     repeatPolicy: 'never',
     progressSource: 'good_gig',
     required: 3,
@@ -60,9 +72,13 @@ export const QUEST_REGISTRY = {
   },
   quest_viral_dance: {
     kind: 'repeatable',
+    label: 'events:quest_viral_dance.label',
+    description: 'events:quest_viral_dance.desc',
+    deadlineOffset: 5,
     repeatPolicy: 'cooldown',
     progressSource: 'followers_gained',
     required: 500,
+    cooldownDays: 7,
     rewardType: 'fame',
     rewardData: { fame: 500 },
     moneyReward: 0,
@@ -73,9 +89,13 @@ export const QUEST_REGISTRY = {
   },
   quest_sponsor_demand: {
     kind: 'repeatable',
+    label: 'events:quest_sponsor_demand.label',
+    description: 'events:quest_sponsor_demand.desc',
+    deadlineOffset: 7,
     repeatPolicy: 'cooldown',
     progressSource: 'brand_deal_completed',
     required: 2,
+    cooldownDays: 15,
     rewardType: 'item',
     rewardData: { item: 'energy_drink' },
     moneyReward: 500,
@@ -86,6 +106,9 @@ export const QUEST_REGISTRY = {
   },
   quest_harmony_project: {
     kind: 'side',
+    label: 'events:quest_harmony_project.label',
+    description: 'events:quest_harmony_project.desc',
+    deadlineOffset: 4,
     repeatPolicy: 'never',
     progressSource: 'harmony_recovered',
     required: 1,
@@ -98,6 +121,9 @@ export const QUEST_REGISTRY = {
   },
   quest_local_legend: {
     kind: 'repeatable',
+    label: 'events:quest_local_legend.label',
+    description: 'events:quest_local_legend.desc',
+    deadlineOffset: 10,
     repeatPolicy: 'perRegion',
     progressSource: 'small_venue_good_gig',
     required: 2,
@@ -109,3 +135,20 @@ export const QUEST_REGISTRY = {
     }
   }
 } as const satisfies Record<string, Partial<QuestState>>
+
+/**
+ * Static configuration shape for a registry quest entry. Mirrors the subset of
+ * `QuestState` that quests declare statically; runtime-only fields such as the
+ * computed `deadline` and live `progress` are layered on by `addQuest`.
+ */
+export type QuestDefinition =
+  (typeof QUEST_REGISTRY)[keyof typeof QUEST_REGISTRY]
+
+/**
+ * Looks up a quest's static definition by id. Returns `undefined` for unknown
+ * ids so callers can fall back to inline payloads.
+ */
+export const getQuestDefinition = (
+  questId: string
+): QuestDefinition | undefined =>
+  QUEST_REGISTRY[questId as keyof typeof QUEST_REGISTRY]
