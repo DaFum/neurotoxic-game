@@ -702,14 +702,6 @@
 }
 
 /* ── NEW: Zone regions ── */
-.zones-svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 0;
-}
 /* ── NEW: Node unlock ── */
 
 /* ── NEW: Enhanced glitch types ── */
@@ -1044,30 +1036,6 @@
   display: inline-block;
   margin-right: 4px;
   flex-shrink: 0;
-}
-/* ── NEW: Travel path ── */
-.travel-path {
-  stroke: var(--color-warning-yellow);
-  stroke-width: 2.5;
-  fill: none;
-  opacity: 0.85;
-}
-@keyframes path-draw {
-  from {
-    stroke-dashoffset: var(--path-len, 300);
-  }
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-/* ── NEW: Ambient particles ── */
-.particles-canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 1;
 }
 
 @media (prefers-reduced-motion: reduce) {

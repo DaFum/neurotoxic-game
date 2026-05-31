@@ -51,7 +51,7 @@ function HeatIndicator({
     <div className='mt-2 w-48'>
       <div className='flex justify-between items-center mb-1'>
         <span
-          className={`uppercase text-xs ${isOverheat ? 'text-blood-red animate-pulse font-bold' : 'text-ash-gray'}`}
+          className={`uppercase text-xs ${isOverheat ? 'text-error-red animate-pulse font-bold' : 'text-ash-gray'}`}
         >
           {isOverheat
             ? t('ui:minigames.amp.hud.overheat', {
@@ -60,14 +60,14 @@ function HeatIndicator({
             : t('ui:minigames.amp.hud.heat', { defaultValue: 'HEAT' })}
         </span>
         <span
-          className={`text-xs ${isOverheat ? 'text-blood-red' : 'text-warning-yellow'}`}
+          className={`text-xs ${isOverheat ? 'text-error-red' : 'text-warning-yellow'}`}
         >
           {Math.floor(heat)}%
         </span>
       </div>
       <div className='h-2 w-full bg-void-black border border-ash-gray overflow-hidden'>
         <div
-          className={`h-full transition-all duration-100 ${isOverheat ? 'bg-blood-red animate-pulse' : 'bg-warning-yellow'}`}
+          className={`h-full transition-all duration-100 ${isOverheat ? 'bg-error-red animate-pulse' : 'bg-warning-yellow'}`}
           style={{ width: `${heat}%` }}
         />
       </div>
@@ -83,15 +83,15 @@ function HijackIndicator({
   if (!isHijackActive && hijacksOverridden <= 0) return null
 
   return (
-    <div className='mt-2 w-48 border border-blood-red p-2 bg-void-black/50'>
+    <div className='mt-2 w-48 border border-error-red p-2 bg-void-black/50'>
       <div className='flex justify-between items-center'>
         <span
-          className={`uppercase text-xs font-bold ${isHijackActive ? 'text-blood-red animate-pulse' : 'text-ash-gray'}`}
+          className={`uppercase text-xs font-bold ${isHijackActive ? 'text-error-red animate-pulse' : 'text-ash-gray'}`}
         >
           {t('ui:minigames.amp.hud.hijack', { defaultValue: 'HIJACK:' })}
         </span>
         <span
-          className={`text-xs ${isHijackActive ? 'text-blood-red font-bold' : 'text-ash-gray'}`}
+          className={`text-xs ${isHijackActive ? 'text-error-red font-bold' : 'text-ash-gray'}`}
         >
           {isHijackActive
             ? t('ui:minigames.amp.hud.hijackActive', {
@@ -125,18 +125,18 @@ function InterferenceIndicator({
   return (
     <div className='mt-2 w-48'>
       <div className='flex justify-between items-center mb-1'>
-        <span className='uppercase text-xs text-blood-red animate-pulse font-bold'>
+        <span className='uppercase text-xs text-error-red animate-pulse font-bold'>
           {t('ui:minigames.amp.hud.interference', {
             defaultValue: 'INTERFERENCE'
           })}
         </span>
-        <span className='text-blood-red text-xs'>
+        <span className='text-error-red text-xs'>
           {Math.floor(interference)}%
         </span>
       </div>
-      <div className='h-2 w-full bg-void-black border border-blood-red overflow-hidden shadow-[0_0_5px_var(--color-blood-red)]'>
+      <div className='h-2 w-full bg-void-black border border-error-red overflow-hidden shadow-[0_0_5px_var(--color-error-red)]'>
         <div
-          className='h-full bg-blood-red transition-all duration-100'
+          className='h-full bg-error-red transition-all duration-100'
           style={{ width: `${interference}%` }}
         />
       </div>
@@ -158,7 +158,7 @@ export const AmpHUD = memo(function AmpHUD({
   const { t } = useTranslation(['ui'])
 
   return (
-    <div className='absolute top-4 left-4 z-(--z-stage-overlay) text-star-white font-mono pointer-events-none bg-void-black/80 p-4 border-2 border-toxic-green shadow-[0_0_15px_var(--color-toxic-green)]'>
+    <div className='absolute scale-75 sm:scale-100 origin-top-left top-4 left-4 z-(--z-stage-overlay) text-star-white font-mono pointer-events-none bg-void-black/80 p-4 border-2 border-toxic-green shadow-[0_0_15px_var(--color-toxic-green)]'>
       <h2 className='text-2xl font-bold text-toxic-green tracking-widest uppercase mb-2'>
         {t('ui:minigames.amp.title', { defaultValue: 'AMP CALIBRATION' })}
       </h2>
@@ -170,7 +170,7 @@ export const AmpHUD = memo(function AmpHUD({
           <span
             className={
               timeLeft < 5
-                ? 'text-blood-red animate-pulse font-bold'
+                ? 'text-error-red animate-pulse font-bold'
                 : 'text-toxic-green'
             }
           >

@@ -28,6 +28,7 @@ export const ForeclosureModal = ({ assetLabel, isOpen, onClose }: Props) => {
             })
           : t('assets:liability.foreclosureNotice')
       }
+      className='assets-modal-sheet max-w-lg'
       actions={[
         {
           label: t('ui:action_close', { defaultValue: 'Close' }),

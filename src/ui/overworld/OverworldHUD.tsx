@@ -99,19 +99,19 @@ const getMemberStatus = (m: Member): MemberStatus => {
 }
 
 const STATUS_DOT_COLOR = {
-  crit: 'var(--color-blood-red)',
+  crit: 'var(--color-error-red)',
   low: 'var(--color-warning-yellow)',
   ok: 'var(--color-toxic-green)'
 } as const satisfies Record<MemberStatus, string>
 
 const getMoodColor = (mood: number) => {
-  if (mood < 30) return 'var(--color-blood-red)'
+  if (mood < 30) return 'var(--color-error-red)'
   if (mood < 50) return 'var(--color-warning-yellow)'
   return 'var(--color-mood-pink)'
 }
 
 const getStaminaColor = (stamina: number) => {
-  if (stamina < 20) return 'var(--color-blood-red)'
+  if (stamina < 20) return 'var(--color-error-red)'
   if (stamina < 35) return 'var(--color-warning-yellow)'
   return 'var(--color-toxic-green)'
 }
@@ -307,7 +307,7 @@ export const OverworldHUD = React.memo(
                 value={vanFuel}
                 isLow={fuelLow}
                 icon='⛽'
-                lowColor='var(--color-blood-red)'
+                lowColor='var(--color-error-red)'
                 normalColor='var(--color-warning-yellow)'
                 notAvailableLabel={t('ui:overworld.notAvailable', {
                   defaultValue: 'N/A'
@@ -317,23 +317,14 @@ export const OverworldHUD = React.memo(
                 value={vanCondition}
                 isLow={condLow}
                 icon='🔧'
-                lowColor='var(--color-blood-red)'
+                lowColor='var(--color-error-red)'
                 normalColor='var(--color-condition-blue)'
                 notAvailableLabel={t('ui:overworld.notAvailable', {
                   defaultValue: 'N/A'
                 })}
               />
               {fuelLow && (
-                <div
-                  style={{
-                    fontSize: 8,
-                    color: 'var(--color-blood-red)',
-                    letterSpacing: '2px',
-                    textTransform: 'uppercase',
-                    marginTop: 2,
-                    animation: 'blink-conf .6s step-end infinite'
-                  }}
-                >
+                <div className='text-[8px] text-error-red uppercase mt-[2px] tracking-[2px] animate-[blink-conf_0.6s_step-end_infinite]'>
                   <span aria-hidden='true'>⚠ </span>
                   {t('ui:overworld.low_fuel', { defaultValue: 'LOW FUEL' })}
                 </div>
@@ -429,21 +420,13 @@ export const OverworldHUD = React.memo(
                       width: `${band.harmony ?? 0}%`,
                       background:
                         (band.harmony ?? 0) < 40
-                          ? 'var(--color-blood-red)'
+                          ? 'var(--color-error-red)'
                           : 'var(--color-toxic-green)'
                     }}
                   />
                 </div>
                 <span
-                  style={{
-                    fontSize: 10,
-                    color:
-                      (band.harmony ?? 0) < 40
-                        ? 'var(--color-blood-red)'
-                        : 'var(--color-toxic-green)',
-                    width: 28,
-                    textAlign: 'right'
-                  }}
+                  className={`text-[10px] w-7 text-right ${(band.harmony ?? 0) < 40 ? 'text-error-red' : 'text-toxic-green'}`}
                 >
                   {Math.round(band.harmony ?? 0)}%
                 </span>

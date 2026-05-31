@@ -26,7 +26,7 @@ export const RiskEventModal = ({ eventType, isOpen, onClose }: Props) => {
       isOpen={isOpen}
       onClose={onClose}
       title={t(`assets:risk.event.${eventType}`)}
-      className='max-w-lg'
+      className='assets-modal-sheet max-w-lg'
     >
       <div className='flex flex-col gap-3 p-4 font-mono text-sm'>
         <GeneratedImagePanel

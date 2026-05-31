@@ -168,7 +168,7 @@ export const ShopItem = React.memo(
                 variant={isPurchased ? 'owned' : 'primary'}
                 isLoading={isProcessingThis}
                 size='sm'
-                className='min-w-[80px]'
+                className='min-w-[80px] min-h-[44px]'
               >
                 {isPurchased
                   ? t('ui:hq.owned', { defaultValue: 'OWNED' })
@@ -182,7 +182,7 @@ export const ShopItem = React.memo(
               variant='primary'
               isLoading={isProcessingThis}
               size='sm'
-              className='min-w-[80px]'
+              className='min-w-[80px] min-h-[44px]'
             >
               {t('ui:hq.buy', { defaultValue: 'BUY' })}
             </GlitchButton>

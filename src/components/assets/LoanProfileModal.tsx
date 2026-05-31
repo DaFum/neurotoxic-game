@@ -75,7 +75,7 @@ export const LoanProfileModal = ({
       isOpen={isOpen}
       onClose={onClose}
       title={title ?? t('assets:mode.loan')}
-      className='max-w-2xl'
+      className='assets-modal-sheet max-w-2xl'
     >
       <div className='p-4'>
         <LoanProfileChoiceGrid

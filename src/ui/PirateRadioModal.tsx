@@ -113,12 +113,12 @@ export const PirateRadioModal = memo(
                   defaultValue: 'CONTROVERSY'
                 })}
                 value={`+${config.CONTROVERSY_GAIN}`}
-                valueClass='text-blood-red'
+                valueClass='text-error-red'
               />
             </div>
 
-            <div className='bg-void-black/50 border border-blood-red/30 p-4 space-y-2'>
-              <h3 className='text-blood-red font-bold mb-2'>
+            <div className='bg-void-black/50 border border-error-red/30 p-4 space-y-2'>
+              <h3 className='text-error-red font-bold mb-2'>
                 {t('ui:pirate_radio.required_offering', {
                   defaultValue: '[ REQUIRED OFFERING ]'
                 })}
@@ -131,7 +131,7 @@ export const PirateRadioModal = memo(
                 valueClass={
                   (player?.money ?? 0) >= config.COST
                     ? 'text-ash-gray'
-                    : 'text-blood-red'
+                    : 'text-error-red'
                 }
               />
               <StatRow
@@ -142,7 +142,7 @@ export const PirateRadioModal = memo(
                 valueClass={
                   (band?.harmony ?? 0) >= config.HARMONY_COST
                     ? 'text-ash-gray'
-                    : 'text-blood-red'
+                    : 'text-error-red'
                 }
               />
             </div>

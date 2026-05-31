@@ -128,7 +128,7 @@ export const VoidTraderTab = ({
                   variant='primary'
                   onClick={() => handleTrade(item)}
                   disabled={disabled}
-                  className='text-xs py-2 px-4 min-w-[120px]'
+                  className='text-xs min-h-[44px] py-2 px-4 min-w-[120px]'
                 >
                   {isProcessingThis
                     ? t('ui:loading', { defaultValue: 'PROCESSING...' })

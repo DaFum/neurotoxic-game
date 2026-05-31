@@ -42,7 +42,7 @@ export const BrandDealsTab = ({ social }: BrandDealsTabProps) => {
         return (
           <div
             key={deal.id}
-            className={`border-2 p-4 relative flex flex-col ${isActive ? 'border-toxic-green bg-toxic-green/10 shadow-[0_0_15px_var(--color-toxic-green)]' : 'border-ash-gray/30 bg-void-black/80'}`}
+            className={`border-2 p-4 relative flex flex-col ${isActive ? 'border-toxic-green bg-toxic-green/10 ' : 'border-ash-gray/30 bg-void-black/80'}`}
           >
             {isActive && (
               <div className='absolute top-0 right-0 bg-toxic-green text-void-black text-xs font-bold px-2 py-1 uppercase tracking-wider transform translate-x-2 -translate-y-2 border border-toxic-green'>
