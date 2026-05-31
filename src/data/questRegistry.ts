@@ -9,6 +9,7 @@ export const QUEST_REGISTRY = {
     progressSource: 'small_venue_good_gig',
     required: 4,
     rewardFlag: 'prove_yourself_complete',
+    followupQuestId: 'quest_back_from_pit',
     failurePenalty: {
       social: { controversyLevel: 10 },
       band: { harmony: -20 },
@@ -27,6 +28,7 @@ export const QUEST_REGISTRY = {
     progressSource: 'small_venue_good_gig',
     required: 3,
     rewardFlag: 'apology_tour_complete',
+    followupQuestId: 'quest_sincere_redemption',
     failurePenalty: {
       social: { controversyLevel: 25 },
       band: { harmony: -20 },
@@ -46,6 +48,7 @@ export const QUEST_REGISTRY = {
     required: 1,
     cooldownDays: 10,
     rewardFlag: 'ego_crisis_resolved',
+    followupQuestId: 'quest_band_pact',
     failurePenalty: {
       band: { harmony: -25 },
       social: { controversyLevel: 10, loyalty: -15 },
@@ -117,6 +120,54 @@ export const QUEST_REGISTRY = {
     moneyReward: 0,
     failurePenalty: {
       band: { harmony: -10 }
+    }
+  },
+  quest_back_from_pit: {
+    kind: 'story',
+    label: 'ui:quests.backFromPit.title',
+    description: 'ui:quests.backFromPit.description',
+    deadlineOffset: 14,
+    repeatPolicy: 'never',
+    progressSource: 'good_gig',
+    required: 3,
+    rewardFlag: 'back_from_pit_complete',
+    rewardType: 'fame',
+    rewardData: { fame: 300 },
+    failurePenalty: {
+      social: { controversyLevel: 5 },
+      flags: ['back_from_pit_failed']
+    }
+  },
+  quest_sincere_redemption: {
+    kind: 'story',
+    label: 'ui:quests.sincereRedemption.title',
+    description: 'ui:quests.sincereRedemption.description',
+    deadlineOffset: 10,
+    repeatPolicy: 'never',
+    progressSource: 'harmony_recovered',
+    required: 1,
+    rewardFlag: 'sincere_redemption_complete',
+    rewardType: 'fans',
+    rewardData: { fans: 150 },
+    failurePenalty: {
+      social: { loyalty: -5 },
+      flags: ['sincere_redemption_failed']
+    }
+  },
+  quest_band_pact: {
+    kind: 'story',
+    label: 'ui:quests.bandPact.title',
+    description: 'ui:quests.bandPact.description',
+    deadlineOffset: 7,
+    repeatPolicy: 'never',
+    progressSource: 'harmony_recovered',
+    required: 1,
+    rewardFlag: 'band_pact_complete',
+    rewardType: 'harmony',
+    rewardData: { harmony: 15 },
+    failurePenalty: {
+      band: { harmony: -10 },
+      flags: ['band_pact_failed']
     }
   },
   quest_local_legend: {

@@ -52,6 +52,12 @@ export interface QuestState extends UnknownRecord {
    * the quest instance is bound to. Stamped by `addQuest` from current state.
    */
   scopeKey?: string
+
+  /**
+   * Quest id automatically added when this quest completes. Lets story arcs
+   * branch into follow-up quests without bespoke reducer hooks.
+   */
+  followupQuestId?: string
 }
 
 /**

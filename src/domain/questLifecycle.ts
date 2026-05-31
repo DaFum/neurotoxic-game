@@ -297,6 +297,14 @@ export const QuestLifecycle = {
       }
     }
 
+    // Story arcs may branch into a follow-up quest declared either inline or in
+    // the registry definition. We addQuest through the same gating path so
+    // repeat-policy and scope checks still apply to the follow-up.
+    const followupId = quest.followupQuestId ?? definition?.followupQuestId
+    if (typeof followupId === 'string' && followupId.length > 0) {
+      return QuestLifecycle.addQuest(nextState, { id: followupId })
+    }
+
     return nextState
   },
 
