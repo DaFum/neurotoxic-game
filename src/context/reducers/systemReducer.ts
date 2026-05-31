@@ -1427,6 +1427,21 @@ const sanitizeQuestCooldowns = (
   })
 }
 
+const sanitizeQuestScopes = (
+  value: unknown
+): GameState['completedQuestScopes'] => {
+  if (!Array.isArray(value)) return []
+  return value.flatMap(entry => {
+    if (
+      !isLooseRecord(entry) ||
+      typeof entry.questId !== 'string' ||
+      typeof entry.scopeKey !== 'string'
+    )
+      return []
+    return [{ questId: entry.questId, scopeKey: entry.scopeKey }]
+  })
+}
+
 /**
  * Handles game load with migration and validation
  * @param {Object} state - Current state
@@ -1490,6 +1505,7 @@ export const handleLoadGame = (
     activeQuests: sanitizeActiveQuests(loadedState.activeQuests),
     questCooldowns: sanitizeQuestCooldowns(loadedState.questCooldowns),
     completedQuestIds: sanitizeStringArray(loadedState.completedQuestIds),
+    completedQuestScopes: sanitizeQuestScopes(loadedState.completedQuestScopes),
     npcs: sanitizeNpcs(loadedState.npcs),
     gigModifiers: sanitizeGigModifiers(loadedState.gigModifiers),
     currentScene: GAME_PHASES.OVERWORLD,

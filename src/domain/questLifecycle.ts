@@ -45,6 +45,25 @@ export const QuestLifecycle = {
         cd => cd.questId === quest.id && cd.expiresOnDay > currentDay
       )
       if (onCooldown) return state
+    } else if (repeatPolicy === 'perVenue' || repeatPolicy === 'perRegion') {
+      // Stamp the current venue/region as scopeKey so completion tracks "this
+      // quest, this place". Add is refused if the same (id, scopeKey) is
+      // already completed; other scopes remain open.
+      const scopeKey =
+        quest.scopeKey ??
+        (repeatPolicy === 'perVenue'
+          ? state.currentGig?.id
+          : state.player?.location)
+      if (typeof scopeKey !== 'string' || scopeKey.length === 0) {
+        // Without a scope we cannot uniquely track completion — refuse rather
+        // than silently turn this into a global-once quest.
+        return state
+      }
+      const alreadyDone = (state.completedQuestScopes ?? []).some(
+        c => c.questId === quest.id && c.scopeKey === scopeKey
+      )
+      if (alreadyDone) return state
+      merged.scopeKey = scopeKey
     }
 
     // Compute an absolute deadline from a relative offset when one was not
@@ -229,6 +248,19 @@ export const QuestLifecycle = {
         ...(nextState.completedQuestIds ?? []),
         quest.id
       ]
+    }
+
+    // Scope-policy quests record (id, scopeKey) so other scopes stay open.
+    if (typeof quest.scopeKey === 'string' && quest.scopeKey.length > 0) {
+      const exists = (nextState.completedQuestScopes ?? []).some(
+        c => c.questId === quest.id && c.scopeKey === quest.scopeKey
+      )
+      if (!exists) {
+        nextState.completedQuestScopes = [
+          ...(nextState.completedQuestScopes ?? []),
+          { questId: quest.id, scopeKey: quest.scopeKey }
+        ]
+      }
     }
 
     // Clear transient story flags tied to this quest being active.

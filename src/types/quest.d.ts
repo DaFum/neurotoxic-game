@@ -46,6 +46,12 @@ export interface QuestState extends UnknownRecord {
   clearFlagsOnComplete?: string[]
   clearFlagsOnFail?: string[]
   cooldownDays?: number
+
+  /**
+   * For `perVenue`/`perRegion` quests, the scope key (venue id or region name)
+   * the quest instance is bound to. Stamped by `addQuest` from current state.
+   */
+  scopeKey?: string
 }
 
 /**
@@ -55,4 +61,14 @@ export interface QuestState extends UnknownRecord {
 export interface QuestCooldown {
   questId: string
   expiresOnDay: number
+}
+
+/**
+ * Tracks completed scoped quests (per-venue / per-region). A quest id paired
+ * with the scope key it was completed for; re-adding for the same scope is
+ * refused, but other scopes remain available.
+ */
+export interface QuestScopeCompletion {
+  questId: string
+  scopeKey: string
 }

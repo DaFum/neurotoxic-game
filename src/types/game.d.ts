@@ -98,6 +98,7 @@ export interface GameState {
   activeQuests: QuestState[]
   questCooldowns: QuestCooldown[]
   completedQuestIds: string[]
+  completedQuestScopes: QuestScopeCompletion[]
   reputationByRegion: Record<string, number>
   settings: GameSettings
   npcs: Record<string, CharacterProfile>
