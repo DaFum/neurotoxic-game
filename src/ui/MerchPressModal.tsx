@@ -263,7 +263,7 @@ function MerchPressCurrentStats({
             }
             max={100}
             showValue={false}
-            color={isAffordable ? 'bg-toxic-green' : 'bg-blood-red'}
+            color={isAffordable ? 'bg-toxic-green' : 'bg-error-red'}
           />
         </div>
         <div>
@@ -281,7 +281,7 @@ function MerchPressCurrentStats({
             value={band?.harmony ?? 0}
             max={100}
             showValue={false}
-            color={hasEnoughHarmony ? 'bg-toxic-green' : 'bg-blood-red'}
+            color={hasEnoughHarmony ? 'bg-toxic-green' : 'bg-error-red'}
           />
         </div>
       </div>
