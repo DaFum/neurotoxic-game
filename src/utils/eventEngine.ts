@@ -219,9 +219,23 @@ const selectEvent = (
   const eventCooldowns = toStringArray(gameState.eventCooldowns)
   const activeStoryFlags = toStringArray(gameState.activeStoryFlags)
   const pendingEvents = toStringArray(gameState.pendingEvents)
+  const currentDay = gameState.player?.day || 0
+  const activeCooldowns: string[] = []
+  for (const cd of eventCooldowns) {
+    const [key, expiryStr] = cd.split(':')
+    if (expiryStr) {
+      const expiry = parseInt(expiryStr, 10)
+      if (!isNaN(expiry) && (currentDay as number) < expiry) {
+        if (key) activeCooldowns.push(key)
+      }
+    } else {
+      if (key) activeCooldowns.push(key)
+    }
+  }
+
   const cooldownsSet =
-    eventCooldowns.length > 0
-      ? new Set<string>(eventCooldowns)
+    activeCooldowns.length > 0
+      ? new Set<string>(activeCooldowns)
       : new Set<string>()
   const flagsSet =
     activeStoryFlags.length > 0
@@ -480,9 +494,25 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
       delta.flags.addStoryFlag = eff.flag
     }
   },
-  cooldown: (eff: EffectShape, delta: EventDelta) => {
+  cooldown: (
+    eff: EffectShape,
+    delta: EventDelta,
+    _context: TemplateContext = {},
+    gameState: EngineGameState | null = null
+  ) => {
     if (typeof eff.eventId === 'string' && eff.eventId.length > 0) {
-      delta.flags.addCooldown = eff.eventId
+      const currentDay = gameState?.player?.day || 0
+      let durationDays = 0
+      if (typeof eff.value === 'number') {
+        durationDays = eff.value
+      }
+
+      const expiryDay = (currentDay as number) + durationDays
+      // In the absence of a distinct context/actor property on eff, we just store it.
+      // If the caller provides context or a specific key, they'd construct it or we can just append it here.
+      // We will append :expiryDay
+
+      delta.flags.addCooldown = `${eff.eventId}:${expiryDay}`
     }
   },
   social_set: (eff: EffectShape, delta: EventDelta) => {
@@ -592,6 +622,40 @@ const resolveSkillCheckFailure = (
     }
   }
   return { ...failure, outcome: 'failure' }
+}
+
+export const isOnCooldown = (
+  gameState: EngineGameState,
+  eventId: string,
+  contextId: string = ''
+): boolean => {
+  if (!gameState.eventCooldowns) return false
+
+  const currentDay = gameState.player?.day || 0
+
+  const cooldowns = Array.isArray(gameState.eventCooldowns)
+    ? gameState.eventCooldowns
+    : Array.from(gameState.eventCooldowns)
+
+  for (const cd of cooldowns) {
+    const [key, expiryStr] = cd.split(':')
+    if (!key) continue
+
+    // Exact match
+    const isMatch =
+      (contextId && key === `${eventId}_${contextId}`) || key === eventId
+    if (isMatch) {
+      if (expiryStr) {
+        const expiry = parseInt(expiryStr, 10)
+        if (!isNaN(expiry) && (currentDay as number) < expiry) {
+          return true
+        }
+      } else {
+        return true // No expiry means forever or legacy
+      }
+    }
+  }
+  return false
 }
 
 export const eventEngine = {

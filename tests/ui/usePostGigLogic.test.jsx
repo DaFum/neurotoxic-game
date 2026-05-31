@@ -567,7 +567,10 @@ describe('usePostGigLogic', () => {
           deadline: 10,
           required: 1,
           failurePenalty: expect.objectContaining({
-            flags: ['ego_crisis_failed']
+            flags: ['ego_crisis_failed'],
+            band: { harmony: -25 },
+            social: { controversyLevel: 10, loyalty: -15 },
+            cooldowns: [{ id: 'ego_management_retry', days: 10 }]
           })
         })
       )

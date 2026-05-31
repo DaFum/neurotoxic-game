@@ -248,6 +248,9 @@ export const CONSEQUENCE_EVENTS = [
     trigger: 'travel',
     chance: 0.8,
     condition: (state: GameState) => {
+      // @ts-expect-error - EventEngine typing
+      if (isOnCooldown(state, 'ego_management_retry')) return false
+
       const harmony = finiteNumberOr(state.band?.harmony, 0)
       const egoFocus = state.social?.egoFocus || null
       const flags = state.activeStoryFlags || []

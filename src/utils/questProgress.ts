@@ -39,7 +39,10 @@ export const QuestProgress = {
     if (!nextState.activeQuests) return nextState
 
     for (const quest of nextState.activeQuests) {
-      const registryEntry = QUEST_REGISTRY[quest.id]
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const registryEntry = (QUEST_REGISTRY as unknown as Record<string, any>)[
+        quest.id
+      ]
       if (!registryEntry) continue
 
       const progressSource = registryEntry.progressSource
