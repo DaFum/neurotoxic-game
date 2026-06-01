@@ -132,6 +132,12 @@ const getRewardText = (
       return t('ui:rewards.skillPointWithAmount', { count: 1 })
     case 'harmony':
       return t('ui:rewards.harmonyWithAmount', { count: value?.harmony ?? 0 })
+    case 'loyalty':
+      return t('ui:rewards.loyaltyWithAmount', { count: value?.loyalty ?? 0 })
+    case 'controversy_reduction':
+      return t('ui:rewards.controversyReduction', {
+        count: value?.controversy ?? 0
+      })
     default:
       return t('ui:rewards.special')
   }
@@ -148,7 +154,10 @@ const getRewardIcon = (type: string) => {
     case 'skill_point':
       return <IconFire className='w-4 h-4 text-blood-red' />
     case 'harmony':
+    case 'loyalty':
       return <IconThumbUp className='w-4 h-4 text-toxic-green' />
+    case 'controversy_reduction':
+      return <IconThumbUp className='w-4 h-4 text-stamina-green' />
     case 'money':
       return <IconCoin className='w-4 h-4 text-fuel-yellow' />
     default:

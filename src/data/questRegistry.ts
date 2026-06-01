@@ -239,8 +239,8 @@ export const QUEST_REGISTRY = {
     progressSource: 'social_post',
     required: 4,
     cooldownDays: 7,
-    rewardType: 'fans',
-    rewardData: { fans: 100 },
+    rewardType: 'loyalty',
+    rewardData: { loyalty: 15 },
     failurePenalty: {
       social: { loyalty: -5 }
     }
@@ -270,8 +270,8 @@ export const QUEST_REGISTRY = {
     progressSource: 'good_gig',
     required: 2,
     rewardFlag: 'sincere_redemption_complete',
-    rewardType: 'fans',
-    rewardData: { fans: 150 },
+    rewardType: 'controversy_reduction',
+    rewardData: { controversy: 20 },
     failurePenalty: {
       social: { loyalty: -5 },
       flags: ['sincere_redemption_failed']

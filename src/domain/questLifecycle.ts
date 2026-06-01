@@ -220,6 +220,53 @@ export const QuestLifecycle = {
           type: 'success'
         })
       }
+    } else if (quest.rewardType === 'fans' && quest.rewardData?.fans) {
+      // Fans land on the general instagram following bucket.
+      const rawFans = Number(quest.rewardData.fans) || 0
+      const previous = finiteNumberOr(nextState.social?.instagram, 0)
+      const next = Math.max(0, previous + rawFans)
+      nextState.social = { ...nextState.social, instagram: next }
+      const appliedDelta = next - previous
+      if (appliedDelta !== 0) {
+        generatedToasts.push({
+          id: `${questId}-fans`,
+          messageKey: 'ui:toast.quest_complete_fans',
+          options: { name: quest.label, amount: appliedDelta },
+          type: 'success'
+        })
+      }
+    } else if (quest.rewardType === 'loyalty' && quest.rewardData?.loyalty) {
+      const raw = Number(quest.rewardData.loyalty) || 0
+      const previous = finiteNumberOr(nextState.social?.loyalty, 0)
+      const next = clampLoyalty(previous + raw)
+      nextState.social = { ...nextState.social, loyalty: next }
+      const appliedDelta = next - previous
+      if (appliedDelta !== 0) {
+        generatedToasts.push({
+          id: `${questId}-loyalty`,
+          messageKey: 'ui:toast.quest_complete_loyalty',
+          options: { name: quest.label, amount: appliedDelta },
+          type: 'success'
+        })
+      }
+    } else if (
+      quest.rewardType === 'controversy_reduction' &&
+      quest.rewardData?.controversy
+    ) {
+      // rewardData.controversy is the positive amount to remove.
+      const raw = Math.abs(Number(quest.rewardData.controversy) || 0)
+      const previous = finiteNumberOr(nextState.social?.controversyLevel, 0)
+      const next = clampControversyLevel(previous - raw)
+      nextState.social = { ...nextState.social, controversyLevel: next }
+      const appliedDelta = previous - next
+      if (appliedDelta !== 0) {
+        generatedToasts.push({
+          id: `${questId}-controversy`,
+          messageKey: 'ui:toast.quest_complete_controversy',
+          options: { name: quest.label, amount: appliedDelta },
+          type: 'success'
+        })
+      }
     }
 
     if (generatedToasts.length === 0) {

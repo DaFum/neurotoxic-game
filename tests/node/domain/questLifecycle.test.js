@@ -273,6 +273,58 @@ test('QuestLifecycle', async t => {
       )
     })
 
+    await t.test('applies fans reward to the instagram following', () => {
+      const state = {
+        activeQuests: [
+          { id: 'q1', rewardType: 'fans', rewardData: { fans: 150 } }
+        ],
+        social: { instagram: 1000 },
+        toasts: []
+      }
+      const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
+      assert.equal(nextState.social.instagram, 1150)
+      assert.equal(
+        nextState.toasts[0].messageKey,
+        'ui:toast.quest_complete_fans'
+      )
+    })
+
+    await t.test('applies loyalty reward (clamped)', () => {
+      const state = {
+        activeQuests: [
+          { id: 'q1', rewardType: 'loyalty', rewardData: { loyalty: 15 } }
+        ],
+        social: { loyalty: 50 },
+        toasts: []
+      }
+      const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
+      assert.equal(nextState.social.loyalty, 65)
+      assert.equal(
+        nextState.toasts[0].messageKey,
+        'ui:toast.quest_complete_loyalty'
+      )
+    })
+
+    await t.test('applies controversy_reduction reward', () => {
+      const state = {
+        activeQuests: [
+          {
+            id: 'q1',
+            rewardType: 'controversy_reduction',
+            rewardData: { controversy: 20 }
+          }
+        ],
+        social: { controversyLevel: 30 },
+        toasts: []
+      }
+      const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
+      assert.equal(nextState.social.controversyLevel, 10)
+      assert.equal(
+        nextState.toasts[0].messageKey,
+        'ui:toast.quest_complete_controversy'
+      )
+    })
+
     await t.test('applies harmony reward with missing band', () => {
       const state = {
         activeQuests: [
