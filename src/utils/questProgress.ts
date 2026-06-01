@@ -24,13 +24,31 @@ export type QuestProgressEvent =
       venueId: string
       region: string
     }
-  | { type: 'social_post'; postType: string; followersGain: number }
-  | { type: 'followers_gained'; amount: number }
+  | {
+      type: 'social_post'
+      postType: string
+      followersGain: number
+      // Optional matchable context — lets quests filter by platform/category
+      // without needing per-quest switch cases in applyEvent.
+      platform?: string
+      category?: string
+    }
+  | {
+      type: 'followers_gained'
+      amount: number
+      platform?: string
+      category?: string
+    }
   | { type: 'fame_gained'; amount: number; region?: string }
   | { type: 'money_earned'; amount: number }
   | { type: 'harmony_recovered'; amount: number; newHarmony: number }
   | { type: 'item_collected'; itemId: string }
-  | { type: 'brand_deal_completed'; dealId: string }
+  | {
+      type: 'brand_deal_completed'
+      dealId: string
+      dealType?: string
+      brandAlignment?: string
+    }
   | { type: 'travel_completed'; region: string }
 
 /**
@@ -51,6 +69,46 @@ const questMatchesScope = (
     return 'region' in event && event.region === quest.scopeKey
   }
   return true
+}
+
+/**
+ * Per-quest filters that narrow a progressSource match by event context. Lets a
+ * quest say "only TikTok follower gains count" or "only Commercial brand deals"
+ * without growing the dispatch switch. Future work: replace with the planned
+ * declarative `progressRules` on QuestDefinition (Phase 2 of the backbone
+ * architecture); this map is the bridge until then.
+ */
+type QuestEventFilter = (event: QuestProgressEvent) => boolean
+
+const QUEST_EVENT_FILTERS: Record<string, QuestEventFilter> = {
+  // TikTok-only viral challenge — Instagram/Newsletter follower spikes must
+  // not advance it.
+  quest_viral_dance: event =>
+    event.type === 'followers_gained' &&
+    (event.platform === undefined || event.platform === 'tiktok'),
+  // Authentic community work; drama / commercial posts do not count.
+  quest_community_outreach: event =>
+    event.type === 'social_post' &&
+    (event.category === undefined ||
+      event.category === 'Lifestyle' ||
+      event.category === 'Community'),
+  // Drama trend specifically — controversy-positive posts.
+  quest_drama_post: event =>
+    event.type === 'followers_gained' &&
+    (event.category === undefined || event.category === 'Drama'),
+  // Sponsorship-style commercial deals; ignore endorsements signed under a
+  // different deal type. `undefined` passes for backward-compat with older
+  // emit sites that do not yet carry dealType.
+  quest_sponsor_demand: event =>
+    event.type === 'brand_deal_completed' &&
+    (event.dealType === undefined ||
+      event.dealType === 'Sponsorship' ||
+      event.dealType === 'Commercial'),
+  // Premium endorsements only — keep sponsor_demand and premium_endorsement
+  // distinct buckets.
+  quest_premium_endorsement: event =>
+    event.type === 'brand_deal_completed' &&
+    (event.dealType === undefined || event.dealType === 'Endorsement')
 }
 
 export const QuestProgress = {
@@ -77,6 +135,12 @@ export const QuestProgress = {
         (registryEntry as { repeatPolicy?: QuestRepeatPolicy })
           .repeatPolicy) as QuestRepeatPolicy | undefined
       if (!questMatchesScope(quest, event, repeatPolicy)) continue
+
+      // Per-quest context filter (platform / category / deal type). Applied
+      // after the type/scope match so it only narrows, never widens, what the
+      // progressSource already accepted.
+      const filter = QUEST_EVENT_FILTERS[quest.id]
+      if (filter && !filter(event)) continue
 
       // Harmony quests are threshold-based, not accumulation-based: progress is
       // the current band harmony level and completion fires when it reaches the

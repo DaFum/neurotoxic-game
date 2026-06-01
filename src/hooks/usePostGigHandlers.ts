@@ -210,15 +210,26 @@ export const usePostGigHandlers = ({
         updateSocial(updatedSocial)
 
         const followersGained = finiteNumberOr(finalResult.followers, 0)
+        // Pass platform + category as context so per-quest filters can narrow
+        // matches (e.g. TikTok-only viral_dance, Lifestyle-only outreach).
+        const platform = option?.platform ? String(option.platform) : undefined
+        const category = option?.category ? String(option.category) : undefined
         // Every resolved post counts as a social_post for community quests…
         applyQuestEvent({
           type: 'social_post',
           postType: String(option?.platform ?? option?.id ?? 'post'),
-          followersGain: followersGained
+          followersGain: followersGained,
+          platform,
+          category
         })
         // …and only follower-positive posts feed follower-growth quests.
         if (followersGained > 0) {
-          applyQuestEvent({ type: 'followers_gained', amount: followersGained })
+          applyQuestEvent({
+            type: 'followers_gained',
+            amount: followersGained,
+            platform,
+            category
+          })
         }
 
         const playerUpdated = { ...player, money: nextMoney }
@@ -283,7 +294,12 @@ export const usePostGigHandlers = ({
         const socialUpdateFactory = getAcceptDealSocialUpdateFactory(deal)
         updateSocial(socialUpdateFactory)
 
-        applyQuestEvent({ type: 'brand_deal_completed', dealId: deal.id })
+        applyQuestEvent({
+          type: 'brand_deal_completed',
+          dealId: deal.id,
+          dealType: deal.type,
+          brandAlignment: deal.alignment
+        })
 
         const moneyText =
           appliedMoneyDelta === 0

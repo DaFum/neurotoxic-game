@@ -1026,6 +1026,85 @@ test('QuestLifecycle', async t => {
       const q = next.activeQuests.find(q => q.id === 'quest_local_legend')
       assert.equal(q.progress, 100)
     })
+
+    await t.test('viral_dance does not advance on instagram followers', () => {
+      const state = baseState({
+        id: 'quest_viral_dance',
+        progress: 0,
+        required: 500
+      })
+      const next = QuestProgress.applyEvent(state, {
+        type: 'followers_gained',
+        amount: 100,
+        platform: 'instagram'
+      })
+      const q = next.activeQuests.find(q => q.id === 'quest_viral_dance')
+      assert.equal(q.progress ?? 0, 0)
+    })
+
+    await t.test('viral_dance advances on tiktok followers', () => {
+      const state = baseState({
+        id: 'quest_viral_dance',
+        progress: 0,
+        required: 500
+      })
+      const next = QuestProgress.applyEvent(state, {
+        type: 'followers_gained',
+        amount: 100,
+        platform: 'tiktok'
+      })
+      const q = next.activeQuests.find(q => q.id === 'quest_viral_dance')
+      assert.equal(q.progress, 100)
+    })
+
+    await t.test('community_outreach ignores drama posts', () => {
+      const state = baseState({
+        id: 'quest_community_outreach',
+        progress: 0,
+        required: 4
+      })
+      const next = QuestProgress.applyEvent(state, {
+        type: 'social_post',
+        postType: 'post',
+        followersGain: 0,
+        category: 'Drama'
+      })
+      const q = next.activeQuests.find(q => q.id === 'quest_community_outreach')
+      assert.equal(q.progress ?? 0, 0)
+    })
+
+    await t.test('community_outreach advances on lifestyle posts', () => {
+      const state = baseState({
+        id: 'quest_community_outreach',
+        progress: 0,
+        required: 4
+      })
+      const next = QuestProgress.applyEvent(state, {
+        type: 'social_post',
+        postType: 'post',
+        followersGain: 0,
+        category: 'Lifestyle'
+      })
+      const q = next.activeQuests.find(q => q.id === 'quest_community_outreach')
+      assert.equal(q.progress, 1)
+    })
+
+    await t.test('premium_endorsement ignores non-endorsement deals', () => {
+      const state = baseState({
+        id: 'quest_premium_endorsement',
+        progress: 0,
+        required: 3
+      })
+      const next = QuestProgress.applyEvent(state, {
+        type: 'brand_deal_completed',
+        dealId: 'deal1',
+        dealType: 'Sponsorship'
+      })
+      const q = next.activeQuests.find(
+        q => q.id === 'quest_premium_endorsement'
+      )
+      assert.equal(q.progress ?? 0, 0)
+    })
   })
 
   await t.test('repeat policy enforcement', async t => {
