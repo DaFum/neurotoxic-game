@@ -80,6 +80,9 @@ const makeProgressEvent = (source, rule) => {
 }
 
 describe('Quest System Registry Validation', () => {
+  // progressSource stays as the legacy compatibility bridge while progressRules
+  // is the declarative matching contract. Keep both gates until the legacy
+  // progressSource fallback is removed.
   it('should ensure quests with required > 0 have a progressSource', () => {
     for (const [_id, quest] of Object.entries(QUEST_REGISTRY)) {
       if (quest.required && quest.required > 0) {
@@ -129,6 +132,19 @@ describe('Quest System Registry Validation', () => {
           `Quest ${id} uses repeatPolicy 'cooldown' but has no positive cooldownDays`
         )
       }
+    }
+  })
+
+  it('should ensure quests do not declare money rewards twice', () => {
+    for (const [id, quest] of Object.entries(QUEST_REGISTRY)) {
+      const hasLegacyMoneyReward = Object.hasOwn(quest, 'moneyReward')
+      const hasStructuredMoneyReward =
+        Array.isArray(quest.rewards) &&
+        quest.rewards.some(reward => reward?.type === 'money')
+      assert.ok(
+        !(hasLegacyMoneyReward && hasStructuredMoneyReward),
+        `Quest ${id} declares both moneyReward and a structured money reward`
+      )
     }
   })
 
@@ -323,6 +339,13 @@ describe('Quest System Registry Validation', () => {
     assert.doesNotMatch(lifecycle, /quest\.rewardType\b/)
     assert.doesNotMatch(lifecycle, /quest\.rewardData\b/)
     assert.doesNotMatch(lifecycle, /quest\.moneyReward\b/)
+  })
+
+  it('quest reward appliers append trait toasts without replacing accumulated toasts', async () => {
+    const fs = await import('node:fs')
+    const rewards = fs.readFileSync('src/domain/questRewards.ts', 'utf8')
+
+    assert.doesNotMatch(rewards, /toasts\.splice\(/)
   })
 
   it('gameplay systems use producer adapters for canonical quest events', async () => {

@@ -1477,6 +1477,8 @@ const sanitizeQuestScopes = (
 ): GameState['completedQuestScopes'] => {
   if (!Array.isArray(value)) return []
   return value.flatMap(entry => {
+    // Scope completions are keyed by questId + scopeKey only; unlike cooldowns,
+    // they have no separate legacy id contract to preserve.
     if (
       !isLooseRecord(entry) ||
       typeof entry.questId !== 'string' ||

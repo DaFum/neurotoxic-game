@@ -39,6 +39,17 @@ const hasQuestSlot = (
   return activeCount < limit
 }
 
+const getCurrentVenueScopeKey = (state: GameState): string | undefined => {
+  const currentGigId = state.currentGig?.id
+  if (typeof currentGigId === 'string' && currentGigId.length > 0) {
+    return currentGigId
+  }
+
+  const nodeId = state.player?.currentNodeId
+  if (typeof nodeId !== 'string' || nodeId.length === 0) return undefined
+  return state.gameMap?.nodes?.[nodeId]?.type === 'GIG' ? nodeId : undefined
+}
+
 const getQuestWithDefinition = (
   quest: QuestState | ActiveQuestState
 ): QuestState => {
@@ -447,7 +458,7 @@ export const canAcceptQuest = (
     scopeKey =
       merged.scopeKey ??
       (repeatPolicy === 'perVenue'
-        ? (state.currentGig?.id ?? state.player?.currentNodeId)
+        ? getCurrentVenueScopeKey(state)
         : state.player?.location)
     if (typeof scopeKey !== 'string' || scopeKey.length === 0) {
       return { ok: false, reason: 'scope' }

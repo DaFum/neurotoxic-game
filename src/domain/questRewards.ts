@@ -218,7 +218,7 @@ const applySkillPointReward = (
   const memberName =
     rewardedMember && typeof rewardedMember.name === 'string'
       ? rewardedMember.name
-      : null
+      : ''
   toasts.push({
     id: `${quest.id}-skill`,
     messageKey: 'ui:toast.quest_complete_skill',
@@ -410,11 +410,11 @@ export const applyQuestRewards = (
           nextState.band?.members?.[0]?.name
         if (typeof memberId === 'string' && memberId.length > 0) {
           const traitResult = applyTraitUnlocks(
-            { band: nextState.band, toasts },
+            { band: nextState.band, toasts: [] },
             [{ memberId, traitId: reward.traitId }]
           )
           nextState = { ...nextState, band: traitResult.band }
-          toasts.splice(0, toasts.length, ...traitResult.toasts)
+          toasts.push(...traitResult.toasts)
         }
         break
       }

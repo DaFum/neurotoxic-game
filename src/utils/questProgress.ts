@@ -441,6 +441,8 @@ export const QuestProgress = {
       if (!activeQuest) continue
       const registryEntry =
         QUEST_REGISTRY[activeQuest.id as keyof typeof QUEST_REGISTRY]
+      // Registry-backed active quests normally carry runtime fields only.
+      // Ad-hoc/legacy quests keep inline rules because activeQuest spread wins.
       const quest: QuestState = registryEntry
         ? { ...(registryEntry as Partial<QuestState>), ...activeQuest }
         : activeQuest

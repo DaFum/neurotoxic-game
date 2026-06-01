@@ -1,6 +1,9 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { QuestLifecycle } from '../../../src/domain/questLifecycle.js'
+import {
+  QuestLifecycle,
+  canAcceptQuest
+} from '../../../src/domain/questLifecycle.js'
 import { QuestProgress } from '../../../src/utils/questProgress.ts'
 import { QUEST_REGISTRY } from '../../../src/data/questRegistry.ts'
 import { QUEST_PROVE_YOURSELF } from '../../../src/data/questsConstants.js'
@@ -531,7 +534,7 @@ test('QuestLifecycle', async t => {
         assert.equal(nextState.band.members[0].baseStats.skill, 11)
         assert.deepEqual(nextState.toasts[0].options, {
           name: 'q1',
-          member: null
+          member: ''
         })
       }
     )
@@ -1474,6 +1477,55 @@ test('QuestLifecycle', async t => {
       }
       const next = QuestLifecycle.addQuest(state, { id: 'quest_viral_dance' })
       assert.ok(next.activeQuests.find(q => q.id === 'quest_viral_dance'))
+    })
+
+    await t.test(
+      'perVenue quests cannot fall back to a non-gig current node',
+      () => {
+        const state = {
+          player: { day: 1, currentNodeId: 'city_a' },
+          activeQuests: [],
+          activeStoryFlags: [],
+          completedQuestIds: [],
+          completedQuestScopes: [],
+          questCooldowns: [],
+          gameMap: {
+            nodes: {
+              city_a: { id: 'city_a', type: 'CITY' }
+            }
+          }
+        }
+
+        assert.deepEqual(canAcceptQuest(state, 'quest_venue_residency'), {
+          ok: false,
+          reason: 'scope'
+        })
+        assert.equal(
+          QuestLifecycle.addQuest(state, { id: 'quest_venue_residency' }),
+          state
+        )
+      }
+    )
+
+    await t.test('perVenue quests can fall back to a gig current node', () => {
+      const state = {
+        player: { day: 1, currentNodeId: 'venue_a' },
+        activeQuests: [],
+        activeStoryFlags: [],
+        completedQuestIds: [],
+        completedQuestScopes: [],
+        questCooldowns: [],
+        gameMap: {
+          nodes: {
+            venue_a: { id: 'venue_a', type: 'GIG' }
+          }
+        }
+      }
+
+      assert.deepEqual(canAcceptQuest(state, 'quest_venue_residency'), {
+        ok: true,
+        scopeKey: 'venue_a'
+      })
     })
 
     await t.test('completing a cooldown quest opens a re-add window', () => {
