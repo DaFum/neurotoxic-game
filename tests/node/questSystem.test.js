@@ -68,6 +68,38 @@ describe('Quest System Registry Validation', () => {
     }
   })
 
+  it('content gate: every quest progressSource is emitted by gameplay code', async () => {
+    const fs = await import('node:fs')
+    const path = await import('node:path')
+    // Concatenate all source files except the questProgress definition itself
+    // (whose type union and switch cases must NOT count as emit sites).
+    const files = []
+    const walk = dir => {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name)
+        if (entry.isDirectory()) walk(full)
+        else if (/\.(ts|tsx)$/.test(entry.name)) files.push(full)
+      }
+    }
+    walk('src')
+    const emitText = files
+      .filter(f => !f.endsWith('questProgress.ts'))
+      .map(f => fs.readFileSync(f, 'utf8'))
+      .join('\n')
+
+    const usedSources = new Set(
+      Object.values(QUEST_REGISTRY)
+        .map(q => q.progressSource)
+        .filter(Boolean)
+    )
+    for (const source of usedSources) {
+      assert.ok(
+        emitText.includes(`type: '${source}'`),
+        `progressSource '${source}' is used by a quest but is never emitted as a quest event anywhere in src/ — the quest can never progress`
+      )
+    }
+  })
+
   it('content gate: repeatable quests must declare a cooldown, scope or daily policy', () => {
     for (const [id, quest] of Object.entries(QUEST_REGISTRY)) {
       if (quest.repeatPolicy && quest.repeatPolicy !== 'never') {

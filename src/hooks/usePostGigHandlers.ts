@@ -210,6 +210,13 @@ export const usePostGigHandlers = ({
         updateSocial(updatedSocial)
 
         const followersGained = finiteNumberOr(finalResult.followers, 0)
+        // Every resolved post counts as a social_post for community quests…
+        applyQuestEvent({
+          type: 'social_post',
+          postType: String(option?.platform ?? option?.id ?? 'post'),
+          followersGain: followersGained
+        })
+        // …and only follower-positive posts feed follower-growth quests.
         if (followersGained > 0) {
           applyQuestEvent({ type: 'followers_gained', amount: followersGained })
         }
