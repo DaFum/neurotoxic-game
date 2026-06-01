@@ -1447,6 +1447,8 @@
   "quests.progressSource.gig_completed": "Progress: Play gigs",
   "quests.progressSource.good_gig": "Progress: Play good gigs",
   "quests.progressSource.harmony_recovered": "Progress: Recover band harmony",
+  "quests.progressSource.harmony_threshold": "Progress: Reach {{target}} band harmony",
+  "quests.repeatableAfter": "Repeatable after {{count}}d cooldown",
   "quests.progressSource.item_collected": "Progress: Collect items",
   "quests.progressSource.money_earned": "Progress: Earn money",
   "quests.progressSource.small_venue_good_gig": "Progress: Play good gigs at small venues",

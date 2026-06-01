@@ -1446,6 +1446,8 @@
   "quests.progressSource.gig_completed": "Fortschritt: Gigs spielen",
   "quests.progressSource.good_gig": "Fortschritt: Gute Gigs spielen",
   "quests.progressSource.harmony_recovered": "Fortschritt: Bandharmonie erholen",
+  "quests.progressSource.harmony_threshold": "Fortschritt: Erreiche {{target}} Bandharmonie",
+  "quests.repeatableAfter": "Wiederholbar nach {{count}}T Cooldown",
   "quests.progressSource.item_collected": "Fortschritt: Gegenstände sammeln",
   "quests.progressSource.money_earned": "Fortschritt: Geld verdienen",
   "quests.progressSource.small_venue_good_gig": "Fortschritt: Gute Gigs in kleinen Venues spielen",

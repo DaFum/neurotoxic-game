@@ -150,6 +150,22 @@ describe('gigReducer', () => {
       assert.strictEqual(apologyQuest.progress, 0)
     })
 
+    it('should not advance small-venue quests when capacity exceeds 300', () => {
+      // small_venue_good_gig dispatch is gated on capacity <= 300 in gigReducer.
+      // A 301-cap venue must still produce a good_gig but no small_venue_good_gig.
+      baseState.currentGig = { id: 'v1', capacity: 301 }
+      baseState.activeQuests = [
+        { id: 'quest_apology_tour', progress: 0, required: 5 }
+      ]
+      const payload = { score: 70 }
+      const nextState = handleSetLastGigStats(baseState, payload)
+
+      const apologyQuest = nextState.activeQuests.find(
+        q => q.id === 'quest_apology_tour'
+      )
+      assert.strictEqual(apologyQuest.progress, 0)
+    })
+
     it('should queue consequences_comeback_album when apology tour complete and controversy recovered', () => {
       baseState.currentGig = { id: 'v1', capacity: 100 }
       baseState.activeStoryFlags = ['apology_tour_complete']

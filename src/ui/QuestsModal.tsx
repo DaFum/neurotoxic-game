@@ -314,9 +314,23 @@ const QuestItem = memo(
 
         {quest.progressSource && (
           <p className='text-xs text-toxic-green/80 mb-3 font-mono italic'>
-            {t(`ui:quests.progressSource.${quest.progressSource}`)}
+            {quest.progressSource === 'harmony_recovered' &&
+            typeof quest.required === 'number' &&
+            quest.required > 1
+              ? t('ui:quests.progressSource.harmony_threshold', {
+                  target: quest.required
+                })
+              : t(`ui:quests.progressSource.${quest.progressSource}`)}
           </p>
         )}
+
+        {quest.repeatPolicy === 'cooldown' &&
+          typeof quest.cooldownDays === 'number' &&
+          quest.cooldownDays > 0 && (
+            <p className='text-xs text-ash-gray/70 mb-3 font-mono'>
+              {t('ui:quests.repeatableAfter', { count: quest.cooldownDays })}
+            </p>
+          )}
 
         <div className='mb-3'>
           <div className='flex justify-between text-xs text-ash-gray mb-1 font-mono'>
