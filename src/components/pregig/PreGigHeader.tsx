@@ -23,11 +23,11 @@ export const PreGigHeader = React.memo(
         <h2 className='text-3xl sm:text-4xl text-toxic-green font-display mb-2'>
           {t('ui:pregig.title')}
         </h2>
-        <div className='w-48 h-[1px] bg-gradient-to-r from-transparent via-toxic-green to-transparent mx-auto mb-3' />
+        <div className='w-48 h-px bg-gradient-to-r from-transparent via-toxic-green to-transparent mx-auto mb-3' />
         <div className='text-lg mb-1 font-mono text-star-white/80'>
           {currentGig?.name ? t(currentGig.name) : ''}
         </div>
-        <div className='font-mono text-[11px] sm:text-xs md:text-sm text-ash-gray flex flex-wrap items-center justify-center gap-x-3 gap-y-1'>
+        <div className='font-mono text-xs sm:text-xs md:text-sm text-ash-gray flex flex-wrap items-center justify-center gap-x-3 gap-y-1'>
           <span>
             {t('ui:pregig.budget')}{' '}
             <span className='text-toxic-green font-bold tabular-nums'>

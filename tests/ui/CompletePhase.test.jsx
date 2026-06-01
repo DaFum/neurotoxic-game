@@ -179,8 +179,8 @@ describe('CompletePhase', () => {
     )
 
     const completePanel = screen.getByTestId('post-gig-complete')
-    expect(completePanel).toHaveClass('min-h-[320px]')
-    expect(completePanel).toHaveClass('sm:min-h-[400px]')
+    expect(completePanel).toHaveClass('min-h-80')
+    expect(completePanel).toHaveClass('sm:min-h-96')
     expect(completePanel).toHaveClass('p-3')
     expect(completePanel).toHaveClass('sm:p-6')
 

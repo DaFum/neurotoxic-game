@@ -18,7 +18,7 @@ function VoidResonanceIndicator({
     <div className='mt-2 w-48'>
       <div className='flex justify-between items-center mb-1'>
         <span
-          className={`uppercase text-xs ${isAnomalyActive ? 'text-electric-blue animate-pulse font-bold' : 'text-ash-gray'}`}
+          className={`uppercase text-xs ${isAnomalyActive ? 'text-electric-blue motion-safe:animate-pulse font-bold' : 'text-ash-gray'}`}
         >
           {isAnomalyActive
             ? t('ui:minigames.amp.hud.anomaly', {
@@ -34,7 +34,7 @@ function VoidResonanceIndicator({
       </div>
       <div className='h-2 w-full bg-void-black border border-electric-blue overflow-hidden shadow-[0_0_5px_var(--color-electric-blue)]'>
         <div
-          className={`h-full bg-electric-blue transition-all duration-100 ${isAnomalyActive ? 'animate-pulse' : ''}`}
+          className={`h-full bg-electric-blue transition-all duration-100 ${isAnomalyActive ? 'motion-safe:animate-pulse' : ''}`}
           style={{ width: `${voidResonance}%` }}
         />
       </div>
@@ -51,7 +51,7 @@ function HeatIndicator({
     <div className='mt-2 w-48'>
       <div className='flex justify-between items-center mb-1'>
         <span
-          className={`uppercase text-xs ${isOverheat ? 'text-error-red animate-pulse font-bold' : 'text-ash-gray'}`}
+          className={`uppercase text-xs ${isOverheat ? 'text-error-red motion-safe:animate-pulse font-bold' : 'text-ash-gray'}`}
         >
           {isOverheat
             ? t('ui:minigames.amp.hud.overheat', {
@@ -67,7 +67,7 @@ function HeatIndicator({
       </div>
       <div className='h-2 w-full bg-void-black border border-ash-gray overflow-hidden'>
         <div
-          className={`h-full transition-all duration-100 ${isOverheat ? 'bg-error-red animate-pulse' : 'bg-warning-yellow'}`}
+          className={`h-full transition-all duration-100 ${isOverheat ? 'bg-error-red motion-safe:animate-pulse' : 'bg-warning-yellow'}`}
           style={{ width: `${heat}%` }}
         />
       </div>
@@ -86,7 +86,7 @@ function HijackIndicator({
     <div className='mt-2 w-48 border border-error-red p-2 bg-void-black/50'>
       <div className='flex justify-between items-center'>
         <span
-          className={`uppercase text-xs font-bold ${isHijackActive ? 'text-error-red animate-pulse' : 'text-ash-gray'}`}
+          className={`uppercase text-xs font-bold ${isHijackActive ? 'text-error-red motion-safe:animate-pulse' : 'text-ash-gray'}`}
         >
           {t('ui:minigames.amp.hud.hijack', { defaultValue: 'HIJACK:' })}
         </span>
@@ -125,7 +125,7 @@ function InterferenceIndicator({
   return (
     <div className='mt-2 w-48'>
       <div className='flex justify-between items-center mb-1'>
-        <span className='uppercase text-xs text-error-red animate-pulse font-bold'>
+        <span className='uppercase text-xs text-error-red motion-safe:animate-pulse font-bold'>
           {t('ui:minigames.amp.hud.interference', {
             defaultValue: 'INTERFERENCE'
           })}
@@ -170,7 +170,7 @@ export const AmpHUD = memo(function AmpHUD({
           <span
             className={
               timeLeft < 5
-                ? 'text-error-red animate-pulse font-bold'
+                ? 'text-error-red motion-safe:animate-pulse font-bold'
                 : 'text-toxic-green'
             }
           >

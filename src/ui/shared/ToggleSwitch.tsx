@@ -65,7 +65,7 @@ const ToggleSwitchComponent = ({
         </div>
         <span
           /* Exception: component-internal z-index stacking */
-          className={`absolute z-0 text-[10px] font-bold ${isOn ? 'left-2 text-toxic-green' : 'right-2 text-toxic-green/50'}`}
+          className={`absolute z-0 text-xs font-bold ${isOn ? 'left-2 text-toxic-green' : 'right-2 text-toxic-green/50'}`}
         >
           {isOn ? t('ui:toggle.on') : t('ui:toggle.off')}
         </span>

@@ -11,7 +11,7 @@ interface KabelsalatGameOverOverlayProps {
 export const KabelsalatGameOverOverlay: FC<KabelsalatGameOverOverlayProps> =
   React.memo(({ t, onAdvance }) => {
     return (
-      <div className='absolute inset-0 z-40 flex flex-col items-center justify-center overflow-y-auto bg-void-black/90 backdrop-blur-sm px-4'>
+      <div className='absolute inset-0 z-(--z-overlay) flex flex-col items-center justify-center overflow-y-auto bg-void-black/90 backdrop-blur-sm px-4'>
         <h3 className='text-error-red text-3xl md:text-5xl font-bold tracking-[0.3em] mb-4 drop-shadow-[0_0_15px_var(--color-error-red)] text-center max-w-full break-words'>
           {t('ui:minigames.kabelsalat.timeUp')}
         </h3>

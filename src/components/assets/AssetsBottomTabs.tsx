@@ -32,7 +32,7 @@ export const AssetsBottomTabs = ({
               aria-selected={isActive}
               aria-controls={`assets-panel-${tab.key}`}
               onClick={() => onSelect(tab.key)}
-              className='assets-hub-control flex min-h-11 min-w-0 flex-col items-center justify-center gap-1 border-2 px-1 py-2 text-[0.65rem] uppercase leading-none transition-transform active:scale-[0.98] sm:flex-row sm:text-xs'
+              className='assets-hub-control flex min-h-11 min-w-0 flex-col items-center justify-center gap-1 border-2 px-1 py-2 text-xs uppercase leading-none transition-transform active:scale-[0.98] sm:flex-row sm:text-xs'
               style={{
                 borderColor: isActive
                   ? 'var(--section-accent)'

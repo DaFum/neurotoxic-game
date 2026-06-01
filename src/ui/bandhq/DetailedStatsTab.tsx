@@ -79,7 +79,7 @@ const DetailRow = ({
       >
         {value}
       </div>
-      {subtext && <div className='text-[10px] text-ash-gray/60'>{subtext}</div>}
+      {subtext && <div className='text-xs text-ash-gray/60'>{subtext}</div>}
     </div>
   </div>
 )
@@ -403,7 +403,7 @@ const RegionalStandingSection = ({
       )}
       {venueBlacklist.length > 0 && (
         <div className='mt-2 pt-2 border-t border-ash-gray/20'>
-          <div className='text-[10px] text-ash-gray mb-1 uppercase tracking-widest'>
+          <div className='text-xs text-ash-gray mb-1 uppercase tracking-widest'>
             {t('ui:detailedStats.blacklistedVenues', {
               defaultValue: 'Blacklisted Venues'
             })}
@@ -656,11 +656,11 @@ const MemberTraits = ({ member, t }: { member: BandMember } & BasicTProps) => {
             {t(trait.name)}
           </span>
           {isTraitActive ? (
-            <span className='text-[10px] uppercase border border-toxic-green px-1 rounded'>
+            <span className='text-xs uppercase border border-toxic-green px-1 rounded'>
               {t('ui:detailedStats.active', { defaultValue: 'Active' })}
             </span>
           ) : (
-            <span className='text-[10px] uppercase'>
+            <span className='text-xs uppercase'>
               {t('ui:detailedStats.locked', { defaultValue: 'Locked' })}
             </span>
           )}

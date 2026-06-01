@@ -9,6 +9,6 @@ export const ToxicModeFlash = memo(function ToxicModeFlash({
 }: ToxicModeFlashProps) {
   if (!isToxicMode) return null
   return (
-    <div className='absolute inset-0 z-0 toxic-border-flash pointer-events-none' />
+    <div className='absolute inset-0 z-(--z-base) toxic-border-flash pointer-events-none' />
   )
 })

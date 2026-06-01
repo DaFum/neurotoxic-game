@@ -102,7 +102,7 @@ export const UplinkButton = memo(
               className='absolute inset-0 opacity-50'
               style={SCANLINE_BACKGROUND_STYLE}
             ></div>
-            <div className='w-full h-1 bg-toxic-green absolute top-1/2 animate-[scan_0.5s_linear_infinite]'></div>
+            <div className='w-full h-1 bg-toxic-green absolute top-1/2 motion-safe:animate-[scan_0.5s_linear_infinite]'></div>
           </div>
         )}
 
@@ -125,12 +125,12 @@ export const UplinkButton = memo(
                 {title}
               </h2>
               <span
-                className={`text-[8px] sm:text-[9px] tracking-[0.12em] sm:tracking-widest px-2 py-1 border transition-colors whitespace-normal break-words [overflow-wrap:anywhere] max-w-full ${isHovered ? 'border-toxic-green text-toxic-green' : 'border-transparent text-toxic-green/50'}`}
+                className={`text-[8px] sm:text-xxs tracking-[0.12em] sm:tracking-widest px-2 py-1 border transition-colors whitespace-normal break-words [overflow-wrap:anywhere] max-w-full ${isHovered ? 'border-toxic-green text-toxic-green' : 'border-transparent text-toxic-green/50'}`}
               >
                 {type}
               </span>
             </div>
-            <p className='text-[9px] sm:text-xs opacity-70 mt-1 font-mono tracking-wide break-words [overflow-wrap:anywhere] whitespace-normal leading-[1.35] pb-[2px]'>
+            <p className='text-xxs sm:text-xs opacity-70 mt-1 font-mono tracking-wide break-words [overflow-wrap:anywhere] whitespace-normal leading-[1.35] pb-[2px]'>
               {subtitle}
             </p>
           </div>
@@ -403,11 +403,11 @@ export const CrisisModal = memo(
 
         {/* Modal Box */}
         <div
-          className={`relative w-full max-w-lg border-2 border-toxic-green bg-void-black shadow-[0_0_40px_var(--color-toxic-green-glow)] animate-[glitch-anim_0.2s_ease-in-out] ${className || ''}`}
+          className={`relative w-full max-w-4xl border-2 border-toxic-green bg-void-black shadow-[0_0_40px_var(--color-toxic-green-glow)] motion-safe:animate-[glitch-anim_0.2s_ease-in-out] ${className || ''}`}
         >
           {/* Hardware details */}
           <div className='absolute top-0 left-0 w-full h-1 bg-toxic-green'></div>
-          <div className='absolute top-0 left-2 w-16 h-4 bg-toxic-green text-void-black text-[10px] font-bold text-center leading-4 uppercase'>
+          <div className='absolute top-0 left-2 w-16 h-4 bg-toxic-green text-void-black text-xs font-bold text-center leading-4 uppercase'>
             {t('ui:event.severity.critical')}
           </div>
 
@@ -529,7 +529,7 @@ export const DeadmanButton = memo(
 
     return (
       <div className='w-full flex flex-col gap-1'>
-        <span className='text-[10px] tracking-widest uppercase opacity-50 text-center'>
+        <span className='text-xs tracking-widest uppercase opacity-50 text-center'>
           {t('ui:holdToOverride', 'HOLD TO OVERRIDE')}
         </span>
         <button
@@ -592,7 +592,7 @@ export const HazardTicker = memo(({ message }: HazardTickerProps) => {
       </div>
 
       {/* Scrolling Text Container */}
-      <div className='flex w-full whitespace-nowrap animate-[marquee_10s_linear_infinite] px-8 items-center gap-12'>
+      <div className='flex w-full whitespace-nowrap motion-safe:animate-[marquee_10s_linear_infinite] px-8 items-center gap-12'>
         {}
         {['pill-0', 'pill-1', 'pill-2'].map(pillKey => (
           <span

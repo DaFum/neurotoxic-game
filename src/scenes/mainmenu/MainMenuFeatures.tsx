@@ -64,7 +64,7 @@ const FeatureBulletList = ({ items }: FeatureBulletListProps) => {
         return (
           <li
             key={item}
-            className='text-ash-gray font-mono text-sm md:text-base pl-2 relative before:content-["-"] before:absolute before:left-[-8px] before:text-toxic-green'
+            className='text-ash-gray font-mono text-sm md:text-base pl-2 relative before:content-["-"] before:absolute before:-left-2 before:text-toxic-green'
           >
             {splitIdx > -1 ? (
               <>

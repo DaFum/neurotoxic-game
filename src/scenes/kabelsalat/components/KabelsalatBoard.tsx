@@ -52,7 +52,7 @@ export const KabelsalatBoard: FC<KabelsalatBoardProps> = ({
       className={`relative w-full aspect-[4/3] border-4 bg-void-black transition-all duration-100 select-none overflow-hidden shadow-[inset_0_0_50px_var(--color-shadow-black)]
         ${
           isShocked
-            ? 'border-error-red animate-[shake_0.1s_infinite]'
+            ? 'border-error-red motion-safe:animate-[shake_0.1s_infinite]'
             : isPoweredOn
               ? 'border-success-green shadow-[0_0_30px_var(--color-success-green)]'
               : isGameOver
@@ -62,7 +62,7 @@ export const KabelsalatBoard: FC<KabelsalatBoardProps> = ({
     >
       {/* Void Surge Meter overlay - autonomous mechanic */}
       {!isGameOver && !isPoweredOn && (
-        <div className='absolute top-4 right-4 z-20 flex flex-col items-end gap-2'>
+        <div className='absolute top-4 right-4 z-(--z-hud) flex flex-col items-end gap-2'>
           <div className='text-toxic-green font-bold text-sm tracking-widest bg-void-black/80 px-2 py-1 border border-toxic-green/50'>
             {t('ui:minigames.kabelsalat.voidSurge')}: {Math.floor(voidSurge)}%
           </div>
@@ -98,7 +98,7 @@ export const KabelsalatBoard: FC<KabelsalatBoardProps> = ({
         height='100%'
         viewBox='0 0 800 600'
         preserveAspectRatio='xMidYMid meet'
-        className='absolute inset-0 z-10'
+        className='absolute inset-0 z-(--z-crt)'
         role='img'
         aria-label={t('ui:minigames.kabelsalat.title')}
       >

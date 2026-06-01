@@ -23,7 +23,7 @@ export const GameOverStats = ({
       transition={{ delay: 1.2, duration: 0.5 }}
       className='border-2 border-blood-red/60 p-6 w-full max-w-lg mb-8 bg-void-black/80 backdrop-blur-sm relative z-10 shadow-[0_0_30px_var(--color-blood-red-20)]'
     >
-      <div className='text-[10px] text-blood-red-bright tracking-widest mb-4 border-b border-blood-red/30 pb-2'>
+      <div className='text-xs text-blood-red-bright tracking-widest mb-4 border-b border-blood-red/30 pb-2'>
         {t('ui:gameOver.finalStatistics')}
       </div>
       <div className='space-y-3 font-mono'>

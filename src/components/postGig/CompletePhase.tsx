@@ -37,7 +37,7 @@ export const CompletePhase = ({
   return (
     <div
       data-testid='post-gig-complete'
-      className='relative min-h-[320px] sm:min-h-[400px] flex flex-col items-center justify-center p-3 sm:p-6 lg:p-8 border-2 border-ash-gray/40 overflow-hidden'
+      className='relative min-h-80 sm:min-h-96 flex flex-col items-center justify-center p-3 sm:p-6 lg:p-8 border-2 border-ash-gray/40 overflow-hidden'
     >
       {/* Background Image Watermark */}
       <div

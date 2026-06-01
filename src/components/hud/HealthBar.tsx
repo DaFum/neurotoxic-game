@@ -25,7 +25,7 @@ export const HealthBar = memo(function HealthBar({
           isDanger={health < 20}
         />
         {isToxicMode && (
-          <div className='mt-3 text-blood-red animate-neon-flicker font-bold tracking-widest text-center font-display text-sm border-t border-blood-red/30 pt-2'>
+          <div className='mt-3 text-error-red animate-neon-flicker font-bold tracking-widest text-center font-display text-sm border-t border-error-red/30 pt-2'>
             {t('ui:gig.toxicModeActive', 'TOXIC MODE ACTIVE')}
           </div>
         )}

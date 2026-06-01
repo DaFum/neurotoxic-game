@@ -149,7 +149,7 @@ const DealInfo = memo(
           </div>
           {displayDeal.alignment && (
             <span
-              className={`text-[10px] font-mono border border-current px-1 ${alignmentMetadata.colorClass}`}
+              className={`text-xs font-mono border border-current px-1 ${alignmentMetadata.colorClass}`}
             >
               {t(alignmentMetadata.badgeKey, {
                 defaultValue: alignmentMetadata.defaultLabel
@@ -157,7 +157,7 @@ const DealInfo = memo(
             </span>
           )}
           {flavor && flavor.variant !== 'standard' && (
-            <span className='text-[10px] font-mono border border-electric-blue/60 text-electric-blue px-1 '>
+            <span className='text-xs font-mono border border-electric-blue/60 text-electric-blue px-1 '>
               {t(flavor.variantLabelKey, {
                 defaultValue: flavor.variantLabelDefault
               })}
@@ -165,7 +165,7 @@ const DealInfo = memo(
           )}
           {flavor && (
             <span
-              className={`text-[10px] font-mono uppercase tracking-wider ${urgencyClass(flavor.urgency)}`}
+              className={`text-xs font-mono uppercase tracking-wider ${urgencyClass(flavor.urgency)}`}
             >
               {t(`economy:brandFlavor.urgency.${flavor.urgency}`, {
                 defaultValue: flavor.urgency
@@ -175,7 +175,7 @@ const DealInfo = memo(
         </div>
 
         {flavor && (
-          <div className='text-[11px] font-mono text-electric-blue/80 mt-1 break-words'>
+          <div className='text-xs font-mono text-electric-blue/80 mt-1 break-words'>
             {t('economy:brandFlavor.campaignLabel', {
               defaultValue: 'Campaign'
             })}
@@ -207,11 +207,11 @@ const DealInfo = memo(
         </div>
 
         {flavor && (
-          <div className='text-[11px] mb-2 border-l-2 border-toxic-green/60 pl-2 break-words'>
+          <div className='text-xs mb-2 border-l-2 border-toxic-green/60 pl-2 break-words'>
             <div className='text-toxic-green/90 italic'>
               “{t(flavor.taglineKey, { defaultValue: flavor.taglineDefault })}”
             </div>
-            <div className='text-ash-gray/90 text-[10px] mt-0.5'>
+            <div className='text-ash-gray/90 text-xs mt-0.5'>
               {t(flavor.hookKey, { defaultValue: flavor.hookDefault })}
             </div>
           </div>
@@ -250,7 +250,7 @@ const DealInfo = memo(
 
         {/* Reputation Status */}
         {alignmentReputation !== undefined && (
-          <div className='mt-2 text-[10px] text-ash-gray'>
+          <div className='mt-2 text-xs text-ash-gray'>
             {t('ui:deals.reputation', { defaultValue: 'Reputation' })}:{' '}
             <span
               className={
@@ -293,7 +293,7 @@ const DealActions = memo(
     const negotiationStatus = getNegotiationStatus(negotiationState)
 
     return (
-      <div className='flex flex-col gap-2 z-10 w-full sm:w-auto sm:min-w-[140px] sm:ml-4'>
+      <div className='flex flex-col gap-2 z-10 w-full sm:w-auto sm:min-w-36 sm:ml-4'>
         {!isRevoked ? (
           <>
             <ActionButton
@@ -313,7 +313,7 @@ const DealActions = memo(
             )}
             {hasNegotiated && (
               <div
-                className={`text-center text-[10px] font-mono tracking-wider ${negotiationStatus === 'SUCCESS' ? 'text-toxic-green' : 'text-warning-yellow'}`}
+                className={`text-center text-xs font-mono tracking-wider ${negotiationStatus === 'SUCCESS' ? 'text-toxic-green' : 'text-warning-yellow'}`}
               >
                 {getNegotiationStatusText(negotiationStatus, t)}
               </div>

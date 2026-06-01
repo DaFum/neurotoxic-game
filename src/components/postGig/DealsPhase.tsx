@@ -28,7 +28,7 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }: DealsPhaseProps) => {
             defaultValue: 'INCOMING BRAND OFFERS'
           })}
         </h3>
-        <div className='text-[10px] text-ash-gray tracking-wider mt-1'>
+        <div className='text-xs text-ash-gray tracking-wider mt-1'>
           {t('ui:deals.sellOutOrStayTrue', {
             defaultValue: 'SELL OUT OR STAY TRUE?'
           })}

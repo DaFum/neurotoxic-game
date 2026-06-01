@@ -37,7 +37,7 @@ export const SocialPhase = ({
             {trend}
           </div>
         )}
-        <div className='text-[10px] text-ash-gray tracking-wider mt-1'>
+        <div className='text-xs text-ash-gray tracking-wider mt-1'>
           {t('economy:social.chooseStrategy', {
             defaultValue: 'CHOOSE YOUR STRATEGY'
           })}

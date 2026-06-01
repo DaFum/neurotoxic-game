@@ -18,7 +18,7 @@ export const TourbusTrailerOverlay = ({ asset, onSlotClick }: Props) => {
   const { t } = useTranslation('ui')
   const addonSlots = asset.slots.filter(s => s.slotType === 'tb_trailer_addon')
   return (
-    <div className='relative w-full md:absolute md:left-[-30%] md:top-[20%] md:w-[30%]'>
+    <div className='relative w-full md:absolute md:-left-1/3 md:top-1/5 md:w-1/3'>
       <GeneratedImagePanel
         prompt={getTrailerImagePrompt(asset.chassisFlavor)}
         alt={t('ui:assets.tourbus.trailer_alt', {

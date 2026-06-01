@@ -46,7 +46,7 @@ const HQTabButton = ({ tab, isActive, label, onClick }: HQTabButtonProps) => (
     id={`tab-${tab.id}`}
     onClick={onClick}
     disabled={tab.isLocked}
-    className={`flex-1 w-full min-w-[6.5rem] sm:min-w-[120px] py-2 sm:py-3 px-3 sm:px-4 text-center text-xs sm:text-sm font-bold tracking-[0.1em] uppercase transition-all duration-150 font-mono flex justify-center items-center gap-2 whitespace-normal break-words [overflow-wrap:anywhere] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset
+    className={`flex-1 w-full min-w-[6.5rem] sm:min-w-32 py-2 sm:py-3 px-3 sm:px-4 text-center text-xs sm:text-sm font-bold tracking-[0.1em] uppercase transition-all duration-150 font-mono flex justify-center items-center gap-2 whitespace-normal break-words [overflow-wrap:anywhere] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset
       ${tab.isLocked ? 'opacity-50 grayscale' : ''}
       ${
         isActive
@@ -151,7 +151,7 @@ export const BandHQ = ({ onClose, className = '' }: BandHQProps) => {
       />
 
       <div
-        className='relative z-(--z-modal) w-full max-w-5xl h-[calc(100svh-1rem)] max-h-[calc(100svh-1rem)] sm:h-[calc(100svh-4rem)] border-4 border-toxic-green bg-void-black flex flex-col overflow-hidden shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)]'
+        className='relative z-(--z-modal) w-full max-w-4xl h-[calc(100svh-1rem)] max-h-[calc(100svh-1rem)] sm:h-[calc(100svh-4rem)] border-4 border-toxic-green bg-void-black flex flex-col overflow-hidden shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)]'
         role='dialog'
         aria-modal='true'
         aria-labelledby='band-hq-title'

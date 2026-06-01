@@ -15,9 +15,9 @@ export const CorruptionMeter = memo(function CorruptionMeter({
 }: CorruptionMeterProps) {
   const { t } = useTranslation('ui')
   return (
-    <div className='mt-3 w-48 bg-void-black/80 p-2 border border-blood-red/30 backdrop-blur-sm'>
+    <div className='mt-3 w-48 bg-void-black/80 p-2 border border-error-red/30 backdrop-blur-sm'>
       {isCorruptionBurstActive ? (
-        <div className='text-blood-red font-bold text-sm tracking-widest text-center animate-pulse'>
+        <div className='text-error-red font-bold text-sm tracking-widest text-center animate-pulse'>
           {t('ui:hud.burst_armed')}
         </div>
       ) : (

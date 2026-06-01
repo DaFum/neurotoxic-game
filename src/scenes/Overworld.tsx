@@ -168,7 +168,7 @@ export const Overworld = () => {
       />
       <OverworldHUD player={player} band={band} />
       {/* Radio Widget */}
-      <div className='fixed top-2 right-2 sm:top-8 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 z-50 pointer-events-auto bg-void-black border-2 border-toxic-green p-2 flex items-center gap-2 shadow-[0_0_10px_var(--color-toxic-green-20)] scale-100 origin-top-right sm:origin-center'>
+      <div className='fixed top-2 right-2 sm:top-8 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 z-(--z-overlay) pointer-events-auto bg-void-black border-2 border-toxic-green p-2 flex items-center gap-2 shadow-[0_0_10px_var(--color-toxic-green-20)] scale-100 origin-top-right sm:origin-center'>
         <div className='w-2 h-2 rounded-full bg-blood-red animate-pulse' />
         <span className='text-xs text-ash-gray font-mono'>
           {t('ui:overworld.radio_station', { defaultValue: 'FM 66.6' })}

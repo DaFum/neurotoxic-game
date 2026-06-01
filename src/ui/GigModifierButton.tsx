@@ -38,13 +38,13 @@ const GigModifierButton = memo(
       >
         <span className='flex flex-col text-left'>
           <span className='font-bold text-sm'>{item.label}</span>
-          <span className='text-[10px] opacity-70'>{item.desc}</span>
+          <span className='text-xs opacity-70'>{item.desc}</span>
         </span>
         <span className='font-mono text-sm font-bold tabular-nums'>
           {formatCurrency(item.cost, i18n.language)}
         </span>
         {!isActive && (
-          <div className='absolute inset-0 bg-star-white/5 translate-x-[-100%] group-hover:animate-[shimmer_0.8s_ease-out] skew-x-12 pointer-events-none' />
+          <div className='absolute inset-0 bg-star-white/5 translate-x-[-100%] motion-safe:group-hover:animate-[shimmer_0.8s_ease-out] skew-x-12 pointer-events-none' />
         )}
       </button>
     )

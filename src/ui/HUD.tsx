@@ -48,7 +48,7 @@ const BandMemberRow = ({ m, idx, t }: BandMemberRowProps) => {
       key={m.id ?? m.name ?? `member-${idx}`}
       className='flex items-center justify-between w-52 mb-1.5 last:mb-0'
     >
-      <span className='text-star-white/80 text-[11px]'>{safeName}</span>
+      <span className='text-star-white/80 text-xs'>{safeName}</span>
       <div className='flex items-center gap-1.5'>
         <Tooltip
           content={t('ui:hud.mood', { defaultValue: 'Mood' })}
@@ -67,7 +67,7 @@ const BandMemberRow = ({ m, idx, t }: BandMemberRowProps) => {
                 })}
               />
             </div>
-            <span className='text-[9px] text-mood-pink w-7 text-right tabular-nums'>
+            <span className='text-xxs text-mood-pink w-7 text-right tabular-nums'>
               {m.mood}%
             </span>
           </div>
@@ -89,7 +89,7 @@ const BandMemberRow = ({ m, idx, t }: BandMemberRowProps) => {
                 })}
               />
             </div>
-            <span className='text-[9px] text-stamina-green w-7 text-right tabular-nums'>
+            <span className='text-xxs text-stamina-green w-7 text-right tabular-nums'>
               {m.stamina}%
             </span>
           </div>
@@ -192,7 +192,7 @@ export const HUD = memo(() => {
                     defaultValue: 'Fuel Level'
                   })}
                 />
-                <span className='text-[10px] text-ash-gray w-8 text-right tabular-nums'>
+                <span className='text-xs text-ash-gray w-8 text-right tabular-nums'>
                   {Math.round(fuel)}
                 </span>
               </div>
@@ -215,7 +215,7 @@ export const HUD = memo(() => {
                     defaultValue: 'Van Condition'
                   })}
                 />
-                <span className='text-[10px] text-ash-gray w-8 text-right tabular-nums'>
+                <span className='text-xs text-ash-gray w-8 text-right tabular-nums'>
                   {Math.round(condition)}
                 </span>
               </div>
@@ -281,7 +281,7 @@ export const HUD = memo(() => {
             id='shortcuts-panel'
             className='pointer-events-auto bg-void-black/95 border border-toxic-green p-3 shadow-[0_0_12px_var(--color-toxic-green-20)] w-52'
           >
-            <div className='text-[10px] text-toxic-green tracking-widest uppercase mb-2 border-b border-toxic-green/30 pb-1'>
+            <div className='text-xs text-toxic-green tracking-widest uppercase mb-2 border-b border-toxic-green/30 pb-1'>
               {t('ui:keyboardShortcuts', {
                 defaultValue: 'Keyboard Shortcuts'
               })}
@@ -291,10 +291,10 @@ export const HUD = memo(() => {
                 key={s.key}
                 className='flex items-center justify-between mb-1 last:mb-0'
               >
-                <kbd className='text-[10px] bg-ash-gray/20 border border-ash-gray/40 px-1.5 py-0.5 text-star-white font-mono'>
+                <kbd className='text-xs bg-ash-gray/20 border border-ash-gray/40 px-1.5 py-0.5 text-star-white font-mono'>
                   {s.key}
                 </kbd>
-                <span className='text-[10px] text-ash-gray'>
+                <span className='text-xs text-ash-gray'>
                   {t(s.descKey, { defaultValue: s.desc })}
                 </span>
               </div>
@@ -324,7 +324,7 @@ export const HUD = memo(() => {
             }`}
           >
             <Skull size={14} className='inline mr-2' />
-            <span className='font-black uppercase tracking-wider text-[10px]'>
+            <span className='font-black uppercase tracking-wider text-xs'>
               {band.neuroDecimatorActive
                 ? t('ui:hud.decimatorActive', { defaultValue: 'DECIMATOR: ON' })
                 : t('ui:hud.decimatorInactive', {
@@ -336,7 +336,7 @@ export const HUD = memo(() => {
         {Boolean(band?.inventory?.neurotoxicPedal) && (
           <div className='bg-void-black text-toxic-green border-2 border-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)] px-3 py-1.5 flex items-center gap-2 animate-pulse mb-2 pointer-events-auto'>
             <Skull size={14} className='text-toxic-green' />
-            <span className='font-black uppercase tracking-wider text-[10px]'>
+            <span className='font-black uppercase tracking-wider text-xs'>
               {t('ui:hud.neurotoxicActive', {
                 defaultValue: 'NEUROTOXIC ACTIVE'
               })}
@@ -344,7 +344,7 @@ export const HUD = memo(() => {
           </div>
         )}
         <div className='bg-void-black border-2 border-toxic-green p-2.5 text-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)]'>
-          <div className='text-right border-b border-toxic-green/30 mb-2 pb-1 text-[10px] tracking-widest text-ash-gray'>
+          <div className='text-right border-b border-toxic-green/30 mb-2 pb-1 text-xs tracking-widest text-ash-gray'>
             {t('ui:bandStatus', { defaultValue: 'BAND STATUS' })}
           </div>
           {band.members.map((m: BandMember, idx: number) => (
@@ -356,7 +356,7 @@ export const HUD = memo(() => {
             />
           ))}
           <div className='mt-2 pt-1.5 border-t border-toxic-green/20 flex items-center justify-between'>
-            <span className='text-[10px] text-ash-gray'>
+            <span className='text-xs text-ash-gray'>
               {t('ui:harmony', { defaultValue: 'HARMONY' })}
             </span>
             <div className='flex items-center gap-2'>
@@ -372,7 +372,7 @@ export const HUD = memo(() => {
                 />
               </div>
               <span
-                className={`text-[10px] tabular-nums ${band.harmony < 40 ? 'text-blood-red' : 'text-toxic-green'}`}
+                className={`text-xs tabular-nums ${band.harmony < 40 ? 'text-blood-red' : 'text-toxic-green'}`}
               >
                 {band.harmony}%
               </span>

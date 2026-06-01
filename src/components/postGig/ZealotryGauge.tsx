@@ -43,7 +43,7 @@ export const ZealotryGauge = memo(
             />
           </div>
           {zealotryLevel >= ZEALOTRY_PROMO_THRESHOLD && (
-            <div className='text-[10px] text-blood-red-bright mt-1 uppercase animate-pulse break-words'>
+            <div className='text-xs text-blood-red-bright mt-1 uppercase animate-pulse break-words'>
               {t('economy:social.zealotryWarning', {
                 defaultValue:
                   'WARNING: FANS ARE BECOMING RADICALIZED. POLICE RAID RISK INCREASED.'

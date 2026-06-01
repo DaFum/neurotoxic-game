@@ -90,7 +90,7 @@ const SocketItemComponent: FC<SocketItemProps> = ({
           stroke='currentColor'
           strokeWidth='1'
           strokeDasharray='4 8'
-          className='animate-[spin_4s_linear_infinite] group-hover:fill-opacity-20'
+          className='motion-safe:animate-[spin_4s_linear_infinite] group-hover:fill-opacity-20'
         />
       )}
 

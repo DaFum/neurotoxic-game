@@ -92,7 +92,7 @@ export const GlitchButton = ({
     >
       <span
         className={`relative z-(--z-hud) flex min-w-0 max-w-full items-center justify-center gap-2 whitespace-normal break-words [overflow-wrap:anywhere] ${
-          isIntervention ? '' : 'group-hover:animate-pulse'
+          isIntervention ? '' : 'motion-safe:group-hover:animate-pulse'
         } ${isLoading ? 'opacity-0' : 'opacity-100'}`}
       >
         {children}

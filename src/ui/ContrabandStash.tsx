@@ -140,7 +140,7 @@ const StashCard = ({ item, selectedMember, onUseItem, t }: StashCardProps) => {
               />
             </div>
           )}
-          <p className='text-ash-gray text-xs min-h-[40px] leading-relaxed flex-1'>
+          <p className='text-ash-gray text-xs min-h-10 leading-relaxed flex-1'>
             {item.description
               ? t(item.description, {
                   defaultValue: t('ui:item.descriptionUnknown', {

@@ -29,11 +29,11 @@ export const ComboDisplay = memo(function ComboDisplay({
       >
         {combo}x
       </div>
-      <div className='text-[10px] text-ash-gray uppercase tracking-widest'>
+      <div className='text-xs text-ash-gray uppercase tracking-widest'>
         {t('ui:gig.combo', 'COMBO')}
       </div>
       {accuracy < 70 && (
-        <div className='text-[10px] text-warning-yellow animate-pulse'>
+        <div className='text-xs text-warning-yellow animate-pulse'>
           {t('ui:gig.lowAcc', 'LOW ACC')}
         </div>
       )}
