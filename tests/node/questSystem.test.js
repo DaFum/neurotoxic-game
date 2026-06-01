@@ -209,4 +209,38 @@ describe('Quest System Registry Validation', () => {
       )
     }
   })
+
+  // Backbone gate: gameplay code must route quest progression through the
+  // event façade (QuestEvents.emit / applyQuestEvent action). Calling
+  // QuestLifecycle.advanceQuest or .setQuestProgress directly from outside
+  // the quest domain is the failure mode the redesign is preventing — every
+  // system growing its own quest switch. The single legitimate call site is
+  // questReducer.ts's handleAdvanceQuest action wiring.
+  it('production code does not call QuestLifecycle.advanceQuest directly', async () => {
+    const fs = await import('node:fs')
+    const path = await import('node:path')
+    const files = []
+    const walk = dir => {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name)
+        if (entry.isDirectory()) walk(full)
+        else if (/\.(ts|tsx)$/.test(entry.name)) files.push(full)
+      }
+    }
+    walk('src')
+    const allowed = new Set([
+      'src/domain/questLifecycle.ts',
+      'src/utils/questProgress.ts',
+      'src/context/reducers/questReducer.ts'
+    ])
+    for (const file of files) {
+      const rel = file.replace(/\\/g, '/')
+      if (allowed.has(rel)) continue
+      const text = fs.readFileSync(file, 'utf8')
+      assert.ok(
+        !/QuestLifecycle\.(advanceQuest|setQuestProgress)\b/.test(text),
+        `${rel} calls QuestLifecycle.advance/setQuestProgress directly — route through QuestEvents.emit / applyQuestEvent instead`
+      )
+    }
+  })
 })

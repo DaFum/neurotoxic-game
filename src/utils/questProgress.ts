@@ -218,3 +218,20 @@ export const QuestProgress = {
     return nextState
   }
 }
+
+/**
+ * Public quest-event façade. Other gameplay systems must go through here
+ * (or the `applyQuestEvent` action it dispatches in reducers/hooks) — never
+ * call `QuestLifecycle.advanceQuest` / `setQuestProgress` directly for a
+ * specific quest id from gameplay code. That keeps producers ignorant of
+ * which quests are listening and prevents the "every system grows its own
+ * quest switch" failure mode the backbone redesign is trying to prevent.
+ *
+ * Producer files in src/quests/producers/* (planned, see backbone plan)
+ * will wrap this with system-specific helpers like
+ * `emitSocialPostResolved` so callers do not even shape the event object.
+ */
+export const QuestEvents = {
+  emit: (state: GameState, event: QuestProgressEvent): GameState =>
+    QuestProgress.applyEvent(state, event)
+}
