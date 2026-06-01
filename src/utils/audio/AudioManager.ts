@@ -129,14 +129,15 @@ class AudioSystem {
       currentSongId: this.currentSongId
     }
 
-    this.listeners.forEach((listener: AudioListener) => {
+    // ⚡ BOLT OPTIMIZATION: Replaced Set.forEach() with a for...of loop to eliminate callback allocation overhead in high-frequency state emissions.
+    for (const listener of this.listeners) {
       try {
         listener()
       } catch (error) {
         logger.warn('AudioSystem', 'Audio subscriber callback failed', error)
         this.listeners.delete(listener)
       }
-    })
+    }
   }
 
   /**
