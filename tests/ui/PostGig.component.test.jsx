@@ -774,11 +774,14 @@ describe('PostGig Component - Complete Phase', () => {
           })
         })
       )
+      // Don't re-assert registry-owned fields like `required` here — those
+      // come from QUEST_REGISTRY via getQuestDefinition. Only assert what
+      // handleContinue itself sets (id, deadline) and the failure-penalty
+      // contract this test is about.
       expect(mockAddQuest).toHaveBeenCalledWith(
         expect.objectContaining({
           id: 'quest_ego_management',
           deadline: 10,
-          required: 50,
           failurePenalty: expect.objectContaining({
             flags: ['ego_crisis_failed'],
             band: { harmony: -25 },

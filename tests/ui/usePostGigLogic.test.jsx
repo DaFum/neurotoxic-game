@@ -563,11 +563,13 @@ describe('usePostGigLogic', () => {
       act(() => {
         egoQuestResult.current.handleContinue()
       })
+      // Registry-owned fields (required, label) are sourced via
+      // getQuestDefinition; assert only what handleContinue itself sets and
+      // the failure-penalty contract this test is about.
       expect(mockAddQuest).toHaveBeenCalledWith(
         expect.objectContaining({
           id: 'quest_ego_management',
           deadline: 10,
-          required: 50,
           failurePenalty: expect.objectContaining({
             flags: ['ego_crisis_failed'],
             band: { harmony: -25 },

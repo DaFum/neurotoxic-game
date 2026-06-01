@@ -428,10 +428,7 @@ export const QuestLifecycle = {
         ? Object.assign(Object.create(null), quest.failurePenalty)
         : undefined
 
-      if (
-        typeof quest.deadline === 'number' &&
-        nextState.player.day > quest.deadline
-      ) {
+      if (typeof quest.deadline === 'number' && currentDay > quest.deadline) {
         hasExpired = true
         if (penalty) {
           const socialPenalty =
