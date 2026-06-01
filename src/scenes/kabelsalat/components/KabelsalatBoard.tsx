@@ -98,7 +98,7 @@ export const KabelsalatBoard: FC<KabelsalatBoardProps> = ({
         height='100%'
         viewBox='0 0 800 600'
         preserveAspectRatio='xMidYMid meet'
-        className='absolute inset-0 z-(--z-crt)'
+        className='absolute inset-0 z-(--z-stage-bg)'
         role='img'
         aria-label={t('ui:minigames.kabelsalat.title')}
       >
