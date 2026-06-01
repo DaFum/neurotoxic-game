@@ -318,7 +318,7 @@ export const IconClose = memo(function IconClose({
 }: IconProps) {
   return (
     <svg
-      className={`text-toxic-green ${className}`}
+      className={className}
       viewBox='0 0 24 24'
       fill='none'
       stroke='currentColor'
