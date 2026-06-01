@@ -46,6 +46,9 @@ import { shouldTriggerBankruptcy } from '../utils/economyEngine'
 import { generateBrandOffers } from '../utils/socialEngine'
 import { getTranslatedBrandDealDisplay } from '../utils/brandDealI18n'
 import { submitLeaderboardScores } from '../utils/leaderboardUtils'
+import { createHarmonyChangedQuestEvent } from '../quests/producers/gigQuestEvents'
+import { createBrandDealCompletedQuestEvent } from '../quests/producers/brandQuestEvents'
+import { createSocialPostQuestEvents } from '../quests/producers/socialQuestEvents'
 
 export interface UsePostGigHandlersReturn {
   isProcessingAction: boolean
@@ -171,13 +174,14 @@ export const usePostGigHandlers = ({
           )
         }
         if (appliedHarmonyDelta > 0) {
-          applyQuestEvent({
-            type: 'harmony_recovered',
-            amount: appliedHarmonyDelta,
-            newHarmony: clampBandHarmony(
-              finiteNumberOr(band?.harmony, 0) + appliedHarmonyDelta
-            )
-          })
+          applyQuestEvent(
+            createHarmonyChangedQuestEvent({
+              amount: appliedHarmonyDelta,
+              newHarmony: clampBandHarmony(
+                finiteNumberOr(band?.harmony, 0) + appliedHarmonyDelta
+              )
+            })
+          )
         }
 
         if (appliedMoneyDelta !== 0) {
@@ -212,24 +216,11 @@ export const usePostGigHandlers = ({
         const followersGained = finiteNumberOr(finalResult.followers, 0)
         // Pass platform + category as context so per-quest filters can narrow
         // matches (e.g. TikTok-only viral_dance, Lifestyle-only outreach).
-        const platform = option?.platform ? String(option.platform) : undefined
-        const category = option?.category ? String(option.category) : undefined
-        // Every resolved post counts as a social_post for community quests…
-        applyQuestEvent({
-          type: 'social_post',
-          postType: String(option?.platform ?? option?.id ?? 'post'),
-          followersGain: followersGained,
-          platform,
-          category
-        })
-        // …and only follower-positive posts feed follower-growth quests.
-        if (followersGained > 0) {
-          applyQuestEvent({
-            type: 'followers_gained',
-            amount: followersGained,
-            platform,
-            category
-          })
+        for (const questEvent of createSocialPostQuestEvents(option, {
+          ...finalResult,
+          followers: followersGained
+        })) {
+          applyQuestEvent(questEvent)
         }
 
         const playerUpdated = { ...player, money: nextMoney }
@@ -294,12 +285,7 @@ export const usePostGigHandlers = ({
         const socialUpdateFactory = getAcceptDealSocialUpdateFactory(deal)
         updateSocial(socialUpdateFactory)
 
-        applyQuestEvent({
-          type: 'brand_deal_completed',
-          dealId: deal.id,
-          dealType: deal.type,
-          brandAlignment: deal.alignment
-        })
+        applyQuestEvent(createBrandDealCompletedQuestEvent(deal))
 
         const moneyText =
           appliedMoneyDelta === 0
@@ -443,21 +429,23 @@ export const usePostGigHandlers = ({
         // Region context lets perRegion fame quests (quest_local_legend)
         // gate progress to the actual region where it was earned.
         applyQuestEvent({
-          type: 'fame_gained',
+          type: 'region.reputationChanged',
           amount: fameGain,
-          region: player.location
+          success: true,
+          context: { region: player.location }
         })
       }
 
+      let postPenaltyHarmony: number | undefined
       if (band.inventory?.neurotoxicPedal) {
+        const nextHarmony = clampBandHarmony(
+          finiteNumberOr(band?.harmony, 100) - NEUROTOXIC_PEDAL_HARMONY_PENALTY
+        )
+        postPenaltyHarmony = nextHarmony
         updateBand((prevBand: BandState) => {
-          const currentHarmony = prevBand.harmony ?? 100
-          const newHarmony = clampBandHarmony(
-            currentHarmony - NEUROTOXIC_PEDAL_HARMONY_PENALTY
-          )
           return {
             ...prevBand,
-            harmony: newHarmony
+            harmony: nextHarmony
           }
         })
       }
@@ -486,7 +474,8 @@ export const usePostGigHandlers = ({
           // miss the harmony_recovered event applied before it was added.
           const seededProgress =
             def.progressSource === 'harmony_recovered'
-              ? clampBandHarmony(finiteNumberOr(band?.harmony, 0))
+              ? (postPenaltyHarmony ??
+                clampBandHarmony(finiteNumberOr(band?.harmony, 0)))
               : 0
           addQuest({
             ...def,

@@ -1093,7 +1093,9 @@ export const POST_OPTIONS = [
   },
   {
     id: 'lifestyle_tour_diary',
-    name: 'Tour Diary Entry',
+    name: i18n.t('ui:postOptions.lifestyle.lifestyle_tour_diary.name', {
+      defaultValue: 'Tour Diary Entry'
+    }),
     platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
     category: 'Lifestyle',
     badges: [POST_BADGES.SAFE],
@@ -1104,12 +1106,16 @@ export const POST_OPTIONS = [
       platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
       followers: 250,
       moodChange: 3,
-      message: 'Newsletter readers eat up the road stories.'
+      message: i18n.t('ui:postOptions.lifestyle.lifestyle_tour_diary.message', {
+        defaultValue: 'Newsletter readers eat up the road stories.'
+      })
     })
   },
   {
     id: 'lifestyle_fan_dinner',
-    name: 'Dinner With Fans',
+    name: i18n.t('ui:postOptions.lifestyle.lifestyle_fan_dinner.name', {
+      defaultValue: 'Dinner With Fans'
+    }),
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Lifestyle',
     badges: [POST_BADGES.SAFE],
@@ -1120,12 +1126,16 @@ export const POST_OPTIONS = [
       platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
       followers: 300,
       moodChange: 5,
-      message: 'Fans posted the photos for you. Loyalty trended.'
+      message: i18n.t('ui:postOptions.lifestyle.lifestyle_fan_dinner.message', {
+        defaultValue: 'Fans posted the photos for you. Loyalty trended.'
+      })
     })
   },
   {
     id: 'lifestyle_behind_the_scenes',
-    name: 'Behind The Scenes Reel',
+    name: i18n.t('ui:postOptions.lifestyle.lifestyle_behind_the_scenes.name', {
+      defaultValue: 'Behind The Scenes Reel'
+    }),
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Lifestyle',
     badges: [POST_BADGES.SAFE],
@@ -1136,12 +1146,20 @@ export const POST_OPTIONS = [
       platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
       followers: 350,
       moodChange: 2,
-      message: 'A messy, honest day in the life. The algorithm noticed.'
+      message: i18n.t(
+        'ui:postOptions.lifestyle.lifestyle_behind_the_scenes.message',
+        {
+          defaultValue:
+            'A messy, honest day in the life. The algorithm noticed.'
+        }
+      )
     })
   },
   {
     id: 'lifestyle_gear_care',
-    name: 'Gear Care Sunday',
+    name: i18n.t('ui:postOptions.lifestyle.lifestyle_gear_care.name', {
+      defaultValue: 'Gear Care Sunday'
+    }),
     platform: SOCIAL_PLATFORMS.YOUTUBE.id,
     category: 'Lifestyle',
     badges: [POST_BADGES.SAFE],
@@ -1152,7 +1170,9 @@ export const POST_OPTIONS = [
       platform: SOCIAL_PLATFORMS.YOUTUBE.id,
       followers: 200,
       moneyChange: 20,
-      message: 'Niche audience, but they tipped via the affiliate link.'
+      message: i18n.t('ui:postOptions.lifestyle.lifestyle_gear_care.message', {
+        defaultValue: 'Niche audience, but they tipped via the affiliate link.'
+      })
     })
   }
 ]

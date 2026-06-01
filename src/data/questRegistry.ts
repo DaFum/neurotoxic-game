@@ -1,4 +1,4 @@
-import { QuestState } from '../types/quest'
+import type { QuestState } from '../types/quest'
 
 export const QUEST_REGISTRY = {
   quest_prove_yourself: {
@@ -7,6 +7,9 @@ export const QUEST_REGISTRY = {
     deadlineOffset: 20,
     repeatPolicy: 'never',
     progressSource: 'small_venue_good_gig',
+    progressRules: [
+      { event: 'gig.smallVenueGood', amount: 'fixed', fixedAmount: 1 }
+    ],
     required: 4,
     rewardFlag: 'prove_yourself_complete',
     followupQuestId: 'quest_back_from_pit',
@@ -27,6 +30,9 @@ export const QUEST_REGISTRY = {
     deadlineOffset: 14,
     repeatPolicy: 'never',
     progressSource: 'small_venue_good_gig',
+    progressRules: [
+      { event: 'gig.smallVenueGood', amount: 'fixed', fixedAmount: 1 }
+    ],
     required: 3,
     rewardFlag: 'apology_tour_complete',
     followupQuestId: 'quest_sincere_redemption',
@@ -46,6 +52,13 @@ export const QUEST_REGISTRY = {
     deadlineOffset: 5,
     repeatPolicy: 'never',
     progressSource: 'harmony_recovered',
+    progressRules: [
+      {
+        event: 'band.harmonyChanged',
+        amount: 'threshold',
+        thresholdField: 'band.harmony'
+      }
+    ],
     required: 50,
     rewardFlag: 'ego_crisis_resolved',
     followupQuestId: 'quest_band_pact',
@@ -65,7 +78,9 @@ export const QUEST_REGISTRY = {
     deadlineOffset: 15,
     repeatPolicy: 'never',
     progressSource: 'good_gig',
+    progressRules: [{ event: 'gig.good', amount: 'fixed', fixedAmount: 1 }],
     required: 3,
+    offer: { trigger: 'random', category: 'special', chance: 0.05 },
     rewardType: 'item',
     rewardData: { item: 'lucky_pick' },
     moneyReward: 200,
@@ -80,8 +95,21 @@ export const QUEST_REGISTRY = {
     deadlineOffset: 5,
     repeatPolicy: 'cooldown',
     progressSource: 'followers_gained',
+    progressRules: [
+      {
+        event: 'social.followersGained',
+        amount: 'event.amount',
+        match: { platform: 'tiktok' }
+      }
+    ],
     required: 500,
     cooldownDays: 7,
+    offer: {
+      trigger: 'random',
+      category: 'band',
+      chance: 0.1,
+      condition: { social: { maxTiktok: 4999 } }
+    },
     rewardType: 'fame',
     rewardData: { fame: 500 },
     moneyReward: 0,
@@ -97,8 +125,17 @@ export const QUEST_REGISTRY = {
     deadlineOffset: 7,
     repeatPolicy: 'cooldown',
     progressSource: 'brand_deal_completed',
+    progressRules: [
+      {
+        event: 'brand.dealCompleted',
+        amount: 'fixed',
+        fixedAmount: 1,
+        match: { dealType: ['Sponsorship', 'Commercial'] }
+      }
+    ],
     required: 2,
     cooldownDays: 15,
+    offer: { trigger: 'random', category: 'financial', chance: 0.08 },
     rewardType: 'item',
     rewardData: { item: 'energy_drink' },
     moneyReward: 500,
@@ -114,7 +151,26 @@ export const QUEST_REGISTRY = {
     deadlineOffset: 4,
     repeatPolicy: 'never',
     progressSource: 'harmony_recovered',
+    progressRules: [
+      {
+        event: 'band.harmonyChanged',
+        amount: 'threshold',
+        thresholdField: 'band.harmony'
+      },
+      {
+        event: 'social.postResolved',
+        amount: 'fixed',
+        fixedAmount: 5,
+        match: { postCategory: 'Lifestyle', success: true }
+      }
+    ],
     required: 75,
+    offer: {
+      trigger: 'random',
+      category: 'band',
+      chance: 0.3,
+      condition: { band: { harmonyBelow: 60 } }
+    },
     rewardType: 'harmony',
     rewardData: { harmony: 20 },
     moneyReward: 0,
@@ -129,8 +185,17 @@ export const QUEST_REGISTRY = {
     deadlineOffset: 7,
     repeatPolicy: 'cooldown',
     progressSource: 'travel_completed',
+    progressRules: [
+      { event: 'travel.completed', amount: 'fixed', fixedAmount: 1 }
+    ],
     required: 2,
     cooldownDays: 14,
+    offer: {
+      trigger: 'random',
+      category: 'transport',
+      chance: 0.07,
+      condition: { requiredAssetKind: 'tourbus_chassis' }
+    },
     moneyReward: 300,
     failurePenalty: {
       band: { harmony: -5 }
@@ -143,8 +208,15 @@ export const QUEST_REGISTRY = {
     deadlineOffset: 14,
     repeatPolicy: 'cooldown',
     progressSource: 'good_gig',
+    progressRules: [{ event: 'gig.good', amount: 'fixed', fixedAmount: 1 }],
     required: 2,
     cooldownDays: 21,
+    offer: {
+      trigger: 'random',
+      category: 'special',
+      chance: 0.06,
+      condition: { requiredAssetKind: 'studio_chassis' }
+    },
     rewardType: 'fame',
     rewardData: { fame: 250 },
     failurePenalty: {
@@ -158,8 +230,17 @@ export const QUEST_REGISTRY = {
     deadlineOffset: 6,
     repeatPolicy: 'cooldown',
     progressSource: 'gig_completed',
+    progressRules: [
+      { event: 'gig.completed', amount: 'fixed', fixedAmount: 1 }
+    ],
     required: 3,
     cooldownDays: 10,
+    offer: {
+      trigger: 'random',
+      category: 'financial',
+      chance: 0.07,
+      condition: { requiredAssetKind: 'merch_workshop_chassis' }
+    },
     moneyReward: 400,
     failurePenalty: {
       social: { loyalty: -3 }
@@ -172,7 +253,21 @@ export const QUEST_REGISTRY = {
     deadlineOffset: 21,
     repeatPolicy: 'perVenue',
     progressSource: 'good_gig',
+    progressRules: [
+      {
+        event: 'gig.good',
+        amount: 'fixed',
+        fixedAmount: 1,
+        match: { scope: 'venue' }
+      }
+    ],
     required: 3,
+    offer: {
+      trigger: 'random',
+      category: 'gig',
+      chance: 0.06,
+      condition: { currentNodeType: 'GIG' }
+    },
     rewardType: 'fans',
     rewardData: { fans: 200 },
     moneyReward: 250,
@@ -187,7 +282,21 @@ export const QUEST_REGISTRY = {
     deadlineOffset: 30,
     repeatPolicy: 'perRegion',
     progressSource: 'good_gig',
+    progressRules: [
+      {
+        event: 'gig.good',
+        amount: 'fixed',
+        fixedAmount: 1,
+        match: { scope: 'region' }
+      }
+    ],
     required: 5,
+    offer: {
+      trigger: 'random',
+      category: 'gig',
+      chance: 0.05,
+      condition: { requireLocation: true }
+    },
     rewardType: 'fame',
     rewardData: { fame: 400 },
     failurePenalty: {
@@ -201,8 +310,16 @@ export const QUEST_REGISTRY = {
     deadlineOffset: 4,
     repeatPolicy: 'cooldown',
     progressSource: 'followers_gained',
+    progressRules: [
+      {
+        event: 'social.followersGained',
+        amount: 'event.amount',
+        match: { postCategory: 'Drama' }
+      }
+    ],
     required: 300,
     cooldownDays: 5,
+    offer: { trigger: 'random', category: 'band', chance: 0.06 },
     moneyReward: 150,
     failurePenalty: {
       social: { controversyLevel: 5 }
@@ -215,8 +332,22 @@ export const QUEST_REGISTRY = {
     deadlineOffset: 14,
     repeatPolicy: 'cooldown',
     progressSource: 'brand_deal_completed',
+    progressRules: [
+      {
+        event: 'brand.dealCompleted',
+        amount: 'fixed',
+        fixedAmount: 1,
+        match: { dealType: 'Endorsement' }
+      }
+    ],
     required: 3,
     cooldownDays: 21,
+    offer: {
+      trigger: 'random',
+      category: 'financial',
+      chance: 0.04,
+      condition: { minFame: 200 }
+    },
     moneyReward: 1500,
     failurePenalty: {
       social: { loyalty: -10 },
@@ -230,8 +361,24 @@ export const QUEST_REGISTRY = {
     deadlineOffset: 6,
     repeatPolicy: 'cooldown',
     progressSource: 'social_post',
+    progressRules: [
+      {
+        event: 'social.postResolved',
+        amount: 'fixed',
+        fixedAmount: 1,
+        match: { postCategory: ['Lifestyle', 'Community'], success: true }
+      }
+    ],
     required: 4,
     cooldownDays: 7,
+    offer: {
+      trigger: 'random',
+      category: 'band',
+      chance: 0.08,
+      condition: {
+        social: { loyaltyBelow: 35, controversyAbove: 30 }
+      }
+    },
     rewardType: 'loyalty',
     rewardData: { loyalty: 15 },
     failurePenalty: {
@@ -245,6 +392,7 @@ export const QUEST_REGISTRY = {
     deadlineOffset: 14,
     repeatPolicy: 'never',
     progressSource: 'good_gig',
+    progressRules: [{ event: 'gig.good', amount: 'fixed', fixedAmount: 1 }],
     required: 3,
     rewardFlag: 'back_from_pit_complete',
     rewardType: 'fame',
@@ -261,6 +409,7 @@ export const QUEST_REGISTRY = {
     deadlineOffset: 10,
     repeatPolicy: 'never',
     progressSource: 'good_gig',
+    progressRules: [{ event: 'gig.good', amount: 'fixed', fixedAmount: 1 }],
     required: 2,
     rewardFlag: 'sincere_redemption_complete',
     rewardType: 'controversy_reduction',
@@ -277,6 +426,13 @@ export const QUEST_REGISTRY = {
     deadlineOffset: 7,
     repeatPolicy: 'never',
     progressSource: 'harmony_recovered',
+    progressRules: [
+      {
+        event: 'band.harmonyChanged',
+        amount: 'threshold',
+        thresholdField: 'band.harmony'
+      }
+    ],
     required: 70,
     rewardFlag: 'band_pact_complete',
     rewardType: 'harmony',
@@ -293,7 +449,20 @@ export const QUEST_REGISTRY = {
     deadlineOffset: 10,
     repeatPolicy: 'perRegion',
     progressSource: 'fame_gained',
+    progressRules: [
+      {
+        event: 'region.reputationChanged',
+        amount: 'event.amount',
+        match: { scope: 'region' }
+      }
+    ],
     required: 500,
+    offer: {
+      trigger: 'random',
+      category: 'special',
+      chance: 0.07,
+      condition: { requireLocation: true }
+    },
     rewardType: 'skill_point',
     rewardData: { memberIndex: 0 },
     moneyReward: 0,

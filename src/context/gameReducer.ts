@@ -5,7 +5,7 @@
  */
 
 import { ActionTypes } from './actionTypes'
-import { QuestProgress } from '../utils/questProgress'
+import { QuestEvents } from '../utils/questProgress'
 import {
   handlePurchaseChassis,
   handleInstallModule,
@@ -168,7 +168,7 @@ const reducerMap: ReducerMap = {
   [ActionTypes.APPLY_QUEST_EVENT]: (
     state: GameState,
     payload: import('../utils/questProgress').QuestProgressEvent
-  ) => QuestProgress.applyEvent(state, payload),
+  ) => QuestEvents.emit(state, payload),
   [ActionTypes.ADD_UNLOCK]: handleAddUnlock,
   [ActionTypes.CLINIC_HEAL]: handleClinicHeal,
   [ActionTypes.CLINIC_ENHANCE]: handleClinicEnhance,

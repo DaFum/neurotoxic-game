@@ -1,6 +1,12 @@
 import i18n from '../i18n'
 import { formatCurrency } from '../utils/numberUtils'
-import type { BandMember, GameState, QuestState, ToastPayload } from '../types'
+import type {
+  BandMember,
+  GameState,
+  QuestKind,
+  QuestState,
+  ToastPayload
+} from '../types'
 import {
   clampPlayerFame,
   clampBandHarmony,
@@ -8,12 +14,64 @@ import {
   calculateFameLevel,
   clampControversyLevel,
   clampLoyalty,
-  finiteNumberOr,
-  isLooseRecord
+  finiteNumberOr
 } from '../utils/gameStateUtils'
 import { QUEST_PROVE_YOURSELF } from '../data/questsConstants'
 import { getQuestDefinition } from '../data/questRegistry'
 import { hasActiveQuest } from '../utils/questUtils'
+import { applyQuestFailurePenalties } from './questPenalties'
+import { applyQuestRewards } from './questRewards'
+
+export const QUEST_SLOT_LIMITS: Record<QuestKind, number> = {
+  story: 1,
+  side: 2,
+  repeatable: 2,
+  tutorial: 1
+}
+
+const getQuestKindForSlots = (quest: Partial<QuestState>): QuestKind => {
+  const definition = getQuestDefinition(quest.id ?? '') as
+    | Partial<QuestState>
+    | undefined
+  return quest.kind ?? definition?.kind ?? 'side'
+}
+
+const hasQuestSlot = (
+  state: GameState,
+  quest: Partial<QuestState>
+): boolean => {
+  const kind = getQuestKindForSlots(quest)
+  const limit = QUEST_SLOT_LIMITS[kind]
+  const activeCount = (state.activeQuests ?? []).filter(activeQuest => {
+    if (!activeQuest) return false
+    return getQuestKindForSlots(activeQuest) === kind
+  }).length
+  return activeCount < limit
+}
+
+const getQuestWithDefinition = (quest: QuestState): QuestState => {
+  const definition = getQuestDefinition(quest.id) as
+    | Partial<QuestState>
+    | undefined
+  return definition ? { ...definition, ...quest } : quest
+}
+
+const createActiveQuestRuntime = (
+  quest: QuestState,
+  startedOnDay: number,
+  isRegistryBacked: boolean
+): QuestState => {
+  if (!isRegistryBacked) return quest
+  return {
+    id: quest.id,
+    deadline: quest.deadline,
+    progress: quest.progress,
+    required: quest.required,
+    scopeKey: quest.scopeKey,
+    status: 'active',
+    startedOnDay
+  }
+}
 
 export const QuestLifecycle = {
   addQuest: (state: GameState, quest: QuestState): GameState => {
@@ -58,10 +116,17 @@ export const QuestLifecycle = {
       if (additions.length > 0) nextStoryFlags = [...base, ...additions]
     }
 
+    const currentDay = finiteNumberOr(state.player?.day, 0)
+    const activeQuest = createActiveQuestRuntime(
+      merged,
+      currentDay,
+      Boolean(definition)
+    )
+
     return {
       ...state,
       activeStoryFlags: nextStoryFlags,
-      activeQuests: [...(state.activeQuests || []), merged]
+      activeQuests: [...(state.activeQuests || []), activeQuest]
     }
   },
 
@@ -73,9 +138,10 @@ export const QuestLifecycle = {
     const questIndex = state.activeQuests.findIndex(q => q.id === questId)
     if (questIndex === -1) return state
 
-    const quest = state.activeQuests[questIndex] as QuestState | undefined
-    if (!quest) return state
-    const nextState = { ...state }
+    const activeQuest = state.activeQuests[questIndex] as QuestState | undefined
+    if (!activeQuest) return state
+    const quest = getQuestWithDefinition(activeQuest)
+    let nextState = { ...state }
 
     // Remove from activeQuests
     nextState.activeQuests = state.activeQuests
@@ -85,7 +151,17 @@ export const QuestLifecycle = {
     // Apply generic quest rewards
     const generatedToasts: ToastPayload[] = []
 
-    if (typeof quest.moneyReward === 'number' && quest.moneyReward !== 0) {
+    const hasDeclaredRewards =
+      Array.isArray(quest.rewards) && quest.rewards.length > 0
+
+    if (hasDeclaredRewards) {
+      const rewardResult = applyQuestRewards(nextState, quest, randomIdx)
+      nextState = rewardResult.state
+      generatedToasts.push(...rewardResult.toasts)
+    } else if (
+      typeof quest.moneyReward === 'number' &&
+      quest.moneyReward !== 0
+    ) {
       const previousMoney = nextState.player?.money ?? 0
       const newMoney = clampPlayerMoney(previousMoney + quest.moneyReward)
       const appliedDelta = newMoney - previousMoney
@@ -106,7 +182,11 @@ export const QuestLifecycle = {
       }
     }
 
-    if (quest.rewardType === 'item' && quest.rewardData?.item) {
+    if (
+      !hasDeclaredRewards &&
+      quest.rewardType === 'item' &&
+      quest.rewardData?.item
+    ) {
       const itemKey = String(quest.rewardData.item)
       nextState.band = {
         ...nextState.band,
@@ -356,7 +436,8 @@ export const QuestLifecycle = {
 
     nextState.activeQuests = nextState.activeQuests.map(q => {
       if (q.id === questId) {
-        const required = q.required
+        const questConfig = getQuestWithDefinition(q)
+        const required = q.required ?? questConfig.required
         const progress = q.progress ?? 0
         if (typeof required !== 'number') {
           return q
@@ -365,7 +446,7 @@ export const QuestLifecycle = {
         if (newProgress >= required) {
           questCompleted = true
         }
-        return { ...q, progress: newProgress }
+        return { ...q, required, progress: newProgress }
       }
       return q
     })
@@ -392,7 +473,8 @@ export const QuestLifecycle = {
     let questCompleted = false
     nextState.activeQuests = nextState.activeQuests.map(q => {
       if (q.id !== questId) return q
-      const required = q.required
+      const questConfig = getQuestWithDefinition(q)
+      const required = q.required ?? questConfig.required
       const prev = q.progress ?? 0
       const next = Math.max(prev, finiteNumberOr(progress, prev))
       const capped =
@@ -400,7 +482,7 @@ export const QuestLifecycle = {
       if (typeof required === 'number' && capped >= required) {
         questCompleted = true
       }
-      return { ...q, progress: capped }
+      return { ...q, required, progress: capped }
     })
 
     if (questCompleted) {
@@ -410,7 +492,7 @@ export const QuestLifecycle = {
   },
 
   checkDeadlines: (state: GameState): GameState => {
-    const nextState = { ...state }
+    let nextState = { ...state }
     if (!nextState.activeQuests) return state
 
     let hasExpired = false
@@ -422,88 +504,20 @@ export const QuestLifecycle = {
     const currentDay = finiteNumberOr(nextState.player?.day, 0)
 
     for (let i = 0; i < nextState.activeQuests.length; i++) {
-      const quest = nextState.activeQuests[i]
-      if (!quest) continue
-      const penalty = isLooseRecord(quest.failurePenalty)
-        ? Object.assign(Object.create(null), quest.failurePenalty)
-        : undefined
+      const activeQuest = nextState.activeQuests[i]
+      if (!activeQuest) continue
+      const quest = getQuestWithDefinition(activeQuest)
 
       if (typeof quest.deadline === 'number' && currentDay > quest.deadline) {
         hasExpired = true
-        if (penalty) {
-          const socialPenalty =
-            Object.hasOwn(penalty, 'social') && isLooseRecord(penalty.social)
-              ? Object.assign(Object.create(null), penalty.social)
-              : undefined
-          if (
-            socialPenalty &&
-            Object.hasOwn(socialPenalty, 'controversyLevel') &&
-            socialPenalty.controversyLevel != null
-          ) {
-            // Deep clone before mutating
-            nextState.social = { ...nextState.social }
-            const controversyDelta = Number(socialPenalty.controversyLevel)
-            const validPenalty = Number.isFinite(controversyDelta)
-              ? controversyDelta
-              : 0
-            nextState.social.controversyLevel = clampControversyLevel(
-              (nextState.social.controversyLevel ?? 0) + validPenalty
-            )
-          }
-          if (
-            socialPenalty &&
-            Object.hasOwn(socialPenalty, 'loyalty') &&
-            socialPenalty.loyalty != null
-          ) {
-            nextState.social = { ...nextState.social }
-            const loyaltyDelta = Number(socialPenalty.loyalty)
-            nextState.social.loyalty = clampLoyalty(
-              (nextState.social.loyalty ?? 0) +
-                (Number.isFinite(loyaltyDelta) ? loyaltyDelta : 0)
-            )
-          }
-          const bandPenalty =
-            Object.hasOwn(penalty, 'band') && isLooseRecord(penalty.band)
-              ? Object.assign(Object.create(null), penalty.band)
-              : undefined
-          if (
-            bandPenalty &&
-            Object.hasOwn(bandPenalty, 'harmony') &&
-            bandPenalty.harmony != null
-          ) {
-            // Deep clone before mutating
-            nextState.band = { ...nextState.band }
-            const harmonyDelta = Number(bandPenalty.harmony)
-            nextState.band.harmony = clampBandHarmony(
-              (nextState.band.harmony ?? 1) +
-                (Number.isFinite(harmonyDelta) ? harmonyDelta : 0)
-            )
-          }
-
-          // Failure story flags (existing schema: failurePenalty.flags).
-          if (Array.isArray(penalty.flags)) {
-            for (const flag of penalty.flags) {
-              if (typeof flag === 'string' && flag.length > 0) {
-                flagsToAdd.push(flag)
-              }
-            }
-          }
-
-          // Re-add cooldown: gate re-adding this quest by quest id so the
-          // repeatPolicy:'cooldown' check honors a post-failure window.
-          if (Array.isArray(penalty.cooldowns)) {
-            for (const cd of penalty.cooldowns) {
-              if (!isLooseRecord(cd)) continue
-              const days = finiteNumberOr(cd.days, Number.NaN)
-              if (Number.isFinite(days)) {
-                cooldownsToAdd.push({
-                  questId: quest.id,
-                  expiresOnDay: currentDay + days
-                })
-              }
-            }
-          }
-        }
+        const penaltyResult = applyQuestFailurePenalties(
+          nextState,
+          quest,
+          currentDay
+        )
+        nextState = penaltyResult.state
+        flagsToAdd.push(...penaltyResult.flagsToAdd)
+        cooldownsToAdd.push(...penaltyResult.cooldownsToAdd)
 
         // Clear story flags that should not persist past failure: both the
         // explicit clearFlagsOnFail list and any startFlags the quest applied.
@@ -525,7 +539,7 @@ export const QuestLifecycle = {
           type: 'error'
         })
       } else {
-        newActiveQuests.push(quest)
+        newActiveQuests.push(activeQuest)
       }
     }
 
@@ -572,7 +586,7 @@ export type CanAcceptQuestResult =
   | { ok: true; scopeKey?: string }
   | {
       ok: false
-      reason: 'active' | 'completed' | 'flag' | 'cooldown' | 'scope'
+      reason: 'active' | 'completed' | 'flag' | 'cooldown' | 'scope' | 'slot'
     }
 
 export const canAcceptQuest = (
@@ -592,6 +606,7 @@ export const canAcceptQuest = (
       : { ...(definition ?? {}), ...questOrId }
 
   const repeatPolicy = merged.repeatPolicy
+  let scopeKey: string | undefined
   if (repeatPolicy === 'never') {
     if (state.completedQuestIds?.includes(questId)) {
       return { ok: false, reason: 'completed' }
@@ -604,17 +619,16 @@ export const canAcceptQuest = (
     if (completionFlags.some(flag => activeFlags.includes(flag))) {
       return { ok: false, reason: 'flag' }
     }
-    return { ok: true }
   }
   if (repeatPolicy === 'cooldown') {
     const currentDay = finiteNumberOr(state.player?.day, 0)
     const onCooldown = (state.questCooldowns ?? []).some(
       cd => cd.questId === questId && cd.expiresOnDay > currentDay
     )
-    return onCooldown ? { ok: false, reason: 'cooldown' } : { ok: true }
+    if (onCooldown) return { ok: false, reason: 'cooldown' }
   }
   if (repeatPolicy === 'perVenue' || repeatPolicy === 'perRegion') {
-    const scopeKey =
+    scopeKey =
       merged.scopeKey ??
       (repeatPolicy === 'perVenue'
         ? (state.currentGig?.id ?? state.player?.currentNodeId)
@@ -625,7 +639,10 @@ export const canAcceptQuest = (
     const alreadyDone = (state.completedQuestScopes ?? []).some(
       c => c.questId === questId && c.scopeKey === scopeKey
     )
-    return alreadyDone ? { ok: false, reason: 'scope' } : { ok: true, scopeKey }
+    if (alreadyDone) return { ok: false, reason: 'scope' }
   }
-  return { ok: true }
+  if (!hasQuestSlot(state, merged)) {
+    return { ok: false, reason: 'slot' }
+  }
+  return scopeKey ? { ok: true, scopeKey } : { ok: true }
 }

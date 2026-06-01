@@ -12,7 +12,13 @@ import { handleAddVenueBlacklist } from './socialReducer'
 import { QuestLifecycle } from '../../domain/questLifecycle'
 import { QUEST_PROVE_YOURSELF } from '../../data/questsConstants'
 import { hasActiveQuest } from '../../utils/questUtils'
-import { QuestProgress } from '../../utils/questProgress'
+import { QuestEvents } from '../../utils/questProgress'
+import {
+  createGigCompletedQuestEvent,
+  createGoodGigQuestEvent,
+  createHarmonyChangedQuestEvent,
+  createSmallVenueGoodQuestEvent
+} from '../../quests/producers/gigQuestEvents'
 import { normalizeSetlistForSave } from '../../utils/gameStateUtils'
 
 const MIN_REPUTATION = -100
@@ -149,13 +155,15 @@ export const handleSetLastGigStats = (
       ? state.currentGig.capacity
       : null
 
-  nextState = QuestProgress.applyEvent(nextState, {
-    type: 'gig_completed',
-    score,
-    capacity: capacity ?? 0,
-    venueId: state.currentGig?.id ?? '',
-    region: location
-  })
+  nextState = QuestEvents.emit(
+    nextState,
+    createGigCompletedQuestEvent({
+      score,
+      capacity: capacity ?? 0,
+      venueId: state.currentGig?.id ?? '',
+      region: location
+    })
+  )
 
   if (score < 30) {
     if (!isForbiddenKey(location)) {
@@ -194,21 +202,25 @@ export const handleSetLastGigStats = (
     }
 
     nextState = handleRecordGoodShow(nextState)
-    nextState = QuestProgress.applyEvent(nextState, {
-      type: 'good_gig',
-      score,
-      capacity: capacity ?? 0,
-      venueId: state.currentGig?.id ?? '',
-      region: location
-    })
-    if (capacity !== null && capacity <= 300) {
-      nextState = QuestProgress.applyEvent(nextState, {
-        type: 'small_venue_good_gig',
+    nextState = QuestEvents.emit(
+      nextState,
+      createGoodGigQuestEvent({
         score,
-        capacity,
+        capacity: capacity ?? 0,
         venueId: state.currentGig?.id ?? '',
         region: location
       })
+    )
+    if (capacity !== null && capacity <= 300) {
+      nextState = QuestEvents.emit(
+        nextState,
+        createSmallVenueGoodQuestEvent({
+          score,
+          capacity,
+          venueId: state.currentGig?.id ?? '',
+          region: location
+        })
+      )
     }
   }
 
@@ -228,11 +240,13 @@ export const handleSetLastGigStats = (
   // Harmony-threshold quests (ego management, harmony project, …) advance
   // toward / complete at their required harmony level. Driven generically via
   // the harmony_recovered progress source rather than a hardcoded quest id.
-  nextState = QuestProgress.applyEvent(nextState, {
-    type: 'harmony_recovered',
-    amount: 0,
-    newHarmony: nextState.band.harmony
-  })
+  nextState = QuestEvents.emit(
+    nextState,
+    createHarmonyChangedQuestEvent({
+      amount: 0,
+      newHarmony: nextState.band.harmony
+    })
+  )
 
   return nextState
 }

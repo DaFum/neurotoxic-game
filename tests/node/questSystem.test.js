@@ -2,12 +2,82 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert'
 import { QUEST_REGISTRY } from '../../src/data/questRegistry.ts'
 import { QuestLifecycle } from '../../src/domain/questLifecycle.ts'
+import { QuestProgress } from '../../src/utils/questProgress.ts'
 const getBaseState = () => ({
   player: { day: 1, location: 'test_city' },
   activeQuests: [],
   activeStoryFlags: [],
   eventCooldowns: []
 })
+
+const LEGACY_EVENT_BY_CANONICAL = {
+  'gig.completed': 'gig_completed',
+  'gig.good': 'good_gig',
+  'gig.smallVenueGood': 'small_venue_good_gig',
+  'social.postResolved': 'social_post',
+  'social.followersGained': 'followers_gained',
+  'region.reputationChanged': 'fame_gained',
+  'economy.moneyEarned': 'money_earned',
+  'band.harmonyChanged': 'harmony_recovered',
+  'item.collected': 'item_collected',
+  'brand.dealCompleted': 'brand_deal_completed',
+  'travel.completed': 'travel_completed'
+}
+
+const firstMatchValue = value => (Array.isArray(value) ? value[0] : value)
+
+const makeProgressEvent = (source, rule) => {
+  const eventSource = LEGACY_EVENT_BY_CANONICAL[source] ?? source
+  const match = rule?.match ?? {}
+  const commonGigPayload = {
+    score: 80,
+    capacity: 100,
+    venueId: 'test_venue',
+    region: 'test_region'
+  }
+
+  switch (eventSource) {
+    case 'gig_completed':
+    case 'good_gig':
+    case 'small_venue_good_gig':
+      return { type: eventSource, ...commonGigPayload }
+    case 'social_post':
+      return {
+        type: eventSource,
+        postType: 'instagram',
+        followersGain: 1,
+        platform: 'instagram',
+        category: 'Lifestyle',
+        success: true
+      }
+    case 'followers_gained':
+      return {
+        type: eventSource,
+        amount: 100,
+        platform: firstMatchValue(match.platform) ?? 'tiktok',
+        category: firstMatchValue(match.postCategory) ?? 'Drama'
+      }
+    case 'fame_gained':
+      return { type: eventSource, amount: 100, region: 'test_region' }
+    case 'money_earned':
+      return { type: eventSource, amount: 100 }
+    case 'harmony_recovered':
+      return { type: eventSource, amount: 5, newHarmony: 80 }
+    case 'item_collected':
+      return { type: eventSource, itemId: 'test_item' }
+    case 'brand_deal_completed':
+      return {
+        type: eventSource,
+        dealId: 'test_deal',
+        dealType: firstMatchValue(match.dealType) ?? 'Sponsorship',
+        brandAlignment: firstMatchValue(match.brandAlignment) ?? 'INDIE'
+      }
+    case 'travel_completed':
+      return { type: eventSource, region: 'test_region' }
+    default:
+      throw new Error(`No minimal event payload for ${source}`)
+  }
+}
 
 describe('Quest System Registry Validation', () => {
   it('should ensure quests with required > 0 have a progressSource', () => {
@@ -16,6 +86,17 @@ describe('Quest System Registry Validation', () => {
         assert.ok(
           quest.progressSource,
           `Quest ${_id} requires progress but has no progressSource`
+        )
+      }
+    }
+  })
+
+  it('should ensure quests with required > 0 have declarative progressRules', () => {
+    for (const [id, quest] of Object.entries(QUEST_REGISTRY)) {
+      if (quest.required && quest.required > 0) {
+        assert.ok(
+          Array.isArray(quest.progressRules) && quest.progressRules.length > 0,
+          `Quest ${id} requires progress but has no progressRules`
         )
       }
     }
@@ -55,20 +136,7 @@ describe('Quest System Registry Validation', () => {
   // cannot reintroduce regressions like game-over penalties or unprogressable
   // accumulation quests.
 
-  it('content gate: every progressSource is handled by QuestProgress.applyEvent', async () => {
-    const src = await import('node:fs').then(m =>
-      m.readFileSync('src/utils/questProgress.ts', 'utf8')
-    )
-    for (const [id, quest] of Object.entries(QUEST_REGISTRY)) {
-      if (!quest.progressSource) continue
-      assert.ok(
-        src.includes(`case '${quest.progressSource}'`),
-        `Quest ${id} uses progressSource '${quest.progressSource}' but it is not handled in QuestProgress.applyEvent`
-      )
-    }
-  })
-
-  it('content gate: every quest progressSource is emitted by gameplay code', async () => {
+  it('content gate: every quest progressRule event is emitted by gameplay code', async () => {
     const fs = await import('node:fs')
     const path = await import('node:path')
     // Concatenate all source files except the questProgress definition itself
@@ -83,19 +151,79 @@ describe('Quest System Registry Validation', () => {
     }
     walk('src')
     const emitText = files
-      .filter(f => !f.endsWith('questProgress.ts'))
+      .filter(
+        f => !f.endsWith('questProgress.ts') && !f.endsWith('questRegistry.ts')
+      )
       .map(f => fs.readFileSync(f, 'utf8'))
       .join('\n')
 
-    const usedSources = new Set(
-      Object.values(QUEST_REGISTRY)
-        .map(q => q.progressSource)
-        .filter(Boolean)
+    const usedEvents = new Set(
+      Object.values(QUEST_REGISTRY).flatMap(q =>
+        Array.isArray(q.progressRules)
+          ? q.progressRules.map(rule => rule.event)
+          : []
+      )
     )
-    for (const source of usedSources) {
+    for (const source of usedEvents) {
       assert.ok(
-        emitText.includes(`type: '${source}'`),
-        `progressSource '${source}' is used by a quest but is never emitted as a quest event anywhere in src/ — the quest can never progress`
+        emitText.includes(`type: '${source}'`) ||
+          emitText.includes(`'${source}'`),
+        `progressRule event '${source}' is used by a quest but is never emitted by gameplay/producers in src/ — the quest can never progress`
+      )
+    }
+  })
+
+  it('content gate: every progressRule event is handled at runtime', () => {
+    for (const [id, quest] of Object.entries(QUEST_REGISTRY)) {
+      if (!Array.isArray(quest.progressRules)) continue
+      const rule = quest.progressRules[0]
+      const source = rule?.event
+      assert.ok(source, `${id} has progressRules without an event`)
+      const scopeKey =
+        quest.repeatPolicy === 'perVenue'
+          ? 'test_venue'
+          : quest.repeatPolicy === 'perRegion'
+            ? 'test_region'
+            : undefined
+      const state = {
+        ...getBaseState(),
+        activeQuests: [
+          {
+            ...quest,
+            id,
+            progress: 0,
+            required: 999999,
+            ...(scopeKey ? { scopeKey } : {})
+          }
+        ]
+      }
+
+      const next = QuestProgress.applyEvent(
+        state,
+        makeProgressEvent(source, rule)
+      )
+      const nextQuest = next.activeQuests.find(q => q.id === id)
+      assert.ok(nextQuest, `${id} should remain active after test event`)
+      assert.ok(
+        nextQuest.progress > 0,
+        `progressRule '${source}' did not advance ${id} through QuestProgress.applyEvent`
+      )
+    }
+  })
+
+  it('content gate: scoped progressRules declare scope matching', () => {
+    for (const [id, quest] of Object.entries(QUEST_REGISTRY)) {
+      if (
+        quest.repeatPolicy !== 'perVenue' &&
+        quest.repeatPolicy !== 'perRegion'
+      )
+        continue
+      const requiredScope =
+        quest.repeatPolicy === 'perVenue' ? 'venue' : 'region'
+      const rules = quest.progressRules ?? []
+      assert.ok(
+        rules.some(rule => rule.match?.scope === requiredScope),
+        `Quest ${id} has repeatPolicy '${quest.repeatPolicy}' but no progressRule with scope '${requiredScope}'`
       )
     }
   })

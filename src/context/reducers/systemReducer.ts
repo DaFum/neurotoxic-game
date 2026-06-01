@@ -66,6 +66,7 @@ import {
 } from '../gameConstants'
 import type { MinigameType } from '../../types/game'
 import { QuestLifecycle } from '../../domain/questLifecycle'
+import { getQuestDefinition } from '../../data/questRegistry'
 import { getSafeRandom } from '../../utils/crypto'
 import { ALLOWED_TOAST_TYPES, sanitizeLoadedToast } from './toastSanitizers'
 import {
@@ -1395,6 +1396,32 @@ const sanitizeActiveQuests = (value: unknown): GameState['activeQuests'] => {
   if (!Array.isArray(value)) return []
   return value.flatMap(quest => {
     if (!isLooseRecord(quest) || typeof quest.id !== 'string') return []
+    const definition = getQuestDefinition(quest.id)
+    if (definition) {
+      const sanitized: GameState['activeQuests'][number] = {
+        id: quest.id,
+        status: 'active',
+        startedOnDay: finiteNumberOr(quest.startedOnDay, 0)
+      }
+      if (quest.deadline === null) {
+        sanitized.deadline = null
+      } else {
+        const deadline = finiteOptionalNumber(quest.deadline)
+        if (deadline !== undefined) sanitized.deadline = deadline
+      }
+      const progress = finiteOptionalNumber(quest.progress)
+      sanitized.progress = progress ?? 0
+      const required = finiteOptionalNumber(quest.required)
+      if (required !== undefined) {
+        sanitized.required = required
+      } else if (typeof definition.required === 'number') {
+        sanitized.required = definition.required
+      }
+      if (typeof quest.scopeKey === 'string') {
+        sanitized.scopeKey = quest.scopeKey
+      }
+      return [sanitized]
+    }
     const sanitized: GameState['activeQuests'][number] = { id: quest.id }
     for (const key of ['label', 'description', 'rewardType', 'rewardFlag']) {
       if (typeof quest[key] === 'string') sanitized[key] = quest[key]

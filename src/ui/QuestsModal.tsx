@@ -4,6 +4,7 @@ import { GlitchButton } from './GlitchButton.tsx'
 import { useTranslation } from 'react-i18next'
 import { useId, memo, type MouseEvent, type ReactNode } from 'react'
 import { formatCurrency } from '../utils/numberUtils'
+import { getQuestDefinition } from '../data/questRegistry'
 import type { Variants } from 'framer-motion'
 import type { PlayerState, QuestState } from '../types'
 
@@ -403,6 +404,10 @@ export const QuestsModal = ({
   player: PlayerState
 }) => {
   const { t } = useTranslation(['ui', 'events'])
+  const displayQuests = activeQuests.map(quest => {
+    const definition = getQuestDefinition(quest.id)
+    return definition ? { ...definition, ...quest } : quest
+  })
 
   // Animation variants
   const overlayVariants = {
@@ -452,7 +457,7 @@ export const QuestsModal = ({
           </div>
 
           {/* Quests List */}
-          {activeQuests.length === 0 ? (
+          {displayQuests.length === 0 ? (
             <div className='text-center py-12 flex flex-col items-center'>
               <IconTrophy className='w-16 h-16 mx-auto text-ash-gray/20 mb-4' />
               <p className='text-ash-gray font-mono italic mb-6'>
@@ -461,7 +466,7 @@ export const QuestsModal = ({
             </div>
           ) : (
             <div className='space-y-6'>
-              {sortQuests(activeQuests).map(
+              {sortQuests(displayQuests).map(
                 (quest: QuestDisplayState, index: number) => (
                   <QuestItem
                     key={quest.id}

@@ -1,14 +1,8 @@
 import type { GameState } from '../../types'
-import { finiteNumberOr } from '../../utils/finiteNumber'
-import { canAcceptQuest } from '../../domain/questLifecycle'
+import { QuestOfferEngine } from '../../domain/questOfferEngine'
 
-// Shared offer-gating helper: an offer only surfaces when no quest is active
-// AND QuestLifecycle.addQuest would actually accept the quest (cooldown / scope
-// / completion-flag guards). Prevents an event from prompting the player to
-// accept a quest that would be silently refused.
 const canOfferQuest = (state: GameState, questId: string): boolean =>
-  (!state.activeQuests || state.activeQuests.length === 0) &&
-  canAcceptQuest(state, questId).ok
+  QuestOfferEngine.canOfferQuest(state, questId)
 
 export const QUEST_EVENTS = [
   {
@@ -44,9 +38,7 @@ export const QUEST_EVENTS = [
     description: 'events:quest_trigger_viral_dance.desc',
     trigger: 'random',
     chance: 0.1,
-    condition: (state: GameState) =>
-      canOfferQuest(state, 'quest_viral_dance') &&
-      (state.social?.tiktok || 0) < 5000,
+    condition: (state: GameState) => canOfferQuest(state, 'quest_viral_dance'),
     options: [
       {
         label: 'events:quest_trigger_viral_dance.opt1.label',
@@ -96,8 +88,7 @@ export const QUEST_EVENTS = [
     trigger: 'random',
     chance: 0.3, // High chance if condition is met, reduced to 0.3 to prevent spam
     condition: (state: GameState) =>
-      canOfferQuest(state, 'quest_harmony_project') &&
-      finiteNumberOr(state.band?.harmony, 0) < 60,
+      canOfferQuest(state, 'quest_harmony_project'),
     options: [
       {
         label: 'events:quest_trigger_harmony_project.opt1.label',
@@ -146,9 +137,7 @@ export const QUEST_EVENTS = [
     trigger: 'random',
     chance: 0.07,
     condition: (state: GameState) =>
-      canOfferQuest(state, 'quest_tourbus_inspection') &&
-      Array.isArray(state.assets) &&
-      state.assets.some(a => a.kind === 'tourbus_chassis'),
+      canOfferQuest(state, 'quest_tourbus_inspection'),
     options: [
       {
         label: 'events:quest_trigger_tourbus_inspection.opt1.label',
@@ -169,10 +158,7 @@ export const QUEST_EVENTS = [
     description: 'events:quest_trigger_studio_demo.desc',
     trigger: 'random',
     chance: 0.06,
-    condition: (state: GameState) =>
-      canOfferQuest(state, 'quest_studio_demo') &&
-      Array.isArray(state.assets) &&
-      state.assets.some(a => a.kind === 'studio_chassis'),
+    condition: (state: GameState) => canOfferQuest(state, 'quest_studio_demo'),
     options: [
       {
         label: 'events:quest_trigger_studio_demo.opt1.label',
@@ -193,10 +179,7 @@ export const QUEST_EVENTS = [
     description: 'events:quest_trigger_merch_rush.desc',
     trigger: 'random',
     chance: 0.07,
-    condition: (state: GameState) =>
-      canOfferQuest(state, 'quest_merch_rush') &&
-      Array.isArray(state.assets) &&
-      state.assets.some(a => a.kind === 'merch_workshop_chassis'),
+    condition: (state: GameState) => canOfferQuest(state, 'quest_merch_rush'),
     options: [
       {
         label: 'events:quest_trigger_merch_rush.opt1.label',
@@ -217,14 +200,8 @@ export const QUEST_EVENTS = [
     description: 'events:quest_trigger_venue_residency.desc',
     trigger: 'random',
     chance: 0.06,
-    condition: (state: GameState) => {
-      if (!canOfferQuest(state, 'quest_venue_residency')) return false
-      const nodeId = state.player?.currentNodeId
-      if (typeof nodeId !== 'string' || nodeId.length === 0) return false
-      // Restrict to real gig venues — not cities, rest stops, festivals, etc.
-      const node = state.gameMap?.nodes?.[nodeId]
-      return node?.type === 'GIG'
-    },
+    condition: (state: GameState) =>
+      canOfferQuest(state, 'quest_venue_residency'),
     options: [
       {
         label: 'events:quest_trigger_venue_residency.opt1.label',
@@ -246,9 +223,7 @@ export const QUEST_EVENTS = [
     trigger: 'random',
     chance: 0.05,
     condition: (state: GameState) =>
-      canOfferQuest(state, 'quest_region_takeover') &&
-      typeof state.player?.location === 'string' &&
-      state.player.location.length > 0,
+      canOfferQuest(state, 'quest_region_takeover'),
     options: [
       {
         label: 'events:quest_trigger_region_takeover.opt1.label',
@@ -291,8 +266,7 @@ export const QUEST_EVENTS = [
     trigger: 'random',
     chance: 0.04,
     condition: (state: GameState) =>
-      canOfferQuest(state, 'quest_premium_endorsement') &&
-      finiteNumberOr(state.player?.fame, 0) >= 200,
+      canOfferQuest(state, 'quest_premium_endorsement'),
     options: [
       {
         label: 'events:quest_trigger_premium_endorsement.opt1.label',
@@ -313,12 +287,8 @@ export const QUEST_EVENTS = [
     description: 'events:quest_trigger_community_outreach.desc',
     trigger: 'random',
     chance: 0.08,
-    // Surface only when there's actual social damage to repair — low loyalty
-    // or high controversy. Otherwise the offer feels like a random ask.
     condition: (state: GameState) =>
-      canOfferQuest(state, 'quest_community_outreach') &&
-      ((state.social?.loyalty ?? 50) < 35 ||
-        (state.social?.controversyLevel ?? 0) > 30),
+      canOfferQuest(state, 'quest_community_outreach'),
     options: [
       {
         label: 'events:quest_trigger_community_outreach.opt1.label',

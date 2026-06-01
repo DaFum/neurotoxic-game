@@ -325,6 +325,39 @@ test('QuestLifecycle', async t => {
       )
     })
 
+    await t.test('applies new rewards arrays', () => {
+      const state = {
+        activeQuests: [
+          {
+            id: 'q_new_rewards',
+            label: 'New Rewards',
+            rewards: [
+              { type: 'money', amount: 25 },
+              { type: 'fame', amount: 5 },
+              { type: 'social.loyalty', amount: 7 },
+              { type: 'band.harmony', amount: 4 },
+              { type: 'item.add', itemId: 'zine_bundle' }
+            ]
+          }
+        ],
+        player: { money: 10, fame: 0, fameLevel: 0 },
+        social: { loyalty: 50 },
+        band: { harmony: 40, inventory: {} },
+        toasts: []
+      }
+
+      const nextState = QuestLifecycle.completeQuest(state, {
+        questId: 'q_new_rewards'
+      })
+
+      assert.equal(nextState.player.money, 35)
+      assert.equal(nextState.player.fame, 5)
+      assert.equal(nextState.social.loyalty, 57)
+      assert.equal(nextState.band.harmony, 44)
+      assert.equal(nextState.band.inventory.zine_bundle, true)
+      assert.equal(nextState.toasts.length, 5)
+    })
+
     await t.test('applies harmony reward with missing band', () => {
       const state = {
         activeQuests: [
@@ -990,6 +1023,25 @@ test('QuestLifecycle', async t => {
       assert.equal(q.progress, 1)
     })
 
+    await t.test('does not trust inherited venueId for perVenue scope', () => {
+      const state = baseState({
+        id: 'quest_venue_residency',
+        scopeKey: 'venue_A',
+        progress: 0,
+        required: 3,
+        repeatPolicy: 'perVenue'
+      })
+      const event = Object.assign(Object.create({ venueId: 'venue_A' }), {
+        type: 'good_gig',
+        score: 80,
+        capacity: 100,
+        region: 'r'
+      })
+      const next = QuestProgress.applyEvent(state, event)
+      const q = next.activeQuests.find(q => q.id === 'quest_venue_residency')
+      assert.equal(q.progress ?? 0, 0)
+    })
+
     await t.test(
       'does not advance perRegion quests from another region',
       () => {
@@ -1025,6 +1077,23 @@ test('QuestLifecycle', async t => {
       })
       const q = next.activeQuests.find(q => q.id === 'quest_local_legend')
       assert.equal(q.progress, 100)
+    })
+
+    await t.test('does not trust inherited region for perRegion scope', () => {
+      const state = baseState({
+        id: 'quest_local_legend',
+        scopeKey: 'magdeburg',
+        progress: 0,
+        required: 500,
+        repeatPolicy: 'perRegion'
+      })
+      const event = Object.assign(Object.create({ region: 'magdeburg' }), {
+        type: 'fame_gained',
+        amount: 100
+      })
+      const next = QuestProgress.applyEvent(state, event)
+      const q = next.activeQuests.find(q => q.id === 'quest_local_legend')
+      assert.equal(q.progress ?? 0, 0)
     })
 
     await t.test('viral_dance does not advance on instagram followers', () => {
@@ -1104,6 +1173,91 @@ test('QuestLifecycle', async t => {
         q => q.id === 'quest_premium_endorsement'
       )
       assert.equal(q.progress ?? 0, 0)
+    })
+
+    await t.test(
+      'supports inline progressRules with multiple event paths',
+      () => {
+        let state = baseState({
+          id: 'q_multi_path',
+          progress: 0,
+          required: 3,
+          progressRules: [
+            {
+              event: 'social.postResolved',
+              amount: 'fixed',
+              fixedAmount: 1,
+              match: { postCategory: 'Community', success: true }
+            },
+            {
+              event: 'brand.dealCompleted',
+              amount: 'fixed',
+              fixedAmount: 2,
+              match: { dealType: 'Sponsorship' }
+            }
+          ]
+        })
+
+        state = QuestProgress.applyEvent(state, {
+          type: 'social.postResolved',
+          amount: 1,
+          success: true,
+          context: { postCategory: 'Drama' }
+        })
+        assert.equal(
+          state.activeQuests.find(q => q.id === 'q_multi_path')?.progress ?? 0,
+          0
+        )
+
+        state = QuestProgress.applyEvent(state, {
+          type: 'social.postResolved',
+          amount: 1,
+          success: true,
+          context: { postCategory: 'Community' }
+        })
+        assert.equal(
+          state.activeQuests.find(q => q.id === 'q_multi_path')?.progress,
+          1
+        )
+
+        state = QuestProgress.applyEvent(state, {
+          type: 'brand.dealCompleted',
+          amount: 1,
+          success: true,
+          context: { dealType: 'Sponsorship' }
+        })
+        assert.equal(
+          state.activeQuests.find(q => q.id === 'q_multi_path'),
+          undefined
+        )
+        assert.ok(state.completedQuestIds.includes('q_multi_path'))
+      }
+    )
+
+    await t.test('supports threshold progressRules from event context', () => {
+      const state = baseState({
+        id: 'q_threshold',
+        progress: 10,
+        required: 50,
+        progressRules: [
+          {
+            event: 'band.harmonyChanged',
+            amount: 'threshold',
+            thresholdField: 'band.harmony'
+          }
+        ]
+      })
+
+      const next = QuestProgress.applyEvent(state, {
+        type: 'band.harmonyChanged',
+        amount: 15,
+        success: true,
+        context: { harmony: 45 }
+      })
+      assert.equal(
+        next.activeQuests.find(q => q.id === 'q_threshold')?.progress,
+        45
+      )
     })
   })
 
@@ -1191,6 +1345,38 @@ test('QuestLifecycle', async t => {
       // cooldownDays is 7 in the registry
       assert.equal(cd.expiresOnDay, 10)
     })
+
+    await t.test('allows different quest kinds to use separate slots', () => {
+      const state = {
+        player: { day: 1 },
+        activeQuests: [{ id: 'quest_prove_yourself' }],
+        activeStoryFlags: [],
+        completedQuestIds: [],
+        questCooldowns: []
+      }
+
+      const next = QuestLifecycle.addQuest(state, {
+        id: 'quest_pick_of_destiny'
+      })
+      assert.ok(next.activeQuests.find(q => q.id === 'quest_prove_yourself'))
+      assert.ok(next.activeQuests.find(q => q.id === 'quest_pick_of_destiny'))
+    })
+
+    await t.test('blocks quests when their kind slot is full', () => {
+      const state = {
+        player: { day: 1 },
+        activeQuests: [
+          { id: 'quest_pick_of_destiny' },
+          { id: 'quest_harmony_project' }
+        ],
+        activeStoryFlags: [],
+        completedQuestIds: [],
+        questCooldowns: []
+      }
+
+      const next = QuestLifecycle.addQuest(state, { id: 'quest_studio_demo' })
+      assert.equal(next, state)
+    })
   })
 
   await t.test('failure penalty handling', async t => {
@@ -1259,5 +1445,36 @@ test('QuestLifecycle', async t => {
         assert.ok(next.activeStoryFlags.includes('ego_crisis_failed'))
       }
     )
+
+    await t.test('applies new failurePenalties arrays', () => {
+      const next = QuestLifecycle.checkDeadlines({
+        player: { day: 10 },
+        social: { loyalty: 50, controversyLevel: 0 },
+        band: { harmony: 50 },
+        activeStoryFlags: [],
+        questCooldowns: [],
+        activeQuests: [
+          {
+            id: 'q_new_penalties',
+            deadline: 5,
+            failurePenalties: [
+              { type: 'social.loyalty', amount: -10 },
+              { type: 'social.controversy', amount: 8 },
+              { type: 'band.harmony', amount: -5 },
+              { type: 'flag.add', flag: 'q_new_penalties_failed' },
+              { type: 'quest.cooldown', days: 3 }
+            ]
+          }
+        ]
+      })
+
+      assert.equal(next.social.loyalty, 40)
+      assert.equal(next.social.controversyLevel, 8)
+      assert.equal(next.band.harmony, 45)
+      assert.ok(next.activeStoryFlags.includes('q_new_penalties_failed'))
+      assert.deepEqual(next.questCooldowns, [
+        { questId: 'q_new_penalties', expiresOnDay: 13 }
+      ])
+    })
   })
 })

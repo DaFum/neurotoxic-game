@@ -17,6 +17,17 @@ test('every quest with required > 0 has a progressSource', () => {
   }
 })
 
+test('every quest with required > 0 has progressRules', () => {
+  for (const [id, quest] of Object.entries(QUEST_REGISTRY)) {
+    if (typeof quest.required === 'number' && quest.required > 0) {
+      assert.ok(
+        Array.isArray(quest.progressRules) && quest.progressRules.length > 0,
+        `Quest ${id} has required > 0 but no progressRules — it can never progress through the declarative matcher`
+      )
+    }
+  }
+})
+
 test('no quest declares failurePenalty.type === "game_over"', () => {
   for (const [id, quest] of Object.entries(QUEST_REGISTRY)) {
     if (!quest.failurePenalty) continue

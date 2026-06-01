@@ -681,6 +681,45 @@ test('systemReducer - LOAD_GAME', async t => {
     }
   )
 
+  await t.test(
+    'migrates registry-backed active quests to runtime fields on load',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = {
+        activeQuests: [
+          {
+            id: 'quest_viral_dance',
+            label: 'Legacy Viral Dance',
+            description: 'Legacy description',
+            deadline: 12,
+            progress: 50,
+            required: 500,
+            rewardType: 'fame',
+            rewardData: { fame: 500 },
+            failurePenalty: { social: { controversyLevel: 5 } },
+            scopeKey: 'berlin',
+            startedOnDay: 4,
+            status: 'active'
+          }
+        ]
+      }
+
+      const nextState = handleLoadGame(initialState, loadedState)
+
+      assert.deepEqual(nextState.activeQuests, [
+        {
+          id: 'quest_viral_dance',
+          deadline: 12,
+          progress: 50,
+          required: 500,
+          scopeKey: 'berlin',
+          status: 'active',
+          startedOnDay: 4
+        }
+      ])
+    }
+  )
+
   await t.test('handles missing or malformed toasts array', () => {
     const initialState = createInitialState()
     const loadedState = {

@@ -2,7 +2,10 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { PostGig } from '../../src/scenes/PostGig'
 import { useGameState } from '../../src/context/GameState'
-import { GAME_PHASES } from '../../src/context/gameConstants'
+import {
+  GAME_PHASES,
+  NEUROTOXIC_PEDAL_HARMONY_PENALTY
+} from '../../src/context/gameConstants'
 import * as economyEngine from '../../src/utils/economyEngine'
 import * as socialEngine from '../../src/utils/socialEngine'
 import { BRAND_ALIGNMENTS } from '../../src/context/initialState'
@@ -739,6 +742,11 @@ describe('PostGig Component - Complete Phase', () => {
     vi.spyOn(economyEngine, 'shouldTriggerBankruptcy').mockReturnValue(false)
     useGameState.mockReturnValue(
       createBaseState({
+        band: {
+          ...createBaseState().band,
+          inventory: { neurotoxicPedal: true },
+          harmony: 50
+        },
         activeStoryFlags: ['cancel_quest_active', 'breakup_quest_active']
       })
     )
@@ -765,7 +773,6 @@ describe('PostGig Component - Complete Phase', () => {
         expect.objectContaining({
           id: 'quest_apology_tour',
           deadline: 19,
-          required: 3,
           failurePenalty: expect.objectContaining({
             flags: ['apology_tour_failed'],
             band: { harmony: -20 },
@@ -782,6 +789,7 @@ describe('PostGig Component - Complete Phase', () => {
         expect.objectContaining({
           id: 'quest_ego_management',
           deadline: 10,
+          progress: 50 - NEUROTOXIC_PEDAL_HARMONY_PENALTY,
           failurePenalty: expect.objectContaining({
             flags: ['ego_crisis_failed'],
             band: { harmony: -25 },

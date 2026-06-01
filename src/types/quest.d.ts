@@ -22,6 +22,135 @@ export type QuestProgressSource =
   | 'brand_deal_completed'
   | 'travel_completed'
 
+export type QuestEventType =
+  | 'gig.completed'
+  | 'gig.good'
+  | 'gig.smallVenueGood'
+  | 'social.postResolved'
+  | 'social.followersGained'
+  | 'brand.dealCompleted'
+  | 'asset.acquired'
+  | 'asset.repaired'
+  | 'asset.moduleInstalled'
+  | 'asset.riskResolved'
+  | 'item.collected'
+  | 'item.used'
+  | 'minigame.completed'
+  | 'travel.completed'
+  | 'economy.moneyEarned'
+  | 'band.harmonyChanged'
+  | 'venue.reputationChanged'
+  | 'region.reputationChanged'
+  | 'story.flagAdded'
+
+export interface QuestEventContext extends UnknownRecord {
+  venueId?: string
+  region?: string
+  cityId?: string
+  capacity?: number
+  platform?: string
+  postId?: string
+  postCategory?: string
+  category?: string
+  dealId?: string
+  dealType?: string
+  brandId?: string
+  brandAlignment?: string
+  assetId?: string
+  assetKind?: string
+  moduleId?: string
+  slotType?: string
+  riskType?: string
+  itemId?: string
+  minigameId?: string
+  score?: number
+  grade?: string
+  memberId?: string
+  traitId?: string
+  flag?: string
+  harmony?: number
+  loyalty?: number
+  condition?: number
+}
+
+export interface QuestEvent {
+  type: QuestEventType
+  amount?: number
+  success?: boolean
+  tags?: string[]
+  context?: QuestEventContext
+}
+
+export type QuestProgressAmountMode =
+  | 'fixed'
+  | 'event.amount'
+  | 'event.score'
+  | 'threshold'
+
+export interface QuestProgressRuleMatch {
+  scope?: 'venue' | 'region' | 'none'
+  platform?: string | string[]
+  postCategory?: string | string[]
+  category?: string | string[]
+  dealType?: string | string[]
+  brandAlignment?: string | string[]
+  assetKind?: string | string[]
+  minigameId?: string | string[]
+  itemId?: string | string[]
+  tags?: string[]
+  minScore?: number
+  success?: boolean
+}
+
+export interface QuestProgressRule {
+  event: QuestEventType | QuestProgressSource
+  amount?: QuestProgressAmountMode
+  fixedAmount?: number
+  thresholdField?: 'band.harmony' | 'social.loyalty' | 'asset.condition'
+  match?: QuestProgressRuleMatch
+}
+
+export type QuestReward =
+  | { type: 'money'; amount: number }
+  | { type: 'fame'; amount: number }
+  | { type: 'social.followers'; platform?: string; amount: number }
+  | { type: 'social.loyalty'; amount: number }
+  | { type: 'social.controversy'; amount: number }
+  | { type: 'band.harmony'; amount: number }
+  | { type: 'item.add'; itemId: string; amount?: number }
+  | { type: 'skill_point'; memberIndex?: number }
+  | { type: 'flag.add'; flag: string }
+
+export type QuestPenalty =
+  | { type: 'social.loyalty'; amount: number }
+  | { type: 'social.controversy'; amount: number }
+  | { type: 'band.harmony'; amount: number }
+  | { type: 'flag.add'; flag: string }
+  | { type: 'quest.cooldown'; days: number }
+
+export interface QuestOfferCondition {
+  band?: {
+    harmonyBelow?: number
+  }
+  social?: {
+    loyaltyBelow?: number
+    controversyAbove?: number
+    minTiktok?: number
+    maxTiktok?: number
+  }
+  currentNodeType?: string
+  requiredAssetKind?: string
+  minFame?: number
+  requireLocation?: boolean
+}
+
+export interface QuestOfferDefinition {
+  trigger: 'random' | 'post_gig' | 'story' | 'travel'
+  category: string
+  chance: number
+  condition?: QuestOfferCondition
+}
+
 export interface QuestState extends UnknownRecord {
   id: string
   label?: string
@@ -40,6 +169,11 @@ export interface QuestState extends UnknownRecord {
   status?: QuestStatus
   repeatPolicy?: QuestRepeatPolicy
   progressSource?: QuestProgressSource
+  progressRule?: QuestProgressRule
+  progressRules?: QuestProgressRule[]
+  rewards?: QuestReward[]
+  failurePenalties?: QuestPenalty[]
+  offer?: QuestOfferDefinition
   startFlags?: string[]
   completionFlags?: string[]
   failureFlags?: string[]
@@ -58,6 +192,7 @@ export interface QuestState extends UnknownRecord {
    * branch into follow-up quests without bespoke reducer hooks.
    */
   followupQuestId?: string
+  startedOnDay?: number
 }
 
 /**

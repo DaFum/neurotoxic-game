@@ -44,6 +44,7 @@ import {
   getActiveAssetModifiers,
   getTotalDailyObligations
 } from '../utils/assetSelectors'
+import { createTravelCompletedQuestEvent } from '../quests/producers/travelQuestEvents'
 import type { Liability } from '../types/assets'
 import type {
   BandState,
@@ -388,10 +389,11 @@ export const useTravelLogic = ({
       }
       advanceDay()
 
-      applyQuestEvent?.({
-        type: 'travel_completed',
-        region: node.venue?.city ?? node.id ?? ''
-      })
+      applyQuestEvent?.(
+        createTravelCompletedQuestEvent({
+          region: node.venue?.city ?? node.id ?? ''
+        })
+      )
 
       // Autosave
       if (saveGame) {

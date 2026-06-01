@@ -407,6 +407,24 @@
         "type": "const"
       }
     ],
+    "applyQuestFailurePenalties": [
+      {
+        "isDefault": false,
+        "name": "applyQuestFailurePenalties",
+        "path": "src/domain/questPenalties.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "applyQuestRewards": [
+      {
+        "isDefault": false,
+        "name": "applyQuestRewards",
+        "path": "src/domain/questRewards.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "applyReputationDecay": [
       {
         "isDefault": false,
@@ -846,6 +864,16 @@
         "path": "src/scenes/intro/components/AutoplayOverlay.tsx",
         "source": "local",
         "type": "const"
+      }
+    ],
+    "AvailableQuestOffer": [
+      {
+        "isDefault": false,
+        "name": "AvailableQuestOffer",
+        "path": "src/domain/questOfferEngine.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
       }
     ],
     "BALANCE_CONSTANTS": [
@@ -1889,6 +1917,25 @@
         "type": "const"
       }
     ],
+    "canAcceptQuest": [
+      {
+        "isDefault": false,
+        "name": "canAcceptQuest",
+        "path": "src/domain/questLifecycle.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "CanAcceptQuestResult": [
+      {
+        "isDefault": false,
+        "name": "CanAcceptQuestResult",
+        "path": "src/domain/questLifecycle.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
     "canAfford": [
       {
         "isDefault": false,
@@ -2868,6 +2915,42 @@
         "type": "const"
       }
     ],
+    "createApplyQuestEventAction": [
+      {
+        "isDefault": false,
+        "name": "createApplyQuestEventAction",
+        "path": "src/context/actionCreators.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "createAssetModuleInstalledQuestEvent": [
+      {
+        "isDefault": false,
+        "name": "createAssetModuleInstalledQuestEvent",
+        "path": "src/quests/producers/assetQuestEvents.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "createAssetRepairedQuestEvent": [
+      {
+        "isDefault": false,
+        "name": "createAssetRepairedQuestEvent",
+        "path": "src/quests/producers/assetQuestEvents.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "createAssetRiskResolvedQuestEvent": [
+      {
+        "isDefault": false,
+        "name": "createAssetRiskResolvedQuestEvent",
+        "path": "src/quests/producers/assetQuestEvents.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "createAudioHandlers": [
       {
         "isDefault": false,
@@ -2891,6 +2974,15 @@
         "isDefault": false,
         "name": "createBloodBankDonateAction",
         "path": "src/context/actionCreators.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "createBrandDealCompletedQuestEvent": [
+      {
+        "isDefault": false,
+        "name": "createBrandDealCompletedQuestEvent",
+        "path": "src/quests/producers/brandQuestEvents.ts",
         "source": "local",
         "type": "const"
       }
@@ -2993,6 +3085,42 @@
         "type": "const"
       }
     ],
+    "createFollowersGainedQuestEvent": [
+      {
+        "isDefault": false,
+        "name": "createFollowersGainedQuestEvent",
+        "path": "src/quests/producers/socialQuestEvents.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "createGigCompletedQuestEvent": [
+      {
+        "isDefault": false,
+        "name": "createGigCompletedQuestEvent",
+        "path": "src/quests/producers/gigQuestEvents.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "createGoodGigQuestEvent": [
+      {
+        "isDefault": false,
+        "name": "createGoodGigQuestEvent",
+        "path": "src/quests/producers/gigQuestEvents.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "createHarmonyChangedQuestEvent": [
+      {
+        "isDefault": false,
+        "name": "createHarmonyChangedQuestEvent",
+        "path": "src/quests/producers/gigQuestEvents.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "createHecklerSession": [
       {
         "isDefault": false,
@@ -3007,6 +3135,24 @@
         "isDefault": false,
         "name": "createInitialState",
         "path": "src/context/initialState.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "createItemCollectedQuestEvent": [
+      {
+        "isDefault": false,
+        "name": "createItemCollectedQuestEvent",
+        "path": "src/quests/producers/itemQuestEvents.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "createItemUsedQuestEvent": [
+      {
+        "isDefault": false,
+        "name": "createItemUsedQuestEvent",
+        "path": "src/quests/producers/itemQuestEvents.ts",
         "source": "local",
         "type": "const"
       }
@@ -3043,6 +3189,15 @@
         "isDefault": false,
         "name": "createMerchPressAction",
         "path": "src/context/actionCreators.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "createMinigameCompletedQuestEvent": [
+      {
+        "isDefault": false,
+        "name": "createMinigameCompletedQuestEvent",
+        "path": "src/quests/producers/minigameQuestEvents.ts",
         "source": "local",
         "type": "const"
       }
@@ -3209,6 +3364,42 @@
         "type": "const"
       }
     ],
+    "createSmallVenueGoodGigQuestEvent": [
+      {
+        "isDefault": false,
+        "name": "createSmallVenueGoodGigQuestEvent",
+        "path": "src/quests/producers/gigQuestEvents.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "createSmallVenueGoodQuestEvent": [
+      {
+        "isDefault": false,
+        "name": "createSmallVenueGoodQuestEvent",
+        "path": "src/quests/producers/gigQuestEvents.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "createSocialPostQuestEvents": [
+      {
+        "isDefault": false,
+        "name": "createSocialPostQuestEvents",
+        "path": "src/quests/producers/socialQuestEvents.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "createSocialPostResolvedQuestEvent": [
+      {
+        "isDefault": false,
+        "name": "createSocialPostResolvedQuestEvent",
+        "path": "src/quests/producers/socialQuestEvents.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "createSpawnRivalBandAction": [
       {
         "isDefault": false,
@@ -3263,6 +3454,15 @@
         "type": "const"
       }
     ],
+    "createStoryFlagAddedQuestEvent": [
+      {
+        "isDefault": false,
+        "name": "createStoryFlagAddedQuestEvent",
+        "path": "src/quests/producers/storyQuestEvents.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "createTourbusStageController": [
       {
         "isDefault": false,
@@ -3277,6 +3477,15 @@
         "isDefault": false,
         "name": "createTradeVoidItemAction",
         "path": "src/context/actionCreators.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "createTravelCompletedQuestEvent": [
+      {
+        "isDefault": false,
+        "name": "createTravelCompletedQuestEvent",
+        "path": "src/quests/producers/travelQuestEvents.ts",
         "source": "local",
         "type": "const"
       }
@@ -5062,6 +5271,15 @@
         "type": "const"
       }
     ],
+    "getQuestDefinition": [
+      {
+        "isDefault": false,
+        "name": "getQuestDefinition",
+        "path": "src/data/questRegistry.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "getRandomChatter": [
       {
         "isDefault": false,
@@ -5375,6 +5593,16 @@
         "path": "src/components/pregig/GigModifiersBlock.tsx",
         "source": "local",
         "type": "const"
+      }
+    ],
+    "GigQuestEventInput": [
+      {
+        "isDefault": false,
+        "name": "GigQuestEventInput",
+        "path": "src/quests/producers/gigQuestEvents.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
       }
     ],
     "GigStats": [
@@ -6500,6 +6728,22 @@
         "type": "const"
       }
     ],
+    "isOnCooldown": [
+      {
+        "isDefault": false,
+        "name": "isOnCooldown",
+        "path": "src/utils/eventEngine.ts",
+        "source": "local",
+        "type": "const"
+      },
+      {
+        "isDefault": false,
+        "name": "isOnCooldown",
+        "path": "src/utils/gameStateUtils.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "isPercussionTrack": [
       {
         "exportPath": "src/utils/audio/audioEngine.ts",
@@ -6682,6 +6926,16 @@
         "path": "src/ui/bandhq/LeaderboardTab.tsx",
         "source": "local",
         "type": "const"
+      }
+    ],
+    "LegacyQuestProgressEvent": [
+      {
+        "isDefault": false,
+        "name": "LegacyQuestProgressEvent",
+        "path": "src/utils/questProgress.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
       }
     ],
     "LiabilitiesPanel": [
@@ -8439,6 +8693,33 @@
         "type": "const"
       }
     ],
+    "QUEST_HARMONY_PROJECT": [
+      {
+        "isDefault": false,
+        "name": "QUEST_HARMONY_PROJECT",
+        "path": "src/data/questsConstants.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "QUEST_LOCAL_LEGEND": [
+      {
+        "isDefault": false,
+        "name": "QUEST_LOCAL_LEGEND",
+        "path": "src/data/questsConstants.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "QUEST_PICK_OF_DESTINY": [
+      {
+        "isDefault": false,
+        "name": "QUEST_PICK_OF_DESTINY",
+        "path": "src/data/questsConstants.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "QUEST_PROVE_YOURSELF": [
       {
         "isDefault": false,
@@ -8448,6 +8729,116 @@
         "type": "const"
       }
     ],
+    "QUEST_REGISTRY": [
+      {
+        "isDefault": false,
+        "name": "QUEST_REGISTRY",
+        "path": "src/data/questRegistry.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "QUEST_SLOT_LIMITS": [
+      {
+        "isDefault": false,
+        "name": "QUEST_SLOT_LIMITS",
+        "path": "src/domain/questLifecycle.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "QUEST_SPONSOR_DEMAND": [
+      {
+        "isDefault": false,
+        "name": "QUEST_SPONSOR_DEMAND",
+        "path": "src/data/questsConstants.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "QUEST_VIRAL_DANCE": [
+      {
+        "isDefault": false,
+        "name": "QUEST_VIRAL_DANCE",
+        "path": "src/data/questsConstants.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "QuestCooldown": [
+      {
+        "exportPath": "src/types/game.d.ts",
+        "isDefault": false,
+        "name": "QuestCooldown",
+        "path": "src/types/quest.d.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
+      }
+    ],
+    "QuestDefinition": [
+      {
+        "isDefault": false,
+        "name": "QuestDefinition",
+        "path": "src/data/questRegistry.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
+    "QuestEvent": [
+      {
+        "exportPath": "src/types/game.d.ts",
+        "isDefault": false,
+        "name": "QuestEvent",
+        "path": "src/types/quest.d.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
+      }
+    ],
+    "QuestEventContext": [
+      {
+        "exportPath": "src/types/game.d.ts",
+        "isDefault": false,
+        "name": "QuestEventContext",
+        "path": "src/types/quest.d.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
+      }
+    ],
+    "QuestEvents": [
+      {
+        "isDefault": false,
+        "name": "QuestEvents",
+        "path": "src/utils/questProgress.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "QuestEventType": [
+      {
+        "exportPath": "src/types/game.d.ts",
+        "isDefault": false,
+        "name": "QuestEventType",
+        "path": "src/types/quest.d.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
+    "QuestKind": [
+      {
+        "exportPath": "src/types/game.d.ts",
+        "isDefault": false,
+        "name": "QuestKind",
+        "path": "src/types/quest.d.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
     "QuestLifecycle": [
       {
         "isDefault": false,
@@ -8455,6 +8846,164 @@
         "path": "src/domain/questLifecycle.ts",
         "source": "local",
         "type": "const"
+      }
+    ],
+    "QuestOfferCondition": [
+      {
+        "exportPath": "src/types/game.d.ts",
+        "isDefault": false,
+        "name": "QuestOfferCondition",
+        "path": "src/types/quest.d.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
+      }
+    ],
+    "QuestOfferDefinition": [
+      {
+        "exportPath": "src/types/game.d.ts",
+        "isDefault": false,
+        "name": "QuestOfferDefinition",
+        "path": "src/types/quest.d.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
+      }
+    ],
+    "QuestOfferEngine": [
+      {
+        "isDefault": false,
+        "name": "QuestOfferEngine",
+        "path": "src/domain/questOfferEngine.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "QuestPenalty": [
+      {
+        "exportPath": "src/types/game.d.ts",
+        "isDefault": false,
+        "name": "QuestPenalty",
+        "path": "src/types/quest.d.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
+    "QuestPenaltyResult": [
+      {
+        "isDefault": false,
+        "name": "QuestPenaltyResult",
+        "path": "src/domain/questPenalties.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
+      }
+    ],
+    "QuestProgress": [
+      {
+        "isDefault": false,
+        "name": "QuestProgress",
+        "path": "src/utils/questProgress.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "QuestProgressAmountMode": [
+      {
+        "exportPath": "src/types/game.d.ts",
+        "isDefault": false,
+        "name": "QuestProgressAmountMode",
+        "path": "src/types/quest.d.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
+    "QuestProgressEvent": [
+      {
+        "isDefault": false,
+        "name": "QuestProgressEvent",
+        "path": "src/utils/questProgress.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
+    "QuestProgressRule": [
+      {
+        "exportPath": "src/types/game.d.ts",
+        "isDefault": false,
+        "name": "QuestProgressRule",
+        "path": "src/types/quest.d.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
+      }
+    ],
+    "QuestProgressRuleMatch": [
+      {
+        "exportPath": "src/types/game.d.ts",
+        "isDefault": false,
+        "name": "QuestProgressRuleMatch",
+        "path": "src/types/quest.d.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
+      }
+    ],
+    "QuestProgressSource": [
+      {
+        "exportPath": "src/types/game.d.ts",
+        "isDefault": false,
+        "name": "QuestProgressSource",
+        "path": "src/types/quest.d.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
+    "QuestRepeatPolicy": [
+      {
+        "exportPath": "src/types/game.d.ts",
+        "isDefault": false,
+        "name": "QuestRepeatPolicy",
+        "path": "src/types/quest.d.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
+    "QuestReward": [
+      {
+        "exportPath": "src/types/game.d.ts",
+        "isDefault": false,
+        "name": "QuestReward",
+        "path": "src/types/quest.d.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
+    "QuestRewardResult": [
+      {
+        "isDefault": false,
+        "name": "QuestRewardResult",
+        "path": "src/domain/questRewards.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
+      }
+    ],
+    "QuestScopeCompletion": [
+      {
+        "exportPath": "src/types/game.d.ts",
+        "isDefault": false,
+        "name": "QuestScopeCompletion",
+        "path": "src/types/quest.d.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
       }
     ],
     "QuestsModal": [
@@ -8474,6 +9023,17 @@
         "path": "src/types/quest.d.ts",
         "source": "local",
         "type": "interface",
+        "typeOnly": true
+      }
+    ],
+    "QuestStatus": [
+      {
+        "exportPath": "src/types/game.d.ts",
+        "isDefault": false,
+        "name": "QuestStatus",
+        "path": "src/types/quest.d.ts",
+        "source": "local",
+        "type": "type",
         "typeOnly": true
       }
     ],
