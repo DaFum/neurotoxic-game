@@ -129,5 +129,95 @@ export const RELATIONSHIP_EVENTS = [
         outcomeText: 'events:synergy_moment.opt1.outcome'
       }
     ]
+  },
+  {
+    id: 'patch_the_rift',
+    category: 'band',
+    tags: ['conflict', 'relationship_low'],
+    title: 'events:patch_the_rift.title',
+    description: 'events:patch_the_rift.desc',
+    trigger: 'random',
+    chance: 0.07,
+    condition: (state: GameState) =>
+      findRelationshipPairByScore(state, score => score < 30),
+    options: [
+      {
+        label: 'events:patch_the_rift.opt1.label',
+        skillCheck: {
+          stat: 'composition',
+          threshold: 6,
+          success: { type: 'stat', stat: 'harmony', value: 12 },
+          failure: { type: 'stat', stat: 'harmony', value: -5 }
+        },
+        outcomeText: 'events:patch_the_rift.opt1.outcome'
+      },
+      {
+        label: 'events:patch_the_rift.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -3 },
+        outcomeText: 'events:patch_the_rift.opt2.outcome'
+      }
+    ]
+  },
+  {
+    id: 'backstage_mediation',
+    category: 'band',
+    tags: ['relationship_low'],
+    title: 'events:backstage_mediation.title',
+    description: 'events:backstage_mediation.desc',
+    trigger: 'post_gig',
+    chance: 0.15,
+    condition: (state: GameState) =>
+      findRelationshipPairByScore(state, score => score < 40),
+    options: [
+      {
+        label: 'events:backstage_mediation.opt1.label',
+        skillCheck: {
+          stat: 'improv',
+          threshold: 6,
+          success: { type: 'stat', stat: 'harmony', value: 8 },
+          failure: { type: 'stat', stat: 'mood', value: -5 }
+        },
+        outcomeText: 'events:backstage_mediation.opt1.outcome'
+      },
+      {
+        label: 'events:backstage_mediation.opt2.label',
+        effect: { type: 'stat', stat: 'harmony', value: -3 },
+        outcomeText: 'events:backstage_mediation.opt2.outcome'
+      }
+    ]
+  },
+  {
+    id: 'old_beef_resurfaces',
+    category: 'band',
+    tags: ['conflict'],
+    title: 'events:old_beef_resurfaces.title',
+    description: 'events:old_beef_resurfaces.desc',
+    trigger: 'random',
+    chance: 0.05,
+    condition: (state: GameState) =>
+      findRelationshipPairByScore(state, score => score < 35),
+    options: [
+      {
+        label: 'events:old_beef_resurfaces.opt1.label',
+        skillCheck: {
+          stat: 'charisma',
+          threshold: 7,
+          success: { type: 'stat', stat: 'harmony', value: 10 },
+          failure: {
+            type: 'composite',
+            effects: [
+              { type: 'stat', stat: 'harmony', value: -10 },
+              { type: 'stat', stat: 'mood', value: -8 }
+            ]
+          }
+        },
+        outcomeText: 'events:old_beef_resurfaces.opt1.outcome'
+      },
+      {
+        label: 'events:old_beef_resurfaces.opt2.label',
+        effect: { type: 'stat', stat: 'harmony', value: -5 },
+        outcomeText: 'events:old_beef_resurfaces.opt2.outcome'
+      }
+    ]
   }
 ]

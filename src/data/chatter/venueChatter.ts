@@ -1484,6 +1484,28 @@ export const VENUE_CHATTER_DB = [
         'chatter:venues.kiel_pumpe.POSTGIG_04'
       ]
     }
+  },
+  {
+    venueId: 'stendal_proberaum',
+    id: 'chatter_stendal_proberaum',
+    linesByScene: {
+      ANY: [
+        'chatter:venues.stendal_proberaum.ANY_01',
+        'chatter:venues.stendal_proberaum.ANY_02',
+        'chatter:venues.stendal_proberaum.ANY_03'
+      ]
+    }
+  },
+  {
+    venueId: 'stendal_stadtfest',
+    id: 'chatter_stendal_stadtfest',
+    linesByScene: {
+      ANY: [
+        'chatter:venues.stendal_stadtfest.ANY_01',
+        'chatter:venues.stendal_stadtfest.ANY_02',
+        'chatter:venues.stendal_stadtfest.ANY_03'
+      ]
+    }
   }
 ]
 
