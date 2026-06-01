@@ -181,7 +181,7 @@ const getEventRecord = (event: QuestProgressEvent): Record<string, unknown> =>
 
 const getEventContext = (event: QuestProgressEvent): QuestEventContext => {
   const eventRecord = getEventRecord(event)
-  const context: QuestEventContext = {}
+  const context = Object.create(null) as QuestEventContext
   const rawContext = Object.hasOwn(eventRecord, 'context')
     ? eventRecord.context
     : undefined

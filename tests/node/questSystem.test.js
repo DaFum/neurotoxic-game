@@ -165,9 +165,12 @@ describe('Quest System Registry Validation', () => {
       )
     )
     for (const source of usedEvents) {
+      const eventLiteral = source.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      const producerEmission = new RegExp(
+        `(?:type:\\s*'${eventLiteral}'|createGigEvent\\('${eventLiteral}')`
+      )
       assert.ok(
-        emitText.includes(`type: '${source}'`) ||
-          emitText.includes(`'${source}'`),
+        producerEmission.test(emitText),
         `progressRule event '${source}' is used by a quest but is never emitted by gameplay/producers in src/ — the quest can never progress`
       )
     }

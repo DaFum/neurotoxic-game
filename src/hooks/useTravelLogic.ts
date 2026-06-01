@@ -391,7 +391,7 @@ export const useTravelLogic = ({
 
       applyQuestEvent?.(
         createTravelCompletedQuestEvent({
-          region: node.venue?.city ?? node.id ?? ''
+          region: updates.nextPlayer.location ?? ''
         })
       )
 

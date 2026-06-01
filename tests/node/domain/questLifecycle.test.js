@@ -1208,6 +1208,27 @@ test('QuestLifecycle', async t => {
       assert.equal(q.progress ?? 0, 0)
     })
 
+    await t.test(
+      'does not match progress rules through polluted context prototype',
+      () => {
+        const state = baseState({
+          id: 'quest_community_outreach',
+          progress: 0,
+          required: 4
+        })
+        const next = QuestProgress.applyEvent(state, {
+          type: 'social.postResolved',
+          amount: 1,
+          success: true,
+          context: JSON.parse('{"__proto__":{"postCategory":"Lifestyle"}}')
+        })
+        const q = next.activeQuests.find(
+          q => q.id === 'quest_community_outreach'
+        )
+        assert.equal(q.progress ?? 0, 0)
+      }
+    )
+
     await t.test('community_outreach advances on lifestyle posts', () => {
       const state = baseState({
         id: 'quest_community_outreach',

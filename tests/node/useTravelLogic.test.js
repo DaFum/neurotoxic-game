@@ -374,6 +374,26 @@ describe('useTravelLogic', () => {
     assert.equal(props.saveGame.mock.calls.length, 1)
   })
 
+  test('onTravelComplete emits quest event with canonical arrival region', () => {
+    const applyQuestEvent = mock.fn()
+    const { result, targetNode } = setupTravelScenario(useTravelLogic, {
+      applyQuestEvent
+    })
+
+    act(() => {
+      result.current.onTravelComplete(targetNode)
+    })
+
+    assert.equal(applyQuestEvent.mock.calls.length, 1)
+    assert.deepEqual(applyQuestEvent.mock.calls[0].arguments[0], {
+      type: 'travel.completed',
+      amount: 1,
+      success: true,
+      context: { region: 'club' },
+      tags: ['club']
+    })
+  })
+
   test('onTravelComplete applies travel band patch before advancing the day', () => {
     const dispatchOrder = []
     const updateBand = mock.fn(() => dispatchOrder.push('updateBand'))
