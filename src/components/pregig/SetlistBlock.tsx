@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react'
+import { memo, useCallback, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { getSongId } from '../../utils/audio/audioEngine'
@@ -118,13 +118,24 @@ export const SetlistBlock = ({
   toggleSong
 }: SetlistBlockProps) => {
   const { t } = useTranslation('ui')
-  const selectedSongs = setlist
-    .map(entry => {
+  const selectedSongs = useMemo(() => {
+    const songs: Song[] = []
+    for (const entry of setlist) {
       const songId = getSongId(entry)
-      return songId ? songsDict[songId] : undefined
-    })
-    .filter((song): song is Song => Boolean(song))
-  const densityBars = buildSetlistChartDensity(selectedSongs)
+      if (songId) {
+        const song = songsDict[songId]
+        if (song) {
+          songs.push(song)
+        }
+      }
+    }
+    return songs
+  }, [setlist, songsDict])
+
+  const densityBars = useMemo(
+    () => buildSetlistChartDensity(selectedSongs),
+    [selectedSongs]
+  )
   const densityTotal = densityBars.reduce((sum, bar) => sum + bar.count, 0)
   const densityPeak = densityBars.reduce(
     (peak, bar) => Math.max(peak, bar.count),
