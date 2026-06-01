@@ -458,11 +458,19 @@ export const usePostGigHandlers = ({
       if (activeStoryFlags?.includes('breakup_quest_active')) {
         const def = getQuestDefinition(QUEST_EGO_MANAGEMENT)
         if (def) {
+          // Threshold-style harmony quest: seed progress with current band
+          // harmony so any harmony recovery that happened earlier this
+          // post-gig phase is not lost. Without this seed the new quest would
+          // miss the harmony_recovered event applied before it was added.
+          const seededProgress =
+            def.progressSource === 'harmony_recovered'
+              ? clampBandHarmony(finiteNumberOr(band?.harmony, 0))
+              : 0
           addQuest({
             ...def,
             id: QUEST_EGO_MANAGEMENT,
             deadline: player.day + finiteNumberOr(def.deadlineOffset, 0),
-            progress: 0
+            progress: seededProgress
           })
         }
       }

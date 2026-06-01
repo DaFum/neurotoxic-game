@@ -174,7 +174,7 @@ describe('Quest System Registry Validation', () => {
       state = QuestLifecycle.addQuest(state, {
         id,
         deadline: state.player.day + 10,
-        required: quest.required || 1,
+        required: quest.required ?? 1,
         rewardFlag: quest.rewardFlag
       })
       assert.ok(
@@ -198,7 +198,7 @@ describe('Quest System Registry Validation', () => {
       state = QuestLifecycle.addQuest(state, {
         id,
         deadline: state.player.day + 10,
-        required: quest.required || 1,
+        required: quest.required ?? 1,
         rewardFlag: quest.rewardFlag
       })
       const afterReadd = state.activeQuests.filter(q => q.id === id).length

@@ -130,8 +130,6 @@ export const QUEST_REGISTRY = {
     progressSource: 'travel_completed',
     required: 2,
     cooldownDays: 14,
-    rewardType: 'money',
-    rewardData: { money: 300 },
     moneyReward: 300,
     failurePenalty: {
       band: { harmony: -5 }
@@ -161,8 +159,6 @@ export const QUEST_REGISTRY = {
     progressSource: 'gig_completed',
     required: 3,
     cooldownDays: 10,
-    rewardType: 'money',
-    rewardData: { money: 400 },
     moneyReward: 400,
     failurePenalty: {
       social: { loyalty: -3 }
@@ -206,8 +202,6 @@ export const QUEST_REGISTRY = {
     progressSource: 'followers_gained',
     required: 300,
     cooldownDays: 5,
-    rewardType: 'money',
-    rewardData: { money: 150 },
     moneyReward: 150,
     failurePenalty: {
       social: { controversyLevel: 5 }
@@ -222,8 +216,6 @@ export const QUEST_REGISTRY = {
     progressSource: 'brand_deal_completed',
     required: 3,
     cooldownDays: 21,
-    rewardType: 'money',
-    rewardData: { money: 1500 },
     moneyReward: 1500,
     failurePenalty: {
       social: { loyalty: -10 },

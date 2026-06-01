@@ -27,44 +27,11 @@ export const QuestLifecycle = {
       ? { ...(definition as Partial<QuestState>), ...quest }
       : { ...quest }
 
-    // Repeat-policy gating: refuse to re-add quests that their policy forbids.
-    const repeatPolicy = merged.repeatPolicy
-    if (repeatPolicy === 'never') {
-      if (state.completedQuestIds?.includes(quest.id)) return state
-      const activeFlags = state.activeStoryFlags ?? []
-      const completionFlags = [
-        ...(merged.completionFlags ?? []),
-        ...(merged.rewardFlag ? [merged.rewardFlag] : [])
-      ]
-      if (completionFlags.some(flag => activeFlags.includes(flag))) {
-        return state
-      }
-    } else if (repeatPolicy === 'cooldown') {
-      const currentDay = finiteNumberOr(state.player?.day, 0)
-      const onCooldown = (state.questCooldowns ?? []).some(
-        cd => cd.questId === quest.id && cd.expiresOnDay > currentDay
-      )
-      if (onCooldown) return state
-    } else if (repeatPolicy === 'perVenue' || repeatPolicy === 'perRegion') {
-      // Stamp the current venue/region as scopeKey so completion tracks "this
-      // quest, this place". Add is refused if the same (id, scopeKey) is
-      // already completed; other scopes remain open.
-      const scopeKey =
-        quest.scopeKey ??
-        (repeatPolicy === 'perVenue'
-          ? (state.currentGig?.id ?? state.player?.currentNodeId)
-          : state.player?.location)
-      if (typeof scopeKey !== 'string' || scopeKey.length === 0) {
-        // Without a scope we cannot uniquely track completion — refuse rather
-        // than silently turn this into a global-once quest.
-        return state
-      }
-      const alreadyDone = (state.completedQuestScopes ?? []).some(
-        c => c.questId === quest.id && c.scopeKey === scopeKey
-      )
-      if (alreadyDone) return state
-      merged.scopeKey = scopeKey
-    }
+    // Repeat-policy gating delegates to canAcceptQuest so event conditions can
+    // mirror the same rules without duplicating logic.
+    const accept = canAcceptQuest(state, merged)
+    if (!accept.ok) return state
+    if (accept.scopeKey) merged.scopeKey = accept.scopeKey
 
     // Compute an absolute deadline from a relative offset when one was not
     // already supplied (event-triggered quests pre-compute it in eventResolver).
@@ -80,8 +47,20 @@ export const QuestLifecycle = {
     // Registry-managed quests start at progress 0; ad-hoc quests are left as-is.
     if (definition && merged.progress == null) merged.progress = 0
 
+    // Apply declarative startFlags so quests can gate other systems while
+    // active. completeQuest / checkDeadlines remove them on resolve.
+    let nextStoryFlags = state.activeStoryFlags
+    if (Array.isArray(merged.startFlags) && merged.startFlags.length > 0) {
+      const base = state.activeStoryFlags ?? []
+      const additions = merged.startFlags.filter(
+        f => typeof f === 'string' && !base.includes(f)
+      )
+      if (additions.length > 0) nextStoryFlags = [...base, ...additions]
+    }
+
     return {
       ...state,
+      activeStoryFlags: nextStoryFlags,
       activeQuests: [...(state.activeQuests || []), merged]
     }
   },
@@ -310,9 +289,17 @@ export const QuestLifecycle = {
       }
     }
 
-    // Clear transient story flags tied to this quest being active.
+    // Clear transient story flags tied to this quest being active. Both the
+    // explicit clearFlagsOnComplete list AND any startFlags this quest applied
+    // are removed so gated follow-ups are no longer blocked.
+    const toClear = new Set<string>()
     if (Array.isArray(quest.clearFlagsOnComplete)) {
-      const toClear = new Set(quest.clearFlagsOnComplete)
+      for (const f of quest.clearFlagsOnComplete) toClear.add(f)
+    }
+    if (Array.isArray(quest.startFlags)) {
+      for (const f of quest.startFlags) toClear.add(f)
+    }
+    if (toClear.size > 0) {
       nextState.activeStoryFlags = (nextState.activeStoryFlags ?? []).filter(
         f => !toClear.has(f)
       )
@@ -521,9 +508,15 @@ export const QuestLifecycle = {
           }
         }
 
-        // Clear story flags that should not persist past failure.
+        // Clear story flags that should not persist past failure: both the
+        // explicit clearFlagsOnFail list and any startFlags the quest applied.
         if (Array.isArray(quest.clearFlagsOnFail)) {
           for (const flag of quest.clearFlagsOnFail) {
+            if (typeof flag === 'string') flagsToRemove.add(flag)
+          }
+        }
+        if (Array.isArray(quest.startFlags)) {
+          for (const flag of quest.startFlags) {
             if (typeof flag === 'string') flagsToRemove.add(flag)
           }
         }
@@ -565,4 +558,77 @@ export const QuestLifecycle = {
 
     return nextState
   }
+}
+
+/**
+ * Predicate that mirrors `QuestLifecycle.addQuest`'s repeat-policy and scope
+ * guards without mutating state. Use in event-condition functions so an offer
+ * does not surface when the dispatch would silently refuse it.
+ *
+ * Pass either a `questId` string or a partial `QuestState`; registry defaults
+ * (repeatPolicy, completionFlags, rewardFlag) are merged automatically.
+ *
+ * Returns `{ ok: true, scopeKey? }` when addQuest would accept, or
+ * `{ ok: false, reason }` describing why it would refuse.
+ */
+export type CanAcceptQuestResult =
+  | { ok: true; scopeKey?: string }
+  | {
+      ok: false
+      reason: 'active' | 'completed' | 'flag' | 'cooldown' | 'scope'
+    }
+
+export const canAcceptQuest = (
+  state: GameState,
+  questOrId: string | QuestState
+): CanAcceptQuestResult => {
+  const questId = typeof questOrId === 'string' ? questOrId : questOrId.id
+  if (hasActiveQuest(state.activeQuests, questId)) {
+    return { ok: false, reason: 'active' }
+  }
+  const definition = getQuestDefinition(questId) as
+    | Partial<QuestState>
+    | undefined
+  const merged: Partial<QuestState> =
+    typeof questOrId === 'string'
+      ? { id: questId, ...(definition ?? {}) }
+      : { ...(definition ?? {}), ...questOrId }
+
+  const repeatPolicy = merged.repeatPolicy
+  if (repeatPolicy === 'never') {
+    if (state.completedQuestIds?.includes(questId)) {
+      return { ok: false, reason: 'completed' }
+    }
+    const activeFlags = state.activeStoryFlags ?? []
+    const completionFlags = [
+      ...(merged.completionFlags ?? []),
+      ...(merged.rewardFlag ? [merged.rewardFlag] : [])
+    ]
+    if (completionFlags.some(flag => activeFlags.includes(flag))) {
+      return { ok: false, reason: 'flag' }
+    }
+    return { ok: true }
+  }
+  if (repeatPolicy === 'cooldown') {
+    const currentDay = finiteNumberOr(state.player?.day, 0)
+    const onCooldown = (state.questCooldowns ?? []).some(
+      cd => cd.questId === questId && cd.expiresOnDay > currentDay
+    )
+    return onCooldown ? { ok: false, reason: 'cooldown' } : { ok: true }
+  }
+  if (repeatPolicy === 'perVenue' || repeatPolicy === 'perRegion') {
+    const scopeKey =
+      merged.scopeKey ??
+      (repeatPolicy === 'perVenue'
+        ? (state.currentGig?.id ?? state.player?.currentNodeId)
+        : state.player?.location)
+    if (typeof scopeKey !== 'string' || scopeKey.length === 0) {
+      return { ok: false, reason: 'scope' }
+    }
+    const alreadyDone = (state.completedQuestScopes ?? []).some(
+      c => c.questId === questId && c.scopeKey === scopeKey
+    )
+    return alreadyDone ? { ok: false, reason: 'scope' } : { ok: true, scopeKey }
+  }
+  return { ok: true }
 }

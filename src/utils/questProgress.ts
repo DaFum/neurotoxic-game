@@ -28,7 +28,7 @@ export type QuestProgressEvent =
   | { type: 'followers_gained'; amount: number }
   | { type: 'fame_gained'; amount: number }
   | { type: 'money_earned'; amount: number }
-  | { type: 'harmony_recovered'; amount: number; newHarmony?: number }
+  | { type: 'harmony_recovered'; amount: number; newHarmony: number }
   | { type: 'item_collected'; itemId: string }
   | { type: 'brand_deal_completed'; dealId: string }
   | { type: 'travel_completed'; region: string }

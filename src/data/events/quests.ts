@@ -1,5 +1,14 @@
 import type { GameState } from '../../types'
 import { finiteNumberOr } from '../../utils/finiteNumber'
+import { canAcceptQuest } from '../../domain/questLifecycle'
+
+// Shared offer-gating helper: an offer only surfaces when no quest is active
+// AND QuestLifecycle.addQuest would actually accept the quest (cooldown / scope
+// / completion-flag guards). Prevents an event from prompting the player to
+// accept a quest that would be silently refused.
+const canOfferQuest = (state: GameState, questId: string): boolean =>
+  (!state.activeQuests || state.activeQuests.length === 0) &&
+  canAcceptQuest(state, questId).ok
 
 export const QUEST_EVENTS = [
   {
@@ -10,7 +19,7 @@ export const QUEST_EVENTS = [
     trigger: 'random',
     chance: 0.05,
     condition: (state: GameState) =>
-      !state.activeQuests || state.activeQuests.length === 0,
+      canOfferQuest(state, 'quest_pick_of_destiny'),
     options: [
       {
         label: 'events:quest_trigger_pick_of_destiny.opt1.label',
@@ -36,7 +45,7 @@ export const QUEST_EVENTS = [
     trigger: 'random',
     chance: 0.1,
     condition: (state: GameState) =>
-      (!state.activeQuests || state.activeQuests.length === 0) &&
+      canOfferQuest(state, 'quest_viral_dance') &&
       (state.social?.tiktok || 0) < 5000,
     options: [
       {
@@ -62,7 +71,7 @@ export const QUEST_EVENTS = [
     trigger: 'random',
     chance: 0.08,
     condition: (state: GameState) =>
-      !state.activeQuests || state.activeQuests.length === 0,
+      canOfferQuest(state, 'quest_sponsor_demand'),
     options: [
       {
         label: 'events:quest_trigger_sponsor_demand.opt1.label',
@@ -87,7 +96,7 @@ export const QUEST_EVENTS = [
     trigger: 'random',
     chance: 0.3, // High chance if condition is met, reduced to 0.3 to prevent spam
     condition: (state: GameState) =>
-      (!state.activeQuests || state.activeQuests.length === 0) &&
+      canOfferQuest(state, 'quest_harmony_project') &&
       finiteNumberOr(state.band?.harmony, 0) < 60,
     options: [
       {
@@ -112,8 +121,7 @@ export const QUEST_EVENTS = [
     description: 'events:quest_trigger_local_legend.desc',
     trigger: 'random',
     chance: 0.07,
-    condition: (state: GameState) =>
-      !state.activeQuests || state.activeQuests.length === 0,
+    condition: (state: GameState) => canOfferQuest(state, 'quest_local_legend'),
     options: [
       {
         label: 'events:quest_trigger_local_legend.opt1.label',
@@ -138,7 +146,7 @@ export const QUEST_EVENTS = [
     trigger: 'random',
     chance: 0.07,
     condition: (state: GameState) =>
-      (!state.activeQuests || state.activeQuests.length === 0) &&
+      canOfferQuest(state, 'quest_tourbus_inspection') &&
       Array.isArray(state.assets) &&
       state.assets.some(a => a.kind === 'tourbus_chassis'),
     options: [
@@ -162,7 +170,7 @@ export const QUEST_EVENTS = [
     trigger: 'random',
     chance: 0.06,
     condition: (state: GameState) =>
-      (!state.activeQuests || state.activeQuests.length === 0) &&
+      canOfferQuest(state, 'quest_studio_demo') &&
       Array.isArray(state.assets) &&
       state.assets.some(a => a.kind === 'studio_chassis'),
     options: [
@@ -186,7 +194,7 @@ export const QUEST_EVENTS = [
     trigger: 'random',
     chance: 0.07,
     condition: (state: GameState) =>
-      (!state.activeQuests || state.activeQuests.length === 0) &&
+      canOfferQuest(state, 'quest_merch_rush') &&
       Array.isArray(state.assets) &&
       state.assets.some(a => a.kind === 'merch_workshop_chassis'),
     options: [
@@ -210,7 +218,7 @@ export const QUEST_EVENTS = [
     trigger: 'random',
     chance: 0.06,
     condition: (state: GameState) =>
-      (!state.activeQuests || state.activeQuests.length === 0) &&
+      canOfferQuest(state, 'quest_venue_residency') &&
       typeof state.player?.currentNodeId === 'string' &&
       state.player.currentNodeId.length > 0,
     options: [
@@ -234,7 +242,7 @@ export const QUEST_EVENTS = [
     trigger: 'random',
     chance: 0.05,
     condition: (state: GameState) =>
-      (!state.activeQuests || state.activeQuests.length === 0) &&
+      canOfferQuest(state, 'quest_region_takeover') &&
       typeof state.player?.location === 'string' &&
       state.player.location.length > 0,
     options: [
@@ -257,8 +265,7 @@ export const QUEST_EVENTS = [
     description: 'events:quest_trigger_drama_post.desc',
     trigger: 'random',
     chance: 0.06,
-    condition: (state: GameState) =>
-      !state.activeQuests || state.activeQuests.length === 0,
+    condition: (state: GameState) => canOfferQuest(state, 'quest_drama_post'),
     options: [
       {
         label: 'events:quest_trigger_drama_post.opt1.label',
@@ -280,7 +287,7 @@ export const QUEST_EVENTS = [
     trigger: 'random',
     chance: 0.04,
     condition: (state: GameState) =>
-      (!state.activeQuests || state.activeQuests.length === 0) &&
+      canOfferQuest(state, 'quest_premium_endorsement') &&
       finiteNumberOr(state.player?.fame, 0) >= 200,
     options: [
       {
@@ -303,7 +310,7 @@ export const QUEST_EVENTS = [
     trigger: 'random',
     chance: 0.08,
     condition: (state: GameState) =>
-      !state.activeQuests || state.activeQuests.length === 0,
+      canOfferQuest(state, 'quest_community_outreach'),
     options: [
       {
         label: 'events:quest_trigger_community_outreach.opt1.label',

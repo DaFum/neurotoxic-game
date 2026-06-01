@@ -1313,7 +1313,7 @@ export const isOnCooldown = (
 ): boolean => {
   if (!gameState.eventCooldowns) return false
 
-  const currentDay = gameState.player?.day ?? 0
+  const currentDay = finiteNumberOr(gameState.player?.day, 0)
 
   const cooldowns = Array.isArray(gameState.eventCooldowns)
     ? gameState.eventCooldowns
@@ -1329,7 +1329,7 @@ export const isOnCooldown = (
     if (isMatch) {
       if (expiryStr) {
         const expiry = parseInt(expiryStr, 10)
-        if (!isNaN(expiry) && (currentDay as number) < expiry) {
+        if (!isNaN(expiry) && currentDay < expiry) {
           return true
         }
       } else {

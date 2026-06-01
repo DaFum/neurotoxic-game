@@ -90,8 +90,15 @@ describe('QUEST_EVENTS', () => {
   test('quest_trigger_local_legend conditions logic', () => {
     const evt = QUEST_EVENTS.find(e => e.id === 'quest_trigger_local_legend')
     assert.ok(evt, 'quest event not found')
-    assert.strictEqual(evt.condition({ activeQuests: [] }), true)
-    assert.strictEqual(evt.condition({ activeQuests: [{ id: 'some' }] }), false)
-    assert.strictEqual(evt.condition({}), true)
+    // The condition now also routes through canAcceptQuest, which requires
+    // a player.location for a perRegion quest's scope key.
+    const ctx = { activeQuests: [], player: { location: 'berlin' } }
+    assert.strictEqual(evt.condition(ctx), true)
+    assert.strictEqual(
+      evt.condition({ ...ctx, activeQuests: [{ id: 'some' }] }),
+      false
+    )
+    // Empty state: no location → scope guard refuses, condition is false.
+    assert.strictEqual(evt.condition({}), false)
   })
 })

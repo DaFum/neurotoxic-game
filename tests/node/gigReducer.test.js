@@ -8,6 +8,7 @@ import {
 } from '../../src/context/reducers/gigReducer'
 import { DEFAULT_GIG_MODIFIERS } from '../../src/context/initialState'
 import { GAME_PHASES } from '../../src/context/gameConstants'
+import { QuestLifecycle } from '../../src/domain/questLifecycle.ts'
 
 describe('gigReducer', () => {
   let baseState
@@ -228,11 +229,12 @@ describe('gigReducer', () => {
 
     it('should auto-complete ego management quest on high harmony', () => {
       baseState.band.harmony = 60
-      // required: 50 mirrors what addQuest merges from QUEST_REGISTRY; the
-      // harmony-threshold completion is now data-driven, not hardcoded.
-      baseState.activeQuests = [
-        { id: 'quest_ego_management', required: 50, progress: 0 }
-      ]
+      // Seed the quest through the registry-aware addQuest path so the
+      // threshold (required: harmony level) and deadline come from
+      // QUEST_REGISTRY, not from a hardcoded fixture.
+      baseState = QuestLifecycle.addQuest(baseState, {
+        id: 'quest_ego_management'
+      })
       const payload = { score: 50 }
       const nextState = handleSetLastGigStats(baseState, payload)
 
