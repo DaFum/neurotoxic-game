@@ -28,6 +28,11 @@ import {
   DEFAULT_EQUIPMENT_COUNT
 } from '../gameConstants'
 import { MINIGAME_REGISTRY } from '../../utils/minigameRegistry'
+import { QuestEvents } from '../../utils/questProgress'
+import {
+  createMinigameCompletedQuestEvent,
+  createMinigameFailedQuestEvent
+} from '../../quests/producers/minigameQuestEvents'
 
 export const handleStartTravelMinigame = (
   state: GameState,
@@ -230,6 +235,24 @@ export const handleCompleteTravelMinigame = (
     }
   }
 
+  newState = QuestEvents.emit(
+    newState,
+    createMinigameCompletedQuestEvent({
+      minigameId: MINIGAME_TYPES.TOURBUS,
+      success: conditionLoss === 0,
+      score: Math.max(0, 100 - conditionLoss)
+    })
+  )
+  if (conditionLoss > 0) {
+    newState = QuestEvents.emit(
+      newState,
+      createMinigameFailedQuestEvent({
+        minigameId: MINIGAME_TYPES.TOURBUS,
+        damage: conditionLoss
+      })
+    )
+  }
+
   return newState
 }
 
@@ -322,12 +345,29 @@ export const handleCompleteAmpCalibration = (
     typeof hijacksOverridden === 'number' ? hijacksOverridden : 0
   )
 
-  return applyPostMinigameResult(
+  let nextState = applyPostMinigameResult(
     state,
     stress,
     reward,
     'Amp Calibration failed'
   )
+  nextState = QuestEvents.emit(
+    nextState,
+    createMinigameCompletedQuestEvent({
+      minigameId: MINIGAME_TYPES.AMP_CALIBRATION,
+      success: stress === 0,
+      score
+    })
+  )
+  return stress > 0
+    ? QuestEvents.emit(
+        nextState,
+        createMinigameFailedQuestEvent({
+          minigameId: MINIGAME_TYPES.AMP_CALIBRATION,
+          damage: stress
+        })
+      )
+    : nextState
 }
 
 export const handleStartKabelsalatMinigame = (
@@ -361,7 +401,28 @@ export const handleCompleteKabelsalatMinigame = (
     state.band
   )
 
-  return applyPostMinigameResult(state, stress, reward, 'Kabelsalat failed')
+  let nextState = applyPostMinigameResult(
+    state,
+    stress,
+    reward,
+    'Kabelsalat failed'
+  )
+  nextState = QuestEvents.emit(
+    nextState,
+    createMinigameCompletedQuestEvent({
+      minigameId: MINIGAME_TYPES.KABELSALAT,
+      success: stress === 0
+    })
+  )
+  return stress > 0
+    ? QuestEvents.emit(
+        nextState,
+        createMinigameFailedQuestEvent({
+          minigameId: MINIGAME_TYPES.KABELSALAT,
+          damage: stress
+        })
+      )
+    : nextState
 }
 
 export const handleCompleteRoadieMinigame = (
@@ -404,11 +465,29 @@ export const handleCompleteRoadieMinigame = (
     nextModifiers.damaged_gear = true
   }
 
-  return {
+  let nextState: GameState = {
     ...state,
     band: nextBand,
     player: nextPlayer,
     gigModifiers: nextModifiers,
     minigame: { ...state.minigame, active: false }
   }
+
+  nextState = QuestEvents.emit(
+    nextState,
+    createMinigameCompletedQuestEvent({
+      minigameId: MINIGAME_TYPES.ROADIE,
+      success: equipmentDamage <= 50,
+      score: Math.max(0, 100 - equipmentDamage)
+    })
+  )
+  return equipmentDamage > 50
+    ? QuestEvents.emit(
+        nextState,
+        createMinigameFailedQuestEvent({
+          minigameId: MINIGAME_TYPES.ROADIE,
+          damage: equipmentDamage
+        })
+      )
+    : nextState
 }

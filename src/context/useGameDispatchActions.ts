@@ -58,6 +58,7 @@ import {
   createUnlockTraitAction,
   createAddQuestAction,
   createAdvanceQuestAction,
+  createApplyQuestEventAction,
   createUseContrabandAction,
   createClinicHealAction,
   createClinicEnhanceAction,
@@ -171,6 +172,9 @@ export type GameDispatchActions = {
   advanceQuest: (
     questId: Parameters<typeof createAdvanceQuestAction>[0],
     progressAmount: Parameters<typeof createAdvanceQuestAction>[1]
+  ) => void
+  applyQuestEvent: (
+    event: Parameters<typeof createApplyQuestEventAction>[0]
   ) => void
   addVenueBlacklist: (
     payload: Parameters<typeof createAddVenueBlacklistAction>[0]
@@ -494,6 +498,12 @@ export function useGameDispatchActions({
     [dispatch]
   )
 
+  const applyQuestEvent = useCallback(
+    (event: Parameters<typeof createApplyQuestEventAction>[0]) =>
+      dispatch(createApplyQuestEventAction(event)),
+    [dispatch]
+  )
+
   const addVenueBlacklist = useCallback(
     (payload: Parameters<typeof createAddVenueBlacklistAction>[0]) =>
       dispatch(createAddVenueBlacklistAction(payload)),
@@ -747,6 +757,7 @@ export function useGameDispatchActions({
       endGig,
       addQuest,
       advanceQuest,
+      applyQuestEvent,
       addVenueBlacklist,
       useContraband,
       clinicHeal,
@@ -809,6 +820,7 @@ export function useGameDispatchActions({
       endGig,
       addQuest,
       advanceQuest,
+      applyQuestEvent,
       addVenueBlacklist,
       useContraband,
       clinicHeal,

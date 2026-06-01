@@ -10,12 +10,20 @@ import { GAME_PHASES } from '../gameConstants'
 import { isForbiddenKey } from '../../utils/gameStateUtils'
 import { handleAddVenueBlacklist } from './socialReducer'
 import { QuestLifecycle } from '../../domain/questLifecycle'
-import {
-  QUEST_PROVE_YOURSELF,
-  QUEST_EGO_MANAGEMENT,
-  QUEST_APOLOGY_TOUR
-} from '../../data/questsConstants'
+import { QUEST_PROVE_YOURSELF } from '../../data/questsConstants'
 import { hasActiveQuest } from '../../utils/questUtils'
+import { QuestEvents } from '../../utils/questProgress'
+import {
+  createGigCompletedQuestEvent,
+  createGoodGigQuestEvent,
+  createHarmonyChangedQuestEvent,
+  createSmallVenueGoodQuestEvent
+} from '../../quests/producers/gigQuestEvents'
+import {
+  createRegionReputationChangedQuestEvent,
+  createVenueGigCompletedQuestEvent,
+  createVenueGoodGigQuestEvent
+} from '../../quests/producers/venueQuestEvents'
 import { normalizeSetlistForSave } from '../../utils/gameStateUtils'
 
 const MIN_REPUTATION = -100
@@ -77,26 +85,16 @@ const handleRecordBadShow = (state: GameState): GameState => {
     currentBadShows >= 3 &&
     !hasActiveQuest(nextState.activeQuests, QUEST_PROVE_YOURSELF)
   ) {
+    // Config (label/deadline/required/failurePenalty/startFlags) lives in
+    // QUEST_REGISTRY. addQuest merges those defaults and applies startFlags,
+    // so the inline override surface here is just the id.
     nextState = QuestLifecycle.addQuest(nextState, {
-      id: QUEST_PROVE_YOURSELF,
-      label: 'ui:quests.proveYourself.title',
-      deadline: nextState.player.day + 20,
-      progress: 0,
-      required: 4,
-      rewardFlag: 'prove_yourself_complete',
-      failurePenalty: {
-        social: { controversyLevel: 10 },
-        band: { harmony: -20 }
-      }
+      id: QUEST_PROVE_YOURSELF
     })
     nextState.player = {
       ...nextState.player,
       stats: { ...nextState.player.stats, proveYourselfMode: true }
     }
-    nextState.activeStoryFlags = [
-      ...(nextState.activeStoryFlags || []),
-      'prove_yourself_active'
-    ]
     nextState.toasts = [
       ...(nextState.toasts || []),
       {
@@ -162,11 +160,37 @@ export const handleSetLastGigStats = (
       ? state.currentGig.capacity
       : null
 
+  nextState = QuestEvents.emit(
+    nextState,
+    createGigCompletedQuestEvent({
+      score,
+      capacity: capacity ?? 0,
+      venueId: state.currentGig?.id ?? '',
+      region: location
+    })
+  )
+  nextState = QuestEvents.emit(
+    nextState,
+    createVenueGigCompletedQuestEvent({
+      score,
+      venueId: state.currentGig?.id ?? '',
+      region: location
+    })
+  )
+
   if (score < 30) {
     if (!isForbiddenKey(location)) {
       nextState.reputationByRegion[location] = Math.max(
         MIN_REPUTATION,
         (nextState.reputationByRegion[location] || 0) - 10
+      )
+      nextState = QuestEvents.emit(
+        nextState,
+        createRegionReputationChangedQuestEvent({
+          region: location,
+          amount: -10,
+          reason: 'bad_gig'
+        })
       )
       logger.warn(
         'GameState',
@@ -191,6 +215,14 @@ export const handleSetLastGigStats = (
           MIN_REPUTATION,
           Math.min(MAX_REPUTATION, currentRep + bonus)
         )
+        nextState = QuestEvents.emit(
+          nextState,
+          createRegionReputationChangedQuestEvent({
+            region: location,
+            amount: bonus,
+            reason: 'good_gig'
+          })
+        )
         logger.info(
           'GameState',
           `Regional reputation gain in ${location} (+${bonus})`
@@ -199,25 +231,34 @@ export const handleSetLastGigStats = (
     }
 
     nextState = handleRecordGoodShow(nextState)
-    if (
-      hasActiveQuest(nextState.activeQuests, QUEST_APOLOGY_TOUR) &&
-      capacity !== null &&
-      capacity <= 300
-    ) {
-      nextState = QuestLifecycle.advanceQuest(nextState, {
-        questId: QUEST_APOLOGY_TOUR,
-        amount: 1
+    nextState = QuestEvents.emit(
+      nextState,
+      createGoodGigQuestEvent({
+        score,
+        capacity: capacity ?? 0,
+        venueId: state.currentGig?.id ?? '',
+        region: location
       })
-    }
-    if (
-      hasActiveQuest(nextState.activeQuests, QUEST_PROVE_YOURSELF) &&
-      capacity !== null &&
-      capacity <= 150
-    ) {
-      nextState = QuestLifecycle.advanceQuest(nextState, {
-        questId: QUEST_PROVE_YOURSELF,
-        amount: 1
+    )
+    nextState = QuestEvents.emit(
+      nextState,
+      createVenueGoodGigQuestEvent({
+        score,
+        capacity: capacity ?? undefined,
+        venueId: state.currentGig?.id ?? '',
+        region: location
       })
+    )
+    if (capacity !== null && capacity <= 300) {
+      nextState = QuestEvents.emit(
+        nextState,
+        createSmallVenueGoodQuestEvent({
+          score,
+          capacity,
+          venueId: state.currentGig?.id ?? '',
+          region: location
+        })
+      )
     }
   }
 
@@ -234,16 +275,16 @@ export const handleSetLastGigStats = (
     ]
   }
 
-  // Ego management quest auto-complete
-  const hasEgoQuest = hasActiveQuest(
-    nextState.activeQuests,
-    QUEST_EGO_MANAGEMENT
-  )
-  if (hasEgoQuest && nextState.band.harmony >= 50) {
-    nextState = QuestLifecycle.completeQuest(nextState, {
-      questId: QUEST_EGO_MANAGEMENT
+  // Harmony-threshold quests (ego management, harmony project, …) advance
+  // toward / complete at their required harmony level. Driven generically via
+  // the harmony_recovered progress source rather than a hardcoded quest id.
+  nextState = QuestEvents.emit(
+    nextState,
+    createHarmonyChangedQuestEvent({
+      amount: 0,
+      newHarmony: nextState.band.harmony
     })
-  }
+  )
 
   return nextState
 }

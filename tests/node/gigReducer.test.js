@@ -8,6 +8,7 @@ import {
 } from '../../src/context/reducers/gigReducer'
 import { DEFAULT_GIG_MODIFIERS } from '../../src/context/initialState'
 import { GAME_PHASES } from '../../src/context/gameConstants'
+import { QuestLifecycle } from '../../src/domain/questLifecycle.ts'
 
 describe('gigReducer', () => {
   let baseState
@@ -150,6 +151,22 @@ describe('gigReducer', () => {
       assert.strictEqual(apologyQuest.progress, 0)
     })
 
+    it('should not advance small-venue quests when capacity exceeds 300', () => {
+      // small_venue_good_gig dispatch is gated on capacity <= 300 in gigReducer.
+      // A 301-cap venue must still produce a good_gig but no small_venue_good_gig.
+      baseState.currentGig = { id: 'v1', capacity: 301 }
+      baseState.activeQuests = [
+        { id: 'quest_apology_tour', progress: 0, required: 5 }
+      ]
+      const payload = { score: 70 }
+      const nextState = handleSetLastGigStats(baseState, payload)
+
+      const apologyQuest = nextState.activeQuests.find(
+        q => q.id === 'quest_apology_tour'
+      )
+      assert.strictEqual(apologyQuest.progress, 0)
+    })
+
     it('should queue consequences_comeback_album when apology tour complete and controversy recovered', () => {
       baseState.currentGig = { id: 'v1', capacity: 100 }
       baseState.activeStoryFlags = ['apology_tour_complete']
@@ -212,9 +229,12 @@ describe('gigReducer', () => {
 
     it('should auto-complete ego management quest on high harmony', () => {
       baseState.band.harmony = 60
-      baseState.activeQuests = [
-        { id: 'quest_ego_management', completed: false }
-      ]
+      // Seed the quest through the registry-aware addQuest path so the
+      // threshold (required: harmony level) and deadline come from
+      // QUEST_REGISTRY, not from a hardcoded fixture.
+      baseState = QuestLifecycle.addQuest(baseState, {
+        id: 'quest_ego_management'
+      })
       const payload = { score: 50 }
       const nextState = handleSetLastGigStats(baseState, payload)
 

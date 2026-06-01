@@ -20,12 +20,14 @@ import {
   QUEST_APOLOGY_TOUR,
   QUEST_EGO_MANAGEMENT
 } from '../data/questsConstants'
+import { getQuestDefinition } from '../data/questRegistry'
 import {
   clampPlayerMoney,
   clampPlayerFame,
   clampBandHarmony,
   calculateFameLevel,
   calculateFameGain,
+  finiteNumberOr,
   BALANCE_CONSTANTS
 } from '../utils/gameStateUtils'
 import { logger } from '../utils/logger'
@@ -44,6 +46,13 @@ import { shouldTriggerBankruptcy } from '../utils/economyEngine'
 import { generateBrandOffers } from '../utils/socialEngine'
 import { getTranslatedBrandDealDisplay } from '../utils/brandDealI18n'
 import { submitLeaderboardScores } from '../utils/leaderboardUtils'
+import { createHarmonyChangedQuestEvent } from '../quests/producers/gigQuestEvents'
+import {
+  createBrandDealCompletedQuestEvent,
+  createBrandOfferAcceptedQuestEvent
+} from '../quests/producers/brandQuestEvents'
+import { createSocialPostQuestEvents } from '../quests/producers/socialQuestEvents'
+import { createRegionReputationChangedQuestEvent } from '../quests/producers/venueQuestEvents'
 
 export interface UsePostGigHandlersReturn {
   isProcessingAction: boolean
@@ -85,6 +94,9 @@ export interface UsePostGigHandlersProps {
       typeof import('../context/actionCreators').createAddQuestAction
     >[0]
   ) => void
+  applyQuestEvent: (
+    event: import('../utils/questProgress').QuestProgressEvent
+  ) => void
   setPhase: (phase: 'REPORT' | 'SOCIAL' | 'DEALS' | 'COMPLETE') => void
   setPostResult: (result: PostResult) => void
   setBrandOffers: (offers: BrandDeal[]) => void
@@ -109,6 +121,7 @@ export const usePostGigHandlers = ({
   addToast,
   changeScene,
   addQuest,
+  applyQuestEvent,
   setPhase,
   setPostResult,
   setBrandOffers,
@@ -164,6 +177,16 @@ export const usePostGigHandlers = ({
             appliedHarmonyDelta > 0 ? 'success' : 'error'
           )
         }
+        if (appliedHarmonyDelta > 0) {
+          applyQuestEvent(
+            createHarmonyChangedQuestEvent({
+              amount: appliedHarmonyDelta,
+              newHarmony: clampBandHarmony(
+                finiteNumberOr(band?.harmony, 0) + appliedHarmonyDelta
+              )
+            })
+          )
+        }
 
         if (appliedMoneyDelta !== 0) {
           updatePlayer({ money: nextMoney })
@@ -193,6 +216,16 @@ export const usePostGigHandlers = ({
         }
 
         updateSocial(updatedSocial)
+
+        const followersGained = finiteNumberOr(finalResult.followers, 0)
+        // Pass platform + category as context so per-quest filters can narrow
+        // matches (e.g. TikTok-only viral_dance, Lifestyle-only outreach).
+        for (const questEvent of createSocialPostQuestEvents(option, {
+          ...finalResult,
+          followers: followersGained
+        })) {
+          applyQuestEvent(questEvent)
+        }
 
         const playerUpdated = { ...player, money: nextMoney }
         // Generate brand offers with UPDATED state (Post-Social-Update)
@@ -226,6 +259,7 @@ export const usePostGigHandlers = ({
       updateBand,
       updatePlayer,
       unlockTrait,
+      applyQuestEvent,
       addToast,
       currentGig,
       t,
@@ -254,6 +288,9 @@ export const usePostGigHandlers = ({
 
         const socialUpdateFactory = getAcceptDealSocialUpdateFactory(deal)
         updateSocial(socialUpdateFactory)
+
+        applyQuestEvent(createBrandOfferAcceptedQuestEvent(deal))
+        applyQuestEvent(createBrandDealCompletedQuestEvent(deal))
 
         const moneyText =
           appliedMoneyDelta === 0
@@ -288,6 +325,7 @@ export const usePostGigHandlers = ({
       updatePlayer,
       updateBand,
       updateSocial,
+      applyQuestEvent,
       addToast,
       t,
       setBrandOffers,
@@ -391,46 +429,67 @@ export const usePostGigHandlers = ({
         lastGigNodeId: player.currentNodeId
       })
 
+      const fameGain = stats.newFame - finiteNumberOr(player.fame, 0)
+      if (fameGain > 0) {
+        // Region context lets perRegion fame quests (quest_local_legend)
+        // gate progress to the actual region where it was earned.
+        applyQuestEvent(
+          createRegionReputationChangedQuestEvent({
+            region: player.location,
+            amount: fameGain,
+            reason: 'post_gig_fame'
+          })
+        )
+      }
+
+      let postPenaltyHarmony: number | undefined
       if (band.inventory?.neurotoxicPedal) {
+        const nextHarmony = clampBandHarmony(
+          finiteNumberOr(band?.harmony, 100) - NEUROTOXIC_PEDAL_HARMONY_PENALTY
+        )
+        postPenaltyHarmony = nextHarmony
         updateBand((prevBand: BandState) => {
-          const currentHarmony = prevBand.harmony ?? 100
-          const newHarmony = clampBandHarmony(
-            currentHarmony - NEUROTOXIC_PEDAL_HARMONY_PENALTY
-          )
           return {
             ...prevBand,
-            harmony: newHarmony
+            harmony: nextHarmony
           }
         })
       }
 
+      // Quest config (label/deadline/penalty) is owned by QUEST_REGISTRY.
+      // We build the dispatch payload from the registry definition so there is
+      // no inline duplication; the reducer also re-merges defaults defensively.
       if (activeStoryFlags?.includes('cancel_quest_active')) {
-        addQuest({
-          id: QUEST_APOLOGY_TOUR,
-          label: 'ui:quests.postgig.apologyTour.title',
-          description: 'ui:quests.postgig.apologyTour.description',
-          deadline: player.day + 14,
-          progress: 0,
-          required: 3,
-          rewardFlag: 'apology_tour_complete',
-          failurePenalty: {
-            social: { controversyLevel: 25 },
-            band: { harmony: -20 }
-          }
-        })
+        const def = getQuestDefinition(QUEST_APOLOGY_TOUR)
+        if (def) {
+          addQuest({
+            ...def,
+            id: QUEST_APOLOGY_TOUR,
+            deadline: player.day + finiteNumberOr(def.deadlineOffset, 0),
+            progress: 0
+          })
+        }
       }
 
       if (activeStoryFlags?.includes('breakup_quest_active')) {
-        addQuest({
-          id: QUEST_EGO_MANAGEMENT,
-          label: 'ui:quests.postgig.saveTheBand.title',
-          description: 'ui:quests.postgig.saveTheBand.description',
-          deadline: player.day + 5,
-          progress: 0,
-          required: 1,
-          rewardFlag: 'ego_crisis_resolved',
-          failurePenalty: { type: 'game_over' }
-        })
+        const def = getQuestDefinition(QUEST_EGO_MANAGEMENT)
+        if (def) {
+          // Threshold-style harmony quest: seed progress with current band
+          // harmony so any harmony recovery that happened earlier this
+          // post-gig phase is not lost. Without this seed the new quest would
+          // miss the harmony_recovered event applied before it was added.
+          const seededProgress =
+            def.progressSource === 'harmony_recovered'
+              ? (postPenaltyHarmony ??
+                clampBandHarmony(finiteNumberOr(band?.harmony, 0)))
+              : 0
+          addQuest({
+            ...def,
+            id: QUEST_EGO_MANAGEMENT,
+            deadline: player.day + finiteNumberOr(def.deadlineOffset, 0),
+            progress: seededProgress
+          })
+        }
       }
 
       submitLeaderboardScores({
@@ -484,6 +543,7 @@ export const usePostGigHandlers = ({
     changeScene,
     activeStoryFlags,
     addQuest,
+    applyQuestEvent,
     setlist,
     band,
     t

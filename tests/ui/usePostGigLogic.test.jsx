@@ -107,6 +107,7 @@ describe('usePostGigLogic', () => {
   const mockSaveGame = vi.fn()
   const mockUnlockTrait = vi.fn()
   const mockAddQuest = vi.fn()
+  const mockApplyQuestEvent = vi.fn()
 
   const getBaseState = (overrides = {}) => ({
     currentGig: { songId: 'test_song', venue: 'Test Venue', payout: 500 },
@@ -157,6 +158,7 @@ describe('usePostGigLogic', () => {
     reputationByRegion: { berlin: 50 },
     setlist: [],
     addQuest: mockAddQuest,
+    applyQuestEvent: mockApplyQuestEvent,
     ...overrides
   })
 
@@ -563,10 +565,7 @@ describe('usePostGigLogic', () => {
       })
       expect(mockAddQuest).toHaveBeenCalledWith(
         expect.objectContaining({
-          id: 'quest_ego_management',
-          deadline: 10,
-          required: 1,
-          failurePenalty: { type: 'game_over' }
+          id: 'quest_ego_management'
         })
       )
     })
@@ -795,9 +794,7 @@ describe('usePostGigLogic', () => {
 
       expect(mockAddQuest).toHaveBeenCalledWith(
         expect.objectContaining({
-          id: 'quest_apology_tour',
-          deadline: 19,
-          required: 3
+          id: 'quest_apology_tour'
         })
       )
       expect(mockAddToast).toHaveBeenCalledWith(

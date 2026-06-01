@@ -149,6 +149,28 @@ test('Full locale validation tests', async t => {
     }
   )
 
+  await t.test('German event probe labels are localized', async () => {
+    const deData = allData.get('de/events')
+    if (!deData) return
+
+    const englishProbePattern =
+      /\[(?:Improv|Technical|Composition)(?: check)?\]/
+    const offenders = deData.entries
+      .filter(
+        entry =>
+          entry.key.endsWith('.label') &&
+          typeof entry.value === 'string' &&
+          englishProbePattern.test(entry.value)
+      )
+      .map(entry => `${entry.key}: ${entry.value}`)
+
+    assert.deepEqual(
+      offenders,
+      [],
+      `German event labels should use localized probe labels:\n${offenders.join('\n')}`
+    )
+  })
+
   await t.test('ui.json featureList has valid structure', async () => {
     for (const locale of LOCALES) {
       const localeData = allData.get(`${locale}/ui`)

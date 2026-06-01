@@ -795,5 +795,186 @@ export const BAND_EVENTS = [
         outcomeText: 'events:forgotten_lyrics.opt2.outcome'
       }
     ]
+  },
+  {
+    id: 'stage_disaster',
+    category: 'band',
+    title: 'events:stage_disaster.title',
+    description: 'events:stage_disaster.desc',
+    trigger: 'random',
+    chance: 0.05,
+    options: [
+      {
+        label: 'events:stage_disaster.opt1.label',
+        skillCheck: {
+          stat: 'improv',
+          threshold: 6,
+          success: { type: 'stat', stat: 'fame', value: 15 },
+          failure: { type: 'stat', stat: 'mood', value: -10 }
+        },
+        outcomeText: 'events:stage_disaster.opt1.outcome'
+      },
+      {
+        label: 'events:stage_disaster.opt2.label',
+        effect: { type: 'stat', stat: 'fame', value: -5 },
+        outcomeText: 'events:stage_disaster.opt2.outcome'
+      }
+    ]
+  },
+  {
+    id: 'songwriting_sprint',
+    category: 'band',
+    title: 'events:songwriting_sprint.title',
+    description: 'events:songwriting_sprint.desc',
+    trigger: 'random',
+    chance: 0.05,
+    options: [
+      {
+        label: 'events:songwriting_sprint.opt1.label',
+        skillCheck: {
+          stat: 'composition',
+          threshold: 6,
+          success: { type: 'stat', stat: 'fame', value: 20 },
+          failure: { type: 'stat', stat: 'mood', value: -5 }
+        },
+        outcomeText: 'events:songwriting_sprint.opt1.outcome'
+      },
+      {
+        label: 'events:songwriting_sprint.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -3 },
+        outcomeText: 'events:songwriting_sprint.opt2.outcome'
+      }
+    ]
+  },
+  {
+    id: 'cable_emergency',
+    category: 'band',
+    title: 'events:cable_emergency.title',
+    description: 'events:cable_emergency.desc',
+    trigger: 'random',
+    chance: 0.05,
+    options: [
+      {
+        label: 'events:cable_emergency.opt1.label',
+        skillCheck: {
+          stat: 'technical',
+          threshold: 6,
+          success: { type: 'resource', resource: 'money', value: 100 },
+          failure: { type: 'resource', resource: 'money', value: -80 }
+        },
+        outcomeText: 'events:cable_emergency.opt1.outcome'
+      },
+      {
+        label: 'events:cable_emergency.opt2.label',
+        effect: { type: 'resource', resource: 'money', value: -50 },
+        outcomeText: 'events:cable_emergency.opt2.outcome'
+      }
+    ]
+  },
+  {
+    id: 'heckler_clapback',
+    category: 'band',
+    title: 'events:heckler_clapback.title',
+    description: 'events:heckler_clapback.desc',
+    trigger: 'random',
+    chance: 0.05,
+    options: [
+      {
+        label: 'events:heckler_clapback.opt1.label',
+        skillCheck: {
+          stat: 'improv',
+          threshold: 6,
+          success: { type: 'stat', stat: 'fame', value: 10 },
+          failure: { type: 'stat', stat: 'mood', value: -5 }
+        },
+        outcomeText: 'events:heckler_clapback.opt1.outcome'
+      },
+      {
+        label: 'events:heckler_clapback.opt2.label',
+        effect: { type: 'stat', stat: 'fame', value: -3 },
+        outcomeText: 'events:heckler_clapback.opt2.outcome'
+      }
+    ]
+  },
+  {
+    id: 'setlist_switch',
+    category: 'band',
+    title: 'events:setlist_switch.title',
+    description: 'events:setlist_switch.desc',
+    trigger: 'random',
+    chance: 0.05,
+    options: [
+      {
+        label: 'events:setlist_switch.opt1.label',
+        skillCheck: {
+          stat: 'improv',
+          threshold: 6,
+          success: {
+            type: 'composite',
+            effects: [
+              { type: 'stat', stat: 'fame', value: 8 },
+              { type: 'stat', stat: 'mood', value: 5 }
+            ]
+          },
+          failure: { type: 'stat', stat: 'mood', value: -5 }
+        },
+        outcomeText: 'events:setlist_switch.opt1.outcome'
+      },
+      {
+        label: 'events:setlist_switch.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:setlist_switch.opt2.outcome'
+      }
+    ]
+  },
+  {
+    id: 'studio_demo_session',
+    category: 'band',
+    title: 'events:studio_demo_session.title',
+    description: 'events:studio_demo_session.desc',
+    trigger: 'random',
+    chance: 0.05,
+    options: [
+      {
+        label: 'events:studio_demo_session.opt1.label',
+        skillCheck: {
+          stat: 'composition',
+          threshold: 7,
+          success: { type: 'stat', stat: 'fame', value: 25 },
+          failure: { type: 'resource', resource: 'money', value: -80 }
+        },
+        outcomeText: 'events:studio_demo_session.opt1.outcome'
+      },
+      {
+        label: 'events:studio_demo_session.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:studio_demo_session.opt2.outcome'
+      }
+    ]
+  },
+  {
+    id: 'record_deal_material',
+    category: 'band',
+    title: 'events:record_deal_material.title',
+    description: 'events:record_deal_material.desc',
+    trigger: 'random',
+    chance: 0.04,
+    options: [
+      {
+        label: 'events:record_deal_material.opt1.label',
+        skillCheck: {
+          stat: 'composition',
+          threshold: 7,
+          success: { type: 'resource', resource: 'money', value: 250 },
+          failure: { type: 'stat', stat: 'mood', value: -8 }
+        },
+        outcomeText: 'events:record_deal_material.opt1.outcome'
+      },
+      {
+        label: 'events:record_deal_material.opt2.label',
+        effect: { type: 'stat', stat: 'fame', value: -3 },
+        outcomeText: 'events:record_deal_material.opt2.outcome'
+      }
+    ]
   }
 ]

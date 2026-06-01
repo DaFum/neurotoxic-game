@@ -21,6 +21,12 @@ import {
   clampNonNegative
 } from '../../utils/gameStateUtils'
 import { sanitizeSuccessToast } from './toastSanitizers'
+import { QuestEvents } from '../../utils/questProgress'
+import {
+  createSocialControversyChangedQuestEvent,
+  createSocialLoyaltyChangedQuestEvent,
+  createSocialTrendMatchedQuestEvent
+} from '../../quests/producers/socialQuestEvents'
 
 type ZealotryPayloadParsed = {
   cost: number
@@ -200,7 +206,47 @@ export const handleUpdateSocial = (
     }
   }
 
-  return { ...state, social: { ...state.social, ...updates } }
+  let nextState: GameState = {
+    ...state,
+    social: { ...state.social, ...updates }
+  }
+
+  if (updates.loyalty !== undefined) {
+    const amount = nextState.social.loyalty - state.social.loyalty
+    if (amount !== 0) {
+      nextState = QuestEvents.emit(
+        nextState,
+        createSocialLoyaltyChangedQuestEvent({
+          amount,
+          reason: 'update_social'
+        })
+      )
+    }
+  }
+  if (updates.controversyLevel !== undefined) {
+    const amount =
+      nextState.social.controversyLevel - state.social.controversyLevel
+    if (amount !== 0) {
+      nextState = QuestEvents.emit(
+        nextState,
+        createSocialControversyChangedQuestEvent({
+          amount,
+          reason: 'update_social'
+        })
+      )
+    }
+  }
+  if (
+    updates.trend !== undefined &&
+    nextState.social.trend !== state.social.trend
+  ) {
+    nextState = QuestEvents.emit(
+      nextState,
+      createSocialTrendMatchedQuestEvent({ trendId: nextState.social.trend })
+    )
+  }
+
+  return nextState
 }
 
 const VENUE_DEFENSE_LOYALTY_THRESHOLD = 30

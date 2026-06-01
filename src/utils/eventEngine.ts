@@ -4,7 +4,11 @@ import { EVENT_STRINGS } from '../data/events/constants'
 import { logger } from './logger'
 import { secureRandom } from './crypto'
 import { bandHasTrait } from './traitUtils'
-import { calculateAppliedDelta, finiteNumberOr } from './gameStateUtils'
+import {
+  calculateAppliedDelta,
+  finiteNumberOr,
+  isOnCooldown as isOnCooldownShared
+} from './gameStateUtils'
 import { MODULE_REGISTRY } from './assetModuleRegistry'
 import { StateError } from './errorHandler'
 import type { GameEvent, GameState } from '../types'
@@ -219,9 +223,23 @@ const selectEvent = (
   const eventCooldowns = toStringArray(gameState.eventCooldowns)
   const activeStoryFlags = toStringArray(gameState.activeStoryFlags)
   const pendingEvents = toStringArray(gameState.pendingEvents)
+  const currentDay = finiteNumberOr(gameState.player?.day, 0)
+  const activeCooldowns: string[] = []
+  for (const cd of eventCooldowns) {
+    const [key, expiryStr] = cd.split(':')
+    if (expiryStr) {
+      const expiry = parseInt(expiryStr, 10)
+      if (!isNaN(expiry) && currentDay < expiry) {
+        if (key) activeCooldowns.push(key)
+      }
+    } else {
+      if (key) activeCooldowns.push(key)
+    }
+  }
+
   const cooldownsSet =
-    eventCooldowns.length > 0
-      ? new Set<string>(eventCooldowns)
+    activeCooldowns.length > 0
+      ? new Set<string>(activeCooldowns)
       : new Set<string>()
   const flagsSet =
     activeStoryFlags.length > 0
@@ -480,9 +498,20 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
       delta.flags.addStoryFlag = eff.flag
     }
   },
-  cooldown: (eff: EffectShape, delta: EventDelta) => {
+  cooldown: (
+    eff: EffectShape,
+    delta: EventDelta,
+    _context: TemplateContext = {},
+    gameState: EngineGameState | null = null
+  ) => {
     if (typeof eff.eventId === 'string' && eff.eventId.length > 0) {
-      delta.flags.addCooldown = eff.eventId
+      if (typeof eff.value === 'number' && eff.value > 0) {
+        const currentDay = finiteNumberOr(gameState?.player?.day, 0)
+        const expiryDay = currentDay + eff.value
+        delta.flags.addCooldown = `${eff.eventId}:${expiryDay}`
+      } else {
+        delta.flags.addCooldown = eff.eventId
+      }
     }
   },
   social_set: (eff: EffectShape, delta: EventDelta) => {
@@ -593,6 +622,8 @@ const resolveSkillCheckFailure = (
   }
   return { ...failure, outcome: 'failure' }
 }
+
+export const isOnCooldown = isOnCooldownShared
 
 export const eventEngine = {
   handleError(err: unknown, eventId?: string) {

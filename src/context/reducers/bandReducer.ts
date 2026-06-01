@@ -14,6 +14,8 @@ import {
 import { applyTraitUnlocks } from '../../utils/traitUtils'
 import { ActionTypes } from '../actionTypes'
 import { CONTRABAND_BY_ID } from '../../data/contraband'
+import { QuestEvents } from '../../utils/questProgress'
+import { createItemUsedQuestEvent } from '../../quests/producers/itemQuestEvents'
 import type {
   BandMember,
   BandState,
@@ -228,7 +230,10 @@ export const handleConsumeItem = (
     )
   }
 
-  return { ...state, band: nextBand }
+  return QuestEvents.emit(
+    { ...state, band: nextBand },
+    createItemUsedQuestEvent({ itemId: itemType })
+  )
 }
 
 /**

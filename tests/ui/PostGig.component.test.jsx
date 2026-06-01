@@ -2,7 +2,10 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { PostGig } from '../../src/scenes/PostGig'
 import { useGameState } from '../../src/context/GameState'
-import { GAME_PHASES } from '../../src/context/gameConstants'
+import {
+  GAME_PHASES,
+  NEUROTOXIC_PEDAL_HARMONY_PENALTY
+} from '../../src/context/gameConstants'
 import * as economyEngine from '../../src/utils/economyEngine'
 import * as socialEngine from '../../src/utils/socialEngine'
 import { BRAND_ALIGNMENTS } from '../../src/context/initialState'
@@ -144,6 +147,7 @@ const mockAddToast = vi.fn()
 const mockSaveGame = vi.fn()
 const mockUnlockTrait = vi.fn()
 const mockAddQuest = vi.fn()
+const mockApplyQuestEvent = vi.fn()
 
 // Shared base state factory
 const createBaseState = (overrides = {}) => ({
@@ -198,6 +202,7 @@ const createBaseState = (overrides = {}) => ({
   reputationByRegion: { berlin: 50 },
   setlist: [],
   addQuest: mockAddQuest,
+  applyQuestEvent: mockApplyQuestEvent,
   ...overrides
 })
 
@@ -737,6 +742,11 @@ describe('PostGig Component - Complete Phase', () => {
     vi.spyOn(economyEngine, 'shouldTriggerBankruptcy').mockReturnValue(false)
     useGameState.mockReturnValue(
       createBaseState({
+        band: {
+          ...createBaseState().band,
+          inventory: { neurotoxicPedal: true },
+          harmony: 50
+        },
         activeStoryFlags: ['cancel_quest_active', 'breakup_quest_active']
       })
     )
@@ -763,15 +773,29 @@ describe('PostGig Component - Complete Phase', () => {
         expect.objectContaining({
           id: 'quest_apology_tour',
           deadline: 19,
-          required: 3
+          failurePenalty: expect.objectContaining({
+            flags: ['apology_tour_failed'],
+            band: { harmony: -20 },
+            social: { controversyLevel: 25 },
+            cooldowns: [{ id: 'apology_tour_retry', days: 14 }]
+          })
         })
       )
+      // Don't re-assert registry-owned fields like `required` here — those
+      // come from QUEST_REGISTRY via getQuestDefinition. Only assert what
+      // handleContinue itself sets (id, deadline) and the failure-penalty
+      // contract this test is about.
       expect(mockAddQuest).toHaveBeenCalledWith(
         expect.objectContaining({
           id: 'quest_ego_management',
           deadline: 10,
-          required: 1,
-          failurePenalty: { type: 'game_over' }
+          progress: 50 - NEUROTOXIC_PEDAL_HARMONY_PENALTY,
+          failurePenalty: expect.objectContaining({
+            flags: ['ego_crisis_failed'],
+            band: { harmony: -25 },
+            social: { controversyLevel: 10, loyalty: -15 },
+            cooldowns: [{ id: 'ego_management_retry', days: 10 }]
+          })
         })
       )
 

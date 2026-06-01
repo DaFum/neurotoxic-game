@@ -845,7 +845,10 @@ export const applyEventDelta = (
 
     if (scoreDelta !== 0) {
       const boundedScore = clampNonNegative(nextPlayer.score)
-      nextPlayer.score = boundedScore + scoreDelta
+      // Match calculateAppliedDelta: score is non-negative. A large negative
+      // delta (e.g. -1000 from ego-breakup consequences) must not drive
+      // player.score below 0.
+      nextPlayer.score = Math.max(0, boundedScore + scoreDelta)
     }
 
     // Player Stats
@@ -1299,3 +1302,40 @@ export const normalizeSetlistForSave = (
 }
 
 export { safeJsonParse }
+
+export const isOnCooldown = (
+  gameState: {
+    eventCooldowns?: string[] | Set<string>
+    player?: { day?: number }
+  },
+  eventId: string,
+  contextId: string = ''
+): boolean => {
+  if (!gameState.eventCooldowns) return false
+
+  const currentDay = finiteNumberOr(gameState.player?.day, 0)
+
+  const cooldowns = Array.isArray(gameState.eventCooldowns)
+    ? gameState.eventCooldowns
+    : Array.from(gameState.eventCooldowns)
+
+  for (const cd of cooldowns) {
+    const [key, expiryStr] = (typeof cd === 'string' ? cd : '').split(':')
+    if (!key) continue
+
+    // Exact match
+    const isMatch =
+      (contextId && key === `${eventId}_${contextId}`) || key === eventId
+    if (isMatch) {
+      if (expiryStr) {
+        const expiry = parseInt(expiryStr, 10)
+        if (!isNaN(expiry) && currentDay < expiry) {
+          return true
+        }
+      } else {
+        return true // No expiry means forever or legacy
+      }
+    }
+  }
+  return false
+}

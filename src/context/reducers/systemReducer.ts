@@ -66,6 +66,7 @@ import {
 } from '../gameConstants'
 import type { MinigameType } from '../../types/game'
 import { QuestLifecycle } from '../../domain/questLifecycle'
+import { getQuestDefinition } from '../../data/questRegistry'
 import { getSafeRandom } from '../../utils/crypto'
 import { ALLOWED_TOAST_TYPES, sanitizeLoadedToast } from './toastSanitizers'
 import {
@@ -1395,6 +1396,51 @@ const sanitizeActiveQuests = (value: unknown): GameState['activeQuests'] => {
   if (!Array.isArray(value)) return []
   return value.flatMap(quest => {
     if (!isLooseRecord(quest) || typeof quest.id !== 'string') return []
+    if (isForbiddenKey(quest.id)) return []
+    const definition = getQuestDefinition(quest.id)
+    if (definition) {
+      if (
+        (definition.repeatPolicy === 'perVenue' ||
+          definition.repeatPolicy === 'perRegion') &&
+        (typeof quest.scopeKey !== 'string' ||
+          quest.scopeKey.length === 0 ||
+          isForbiddenKey(quest.scopeKey))
+      ) {
+        return []
+      }
+      const startedOnDay = finiteNumberOr(quest.startedOnDay, 0)
+      const sanitized: GameState['activeQuests'][number] = {
+        id: quest.id,
+        status: 'active',
+        startedOnDay
+      }
+      if (quest.deadline == null) {
+        const deadlineOffset = finiteOptionalNumber(definition.deadlineOffset)
+        if (deadlineOffset !== undefined) {
+          sanitized.deadline = startedOnDay + deadlineOffset
+        } else if (quest.deadline === null) {
+          sanitized.deadline = null
+        }
+      } else {
+        const deadline = finiteOptionalNumber(quest.deadline)
+        if (deadline !== undefined) sanitized.deadline = deadline
+      }
+      const progress = finiteOptionalNumber(quest.progress)
+      sanitized.progress = progress ?? 0
+      const required = finiteOptionalNumber(quest.required)
+      if (required !== undefined) {
+        sanitized.required = required
+      } else if (typeof definition.required === 'number') {
+        sanitized.required = definition.required
+      }
+      if (
+        typeof quest.scopeKey === 'string' &&
+        !isForbiddenKey(quest.scopeKey)
+      ) {
+        sanitized.scopeKey = quest.scopeKey
+      }
+      return [sanitized]
+    }
     const sanitized: GameState['activeQuests'][number] = { id: quest.id }
     for (const key of ['label', 'description', 'rewardType', 'rewardFlag']) {
       if (typeof quest[key] === 'string') sanitized[key] = quest[key]
@@ -1412,6 +1458,50 @@ const sanitizeActiveQuests = (value: unknown): GameState['activeQuests'] => {
     const failurePenalty = copySafeJsonValue(quest.failurePenalty)
     if (isLooseRecord(failurePenalty)) sanitized.failurePenalty = failurePenalty
     return [sanitized]
+  })
+}
+
+const sanitizeQuestCooldowns = (
+  value: unknown
+): GameState['questCooldowns'] => {
+  if (!Array.isArray(value)) return []
+  return value.flatMap(entry => {
+    if (!isLooseRecord(entry) || typeof entry.questId !== 'string') return []
+    if (isForbiddenKey(entry.questId)) return []
+    const expiresOnDay = finiteOptionalNumber(entry.expiresOnDay)
+    if (expiresOnDay === undefined) return []
+    const sanitized: GameState['questCooldowns'][number] = {
+      questId: entry.questId,
+      expiresOnDay
+    }
+    if (
+      Object.hasOwn(entry, 'id') &&
+      typeof entry.id === 'string' &&
+      entry.id.length > 0 &&
+      !isForbiddenKey(entry.id)
+    ) {
+      sanitized.id = entry.id
+    }
+    return [sanitized]
+  })
+}
+
+const sanitizeQuestScopes = (
+  value: unknown
+): GameState['completedQuestScopes'] => {
+  if (!Array.isArray(value)) return []
+  return value.flatMap(entry => {
+    // Scope completions are keyed by questId + scopeKey only; unlike cooldowns,
+    // they have no separate legacy id contract to preserve.
+    if (
+      !isLooseRecord(entry) ||
+      typeof entry.questId !== 'string' ||
+      typeof entry.scopeKey !== 'string' ||
+      isForbiddenKey(entry.questId) ||
+      isForbiddenKey(entry.scopeKey)
+    )
+      return []
+    return [{ questId: entry.questId, scopeKey: entry.scopeKey }]
   })
 }
 
@@ -1476,6 +1566,9 @@ export const handleLoadGame = (
     ),
     venueBlacklist: sanitizeStringArray(loadedState.venueBlacklist),
     activeQuests: sanitizeActiveQuests(loadedState.activeQuests),
+    questCooldowns: sanitizeQuestCooldowns(loadedState.questCooldowns),
+    completedQuestIds: sanitizeStringArray(loadedState.completedQuestIds),
+    completedQuestScopes: sanitizeQuestScopes(loadedState.completedQuestScopes),
     npcs: sanitizeNpcs(loadedState.npcs),
     gigModifiers: sanitizeGigModifiers(loadedState.gigModifiers),
     currentScene: GAME_PHASES.OVERWORLD,
@@ -1872,12 +1965,32 @@ export const handleAdvanceDay = (
 
   const newTrend = generateDailyTrend(rng)
 
+  // Expire quest cooldowns whose window has elapsed (mirrors the deadline check
+  // pattern). Entries are kept while expiresOnDay is still in the future.
+  const currentDay = finiteNumberOr(nextPlayer.day, 0)
+  const activeQuestCooldowns = (state.questCooldowns ?? []).filter(
+    cd => cd.expiresOnDay > currentDay
+  )
+
+  // Keep timed event cooldowns (`eventId:expiryDay`) alive until their expiry
+  // day, while legacy untimed daily cooldowns (no `:`) reset every day as
+  // before. Without this filter the new ego_management_retry / failure cooldown
+  // entries would silently evaporate on the next advanceDay.
+  const activeEventCooldowns = (state.eventCooldowns ?? []).filter(cd => {
+    if (typeof cd !== 'string') return false
+    const idx = cd.indexOf(':')
+    if (idx < 0) return false // legacy daily entry → drop
+    const expiry = parseInt(cd.slice(idx + 1), 10)
+    return Number.isFinite(expiry) && expiry > currentDay
+  })
+
   let nextState: GameState = {
     ...state,
     player: nextPlayer,
     band: finalBandState,
     social: { ...social, trend: newTrend },
-    eventCooldowns: [],
+    eventCooldowns: activeEventCooldowns,
+    questCooldowns: activeQuestCooldowns,
     toasts: traitResult.toasts
   }
 

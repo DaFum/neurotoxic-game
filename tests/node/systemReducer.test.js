@@ -681,6 +681,111 @@ test('systemReducer - LOAD_GAME', async t => {
     }
   )
 
+  await t.test(
+    'migrates registry-backed active quests to runtime fields on load',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = {
+        activeQuests: [
+          {
+            id: 'quest_viral_dance',
+            label: 'Legacy Viral Dance',
+            description: 'Legacy description',
+            deadline: 12,
+            progress: 50,
+            required: 500,
+            rewardType: 'fame',
+            rewardData: { fame: 500 },
+            failurePenalty: { social: { controversyLevel: 5 } },
+            scopeKey: 'berlin',
+            startedOnDay: 4,
+            status: 'active'
+          }
+        ]
+      }
+
+      const nextState = handleLoadGame(initialState, loadedState)
+
+      assert.deepEqual(nextState.activeQuests, [
+        {
+          id: 'quest_viral_dance',
+          deadline: 12,
+          progress: 50,
+          required: 500,
+          scopeKey: 'berlin',
+          status: 'active',
+          startedOnDay: 4
+        }
+      ])
+    }
+  )
+
+  await t.test(
+    'drops loaded scoped registry quests without a scope key',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = {
+        activeQuests: [
+          {
+            id: 'quest_venue_residency',
+            progress: 1,
+            required: 3
+          },
+          {
+            id: 'quest_local_legend',
+            progress: 100,
+            required: 500,
+            scopeKey: 'berlin'
+          }
+        ]
+      }
+
+      const nextState = handleLoadGame(initialState, loadedState)
+
+      assert.deepEqual(nextState.activeQuests, [
+        {
+          id: 'quest_local_legend',
+          deadline: 10,
+          progress: 100,
+          required: 500,
+          scopeKey: 'berlin',
+          status: 'active',
+          startedOnDay: 0
+        }
+      ])
+    }
+  )
+
+  await t.test(
+    'backfills registry-backed active quest deadlines on load',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = {
+        activeQuests: [
+          { id: 'quest_viral_dance', startedOnDay: 4 },
+          {
+            id: 'quest_prove_yourself',
+            startedOnDay: undefined,
+            deadline: null
+          }
+        ]
+      }
+
+      const nextState = handleLoadGame(initialState, loadedState)
+
+      assert.equal(
+        nextState.activeQuests.find(q => q.id === 'quest_viral_dance')
+          ?.deadline,
+        9
+      )
+      assert.equal(
+        nextState.activeQuests.find(q => q.id === 'quest_prove_yourself')
+          ?.deadline,
+        20
+      )
+    }
+  )
+
   await t.test('handles missing or malformed toasts array', () => {
     const initialState = createInitialState()
     const loadedState = {
@@ -1103,6 +1208,22 @@ test('systemReducer - ADVANCE_DAY core logic', async t => {
       assert.deepEqual(nextState.eventCooldowns, [])
     }
   )
+
+  await t.test('keeps timed event cooldowns until their expiry day', () => {
+    const state = {
+      ...createInitialState(),
+      player: { ...createInitialState().player, day: 5, money: 100 },
+      // Legacy untimed entry resets every advanceDay; timed entries persist
+      // until expiry. expiry 10 (future) stays; expiry 5 (=current) drops.
+      eventCooldowns: [
+        'legacy_daily',
+        'ego_management_retry:10',
+        'expired_event:5'
+      ]
+    }
+    const next = handleAdvanceDay(state, { rng: () => 0.5 })
+    assert.deepEqual(next.eventCooldowns, ['ego_management_retry:10'])
+  })
 
   await t.test(
     'preserves an existing pending risk event during daily rolls',

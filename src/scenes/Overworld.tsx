@@ -50,7 +50,8 @@ export const Overworld = () => {
     spawnRivalBand,
     updateRivalBand,
     moveRivalBand,
-    checkRivalEncounter
+    checkRivalEncounter,
+    applyQuestEvent
   } = useGameActions()
 
   const [hoveredNode, setHoveredNode] = useState<MapNode | null>(null)
@@ -139,7 +140,8 @@ export const Overworld = () => {
     onShowSupplyStop: openSupplyStop,
     onStartTravelMinigame: startTravelMinigame,
     moveRivalBand,
-    checkRivalEncounter
+    checkRivalEncounter,
+    applyQuestEvent
   })
 
   const { isSaving, handleSaveWithDelay } = useOverworldSave(saveGame)

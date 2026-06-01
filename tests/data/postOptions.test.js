@@ -1,7 +1,17 @@
 import { test } from 'vitest'
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import { POST_OPTIONS } from '../../src/data/postOptions'
 import { SOCIAL_PLATFORMS } from '../../src/data/platforms'
+
+const LIFESTYLE_POST_IDS = [
+  'lifestyle_tour_diary',
+  'lifestyle_fan_dinner',
+  'lifestyle_behind_the_scenes',
+  'lifestyle_gear_care'
+]
+
+const escapeRegExp = value => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 test('POST_OPTIONS is an array', () => {
   assert.ok(Array.isArray(POST_OPTIONS), 'POST_OPTIONS should be an array')
@@ -120,4 +130,44 @@ test('POST_OPTIONS resolve functions return valid structures', () => {
       )
     }
   })
+})
+
+test('Lifestyle POST_OPTIONS use locale keys for names and messages', () => {
+  const source = readFileSync('src/data/postOptions.ts', 'utf8')
+  const enUi = JSON.parse(readFileSync('public/locales/en/ui.json', 'utf8'))
+  const deUi = JSON.parse(readFileSync('public/locales/de/ui.json', 'utf8'))
+
+  for (const id of LIFESTYLE_POST_IDS) {
+    const optionBlockPattern = new RegExp(`id:\\s*'${id}'[\\s\\S]*?\\n  }`)
+    const optionBlock = source.match(optionBlockPattern)?.[0] ?? ''
+    const nameKey = `postOptions.lifestyle.${id}.name`
+    const messageKey = `postOptions.lifestyle.${id}.message`
+
+    assert.match(
+      optionBlock,
+      new RegExp(`i18n\\.t\\(\\s*'ui:${escapeRegExp(nameKey)}'`),
+      `${id} should read its name from ui:${nameKey}`
+    )
+    assert.match(
+      optionBlock,
+      new RegExp(`i18n\\.t\\(\\s*'ui:${escapeRegExp(messageKey)}'`),
+      `${id} should read its resolve.message from ui:${messageKey}`
+    )
+
+    for (const [locale, ui] of [
+      ['en', enUi],
+      ['de', deUi]
+    ]) {
+      assert.equal(
+        typeof ui[nameKey],
+        'string',
+        `${locale}/ui.json missing ${nameKey}`
+      )
+      assert.equal(
+        typeof ui[messageKey],
+        'string',
+        `${locale}/ui.json missing ${messageKey}`
+      )
+    }
+  }
 })

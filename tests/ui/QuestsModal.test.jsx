@@ -30,4 +30,27 @@ describe('QuestsModal', () => {
     ).toBeInTheDocument()
     expect(screen.getByText('1 / 3')).toBeInTheDocument()
   })
+
+  it('renders structured rewards and failure penalties', () => {
+    render(
+      <QuestsModal
+        onClose={vi.fn()}
+        player={{ day: 3 }}
+        activeQuests={[
+          {
+            id: 'structured_quest',
+            label: 'ui:quests.structured.title',
+            description: 'ui:quests.structured.description',
+            progress: 0,
+            required: 1,
+            rewards: [{ type: 'fame', amount: 25 }],
+            failurePenalties: [{ type: 'band.harmony', amount: -5 }]
+          }
+        ]}
+      />
+    )
+
+    expect(screen.getByText('ui:rewards.fameWithAmount')).toBeInTheDocument()
+    expect(screen.getByText('ui:quests.penalty.harmony')).toBeInTheDocument()
+  })
 })

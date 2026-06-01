@@ -253,6 +253,9 @@ const initialState: GameState = {
   eventCooldowns: [],
   venueBlacklist: [],
   activeQuests: [],
+  questCooldowns: [],
+  completedQuestIds: [],
+  completedQuestScopes: [],
   reputationByRegion: {},
   settings: { ...DEFAULT_SETTINGS },
   npcs: {},
@@ -284,6 +287,9 @@ export const createInitialState = (
   player: structuredClone(DEFAULT_PLAYER_STATE),
   venueBlacklist: [],
   activeQuests: [],
+  questCooldowns: [],
+  completedQuestIds: [],
+  completedQuestScopes: [],
   band: {
     ...DEFAULT_BAND_STATE,
     members: DEFAULT_BAND_STATE.members.map(m => ({

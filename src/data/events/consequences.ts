@@ -8,6 +8,7 @@ import { finiteNumberOr } from '../../utils/finiteNumber'
 
 import { QUEST_APOLOGY_TOUR } from '../questsConstants'
 import { hasActiveQuest } from '../../utils/questUtils'
+import { isOnCooldown } from '../../utils/gameStateUtils'
 
 export const CONSEQUENCE_EVENTS = [
   {
@@ -248,6 +249,8 @@ export const CONSEQUENCE_EVENTS = [
     trigger: 'travel',
     chance: 0.8,
     condition: (state: GameState) => {
+      if (isOnCooldown(state, 'ego_management_retry')) return false
+
       const harmony = finiteNumberOr(state.band?.harmony, 0)
       const egoFocus = state.social?.egoFocus || null
       const flags = state.activeStoryFlags || []
@@ -275,7 +278,11 @@ export const CONSEQUENCE_EVENTS = [
           type: 'composite',
           effects: [
             { type: 'stat', stat: 'score', value: -1000 },
-            { type: 'game_over' }
+            { type: 'stat', stat: 'harmony', value: -25 },
+            { type: 'stat', stat: 'controversyLevel', value: 10 },
+            { type: 'stat', stat: 'loyalty', value: -15 },
+            { type: 'flag', flag: 'ego_crisis_failed' },
+            { type: 'cooldown', eventId: 'ego_management_retry', value: 10 }
           ]
         },
         outcomeText: 'events:consequences_ego_breakup_threat.opt2.outcome'

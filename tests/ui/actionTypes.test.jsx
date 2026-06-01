@@ -42,6 +42,7 @@ describe('ActionTypes', () => {
       'ADD_VENUE_BLACKLIST',
       'ADD_QUEST',
       'ADVANCE_QUEST',
+      'APPLY_QUEST_EVENT',
       'ADD_UNLOCK',
       'USE_CONTRABAND',
       'CLINIC_HEAL',

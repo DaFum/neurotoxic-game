@@ -5,8 +5,11 @@ import { GlitchButton } from './GlitchButton.tsx'
 import { useTranslation } from 'react-i18next'
 import { useId, memo, type MouseEvent, type ReactNode } from 'react'
 import { formatCurrency } from '../utils/numberUtils'
+import { getQuestDefinition } from '../data/questRegistry'
+import { getQuestPenalties } from '../domain/questPenalties'
+import { getQuestRewards } from '../domain/questRewards'
 import type { Variants } from 'framer-motion'
-import type { PlayerState, QuestState } from '../types'
+import type { PlayerState, QuestReward, QuestState } from '../types'
 
 type IconProps = {
   className?: string
@@ -105,27 +108,51 @@ type QuestDisplayState = QuestState & {
   moneyReward?: number
 }
 
-// Get translated reward text
 const getRewardText = (
-  quest: QuestDisplayState,
-  t: (key: string, options?: Record<string, unknown>) => string
+  reward: QuestReward,
+  t: (key: string, options?: Record<string, unknown>) => string,
+  language: string
 ) => {
-  const value = quest.rewardData
-  switch (quest.rewardType) {
-    case 'item':
+  switch (reward.type) {
+    case 'item.add':
       return t('ui:rewards.freeItem')
     case 'fame':
-      return t('ui:rewards.fameWithAmount', { count: value?.fame ?? 0 })
-    case 'fans':
-      return t('ui:rewards.fansWithAmount', { count: value?.fans ?? 0 })
+      return t('ui:rewards.fameWithAmount', { count: reward.amount })
+    case 'social.followers':
+      return t('ui:rewards.fansWithAmount', { count: reward.amount })
     case 'money':
-      return t('ui:rewards.moneyWithAmount', { count: value?.money ?? 0 })
+      return t('ui:quests.moneyReward', {
+        amount: formatCurrency(reward.amount, language, 'always')
+      })
     case 'skill_point':
       return t('ui:rewards.skillPointWithAmount', { count: 1 })
-    case 'harmony':
-      return t('ui:rewards.harmonyWithAmount', { count: value?.harmony ?? 0 })
+    case 'band.harmony':
+      return t('ui:rewards.harmonyWithAmount', { count: reward.amount })
+    case 'social.loyalty':
+      return t('ui:rewards.loyaltyWithAmount', { count: reward.amount })
+    case 'social.controversy':
+      return t('ui:rewards.controversyReduction', {
+        count: Math.abs(reward.amount)
+      })
     default:
       return t('ui:rewards.special')
+  }
+}
+
+const getRewardIconType = (reward: QuestReward): string => {
+  switch (reward.type) {
+    case 'item.add':
+      return 'item'
+    case 'social.followers':
+      return 'fans'
+    case 'band.harmony':
+      return 'harmony'
+    case 'social.loyalty':
+      return 'loyalty'
+    case 'social.controversy':
+      return 'controversy_reduction'
+    default:
+      return reward.type
   }
 }
 
@@ -140,13 +167,64 @@ const getRewardIcon = (type: string) => {
     case 'skill_point':
       return <IconFire className='w-4 h-4 text-error-red' />
     case 'harmony':
+    case 'loyalty':
       return <IconThumbUp className='w-4 h-4 text-toxic-green' />
+    case 'controversy_reduction':
+      return <IconThumbUp className='w-4 h-4 text-stamina-green' />
     case 'money':
       return <IconCoin className='w-4 h-4 text-fuel-yellow' />
     default:
       return <IconTrophy className='w-4 h-4 text-fuel-yellow' />
   }
 }
+
+// Human-readable failure-penalty chips derived from the quest's penalty config.
+const getPenaltyTexts = (
+  quest: QuestDisplayState,
+  t: (key: string, options?: Record<string, unknown>) => string
+): string[] => {
+  const texts: string[] = []
+  for (const penalty of getQuestPenalties(quest)) {
+    switch (penalty.type) {
+      case 'band.harmony':
+        if (penalty.amount !== 0) {
+          texts.push(t('ui:quests.penalty.harmony', { count: penalty.amount }))
+        }
+        break
+      case 'social.controversy':
+        if (penalty.amount !== 0) {
+          texts.push(
+            t('ui:quests.penalty.controversy', { count: penalty.amount })
+          )
+        }
+        break
+      case 'social.loyalty':
+        if (penalty.amount !== 0) {
+          texts.push(t('ui:quests.penalty.loyalty', { count: penalty.amount }))
+        }
+        break
+    }
+  }
+  return texts
+}
+
+// Display order: story first, then by ascending deadline (no deadline last),
+// then repeatables. Stable for equal keys so React doesn't churn.
+const KIND_RANK: Record<string, number> = {
+  story: 0,
+  side: 1,
+  repeatable: 2,
+  tutorial: 3
+}
+const sortQuests = (quests: QuestDisplayState[]): QuestDisplayState[] =>
+  [...quests].sort((a, b) => {
+    const rankA = KIND_RANK[a.kind ?? 'side'] ?? 1
+    const rankB = KIND_RANK[b.kind ?? 'side'] ?? 1
+    if (rankA !== rankB) return rankA - rankB
+    const da = a.deadline ?? Number.POSITIVE_INFINITY
+    const db = b.deadline ?? Number.POSITIVE_INFINITY
+    return da - db
+  })
 
 const questItemVariants = {
   hidden: { opacity: 0, x: -20 },
@@ -184,6 +262,9 @@ const QuestItem = memo(
     const timeRemaining =
       quest.deadline != null ? Math.max(0, quest.deadline - currentDay) : null
 
+    const rewardChips = getQuestRewards(quest)
+    const penaltyTexts = getPenaltyTexts(quest, t)
+
     return (
       <motion.div
         key={quest.id}
@@ -194,9 +275,35 @@ const QuestItem = memo(
         className={`p-4 border-l-4 ${isOverdue ? 'border-blood-red' : 'border-toxic-green'} bg-ash-gray/5`}
       >
         <div className='flex justify-between items-start mb-2'>
-          <h3 className='text-xl font-bold text-star-white uppercase tracking-wide'>
-            {quest.label ? t(quest.label) : ''}
-          </h3>
+          <div className='flex flex-col gap-1'>
+            <h3 className='text-xl font-bold text-star-white uppercase tracking-wide'>
+              {quest.label ? t(quest.label) : ''}
+            </h3>
+            <div className='flex flex-wrap gap-1'>
+              {quest.kind && (
+                <span className='inline-block bg-toxic-green/10 text-toxic-green px-2 py-0.5 text-[10px] font-mono uppercase tracking-wide'>
+                  {t(`ui:quests.kind.${quest.kind}`)}
+                </span>
+              )}
+              {quest.repeatPolicy && (
+                <span className='inline-block bg-ash-gray/10 text-ash-gray px-2 py-0.5 text-[10px] font-mono uppercase tracking-wide'>
+                  {quest.repeatPolicy === 'never'
+                    ? t('ui:quests.oneTime')
+                    : t('ui:quests.repeatable')}
+                </span>
+              )}
+              {quest.scopeKey && (
+                <span className='inline-block bg-fuel-yellow/10 text-fuel-yellow px-2 py-0.5 text-[10px] font-mono uppercase tracking-wide'>
+                  {t(
+                    quest.repeatPolicy === 'perVenue'
+                      ? 'ui:quests.scope.venue'
+                      : 'ui:quests.scope.region',
+                    { scope: quest.scopeKey }
+                  )}
+                </span>
+              )}
+            </div>
+          </div>
           {timeRemaining !== null && (
             <div
               className={`flex items-center gap-1 text-xs font-mono px-2 py-1 ${timeRemaining <= 2 ? 'bg-error-red/20 text-error-red' : 'bg-fuel-yellow/10 text-fuel-yellow'}`}
@@ -212,9 +319,29 @@ const QuestItem = memo(
           )}
         </div>
 
-        <p className='text-sm text-ash-gray mb-4 font-mono'>
+        <p className='text-sm text-ash-gray mb-2 font-mono'>
           {quest.description ? t(quest.description) : ''}
         </p>
+
+        {quest.progressSource && (
+          <p className='text-xs text-toxic-green/80 mb-3 font-mono italic'>
+            {quest.progressSource === 'harmony_recovered' &&
+            typeof quest.required === 'number' &&
+            quest.required > 1
+              ? t('ui:quests.progressSource.harmony_threshold', {
+                  target: quest.required
+                })
+              : t(`ui:quests.progressSource.${quest.progressSource}`)}
+          </p>
+        )}
+
+        {quest.repeatPolicy === 'cooldown' &&
+          typeof quest.cooldownDays === 'number' &&
+          quest.cooldownDays > 0 && (
+            <p className='text-xs text-ash-gray/70 mb-3 font-mono'>
+              {t('ui:quests.repeatableAfter', { count: quest.cooldownDays })}
+            </p>
+          )}
 
         <div className='mb-3'>
           <div className='flex justify-between text-xs text-ash-gray mb-1 font-mono'>
@@ -236,26 +363,32 @@ const QuestItem = memo(
             {t('ui:quests.rewards')}
           </span>
 
-          {typeof quest.moneyReward === 'number' && quest.moneyReward > 0 && (
-            <span className='inline-flex items-center gap-1 bg-fuel-yellow/10 text-fuel-yellow px-2 py-1 text-xs font-mono '>
-              <IconCoin className='w-3 h-3' />{' '}
-              {t('ui:quests.moneyReward', {
-                amount: formatCurrency(
-                  quest.moneyReward,
-                  i18n.language,
-                  'always'
-                )
-              })}
+          {rewardChips.map((reward, rewardIndex) => (
+            <span
+              key={`${reward.type}-${rewardIndex}`}
+              className='inline-flex items-center gap-1 bg-toxic-green/10 text-toxic-green px-2 py-1 text-xs font-mono '
+            >
+              {getRewardIcon(getRewardIconType(reward))}
+              {getRewardText(reward, t, i18n.language)}
             </span>
-          )}
-
-          {quest.rewardType && (
-            <span className='inline-flex items-center gap-1 bg-toxic-green/10 text-toxic-green px-2 py-1 text-xs font-mono '>
-              {getRewardIcon(quest.rewardType)}
-              {getRewardText(quest, t)}
-            </span>
-          )}
+          ))}
         </div>
+
+        {penaltyTexts.length > 0 && (
+          <div className='flex flex-wrap gap-2 mt-3'>
+            <span className='text-xs text-blood-red uppercase font-bold mr-2 self-center'>
+              {t('ui:quests.penalty.label')}
+            </span>
+            {penaltyTexts.map(text => (
+              <span
+                key={text}
+                className='inline-flex items-center gap-1 bg-blood-red/10 text-blood-red px-2 py-1 text-xs font-mono'
+              >
+                {text}
+              </span>
+            ))}
+          </div>
+        )}
       </motion.div>
     )
   }
@@ -271,6 +404,10 @@ export const QuestsModal = ({
   player: PlayerState
 }) => {
   const { t } = useTranslation(['ui', 'events'])
+  const displayQuests = activeQuests.map(quest => {
+    const definition = getQuestDefinition(quest.id)
+    return definition ? { ...definition, ...quest } : quest
+  })
 
   // Animation variants
   const overlayVariants = {
@@ -320,7 +457,7 @@ export const QuestsModal = ({
           </div>
 
           {/* Quests List */}
-          {activeQuests.length === 0 ? (
+          {displayQuests.length === 0 ? (
             <div className='text-center py-12 flex flex-col items-center'>
               <IconTrophy className='w-16 h-16 mx-auto text-ash-gray/20 mb-4' />
               <p className='text-ash-gray font-mono italic mb-6'>
@@ -329,15 +466,17 @@ export const QuestsModal = ({
             </div>
           ) : (
             <div className='space-y-6'>
-              {activeQuests.map((quest: QuestDisplayState, index: number) => (
-                <QuestItem
-                  key={quest.id}
-                  quest={quest}
-                  index={index}
-                  currentDay={player.day}
-                  variants={questItemVariants}
-                />
-              ))}
+              {sortQuests(displayQuests).map(
+                (quest: QuestDisplayState, index: number) => (
+                  <QuestItem
+                    key={quest.id}
+                    quest={quest}
+                    index={index}
+                    currentDay={player.day}
+                    variants={questItemVariants}
+                  />
+                )
+              )}
             </div>
           )}
 

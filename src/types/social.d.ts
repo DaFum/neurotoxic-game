@@ -23,11 +23,13 @@ export interface BrandDealOffer {
   [key: string]: unknown
 }
 
+export type BrandDealType = 'SPONSORSHIP' | 'ENDORSEMENT' | 'RECORD_DEAL'
+
 export interface BrandDeal {
   id: string
   name: string
   description: string
-  type: string
+  type: BrandDealType
   alignment: BrandAlignment
   requirements: BrandDealRequirements
   offer: BrandDealOffer

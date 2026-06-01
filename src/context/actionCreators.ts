@@ -7,6 +7,7 @@ import { RNG_BASE_BUFFER, RNG_ROLLS_PER_ASSET } from '../utils/assetConfig'
  */
 
 import { ActionTypes } from './actionTypes'
+import type { QuestProgressEvent } from '../utils/questProgress'
 import { getSafeUUID, secureRandom } from '../utils/crypto'
 import { generateRivalBand, moveRivalBand } from '../utils/rivalEngine'
 import { sanitizeRiskEventDescriptor } from './reducers/assetSanitizers'
@@ -703,6 +704,9 @@ export const createAddQuestAction = (
   quest: QuestState
 ): Extract<GameAction, { type: typeof ActionTypes.ADD_QUEST }> => {
   const safeQuest = { ...(quest || {}) } as QuestState
+  if (typeof safeQuest.id !== 'string' || HOSTILE_KEYS.has(safeQuest.id)) {
+    safeQuest.id = ''
+  }
 
   if (safeQuest.moneyReward != null) {
     safeQuest.moneyReward = clampNonNegative(Number(safeQuest.moneyReward) || 0)
@@ -1014,3 +1018,10 @@ export const advanceDay = (
     }
   }
 }
+
+export const createApplyQuestEventAction = (
+  event: QuestProgressEvent
+): Extract<GameAction, { type: typeof ActionTypes.APPLY_QUEST_EVENT }> => ({
+  type: ActionTypes.APPLY_QUEST_EVENT,
+  payload: event
+})

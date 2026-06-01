@@ -4,6 +4,7 @@ import type { GAME_PHASES } from '../context/gameConstants'
 import type { UpdateSocialPayload } from './social'
 import type { PurchaseItem } from './components'
 import type { AssetKind, RiskEventDescriptor } from './assets'
+import type { ActiveQuestState } from './quest'
 
 export type RelationshipChange = {
   member1: string
@@ -95,7 +96,10 @@ export interface GameState {
   activeStoryFlags: string[]
   eventCooldowns: string[]
   venueBlacklist: string[]
-  activeQuests: QuestState[]
+  activeQuests: ActiveQuestState[]
+  questCooldowns: QuestCooldown[]
+  completedQuestIds: string[]
+  completedQuestScopes: QuestScopeCompletion[]
   reputationByRegion: Record<string, number>
   settings: GameSettings
   npcs: Record<string, CharacterProfile>

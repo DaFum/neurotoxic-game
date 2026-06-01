@@ -1,3 +1,5 @@
+import type { GameState } from '../../types'
+
 // Special Events
 export const SPECIAL_EVENTS = [
   {
@@ -158,6 +160,36 @@ export const SPECIAL_EVENTS = [
         label: 'events:the_other_band.opt2.label',
         effect: { type: 'stat', stat: 'mood', value: 2 },
         outcomeText: 'events:the_other_band.opt2.outcome'
+      }
+    ]
+  },
+  {
+    id: 'diy_chassis_consequence',
+    category: 'special',
+    title: 'events:diy_chassis_consequence.title',
+    description: 'events:diy_chassis_consequence.desc',
+    trigger: 'random',
+    chance: 0.04,
+    // Fires only when the band owns a DIY-flavor asset (lower reliability is
+    // the intentional tradeoff DIY took during acquisition).
+    condition: (state: GameState) =>
+      Array.isArray(state.assets) &&
+      state.assets.some(a => a.chassisFlavor === 'diy'),
+    options: [
+      {
+        label: 'events:diy_chassis_consequence.opt1.label',
+        skillCheck: {
+          stat: 'technical',
+          threshold: 6,
+          success: { type: 'resource', resource: 'money', value: -40 },
+          failure: { type: 'resource', resource: 'money', value: -200 }
+        },
+        outcomeText: 'events:diy_chassis_consequence.opt1.outcome'
+      },
+      {
+        label: 'events:diy_chassis_consequence.opt2.label',
+        effect: { type: 'resource', resource: 'money', value: -120 },
+        outcomeText: 'events:diy_chassis_consequence.opt2.outcome'
       }
     ]
   }

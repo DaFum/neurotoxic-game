@@ -292,6 +292,15 @@ describe('Action Creators', () => {
     })
   })
 
+  describe('createAddQuestAction validation', () => {
+    it('rejects forbidden quest ids', () => {
+      assert.deepStrictEqual(createAddQuestAction({ id: '__proto__' }), {
+        type: ActionTypes.ADD_QUEST,
+        payload: { id: '' }
+      })
+    })
+  })
+
   describe('createSetPendingRiskEventAction validation', () => {
     it('drops invalid non-null payloads instead of clearing pending state', () => {
       assert.equal(createSetPendingRiskEventAction('bad'), null)

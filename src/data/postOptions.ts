@@ -1090,5 +1090,89 @@ export const POST_OPTIONS = [
         }
       }
     }
+  },
+  {
+    id: 'lifestyle_tour_diary',
+    name: i18n.t('ui:postOptions.lifestyle.lifestyle_tour_diary.name', {
+      defaultValue: 'Tour Diary Entry'
+    }),
+    platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
+    category: 'Lifestyle',
+    badges: [POST_BADGES.SAFE],
+    condition: () => true,
+    resolve: () => ({
+      type: 'FIXED',
+      success: true,
+      platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
+      followers: 250,
+      moodChange: 3,
+      message: i18n.t('ui:postOptions.lifestyle.lifestyle_tour_diary.message', {
+        defaultValue: 'Newsletter readers eat up the road stories.'
+      })
+    })
+  },
+  {
+    id: 'lifestyle_fan_dinner',
+    name: i18n.t('ui:postOptions.lifestyle.lifestyle_fan_dinner.name', {
+      defaultValue: 'Dinner With Fans'
+    }),
+    platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
+    category: 'Lifestyle',
+    badges: [POST_BADGES.SAFE],
+    condition: ({ social }: GameState) => (social?.loyalty ?? 0) > 30,
+    resolve: () => ({
+      type: 'FIXED',
+      success: true,
+      platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
+      followers: 300,
+      moodChange: 5,
+      message: i18n.t('ui:postOptions.lifestyle.lifestyle_fan_dinner.message', {
+        defaultValue: 'Fans posted the photos for you. Loyalty trended.'
+      })
+    })
+  },
+  {
+    id: 'lifestyle_behind_the_scenes',
+    name: i18n.t('ui:postOptions.lifestyle.lifestyle_behind_the_scenes.name', {
+      defaultValue: 'Behind The Scenes Reel'
+    }),
+    platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
+    category: 'Lifestyle',
+    badges: [POST_BADGES.SAFE],
+    condition: () => true,
+    resolve: () => ({
+      type: 'FIXED',
+      success: true,
+      platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
+      followers: 350,
+      moodChange: 2,
+      message: i18n.t(
+        'ui:postOptions.lifestyle.lifestyle_behind_the_scenes.message',
+        {
+          defaultValue:
+            'A messy, honest day in the life. The algorithm noticed.'
+        }
+      )
+    })
+  },
+  {
+    id: 'lifestyle_gear_care',
+    name: i18n.t('ui:postOptions.lifestyle.lifestyle_gear_care.name', {
+      defaultValue: 'Gear Care Sunday'
+    }),
+    platform: SOCIAL_PLATFORMS.YOUTUBE.id,
+    category: 'Lifestyle',
+    badges: [POST_BADGES.SAFE],
+    condition: () => true,
+    resolve: () => ({
+      type: 'FIXED',
+      success: true,
+      platform: SOCIAL_PLATFORMS.YOUTUBE.id,
+      followers: 200,
+      moneyChange: 20,
+      message: i18n.t('ui:postOptions.lifestyle.lifestyle_gear_care.message', {
+        defaultValue: 'Niche audience, but they tipped via the affiliate link.'
+      })
+    })
   }
 ]

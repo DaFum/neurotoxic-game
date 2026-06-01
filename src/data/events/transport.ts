@@ -789,5 +789,63 @@ export const TRANSPORT_EVENTS = [
         outcomeText: 'events:tire_pressure_warning.opt2.outcome'
       }
     ]
+  },
+  {
+    id: 'module_saves_the_run',
+    category: 'transport',
+    title: 'events:module_saves_the_run.title',
+    description: 'events:module_saves_the_run.desc',
+    trigger: 'random',
+    chance: 0.05,
+    // Fires only when the tourbus has at least one installed module.
+    condition: (state: GameState) =>
+      Array.isArray(state.assets) &&
+      state.assets.some(
+        a =>
+          a.kind === 'tourbus_chassis' &&
+          Array.isArray(a.slots) &&
+          a.slots.some(s => s.installedModuleId)
+      ),
+    options: [
+      {
+        label: 'events:module_saves_the_run.opt1.label',
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'stat', stat: 'fame', value: 5 },
+            { type: 'resource', resource: 'money', value: 80 }
+          ]
+        },
+        outcomeText: 'events:module_saves_the_run.opt1.outcome'
+      }
+    ]
+  },
+  {
+    id: 'tourbus_maintenance_check',
+    category: 'transport',
+    title: 'events:tourbus_maintenance_check.title',
+    description: 'events:tourbus_maintenance_check.desc',
+    trigger: 'random',
+    chance: 0.05,
+    condition: (state: GameState) =>
+      Array.isArray(state.assets) &&
+      state.assets.some(a => a.kind === 'tourbus_chassis'),
+    options: [
+      {
+        label: 'events:tourbus_maintenance_check.opt1.label',
+        effect: { type: 'resource', resource: 'money', value: -100 },
+        outcomeText: 'events:tourbus_maintenance_check.opt1.outcome'
+      },
+      {
+        label: 'events:tourbus_maintenance_check.opt2.label',
+        skillCheck: {
+          stat: 'technical',
+          threshold: 6,
+          success: { type: 'resource', resource: 'money', value: -30 },
+          failure: { type: 'resource', resource: 'money', value: -180 }
+        },
+        outcomeText: 'events:tourbus_maintenance_check.opt2.outcome'
+      }
+    ]
   }
 ]
