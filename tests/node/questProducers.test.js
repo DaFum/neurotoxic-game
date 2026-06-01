@@ -184,7 +184,7 @@ test('quest producers create canonical events with matchable context', async t =
       id: 'deal_1',
       name: 'Deal',
       description: 'Desc',
-      type: 'Endorsement',
+      type: 'ENDORSEMENT',
       alignment: 'INDIE',
       requirements: { followers: 0 },
       offer: { upfront: 0, duration: 1 }
@@ -192,13 +192,13 @@ test('quest producers create canonical events with matchable context', async t =
 
     assert.equal(event.type, 'brand.dealCompleted')
     assert.equal(event.context?.dealId, 'deal_1')
-    assert.equal(event.context?.dealType, 'Endorsement')
+    assert.equal(event.context?.dealType, 'ENDORSEMENT')
     assert.equal(event.context?.brandAlignment, 'INDIE')
 
     assert.equal(
       createBrandOfferAcceptedQuestEvent({
         id: 'deal_1',
-        type: 'Endorsement',
+        type: 'ENDORSEMENT',
         alignment: 'INDIE'
       }).type,
       'brand.offerAccepted'

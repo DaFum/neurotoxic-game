@@ -7,7 +7,8 @@ import type {
   QuestProgressRuleMatch,
   QuestProgressSource,
   QuestRepeatPolicy,
-  QuestState
+  QuestState,
+  BrandDealType
 } from '../types'
 import { QuestLifecycle } from '../domain/questLifecycle'
 import { QUEST_REGISTRY } from '../data/questRegistry'
@@ -76,27 +77,53 @@ const LEGACY_EVENT_TYPES: Record<QuestProgressSource, QuestEventType> = {
   travel_completed: 'travel.completed'
 }
 
-const CANONICAL_EVENT_TYPES = new Set<string>([
+const CANONICAL_EVENT_TYPE_VALUES = [
   'gig.completed',
   'gig.good',
   'gig.smallVenueGood',
   'social.postResolved',
   'social.followersGained',
+  'social.loyaltyChanged',
+  'social.controversyChanged',
+  'social.trendMatched',
+  'brand.offerAccepted',
   'brand.dealCompleted',
+  'brand.dealFailed',
+  'brand.trustChanged',
   'asset.acquired',
   'asset.repaired',
   'asset.moduleInstalled',
+  'asset.riskTriggered',
   'asset.riskResolved',
+  'asset.conditionChanged',
   'item.collected',
   'item.used',
+  'item.crafted',
+  'item.delivered',
   'minigame.completed',
+  'minigame.perfect',
+  'minigame.failed',
   'travel.completed',
   'economy.moneyEarned',
   'band.harmonyChanged',
+  'venue.gigCompleted',
+  'venue.goodGig',
   'venue.reputationChanged',
+  'venue.blacklisted',
+  'venue.unblacklisted',
   'region.reputationChanged',
   'story.flagAdded'
+] as const satisfies readonly QuestEventType[]
+
+const CANONICAL_EVENT_TYPES = new Set<string>(CANONICAL_EVENT_TYPE_VALUES)
+const BRAND_DEAL_TYPES = new Set<string>([
+  'SPONSORSHIP',
+  'ENDORSEMENT',
+  'RECORD_DEAL'
 ])
+
+const isBrandDealType = (value: string): value is BrandDealType =>
+  BRAND_DEAL_TYPES.has(value)
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -169,7 +196,6 @@ const getEventContext = (event: QuestProgressEvent): QuestEventContext => {
     'region',
     'platform',
     'dealId',
-    'dealType',
     'brandAlignment',
     'assetId',
     'assetKind',
@@ -184,6 +210,10 @@ const getEventContext = (event: QuestProgressEvent): QuestEventContext => {
   for (const key of stringKeys) {
     const value = readOwnString(eventRecord, key)
     if (value !== undefined) context[key] = value
+  }
+  const dealType = readOwnString(eventRecord, 'dealType')
+  if (dealType !== undefined && isBrandDealType(dealType)) {
+    context.dealType = dealType
   }
 
   const numberKeys = ['score', 'capacity'] as const
@@ -345,7 +375,7 @@ const questRuleMatchesEvent = (
 
   if (match.success !== undefined) {
     const success = getEventSuccess(event)
-    if (success !== undefined && success !== match.success) return false
+    if (success !== match.success) return false
   }
 
   if (typeof match.minScore === 'number') {

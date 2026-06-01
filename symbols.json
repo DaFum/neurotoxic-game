@@ -1263,6 +1263,17 @@
         "type": "const"
       }
     ],
+    "BrandDealType": [
+      {
+        "exportPath": "src/types/game.d.ts",
+        "isDefault": false,
+        "name": "BrandDealType",
+        "path": "src/types/social.d.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
     "BrandOffer": [
       {
         "exportPath": "src/types/game.d.ts",

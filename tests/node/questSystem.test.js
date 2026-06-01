@@ -69,7 +69,7 @@ const makeProgressEvent = (source, rule) => {
       return {
         type: eventSource,
         dealId: 'test_deal',
-        dealType: firstMatchValue(match.dealType) ?? 'Sponsorship',
+        dealType: firstMatchValue(match.dealType) ?? 'SPONSORSHIP',
         brandAlignment: firstMatchValue(match.brandAlignment) ?? 'INDIE'
       }
     case 'travel_completed':
@@ -338,6 +338,45 @@ describe('Quest System Registry Validation', () => {
       assert.ok(
         gameplayText.includes(producerName),
         `${producerName} is not wired into gameplay code`
+      )
+    }
+  })
+
+  it('every QuestEventType is accepted as canonical progress event', async () => {
+    const fs = await import('node:fs')
+    const questTypes = fs.readFileSync('src/types/quest.d.ts', 'utf8')
+    const eventTypeBlock =
+      questTypes.match(/export type QuestEventType =([\s\S]*?)\n\n/)?.[1] ?? ''
+    const eventTypes = Array.from(
+      eventTypeBlock.matchAll(/\|\s+'([^']+)'/g),
+      match => match[1]
+    )
+
+    assert.ok(eventTypes.length > 0, 'expected QuestEventType literals')
+    for (const eventType of eventTypes) {
+      const state = {
+        ...getBaseState(),
+        activeQuests: [
+          {
+            id: `q_${eventType}`,
+            progress: 0,
+            required: 1,
+            progressRules: [
+              { event: eventType, amount: 'fixed', fixedAmount: 1 }
+            ]
+          }
+        ]
+      }
+      const next = QuestProgress.applyEvent(state, {
+        type: eventType,
+        amount: 1,
+        success: true,
+        context: {}
+      })
+
+      assert.ok(
+        next.completedQuestIds?.includes(`q_${eventType}`),
+        `${eventType} was not canonicalized`
       )
     }
   })

@@ -4,6 +4,8 @@ import { QuestLifecycle } from '../../../src/domain/questLifecycle.js'
 import { QuestProgress } from '../../../src/utils/questProgress.ts'
 import { QUEST_REGISTRY } from '../../../src/data/questRegistry.ts'
 import { QUEST_PROVE_YOURSELF } from '../../../src/data/questsConstants.js'
+import { BRAND_DEALS } from '../../../src/data/brandDeals.ts'
+import { createBrandDealCompletedQuestEvent } from '../../../src/quests/producers/brandQuestEvents.ts'
 
 test('QuestLifecycle', async t => {
   await t.test('addQuest', async t => {
@@ -1216,10 +1218,27 @@ test('QuestLifecycle', async t => {
         type: 'social_post',
         postType: 'post',
         followersGain: 0,
-        category: 'Lifestyle'
+        category: 'Lifestyle',
+        success: true
       })
       const q = next.activeQuests.find(q => q.id === 'quest_community_outreach')
       assert.equal(q.progress, 1)
+    })
+
+    await t.test('success-matched rules ignore events without success', () => {
+      const state = baseState({
+        id: 'quest_community_outreach',
+        progress: 0,
+        required: 4
+      })
+      const next = QuestProgress.applyEvent(state, {
+        type: 'social_post',
+        postType: 'post',
+        followersGain: 0,
+        category: 'Lifestyle'
+      })
+      const q = next.activeQuests.find(q => q.id === 'quest_community_outreach')
+      assert.equal(q.progress ?? 0, 0)
     })
 
     await t.test('premium_endorsement ignores non-endorsement deals', () => {
@@ -1231,13 +1250,58 @@ test('QuestLifecycle', async t => {
       const next = QuestProgress.applyEvent(state, {
         type: 'brand_deal_completed',
         dealId: 'deal1',
-        dealType: 'Sponsorship'
+        dealType: 'SPONSORSHIP'
       })
       const q = next.activeQuests.find(
         q => q.id === 'quest_premium_endorsement'
       )
       assert.equal(q.progress ?? 0, 0)
     })
+
+    await t.test(
+      'brand quests progress from real brand deal producer events',
+      () => {
+        const sponsorship = BRAND_DEALS.find(
+          deal => deal.type === 'SPONSORSHIP'
+        )
+        const endorsement = BRAND_DEALS.find(
+          deal => deal.type === 'ENDORSEMENT'
+        )
+        assert.ok(sponsorship)
+        assert.ok(endorsement)
+
+        const sponsorState = baseState({
+          id: 'quest_sponsor_demand',
+          progress: 0,
+          required: 2
+        })
+        const sponsorNext = QuestProgress.applyEvent(
+          sponsorState,
+          createBrandDealCompletedQuestEvent(sponsorship)
+        )
+        assert.equal(
+          sponsorNext.activeQuests.find(q => q.id === 'quest_sponsor_demand')
+            ?.progress,
+          1
+        )
+
+        const endorsementState = baseState({
+          id: 'quest_premium_endorsement',
+          progress: 0,
+          required: 3
+        })
+        const endorsementNext = QuestProgress.applyEvent(
+          endorsementState,
+          createBrandDealCompletedQuestEvent(endorsement)
+        )
+        assert.equal(
+          endorsementNext.activeQuests.find(
+            q => q.id === 'quest_premium_endorsement'
+          )?.progress,
+          1
+        )
+      }
+    )
 
     await t.test(
       'supports inline progressRules with multiple event paths',
@@ -1257,7 +1321,7 @@ test('QuestLifecycle', async t => {
               event: 'brand.dealCompleted',
               amount: 'fixed',
               fixedAmount: 2,
-              match: { dealType: 'Sponsorship' }
+              match: { dealType: 'SPONSORSHIP' }
             }
           ]
         })
@@ -1288,7 +1352,7 @@ test('QuestLifecycle', async t => {
           type: 'brand.dealCompleted',
           amount: 1,
           success: true,
-          context: { dealType: 'Sponsorship' }
+          context: { dealType: 'SPONSORSHIP' }
         })
         assert.equal(
           state.activeQuests.find(q => q.id === 'q_multi_path'),
@@ -1475,13 +1539,33 @@ test('QuestLifecycle', async t => {
       assert.ok(!next.activeStoryFlags.includes('side_active'))
     })
 
-    await t.test('preserves legacy cooldown ids', () => {
-      const next = QuestLifecycle.checkDeadlines(
-        makeExpiredState({ cooldowns: [{ id: 'retry', days: 7 }] })
+    await t.test('failure cooldowns block the failed quest by quest id', () => {
+      const next = QuestLifecycle.checkDeadlines({
+        player: { day: 10 },
+        social: { loyalty: 50, controversyLevel: 0 },
+        band: { harmony: 50 },
+        activeStoryFlags: [],
+        questCooldowns: [],
+        activeQuests: [
+          {
+            id: 'quest_viral_dance',
+            deadline: 5,
+            failurePenalty: {
+              cooldowns: [{ id: 'quest_viral_dance_retry', days: 7 }]
+            }
+          }
+        ]
+      })
+      const cd = next.questCooldowns.find(
+        c => c.questId === 'quest_viral_dance'
       )
-      const cd = next.questCooldowns.find(c => c.questId === 'retry')
       assert.ok(cd)
+      assert.equal(cd.id, 'quest_viral_dance_retry')
       assert.equal(cd.expiresOnDay, 17)
+      assert.equal(
+        QuestLifecycle.addQuest(next, { id: 'quest_viral_dance' }),
+        next
+      )
     })
 
     await t.test(
@@ -1537,7 +1621,7 @@ test('QuestLifecycle', async t => {
       assert.equal(next.band.harmony, 45)
       assert.ok(next.activeStoryFlags.includes('q_new_penalties_failed'))
       assert.deepEqual(next.questCooldowns, [
-        { questId: 'retry_specific', expiresOnDay: 13 }
+        { questId: 'q_new_penalties', id: 'retry_specific', expiresOnDay: 13 }
       ])
     })
 

@@ -130,7 +130,7 @@ export const QUEST_REGISTRY = {
         event: 'brand.dealCompleted',
         amount: 'fixed',
         fixedAmount: 1,
-        match: { dealType: ['Sponsorship', 'Commercial'] }
+        match: { dealType: ['SPONSORSHIP'] }
       }
     ],
     required: 2,
@@ -337,7 +337,7 @@ export const QUEST_REGISTRY = {
         event: 'brand.dealCompleted',
         amount: 'fixed',
         fixedAmount: 1,
-        match: { dealType: 'Endorsement' }
+        match: { dealType: 'ENDORSEMENT' }
       }
     ],
     required: 3,

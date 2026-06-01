@@ -1456,7 +1456,19 @@ const sanitizeQuestCooldowns = (
     if (!isLooseRecord(entry) || typeof entry.questId !== 'string') return []
     const expiresOnDay = finiteOptionalNumber(entry.expiresOnDay)
     if (expiresOnDay === undefined) return []
-    return [{ questId: entry.questId, expiresOnDay }]
+    const sanitized: GameState['questCooldowns'][number] = {
+      questId: entry.questId,
+      expiresOnDay
+    }
+    if (
+      Object.hasOwn(entry, 'id') &&
+      typeof entry.id === 'string' &&
+      entry.id.length > 0 &&
+      !isForbiddenKey(entry.id)
+    ) {
+      sanitized.id = entry.id
+    }
+    return [sanitized]
   })
 }
 

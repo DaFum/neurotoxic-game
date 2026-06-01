@@ -1,4 +1,5 @@
 import type { UnknownRecord } from './game'
+import type { BrandDealType } from './social'
 
 export type QuestKind = 'story' | 'side' | 'repeatable' | 'tutorial'
 export type QuestStatus = 'active' | 'completed' | 'failed'
@@ -71,7 +72,7 @@ export interface QuestEventContext extends UnknownRecord {
   trendId?: string
   category?: string
   dealId?: string
-  dealType?: string
+  dealType?: BrandDealType
   brandId?: string
   brandAlignment?: string
   assetId?: string
@@ -114,7 +115,7 @@ export interface QuestProgressRuleMatch {
   platform?: string | string[]
   postCategory?: string | string[]
   category?: string | string[]
-  dealType?: string | string[]
+  dealType?: BrandDealType | BrandDealType[]
   brandId?: string | string[]
   brandAlignment?: string | string[]
   assetKind?: string | string[]
@@ -298,6 +299,7 @@ export interface QuestState extends UnknownRecord {
  */
 export interface QuestCooldown {
   questId: string
+  id?: string
   expiresOnDay: number
 }
 

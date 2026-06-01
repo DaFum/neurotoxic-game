@@ -266,9 +266,10 @@ export const applyQuestFailurePenalties = (
           penalty.id.length > 0 &&
           !isForbiddenKey(penalty.id)
             ? penalty.id
-            : quest.id
+            : undefined
         cooldownsToAdd.push({
-          questId: cooldownId,
+          questId: quest.id,
+          ...(cooldownId ? { id: cooldownId } : {}),
           expiresOnDay: currentDay + penalty.days
         })
         break
