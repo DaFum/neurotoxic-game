@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import { render } from '@testing-library/react'
 import { KabelsalatBoard } from '../../src/scenes/kabelsalat/components/KabelsalatBoard'
+import type { TFunction } from 'i18next'
 
-const mockT = (key) => key
+const mockT = ((key: string) => key) as unknown as TFunction
 
 describe('KabelsalatBoard Layering', () => {
   it('does not use z-(--z-crt) for the board SVG', () => {
@@ -27,6 +28,7 @@ describe('KabelsalatBoard Layering', () => {
     )
 
     const svg = container.querySelector('svg')
+    expect(svg).not.toBeNull()
     expect(svg).not.toHaveClass('z-(--z-crt)')
     expect(svg).toHaveClass('z-(--z-stage-bg)')
   })
