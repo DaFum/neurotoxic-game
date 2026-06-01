@@ -217,10 +217,14 @@ export const QUEST_EVENTS = [
     description: 'events:quest_trigger_venue_residency.desc',
     trigger: 'random',
     chance: 0.06,
-    condition: (state: GameState) =>
-      canOfferQuest(state, 'quest_venue_residency') &&
-      typeof state.player?.currentNodeId === 'string' &&
-      state.player.currentNodeId.length > 0,
+    condition: (state: GameState) => {
+      if (!canOfferQuest(state, 'quest_venue_residency')) return false
+      const nodeId = state.player?.currentNodeId
+      if (typeof nodeId !== 'string' || nodeId.length === 0) return false
+      // Restrict to real gig venues — not cities, rest stops, festivals, etc.
+      const node = state.gameMap?.nodes?.[nodeId]
+      return node?.type === 'GIG'
+    },
     options: [
       {
         label: 'events:quest_trigger_venue_residency.opt1.label',
@@ -309,8 +313,12 @@ export const QUEST_EVENTS = [
     description: 'events:quest_trigger_community_outreach.desc',
     trigger: 'random',
     chance: 0.08,
+    // Surface only when there's actual social damage to repair — low loyalty
+    // or high controversy. Otherwise the offer feels like a random ask.
     condition: (state: GameState) =>
-      canOfferQuest(state, 'quest_community_outreach'),
+      canOfferQuest(state, 'quest_community_outreach') &&
+      ((state.social?.loyalty ?? 50) < 35 ||
+        (state.social?.controversyLevel ?? 0) > 30),
     options: [
       {
         label: 'events:quest_trigger_community_outreach.opt1.label',

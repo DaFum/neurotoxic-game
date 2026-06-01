@@ -1104,6 +1104,22 @@ test('systemReducer - ADVANCE_DAY core logic', async t => {
     }
   )
 
+  await t.test('keeps timed event cooldowns until their expiry day', () => {
+    const state = {
+      ...createInitialState(),
+      player: { ...createInitialState().player, day: 5, money: 100 },
+      // Legacy untimed entry resets every advanceDay; timed entries persist
+      // until expiry. expiry 10 (future) stays; expiry 5 (=current) drops.
+      eventCooldowns: [
+        'legacy_daily',
+        'ego_management_retry:10',
+        'expired_event:5'
+      ]
+    }
+    const next = handleAdvanceDay(state, { rng: () => 0.5 })
+    assert.deepEqual(next.eventCooldowns, ['ego_management_retry:10'])
+  })
+
   await t.test(
     'preserves an existing pending risk event during daily rolls',
     () => {

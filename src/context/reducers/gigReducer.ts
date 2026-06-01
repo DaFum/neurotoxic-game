@@ -74,26 +74,16 @@ const handleRecordBadShow = (state: GameState): GameState => {
     currentBadShows >= 3 &&
     !hasActiveQuest(nextState.activeQuests, QUEST_PROVE_YOURSELF)
   ) {
+    // Config (label/deadline/required/failurePenalty/startFlags) lives in
+    // QUEST_REGISTRY. addQuest merges those defaults and applies startFlags,
+    // so the inline override surface here is just the id.
     nextState = QuestLifecycle.addQuest(nextState, {
-      id: QUEST_PROVE_YOURSELF,
-      label: 'ui:quests.proveYourself.title',
-      deadline: nextState.player.day + 20,
-      progress: 0,
-      required: 4,
-      rewardFlag: 'prove_yourself_complete',
-      failurePenalty: {
-        social: { controversyLevel: 10 },
-        band: { harmony: -20 }
-      }
+      id: QUEST_PROVE_YOURSELF
     })
     nextState.player = {
       ...nextState.player,
       stats: { ...nextState.player.stats, proveYourselfMode: true }
     }
-    nextState.activeStoryFlags = [
-      ...(nextState.activeStoryFlags || []),
-      'prove_yourself_active'
-    ]
     nextState.toasts = [
       ...(nextState.toasts || []),
       {

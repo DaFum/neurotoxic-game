@@ -424,7 +424,13 @@ export const usePostGigHandlers = ({
 
       const fameGain = stats.newFame - finiteNumberOr(player.fame, 0)
       if (fameGain > 0) {
-        applyQuestEvent({ type: 'fame_gained', amount: fameGain })
+        // Region context lets perRegion fame quests (quest_local_legend)
+        // gate progress to the actual region where it was earned.
+        applyQuestEvent({
+          type: 'fame_gained',
+          amount: fameGain,
+          region: player.location
+        })
       }
 
       if (band.inventory?.neurotoxicPedal) {

@@ -951,6 +951,81 @@ test('QuestLifecycle', async t => {
       const q = next.activeQuests.find(q => q.id === 'quest_harmony_project')
       assert.equal(q.progress, 70)
     })
+
+    await t.test('does not advance perVenue quests from another venue', () => {
+      const state = baseState({
+        id: 'quest_venue_residency',
+        scopeKey: 'venue_A',
+        progress: 0,
+        required: 3,
+        repeatPolicy: 'perVenue'
+      })
+      const next = QuestProgress.applyEvent(state, {
+        type: 'good_gig',
+        score: 80,
+        capacity: 100,
+        venueId: 'venue_B',
+        region: 'r'
+      })
+      const q = next.activeQuests.find(q => q.id === 'quest_venue_residency')
+      assert.equal(q.progress ?? 0, 0)
+    })
+
+    await t.test('advances perVenue quests in their stamped venue', () => {
+      const state = baseState({
+        id: 'quest_venue_residency',
+        scopeKey: 'venue_A',
+        progress: 0,
+        required: 3,
+        repeatPolicy: 'perVenue'
+      })
+      const next = QuestProgress.applyEvent(state, {
+        type: 'good_gig',
+        score: 80,
+        capacity: 100,
+        venueId: 'venue_A',
+        region: 'r'
+      })
+      const q = next.activeQuests.find(q => q.id === 'quest_venue_residency')
+      assert.equal(q.progress, 1)
+    })
+
+    await t.test(
+      'does not advance perRegion quests from another region',
+      () => {
+        const state = baseState({
+          id: 'quest_local_legend',
+          scopeKey: 'magdeburg',
+          progress: 0,
+          required: 500,
+          repeatPolicy: 'perRegion'
+        })
+        const next = QuestProgress.applyEvent(state, {
+          type: 'fame_gained',
+          amount: 100,
+          region: 'berlin'
+        })
+        const q = next.activeQuests.find(q => q.id === 'quest_local_legend')
+        assert.equal(q.progress ?? 0, 0)
+      }
+    )
+
+    await t.test('advances perRegion quests when region matches', () => {
+      const state = baseState({
+        id: 'quest_local_legend',
+        scopeKey: 'magdeburg',
+        progress: 0,
+        required: 500,
+        repeatPolicy: 'perRegion'
+      })
+      const next = QuestProgress.applyEvent(state, {
+        type: 'fame_gained',
+        amount: 100,
+        region: 'magdeburg'
+      })
+      const q = next.activeQuests.find(q => q.id === 'quest_local_legend')
+      assert.equal(q.progress, 100)
+    })
   })
 
   await t.test('repeat policy enforcement', async t => {

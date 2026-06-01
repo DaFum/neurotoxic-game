@@ -1,4 +1,4 @@
-import { UnknownRecord } from './kabelsalat'
+import type { UnknownRecord } from './game'
 
 export type QuestKind = 'story' | 'side' | 'repeatable' | 'tutorial'
 export type QuestStatus = 'active' | 'completed' | 'failed'

@@ -1909,12 +1909,24 @@ export const handleAdvanceDay = (
     cd => cd.expiresOnDay > currentDay
   )
 
+  // Keep timed event cooldowns (`eventId:expiryDay`) alive until their expiry
+  // day, while legacy untimed daily cooldowns (no `:`) reset every day as
+  // before. Without this filter the new ego_management_retry / failure cooldown
+  // entries would silently evaporate on the next advanceDay.
+  const activeEventCooldowns = (state.eventCooldowns ?? []).filter(cd => {
+    if (typeof cd !== 'string') return false
+    const idx = cd.indexOf(':')
+    if (idx < 0) return false // legacy daily entry → drop
+    const expiry = parseInt(cd.slice(idx + 1), 10)
+    return Number.isFinite(expiry) && expiry > currentDay
+  })
+
   let nextState: GameState = {
     ...state,
     player: nextPlayer,
     band: finalBandState,
     social: { ...social, trend: newTrend },
-    eventCooldowns: [],
+    eventCooldowns: activeEventCooldowns,
     questCooldowns: activeQuestCooldowns,
     toasts: traitResult.toasts
   }

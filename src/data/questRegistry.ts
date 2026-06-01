@@ -10,6 +10,7 @@ export const QUEST_REGISTRY = {
     required: 4,
     rewardFlag: 'prove_yourself_complete',
     followupQuestId: 'quest_back_from_pit',
+    startFlags: ['prove_yourself_active'],
     failurePenalty: {
       social: { controversyLevel: 10 },
       band: { harmony: -20 },

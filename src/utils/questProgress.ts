@@ -1,4 +1,4 @@
-import { GameState } from '../types'
+import { GameState, QuestState, QuestRepeatPolicy } from '../types'
 import { QuestLifecycle } from '../domain/questLifecycle'
 import { QUEST_REGISTRY } from '../data/questRegistry'
 
@@ -26,12 +26,32 @@ export type QuestProgressEvent =
     }
   | { type: 'social_post'; postType: string; followersGain: number }
   | { type: 'followers_gained'; amount: number }
-  | { type: 'fame_gained'; amount: number }
+  | { type: 'fame_gained'; amount: number; region?: string }
   | { type: 'money_earned'; amount: number }
   | { type: 'harmony_recovered'; amount: number; newHarmony: number }
   | { type: 'item_collected'; itemId: string }
   | { type: 'brand_deal_completed'; dealId: string }
   | { type: 'travel_completed'; region: string }
+
+/**
+ * For `perVenue` / `perRegion` quests, only progress when the event's
+ * venue/region matches the quest's stamped scopeKey. Cooldown and never
+ * quests have no scope to enforce — they always pass.
+ */
+const questMatchesScope = (
+  quest: QuestState,
+  event: QuestProgressEvent,
+  repeatPolicy: QuestRepeatPolicy | undefined
+): boolean => {
+  if (!quest.scopeKey) return true
+  if (repeatPolicy === 'perVenue') {
+    return 'venueId' in event && event.venueId === quest.scopeKey
+  }
+  if (repeatPolicy === 'perRegion') {
+    return 'region' in event && event.region === quest.scopeKey
+  }
+  return true
+}
 
 export const QuestProgress = {
   applyEvent: (state: GameState, event: QuestProgressEvent): GameState => {
@@ -50,6 +70,13 @@ export const QuestProgress = {
         | QuestProgressEvent['type']
         | undefined
       if (!progressSource) continue
+
+      // Scope guard: perVenue / perRegion quests only progress when the event
+      // happened in their stamped scope (venue id / region).
+      const repeatPolicy = (quest.repeatPolicy ??
+        (registryEntry as { repeatPolicy?: QuestRepeatPolicy })
+          .repeatPolicy) as QuestRepeatPolicy | undefined
+      if (!questMatchesScope(quest, event, repeatPolicy)) continue
 
       // Harmony quests are threshold-based, not accumulation-based: progress is
       // the current band harmony level and completion fires when it reaches the
