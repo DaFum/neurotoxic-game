@@ -139,8 +139,13 @@ describe('Quest System Registry Validation', () => {
   it('content gate: every quest progressRule event is emitted by gameplay code', async () => {
     const fs = await import('node:fs')
     const path = await import('node:path')
-    // Concatenate all source files except the questProgress definition itself
-    // (whose type union and switch cases must NOT count as emit sites).
+    // Walk src/ and split into two corpora:
+    //  - producerText: src/quests/producers/* — small factories that take the
+    //    event type as a parameter, so a bare string literal there is a real
+    //    emit site even without a literal `type: '<src>'` payload object.
+    //  - emitText: everything else — only the strict `type: '<src>'` shape
+    //    counts (skips the questProgress / questRegistry definition files
+    //    whose type unions/switches would otherwise satisfy a loose match).
     const files = []
     const walk = dir => {
       for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -150,9 +155,17 @@ describe('Quest System Registry Validation', () => {
       }
     }
     walk('src')
+    const isProducer = f => /(^|[\\/])src[\\/]quests[\\/]producers[\\/]/.test(f)
+    const producerText = files
+      .filter(isProducer)
+      .map(f => fs.readFileSync(f, 'utf8'))
+      .join('\n')
     const emitText = files
       .filter(
-        f => !f.endsWith('questProgress.ts') && !f.endsWith('questRegistry.ts')
+        f =>
+          !isProducer(f) &&
+          !f.endsWith('questProgress.ts') &&
+          !f.endsWith('questRegistry.ts')
       )
       .map(f => fs.readFileSync(f, 'utf8'))
       .join('\n')
@@ -165,10 +178,11 @@ describe('Quest System Registry Validation', () => {
       )
     )
     for (const source of usedEvents) {
+      const literal = `'${source}'`
       assert.ok(
         emitText.includes(`type: '${source}'`) ||
-          emitText.includes(`'${source}'`),
-        `progressRule event '${source}' is used by a quest but is never emitted by gameplay/producers in src/ — the quest can never progress`
+          producerText.includes(literal),
+        `progressRule event '${source}' is used by a quest but is never emitted as a producer payload (\`type: '${source}'\`) or referenced by a producer in src/quests/producers/ — the quest can never progress`
       )
     }
   })

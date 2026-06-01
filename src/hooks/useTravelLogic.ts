@@ -391,7 +391,11 @@ export const useTravelLogic = ({
 
       applyQuestEvent?.(
         createTravelCompletedQuestEvent({
-          region: node.venue?.city ?? node.id ?? ''
+          // Use the canonical region key getTravelArrivalUpdates already
+          // resolved so perRegion quest matching stays consistent with the
+          // rest of the state (player.location).
+          region:
+            updates.nextPlayer?.location ?? node.venue?.city ?? node.id ?? ''
         })
       )
 

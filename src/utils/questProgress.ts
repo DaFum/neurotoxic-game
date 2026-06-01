@@ -12,6 +12,7 @@ import type {
 } from '../types'
 import { QuestLifecycle } from '../domain/questLifecycle'
 import { QUEST_REGISTRY } from '../data/questRegistry'
+import { isForbiddenKey } from './objectUtils'
 
 export type LegacyQuestProgressEvent =
   | {
@@ -181,12 +182,15 @@ const getEventRecord = (event: QuestProgressEvent): Record<string, unknown> =>
 
 const getEventContext = (event: QuestProgressEvent): QuestEventContext => {
   const eventRecord = getEventRecord(event)
-  const context: QuestEventContext = {}
+  // Null-prototype object so dynamic key copy from untrusted event context
+  // cannot mutate Object.prototype via a `__proto__` (or other forbidden) key.
+  const context = Object.create(null) as QuestEventContext
   const rawContext = Object.hasOwn(eventRecord, 'context')
     ? eventRecord.context
     : undefined
   if (isRecord(rawContext)) {
     for (const key of Object.keys(rawContext)) {
+      if (isForbiddenKey(key)) continue
       context[key] = rawContext[key]
     }
   }
