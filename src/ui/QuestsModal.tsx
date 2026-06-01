@@ -199,7 +199,7 @@ const QuestItem = memo(
           </h3>
           {timeRemaining !== null && (
             <div
-              className={`flex items-center gap-1 text-xs font-mono px-2 py-1 ${timeRemaining <= 2 ? 'bg-blood-red/20 text-error-red' : 'bg-fuel-yellow/10 text-fuel-yellow'}`}
+              className={`flex items-center gap-1 text-xs font-mono px-2 py-1 ${timeRemaining <= 2 ? 'bg-error-red/20 text-error-red' : 'bg-fuel-yellow/10 text-fuel-yellow'}`}
             >
               <IconClock className='w-3 h-3' />
               <span>
@@ -312,7 +312,7 @@ export const QuestsModal = ({
             <button
               type='button'
               onClick={onClose}
-              className='text-ash-gray hover:text-error-red transition-colors p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blood-red focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
+              className='text-ash-gray hover:text-error-red transition-colors p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error-red focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
               aria-label={t('ui:quests.closeButton')}
             >
               <IconClose />

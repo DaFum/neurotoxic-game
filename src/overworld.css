@@ -969,9 +969,6 @@
     width: 100%;
     min-height: 44px;
   }
-
-
-
 }
 @media (max-width: 640px), (pointer: coarse) {
   .scene {
@@ -1001,9 +998,6 @@
     padding-bottom: 12px;
   }
 
-
-
-
   .group-hover\:block {
     pointer-events: none;
   }
@@ -1027,4 +1021,11 @@
 @media (prefers-reduced-motion: reduce) {
   .glitch-on .map-wrap,
   .glitch-on .ow-title,
+  .g-hue .map-wrap,
+  .g-pixel .map-wrap,
+  .money-anim-up,
+  .money-anim-down,
+  .ow-panel.fuel-warn {
+    animation: none !important;
+  }
 }
