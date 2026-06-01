@@ -1396,8 +1396,18 @@ const sanitizeActiveQuests = (value: unknown): GameState['activeQuests'] => {
   if (!Array.isArray(value)) return []
   return value.flatMap(quest => {
     if (!isLooseRecord(quest) || typeof quest.id !== 'string') return []
+    if (isForbiddenKey(quest.id)) return []
     const definition = getQuestDefinition(quest.id)
     if (definition) {
+      if (
+        (definition.repeatPolicy === 'perVenue' ||
+          definition.repeatPolicy === 'perRegion') &&
+        (typeof quest.scopeKey !== 'string' ||
+          quest.scopeKey.length === 0 ||
+          isForbiddenKey(quest.scopeKey))
+      ) {
+        return []
+      }
       const startedOnDay = finiteNumberOr(quest.startedOnDay, 0)
       const sanitized: GameState['activeQuests'][number] = {
         id: quest.id,
@@ -1423,7 +1433,10 @@ const sanitizeActiveQuests = (value: unknown): GameState['activeQuests'] => {
       } else if (typeof definition.required === 'number') {
         sanitized.required = definition.required
       }
-      if (typeof quest.scopeKey === 'string') {
+      if (
+        typeof quest.scopeKey === 'string' &&
+        !isForbiddenKey(quest.scopeKey)
+      ) {
         sanitized.scopeKey = quest.scopeKey
       }
       return [sanitized]
@@ -1454,6 +1467,7 @@ const sanitizeQuestCooldowns = (
   if (!Array.isArray(value)) return []
   return value.flatMap(entry => {
     if (!isLooseRecord(entry) || typeof entry.questId !== 'string') return []
+    if (isForbiddenKey(entry.questId)) return []
     const expiresOnDay = finiteOptionalNumber(entry.expiresOnDay)
     if (expiresOnDay === undefined) return []
     const sanitized: GameState['questCooldowns'][number] = {
@@ -1482,7 +1496,9 @@ const sanitizeQuestScopes = (
     if (
       !isLooseRecord(entry) ||
       typeof entry.questId !== 'string' ||
-      typeof entry.scopeKey !== 'string'
+      typeof entry.scopeKey !== 'string' ||
+      isForbiddenKey(entry.questId) ||
+      isForbiddenKey(entry.scopeKey)
     )
       return []
     return [{ questId: entry.questId, scopeKey: entry.scopeKey }]

@@ -33,6 +33,32 @@ test('QuestLifecycle', async t => {
       const nextState = QuestLifecycle.addQuest(state, quest)
       assert.deepEqual(nextState.activeQuests, [quest])
     })
+
+    await t.test('rejects forbidden quest ids', () => {
+      const state = { activeQuests: [] }
+      const nextState = QuestLifecycle.addQuest(state, { id: '__proto__' })
+      assert.equal(nextState, state)
+    })
+
+    await t.test('completes threshold quests seeded at their target', () => {
+      const state = {
+        player: { day: 1 },
+        activeQuests: [],
+        activeStoryFlags: ['breakup_quest_active'],
+        completedQuestIds: [],
+        questCooldowns: []
+      }
+      const nextState = QuestLifecycle.addQuest(state, {
+        id: 'quest_ego_management',
+        progress: 80
+      })
+
+      assert.equal(
+        nextState.activeQuests.find(q => q.id === 'quest_ego_management'),
+        undefined
+      )
+      assert.ok(nextState.completedQuestIds.includes('quest_ego_management'))
+    })
   })
 
   await t.test('completeQuest', async t => {
@@ -72,6 +98,18 @@ test('QuestLifecycle', async t => {
         assert.equal(nextState.activeQuests.length, 0)
         assert.equal(nextState.toasts.length, 1)
         assert.equal(nextState.toasts[0].messageKey, 'ui:toast.quest_complete')
+      }
+    )
+
+    await t.test(
+      'uses quest id for generic completion toast without label',
+      () => {
+        const state = {
+          activeQuests: [{ id: 'q1' }],
+          toasts: []
+        }
+        const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
+        assert.equal(nextState.toasts[0].options.name, 'q1')
       }
     )
 
@@ -655,6 +693,23 @@ test('QuestLifecycle', async t => {
       assert.deepEqual(nextState.activeStoryFlags, ['flag1'])
     })
 
+    await t.test('applies completionFlags on completion', () => {
+      const state = {
+        activeQuests: [
+          {
+            id: 'q1',
+            completionFlags: ['story_complete']
+          }
+        ],
+        activeStoryFlags: ['existing_flag']
+      }
+      const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
+      assert.deepEqual(nextState.activeStoryFlags, [
+        'existing_flag',
+        'story_complete'
+      ])
+    })
+
     await t.test('handles hardcoded QUEST_PROVE_YOURSELF', () => {
       const state = {
         activeQuests: [{ id: QUEST_PROVE_YOURSELF }],
@@ -809,6 +864,15 @@ test('QuestLifecycle', async t => {
       assert.equal(nextState.band.harmony, 30)
       assert.equal(nextState.toasts.length, 1)
       assert.equal(nextState.toasts[0].messageKey, 'ui:toast.quest_failed')
+    })
+
+    await t.test('uses quest id for failure toast without label', () => {
+      const state = {
+        player: { day: 10 },
+        activeQuests: [{ id: 'q1', deadline: 9 }]
+      }
+      const nextState = QuestLifecycle.checkDeadlines(state)
+      assert.equal(nextState.toasts[0].options.name, 'q1')
     })
 
     await t.test('fails expired quests with invalid penalties', () => {
@@ -1107,6 +1171,24 @@ test('QuestLifecycle', async t => {
         region: 'r'
       })
       const next = QuestProgress.applyEvent(state, event)
+      const q = next.activeQuests.find(q => q.id === 'quest_venue_residency')
+      assert.equal(q.progress ?? 0, 0)
+    })
+
+    await t.test('does not advance scoped quests without a scope key', () => {
+      const state = baseState({
+        id: 'quest_venue_residency',
+        progress: 0,
+        required: 3,
+        repeatPolicy: 'perVenue'
+      })
+      const next = QuestProgress.applyEvent(state, {
+        type: 'good_gig',
+        score: 80,
+        capacity: 100,
+        venueId: 'venue_A',
+        region: 'r'
+      })
       const q = next.activeQuests.find(q => q.id === 'quest_venue_residency')
       assert.equal(q.progress ?? 0, 0)
     })
@@ -1610,6 +1692,24 @@ test('QuestLifecycle', async t => {
       )
       assert.ok(next.activeStoryFlags.includes('side_failed'))
       assert.ok(!next.activeStoryFlags.includes('side_active'))
+    })
+
+    await t.test('applies declarative failureFlags on failure', () => {
+      const next = QuestLifecycle.checkDeadlines({
+        player: { day: 10 },
+        social: { loyalty: 50, controversyLevel: 0 },
+        band: { harmony: 50 },
+        activeStoryFlags: [],
+        questCooldowns: [],
+        activeQuests: [
+          {
+            id: 'q_fail_flags',
+            deadline: 5,
+            failureFlags: ['story_failed']
+          }
+        ]
+      })
+      assert.ok(next.activeStoryFlags.includes('story_failed'))
     })
 
     await t.test('failure cooldowns block the failed quest by quest id', () => {

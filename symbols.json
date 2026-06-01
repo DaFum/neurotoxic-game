@@ -5482,6 +5482,24 @@
         "type": "const"
       }
     ],
+    "getQuestPenalties": [
+      {
+        "isDefault": false,
+        "name": "getQuestPenalties",
+        "path": "src/domain/questPenalties.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "getQuestRewards": [
+      {
+        "isDefault": false,
+        "name": "getQuestRewards",
+        "path": "src/domain/questRewards.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "getRandomChatter": [
       {
         "isDefault": false,
@@ -6962,6 +6980,15 @@
         "isDefault": false,
         "name": "isPlainRecord",
         "path": "src/utils/objectUtils.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "isQuestRegistryId": [
+      {
+        "isDefault": false,
+        "name": "isQuestRegistryId",
+        "path": "src/data/questRegistry.ts",
         "source": "local",
         "type": "const"
       }

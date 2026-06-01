@@ -5,8 +5,10 @@ import { useTranslation } from 'react-i18next'
 import { useId, memo, type MouseEvent, type ReactNode } from 'react'
 import { formatCurrency } from '../utils/numberUtils'
 import { getQuestDefinition } from '../data/questRegistry'
+import { getQuestPenalties } from '../domain/questPenalties'
+import { getQuestRewards } from '../domain/questRewards'
 import type { Variants } from 'framer-motion'
-import type { PlayerState, QuestState } from '../types'
+import type { PlayerState, QuestReward, QuestState } from '../types'
 
 type IconProps = {
   className?: string
@@ -114,33 +116,51 @@ type QuestDisplayState = QuestState & {
   moneyReward?: number
 }
 
-// Get translated reward text
 const getRewardText = (
-  quest: QuestDisplayState,
-  t: (key: string, options?: Record<string, unknown>) => string
+  reward: QuestReward,
+  t: (key: string, options?: Record<string, unknown>) => string,
+  language: string
 ) => {
-  const value = quest.rewardData
-  switch (quest.rewardType) {
-    case 'item':
+  switch (reward.type) {
+    case 'item.add':
       return t('ui:rewards.freeItem')
     case 'fame':
-      return t('ui:rewards.fameWithAmount', { count: value?.fame ?? 0 })
-    case 'fans':
-      return t('ui:rewards.fansWithAmount', { count: value?.fans ?? 0 })
+      return t('ui:rewards.fameWithAmount', { count: reward.amount })
+    case 'social.followers':
+      return t('ui:rewards.fansWithAmount', { count: reward.amount })
     case 'money':
-      return t('ui:rewards.moneyWithAmount', { count: value?.money ?? 0 })
+      return t('ui:quests.moneyReward', {
+        amount: formatCurrency(reward.amount, language, 'always')
+      })
     case 'skill_point':
       return t('ui:rewards.skillPointWithAmount', { count: 1 })
-    case 'harmony':
-      return t('ui:rewards.harmonyWithAmount', { count: value?.harmony ?? 0 })
-    case 'loyalty':
-      return t('ui:rewards.loyaltyWithAmount', { count: value?.loyalty ?? 0 })
-    case 'controversy_reduction':
+    case 'band.harmony':
+      return t('ui:rewards.harmonyWithAmount', { count: reward.amount })
+    case 'social.loyalty':
+      return t('ui:rewards.loyaltyWithAmount', { count: reward.amount })
+    case 'social.controversy':
       return t('ui:rewards.controversyReduction', {
-        count: value?.controversy ?? 0
+        count: Math.abs(reward.amount)
       })
     default:
       return t('ui:rewards.special')
+  }
+}
+
+const getRewardIconType = (reward: QuestReward): string => {
+  switch (reward.type) {
+    case 'item.add':
+      return 'item'
+    case 'social.followers':
+      return 'fans'
+    case 'band.harmony':
+      return 'harmony'
+    case 'social.loyalty':
+      return 'loyalty'
+    case 'social.controversy':
+      return 'controversy_reduction'
+    default:
+      return reward.type
   }
 }
 
@@ -171,30 +191,27 @@ const getPenaltyTexts = (
   quest: QuestDisplayState,
   t: (key: string, options?: Record<string, unknown>) => string
 ): string[] => {
-  const penalty = quest.failurePenalty
-  if (!penalty || typeof penalty !== 'object' || Array.isArray(penalty))
-    return []
-  const p = penalty as Record<string, unknown>
-  const pickRecord = (v: unknown): Record<string, unknown> =>
-    v && typeof v === 'object' && !Array.isArray(v)
-      ? (v as Record<string, unknown>)
-      : {}
-  const social = pickRecord(p.social)
-  const band = pickRecord(p.band)
   const texts: string[] = []
-  if (typeof band.harmony === 'number' && band.harmony !== 0) {
-    texts.push(t('ui:quests.penalty.harmony', { count: band.harmony }))
-  }
-  if (
-    typeof social.controversyLevel === 'number' &&
-    social.controversyLevel !== 0
-  ) {
-    texts.push(
-      t('ui:quests.penalty.controversy', { count: social.controversyLevel })
-    )
-  }
-  if (typeof social.loyalty === 'number' && social.loyalty !== 0) {
-    texts.push(t('ui:quests.penalty.loyalty', { count: social.loyalty }))
+  for (const penalty of getQuestPenalties(quest)) {
+    switch (penalty.type) {
+      case 'band.harmony':
+        if (penalty.amount !== 0) {
+          texts.push(t('ui:quests.penalty.harmony', { count: penalty.amount }))
+        }
+        break
+      case 'social.controversy':
+        if (penalty.amount !== 0) {
+          texts.push(
+            t('ui:quests.penalty.controversy', { count: penalty.amount })
+          )
+        }
+        break
+      case 'social.loyalty':
+        if (penalty.amount !== 0) {
+          texts.push(t('ui:quests.penalty.loyalty', { count: penalty.amount }))
+        }
+        break
+    }
   }
   return texts
 }
@@ -253,6 +270,7 @@ const QuestItem = memo(
     const timeRemaining =
       quest.deadline != null ? Math.max(0, quest.deadline - currentDay) : null
 
+    const rewardChips = getQuestRewards(quest)
     const penaltyTexts = getPenaltyTexts(quest, t)
 
     return (
@@ -353,25 +371,15 @@ const QuestItem = memo(
             {t('ui:quests.rewards')}
           </span>
 
-          {typeof quest.moneyReward === 'number' && quest.moneyReward > 0 && (
-            <span className='inline-flex items-center gap-1 bg-fuel-yellow/10 text-fuel-yellow px-2 py-1 text-xs font-mono '>
-              <IconCoin className='w-3 h-3' />{' '}
-              {t('ui:quests.moneyReward', {
-                amount: formatCurrency(
-                  quest.moneyReward,
-                  i18n.language,
-                  'always'
-                )
-              })}
+          {rewardChips.map((reward, rewardIndex) => (
+            <span
+              key={`${reward.type}-${rewardIndex}`}
+              className='inline-flex items-center gap-1 bg-toxic-green/10 text-toxic-green px-2 py-1 text-xs font-mono '
+            >
+              {getRewardIcon(getRewardIconType(reward))}
+              {getRewardText(reward, t, i18n.language)}
             </span>
-          )}
-
-          {quest.rewardType && (
-            <span className='inline-flex items-center gap-1 bg-toxic-green/10 text-toxic-green px-2 py-1 text-xs font-mono '>
-              {getRewardIcon(quest.rewardType)}
-              {getRewardText(quest, t)}
-            </span>
-          )}
+          ))}
         </div>
 
         {penaltyTexts.length > 0 && (

@@ -1,6 +1,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
 import { QUEST_REGISTRY } from '../../src/data/questRegistry.ts'
+import { QUEST_EVENTS } from '../../src/data/events/quests.ts'
 import { QuestLifecycle } from '../../src/domain/questLifecycle.ts'
 import { QuestProgress } from '../../src/utils/questProgress.ts'
 const getBaseState = () => ({
@@ -209,38 +210,39 @@ describe('Quest System Registry Validation', () => {
   it('content gate: every progressRule event is handled at runtime', () => {
     for (const [id, quest] of Object.entries(QUEST_REGISTRY)) {
       if (!Array.isArray(quest.progressRules)) continue
-      const rule = quest.progressRules[0]
-      const source = rule?.event
-      assert.ok(source, `${id} has progressRules without an event`)
-      const scopeKey =
-        quest.repeatPolicy === 'perVenue'
-          ? 'test_venue'
-          : quest.repeatPolicy === 'perRegion'
-            ? 'test_region'
-            : undefined
-      const state = {
-        ...getBaseState(),
-        activeQuests: [
-          {
-            ...quest,
-            id,
-            progress: 0,
-            required: 999999,
-            ...(scopeKey ? { scopeKey } : {})
-          }
-        ]
-      }
+      for (const rule of quest.progressRules) {
+        const source = rule?.event
+        assert.ok(source, `${id} has progressRules without an event`)
+        const scopeKey =
+          quest.repeatPolicy === 'perVenue'
+            ? 'test_venue'
+            : quest.repeatPolicy === 'perRegion'
+              ? 'test_region'
+              : undefined
+        const state = {
+          ...getBaseState(),
+          activeQuests: [
+            {
+              ...quest,
+              id,
+              progress: 0,
+              required: 999999,
+              ...(scopeKey ? { scopeKey } : {})
+            }
+          ]
+        }
 
-      const next = QuestProgress.applyEvent(
-        state,
-        makeProgressEvent(source, rule)
-      )
-      const nextQuest = next.activeQuests.find(q => q.id === id)
-      assert.ok(nextQuest, `${id} should remain active after test event`)
-      assert.ok(
-        nextQuest.progress > 0,
-        `progressRule '${source}' did not advance ${id} through QuestProgress.applyEvent`
-      )
+        const next = QuestProgress.applyEvent(
+          state,
+          makeProgressEvent(source, rule)
+        )
+        const nextQuest = next.activeQuests.find(q => q.id === id)
+        assert.ok(nextQuest, `${id} should remain active after test event`)
+        assert.ok(
+          nextQuest.progress > 0,
+          `progressRule '${source}' did not advance ${id} through QuestProgress.applyEvent`
+        )
+      }
     }
   })
 
@@ -261,18 +263,39 @@ describe('Quest System Registry Validation', () => {
     }
   })
 
-  it('content gate: repeatable quests must declare a cooldown, scope or daily policy', () => {
+  it('content gate: repeatable quests must declare a cooldown or scope policy', () => {
     for (const [id, quest] of Object.entries(QUEST_REGISTRY)) {
       if (quest.repeatPolicy && quest.repeatPolicy !== 'never') {
         const hasGuard =
           quest.repeatPolicy === 'cooldown'
             ? typeof quest.cooldownDays === 'number' && quest.cooldownDays > 0
-            : ['daily', 'perVenue', 'perRegion'].includes(quest.repeatPolicy)
+            : ['perVenue', 'perRegion'].includes(quest.repeatPolicy)
         assert.ok(
           hasGuard,
           `Quest ${id} has repeatPolicy '${quest.repeatPolicy}' but no cooldown/scope guard`
         )
       }
+    }
+  })
+
+  it('content gate: quest trigger events mirror registry offer metadata', () => {
+    for (const event of QUEST_EVENTS) {
+      const questId = event.options
+        ?.map(option => option?.effect?.quest?.id)
+        .find(id => typeof id === 'string')
+      if (!questId) continue
+      const offer = QUEST_REGISTRY[questId]?.offer
+      assert.ok(
+        offer,
+        `Quest event ${event.id} points to ${questId} without an offer`
+      )
+      assert.equal(event.trigger, offer.trigger, `${event.id} trigger drifted`)
+      assert.equal(
+        event.category,
+        offer.category,
+        `${event.id} category drifted`
+      )
+      assert.equal(event.chance, offer.chance, `${event.id} chance drifted`)
     }
   })
 

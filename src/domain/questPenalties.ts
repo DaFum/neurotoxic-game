@@ -93,7 +93,7 @@ const normalizeLegacyPenalties = (quest: QuestState): QuestPenalty[] => {
   return penalties
 }
 
-const getQuestPenalties = (quest: QuestState): QuestPenalty[] =>
+export const getQuestPenalties = (quest: QuestState): QuestPenalty[] =>
   Array.isArray(quest.failurePenalties) && quest.failurePenalties.length > 0
     ? quest.failurePenalties
     : normalizeLegacyPenalties(quest)

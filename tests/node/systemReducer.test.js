@@ -721,6 +721,42 @@ test('systemReducer - LOAD_GAME', async t => {
   )
 
   await t.test(
+    'drops loaded scoped registry quests without a scope key',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = {
+        activeQuests: [
+          {
+            id: 'quest_venue_residency',
+            progress: 1,
+            required: 3
+          },
+          {
+            id: 'quest_local_legend',
+            progress: 100,
+            required: 500,
+            scopeKey: 'berlin'
+          }
+        ]
+      }
+
+      const nextState = handleLoadGame(initialState, loadedState)
+
+      assert.deepEqual(nextState.activeQuests, [
+        {
+          id: 'quest_local_legend',
+          deadline: 10,
+          progress: 100,
+          required: 500,
+          scopeKey: 'berlin',
+          status: 'active',
+          startedOnDay: 0
+        }
+      ])
+    }
+  )
+
+  await t.test(
     'backfills registry-backed active quest deadlines on load',
     () => {
       const initialState = createInitialState()

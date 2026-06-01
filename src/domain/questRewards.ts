@@ -73,10 +73,12 @@ const normalizeLegacyRewards = (quest: QuestState): QuestReward[] => {
   return rewards
 }
 
-const getQuestRewards = (quest: QuestState): QuestReward[] =>
+export const getQuestRewards = (quest: QuestState): QuestReward[] =>
   Array.isArray(quest.rewards) && quest.rewards.length > 0
     ? quest.rewards
     : normalizeLegacyRewards(quest)
+
+const getQuestToastName = (quest: QuestState): string => quest.label ?? quest.id
 
 const clampReputation = (value: number): number =>
   Math.max(-100, Math.min(100, value))
@@ -236,6 +238,7 @@ export const applyQuestRewards = (
 ): QuestRewardResult => {
   let nextState = state
   const toasts: ToastPayload[] = []
+  const questName = getQuestToastName(quest)
 
   for (const reward of getQuestRewards(quest)) {
     switch (reward.type) {
@@ -252,7 +255,7 @@ export const applyQuestRewards = (
             id: `${quest.id}-money`,
             messageKey: 'ui:toast.quest_complete_money',
             options: {
-              name: quest.label,
+              name: questName,
               amount: formatCurrency(appliedDelta, i18n.language, 'always')
             },
             type: 'success'
@@ -274,7 +277,7 @@ export const applyQuestRewards = (
         toasts.push({
           id: `${quest.id}-item`,
           messageKey: 'ui:toast.quest_complete_item',
-          options: { name: quest.label },
+          options: { name: questName },
           type: 'success'
         })
         break
@@ -295,7 +298,7 @@ export const applyQuestRewards = (
           toasts.push({
             id: `${quest.id}-fame`,
             messageKey: 'ui:toast.quest_complete_fame',
-            options: { name: quest.label, amount: appliedDelta },
+            options: { name: questName, amount: appliedDelta },
             type: 'success'
           })
         }
@@ -322,7 +325,7 @@ export const applyQuestRewards = (
           toasts.push({
             id: `${quest.id}-harmony`,
             messageKey: 'ui:toast.quest_complete_harmony',
-            options: { name: quest.label, amount: appliedDelta },
+            options: { name: questName, amount: appliedDelta },
             type: 'success'
           })
         }
@@ -361,7 +364,7 @@ export const applyQuestRewards = (
           toasts.push({
             id: `${quest.id}-fans`,
             messageKey: 'ui:toast.quest_complete_fans',
-            options: { name: quest.label, amount: appliedDelta },
+            options: { name: questName, amount: appliedDelta },
             type: 'success'
           })
         }
@@ -379,7 +382,7 @@ export const applyQuestRewards = (
           toasts.push({
             id: `${quest.id}-loyalty`,
             messageKey: 'ui:toast.quest_complete_loyalty',
-            options: { name: quest.label, amount: appliedDelta },
+            options: { name: questName, amount: appliedDelta },
             type: 'success'
           })
         }
@@ -397,7 +400,7 @@ export const applyQuestRewards = (
           toasts.push({
             id: `${quest.id}-controversy`,
             messageKey: 'ui:toast.quest_complete_controversy',
-            options: { name: quest.label, amount: Math.abs(appliedDelta) },
+            options: { name: questName, amount: Math.abs(appliedDelta) },
             type: 'success'
           })
         }

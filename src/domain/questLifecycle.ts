@@ -5,7 +5,7 @@ import type {
   QuestState,
   ToastPayload
 } from '../types'
-import { finiteNumberOr } from '../utils/gameStateUtils'
+import { finiteNumberOr, isForbiddenKey } from '../utils/gameStateUtils'
 import { QUEST_PROVE_YOURSELF } from '../data/questsConstants'
 import { getQuestDefinition } from '../data/questRegistry'
 import { hasActiveQuest } from '../utils/questUtils'
@@ -76,8 +76,32 @@ const createActiveQuestRuntime = (
   }
 }
 
+const getQuestToastName = (quest: QuestState): string => quest.label ?? quest.id
+
+const addStoryFlags = (
+  flags: GameState['activeStoryFlags'],
+  additions: unknown[]
+): GameState['activeStoryFlags'] => {
+  const validAdditions = additions.filter(
+    (flag): flag is string => typeof flag === 'string' && flag.length > 0
+  )
+  if (validAdditions.length === 0) return flags
+  const nextFlags = [...(flags ?? [])]
+  for (const flag of validAdditions) {
+    if (!nextFlags.includes(flag)) nextFlags.push(flag)
+  }
+  return nextFlags
+}
+
 export const QuestLifecycle = {
   addQuest: (state: GameState, quest: QuestState): GameState => {
+    if (
+      typeof quest.id !== 'string' ||
+      quest.id.length === 0 ||
+      isForbiddenKey(quest.id)
+    ) {
+      return state
+    }
     if (hasActiveQuest(state.activeQuests, quest.id)) return state
 
     // Merge static registry defaults under the provided payload so callers can
@@ -126,11 +150,19 @@ export const QuestLifecycle = {
       Boolean(definition)
     )
 
-    return {
+    const nextState = {
       ...state,
       activeStoryFlags: nextStoryFlags,
       activeQuests: [...(state.activeQuests || []), activeQuest]
     }
+    const required = finiteNumberOr(activeQuest.required, Number.NaN)
+    const progress = finiteNumberOr(activeQuest.progress, Number.NaN)
+    if (Number.isFinite(required) && required > 0 && progress >= required) {
+      return QuestLifecycle.completeQuest(nextState, {
+        questId: activeQuest.id
+      })
+    }
+    return nextState
   },
 
   completeQuest: (
@@ -159,17 +191,17 @@ export const QuestLifecycle = {
       generatedToasts.push({
         id: `${questId}-generic`,
         messageKey: 'ui:toast.quest_complete',
-        options: { name: quest.label },
+        options: { name: getQuestToastName(quest) },
         type: 'success'
       })
     }
 
-    // Add reward flag
-    if (quest.rewardFlag) {
-      nextState.activeStoryFlags = [
-        ...(nextState.activeStoryFlags || []),
-        quest.rewardFlag
-      ]
+    const completionFlags = addStoryFlags(nextState.activeStoryFlags, [
+      quest.rewardFlag,
+      ...(quest.completionFlags ?? [])
+    ])
+    if (completionFlags !== nextState.activeStoryFlags) {
+      nextState.activeStoryFlags = completionFlags
     }
 
     // Toast
@@ -362,9 +394,17 @@ export const QuestLifecycle = {
         newToasts.push({
           id: `${quest.id}-fail`,
           messageKey: 'ui:toast.quest_failed',
-          options: { name: quest.label },
+          options: { name: getQuestToastName(quest) },
           type: 'error'
         })
+        if (Array.isArray(quest.failureFlags)) {
+          flagsToAdd.push(
+            ...quest.failureFlags.filter(
+              (flag): flag is string =>
+                typeof flag === 'string' && flag.length > 0
+            )
+          )
+        }
       } else {
         newActiveQuests.push(activeQuest)
       }

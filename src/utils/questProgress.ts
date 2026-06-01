@@ -11,7 +11,7 @@ import type {
   BrandDealType
 } from '../types'
 import { QuestLifecycle } from '../domain/questLifecycle'
-import { QUEST_REGISTRY } from '../data/questRegistry'
+import { getQuestDefinition } from '../data/questRegistry'
 import { isForbiddenKey } from './objectUtils'
 
 export type LegacyQuestProgressEvent =
@@ -333,7 +333,10 @@ const matchesScope = (
   context: QuestEventContext
 ): boolean => {
   const scope = match?.scope
-  if (!scope || scope === 'none' || !quest.scopeKey) return true
+  if (!scope || scope === 'none') return true
+  if (typeof quest.scopeKey !== 'string' || quest.scopeKey.length === 0) {
+    return false
+  }
   if (scope === 'venue') {
     return context.venueId === quest.scopeKey
   }
@@ -439,8 +442,7 @@ export const QuestProgress = {
 
     for (const activeQuest of nextState.activeQuests) {
       if (!activeQuest) continue
-      const registryEntry =
-        QUEST_REGISTRY[activeQuest.id as keyof typeof QUEST_REGISTRY]
+      const registryEntry = getQuestDefinition(activeQuest.id)
       // Registry-backed active quests normally carry runtime fields only.
       // Ad-hoc/legacy quests keep inline rules because activeQuest spread wins.
       const quest: QuestState = registryEntry

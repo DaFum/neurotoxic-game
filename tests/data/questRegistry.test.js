@@ -4,7 +4,10 @@
 // explicit registry-only contract for future quest additions.
 import { test } from 'vitest'
 import assert from 'node:assert/strict'
-import { QUEST_REGISTRY } from '../../src/data/questRegistry'
+import {
+  QUEST_REGISTRY,
+  getQuestDefinition
+} from '../../src/data/questRegistry'
 
 test('every quest with required > 0 has a progressSource', () => {
   for (const [id, quest] of Object.entries(QUEST_REGISTRY)) {
@@ -54,4 +57,10 @@ test('repeatPolicy "cooldown" quests define cooldownDays > 0', () => {
       `Quest ${id} uses repeatPolicy 'cooldown' but cooldownDays is missing or non-positive`
     )
   }
+})
+
+test('quest lookups only return own registry definitions', () => {
+  assert.equal(getQuestDefinition('__proto__'), undefined)
+  assert.equal(getQuestDefinition('constructor'), undefined)
+  assert.equal(getQuestDefinition('toString'), undefined)
 })

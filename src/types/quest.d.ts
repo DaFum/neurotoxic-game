@@ -3,12 +3,7 @@ import type { BrandDealType } from './social'
 
 export type QuestKind = 'story' | 'side' | 'repeatable' | 'tutorial'
 export type QuestStatus = 'active' | 'completed' | 'failed'
-export type QuestRepeatPolicy =
-  | 'never'
-  | 'cooldown'
-  | 'daily'
-  | 'perVenue'
-  | 'perRegion'
+export type QuestRepeatPolicy = 'never' | 'cooldown' | 'perVenue' | 'perRegion'
 
 export type QuestProgressSource =
   | 'gig_completed'

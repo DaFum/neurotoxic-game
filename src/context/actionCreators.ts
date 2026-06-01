@@ -704,6 +704,9 @@ export const createAddQuestAction = (
   quest: QuestState
 ): Extract<GameAction, { type: typeof ActionTypes.ADD_QUEST }> => {
   const safeQuest = { ...(quest || {}) } as QuestState
+  if (typeof safeQuest.id !== 'string' || HOSTILE_KEYS.has(safeQuest.id)) {
+    safeQuest.id = ''
+  }
 
   if (safeQuest.moneyReward != null) {
     safeQuest.moneyReward = clampNonNegative(Number(safeQuest.moneyReward) || 0)

@@ -4,7 +4,7 @@ import type {
   QuestOfferDefinition,
   QuestState
 } from '../types'
-import { QUEST_REGISTRY } from '../data/questRegistry'
+import { QUEST_REGISTRY, getQuestDefinition } from '../data/questRegistry'
 import { canAcceptQuest } from './questLifecycle'
 import { finiteNumberOr } from '../utils/gameStateUtils'
 
@@ -92,9 +92,9 @@ const matchesOfferCondition = (
 
 export const QuestOfferEngine = {
   canOfferQuest: (state: GameState, questId: string): boolean => {
-    const definition = QUEST_REGISTRY[
-      questId as keyof typeof QUEST_REGISTRY
-    ] as (Partial<QuestState> & { offer?: QuestOfferDefinition }) | undefined
+    const definition = getQuestDefinition(questId) as
+      | (Partial<QuestState> & { offer?: QuestOfferDefinition })
+      | undefined
     if (!definition?.offer) return canAcceptQuest(state, questId).ok
     return (
       canAcceptQuest(state, questId).ok &&
