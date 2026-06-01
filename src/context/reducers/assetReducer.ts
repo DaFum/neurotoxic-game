@@ -301,7 +301,7 @@ export const handleUpgradeChassisTier = (
   // allocation and could mask a buggy dispatch from upstream).
   // ⚡ BOLT OPTIMIZATION: Replaced O(N) array methods (.find, .map)
   // with procedural loops to avoid intermediate array allocations and reduce GC pressure.
-  let targetAsset: import('../../types/assets').LongTermAsset | null = null
+  let targetAsset: LongTermAsset | null = null
   let targetAssetIndex = -1
   for (let i = 0; i < state.assets.length; i++) {
     const asset = state.assets[i]
