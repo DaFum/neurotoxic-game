@@ -1,6 +1,12 @@
 import { test, vi } from 'vitest'
 import assert from 'node:assert'
 
+// QUEST_EVENTS contains events that are also `category: 'transport'`
+// (e.g. quest_trigger_tourbus_inspection). They route into EVENTS_DB.transport
+// too, so we have to mock them out to isolate the transport-only validation
+// behaviour this test asserts.
+vi.mock('../../../src/data/events/quests', () => ({ QUEST_EVENTS: [] }))
+
 // Mock the transport events module
 vi.mock('../../../src/data/events/transport', () => ({
   TRANSPORT_EVENTS: [
