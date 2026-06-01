@@ -1,21 +1,11 @@
-import i18n from '../i18n'
-import { formatCurrency } from '../utils/numberUtils'
 import type {
-  BandMember,
+  ActiveQuestState,
   GameState,
   QuestKind,
   QuestState,
   ToastPayload
 } from '../types'
-import {
-  clampPlayerFame,
-  clampBandHarmony,
-  clampPlayerMoney,
-  calculateFameLevel,
-  clampControversyLevel,
-  clampLoyalty,
-  finiteNumberOr
-} from '../utils/gameStateUtils'
+import { finiteNumberOr } from '../utils/gameStateUtils'
 import { QUEST_PROVE_YOURSELF } from '../data/questsConstants'
 import { getQuestDefinition } from '../data/questRegistry'
 import { hasActiveQuest } from '../utils/questUtils'
@@ -49,7 +39,9 @@ const hasQuestSlot = (
   return activeCount < limit
 }
 
-const getQuestWithDefinition = (quest: QuestState): QuestState => {
+const getQuestWithDefinition = (
+  quest: QuestState | ActiveQuestState
+): QuestState => {
   const definition = getQuestDefinition(quest.id) as
     | Partial<QuestState>
     | undefined
@@ -60,8 +52,8 @@ const createActiveQuestRuntime = (
   quest: QuestState,
   startedOnDay: number,
   isRegistryBacked: boolean
-): QuestState => {
-  if (!isRegistryBacked) return quest
+): ActiveQuestState => {
+  if (!isRegistryBacked) return quest as ActiveQuestState
   return {
     id: quest.id,
     deadline: quest.deadline,
@@ -138,7 +130,7 @@ export const QuestLifecycle = {
     const questIndex = state.activeQuests.findIndex(q => q.id === questId)
     if (questIndex === -1) return state
 
-    const activeQuest = state.activeQuests[questIndex] as QuestState | undefined
+    const activeQuest = state.activeQuests[questIndex]
     if (!activeQuest) return state
     const quest = getQuestWithDefinition(activeQuest)
     let nextState = { ...state }
@@ -148,185 +140,9 @@ export const QuestLifecycle = {
       .slice(0, questIndex)
       .concat(state.activeQuests.slice(questIndex + 1))
 
-    // Apply generic quest rewards
-    const generatedToasts: ToastPayload[] = []
-
-    const hasDeclaredRewards =
-      Array.isArray(quest.rewards) && quest.rewards.length > 0
-
-    if (hasDeclaredRewards) {
-      const rewardResult = applyQuestRewards(nextState, quest, randomIdx)
-      nextState = rewardResult.state
-      generatedToasts.push(...rewardResult.toasts)
-    } else if (
-      typeof quest.moneyReward === 'number' &&
-      quest.moneyReward !== 0
-    ) {
-      const previousMoney = nextState.player?.money ?? 0
-      const newMoney = clampPlayerMoney(previousMoney + quest.moneyReward)
-      const appliedDelta = newMoney - previousMoney
-      nextState.player = {
-        ...(nextState.player ?? {}),
-        money: newMoney
-      }
-      if (appliedDelta !== 0) {
-        generatedToasts.push({
-          id: `${questId}-money`,
-          messageKey: 'ui:toast.quest_complete_money',
-          options: {
-            name: quest.label,
-            amount: formatCurrency(appliedDelta, i18n.language, 'always')
-          },
-          type: 'success'
-        })
-      }
-    }
-
-    if (
-      !hasDeclaredRewards &&
-      quest.rewardType === 'item' &&
-      quest.rewardData?.item
-    ) {
-      const itemKey = String(quest.rewardData.item)
-      nextState.band = {
-        ...nextState.band,
-        inventory: {
-          ...(nextState.band?.inventory ?? {}),
-          [itemKey]: true
-        }
-      }
-      generatedToasts.push({
-        id: `${questId}-item`,
-        messageKey: 'ui:toast.quest_complete_item',
-        options: { name: quest.label },
-        type: 'success'
-      })
-    } else if (quest.rewardType === 'fame' && quest.rewardData?.fame) {
-      const rawFameReward = Number(quest.rewardData.fame) || 0
-      const previousFame = nextState.player?.fame ?? 0
-      const newFame = clampPlayerFame(previousFame + rawFameReward)
-      const appliedDelta = newFame - previousFame
-      nextState.player = {
-        ...nextState.player,
-        fame: newFame,
-        fameLevel: calculateFameLevel(newFame)
-      }
-      if (appliedDelta !== 0) {
-        generatedToasts.push({
-          id: `${questId}-fame`,
-          messageKey: 'ui:toast.quest_complete_fame',
-          options: { name: quest.label, amount: appliedDelta },
-          type: 'success'
-        })
-      }
-    } else if (quest.rewardType === 'skill_point') {
-      const originalMembers = nextState.band?.members ?? []
-      if (originalMembers.length > 0) {
-        const memberIdx =
-          typeof quest.rewardData?.memberIndex === 'number'
-            ? Math.max(
-                0,
-                Math.min(
-                  originalMembers.length - 1,
-                  quest.rewardData.memberIndex
-                )
-              )
-            : typeof randomIdx === 'number'
-              ? Math.max(0, Math.min(originalMembers.length - 1, randomIdx))
-              : 0
-
-        const members = originalMembers.map((m: BandMember, idx: number) => {
-          if (idx === memberIdx) {
-            const baseStats = (m.baseStats ?? {}) as Record<string, unknown>
-            const currentSkill = m.baseStats
-              ? Number((m.baseStats as Record<string, unknown>).skill)
-              : Number(m.skill)
-            const skillValue = Number.isFinite(currentSkill) ? currentSkill : 0
-            return {
-              ...m,
-              baseStats: {
-                ...baseStats,
-                skill: skillValue + 1
-              }
-            }
-          }
-          return m
-        })
-
-        nextState.band = { ...nextState.band, members }
-        const rewardedMember = members[memberIdx]
-        generatedToasts.push({
-          id: `${questId}-skill`,
-          messageKey: 'ui:toast.quest_complete_skill',
-          options: { name: quest.label, member: rewardedMember?.name },
-          type: 'success'
-        })
-      }
-    } else if (quest.rewardType === 'harmony' && quest.rewardData?.harmony) {
-      const rawHarmonyReward = Number(quest.rewardData.harmony) || 0
-      const previousHarmony = nextState.band?.harmony ?? 1
-      const newHarmony = clampBandHarmony(previousHarmony + rawHarmonyReward)
-      const appliedDelta = newHarmony - previousHarmony
-      nextState.band = {
-        ...nextState.band,
-        harmony: newHarmony
-      }
-      if (appliedDelta !== 0) {
-        generatedToasts.push({
-          id: `${questId}-harmony`,
-          messageKey: 'ui:toast.quest_complete_harmony',
-          options: { name: quest.label, amount: appliedDelta },
-          type: 'success'
-        })
-      }
-    } else if (quest.rewardType === 'fans' && quest.rewardData?.fans) {
-      // Fans land on the general instagram following bucket.
-      const rawFans = Number(quest.rewardData.fans) || 0
-      const previous = finiteNumberOr(nextState.social?.instagram, 0)
-      const next = Math.max(0, previous + rawFans)
-      nextState.social = { ...nextState.social, instagram: next }
-      const appliedDelta = next - previous
-      if (appliedDelta !== 0) {
-        generatedToasts.push({
-          id: `${questId}-fans`,
-          messageKey: 'ui:toast.quest_complete_fans',
-          options: { name: quest.label, amount: appliedDelta },
-          type: 'success'
-        })
-      }
-    } else if (quest.rewardType === 'loyalty' && quest.rewardData?.loyalty) {
-      const raw = Number(quest.rewardData.loyalty) || 0
-      const previous = finiteNumberOr(nextState.social?.loyalty, 0)
-      const next = clampLoyalty(previous + raw)
-      nextState.social = { ...nextState.social, loyalty: next }
-      const appliedDelta = next - previous
-      if (appliedDelta !== 0) {
-        generatedToasts.push({
-          id: `${questId}-loyalty`,
-          messageKey: 'ui:toast.quest_complete_loyalty',
-          options: { name: quest.label, amount: appliedDelta },
-          type: 'success'
-        })
-      }
-    } else if (
-      quest.rewardType === 'controversy_reduction' &&
-      quest.rewardData?.controversy
-    ) {
-      // rewardData.controversy is the positive amount to remove.
-      const raw = Math.abs(Number(quest.rewardData.controversy) || 0)
-      const previous = finiteNumberOr(nextState.social?.controversyLevel, 0)
-      const next = clampControversyLevel(previous - raw)
-      nextState.social = { ...nextState.social, controversyLevel: next }
-      const appliedDelta = previous - next
-      if (appliedDelta !== 0) {
-        generatedToasts.push({
-          id: `${questId}-controversy`,
-          messageKey: 'ui:toast.quest_complete_controversy',
-          options: { name: quest.label, amount: appliedDelta },
-          type: 'success'
-        })
-      }
-    }
+    const rewardResult = applyQuestRewards(nextState, quest, randomIdx)
+    nextState = rewardResult.state
+    const generatedToasts: ToastPayload[] = [...rewardResult.toasts]
 
     if (generatedToasts.length === 0) {
       generatedToasts.push({
@@ -496,7 +312,7 @@ export const QuestLifecycle = {
     if (!nextState.activeQuests) return state
 
     let hasExpired = false
-    const newActiveQuests: QuestState[] = []
+    const newActiveQuests: ActiveQuestState[] = []
     const newToasts: ToastPayload[] = []
     const flagsToAdd: string[] = []
     const flagsToRemove = new Set<string>()

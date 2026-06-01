@@ -47,8 +47,12 @@ import { generateBrandOffers } from '../utils/socialEngine'
 import { getTranslatedBrandDealDisplay } from '../utils/brandDealI18n'
 import { submitLeaderboardScores } from '../utils/leaderboardUtils'
 import { createHarmonyChangedQuestEvent } from '../quests/producers/gigQuestEvents'
-import { createBrandDealCompletedQuestEvent } from '../quests/producers/brandQuestEvents'
+import {
+  createBrandDealCompletedQuestEvent,
+  createBrandOfferAcceptedQuestEvent
+} from '../quests/producers/brandQuestEvents'
 import { createSocialPostQuestEvents } from '../quests/producers/socialQuestEvents'
+import { createRegionReputationChangedQuestEvent } from '../quests/producers/venueQuestEvents'
 
 export interface UsePostGigHandlersReturn {
   isProcessingAction: boolean
@@ -285,6 +289,7 @@ export const usePostGigHandlers = ({
         const socialUpdateFactory = getAcceptDealSocialUpdateFactory(deal)
         updateSocial(socialUpdateFactory)
 
+        applyQuestEvent(createBrandOfferAcceptedQuestEvent(deal))
         applyQuestEvent(createBrandDealCompletedQuestEvent(deal))
 
         const moneyText =
@@ -428,12 +433,13 @@ export const usePostGigHandlers = ({
       if (fameGain > 0) {
         // Region context lets perRegion fame quests (quest_local_legend)
         // gate progress to the actual region where it was earned.
-        applyQuestEvent({
-          type: 'region.reputationChanged',
-          amount: fameGain,
-          success: true,
-          context: { region: player.location }
-        })
+        applyQuestEvent(
+          createRegionReputationChangedQuestEvent({
+            region: player.location,
+            amount: fameGain,
+            reason: 'post_gig_fame'
+          })
+        )
       }
 
       let postPenaltyHarmony: number | undefined

@@ -1,4 +1,4 @@
-import type { QuestState } from '../types/quest'
+import type { QuestDefinition } from '../types/quest'
 
 export const QUEST_REGISTRY = {
   quest_prove_yourself: {
@@ -470,15 +470,7 @@ export const QUEST_REGISTRY = {
       social: { loyalty: -15 }
     }
   }
-} as const satisfies Record<string, Partial<QuestState>>
-
-/**
- * Static configuration shape for a registry quest entry. Mirrors the subset of
- * `QuestState` that quests declare statically; runtime-only fields such as the
- * computed `deadline` and live `progress` are layered on by `addQuest`.
- */
-export type QuestDefinition =
-  (typeof QUEST_REGISTRY)[keyof typeof QUEST_REGISTRY]
+} as const satisfies Record<string, QuestDefinition>
 
 /**
  * Looks up a quest's static definition by id. Returns `undefined` for unknown

@@ -333,10 +333,15 @@ const questRuleMatchesEvent = (
     return false
   }
   if (!matchesString(match.dealType, context.dealType)) return false
+  if (!matchesString(match.brandId, context.brandId)) return false
   if (!matchesString(match.brandAlignment, context.brandAlignment)) return false
   if (!matchesString(match.assetKind, context.assetKind)) return false
+  if (!matchesString(match.moduleId, context.moduleId)) return false
+  if (!matchesString(match.slotType, context.slotType)) return false
+  if (!matchesString(match.riskType, context.riskType)) return false
   if (!matchesString(match.minigameId, context.minigameId)) return false
   if (!matchesString(match.itemId, context.itemId)) return false
+  if (!matchesString(match.recipeId, context.recipeId)) return false
 
   if (match.success !== undefined) {
     const success = getEventSuccess(event)

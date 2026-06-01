@@ -10,12 +10,15 @@ import type {
 import {
   calculateFameLevel,
   clampBandHarmony,
+  clamp0to100,
   clampControversyLevel,
   clampLoyalty,
   clampPlayerFame,
   clampPlayerMoney,
-  finiteNumberOr
+  finiteNumberOr,
+  isForbiddenKey
 } from '../utils/gameStateUtils'
+import { applyTraitUnlocks } from '../utils/traitUtils'
 
 export interface QuestRewardResult {
   state: GameState
@@ -70,10 +73,112 @@ const normalizeLegacyRewards = (quest: QuestState): QuestReward[] => {
   return rewards
 }
 
-const getQuestRewards = (quest: QuestState): QuestReward[] => [
-  ...(Array.isArray(quest.rewards) ? quest.rewards : []),
-  ...normalizeLegacyRewards(quest)
-]
+const getQuestRewards = (quest: QuestState): QuestReward[] =>
+  Array.isArray(quest.rewards) && quest.rewards.length > 0
+    ? quest.rewards
+    : normalizeLegacyRewards(quest)
+
+const clampReputation = (value: number): number =>
+  Math.max(-100, Math.min(100, value))
+
+const getVenueReputationKey = (
+  state: GameState,
+  scope: 'current' | string | undefined
+): string | undefined => {
+  const key =
+    scope === 'current' || scope == null
+      ? (state.currentGig?.id ?? state.player?.currentNodeId)
+      : scope
+  return typeof key === 'string' && key.length > 0 && !isForbiddenKey(key)
+    ? key
+    : undefined
+}
+
+const getRegionReputationKey = (
+  state: GameState,
+  scope: 'current' | string | undefined
+): string | undefined => {
+  const key =
+    scope === 'current' || scope == null ? state.player?.location : scope
+  return typeof key === 'string' && key.length > 0 && !isForbiddenKey(key)
+    ? key
+    : undefined
+}
+
+const applyReputationDelta = (
+  state: GameState,
+  key: string | undefined,
+  amount: number
+): GameState => {
+  if (!key) return state
+  const previous = finiteNumberOr(state.reputationByRegion?.[key], 0)
+  return {
+    ...state,
+    reputationByRegion: {
+      ...(state.reputationByRegion ?? {}),
+      [key]: clampReputation(previous + amount)
+    }
+  }
+}
+
+const getBrandReputationKey = (
+  reward: Extract<QuestReward, { type: 'brand.trust' }>
+): string | undefined => {
+  const key = reward.brandId ?? reward.alignment ?? 'global'
+  return typeof key === 'string' && key.length > 0 && !isForbiddenKey(key)
+    ? key
+    : undefined
+}
+
+const applyBrandTrustDelta = (
+  state: GameState,
+  reward: Extract<QuestReward, { type: 'brand.trust' }>
+): GameState => {
+  const key = getBrandReputationKey(reward)
+  if (!key) return state
+  const previous = finiteNumberOr(state.social?.brandReputation?.[key], 0)
+  return {
+    ...state,
+    social: {
+      ...state.social,
+      brandReputation: {
+        ...(state.social?.brandReputation ?? {}),
+        [key]: clamp0to100(previous + reward.amount)
+      }
+    }
+  }
+}
+
+const applyAssetRepair = (
+  state: GameState,
+  reward: Extract<QuestReward, { type: 'asset.repair' }>
+): GameState => {
+  let repaired = false
+  const assets = (state.assets ?? []).map(asset => {
+    const matchesId =
+      typeof reward.assetId === 'string' && asset.id === reward.assetId
+    const matchesKind =
+      reward.assetId == null &&
+      typeof reward.assetKind === 'string' &&
+      asset.kind === reward.assetKind
+    if (repaired || (!matchesId && !matchesKind)) return asset
+    repaired = true
+    return {
+      ...asset,
+      condition: clamp0to100(finiteNumberOr(asset.condition, 0) + reward.amount)
+    }
+  })
+  return repaired ? { ...state, assets } : state
+}
+
+const queueEvent = (state: GameState, eventId: string): GameState => {
+  if (!eventId || isForbiddenKey(eventId)) return state
+  if (state.pendingEvents?.includes(eventId)) return state
+  return {
+    ...state,
+    pendingEvents: [...(state.pendingEvents ?? []), eventId]
+  }
+}
 
 const applySkillPointReward = (
   state: GameState,
@@ -109,10 +214,15 @@ const applySkillPointReward = (
   })
 
   const rewardedMember = members[memberIdx]
+  const questName = typeof quest.label === 'string' ? quest.label : quest.id
+  const memberName =
+    rewardedMember && typeof rewardedMember.name === 'string'
+      ? rewardedMember.name
+      : null
   toasts.push({
     id: `${quest.id}-skill`,
     messageKey: 'ui:toast.quest_complete_skill',
-    options: { name: quest.label, member: rewardedMember?.name },
+    options: { name: questName, member: memberName },
     type: 'success'
   })
 
@@ -218,6 +328,26 @@ export const applyQuestRewards = (
         }
         break
       }
+      case 'asset.repair':
+        nextState = applyAssetRepair(nextState, reward)
+        break
+      case 'venue.reputation':
+        nextState = applyReputationDelta(
+          nextState,
+          getVenueReputationKey(nextState, reward.scope),
+          reward.amount
+        )
+        break
+      case 'region.reputation':
+        nextState = applyReputationDelta(
+          nextState,
+          getRegionReputationKey(nextState, reward.scope),
+          reward.amount
+        )
+        break
+      case 'brand.trust':
+        nextState = applyBrandTrustDelta(nextState, reward)
+        break
       case 'social.followers': {
         const platform = reward.platform ?? 'instagram'
         const previous = finiteNumberOr(nextState.social?.[platform], 0)
@@ -273,6 +403,21 @@ export const applyQuestRewards = (
         }
         break
       }
+      case 'trait.unlock': {
+        const memberId =
+          reward.memberId ??
+          nextState.band?.members?.[0]?.id ??
+          nextState.band?.members?.[0]?.name
+        if (typeof memberId === 'string' && memberId.length > 0) {
+          const traitResult = applyTraitUnlocks(
+            { band: nextState.band, toasts },
+            [{ memberId, traitId: reward.traitId }]
+          )
+          nextState = { ...nextState, band: traitResult.band }
+          toasts.splice(0, toasts.length, ...traitResult.toasts)
+        }
+        break
+      }
       case 'flag.add':
         if (!nextState.activeStoryFlags?.includes(reward.flag)) {
           nextState = {
@@ -283,6 +428,9 @@ export const applyQuestRewards = (
             ]
           }
         }
+        break
+      case 'event.queue':
+        nextState = queueEvent(nextState, reward.eventId)
         break
     }
   }

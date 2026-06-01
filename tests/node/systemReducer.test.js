@@ -720,6 +720,36 @@ test('systemReducer - LOAD_GAME', async t => {
     }
   )
 
+  await t.test(
+    'backfills registry-backed active quest deadlines on load',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = {
+        activeQuests: [
+          { id: 'quest_viral_dance', startedOnDay: 4 },
+          {
+            id: 'quest_prove_yourself',
+            startedOnDay: undefined,
+            deadline: null
+          }
+        ]
+      }
+
+      const nextState = handleLoadGame(initialState, loadedState)
+
+      assert.equal(
+        nextState.activeQuests.find(q => q.id === 'quest_viral_dance')
+          ?.deadline,
+        9
+      )
+      assert.equal(
+        nextState.activeQuests.find(q => q.id === 'quest_prove_yourself')
+          ?.deadline,
+        20
+      )
+    }
+  )
+
   await t.test('handles missing or malformed toasts array', () => {
     const initialState = createInitialState()
     const loadedState = {

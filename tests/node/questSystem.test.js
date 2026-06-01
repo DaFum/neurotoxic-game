@@ -289,6 +289,59 @@ describe('Quest System Registry Validation', () => {
     }
   })
 
+  it('quest state contract separates registry definition from active runtime', async () => {
+    const fs = await import('node:fs')
+    const questTypes = fs.readFileSync('src/types/quest.d.ts', 'utf8')
+    const gameTypes = fs.readFileSync('src/types/game.d.ts', 'utf8')
+
+    assert.match(questTypes, /export interface QuestDefinition\b/)
+    assert.match(questTypes, /export interface ActiveQuestState\b/)
+    assert.match(gameTypes, /activeQuests:\s*ActiveQuestState\[\]/)
+  })
+
+  it('quest lifecycle delegates reward handling to reward appliers', async () => {
+    const fs = await import('node:fs')
+    const lifecycle = fs.readFileSync('src/domain/questLifecycle.ts', 'utf8')
+
+    assert.doesNotMatch(lifecycle, /quest\.rewardType\b/)
+    assert.doesNotMatch(lifecycle, /quest\.rewardData\b/)
+    assert.doesNotMatch(lifecycle, /quest\.moneyReward\b/)
+  })
+
+  it('gameplay systems use producer adapters for canonical quest events', async () => {
+    const fs = await import('node:fs')
+    const path = await import('node:path')
+    const files = []
+    const walk = dir => {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name)
+        if (entry.isDirectory()) walk(full)
+        else if (/\.(ts|tsx)$/.test(entry.name)) files.push(full)
+      }
+    }
+    walk('src')
+    const gameplayText = files
+      .filter(file => !file.replace(/\\/g, '/').includes('/quests/producers/'))
+      .map(file => fs.readFileSync(file, 'utf8'))
+      .join('\n')
+
+    for (const producerName of [
+      'createBrandOfferAcceptedQuestEvent',
+      'createAssetAcquiredQuestEvent',
+      'createAssetRepairedQuestEvent',
+      'createAssetModuleInstalledQuestEvent',
+      'createMinigameCompletedQuestEvent',
+      'createItemUsedQuestEvent',
+      'createSocialLoyaltyChangedQuestEvent',
+      'createVenueGoodGigQuestEvent'
+    ]) {
+      assert.ok(
+        gameplayText.includes(producerName),
+        `${producerName} is not wired into gameplay code`
+      )
+    }
+  })
+
   it('should ensure repeatPolicy never quests do not restart', () => {
     // Contract: QuestLifecycle.addQuest enforces repeatPolicy: 'never' by
     // refusing re-add once the id is in completedQuestIds or an active

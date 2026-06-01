@@ -23,6 +23,13 @@ import {
 import { MODULE_REGISTRY } from '../../utils/assetModuleRegistry'
 import { hasActiveAssetAcquisition } from '../../utils/assetSelectors'
 import { finiteNumberOr } from '../../utils/gameStateUtils'
+import { QuestEvents } from '../../utils/questProgress'
+import {
+  createAssetAcquiredQuestEvent,
+  createAssetConditionChangedQuestEvent,
+  createAssetModuleInstalledQuestEvent,
+  createAssetRepairedQuestEvent
+} from '../../quests/producers/assetQuestEvents'
 
 export const handlePurchaseChassis = (
   state: GameState,
@@ -100,7 +107,7 @@ export const handlePurchaseChassis = (
     nextLiabilities.push(liability)
   }
 
-  return {
+  const nextState = {
     ...state,
     player: {
       ...state.player,
@@ -109,6 +116,16 @@ export const handlePurchaseChassis = (
     assets: [...(state.assets || []), asset],
     liabilities: nextLiabilities
   }
+
+  return QuestEvents.emit(
+    nextState,
+    createAssetAcquiredQuestEvent({
+      assetId: id,
+      assetKind: kind,
+      flavor,
+      tier
+    })
+  )
 }
 
 export const handleInstallModule = (
@@ -157,7 +174,7 @@ export const handleInstallModule = (
 
   if (!installed) return state
 
-  return {
+  let nextState: GameState = {
     ...state,
     assets: nextAssets,
     player: {
@@ -165,6 +182,21 @@ export const handleInstallModule = (
       money: state.player.money - installCost
     }
   }
+
+  const assetForEvent = state.assets.find(asset => asset.id === assetId)
+  if (assetForEvent) {
+    nextState = QuestEvents.emit(
+      nextState,
+      createAssetModuleInstalledQuestEvent({
+        assetId,
+        assetKind: assetForEvent.kind,
+        moduleId,
+        slotType: moduleInfo.slotType
+      })
+    )
+  }
+
+  return nextState
 }
 
 export const handleRemoveModule = (
@@ -245,7 +277,7 @@ export const handleRemoveModule = (
   const nextAssets = [...state.assets]
   nextAssets[targetAssetIndex] = { ...targetAsset, slots: nextSlots }
 
-  return {
+  const nextState: GameState = {
     ...state,
     assets: nextAssets,
     player: {
@@ -253,6 +285,7 @@ export const handleRemoveModule = (
       money: state.player.money + refund
     }
   }
+  return nextState
 }
 
 export const handleUpgradeChassisTier = (
@@ -306,7 +339,7 @@ export const handleUpgradeChassisTier = (
     }
   })
 
-  return {
+  const nextState: GameState = {
     ...state,
     assets: nextAssets,
     player: {
@@ -314,6 +347,7 @@ export const handleUpgradeChassisTier = (
       money: state.player.money - upgradeCost
     }
   }
+  return nextState
 }
 
 export const handleSellChassis = (
@@ -371,7 +405,7 @@ export const handleSellChassis = (
 
   const net = gross - totalPrincipalRemaining
 
-  return {
+  const nextState: GameState = {
     ...state,
     assets: state.assets.filter(a => a && a.id !== assetId),
     liabilities: (state.liabilities || []).filter(
@@ -382,6 +416,7 @@ export const handleSellChassis = (
       money: state.player.money + net
     }
   }
+  return nextState
 }
 
 export const handleRepairChassis = (
@@ -404,7 +439,7 @@ export const handleRepairChassis = (
     asset.id === assetId ? { ...asset, condition: 100 } : asset
   )
 
-  return {
+  let nextState: GameState = {
     ...state,
     assets: nextAssets,
     player: {
@@ -412,6 +447,25 @@ export const handleRepairChassis = (
       money: state.player.money - repairCost
     }
   }
+
+  const repairAmount = 100 - targetAsset.condition
+  nextState = QuestEvents.emit(
+    nextState,
+    createAssetRepairedQuestEvent({
+      assetId,
+      assetKind: targetAsset.kind,
+      amount: repairAmount
+    })
+  )
+  return QuestEvents.emit(
+    nextState,
+    createAssetConditionChangedQuestEvent({
+      assetId,
+      assetKind: targetAsset.kind,
+      amount: repairAmount,
+      condition: 100
+    })
+  )
 }
 
 export const handleRefinanceLiability = (

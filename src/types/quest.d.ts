@@ -28,18 +28,34 @@ export type QuestEventType =
   | 'gig.smallVenueGood'
   | 'social.postResolved'
   | 'social.followersGained'
+  | 'social.loyaltyChanged'
+  | 'social.controversyChanged'
+  | 'social.trendMatched'
+  | 'brand.offerAccepted'
   | 'brand.dealCompleted'
+  | 'brand.dealFailed'
+  | 'brand.trustChanged'
   | 'asset.acquired'
   | 'asset.repaired'
   | 'asset.moduleInstalled'
+  | 'asset.riskTriggered'
   | 'asset.riskResolved'
+  | 'asset.conditionChanged'
   | 'item.collected'
   | 'item.used'
+  | 'item.crafted'
+  | 'item.delivered'
   | 'minigame.completed'
+  | 'minigame.perfect'
+  | 'minigame.failed'
   | 'travel.completed'
   | 'economy.moneyEarned'
   | 'band.harmonyChanged'
+  | 'venue.gigCompleted'
+  | 'venue.goodGig'
   | 'venue.reputationChanged'
+  | 'venue.blacklisted'
+  | 'venue.unblacklisted'
   | 'region.reputationChanged'
   | 'story.flagAdded'
 
@@ -51,6 +67,8 @@ export interface QuestEventContext extends UnknownRecord {
   platform?: string
   postId?: string
   postCategory?: string
+  reason?: string
+  trendId?: string
   category?: string
   dealId?: string
   dealType?: string
@@ -58,13 +76,17 @@ export interface QuestEventContext extends UnknownRecord {
   brandAlignment?: string
   assetId?: string
   assetKind?: string
+  flavor?: string
+  tier?: number
   moduleId?: string
   slotType?: string
   riskType?: string
   itemId?: string
+  recipeId?: string
   minigameId?: string
   score?: number
   grade?: string
+  damage?: number
   memberId?: string
   traitId?: string
   flag?: string
@@ -93,10 +115,15 @@ export interface QuestProgressRuleMatch {
   postCategory?: string | string[]
   category?: string | string[]
   dealType?: string | string[]
+  brandId?: string | string[]
   brandAlignment?: string | string[]
   assetKind?: string | string[]
+  moduleId?: string | string[]
+  slotType?: string | string[]
+  riskType?: string | string[]
   minigameId?: string | string[]
   itemId?: string | string[]
+  recipeId?: string | string[]
   tags?: string[]
   minScore?: number
   success?: boolean
@@ -117,16 +144,47 @@ export type QuestReward =
   | { type: 'social.loyalty'; amount: number }
   | { type: 'social.controversy'; amount: number }
   | { type: 'band.harmony'; amount: number }
+  | {
+      type: 'asset.repair'
+      assetId?: string
+      assetKind?: string
+      amount: number
+    }
+  | { type: 'venue.reputation'; amount: number; scope?: 'current' | string }
+  | { type: 'region.reputation'; amount: number; scope?: 'current' | string }
+  | {
+      type: 'brand.trust'
+      brandId?: string
+      alignment?: string
+      amount: number
+    }
   | { type: 'item.add'; itemId: string; amount?: number }
+  | { type: 'trait.unlock'; memberId?: string; traitId: string }
   | { type: 'skill_point'; memberIndex?: number }
   | { type: 'flag.add'; flag: string }
+  | { type: 'event.queue'; eventId: string }
 
 export type QuestPenalty =
   | { type: 'social.loyalty'; amount: number }
   | { type: 'social.controversy'; amount: number }
   | { type: 'band.harmony'; amount: number }
+  | {
+      type: 'asset.damage'
+      assetId?: string
+      assetKind?: string
+      amount: number
+    }
+  | { type: 'venue.reputation'; amount: number; scope?: 'current' | string }
+  | { type: 'region.reputation'; amount: number; scope?: 'current' | string }
+  | {
+      type: 'brand.trust'
+      brandId?: string
+      alignment?: string
+      amount: number
+    }
   | { type: 'flag.add'; flag: string }
-  | { type: 'quest.cooldown'; days: number }
+  | { type: 'event.queue'; eventId: string }
+  | { type: 'quest.cooldown'; id?: string; days: number }
 
 export interface QuestOfferCondition {
   band?: {
@@ -149,6 +207,45 @@ export interface QuestOfferDefinition {
   category: string
   chance: number
   condition?: QuestOfferCondition
+}
+
+export interface QuestDefinition extends UnknownRecord {
+  id?: string
+  label?: string
+  description?: string
+  deadlineOffset?: number
+  required?: number
+  rewardType?: string
+  rewardData?: UnknownRecord
+  rewardFlag?: string
+  moneyReward?: number
+  failurePenalty?: UnknownRecord
+
+  kind?: QuestKind
+  repeatPolicy?: QuestRepeatPolicy
+  progressSource?: QuestProgressSource
+  progressRule?: QuestProgressRule
+  progressRules?: QuestProgressRule[]
+  rewards?: QuestReward[]
+  failurePenalties?: QuestPenalty[]
+  offer?: QuestOfferDefinition
+  startFlags?: string[]
+  completionFlags?: string[]
+  failureFlags?: string[]
+  clearFlagsOnComplete?: string[]
+  clearFlagsOnFail?: string[]
+  cooldownDays?: number
+  followupQuestId?: string
+}
+
+export interface ActiveQuestState extends UnknownRecord {
+  id: string
+  progress?: number
+  required?: number
+  deadline?: number | null
+  scopeKey?: string
+  status?: 'active'
+  startedOnDay?: number
 }
 
 export interface QuestState extends UnknownRecord {

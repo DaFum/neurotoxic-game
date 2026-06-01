@@ -19,6 +19,11 @@ import {
   createHarmonyChangedQuestEvent,
   createSmallVenueGoodQuestEvent
 } from '../../quests/producers/gigQuestEvents'
+import {
+  createRegionReputationChangedQuestEvent,
+  createVenueGigCompletedQuestEvent,
+  createVenueGoodGigQuestEvent
+} from '../../quests/producers/venueQuestEvents'
 import { normalizeSetlistForSave } from '../../utils/gameStateUtils'
 
 const MIN_REPUTATION = -100
@@ -164,12 +169,28 @@ export const handleSetLastGigStats = (
       region: location
     })
   )
+  nextState = QuestEvents.emit(
+    nextState,
+    createVenueGigCompletedQuestEvent({
+      score,
+      venueId: state.currentGig?.id ?? '',
+      region: location
+    })
+  )
 
   if (score < 30) {
     if (!isForbiddenKey(location)) {
       nextState.reputationByRegion[location] = Math.max(
         MIN_REPUTATION,
         (nextState.reputationByRegion[location] || 0) - 10
+      )
+      nextState = QuestEvents.emit(
+        nextState,
+        createRegionReputationChangedQuestEvent({
+          region: location,
+          amount: -10,
+          reason: 'bad_gig'
+        })
       )
       logger.warn(
         'GameState',
@@ -194,6 +215,14 @@ export const handleSetLastGigStats = (
           MIN_REPUTATION,
           Math.min(MAX_REPUTATION, currentRep + bonus)
         )
+        nextState = QuestEvents.emit(
+          nextState,
+          createRegionReputationChangedQuestEvent({
+            region: location,
+            amount: bonus,
+            reason: 'good_gig'
+          })
+        )
         logger.info(
           'GameState',
           `Regional reputation gain in ${location} (+${bonus})`
@@ -207,6 +236,15 @@ export const handleSetLastGigStats = (
       createGoodGigQuestEvent({
         score,
         capacity: capacity ?? 0,
+        venueId: state.currentGig?.id ?? '',
+        region: location
+      })
+    )
+    nextState = QuestEvents.emit(
+      nextState,
+      createVenueGoodGigQuestEvent({
+        score,
+        capacity: capacity ?? undefined,
         venueId: state.currentGig?.id ?? '',
         region: location
       })

@@ -85,6 +85,17 @@
         "typeOnly": true
       }
     ],
+    "ActiveQuestState": [
+      {
+        "exportPath": "src/types/game.d.ts",
+        "isDefault": false,
+        "name": "ActiveQuestState",
+        "path": "src/types/quest.d.ts",
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
+      }
+    ],
     "addContrabandHelper": [
       {
         "isDefault": false,
@@ -2924,6 +2935,24 @@
         "type": "const"
       }
     ],
+    "createAssetAcquiredQuestEvent": [
+      {
+        "isDefault": false,
+        "name": "createAssetAcquiredQuestEvent",
+        "path": "src/quests/producers/assetQuestEvents.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "createAssetConditionChangedQuestEvent": [
+      {
+        "isDefault": false,
+        "name": "createAssetConditionChangedQuestEvent",
+        "path": "src/quests/producers/assetQuestEvents.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "createAssetModuleInstalledQuestEvent": [
       {
         "isDefault": false,
@@ -2946,6 +2975,15 @@
       {
         "isDefault": false,
         "name": "createAssetRiskResolvedQuestEvent",
+        "path": "src/quests/producers/assetQuestEvents.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "createAssetRiskTriggeredQuestEvent": [
+      {
+        "isDefault": false,
+        "name": "createAssetRiskTriggeredQuestEvent",
         "path": "src/quests/producers/assetQuestEvents.ts",
         "source": "local",
         "type": "const"
@@ -2982,6 +3020,33 @@
       {
         "isDefault": false,
         "name": "createBrandDealCompletedQuestEvent",
+        "path": "src/quests/producers/brandQuestEvents.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "createBrandDealFailedQuestEvent": [
+      {
+        "isDefault": false,
+        "name": "createBrandDealFailedQuestEvent",
+        "path": "src/quests/producers/brandQuestEvents.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "createBrandOfferAcceptedQuestEvent": [
+      {
+        "isDefault": false,
+        "name": "createBrandOfferAcceptedQuestEvent",
+        "path": "src/quests/producers/brandQuestEvents.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "createBrandTrustChangedQuestEvent": [
+      {
+        "isDefault": false,
+        "name": "createBrandTrustChangedQuestEvent",
         "path": "src/quests/producers/brandQuestEvents.ts",
         "source": "local",
         "type": "const"
@@ -3148,6 +3213,24 @@
         "type": "const"
       }
     ],
+    "createItemCraftedQuestEvent": [
+      {
+        "isDefault": false,
+        "name": "createItemCraftedQuestEvent",
+        "path": "src/quests/producers/itemQuestEvents.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "createItemDeliveredQuestEvent": [
+      {
+        "isDefault": false,
+        "name": "createItemDeliveredQuestEvent",
+        "path": "src/quests/producers/itemQuestEvents.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "createItemUsedQuestEvent": [
       {
         "isDefault": false,
@@ -3202,6 +3285,33 @@
         "type": "const"
       }
     ],
+    "createMinigameFailedQuestEvent": [
+      {
+        "isDefault": false,
+        "name": "createMinigameFailedQuestEvent",
+        "path": "src/quests/producers/minigameQuestEvents.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "createMinigamePerfectQuestEvent": [
+      {
+        "isDefault": false,
+        "name": "createMinigamePerfectQuestEvent",
+        "path": "src/quests/producers/minigameQuestEvents.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "createMoneyEarnedQuestEvent": [
+      {
+        "isDefault": false,
+        "name": "createMoneyEarnedQuestEvent",
+        "path": "src/quests/producers/economyQuestEvents.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "createMoveRivalBandAction": [
       {
         "isDefault": false,
@@ -3243,6 +3353,15 @@
         "isDefault": false,
         "name": "createRawLoadPayload",
         "path": "src/context/usePersistence.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "createRegionReputationChangedQuestEvent": [
+      {
+        "isDefault": false,
+        "name": "createRegionReputationChangedQuestEvent",
+        "path": "src/quests/producers/venueQuestEvents.ts",
         "source": "local",
         "type": "const"
       }
@@ -3382,6 +3501,24 @@
         "type": "const"
       }
     ],
+    "createSocialControversyChangedQuestEvent": [
+      {
+        "isDefault": false,
+        "name": "createSocialControversyChangedQuestEvent",
+        "path": "src/quests/producers/socialQuestEvents.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "createSocialLoyaltyChangedQuestEvent": [
+      {
+        "isDefault": false,
+        "name": "createSocialLoyaltyChangedQuestEvent",
+        "path": "src/quests/producers/socialQuestEvents.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "createSocialPostQuestEvents": [
       {
         "isDefault": false,
@@ -3395,6 +3532,15 @@
       {
         "isDefault": false,
         "name": "createSocialPostResolvedQuestEvent",
+        "path": "src/quests/producers/socialQuestEvents.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "createSocialTrendMatchedQuestEvent": [
+      {
+        "isDefault": false,
+        "name": "createSocialTrendMatchedQuestEvent",
         "path": "src/quests/producers/socialQuestEvents.ts",
         "source": "local",
         "type": "const"
@@ -3549,6 +3695,51 @@
         "isDefault": false,
         "name": "createUseContrabandAction",
         "path": "src/context/actionCreators.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "createVenueBlacklistedQuestEvent": [
+      {
+        "isDefault": false,
+        "name": "createVenueBlacklistedQuestEvent",
+        "path": "src/quests/producers/venueQuestEvents.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "createVenueGigCompletedQuestEvent": [
+      {
+        "isDefault": false,
+        "name": "createVenueGigCompletedQuestEvent",
+        "path": "src/quests/producers/venueQuestEvents.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "createVenueGoodGigQuestEvent": [
+      {
+        "isDefault": false,
+        "name": "createVenueGoodGigQuestEvent",
+        "path": "src/quests/producers/venueQuestEvents.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "createVenueReputationChangedQuestEvent": [
+      {
+        "isDefault": false,
+        "name": "createVenueReputationChangedQuestEvent",
+        "path": "src/quests/producers/venueQuestEvents.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "createVenueUnblacklistedQuestEvent": [
+      {
+        "isDefault": false,
+        "name": "createVenueUnblacklistedQuestEvent",
+        "path": "src/quests/producers/venueQuestEvents.ts",
         "source": "local",
         "type": "const"
       }
@@ -8778,11 +8969,12 @@
     ],
     "QuestDefinition": [
       {
+        "exportPath": "src/types/game.d.ts",
         "isDefault": false,
         "name": "QuestDefinition",
-        "path": "src/data/questRegistry.ts",
+        "path": "src/types/quest.d.ts",
         "source": "local",
-        "type": "type",
+        "type": "interface",
         "typeOnly": true
       }
     ],

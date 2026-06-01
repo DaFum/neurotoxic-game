@@ -8,16 +8,44 @@ import {
 } from '../../src/quests/producers/gigQuestEvents.ts'
 import {
   createSocialPostQuestEvents,
-  createFollowersGainedQuestEvent
+  createFollowersGainedQuestEvent,
+  createSocialLoyaltyChangedQuestEvent,
+  createSocialControversyChangedQuestEvent,
+  createSocialTrendMatchedQuestEvent
 } from '../../src/quests/producers/socialQuestEvents.ts'
-import { createBrandDealCompletedQuestEvent } from '../../src/quests/producers/brandQuestEvents.ts'
 import {
+  createBrandDealCompletedQuestEvent,
+  createBrandOfferAcceptedQuestEvent,
+  createBrandDealFailedQuestEvent,
+  createBrandTrustChangedQuestEvent
+} from '../../src/quests/producers/brandQuestEvents.ts'
+import {
+  createAssetAcquiredQuestEvent,
   createAssetRepairedQuestEvent,
-  createAssetModuleInstalledQuestEvent
+  createAssetModuleInstalledQuestEvent,
+  createAssetRiskTriggeredQuestEvent,
+  createAssetConditionChangedQuestEvent
 } from '../../src/quests/producers/assetQuestEvents.ts'
-import { createMinigameCompletedQuestEvent } from '../../src/quests/producers/minigameQuestEvents.ts'
-import { createItemCollectedQuestEvent } from '../../src/quests/producers/itemQuestEvents.ts'
+import {
+  createMinigameCompletedQuestEvent,
+  createMinigamePerfectQuestEvent,
+  createMinigameFailedQuestEvent
+} from '../../src/quests/producers/minigameQuestEvents.ts'
+import {
+  createItemCollectedQuestEvent,
+  createItemCraftedQuestEvent,
+  createItemDeliveredQuestEvent
+} from '../../src/quests/producers/itemQuestEvents.ts'
 import { createStoryFlagAddedQuestEvent } from '../../src/quests/producers/storyQuestEvents.ts'
+import {
+  createVenueGigCompletedQuestEvent,
+  createVenueGoodGigQuestEvent,
+  createVenueReputationChangedQuestEvent,
+  createRegionReputationChangedQuestEvent,
+  createVenueBlacklistedQuestEvent,
+  createVenueUnblacklistedQuestEvent
+} from '../../src/quests/producers/venueQuestEvents.ts'
+import { createMoneyEarnedQuestEvent } from '../../src/quests/producers/economyQuestEvents.ts'
 
 test('quest producers create canonical events with matchable context', async t => {
   await t.test(
@@ -98,6 +126,18 @@ test('quest producers create canonical events with matchable context', async t =
     })
   })
 
+  await t.test('social producer ignores inherited result fields', () => {
+    const result = Object.create({ success: false, followers: 999 })
+    const events = createSocialPostQuestEvents(
+      { id: 'post_1', platform: 'tiktok', category: 'Performance' },
+      result
+    )
+
+    assert.equal(events.length, 1)
+    assert.equal(events[0].type, 'social.postResolved')
+    assert.equal(events[0].success, true)
+  })
+
   await t.test('followers producer keeps category and platform context', () => {
     const event = createFollowersGainedQuestEvent({
       amount: 50,
@@ -110,6 +150,34 @@ test('quest producers create canonical events with matchable context', async t =
     assert.equal(event.context?.platform, 'instagram')
     assert.equal(event.context?.postCategory, 'Drama')
   })
+
+  await t.test(
+    'social producers expose loyalty, controversy and trend context',
+    () => {
+      const loyalty = createSocialLoyaltyChangedQuestEvent({
+        amount: -5,
+        reason: 'brand_backlash'
+      })
+      assert.equal(loyalty.type, 'social.loyaltyChanged')
+      assert.equal(loyalty.amount, -5)
+      assert.equal(loyalty.context?.reason, 'brand_backlash')
+
+      const controversy = createSocialControversyChangedQuestEvent({
+        amount: 9,
+        reason: 'drama_post'
+      })
+      assert.equal(controversy.type, 'social.controversyChanged')
+      assert.equal(controversy.context?.reason, 'drama_post')
+
+      const trend = createSocialTrendMatchedQuestEvent({
+        trendId: 'WHOLESOME',
+        platform: 'instagram',
+        postCategory: 'Lifestyle'
+      })
+      assert.equal(trend.type, 'social.trendMatched')
+      assert.equal(trend.context?.trendId, 'WHOLESOME')
+    }
+  )
 
   await t.test('brand producer includes deal type and alignment', () => {
     const event = createBrandDealCompletedQuestEvent({
@@ -126,9 +194,41 @@ test('quest producers create canonical events with matchable context', async t =
     assert.equal(event.context?.dealId, 'deal_1')
     assert.equal(event.context?.dealType, 'Endorsement')
     assert.equal(event.context?.brandAlignment, 'INDIE')
+
+    assert.equal(
+      createBrandOfferAcceptedQuestEvent({
+        id: 'deal_1',
+        type: 'Endorsement',
+        alignment: 'INDIE'
+      }).type,
+      'brand.offerAccepted'
+    )
+    assert.equal(
+      createBrandDealFailedQuestEvent({
+        dealId: 'deal_1',
+        reason: 'missed_deadline'
+      }).type,
+      'brand.dealFailed'
+    )
+    const trust = createBrandTrustChangedQuestEvent({
+      brandId: 'ampcorp',
+      amount: 6
+    })
+    assert.equal(trust.type, 'brand.trustChanged')
+    assert.equal(trust.context?.brandId, 'ampcorp')
   })
 
   await t.test('asset producer includes asset and module context', () => {
+    const acquired = createAssetAcquiredQuestEvent({
+      assetId: 'asset_1',
+      assetKind: 'tourbus_chassis',
+      flavor: 'diy',
+      tier: 2
+    })
+    assert.equal(acquired.type, 'asset.acquired')
+    assert.equal(acquired.context?.flavor, 'diy')
+    assert.equal(acquired.context?.tier, 2)
+
     const repaired = createAssetRepairedQuestEvent({
       assetId: 'asset_1',
       assetKind: 'tourbus_chassis',
@@ -146,6 +246,23 @@ test('quest producers create canonical events with matchable context', async t =
     assert.equal(installed.type, 'asset.moduleInstalled')
     assert.equal(installed.context?.moduleId, 'studio_rack')
     assert.equal(installed.context?.slotType, 'utility')
+
+    assert.equal(
+      createAssetRiskTriggeredQuestEvent({
+        assetId: 'asset_1',
+        assetKind: 'tourbus_chassis',
+        riskType: 'fire'
+      }).type,
+      'asset.riskTriggered'
+    )
+    const condition = createAssetConditionChangedQuestEvent({
+      assetId: 'asset_1',
+      assetKind: 'tourbus_chassis',
+      amount: -12,
+      condition: 68
+    })
+    assert.equal(condition.type, 'asset.conditionChanged')
+    assert.equal(condition.context?.condition, 68)
   })
 
   await t.test('minigame producer includes score and grade', () => {
@@ -160,6 +277,18 @@ test('quest producers create canonical events with matchable context', async t =
     assert.equal(event.context?.minigameId, 'ROADIE')
     assert.equal(event.context?.score, 950)
     assert.equal(event.context?.grade, 'A')
+
+    assert.equal(
+      createMinigamePerfectQuestEvent({ minigameId: 'ROADIE' }).type,
+      'minigame.perfect'
+    )
+    assert.equal(
+      createMinigameFailedQuestEvent({
+        minigameId: 'ROADIE',
+        damage: 60
+      }).type,
+      'minigame.failed'
+    )
   })
 
   await t.test('item and story producers expose ids', () => {
@@ -167,10 +296,76 @@ test('quest producers create canonical events with matchable context', async t =
     assert.equal(item.type, 'item.collected')
     assert.equal(item.context?.itemId, 'lucky_pick')
 
+    assert.equal(
+      createItemCraftedQuestEvent({
+        itemId: 'demo_tape',
+        recipeId: 'studio_recipe'
+      }).type,
+      'item.crafted'
+    )
+    const delivered = createItemDeliveredQuestEvent({
+      itemId: 'shirts',
+      amount: 12
+    })
+    assert.equal(delivered.type, 'item.delivered')
+    assert.equal(delivered.amount, 12)
+
     const flag = createStoryFlagAddedQuestEvent({
       flag: 'cancel_quest_active'
     })
     assert.equal(flag.type, 'story.flagAdded')
     assert.equal(flag.context?.flag, 'cancel_quest_active')
+  })
+
+  await t.test('venue, region and economy producers expose plan events', () => {
+    assert.equal(
+      createVenueGigCompletedQuestEvent({
+        venueId: 'venue_1',
+        region: 'berlin',
+        score: 77
+      }).type,
+      'venue.gigCompleted'
+    )
+    assert.equal(
+      createVenueGoodGigQuestEvent({
+        venueId: 'venue_1',
+        region: 'berlin',
+        score: 77,
+        capacity: 250
+      }).type,
+      'venue.goodGig'
+    )
+    assert.equal(
+      createVenueReputationChangedQuestEvent({
+        venueId: 'venue_1',
+        amount: 5
+      }).type,
+      'venue.reputationChanged'
+    )
+    assert.equal(
+      createRegionReputationChangedQuestEvent({
+        region: 'berlin',
+        amount: 5
+      }).type,
+      'region.reputationChanged'
+    )
+    assert.equal(
+      createVenueBlacklistedQuestEvent({
+        venueId: 'venue_1',
+        reason: 'bad_show'
+      }).type,
+      'venue.blacklisted'
+    )
+    assert.equal(
+      createVenueUnblacklistedQuestEvent({
+        venueId: 'venue_1',
+        reason: 'quest_complete'
+      }).type,
+      'venue.unblacklisted'
+    )
+    assert.equal(
+      createMoneyEarnedQuestEvent({ amount: 100 }).type,
+      'economy.moneyEarned'
+    )
   })
 })

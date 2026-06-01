@@ -24,7 +24,10 @@ export const createSocialPostResolvedQuestEvent = (
 ): QuestEvent => ({
   type: 'social.postResolved',
   amount: 1,
-  success: typeof result.success === 'boolean' ? result.success : true,
+  success:
+    Object.hasOwn(result, 'success') && typeof result.success === 'boolean'
+      ? result.success
+      : true,
   context: getSocialContext(option),
   tags: getTags(option)
 })
@@ -53,12 +56,60 @@ export const createFollowersGainedQuestEvent = ({
   )
 })
 
+export const createSocialLoyaltyChangedQuestEvent = ({
+  amount,
+  reason
+}: {
+  amount: number
+  reason?: string
+}): QuestEvent => ({
+  type: 'social.loyaltyChanged',
+  amount,
+  success: amount >= 0,
+  context: { reason },
+  tags: [reason].filter((entry): entry is string => typeof entry === 'string')
+})
+
+export const createSocialControversyChangedQuestEvent = ({
+  amount,
+  reason
+}: {
+  amount: number
+  reason?: string
+}): QuestEvent => ({
+  type: 'social.controversyChanged',
+  amount,
+  success: amount <= 0,
+  context: { reason },
+  tags: [reason].filter((entry): entry is string => typeof entry === 'string')
+})
+
+export const createSocialTrendMatchedQuestEvent = ({
+  trendId,
+  platform,
+  postCategory
+}: {
+  trendId: string
+  platform?: string
+  postCategory?: string
+}): QuestEvent => ({
+  type: 'social.trendMatched',
+  amount: 1,
+  success: true,
+  context: { trendId, platform, postCategory },
+  tags: [trendId, platform, postCategory].filter(
+    (entry): entry is string => typeof entry === 'string'
+  )
+})
+
 export const createSocialPostQuestEvents = (
   option: Pick<SocialPostOption, 'id' | 'platform' | 'category'>,
   result: Record<string, unknown>
 ): QuestEvent[] => {
   const events = [createSocialPostResolvedQuestEvent(option, result)]
-  const followers = finiteNumberOrZero(result.followers)
+  const followers = Object.hasOwn(result, 'followers')
+    ? finiteNumberOrZero(result.followers)
+    : 0
   if (followers > 0) {
     events.push(
       createFollowersGainedQuestEvent({

@@ -358,6 +358,66 @@ test('QuestLifecycle', async t => {
       assert.equal(nextState.toasts.length, 5)
     })
 
+    await t.test('applies backbone reward types through appliers', () => {
+      const state = {
+        activeQuests: [
+          {
+            id: 'q_backbone_rewards',
+            label: 'Backbone Rewards',
+            rewards: [
+              { type: 'asset.repair', assetId: 'asset_1', amount: 15 },
+              { type: 'venue.reputation', scope: 'venue_1', amount: 5 },
+              { type: 'region.reputation', scope: 'berlin', amount: 7 },
+              { type: 'brand.trust', brandId: 'ampcorp', amount: 10 },
+              {
+                type: 'trait.unlock',
+                memberId: 'Matze',
+                traitId: 'gear_nerd'
+              },
+              { type: 'event.queue', eventId: 'quest_reward_followup' }
+            ]
+          }
+        ],
+        player: { money: 0, fame: 0, fameLevel: 0 },
+        social: { brandReputation: { ampcorp: 2 } },
+        reputationByRegion: { venue_1: 1, berlin: 3 },
+        pendingEvents: [],
+        assets: [
+          {
+            id: 'asset_1',
+            kind: 'tourbus_chassis',
+            condition: 80,
+            slots: []
+          }
+        ],
+        band: {
+          members: [
+            {
+              id: 'matze',
+              name: 'Matze',
+              mood: 80,
+              stamina: 100,
+              traits: {},
+              relationships: {}
+            }
+          ],
+          inventory: {}
+        },
+        toasts: []
+      }
+
+      const nextState = QuestLifecycle.completeQuest(state, {
+        questId: 'q_backbone_rewards'
+      })
+
+      assert.equal(nextState.assets[0].condition, 95)
+      assert.equal(nextState.reputationByRegion.venue_1, 6)
+      assert.equal(nextState.reputationByRegion.berlin, 10)
+      assert.equal(nextState.social.brandReputation.ampcorp, 12)
+      assert.ok(nextState.band.members[0].traits.gear_nerd)
+      assert.deepEqual(nextState.pendingEvents, ['quest_reward_followup'])
+    })
+
     await t.test('applies harmony reward with missing band', () => {
       const state = {
         activeQuests: [
@@ -467,6 +527,10 @@ test('QuestLifecycle', async t => {
         }
         const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
         assert.equal(nextState.band.members[0].baseStats.skill, 11)
+        assert.deepEqual(nextState.toasts[0].options, {
+          name: 'q1',
+          member: null
+        })
       }
     )
 
@@ -1411,11 +1475,11 @@ test('QuestLifecycle', async t => {
       assert.ok(!next.activeStoryFlags.includes('side_active'))
     })
 
-    await t.test('records cooldown entries keyed by quest id', () => {
+    await t.test('preserves legacy cooldown ids', () => {
       const next = QuestLifecycle.checkDeadlines(
         makeExpiredState({ cooldowns: [{ id: 'retry', days: 7 }] })
       )
-      const cd = next.questCooldowns.find(c => c.questId === 'q_fail')
+      const cd = next.questCooldowns.find(c => c.questId === 'retry')
       assert.ok(cd)
       assert.equal(cd.expiresOnDay, 17)
     })
@@ -1462,7 +1526,7 @@ test('QuestLifecycle', async t => {
               { type: 'social.controversy', amount: 8 },
               { type: 'band.harmony', amount: -5 },
               { type: 'flag.add', flag: 'q_new_penalties_failed' },
-              { type: 'quest.cooldown', days: 3 }
+              { type: 'quest.cooldown', id: 'retry_specific', days: 3 }
             ]
           }
         ]
@@ -1473,8 +1537,50 @@ test('QuestLifecycle', async t => {
       assert.equal(next.band.harmony, 45)
       assert.ok(next.activeStoryFlags.includes('q_new_penalties_failed'))
       assert.deepEqual(next.questCooldowns, [
-        { questId: 'q_new_penalties', expiresOnDay: 13 }
+        { questId: 'retry_specific', expiresOnDay: 13 }
       ])
     })
+
+    await t.test(
+      'applies backbone failure penalty types through appliers',
+      () => {
+        const next = QuestLifecycle.checkDeadlines({
+          player: { day: 10 },
+          social: { brandReputation: { ampcorp: 20 } },
+          band: { harmony: 50 },
+          reputationByRegion: { venue_1: 5, berlin: 10 },
+          pendingEvents: [],
+          activeStoryFlags: [],
+          questCooldowns: [],
+          assets: [
+            {
+              id: 'asset_1',
+              kind: 'tourbus_chassis',
+              condition: 80,
+              slots: []
+            }
+          ],
+          activeQuests: [
+            {
+              id: 'q_backbone_penalties',
+              deadline: 5,
+              failurePenalties: [
+                { type: 'asset.damage', assetId: 'asset_1', amount: 25 },
+                { type: 'venue.reputation', scope: 'venue_1', amount: -8 },
+                { type: 'region.reputation', scope: 'berlin', amount: -6 },
+                { type: 'brand.trust', brandId: 'ampcorp', amount: -7 },
+                { type: 'event.queue', eventId: 'quest_failure_followup' }
+              ]
+            }
+          ]
+        })
+
+        assert.equal(next.assets[0].condition, 55)
+        assert.equal(next.reputationByRegion.venue_1, -3)
+        assert.equal(next.reputationByRegion.berlin, 4)
+        assert.equal(next.social.brandReputation.ampcorp, 13)
+        assert.deepEqual(next.pendingEvents, ['quest_failure_followup'])
+      }
+    )
   })
 })

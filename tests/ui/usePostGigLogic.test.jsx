@@ -563,19 +563,9 @@ describe('usePostGigLogic', () => {
       act(() => {
         egoQuestResult.current.handleContinue()
       })
-      // Registry-owned fields (required, label) are sourced via
-      // getQuestDefinition; assert only what handleContinue itself sets and
-      // the failure-penalty contract this test is about.
       expect(mockAddQuest).toHaveBeenCalledWith(
         expect.objectContaining({
-          id: 'quest_ego_management',
-          deadline: 10,
-          failurePenalty: expect.objectContaining({
-            flags: ['ego_crisis_failed'],
-            band: { harmony: -25 },
-            social: { controversyLevel: 10, loyalty: -15 },
-            cooldowns: [{ id: 'ego_management_retry', days: 10 }]
-          })
+          id: 'quest_ego_management'
         })
       )
     })
@@ -804,15 +794,7 @@ describe('usePostGigLogic', () => {
 
       expect(mockAddQuest).toHaveBeenCalledWith(
         expect.objectContaining({
-          id: 'quest_apology_tour',
-          deadline: 19,
-          required: 3,
-          failurePenalty: expect.objectContaining({
-            flags: ['apology_tour_failed'],
-            band: { harmony: -20 },
-            social: { controversyLevel: 25 },
-            cooldowns: [{ id: 'apology_tour_retry', days: 14 }]
-          })
+          id: 'quest_apology_tour'
         })
       )
       expect(mockAddToast).toHaveBeenCalledWith(

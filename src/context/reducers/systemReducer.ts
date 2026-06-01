@@ -1398,13 +1398,19 @@ const sanitizeActiveQuests = (value: unknown): GameState['activeQuests'] => {
     if (!isLooseRecord(quest) || typeof quest.id !== 'string') return []
     const definition = getQuestDefinition(quest.id)
     if (definition) {
+      const startedOnDay = finiteNumberOr(quest.startedOnDay, 0)
       const sanitized: GameState['activeQuests'][number] = {
         id: quest.id,
         status: 'active',
-        startedOnDay: finiteNumberOr(quest.startedOnDay, 0)
+        startedOnDay
       }
-      if (quest.deadline === null) {
-        sanitized.deadline = null
+      if (quest.deadline == null) {
+        const deadlineOffset = finiteOptionalNumber(definition.deadlineOffset)
+        if (deadlineOffset !== undefined) {
+          sanitized.deadline = startedOnDay + deadlineOffset
+        } else if (quest.deadline === null) {
+          sanitized.deadline = null
+        }
       } else {
         const deadline = finiteOptionalNumber(quest.deadline)
         if (deadline !== undefined) sanitized.deadline = deadline
