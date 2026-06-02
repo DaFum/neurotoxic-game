@@ -129,7 +129,11 @@ const StashCardDetails = ({ item, t }: StashCardSubComponentProps) => {
             src={resolveGenImageUrl(
               IMG_PROMPTS[item.imagePrompt as keyof typeof IMG_PROMPTS]
             )}
-            alt={t(`items:contraband.${item.id}.name`)}
+            alt={t(`items:contraband.${item.id}.name`, {
+              defaultValue: t('ui:item.unknown', {
+                defaultValue: 'Unknown Item'
+              })
+            })}
             className='w-full h-full object-contain'
             loading='lazy'
             onError={e => {
