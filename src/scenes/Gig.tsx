@@ -1,4 +1,4 @@
-import { useEffect, useRef, lazy, Suspense } from 'react'
+import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameActions, useGameSelector } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
@@ -7,24 +7,12 @@ import { useGigEffects } from '../hooks/useGigEffects'
 import { useGigInput } from '../hooks/useGigInput'
 import { useGigSession } from '../hooks/useGigSession'
 import { useGigVisuals } from '../hooks/useGigVisuals'
-import { GigHUD } from '../components/GigHUD'
-import { createPixiStageController } from '../components/PixiStageController'
-import type { PixiStageProps } from '../types/components'
-import type { RhythmGameRefState } from '../types/rhythmGame'
-
-const PixiStage = lazy(async () => {
-  const { PixiStage: LoadedPixiStage } = await import('../components/PixiStage')
-  const RhythmPixiStage = (props: PixiStageProps<RhythmGameRefState>) => (
-    <LoadedPixiStage<RhythmGameRefState> {...props} />
-  )
-  return { default: RhythmPixiStage }
-})
 import { audioService } from '../utils/audio/audioEngine'
 import { logger } from '../utils/logger'
 
 import { AudioLockedOverlay } from '../components/minigames/gig/AudioLockedOverlay'
-import { BandMembersLayer } from '../components/minigames/gig/BandMembersLayer'
-import { PauseOverlay } from '../components/minigames/gig/PauseOverlay'
+
+import { GigView } from '../components/minigames/gig/GigView'
 
 /**
  * The core Rhythm Game scene.
@@ -111,54 +99,23 @@ export const Gig = () => {
   }
 
   return (
-    <div
-      ref={chaosContainerRef}
-      className={`w-full h-full relative bg-void-black flex flex-col overflow-hidden ${stats.isToxicMode ? 'border-4 border-toxic-green' : ''}`}
-      style={chaosStyle}
-    >
-      {/* Layer 0: Background */}
-      <div
-        className='absolute inset-0 z-0 bg-cover bg-center opacity-50'
-        style={{ backgroundImage: `url("${bgUrl}")` }}
-      />
-
-      {/* Layer 1: Band Members (DOM) */}
-      <BandMembersLayer
-        matzeUrl={matzeUrl}
-        mariusUrl={mariusUrl}
-        larsUrl={larsUrl}
-        setBandMemberRef={setBandMemberRef}
-      />
-
-      {/* Layer 2: Pixi Canvas (Notes) */}
-      <Suspense
-        fallback={
-          <div className='w-full h-full flex items-center justify-center bg-void-black text-ash-gray text-xl'>
-            {t('ui:loading_stage', { defaultValue: 'Loading Stage...' })}
-          </div>
-        }
-      >
-        <PixiStage
-          gameStateRef={gameStateRef}
-          update={update}
-          controllerFactory={createPixiStageController}
-        />
-      </Suspense>
-
-      {/* Layer 3 & 4: HUD & Inputs */}
-      <GigHUD
-        stats={stats}
-        gameStateRef={gameStateRef}
-        onLaneInput={handleLaneInput}
-        onTogglePause={handleTogglePause}
-      />
-
-      {/* Pause Overlay */}
-      <PauseOverlay
-        isPaused={isPaused}
-        onResume={handleTogglePause}
-        onQuit={handleQuitGig}
-      />
-    </div>
+    <GigView
+      chaosContainerRef={chaosContainerRef}
+      chaosStyle={chaosStyle}
+      isToxicMode={stats.isToxicMode}
+      bgUrl={bgUrl}
+      matzeUrl={matzeUrl}
+      mariusUrl={mariusUrl}
+      larsUrl={larsUrl}
+      setBandMemberRef={setBandMemberRef}
+      t={t}
+      gameStateRef={gameStateRef}
+      update={update}
+      stats={stats}
+      handleLaneInput={handleLaneInput}
+      handleTogglePause={handleTogglePause}
+      isPaused={isPaused}
+      handleQuitGig={handleQuitGig}
+    />
   )
 }
