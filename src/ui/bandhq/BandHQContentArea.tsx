@@ -162,7 +162,7 @@ export const BandHQContentArea = ({
           <SetlistTab
             setlist={setlist}
             setSetlist={setSetlist}
-            addToast={addToast as unknown as (toast: unknown) => void}
+            addToast={addToast}
           />
         )}
 

@@ -19,7 +19,7 @@ export const BandHQTabsList = ({
 }: BandHQTabsListProps) => {
   const { t } = useTranslation()
 
-  const TABS_CONFIG: HQTabDef[] = [
+  const tabs: HQTabDef[] = [
     { id: 'STATS', key: 'tabs.stats' },
     { id: 'DETAILS', key: 'tabs.details' },
     { id: 'SHOP', key: 'tabs.shop' },
@@ -47,7 +47,7 @@ export const BandHQTabsList = ({
       })}
       className='flex shrink-0 border-b-4 border-toxic-green overflow-x-auto touch-pan-x scrollbar-hidden'
     >
-      {TABS_CONFIG.map(tab => {
+      {tabs.map(tab => {
         const isActive = currentTab === tab.id
         const button = (
           <HQTabButton
