@@ -51,7 +51,10 @@ function walkSrc(dir, out = []) {
       walkSrc(full, out)
       continue
     }
-    if (SOURCE_FILE_RE.test(entry.name) && !IGNORED_SOURCE_FILE_RE.test(entry.name)) {
+    if (
+      SOURCE_FILE_RE.test(entry.name) &&
+      !IGNORED_SOURCE_FILE_RE.test(entry.name)
+    ) {
       out.push(full)
     }
   }
@@ -288,7 +291,10 @@ function callableDeclaration(decl) {
   }
   if (ts.isVariableDeclaration(decl) && decl.initializer) {
     const initializer = unwrapReactHocInitializer(decl.initializer)
-    if (ts.isFunctionExpression(initializer) || ts.isArrowFunction(initializer)) {
+    if (
+      ts.isFunctionExpression(initializer) ||
+      ts.isArrowFunction(initializer)
+    ) {
       return initializer
     }
   }
@@ -326,11 +332,7 @@ function serializeSignature(sym, decl) {
         )
       }
     }),
-    returnType: typeString(
-      signature.getReturnType(),
-      callable ?? decl,
-      false
-    )
+    returnType: typeString(signature.getReturnType(), callable ?? decl, false)
   }
 }
 
@@ -385,8 +387,7 @@ function serializeProperty(property, fallbackNode) {
   }
 
   const optional = !!(
-    property.flags & ts.SymbolFlags.Optional ||
-    propertyDecl.questionToken
+    property.flags & ts.SymbolFlags.Optional || propertyDecl.questionToken
   )
   const entry = {
     name: property.name,
@@ -524,7 +525,9 @@ function isReactComponent(name, decl, signature) {
   if (containsJsx(decl)) return true
   const fileName = decl.getSourceFile().fileName
   if (!/\.(tsx|jsx)$/.test(fileName)) return false
-  return !!signature?.returnType.match(/\b(JSX\.Element|ReactElement|Element)\b/)
+  return !!signature?.returnType.match(
+    /\b(JSX\.Element|ReactElement|Element)\b/
+  )
 }
 
 function addDeclarationMetadata(entry, sym, decl, exportedName, isDefault) {
@@ -777,7 +780,8 @@ function collectImportUsage(sourceFile) {
         path: rel,
         importedAs: specifier.name.text
       }
-      if (specifier.name.text !== importedName) usage.importedName = importedName
+      if (specifier.name.text !== importedName)
+        usage.importedName = importedName
       if (clauseTypeOnly || specifier.isTypeOnly) usage.typeOnly = true
 
       for (const entry of targetEntriesForNode(specifier.name, importedName)) {
@@ -823,7 +827,8 @@ function collectDeclarationDependencies({ entry, decl }) {
 
 for (const srcFilePath of srcFiles) {
   const sourceFile = program.getSourceFile(srcFilePath)
-  if (sourceFile && isUnderSrc(sourceFile.fileName)) collectImportUsage(sourceFile)
+  if (sourceFile && isUnderSrc(sourceFile.fileName))
+    collectImportUsage(sourceFile)
 }
 
 for (const ref of localEntryRefs) collectDeclarationDependencies(ref)

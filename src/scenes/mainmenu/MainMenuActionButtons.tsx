@@ -25,9 +25,7 @@ export const MainMenuActionButtons = ({
       initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={
-        prefersReducedMotion
-          ? { duration: 0 }
-          : { duration: 0.5, delay: 0.8 }
+        prefersReducedMotion ? { duration: 0 } : { duration: 0.5, delay: 0.8 }
       }
       className='flex w-full max-w-xs flex-col gap-3'
     >
@@ -42,14 +40,16 @@ export const MainMenuActionButtons = ({
       <GlitchButton
         onClick={handleLoad}
         isLoading={isLoadingGame}
-        variant='danger' className='relative z-20 w-full'
+        variant='danger'
+        className='relative z-20 w-full'
       >
         {t('ui:load_game')}
       </GlitchButton>
 
       <GlitchButton
         onClick={openHQ}
-        variant='warning' className='relative z-20 w-full'
+        variant='warning'
+        className='relative z-20 w-full'
       >
         {t('ui:band_hq')}
       </GlitchButton>

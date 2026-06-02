@@ -58,13 +58,7 @@ export const useMainMenuStart = ({
 
     // Audio setup is fire-and-forget — never blocks scene transitions.
     initializeAudio()
-  }, [
-    resetState,
-    changeScene,
-    initializeAudio,
-    updatePlayer,
-    setIsStarting
-  ])
+  }, [resetState, changeScene, initializeAudio, updatePlayer, setIsStarting])
 
   const startNewTourFlow = useCallback(() => {
     // Check for existing player identity
@@ -128,7 +122,14 @@ export const useMainMenuStart = ({
 
     setShowNameInput(false)
     proceedToTour()
-  }, [playerNameInput, addToast, proceedToTour, updatePlayer, setShowNameInput, tRef])
+  }, [
+    playerNameInput,
+    addToast,
+    proceedToTour,
+    updatePlayer,
+    setShowNameInput,
+    tRef
+  ])
 
   const closeNameInput = useCallback(
     () => setShowNameInput(false),

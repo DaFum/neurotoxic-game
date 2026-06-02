@@ -47,14 +47,7 @@ export const useMainMenuLoad = ({
 
     // Audio is fire-and-forget; Overworld re-syncs audio.
     initializeAudio()
-  }, [
-    loadGame,
-    addToast,
-    changeScene,
-    initializeAudio,
-    setIsLoadingGame,
-    tRef
-  ])
+  }, [loadGame, addToast, changeScene, initializeAudio, setIsLoadingGame, tRef])
 
   const handleLoadExistingFromPrompt = useCallback(() => {
     setShowExistingSavePrompt(false)
