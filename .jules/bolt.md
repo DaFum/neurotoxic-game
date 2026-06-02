@@ -161,13 +161,16 @@
 **Action:** Prefer standard `for` loops when processing arrays in high-frequency engine domains. This saves closure invocations and increases overall throughput.
 
 ## 2024-05-29 - Array Map/Filter/Reduce in Hot Paths
+
 **Learning:** Replaced chained `.filter().reduce()` and `.filter().forEach()` loops with single-pass `for` loops in hot logic paths like `assetReducer.ts` and `useClinicLogic.ts`. Those methods create intermediate arrays which adds memory pressure and increases GC pause times.
 **Action:** Always prefer basic `for` loop iterations with accumulators or early returns over array chaining on heavily used data paths.
 
 ## 2024-05-30 - O(N) Set Instantiation Overhead vs O(N) Array Includes
+
 **Learning:** Instantiating a `new Set(arr)` to perform a single membership check is significantly slower in V8 than using `arr.includes(val)`, even for larger arrays (e.g., 100k items). The overhead of memory allocation, hashing, and populating the Set entirely negates the O(1) lookup benefit for a single check, making the operation O(N) with a much larger constant factor than the highly optimized O(N) array traversal with fast-bailout provided by `.includes()`.
 **Action:** Do not replace `Array.prototype.includes()` with a Set membership check for one-off operations. Sets should only be used when they can be cached/memoized across multiple lookups, or when performing multiple lookups within the same function execution context.
 
 ## 2024-05-31 - Eliminate Set.forEach callback overhead in high-frequency state emissions
+
 **Learning:** `Set.prototype.forEach` creates a callback allocation on every invocation. When this is used within high-frequency loops or state emission paths (e.g., `emitChange` in `AudioManager.ts`), it causes unnecessary GC pressure.
 **Action:** Replace `Set.prototype.forEach` with a `for...of` loop in hot paths. This iterates over the collection without allocating an anonymous function, significantly improving performance and reducing memory footprint.

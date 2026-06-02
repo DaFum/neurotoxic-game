@@ -18,13 +18,13 @@ export const useOverworldModals = () => {
   const supplyStop = useSupplyStopModal()
 
   return {
-      hq,
-      quests,
-      stash,
-      pirateRadio,
-      merchPress,
-      bloodBank,
-      darkWebLeak,
-      supplyStop
-    }
+    hq,
+    quests,
+    stash,
+    pirateRadio,
+    merchPress,
+    bloodBank,
+    darkWebLeak,
+    supplyStop
+  }
 }

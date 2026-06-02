@@ -24,20 +24,14 @@ export const MainMenuSecondaryButtons = ({
       className='flex w-full max-w-xs flex-col gap-4 mt-6 items-center'
     >
       <div className='flex w-full flex-wrap justify-center gap-3 sm:gap-4'>
-        <GlitchButton
-          onClick={() => setShowSocials(true)}
-          className='flex-1'
-        >
+        <GlitchButton onClick={() => setShowSocials(true)} className='flex-1'>
           {t('ui:socials')}
         </GlitchButton>
         <GlitchButton onClick={handleCredits} className='flex-1'>
           {t('ui:credits')}
         </GlitchButton>
       </div>
-      <GlitchButton
-        onClick={() => setShowFeatures(true)}
-        className='w-full'
-      >
+      <GlitchButton onClick={() => setShowFeatures(true)} className='w-full'>
         {t('ui:features.button')}
       </GlitchButton>
     </motion.div>

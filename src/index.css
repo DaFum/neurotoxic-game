@@ -322,7 +322,6 @@ button {
 
 /* Stat bar fill */
 
-
 /* Dramatic zoom for Game Over */
 @keyframes doom-zoom {
   0% {
@@ -613,8 +612,6 @@ input[type='range'].vol-slider::-moz-range-thumb:hover {
   }
 }
 
-
-
 @keyframes marquee {
   0% {
     transform: translateX(0);
@@ -845,4 +842,3 @@ input[type='range'].vol-slider::-moz-range-thumb:hover {
     transition: none !important;
   }
 }
-

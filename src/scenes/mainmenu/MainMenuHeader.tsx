@@ -31,9 +31,7 @@ export const MainMenuHeader = () => {
       <AnimatedDivider
         width='100%'
         transition={
-          prefersReducedMotion
-            ? { duration: 0 }
-            : { duration: 0.6, delay: 0.4 }
+          prefersReducedMotion ? { duration: 0 } : { duration: 0.6, delay: 0.4 }
         }
         className='bg-gradient-to-r from-transparent via-toxic-green to-transparent mb-4 max-w-md'
       />
@@ -41,9 +39,7 @@ export const MainMenuHeader = () => {
       {/* jscpd:ignore-start */}
       <AnimatedSubtitle
         initial={
-          prefersReducedMotion
-            ? false
-            : { opacity: 0, letterSpacing: '0.5em' }
+          prefersReducedMotion ? false : { opacity: 0, letterSpacing: '0.5em' }
         }
         animate={{ opacity: 1, letterSpacing: '0.3em' }}
         transition={

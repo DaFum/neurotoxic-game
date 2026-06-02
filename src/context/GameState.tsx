@@ -79,8 +79,7 @@ function useRequiredContext<T>(context: Context<T | null>, name: string): T {
  */
 // Lazy initialization of state to ensure fresh data fetch on mount
 const initGameState = (): GameState => {
-  const unlocks =
-    safeStorage('loadUnlocks', () => getUnlocks(), [] as string[])
+  const unlocks = safeStorage('loadUnlocks', () => getUnlocks(), [] as string[])
   const freshState = createInitialState({ unlocks })
 
   // Check for test-injected state (screenshot testing).
