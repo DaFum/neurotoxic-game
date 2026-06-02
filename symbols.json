@@ -18229,7 +18229,7 @@
         "type": "const",
         "usedBy": [
           {
-            "path": "src/scenes/Credits.tsx",
+            "path": "src/scenes/credits/CreditsView.tsx",
             "importedAs": "CreditEntry"
           }
         ]
@@ -18253,7 +18253,7 @@
         "type": "const",
         "usedBy": [
           {
-            "path": "src/scenes/Credits.tsx",
+            "path": "src/scenes/credits/CreditsView.tsx",
             "importedAs": "CreditFooter"
           }
         ]
@@ -18277,7 +18277,7 @@
         "type": "const",
         "usedBy": [
           {
-            "path": "src/scenes/Credits.tsx",
+            "path": "src/scenes/credits/CreditsView.tsx",
             "importedAs": "CreditHeader"
           }
         ]
@@ -18288,10 +18288,7 @@
         "columnEnd": 2,
         "columnStart": 14,
         "dependencies": [
-          "CreditEntry",
-          "CreditFooter",
-          "CreditHeader",
-          "GlitchButton",
+          "CreditsView",
           "useGameActions"
         ],
         "exportedName": "Credits",
@@ -18301,14 +18298,51 @@
         "jsDoc": {
           "summary": "Scene displaying game credits."
         },
-        "lineEnd": 118,
-        "lineStart": 13,
+        "lineEnd": 73,
+        "lineStart": 10,
         "name": "Credits",
         "parameters": [],
         "path": "src/scenes/Credits.tsx",
         "returnType": "JSX.Element",
         "source": "local",
         "type": "const"
+      }
+    ],
+    "CreditsView": [
+      {
+        "columnEnd": 2,
+        "columnStart": 14,
+        "dependencies": [
+          "CreditEntry",
+          "CreditFooter",
+          "CreditHeader",
+          "GlitchButton"
+        ],
+        "exportedName": "CreditsView",
+        "exportKind": "named",
+        "isComponent": true,
+        "isDefault": false,
+        "lineEnd": 66,
+        "lineStart": 16,
+        "name": "CreditsView",
+        "parameters": [
+          {
+            "name": "{ credits, onReturn, returnText }",
+            "optional": false,
+            "rest": false,
+            "type": "CreditsViewProps"
+          }
+        ],
+        "path": "src/scenes/credits/CreditsView.tsx",
+        "returnType": "React.JSX.Element",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/scenes/Credits.tsx",
+            "importedAs": "CreditsView"
+          }
+        ]
       }
     ],
     "CRISIS_EVENTS": [
@@ -29195,7 +29229,7 @@
             "importedAs": "GlitchButton"
           },
           {
-            "path": "src/scenes/Credits.tsx",
+            "path": "src/scenes/credits/CreditsView.tsx",
             "importedAs": "GlitchButton"
           },
           {
