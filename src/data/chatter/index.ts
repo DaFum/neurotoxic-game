@@ -62,9 +62,7 @@ type ChatterState = Pick<
   | 'lastGigStats'
 >
 
-export const getRandomChatter = (state: ChatterState) => {
-  const pool: ChatterPoolItem[] = []
-
+const addVenueChatter = (pool: ChatterPoolItem[], state: ChatterState): void => {
   // 1) Venue Specific Chatter (Scene-aware)
   const currentNode = state.gameMap?.nodes[state.player.currentNodeId]
   const venueId =
@@ -117,7 +115,9 @@ export const getRandomChatter = (state: ChatterState) => {
       }
     }
   }
+}
 
+const addStandardChatter = (pool: ChatterPoolItem[], state: ChatterState): void => {
   // Pre-calculate band member stats for standard chatter condition checks
   const bandMembers = state.band?.members ?? []
   let minMood = Infinity
@@ -150,7 +150,9 @@ export const getRandomChatter = (state: ChatterState) => {
       pool.push(c)
     }
   }
+}
 
+const selectRandomChatter = (pool: ChatterPoolItem[]) => {
   if (pool.length === 0) return null
 
   // Weighted Random Selection
@@ -179,4 +181,13 @@ export const getRandomChatter = (state: ChatterState) => {
     speaker: item.speaker || null,
     type: item.type || 'normal'
   }
+}
+
+export const getRandomChatter = (state: ChatterState) => {
+  const pool: ChatterPoolItem[] = []
+
+  addVenueChatter(pool, state)
+  addStandardChatter(pool, state)
+
+  return selectRandomChatter(pool)
 }
