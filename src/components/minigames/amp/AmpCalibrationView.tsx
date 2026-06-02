@@ -9,6 +9,7 @@ import type {
   AmpStageOptions
 } from '../../../types/components'
 import { AmpStageController } from '../../stage/AmpStageController'
+const INACTIVE_UI_STATE = { timeLeft: 0, score: 0, isGameOver: false }
 
 export interface AmpCalibrationViewProps {
   t: TFunction<'ui', undefined>
@@ -98,7 +99,7 @@ export const AmpCalibrationView = ({
     <MinigameSceneFrame
       controllerFactory={controllerFactory}
       logic={logic}
-      uiState={{ timeLeft, score, isGameOver }}
+      uiState={isGameOver ? { timeLeft, score, isGameOver } : INACTIVE_UI_STATE}
       onComplete={onComplete}
       completionTitle={t('ui:minigames.amp.completion.title', {
         defaultValue: 'AMP CALIBRATED'
@@ -106,7 +107,7 @@ export const AmpCalibrationView = ({
       completionButtonText={t('ui:minigames.amp.completion.button', {
         defaultValue: 'START GIG'
       })}
-      renderCompletionStats={renderCompletionStats}
+      renderCompletionStats={isGameOver ? renderCompletionStats : undefined}
     >
       <AmpHUD
         timeLeft={timeLeft}
