@@ -78,7 +78,7 @@ export const canAcceptQuest = (
   const repeatPolicy = merged.repeatPolicy
   let scopeKey: string | undefined
   if (repeatPolicy === 'never') {
-    if (state.completedQuestIds?.includes(questId)) {
+    if ((state.completedQuestIds ?? []).includes(questId)) {
       return { ok: false, reason: 'completed' }
     }
     const activeFlags = state.activeStoryFlags ?? []
