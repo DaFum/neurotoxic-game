@@ -1,6 +1,9 @@
 import { lazy, Suspense } from 'react'
+import type { RefObject, CSSProperties, MutableRefObject } from 'react'
+import type { TFunction } from 'i18next'
 import type { RhythmGameRefState } from '../../../types/rhythmGame'
 import type { PixiStageProps } from '../../../types/components'
+import type { RhythmGameStats } from '../../../hooks/useRhythmGameLogic'
 import { BandMembersLayer } from './BandMembersLayer'
 import { PauseOverlay } from './PauseOverlay'
 import { GigHUD } from '../../GigHUD'
@@ -15,18 +18,18 @@ const PixiStage = lazy(async () => {
 })
 
 export type GigViewProps = {
-  chaosContainerRef: React.RefObject<HTMLDivElement | null>
-  chaosStyle: React.CSSProperties
+  chaosContainerRef: RefObject<HTMLDivElement | null>
+  chaosStyle: CSSProperties
   isToxicMode: boolean
   bgUrl: string
   matzeUrl: string
   mariusUrl: string
   larsUrl: string
   setBandMemberRef: (index: number) => (el: HTMLElement | null) => void
-  t: import('i18next').TFunction<'translation', undefined>
-  gameStateRef: React.MutableRefObject<RhythmGameRefState>
+  t: TFunction<'translation', undefined>
+  gameStateRef: MutableRefObject<RhythmGameRefState>
   update: (delta: number) => void
-  stats: import('../../../hooks/rhythmGame/useRhythmGameState').RhythmUiState
+  stats: RhythmGameStats
   handleLaneInput: (laneIndex: number, isDown: boolean) => void
   handleTogglePause: () => void
   isPaused: boolean
