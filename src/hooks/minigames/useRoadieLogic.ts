@@ -155,7 +155,11 @@ function useRoadieKeyboardControls(move: (dx: number, dy: number) => void) {
 }
 
 
-function useRoadieSceneTransition(isGameOver: boolean, currentScene: string, changeScene: (scene: string) => void) {
+function useRoadieSceneTransition(
+  isGameOver: boolean,
+  currentScene: string,
+  changeScene: (scene: typeof GAME_PHASES[keyof typeof GAME_PHASES]) => void
+) {
   const currentSceneRef = useRef(currentScene)
   const hasTransitionedRef = useRef(false)
 
@@ -190,7 +194,10 @@ export const useRoadieLogic = () => {
   const hasContraband = !!(band?.stash && !isEmptyObject(band.stash))
 
   // Mutable Game State
-  const gameStateRef = useRef<RoadieLogicState>(getInitialGameState(hasContraband))
+  const gameStateRef = useRef<RoadieLogicState>(null as unknown as RoadieLogicState)
+  if (!gameStateRef.current) {
+    gameStateRef.current = getInitialGameState(hasContraband)
+  }
 
   // UI State
   const [uiState, setUiState] = useState(() => getInitialUiState(gameStateRef.current))
