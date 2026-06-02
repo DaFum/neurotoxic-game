@@ -86,29 +86,26 @@ function processTraffic(
   return crashed
 }
 
-export const useRoadieLogic = () => {
-  const currentScene = useGameSelector(state => state.currentScene)
-  const band = useGameSelector(state => state.band)
-  const { completeRoadieMinigame, changeScene } = useGameActions()
 
-  // Conditionally inject contraband to escort if present in stash
-  const hasContraband = !!(band?.stash && !isEmptyObject(band.stash))
+function getInitialGameState(hasContraband: boolean): RoadieLogicState {
+  const itemsToDeliver = [
+    hasContraband
+      ? { id: 'contraband', type: 'CONTRABAND', weight: 1.5 }
+      : null,
+    { id: 'amp', type: 'AMP', weight: 2 },
+    { id: 'drums', type: 'DRUMS', weight: 1.5 },
+    { id: 'guitar', type: 'GUITAR', weight: 1 }
+  ].filter((item): item is RoadieCarryingItem => item !== null)
 
-  // Mutable Game State
-  const gameStateRef = useRef<RoadieLogicState>({
+  const carrying = itemsToDeliver.shift() ?? null
+
+  return {
     playerPos: { x: 6, y: 0 },
-    carrying: null, // { type, weight }
-    itemsToDeliver: [
-      hasContraband
-        ? { id: 'contraband', type: 'CONTRABAND', weight: 1.5 }
-        : null,
-      { id: 'amp', type: 'AMP', weight: 2 },
-      { id: 'drums', type: 'DRUMS', weight: 1.5 },
-      { id: 'guitar', type: 'GUITAR', weight: 1 }
-    ].filter((item): item is RoadieCarryingItem => item !== null),
+    carrying,
+    itemsToDeliver,
     itemsDelivered: [],
     contrabandCount: 0,
-    traffic: [], // { id, row, x (float), speed }
+    traffic: [],
     lastMoveTime: 0,
     equipmentDamage: 0,
     isGameOver: false,
@@ -118,16 +115,92 @@ export const useRoadieLogic = () => {
       rate: CAR_SPAWN_RATES[i] ?? 2000,
       speed: TRAFFIC_SPEEDS[i] ?? 0.01
     }))
-  })
+  }
+}
 
-  // UI State
-  const [uiState, setUiState] = useState(() => ({
-    itemsRemaining: gameStateRef.current.itemsToDeliver.length,
+function getInitialUiState(game: RoadieLogicState) {
+  return {
+    itemsRemaining: game.itemsToDeliver.length,
     itemsDelivered: 0,
     currentDamage: 0,
-    carrying: null as RoadieCarryingItem | null,
+    carrying: game.carrying,
     isGameOver: false
-  }))
+  }
+}
+
+
+function useRoadieKeyboardControls(move: (dx: number, dy: number) => void) {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'ArrowLeft' || e.code === 'KeyA') {
+        e.preventDefault()
+        move(-1, 0)
+      }
+      if (e.code === 'ArrowRight' || e.code === 'KeyD') {
+        e.preventDefault()
+        move(1, 0)
+      }
+      if (e.code === 'ArrowUp' || e.code === 'KeyW') {
+        e.preventDefault()
+        move(0, -1)
+      }
+      if (e.code === 'ArrowDown' || e.code === 'KeyS') {
+        e.preventDefault()
+        move(0, 1)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [move])
+}
+
+
+function useRoadieSceneTransition(
+  isGameOver: boolean,
+  currentScene: string,
+  changeScene: (scene: typeof GAME_PHASES[keyof typeof GAME_PHASES]) => void
+) {
+  const currentSceneRef = useRef(currentScene)
+  const hasTransitionedRef = useRef(false)
+
+  useEffect(() => {
+    currentSceneRef.current = currentScene
+  }, [currentScene])
+
+  useEffect(() => {
+    if (isGameOver && currentScene === GAME_PHASES.PRE_GIG_MINIGAME) {
+      if (hasTransitionedRef.current) return
+
+      const timeout = setTimeout(() => {
+        if (
+          currentSceneRef.current === GAME_PHASES.PRE_GIG_MINIGAME &&
+          !hasTransitionedRef.current
+        ) {
+          hasTransitionedRef.current = true
+          changeScene(GAME_PHASES.GIG)
+        }
+      }, 10000)
+      return () => clearTimeout(timeout)
+    }
+  }, [isGameOver, currentScene, changeScene])
+}
+
+export const useRoadieLogic = () => {
+  const currentScene = useGameSelector(state => state.currentScene)
+  const band = useGameSelector(state => state.band)
+  const { completeRoadieMinigame, changeScene } = useGameActions()
+
+  // Conditionally inject contraband to escort if present in stash
+  const hasContraband = !!(band?.stash && !isEmptyObject(band.stash))
+
+  // Mutable Game State
+  const gameStateRef = useRef<RoadieLogicState>(null as unknown as RoadieLogicState)
+  if (!gameStateRef.current) {
+    gameStateRef.current = getInitialGameState(hasContraband)
+  }
+
+  // UI State
+  const [uiState, setUiState] = useState(() => getInitialUiState(gameStateRef.current))
 
   // Stats Ref for Pixi
   const statsRef = useRef({
@@ -219,70 +292,9 @@ export const useRoadieLogic = () => {
     [completeRoadieMinigame]
   )
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.code === 'ArrowLeft' || e.code === 'KeyA') {
-        e.preventDefault()
-        move(-1, 0)
-      }
-      if (e.code === 'ArrowRight' || e.code === 'KeyD') {
-        e.preventDefault()
-        move(1, 0)
-      }
-      if (e.code === 'ArrowUp' || e.code === 'KeyW') {
-        e.preventDefault()
-        move(0, -1)
-      }
-      if (e.code === 'ArrowDown' || e.code === 'KeyS') {
-        e.preventDefault()
-        move(0, 1)
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [move])
+  useRoadieKeyboardControls(move)
+  useRoadieSceneTransition(uiState.isGameOver, currentScene, changeScene)
 
-  // Initial setup: pickup first item
-  useEffect(() => {
-    if (
-      !gameStateRef.current.carrying &&
-      gameStateRef.current.itemsToDeliver.length > 0
-    ) {
-      gameStateRef.current.carrying =
-        gameStateRef.current.itemsToDeliver.shift() ?? null
-      setUiState(prev => ({
-        ...prev,
-        carrying: gameStateRef.current.carrying,
-        itemsRemaining: gameStateRef.current.itemsToDeliver.length
-      }))
-    }
-  }, [])
-
-  const currentSceneRef = useRef(currentScene)
-  const hasTransitionedRef = useRef(false)
-
-  useEffect(() => {
-    currentSceneRef.current = currentScene
-  }, [currentScene])
-
-  // Safety Fallback: Ensure scene advances if UI hangs
-  useEffect(() => {
-    if (uiState.isGameOver && currentScene === GAME_PHASES.PRE_GIG_MINIGAME) {
-      if (hasTransitionedRef.current) return
-
-      const timeout = setTimeout(() => {
-        // Double check scene hasn't changed
-        if (
-          currentSceneRef.current === GAME_PHASES.PRE_GIG_MINIGAME &&
-          !hasTransitionedRef.current
-        ) {
-          hasTransitionedRef.current = true
-          changeScene(GAME_PHASES.GIG)
-        }
-      }, 10000) // 10s fallback
-      return () => clearTimeout(timeout)
-    }
-  }, [uiState.isGameOver, currentScene, changeScene])
 
   return {
     gameStateRef,
