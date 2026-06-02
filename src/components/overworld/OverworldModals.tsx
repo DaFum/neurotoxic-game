@@ -123,7 +123,22 @@ export const OverworldModals = React.memo(({ modals }: OverworldModalsProps) => 
     p.bloodBank.canDonate === n.bloodBank.canDonate &&
     p.bloodBank.canDonateMarrow === n.bloodBank.canDonateMarrow &&
     p.darkWebLeak.canLeak === n.darkWebLeak.canLeak &&
-    p.darkWebLeak.hasLeakedToday === n.darkWebLeak.hasLeakedToday
+    p.darkWebLeak.hasLeakedToday === n.darkWebLeak.hasLeakedToday &&
+    p.merchPress.config === n.merchPress.config &&
+    p.merchPress.triggerPress === n.merchPress.triggerPress &&
+    p.bloodBank.config === n.bloodBank.config &&
+    p.bloodBank.marrowConfig === n.bloodBank.marrowConfig &&
+    p.bloodBank.triggerDonate === n.bloodBank.triggerDonate &&
+    p.darkWebLeak.DARK_WEB_LEAK_CONFIG === n.darkWebLeak.DARK_WEB_LEAK_CONFIG &&
+    p.darkWebLeak.triggerLeak === n.darkWebLeak.triggerLeak &&
+    p.pirateRadio.PIRATE_RADIO_CONFIG === n.pirateRadio.PIRATE_RADIO_CONFIG &&
+    p.pirateRadio.triggerBroadcast === n.pirateRadio.triggerBroadcast &&
+    p.hq.closeHQ === n.hq.closeHQ &&
+    p.pirateRadio.closePirateRadio === n.pirateRadio.closePirateRadio &&
+    p.merchPress.closeMerchPress === n.merchPress.closeMerchPress &&
+    p.bloodBank.closeBloodBank === n.bloodBank.closeBloodBank &&
+    p.darkWebLeak.closeDarkWebLeak === n.darkWebLeak.closeDarkWebLeak &&
+    p.supplyStop.closeSupplyStop === n.supplyStop.closeSupplyStop
   )
 })
 
