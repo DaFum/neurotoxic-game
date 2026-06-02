@@ -75,6 +75,14 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - Test scope picker: `pnpm run test` for fast local, `pnpm run test:all` for full PR, `pnpm run test:ui` for Vitest/UI, `pnpm run test:node` for legacy node, `pnpm run test:additional` for perf/locale.
 - Single-file tests: use `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/<file>.test.js` for `node:test`; use `pnpm run test:ui:file -- tests/<file>.test.js(x)` for Vitest.
 - Type gates: `pnpm run typecheck:core`; `pnpm run typecheck` is the scoped reducer gate.
+- Symbol index: `pnpm run symbols:update` regenerates `symbols.json`; `pnpm run symbols:check` verifies it is current.
+
+## Symbols Index
+
+- Before opening source only to inspect an exported symbol, check `symbols.json.knownSymbols` first. Local entries include signatures (`parameters`, `returnType`), object structure (`properties`, union `variants`), docs (`jsDoc`), graph data (`dependencies`, `usedBy`), exact positions, React metadata (`isComponent`, `isHook`), and export details (`exportKind`, `exportedName`, `exportPath`).
+- For concrete usage patterns, see `docs/agent-symbols-guide.md`.
+- Do not hand-edit `symbols.json`. If exported APIs, type shapes, local imports/calls, or JSDoc under `src/` change, run `pnpm run symbols:update` and then `pnpm run symbols:check`.
+- Primitive/string-literal type aliases intentionally omit prototype `properties`; mixed unions expose object branches through `variants`.
 
 ## Dependencies
 

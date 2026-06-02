@@ -39,6 +39,9 @@ function isUnderSrc(fileName) {
 // ---------------------------------------------------------------------------
 // 1. Collect src files (including .d.ts for src/types)
 // ---------------------------------------------------------------------------
+const SOURCE_FILE_RE = /\.(ts|tsx|js|jsx)$/
+const IGNORED_SOURCE_FILE_RE = /\.(test|spec|stories)\.(ts|tsx|js|jsx)$/
+
 function walkSrc(dir, out = []) {
   const entries = fs.readdirSync(dir, { withFileTypes: true })
   entries.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
@@ -48,7 +51,9 @@ function walkSrc(dir, out = []) {
       walkSrc(full, out)
       continue
     }
-    if (/\.(ts|tsx|js|jsx)$/.test(entry.name)) out.push(full)
+    if (SOURCE_FILE_RE.test(entry.name) && !IGNORED_SOURCE_FILE_RE.test(entry.name)) {
+      out.push(full)
+    }
   }
   return out
 }
@@ -148,6 +153,404 @@ function resolveAlias(checker, sym) {
   return cur
 }
 
+const TYPE_FORMAT_FLAGS =
+  ts.TypeFormatFlags.NoTruncation |
+  ts.TypeFormatFlags.UseSingleQuotesForStringLiteralType |
+  ts.TypeFormatFlags.UseAliasDefinedOutsideCurrentScope |
+  ts.TypeFormatFlags.OmitParameterModifiers |
+  ts.TypeFormatFlags.WriteArrowStyleSignature
+
+function declarationKey(decl) {
+  return `${relPath(decl.getSourceFile().fileName)}:${decl.pos}:${decl.end}`
+}
+
+function addToMapSet(map, key, value) {
+  if (!map.has(key)) map.set(key, new Set())
+  map.get(key).add(value)
+}
+
+function withoutUndefined(type) {
+  if (!type.isUnion()) return type
+  const narrowed = type.types.filter(
+    part => !(part.flags & ts.TypeFlags.Undefined)
+  )
+  if (narrowed.length === type.types.length) return type
+  if (narrowed.length === 1) return narrowed[0]
+  return checker.getUnionType(narrowed, ts.UnionReduction.None)
+}
+
+function typeString(type, node, optional = false) {
+  const printableType = optional ? withoutUndefined(type) : type
+  return checker
+    .typeToString(printableType, node, TYPE_FORMAT_FLAGS)
+    .replace(/import\(["'][^"']+["']\)\./g, '')
+}
+
+function declarationLocation(decl) {
+  const sourceFile = decl.getSourceFile()
+  const start = sourceFile.getLineAndCharacterOfPosition(
+    decl.getStart(sourceFile)
+  )
+  const end = sourceFile.getLineAndCharacterOfPosition(decl.getEnd())
+  return {
+    lineStart: start.line + 1,
+    lineEnd: end.line + 1,
+    columnStart: start.character + 1,
+    columnEnd: end.character + 1
+  }
+}
+
+function jsDocText(comment) {
+  if (typeof comment === 'string') return comment
+  if (Array.isArray(comment)) {
+    return comment
+      .map(part => (typeof part.text === 'string' ? part.text : ''))
+      .join('')
+  }
+  return ''
+}
+
+function normalizeDocText(text) {
+  return text.replace(/\s+/g, ' ').trim()
+}
+
+function jsDocHosts(decl) {
+  const hosts = [decl]
+  if (ts.isVariableDeclaration(decl)) {
+    let parent = decl.parent
+    while (parent && !ts.isVariableStatement(parent)) parent = parent.parent
+    if (parent) hosts.push(parent)
+  }
+  if (ts.isBindingElement(decl)) {
+    let parent = decl.parent
+    while (parent && !ts.isVariableStatement(parent)) parent = parent.parent
+    if (parent) hosts.push(parent)
+  }
+  return hosts
+}
+
+function serializeJsDoc(decl) {
+  const docs = jsDocHosts(decl).flatMap(host => host.jsDoc ?? [])
+  if (docs.length === 0) return undefined
+
+  const summary = normalizeDocText(
+    docs
+      .map(doc => jsDocText(doc.comment))
+      .filter(Boolean)
+      .join(' ')
+  )
+  const tags = docs.flatMap(doc =>
+    Array.from(doc.tags ?? [], tag => {
+      const entry = { name: tag.tagName.getText(decl.getSourceFile()) }
+      if ('name' in tag && tag.name) entry.target = tag.name.getText()
+      const text = normalizeDocText(jsDocText(tag.comment))
+      if (text) entry.text = text
+      return entry
+    })
+  )
+
+  const result = {}
+  if (summary) result.summary = summary
+  if (tags.length > 0) result.tags = tags
+  return Object.keys(result).length > 0 ? result : undefined
+}
+
+function isReactHocExpression(expression) {
+  return (
+    (ts.isIdentifier(expression) &&
+      (expression.text === 'memo' || expression.text === 'forwardRef')) ||
+    (ts.isPropertyAccessExpression(expression) &&
+      (expression.name.text === 'memo' ||
+        expression.name.text === 'forwardRef'))
+  )
+}
+
+function unwrapReactHocInitializer(initializer) {
+  let current = initializer
+  while (
+    ts.isCallExpression(current) &&
+    current.arguments.length > 0 &&
+    isReactHocExpression(current.expression)
+  ) {
+    current = current.arguments[0]
+  }
+  return current
+}
+
+function callableDeclaration(decl) {
+  if (
+    ts.isFunctionDeclaration(decl) ||
+    ts.isFunctionExpression(decl) ||
+    ts.isArrowFunction(decl) ||
+    ts.isMethodDeclaration(decl)
+  ) {
+    return decl
+  }
+  if (ts.isVariableDeclaration(decl) && decl.initializer) {
+    const initializer = unwrapReactHocInitializer(decl.initializer)
+    if (ts.isFunctionExpression(initializer) || ts.isArrowFunction(initializer)) {
+      return initializer
+    }
+  }
+  return undefined
+}
+
+function serializeSignature(sym, decl) {
+  const callable = callableDeclaration(decl)
+  const signature =
+    (callable ? checker.getSignatureFromDeclaration(callable) : undefined) ??
+    checker.getTypeOfSymbolAtLocation(sym, decl).getCallSignatures()[0]
+  if (!signature) return undefined
+
+  const parameterDecls = callable?.parameters ?? []
+  return {
+    parameters: signature.getParameters().map((param, index) => {
+      const paramDecl = param.valueDeclaration ?? parameterDecls[index]
+      const optional = !!(
+        param.flags & ts.SymbolFlags.Optional ||
+        paramDecl?.questionToken ||
+        paramDecl?.initializer
+      )
+      const name =
+        paramDecl && ts.isParameter(paramDecl)
+          ? paramDecl.name.getText(paramDecl.getSourceFile())
+          : param.name
+      return {
+        name,
+        optional,
+        rest: !!paramDecl?.dotDotDotToken,
+        type: typeString(
+          checker.getTypeOfSymbolAtLocation(param, paramDecl ?? decl),
+          paramDecl ?? decl,
+          optional
+        )
+      }
+    }),
+    returnType: typeString(
+      signature.getReturnType(),
+      callable ?? decl,
+      false
+    )
+  }
+}
+
+function hasReadonlyModifier(decl) {
+  return !!decl.modifiers?.some(
+    modifier => modifier.kind === ts.SyntaxKind.ReadonlyKeyword
+  )
+}
+
+function typeMayHaveObjectProperties(type) {
+  if (type.flags & ts.TypeFlags.Object) return true
+  if (type.flags & (ts.TypeFlags.Union | ts.TypeFlags.Intersection)) {
+    return type.types?.some(typeMayHaveObjectProperties) ?? false
+  }
+  return false
+}
+
+function typeNodeMayHaveObjectProperties(node) {
+  if (ts.isTypeLiteralNode(node) || ts.isMappedTypeNode(node)) return true
+  if (ts.isParenthesizedTypeNode(node)) {
+    return typeNodeMayHaveObjectProperties(node.type)
+  }
+  if (ts.isUnionTypeNode(node) || ts.isIntersectionTypeNode(node)) {
+    return node.types.some(typeNodeMayHaveObjectProperties)
+  }
+  if (
+    ts.isTypeReferenceNode(node) ||
+    ts.isIndexedAccessTypeNode(node) ||
+    ts.isConditionalTypeNode(node)
+  ) {
+    return typeMayHaveObjectProperties(checker.getTypeFromTypeNode(node))
+  }
+  return false
+}
+
+function shouldSerializeTypeAliasProperties(decl) {
+  return (
+    ts.isInterfaceDeclaration(decl) ||
+    (ts.isTypeAliasDeclaration(decl) &&
+      typeNodeMayHaveObjectProperties(decl.type))
+  )
+}
+
+function propertyDeclaration(property) {
+  return property.valueDeclaration ?? property.declarations?.[0]
+}
+
+function serializeProperty(property, fallbackNode) {
+  const propertyDecl = propertyDeclaration(property)
+  if (!propertyDecl || !isUnderSrc(propertyDecl.getSourceFile().fileName)) {
+    return undefined
+  }
+
+  const optional = !!(
+    property.flags & ts.SymbolFlags.Optional ||
+    propertyDecl.questionToken
+  )
+  const entry = {
+    name: property.name,
+    optional,
+    type: typeString(
+      checker.getTypeOfSymbolAtLocation(property, propertyDecl),
+      propertyDecl ?? fallbackNode,
+      optional
+    )
+  }
+  if (hasReadonlyModifier(propertyDecl)) entry.readonly = true
+  const jsDoc = serializeJsDoc(propertyDecl)
+  if (jsDoc) entry.jsDoc = jsDoc
+  return entry
+}
+
+function shouldSerializeIndexSignatures(type) {
+  return !!(
+    type.flags & ts.TypeFlags.Object &&
+    !checker.isArrayType(type) &&
+    !checker.isTupleType(type)
+  )
+}
+
+function serializePropertiesFromType(type, node) {
+  const properties = checker
+    .getPropertiesOfType(type)
+    .map(property => serializeProperty(property, node))
+    .filter(Boolean)
+
+  if (shouldSerializeIndexSignatures(type)) {
+    const stringIndexType = type.getStringIndexType()
+    if (stringIndexType) {
+      properties.push({
+        name: '[key: string]',
+        optional: false,
+        type: typeString(stringIndexType, node, false)
+      })
+    }
+
+    const numberIndexType = type.getNumberIndexType()
+    if (numberIndexType) {
+      properties.push({
+        name: '[key: number]',
+        optional: false,
+        type: typeString(numberIndexType, node, false)
+      })
+    }
+  }
+
+  if (properties.length === 0) return undefined
+  return properties.sort((a, b) => a.name.localeCompare(b.name))
+}
+
+function serializeProperties(decl) {
+  if (!shouldSerializeTypeAliasProperties(decl)) return undefined
+
+  return serializePropertiesFromType(checker.getTypeAtLocation(decl), decl)
+}
+
+function unionVariantTypeNodes(node) {
+  if (ts.isParenthesizedTypeNode(node)) return unionVariantTypeNodes(node.type)
+  return ts.isUnionTypeNode(node) ? Array.from(node.types) : undefined
+}
+
+function variantKind(type) {
+  if (type.flags & ts.TypeFlags.Null) return 'null'
+  if (type.flags & ts.TypeFlags.Undefined) return 'undefined'
+  if (
+    type.flags &
+    (ts.TypeFlags.StringLiteral |
+      ts.TypeFlags.NumberLiteral |
+      ts.TypeFlags.BooleanLiteral |
+      ts.TypeFlags.BigIntLiteral |
+      ts.TypeFlags.EnumLiteral)
+  ) {
+    return 'literal'
+  }
+  if (
+    type.flags &
+    (ts.TypeFlags.StringLike |
+      ts.TypeFlags.NumberLike |
+      ts.TypeFlags.BooleanLike |
+      ts.TypeFlags.BigIntLike |
+      ts.TypeFlags.ESSymbolLike)
+  ) {
+    return 'primitive'
+  }
+  if (type.flags & ts.TypeFlags.Object) return 'object'
+  return 'other'
+}
+
+function serializeVariants(decl) {
+  if (!ts.isTypeAliasDeclaration(decl)) return undefined
+
+  const variantNodes = unionVariantTypeNodes(decl.type)
+  if (!variantNodes) return undefined
+
+  const variants = variantNodes.map(node => {
+    const type = checker.getTypeFromTypeNode(node)
+    const properties = serializePropertiesFromType(type, node)
+    const entry = {
+      kind: properties ? 'object' : variantKind(type),
+      type: typeString(type, node, false)
+    }
+    if (properties) entry.properties = properties
+    return entry
+  })
+
+  return variants.some(variant => variant.kind === 'object')
+    ? variants
+    : undefined
+}
+
+function containsJsx(node) {
+  let found = false
+  const visit = child => {
+    if (found) return
+    if (
+      ts.isJsxElement(child) ||
+      ts.isJsxSelfClosingElement(child) ||
+      ts.isJsxFragment(child)
+    ) {
+      found = true
+      return
+    }
+    ts.forEachChild(child, visit)
+  }
+  visit(node)
+  return found
+}
+
+function isReactComponent(name, decl, signature) {
+  if (!/^[A-Z]/.test(name)) return false
+  if (containsJsx(decl)) return true
+  const fileName = decl.getSourceFile().fileName
+  if (!/\.(tsx|jsx)$/.test(fileName)) return false
+  return !!signature?.returnType.match(/\b(JSX\.Element|ReactElement|Element)\b/)
+}
+
+function addDeclarationMetadata(entry, sym, decl, exportedName, isDefault) {
+  Object.assign(entry, declarationLocation(decl))
+  entry.exportKind = isDefault ? 'default' : 'named'
+  entry.exportedName = isDefault ? 'default' : exportedName
+
+  const jsDoc = serializeJsDoc(decl)
+  if (jsDoc) entry.jsDoc = jsDoc
+
+  const signature = serializeSignature(sym, decl)
+  if (signature) {
+    entry.parameters = signature.parameters
+    entry.returnType = signature.returnType
+  }
+
+  const properties = serializeProperties(decl)
+  if (properties) entry.properties = properties
+
+  const variants = serializeVariants(decl)
+  if (variants) entry.variants = variants
+
+  if (/^use[A-Z0-9]/.test(exportedName) && signature) entry.isHook = true
+  if (isReactComponent(exportedName, decl, signature)) entry.isComponent = true
+}
+
 // ---------------------------------------------------------------------------
 // 3. Walk each source file and collect its exports
 // ---------------------------------------------------------------------------
@@ -155,6 +558,11 @@ function resolveAlias(checker, sym) {
 const knownSymbols = {}
 /** @type {Record<string, Set<string>>} */
 const knownSignatures = {}
+const localEntryRefs = []
+const localEntryRefEntries = new Set()
+const entriesByDeclKey = new Map()
+const dependenciesByEntry = new Map()
+const usedByByEntry = new Map()
 
 function upsert(name, entry) {
   if (!knownSymbols[name]) {
@@ -169,6 +577,7 @@ function upsert(name, entry) {
   if (!knownSignatures[name].has(sig)) {
     knownSignatures[name].add(sig)
     knownSymbols[name].push(entry)
+    return entry
   } else if (entry.exportPath) {
     // Definition files are typically scanned before their barrels, so the
     // first entry wins the dedup but has no exportPath. When a barrel scan
@@ -180,7 +589,51 @@ function upsert(name, entry) {
         e.isDefault === entry.isDefault
     )
     if (existing && !existing.exportPath) existing.exportPath = entry.exportPath
+    return existing ?? entry
   }
+  return knownSymbols[name].find(
+    e =>
+      (e.path ?? null) === (entry.path ?? null) &&
+      (e.module ?? null) === (entry.module ?? null) &&
+      e.isDefault === entry.isDefault
+  )
+}
+
+function registerLocalEntry(entry, sym, decl) {
+  const key = declarationKey(decl)
+  addToMapSet(entriesByDeclKey, key, entry)
+  if (!localEntryRefEntries.has(entry)) {
+    localEntryRefEntries.add(entry)
+    localEntryRefs.push({ entry, sym, decl })
+  }
+}
+
+function targetEntriesForNode(node, importedName) {
+  const sym = checker.getSymbolAtLocation(node)
+  if (!sym) return []
+  const resolved = resolveAlias(checker, sym)
+  const decl = resolved.valueDeclaration ?? resolved.declarations?.[0]
+  if (!decl) return []
+  const declFile = normalizePath(decl.getSourceFile().fileName)
+  if (!isUnderSrc(declFile)) return []
+
+  const entries = Array.from(entriesByDeclKey.get(declarationKey(decl)) ?? [])
+  if (entries.length === 0 || importedName === undefined) return entries
+
+  const filtered = entries.filter(entry =>
+    importedName === 'default' ? entry.isDefault : entry.name === importedName
+  )
+  return filtered.length > 0 ? filtered : entries
+}
+
+function addDependency(entry, dependencyName) {
+  if (!dependenciesByEntry.has(entry)) dependenciesByEntry.set(entry, new Set())
+  dependenciesByEntry.get(entry).add(dependencyName)
+}
+
+function addUsedBy(entry, usage) {
+  if (!usedByByEntry.has(entry)) usedByByEntry.set(entry, new Map())
+  usedByByEntry.get(entry).set(JSON.stringify(usage), usage)
 }
 
 const SKIP_NAMES = new Set(['__esModule'])
@@ -236,11 +689,13 @@ for (const srcFilePath of srcFiles) {
       type: kindLabel(resolvedSym),
       isDefault: false
     }
+    addDeclarationMetadata(entry, resolvedSym, decl, exportedName, false)
     if (exportPath !== undefined) entry.exportPath = exportPath
     if (isTypeOnlyExport(sym) || isTypeOnlySym(resolvedSym))
       entry.typeOnly = true
 
-    upsert(exportedName, entry)
+    const storedEntry = upsert(exportedName, entry)
+    registerLocalEntry(storedEntry, resolvedSym, decl)
   }
 
   // --- dedicated default-export pass ---
@@ -278,17 +733,124 @@ for (const srcFilePath of srcFiles) {
           type: kindLabel(resolvedDefault),
           isDefault: true
         }
+        addDeclarationMetadata(entry, resolvedDefault, defaultDecl, key, true)
         if (exportPath !== undefined) entry.exportPath = exportPath
         if (defaultTypeOnly || isTypeOnlySym(resolvedDefault))
           entry.typeOnly = true
-        upsert(key, entry)
+        const storedEntry = upsert(key, entry)
+        registerLocalEntry(storedEntry, resolvedDefault, defaultDecl)
       }
     }
   }
 }
 
 // ---------------------------------------------------------------------------
-// 4. Merge static external-module allowlist
+// 4. Add import and call graph metadata
+// ---------------------------------------------------------------------------
+function collectImportUsage(sourceFile) {
+  const rel = relPath(sourceFile.fileName)
+  const visitImport = node => {
+    if (!ts.isImportDeclaration(node)) return
+    if (!ts.isStringLiteral(node.moduleSpecifier)) return
+    if (!node.moduleSpecifier.text.startsWith('.')) return
+
+    const importClause = node.importClause
+    if (!importClause) return
+    const clauseTypeOnly = !!importClause.isTypeOnly
+
+    if (importClause.name) {
+      for (const entry of targetEntriesForNode(importClause.name, 'default')) {
+        addUsedBy(entry, {
+          path: rel,
+          importedAs: importClause.name.text,
+          typeOnly: clauseTypeOnly
+        })
+      }
+    }
+
+    const bindings = importClause.namedBindings
+    if (!bindings || !ts.isNamedImports(bindings)) return
+
+    for (const specifier of bindings.elements) {
+      const importedName = specifier.propertyName?.text ?? specifier.name.text
+      const usage = {
+        path: rel,
+        importedAs: specifier.name.text
+      }
+      if (specifier.name.text !== importedName) usage.importedName = importedName
+      if (clauseTypeOnly || specifier.isTypeOnly) usage.typeOnly = true
+
+      for (const entry of targetEntriesForNode(specifier.name, importedName)) {
+        addUsedBy(entry, usage)
+      }
+    }
+  }
+
+  ts.forEachChild(sourceFile, visitImport)
+}
+
+function dependencySymbolNode(expression) {
+  if (ts.isIdentifier(expression)) return expression
+  if (ts.isPropertyAccessExpression(expression)) return expression.name
+  return undefined
+}
+
+function collectDeclarationDependencies({ entry, decl }) {
+  const addTargets = node => {
+    for (const target of targetEntriesForNode(node, undefined)) {
+      if (target !== entry) addDependency(entry, target.name)
+    }
+  }
+
+  const visit = node => {
+    if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
+      const targetNode = node.expression
+        ? dependencySymbolNode(node.expression)
+        : undefined
+      if (targetNode) addTargets(targetNode)
+    } else if (
+      ts.isJsxOpeningElement(node) ||
+      ts.isJsxSelfClosingElement(node)
+    ) {
+      const targetNode = dependencySymbolNode(node.tagName)
+      if (targetNode) addTargets(targetNode)
+    }
+    ts.forEachChild(node, visit)
+  }
+
+  visit(decl)
+}
+
+for (const srcFilePath of srcFiles) {
+  const sourceFile = program.getSourceFile(srcFilePath)
+  if (sourceFile && isUnderSrc(sourceFile.fileName)) collectImportUsage(sourceFile)
+}
+
+for (const ref of localEntryRefs) collectDeclarationDependencies(ref)
+
+for (const [entry, dependencies] of dependenciesByEntry) {
+  const sorted = Array.from(dependencies).sort((a, b) => a.localeCompare(b))
+  if (sorted.length > 0) entry.dependencies = sorted
+}
+
+function usageSortKey(usage) {
+  return [
+    usage.path,
+    usage.importedAs,
+    usage.importedName ?? '',
+    usage.typeOnly ? '1' : '0'
+  ].join('\0')
+}
+
+for (const [entry, usageByKey] of usedByByEntry) {
+  const sorted = Array.from(usageByKey.values()).sort((a, b) =>
+    usageSortKey(a).localeCompare(usageSortKey(b))
+  )
+  if (sorted.length > 0) entry.usedBy = sorted
+}
+
+// ---------------------------------------------------------------------------
+// 5. Merge static external-module allowlist
 // ---------------------------------------------------------------------------
 /** @type {Array<{name: string, module: string, isDefault: boolean, typeOnly?: boolean, isNamespace?: boolean}>} */
 const EXTERNAL = [
@@ -389,11 +951,16 @@ const EXTERNAL = [
 ]
 
 for (const e of EXTERNAL) {
-  upsert(e.name, { ...e, source: 'external' })
+  upsert(e.name, {
+    ...e,
+    source: 'external',
+    exportKind: e.isDefault ? 'default' : 'named',
+    exportedName: e.isDefault ? 'default' : e.name
+  })
 }
 
 // ---------------------------------------------------------------------------
-// 5. Write or check
+// 6. Write or check
 // ---------------------------------------------------------------------------
 
 // Sort an entry object's keys alphabetically so the JSON layout is stable

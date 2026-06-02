@@ -1,6 +1,7 @@
 # tests/node - Agent Instructions
 
 - Use `test:node:quick` for normal local loops and `test:node:heavy` for Pixi/render-heavy suites.
+- `updateSymbols.test.js` pins the generated `symbols.json` schema. When changing symbol metadata, cover enriched fields there: signatures, `properties`/union `variants`, JSDoc tags, `dependencies`/`usedBy`, positions, React metadata, and export details.
 - Travel/location assertions need both legacy and canonical venue ID cases.
 - Load/reset tests verify whitelist sanitization, not raw spread assumptions.
 - Keep `songsData.test.js` on transform edge cases and `songs-real.test.js` on production-dataset contracts; real-dataset assertions include `song.id` in failure messages.
