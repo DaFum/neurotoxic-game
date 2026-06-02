@@ -1,12 +1,11 @@
 import { useEffect, useRef, useCallback } from 'react'
-import { safeStorageOperation } from '../../utils/storage'
-import { getSafeUUID } from '../../utils/crypto'
 import { useTranslation } from 'react-i18next'
 import { useGameActions } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
-import { enterFullscreen } from '../../utils/fullscreen'
 import { useMainMenuState } from './hooks/useMainMenuState'
 import { useMainMenuAudio } from './hooks/useMainMenuAudio'
+import { useMainMenuStart } from './hooks/useMainMenuStart'
+import { useMainMenuLoad } from './hooks/useMainMenuLoad'
 
 export const useMainMenu = () => {
   const { t } = useTranslation()
@@ -39,161 +38,42 @@ export const useMainMenu = () => {
 
   const { initializeAudio } = useMainMenuAudio(isMountedRef, addToast, tRef)
 
-  const proceedToTour = useCallback(() => {
-    setIsStarting(true)
-
-    // Optimization: Artificial delay removed
-    if (!isMountedRef.current) return
-
-    // Capture identity before reset
-    const savedPlayerId = safeStorageOperation('getPlayerId', () =>
-      localStorage.getItem('neurotoxic_player_id')
-    )
-    const savedPlayerName = safeStorageOperation('getPlayerName', () =>
-      localStorage.getItem('neurotoxic_player_name')
-    )
-
-    // State transitions (batched automatically by React 18+)
-    resetState()
-
-    // Re-apply identity unconditionally (protects against storage failure but valid in-memory session)
-    if (savedPlayerId && savedPlayerName) {
-      updatePlayer({
-        playerId: savedPlayerId,
-        playerName: savedPlayerName
-      })
-    }
-
-    changeScene(GAME_PHASES.OVERWORLD)
-
-    // Audio setup is fire-and-forget — never blocks scene transitions.
-    initializeAudio()
-  }, [
+  const {
+    proceedToTour,
+    startNewTourFlow,
+    handleStartTour,
+    handleNameSubmit,
+    closeNameInput,
+    handleStartNewAnyway
+  } = useMainMenuStart({
+    isMountedRef,
+    setIsStarting,
     resetState,
-    changeScene,
-    initializeAudio,
     updatePlayer,
-    isMountedRef,
-    setIsStarting
-  ])
-
-  const startNewTourFlow = useCallback(() => {
-    // Check for existing player identity
-    const savedPlayerId = safeStorageOperation('getPlayerId', () =>
-      localStorage.getItem('neurotoxic_player_id')
-    )
-    const savedPlayerName = safeStorageOperation('getPlayerName', () =>
-      localStorage.getItem('neurotoxic_player_name')
-    )
-
-    if (!savedPlayerId || !savedPlayerName) {
-      setShowNameInput(true)
-      return
-    }
-
-    updatePlayer({
-      playerId: savedPlayerId,
-      playerName: savedPlayerName
-    })
-    void proceedToTour()
-  }, [proceedToTour, updatePlayer, setShowNameInput])
-
-  const handleStartTour = useCallback(() => {
-    const savedGameExists = !!safeStorageOperation('checkSaveExists', () =>
-      localStorage.getItem('neurotoxic_v3_save')
-    )
-    if (savedGameExists) {
-      setShowExistingSavePrompt(true)
-      return
-    }
-
-    startNewTourFlow()
-    void enterFullscreen()
-  }, [startNewTourFlow, setShowExistingSavePrompt])
-
-  const handleNameSubmit = useCallback(() => {
-    if (!playerNameInput.trim()) {
-      addToast(
-        tRef.current('ui:enter_name_error', {
-          defaultValue: 'Please enter a name'
-        }),
-        'error'
-      )
-      return
-    }
-
-    const newId = getSafeUUID()
-    const newName = playerNameInput.trim()
-
-    safeStorageOperation('setPlayerId', () =>
-      localStorage.setItem('neurotoxic_player_id', newId)
-    )
-    safeStorageOperation('setPlayerName', () =>
-      localStorage.setItem('neurotoxic_player_name', newName)
-    )
-
-    updatePlayer({
-      playerId: newId,
-      playerName: newName
-    })
-
-    setShowNameInput(false)
-    void proceedToTour()
-  }, [playerNameInput, addToast, proceedToTour, updatePlayer, setShowNameInput])
-
-  /**
-   * Handles loading a saved game.
-   */
-  const handleLoad = useCallback(() => {
-    setIsLoadingGame(true)
-
-    if (!isMountedRef.current) return
-
-    if (!loadGame()) {
-      addToast(
-        tRef.current('ui:no_save_found', {
-          defaultValue: 'No save found'
-        }),
-        'error'
-      )
-      if (isMountedRef.current) setIsLoadingGame(false)
-      return
-    }
-
-    void enterFullscreen()
-    // State transitions (batched automatically by React 18+)
-    changeScene(GAME_PHASES.OVERWORLD)
-
-    // Audio is fire-and-forget; Overworld re-syncs audio.
-    initializeAudio()
-  }, [
-    loadGame,
-    addToast,
     changeScene,
     initializeAudio,
+    setShowNameInput,
+    setShowExistingSavePrompt,
+    playerNameInput,
+    addToast,
+    tRef
+  })
+
+  const { handleLoad, handleLoadExistingFromPrompt } = useMainMenuLoad({
     isMountedRef,
-    setIsLoadingGame
-  ])
+    setIsLoadingGame,
+    loadGame,
+    changeScene,
+    initializeAudio,
+    setShowExistingSavePrompt,
+    addToast,
+    tRef
+  })
 
   const handleCredits = useCallback(
     () => changeScene(GAME_PHASES.CREDITS),
     [changeScene]
   )
-  const closeNameInput = useCallback(
-    () => setShowNameInput(false),
-    [setShowNameInput]
-  )
-
-  const handleStartNewAnyway = useCallback(() => {
-    void enterFullscreen()
-    setShowExistingSavePrompt(false)
-    startNewTourFlow()
-  }, [startNewTourFlow, setShowExistingSavePrompt])
-
-  const handleLoadExistingFromPrompt = useCallback(() => {
-    setShowExistingSavePrompt(false)
-    void handleLoad()
-  }, [handleLoad, setShowExistingSavePrompt])
 
   return {
     t,
