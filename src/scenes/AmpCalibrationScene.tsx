@@ -10,16 +10,16 @@ export const AmpCalibrationScene = () => {
   const { t } = useTranslation(['ui'])
   const { changeScene } = useGameActions()
 
-  const ampLogicProps = useAmpLogic()
+  const { update, gameStateRef, ...ampLogicProps } = useAmpLogic()
 
   const controllerFactory = useMemo(() => createAmpStageController, [])
 
   const logic = useMemo(
     () => ({
-      update: ampLogicProps.update,
-      gameStateRef: ampLogicProps.gameStateRef
+      update,
+      gameStateRef
     }),
-    [ampLogicProps.update, ampLogicProps.gameStateRef]
+    [update, gameStateRef]
   )
 
   const onComplete = useCallback(() => {

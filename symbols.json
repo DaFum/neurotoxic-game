@@ -430,9 +430,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "isForbiddenKey"
-        ],
+        "dependencies": ["isForbiddenKey"],
         "exportedName": "addContrabandHelper",
         "exportKind": "named",
         "isDefault": false,
@@ -476,10 +474,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "getUnlocks",
-          "safeStorageOperation"
-        ],
+        "dependencies": ["getUnlocks", "safeStorageOperation"],
         "exportedName": "addUnlock",
         "exportKind": "named",
         "isDefault": false,
@@ -528,10 +523,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "createRngStream",
-          "nextSeed"
-        ],
+        "dependencies": ["createRngStream", "nextSeed"],
         "exportedName": "advanceDay",
         "exportKind": "named",
         "isDefault": false,
@@ -824,11 +816,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "AmpCalibrationView",
-          "useAmpLogic",
-          "useGameActions"
-        ],
+        "dependencies": ["AmpCalibrationView", "useAmpLogic", "useGameActions"],
         "exportedName": "AmpCalibrationScene",
         "exportKind": "named",
         "isComponent": true,
@@ -847,11 +835,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "AmpControls",
-          "AmpHUD",
-          "MinigameSceneFrame"
-        ],
+        "dependencies": ["AmpControls", "AmpHUD", "MinigameSceneFrame"],
         "exportedName": "AmpCalibrationView",
         "exportKind": "named",
         "isComponent": true,
@@ -1016,9 +1000,7 @@
       {
         "columnEnd": 3,
         "columnStart": 14,
-        "dependencies": [
-          "clampAmpDial"
-        ],
+        "dependencies": ["clampAmpDial"],
         "exportedName": "AmpControls",
         "exportKind": "named",
         "isComponent": true,
@@ -1337,10 +1319,7 @@
       {
         "columnEnd": 2,
         "columnStart": 1,
-        "dependencies": [
-          "getPixiColorFromToken",
-          "getSafeRandom"
-        ],
+        "dependencies": ["getPixiColorFromToken", "getSafeRandom"],
         "exportedName": "AmpWaveManager",
         "exportKind": "named",
         "isDefault": false,
@@ -1650,9 +1629,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "StateError"
-        ],
+        "dependencies": ["StateError"],
         "exportedName": "applyInventoryAdd",
         "exportKind": "named",
         "isDefault": false,
@@ -1866,9 +1843,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "calculateExcessMissMoneyPenalty"
-        ],
+        "dependencies": ["calculateExcessMissMoneyPenalty"],
         "exportedName": "applyPostGigPerformancePenalty",
         "exportKind": "named",
         "isDefault": false,
@@ -2128,11 +2103,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "getSafeUUID",
-          "hasTrait",
-          "normalizeTraitMap"
-        ],
+        "dependencies": ["getSafeUUID", "hasTrait", "normalizeTraitMap"],
         "exportedName": "applyTraitUnlocks",
         "exportKind": "named",
         "isDefault": false,
@@ -3448,10 +3419,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "formatCurrency",
-          "useGameSelector"
-        ],
+        "dependencies": ["formatCurrency", "useGameSelector"],
         "exportedName": "AssetsStatusStrip",
         "exportKind": "named",
         "isComponent": true,
@@ -3696,9 +3664,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "GlitchButton"
-        ],
+        "dependencies": ["GlitchButton"],
         "exportedName": "AudioLockedOverlay",
         "exportKind": "named",
         "isComponent": true,
@@ -3953,10 +3919,7 @@
       {
         "columnEnd": 3,
         "columnStart": 14,
-        "dependencies": [
-          "ToggleSwitch",
-          "VolumeSlider"
-        ],
+        "dependencies": ["ToggleSwitch", "VolumeSlider"],
         "exportedName": "AudioSettings",
         "exportKind": "named",
         "isComponent": true,
@@ -4176,9 +4139,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "GlitchButton"
-        ],
+        "dependencies": ["GlitchButton"],
         "exportedName": "AutoplayOverlay",
         "exportKind": "named",
         "isComponent": true,
@@ -4348,9 +4309,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "hasTrait"
-        ],
+        "dependencies": ["hasTrait"],
         "exportedName": "bandHasTrait",
         "exportKind": "named",
         "isDefault": false,
@@ -4539,10 +4498,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "AssetSectionPanel",
-          "BandhausCrossSectionView"
-        ],
+        "dependencies": ["AssetSectionPanel", "BandhausCrossSectionView"],
         "exportedName": "BandhausSection",
         "exportKind": "named",
         "isComponent": true,
@@ -5554,10 +5510,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "ActionButton",
-          "resolveGenImageUrl"
-        ],
+        "dependencies": ["ActionButton", "resolveGenImageUrl"],
         "exportedName": "BloodBankModal",
         "exportKind": "named",
         "isComponent": true,
@@ -6426,9 +6379,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "generateCampaignCodename"
-        ],
+        "dependencies": ["generateCampaignCodename"],
         "exportedName": "buildBrandOffer",
         "exportKind": "named",
         "isDefault": false,
@@ -6535,9 +6486,7 @@
       {
         "columnEnd": 2,
         "columnStart": 1,
-        "dependencies": [
-          "createLayeredSnare"
-        ],
+        "dependencies": ["createLayeredSnare"],
         "exportedName": "buildDrumKit",
         "exportKind": "named",
         "isDefault": false,
@@ -6568,9 +6517,7 @@
       {
         "columnEnd": 3,
         "columnStart": 14,
-        "dependencies": [
-          "calculateAccuracy"
-        ],
+        "dependencies": ["calculateAccuracy"],
         "exportedName": "buildGigStatsSnapshot",
         "exportKind": "named",
         "isDefault": false,
@@ -6659,9 +6606,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "normalizeMidiPitch"
-        ],
+        "dependencies": ["normalizeMidiPitch"],
         "exportedName": "buildMidiTrackEvents",
         "exportKind": "named",
         "exportPath": "src/utils/audio/audioEngine.ts",
@@ -6770,9 +6715,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "buildSongChartDensity"
-        ],
+        "dependencies": ["buildSongChartDensity"],
         "exportedName": "buildSetlistChartDensity",
         "exportKind": "named",
         "isDefault": false,
@@ -6809,10 +6752,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "buildMidiTrackEvents",
-          "isFiniteNumber"
-        ],
+        "dependencies": ["buildMidiTrackEvents", "isFiniteNumber"],
         "exportedName": "buildSongChartDensity",
         "exportKind": "named",
         "isDefault": false,
@@ -7107,9 +7047,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "CableItem"
-        ],
+        "dependencies": ["CableItem"],
         "exportedName": "CableList",
         "exportKind": "named",
         "isComponent": true,
@@ -7281,9 +7219,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "clamp0to100"
-        ],
+        "dependencies": ["clamp0to100"],
         "exportedName": "calculateAccuracy",
         "exportKind": "named",
         "isDefault": false,
@@ -7340,10 +7276,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "bandHasTrait",
-          "clamp0to100"
-        ],
+        "dependencies": ["bandHasTrait", "clamp0to100"],
         "exportedName": "calculateAmpCalibrationResult",
         "exportKind": "named",
         "isDefault": false,
@@ -7628,9 +7561,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "calculateGigFameReward"
-        ],
+        "dependencies": ["calculateGigFameReward"],
         "exportedName": "calculateContinueStats",
         "exportKind": "named",
         "isDefault": false,
@@ -8016,9 +7947,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "clampNonNegative"
-        ],
+        "dependencies": ["clampNonNegative"],
         "exportedName": "calculateFameLevel",
         "exportKind": "named",
         "isDefault": false,
@@ -8210,9 +8139,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "bandHasTrait"
-        ],
+        "dependencies": ["bandHasTrait"],
         "exportedName": "calculateFuelCost",
         "exportKind": "named",
         "isDefault": false,
@@ -8279,9 +8206,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "calculateGigModifierCost"
-        ],
+        "dependencies": ["calculateGigModifierCost"],
         "exportedName": "calculateGigExpenses",
         "exportKind": "named",
         "isDefault": false,
@@ -8418,9 +8343,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "finiteNumberOr"
-        ],
+        "dependencies": ["finiteNumberOr"],
         "exportedName": "calculateGigModifierCost",
         "exportKind": "named",
         "isDefault": false,
@@ -8457,9 +8380,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "hasTrait"
-        ],
+        "dependencies": ["hasTrait"],
         "exportedName": "calculateGigPhysics",
         "exportKind": "named",
         "isDefault": false,
@@ -8587,9 +8508,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "finiteNumberOr"
-        ],
+        "dependencies": ["finiteNumberOr"],
         "exportedName": "calculateGuarantee",
         "exportKind": "named",
         "isDefault": false,
@@ -8687,9 +8606,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "bandHasTrait"
-        ],
+        "dependencies": ["bandHasTrait"],
         "exportedName": "calculateKabelsalatMinigameResult",
         "exportKind": "named",
         "isDefault": false,
@@ -8744,10 +8661,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "clamp0to100",
-          "finiteNumberOr"
-        ],
+        "dependencies": ["clamp0to100", "finiteNumberOr"],
         "exportedName": "calculateMerchIncome",
         "exportKind": "named",
         "isDefault": false,
@@ -9286,10 +9200,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "clamp0to100",
-          "finiteNumberOr"
-        ],
+        "dependencies": ["clamp0to100", "finiteNumberOr"],
         "exportedName": "calculateRepairCost",
         "exportKind": "named",
         "isDefault": false,
@@ -9334,9 +9245,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "bandHasTrait"
-        ],
+        "dependencies": ["bandHasTrait"],
         "exportedName": "calculateRoadieMinigameResult",
         "exportKind": "named",
         "isDefault": false,
@@ -9485,9 +9394,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "finiteNumberOr"
-        ],
+        "dependencies": ["finiteNumberOr"],
         "exportedName": "calculateTicketIncome",
         "exportKind": "named",
         "isDefault": false,
@@ -9610,10 +9517,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "calculateFuelCost",
-          "finiteNumberOr"
-        ],
+        "dependencies": ["calculateFuelCost", "finiteNumberOr"],
         "exportedName": "calculateTravelExpenses",
         "exportKind": "named",
         "isDefault": false,
@@ -9790,9 +9694,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "bandHasTrait"
-        ],
+        "dependencies": ["bandHasTrait"],
         "exportedName": "calculateViralityScore",
         "exportKind": "named",
         "isDefault": false,
@@ -9838,9 +9740,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "clampZealotry"
-        ],
+        "dependencies": ["clampZealotry"],
         "exportedName": "calculateZealotryEffects",
         "exportKind": "named",
         "isDefault": false,
@@ -10621,10 +10521,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "formatCurrency",
-          "ShopItem"
-        ],
+        "dependencies": ["formatCurrency", "ShopItem"],
         "exportedName": "CatalogTab",
         "exportKind": "named",
         "isComponent": true,
@@ -10900,9 +10797,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "buildDiyTier"
-        ],
+        "dependencies": ["buildDiyTier"],
         "exportedName": "CHASSIS_CONFIG",
         "exportKind": "named",
         "isDefault": false,
@@ -11328,9 +11223,7 @@
       {
         "columnEnd": 3,
         "columnStart": 14,
-        "dependencies": [
-          "useChatterLogic"
-        ],
+        "dependencies": ["useChatterLogic"],
         "exportedName": "ChatterOverlay",
         "exportKind": "named",
         "isComponent": true,
@@ -11587,9 +11480,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "destroyPixiApp"
-        ],
+        "dependencies": ["destroyPixiApp"],
         "exportedName": "checkLifecycleRace",
         "exportKind": "named",
         "isDefault": false,
@@ -11715,9 +11606,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "hasTrait"
-        ],
+        "dependencies": ["hasTrait"],
         "exportedName": "checkTraitUnlocks",
         "exportKind": "named",
         "isDefault": false,
@@ -11855,9 +11744,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "clampPlayerMoney"
-        ],
+        "dependencies": ["clampPlayerMoney"],
         "exportedName": "checkTravelResources",
         "exportKind": "named",
         "isDefault": false,
@@ -11972,10 +11859,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "calculateViralityScore",
-          "secureRandom"
-        ],
+        "dependencies": ["calculateViralityScore", "secureRandom"],
         "exportedName": "checkViralEvent",
         "exportKind": "named",
         "isDefault": false,
@@ -12356,9 +12240,7 @@
       {
         "columnEnd": 79,
         "columnStart": 14,
-        "dependencies": [
-          "clamp0to100"
-        ],
+        "dependencies": ["clamp0to100"],
         "exportedName": "clampBandStress",
         "exportKind": "named",
         "isDefault": false,
@@ -12389,9 +12271,7 @@
       {
         "columnEnd": 21,
         "columnStart": 14,
-        "dependencies": [
-          "clamp0to100"
-        ],
+        "dependencies": ["clamp0to100"],
         "exportedName": "clampControversyLevel",
         "exportKind": "named",
         "isDefault": false,
@@ -12452,9 +12332,7 @@
       {
         "columnEnd": 78,
         "columnStart": 14,
-        "dependencies": [
-          "clamp0to100"
-        ],
+        "dependencies": ["clamp0to100"],
         "exportedName": "clampLoyalty",
         "exportKind": "named",
         "isDefault": false,
@@ -12511,9 +12389,7 @@
       {
         "columnEnd": 75,
         "columnStart": 14,
-        "dependencies": [
-          "clamp0to100"
-        ],
+        "dependencies": ["clamp0to100"],
         "exportedName": "clampMemberMood",
         "exportKind": "named",
         "isDefault": false,
@@ -13037,9 +12913,7 @@
       {
         "columnEnd": 25,
         "columnStart": 14,
-        "dependencies": [
-          "clamp0to100"
-        ],
+        "dependencies": ["clamp0to100"],
         "exportedName": "clampVanCondition",
         "exportKind": "named",
         "isDefault": false,
@@ -13147,9 +13021,7 @@
       {
         "columnEnd": 81,
         "columnStart": 14,
-        "dependencies": [
-          "clamp0to100"
-        ],
+        "dependencies": ["clamp0to100"],
         "exportedName": "clampZealotry",
         "exportKind": "named",
         "isDefault": false,
@@ -13202,9 +13074,7 @@
       {
         "columnEnd": 2,
         "columnStart": 1,
-        "dependencies": [
-          "stopAndDisconnectSource"
-        ],
+        "dependencies": ["stopAndDisconnectSource"],
         "exportedName": "cleanupAmbientPlayback",
         "exportKind": "named",
         "isDefault": false,
@@ -13235,10 +13105,7 @@
       {
         "columnEnd": 2,
         "columnStart": 1,
-        "dependencies": [
-          "resetGigState",
-          "stopAndDisconnectSource"
-        ],
+        "dependencies": ["resetGigState", "stopAndDisconnectSource"],
         "exportedName": "cleanupGigPlayback",
         "exportKind": "named",
         "isDefault": false,
@@ -13269,9 +13136,7 @@
       {
         "columnEnd": 2,
         "columnStart": 1,
-        "dependencies": [
-          "clearTransportEvent"
-        ],
+        "dependencies": ["clearTransportEvent"],
         "exportedName": "cleanupTransportEvents",
         "exportKind": "named",
         "isDefault": false,
@@ -13471,9 +13336,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "formatCurrency"
-        ],
+        "dependencies": ["formatCurrency"],
         "exportedName": "ClinicHeader",
         "exportKind": "named",
         "isComponent": true,
@@ -13536,10 +13399,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "formatCurrency",
-          "GlitchButton"
-        ],
+        "dependencies": ["formatCurrency", "GlitchButton"],
         "exportedName": "ClinicMemberCard",
         "exportKind": "named",
         "isComponent": true,
@@ -14041,9 +13901,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "getMessyPath"
-        ],
+        "dependencies": ["getMessyPath"],
         "exportedName": "ConnectionPath",
         "exportKind": "named",
         "isComponent": true,
@@ -14120,9 +13978,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "ConnectionPath"
-        ],
+        "dependencies": ["ConnectionPath"],
         "exportedName": "ConnectionPaths",
         "exportKind": "named",
         "isComponent": true,
@@ -14280,12 +14136,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "AnimatedDivider",
-          "GlitchButton",
-          "Modal",
-          "Panel"
-        ],
+        "dependencies": ["AnimatedDivider", "GlitchButton", "Modal", "Panel"],
         "exportedName": "ContrabandStash",
         "exportKind": "named",
         "isComponent": true,
@@ -14402,10 +14253,7 @@
       {
         "columnEnd": 3,
         "columnStart": 14,
-        "dependencies": [
-          "BlockMeter",
-          "normalizePercentageToScale"
-        ],
+        "dependencies": ["BlockMeter", "normalizePercentageToScale"],
         "exportedName": "CorruptionMeter",
         "exportKind": "named",
         "isComponent": true,
@@ -14506,9 +14354,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "clampNonNegative"
-        ],
+        "dependencies": ["clampNonNegative"],
         "exportedName": "createAddQuestAction",
         "exportKind": "named",
         "isDefault": false,
@@ -14557,9 +14403,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "getSafeUUID"
-        ],
+        "dependencies": ["getSafeUUID"],
         "exportedName": "createAddToastAction",
         "exportKind": "named",
         "isDefault": false,
@@ -14667,9 +14511,7 @@
       {
         "columnEnd": 3,
         "columnStart": 14,
-        "dependencies": [
-          "getSafeUUID"
-        ],
+        "dependencies": ["getSafeUUID"],
         "exportedName": "createAddVenueBlacklistAction",
         "exportKind": "named",
         "isDefault": false,
@@ -14775,9 +14617,7 @@
       {
         "columnEnd": 36,
         "columnStart": 14,
-        "dependencies": [
-          "AmpStageController"
-        ],
+        "dependencies": ["AmpStageController"],
         "exportedName": "createAmpStageController",
         "exportKind": "named",
         "isDefault": false,
@@ -14808,9 +14648,7 @@
       {
         "columnEnd": 2,
         "columnStart": 1,
-        "dependencies": [
-          "getRawAudioContext"
-        ],
+        "dependencies": ["getRawAudioContext"],
         "exportedName": "createAndConnectBufferSource",
         "exportKind": "named",
         "isDefault": false,
@@ -15112,9 +14950,7 @@
       {
         "columnEnd": 3,
         "columnStart": 14,
-        "dependencies": [
-          "executeAudioAction"
-        ],
+        "dependencies": ["executeAudioAction"],
         "exportedName": "createAudioHandlers",
         "exportKind": "named",
         "isDefault": false,
@@ -15142,9 +14978,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "handleError"
-        ],
+        "dependencies": ["handleError"],
         "exportedName": "createAudioSubscriber",
         "exportKind": "named",
         "isDefault": false,
@@ -15452,9 +15286,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "clampNonNegative"
-        ],
+        "dependencies": ["clampNonNegative"],
         "exportedName": "createClinicHealAction",
         "exportKind": "named",
         "isDefault": false,
@@ -15498,9 +15330,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "clampToNonNegativeInt"
-        ],
+        "dependencies": ["clampToNonNegativeInt"],
         "exportedName": "createCompleteAmpCalibrationAction",
         "exportKind": "named",
         "isDefault": false,
@@ -15608,10 +15438,7 @@
       {
         "columnEnd": 3,
         "columnStart": 14,
-        "dependencies": [
-          "clamp0to100",
-          "clampNonNegative"
-        ],
+        "dependencies": ["clamp0to100", "clampNonNegative"],
         "exportedName": "createCompleteRoadieMinigameAction",
         "exportKind": "named",
         "isDefault": false,
@@ -15662,9 +15489,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "clampUnitRandom"
-        ],
+        "dependencies": ["clampUnitRandom"],
         "exportedName": "createCompleteTravelMinigameAction",
         "exportKind": "named",
         "isDefault": false,
@@ -15969,9 +15794,7 @@
       {
         "columnEnd": 3,
         "columnStart": 14,
-        "dependencies": [
-          "normalizeTraitMap"
-        ],
+        "dependencies": ["normalizeTraitMap"],
         "exportedName": "createInitialState",
         "exportKind": "named",
         "isDefault": false,
@@ -16403,9 +16226,7 @@
       {
         "columnEnd": 3,
         "columnStart": 14,
-        "dependencies": [
-          "moveRivalBand"
-        ],
+        "dependencies": ["moveRivalBand"],
         "exportedName": "createMoveRivalBandAction",
         "exportKind": "named",
         "isDefault": false,
@@ -16719,9 +16540,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "mulberry32"
-        ],
+        "dependencies": ["mulberry32"],
         "exportedName": "createRngStream",
         "exportKind": "named",
         "isDefault": false,
@@ -16931,9 +16750,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "getSafeUUID"
-        ],
+        "dependencies": ["getSafeUUID"],
         "exportedName": "createSetLastGigStatsAction",
         "exportKind": "named",
         "isDefault": false,
@@ -17069,9 +16886,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "sanitizeRiskEventDescriptor"
-        ],
+        "dependencies": ["sanitizeRiskEventDescriptor"],
         "exportedName": "createSetPendingRiskEventAction",
         "exportKind": "named",
         "isDefault": false,
@@ -17390,9 +17205,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "generateRivalBand"
-        ],
+        "dependencies": ["generateRivalBand"],
         "exportedName": "createSpawnRivalBandAction",
         "exportKind": "named",
         "isDefault": false,
@@ -17695,9 +17508,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "getSafeUUID"
-        ],
+        "dependencies": ["getSafeUUID"],
         "exportedName": "createTradeVoidItemAction",
         "exportKind": "named",
         "isDefault": false,
@@ -17821,9 +17632,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "clampBandHarmony"
-        ],
+        "dependencies": ["clampBandHarmony"],
         "exportedName": "createUpdateBandAction",
         "exportKind": "named",
         "isDefault": false,
@@ -18368,9 +18177,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "AlertIcon"
-        ],
+        "dependencies": ["AlertIcon"],
         "exportedName": "CrisisModal",
         "exportKind": "named",
         "exportPath": "src/ui/shared/index.tsx",
@@ -18630,11 +18437,7 @@
       {
         "columnEnd": 2,
         "columnStart": 1,
-        "dependencies": [
-          "handleError",
-          "loadTextures",
-          "resolveGenImageUrl"
-        ],
+        "dependencies": ["handleError", "loadTextures", "resolveGenImageUrl"],
         "exportedName": "CrowdTextureManager",
         "exportKind": "named",
         "isDefault": false,
@@ -18772,11 +18575,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "formatCurrency",
-          "GlitchButton",
-          "Modal"
-        ],
+        "dependencies": ["formatCurrency", "GlitchButton", "Modal"],
         "exportedName": "DarkWebLeakModal",
         "exportKind": "named",
         "isComponent": true,
@@ -18912,9 +18711,7 @@
       {
         "columnEnd": 3,
         "columnStart": 14,
-        "dependencies": [
-          "DeadmanButton"
-        ],
+        "dependencies": ["DeadmanButton"],
         "exportedName": "DataManagement",
         "exportKind": "named",
         "isComponent": true,
@@ -19150,9 +18947,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "getTranslatedBrandDealDisplay"
-        ],
+        "dependencies": ["getTranslatedBrandDealDisplay"],
         "exportedName": "DealCard",
         "exportKind": "named",
         "isComponent": true,
@@ -19880,9 +19675,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "generatePostOptions"
-        ],
+        "dependencies": ["generatePostOptions"],
         "exportedName": "derivePostOptions",
         "exportKind": "named",
         "isDefault": false,
@@ -20582,10 +20375,7 @@
       {
         "columnEnd": 2,
         "columnStart": 1,
-        "dependencies": [
-          "EffectSpritePool",
-          "EffectTextureManager"
-        ],
+        "dependencies": ["EffectSpritePool", "EffectTextureManager"],
         "exportedName": "EffectManager",
         "exportKind": "named",
         "isDefault": false,
@@ -20678,10 +20468,7 @@
       {
         "columnEnd": 2,
         "columnStart": 1,
-        "dependencies": [
-          "loadTextures",
-          "resolveGenImageUrl"
-        ],
+        "dependencies": ["loadTextures", "resolveGenImageUrl"],
         "exportedName": "EffectTextureManager",
         "exportKind": "named",
         "isDefault": false,
@@ -21252,9 +21039,7 @@
       {
         "columnEnd": 3,
         "columnStart": 14,
-        "dependencies": [
-          "translateLocation"
-        ],
+        "dependencies": ["translateLocation"],
         "exportedName": "EventLog",
         "exportKind": "named",
         "isComponent": true,
@@ -21637,9 +21422,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "handleError"
-        ],
+        "dependencies": ["handleError"],
         "exportedName": "executeAudioAction",
         "exportKind": "named",
         "isDefault": false,
@@ -21754,9 +21537,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "buildGigStatsSnapshot"
-        ],
+        "dependencies": ["buildGigStatsSnapshot"],
         "exportedName": "finalizeGig",
         "exportKind": "named",
         "isDefault": false,
@@ -21993,10 +21774,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "formatSignedFinancialAmount",
-          "getFinancialColors"
-        ],
+        "dependencies": ["formatSignedFinancialAmount", "getFinancialColors"],
         "exportedName": "FinancialList",
         "exportKind": "named",
         "isComponent": true,
@@ -22252,9 +22030,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "CrisisModal"
-        ],
+        "dependencies": ["CrisisModal"],
         "exportedName": "ForeclosureModal",
         "exportKind": "named",
         "isComponent": true,
@@ -22527,9 +22303,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "formatCurrency"
-        ],
+        "dependencies": ["formatCurrency"],
         "exportedName": "formatSignedFinancialAmount",
         "exportKind": "named",
         "isDefault": false,
@@ -24094,10 +23868,7 @@
       {
         "columnEnd": 2,
         "columnStart": 1,
-        "dependencies": [
-          "AudioError",
-          "StateError"
-        ],
+        "dependencies": ["AudioError", "StateError"],
         "exportedName": "GameError",
         "exportKind": "named",
         "isDefault": false,
@@ -24395,9 +24166,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "GlitchButton"
-        ],
+        "dependencies": ["GlitchButton"],
         "exportedName": "GameOverButtons",
         "exportKind": "named",
         "isComponent": true,
@@ -24604,11 +24373,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "assertNever",
-          "bandReducer",
-          "createAddToastAction"
-        ],
+        "dependencies": ["assertNever", "bandReducer", "createAddToastAction"],
         "exportedName": "gameReducer",
         "exportKind": "named",
         "isDefault": false,
@@ -25284,10 +25049,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "buildBrandOffer",
-          "finiteNumberOr"
-        ],
+        "dependencies": ["buildBrandOffer", "finiteNumberOr"],
         "exportedName": "generateBrandOffers",
         "exportKind": "named",
         "isDefault": false,
@@ -25324,9 +25086,7 @@
       {
         "columnEnd": 59,
         "columnStart": 14,
-        "dependencies": [
-          "generateBrandName"
-        ],
+        "dependencies": ["generateBrandName"],
         "exportedName": "generateCampaignCodename",
         "exportKind": "named",
         "isDefault": false,
@@ -25549,10 +25309,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "formatCurrency",
-          "isFiniteNumber"
-        ],
+        "dependencies": ["formatCurrency", "isFiniteNumber"],
         "exportedName": "generateEffectText",
         "exportKind": "named",
         "isDefault": false,
@@ -25595,10 +25352,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "getSafeUUID",
-          "secureRandom"
-        ],
+        "dependencies": ["getSafeUUID", "secureRandom"],
         "exportedName": "generateLightningSeeds",
         "exportKind": "named",
         "isDefault": false,
@@ -25677,10 +25431,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "hasActiveSponsorship",
-          "StateError"
-        ],
+        "dependencies": ["hasActiveSponsorship", "StateError"],
         "exportedName": "generatePostOptions",
         "exportKind": "named",
         "isDefault": false,
@@ -25726,9 +25477,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "generateBrandName"
-        ],
+        "dependencies": ["generateBrandName"],
         "exportedName": "generateRivalBand",
         "exportKind": "named",
         "isDefault": false,
@@ -25825,9 +25574,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "clampControversyLevel"
-        ],
+        "dependencies": ["clampControversyLevel"],
         "exportedName": "getAcceptDealSocialUpdateFactory",
         "exportKind": "named",
         "isDefault": false,
@@ -25858,9 +25605,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "getAssetAggregateBoni"
-        ],
+        "dependencies": ["getAssetAggregateBoni"],
         "exportedName": "getActiveAssetModifiers",
         "exportKind": "named",
         "isDefault": false,
@@ -25906,9 +25651,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "bandHasTrait"
-        ],
+        "dependencies": ["bandHasTrait"],
         "exportedName": "getAdjustedCost",
         "exportKind": "named",
         "isDefault": false,
@@ -25964,9 +25707,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "getInstalledModules"
-        ],
+        "dependencies": ["getInstalledModules"],
         "exportedName": "getAssetAggregateBoni",
         "exportKind": "named",
         "isDefault": false,
@@ -26000,9 +25741,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "getAssetAggregateBoni"
-        ],
+        "dependencies": ["getAssetAggregateBoni"],
         "exportedName": "getAssetTotalDailyRevenue",
         "exportKind": "named",
         "isDefault": false,
@@ -26036,9 +25775,7 @@
       {
         "columnEnd": 69,
         "columnStart": 14,
-        "dependencies": [
-          "getAssetAggregateBoni"
-        ],
+        "dependencies": ["getAssetAggregateBoni"],
         "exportedName": "getAssetTotalUpkeep",
         "exportKind": "named",
         "isDefault": false,
@@ -26072,9 +25809,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "getRawAudioContext"
-        ],
+        "dependencies": ["getRawAudioContext"],
         "exportedName": "getAudioContextTimeSec",
         "exportKind": "named",
         "exportPath": "src/utils/audio/audioEngine.ts",
@@ -26553,10 +26288,7 @@
       {
         "columnEnd": 2,
         "columnStart": 1,
-        "dependencies": [
-          "calculateGigTimeMs",
-          "getRawAudioContext"
-        ],
+        "dependencies": ["calculateGigTimeMs", "getRawAudioContext"],
         "exportedName": "getGigTimeMs",
         "exportKind": "named",
         "exportPath": "src/utils/audio/audioEngine.ts",
@@ -26606,9 +26338,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "hasUpgrade"
-        ],
+        "dependencies": ["hasUpgrade"],
         "exportedName": "getHitDamage",
         "exportKind": "named",
         "isDefault": false,
@@ -26923,9 +26653,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "getLockReasons"
-        ],
+        "dependencies": ["getLockReasons"],
         "exportedName": "getModulePoolForAsset",
         "exportKind": "named",
         "isDefault": false,
@@ -27344,9 +27072,7 @@
       {
         "columnEnd": 67,
         "columnStart": 14,
-        "dependencies": [
-          "isQuestRegistryId"
-        ],
+        "dependencies": ["isQuestRegistryId"],
         "exportedName": "getQuestDefinition",
         "exportKind": "named",
         "isDefault": false,
@@ -27457,9 +27183,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "getSafeRandom"
-        ],
+        "dependencies": ["getSafeRandom"],
         "exportedName": "getRandomChatter",
         "exportKind": "named",
         "isDefault": false,
@@ -27531,9 +27255,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "getChassisImagePrompt"
-        ],
+        "dependencies": ["getChassisImagePrompt"],
         "exportedName": "getRepairImagePrompt",
         "exportKind": "named",
         "isDefault": false,
@@ -27612,10 +27334,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "handleError",
-          "secureRandom"
-        ],
+        "dependencies": ["handleError", "secureRandom"],
         "exportedName": "getSafeRandom",
         "exportKind": "named",
         "isDefault": false,
@@ -27715,11 +27434,7 @@
       {
         "columnEnd": 2,
         "columnStart": 1,
-        "dependencies": [
-          "handleError",
-          "safeJsonParse",
-          "StorageError"
-        ],
+        "dependencies": ["handleError", "safeJsonParse", "StorageError"],
         "exportedName": "getSafeStorageItem",
         "exportKind": "named",
         "isDefault": false,
@@ -28117,9 +27832,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "clampControversyLevel"
-        ],
+        "dependencies": ["clampControversyLevel"],
         "exportedName": "getSpinStorySocialUpdateFactory",
         "exportKind": "named",
         "isDefault": false,
@@ -28619,10 +28332,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "safeJsonParse",
-          "safeStorageOperation"
-        ],
+        "dependencies": ["safeJsonParse", "safeStorageOperation"],
         "exportedName": "getUnlocks",
         "exportKind": "named",
         "isDefault": false,
@@ -28782,9 +28492,7 @@
       {
         "columnEnd": 2,
         "columnStart": 7,
-        "dependencies": [
-          "formatCurrency"
-        ],
+        "dependencies": ["formatCurrency"],
         "exportedName": "default",
         "exportKind": "default",
         "isComponent": true,
@@ -28898,10 +28606,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "formatCurrency",
-          "GigModifierButton"
-        ],
+        "dependencies": ["formatCurrency", "GigModifierButton"],
         "exportedName": "GigModifiersBlock",
         "exportKind": "named",
         "isComponent": true,
@@ -29042,11 +28747,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "BandMembersLayer",
-          "GigHUD",
-          "PauseOverlay"
-        ],
+        "dependencies": ["BandMembersLayer", "GigHUD", "PauseOverlay"],
         "exportedName": "GigView",
         "exportKind": "named",
         "isComponent": true,
@@ -29304,9 +29005,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "useGameSelector"
-        ],
+        "dependencies": ["useGameSelector"],
         "exportedName": "GlossaryTab",
         "exportKind": "named",
         "isComponent": true,
@@ -29331,9 +29030,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "isForbiddenKey"
-        ],
+        "dependencies": ["isForbiddenKey"],
         "exportedName": "handleAddCooldown",
         "exportKind": "named",
         "isDefault": false,
@@ -29806,9 +29503,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "isValidGamePhase"
-        ],
+        "dependencies": ["isValidGamePhase"],
         "exportedName": "handleChangeScene",
         "exportKind": "named",
         "isDefault": false,
@@ -29864,9 +29559,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "getSafeUUID"
-        ],
+        "dependencies": ["getSafeUUID"],
         "exportedName": "handleCheckRivalEncounter",
         "exportKind": "named",
         "isDefault": false,
@@ -29897,10 +29590,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "getTraitById",
-          "normalizeTraitMap"
-        ],
+        "dependencies": ["getTraitById", "normalizeTraitMap"],
         "exportedName": "handleClinicEnhance",
         "exportKind": "named",
         "isDefault": false,
@@ -29956,10 +29646,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "clampMemberMood",
-          "clampMemberStamina"
-        ],
+        "dependencies": ["clampMemberMood", "clampMemberStamina"],
         "exportedName": "handleClinicHeal",
         "exportKind": "named",
         "isDefault": false,
@@ -30248,9 +29935,7 @@
       {
         "columnEnd": 2,
         "columnStart": 1,
-        "dependencies": [
-          "clamp0to100"
-        ],
+        "dependencies": ["clamp0to100"],
         "exportedName": "handleCrash",
         "exportKind": "named",
         "isDefault": false,
@@ -30395,9 +30080,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "isPlainRecord"
-        ],
+        "dependencies": ["isPlainRecord"],
         "exportedName": "handleError",
         "exportKind": "named",
         "isDefault": false,
@@ -30537,9 +30220,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "createAssetModuleInstalledQuestEvent"
-        ],
+        "dependencies": ["createAssetModuleInstalledQuestEvent"],
         "exportedName": "handleInstallModule",
         "exportKind": "named",
         "isDefault": false,
@@ -31132,9 +30813,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "createInitialState"
-        ],
+        "dependencies": ["createInitialState"],
         "exportedName": "handleResetState",
         "exportKind": "named",
         "isDefault": false,
@@ -31171,9 +30850,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "finiteNumberOr"
-        ],
+        "dependencies": ["finiteNumberOr"],
         "exportedName": "handleSellChassis",
         "exportKind": "named",
         "isDefault": false,
@@ -31477,9 +31154,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "sanitizeRiskEventDescriptor"
-        ],
+        "dependencies": ["sanitizeRiskEventDescriptor"],
         "exportedName": "handleSetPendingRiskEvent",
         "exportKind": "named",
         "isDefault": false,
@@ -31552,9 +31227,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "normalizeSetlistForSave"
-        ],
+        "dependencies": ["normalizeSetlistForSave"],
         "exportedName": "handleSetSetlist",
         "exportKind": "named",
         "isDefault": false,
@@ -31663,9 +31336,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "hasActiveAssetAcquisition"
-        ],
+        "dependencies": ["hasActiveAssetAcquisition"],
         "exportedName": "handleStartCrowdfund",
         "exportKind": "named",
         "isDefault": false,
@@ -31846,9 +31517,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "clampBandHarmony"
-        ],
+        "dependencies": ["clampBandHarmony"],
         "exportedName": "handleToggleNeuroDecimator",
         "exportKind": "named",
         "isDefault": false,
@@ -31963,10 +31632,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "applyTraitUnlocks",
-          "isForbiddenKey"
-        ],
+        "dependencies": ["applyTraitUnlocks", "isForbiddenKey"],
         "exportedName": "handleUnlockTrait",
         "exportKind": "named",
         "isDefault": false,
@@ -32249,9 +31915,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "calculateChassisUpgradeCost"
-        ],
+        "dependencies": ["calculateChassisUpgradeCost"],
         "exportedName": "handleUpgradeChassisTier",
         "exportKind": "named",
         "isDefault": false,
@@ -32288,9 +31952,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "isForbiddenKey"
-        ],
+        "dependencies": ["isForbiddenKey"],
         "exportedName": "handleUseContraband",
         "exportKind": "named",
         "isDefault": false,
@@ -32451,9 +32113,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "isLooseRecord"
-        ],
+        "dependencies": ["isLooseRecord"],
         "exportedName": "hasActiveSponsorship",
         "exportKind": "named",
         "isDefault": false,
@@ -32819,10 +32479,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "HeaderTimer",
-          "HeaderTitle"
-        ],
+        "dependencies": ["HeaderTimer", "HeaderTitle"],
         "exportedName": "Header",
         "exportKind": "named",
         "isComponent": true,
@@ -32916,10 +32573,7 @@
       {
         "columnEnd": 3,
         "columnStart": 14,
-        "dependencies": [
-          "BlockMeter",
-          "normalizePercentageToScale"
-        ],
+        "dependencies": ["BlockMeter", "normalizePercentageToScale"],
         "exportedName": "HealthBar",
         "exportKind": "named",
         "isComponent": true,
@@ -33485,9 +33139,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "handleError"
-        ],
+        "dependencies": ["handleError"],
         "exportedName": "initGlobalErrorHandling",
         "exportKind": "named",
         "isDefault": false,
@@ -33716,11 +33368,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "AutoplayOverlay",
-          "SkipButton",
-          "useGameActions"
-        ],
+        "dependencies": ["AutoplayOverlay", "SkipButton", "useGameActions"],
         "exportedName": "IntroVideo",
         "exportKind": "named",
         "isComponent": true,
@@ -34183,9 +33831,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "getPrimaryEffect"
-        ],
+        "dependencies": ["getPrimaryEffect"],
         "exportedName": "isItemOwned",
         "exportKind": "named",
         "isDefault": false,
@@ -34482,9 +34128,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "finiteNumberOr"
-        ],
+        "dependencies": ["finiteNumberOr"],
         "exportedName": "isOnCooldown",
         "exportKind": "named",
         "isDefault": false,
@@ -34826,9 +34470,7 @@
       {
         "columnEnd": 5,
         "columnStart": 14,
-        "dependencies": [
-          "ActionButton"
-        ],
+        "dependencies": ["ActionButton"],
         "exportedName": "KabelsalatGameOverOverlay",
         "exportKind": "named",
         "isComponent": true,
@@ -35055,10 +34697,7 @@
       {
         "columnEnd": 2,
         "columnStart": 1,
-        "dependencies": [
-          "buildRhythmLayout",
-          "LaneRenderer"
-        ],
+        "dependencies": ["buildRhythmLayout", "LaneRenderer"],
         "exportedName": "LaneManager",
         "exportKind": "named",
         "isDefault": false,
@@ -35101,9 +34740,7 @@
       {
         "columnEnd": 3,
         "columnStart": 14,
-        "dependencies": [
-          "ActionButton"
-        ],
+        "dependencies": ["ActionButton"],
         "exportedName": "LanguageSettings",
         "exportKind": "named",
         "isComponent": true,
@@ -35169,11 +34806,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "formatCurrency",
-          "formatNumber",
-          "GlitchButton"
-        ],
+        "dependencies": ["formatCurrency", "formatNumber", "GlitchButton"],
         "exportedName": "LeaderboardTab",
         "exportKind": "named",
         "isComponent": true,
@@ -35809,9 +35442,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "loadTexture"
-        ],
+        "dependencies": ["loadTexture"],
         "exportedName": "loadTextures",
         "exportKind": "named",
         "isDefault": false,
@@ -35963,10 +35594,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "GeneratedImagePanel",
-          "getLoanProfileImagePrompt"
-        ],
+        "dependencies": ["GeneratedImagePanel", "getLoanProfileImagePrompt"],
         "exportedName": "LoanProfileChoiceGrid",
         "exportKind": "named",
         "isComponent": true,
@@ -36036,10 +35664,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "LoanProfileChoiceGrid",
-          "Modal"
-        ],
+        "dependencies": ["LoanProfileChoiceGrid", "Modal"],
         "exportedName": "LoanProfileModal",
         "exportKind": "named",
         "isComponent": true,
@@ -36277,9 +35902,7 @@
       {
         "columnEnd": 35,
         "columnStart": 14,
-        "dependencies": [
-          "Logger"
-        ],
+        "dependencies": ["Logger"],
         "exportedName": "logger",
         "exportKind": "named",
         "isDefault": false,
@@ -36597,10 +36220,7 @@
       {
         "columnEnd": 2,
         "columnStart": 1,
-        "dependencies": [
-          "getSafeUUID",
-          "isValidLogLevel"
-        ],
+        "dependencies": ["getSafeUUID", "isValidLogLevel"],
         "exportedName": "Logger",
         "exportKind": "named",
         "isDefault": false,
@@ -36868,9 +36488,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "GlitchButton"
-        ],
+        "dependencies": ["GlitchButton"],
         "exportedName": "MainMenuActionButtons",
         "exportKind": "named",
         "isComponent": true,
@@ -36902,10 +36520,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "resolveGenImageUrl",
-          "useNetworkStatus"
-        ],
+        "dependencies": ["resolveGenImageUrl", "useNetworkStatus"],
         "exportedName": "MainMenuBackground",
         "exportKind": "named",
         "isComponent": true,
@@ -36930,10 +36545,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "GlitchButton",
-          "Modal"
-        ],
+        "dependencies": ["GlitchButton", "Modal"],
         "exportedName": "MainMenuExistingSavePrompt",
         "exportKind": "named",
         "isComponent": true,
@@ -36965,9 +36577,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "Modal"
-        ],
+        "dependencies": ["Modal"],
         "exportedName": "MainMenuFeatures",
         "exportKind": "named",
         "isComponent": true,
@@ -37023,10 +36633,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "AnimatedDivider",
-          "AnimatedSubtitle"
-        ],
+        "dependencies": ["AnimatedDivider", "AnimatedSubtitle"],
         "exportedName": "MainMenuHeader",
         "exportKind": "named",
         "isComponent": true,
@@ -37051,10 +36658,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "GlitchButton",
-          "Modal"
-        ],
+        "dependencies": ["GlitchButton", "Modal"],
         "exportedName": "MainMenuNameInputPrompt",
         "exportKind": "named",
         "isComponent": true,
@@ -37086,9 +36690,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "GlitchButton"
-        ],
+        "dependencies": ["GlitchButton"],
         "exportedName": "MainMenuSecondaryButtons",
         "exportKind": "named",
         "isComponent": true,
@@ -37120,10 +36722,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "Modal",
-          "UplinkButton"
-        ],
+        "dependencies": ["Modal", "UplinkButton"],
         "exportedName": "MainMenuSocials",
         "exportKind": "named",
         "isComponent": true,
@@ -37372,10 +36971,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "HexNode",
-          "translateLocation"
-        ],
+        "dependencies": ["HexNode", "translateLocation"],
         "exportedName": "MapNodeView",
         "exportKind": "named",
         "isComponent": true,
@@ -37639,10 +37235,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "resolveGenImageUrl",
-          "useGameSelector"
-        ],
+        "dependencies": ["resolveGenImageUrl", "useGameSelector"],
         "exportedName": "MerchPressModal",
         "exportKind": "named",
         "isComponent": true,
@@ -37772,10 +37365,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "AssetSectionPanel",
-          "WorkshopProductionLineView"
-        ],
+        "dependencies": ["AssetSectionPanel", "WorkshopProductionLineView"],
         "exportedName": "MerchWorkshopSection",
         "exportKind": "named",
         "isComponent": true,
@@ -37848,9 +37438,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "buildAssetUrlMap"
-        ],
+        "dependencies": ["buildAssetUrlMap"],
         "exportedName": "midiUrlMap",
         "exportKind": "named",
         "isDefault": false,
@@ -38343,10 +37931,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "Tooltip",
-          "UIFrameCorner"
-        ],
+        "dependencies": ["Tooltip", "UIFrameCorner"],
         "exportedName": "Modal",
         "exportKind": "named",
         "exportPath": "src/ui/shared/index.tsx",
@@ -38782,9 +38367,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "isEmptyObject"
-        ],
+        "dependencies": ["isEmptyObject"],
         "exportedName": "moveRivalBand",
         "exportKind": "named",
         "isDefault": false,
@@ -38902,9 +38485,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "bandHasTrait"
-        ],
+        "dependencies": ["bandHasTrait"],
         "exportedName": "negotiateDeal",
         "exportKind": "named",
         "isDefault": false,
@@ -38982,9 +38563,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "Modal"
-        ],
+        "dependencies": ["Modal"],
         "exportedName": "NegotiationModal",
         "exportKind": "named",
         "isComponent": true,
@@ -39113,10 +38692,7 @@
       {
         "columnEnd": 3,
         "columnStart": 14,
-        "dependencies": [
-          "formatCurrency",
-          "formatSignedFinancialAmount"
-        ],
+        "dependencies": ["formatCurrency", "formatSignedFinancialAmount"],
         "exportedName": "NetResult",
         "exportKind": "named",
         "isComponent": true,
@@ -39280,9 +38856,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "mulberry32"
-        ],
+        "dependencies": ["mulberry32"],
         "exportedName": "nextSeed",
         "exportKind": "named",
         "isDefault": false,
@@ -39350,9 +38924,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "isCatalogEffect"
-        ],
+        "dependencies": ["isCatalogEffect"],
         "exportedName": "normalizeCatalogEffect",
         "exportKind": "named",
         "isDefault": false,
@@ -39475,9 +39047,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "clamp0to100"
-        ],
+        "dependencies": ["clamp0to100"],
         "exportedName": "normalizePercentageToScale",
         "exportKind": "named",
         "isDefault": false,
@@ -39897,11 +39467,7 @@
       {
         "columnEnd": 2,
         "columnStart": 1,
-        "dependencies": [
-          "handleError",
-          "loadTextures",
-          "resolveGenImageUrl"
-        ],
+        "dependencies": ["handleError", "loadTextures", "resolveGenImageUrl"],
         "exportedName": "NoteTextureManager",
         "exportKind": "named",
         "isDefault": false,
@@ -40054,10 +39620,7 @@
       {
         "columnEnd": 3,
         "columnStart": 14,
-        "dependencies": [
-          "BlockMeter",
-          "normalizePercentageToScale"
-        ],
+        "dependencies": ["BlockMeter", "normalizePercentageToScale"],
         "exportedName": "OverloadMeter",
         "exportKind": "named",
         "isComponent": true,
@@ -40089,9 +39652,7 @@
       {
         "columnEnd": 3,
         "columnStart": 14,
-        "dependencies": [
-          "VoidSkullIcon"
-        ],
+        "dependencies": ["VoidSkullIcon"],
         "exportedName": "OverloadWarning",
         "exportKind": "named",
         "isComponent": true,
@@ -40335,9 +39896,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "GlitchButton"
-        ],
+        "dependencies": ["GlitchButton"],
         "exportedName": "OverworldMenu",
         "exportKind": "named",
         "isComponent": true,
@@ -40411,9 +39970,7 @@
       {
         "columnEnd": 3,
         "columnStart": 14,
-        "dependencies": [
-          "UIFrameCorner"
-        ],
+        "dependencies": ["UIFrameCorner"],
         "exportedName": "Panel",
         "exportKind": "named",
         "isComponent": true,
@@ -40557,9 +40114,7 @@
       {
         "columnEnd": 2,
         "columnStart": 1,
-        "dependencies": [
-          "pauseGigPlayback"
-        ],
+        "dependencies": ["pauseGigPlayback"],
         "exportedName": "pauseAudio",
         "exportKind": "named",
         "exportPath": "src/utils/audio/audioEngine.ts",
@@ -40597,9 +40152,7 @@
       {
         "columnEnd": 3,
         "columnStart": 14,
-        "dependencies": [
-          "Tooltip"
-        ],
+        "dependencies": ["Tooltip"],
         "exportedName": "PauseButton",
         "exportKind": "named",
         "isComponent": true,
@@ -40631,9 +40184,7 @@
       {
         "columnEnd": 2,
         "columnStart": 1,
-        "dependencies": [
-          "getGigTimeMs"
-        ],
+        "dependencies": ["getGigTimeMs"],
         "exportedName": "pauseGigPlayback",
         "exportKind": "named",
         "exportPath": "src/utils/audio/audioEngine.ts",
@@ -40660,9 +40211,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "GlitchButton"
-        ],
+        "dependencies": ["GlitchButton"],
         "exportedName": "PauseOverlay",
         "exportKind": "named",
         "isComponent": true,
@@ -40735,10 +40284,7 @@
       {
         "columnEnd": 2,
         "columnStart": 1,
-        "dependencies": [
-          "pickRandomContrabandByRarity",
-          "pickRarity"
-        ],
+        "dependencies": ["pickRandomContrabandByRarity", "pickRarity"],
         "exportedName": "pickRandomContraband",
         "exportKind": "named",
         "isDefault": false,
@@ -41576,9 +41122,7 @@
       {
         "columnEnd": 2,
         "columnStart": 1,
-        "dependencies": [
-          "playMidiFileInternal"
-        ],
+        "dependencies": ["playMidiFileInternal"],
         "exportedName": "playMidiFile",
         "exportKind": "named",
         "exportPath": "src/utils/audio/audioEngine.ts",
@@ -41664,10 +41208,7 @@
       {
         "columnEnd": 2,
         "columnStart": 1,
-        "dependencies": [
-          "normalizeMidiPlaybackOptions",
-          "stopAudioInternal"
-        ],
+        "dependencies": ["normalizeMidiPlaybackOptions", "stopAudioInternal"],
         "exportedName": "playMidiFileInternal",
         "exportKind": "named",
         "isDefault": false,
@@ -42105,10 +41646,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "resolveGenImageUrl",
-          "usePostGigLogic"
-        ],
+        "dependencies": ["resolveGenImageUrl", "usePostGigLogic"],
         "exportedName": "PostGig",
         "exportKind": "named",
         "isComponent": true,
@@ -42376,9 +41914,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "ActionButton"
-        ],
+        "dependencies": ["ActionButton"],
         "exportedName": "PoweredOnOverlay",
         "exportKind": "named",
         "isComponent": true,
@@ -42494,9 +42030,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "formatCurrency"
-        ],
+        "dependencies": ["formatCurrency"],
         "exportedName": "PreGigHeader",
         "exportKind": "named",
         "isComponent": true,
@@ -42646,10 +42180,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "ActionButton",
-          "RazorPlayIcon"
-        ],
+        "dependencies": ["ActionButton", "RazorPlayIcon"],
         "exportedName": "PreGigStartButton",
         "exportKind": "named",
         "isComponent": true,
@@ -42914,9 +42445,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "clampBandHarmony"
-        ],
+        "dependencies": ["clampBandHarmony"],
         "exportedName": "processHarmonyRegen",
         "exportKind": "named",
         "isDefault": false,
@@ -43005,9 +42534,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "calculateFameLevel"
-        ],
+        "dependencies": ["calculateFameLevel"],
         "exportedName": "processLiabilityTick",
         "exportKind": "named",
         "isDefault": false,
@@ -43218,9 +42745,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "isGigNode"
-        ],
+        "dependencies": ["isGigNode"],
         "exportedName": "processTravelEvents",
         "exportKind": "named",
         "isDefault": false,
@@ -44696,10 +44221,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "canAcceptQuest",
-          "getQuestDefinition"
-        ],
+        "dependencies": ["canAcceptQuest", "getQuestDefinition"],
         "exportedName": "QuestOfferEngine",
         "exportKind": "named",
         "isDefault": false,
@@ -44982,9 +44504,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "getQuestDefinition"
-        ],
+        "dependencies": ["getQuestDefinition"],
         "exportedName": "QuestProgress",
         "exportKind": "named",
         "isDefault": false,
@@ -45684,11 +45204,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "getQuestDefinition",
-          "GlitchButton",
-          "IconClose"
-        ],
+        "dependencies": ["getQuestDefinition", "GlitchButton", "IconClose"],
         "exportedName": "QuestsModal",
         "exportKind": "named",
         "isComponent": true,
@@ -45964,9 +45480,7 @@
       {
         "columnEnd": 3,
         "columnStart": 14,
-        "dependencies": [
-          "RackScrew"
-        ],
+        "dependencies": ["RackScrew"],
         "exportedName": "RackPanel",
         "exportKind": "named",
         "isComponent": true,
@@ -46641,9 +46155,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "selectAssetsMap"
-        ],
+        "dependencies": ["selectAssetsMap"],
         "exportedName": "repairChassis",
         "exportKind": "named",
         "isDefault": false,
@@ -46722,11 +46234,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "ActionButton",
-          "FinancialColumn",
-          "NetResult"
-        ],
+        "dependencies": ["ActionButton", "FinancialColumn", "NetResult"],
         "exportedName": "ReportPhase",
         "exportKind": "named",
         "isComponent": true,
@@ -46917,9 +46425,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "encodePublicAssetPath"
-        ],
+        "dependencies": ["encodePublicAssetPath"],
         "exportedName": "resolveAssetUrl",
         "exportKind": "named",
         "isDefault": false,
@@ -47080,9 +46586,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "calculateAppliedDelta"
-        ],
+        "dependencies": ["calculateAppliedDelta"],
         "exportedName": "resolveEventChoice",
         "exportKind": "named",
         "isDefault": false,
@@ -47281,9 +46785,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "finiteNumberOr"
-        ],
+        "dependencies": ["finiteNumberOr"],
         "exportedName": "resolveMerchRestockCost",
         "exportKind": "named",
         "isDefault": false,
@@ -47449,10 +46951,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "normalizeVenueId",
-          "resolveVenue"
-        ],
+        "dependencies": ["normalizeVenueId", "resolveVenue"],
         "exportedName": "resolveTravelVenue",
         "exportKind": "named",
         "isDefault": false,
@@ -47549,9 +47048,7 @@
       {
         "columnEnd": 2,
         "columnStart": 1,
-        "dependencies": [
-          "resumeGigPlayback"
-        ],
+        "dependencies": ["resumeGigPlayback"],
         "exportedName": "resumeAudio",
         "exportKind": "named",
         "exportPath": "src/utils/audio/audioEngine.ts",
@@ -47589,10 +47086,7 @@
       {
         "columnEnd": 2,
         "columnStart": 1,
-        "dependencies": [
-          "calculateGigPlaybackWindow",
-          "getRawAudioContext"
-        ],
+        "dependencies": ["calculateGigPlaybackWindow", "getRawAudioContext"],
         "exportedName": "resumeGigPlayback",
         "exportKind": "named",
         "exportPath": "src/utils/audio/audioEngine.ts",
@@ -49333,10 +48827,7 @@
       {
         "columnEnd": 3,
         "columnStart": 14,
-        "dependencies": [
-          "RoadieDPad",
-          "RoadieTouchSurface"
-        ],
+        "dependencies": ["RoadieDPad", "RoadieTouchSurface"],
         "exportedName": "RoadieControls",
         "exportKind": "named",
         "isComponent": true,
@@ -49800,9 +49291,7 @@
       {
         "columnEnd": 2,
         "columnStart": 1,
-        "dependencies": [
-          "hashString"
-        ],
+        "dependencies": ["hashString"],
         "exportedName": "RoadieTrafficManager",
         "exportKind": "named",
         "isDefault": false,
@@ -49824,9 +49313,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "getAssetAggregateBoni"
-        ],
+        "dependencies": ["getAssetAggregateBoni"],
         "exportedName": "rollAssetRiskEvents",
         "exportKind": "named",
         "isDefault": false,
@@ -50035,9 +49522,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "isForbiddenKey"
-        ],
+        "dependencies": ["isForbiddenKey"],
         "exportedName": "safeJsonParse",
         "exportKind": "named",
         "exportPath": "src/utils/gameStateUtils.ts",
@@ -50115,9 +49600,7 @@
       {
         "columnEnd": 2,
         "columnStart": 1,
-        "dependencies": [
-          "runSafeStorageOperation"
-        ],
+        "dependencies": ["runSafeStorageOperation"],
         "exportedName": "safeStorage",
         "exportKind": "named",
         "isDefault": false,
@@ -50168,9 +49651,7 @@
       {
         "columnEnd": 2,
         "columnStart": 1,
-        "dependencies": [
-          "runSafeStorageOperation"
-        ],
+        "dependencies": ["runSafeStorageOperation"],
         "exportedName": "safeStorageNoFallback",
         "exportKind": "named",
         "isDefault": false,
@@ -50289,10 +49770,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "finiteNumberOr",
-          "isLooseRecord"
-        ],
+        "dependencies": ["finiteNumberOr", "isLooseRecord"],
         "exportedName": "sanitizeAssets",
         "exportKind": "named",
         "isDefault": false,
@@ -50323,10 +49801,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "finiteNumberOr",
-          "isLooseRecord"
-        ],
+        "dependencies": ["finiteNumberOr", "isLooseRecord"],
         "exportedName": "sanitizeCrowdfundCampaigns",
         "exportKind": "named",
         "isDefault": false,
@@ -50363,10 +49838,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "finiteNumberOr",
-          "isLooseRecord"
-        ],
+        "dependencies": ["finiteNumberOr", "isLooseRecord"],
         "exportedName": "sanitizeLiabilities",
         "exportKind": "named",
         "isDefault": false,
@@ -50403,9 +49875,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "isEmptyObject"
-        ],
+        "dependencies": ["isEmptyObject"],
         "exportedName": "sanitizeLoadedToast",
         "exportKind": "named",
         "isDefault": false,
@@ -50442,9 +49912,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "isLooseRecord"
-        ],
+        "dependencies": ["isLooseRecord"],
         "exportedName": "sanitizeRiskEventDescriptor",
         "exportKind": "named",
         "isDefault": false,
@@ -50509,9 +49977,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "isEmptyObject"
-        ],
+        "dependencies": ["isEmptyObject"],
         "exportedName": "sanitizeSuccessToast",
         "exportKind": "named",
         "isDefault": false,
@@ -50623,9 +50089,7 @@
       {
         "columnEnd": 2,
         "columnStart": 1,
-        "dependencies": [
-          "MainMenu"
-        ],
+        "dependencies": ["MainMenu"],
         "exportedName": "SceneRouter",
         "exportKind": "named",
         "isComponent": true,
@@ -51199,10 +50663,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "buildSetlistChartDensity",
-          "getSongId"
-        ],
+        "dependencies": ["buildSetlistChartDensity", "getSongId"],
         "exportedName": "SetlistBlock",
         "exportKind": "named",
         "isComponent": true,
@@ -51234,11 +50695,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "ActionButton",
-          "useGameActions",
-          "useGameSelector"
-        ],
+        "dependencies": ["ActionButton", "useGameActions", "useGameSelector"],
         "exportedName": "SetlistTab",
         "exportKind": "named",
         "isComponent": true,
@@ -51342,10 +50799,7 @@
       {
         "columnEnd": 2,
         "columnStart": 1,
-        "dependencies": [
-          "handleError",
-          "StorageError"
-        ],
+        "dependencies": ["handleError", "StorageError"],
         "exportedName": "setSafeStorageItem",
         "exportKind": "named",
         "isDefault": false,
@@ -51576,9 +51030,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "GlitchButton"
-        ],
+        "dependencies": ["GlitchButton"],
         "exportedName": "SettingsReturnButton",
         "exportKind": "named",
         "isComponent": true,
@@ -51610,10 +51062,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "SettingsPanel",
-          "useSettingsActions"
-        ],
+        "dependencies": ["SettingsPanel", "useSettingsActions"],
         "exportedName": "SettingsTab",
         "exportKind": "named",
         "isComponent": true,
@@ -51732,9 +51181,7 @@
       {
         "columnEnd": 2,
         "columnStart": 1,
-        "dependencies": [
-          "buildDrumKit"
-        ],
+        "dependencies": ["buildDrumKit"],
         "exportedName": "setupDrums",
         "exportKind": "named",
         "isDefault": false,
@@ -51758,10 +51205,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "calculateGigPhysics",
-          "getGigModifiers"
-        ],
+        "dependencies": ["calculateGigPhysics", "getGigModifiers"],
         "exportedName": "setupGigPhysics",
         "exportKind": "named",
         "exportPath": "src/utils/audio/audioEngine.ts",
@@ -51869,9 +51313,7 @@
       {
         "columnEnd": 2,
         "columnStart": 1,
-        "dependencies": [
-          "buildDrumKit"
-        ],
+        "dependencies": ["buildDrumKit"],
         "exportedName": "setupMidiChain",
         "exportKind": "named",
         "isDefault": false,
@@ -52040,9 +51482,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "CatalogTab"
-        ],
+        "dependencies": ["CatalogTab"],
         "exportedName": "ShopTab",
         "exportKind": "named",
         "isComponent": true,
@@ -52311,9 +51751,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "formatCurrency"
-        ],
+        "dependencies": ["formatCurrency"],
         "exportedName": "SideEffectsSummary",
         "exportKind": "named",
         "isComponent": true,
@@ -52345,9 +51783,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "GlitchButton"
-        ],
+        "dependencies": ["GlitchButton"],
         "exportedName": "SkipButton",
         "exportKind": "named",
         "isComponent": true,
@@ -52732,11 +52168,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "Panel",
-          "SocialOptionButton",
-          "ZealotryGauge"
-        ],
+        "dependencies": ["Panel", "SocialOptionButton", "ZealotryGauge"],
         "exportedName": "SocialPhase",
         "exportKind": "named",
         "isComponent": true,
@@ -53229,9 +52661,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "SocketItem"
-        ],
+        "dependencies": ["SocketItem"],
         "exportedName": "SocketList",
         "exportKind": "named",
         "isComponent": true,
@@ -53499,9 +52929,7 @@
       {
         "columnEnd": 56,
         "columnStart": 14,
-        "dependencies": [
-          "transformSongsData"
-        ],
+        "dependencies": ["transformSongsData"],
         "exportedName": "SONGS_DB",
         "exportKind": "named",
         "isDefault": false,
@@ -53976,9 +53404,7 @@
       {
         "columnEnd": 2,
         "columnStart": 1,
-        "dependencies": [
-          "getAudioContextTimeSec"
-        ],
+        "dependencies": ["getAudioContextTimeSec"],
         "exportedName": "startGigClock",
         "exportKind": "named",
         "exportPath": "src/utils/audio/audioEngine.ts",
@@ -54076,9 +53502,7 @@
       {
         "columnEnd": 2,
         "columnStart": 1,
-        "dependencies": [
-          "prepareTransportPlayback"
-        ],
+        "dependencies": ["prepareTransportPlayback"],
         "exportedName": "startMetalGenerator",
         "exportKind": "named",
         "exportPath": "src/utils/audio/audioEngine.ts",
@@ -54218,9 +53642,7 @@
       {
         "columnEnd": 3,
         "columnStart": 14,
-        "dependencies": [
-          "UIFrameCorner"
-        ],
+        "dependencies": ["UIFrameCorner"],
         "exportedName": "StatBox",
         "exportKind": "named",
         "isComponent": true,
@@ -54351,11 +53773,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "formatCurrency",
-          "ProgressBar",
-          "StatBox"
-        ],
+        "dependencies": ["formatCurrency", "ProgressBar", "StatBox"],
         "exportedName": "StatsTab",
         "exportKind": "named",
         "isComponent": true,
@@ -54387,9 +53805,7 @@
       {
         "columnEnd": 2,
         "columnStart": 1,
-        "dependencies": [
-          "cleanupAmbientPlayback"
-        ],
+        "dependencies": ["cleanupAmbientPlayback"],
         "exportedName": "stopAmbientPlayback",
         "exportKind": "named",
         "exportPath": "src/utils/audio/audioEngine.ts",
@@ -54548,10 +53964,7 @@
       {
         "columnEnd": 2,
         "columnStart": 1,
-        "dependencies": [
-          "cleanupGigPlayback",
-          "getGigTimeMs"
-        ],
+        "dependencies": ["cleanupGigPlayback", "getGigTimeMs"],
         "exportedName": "stopGigPlayback",
         "exportKind": "named",
         "exportPath": "src/utils/audio/audioEngine.ts",
@@ -54758,10 +54171,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "AssetSectionPanel",
-          "StudioFloorplanView"
-        ],
+        "dependencies": ["AssetSectionPanel", "StudioFloorplanView"],
         "exportedName": "StudioSection",
         "exportKind": "named",
         "isComponent": true,
@@ -55069,10 +54479,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "useGameActions",
-          "useGameSelector"
-        ],
+        "dependencies": ["useGameActions", "useGameSelector"],
         "exportedName": "ToastOverlay",
         "exportKind": "named",
         "isComponent": true,
@@ -55267,11 +54674,7 @@
       {
         "columnEnd": 3,
         "columnStart": 14,
-        "dependencies": [
-          "RazorPlayIcon",
-          "Tooltip",
-          "useAudioControl"
-        ],
+        "dependencies": ["RazorPlayIcon", "Tooltip", "useAudioControl"],
         "exportedName": "ToggleRadio",
         "exportKind": "named",
         "isComponent": true,
@@ -56005,10 +55408,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "AssetSectionPanel",
-          "TourbusVehicleView"
-        ],
+        "dependencies": ["AssetSectionPanel", "TourbusVehicleView"],
         "exportedName": "TourbusSection",
         "exportKind": "named",
         "isComponent": true,
@@ -56133,9 +55533,7 @@
       {
         "columnEnd": 3,
         "columnStart": 14,
-        "dependencies": [
-          "HazardTicker"
-        ],
+        "dependencies": ["HazardTicker"],
         "exportedName": "ToxicHazardTicker",
         "exportKind": "named",
         "isComponent": true,
@@ -56302,9 +55700,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "isForbiddenKey"
-        ],
+        "dependencies": ["isForbiddenKey"],
         "exportedName": "translateContextKeys",
         "exportKind": "named",
         "isDefault": false,
@@ -56510,9 +55906,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "computeStashBustRisk"
-        ],
+        "dependencies": ["computeStashBustRisk"],
         "exportedName": "TRANSPORT_EVENTS",
         "exportKind": "named",
         "isDefault": false,
@@ -56690,9 +56084,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "useTutorial"
-        ],
+        "dependencies": ["useTutorial"],
         "exportedName": "TutorialManager",
         "exportKind": "named",
         "isComponent": true,
@@ -57312,9 +56704,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "CatalogTab"
-        ],
+        "dependencies": ["CatalogTab"],
         "exportedName": "UpgradesTab",
         "exportKind": "named",
         "isComponent": true,
@@ -57403,11 +56793,7 @@
       {
         "columnEnd": 2,
         "columnStart": 1,
-        "dependencies": [
-          "clampAmpDial",
-          "getSafeRandom",
-          "useGameActions"
-        ],
+        "dependencies": ["clampAmpDial", "getSafeRandom", "useGameActions"],
         "exportedName": "useAmpLogic",
         "exportKind": "named",
         "isDefault": false,
@@ -57653,10 +57039,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "useGameActions",
-          "useGameSelector"
-        ],
+        "dependencies": ["useGameActions", "useGameSelector"],
         "exportedName": "useBandHQModal",
         "exportKind": "named",
         "isDefault": false,
@@ -57727,11 +57110,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "getRandomChatter",
-          "getSafeRandom",
-          "getSafeUUID"
-        ],
+        "dependencies": ["getRandomChatter", "getSafeRandom", "getSafeUUID"],
         "exportedName": "useChatterLogic",
         "exportKind": "named",
         "isDefault": false,
@@ -57769,10 +57148,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "useGameActions",
-          "useGameSelector"
-        ],
+        "dependencies": ["useGameActions", "useGameSelector"],
         "exportedName": "useClinicLogic",
         "exportKind": "named",
         "isDefault": false,
@@ -57960,10 +57336,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "useGameActions",
-          "useGameSelector"
-        ],
+        "dependencies": ["useGameActions", "useGameSelector"],
         "exportedName": "useForeclosureModal",
         "exportKind": "named",
         "isDefault": false,
@@ -58684,10 +58057,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "resolveGenImageUrl",
-          "useNetworkStatus"
-        ],
+        "dependencies": ["resolveGenImageUrl", "useNetworkStatus"],
         "exportedName": "useGigVisuals",
         "exportKind": "named",
         "isDefault": false,
@@ -58719,9 +58089,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "getSafeRandom"
-        ],
+        "dependencies": ["getSafeRandom"],
         "exportedName": "useGlitchEffect",
         "exportKind": "named",
         "exportPath": "src/hooks/overworld/index.ts",
@@ -58781,10 +58149,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "loadTexture",
-          "resolveGenImageUrl"
-        ],
+        "dependencies": ["loadTexture", "resolveGenImageUrl"],
         "exportedName": "useKabelsalatBackground",
         "exportKind": "named",
         "isDefault": false,
@@ -58809,9 +58174,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "useGameActions"
-        ],
+        "dependencies": ["useGameActions"],
         "exportedName": "useKabelsalatGameEnd",
         "exportKind": "named",
         "isDefault": false,
@@ -59178,9 +58541,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "safeStorageOperation"
-        ],
+        "dependencies": ["safeStorageOperation"],
         "exportedName": "useLeaderboardSync",
         "exportKind": "named",
         "isDefault": false,
@@ -59253,9 +58614,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "handleError"
-        ],
+        "dependencies": ["handleError"],
         "exportedName": "useMainMenuAudio",
         "exportKind": "named",
         "isDefault": false,
@@ -59299,9 +58658,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "enterFullscreen"
-        ],
+        "dependencies": ["enterFullscreen"],
         "exportedName": "useMainMenuLoad",
         "exportKind": "named",
         "isDefault": false,
@@ -59443,11 +58800,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "secureRandom",
-          "useGameActions",
-          "useGameSelector"
-        ],
+        "dependencies": ["secureRandom", "useGameActions", "useGameSelector"],
         "exportedName": "useMerchPress",
         "exportKind": "named",
         "isDefault": false,
@@ -60119,9 +59472,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "useGameSelector"
-        ],
+        "dependencies": ["useGameSelector"],
         "exportedName": "useQuestsModal",
         "exportKind": "named",
         "isDefault": false,
@@ -60668,10 +60019,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "useGameActions",
-          "useGameSelector"
-        ],
+        "dependencies": ["useGameActions", "useGameSelector"],
         "exportedName": "useSupplyStopModal",
         "exportKind": "named",
         "exportPath": "src/hooks/overworld/index.ts",
@@ -60697,10 +60045,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "useGameActions",
-          "useGameSelector"
-        ],
+        "dependencies": ["useGameActions", "useGameSelector"],
         "exportedName": "useTourbusLogic",
         "exportKind": "named",
         "isDefault": false,
@@ -60790,10 +60135,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "useGameActions",
-          "useGameSelector"
-        ],
+        "dependencies": ["useGameActions", "useGameSelector"],
         "exportedName": "useTutorial",
         "exportKind": "named",
         "isDefault": false,
@@ -60818,9 +60160,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "isFiniteNumber"
-        ],
+        "dependencies": ["isFiniteNumber"],
         "exportedName": "validateBloodBankDonation",
         "exportKind": "named",
         "isDefault": false,
@@ -60887,10 +60227,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "checkHasLeakedToday",
-          "isFiniteNumber"
-        ],
+        "dependencies": ["checkHasLeakedToday", "isFiniteNumber"],
         "exportedName": "validateDarkWebLeak",
         "exportKind": "named",
         "isDefault": false,
@@ -61113,11 +60450,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "getAdjustedCost",
-          "getPrimaryEffect",
-          "isItemOwned"
-        ],
+        "dependencies": ["getAdjustedCost", "getPrimaryEffect", "isItemOwned"],
         "exportedName": "validatePurchase",
         "exportKind": "named",
         "isDefault": false,
@@ -61184,10 +60517,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "isLooseRecord",
-          "StateError"
-        ],
+        "dependencies": ["isLooseRecord", "StateError"],
         "exportedName": "validateSaveData",
         "exportKind": "named",
         "isDefault": false,
@@ -61642,9 +60972,7 @@
       {
         "columnEnd": 3,
         "columnStart": 14,
-        "dependencies": [
-          "ToggleSwitch"
-        ],
+        "dependencies": ["ToggleSwitch"],
         "exportedName": "VisualSettings",
         "exportKind": "named",
         "isComponent": true,
@@ -61875,9 +61203,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "ActionButton"
-        ],
+        "dependencies": ["ActionButton"],
         "exportedName": "VoidTraderTab",
         "exportKind": "named",
         "isComponent": true,
@@ -61909,9 +61235,7 @@
       {
         "columnEnd": 3,
         "columnStart": 14,
-        "dependencies": [
-          "SegmentedSlider"
-        ],
+        "dependencies": ["SegmentedSlider"],
         "exportedName": "VolumeSlider",
         "exportKind": "named",
         "exportPath": "src/ui/shared/index.tsx",
@@ -62232,10 +61556,7 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
-        "dependencies": [
-          "clampZealotry",
-          "resolveGenImageUrl"
-        ],
+        "dependencies": ["clampZealotry", "resolveGenImageUrl"],
         "exportedName": "ZealotryGauge",
         "exportKind": "named",
         "isComponent": true,

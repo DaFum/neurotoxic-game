@@ -19,8 +19,6 @@ export interface AmpCalibrationViewProps {
   timeLeft: number
   score: number
   isGameOver: boolean
-  update: (deltaMS: number) => void
-  gameStateRef: MutableRefObject<AmpStageOptions>
   isOverdriveActive: boolean
   setIsOverdriveActive: (val: boolean | ((prev: boolean) => boolean)) => void
   heat: number
