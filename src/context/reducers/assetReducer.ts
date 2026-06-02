@@ -299,7 +299,18 @@ export const handleUpgradeChassisTier = (
   // reducer would still spread state and rebuild player.money (with
   // upgradeCost staying at 0 — no functional damage today, but it wastes an
   // allocation and could mask a buggy dispatch from upstream).
-  const targetAsset = state.assets.find(a => a.id === assetId)
+  // ⚡ BOLT OPTIMIZATION: Replaced O(N) array methods (.find, .map)
+  // with procedural loops to avoid intermediate array allocations and reduce GC pressure.
+  let targetAsset: LongTermAsset | null = null
+  let targetAssetIndex = -1
+  for (let i = 0; i < state.assets.length; i++) {
+    const asset = state.assets[i]
+    if (asset && asset.id === assetId) {
+      targetAsset = asset
+      targetAssetIndex = i
+      break
+    }
+  }
   if (!targetAsset) return state
 
   if (targetTier <= targetAsset.chassisTier) return state
@@ -316,28 +327,28 @@ export const handleUpgradeChassisTier = (
   )
   if (state.player.money < upgradeCost) return state
 
-  const nextAssets = state.assets.map(asset => {
-    if (asset.id !== assetId) return asset
-
-    const nextSlots = [...asset.slots]
-    newSlotIds.forEach(newSlot => {
+  const nextSlots = [...targetAsset.slots]
+  for (let i = 0; i < newSlotIds.length; i++) {
+    const newSlot = newSlotIds[i]
+    if (newSlot) {
       nextSlots.push({
         id: newSlot.id,
         slotType: newSlot.slotType,
         position: { x: 0, y: 0 },
         installedModuleId: null
       })
-    })
-
-    return {
-      ...asset,
-      chassisTier: targetTier,
-      baseUpkeep: targetConfigTier.upkeep,
-      baseDailyRevenue: targetConfigTier.revenue,
-      baseRiskEventChance: targetConfigTier.baseRiskEventChance,
-      slots: nextSlots
     }
-  })
+  }
+
+  const nextAssets = [...state.assets]
+  nextAssets[targetAssetIndex] = {
+    ...targetAsset,
+    chassisTier: targetTier,
+    baseUpkeep: targetConfigTier.upkeep,
+    baseDailyRevenue: targetConfigTier.revenue,
+    baseRiskEventChance: targetConfigTier.baseRiskEventChance,
+    slots: nextSlots
+  }
 
   const nextState: GameState = {
     ...state,
