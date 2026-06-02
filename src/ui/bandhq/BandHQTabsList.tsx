@@ -1,6 +1,7 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { Tooltip } from '../shared/Tooltip.tsx'
+import { type HQTabDef } from './HQTabButton.tsx'
 import { HQTabButton } from './HQTabButton.tsx'
 
 interface BandHQTabsListProps {
@@ -18,6 +19,26 @@ export const BandHQTabsList = ({
 }: BandHQTabsListProps) => {
   const { t } = useTranslation()
 
+  const TABS_CONFIG: HQTabDef[] = [
+    { id: 'STATS', key: 'tabs.stats' },
+    { id: 'DETAILS', key: 'tabs.details' },
+    { id: 'SHOP', key: 'tabs.shop' },
+    { id: 'UPGRADES', key: 'tabs.upgrades' },
+    { id: 'SETLIST', key: 'tabs.setlist' },
+    { id: 'LEADERBOARD', key: 'tabs.leaderboard' },
+    { id: 'BRAND_DEALS', key: 'tabs.brandDeals' },
+    { id: 'SETTINGS', key: 'tabs.settings' },
+    { id: 'GLOSSARY', key: 'tabs.glossary' },
+    {
+      id: 'VOID',
+      key:
+        controversyLevel >= VOID_TRADER_CONTROVERSY_THRESHOLD
+          ? 'tabs.voidTrader'
+          : 'tabs.voidTraderLocked',
+      isLocked: controversyLevel < VOID_TRADER_CONTROVERSY_THRESHOLD
+    }
+  ]
+
   return (
     <div
       role='tablist'
@@ -26,29 +47,11 @@ export const BandHQTabsList = ({
       })}
       className='flex shrink-0 border-b-4 border-toxic-green overflow-x-auto touch-pan-x scrollbar-hidden'
     >
-      {[
-        { id: 'STATS', key: 'tabs.stats' },
-        { id: 'DETAILS', key: 'tabs.details' },
-        { id: 'SHOP', key: 'tabs.shop' },
-        { id: 'UPGRADES', key: 'tabs.upgrades' },
-        { id: 'SETLIST', key: 'tabs.setlist' },
-        { id: 'LEADERBOARD', key: 'tabs.leaderboard' },
-        { id: 'BRAND_DEALS', key: 'tabs.brandDeals' },
-        { id: 'SETTINGS', key: 'tabs.settings' },
-        { id: 'GLOSSARY', key: 'tabs.glossary' },
-        {
-          id: 'VOID',
-          key:
-            controversyLevel >= VOID_TRADER_CONTROVERSY_THRESHOLD
-              ? 'tabs.voidTrader'
-              : 'tabs.voidTraderLocked',
-          isLocked: controversyLevel < VOID_TRADER_CONTROVERSY_THRESHOLD
-        }
-      ].map(tab => {
+      {TABS_CONFIG.map(tab => {
         const isActive = currentTab === tab.id
         const button = (
           <HQTabButton
-            tab={tab as import('./HQTabButton.tsx').HQTabDef}
+            tab={tab}
             isActive={isActive}
             label={t(tab.key)}
             onClick={() => !tab.isLocked && setActiveTab(tab.id)}

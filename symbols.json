@@ -861,7 +861,7 @@
         "name": "AmpControls",
         "parameters": [
           {
-            "name": "{\r\n  dialValue,\r\n  targetValue,\r\n  setDialValue,\r\n  isOverdriveActive,\r\n  setIsOverdriveActive,\r\n  purgeInterference,\r\n  interference,\r\n  isHijackActive,\r\n  overrideHijack\r\n}",
+            "name": "{\n  dialValue,\n  targetValue,\n  setDialValue,\n  isOverdriveActive,\n  setIsOverdriveActive,\n  purgeInterference,\n  interference,\n  isHijackActive,\n  overrideHijack\n}",
             "optional": false,
             "rest": false,
             "type": "AmpControlsProps"
@@ -963,7 +963,7 @@
         "name": "AmpHUD",
         "parameters": [
           {
-            "name": "{\r\n  timeLeft,\r\n  score,\r\n  heat,\r\n  isOverheat,\r\n  voidResonance = 0,\r\n  isAnomalyActive = false,\r\n  interference = 0,\r\n  isHijackActive = false,\r\n  hijacksOverridden = 0\r\n}",
+            "name": "{\n  timeLeft,\n  score,\n  heat,\n  isOverheat,\n  voidResonance = 0,\n  isAnomalyActive = false,\n  interference = 0,\n  isHijackActive = false,\n  hijacksOverridden = 0\n}",
             "optional": false,
             "rest": false,
             "type": "AmpHUDProps"
@@ -1699,7 +1699,7 @@
         "name": "applyPostGigPerformancePenalty",
         "parameters": [
           {
-            "name": "{\r\n  financials,\r\n  misses = 0,\r\n  missTolerance,\r\n  missMoneyPenalty\r\n}",
+            "name": "{\n  financials,\n  misses = 0,\n  missTolerance,\n  missMoneyPenalty\n}",
             "optional": false,
             "rest": false,
             "type": "{ financials: PostGigFinancials; misses?: number; missTolerance: number; missMoneyPenalty?: number; }"
@@ -2887,7 +2887,7 @@
         "name": "AssetsBottomTabs",
         "parameters": [
           {
-            "name": "{\r\n  active,\r\n  onSelect\r\n}",
+            "name": "{\n  active,\n  onSelect\n}",
             "optional": false,
             "rest": false,
             "type": "AssetsBottomTabsProps"
@@ -2923,7 +2923,7 @@
         "name": "AssetSectionDeck",
         "parameters": [
           {
-            "name": "{\r\n  asset,\r\n  hero,\r\n  onSlotClick,\r\n  onRepair,\r\n  onUpgrade,\r\n  onSell\r\n}",
+            "name": "{\n  asset,\n  hero,\n  onSlotClick,\n  onRepair,\n  onUpgrade,\n  onSell\n}",
             "optional": false,
             "rest": false,
             "type": "AssetSectionDeckProps"
@@ -3098,7 +3098,7 @@
         "name": "AssetSlotActionList",
         "parameters": [
           {
-            "name": "{\r\n  asset,\r\n  onSlotClick\r\n}",
+            "name": "{\n  asset,\n  onSlotClick\n}",
             "optional": false,
             "rest": false,
             "type": "AssetSlotActionListProps"
@@ -3134,7 +3134,7 @@
         "name": "AssetSlotButton",
         "parameters": [
           {
-            "name": "{\r\n  id,\r\n  slotType,\r\n  installedModuleId,\r\n  onClick,\r\n  style,\r\n  className = 'absolute',\r\n  imageAspectRatio = '1:1',\r\n  imageSizeHint = { width: 256, height: 256 },\r\n  ariaLabel,\r\n  children\r\n}",
+            "name": "{\n  id,\n  slotType,\n  installedModuleId,\n  onClick,\n  style,\n  className = 'absolute',\n  imageAspectRatio = '1:1',\n  imageSizeHint = { width: 256, height: 256 },\n  ariaLabel,\n  children\n}",
             "optional": false,
             "rest": false,
             "type": "AssetSlotButtonProps"
@@ -3788,7 +3788,7 @@
         "name": "AudioSettings",
         "parameters": [
           {
-            "name": "{\r\n  musicVol,\r\n  sfxVol,\r\n  isMuted,\r\n  onMusicChange,\r\n  onSfxChange,\r\n  onToggleMute\r\n}",
+            "name": "{\n  musicVol,\n  sfxVol,\n  isMuted,\n  onMusicChange,\n  onSfxChange,\n  onToggleMute\n}",
             "optional": false,
             "rest": false,
             "type": "AudioSettingsProps"
@@ -4148,7 +4148,7 @@
         "name": "BandcampIcon",
         "parameters": [
           {
-            "name": "{\r\n  className = '',\r\n  ...props\r\n}",
+            "name": "{\n  className = '',\n  ...props\n}",
             "optional": false,
             "rest": false,
             "type": "IconProps"
@@ -4390,32 +4390,18 @@
         "columnEnd": 2,
         "columnStart": 14,
         "dependencies": [
-          "BrandDealsTab",
-          "DetailedStatsTab",
-          "getUnifiedUpgradeCatalog",
-          "GlossaryTab",
-          "LeaderboardTab",
+          "BandHQContentArea",
+          "BandHQTabsList",
           "resolveGenImageUrl",
-          "SetlistTab",
-          "SettingsTab",
-          "ShopTab",
-          "StatsTab",
-          "Tooltip",
-          "UpgradesTab",
-          "useAudioControl",
-          "useBandHQLogic",
-          "useGameActions",
           "useGameSelector",
-          "useNetworkStatus",
-          "usePurchaseLogic",
-          "VoidTraderTab"
+          "useNetworkStatus"
         ],
         "exportedName": "BandHQ",
         "exportKind": "named",
         "isComponent": true,
         "isDefault": false,
-        "lineEnd": 330,
-        "lineStart": 75,
+        "lineEnd": 93,
+        "lineStart": 17,
         "name": "BandHQ",
         "parameters": [
           {
@@ -4439,6 +4425,83 @@
             "importedAs": "BandHQ"
           }
         ]
+      }
+    ],
+    "BandHQContentArea": [
+      {
+        "columnEnd": 2,
+        "columnStart": 14,
+        "dependencies": [
+          "BrandDealsTab",
+          "DetailedStatsTab",
+          "getUnifiedUpgradeCatalog",
+          "GlossaryTab",
+          "LeaderboardTab",
+          "SetlistTab",
+          "SettingsTab",
+          "ShopTab",
+          "StatsTab",
+          "UpgradesTab",
+          "useAudioControl",
+          "useBandHQLogic",
+          "useGameActions",
+          "useGameSelector",
+          "usePurchaseLogic",
+          "VoidTraderTab"
+        ],
+        "exportedName": "BandHQContentArea",
+        "exportKind": "named",
+        "isComponent": true,
+        "isDefault": false,
+        "lineEnd": 194,
+        "lineStart": 25,
+        "name": "BandHQContentArea",
+        "parameters": [
+          {
+            "name": "{\n  currentTab,\n  VOID_TRADER_CONTROVERSY_THRESHOLD\n}",
+            "optional": false,
+            "rest": false,
+            "type": "BandHQContentAreaProps"
+          }
+        ],
+        "path": "src/ui/bandhq/BandHQContentArea.tsx",
+        "returnType": "React.JSX.Element",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/ui/BandHQ.tsx",
+            "importedAs": "BandHQContentArea"
+          }
+        ]
+      }
+    ],
+    "BandHQContentAreaProps": [
+      {
+        "columnEnd": 2,
+        "columnStart": 1,
+        "exportedName": "BandHQContentAreaProps",
+        "exportKind": "named",
+        "isDefault": false,
+        "lineEnd": 23,
+        "lineStart": 20,
+        "name": "BandHQContentAreaProps",
+        "path": "src/ui/bandhq/BandHQContentArea.tsx",
+        "properties": [
+          {
+            "name": "currentTab",
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "name": "VOID_TRADER_CONTROVERSY_THRESHOLD",
+            "optional": false,
+            "type": "number"
+          }
+        ],
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
       }
     ],
     "BandHQLogicResult": [
@@ -4491,17 +4554,8 @@
         "exportedName": "BandHQProps",
         "exportKind": "named",
         "isDefault": false,
-        "jsDoc": {
-          "summary": "BandHQ Component Displays statistics and a shop for purchasing upgrades.",
-          "tags": [
-            {
-              "name": "param",
-              "target": "props"
-            }
-          ]
-        },
-        "lineEnd": 73,
-        "lineStart": 70,
+        "lineEnd": 15,
+        "lineStart": 12,
         "name": "BandHQProps",
         "path": "src/ui/BandHQ.tsx",
         "properties": [
@@ -4519,6 +4573,41 @@
         "source": "local",
         "type": "interface",
         "typeOnly": true
+      }
+    ],
+    "BandHQTabsList": [
+      {
+        "columnEnd": 2,
+        "columnStart": 14,
+        "dependencies": [
+          "HQTabButton",
+          "Tooltip"
+        ],
+        "exportedName": "BandHQTabsList",
+        "exportKind": "named",
+        "isComponent": true,
+        "isDefault": false,
+        "lineEnd": 75,
+        "lineStart": 13,
+        "name": "BandHQTabsList",
+        "parameters": [
+          {
+            "name": "{\n  currentTab,\n  setActiveTab,\n  controversyLevel,\n  VOID_TRADER_CONTROVERSY_THRESHOLD\n}",
+            "optional": false,
+            "rest": false,
+            "type": "BandHQTabsListProps"
+          }
+        ],
+        "path": "src/ui/bandhq/BandHQTabsList.tsx",
+        "returnType": "React.JSX.Element",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/ui/BandHQ.tsx",
+            "importedAs": "BandHQTabsList"
+          }
+        ]
       }
     ],
     "BandMember": [
@@ -4721,7 +4810,7 @@
         "name": "BandMembersLayer",
         "parameters": [
           {
-            "name": "{\r\n    matzeUrl,\r\n    mariusUrl,\r\n    larsUrl,\r\n    setBandMemberRef\r\n  }",
+            "name": "{\n    matzeUrl,\n    mariusUrl,\n    larsUrl,\n    setBandMemberRef\n  }",
             "optional": false,
             "rest": false,
             "type": "BandMembersLayerProps"
@@ -5298,7 +5387,7 @@
         "name": "BlogIcon",
         "parameters": [
           {
-            "name": "{\r\n  className = '',\r\n  ...props\r\n}",
+            "name": "{\n  className = '',\n  ...props\n}",
             "optional": false,
             "rest": false,
             "type": "IconProps"
@@ -5389,7 +5478,7 @@
         "name": "BloodBankModal",
         "parameters": [
           {
-            "name": "{\r\n  onClose,\r\n  onDonate,\r\n  canDonate,\r\n  canDonateMarrow,\r\n  config,\r\n  marrowConfig\r\n}",
+            "name": "{\n  onClose,\n  onDonate,\n  canDonate,\n  canDonateMarrow,\n  config,\n  marrowConfig\n}",
             "optional": false,
             "rest": false,
             "type": "{ onClose: () => void; onDonate: (type: 'blood' | 'marrow') => void; canDonate: boolean; canDonateMarrow: boolean; config: BloodBankConfig; marrowConfig: BloodBankConfig; }"
@@ -5877,7 +5966,7 @@
         "type": "const",
         "usedBy": [
           {
-            "path": "src/ui/BandHQ.tsx",
+            "path": "src/ui/bandhq/BandHQContentArea.tsx",
             "importedAs": "BrandDealsTab"
           }
         ]
@@ -7514,7 +7603,7 @@
         "name": "calculateContinueStats",
         "parameters": [
           {
-            "name": "{\r\n  player,\r\n  perfScore,\r\n  financials,\r\n  misses,\r\n  calculateFameGain,\r\n  calculateFameLevel,\r\n  clampPlayerFame,\r\n  clampPlayerMoney,\r\n  BALANCE_CONSTANTS\r\n}",
+            "name": "{\n  player,\n  perfScore,\n  financials,\n  misses,\n  calculateFameGain,\n  calculateFameLevel,\n  clampPlayerFame,\n  clampPlayerMoney,\n  BALANCE_CONSTANTS\n}",
             "optional": false,
             "rest": false,
             "type": "{ player: GameState['player']; perfScore: number; financials: PostGigFinancials; misses?: number; calculateFameGain: (a: number, b: number, c: number) => number; calculateFameLevel: (fame: number) => number; clampPlayerFame: (n: number) => number; clampPlayerMoney: (n: number) => number; BALANCE_CONSTANTS: typeof BALANCE_CONSTANTS; }"
@@ -7756,7 +7845,7 @@
         "name": "calculateExcessMissMoneyPenalty",
         "parameters": [
           {
-            "name": "{\r\n  misses = 0,\r\n  missTolerance,\r\n  missMoneyPenalty\r\n}",
+            "name": "{\n  misses = 0,\n  missTolerance,\n  missMoneyPenalty\n}",
             "optional": false,
             "rest": false,
             "type": "{ misses?: number; missTolerance: number; missMoneyPenalty?: number; }"
@@ -8212,7 +8301,7 @@
         "name": "calculateGigFinancials",
         "parameters": [
           {
-            "name": "{\r\n    gigData,\r\n    performanceScore,\r\n    modifiers,\r\n    bandInventory,\r\n    playerState,\r\n    gigStats,\r\n    context = {}\r\n  }",
+            "name": "{\n    gigData,\n    performanceScore,\n    modifiers,\n    bandInventory,\n    playerState,\n    gigStats,\n    context = {}\n  }",
             "optional": false,
             "rest": false,
             "type": "GigFinancialParams"
@@ -10456,7 +10545,7 @@
         "name": "CatalogTab",
         "parameters": [
           {
-            "name": "{\r\n  items,\r\n  balances,\r\n  handleBuyCallback,\r\n  isItemOwnedCallback,\r\n  isItemDisabledCallback,\r\n  getAdjustedCostCallback,\r\n  processingItemId\r\n}",
+            "name": "{\n  items,\n  balances,\n  handleBuyCallback,\n  isItemOwnedCallback,\n  isItemDisabledCallback,\n  getAdjustedCostCallback,\n  processingItemId\n}",
             "optional": false,
             "rest": false,
             "type": "CatalogTabProps"
@@ -13371,7 +13460,7 @@
         "name": "ClinicMemberCard",
         "parameters": [
           {
-            "name": "{\r\n  member,\r\n  player,\r\n  healCostMoney,\r\n  enhanceCostFame,\r\n  healMember,\r\n  enhanceMember\r\n}",
+            "name": "{\n  member,\n  player,\n  healCostMoney,\n  enhanceCostFame,\n  healMember,\n  enhanceMember\n}",
             "optional": false,
             "rest": false,
             "type": "ClinicMemberCardProps"
@@ -13506,7 +13595,7 @@
         "name": "ComboDisplay",
         "parameters": [
           {
-            "name": "{\r\n  combo,\r\n  accuracy\r\n}",
+            "name": "{\n  combo,\n  accuracy\n}",
             "optional": false,
             "rest": false,
             "type": "ComboDisplayProps"
@@ -13543,7 +13632,7 @@
         "name": "CompletePhase",
         "parameters": [
           {
-            "name": "{\r\n  result,\r\n  onContinue,\r\n  onSpinStory,\r\n  player,\r\n  social,\r\n  isProcessingAction = false\r\n}",
+            "name": "{\n  result,\n  onContinue,\n  onSpinStory,\n  player,\n  social,\n  isProcessingAction = false\n}",
             "optional": false,
             "rest": false,
             "type": "CompletePhaseProps"
@@ -13875,7 +13964,7 @@
         "name": "ConnectionPath",
         "parameters": [
           {
-            "name": "{\r\n  sockId,\r\n  cabId,\r\n  isPowerConnected,\r\n  socketOrder\r\n}",
+            "name": "{\n  sockId,\n  cabId,\n  isPowerConnected,\n  socketOrder\n}",
             "optional": false,
             "rest": false,
             "type": "ConnectionPathProps"
@@ -14117,7 +14206,7 @@
         "name": "ContrabandStash",
         "parameters": [
           {
-            "name": "{\r\n  stash = [],\r\n  members = [],\r\n  selectedMember,\r\n  setSelectedMember,\r\n  handleUseItem,\r\n  onClose\r\n}",
+            "name": "{\n  stash = [],\n  members = [],\n  selectedMember,\n  setSelectedMember,\n  handleUseItem,\n  onClose\n}",
             "optional": false,
             "rest": false,
             "type": "ContrabandStashProps"
@@ -14237,7 +14326,7 @@
         "name": "CorruptionMeter",
         "parameters": [
           {
-            "name": "{\r\n  corruptionLevel,\r\n  isCorruptionBurstActive\r\n}",
+            "name": "{\n  corruptionLevel,\n  isCorruptionBurstActive\n}",
             "optional": false,
             "rest": false,
             "type": "CorruptionMeterProps"
@@ -14774,7 +14863,7 @@
         "name": "createAssetAcquiredQuestEvent",
         "parameters": [
           {
-            "name": "{\r\n  assetId,\r\n  assetKind,\r\n  flavor,\r\n  tier\r\n}",
+            "name": "{\n  assetId,\n  assetKind,\n  flavor,\n  tier\n}",
             "optional": false,
             "rest": false,
             "type": "{ assetId: string; assetKind: AssetKind | string; flavor: string; tier: number; }"
@@ -14804,7 +14893,7 @@
         "name": "createAssetConditionChangedQuestEvent",
         "parameters": [
           {
-            "name": "{\r\n  assetId,\r\n  assetKind,\r\n  amount,\r\n  condition\r\n}",
+            "name": "{\n  assetId,\n  assetKind,\n  amount,\n  condition\n}",
             "optional": false,
             "rest": false,
             "type": "{ assetId: string; assetKind: AssetKind | string; amount: number; condition: number; }"
@@ -14834,7 +14923,7 @@
         "name": "createAssetModuleInstalledQuestEvent",
         "parameters": [
           {
-            "name": "{\r\n  assetId,\r\n  assetKind,\r\n  moduleId,\r\n  slotType\r\n}",
+            "name": "{\n  assetId,\n  assetKind,\n  moduleId,\n  slotType\n}",
             "optional": false,
             "rest": false,
             "type": "{ assetId: string; assetKind: AssetKind | string; moduleId: string; slotType?: string; }"
@@ -14864,7 +14953,7 @@
         "name": "createAssetRepairedQuestEvent",
         "parameters": [
           {
-            "name": "{\r\n  assetId,\r\n  assetKind,\r\n  amount\r\n}",
+            "name": "{\n  assetId,\n  assetKind,\n  amount\n}",
             "optional": false,
             "rest": false,
             "type": "{ assetId: string; assetKind: AssetKind | string; amount: number; }"
@@ -14894,7 +14983,7 @@
         "name": "createAssetRiskResolvedQuestEvent",
         "parameters": [
           {
-            "name": "{\r\n  assetId,\r\n  assetKind,\r\n  riskType,\r\n  success\r\n}",
+            "name": "{\n  assetId,\n  assetKind,\n  riskType,\n  success\n}",
             "optional": false,
             "rest": false,
             "type": "{ assetId: string; assetKind: AssetKind | string; riskType: string; success: boolean; }"
@@ -14918,7 +15007,7 @@
         "name": "createAssetRiskTriggeredQuestEvent",
         "parameters": [
           {
-            "name": "{\r\n  assetId,\r\n  assetKind,\r\n  riskType\r\n}",
+            "name": "{\n  assetId,\n  assetKind,\n  riskType\n}",
             "optional": false,
             "rest": false,
             "type": "{ assetId: string; assetKind: AssetKind | string; riskType: string; }"
@@ -15090,7 +15179,7 @@
         "name": "createBrandDealFailedQuestEvent",
         "parameters": [
           {
-            "name": "{\r\n  dealId,\r\n  reason\r\n}",
+            "name": "{\n  dealId,\n  reason\n}",
             "optional": false,
             "rest": false,
             "type": "{ dealId: string; reason: string; }"
@@ -15144,7 +15233,7 @@
         "name": "createBrandTrustChangedQuestEvent",
         "parameters": [
           {
-            "name": "{\r\n  brandId,\r\n  amount\r\n}",
+            "name": "{\n  brandId,\n  amount\n}",
             "optional": false,
             "rest": false,
             "type": "{ brandId: string; amount: number; }"
@@ -15658,7 +15747,7 @@
         "name": "createFollowersGainedQuestEvent",
         "parameters": [
           {
-            "name": "{\r\n  amount,\r\n  platform,\r\n  postCategory,\r\n  postId\r\n}",
+            "name": "{\n  amount,\n  platform,\n  postCategory,\n  postId\n}",
             "optional": false,
             "rest": false,
             "type": "{ amount: number; platform?: string; postCategory?: string; postId?: string; }"
@@ -15742,7 +15831,7 @@
         "name": "createHarmonyChangedQuestEvent",
         "parameters": [
           {
-            "name": "{\r\n  amount,\r\n  newHarmony\r\n}",
+            "name": "{\n  amount,\n  newHarmony\n}",
             "optional": false,
             "rest": false,
             "type": "{ amount: number; newHarmony: number; }"
@@ -15850,7 +15939,7 @@
         "name": "createItemCollectedQuestEvent",
         "parameters": [
           {
-            "name": "{\r\n  itemId\r\n}",
+            "name": "{\n  itemId\n}",
             "optional": false,
             "rest": false,
             "type": "{ itemId: string; }"
@@ -15874,7 +15963,7 @@
         "name": "createItemCraftedQuestEvent",
         "parameters": [
           {
-            "name": "{\r\n  itemId,\r\n  recipeId\r\n}",
+            "name": "{\n  itemId,\n  recipeId\n}",
             "optional": false,
             "rest": false,
             "type": "{ itemId: string; recipeId: string; }"
@@ -15898,7 +15987,7 @@
         "name": "createItemDeliveredQuestEvent",
         "parameters": [
           {
-            "name": "{\r\n  itemId,\r\n  amount\r\n}",
+            "name": "{\n  itemId,\n  amount\n}",
             "optional": false,
             "rest": false,
             "type": "{ itemId: string; amount: number; }"
@@ -15922,7 +16011,7 @@
         "name": "createItemUsedQuestEvent",
         "parameters": [
           {
-            "name": "{\r\n  itemId\r\n}",
+            "name": "{\n  itemId\n}",
             "optional": false,
             "rest": false,
             "type": "{ itemId: string; }"
@@ -16125,7 +16214,7 @@
         "name": "createMinigameCompletedQuestEvent",
         "parameters": [
           {
-            "name": "{\r\n  minigameId,\r\n  success,\r\n  score,\r\n  grade\r\n}",
+            "name": "{\n  minigameId,\n  success,\n  score,\n  grade\n}",
             "optional": false,
             "rest": false,
             "type": "{ minigameId: MinigameType | string; success: boolean; score?: number; grade?: string; }"
@@ -16155,7 +16244,7 @@
         "name": "createMinigameFailedQuestEvent",
         "parameters": [
           {
-            "name": "{\r\n  minigameId,\r\n  damage\r\n}",
+            "name": "{\n  minigameId,\n  damage\n}",
             "optional": false,
             "rest": false,
             "type": "{ minigameId: MinigameType | string; damage?: number; }"
@@ -16185,7 +16274,7 @@
         "name": "createMinigamePerfectQuestEvent",
         "parameters": [
           {
-            "name": "{\r\n  minigameId\r\n}",
+            "name": "{\n  minigameId\n}",
             "optional": false,
             "rest": false,
             "type": "{ minigameId: MinigameType | string; }"
@@ -16209,7 +16298,7 @@
         "name": "createMoneyEarnedQuestEvent",
         "parameters": [
           {
-            "name": "{\r\n  amount,\r\n  reason\r\n}",
+            "name": "{\n  amount,\n  reason\n}",
             "optional": false,
             "rest": false,
             "type": "{ amount: number; reason?: string; }"
@@ -16427,7 +16516,7 @@
         "name": "createRegionReputationChangedQuestEvent",
         "parameters": [
           {
-            "name": "{\r\n  region,\r\n  amount,\r\n  reason\r\n}",
+            "name": "{\n  region,\n  amount,\n  reason\n}",
             "optional": false,
             "rest": false,
             "type": "{ region: string; amount: number; reason?: string; }"
@@ -17060,7 +17149,7 @@
         "name": "createSocialControversyChangedQuestEvent",
         "parameters": [
           {
-            "name": "{\r\n  amount,\r\n  reason\r\n}",
+            "name": "{\n  amount,\n  reason\n}",
             "optional": false,
             "rest": false,
             "type": "{ amount: number; reason?: string; }"
@@ -17090,7 +17179,7 @@
         "name": "createSocialLoyaltyChangedQuestEvent",
         "parameters": [
           {
-            "name": "{\r\n  amount,\r\n  reason\r\n}",
+            "name": "{\n  amount,\n  reason\n}",
             "optional": false,
             "rest": false,
             "type": "{ amount: number; reason?: string; }"
@@ -17190,7 +17279,7 @@
         "name": "createSocialTrendMatchedQuestEvent",
         "parameters": [
           {
-            "name": "{\r\n  trendId,\r\n  platform,\r\n  postCategory\r\n}",
+            "name": "{\n  trendId,\n  platform,\n  postCategory\n}",
             "optional": false,
             "rest": false,
             "type": "{ trendId: string; platform?: string; postCategory?: string; }"
@@ -17471,7 +17560,7 @@
         "name": "createStoryFlagAddedQuestEvent",
         "parameters": [
           {
-            "name": "{\r\n  flag\r\n}",
+            "name": "{\n  flag\n}",
             "optional": false,
             "rest": false,
             "type": "{ flag: string; }"
@@ -17571,7 +17660,7 @@
         "name": "createTravelCompletedQuestEvent",
         "parameters": [
           {
-            "name": "{\r\n  region\r\n}",
+            "name": "{\n  region\n}",
             "optional": false,
             "rest": false,
             "type": "{ region: string; }"
@@ -17933,7 +18022,7 @@
         "name": "createVenueBlacklistedQuestEvent",
         "parameters": [
           {
-            "name": "{\r\n  venueId,\r\n  reason\r\n}",
+            "name": "{\n  venueId,\n  reason\n}",
             "optional": false,
             "rest": false,
             "type": "{ venueId: string; reason: string; }"
@@ -17957,7 +18046,7 @@
         "name": "createVenueGigCompletedQuestEvent",
         "parameters": [
           {
-            "name": "{\r\n  venueId,\r\n  region,\r\n  score\r\n}",
+            "name": "{\n  venueId,\n  region,\n  score\n}",
             "optional": false,
             "rest": false,
             "type": "{ venueId: string; region: string; score: number; }"
@@ -17987,7 +18076,7 @@
         "name": "createVenueGoodGigQuestEvent",
         "parameters": [
           {
-            "name": "{\r\n  venueId,\r\n  region,\r\n  score,\r\n  capacity\r\n}",
+            "name": "{\n  venueId,\n  region,\n  score,\n  capacity\n}",
             "optional": false,
             "rest": false,
             "type": "{ venueId: string; region: string; score: number; capacity?: number; }"
@@ -18017,7 +18106,7 @@
         "name": "createVenueReputationChangedQuestEvent",
         "parameters": [
           {
-            "name": "{\r\n  venueId,\r\n  amount,\r\n  reason\r\n}",
+            "name": "{\n  venueId,\n  amount,\n  reason\n}",
             "optional": false,
             "rest": false,
             "type": "{ venueId: string; amount: number; reason?: string; }"
@@ -18041,7 +18130,7 @@
         "name": "createVenueUnblacklistedQuestEvent",
         "parameters": [
           {
-            "name": "{\r\n  venueId,\r\n  reason\r\n}",
+            "name": "{\n  venueId,\n  reason\n}",
             "optional": false,
             "rest": false,
             "type": "{ venueId: string; reason: string; }"
@@ -18203,7 +18292,7 @@
         "name": "CrisisModal",
         "parameters": [
           {
-            "name": "{\r\n    isOpen,\r\n    onClose,\r\n    title,\r\n    description,\r\n    actions,\r\n    className\r\n  }",
+            "name": "{\n    isOpen,\n    onClose,\n    title,\n    description,\n    actions,\n    className\n  }",
             "optional": false,
             "rest": false,
             "type": "CrisisModalProps"
@@ -18608,7 +18697,7 @@
         "name": "DarkWebLeakModal",
         "parameters": [
           {
-            "name": "{\r\n  config,\r\n  canLeak,\r\n  onConfirm,\r\n  onCancel,\r\n  hasLeakedToday\r\n}",
+            "name": "{\n  config,\n  canLeak,\n  onConfirm,\n  onCancel,\n  hasLeakedToday\n}",
             "optional": false,
             "rest": false,
             "type": "DarkWebLeakModalProps"
@@ -18984,7 +19073,7 @@
         "name": "DealCard",
         "parameters": [
           {
-            "name": "{\r\n    deal,\r\n    negotiationState,\r\n    brandReputation,\r\n    handleAcceptDeal,\r\n    handleNegotiationStart\r\n  }",
+            "name": "{\n    deal,\n    negotiationState,\n    brandReputation,\n    handleAcceptDeal,\n    handleNegotiationStart\n  }",
             "optional": false,
             "rest": false,
             "type": "DealCardProps"
@@ -19638,7 +19727,7 @@
         "name": "deriveFinancials",
         "parameters": [
           {
-            "name": "{\r\n  currentGig,\r\n  lastGigStats,\r\n  perfScore,\r\n  gigModifiers,\r\n  bandInventory,\r\n  bandMerchPrices,\r\n  player,\r\n  social,\r\n  reputationByRegion,\r\n  activeStoryFlags,\r\n  gigContext,\r\n  cityTraits,\r\n  assetModifiers\r\n}",
+            "name": "{\n  currentGig,\n  lastGigStats,\n  perfScore,\n  gigModifiers,\n  bandInventory,\n  bandMerchPrices,\n  player,\n  social,\n  reputationByRegion,\n  activeStoryFlags,\n  gigContext,\n  cityTraits,\n  assetModifiers\n}",
             "optional": false,
             "rest": false,
             "type": "{ currentGig: GameState['currentGig']; lastGigStats: GameState['lastGigStats']; perfScore: number; gigModifiers: GameState['gigModifiers']; bandInventory: GameState['band']['inventory']; bandMerchPrices?: GameState['band']['merchPrices']; player: GameState['player']; social: GameState['social']; reputationByRegion: GameState['reputationByRegion']; activeStoryFlags: GameState['activeStoryFlags']; gigContext: { daysSinceLastGig: number; lastGigDifficulty: number | null; } | null; cityTraits?: CityTraitState; assetModifiers?: AssetModifiers; }"
@@ -19713,7 +19802,7 @@
         "name": "derivePostOptions",
         "parameters": [
           {
-            "name": "{\r\n  currentGig,\r\n  lastGigStats,\r\n  player,\r\n  band,\r\n  social,\r\n  activeEvent\r\n}",
+            "name": "{\n  currentGig,\n  lastGigStats,\n  player,\n  band,\n  social,\n  activeEvent\n}",
             "optional": false,
             "rest": false,
             "type": "{ currentGig: GameState['currentGig']; lastGigStats: GameState['lastGigStats']; player: GameState['player']; band: GameState['band']; social: GameState['social']; activeEvent: GameState['activeEvent']; }"
@@ -19800,7 +19889,7 @@
         "name": "DetailedStatsTab",
         "parameters": [
           {
-            "name": "{\r\n  player,\r\n  band,\r\n  social,\r\n  activeQuests = [],\r\n  venueBlacklist = [],\r\n  reputationByRegion = {}\r\n}",
+            "name": "{\n  player,\n  band,\n  social,\n  activeQuests = [],\n  venueBlacklist = [],\n  reputationByRegion = {}\n}",
             "optional": false,
             "rest": false,
             "type": "{ player: PlayerData; band: BandData; social: SocialData; activeQuests?: ActiveQuest[]; venueBlacklist?: string[]; reputationByRegion?: Record<string, number>; }"
@@ -19812,7 +19901,7 @@
         "type": "const",
         "usedBy": [
           {
-            "path": "src/ui/BandHQ.tsx",
+            "path": "src/ui/bandhq/BandHQContentArea.tsx",
             "importedAs": "DetailedStatsTab"
           }
         ]
@@ -21157,7 +21246,7 @@
         "name": "EventModal",
         "parameters": [
           {
-            "name": "{\r\n  event,\r\n  onOptionSelect,\r\n  className = ''\r\n}",
+            "name": "{\n  event,\n  onOptionSelect,\n  className = ''\n}",
             "optional": false,
             "rest": false,
             "type": "{ event: EventModalEvent | null; onOptionSelect: (option: EventModalOption & { _precomputedResult?: EventModalPrecomputedResult; }) => void; className?: string; }"
@@ -24051,7 +24140,7 @@
         "name": "GameIcon",
         "parameters": [
           {
-            "name": "{\r\n  className = '',\r\n  ...props\r\n}",
+            "name": "{\n  className = '',\n  ...props\n}",
             "optional": false,
             "rest": false,
             "type": "IconProps"
@@ -24289,7 +24378,7 @@
         "name": "GameOverOverlay",
         "parameters": [
           {
-            "name": "{\r\n  isGameOver\r\n}",
+            "name": "{\n  isGameOver\n}",
             "optional": false,
             "rest": false,
             "type": "GameOverOverlayProps"
@@ -24320,7 +24409,7 @@
         "name": "GameOverStats",
         "parameters": [
           {
-            "name": "{\r\n  player\r\n}",
+            "name": "{\n  player\n}",
             "optional": false,
             "rest": false,
             "type": "{ player?: Pick<PlayerState, 'day' | 'fame' | 'totalTravels' | 'score'>; }"
@@ -25625,7 +25714,7 @@
         "name": "getAcceptDealMoneyUpdate",
         "parameters": [
           {
-            "name": "{\r\n  deal,\r\n  player\r\n}",
+            "name": "{\n  deal,\n  player\n}",
             "optional": false,
             "rest": false,
             "type": "{ deal: BrandDeal; player: GameState['player']; }"
@@ -27917,7 +28006,7 @@
         "name": "getSpinStoryMoneyUpdate",
         "parameters": [
           {
-            "name": "{\r\n  player\r\n}",
+            "name": "{\n  player\n}",
             "optional": false,
             "rest": false,
             "type": "{ player: GameState['player']; }"
@@ -28431,7 +28520,7 @@
         "type": "const",
         "usedBy": [
           {
-            "path": "src/ui/BandHQ.tsx",
+            "path": "src/ui/bandhq/BandHQContentArea.tsx",
             "importedAs": "getUnifiedUpgradeCatalog"
           }
         ]
@@ -28733,7 +28822,7 @@
         "name": "GigModifiersBlock",
         "parameters": [
           {
-            "name": "{\r\n  t,\r\n  gigModifierOptions,\r\n  gigModifiers,\r\n  toggleModifier,\r\n  handleBandMeeting,\r\n  bandMeetingCost,\r\n  currentModifiers\r\n}",
+            "name": "{\n  t,\n  gigModifierOptions,\n  gigModifiers,\n  toggleModifier,\n  handleBandMeeting,\n  bandMeetingCost,\n  currentModifiers\n}",
             "optional": false,
             "rest": false,
             "type": "GigModifiersBlockProps"
@@ -28878,7 +28967,7 @@
         "name": "GigView",
         "parameters": [
           {
-            "name": "{\r\n  chaosContainerRef,\r\n  chaosStyle,\r\n  isToxicMode,\r\n  bgUrl,\r\n  matzeUrl,\r\n  mariusUrl,\r\n  larsUrl,\r\n  setBandMemberRef,\r\n  t,\r\n  gameStateRef,\r\n  update,\r\n  stats,\r\n  handleLaneInput,\r\n  handleTogglePause,\r\n  isPaused,\r\n  handleQuitGig\r\n}",
+            "name": "{\n  chaosContainerRef,\n  chaosStyle,\n  isToxicMode,\n  bgUrl,\n  matzeUrl,\n  mariusUrl,\n  larsUrl,\n  setBandMemberRef,\n  t,\n  gameStateRef,\n  update,\n  stats,\n  handleLaneInput,\n  handleTogglePause,\n  isPaused,\n  handleQuitGig\n}",
             "optional": false,
             "rest": false,
             "type": "GigViewProps"
@@ -29016,7 +29105,7 @@
         "name": "GlitchButton",
         "parameters": [
           {
-            "name": "{\r\n  onClick,\r\n  children,\r\n  className = '',\r\n  disabled = false,\r\n  variant = 'primary',\r\n  size = 'lg',\r\n  isLoading = false,\r\n  ...props\r\n}",
+            "name": "{\n  onClick,\n  children,\n  className = '',\n  disabled = false,\n  variant = 'primary',\n  size = 'lg',\n  isLoading = false,\n  ...props\n}",
             "optional": false,
             "rest": false,
             "type": "GlitchButtonProps"
@@ -29143,7 +29232,7 @@
         "type": "const",
         "usedBy": [
           {
-            "path": "src/ui/BandHQ.tsx",
+            "path": "src/ui/bandhq/BandHQContentArea.tsx",
             "importedAs": "GlossaryTab"
           }
         ]
@@ -29435,7 +29524,7 @@
             "type": "GameState"
           },
           {
-            "name": "{\r\n      questId,\r\n      amount = 1,\r\n      randomIdx\r\n    }",
+            "name": "{\n      questId,\n      amount = 1,\n      randomIdx\n    }",
             "optional": false,
             "rest": false,
             "type": "{ questId: string; amount?: number; randomIdx?: number; }"
@@ -32751,7 +32840,7 @@
         "name": "HealthBar",
         "parameters": [
           {
-            "name": "{\r\n  health,\r\n  isToxicMode = false\r\n}",
+            "name": "{\n  health,\n  isToxicMode = false\n}",
             "optional": false,
             "rest": false,
             "type": "HealthBarProps"
@@ -32791,7 +32880,7 @@
         "name": "HecklerOverlay",
         "parameters": [
           {
-            "name": "{\r\n  gameStateRef\r\n}",
+            "name": "{\n  gameStateRef\n}",
             "optional": false,
             "rest": false,
             "type": "HecklerOverlayProps"
@@ -33065,6 +33154,70 @@
         "typeOnly": true
       }
     ],
+    "HQTabButton": [
+      {
+        "columnEnd": 2,
+        "columnStart": 14,
+        "exportedName": "HQTabButton",
+        "exportKind": "named",
+        "isComponent": true,
+        "isDefault": false,
+        "lineEnd": 41,
+        "lineStart": 16,
+        "name": "HQTabButton",
+        "parameters": [
+          {
+            "name": "{\n  tab,\n  isActive,\n  label,\n  onClick\n}",
+            "optional": false,
+            "rest": false,
+            "type": "HQTabButtonProps"
+          }
+        ],
+        "path": "src/ui/bandhq/HQTabButton.tsx",
+        "returnType": "React.JSX.Element",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/ui/bandhq/BandHQTabsList.tsx",
+            "importedAs": "HQTabButton"
+          }
+        ]
+      }
+    ],
+    "HQTabDef": [
+      {
+        "columnEnd": 2,
+        "columnStart": 1,
+        "exportedName": "HQTabDef",
+        "exportKind": "named",
+        "isDefault": false,
+        "lineEnd": 7,
+        "lineStart": 3,
+        "name": "HQTabDef",
+        "path": "src/ui/bandhq/HQTabButton.tsx",
+        "properties": [
+          {
+            "name": "id",
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "name": "isLocked",
+            "optional": true,
+            "type": "boolean"
+          },
+          {
+            "name": "key",
+            "optional": false,
+            "type": "string"
+          }
+        ],
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
+      }
+    ],
     "HTMLAttributes": [
       {
         "exportedName": "HTMLAttributes",
@@ -33136,7 +33289,7 @@
         "name": "IconClose",
         "parameters": [
           {
-            "name": "{\r\n  className = 'w-6 h-6'\r\n}",
+            "name": "{\n  className = 'w-6 h-6'\n}",
             "optional": false,
             "rest": false,
             "type": "IconProps"
@@ -33365,7 +33518,7 @@
         "name": "InstaIcon",
         "parameters": [
           {
-            "name": "{\r\n  className = '',\r\n  ...props\r\n}",
+            "name": "{\n  className = '',\n  ...props\n}",
             "optional": false,
             "rest": false,
             "type": "IconProps"
@@ -34626,7 +34779,7 @@
         "name": "KabelsalatBoard",
         "parameters": [
           {
-            "name": "{\r\n  t,\r\n  isShocked,\r\n  isPoweredOn,\r\n  isGameOver,\r\n  faultReason,\r\n  isPowerConnected,\r\n  lightningSeeds,\r\n  connections,\r\n  socketOrder,\r\n  selectedCable,\r\n  handleSocketClick,\r\n  handleCableClick,\r\n  onAdvance,\r\n  voidSurge,\r\n  purgeVoidSurge\r\n}",
+            "name": "{\n  t,\n  isShocked,\n  isPoweredOn,\n  isGameOver,\n  faultReason,\n  isPowerConnected,\n  lightningSeeds,\n  connections,\n  socketOrder,\n  selectedCable,\n  handleSocketClick,\n  handleCableClick,\n  onAdvance,\n  voidSurge,\n  purgeVoidSurge\n}",
             "optional": false,
             "rest": false,
             "type": "KabelsalatBoardProps"
@@ -34855,7 +35008,7 @@
         "name": "LaneInputArea",
         "parameters": [
           {
-            "name": "{\r\n  onLaneInput\r\n}",
+            "name": "{\n  onLaneInput\n}",
             "optional": false,
             "rest": false,
             "type": "LaneInputAreaProps"
@@ -35010,7 +35163,7 @@
         "type": "const",
         "usedBy": [
           {
-            "path": "src/ui/BandHQ.tsx",
+            "path": "src/ui/bandhq/BandHQContentArea.tsx",
             "importedAs": "LeaderboardTab"
           }
         ]
@@ -35451,7 +35604,7 @@
         "name": "LightningEffects",
         "parameters": [
           {
-            "name": "{\r\n  lightningSeeds\r\n}",
+            "name": "{\n  lightningSeeds\n}",
             "optional": false,
             "rest": false,
             "type": "{ lightningSeeds: LightningSeed[]; }"
@@ -35798,7 +35951,7 @@
         "name": "LoanProfileChoiceGrid",
         "parameters": [
           {
-            "name": "{\r\n  value,\r\n  onSelect\r\n}",
+            "name": "{\n  value,\n  onSelect\n}",
             "optional": false,
             "rest": false,
             "type": "LoanProfileChoiceGridProps"
@@ -35871,7 +36024,7 @@
         "name": "LoanProfileModal",
         "parameters": [
           {
-            "name": "{\r\n  isOpen,\r\n  onClose,\r\n  onSelect,\r\n  title\r\n}",
+            "name": "{\n  isOpen,\n  onClose,\n  onSelect,\n  title\n}",
             "optional": false,
             "rest": false,
             "type": "Props"
@@ -36450,7 +36603,7 @@
         "name": "LogSettings",
         "parameters": [
           {
-            "name": "{\r\n  logLevel,\r\n  onLogLevelChange\r\n}",
+            "name": "{\n  logLevel,\n  onLogLevelChange\n}",
             "optional": false,
             "rest": false,
             "type": "LogSettingsProps"
@@ -36702,7 +36855,7 @@
         "name": "MainMenuActionButtons",
         "parameters": [
           {
-            "name": "{\r\n  handleStartTour,\r\n  isStarting,\r\n  handleLoad,\r\n  isLoadingGame,\r\n  openHQ\r\n}",
+            "name": "{\n  handleStartTour,\n  isStarting,\n  handleLoad,\n  isLoadingGame,\n  openHQ\n}",
             "optional": false,
             "rest": false,
             "type": "MainMenuActionButtonsProps"
@@ -36920,7 +37073,7 @@
         "name": "MainMenuSecondaryButtons",
         "parameters": [
           {
-            "name": "{\r\n  setShowSocials,\r\n  handleCredits,\r\n  setShowFeatures\r\n}",
+            "name": "{\n  setShowSocials,\n  handleCredits,\n  setShowFeatures\n}",
             "optional": false,
             "rest": false,
             "type": "MainMenuSecondaryButtonsProps"
@@ -37207,7 +37360,7 @@
         "name": "MapNodeView",
         "parameters": [
           {
-            "name": "{\r\n    node,\r\n    isCurrent,\r\n    isTraveling,\r\n    visibility,\r\n    isReachable,\r\n    isPendingConfirm,\r\n    handleTravel,\r\n    setHoveredNode,\r\n    iconUrl,\r\n    vanUrl,\r\n    ticketPrice,\r\n    harmony,\r\n    cityTraits\r\n  }",
+            "name": "{\n    node,\n    isCurrent,\n    isTraveling,\n    visibility,\n    isReachable,\n    isPendingConfirm,\n    handleTravel,\n    setHoveredNode,\n    iconUrl,\n    vanUrl,\n    ticketPrice,\n    harmony,\n    cityTraits\n  }",
             "optional": false,
             "rest": false,
             "type": "MapNodeProps"
@@ -37474,7 +37627,7 @@
         "name": "MerchPressModal",
         "parameters": [
           {
-            "name": "{\r\n  onClose,\r\n  onPress,\r\n  canPress,\r\n  config\r\n}",
+            "name": "{\n  onClose,\n  onPress,\n  canPress,\n  config\n}",
             "optional": false,
             "rest": false,
             "type": "MerchPressModalProps"
@@ -37572,7 +37725,7 @@
         "name": "MerchStrategyBlock",
         "parameters": [
           {
-            "name": "{\r\n  bandInventory,\r\n  customPrices,\r\n  onUpdatePrice,\r\n  onRestock,\r\n  restockCostMultiplier = 1,\r\n  merchCapacityBonus = 0\r\n}",
+            "name": "{\n  bandInventory,\n  customPrices,\n  onUpdatePrice,\n  onRestock,\n  restockCostMultiplier = 1,\n  merchCapacityBonus = 0\n}",
             "optional": false,
             "rest": false,
             "type": "MerchStrategyBlockProps"
@@ -38179,7 +38332,7 @@
         "name": "Modal",
         "parameters": [
           {
-            "name": "{\r\n  isOpen,\r\n  onClose,\r\n  title,\r\n  ariaLabel,\r\n  children,\r\n  contentClassName = 'flex-1 min-h-0 flex flex-col max-h-[calc(100svh-3rem)] sm:max-h-[calc(100svh-4rem)] overflow-y-auto overflow-x-hidden',\r\n  className = 'max-w-md'\r\n}",
+            "name": "{\n  isOpen,\n  onClose,\n  title,\n  ariaLabel,\n  children,\n  contentClassName = 'flex-1 min-h-0 flex flex-col max-h-[calc(100svh-3rem)] sm:max-h-[calc(100svh-4rem)] overflow-y-auto overflow-x-hidden',\n  className = 'max-w-md'\n}",
             "optional": false,
             "rest": false,
             "type": "ModalProps"
@@ -39923,7 +40076,7 @@
         "name": "OverloadWarning",
         "parameters": [
           {
-            "name": "{\r\n  overload,\r\n  isToxicMode\r\n}",
+            "name": "{\n  overload,\n  isToxicMode\n}",
             "optional": false,
             "rest": false,
             "type": "OverloadWarningProps"
@@ -40135,7 +40288,7 @@
         "name": "OverworldMap",
         "parameters": [
           {
-            "name": "{\r\n    t,\r\n    gameMap,\r\n    player,\r\n    currentLayer,\r\n    isTraveling,\r\n    pendingTravelNode,\r\n    getNodeVisibility,\r\n    isConnected,\r\n    handleTravel,\r\n    setHoveredNode,\r\n    hoveredNode,\r\n    currentNode,\r\n    travelTarget,\r\n    travelCompletedRef,\r\n    onTravelComplete,\r\n    activeStoryFlags,\r\n    rivalBand,\r\n    band\r\n  }",
+            "name": "{\n    t,\n    gameMap,\n    player,\n    currentLayer,\n    isTraveling,\n    pendingTravelNode,\n    getNodeVisibility,\n    isConnected,\n    handleTravel,\n    setHoveredNode,\n    hoveredNode,\n    currentNode,\n    travelTarget,\n    travelCompletedRef,\n    onTravelComplete,\n    activeStoryFlags,\n    rivalBand,\n    band\n  }",
             "optional": false,
             "rest": false,
             "type": "OverworldMapProps"
@@ -40169,7 +40322,7 @@
         "name": "OverworldMenu",
         "parameters": [
           {
-            "name": "{\r\n    t,\r\n    isMenuOpen,\r\n    setIsMenuOpen,\r\n    isTraveling,\r\n    vanFuel,\r\n    vanCondition,\r\n    isSaving,\r\n    openStash,\r\n    openQuests,\r\n    openPirateRadio,\r\n    openMerchPress,\r\n    openBloodBank,\r\n    openClinic,\r\n    openDarkWebLeak,\r\n    openHQ,\r\n    openAssets,\r\n    handleRefuel,\r\n    handleRepair,\r\n    handleSaveWithDelay\r\n  }",
+            "name": "{\n    t,\n    isMenuOpen,\n    setIsMenuOpen,\n    isTraveling,\n    vanFuel,\n    vanCondition,\n    isSaving,\n    openStash,\n    openQuests,\n    openPirateRadio,\n    openMerchPress,\n    openBloodBank,\n    openClinic,\n    openDarkWebLeak,\n    openHQ,\n    openAssets,\n    handleRefuel,\n    handleRepair,\n    handleSaveWithDelay\n  }",
             "optional": false,
             "rest": false,
             "type": "OverworldMenuProps"
@@ -40254,7 +40407,7 @@
         "name": "Panel",
         "parameters": [
           {
-            "name": "{\r\n  title,\r\n  children,\r\n  className = '',\r\n  contentClassName = 'space-y-1'\r\n}",
+            "name": "{\n  title,\n  children,\n  className = '',\n  contentClassName = 'space-y-1'\n}",
             "optional": false,
             "rest": false,
             "type": "PanelProps"
@@ -40431,7 +40584,7 @@
         "name": "PauseButton",
         "parameters": [
           {
-            "name": "{\r\n  onTogglePause,\r\n  isGameOver\r\n}",
+            "name": "{\n  onTogglePause,\n  isGameOver\n}",
             "optional": false,
             "rest": false,
             "type": "PauseButtonProps"
@@ -40786,7 +40939,7 @@
         "name": "PirateRadioModal",
         "parameters": [
           {
-            "name": "{\r\n    onClose,\r\n    onBroadcast,\r\n    canBroadcast,\r\n    hasBroadcastedToday,\r\n    config,\r\n    contentClassName = ''\r\n  }",
+            "name": "{\n    onClose,\n    onBroadcast,\n    canBroadcast,\n    hasBroadcastedToday,\n    config,\n    contentClassName = ''\n  }",
             "optional": false,
             "rest": false,
             "type": "PirateRadioModalProps"
@@ -43126,7 +43279,7 @@
         "name": "ProgressBar",
         "parameters": [
           {
-            "name": "{\r\n  label,\r\n  value = 0,\r\n  max,\r\n  color,\r\n  size = 'md',\r\n  showValue = true,\r\n  warn = false,\r\n  className = '',\r\n  ...props\r\n}",
+            "name": "{\n  label,\n  value = 0,\n  max,\n  color,\n  size = 'md',\n  showValue = true,\n  warn = false,\n  className = '',\n  ...props\n}",
             "optional": false,
             "rest": false,
             "type": "ProgressBarProps"
@@ -45520,7 +45673,7 @@
         "name": "QuestsModal",
         "parameters": [
           {
-            "name": "{\r\n  onClose,\r\n  activeQuests,\r\n  player\r\n}",
+            "name": "{\n  onClose,\n  activeQuests,\n  player\n}",
             "optional": false,
             "rest": false,
             "type": "{ onClose: () => void; activeQuests: QuestDisplayState[]; player: PlayerState; }"
@@ -45970,7 +46123,7 @@
         "name": "RazorPlayIcon",
         "parameters": [
           {
-            "name": "{\r\n  className = ''\r\n}",
+            "name": "{\n  className = ''\n}",
             "optional": false,
             "rest": false,
             "type": "IconProps"
@@ -47114,7 +47267,7 @@
         "name": "resolveMerchRestockCost",
         "parameters": [
           {
-            "name": "{\r\n  itemCost,\r\n  merchCostMultiplier,\r\n  restockAmount,\r\n  bundleAmount\r\n}",
+            "name": "{\n  itemCost,\n  merchCostMultiplier,\n  restockAmount,\n  bundleAmount\n}",
             "optional": false,
             "rest": false,
             "type": "{ itemCost: unknown; merchCostMultiplier: unknown; restockAmount: unknown; bundleAmount: unknown; }"
@@ -49168,7 +49321,7 @@
         "name": "RoadieControls",
         "parameters": [
           {
-            "name": "{\r\n  showControls,\r\n  setShowControls,\r\n  handleMoveUp,\r\n  handleMoveLeft,\r\n  handleMoveDown,\r\n  handleMoveRight\r\n}",
+            "name": "{\n  showControls,\n  setShowControls,\n  handleMoveUp,\n  handleMoveLeft,\n  handleMoveDown,\n  handleMoveRight\n}",
             "optional": false,
             "rest": false,
             "type": "RoadieControlsProps"
@@ -49255,7 +49408,7 @@
         "name": "RoadieDPad",
         "parameters": [
           {
-            "name": "{\r\n  showControls,\r\n  handleMoveUp,\r\n  handleMoveLeft,\r\n  handleMoveDown,\r\n  handleMoveRight\r\n}",
+            "name": "{\n  showControls,\n  handleMoveUp,\n  handleMoveLeft,\n  handleMoveDown,\n  handleMoveRight\n}",
             "optional": false,
             "rest": false,
             "type": "RoadieDPadProps"
@@ -49552,7 +49705,7 @@
         "name": "RoadieTouchSurface",
         "parameters": [
           {
-            "name": "{\r\n  handleMoveUp,\r\n  handleMoveLeft,\r\n  handleMoveDown,\r\n  handleMoveRight\r\n}",
+            "name": "{\n  handleMoveUp,\n  handleMoveLeft,\n  handleMoveDown,\n  handleMoveRight\n}",
             "optional": false,
             "rest": false,
             "type": "RoadieTouchSurfaceProps"
@@ -50502,7 +50655,7 @@
         "name": "ScoreDisplay",
         "parameters": [
           {
-            "name": "{\r\n  score\r\n}",
+            "name": "{\n  score\n}",
             "optional": false,
             "rest": false,
             "type": "ScoreDisplayProps"
@@ -51034,7 +51187,7 @@
         "name": "SetlistBlock",
         "parameters": [
           {
-            "name": "{\r\n  setlist,\r\n  songsDb,\r\n  songsDict,\r\n  selectedSongIds,\r\n  player,\r\n  toggleSong\r\n}",
+            "name": "{\n  setlist,\n  songsDb,\n  songsDict,\n  selectedSongIds,\n  player,\n  toggleSong\n}",
             "optional": false,
             "rest": false,
             "type": "SetlistBlockProps"
@@ -51082,7 +51235,7 @@
         "type": "const",
         "usedBy": [
           {
-            "path": "src/ui/BandHQ.tsx",
+            "path": "src/ui/bandhq/BandHQContentArea.tsx",
             "importedAs": "SetlistTab"
           }
         ]
@@ -51457,7 +51610,7 @@
         "type": "const",
         "usedBy": [
           {
-            "path": "src/ui/BandHQ.tsx",
+            "path": "src/ui/bandhq/BandHQContentArea.tsx",
             "importedAs": "SettingsTab"
           }
         ]
@@ -51788,7 +51941,7 @@
         "name": "ShopItem",
         "parameters": [
           {
-            "name": "{\r\n    item,\r\n    isOwned,\r\n    isDisabled,\r\n    adjustedCost,\r\n    onBuy,\r\n    processingItemId\r\n  }",
+            "name": "{\n    item,\n    isOwned,\n    isDisabled,\n    adjustedCost,\n    onBuy,\n    processingItemId\n  }",
             "optional": false,
             "rest": false,
             "type": "ShopItemProps"
@@ -51886,7 +52039,7 @@
         "type": "const",
         "usedBy": [
           {
-            "path": "src/ui/BandHQ.tsx",
+            "path": "src/ui/bandhq/BandHQContentArea.tsx",
             "importedAs": "ShopTab"
           }
         ]
@@ -52145,7 +52298,7 @@
         "name": "SideEffectsSummary",
         "parameters": [
           {
-            "name": "{\r\n  result,\r\n  i18n,\r\n  t\r\n}",
+            "name": "{\n  result,\n  i18n,\n  t\n}",
             "optional": false,
             "rest": false,
             "type": "SideEffectsSummaryProps"
@@ -52491,7 +52644,7 @@
         "name": "SocialOptionButton",
         "parameters": [
           {
-            "name": "{\r\n  opt,\r\n  index,\r\n  onSelect\r\n}",
+            "name": "{\n  opt,\n  index,\n  onSelect\n}",
             "optional": false,
             "rest": false,
             "type": "SocialOptionButtonProps"
@@ -52568,7 +52721,7 @@
         "name": "SocialPhase",
         "parameters": [
           {
-            "name": "{\r\n  options,\r\n  onSelect,\r\n  trend,\r\n  zealotryLevel = 0\r\n}",
+            "name": "{\n  options,\n  onSelect,\n  trend,\n  zealotryLevel = 0\n}",
             "optional": false,
             "rest": false,
             "type": "SocialPhaseProps"
@@ -54047,7 +54200,7 @@
         "name": "StatBox",
         "parameters": [
           {
-            "name": "{\r\n  label,\r\n  value,\r\n  icon,\r\n  className = ''\r\n}",
+            "name": "{\n  label,\n  value,\n  icon,\n  className = ''\n}",
             "optional": false,
             "rest": false,
             "type": "StatBoxProps"
@@ -54194,7 +54347,7 @@
         "type": "const",
         "usedBy": [
           {
-            "path": "src/ui/BandHQ.tsx",
+            "path": "src/ui/bandhq/BandHQContentArea.tsx",
             "importedAs": "StatsTab"
           }
         ]
@@ -54650,7 +54803,7 @@
         "name": "SupplyStopModal",
         "parameters": [
           {
-            "name": "{\r\n  inventory,\r\n  onClose\r\n}",
+            "name": "{\n  inventory,\n  onClose\n}",
             "optional": false,
             "rest": false,
             "type": "SupplyStopModalProps"
@@ -54814,7 +54967,7 @@
         "name": "TikTokIcon",
         "parameters": [
           {
-            "name": "{\r\n  className = '',\r\n  ...props\r\n}",
+            "name": "{\n  className = '',\n  ...props\n}",
             "optional": false,
             "rest": false,
             "type": "IconProps"
@@ -55189,7 +55342,7 @@
         "name": "Tooltip",
         "parameters": [
           {
-            "name": "{\r\n  children,\r\n  content,\r\n  className = '',\r\n  position = 'top'\r\n}",
+            "name": "{\n  children,\n  content,\n  className = '',\n  position = 'top'\n}",
             "optional": false,
             "rest": false,
             "type": "{ children: ReactElement; content: ReactNode; className?: string; position?: 'top' | 'bottom'; }"
@@ -55241,7 +55394,7 @@
             "importedAs": "Tooltip"
           },
           {
-            "path": "src/ui/BandHQ.tsx",
+            "path": "src/ui/bandhq/BandHQTabsList.tsx",
             "importedAs": "Tooltip"
           },
           {
@@ -55542,7 +55695,7 @@
         "name": "TourbusControls",
         "parameters": [
           {
-            "name": "{\r\n  onMoveLeft,\r\n  onMoveRight\r\n}",
+            "name": "{\n  onMoveLeft,\n  onMoveRight\n}",
             "optional": false,
             "rest": false,
             "type": "TourbusControlsProps"
@@ -55962,7 +56115,7 @@
         "name": "ToxicHazardTicker",
         "parameters": [
           {
-            "name": "{\r\n  isToxicMode\r\n}",
+            "name": "{\n  isToxicMode\n}",
             "optional": false,
             "rest": false,
             "type": "ToxicHazardTickerProps"
@@ -55993,7 +56146,7 @@
         "name": "ToxicModeFlash",
         "parameters": [
           {
-            "name": "{\r\n  isToxicMode\r\n}",
+            "name": "{\n  isToxicMode\n}",
             "optional": false,
             "rest": false,
             "type": "ToxicModeFlashProps"
@@ -56544,7 +56697,7 @@
         "name": "UIFrameCorner",
         "parameters": [
           {
-            "name": "{\r\n  className = ''\r\n}",
+            "name": "{\n  className = ''\n}",
             "optional": false,
             "rest": false,
             "type": "IconProps"
@@ -57153,7 +57306,7 @@
         "type": "const",
         "usedBy": [
           {
-            "path": "src/ui/BandHQ.tsx",
+            "path": "src/ui/bandhq/BandHQContentArea.tsx",
             "importedAs": "UpgradesTab"
           }
         ]
@@ -57343,7 +57496,7 @@
             "importedAs": "useAudioControl"
           },
           {
-            "path": "src/ui/BandHQ.tsx",
+            "path": "src/ui/bandhq/BandHQContentArea.tsx",
             "importedAs": "useAudioControl"
           },
           {
@@ -57460,7 +57613,7 @@
         "type": "const",
         "usedBy": [
           {
-            "path": "src/ui/BandHQ.tsx",
+            "path": "src/ui/bandhq/BandHQContentArea.tsx",
             "importedAs": "useBandHQLogic"
           }
         ]
@@ -57985,7 +58138,7 @@
             "importedAs": "useGameActions"
           },
           {
-            "path": "src/ui/BandHQ.tsx",
+            "path": "src/ui/bandhq/BandHQContentArea.tsx",
             "importedAs": "useGameActions"
           },
           {
@@ -58121,7 +58274,7 @@
         "name": "useGameDispatchActions",
         "parameters": [
           {
-            "name": "{\r\n  dispatch,\r\n  state,\r\n  stateRef,\r\n  tRef,\r\n  resetMapGenerationRetries\r\n}",
+            "name": "{\n  dispatch,\n  state,\n  stateRef,\n  tRef,\n  resetMapGenerationRetries\n}",
             "optional": false,
             "rest": false,
             "type": "UseGameDispatchActionsProps"
@@ -58325,6 +58478,10 @@
             "importedAs": "useGameSelector"
           },
           {
+            "path": "src/ui/bandhq/BandHQContentArea.tsx",
+            "importedAs": "useGameSelector"
+          },
+          {
             "path": "src/ui/bandhq/GlossaryTab.tsx",
             "importedAs": "useGameSelector"
           },
@@ -58514,7 +58671,7 @@
         "name": "useGigVisuals",
         "parameters": [
           {
-            "name": "{\r\n  currentGig,\r\n  bandHarmony\r\n}",
+            "name": "{\n  currentGig,\n  bandHarmony\n}",
             "optional": false,
             "rest": false,
             "type": "UseGigVisualsProps"
@@ -59128,7 +59285,7 @@
         "name": "useMainMenuLoad",
         "parameters": [
           {
-            "name": "{\r\n  setIsLoadingGame,\r\n  loadGame,\r\n  changeScene,\r\n  initializeAudio,\r\n  setShowExistingSavePrompt,\r\n  addToast,\r\n  tRef\r\n}",
+            "name": "{\n  setIsLoadingGame,\n  loadGame,\n  changeScene,\n  initializeAudio,\n  setShowExistingSavePrompt,\n  addToast,\n  tRef\n}",
             "optional": false,
             "rest": false,
             "type": "UseMainMenuLoadProps"
@@ -59164,7 +59321,7 @@
         "name": "useMainMenuStart",
         "parameters": [
           {
-            "name": "{\r\n  setIsStarting,\r\n  resetState,\r\n  updatePlayer,\r\n  changeScene,\r\n  initializeAudio,\r\n  setShowNameInput,\r\n  setShowExistingSavePrompt,\r\n  playerNameInput,\r\n  addToast,\r\n  tRef\r\n}",
+            "name": "{\n  setIsStarting,\n  resetState,\n  updatePlayer,\n  changeScene,\n  initializeAudio,\n  setShowNameInput,\n  setShowExistingSavePrompt,\n  playerNameInput,\n  addToast,\n  tRef\n}",
             "optional": false,
             "rest": false,
             "type": "UseMainMenuStartProps"
@@ -59466,7 +59623,7 @@
         "name": "usePersistence",
         "parameters": [
           {
-            "name": "{\r\n  currentScene,\r\n  stateRef,\r\n  dispatch,\r\n  addToast,\r\n  tRef\r\n}",
+            "name": "{\n  currentScene,\n  stateRef,\n  dispatch,\n  addToast,\n  tRef\n}",
             "optional": false,
             "rest": false,
             "type": "UsePersistenceParams"
@@ -59591,7 +59748,7 @@
         "name": "usePostGigHandlers",
         "parameters": [
           {
-            "name": "{\r\n  player,\r\n  band,\r\n  social,\r\n  lastGigStats,\r\n  currentGig,\r\n  postOptionsDerivationError,\r\n  perfScore,\r\n  financials,\r\n  activeStoryFlags,\r\n  setlist,\r\n  updatePlayer,\r\n  updateBand,\r\n  updateSocial,\r\n  unlockTrait,\r\n  addToast,\r\n  changeScene,\r\n  addQuest,\r\n  applyQuestEvent,\r\n  setPhase,\r\n  setPostResult,\r\n  setBrandOffers,\r\n  t\r\n}",
+            "name": "{\n  player,\n  band,\n  social,\n  lastGigStats,\n  currentGig,\n  postOptionsDerivationError,\n  perfScore,\n  financials,\n  activeStoryFlags,\n  setlist,\n  updatePlayer,\n  updateBand,\n  updateSocial,\n  unlockTrait,\n  addToast,\n  changeScene,\n  addQuest,\n  applyQuestEvent,\n  setPhase,\n  setPostResult,\n  setBrandOffers,\n  t\n}",
             "optional": false,
             "rest": false,
             "type": "UsePostGigHandlersProps"
@@ -59922,7 +60079,7 @@
         "type": "const",
         "usedBy": [
           {
-            "path": "src/ui/BandHQ.tsx",
+            "path": "src/ui/bandhq/BandHQContentArea.tsx",
             "importedAs": "usePurchaseLogic"
           },
           {
@@ -60585,7 +60742,7 @@
         "name": "useTravelLogic",
         "parameters": [
           {
-            "name": "{\r\n  player,\r\n  band,\r\n  assets,\r\n  liabilities,\r\n  social,\r\n  gameMap,\r\n  updatePlayer,\r\n  updateBand,\r\n  saveGame,\r\n  advanceDay,\r\n  triggerEvent,\r\n  startGig,\r\n  addToast,\r\n  changeScene,\r\n  reputationByRegion,\r\n  venueBlacklist = [],\r\n  onShowHQ,\r\n  onShowSupplyStop,\r\n  onStartTravelMinigame,\r\n  moveRivalBand,\r\n  checkRivalEncounter,\r\n  applyQuestEvent\r\n}",
+            "name": "{\n  player,\n  band,\n  assets,\n  liabilities,\n  social,\n  gameMap,\n  updatePlayer,\n  updateBand,\n  saveGame,\n  advanceDay,\n  triggerEvent,\n  startGig,\n  addToast,\n  changeScene,\n  reputationByRegion,\n  venueBlacklist = [],\n  onShowHQ,\n  onShowSupplyStop,\n  onStartTravelMinigame,\n  moveRivalBand,\n  checkRivalEncounter,\n  applyQuestEvent\n}",
             "optional": false,
             "rest": false,
             "type": "TravelLogicParams"
@@ -61471,7 +61628,7 @@
         "name": "VisualSettings",
         "parameters": [
           {
-            "name": "{\r\n  crtEnabled,\r\n  onToggleCRT\r\n}",
+            "name": "{\n  crtEnabled,\n  onToggleCRT\n}",
             "optional": false,
             "rest": false,
             "type": "VisualSettingsProps"
@@ -61552,7 +61709,7 @@
         "name": "VoidSkullIcon",
         "parameters": [
           {
-            "name": "{\r\n  className = ''\r\n}",
+            "name": "{\n  className = ''\n}",
             "optional": false,
             "rest": false,
             "type": "IconProps"
@@ -61704,7 +61861,7 @@
         "name": "VoidTraderTab",
         "parameters": [
           {
-            "name": "{\r\n  player,\r\n  handleTrade,\r\n  isItemOwned,\r\n  isItemDisabled,\r\n  processingItemId\r\n}",
+            "name": "{\n  player,\n  handleTrade,\n  isItemOwned,\n  isItemDisabled,\n  processingItemId\n}",
             "optional": false,
             "rest": false,
             "type": "VoidTraderTabProps"
@@ -61716,7 +61873,7 @@
         "type": "const",
         "usedBy": [
           {
-            "path": "src/ui/BandHQ.tsx",
+            "path": "src/ui/bandhq/BandHQContentArea.tsx",
             "importedAs": "VoidTraderTab"
           }
         ]
@@ -62006,7 +62163,7 @@
         "name": "YouTubeIcon",
         "parameters": [
           {
-            "name": "{\r\n  className = '',\r\n  ...props\r\n}",
+            "name": "{\n  className = '',\n  ...props\n}",
             "optional": false,
             "rest": false,
             "type": "IconProps"

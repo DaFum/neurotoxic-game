@@ -110,7 +110,9 @@ export const BandHQContentArea = ({
         {currentTab === 'SHOP' && (
           <ShopTab
             player={player}
-            handleBuy={handleBuyWithLock}
+            handleBuy={(item: import('../../types/components').CatalogItem) => {
+              void handleBuyWithLock(item)
+            }}
             isItemOwned={
               isItemOwned as unknown as (
                 item: import('../../types/components').CatalogItem
@@ -134,7 +136,9 @@ export const BandHQContentArea = ({
           <UpgradesTab
             player={player}
             upgrades={unifiedUpgradeCatalog}
-            handleBuy={handleBuyWithLock}
+            handleBuy={(item: import('../../types/components').CatalogItem) => {
+              void handleBuyWithLock(item)
+            }}
             isItemOwned={
               isItemOwned as unknown as (
                 item: import('../../types/components').CatalogItem
@@ -168,7 +172,11 @@ export const BandHQContentArea = ({
           social.controversyLevel >= VOID_TRADER_CONTROVERSY_THRESHOLD && (
             <VoidTraderTab
               player={player}
-              handleTrade={handleVoidTrade}
+              handleTrade={(
+                item: import('../../types/components').VoidTraderItem
+              ) => {
+                void handleVoidTrade(item)
+              }}
               isItemOwned={isVoidItemOwned}
               isItemDisabled={isVoidItemDisabled}
               processingItemId={processingItemId ?? undefined}
