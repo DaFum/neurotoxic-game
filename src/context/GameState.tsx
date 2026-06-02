@@ -80,7 +80,7 @@ function useRequiredContext<T>(context: Context<T | null>, name: string): T {
 // Lazy initialization of state to ensure fresh data fetch on mount
 const initGameState = (): GameState => {
   const unlocks =
-    safeStorage('loadUnlocks', () => getUnlocks(), [] as string[]) ?? []
+    safeStorage('loadUnlocks', () => getUnlocks(), [] as string[])
   const freshState = createInitialState({ unlocks })
 
   // Check for test-injected state (screenshot testing).
@@ -136,8 +136,6 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   useEffect(() => {
     tRef.current = t
   }, [t])
-
-
 
   const [state, dispatch] = useReducer(gameReducer, undefined, initGameState)
 
