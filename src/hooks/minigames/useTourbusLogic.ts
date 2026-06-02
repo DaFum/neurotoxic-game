@@ -154,7 +154,7 @@ const processObstacles = (
  */
 const syncUiState = (
   game: TourbusLogicState,
-  setUiState: React.Dispatch<React.SetStateAction<UiState>>
+  setUiState: (value: UiState | ((prevState: UiState) => UiState)) => void
 ) => {
   setUiState(prev => {
     const distDiff = Math.abs(prev.distance - game.distance)
