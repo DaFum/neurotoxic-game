@@ -188,8 +188,8 @@ const selectRandomChatter = (
 
   return {
     text: item.text,
-    speaker: item.speaker || null,
-    type: item.type || 'normal'
+    speaker: item.speaker ?? null,
+    type: item.type ?? 'normal'
   }
 }
 
