@@ -36,7 +36,7 @@ const getCurrentVenueScopeKey = (state: GameState): string | undefined => {
     return currentGigId
   }
 
-  const nodeId = state.player?.currentNodeId
+  const nodeId = state.player.currentNodeId
   if (typeof nodeId !== 'string' || nodeId.length === 0) return undefined
   return state.gameMap?.nodes?.[nodeId]?.type === 'GIG' ? nodeId : undefined
 }
@@ -78,7 +78,7 @@ export const canAcceptQuest = (
   const repeatPolicy = merged.repeatPolicy
   let scopeKey: string | undefined
   if (repeatPolicy === 'never') {
-    if (state.completedQuestIds?.includes(questId)) {
+    if (state.completedQuestIds.includes(questId)) {
       return { ok: false, reason: 'completed' }
     }
     const activeFlags = state.activeStoryFlags ?? []
@@ -91,7 +91,7 @@ export const canAcceptQuest = (
     }
   }
   if (repeatPolicy === 'cooldown') {
-    const currentDay = finiteNumberOr(state.player?.day, 0)
+    const currentDay = finiteNumberOr(state.player.day, 0)
     const onCooldown = (state.questCooldowns ?? []).some(
       cd => cd.questId === questId && cd.expiresOnDay > currentDay
     )
@@ -102,7 +102,7 @@ export const canAcceptQuest = (
       merged.scopeKey ??
       (repeatPolicy === 'perVenue'
         ? getCurrentVenueScopeKey(state)
-        : state.player?.location)
+        : state.player.location)
     if (typeof scopeKey !== 'string' || scopeKey.length === 0) {
       return { ok: false, reason: 'scope' }
     }
