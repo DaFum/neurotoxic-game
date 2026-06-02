@@ -143,19 +143,23 @@ export function updateAmpGameState(
   // Overdrive & Heat Logic
   let currentHeat = heatRef.current
   let currentIsOverheat = isOverheatRef.current
-  const currentOverdriveActive = isOverdriveActiveRef.current
+  let currentOverdriveActive = isOverdriveActiveRef.current
 
   if (currentIsOverheat) {
     // Cooldown mode: disable overdrive automatically
     if (currentOverdriveActive) {
+      currentOverdriveActive = false
+      isOverdriveActiveRef.current = false
       setIsOverdriveActive(false)
     }
     currentHeat -= 25 * deltaSec // Cool down quickly when overheated
     if (currentHeat <= 0) {
       currentHeat = 0
       currentIsOverheat = false
+      isOverheatRef.current = false
       setIsOverheat(false)
     }
+    heatRef.current = currentHeat
     setHeat(currentHeat)
   } else {
     if (currentOverdriveActive) {
@@ -163,12 +167,16 @@ export function updateAmpGameState(
       if (currentHeat >= 100) {
         currentHeat = 100
         currentIsOverheat = true
+        isOverheatRef.current = true
         setIsOverheat(true)
+        currentOverdriveActive = false
+        isOverdriveActiveRef.current = false
         setIsOverdriveActive(false) // Force off
       }
     } else {
       currentHeat = Math.max(0, currentHeat - 15 * deltaSec) // Normal cooldown
     }
+    heatRef.current = currentHeat
     setHeat(currentHeat)
   }
 
@@ -183,7 +191,9 @@ export function updateAmpGameState(
       isAnomalyActiveRef.current = true
       setIsAnomalyActive(true)
       // Force an extreme target frequency
-      setTargetValue(getSafeRandom() > 0.5 ? 950 : 50)
+      const nextTarget = getSafeRandom() > 0.5 ? 950 : 50
+      targetValueRef.current = nextTarget
+      setTargetValue(nextTarget)
     }
   } else if (
     isAnomalyActiveRef.current &&
@@ -207,7 +217,9 @@ export function updateAmpGameState(
     getSafeRandom() < Math.max(0, Math.min(1, chance * (deltaMS / 100)))
   ) {
     const shift = (getSafeRandom() - 0.5) * shiftSize
-    setTargetValue(prev => clampAmpDial(prev + shift))
+    const nextTarget = clampAmpDial(targetValueRef.current + shift)
+    targetValueRef.current = nextTarget
+    setTargetValue(nextTarget)
   }
 
   // Kranker Schrank Hijack Logic
