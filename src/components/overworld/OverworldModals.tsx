@@ -102,6 +102,29 @@ export const OverworldModals = React.memo(({ modals }: OverworldModalsProps) => 
       )}
     </>
   )
+}, (prev, next) => {
+  const p = prev.modals
+  const n = next.modals
+  return (
+    p.hq.showHQ === n.hq.showHQ &&
+    p.quests.showQuests === n.quests.showQuests &&
+    p.stash.showStash === n.stash.showStash &&
+    p.pirateRadio.showPirateRadio === n.pirateRadio.showPirateRadio &&
+    p.merchPress.showMerchPress === n.merchPress.showMerchPress &&
+    p.bloodBank.showBloodBank === n.bloodBank.showBloodBank &&
+    p.darkWebLeak.showDarkWebLeak === n.darkWebLeak.showDarkWebLeak &&
+    p.supplyStop.showSupplyStop === n.supplyStop.showSupplyStop &&
+    p.quests.questsProps === n.quests.questsProps &&
+    p.stash.stashProps === n.stash.stashProps &&
+    p.supplyStop.supplyStopInventory === n.supplyStop.supplyStopInventory &&
+    p.pirateRadio.canBroadcast === n.pirateRadio.canBroadcast &&
+    p.pirateRadio.hasBroadcastedToday === n.pirateRadio.hasBroadcastedToday &&
+    p.merchPress.canPress === n.merchPress.canPress &&
+    p.bloodBank.canDonate === n.bloodBank.canDonate &&
+    p.bloodBank.canDonateMarrow === n.bloodBank.canDonateMarrow &&
+    p.darkWebLeak.canLeak === n.darkWebLeak.canLeak &&
+    p.darkWebLeak.hasLeakedToday === n.darkWebLeak.hasLeakedToday
+  )
 })
 
 OverworldModals.displayName = 'OverworldModals'
