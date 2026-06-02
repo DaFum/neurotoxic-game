@@ -68,6 +68,149 @@ const getRarityClass = (rarity: string | undefined): string => {
   }
 }
 
+interface StashCardSubComponentProps {
+  item: DisplayStashItem
+  t: ReturnType<typeof useTranslation>['t']
+}
+
+const StashCardHeader = ({ item, t }: StashCardSubComponentProps) => {
+  const typeBadgeClass =
+    item.type === 'consumable'
+      ? 'border-blood-red text-error-red bg-blood-red-20'
+      : 'border-electric-blue text-electric-blue bg-electric-blue-20'
+
+  return (
+    <div className='flex justify-between items-start mb-2'>
+      <div className='flex flex-col gap-1'>
+        <h4 className='text-toxic-green font-bold text-lg font-display tracking-wider uppercase drop-shadow-[0_0_5px_var(--color-toxic-green-20)]'>
+          {t(`items:contraband.${item.id}.name`, {
+            defaultValue: t('ui:item.unknown', {
+              defaultValue: 'Unknown Item'
+            })
+          })}
+        </h4>
+        <div className='flex gap-2 text-xs font-mono'>
+          <span className={getRarityClass(item.rarity)}>
+            {t(`ui:rarity.${item.rarity ?? 'unknown'}`, {
+              defaultValue: item.rarity?.toUpperCase() ?? 'UNKNOWN'
+            })}
+          </span>
+        </div>
+      </div>
+      <div className='flex flex-col gap-1 items-end'>
+        <span
+          className={`text-xs px-2 py-1 border font-mono ${typeBadgeClass}`}
+        >
+          {item.type
+            ? t(`ui:item.type_${item.type}`, {
+                defaultValue: item.type
+              })
+            : t('ui:item.typeUnknown', {
+                defaultValue: 'Unknown Type'
+              })}
+        </span>
+        {item.duration && (
+          <span className='text-xs text-ash-gray italic'>
+            {item.duration}{' '}
+            {t('ui:contraband.gigs', { defaultValue: 'GIGS' })}
+          </span>
+        )}
+      </div>
+    </div>
+  )
+}
+
+const StashCardDetails = ({ item, t }: StashCardSubComponentProps) => {
+  return (
+    <div className='flex flex-row gap-4 items-start mb-4'>
+      {item.imagePrompt && Object.hasOwn(IMG_PROMPTS, item.imagePrompt) && (
+        <div className='w-20 h-20 shrink-0 border border-toxic-green-20 bg-void-black flex items-center justify-center p-1 overflow-hidden shadow-[0_0_10px_var(--color-toxic-green-10)]'>
+          <img
+            src={resolveGenImageUrl(
+              IMG_PROMPTS[item.imagePrompt as keyof typeof IMG_PROMPTS]
+            )}
+            alt={t(`items:contraband.${item.id}.name`, {
+              defaultValue: t('ui:item.unknown', {
+                defaultValue: 'Unknown Item'
+              })
+            })}
+            className='w-full h-full object-contain'
+            loading='lazy'
+            onError={e => {
+              e.currentTarget.onerror = null
+              e.currentTarget.src = getGeneratedImageFallbackUrl()
+            }}
+          />
+        </div>
+      )}
+      <p className='text-ash-gray text-xs min-h-10 leading-relaxed flex-1'>
+        {item.description
+          ? t(item.description, {
+              defaultValue: t('ui:item.descriptionUnknown', {
+                defaultValue: 'Unknown Description'
+              })
+            })
+          : t('ui:item.descriptionUnknown', {
+              defaultValue: 'Unknown Description'
+            })}
+      </p>
+    </div>
+  )
+}
+
+interface StashCardActionsProps extends StashCardSubComponentProps {
+  selectedMember?: string | null
+  onUseItem: () => void
+}
+
+const StashCardActions = ({
+  item,
+  selectedMember,
+  onUseItem,
+  t
+}: StashCardActionsProps) => {
+  const requiresTarget =
+    item.effectType === 'stamina' || item.effectType === 'mood'
+
+  return (
+    <div className='mt-auto'>
+      {requiresTarget &&
+      !selectedMember &&
+      !item.applied &&
+      item.type === 'consumable' ? (
+        <p className='text-error-red text-xs mb-2 italic'>
+          {t('ui:contraband.requiresTarget', {
+            defaultValue: 'Requires target member.'
+          })}
+        </p>
+      ) : null}
+
+      {item.applied ? (
+        <div className='w-full text-center text-xs text-electric-blue border border-electric-blue-20 py-2 bg-electric-blue-10'>
+          {t('ui:contraband.applied', { defaultValue: 'APPLIED' })}
+        </div>
+      ) : item.type === 'consumable' || !item.applyOnAdd ? (
+        <ActionButton
+          onClick={onUseItem}
+          disabled={requiresTarget && !selectedMember}
+          variant='primary'
+          className='w-full text-sm font-bold'
+        >
+          {item.type === 'consumable'
+            ? t('ui:contraband.useItem', { defaultValue: 'USE ITEM' })
+            : t('ui:contraband.applyItem', { defaultValue: 'APPLY EFFECT' })}
+        </ActionButton>
+      ) : (
+        <div className='w-full text-center text-xs text-electric-blue border border-electric-blue-20 py-2 bg-electric-blue-10'>
+          {t('ui:contraband.passiveActive', {
+            defaultValue: 'PASSIVE EFFECT ACTIVE'
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
 interface StashCardProps {
   item: DisplayStashItem
   selectedMember?: string | null
@@ -76,119 +219,18 @@ interface StashCardProps {
 }
 
 const StashCard = ({ item, selectedMember, onUseItem, t }: StashCardProps) => {
-  const requiresTarget =
-    item.effectType === 'stamina' || item.effectType === 'mood'
-  const typeBadgeClass =
-    item.type === 'consumable'
-      ? 'border-blood-red text-error-red bg-blood-red-20'
-      : 'border-electric-blue text-electric-blue bg-electric-blue-20'
-
   return (
     <div className='bg-void-black flex flex-col justify-between border border-toxic-green p-4'>
       <div>
-        <div className='flex justify-between items-start mb-2'>
-          <div className='flex flex-col gap-1'>
-            <h4 className='text-toxic-green font-bold text-lg font-display tracking-wider uppercase drop-shadow-[0_0_5px_var(--color-toxic-green-20)]'>
-              {t(`items:contraband.${item.id}.name`, {
-                defaultValue: t('ui:item.unknown', {
-                  defaultValue: 'Unknown Item'
-                })
-              })}
-            </h4>
-            <div className='flex gap-2 text-xs font-mono'>
-              <span className={getRarityClass(item.rarity)}>
-                {t(`ui:rarity.${item.rarity ?? 'unknown'}`, {
-                  defaultValue: item.rarity?.toUpperCase() ?? 'UNKNOWN'
-                })}
-              </span>
-            </div>
-          </div>
-          <div className='flex flex-col gap-1 items-end'>
-            <span
-              className={`text-xs px-2 py-1 border font-mono ${typeBadgeClass}`}
-            >
-              {item.type
-                ? t(`ui:item.type_${item.type}`, {
-                    defaultValue: item.type
-                  })
-                : t('ui:item.typeUnknown', {
-                    defaultValue: 'Unknown Type'
-                  })}
-            </span>
-            {item.duration && (
-              <span className='text-xs text-ash-gray italic'>
-                {item.duration}{' '}
-                {t('ui:contraband.gigs', { defaultValue: 'GIGS' })}
-              </span>
-            )}
-          </div>
-        </div>
-        <div className='flex flex-row gap-4 items-start mb-4'>
-          {item.imagePrompt && Object.hasOwn(IMG_PROMPTS, item.imagePrompt) && (
-            <div className='w-20 h-20 shrink-0 border border-toxic-green-20 bg-void-black flex items-center justify-center p-1 overflow-hidden shadow-[0_0_10px_var(--color-toxic-green-10)]'>
-              <img
-                src={resolveGenImageUrl(
-                  IMG_PROMPTS[item.imagePrompt as keyof typeof IMG_PROMPTS]
-                )}
-                alt={t(`items:contraband.${item.id}.name`)}
-                className='w-full h-full object-contain'
-                loading='lazy'
-                onError={e => {
-                  e.currentTarget.onerror = null
-                  e.currentTarget.src = getGeneratedImageFallbackUrl()
-                }}
-              />
-            </div>
-          )}
-          <p className='text-ash-gray text-xs min-h-10 leading-relaxed flex-1'>
-            {item.description
-              ? t(item.description, {
-                  defaultValue: t('ui:item.descriptionUnknown', {
-                    defaultValue: 'Unknown Description'
-                  })
-                })
-              : t('ui:item.descriptionUnknown', {
-                  defaultValue: 'Unknown Description'
-                })}
-          </p>
-        </div>
+        <StashCardHeader item={item} t={t} />
+        <StashCardDetails item={item} t={t} />
       </div>
-
-      <div className='mt-auto'>
-        {requiresTarget &&
-        !selectedMember &&
-        !item.applied &&
-        item.type === 'consumable' ? (
-          <p className='text-error-red text-xs mb-2 italic'>
-            {t('ui:contraband.requiresTarget', {
-              defaultValue: 'Requires target member.'
-            })}
-          </p>
-        ) : null}
-
-        {item.applied ? (
-          <div className='w-full text-center text-xs text-electric-blue border border-electric-blue-20 py-2 bg-electric-blue-10'>
-            {t('ui:contraband.applied', { defaultValue: 'APPLIED' })}
-          </div>
-        ) : item.type === 'consumable' || !item.applyOnAdd ? (
-          <ActionButton
-            onClick={onUseItem}
-            disabled={requiresTarget && !selectedMember}
-            variant='primary'
-            className='w-full text-sm font-bold'
-          >
-            {item.type === 'consumable'
-              ? t('ui:contraband.useItem', { defaultValue: 'USE ITEM' })
-              : t('ui:contraband.applyItem', { defaultValue: 'APPLY EFFECT' })}
-          </ActionButton>
-        ) : (
-          <div className='w-full text-center text-xs text-electric-blue border border-electric-blue-20 py-2 bg-electric-blue-10'>
-            {t('ui:contraband.passiveActive', {
-              defaultValue: 'PASSIVE EFFECT ACTIVE'
-            })}
-          </div>
-        )}
-      </div>
+      <StashCardActions
+        item={item}
+        selectedMember={selectedMember}
+        onUseItem={onUseItem}
+        t={t}
+      />
     </div>
   )
 }
