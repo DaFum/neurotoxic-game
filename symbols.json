@@ -5836,6 +5836,25 @@
         "typeOnly": true
       }
     ],
+    "GigView": [
+      {
+        "isDefault": false,
+        "name": "GigView",
+        "path": "src/components/minigames/gig/GigView.tsx",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "GigViewProps": [
+      {
+        "isDefault": false,
+        "name": "GigViewProps",
+        "path": "src/components/minigames/gig/GigView.tsx",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
     "GlitchButton": [
       {
         "isDefault": false,
@@ -6714,6 +6733,15 @@
         "type": "const"
       }
     ],
+    "IconClose": [
+      {
+        "isDefault": false,
+        "name": "IconClose",
+        "path": "src/ui/shared/Icons.tsx",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "IecPlug": [
       {
         "isDefault": false,
@@ -7376,6 +7404,24 @@
         "type": "const"
       }
     ],
+    "MainMenuActionButtons": [
+      {
+        "isDefault": false,
+        "name": "MainMenuActionButtons",
+        "path": "src/scenes/mainmenu/MainMenuActionButtons.tsx",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "MainMenuBackground": [
+      {
+        "isDefault": false,
+        "name": "MainMenuBackground",
+        "path": "src/scenes/mainmenu/MainMenuBackground.tsx",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "MainMenuExistingSavePrompt": [
       {
         "isDefault": false,
@@ -7394,11 +7440,38 @@
         "type": "const"
       }
     ],
+    "MainMenuFooter": [
+      {
+        "isDefault": false,
+        "name": "MainMenuFooter",
+        "path": "src/scenes/mainmenu/MainMenuFooter.tsx",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "MainMenuHeader": [
+      {
+        "isDefault": false,
+        "name": "MainMenuHeader",
+        "path": "src/scenes/mainmenu/MainMenuHeader.tsx",
+        "source": "local",
+        "type": "const"
+      }
+    ],
     "MainMenuNameInputPrompt": [
       {
         "isDefault": false,
         "name": "MainMenuNameInputPrompt",
         "path": "src/scenes/mainmenu/MainMenuNameInputPrompt.tsx",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "MainMenuSecondaryButtons": [
+      {
+        "isDefault": false,
+        "name": "MainMenuSecondaryButtons",
+        "path": "src/scenes/mainmenu/MainMenuSecondaryButtons.tsx",
         "source": "local",
         "type": "const"
       }
@@ -9786,6 +9859,16 @@
         "typeOnly": true
       }
     ],
+    "RhythmGameStats": [
+      {
+        "isDefault": false,
+        "name": "RhythmGameStats",
+        "path": "src/hooks/useRhythmGameLogic.ts",
+        "source": "local",
+        "type": "type",
+        "typeOnly": true
+      }
+    ],
     "RhythmLane": [
       {
         "exportPath": "src/types/index.ts",
@@ -9864,6 +9947,7 @@
     ],
     "RhythmUiState": [
       {
+        "exportPath": "src/hooks/useRhythmGameLogic.ts",
         "isDefault": false,
         "name": "RhythmUiState",
         "path": "src/hooks/rhythmGame/useRhythmGameState.ts",
@@ -12345,6 +12429,24 @@
         "isDefault": false,
         "name": "useMainMenuAudio",
         "path": "src/scenes/mainmenu/hooks/useMainMenuAudio.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "useMainMenuLoad": [
+      {
+        "isDefault": false,
+        "name": "useMainMenuLoad",
+        "path": "src/scenes/mainmenu/hooks/useMainMenuLoad.ts",
+        "source": "local",
+        "type": "const"
+      }
+    ],
+    "useMainMenuStart": [
+      {
+        "isDefault": false,
+        "name": "useMainMenuStart",
+        "path": "src/scenes/mainmenu/hooks/useMainMenuStart.ts",
         "source": "local",
         "type": "const"
       }
