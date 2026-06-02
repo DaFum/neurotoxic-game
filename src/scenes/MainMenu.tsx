@@ -5,7 +5,6 @@ import { MainMenuFeatures } from './mainmenu/MainMenuFeatures.tsx'
 import { MainMenuExistingSavePrompt } from './mainmenu/MainMenuExistingSavePrompt.tsx'
 import { MainMenuNameInputPrompt } from './mainmenu/MainMenuNameInputPrompt.tsx'
 import { useMainMenu } from './mainmenu/useMainMenu'
-import { useNetworkStatus } from '../hooks/useNetworkStatus'
 import { MainMenuBackground } from './mainmenu/MainMenuBackground'
 import { MainMenuHeader } from './mainmenu/MainMenuHeader'
 import { MainMenuActionButtons } from './mainmenu/MainMenuActionButtons'
@@ -18,7 +17,6 @@ import { MainMenuFooter } from './mainmenu/MainMenuFooter'
  */
 export const MainMenu = () => {
   const { showHQ, openHQ, closeHQ } = useBandHQModal()
-  const isOnline = useNetworkStatus()
 
   const {
     isStarting,
@@ -62,7 +60,7 @@ export const MainMenu = () => {
         />
       )}
 
-      <MainMenuBackground isOnline={isOnline} />
+      <MainMenuBackground />
 
       {showHQ && <BandHQ onClose={closeHQ} />}
 

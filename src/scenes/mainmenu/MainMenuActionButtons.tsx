@@ -42,14 +42,14 @@ export const MainMenuActionButtons = ({
       <GlitchButton
         onClick={handleLoad}
         isLoading={isLoadingGame}
-        className='relative z-20 w-full border-blood-red text-blood-red hover:bg-blood-red hover:shadow-[4px_4px_0px_var(--color-toxic-green)]'
+        variant='danger' className='relative z-20 w-full'
       >
         {t('ui:load_game')}
       </GlitchButton>
 
       <GlitchButton
         onClick={openHQ}
-        className='relative z-20 w-full border-warning-yellow text-warning-yellow hover:bg-warning-yellow hover:shadow-[4px_4px_0px_var(--color-toxic-green)]'
+        variant='warning' className='relative z-20 w-full'
       >
         {t('ui:band_hq')}
       </GlitchButton>

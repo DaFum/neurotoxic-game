@@ -1,10 +1,8 @@
+import { useNetworkStatus } from '../../hooks/useNetworkStatus'
 import { IMG_PROMPTS, resolveGenImageUrl } from '../../utils/imageGen'
 
-interface MainMenuBackgroundProps {
-  isOnline: boolean
-}
-
-export const MainMenuBackground = ({ isOnline }: MainMenuBackgroundProps) => {
+export const MainMenuBackground = () => {
+  const isOnline = useNetworkStatus()
   return (
     <>
       {/* Dynamic Background */}
