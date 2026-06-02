@@ -58,7 +58,7 @@ export const useMainMenuLoad = ({
 
   const handleLoadExistingFromPrompt = useCallback(() => {
     setShowExistingSavePrompt(false)
-    void handleLoad()
+    handleLoad()
   }, [handleLoad, setShowExistingSavePrompt])
 
   return {

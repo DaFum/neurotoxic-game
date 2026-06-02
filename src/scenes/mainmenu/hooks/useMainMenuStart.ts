@@ -84,7 +84,7 @@ export const useMainMenuStart = ({
       playerId: savedPlayerId,
       playerName: savedPlayerName
     })
-    void proceedToTour()
+    proceedToTour()
   }, [proceedToTour, updatePlayer, setShowNameInput])
 
   const handleStartTour = useCallback(() => {
@@ -127,7 +127,7 @@ export const useMainMenuStart = ({
     })
 
     setShowNameInput(false)
-    void proceedToTour()
+    proceedToTour()
   }, [playerNameInput, addToast, proceedToTour, updatePlayer, setShowNameInput, tRef])
 
   const closeNameInput = useCallback(
