@@ -100,11 +100,21 @@ describe('useTourbusLogic', () => {
     game.obstacles = []
 
     act(() => {
-      result.current.update(SPAWN_RATE_MS - 10)
+      let remaining = 1000
+      while (remaining > 0) {
+        const step = Math.min(remaining, 100)
+        result.current.update(step)
+        remaining -= step
+      }
     })
     expect(game.obstacles.length).toBe(0)
     act(() => {
-      result.current.update(20)
+      let remaining = 500
+      while (remaining > 0) {
+        const step = Math.min(remaining, 100)
+        result.current.update(step)
+        remaining -= step
+      }
     })
     expect(game.obstacles.length).toBe(1)
 
@@ -118,7 +128,12 @@ describe('useTourbusLogic', () => {
     expect(game.speed).toBe(MAX_SPEED)
     const expectedRate = (BASE_SPEED * SPAWN_RATE_MS) / MAX_SPEED
     act(() => {
-      result.current.update(expectedRate - 25)
+      let remaining = expectedRate - 25
+      while (remaining > 0) {
+        const step = Math.min(remaining, 100)
+        result.current.update(step)
+        remaining -= step
+      }
     })
     expect(game.obstacles.length).toBe(0)
     act(() => {

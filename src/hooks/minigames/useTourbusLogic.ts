@@ -232,10 +232,11 @@ export const useTourbusLogic = () => {
       if (game.isGameOver) return
 
       const currentSpawnRate = updateGameSpeed(game)
-      game.distance += game.speed * deltaMS
+      const clampedDelta = Math.min(deltaMS, 100)
+      game.distance += game.speed * clampedDelta
 
-      spawnObstacles(game, currentSpawnRate, deltaMS)
-      processObstacles(game, deltaMS, upgradesRef.current)
+      spawnObstacles(game, currentSpawnRate, clampedDelta)
+      processObstacles(game, clampedDelta, upgradesRef.current)
 
       // Check Win/Loss
       if (
