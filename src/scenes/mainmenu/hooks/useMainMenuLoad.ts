@@ -1,20 +1,21 @@
 import { useCallback } from 'react'
+import type { MutableRefObject } from 'react'
 import { GAME_PHASES } from '../../../context/gameConstants'
 import { enterFullscreen } from '../../../utils/fullscreen'
+import type { GamePhase } from '../../../types/game'
+import type { TFunction } from 'i18next'
 
 interface UseMainMenuLoadProps {
-  isMountedRef: React.MutableRefObject<boolean>
   setIsLoadingGame: (val: boolean) => void
   loadGame: () => boolean
-  changeScene: (scene: string) => void
+  changeScene: (scene: GamePhase) => void
   initializeAudio: () => void
   setShowExistingSavePrompt: (val: boolean) => void
   addToast: (msg: string, type: 'error' | 'success' | 'info') => void
-  tRef: React.MutableRefObject<(key: string, options?: unknown) => string>
+  tRef: MutableRefObject<TFunction>
 }
 
 export const useMainMenuLoad = ({
-  isMountedRef,
   setIsLoadingGame,
   loadGame,
   changeScene,
@@ -29,8 +30,6 @@ export const useMainMenuLoad = ({
   const handleLoad = useCallback(() => {
     setIsLoadingGame(true)
 
-    if (!isMountedRef.current) return
-
     if (!loadGame()) {
       addToast(
         tRef.current('ui:no_save_found', {
@@ -38,7 +37,7 @@ export const useMainMenuLoad = ({
         }),
         'error'
       )
-      if (isMountedRef.current) setIsLoadingGame(false)
+      setIsLoadingGame(false)
       return
     }
 
@@ -53,7 +52,6 @@ export const useMainMenuLoad = ({
     addToast,
     changeScene,
     initializeAudio,
-    isMountedRef,
     setIsLoadingGame,
     tRef
   ])

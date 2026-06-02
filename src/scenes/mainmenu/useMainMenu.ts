@@ -39,14 +39,11 @@ export const useMainMenu = () => {
   const { initializeAudio } = useMainMenuAudio(isMountedRef, addToast, tRef)
 
   const {
-    proceedToTour,
-    startNewTourFlow,
     handleStartTour,
     handleNameSubmit,
     closeNameInput,
     handleStartNewAnyway
   } = useMainMenuStart({
-    isMountedRef,
     setIsStarting,
     resetState,
     updatePlayer,
@@ -60,7 +57,6 @@ export const useMainMenu = () => {
   })
 
   const { handleLoad, handleLoadExistingFromPrompt } = useMainMenuLoad({
-    isMountedRef,
     setIsLoadingGame,
     loadGame,
     changeScene,

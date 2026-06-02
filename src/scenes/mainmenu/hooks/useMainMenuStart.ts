@@ -1,25 +1,26 @@
 import { useCallback } from 'react'
+import type { MutableRefObject } from 'react'
 import { safeStorageOperation } from '../../../utils/storage'
 import { getSafeUUID } from '../../../utils/crypto'
 import { GAME_PHASES } from '../../../context/gameConstants'
 import { enterFullscreen } from '../../../utils/fullscreen'
+import type { GamePhase } from '../../../types/game'
+import type { TFunction } from 'i18next'
 
 interface UseMainMenuStartProps {
-  isMountedRef: React.MutableRefObject<boolean>
   setIsStarting: (val: boolean) => void
   resetState: () => void
   updatePlayer: (player: { playerId: string; playerName: string }) => void
-  changeScene: (scene: string) => void
+  changeScene: (scene: GamePhase) => void
   initializeAudio: () => void
   setShowNameInput: (val: boolean) => void
   setShowExistingSavePrompt: (val: boolean) => void
   playerNameInput: string
   addToast: (msg: string, type: 'error' | 'success' | 'info') => void
-  tRef: React.MutableRefObject<(key: string, options?: unknown) => string>
+  tRef: MutableRefObject<TFunction>
 }
 
 export const useMainMenuStart = ({
-  isMountedRef,
   setIsStarting,
   resetState,
   updatePlayer,
@@ -33,9 +34,6 @@ export const useMainMenuStart = ({
 }: UseMainMenuStartProps) => {
   const proceedToTour = useCallback(() => {
     setIsStarting(true)
-
-    // Optimization: Artificial delay removed
-    if (!isMountedRef.current) return
 
     // Capture identity before reset
     const savedPlayerId = safeStorageOperation('getPlayerId', () =>
@@ -65,7 +63,6 @@ export const useMainMenuStart = ({
     changeScene,
     initializeAudio,
     updatePlayer,
-    isMountedRef,
     setIsStarting
   ])
 
