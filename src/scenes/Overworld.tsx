@@ -60,53 +60,7 @@ export const Overworld = () => {
   useRivalEscalation(rivalBand, player.currentNodeId, updateRivalBand)
   const glitch = useGlitchEffect()
 
-  const {
-    hq: { showHQ, openHQ, closeHQ },
-    quests: { showQuests, openQuests, questsProps },
-    stash: { showStash, openStash, stashProps },
-    pirateRadio: {
-      showPirateRadio,
-      openPirateRadio,
-      closePirateRadio,
-      triggerBroadcast,
-      canBroadcast,
-      hasBroadcastedToday,
-      PIRATE_RADIO_CONFIG
-    },
-    merchPress: {
-      showMerchPress,
-      openMerchPress,
-      closeMerchPress,
-      triggerPress,
-      canPress,
-      config: merchPressConfig
-    },
-    bloodBank: {
-      showBloodBank,
-      openBloodBank,
-      closeBloodBank,
-      triggerDonate,
-      canDonate,
-      canDonateMarrow,
-      config: bloodBankConfig,
-      marrowConfig
-    },
-    darkWebLeak: {
-      showDarkWebLeak,
-      hasLeakedToday,
-      openDarkWebLeak,
-      closeDarkWebLeak,
-      triggerLeak,
-      canLeak: canDarkWebLeak,
-      DARK_WEB_LEAK_CONFIG
-    },
-    supplyStop: {
-      showSupplyStop,
-      supplyStopInventory,
-      openSupplyStop,
-      closeSupplyStop
-    }
-  } = useOverworldModals()
+  const modals = useOverworldModals()
 
   const {
     isTraveling,
@@ -136,8 +90,8 @@ export const Overworld = () => {
     startGig,
     addToast,
     changeScene,
-    onShowHQ: openHQ,
-    onShowSupplyStop: openSupplyStop,
+    onShowHQ: modals.hq.openHQ,
+    onShowSupplyStop: modals.supplyStop.openSupplyStop,
     onStartTravelMinigame: startTravelMinigame,
     moveRivalBand,
     checkRivalEncounter,
@@ -186,14 +140,14 @@ export const Overworld = () => {
         vanFuel={player.van?.fuel}
         vanCondition={player.van?.condition}
         isSaving={isSaving}
-        openStash={openStash}
-        openQuests={openQuests}
-        openPirateRadio={openPirateRadio}
-        openMerchPress={openMerchPress}
-        openBloodBank={openBloodBank}
+        openStash={modals.stash.openStash}
+        openQuests={modals.quests.openQuests}
+        openPirateRadio={modals.pirateRadio.openPirateRadio}
+        openMerchPress={modals.merchPress.openMerchPress}
+        openBloodBank={modals.bloodBank.openBloodBank}
         openClinic={openClinic}
-        openDarkWebLeak={openDarkWebLeak}
-        openHQ={openHQ}
+        openDarkWebLeak={modals.darkWebLeak.openDarkWebLeak}
+        openHQ={modals.hq.openHQ}
         openAssets={openAssets}
         handleRefuel={handleRefuel}
         handleRepair={handleRepair}
@@ -223,41 +177,7 @@ export const Overworld = () => {
 
       <EventLog t={t} day={player.day} locationId={player.location} />
 
-      <OverworldModals
-        showHQ={showHQ}
-        closeHQ={closeHQ}
-        showQuests={showQuests}
-        questsProps={questsProps}
-        showStash={showStash}
-        stashProps={stashProps}
-        showPirateRadio={showPirateRadio}
-        closePirateRadio={closePirateRadio}
-        triggerBroadcast={triggerBroadcast}
-        canBroadcast={canBroadcast}
-        hasBroadcastedToday={hasBroadcastedToday}
-        PIRATE_RADIO_CONFIG={PIRATE_RADIO_CONFIG}
-        showMerchPress={showMerchPress}
-        closeMerchPress={closeMerchPress}
-        triggerPress={triggerPress}
-        canPress={canPress}
-        merchPressConfig={merchPressConfig}
-        showBloodBank={showBloodBank}
-        closeBloodBank={closeBloodBank}
-        triggerDonate={triggerDonate}
-        canDonate={canDonate}
-        canDonateMarrow={canDonateMarrow}
-        bloodBankConfig={bloodBankConfig}
-        marrowConfig={marrowConfig}
-        showDarkWebLeak={showDarkWebLeak}
-        closeDarkWebLeak={closeDarkWebLeak}
-        triggerLeak={triggerLeak}
-        canDarkWebLeak={canDarkWebLeak}
-        hasLeakedToday={hasLeakedToday}
-        DARK_WEB_LEAK_CONFIG={DARK_WEB_LEAK_CONFIG}
-        showSupplyStop={showSupplyStop}
-        supplyStopInventory={supplyStopInventory}
-        closeSupplyStop={closeSupplyStop}
-      />
+      <OverworldModals modals={modals} />
     </div>
   )
 }
