@@ -530,19 +530,128 @@ function isReactComponent(name, decl, signature) {
   )
 }
 
+// The identifier as written at the declaration site. For aliased re-exports
+// (`export { TOURBUS_BASE_SPEED as BASE_SPEED }`) this differs from the name the
+// module exports, so recording it keeps the entry honest about what an agent
+// will actually find at path:lineStart.
+function declaredIdentifier(decl) {
+  const name = /** @type {any} */ (decl).name
+  return name && ts.isIdentifier(name) ? name.text : undefined
+}
+
+// Returns the textual base/implemented type names from a heritage clause
+// (e.g. interface/class `extends`/`implements`).
+function heritageNames(decl, keyword) {
+  const clause = decl.heritageClauses?.find(clause => clause.token === keyword)
+  if (!clause) return undefined
+  const names = clause.types.map(type =>
+    type.getText(decl.getSourceFile()).trim()
+  )
+  return names.length > 0 ? names : undefined
+}
+
+// Generic type-parameter declarations as written, e.g. ['T', 'K extends string'].
+function typeParameterTexts(host) {
+  const params = host?.typeParameters
+  if (!params || params.length === 0) return undefined
+  return params.map(param => param.getText(param.getSourceFile()).trim())
+}
+
+// async / generator flags for the callable behind a declaration.
+function callableModifiers(decl) {
+  const callable = callableDeclaration(decl)
+  if (!callable) return {}
+  const flags = ts.getCombinedModifierFlags(callable)
+  return {
+    async: !!(flags & ts.ModifierFlags.Async),
+    generator: !!callable.asteriskToken
+  }
+}
+
+// Literal value of a primitive `const` export so agents can read constants
+// (speeds, costs, thresholds, flags) without opening the file. Returns the
+// sentinel `undefined` only when there is no serializable literal — `null`,
+// `false`, and `0` are valid recorded values.
+function literalConstValue(decl) {
+  if (!ts.isVariableDeclaration(decl) || !decl.initializer) return undefined
+  let list = decl.parent
+  while (list && !ts.isVariableDeclarationList(list)) list = list.parent
+  if (!list || !(list.flags & ts.NodeFlags.Const)) return undefined
+
+  const init = decl.initializer
+  if (ts.isNumericLiteral(init)) return Number(init.text)
+  if (ts.isStringLiteralLike(init)) return init.text
+  if (init.kind === ts.SyntaxKind.TrueKeyword) return true
+  if (init.kind === ts.SyntaxKind.FalseKeyword) return false
+  if (init.kind === ts.SyntaxKind.NullKeyword) return null
+  if (
+    ts.isPrefixUnaryExpression(init) &&
+    init.operator === ts.SyntaxKind.MinusToken &&
+    ts.isNumericLiteral(init.operand)
+  ) {
+    return -Number(init.operand.text)
+  }
+  return undefined
+}
+
+// Enum member names and their resolved constant values.
+function enumMembers(decl) {
+  if (!ts.isEnumDeclaration(decl)) return undefined
+  const members = decl.members.map(member => {
+    const entry = { name: member.name.getText(decl.getSourceFile()) }
+    const value = checker.getConstantValue(member)
+    if (value !== undefined) entry.value = value
+    return entry
+  })
+  return members.length > 0 ? members : undefined
+}
+
 function addDeclarationMetadata(entry, sym, decl, exportedName, isDefault) {
   Object.assign(entry, declarationLocation(decl))
   entry.exportKind = isDefault ? 'default' : 'named'
   entry.exportedName = isDefault ? 'default' : exportedName
 
+  // Flag aliased re-exports and record the real declared identifier so the
+  // name/location pair is unambiguous (e.g. BASE_SPEED -> TOURBUS_BASE_SPEED).
+  if (!isDefault) {
+    const declaredName = declaredIdentifier(decl)
+    if (declaredName && declaredName !== exportedName) {
+      entry.localName = declaredName
+      entry.isAlias = true
+    }
+  }
+
   const jsDoc = serializeJsDoc(decl)
   if (jsDoc) entry.jsDoc = jsDoc
+  if (jsDoc?.tags?.some(tag => tag.name === 'deprecated')) {
+    entry.deprecated = true
+  }
 
   const signature = serializeSignature(sym, decl)
   if (signature) {
     entry.parameters = signature.parameters
     entry.returnType = signature.returnType
   }
+
+  const { async: isAsync, generator } = callableModifiers(decl)
+  if (isAsync) entry.async = true
+  if (generator) entry.generator = true
+
+  const typeParameters = typeParameterTexts(callableDeclaration(decl) ?? decl)
+  if (typeParameters) entry.typeParameters = typeParameters
+
+  if (ts.isInterfaceDeclaration(decl) || ts.isClassDeclaration(decl)) {
+    const extendsNames = heritageNames(decl, ts.SyntaxKind.ExtendsKeyword)
+    const implementsNames = heritageNames(decl, ts.SyntaxKind.ImplementsKeyword)
+    if (extendsNames) entry.extends = extendsNames
+    if (implementsNames) entry.implements = implementsNames
+  }
+
+  const constValue = literalConstValue(decl)
+  if (constValue !== undefined) entry.value = constValue
+
+  const members = enumMembers(decl)
+  if (members) entry.enumMembers = members
 
   const properties = serializeProperties(decl)
   if (properties) entry.properties = properties
@@ -1004,7 +1113,71 @@ const sortedKnownSymbols = Object.keys(knownSymbols)
     return acc
   }, {})
 
-const output = JSON.stringify({ knownSymbols: sortedKnownSymbols }, null, 2)
+// Deterministic summary + inline schema legend so an agent reading the file
+// cold understands every field without consulting external docs. No timestamps
+// or env-derived data — values depend only on source, preserving --check.
+let localSymbols = 0
+let externalSymbols = 0
+let aliasedReexports = 0
+for (const entries of Object.values(knownSymbols)) {
+  for (const e of entries) {
+    if (e.source === 'external') externalSymbols++
+    else localSymbols++
+    if (e.isAlias) aliasedReexports++
+  }
+}
+
+const meta = {
+  schemaVersion: 2,
+  description:
+    'Exported-symbol index generated by scripts/update-symbols.mjs from the TypeScript compiler API. Do not hand-edit; run `pnpm run symbols:update`. Guide: docs/agent-symbols-guide.md.',
+  symbolNames: Object.keys(knownSymbols).length,
+  localSymbols,
+  externalSymbols,
+  aliasedReexports,
+  sourceFiles: srcFiles.length,
+  fieldGuide: {
+    path: 'File where the symbol is declared.',
+    exportPath:
+      'Present when the symbol is re-exported through another module (barrel or alias); value is that re-exporting file.',
+    localName:
+      'Real declared identifier at path:lineStart when it differs from the exported name (aliased re-export).',
+    isAlias: 'True when the exported name differs from the declared identifier.',
+    source: '"local" (defined in src/) or "external" (allowlisted dependency).',
+    type: 'Declaration kind: const | let | var | function | class | interface | type | enum.',
+    typeOnly: 'True for type-only declarations or `export type` re-exports.',
+    isDefault: 'True for default exports.',
+    lineStart: '1-based line/column span of the declaration.',
+    parameters:
+      'Function/hook parameters: name, type, optional, rest. Use to build correct calls.',
+    returnType: 'Function/hook return type string.',
+    typeParameters:
+      'Generic parameter declarations, e.g. ["T", "K extends string"].',
+    async: 'True for async functions.',
+    generator: 'True for generator functions.',
+    deprecated: 'True when the declaration carries an @deprecated JSDoc tag.',
+    properties:
+      'Members of an interface or object-like type alias for fixture/payload construction.',
+    variants: 'Object branches of a union type alias.',
+    extends: 'Heritage base interfaces/classes.',
+    implements: 'Heritage implemented interfaces (classes).',
+    enumMembers: 'Enum member names and resolved constant values.',
+    value:
+      'Literal value of a primitive const export (number/string/boolean/null).',
+    isComponent: 'True for React components.',
+    isHook: 'True for React hooks (use* name with a call signature).',
+    jsDoc: 'Parsed JSDoc/TSDoc summary text and tags.',
+    dependencies:
+      'Local exported symbols this declaration calls, constructs, or renders.',
+    usedBy: 'Files that import this symbol (test/spec/story files excluded).'
+  }
+}
+
+const output = JSON.stringify(
+  { meta, knownSymbols: sortedKnownSymbols },
+  null,
+  2
+)
 
 if (CHECK) {
   const existing = fs.existsSync(OUT) ? fs.readFileSync(OUT, 'utf8') : ''

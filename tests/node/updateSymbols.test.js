@@ -8,6 +8,10 @@ function loadSymbols() {
   return JSON.parse(fs.readFileSync('symbols.json', 'utf8')).knownSymbols
 }
 
+function loadDocument() {
+  return JSON.parse(fs.readFileSync('symbols.json', 'utf8'))
+}
+
 function runUpdateSymbols() {
   execSync('node scripts/update-symbols.mjs', { stdio: 'pipe' })
 }
@@ -265,4 +269,64 @@ test('local symbols include signatures, structure, docs, graph, location, and fr
     entry => entry.path === 'src/hooks/postGig/usePostGigState.ts'
   )
   assert.equal(postGigState.isHook, true)
+})
+
+test('aliased re-exports record the real declared identifier and value', () => {
+  runUpdateSymbols()
+  const ks = loadSymbols()
+
+  // useTourbusLogic.ts re-exports `TOURBUS_BASE_SPEED as BASE_SPEED`. The entry
+  // must surface the alias so jumping to path:lineStart is unambiguous.
+  const baseSpeed = ks.BASE_SPEED.find(
+    entry => entry.path === 'src/hooks/minigames/minigameConstants.ts'
+  )
+  assert.equal(baseSpeed.isAlias, true)
+  assert.equal(baseSpeed.localName, 'TOURBUS_BASE_SPEED')
+  assert.equal(baseSpeed.exportPath, 'src/hooks/minigames/useTourbusLogic.ts')
+  assert.equal(baseSpeed.value, 0.05)
+
+  // The canonical (non-aliased) export carries no alias markers.
+  const tourbusBaseSpeed = ks.TOURBUS_BASE_SPEED.find(
+    entry => entry.path === 'src/hooks/minigames/minigameConstants.ts'
+  )
+  assert.equal(tourbusBaseSpeed.isAlias, undefined)
+  assert.equal(tourbusBaseSpeed.localName, undefined)
+})
+
+test('local symbols expose generics, async, heritage, and literal values', () => {
+  runUpdateSymbols()
+  const ks = loadSymbols()
+
+  const action = ks.Action.find(entry => entry.path === 'src/types/game.d.ts')
+  assert.deepEqual(action.typeParameters, [
+    'TType extends ActionType',
+    'TPayload = undefined'
+  ])
+
+  const ensureAudioContext = ks.ensureAudioContext.find(
+    entry => entry.path === 'src/utils/audio/context.ts'
+  )
+  assert.equal(ensureAudioContext.async, true)
+
+  const activeQuestState = ks.ActiveQuestState.find(
+    entry => entry.path === 'src/types/quest.d.ts'
+  )
+  assert.ok(
+    activeQuestState.extends.includes('UnknownRecord'),
+    'interface heritage should be recorded under `extends`'
+  )
+})
+
+test('document exposes a self-documenting meta block', () => {
+  runUpdateSymbols()
+  const doc = loadDocument()
+
+  assert.equal(doc.meta.schemaVersion, 2)
+  assert.equal(typeof doc.meta.localSymbols, 'number')
+  assert.equal(typeof doc.meta.externalSymbols, 'number')
+  assert.ok(doc.meta.aliasedReexports >= 1)
+  assert.equal(typeof doc.meta.fieldGuide.localName, 'string')
+  assert.equal(typeof doc.meta.fieldGuide.usedBy, 'string')
+  // knownSymbols remains the primary index alongside meta.
+  assert.equal(typeof doc.knownSymbols, 'object')
 })

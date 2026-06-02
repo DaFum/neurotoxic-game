@@ -159,9 +159,13 @@ So an entire class of quest triggers (asset-risk, brand-trust, money-earned, ite
 
 ---
 
-## 6. Tooling anomaly (bonus)
+## 6. Tooling clarity (bonus) — RESOLVED
 
-**MED** — `symbols.json` contains 4 **phantom shadow entries** that do not exist as real exports: `BASE_SPEED`, `MAX_SPEED`, `SPAWN_RATE_MS`, `TARGET_DISTANCE`, each recorded at the *same line* as the real `TOURBUS_*` constant it was truncated from (`src/hooks/minigames/minigameConstants.ts:10-13`). The index generator double-records these symbols with a prefix-stripped name. Critically, `pnpm run symbols:check` reports **"symbols.json is up to date"** — so the drift is invisible to the gate, yet AGENTS.md instructs agents to consult `symbols.json.knownSymbols` *before* opening source. An agent looking up `BASE_SPEED` would be pointed at a non-existent symbol. **Action: FIX** the generator (`scripts/update-symbols.mjs`) so it records only the real exported identifier, and regenerate.
+**Original claim (corrected):** I first read `BASE_SPEED`/`MAX_SPEED`/`SPAWN_RATE_MS`/`TARGET_DISTANCE` (`src/hooks/minigames/minigameConstants.ts:10-13`) as "phantom" generator output. That was wrong: they are **genuine aliased re-exports** — `src/hooks/minigames/useTourbusLogic.ts:35-40` does `export { TOURBUS_BASE_SPEED as BASE_SPEED } from './minigameConstants'`. `symbols.json` was correct, which is why `symbols:check` passed.
+
+**Real defect:** the entries were *misleading*, not wrong. The index key was the alias (`BASE_SPEED`) while `path:lineStart` pointed at a declaration whose actual identifier is `TOURBUS_BASE_SPEED`, with no marker linking the two — an agent jumping to the location would not find an identifier named `BASE_SPEED`.
+
+**Resolution (applied):** the generator now records `localName` (the real declared identifier) and `isAlias: true` for aliased re-exports, plus richer fields (`value`, `typeParameters`, `async`/`generator`, `extends`/`implements`, `deprecated`, `enumMembers`) and a self-documenting top-level `meta` block. Tests in `tests/node/updateSymbols.test.js` and docs (`AGENTS.md`, `docs/agent-symbols-guide.md`) were updated. **Status: FIXED.**
 
 ---
 

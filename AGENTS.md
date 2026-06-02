@@ -79,7 +79,9 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 ## Symbols Index
 
-- Before opening source only to inspect an exported symbol, check `symbols.json.knownSymbols` first. Local entries include signatures (`parameters`, `returnType`), object structure (`properties`, union `variants`), docs (`jsDoc`), graph data (`dependencies`, `usedBy`), exact positions, React metadata (`isComponent`, `isHook`), and export details (`exportKind`, `exportedName`, `exportPath`).
+- Before opening source only to inspect an exported symbol, check `symbols.json.knownSymbols` first. Local entries include signatures (`parameters`, `returnType`, `typeParameters`, `async`, `generator`), object structure (`properties`, union `variants`), heritage (`extends`, `implements`), literal data (`value` for primitive consts, `enumMembers`), docs (`jsDoc`, `deprecated`), graph data (`dependencies`, `usedBy`), exact positions, React metadata (`isComponent`, `isHook`), and export details (`exportKind`, `exportedName`, `exportPath`).
+- Aliased re-exports (`export { X as Y }`) carry `isAlias: true` and `localName` (the real declared identifier at `path:lineStart`). Trust `localName`, not the index key, when jumping to the declaration. A symbol with `exportPath` is re-exported through that file.
+- The top-level `meta` block summarizes counts and carries `meta.fieldGuide`, a one-line description of every field — read it when a field is unfamiliar. The primary index stays under `knownSymbols`.
 - For concrete usage patterns, see `docs/agent-symbols-guide.md`.
 - Do not hand-edit `symbols.json`. If exported APIs, type shapes, local imports/calls, or JSDoc under `src/` change, run `pnpm run symbols:update` and then `pnpm run symbols:check`.
 - Primitive/string-literal type aliases intentionally omit prototype `properties`; mixed unions expose object branches through `variants`.

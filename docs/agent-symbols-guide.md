@@ -113,7 +113,47 @@ Agent workflow:
 2. Treat `@param`, `@returns`, and `@throws` tags as part of the contract.
 3. If your change alters the contract, update source JSDoc and regenerate `symbols.json`.
 
-## 6. Know The Limits
+## 6. Resolve Aliases, Constants, Generics, and Heritage
+
+These fields let the index answer more questions before you open a file.
+
+**Aliased re-exports.** When a module re-exports under a different name
+(`export { TOURBUS_BASE_SPEED as BASE_SPEED }`), the entry's key is the exported
+alias but `path:lineStart` points at the original declaration. Such entries carry
+`isAlias: true` and `localName` (the real identifier). Example: `BASE_SPEED`
+resolves to `localName: "TOURBUS_BASE_SPEED"` in
+`src/hooks/minigames/minigameConstants.ts`, re-exported through
+`exportPath: src/hooks/minigames/useTourbusLogic.ts`. Jump using `localName`, not
+the key.
+
+**Literal constants.** Primitive `const` exports carry their `value` (number,
+string, boolean, or null), so you can read thresholds and tuning knobs without
+opening source — e.g. `BASE_SPEED` has `value: 0.05`. Object/array/computed
+constants omit `value`; open source for those.
+
+**Generics.** `typeParameters` lists declared generic parameters as written, e.g.
+`Action` has `["TType extends ActionType", "TPayload = undefined"]`. Use it to
+instantiate generic helpers and types correctly.
+
+**Async/generator.** Functions declared `async` carry `async: true`; generators
+carry `generator: true`. Await accordingly.
+
+**Heritage.** Interfaces and classes expose `extends` and `implements` arrays
+(e.g. `ActiveQuestState` extends `UnknownRecord`). Follow these to find inherited
+members before constructing objects.
+
+**Deprecation.** Declarations with an `@deprecated` JSDoc tag carry
+`deprecated: true`; prefer non-deprecated alternatives.
+
+## 7. Read The `meta` Block
+
+The document is `{ meta, knownSymbols }`. `meta` is deterministic (no
+timestamps) and includes `schemaVersion`, symbol/file counts,
+`aliasedReexports`, and `fieldGuide` — a one-line description of every entry
+field. When you encounter an unfamiliar field, read `meta.fieldGuide[field]`
+rather than guessing.
+
+## 8. Know The Limits
 
 `symbols.json` is an index, not a replacement for source review.
 
@@ -125,7 +165,7 @@ Agent workflow:
 
 Use the index to reduce search space and avoid unnecessary file reads. Use source files for final behavioral changes and verification.
 
-## 7. Keep The Index Current
+## 9. Keep The Index Current
 
 After changing exported APIs, type shapes, import relations, local calls, React metadata, or JSDoc under `src/`, run:
 
