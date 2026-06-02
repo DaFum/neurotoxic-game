@@ -33,7 +33,8 @@ import {
   clampRelationship,
   isLooseRecord,
   isEmptyObject,
-  finiteNumberOr
+  finiteNumberOr,
+  isFiniteNumber
 } from '../../utils/gameStateUtils'
 import { calculateDailyUpdates } from '../../utils/simulationUtils'
 import {
@@ -139,7 +140,7 @@ const inferLoadedMapNodeType = (
 }
 
 const finiteOptionalNumber = (value: unknown): number | undefined =>
-  typeof value === 'number' && Number.isFinite(value) ? value : undefined
+  isFiniteNumber(value) ? value : undefined
 
 const sanitizeStringArray = (value: unknown): string[] => {
   if (!Array.isArray(value)) return []
@@ -376,7 +377,7 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
   >
 
   const normalizeCoordinate = (value: unknown): number =>
-    typeof value === 'number' && Number.isFinite(value) ? value : 0
+    finiteNumberOr(value, 0)
   // Note: copySafeArray always returns an array (which is truthy), even if all items are filtered out.
   // copySafeFlatObject returns null if all items are filtered out.
   // This asymmetry preserves array identity for map data node properties while dropping empty objects.

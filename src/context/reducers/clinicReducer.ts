@@ -12,7 +12,8 @@ import {
   clampMemberStamina,
   calculateFameLevel,
   clampBandHarmony,
-  clampControversyLevel
+  clampControversyLevel,
+  finiteNumberOr
 } from '../../utils/gameStateUtils'
 import { getTraitById, normalizeTraitMap } from '../../utils/traitUtils'
 import { getSafeUUID } from '../../utils/crypto'
@@ -147,8 +148,8 @@ export const handleClinicHeal = (
   const moodGain = Number(payload.moodGain) || 0
 
   return executeClinicAction(state, payload, member => {
-    const prevStamina = member.stamina ?? 0
-    const prevMood = member.mood ?? 0
+    const prevStamina = finiteNumberOr(member.stamina, 0)
+    const prevMood = finiteNumberOr(member.mood, 0)
 
     const nextStamina = clampMemberStamina(
       prevStamina + staminaGain,
@@ -231,7 +232,7 @@ export const handleBloodBankDonate = (
   // Apply stamina drain to all members and calculate actual loss
   let totalStaminaLost = 0
   const updatedMembers = state.band.members.map((member: BandMember) => {
-    const prevStamina = member.stamina ?? 0
+    const prevStamina = finiteNumberOr(member.stamina, 0)
     const nextStamina = clampMemberStamina(
       prevStamina - staminaCost,
       member.staminaMax

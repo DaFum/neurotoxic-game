@@ -39,6 +39,30 @@ test('clinicReducer', async t => {
       assert.equal(nextState.band.members[1].stamina, 100)
     })
 
+    await t2.test('heals a member whose persisted stamina/mood is NaN', () => {
+      // Regression: a stale save can carry NaN stats. `?? 0` does not strip NaN,
+      // so the addend stayed NaN and the clamp collapsed the heal to 0 (no-op).
+      // finiteNumberOr must coerce the NaN base to 0 so the gain still applies.
+      const state = {
+        player: { money: 500, fame: 100, clinicVisits: 0 },
+        band: {
+          members: [{ id: 'm1', name: 'M1', stamina: NaN, mood: NaN }]
+        }
+      }
+
+      const payload = {
+        memberId: 'm1',
+        type: 'heal',
+        staminaGain: 40,
+        moodGain: 25
+      }
+
+      const nextState = handleClinicHeal(state, payload)
+
+      assert.equal(nextState.band.members[0].stamina, 40)
+      assert.equal(nextState.band.members[0].mood, 25)
+    })
+
     await t2.test('appends successToast to state.toasts on success', () => {
       const state = {
         player: { money: 500, fame: 100, clinicVisits: 0 },

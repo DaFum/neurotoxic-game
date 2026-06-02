@@ -11,7 +11,7 @@ import type {
   EventDelta
 } from '../types'
 
-export { finiteNumberOr } from './finiteNumber'
+export { finiteNumberOr, isFiniteNumber } from './finiteNumber'
 
 /**
  * Clamps a value to be at least 0.

@@ -9,7 +9,8 @@ import {
   applyInventoryItemDelta,
   isForbiddenKey,
   hasForbiddenKeys,
-  finiteNumberOr
+  finiteNumberOr,
+  isFiniteNumber
 } from '../../utils/gameStateUtils'
 import { applyTraitUnlocks } from '../../utils/traitUtils'
 import { ActionTypes } from '../actionTypes'
@@ -23,10 +24,6 @@ import type {
   GameState,
   UpdateBandPayload
 } from '../../types'
-
-// Guards reducer-boundary numeric payloads against NaN and Infinity.
-const isSafeNumber = (value: unknown): value is number =>
-  typeof value === 'number' && Number.isFinite(value)
 
 const DEFAULT_MEMBER_MOOD = 50
 const DEFAULT_MEMBER_STAMINA = 100
@@ -59,7 +56,7 @@ export const handleUpdateBand = (
   const safeUpdates: Record<string, unknown> = { ...updates }
   if (Object.hasOwn(safeUpdates, 'harmony')) {
     safeUpdates.harmony = clampBandHarmony(
-      isSafeNumber(safeUpdates.harmony)
+      isFiniteNumber(safeUpdates.harmony)
         ? safeUpdates.harmony
         : state.band.harmony
     )
@@ -108,34 +105,34 @@ export const handleUpdateBand = (
         next = { ...(patch as BandMember), id }
       }
       if (!next) continue
-      if (Object.hasOwn(patch, 'stamina') && !isSafeNumber(next.stamina)) {
+      if (Object.hasOwn(patch, 'stamina') && !isFiniteNumber(next.stamina)) {
         next.stamina =
-          existing && isSafeNumber(existing.stamina)
+          existing && isFiniteNumber(existing.stamina)
             ? existing.stamina
             : DEFAULT_MEMBER_STAMINA
       }
       if (
         Object.hasOwn(patch, 'staminaMax') &&
-        !isSafeNumber(next.staminaMax)
+        !isFiniteNumber(next.staminaMax)
       ) {
         next.staminaMax =
-          existing && isSafeNumber(existing.staminaMax)
+          existing && isFiniteNumber(existing.staminaMax)
             ? existing.staminaMax
             : DEFAULT_MEMBER_STAMINA_MAX
       }
-      if (isSafeNumber(next.stamina)) {
-        const maxStamina = isSafeNumber(next.staminaMax)
+      if (isFiniteNumber(next.stamina)) {
+        const maxStamina = isFiniteNumber(next.staminaMax)
           ? next.staminaMax
           : undefined
         next.stamina = clampMemberStamina(next.stamina, maxStamina)
       }
-      if (Object.hasOwn(patch, 'mood') && !isSafeNumber(next.mood)) {
+      if (Object.hasOwn(patch, 'mood') && !isFiniteNumber(next.mood)) {
         next.mood =
-          existing && isSafeNumber(existing.mood)
+          existing && isFiniteNumber(existing.mood)
             ? existing.mood
             : DEFAULT_MEMBER_MOOD
       }
-      if (isSafeNumber(next.mood)) {
+      if (isFiniteNumber(next.mood)) {
         next.mood = clampMemberMood(next.mood)
       }
       if (typeof next.id === 'string') {

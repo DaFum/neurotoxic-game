@@ -488,8 +488,8 @@
         "jsDoc": {
           "summary": "Architecture (Redux Orchestration / State Transitions): Pure helper function to handle adding contraband. This is exposed as a direct state-update helper rather than an action to allow other reducers (like minigameReducer and tradeReducer) to perform atomic state updates across domain boundaries without requiring complex multi-action orchestration in the hook layer, avoiding potential stale-state race conditions."
         },
-        "lineEnd": 394,
-        "lineStart": 333,
+        "lineEnd": 391,
+        "lineStart": 330,
         "name": "addContrabandHelper",
         "parameters": [
           {
@@ -5438,8 +5438,8 @@
             }
           ]
         },
-        "lineEnd": 611,
-        "lineStart": 580,
+        "lineEnd": 608,
+        "lineStart": 577,
         "name": "bandReducer",
         "parameters": [
           {
@@ -22576,6 +22576,14 @@
             "importedAs": "finiteNumberOr"
           },
           {
+            "path": "src/context/reducers/clinicReducer.ts",
+            "importedAs": "finiteNumberOr"
+          },
+          {
+            "path": "src/context/reducers/playerReducer.ts",
+            "importedAs": "finiteNumberOr"
+          },
+          {
             "path": "src/context/reducers/systemReducer.ts",
             "importedAs": "finiteNumberOr"
           },
@@ -29959,8 +29967,8 @@
         "exportedName": "handleAddToast",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 1686,
-        "lineStart": 1681,
+        "lineEnd": 1687,
+        "lineStart": 1682,
         "name": "handleAddToast",
         "parameters": [
           {
@@ -30014,8 +30022,8 @@
             }
           ]
         },
-        "lineEnd": 2029,
-        "lineStart": 2022,
+        "lineEnd": 2030,
+        "lineStart": 2023,
         "name": "handleAddUnlock",
         "parameters": [
           {
@@ -30116,8 +30124,8 @@
             }
           ]
         },
-        "lineEnd": 2014,
-        "lineStart": 1863,
+        "lineEnd": 2015,
+        "lineStart": 1864,
         "name": "handleAdvanceDay",
         "parameters": [
           {
@@ -30297,6 +30305,7 @@
           "clampControversyLevel",
           "clampMemberStamina",
           "clampPlayerMoney",
+          "finiteNumberOr",
           "formatCurrency",
           "getSafeUUID",
           "sanitizeSuccessToast"
@@ -30323,8 +30332,8 @@
             }
           ]
         },
-        "lineEnd": 283,
-        "lineStart": 184,
+        "lineEnd": 284,
+        "lineStart": 185,
         "name": "handleBloodBankDonate",
         "parameters": [
           {
@@ -30473,8 +30482,8 @@
             }
           ]
         },
-        "lineEnd": 349,
-        "lineStart": 294,
+        "lineEnd": 350,
+        "lineStart": 295,
         "name": "handleClinicEnhance",
         "parameters": [
           {
@@ -30508,7 +30517,8 @@
         "columnStart": 14,
         "dependencies": [
           "clampMemberMood",
-          "clampMemberStamina"
+          "clampMemberStamina",
+          "finiteNumberOr"
         ],
         "exportedName": "handleClinicHeal",
         "exportKind": "named",
@@ -30532,8 +30542,8 @@
             }
           ]
         },
-        "lineEnd": 171,
-        "lineStart": 142,
+        "lineEnd": 172,
+        "lineStart": 143,
         "name": "handleClinicHeal",
         "parameters": [
           {
@@ -30771,8 +30781,8 @@
             }
           ]
         },
-        "lineEnd": 237,
-        "lineStart": 206,
+        "lineEnd": 234,
+        "lineStart": 203,
         "name": "handleConsumeItem",
         "parameters": [
           {
@@ -31234,8 +31244,8 @@
             }
           ]
         },
-        "lineEnd": 1630,
-        "lineStart": 1514,
+        "lineEnd": 1631,
+        "lineStart": 1515,
         "name": "handleLoadGame",
         "parameters": [
           {
@@ -31609,8 +31619,8 @@
         "exportedName": "handleRemoveToast",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 1696,
-        "lineStart": 1688,
+        "lineEnd": 1697,
+        "lineStart": 1689,
         "name": "handleRemoveToast",
         "parameters": [
           {
@@ -31688,8 +31698,8 @@
         "exportedName": "handleResetState",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 1656,
-        "lineStart": 1632,
+        "lineEnd": 1657,
+        "lineStart": 1633,
         "name": "handleResetState",
         "parameters": [
           {
@@ -31939,8 +31949,8 @@
         "exportedName": "handleSetMap",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 1679,
-        "lineStart": 1669,
+        "lineEnd": 1680,
+        "lineStart": 1670,
         "name": "handleSetMap",
         "parameters": [
           {
@@ -31994,8 +32004,8 @@
             }
           ]
         },
-        "lineEnd": 2043,
-        "lineStart": 2037,
+        "lineEnd": 2044,
+        "lineStart": 2038,
         "name": "handleSetPendingBandHQOpen",
         "parameters": [
           {
@@ -32033,8 +32043,8 @@
         "exportedName": "handleSetPendingRiskEvent",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 2084,
-        "lineStart": 2058,
+        "lineEnd": 2085,
+        "lineStart": 2059,
         "name": "handleSetPendingRiskEvent",
         "parameters": [
           {
@@ -32069,8 +32079,8 @@
         "exportedName": "handleSetPendingSupplyStopInventory",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 2056,
-        "lineStart": 2045,
+        "lineEnd": 2057,
+        "lineStart": 2046,
         "name": "handleSetPendingSupplyStopInventory",
         "parameters": [
           {
@@ -32421,8 +32431,8 @@
             }
           ]
         },
-        "lineEnd": 572,
-        "lineStart": 542,
+        "lineEnd": 569,
+        "lineStart": 539,
         "name": "handleToggleNeuroDecimator",
         "parameters": [
           {
@@ -32539,8 +32549,8 @@
             }
           ]
         },
-        "lineEnd": 198,
-        "lineStart": 174,
+        "lineEnd": 195,
+        "lineStart": 171,
         "name": "handleUnlockTrait",
         "parameters": [
           {
@@ -32570,7 +32580,8 @@
           "clampBandHarmony",
           "clampMemberMood",
           "clampMemberStamina",
-          "hasForbiddenKeys"
+          "hasForbiddenKeys",
+          "isFiniteNumber"
         ],
         "exportedName": "handleUpdateBand",
         "exportKind": "named",
@@ -32594,8 +32605,8 @@
             }
           ]
         },
-        "lineEnd": 166,
-        "lineStart": 42,
+        "lineEnd": 163,
+        "lineStart": 39,
         "name": "handleUpdateBand",
         "parameters": [
           {
@@ -32625,14 +32636,15 @@
           "calculateFameLevel",
           "clampPlayerFame",
           "clampPlayerMoney",
+          "finiteNumberOr",
           "hasForbiddenKeys",
           "isLooseRecord"
         ],
         "exportedName": "handleUpdatePlayer",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 54,
-        "lineStart": 17,
+        "lineEnd": 49,
+        "lineStart": 18,
         "name": "handleUpdatePlayer",
         "parameters": [
           {
@@ -32706,8 +32718,8 @@
         "exportedName": "handleUpdateSettings",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 1667,
-        "lineStart": 1658,
+        "lineEnd": 1668,
+        "lineStart": 1659,
         "name": "handleUpdateSettings",
         "parameters": [
           {
@@ -32866,8 +32878,8 @@
             }
           ]
         },
-        "lineEnd": 533,
-        "lineStart": 494,
+        "lineEnd": 530,
+        "lineStart": 491,
         "name": "handleUseContraband",
         "parameters": [
           {
@@ -34609,6 +34621,7 @@
         "columnStart": 14,
         "exportedName": "isFiniteNumber",
         "exportKind": "named",
+        "exportPath": "src/utils/gameStateUtils.ts",
         "isDefault": false,
         "lineEnd": 12,
         "lineStart": 11,
@@ -34626,6 +34639,14 @@
         "source": "local",
         "type": "const",
         "usedBy": [
+          {
+            "path": "src/context/reducers/bandReducer.ts",
+            "importedAs": "isFiniteNumber"
+          },
+          {
+            "path": "src/context/reducers/systemReducer.ts",
+            "importedAs": "isFiniteNumber"
+          },
           {
             "path": "src/data/chatter/standardChatter.ts",
             "importedAs": "isFiniteNumber"
