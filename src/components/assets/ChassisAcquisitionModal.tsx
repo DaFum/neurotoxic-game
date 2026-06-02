@@ -40,7 +40,7 @@ const MODES: readonly AcquisitionMode[] = ['cash', 'loan', 'crowdfund']
  * to the player.
  */
 export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
-  const { t, i18n } = useTranslation(['assets'])
+  const { t } = useTranslation(['assets'])
   const money = useGameSelector(s => s.player.money)
   const acquisitionBlocked = useGameSelector(s =>
     hasActiveAssetAcquisition(s, kind)
@@ -129,71 +129,19 @@ export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
             </div>
           )}
 
-          <div
-            className='flex flex-col items-stretch gap-2 border-t-2 pt-2 sm:flex-row sm:items-center sm:justify-between'
-            style={{
-              borderColor: 'var(--section-accent, var(--color-toxic-green))'
-            }}
-          >
-            <span className='text-base sm:text-sm'>
-              {formatCurrency(price, i18n.language)}
-            </span>
-            <div className='flex gap-2'>
-              <ActionButton
-                onClick={onClose}
-                variant='custom'
-                className='bg-void-black text-ash-gray border-2 border-ash-gray px-3 py-2 text-sm hover:bg-ash-gray hover:text-void-black'
-              >
-                {t('ui:action_cancel')}
-              </ActionButton>
-              <Tooltip
-                content={
-                  acquisitionBlocked
-                    ? t('assets:purchaseFailed.acquisition_already_active')
-                    : diyLoanBlocked
-                      ? t('assets:purchaseFailed.diy_loan_not_allowed')
-                      : insufficient
-                        ? t('assets:purchaseFailed.insufficient_funds')
-                        : undefined
-                }
-              >
-                <ActionButton
-                  onClick={onConfirm}
-                  disabled={
-                    acquisitionBlocked ||
-                    diyLoanBlocked ||
-                    insufficient ||
-                    price === 0
-                  }
-                  variant='custom'
-                  className='px-3 py-2 text-sm disabled:opacity-40'
-                  style={{
-                    background:
-                      'var(--section-accent, var(--color-toxic-green))',
-                    color: 'var(--color-void-black)'
-                  }}
-                >
-                  {t('assets:actions.purchase')}
-                </ActionButton>
-              </Tooltip>
-            </div>
-          </div>
-
-          {diyLoanBlocked && (
-            <p style={{ color: 'var(--color-blood-red)' }}>
-              {t('assets:purchaseFailed.diy_loan_not_allowed')}
-            </p>
-          )}
-          {acquisitionBlocked && (
-            <p style={{ color: 'var(--color-warning-yellow)' }}>
-              {t('assets:purchaseFailed.acquisition_already_active')}
-            </p>
-          )}
-          {insufficient && (
-            <p style={{ color: 'var(--color-blood-red)' }}>
-              {t('assets:purchaseFailed.insufficient_funds')}
-            </p>
-          )}
+          <ChassisAcquisitionFooter
+            price={price}
+            acquisitionBlocked={acquisitionBlocked}
+            diyLoanBlocked={diyLoanBlocked}
+            insufficient={insufficient}
+            onClose={onClose}
+            onConfirm={onConfirm}
+          />
+          <ChassisAcquisitionWarnings
+            acquisitionBlocked={acquisitionBlocked}
+            diyLoanBlocked={diyLoanBlocked}
+            insufficient={insufficient}
+          />
         </div>
       </Modal>
       {showCrowdfundSetup && (
@@ -269,3 +217,106 @@ const ChoiceGroup = <T extends string | number>({
     </div>
   </div>
 )
+
+
+interface ChassisAcquisitionFooterProps {
+  price: number
+  acquisitionBlocked: boolean
+  diyLoanBlocked: boolean
+  insufficient: boolean
+  onClose: () => void
+  onConfirm: () => void
+}
+
+const ChassisAcquisitionFooter = ({
+  price,
+  acquisitionBlocked,
+  diyLoanBlocked,
+  insufficient,
+  onClose,
+  onConfirm
+}: ChassisAcquisitionFooterProps) => {
+  const { t, i18n } = useTranslation(['assets', 'ui'])
+  return (
+    <div
+      className='flex flex-col items-stretch gap-2 border-t-2 pt-2 sm:flex-row sm:items-center sm:justify-between'
+      style={{
+        borderColor: 'var(--section-accent, var(--color-toxic-green))'
+      }}
+    >
+      <span className='text-base sm:text-sm'>
+        {formatCurrency(price, i18n.language)}
+      </span>
+      <div className='flex gap-2'>
+        <ActionButton
+          onClick={onClose}
+          variant='custom'
+          className='bg-void-black text-ash-gray border-2 border-ash-gray px-3 py-2 text-sm hover:bg-ash-gray hover:text-void-black'
+        >
+          {t('ui:action_cancel')}
+        </ActionButton>
+        <Tooltip
+          content={
+            acquisitionBlocked
+              ? t('assets:purchaseFailed.acquisition_already_active')
+              : diyLoanBlocked
+                ? t('assets:purchaseFailed.diy_loan_not_allowed')
+                : insufficient
+                  ? t('assets:purchaseFailed.insufficient_funds')
+                  : undefined
+          }
+        >
+          <ActionButton
+            onClick={onConfirm}
+            disabled={
+              acquisitionBlocked ||
+              diyLoanBlocked ||
+              insufficient ||
+              price === 0
+            }
+            variant='custom'
+            className='px-3 py-2 text-sm disabled:opacity-40'
+            style={{
+              background:
+                'var(--section-accent, var(--color-toxic-green))',
+              color: 'var(--color-void-black)'
+            }}
+          >
+            {t('assets:actions.purchase')}
+          </ActionButton>
+        </Tooltip>
+      </div>
+    </div>
+  )
+}
+
+const ChassisAcquisitionWarnings = ({
+  acquisitionBlocked,
+  diyLoanBlocked,
+  insufficient
+}: {
+  acquisitionBlocked: boolean
+  diyLoanBlocked: boolean
+  insufficient: boolean
+}) => {
+  const { t } = useTranslation(['assets'])
+  return (
+    <>
+      {diyLoanBlocked && (
+        <p style={{ color: 'var(--color-blood-red)' }}>
+          {t('assets:purchaseFailed.diy_loan_not_allowed')}
+        </p>
+      )}
+      {acquisitionBlocked && (
+        <p style={{ color: 'var(--color-warning-yellow)' }}>
+          {t('assets:purchaseFailed.acquisition_already_active')}
+        </p>
+      )}
+      {insufficient && (
+        <p style={{ color: 'var(--color-blood-red)' }}>
+          {t('assets:purchaseFailed.insufficient_funds')}
+        </p>
+      )}
+    </>
+  )
+}
