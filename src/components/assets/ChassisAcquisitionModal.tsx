@@ -290,15 +290,17 @@ const ChassisAcquisitionFooter = ({
   )
 }
 
+interface ChassisAcquisitionWarningsProps {
+  acquisitionBlocked: boolean
+  diyLoanBlocked: boolean
+  insufficient: boolean
+}
+
 const ChassisAcquisitionWarnings = ({
   acquisitionBlocked,
   diyLoanBlocked,
   insufficient
-}: {
-  acquisitionBlocked: boolean
-  diyLoanBlocked: boolean
-  insufficient: boolean
-}) => {
+}: ChassisAcquisitionWarningsProps) => {
   const { t } = useTranslation(['assets'])
   return (
     <>
