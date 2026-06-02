@@ -77,6 +77,59 @@ function useRequiredContext<T>(context: Context<T | null>, name: string): T {
  * @param {object} props
  * @param {React.ReactNode} props.children
  */
+// Lazy initialization of state to ensure fresh data fetch on mount
+const initGameState = (): GameState => {
+  const unlocks =
+    safeStorage('loadUnlocks', () => getUnlocks(), [] as string[]) ?? []
+  const freshState = createInitialState({ unlocks })
+
+  // Check for test-injected state (screenshot testing).
+  // A special marker key signals the state was placed by the screenshot
+  // injection script and should be hydrated on mount.  Normal player
+  // saves are loaded explicitly via the MENU → "Load Game" button.
+  const shouldHydrate = safeStorage(
+    'checkInjectMarker',
+    () => localStorage.getItem('neurotoxic_inject_marker') === 'true',
+    false
+  )
+
+  if (shouldHydrate) {
+    // NOTE: Do NOT remove the marker here.  React StrictMode double-invokes
+    // lazy initialisers in dev, so removing it on the first call would cause
+    // the second (authoritative) call to miss the marker and return INTRO.
+    // The marker is cleaned up in a useEffect after mount instead.
+
+    const savedGame = safeStorage(
+      'loadInjectedState',
+      () => {
+        try {
+          const saved = localStorage.getItem(SAVE_KEY)
+          if (!saved) return null
+          const parsed: unknown = safeJsonParse(saved)
+          return isLooseRecord(parsed) ? parsed : null
+        } catch (err) {
+          logger.error('GameState', 'Failed to parse injected state', err)
+          return null
+        }
+      },
+      null as Record<string, unknown> | null
+    )
+
+    if (savedGame && Object.hasOwn(savedGame, 'version')) {
+      try {
+        return gameReducer(
+          freshState,
+          createLoadGameAction(createRawLoadPayload(savedGame, unlocks))
+        )
+      } catch (err) {
+        logger.error('GameState', 'Failed to hydrate injected state', err)
+      }
+    }
+  }
+
+  return freshState
+}
+
 export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   const { t } = useTranslation()
   const tRef = useRef(t)
@@ -84,58 +137,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
     tRef.current = t
   }, [t])
 
-  // Lazy initialization of state to ensure fresh data fetch on mount
-  const initGameState = (): GameState => {
-    const unlocks =
-      safeStorage('loadUnlocks', () => getUnlocks(), [] as string[]) ?? []
-    const freshState = createInitialState({ unlocks })
 
-    // Check for test-injected state (screenshot testing).
-    // A special marker key signals the state was placed by the screenshot
-    // injection script and should be hydrated on mount.  Normal player
-    // saves are loaded explicitly via the MENU → "Load Game" button.
-    const shouldHydrate = safeStorage(
-      'checkInjectMarker',
-      () => localStorage.getItem('neurotoxic_inject_marker') === 'true',
-      false
-    )
-
-    if (shouldHydrate) {
-      // NOTE: Do NOT remove the marker here.  React StrictMode double-invokes
-      // lazy initialisers in dev, so removing it on the first call would cause
-      // the second (authoritative) call to miss the marker and return INTRO.
-      // The marker is cleaned up in a useEffect after mount instead.
-
-      const savedGame = safeStorage(
-        'loadInjectedState',
-        () => {
-          try {
-            const saved = localStorage.getItem(SAVE_KEY)
-            if (!saved) return null
-            const parsed: unknown = safeJsonParse(saved)
-            return isLooseRecord(parsed) ? parsed : null
-          } catch (err) {
-            logger.error('GameState', 'Failed to parse injected state', err)
-            return null
-          }
-        },
-        null as Record<string, unknown> | null
-      )
-
-      if (savedGame && Object.hasOwn(savedGame, 'version')) {
-        try {
-          return gameReducer(
-            freshState,
-            createLoadGameAction(createRawLoadPayload(savedGame, unlocks))
-          )
-        } catch (err) {
-          logger.error('GameState', 'Failed to hydrate injected state', err)
-        }
-      }
-    }
-
-    return freshState
-  }
 
   const [state, dispatch] = useReducer(gameReducer, undefined, initGameState)
 
