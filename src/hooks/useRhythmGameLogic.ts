@@ -10,6 +10,8 @@ import { useRhythmGameLoop } from './rhythmGame/useRhythmGameLoop'
 import { useRhythmGameInput } from './rhythmGame/useRhythmGameInput'
 import type { RhythmGameRefState } from '../types/rhythmGame'
 import type { RhythmUiState } from './rhythmGame/useRhythmGameState'
+export type { RhythmUiState } from './rhythmGame/useRhythmGameState'
+export type RhythmGameStats = RhythmUiState
 
 type RhythmGameLogicActions = {
   registerInput: (laneIndex: number, isDown: boolean) => void
