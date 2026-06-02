@@ -4524,32 +4524,18 @@
         "columnEnd": 2,
         "columnStart": 14,
         "dependencies": [
-          "BrandDealsTab",
-          "DetailedStatsTab",
-          "getUnifiedUpgradeCatalog",
-          "GlossaryTab",
-          "LeaderboardTab",
+          "BandHQContentArea",
+          "BandHQTabsList",
           "resolveGenImageUrl",
-          "SetlistTab",
-          "SettingsTab",
-          "ShopTab",
-          "StatsTab",
-          "Tooltip",
-          "UpgradesTab",
-          "useAudioControl",
-          "useBandHQLogic",
-          "useGameActions",
           "useGameSelector",
-          "useNetworkStatus",
-          "usePurchaseLogic",
-          "VoidTraderTab"
+          "useNetworkStatus"
         ],
         "exportedName": "BandHQ",
         "exportKind": "named",
         "isComponent": true,
         "isDefault": false,
-        "lineEnd": 330,
-        "lineStart": 75,
+        "lineEnd": 93,
+        "lineStart": 17,
         "name": "BandHQ",
         "parameters": [
           {
@@ -4573,6 +4559,83 @@
             "importedAs": "BandHQ"
           }
         ]
+      }
+    ],
+    "BandHQContentArea": [
+      {
+        "columnEnd": 2,
+        "columnStart": 14,
+        "dependencies": [
+          "BrandDealsTab",
+          "DetailedStatsTab",
+          "getUnifiedUpgradeCatalog",
+          "GlossaryTab",
+          "LeaderboardTab",
+          "SetlistTab",
+          "SettingsTab",
+          "ShopTab",
+          "StatsTab",
+          "UpgradesTab",
+          "useAudioControl",
+          "useBandHQLogic",
+          "useGameActions",
+          "useGameSelector",
+          "usePurchaseLogic",
+          "VoidTraderTab"
+        ],
+        "exportedName": "BandHQContentArea",
+        "exportKind": "named",
+        "isComponent": true,
+        "isDefault": false,
+        "lineEnd": 194,
+        "lineStart": 25,
+        "name": "BandHQContentArea",
+        "parameters": [
+          {
+            "name": "{\n  currentTab,\n  VOID_TRADER_CONTROVERSY_THRESHOLD\n}",
+            "optional": false,
+            "rest": false,
+            "type": "BandHQContentAreaProps"
+          }
+        ],
+        "path": "src/ui/bandhq/BandHQContentArea.tsx",
+        "returnType": "React.JSX.Element",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/ui/BandHQ.tsx",
+            "importedAs": "BandHQContentArea"
+          }
+        ]
+      }
+    ],
+    "BandHQContentAreaProps": [
+      {
+        "columnEnd": 2,
+        "columnStart": 1,
+        "exportedName": "BandHQContentAreaProps",
+        "exportKind": "named",
+        "isDefault": false,
+        "lineEnd": 23,
+        "lineStart": 20,
+        "name": "BandHQContentAreaProps",
+        "path": "src/ui/bandhq/BandHQContentArea.tsx",
+        "properties": [
+          {
+            "name": "currentTab",
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "name": "VOID_TRADER_CONTROVERSY_THRESHOLD",
+            "optional": false,
+            "type": "number"
+          }
+        ],
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
       }
     ],
     "BandHQLogicResult": [
@@ -4625,17 +4688,8 @@
         "exportedName": "BandHQProps",
         "exportKind": "named",
         "isDefault": false,
-        "jsDoc": {
-          "summary": "BandHQ Component Displays statistics and a shop for purchasing upgrades.",
-          "tags": [
-            {
-              "name": "param",
-              "target": "props"
-            }
-          ]
-        },
-        "lineEnd": 73,
-        "lineStart": 70,
+        "lineEnd": 15,
+        "lineStart": 12,
         "name": "BandHQProps",
         "path": "src/ui/BandHQ.tsx",
         "properties": [
@@ -4653,6 +4707,41 @@
         "source": "local",
         "type": "interface",
         "typeOnly": true
+      }
+    ],
+    "BandHQTabsList": [
+      {
+        "columnEnd": 2,
+        "columnStart": 14,
+        "dependencies": [
+          "HQTabButton",
+          "Tooltip"
+        ],
+        "exportedName": "BandHQTabsList",
+        "exportKind": "named",
+        "isComponent": true,
+        "isDefault": false,
+        "lineEnd": 75,
+        "lineStart": 13,
+        "name": "BandHQTabsList",
+        "parameters": [
+          {
+            "name": "{\n  currentTab,\n  setActiveTab,\n  controversyLevel,\n  VOID_TRADER_CONTROVERSY_THRESHOLD\n}",
+            "optional": false,
+            "rest": false,
+            "type": "BandHQTabsListProps"
+          }
+        ],
+        "path": "src/ui/bandhq/BandHQTabsList.tsx",
+        "returnType": "React.JSX.Element",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/ui/BandHQ.tsx",
+            "importedAs": "BandHQTabsList"
+          }
+        ]
       }
     ],
     "BandMember": [
@@ -6008,7 +6097,7 @@
         "type": "const",
         "usedBy": [
           {
-            "path": "src/ui/BandHQ.tsx",
+            "path": "src/ui/bandhq/BandHQContentArea.tsx",
             "importedAs": "BrandDealsTab"
           }
         ]
@@ -19783,7 +19872,7 @@
         "type": "const",
         "usedBy": [
           {
-            "path": "src/ui/BandHQ.tsx",
+            "path": "src/ui/bandhq/BandHQContentArea.tsx",
             "importedAs": "DetailedStatsTab"
           }
         ]
@@ -28322,7 +28411,7 @@
         "type": "const",
         "usedBy": [
           {
-            "path": "src/ui/BandHQ.tsx",
+            "path": "src/ui/bandhq/BandHQContentArea.tsx",
             "importedAs": "getUnifiedUpgradeCatalog"
           }
         ]
@@ -29020,7 +29109,7 @@
         "type": "const",
         "usedBy": [
           {
-            "path": "src/ui/BandHQ.tsx",
+            "path": "src/ui/bandhq/BandHQContentArea.tsx",
             "importedAs": "GlossaryTab"
           }
         ]
@@ -32897,6 +32986,70 @@
         "typeOnly": true
       }
     ],
+    "HQTabButton": [
+      {
+        "columnEnd": 2,
+        "columnStart": 14,
+        "exportedName": "HQTabButton",
+        "exportKind": "named",
+        "isComponent": true,
+        "isDefault": false,
+        "lineEnd": 41,
+        "lineStart": 16,
+        "name": "HQTabButton",
+        "parameters": [
+          {
+            "name": "{\n  tab,\n  isActive,\n  label,\n  onClick\n}",
+            "optional": false,
+            "rest": false,
+            "type": "HQTabButtonProps"
+          }
+        ],
+        "path": "src/ui/bandhq/HQTabButton.tsx",
+        "returnType": "React.JSX.Element",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/ui/bandhq/BandHQTabsList.tsx",
+            "importedAs": "HQTabButton"
+          }
+        ]
+      }
+    ],
+    "HQTabDef": [
+      {
+        "columnEnd": 2,
+        "columnStart": 1,
+        "exportedName": "HQTabDef",
+        "exportKind": "named",
+        "isDefault": false,
+        "lineEnd": 7,
+        "lineStart": 3,
+        "name": "HQTabDef",
+        "path": "src/ui/bandhq/HQTabButton.tsx",
+        "properties": [
+          {
+            "name": "id",
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "name": "isLocked",
+            "optional": true,
+            "type": "boolean"
+          },
+          {
+            "name": "key",
+            "optional": false,
+            "type": "string"
+          }
+        ],
+        "source": "local",
+        "type": "interface",
+        "typeOnly": true
+      }
+    ],
     "HTMLAttributes": [
       {
         "exportedName": "HTMLAttributes",
@@ -34821,7 +34974,7 @@
         "type": "const",
         "usedBy": [
           {
-            "path": "src/ui/BandHQ.tsx",
+            "path": "src/ui/bandhq/BandHQContentArea.tsx",
             "importedAs": "LeaderboardTab"
           }
         ]
@@ -50717,7 +50870,7 @@
         "type": "const",
         "usedBy": [
           {
-            "path": "src/ui/BandHQ.tsx",
+            "path": "src/ui/bandhq/BandHQContentArea.tsx",
             "importedAs": "SetlistTab"
           }
         ]
@@ -51084,7 +51237,7 @@
         "type": "const",
         "usedBy": [
           {
-            "path": "src/ui/BandHQ.tsx",
+            "path": "src/ui/bandhq/BandHQContentArea.tsx",
             "importedAs": "SettingsTab"
           }
         ]
@@ -51504,7 +51657,7 @@
         "type": "const",
         "usedBy": [
           {
-            "path": "src/ui/BandHQ.tsx",
+            "path": "src/ui/bandhq/BandHQContentArea.tsx",
             "importedAs": "ShopTab"
           }
         ]
@@ -53795,7 +53948,7 @@
         "type": "const",
         "usedBy": [
           {
-            "path": "src/ui/BandHQ.tsx",
+            "path": "src/ui/bandhq/BandHQContentArea.tsx",
             "importedAs": "StatsTab"
           }
         ]
@@ -54827,7 +54980,7 @@
             "importedAs": "Tooltip"
           },
           {
-            "path": "src/ui/BandHQ.tsx",
+            "path": "src/ui/bandhq/BandHQTabsList.tsx",
             "importedAs": "Tooltip"
           },
           {
@@ -56726,7 +56879,7 @@
         "type": "const",
         "usedBy": [
           {
-            "path": "src/ui/BandHQ.tsx",
+            "path": "src/ui/bandhq/BandHQContentArea.tsx",
             "importedAs": "UpgradesTab"
           }
         ]
@@ -56912,7 +57065,7 @@
             "importedAs": "useAudioControl"
           },
           {
-            "path": "src/ui/BandHQ.tsx",
+            "path": "src/ui/bandhq/BandHQContentArea.tsx",
             "importedAs": "useAudioControl"
           },
           {
@@ -57029,7 +57182,7 @@
         "type": "const",
         "usedBy": [
           {
-            "path": "src/ui/BandHQ.tsx",
+            "path": "src/ui/bandhq/BandHQContentArea.tsx",
             "importedAs": "useBandHQLogic"
           }
         ]
@@ -57541,7 +57694,7 @@
             "importedAs": "useGameActions"
           },
           {
-            "path": "src/ui/BandHQ.tsx",
+            "path": "src/ui/bandhq/BandHQContentArea.tsx",
             "importedAs": "useGameActions"
           },
           {
@@ -57878,6 +58031,10 @@
           },
           {
             "path": "src/ui/BandHQ.tsx",
+            "importedAs": "useGameSelector"
+          },
+          {
+            "path": "src/ui/bandhq/BandHQContentArea.tsx",
             "importedAs": "useGameSelector"
           },
           {
@@ -59458,7 +59615,7 @@
         "type": "const",
         "usedBy": [
           {
-            "path": "src/ui/BandHQ.tsx",
+            "path": "src/ui/bandhq/BandHQContentArea.tsx",
             "importedAs": "usePurchaseLogic"
           },
           {
@@ -61225,7 +61382,7 @@
         "type": "const",
         "usedBy": [
           {
-            "path": "src/ui/BandHQ.tsx",
+            "path": "src/ui/bandhq/BandHQContentArea.tsx",
             "importedAs": "VoidTraderTab"
           }
         ]
