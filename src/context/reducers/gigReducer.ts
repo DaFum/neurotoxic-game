@@ -131,7 +131,16 @@ export const handleSetLastGigStats = (
     }
   }
 
-  const safePayload = payload
+  const safePayload = {
+    ...payload,
+    score: payload.score !== undefined ? finiteNumberOr(payload.score, 0) : undefined,
+    misses: payload.misses !== undefined ? finiteNumberOr(payload.misses, 0) : undefined,
+    accuracy: payload.accuracy !== undefined ? finiteNumberOr(payload.accuracy, 0) : undefined,
+    combo: payload.combo !== undefined ? finiteNumberOr(payload.combo, 0) : undefined,
+    health: payload.health !== undefined ? finiteNumberOr(payload.health, 0) : undefined,
+    overload: payload.overload !== undefined ? finiteNumberOr(payload.overload, 0) : undefined,
+    maxCombo: payload.maxCombo !== undefined ? finiteNumberOr(payload.maxCombo, 0) : undefined
+  }
   // Prevent trait unlocks during practice mode
   if (state.currentGig?.isPractice) {
     return {
