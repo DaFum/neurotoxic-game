@@ -27,15 +27,21 @@ import {
   createSocialLoyaltyChangedQuestEvent,
   createSocialTrendMatchedQuestEvent
 } from '../../quests/producers/socialQuestEvents'
-import { createBrandDealFailedQuestEvent } from '../../quests/producers/brandQuestEvents'
+import {
+  createBrandDealFailedQuestEvent,
+  createBrandTrustChangedQuestEvent
+} from '../../quests/producers/brandQuestEvents'
 import {
   createVenueBlacklistedQuestEvent,
   createVenueUnblacklistedQuestEvent
 } from '../../quests/producers/venueQuestEvents'
 import { VENUES_BY_ID } from '../../data/venues'
+import { isForbiddenKey } from '../../utils/objectUtils'
 
 /** Controversy at or above this voids active brand deals. */
 const DEAL_BREAK_CONTROVERSY = 85
+/** Brand trust lost with each deal that collapses under controversy. */
+const DEAL_BREAK_TRUST_PENALTY = 10
 
 type ZealotryPayloadParsed = {
   cost: number
@@ -273,9 +279,27 @@ export const handleUpdateSocial = (
     activeDeals.length > 0
   ) {
     const brokenDeals = activeDeals
+    // Burned trust: each broken deal drags down the brand's reputation.
+    const nextBrandReputation = { ...(nextState.social.brandReputation || {}) }
+    for (const deal of brokenDeals) {
+      const alignment =
+        deal && typeof deal === 'object' && typeof deal.alignment === 'string'
+          ? deal.alignment
+          : undefined
+      if (alignment && !isForbiddenKey(alignment)) {
+        nextBrandReputation[alignment] = Math.max(
+          0,
+          (nextBrandReputation[alignment] || 0) - DEAL_BREAK_TRUST_PENALTY
+        )
+      }
+    }
     nextState = {
       ...nextState,
-      social: { ...nextState.social, activeDeals: [] },
+      social: {
+        ...nextState.social,
+        activeDeals: [],
+        brandReputation: nextBrandReputation
+      },
       toasts: [
         ...(nextState.toasts || []),
         {
@@ -290,10 +314,23 @@ export const handleUpdateSocial = (
         deal && typeof deal === 'object' && typeof deal.id === 'string'
           ? deal.id
           : 'unknown'
+      const alignment =
+        deal && typeof deal === 'object' && typeof deal.alignment === 'string'
+          ? deal.alignment
+          : undefined
       nextState = QuestEvents.emit(
         nextState,
         createBrandDealFailedQuestEvent({ dealId, reason: 'controversy' })
       )
+      if (alignment) {
+        nextState = QuestEvents.emit(
+          nextState,
+          createBrandTrustChangedQuestEvent({
+            brandId: alignment,
+            amount: -DEAL_BREAK_TRUST_PENALTY
+          })
+        )
+      }
     }
   }
 

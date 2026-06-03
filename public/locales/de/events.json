@@ -1,4 +1,12 @@
 {
+  "quest_brand_ambassador.label": "Markenbotschafter",
+  "quest_brand_ambassador.desc": "Gewinne Markenvertrauen, indem du Deals abschließt und einhältst.",
+  "quest_trigger_brand_ambassador.title": "KONZERN-WERBUNG",
+  "quest_trigger_brand_ambassador.desc": "Ein Booking-Agent meint, du könntest zum Sponsor-Liebling werden. Spielst du mit?",
+  "quest_trigger_brand_ambassador.opt1.label": "Sie überzeugen",
+  "quest_trigger_brand_ambassador.opt1.outcome": "Du nimmst dir vor, der Lieblingsact der Marke zu werden.",
+  "quest_trigger_brand_ambassador.opt2.label": "Deine Kante behalten",
+  "quest_trigger_brand_ambassador.opt2.outcome": "Du weigerst dich, jemandes Maskottchen zu sein.",
   "quest_venue_regular.label": "Hausband",
   "quest_venue_regular.desc": "Bau dir einen Venue-Ruf auf, indem du auf der Bühne abräumst.",
   "quest_trigger_venue_regular.title": "VERDIEN DIR DEINEN PLATZ",

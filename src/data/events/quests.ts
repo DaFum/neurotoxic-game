@@ -539,5 +539,27 @@ export const QUEST_EVENTS = [
         outcomeText: 'events:quest_trigger_venue_regular.opt2.outcome'
       }
     ]
+  },
+  {
+    id: 'quest_trigger_brand_ambassador',
+    category: 'financial',
+    title: 'events:quest_trigger_brand_ambassador.title',
+    description: 'events:quest_trigger_brand_ambassador.desc',
+    trigger: 'random',
+    chance: 0.06,
+    condition: (state: GameState) =>
+      canOfferQuest(state, 'quest_brand_ambassador'),
+    options: [
+      {
+        label: 'events:quest_trigger_brand_ambassador.opt1.label',
+        effect: { type: 'quest', quest: { id: 'quest_brand_ambassador' } },
+        outcomeText: 'events:quest_trigger_brand_ambassador.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_brand_ambassador.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:quest_trigger_brand_ambassador.opt2.outcome'
+      }
+    ]
   }
 ]

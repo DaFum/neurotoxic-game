@@ -49,7 +49,8 @@ import { submitLeaderboardScores } from '../utils/leaderboardUtils'
 import { createHarmonyChangedQuestEvent } from '../quests/producers/gigQuestEvents'
 import {
   createBrandDealCompletedQuestEvent,
-  createBrandOfferAcceptedQuestEvent
+  createBrandOfferAcceptedQuestEvent,
+  createBrandTrustChangedQuestEvent
 } from '../quests/producers/brandQuestEvents'
 import { createSocialPostQuestEvents } from '../quests/producers/socialQuestEvents'
 import { createRegionReputationChangedQuestEvent } from '../quests/producers/venueQuestEvents'
@@ -292,6 +293,16 @@ export const usePostGigHandlers = ({
 
         applyQuestEvent(createBrandOfferAcceptedQuestEvent(deal))
         applyQuestEvent(createBrandDealCompletedQuestEvent(deal))
+        if (deal.alignment) {
+          // The accept social factory raises this brand's reputation; surface
+          // the matching trust change for quests.
+          applyQuestEvent(
+            createBrandTrustChangedQuestEvent({
+              brandId: deal.alignment,
+              amount: 5
+            })
+          )
+        }
         if (appliedMoneyDelta > 0) {
           applyQuestEvent(
             createMoneyEarnedQuestEvent({

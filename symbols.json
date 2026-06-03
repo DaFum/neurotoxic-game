@@ -15749,7 +15749,17 @@
         "path": "src/quests/producers/brandQuestEvents.ts",
         "returnType": "QuestEvent",
         "source": "local",
-        "type": "const"
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/context/reducers/socialReducer.ts",
+            "importedAs": "createBrandTrustChangedQuestEvent"
+          },
+          {
+            "path": "src/hooks/usePostGigHandlers.ts",
+            "importedAs": "createBrandTrustChangedQuestEvent"
+          }
+        ]
       }
     ],
     "createChangeSceneAction": [
@@ -27973,8 +27983,8 @@
         "exportedName": "getQuestDefinition",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 704,
-        "lineStart": 701,
+        "lineEnd": 722,
+        "lineStart": 719,
         "name": "getQuestDefinition",
         "parameters": [
           {
@@ -29287,8 +29297,8 @@
         "jsDoc": {
           "summary": "Cost to win a venue back. Bigger rooms have longer memories, so the amends fee scales with capacity on top of a flat base."
         },
-        "lineEnd": 362,
-        "lineStart": 353,
+        "lineEnd": 399,
+        "lineStart": 390,
         "name": "getUnblacklistCost",
         "parameters": [
           {
@@ -30233,8 +30243,8 @@
         "exportedName": "handleAddVenueBlacklist",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 344,
-        "lineStart": 306,
+        "lineEnd": 381,
+        "lineStart": 343,
         "name": "handleAddVenueBlacklist",
         "parameters": [
           {
@@ -31033,8 +31043,8 @@
         "exportedName": "handleDarkWebLeak",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 628,
-        "lineStart": 618,
+        "lineEnd": 665,
+        "lineStart": 655,
         "name": "handleDarkWebLeak",
         "parameters": [
           {
@@ -31472,8 +31482,8 @@
         "exportedName": "handleMerchPress",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 502,
-        "lineStart": 419,
+        "lineEnd": 539,
+        "lineStart": 456,
         "name": "handleMerchPress",
         "parameters": [
           {
@@ -31617,8 +31627,8 @@
         "exportedName": "handlePirateBroadcast",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 616,
-        "lineStart": 607,
+        "lineEnd": 653,
+        "lineStart": 644,
         "name": "handlePirateBroadcast",
         "parameters": [
           {
@@ -32717,8 +32727,8 @@
         "exportedName": "handleUnblacklistVenue",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 417,
-        "lineStart": 364,
+        "lineEnd": 454,
+        "lineStart": 401,
         "name": "handleUnblacklistVenue",
         "parameters": [
           {
@@ -32983,10 +32993,12 @@
           "clampLoyalty",
           "clampZealotry",
           "createBrandDealFailedQuestEvent",
+          "createBrandTrustChangedQuestEvent",
           "createSocialControversyChangedQuestEvent",
           "createSocialLoyaltyChangedQuestEvent",
           "createSocialTrendMatchedQuestEvent",
-          "getSafeUUID"
+          "getSafeUUID",
+          "isForbiddenKey"
         ],
         "exportedName": "handleUpdateSocial",
         "exportKind": "named",
@@ -33010,8 +33022,8 @@
             }
           ]
         },
-        "lineEnd": 301,
-        "lineStart": 155,
+        "lineEnd": 338,
+        "lineStart": 161,
         "name": "handleUpdateSocial",
         "parameters": [
           {
@@ -34944,6 +34956,10 @@
             "importedAs": "isForbiddenKey"
           },
           {
+            "path": "src/context/reducers/socialReducer.ts",
+            "importedAs": "isForbiddenKey"
+          },
+          {
             "path": "src/context/reducers/systemReducer.ts",
             "importedAs": "isForbiddenKey"
           },
@@ -35498,8 +35514,8 @@
         "jsDoc": {
           "summary": "Looks up a quest's static definition by id. Returns `undefined` for unknown ids so callers can fall back to inline payloads."
         },
-        "lineEnd": 699,
-        "lineStart": 696,
+        "lineEnd": 717,
+        "lineStart": 714,
         "name": "isQuestRegistryId",
         "parameters": [
           {
@@ -44749,7 +44765,7 @@
         "exportedName": "QUEST_EVENTS",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 543,
+        "lineEnd": 565,
         "lineStart": 7,
         "name": "QUEST_EVENTS",
         "path": "src/data/events/quests.ts",
@@ -44844,7 +44860,7 @@
         "exportedName": "QUEST_REGISTRY",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 690,
+        "lineEnd": 708,
         "lineStart": 3,
         "name": "QUEST_REGISTRY",
         "path": "src/data/questRegistry.ts",
@@ -60848,6 +60864,7 @@
           "clampBandHarmony",
           "createBrandDealCompletedQuestEvent",
           "createBrandOfferAcceptedQuestEvent",
+          "createBrandTrustChangedQuestEvent",
           "createHarmonyChangedQuestEvent",
           "createMoneyEarnedQuestEvent",
           "createRegionReputationChangedQuestEvent",
@@ -60870,8 +60887,8 @@
         "exportKind": "named",
         "isDefault": false,
         "isHook": true,
-        "lineEnd": 594,
-        "lineStart": 107,
+        "lineEnd": 605,
+        "lineStart": 108,
         "name": "usePostGigHandlers",
         "parameters": [
           {
@@ -60900,8 +60917,8 @@
         "exportedName": "UsePostGigHandlersProps",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 105,
-        "lineStart": 68,
+        "lineEnd": 106,
+        "lineStart": 69,
         "name": "UsePostGigHandlersProps",
         "path": "src/hooks/usePostGigHandlers.ts",
         "properties": [
@@ -61028,8 +61045,8 @@
         "exportedName": "UsePostGigHandlersReturn",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 66,
-        "lineStart": 58,
+        "lineEnd": 67,
+        "lineStart": 59,
         "name": "UsePostGigHandlersReturn",
         "path": "src/hooks/usePostGigHandlers.ts",
         "properties": [

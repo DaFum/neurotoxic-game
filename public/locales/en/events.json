@@ -1,4 +1,12 @@
 {
+  "quest_brand_ambassador.label": "Brand Ambassador",
+  "quest_brand_ambassador.desc": "Earn brand trust by signing and honoring deals.",
+  "quest_trigger_brand_ambassador.title": "CORPORATE COURTSHIP",
+  "quest_trigger_brand_ambassador.desc": "A booking agent figures you could become a sponsor favorite. Play along?",
+  "quest_trigger_brand_ambassador.opt1.label": "Win them over",
+  "quest_trigger_brand_ambassador.opt1.outcome": "You set out to become the brand’s favorite act.",
+  "quest_trigger_brand_ambassador.opt2.label": "Keep your edge",
+  "quest_trigger_brand_ambassador.opt2.outcome": "You refuse to be anyone’s mascot.",
   "quest_venue_regular.label": "House Band",
   "quest_venue_regular.desc": "Build up a venue reputation by killing it on stage.",
   "quest_trigger_venue_regular.title": "EARN YOUR SPOT",
