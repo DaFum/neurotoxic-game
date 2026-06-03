@@ -264,6 +264,8 @@
   "detailedStats.totalTravels": "Gesamtreisen",
   "detailedStats.traits": "Eigenschaften",
   "detailedStats.upgrades": "Upgrades",
+  "detailedStats.useInventoryItem": "Verwenden",
+  "detailedStats.useInventoryItemAria": "{{item}} verwenden",
   "detailedStats.vanUpgrades.installed": "{{count}} Installiert",
   "detailedStats.vanUpgrades.installed_one": "{{count}} Installiert",
   "detailedStats.vanUpgrades.installed_other": "{{count}} Installiert",

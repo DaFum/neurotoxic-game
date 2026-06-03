@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { BRAND_COLOR_HEX } from '../../../utils/brandColors'
+import { BRAND_COLOR_HEX, HEX_COLOR_PATTERN } from '../../../utils/brandColors'
 import {
   getGenImageUrl,
   IMG_PROMPTS,
@@ -24,7 +24,6 @@ const SVG_TOKEN_FALLBACKS = {
   '--color-ash-gray': BRAND_COLOR_HEX['ash-gray']
 } as const satisfies Record<SvgTokenName, string>
 
-const HEX_COLOR_PATTERN = /^#(?:[0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i
 const SVG_UNSAFE_CSS_PATTERN = /[;{}<>]/
 
 const isSafeSvgColorValue = (value: string): boolean => {

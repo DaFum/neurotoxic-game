@@ -17,16 +17,9 @@ import { RELATIONSHIP_EVENTS } from './relationshipEvents'
 import { QUEST_EVENTS } from './quests'
 import { logger } from '../../utils/logger'
 import { validateGameEvent } from '../../utils/eventValidator'
+import { EVENT_CATEGORIES, type EventCategory } from './categories'
 
-export const EVENT_CATEGORIES = [
-  'transport',
-  'band',
-  'gig',
-  'financial',
-  'special'
-] as const
-
-export type EventCategory = (typeof EVENT_CATEGORIES)[number]
+export { EVENT_CATEGORIES, type EventCategory } from './categories'
 
 const VALID_CATEGORIES = new Set<EventCategory>(EVENT_CATEGORIES)
 

@@ -7,7 +7,7 @@
 import { CHARACTERS } from '../data/characters'
 import { LOG_LEVELS, isValidLogLevel } from '../utils/logger'
 import { isLooseRecord } from '../utils/gameStateUtils'
-import { safeJsonParse } from '../utils/objectUtils'
+import { readGlobalSettings } from '../utils/storage'
 import { DEFAULT_MINIGAME_STATE, GAME_PHASES } from './gameConstants'
 import { normalizeTraitMap } from '../utils/traitUtils'
 import type {
@@ -182,9 +182,7 @@ export const DEFAULT_GIG_MODIFIERS = {
  */
 const getSavedSettings = () => {
   try {
-    return safeJsonParse(
-      localStorage.getItem('neurotoxic_global_settings') || '{}'
-    )
+    return readGlobalSettings()
   } catch (_e) {
     return {}
   }

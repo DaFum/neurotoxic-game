@@ -15,10 +15,18 @@ import {
   clampLoyalty,
   clampPlayerFame,
   clampPlayerMoney,
-  finiteNumberOr,
-  isForbiddenKey
+  finiteNumberOr
 } from '../utils/gameStateUtils'
 import { applyTraitUnlocks } from '../utils/traitUtils'
+import { getQuestToastName } from './questHelpers'
+import {
+  applyBrandTrustDelta,
+  applyReputationDelta,
+  applyVenueReputationDelta,
+  getRegionReputationKey,
+  getVenueReputationKey,
+  queueEvent
+} from './questEffects'
 
 export interface QuestRewardResult {
   state: GameState
@@ -78,95 +86,6 @@ export const getQuestRewards = (quest: QuestState): QuestReward[] =>
     ? quest.rewards
     : normalizeLegacyRewards(quest)
 
-const getQuestToastName = (quest: QuestState): string => quest.label ?? quest.id
-
-const clampReputation = (value: number): number =>
-  Math.max(-100, Math.min(100, value))
-
-const getVenueReputationKey = (
-  state: GameState,
-  scope: 'current' | string | undefined
-): string | undefined => {
-  const key =
-    scope === 'current' || scope == null
-      ? (state.currentGig?.id ?? state.player?.currentNodeId)
-      : scope
-  return typeof key === 'string' && key.length > 0 && !isForbiddenKey(key)
-    ? key
-    : undefined
-}
-
-const getRegionReputationKey = (
-  state: GameState,
-  scope: 'current' | string | undefined
-): string | undefined => {
-  const key =
-    scope === 'current' || scope == null ? state.player?.location : scope
-  return typeof key === 'string' && key.length > 0 && !isForbiddenKey(key)
-    ? key
-    : undefined
-}
-
-const applyReputationDelta = (
-  state: GameState,
-  key: string | undefined,
-  amount: number
-): GameState => {
-  if (!key) return state
-  const previous = finiteNumberOr(state.reputationByRegion?.[key], 0)
-  return {
-    ...state,
-    reputationByRegion: {
-      ...(state.reputationByRegion ?? {}),
-      [key]: clampReputation(previous + amount)
-    }
-  }
-}
-
-const applyVenueReputationDelta = (
-  state: GameState,
-  key: string | undefined,
-  amount: number
-): GameState => {
-  if (!key) return state
-  const previous = finiteNumberOr(state.reputationByVenue?.[key], 0)
-  return {
-    ...state,
-    reputationByVenue: {
-      ...(state.reputationByVenue ?? {}),
-      [key]: clampReputation(previous + amount)
-    }
-  }
-}
-
-const getBrandReputationKey = (
-  reward: Extract<QuestReward, { type: 'brand.trust' }>
-): string | undefined => {
-  const key = reward.brandId ?? reward.alignment ?? 'global'
-  return typeof key === 'string' && key.length > 0 && !isForbiddenKey(key)
-    ? key
-    : undefined
-}
-
-const applyBrandTrustDelta = (
-  state: GameState,
-  reward: Extract<QuestReward, { type: 'brand.trust' }>
-): GameState => {
-  const key = getBrandReputationKey(reward)
-  if (!key) return state
-  const previous = finiteNumberOr(state.social?.brandReputation?.[key], 0)
-  return {
-    ...state,
-    social: {
-      ...state.social,
-      brandReputation: {
-        ...(state.social?.brandReputation ?? {}),
-        [key]: clamp0to100(previous + reward.amount)
-      }
-    }
-  }
-}
-
 const applyAssetRepair = (
   state: GameState,
   reward: Extract<QuestReward, { type: 'asset.repair' }>
@@ -187,15 +106,6 @@ const applyAssetRepair = (
     }
   })
   return repaired ? { ...state, assets } : state
-}
-
-const queueEvent = (state: GameState, eventId: string): GameState => {
-  if (!eventId || isForbiddenKey(eventId)) return state
-  if (state.pendingEvents?.includes(eventId)) return state
-  return {
-    ...state,
-    pendingEvents: [...(state.pendingEvents ?? []), eventId]
-  }
 }
 
 const applySkillPointReward = (

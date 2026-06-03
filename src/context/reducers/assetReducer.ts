@@ -21,7 +21,10 @@ import {
   isLoanProfileEligible
 } from '../../utils/loanProfiles'
 import { MODULE_REGISTRY } from '../../utils/assetModuleRegistry'
-import { hasActiveAssetAcquisition } from '../../utils/assetSelectors'
+import {
+  calculateChassisGrossSaleValue,
+  hasActiveAssetAcquisition
+} from '../../utils/assetSelectors'
 import { finiteNumberOr } from '../../utils/gameStateUtils'
 import { QuestEvents } from '../../utils/questProgress'
 import {
@@ -389,26 +392,8 @@ export const handleSellChassis = (
     finiteNumberOr(rawTotalPrincipalRemaining, 0)
   )
 
-  const daysOwned = Math.max(0, state.player.day - asset.acquiredOnDay)
-  const conditionFactor = asset.condition / 100
-  const depreciation = Math.max(0.4, 1 - (daysOwned / 365) * 0.4)
-
-  const configTier =
-    CHASSIS_CONFIG[asset.kind]?.[asset.chassisFlavor]?.[asset.chassisTier]
-  if (!configTier) return state
-
-  let moduleRefunds = 0
-  asset.slots.forEach(slot => {
-    if (slot.installedModuleId) {
-      const moduleInfo = MODULE_REGISTRY[slot.installedModuleId]
-      if (moduleInfo) {
-        moduleRefunds += moduleInfo.cost * moduleInfo.removalRefundFraction
-      }
-    }
-  })
-
-  const gross =
-    configTier.price * conditionFactor * depreciation + moduleRefunds
+  const gross = calculateChassisGrossSaleValue(asset, state.player.day)
+  if (gross === null) return state
 
   if (gross < totalPrincipalRemaining) {
     return state

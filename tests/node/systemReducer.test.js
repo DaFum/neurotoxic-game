@@ -16,6 +16,106 @@ import {
 import { createInitialState } from '../../src/context/initialState'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 
+test('handleAdvanceDay ignores non-finite expired harmony effect values', () => {
+  const createState = () => {
+    const state = createInitialState()
+    state.player.money = 10000
+    state.band.harmony = 50
+    state.rngSeed = 123
+    return state
+  }
+  const stateWithExpiredEffect = createState()
+  const controlState = createState()
+  const payload = {
+    dayRngStream: [],
+    nextRngSeed: stateWithExpiredEffect.rngSeed,
+    rng: () => 0.5
+  }
+  stateWithExpiredEffect.band.activeContrabandEffects = [
+    {
+      effectType: 'harmony',
+      value: Number.NaN,
+      remainingDuration: 1
+    }
+  ]
+
+  const nextState = handleAdvanceDay(stateWithExpiredEffect, payload)
+  const controlNextState = handleAdvanceDay(controlState, payload)
+
+  assert.equal(nextState.band.harmony, controlNextState.band.harmony)
+})
+
+test('handleAdvanceDay ignores non-finite expired additive effect values', () => {
+  const createState = () => {
+    const state = createInitialState()
+    state.player.money = 10000
+    state.rngSeed = 123
+    state.band.performance = {
+      ...state.band.performance,
+      guitarDifficulty: 1.5
+    }
+    state.band.luck = 4
+    state.band.style = 5
+    state.band.tourSuccess = 6
+    state.band.gigModifier = 7
+    state.band.tempo = 8
+    state.band.practiceGain = 9
+    state.band.crit = 10
+    state.band.affinity = 11
+    state.band.crowdControl = 12
+    state.band.members = state.band.members.map(member => ({
+      ...member,
+      staminaMax: 100
+    }))
+    return state
+  }
+  const stateWithExpiredEffects = createState()
+  const controlState = createState()
+  const payload = {
+    dayRngStream: [],
+    nextRngSeed: stateWithExpiredEffects.rngSeed,
+    rng: () => 0.5
+  }
+  stateWithExpiredEffects.band.activeContrabandEffects = [
+    'guitar_difficulty',
+    'stamina_max',
+    'luck',
+    'style',
+    'tour_success',
+    'gig_modifier',
+    'tempo',
+    'practice_gain',
+    'crit',
+    'affinity',
+    'crowd_control'
+  ].map(effectType => ({
+    effectType,
+    value: Number.NaN,
+    remainingDuration: 1
+  }))
+
+  const nextState = handleAdvanceDay(stateWithExpiredEffects, payload)
+  const controlNextState = handleAdvanceDay(controlState, payload)
+
+  assert.equal(
+    nextState.band.performance?.guitarDifficulty,
+    controlNextState.band.performance?.guitarDifficulty
+  )
+  assert.deepEqual(
+    nextState.band.members.map(member => member.staminaMax),
+    controlNextState.band.members.map(member => member.staminaMax)
+  )
+  assert.equal(nextState.band.luck, controlNextState.band.luck)
+  assert.equal(nextState.band.style, controlNextState.band.style)
+  assert.equal(nextState.band.tourSuccess, controlNextState.band.tourSuccess)
+  assert.equal(nextState.band.gigModifier, controlNextState.band.gigModifier)
+  assert.equal(nextState.band.tempo, controlNextState.band.tempo)
+  assert.equal(nextState.band.practiceGain, controlNextState.band.practiceGain)
+  assert.equal(nextState.band.crit, controlNextState.band.crit)
+  assert.equal(nextState.band.affinity, controlNextState.band.affinity)
+  assert.equal(nextState.band.crowdControl, controlNextState.band.crowdControl)
+})
+
 test('systemReducer - LOAD_GAME', async t => {
   await t.test(
     'loads game and sanitizes player, band, and social state',

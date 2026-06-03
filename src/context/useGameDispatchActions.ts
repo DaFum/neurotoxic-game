@@ -17,9 +17,11 @@ import type {
 } from '../types'
 import { GAME_PHASES, PRACTICE_RETURN_SCENES } from './gameConstants'
 import { logger, isValidLogLevel } from '../utils/logger'
-import { isLooseRecord } from '../utils/gameStateUtils'
-import { safeJsonParse } from '../utils/objectUtils'
-import { safeStorageNoFallback, safeStorage } from '../utils/storage'
+import {
+  readGlobalSettings,
+  safeStorageOperation,
+  writeGlobalSettings
+} from '../utils/storage'
 import { handleError, StateError } from '../utils/errorHandler'
 import { getUnlocks } from '../utils/unlockManager'
 import { secureRandom } from '../utils/crypto'
@@ -67,7 +69,6 @@ import {
   createMerchPressAction,
   createTradeVoidItemAction,
   createBloodBankDonateAction,
-  createAddVenueBlacklistAction,
   createUnblacklistVenueAction,
   createCraftItemAction,
   createSetPendingBandHQOpenAction,
@@ -177,9 +178,6 @@ export type GameDispatchActions = {
   ) => void
   applyQuestEvent: (
     event: Parameters<typeof createApplyQuestEventAction>[0]
-  ) => void
-  addVenueBlacklist: (
-    payload: Parameters<typeof createAddVenueBlacklistAction>[0]
   ) => void
   unblacklistVenue: (
     payload: Parameters<typeof createUnblacklistVenueAction>[0]
@@ -364,8 +362,11 @@ export function useGameDispatchActions({
 
   const resetState = useCallback(() => {
     resetMapGenerationRetries()
-    const unlocks: string[] =
-      safeStorage('loadUnlocks', () => getUnlocks(), [] as string[]) ?? []
+    const unlocks: string[] = safeStorageOperation(
+      'loadUnlocks',
+      () => getUnlocks(),
+      [] as string[]
+    )
     dispatch(createResetStateAction({ unlocks }))
   }, [dispatch, resetMapGenerationRetries])
 
@@ -507,12 +508,6 @@ export function useGameDispatchActions({
   const applyQuestEvent = useCallback(
     (event: Parameters<typeof createApplyQuestEventAction>[0]) =>
       dispatch(createApplyQuestEventAction(event)),
-    [dispatch]
-  )
-
-  const addVenueBlacklist = useCallback(
-    (payload: Parameters<typeof createAddVenueBlacklistAction>[0]) =>
-      dispatch(createAddVenueBlacklistAction(payload)),
     [dispatch]
   )
 
@@ -662,14 +657,8 @@ export function useGameDispatchActions({
         }
       }
 
-      safeStorageNoFallback('saveGlobalSettings', () => {
-        const current = safeJsonParse(
-          localStorage.getItem('neurotoxic_global_settings') || '{}'
-        )
-        const next = isLooseRecord(current)
-          ? { ...current, ...updates }
-          : { ...updates }
-        localStorage.setItem('neurotoxic_global_settings', JSON.stringify(next))
+      safeStorageOperation('saveGlobalSettings', () => {
+        writeGlobalSettings({ ...readGlobalSettings(), ...updates })
       })
     },
     [dispatch]
@@ -696,9 +685,9 @@ export function useGameDispatchActions({
   )
   const sellChassis = useCallback(
     (assetId: string) => {
-      dispatch(sellChassisAction(assetId))
+      dispatch(sellChassisAction(assetId, stateRef.current))
     },
-    [dispatch]
+    [dispatch, stateRef]
   )
   const repairChassis = useCallback(
     (assetId: string) => {
@@ -776,7 +765,6 @@ export function useGameDispatchActions({
       addQuest,
       advanceQuest,
       applyQuestEvent,
-      addVenueBlacklist,
       unblacklistVenue,
       craftItem,
       useContraband,
@@ -841,7 +829,6 @@ export function useGameDispatchActions({
       addQuest,
       advanceQuest,
       applyQuestEvent,
-      addVenueBlacklist,
       unblacklistVenue,
       craftItem,
       useContraband,

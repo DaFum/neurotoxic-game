@@ -9,7 +9,7 @@ import type { TFunction } from 'i18next'
 import { normalizeSetlistForSave, isLooseRecord } from '../utils/gameStateUtils'
 import { safeJsonParse } from '../utils/objectUtils'
 import { handleError, StateError, StorageError } from '../utils/errorHandler'
-import { safeStorage, safeStorageNoFallback } from '../utils/storage'
+import { safeStorageOperation } from '../utils/storage'
 import { validateSaveData } from '../utils/saveValidator'
 import { addUnlock, getUnlocks } from '../utils/unlockManager'
 import { logger } from '../utils/logger'
@@ -155,7 +155,7 @@ export function usePersistence({
   tRef
 }: UsePersistenceParams) {
   const deleteSave = useCallback(() => {
-    safeStorageNoFallback('deleteSave', () => {
+    safeStorageOperation('deleteSave', () => {
       localStorage.removeItem(SAVE_KEY)
     })
     window.location.reload()
@@ -165,7 +165,7 @@ export function usePersistence({
     (showToast = true, stateSnapshot: GameState = stateRef.current) => {
       const saveData = createPersistedState(stateSnapshot)
 
-      const success = safeStorage(
+      const success = safeStorageOperation(
         'saveGame',
         () => {
           localStorage.setItem(SAVE_KEY, JSON.stringify(saveData))
@@ -205,7 +205,7 @@ export function usePersistence({
   }, [currentScene, saveGame])
 
   const loadGame = useCallback(() => {
-    return safeStorage(
+    return safeStorageOperation(
       'loadGame',
       () => {
         let parsed: unknown

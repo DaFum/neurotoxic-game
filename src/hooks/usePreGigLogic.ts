@@ -26,6 +26,7 @@ import {
 import { getGigModifiers } from '../utils/simulationUtils'
 import { getActiveAssetModifiers } from '../utils/assetSelectors'
 import {
+  getMerchCapacity,
   resolveMerchRestockCost,
   getMerchBundleAmount,
   getTotalMerchStock
@@ -47,7 +48,6 @@ const resetLastMinigameFallback = (): void => {
 }
 
 const BAND_MEETING_COST = 50
-const BASE_MERCH_CAPACITY = 100
 
 const resolveBandMeetingCost = (trainingCostMultiplier: unknown): number => {
   const safeMultiplier = Math.max(0, finiteNumberOr(trainingCostMultiplier, 1))
@@ -192,9 +192,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
 
       const bundleAmount = getMerchBundleAmount(itemDef)
       const currentInventory = band.inventory ?? {}
-      const merchCapacity =
-        BASE_MERCH_CAPACITY +
-        Math.max(0, finiteNumberOr(assetModifiers.merchCapacityBonus, 0))
+      const merchCapacity = getMerchCapacity(assetModifiers.merchCapacityBonus)
       const remainingCapacity = Math.max(
         0,
         merchCapacity - getTotalMerchStock(currentInventory)

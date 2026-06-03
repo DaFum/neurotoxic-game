@@ -6,6 +6,12 @@ import {
 import { isForbiddenKey } from '../../utils/objectUtils'
 import { MODULE_REGISTRY } from '../../utils/assetModuleRegistry'
 import { CHASSIS_CONFIG } from '../../utils/assetConfig'
+import {
+  VALID_ASSET_ACQUISITION_MODES,
+  VALID_ASSET_FLAVORS,
+  VALID_ASSET_KINDS,
+  VALID_ASSET_TIERS
+} from '../../utils/assetValidation'
 import type {
   AssetFlavor,
   AssetKind,
@@ -20,11 +26,7 @@ import type {
   SlotType
 } from '../../types/assets'
 
-const VALID_KINDS: ReadonlySet<string> = new Set(Object.keys(CHASSIS_CONFIG))
-const VALID_FLAVORS: ReadonlySet<string> = new Set(['legit', 'diy'])
-const VALID_MODES: ReadonlySet<string> = new Set(['cash', 'loan', 'crowdfund'])
 const VALID_SOURCES: ReadonlySet<string> = new Set(['loan', 'crowdfund'])
-const VALID_TIERS: ReadonlySet<number> = new Set([1, 2, 3])
 const VALID_OUTCOMES: ReadonlySet<string> = new Set(['success', 'fail'])
 const VALID_RISK_EVENT_TYPES: ReadonlySet<string> = new Set([
   'eviction',
@@ -88,7 +90,7 @@ export const sanitizeAssetKinds = (raw: unknown): AssetKind[] => {
   if (!Array.isArray(raw)) return []
   const out: AssetKind[] = []
   for (const item of raw) {
-    if (typeof item !== 'string' || !VALID_KINDS.has(item)) continue
+    if (typeof item !== 'string' || !VALID_ASSET_KINDS.has(item)) continue
     const kind = item as AssetKind
     if (!out.includes(kind)) out.push(kind)
   }
@@ -246,11 +248,12 @@ export const sanitizeAssets = (raw: unknown): LongTermAsset[] => {
     if (!isLooseRecord(item)) continue
     const clean = stripHostileKeys(item)
     if (typeof clean.id !== 'string' || seenIds.has(clean.id)) continue
-    if (!VALID_KINDS.has(clean.kind as string)) continue
-    if (!VALID_FLAVORS.has(clean.chassisFlavor as string)) continue
+    if (!VALID_ASSET_KINDS.has(clean.kind as string)) continue
+    if (!VALID_ASSET_FLAVORS.has(clean.chassisFlavor as string)) continue
     const tier = Number(clean.chassisTier)
-    if (!VALID_TIERS.has(tier)) continue
-    if (!VALID_MODES.has(clean.acquisitionMode as string)) continue
+    if (!VALID_ASSET_TIERS.has(tier)) continue
+    if (!VALID_ASSET_ACQUISITION_MODES.has(clean.acquisitionMode as string))
+      continue
 
     const kind = clean.kind as LongTermAsset['kind']
     const flavor = clean.chassisFlavor as AssetFlavor
@@ -338,10 +341,10 @@ export const sanitizeCrowdfundCampaigns = (
     if (typeof clean.id !== 'string' || seenIds.has(clean.id)) continue
     if (!isLooseRecord(clean.assetSpec)) continue
     const spec = stripHostileKeys(clean.assetSpec)
-    if (!VALID_KINDS.has(spec.kind as string)) continue
-    if (!VALID_FLAVORS.has(spec.flavor as string)) continue
+    if (!VALID_ASSET_KINDS.has(spec.kind as string)) continue
+    if (!VALID_ASSET_FLAVORS.has(spec.flavor as string)) continue
     const tier = Number(spec.chassisTier)
-    if (!VALID_TIERS.has(tier)) continue
+    if (!VALID_ASSET_TIERS.has(tier)) continue
     const kind = spec.kind as CrowdfundCampaign['assetSpec']['kind']
     if (unavailableKinds.has(kind) || seenKinds.has(kind)) continue
 

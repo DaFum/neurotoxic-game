@@ -1,7 +1,5 @@
 import type { QuestEvent, SocialPostOption } from '../../types'
-
-const finiteNumberOrZero = (value: unknown): number =>
-  typeof value === 'number' && Number.isFinite(value) ? value : 0
+import { finiteNumberOr } from '../../utils/gameStateUtils'
 
 const getSocialContext = (
   option: Pick<SocialPostOption, 'id' | 'platform' | 'category'>
@@ -108,7 +106,7 @@ export const createSocialPostQuestEvents = (
 ): QuestEvent[] => {
   const events = [createSocialPostResolvedQuestEvent(option, result)]
   const followers = Object.hasOwn(result, 'followers')
-    ? finiteNumberOrZero(result.followers)
+    ? finiteNumberOr(result.followers, 0)
     : 0
   if (followers > 0) {
     events.push(

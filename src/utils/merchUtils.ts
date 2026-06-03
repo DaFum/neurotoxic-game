@@ -4,6 +4,11 @@ import { HQ_ITEMS_BY_MERCH_KEY } from '../data/hqItems'
 export type HQItemDef =
   typeof HQ_ITEMS_BY_MERCH_KEY extends ReadonlyMap<string, infer T> ? T : never
 
+export const BASE_MERCH_CAPACITY = 100
+
+export const getMerchCapacity = (bonus: unknown): number =>
+  BASE_MERCH_CAPACITY + Math.max(0, finiteNumberOr(bonus, 0))
+
 export const getMerchBundleAmount = (itemDef?: HQItemDef | null): number => {
   if (!itemDef) return 10
   const effect = itemDef.effect
