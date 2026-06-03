@@ -49,10 +49,12 @@ import { submitLeaderboardScores } from '../utils/leaderboardUtils'
 import { createHarmonyChangedQuestEvent } from '../quests/producers/gigQuestEvents'
 import {
   createBrandDealCompletedQuestEvent,
-  createBrandOfferAcceptedQuestEvent
+  createBrandOfferAcceptedQuestEvent,
+  createBrandTrustChangedQuestEvent
 } from '../quests/producers/brandQuestEvents'
 import { createSocialPostQuestEvents } from '../quests/producers/socialQuestEvents'
 import { createRegionReputationChangedQuestEvent } from '../quests/producers/venueQuestEvents'
+import { createMoneyEarnedQuestEvent } from '../quests/producers/economyQuestEvents'
 
 export interface UsePostGigHandlersReturn {
   isProcessingAction: boolean
@@ -291,6 +293,29 @@ export const usePostGigHandlers = ({
 
         applyQuestEvent(createBrandOfferAcceptedQuestEvent(deal))
         applyQuestEvent(createBrandDealCompletedQuestEvent(deal))
+        if (deal.alignment) {
+          // Mirror the accept social factory's clamped +5 so the emitted trust
+          // delta matches the real reputation change (avoids over-crediting
+          // quests when the brand is already near the 100 cap).
+          const currentRep = social.brandReputation?.[deal.alignment] || 0
+          const trustDelta = Math.min(100, currentRep + 5) - currentRep
+          if (trustDelta !== 0) {
+            applyQuestEvent(
+              createBrandTrustChangedQuestEvent({
+                brandId: deal.alignment,
+                amount: trustDelta
+              })
+            )
+          }
+        }
+        if (appliedMoneyDelta > 0) {
+          applyQuestEvent(
+            createMoneyEarnedQuestEvent({
+              amount: appliedMoneyDelta,
+              reason: 'brand_deal'
+            })
+          )
+        }
 
         const moneyText =
           appliedMoneyDelta === 0

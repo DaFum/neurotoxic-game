@@ -103,7 +103,8 @@ describe('QUEST_EVENTS', () => {
       evt.condition({
         activeQuests: [
           { id: 'quest_pick_of_destiny' },
-          { id: 'quest_studio_demo' }
+          { id: 'quest_studio_demo' },
+          { id: 'quest_merch_rush' }
         ],
         band: { harmony: 59 }
       }),

@@ -2,6 +2,8 @@ import { logger } from '../../utils/logger'
 import { applyEventDelta, isForbiddenKey } from '../../utils/gameStateUtils'
 import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks } from '../../utils/traitUtils'
+import { QuestEvents } from '../../utils/questProgress'
+import { createStoryFlagAddedQuestEvent } from '../../quests/producers/storyQuestEvents'
 import type { EventDeltaPayload, GameEvent, GameState } from '../../types'
 
 export const handleSetActiveEvent = (
@@ -29,11 +31,26 @@ export const handleApplyEventDelta = (
     eventUnlocks
   )
 
-  return {
+  let resultState: GameState = {
     ...nextState,
     band: traitResult.band,
     toasts: traitResult.toasts
   }
+
+  const priorFlags = new Set(
+    Array.isArray(state.activeStoryFlags) ? state.activeStoryFlags : []
+  )
+  const addedFlags = Array.isArray(resultState.activeStoryFlags)
+    ? resultState.activeStoryFlags.filter(flag => !priorFlags.has(flag))
+    : []
+  for (const flag of addedFlags) {
+    resultState = QuestEvents.emit(
+      resultState,
+      createStoryFlagAddedQuestEvent({ flag })
+    )
+  }
+
+  return resultState
 }
 
 export const handlePopPendingEvent = (state: GameState): GameState => {

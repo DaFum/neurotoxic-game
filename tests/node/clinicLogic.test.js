@@ -2,7 +2,8 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
   handleClinicHeal,
-  handleClinicEnhance
+  handleClinicEnhance,
+  handleBloodBankDonate
 } from '../../src/context/reducers/clinicReducer'
 import { calculateDailyUpdates } from '../../src/utils/simulationUtils'
 
@@ -37,6 +38,30 @@ test('clinicReducer', async t => {
       assert.equal(nextState.band.members[0].stamina, 100)
       assert.equal(nextState.band.members[0].mood, 60)
       assert.equal(nextState.band.members[1].stamina, 100)
+    })
+
+    await t2.test('heals a member whose persisted stamina/mood is NaN', () => {
+      // Regression: a stale save can carry NaN stats. `?? 0` does not strip NaN,
+      // so the addend stayed NaN and the clamp collapsed the heal to 0 (no-op).
+      // finiteNumberOr must coerce the NaN base to 0 so the gain still applies.
+      const state = {
+        player: { money: 500, fame: 100, clinicVisits: 0 },
+        band: {
+          members: [{ id: 'm1', name: 'M1', stamina: NaN, mood: NaN }]
+        }
+      }
+
+      const payload = {
+        memberId: 'm1',
+        type: 'heal',
+        staminaGain: 40,
+        moodGain: 25
+      }
+
+      const nextState = handleClinicHeal(state, payload)
+
+      assert.equal(nextState.band.members[0].stamina, 40)
+      assert.equal(nextState.band.members[0].mood, 25)
     })
 
     await t2.test('appends successToast to state.toasts on success', () => {
@@ -159,6 +184,46 @@ test('clinicReducer', async t => {
 
       assert.equal(nextState, state)
     })
+  })
+
+  await t.test('handleBloodBankDonate', async t2 => {
+    await t2.test(
+      'drains a member whose persisted stamina is NaN from a 0 base',
+      () => {
+        // Regression mirror of the heal case: a stale save can carry NaN stamina.
+        // handleBloodBankDonate must coerce the NaN base to 0 (finiteNumberOr) so
+        // the drain computes from 0 and NaN never propagates into stored stamina.
+        // From a 0 base the drain clamps to 0 — you cannot lose stamina you do
+        // not have — so the reported deltaStamina is 0, not the requested cost.
+        const staminaCost = 20
+        const state = {
+          player: { money: 100, fame: 0, clinicVisits: 0 },
+          band: {
+            harmony: 50,
+            members: [{ id: 'm1', name: 'M1', stamina: NaN, mood: 50 }]
+          },
+          social: { controversyLevel: 0 },
+          toasts: []
+        }
+
+        const nextState = handleBloodBankDonate(state, {
+          moneyGain: 50,
+          harmonyCost: 0,
+          staminaCost,
+          controversyGain: 0,
+          successToast: { id: 'bb-toast', message: 'Donated', type: 'success' }
+        })
+
+        // Base 0 - drain, clamped at 0; result is finite, not NaN.
+        assert.equal(
+          nextState.band.members[0].stamina,
+          Math.max(0, 0 - staminaCost)
+        )
+        assert.equal(Number.isNaN(nextState.band.members[0].stamina), false)
+        // Toast delta uses the same coerced baseline (0), so no phantom drain.
+        assert.equal(nextState.toasts[0].options.deltaStamina, 0)
+      }
+    )
   })
 
   await t.test('cyber_lungs trait grants daily stamina regen bonus', () => {

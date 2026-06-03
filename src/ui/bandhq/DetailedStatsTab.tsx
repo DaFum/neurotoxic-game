@@ -7,6 +7,8 @@ import { getTranslatedBrandDealDisplay } from '../../utils/brandDealI18n'
 import { formatCurrency } from '../../utils/numberUtils'
 import { translateLocation } from '../../utils/locationI18n'
 import { getCityKeyFromVenueId } from '../../utils/mapGenerator'
+import { getUnblacklistCost } from '../../context/reducers/socialReducer'
+import { CRAFTING_RECIPES } from '../../data/craftingRecipes'
 import { isEmptyObject } from '../../utils/gameStateUtils'
 import type {
   PlayerState,
@@ -351,11 +353,16 @@ const VanConditionSection = ({
 const RegionalStandingSection = ({
   reputationByRegion,
   venueBlacklist,
+  playerMoney,
+  onMakeAmends,
   t
 }: {
   reputationByRegion: Record<string, number>
   venueBlacklist: string[]
+  playerMoney: number
+  onMakeAmends?: (venueId: string) => void
 } & BasicTProps) => {
+  const { i18n } = useTranslation()
   const blacklistedCityKeys = useMemo(() => {
     const keys = new Set<string>()
     for (const v of venueBlacklist) {
@@ -364,10 +371,6 @@ const RegionalStandingSection = ({
     }
     return keys
   }, [venueBlacklist])
-
-  const blacklistedVenuesLabel = useMemo(() => {
-    return venueBlacklist.map(v => translateLocation(t, v, v)).join(', ')
-  }, [venueBlacklist, t])
 
   const regionalRows = useMemo(() => {
     return Object.entries(reputationByRegion).map(([region, rep]) => (
@@ -408,8 +411,38 @@ const RegionalStandingSection = ({
               defaultValue: 'Blacklisted Venues'
             })}
           </div>
-          <div className='text-xs text-toxic-green font-mono italic'>
-            {blacklistedVenuesLabel}
+          <div className='space-y-1'>
+            {venueBlacklist.map(venueId => {
+              const cost = getUnblacklistCost(venueId)
+              const affordable = playerMoney >= cost
+              return (
+                <div
+                  key={venueId}
+                  className='flex items-center justify-between gap-2'
+                >
+                  <span className='text-xs text-toxic-green font-mono italic'>
+                    {translateLocation(t, venueId, venueId)}
+                  </span>
+                  {onMakeAmends && (
+                    <button
+                      type='button'
+                      disabled={!affordable}
+                      onClick={() => onMakeAmends(venueId)}
+                      aria-label={`${t('ui:detailedStats.makeAmends', {
+                        amount: formatCurrency(cost, i18n.language),
+                        defaultValue: 'Make Amends ({{amount}})'
+                      })} — ${translateLocation(t, venueId, venueId)}`}
+                      className='text-xs px-2 py-0.5 border border-toxic-green/50 text-toxic-green uppercase tracking-wider disabled:opacity-40 disabled:cursor-not-allowed hover:bg-toxic-green/10'
+                    >
+                      {t('ui:detailedStats.makeAmends', {
+                        amount: formatCurrency(cost, i18n.language),
+                        defaultValue: 'Make Amends ({{amount}})'
+                      })}
+                    </button>
+                  )}
+                </div>
+              )
+            })}
           </div>
         </div>
       )}
@@ -586,6 +619,73 @@ const InventoryEquipmentSection = ({
     </div>
   </Panel>
 )
+
+const getStashStacks = (
+  stash: Record<string, unknown> | undefined,
+  itemId: string
+): number => {
+  if (!stash || !Object.hasOwn(stash, itemId)) return 0
+  const entry = stash[itemId]
+  if (!entry || typeof entry !== 'object') return 0
+  const stacks = (entry as Record<string, unknown>).stacks
+  // Stash entries are always contraband objects (never boolean-owned flags).
+  // A null/absent `stacks` means a non-stackable item that is owned = 1 unit,
+  // mirroring the reducer's getStashCount (the authority on craftability); this
+  // is display-only affordability and must agree with that reducer count.
+  return typeof stacks === 'number' && Number.isFinite(stacks)
+    ? Math.max(0, stacks)
+    : 1
+}
+
+const CraftingSection = ({
+  stash,
+  onCraft,
+  t
+}: {
+  stash: Record<string, unknown> | undefined
+  onCraft?: (recipeId: string) => void
+} & BasicTProps) => {
+  const recipes = Object.values(CRAFTING_RECIPES)
+  return (
+    <Panel title={t('ui:crafting.title', { defaultValue: 'Workshop' })}>
+      <div className='space-y-2'>
+        {recipes.map(recipe => {
+          const canCraft = Object.entries(recipe.inputs).every(
+            ([itemId, qty]) => getStashStacks(stash, itemId) >= qty
+          )
+          return (
+            <div
+              key={recipe.id}
+              className='flex items-center justify-between gap-2'
+            >
+              <div className='min-w-0'>
+                <div className='text-xs text-toxic-green font-mono truncate'>
+                  {t(recipe.labelKey, { defaultValue: recipe.id })}
+                </div>
+                <div className='text-[10px] text-ash-gray truncate'>
+                  {t(recipe.descKey, { defaultValue: '' })}
+                </div>
+              </div>
+              {onCraft && (
+                <button
+                  type='button'
+                  disabled={!canCraft}
+                  onClick={() => onCraft(recipe.id)}
+                  aria-label={`${t('ui:crafting.craft', {
+                    defaultValue: 'Craft'
+                  })} ${t(recipe.labelKey, { defaultValue: recipe.id })}`}
+                  className='shrink-0 text-xs px-2 py-0.5 border border-toxic-green/50 text-toxic-green uppercase tracking-wider disabled:opacity-40 disabled:cursor-not-allowed hover:bg-toxic-green/10'
+                >
+                  {t('ui:crafting.craft', { defaultValue: 'Craft' })}
+                </button>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </Panel>
+  )
+}
 
 const MemberTraits = ({ member, t }: { member: BandMember } & BasicTProps) => {
   const def = member.name ? CHAR_MAP[member.name] : undefined
@@ -805,7 +905,9 @@ export const DetailedStatsTab = ({
   social,
   activeQuests = [],
   venueBlacklist = [],
-  reputationByRegion = {}
+  reputationByRegion = {},
+  onMakeAmends,
+  onCraft
 }: {
   player: PlayerData
   band: BandData
@@ -813,6 +915,8 @@ export const DetailedStatsTab = ({
   activeQuests?: ActiveQuest[]
   venueBlacklist?: string[]
   reputationByRegion?: Record<string, number>
+  onMakeAmends?: (venueId: string) => void
+  onCraft?: (recipeId: string) => void
 }) => {
   const { t } = useTranslation([
     'ui',
@@ -837,6 +941,8 @@ export const DetailedStatsTab = ({
         <RegionalStandingSection
           reputationByRegion={reputationByRegion}
           venueBlacklist={venueBlacklist}
+          playerMoney={player.money ?? 0}
+          onMakeAmends={onMakeAmends}
           t={t}
         />
         <ActiveQuestsSection activeQuests={activeQuests} t={t} />
@@ -846,6 +952,11 @@ export const DetailedStatsTab = ({
       <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
         <BandMetricsSection band={band} social={social} t={t} />
         <InventoryEquipmentSection band={band} t={t} />
+      </div>
+
+      {/* Workshop */}
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+        <CraftingSection stash={band.stash} onCraft={onCraft} t={t} />
       </div>
 
       {/* Members Detail */}

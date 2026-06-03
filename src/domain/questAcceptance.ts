@@ -5,8 +5,8 @@ import { finiteNumberOr } from '../utils/gameStateUtils'
 
 export const QUEST_SLOT_LIMITS: Record<QuestKind, number> = {
   story: 1,
-  side: 2,
-  repeatable: 2,
+  side: 3,
+  repeatable: 3,
   tutorial: 1
 }
 
@@ -36,7 +36,7 @@ const getCurrentVenueScopeKey = (state: GameState): string | undefined => {
     return currentGigId
   }
 
-  const nodeId = state.player.currentNodeId
+  const nodeId = state.player?.currentNodeId
   if (typeof nodeId !== 'string' || nodeId.length === 0) return undefined
   return state.gameMap?.nodes?.[nodeId]?.type === 'GIG' ? nodeId : undefined
 }

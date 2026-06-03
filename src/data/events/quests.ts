@@ -301,5 +301,286 @@ export const QUEST_EVENTS = [
         outcomeText: 'events:quest_trigger_community_outreach.opt2.outcome'
       }
     ]
+  },
+  {
+    id: 'quest_trigger_flawless_run',
+    category: 'band',
+    title: 'events:quest_trigger_flawless_run.title',
+    description: 'events:quest_trigger_flawless_run.desc',
+    trigger: 'random',
+    chance: 0.08,
+    condition: (state: GameState) => canOfferQuest(state, 'quest_flawless_run'),
+    options: [
+      {
+        label: 'events:quest_trigger_flawless_run.opt1.label',
+        effect: { type: 'quest', quest: { id: 'quest_flawless_run' } },
+        outcomeText: 'events:quest_trigger_flawless_run.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_flawless_run.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:quest_trigger_flawless_run.opt2.outcome'
+      }
+    ]
+  },
+  {
+    id: 'quest_trigger_sticky_fingers',
+    category: 'special',
+    title: 'events:quest_trigger_sticky_fingers.title',
+    description: 'events:quest_trigger_sticky_fingers.desc',
+    trigger: 'random',
+    chance: 0.06,
+    condition: (state: GameState) =>
+      canOfferQuest(state, 'quest_sticky_fingers'),
+    options: [
+      {
+        label: 'events:quest_trigger_sticky_fingers.opt1.label',
+        effect: { type: 'quest', quest: { id: 'quest_sticky_fingers' } },
+        outcomeText: 'events:quest_trigger_sticky_fingers.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_sticky_fingers.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:quest_trigger_sticky_fingers.opt2.outcome'
+      }
+    ]
+  },
+  {
+    id: 'quest_trigger_special_delivery',
+    category: 'special',
+    title: 'events:quest_trigger_special_delivery.title',
+    description: 'events:quest_trigger_special_delivery.desc',
+    trigger: 'random',
+    chance: 0.06,
+    condition: (state: GameState) =>
+      canOfferQuest(state, 'quest_special_delivery'),
+    options: [
+      {
+        label: 'events:quest_trigger_special_delivery.opt1.label',
+        effect: { type: 'quest', quest: { id: 'quest_special_delivery' } },
+        outcomeText: 'events:quest_trigger_special_delivery.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_special_delivery.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:quest_trigger_special_delivery.opt2.outcome'
+      }
+    ]
+  },
+  {
+    id: 'quest_trigger_persona_non_grata',
+    category: 'band',
+    title: 'events:quest_trigger_persona_non_grata.title',
+    description: 'events:quest_trigger_persona_non_grata.desc',
+    trigger: 'random',
+    chance: 0.05,
+    condition: (state: GameState) =>
+      canOfferQuest(state, 'quest_persona_non_grata'),
+    options: [
+      {
+        label: 'events:quest_trigger_persona_non_grata.opt1.label',
+        effect: { type: 'quest', quest: { id: 'quest_persona_non_grata' } },
+        outcomeText: 'events:quest_trigger_persona_non_grata.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_persona_non_grata.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:quest_trigger_persona_non_grata.opt2.outcome'
+      }
+    ]
+  },
+  {
+    id: 'quest_trigger_murphys_law',
+    category: 'special',
+    title: 'events:quest_trigger_murphys_law.title',
+    description: 'events:quest_trigger_murphys_law.desc',
+    trigger: 'random',
+    chance: 0.05,
+    condition: (state: GameState) => canOfferQuest(state, 'quest_murphys_law'),
+    options: [
+      {
+        label: 'events:quest_trigger_murphys_law.opt1.label',
+        effect: { type: 'quest', quest: { id: 'quest_murphys_law' } },
+        outcomeText: 'events:quest_trigger_murphys_law.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_murphys_law.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:quest_trigger_murphys_law.opt2.outcome'
+      }
+    ]
+  },
+  {
+    id: 'quest_trigger_crisis_manager',
+    category: 'special',
+    title: 'events:quest_trigger_crisis_manager.title',
+    description: 'events:quest_trigger_crisis_manager.desc',
+    trigger: 'random',
+    chance: 0.05,
+    condition: (state: GameState) =>
+      canOfferQuest(state, 'quest_crisis_manager'),
+    options: [
+      {
+        label: 'events:quest_trigger_crisis_manager.opt1.label',
+        effect: { type: 'quest', quest: { id: 'quest_crisis_manager' } },
+        outcomeText: 'events:quest_trigger_crisis_manager.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_crisis_manager.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:quest_trigger_crisis_manager.opt2.outcome'
+      }
+    ]
+  },
+  {
+    id: 'quest_trigger_chapter_marker',
+    category: 'special',
+    title: 'events:quest_trigger_chapter_marker.title',
+    description: 'events:quest_trigger_chapter_marker.desc',
+    trigger: 'random',
+    chance: 0.05,
+    condition: (state: GameState) =>
+      canOfferQuest(state, 'quest_chapter_marker'),
+    options: [
+      {
+        label: 'events:quest_trigger_chapter_marker.opt1.label',
+        effect: { type: 'quest', quest: { id: 'quest_chapter_marker' } },
+        outcomeText: 'events:quest_trigger_chapter_marker.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_chapter_marker.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:quest_trigger_chapter_marker.opt2.outcome'
+      }
+    ]
+  },
+  {
+    id: 'quest_trigger_payday',
+    category: 'special',
+    title: 'events:quest_trigger_payday.title',
+    description: 'events:quest_trigger_payday.desc',
+    trigger: 'random',
+    chance: 0.06,
+    condition: (state: GameState) => canOfferQuest(state, 'quest_payday'),
+    options: [
+      {
+        label: 'events:quest_trigger_payday.opt1.label',
+        effect: { type: 'quest', quest: { id: 'quest_payday' } },
+        outcomeText: 'events:quest_trigger_payday.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_payday.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:quest_trigger_payday.opt2.outcome'
+      }
+    ]
+  },
+  {
+    id: 'quest_trigger_make_amends',
+    category: 'special',
+    title: 'events:quest_trigger_make_amends.title',
+    description: 'events:quest_trigger_make_amends.desc',
+    trigger: 'random',
+    chance: 0.05,
+    condition: (state: GameState) => canOfferQuest(state, 'quest_make_amends'),
+    options: [
+      {
+        label: 'events:quest_trigger_make_amends.opt1.label',
+        effect: { type: 'quest', quest: { id: 'quest_make_amends' } },
+        outcomeText: 'events:quest_trigger_make_amends.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_make_amends.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:quest_trigger_make_amends.opt2.outcome'
+      }
+    ]
+  },
+  {
+    id: 'quest_trigger_burned_bridges',
+    category: 'financial',
+    title: 'events:quest_trigger_burned_bridges.title',
+    description: 'events:quest_trigger_burned_bridges.desc',
+    trigger: 'random',
+    chance: 0.05,
+    condition: (state: GameState) =>
+      canOfferQuest(state, 'quest_burned_bridges'),
+    options: [
+      {
+        label: 'events:quest_trigger_burned_bridges.opt1.label',
+        effect: { type: 'quest', quest: { id: 'quest_burned_bridges' } },
+        outcomeText: 'events:quest_trigger_burned_bridges.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_burned_bridges.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:quest_trigger_burned_bridges.opt2.outcome'
+      }
+    ]
+  },
+  {
+    id: 'quest_trigger_venue_regular',
+    category: 'gig',
+    title: 'events:quest_trigger_venue_regular.title',
+    description: 'events:quest_trigger_venue_regular.desc',
+    trigger: 'random',
+    chance: 0.06,
+    condition: (state: GameState) =>
+      canOfferQuest(state, 'quest_venue_regular'),
+    options: [
+      {
+        label: 'events:quest_trigger_venue_regular.opt1.label',
+        effect: { type: 'quest', quest: { id: 'quest_venue_regular' } },
+        outcomeText: 'events:quest_trigger_venue_regular.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_venue_regular.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:quest_trigger_venue_regular.opt2.outcome'
+      }
+    ]
+  },
+  {
+    id: 'quest_trigger_brand_ambassador',
+    category: 'financial',
+    title: 'events:quest_trigger_brand_ambassador.title',
+    description: 'events:quest_trigger_brand_ambassador.desc',
+    trigger: 'random',
+    chance: 0.06,
+    condition: (state: GameState) =>
+      canOfferQuest(state, 'quest_brand_ambassador'),
+    options: [
+      {
+        label: 'events:quest_trigger_brand_ambassador.opt1.label',
+        effect: { type: 'quest', quest: { id: 'quest_brand_ambassador' } },
+        outcomeText: 'events:quest_trigger_brand_ambassador.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_brand_ambassador.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:quest_trigger_brand_ambassador.opt2.outcome'
+      }
+    ]
+  },
+  {
+    id: 'quest_trigger_alchemist',
+    category: 'special',
+    title: 'events:quest_trigger_alchemist.title',
+    description: 'events:quest_trigger_alchemist.desc',
+    trigger: 'random',
+    chance: 0.06,
+    condition: (state: GameState) => canOfferQuest(state, 'quest_alchemist'),
+    options: [
+      {
+        label: 'events:quest_trigger_alchemist.opt1.label',
+        effect: { type: 'quest', quest: { id: 'quest_alchemist' } },
+        outcomeText: 'events:quest_trigger_alchemist.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_alchemist.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:quest_trigger_alchemist.opt2.outcome'
+      }
+    ]
   }
 ]

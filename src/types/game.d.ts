@@ -101,6 +101,7 @@ export interface GameState {
   completedQuestIds: string[]
   completedQuestScopes: QuestScopeCompletion[]
   reputationByRegion: Record<string, number>
+  reputationByVenue: Record<string, number>
   settings: GameSettings
   npcs: Record<string, CharacterProfile>
   gigModifiers: GigModifiers
@@ -191,6 +192,11 @@ export type GameAction =
       ActionTypes['ADD_VENUE_BLACKLIST'],
       { venueId: string; toastId: string }
     >
+  | Action<
+      ActionTypes['UNBLACKLIST_VENUE'],
+      { venueId: string; toastId: string }
+    >
+  | Action<ActionTypes['CRAFT_ITEM'], { recipeId: string; toastId: string }>
   | Action<ActionTypes['ADD_QUEST'], QuestState>
   | Action<
       ActionTypes['ADVANCE_QUEST'],

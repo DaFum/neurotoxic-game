@@ -4,7 +4,8 @@ import {
   isLooseRecord,
   clampPlayerMoney,
   clampPlayerFame,
-  calculateFameLevel
+  calculateFameLevel,
+  finiteNumberOr
 } from '../../utils/gameStateUtils'
 import type { PlayerState, UpdatePlayerPayload } from '../../types'
 
@@ -29,17 +30,11 @@ export const handleUpdatePlayer = <TState extends WithPlayer>(
   const safeUpdates = { ...updates }
   if (Object.hasOwn(safeUpdates, 'money')) {
     safeUpdates.money = clampPlayerMoney(
-      typeof safeUpdates.money === 'number' &&
-        Number.isFinite(safeUpdates.money)
-        ? safeUpdates.money
-        : state.player.money
+      finiteNumberOr(safeUpdates.money, state.player.money)
     )
   }
   if (Object.hasOwn(safeUpdates, 'fame')) {
-    const nextFame =
-      typeof safeUpdates.fame === 'number' && Number.isFinite(safeUpdates.fame)
-        ? safeUpdates.fame
-        : state.player.fame
+    const nextFame = finiteNumberOr(safeUpdates.fame, state.player.fame)
     const clampedFame = clampPlayerFame(nextFame)
     safeUpdates.fame = clampedFame
     safeUpdates.fameLevel = calculateFameLevel(clampedFame)

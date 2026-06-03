@@ -27,6 +27,21 @@ import {
   createSocialLoyaltyChangedQuestEvent,
   createSocialTrendMatchedQuestEvent
 } from '../../quests/producers/socialQuestEvents'
+import {
+  createBrandDealFailedQuestEvent,
+  createBrandTrustChangedQuestEvent
+} from '../../quests/producers/brandQuestEvents'
+import {
+  createVenueBlacklistedQuestEvent,
+  createVenueUnblacklistedQuestEvent
+} from '../../quests/producers/venueQuestEvents'
+import { VENUES_BY_ID } from '../../data/venues'
+import { isForbiddenKey } from '../../utils/objectUtils'
+
+/** Controversy at or above this voids active brand deals. */
+const DEAL_BREAK_CONTROVERSY = 85
+/** Brand trust lost with each deal that collapses under controversy. */
+const DEAL_BREAK_TRUST_PENALTY = 10
 
 type ZealotryPayloadParsed = {
   cost: number
@@ -246,6 +261,79 @@ export const handleUpdateSocial = (
     )
   }
 
+  // Sponsors abandon a band that becomes too toxic. When this update pushes
+  // controversy across the break threshold, every active brand deal collapses
+  // and reports as failed. Crossing-only so deals added at high controversy by
+  // other flows are not retroactively voided.
+  const prevControversy = clampControversyLevel(
+    Number(state.social.controversyLevel) || 0
+  )
+  const nextControversy = clampControversyLevel(
+    Number(nextState.social.controversyLevel) || 0
+  )
+  const activeDeals = nextState.social.activeDeals
+  if (
+    prevControversy < DEAL_BREAK_CONTROVERSY &&
+    nextControversy >= DEAL_BREAK_CONTROVERSY &&
+    Array.isArray(activeDeals) &&
+    activeDeals.length > 0
+  ) {
+    const brokenDeals = activeDeals
+    // Burned trust: each broken deal drags down the brand's reputation.
+    const nextBrandReputation = { ...(nextState.social.brandReputation || {}) }
+    for (const deal of brokenDeals) {
+      const alignment =
+        deal && typeof deal === 'object' && typeof deal.alignment === 'string'
+          ? deal.alignment
+          : undefined
+      if (alignment && !isForbiddenKey(alignment)) {
+        nextBrandReputation[alignment] = Math.max(
+          0,
+          (nextBrandReputation[alignment] || 0) - DEAL_BREAK_TRUST_PENALTY
+        )
+      }
+    }
+    nextState = {
+      ...nextState,
+      social: {
+        ...nextState.social,
+        activeDeals: [],
+        brandReputation: nextBrandReputation
+      },
+      toasts: [
+        ...(nextState.toasts || []),
+        {
+          id: getSafeUUID(),
+          messageKey: 'ui:toast.dealsBroken',
+          type: 'error'
+        }
+      ]
+    }
+    for (const deal of brokenDeals) {
+      const dealId =
+        deal && typeof deal === 'object' && typeof deal.id === 'string'
+          ? deal.id
+          : 'unknown'
+      const alignment =
+        deal && typeof deal === 'object' && typeof deal.alignment === 'string'
+          ? deal.alignment
+          : undefined
+      nextState = QuestEvents.emit(
+        nextState,
+        createBrandDealFailedQuestEvent({ dealId, reason: 'controversy' })
+      )
+      if (alignment) {
+        nextState = QuestEvents.emit(
+          nextState,
+          createBrandTrustChangedQuestEvent({
+            brandId: alignment,
+            amount: -DEAL_BREAK_TRUST_PENALTY
+          })
+        )
+      }
+    }
+  }
+
   return nextState
 }
 
@@ -284,8 +372,85 @@ export const handleAddVenueBlacklist = (
         type: 'error'
       }
     ]
+    return QuestEvents.emit(
+      nextState,
+      createVenueBlacklistedQuestEvent({ venueId, reason: 'low_loyalty' })
+    )
   }
   return nextState
+}
+
+const UNBLACKLIST_BASE_COST = 250
+const UNBLACKLIST_COST_PER_CAPACITY = 2
+
+/**
+ * Cost to win a venue back. Bigger rooms have longer memories, so the amends
+ * fee scales with capacity on top of a flat base.
+ */
+export const getUnblacklistCost = (venueId: string): number => {
+  const venue = VENUES_BY_ID.get(venueId)
+  const capacity =
+    venue &&
+    typeof venue.capacity === 'number' &&
+    Number.isFinite(venue.capacity)
+      ? Math.max(0, venue.capacity)
+      : 0
+  return UNBLACKLIST_BASE_COST + capacity * UNBLACKLIST_COST_PER_CAPACITY
+}
+
+export const handleUnblacklistVenue = (
+  state: GameState,
+  { venueId, toastId }: { venueId: string; toastId: string }
+): GameState => {
+  const blacklist = state.venueBlacklist ?? []
+  if (!venueId || !blacklist.includes(venueId)) {
+    return state
+  }
+
+  const cost = getUnblacklistCost(venueId)
+  const currentMoney = clampPlayerMoney(state.player.money)
+  if (currentMoney !== state.player.money) {
+    logger.warn('GameState', 'Invalid player funds state for unblacklist')
+    return state
+  }
+
+  if (currentMoney < cost) {
+    return {
+      ...state,
+      toasts: [
+        ...(state.toasts || []),
+        {
+          id: toastId,
+          messageKey: 'ui:toast.amendsTooExpensive',
+          options: {
+            venueLabel: `venues:${venueId}.name`,
+            amount: formatCurrency(cost, i18n.language)
+          },
+          type: 'error'
+        }
+      ]
+    }
+  }
+
+  const nextState: GameState = {
+    ...state,
+    player: { ...state.player, money: clampPlayerMoney(currentMoney - cost) },
+    venueBlacklist: blacklist.filter(id => id !== venueId),
+    toasts: [
+      ...(state.toasts || []),
+      {
+        id: toastId,
+        messageKey: 'ui:toast.amendsMade',
+        options: { venueLabel: `venues:${venueId}.name` },
+        type: 'success'
+      }
+    ]
+  }
+
+  return QuestEvents.emit(
+    nextState,
+    createVenueUnblacklistedQuestEvent({ venueId, reason: 'amends' })
+  )
 }
 
 export const handleMerchPress = (

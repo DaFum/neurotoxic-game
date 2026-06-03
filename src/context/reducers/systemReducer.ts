@@ -4,6 +4,11 @@ import {
   processCrowdfundTick,
   rollAssetRiskEvents
 } from '../../utils/assetTicks'
+import { QuestEvents } from '../../utils/questProgress'
+import {
+  createAssetRiskTriggeredQuestEvent,
+  createAssetRiskResolvedQuestEvent
+} from '../../quests/producers/assetQuestEvents'
 import type {
   GameState,
   PlayerState,
@@ -33,7 +38,8 @@ import {
   clampRelationship,
   isLooseRecord,
   isEmptyObject,
-  finiteNumberOr
+  finiteNumberOr,
+  isFiniteNumber
 } from '../../utils/gameStateUtils'
 import { calculateDailyUpdates } from '../../utils/simulationUtils'
 import {
@@ -139,7 +145,7 @@ const inferLoadedMapNodeType = (
 }
 
 const finiteOptionalNumber = (value: unknown): number | undefined =>
-  typeof value === 'number' && Number.isFinite(value) ? value : undefined
+  isFiniteNumber(value) ? value : undefined
 
 const sanitizeStringArray = (value: unknown): string[] => {
   if (!Array.isArray(value)) return []
@@ -376,7 +382,7 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
   >
 
   const normalizeCoordinate = (value: unknown): number =>
-    typeof value === 'number' && Number.isFinite(value) ? value : 0
+    finiteNumberOr(value, 0)
   // Note: copySafeArray always returns an array (which is truthy), even if all items are filtered out.
   // copySafeFlatObject returns null if all items are filtered out.
   // This asymmetry preserves array identity for map data node properties while dropping empty objects.
@@ -1564,6 +1570,9 @@ export const handleLoadGame = (
     reputationByRegion: sanitizeReputationByRegion(
       loadedState.reputationByRegion
     ),
+    reputationByVenue: sanitizeReputationByRegion(
+      loadedState.reputationByVenue
+    ),
     venueBlacklist: sanitizeStringArray(loadedState.venueBlacklist),
     activeQuests: sanitizeActiveQuests(loadedState.activeQuests),
     questCooldowns: sanitizeQuestCooldowns(loadedState.questCooldowns),
@@ -1924,6 +1933,23 @@ export const handleAdvanceDay = (
           pendingRiskEvent: firstEvent
         }
       }
+      const emittedRisk = new Set<string>()
+      for (const ev of events) {
+        const dedupKey = `${ev.assetId}:${ev.eventType}`
+        if (emittedRisk.has(dedupKey)) continue
+        emittedRisk.add(dedupKey)
+        const assetKind =
+          nextStatePre.assets?.find(asset => asset.id === ev.assetId)?.kind ??
+          'unknown'
+        nextStatePre = QuestEvents.emit(
+          nextStatePre,
+          createAssetRiskTriggeredQuestEvent({
+            assetId: ev.assetId,
+            assetKind,
+            riskType: ev.eventType
+          })
+        )
+      }
     }
   }
   const rngSeed = payload?.nextRngSeed ?? nextStatePre.rngSeed
@@ -2061,10 +2087,22 @@ export const handleSetPendingRiskEvent = (
 ): GameState => {
   if (event === null) {
     if (state.pendingRiskEvent === null) return state
-    return {
-      ...state,
-      pendingRiskEvent: null
-    }
+    const resolved = state.pendingRiskEvent
+    const assetKind =
+      state.assets?.find(asset => asset.id === resolved.assetId)?.kind ??
+      'unknown'
+    return QuestEvents.emit(
+      {
+        ...state,
+        pendingRiskEvent: null
+      },
+      createAssetRiskResolvedQuestEvent({
+        assetId: resolved.assetId,
+        assetKind,
+        riskType: resolved.eventType,
+        success: true
+      })
+    )
   }
 
   const nextEvent = sanitizeRiskEventDescriptor(event)

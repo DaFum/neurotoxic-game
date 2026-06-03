@@ -696,6 +696,44 @@ export const createAddVenueBlacklistAction = (
 })
 
 /**
+ * Creates an action to remove a venue from the blacklist ("make amends").
+ * The `handleUnblacklistVenue` reducer charges the amends cost and is the final
+ * authority on affordability; this creator only normalizes a hostile id to ''.
+ * @param {string} venueId - The ID of the venue to win back.
+ * @returns {Object} Action object
+ */
+export const createUnblacklistVenueAction = (
+  venueId: string
+): Extract<GameAction, { type: typeof ActionTypes.UNBLACKLIST_VENUE }> => ({
+  type: ActionTypes.UNBLACKLIST_VENUE,
+  payload: {
+    venueId:
+      typeof venueId === 'string' && !HOSTILE_KEYS.has(venueId) ? venueId : '',
+    toastId: getSafeUUID()
+  }
+})
+
+/**
+ * Creates an action to craft an item from a recipe. The `handleCraftItem`
+ * reducer is the final authority on input availability; this creator only
+ * normalizes a hostile recipe id to ''.
+ * @param {string} recipeId - The crafting recipe id.
+ * @returns {Object} Action object
+ */
+export const createCraftItemAction = (
+  recipeId: string
+): Extract<GameAction, { type: typeof ActionTypes.CRAFT_ITEM }> => ({
+  type: ActionTypes.CRAFT_ITEM,
+  payload: {
+    recipeId:
+      typeof recipeId === 'string' && !HOSTILE_KEYS.has(recipeId)
+        ? recipeId
+        : '',
+    toastId: getSafeUUID()
+  }
+})
+
+/**
  * Creates an action to add a new quest.
  * @param {Object} quest - The quest object to add.
  * @returns {Object} Action object

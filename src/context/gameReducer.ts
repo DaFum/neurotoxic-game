@@ -29,6 +29,7 @@ import { bandReducer } from './reducers/bandReducer'
 import {
   handleUpdateSocial,
   handleAddVenueBlacklist,
+  handleUnblacklistVenue,
   handlePirateBroadcast,
   handleMerchPress,
   handleDarkWebLeak
@@ -96,7 +97,8 @@ const BAND_ACTIONS = [
   ActionTypes.USE_CONTRABAND,
   ActionTypes.CONSUME_ITEM,
   ActionTypes.UNLOCK_TRAIT,
-  ActionTypes.TOGGLE_NEURO_DECIMATOR
+  ActionTypes.TOGGLE_NEURO_DECIMATOR,
+  ActionTypes.CRAFT_ITEM
 ] as const
 
 type BandActionType = (typeof BAND_ACTIONS)[number]
@@ -163,6 +165,7 @@ const reducerMap: ReducerMap = {
   [ActionTypes.MERCH_PRESS]: handleMerchPress,
   [ActionTypes.DARK_WEB_LEAK]: handleDarkWebLeak,
   [ActionTypes.ADD_VENUE_BLACKLIST]: handleAddVenueBlacklist,
+  [ActionTypes.UNBLACKLIST_VENUE]: handleUnblacklistVenue,
   [ActionTypes.ADD_QUEST]: handleAddQuest,
   [ActionTypes.ADVANCE_QUEST]: handleAdvanceQuest,
   [ActionTypes.APPLY_QUEST_EVENT]: (

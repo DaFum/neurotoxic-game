@@ -9,13 +9,18 @@ import {
   applyInventoryItemDelta,
   isForbiddenKey,
   hasForbiddenKeys,
-  finiteNumberOr
+  finiteNumberOr,
+  isFiniteNumber
 } from '../../utils/gameStateUtils'
 import { applyTraitUnlocks } from '../../utils/traitUtils'
 import { ActionTypes } from '../actionTypes'
 import { CONTRABAND_BY_ID } from '../../data/contraband'
 import { QuestEvents } from '../../utils/questProgress'
-import { createItemUsedQuestEvent } from '../../quests/producers/itemQuestEvents'
+import {
+  createItemUsedQuestEvent,
+  createItemCraftedQuestEvent
+} from '../../quests/producers/itemQuestEvents'
+import { getCraftingRecipe } from '../../data/craftingRecipes'
 import type {
   BandMember,
   BandState,
@@ -23,10 +28,6 @@ import type {
   GameState,
   UpdateBandPayload
 } from '../../types'
-
-// Guards reducer-boundary numeric payloads against NaN and Infinity.
-const isSafeNumber = (value: unknown): value is number =>
-  typeof value === 'number' && Number.isFinite(value)
 
 const DEFAULT_MEMBER_MOOD = 50
 const DEFAULT_MEMBER_STAMINA = 100
@@ -59,7 +60,7 @@ export const handleUpdateBand = (
   const safeUpdates: Record<string, unknown> = { ...updates }
   if (Object.hasOwn(safeUpdates, 'harmony')) {
     safeUpdates.harmony = clampBandHarmony(
-      isSafeNumber(safeUpdates.harmony)
+      isFiniteNumber(safeUpdates.harmony)
         ? safeUpdates.harmony
         : state.band.harmony
     )
@@ -108,34 +109,34 @@ export const handleUpdateBand = (
         next = { ...(patch as BandMember), id }
       }
       if (!next) continue
-      if (Object.hasOwn(patch, 'stamina') && !isSafeNumber(next.stamina)) {
+      if (Object.hasOwn(patch, 'stamina') && !isFiniteNumber(next.stamina)) {
         next.stamina =
-          existing && isSafeNumber(existing.stamina)
+          existing && isFiniteNumber(existing.stamina)
             ? existing.stamina
             : DEFAULT_MEMBER_STAMINA
       }
       if (
         Object.hasOwn(patch, 'staminaMax') &&
-        !isSafeNumber(next.staminaMax)
+        !isFiniteNumber(next.staminaMax)
       ) {
         next.staminaMax =
-          existing && isSafeNumber(existing.staminaMax)
+          existing && isFiniteNumber(existing.staminaMax)
             ? existing.staminaMax
             : DEFAULT_MEMBER_STAMINA_MAX
       }
-      if (isSafeNumber(next.stamina)) {
-        const maxStamina = isSafeNumber(next.staminaMax)
+      if (isFiniteNumber(next.stamina)) {
+        const maxStamina = isFiniteNumber(next.staminaMax)
           ? next.staminaMax
           : undefined
         next.stamina = clampMemberStamina(next.stamina, maxStamina)
       }
-      if (Object.hasOwn(patch, 'mood') && !isSafeNumber(next.mood)) {
+      if (Object.hasOwn(patch, 'mood') && !isFiniteNumber(next.mood)) {
         next.mood =
-          existing && isSafeNumber(existing.mood)
+          existing && isFiniteNumber(existing.mood)
             ? existing.mood
             : DEFAULT_MEMBER_MOOD
       }
-      if (isSafeNumber(next.mood)) {
+      if (isFiniteNumber(next.mood)) {
         next.mood = clampMemberMood(next.mood)
       }
       if (typeof next.id === 'string') {
@@ -393,6 +394,105 @@ export const addContrabandHelper = (
   }
 }
 
+/** Stack count of a stash entry (non-stackable owned items count as 1). */
+const getStashCount = (
+  stash: Record<string, unknown> | undefined,
+  itemId: string
+): number => {
+  if (!stash || !Object.hasOwn(stash, itemId)) return 0
+  const entry = stash[itemId] as Record<string, unknown> | undefined
+  if (!entry) return 0
+  const stacks = entry.stacks
+  return typeof stacks === 'number' && Number.isFinite(stacks)
+    ? Math.max(0, stacks)
+    : 1
+}
+
+export const handleCraftItem = (
+  state: GameState,
+  { recipeId, toastId }: { recipeId: string; toastId: string }
+): GameState => {
+  const recipe = getCraftingRecipe(recipeId)
+  if (!recipe) return state
+  // Defense in depth: never write a malformed toast id into state.
+  if (typeof toastId !== 'string' || toastId.length === 0) return state
+
+  const stash = state.band.stash || {}
+
+  // Verify every input is available in the required quantity.
+  for (const [itemId, qty] of Object.entries(recipe.inputs)) {
+    if (getStashCount(stash, itemId) < qty) {
+      return {
+        ...state,
+        toasts: [
+          ...(state.toasts || []),
+          {
+            id: toastId,
+            messageKey: 'ui:toast.craftMissingInputs',
+            options: { recipeLabel: recipe.labelKey },
+            type: 'error'
+          }
+        ]
+      }
+    }
+  }
+
+  // Consume inputs.
+  const newStash = Object.assign(Object.create(null), stash)
+  for (const [itemId, qty] of Object.entries(recipe.inputs)) {
+    const entry = newStash[itemId] as Record<string, unknown>
+    const current = getStashCount(newStash, itemId)
+    if (current - qty > 0 && typeof entry.stacks === 'number') {
+      newStash[itemId] = { ...entry, stacks: current - qty }
+    } else {
+      delete newStash[itemId]
+    }
+  }
+
+  const consumedState: GameState = {
+    ...state,
+    band: { ...state.band, stash: newStash }
+  }
+
+  // Add the output. Abort (without consuming) if it cannot be added, e.g. a
+  // non-stackable artifact the band already owns.
+  const craftedState = addContrabandHelper(consumedState, {
+    contrabandId: recipe.output
+  })
+  if (craftedState === consumedState) {
+    return {
+      ...state,
+      toasts: [
+        ...(state.toasts || []),
+        {
+          id: toastId,
+          messageKey: 'ui:toast.craftFailed',
+          options: { recipeLabel: recipe.labelKey },
+          type: 'error'
+        }
+      ]
+    }
+  }
+
+  const withToast: GameState = {
+    ...craftedState,
+    toasts: [
+      ...(craftedState.toasts || []),
+      {
+        id: toastId,
+        messageKey: 'ui:toast.crafted',
+        options: { itemLabel: `items:contraband.${recipe.output}.name` },
+        type: 'success'
+      }
+    ]
+  }
+
+  return QuestEvents.emit(
+    withToast,
+    createItemCraftedQuestEvent({ itemId: recipe.output, recipeId: recipe.id })
+  )
+}
+
 /**
  * Pure helper function to apply the effect of a contraband item.
  * @param {Object} band - Current band state
@@ -604,6 +704,11 @@ export const bandReducer = (
           contrabandId: string
           memberId?: string
         }
+      )
+    case ActionTypes.CRAFT_ITEM:
+      return handleCraftItem(
+        state,
+        action.payload as { recipeId: string; toastId: string }
       )
     default:
       return assertNever(action as never)
