@@ -2133,8 +2133,8 @@
         "exportedName": "applyQuestFailurePenalties",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 281,
-        "lineStart": 205,
+        "lineEnd": 297,
+        "lineStart": 221,
         "name": "applyQuestFailurePenalties",
         "parameters": [
           {
@@ -2187,8 +2187,8 @@
         "exportedName": "applyQuestRewards",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 442,
-        "lineStart": 234,
+        "lineEnd": 458,
+        "lineStart": 250,
         "name": "applyQuestRewards",
         "parameters": [
           {

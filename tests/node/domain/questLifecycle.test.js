@@ -423,7 +423,8 @@ test('QuestLifecycle', async t => {
         ],
         player: { money: 0, fame: 0, fameLevel: 0 },
         social: { brandReputation: { ampcorp: 2 } },
-        reputationByRegion: { venue_1: 1, berlin: 3 },
+        reputationByRegion: { berlin: 3 },
+        reputationByVenue: { venue_1: 1 },
         pendingEvents: [],
         assets: [
           {
@@ -454,7 +455,7 @@ test('QuestLifecycle', async t => {
       })
 
       assert.equal(nextState.assets[0].condition, 95)
-      assert.equal(nextState.reputationByRegion.venue_1, 6)
+      assert.equal(nextState.reputationByVenue.venue_1, 6)
       assert.equal(nextState.reputationByRegion.berlin, 10)
       assert.equal(nextState.social.brandReputation.ampcorp, 12)
       assert.ok(nextState.band.members[0].traits.gear_nerd)
@@ -1806,7 +1807,8 @@ test('QuestLifecycle', async t => {
           player: { day: 10 },
           social: { brandReputation: { ampcorp: 20 } },
           band: { harmony: 50 },
-          reputationByRegion: { venue_1: 5, berlin: 10 },
+          reputationByRegion: { berlin: 10 },
+          reputationByVenue: { venue_1: 5 },
           pendingEvents: [],
           activeStoryFlags: [],
           questCooldowns: [],
@@ -1834,7 +1836,7 @@ test('QuestLifecycle', async t => {
         })
 
         assert.equal(next.assets[0].condition, 55)
-        assert.equal(next.reputationByRegion.venue_1, -3)
+        assert.equal(next.reputationByVenue.venue_1, -3)
         assert.equal(next.reputationByRegion.berlin, 4)
         assert.equal(next.social.brandReputation.ampcorp, 13)
         assert.deepEqual(next.pendingEvents, ['quest_failure_followup'])

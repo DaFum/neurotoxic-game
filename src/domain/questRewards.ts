@@ -123,6 +123,22 @@ const applyReputationDelta = (
   }
 }
 
+const applyVenueReputationDelta = (
+  state: GameState,
+  key: string | undefined,
+  amount: number
+): GameState => {
+  if (!key) return state
+  const previous = finiteNumberOr(state.reputationByVenue?.[key], 0)
+  return {
+    ...state,
+    reputationByVenue: {
+      ...(state.reputationByVenue ?? {}),
+      [key]: clampReputation(previous + amount)
+    }
+  }
+}
+
 const getBrandReputationKey = (
   reward: Extract<QuestReward, { type: 'brand.trust' }>
 ): string | undefined => {
@@ -335,7 +351,7 @@ export const applyQuestRewards = (
         nextState = applyAssetRepair(nextState, reward)
         break
       case 'venue.reputation':
-        nextState = applyReputationDelta(
+        nextState = applyVenueReputationDelta(
           nextState,
           getVenueReputationKey(nextState, reward.scope),
           reward.amount
