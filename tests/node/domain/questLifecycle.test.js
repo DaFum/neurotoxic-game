@@ -1650,14 +1650,15 @@ test('QuestLifecycle', async t => {
         player: { day: 1 },
         activeQuests: [
           { id: 'quest_pick_of_destiny' },
-          { id: 'quest_harmony_project' }
+          { id: 'quest_harmony_project' },
+          { id: 'quest_studio_demo' }
         ],
         activeStoryFlags: [],
         completedQuestIds: [],
         questCooldowns: []
       }
 
-      const next = QuestLifecycle.addQuest(state, { id: 'quest_studio_demo' })
+      const next = QuestLifecycle.addQuest(state, { id: 'quest_merch_rush' })
       assert.equal(next, state)
     })
   })

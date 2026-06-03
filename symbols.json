@@ -23562,7 +23562,7 @@
         "exportKind": "named",
         "exportPath": "src/types/index.ts",
         "isDefault": false,
-        "lineEnd": 267,
+        "lineEnd": 264,
         "lineStart": 135,
         "name": "GameAction",
         "path": "src/types/game.d.ts",
