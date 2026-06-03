@@ -20685,8 +20685,8 @@
         "exportKind": "named",
         "isComponent": true,
         "isDefault": false,
-        "lineEnd": 959,
-        "lineStart": 895,
+        "lineEnd": 966,
+        "lineStart": 902,
         "name": "DetailedStatsTab",
         "parameters": [
           {

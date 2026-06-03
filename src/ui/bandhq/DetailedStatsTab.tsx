@@ -428,6 +428,10 @@ const RegionalStandingSection = ({
                       type='button'
                       disabled={!affordable}
                       onClick={() => onMakeAmends(venueId)}
+                      aria-label={`${t('ui:detailedStats.makeAmends', {
+                        amount: formatCurrency(cost, i18n.language),
+                        defaultValue: 'Make Amends ({{amount}})'
+                      })} — ${translateLocation(t, venueId, venueId)}`}
                       className='text-xs px-2 py-0.5 border border-toxic-green/50 text-toxic-green uppercase tracking-wider disabled:opacity-40 disabled:cursor-not-allowed hover:bg-toxic-green/10'
                     >
                       {t('ui:detailedStats.makeAmends', {
@@ -667,6 +671,9 @@ const CraftingSection = ({
                   type='button'
                   disabled={!canCraft}
                   onClick={() => onCraft(recipe.id)}
+                  aria-label={`${t('ui:crafting.craft', {
+                    defaultValue: 'Craft'
+                  })} ${t(recipe.labelKey, { defaultValue: recipe.id })}`}
                   className='shrink-0 text-xs px-2 py-0.5 border border-toxic-green/50 text-toxic-green uppercase tracking-wider disabled:opacity-40 disabled:cursor-not-allowed hover:bg-toxic-green/10'
                 >
                   {t('ui:crafting.craft', { defaultValue: 'Craft' })}
