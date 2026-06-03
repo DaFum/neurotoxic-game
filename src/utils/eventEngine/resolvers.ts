@@ -20,7 +20,7 @@ export const resolveEventChoice = (
   rng: () => number = secureRandom
 ) => {
   if (!choice || !gameState) {
-    return { result: null, delta: null, outcomeText: '', description: '' }
+    return { result: null, delta: null, appliedDelta: null, outcomeText: '', description: '' }
   }
 
   const result = eventEngine.resolveChoice(choice, gameState, rng)

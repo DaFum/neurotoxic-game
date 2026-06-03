@@ -184,6 +184,10 @@ const selectEvent = (
       chance *= INFIGHTING_DAMPER_CHANCE_FACTOR
     }
 
+    if (!Number.isFinite(chance)) chance = 0
+    if (chance > 1) chance = 1
+    if (chance < 0) chance = 0
+
     if (rng() < chance) {
       logger.debug('EventEngine', 'Event Selected', event.id)
 

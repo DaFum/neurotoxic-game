@@ -28,7 +28,7 @@ const resolveTemplateString = (
     }
 
     // Fast path: exact case match
-    if (typeof context[key] === 'string') {
+    if (Object.hasOwn(context, key) && typeof context[key] === 'string') {
       return context[key]
     }
 
@@ -62,7 +62,7 @@ const resolveTemplateString = (
 
     const foundKey = (lowerKeysMap as Record<string, string>)[lowerKey]
 
-    if (foundKey && typeof context[foundKey] === 'string') {
+    if (foundKey && Object.hasOwn(context, foundKey) && typeof context[foundKey] === 'string') {
       return context[foundKey]
     }
 
@@ -75,8 +75,9 @@ export const buildTemplateContext = (
   input: Record<string, unknown> | undefined
 ): TemplateContext => {
   if (!input) return {}
-  const output: TemplateContext = {}
+  const output: TemplateContext = Object.create(null)
   for (const key of Object.keys(input)) {
+    if (isForbiddenKey(key)) continue
     const value = input[key]
     if (typeof value === 'string') output[key] = value
   }

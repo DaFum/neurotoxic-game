@@ -170,8 +170,10 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
     }
   },
   quest: (eff: EffectShape, delta: EventDelta) => {
-    if (!delta.flags.addQuest) delta.flags.addQuest = []
-    delta.flags.addQuest.push(eff.quest)
+    if (typeof eff.quest === 'string' && eff.quest.length > 0) {
+      if (!delta.flags.addQuest) delta.flags.addQuest = []
+      delta.flags.addQuest.push(eff.quest)
+    }
   },
   stash_confiscate: (
     eff: EffectShape,
