@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import type { ContrabandStashItem, UnknownRecord } from '../types'
-import { Modal, Panel, AnimatedDivider, ActionButton, GeneratedImagePanel } from './shared/index.tsx'
+import { Modal, Panel, AnimatedDivider, ActionButton } from './shared/index.tsx'
+import { GeneratedImagePanel } from './shared/GeneratedImagePanel.tsx'
 import { useTranslation } from 'react-i18next'
 
 import { GlitchButton } from './GlitchButton'
@@ -111,8 +112,7 @@ const StashCardHeader = ({ item, t }: StashCardSubComponentProps) => {
         </span>
         {item.duration && (
           <span className='text-xs text-ash-gray italic'>
-            {item.duration}{' '}
-            {t('ui:contraband.gigs', { defaultValue: 'GIGS' })}
+            {item.duration} {t('ui:contraband.gigs', { defaultValue: 'GIGS' })}
           </span>
         )}
       </div>
