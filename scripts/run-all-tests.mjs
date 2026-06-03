@@ -14,10 +14,10 @@
  * the pool while test:node runs, and completes in ~5 s. By overlapping it
  * with test:node the 5 s disappears from the critical path entirely.
  *
- * test:ui is kept sequential after test:node because both are CPU-saturating;
- * running them simultaneously degrades both with no net gain.
- * If NODE_ALL_PARALLEL=1 is set, test:ui also runs in Phase A (useful on
- * machines with ≥8 cores).
+ * test:ui is kept sequential after test:node on smaller machines because both
+ * are CPU-saturating; running them simultaneously degrades both with no net
+ * gain. On high-core machines, test:ui also runs in Phase A with a smaller
+ * worker budget. Set NODE_ALL_PARALLEL=0 to force the phase split.
  */
 import { spawn } from 'node:child_process'
 import { availableParallelism } from 'node:os'
@@ -34,7 +34,17 @@ const totalWorkers = Math.max(1, availableParallelism())
 const nodeWorkersDefault = totalWorkers
 const logicWorkers = 1
 const vitestUiWorkerCap = 12
-const uiWorkersDefault = Math.min(totalWorkers, vitestUiWorkerCap)
+const highCoreParallelThreshold = 16
+const parallelUiWorkerCap = 8
+
+const fullyParallel =
+  process.env.NODE_ALL_PARALLEL === '1' ||
+  (process.env.NODE_ALL_PARALLEL !== '0' &&
+    totalWorkers >= highCoreParallelThreshold)
+
+const uiWorkersDefault = fullyParallel
+  ? Math.min(totalWorkers, parallelUiWorkerCap)
+  : Math.min(totalWorkers, vitestUiWorkerCap)
 
 const baseEnv = { ...process.env }
 if (!baseEnv.NODE_TEST_CONCURRENCY) {
@@ -78,20 +88,23 @@ const bail = result => {
 // ---------------------------------------------------------------------------
 // Execution strategy
 //
-// Default (4-core): Phase A = test:node + test:vitest:logic in parallel.
-//                   Phase B = test:ui sequential after Phase A.
-//   Running test:node and test:ui simultaneously on 4 cores saturates both;
-//   keeping them sequential gives each suite full worker allotment.
+// Default: Phase A = test:node + test:vitest:logic in parallel.
+//          Phase B = test:ui sequential after Phase A.
+//   Running test:node and test:ui simultaneously on smaller machines saturates
+//   both; keeping them sequential gives each suite full worker allotment.
 //
-// NODE_ALL_PARALLEL=1: all three suites run concurrently in one Promise.all.
-//   Intended for ≥8-core machines where the OS has headroom to schedule all
-//   three without degradation.
+// High-core or NODE_ALL_PARALLEL=1: all three suites run concurrently in one
+//   Promise.all. The UI worker cap is lower in this mode so jsdom work can
+//   overlap node:test without starving individual UI tests.
 // ---------------------------------------------------------------------------
-const fullyParallel = process.env.NODE_ALL_PARALLEL === '1'
-
 if (fullyParallel) {
+  const parallelModeReason =
+    process.env.NODE_ALL_PARALLEL === '1'
+      ? 'NODE_ALL_PARALLEL=1'
+      : `auto high-core (${totalWorkers} workers)`
+
   console.log(
-    `[run-all-tests] Fully parallel (NODE_ALL_PARALLEL=1): test:node (${nodeWorkers}) + test:vitest:logic (${logicWorkers}) + test:ui (${uiWorkers})`
+    `[run-all-tests] Fully parallel (${parallelModeReason}): test:node (${nodeWorkers}) + test:vitest:logic (${logicWorkers}) + test:ui (${uiWorkers})`
   )
   const [nodeResult, logicResult, uiResult] = await Promise.all([
     runScript('test:node', baseEnv),
