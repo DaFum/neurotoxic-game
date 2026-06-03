@@ -347,6 +347,7 @@ export const usePostGigHandlers = ({
     },
     [
       player,
+      social.brandReputation,
       updatePlayer,
       updateBand,
       updateSocial,
