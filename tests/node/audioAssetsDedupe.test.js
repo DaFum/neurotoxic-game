@@ -48,8 +48,6 @@ mock.module(
 // Mock Setup
 const mockContext = {
   decodeAudioData: mock.fn(async _buffer => {
-    // Simulate async decoding
-    await new Promise(r => setTimeout(r, 10))
     return {
       duration: 1,
       sampleRate: 44100,
@@ -77,8 +75,6 @@ test('loadAudioBuffer Deduplication Tests', async t => {
     if (url.includes('fail')) {
       return { ok: false, status: 404 }
     }
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 20))
     return {
       ok: true,
       arrayBuffer: async () => new ArrayBuffer(100)

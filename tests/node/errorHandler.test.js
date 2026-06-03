@@ -213,11 +213,22 @@ describe('handleError', () => {
     }
   })
 
-  it('should truncate errorLog to MAX_ERROR_LOG_SIZE', () => {
-    for (let i = 0; i < 105; i++) {
-      handleError(new Error('Log size test ' + i), { silent: true })
+  it('should truncate errorLog to MAX_ERROR_LOG_SIZE', async () => {
+    const { logger, LOG_LEVELS } = await import('../../src/utils/logger')
+    const originalMinLevel = logger.minLevel
+    logger.minLevel = LOG_LEVELS.NONE
+
+    try {
+      let latestErrorInfo
+      for (let i = 0; i < 105; i++) {
+        latestErrorInfo = handleError(new Error('Log size test ' + i), {
+          silent: true
+        })
+      }
+      assert.strictEqual(latestErrorInfo.message, 'Log size test 104')
+    } finally {
+      logger.minLevel = originalMinLevel
     }
-    assert.ok(true)
   })
 
   it('should log locally to logger.debug for ErrorSeverity.LOW', async () => {
