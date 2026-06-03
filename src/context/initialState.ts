@@ -257,6 +257,7 @@ const initialState: GameState = {
   completedQuestIds: [],
   completedQuestScopes: [],
   reputationByRegion: {},
+  reputationByVenue: {},
   settings: { ...DEFAULT_SETTINGS },
   npcs: {},
   gigModifiers: { ...DEFAULT_GIG_MODIFIERS },

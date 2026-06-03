@@ -21,6 +21,7 @@ import {
 } from '../../quests/producers/gigQuestEvents'
 import {
   createRegionReputationChangedQuestEvent,
+  createVenueReputationChangedQuestEvent,
   createVenueGigCompletedQuestEvent,
   createVenueGoodGigQuestEvent
 } from '../../quests/producers/venueQuestEvents'
@@ -149,11 +150,13 @@ export const handleSetLastGigStats = (
     lastGigStats: safePayload,
     band: traitResult.band,
     toasts: traitResult.toasts,
-    reputationByRegion: { ...state.reputationByRegion }
+    reputationByRegion: { ...state.reputationByRegion },
+    reputationByVenue: { ...state.reputationByVenue }
   }
 
   const score = typeof safePayload.score === 'number' ? safePayload.score : 0
   const location = state.player?.location || 'Unknown'
+  const venueId = state.currentGig?.id ?? ''
   const capacity =
     typeof state.currentGig?.capacity === 'number' &&
     Number.isFinite(state.currentGig.capacity)
@@ -204,6 +207,20 @@ export const handleSetLastGigStats = (
         })
       }
     }
+    if (venueId && !isForbiddenKey(venueId)) {
+      nextState.reputationByVenue[venueId] = Math.max(
+        MIN_REPUTATION,
+        (nextState.reputationByVenue[venueId] || 0) - 10
+      )
+      nextState = QuestEvents.emit(
+        nextState,
+        createVenueReputationChangedQuestEvent({
+          venueId,
+          amount: -10,
+          reason: 'bad_gig'
+        })
+      )
+    }
     nextState = handleRecordBadShow(nextState)
   } else if (score >= 60) {
     // Increase reputation on good gigs up to 100 max
@@ -226,6 +243,24 @@ export const handleSetLastGigStats = (
         logger.info(
           'GameState',
           `Regional reputation gain in ${location} (+${bonus})`
+        )
+      }
+    }
+    if (venueId && !isForbiddenKey(venueId)) {
+      const currentVenueRep = nextState.reputationByVenue[venueId] || 0
+      if (currentVenueRep < MAX_REPUTATION) {
+        const venueBonus = score >= 90 ? 10 : 5
+        nextState.reputationByVenue[venueId] = Math.max(
+          MIN_REPUTATION,
+          Math.min(MAX_REPUTATION, currentVenueRep + venueBonus)
+        )
+        nextState = QuestEvents.emit(
+          nextState,
+          createVenueReputationChangedQuestEvent({
+            venueId,
+            amount: venueBonus,
+            reason: 'good_gig'
+          })
         )
       }
     }

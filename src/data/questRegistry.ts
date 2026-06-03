@@ -666,6 +666,26 @@ export const QUEST_REGISTRY = {
     failurePenalty: {
       social: { loyalty: -5 }
     }
+  },
+  quest_venue_regular: {
+    kind: 'repeatable',
+    label: 'events:quest_venue_regular.label',
+    description: 'events:quest_venue_regular.desc',
+    deadlineOffset: 18,
+    repeatPolicy: 'cooldown',
+    cooldownDays: 12,
+    progressSource: 'venue_reputation_changed',
+    progressRules: [
+      { event: 'venue.reputationChanged', amount: 'event.amount' }
+    ],
+    required: 30,
+    offer: { trigger: 'random', category: 'gig', chance: 0.06 },
+    rewardType: 'fame',
+    rewardData: { fame: 150 },
+    moneyReward: 0,
+    failurePenalty: {
+      social: { loyalty: -5 }
+    }
   }
 } as const satisfies Record<string, QuestDefinition>
 

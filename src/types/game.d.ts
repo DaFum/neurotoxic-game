@@ -101,6 +101,7 @@ export interface GameState {
   completedQuestIds: string[]
   completedQuestScopes: QuestScopeCompletion[]
   reputationByRegion: Record<string, number>
+  reputationByVenue: Record<string, number>
   settings: GameSettings
   npcs: Record<string, CharacterProfile>
   gigModifiers: GigModifiers

@@ -1,4 +1,12 @@
 {
+  "quest_venue_regular.label": "House Band",
+  "quest_venue_regular.desc": "Build up a venue reputation by killing it on stage.",
+  "quest_trigger_venue_regular.title": "EARN YOUR SPOT",
+  "quest_trigger_venue_regular.desc": "A booker says if you keep delivering, the room is yours. Go earn it?",
+  "quest_trigger_venue_regular.opt1.label": "Earn the room",
+  "quest_trigger_venue_regular.opt1.outcome": "You set out to become a name this venue can rely on.",
+  "quest_trigger_venue_regular.opt2.label": "Just passing through",
+  "quest_trigger_venue_regular.opt2.outcome": "You prefer to keep moving.",
   "quest_burned_bridges.label": "Burned Bridges",
   "quest_burned_bridges.desc": "Lose a brand deal — and prove you never needed them.",
   "quest_trigger_burned_bridges.title": "NO SELLOUTS",

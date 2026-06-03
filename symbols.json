@@ -79,8 +79,8 @@
         "exportKind": "named",
         "exportPath": "src/types/index.ts",
         "isDefault": false,
-        "lineEnd": 132,
-        "lineStart": 127,
+        "lineEnd": 133,
+        "lineStart": 128,
         "name": "Action",
         "path": "src/types/game.d.ts",
         "source": "local",
@@ -16407,8 +16407,8 @@
             }
           ]
         },
-        "lineEnd": 327,
-        "lineStart": 283,
+        "lineEnd": 328,
+        "lineStart": 284,
         "name": "createInitialState",
         "parameters": [
           {
@@ -17009,8 +17009,8 @@
         "exportedName": "createRawLoadPayload",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 74,
-        "lineStart": 63,
+        "lineEnd": 75,
+        "lineStart": 64,
         "name": "createRawLoadPayload",
         "parameters": [
           {
@@ -18708,7 +18708,13 @@
         "path": "src/quests/producers/venueQuestEvents.ts",
         "returnType": "QuestEvent",
         "source": "local",
-        "type": "const"
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/context/reducers/gigReducer.ts",
+            "importedAs": "createVenueReputationChangedQuestEvent"
+          }
+        ]
       }
     ],
     "createVenueUnblacklistedQuestEvent": [
@@ -23400,8 +23406,8 @@
         "exportKind": "named",
         "exportPath": "src/types/index.ts",
         "isDefault": false,
-        "lineEnd": 262,
-        "lineStart": 134,
+        "lineEnd": 263,
+        "lineStart": 135,
         "name": "GameAction",
         "path": "src/types/game.d.ts",
         "source": "local",
@@ -25316,7 +25322,7 @@
         "exportKind": "named",
         "exportPath": "src/types/index.ts",
         "isDefault": false,
-        "lineEnd": 123,
+        "lineEnd": 124,
         "lineStart": 81,
         "name": "GameState",
         "path": "src/types/game.d.ts",
@@ -25453,6 +25459,11 @@
           },
           {
             "name": "reputationByRegion",
+            "optional": false,
+            "type": "Record<string, number>"
+          },
+          {
+            "name": "reputationByVenue",
             "optional": false,
             "type": "Record<string, number>"
           },
@@ -27962,8 +27973,8 @@
         "exportedName": "getQuestDefinition",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 684,
-        "lineStart": 681,
+        "lineEnd": 704,
+        "lineStart": 701,
         "name": "getQuestDefinition",
         "parameters": [
           {
@@ -30128,8 +30139,8 @@
         "exportedName": "handleAddToast",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 1692,
-        "lineStart": 1687,
+        "lineEnd": 1695,
+        "lineStart": 1690,
         "name": "handleAddToast",
         "parameters": [
           {
@@ -30183,8 +30194,8 @@
             }
           ]
         },
-        "lineEnd": 2052,
-        "lineStart": 2045,
+        "lineEnd": 2055,
+        "lineStart": 2048,
         "name": "handleAddUnlock",
         "parameters": [
           {
@@ -30289,8 +30300,8 @@
             }
           ]
         },
-        "lineEnd": 2037,
-        "lineStart": 1869,
+        "lineEnd": 2040,
+        "lineStart": 1872,
         "name": "handleAdvanceDay",
         "parameters": [
           {
@@ -31416,7 +31427,7 @@
             }
           ]
         },
-        "lineEnd": 1636,
+        "lineEnd": 1639,
         "lineStart": 1520,
         "name": "handleLoadGame",
         "parameters": [
@@ -31791,8 +31802,8 @@
         "exportedName": "handleRemoveToast",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 1702,
-        "lineStart": 1694,
+        "lineEnd": 1705,
+        "lineStart": 1697,
         "name": "handleRemoveToast",
         "parameters": [
           {
@@ -31870,8 +31881,8 @@
         "exportedName": "handleResetState",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 1662,
-        "lineStart": 1638,
+        "lineEnd": 1665,
+        "lineStart": 1641,
         "name": "handleResetState",
         "parameters": [
           {
@@ -31981,8 +31992,8 @@
         "exportedName": "handleSetGig",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 38,
-        "lineStart": 32,
+        "lineEnd": 39,
+        "lineStart": 33,
         "name": "handleSetGig",
         "parameters": [
           {
@@ -32036,8 +32047,8 @@
             }
           ]
         },
-        "lineEnd": 73,
-        "lineStart": 63,
+        "lineEnd": 74,
+        "lineStart": 64,
         "name": "handleSetGigModifiers",
         "parameters": [
           {
@@ -32079,14 +32090,15 @@
           "createSmallVenueGoodQuestEvent",
           "createVenueGigCompletedQuestEvent",
           "createVenueGoodGigQuestEvent",
+          "createVenueReputationChangedQuestEvent",
           "handleAddVenueBlacklist",
           "isForbiddenKey"
         ],
         "exportedName": "handleSetLastGigStats",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 290,
-        "lineStart": 122,
+        "lineEnd": 325,
+        "lineStart": 123,
         "name": "handleSetLastGigStats",
         "parameters": [
           {
@@ -32121,8 +32133,8 @@
         "exportedName": "handleSetMap",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 1685,
-        "lineStart": 1675,
+        "lineEnd": 1688,
+        "lineStart": 1678,
         "name": "handleSetMap",
         "parameters": [
           {
@@ -32176,8 +32188,8 @@
             }
           ]
         },
-        "lineEnd": 2066,
-        "lineStart": 2060,
+        "lineEnd": 2069,
+        "lineStart": 2063,
         "name": "handleSetPendingBandHQOpen",
         "parameters": [
           {
@@ -32216,8 +32228,8 @@
         "exportedName": "handleSetPendingRiskEvent",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 2119,
-        "lineStart": 2081,
+        "lineEnd": 2122,
+        "lineStart": 2084,
         "name": "handleSetPendingRiskEvent",
         "parameters": [
           {
@@ -32252,8 +32264,8 @@
         "exportedName": "handleSetPendingSupplyStopInventory",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 2079,
-        "lineStart": 2068,
+        "lineEnd": 2082,
+        "lineStart": 2071,
         "name": "handleSetPendingSupplyStopInventory",
         "parameters": [
           {
@@ -32291,8 +32303,8 @@
         "exportedName": "handleSetSetlist",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 55,
-        "lineStart": 50,
+        "lineEnd": 56,
+        "lineStart": 51,
         "name": "handleSetSetlist",
         "parameters": [
           {
@@ -32438,8 +32450,8 @@
         "exportedName": "handleStartGig",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 48,
-        "lineStart": 40,
+        "lineEnd": 49,
+        "lineStart": 41,
         "name": "handleStartGig",
         "parameters": [
           {
@@ -32933,8 +32945,8 @@
         "exportedName": "handleUpdateSettings",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 1673,
-        "lineStart": 1664,
+        "lineEnd": 1676,
+        "lineStart": 1667,
         "name": "handleUpdateSettings",
         "parameters": [
           {
@@ -35486,8 +35498,8 @@
         "jsDoc": {
           "summary": "Looks up a quest's static definition by id. Returns `undefined` for unknown ids so callers can fall back to inline payloads."
         },
-        "lineEnd": 679,
-        "lineStart": 676,
+        "lineEnd": 699,
+        "lineStart": 696,
         "name": "isQuestRegistryId",
         "parameters": [
           {
@@ -44737,7 +44749,7 @@
         "exportedName": "QUEST_EVENTS",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 521,
+        "lineEnd": 543,
         "lineStart": 7,
         "name": "QUEST_EVENTS",
         "path": "src/data/events/quests.ts",
@@ -44832,7 +44844,7 @@
         "exportedName": "QUEST_REGISTRY",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 670,
+        "lineEnd": 690,
         "lineStart": 3,
         "name": "QUEST_REGISTRY",
         "path": "src/data/questRegistry.ts",
@@ -47070,8 +47082,8 @@
         "exportKind": "named",
         "exportPath": "src/types/index.ts",
         "isDefault": false,
-        "lineEnd": 125,
-        "lineStart": 125,
+        "lineEnd": 126,
+        "lineStart": 126,
         "name": "RawLoadedGame",
         "path": "src/types/game.d.ts",
         "properties": [
@@ -60732,8 +60744,8 @@
         "exportKind": "named",
         "isDefault": false,
         "isHook": true,
-        "lineEnd": 279,
-        "lineStart": 147,
+        "lineEnd": 282,
+        "lineStart": 150,
         "name": "usePersistence",
         "parameters": [
           {

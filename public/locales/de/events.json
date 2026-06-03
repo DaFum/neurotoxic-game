@@ -1,4 +1,12 @@
 {
+  "quest_venue_regular.label": "Hausband",
+  "quest_venue_regular.desc": "Bau dir einen Venue-Ruf auf, indem du auf der Bühne abräumst.",
+  "quest_trigger_venue_regular.title": "VERDIEN DIR DEINEN PLATZ",
+  "quest_trigger_venue_regular.desc": "Ein Booker sagt, wenn du weiter ablieferst, gehört dir der Laden. Verdien es dir?",
+  "quest_trigger_venue_regular.opt1.label": "Den Laden verdienen",
+  "quest_trigger_venue_regular.opt1.outcome": "Du nimmst dir vor, ein Name zu werden, auf den dieses Venue zählen kann.",
+  "quest_trigger_venue_regular.opt2.label": "Nur auf der Durchreise",
+  "quest_trigger_venue_regular.opt2.outcome": "Du bleibst lieber in Bewegung.",
   "quest_burned_bridges.label": "Verbrannte Brücken",
   "quest_burned_bridges.desc": "Verlier einen Markendeal — und beweise, dass du ihn nie gebraucht hast.",
   "quest_trigger_burned_bridges.title": "KEINE AUSVERKÄUFE",

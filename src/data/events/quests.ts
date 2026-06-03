@@ -517,5 +517,27 @@ export const QUEST_EVENTS = [
         outcomeText: 'events:quest_trigger_burned_bridges.opt2.outcome'
       }
     ]
+  },
+  {
+    id: 'quest_trigger_venue_regular',
+    category: 'gig',
+    title: 'events:quest_trigger_venue_regular.title',
+    description: 'events:quest_trigger_venue_regular.desc',
+    trigger: 'random',
+    chance: 0.06,
+    condition: (state: GameState) =>
+      canOfferQuest(state, 'quest_venue_regular'),
+    options: [
+      {
+        label: 'events:quest_trigger_venue_regular.opt1.label',
+        effect: { type: 'quest', quest: { id: 'quest_venue_regular' } },
+        outcomeText: 'events:quest_trigger_venue_regular.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_venue_regular.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:quest_trigger_venue_regular.opt2.outcome'
+      }
+    ]
   }
 ]
