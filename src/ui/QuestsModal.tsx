@@ -363,9 +363,9 @@ const QuestItem = memo(
             {t('ui:quests.rewards')}
           </span>
 
-          {rewardChips.map((reward, rewardIndex) => (
+          {rewardChips.map((reward, _rewardIndex) => (
             <span
-              key={`${reward.type}-${rewardIndex}`}
+              key={`${reward.type}-${reward.id || reward.item || reward.trait || reward.amount || reward.value || _rewardIndex}`}
               className='inline-flex items-center gap-1 bg-toxic-green/10 text-toxic-green px-2 py-1 text-xs font-mono '
             >
               {getRewardIcon(getRewardIconType(reward))}

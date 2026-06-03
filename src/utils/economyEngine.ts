@@ -993,9 +993,7 @@ export const calculateGigFinancials = (
   if (assetModifiers.tipBonusGigs && assetModifiers.tipBonusGigs > 0) {
     // tipBonusGigs is a decimal fraction (0.10 = 10%); apply directly to
     // income.total.
-    const tipBonus = Math.floor(
-      report.income.total * assetModifiers.tipBonusGigs
-    )
+    const tipBonus = Math.floor(report.income.total * assetModifiers.tipBonusGigs)
     if (tipBonus > 0) {
       report.income.breakdown.push({
         labelKey: 'economy:gigIncome.tipBonus.label',
@@ -1008,7 +1006,7 @@ export const calculateGigFinancials = (
 
   // 7. Management Cut (fame-progressive: 0% at fame=0, full 15% at fame≥200)
   const effectiveCutRate = MANAGEMENT_CUT_RATE * Math.min(1, playerFame / 200)
-  const managementCut = Math.floor(report.income.total * effectiveCutRate)
+  const managementCut = Math.max(0, Math.floor(report.income.total * effectiveCutRate))
   if (managementCut > 0) {
     report.expenses.breakdown.push({
       labelKey: 'economy:gigExpenses.managementFee.label',
@@ -1021,7 +1019,7 @@ export const calculateGigFinancials = (
 
   const grossNet = report.income.total - report.expenses.total
   if (grossNet > 0 && GLOBAL_PAYOUT_NERF < 1) {
-    const adjustedNet = Math.floor(grossNet * GLOBAL_PAYOUT_NERF)
+    const adjustedNet = Math.max(0, Math.floor(grossNet * GLOBAL_PAYOUT_NERF))
     const payoutDampener = grossNet - adjustedNet
     if (payoutDampener > 0) {
       report.expenses.breakdown.push({
@@ -1126,12 +1124,12 @@ export const calculateRoadieMinigameResult = (
   contrabandDelivered: number = 0
 ) => {
   const safeDamage = Math.max(0, equipmentDamage)
-  const stress = Math.floor(safeDamage / 5)
-  let repairCost = Math.floor(safeDamage * 2)
+  const stress = Math.max(0, Math.floor(safeDamage / 5))
+  let repairCost = Math.max(0, Math.floor(safeDamage * 2))
 
   // Gear Nerd Trait: 20% discount on repairs
   if (bandHasTrait(bandState, 'gear_nerd')) {
-    repairCost = Math.floor(repairCost * 0.8)
+    repairCost = Math.max(0, Math.floor(repairCost * 0.8))
   }
 
   // Brutalist neurotoxic payout
@@ -1169,18 +1167,18 @@ export const calculateAmpCalibrationResult = (
 
   if (safeScore < 50) {
     // Failure or poor performance
-    stress = Math.floor((50 - safeScore) / 2)
+    stress = Math.max(0, Math.floor((50 - safeScore) / 2))
   } else {
     // Success
     reward = Math.floor(safeScore)
 
     // Tech Wizard trait increases rewards
     if (bandHasTrait(bandState, 'tech_wizard')) {
-      reward = Math.floor(reward * 1.5)
+      reward = Math.max(0, Math.floor(reward * 1.5))
     }
 
     // Void Resonance converts to pure money at a 2x rate only on success
-    reward += Math.floor(safeResonance * 2)
+    reward = Math.max(0, reward + Math.floor(safeResonance * 2))
   }
 
   // Stress penalty for relying on neurotoxic purges
@@ -1189,7 +1187,7 @@ export const calculateAmpCalibrationResult = (
 
   // Kranker Schrank Hijack bonuses/mitigations
   const safeHijacksOverridden = Math.max(0, Number(hijacksOverridden) || 0)
-  reward += safeHijacksOverridden * 10
+  reward = Math.max(0, reward + safeHijacksOverridden * 10)
   stress = Math.max(0, stress - safeHijacksOverridden * 2)
 
   return { stress, reward }
