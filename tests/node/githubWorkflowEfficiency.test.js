@@ -28,17 +28,26 @@ describe('GitHub Actions efficiency guardrails', () => {
     )
   })
 
-  it('runs only node tests in the Node.js Tests job', () => {
+  it('runs all non-Playwright test suites in required PR CI', () => {
     const workflow = readWorkflow('.github/workflows/test.yml')
-    const runStep = workflow.jobs['node-tests'].steps.find(
-      step => step.id === 'run-tests'
-    )
+    const workflowText = readText('.github/workflows/test.yml')
+    const runCommands = Object.values(workflow.jobs)
+      .flatMap(job => job.steps)
+      .map(step => step.run ?? '')
+      .join('\n')
 
-    assert.match(runStep.run, /\bpnpm run test:node:quick\b/)
+    assert.match(runCommands, /\bpnpm run test:node\b(?!:)/)
+    assert.match(runCommands, /\bpnpm run test:vitest:logic\b/)
+    assert.match(runCommands, /\bpnpm run test:vitest:ui\b/)
+    assert.match(runCommands, /\bpnpm test:locale:smoke\b/)
+    assert.match(runCommands, /\bpnpm test:locale:full\b/)
+    assert.match(runCommands, /\bpnpm run test:perf\b/)
+    assert.match(runCommands, /\bpnpm run typecheck:core\b/)
+    assert.match(runCommands, /\bpnpm run typecheck\b(?!:)/)
     assert.doesNotMatch(
-      runStep.run,
-      /\bpnpm test\b/,
-      'pnpm test also runs Vitest logic, which has its own workflow job'
+      workflowText,
+      /\b(playwright|test:e2e|test:e2e:shard[12])\b/,
+      'Playwright/e2e suites are intentionally excluded from required PR CI'
     )
   })
 
