@@ -1,4 +1,4 @@
 interface:
   display_name: 'Holistic Test Suite Optimizer'
-  short_description: 'Diagnose and optimize the Neurotoxic test suite pipeline with measured timing, failure triage, safe fixture deduplication, runner isolation, and concrete verification.'
-  default_prompt: 'Analyze the Neurotoxic test pipeline holistically. Return baseline evidence, failure triage if needed, ranked optimization opportunities, safe implementation steps, and exact verification commands.'
+  short_description: 'Optimize Neurotoxic test suite runs safely.'
+  default_prompt: 'Use $holistic-test-suite-optimizer to analyze the Neurotoxic test pipeline and return baseline evidence, failure triage if needed, ranked optimization opportunities, safe implementation steps, and exact verification commands.'

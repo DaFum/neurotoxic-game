@@ -1,6 +1,6 @@
 ---
 name: holistic-test-suite-optimizer
-description: 'Use when optimizing or diagnosing the Neurotoxic test suite pipeline: `pnpm run test`, `pnpm run test:all`, node:test, Vitest, Playwright test runs, CI test jobs for test runners, slow/flaky tests, duplicate setup, worker tuning, sharding, OOM crashes, hanging suites, or runtime regressions. Trigger aggressively on test-runner or suite-topology intent.'
+description: 'Use when Neurotoxic test commands, CI test jobs, or runner-owned suites need diagnosis or optimization: slow/flaky/hanging/OOMing runs, runtime regressions, worker tuning, sharding, fixture duplication, suite topology, `pnpm run test`, `pnpm run test:all`, node:test, Vitest, Playwright, perf, or locale coverage.'
 compatibility: Node.js 22.13+, pnpm
 metadata:
   version: '1.0.0'
@@ -27,11 +27,24 @@ This skill exists to correct common failure modes in aggressive "optimize everyt
 | "All engines are one flow" | Mixes `node:test`, Vitest, and Playwright imports | Preserve runner ownership and config boundaries |
 | "Crush execution time" | Skips verification or hides failures | Re-run the affected suite and report deltas |
 
+## Intent Router
+
+Classify the request before measuring or editing:
+
+| User intent | First move | Do not do yet |
+| --- | --- | --- |
+| Failure, flake, hang, OOM, or CI-only problem | Read `references/failure-triage-guide.md`, map the owning command, and reproduce the smallest runner-owned scope | Tune workers, add retries, skip tests, or change topology |
+| Slow local command or suite topology | Read `references/repo-test-topology.md` and `references/pipeline-audit-playbook.md`, then measure the same target command before and after | Claim speedups from different commands or failed early exits |
+| Duplicate setup or fixture cleanup | Inspect repeated setup only inside the same runner family and keep teardown beside setup | Hoist cross-runner mocks or add global setup without cleanup |
+| Analysis-only request | Return a ranked plan with evidence and exact verification commands | Edit files |
+| Implementation request | State assumptions, make the smallest owning-layer change, then verify upward | Refactor adjacent tests or move tests between engines for convenience |
+
 ## Workflow
 
 1. **Map the pipeline**
-   - Read `package.json`, `scripts/run-fast-tests.mjs`, `scripts/run-all-tests.mjs`, `scripts/run-node-tests.mjs`, `scripts/run-vitest-ui.mjs`, `scripts/utils/parallelism.mjs`, relevant `vitest.config*.js`, `playwright.config.*`, and `.github/workflows/test.yml` before changing execution strategy.
+   - Read `references/repo-test-topology.md` when choosing scope or explaining command coverage. Inspect `package.json` and only the runner/config files that own the target before touching implementation; read the full runner set before changing execution strategy.
    - Confirm the target command before measuring. In this repo, `pnpm run test` is the fast local runner, `pnpm run test:all` excludes Playwright/perf/locale unless the scripts have changed, and Playwright has separate `test:e2e` scripts.
+   - If multiple target scopes would change the measurement or verification plan, state the assumption or ask before running expensive commands.
    - Read nested `tests/**/AGENTS.md` files for the suites you will touch.
 
 2. **Measure before changing**
@@ -44,10 +57,13 @@ This skill exists to correct common failure modes in aggressive "optimize everyt
      pnpm run test:ui
      pnpm run test
      pnpm run test:all
+     pnpm run test:additional
      pnpm run test:e2e
      ```
 
-   - Capture wall time, failing tests, worker-related env vars, and OOM/hang symptoms. If the command is too expensive locally, explain the constraint and use the closest targeted runner.
+   - Capture wall time, failing tests, worker-related env vars, and OOM/hang symptoms. On Windows, use `Measure-Command { pnpm run <script> }` when wall time matters.
+   - Compare only the same command, machine, worker env, and pass/fail state. A failed run that exits early is not a runtime improvement.
+   - If the command is too expensive locally, explain the constraint and use the closest targeted runner.
 
 3. **Triage failures before speed work**
    - If the symptom is a failing, flaky, hanging, OOMing, or CI-only suite, read `references/failure-triage-guide.md` before changing runner topology.
@@ -71,6 +87,7 @@ This skill exists to correct common failure modes in aggressive "optimize everyt
    - Re-run the changed suite first, then the next broader gate that can catch cross-suite pollution.
    - For shared fixtures or runner scripts, run at least the affected engine plus `pnpm run test:all` when feasible.
    - Report baseline time, post-change time, commands, failures, skipped checks, and remaining risk.
+   - Use direct status labels: `Reproduced`, `Not reproduced`, `Not measured`, and `Optimization deferred`. Do not say `fixed` unless the reproducer and owning suite both pass after the change.
 
 ## Quick Reference
 
@@ -82,6 +99,7 @@ This skill exists to correct common failure modes in aggressive "optimize everyt
 | Duplicate `vi.mock` setup | Same mock repeated in same runner family | Extract Vitest-only fixture with restore path |
 | Slow node suite | heavy test list, `NODE_TEST_CONCURRENCY` | Split quick/heavy or tune node workers |
 | Slow E2E startup | Playwright config, auth/menu setup | Use `storageState` or direct scene fixture when valid |
+| Perf or locale concern | package script, CI job map, `test:additional` boundary | Use the specific perf/locale command before broad gates |
 | Flaky async wait | arbitrary sleeps, leaked timers | Replace with condition-based wait and cleanup |
 | CI-only failure | CI job log, package script, local matching command | Reproduce with the same runner before touching unrelated suites |
 | Hang or OOM | Last emitted test, teardown, worker env, heap symptoms | Fix leaks or isolation before increasing memory/workers |
@@ -111,6 +129,8 @@ Test Suite Optimization Report
 ```
 
 If implementation is requested, make surgical changes and include exact commands run. If only analysis is requested, provide a ranked change plan with expected verification commands.
+
+If a runtime delta is missing or not comparable, say `Not measured` instead of estimating. If correctness blocks speed work, say `Optimization deferred` and name the reproducer that must pass first.
 
 ## Example
 
