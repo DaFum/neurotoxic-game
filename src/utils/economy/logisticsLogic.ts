@@ -111,7 +111,7 @@ export const calculateTravelExpenses = (
   assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS
 ) => {
   const dist = calculateDistance(node, fromNode)
-  const { fuelLiters } = calculateFuelCost(
+  const { fuelLiters, fuelCost } = calculateFuelCost(
     dist,
     playerState,
     bandState,
@@ -135,7 +135,7 @@ export const calculateTravelExpenses = (
     Math.floor(finiteNumberOr(playerState?.money, 0) / 1000) * 5
   )
   const logisticsCost =
-    TRAVEL_LOGISTICS_BASE + distanceLogistics + fameLogistics + cashReserveFee
+    TRAVEL_LOGISTICS_BASE + distanceLogistics + fameLogistics + cashReserveFee + fuelCost
   const totalCost = foodCost + logisticsCost
 
   return { dist, fuelLiters, totalCost }
@@ -183,7 +183,8 @@ export const calculateRepairCost = (currentCondition: number) => {
  */
 export const shouldTriggerBankruptcy = (
   newMoney: unknown,
-  netIncome: number | null | undefined
+  netIncome: number | null | undefined,
+  totalDailyObligations: number = 0
 ) => {
   const val = Number(newMoney)
   if (!Number.isFinite(val)) {
@@ -201,6 +202,6 @@ export const shouldTriggerBankruptcy = (
   // If netIncome is undefined, default to 0 (assume break-even/safe).
   const income = netIncome ?? 0
 
-  // Bankrupt if at 0 money and net income was strictly negative.
-  return income < 0
+  // Check if we are bleeding money taking into account daily obligations
+  return (income - totalDailyObligations) < 0
 }

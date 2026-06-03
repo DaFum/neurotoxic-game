@@ -84,7 +84,8 @@ export const calculateTicketIncome = (
   }
 
   // Price Sensitivity: Higher price reduces attendance slightly unless Fame is very high
-  const ticketPrice = typeof gigData.price === 'number' ? gigData.price : 0
+  const rawTicketPrice = typeof gigData.price === 'number' ? gigData.price : 0
+  const ticketPrice = context.discountedTickets && rawTicketPrice > 10 ? Math.floor(rawTicketPrice * 0.5) : rawTicketPrice
   if (!context.discountedTickets && ticketPrice > 15) {
     const pricePenalty = (ticketPrice - 15) * 0.02 // -2% per Euro over 15
     const mitigation = fameRatio * 0.5
@@ -330,12 +331,12 @@ export const calculateVenueSplit = (
   gigData: GigEconomyData = {}
 ) => {
   gigData = gigData || {}
-  const splitRate =
-    (gigData.diff ?? 0) >= 5
-      ? 0.7
-      : Object.hasOwn(VENUE_SPLIT_RATES, gigData.diff ?? 0)
-        ? (VENUE_SPLIT_RATES[gigData.diff as number] ?? 0)
-        : 0
+  const diff = gigData.diff ?? gigData.difficulty ?? 0
+  const splitRate = diff >= 5
+    ? 0.7
+    : Object.hasOwn(VENUE_SPLIT_RATES, diff)
+      ? (VENUE_SPLIT_RATES[diff] ?? 0)
+      : 0
 
   if (splitRate > 0) {
     const splitAmount = Math.floor(Math.max(0, ticketsRevenue) * splitRate)

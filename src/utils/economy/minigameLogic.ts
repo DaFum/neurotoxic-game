@@ -10,11 +10,12 @@ import type { KabelsalatResults } from './types'
  * @returns {object} { conditionLoss, fuelBonus }
  */
 export const calculateTravelMinigameResult = (
-  damageTaken: number,
+  damageTaken: unknown,
   itemsCollected: unknown
 ) => {
   // 50% damage scaling: 100 damage -> 50 condition loss
-  const conditionLoss = Math.floor(Math.max(0, damageTaken) / 2)
+  const safeDamageTaken = Number.isFinite(Number(damageTaken)) ? Number(damageTaken) : 0
+  const conditionLoss = Math.floor(Math.max(0, safeDamageTaken) / 2)
 
   // Fuel bonus re-enabled: each fuel item grants 0.5 liters of fuel bonus
   let fuelItems = 0
@@ -41,7 +42,8 @@ export const calculateRoadieMinigameResult = (
   bandState: Pick<BandState, 'members'> | null | undefined,
   contrabandDelivered: number = 0
 ) => {
-  const safeDamage = Math.max(0, equipmentDamage)
+  const safeEquipmentDamage = Number.isFinite(Number(equipmentDamage)) ? Number(equipmentDamage) : 0
+  const safeDamage = Math.max(0, safeEquipmentDamage)
   const stress = Math.floor(safeDamage / 5)
   let repairCost = Math.floor(safeDamage * 2)
 

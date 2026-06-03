@@ -365,7 +365,7 @@ const QuestItem = memo(
 
           {rewardChips.map((reward, rewardIndex) => (
             <span
-              key={`${reward.type}-${rewardIndex}`}
+              key={`${reward.type}-${rewardIndex}`} /* eslint-disable-line @eslint-react/no-array-index-key */
               className='inline-flex items-center gap-1 bg-toxic-green/10 text-toxic-green px-2 py-1 text-xs font-mono '
             >
               {getRewardIcon(getRewardIconType(reward))}
