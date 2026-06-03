@@ -74,8 +74,19 @@ const LEGACY_EVENT_TYPES: Record<QuestProgressSource, QuestEventType> = {
   money_earned: 'economy.moneyEarned',
   harmony_recovered: 'band.harmonyChanged',
   item_collected: 'item.collected',
+  item_delivered: 'item.delivered',
+  item_crafted: 'item.crafted',
   brand_deal_completed: 'brand.dealCompleted',
-  travel_completed: 'travel.completed'
+  brand_deal_failed: 'brand.dealFailed',
+  brand_trust_changed: 'brand.trustChanged',
+  travel_completed: 'travel.completed',
+  minigame_perfected: 'minigame.perfect',
+  asset_risk_triggered: 'asset.riskTriggered',
+  asset_risk_resolved: 'asset.riskResolved',
+  venue_blacklisted: 'venue.blacklisted',
+  venue_unblacklisted: 'venue.unblacklisted',
+  venue_reputation_changed: 'venue.reputationChanged',
+  story_flag_added: 'story.flagAdded'
 }
 
 const CANONICAL_EVENT_TYPE_VALUES = [

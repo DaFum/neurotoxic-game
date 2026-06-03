@@ -469,6 +469,164 @@ export const QUEST_REGISTRY = {
     failurePenalty: {
       social: { loyalty: -15 }
     }
+  },
+  quest_flawless_run: {
+    kind: 'repeatable',
+    label: 'events:quest_flawless_run.label',
+    description: 'events:quest_flawless_run.desc',
+    deadlineOffset: 12,
+    repeatPolicy: 'cooldown',
+    cooldownDays: 6,
+    progressSource: 'minigame_perfected',
+    progressRules: [
+      { event: 'minigame.perfect', amount: 'fixed', fixedAmount: 1 }
+    ],
+    required: 3,
+    offer: { trigger: 'random', category: 'band', chance: 0.08 },
+    rewardType: 'fame',
+    rewardData: { fame: 150 },
+    moneyReward: 0,
+    failurePenalty: {
+      social: { loyalty: -5 }
+    }
+  },
+  quest_sticky_fingers: {
+    kind: 'side',
+    label: 'events:quest_sticky_fingers.label',
+    description: 'events:quest_sticky_fingers.desc',
+    deadlineOffset: 18,
+    repeatPolicy: 'never',
+    progressSource: 'item_collected',
+    progressRules: [
+      { event: 'item.collected', amount: 'fixed', fixedAmount: 1 }
+    ],
+    required: 5,
+    offer: { trigger: 'random', category: 'special', chance: 0.06 },
+    moneyReward: 300,
+    failurePenalty: {
+      social: { loyalty: -5 }
+    }
+  },
+  quest_special_delivery: {
+    kind: 'repeatable',
+    label: 'events:quest_special_delivery.label',
+    description: 'events:quest_special_delivery.desc',
+    deadlineOffset: 14,
+    repeatPolicy: 'cooldown',
+    cooldownDays: 7,
+    progressSource: 'item_delivered',
+    progressRules: [{ event: 'item.delivered', amount: 'event.amount' }],
+    required: 10,
+    offer: { trigger: 'random', category: 'special', chance: 0.06 },
+    rewardType: 'fame',
+    rewardData: { fame: 100 },
+    moneyReward: 0,
+    failurePenalty: {
+      social: { loyalty: -5 }
+    }
+  },
+  quest_persona_non_grata: {
+    kind: 'side',
+    label: 'events:quest_persona_non_grata.label',
+    description: 'events:quest_persona_non_grata.desc',
+    deadlineOffset: 20,
+    repeatPolicy: 'never',
+    progressSource: 'venue_blacklisted',
+    progressRules: [
+      { event: 'venue.blacklisted', amount: 'fixed', fixedAmount: 1 }
+    ],
+    required: 1,
+    offer: { trigger: 'random', category: 'band', chance: 0.05 },
+    rewardType: 'loyalty',
+    rewardData: { loyalty: 10 },
+    moneyReward: 0,
+    failurePenalty: {
+      social: { loyalty: -5 }
+    }
+  },
+  quest_murphys_law: {
+    kind: 'side',
+    label: 'events:quest_murphys_law.label',
+    description: 'events:quest_murphys_law.desc',
+    deadlineOffset: 25,
+    repeatPolicy: 'never',
+    progressSource: 'asset_risk_triggered',
+    progressRules: [
+      { event: 'asset.riskTriggered', amount: 'fixed', fixedAmount: 1 }
+    ],
+    required: 3,
+    offer: {
+      trigger: 'random',
+      category: 'special',
+      chance: 0.05,
+      condition: { requiredAssetKind: 'rehearsal' }
+    },
+    moneyReward: 250,
+    failurePenalty: {
+      social: { loyalty: -5 }
+    }
+  },
+  quest_crisis_manager: {
+    kind: 'repeatable',
+    label: 'events:quest_crisis_manager.label',
+    description: 'events:quest_crisis_manager.desc',
+    deadlineOffset: 20,
+    repeatPolicy: 'cooldown',
+    cooldownDays: 8,
+    progressSource: 'asset_risk_resolved',
+    progressRules: [
+      { event: 'asset.riskResolved', amount: 'fixed', fixedAmount: 1 }
+    ],
+    required: 3,
+    offer: {
+      trigger: 'random',
+      category: 'special',
+      chance: 0.05,
+      condition: { requiredAssetKind: 'rehearsal' }
+    },
+    rewardType: 'fame',
+    rewardData: { fame: 120 },
+    moneyReward: 0,
+    failurePenalty: {
+      social: { loyalty: -5 }
+    }
+  },
+  quest_chapter_marker: {
+    kind: 'side',
+    label: 'events:quest_chapter_marker.label',
+    description: 'events:quest_chapter_marker.desc',
+    deadlineOffset: 30,
+    repeatPolicy: 'never',
+    progressSource: 'story_flag_added',
+    progressRules: [
+      { event: 'story.flagAdded', amount: 'fixed', fixedAmount: 1 }
+    ],
+    required: 3,
+    offer: { trigger: 'random', category: 'special', chance: 0.05 },
+    rewardType: 'skill_point',
+    rewardData: { memberIndex: 0 },
+    moneyReward: 0,
+    failurePenalty: {
+      social: { loyalty: -5 }
+    }
+  },
+  quest_payday: {
+    kind: 'repeatable',
+    label: 'events:quest_payday.label',
+    description: 'events:quest_payday.desc',
+    deadlineOffset: 15,
+    repeatPolicy: 'cooldown',
+    cooldownDays: 5,
+    progressSource: 'money_earned',
+    progressRules: [{ event: 'economy.moneyEarned', amount: 'event.amount' }],
+    required: 1000,
+    offer: { trigger: 'random', category: 'special', chance: 0.06 },
+    rewardType: 'fame',
+    rewardData: { fame: 200 },
+    moneyReward: 0,
+    failurePenalty: {
+      social: { loyalty: -5 }
+    }
   }
 } as const satisfies Record<string, QuestDefinition>
 

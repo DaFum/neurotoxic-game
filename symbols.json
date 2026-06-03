@@ -407,8 +407,8 @@
           "UnknownRecord"
         ],
         "isDefault": false,
-        "lineEnd": 245,
-        "lineStart": 237,
+        "lineEnd": 256,
+        "lineStart": 248,
         "name": "ActiveQuestState",
         "path": "src/types/quest.d.ts",
         "properties": [
@@ -27882,8 +27882,8 @@
         "exportedName": "getQuestDefinition",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 487,
-        "lineStart": 484,
+        "lineEnd": 649,
+        "lineStart": 646,
         "name": "getQuestDefinition",
         "parameters": [
           {
@@ -35329,8 +35329,8 @@
         "jsDoc": {
           "summary": "Looks up a quest's static definition by id. Returns `undefined` for unknown ids so callers can fall back to inline payloads."
         },
-        "lineEnd": 482,
-        "lineStart": 479,
+        "lineEnd": 644,
+        "lineStart": 641,
         "name": "isQuestRegistryId",
         "parameters": [
           {
@@ -44580,7 +44580,7 @@
         "exportedName": "QUEST_EVENTS",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 305,
+        "lineEnd": 478,
         "lineStart": 7,
         "name": "QUEST_EVENTS",
         "path": "src/data/events/quests.ts",
@@ -44675,7 +44675,7 @@
         "exportedName": "QUEST_REGISTRY",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 473,
+        "lineEnd": 635,
         "lineStart": 3,
         "name": "QUEST_REGISTRY",
         "path": "src/data/questRegistry.ts",
@@ -44748,8 +44748,8 @@
         "jsDoc": {
           "summary": "Tracks a `repeatPolicy: 'cooldown'` quest that may not be re-added until the in-game day reaches `expiresOnDay`."
         },
-        "lineEnd": 299,
-        "lineStart": 295,
+        "lineEnd": 310,
+        "lineStart": 306,
         "name": "QuestCooldown",
         "path": "src/types/quest.d.ts",
         "properties": [
@@ -44785,8 +44785,8 @@
           "UnknownRecord"
         ],
         "isDefault": false,
-        "lineEnd": 235,
-        "lineStart": 208,
+        "lineEnd": 246,
+        "lineStart": 219,
         "name": "QuestDefinition",
         "path": "src/types/quest.d.ts",
         "properties": [
@@ -44883,7 +44883,7 @@
           {
             "name": "progressSource",
             "optional": true,
-            "type": "'small_venue_good_gig' | 'gig_completed' | 'good_gig' | 'social_post' | 'followers_gained' | 'fame_gained' | 'money_earned' | 'harmony_recovered' | 'item_collected' | 'brand_deal_completed' | 'travel_completed'"
+            "type": "'small_venue_good_gig' | 'gig_completed' | 'good_gig' | 'social_post' | 'followers_gained' | 'fame_gained' | 'money_earned' | 'harmony_recovered' | 'item_collected' | 'item_delivered' | 'item_crafted' | 'brand_deal_completed' | 'brand_deal_failed' | 'brand_trust_changed' | 'travel_completed' | 'minigame_perfected' | 'asset_risk_triggered' | 'asset_risk_resolved' | 'venue_blacklisted' | 'venue_unblacklisted' | 'venue_reputation_changed' | 'story_flag_added'"
           },
           {
             "name": "repeatPolicy",
@@ -44941,8 +44941,8 @@
         "exportKind": "named",
         "exportPath": "src/types/game.d.ts",
         "isDefault": false,
-        "lineEnd": 100,
-        "lineStart": 94,
+        "lineEnd": 111,
+        "lineStart": 105,
         "name": "QuestEvent",
         "path": "src/types/quest.d.ts",
         "properties": [
@@ -45045,8 +45045,8 @@
           "UnknownRecord"
         ],
         "isDefault": false,
-        "lineEnd": 92,
-        "lineStart": 58,
+        "lineEnd": 103,
+        "lineStart": 69,
         "name": "QuestEventContext",
         "path": "src/types/quest.d.ts",
         "properties": [
@@ -45243,8 +45243,8 @@
         "jsDoc": {
           "summary": "Public quest-event facade. Gameplay systems must go through this or the `applyQuestEvent` action rather than targeting concrete quest ids."
         },
-        "lineEnd": 485,
-        "lineStart": 482,
+        "lineEnd": 496,
+        "lineStart": 493,
         "name": "QuestEvents",
         "path": "src/utils/questProgress.ts",
         "source": "local",
@@ -45293,8 +45293,8 @@
         "exportKind": "named",
         "exportPath": "src/types/game.d.ts",
         "isDefault": false,
-        "lineEnd": 56,
-        "lineStart": 21,
+        "lineEnd": 67,
+        "lineStart": 32,
         "name": "QuestEventType",
         "path": "src/types/quest.d.ts",
         "source": "local",
@@ -45387,8 +45387,8 @@
         "exportKind": "named",
         "exportPath": "src/types/game.d.ts",
         "isDefault": false,
-        "lineEnd": 199,
-        "lineStart": 185,
+        "lineEnd": 210,
+        "lineStart": 196,
         "name": "QuestOfferCondition",
         "path": "src/types/quest.d.ts",
         "properties": [
@@ -45443,8 +45443,8 @@
         "exportKind": "named",
         "exportPath": "src/types/game.d.ts",
         "isDefault": false,
-        "lineEnd": 206,
-        "lineStart": 201,
+        "lineEnd": 217,
+        "lineStart": 212,
         "name": "QuestOfferDefinition",
         "path": "src/types/quest.d.ts",
         "properties": [
@@ -45514,8 +45514,8 @@
         "exportKind": "named",
         "exportPath": "src/types/game.d.ts",
         "isDefault": false,
-        "lineEnd": 183,
-        "lineStart": 163,
+        "lineEnd": 194,
+        "lineStart": 174,
         "name": "QuestPenalty",
         "path": "src/types/quest.d.ts",
         "properties": [
@@ -45777,8 +45777,8 @@
         "exportedName": "QuestProgress",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 476,
-        "lineStart": 438,
+        "lineEnd": 487,
+        "lineStart": 449,
         "name": "QuestProgress",
         "path": "src/utils/questProgress.ts",
         "source": "local",
@@ -45793,8 +45793,8 @@
         "exportKind": "named",
         "exportPath": "src/types/game.d.ts",
         "isDefault": false,
-        "lineEnd": 106,
-        "lineStart": 102,
+        "lineEnd": 117,
+        "lineStart": 113,
         "name": "QuestProgressAmountMode",
         "path": "src/types/quest.d.ts",
         "source": "local",
@@ -45884,8 +45884,8 @@
         "exportKind": "named",
         "exportPath": "src/types/game.d.ts",
         "isDefault": false,
-        "lineEnd": 134,
-        "lineStart": 128,
+        "lineEnd": 145,
+        "lineStart": 139,
         "name": "QuestProgressRule",
         "path": "src/types/quest.d.ts",
         "properties": [
@@ -45935,8 +45935,8 @@
         "exportKind": "named",
         "exportPath": "src/types/game.d.ts",
         "isDefault": false,
-        "lineEnd": 126,
-        "lineStart": 108,
+        "lineEnd": 137,
+        "lineStart": 119,
         "name": "QuestProgressRuleMatch",
         "path": "src/types/quest.d.ts",
         "properties": [
@@ -46046,7 +46046,7 @@
         "exportKind": "named",
         "exportPath": "src/types/game.d.ts",
         "isDefault": false,
-        "lineEnd": 19,
+        "lineEnd": 30,
         "lineStart": 8,
         "name": "QuestProgressSource",
         "path": "src/types/quest.d.ts",
@@ -46094,8 +46094,8 @@
         "exportKind": "named",
         "exportPath": "src/types/game.d.ts",
         "isDefault": false,
-        "lineEnd": 161,
-        "lineStart": 136,
+        "lineEnd": 172,
+        "lineStart": 147,
         "name": "QuestReward",
         "path": "src/types/quest.d.ts",
         "properties": [
@@ -46448,8 +46448,8 @@
         "jsDoc": {
           "summary": "Tracks completed scoped quests (per-venue / per-region). A quest id paired with the scope key it was completed for; re-adding for the same scope is refused, but other scopes remain available."
         },
-        "lineEnd": 309,
-        "lineStart": 306,
+        "lineEnd": 320,
+        "lineStart": 317,
         "name": "QuestScopeCompletion",
         "path": "src/types/quest.d.ts",
         "properties": [
@@ -46516,8 +46516,8 @@
           "UnknownRecord"
         ],
         "isDefault": false,
-        "lineEnd": 289,
-        "lineStart": 247,
+        "lineEnd": 300,
+        "lineStart": 258,
         "name": "QuestState",
         "path": "src/types/quest.d.ts",
         "properties": [
@@ -46627,7 +46627,7 @@
           {
             "name": "progressSource",
             "optional": true,
-            "type": "'small_venue_good_gig' | 'gig_completed' | 'good_gig' | 'social_post' | 'followers_gained' | 'fame_gained' | 'money_earned' | 'harmony_recovered' | 'item_collected' | 'brand_deal_completed' | 'travel_completed'"
+            "type": "'small_venue_good_gig' | 'gig_completed' | 'good_gig' | 'social_post' | 'followers_gained' | 'fame_gained' | 'money_earned' | 'harmony_recovered' | 'item_collected' | 'item_delivered' | 'item_crafted' | 'brand_deal_completed' | 'brand_deal_failed' | 'brand_trust_changed' | 'travel_completed' | 'minigame_perfected' | 'asset_risk_triggered' | 'asset_risk_resolved' | 'venue_blacklisted' | 'venue_unblacklisted' | 'venue_reputation_changed' | 'story_flag_added'"
           },
           {
             "name": "repeatPolicy",

@@ -75,6 +75,64 @@ const makeProgressEvent = (source, rule) => {
       }
     case 'travel_completed':
       return { type: eventSource, region: 'test_region' }
+    case 'minigame.perfect':
+      return {
+        type: eventSource,
+        minigameId: firstMatchValue(match.minigameId) ?? 'tourbus'
+      }
+    case 'item.delivered':
+      return {
+        type: eventSource,
+        amount: 10,
+        itemId: firstMatchValue(match.itemId) ?? 'contraband'
+      }
+    case 'item.crafted':
+      return {
+        type: eventSource,
+        amount: 1,
+        itemId: firstMatchValue(match.itemId) ?? 'test_item',
+        recipeId: firstMatchValue(match.recipeId) ?? 'test_recipe'
+      }
+    case 'venue.blacklisted':
+      return { type: eventSource, venueId: 'test_venue' }
+    case 'venue.unblacklisted':
+      return { type: eventSource, venueId: 'test_venue' }
+    case 'venue.reputationChanged':
+      return {
+        type: eventSource,
+        amount: 10,
+        venueId: 'test_venue',
+        region: 'test_region'
+      }
+    case 'asset.riskTriggered':
+      return {
+        type: eventSource,
+        assetId: 'test_asset',
+        assetKind: firstMatchValue(match.assetKind) ?? 'rehearsal',
+        riskType: firstMatchValue(match.riskType) ?? 'fire'
+      }
+    case 'asset.riskResolved':
+      return {
+        type: eventSource,
+        assetId: 'test_asset',
+        assetKind: firstMatchValue(match.assetKind) ?? 'rehearsal',
+        riskType: firstMatchValue(match.riskType) ?? 'fire',
+        success: true
+      }
+    case 'brand.dealFailed':
+      return {
+        type: eventSource,
+        dealId: 'test_deal',
+        brandId: firstMatchValue(match.brandId) ?? 'test_brand'
+      }
+    case 'brand.trustChanged':
+      return {
+        type: eventSource,
+        amount: 10,
+        brandId: firstMatchValue(match.brandId) ?? 'test_brand'
+      }
+    case 'story.flagAdded':
+      return { type: eventSource, flag: 'test_flag' }
     default:
       throw new Error(`No minimal event payload for ${source}`)
   }
