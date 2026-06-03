@@ -54,7 +54,7 @@ export const MainMenuHeader = () => {
         initial={prefersReducedMotion ? false : { opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={prefersReducedMotion ? { duration: 0 } : { delay: 1 }}
-        className='mb-8 sm:mb-10 px-3 py-1 border border-toxic-green/30 text-xs font-mono text-toxic-green/60 tracking-widest'
+        className='mb-8 sm:mb-10 px-3 py-1 border border-toxic-green/30 text-xs font-mono text-toxic-green tracking-widest'
       >
         {t('ui:mainMenu.versionBadge', {
           defaultValue: 'v3.0 // EARLY ACCESS'
