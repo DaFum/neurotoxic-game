@@ -12,7 +12,7 @@ export const ControlsHint = memo(function ControlsHint() {
 
   return (
     <div
-      className='absolute bottom-2 sm:bottom-3 w-full flex justify-center gap-3 sm:gap-8 z-(--z-stage-bg) pointer-events-none'
+      className='absolute bottom-2 sm:bottom-3 w-full justify-center gap-3 sm:gap-8 z-(--z-stage-bg) pointer-events-none hidden md:flex'
       role='group'
       aria-label={t('ui:gig.controlsHint', { defaultValue: 'Game Controls' })}
     >
@@ -24,7 +24,7 @@ export const ControlsHint = memo(function ControlsHint() {
           <kbd className='border border-ash-gray/30 px-1.5 py-0.5 text-xs font-sans'>
             {key}
           </kbd>
-          <span className='uppercase tracking-wider max-sm:hidden'>
+          <span className='uppercase tracking-wider'>
             {t(`ui:rhythm.lane_${id}`)}
           </span>
         </div>
