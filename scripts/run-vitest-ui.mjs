@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process'
+import { availableParallelism } from 'node:os'
 import { computeWorkerCount } from './utils/parallelism.mjs'
 
 const rawArgs = process.argv.slice(2)
@@ -14,7 +15,11 @@ const hasMaxWorkers = vitestArgs.some(
 const hasPool = vitestArgs.some(
   arg => arg === '--pool' || arg.startsWith('--pool=')
 )
-const maxWorkers = computeWorkerCount('VITEST_MAX_WORKERS')
+const vitestWorkerCap = 12
+const maxWorkers = computeWorkerCount(
+  'VITEST_MAX_WORKERS',
+  Math.min(Math.max(1, availableParallelism()), vitestWorkerCap)
+)
 
 const isWindows = process.platform === 'win32'
 const command = isWindows ? 'cmd.exe' : 'pnpm'

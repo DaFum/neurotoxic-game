@@ -1,20 +1,38 @@
 import assert from 'node:assert/strict'
 import { execSync } from 'node:child_process'
-import { test } from 'node:test'
+import { before, test } from 'node:test'
 import fs from 'node:fs'
 import path from 'node:path'
 
+let cachedDocument
+let cachedSymbolsText
+
+function refreshSymbolsCache() {
+  cachedSymbolsText = fs.readFileSync('symbols.json', 'utf8')
+  cachedDocument = JSON.parse(cachedSymbolsText)
+  return cachedDocument
+}
+
 function loadSymbols() {
-  return JSON.parse(fs.readFileSync('symbols.json', 'utf8')).knownSymbols
+  return cachedDocument.knownSymbols
 }
 
 function loadDocument() {
-  return JSON.parse(fs.readFileSync('symbols.json', 'utf8'))
+  return cachedDocument
 }
 
 function runUpdateSymbols() {
   execSync('node scripts/update-symbols.mjs', { stdio: 'pipe' })
 }
+
+function runUpdateSymbolsAndRefreshCache() {
+  runUpdateSymbols()
+  return refreshSymbolsCache()
+}
+
+before(() => {
+  runUpdateSymbolsAndRefreshCache()
+})
 
 test('every local symbol entry has source: "local"', () => {
   const ks = loadSymbols()
@@ -43,10 +61,9 @@ test('every external symbol entry has source: "external"', () => {
 })
 
 test('symbols.json output is deterministic across two consecutive runs', () => {
-  runUpdateSymbols()
-  const first = fs.readFileSync('symbols.json', 'utf8')
-  runUpdateSymbols()
-  const second = fs.readFileSync('symbols.json', 'utf8')
+  const first = cachedSymbolsText
+  runUpdateSymbolsAndRefreshCache()
+  const second = cachedSymbolsText
   assert.equal(
     first,
     second,
@@ -55,7 +72,6 @@ test('symbols.json output is deterministic across two consecutive runs', () => {
 })
 
 test('direct exports from declaration files remain indexed', () => {
-  runUpdateSymbols()
   const ks = loadSymbols()
   const expectedDeclarationSymbols = [
     ['BandPatch', 'src/types/purchase.d.ts'],
@@ -112,6 +128,7 @@ test('test, spec, and story files are ignored while React HOCs keep render signa
     )
 
     runUpdateSymbols()
+    refreshSymbolsCache()
     const ks = loadSymbols()
 
     assert.equal(ks.SymbolIndexTestNoise, undefined)
@@ -141,12 +158,11 @@ test('test, spec, and story files are ignored while React HOCs keep render signa
     )
   } finally {
     fs.rmSync(fixtureDir, { recursive: true, force: true })
-    runUpdateSymbols()
+    runUpdateSymbolsAndRefreshCache()
   }
 })
 
 test('local symbols include signatures, structure, docs, graph, location, and framework metadata', () => {
-  runUpdateSymbols()
   const ks = loadSymbols()
 
   const getQuestRewards = ks.getQuestRewards.find(
@@ -272,7 +288,6 @@ test('local symbols include signatures, structure, docs, graph, location, and fr
 })
 
 test('aliased re-exports record the real declared identifier and value', () => {
-  runUpdateSymbols()
   const ks = loadSymbols()
 
   // useTourbusLogic.ts re-exports `TOURBUS_BASE_SPEED as BASE_SPEED`. The entry
@@ -294,7 +309,6 @@ test('aliased re-exports record the real declared identifier and value', () => {
 })
 
 test('local symbols expose generics, async, heritage, and literal values', () => {
-  runUpdateSymbols()
   const ks = loadSymbols()
 
   const action = ks.Action.find(entry => entry.path === 'src/types/game.d.ts')
@@ -318,7 +332,6 @@ test('local symbols expose generics, async, heritage, and literal values', () =>
 })
 
 test('document exposes a self-documenting meta block', () => {
-  runUpdateSymbols()
   const doc = loadDocument()
 
   assert.equal(doc.meta.schemaVersion, 2)

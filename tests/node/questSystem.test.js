@@ -467,7 +467,9 @@ describe('Quest System Registry Validation', () => {
     const fs = await import('node:fs')
     const questTypes = fs.readFileSync('src/types/quest.d.ts', 'utf8')
     const eventTypeBlock =
-      questTypes.match(/export type QuestEventType =([\s\S]*?)\n\n/)?.[1] ?? ''
+      questTypes.match(
+        /export type QuestEventType =([\s\S]*?)\r?\n\r?\n/
+      )?.[1] ?? ''
     const eventTypes = Array.from(
       eventTypeBlock.matchAll(/\|\s+'([^']+)'/g),
       match => match[1]
