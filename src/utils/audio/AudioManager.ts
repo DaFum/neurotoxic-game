@@ -2,6 +2,7 @@ import * as audioEngine from './audioEngine'
 import { secureRandom } from '../crypto'
 import { handleError } from '../errorHandler'
 import { logger } from '../logger'
+import { getSafeStorageItem, setSafeStorageItem } from '../storage'
 import { audioState } from './state'
 
 type AudioListener = () => void
@@ -147,30 +148,20 @@ class AudioSystem {
   init(): void {
     if (this.prefsLoaded) return
 
-    const clamp01 = (n: string | null, fallback: number): number => {
-      if (n == null) return fallback
-      const v = Number.parseFloat(n)
+    const clamp01 = (v: number, fallback: number): number => {
       if (!Number.isFinite(v)) return fallback
       return Math.min(1, Math.max(0, v))
     }
 
-    let savedMusicVol: string | null = null
-    let savedSfxVol: string | null = null
-    let savedMuted: string | null = null
-
-    try {
-      savedMusicVol = localStorage.getItem('neurotoxic_vol_music')
-      savedSfxVol = localStorage.getItem('neurotoxic_vol_sfx')
-      savedMuted = localStorage.getItem('neurotoxic_muted')
-    } catch (error) {
-      handleError(error, {
-        fallbackMessage: 'AudioSystem preference load failed'
-      })
-    }
-
-    this.musicVolume = clamp01(savedMusicVol, 0.5)
-    this.sfxVolume = clamp01(savedSfxVol, 0.5)
-    this.muted = savedMuted === 'true'
+    this.musicVolume = clamp01(
+      getSafeStorageItem<number>('neurotoxic_vol_music', 0.5),
+      0.5
+    )
+    this.sfxVolume = clamp01(
+      getSafeStorageItem<number>('neurotoxic_vol_sfx', 0.5),
+      0.5
+    )
+    this.muted = getSafeStorageItem<boolean>('neurotoxic_muted', false) === true
 
     try {
       // Initialize Audio Engine settings (but don't start Context yet)
@@ -381,13 +372,7 @@ class AudioSystem {
           'Music volume stored for deferred apply (audio graph not ready).'
         )
       }
-      try {
-        localStorage.setItem('neurotoxic_vol_music', String(next))
-      } catch (e) {
-        handleError(e, {
-          fallbackMessage: 'Failed to persist music volume preference'
-        })
-      }
+      setSafeStorageItem('neurotoxic_vol_music', next)
     }
     if (operationSucceeded) {
       this.emitChange()
@@ -422,13 +407,7 @@ class AudioSystem {
           'SFX volume stored for deferred apply (audio graph not ready).'
         )
       }
-      try {
-        localStorage.setItem('neurotoxic_vol_sfx', String(next))
-      } catch (e) {
-        handleError(e, {
-          fallbackMessage: 'Failed to persist SFX volume preference'
-        })
-      }
+      setSafeStorageItem('neurotoxic_vol_sfx', next)
     }
     if (operationSucceeded) {
       this.emitChange()
@@ -452,11 +431,7 @@ class AudioSystem {
 
     this.emitChange()
 
-    try {
-      localStorage.setItem('neurotoxic_muted', String(this.muted))
-    } catch (e) {
-      handleError(e, { fallbackMessage: 'Failed to persist mute preference' })
-    }
+    setSafeStorageItem('neurotoxic_muted', this.muted)
     return this.muted
   }
 

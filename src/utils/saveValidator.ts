@@ -11,7 +11,7 @@ import {
   clampPlayerMoney,
   clampNonNegative
 } from './gameStateUtils'
-import { isLooseRecord } from './objectUtils'
+import { isForbiddenKey, isLooseRecord } from './objectUtils'
 
 /**
  * Validates the structure and types of the save data.
@@ -104,8 +104,6 @@ const validatePlayer = (player: unknown): void => {
   }
 }
 
-const BANNED_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
-
 const checkPrototypePollution = (obj: unknown): void => {
   if (typeof obj !== 'object' || obj === null) return
 
@@ -125,7 +123,7 @@ const checkPrototypePollution = (obj: unknown): void => {
   const asObj = obj as Record<string, unknown>
   for (const key in asObj) {
     if (!Object.hasOwn(asObj, key)) continue
-    if (BANNED_KEYS.has(key)) {
+    if (isForbiddenKey(key)) {
       throw new StateError(`Prototype pollution detected: ${key}`)
     }
     const nested = asObj[key]
@@ -217,7 +215,7 @@ const validateBand = (band: unknown): void => {
         for (const relKey in rels) {
           if (!Object.hasOwn(rels, relKey)) continue
           const relVal = rels[relKey]
-          if (BANNED_KEYS.has(relKey)) {
+          if (isForbiddenKey(relKey)) {
             throw new StateError(
               `band.members[${index}].relationships.${relKey} is a reserved key`
             )

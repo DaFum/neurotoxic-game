@@ -11,9 +11,12 @@ import { useTranslation } from 'react-i18next'
 import { logger, isValidLogLevel } from '../utils/logger'
 import { getUnlocks } from '../utils/unlockManager'
 import { isLooseRecord } from '../utils/gameStateUtils'
-import { safeJsonParse } from '../utils/objectUtils'
 import { useLeaderboardSync } from '../hooks/useLeaderboardSync'
-import { safeStorage, safeStorageNoFallback } from '../utils/storage'
+import {
+  safeStorage,
+  safeStorageNoFallback,
+  getSafeStorageItem
+} from '../utils/storage'
 
 // Import modular state management
 import { createInitialState } from './initialState'
@@ -98,21 +101,8 @@ const initGameState = (): GameState => {
     // the second (authoritative) call to miss the marker and return INTRO.
     // The marker is cleaned up in a useEffect after mount instead.
 
-    const savedGame = safeStorage(
-      'loadInjectedState',
-      () => {
-        try {
-          const saved = localStorage.getItem(SAVE_KEY)
-          if (!saved) return null
-          const parsed: unknown = safeJsonParse(saved)
-          return isLooseRecord(parsed) ? parsed : null
-        } catch (err) {
-          logger.error('GameState', 'Failed to parse injected state', err)
-          return null
-        }
-      },
-      null as Record<string, unknown> | null
-    )
+    const parsed = getSafeStorageItem<unknown>(SAVE_KEY, null)
+    const savedGame = isLooseRecord(parsed) ? parsed : null
 
     if (savedGame && Object.hasOwn(savedGame, 'version')) {
       try {

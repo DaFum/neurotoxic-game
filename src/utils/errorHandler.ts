@@ -206,8 +206,8 @@ const sanitizeContextValue = (
     {
       isRecord: isPlainRecord,
       createObject: () => ({}),
-      shouldSkipKey: key =>
-        key === '__proto__' || key === 'constructor' || key === 'prototype',
+      // Prototype-pollution keys are already stripped by sanitizeTraversableValue
+      // via the canonical FORBIDDEN_KEYS set, so no shouldSkipKey is needed here.
       transformRecordValue: (key, rawValue, sanitize) =>
         isSensitiveContextKey(key.toLowerCase())
           ? '[REDACTED]'

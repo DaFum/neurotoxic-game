@@ -23,7 +23,8 @@ vi.mock('../../src/utils/eventEngine', () => ({
     outcomeText: option.outcomeText || '',
     description:
       option.description !== undefined ? option.description : 'Description'
-  }))
+  })),
+  getOptionPreviewMoney: vi.fn(() => null)
 }))
 
 vi.mock('../../src/ui/shared/BrutalistUI', () => ({

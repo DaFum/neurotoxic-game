@@ -6,7 +6,8 @@ import {
   clampBandHarmony,
   clampVanFuel,
   clampMemberStamina,
-  clampUnitRandom
+  clampUnitRandom,
+  finiteNumberOr
 } from '../../utils/gameStateUtils'
 import {
   calculateTravelExpenses,
@@ -96,10 +97,14 @@ export const handleCompleteTravelMinigame = (
   const { conditionLoss, fuelBonus, voidHazardHits } =
     calculateTravelMinigameResult(damageTaken, itemsCollected)
 
-  const nextMoney = clampPlayerMoney(state.player.money - totalCost)
-  const nextFuel = clampVanFuel(state.player.van.fuel - fuelLiters + fuelBonus)
+  const nextMoney = clampPlayerMoney(
+    finiteNumberOr(state.player.money, 0) - totalCost
+  )
+  const nextFuel = clampVanFuel(
+    finiteNumberOr(state.player.van.fuel, 0) - fuelLiters + fuelBonus
+  )
   const nextCondition = clampVanCondition(
-    state.player.van.condition - conditionLoss
+    finiteNumberOr(state.player.van.condition, 0) - conditionLoss
   )
 
   let nextMembers = state.band.members
@@ -113,8 +118,8 @@ export const handleCompleteTravelMinigame = (
       nextMembers[memberIndex] = {
         ...hitMember,
         stamina: clampMemberStamina(
-          hitMember.stamina - staminaPenalty,
-          hitMember.staminaMax
+          finiteNumberOr(hitMember.stamina, 0) - staminaPenalty,
+          finiteNumberOr(hitMember.staminaMax, 100)
         )
       }
     }
@@ -321,8 +326,12 @@ const applyPostMinigameResult = (
   reward: number,
   failureLogTag: string
 ): GameState => {
-  const nextHarmony = clampBandHarmony(state.band.harmony - stress)
-  const nextMoney = clampPlayerMoney(state.player.money + reward)
+  const nextHarmony = clampBandHarmony(
+    finiteNumberOr(state.band.harmony, 0) - stress
+  )
+  const nextMoney = clampPlayerMoney(
+    finiteNumberOr(state.player.money, 0) + reward
+  )
 
   const nextModifiers = { ...state.gigModifiers }
   if (stress > 0) {
@@ -355,9 +364,9 @@ export const handleCompleteAmpCalibration = (
   const { stress, reward } = calculateAmpCalibrationResult(
     score,
     state.band,
-    typeof voidResonance === 'number' ? voidResonance : 0,
-    typeof purgesUsed === 'number' ? purgesUsed : 0,
-    typeof hijacksOverridden === 'number' ? hijacksOverridden : 0
+    finiteNumberOr(voidResonance, 0),
+    finiteNumberOr(purgesUsed, 0),
+    finiteNumberOr(hijacksOverridden, 0)
   )
 
   let nextState = applyPostMinigameResult(
@@ -470,9 +479,11 @@ export const handleCompleteRoadieMinigame = (
     contrabandDelivered
   )
 
-  const nextHarmony = clampBandHarmony(state.band.harmony - stress)
+  const nextHarmony = clampBandHarmony(
+    finiteNumberOr(state.band.harmony, 0) - stress
+  )
   const nextMoney = clampPlayerMoney(
-    state.player.money - repairCost + contrabandBonus
+    finiteNumberOr(state.player.money, 0) - repairCost + contrabandBonus
   )
 
   const nextBand = {

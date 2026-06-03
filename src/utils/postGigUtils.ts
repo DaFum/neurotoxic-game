@@ -271,10 +271,10 @@ export const calculatePostGigStateUpdates = (
       const moodChange = result.moodChange
       const staminaChange = result.staminaChange
       const needsMoodUpdate =
-        typeof moodChange === 'number' &&
+        Number.isFinite(moodChange) &&
         (result.allMembersMoodChange || m.name === result.targetMember)
       const needsStaminaUpdate =
-        typeof staminaChange === 'number' &&
+        Number.isFinite(staminaChange) &&
         (result.allMembersStaminaChange || m.name === result.targetMember)
 
       if (!needsMoodUpdate && !needsStaminaUpdate) {
@@ -284,12 +284,13 @@ export const calculatePostGigStateUpdates = (
       const updatedM = { ...m }
       if (needsMoodUpdate) {
         updatedM.mood = clampMemberMood(
-          finiteNumberOr(updatedM.mood, 0) + moodChange
+          finiteNumberOr(updatedM.mood, 0) + finiteNumberOr(moodChange, 0)
         )
       }
       if (needsStaminaUpdate) {
         updatedM.stamina = clampMemberStamina(
-          finiteNumberOr(updatedM.stamina, 0) + staminaChange,
+          finiteNumberOr(updatedM.stamina, 0) +
+            finiteNumberOr(staminaChange, 0),
           finiteNumberOr(updatedM.staminaMax, 100)
         )
       }

@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 import { useEffect } from 'react'
-import { safeStorageOperation } from '../utils/storage'
+import { getSafeStorageItem, setSafeStorageItem } from '../utils/storage'
 import { logger } from '../utils/logger'
 import type { GameState } from '../types'
 
@@ -179,12 +179,7 @@ export const useLeaderboardSync = (state: GameState): void => {
     const syncStats = async () => {
       // 2. Check if already synced for this day (Player-Specific)
       const syncKey = `neurotoxic_last_synced_day:${playerId}`
-      const lastSyncedDay = parseInt(
-        safeStorageOperation('getLastSyncedDay', () =>
-          localStorage.getItem(syncKey)
-        ) || '0',
-        10
-      )
+      const lastSyncedDay = getSafeStorageItem<number>(syncKey, 0)
 
       if (day <= lastSyncedDay) return
 
@@ -206,9 +201,7 @@ export const useLeaderboardSync = (state: GameState): void => {
         if (!didSync) return
 
         // 4. Update Synced State
-        safeStorageOperation('setLastSyncedDay', () =>
-          localStorage.setItem(syncKey, day.toString())
-        )
+        setSafeStorageItem(syncKey, day)
         logger.info('Leaderboard', `Synced stats for day ${day}`)
       } catch (error) {
         // Silent fail for leaderboard sync to not disrupt gameplay

@@ -10,6 +10,7 @@ import {
   isOnCooldown as isOnCooldownShared
 } from './gameStateUtils'
 import { MODULE_REGISTRY } from './assetModuleRegistry'
+import { isForbiddenKey } from './objectUtils'
 import { StateError } from './errorHandler'
 import type { GameEvent, GameState } from '../types'
 
@@ -115,8 +116,9 @@ const resolveTemplateString = (
   let lowerKeysMap: Record<string, string> | null = null
 
   return str.replace(TEMPLATE_REGEX, (match, key) => {
-    // Reject forbidden keys immediately
-    if (/^(?:__proto__|constructor|prototype)$/i.test(key)) {
+    // Reject forbidden keys immediately (case-insensitive, matching the
+    // canonical key set lowercased).
+    if (isForbiddenKey(key.toLowerCase())) {
       return match
     }
 
@@ -131,7 +133,7 @@ const resolveTemplateString = (
       const lowerMap = lowerKeysMap as Record<string, string>
 
       for (const k of Object.keys(context)) {
-        if (k === '__proto__' || k === 'constructor' || k === 'prototype') {
+        if (isForbiddenKey(k)) {
           continue
         }
 
@@ -941,4 +943,56 @@ export const resolveEventChoice = (
     outcomeText: choice.outcomeText ?? '',
     description: String(result?.description ?? '')
   }
+}
+
+/**
+ * Computes the deterministic money delta an option's direct effect(s) would
+ * apply, for previewing the cost/reward inside a localized option label via an
+ * `{{amount}}` interpolation. Mirrors the `resource` and `percentage_resource`
+ * money handlers exactly (no RNG, so the preview is stable across renders).
+ * Returns null when the option has no money-affecting effect, letting callers
+ * fall back to a zero amount rather than leaking an unresolved placeholder.
+ */
+export const getOptionPreviewMoney = (
+  option: { effect?: unknown; effects?: unknown } | null | undefined,
+  gameState: EngineGameState | null | undefined
+): number | null => {
+  if (!option) return null
+
+  let total = 0
+  let found = false
+
+  const visit = (eff: unknown): void => {
+    if (!eff || typeof eff !== 'object') return
+    const e = eff as EffectShape
+    if (Array.isArray(e.effects)) {
+      for (const child of e.effects) visit(child)
+    }
+    if (e.type === 'resource' && e.resource === 'money') {
+      total += asNumber(e.value)
+      found = true
+    } else if (e.type === 'percentage_resource' && e.resource === 'money') {
+      const current = gameState?.player?.money ?? 0
+      const percentage = asNumber(e.percentage)
+      let amount = Math.round(current * (percentage / 100))
+      let min =
+        typeof e.min === 'number' && Number.isFinite(e.min) ? e.min : undefined
+      let max =
+        typeof e.max === 'number' && Number.isFinite(e.max) ? e.max : undefined
+      if (min !== undefined && max !== undefined && min > max) {
+        ;[min, max] = [max, min]
+      }
+      if (min !== undefined) amount = Math.max(min, amount)
+      if (max !== undefined) amount = Math.min(max, amount)
+      total += amount
+      found = true
+    }
+  }
+
+  if (Array.isArray(option.effects)) {
+    for (const child of option.effects) visit(child)
+  }
+  visit(option.effect)
+
+  return found ? total : null
 }
