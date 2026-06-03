@@ -1,0 +1,3 @@
+interface:
+  display_name: "GitHub Actions Efficiency"
+  short_description: "Audit GitHub Actions workflow efficiency and recommend fixes to reduce CI minutes and costs."
