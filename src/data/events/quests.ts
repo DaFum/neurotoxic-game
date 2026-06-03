@@ -1,5 +1,12 @@
 import type { GameState } from '../../types'
 import { QuestOfferEngine } from '../../domain/questOfferEngine'
+import {
+  QUEST_PICK_OF_DESTINY,
+  QUEST_VIRAL_DANCE,
+  QUEST_SPONSOR_DEMAND,
+  QUEST_HARMONY_PROJECT,
+  QUEST_LOCAL_LEGEND
+} from '../questsConstants'
 
 const canOfferQuest = (state: GameState, questId: string): boolean =>
   QuestOfferEngine.canOfferQuest(state, questId)
@@ -13,14 +20,14 @@ export const QUEST_EVENTS = [
     trigger: 'random',
     chance: 0.05,
     condition: (state: GameState) =>
-      canOfferQuest(state, 'quest_pick_of_destiny'),
+      canOfferQuest(state, QUEST_PICK_OF_DESTINY),
     options: [
       {
         label: 'events:quest_trigger_pick_of_destiny.opt1.label',
         effect: {
           type: 'quest',
           // Config lives in QUEST_REGISTRY; addQuest merges defaults by id.
-          quest: { id: 'quest_pick_of_destiny' }
+          quest: { id: QUEST_PICK_OF_DESTINY }
         },
         outcomeText: 'events:quest_trigger_pick_of_destiny.opt1.outcome'
       },
@@ -38,13 +45,13 @@ export const QUEST_EVENTS = [
     description: 'events:quest_trigger_viral_dance.desc',
     trigger: 'random',
     chance: 0.1,
-    condition: (state: GameState) => canOfferQuest(state, 'quest_viral_dance'),
+    condition: (state: GameState) => canOfferQuest(state, QUEST_VIRAL_DANCE),
     options: [
       {
         label: 'events:quest_trigger_viral_dance.opt1.label',
         effect: {
           type: 'quest',
-          quest: { id: 'quest_viral_dance' }
+          quest: { id: QUEST_VIRAL_DANCE }
         },
         outcomeText: 'events:quest_trigger_viral_dance.opt1.outcome'
       },
@@ -62,14 +69,13 @@ export const QUEST_EVENTS = [
     description: 'events:quest_trigger_sponsor_demand.desc',
     trigger: 'random',
     chance: 0.08,
-    condition: (state: GameState) =>
-      canOfferQuest(state, 'quest_sponsor_demand'),
+    condition: (state: GameState) => canOfferQuest(state, QUEST_SPONSOR_DEMAND),
     options: [
       {
         label: 'events:quest_trigger_sponsor_demand.opt1.label',
         effect: {
           type: 'quest',
-          quest: { id: 'quest_sponsor_demand' }
+          quest: { id: QUEST_SPONSOR_DEMAND }
         },
         outcomeText: 'events:quest_trigger_sponsor_demand.opt1.outcome'
       },
@@ -88,13 +94,13 @@ export const QUEST_EVENTS = [
     trigger: 'random',
     chance: 0.3, // High chance if condition is met, reduced to 0.3 to prevent spam
     condition: (state: GameState) =>
-      canOfferQuest(state, 'quest_harmony_project'),
+      canOfferQuest(state, QUEST_HARMONY_PROJECT),
     options: [
       {
         label: 'events:quest_trigger_harmony_project.opt1.label',
         effect: {
           type: 'quest',
-          quest: { id: 'quest_harmony_project' }
+          quest: { id: QUEST_HARMONY_PROJECT }
         },
         outcomeText: 'events:quest_trigger_harmony_project.opt1.outcome'
       },
@@ -112,13 +118,13 @@ export const QUEST_EVENTS = [
     description: 'events:quest_trigger_local_legend.desc',
     trigger: 'random',
     chance: 0.07,
-    condition: (state: GameState) => canOfferQuest(state, 'quest_local_legend'),
+    condition: (state: GameState) => canOfferQuest(state, QUEST_LOCAL_LEGEND),
     options: [
       {
         label: 'events:quest_trigger_local_legend.opt1.label',
         effect: {
           type: 'quest',
-          quest: { id: 'quest_local_legend' }
+          quest: { id: QUEST_LOCAL_LEGEND }
         },
         outcomeText: 'events:quest_trigger_local_legend.opt1.outcome'
       },

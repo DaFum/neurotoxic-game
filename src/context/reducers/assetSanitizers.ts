@@ -1,4 +1,9 @@
-import { finiteNumberOr, isLooseRecord } from '../../utils/gameStateUtils'
+import {
+  clamp0to100,
+  finiteNumberOr,
+  isLooseRecord
+} from '../../utils/gameStateUtils'
+import { isForbiddenKey } from '../../utils/objectUtils'
 import { MODULE_REGISTRY } from '../../utils/assetModuleRegistry'
 import { CHASSIS_CONFIG } from '../../utils/assetConfig'
 import type {
@@ -116,8 +121,6 @@ export const sanitizeRiskEventDescriptor = (
   }
 }
 
-const HOSTILE_KEYS = ['__proto__', 'constructor', 'prototype']
-
 /**
  * Returns a shallow copy of `obj` with prototype-pollution keys stripped.
  * Used as the first line of defense before reading any persisted asset data.
@@ -125,15 +128,10 @@ const HOSTILE_KEYS = ['__proto__', 'constructor', 'prototype']
 const stripHostileKeys = <T extends Record<string, unknown>>(obj: T): T => {
   const out: Record<string, unknown> = {}
   for (const k of Object.keys(obj)) {
-    if (HOSTILE_KEYS.includes(k)) continue
+    if (isForbiddenKey(k)) continue
     if (Object.hasOwn(obj, k)) out[k] = obj[k]
   }
   return out as T
-}
-
-const clampCondition = (value: number): number => {
-  if (!Number.isFinite(value)) return 0
-  return Math.max(0, Math.min(100, value))
 }
 
 const sanitizePosition = (raw: unknown): { x: number; y: number } => {
@@ -274,7 +272,7 @@ export const sanitizeAssets = (raw: unknown): LongTermAsset[] => {
       kind,
       chassisFlavor: flavor,
       chassisTier,
-      condition: clampCondition(finiteNumberOr(clean.condition, 100)),
+      condition: clamp0to100(finiteNumberOr(clean.condition, 100)),
       baseUpkeep: finiteNumberOr(clean.baseUpkeep, 0),
       baseDailyRevenue: finiteNumberOr(clean.baseDailyRevenue, 0),
       slots: sanitizedSlots,

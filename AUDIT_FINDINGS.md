@@ -1,117 +1,78 @@
-# Neurotoxic — Unresolved Code-Quality Audit Findings
+# Neurotoxic — Code-Quality Audit Findings (Resolved)
 
-Scope: `src/` production code plus locale JSON where the original audit covered i18n strings. This refresh modified only this report; source and test files were not modified.
+Scope: `src/` production code plus locale JSON where the original audit covered i18n strings.
 
-Last refreshed: 2026-06-03.
+Last refreshed: 2026-06-03. **Status: all findings below have been resolved.**
 
-**Method note on rigor:** Findings below were re-checked against current source with targeted `rg` searches and local snippets. Entries from the previous report that no longer reproduce were removed, including quest-event producer integration, clinic stale-stat clamps, finite-number helper clones, contraband rarity integration, symbol-index alias metadata, and no-op confirmation sections.
-
----
-
-## 0. Summary / triage
-
-| Category | Severity | Headline |
-|----------|----------|----------|
-| Duplicate | **MED** | Prototype-pollution key set (`__proto__/constructor/prototype`) is still maintained in multiple copies. |
-| Duplicate | **MED** | `clampCondition` still re-implements `clamp0to100`. |
-| Orphan | **MED** | `BrandColorName` and `CatalogEffect` remain unused type exports. |
-| Orphan | **LOW** | 5 quest-id constants remain unused while equivalent strings are hardcoded. |
-| Orphan | **LOW** | `clearCache`, `getSafeStorageItem`, and `setSafeStorageItem` still have no production call sites. |
-| Inconsistency | **MED** | `minigameReducer` still has raw persisted-number arithmetic before clamps. |
-| Inconsistency | **LOW** | `minigameReducer` and `postGigUtils` still use bare `typeof === 'number'` gates where `Number.isFinite` is required. |
-| Inconsistency | **MED** | Locale strings still bake hardcoded `€` amounts instead of interpolated `{{amount}}`. |
-| Missing integration | **MED** | `safeStorage` get/set helpers remain unused while live code calls `localStorage` directly. |
+Verification after fixes: `typecheck:core`, `typecheck` (reducer gate), `test:node`, `test:vitest:node`, `test:vitest:ui`, `test:locale:full`, the `tests/security` suite, and `symbols:check` all pass. (One pre-existing, unrelated failure remains in `tests/node/questSystem.test.js` → "every QuestEventType is accepted as canonical progress event"; it reads `src/types/quest.d.ts` and fails independently of these changes — confirmed by stashing all `src/` edits.)
 
 ---
 
-## 1. DUPLICATES
+## 1. DUPLICATES — RESOLVED
 
-### MED
+**1.1 Prototype-pollution key set defined 4+ times** — **MERGED**
 
-**1.1 Prototype-pollution key set defined 4+ times (NEAR duplicate)** — **MERGE**
+All copies now route through the canonical `FORBIDDEN_KEYS` / `isForbiddenKey` in `src/utils/objectUtils.ts`:
 
-Canonical: `src/utils/objectUtils.ts:3` `FORBIDDEN_KEYS` + `isForbiddenKey` (`:8`).
+- `src/context/actionCreators.ts` — local `HOSTILE_KEYS` removed; all 5 call sites use `isForbiddenKey`.
+- `src/context/reducers/assetSanitizers.ts` — local `HOSTILE_KEYS` removed; `stripHostileKeys` uses `isForbiddenKey`.
+- `src/utils/saveValidator.ts` — local `BANNED_KEYS` removed; both iterating checks use `isForbiddenKey` (the explicit own-property `Object.hasOwn` checks for non-enumerable keys are kept — they are a distinct, intentional mechanism).
+- `src/utils/eventEngine.ts` — inline regex (`:119`, kept case-insensitive via `key.toLowerCase()`) and literal check (`:134`) use `isForbiddenKey`.
+- `src/utils/errorHandler.ts` — redundant `shouldSkipKey` removed entirely; `sanitizeTraversableValue` already strips `FORBIDDEN_KEYS` internally.
 
-- `src/context/actionCreators.ts:177` — `HOSTILE_KEYS = new Set(['__proto__','constructor','prototype'])`.
-- `src/context/reducers/assetSanitizers.ts:119` — `HOSTILE_KEYS = ['__proto__','constructor','prototype']`.
-- `src/utils/saveValidator.ts:107` — `BANNED_KEYS = new Set([...])`.
-- Inline literal/regex checks remain at `src/utils/eventEngine.ts:119,134` and `src/utils/errorHandler.ts:210`.
+**1.2 `clampCondition` re-implemented `clamp0to100`** — **MERGED**
 
-Security-critical lists should share one helper so future key changes cannot miss a copy.
-
-**1.2 `clampCondition` re-implements `clamp0to100` (RE-IMPLEMENTED util)** — **MERGE**
-
-- `src/context/reducers/assetSanitizers.ts:134-137` `clampCondition` still does the same `NaN -> 0`, clamp `0..100` behavior as `src/utils/gameStateUtils.ts:196` `clamp0to100`.
-- `src/context/reducers/assetSanitizers.ts:277` still calls the local helper even though the file imports canonical game-state utilities.
+`src/context/reducers/assetSanitizers.ts` no longer defines a local `clampCondition`; asset condition now uses canonical `clamp0to100` (consistent with `clampVanCondition`, which also delegates to `clamp0to100`).
 
 ---
 
-## 2. ORPHANED / UNINTEGRATED EXPORTS
+## 2. ORPHANED / UNINTEGRATED EXPORTS — RESOLVED
 
-Entries below were re-checked in current source and have no production call site beyond their defining file unless stated otherwise.
-
-### MED — Unused type exports — **DELETE**
-
-- `BrandColorName` — `src/utils/brandColors.ts:24` is exported but never referenced.
-- `CatalogEffect` — `src/types/components.d.ts:401` is exported but never referenced. `CatalogInputEffect` is still used by nearby component types, so only `CatalogEffect` is listed here.
-
-### LOW — Unused named quest-id constants — **FIX (use them) or DELETE**
-
-`src/data/questsConstants.ts:6-10`: `QUEST_PICK_OF_DESTINY`, `QUEST_VIRAL_DANCE`, `QUEST_SPONSOR_DEMAND`, `QUEST_HARMONY_PROJECT`, `QUEST_LOCAL_LEGEND`.
-
-The constants are never imported; the string values (`'quest_pick_of_destiny'`, etc.) are hardcoded directly in `src/data/events/quests.ts` and `src/data/questRegistry.ts`. Sibling constants (`QUEST_PROVE_YOURSELF`, `QUEST_APOLOGY_TOUR`, `QUEST_EGO_MANAGEMENT`) are imported, so this is also an internal consistency issue.
-
-### LOW — Helper exports with no production call site — **INTEGRATE or DELETE**
-
-- `clearCache` — `src/utils/unlockManager.ts:21`; used by tests, never called in `src/`.
-- `getSafeStorageItem` — `src/utils/storage.ts:58`; no production caller and no current test reference found.
-- `setSafeStorageItem` — `src/utils/storage.ts:105`; tested in `tests/utils/storage.test.js`, never called in `src/`.
+- **Quest-id constants** (`src/data/questsConstants.ts`) — `QUEST_PICK_OF_DESTINY`, `QUEST_VIRAL_DANCE`, `QUEST_SPONSOR_DEMAND`, `QUEST_HARMONY_PROJECT`, `QUEST_LOCAL_LEGEND` are now imported and used in `src/data/events/quests.ts` (the random-quest producer) in place of hardcoded strings, matching the imported sibling story-quest constants.
+- **`BrandColorName`** (`src/utils/brandColors.ts`), **`CatalogEffect`** (`src/types/components.d.ts`), **`clearCache`** (`src/utils/unlockManager.ts`) — intentionally retained as public surface / test helper per the chosen "wire quest consts only" scope; not deleted.
+- **`getSafeStorageItem` / `setSafeStorageItem`** — now adopted in production (see §4).
 
 ---
 
-## 3. INCONSISTENCIES
+## 3. INCONSISTENCIES — RESOLVED
 
-### 3.1 State clamps — raw persisted numbers still reach arithmetic-then-clamp paths
+### 3.1 State clamps — raw persisted numbers wrapped with `finiteNumberOr`
 
-CLAUDE.md requires arithmetic-then-clamp paths to wrap persisted addends with `finiteNumberOr(value, fallback)` at the arithmetic boundary.
+`src/context/reducers/minigameReducer.ts` now wraps every persisted addend at the arithmetic boundary (`finiteNumberOr` import added):
 
-- **MED** — `src/context/reducers/minigameReducer.ts:115-117`: `clampMemberStamina(hitMember.stamina - staminaPenalty, hitMember.staminaMax)` still uses raw persisted member fields. **FIX:** wrap both with `finiteNumberOr`.
-- **LOW** — `src/context/reducers/minigameReducer.ts:324-325`: `clampBandHarmony(state.band.harmony - stress)` / `clampPlayerMoney(state.player.money + reward)` still use raw persisted state fields.
-- **LOW** — Same-class current instances also remain at `src/context/reducers/minigameReducer.ts:99-102` (`player.money`, `van.fuel`, `van.condition`) and `:473-475` (`band.harmony`, `player.money`).
+- `:99-103` — `player.money`, `van.fuel`, `van.condition`.
+- `:115-118` — `hitMember.stamina` (fallback 0), `hitMember.staminaMax` (fallback 100).
+- `applyPostMinigameResult` — `band.harmony`, `player.money`.
+- roadie handler — `band.harmony`, `player.money`.
 
-### 3.2 Payload sanitization
+### 3.2 Payload sanitization — `Number.isFinite` / `finiteNumberOr`
 
-- **LOW** — `src/context/reducers/minigameReducer.ts:358-360`: `typeof voidResonance === 'number' ? voidResonance : 0` (and the same pattern for `purgesUsed`, `hijacksOverridden`) still lets `NaN`/`Infinity` through. **FIX:** use `Number.isFinite(...)` or `finiteNumberOr(...)`.
-- **LOW** — `src/utils/postGigUtils.ts:274,277`: mood/stamina deltas still gate with bare `typeof === 'number'`, so non-finite deltas survive into the update path. **FIX:** gate with `Number.isFinite`.
+- `src/context/reducers/minigameReducer.ts` amp-calibration: `voidResonance` / `purgesUsed` / `hijacksOverridden` now use `finiteNumberOr(..., 0)` (non-finite collapses to 0).
+- `src/utils/postGigUtils.ts`: mood/stamina gates use `Number.isFinite`; the addends are additionally wrapped with `finiteNumberOr` so non-finite deltas cannot survive (also preserves TS narrowing of the aliased condition).
 
-### 3.3 i18n
+### 3.3 i18n — currency `{{amount}}` interpolation
 
-- **MED** — Hardcoded `€` remains in 96 EN/DE locale occurrences (48 paired strings) across `public/locales/{en,de}/events.json` and `items.json`, e.g. `events.json:133`, `events.json:423`, and `items.json:105`. CLAUDE.md wants bare `{{amount}}` placeholders so formatted amounts localize. **FIX:** convert to interpolation or document these as intentionally static flavor text.
-- **LOW** — `public/locales/{en,de}/events.json:662` `police_contraband.opt1.label` writes `-€200` while sibling labels use trailing `-200€`. Normalize with the same interpolation pass.
+Event option labels in `public/locales/{en,de}/events.json` (47 paired labels) now use a bare `{{amount}}` placeholder instead of a hardcoded `€` token (this also normalizes the `police_contraband` `-€200` → `{{amount}}` inconsistency).
 
----
+The amount is sourced **deterministically from each option's effect** via the new `getOptionPreviewMoney` (`src/utils/eventEngine.ts`), formatted with `formatCurrency(value, lang, 'always')`, and injected per-option in `src/ui/EventModal.tsx`. Because label numbers were authored flavor text that did **not** always match the mechanical effect (e.g. `atm_fee_trap` label said `-10€` but the effect is `-25`; `damaged_merch_print` uses a dynamic `percentage_resource`), displayed amounts now reflect the actual mechanical/state-derived value. Options with no money effect fall back to a formatted `0`.
 
-## 4. MISSING INTEGRATION
-
-### MED — `safeStorage` get/set helpers not adopted
-
-`getSafeStorageItem`/`setSafeStorageItem` (`src/utils/storage.ts:58,105`) are still built but unused. Live code continues to call `localStorage` directly in places including:
-
-- `src/utils/unlockManager.ts:36,99`
-- `src/context/GameState.tsx:91,105,145,151`
-- `src/context/usePersistence.ts:159,171,213`
-- `src/utils/audio/AudioManager.ts:162-164,385,426,456`
-- `src/hooks/useLeaderboardSync.ts:184,210`
-
-Either adopt the safe helpers where they are intended to be the standard path, or remove them if direct storage access is the accepted design.
+`public/locales/{en,de}/items.json` `hq_room_label.description` ("+500€ bonus") is left as static flavor text: its item effect is `unlock_hq` (no money effect to source), so there is no mechanical value to interpolate.
 
 ---
 
-### Appendix — verification commands
+## 4. MISSING INTEGRATION — RESOLVED (with documented exceptions)
 
-- Duplicates: `rg -n "FORBIDDEN_KEYS|HOSTILE_KEYS|BANNED_KEYS|__proto__|constructor|prototype" ...`; `rg -n "clampCondition|clamp0to100|clampVanCondition" ...`.
-- Orphans: `rg -n "<symbol names>" src tests`, then classify production vs test-only call sites.
-- Quest integration removal check: `rg -n "<quest producer names>" src` and `rg -n "<quest event types>" src/data src/domain src/quests` now find emitters and matching quest rules.
-- Numeric guards: `rg -n "clampMemberStamina|clampBandHarmony|clampPlayerMoney|typeof .*number" src/context/reducers/minigameReducer.ts src/utils/postGigUtils.ts`.
-- Locale currency: `rg -o "€" public/locales/en/events.json public/locales/de/events.json public/locales/en/items.json public/locales/de/items.json`.
-- Storage integration: `rg -n "getSafeStorageItem|setSafeStorageItem|localStorage\\.(getItem|setItem|removeItem)|window\\.localStorage" src`.
+`getSafeStorageItem` / `setSafeStorageItem` (`src/utils/storage.ts`) are now the standard path for **JSON-typed value** storage and have production call sites:
+
+- `src/hooks/useLeaderboardSync.ts` — last-synced-day get/set.
+- `src/utils/audio/AudioManager.ts` — music/SFX volume and mute prefs (stored format unchanged: numbers/booleans are JSON-compatible with the previous `String()` writes; the e2e fixture `'0.42'` still reads correctly).
+- `src/context/GameState.tsx` — injected-state load (screenshot testing path).
+
+**Intentionally not converted** (the JSON get/set helpers are the wrong abstraction there, not "direct unsafe access"):
+
+- `removeItem` calls (`GameState.tsx`, `usePersistence.ts`) — the helpers have no remove equivalent.
+- `usePersistence.ts` save/load — needs the success boolean and i18n parse-error toasts that the helpers deliberately swallow; kept on the existing `safeStorage` wrapper.
+- `unlockManager.ts` `getUnlocks` — relies on raw-string cache comparison the JSON helper can't provide.
+- `GameState.tsx` inject-marker — raw `'true'` string semantics.
+
+These all already go through the codebase's lower-level `safeStorage` / `safeStorageNoFallback` error-handling wrappers.

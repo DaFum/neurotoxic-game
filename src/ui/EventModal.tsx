@@ -5,7 +5,8 @@ import { useTranslation } from 'react-i18next'
 import { AlertIcon } from './shared/BrutalistUI'
 import { VoidSkullIcon } from './shared/Icons'
 import { generateEffectText } from '../utils/effectFormatter'
-import { resolveEventChoice } from '../utils/eventEngine'
+import { formatCurrency } from '../utils/numberUtils'
+import { resolveEventChoice, getOptionPreviewMoney } from '../utils/eventEngine'
 import { useGameSelector } from '../context/GameState'
 import type { EngineGameState } from '../utils/eventEngine'
 import type {
@@ -33,6 +34,7 @@ interface EventOptionButtonProps {
   index: number
   optionLabel: string
   eventContext: Record<string, unknown> | undefined
+  amount: string
   onSelect: (option: EventModalOption) => void
   t: ReturnType<typeof useTranslation>['t']
 }
@@ -42,6 +44,7 @@ const EventOptionButton = ({
   index,
   optionLabel,
   eventContext,
+  amount,
   onSelect,
   t
 }: EventOptionButtonProps) => {
@@ -67,7 +70,7 @@ const EventOptionButton = ({
     >
       <span>
         <span className='opacity-50 mr-2'>[{index + 1}]</span>
-        {String(t(optionLabel, eventContext))}
+        {String(t(optionLabel, { ...eventContext, amount }))}
       </span>
 
       <div className='flex flex-col items-end text-right'>
@@ -341,6 +344,16 @@ export const EventModal = ({
                     'ui:event.option'
                   const key =
                     option.id ?? option.nextEventId ?? `${optionLabel}-${index}`
+                  // Localized currency for the optional `{{amount}}` placeholder
+                  // in money-bearing option labels. Sourced deterministically
+                  // from the option's effect (null money → 0) so the formatted
+                  // amount matches the mechanical effect and localizes per locale.
+                  const previewMoney = getOptionPreviewMoney(option, gameState)
+                  const amount = formatCurrency(
+                    previewMoney ?? 0,
+                    i18n.language,
+                    'always'
+                  )
                   return (
                     <EventOptionButton
                       key={key}
@@ -348,6 +361,7 @@ export const EventModal = ({
                       index={index}
                       optionLabel={optionLabel}
                       eventContext={eventContext}
+                      amount={amount}
                       onSelect={handleOptionSelect}
                       t={t}
                     />

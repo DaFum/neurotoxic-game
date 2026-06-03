@@ -9,6 +9,7 @@ import { RNG_BASE_BUFFER, RNG_ROLLS_PER_ASSET } from '../utils/assetConfig'
 import { ActionTypes } from './actionTypes'
 import type { QuestProgressEvent } from '../utils/questProgress'
 import { getSafeUUID, secureRandom } from '../utils/crypto'
+import { isForbiddenKey } from '../utils/objectUtils'
 import { generateRivalBand, moveRivalBand } from '../utils/rivalEngine'
 import { sanitizeRiskEventDescriptor } from './reducers/assetSanitizers'
 import type { RivalBandState } from '../types'
@@ -174,8 +175,6 @@ export const toggleNeuroDecimator = (
   payload: { isActive }
 })
 
-const HOSTILE_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
-
 const SOCIAL_NULLABLE_FIELDS = new Set([
   'lastGigDay',
   'lastGigDifficulty',
@@ -211,7 +210,7 @@ const sanitizeSocialUpdates = (
   if (!updates || typeof updates !== 'object') return {}
   const out: Record<string, unknown> = {}
   for (const key of Object.keys(updates)) {
-    if (HOSTILE_KEYS.has(key)) continue
+    if (isForbiddenKey(key)) continue
     const value = (updates as Record<string, unknown>)[key]
     if (SOCIAL_NUMERIC_FIELDS.has(key)) {
       if (value === null) {
@@ -254,7 +253,7 @@ export const createUpdateSettingsAction = (
   const filtered: Record<string, unknown> = {}
   if (updates && typeof updates === 'object') {
     for (const key of Object.keys(updates)) {
-      if (HOSTILE_KEYS.has(key)) continue
+      if (isForbiddenKey(key)) continue
       if (!ALLOWED_SETTINGS_KEYS.has(key)) continue
       if (!Object.hasOwn(updates, key)) continue
       filtered[key] = updates[key]
@@ -708,7 +707,7 @@ export const createUnblacklistVenueAction = (
   type: ActionTypes.UNBLACKLIST_VENUE,
   payload: {
     venueId:
-      typeof venueId === 'string' && !HOSTILE_KEYS.has(venueId) ? venueId : '',
+      typeof venueId === 'string' && !isForbiddenKey(venueId) ? venueId : '',
     toastId: getSafeUUID()
   }
 })
@@ -726,9 +725,7 @@ export const createCraftItemAction = (
   type: ActionTypes.CRAFT_ITEM,
   payload: {
     recipeId:
-      typeof recipeId === 'string' && !HOSTILE_KEYS.has(recipeId)
-        ? recipeId
-        : '',
+      typeof recipeId === 'string' && !isForbiddenKey(recipeId) ? recipeId : '',
     toastId: getSafeUUID()
   }
 })
@@ -742,7 +739,7 @@ export const createAddQuestAction = (
   quest: QuestState
 ): Extract<GameAction, { type: typeof ActionTypes.ADD_QUEST }> => {
   const safeQuest = { ...(quest || {}) } as QuestState
-  if (typeof safeQuest.id !== 'string' || HOSTILE_KEYS.has(safeQuest.id)) {
+  if (typeof safeQuest.id !== 'string' || isForbiddenKey(safeQuest.id)) {
     safeQuest.id = ''
   }
 
