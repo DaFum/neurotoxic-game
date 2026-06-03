@@ -16826,7 +16826,13 @@
         "path": "src/quests/producers/economyQuestEvents.ts",
         "returnType": "QuestEvent",
         "source": "local",
-        "type": "const"
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/hooks/usePostGigHandlers.ts",
+            "importedAs": "createMoneyEarnedQuestEvent"
+          }
+        ]
       }
     ],
     "createMoveRivalBandAction": [
@@ -18091,7 +18097,13 @@
         "path": "src/quests/producers/storyQuestEvents.ts",
         "returnType": "QuestEvent",
         "source": "local",
-        "type": "const"
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/context/reducers/eventReducer.ts",
+            "importedAs": "createStoryFlagAddedQuestEvent"
+          }
+        ]
       }
     ],
     "createTourbusStageController": [
@@ -29931,8 +29943,8 @@
         "exportedName": "handleAddCooldown",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 59,
-        "lineStart": 43,
+        "lineEnd": 76,
+        "lineStart": 60,
         "name": "handleAddCooldown",
         "parameters": [
           {
@@ -30236,13 +30248,14 @@
         "dependencies": [
           "applyEventDelta",
           "applyTraitUnlocks",
-          "checkTraitUnlocks"
+          "checkTraitUnlocks",
+          "createStoryFlagAddedQuestEvent"
         ],
         "exportedName": "handleApplyEventDelta",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 37,
-        "lineStart": 17,
+        "lineEnd": 54,
+        "lineStart": 19,
         "name": "handleApplyEventDelta",
         "parameters": [
           {
@@ -31516,8 +31529,8 @@
         "exportedName": "handlePopPendingEvent",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 41,
-        "lineStart": 39,
+        "lineEnd": 58,
+        "lineStart": 56,
         "name": "handlePopPendingEvent",
         "parameters": [
           {
@@ -31819,8 +31832,8 @@
         "exportedName": "handleSetActiveEvent",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 15,
-        "lineStart": 7,
+        "lineEnd": 17,
+        "lineStart": 9,
         "name": "handleSetActiveEvent",
         "parameters": [
           {
@@ -45247,6 +45260,10 @@
           },
           {
             "path": "src/context/reducers/bandReducer.ts",
+            "importedAs": "QuestEvents"
+          },
+          {
+            "path": "src/context/reducers/eventReducer.ts",
             "importedAs": "QuestEvents"
           },
           {
@@ -60662,6 +60679,7 @@
           "createBrandDealCompletedQuestEvent",
           "createBrandOfferAcceptedQuestEvent",
           "createHarmonyChangedQuestEvent",
+          "createMoneyEarnedQuestEvent",
           "createRegionReputationChangedQuestEvent",
           "createSocialPostQuestEvents",
           "finiteNumberOr",
@@ -60682,8 +60700,8 @@
         "exportKind": "named",
         "isDefault": false,
         "isHook": true,
-        "lineEnd": 585,
-        "lineStart": 106,
+        "lineEnd": 594,
+        "lineStart": 107,
         "name": "usePostGigHandlers",
         "parameters": [
           {
@@ -60712,8 +60730,8 @@
         "exportedName": "UsePostGigHandlersProps",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 104,
-        "lineStart": 67,
+        "lineEnd": 105,
+        "lineStart": 68,
         "name": "UsePostGigHandlersProps",
         "path": "src/hooks/usePostGigHandlers.ts",
         "properties": [
@@ -60840,8 +60858,8 @@
         "exportedName": "UsePostGigHandlersReturn",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 65,
-        "lineStart": 57,
+        "lineEnd": 66,
+        "lineStart": 58,
         "name": "UsePostGigHandlersReturn",
         "path": "src/hooks/usePostGigHandlers.ts",
         "properties": [

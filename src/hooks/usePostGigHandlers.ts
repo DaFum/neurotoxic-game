@@ -53,6 +53,7 @@ import {
 } from '../quests/producers/brandQuestEvents'
 import { createSocialPostQuestEvents } from '../quests/producers/socialQuestEvents'
 import { createRegionReputationChangedQuestEvent } from '../quests/producers/venueQuestEvents'
+import { createMoneyEarnedQuestEvent } from '../quests/producers/economyQuestEvents'
 
 export interface UsePostGigHandlersReturn {
   isProcessingAction: boolean
@@ -291,6 +292,14 @@ export const usePostGigHandlers = ({
 
         applyQuestEvent(createBrandOfferAcceptedQuestEvent(deal))
         applyQuestEvent(createBrandDealCompletedQuestEvent(deal))
+        if (appliedMoneyDelta > 0) {
+          applyQuestEvent(
+            createMoneyEarnedQuestEvent({
+              amount: appliedMoneyDelta,
+              reason: 'brand_deal'
+            })
+          )
+        }
 
         const moneyText =
           appliedMoneyDelta === 0
