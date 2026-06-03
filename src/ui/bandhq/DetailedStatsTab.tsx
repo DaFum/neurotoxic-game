@@ -624,6 +624,10 @@ const getStashStacks = (
   const entry = stash[itemId]
   if (!entry || typeof entry !== 'object') return 0
   const stacks = (entry as Record<string, unknown>).stacks
+  // Stash entries are always contraband objects (never boolean-owned flags).
+  // A null/absent `stacks` means a non-stackable item that is owned = 1 unit,
+  // mirroring the reducer's getStashCount (the authority on craftability); this
+  // is display-only affordability and must agree with that reducer count.
   return typeof stacks === 'number' && Number.isFinite(stacks)
     ? Math.max(0, stacks)
     : 1

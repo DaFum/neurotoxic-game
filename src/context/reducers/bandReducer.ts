@@ -414,6 +414,8 @@ export const handleCraftItem = (
 ): GameState => {
   const recipe = getCraftingRecipe(recipeId)
   if (!recipe) return state
+  // Defense in depth: never write a malformed toast id into state.
+  if (typeof toastId !== 'string' || toastId.length === 0) return state
 
   const stash = state.band.stash || {}
 

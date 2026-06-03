@@ -59,6 +59,27 @@ describe('bandReducer - handleCraftItem', () => {
     )
   })
 
+  it('rolls back (keeps inputs) when the output cannot be added', () => {
+    // recipe_amped_synth: 3x c_void_energy -> c_amped_synth (non-stackable).
+    // Already owning the non-stackable output makes addContrabandHelper reject,
+    // so inputs must remain untouched and a craftFailed toast is emitted.
+    const state = makeState({
+      c_void_energy: { id: 'c_void_energy', stacks: 3 },
+      c_amped_synth: { id: 'c_amped_synth', stacks: null }
+    })
+    const next = handleCraftItem(state, {
+      recipeId: 'recipe_amped_synth',
+      toastId: 'craft_toast'
+    })
+
+    assert.equal(next.band.stash.c_void_energy.stacks, 3)
+    assert.ok(
+      next.toasts.some(
+        t => t.type === 'error' && t.messageKey === 'ui:toast.craftFailed'
+      )
+    )
+  })
+
   it('returns state unchanged for an unknown recipe', () => {
     const state = makeState({})
     const next = handleCraftItem(state, {

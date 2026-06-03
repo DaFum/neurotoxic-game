@@ -294,14 +294,19 @@ export const usePostGigHandlers = ({
         applyQuestEvent(createBrandOfferAcceptedQuestEvent(deal))
         applyQuestEvent(createBrandDealCompletedQuestEvent(deal))
         if (deal.alignment) {
-          // The accept social factory raises this brand's reputation; surface
-          // the matching trust change for quests.
-          applyQuestEvent(
-            createBrandTrustChangedQuestEvent({
-              brandId: deal.alignment,
-              amount: 5
-            })
-          )
+          // Mirror the accept social factory's clamped +5 so the emitted trust
+          // delta matches the real reputation change (avoids over-crediting
+          // quests when the brand is already near the 100 cap).
+          const currentRep = social.brandReputation?.[deal.alignment] || 0
+          const trustDelta = Math.min(100, currentRep + 5) - currentRep
+          if (trustDelta !== 0) {
+            applyQuestEvent(
+              createBrandTrustChangedQuestEvent({
+                brandId: deal.alignment,
+                amount: trustDelta
+              })
+            )
+          }
         }
         if (appliedMoneyDelta > 0) {
           applyQuestEvent(

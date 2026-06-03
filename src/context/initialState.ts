@@ -287,6 +287,8 @@ export const createInitialState = (
   ...initialState,
   player: structuredClone(DEFAULT_PLAYER_STATE),
   venueBlacklist: [],
+  reputationByRegion: {},
+  reputationByVenue: {},
   activeQuests: [],
   questCooldowns: [],
   completedQuestIds: [],

@@ -5439,8 +5439,8 @@
             }
           ]
         },
-        "lineEnd": 714,
-        "lineStart": 678,
+        "lineEnd": 716,
+        "lineStart": 680,
         "name": "bandReducer",
         "parameters": [
           {
@@ -16557,7 +16557,7 @@
             }
           ]
         },
-        "lineEnd": 328,
+        "lineEnd": 330,
         "lineStart": 284,
         "name": "createInitialState",
         "parameters": [
@@ -20685,8 +20685,8 @@
         "exportKind": "named",
         "isComponent": true,
         "isDefault": false,
-        "lineEnd": 955,
-        "lineStart": 891,
+        "lineEnd": 959,
+        "lineStart": 895,
         "name": "DetailedStatsTab",
         "parameters": [
           {
@@ -31209,7 +31209,7 @@
         "exportedName": "handleCraftItem",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 492,
+        "lineEnd": 494,
         "lineStart": 411,
         "name": "handleCraftItem",
         "parameters": [
@@ -32861,8 +32861,8 @@
             }
           ]
         },
-        "lineEnd": 670,
-        "lineStart": 640,
+        "lineEnd": 672,
+        "lineStart": 642,
         "name": "handleToggleNeuroDecimator",
         "parameters": [
           {
@@ -33354,8 +33354,8 @@
             }
           ]
         },
-        "lineEnd": 631,
-        "lineStart": 592,
+        "lineEnd": 633,
+        "lineStart": 594,
         "name": "handleUseContraband",
         "parameters": [
           {
@@ -61147,7 +61147,7 @@
         "exportKind": "named",
         "isDefault": false,
         "isHook": true,
-        "lineEnd": 605,
+        "lineEnd": 610,
         "lineStart": 108,
         "name": "usePostGigHandlers",
         "parameters": [
