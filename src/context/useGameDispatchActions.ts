@@ -362,9 +362,11 @@ export function useGameDispatchActions({
 
   const resetState = useCallback(() => {
     resetMapGenerationRetries()
-    const unlocks: string[] =
-      safeStorageOperation('loadUnlocks', () => getUnlocks(), [] as string[]) ??
-      []
+    const unlocks: string[] = safeStorageOperation(
+      'loadUnlocks',
+      () => getUnlocks(),
+      [] as string[]
+    )
     dispatch(createResetStateAction({ unlocks }))
   }, [dispatch, resetMapGenerationRetries])
 

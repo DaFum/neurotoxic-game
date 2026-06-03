@@ -323,6 +323,7 @@ test('calculateAppliedDelta falls back from non-finite current numeric state', (
     player: {
       money: Number.NaN,
       fame: Number.POSITIVE_INFINITY,
+      score: Number.NaN,
       van: {
         fuel: Number.NaN,
         condition: Number.POSITIVE_INFINITY
@@ -344,6 +345,7 @@ test('calculateAppliedDelta falls back from non-finite current numeric state', (
     player: {
       money: 15,
       fame: 20,
+      score: 10,
       van: {
         fuel: 5,
         condition: 6
@@ -364,6 +366,7 @@ test('calculateAppliedDelta falls back from non-finite current numeric state', (
 
   assert.equal(applied.player.money, 15)
   assert.equal(applied.player.fame, 20)
+  assert.equal(applied.score, 10)
   assert.equal(applied.player.van.fuel, 5)
   assert.equal(applied.player.van.condition, 6)
   assert.equal(applied.band.harmony, 7)

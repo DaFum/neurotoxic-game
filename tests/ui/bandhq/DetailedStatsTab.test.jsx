@@ -106,6 +106,8 @@ describe('DetailedStatsTab', () => {
       />
     )
 
+    expect(screen.queryByText('OWNED')).not.toBeInTheDocument()
+
     fireEvent.click(screen.getByRole('button', { name: 'Use Guitar Strings' }))
 
     expect(onConsumeItem).toHaveBeenCalledWith('strings')

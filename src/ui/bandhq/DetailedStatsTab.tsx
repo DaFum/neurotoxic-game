@@ -631,7 +631,6 @@ const InventoryEquipmentSection = ({
             value={
               canConsume ? (
                 <div className='flex items-center justify-end gap-2'>
-                  <span>{status}</span>
                   <button
                     type='button'
                     onClick={() => onConsumeItem(key)}

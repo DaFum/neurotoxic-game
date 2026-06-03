@@ -1704,6 +1704,8 @@ export const handleRemoveToast = (
   }
 }
 
+const finiteEffectValue = (value: unknown): number => finiteNumberOr(value, 0)
+
 const EFFECT_REVERTERS: Record<
   string,
   (band: BandState, value: unknown) => BandState
@@ -1711,7 +1713,7 @@ const EFFECT_REVERTERS: Record<
   harmony: (band: BandState, value: unknown) => ({
     ...band,
     harmony: clampBandHarmony(
-      finiteNumberOr(band.harmony, 1) - finiteNumberOr(value, 0)
+      finiteNumberOr(band.harmony, 1) - finiteEffectValue(value)
     )
   }),
   guitar_difficulty: (band: BandState, value: unknown) => ({
@@ -1720,13 +1722,13 @@ const EFFECT_REVERTERS: Record<
       ...band.performance,
       guitarDifficulty: Math.max(
         0.1,
-        (band.performance?.guitarDifficulty ?? 1) - (value as number)
+        (band.performance?.guitarDifficulty ?? 1) - finiteEffectValue(value)
       )
     }
   }),
   luck: (band: BandState, value: unknown) => ({
     ...band,
-    luck: Math.max(0, ((band.luck as number) ?? 0) - (value as number))
+    luck: Math.max(0, ((band.luck as number) ?? 0) - finiteEffectValue(value))
   }),
   stamina_max: (band: BandState, value: unknown) => ({
     ...band,
@@ -1734,52 +1736,55 @@ const EFFECT_REVERTERS: Record<
       ...m,
       staminaMax: Math.max(
         0,
-        ((m.staminaMax as number) ?? 100) - (value as number)
+        ((m.staminaMax as number) ?? 100) - finiteEffectValue(value)
       )
     }))
   }),
   style: (band: BandState, value: unknown) => ({
     ...band,
-    style: Math.max(0, ((band.style as number) ?? 0) - (value as number))
+    style: Math.max(0, ((band.style as number) ?? 0) - finiteEffectValue(value))
   }),
   tour_success: (band: BandState, value: unknown) => ({
     ...band,
     tourSuccess: Math.max(
       0,
-      ((band.tourSuccess as number) ?? 0) - (value as number)
+      ((band.tourSuccess as number) ?? 0) - finiteEffectValue(value)
     )
   }),
   gig_modifier: (band: BandState, value: unknown) => ({
     ...band,
     gigModifier: Math.max(
       0,
-      ((band.gigModifier as number) ?? 0) - (value as number)
+      ((band.gigModifier as number) ?? 0) - finiteEffectValue(value)
     )
   }),
   tempo: (band: BandState, value: unknown) => ({
     ...band,
-    tempo: Math.max(0, ((band.tempo as number) ?? 0) - (value as number))
+    tempo: Math.max(0, ((band.tempo as number) ?? 0) - finiteEffectValue(value))
   }),
   practice_gain: (band: BandState, value: unknown) => ({
     ...band,
     practiceGain: Math.max(
       0,
-      ((band.practiceGain as number) ?? 0) - (value as number)
+      ((band.practiceGain as number) ?? 0) - finiteEffectValue(value)
     )
   }),
   crit: (band: BandState, value: unknown) => ({
     ...band,
-    crit: Math.max(0, ((band.crit as number) ?? 0) - (value as number))
+    crit: Math.max(0, ((band.crit as number) ?? 0) - finiteEffectValue(value))
   }),
   affinity: (band: BandState, value: unknown) => ({
     ...band,
-    affinity: Math.max(0, ((band.affinity as number) ?? 0) - (value as number))
+    affinity: Math.max(
+      0,
+      ((band.affinity as number) ?? 0) - finiteEffectValue(value)
+    )
   }),
   crowd_control: (band: BandState, value: unknown) => ({
     ...band,
     crowdControl: Math.max(
       0,
-      ((band.crowdControl as number) ?? 0) - (value as number)
+      ((band.crowdControl as number) ?? 0) - finiteEffectValue(value)
     )
   })
 }

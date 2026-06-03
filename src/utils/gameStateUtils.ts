@@ -553,8 +553,7 @@ export const calculateAppliedDelta = (
           ? delta.score
           : 0
     if (scoreDelta !== 0) {
-      const currentScore =
-        typeof state.player?.score === 'number' ? state.player.score : 0
+      const currentScore = Math.max(0, finiteNumberOr(state.player?.score, 0))
       const nextScore = Math.max(0, currentScore + scoreDelta)
       applied.score = nextScore - currentScore
     }

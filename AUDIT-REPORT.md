@@ -18,25 +18,16 @@
 
 `src/domain/questRewards.ts` and `src/domain/questPenalties.ts` carry byte-identical (or param-renamed) copies of eight helpers — the engines differ only in `+amount` sign:
 
-| Helper | questRewards.ts | questPenalties.ts |
-
-|--------|-----------------|-------------------|
-
-| `clampReputation` | :83 | :101 |
-
-| `getVenueReputationKey` | :86 | :104 |
-
-| `getRegionReputationKey` | :99 | :117 |
-
-| `applyReputationDelta` | :110 | :128 |
-
-| `applyVenueReputationDelta` | :126 | :144 |
-
-| `getBrandReputationKey` | :142 | :160 |
-
-| `applyBrandTrustDelta` | :151 | :169 |
-
-| `queueEvent` | :192 | :212 |
+| Helper                      | questRewards.ts | questPenalties.ts |
+| --------------------------- | --------------- | ----------------- |
+| `clampReputation`           | :83             | :101              |
+| `getVenueReputationKey`     | :86             | :104              |
+| `getRegionReputationKey`    | :99             | :117              |
+| `applyReputationDelta`      | :110            | :128              |
+| `applyVenueReputationDelta` | :126            | :144              |
+| `getBrandReputationKey`     | :142            | :160              |
+| `applyBrandTrustDelta`      | :151            | :169              |
+| `queueEvent`                | :192            | :212              |
 
 **Action:** extract into a shared `src/domain/questEffects.ts` (or `questHelpers.ts`) and import from both. Move `clampReputation` (−100..100) into `src/utils/gameStateUtils.ts` alongside the other canonical clamps.
 

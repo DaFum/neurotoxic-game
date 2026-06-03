@@ -8,10 +8,10 @@ import {
 
 export const getVenueReputationKey = (
   state: GameState,
-  scope: 'current' | string | undefined
+  scope: 'current' | string | null | undefined
 ): string | undefined => {
   const key =
-    scope === 'current' || scope == null
+    scope === 'current' || scope === null || scope === undefined
       ? (state.currentGig?.id ?? state.player?.currentNodeId)
       : scope
   return typeof key === 'string' && key.length > 0 && !isForbiddenKey(key)
@@ -21,10 +21,12 @@ export const getVenueReputationKey = (
 
 export const getRegionReputationKey = (
   state: GameState,
-  scope: 'current' | string | undefined
+  scope: 'current' | string | null | undefined
 ): string | undefined => {
   const key =
-    scope === 'current' || scope == null ? state.player?.location : scope
+    scope === 'current' || scope === null || scope === undefined
+      ? state.player?.location
+      : scope
   return typeof key === 'string' && key.length > 0 && !isForbiddenKey(key)
     ? key
     : undefined
