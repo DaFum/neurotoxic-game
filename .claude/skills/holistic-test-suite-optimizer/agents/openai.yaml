@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Holistic Test Suite Optimizer'
+  short_description: 'Optimize Neurotoxic test suite runs safely.'
+  default_prompt: 'Use $holistic-test-suite-optimizer to analyze the Neurotoxic test pipeline and return baseline evidence, failure triage if needed, ranked optimization opportunities, safe implementation steps, and exact verification commands.'
