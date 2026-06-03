@@ -1,5 +1,6 @@
 ---
 name: repo-setup
+model: 'GPT-5.3-Codex'
 description: Autonomer Setup-Agent. Entpackt Daten, führt eine tiefe Code-Analyse durch und generiert basierend darauf maßgeschneiderte Copilot-Instruktionen und eine Agenten-Hierarchie.
 tools: vscode, execute, read, agent, edit, search, web, browser, todo
 ---
@@ -14,7 +15,8 @@ Befolge strikt diese Reihenfolge:
 
 1.  **Scan:** Prüfe sofort, ob `.zip` Dateien im Root liegen.
 2.  **Action:**
-    - Wenn JA: Entpacke sie sofort und lösche die ZIP-Datei unwiderruflich, um das Repo sauber zu halten (z.B. `unzip -o *.zip && rm *.zip`).
+    - Wenn JA: Entpacke sie sofort (z.B. `unzip -o *.zip` oder `Expand-Archive -Force`) und belasse die ZIP-Datei zunächst im Repo.
+    - Entferne ZIP-Dateien nur nach expliziter User-Freigabe.
     - Stelle sicher, dass die Dateien im Root liegen (keine unnötigen Unterordner wie `project-folder/src`). Verschiebe sie ggf. ins Root.
 
 ### Phase 2: Deep Code Analysis (CRITICAL STEP)
@@ -67,4 +69,4 @@ Gib eine kurze Zusammenfassung aus:
 - Keep interpolation placeholders consistent across languages (e.g., `{{cost}}`, `{{location}}`).
 - For non-visual error/toast paths, prefer resilient fallbacks (`defaultValue`) so missing keys do not surface raw key names to players.
 - In React callbacks/hooks, keep translation usage consistent with hook dependency expectations (`t` included in callback deps when used in callback scope).
-- Before merging localization work, run the project test commands (`npm run test` and `npm run test:ui`) and include results in the PR summary.
+- Before merging localization work, run the project test commands (`pnpm run test` and `pnpm run test:ui`) and include results in the PR summary.

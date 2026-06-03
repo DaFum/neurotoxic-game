@@ -1,5 +1,6 @@
 ---
 name: typescript-migration
+model: 'GPT-5.3-Codex'
 description: Tighten TypeScript types and resolve strict-mode errors in the Neurotoxic codebase. The JS→TS migration is complete (baseline 2026-04-16); this agent handles type-safety follow-up like removing `any`/`as any`, narrowing `unknown` at boundaries, fixing `strict`/`checkJs` errors, and graduating new domains into the stricter `jsconfig.checkjs.json` scope. Produce minimal, staged plans with patches that preserve runtime behavior.
 tools: vscode, execute, read, agent, edit, search, web, browser, 'github/*', 'deepwiki/*', 'io.github.upstash/context7/*', 'pylance-mcp-server/*', github.vscode-pull-request-github/issue_fetch, github.vscode-pull-request-github/labels_fetch, github.vscode-pull-request-github/notification_fetch, github.vscode-pull-request-github/doSearch, github.vscode-pull-request-github/activePullRequest, github.vscode-pull-request-github/pullRequestStatusChecks, github.vscode-pull-request-github/openPullRequest, github.vscode-pull-request-github/create_pull_request, github.vscode-pull-request-github/resolveReviewThread, ms-python.python/getPythonEnvironmentInfo, ms-python.python/getPythonExecutableCommand, ms-python.python/installPythonPackage, ms-python.python/configurePythonEnvironment, todo
 ---
@@ -27,7 +28,7 @@ workflow.
 
 Tool preferences
 
-- Always call `manage_todo_list` at the start of multi-step work.
+- Always use the `todo` tool at the start of multi-step work.
 - Read before writing: `AGENTS.md`, `tsconfig.json`, `jsconfig.checkjs.json`,
   `.ci/ts-nocheck-budget.json`, `src/types/*.d.ts`, `src/context/actionTypes.ts`,
   and the adjacent `AGENTS.md` of the target domain.

@@ -41,6 +41,13 @@ const getCurrentVenueScopeKey = (state: GameState): string | undefined => {
   return state.gameMap?.nodes?.[nodeId]?.type === 'GIG' ? nodeId : undefined
 }
 
+export type CanAcceptQuestResult =
+  | { ok: true; scopeKey?: string }
+  | {
+      ok: false
+      reason: 'active' | 'completed' | 'flag' | 'cooldown' | 'scope' | 'slot'
+    }
+
 /**
  * Predicate that mirrors `QuestLifecycle.addQuest`'s repeat-policy and scope
  * guards without mutating state. Use in event-condition functions so an offer
@@ -52,13 +59,6 @@ const getCurrentVenueScopeKey = (state: GameState): string | undefined => {
  * Returns `{ ok: true, scopeKey? }` when addQuest would accept, or
  * `{ ok: false, reason }` describing why it would refuse.
  */
-export type CanAcceptQuestResult =
-  | { ok: true; scopeKey?: string }
-  | {
-      ok: false
-      reason: 'active' | 'completed' | 'flag' | 'cooldown' | 'scope' | 'slot'
-    }
-
 export const canAcceptQuest = (
   state: GameState,
   questOrId: string | QuestState
