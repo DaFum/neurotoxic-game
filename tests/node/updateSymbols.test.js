@@ -149,6 +149,8 @@ test('test, spec, and story files are ignored while React HOCs keep render signa
     )
     assert.equal(memoFixture.isComponent, true)
     assert.equal(memoFixture.parameters[0].name, '{ label }')
+    assert.equal(memoFixture.parameters[0].bindingKind, 'objectPattern')
+    assert.deepEqual(memoFixture.parameters[0].destructuredNames, ['label'])
     assert.equal(memoFixture.parameters[0].type, 'SymbolIndexHocFixtureProps')
 
     const forwardRefFixture = ks.SymbolIndexForwardRefFixture.find(
@@ -160,6 +162,10 @@ test('test, spec, and story files are ignored while React HOCs keep render signa
       forwardRefFixture.parameters.map(parameter => parameter.name),
       ['{ label }', 'ref']
     )
+    assert.equal(forwardRefFixture.parameters[0].bindingKind, 'objectPattern')
+    assert.deepEqual(forwardRefFixture.parameters[0].destructuredNames, [
+      'label'
+    ])
     assert.equal(
       forwardRefFixture.parameters[0].type,
       'SymbolIndexHocFixtureProps'
@@ -202,6 +208,18 @@ test('local symbols include signatures, structure, docs, graph, location, and fr
   assert.ok(
     applyQuestRewards.dependencies.includes('clampPlayerMoney'),
     'applyQuestRewards should list imported local helpers it calls'
+  )
+
+  const calculateBarCut = ks.calculateBarCut.find(
+    entry => entry.path === 'src/utils/economyEngine.ts'
+  )
+  assert.ok(
+    calculateBarCut.referencedByLocal.some(
+      reference =>
+        reference.path === 'src/utils/economyEngine.ts' &&
+        reference.symbol === 'calculateGigFinancials'
+    ),
+    'same-file exported helper references should expose local reverse references'
   )
 
   const questState = ks.QuestState.find(
@@ -289,6 +307,21 @@ test('local symbols include signatures, structure, docs, graph, location, and fr
   const bandHq = ks.BandHQ.find(entry => entry.path === 'src/ui/BandHQ.tsx')
   assert.equal(bandHq.isComponent, true)
 
+  const actionButton = ks.ActionButton.find(
+    entry => entry.path === 'src/ui/shared/ActionButton.tsx'
+  )
+  assert.equal(actionButton.parameters[0].bindingKind, 'objectPattern')
+  assert.ok(
+    actionButton.parameters[0].destructuredNames.includes('onClick'),
+    'destructured parameter names should be exposed separately from raw text'
+  )
+  assert.ok(
+    actionButton.usedByTests.some(
+      usage => usage.path === 'tests/ui/ActionButton.test.jsx'
+    ),
+    'test imports should be tracked separately from production imports'
+  )
+
   const postGigState = ks.usePostGigState.find(
     entry => entry.path === 'src/hooks/postGig/usePostGigState.ts'
   )
@@ -337,17 +370,50 @@ test('local symbols expose generics, async, heritage, and literal values', () =>
     activeQuestState.extends.includes('UnknownRecord'),
     'interface heritage should be recorded under `extends`'
   )
+
+  const modifierCosts = ks.MODIFIER_COSTS.find(
+    entry => entry.path === 'src/utils/economyEngine.ts'
+  )
+  assert.deepEqual(
+    modifierCosts.literalKeys,
+    ['catering', 'guestlist', 'merch', 'promo', 'soundcheck'],
+    'object literal const exports should expose stable top-level literal keys'
+  )
 })
 
 test('document exposes a self-documenting meta block', () => {
   const doc = loadDocument()
 
-  assert.equal(doc.meta.schemaVersion, 2)
+  assert.equal(doc.meta.schemaVersion, 3)
+  assert.equal(doc.meta.guidePath, 'docs/agent-symbols-guide.md')
+  assert.match(doc.meta.sourceHash, /^[a-f0-9]{64}$/)
   assert.equal(typeof doc.meta.localSymbols, 'number')
   assert.equal(typeof doc.meta.externalSymbols, 'number')
   assert.ok(doc.meta.aliasedReexports >= 1)
+  assert.equal(typeof doc.meta.fieldGuide.files, 'string')
   assert.equal(typeof doc.meta.fieldGuide.localName, 'string')
+  assert.equal(typeof doc.meta.fieldGuide.literalKeys, 'string')
+  assert.equal(typeof doc.meta.fieldGuide.referencedByLocal, 'string')
+  assert.equal(typeof doc.meta.fieldGuide.usedByTests, 'string')
   assert.equal(typeof doc.meta.fieldGuide.usedBy, 'string')
+  assert.ok(
+    doc.meta.indexedFiles >= doc.meta.sourceFiles,
+    'indexed file count should include src files and reference-only files'
+  )
   // knownSymbols remains the primary index alongside meta.
   assert.equal(typeof doc.knownSymbols, 'object')
+  assert.ok(Array.isArray(doc.files['src/domain/questRewards.ts'].exports))
+  assert.ok(
+    doc.files['src/domain/questRewards.ts'].exports.includes(
+      'applyQuestRewards'
+    )
+  )
+  assert.ok(
+    doc.files['src/domain/questRewards.ts'].imports.includes('QuestReward')
+  )
+  assert.ok(
+    doc.files['src/hooks/postGig/usePostGigState.ts'].hooks.includes(
+      'usePostGigState'
+    )
+  )
 })

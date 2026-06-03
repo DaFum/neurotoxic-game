@@ -83,7 +83,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - Aliased re-exports (`export { X as Y }`) carry `isAlias: true` and `localName` (the real declared identifier at `path:lineStart`). Trust `localName`, not the index key, when jumping to the declaration. A symbol with `exportPath` is re-exported through that file.
 - The top-level `meta` block summarizes counts and carries `meta.fieldGuide`, a one-line description of every field — read it when a field is unfamiliar. The primary index stays under `knownSymbols`.
 - For concrete usage patterns, see `docs/agent-symbols-guide.md`.
-- Do not hand-edit `symbols.json`. If exported APIs, type shapes, local imports/calls, or JSDoc under `src/` change, run `pnpm run symbols:update` and then `pnpm run symbols:check`.
+- Do not hand-edit `symbols.json`. If exported APIs, type shapes, local imports/calls, JSDoc under `src/`, or test/spec/story imports change, run `pnpm run symbols:update` and then `pnpm run symbols:check`.
 - Primitive/string-literal type aliases intentionally omit prototype `properties`; mixed unions expose object branches through `variants`.
 
 ## Dependencies

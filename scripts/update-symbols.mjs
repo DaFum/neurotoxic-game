@@ -15,6 +15,7 @@
 
 import fs from 'fs'
 import path from 'path'
+import crypto from 'crypto'
 import ts from 'typescript'
 
 const ROOT = path.resolve('.')
@@ -62,17 +63,51 @@ function walkSrc(dir, out = []) {
 }
 
 const srcFiles = walkSrc(SRC)
+const srcFileSet = new Set(srcFiles.map(fileName => normalizePath(fileName)))
+
+function walkFiles(dir, shouldInclude, out = []) {
+  if (!fs.existsSync(dir)) return out
+  const entries = fs.readdirSync(dir, { withFileTypes: true })
+  entries.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
+  for (const entry of entries) {
+    const full = path.join(dir, entry.name)
+    if (entry.isDirectory()) {
+      walkFiles(full, shouldInclude, out)
+      continue
+    }
+    if (shouldInclude(entry.name, full)) out.push(full)
+  }
+  return out
+}
+
+function collectReferenceFiles() {
+  const testDir = path.join(ROOT, 'tests')
+  const referenceFiles = [
+    ...walkFiles(
+      SRC,
+      name => SOURCE_FILE_RE.test(name) && IGNORED_SOURCE_FILE_RE.test(name)
+    ),
+    ...walkFiles(testDir, name => SOURCE_FILE_RE.test(name))
+  ]
+  return referenceFiles
+    .filter(fileName => !srcFileSet.has(normalizePath(fileName)))
+    .sort((a, b) => normalizePath(a).localeCompare(normalizePath(b)))
+}
+
+const referenceFiles = collectReferenceFiles()
+const programFiles = [...srcFiles, ...referenceFiles]
 
 // ---------------------------------------------------------------------------
 // 2. Build program
 // ---------------------------------------------------------------------------
 let program, checker
 try {
-  program = ts.createProgram(srcFiles, {
+  program = ts.createProgram(programFiles, {
     allowJs: true,
     checkJs: false,
     noEmit: true,
     skipLibCheck: true,
+    allowImportingTsExtensions: true,
     moduleResolution: ts.ModuleResolutionKind.Bundler,
     jsx: ts.JsxEmit.Preserve
   })
@@ -301,6 +336,43 @@ function callableDeclaration(decl) {
   return undefined
 }
 
+function bindingKind(bindingName) {
+  if (!bindingName) return undefined
+  if (ts.isObjectBindingPattern(bindingName)) return 'objectPattern'
+  if (ts.isArrayBindingPattern(bindingName)) return 'arrayPattern'
+  return undefined
+}
+
+function collectBindingNames(bindingName, names = []) {
+  if (!bindingName) return names
+  if (ts.isIdentifier(bindingName)) {
+    names.push(bindingName.text)
+    return names
+  }
+  if (ts.isObjectBindingPattern(bindingName)) {
+    for (const element of bindingName.elements) {
+      collectBindingNames(element.name, names)
+    }
+    return names
+  }
+  if (ts.isArrayBindingPattern(bindingName)) {
+    for (const element of bindingName.elements) {
+      if (ts.isBindingElement(element)) collectBindingNames(element.name, names)
+    }
+  }
+  return names
+}
+
+function serializeParameterBinding(paramDecl) {
+  if (!paramDecl || !ts.isParameter(paramDecl)) return undefined
+  const kind = bindingKind(paramDecl.name)
+  if (!kind) return undefined
+  const names = collectBindingNames(paramDecl.name)
+  const result = { bindingKind: kind }
+  if (names.length > 0) result.destructuredNames = names
+  return result
+}
+
 function serializeSignature(sym, decl) {
   const callable = callableDeclaration(decl)
   const signature =
@@ -321,7 +393,7 @@ function serializeSignature(sym, decl) {
         paramDecl && ts.isParameter(paramDecl)
           ? paramDecl.name.getText(paramDecl.getSourceFile())
           : param.name
-      return {
+      const entry = {
         name,
         optional,
         rest: !!paramDecl?.dotDotDotToken,
@@ -331,6 +403,9 @@ function serializeSignature(sym, decl) {
           optional
         )
       }
+      const binding = serializeParameterBinding(paramDecl)
+      if (binding) Object.assign(entry, binding)
+      return entry
     }),
     returnType: typeString(signature.getReturnType(), callable ?? decl, false)
   }
@@ -594,6 +669,48 @@ function literalConstValue(decl) {
   return undefined
 }
 
+function unwrapLiteralExpression(expression) {
+  let current = expression
+  while (
+    ts.isParenthesizedExpression(current) ||
+    ts.isAsExpression(current) ||
+    ts.isSatisfiesExpression(current) ||
+    ts.isTypeAssertionExpression(current)
+  ) {
+    current = current.expression
+  }
+  return current
+}
+
+function literalPropertyName(propertyName) {
+  if (ts.isIdentifier(propertyName)) return propertyName.text
+  if (ts.isStringLiteralLike(propertyName)) return propertyName.text
+  if (ts.isNumericLiteral(propertyName)) return propertyName.text
+  return undefined
+}
+
+function objectLiteralConstKeys(decl) {
+  if (!ts.isVariableDeclaration(decl) || !decl.initializer) return undefined
+  let list = decl.parent
+  while (list && !ts.isVariableDeclarationList(list)) list = list.parent
+  if (!list || !(list.flags & ts.NodeFlags.Const)) return undefined
+
+  const initializer = unwrapLiteralExpression(decl.initializer)
+  if (!ts.isObjectLiteralExpression(initializer)) return undefined
+
+  const keys = initializer.properties
+    .map(property => {
+      if (ts.isSpreadAssignment(property)) return undefined
+      if (ts.isShorthandPropertyAssignment(property)) return property.name.text
+      const name = /** @type {any} */ (property).name
+      return name ? literalPropertyName(name) : undefined
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b))
+
+  return keys.length > 0 ? keys : undefined
+}
+
 // Enum member names and their resolved constant values.
 function enumMembers(decl) {
   if (!ts.isEnumDeclaration(decl)) return undefined
@@ -650,6 +767,9 @@ function addDeclarationMetadata(entry, sym, decl, exportedName, isDefault) {
   const constValue = literalConstValue(decl)
   if (constValue !== undefined) entry.value = constValue
 
+  const literalKeys = objectLiteralConstKeys(decl)
+  if (literalKeys) entry.literalKeys = literalKeys
+
   const members = enumMembers(decl)
   if (members) entry.enumMembers = members
 
@@ -675,6 +795,9 @@ const localEntryRefEntries = new Set()
 const entriesByDeclKey = new Map()
 const dependenciesByEntry = new Map()
 const usedByByEntry = new Map()
+const usedByTestsByEntry = new Map()
+const referencedByLocalByEntry = new Map()
+const importsByFile = new Map()
 
 function upsert(name, entry) {
   if (!knownSymbols[name]) {
@@ -746,6 +869,32 @@ function addDependency(entry, dependencyName) {
 function addUsedBy(entry, usage) {
   if (!usedByByEntry.has(entry)) usedByByEntry.set(entry, new Map())
   usedByByEntry.get(entry).set(JSON.stringify(usage), usage)
+}
+
+function addUsedByTests(entry, usage) {
+  if (!usedByTestsByEntry.has(entry))
+    usedByTestsByEntry.set(entry, new Map())
+  usedByTestsByEntry.get(entry).set(JSON.stringify(usage), usage)
+}
+
+function addReferencedByLocal(entry, reference) {
+  if (!referencedByLocalByEntry.has(entry))
+    referencedByLocalByEntry.set(entry, new Map())
+  referencedByLocalByEntry.get(entry).set(JSON.stringify(reference), reference)
+}
+
+function addFileImport(filePath, importedName) {
+  if (!importsByFile.has(filePath)) importsByFile.set(filePath, new Set())
+  importsByFile.get(filePath).add(importedName)
+}
+
+function isReferenceOnlyFile(fileName) {
+  const normalized = normalizePath(fileName)
+  const testsPrefix = `${normalizePath(path.join(ROOT, 'tests'))}/`
+  return (
+    normalized.startsWith(testsPrefix) ||
+    IGNORED_SOURCE_FILE_RE.test(path.basename(normalized))
+  )
 }
 
 const SKIP_NAMES = new Set(['__esModule'])
@@ -861,30 +1010,40 @@ for (const srcFilePath of srcFiles) {
 // ---------------------------------------------------------------------------
 function collectImportUsage(sourceFile) {
   const rel = relPath(sourceFile.fileName)
+  const addUsage = isReferenceOnlyFile(sourceFile.fileName)
+    ? addUsedByTests
+    : addUsedBy
   const visitImport = node => {
     if (!ts.isImportDeclaration(node)) return
     if (!ts.isStringLiteral(node.moduleSpecifier)) return
-    if (!node.moduleSpecifier.text.startsWith('.')) return
 
     const importClause = node.importClause
     if (!importClause) return
     const clauseTypeOnly = !!importClause.isTypeOnly
 
     if (importClause.name) {
-      for (const entry of targetEntriesForNode(importClause.name, 'default')) {
-        addUsedBy(entry, {
-          path: rel,
-          importedAs: importClause.name.text,
-          typeOnly: clauseTypeOnly
-        })
+      addFileImport(rel, importClause.name.text)
+      if (node.moduleSpecifier.text.startsWith('.')) {
+        for (const entry of targetEntriesForNode(importClause.name, 'default')) {
+          addUsage(entry, {
+            path: rel,
+            importedAs: importClause.name.text,
+            typeOnly: clauseTypeOnly
+          })
+        }
       }
     }
 
     const bindings = importClause.namedBindings
+    if (bindings && ts.isNamespaceImport(bindings)) {
+      addFileImport(rel, bindings.name.text)
+      return
+    }
     if (!bindings || !ts.isNamedImports(bindings)) return
 
     for (const specifier of bindings.elements) {
       const importedName = specifier.propertyName?.text ?? specifier.name.text
+      addFileImport(rel, specifier.name.text)
       const usage = {
         path: rel,
         importedAs: specifier.name.text
@@ -893,8 +1052,9 @@ function collectImportUsage(sourceFile) {
         usage.importedName = importedName
       if (clauseTypeOnly || specifier.isTypeOnly) usage.typeOnly = true
 
+      if (!node.moduleSpecifier.text.startsWith('.')) continue
       for (const entry of targetEntriesForNode(specifier.name, importedName)) {
-        addUsedBy(entry, usage)
+        addUsage(entry, usage)
       }
     }
   }
@@ -911,7 +1071,14 @@ function dependencySymbolNode(expression) {
 function collectDeclarationDependencies({ entry, decl }) {
   const addTargets = node => {
     for (const target of targetEntriesForNode(node, undefined)) {
-      if (target !== entry) addDependency(entry, target.name)
+      if (target === entry) continue
+      addDependency(entry, target.name)
+      if (target.path === entry.path) {
+        addReferencedByLocal(target, {
+          path: entry.path,
+          symbol: entry.name
+        })
+      }
     }
   }
 
@@ -934,10 +1101,9 @@ function collectDeclarationDependencies({ entry, decl }) {
   visit(decl)
 }
 
-for (const srcFilePath of srcFiles) {
-  const sourceFile = program.getSourceFile(srcFilePath)
-  if (sourceFile && isUnderSrc(sourceFile.fileName))
-    collectImportUsage(sourceFile)
+for (const filePath of programFiles) {
+  const sourceFile = program.getSourceFile(filePath)
+  if (sourceFile) collectImportUsage(sourceFile)
 }
 
 for (const ref of localEntryRefs) collectDeclarationDependencies(ref)
@@ -961,6 +1127,24 @@ for (const [entry, usageByKey] of usedByByEntry) {
     usageSortKey(a).localeCompare(usageSortKey(b))
   )
   if (sorted.length > 0) entry.usedBy = sorted
+}
+
+for (const [entry, usageByKey] of usedByTestsByEntry) {
+  const sorted = Array.from(usageByKey.values()).sort((a, b) =>
+    usageSortKey(a).localeCompare(usageSortKey(b))
+  )
+  if (sorted.length > 0) entry.usedByTests = sorted
+}
+
+function localReferenceSortKey(reference) {
+  return [reference.path, reference.symbol].join('\0')
+}
+
+for (const [entry, referenceByKey] of referencedByLocalByEntry) {
+  const sorted = Array.from(referenceByKey.values()).sort((a, b) =>
+    localReferenceSortKey(a).localeCompare(localReferenceSortKey(b))
+  )
+  if (sorted.length > 0) entry.referencedByLocal = sorted
 }
 
 // ---------------------------------------------------------------------------
@@ -1113,6 +1297,75 @@ const sortedKnownSymbols = Object.keys(knownSymbols)
     return acc
   }, {})
 
+function emptyFileIndexEntry() {
+  return {
+    exports: [],
+    imports: [],
+    components: [],
+    hooks: []
+  }
+}
+
+function getFileIndexEntry(fileMap, filePath) {
+  if (!fileMap.has(filePath)) fileMap.set(filePath, emptyFileIndexEntry())
+  return fileMap.get(filePath)
+}
+
+function addUniqueSorted(array, value) {
+  if (!array.includes(value)) array.push(value)
+}
+
+function buildFilesIndex() {
+  const fileMap = new Map()
+  for (const fileName of programFiles) {
+    getFileIndexEntry(fileMap, relPath(fileName))
+  }
+
+  for (const [filePath, imports] of importsByFile) {
+    const fileEntry = getFileIndexEntry(fileMap, filePath)
+    for (const importedName of imports) {
+      addUniqueSorted(fileEntry.imports, importedName)
+    }
+  }
+
+  for (const entries of Object.values(sortedKnownSymbols)) {
+    for (const entry of entries) {
+      if (entry.source !== 'local' || !entry.path) continue
+      const fileEntry = getFileIndexEntry(fileMap, entry.path)
+      addUniqueSorted(fileEntry.exports, entry.name)
+      if (entry.isComponent) addUniqueSorted(fileEntry.components, entry.name)
+      if (entry.isHook) addUniqueSorted(fileEntry.hooks, entry.name)
+    }
+  }
+
+  return Array.from(fileMap.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .reduce((acc, [filePath, fileEntry]) => {
+      acc[filePath] = {
+        exports: fileEntry.exports.sort((a, b) => a.localeCompare(b)),
+        imports: fileEntry.imports.sort((a, b) => a.localeCompare(b)),
+        components: fileEntry.components.sort((a, b) => a.localeCompare(b)),
+        hooks: fileEntry.hooks.sort((a, b) => a.localeCompare(b))
+      }
+      return acc
+    }, {})
+}
+
+function sourceHash(files) {
+  const hash = crypto.createHash('sha256')
+  for (const fileName of files
+    .slice()
+    .sort((a, b) => normalizePath(a).localeCompare(normalizePath(b)))) {
+    hash.update(relPath(fileName))
+    hash.update('\0')
+    hash.update(fs.readFileSync(fileName))
+    hash.update('\0')
+  }
+  return hash.digest('hex')
+}
+
+const files = buildFilesIndex()
+
 // Deterministic summary + inline schema legend so an agent reading the file
 // cold understands every field without consulting external docs. No timestamps
 // or env-derived data — values depend only on source, preserving --check.
@@ -1128,7 +1381,9 @@ for (const entries of Object.values(knownSymbols)) {
 }
 
 const meta = {
-  schemaVersion: 2,
+  schemaVersion: 3,
+  guidePath: 'docs/agent-symbols-guide.md',
+  sourceHash: sourceHash(programFiles),
   description:
     'Exported-symbol index generated by scripts/update-symbols.mjs from the TypeScript compiler API. Do not hand-edit; run `pnpm run symbols:update`. Guide: docs/agent-symbols-guide.md.',
   symbolNames: Object.keys(knownSymbols).length,
@@ -1136,7 +1391,18 @@ const meta = {
   externalSymbols,
   aliasedReexports,
   sourceFiles: srcFiles.length,
+  referenceFiles: referenceFiles.length,
+  indexedFiles: Object.keys(files).length,
   fieldGuide: {
+    files:
+      'Top-level file navigation index keyed by relative file path; each entry lists exports, imports, React components, and hooks.',
+    exports: 'In files entries, exported symbols declared in the file.',
+    imports: 'In files entries, imported local or external binding names.',
+    components: 'In files entries, React component exports declared in the file.',
+    hooks: 'In files entries, React hook exports declared in the file.',
+    guidePath: 'Path to the detailed agent usage guide for this schema.',
+    sourceHash:
+      'Stable SHA-256 over indexed source and reference files, used to spot stale generated output.',
     path: 'File where the symbol is declared.',
     exportPath:
       'Present when the symbol is re-exported through another module (barrel or alias); value is that re-exporting file.',
@@ -1150,6 +1416,10 @@ const meta = {
     lineStart: '1-based line/column span of the declaration.',
     parameters:
       'Function/hook parameters: name, type, optional, rest. Use to build correct calls.',
+    bindingKind:
+      'Present on destructured parameters; objectPattern or arrayPattern.',
+    destructuredNames:
+      'Identifier names bound by a destructured parameter, separate from the raw parameter text.',
     returnType: 'Function/hook return type string.',
     typeParameters:
       'Generic parameter declarations, e.g. ["T", "K extends string"].',
@@ -1164,17 +1434,23 @@ const meta = {
     enumMembers: 'Enum member names and resolved constant values.',
     value:
       'Literal value of a primitive const export (number/string/boolean/null).',
+    literalKeys:
+      'Stable sorted top-level keys for object literal const exports.',
     isComponent: 'True for React components.',
     isHook: 'True for React hooks (use* name with a call signature).',
     jsDoc: 'Parsed JSDoc/TSDoc summary text and tags.',
     dependencies:
       'Local exported symbols this declaration calls, constructs, or renders.',
-    usedBy: 'Files that import this symbol (test/spec/story files excluded).'
+    referencedByLocal:
+      'Same-file exported declarations that directly call, construct, or render this symbol.',
+    usedBy: 'Production files that import this symbol.',
+    usedByTests:
+      'Test, spec, or story files that import this symbol, tracked separately from usedBy.'
   }
 }
 
 const output = JSON.stringify(
-  { meta, knownSymbols: sortedKnownSymbols },
+  { meta, files, knownSymbols: sortedKnownSymbols },
   null,
   2
 )
