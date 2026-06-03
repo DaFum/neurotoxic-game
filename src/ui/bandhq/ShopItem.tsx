@@ -2,14 +2,13 @@ import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { CatalogItem } from '../../types/components'
 import {
-  IMG_PROMPTS,
-  resolveGenImageUrl,
-  getGeneratedImageFallbackUrl
+  IMG_PROMPTS
 } from '../../utils/imageGen'
 import { getPrimaryEffect } from '../../utils/purchaseLogicUtils'
 import { formatCurrency } from '../../utils/numberUtils'
 import { GlitchButton } from '../GlitchButton'
 import { Tooltip } from '../shared'
+import { GeneratedImagePanel } from '../shared/GeneratedImagePanel'
 
 export interface ShopItemProps {
   item: CatalogItem
@@ -87,15 +86,12 @@ export const ShopItem = React.memo(
       >
         <div>
           <div className='flex items-center gap-2 mb-2'>
-            <img
-              src={resolveGenImageUrl(sanitizedPrompt)}
+            <GeneratedImagePanel
+              prompt={sanitizedPrompt}
               alt=''
-              aria-hidden='true'
-              className='w-12 h-12 object-contain bg-void-black border-2 border-ash-gray'
-              onError={e => {
-                e.currentTarget.onerror = null
-                e.currentTarget.src = getGeneratedImageFallbackUrl()
-              }}
+              aspectRatio='1:1'
+              className='w-12 h-12 shrink-0 object-contain bg-void-black border-2 border-ash-gray'
+              variant='inline'
             />
             <h4 className='font-bold text-toxic-green leading-tight font-mono uppercase'>
               {typeof item.name === 'string'

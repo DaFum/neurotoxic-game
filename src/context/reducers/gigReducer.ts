@@ -7,7 +7,7 @@ import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks } from '../../utils/traitUtils'
 import { DEFAULT_GIG_MODIFIERS } from '../initialState'
 import { GAME_PHASES } from '../gameConstants'
-import { isForbiddenKey } from '../../utils/gameStateUtils'
+import { isForbiddenKey, finiteNumberOr } from '../../utils/gameStateUtils'
 import { handleAddVenueBlacklist } from './socialReducer'
 import { QuestLifecycle } from '../../domain/questLifecycle'
 import { QUEST_PROVE_YOURSELF } from '../../data/questsConstants'
@@ -154,7 +154,7 @@ export const handleSetLastGigStats = (
     reputationByVenue: { ...state.reputationByVenue }
   }
 
-  const score = typeof safePayload.score === 'number' ? safePayload.score : 0
+  const score = finiteNumberOr(safePayload.score, 0)
   const location = state.player?.location || 'Unknown'
   const venueId = state.currentGig?.id ?? ''
   const capacity =

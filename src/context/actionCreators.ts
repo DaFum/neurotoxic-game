@@ -21,7 +21,8 @@ import {
   clampNonNegative,
   clampToNonNegativeInt,
   clamp0to100,
-  clampUnitRandom
+  clampUnitRandom,
+  finiteNumberOr
 } from '../utils/gameStateUtils'
 import type { RhythmSetlistEntry } from '../types/rhythmGame'
 import type {
@@ -321,7 +322,19 @@ export const createSetSetlistAction = (
 export const createSetLastGigStatsAction = (
   stats: PostGigSummary | null
 ): Extract<GameAction, { type: typeof ActionTypes.SET_LAST_GIG_STATS }> => {
-  const payloadWithToastId = stats ? { ...stats, toastId: getSafeUUID() } : null
+  const payloadWithToastId = stats
+    ? {
+        ...stats,
+        score: stats.score !== undefined ? finiteNumberOr(stats.score, 0) : undefined,
+        misses: stats.misses !== undefined ? finiteNumberOr(stats.misses, 0) : undefined,
+        accuracy: stats.accuracy !== undefined ? finiteNumberOr(stats.accuracy, 0) : undefined,
+        combo: stats.combo !== undefined ? finiteNumberOr(stats.combo, 0) : undefined,
+        health: stats.health !== undefined ? finiteNumberOr(stats.health, 0) : undefined,
+        overload: stats.overload !== undefined ? finiteNumberOr(stats.overload, 0) : undefined,
+        maxCombo: stats.maxCombo !== undefined ? finiteNumberOr(stats.maxCombo, 0) : undefined,
+        toastId: getSafeUUID()
+      }
+    : null
   return {
     type: ActionTypes.SET_LAST_GIG_STATS,
     payload: payloadWithToastId
