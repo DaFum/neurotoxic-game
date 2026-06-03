@@ -28,7 +28,6 @@ import { handleUpdatePlayer } from './reducers/playerReducer'
 import { bandReducer } from './reducers/bandReducer'
 import {
   handleUpdateSocial,
-  handleAddVenueBlacklist,
   handleUnblacklistVenue,
   handlePirateBroadcast,
   handleMerchPress,
@@ -164,7 +163,6 @@ const reducerMap: ReducerMap = {
   [ActionTypes.PIRATE_BROADCAST]: handlePirateBroadcast,
   [ActionTypes.MERCH_PRESS]: handleMerchPress,
   [ActionTypes.DARK_WEB_LEAK]: handleDarkWebLeak,
-  [ActionTypes.ADD_VENUE_BLACKLIST]: handleAddVenueBlacklist,
   [ActionTypes.UNBLACKLIST_VENUE]: handleUnblacklistVenue,
   [ActionTypes.ADD_QUEST]: handleAddQuest,
   [ActionTypes.ADVANCE_QUEST]: handleAdvanceQuest,

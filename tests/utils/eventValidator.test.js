@@ -24,6 +24,19 @@ describe('validateCrisisEvent', () => {
     assert.strictEqual(validateCrisisEvent(getValidEvent()), true)
   })
 
+  test('accepts every registered event category', () => {
+    for (const category of [
+      'transport',
+      'band',
+      'gig',
+      'financial',
+      'special'
+    ]) {
+      const event = { ...getValidEvent(), category }
+      assert.strictEqual(validateCrisisEvent(event), true)
+    }
+  })
+
   test('throws if event is not an object', () => {
     ;[null, undefined, 'string', 123, true].forEach(input => {
       assert.throws(() => validateCrisisEvent(input), /Event must be an object/)

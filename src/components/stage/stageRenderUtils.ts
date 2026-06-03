@@ -1,6 +1,6 @@
 import { Assets, ImageSource, Texture } from 'pixi.js'
 import { logger } from '../../utils/logger'
-import { BRAND_COLOR_HEX } from '../../utils/brandColors'
+import { BRAND_COLOR_HEX, HEX_COLOR_PATTERN } from '../../utils/brandColors'
 
 // getPixiColorFromToken accepts both `--token` and `--color-token` forms
 // (see CSS-property derivation below). Mirror both keys here so the SSR/test
@@ -14,8 +14,6 @@ const PIXI_TOKEN_FALLBACKS: Readonly<Record<string, string>> = Object.freeze(
   )
 )
 
-const HEX_COLOR_PATTERN = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i
-
 const normalizeHexColor = (colorValue: unknown): string | null => {
   if (typeof colorValue !== 'string') {
     return null
@@ -28,6 +26,10 @@ const normalizeHexColor = (colorValue: unknown): string | null => {
 
   if (normalizedColorValue.length === 4) {
     return `#${normalizedColorValue[1]}${normalizedColorValue[1]}${normalizedColorValue[2]}${normalizedColorValue[2]}${normalizedColorValue[3]}${normalizedColorValue[3]}`
+  }
+
+  if (normalizedColorValue.length === 9) {
+    return normalizedColorValue.slice(0, 7)
   }
 
   return normalizedColorValue

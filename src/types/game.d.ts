@@ -189,10 +189,6 @@ export type GameAction =
   | Action<ActionTypes['CHECK_RIVAL_ENCOUNTER']>
   | Action<ActionTypes['UNLOCK_TRAIT'], { memberId: string; traitId: string }>
   | Action<
-      ActionTypes['ADD_VENUE_BLACKLIST'],
-      { venueId: string; toastId: string }
-    >
-  | Action<
       ActionTypes['UNBLACKLIST_VENUE'],
       { venueId: string; toastId: string }
     >

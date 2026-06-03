@@ -682,19 +682,6 @@ export const createUnlockTraitAction = (
 })
 
 /**
- * Creates an action to blacklist a venue.
- * The `handleAddVenueBlacklist` reducer handles it.
- * @param {string} venueId - The ID of the venue to blacklist.
- * @returns {Object} Action object
- */
-export const createAddVenueBlacklistAction = (
-  venueId: string
-): Extract<GameAction, { type: typeof ActionTypes.ADD_VENUE_BLACKLIST }> => ({
-  type: ActionTypes.ADD_VENUE_BLACKLIST,
-  payload: { venueId, toastId: getSafeUUID() }
-})
-
-/**
  * Creates an action to remove a venue from the blacklist ("make amends").
  * The `handleUnblacklistVenue` reducer charges the amends cost and is the final
  * authority on affordability; this creator only normalizes a hostile id to ''.

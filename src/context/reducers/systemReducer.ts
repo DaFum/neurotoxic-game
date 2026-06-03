@@ -1710,7 +1710,9 @@ const EFFECT_REVERTERS: Record<
 > = {
   harmony: (band: BandState, value: unknown) => ({
     ...band,
-    harmony: clampBandHarmony((band.harmony ?? 1) - (value as number))
+    harmony: clampBandHarmony(
+      finiteNumberOr(band.harmony, 1) - finiteNumberOr(value, 0)
+    )
   }),
   guitar_difficulty: (band: BandState, value: unknown) => ({
     ...band,

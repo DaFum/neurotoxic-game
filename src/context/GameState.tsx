@@ -12,11 +12,7 @@ import { logger, isValidLogLevel } from '../utils/logger'
 import { getUnlocks } from '../utils/unlockManager'
 import { isLooseRecord } from '../utils/gameStateUtils'
 import { useLeaderboardSync } from '../hooks/useLeaderboardSync'
-import {
-  safeStorage,
-  safeStorageNoFallback,
-  getSafeStorageItem
-} from '../utils/storage'
+import { safeStorageOperation, getSafeStorageItem } from '../utils/storage'
 
 // Import modular state management
 import { createInitialState } from './initialState'
@@ -82,14 +78,18 @@ function useRequiredContext<T>(context: Context<T | null>, name: string): T {
  */
 // Lazy initialization of state to ensure fresh data fetch on mount
 const initGameState = (): GameState => {
-  const unlocks = safeStorage('loadUnlocks', () => getUnlocks(), [] as string[])
+  const unlocks = safeStorageOperation(
+    'loadUnlocks',
+    () => getUnlocks(),
+    [] as string[]
+  )
   const freshState = createInitialState({ unlocks })
 
   // Check for test-injected state (screenshot testing).
   // A special marker key signals the state was placed by the screenshot
   // injection script and should be hydrated on mount.  Normal player
   // saves are loaded explicitly via the MENU → "Load Game" button.
-  const shouldHydrate = safeStorage(
+  const shouldHydrate = safeStorageOperation(
     'checkInjectMarker',
     () => localStorage.getItem('neurotoxic_inject_marker') === 'true',
     false
@@ -131,13 +131,13 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   // Clean up injection marker after mount (deferred from initGameState to
   // survive React StrictMode's double-invocation of lazy initialisers).
   useEffect(() => {
-    safeStorageNoFallback('removeInjectMarker', () =>
+    safeStorageOperation('removeInjectMarker', () =>
       localStorage.removeItem('neurotoxic_inject_marker')
     )
 
     // Also clean up on page unload to prevent marker persistence if test crashes
     const handleUnload = () => {
-      safeStorageNoFallback('removeInjectMarkerOnUnload', () =>
+      safeStorageOperation('removeInjectMarkerOnUnload', () =>
         localStorage.removeItem('neurotoxic_inject_marker')
       )
     }

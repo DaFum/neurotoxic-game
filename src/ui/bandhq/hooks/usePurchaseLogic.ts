@@ -27,6 +27,7 @@ import {
   clampPlayerFame,
   calculateFameLevel
 } from '../../../utils/gameStateUtils'
+import { isForbiddenKey } from '../../../utils/objectUtils'
 import type {
   BandState,
   PlayerState,
@@ -94,9 +95,7 @@ const asToastOptions = (value: unknown): Record<string, unknown> => {
   const options: Record<string, unknown> = Object.create(null)
   const source = value as Record<string, unknown>
   for (const key of Object.keys(source)) {
-    if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
-      continue
-    }
+    if (isForbiddenKey(key)) continue
     if (Object.hasOwn(source, key)) {
       options[key] = source[key]
     }

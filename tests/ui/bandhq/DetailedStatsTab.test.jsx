@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { DetailedStatsTab } from '../../../src/ui/bandhq/DetailedStatsTab.tsx'
 
 vi.mock('react-i18next', () => ({
@@ -11,6 +11,7 @@ vi.mock('react-i18next', () => ({
           'Das grüne Zeug, das leuchtet. Sie wollen, dass ihr es auf der Bühne trinkt.',
         'economy:brandDeals.energy_drink_cx.name': 'Toxischer Energy-Drink',
         'events:quest_sponsor_demand.label': 'Bizarre Forderung des Sponsors',
+        'ui:detailedStats.useInventoryItem': 'Use',
         'ui:stats.active_quests': 'Aktive Quests',
         'ui:ui.day': 'Tag'
       }
@@ -91,5 +92,36 @@ describe('DetailedStatsTab', () => {
         'Das grüne Zeug, das leuchtet. Sie wollen, dass ihr es auf der Bühne trinkt.'
       )
     ).toBeInTheDocument()
+  })
+
+  it('calls the inventory consume action for usable gear', () => {
+    const onConsumeItem = vi.fn()
+    render(
+      <DetailedStatsTab
+        player={player}
+        band={{ ...band, inventory: { strings: true } }}
+        social={social}
+        onConsumeItem={onConsumeItem}
+      />
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Use strings' }))
+
+    expect(onConsumeItem).toHaveBeenCalledWith('strings')
+  })
+
+  it('does not expose consume controls for passive owned gear', () => {
+    render(
+      <DetailedStatsTab
+        player={player}
+        band={{ ...band, inventory: { golden_pick: true } }}
+        social={social}
+        onConsumeItem={vi.fn()}
+      />
+    )
+
+    expect(
+      screen.queryByRole('button', { name: 'Use golden_pick' })
+    ).not.toBeInTheDocument()
   })
 })

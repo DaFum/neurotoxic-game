@@ -2,8 +2,9 @@
  * Crisis Event Validation Utility
  * Validates event objects against the expected structure and types.
  */
+import { EVENT_CATEGORIES } from '../data/events/categories'
 
-const VALID_CATEGORIES = ['band', 'financial', 'special']
+const VALID_CATEGORIES = new Set<string>(EVENT_CATEGORIES)
 const VALID_TRIGGERS = ['post_gig', 'travel', 'random']
 
 /**
@@ -109,10 +110,7 @@ export const validateCrisisEvent = (event: unknown): boolean => {
     throw new Error('Invalid event id: ' + String(e.id))
   }
 
-  if (
-    typeof e.category !== 'string' ||
-    !VALID_CATEGORIES.includes(e.category)
-  ) {
+  if (typeof e.category !== 'string' || !VALID_CATEGORIES.has(e.category)) {
     throw new Error(
       'Invalid category: ' + String(e.category) + ' for event ' + String(e.id)
     )

@@ -16,6 +16,27 @@ import {
 import { createInitialState } from '../../src/context/initialState'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 
+test('handleAdvanceDay ignores non-finite expired harmony effect values', () => {
+  const state = createInitialState()
+  state.player.money = 10000
+  state.band.harmony = 50
+  state.band.activeContrabandEffects = [
+    {
+      effectType: 'harmony',
+      value: Number.NaN,
+      remainingDuration: 1
+    }
+  ]
+
+  const nextState = handleAdvanceDay(state, {
+    dayRngStream: [],
+    nextRngSeed: state.rngSeed,
+    rng: () => 0.5
+  })
+
+  assert.ok(nextState.band.harmony > 1)
+})
+
 test('systemReducer - LOAD_GAME', async t => {
   await t.test(
     'loads game and sanitizes player, band, and social state',

@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
 
-import { safeStorage, safeStorageNoFallback } from '../../src/utils/storage'
+import { safeStorageOperation } from '../../src/utils/storage'
 
 describe('storage operation wrappers', () => {
-  test('safeStorage returns fallback when storage work fails', () => {
-    const result = safeStorage(
+  test('safeStorageOperation returns fallback when storage work fails', () => {
+    const result = safeStorageOperation(
       'testStorageFallback',
       () => {
         throw new Error('storage unavailable')
@@ -16,10 +16,10 @@ describe('storage operation wrappers', () => {
     assert.equal(result, 'fallback')
   })
 
-  test('safeStorageNoFallback throws a StorageError when storage work fails', () => {
+  test('safeStorageOperation throws a StorageError without fallback', () => {
     assert.throws(
       () =>
-        safeStorageNoFallback('testStorageThrow', () => {
+        safeStorageOperation('testStorageThrow', () => {
           throw new Error('storage unavailable')
         }),
       error =>

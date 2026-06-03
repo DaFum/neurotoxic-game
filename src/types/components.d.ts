@@ -398,7 +398,6 @@ export type Effect =
   | (EffectBase & { type: 'passive'; key: string; value?: unknown })
   | (EffectBase & { type: 'unlock_hq'; id: string })
 
-export type CatalogEffect = Effect
 export type CatalogInputEffect = Effect | Record<string, unknown>
 
 export interface PurchaseItem {

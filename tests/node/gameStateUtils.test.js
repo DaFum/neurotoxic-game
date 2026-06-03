@@ -114,6 +114,48 @@ test('applyEventDelta clamps values', () => {
   assert.equal(nextState.band.members[0].stamina, 0) // min 0
 })
 
+test('applyEventDelta preserves deltas when persisted numeric bases are stale', () => {
+  const state = {
+    player: {
+      money: Number.NaN,
+      fame: undefined,
+      van: {
+        fuel: undefined,
+        condition: Number.NaN
+      }
+    },
+    band: {
+      harmony: Number.NaN,
+      luck: Number.NaN,
+      members: []
+    }
+  }
+  const delta = {
+    player: {
+      money: 25,
+      fame: 10,
+      van: {
+        fuel: 7,
+        condition: 8
+      }
+    },
+    band: {
+      harmony: 4,
+      luck: 3
+    }
+  }
+
+  const nextState = applyEventDelta(state, delta)
+
+  assert.equal(nextState.player.money, 25)
+  assert.equal(nextState.player.fame, 10)
+  assert.equal(nextState.player.fameLevel, 0)
+  assert.equal(nextState.player.van.fuel, 7)
+  assert.equal(nextState.player.van.condition, 8)
+  assert.equal(nextState.band.harmony, 5)
+  assert.equal(nextState.band.luck, 3)
+})
+
 test('applyEventDelta handles band inventory updates', () => {
   const state = {
     band: { inventory: { shirts: 10, golden_pick: false } }
@@ -274,6 +316,61 @@ test('calculateAppliedDelta calculates correctly with limits and forbidden keys'
     Object.hasOwn(applied.band.membersDelta[0] ?? {}, 'prototype'),
     false
   )
+})
+
+test('calculateAppliedDelta falls back from non-finite current numeric state', () => {
+  const state = {
+    player: {
+      money: Number.NaN,
+      fame: Number.POSITIVE_INFINITY,
+      van: {
+        fuel: Number.NaN,
+        condition: Number.POSITIVE_INFINITY
+      }
+    },
+    band: {
+      harmony: Number.NaN,
+      luck: Number.NaN,
+      members: [],
+      inventory: {}
+    },
+    social: {
+      controversyLevel: Number.NaN,
+      viral: Number.POSITIVE_INFINITY,
+      loyalty: Number.NaN
+    }
+  }
+  const delta = {
+    player: {
+      money: 15,
+      fame: 20,
+      van: {
+        fuel: 5,
+        condition: 6
+      }
+    },
+    band: {
+      harmony: 7,
+      luck: 2
+    },
+    social: {
+      controversyLevel: 3,
+      viral: 4,
+      loyalty: 5
+    }
+  }
+
+  const applied = calculateAppliedDelta(state, delta)
+
+  assert.equal(applied.player.money, 15)
+  assert.equal(applied.player.fame, 20)
+  assert.equal(applied.player.van.fuel, 5)
+  assert.equal(applied.player.van.condition, 6)
+  assert.equal(applied.band.harmony, 7)
+  assert.equal(applied.band.luck, 2)
+  assert.equal(applied.social.controversyLevel, 3)
+  assert.equal(applied.social.viral, 4)
+  assert.equal(applied.social.loyalty, 5)
 })
 
 test('calculateAppliedDelta emits empty applied delta for missing members', () => {

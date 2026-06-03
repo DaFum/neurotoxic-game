@@ -555,7 +555,7 @@ const applyContrabandEffect = (
     // removed return newBand so duration logic handles it at the end
   } else if (item.effectType === 'harmony') {
     newBand.harmony = clampBandHarmony(
-      (newBand.harmony ?? 1) + (item.value as number)
+      finiteNumberOr(newBand.harmony, 1) + finiteNumberOr(item.value, 0)
     )
   } else {
     applySharedBandEffect(newBand, item.effectType, item.value as number)

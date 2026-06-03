@@ -12,7 +12,7 @@ import type {
 } from '../types'
 import { QuestLifecycle } from '../domain/questLifecycle'
 import { getQuestDefinition } from '../data/questRegistry'
-import { isForbiddenKey } from './objectUtils'
+import { isForbiddenKey, isLooseRecord } from './objectUtils'
 
 export type LegacyQuestProgressEvent =
   | {
@@ -137,9 +137,6 @@ const BRAND_DEAL_TYPES = new Set<string>([
 const isBrandDealType = (value: string): value is BrandDealType =>
   BRAND_DEAL_TYPES.has(value)
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value)
-
 const readOwnString = (
   record: Record<string, unknown>,
   key: string
@@ -197,7 +194,7 @@ const getEventContext = (event: QuestProgressEvent): QuestEventContext => {
   const rawContext = Object.hasOwn(eventRecord, 'context')
     ? eventRecord.context
     : undefined
-  if (isRecord(rawContext)) {
+  if (isLooseRecord(rawContext)) {
     for (const key of Object.keys(rawContext)) {
       if (isForbiddenKey(key)) continue
       context[key] = rawContext[key]

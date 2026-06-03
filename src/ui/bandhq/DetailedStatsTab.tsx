@@ -52,6 +52,12 @@ const isUnlocked = (val: unknown) => {
   return !!val
 }
 
+const USABLE_BOOLEAN_INVENTORY_ITEMS = new Set([
+  'strings',
+  'cables',
+  'drum_parts'
+])
+
 // Generate CHAR_MAP using a single pass loop to avoid intermediate array allocations
 // from chained map/filter pipelines that run on module evaluation.
 const CHAR_MAP: Record<string, CharacterDefinition> = {}
@@ -592,30 +598,65 @@ const BandMetricsSection = ({
 
 const InventoryEquipmentSection = ({
   band,
+  onConsumeItem,
   t
-}: { band: BandData } & BasicTProps) => (
+}: {
+  band: BandData
+  onConsumeItem?: (itemId: string) => void
+} & BasicTProps) => (
   <Panel
     title={t('ui:stats.inventory_equipment', {
       defaultValue: 'Inventory & Equipment'
     })}
   >
     <div className='grid grid-cols-2 gap-x-8 gap-y-1'>
-      {Object.entries(band.inventory || {}).map(([key, val]) => (
-        <DetailRow
-          key={key}
-          label={t(`items:${key}.name`, {
-            defaultValue: key.replace(/_/g, ' ').toUpperCase()
-          })}
-          value={
-            val === true
-              ? t('ui:ui.owned', { defaultValue: 'OWNED' })
-              : val === false
-                ? t('ui:ui.locked', { defaultValue: 'LOCKED' })
-                : String(val)
-          }
-          locked={!isUnlocked(val)}
-        />
-      ))}
+      {Object.entries(band.inventory || {}).map(([key, val]) => {
+        const canConsume =
+          val === true &&
+          onConsumeItem !== undefined &&
+          USABLE_BOOLEAN_INVENTORY_ITEMS.has(key)
+        const status =
+          val === true
+            ? t('ui:ui.owned', { defaultValue: 'OWNED' })
+            : val === false
+              ? t('ui:ui.locked', { defaultValue: 'LOCKED' })
+              : String(val)
+        return (
+          <DetailRow
+            key={key}
+            label={t(`items:${key}.name`, {
+              defaultValue: key.replace(/_/g, ' ').toUpperCase()
+            })}
+            value={
+              canConsume ? (
+                <div className='flex items-center justify-end gap-2'>
+                  <span>{status}</span>
+                  <button
+                    type='button'
+                    onClick={() => onConsumeItem(key)}
+                    aria-label={t('ui:detailedStats.useInventoryItemAria', {
+                      item: key,
+                      defaultValue: `Use ${key}`
+                    })}
+                    className='min-h-7 border px-2 text-xs uppercase'
+                    style={{
+                      borderColor: 'var(--color-toxic-green)',
+                      color: 'var(--color-toxic-green)'
+                    }}
+                  >
+                    {t('ui:detailedStats.useInventoryItem', {
+                      defaultValue: 'Use'
+                    })}
+                  </button>
+                </div>
+              ) : (
+                status
+              )
+            }
+            locked={!isUnlocked(val)}
+          />
+        )
+      })}
     </div>
   </Panel>
 )
@@ -907,7 +948,8 @@ export const DetailedStatsTab = ({
   venueBlacklist = [],
   reputationByRegion = {},
   onMakeAmends,
-  onCraft
+  onCraft,
+  onConsumeItem
 }: {
   player: PlayerData
   band: BandData
@@ -917,6 +959,7 @@ export const DetailedStatsTab = ({
   reputationByRegion?: Record<string, number>
   onMakeAmends?: (venueId: string) => void
   onCraft?: (recipeId: string) => void
+  onConsumeItem?: (itemId: string) => void
 }) => {
   const { t } = useTranslation([
     'ui',
@@ -951,7 +994,11 @@ export const DetailedStatsTab = ({
       {/* Band Metrics */}
       <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
         <BandMetricsSection band={band} social={social} t={t} />
-        <InventoryEquipmentSection band={band} t={t} />
+        <InventoryEquipmentSection
+          band={band}
+          onConsumeItem={onConsumeItem}
+          t={t}
+        />
       </div>
 
       {/* Workshop */}

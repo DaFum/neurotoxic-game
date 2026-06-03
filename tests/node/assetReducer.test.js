@@ -431,6 +431,39 @@ test('handleSellChassis - pays off all liabilities for the sold asset', () => {
   )
 })
 
+test('handleSellChassis - rejects sale when liability exceeds gross sale value', () => {
+  const configTier = CHASSIS_CONFIG.tourbus_chassis.legit[1]
+  const startState = {
+    ...mockState,
+    assets: [
+      {
+        id: 'a1',
+        kind: 'tourbus_chassis',
+        chassisFlavor: 'legit',
+        chassisTier: 1,
+        condition: 100,
+        baseUpkeep: configTier.upkeep,
+        baseDailyRevenue: configTier.revenue,
+        slots: [],
+        acquiredOnDay: mockState.player.day,
+        acquisitionMode: 'loan',
+        baseRiskEventChance: configTier.baseRiskEventChance
+      }
+    ],
+    liabilities: [
+      {
+        id: 'loan_1',
+        assetId: 'a1',
+        principalRemaining: configTier.price + 1
+      }
+    ]
+  }
+
+  const next = handleSellChassis(startState, { assetId: 'a1' })
+
+  assert.strictEqual(next, startState)
+})
+
 test('handleSellChassis - ignores non-finite liability principal when computing payoff', () => {
   const configTier = CHASSIS_CONFIG.tourbus_chassis.legit[1]
   const startState = {

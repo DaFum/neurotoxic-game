@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DEFAULT_MERCH_PRICES } from '../../utils/economyEngine'
-import { finiteNumberOr } from '../../utils/gameStateUtils'
 import { formatCurrency } from '../../utils/numberUtils'
 import {
+  getMerchCapacity,
   resolveMerchRestockCost,
   getMerchBundleAmount,
   getTotalMerchStock
@@ -107,8 +107,6 @@ const MerchItemRow: React.FC<MerchItemRowProps> = ({
   )
 }
 
-const BASE_MERCH_CAPACITY = 100
-
 export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
   bandInventory,
   customPrices,
@@ -121,8 +119,7 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
 
   const merchItems = useMemo(() => {
     const items: MerchItem[] = []
-    const merchCapacity =
-      BASE_MERCH_CAPACITY + Math.max(0, finiteNumberOr(merchCapacityBonus, 0))
+    const merchCapacity = getMerchCapacity(merchCapacityBonus)
     const remainingCapacity = Math.max(
       0,
       merchCapacity - getTotalMerchStock(bandInventory)

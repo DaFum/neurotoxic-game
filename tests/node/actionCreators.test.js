@@ -34,7 +34,6 @@ import {
   createStartKabelsalatMinigameAction,
   createCompleteKabelsalatMinigameAction,
   createUnlockTraitAction,
-  createAddVenueBlacklistAction,
   createAddQuestAction,
   createAdvanceQuestAction,
   createAddUnlockAction,
@@ -450,15 +449,6 @@ describe('Action Creators', () => {
         createCompleteTravelMinigameAction(Number.NaN, [], Number.NaN).payload,
         { damageTaken: 0, itemsCollected: [], rngValue: undefined }
       )
-    })
-  })
-
-  describe('createAddVenueBlacklistAction', () => {
-    it('creates correct action', () => {
-      const action = createAddVenueBlacklistAction('venue_1')
-      assert.strictEqual(action.type, ActionTypes.ADD_VENUE_BLACKLIST)
-      assert.strictEqual(action.payload.venueId, 'venue_1')
-      assert.ok(typeof action.payload.toastId === 'string')
     })
   })
 

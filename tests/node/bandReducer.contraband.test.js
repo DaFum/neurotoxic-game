@@ -107,6 +107,32 @@ describe('bandReducer - Contraband', () => {
       )
     })
 
+    it('uses finite fallbacks for harmony consumable effects', () => {
+      const state = {
+        band: {
+          ...DEFAULT_BAND_STATE,
+          harmony: Number.NaN,
+          stash: {
+            c_test_harmony: {
+              id: 'c_test_harmony',
+              instanceId: 'test-harmony',
+              type: 'consumable',
+              effectType: 'harmony',
+              value: 4
+            }
+          }
+        }
+      }
+      const payload = {
+        instanceId: 'test-harmony',
+        contrabandId: 'c_test_harmony'
+      }
+
+      const newState = handleUseContraband(state, payload)
+
+      assert.equal(newState.band.harmony, 5)
+    })
+
     it('applies persistent untargeted effects directly if duration is not set', () => {
       const state = {
         band: {

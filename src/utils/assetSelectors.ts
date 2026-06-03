@@ -9,8 +9,9 @@ import type {
   Liability
 } from '../types/assets'
 import { MODULE_REGISTRY } from './assetModuleRegistry'
+import { CHASSIS_CONFIG } from './assetConfig'
 import { calculateGuaranteedDailyCost } from './economyEngine'
-import { isFiniteNumber } from './finiteNumber'
+import { finiteNumberOr, isFiniteNumber } from './finiteNumber'
 
 /**
  * Identity element for AssetModifiers aggregation. Multiplicative fields
@@ -42,6 +43,34 @@ export const NEUTRAL_ASSET_MODIFIERS: AssetModifiers = Object.freeze({
 }) as AssetModifiers
 
 const BROKEN_THRESHOLD = 20
+
+export const calculateChassisGrossSaleValue = (
+  asset: LongTermAsset,
+  currentDay: unknown
+): number | null => {
+  const configTier =
+    CHASSIS_CONFIG[asset.kind]?.[asset.chassisFlavor]?.[asset.chassisTier]
+  if (!configTier) return null
+
+  const daysOwned = Math.max(
+    0,
+    finiteNumberOr(currentDay, 0) - finiteNumberOr(asset.acquiredOnDay, 0)
+  )
+  const conditionFactor = finiteNumberOr(asset.condition, 0) / 100
+  const depreciation = Math.max(0.4, 1 - (daysOwned / 365) * 0.4)
+
+  let moduleRefunds = 0
+  for (const slot of asset.slots) {
+    if (!slot.installedModuleId) continue
+    const moduleInfo = MODULE_REGISTRY[slot.installedModuleId]
+    if (!moduleInfo) continue
+    moduleRefunds +=
+      finiteNumberOr(moduleInfo.cost, 0) *
+      finiteNumberOr(moduleInfo.removalRefundFraction, 0)
+  }
+
+  return configTier.price * conditionFactor * depreciation + moduleRefunds
+}
 
 /** Reads the installed modules of an asset by resolving slot ids against the registry. */
 export const getInstalledModules = (asset: LongTermAsset): AssetModule[] => {

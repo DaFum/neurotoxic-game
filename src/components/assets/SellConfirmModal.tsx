@@ -4,10 +4,9 @@ import { Tooltip } from '../../ui/shared/Tooltip'
 import { ActionButton } from '../../ui/shared/ActionButton'
 import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 import { getChassisImagePrompt } from '../../utils/imageGen'
-import { CHASSIS_CONFIG } from '../../utils/assetConfig'
 import { formatCurrency } from '../../utils/numberUtils'
 import { useGameActions, useGameSelector } from '../../context/GameState'
-import { selectLiabilitiesMap } from '../../utils/assetSelectors'
+import { calculateChassisGrossSaleValue } from '../../utils/assetSelectors'
 import type { LongTermAsset } from '../../types/assets'
 
 interface Props {
@@ -25,15 +24,17 @@ export const SellConfirmModal = ({ asset, isOpen, onClose }: Props) => {
   const { t, i18n } = useTranslation(['assets'])
   const { sellChassis } = useGameActions()
   const day = useGameSelector(s => s.player.day)
-  const liability = useGameSelector(s => selectLiabilitiesMap(s).get(asset.id))
+  const liabilityDebt = useGameSelector(s =>
+    (s.liabilities ?? []).reduce(
+      (sum, liability) =>
+        liability.assetId === asset.id
+          ? sum + liability.principalRemaining
+          : sum,
+      0
+    )
+  )
 
-  const cfg =
-    CHASSIS_CONFIG[asset.kind]?.[asset.chassisFlavor]?.[asset.chassisTier]
-  const conditionFactor = asset.condition / 100
-  const daysOwned = Math.max(0, day - asset.acquiredOnDay)
-  const depreciation = Math.max(0.4, 1 - (daysOwned / 365) * 0.4)
-  const grossSale = (cfg?.price ?? 0) * conditionFactor * depreciation
-  const liabilityDebt = liability?.principalRemaining ?? 0
+  const grossSale = calculateChassisGrossSaleValue(asset, day) ?? 0
   const net = grossSale - liabilityDebt
   const blocked = net < 0
 

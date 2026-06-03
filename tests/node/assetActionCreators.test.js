@@ -630,6 +630,34 @@ describe('startCrowdfund / sellChassis / repairChassis / removeModule', () => {
     assert.equal(action, null)
   })
 
+  it('sellChassis returns FAILED when liability exceeds sale value', () => {
+    setupTourbusT1()
+    const action = sellChassis(
+      'asset_1',
+      makeState({
+        assets: [makeAsset()],
+        liabilities: [
+          {
+            id: 'loan_1',
+            source: 'loan',
+            assetId: 'asset_1',
+            principalRemaining: 5000,
+            interestRate: 0.08,
+            dailyPayment: 20,
+            termDaysRemaining: 40,
+            defaultCounter: 0
+          }
+        ]
+      })
+    )
+
+    assert.equal(action.type, ActionTypes.SELL_CHASSIS_FAILED)
+    assert.deepEqual(action.payload, {
+      assetId: 'asset_1',
+      reason: 'LIABILITY_EXCEEDS_VALUE'
+    })
+  })
+
   it('sellChassis / repairChassis / removeModule shape', () => {
     const repairState = makeState({
       assets: [makeAsset({ id: 'a1', condition: 90 })]

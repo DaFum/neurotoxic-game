@@ -35,10 +35,18 @@ import {
   getSlotConflicts,
   hasActiveAssetAcquisition,
   getLockReasons,
+  isModuleUnlocked,
+  calculateChassisGrossSaleValue,
   selectAssetsMap
 } from '../utils/assetSelectors'
 import { finiteNumberOr } from '../utils/gameStateUtils'
 import { getSafeUUID } from '../utils/crypto'
+import {
+  VALID_ASSET_ACQUISITION_MODES,
+  VALID_ASSET_FLAVORS,
+  VALID_ASSET_KINDS,
+  VALID_ASSET_TIERS
+} from '../utils/assetValidation'
 import type { GameState, GameAction } from '../types'
 import type {
   AcquisitionMode,
@@ -76,6 +84,10 @@ type UpgradeChassisTierAction = Extract2<
   typeof ActionTypes.UPGRADE_CHASSIS_TIER
 >
 type SellChassisAction = Extract2<GameAction, typeof ActionTypes.SELL_CHASSIS>
+type SellChassisFailedAction = Extract2<
+  GameAction,
+  typeof ActionTypes.SELL_CHASSIS_FAILED
+>
 type RepairChassisAction = Extract2<
   GameAction,
   typeof ActionTypes.REPAIR_CHASSIS
@@ -96,16 +108,6 @@ type AssetForeclosedAction = Extract2<
   GameAction,
   typeof ActionTypes.ASSET_FORECLOSED
 >
-
-const VALID_KINDS: ReadonlySet<string> = new Set([
-  'tourbus_chassis',
-  'studio_chassis',
-  'bandhaus_chassis',
-  'merch_workshop_chassis'
-])
-const VALID_FLAVORS: ReadonlySet<string> = new Set(['legit', 'diy'])
-const VALID_TIERS: ReadonlySet<number> = new Set([1, 2, 3])
-const VALID_MODES: ReadonlySet<string> = new Set(['cash', 'loan', 'crowdfund'])
 
 /**
  * Composes the pre-generated `NewSlotEntry` array for a module that uses
@@ -148,14 +150,14 @@ export const purchaseChassis = (
     payload: { reason }
   })
 
-  if (!VALID_FLAVORS.has(raw.flavor)) {
+  if (!VALID_ASSET_FLAVORS.has(raw.flavor)) {
     return fail('UNKNOWN_FLAVOR')
   }
 
   if (
-    !VALID_KINDS.has(raw.kind) ||
-    !VALID_TIERS.has(raw.tier) ||
-    !VALID_MODES.has(raw.mode)
+    !VALID_ASSET_KINDS.has(raw.kind) ||
+    !VALID_ASSET_TIERS.has(raw.tier) ||
+    !VALID_ASSET_ACQUISITION_MODES.has(raw.mode)
   ) {
     return fail('UNKNOWN_KIND_OR_TIER')
   }
@@ -236,6 +238,7 @@ export const installModule = (
   if (!slot) return fail('UNKNOWN_SLOT')
   if (slot.installedModuleId !== null) return fail('SLOT_OCCUPIED')
   if (slot.slotType !== module.slotType) return fail('SLOT_TYPE_MISMATCH')
+  if (!isModuleUnlocked(module, state)) return fail('LOCKED')
   if (getLockReasons(module, state, asset).length > 0) return fail('LOCKED')
   const conflicts = getSlotConflicts(asset, raw.moduleId)
   if (!conflicts.canInstall) return fail('EXCLUSIVITY')
@@ -316,10 +319,41 @@ export const upgradeChassisTier = (
   }
 }
 
-export const sellChassis = (assetId: string): SellChassisAction => ({
-  type: ActionTypes.SELL_CHASSIS,
-  payload: { assetId }
-})
+export const sellChassis = (
+  assetId: string,
+  state?: GameState
+): SellChassisAction | SellChassisFailedAction => {
+  if (state) {
+    const asset = selectAssetsMap(state).get(assetId)
+    const grossSale =
+      asset !== undefined
+        ? calculateChassisGrossSaleValue(asset, state.player.day)
+        : null
+
+    if (grossSale !== null) {
+      let totalPrincipalRemaining = 0
+      for (const liability of state.liabilities ?? []) {
+        if (liability.assetId !== assetId) continue
+        totalPrincipalRemaining += Math.max(
+          0,
+          finiteNumberOr(liability.principalRemaining, 0)
+        )
+      }
+
+      if (grossSale < totalPrincipalRemaining) {
+        return {
+          type: ActionTypes.SELL_CHASSIS_FAILED,
+          payload: { assetId, reason: 'LIABILITY_EXCEEDS_VALUE' }
+        }
+      }
+    }
+  }
+
+  return {
+    type: ActionTypes.SELL_CHASSIS,
+    payload: { assetId }
+  }
+}
 
 export const repairChassis = (
   assetId: string,
@@ -405,9 +439,9 @@ export const startCrowdfund = (
   state: Pick<GameState, 'assets' | 'crowdfundCampaigns'>
 ): StartCrowdfundAction | null => {
   if (
-    !VALID_KINDS.has(raw.kind) ||
-    !VALID_FLAVORS.has(raw.flavor) ||
-    !VALID_TIERS.has(raw.tier)
+    !VALID_ASSET_KINDS.has(raw.kind) ||
+    !VALID_ASSET_FLAVORS.has(raw.flavor) ||
+    !VALID_ASSET_TIERS.has(raw.tier)
   ) {
     return null
   }

@@ -198,6 +198,11 @@ export const clamp0to100 = (value: number): number => {
   return Math.max(0, Math.min(100, Math.floor(value)))
 }
 
+export const clampReputation = (value: number): number => {
+  if (!Number.isFinite(value)) return 0
+  return Math.max(-100, Math.min(100, Math.floor(value)))
+}
+
 /**
  * Clamps an amp-calibration dial value to its valid 0..1000 range.
  *
@@ -398,7 +403,7 @@ const calculateClampedStatDelta = (
   currentValue: number | null | undefined,
   deltaValue: number
 ): number => {
-  const baseValue = typeof currentValue === 'number' ? currentValue : 0
+  const baseValue = finiteNumberOr(currentValue, 0)
   const nextValue = Math.max(0, baseValue + deltaValue)
   return nextValue - baseValue
 }
@@ -407,7 +412,7 @@ const calculateClampedControversyDelta = (
   currentValue: number | null | undefined,
   deltaValue: number
 ): number => {
-  const baseValue = typeof currentValue === 'number' ? currentValue : 0
+  const baseValue = finiteNumberOr(currentValue, 0)
   const nextValue = clampControversyLevel(baseValue + deltaValue)
   return nextValue - baseValue
 }
@@ -529,10 +534,7 @@ export const calculateAppliedDelta = (
 
   if (delta.player) {
     if (typeof delta.player.money === 'number') {
-      const currentMoney = Math.max(
-        0,
-        typeof state.player?.money === 'number' ? state.player.money : 0
-      )
+      const currentMoney = Math.max(0, finiteNumberOr(state.player?.money, 0))
       const nextMoney = clampPlayerMoney(currentMoney + delta.player.money)
       applied.player.money = nextMoney - currentMoney
     }
@@ -540,10 +542,7 @@ export const calculateAppliedDelta = (
       applied.player.time = delta.player.time // time is unbounded
     }
     if (typeof delta.player.fame === 'number') {
-      const currentFame = Math.max(
-        0,
-        typeof state.player?.fame === 'number' ? state.player.fame : 0
-      )
+      const currentFame = Math.max(0, finiteNumberOr(state.player?.fame, 0))
       const nextFame = clampPlayerFame(currentFame + delta.player.fame)
       applied.player.fame = nextFame - currentFame
     }
@@ -562,18 +561,12 @@ export const calculateAppliedDelta = (
     if (delta.player.van) {
       applied.player.van = {}
       if (typeof delta.player.van.fuel === 'number') {
-        const currentFuel =
-          typeof state.player?.van?.fuel === 'number'
-            ? state.player.van.fuel
-            : 0
+        const currentFuel = finiteNumberOr(state.player?.van?.fuel, 0)
         const nextFuel = clampVanFuel(currentFuel + delta.player.van.fuel)
         applied.player.van.fuel = nextFuel - currentFuel
       }
       if (typeof delta.player.van.condition === 'number') {
-        const currentCondition =
-          typeof state.player?.van?.condition === 'number'
-            ? state.player.van.condition
-            : 0
+        const currentCondition = finiteNumberOr(state.player?.van?.condition, 0)
         const nextCondition = clampVanCondition(
           currentCondition + delta.player.van.condition
         )
@@ -611,7 +604,9 @@ export const calculateAppliedDelta = (
 
   if (delta.band) {
     if (typeof delta.band.harmony === 'number') {
-      const currentHarmony = clampBandHarmony(state.band?.harmony ?? 1)
+      const currentHarmony = clampBandHarmony(
+        finiteNumberOr(state.band?.harmony, 1)
+      )
       const nextHarmony = clampBandHarmony(currentHarmony + delta.band.harmony)
       applied.band.harmony = nextHarmony - currentHarmony
     }
@@ -711,8 +706,7 @@ export const calculateAppliedDelta = (
     }
 
     if (typeof delta.band.luck === 'number') {
-      const currentLuck =
-        typeof state.band?.luck === 'number' ? state.band.luck : 0
+      const currentLuck = finiteNumberOr(state.band?.luck, 0)
       const nextLuck = Math.max(0, currentLuck + delta.band.luck)
       applied.band.luck = nextLuck - currentLuck
     }
@@ -826,14 +820,18 @@ export const applyEventDelta = (
   if (delta.player) {
     const nextPlayer = { ...nextState.player }
     if (typeof delta.player.money === 'number') {
-      const nextMoney = clampPlayerMoney(nextPlayer.money + delta.player.money)
+      const nextMoney = clampPlayerMoney(
+        finiteNumberOr(nextPlayer.money, 0) + delta.player.money
+      )
       nextPlayer.money = nextMoney
     }
     if (typeof delta.player.time === 'number') {
       nextPlayer.time = nextPlayer.time + delta.player.time
     }
     if (typeof delta.player.fame === 'number') {
-      nextPlayer.fame = clampPlayerFame(nextPlayer.fame + delta.player.fame)
+      nextPlayer.fame = clampPlayerFame(
+        finiteNumberOr(nextPlayer.fame, 0) + delta.player.fame
+      )
       nextPlayer.fameLevel = calculateFameLevel(nextPlayer.fame)
     }
     const scoreDelta =
@@ -880,11 +878,13 @@ export const applyEventDelta = (
     if (delta.player.van) {
       const nextVan = { ...nextPlayer.van }
       if (typeof delta.player.van.fuel === 'number') {
-        nextVan.fuel = clampVanFuel(nextVan.fuel + delta.player.van.fuel)
+        nextVan.fuel = clampVanFuel(
+          finiteNumberOr(nextVan.fuel, 0) + delta.player.van.fuel
+        )
       }
       if (typeof delta.player.van.condition === 'number') {
         const nextCondition = clampVanCondition(
-          nextVan.condition + delta.player.van.condition
+          finiteNumberOr(nextVan.condition, 0) + delta.player.van.condition
         )
         nextVan.condition = nextCondition
       }
@@ -903,7 +903,7 @@ export const applyEventDelta = (
     const nextBand = { ...nextState.band }
     if (typeof delta.band.harmony === 'number') {
       const nextHarmony = clampBandHarmony(
-        nextBand.harmony + delta.band.harmony
+        finiteNumberOr(nextBand.harmony, 1) + delta.band.harmony
       )
       nextBand.harmony = nextHarmony
     }
@@ -1137,7 +1137,7 @@ export const applyEventDelta = (
     }
 
     if (typeof delta.band.luck === 'number') {
-      const boundedLuck = clampNonNegative(nextBand.luck)
+      const boundedLuck = Math.max(0, finiteNumberOr(nextBand.luck, 0))
       nextBand.luck = boundedLuck + delta.band.luck
     }
     nextState.band = nextBand
@@ -1155,7 +1155,7 @@ export const applyEventDelta = (
       if (key === 'controversyLevel') {
         if (typeof value === 'number') {
           const newValue = clampControversyLevel(
-            (typeof nextSocial[key] === 'number' ? nextSocial[key] : 0) + value
+            finiteNumberOr(nextSocial[key], 0) + value
           )
           nextSocial[key] = newValue
         }
@@ -1195,8 +1195,7 @@ export const applyEventDelta = (
           nextSocial[key] = value
         }
       } else if (typeof value === 'number') {
-        const currentValue =
-          typeof nextSocial[key] === 'number' ? nextSocial[key] : 0
+        const currentValue = finiteNumberOr(nextSocial[key], 0)
         nextSocial[key] = Math.max(0, currentValue + value)
       }
     }

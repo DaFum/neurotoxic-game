@@ -9,7 +9,9 @@ import {
   StorageError,
   runSafeStorageOperation
 } from './errorHandler'
-import { safeJsonParse } from './objectUtils'
+import { isLooseRecord, safeJsonParse } from './objectUtils'
+
+export const GLOBAL_SETTINGS_KEY = 'neurotoxic_global_settings'
 
 export function safeStorageOperation<T>(operation: string, fn: () => T): T
 export function safeStorageOperation<T>(
@@ -118,14 +120,13 @@ export function setSafeStorageItem(key: string, value: unknown): void {
   }
 }
 
-export function safeStorage<T>(
-  operation: string,
-  fn: () => T,
-  fallbackValue: T
-): T {
-  return runSafeStorageOperation(operation, fn, fallbackValue)
+export const readGlobalSettings = (): Record<string, unknown> => {
+  const settings = getSafeStorageItem<unknown>(GLOBAL_SETTINGS_KEY, {})
+  return isLooseRecord(settings) ? settings : {}
 }
 
-export function safeStorageNoFallback<T>(operation: string, fn: () => T): T {
-  return runSafeStorageOperation(operation, fn)
+export const writeGlobalSettings = (
+  settings: Record<string, unknown>
+): void => {
+  setSafeStorageItem(GLOBAL_SETTINGS_KEY, settings)
 }
