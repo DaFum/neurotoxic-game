@@ -7,6 +7,7 @@ import { getChassisImagePrompt } from '../../utils/imageGen'
 import { formatCurrency } from '../../utils/numberUtils'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import { calculateChassisGrossSaleValue } from '../../utils/assetSelectors'
+import { finiteNumberOr } from '../../utils/gameStateUtils'
 import type { LongTermAsset } from '../../types/assets'
 
 interface Props {
@@ -28,7 +29,7 @@ export const SellConfirmModal = ({ asset, isOpen, onClose }: Props) => {
     (s.liabilities ?? []).reduce(
       (sum, liability) =>
         liability.assetId === asset.id
-          ? sum + liability.principalRemaining
+          ? sum + Math.max(0, finiteNumberOr(liability.principalRemaining, 0))
           : sum,
       0
     )

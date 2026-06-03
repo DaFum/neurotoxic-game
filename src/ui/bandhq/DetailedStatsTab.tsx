@@ -615,6 +615,9 @@ const InventoryEquipmentSection = ({
           val === true &&
           onConsumeItem !== undefined &&
           USABLE_BOOLEAN_INVENTORY_ITEMS.has(key)
+        const itemName = t(`items:${key}.name`, {
+          defaultValue: key.replace(/_/g, ' ').toUpperCase()
+        })
         const status =
           val === true
             ? t('ui:ui.owned', { defaultValue: 'OWNED' })
@@ -624,9 +627,7 @@ const InventoryEquipmentSection = ({
         return (
           <DetailRow
             key={key}
-            label={t(`items:${key}.name`, {
-              defaultValue: key.replace(/_/g, ' ').toUpperCase()
-            })}
+            label={itemName}
             value={
               canConsume ? (
                 <div className='flex items-center justify-end gap-2'>
@@ -635,8 +636,8 @@ const InventoryEquipmentSection = ({
                     type='button'
                     onClick={() => onConsumeItem(key)}
                     aria-label={t('ui:detailedStats.useInventoryItemAria', {
-                      item: key,
-                      defaultValue: `Use ${key}`
+                      item: itemName,
+                      defaultValue: `Use ${itemName}`
                     })}
                     className='min-h-7 border px-2 text-xs uppercase'
                     style={{

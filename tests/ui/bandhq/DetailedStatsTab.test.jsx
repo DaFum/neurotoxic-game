@@ -11,6 +11,7 @@ vi.mock('react-i18next', () => ({
           'Das grüne Zeug, das leuchtet. Sie wollen, dass ihr es auf der Bühne trinkt.',
         'economy:brandDeals.energy_drink_cx.name': 'Toxischer Energy-Drink',
         'events:quest_sponsor_demand.label': 'Bizarre Forderung des Sponsors',
+        'items:strings.name': 'Guitar Strings',
         'ui:detailedStats.useInventoryItem': 'Use',
         'ui:stats.active_quests': 'Aktive Quests',
         'ui:ui.day': 'Tag'
@@ -105,7 +106,7 @@ describe('DetailedStatsTab', () => {
       />
     )
 
-    fireEvent.click(screen.getByRole('button', { name: 'Use strings' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Use Guitar Strings' }))
 
     expect(onConsumeItem).toHaveBeenCalledWith('strings')
   })
