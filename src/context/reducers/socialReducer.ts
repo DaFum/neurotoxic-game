@@ -27,11 +27,15 @@ import {
   createSocialLoyaltyChangedQuestEvent,
   createSocialTrendMatchedQuestEvent
 } from '../../quests/producers/socialQuestEvents'
+import { createBrandDealFailedQuestEvent } from '../../quests/producers/brandQuestEvents'
 import {
   createVenueBlacklistedQuestEvent,
   createVenueUnblacklistedQuestEvent
 } from '../../quests/producers/venueQuestEvents'
 import { VENUES_BY_ID } from '../../data/venues'
+
+/** Controversy at or above this voids active brand deals. */
+const DEAL_BREAK_CONTROVERSY = 85
 
 type ZealotryPayloadParsed = {
   cost: number
@@ -249,6 +253,48 @@ export const handleUpdateSocial = (
       nextState,
       createSocialTrendMatchedQuestEvent({ trendId: nextState.social.trend })
     )
+  }
+
+  // Sponsors abandon a band that becomes too toxic. When this update pushes
+  // controversy across the break threshold, every active brand deal collapses
+  // and reports as failed. Crossing-only so deals added at high controversy by
+  // other flows are not retroactively voided.
+  const prevControversy = clampControversyLevel(
+    Number(state.social.controversyLevel) || 0
+  )
+  const nextControversy = clampControversyLevel(
+    Number(nextState.social.controversyLevel) || 0
+  )
+  const activeDeals = nextState.social.activeDeals
+  if (
+    prevControversy < DEAL_BREAK_CONTROVERSY &&
+    nextControversy >= DEAL_BREAK_CONTROVERSY &&
+    Array.isArray(activeDeals) &&
+    activeDeals.length > 0
+  ) {
+    const brokenDeals = activeDeals
+    nextState = {
+      ...nextState,
+      social: { ...nextState.social, activeDeals: [] },
+      toasts: [
+        ...(nextState.toasts || []),
+        {
+          id: getSafeUUID(),
+          messageKey: 'ui:toast.dealsBroken',
+          type: 'error'
+        }
+      ]
+    }
+    for (const deal of brokenDeals) {
+      const dealId =
+        deal && typeof deal === 'object' && typeof deal.id === 'string'
+          ? deal.id
+          : 'unknown'
+      nextState = QuestEvents.emit(
+        nextState,
+        createBrandDealFailedQuestEvent({ dealId, reason: 'controversy' })
+      )
+    }
   }
 
   return nextState

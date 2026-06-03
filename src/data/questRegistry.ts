@@ -647,6 +647,25 @@ export const QUEST_REGISTRY = {
     failurePenalty: {
       social: { loyalty: -5 }
     }
+  },
+  quest_burned_bridges: {
+    kind: 'side',
+    label: 'events:quest_burned_bridges.label',
+    description: 'events:quest_burned_bridges.desc',
+    deadlineOffset: 20,
+    repeatPolicy: 'never',
+    progressSource: 'brand_deal_failed',
+    progressRules: [
+      { event: 'brand.dealFailed', amount: 'fixed', fixedAmount: 1 }
+    ],
+    required: 1,
+    offer: { trigger: 'random', category: 'financial', chance: 0.05 },
+    rewardType: 'loyalty',
+    rewardData: { loyalty: 15 },
+    moneyReward: 0,
+    failurePenalty: {
+      social: { loyalty: -5 }
+    }
   }
 } as const satisfies Record<string, QuestDefinition>
 

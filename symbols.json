@@ -15689,7 +15689,13 @@
         "path": "src/quests/producers/brandQuestEvents.ts",
         "returnType": "QuestEvent",
         "source": "local",
-        "type": "const"
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/context/reducers/socialReducer.ts",
+            "importedAs": "createBrandDealFailedQuestEvent"
+          }
+        ]
       }
     ],
     "createBrandOfferAcceptedQuestEvent": [
@@ -27956,8 +27962,8 @@
         "exportedName": "getQuestDefinition",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 665,
-        "lineStart": 662,
+        "lineEnd": 684,
+        "lineStart": 681,
         "name": "getQuestDefinition",
         "parameters": [
           {
@@ -29270,8 +29276,8 @@
         "jsDoc": {
           "summary": "Cost to win a venue back. Bigger rooms have longer memories, so the amends fee scales with capacity on top of a flat base."
         },
-        "lineEnd": 314,
-        "lineStart": 307,
+        "lineEnd": 362,
+        "lineStart": 353,
         "name": "getUnblacklistCost",
         "parameters": [
           {
@@ -30216,8 +30222,8 @@
         "exportedName": "handleAddVenueBlacklist",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 298,
-        "lineStart": 260,
+        "lineEnd": 344,
+        "lineStart": 306,
         "name": "handleAddVenueBlacklist",
         "parameters": [
           {
@@ -31016,8 +31022,8 @@
         "exportedName": "handleDarkWebLeak",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 580,
-        "lineStart": 570,
+        "lineEnd": 628,
+        "lineStart": 618,
         "name": "handleDarkWebLeak",
         "parameters": [
           {
@@ -31455,8 +31461,8 @@
         "exportedName": "handleMerchPress",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 454,
-        "lineStart": 371,
+        "lineEnd": 502,
+        "lineStart": 419,
         "name": "handleMerchPress",
         "parameters": [
           {
@@ -31600,8 +31606,8 @@
         "exportedName": "handlePirateBroadcast",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 568,
-        "lineStart": 559,
+        "lineEnd": 616,
+        "lineStart": 607,
         "name": "handlePirateBroadcast",
         "parameters": [
           {
@@ -32699,8 +32705,8 @@
         "exportedName": "handleUnblacklistVenue",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 369,
-        "lineStart": 316,
+        "lineEnd": 417,
+        "lineStart": 364,
         "name": "handleUnblacklistVenue",
         "parameters": [
           {
@@ -32964,9 +32970,11 @@
           "clampControversyLevel",
           "clampLoyalty",
           "clampZealotry",
+          "createBrandDealFailedQuestEvent",
           "createSocialControversyChangedQuestEvent",
           "createSocialLoyaltyChangedQuestEvent",
-          "createSocialTrendMatchedQuestEvent"
+          "createSocialTrendMatchedQuestEvent",
+          "getSafeUUID"
         ],
         "exportedName": "handleUpdateSocial",
         "exportKind": "named",
@@ -32990,8 +32998,8 @@
             }
           ]
         },
-        "lineEnd": 255,
-        "lineStart": 151,
+        "lineEnd": 301,
+        "lineStart": 155,
         "name": "handleUpdateSocial",
         "parameters": [
           {
@@ -35478,8 +35486,8 @@
         "jsDoc": {
           "summary": "Looks up a quest's static definition by id. Returns `undefined` for unknown ids so callers can fall back to inline payloads."
         },
-        "lineEnd": 660,
-        "lineStart": 657,
+        "lineEnd": 679,
+        "lineStart": 676,
         "name": "isQuestRegistryId",
         "parameters": [
           {
@@ -44729,7 +44737,7 @@
         "exportedName": "QUEST_EVENTS",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 499,
+        "lineEnd": 521,
         "lineStart": 7,
         "name": "QUEST_EVENTS",
         "path": "src/data/events/quests.ts",
@@ -44824,7 +44832,7 @@
         "exportedName": "QUEST_REGISTRY",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 651,
+        "lineEnd": 670,
         "lineStart": 3,
         "name": "QUEST_REGISTRY",
         "path": "src/data/questRegistry.ts",

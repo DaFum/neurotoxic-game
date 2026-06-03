@@ -1,4 +1,5 @@
 {
+  "toast.dealsBroken": "SPONSOREN RAUS: Deine Markendeals sind an der Kontroverse zerbrochen.",
   "toast.amendsMade": "WIEDERGUTGEMACHT: Du hast dich mit {{venueLabel}} versöhnt.",
   "toast.amendsTooExpensive": "Nicht genug Geld, um dich mit {{venueLabel}} zu versöhnen ({{amount}}).",
   "detailedStats.makeAmends": "Wiedergutmachen ({{amount}})",

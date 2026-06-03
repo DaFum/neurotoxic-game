@@ -1,4 +1,5 @@
 {
+  "toast.dealsBroken": "SPONSORS OUT: Your brand deals collapsed under the controversy.",
   "toast.amendsMade": "AMENDS MADE: You patched things up with {{venueLabel}}.",
   "toast.amendsTooExpensive": "Not enough cash to make amends with {{venueLabel}} ({{amount}}).",
   "detailedStats.makeAmends": "Make Amends ({{amount}})",

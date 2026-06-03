@@ -1,4 +1,12 @@
 {
+  "quest_burned_bridges.label": "Verbrannte Brücken",
+  "quest_burned_bridges.desc": "Verlier einen Markendeal — und beweise, dass du ihn nie gebraucht hast.",
+  "quest_trigger_burned_bridges.title": "KEINE AUSVERKÄUFE",
+  "quest_trigger_burned_bridges.desc": "Die Szene tuschelt, dass echte Bands ihre Konzerndeals abfackeln. Bereit dafür?",
+  "quest_trigger_burned_bridges.opt1.label": "Underground bleiben",
+  "quest_trigger_burned_bridges.opt1.outcome": "Du schwörst, dem nächsten Sponsor, der abspringt, den Rücken zu kehren.",
+  "quest_trigger_burned_bridges.opt2.label": "Die Schecks behalten",
+  "quest_trigger_burned_bridges.opt2.outcome": "Geld ist Geld, zuckst du mit den Schultern.",
   "quest_make_amends.label": "Wiedergutmachung",
   "quest_make_amends.desc": "Gewinne ein Venue zurück, das dich verbannt hat.",
   "quest_trigger_make_amends.title": "BRÜCKEN BAUEN",

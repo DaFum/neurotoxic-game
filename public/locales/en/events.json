@@ -1,4 +1,12 @@
 {
+  "quest_burned_bridges.label": "Burned Bridges",
+  "quest_burned_bridges.desc": "Lose a brand deal — and prove you never needed them.",
+  "quest_trigger_burned_bridges.title": "NO SELLOUTS",
+  "quest_trigger_burned_bridges.desc": "The scene whispers that real bands torch their corporate deals. Ready to live it?",
+  "quest_trigger_burned_bridges.opt1.label": "Stay underground",
+  "quest_trigger_burned_bridges.opt1.outcome": "You vow to walk away from the next sponsor who bails.",
+  "quest_trigger_burned_bridges.opt2.label": "Keep the cheques",
+  "quest_trigger_burned_bridges.opt2.outcome": "Money is money, you shrug.",
   "quest_make_amends.label": "Make Amends",
   "quest_make_amends.desc": "Win back a venue that blacklisted you.",
   "quest_trigger_make_amends.title": "BUILDING BRIDGES",

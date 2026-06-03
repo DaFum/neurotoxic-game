@@ -149,6 +149,44 @@ describe('socialReducer', () => {
     })
   })
 
+  describe('brand deal break on controversy', () => {
+    it('voids active deals and emits failure when crossing the threshold', () => {
+      const state = {
+        social: {
+          loyalty: 0,
+          controversyLevel: 50,
+          activeDeals: [{ id: 'd1', remainingGigs: 3 }]
+        },
+        venueBlacklist: [],
+        toasts: [],
+        activeQuests: []
+      }
+      const next = handleUpdateSocial(state, { controversyLevel: 90 })
+      assert.deepStrictEqual(next.social.activeDeals, [])
+      assert.ok(
+        next.toasts.some(
+          t => t.type === 'error' && t.messageKey === 'ui:toast.dealsBroken'
+        )
+      )
+    })
+
+    it('does not re-void when already above the threshold (no crossing)', () => {
+      const state = {
+        social: {
+          loyalty: 0,
+          controversyLevel: 90,
+          activeDeals: [{ id: 'd1', remainingGigs: 3 }]
+        },
+        venueBlacklist: [],
+        toasts: [],
+        activeQuests: []
+      }
+      const next = handleUpdateSocial(state, { loyalty: 5 })
+      assert.strictEqual(next.social.activeDeals.length, 1)
+      assert.ok(!next.toasts.some(t => t.messageKey === 'ui:toast.dealsBroken'))
+    })
+  })
+
   describe('handleAddVenueBlacklist', () => {
     it('should add to venueBlacklist and show error toast if loyalty < 30', () => {
       baseState.social.loyalty = 10
