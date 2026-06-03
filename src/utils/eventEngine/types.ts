@@ -43,6 +43,7 @@ export type EngineGameState = {
     currentLocation?: string
     time?: number
     fame?: number
+    day?: number
     van?: Record<string, unknown>
     stats?: Record<string, number>
     [key: string]: unknown

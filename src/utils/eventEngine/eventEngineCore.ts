@@ -8,7 +8,7 @@ import { finiteNumberOr, isOnCooldown as isOnCooldownShared } from '../gameState
 import { StateError } from '../errorHandler'
 import { selectEvent } from './eventSelection'
 import { processEffect } from './eventEffectHandlers'
-import { asNumber } from './helpers'
+import { asNumber, handleError, processEvent } from './helpers'
 import type {
   EffectShape,
   EngineEvent,
@@ -87,40 +87,8 @@ const resolveSkillCheckFailure = (
 export const isOnCooldown = isOnCooldownShared
 
 export const eventEngine = {
-  handleError(err: unknown, eventId?: string) {
-    logger.error(
-      'EventEngine',
-      `Condition check failed for event ${eventId || 'unknown'}`,
-      err
-    )
-  },
-
-  processEvent(event: EngineEvent, optimizedState: EngineGameState) {
-    try {
-      if (typeof event.condition !== 'function') {
-        this.handleError(
-          new TypeError(
-            `Invalid condition for event ${event.id}: expected function`
-          ),
-          event.id
-        )
-        return null
-      }
-      const condResult = event.condition(optimizedState)
-      if (condResult) {
-        return {
-          event: event,
-          contextvars:
-            condResult && typeof condResult === 'object'
-              ? (condResult as Record<string, string>)
-              : {}
-        }
-      }
-    } catch (err) {
-      this.handleError(err, event.id)
-    }
-    return null
-  },
+  handleError,
+  processEvent,
 
   /**
    * Checks for and selects a random event from a specific category.

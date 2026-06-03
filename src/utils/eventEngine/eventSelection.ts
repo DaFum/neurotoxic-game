@@ -4,8 +4,7 @@ import { finiteNumberOr } from '../gameStateUtils'
 import { MODULE_REGISTRY } from '../assetModuleRegistry'
 import { StateError } from '../errorHandler'
 import { resolveTemplateString } from './templateResolver'
-import { toStringArray } from './helpers'
-import { eventEngine } from './eventEngineCore'
+import { toStringArray, processEvent } from './helpers'
 import type { EngineEvent, EngineGameState, TriggerPoint } from './types'
 
 const HARMONY_DEATH_SPIRAL_THRESHOLD = 30
@@ -120,6 +119,8 @@ const selectEvent = (
     contextvars: Record<string, string>
   }> = []
   for (const e of pool) {
+    if (!e) continue
+
     // Trigger check — events with trigger:'random' are eligible at any trigger point
     if (triggerPoint && e.trigger !== triggerPoint && e.trigger !== 'random')
       continue
@@ -133,7 +134,7 @@ const selectEvent = (
       continue
     }
 
-    const processed = eventEngine.processEvent(e, optimizedState)
+    const processed = processEvent(e, optimizedState)
     if (processed) {
       eligibleEvents.push(processed)
     }
