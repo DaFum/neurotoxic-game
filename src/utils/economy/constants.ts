@@ -17,10 +17,10 @@ export const MERCH_PROFILE_VALUES = Object.freeze(
   Object.values(MERCH_PROFILES)
 ) as ReadonlyArray<MerchItemProfile>
 
-export /**
- * Calculates venue split / promoter cut.
+/**
+ * Venue split rates by difficulty.
  */
-const VENUE_SPLIT_RATES: Record<number, number> = { 3: 0.35, 4: 0.55 }
+export const VENUE_SPLIT_RATES: Record<number, number> = { 3: 0.35, 4: 0.55 }
 
 export const BAR_RATE_VIP = 0.3;
 export const BAR_RATE_NORMAL = 0.15;

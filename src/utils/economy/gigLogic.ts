@@ -322,6 +322,9 @@ export const calculateEffectiveTicketPrice = (
 }
 
 
+/**
+ * Calculates venue split / promoter cut.
+ */
 export const calculateVenueSplit = (
   ticketsRevenue = 0,
   gigData: GigEconomyData = {}

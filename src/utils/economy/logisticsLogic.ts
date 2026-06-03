@@ -6,13 +6,13 @@ import type { PlayerState, BandState, SocialState } from '../../types'
 import type { MapPoint } from './types'
 import { EXPENSE_CONSTANTS, TRAVEL_LOGISTICS_PER_100KM, TRAVEL_LOGISTICS_PER_FAME_LEVEL, TRAVEL_LOGISTICS_CASH_CAP, TRAVEL_LOGISTICS_BASE } from './constants'
 
-export /**
+/**
  * Calculates distance between two nodes or a node and a fallback point.
  * @param {object} nodeA - The target node.
  * @param {object} [nodeB=null] - The source node.
  * @returns {number} The calculated distance.
  */
-const calculateDistance = (nodeA: unknown, nodeB: unknown = null) => {
+export const calculateDistance = (nodeA: unknown, nodeB: unknown = null) => {
   const pointA = (nodeA && typeof nodeA === 'object' ? nodeA : {}) as MapPoint
   const pointB = (nodeB && typeof nodeB === 'object' ? nodeB : {}) as MapPoint
   const x1 = typeof pointA.x === 'number' ? pointA.x : (pointA.venue?.x ?? 50)
