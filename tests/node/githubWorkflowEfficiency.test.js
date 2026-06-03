@@ -13,12 +13,18 @@ const readWorkflow = relativePath => parse(readText(relativePath))
 
 describe('GitHub Actions efficiency guardrails', () => {
   it('does not run the PR comment tracker for issue comments', () => {
+    const workflowText = readText('.github/workflows/pr-comment-tracker.yml')
     const workflow = readWorkflow('.github/workflows/pr-comment-tracker.yml')
 
     assert.equal(
       Object.hasOwn(workflow.on, 'issue_comment'),
       false,
       'issue_comment events include the bot summary comment and can retrigger the tracker'
+    )
+    assert.doesNotMatch(
+      workflowText,
+      /github\.event\.issue|context\.payload\.issue/,
+      'issue-event fallbacks are stale once issue_comment no longer triggers the workflow'
     )
   })
 

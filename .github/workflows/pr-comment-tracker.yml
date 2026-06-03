@@ -13,10 +13,8 @@ jobs:
     name: Aggregate Comments & Enforce Resolution
     runs-on: ubuntu-latest
     concurrency:
-      group: pr-comment-tracker-${{ github.event.issue.number || github.event.pull_request.number }}
+      group: pr-comment-tracker-${{ github.event.pull_request.number }}
       cancel-in-progress: true
-    # Stellt sicher, dass der Workflow nur in Pull Requests läuft
-    if: ${{ github.event.issue.pull_request || github.event.pull_request }}
 
     # Berechtigungen zum Lesen und Schreiben in PRs
     permissions:
@@ -31,9 +29,7 @@ jobs:
         with:
           script: |
             // 1. PR-Nummer aus dem Trigger-Event ermitteln
-            const prNumber = context.payload.issue
-              ? context.payload.issue.number
-              : context.payload.pull_request.number;
+            const prNumber = context.payload.pull_request.number;
             const { owner, repo } = context.repo;
 
             // Unsichtbarer Marker, um den Kommentar des Bots später wiederzufinden
