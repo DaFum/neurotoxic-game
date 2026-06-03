@@ -8,8 +8,6 @@
 
 **Mode:** read-only audit. **No files were modified.**
 
-> Note on the prior report: the repo's existing `AUDIT_FINDINGS.md` (also present in the `determined-noyce-da1fa5` worktree) marks an earlier audit "all resolved." Those fixes were verified to hold (e.g. `FORBIDDEN_KEYS`/`isForbiddenKey` centralized in `objectUtils.ts`, `clampCondition`→`clamp0to100` merged, i18n EN/DE in sync, no hardcoded colors). The findings below are **new or remaining** issues; resolved items are not re-reported.
-
 ---
 
 ## 1. DUPLICATES
