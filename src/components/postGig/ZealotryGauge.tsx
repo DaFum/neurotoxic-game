@@ -23,7 +23,7 @@ export const ZealotryGauge = memo(
             })}
             aspectRatio='1:1'
             variant='inline'
-            className='w-full h-full object-cover mix-blend-screen opacity-80'
+            className='w-full h-full object-cover mix-blend-screen opacity-80 !border-0 !shadow-none'
           />
         </div>
         <div className='w-full flex-1 flex flex-col'>

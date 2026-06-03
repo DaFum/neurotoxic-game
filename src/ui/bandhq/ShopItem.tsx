@@ -90,7 +90,7 @@ export const ShopItem = React.memo(
               prompt={sanitizedPrompt}
               alt=''
               aspectRatio='1:1'
-              className='w-12 h-12 shrink-0 object-contain bg-void-black border-2 border-ash-gray'
+              className='w-12 h-12 shrink-0 object-contain bg-void-black !border-2 !border-ash-gray !shadow-none'
               variant='inline'
             />
             <h4 className='font-bold text-toxic-green leading-tight font-mono uppercase'>

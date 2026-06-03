@@ -121,7 +121,7 @@ const DealImage = memo(({ alignment, name }: DealImageProps) => (
       alt={name}
       aspectRatio='1:1'
       variant='inline'
-      className='w-full h-full object-cover object-center grayscale hover:grayscale-0 transition-all duration-300'
+      className='w-full h-full object-cover object-center grayscale hover:grayscale-0 transition-all duration-300 !border-0 !shadow-none'
     />
   </div>
 ))
