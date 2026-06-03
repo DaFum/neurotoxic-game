@@ -27,6 +27,7 @@ import {
   createSocialLoyaltyChangedQuestEvent,
   createSocialTrendMatchedQuestEvent
 } from '../../quests/producers/socialQuestEvents'
+import { createVenueBlacklistedQuestEvent } from '../../quests/producers/venueQuestEvents'
 
 type ZealotryPayloadParsed = {
   cost: number
@@ -284,6 +285,10 @@ export const handleAddVenueBlacklist = (
         type: 'error'
       }
     ]
+    return QuestEvents.emit(
+      nextState,
+      createVenueBlacklistedQuestEvent({ venueId, reason: 'low_loyalty' })
+    )
   }
   return nextState
 }

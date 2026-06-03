@@ -31,8 +31,13 @@ import { MINIGAME_REGISTRY } from '../../utils/minigameRegistry'
 import { QuestEvents } from '../../utils/questProgress'
 import {
   createMinigameCompletedQuestEvent,
-  createMinigameFailedQuestEvent
+  createMinigameFailedQuestEvent,
+  createMinigamePerfectQuestEvent
 } from '../../quests/producers/minigameQuestEvents'
+import {
+  createItemCollectedQuestEvent,
+  createItemDeliveredQuestEvent
+} from '../../quests/producers/itemQuestEvents'
 
 export const handleStartTravelMinigame = (
   state: GameState,
@@ -231,6 +236,10 @@ export const handleCompleteTravelMinigame = (
             type: 'info' // Could be 'success'
           }
         ]
+        newState = QuestEvents.emit(
+          newState,
+          createItemCollectedQuestEvent({ itemId: contrabandId })
+        )
       }
     }
   }
@@ -243,6 +252,12 @@ export const handleCompleteTravelMinigame = (
       score: Math.max(0, 100 - conditionLoss)
     })
   )
+  if (conditionLoss === 0) {
+    newState = QuestEvents.emit(
+      newState,
+      createMinigamePerfectQuestEvent({ minigameId: MINIGAME_TYPES.TOURBUS })
+    )
+  }
   if (conditionLoss > 0) {
     newState = QuestEvents.emit(
       newState,
@@ -359,6 +374,14 @@ export const handleCompleteAmpCalibration = (
       score
     })
   )
+  if (stress === 0) {
+    nextState = QuestEvents.emit(
+      nextState,
+      createMinigamePerfectQuestEvent({
+        minigameId: MINIGAME_TYPES.AMP_CALIBRATION
+      })
+    )
+  }
   return stress > 0
     ? QuestEvents.emit(
         nextState,
@@ -414,6 +437,14 @@ export const handleCompleteKabelsalatMinigame = (
       success: stress === 0
     })
   )
+  if (stress === 0) {
+    nextState = QuestEvents.emit(
+      nextState,
+      createMinigamePerfectQuestEvent({
+        minigameId: MINIGAME_TYPES.KABELSALAT
+      })
+    )
+  }
   return stress > 0
     ? QuestEvents.emit(
         nextState,
@@ -481,6 +512,21 @@ export const handleCompleteRoadieMinigame = (
       score: Math.max(0, 100 - equipmentDamage)
     })
   )
+  if (typeof contrabandDelivered === 'number' && contrabandDelivered > 0) {
+    nextState = QuestEvents.emit(
+      nextState,
+      createItemDeliveredQuestEvent({
+        itemId: 'contraband',
+        amount: contrabandDelivered
+      })
+    )
+  }
+  if (equipmentDamage === 0) {
+    nextState = QuestEvents.emit(
+      nextState,
+      createMinigamePerfectQuestEvent({ minigameId: MINIGAME_TYPES.ROADIE })
+    )
+  }
   return equipmentDamage > 50
     ? QuestEvents.emit(
         nextState,

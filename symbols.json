@@ -15481,7 +15481,13 @@
         "path": "src/quests/producers/assetQuestEvents.ts",
         "returnType": "QuestEvent",
         "source": "local",
-        "type": "const"
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/context/reducers/systemReducer.ts",
+            "importedAs": "createAssetRiskResolvedQuestEvent"
+          }
+        ]
       }
     ],
     "createAssetRiskTriggeredQuestEvent": [
@@ -15505,7 +15511,13 @@
         "path": "src/quests/producers/assetQuestEvents.ts",
         "returnType": "QuestEvent",
         "source": "local",
-        "type": "const"
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/context/reducers/systemReducer.ts",
+            "importedAs": "createAssetRiskTriggeredQuestEvent"
+          }
+        ]
       }
     ],
     "createAudioHandlers": [
@@ -16437,7 +16449,13 @@
         "path": "src/quests/producers/itemQuestEvents.ts",
         "returnType": "QuestEvent",
         "source": "local",
-        "type": "const"
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/context/reducers/minigameReducer.ts",
+            "importedAs": "createItemCollectedQuestEvent"
+          }
+        ]
       }
     ],
     "createItemCraftedQuestEvent": [
@@ -16485,7 +16503,13 @@
         "path": "src/quests/producers/itemQuestEvents.ts",
         "returnType": "QuestEvent",
         "source": "local",
-        "type": "const"
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/context/reducers/minigameReducer.ts",
+            "importedAs": "createItemDeliveredQuestEvent"
+          }
+        ]
       }
     ],
     "createItemUsedQuestEvent": [
@@ -16772,7 +16796,13 @@
         "path": "src/quests/producers/minigameQuestEvents.ts",
         "returnType": "QuestEvent",
         "source": "local",
-        "type": "const"
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/context/reducers/minigameReducer.ts",
+            "importedAs": "createMinigamePerfectQuestEvent"
+          }
+        ]
       }
     ],
     "createMoneyEarnedQuestEvent": [
@@ -18523,7 +18553,13 @@
         "path": "src/quests/producers/venueQuestEvents.ts",
         "returnType": "QuestEvent",
         "source": "local",
-        "type": "const"
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/context/reducers/socialReducer.ts",
+            "importedAs": "createVenueBlacklistedQuestEvent"
+          }
+        ]
       }
     ],
     "createVenueGigCompletedQuestEvent": [
@@ -29967,8 +30003,8 @@
         "exportedName": "handleAddToast",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 1687,
-        "lineStart": 1682,
+        "lineEnd": 1692,
+        "lineStart": 1687,
         "name": "handleAddToast",
         "parameters": [
           {
@@ -30022,8 +30058,8 @@
             }
           ]
         },
-        "lineEnd": 2030,
-        "lineStart": 2023,
+        "lineEnd": 2052,
+        "lineStart": 2045,
         "name": "handleAddUnlock",
         "parameters": [
           {
@@ -30055,11 +30091,14 @@
       {
         "columnEnd": 2,
         "columnStart": 14,
+        "dependencies": [
+          "createVenueBlacklistedQuestEvent"
+        ],
         "exportedName": "handleAddVenueBlacklist",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 289,
-        "lineStart": 255,
+        "lineEnd": 294,
+        "lineStart": 256,
         "name": "handleAddVenueBlacklist",
         "parameters": [
           {
@@ -30100,6 +30139,7 @@
           "calculateDailyUpdates",
           "checkTraitUnlocks",
           "clampBandHarmony",
+          "createAssetRiskTriggeredQuestEvent",
           "finiteNumberOr",
           "generateDailyTrend",
           "processAssetTick",
@@ -30124,8 +30164,8 @@
             }
           ]
         },
-        "lineEnd": 2015,
-        "lineStart": 1864,
+        "lineEnd": 2037,
+        "lineStart": 1869,
         "name": "handleAdvanceDay",
         "parameters": [
           {
@@ -30578,13 +30618,14 @@
         "dependencies": [
           "calculateAmpCalibrationResult",
           "createMinigameCompletedQuestEvent",
-          "createMinigameFailedQuestEvent"
+          "createMinigameFailedQuestEvent",
+          "createMinigamePerfectQuestEvent"
         ],
         "exportedName": "handleCompleteAmpCalibration",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 371,
-        "lineStart": 327,
+        "lineEnd": 394,
+        "lineStart": 342,
         "name": "handleCompleteAmpCalibration",
         "parameters": [
           {
@@ -30619,13 +30660,14 @@
         "dependencies": [
           "calculateKabelsalatMinigameResult",
           "createMinigameCompletedQuestEvent",
-          "createMinigameFailedQuestEvent"
+          "createMinigameFailedQuestEvent",
+          "createMinigamePerfectQuestEvent"
         ],
         "exportedName": "handleCompleteKabelsalatMinigame",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 426,
-        "lineStart": 391,
+        "lineEnd": 457,
+        "lineStart": 414,
         "name": "handleCompleteKabelsalatMinigame",
         "parameters": [
           {
@@ -30661,14 +30703,16 @@
           "calculateRoadieMinigameResult",
           "clampBandHarmony",
           "clampPlayerMoney",
+          "createItemDeliveredQuestEvent",
           "createMinigameCompletedQuestEvent",
-          "createMinigameFailedQuestEvent"
+          "createMinigameFailedQuestEvent",
+          "createMinigamePerfectQuestEvent"
         ],
         "exportedName": "handleCompleteRoadieMinigame",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 493,
-        "lineStart": 428,
+        "lineEnd": 539,
+        "lineStart": 459,
         "name": "handleCompleteRoadieMinigame",
         "parameters": [
           {
@@ -30712,8 +30756,10 @@
           "clampVanCondition",
           "clampVanFuel",
           "computeDropChance",
+          "createItemCollectedQuestEvent",
           "createMinigameCompletedQuestEvent",
           "createMinigameFailedQuestEvent",
+          "createMinigamePerfectQuestEvent",
           "getActiveAssetModifiers",
           "normalizeVenueId",
           "pickRandomContraband"
@@ -30721,8 +30767,8 @@
         "exportedName": "handleCompleteTravelMinigame",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 257,
-        "lineStart": 55,
+        "lineEnd": 272,
+        "lineStart": 60,
         "name": "handleCompleteTravelMinigame",
         "parameters": [
           {
@@ -30850,8 +30896,8 @@
         "exportedName": "handleDarkWebLeak",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 500,
-        "lineStart": 490,
+        "lineEnd": 505,
+        "lineStart": 495,
         "name": "handleDarkWebLeak",
         "parameters": [
           {
@@ -31244,8 +31290,8 @@
             }
           ]
         },
-        "lineEnd": 1631,
-        "lineStart": 1515,
+        "lineEnd": 1636,
+        "lineStart": 1520,
         "name": "handleLoadGame",
         "parameters": [
           {
@@ -31289,8 +31335,8 @@
         "exportedName": "handleMerchPress",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 374,
-        "lineStart": 291,
+        "lineEnd": 379,
+        "lineStart": 296,
         "name": "handleMerchPress",
         "parameters": [
           {
@@ -31434,8 +31480,8 @@
         "exportedName": "handlePirateBroadcast",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 488,
-        "lineStart": 479,
+        "lineEnd": 493,
+        "lineStart": 484,
         "name": "handlePirateBroadcast",
         "parameters": [
           {
@@ -31619,8 +31665,8 @@
         "exportedName": "handleRemoveToast",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 1697,
-        "lineStart": 1689,
+        "lineEnd": 1702,
+        "lineStart": 1694,
         "name": "handleRemoveToast",
         "parameters": [
           {
@@ -31698,8 +31744,8 @@
         "exportedName": "handleResetState",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 1657,
-        "lineStart": 1633,
+        "lineEnd": 1662,
+        "lineStart": 1638,
         "name": "handleResetState",
         "parameters": [
           {
@@ -31949,8 +31995,8 @@
         "exportedName": "handleSetMap",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 1680,
-        "lineStart": 1670,
+        "lineEnd": 1685,
+        "lineStart": 1675,
         "name": "handleSetMap",
         "parameters": [
           {
@@ -32004,8 +32050,8 @@
             }
           ]
         },
-        "lineEnd": 2044,
-        "lineStart": 2038,
+        "lineEnd": 2066,
+        "lineStart": 2060,
         "name": "handleSetPendingBandHQOpen",
         "parameters": [
           {
@@ -32038,13 +32084,14 @@
         "columnEnd": 2,
         "columnStart": 14,
         "dependencies": [
+          "createAssetRiskResolvedQuestEvent",
           "sanitizeRiskEventDescriptor"
         ],
         "exportedName": "handleSetPendingRiskEvent",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 2085,
-        "lineStart": 2059,
+        "lineEnd": 2119,
+        "lineStart": 2081,
         "name": "handleSetPendingRiskEvent",
         "parameters": [
           {
@@ -32079,8 +32126,8 @@
         "exportedName": "handleSetPendingSupplyStopInventory",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 2057,
-        "lineStart": 2046,
+        "lineEnd": 2079,
+        "lineStart": 2068,
         "name": "handleSetPendingSupplyStopInventory",
         "parameters": [
           {
@@ -32190,8 +32237,8 @@
         "exportedName": "handleStartAmpCalibration",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 294,
-        "lineStart": 278,
+        "lineEnd": 309,
+        "lineStart": 293,
         "name": "handleStartAmpCalibration",
         "parameters": [
           {
@@ -32301,8 +32348,8 @@
         "exportedName": "handleStartKabelsalatMinigame",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 389,
-        "lineStart": 373,
+        "lineEnd": 412,
+        "lineStart": 396,
         "name": "handleStartKabelsalatMinigame",
         "parameters": [
           {
@@ -32337,8 +32384,8 @@
         "exportedName": "handleStartRoadieMinigame",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 276,
-        "lineStart": 259,
+        "lineEnd": 291,
+        "lineStart": 274,
         "name": "handleStartRoadieMinigame",
         "parameters": [
           {
@@ -32373,8 +32420,8 @@
         "exportedName": "handleStartTravelMinigame",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 53,
-        "lineStart": 37,
+        "lineEnd": 58,
+        "lineStart": 42,
         "name": "handleStartTravelMinigame",
         "parameters": [
           {
@@ -32718,8 +32765,8 @@
         "exportedName": "handleUpdateSettings",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 1668,
-        "lineStart": 1659,
+        "lineEnd": 1673,
+        "lineStart": 1664,
         "name": "handleUpdateSettings",
         "parameters": [
           {
@@ -32781,8 +32828,8 @@
             }
           ]
         },
-        "lineEnd": 250,
-        "lineStart": 146,
+        "lineEnd": 251,
+        "lineStart": 147,
         "name": "handleUpdateSocial",
         "parameters": [
           {
@@ -45212,6 +45259,10 @@
           },
           {
             "path": "src/context/reducers/socialReducer.ts",
+            "importedAs": "QuestEvents"
+          },
+          {
+            "path": "src/context/reducers/systemReducer.ts",
             "importedAs": "QuestEvents"
           }
         ]

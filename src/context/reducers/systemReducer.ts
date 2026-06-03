@@ -4,6 +4,11 @@ import {
   processCrowdfundTick,
   rollAssetRiskEvents
 } from '../../utils/assetTicks'
+import { QuestEvents } from '../../utils/questProgress'
+import {
+  createAssetRiskTriggeredQuestEvent,
+  createAssetRiskResolvedQuestEvent
+} from '../../quests/producers/assetQuestEvents'
 import type {
   GameState,
   PlayerState,
@@ -1925,6 +1930,23 @@ export const handleAdvanceDay = (
           pendingRiskEvent: firstEvent
         }
       }
+      const emittedRisk = new Set<string>()
+      for (const ev of events) {
+        const dedupKey = `${ev.assetId}:${ev.eventType}`
+        if (emittedRisk.has(dedupKey)) continue
+        emittedRisk.add(dedupKey)
+        const assetKind =
+          nextStatePre.assets?.find(asset => asset.id === ev.assetId)?.kind ??
+          'unknown'
+        nextStatePre = QuestEvents.emit(
+          nextStatePre,
+          createAssetRiskTriggeredQuestEvent({
+            assetId: ev.assetId,
+            assetKind,
+            riskType: ev.eventType
+          })
+        )
+      }
     }
   }
   const rngSeed = payload?.nextRngSeed ?? nextStatePre.rngSeed
@@ -2062,10 +2084,22 @@ export const handleSetPendingRiskEvent = (
 ): GameState => {
   if (event === null) {
     if (state.pendingRiskEvent === null) return state
-    return {
-      ...state,
-      pendingRiskEvent: null
-    }
+    const resolved = state.pendingRiskEvent
+    const assetKind =
+      state.assets?.find(asset => asset.id === resolved.assetId)?.kind ??
+      'unknown'
+    return QuestEvents.emit(
+      {
+        ...state,
+        pendingRiskEvent: null
+      },
+      createAssetRiskResolvedQuestEvent({
+        assetId: resolved.assetId,
+        assetKind,
+        riskType: resolved.eventType,
+        success: true
+      })
+    )
   }
 
   const nextEvent = sanitizeRiskEventDescriptor(event)
