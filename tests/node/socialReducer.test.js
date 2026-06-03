@@ -4,6 +4,8 @@ import assert from 'node:assert/strict'
 import {
   handleUpdateSocial,
   handleAddVenueBlacklist,
+  handleUnblacklistVenue,
+  getUnblacklistCost,
   handlePirateBroadcast
 } from '../../src/context/reducers/socialReducer'
 import { ALLOWED_TRENDS } from '../../src/data/socialTrends'
@@ -282,6 +284,70 @@ describe('socialReducer', () => {
 
       const toast = nextState.toasts.find(t => t.type === 'error')
       assert.strictEqual(toast.options.venueLabel, 'venues:club_berlin.name')
+    })
+  })
+
+  describe('handleUnblacklistVenue', () => {
+    const VENUE = 'stendal_adler' // real venue id; capacity 120
+
+    const makeState = (money, blacklist) => ({
+      player: { money },
+      social: { loyalty: 0 },
+      venueBlacklist: blacklist,
+      toasts: [],
+      activeQuests: []
+    })
+
+    it('removes the venue and deducts the amends cost when affordable', () => {
+      const cost = getUnblacklistCost(VENUE)
+      const state = makeState(cost + 100, [VENUE, 'other_venue'])
+      const next = handleUnblacklistVenue(state, {
+        venueId: VENUE,
+        toastId: 'amends_toast'
+      })
+
+      assert.ok(!next.venueBlacklist.includes(VENUE))
+      assert.ok(next.venueBlacklist.includes('other_venue'))
+      assert.strictEqual(next.player.money, 100)
+      assert.ok(
+        next.toasts.some(
+          t => t.type === 'success' && t.messageKey === 'ui:toast.amendsMade'
+        )
+      )
+    })
+
+    it('refuses and keeps money when the player cannot afford it', () => {
+      const cost = getUnblacklistCost(VENUE)
+      const state = makeState(cost - 1, [VENUE])
+      const next = handleUnblacklistVenue(state, {
+        venueId: VENUE,
+        toastId: 'amends_toast'
+      })
+
+      assert.ok(next.venueBlacklist.includes(VENUE))
+      assert.strictEqual(next.player.money, cost - 1)
+      assert.ok(
+        next.toasts.some(
+          t =>
+            t.type === 'error' && t.messageKey === 'ui:toast.amendsTooExpensive'
+        )
+      )
+    })
+
+    it('returns state unchanged when the venue is not blacklisted', () => {
+      const state = makeState(9999, ['someone_else'])
+      const next = handleUnblacklistVenue(state, {
+        venueId: VENUE,
+        toastId: 'amends_toast'
+      })
+      assert.strictEqual(next, state)
+    })
+
+    it('scales the amends cost with venue capacity', () => {
+      // stendal_adler capacity 120 => 250 + 120*2 = 490
+      assert.strictEqual(getUnblacklistCost(VENUE), 490)
+      // unknown venue falls back to the base cost
+      assert.strictEqual(getUnblacklistCost('does_not_exist'), 250)
     })
   })
 

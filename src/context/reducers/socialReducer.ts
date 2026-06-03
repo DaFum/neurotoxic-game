@@ -27,7 +27,11 @@ import {
   createSocialLoyaltyChangedQuestEvent,
   createSocialTrendMatchedQuestEvent
 } from '../../quests/producers/socialQuestEvents'
-import { createVenueBlacklistedQuestEvent } from '../../quests/producers/venueQuestEvents'
+import {
+  createVenueBlacklistedQuestEvent,
+  createVenueUnblacklistedQuestEvent
+} from '../../quests/producers/venueQuestEvents'
+import { VENUES_BY_ID } from '../../data/venues'
 
 type ZealotryPayloadParsed = {
   cost: number
@@ -291,6 +295,79 @@ export const handleAddVenueBlacklist = (
     )
   }
   return nextState
+}
+
+const UNBLACKLIST_BASE_COST = 250
+const UNBLACKLIST_COST_PER_CAPACITY = 2
+
+/**
+ * Cost to win a venue back. Bigger rooms have longer memories, so the amends
+ * fee scales with capacity on top of a flat base.
+ */
+export const getUnblacklistCost = (venueId: string): number => {
+  const venue = VENUES_BY_ID.get(venueId)
+  const capacity =
+    venue &&
+    typeof venue.capacity === 'number' &&
+    Number.isFinite(venue.capacity)
+      ? Math.max(0, venue.capacity)
+      : 0
+  return UNBLACKLIST_BASE_COST + capacity * UNBLACKLIST_COST_PER_CAPACITY
+}
+
+export const handleUnblacklistVenue = (
+  state: GameState,
+  { venueId, toastId }: { venueId: string; toastId: string }
+): GameState => {
+  const blacklist = state.venueBlacklist ?? []
+  if (!venueId || !blacklist.includes(venueId)) {
+    return state
+  }
+
+  const cost = getUnblacklistCost(venueId)
+  const currentMoney = clampPlayerMoney(state.player.money)
+  if (currentMoney !== state.player.money) {
+    logger.warn('GameState', 'Invalid player funds state for unblacklist')
+    return state
+  }
+
+  if (currentMoney < cost) {
+    return {
+      ...state,
+      toasts: [
+        ...(state.toasts || []),
+        {
+          id: toastId,
+          messageKey: 'ui:toast.amendsTooExpensive',
+          options: {
+            venueLabel: `venues:${venueId}.name`,
+            amount: formatCurrency(cost, i18n.language)
+          },
+          type: 'error'
+        }
+      ]
+    }
+  }
+
+  const nextState: GameState = {
+    ...state,
+    player: { ...state.player, money: clampPlayerMoney(currentMoney - cost) },
+    venueBlacklist: blacklist.filter(id => id !== venueId),
+    toasts: [
+      ...(state.toasts || []),
+      {
+        id: toastId,
+        messageKey: 'ui:toast.amendsMade',
+        options: { venueLabel: `venues:${venueId}.name` },
+        type: 'success'
+      }
+    ]
+  }
+
+  return QuestEvents.emit(
+    nextState,
+    createVenueUnblacklistedQuestEvent({ venueId, reason: 'amends' })
+  )
 }
 
 export const handleMerchPress = (

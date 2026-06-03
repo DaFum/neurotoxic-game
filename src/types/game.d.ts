@@ -191,6 +191,10 @@ export type GameAction =
       ActionTypes['ADD_VENUE_BLACKLIST'],
       { venueId: string; toastId: string }
     >
+  | Action<
+      ActionTypes['UNBLACKLIST_VENUE'],
+      { venueId: string; toastId: string }
+    >
   | Action<ActionTypes['ADD_QUEST'], QuestState>
   | Action<
       ActionTypes['ADVANCE_QUEST'],

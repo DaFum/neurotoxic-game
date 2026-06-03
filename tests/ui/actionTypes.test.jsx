@@ -40,6 +40,7 @@ describe('ActionTypes', () => {
       'CHECK_RIVAL_ENCOUNTER',
       'UNLOCK_TRAIT',
       'ADD_VENUE_BLACKLIST',
+      'UNBLACKLIST_VENUE',
       'ADD_QUEST',
       'ADVANCE_QUEST',
       'APPLY_QUEST_EVENT',

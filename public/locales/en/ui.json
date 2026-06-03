@@ -1,4 +1,7 @@
 {
+  "toast.amendsMade": "AMENDS MADE: You patched things up with {{venueLabel}}.",
+  "toast.amendsTooExpensive": "Not enough cash to make amends with {{venueLabel}} ({{amount}}).",
+  "detailedStats.makeAmends": "Make Amends ({{amount}})",
   "action_cancel": "CANCEL",
   "action_clear": "CLEAR",
   "action_close": "CLOSE",

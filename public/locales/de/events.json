@@ -1,4 +1,12 @@
 {
+  "quest_make_amends.label": "Wiedergutmachung",
+  "quest_make_amends.desc": "Gewinne ein Venue zurück, das dich verbannt hat.",
+  "quest_trigger_make_amends.title": "BRÜCKEN BAUEN",
+  "quest_trigger_make_amends.desc": "Dein Manager meint, es sei Zeit, sich mit einem Venue zu versöhnen.",
+  "quest_trigger_make_amends.opt1.label": "Frieden schließen",
+  "quest_trigger_make_amends.opt1.outcome": "Du nimmst dir vor, eine verbrannte Brücke zurückzugewinnen.",
+  "quest_trigger_make_amends.opt2.label": "Den Groll behalten",
+  "quest_trigger_make_amends.opt2.outcome": "Manche Brücken dürfen ruhig Asche bleiben.",
   "quest_flawless_run.label": "Makelloser Lauf",
   "quest_flawless_run.desc": "Zieh 3 perfekte Minispiel-Läufe durch — kein Schaden, keine Ausreden.",
   "quest_sticky_fingers.label": "Lange Finger",

@@ -474,5 +474,26 @@ export const QUEST_EVENTS = [
         outcomeText: 'events:quest_trigger_payday.opt2.outcome'
       }
     ]
+  },
+  {
+    id: 'quest_trigger_make_amends',
+    category: 'special',
+    title: 'events:quest_trigger_make_amends.title',
+    description: 'events:quest_trigger_make_amends.desc',
+    trigger: 'random',
+    chance: 0.05,
+    condition: (state: GameState) => canOfferQuest(state, 'quest_make_amends'),
+    options: [
+      {
+        label: 'events:quest_trigger_make_amends.opt1.label',
+        effect: { type: 'quest', quest: { id: 'quest_make_amends' } },
+        outcomeText: 'events:quest_trigger_make_amends.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_make_amends.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:quest_trigger_make_amends.opt2.outcome'
+      }
+    ]
   }
 ]

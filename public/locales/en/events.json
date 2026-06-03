@@ -1,4 +1,12 @@
 {
+  "quest_make_amends.label": "Make Amends",
+  "quest_make_amends.desc": "Win back a venue that blacklisted you.",
+  "quest_trigger_make_amends.title": "BUILDING BRIDGES",
+  "quest_trigger_make_amends.desc": "Your manager suggests it might be time to patch things up with a venue.",
+  "quest_trigger_make_amends.opt1.label": "Make peace",
+  "quest_trigger_make_amends.opt1.outcome": "You resolve to win back a burned bridge.",
+  "quest_trigger_make_amends.opt2.label": "Hold the grudge",
+  "quest_trigger_make_amends.opt2.outcome": "Some bridges deserve to stay ash.",
   "quest_flawless_run.label": "Flawless Run",
   "quest_flawless_run.desc": "Pull off 3 perfect minigame runs — zero damage, zero excuses.",
   "quest_sticky_fingers.label": "Sticky Fingers",

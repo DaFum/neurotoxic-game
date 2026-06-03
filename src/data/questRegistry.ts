@@ -627,6 +627,26 @@ export const QUEST_REGISTRY = {
     failurePenalty: {
       social: { loyalty: -5 }
     }
+  },
+  quest_make_amends: {
+    kind: 'repeatable',
+    label: 'events:quest_make_amends.label',
+    description: 'events:quest_make_amends.desc',
+    deadlineOffset: 20,
+    repeatPolicy: 'cooldown',
+    cooldownDays: 10,
+    progressSource: 'venue_unblacklisted',
+    progressRules: [
+      { event: 'venue.unblacklisted', amount: 'fixed', fixedAmount: 1 }
+    ],
+    required: 1,
+    offer: { trigger: 'random', category: 'special', chance: 0.05 },
+    rewardType: 'loyalty',
+    rewardData: { loyalty: 10 },
+    moneyReward: 0,
+    failurePenalty: {
+      social: { loyalty: -5 }
+    }
   }
 } as const satisfies Record<string, QuestDefinition>
 

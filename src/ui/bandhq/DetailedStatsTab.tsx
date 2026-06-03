@@ -7,6 +7,7 @@ import { getTranslatedBrandDealDisplay } from '../../utils/brandDealI18n'
 import { formatCurrency } from '../../utils/numberUtils'
 import { translateLocation } from '../../utils/locationI18n'
 import { getCityKeyFromVenueId } from '../../utils/mapGenerator'
+import { getUnblacklistCost } from '../../context/reducers/socialReducer'
 import { isEmptyObject } from '../../utils/gameStateUtils'
 import type {
   PlayerState,
@@ -351,11 +352,16 @@ const VanConditionSection = ({
 const RegionalStandingSection = ({
   reputationByRegion,
   venueBlacklist,
+  playerMoney,
+  onMakeAmends,
   t
 }: {
   reputationByRegion: Record<string, number>
   venueBlacklist: string[]
+  playerMoney: number
+  onMakeAmends?: (venueId: string) => void
 } & BasicTProps) => {
+  const { i18n } = useTranslation()
   const blacklistedCityKeys = useMemo(() => {
     const keys = new Set<string>()
     for (const v of venueBlacklist) {
@@ -364,10 +370,6 @@ const RegionalStandingSection = ({
     }
     return keys
   }, [venueBlacklist])
-
-  const blacklistedVenuesLabel = useMemo(() => {
-    return venueBlacklist.map(v => translateLocation(t, v, v)).join(', ')
-  }, [venueBlacklist, t])
 
   const regionalRows = useMemo(() => {
     return Object.entries(reputationByRegion).map(([region, rep]) => (
@@ -408,8 +410,34 @@ const RegionalStandingSection = ({
               defaultValue: 'Blacklisted Venues'
             })}
           </div>
-          <div className='text-xs text-toxic-green font-mono italic'>
-            {blacklistedVenuesLabel}
+          <div className='space-y-1'>
+            {venueBlacklist.map(venueId => {
+              const cost = getUnblacklistCost(venueId)
+              const affordable = playerMoney >= cost
+              return (
+                <div
+                  key={venueId}
+                  className='flex items-center justify-between gap-2'
+                >
+                  <span className='text-xs text-toxic-green font-mono italic'>
+                    {translateLocation(t, venueId, venueId)}
+                  </span>
+                  {onMakeAmends && (
+                    <button
+                      type='button'
+                      disabled={!affordable}
+                      onClick={() => onMakeAmends(venueId)}
+                      className='text-xs px-2 py-0.5 border border-toxic-green/50 text-toxic-green uppercase tracking-wider disabled:opacity-40 disabled:cursor-not-allowed hover:bg-toxic-green/10'
+                    >
+                      {t('ui:detailedStats.makeAmends', {
+                        amount: formatCurrency(cost, i18n.language),
+                        defaultValue: 'Make Amends ({{amount}})'
+                      })}
+                    </button>
+                  )}
+                </div>
+              )
+            })}
           </div>
         </div>
       )}
@@ -805,7 +833,8 @@ export const DetailedStatsTab = ({
   social,
   activeQuests = [],
   venueBlacklist = [],
-  reputationByRegion = {}
+  reputationByRegion = {},
+  onMakeAmends
 }: {
   player: PlayerData
   band: BandData
@@ -813,6 +842,7 @@ export const DetailedStatsTab = ({
   activeQuests?: ActiveQuest[]
   venueBlacklist?: string[]
   reputationByRegion?: Record<string, number>
+  onMakeAmends?: (venueId: string) => void
 }) => {
   const { t } = useTranslation([
     'ui',
@@ -837,6 +867,8 @@ export const DetailedStatsTab = ({
         <RegionalStandingSection
           reputationByRegion={reputationByRegion}
           venueBlacklist={venueBlacklist}
+          playerMoney={player.money ?? 0}
+          onMakeAmends={onMakeAmends}
           t={t}
         />
         <ActiveQuestsSection activeQuests={activeQuests} t={t} />

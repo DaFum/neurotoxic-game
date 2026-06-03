@@ -1,4 +1,7 @@
 {
+  "toast.amendsMade": "WIEDERGUTGEMACHT: Du hast dich mit {{venueLabel}} versöhnt.",
+  "toast.amendsTooExpensive": "Nicht genug Geld, um dich mit {{venueLabel}} zu versöhnen ({{amount}}).",
+  "detailedStats.makeAmends": "Wiedergutmachen ({{amount}})",
   "action_cancel": "ABBRECHEN",
   "action_clear": "LEEREN",
   "action_close": "SCHLIESSEN",

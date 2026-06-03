@@ -29,6 +29,7 @@ import { bandReducer } from './reducers/bandReducer'
 import {
   handleUpdateSocial,
   handleAddVenueBlacklist,
+  handleUnblacklistVenue,
   handlePirateBroadcast,
   handleMerchPress,
   handleDarkWebLeak
@@ -163,6 +164,7 @@ const reducerMap: ReducerMap = {
   [ActionTypes.MERCH_PRESS]: handleMerchPress,
   [ActionTypes.DARK_WEB_LEAK]: handleDarkWebLeak,
   [ActionTypes.ADD_VENUE_BLACKLIST]: handleAddVenueBlacklist,
+  [ActionTypes.UNBLACKLIST_VENUE]: handleUnblacklistVenue,
   [ActionTypes.ADD_QUEST]: handleAddQuest,
   [ActionTypes.ADVANCE_QUEST]: handleAdvanceQuest,
   [ActionTypes.APPLY_QUEST_EVENT]: (
