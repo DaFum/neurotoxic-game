@@ -47,12 +47,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
 
-      - name: Run fast node:test suite
+      - name: Run node:test suite
         id: run-tests
         shell: bash
         run: |
           rc=0
-          pnpm test 2>&1 | tee test-output-node.txt || rc=$?
+          pnpm run test:node 2>&1 | tee test-output-node.txt || rc=$?
           echo "exit_code=$rc" >> "$GITHUB_OUTPUT"
 
       - name: Upload test log artifact (node)
@@ -229,7 +229,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
 
-      - name: Run TypeScript checks
+      - name: Run core TypeScript checks
+        run: pnpm run typecheck:core
+
+      - name: Run reducer TypeScript checks
         run: pnpm run typecheck
 
   locale-smoke-tests:
