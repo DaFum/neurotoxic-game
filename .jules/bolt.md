@@ -174,3 +174,6 @@
 
 **Learning:** `Set.prototype.forEach` creates a callback allocation on every invocation. When this is used within high-frequency loops or state emission paths (e.g., `emitChange` in `AudioManager.ts`), it causes unnecessary GC pressure.
 **Action:** Replace `Set.prototype.forEach` with a `for...of` loop in hot paths. This iterates over the collection without allocating an anonymous function, significantly improving performance and reducing memory footprint.
+## 2024-05-19 - Replacing chained array methods in chart density calculation
+**Learning:** Found an opportunity to replace a chained `.map().filter()` operation in `buildSetlistChartDensity` (`src/utils/chartDensity.ts`) with a single-pass `for` loop. This avoids the creation of an intermediate array which, especially on hot paths or loops handling large lists (like song data parsing for charts), leads to unnecessary garbage collection overhead. Procedural `for` loops are much faster and more memory-efficient here.
+**Action:** When working on array transformations in utility functions dealing with large or frequent data processing, look out for chained array methods like `.map().filter()`, `.filter().reduce()`, etc., and replace them with single-pass `for` loops.

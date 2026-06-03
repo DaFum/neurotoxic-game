@@ -73,9 +73,19 @@ export const buildSetlistChartDensity = (
   songs: Array<Pick<Song, 'notes' | 'tpb' | 'bpm' | 'duration'>>,
   bucketCount = 16
 ): ChartDensityBar[] => {
-  const densitySets = songs
-    .map(song => buildSongChartDensity(song, bucketCount))
-    .filter(bars => bars.length > 0)
+  // ⚡ BOLT OPTIMIZATION: Replaced chained .map().filter() with a single-pass loop.
+  // Why: Eliminates intermediate array allocations.
+  // Impact: Reduces garbage collection overhead.
+  const densitySets: ChartDensityBar[][] = []
+  for (let i = 0; i < songs.length; i++) {
+    const song = songs[i]
+    if (song) {
+      const bars = buildSongChartDensity(song, bucketCount)
+      if (bars.length > 0) {
+        densitySets.push(bars)
+      }
+    }
+  }
   const firstSet = densitySets[0]
   if (!firstSet) return []
 
