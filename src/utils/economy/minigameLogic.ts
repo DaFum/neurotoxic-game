@@ -3,12 +3,6 @@ import { bandHasTrait } from '../traitUtils'
 import type { BandState } from '../../types'
 import type { KabelsalatResults } from './types'
 
-/**
- * Calculates effects of Travel Minigame results.
- * @param {number} damageTaken - Total damage taken.
- * @param {string[]} itemsCollected - Array of collected item types.
- * @returns {object} { conditionLoss, fuelBonus }
- */
 export const calculateTravelMinigameResult = (
   damageTaken: unknown,
   itemsCollected: unknown
@@ -38,7 +32,7 @@ export const calculateTravelMinigameResult = (
  * @returns {object} { stress, repairCost }
  */
 export const calculateRoadieMinigameResult = (
-  equipmentDamage: number,
+  equipmentDamage: unknown,
   bandState: Pick<BandState, 'members'> | null | undefined,
   contrabandDelivered: number = 0
 ) => {

@@ -12,6 +12,13 @@ export interface PostGigFinancials {
   soldMerch?: Record<string, number>
 }
 
+import type {
+  PlayerState,
+  Venue,
+  GigModifiers
+} from '.'
+import type { CityTraitState } from './game'
+
 export type GigEconomyData = Partial<
   Pick<Venue, 'capacity' | 'diff' | 'difficulty' | 'name'>
 > & {
@@ -19,8 +26,6 @@ export type GigEconomyData = Partial<
   pay?: number
   [key: string]: unknown
 }
-
-
 
 export type EconomyContext = {
   daysSinceLastGig?: number
@@ -43,15 +48,11 @@ export type EconomyContext = {
   [key: string]: unknown
 }
 
-
-
 export type GigStatsLike = {
   misses?: number
   peakHype?: number
   [key: string]: unknown
 }
-
-
 
 export type BandInventoryLike = {
   shirts?: number
@@ -61,8 +62,6 @@ export type BandInventoryLike = {
   vinyl?: number
   [key: string]: unknown
 }
-
-
 
 export type MapPoint = {
   x?: number
@@ -74,8 +73,6 @@ export type MapPoint = {
   [key: string]: unknown
 }
 
-
-
 export type GigFinancialParams = {
   gigData: GigEconomyData
   performanceScore: number
@@ -85,8 +82,6 @@ export type GigFinancialParams = {
   gigStats: GigStatsLike
   context?: EconomyContext
 }
-
-
 
 export type KabelsalatResults = {
   isPoweredOn?: boolean

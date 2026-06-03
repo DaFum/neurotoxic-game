@@ -1,18 +1,30 @@
 import { NEUTRAL_ASSET_MODIFIERS } from '../assetSelectors'
 import type { AssetModifiers } from '../../types/assets'
 import { logger } from '../logger'
-import { calculateZealotryEffects } from '../socialEngine'
 import { clamp0to100, finiteNumberOr } from '../gameStateUtils'
-import { SPENDING_PROFILE_MERCH_MULTIPLIER } from '../../data/merch'
+import {
+  SPENDING_PROFILE_MERCH_MULTIPLIER
+} from '../../data/merch'
 import type { CityGenre, SpendingProfile, MerchItemProfile } from '../../data/merch'
 import { MERCH_PROFILES } from '../../data/merch'
 import type { GigEconomyData, EconomyContext, GigStatsLike, BandInventoryLike, GigFinancialParams } from './types'
 import type { GigModifiers } from '../../types'
 import type { FinancialBreakdownItem, PostGigFinancials } from '../../types/economy'
+import { calculateZealotryEffects } from '../socialEngine'
+import {
+  TICKET_SALES_CONSTANTS,
+    BAR_RATE_VIP,
+  BAR_RATE_NORMAL,
+  AVG_SPEND_PER_PERSON_AT_BAR,
+  MAX_GIG_NET,
+  MANAGEMENT_CUT_RATE,
+  GLOBAL_PAYOUT_NERF,
+  ZEALOTRY_PROMO_THRESHOLD,
+  MERCH_PROFILE_VALUES,
 
-import { TICKET_SALES_CONSTANTS, MERCH_PROFILE_VALUES, BAR_RATE_VIP, BAR_RATE_NORMAL, AVG_SPEND_PER_PERSON_AT_BAR, ZEALOTRY_PROMO_THRESHOLD, MANAGEMENT_CUT_RATE, GLOBAL_PAYOUT_NERF, MAX_GIG_NET, VENUE_SPLIT_RATES, SORTED_MERCH_KEYS, calculateGigModifierCost } from './constants'
-
-
+  SORTED_MERCH_KEYS,
+  calculateGigModifierCost
+} from './constants'
 
 /**
  * Calculates ticket sales revenue and attendance.
@@ -304,8 +316,11 @@ export const calculateMerchIncome = (
 }
 
 /**
- * Calculates the effective ticket price, accounting for any discounts or modifiers.
- * @param {object} gigData - The gig data containing the base price.
+ * Calculates distance between two nodes or a node and a fallback point.
+ * @param {object} nodeA - The target node.
+ * @param {object} [nodeB=null] - The source node.
+ * @returns {number} The calculated distance.
+
  * @param {object} context - Context object containing flags like discountedTickets.
  * @returns {number} The effective ticket price.
  */
@@ -322,7 +337,10 @@ export const calculateEffectiveTicketPrice = (
   return price
 }
 
-
+/**
+ * Calculates venue split / promoter cut.
+ */
+const VENUE_SPLIT_RATES: Record<number, number> = { 3: 0.35, 4: 0.55 }
 /**
  * Calculates venue split / promoter cut.
  */

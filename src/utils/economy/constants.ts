@@ -1,32 +1,19 @@
+import { MERCH_PROFILES } from '../../data/merch'
+import type { MerchItemProfile } from '../../data/merch'
 import type { AssetModifiers } from '../../types/assets'
 import { NEUTRAL_ASSET_MODIFIERS } from '../assetSelectors'
 import { finiteNumberOr } from '../gameStateUtils'
-import { MERCH_PROFILES } from '../../data/merch'
-import type { MerchItemProfile } from '../../data/merch'
-
-
-
-
-
 
 export { DEFAULT_MERCH_PRICES } from '../../data/merch'
 export const SORTED_MERCH_KEYS = Object.freeze(Object.keys(MERCH_PROFILES).sort())
-
-
 export const MERCH_PROFILE_VALUES = Object.freeze(
   Object.values(MERCH_PROFILES)
 ) as ReadonlyArray<MerchItemProfile>
 
 /**
- * Venue split rates by difficulty.
+ * Per-modifier costs used both in the PreGig UI preview and the PostGig expense calculation.
+ * Keep this as the single source of truth so both screens always agree.
  */
-export const VENUE_SPLIT_RATES: Record<number, number> = { 3: 0.35, 4: 0.55 }
-
-export const BAR_RATE_VIP = 0.3;
-export const BAR_RATE_NORMAL = 0.15;
-export const AVG_SPEND_PER_PERSON_AT_BAR = 5;
-export const ZEALOTRY_PROMO_THRESHOLD = 80;
-
 export const MODIFIER_COSTS = {
   catering: 18,
   promo: 26,
@@ -34,6 +21,7 @@ export const MODIFIER_COSTS = {
   soundcheck: 42,
   guestlist: 50
 }
+
 export const calculateGigModifierCost = (
   key: keyof typeof MODIFIER_COSTS,
   assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS
@@ -47,6 +35,11 @@ export const calculateGigModifierCost = (
   )
   return Math.ceil(baseCost * songCostMultiplier)
 }
+
+export const BAR_RATE_VIP = 0.3
+export const BAR_RATE_NORMAL = 0.15
+export const AVG_SPEND_PER_PERSON_AT_BAR = 5
+export const ZEALOTRY_PROMO_THRESHOLD = 80
 
 export const EXPENSE_CONSTANTS = {
   DAILY: {
@@ -88,7 +81,6 @@ export const TICKET_SALES_CONSTANTS = {
   FAME_FILL_WEIGHT: 0.55
 }
 
-
 export const MANAGEMENT_CUT_RATE = 0.15
 export const MAX_GIG_NET = 7500
 export const GLOBAL_PAYOUT_NERF = 0.5
@@ -96,3 +88,8 @@ export const TRAVEL_LOGISTICS_BASE = 18
 export const TRAVEL_LOGISTICS_PER_100KM = 4
 export const TRAVEL_LOGISTICS_PER_FAME_LEVEL = 1.5
 export const TRAVEL_LOGISTICS_CASH_CAP = 45
+
+/**
+ * Venue split rates by difficulty.
+ */
+export const VENUE_SPLIT_RATES: Record<number, number> = { 3: 0.35, 4: 0.55 }

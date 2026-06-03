@@ -3,15 +3,17 @@ import type { AssetModifiers } from '../../types/assets'
 import { clamp0to100, finiteNumberOr } from '../gameStateUtils'
 import { bandHasTrait } from '../traitUtils'
 import type { PlayerState, BandState, SocialState } from '../../types'
-import type { MapPoint } from './types'
+
 import { EXPENSE_CONSTANTS, TRAVEL_LOGISTICS_PER_100KM, TRAVEL_LOGISTICS_PER_FAME_LEVEL, TRAVEL_LOGISTICS_CASH_CAP, TRAVEL_LOGISTICS_BASE } from './constants'
 
 /**
  * Calculates distance between two nodes or a node and a fallback point.
  * @param {object} nodeA - The target node.
- * @param {object} [nodeB=null] - The source node.
+ * @param {object} [__nodeB=null] - The source node.
  * @returns {number} The calculated distance.
  */
+import type { MapPoint } from './types'
+
 export const calculateDistance = (nodeA: unknown, nodeB: unknown = null) => {
   const pointA = (nodeA && typeof nodeA === 'object' ? nodeA : {}) as MapPoint
   const pointB = (nodeB && typeof nodeB === 'object' ? nodeB : {}) as MapPoint
@@ -174,13 +176,6 @@ export const calculateRepairCost = (currentCondition: number) => {
   return Math.ceil(missing * EXPENSE_CONSTANTS.TRANSPORT.REPAIR_COST_PER_UNIT)
 }
 
-/**
- * Determines whether the run should end due to insolvency.
- * @param {number} newMoney - Player money after applying earnings/losses.
- * @param {number} netIncome - Net income from the gig (optional context).
- * @returns {boolean} True when player is bankrupt.
- * @throws {TypeError} If newMoney is not a finite number.
- */
 export const shouldTriggerBankruptcy = (
   newMoney: unknown,
   netIncome: number | null | undefined,
@@ -199,9 +194,10 @@ export const shouldTriggerBankruptcy = (
   if (val < 0) return true
 
   // If exactly 0, check if we are bleeding money (netIncome < 0).
+
   // If netIncome is undefined, default to 0 (assume break-even/safe).
   const income = netIncome ?? 0
 
-  // Check if we are bleeding money taking into account daily obligations
+  // Bankrupt if at 0 money and net income was strictly negative.
   return (income - totalDailyObligations) < 0
 }
