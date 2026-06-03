@@ -1,4 +1,10 @@
 {
+  "crafting.recipe_amped_synth.label": "Aufgemotzter Synth",
+  "crafting.recipe_amped_synth.desc": "3x Void-Energy-Drink → Aufgemotzter Synth",
+  "crafting.recipe_cursed_pick.label": "Verfluchtes Plektrum",
+  "crafting.recipe_cursed_pick.desc": "2x Klebriges Plektrum → Verfluchtes Plektrum",
+  "crafting.recipe_blood_pact.label": "Blutpakt",
+  "crafting.recipe_blood_pact.desc": "2x Mysteriöse Pillen + 1x Void-Energy-Drink → Blutpakt",
   "hq_gear_neuro_decimator.name": "Neuro-Dezimator",
   "hq_gear_neuro_decimator.description": "Aggressive Harmoniemanipulation durch Chebyshev-Übersteuerung. Warnung: Harmoniereduktion ist dauerhaft.",
   "hq_gear_neurotoxic_pedal.name": "Neurotoxisches Pedal",

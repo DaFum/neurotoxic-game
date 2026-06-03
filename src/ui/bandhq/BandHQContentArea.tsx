@@ -45,7 +45,8 @@ export const BandHQContentArea = ({
     updateSettings,
     deleteSave,
     setSetlist,
-    unblacklistVenue
+    unblacklistVenue,
+    craftItem
   } = useGameActions()
 
   const { audioState, handleAudioChange: onAudioChange } = useAudioControl()
@@ -106,6 +107,7 @@ export const BandHQContentArea = ({
             venueBlacklist={venueBlacklist}
             reputationByRegion={reputationByRegion}
             onMakeAmends={unblacklistVenue}
+            onCraft={craftItem}
           />
         )}
 

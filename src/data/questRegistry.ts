@@ -702,6 +702,24 @@ export const QUEST_REGISTRY = {
     failurePenalty: {
       social: { loyalty: -5 }
     }
+  },
+  quest_alchemist: {
+    kind: 'repeatable',
+    label: 'events:quest_alchemist.label',
+    description: 'events:quest_alchemist.desc',
+    deadlineOffset: 20,
+    repeatPolicy: 'cooldown',
+    cooldownDays: 8,
+    progressSource: 'item_crafted',
+    progressRules: [{ event: 'item.crafted', amount: 'fixed', fixedAmount: 1 }],
+    required: 2,
+    offer: { trigger: 'random', category: 'special', chance: 0.06 },
+    rewardType: 'fame',
+    rewardData: { fame: 120 },
+    moneyReward: 0,
+    failurePenalty: {
+      social: { loyalty: -5 }
+    }
   }
 } as const satisfies Record<string, QuestDefinition>
 

@@ -69,6 +69,7 @@ import {
   createBloodBankDonateAction,
   createAddVenueBlacklistAction,
   createUnblacklistVenueAction,
+  createCraftItemAction,
   createSetPendingBandHQOpenAction,
   createSetPendingSupplyStopInventoryAction,
   dismissForeclosureNotice as dismissForeclosureNoticeAction,
@@ -183,6 +184,7 @@ export type GameDispatchActions = {
   unblacklistVenue: (
     payload: Parameters<typeof createUnblacklistVenueAction>[0]
   ) => void
+  craftItem: (payload: Parameters<typeof createCraftItemAction>[0]) => void
   useContraband: (
     instanceId: Parameters<typeof createUseContrabandAction>[0],
     contrabandId: Parameters<typeof createUseContrabandAction>[1],
@@ -520,6 +522,12 @@ export function useGameDispatchActions({
     [dispatch]
   )
 
+  const craftItem = useCallback(
+    (payload: Parameters<typeof createCraftItemAction>[0]) =>
+      dispatch(createCraftItemAction(payload)),
+    [dispatch]
+  )
+
   const useContraband = useCallback(
     (
       instanceId: Parameters<typeof createUseContrabandAction>[0],
@@ -770,6 +778,7 @@ export function useGameDispatchActions({
       applyQuestEvent,
       addVenueBlacklist,
       unblacklistVenue,
+      craftItem,
       useContraband,
       clinicHeal,
       clinicEnhance,
@@ -834,6 +843,7 @@ export function useGameDispatchActions({
       applyQuestEvent,
       addVenueBlacklist,
       unblacklistVenue,
+      craftItem,
       useContraband,
       clinicHeal,
       clinicEnhance,

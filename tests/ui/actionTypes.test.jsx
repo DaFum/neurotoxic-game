@@ -41,6 +41,7 @@ describe('ActionTypes', () => {
       'UNLOCK_TRAIT',
       'ADD_VENUE_BLACKLIST',
       'UNBLACKLIST_VENUE',
+      'CRAFT_ITEM',
       'ADD_QUEST',
       'ADVANCE_QUEST',
       'APPLY_QUEST_EVENT',

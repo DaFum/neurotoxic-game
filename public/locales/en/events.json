@@ -1,4 +1,12 @@
 {
+  "quest_alchemist.label": "Back-Alley Alchemist",
+  "quest_alchemist.desc": "Craft an item from contraband you scavenged.",
+  "quest_trigger_alchemist.title": "COOK SOMETHING UP",
+  "quest_trigger_alchemist.desc": "A roadie swears you can fuse junk contraband into something worth using.",
+  "quest_trigger_alchemist.opt1.label": "Start tinkering",
+  "quest_trigger_alchemist.opt1.outcome": "You start eyeing your stash for spare parts.",
+  "quest_trigger_alchemist.opt2.label": "Leave it be",
+  "quest_trigger_alchemist.opt2.outcome": "You are no chemist, you decide.",
   "quest_brand_ambassador.label": "Brand Ambassador",
   "quest_brand_ambassador.desc": "Earn brand trust by signing and honoring deals.",
   "quest_trigger_brand_ambassador.title": "CORPORATE COURTSHIP",

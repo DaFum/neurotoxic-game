@@ -16,7 +16,11 @@ import { applyTraitUnlocks } from '../../utils/traitUtils'
 import { ActionTypes } from '../actionTypes'
 import { CONTRABAND_BY_ID } from '../../data/contraband'
 import { QuestEvents } from '../../utils/questProgress'
-import { createItemUsedQuestEvent } from '../../quests/producers/itemQuestEvents'
+import {
+  createItemUsedQuestEvent,
+  createItemCraftedQuestEvent
+} from '../../quests/producers/itemQuestEvents'
+import { getCraftingRecipe } from '../../data/craftingRecipes'
 import type {
   BandMember,
   BandState,
@@ -390,6 +394,103 @@ export const addContrabandHelper = (
   }
 }
 
+/** Stack count of a stash entry (non-stackable owned items count as 1). */
+const getStashCount = (
+  stash: Record<string, unknown> | undefined,
+  itemId: string
+): number => {
+  if (!stash || !Object.hasOwn(stash, itemId)) return 0
+  const entry = stash[itemId] as Record<string, unknown> | undefined
+  if (!entry) return 0
+  const stacks = entry.stacks
+  return typeof stacks === 'number' && Number.isFinite(stacks)
+    ? Math.max(0, stacks)
+    : 1
+}
+
+export const handleCraftItem = (
+  state: GameState,
+  { recipeId, toastId }: { recipeId: string; toastId: string }
+): GameState => {
+  const recipe = getCraftingRecipe(recipeId)
+  if (!recipe) return state
+
+  const stash = state.band.stash || {}
+
+  // Verify every input is available in the required quantity.
+  for (const [itemId, qty] of Object.entries(recipe.inputs)) {
+    if (getStashCount(stash, itemId) < qty) {
+      return {
+        ...state,
+        toasts: [
+          ...(state.toasts || []),
+          {
+            id: toastId,
+            messageKey: 'ui:toast.craftMissingInputs',
+            options: { recipeLabel: recipe.labelKey },
+            type: 'error'
+          }
+        ]
+      }
+    }
+  }
+
+  // Consume inputs.
+  const newStash = Object.assign(Object.create(null), stash)
+  for (const [itemId, qty] of Object.entries(recipe.inputs)) {
+    const entry = newStash[itemId] as Record<string, unknown>
+    const current = getStashCount(newStash, itemId)
+    if (current - qty > 0 && typeof entry.stacks === 'number') {
+      newStash[itemId] = { ...entry, stacks: current - qty }
+    } else {
+      delete newStash[itemId]
+    }
+  }
+
+  const consumedState: GameState = {
+    ...state,
+    band: { ...state.band, stash: newStash }
+  }
+
+  // Add the output. Abort (without consuming) if it cannot be added, e.g. a
+  // non-stackable artifact the band already owns.
+  const craftedState = addContrabandHelper(consumedState, {
+    contrabandId: recipe.output
+  })
+  if (craftedState === consumedState) {
+    return {
+      ...state,
+      toasts: [
+        ...(state.toasts || []),
+        {
+          id: toastId,
+          messageKey: 'ui:toast.craftFailed',
+          options: { recipeLabel: recipe.labelKey },
+          type: 'error'
+        }
+      ]
+    }
+  }
+
+  const withToast: GameState = {
+    ...craftedState,
+    toasts: [
+      ...(craftedState.toasts || []),
+      {
+        id: toastId,
+        messageKey: 'ui:toast.crafted',
+        options: { itemLabel: `items:contraband.${recipe.output}.name` },
+        type: 'success'
+      }
+    ]
+  }
+
+  return QuestEvents.emit(
+    withToast,
+    createItemCraftedQuestEvent({ itemId: recipe.output, recipeId: recipe.id })
+  )
+}
+
 /**
  * Pure helper function to apply the effect of a contraband item.
  * @param {Object} band - Current band state
@@ -601,6 +702,11 @@ export const bandReducer = (
           contrabandId: string
           memberId?: string
         }
+      )
+    case ActionTypes.CRAFT_ITEM:
+      return handleCraftItem(
+        state,
+        action.payload as { recipeId: string; toastId: string }
       )
     default:
       return assertNever(action as never)

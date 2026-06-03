@@ -1,4 +1,10 @@
 {
+  "crafting.recipe_amped_synth.label": "Amped Synth",
+  "crafting.recipe_amped_synth.desc": "3x Void Energy Drink → Amped Synth",
+  "crafting.recipe_cursed_pick.label": "Cursed Pick",
+  "crafting.recipe_cursed_pick.desc": "2x Sticky Plectrum → Cursed Pick",
+  "crafting.recipe_blood_pact.label": "Blood Pact",
+  "crafting.recipe_blood_pact.desc": "2x Mystery Pills + 1x Void Energy Drink → Blood Pact",
   "hq_gear_neuro_decimator.name": "Neuro-Decimator",
   "hq_gear_neuro_decimator.description": "Aggressive harmonic manipulation via Chebyshev overdrive. Warning: Harmony reduction is permanent.",
   "hq_gear_neurotoxic_pedal.name": "Neurotoxic Pedal",

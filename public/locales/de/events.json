@@ -1,4 +1,12 @@
 {
+  "quest_alchemist.label": "Hinterhof-Alchemist",
+  "quest_alchemist.desc": "Stelle einen Gegenstand aus erbeuteter Schmuggelware her.",
+  "quest_trigger_alchemist.title": "BRAU WAS ZUSAMMEN",
+  "quest_trigger_alchemist.desc": "Ein Roadie schwört, du könntest Schrott-Schmuggelware zu etwas Brauchbarem verschmelzen.",
+  "quest_trigger_alchemist.opt1.label": "Anfangen zu basteln",
+  "quest_trigger_alchemist.opt1.outcome": "Du beäugst dein Versteck nach Ersatzteilen.",
+  "quest_trigger_alchemist.opt2.label": "Lass es sein",
+  "quest_trigger_alchemist.opt2.outcome": "Du bist kein Chemiker, entscheidest du.",
   "quest_brand_ambassador.label": "Markenbotschafter",
   "quest_brand_ambassador.desc": "Gewinne Markenvertrauen, indem du Deals abschließt und einhältst.",
   "quest_trigger_brand_ambassador.title": "KONZERN-WERBUNG",

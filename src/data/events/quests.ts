@@ -561,5 +561,26 @@ export const QUEST_EVENTS = [
         outcomeText: 'events:quest_trigger_brand_ambassador.opt2.outcome'
       }
     ]
+  },
+  {
+    id: 'quest_trigger_alchemist',
+    category: 'special',
+    title: 'events:quest_trigger_alchemist.title',
+    description: 'events:quest_trigger_alchemist.desc',
+    trigger: 'random',
+    chance: 0.06,
+    condition: (state: GameState) => canOfferQuest(state, 'quest_alchemist'),
+    options: [
+      {
+        label: 'events:quest_trigger_alchemist.opt1.label',
+        effect: { type: 'quest', quest: { id: 'quest_alchemist' } },
+        outcomeText: 'events:quest_trigger_alchemist.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_alchemist.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'events:quest_trigger_alchemist.opt2.outcome'
+      }
+    ]
   }
 ]

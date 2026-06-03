@@ -97,7 +97,8 @@ const BAND_ACTIONS = [
   ActionTypes.USE_CONTRABAND,
   ActionTypes.CONSUME_ITEM,
   ActionTypes.UNLOCK_TRAIT,
-  ActionTypes.TOGGLE_NEURO_DECIMATOR
+  ActionTypes.TOGGLE_NEURO_DECIMATOR,
+  ActionTypes.CRAFT_ITEM
 ] as const
 
 type BandActionType = (typeof BAND_ACTIONS)[number]

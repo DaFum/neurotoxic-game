@@ -1,4 +1,10 @@
 {
+  "toast.crafted": "HERGESTELLT: {{itemLabel}}",
+  "toast.craftMissingInputs": "Fehlende Materialien für {{recipeLabel}}.",
+  "toast.craftFailed": "Konnte {{recipeLabel}} gerade nicht herstellen.",
+  "crafting.title": "Werkstatt",
+  "crafting.empty": "Keine Rezepte verfügbar.",
+  "crafting.craft": "Herstellen",
   "toast.dealsBroken": "SPONSOREN RAUS: Deine Markendeals sind an der Kontroverse zerbrochen.",
   "toast.amendsMade": "WIEDERGUTGEMACHT: Du hast dich mit {{venueLabel}} versöhnt.",
   "toast.amendsTooExpensive": "Nicht genug Geld, um dich mit {{venueLabel}} zu versöhnen ({{amount}}).",
