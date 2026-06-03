@@ -43,9 +43,7 @@ export default defineConfig({
       'tests/ui/**/*.test.js',
       'tests/ui/**/*.spec.js',
       'tests/integration/**/*.test.js',
-      'tests/integration/**/*.spec.js',
-      'tests/ui/bandhq/hooks/**/*.test.jsx',
-      'tests/ui/bandhq/hooks/**/*.spec.jsx'
+      'tests/integration/**/*.spec.js'
     ]
   }
 })

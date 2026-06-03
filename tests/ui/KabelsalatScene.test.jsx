@@ -99,36 +99,6 @@ describe('KabelsalatScene', () => {
     expect(screen.getAllByRole('button').length).toBeGreaterThan(5)
   })
 
-  it('renders all 5 cables', async () => {
-    await act(async () => {
-      render(<KabelsalatScene />)
-    })
-
-    expect(screen.getAllByText(/HARDWARE_RIGGING/).length).toBeGreaterThan(0)
-    expect(screen.getByText('T-MINUS')).toBeInTheDocument()
-  })
-
-  it('renders all 5 cables and their accessibility attributes', async () => {
-    await act(async () => {
-      render(<KabelsalatScene />)
-    })
-
-    const buttons = screen.getAllByRole('button')
-    // Filter for cable buttons (check for cable labels in accessible names)
-    const cableButtons = buttons.filter(btn =>
-      btn.getAttribute('aria-label')?.toLowerCase().includes('cable')
-    )
-    expect(cableButtons.length).toBeGreaterThanOrEqual(5)
-  })
-
-  it('renders rules section', async () => {
-    await act(async () => {
-      render(<KabelsalatScene />)
-    })
-
-    expect(screen.getByText(/RIGGING PROTOCOL/)).toBeInTheDocument()
-  })
-
   it('renders SVG viewport with correct viewBox', async () => {
     let container
     await act(async () => {
@@ -153,18 +123,6 @@ describe('KabelsalatScene', () => {
     expect(svg.getAttribute('aria-label')).toBe('HARDWARE_RIGGING')
   })
 
-  it('renders all 5 sockets and their accessibility attributes', async () => {
-    await act(async () => {
-      render(<KabelsalatScene />)
-    })
-    const buttons = screen.getAllByRole('button')
-    // Filter for socket buttons (check for socket labels in accessible names)
-    const socketButtons = buttons.filter(btn =>
-      btn.getAttribute('aria-label')?.toLowerCase().includes('socket')
-    )
-    expect(socketButtons.length).toBeGreaterThanOrEqual(5)
-  })
-
   it('displays initial time limit', async () => {
     await act(async () => {
       render(<KabelsalatScene />)
@@ -179,14 +137,6 @@ describe('KabelsalatScene', () => {
     })
 
     expect(screen.getByText(/CABLE MESS DETECTED/)).toBeInTheDocument()
-  })
-
-  it('displays rules section', async () => {
-    await act(async () => {
-      render(<KabelsalatScene />)
-    })
-
-    expect(screen.getByText(/Status/)).toBeInTheDocument()
   })
 
   it('renders power LED indicator as SVG circle', async () => {
@@ -221,16 +171,6 @@ describe('KabelsalatScene', () => {
     expect(screen.getByText(/RIGGING PROTOCOL/)).toBeInTheDocument()
   })
 
-  it('renders rack screws for hardware decoration', async () => {
-    await act(async () => {
-      render(<KabelsalatScene />)
-    })
-
-    // Check that SVG is rendered
-    const svg = screen.getByLabelText('HARDWARE_RIGGING')
-    expect(svg.tagName.toLowerCase()).toBe('svg')
-  })
-
   it('displays power indicator light', async () => {
     await act(async () => {
       render(<KabelsalatScene />)
@@ -249,16 +189,6 @@ describe('KabelsalatScene', () => {
     // Check that the main container has background styling
     const mainDiv = container.firstChild
     expect(mainDiv).toHaveClass(/flex/)
-  })
-
-  it('applies opacity transition when background texture loads', async () => {
-    await act(async () => {
-      const { container } = render(<KabelsalatScene />)
-
-      // Initially might be opacity-0
-      const mainDiv = container.firstChild
-      expect(mainDiv).toBeDefined()
-    })
   })
 })
 
@@ -356,7 +286,7 @@ describe('KabelsalatScene - accessibility', () => {
       btn.getAttribute('aria-label')?.toLowerCase().includes('cable')
     )
 
-    expect(cableButtons.length).toBeGreaterThan(0)
+    expect(cableButtons.length).toBeGreaterThanOrEqual(5)
     cableButtons.forEach(btn => {
       expect(btn).toHaveAttribute('aria-label')
     })
@@ -372,7 +302,7 @@ describe('KabelsalatScene - accessibility', () => {
       btn.getAttribute('aria-label')?.toLowerCase().includes('socket')
     )
 
-    expect(socketButtons.length).toBeGreaterThan(0)
+    expect(socketButtons.length).toBeGreaterThanOrEqual(5)
     socketButtons.forEach(btn => {
       expect(btn).toHaveAttribute('aria-label')
     })
@@ -402,15 +332,6 @@ describe('KabelsalatScene - accessibility', () => {
 })
 
 describe('KabelsalatScene - visual feedback', () => {
-  it('renders cable shadows', async () => {
-    const { container } = render(<KabelsalatScene />)
-
-    await act(async () => {
-      // Check SVG elements exist
-      expect(container.querySelector('svg')).toBeInTheDocument()
-    })
-  })
-
   it('displays phase title with correct styling', async () => {
     await act(async () => {
       render(<KabelsalatScene />)

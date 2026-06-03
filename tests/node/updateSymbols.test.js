@@ -13,6 +13,13 @@ function refreshSymbolsCache() {
   return cachedDocument
 }
 
+function restoreSymbolsCache(symbolsText) {
+  fs.writeFileSync('symbols.json', symbolsText)
+  cachedSymbolsText = symbolsText
+  cachedDocument = JSON.parse(symbolsText)
+  return cachedDocument
+}
+
 function loadSymbols() {
   return cachedDocument.knownSymbols
 }
@@ -92,6 +99,7 @@ test('direct exports from declaration files remain indexed', () => {
 
 test('test, spec, and story files are ignored while React HOCs keep render signatures', () => {
   const fixtureDir = path.join('src', '__symbolIndexFixtures')
+  const symbolsBeforeFixture = cachedSymbolsText
 
   try {
     fs.mkdirSync(fixtureDir, { recursive: true })
@@ -158,7 +166,7 @@ test('test, spec, and story files are ignored while React HOCs keep render signa
     )
   } finally {
     fs.rmSync(fixtureDir, { recursive: true, force: true })
-    runUpdateSymbolsAndRefreshCache()
+    restoreSymbolsCache(symbolsBeforeFixture)
   }
 })
 
