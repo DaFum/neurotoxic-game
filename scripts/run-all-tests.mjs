@@ -8,14 +8,14 @@
  *     test:vitest:logic   — 26 node-env vitest files, minimal workers (5 s)
  *
  *   Phase B (sequential, after Phase A):
- *     test:ui             — 131 jsdom vitest files, full worker allotment
+ *     test:ui             — 131 jsdom vitest files, capped worker allotment
  *
  * test:vitest:logic is node-env only (no jsdom), draws ~1 extra worker from
  * the pool while test:node runs, and completes in ~5 s. By overlapping it
  * with test:node the 5 s disappears from the critical path entirely.
  *
- * test:ui is kept sequential after test:node because both are CPU-saturating
- * on 4 cores; running them simultaneously degrades both with no net gain.
+ * test:ui is kept sequential after test:node because both are CPU-saturating;
+ * running them simultaneously degrades both with no net gain.
  * If NODE_ALL_PARALLEL=1 is set, test:ui also runs in Phase A (useful on
  * machines with ≥8 cores).
  */
@@ -31,22 +31,25 @@ const totalWorkers = Math.max(1, availableParallelism())
 // simultaneously so there is no contention.  test:vitest:logic is tiny
 // (~5 s, node-env only) and is capped at 1 vitest worker so it doesn't
 // compete with test:node's threads — the OS schedules it in the I/O gaps.
-const nodeWorkers = totalWorkers
+const nodeWorkersDefault = totalWorkers
 const logicWorkers = 1
-const uiWorkers = totalWorkers
+const vitestUiWorkerCap = 12
+const uiWorkersDefault = Math.min(totalWorkers, vitestUiWorkerCap)
 
 const baseEnv = { ...process.env }
 if (!baseEnv.NODE_TEST_CONCURRENCY) {
-  baseEnv.NODE_TEST_CONCURRENCY = `${nodeWorkers}`
+  baseEnv.NODE_TEST_CONCURRENCY = `${nodeWorkersDefault}`
 }
 if (!baseEnv.VITEST_MAX_WORKERS) {
-  baseEnv.VITEST_MAX_WORKERS = `${uiWorkers}`
+  baseEnv.VITEST_MAX_WORKERS = `${uiWorkersDefault}`
 }
 
 const logicEnv = {
   ...baseEnv,
   VITEST_MAX_WORKERS: `${logicWorkers}`
 }
+const nodeWorkers = baseEnv.NODE_TEST_CONCURRENCY
+const uiWorkers = baseEnv.VITEST_MAX_WORKERS
 
 // ---------------------------------------------------------------------------
 // Spawn helper
