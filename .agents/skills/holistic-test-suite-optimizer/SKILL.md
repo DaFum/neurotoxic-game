@@ -49,20 +49,25 @@ This skill exists to correct common failure modes in aggressive "optimize everyt
 
    - Capture wall time, failing tests, worker-related env vars, and OOM/hang symptoms. If the command is too expensive locally, explain the constraint and use the closest targeted runner.
 
-3. **Optimize the highest-impact layer first**
+3. **Triage failures before speed work**
+   - If the symptom is a failing, flaky, hanging, OOMing, or CI-only suite, read `references/failure-triage-guide.md` before changing runner topology.
+   - Keep the failure visible. Narrow to the smallest runner-owned command that reproduces it, then fix lifecycle, fixture, or data pollution before treating worker counts as the cause.
+   - Do not use a passing `pnpm run test` result as evidence for a failing `pnpm run test:all`, `test:ui`, `test:e2e`, perf, or locale surface.
+
+4. **Optimize the highest-impact layer first**
    - **Topology**: change suite ordering, overlap, sharding, or worker allocation only when baseline timing shows idle capacity or a critical-path win.
    - **Fixtures**: extract duplicated setup only after finding the same setup pattern in multiple files owned by the same runner.
    - **Lifecycle**: restore mocks, timers, localStorage, DOM, AudioContext, Pixi, and Playwright contexts with `try/finally`, `afterEach`, or `afterAll`.
    - **Data shape**: combine repeated cases into data-driven tests when it reduces setup cost without making failures ambiguous.
    - **Memory**: fix leaks before raising memory limits. Treat `--max-old-space-size` as a last-mile guard, not the first fix.
 
-4. **Preserve engine isolation**
+5. **Preserve engine isolation**
    - `node:test` suites stay on `node:test` and `node:assert`.
    - Vitest suites own `vi`, jsdom, React Testing Library, and Vitest setup files.
    - Playwright suites own browser contexts, `storageState`, routing, screenshots, and E2E sharding.
    - Do not move a test between engines just to make a local optimization look cleaner.
 
-5. **Verify and report**
+6. **Verify and report**
    - Re-run the changed suite first, then the next broader gate that can catch cross-suite pollution.
    - For shared fixtures or runner scripts, run at least the affected engine plus `pnpm run test:all` when feasible.
    - Report baseline time, post-change time, commands, failures, skipped checks, and remaining risk.
@@ -78,14 +83,18 @@ This skill exists to correct common failure modes in aggressive "optimize everyt
 | Slow node suite | heavy test list, `NODE_TEST_CONCURRENCY` | Split quick/heavy or tune node workers |
 | Slow E2E startup | Playwright config, auth/menu setup | Use `storageState` or direct scene fixture when valid |
 | Flaky async wait | arbitrary sleeps, leaked timers | Replace with condition-based wait and cleanup |
+| CI-only failure | CI job log, package script, local matching command | Reproduce with the same runner before touching unrelated suites |
+| Hang or OOM | Last emitted test, teardown, worker env, heap symptoms | Fix leaks or isolation before increasing memory/workers |
 
 ## Bundled Resources
 
 - Read [references/repo-test-topology.md](references/repo-test-topology.md) when choosing test scope, checking what each package script includes, or changing worker-related behavior.
 - Read [references/pipeline-audit-playbook.md](references/pipeline-audit-playbook.md) when changing runner topology, worker counts, CI jobs, suite boundaries, or memory behavior.
+- Read [references/failure-triage-guide.md](references/failure-triage-guide.md) when diagnosing failing, flaky, hanging, OOMing, or CI-only test suites before optimizing runtime.
 - Use [examples/runner-topology-analysis-example.md](examples/runner-topology-analysis-example.md) when a request asks to speed up `pnpm run test` or `pnpm run test:all` and the right answer may be "measure first, no code change yet."
 - Use [examples/test-suite-optimization-report.md](examples/test-suite-optimization-report.md) as the expected reporting shape after an optimization pass.
 - Use [examples/fixture-extraction-example.md](examples/fixture-extraction-example.md) when deciding whether duplicated setup should become a shared fixture.
+- Use [examples/failure-triage-example.md](examples/failure-triage-example.md) when a prompt mixes speed pressure with a failing or hanging suite.
 
 ## Output Contract
 
@@ -123,5 +132,7 @@ If implementation is requested, make surgical changes and include exact commands
 - Treating Playwright as part of `test:all` without checking current scripts.
 - Reporting "faster" without command output and wall-time evidence.
 - Hiding failed tests behind retries, grep filters, or skipped suites.
+- Treating an unreproduced failure as a worker-count problem.
+- Comparing timings from different commands, machines, or failure states as if they are a runtime delta.
 
 _Skill sync: compatible with React 19.2.6 / Vite 8.0.14 / Tailwind 4.3.0 baseline as of 2026-06-03._

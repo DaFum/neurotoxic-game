@@ -18,6 +18,19 @@ Use this reference when choosing test scope, explaining what a package script co
 | `pnpm run test:additional` | `test:perf` + locale smoke + locale full | Perf and locale validation | Not part of `test:all` unless scripts change. |
 | `pnpm run test:e2e` | `playwright test` | Playwright E2E under `e2e/**` | Not part of `test:all`. Uses `playwright.config.js` and starts Vite dev server. |
 
+## Targeted File Commands
+
+Use the runner that already owns the file. A targeted command is valid evidence only for that runner family.
+
+| File family | Command |
+| --- | --- |
+| `node:test` files under node-owned directories | `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/<file>.test.js` |
+| Vitest logic files under `vitest.config.node.js` | `pnpm run test:ui:file -- --config vitest.config.node.js tests/<file>.test.js` |
+| Vitest UI/jsdom files | `pnpm run test:ui:file -- tests/<file>.test.js(x)` |
+| Playwright specs | `pnpm run test:e2e -- e2e/<file>.spec.js` |
+
+If `run-node-tests.mjs` rejects a path, the file is outside the node runner boundary. Do not force it through `node:test`; use the Vitest command that matches the config include list.
+
 ## Worker Knobs
 
 | Knob | Used by | Safe use |
@@ -31,8 +44,22 @@ Use this reference when choosing test scope, explaining what a package script co
 - `test:all` does not include Playwright, perf, locale, lint, or typecheck in the current scripts.
 - `pnpm run test` is intentionally smaller than `test:all`; do not report it as full PR coverage.
 - CI runs node, Vitest logic, Vitest UI, locale, perf, and typecheck jobs separately. Local `test:all` is not a complete CI mirror.
+- The current Tests workflow does not run Playwright E2E; use `test:e2e` or an E2E workflow when the requested surface is browser automation.
 - `vitest.config.node.js` excludes `tests/logic/AmpStageController.test.js` because it needs jsdom through the UI config.
 - The node runner rejects specific files outside node-owned test directories; use the Vitest file command for Vitest-owned files.
+
+## CI Job Map
+
+| CI job | Local command |
+| --- | --- |
+| Node.js Tests | `pnpm run test:node` |
+| Vitest Logic | `pnpm run test:vitest:logic` |
+| Vitest UI | `pnpm run test:vitest:ui` |
+| Locale Smoke Tests | `pnpm run test:locale:smoke` |
+| Locale Full Tests | `pnpm run test:locale:full` |
+| Performance Tests | `pnpm run test:perf` |
+| Typecheck | `pnpm run typecheck:core` and `pnpm run typecheck` |
+| TS Nocheck Guard | `pnpm run guard:nocheck` |
 
 ## Scope Picker
 

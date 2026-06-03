@@ -2,6 +2,8 @@
 
 Use this reference for test-suite optimization work that goes beyond a single failing test file. Keep the main skill loaded first; read this file only when you need deeper runner, fixture, CI, or memory guidance.
 
+If the current symptom is a failing, flaky, hanging, OOMing, or CI-only suite, read `references/failure-triage-guide.md` first. This playbook assumes the failing surface is understood or the request is primarily about topology/runtime.
+
 ## Context Map
 
 Start by reading the files that define the current test topology:
@@ -44,6 +46,16 @@ Record:
 - failure count and first failure
 - OOM, timeout, retry, or hang symptoms
 - CPU-core assumption if changing concurrency
+
+## False Delta Checks
+
+Before claiming a speedup, confirm the before/after runs are comparable:
+
+- Same package command.
+- Same machine or CI runner class.
+- Same worker-related environment variables unless the env var is the intended experiment.
+- Same pass/fail state. A failing run that exits early is not a faster passing suite.
+- Same dependency install state; do not compare cold install plus tests against warm tests only.
 
 ## Decision Rules
 
