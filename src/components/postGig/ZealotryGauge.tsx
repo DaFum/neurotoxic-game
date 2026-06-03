@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { ZEALOTRY_PROMO_THRESHOLD } from '../../utils/economyEngine'
 import { clampZealotry } from '../../utils/gameStateUtils'
 import { IMG_PROMPTS, resolveGenImageUrl } from '../../utils/imageGen'
+import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 
 type ZealotryGaugeProps = { zealotryLevel?: number }
 
@@ -15,12 +16,14 @@ export const ZealotryGauge = memo(
     return (
       <div className='flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-4 p-3 bg-blood-red/10 border-2 border-blood-red/50 relative overflow-hidden'>
         <div className='w-12 h-12 shrink-0 border-2 border-blood-red/50 overflow-hidden'>
-          <img
-            src={resolveGenImageUrl(IMG_PROMPTS.ZEALOTRY_CULT)}
+          <GeneratedImagePanel
+            prompt={IMG_PROMPTS.ZEALOTRY_CULT}
             alt={t('ui:postGig.socialPhase.altZealotryCult', {
               defaultValue: 'Zealotry Cult'
             })}
-            className='w-full h-full object-cover mix-blend-screen opacity-80'
+            aspectRatio='1:1'
+            className='w-full h-full border-none mix-blend-screen opacity-80'
+            variant='inline'
           />
         </div>
         <div className='w-full flex-1 flex flex-col'>

@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import type { ContrabandStashItem, UnknownRecord } from '../types'
 import { Modal, Panel, AnimatedDivider, ActionButton } from './shared/index.tsx'
+import { GeneratedImagePanel } from './shared/GeneratedImagePanel.tsx'
 import { useTranslation } from 'react-i18next'
 
 import { GlitchButton } from './GlitchButton'
@@ -111,8 +112,7 @@ const StashCardHeader = ({ item, t }: StashCardSubComponentProps) => {
         </span>
         {item.duration && (
           <span className='text-xs text-ash-gray italic'>
-            {item.duration}{' '}
-            {t('ui:contraband.gigs', { defaultValue: 'GIGS' })}
+            {item.duration} {t('ui:contraband.gigs', { defaultValue: 'GIGS' })}
           </span>
         )}
       </div>
@@ -125,21 +125,16 @@ const StashCardDetails = ({ item, t }: StashCardSubComponentProps) => {
     <div className='flex flex-row gap-4 items-start mb-4'>
       {item.imagePrompt && Object.hasOwn(IMG_PROMPTS, item.imagePrompt) && (
         <div className='w-20 h-20 shrink-0 border border-toxic-green-20 bg-void-black flex items-center justify-center p-1 overflow-hidden shadow-[0_0_10px_var(--color-toxic-green-10)]'>
-          <img
-            src={resolveGenImageUrl(
-              IMG_PROMPTS[item.imagePrompt as keyof typeof IMG_PROMPTS]
-            )}
+          <GeneratedImagePanel
+            prompt={IMG_PROMPTS[item.imagePrompt as keyof typeof IMG_PROMPTS]}
             alt={t(`items:contraband.${item.id}.name`, {
               defaultValue: t('ui:item.unknown', {
                 defaultValue: 'Unknown Item'
               })
             })}
-            className='w-full h-full object-contain'
-            loading='lazy'
-            onError={e => {
-              e.currentTarget.onerror = null
-              e.currentTarget.src = getGeneratedImageFallbackUrl()
-            }}
+            aspectRatio='1:1'
+            className='w-full h-full border-none'
+            variant='inline'
           />
         </div>
       )}

@@ -1,6 +1,7 @@
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../../ui/shared'
+import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 import { BRAND_ALIGNMENTS } from '../../context/initialState'
 import { getTranslatedBrandDealDisplay } from '../../utils/brandDealI18n'
 import { IMG_PROMPTS, resolveGenImageUrl } from '../../utils/imageGen'
@@ -115,11 +116,12 @@ const isDeal = (value: unknown): value is DealCardProps['deal'] => {
 
 const DealImage = memo(({ alignment, name }: DealImageProps) => (
   <div className='shrink-0 w-20 h-20 sm:w-24 sm:h-24 border border-current opacity-80 overflow-hidden'>
-    <img
-      src={resolveGenImageUrl(getAlignmentMetadata(alignment).imagePrompt)}
+    <GeneratedImagePanel
+      prompt={getAlignmentMetadata(alignment).imagePrompt}
       alt={name}
-      className='w-full h-full object-cover object-center grayscale hover:grayscale-0 transition-all duration-300'
-      loading='lazy'
+      aspectRatio='1:1'
+      className='w-full h-full border-none grayscale hover:grayscale-0 transition-all duration-300'
+      variant='inline'
     />
   </div>
 ))
