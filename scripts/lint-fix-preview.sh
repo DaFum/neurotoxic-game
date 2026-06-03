@@ -23,10 +23,14 @@ has_eslint=0
 has_format_script=0
 has_lint_fix_script=0
 
-if pnpm run -s format >/dev/null 2>&1; then
+has_package_script() {
+	node -e "const fs=require('fs'); const scripts=JSON.parse(fs.readFileSync('package.json','utf8')).scripts || {}; process.exit(Object.hasOwn(scripts, process.argv[1]) ? 0 : 1)" "$1"
+}
+
+if has_package_script format; then
 	has_format_script=1
 fi
-if pnpm run -s "lint:fix" >/dev/null 2>&1; then
+if has_package_script "lint:fix"; then
 	has_lint_fix_script=1
 fi
 
