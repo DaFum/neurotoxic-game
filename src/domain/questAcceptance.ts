@@ -41,6 +41,13 @@ const getCurrentVenueScopeKey = (state: GameState): string | undefined => {
   return state.gameMap?.nodes?.[nodeId]?.type === 'GIG' ? nodeId : undefined
 }
 
+export type CanAcceptQuestResult =
+  | { ok: true; scopeKey?: string }
+  | {
+      ok: false
+      reason: 'active' | 'completed' | 'flag' | 'cooldown' | 'scope' | 'slot'
+    }
+
 /**
  * Predicate that mirrors `QuestLifecycle.addQuest`'s repeat-policy and scope
  * guards without mutating state. Use in event-condition functions so an offer
@@ -52,13 +59,6 @@ const getCurrentVenueScopeKey = (state: GameState): string | undefined => {
  * Returns `{ ok: true, scopeKey? }` when addQuest would accept, or
  * `{ ok: false, reason }` describing why it would refuse.
  */
-export type CanAcceptQuestResult =
-  | { ok: true; scopeKey?: string }
-  | {
-      ok: false
-      reason: 'active' | 'completed' | 'flag' | 'cooldown' | 'scope' | 'slot'
-    }
-
 export const canAcceptQuest = (
   state: GameState,
   questOrId: string | QuestState
@@ -78,7 +78,7 @@ export const canAcceptQuest = (
   const repeatPolicy = merged.repeatPolicy
   let scopeKey: string | undefined
   if (repeatPolicy === 'never') {
-    if (state.completedQuestIds.includes(questId)) {
+    if ((state.completedQuestIds ?? []).includes(questId)) {
       return { ok: false, reason: 'completed' }
     }
     const activeFlags = state.activeStoryFlags ?? []
@@ -91,7 +91,7 @@ export const canAcceptQuest = (
     }
   }
   if (repeatPolicy === 'cooldown') {
-    const currentDay = finiteNumberOr(state.player.day, 0)
+    const currentDay = finiteNumberOr(state.player?.day, 0)
     const onCooldown = (state.questCooldowns ?? []).some(
       cd => cd.questId === questId && cd.expiresOnDay > currentDay
     )
@@ -102,7 +102,7 @@ export const canAcceptQuest = (
       merged.scopeKey ??
       (repeatPolicy === 'perVenue'
         ? getCurrentVenueScopeKey(state)
-        : state.player.location)
+        : state.player?.location)
     if (typeof scopeKey !== 'string' || scopeKey.length === 0) {
       return { ok: false, reason: 'scope' }
     }

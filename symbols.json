@@ -10174,6 +10174,9 @@
         "exportKind": "named",
         "exportPath": "src/domain/questLifecycle.ts",
         "isDefault": false,
+        "jsDoc": {
+          "summary": "Predicate that mirrors `QuestLifecycle.addQuest`'s repeat-policy and scope guards without mutating state. Use in event-condition functions so an offer does not surface when the dispatch would silently refuse it. Pass either a `questId` string or a partial `QuestState`; registry defaults (repeatPolicy, completionFlags, rewardFlag) are merged automatically. Returns `{ ok: true, scopeKey? }` when addQuest would accept, or `{ ok: false, reason }` describing why it would refuse."
+        },
         "lineEnd": 118,
         "lineStart": 62,
         "name": "canAcceptQuest",
@@ -10215,11 +10218,8 @@
         "exportKind": "named",
         "exportPath": "src/domain/questLifecycle.ts",
         "isDefault": false,
-        "jsDoc": {
-          "summary": "Predicate that mirrors `QuestLifecycle.addQuest`'s repeat-policy and scope guards without mutating state. Use in event-condition functions so an offer does not surface when the dispatch would silently refuse it. Pass either a `questId` string or a partial `QuestState`; registry defaults (repeatPolicy, completionFlags, rewardFlag) are merged automatically. Returns `{ ok: true, scopeKey? }` when addQuest would accept, or `{ ok: false, reason }` describing why it would refuse."
-        },
-        "lineEnd": 60,
-        "lineStart": 55,
+        "lineEnd": 49,
+        "lineStart": 44,
         "name": "CanAcceptQuestResult",
         "path": "src/domain/questAcceptance.ts",
         "properties": [
