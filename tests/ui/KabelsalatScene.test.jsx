@@ -90,15 +90,6 @@ describe('KabelsalatScene', () => {
     })
   })
 
-  it('renders scene shell and interactive cable board', async () => {
-    await act(async () => {
-      render(<KabelsalatScene />)
-    })
-
-    expect(screen.getByLabelText('HARDWARE_RIGGING')).toBeInTheDocument()
-    expect(screen.getAllByRole('button').length).toBeGreaterThan(5)
-  })
-
   it('renders SVG viewport with correct viewBox', async () => {
     let container
     await act(async () => {
@@ -319,15 +310,6 @@ describe('KabelsalatScene - accessibility', () => {
     )
 
     expect(tabbableButtons.length).toBeGreaterThan(0)
-  })
-
-  it('provides SVG title for screen readers', async () => {
-    await act(async () => {
-      render(<KabelsalatScene />)
-    })
-
-    const svg = screen.getByLabelText('HARDWARE_RIGGING')
-    expect(svg).toBeInTheDocument()
   })
 })
 

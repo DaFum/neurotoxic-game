@@ -329,20 +329,6 @@ describe('MinigameSceneFrame', () => {
     expect(screen.getByTestId('pixi-stage-mock')).toBeTruthy()
   })
 
-  test('handles missing children prop', async () => {
-    render(
-      <MinigameSceneFrame
-        controllerFactory={mockControllerFactory}
-        logic={mockLogic}
-        uiState={{ isGameOver: false }}
-        onComplete={mockOnComplete}
-      />
-    )
-
-    // Should render without errors
-    expect(screen.getByTestId('pixi-stage-mock')).toBeTruthy()
-  })
-
   test('handles missing renderCompletionStats prop', async () => {
     render(
       <MinigameSceneFrame

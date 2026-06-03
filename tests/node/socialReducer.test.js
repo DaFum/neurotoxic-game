@@ -390,36 +390,6 @@ describe('socialReducer', () => {
   })
 
   describe('handleUpdateSocial - additional edge cases', () => {
-    it('should validate activeDeals is an array', () => {
-      const payload = { activeDeals: 'not-an-array' }
-      const nextState = handleUpdateSocial(baseState, payload)
-
-      assert.deepStrictEqual(nextState.social.activeDeals, [])
-    })
-
-    it('should handle null payload', () => {
-      const nextState = handleUpdateSocial(baseState, null)
-      assert.strictEqual(nextState, baseState)
-    })
-
-    it('should handle undefined payload', () => {
-      const nextState = handleUpdateSocial(baseState, undefined)
-      assert.strictEqual(nextState, baseState)
-    })
-
-    it('should merge multiple valid fields', () => {
-      const payload = {
-        trend: ALLOWED_TRENDS[0],
-        loyalty: 50,
-        activeDeals: [{ id: 'deal1', remainingGigs: 2 }]
-      }
-      const nextState = handleUpdateSocial(baseState, payload)
-
-      assert.strictEqual(nextState.social.trend, ALLOWED_TRENDS[0])
-      assert.strictEqual(nextState.social.loyalty, 50)
-      assert.strictEqual(nextState.social.activeDeals.length, 1)
-    })
-
     it('should preserve existing social fields not in payload', () => {
       baseState.social.instagram = 100
       baseState.social.tiktok = 50

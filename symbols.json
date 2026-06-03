@@ -109,7 +109,7 @@
         "name": "ActionButton",
         "parameters": [
           {
-            "name": "{\r\n    children,\r\n    onClick,\r\n    type = 'button',\r\n    className = '',\r\n    ref,\r\n    variant = 'primary',\r\n    ...rest\r\n  }",
+            "name": "{\n    children,\n    onClick,\n    type = 'button',\n    className = '',\n    ref,\n    variant = 'primary',\n    ...rest\n  }",
             "optional": false,
             "rest": false,
             "type": "ActionButtonProps"
@@ -620,8 +620,8 @@
         "exportedName": "advanceDay",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 1057,
-        "lineStart": 1039,
+        "lineEnd": 1055,
+        "lineStart": 1037,
         "name": "advanceDay",
         "parameters": [
           {
@@ -1602,7 +1602,7 @@
         "name": "AnimatedDivider",
         "parameters": [
           {
-            "name": "{\r\n  width = '100%',\r\n  transition,\r\n  className = ''\r\n}",
+            "name": "{\n  width = '100%',\n  transition,\n  className = ''\n}",
             "optional": false,
             "rest": false,
             "type": "{ width?: string | number; transition?: Transition; className?: string; }"
@@ -1642,7 +1642,7 @@
         "name": "AnimatedSubtitle",
         "parameters": [
           {
-            "name": "{\r\n  as = 'h2',\r\n  initial,\r\n  animate,\r\n  transition,\r\n  className = '',\r\n  children\r\n}",
+            "name": "{\n  as = 'h2',\n  initial,\n  animate,\n  transition,\n  className = '',\n  children\n}",
             "optional": false,
             "rest": false,
             "type": "AnimatedSubtitleProps"
@@ -2102,8 +2102,8 @@
         "exportedName": "applyPostGigPerformancePenalty",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 656,
-        "lineStart": 619,
+        "lineEnd": 657,
+        "lineStart": 620,
         "name": "applyPostGigPerformancePenalty",
         "parameters": [
           {
@@ -3374,7 +3374,7 @@
         "name": "AssetSectionPanel",
         "parameters": [
           {
-            "name": "{\r\n  kind,\r\n  renderHero\r\n}",
+            "name": "{\n  kind,\n  renderHero\n}",
             "optional": false,
             "rest": false,
             "type": "AssetSectionPanelProps"
@@ -7090,7 +7090,7 @@
         "name": "buildRhythmLayout",
         "parameters": [
           {
-            "name": "{\r\n  screenWidth,\r\n  screenHeight\r\n}",
+            "name": "{\n  screenWidth,\n  screenHeight\n}",
             "optional": false,
             "rest": false,
             "type": "{ screenWidth: number; screenHeight: number; }"
@@ -7465,7 +7465,7 @@
         "name": "CableList",
         "parameters": [
           {
-            "name": "{\r\n  t,\r\n  connections,\r\n  selectedCable,\r\n  isShocked,\r\n  isGameOver,\r\n  handleCableClick\r\n}",
+            "name": "{\n  t,\n  connections,\n  selectedCable,\n  isShocked,\n  isGameOver,\n  handleCableClick\n}",
             "optional": false,
             "rest": false,
             "type": "CableListProps"
@@ -8033,8 +8033,8 @@
             }
           ]
         },
-        "lineEnd": 724,
-        "lineStart": 672,
+        "lineEnd": 725,
+        "lineStart": 673,
         "name": "calculateContinueStats",
         "parameters": [
           {
@@ -8082,7 +8082,7 @@
         "name": "calculateCrowdOffset",
         "parameters": [
           {
-            "name": "{\r\n  combo,\r\n  timeMs\r\n}",
+            "name": "{\n  combo,\n  timeMs\n}",
             "optional": false,
             "rest": false,
             "type": "{ combo: number; timeMs: number; }"
@@ -8275,8 +8275,8 @@
         "exportedName": "calculateExcessMissMoneyPenalty",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 617,
-        "lineStart": 597,
+        "lineEnd": 618,
+        "lineStart": 598,
         "name": "calculateExcessMissMoneyPenalty",
         "parameters": [
           {
@@ -8878,7 +8878,7 @@
         "name": "calculateGigPlaybackWindow",
         "parameters": [
           {
-            "name": "{\r\n  bufferDurationSec,\r\n  baseOffsetMs,\r\n  seekOffsetMs,\r\n  durationMs\r\n}",
+            "name": "{\n  bufferDurationSec,\n  baseOffsetMs,\n  seekOffsetMs,\n  durationMs\n}",
             "optional": false,
             "rest": false,
             "type": "{ bufferDurationSec: number; baseOffsetMs: number; seekOffsetMs: number; durationMs: number | null; }"
@@ -8917,7 +8917,7 @@
         "name": "calculateGigTimeMs",
         "parameters": [
           {
-            "name": "{\r\n  contextTimeSec,\r\n  startCtxTimeSec,\r\n  offsetMs\r\n}",
+            "name": "{\n  contextTimeSec,\n  startCtxTimeSec,\n  offsetMs\n}",
             "optional": false,
             "rest": false,
             "type": "{ contextTimeSec: number; startCtxTimeSec: number | null; offsetMs?: number; }"
@@ -9325,8 +9325,8 @@
         "exportedName": "calculatePerformanceScore",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 735,
-        "lineStart": 730,
+        "lineEnd": 736,
+        "lineStart": 731,
         "name": "calculatePerformanceScore",
         "parameters": [
           {
@@ -9513,7 +9513,7 @@
         "exportedName": "calculatePostGigStateUpdates",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 470,
+        "lineEnd": 471,
         "lineStart": 201,
         "name": "calculatePostGigStateUpdates",
         "parameters": [
@@ -10750,7 +10750,7 @@
         "exportKind": "named",
         "exportPath": "src/types/index.ts",
         "extends": [
-          "Omit<\r\n  PurchaseItem,\r\n  'effect' | 'effects'\r\n>"
+          "Omit<\n  PurchaseItem,\n  'effect' | 'effects'\n>"
         ],
         "isDefault": false,
         "lineEnd": 436,
@@ -12308,7 +12308,7 @@
         "name": "checkVenueAccess",
         "parameters": [
           {
-            "name": "{\r\n  node,\r\n  player,\r\n  reputationByRegion = {},\r\n  venueBlacklist = [],\r\n  venuesMap,\r\n  getLocationName\r\n}",
+            "name": "{\n  node,\n  player,\n  reputationByRegion = {},\n  venueBlacklist = [],\n  venuesMap,\n  getLocationName\n}",
             "optional": false,
             "rest": false,
             "type": "{ node: MapNode & { type?: string; venue?: VenueLike | string; }; player: PlayerState; reputationByRegion?: Record<string, number>; venueBlacklist?: string[]; venuesMap: VenueMap; getLocationName: (location: string | undefined, venueId: string | null | undefined) => string; }"
@@ -14495,7 +14495,7 @@
         "name": "ConnectionPaths",
         "parameters": [
           {
-            "name": "{\r\n  connections,\r\n  isPowerConnected,\r\n  socketOrder\r\n}",
+            "name": "{\n  connections,\n  isPowerConnected,\n  socketOrder\n}",
             "optional": false,
             "rest": false,
             "type": "ConnectionPathsProps"
@@ -15024,8 +15024,8 @@
             }
           ]
         },
-        "lineEnd": 770,
-        "lineStart": 740,
+        "lineEnd": 768,
+        "lineStart": 738,
         "name": "createAddQuestAction",
         "parameters": [
           {
@@ -15138,8 +15138,8 @@
             }
           ]
         },
-        "lineEnd": 801,
-        "lineStart": 796,
+        "lineEnd": 799,
+        "lineStart": 794,
         "name": "createAddUnlockAction",
         "parameters": [
           {
@@ -15234,8 +15234,8 @@
             }
           ]
         },
-        "lineEnd": 789,
-        "lineStart": 778,
+        "lineEnd": 787,
+        "lineStart": 776,
         "name": "createAdvanceQuestAction",
         "parameters": [
           {
@@ -15415,8 +15415,8 @@
         "exportedName": "createApplyQuestEventAction",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 1064,
-        "lineStart": 1059,
+        "lineEnd": 1062,
+        "lineStart": 1057,
         "name": "createApplyQuestEventAction",
         "parameters": [
           {
@@ -15713,8 +15713,8 @@
             }
           ]
         },
-        "lineEnd": 968,
-        "lineStart": 958,
+        "lineEnd": 966,
+        "lineStart": 956,
         "name": "createBloodBankDonateAction",
         "parameters": [
           {
@@ -15951,8 +15951,8 @@
             }
           ]
         },
-        "lineEnd": 865,
-        "lineStart": 860,
+        "lineEnd": 863,
+        "lineStart": 858,
         "name": "createClinicEnhanceAction",
         "parameters": [
           {
@@ -15997,8 +15997,8 @@
             }
           ]
         },
-        "lineEnd": 846,
-        "lineStart": 830,
+        "lineEnd": 844,
+        "lineStart": 828,
         "name": "createClinicHealAction",
         "parameters": [
           {
@@ -16332,7 +16332,7 @@
             }
           ]
         },
-        "lineEnd": 733,
+        "lineEnd": 731,
         "lineStart": 722,
         "name": "createCraftItemAction",
         "parameters": [
@@ -16375,8 +16375,8 @@
             }
           ]
         },
-        "lineEnd": 1013,
-        "lineStart": 1002,
+        "lineEnd": 1011,
+        "lineStart": 1000,
         "name": "createDarkWebLeakAction",
         "parameters": [
           {
@@ -16860,8 +16860,8 @@
             }
           ]
         },
-        "lineEnd": 1037,
-        "lineStart": 1026,
+        "lineEnd": 1035,
+        "lineStart": 1024,
         "name": "createMerchPressAction",
         "parameters": [
           {
@@ -17062,8 +17062,8 @@
             }
           ]
         },
-        "lineEnd": 889,
-        "lineStart": 878,
+        "lineEnd": 887,
+        "lineStart": 876,
         "name": "createPirateBroadcastAction",
         "parameters": [
           {
@@ -17649,8 +17649,8 @@
             }
           ]
         },
-        "lineEnd": 904,
-        "lineStart": 896,
+        "lineEnd": 902,
+        "lineStart": 894,
         "name": "createSetPendingBandHQOpenAction",
         "parameters": [
           {
@@ -17682,8 +17682,8 @@
         "exportedName": "createSetPendingRiskEventAction",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 946,
-        "lineStart": 926,
+        "lineEnd": 944,
+        "lineStart": 924,
         "name": "createSetPendingRiskEventAction",
         "parameters": [
           {
@@ -17712,8 +17712,8 @@
         "exportedName": "createSetPendingSupplyStopInventoryAction",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 914,
-        "lineStart": 906,
+        "lineEnd": 912,
+        "lineStart": 904,
         "name": "createSetPendingSupplyStopInventoryAction",
         "parameters": [
           {
@@ -18327,8 +18327,8 @@
             }
           ]
         },
-        "lineEnd": 989,
-        "lineStart": 978,
+        "lineEnd": 987,
+        "lineStart": 976,
         "name": "createTradeVoidItemAction",
         "parameters": [
           {
@@ -18728,8 +18728,8 @@
             }
           ]
         },
-        "lineEnd": 817,
-        "lineStart": 810,
+        "lineEnd": 815,
+        "lineStart": 808,
         "name": "createUseContrabandAction",
         "parameters": [
           {
@@ -19297,7 +19297,7 @@
         "name": "CrowdfundSetupModal",
         "parameters": [
           {
-            "name": "{\r\n  kind,\r\n  flavor,\r\n  tier,\r\n  targetAmount,\r\n  isOpen,\r\n  onClose\r\n}",
+            "name": "{\n  kind,\n  flavor,\n  tier,\n  targetAmount,\n  isOpen,\n  onClose\n}",
             "optional": false,
             "rest": false,
             "type": "Props"
@@ -19640,7 +19640,7 @@
         "name": "DataManagement",
         "parameters": [
           {
-            "name": "{\r\n  onDeleteSave\r\n}",
+            "name": "{\n  onDeleteSave\n}",
             "optional": false,
             "rest": false,
             "type": "DataManagementProps"
@@ -20533,8 +20533,8 @@
         "exportedName": "deriveFinancials",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 816,
-        "lineStart": 750,
+        "lineEnd": 817,
+        "lineStart": 751,
         "name": "deriveFinancials",
         "parameters": [
           {
@@ -20563,8 +20563,8 @@
         "exportedName": "deriveGigContext",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 748,
-        "lineStart": 737,
+        "lineEnd": 749,
+        "lineStart": 738,
         "name": "deriveGigContext",
         "parameters": [
           {
@@ -20608,8 +20608,8 @@
         "exportedName": "derivePostOptions",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 852,
-        "lineStart": 818,
+        "lineEnd": 853,
+        "lineStart": 819,
         "name": "derivePostOptions",
         "parameters": [
           {
@@ -20749,8 +20749,8 @@
         "exportedName": "dismissForeclosureNotice",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 924,
-        "lineStart": 916,
+        "lineEnd": 922,
+        "lineStart": 914,
         "name": "dismissForeclosureNotice",
         "parameters": [
           {
@@ -25212,7 +25212,7 @@
         "name": "GameOverButtons",
         "parameters": [
           {
-            "name": "{\r\n  onRetry,\r\n  onReturnToMenu\r\n}",
+            "name": "{\n  onRetry,\n  onReturnToMenu\n}",
             "optional": false,
             "rest": false,
             "type": "GameOverButtonsProps"
@@ -26238,7 +26238,7 @@
         "name": "GeneratedImagePanel",
         "parameters": [
           {
-            "name": "{\r\n  prompt,\r\n  alt,\r\n  aspectRatio = '16:9',\r\n  className = '',\r\n  onLoad,\r\n  variant = 'card',\r\n  sizeHint\r\n}",
+            "name": "{\n  prompt,\n  alt,\n  aspectRatio = '16:9',\n  className = '',\n  onLoad,\n  variant = 'card',\n  sizeHint\n}",
             "optional": false,
             "rest": false,
             "type": "GeneratedImagePanelProps"
@@ -26588,8 +26588,8 @@
         "exportedName": "getAcceptDealBandUpdateFactory",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 511,
-        "lineStart": 503,
+        "lineEnd": 512,
+        "lineStart": 504,
         "name": "getAcceptDealBandUpdateFactory",
         "parameters": [
           {
@@ -26618,8 +26618,8 @@
         "exportedName": "getAcceptDealMoneyUpdate",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 501,
-        "lineStart": 481,
+        "lineEnd": 502,
+        "lineStart": 482,
         "name": "getAcceptDealMoneyUpdate",
         "parameters": [
           {
@@ -26651,8 +26651,8 @@
         "exportedName": "getAcceptDealSocialUpdateFactory",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 547,
-        "lineStart": 513,
+        "lineEnd": 548,
+        "lineStart": 514,
         "name": "getAcceptDealSocialUpdateFactory",
         "parameters": [
           {
@@ -27995,7 +27995,7 @@
         "jsDoc": {
           "summary": "Computes the deterministic money delta an option's direct effect(s) would apply, for previewing the cost/reward inside a localized option label via an `{{amount}}` interpolation. Mirrors the `resource` and `percentage_resource` money handlers exactly (no RNG, so the preview is stable across renders). Returns null when the option has no money-affecting effect, letting callers fall back to a zero amount rather than leaking an unresolved placeholder."
         },
-        "lineEnd": 996,
+        "lineEnd": 998,
         "lineStart": 956,
         "name": "getOptionPreviewMoney",
         "parameters": [
@@ -28165,7 +28165,7 @@
         "name": "getPreferredAudioContextState",
         "parameters": [
           {
-            "name": "{\r\n  rawContextState,\r\n  toneContextState\r\n}",
+            "name": "{\n  rawContextState,\n  toneContextState\n}",
             "optional": false,
             "rest": false,
             "type": "{ rawContextState?: string | null; toneContextState?: string | null; }"
@@ -28860,7 +28860,7 @@
         "name": "getScheduledHitTimeMs",
         "parameters": [
           {
-            "name": "{\r\n  noteTimeMs,\r\n  gigTimeMs,\r\n  audioTimeMs,\r\n  maxLeadMs = 30\r\n}",
+            "name": "{\n  noteTimeMs,\n  gigTimeMs,\n  audioTimeMs,\n  maxLeadMs = 30\n}",
             "optional": false,
             "rest": false,
             "type": "{ noteTimeMs: number; gigTimeMs: number; audioTimeMs: number; maxLeadMs?: number; }"
@@ -29067,8 +29067,8 @@
         "exportedName": "getSpinStoryMoneyUpdate",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 575,
-        "lineStart": 556,
+        "lineEnd": 576,
+        "lineStart": 557,
         "name": "getSpinStoryMoneyUpdate",
         "parameters": [
           {
@@ -29100,8 +29100,8 @@
         "exportedName": "getSpinStorySocialUpdateFactory",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 583,
-        "lineStart": 577,
+        "lineEnd": 584,
+        "lineStart": 578,
         "name": "getSpinStorySocialUpdateFactory",
         "parameters": [],
         "path": "src/utils/postGigUtils.ts",
@@ -29542,7 +29542,7 @@
         "name": "getTravelArrivalUpdates",
         "parameters": [
           {
-            "name": "{\r\n  player,\r\n  band,\r\n  node,\r\n  fuelLiters,\r\n  totalCost,\r\n  assetModifiers\r\n}",
+            "name": "{\n  player,\n  band,\n  node,\n  fuelLiters,\n  totalCost,\n  assetModifiers\n}",
             "optional": false,
             "rest": false,
             "type": "TravelArrivalUpdateInput"
@@ -29773,7 +29773,7 @@
         "name": "GigHUD",
         "parameters": [
           {
-            "name": "{\r\n  stats,\r\n  onLaneInput,\r\n  gameStateRef,\r\n  onTogglePause\r\n}",
+            "name": "{\n  stats,\n  onLaneInput,\n  gameStateRef,\n  onTogglePause\n}",
             "optional": false,
             "rest": false,
             "type": "GigHUDProps"
@@ -31657,7 +31657,7 @@
         "name": "handleKeyDownLogic",
         "parameters": [
           {
-            "name": "{\r\n  e,\r\n  getLaneIndex,\r\n  actions,\r\n  triggerBandAnimation,\r\n  onTogglePause,\r\n  ensureAudioFromGesture\r\n}",
+            "name": "{\n  e,\n  getLaneIndex,\n  actions,\n  triggerBandAnimation,\n  onTogglePause,\n  ensureAudioFromGesture\n}",
             "optional": false,
             "rest": false,
             "type": "{ e: KeyboardEvent; getLaneIndex: (key: string) => number | undefined; actions: { registerInput: (laneIndex: number, pressed: boolean) => void; }; triggerBandAnimation: (laneIndex: number) => void; onTogglePause?: () => void; ensureAudioFromGesture: () => void; }"
@@ -31696,7 +31696,7 @@
         "name": "handleKeyUpLogic",
         "parameters": [
           {
-            "name": "{\r\n  e,\r\n  getLaneIndex,\r\n  actions\r\n}",
+            "name": "{\n  e,\n  getLaneIndex,\n  actions\n}",
             "optional": false,
             "rest": false,
             "type": "{ e: KeyboardEvent; getLaneIndex: (key: string) => number | undefined; actions: { registerInput: (laneIndex: number, pressed: boolean) => void; }; }"
@@ -33953,7 +33953,7 @@
         "name": "Header",
         "parameters": [
           {
-            "name": "{\r\n  t,\r\n  isShocked,\r\n  isPoweredOn,\r\n  isGameOver,\r\n  timeLeft\r\n}",
+            "name": "{\n  t,\n  isShocked,\n  isPoweredOn,\n  isGameOver,\n  timeLeft\n}",
             "optional": false,
             "rest": false,
             "type": "HeaderProps"
@@ -38198,7 +38198,7 @@
         "name": "MainMenuExistingSavePrompt",
         "parameters": [
           {
-            "name": "{\r\n  onLoad,\r\n  onStartNew,\r\n  onClose\r\n}",
+            "name": "{\n  onLoad,\n  onStartNew,\n  onClose\n}",
             "optional": false,
             "rest": false,
             "type": "{ onLoad: () => void; onStartNew: () => void; onClose: () => void; }"
@@ -38319,7 +38319,7 @@
         "name": "MainMenuNameInputPrompt",
         "parameters": [
           {
-            "name": "{\r\n  playerNameInput,\r\n  setPlayerNameInput,\r\n  handleNameSubmit,\r\n  onClose,\r\n  inputRef\r\n}",
+            "name": "{\n  playerNameInput,\n  setPlayerNameInput,\n  handleNameSubmit,\n  onClose,\n  inputRef\n}",
             "optional": false,
             "rest": false,
             "type": "{ playerNameInput: string; setPlayerNameInput: (value: string) => void; handleNameSubmit: () => void; onClose: () => void; inputRef?: RefObject<HTMLInputElement | null>; }"
@@ -39366,7 +39366,7 @@
         "name": "MinigameSceneFrame",
         "parameters": [
           {
-            "name": "{\r\n  controllerFactory,\r\n  logic,\r\n  uiState,\r\n  onComplete,\r\n  completionTitle = 'COMPLETE',\r\n  renderCompletionStats,\r\n  completionButtonText = 'CONTINUE',\r\n  children\r\n}",
+            "name": "{\n  controllerFactory,\n  logic,\n  uiState,\n  onComplete,\n  completionTitle = 'COMPLETE',\n  renderCompletionStats,\n  completionButtonText = 'CONTINUE',\n  children\n}",
             "optional": false,
             "rest": false,
             "type": "MinigameSceneFrameProps<TState>"
@@ -40271,7 +40271,7 @@
         "name": "NegotiationModal",
         "parameters": [
           {
-            "name": "{\r\n  isOpen,\r\n  onClose,\r\n  negotiationResult,\r\n  handleNegotiationSubmit\r\n}",
+            "name": "{\n  isOpen,\n  onClose,\n  negotiationResult,\n  handleNegotiationSubmit\n}",
             "optional": false,
             "rest": false,
             "type": "NegotiationModalProps"
@@ -40433,7 +40433,7 @@
         "name": "NetworkStatusProvider",
         "parameters": [
           {
-            "name": "{\r\n  children\r\n}",
+            "name": "{\n  children\n}",
             "optional": false,
             "rest": false,
             "type": "{ children: ReactNode; }"
@@ -41313,7 +41313,7 @@
         "name": "Overlays",
         "parameters": [
           {
-            "name": "{\r\n  t,\r\n  isShocked,\r\n  isGameOver,\r\n  isPoweredOn,\r\n  faultReason,\r\n  onAdvance\r\n}",
+            "name": "{\n  t,\n  isShocked,\n  isGameOver,\n  isPoweredOn,\n  faultReason,\n  onAdvance\n}",
             "optional": false,
             "rest": false,
             "type": "OverlaysProps"
@@ -41348,7 +41348,7 @@
         "name": "OverloadMeter",
         "parameters": [
           {
-            "name": "{\r\n  overload\r\n}",
+            "name": "{\n  overload\n}",
             "optional": false,
             "rest": false,
             "type": "OverloadMeterProps"
@@ -41954,7 +41954,7 @@
         "name": "PauseOverlay",
         "parameters": [
           {
-            "name": "{\r\n  isPaused,\r\n  onResume,\r\n  onQuit\r\n}",
+            "name": "{\n  isPaused,\n  onResume,\n  onQuit\n}",
             "optional": false,
             "rest": false,
             "type": "PauseOverlayProps"
@@ -44281,7 +44281,7 @@
         "name": "processLaneInput",
         "parameters": [
           {
-            "name": "{\r\n  laneIndex,\r\n  isDown,\r\n  now,\r\n  state,\r\n  lastInputTimes,\r\n  handleHit\r\n}",
+            "name": "{\n  laneIndex,\n  isDown,\n  now,\n  state,\n  lastInputTimes,\n  handleHit\n}",
             "optional": false,
             "rest": false,
             "type": "{ laneIndex: number; isDown: boolean; now: number; state: InputRuntimeState; lastInputTimes: number[]; handleHit: LaneHitHandler; }"
@@ -44494,7 +44494,7 @@
         "name": "processRhythmGameTick",
         "parameters": [
           {
-            "name": "{\r\n  stateRef,\r\n  isTransportRunning,\r\n  transportState,\r\n  activeEvent,\r\n  dimensionsRef,\r\n  hecklerSessionRef,\r\n  deltaMS,\r\n  handleCollision,\r\n  setIsToxicMode,\r\n  setIsCorruptionBurstActive,\r\n  handleMiss,\r\n  finalizeGigCallback,\r\n  getGigTimeMs,\r\n  pauseAudio,\r\n  resumeAudio,\r\n  setCorruptionState,\r\n  setCorruptionEffect\r\n}",
+            "name": "{\n  stateRef,\n  isTransportRunning,\n  transportState,\n  activeEvent,\n  dimensionsRef,\n  hecklerSessionRef,\n  deltaMS,\n  handleCollision,\n  setIsToxicMode,\n  setIsCorruptionBurstActive,\n  handleMiss,\n  finalizeGigCallback,\n  getGigTimeMs,\n  pauseAudio,\n  resumeAudio,\n  setCorruptionState,\n  setCorruptionEffect\n}",
             "optional": false,
             "rest": false,
             "type": "RhythmTickArgs"
@@ -45116,7 +45116,7 @@
         "exportedName": "QUEST_EVENTS",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 593,
+        "lineEnd": 592,
         "lineStart": 14,
         "name": "QUEST_EVENTS",
         "path": "src/data/events/quests.ts",
@@ -51924,7 +51924,7 @@
             "type": "unknown"
           },
           {
-            "name": "{\r\n    fallbackId,\r\n    fallbackType = 'info',\r\n    message,\r\n    optionsPatch = {}\r\n  }",
+            "name": "{\n    fallbackId,\n    fallbackType = 'info',\n    message,\n    optionsPatch = {}\n  }",
             "optional": false,
             "rest": false,
             "type": "SuccessToastConfig"
@@ -52258,7 +52258,7 @@
         "name": "SegmentedSlider",
         "parameters": [
           {
-            "name": "{\r\n  label,\r\n  inputValue,\r\n  inputMin,\r\n  inputMax,\r\n  inputStep,\r\n  activeSegments,\r\n  segmentCount,\r\n  valueLabel,\r\n  onInputChange,\r\n  onSegmentSelect\r\n}",
+            "name": "{\n  label,\n  inputValue,\n  inputMin,\n  inputMax,\n  inputStep,\n  activeSegments,\n  segmentCount,\n  valueLabel,\n  onInputChange,\n  onSegmentSelect\n}",
             "optional": false,
             "rest": false,
             "type": "SegmentedSliderProps"
@@ -52889,7 +52889,7 @@
         "name": "SettingsPanel",
         "parameters": [
           {
-            "name": "{\r\n  settings,\r\n  musicVol = 0,\r\n  sfxVol = 0,\r\n  isMuted = false,\r\n  onMusicChange = () => {},\r\n  onSfxChange = () => {},\r\n  onToggleMute = () => {},\r\n  onToggleCRT = () => {},\r\n  onLogLevelChange = () => {},\r\n  onDeleteSave,\r\n  className = ''\r\n}",
+            "name": "{\n  settings,\n  musicVol = 0,\n  sfxVol = 0,\n  isMuted = false,\n  onMusicChange = () => {},\n  onSfxChange = () => {},\n  onToggleMute = () => {},\n  onToggleCRT = () => {},\n  onLogLevelChange = () => {},\n  onDeleteSave,\n  className = ''\n}",
             "optional": false,
             "rest": false,
             "type": "SettingsPanelProps"
@@ -53000,7 +53000,7 @@
         "name": "SettingsReturnButton",
         "parameters": [
           {
-            "name": "{\r\n  onReturn\r\n}",
+            "name": "{\n  onReturn\n}",
             "optional": false,
             "rest": false,
             "type": "SettingsReturnButtonProps"
@@ -53035,7 +53035,7 @@
         "name": "SettingsTab",
         "parameters": [
           {
-            "name": "{\r\n  settings,\r\n  audioState,\r\n  onAudioChange,\r\n  updateSettings,\r\n  deleteSave\r\n}",
+            "name": "{\n  settings,\n  audioState,\n  onAudioChange,\n  updateSettings,\n  deleteSave\n}",
             "optional": false,
             "rest": false,
             "type": "SettingsTabProps"
@@ -53465,7 +53465,7 @@
         "name": "ShopTab",
         "parameters": [
           {
-            "name": "{\r\n  player,\r\n  handleBuy,\r\n  isItemOwned,\r\n  isItemDisabled,\r\n  getAdjustedCost,\r\n  processingItemId\r\n}",
+            "name": "{\n  player,\n  handleBuy,\n  isItemOwned,\n  isItemDisabled,\n  getAdjustedCost,\n  processingItemId\n}",
             "optional": false,
             "rest": false,
             "type": "ShopTabProps"
@@ -54662,7 +54662,7 @@
         "name": "SocketList",
         "parameters": [
           {
-            "name": "{\r\n  t,\r\n  socketOrder,\r\n  connections,\r\n  isPowerConnected,\r\n  selectedCable,\r\n  isGameOver,\r\n  handleSocketClick\r\n}",
+            "name": "{\n  t,\n  socketOrder,\n  connections,\n  isPowerConnected,\n  selectedCable,\n  isGameOver,\n  handleSocketClick\n}",
             "optional": false,
             "rest": false,
             "type": "SocketListProps"
@@ -55111,8 +55111,8 @@
         "exportedName": "SPIN_STORY_CONTROVERSY_REDUCTION",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 550,
-        "lineStart": 550,
+        "lineEnd": 551,
+        "lineStart": 551,
         "name": "SPIN_STORY_CONTROVERSY_REDUCTION",
         "path": "src/utils/postGigUtils.ts",
         "source": "local",
@@ -55133,8 +55133,8 @@
         "exportedName": "SPIN_STORY_MONEY_COST",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 549,
-        "lineStart": 549,
+        "lineEnd": 550,
+        "lineStart": 550,
         "name": "SPIN_STORY_MONEY_COST",
         "path": "src/utils/postGigUtils.ts",
         "source": "local",
@@ -55155,8 +55155,8 @@
         "exportedName": "SpinStoryMoneyUpdate",
         "exportKind": "named",
         "isDefault": false,
-        "lineEnd": 554,
-        "lineStart": 552,
+        "lineEnd": 555,
+        "lineStart": 553,
         "name": "SpinStoryMoneyUpdate",
         "path": "src/utils/postGigUtils.ts",
         "properties": [
@@ -55430,7 +55430,7 @@
         "name": "startGigClock",
         "parameters": [
           {
-            "name": "{\r\n  delayMs = 0,\r\n  offsetMs = 0,\r\n  startTimeSec = null\r\n}",
+            "name": "{\n  delayMs = 0,\n  offsetMs = 0,\n  startTimeSec = null\n}",
             "optional": true,
             "rest": false,
             "type": "{ delayMs?: number; offsetMs?: number; startTimeSec?: number | null; }"
@@ -55484,7 +55484,7 @@
         "name": "startGigPlayback",
         "parameters": [
           {
-            "name": "{\r\n  filename,\r\n  bufferOffsetMs = 0,\r\n  delayMs = 0,\r\n  durationMs = null,\r\n  onEnded = null\r\n}",
+            "name": "{\n  filename,\n  bufferOffsetMs = 0,\n  delayMs = 0,\n  durationMs = null,\n  onEnded = null\n}",
             "optional": false,
             "rest": false,
             "type": "{ filename: string; bufferOffsetMs?: number; delayMs?: number; durationMs?: number | null; onEnded?: ((args: GigEndedInfo) => void) | null; }"
@@ -55763,7 +55763,7 @@
         "name": "StatsOverlay",
         "parameters": [
           {
-            "name": "{\r\n  score,\r\n  combo,\r\n  accuracy,\r\n  overload,\r\n  corruptionLevel,\r\n  isCorruptionBurstActive\r\n}",
+            "name": "{\n  score,\n  combo,\n  accuracy,\n  overload,\n  corruptionLevel,\n  isCorruptionBurstActive\n}",
             "optional": false,
             "rest": false,
             "type": "StatsOverlayProps"
@@ -56232,7 +56232,7 @@
         "name": "submitLeaderboardScores",
         "parameters": [
           {
-            "name": "{\r\n  player,\r\n  lastGigStats,\r\n  currentGig,\r\n  setlist\r\n}",
+            "name": "{\n  player,\n  lastGigStats,\n  currentGig,\n  setlist\n}",
             "optional": false,
             "rest": false,
             "type": "{ player: GameState['player']; lastGigStats: PostGigSummary | null; currentGig: Venue | null; setlist: GameState['setlist']; }"
@@ -57993,7 +57993,7 @@
         "name": "TravelingVan",
         "parameters": [
           {
-            "name": "{\r\n    t,\r\n    isTraveling,\r\n    currentNode,\r\n    travelTarget,\r\n    vanUrl,\r\n    travelCompletedRef,\r\n    onTravelComplete\r\n  }",
+            "name": "{\n    t,\n    isTraveling,\n    currentNode,\n    travelTarget,\n    vanUrl,\n    travelCompletedRef,\n    onTravelComplete\n  }",
             "optional": false,
             "rest": false,
             "type": "TravelingVanProps"
@@ -58814,7 +58814,7 @@
         "name": "UpgradesTab",
         "parameters": [
           {
-            "name": "{\r\n  player,\r\n  upgrades,\r\n  handleBuy,\r\n  isItemOwned,\r\n  isItemDisabled,\r\n  getAdjustedCost,\r\n  processingItemId\r\n}",
+            "name": "{\n  player,\n  upgrades,\n  handleBuy,\n  isItemOwned,\n  isItemDisabled,\n  getAdjustedCost,\n  processingItemId\n}",
             "optional": false,
             "rest": false,
             "type": "UpgradesTabProps"
@@ -58940,7 +58940,7 @@
         "name": "useArrivalLogic",
         "parameters": [
           {
-            "name": "{\r\n  onShowHQ,\r\n  onShowSupplyStop,\r\n  rng\r\n}",
+            "name": "{\n  onShowHQ,\n  onShowSupplyStop,\n  rng\n}",
             "optional": true,
             "rest": false,
             "type": "UseArrivalLogicOptions"
@@ -59123,7 +59123,7 @@
         "name": "useBandHQLogic",
         "parameters": [
           {
-            "name": "{\r\n  player,\r\n  band,\r\n  handleBuy,\r\n  tradeVoidItem,\r\n  addToast\r\n}",
+            "name": "{\n  player,\n  band,\n  handleBuy,\n  tradeVoidItem,\n  addToast\n}",
             "optional": false,
             "rest": false,
             "type": "BandHQLogicParams"
@@ -59383,7 +59383,7 @@
         "name": "useDealNegotiation",
         "parameters": [
           {
-            "name": "{\r\n  onAccept\r\n}",
+            "name": "{\n  onAccept\n}",
             "optional": false,
             "rest": false,
             "type": "{ onAccept: (deal: Deal) => Promise<void> | void; }"
@@ -59430,7 +59430,7 @@
         "name": "useEventSystem",
         "parameters": [
           {
-            "name": "{\r\n  stateRef,\r\n  dispatch,\r\n  addToast,\r\n  changeScene,\r\n  saveGame,\r\n  tRef\r\n}",
+            "name": "{\n  stateRef,\n  dispatch,\n  addToast,\n  changeScene,\n  saveGame,\n  tRef\n}",
             "optional": false,
             "rest": false,
             "type": "UseEventSystemParams"
@@ -60125,7 +60125,7 @@
         "name": "useGigInput",
         "parameters": [
           {
-            "name": "{\r\n  actions,\r\n  gameStateRef,\r\n  triggerBandAnimation,\r\n  onTogglePause\r\n}",
+            "name": "{\n  actions,\n  gameStateRef,\n  triggerBandAnimation,\n  onTogglePause\n}",
             "optional": false,
             "rest": false,
             "type": "GigInputParams"
@@ -60163,7 +60163,7 @@
         "name": "useGigSession",
         "parameters": [
           {
-            "name": "{\r\n  addToast,\r\n  setLastGigStats,\r\n  endGig,\r\n  tRef,\r\n  gameStateRef\r\n}",
+            "name": "{\n  addToast,\n  setLastGigStats,\n  endGig,\n  tRef,\n  gameStateRef\n}",
             "optional": false,
             "rest": false,
             "type": "UseGigSessionProps"
@@ -60913,7 +60913,7 @@
         "name": "useMapGeneration",
         "parameters": [
           {
-            "name": "{\r\n  gameMap,\r\n  dispatch,\r\n  tRef\r\n}",
+            "name": "{\n  gameMap,\n  dispatch,\n  tRef\n}",
             "optional": false,
             "rest": false,
             "type": "UseMapGenerationParams"
@@ -61222,7 +61222,7 @@
         "name": "usePostGigDerivations",
         "parameters": [
           {
-            "name": "{\r\n  currentGig,\r\n  player,\r\n  gigModifiers,\r\n  activeEvent,\r\n  band,\r\n  assets,\r\n  social,\r\n  lastGigStats,\r\n  reputationByRegion,\r\n  activeStoryFlags,\r\n  cityStates,\r\n  triggerEvent\r\n}",
+            "name": "{\n  currentGig,\n  player,\n  gigModifiers,\n  activeEvent,\n  band,\n  assets,\n  social,\n  lastGigStats,\n  reputationByRegion,\n  activeStoryFlags,\n  cityStates,\n  triggerEvent\n}",
             "optional": false,
             "rest": false,
             "type": "UsePostGigDerivationsProps"
@@ -61597,7 +61597,7 @@
         "name": "usePurchaseLogic",
         "parameters": [
           {
-            "name": "{\r\n  player,\r\n  band,\r\n  social,\r\n  updatePlayer,\r\n  updateBand,\r\n  addToast,\r\n  transformPlayerPatch\r\n}",
+            "name": "{\n  player,\n  band,\n  social,\n  updatePlayer,\n  updateBand,\n  addToast,\n  transformPlayerPatch\n}",
             "optional": false,
             "rest": false,
             "type": "{ player: PlayerState; band: BandState; social: SocialState; updatePlayer: (patch: UpdatePlayerPayload) => void; updateBand: (patch: UpdateBandPayload) => void; addToast: ToastFn; transformPlayerPatch?: PlayerPatchTransform; }"
@@ -61706,7 +61706,7 @@
         "name": "useRhythmGameAudio",
         "parameters": [
           {
-            "name": "{\r\n  gameStateRef,\r\n  setters,\r\n  contextState,\r\n  contextActions\r\n}",
+            "name": "{\n  gameStateRef,\n  setters,\n  contextState,\n  contextActions\n}",
             "optional": false,
             "rest": false,
             "type": "RhythmGameAudioParams"
@@ -61757,7 +61757,7 @@
         "name": "useRhythmGameInput",
         "parameters": [
           {
-            "name": "{\r\n  gameStateRef,\r\n  scoringActions,\r\n  contextState\r\n}",
+            "name": "{\n  gameStateRef,\n  scoringActions,\n  contextState\n}",
             "optional": false,
             "rest": false,
             "type": "RhythmGameInputParams"
@@ -61837,7 +61837,7 @@
         "name": "useRhythmGameLoop",
         "parameters": [
           {
-            "name": "{\r\n  gameStateRef,\r\n  scoringActions,\r\n  setters,\r\n  contextState,\r\n  contextActions\r\n}",
+            "name": "{\n  gameStateRef,\n  scoringActions,\n  setters,\n  contextState,\n  contextActions\n}",
             "optional": false,
             "rest": false,
             "type": "RhythmGameLoopParams"
@@ -61900,7 +61900,7 @@
         "name": "useRhythmGameScoring",
         "parameters": [
           {
-            "name": "{\r\n  gameStateRef,\r\n  setters,\r\n  performance,\r\n  contextActions\r\n}",
+            "name": "{\n  gameStateRef,\n  setters,\n  performance,\n  contextActions\n}",
             "optional": false,
             "rest": false,
             "type": "RhythmGameScoringParams"
@@ -63433,7 +63433,7 @@
         "name": "VolumeSlider",
         "parameters": [
           {
-            "name": "{\r\n  label,\r\n  value,\r\n  onChange\r\n}",
+            "name": "{\n  label,\n  value,\n  onChange\n}",
             "optional": false,
             "rest": false,
             "type": "{ label: string; value: number; onChange: (e: ChangeEvent<HTMLInputElement> | { target: { value: number; }; }) => void; }"

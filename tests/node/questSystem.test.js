@@ -139,61 +139,6 @@ const makeProgressEvent = (source, rule) => {
 }
 
 describe('Quest System Registry Validation', () => {
-  // progressSource stays as the legacy compatibility bridge while progressRules
-  // is the declarative matching contract. Keep both gates until the legacy
-  // progressSource fallback is removed.
-  it('should ensure quests with required > 0 have a progressSource', () => {
-    for (const [_id, quest] of Object.entries(QUEST_REGISTRY)) {
-      if (quest.required && quest.required > 0) {
-        assert.ok(
-          quest.progressSource,
-          `Quest ${_id} requires progress but has no progressSource`
-        )
-      }
-    }
-  })
-
-  it('should ensure quests with required > 0 have declarative progressRules', () => {
-    for (const [id, quest] of Object.entries(QUEST_REGISTRY)) {
-      if (quest.required && quest.required > 0) {
-        assert.ok(
-          Array.isArray(quest.progressRules) && quest.progressRules.length > 0,
-          `Quest ${id} requires progress but has no progressRules`
-        )
-      }
-    }
-  })
-
-  it('should ensure no quest uses game_over failure penalty', () => {
-    for (const [_id, quest] of Object.entries(QUEST_REGISTRY)) {
-      if (quest.failurePenalty) {
-        assert.notStrictEqual(
-          quest.failurePenalty.type,
-          'game_over',
-          `Quest ${_id} uses game_over failure penalty`
-        )
-      }
-    }
-  })
-
-  it('should ensure every quest declares kind and repeatPolicy', () => {
-    for (const [id, quest] of Object.entries(QUEST_REGISTRY)) {
-      assert.ok(quest.kind, `Quest ${id} is missing kind`)
-      assert.ok(quest.repeatPolicy, `Quest ${id} is missing repeatPolicy`)
-    }
-  })
-
-  it('should ensure cooldown-policy quests define cooldownDays > 0', () => {
-    for (const [id, quest] of Object.entries(QUEST_REGISTRY)) {
-      if (quest.repeatPolicy === 'cooldown') {
-        assert.ok(
-          typeof quest.cooldownDays === 'number' && quest.cooldownDays > 0,
-          `Quest ${id} uses repeatPolicy 'cooldown' but has no positive cooldownDays`
-        )
-      }
-    }
-  })
-
   it('should ensure quests do not declare money rewards twice', () => {
     for (const [id, quest] of Object.entries(QUEST_REGISTRY)) {
       const hasLegacyMoneyReward = Object.hasOwn(quest, 'moneyReward')

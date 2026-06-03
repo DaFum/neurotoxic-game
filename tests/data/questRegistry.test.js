@@ -1,7 +1,6 @@
 // Phase-4 Task 5: registry shape validation per the original plan.
-// The same invariants run in tests/node/questSystem.test.js with extended
-// content gates; this file keeps the plan's exact location/name as an
-// explicit registry-only contract for future quest additions.
+// Keep these registry-only contracts here so future quest additions have a
+// single owner for static shape checks.
 import { test } from 'vitest'
 import assert from 'node:assert/strict'
 import {
