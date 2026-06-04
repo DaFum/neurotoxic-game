@@ -2,13 +2,16 @@ import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 interface GameOverOverlayProps {
+  /** Whether the failed-gig overlay should cover the stage HUD. */
   isGameOver?: boolean
 }
 
 /**
- * Renders the GameOverOverlay component when the gig has ended in failure.
- * @param props - Game-over visibility flag for the gig overlay.
- * @returns The rendered Game Over Overlay UI.
+ * Shows the non-interactive failure overlay after a gig ends badly.
+ *
+ * @remarks
+ * The component renders `null` until `isGameOver` is truthy. The overlay keeps
+ * pointer events disabled so scene-level continuation handlers stay in control.
  */
 export const GameOverOverlay = memo(function GameOverOverlay({
   isGameOver

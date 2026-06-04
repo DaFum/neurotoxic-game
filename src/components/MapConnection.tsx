@@ -3,21 +3,30 @@ import { memo } from 'react'
 import type { NodeVisibility } from '../types/map'
 
 interface MapConnectionEndpoint {
+  /** Horizontal position as a percentage of the map SVG viewport. */
   x: number
+  /** Vertical position as a percentage of the map SVG viewport. */
   y: number
 }
 
 interface MapConnectionProps {
+  /** Start node position for the route segment. */
   start: MapConnectionEndpoint
+  /** End node position for the route segment. */
   end: MapConnectionEndpoint
+  /** Visibility state of the start node. Hidden nodes suppress the segment. */
   startVis: NodeVisibility
+  /** Visibility state of the end node. Hidden nodes suppress the segment. */
   endVis: NodeVisibility
 }
 
 /**
- * Displays a map edge between two endpoints when both endpoints are visible.
- * @param props - Connection endpoints and visibility states for a map edge.
- * @returns The rendered Map Connection UI.
+ * Draws a route segment between two visible map nodes.
+ *
+ * @remarks
+ * Coordinates are percentage units in the parent SVG. If either endpoint is
+ * hidden, no line is rendered; if either endpoint is dimmed, the line stays
+ * visible at reduced opacity.
  */
 export const MapConnection = memo(
   ({ start, end, startVis, endVis }: MapConnectionProps) => {

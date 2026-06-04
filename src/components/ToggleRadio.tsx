@@ -5,8 +5,11 @@ import { RazorPlayIcon } from '../ui/shared/Icons'
 import { Tooltip } from '../ui/shared'
 
 /**
- * Renders a labeled two-state radio-style toggle control.
- * @returns The rendered Toggle Radio UI.
+ * Toggles ambient radio playback from the compact HUD control.
+ *
+ * @remarks
+ * The pressed state tracks only the `ambient` song, so unrelated audio playback
+ * does not make the radio button appear active.
  */
 export const ToggleRadio = memo(() => {
   const { t } = useTranslation()

@@ -6,7 +6,16 @@ metadata:
   version: '1.0.0'
   author: 'neurotoxic-project'
   category: 'documentation'
-  keywords: ['documentation', 'tsdoc', 'typescript', 'intellisense', 'typedoc', 'api-extractor', 'eslint-plugin-tsdoc']
+  keywords:
+    [
+      'documentation',
+      'tsdoc',
+      'typescript',
+      'intellisense',
+      'typedoc',
+      'api-extractor',
+      'eslint-plugin-tsdoc'
+    ]
   maturity: 'stable'
 license: 'Proprietary. See LICENSE.txt for terms'
 ---
@@ -38,18 +47,18 @@ Skip TSDoc for obvious private implementation details. Use a normal code comment
 
 ## Tag Guide
 
-| Tag | Use it for |
-| --- | --- |
-| `@remarks` | Context, architectural reasoning, lifecycle notes, side effects, or caveats too long for the summary. |
-| `@typeParam T` | The role or constraint of a generic type parameter. Do not write "the type of T". |
-| `@param name` | Semantic meaning, constraints, formats, units, ownership, or special values. |
-| `@returns` | What the value represents, including meaningful empty, false, null, or undefined results. |
-| `@throws` | Each catchable error condition the caller should handle. Omit it when nothing intentional is thrown. |
-| `@example` | A copy-pasteable consumer example, preferably with real names and realistic values. Use multiple `@example` blocks when distinct use cases would otherwise blur together. |
-| `@deprecated` | Why the API is obsolete and what to use instead, often with `{@link Replacement}`. |
-| `@see` | Related references such as RFCs, external docs, tracking tickets, or design notes. |
-| `{@link Symbol}` | Inline references to related symbols or URLs. Do not use `@link` as a block tag. |
-| `@defaultValue` | Default values for properties, accessors, or fields. Prefer this TSDoc tag over JSDoc-only forms such as `@default`. |
+| Tag              | Use it for                                                                                                                                                                |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@remarks`       | Context, architectural reasoning, lifecycle notes, side effects, or caveats too long for the summary.                                                                     |
+| `@typeParam T`   | The role or constraint of a generic type parameter. Do not write "the type of T".                                                                                         |
+| `@param name`    | Semantic meaning, constraints, formats, units, ownership, or special values.                                                                                              |
+| `@returns`       | What the value represents, including meaningful empty, false, null, or undefined results.                                                                                 |
+| `@throws`        | Each catchable error condition the caller should handle. Omit it when nothing intentional is thrown.                                                                      |
+| `@example`       | A copy-pasteable consumer example, preferably with real names and realistic values. Use multiple `@example` blocks when distinct use cases would otherwise blur together. |
+| `@deprecated`    | Why the API is obsolete and what to use instead, often with `{@link Replacement}`.                                                                                        |
+| `@see`           | Related references such as RFCs, external docs, tracking tickets, or design notes.                                                                                        |
+| `{@link Symbol}` | Inline references to related symbols or URLs. Do not use `@link` as a block tag.                                                                                          |
+| `@defaultValue`  | Default values for properties, accessors, or fields. Prefer this TSDoc tag over JSDoc-only forms such as `@default`.                                                      |
 
 TSDoc `@param` and `@typeParam` blocks use `name - description`. Do not include JSDoc type syntax such as `@param {string} userId`.
 
@@ -57,13 +66,13 @@ TSDoc `@param` and `@typeParam` blocks use `name - description`. Do not include 
 
 Use release tags only when generated API docs or declaration rollups consume them:
 
-| Tag | Use it for |
-| --- | --- |
-| `@public` | Stable APIs intended for external consumers. |
-| `@beta` | Usable APIs that may still change before a stable release. |
-| `@alpha` | Experimental APIs whose contract is actively unsettled. |
+| Tag             | Use it for                                                                                          |
+| --------------- | --------------------------------------------------------------------------------------------------- |
+| `@public`       | Stable APIs intended for external consumers.                                                        |
+| `@beta`         | Usable APIs that may still change before a stable release.                                          |
+| `@alpha`        | Experimental APIs whose contract is actively unsettled.                                             |
 | `@experimental` | Same stability meaning as `@beta`; use it only when local tooling or docs already prefer that name. |
-| `@internal` | Repo-only APIs that should be hidden or stripped from generated public docs. |
+| `@internal`     | Repo-only APIs that should be hidden or stripped from generated public docs.                        |
 
 Release tags complement TypeScript access modifiers; they do not replace `private` or `protected`. In app code without a published API surface, omit release tags unless local tooling requires them. Do not use both `@beta` and `@experimental` on the same API.
 
@@ -102,10 +111,10 @@ Mention governance tools only when the task is about linting, generated docs, or
 
 Load extra references only when useful:
 
-| Need | Reference |
-| --- | --- |
+| Need                                                                       | Reference                                                                  |
+| -------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
 | Fast tag lookup, release tags, linking syntax, and the no-JSDoc-types rule | [references/tsdoc-reference-guide.md](references/tsdoc-reference-guide.md) |
-| A complete model comment to adapt for a function | [references/perfect-tsdoc-example.md](references/perfect-tsdoc-example.md) |
+| A complete model comment to adapt for a function                           | [references/perfect-tsdoc-example.md](references/perfect-tsdoc-example.md) |
 
 ## Example
 
@@ -155,10 +164,10 @@ export async function fetchUsers(limit: number): Promise<User[]>;
 
 ## Common Mistakes
 
-| Mistake | Fix |
-| --- | --- |
-| `@param count - The count number.` | Say what count controls, its unit, or valid range. |
-| `@returns Promise resolving to Result.` | Say what completion means and what failures remain possible. |
-| Long summary paragraph | Move detail to `@remarks`; keep the first sentence short. |
-| Documenting implementation steps | Document caller-visible behavior unless the internal detail is part of the contract. |
-| Adding `@throws` for impossible errors | Omit speculative tags. Only document errors consumers should catch. |
+| Mistake                                 | Fix                                                                                  |
+| --------------------------------------- | ------------------------------------------------------------------------------------ |
+| `@param count - The count number.`      | Say what count controls, its unit, or valid range.                                   |
+| `@returns Promise resolving to Result.` | Say what completion means and what failures remain possible.                         |
+| Long summary paragraph                  | Move detail to `@remarks`; keep the first sentence short.                            |
+| Documenting implementation steps        | Document caller-visible behavior unless the internal detail is part of the contract. |
+| Adding `@throws` for impossible errors  | Omit speculative tags. Only document errors consumers should catch.                  |

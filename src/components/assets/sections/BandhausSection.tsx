@@ -3,7 +3,6 @@ import { BandhausCrossSectionView } from './BandhausCrossSectionView'
 
 /**
  * Renders the Bandhaus asset section through the shared section panel.
- * @returns The rendered Bandhaus Section UI.
  */
 export const BandhausSection = () => (
   <AssetSectionPanel

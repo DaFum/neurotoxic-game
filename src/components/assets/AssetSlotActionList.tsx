@@ -16,9 +16,8 @@ const getConditionState = (
 }
 
 /**
- * Renders the Asset Slot Action List component from asset and onSlotClick.
+ * Renders the Asset Slot Action List.
  * @param props - Asset state and slot-click handler for the slot action list.
- * @returns The rendered Asset Slot Action List UI.
  */
 export const AssetSlotActionList = ({
   asset,

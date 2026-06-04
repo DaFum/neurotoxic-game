@@ -14,9 +14,8 @@ type BackdoorMinigameState = {
 }
 
 /**
- * Renders the Minigame Scene Frame component from controllerFactory, logic, uiState, onComplete, completionTitle, renderCompletionStats, completionButtonText, and children.
+ * Renders the Minigame Scene Frame.
  * @param props - Stage controller factory, minigame logic, UI state, completion callback, completion copy, stats renderer, and child UI.
- * @returns The rendered Minigame Scene Frame UI.
  */
 export const MinigameSceneFrame = <TState,>({
   controllerFactory,

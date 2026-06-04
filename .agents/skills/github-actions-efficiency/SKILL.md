@@ -42,14 +42,14 @@ Look for: missing dependency caches, missing `concurrency` cancellation, over-br
 Check each proposed fix against these rules before recommending it:
 
 1. Does not hide required validation — drop any fix that removes release, schema, migration, or shared-library checks.
-2. Does not reduce parallelism without justification — drop unless the user prioritised cost over latency *and* the new critical path stays within 1.25× the original.
+2. Does not reduce parallelism without justification — drop unless the user prioritised cost over latency _and_ the new critical path stays within 1.25× the original.
 3. Preserves only documented matrix legs — drop matrix legs with no explicit version or platform commitment.
 4. Write-back jobs use opt-in triggers — flag (do not drop) formatter or bot jobs that run automatically; recommend an opt-in trigger instead.
 5. Repo changes stay separate from org settings — split any fix that mixes repo-editable YAML with org-level or GitHub-account settings into two distinct recommendations.
 
 ### 3. Select the top 3 fixes
 
-From the six candidates below, keep only those supported by audit evidence from step 1 *and* passing all guardrails from step 2. Rank survivors by estimated daily CI minutes saved (per-run savings × runs per day). Select all candidates that meet both criteria, up to a maximum of 3.
+From the six candidates below, keep only those supported by audit evidence from step 1 _and_ passing all guardrails from step 2. Rank survivors by estimated daily CI minutes saved (per-run savings × runs per day). Select all candidates that meet both criteria, up to a maximum of 3.
 
 1. Add dependency caching with lockfile-based keys
 2. Add or correct `concurrency` cancellation

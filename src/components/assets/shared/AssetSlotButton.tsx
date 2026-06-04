@@ -21,9 +21,8 @@ export interface AssetSlotButtonProps {
 }
 
 /**
- * Renders the Asset Slot Button component from id, slotType, installedModuleId, onClick, style, className, imageAspectRatio, imageSizeHint, ariaLabel, and children.
+ * Renders the Asset Slot Button.
  * @param props - Slot identity/type, installed module state, click handler, positioning style, image metadata, and accessible label.
- * @returns The rendered Asset Slot Button UI.
  */
 export const AssetSlotButton = ({
   id,

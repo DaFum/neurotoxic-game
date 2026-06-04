@@ -12,9 +12,8 @@ interface Props {
 }
 
 /**
- * Renders the Tourbus Vehicle View component from asset and onSlotClick.
+ * Renders the Tourbus Vehicle View.
  * @param props - Tourbus asset state and slot-click handler.
- * @returns The rendered Tourbus Vehicle View UI.
  */
 export const TourbusVehicleView = ({ asset, onSlotClick }: Props) => {
   const { t } = useTranslation(['assets'])

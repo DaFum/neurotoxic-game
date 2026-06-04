@@ -5,9 +5,8 @@ interface ToxicModeFlashProps {
 }
 
 /**
- * Renders the Toxic Mode Flash component from isToxicMode.
+ * Renders the Toxic Mode Flash.
  * @param props - Toxic-mode state used to show the flash overlay.
- * @returns The rendered Toxic Mode Flash UI.
  */
 export const ToxicModeFlash = memo(function ToxicModeFlash({
   isToxicMode

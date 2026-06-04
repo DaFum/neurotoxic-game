@@ -38,6 +38,7 @@ import {
   createAdvanceQuestAction,
   createAddUnlockAction,
   createUseContrabandAction,
+  createCraftItemAction,
   createClinicHealAction,
   createClinicEnhanceAction,
   createPirateBroadcastAction,
@@ -288,6 +289,18 @@ describe('Action Creators', () => {
       it('creates correct action', () => {
         assert.deepStrictEqual(call(), expected)
       })
+    })
+  })
+
+  describe('createCraftItemAction', () => {
+    it('includes the crafted contraband instance id in the payload', () => {
+      const action = createCraftItemAction('recipe_cursed_pick', 'crafted-pick')
+
+      assert.equal(action.type, ActionTypes.CRAFT_ITEM)
+      assert.equal(action.payload.recipeId, 'recipe_cursed_pick')
+      assert.equal(action.payload.instanceId, 'crafted-pick')
+      assert.equal(typeof action.payload.toastId, 'string')
+      assert.notEqual(action.payload.toastId, '')
     })
   })
 

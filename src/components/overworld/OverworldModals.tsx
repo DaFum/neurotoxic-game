@@ -14,9 +14,8 @@ interface OverworldModalsProps {
 }
 
 /**
- * Renders the Overworld Modals component from modals.
+ * Renders the Overworld Modals.
  * @param props - Modal state bundle for the overworld modal stack.
- * @returns The rendered Overworld Modals UI.
  */
 export const OverworldModals = React.memo(
   ({ modals }: OverworldModalsProps) => {

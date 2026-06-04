@@ -3,7 +3,6 @@ import { TourbusVehicleView } from './TourbusVehicleView'
 
 /**
  * Renders the Tourbus asset section through the shared section panel.
- * @returns The rendered Tourbus Section UI.
  */
 export const TourbusSection = () => (
   <AssetSectionPanel

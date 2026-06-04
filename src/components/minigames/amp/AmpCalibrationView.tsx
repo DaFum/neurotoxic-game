@@ -44,9 +44,8 @@ export interface AmpCalibrationViewProps {
 }
 
 /**
- * Renders the Amp Calibration View component from t, dialValue, setDialValue, targetValue, timeLeft, score, isGameOver, isOverdriveActive, setIsOverdriveActive, heat, isOverheat, voidResonance, isAnomalyActive, interference, purgeInterference, isHijackActive, hijacksOverridden, overrideHijack, controllerFactory, logic, and onComplete.
+ * Renders the Amp Calibration View.
  * @param props - Amp calibration controls, HUD state, stage controller factory, completion handler, and advanced mechanic callbacks.
- * @returns The rendered Amp Calibration View UI.
  */
 export const AmpCalibrationView = ({
   t,

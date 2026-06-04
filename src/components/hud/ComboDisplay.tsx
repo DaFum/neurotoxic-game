@@ -2,28 +2,32 @@ import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 interface ComboDisplayProps {
+  /** Current consecutive hit streak. */
   combo: number
+  /** Current hit accuracy percentage for the active gig. */
   accuracy: number
 }
 
 /**
- * Renders the ComboDisplay component showing combo count and accuracy warnings.
- * @param props - Combo and accuracy values displayed during the gig.
- * @returns The rendered Combo Display UI.
+ * Shows the active hit streak and low-accuracy warning during a gig.
+ *
+ * @remarks
+ * Combo feedback escalates at `20` and `50` hits. Accuracy below `70` displays
+ * the low-accuracy warning beside the combo counter.
  */
 export const ComboDisplay = memo(function ComboDisplay({
   combo,
   accuracy
 }: ComboDisplayProps) {
   const { t } = useTranslation()
-  const comboColor =
+  const comboColorClass =
     combo >= 50
-      ? 'var(--color-blood-red)'
+      ? 'text-blood-red'
       : combo >= 20
-        ? 'var(--color-warning-yellow)'
+        ? 'text-warning-yellow'
         : combo > 0
-          ? 'var(--color-toxic-green)'
-          : 'rgb(var(--color-ash-gray-rgb) / 50%)'
+          ? 'text-toxic-green'
+          : 'text-ash-gray/50'
   const comboPulseClass = combo >= 50 ? 'animate-pulse' : ''
 
   return (
@@ -31,14 +35,14 @@ export const ComboDisplay = memo(function ComboDisplay({
       className='mt-2 backdrop-blur-sm border px-3 py-1.5 inline-flex items-baseline gap-2'
       style={{
         backgroundColor: 'rgb(var(--color-void-black-rgb) / 60%)',
-        borderColor: 'var(--color-toxic-green-20)'
+        borderColor:
+          'color-mix(in srgb, var(--color-toxic-green) 20%, transparent)'
       }}
     >
       <div
-        className={`text-2xl font-bold transition-all duration-100 tabular-nums ${comboPulseClass} ${
+        className={`text-2xl font-bold transition-all duration-100 tabular-nums ${comboColorClass} ${comboPulseClass} ${
           combo > 0 ? 'scale-110' : 'scale-100'
         }`}
-        style={{ color: comboColor }}
       >
         {combo}x
       </div>

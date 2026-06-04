@@ -7,9 +7,8 @@ interface ToxicHazardTickerProps {
 }
 
 /**
- * Renders the Toxic Hazard Ticker component from isToxicMode.
+ * Renders the Toxic Hazard Ticker.
  * @param props - Toxic-mode state used to show the hazard ticker.
- * @returns The rendered Toxic Hazard Ticker UI.
  */
 export const ToxicHazardTicker = memo(function ToxicHazardTicker({
   isToxicMode

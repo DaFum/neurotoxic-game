@@ -5,9 +5,8 @@ import { getFinancialColors } from '../../utils/financialColors'
 import type { FinancialListProps } from '../../types/components'
 
 /**
- * Renders the Financial List component from items and type.
+ * Renders the Financial List.
  * @param props - Financial entries and income/expense type.
- * @returns The rendered Financial List UI.
  */
 export const FinancialList = ({ items, type }: FinancialListProps) => {
   const { t, i18n } = useTranslation(['economy', 'ui'])

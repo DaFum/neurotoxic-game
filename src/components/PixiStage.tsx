@@ -70,7 +70,6 @@ const PixiStageComponent = <TState = RhythmGameRefState,>(
 /**
  * Renders the memoized Pixi canvas host for a stage controller.
  * @param props - Pixi stage refs, per-frame update callback, and controller factory.
- * @returns The rendered Pixi Stage UI.
  */
 export const PixiStage = memo(
   PixiStageComponent

@@ -749,19 +749,32 @@ export const createUnblacklistVenueAction = (
 /**
  * Creates an action to craft an item from a recipe. The `handleCraftItem`
  * reducer is the final authority on input availability; this creator only
- * normalizes a hostile recipe id to ''.
+ * normalizes a hostile recipe id to '' and stamps the crafted output with a
+ * fresh contraband instance id.
  * @param recipeId - The crafting recipe id.
+ * @param instanceId - Unique id assigned to the crafted contraband output.
  */
 export const createCraftItemAction = (
-  recipeId: string
-): Extract<GameAction, { type: typeof ActionTypes.CRAFT_ITEM }> => ({
-  type: ActionTypes.CRAFT_ITEM,
-  payload: {
-    recipeId:
-      typeof recipeId === 'string' && !isForbiddenKey(recipeId) ? recipeId : '',
-    toastId: getSafeUUID()
+  recipeId: string,
+  instanceId: string = getSafeUUID()
+): Extract<GameAction, { type: typeof ActionTypes.CRAFT_ITEM }> => {
+  const safeInstanceId =
+    typeof instanceId === 'string' && instanceId.length > 0
+      ? instanceId
+      : getSafeUUID()
+
+  return {
+    type: ActionTypes.CRAFT_ITEM,
+    payload: {
+      recipeId:
+        typeof recipeId === 'string' && !isForbiddenKey(recipeId)
+          ? recipeId
+          : '',
+      instanceId: safeInstanceId,
+      toastId: getSafeUUID()
+    }
   }
-})
+}
 
 /**
  * Creates an action to add a new quest.

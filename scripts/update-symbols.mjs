@@ -878,8 +878,7 @@ function addUsedBy(entry, usage) {
 }
 
 function addUsedByTests(entry, usage) {
-  if (!usedByTestsByEntry.has(entry))
-    usedByTestsByEntry.set(entry, new Map())
+  if (!usedByTestsByEntry.has(entry)) usedByTestsByEntry.set(entry, new Map())
   usedByTestsByEntry.get(entry).set(JSON.stringify(usage), usage)
 }
 
@@ -1030,7 +1029,10 @@ function collectImportUsage(sourceFile) {
     if (importClause.name) {
       addFileImport(rel, importClause.name.text)
       if (node.moduleSpecifier.text.startsWith('.')) {
-        for (const entry of targetEntriesForNode(importClause.name, 'default')) {
+        for (const entry of targetEntriesForNode(
+          importClause.name,
+          'default'
+        )) {
           addUsage(entry, {
             path: rel,
             importedAs: importClause.name.text,
@@ -1404,7 +1406,8 @@ const meta = {
       'Top-level file navigation index keyed by relative file path; each entry lists exports, imports, React components, and hooks.',
     exports: 'In files entries, exported symbols declared in the file.',
     imports: 'In files entries, imported local or external binding names.',
-    components: 'In files entries, React component exports declared in the file.',
+    components:
+      'In files entries, React component exports declared in the file.',
     hooks: 'In files entries, React hook exports declared in the file.',
     guidePath: 'Path to the detailed agent usage guide for this schema.',
     sourceHash:
@@ -1414,7 +1417,8 @@ const meta = {
       'Present when the symbol is re-exported through another module (barrel or alias); value is that re-exporting file.',
     localName:
       'Real declared identifier at path:lineStart when it differs from the exported name (aliased re-export).',
-    isAlias: 'True when the exported name differs from the declared identifier.',
+    isAlias:
+      'True when the exported name differs from the declared identifier.',
     source: '"local" (defined in src/) or "external" (allowlisted dependency).',
     type: 'Declaration kind: const | let | var | function | class | interface | type | enum.',
     typeOnly: 'True for type-only declarations or `export type` re-exports.',
