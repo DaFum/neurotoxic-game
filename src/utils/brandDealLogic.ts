@@ -145,9 +145,7 @@ const scoreEntry = (
 ): number => {
   const reputation = gameState.social?.brandReputation ?? {}
   const align = String(entry.deal.alignment)
-  const rep = Object.hasOwn(reputation, align)
-    ? finiteNumberOr(reputation[align], 0)
-    : 0
+  const rep = finiteNumberOr(reputation[align], 0)
   const tierPenalty = entry.tier * 30
   const jitter = rng() * 25
   return rep - rivalPenalty - tierPenalty + jitter
@@ -165,8 +163,8 @@ export const generateBrandOffers = (
   gameState: SocialEngineGameState,
   rng: RandomFn = secureRandom
 ): BrandOffer[] => {
-  const social = gameState?.social ?? {}
-  const band = gameState?.band
+  const social = gameState.social ?? {}
+  const band = gameState.band
 
   // Single-deal invariant: never offer anything while a deal is active.
   if (Array.isArray(social.activeDeals) && social.activeDeals.length > 0) {
@@ -199,8 +197,8 @@ export const generateBrandOffers = (
   if (pool.length === 0) return []
 
   const rivalInLocation =
-    gameState.rivalBand != null &&
-    gameState.player != null &&
+    gameState.rivalBand?.currentLocationId != null &&
+    gameState.player?.currentNodeId != null &&
     gameState.rivalBand.currentLocationId === gameState.player.currentNodeId
 
   const rivalPower =
@@ -247,14 +245,14 @@ export const generateBrandOffers = (
  * @param rng - Random number generator.
  * @returns `success: boolean, deal: object, feedback: string, status: 'ACCEPTED'|'REVOKED'|'FAILED'`
  */
-export const negotiateDeal = <TDeal extends BrandDeal>(
-  deal: TDeal,
+export const negotiateDeal = (
+  deal: BrandDeal,
   strategy: 'AGGRESSIVE' | 'PERSUASIVE' | 'SAFE',
   gameState: SocialEngineGameState,
   rng: RandomFn = secureRandom
 ): {
   success: boolean
-  deal: TDeal | null
+  deal: BrandDeal | null
   feedback: string
   status: 'ACCEPTED' | 'REVOKED' | 'FAILED'
 } => {
@@ -265,15 +263,15 @@ export const negotiateDeal = <TDeal extends BrandDeal>(
 
   // Rival Penalty for Negotiations
   const rivalPenalty =
-    gameState.rivalBand &&
-    gameState.player &&
+    gameState.rivalBand?.currentLocationId != null &&
+    gameState.player?.currentNodeId != null &&
     gameState.rivalBand.currentLocationId === gameState.player.currentNodeId
       ? RIVAL_NEGOTIATION_PENALTY
       : 0
 
   // Optimization: structuredClone is slow for hot paths. Manual shallow copy
   // with nested offer copy is ~98% faster.
-  const newDeal: TDeal = {
+  const newDeal: BrandDeal = {
     ...deal,
     offer: { ...deal.offer }
   }

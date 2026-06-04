@@ -4,6 +4,7 @@ import { usePostGigLogic } from '../../src/hooks/usePostGigLogic'
 import * as GameState from '../../src/context/GameState'
 import * as economyEngine from '../../src/utils/economyEngine'
 import * as socialEngine from '../../src/utils/socialEngine'
+import * as brandDealLogic from '../../src/utils/brandDealLogic'
 import * as crypto from '../../src/utils/crypto'
 import * as assetSelectors from '../../src/utils/assetSelectors'
 import { GAME_PHASES } from '../../src/context/gameConstants'
@@ -56,6 +57,11 @@ vi.mock('../../src/utils/assetSelectors', () => ({
       reducesTheftRiskTravel: false
     }
   }))
+}))
+
+vi.mock('../../src/utils/brandDealLogic', () => ({
+  generateBrandOffers: vi.fn(),
+  negotiateDeal: vi.fn()
 }))
 vi.mock('../../src/utils/socialEngine', () => ({
   generatePostOptions: vi.fn(),
@@ -189,7 +195,7 @@ describe('usePostGigLogic', () => {
     })
     socialEngine.checkViralEvent.mockReturnValue(false)
     socialEngine.calculateSocialGrowth.mockReturnValue(25)
-    socialEngine.generateBrandOffers.mockReturnValue([])
+    brandDealLogic.generateBrandOffers.mockReturnValue([])
     crypto.secureRandom.mockReturnValue(0.5)
     mockGameState(getBaseState())
   })
@@ -401,7 +407,7 @@ describe('usePostGigLogic', () => {
         moneyChange: -600,
         harmonyChange: 60
       })
-      socialEngine.generateBrandOffers.mockReturnValueOnce([
+      brandDealLogic.generateBrandOffers.mockReturnValueOnce([
         {
           id: 'deal_1',
           name: 'Test Brand',
@@ -486,7 +492,7 @@ describe('usePostGigLogic', () => {
       expect(mockUpdateSocial).toHaveBeenCalledWith(expect.any(Function))
 
       // Reject deals
-      socialEngine.generateBrandOffers.mockReturnValueOnce([
+      brandDealLogic.generateBrandOffers.mockReturnValueOnce([
         {
           id: 'deal_1',
           name: 'Test Brand',

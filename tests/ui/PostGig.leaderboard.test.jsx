@@ -5,6 +5,7 @@ import { useGameState } from '../../src/context/GameState'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 import * as economyEngine from '../../src/utils/economyEngine'
 import * as socialEngine from '../../src/utils/socialEngine'
+import * as brandDealLogic from '../../src/utils/brandDealLogic'
 
 // Mock lazy-loaded phase components to prevent Suspense timeout in tests
 vi.mock('../../src/components/postGig/ReportPhase', () => ({
@@ -232,7 +233,7 @@ describe('PostGig Leaderboard Submission', () => {
     })
 
     vi.spyOn(socialEngine, 'calculateSocialGrowth').mockReturnValue(5)
-    vi.spyOn(socialEngine, 'generateBrandOffers').mockReturnValue([]) // Skip deals phase
+    vi.spyOn(brandDealLogic, 'generateBrandOffers').mockReturnValue([]) // Skip deals phase
 
     useGameState.mockReturnValue(getBaseState())
   })

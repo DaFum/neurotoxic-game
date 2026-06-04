@@ -11,12 +11,8 @@ import {
   clampPlayerMoney,
   clampBandHarmony
 } from './gameStateUtils'
-import type {
-  SocialEngineGameState,
-  SocialPostOption
-} from '../types/social'
+import type { SocialEngineGameState, SocialPostOption } from '../types/social'
 import type { RandomFn } from '../types/callbacks'
-
 
 interface WeightedPostOption extends SocialPostOption {
   _weight: number

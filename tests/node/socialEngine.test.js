@@ -7,10 +7,12 @@ import {
   applyReputationDecay,
   calculateSocialGrowth,
   checkViralEvent,
-  generateBrandName,
+  generateBrandName
+} from '../../src/utils/socialEngine'
+import {
   generateBrandOffers,
   negotiateDeal
-} from '../../src/utils/socialEngine'
+} from '../../src/utils/brandDealLogic'
 import { BRAND_ALIGNMENTS } from '../../src/context/initialState'
 
 test('calculateViralityScore returns base chance for average performance', () => {
