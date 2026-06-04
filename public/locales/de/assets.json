@@ -300,5 +300,6 @@
   "refinanceFailed.unknown_kind_or_tier": "Asset-Konfiguration nicht verfügbar.",
   "refinanceFailed.loan_profile_ineligible": "Anforderungen für dieses Kreditprofil nicht erfüllt.",
   "refinanceFailed.insufficient_funds": "Nicht genug Geld.",
-  "refinanceFailed.loan_in_default": "Kredit ist bereits ausgefallen."
+  "refinanceFailed.loan_in_default": "Kredit ist bereits ausgefallen.",
+  "purchaseFailed.unknown_flavor": "Unbekannter Asset-Stil."
 }

@@ -300,5 +300,6 @@
   "refinanceFailed.unknown_kind_or_tier": "Asset configuration not available.",
   "refinanceFailed.loan_profile_ineligible": "You don't meet the requirements for this loan profile.",
   "refinanceFailed.insufficient_funds": "Not enough money.",
-  "refinanceFailed.loan_in_default": "Loan is already in default."
+  "refinanceFailed.loan_in_default": "Loan is already in default.",
+  "purchaseFailed.unknown_flavor": "Unknown asset style."
 }
