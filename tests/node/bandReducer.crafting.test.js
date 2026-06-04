@@ -17,11 +17,13 @@ describe('bandReducer - handleCraftItem', () => {
     })
     const next = handleCraftItem(state, {
       recipeId: 'recipe_cursed_pick',
+      instanceId: 'crafted-pick',
       toastId: 'craft_toast'
     })
 
     assert.ok(!Object.hasOwn(next.band.stash, 'c_sticky_plectrum'))
     assert.ok(Object.hasOwn(next.band.stash, 'c_cursed_pick'))
+    assert.equal(next.band.stash.c_cursed_pick.instanceId, 'crafted-pick')
     assert.ok(
       next.toasts.some(
         t => t.type === 'success' && t.messageKey === 'ui:toast.crafted'
@@ -35,6 +37,7 @@ describe('bandReducer - handleCraftItem', () => {
     })
     const next = handleCraftItem(state, {
       recipeId: 'recipe_cursed_pick',
+      instanceId: 'crafted-pick',
       toastId: 'craft_toast'
     })
     assert.equal(next.band.stash.c_sticky_plectrum.stacks, 3)
@@ -46,6 +49,7 @@ describe('bandReducer - handleCraftItem', () => {
     })
     const next = handleCraftItem(state, {
       recipeId: 'recipe_cursed_pick',
+      instanceId: 'crafted-pick',
       toastId: 'craft_toast'
     })
     // input untouched, no output
@@ -69,6 +73,7 @@ describe('bandReducer - handleCraftItem', () => {
     })
     const next = handleCraftItem(state, {
       recipeId: 'recipe_amped_synth',
+      instanceId: 'crafted-synth',
       toastId: 'craft_toast'
     })
 
@@ -84,8 +89,22 @@ describe('bandReducer - handleCraftItem', () => {
     const state = makeState({})
     const next = handleCraftItem(state, {
       recipeId: 'recipe_does_not_exist',
+      instanceId: 'crafted-missing',
       toastId: 'craft_toast'
     })
+    assert.strictEqual(next, state)
+  })
+
+  it('returns state unchanged for a missing crafted instance id', () => {
+    const state = makeState({
+      c_sticky_plectrum: { id: 'c_sticky_plectrum', stacks: 2 }
+    })
+    const next = handleCraftItem(state, {
+      recipeId: 'recipe_cursed_pick',
+      instanceId: '',
+      toastId: 'craft_toast'
+    })
+
     assert.strictEqual(next, state)
   })
 })

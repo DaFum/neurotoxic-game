@@ -419,17 +419,23 @@ const getStashCount = (
  *
  * @param state - Current game state before crafting.
  * @param recipeId - Recipe id to craft.
+ * @param instanceId - Instance id assigned to the crafted contraband output.
  * @param toastId - Toast id used for success or failure feedback.
  * @returns Updated state with consumed inputs, crafted output, quest progress, and feedback, or the original state when crafting cannot proceed.
  */
 export const handleCraftItem = (
   state: GameState,
-  { recipeId, toastId }: { recipeId: string; toastId: string }
+  {
+    recipeId,
+    instanceId,
+    toastId
+  }: { recipeId: string; instanceId: string; toastId: string }
 ): GameState => {
   const recipe = getCraftingRecipe(recipeId)
   if (!recipe) return state
-  // Defense in depth: never write a malformed toast id into state.
+  // Defense in depth: never write malformed ids into state.
   if (typeof toastId !== 'string' || toastId.length === 0) return state
+  if (typeof instanceId !== 'string' || instanceId.length === 0) return state
 
   const stash = state.band.stash || {}
 
@@ -471,7 +477,8 @@ export const handleCraftItem = (
   // Add the output. Abort (without consuming) if it cannot be added, e.g. a
   // non-stackable artifact the band already owns.
   const craftedState = addContrabandHelper(consumedState, {
-    contrabandId: recipe.output
+    contrabandId: recipe.output,
+    instanceId
   })
   if (craftedState === consumedState) {
     return {
@@ -730,7 +737,11 @@ export const bandReducer = (
     case ActionTypes.CRAFT_ITEM:
       return handleCraftItem(
         state,
-        action.payload as { recipeId: string; toastId: string }
+        action.payload as {
+          recipeId: string
+          instanceId: string
+          toastId: string
+        }
       )
     default:
       return assertNever(action as never)

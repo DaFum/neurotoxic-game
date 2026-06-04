@@ -240,7 +240,10 @@ export type GameAction =
       ActionTypes['UNBLACKLIST_VENUE'],
       { venueId: string; toastId: string }
     >
-  | Action<ActionTypes['CRAFT_ITEM'], { recipeId: string; toastId: string }>
+  | Action<
+      ActionTypes['CRAFT_ITEM'],
+      { recipeId: string; instanceId: string; toastId: string }
+    >
   | Action<ActionTypes['ADD_QUEST'], QuestState>
   | Action<
       ActionTypes['ADVANCE_QUEST'],

@@ -35,7 +35,8 @@ export const ComboDisplay = memo(function ComboDisplay({
       className='mt-2 backdrop-blur-sm border px-3 py-1.5 inline-flex items-baseline gap-2'
       style={{
         backgroundColor: 'rgb(var(--color-void-black-rgb) / 60%)',
-        borderColor: 'var(--color-toxic-green-20)'
+        borderColor:
+          'color-mix(in srgb, var(--color-toxic-green) 20%, transparent)'
       }}
     >
       <div
