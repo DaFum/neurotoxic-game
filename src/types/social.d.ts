@@ -1,7 +1,7 @@
 import type { UnknownRecord } from './game'
 
 /**
- * Supported social media platforms.
+ * Social channels tracked for follower counts, post choices, and brand context.
  */
 export type Platform = 'instagram' | 'tiktok' | 'youtube' | 'newsletter'
 
@@ -33,7 +33,7 @@ export interface BrandDealOffer {
 }
 
 /**
- * High-level brand-deal categories.
+ * Deal categories that drive sponsorship terms, copy, and post-gig handling.
  */
 export type BrandDealType = 'SPONSORSHIP' | 'ENDORSEMENT' | 'RECORD_DEAL'
 

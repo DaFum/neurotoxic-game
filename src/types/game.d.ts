@@ -27,7 +27,7 @@ export type GamePhase = (typeof GAME_PHASES)[keyof typeof GAME_PHASES]
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic'
 
 /**
- * Persisted player settings.
+ * Player-controlled settings that survive save/load and reset flows.
  */
 export interface GameSettings {
   crtEnabled: boolean
@@ -45,7 +45,7 @@ export type UnknownRecord = Record<string, unknown>
 export type RawGameSettings = Partial<Record<keyof GameSettings, unknown>>
 
 /**
- * Persisted contraband stash entry.
+ * Minimal persisted stash metadata for one contraband item type.
  */
 export type StashEntry = {
   stacks?: number | null
@@ -178,7 +178,7 @@ export type Action<
   : { type: TType; payload: TPayload }
 
 /**
- * Application reducer action union.
+ * Complete set of reducer actions accepted by the game-state reducer.
  */
 export type GameAction =
   | Action<ActionTypes['CHANGE_SCENE'], GamePhase>

@@ -9,7 +9,7 @@ export interface FinancialBreakdownItem {
 }
 
 /**
- * Complete post-gig financial summary.
+ * Reconciled post-gig income, expense, net, and optional merch-sales summary.
  */
 export interface PostGigFinancials {
   income: { total: number; breakdown: FinancialBreakdownItem[] }

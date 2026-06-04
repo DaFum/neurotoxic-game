@@ -22,7 +22,7 @@ export interface Note {
 }
 
 /**
- * Song metadata, chart notes, and optional audio source references.
+ * Rhythm song metadata, playable chart data, and optional MIDI/OGG source references.
  */
 export interface Song {
   id: string
@@ -73,7 +73,7 @@ export interface DrumKitSynth {
 }
 
 /**
- * User-facing audio preference state.
+ * User-controlled audio preferences mirrored between UI and the audio service.
  */
 export interface AudioState {
   musicVol: number

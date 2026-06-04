@@ -20,7 +20,7 @@ export interface BandMember extends UnknownRecord {
 }
 
 /**
- * Stacked contraband stash entry.
+ * Persisted stack count and legacy metadata for one contraband stash item.
  */
 export interface StashItem {
   stacks: number
