@@ -29,9 +29,11 @@ export const ASSET_SECTION_TABS = [
 /**
  * Optimized record lookup for active asset tab resolution.
  */
-export const ASSET_SECTION_TABS_MAP: Record<string, AssetSectionTab> = Object.freeze(
-  ASSET_SECTION_TABS.reduce<Record<string, AssetSectionTab>>((acc, tab) => {
+export const ASSET_SECTION_TABS_MAP: Readonly<
+  Record<AssetKind, AssetSectionTab>
+> = Object.freeze(
+  ASSET_SECTION_TABS.reduce((acc, tab) => {
     acc[tab.key] = tab
     return acc
-  }, {})
+  }, {} as Record<AssetKind, AssetSectionTab>)
 )

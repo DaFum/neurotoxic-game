@@ -38,8 +38,7 @@ export const AssetsScene = () => {
 
   const activeView = SECTION_VIEWS[active]
   const accent = activeView?.accent ?? DEFAULT_SECTION_ACCENT
-  const activeTab =
-    ASSET_SECTION_TABS_MAP[active as string] ?? ASSET_SECTION_TABS[0]
+  const activeTab = ASSET_SECTION_TABS_MAP[active] ?? ASSET_SECTION_TABS[0]
   const foreclosureAssetLabel = foreclosureModal.currentKind
     ? t(`assets:kind.${foreclosureModal.currentKind}`)
     : undefined
