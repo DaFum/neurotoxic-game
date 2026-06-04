@@ -6,7 +6,7 @@ const SCANLINES_STYLE = {
 } as const
 
 /**
- * Renders the decorative game-over background layer.
+ * Draws the non-interactive background treatment behind the game-over screen.
  */
 export const GameOverBackground = React.memo(() => {
   return (

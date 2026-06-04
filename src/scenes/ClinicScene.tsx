@@ -5,7 +5,7 @@ import { ClinicHeader } from '../components/clinic/ClinicHeader'
 import { ClinicMemberCard } from '../components/clinic/ClinicMemberCard'
 
 /**
- * Renders the Clinic Scene.
+ * Hosts the Void Clinic flow for healing or enhancing band members.
  */
 export const ClinicScene = () => {
   const { t } = useTranslation(['ui'])

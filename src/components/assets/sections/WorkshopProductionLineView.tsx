@@ -12,7 +12,7 @@ interface Props {
 }
 
 /**
- * Renders the Workshop Production Line View.
+ * Displays the merch workshop production-line background and station zones.
  * @param props - Workshop asset state and slot-click handler.
  */
 export const WorkshopProductionLineView = ({ asset, onSlotClick }: Props) => {

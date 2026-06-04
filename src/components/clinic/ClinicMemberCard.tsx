@@ -22,7 +22,7 @@ const ActionButtonWrapper = ({
   )
 }
 /**
- * Renders the Clinic Member Card.
+ * Displays one band member's clinic treatment options and affordability state.
  * @param props - Band member, player resources, clinic costs, and heal/enhance callbacks.
  */
 export const ClinicMemberCard = ({

@@ -31,7 +31,7 @@ interface KabelsalatBoardProps {
 }
 
 /**
- * Renders the Kabelsalat Board scene.
+ * Composes the interactive Kabelsalat board, connections, cables, sockets, and overlays.
  * @param props - Kabelsalat translator, state flags, connection state, socket/cable handlers, lightning seeds, and surge controls.
  */
 export const KabelsalatBoard: FC<KabelsalatBoardProps> = ({

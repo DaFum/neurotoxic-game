@@ -7,7 +7,7 @@ import { useGameActions } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
 
 /**
- * Renders the Amp Calibration Scene.
+ * Hosts the amp-calibration minigame and dispatches completion results before the gig starts.
  */
 export const AmpCalibrationScene = () => {
   const { t } = useTranslation(['ui'])

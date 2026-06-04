@@ -2,7 +2,7 @@ import { motion, useReducedMotion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 
 /**
- * Renders the main menu footer controls and status text.
+ * Displays main-menu footer controls and status text.
  */
 export const MainMenuFooter = () => {
   const { t } = useTranslation()

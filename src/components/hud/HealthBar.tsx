@@ -10,7 +10,7 @@ interface HealthBarProps {
 }
 
 /**
- * Renders the HealthBar component showing crowd energy and toxic-mode status.
+ * Displays crowd energy with toxic-mode visual treatment.
  * @param props - Current health and toxic-mode state.
  */
 export const HealthBar = memo(function HealthBar({

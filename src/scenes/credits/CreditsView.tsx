@@ -14,7 +14,7 @@ interface CreditsViewProps {
 }
 
 /**
- * Renders the credits screen with a scrolling credits list and return action.
+ * Displays the scrolling credits list and return action.
  * @param props - Credit rows, return callback, and return button text.
  */
 export const CreditsView = React.memo(

@@ -63,7 +63,7 @@ const isNegotiationResult = (value: unknown): value is NegotiationResult => {
 }
 
 /**
- * Renders the Negotiation Modal.
+ * Shows brand-deal negotiation tactics or the resolved negotiation outcome.
  * @param props - Modal state, close handler, negotiation result, and negotiation-submit handler.
  */
 export const NegotiationModal = ({

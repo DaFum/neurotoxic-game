@@ -11,7 +11,7 @@ interface MainMenuActionButtonsProps {
 }
 
 /**
- * Renders the Main Menu Action Buttons scene.
+ * Provides the primary main-menu actions for start, load, and Band HQ preview.
  * @param props - Start/load handlers, loading flags, and Band HQ shortcut for the main menu.
  */
 export const MainMenuActionButtons = ({

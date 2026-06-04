@@ -5,7 +5,7 @@ import { GAME_PHASES } from '../context/gameConstants'
 import { CreditsView } from './credits/CreditsView'
 
 /**
- * Scene displaying game credits.
+ * Builds localized credits data and returns to the main menu on exit.
  */
 export const Credits = () => {
   const { t } = useTranslation(['ui'])

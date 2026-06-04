@@ -18,7 +18,7 @@ import type {
 } from '../types'
 
 /**
- * Brand alignment constants
+ * Canonical brand-alignment identifiers used by deal generation and display.
  */
 export const BRAND_ALIGNMENTS = {
   EVIL: 'EVIL',

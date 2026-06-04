@@ -9,8 +9,8 @@ interface OverloadMeterProps {
 }
 
 /**
- * Renders the OverloadMeter component.
- * @param props - Props containing the current overload value.
+ * Displays toxic overload as a ten-block meter with danger styling above the warning threshold.
+ * @param props - Current overload percentage.
  */
 export const OverloadMeter = memo(function OverloadMeter({
   overload

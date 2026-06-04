@@ -14,7 +14,7 @@ interface OverlaysProps {
 }
 
 /**
- * Renders the Overlays scene.
+ * Selects the active Kabelsalat shock, loss, or powered-on overlay.
  * @param props - Kabelsalat translator, state flags, fault reason, and continuation callback.
  */
 export const Overlays: FC<OverlaysProps> = ({

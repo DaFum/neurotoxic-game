@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import type { TravelingVanProps } from '../../types/components'
 
 /**
- * Renders the Traveling Van.
+ * Animates the player van between the current node and pending travel target.
  * @param props - Travel state, route endpoints, van image URL, completion guard ref, and completion callback.
  */
 export const TravelingVan = React.memo(

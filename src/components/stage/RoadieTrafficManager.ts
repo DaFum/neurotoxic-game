@@ -3,7 +3,7 @@ import { logger } from '../../utils/logger'
 import { hashString } from '../../utils/stringUtils'
 
 /**
- * Type contract for Roadie Car.
+ * Runtime vehicle obstacle tracked by the Roadie traffic manager.
  */
 export type RoadieCar = {
   id: string | number

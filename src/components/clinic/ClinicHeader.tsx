@@ -3,8 +3,8 @@ import { formatCurrency } from '../../utils/numberUtils'
 import type { ClinicHeaderProps } from '../../types/components'
 
 /**
- * Renders the Clinic Header.
- * @param props - Player clinic state shown in the clinic header.
+ * Shows the clinic title, flavor copy, and spendable player resources.
+ * @param props - Player money and fame available for clinic actions.
  */
 export const ClinicHeader = ({ player }: ClinicHeaderProps) => {
   const { t, i18n } = useTranslation(['ui'])

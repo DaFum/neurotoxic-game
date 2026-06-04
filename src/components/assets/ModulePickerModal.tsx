@@ -62,7 +62,7 @@ const formatLockReason = (
 }
 
 /**
- * Renders the Module Picker Modal.
+ * Presents installable modules for a selected asset slot.
  * @param props - Asset, slot id, modal state, and close handler for module installation.
  */
 export const ModulePickerModal = memo(

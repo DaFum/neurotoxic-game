@@ -196,7 +196,7 @@ const MapNodeTooltip = memo(
 MapNodeTooltip.displayName = 'MapNodeTooltip'
 
 /**
- * Renders the Map Node View.
+ * Displays one overworld map node with state-dependent styling and travel handlers.
  * @param props - Map node data, travel/current/pending states, hover handler, travel handler, translation callback, and route metadata.
  */
 export const MapNodeView = memo(

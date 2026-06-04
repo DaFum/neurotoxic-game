@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import type { TourbusControlsProps } from '../../../types/components'
 
 /**
- * Renders the Tourbus Controls.
+ * Provides full-height left and right touch targets for tourbus lane changes.
  * @param props - Left and right movement callbacks for the tourbus minigame.
  */
 export const TourbusControls = ({

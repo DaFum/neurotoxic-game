@@ -5,7 +5,7 @@ import { getFinancialColors } from '../../utils/financialColors'
 import type { FinancialListProps } from '../../types/components'
 
 /**
- * Renders the Financial List.
+ * Renders localized financial rows with signed values for an income or expense category.
  * @param props - Financial entries and income/expense type.
  */
 export const FinancialList = ({ items, type }: FinancialListProps) => {

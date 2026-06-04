@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { AnimatedDivider, AnimatedSubtitle } from '../../ui/shared'
 
 /**
- * Renders the main menu title lockup.
+ * Displays the main-menu title lockup and subtitle copy.
  */
 export const MainMenuHeader = () => {
   const { t } = useTranslation()

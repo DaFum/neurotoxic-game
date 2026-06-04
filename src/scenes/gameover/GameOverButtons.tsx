@@ -8,7 +8,7 @@ type GameOverButtonsProps = {
 }
 
 /**
- * Renders the retry and return-to-menu buttons shown on the game-over screen.
+ * Provides the retry and return-to-menu actions for game-over recovery.
  * @param props - Retry and return-to-menu callbacks for game-over recovery actions.
  */
 export const GameOverButtons = ({

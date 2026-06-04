@@ -12,7 +12,7 @@ interface Props {
 }
 
 /**
- * Renders the Bandhaus Cross Section View.
+ * Displays the Bandhaus cross-section background and room slot zones.
  * @param props - Bandhaus asset state and slot-click handler.
  */
 export const BandhausCrossSectionView = ({ asset, onSlotClick }: Props) => {

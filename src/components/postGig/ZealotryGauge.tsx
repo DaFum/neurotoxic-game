@@ -8,7 +8,7 @@ import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 type ZealotryGaugeProps = { zealotryLevel?: number }
 
 /**
- * Renders the Zealotry Gauge.
+ * Warns when cult zealotry is active and highlights the raid-risk threshold.
  * @param props - Zealotry level displayed in the post-gig social phase.
  */
 export const ZealotryGauge = memo(

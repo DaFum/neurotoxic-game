@@ -17,7 +17,7 @@ const SWIPE_THRESHOLD_PX = 24
 const TAP_DEAD_ZONE_PX = 18
 
 /**
- * Renders the Roadie Touch Surface.
+ * Provides swipe and tap movement zones for Roadie touch controls.
  * @param props - Directional movement callbacks for touch input.
  */
 export const RoadieTouchSurface = memo(function RoadieTouchSurface({

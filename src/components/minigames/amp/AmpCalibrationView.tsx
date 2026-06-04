@@ -12,7 +12,7 @@ import { AmpStageController } from '../../stage/AmpStageController'
 const INACTIVE_UI_STATE = { timeLeft: 0, score: 0, isGameOver: false }
 
 /**
- * Props for the Amp Calibration View component.
+ * State, callbacks, and Pixi controller factory required to host amp calibration.
  */
 export interface AmpCalibrationViewProps {
   t: TFunction<'ui', undefined>
@@ -44,7 +44,7 @@ export interface AmpCalibrationViewProps {
 }
 
 /**
- * Renders the Amp Calibration View.
+ * Hosts the amp-calibration Pixi stage, HUD, controls, and completion summary.
  * @param props - Amp calibration controls, HUD state, stage controller factory, completion handler, and advanced mechanic callbacks.
  */
 export const AmpCalibrationView = ({

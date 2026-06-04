@@ -6,7 +6,7 @@ import type { CableId } from '../kabelsalatConstants'
 import type { SocketId } from '../../../types/kabelsalat'
 
 /**
- * Props for the Connection Path component.
+ * Socket/cable pairing used to draw one Kabelsalat connection path.
  */
 export type ConnectionPathProps = {
   sockId: SocketId
@@ -16,7 +16,7 @@ export type ConnectionPathProps = {
 }
 
 /**
- * Renders the Connection Path scene.
+ * Draws one animated cable path between a selected cable and socket.
  * @param props - Socket/cable ids, power state, and socket order for one rendered connection path.
  */
 export const ConnectionPath: FC<ConnectionPathProps> = ({

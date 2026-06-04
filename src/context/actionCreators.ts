@@ -313,8 +313,8 @@ export const createStartGigAction = (
 })
 
 /**
- * Creates a setlist action
- * @param list - Array of songs
+ * Creates the action that replaces the active gig setlist.
+ * @param list - Ordered rhythm setlist entries selected for the next gig.
  */
 export const createSetSetlistAction = (
   list: RhythmSetlistEntry[]
@@ -717,7 +717,7 @@ export const createUpdateRivalBandAction = (
 }
 
 /**
- * Creates unlock trait action
+ * Creates the action that unlocks one trait for one band member.
  * @param memberId - Target band member id.
  * @param traitId - Trait id to unlock.
  */

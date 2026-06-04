@@ -8,7 +8,7 @@ interface AssetsBottomTabsProps {
 }
 
 /**
- * Renders the Assets Bottom Tabs.
+ * Displays the sticky mobile asset-section tab bar.
  * @param props - Active asset section and tab selection callback.
  */
 export const AssetsBottomTabs = ({

@@ -9,7 +9,7 @@ interface PoweredOnOverlayProps {
 }
 
 /**
- * Renders the Powered On Overlay scene.
+ * Displays the Kabelsalat success overlay and manual continue action.
  * @param props - Translator and continuation callback for the powered-on overlay.
  */
 export const PoweredOnOverlay: FC<PoweredOnOverlayProps> = React.memo(

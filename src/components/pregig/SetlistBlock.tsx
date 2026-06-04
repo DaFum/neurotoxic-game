@@ -110,7 +110,7 @@ const SongRow = memo(function SongRow({
 SongRow.displayName = 'SongRow'
 
 /**
- * Renders the Setlist Block.
+ * Displays available songs, selected setlist state, locks, and density preview for pre-gig setup.
  * @param props - Setlist, song lookup data, selected song ids, player state, and song toggle callback.
  */
 export const SetlistBlock = ({

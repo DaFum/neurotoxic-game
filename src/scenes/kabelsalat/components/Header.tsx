@@ -12,7 +12,7 @@ interface HeaderProps {
 }
 
 /**
- * Renders the Header scene.
+ * Shows Kabelsalat title feedback and countdown timer state.
  * @param props - Kabelsalat translator, shock/power/game-over state, and remaining time.
  */
 export const Header: FC<HeaderProps> = ({

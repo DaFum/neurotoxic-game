@@ -20,7 +20,7 @@ interface Props {
 }
 
 /**
- * Renders the Upgrade Confirm Modal.
+ * Confirms chassis tier upgrade cost and action for one asset.
  * @param props - Asset, modal state, and close handler for chassis upgrade confirmation.
  */
 export const UpgradeConfirmModal = ({ asset, isOpen, onClose }: Props) => {

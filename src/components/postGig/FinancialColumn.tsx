@@ -16,7 +16,7 @@ type FinancialColumnProps = {
 }
 
 /**
- * Renders the Financial Column.
+ * Displays one animated income or expense column with row details and a signed total.
  * @param props - Financial section title, entry list, total, animation offset, and income/expense type.
  */
 export const FinancialColumn = React.memo(

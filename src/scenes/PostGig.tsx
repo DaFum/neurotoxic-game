@@ -25,7 +25,7 @@ const CompletePhase = lazy(() =>
 )
 
 /**
- * Renders the post-gig report, social, deal, and completion flow.
+ * Orchestrates the post-gig report, social post, brand-deal, and completion phases.
  */
 export const PostGig = () => {
   const {

@@ -4,7 +4,7 @@ import { IMG_PROMPTS, resolveGenImageUrl } from '../../utils/imageGen'
 import { loadTextures } from './stageRenderUtils'
 
 /**
- * Type contract for Note Textures.
+ * Texture bundle used for rhythm note sprites and lane-specific variants.
  */
 export type NoteTextures = { skull: Texture | null; lightning: Texture | null }
 

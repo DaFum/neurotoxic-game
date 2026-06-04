@@ -9,7 +9,7 @@ interface KabelsalatGameOverOverlayProps {
 }
 
 /**
- * Renders the Kabelsalat Game Over Overlay scene.
+ * Displays the Kabelsalat failure overlay and manual continue action.
  * @param props - Translator and continuation callback for the game-over overlay.
  */
 export const KabelsalatGameOverOverlay: FC<KabelsalatGameOverOverlayProps> =

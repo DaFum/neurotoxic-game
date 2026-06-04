@@ -62,12 +62,12 @@ interface SceneRouterProps {
 }
 
 /**
- * Routes the current scene state to the corresponding scene component.
+ * Selects the active top-level scene for the current game phase.
  *
- * @param props - The component props.
+ * @param props - Scene routing inputs.
  * - `props.currentScene` - The active scene identifier.
- * - `props.minigameType` - Optional. The type of minigame (if applicable).
- * @returns The active scene component.
+ * - `props.minigameType` - Optional minigame discriminator for pre-gig overlays.
+ * @returns The scene component for the current phase, falling back to the main menu.
  */
 export function SceneRouter({ currentScene, minigameType }: SceneRouterProps) {
   switch (currentScene) {

@@ -3,7 +3,7 @@ import { GlitchButton } from '../../../ui/GlitchButton'
 import type { PauseOverlayProps } from '../../../types/components'
 
 /**
- * Renders the Pause Overlay.
+ * Blocks the gig scene with resume and quit actions while paused.
  * @param props - Pause visibility plus resume and quit callbacks.
  */
 export const PauseOverlay = ({

@@ -2,7 +2,7 @@ import { useNetworkStatus } from '../../hooks/useNetworkStatus'
 import { IMG_PROMPTS, resolveGenImageUrl } from '../../utils/imageGen'
 
 /**
- * Renders the animated main menu background layer.
+ * Draws the animated, non-interactive main-menu background layer.
  */
 export const MainMenuBackground = () => {
   const isOnline = useNetworkStatus()

@@ -5,7 +5,7 @@ import { AnimatedDivider, AnimatedSubtitle } from '../../ui/shared'
 import { VoidSkullIcon } from '../../ui/shared/Icons'
 
 /**
- * Renders the game-over headline and summary heading.
+ * Displays the game-over headline and summary section heading.
  */
 export const GameOverHeader = React.memo(() => {
   const { t } = useTranslation(['ui'])

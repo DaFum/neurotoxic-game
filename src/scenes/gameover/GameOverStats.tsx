@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import type { PlayerState } from '../../types'
 
 /**
- * Renders the game-over statistics panel for the provided player snapshot.
+ * Displays the final run statistics from the provided player snapshot.
  * @param props - Player state used to display game-over totals.
  */
 export const GameOverStats = ({

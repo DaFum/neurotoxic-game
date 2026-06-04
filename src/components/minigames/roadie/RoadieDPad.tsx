@@ -10,7 +10,7 @@ interface RoadieDPadProps {
 }
 
 /**
- * Renders the Roadie D Pad.
+ * Displays the optional desktop D-pad for Roadie movement.
  * @param props - Roadie control visibility flag and directional movement callbacks.
  */
 export const RoadieDPad = memo(function RoadieDPad({

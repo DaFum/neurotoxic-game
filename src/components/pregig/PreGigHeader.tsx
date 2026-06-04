@@ -13,7 +13,7 @@ type PreGigHeaderProps = {
 }
 
 /**
- * Renders the Pre Gig Header.
+ * Displays venue metadata and pre-gig heading information.
  * @param props - Translator, locale, current gig, player state, and calculated pre-gig budget.
  */
 export const PreGigHeader = React.memo(

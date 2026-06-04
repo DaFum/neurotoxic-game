@@ -3,7 +3,7 @@ import { Modal } from '../../ui/shared'
 import { GlitchButton } from '../../ui/GlitchButton'
 
 /**
- * Renders the Main Menu Existing Save Prompt scene.
+ * Prompts the player to load an existing save or start a new run.
  * @param props - Load, start-new, and close callbacks for the existing-save prompt.
  */
 export const MainMenuExistingSavePrompt = ({

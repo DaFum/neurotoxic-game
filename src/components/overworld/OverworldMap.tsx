@@ -65,7 +65,7 @@ const RivalMarker = ({
 )
 
 /**
- * Renders the Overworld Map.
+ * Draws the overworld route graph, node markers, rival marker, and animated travel van.
  * @param props - Map state, player state, travel state, node visibility/connectivity helpers, travel handlers, hover state, and visual URL context.
  */
 export const OverworldMap = React.memo(

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import type { TFunction } from 'i18next'
 
 /**
- * Coordinates kabelsalat Void Surge behavior.
+ * Tracks Kabelsalat void surge buildup and purge state for the board.
  * @param isPoweredOn - Whether powered on is active.
  * @param isGameOver - Whether game over is active.
  * @param isShocked - Whether shocked is active.

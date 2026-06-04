@@ -4,7 +4,7 @@ import { Rules } from './kabelsalat/components/Rules.tsx'
 import { KabelsalatBoard } from './kabelsalat/components/KabelsalatBoard.tsx'
 
 /**
- * Renders the Kabelsalat Scene.
+ * Hosts the Kabelsalat wiring minigame using shared state, board, header, and rules views.
  */
 export const KabelsalatScene = () => {
   const {

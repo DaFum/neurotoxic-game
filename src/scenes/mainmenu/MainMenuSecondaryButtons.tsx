@@ -9,7 +9,7 @@ interface MainMenuSecondaryButtonsProps {
 }
 
 /**
- * Renders the Main Menu Secondary Buttons scene.
+ * Provides secondary main-menu actions for socials, credits, and features.
  * @param props - Callbacks that open socials, credits, and feature panels.
  */
 export const MainMenuSecondaryButtons = ({

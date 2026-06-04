@@ -16,7 +16,7 @@ interface Props {
 }
 
 /**
- * Renders the Repair Confirm Modal.
+ * Confirms chassis repair cost and action for one asset.
  * @param props - Asset, modal state, and close handler for chassis repair confirmation.
  */
 export const RepairConfirmModal = ({ asset, isOpen, onClose }: Props) => {

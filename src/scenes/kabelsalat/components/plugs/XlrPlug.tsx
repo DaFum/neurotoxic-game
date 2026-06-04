@@ -1,7 +1,7 @@
 import React from 'react'
 
 /**
- * Renders the XLR cable plug graphic.
+ * Draws the XLR cable plug SVG.
  */
 export const XlrPlug = React.memo(function XlrPlug() {
   return (

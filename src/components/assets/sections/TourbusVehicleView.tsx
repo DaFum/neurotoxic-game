@@ -12,7 +12,7 @@ interface Props {
 }
 
 /**
- * Renders the Tourbus Vehicle View.
+ * Displays the tourbus vehicle background, module hotspots, and trailer overlay.
  * @param props - Tourbus asset state and slot-click handler.
  */
 export const TourbusVehicleView = ({ asset, onSlotClick }: Props) => {

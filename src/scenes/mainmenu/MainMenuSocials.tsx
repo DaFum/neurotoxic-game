@@ -11,7 +11,7 @@ import {
 } from '../../ui/shared'
 
 /**
- * Renders the Main Menu Socials scene.
+ * Shows the main-menu social links overlay and close action.
  * @param props - Close callback for the socials panel.
  */
 export const MainMenuSocials = ({ onClose }: { onClose: () => void }) => {

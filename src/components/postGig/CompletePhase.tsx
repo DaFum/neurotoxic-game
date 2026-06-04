@@ -13,7 +13,7 @@ import type { CompletePhaseProps } from '../../types/components'
 const UNKNOWN_PLATFORM = 'unknown'
 
 /**
- * Renders the Complete Phase.
+ * Shows the post-gig social outcome and optional PR recovery action before continuing.
  * @param props - Post result, player/social state, story-spin and continue handlers, and action-processing state.
  */
 export const CompletePhase = ({

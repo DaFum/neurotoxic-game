@@ -9,7 +9,7 @@ import {
 type NetResultProps = { net: number }
 
 /**
- * Renders the Net Result.
+ * Displays the final post-gig net amount with profit/loss formatting.
  * @param props - Net gig result amount for the report summary.
  */
 export const NetResult = React.memo(({ net }: NetResultProps) => {

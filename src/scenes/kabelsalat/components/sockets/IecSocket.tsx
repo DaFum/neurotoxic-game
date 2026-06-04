@@ -1,7 +1,7 @@
 import React from 'react'
 
 /**
- * Renders the IEC power socket graphic.
+ * Draws the IEC power socket SVG.
  */
 export const IecSocket = React.memo(function IecSocket() {
   return (

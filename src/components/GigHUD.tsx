@@ -30,8 +30,8 @@ interface GigHUDProps {
 }
 
 /**
- * Renders the Gig HUD.
- * @param props - Display data, callbacks, and refs for the gig hud component.
+ * Composes the live gig overlay for input lanes, stats, hazards, and pause/game-over controls.
+ * @param props - Current gig stats, input callbacks, projectile state ref, and pause callback.
  */
 export const GigHUD = memo(function GigHUD({
   stats,

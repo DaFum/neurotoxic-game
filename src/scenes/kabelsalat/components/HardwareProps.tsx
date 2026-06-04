@@ -137,7 +137,7 @@ const PowerIndicatorComponent: FC<PowerIndicatorProps> = ({
 )
 
 /**
- * Renders the Kabelsalat power indicator light.
+ * Displays the Kabelsalat power indicator light for current board state.
  * @param props - Translator and power-connection state for the indicator.
  */
 export const PowerIndicator = memo(PowerIndicatorComponent)
