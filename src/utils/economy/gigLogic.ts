@@ -2,18 +2,29 @@ import { NEUTRAL_ASSET_MODIFIERS } from '../assetSelectors'
 import type { AssetModifiers } from '../../types/assets'
 import { logger } from '../logger'
 import { clamp0to100, finiteNumberOr } from '../gameStateUtils'
-import {
-  SPENDING_PROFILE_MERCH_MULTIPLIER
+import { SPENDING_PROFILE_MERCH_MULTIPLIER } from '../../data/merch'
+import type {
+  CityGenre,
+  SpendingProfile,
+  MerchItemProfile
 } from '../../data/merch'
-import type { CityGenre, SpendingProfile, MerchItemProfile } from '../../data/merch'
 import { MERCH_PROFILES } from '../../data/merch'
-import type { GigEconomyData, EconomyContext, GigStatsLike, BandInventoryLike, GigFinancialParams } from './types'
+import type {
+  GigEconomyData,
+  EconomyContext,
+  GigStatsLike,
+  BandInventoryLike,
+  GigFinancialParams
+} from './types'
 import type { GigModifiers } from '../../types'
-import type { FinancialBreakdownItem, PostGigFinancials } from '../../types/economy'
+import type {
+  FinancialBreakdownItem,
+  PostGigFinancials
+} from '../../types/economy'
 import { calculateZealotryEffects } from '../socialEngine'
 import {
   TICKET_SALES_CONSTANTS,
-    BAR_RATE_VIP,
+  BAR_RATE_VIP,
   BAR_RATE_NORMAL,
   AVG_SPEND_PER_PERSON_AT_BAR,
   MAX_GIG_NET,
@@ -21,8 +32,8 @@ import {
   GLOBAL_PAYOUT_NERF,
   ZEALOTRY_PROMO_THRESHOLD,
   MERCH_PROFILE_VALUES,
-
   SORTED_MERCH_KEYS,
+  VENUE_SPLIT_RATES,
   calculateGigModifierCost
 } from './constants'
 
@@ -97,7 +108,10 @@ export const calculateTicketIncome = (
 
   // Price Sensitivity: Higher price reduces attendance slightly unless Fame is very high
   const rawTicketPrice = typeof gigData.price === 'number' ? gigData.price : 0
-  const ticketPrice = context.discountedTickets && rawTicketPrice > 10 ? Math.floor(rawTicketPrice * 0.5) : rawTicketPrice
+  const ticketPrice =
+    context.discountedTickets && rawTicketPrice > 10
+      ? Math.floor(rawTicketPrice * 0.5)
+      : rawTicketPrice
   if (!context.discountedTickets && ticketPrice > 15) {
     const pricePenalty = (ticketPrice - 15) * 0.02 // -2% per Euro over 15
     const mitigation = fameRatio * 0.5
@@ -340,21 +354,18 @@ export const calculateEffectiveTicketPrice = (
 /**
  * Calculates venue split / promoter cut.
  */
-const VENUE_SPLIT_RATES: Record<number, number> = { 3: 0.35, 4: 0.55 }
-/**
- * Calculates venue split / promoter cut.
- */
 export const calculateVenueSplit = (
   ticketsRevenue = 0,
   gigData: GigEconomyData = {}
 ) => {
   gigData = gigData || {}
   const diff = gigData.diff ?? gigData.difficulty ?? 0
-  const splitRate = diff >= 5
-    ? 0.7
-    : Object.hasOwn(VENUE_SPLIT_RATES, diff)
-      ? (VENUE_SPLIT_RATES[diff] ?? 0)
-      : 0
+  const splitRate =
+    diff >= 5
+      ? 0.7
+      : Object.hasOwn(VENUE_SPLIT_RATES, diff)
+        ? (VENUE_SPLIT_RATES[diff] ?? 0)
+        : 0
 
   if (splitRate > 0) {
     const splitAmount = Math.floor(Math.max(0, ticketsRevenue) * splitRate)
