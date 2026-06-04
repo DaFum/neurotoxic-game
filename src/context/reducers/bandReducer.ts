@@ -412,7 +412,8 @@ const getStashCount = (
  * Crafts a contraband recipe by consuming stash inputs and adding the recipe output.
  *
  * @param state - Current game state before crafting.
- * @param payload - Recipe id and toast id used for success or failure feedback.
+ * @param recipeId - Recipe id to craft.
+ * @param toastId - Toast id used for success or failure feedback.
  * @returns Updated state with consumed inputs, crafted output, quest progress, and feedback, or the original state when crafting cannot proceed.
  */
 export const handleCraftItem = (
