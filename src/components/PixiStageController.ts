@@ -231,7 +231,6 @@ class PixiStageController<
 
   /**
    * Disposes Pixi resources and removes the canvas.
-   * @returns
    */
   dispose() {
     this.noteManager?.dispose()

@@ -242,7 +242,7 @@ export const useGameActions = () => {
  * Note: Re-renders are still triggered by any context update; for
  * equality-based bail-out, memoize the consuming component with React.memo.
  *
- * Type: `Param T - Type parameter.`.
+ * @typeParam T - Selected state slice type.
  * @param selector - State selector.
  * @returns Selected state slice.
  */

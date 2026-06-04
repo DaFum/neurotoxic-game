@@ -582,7 +582,7 @@ export const createCompleteRoadieMinigameAction = (
 /**
  * Creates start kabelsalat minigame action
  * @param gigId - Gig id.
- * @returns */
+ */
 export const createStartKabelsalatMinigameAction = (
   gigId: string
 ): Extract<
@@ -596,7 +596,7 @@ export const createStartKabelsalatMinigameAction = (
 /**
  * Creates complete kabelsalat minigame action
  * @param results - Results.
- * @returns */
+ */
 export const createCompleteKabelsalatMinigameAction = (
   results: unknown
 ): Extract<

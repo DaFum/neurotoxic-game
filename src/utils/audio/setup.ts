@@ -12,7 +12,6 @@ import {
 
 /**
  * Initializes the audio subsystem, including synths, effects, and master compressor.
- * @returns
  */
 export async function setupAudio() {
   if (audioState.isSetup) return

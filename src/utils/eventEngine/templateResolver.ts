@@ -6,9 +6,9 @@ const TEMPLATE_REGEX = /\{([^}]+)\}/gi
 const toLowerCaseCache = Object.create(null)
 
 /**
- * Resolves a template string by replacing `key` with the corresponding value from the context.
+ * Resolves a template string by replacing `{key}` with the corresponding value from the context.
  * Uses a single pre-compiled regex for performance.
- * @param str - The string containing `key` templates.
+ * @param str - The string containing `{key}` templates.
  * @param context - The context object containing replacement values.
  * @returns The resolved string.
  */

@@ -42,7 +42,7 @@ export class ToxicFilterManager {
 
   /**
    * Checks if the manager is ready for updates.
-   * @returns
+   * @returns Whether the toxic filters are available.
    */
   isReady(): boolean {
     return !!this.toxicFilters

@@ -162,7 +162,7 @@ export const createAudioSubscriber = (
  *
  * @param selector - Optional selector to read a focused slice of audio state.
  * @param options - Optional polling configuration.
- * @returns */
+ */
 export function useAudioControl(
   selector?: null,
   options?: UseAudioControlOptions

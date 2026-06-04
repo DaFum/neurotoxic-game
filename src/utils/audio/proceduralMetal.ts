@@ -77,8 +77,13 @@ function playDrumsLegacy(
  * Starts the procedural metal music generator for a specific song configuration.
  * @param song - The song object containing metadata like BPM and difficulty.
  * @param delay - Delay in seconds before the audio starts. Defaults to `0`.
+ * @param options - Playback options forwarded to transport setup.
+ * - `options.useCleanPlayback` - Boolean that controls whether playback bypasses FX.
+ * - `options.onEnded` - Callback invoked when playback ends.
+ * - `options.stopAfterSeconds` - Number of seconds before playback stops.
+ * - `options.startTimeSec` - Absolute Tone.js start time in seconds.
  * @param random - RNG function for deterministic generation. Defaults to `secureRandom`.
- * @returns
+ * @returns Promise resolving to whether procedural playback started successfully.
  */
 export async function startMetalGenerator(
   song: Partial<Song>,

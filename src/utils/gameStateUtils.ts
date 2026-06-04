@@ -1248,10 +1248,11 @@ export const hasStateItem = (
 
 /**
  * Checks if the player has an active, non-expired sponsorship brand deal.
- * activeDeals stores deal objects with `id, type, remainingGigs, ...`.
+ * activeDeals stores deal objects with `{ id, type, remainingGigs, ... }`.
  * Deals with remainingGigs at most 0 are considered expired even if not yet filtered.
  * @param socialState - Social state.
- * @returns */
+ * @returns Whether an active sponsorship deal exists.
+ */
 type SponsorshipDealLike = {
   type?: unknown
   remainingGigs?: unknown

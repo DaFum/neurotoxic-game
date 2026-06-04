@@ -15,7 +15,8 @@ const customSongsMapCache = new WeakMap<Song[], Map<string, Song>>()
 /**
  * Memoizes metadata lookup for custom songs arrays to O(1).
  * @param songs - Songs.
- * @returns */
+ * @returns Cached metadata lookup map.
+ */
 function getCustomSongsMap(songs: Song[]): Map<string, Song> {
   let map = customSongsMapCache.get(songs)
   if (!map) {

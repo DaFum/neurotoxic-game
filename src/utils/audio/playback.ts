@@ -149,7 +149,7 @@ export function getGigTimeMs() {
 /**
  * Handles cleanup when a gig buffer source ends naturally.
  * @param source - The ended source node.
- * @returns */
+ */
 type GigEndedInfo = {
   filename: string | null
   durationMs: number | null
@@ -247,7 +247,7 @@ export const calculateGigPlaybackWindow = ({
 
 /**
  * Stops gig playback and clears the gig clock state.
- * @returns */
+ */
 export function stopGigPlayback() {
   if (audioState.gigSource) {
     logger.debug(
@@ -383,7 +383,7 @@ export async function startGigPlayback({
  * - `params.delayMs` - Delay before starting the clock in ms. Defaults to `0`.
  * - `params.offsetMs` - Starting offset for the gig clock. Defaults to `0`.
  * - `params.startTimeSec` - Absolute Tone.js time to start the gig clock. Defaults to `null`.
- * @returns */
+ */
 export function startGigClock({
   delayMs = 0,
   offsetMs = 0,
@@ -416,7 +416,7 @@ export function startGigClock({
 
 /**
  * Pauses gig playback and preserves the current offset.
- * @returns */
+ */
 export function pauseGigPlayback(): void {
   if (audioState.gigIsPaused) return
   if (!audioState.gigSource && audioState.gigStartCtxTime == null) return
@@ -548,7 +548,7 @@ export function stopAudioInternal(): void {
 
 /**
  * Stops ambient OGG playback and clears ambient state.
- * @returns */
+ */
 export function stopAmbientPlayback(): void {
   if (audioState.ambientSource) {
     logger.debug('AudioEngine', 'Stopping ambient OGG playback.')
@@ -629,7 +629,7 @@ export async function resumeAudio(): Promise<boolean> {
 
 /**
  * Returns the current Tone transport state.
- * @returns */
+ */
 export function getTransportState(): 'started' | 'stopped' | 'paused' {
   return Tone.getTransport().state
 }
@@ -656,7 +656,7 @@ export function setDestinationMute(muted: boolean): boolean {
 
 /**
  * Returns whether ambient OGG playback is currently active.
- * @returns */
+ */
 export function isAmbientOggPlaying(): boolean {
   return audioState.ambientSource != null
 }

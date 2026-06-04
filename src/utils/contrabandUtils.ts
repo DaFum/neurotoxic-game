@@ -3,6 +3,7 @@ import {
   CONTRABAND_BY_RARITY
 } from '../data/contraband'
 import { secureRandom } from './crypto'
+import { finiteNumberOr } from './gameStateUtils'
 import type { Rarity } from '../types'
 
 export const DROP_BASE_CHANCE = 0.15
@@ -104,7 +105,7 @@ export function pickRandomContrabandByRarity(
 /**
  * Picks a random contraband ID using the weighted rarity system.
  * @param rng - Defaults to `secureRandom`.
- * @returns */
+ */
 export function pickRandomContraband(rng = secureRandom) {
   const rarity = pickRarity(rng)
   return pickRandomContrabandByRarity(rarity, rng)
@@ -117,6 +118,6 @@ export function pickRandomContraband(rng = secureRandom) {
  * @returns probability [0, MAX_DROP_CHANCE]
  */
 export function computeDropChance(base = DROP_BASE_CHANCE, luck = 0) {
-  const chance = base + (luck || 0) * LUCK_MOD_PER_POINT
+  const chance = base + finiteNumberOr(luck, 0) * LUCK_MOD_PER_POINT
   return Math.min(MAX_DROP_CHANCE, Math.max(0, chance))
 }

@@ -299,8 +299,8 @@ export const resolvePost = (
     return {
       success: result.success ?? true,
       followers: result.followers ?? 0,
-      platform: result.platform || postOption.platform,
-      message: result.message || 'Post completed.',
+      platform: result.platform ?? postOption.platform,
+      message: result.message ?? 'Post completed.',
       // Side effects (optional, will be undefined if not provided)
       moneyChange,
       moodChange: result.moodChange,

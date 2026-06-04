@@ -59,7 +59,7 @@ export const resolveEventChoice = (
 /**
  * Computes the deterministic money delta an option's direct effect(s) would
  * apply, for previewing the cost/reward inside a localized option label via an
- * `amount` interpolation. Mirrors the `resource` and `percentage_resource`
+ * `{{amount}}` interpolation. Mirrors the `resource` and `percentage_resource`
  * money handlers exactly (no RNG, so the preview is stable across renders).
  * Returns null when the option has no money-affecting effect, letting callers
  * fall back to a zero amount rather than leaking an unresolved placeholder.

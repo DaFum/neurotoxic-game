@@ -112,7 +112,7 @@ for (const charKey of Object.keys(CHARACTERS) as Array<
 /**
  * Helper to fetch a generic trait (e.g., from CLINIC definitions)
  * @param traitId - Trait id.
- * @returns */
+ */
 export const getTraitById = (traitId: string): TraitDef | null => {
   if (!traitId) return null
   return TRAIT_DEFS_BY_ID.get(traitId) ?? null

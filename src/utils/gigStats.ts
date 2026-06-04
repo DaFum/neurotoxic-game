@@ -1,19 +1,13 @@
 import { clamp0to100 } from './gameStateUtils'
-
-/**
- * Type: `def `object` GigPerformanceStats`.
- * Property `perfectHits`.
- * Property `misses`.
- * Property `maxCombo`.
- * Property `peakHype`.
- */
+import type { RhythmLiveStats } from '../types/rhythmGame'
 
 /**
  * Calculates hit accuracy as a percentage (0–100).
  * Returns 100 when no notes were attempted (no misses, no hits).
  * @param perfectHits - Perfect hits.
  * @param misses - Misses.
- * @returns */
+ * @returns Hit accuracy as a percentage.
+ */
 export const calculateAccuracy = (
   perfectHits: number,
   misses: number
@@ -29,8 +23,6 @@ export const calculateAccuracy = (
  * @param payload - Current combo and hype values.
  * @returns Updated stats snapshot.
  */
-import type { RhythmLiveStats } from '../types/rhythmGame'
-
 export const updateGigPerformanceStats = (
   stats: RhythmLiveStats,
   payload: { combo: number; overload: number }
