@@ -4,6 +4,7 @@ import type {
   AssetKind,
   AssetModifiers,
   AssetModule,
+  AssetSlot,
   LongTermAsset,
   ModuleUnlockReq,
   Liability
@@ -582,6 +583,27 @@ let liabilitiesMapCache: Map<string, Liability> | null = null
 const EMPTY_ASSETS: readonly LongTermAsset[] = []
 let lastAssetsForMap: readonly LongTermAsset[] | null = null
 let assetsMapCache: Map<string, LongTermAsset> | null = null
+const assetSlotsCache = new WeakMap<readonly AssetSlot[], Map<string, AssetSlot>>()
+
+/**
+ * Selects a memoized slot map keyed by slot id for a given asset.
+ *
+ * @param asset - The asset containing the slots.
+ * @returns Map of slot id to AssetSlot, memoized by the slots array identity.
+ */
+export const selectAssetSlotsMap = (
+  asset: LongTermAsset
+): Map<string, AssetSlot> => {
+  let map = assetSlotsCache.get(asset.slots)
+  if (!map) {
+    map = new Map<string, AssetSlot>()
+    for (const slot of asset.slots) {
+      map.set(slot.id, slot)
+    }
+    assetSlotsCache.set(asset.slots, map)
+  }
+  return map
+}
 
 /**
  * Selects a memoized asset map keyed by asset id.

@@ -9,6 +9,7 @@ import { MODULE_REGISTRY } from '../../utils/assetModuleRegistry'
 import {
   getModulePoolForAsset,
   getSlotConflicts,
+  selectAssetSlotsMap,
   type LockReason
 } from '../../utils/assetSelectors'
 import { useGameActions, useGameSelector } from '../../context/GameState'
@@ -81,7 +82,7 @@ export const ModulePickerModal = memo(
     const assets = useGameSelector(s => s.assets)
     const { installModule, removeModule } = useGameActions()
     const slot = useMemo(
-      () => asset.slots.find(s => s.id === slotId),
+      () => (slotId ? selectAssetSlotsMap(asset).get(slotId) : undefined),
       [asset, slotId]
     )
 
