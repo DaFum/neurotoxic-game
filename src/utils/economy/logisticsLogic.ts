@@ -90,13 +90,14 @@ export const calculateGuaranteedDailyCost = (
   social: Partial<Pick<SocialState, 'youtube'>> = {}
 ) => {
   const bandSize = Array.isArray(band.members) ? band.members.length : 3
-  const fameLevel = player.fameLevel || 0
+  const fameLevel = finiteNumberOr(player.fameLevel, 0)
   const lifestyleInflation = Math.floor(Math.pow(fameLevel, 1.4) * 15)
   let dailyCost =
     EXPENSE_CONSTANTS.DAILY.BASE_COST + bandSize * 8 + lifestyleInflation
 
-  if ((social.youtube || 0) >= 10000) {
-    const adRevenue = Math.floor((social.youtube || 0) / 10000) * 10
+  const youtube = finiteNumberOr(social.youtube, 0)
+  if (youtube >= 10000) {
+    const adRevenue = Math.floor(youtube / 10000) * 10
     dailyCost -= adRevenue
   }
 
@@ -126,7 +127,7 @@ export const calculateTravelExpenses = (
   )
 
   const bandSize = bandState?.members?.length || 3
-  const fameLevel = playerState?.fameLevel || 0
+  const fameLevel = finiteNumberOr(playerState?.fameLevel, 0)
 
   // Base food cost
   const foodCost = bandSize * EXPENSE_CONSTANTS.FOOD.FAST_FOOD
@@ -185,6 +186,17 @@ export const calculateRepairCost = (currentCondition: number) => {
   return Math.ceil(missing * EXPENSE_CONSTANTS.TRANSPORT.REPAIR_COST_PER_UNIT)
 }
 
+/**
+ * Decides whether the player should be declared bankrupt.
+ * @param {unknown} newMoney - Resulting cash balance; coerced to Number and must
+ *   be finite (a TypeError is thrown otherwise). Negative => immediate
+ *   bankruptcy, positive => never bankrupt.
+ * @param {number | null | undefined} netIncome - Latest net income; defaults to
+ *   0 when undefined.
+ * @param {number} [totalDailyObligations=0] - Daily obligations folded into the
+ *   break-even check when the balance is exactly 0.
+ * @returns {boolean} True when bankruptcy should trigger.
+ */
 export const shouldTriggerBankruptcy = (
   newMoney: unknown,
   netIncome: number | null | undefined,

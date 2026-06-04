@@ -330,11 +330,8 @@ export const calculateMerchIncome = (
 }
 
 /**
- * Calculates distance between two nodes or a node and a fallback point.
- * @param {object} nodeA - The target node.
- * @param {object} [nodeB=null] - The source node.
- * @returns {number} The calculated distance.
-
+ * Calculates the effective ticket price after applying ticket discounts.
+ * @param {object} gigData - Gig economy data containing the base ticket price.
  * @param {object} context - Context object containing flags like discountedTickets.
  * @returns {number} The effective ticket price.
  */
@@ -568,9 +565,6 @@ export const calculateGigFinancials = (
     fame: playerFame
   })
 
-  const effectivePrice = calculateEffectiveTicketPrice(gigData, context)
-  const effectiveGigData = { ...gigData, price: effectivePrice }
-
   const report: PostGigFinancials = {
     income: { total: 0, breakdown: [] },
     expenses: { total: 0, breakdown: [] },
@@ -589,8 +583,11 @@ export const calculateGigFinancials = (
     effectiveModifiers.promo = true
   }
 
+  // calculateTicketIncome applies the ticket discount itself (via
+  // context.discountedTickets), so pass the original gigData to avoid
+  // double-applying the discount.
   const tickets = calculateTicketIncome(
-    effectiveGigData,
+    gigData,
     playerFame,
     effectiveModifiers,
     context

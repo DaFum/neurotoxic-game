@@ -5,7 +5,9 @@ import { NEUTRAL_ASSET_MODIFIERS } from '../assetSelectors'
 import { finiteNumberOr } from '../gameStateUtils'
 
 export { DEFAULT_MERCH_PRICES } from '../../data/merch'
-export const SORTED_MERCH_KEYS = Object.freeze(Object.keys(MERCH_PROFILES).sort())
+export const SORTED_MERCH_KEYS = Object.freeze(
+  Object.keys(MERCH_PROFILES).sort()
+)
 export const MERCH_PROFILE_VALUES = Object.freeze(
   Object.values(MERCH_PROFILES)
 ) as ReadonlyArray<MerchItemProfile>
@@ -20,7 +22,7 @@ export const MODIFIER_COSTS = {
   merch: 26,
   soundcheck: 42,
   guestlist: 50
-}
+} as const satisfies Record<string, number>
 
 export const calculateGigModifierCost = (
   key: keyof typeof MODIFIER_COSTS,

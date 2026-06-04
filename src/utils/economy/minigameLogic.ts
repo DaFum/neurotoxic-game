@@ -1,14 +1,15 @@
-import { clamp0to100 } from '../gameStateUtils'
+import { clamp0to100, finiteNumberOr } from '../gameStateUtils'
 import { bandHasTrait } from '../traitUtils'
 import type { BandState } from '../../types'
-import type { KabelsalatResults } from './types'
 
 export const calculateTravelMinigameResult = (
   damageTaken: unknown,
   itemsCollected: unknown
 ) => {
   // 50% damage scaling: 100 damage -> 50 condition loss
-  const safeDamageTaken = Number.isFinite(Number(damageTaken)) ? Number(damageTaken) : 0
+  const safeDamageTaken = Number.isFinite(Number(damageTaken))
+    ? Number(damageTaken)
+    : 0
   const conditionLoss = Math.floor(Math.max(0, safeDamageTaken) / 2)
 
   // Fuel bonus re-enabled: each fuel item grants 0.5 liters of fuel bonus
@@ -36,7 +37,9 @@ export const calculateRoadieMinigameResult = (
   bandState: Pick<BandState, 'members'> | null | undefined,
   contrabandDelivered: number = 0
 ) => {
-  const safeEquipmentDamage = Number.isFinite(Number(equipmentDamage)) ? Number(equipmentDamage) : 0
+  const safeEquipmentDamage = Number.isFinite(Number(equipmentDamage))
+    ? Number(equipmentDamage)
+    : 0
   const safeDamage = Math.max(0, safeEquipmentDamage)
   const stress = Math.floor(safeDamage / 5)
   let repairCost = Math.floor(safeDamage * 2)
@@ -47,7 +50,7 @@ export const calculateRoadieMinigameResult = (
   }
 
   // Brutalist neurotoxic payout
-  const safeContraband = Math.max(0, Number(contrabandDelivered) || 0)
+  const safeContraband = Math.max(0, finiteNumberOr(contrabandDelivered, 0))
   const contrabandBonus = safeContraband * 50
 
   return { stress, repairCost, contrabandBonus }
@@ -96,11 +99,14 @@ export const calculateAmpCalibrationResult = (
   }
 
   // Stress penalty for relying on neurotoxic purges
-  const safePurgesUsed = Math.max(0, Number(purgesUsed) || 0)
+  const safePurgesUsed = Math.max(0, finiteNumberOr(purgesUsed, 0))
   stress += Math.floor(safePurgesUsed * 5)
 
   // Kranker Schrank Hijack bonuses/mitigations
-  const safeHijacksOverridden = Math.max(0, Number(hijacksOverridden) || 0)
+  const safeHijacksOverridden = Math.max(
+    0,
+    finiteNumberOr(hijacksOverridden, 0)
+  )
   reward += safeHijacksOverridden * 10
   stress = Math.max(0, stress - safeHijacksOverridden * 2)
 
@@ -117,22 +123,30 @@ export const calculateKabelsalatMinigameResult = (
   results: unknown,
   bandState: Pick<BandState, 'members'> | null | undefined
 ) => {
-  const safeResults =
-    results && typeof results === 'object' ? (results as KabelsalatResults) : {}
+  // Treat results as untrusted input: read only own properties and validate
+  // types so inherited props or getter side-effects cannot leak through.
+  const source =
+    results && typeof results === 'object'
+      ? (results as Record<string, unknown>)
+      : {}
+  const isPoweredOn =
+    Object.hasOwn(source, 'isPoweredOn') && source.isPoweredOn === true
+  const rawTimeLeft = Object.hasOwn(source, 'timeLeft')
+    ? source.timeLeft
+    : undefined
+  const timeLeft =
+    typeof rawTimeLeft === 'number' && Number.isFinite(rawTimeLeft)
+      ? rawTimeLeft
+      : 0
   let stress = 0
   let reward = 0
 
-  if (!safeResults.isPoweredOn) {
+  if (!isPoweredOn) {
     // Failure! Stress for everyone.
     stress = 15
   } else {
     // Success! Reward based on time remaining
-    const validTimeLeft =
-      typeof safeResults.timeLeft === 'number' &&
-      Number.isFinite(safeResults.timeLeft)
-        ? safeResults.timeLeft
-        : 0
-    const timeBonus = Math.max(0, Math.floor(validTimeLeft / 5))
+    const timeBonus = Math.max(0, Math.floor(timeLeft / 5))
     reward = Math.max(0, 60 + timeBonus * 15) // Base 60, scaling better for quick completion
 
     // Tech Wizard trait increases rewards
@@ -142,7 +156,9 @@ export const calculateKabelsalatMinigameResult = (
   }
 
   // Stress penalty for relying on neurotoxic purges
-  const rawPurged = safeResults.voidSurgesPurged
+  const rawPurged = Object.hasOwn(source, 'voidSurgesPurged')
+    ? source.voidSurgesPurged
+    : undefined
   let safePurgesUsed = Number(rawPurged)
   if (!Number.isFinite(safePurgesUsed) || safePurgesUsed < 0) {
     safePurgesUsed = 0
