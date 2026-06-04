@@ -325,13 +325,29 @@ export const createSetLastGigStatsAction = (
   const payloadWithToastId = stats
     ? {
         ...stats,
-        score: stats.score !== undefined ? finiteNumberOr(stats.score, 0) : undefined,
-        misses: stats.misses !== undefined ? finiteNumberOr(stats.misses, 0) : undefined,
-        accuracy: stats.accuracy !== undefined ? finiteNumberOr(stats.accuracy, 0) : undefined,
-        combo: stats.combo !== undefined ? finiteNumberOr(stats.combo, 0) : undefined,
-        health: stats.health !== undefined ? finiteNumberOr(stats.health, 0) : undefined,
-        overload: stats.overload !== undefined ? finiteNumberOr(stats.overload, 0) : undefined,
-        maxCombo: stats.maxCombo !== undefined ? finiteNumberOr(stats.maxCombo, 0) : undefined,
+        // Only re-normalize numeric fields that are actually present so we
+        // never introduce explicit `undefined` keys into the payload.
+        ...(stats.score !== undefined && {
+          score: finiteNumberOr(stats.score, 0)
+        }),
+        ...(stats.misses !== undefined && {
+          misses: finiteNumberOr(stats.misses, 0)
+        }),
+        ...(stats.accuracy !== undefined && {
+          accuracy: finiteNumberOr(stats.accuracy, 0)
+        }),
+        ...(stats.combo !== undefined && {
+          combo: finiteNumberOr(stats.combo, 0)
+        }),
+        ...(stats.health !== undefined && {
+          health: finiteNumberOr(stats.health, 0)
+        }),
+        ...(stats.overload !== undefined && {
+          overload: finiteNumberOr(stats.overload, 0)
+        }),
+        ...(stats.maxCombo !== undefined && {
+          maxCombo: finiteNumberOr(stats.maxCombo, 0)
+        }),
         toastId: getSafeUUID()
       }
     : null
