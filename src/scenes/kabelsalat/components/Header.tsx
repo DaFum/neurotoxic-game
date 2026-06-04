@@ -12,9 +12,8 @@ interface HeaderProps {
 }
 
 /**
- * Renders the Header scene from t, isShocked, isPoweredOn, isGameOver, and timeLeft.
+ * Renders the Header scene.
  * @param props - Kabelsalat translator, shock/power/game-over state, and remaining time.
- * @returns The rendered Header UI.
  */
 export const Header: FC<HeaderProps> = ({
   t,

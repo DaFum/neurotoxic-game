@@ -211,9 +211,8 @@ const MenuSubmenu = React.memo(
 MenuSubmenu.displayName = 'MenuSubmenu'
 
 /**
- * Renders the Overworld Menu view from t, isMenuOpen, setIsMenuOpen, isTraveling, vanFuel, vanCondition, isSaving, openStash, openQuests, openPirateRadio, openMerchPress, openBloodBank, openClinic, openDarkWebLeak, openHQ, openAssets, handleRefuel, handleRepair, and handleSaveWithDelay.
+ * Renders the Overworld Menu view.
  * @param props - Menu open state, travel/save status, vehicle status, and callbacks for each overworld menu action.
- * @returns The rendered Overworld Menu UI.
  */
 export const OverworldMenu = React.memo(
   ({

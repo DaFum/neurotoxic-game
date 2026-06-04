@@ -9,9 +9,8 @@ interface KabelsalatGameOverOverlayProps {
 }
 
 /**
- * Renders the Kabelsalat Game Over Overlay scene from t and onAdvance.
+ * Renders the Kabelsalat Game Over Overlay scene.
  * @param props - Translator and continuation callback for the game-over overlay.
- * @returns The rendered Kabelsalat Game Over Overlay UI.
  */
 export const KabelsalatGameOverOverlay: FC<KabelsalatGameOverOverlayProps> =
   React.memo(({ t, onAdvance }) => {

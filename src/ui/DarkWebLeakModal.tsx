@@ -17,9 +17,8 @@ export interface DarkWebLeakModalProps {
 }
 
 /**
- * Renders the Dark Web Leak Modal view from config, canLeak, onConfirm, onCancel, and hasLeakedToday.
+ * Renders the Dark Web Leak Modal view.
  * @param props - Leak configuration, availability state, confirm/cancel handlers, and daily-use state.
- * @returns The rendered Dark Web Leak Modal UI.
  */
 export const DarkWebLeakModal = ({
   config,

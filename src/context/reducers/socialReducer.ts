@@ -153,10 +153,13 @@ const readPlayerFundsAndHarmony = (
 }
 
 /**
- * Handles social update actions
- * @param state - Current state
- * @param payload - Social updates
- * @returns Updated state
+ * Applies sanitized social-state updates.
+ *
+ * @param state - Game state before the social patch.
+ * @param payload - Partial social patch or updater function. Numeric fields,
+ * active deals, and trend data are normalized before merge.
+ * @returns State with social updates merged, or the original state when the
+ * payload is invalid.
  */
 export const handleUpdateSocial = (
   state: GameState,

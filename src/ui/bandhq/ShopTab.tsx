@@ -56,9 +56,8 @@ const ITEMS: CatalogItem[] = (() => {
 })()
 
 /**
- * Renders the Shop Tab view from player, handleBuy, isItemOwned, isItemDisabled, getAdjustedCost, and processingItemId.
+ * Renders the Shop Tab view.
  * @param props - Display data, state flags, callbacks, and visual options for the shop tab view.
- * @returns The rendered Shop Tab UI.
  */
 export const ShopTab = ({
   player,

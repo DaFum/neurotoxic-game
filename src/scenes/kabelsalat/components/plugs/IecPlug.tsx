@@ -2,7 +2,6 @@ import React from 'react'
 
 /**
  * Renders the IEC power cable plug graphic.
- * @returns The rendered Iec Plug UI.
  */
 export const IecPlug = React.memo(function IecPlug() {
   return (

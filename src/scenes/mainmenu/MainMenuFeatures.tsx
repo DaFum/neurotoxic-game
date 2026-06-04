@@ -140,9 +140,8 @@ const FeatureTable = ({ headers, rows, title }: FeatureTableProps) => {
 }
 
 /**
- * Renders the Main Menu Features scene from onClose.
+ * Renders the Main Menu Features scene.
  * @param props - Close callback for the feature list panel.
- * @returns The rendered Main Menu Features UI.
  */
 export const MainMenuFeatures = ({ onClose }: { onClose: () => void }) => {
   const { t } = useTranslation()

@@ -6,9 +6,8 @@ type AutoplayOverlayProps = {
 }
 
 /**
- * Renders the Autoplay Overlay scene from onPlay.
+ * Renders an overlay that prompts the player to start playback with sound.
  * @param props - Playback callback for starting the intro video with sound.
- * @returns The rendered Autoplay Overlay UI.
  */
 export const AutoplayOverlay = ({ onPlay }: AutoplayOverlayProps) => {
   const { t } = useTranslation()

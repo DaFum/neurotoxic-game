@@ -5,9 +5,8 @@ const LIGHTNING_Y_COORDS = [0, 200, 400, 600]
 import type { LightningSeed } from '../../../types/kabelsalat'
 
 /**
- * Renders the Lightning Effects scene from lightningSeeds.
+ * Renders the Lightning Effects scene.
  * @param props - Lightning seed positions for Kabelsalat visual effects.
- * @returns The rendered Lightning Effects UI.
  */
 export const LightningEffects: FC<{ lightningSeeds: LightningSeed[] }> = ({
   lightningSeeds

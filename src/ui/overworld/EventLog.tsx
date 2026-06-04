@@ -25,9 +25,8 @@ interface EventLogEntry {
 }
 
 /**
- * Renders the Event Log view from t, day, and locationId.
+ * Renders the Event Log view.
  * @param props - Current day and location context used to render translated event log entries.
- * @returns The rendered Event Log UI.
  */
 export const EventLog = React.memo(({ t, day, locationId }: EventLogProps) => {
   const bodyRef = useRef<HTMLDivElement | null>(null)

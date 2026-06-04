@@ -66,7 +66,8 @@ export const isPlainRecord = (
  * Arrays and records are copied, circular references are replaced through
  * `onCircular`, and optional transforms can customize leaves or record values.
  *
- * @param value - Value to sanitize.
+ * @param value - Arbitrary value crossing a storage, logging, or payload
+ * boundary.
  * @param options - Traversal hooks and record policy overrides.
  * @param visited - Active traversal set used to detect circular references.
  * @returns Sanitized clone or transformed primitive value.

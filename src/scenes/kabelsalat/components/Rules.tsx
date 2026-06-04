@@ -22,9 +22,8 @@ interface RulesProps {
 }
 
 /**
- * Renders the Rules scene from t.
+ * Renders the Rules scene.
  * @param props - Translator used to render Kabelsalat rule copy.
- * @returns The rendered Rules UI.
  */
 export const Rules: FC<RulesProps> = ({ t }) => (
   <div className='mt-6 border border-warning-yellow bg-warning-yellow/10 p-4 text-sm text-warning-yellow max-w-4xl w-full'>

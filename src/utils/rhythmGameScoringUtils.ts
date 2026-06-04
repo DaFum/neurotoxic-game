@@ -30,12 +30,14 @@ const CONSTANTS = {
 }
 
 /**
- * Calculates the dynamic hit window for a specific lane.
- * @param baseHitWindow - Base hit window in ms.
- * @param hitWindowBonus - Bonus hit window from modifiers.
- * @param laneIndex - Lane index.
- * @param guitarDifficulty - Modifier for guitar lane difficulty.
- * @returns The calculated dynamic hit window.
+ * Resolves the effective hit window for one rhythm lane.
+ *
+ * @param baseHitWindow - Base hit window in milliseconds.
+ * @param hitWindowBonus - Flat bonus from active gig modifiers.
+ * @param laneIndex - Lane receiving the note input.
+ * @param guitarDifficulty - Guitar-lane divisor. Values below the minimum
+ * difficulty floor are clamped before division.
+ * @returns Hit window in milliseconds after lane-specific modifiers.
  */
 export const calculateDynamicHitWindow = (
   baseHitWindow: number,
@@ -58,13 +60,16 @@ export const calculateDynamicHitWindow = (
 }
 
 /**
- * Calculates the points awarded for hitting a note.
- * @param laneIndex - Lane index.
- * @param drumMultiplier - Modifier for drum lane points.
- * @param guitarScoreMult - Modifier for guitar lane points.
- * @param bassScoreMult - Modifier for bass lane points.
- * @param guestlist - Whether guestlist modifier is active.
- * @returns The calculated base points.
+ * Resolves base note points before combo and toxic/corruption multipliers.
+ *
+ * @param laneIndex - Lane that received the hit.
+ * @param drumMultiplier - Drum-lane score multiplier.
+ * @param guitarScoreMult - Guitar-lane score multiplier.
+ * @param bassScoreMult - Bass-lane score multiplier.
+ * @param guestlist - Whether the guestlist modifier adds its score bonus.
+ * @returns Base points for a valid hit.
+ *
+ * @throws Error when `laneIndex` is not one of the supported rhythm lanes.
  */
 export const calculatePoints = (
   laneIndex: number,
@@ -102,14 +107,16 @@ export const calculatePoints = (
 }
 
 /**
- * Calculates the final score for a hit.
- * @param basePoints - Points awarded for the hit.
- * @param currentCombo - Current combo count.
- * @param toxicModeActive - Whether toxic mode is active.
- * @param hasPerfektionist - Whether the Perfektionist trait is active.
+ * Applies combo, toxic mode, corruption burst, and trait multipliers to a hit.
+ *
+ * @param basePoints - Lane-adjusted base points for the hit.
+ * @param currentCombo - Current combo count before this score increment.
+ * @param toxicModeActive - Whether toxic mode multiplies the score.
+ * @param hasPerfektionist - Whether the Perfektionist trait can award its
+ * accuracy-based bonus.
  * @param currentAccuracy - Current hit accuracy percentage.
- * @param isCorruptionBurstActive - Whether corruption burst is active.
- * @returns The final calculated score increment.
+ * @param isCorruptionBurstActive - Whether corruption burst multiplies the hit.
+ * @returns Floored score increment for the hit.
  */
 export const calculateFinalScore = (
   basePoints: number,
@@ -141,13 +148,15 @@ export const calculateFinalScore = (
 }
 
 /**
- * Calculates the impact of a miss.
- * @param count - Number of misses.
- * @param isEmptyHit - Whether it was an empty hit.
- * @param currentOverload - Current overload amount.
- * @param currentHealth - Current health amount.
- * @param crowdDecay - Crowd decay modifier.
- * @returns The calculated miss impact.
+ * Resolves overload recovery and crowd-energy loss from missed input.
+ *
+ * @param count - Number of misses represented by this update.
+ * @param isEmptyHit - Whether the miss came from pressing an empty lane instead
+ * of missing a scheduled note.
+ * @param currentOverload - Current overload amount before applying the penalty.
+ * @param currentHealth - Current crowd-energy value before decay.
+ * @param crowdDecay - Crowd-decay multiplier, floored to the minimum decay.
+ * @returns Miss penalty, per-miss decay, and clamped next overload/health values.
  */
 export const calculateMissImpact = (
   count = 1,

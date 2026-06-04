@@ -941,9 +941,8 @@ const BandMembersSection = ({
 // --- Main Component ---
 
 /**
- * Renders the Detailed Stats Tab view from player, band, social, activeQuests, venueBlacklist, reputationByRegion, onMakeAmends, onCraft, and onConsumeItem.
+ * Renders the Detailed Stats Tab view.
  * @param props - Player, band, social, quest, reputation, blacklist, crafting, and amends callbacks for detailed stats.
- * @returns The rendered Detailed Stats Tab UI.
  */
 export const DetailedStatsTab = ({
   player,

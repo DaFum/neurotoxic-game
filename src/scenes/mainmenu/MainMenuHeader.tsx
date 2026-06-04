@@ -4,7 +4,6 @@ import { AnimatedDivider, AnimatedSubtitle } from '../../ui/shared'
 
 /**
  * Renders the main menu title lockup.
- * @returns The rendered Main Menu Header UI.
  */
 export const MainMenuHeader = () => {
   const { t } = useTranslation()

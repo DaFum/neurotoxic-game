@@ -3,9 +3,8 @@ import { motion } from 'framer-motion'
 import type { PlayerState } from '../../types'
 
 /**
- * Renders the Game Over Stats scene from player.
+ * Renders the game-over statistics panel for the provided player snapshot.
  * @param props - Player state used to display game-over totals.
- * @returns The rendered Game Over Stats UI.
  */
 export const GameOverStats = ({
   player

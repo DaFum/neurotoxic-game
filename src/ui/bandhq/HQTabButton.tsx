@@ -17,9 +17,8 @@ interface HQTabButtonProps {
 }
 
 /**
- * Renders the HQ Tab Button view from tab, isActive, label, and onClick.
+ * Renders the HQ Tab Button view.
  * @param props - Tab id, active state, label, and tab selection callback.
- * @returns The rendered HQ Tab Button UI.
  */
 export const HQTabButton = ({
   tab,

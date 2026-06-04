@@ -5,7 +5,6 @@ import { KabelsalatBoard } from './kabelsalat/components/KabelsalatBoard.tsx'
 
 /**
  * Renders the Kabelsalat Scene.
- * @returns The rendered Kabelsalat Scene UI.
  */
 export const KabelsalatScene = () => {
   const {

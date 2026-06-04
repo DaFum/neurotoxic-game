@@ -196,11 +196,10 @@ const reducerMap: ReducerMap = {
 }
 
 /**
- * Main state reducer for the game.
- * Uses a map-based dispatcher or delegates to sub-reducers.
- * @param state - Current state
- * @param action - Action with type and payload
- * @returns New state
+ * Narrows actions that can be handled by the root reducer map.
+ *
+ * @param action - Game action being routed.
+ * @returns True when the action is not owned by the band reducer.
  */
 const isHandledAction = (action: GameAction): action is HandledAction =>
   !(BAND_ACTIONS as readonly string[]).includes(action.type)

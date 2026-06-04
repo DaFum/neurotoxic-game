@@ -7,9 +7,8 @@ type SettingsReturnButtonProps = {
 }
 
 /**
- * Renders the Settings Return Button view from onReturn.
+ * Renders the Settings Return Button view.
  * @param props - Return callback for leaving the settings screen.
- * @returns The rendered Settings Return Button UI.
  */
 export const SettingsReturnButton = ({
   onReturn

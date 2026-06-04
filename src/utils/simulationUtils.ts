@@ -291,7 +291,7 @@ export const calculateGigPhysics = (bandState: BandState, song: Song) => {
  * Calculates daily state updates including costs, mood drift, and decay.
  * @param currentState - The full state before update.
  * @param rng - Random number generator for determinism. Defaults to `getSafeRandom`.
- * @returns The updated parts of state (player, band, social).
+ * @returns Partial next-state slices for player, band, and social updates.
  */
 const CONTROVERSY_ACCELERATED_DECAY_THRESHOLD = 55
 const CONTROVERSY_ACCELERATED_DECAY_AMOUNT = 3

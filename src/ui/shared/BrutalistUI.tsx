@@ -53,9 +53,8 @@ interface CrisisModalProps {
 }
 
 /**
- * Renders the Uplink Button view from title, url, subtitle, type, and Icon.
+ * Renders the Uplink Button view.
  * @param props - External link title, URL, subtitle, type, and icon component.
- * @returns The rendered Uplink Button UI.
  */
 export const UplinkButton = memo(
   ({ title, url, subtitle, type, Icon }: UplinkButtonProps) => {
@@ -169,9 +168,8 @@ export const UplinkButton = memo(
 
 // Optimization: Wrapped in React.memo to prevent unnecessary re-renders of static SVG decorations
 /**
- * Renders the Alert Icon view from className and title.
+ * Renders the Alert Icon view.
  * @param props - Optional class and accessible title for the alert icon.
- * @returns The rendered Alert Icon UI.
  */
 export const AlertIcon = memo(({ className, title }: SvgIconProps) => {
   const titleId = useId()
@@ -225,9 +223,8 @@ export const AlertIcon = memo(({ className, title }: SvgIconProps) => {
 
 // Optimization: Wrapped in React.memo to prevent unnecessary re-renders of static SVG decorations
 /**
- * Renders the Hex Node view from className and title.
+ * Renders the Hex Node view.
  * @param props - Optional class and accessible title for the hex-node icon.
- * @returns The rendered Hex Node UI.
  */
 export const HexNode = memo(({ className, title }: SvgIconProps) => {
   const titleId = useId()
@@ -313,9 +310,8 @@ const WarningStripe = memo(() => {
 
 // Optimization: Wrapped in React.memo to prevent unnecessary re-renders of static SVG decorations
 /**
- * Renders the Block Meter view from label, value, max, and isDanger.
+ * Renders the Block Meter view.
  * @param props - Meter label, current value, maximum value, and danger-state flag.
- * @returns The rendered Block Meter UI.
  */
 export const BlockMeter = memo(
   ({ label, value, max = 10, isDanger = false }: BlockMeterProps) => {
@@ -359,9 +355,8 @@ export const BlockMeter = memo(
 
 // 3. Brutalist Tabs
 /**
- * Renders the Crisis Modal view from isOpen, onClose, title, description, actions, and className.
+ * Renders the Crisis Modal view.
  * @param props - Modal visibility, close handler, title, description, actions, and optional classes.
- * @returns The rendered Crisis Modal UI.
  */
 export const CrisisModal = memo(
   ({
@@ -479,9 +474,8 @@ export const CrisisModal = memo(
 
 // 8. Deadman Button (Hold to Confirm)
 /**
- * Renders the Deadman Button view from label and onConfirm.
+ * Renders the Deadman Button view.
  * @param props - Button label and confirmation callback.
- * @returns The rendered Deadman Button UI.
  */
 export const DeadmanButton = memo(
   ({ label, onConfirm }: DeadmanButtonProps) => {
@@ -610,9 +604,8 @@ export const DeadmanButton = memo(
 
 // 10. Hardware Inventory Slot
 /**
- * Renders the Hazard Ticker view from message.
+ * Renders the Hazard Ticker view.
  * @param props - Ticker message text.
- * @returns The rendered Hazard Ticker UI.
  */
 export const HazardTicker = memo(({ message }: HazardTickerProps) => {
   const { t } = useTranslation(['ui'])

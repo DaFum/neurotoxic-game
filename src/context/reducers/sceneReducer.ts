@@ -15,10 +15,12 @@ export const isValidGamePhase = (value: string): value is GamePhase => {
 }
 
 /**
- * Handles scene change actions
- * @param state - Current state
- * @param payload - New scene name
- * @returns Updated state
+ * Changes scenes only when the requested phase is known.
+ *
+ * @param state - Game state before the transition.
+ * @param payload - Requested scene name.
+ * @returns State with `currentScene` changed, or the original state for invalid
+ * scene names.
  */
 export const handleChangeScene = (
   state: GameState,

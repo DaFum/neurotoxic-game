@@ -11,9 +11,8 @@ export interface OverworldHeaderProps {
 }
 
 /**
- * Renders the Overworld Header view from t, locationName, and isTraveling.
+ * Renders the Overworld Header view.
  * @param props - Localized location label and travel state displayed in the overworld header.
- * @returns The rendered Overworld Header UI.
  */
 export const OverworldHeader = React.memo(
   ({ t, locationName, isTraveling }: OverworldHeaderProps) => {

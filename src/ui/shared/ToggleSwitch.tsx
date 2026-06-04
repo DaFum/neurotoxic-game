@@ -77,7 +77,6 @@ const ToggleSwitchComponent = ({
 /**
  * Renders an accessible binary toggle switch with glitch feedback.
  * @param props - Toggle state, accessible label, toggle callback, and optional classes.
- * @returns The rendered Toggle Switch UI.
  */
 export const ToggleSwitch = memo(ToggleSwitchComponent)
 ToggleSwitch.displayName = 'ToggleSwitch'

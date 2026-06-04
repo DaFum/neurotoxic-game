@@ -2,7 +2,6 @@ import React from 'react'
 
 /**
  * Renders the XLR socket graphic.
- * @returns The rendered Xlr Socket UI.
  */
 export const XlrSocket = React.memo(function XlrSocket() {
   return (

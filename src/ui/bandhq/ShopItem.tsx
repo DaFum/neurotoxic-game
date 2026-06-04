@@ -24,9 +24,8 @@ export interface ShopItemProps {
 // Prevents re-rendering all shop/upgrade items when parent `BandHQ` state changes
 // (e.g. player money updates) if the item's specific props haven't changed.
 /**
- * Renders the Shop Item view from item, isOwned, isDisabled, adjustedCost, onBuy, and processingItemId.
+ * Renders the Shop Item view.
  * @param props - Shop item data, cost/ownership state, disabled state, purchase callback, and processing lock id.
- * @returns The rendered Shop Item UI.
  */
 export const ShopItem = React.memo(
   ({

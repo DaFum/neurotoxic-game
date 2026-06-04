@@ -16,14 +16,18 @@ type GigInputParams = {
 }
 
 /**
- * Manages user input for the Gig scene, including keyboard and touch events.
+ * Wires keyboard, touch, and mouse input into the active Gig scene.
  *
- * @param params - Params.
+ * @remarks
+ * The hook unlocks audio from the first accepted user gesture and reuses a
+ * cached key-to-lane map while the lane array reference stays stable.
+ *
+ * @param params - Rhythm input collaborators from `useRhythmGameLogic`.
  * - `params.actions` - Rhythm game actions (registerInput).
  * - `params.gameStateRef` - Reference to the game state.
  * - `params.triggerBandAnimation` - Callback to trigger band animation.
  * - `params.onTogglePause` - Callback to toggle the pause menu.
- * @returns - Input handlers.
+ * @returns Lane input handlers for pointer/touch controls.
  */
 export const useGigInput = ({
   actions,

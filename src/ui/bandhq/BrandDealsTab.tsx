@@ -12,9 +12,8 @@ interface BrandDealsTabProps {
 }
 
 /**
- * Renders the Brand Deals Tab view from social.
+ * Renders the Brand Deals Tab view.
  * @param props - Social sponsorship state shown in the brand deals tab.
- * @returns The rendered Brand Deals Tab UI.
  */
 export const BrandDealsTab = ({ social }: BrandDealsTabProps) => {
   const { t, i18n } = useTranslation()

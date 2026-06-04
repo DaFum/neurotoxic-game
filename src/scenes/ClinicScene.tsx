@@ -6,7 +6,6 @@ import { ClinicMemberCard } from '../components/clinic/ClinicMemberCard'
 
 /**
  * Renders the Clinic Scene.
- * @returns The rendered Clinic Scene UI.
  */
 export const ClinicScene = () => {
   const { t } = useTranslation(['ui'])

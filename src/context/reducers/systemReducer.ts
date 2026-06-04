@@ -1510,10 +1510,11 @@ const sanitizeQuestScopes = (
 }
 
 /**
- * Handles game load with migration and validation
- * @param state - Current state
- * @param payload - Loaded save data
- * @returns Updated state
+ * Loads persisted state through migration and sanitizer gates.
+ *
+ * @param state - Current in-memory state used as a fallback baseline.
+ * @param payload - Raw save payload from storage.
+ * @returns Migrated and sanitized game state.
  */
 export const handleLoadGame = (
   state: GameState,
@@ -2082,10 +2083,12 @@ export const handleAdvanceDay = (
 }
 
 /**
- * Handles adding an unlock
- * @param state - Current state
- * @param unlockId - Unlock ID to add
- * @returns Updated state
+ * Adds an unlock id if it is valid and not already present.
+ *
+ * @param state - Game state before the unlock.
+ * @param unlockId - Unlock id to append.
+ * @returns State with the unlock appended, or the original state for invalid or
+ * duplicate ids.
  */
 export const handleAddUnlock = (
   state: GameState,
@@ -2097,10 +2100,12 @@ export const handleAddUnlock = (
 }
 
 /**
- * Handles setting the pendingBandHQOpen flag
- * @param state - Current state
- * @param isOpen - new flag value
- * @returns Updated state
+ * Sets the deferred Band HQ open flag.
+ *
+ * @param state - Game state before updating the pending flag.
+ * @param isOpen - Next pending open state.
+ * @returns State with the pending flag changed, or the original state when it
+ * already matches.
  */
 export const handleSetPendingBandHQOpen = (
   state: GameState,

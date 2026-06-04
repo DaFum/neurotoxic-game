@@ -31,9 +31,8 @@ interface KabelsalatBoardProps {
 }
 
 /**
- * Renders the Kabelsalat Board scene from t, isShocked, isPoweredOn, isGameOver, faultReason, isPowerConnected, lightningSeeds, connections, socketOrder, selectedCable, handleSocketClick, handleCableClick, onAdvance, voidSurge, and purgeVoidSurge.
+ * Renders the Kabelsalat Board scene.
  * @param props - Kabelsalat translator, state flags, connection state, socket/cable handlers, lightning seeds, and surge controls.
- * @returns The rendered Kabelsalat Board UI.
  */
 export const KabelsalatBoard: FC<KabelsalatBoardProps> = ({
   t,

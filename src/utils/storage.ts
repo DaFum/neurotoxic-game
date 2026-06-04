@@ -107,8 +107,8 @@ export function getSafeStorageItem<T>(key: string, fallback: T): T {
  * Errors (quota exceeded, SecurityError, hostile getter tampering) are routed
  * through `handleError` with `silent: true` — no user toast, but a telemetry
  * entry so save loss has a diagnostic trail.
- * @param key - localStorage key
- * @param value - Value to store (will be JSON.stringify'd)
+ * @param key - localStorage key.
+ * @param value - JSON-serializable value to store.
  */
 export function setSafeStorageItem(key: string, value: unknown): void {
   const storage = getStorage()

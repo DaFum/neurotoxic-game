@@ -77,10 +77,12 @@ export const handleSetSetlist = (
 }
 
 /**
- * Handles gig modifier updates
- * @param state - Current state
- * @param payload - Modifiers update
- * @returns Updated state
+ * Merges partial or functional gig modifier updates.
+ *
+ * @param state - Game state before modifier replacement.
+ * @param payload - Modifier patch or updater evaluated against the current
+ * modifier state.
+ * @returns State with gig modifiers shallow-merged.
  */
 export const handleSetGigModifiers = (
   state: GameState,

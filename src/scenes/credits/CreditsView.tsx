@@ -14,9 +14,8 @@ interface CreditsViewProps {
 }
 
 /**
- * Renders the Credits View scene from credits, onReturn, and returnText.
+ * Renders the credits screen with a scrolling credits list and return action.
  * @param props - Credit rows, return callback, and return button text.
- * @returns The rendered Credits View UI.
  */
 export const CreditsView = React.memo(
   ({ credits, onReturn, returnText }: CreditsViewProps) => {

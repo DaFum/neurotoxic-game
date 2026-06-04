@@ -301,7 +301,7 @@ export class MapGenerator {
 
   /**
    * Generates intermediate layers of the map.
-   * @param map - The map object.
+   * @param map - Mutable map state being populated.
    * @param depth - The total depth of the map.
    * @param pools - The available and fallback venue pools.
    */
@@ -483,7 +483,7 @@ export class MapGenerator {
 
   /**
    * Generates connections between layers.
-   * @param map - The map object.
+   * @param map - Mutable map state whose layer nodes receive connections.
    * @param depth - The total depth of the map.
    */
   _generateConnections(map: MapGeneratorState, depth: number): void {
@@ -539,10 +539,10 @@ export class MapGenerator {
 
   /**
    * Generates the finale layer.
-   * @param map - The map object.
+   * @param map - Mutable map state receiving finale nodes and connections.
    * @param depth - The total depth of the map.
    * @param hardVenues - The hard venues array.
-   * @param pools - The pools object.
+   * @param pools - Venue usage tracker shared with earlier layers.
    */
   _generateFinaleLayer(
     map: MapGeneratorState,
@@ -584,7 +584,7 @@ export class MapGenerator {
 
   /**
    * Assigns initial coordinates to map nodes.
-   * @param map - The map object.
+   * @param map - Mutable map state whose nodes need layout coordinates.
    */
   _assignInitialCoordinates(map: MapGeneratorState): void {
     // Assign initial coordinates with jitter and resolve overlaps

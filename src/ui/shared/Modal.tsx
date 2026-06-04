@@ -30,9 +30,8 @@ type ModalProps = {
 }
 
 /**
- * Renders the Modal view from isOpen, onClose, title, ariaLabel, children, contentClassName, and className.
+ * Renders the Modal view.
  * @param props - Modal visibility, close handler, accessible title or label, content, and styling hooks.
- * @returns The rendered Modal UI.
  */
 export const Modal = ({
   isOpen,

@@ -14,9 +14,8 @@ interface OverlaysProps {
 }
 
 /**
- * Renders the Overlays scene from t, isShocked, isGameOver, isPoweredOn, faultReason, and onAdvance.
+ * Renders the Overlays scene.
  * @param props - Kabelsalat translator, state flags, fault reason, and continuation callback.
- * @returns The rendered Overlays UI.
  */
 export const Overlays: FC<OverlaysProps> = ({
   t,

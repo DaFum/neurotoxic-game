@@ -86,7 +86,6 @@ const sanitizeNonNegativePayload = <
 /**
  * Creates a scene change action
  * @param scene - Target scene name
- * @returns Action object
  */
 export const createChangeSceneAction = (
   scene: GameState['currentScene']
@@ -98,7 +97,6 @@ export const createChangeSceneAction = (
 /**
  * Creates a player update action
  * @param updates - Player state updates
- * @returns Action object
  */
 export const createUpdatePlayerAction = (
   updates: UpdatePlayerPayload
@@ -240,7 +238,6 @@ const sanitizeSocialUpdates = (
 /**
  * Creates a social update action
  * @param updates - Social media state updates
- * @returns Action object
  */
 export const createUpdateSocialAction = (
   updates: Partial<SocialState> | ((prev: SocialState) => Partial<SocialState>)
@@ -258,7 +255,6 @@ export const createUpdateSocialAction = (
 /**
  * Creates a settings update action
  * @param updates - Settings updates
- * @returns Action object
  */
 export const createUpdateSettingsAction = (
   updates: Record<string, unknown>
@@ -281,7 +277,6 @@ export const createUpdateSettingsAction = (
 /**
  * Creates a map set action
  * @param map - Generated map object
- * @returns Action object
  */
 export const createSetMapAction = (
   map: GameMap | null
@@ -293,7 +288,6 @@ export const createSetMapAction = (
 /**
  * Creates a gig set action
  * @param gig - Current gig data
- * @returns Action object
  */
 export const createSetGigAction = (
   gig: Venue | null
@@ -303,9 +297,13 @@ export const createSetGigAction = (
 })
 
 /**
- * Creates a start gig action
- * @param venue - Venue object
- * @returns Action object
+ * Starts a gig for the selected venue.
+ *
+ * @remarks
+ * The reducer treats this as the boundary between pre-gig setup and active gig
+ * state, including resetting gig modifiers to defaults.
+ *
+ * @param venue - Venue object that becomes `currentGig`.
  */
 export const createStartGigAction = (
   venue: Venue
@@ -317,7 +315,6 @@ export const createStartGigAction = (
 /**
  * Creates a setlist action
  * @param list - Array of songs
- * @returns Action object
  */
 export const createSetSetlistAction = (
   list: RhythmSetlistEntry[]
@@ -329,7 +326,6 @@ export const createSetSetlistAction = (
 /**
  * Creates a last gig stats action
  * @param stats - Gig statistics
- * @returns Action object
  */
 export const createSetLastGigStatsAction = (
   stats: PostGigSummary | null
@@ -372,7 +368,6 @@ export const createSetLastGigStatsAction = (
 /**
  * Creates an active event action
  * @param event - Event object or null
- * @returns Action object
  */
 export const createSetActiveEventAction = (
   event: GameEvent | null
@@ -421,7 +416,6 @@ export const createAddToastAction = (
 /**
  * Creates a toast removal action
  * @param id - Toast ID to remove
- * @returns Action object
  */
 export const createRemoveToastAction = (
   id: string
@@ -433,7 +427,6 @@ export const createRemoveToastAction = (
 /**
  * Creates a gig modifiers action
  * @param payload - Modifiers or updater function
- * @returns Action object
  */
 export const createSetGigModifiersAction = (
   payload:
@@ -447,7 +440,6 @@ export const createSetGigModifiersAction = (
 /**
  * Creates a load game action
  * @param data - Saved game data
- * @returns Action object
  */
 export const createLoadGameAction = (
   data: RawLoadedGame
@@ -459,7 +451,6 @@ export const createLoadGameAction = (
 /**
  * Creates a reset state action
  * @param payload - Data to preserve across reset (e.g. settings, unlocks) Defaults to `{}`.
- * @returns Action object
  */
 export const createResetStateAction = (
   payload: ResetStatePayload = {}
@@ -471,7 +462,6 @@ export const createResetStateAction = (
 /**
  * Creates an event delta application action
  * @param delta - State delta to apply
- * @returns Action object
  */
 export const createApplyEventDeltaAction = (
   delta: EventDeltaPayload
@@ -482,7 +472,6 @@ export const createApplyEventDeltaAction = (
 
 /**
  * Creates a pop pending event action
- * @returns Action object
  */
 export const createPopPendingEventAction = (): Extract<
   GameAction,
@@ -494,7 +483,6 @@ export const createPopPendingEventAction = (): Extract<
 /**
  * Creates a consume item action
  * @param itemType - Item type to consume
- * @returns Action object
  */
 export const createConsumeItemAction = (
   itemType: string
@@ -504,14 +492,8 @@ export const createConsumeItemAction = (
 })
 
 /**
- * Creates an advance day action
- * @returns Action object
- */
-
-/**
  * Creates an add cooldown action
  * @param eventId - Event ID to add to cooldowns
- * @returns Action object
  */
 export const createAddCooldownAction = (
   eventId: string
@@ -523,7 +505,6 @@ export const createAddCooldownAction = (
 /**
  * Creates start travel minigame action
  * @param targetNodeId - The destination node ID
- * @returns Action object
  */
 export const createStartTravelMinigameAction = (
   targetNodeId: string
@@ -533,11 +514,14 @@ export const createStartTravelMinigameAction = (
 })
 
 /**
- * Creates complete travel minigame action
- * @param damageTaken - Amount of damage taken
- * @param itemsCollected - Array of collected items
- * @param rngValue - Optional. The secure random value used for drops
- * @returns Action object with payload `damageTaken, itemsCollected, rngValue`
+ * Completes the travel minigame with sanitized damage and loot data.
+ *
+ * @param damageTaken - Raw minigame damage. Non-finite values become `0` and
+ * negative values are clamped away.
+ * @param itemsCollected - Collected item payloads. Non-arrays are dispatched as
+ * an empty collection.
+ * @param rngValue - Optional secure random value for reducer-side drop logic,
+ * clamped to the unit interval.
  */
 export const createCompleteTravelMinigameAction = (
   damageTaken: number,
@@ -563,7 +547,6 @@ export const createCompleteTravelMinigameAction = (
 /**
  * Creates start roadie minigame action
  * @param gigId - The gig ID
- * @returns Action object
  */
 export const createStartRoadieMinigameAction = (
   gigId: string
@@ -576,7 +559,6 @@ export const createStartRoadieMinigameAction = (
  * Creates complete roadie minigame action
  * @param equipmentDamage - Raw equipment damage from the minigame.
  * @param contrabandDelivered - Optional delivered contraband count.
- * @returns Action object
  */
 export const createCompleteRoadieMinigameAction = (
   equipmentDamage: number,
@@ -595,7 +577,6 @@ export const createCompleteRoadieMinigameAction = (
 /**
  * Creates start kabelsalat minigame action
  * @param gigId - Gig id.
- * @returns Action object.
  */
 export const createStartKabelsalatMinigameAction = (
   gigId: string
@@ -608,9 +589,9 @@ export const createStartKabelsalatMinigameAction = (
 })
 
 /**
- * Creates complete kabelsalat minigame action
- * @param results - Results.
- * @returns Action object.
+ * Completes Kabelsalat while leaving result validation to the reducer.
+ *
+ * @param results - Raw completion result emitted by the Kabelsalat scene.
  */
 export const createCompleteKabelsalatMinigameAction = (
   results: unknown
@@ -625,7 +606,6 @@ export const createCompleteKabelsalatMinigameAction = (
 /**
  * Action creator to start Amp Calibration minigame
  * @param gigId - Target gig
- * @returns Action object
  */
 export const createStartAmpCalibrationAction = (
   gigId: string
@@ -635,12 +615,12 @@ export const createStartAmpCalibrationAction = (
 })
 
 /**
- * Action creator to complete Amp Calibration minigame
- * @param score - Score.
- * @param voidResonance - Void resonance.
- * @param purgesUsed - Number of purges used during calibration.
- * @param hijacksOverridden - Number of hijacks overridden.
- * @returns Action object
+ * Completes Amp Calibration with non-negative integer result counters.
+ *
+ * @param score - Raw calibration score before action-creator clamping.
+ * @param voidResonance - Raw void-resonance count or score contribution.
+ * @param purgesUsed - Number of interference purges used during calibration.
+ * @param hijacksOverridden - Number of hijacks overridden during calibration.
  */
 export const createCompleteAmpCalibrationAction = (
   score: number,
@@ -740,7 +720,6 @@ export const createUpdateRivalBandAction = (
  * Creates unlock trait action
  * @param memberId - Target band member id.
  * @param traitId - Trait id to unlock.
- * @returns Action object
  */
 export const createUnlockTraitAction = (
   memberId: string,
@@ -755,7 +734,6 @@ export const createUnlockTraitAction = (
  * The `handleUnblacklistVenue` reducer charges the amends cost and is the final
  * authority on affordability; this creator only normalizes a hostile id to ''.
  * @param venueId - The ID of the venue to win back.
- * @returns Action object
  */
 export const createUnblacklistVenueAction = (
   venueId: string
@@ -773,7 +751,6 @@ export const createUnblacklistVenueAction = (
  * reducer is the final authority on input availability; this creator only
  * normalizes a hostile recipe id to ''.
  * @param recipeId - The crafting recipe id.
- * @returns Action object
  */
 export const createCraftItemAction = (
   recipeId: string
@@ -789,7 +766,6 @@ export const createCraftItemAction = (
 /**
  * Creates an action to add a new quest.
  * @param quest - The quest object to add.
- * @returns Action object
  */
 export const createAddQuestAction = (
   quest: QuestState
@@ -827,7 +803,6 @@ export const createAddQuestAction = (
  * Creates an action to advance a quest's progress.
  * @param questId - The ID of the quest.
  * @param amount - The amount to advance progress by. Defaults to `1`.
- * @returns Action object
  */
 export const createAdvanceQuestAction = (
   questId: string,
@@ -845,7 +820,6 @@ export const createAdvanceQuestAction = (
 /**
  * Creates an action to add an unlock to the state.
  * @param unlockId - The ID of the unlock.
- * @returns Action object
  */
 export const createAddUnlockAction = (
   unlockId: string
@@ -859,7 +833,6 @@ export const createAddUnlockAction = (
  * @param instanceId - The unique instance ID of the contraband item in the stash.
  * @param contrabandId - The ID of the contraband item.
  * @param memberId - Optional. The ID of the band member to apply the effect to.
- * @returns Action object
  */
 export const createUseContrabandAction = (
   instanceId: string,
@@ -873,13 +846,15 @@ export const createUseContrabandAction = (
 /**
  * Creates an action to heal a band member in the Void Clinic.
  * Cost is computed by the reducer from CLINIC_CONFIG and clinicVisits.
- * @param payload - Payload.
+ *
+ * @param payload - Clinic heal request. `staminaGain` and `moodGain` are
+ * normalized to non-negative numbers before dispatch; reducer clamps remain the
+ * final authority.
  * - `payload.memberId` - The ID of the band member.
  * - `payload.type` - Must be 'heal'. Used by the reducer to compute cost.
  * - `payload.staminaGain` - The amount of stamina to restore.
  * - `payload.moodGain` - The amount of mood to restore.
  * - `payload.successToast` - Optional. Toast object appended to state on success.
- * @returns Action object
  */
 export const createClinicHealAction = (
   payload: ClinicActionPayload
@@ -904,12 +879,13 @@ export const createClinicHealAction = (
  * Cost is computed by the reducer from CLINIC_CONFIG and clinicVisits.
  * Payload is passed through because the reducer derives and clamps every
  * numeric effect; the creator only carries IDs and an optional toast.
- * @param payload - Payload.
+ *
+ * @param payload - Clinic enhancement request passed through for reducer-owned
+ * validation and cost calculation.
  * - `payload.memberId` - The ID of the band member.
  * - `payload.type` - Must be 'enhance'. Used by the reducer to compute cost.
  * - `payload.trait` - The ID of the trait to graft.
  * - `payload.successToast` - Optional. Toast object appended to state on success.
- * @returns Action object
  */
 export const createClinicEnhanceAction = (
   payload: ClinicActionPayload
@@ -920,14 +896,15 @@ export const createClinicEnhanceAction = (
 
 /**
  * Creates an action to trigger a pirate radio broadcast.
- * @param payload - Payload.
+ *
+ * @param payload - Broadcast cost and reward deltas. Numeric economy/social
+ * fields are normalized as non-negative values before dispatch.
  * - `payload.cost` - Money cost.
  * - `payload.fameGain` - Fame gained.
  * - `payload.zealotryGain` - Zealotry gained.
  * - `payload.controversyGain` - Controversy gained.
  * - `payload.harmonyCost` - Band harmony lost.
  * - `payload.successToast` - Optional. Toast object appended to state on success.
- * @returns Action object
  */
 export const createPirateBroadcastAction = (
   payload: PirateBroadcastPayload
@@ -945,7 +922,6 @@ export const createPirateBroadcastAction = (
 /**
  * Creates an action to set pendingBandHQOpen
  * @param isOpen - Is open.
- * @returns Action object
  */
 export const createSetPendingBandHQOpenAction = (
   isOpen: boolean
@@ -1019,13 +995,14 @@ export const createSetPendingRiskEventAction = (
 
 /**
  * Creates an action to donate blood to the void clinic.
- * @param payload - Payload.
+ *
+ * @param payload - Donation rewards and costs. Numeric fields are normalized
+ * as non-negative values before dispatch.
  * - `payload.moneyGain` - The money gained.
  * - `payload.harmonyCost` - The harmony lost.
  * - `payload.staminaCost` - The stamina lost per member.
  * - `payload.controversyGain` - The controversy gained.
  * - `payload.successToast` - Optional toast on success.
- * @returns Action object
  */
 export const createBloodBankDonateAction = (
   payload: BloodBankDonatePayload
@@ -1041,11 +1018,12 @@ export const createBloodBankDonateAction = (
 
 /**
  * Creates an action to trade fame for a void item (contraband).
- * @param payload - Payload.
+ *
+ * @param payload - Void-trader purchase request. `fameCost` is normalized as a
+ * non-negative value and a fresh contraband instance id is added.
  * - `payload.contrabandId` - ID of the contraband item.
  * - `payload.fameCost` - Cost in fame to purchase.
  * - `payload.successToast` - Optional toast on success.
- * @returns Action object
  */
 export const createTradeVoidItemAction = (
   payload: TradeVoidItemPayload
@@ -1062,14 +1040,15 @@ export const createTradeVoidItemAction = (
 
 /**
  * Creates an action to trigger a dark web leak.
- * @param payload - Payload.
+ *
+ * @param payload - Leak cost and reward deltas. Numeric economy/social fields
+ * are normalized as non-negative values before dispatch.
  * - `payload.cost` - Money cost.
  * - `payload.fameGain` - Fame gained.
  * - `payload.zealotryGain` - Zealotry gained.
  * - `payload.controversyGain` - Controversy gained.
  * - `payload.harmonyCost` - Band harmony lost.
  * - `payload.successToast` - Optional. Toast object appended to state on success.
- * @returns Action object
  */
 export const createDarkWebLeakAction = (
   payload: DarkWebLeakPayload
@@ -1086,14 +1065,15 @@ export const createDarkWebLeakAction = (
 
 /**
  * Creates an action to press merch underground.
- * @param payload - Payload.
+ *
+ * @param payload - Merch-press cost and reward deltas. Numeric economy/social
+ * fields are normalized as non-negative values before dispatch.
  * - `payload.cost` - Money cost.
  * - `payload.loyaltyGain` - Loyalty gained.
  * - `payload.controversyGain` - Controversy gained.
  * - `payload.fameGain` - Fame gained.
  * - `payload.harmonyCost` - Band harmony lost.
  * - `payload.successToast` - Optional. Toast object appended to state on success.
- * @returns Action object
  */
 export const createMerchPressAction = (
   payload: MerchPressPayload

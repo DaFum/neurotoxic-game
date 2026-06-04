@@ -30,9 +30,8 @@ const ASPECT_CSS: Record<
 }
 
 /**
- * Renders the Generated Image Panel view from prompt, alt, aspectRatio, className, onLoad, variant, and sizeHint.
+ * Renders the Generated Image Panel view.
  * @param props - Image prompt, alt text, sizing, variant, load callback, and wrapper styling.
- * @returns The rendered Generated Image Panel UI.
  */
 export const GeneratedImagePanel = ({
   prompt,
