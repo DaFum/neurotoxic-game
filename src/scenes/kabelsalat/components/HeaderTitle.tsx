@@ -10,7 +10,7 @@ interface HeaderTitleProps {
 }
 
 /**
- * Renders the Header Title scene.
+ * Displays Kabelsalat title feedback for shock, power, and game-over states.
  * @param props - Kabelsalat translator plus shock, game-over, and powered-on state.
  */
 export const HeaderTitle: FC<HeaderTitleProps> = React.memo(

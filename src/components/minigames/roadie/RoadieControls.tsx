@@ -5,7 +5,7 @@ import { RoadieTouchSurface } from './RoadieTouchSurface'
 import { RoadieDPad } from './RoadieDPad'
 
 /**
- * Renders the Roadie Controls.
+ * Provides touch, keyboard-hint, and optional desktop D-pad controls for Roadie movement.
  * @param props - Roadie touch-control visibility state, visibility setter, and directional movement callbacks.
  */
 export const RoadieControls = memo(function RoadieControls({

@@ -2,7 +2,7 @@ import { AssetSectionPanel } from '../AssetSectionPanel'
 import { TourbusVehicleView } from './TourbusVehicleView'
 
 /**
- * Renders the Tourbus asset section through the shared section panel.
+ * Presents the tourbus asset section through the shared section panel.
  */
 export const TourbusSection = () => (
   <AssetSectionPanel

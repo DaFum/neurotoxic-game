@@ -18,7 +18,7 @@ const PixiStage = lazy(async () => {
 })
 
 /**
- * Props for the Gig View component.
+ * Rendering inputs and callbacks for the active rhythm gig scene.
  */
 export type GigViewProps = {
   chaosContainerRef: RefObject<HTMLDivElement | null>
@@ -40,7 +40,7 @@ export type GigViewProps = {
 }
 
 /**
- * Renders the Gig View.
+ * Layers the gig background, band members, Pixi note stage, HUD, and pause overlay.
  * @param props - Stage visual refs/styles, band member images, HUD state, audio-lock state, pause state, and input/scene callbacks.
  */
 export const GigView = ({

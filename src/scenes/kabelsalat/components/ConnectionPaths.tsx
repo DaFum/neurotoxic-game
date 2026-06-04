@@ -11,7 +11,7 @@ type ConnectionPathsProps = {
 }
 
 /**
- * Renders the Connection Paths scene.
+ * Draws all currently connected Kabelsalat cable paths.
  * @param props - Connection map, power state, and socket order for all rendered paths.
  */
 export const ConnectionPaths = ({

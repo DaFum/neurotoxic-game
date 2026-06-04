@@ -8,7 +8,7 @@ interface ShockOverlayProps {
 }
 
 /**
- * Renders the Shock Overlay scene.
+ * Displays transient Kabelsalat shock feedback with the localized fault reason.
  * @param props - Translator and fault reason for the shock overlay.
  */
 export const ShockOverlay: FC<ShockOverlayProps> = React.memo(

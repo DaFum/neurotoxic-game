@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import type { TourbusHUDProps } from '../../../types/components'
 
 /**
- * Renders the Tourbus HUD.
+ * Displays tourbus travel distance and raw minigame damage while driving.
  * @param props - Travel distance and damage totals displayed during the tourbus minigame.
  */
 export const TourbusHUD = ({ distance, damage }: TourbusHUDProps) => {

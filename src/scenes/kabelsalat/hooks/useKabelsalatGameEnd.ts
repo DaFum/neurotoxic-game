@@ -4,7 +4,7 @@ import { GAME_PHASES } from '../../../context/gameConstants'
 import { logger } from '../../../utils/logger'
 
 /**
- * Coordinates kabelsalat Game End behavior.
+ * Guards Kabelsalat end-of-game continuation so StrictMode replays do not double-transition.
  * @param isPoweredOn - Whether powered on is active.
  * @param isGameOver - Whether game over is active.
  * @param timeLeft - Time left.

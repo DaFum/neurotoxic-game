@@ -89,10 +89,10 @@ const escapeSvgText = (value: string): string =>
   })
 
 /**
- * Coordinates overworld Urls behavior.
+ * Resolves online generated images or offline SVG fallbacks for overworld map art.
  * @param isOnlineNetwork - Current online/offline state used when choosing URLs.
  * @param t - Translation callback used for localized labels and messages.
- * @returns State, derived values, and callbacks for overworld Urls.
+ * @returns URLs for the map background, vans, and node marker icons.
  */
 export const useOverworldUrls = (
   isOnlineNetwork: boolean,

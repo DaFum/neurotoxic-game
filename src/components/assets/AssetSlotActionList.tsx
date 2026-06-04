@@ -16,7 +16,7 @@ const getConditionState = (
 }
 
 /**
- * Renders the Asset Slot Action List.
+ * Displays install, remove, and slot-management actions for selected asset slots.
  * @param props - Asset state and slot-click handler for the slot action list.
  */
 export const AssetSlotActionList = ({

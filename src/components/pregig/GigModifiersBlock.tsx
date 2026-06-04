@@ -48,7 +48,7 @@ const getEffectLabel = (eff: ActiveEffectEntry, t: TranslationCallback) => {
 }
 
 /**
- * Renders the Gig Modifiers Block.
+ * Displays paid pre-gig modifiers and toggles the selected modifier state.
  * @param props - Translator, modifier options/state, modifier toggle, band-meeting handler/cost, and active-effect summary.
  */
 export const GigModifiersBlock = ({

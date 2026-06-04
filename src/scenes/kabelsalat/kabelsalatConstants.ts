@@ -45,11 +45,11 @@ export const CABLES = [
 ] as const
 
 /**
- * Type contract for Cable.
+ * Inferred cable definition from the fixed Kabelsalat cable catalogue.
  */
 export type Cable = (typeof CABLES)[number]
 /**
- * Type contract for Cable Id.
+ * Identifier union for valid Kabelsalat cable definitions.
  */
 export type CableId = Cable['id']
 type CableMap = Record<CableId, Cable>

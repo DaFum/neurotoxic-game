@@ -12,7 +12,7 @@ interface Props {
 }
 
 /**
- * Renders the Studio Floorplan View.
+ * Displays the studio floorplan background and module slot zones.
  * @param props - Studio asset state and slot-click handler.
  */
 export const StudioFloorplanView = ({ asset, onSlotClick }: Props) => {

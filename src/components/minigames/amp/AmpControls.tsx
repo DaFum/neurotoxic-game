@@ -4,7 +4,7 @@ import type { AmpControlsProps } from '../../../types/components'
 import { clampAmpDial } from '../../../utils/gameStateUtils'
 
 /**
- * Renders the Amp Controls.
+ * Presents amp dial tuning, overdrive, interference purge, and hijack override controls.
  * @param props - Dial/target values, overdrive state, interference controls, hijack controls, and related setters.
  */
 export const AmpControls = memo(function AmpControls({

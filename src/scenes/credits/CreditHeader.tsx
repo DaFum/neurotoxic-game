@@ -2,7 +2,7 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 
 /**
- * Renders the credits title header.
+ * Displays the credits title header.
  */
 export const CreditHeader = React.memo(() => {
   const { t } = useTranslation()

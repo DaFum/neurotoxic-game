@@ -15,7 +15,7 @@ interface AssetSectionDeckProps {
 }
 
 /**
- * Renders the Asset Section Deck.
+ * Displays the shared asset-section hero/deck area.
  * @param props - Selected asset, hero renderer, slot-click handler, and chassis repair/upgrade/sell callbacks.
  */
 export const AssetSectionDeck = ({

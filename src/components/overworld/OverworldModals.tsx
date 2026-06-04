@@ -14,7 +14,7 @@ interface OverworldModalsProps {
 }
 
 /**
- * Renders the Overworld Modals.
+ * Mounts the active modal stack for overworld management and hustle actions.
  * @param props - Modal state bundle for the overworld modal stack.
  */
 export const OverworldModals = React.memo(

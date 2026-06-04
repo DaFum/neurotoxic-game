@@ -12,7 +12,7 @@ import { MainMenuSecondaryButtons } from './mainmenu/MainMenuSecondaryButtons'
 import { MainMenuFooter } from './mainmenu/MainMenuFooter'
 
 /**
- * The main menu scene component.
+ * Hosts new-tour, load, Band HQ preview, credits, feature, and social menu flows.
  */
 export const MainMenu = () => {
   const { showHQ, openHQ, closeHQ } = useBandHQModal()

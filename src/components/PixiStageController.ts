@@ -256,9 +256,9 @@ class PixiStageController<
 }
 
 /**
- * Factory for PixiStageController instances.
- * @param params - Controller dependencies.
- * @returns Controller instance.
+ * Creates a rhythm-game Pixi stage controller for the shared React stage host.
+ * @param params - Container, state ref, and update callback used by the stage lifecycle.
+ * @returns Controller instance owned by the caller until disposed.
  */
 export const createPixiStageController = <
   TState extends RhythmGameRefState = RhythmGameRefState

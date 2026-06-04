@@ -1,7 +1,7 @@
 import React from 'react'
 
 /**
- * Renders the MIDI cable plug graphic.
+ * Draws the MIDI cable plug SVG.
  */
 export const MidiPlug = React.memo(function MidiPlug() {
   return (

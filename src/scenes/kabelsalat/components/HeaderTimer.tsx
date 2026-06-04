@@ -9,7 +9,7 @@ interface HeaderTimerProps {
 }
 
 /**
- * Renders the Header Timer scene.
+ * Displays the Kabelsalat countdown timer with powered-state styling.
  * @param props - Kabelsalat translator, power state, and remaining time.
  */
 export const HeaderTimer: FC<HeaderTimerProps> = React.memo(

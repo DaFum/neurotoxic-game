@@ -16,7 +16,7 @@ type CableListProps = {
 }
 
 /**
- * Renders the Cable List scene.
+ * Displays the selectable cable list for the Kabelsalat board.
  * @param props - Translator, connection map, selected cable, shock/game-over state, and cable-click handler.
  */
 export const CableList = ({

@@ -19,7 +19,7 @@ type SideEffectsSummaryProps = {
 }
 
 /**
- * Renders the Side Effects Summary.
+ * Displays post-gig side effects grouped by localized label and signed value.
  * @param props - Resolved social-post result, translator, and locale formatter context.
  */
 export const SideEffectsSummary = ({

@@ -15,7 +15,7 @@ interface SocketListProps {
 }
 
 /**
- * Renders the Socket List scene.
+ * Displays the shuffled Kabelsalat sockets and click targets.
  * @param props - Translator, socket order, connection map, power state, selected cable, game-over state, and socket-click handler.
  */
 export const SocketList: FC<SocketListProps> = ({

@@ -8,7 +8,7 @@ interface PauseButtonProps {
 }
 
 /**
- * Renders the PauseButton control that toggles pause state and disables after game over.
+ * Provides the gig pause toggle and disables it once the gig is over.
  * @param props - Props containing `onTogglePause` callback and `isGameOver` disabled state.
  */
 export const PauseButton = memo(function PauseButton({

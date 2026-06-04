@@ -17,7 +17,7 @@ interface LoanProfileChoiceGridProps {
 }
 
 /**
- * Renders the Loan Profile Choice Grid.
+ * Displays available loan profiles and eligibility state.
  * @param props - Selected loan profile and selection callback.
  */
 export const LoanProfileChoiceGrid = ({
@@ -68,7 +68,7 @@ export const LoanProfileChoiceGrid = ({
 }
 
 /**
- * Renders the Loan Profile Modal.
+ * Presents loan-profile selection for financed chassis acquisition.
  * @param props - Modal state, close handler, profile selection callback, and title.
  */
 export const LoanProfileModal = ({

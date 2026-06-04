@@ -8,7 +8,7 @@ type CreditEntryProps = {
 }
 
 /**
- * Renders the Credit Entry scene.
+ * Displays one animated credits row with role/name text and delay styling.
  * @param props - Credit role, credited name, and animation delay.
  */
 export const CreditEntry = React.memo(

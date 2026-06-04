@@ -332,7 +332,7 @@ const DealActions = memo(
 )
 DealActions.displayName = 'DealActions'
 /**
- * Renders the Deal Card.
+ * Presents one brand-deal offer with localized copy, negotiation state, and accept/negotiate actions.
  * @param props - Brand deal data, negotiation state, brand reputation, accept handler, and negotiation-start handler.
  */
 export const DealCard = memo(

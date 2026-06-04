@@ -1,7 +1,7 @@
 import React from 'react'
 
 /**
- * Renders the jack cable plug graphic.
+ * Draws the jack cable plug SVG.
  */
 export const JackPlug = React.memo(function JackPlug() {
   return (

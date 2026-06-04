@@ -31,7 +31,7 @@ interface AssetSectionPanelProps {
 }
 
 /**
- * Renders the Asset Section Panel.
+ * Provides the shared shell for one long-term asset section.
  * @param props - Asset kind and hero renderer for the shared asset-section shell.
  */
 export const AssetSectionPanel = ({

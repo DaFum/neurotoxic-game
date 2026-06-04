@@ -2,7 +2,7 @@ import { AssetSectionPanel } from '../AssetSectionPanel'
 import { WorkshopProductionLineView } from './WorkshopProductionLineView'
 
 /**
- * Renders the merch workshop asset section through the shared section panel.
+ * Presents the merch workshop asset section through the shared section panel.
  */
 export const MerchWorkshopSection = () => (
   <AssetSectionPanel

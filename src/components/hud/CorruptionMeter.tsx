@@ -10,7 +10,7 @@ interface CorruptionMeterProps {
 }
 
 /**
- * Renders the CorruptionMeter component for decibel corruption and burst status.
+ * Displays decibel corruption and burst status as a compact HUD meter.
  * @param props - Corruption level and burst-active state.
  */
 export const CorruptionMeter = memo(function CorruptionMeter({

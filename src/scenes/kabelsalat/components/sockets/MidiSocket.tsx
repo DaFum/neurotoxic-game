@@ -1,7 +1,7 @@
 import React from 'react'
 
 /**
- * Renders the MIDI socket graphic.
+ * Draws the MIDI socket SVG.
  */
 export const MidiSocket = React.memo(function MidiSocket() {
   return (

@@ -18,7 +18,7 @@ type LaneData = {
 }
 
 /**
- * Type contract for Note Sprite.
+ * Sprite instance plus metadata managed by the rhythm note sprite pool.
  */
 export type NoteSprite = Sprite & {
   isFallback: boolean

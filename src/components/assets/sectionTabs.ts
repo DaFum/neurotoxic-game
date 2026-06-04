@@ -8,7 +8,7 @@ type TabIcon = ComponentType<{
 }>
 
 /**
- * Type contract for Asset Section Tab.
+ * Asset section tab metadata rendered by the assets navigation.
  */
 export interface AssetSectionTab {
   key: AssetKind

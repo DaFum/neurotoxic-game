@@ -6,7 +6,7 @@ import { NetResult } from './NetResult'
 import type { ReportPhaseProps } from '../../types/components'
 
 /**
- * Renders the Report Phase.
+ * Shows the post-gig financial report and advances once the player has reviewed it.
  * @param props - Post-gig financial report and callback that advances to the next phase.
  */
 export const ReportPhase = ({ financials, onNext }: ReportPhaseProps) => {

@@ -5,7 +5,7 @@ import { getSlotButtonAriaLabel } from '../sections/slotLabels'
 import type { SlotType } from '../../../types/assets'
 
 /**
- * Props for the Asset Slot Button component.
+ * Configures an interactive asset slot hotspot and its optional installed-module image.
  */
 export interface AssetSlotButtonProps {
   id: string
@@ -21,7 +21,7 @@ export interface AssetSlotButtonProps {
 }
 
 /**
- * Renders the Asset Slot Button.
+ * Shows one clickable asset slot, rendering the installed module preview when present.
  * @param props - Slot identity/type, installed module state, click handler, positioning style, image metadata, and accessible label.
  */
 export const AssetSlotButton = ({

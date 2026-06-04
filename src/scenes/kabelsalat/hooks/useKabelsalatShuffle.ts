@@ -11,14 +11,13 @@ import type { SocketId } from '../../../types/kabelsalat'
 import { getSafeRandom } from '../../../utils/crypto'
 
 /**
- * Coordinates kabelsalat Shuffle behavior.
+ * Shuffles unconnected Kabelsalat sockets while preserving already connected positions and cleaning up scheduled updates.
  * @param isPoweredOn - Whether powered on is active.
  * @param isGameOver - Whether game over is active.
  * @param isShocked - Whether shocked is active.
  * @param connections - Current cable-to-socket connection map.
  * @param isWinningRef - Ref that guards one-shot win transitions.
  * @param setSocketOrder - State setter for socket order.
- * @returns State, derived values, and callbacks for kabelsalat Shuffle.
  */
 export const useKabelsalatShuffle = (
   isPoweredOn: boolean,

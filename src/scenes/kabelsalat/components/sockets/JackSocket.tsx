@@ -1,7 +1,7 @@
 import React from 'react'
 
 /**
- * Renders the jack socket graphic.
+ * Draws the jack socket SVG.
  */
 export const JackSocket = React.memo(function JackSocket() {
   return (

@@ -140,7 +140,7 @@ const FeatureTable = ({ headers, rows, title }: FeatureTableProps) => {
 }
 
 /**
- * Renders the Main Menu Features scene.
+ * Shows the main-menu feature overview overlay and close action.
  * @param props - Close callback for the feature list panel.
  */
 export const MainMenuFeatures = ({ onClose }: { onClose: () => void }) => {

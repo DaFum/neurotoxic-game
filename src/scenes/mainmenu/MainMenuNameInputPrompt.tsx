@@ -5,7 +5,7 @@ import { Modal } from '../../ui/shared'
 import { GlitchButton } from '../../ui/GlitchButton'
 
 /**
- * Renders the Main Menu Name Input Prompt scene.
+ * Prompts for the player name before starting a new tour.
  * @param props - Player-name input state, submit handler, close handler, and input ref.
  */
 export const MainMenuNameInputPrompt = ({

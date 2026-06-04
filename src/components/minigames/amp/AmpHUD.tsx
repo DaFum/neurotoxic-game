@@ -145,7 +145,7 @@ function InterferenceIndicator({
 }
 
 /**
- * Renders the Amp HUD.
+ * Displays amp calibration timer, stability, heat, and active hazard indicators.
  * @param props - Amp timer, score, heat, void resonance, anomaly/interference/hijack status, and purge/override counters.
  */
 export const AmpHUD = memo(function AmpHUD({

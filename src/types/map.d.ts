@@ -34,7 +34,7 @@ export interface GameMap {
 }
 
 /**
- * Venue metadata attached to map nodes and gig state.
+ * Loose venue metadata shared by generated map nodes, gig state, and economy calculations.
  */
 export interface Venue {
   id: string

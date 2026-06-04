@@ -1,5 +1,5 @@
 /**
- * Long-term asset section identifiers.
+ * Asset chassis families that own their own slot layout, modules, and section UI.
  */
 export type AssetKind =
   | 'tourbus_chassis'
@@ -12,7 +12,7 @@ export type AssetKind =
  */
 export type AssetFlavor = 'legit' | 'diy'
 /**
- * Supported chassis upgrade tiers.
+ * Numeric chassis tiers used for pricing, slot layouts, and module unlock gates.
  */
 export type ChassisTier = 1 | 2 | 3
 /**
@@ -23,7 +23,7 @@ export type AcquisitionMode = 'cash' | 'loan' | 'crowdfund'
 // Slot-Typen sind kategorie-spezifische String-Literals.
 // Ein Modul mit slotType X passt nur in Slots mit slotType X.
 /**
- * Category-specific module slot identifiers.
+ * Module slot identifiers scoped by asset family; a module fits only matching slot types.
  */
 export type SlotType =
   // Tourbus
@@ -221,7 +221,7 @@ export interface CrowdfundCampaign {
 }
 
 /**
- * Asset risk event categories.
+ * Risk event categories emitted by daily asset ticks and shown in asset feedback.
  */
 export type RiskEventType =
   | 'eviction'

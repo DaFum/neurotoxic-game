@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import type { BandMembersLayerProps } from '../../../types/components'
 
 /**
- * Renders the Band Members Layer.
+ * Positions the rendered band member images over the rhythm stage.
  * @param props - Band member image URLs and ref registration callback.
  */
 export const BandMembersLayer = memo(

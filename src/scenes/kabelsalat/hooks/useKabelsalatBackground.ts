@@ -4,8 +4,8 @@ import { logger } from '../../../utils/logger'
 import { IMG_PROMPTS, resolveGenImageUrl } from '../../../utils/imageGen'
 
 /**
- * Coordinates kabelsalat Background behavior.
- * @returns State, derived values, and callbacks for kabelsalat Background.
+ * Loads the generated Kabelsalat background texture and falls back to the raw URL on texture failure.
+ * @returns Background image URL once resolved, or `null` while pending.
  */
 export const useKabelsalatBackground = () => {
   const [bgTextureUrl, setBgTextureUrl] = useState<string | null>(null)

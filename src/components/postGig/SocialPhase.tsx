@@ -12,7 +12,7 @@ type SocialPhaseProps = {
 }
 
 /**
- * Renders the Social Phase.
+ * Lets the player choose a post-gig social strategy, with trend and zealotry context.
  * @param props - Social post options, selection callback, trend state, and zealotry level.
  */
 export const SocialPhase = ({

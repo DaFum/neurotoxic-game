@@ -4,7 +4,7 @@ import { logger } from '../utils/logger'
 import './ReloadPrompt.css'
 
 /**
- * Renders the service-worker update reload prompt.
+ * Displays the service-worker update prompt and triggers a reload on confirmation.
  */
 export default function ReloadPrompt() {
   const { t } = useTranslation()

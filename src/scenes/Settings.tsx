@@ -8,7 +8,7 @@ import { SettingsTitle } from '../ui/settings/SettingsTitle'
 import { SettingsReturnButton } from '../ui/settings/SettingsReturnButton'
 
 /**
- * Settings scene for configuring audio, visuals, and data management.
+ * Connects persisted settings, audio controls, and save-data actions to the settings UI.
  */
 export const Settings = () => {
   const settings = useGameSelector(state => state.settings)

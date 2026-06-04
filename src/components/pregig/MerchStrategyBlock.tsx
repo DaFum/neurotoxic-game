@@ -108,7 +108,7 @@ const MerchItemRow: React.FC<MerchItemRowProps> = ({
 }
 
 /**
- * Renders the Merch Strategy Block.
+ * Lets the player tune per-item merch prices before the gig.
  * @param props - Merch inventory, custom prices, price/restock handlers, restock cost multiplier, and capacity bonus.
  */
 export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({

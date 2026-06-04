@@ -9,7 +9,7 @@ import { useGameActions } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
 
 /**
- * Renders the Roadie Run Scene.
+ * Hosts the Roadie equipment-delivery minigame and returns to the gig flow on completion.
  */
 export const RoadieRunScene = () => {
   const { t } = useTranslation(['ui'])

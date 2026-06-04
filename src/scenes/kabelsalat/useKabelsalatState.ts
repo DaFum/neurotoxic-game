@@ -14,7 +14,7 @@ import { useKabelsalatVoidSurge } from './hooks/useKabelsalatVoidSurge'
 import type { TFunction } from 'i18next'
 
 /**
- * State shape for Kabelsalat.
+ * Complete view-model returned to the Kabelsalat scene.
  */
 export interface KabelsalatState {
   t: TFunction<['ui'], undefined>
@@ -38,8 +38,8 @@ export interface KabelsalatState {
 }
 
 /**
- * Coordinates kabelsalat State behavior.
- * @returns State, derived values, and callbacks for kabelsalat State.
+ * Composes Kabelsalat translation, timers, shuffling, interactions, end flow, and void-surge state.
+ * @returns The state and callbacks consumed by `KabelsalatScene`.
  */
 export const useKabelsalatState = (): KabelsalatState => {
   const { t } = useTranslation(['ui'])

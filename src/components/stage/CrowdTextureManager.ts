@@ -4,7 +4,7 @@ import { handleError } from '../../utils/errorHandler'
 import { loadTextures } from './stageRenderUtils'
 
 /**
- * Type contract for Crowd Textures.
+ * Texture bundle used by the crowd rendering manager.
  */
 export type CrowdTextures = {
   idle: Texture | null

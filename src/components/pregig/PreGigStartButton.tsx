@@ -12,7 +12,7 @@ type PreGigStartButtonProps = {
 }
 
 /**
- * Renders the Pre Gig Start Button.
+ * Shows the pre-gig start action with disabled-state copy and click handling.
  * @param props - Translator, start-state flag, setlist-empty flag, and show-start handler.
  */
 export const PreGigStartButton = React.memo(

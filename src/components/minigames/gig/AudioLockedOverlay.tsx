@@ -4,7 +4,7 @@ import { GlitchButton } from '../../../ui/GlitchButton'
 import type { AudioLockedOverlayProps } from '../../../types/components'
 
 /**
- * Renders the Audio Locked Overlay.
+ * Displays the browser-audio unlock prompt before gig playback starts.
  * @param props - Callback that retries or starts audio initialization.
  */
 export const AudioLockedOverlay = memo(

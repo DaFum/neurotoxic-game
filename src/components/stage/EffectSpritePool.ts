@@ -1,7 +1,7 @@
 import { Container, Sprite, Texture } from 'pixi.js'
 
 /**
- * Type contract for Effect Sprite.
+ * Particle/effect sprite instance managed by the stage effect pool.
  */
 export type EffectSprite = Sprite & {
   isSprite: boolean

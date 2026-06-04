@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import type { RoadieHUDProps } from '../../../types/components'
 
 /**
- * Renders the Roadie HUD.
+ * Displays Roadie delivery progress, current damage, and carried item status.
  * @param props - Roadie UI state displayed during the minigame.
  */
 export const RoadieHUD = memo(function RoadieHUD({ uiState }: RoadieHUDProps) {

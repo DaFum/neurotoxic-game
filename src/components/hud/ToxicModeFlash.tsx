@@ -5,7 +5,7 @@ interface ToxicModeFlashProps {
 }
 
 /**
- * Renders the Toxic Mode Flash.
+ * Shows the full-screen toxic-mode flash when the modifier is active.
  * @param props - Toxic-mode state used to show the flash overlay.
  */
 export const ToxicModeFlash = memo(function ToxicModeFlash({

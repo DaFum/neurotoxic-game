@@ -56,14 +56,14 @@ export type ChatterGameState = Pick<
 >
 
 /**
- * Props for the chatter overlay container.
+ * Game-state inputs required to select and render scene-aware chatter.
  */
 export interface ChatterOverlayProps {
   gameState: ChatterGameState
 }
 
 /**
- * Props for one dismissible chatter message.
+ * Message data and callbacks required to render and dismiss one chatter entry.
  */
 export interface ChatterMessageProps {
   msg: ChatterMessageData
@@ -98,7 +98,7 @@ export interface ActiveEffect {
 export type ActiveEffectEntry = string | ActiveEffect
 
 /**
- * Props for a selectable social option button.
+ * Post-gig social option plus selection metadata for one strategy button.
  */
 export interface SocialOptionButtonProps {
   opt: SocialOption
@@ -107,7 +107,7 @@ export interface SocialOptionButtonProps {
 }
 
 /**
- * Props for the minigame pause overlay.
+ * Visibility and exit callbacks for the gig pause overlay.
  */
 export interface PauseOverlayProps {
   isPaused: boolean
@@ -126,7 +126,7 @@ export interface MinigameLogicBase<TState = unknown> {
 }
 
 /**
- * Props for the reusable minigame scene frame.
+ * Stage, logic, completion, and overlay content for the reusable Pixi minigame shell.
  */
 export interface MinigameSceneFrameProps<TState = unknown> {
   controllerFactory: (options: StageControllerOptions<TState>) => PixiController
@@ -165,7 +165,7 @@ export interface StageControllerOptions<TState = unknown> {
 }
 
 /**
- * Props for a React wrapper that hosts a Pixi stage controller.
+ * React host inputs for creating, updating, and disposing a Pixi stage controller.
  */
 export interface PixiStageProps<TState = unknown> {
   gameStateRef: RefObject<TState>
@@ -174,14 +174,14 @@ export interface PixiStageProps<TState = unknown> {
 }
 
 /**
- * Props for the clinic resource header.
+ * Player resource slice displayed in the clinic header.
  */
 export interface ClinicHeaderProps {
   player: Pick<PlayerState, 'money' | 'fame'>
 }
 
 /**
- * Props for one clinic band-member treatment card.
+ * Band member, resources, costs, and action callbacks for one clinic treatment card.
  */
 export interface ClinicMemberCardProps {
   member: BandMember
@@ -201,7 +201,7 @@ export interface ActionButtonWrapperProps {
 }
 
 /**
- * Props for amp-calibration controls and optional hazard actions.
+ * Amp calibration input state and optional hazard action callbacks.
  */
 export interface AmpControlsProps {
   dialValue: number
@@ -216,7 +216,7 @@ export interface AmpControlsProps {
 }
 
 /**
- * Props for the amp-calibration status HUD.
+ * Amp calibration telemetry shown in the status HUD.
  */
 export interface AmpHUDProps {
   timeLeft: number
@@ -231,14 +231,14 @@ export interface AmpHUDProps {
 }
 
 /**
- * Props for the audio-unlock overlay action.
+ * Callback invoked when the player unlocks browser audio.
  */
 export interface AudioLockedOverlayProps {
   onInitializeAudio: () => void
 }
 
 /**
- * Props for positioning rendered band-member elements.
+ * Image URLs and ref setter used to position DOM band members over the stage.
  */
 export interface BandMembersLayerProps {
   matzeUrl: string
@@ -248,7 +248,7 @@ export interface BandMembersLayerProps {
 }
 
 /**
- * Props for roadie minigame directional controls.
+ * Visibility state and movement callbacks for Roadie directional controls.
  */
 export interface RoadieControlsProps {
   showControls: boolean
@@ -260,7 +260,7 @@ export interface RoadieControlsProps {
 }
 
 /**
- * Props for roadie minigame delivery and damage status.
+ * Roadie delivery, damage, and carried-item state displayed in the HUD.
  */
 export interface RoadieHUDProps {
   uiState: {
@@ -275,7 +275,7 @@ export interface RoadieHUDProps {
 }
 
 /**
- * Props for tourbus lane-change controls.
+ * Movement callbacks for the tourbus minigame's left/right touch targets.
  */
 export interface TourbusControlsProps {
   onMoveLeft: () => void
@@ -283,7 +283,7 @@ export interface TourbusControlsProps {
 }
 
 /**
- * Props for tourbus progress and damage display.
+ * Tourbus distance and raw damage values shown during travel.
  */
 export interface TourbusHUDProps {
   distance: number
@@ -291,7 +291,7 @@ export interface TourbusHUDProps {
 }
 
 /**
- * Props for the animated overworld travel van.
+ * Travel endpoints, guard ref, and completion callback for the animated overworld van.
  */
 export interface TravelingVanProps {
   t: TranslationCallback
@@ -304,7 +304,7 @@ export interface TravelingVanProps {
 }
 
 /**
- * Props for the post-gig completion phase.
+ * Post-gig outcome, optional PR action, and continuation state.
  */
 export interface CompletePhaseProps {
   result: import('./game').PostResult
@@ -319,7 +319,7 @@ export interface CompletePhaseProps {
 }
 
 /**
- * Props for one brand-deal offer card.
+ * Brand deal offer data and action handlers for one card.
  */
 export interface DealCardProps {
   deal: BrandDeal
@@ -330,7 +330,7 @@ export interface DealCardProps {
 }
 
 /**
- * Props for brand-deal image rendering.
+ * Brand alignment and alt text source for the deal thumbnail.
  */
 export interface DealImageProps {
   alignment?: string
@@ -338,7 +338,7 @@ export interface DealImageProps {
 }
 
 /**
- * Props for displayed brand-deal details.
+ * Localized brand deal details, revocation state, and reputation context.
  */
 export interface DealInfoProps {
   displayDeal: {
@@ -360,7 +360,7 @@ export interface DealInfoProps {
 }
 
 /**
- * Props for brand-deal accept and negotiation controls.
+ * Brand deal action state and callbacks for accept/negotiation controls.
  */
 export interface DealActionsProps {
   deal: BrandDeal
@@ -410,7 +410,7 @@ export interface DealNegotiationHook {
 }
 
 /**
- * Props for the post-gig brand-deals phase.
+ * Offer list and flow callbacks for the post-gig brand-deals phase.
  */
 export interface DealsPhaseProps {
   offers: BrandDeal[]
@@ -419,7 +419,7 @@ export interface DealsPhaseProps {
 }
 
 /**
- * Props for rendering an income or expense list.
+ * Financial breakdown rows and category type for signed amount formatting.
  */
 export interface FinancialListProps {
   items: FinancialItem[]
@@ -427,7 +427,7 @@ export interface FinancialListProps {
 }
 
 /**
- * Props for the brand-deal negotiation modal.
+ * Modal state, current result, and tactic submission callback for deal negotiation.
  */
 export interface NegotiationModalProps {
   isOpen: boolean
@@ -494,7 +494,7 @@ export interface FinancialCategory {
 }
 
 /**
- * Props for the post-gig financial report phase.
+ * Financial report data and continuation callback for the post-gig report step.
  */
 export interface ReportPhaseProps {
   financials?: {
@@ -604,7 +604,7 @@ export interface CatalogConsumerProps {
 }
 
 /**
- * Props for one purchase catalog tab.
+ * Catalog items, balances, and pre-bound purchase callbacks for one Band HQ tab.
  */
 export interface CatalogTabProps {
   items: CatalogItem[]

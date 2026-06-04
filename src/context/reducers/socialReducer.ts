@@ -153,7 +153,7 @@ const readPlayerFundsAndHarmony = (
 }
 
 /**
- * Applies sanitized social-state updates.
+ * Merges sanitized social-state updates while preserving reducer-owned clamps and validation.
  *
  * @param state - Game state before the social patch.
  * @param payload - Partial social patch or updater function. Numeric fields,

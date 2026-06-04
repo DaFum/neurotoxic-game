@@ -14,7 +14,7 @@ type BackdoorMinigameState = {
 }
 
 /**
- * Renders the Minigame Scene Frame.
+ * Owns the shared Pixi minigame shell, completion overlay, and manual continue path.
  * @param props - Stage controller factory, minigame logic, UI state, completion callback, completion copy, stats renderer, and child UI.
  */
 export const MinigameSceneFrame = <TState,>({

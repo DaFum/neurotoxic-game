@@ -2,7 +2,7 @@ import type { Note } from './audio'
 import type { Projectile } from '../utils/hecklerLogic'
 
 /**
- * Playable rhythm-game lane identifiers.
+ * Runtime lane configuration for one playable rhythm-game input track.
  */
 export type RhythmLane = {
   id: 'guitar' | 'drums' | 'bass'
@@ -43,7 +43,7 @@ export type RhythmNote = {
 }
 
 /**
- * Per-song rhythm performance summary.
+ * Score, accuracy, and setlist position recorded for one completed rhythm song.
  */
 export type RhythmSongStatsEntry = {
   songId: string

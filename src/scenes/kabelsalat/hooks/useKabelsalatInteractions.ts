@@ -18,7 +18,7 @@ const isSocketId = (value: string): value is SocketId =>
   Object.hasOwn(SOCKET_DEFS, value)
 
 /**
- * Coordinates kabelsalat Interactions behavior.
+ * Handles Kabelsalat cable/socket clicks, invalid-connection shock state, and one-shot win guards.
  * @param t - Translation callback used for localized labels and messages.
  * @param isPoweredOn - Whether powered on is active.
  * @param isGameOver - Whether game over is active.
@@ -30,7 +30,7 @@ const isSocketId = (value: string): value is SocketId =>
  * @param isShocked - Whether shocked is active.
  * @param setIsShocked - State setter for is shocked.
  * @param setFaultReason - State setter for fault reason.
- * @returns State, derived values, and callbacks for kabelsalat Interactions.
+ * @returns Click handlers and a shock trigger for the Kabelsalat board.
  */
 export const useKabelsalatInteractions = (
   t: TFunction,

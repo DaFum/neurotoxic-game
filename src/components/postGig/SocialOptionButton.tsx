@@ -22,7 +22,7 @@ const getImagePromptForCategory = (category?: string, badges?: string[]) => {
 }
 
 /**
- * Renders the Social Option Button.
+ * Shows one selectable post-gig social strategy with staggered animation.
  * @param props - Social option data, list index, and selection callback.
  */
 export const SocialOptionButton = memo(function SocialOptionButton({

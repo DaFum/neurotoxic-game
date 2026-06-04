@@ -6,7 +6,7 @@ interface ScoreDisplayProps {
 }
 
 /**
- * Renders the ScoreDisplay component showing the current score.
+ * Displays the current score with compact gig-HUD styling.
  * @param props - Props containing the current `score` value.
  */
 export const ScoreDisplay = memo(function ScoreDisplay({

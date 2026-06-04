@@ -1,5 +1,5 @@
 /**
- * Raw MIDI tempo-map entry.
+ * MIDI tempo change expressed as an absolute tick and microseconds per beat.
  */
 export interface TempoMapEntry {
   tick: number

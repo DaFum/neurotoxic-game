@@ -1,7 +1,7 @@
 import React from 'react'
 
 /**
- * Renders the DC cable plug graphic.
+ * Draws the DC cable plug SVG.
  */
 export const DcPlug = React.memo(function DcPlug() {
   return (

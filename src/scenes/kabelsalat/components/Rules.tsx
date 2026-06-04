@@ -22,7 +22,7 @@ interface RulesProps {
 }
 
 /**
- * Renders the Rules scene.
+ * Displays the localized Kabelsalat rule list below the board.
  * @param props - Translator used to render Kabelsalat rule copy.
  */
 export const Rules: FC<RulesProps> = ({ t }) => (

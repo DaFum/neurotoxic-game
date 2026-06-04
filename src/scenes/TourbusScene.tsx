@@ -9,7 +9,7 @@ import { TourbusControls } from '../components/minigames/tourbus/TourbusControls
 import { calculateTravelMinigameResult } from '../utils/economyEngine'
 
 /**
- * Renders the Tourbus Scene.
+ * Hosts the tourbus travel minigame and hands completion to the arrival sequence.
  */
 export const TourbusScene = () => {
   const { t } = useTranslation('minigame')
