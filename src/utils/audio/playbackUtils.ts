@@ -6,7 +6,7 @@ import { stopTransportAndClear, cleanupTransportEvents } from './cleanupUtils'
 /**
  * Prepares the Tone.js transport for playback, returning normalized options and request ID.
  * @param options - Optional. Playback options.
- * @returns Result.
+ * @returns Playback preparation status, request id, and normalized options.
  */
 export async function prepareTransportPlayback(options: unknown = {}): Promise<{
   success: boolean

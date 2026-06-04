@@ -190,8 +190,8 @@ export const calculateRepairCost = (currentCondition: number) => {
  *   bankruptcy, positive returns never bankrupt.
  * @param netIncome - Latest net income; defaults to
  *   0 when undefined.
- * @param totalDailyObligations - Daily obligations folded into the Defaults to `0`.
- *   break-even check when the balance is exactly 0.
+ * @param totalDailyObligations - Daily obligations folded into the
+ *   break-even check when the balance is exactly 0. Defaults to `0`.
  * @returns True when bankruptcy should trigger.
  */
 export const shouldTriggerBankruptcy = (

@@ -112,7 +112,7 @@ class AudioSystem {
 
   /**
    * Returns the current audio state snapshot for external-store consumers.
-   * @returns Result.
+   * @returns Current audio state snapshot.
    */
   getStateSnapshot(): AudioStateSnapshot {
     return this.stateSnapshot

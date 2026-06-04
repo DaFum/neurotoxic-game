@@ -14,7 +14,7 @@ import {
 
 /**
  * Plays a sound effect by type.
- * @param type - The type of SFX ('hit', 'miss', 'menu', 'travel', 'cash').
+ * @param type - The type of SFX (`hit`, `miss`, `menu`, `travel`, `cash`, `crash`, `honk`, `pickup`, `deliver`, or `void_hit`).
  */
 export function playSFX(type: string): void {
   if (!audioState.isSetup || !audioState.sfxSynth) return

@@ -21,7 +21,7 @@ export const getSongId = (
  * @param song - Song metadata entry.
  * @param options - Optional behavior flags.
  * - `options.defaultDurationMs` - Fallback duration. Defaults to `0`.
- * @returns Result.
+ * @returns Excerpt start, optional excerpt end, and resolved excerpt duration in milliseconds.
  */
 export const resolveSongPlaybackWindow = (
   song: Partial<Song> | null | undefined,

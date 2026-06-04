@@ -668,7 +668,7 @@ export const applyPostGigPerformancePenalty = ({
  * - `params.clampPlayerFame` - Clamps fame to valid range.
  * - `params.clampPlayerMoney` - Clamps money to valid range.
  * - `params.BALANCE_CONSTANTS` - Shared balance tuning values.
- * @returns Result.
+ * @returns Updated money, fame, and fame level.
  */
 export const calculateContinueStats = ({
   player,
