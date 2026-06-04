@@ -735,14 +735,14 @@ const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
     }
   }
 
-  const validatedFame = clampPlayerFame(finiteNumberOr(rawPlayer.fame, 0))
+  const validatedFame = clampPlayerFame(rawPlayer.fame)
 
   return {
     ...rawPlayer,
-    money: clampPlayerMoney(finiteNumberOr(rawPlayer.money, 0)),
+    money: clampPlayerMoney(rawPlayer.money),
     fame: validatedFame,
     fameLevel: calculateFameLevel(validatedFame),
-    day: Math.max(1, finiteNumberOr(rawPlayer.day, 1)),
+    day: Math.max(1, rawPlayer.day),
     van: {
       ...rawPlayer.van,
       fuel: clampVanFuel(rawPlayer.van.fuel)
