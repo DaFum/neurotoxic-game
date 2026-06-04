@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { expect, test, vi, beforeEach, afterEach } from 'vitest'
 import { DealsPhase } from '../../src/components/postGig/DealsPhase.tsx'
 import { handleError } from '../../src/utils/errorHandler'
-import { negotiateDeal } from '../../src/utils/socialEngine'
+import { negotiateDeal } from '../../src/utils/brandDealLogic'
 
 vi.mock('../../src/utils/errorHandler', () => ({
   handleError: vi.fn()
@@ -21,7 +21,7 @@ vi.mock('../../src/context/GameState', () => ({
   useGameSelector: selector => selector(mockGameState)
 }))
 
-vi.mock('../../src/utils/socialEngine', () => ({
+vi.mock('../../src/utils/brandDealLogic', () => ({
   negotiateDeal: vi.fn().mockReturnValue({
     success: true,
     status: 'ACCEPTED',

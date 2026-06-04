@@ -43,7 +43,7 @@ import {
   calculateContinueStats
 } from '../utils/postGigUtils'
 import { shouldTriggerBankruptcy } from '../utils/economyEngine'
-import { generateBrandOffers } from '../utils/socialEngine'
+import { generateBrandOffers } from '../utils/brandDealLogic'
 import { getTranslatedBrandDealDisplay } from '../utils/brandDealI18n'
 import { submitLeaderboardScores } from '../utils/leaderboardUtils'
 import { createHarmonyChangedQuestEvent } from '../quests/producers/gigQuestEvents'

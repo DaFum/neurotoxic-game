@@ -8,6 +8,7 @@ import {
 } from '../../src/context/gameConstants'
 import * as economyEngine from '../../src/utils/economyEngine'
 import * as socialEngine from '../../src/utils/socialEngine'
+import * as brandDealLogic from '../../src/utils/brandDealLogic'
 import { BRAND_ALIGNMENTS } from '../../src/context/initialState'
 
 // Mock dependencies
@@ -242,7 +243,7 @@ const setupCommonMocks = () => {
 
   vi.spyOn(socialEngine, 'checkViralEvent').mockReturnValue(false)
   vi.spyOn(socialEngine, 'calculateSocialGrowth').mockReturnValue(25)
-  vi.spyOn(socialEngine, 'generateBrandOffers').mockReturnValue([])
+  vi.spyOn(brandDealLogic, 'generateBrandOffers').mockReturnValue([])
 
   useGameState.mockReturnValue(createBaseState())
 }
@@ -328,7 +329,7 @@ describe('PostGig Component - Phase Management', () => {
   })
 
   it('shows DEALS phase when brand offers are available', async () => {
-    vi.spyOn(socialEngine, 'generateBrandOffers').mockReturnValue([
+    vi.spyOn(brandDealLogic, 'generateBrandOffers').mockReturnValue([
       {
         id: 'deal_1',
         name: 'Test Brand',
@@ -534,7 +535,7 @@ describe('PostGig Component - Brand Deals', () => {
   })
 
   it('processes accepting a complex brand deal correctly', async () => {
-    vi.spyOn(socialEngine, 'generateBrandOffers').mockReturnValue([
+    vi.spyOn(brandDealLogic, 'generateBrandOffers').mockReturnValue([
       {
         id: 'deal_mega',
         name: 'Mega Corp',
@@ -591,7 +592,7 @@ describe('PostGig Component - Brand Deals', () => {
   })
 
   it('rejects all deals and advances to COMPLETE phase', async () => {
-    vi.spyOn(socialEngine, 'generateBrandOffers').mockReturnValue([
+    vi.spyOn(brandDealLogic, 'generateBrandOffers').mockReturnValue([
       {
         id: 'deal_6',
         name: 'Skip Me',

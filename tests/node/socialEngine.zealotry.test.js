@@ -1,9 +1,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import {
-  calculateZealotryEffects,
-  generateBrandOffers
-} from '../../src/utils/socialEngine'
+import { calculateZealotryEffects } from '../../src/utils/socialEngine'
+import { generateBrandOffers } from '../../src/utils/brandDealLogic'
 
 describe('calculateZealotryEffects', () => {
   it('should calculate passive income properly', () => {

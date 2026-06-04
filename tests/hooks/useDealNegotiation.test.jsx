@@ -1,10 +1,10 @@
 import { describe, it, vi, expect, beforeEach, afterEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { useDealNegotiation } from '../../src/hooks/useDealNegotiation'
-import { negotiateDeal } from '../../src/utils/socialEngine'
+import { negotiateDeal } from '../../src/utils/brandDealLogic'
 import { handleError } from '../../src/utils/errorHandler'
 
-vi.mock('../../src/utils/socialEngine', () => ({
+vi.mock('../../src/utils/brandDealLogic', () => ({
   negotiateDeal: vi.fn()
 }))
 

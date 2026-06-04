@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameActions, useGameSelector } from '../context/GameState'
-import { negotiateDeal } from '../utils/socialEngine'
+import { negotiateDeal } from '../utils/brandDealLogic'
 import { handleError } from '../utils/errorHandler'
 import type {
   DealNegotiationHook,

@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest'
-import { generateBrandOffers } from '../../src/utils/socialEngine'
+import { generateBrandOffers } from '../../src/utils/brandDealLogic'
 
 describe('Social Engine Performance', () => {
   test('generateBrandOffers performance loop', () => {
