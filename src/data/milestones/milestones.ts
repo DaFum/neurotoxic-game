@@ -1,6 +1,6 @@
 /**
  * Game Progression Milestones Data
- * @module milestones
+ * Module: `milestones`.
  */
 
 import {

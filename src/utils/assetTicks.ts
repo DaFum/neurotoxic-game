@@ -53,7 +53,7 @@ export const resolveCrowdfundProbability = (
 
 /**
  * Daily decay of every asset's condition, plus net cashflow (revenue − upkeep)
- * for productive assets. Broken assets (condition < 20) contribute zero boni
+ * for productive assets. Broken assets (condition less than 20) contribute zero boni
  * via the selector layer; they still decay further until repaired.
  */
 export const processAssetTick = (state: GameState): GameState => {
@@ -311,7 +311,7 @@ export interface RollAssetRiskEventsResult {
  * RNG-exhaustion behavior: if the caller under-sized `dayRngStream`, missing
  * rolls fall back to `1.0` (a neutral non-triggering value), NOT 0 — a 0
  * fallback would auto-fire every remaining asset's event since totalRiskChance
- * is always < 1.0.
+ * is always less than 1.0.
  */
 export const rollAssetRiskEvents = (
   state: GameState,

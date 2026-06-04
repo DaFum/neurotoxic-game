@@ -19,11 +19,11 @@ const getOwn = <T,>(
 
 /**
  * Tooltip - Displays a floating tooltip on hover.
- * @param {Object} props
- * @param {React.ReactElement} props.children - The trigger element. Must be a valid React element.
- * @param {React.ReactNode} props.content - The tooltip content.
- * @param {string} [props.className] - Additional CSS classes for the container.
- * @param {'top' | 'bottom'} [props.position] - Optional position for the tooltip to appear relative to the trigger.
+ * @param props - Component props.
+ * - `props.children` - The trigger element. Must be a valid React element.
+ * - `props.content` - The tooltip content.
+ * - `props.className` - Optional. Additional CSS classes for the container.
+ * - `props.position` - Optional position for the tooltip to appear relative to the trigger.
  */
 export const Tooltip = ({
   children,

@@ -84,7 +84,7 @@ export const sanitizeTraversableValue = (
  * A secure wrapper around JSON.parse that uses a reviver to strip out
  * potentially dangerous keys associated with prototype pollution.
  *
- * @param text The JSON string to parse
+ * @param text - The JSON string to parse
  * @returns The parsed object, safely filtered
  */
 export const safeJsonParse = <T = unknown>(text: string): T => {

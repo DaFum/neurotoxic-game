@@ -20,11 +20,11 @@ export type RhythmGameInputReturn = {
 /**
  * Handles user input for the rhythm game.
  *
- * @param {Object} params - Hook parameters.
- * @param {Object} params.gameStateRef - Game state reference.
- * @param {Object} params.scoringActions - Scoring actions (handleHit).
- * @param {Object} params.contextState - Context state (activeEvent).
- * @returns {Object} Input actions (registerInput).
+ * @param params - Hook parameters.
+ * - `params.gameStateRef` - Game state reference.
+ * - `params.scoringActions` - Scoring actions (handleHit).
+ * - `params.contextState` - Context state (activeEvent).
+ * @returns Input actions (registerInput).
  */
 export const useRhythmGameInput = ({
   gameStateRef,
@@ -37,8 +37,8 @@ export const useRhythmGameInput = ({
 
   /**
    * Registers player input for a lane.
-   * @param {number} laneIndex - Lane index.
-   * @param {boolean} isDown - Whether the input is pressed.
+   * @param laneIndex - Lane index.
+   * @param isDown - Whether the input is pressed.
    */
   const registerInput = useCallback(
     (laneIndex: number, isDown: boolean) => {

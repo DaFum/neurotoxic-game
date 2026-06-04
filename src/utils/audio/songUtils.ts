@@ -2,8 +2,8 @@ import type { Song } from '../../types/audio'
 
 /**
  * Normalizes a song entry to its ID.
- * @param {string|object} item - The song entry (ID string or object with ID).
- * @returns {string|undefined} The normalized song ID.
+ * @param item - The song entry (ID string or object with ID).
+ * @returns The normalized song ID.
  */
 export const getSongId = (
   item: string | Partial<Pick<Song, 'id'>> | undefined
@@ -18,10 +18,10 @@ export const getSongId = (
  * 3) durationMs (raw authored value)
  * 4) defaultDurationMs fallback
  *
- * @param {object} song - Song metadata entry.
- * @param {object} [options] - Optional behavior flags.
- * @param {number} [options.defaultDurationMs=0] - Fallback duration.
- * @returns {{ excerptStartMs: number, excerptEndMs: number|null, excerptDurationMs: number }}
+ * @param song - Song metadata entry.
+ * @param options - Optional behavior flags.
+ * - `options.defaultDurationMs` - Fallback duration. Defaults to `0`.
+ * @returns Result.
  */
 export const resolveSongPlaybackWindow = (
   song: Partial<Song> | null | undefined,

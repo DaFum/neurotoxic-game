@@ -160,10 +160,9 @@ export const createAudioSubscriber = (
 /**
  * Provides reactive audio controls backed by AudioManager.
  *
- * @param {(state: AudioSnapshot) => unknown} [selector] - Optional selector to read a focused slice of audio state.
- * @param {{ pollEvenWithSubscribe?: boolean, pollMs?: number }} [options] - Optional polling configuration.
- * @returns {UseAudioControlResult<unknown>}
- */
+ * @param selector - Optional selector to read a focused slice of audio state.
+ * @param options - Optional polling configuration.
+ * @returns */
 export function useAudioControl(
   selector?: null,
   options?: UseAudioControlOptions

@@ -2,7 +2,7 @@
  * Contraband & Relics Data Catalog
  * Artifacts gathered from the void during tour.
  * They either grant immediate consumable effects or passive buffs.
- * @module contraband
+ * Module: `contraband`.
  */
 
 import { logger } from '../utils/logger'

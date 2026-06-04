@@ -15,9 +15,9 @@ import type { MapPoint } from './types'
 
 /**
  * Calculates distance between two nodes or a node and a fallback point.
- * @param {object} nodeA - The target node.
- * @param {object} [nodeB=null] - The source node.
- * @returns {number} The calculated distance.
+ * @param nodeA - The target node.
+ * @param nodeB - The source node. Defaults to `null`.
+ * @returns The calculated distance.
  */
 export const calculateDistance = (nodeA: unknown, nodeB: unknown = null) => {
   const pointA = (nodeA && typeof nodeA === 'object' ? nodeA : {}) as MapPoint
@@ -37,10 +37,10 @@ export const calculateDistance = (nodeA: unknown, nodeB: unknown = null) => {
 
 /**
  * Calculates fuel consumption and cost based on distance and player upgrades.
- * @param {number} dist - The distance in km.
- * @param {object} [playerState=null] - Optional player state for upgrade checks.
- * @param {object} [bandState=null] - Optional band state for trait checks.
- * @returns {object} { fuelLiters, fuelCost }
+ * @param dist - The distance in km.
+ * @param playerState - Optional player state for upgrade checks. Defaults to `null`.
+ * @param bandState - Optional band state for trait checks. Defaults to `null`.
+ * @returns `fuelLiters, fuelCost`
  */
 export const calculateFuelCost = (
   dist: number,
@@ -79,10 +79,10 @@ export const calculateFuelCost = (
 /**
  * Calculates the guaranteed daily cost for the player, including lifestyle inflation
  * and potential offsets from social media revenue.
- * @param {object} player - Player state containing fame level.
- * @param {object} band - Band state containing members.
- * @param {object} [social={}] - Social state containing YouTube followers.
- * @returns {number} The calculated daily cost.
+ * @param player - Player state containing fame level.
+ * @param band - Band state containing members.
+ * @param social - Social state containing YouTube followers. Defaults to `{}`.
+ * @returns The calculated daily cost.
  */
 export const calculateGuaranteedDailyCost = (
   player: Pick<PlayerState, 'fameLevel'>,
@@ -106,10 +106,10 @@ export const calculateGuaranteedDailyCost = (
 
 /**
  * Calculates travel expenses.
- * @param {object} node - The target node.
- * @param {object} [fromNode=null] - The source node.
- * @param {object} [playerState=null] - Optional player state for upgrade-aware costs.
- * @param {object} [bandState=null] - Optional band state for trait checks.
+ * @param node - The target node.
+ * @param fromNode - The source node. Defaults to `null`.
+ * @param playerState - Optional player state for upgrade-aware costs. Defaults to `null`.
+ * @param bandState - Optional band state for trait checks. Defaults to `null`.
  */
 export const calculateTravelExpenses = (
   node: unknown,
@@ -154,18 +154,15 @@ export const calculateTravelExpenses = (
 
 /**
  * Calculates the cost to refuel the van to full capacity.
- * @param {number} currentFuel - Current fuel level.
- * @returns {number} Cost in euros.
+ * @param currentFuel - Current fuel level.
+ * @returns Cost in euros.
  */
 export const calculateRefuelCost = (
   currentFuel: number,
   assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS
 ) => {
   const safeFuel = clamp0to100(finiteNumberOr(currentFuel, 0))
-  const missing = Math.max(
-    0,
-    EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL - safeFuel
-  )
+  const missing = Math.max(0, EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL - safeFuel)
   return Math.ceil(
     missing *
       EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE *
@@ -177,8 +174,8 @@ export const calculateRefuelCost = (
 
 /**
  * Calculates the cost to repair the van to full condition.
- * @param {number} currentCondition - Current condition (0-100).
- * @returns {number} Cost in euros.
+ * @param currentCondition - Current condition (0-100).
+ * @returns Cost in euros.
  */
 export const calculateRepairCost = (currentCondition: number) => {
   const safeCondition = clamp0to100(finiteNumberOr(currentCondition, 0))
@@ -188,14 +185,14 @@ export const calculateRepairCost = (currentCondition: number) => {
 
 /**
  * Decides whether the player should be declared bankrupt.
- * @param {unknown} newMoney - Resulting cash balance; coerced to Number and must
- *   be finite (a TypeError is thrown otherwise). Negative => immediate
- *   bankruptcy, positive => never bankrupt.
- * @param {number | null | undefined} netIncome - Latest net income; defaults to
+ * @param newMoney - Resulting cash balance; coerced to Number and must
+ *   be finite (a TypeError is thrown otherwise). Negative returns immediate
+ *   bankruptcy, positive returns never bankrupt.
+ * @param netIncome - Latest net income; defaults to
  *   0 when undefined.
- * @param {number} [totalDailyObligations=0] - Daily obligations folded into the
+ * @param totalDailyObligations - Daily obligations folded into the Defaults to `0`.
  *   break-even check when the balance is exactly 0.
- * @returns {boolean} True when bankruptcy should trigger.
+ * @returns True when bankruptcy should trigger.
  */
 export const shouldTriggerBankruptcy = (
   newMoney: unknown,

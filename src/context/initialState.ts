@@ -1,7 +1,7 @@
 /**
  * Initial State Definition for the Game
  * This module defines the default state structure for the entire game.
- * @module initialState
+ * Module: `initialState`.
  */
 
 import { CHARACTERS } from '../data/characters'
@@ -34,7 +34,7 @@ export const BRAND_ALIGNMENTS = {
 
 /**
  * Default player state configuration
- * @type {Object}
+ * Type: `Object`.
  */
 export const DEFAULT_PLAYER_STATE = {
   playerId: null,
@@ -71,14 +71,14 @@ export const DEFAULT_PLAYER_STATE = {
 
 /**
  * Default rival band state configuration
- * @type {Object}
+ * Type: `Object`.
  */
 
 const DEFAULT_RIVAL_BAND_STATE: RivalBandState | null = null
 
 /**
  * Default band state configuration
- * @type {Object}
+ * Type: `Object`.
  */
 export const DEFAULT_BAND_STATE: BandState = {
   members: [
@@ -137,7 +137,7 @@ export const DEFAULT_BAND_STATE: BandState = {
 
 /**
  * Default social media state configuration
- * @type {Object}
+ * Type: `Object`.
  */
 export const DEFAULT_SOCIAL_STATE = {
   instagram: 228,
@@ -166,7 +166,7 @@ export const DEFAULT_SOCIAL_STATE = {
 
 /**
  * Default gig modifiers configuration
- * @type {Object}
+ * Type: `Object`.
  */
 export const DEFAULT_GIG_MODIFIERS = {
   promo: false,
@@ -178,7 +178,7 @@ export const DEFAULT_GIG_MODIFIERS = {
 
 /**
  * Default settings configuration
- * @type {Object}
+ * Type: `Object`.
  */
 const getSavedSettings = () => {
   try {
@@ -230,7 +230,7 @@ const sanitizeSettings = (
 
 /**
  * Complete initial state for the game
- * @type {Object}
+ * Type: `Object`.
  */
 const initialState: GameState = {
   version: 2,
@@ -276,8 +276,8 @@ const initialState: GameState = {
 
 /**
  * Creates a fresh copy of the initial state
- * @param {Object} [persistedData={}] - Persisted data to inject (e.g. unlocks, settings)
- * @returns {Object} A new initial state object
+ * @param persistedData - Persisted data to inject (e.g. unlocks, settings) Defaults to `{}`.
+ * @returns A new initial state object
  */
 export const createInitialState = (
   persistedData: { settings?: Partial<GameSettings>; unlocks?: string[] } = {}

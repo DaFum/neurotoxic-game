@@ -5,8 +5,8 @@ import { stopTransportAndClear, cleanupTransportEvents } from './cleanupUtils'
 
 /**
  * Prepares the Tone.js transport for playback, returning normalized options and request ID.
- * @param {object} [options] - Playback options.
- * @returns {Promise<{success: boolean, reqId: number, normalizedOptions: object}>}
+ * @param options - Optional. Playback options.
+ * @returns Result.
  */
 export async function prepareTransportPlayback(options: unknown = {}): Promise<{
   success: boolean
@@ -30,12 +30,12 @@ export async function prepareTransportPlayback(options: unknown = {}): Promise<{
 
 /**
  * Normalizes MIDI playback options.
- * @param {object} [options] - Optional playback settings.
- * @param {boolean} [options.useCleanPlayback=true] - Whether to bypass FX for MIDI playback.
- * @param {Function} [options.onEnded] - Callback invoked when playback ends.
- * @param {number} [options.stopAfterSeconds] - Optional playback duration limit in seconds.
- * @param {number} [options.startTimeSec] - Absolute Tone.js time to start playback.
- * @returns {{useCleanPlayback: boolean, onEnded: Function|null, stopAfterSeconds: number|null, startTimeSec: number|null}} Normalized options.
+ * @param options - Optional playback settings.
+ * - `options.useCleanPlayback` - Whether to bypass FX for MIDI playback. Defaults to `true`.
+ * - `options.onEnded` - Optional. Callback invoked when playback ends.
+ * - `options.stopAfterSeconds` - Optional playback duration limit in seconds.
+ * - `options.startTimeSec` - Optional. Absolute Tone.js time to start playback.
+ * @returns Normalized options.
  */
 export const normalizeMidiPlaybackOptions = (
   options: unknown
@@ -82,7 +82,7 @@ let cachedAssetPaths: { baseUrl: string; publicBasePath: string } | null = null
 /**
  * Derives the base asset path and public base path from import.meta.
  * Computes once lazily and caches the result for performance.
- * @returns {{baseUrl: string, publicBasePath: string}} The resolved paths.
+ * @returns The resolved paths.
  */
 export const getBaseAssetPath = (): {
   baseUrl: string
@@ -109,8 +109,8 @@ export const __resetBaseAssetPathCache = (): void => {
 /**
  * Encodes a public asset path segment-by-segment to preserve slashes.
  * Primarily used by resolveAssetUrl; exported for direct testing.
- * @param {string} assetPath - Asset path relative to the public base.
- * @returns {string} Encoded path suitable for URL usage.
+ * @param assetPath - Asset path relative to the public base.
+ * @returns Encoded path suitable for URL usage.
  */
 export const encodePublicAssetPath = (assetPath: string): string => {
   if (typeof assetPath !== 'string') return ''
@@ -123,10 +123,10 @@ export const encodePublicAssetPath = (assetPath: string): string => {
 
 /**
  * Resolves an asset URL from the bundled map or a public fallback path.
- * @param {string} filename - Filename or relative path to the asset.
- * @param {Record<string, string>} assetUrlMap - Map of asset keys to bundled URLs.
- * @param {string} [publicBasePath='/assets'] - Base path for public assets.
- * @returns {{url: string|null, source: 'bundled'|'public'|null}} Resolved URL info.
+ * @param filename - Filename or relative path to the asset.
+ * @param assetUrlMap - Map of asset keys to bundled URLs.
+ * @param publicBasePath - Base path for public assets. Defaults to `'/assets'`.
+ * @returns Resolved URL info.
  */
 export const resolveAssetUrl = (
   filename: string,
@@ -162,10 +162,10 @@ export const resolveAssetUrl = (
 
 /**
  * Builds an asset URL map with conflict detection for duplicate basenames.
- * @param {Record<string, string>} assetGlob - Vite glob map of asset paths to URLs.
- * @param {(message: string) => void} [warn] - Warning callback for conflicts.
- * @param {string} [label='Asset'] - Label for conflict warnings.
- * @returns {Record<string, string>} Map of relative paths and basenames to URLs.
+ * @param assetGlob - Vite glob map of asset paths to URLs.
+ * @param warn - Optional. Warning callback for conflicts.
+ * @param label - Label for conflict warnings. Defaults to `'Asset'`.
+ * @returns Map of relative paths and basenames to URLs.
  */
 export const buildAssetUrlMap = (
   assetGlob: unknown,

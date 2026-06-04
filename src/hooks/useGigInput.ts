@@ -18,12 +18,12 @@ type GigInputParams = {
 /**
  * Manages user input for the Gig scene, including keyboard and touch events.
  *
- * @param {Object} params
- * @param {Object} params.actions - Rhythm game actions (registerInput).
- * @param {Object} params.gameStateRef - Reference to the game state.
- * @param {Function} params.triggerBandAnimation - Callback to trigger band animation.
- * @param {Function} params.onTogglePause - Callback to toggle the pause menu.
- * @returns {Object} - Input handlers.
+ * @param params - Params.
+ * - `params.actions` - Rhythm game actions (registerInput).
+ * - `params.gameStateRef` - Reference to the game state.
+ * - `params.triggerBandAnimation` - Callback to trigger band animation.
+ * - `params.onTogglePause` - Callback to toggle the pause menu.
+ * @returns - Input handlers.
  */
 export const useGigInput = ({
   actions,
@@ -107,7 +107,7 @@ export const useGigInput = ({
   // Touch/Mouse Input Handlers for Columns
   /**
    * Handles touch/mouse down on a lane column.
-   * @param {number} laneIndex
+   * @param laneIndex - Lane index.
    */
   const handleTouchStart = useCallback(
     (laneIndex: number) => {
@@ -120,7 +120,7 @@ export const useGigInput = ({
 
   /**
    * Handles touch/mouse up on a lane column.
-   * @param {number} laneIndex
+   * @param laneIndex - Lane index.
    */
   const handleTouchEnd = useCallback(
     (laneIndex: number) => {

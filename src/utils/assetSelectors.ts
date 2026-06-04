@@ -91,7 +91,7 @@ export const getInstalledModules = (asset: LongTermAsset): AssetModule[] => {
  * AssetBoni object. Multiplier fields are multiplied (identity 1.0), additive
  * fields summed (identity 0), boolean flags OR-ed.
  *
- * Assets with condition < 20 are treated as broken and contribute no boni —
+ * Assets with condition less than 20 are treated as broken and contribute no boni —
  * this gives a clear gameplay signal that repair is needed before bonuses
  * apply again.
  */
@@ -164,7 +164,7 @@ export const getAssetTotalUpkeep = (asset: LongTermAsset): number =>
   asset.baseUpkeep + (getAssetAggregateBoni(asset).upkeepDelta ?? 0)
 
 /**
- * Daily revenue scaled by condition. A broken asset (condition < 20) returns
+ * Daily revenue scaled by condition. A broken asset (condition less than 20) returns
  * 0 — the aggregate-boni neutralization only zeroes the delta, but
  * `baseDailyRevenue` is a chassis field and would otherwise still pay out
  * `base * (condition/100)`. Explicit guard keeps broken assets fully silent

@@ -70,12 +70,12 @@ export type RhythmGameScoringReturn = {
 /**
  * Handles scoring logic including hits, misses, toxic mode, and game over.
  *
- * @param {Object} params - Hook parameters.
- * @param {Object} params.gameStateRef - Reference to the mutable game state.
- * @param {Object} params.setters - React state setters from useRhythmGameState.
- * @param {Object} params.performance - Band performance stats (modifiers).
- * @param {Object} params.contextActions - Game action callbacks (addToast, setLastGigStats, endGig).
- * @returns {Object} Scoring actions: handleHit, handleMiss, activateToxicMode.
+ * @param params - Hook parameters.
+ * - `params.gameStateRef` - Reference to the mutable game state.
+ * - `params.setters` - React state setters from useRhythmGameState.
+ * - `params.performance` - Band performance stats (modifiers).
+ * - `params.contextActions` - Game action callbacks (addToast, setLastGigStats, endGig).
+ * @returns Scoring actions: handleHit, handleMiss, activateToxicMode.
  */
 export const useRhythmGameScoring = ({
   gameStateRef,
@@ -128,8 +128,8 @@ export const useRhythmGameScoring = ({
 
   /**
    * Applies a miss penalty and updates state/refs.
-   * @param {number} count - Number of misses to process (default 1)
-   * @param {boolean} isEmptyHit - Whether this was an empty hit (hitting without a note).
+   * @param count - Number of misses to process (default 1)
+   * @param isEmptyHit - Whether this was an empty hit (hitting without a note).
    */
   const handleMiss = useCallback(
     (count = 1, isEmptyHit = false) => {
@@ -246,8 +246,8 @@ export const useRhythmGameScoring = ({
 
   /**
    * Attempts to register a hit for the active lane.
-   * @param {number} laneIndex - Index of the lane to check.
-   * @returns {boolean} True when the hit registers.
+   * @param laneIndex - Index of the lane to check.
+   * @returns True when the hit registers.
    */
   const handleHit = useCallback(
     (laneIndex: number) => {

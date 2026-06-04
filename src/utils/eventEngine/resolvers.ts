@@ -9,10 +9,10 @@ import type { EffectShape, EngineGameState, EventChoice } from './types'
 /**
  * Resolves an event choice into result and state delta payloads.
  *
- * @param {object} choice - Event choice selected by the player.
- * @param {object} gameState - Snapshot of the current game state.
- * @param {function} [rng=secureRandom] - Random number generator.
- * @returns {{ result: object | null, delta: object | null, outcomeText: string, description: string }} Resolution payload.
+ * @param choice - Event choice selected by the player.
+ * @param gameState - Snapshot of the current game state.
+ * @param rng - Random number generator. Defaults to `secureRandom`.
+ * @returns Resolution payload.
  */
 export const resolveEventChoice = (
   choice: EventChoice | null | undefined,
@@ -20,7 +20,13 @@ export const resolveEventChoice = (
   rng: () => number = secureRandom
 ) => {
   if (!choice || !gameState) {
-    return { result: null, delta: null, appliedDelta: null, outcomeText: '', description: '' }
+    return {
+      result: null,
+      delta: null,
+      appliedDelta: null,
+      outcomeText: '',
+      description: ''
+    }
   }
 
   const result = eventEngine.resolveChoice(choice, gameState, rng)
@@ -53,7 +59,7 @@ export const resolveEventChoice = (
 /**
  * Computes the deterministic money delta an option's direct effect(s) would
  * apply, for previewing the cost/reward inside a localized option label via an
- * `{{amount}}` interpolation. Mirrors the `resource` and `percentage_resource`
+ * `amount` interpolation. Mirrors the `resource` and `percentage_resource`
  * money handlers exactly (no RNG, so the preview is stable across renders).
  * Returns null when the option has no money-affecting effect, letting callers
  * fall back to a zero amount rather than leaking an unresolved placeholder.

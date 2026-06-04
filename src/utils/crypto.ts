@@ -23,7 +23,7 @@ const lut: string[] = Array.from({ length: 256 }, (_, i) =>
 /**
  * Returns a cryptographically secure random number between 0 and 1.
  * Throws an error if the Crypto API is not available.
- * @returns {number}
+ * @returns
  */
 export const secureRandom = (): number => {
   const crypto =
@@ -59,7 +59,7 @@ export const secureRandom = (): number => {
  * A safe wrapper for generating random numbers that uses secureRandom.
  * Logs the error once to the error handler and falls back to Math.random() if the Crypto API
  * is unavailable.
- * @returns {number}
+ * @returns
  */
 export const getSafeRandom = (): number => {
   try {
@@ -80,7 +80,7 @@ export const getSafeRandom = (): number => {
 /**
  * A safe wrapper for generating UUIDs that prefers crypto.randomUUID()
  * but falls back to a generated string if unavailable.
- * @returns {string}
+ * @returns
  */
 export const getSafeUUID = (): string => {
   const crypto =

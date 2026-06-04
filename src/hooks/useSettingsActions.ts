@@ -11,9 +11,9 @@ export type UseSettingsActionsReturn = {
 
 /**
  * Hook that provides shared settings action handlers.
- * @param {object} settings - The current game settings.
- * @param {function} updateSettings - The function to update the settings.
- * @returns {object} Object containing the handlers `handleToggleCRT` and `handleLogLevelChange`.
+ * @param settings - The current game settings.
+ * @param updateSettings - The function to update the settings.
+ * @returns Object containing the handlers `handleToggleCRT` and `handleLogLevelChange`.
  */
 export const useSettingsActions = (
   settings: GameSettings,

@@ -2,9 +2,9 @@
  * Checks if a specific quest is active using a fast for loop.
  * This avoids array allocation overhead from Array.some() in hot paths.
  *
- * @param {Array} activeQuests - The array of active quests.
- * @param {string} questId - The ID of the quest to find.
- * @returns {boolean} True if the quest is active.
+ * @param activeQuests - The array of active quests.
+ * @param questId - The ID of the quest to find.
+ * @returns True if the quest is active.
  */
 export const hasActiveQuest = (
   activeQuests: Array<{ id: string } | undefined> | undefined,

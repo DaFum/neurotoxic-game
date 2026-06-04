@@ -24,8 +24,8 @@ export const getGeneratedImageFallbackUrl = () =>
 /**
  * Generates a URL string for a procedurally generated image.
  * Use this for direct URL assignment (img src, CSS backgroundImage, PIXI loaders).
- * @param {string} description - The detailed prompt for the image.
- * @returns {string} The complete image URL.
+ * @param description - The detailed prompt for the image.
+ * @returns The complete image URL.
  */
 export const getGenImageUrl = (description: string) => {
   const encodedDesc = encodeURIComponent(description)

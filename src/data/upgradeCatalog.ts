@@ -165,7 +165,7 @@ const normalizeUpgradeShape = (item: CatalogInputItem): CatalogItem => {
  * Merges HQ_ITEMS (money-based) and legacy fame-based upgrades
  * into a single selector for UI consumption.
  *
- * @returns {Array<object>} Unified list of upgrade/shop entries.
+ * @returns Unified list of upgrade/shop entries.
  */
 export const getUnifiedUpgradeCatalog = (): CatalogItem[] =>
   [

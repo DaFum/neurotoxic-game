@@ -26,7 +26,7 @@ export interface MerchItemProfile {
   defaultPrice: number
   /** Relative share of audience attention before all multipliers (0..1). */
   baseAppeal: number
-  /** Price-elasticity strength. >1 punishes overpricing more steeply. */
+  /** Price-elasticity strength. Greater than 1 punishes overpricing more steeply. */
   priceElasticity: number
   /** Multiplicative boosts by city genreBias. Missing genres default to 1.0. */
   genreAffinity: Partial<Record<CityGenre, number>>

@@ -1,7 +1,7 @@
 /**
  * Travel Logic Hook
  * Encapsulates all travel-related state and logic for the Overworld scene.
- * @module useTravelLogic
+ * Module: `useTravelLogic`.
  */
 
 import { useState, useRef, useCallback, useEffect } from 'react'
@@ -89,27 +89,27 @@ type TravelLogicParams = {
 /**
  * Failsafe timeout duration in milliseconds
  * Travel animation duration (1500ms) + buffer (10ms)
- * @constant {number}
+ * Constant: `number`
  */
 const TRAVEL_ANIMATION_TIMEOUT_MS = 1510
 
 /**
  * Custom hook for managing travel state and logic
- * @param {Object} params - Hook parameters
- * @param {Object} params.player - Player state
- * @param {Object} params.band - Band state
- * @param {Object} params.social - Social state
- * @param {Object} params.gameMap - Game map data
- * @param {Function} params.updatePlayer - Player update function
- * @param {Function} params.updateBand - Band update function
- * @param {Function} params.saveGame - Function to save game state
- * @param {Function} params.advanceDay - Day advancement function
- * @param {Function} params.triggerEvent - Event trigger function
- * @param {Function} params.startGig - Gig start function
- * @param {Function} params.addToast - Toast notification function
- * @param {Function} params.changeScene - Scene change function
- * @param {Function} [params.onShowHQ] - Callback when HQ should be shown
- * @returns {Object} Travel state and handlers
+ * @param params - Hook parameters
+ * - `params.player` - Player state
+ * - `params.band` - Band state
+ * - `params.social` - Social state
+ * - `params.gameMap` - Game map data
+ * - `params.updatePlayer` - Player update function
+ * - `params.updateBand` - Band update function
+ * - `params.saveGame` - Function to save game state
+ * - `params.advanceDay` - Day advancement function
+ * - `params.triggerEvent` - Event trigger function
+ * - `params.startGig` - Gig start function
+ * - `params.addToast` - Toast notification function
+ * - `params.changeScene` - Scene change function
+ * - `params.onShowHQ` - Optional. Callback when HQ should be shown
+ * @returns Travel state and handlers
  */
 function calculateTravelCostsAndImpact(
   node: MapNode,
@@ -230,8 +230,8 @@ export const useTravelLogic = ({
 
   /**
    * Checks if a target node is connected to the current node
-   * @param {string} targetNodeId - Target node ID
-   * @returns {boolean} True if connected
+   * @param targetNodeId - Target node ID
+   * @returns True if connected
    */
   const isConnected = useCallback(
     (targetNodeId: string) => {
@@ -242,9 +242,9 @@ export const useTravelLogic = ({
 
   /**
    * Determines the visibility state of a node based on its layer
-   * @param {number} nodeLayer - Target node layer
-   * @param {number} currentLayer - Current player layer
-   * @returns {string} 'visible', 'dimmed', or 'hidden'
+   * @param nodeLayer - Target node layer
+   * @param currentLayer - Current player layer
+   * @returns 'visible', 'dimmed', or 'hidden'
    */
   const getNodeVisibility = useCallback(
     (nodeLayer: number, currentLayer: number) => {
@@ -255,7 +255,7 @@ export const useTravelLogic = ({
 
   /**
    * Handles logic when arriving at a node
-   * @param {Object} node - Arrived node
+   * @param node - Arrived node
    */
   const handleNodeArrivalCallback = useCallback(
     (node: MapNode, eventAlreadyActive = false) => {
@@ -290,7 +290,7 @@ export const useTravelLogic = ({
 
   /**
    * Callback executed when travel animation completes
-   * @param {Object} [explicitNode] - Explicit target node (bypasses state)
+   * @param explicitNode - Optional. Explicit target node (bypasses state)
    */
   const onTravelComplete = useCallback(
     (explicitNode: MapNode | null = null) => {
@@ -447,7 +447,7 @@ export const useTravelLogic = ({
 
   /**
    * Starts the actual travel sequence (called after confirmation)
-   * @param {Object} node - Target node
+   * @param node - Target node
    */
   const startTravelSequence = useCallback(
     (node: MapNode) => {
@@ -537,7 +537,7 @@ export const useTravelLogic = ({
    * Initiates travel to a selected node.
    * First click shows cost and sets pending confirmation.
    * Second click on the same node confirms and starts travel.
-   * @param {Object} node - Target node
+   * @param node - Target node
    */
   const handleTravel = useCallback(
     (node: MapNode) => {

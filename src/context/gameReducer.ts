@@ -1,7 +1,7 @@
 /**
  * Game Reducer Module
  * Handles all state mutations through a centralized reducer pattern.
- * @module gameReducer
+ * Module: `gameReducer`.
  */
 
 import { ActionTypes } from './actionTypes'
@@ -198,9 +198,9 @@ const reducerMap: ReducerMap = {
 /**
  * Main state reducer for the game.
  * Uses a map-based dispatcher or delegates to sub-reducers.
- * @param {Object} state - Current state
- * @param {Object} action - Action with type and payload
- * @returns {Object} New state
+ * @param state - Current state
+ * @param action - Action with type and payload
+ * @returns New state
  */
 const isHandledAction = (action: GameAction): action is HandledAction =>
   !(BAND_ACTIONS as readonly string[]).includes(action.type)

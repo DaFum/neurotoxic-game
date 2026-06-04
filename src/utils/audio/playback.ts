@@ -14,7 +14,7 @@ import {
 
 /**
  * Plays a sound effect by type.
- * @param {string} type - The type of SFX ('hit', 'miss', 'menu', 'travel', 'cash').
+ * @param type - The type of SFX ('hit', 'miss', 'menu', 'travel', 'cash').
  */
 export function playSFX(type: string): void {
   if (!audioState.isSetup || !audioState.sfxSynth) return
@@ -80,8 +80,8 @@ export function playSFX(type: string): void {
 
 /**
  * Sets the SFX volume.
- * @param {number} vol - Volume between 0 and 1.
- * @returns {boolean} True when applied to an existing gain node.
+ * @param vol - Volume between 0 and 1.
+ * @returns True when applied to an existing gain node.
  */
 export function setSFXVolume(vol: number): boolean {
   if (!audioState.sfxGain) return false
@@ -94,8 +94,8 @@ export function setSFXVolume(vol: number): boolean {
 
 /**
  * Sets the music volume using the dedicated music bus.
- * @param {number} vol - Volume between 0 and 1.
- * @returns {boolean} True when applied to an existing gain node.
+ * @param vol - Volume between 0 and 1.
+ * @returns True when applied to an existing gain node.
  */
 export function setMusicVolume(vol: number): boolean {
   if (!audioState.musicGain) return false
@@ -106,11 +106,11 @@ export function setMusicVolume(vol: number): boolean {
 
 /**
  * Calculates gig time in milliseconds based on context time.
- * @param {object} params - Calculation inputs.
- * @param {number} params.contextTimeSec - Raw audio context time in seconds.
- * @param {number|null} params.startCtxTimeSec - Context time when gig playback started.
- * @param {number} params.offsetMs - Offset in milliseconds to apply.
- * @returns {number} Calculated gig time in milliseconds.
+ * @param params - Calculation inputs.
+ * - `params.contextTimeSec` - Raw audio context time in seconds.
+ * - `params.startCtxTimeSec` - Context time when gig playback started.
+ * - `params.offsetMs` - Offset in milliseconds to apply.
+ * @returns Calculated gig time in milliseconds.
  */
 export const calculateGigTimeMs = ({
   contextTimeSec,
@@ -135,7 +135,7 @@ export const calculateGigTimeMs = ({
 /**
  * Returns the current gig time in ms.
  * This uses the raw Web Audio context for sample-accurate sync with buffers.
- * @returns {number} Current gig time in ms.
+ * @returns Current gig time in ms.
  */
 export function getGigTimeMs() {
   const rawContext = getRawAudioContext()
@@ -148,9 +148,8 @@ export function getGigTimeMs() {
 
 /**
  * Handles cleanup when a gig buffer source ends naturally.
- * @param {AudioBufferSourceNode} source - The ended source node.
- * @returns {void}
- */
+ * @param source - The ended source node.
+ * @returns */
 type GigEndedInfo = {
   filename: string | null
   durationMs: number | null
@@ -183,12 +182,12 @@ const createGigBufferSource = ({
 
 /**
  * Calculates buffer playback offsets and safe duration for gig playback.
- * @param {object} params - Playback window params.
- * @param {number} params.bufferDurationSec - Audio buffer duration in seconds.
- * @param {number} params.baseOffsetMs - Base offset in milliseconds.
- * @param {number} params.seekOffsetMs - Seek offset in milliseconds.
- * @param {number|null} params.durationMs - Requested playback duration in milliseconds.
- * @returns {{offsetSeconds: number, requestedOffsetSeconds: number, safeDurationSeconds: number|null, nextBaseOffsetMs: number, nextSeekOffsetMs: number, didResetOffsets: boolean}} Playback window.
+ * @param params - Playback window params.
+ * - `params.bufferDurationSec` - Audio buffer duration in seconds.
+ * - `params.baseOffsetMs` - Base offset in milliseconds.
+ * - `params.seekOffsetMs` - Seek offset in milliseconds.
+ * - `params.durationMs` - Requested playback duration in milliseconds.
+ * @returns Playback window.
  */
 export const calculateGigPlaybackWindow = ({
   bufferDurationSec,
@@ -248,8 +247,7 @@ export const calculateGigPlaybackWindow = ({
 
 /**
  * Stops gig playback and clears the gig clock state.
- * @returns {void}
- */
+ * @returns */
 export function stopGigPlayback() {
   if (audioState.gigSource) {
     logger.debug(
@@ -262,13 +260,13 @@ export function stopGigPlayback() {
 
 /**
  * Starts gig playback using Web Audio buffer playback.
- * @param {object} params - Playback params.
- * @param {string} params.filename - Audio filename to play.
- * @param {number} [params.bufferOffsetMs=0] - Offset into the buffer in ms.
- * @param {number} [params.delayMs=0] - Delay before starting playback in ms.
- * @param {number} [params.durationMs=null] - Optional playback duration in ms.
- * @param {Function} [params.onEnded] - Callback invoked after playback ends.
- * @returns {Promise<boolean>} True when playback starts.
+ * @param params - Playback params.
+ * - `params.filename` - Audio filename to play.
+ * - `params.bufferOffsetMs` - Offset into the buffer in ms. Defaults to `0`.
+ * - `params.delayMs` - Delay before starting playback in ms. Defaults to `0`.
+ * - `params.durationMs` - Optional playback duration in ms. Defaults to `null`.
+ * - `params.onEnded` - Optional. Callback invoked after playback ends.
+ * @returns True when playback starts.
  */
 export async function startGigPlayback({
   filename,
@@ -381,12 +379,11 @@ export async function startGigPlayback({
 
 /**
  * Starts the gig clock without buffer playback (e.g. for MIDI fallback).
- * @param {object} params - Clock params.
- * @param {number} [params.delayMs=0] - Delay before starting the clock in ms.
- * @param {number} [params.offsetMs=0] - Starting offset for the gig clock.
- * @param {number|null} [params.startTimeSec=null] - Absolute Tone.js time to start the gig clock.
- * @returns {void}
- */
+ * @param params - Clock params.
+ * - `params.delayMs` - Delay before starting the clock in ms. Defaults to `0`.
+ * - `params.offsetMs` - Starting offset for the gig clock. Defaults to `0`.
+ * - `params.startTimeSec` - Absolute Tone.js time to start the gig clock. Defaults to `null`.
+ * @returns */
 export function startGigClock({
   delayMs = 0,
   offsetMs = 0,
@@ -419,8 +416,7 @@ export function startGigClock({
 
 /**
  * Pauses gig playback and preserves the current offset.
- * @returns {void}
- */
+ * @returns */
 export function pauseGigPlayback(): void {
   if (audioState.gigIsPaused) return
   if (!audioState.gigSource && audioState.gigStartCtxTime == null) return
@@ -448,7 +444,7 @@ export function pauseGigPlayback(): void {
 
 /**
  * Resumes gig playback from the stored offset.
- * @returns {boolean} True on success or no-op, false on source.start() failure.
+ * @returns True on success or no-op, false on source.start() failure.
  */
 export function resumeGigPlayback(): boolean {
   if (!audioState.gigIsPaused) return true
@@ -552,8 +548,7 @@ export function stopAudioInternal(): void {
 
 /**
  * Stops ambient OGG playback and clears ambient state.
- * @returns {void}
- */
+ * @returns */
 export function stopAmbientPlayback(): void {
   if (audioState.ambientSource) {
     logger.debug('AudioEngine', 'Stopping ambient OGG playback.')
@@ -585,7 +580,7 @@ const awaitMaybePromise = async (value: unknown): Promise<void> => {
 
 /**
  * Pauses the audio transport.
- * @returns {Promise<void>} Resolves when pause is complete.
+ * @returns Resolves when pause is complete.
  */
 export async function pauseAudio(): Promise<void> {
   try {
@@ -604,7 +599,7 @@ export async function pauseAudio(): Promise<void> {
 
 /**
  * Resumes the audio transport.
- * @returns {Promise<boolean>} Resolves to the boolean result of resumeGigPlayback() when resume is complete.
+ * @returns Resolves to the boolean result of resumeGigPlayback() when resume is complete.
  */
 export async function resumeAudio(): Promise<boolean> {
   try {
@@ -634,16 +629,15 @@ export async function resumeAudio(): Promise<boolean> {
 
 /**
  * Returns the current Tone transport state.
- * @returns {'started'|'stopped'|'paused'}
- */
+ * @returns */
 export function getTransportState(): 'started' | 'stopped' | 'paused' {
   return Tone.getTransport().state
 }
 
 /**
  * Applies global destination mute.
- * @param {boolean} muted - Whether the output destination should be muted.
- * @returns {boolean} The applied mute state.
+ * @param muted - Whether the output destination should be muted.
+ * @returns The applied mute state.
  */
 export function setDestinationMute(muted: boolean): boolean {
   const nextMute = Boolean(muted)
@@ -662,8 +656,7 @@ export function setDestinationMute(muted: boolean): boolean {
 
 /**
  * Returns whether ambient OGG playback is currently active.
- * @returns {boolean}
- */
+ * @returns */
 export function isAmbientOggPlaying(): boolean {
   return audioState.ambientSource != null
 }
@@ -672,7 +665,7 @@ export function isAmbientOggPlaying(): boolean {
  * Returns the current absolute audio clock time in milliseconds.
  * Uses the Tone.js AudioContext clock. This absolute time is needed
  * for MIDI note scheduling (which occurs independent of gig state).
- * @returns {number} Current audio time in ms.
+ * @returns Current audio time in ms.
  */
 export function getToneAbsoluteTimeMs(): number {
   return Tone.now() * 1000
@@ -680,7 +673,7 @@ export function getToneAbsoluteTimeMs(): number {
 
 /**
  * Returns the current play request ID.
- * @returns {number} The play request ID.
+ * @returns The play request ID.
  */
 export function getPlayRequestId(): number {
   return audioState.playRequestId
@@ -712,7 +705,7 @@ export const disableCorruptionBurstAudio = (): void => {
 
 /**
  * Triggers the master corruption effect (distortion)
- * @param {boolean} active - Whether the effect should be active
+ * @param active - Whether the effect should be active
  */
 export function setCorruptionEffect(active: boolean): void {
   if (audioState.masterCorruption) {

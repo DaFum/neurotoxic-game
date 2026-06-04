@@ -13,7 +13,7 @@ import { MainMenuFooter } from './mainmenu/MainMenuFooter'
 
 /**
  * The main menu scene component.
- * @returns {JSX.Element} The rendered menu.
+ * @returns The rendered menu.
  */
 export const MainMenu = () => {
   const { showHQ, openHQ, closeHQ } = useBandHQModal()

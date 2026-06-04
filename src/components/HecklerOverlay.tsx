@@ -75,8 +75,8 @@ function updateOverlayNodes(
 /**
  * Overlay component that renders projectiles (heckler items).
  * Optimized to bypass React renders during animation.
- * @param {object} props
- * @param {object} props.gameStateRef - Mutable game state ref containing projectiles array.
+ * @param props - Component props.
+ * - `props.gameStateRef` - Mutable game state ref containing projectiles array.
  */
 export const HecklerOverlay = memo(function HecklerOverlay({
   gameStateRef

@@ -96,8 +96,8 @@ class AudioSystem {
 
   /**
    * Subscribes to audio state changes for reactive UI consumers.
-   * @param {() => void} listener - Callback invoked after audio state transitions.
-   * @returns {() => void} Unsubscribe function.
+   * @param listener - Callback invoked after audio state transitions.
+   * @returns Unsubscribe function.
    */
   subscribe(listener: AudioListener): () => void {
     if (typeof listener !== 'function') {
@@ -112,7 +112,7 @@ class AudioSystem {
 
   /**
    * Returns the current audio state snapshot for external-store consumers.
-   * @returns {{musicVol: number, sfxVol: number, isMuted: boolean, isPlaying: boolean, currentSongId: string | null}}
+   * @returns Result.
    */
   getStateSnapshot(): AudioStateSnapshot {
     return this.stateSnapshot
@@ -258,7 +258,7 @@ class AudioSystem {
 
   /**
    * Stops the currently playing music.
-   * @param {{ emit?: boolean }} [options] - Controls whether subscriber notifications are emitted.
+   * @param options - Optional. Controls whether subscriber notifications are emitted.
    */
   stopMusic(
     options: { emit?: boolean; invalidateAmbientStart?: boolean } = {}
@@ -283,7 +283,7 @@ class AudioSystem {
   /**
    * Resumes the paused music or starts ambient if none is loaded.
    * We assume mutually exclusive playback states (either ambient or gig audio is active, not both).
-   * @returns {Promise<boolean>} True when music is running or successfully started.
+   * @returns True when music is running or successfully started.
    */
   async resumeMusic(): Promise<boolean> {
     try {
@@ -314,7 +314,7 @@ class AudioSystem {
   /**
    * Ensures the AudioContext is running (Tone.js).
    * Should be called after a user gesture.
-   * @returns {Promise<boolean>} True if successful.
+   * @returns True if successful.
    */
   async ensureAudioContext(): Promise<boolean> {
     try {
@@ -335,7 +335,7 @@ class AudioSystem {
 
   /**
    * Plays a sound effect by key.
-   * @param {string} key - The SFX identifier (e.g., 'CLICK', 'ERROR').
+   * @param key - The SFX identifier (e.g., 'CLICK', 'ERROR').
    */
   playSFX(key: AudioSfxType): void {
     if (!this.prefsLoaded) return
@@ -348,7 +348,7 @@ class AudioSystem {
 
   /**
    * Sets the music volume and persists it.
-   * @param {number} vol - Volume level between 0 and 1.
+   * @param vol - Volume level between 0 and 1.
    */
   setMusicVolume(vol: number): boolean {
     if (!Number.isFinite(vol)) {
@@ -383,7 +383,7 @@ class AudioSystem {
 
   /**
    * Sets the SFX volume and persists it.
-   * @param {number} vol - Volume level between 0 and 1.
+   * @param vol - Volume level between 0 and 1.
    */
   setSFXVolume(vol: number): boolean {
     if (!Number.isFinite(vol)) {
@@ -418,7 +418,7 @@ class AudioSystem {
 
   /**
    * Toggles global mute state.
-   * @returns {boolean} The new mute state.
+   * @returns The new mute state.
    */
   toggleMute(): boolean {
     this.muted = !this.muted
@@ -437,7 +437,7 @@ class AudioSystem {
 
   /**
    * Toggles the Neuro-Decimator WebAudio node.
-   * @param {boolean} active - The active state
+   * @param active - The active state
    */
   setNeuroDecimator(active: boolean): void {
     if (audioState.neuroDistortion) {

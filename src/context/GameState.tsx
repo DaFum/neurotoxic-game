@@ -73,8 +73,8 @@ function useRequiredContext<T>(context: Context<T | null>, name: string): T {
 
 /**
  * Global State Provider covering Player, Band, Inventory, and Scene Management.
- * @param {object} props
- * @param {React.ReactNode} props.children
+ * @param props - Component props.
+ * - `props.children` - Children.
  */
 // Lazy initialization of state to ensure fresh data fetch on mount
 const initGameState = (): GameState => {
@@ -220,7 +220,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
 /**
  * Hook to access the global game dispatch functions only (stable reference).
  *
- * @returns {object} The action dispatchers.
+ * @returns The action dispatchers.
  */
 export const useGameDispatch = () => {
   return useRequiredContext(GameDispatchContext, 'useGameDispatch')
@@ -230,7 +230,7 @@ export const useGameDispatch = () => {
  * Hook to access stable game actions only.
  * This is the preferred action surface for new code.
  *
- * @returns {object} The action dispatchers.
+ * @returns The action dispatchers.
  */
 export const useGameActions = () => {
   return useRequiredContext(GameDispatchContext, 'useGameActions')
@@ -242,9 +242,9 @@ export const useGameActions = () => {
  * Note: Re-renders are still triggered by any context update; for
  * equality-based bail-out, memoize the consuming component with React.memo.
  *
- * @template T
- * @param {(state: GameState) => T} selector - State selector.
- * @returns {T} Selected state slice.
+ * Type: `Param T - Type parameter.`.
+ * @param selector - State selector.
+ * @returns Selected state slice.
  */
 export function useGameSelector<T>(selector: (state: GameState) => T): T {
   const state = useRequiredContext(GameStateContext, 'useGameSelector')

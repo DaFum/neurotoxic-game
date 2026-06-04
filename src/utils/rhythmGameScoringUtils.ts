@@ -28,11 +28,11 @@ const CONSTANTS = {
 
 /**
  * Calculates the dynamic hit window for a specific lane.
- * @param {number} baseHitWindow - Base hit window in ms.
- * @param {number} hitWindowBonus - Bonus hit window from modifiers.
- * @param {number} laneIndex - Lane index.
- * @param {number} guitarDifficulty - Modifier for guitar lane difficulty.
- * @returns {number} The calculated dynamic hit window.
+ * @param baseHitWindow - Base hit window in ms.
+ * @param hitWindowBonus - Bonus hit window from modifiers.
+ * @param laneIndex - Lane index.
+ * @param guitarDifficulty - Modifier for guitar lane difficulty.
+ * @returns The calculated dynamic hit window.
  */
 export const calculateDynamicHitWindow = (
   baseHitWindow: number,
@@ -56,12 +56,12 @@ export const calculateDynamicHitWindow = (
 
 /**
  * Calculates the points awarded for hitting a note.
- * @param {number} laneIndex - Lane index.
- * @param {number} drumMultiplier - Modifier for drum lane points.
- * @param {number} guitarScoreMult - Modifier for guitar lane points.
- * @param {number} bassScoreMult - Modifier for bass lane points.
- * @param {boolean} guestlist - Whether guestlist modifier is active.
- * @returns {number} The calculated base points.
+ * @param laneIndex - Lane index.
+ * @param drumMultiplier - Modifier for drum lane points.
+ * @param guitarScoreMult - Modifier for guitar lane points.
+ * @param bassScoreMult - Modifier for bass lane points.
+ * @param guestlist - Whether guestlist modifier is active.
+ * @returns The calculated base points.
  */
 export const calculatePoints = (
   laneIndex: number,
@@ -100,13 +100,13 @@ export const calculatePoints = (
 
 /**
  * Calculates the final score for a hit.
- * @param {number} basePoints - Points awarded for the hit.
- * @param {number} currentCombo - Current combo count.
- * @param {boolean} toxicModeActive - Whether toxic mode is active.
- * @param {boolean} hasPerfektionist - Whether the Perfektionist trait is active.
- * @param {number} currentAccuracy - Current hit accuracy percentage.
- * @param {boolean} isCorruptionBurstActive - Whether corruption burst is active.
- * @returns {number} The final calculated score increment.
+ * @param basePoints - Points awarded for the hit.
+ * @param currentCombo - Current combo count.
+ * @param toxicModeActive - Whether toxic mode is active.
+ * @param hasPerfektionist - Whether the Perfektionist trait is active.
+ * @param currentAccuracy - Current hit accuracy percentage.
+ * @param isCorruptionBurstActive - Whether corruption burst is active.
+ * @returns The final calculated score increment.
  */
 export const calculateFinalScore = (
   basePoints: number,
@@ -139,12 +139,12 @@ export const calculateFinalScore = (
 
 /**
  * Calculates the impact of a miss.
- * @param {number} count - Number of misses.
- * @param {boolean} isEmptyHit - Whether it was an empty hit.
- * @param {number} currentOverload - Current overload amount.
- * @param {number} currentHealth - Current health amount.
- * @param {number} crowdDecay - Crowd decay modifier.
- * @returns {{ penalty: number, nextOverload: number, decayPerMiss: number, nextHealth: number }} The calculated miss impact.
+ * @param count - Number of misses.
+ * @param isEmptyHit - Whether it was an empty hit.
+ * @param currentOverload - Current overload amount.
+ * @param currentHealth - Current health amount.
+ * @param crowdDecay - Crowd decay modifier.
+ * @returns The calculated miss impact.
  */
 export const calculateMissImpact = (
   count = 1,

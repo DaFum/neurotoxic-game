@@ -61,8 +61,8 @@ const setProp = (obj: unknown, key?: string, value?: unknown): void => {
 
 /**
  * Selects the primary effect payload from catalog entries during migration.
- * @param {object} item - Purchase catalog item.
- * @returns {object|undefined} Primary effect object, if available.
+ * @param item - Purchase catalog item.
+ * @returns Primary effect object, if available.
  */
 export const getPrimaryEffect = (
   item?: PurchaseItem | null
@@ -90,9 +90,9 @@ allGearItems.forEach((item: PurchaseItem) => {
 
 /**
  * Helper to calculate the current gear count in band inventory
- * @param {Object} inventory - Band inventory
- * @param {Map} lookup - Gear lookup map
- * @returns {number} Gear count
+ * @param inventory - Band inventory
+ * @param lookup - Gear lookup map
+ * @returns Gear count
  */
 export const getGearCount = (
   inventory?: Inventory | null,
@@ -115,9 +115,9 @@ export const getGearCount = (
 
 /**
  * Calculates the adjusted cost of an item based on active traits.
- * @param {Object} item - Item to check
- * @param {Object} band - Band state
- * @returns {number} Adjusted cost
+ * @param item - Item to check
+ * @param band - Band state
+ * @returns Adjusted cost
  */
 export const getAdjustedCost = (
   item: PurchaseItem,
@@ -137,9 +137,9 @@ export const getAdjustedCost = (
 
 /**
  * Helper to return a van object with the upgrade added if not already present.
- * @param {Object} van - Current van state (could be from player or playerPatch)
- * @param {string} upgradeId - ID of the upgrade to add
- * @returns {Object} Updated van object
+ * @param van - Current van state (could be from player or playerPatch)
+ * @param upgradeId - ID of the upgrade to add
+ * @returns Updated van object
  */
 export const buildVanWithUpgrade = (
   van: Partial<PlayerState['van']> | undefined,
@@ -177,10 +177,10 @@ export const buildVanWithUpgrade = (
  * - player.hqUpgrades
  * - band.inventory
  *
- * @param {Object} item - Item to check
- * @param {Object} player - Player state
- * @param {Object} band - Band state
- * @returns {boolean} True if owned
+ * @param item - Item to check
+ * @param player - Player state
+ * @param band - Band state
+ * @returns True if owned
  */
 export const isItemOwned = (
   item: PurchaseItem,
@@ -207,10 +207,10 @@ export const isItemOwned = (
 
 /**
  * Checks if player can afford an item
- * @param {Object} item - Item to check
- * @param {Object} player - Player state
- * @param {number} adjustedCost - Cost after adjustments
- * @returns {boolean} True if affordable
+ * @param item - Item to check
+ * @param player - Player state
+ * @param adjustedCost - Cost after adjustments
+ * @returns True if affordable
  */
 export const canAfford = (
   item: PurchaseItem,
@@ -226,9 +226,9 @@ export const canAfford = (
 
 /**
  * Applies inventory set effect
- * @param {Object} effect - Effect configuration
- * @param {Object} bandInventory - Current band inventory
- * @returns {Object} Band patch to apply
+ * @param effect - Effect configuration
+ * @param bandInventory - Current band inventory
+ * @returns Band patch to apply
  */
 export const applyInventorySet = (
   effect: Effect,
@@ -245,9 +245,9 @@ export const applyInventorySet = (
  * value level; this one handles the `Effect` shape used by the catalog/HQ
  * purchase pipeline and produces a full band patch.
  *
- * @param {Object} effect - Effect configuration
- * @param {Object} bandInventory - Current band inventory
- * @returns {Object} Band patch to apply
+ * @param effect - Effect configuration
+ * @param bandInventory - Current band inventory
+ * @returns Band patch to apply
  */
 export const applyInventoryAdd = (
   effect: Effect,
@@ -281,11 +281,11 @@ export const applyInventoryAdd = (
 
 /**
  * Applies stat modifier effect
- * @param {Object} effect - Effect configuration
- * @param {Object} playerPatch - Current player patch
- * @param {Object} player - Player state
- * @param {Object} band - Band state
- * @returns {Object} Object with updated playerPatch and bandPatch
+ * @param effect - Effect configuration
+ * @param playerPatch - Current player patch
+ * @param player - Player state
+ * @param band - Band state
+ * @returns Object with updated playerPatch and bandPatch
  */
 export const applyStatModifier = (
   effect: Effect,
@@ -359,10 +359,10 @@ export const applyStatModifier = (
 
 /**
  * Validates whether the item can be purchased.
- * @param {Object} item - Item to purchase
- * @param {Object} player - Player state
- * @param {Object} band - Band state
- * @returns {Object} { isValid: boolean, errorType?: string, finalCost?: number, isConsumable?: boolean, payingWithFame?: boolean, startingCurrency?: number, effect?: Object }
+ * @param item - Item to purchase
+ * @param player - Player state
+ * @param band - Band state
+ * @returns `isValid: boolean, errorType?: string, finalCost?: number, isConsumable?: boolean, payingWithFame?: boolean, startingCurrency?: number, effect?: Object`
  */
 export const validatePurchase = (
   item: PurchaseItem,
@@ -458,12 +458,12 @@ export const EFFECT_HANDLERS: Record<Effect['type'], EffectHandler> = {
 
 /**
  * Processes a purchase effect using the corresponding handler.
- * @param {Object} effect - Primary effect of the item
- * @param {Object} item - Item being purchased
- * @param {Object} initialPlayerPatch - Player patch after cost deduction
- * @param {Object} player - Player state
- * @param {Object} band - Band state
- * @returns {Object} { playerPatch, bandPatch, messages, errorType }
+ * @param effect - Primary effect of the item
+ * @param item - Item being purchased
+ * @param initialPlayerPatch - Player patch after cost deduction
+ * @param player - Player state
+ * @param band - Band state
+ * @returns `playerPatch, bandPatch, messages, errorType`
  */
 export const processPurchaseEffect = (
   effect: Effect,
@@ -483,11 +483,11 @@ export const processPurchaseEffect = (
 
 /**
  * Applies unlock upgrade effect
- * @param {Object} effect - Effect configuration
- * @param {Object} item - Item being purchased
- * @param {Object} playerPatch - Current player patch
- * @param {Object} playerVan - Current player van state
- * @returns {Object} Updated player patch
+ * @param effect - Effect configuration
+ * @param item - Item being purchased
+ * @param playerPatch - Current player patch
+ * @param playerVan - Current player van state
+ * @returns Updated player patch
  */
 export const applyUnlockUpgrade = (
   effect: Effect,
@@ -517,11 +517,11 @@ export const applyUnlockUpgrade = (
 
 /**
  * Applies unlock HQ effect
- * @param {Object} item - Item being purchased
- * @param {Object} playerPatch - Current player patch
- * @param {Object} player - Player state
- * @param {Object} band - Band state
- * @returns {Object} Object with updated playerPatch, bandPatch and messages
+ * @param item - Item being purchased
+ * @param playerPatch - Current player patch
+ * @param player - Player state
+ * @param band - Band state
+ * @returns Object with updated playerPatch, bandPatch and messages
  */
 export const applyUnlockHQ = (
   item: PurchaseItem,
@@ -656,10 +656,10 @@ export const applyUnlockHQ = (
 
 /**
  * Applies passive effect
- * @param {Object} effect - Effect configuration
- * @param {Object} playerPatch - Current player patch
- * @param {Object} player - Player state
- * @returns {Object} Object with updated playerPatch and bandPatch
+ * @param effect - Effect configuration
+ * @param playerPatch - Current player patch
+ * @param player - Player state
+ * @returns Object with updated playerPatch and bandPatch
  */
 export const applyPassive = (
   effect: Effect,

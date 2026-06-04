@@ -1,7 +1,7 @@
 /**
  * Purchase Logic Hook
  * Encapsulates all purchase-related logic for the BandHQ shop.
- * @module usePurchaseLogic
+ * Module: `usePurchaseLogic`.
  */
 
 import { useCallback } from 'react'
@@ -105,19 +105,19 @@ const asToastOptions = (value: unknown): Record<string, unknown> => {
 
 /**
  * Custom hook for managing shop purchase logic
- * @param {Object} params - Hook parameters
- * @param {Object} params.player - Player state
- * @param {Object} params.band - Band state
- * @param {Function} params.updatePlayer - Player update function
- * @param {Function} params.updateBand - Band update function
- * @param {Function} params.addToast - Toast notification function
- * @returns {Object} Purchase handlers and utilities
+ * @param params - Hook parameters
+ * - `params.player` - Player state
+ * - `params.band` - Band state
+ * - `params.updatePlayer` - Player update function
+ * - `params.updateBand` - Band update function
+ * - `params.addToast` - Toast notification function
+ * @returns Purchase handlers and utilities
  */
 /**
  * Helper to process and display toasts from trait unlocks
- * @param {Array} toasts - Array of toast objects
- * @param {Function} addToast - Toast function
- * @param {Function} t - Translation function
+ * @param toasts - Array of toast objects
+ * @param addToast - Toast function
+ * @param t - Translation function
  */
 const processTraitToasts = (
   toasts: ToastPayload[],
@@ -344,8 +344,8 @@ export const usePurchaseLogic = ({
 
   /**
    * Handles the purchase of an item
-   * @param {Object} item - Item to purchase
-   * @returns {boolean} True if purchase was successful
+   * @param item - Item to purchase
+   * @returns True if purchase was successful
    */
   const handleBuy = useCallback(
     (item: PurchaseItem) => {
@@ -491,8 +491,8 @@ export const usePurchaseLogic = ({
 
   /**
    * Checks if an item should be disabled
-   * @param {Object} item - Item to check
-   * @returns {boolean} True if disabled
+   * @param item - Item to check
+   * @returns True if disabled
    */
   const isItemDisabled = useCallback(
     (item: PurchaseItem) => {

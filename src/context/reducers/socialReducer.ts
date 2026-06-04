@@ -154,9 +154,9 @@ const readPlayerFundsAndHarmony = (
 
 /**
  * Handles social update actions
- * @param {Object} state - Current state
- * @param {Object} payload - Social updates
- * @returns {Object} Updated state
+ * @param state - Current state
+ * @param payload - Social updates
+ * @returns Updated state
  */
 export const handleUpdateSocial = (
   state: GameState,

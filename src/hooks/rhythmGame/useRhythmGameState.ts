@@ -249,7 +249,7 @@ const INITIAL_GAME_STATE_REF: Omit<RhythmGameRefState, 'rng'> = {
  * Manages the state for the rhythm game, including React state for UI
  * and a Ref for the high-frequency game loop.
  *
- * @returns {{gameStateRef: React.MutableRefObject, state: Object, setters: Object}} State and setters.
+ * @returns State and setters.
  */
 export const useRhythmGameState = (): RhythmGameStateHookReturn => {
   // React State for UI

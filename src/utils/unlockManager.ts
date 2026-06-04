@@ -25,7 +25,7 @@ const clearCache = (): void => {
 
 /**
  * Loads and validates unlocks from local storage.
- * @returns {string[]} Array of unlocked strings.
+ * @returns Array of unlocked strings.
  */
 export const getUnlocks = (): string[] => {
   let currentRaw: string | null = null
@@ -73,8 +73,8 @@ export const getUnlocks = (): string[] => {
 
 /**
  * Adds a new unlock to storage if not already present.
- * @param {string} unlockId - The ID of the unlock to add.
- * @returns {boolean} True if the unlock was added (wasn't already present).
+ * @param unlockId - The ID of the unlock to add.
+ * @returns True if the unlock was added (wasn't already present).
  */
 export const addUnlock = (unlockId: string): boolean => {
   if (typeof unlockId !== 'string') return false

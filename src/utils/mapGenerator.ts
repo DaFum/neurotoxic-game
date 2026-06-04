@@ -141,7 +141,7 @@ export class MapGenerator {
   seed: number
   /**
    * Creates a new MapGenerator instance.
-   * @param {number} seed - The seed for the random number generator.
+   * @param seed - The seed for the random number generator.
    */
   constructor(seed: number) {
     const s = Number(seed)
@@ -150,7 +150,7 @@ export class MapGenerator {
 
   /**
    * Linear Congruential Generator for seeded random numbers.
-   * @returns {number} A float between 0 and 1.
+   * @returns A float between 0 and 1.
    */
   random(): number {
     this.seed = (this.seed * 9301 + 49297) % 233280
@@ -160,8 +160,8 @@ export class MapGenerator {
   /**
    * Generates a tour map with layers of nodes.
    * Structure: Array of Layers. Each Layer has Nodes. Each Node has connections to next layer.
-   * @param {number} [depth=10] - The number of layers in the map.
-   * @returns {object} The generated map object containing layers, nodes, and connections.
+   * @param depth - The number of layers in the map. Defaults to `10`.
+   * @returns The generated map object containing layers, nodes, and connections.
    */
   generateMap(depth: number = 10): MapGeneratorState {
     const validDepth = Math.floor(depth)
@@ -294,9 +294,9 @@ export class MapGenerator {
 
   /**
    * Generates intermediate layers of the map.
-   * @param {{layers: object[][], nodes: Object<string, object>, nodeList: object[], connections: object[]}} map - The map object.
-   * @param {number} depth - The total depth of the map.
-   * @param {{availableEasy: object[], availableMedium: object[], availableHard: object[], fallbackEasy: object[], fallbackMedium: object[], fallbackHard: object[]}} pools - The available and fallback venue pools.
+   * @param map - The map object.
+   * @param depth - The total depth of the map.
+   * @param pools - The available and fallback venue pools.
    */
   _generateIntermediateLayers(
     map: MapGeneratorState,
@@ -476,8 +476,8 @@ export class MapGenerator {
 
   /**
    * Generates connections between layers.
-   * @param {object} map - The map object.
-   * @param {number} depth - The total depth of the map.
+   * @param map - The map object.
+   * @param depth - The total depth of the map.
    */
   _generateConnections(map: MapGeneratorState, depth: number): void {
     // Generate Connections
@@ -532,10 +532,10 @@ export class MapGenerator {
 
   /**
    * Generates the finale layer.
-   * @param {object} map - The map object.
-   * @param {number} depth - The total depth of the map.
-   * @param {Array} hardVenues - The hard venues array.
-   * @param {object} pools - The pools object.
+   * @param map - The map object.
+   * @param depth - The total depth of the map.
+   * @param hardVenues - The hard venues array.
+   * @param pools - The pools object.
    */
   _generateFinaleLayer(
     map: MapGeneratorState,
@@ -577,7 +577,7 @@ export class MapGenerator {
 
   /**
    * Assigns initial coordinates to map nodes.
-   * @param {object} map - The map object.
+   * @param map - The map object.
    */
   _assignInitialCoordinates(map: MapGeneratorState): void {
     // Assign initial coordinates with jitter and resolve overlaps
@@ -593,12 +593,12 @@ export class MapGenerator {
 
   /**
    * Retrieves candidate node indices from neighboring cells that have an index greater than j.
-   * @param {Map} grid - The spatial partitioning grid.
-   * @param {number} cellX - The X coordinate of the current cell.
-   * @param {number} cellY - The Y coordinate of the current cell.
-   * @param {number} j - The index of the current node to preserve directionality.
-   * @returns {number[]} Array of candidate node indices.
-   * @private
+   * @param grid - The spatial partitioning grid.
+   * @param cellX - The X coordinate of the current cell.
+   * @param cellY - The Y coordinate of the current cell.
+   * @param j - The index of the current node to preserve directionality.
+   * @returns Array of candidate node indices.
+   * @internal
    */
   _getNeighborCandidates(
     grid: Map<number, number[]>,
@@ -631,7 +631,7 @@ export class MapGenerator {
   /**
    * Iteratively pushes overlapping nodes apart to ensure visibility.
    * Note: This method mutates the node objects in the provided list.
-   * @param {object[]} nodeList - The list of nodes.
+   * @param nodeList - The list of nodes.
    */
   resolveOverlaps(nodeList: GeneratedMapNode[]): void {
     const iterations = 150 // Increased iterations
@@ -737,9 +737,9 @@ export class MapGenerator {
 
   /**
    * Picks a random subset of items from an array.
-   * @param {Array} arr - The source array.
-   * @param {number} count - The number of items to pick.
-   * @returns {Array} A new array with the selected items.
+   * @param arr - The source array.
+   * @param count - The number of items to pick.
+   * @returns A new array with the selected items.
    */
   pickRandomSubset<T>(arr: readonly T[], count: number): T[] {
     const n = arr.length

@@ -1,10 +1,12 @@
 import type { EventDelta, GameEvent, GameState } from '../../types'
 import { EVENTS_DB } from '../../data/events/index'
 import { EVENT_STRINGS } from '../../data/events/constants'
-import { logger } from '../logger'
 import { secureRandom } from '../crypto'
 import { bandHasTrait } from '../traitUtils'
-import { finiteNumberOr, isOnCooldown as isOnCooldownShared } from '../gameStateUtils'
+import {
+  finiteNumberOr,
+  isOnCooldown as isOnCooldownShared
+} from '../gameStateUtils'
 import { StateError } from '../errorHandler'
 import { selectEvent } from './eventSelection'
 import { processEffect } from './eventEffectHandlers'
@@ -92,11 +94,11 @@ export const eventEngine = {
 
   /**
    * Checks for and selects a random event from a specific category.
-   * @param {string} category - The category of events to check (e.g., 'travel', 'gig').
-   * @param {object} gameState - The current game state.
-   * @param {string|null} [triggerPoint=null] - Optional specific trigger point filter.
-   * @param {function} [rng=secureRandom] - Random number generator.
-   * @returns {object|null} The selected event object or null if none found.
+   * @param category - The category of events to check (e.g., 'travel', 'gig').
+   * @param gameState - The current game state.
+   * @param triggerPoint - Optional specific trigger point filter. Defaults to `null`.
+   * @param rng - Random number generator. Defaults to `secureRandom`.
+   * @returns The selected event object or null if none found.
    */
   checkEvent: (
     category: string,
@@ -118,10 +120,10 @@ export const eventEngine = {
 
   /**
    * Resolves a player's choice for an event, handling skill checks and immediate effects.
-   * @param {object} choice - The choice object selected by the player.
-   * @param {object} gameState - The current game state.
-   * @param {function} [rng=secureRandom] - Random number generator.
-   * @returns {object} The result object containing effects and outcomes.
+   * @param choice - The choice object selected by the player.
+   * @param gameState - The current game state.
+   * @param rng - Random number generator. Defaults to `secureRandom`.
+   * @returns The result object containing effects and outcomes.
    */
   resolveChoice: (
     choice: EventChoice,
@@ -214,9 +216,9 @@ export const eventEngine = {
 
   /**
    * Post-processes event options to add dynamic context-sensitive choices (e.g. inventory usage).
-   * @param {object} event - The event object.
-   * @param {object} gameState - The current game state.
-   * @returns {object} The event object with processed options.
+   * @param event - The event object.
+   * @param gameState - The current game state.
+   * @returns The event object with processed options.
    */
   processOptions: (
     event: GameEvent,
@@ -255,9 +257,9 @@ export const eventEngine = {
 
   /**
    * Converts a resolution result into a state delta object for the reducer.
-   * @param {object} result - The result object from resolveChoice.
-   * @param {object} context - Context variables from the event (e.g. member names).
-   * @returns {object|null} A delta object representing state changes, or null.
+   * @param result - The result object from resolveChoice.
+   * @param context - Context variables from the event (e.g. member names).
+   * @returns A delta object representing state changes, or null.
    */
   applyResult: (
     result: EffectShape | null,

@@ -1,6 +1,6 @@
 /**
  * ActionButton - A standardized action button for overlays and dialogues.
- * @module ActionButton
+ * Module: `ActionButton`.
  */
 
 import {

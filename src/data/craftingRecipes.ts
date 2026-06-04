@@ -10,7 +10,7 @@
 
 export interface CraftingRecipe {
   id: string
-  /** Map of contraband id -> required stack count. */
+  /** Map of contraband id to required stack count. */
   inputs: Record<string, number>
   /** Contraband id produced (one unit). */
   output: string

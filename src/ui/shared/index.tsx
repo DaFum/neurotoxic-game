@@ -1,7 +1,7 @@
 /**
  * Shared UI Components
  * Reusable UI elements used across multiple components.
- * @module shared
+ * Module: `shared`.
  */
 
 import { memo, type HTMLAttributes, type ReactNode } from 'react'
@@ -41,11 +41,11 @@ export {
 
 /**
  * StatBox - Displays a single statistic with an icon
- * @param {Object} props
- * @param {string} props.label - Stat label
- * @param {string|number} props.value - Stat value
- * @param {string} props.icon - Icon or emoji
- * @param {string} [props.className] - Additional CSS classes
+ * @param props - Component props.
+ * - `props.label` - Stat label
+ * - `props.value` - Stat value
+ * - `props.icon` - Icon or emoji
+ * - `props.className` - Optional. Additional CSS classes
  */
 interface StatBoxProps {
   label: string
@@ -104,15 +104,15 @@ interface ProgressBarProps extends Omit<
 
 /**
  * ProgressBar - Displays a progress bar with label
- * @param {Object} props
- * @param {string} [props.label] - Progress bar label (optional)
- * @param {number} props.value - Current value
- * @param {number} props.max - Maximum value
- * @param {string} props.color - CSS color class
- * @param {string} [props.size='md'] - Size variant (sm, md, mini)
- * @param {boolean} [props.showValue=true] - Whether to show value
- * @param {boolean} [props.warn=false] - Whether to show warning animation
- * @param {string} [props.className] - Additional CSS classes
+ * @param props - Component props.
+ * - `props.label` - Optional. Progress bar label (optional)
+ * - `props.value` - Current value
+ * - `props.max` - Maximum value
+ * - `props.color` - CSS color class
+ * - `props.size` - Size variant (sm, md, mini) Defaults to `'md'`.
+ * - `props.showValue` - Whether to show value Defaults to `true`.
+ * - `props.warn` - Whether to show warning animation Defaults to `false`.
+ * - `props.className` - Optional. Additional CSS classes
  */
 export const ProgressBar = memo(function ProgressBar({
   label,
@@ -175,11 +175,11 @@ interface PanelProps {
 
 /**
  * Panel - A styled container with an optional title.
- * @param {Object} props
- * @param {string} [props.title] - Optional title for the panel header.
- * @param {React.ReactNode} props.children - Panel content.
- * @param {string} [props.className] - Additional CSS classes applied to the outer container.
- * @param {string} [props.contentClassName] - Additional CSS classes applied to the inner content wrapper.
+ * @param props - Component props.
+ * - `props.title` - Optional title for the panel header.
+ * - `props.children` - Panel content.
+ * - `props.className` - Optional. Additional CSS classes applied to the outer container.
+ * - `props.contentClassName` - Optional. Additional CSS classes applied to the inner content wrapper.
  */
 export const Panel = memo(function Panel({
   title,

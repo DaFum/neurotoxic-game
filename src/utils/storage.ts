@@ -52,7 +52,7 @@ function getStorage(): Storage | null {
 /**
  * Safely get a typed item from localStorage.
  * Returns the parsed value or the fallback if the key doesn't exist, is unparseable, or is invalid.
- * @template T - The expected type of the value
+ * @typeParam T - The expected type of the value
  * @param key - localStorage key
  * @param fallback - Fallback value if missing or invalid
  * @returns Parsed value or fallback

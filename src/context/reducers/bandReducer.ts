@@ -36,9 +36,9 @@ const DEFAULT_MEMBER_STAMINA_MAX = 100
 /**
  * Handles band update actions
  * Clamps band.harmony to valid range 1-100
- * @param {Object} state - Current state
- * @param {Object} payload - Band updates
- * @returns {Object} Updated state
+ * @param state - Current state
+ * @param payload - Band updates
+ * @returns Updated state
  */
 export const handleUpdateBand = (
   state: GameState,
@@ -168,9 +168,9 @@ export const handleUpdateBand = (
 
 /**
  * Handles explicit trait unlocking via action.
- * @param {Object} state - Current state
- * @param {Object} payload - { memberId, traitId }
- * @returns {Object} Updated state
+ * @param state - Current state
+ * @param payload - `memberId, traitId`
+ * @returns Updated state
  */
 export const handleUnlockTrait = (
   state: GameState,
@@ -200,9 +200,9 @@ export const handleUnlockTrait = (
 
 /**
  * Handles item consumption
- * @param {Object} state - Current state
- * @param {string} payload - Item type to consume
- * @returns {Object} Updated state
+ * @param state - Current state
+ * @param payload - Item type to consume
+ * @returns Updated state
  */
 export const handleConsumeItem = (
   state: GameState,
@@ -495,10 +495,10 @@ export const handleCraftItem = (
 
 /**
  * Pure helper function to apply the effect of a contraband item.
- * @param {Object} band - Current band state
- * @param {Object} item - Contraband item to apply
- * @param {string} memberId - Target member ID for targeted effects
- * @returns {Object|null} Updated band object, or null if application fails (e.g. invalid target)
+ * @param band - Current band state
+ * @param item - Contraband item to apply
+ * @param memberId - Target member ID for targeted effects
+ * @returns Updated band object, or null if application fails (e.g. invalid target)
  */
 const applyContrabandEffect = (
   band: BandState,
@@ -587,9 +587,9 @@ const applyContrabandEffect = (
 
 /**
  * Handles using a contraband item.
- * @param {Object} state - Current state
- * @param {Object} payload - { instanceId, contrabandId, memberId }
- * @returns {Object} Updated state
+ * @param state - Current state
+ * @param payload - `instanceId, contrabandId, memberId`
+ * @returns Updated state
  */
 export const handleUseContraband = (
   state: GameState,
@@ -635,9 +635,9 @@ export const handleUseContraband = (
 /**
  * Reducer for band actions.
  * Extracts the subset of actions specific to the band context.
- * @param {Object} state - Current state
- * @param {Object} action - Action with type and payload
- * @returns {Object} New state
+ * @param state - Current state
+ * @param action - Action with type and payload
+ * @returns New state
  */
 export const handleToggleNeuroDecimator = (
   state: GameState,
@@ -673,9 +673,9 @@ export const handleToggleNeuroDecimator = (
 
 /**
  * Main band reducer
- * @param {Object} state - Current state
- * @param {Object} action - Action with type and payload
- * @returns {Object} New state
+ * @param state - Current state
+ * @param action - Action with type and payload
+ * @returns New state
  */
 export const bandReducer = (
   state: GameState,

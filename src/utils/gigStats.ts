@@ -1,20 +1,19 @@
 import { clamp0to100 } from './gameStateUtils'
 
 /**
- * @typedef {object} GigPerformanceStats
- * @property {number} perfectHits
- * @property {number} misses
- * @property {number} maxCombo
- * @property {number} peakHype
+ * Type: `def `object` GigPerformanceStats`.
+ * Property `perfectHits`.
+ * Property `misses`.
+ * Property `maxCombo`.
+ * Property `peakHype`.
  */
 
 /**
  * Calculates hit accuracy as a percentage (0–100).
  * Returns 100 when no notes were attempted (no misses, no hits).
- * @param {number} perfectHits
- * @param {number} misses
- * @returns {number}
- */
+ * @param perfectHits - Perfect hits.
+ * @param misses - Misses.
+ * @returns */
 export const calculateAccuracy = (
   perfectHits: number,
   misses: number
@@ -26,9 +25,9 @@ export const calculateAccuracy = (
 
 /**
  * Updates peak performance stats without mutating the original object.
- * @param {GigPerformanceStats} stats - Current performance stats.
- * @param {{combo: number, overload: number}} payload - Current combo and hype values.
- * @returns {GigPerformanceStats} Updated stats snapshot.
+ * @param stats - Current performance stats.
+ * @param payload - Current combo and hype values.
+ * @returns Updated stats snapshot.
  */
 import type { RhythmLiveStats } from '../types/rhythmGame'
 
@@ -43,11 +42,11 @@ export const updateGigPerformanceStats = (
 
 /**
  * Builds a gig stats snapshot for post-gig economy calculations.
- * @param {number} score - Final score.
- * @param {GigPerformanceStats} stats - Performance stats accumulated during the gig.
- * @param {number} toxicTimeTotal - Total time spent in toxic mode.
- * @param {Array<{songId: string, score: number, accuracy: number, index: number}>} [songStats=[]] - Array of stats for individual songs completed in the gig.
- * @returns {{score: number, misses: number, perfectHits: number, maxCombo: number, peakHype: number, toxicTimeTotal: number, accuracy: number, songStats: Array<{songId: string, score: number, accuracy: number, index: number}>}}
+ * @param score - Final score.
+ * @param stats - Performance stats accumulated during the gig.
+ * @param toxicTimeTotal - Total time spent in toxic mode.
+ * @param songStats - Array of stats for individual songs completed in the gig. Defaults to `[]`.
+ * @returns Gig stats snapshot.
  */
 export const buildGigStatsSnapshot = (
   score: number,

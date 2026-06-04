@@ -170,10 +170,10 @@ DRUM_MAPPING[50] = {
  * Die übergebene Velocity wird auf den Bereich 0–1 begrenzt. Falls die MIDI-Note
  * keiner Zuordnung entspricht, wird ein geschlossenes HiHat als Fallback ausgelöst.
  *
- * @param {number} midiPitch - Die MIDI-Notennummer, die den zu spielenden Schlagzeugtyp bestimmt.
- * @param {number} time - Zeitpunkt, zu dem der Ton ausgelöst werden soll.
- * @param {number} velocity - Anschlagstärke; Werte außerhalb von 0–1 werden auf diesen Bereich begrenzt.
- * @param {object} [kit=audioState.drumKit] - Das Schlagzeug-Kit/Synth-Objekt, das die Trigger-Methoden bereitstellt.
+ * @param midiPitch - Die MIDI-Notennummer, die den zu spielenden Schlagzeugtyp bestimmt.
+ * @param time - Zeitpunkt, zu dem der Ton ausgelöst werden soll.
+ * @param velocity - Anschlagstärke; Werte außerhalb von 0–1 werden auf diesen Bereich begrenzt.
+ * @param kit - Das Schlagzeug-Kit/Synth-Objekt, das die Trigger-Methoden bereitstellt. Defaults to `audioState.drumKit`.
  */
 export function playDrumNote(
   midiPitch: number,

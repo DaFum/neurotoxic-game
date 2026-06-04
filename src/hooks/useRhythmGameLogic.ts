@@ -28,7 +28,7 @@ export type RhythmGameLogicReturn = {
 
 /**
  * Provides rhythm game state, actions, and update loop for the gig scene.
- * @returns {{gameStateRef: object, stats: object, actions: object, update: Function}} Rhythm game API.
+ * @returns Rhythm game API.
  */
 export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
   const { t } = useTranslation()

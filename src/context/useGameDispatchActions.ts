@@ -256,7 +256,7 @@ export function useGameDispatchActions({
 }: UseGameDispatchActionsProps): GameDispatchActions {
   /**
    * Transitions the game to a new scene.
-   * @param {string} scene - The target scene name (e.g., GAME_PHASES.OVERWORLD).
+   * @param scene - The target scene name (e.g., GAME_PHASES.OVERWORLD).
    */
   const changeScene = useCallback(
     (scene: Parameters<typeof createChangeSceneAction>[0]) =>

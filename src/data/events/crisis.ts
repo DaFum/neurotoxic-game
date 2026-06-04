@@ -13,10 +13,10 @@ import { hasStateItem } from '../../utils/gameStateUtils'
 /**
  * Erstellt ein Composite-Effektobjekt und fügt diesem einen Cooldown für ein Ereignis hinzu.
  *
- * @param {string} eventId - Kennung des Ereignisses, für das der Cooldown gesetzt wird.
- * @param {Array<object>} effects - Liste von Effekten, die im Composite enthalten sein sollen.
- * @param {string} [description] - Optionale Beschreibung, die dem Composite hinzugefügt wird.
- * @returns {object} Das erzeugte Composite-Objekt mit den kombinierten Effekten und einem angehängten Cooldown.
+ * @param eventId - Kennung des Ereignisses, für das der Cooldown gesetzt wird.
+ * @param effects - Liste von Effekten, die im Composite enthalten sein sollen.
+ * @param description - Optional. Optionale Beschreibung, die dem Composite hinzugefügt wird.
+ * @returns Das erzeugte Composite-Objekt mit den kombinierten Effekten und einem angehängten Cooldown.
  */
 function createCooldownComposite(
   eventId: string,

@@ -3,9 +3,9 @@
  * Pure function extracted from context state helpers to allow direct testing
  * and avoid recreating the closure on every render.
  *
- * @param {string[]} upgrades - The player's current upgrades array.
- * @param {string} upgradeId - The ID of the upgrade to check.
- * @returns {boolean} True if the upgrade is owned.
+ * @param upgrades - The player's current upgrades array.
+ * @param upgradeId - The ID of the upgrade to check.
+ * @returns True if the upgrade is owned.
  */
 const upgradeCache = new WeakMap<string[], Set<string>>()
 
@@ -33,8 +33,8 @@ const BREAKDOWN_REDUCTIONS = {
  * Calculates the base breakdown chance after applying all upgrade reductions.
  * Centralises the subtraction logic shared by daily simulation and van repair.
  *
- * @param {string[]} upgrades - The van's current upgrades array.
- * @returns {number} Base breakdown chance (before condition multiplier), clamped >= 0.
+ * @param upgrades - The van's current upgrades array.
+ * @returns Base breakdown chance (before condition multiplier), clamped at least 0.
  */
 export const calcBaseBreakdownChance = (
   upgrades: string[] | null | undefined

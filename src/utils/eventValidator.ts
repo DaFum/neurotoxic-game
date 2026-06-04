@@ -9,9 +9,9 @@ const VALID_TRIGGERS = ['post_gig', 'travel', 'random']
 
 /**
  * Validates a single crisis event object.
- * @param {object} event - The crisis event to validate.
- * @throws {Error} If validation fails.
- * @returns {boolean} True if valid.
+ * @param event - The crisis event to validate.
+ * @throws If validation fails.
+ * @returns True if valid.
  */
 const validateEffect = (
   effect: unknown,

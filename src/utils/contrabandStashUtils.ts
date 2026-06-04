@@ -1,8 +1,8 @@
 /**
  * Validates if a contraband stash item can be used based on the current selection.
- * @param {Object} item - The contraband item.
- * @param {string|null} selectedMember - The ID of the currently selected band member.
- * @returns {Object} Validation result { isValid, errorKey, defaultMessage }
+ * @param item - The contraband item.
+ * @param selectedMember - The ID of the currently selected band member.
+ * @returns Validation result `isValid, errorKey, defaultMessage`
  */
 import type { ValidationResult } from '../types/validation'
 
@@ -32,9 +32,9 @@ export const validateStashItemSelection = (
 
 /**
  * Generates the toast message payload for when a stash item is used.
- * @param {Object} item - The contraband item.
- * @param {Function} t - The translation function.
- * @returns {Object} Message payload { key, options }
+ * @param item - The contraband item.
+ * @param t - The translation function.
+ * @returns Message payload `key, options`
  */
 export const getStashItemUseMessage = (
   item: StashItemLike,

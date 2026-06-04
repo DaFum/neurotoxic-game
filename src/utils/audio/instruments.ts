@@ -15,8 +15,8 @@ type EnvelopeWithCurves = {
 
 /**
  * Creates a layered snare instrument (noise crack + membrane body) connected to the given bus.
- * @param {object} bus - Tone.js audio node to connect the snare to.
- * @returns {object} Proxy object with triggerAttackRelease, volume, and dispose methods.
+ * @param bus - Tone.js audio node to connect the snare to.
+ * @returns Proxy object with triggerAttackRelease, volume, and dispose methods.
  */
 export function createLayeredSnare(bus: Tone.InputNode): LayeredSnare {
   const snareBus = new Tone.Volume(0).connect(bus)

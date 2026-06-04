@@ -79,8 +79,8 @@ if (oggCandidates.length > 0) {
 /**
  * Checks whether the current browser can likely decode a given audio MIME type.
  * Uses HTMLAudioElement.canPlayType (available without user gesture).
- * @param {string} mimeType - e.g. 'audio/ogg; codecs=vorbis'
- * @returns {boolean} True when the browser reports 'probably' or 'maybe'.
+ * @param mimeType - e.g. 'audio/ogg; codecs=vorbis'
+ * @returns True when the browser reports 'probably' or 'maybe'.
  */
 function canPlayAudioType(mimeType: string): boolean {
   try {
@@ -99,8 +99,8 @@ function canPlayAudioType(mimeType: string): boolean {
 
 /**
  * Checks whether an audio asset exists in the bundled map.
- * @param {string} filename - The audio filename to check.
- * @returns {boolean} True when the asset exists.
+ * @param filename - The audio filename to check.
+ * @returns True when the asset exists.
  */
 export function hasAudioAsset(filename: string): boolean {
   if (typeof filename !== 'string') return false
@@ -114,8 +114,8 @@ export function hasAudioAsset(filename: string): boolean {
 /**
  * Calculates the approximate byte size of an AudioBuffer in memory.
  * Assumes 32-bit float samples (4 bytes per sample).
- * @param {AudioBuffer} buffer - The buffer to measure.
- * @returns {number} Estimated size in bytes.
+ * @param buffer - The buffer to measure.
+ * @returns Estimated size in bytes.
  */
 function getAudioBufferSize(buffer: AudioBuffer | null | undefined): number {
   if (!buffer) return 0
@@ -124,8 +124,8 @@ function getAudioBufferSize(buffer: AudioBuffer | null | undefined): number {
 
 /**
  * Loads an audio buffer for Web Audio playback.
- * @param {string} filename - Audio filename (e.g. .ogg).
- * @returns {Promise<AudioBuffer|null>} Decoded audio buffer or null on failure.
+ * @param filename - Audio filename (e.g. .ogg).
+ * @returns Decoded audio buffer or null on failure.
  */
 export async function loadAudioBuffer(
   filename: string
@@ -159,9 +159,9 @@ export async function loadAudioBuffer(
 
 /**
  * Fetches an audio file into an ArrayBuffer with a timeout.
- * @param {string} url - The URL to fetch.
- * @param {string} filename - The original filename for logging.
- * @returns {Promise<ArrayBuffer | null>} The downloaded ArrayBuffer, or null on failure.
+ * @param url - The URL to fetch.
+ * @param filename - The original filename for logging.
+ * @returns The downloaded ArrayBuffer, or null on failure.
  */
 async function fetchAudioArrayBuffer(
   url: string,
@@ -189,8 +189,8 @@ async function fetchAudioArrayBuffer(
 
 /**
  * Decodes audio data into an AudioBuffer with a timeout.
- * @param {ArrayBuffer} arrayBuffer - The raw audio data.
- * @returns {Promise<AudioBuffer>} The decoded AudioBuffer. Throws on failure.
+ * @param arrayBuffer - The raw audio data.
+ * @returns The decoded AudioBuffer. Throws on failure.
  */
 async function decodeAudioDataWithTimeout(
   arrayBuffer: ArrayBuffer
@@ -216,9 +216,9 @@ async function decodeAudioDataWithTimeout(
 
 /**
  * Caches an audio buffer and manages LRU cache eviction.
- * @param {string} cacheKey - The cache key.
- * @param {AudioBuffer} buffer - The buffer to cache.
- * @param {string} filename - The original filename for logging.
+ * @param cacheKey - The cache key.
+ * @param buffer - The buffer to cache.
+ * @param filename - The original filename for logging.
  */
 function cacheAudioBuffer(
   cacheKey: string,
@@ -254,9 +254,9 @@ function cacheAudioBuffer(
 
 /**
  * Internal implementation of loading an audio buffer.
- * @param {string} filename - Audio filename.
- * @param {string} cacheKey - The cache key for storage.
- * @returns {Promise<AudioBuffer|null>} Decoded audio buffer or null.
+ * @param filename - Audio filename.
+ * @param cacheKey - The cache key for storage.
+ * @returns Decoded audio buffer or null.
  */
 async function loadAudioBufferInternal(
   filename: string,

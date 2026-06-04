@@ -46,11 +46,11 @@ export type RhythmGameAudioReturn = {
 /**
  * Manages audio initialization, playback, and setup for the gig.
  *
- * @param {Object} params - Hook parameters.
- * @param {Object} params.gameStateRef - Game state reference.
- * @param {Object} params.setters - Setters (setIsAudioReady).
- * @param {Object} params.contextState - Context state (band, gameMap, player, setlist, gigModifiers, addToast).
- * @returns {Object} Audio actions ({ retryAudioInitialization }).
+ * @param params - Hook parameters.
+ * - `params.gameStateRef` - Game state reference.
+ * - `params.setters` - Setters (setIsAudioReady).
+ * - `params.contextState` - Context state (band, gameMap, player, setlist, gigModifiers, addToast).
+ * @returns Audio actions (`retryAudioInitialization`).
  */
 export const useRhythmGameAudio = ({
   gameStateRef,

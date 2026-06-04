@@ -7,9 +7,9 @@ import type { Song } from '../../types/audio'
 
 /**
  * Generates a procedural riff pattern.
- * @param {number} diff - Difficulty level.
- * @param {Function} random - Random number generator function.
- * @returns {Array} Array of note strings or nulls.
+ * @param diff - Difficulty level.
+ * @param random - Random number generator function.
+ * @returns Array of note strings or nulls.
  */
 function generateRiffPattern(
   diff: number,
@@ -37,10 +37,10 @@ function generateRiffPattern(
 
 /**
  * Plays procedural drums based on legacy logic.
- * @param {number} time - Audio time.
- * @param {number} diff - Difficulty.
- * @param {string|null} note - The guitar note played on this step.
- * @param {Function} random - Random number generator.
+ * @param time - Audio time.
+ * @param diff - Difficulty.
+ * @param note - The guitar note played on this step.
+ * @param random - Random number generator.
  */
 function playDrumsLegacy(
   time: number,
@@ -75,10 +75,10 @@ function playDrumsLegacy(
 // The actual generation logic (Legacy / Fallback)
 /**
  * Starts the procedural metal music generator for a specific song configuration.
- * @param {object} song - The song object containing metadata like BPM and difficulty.
- * @param {number} [delay=0] - Delay in seconds before the audio starts.
- * @param {Function} [random=secureRandom] - RNG function for deterministic generation.
- * @returns {Promise<boolean>}
+ * @param song - The song object containing metadata like BPM and difficulty.
+ * @param delay - Delay in seconds before the audio starts. Defaults to `0`.
+ * @param random - RNG function for deterministic generation. Defaults to `secureRandom`.
+ * @returns
  */
 export async function startMetalGenerator(
   song: Partial<Song>,

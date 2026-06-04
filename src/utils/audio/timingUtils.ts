@@ -1,11 +1,11 @@
 /**
  * Calculates a scheduled Tone.js time in milliseconds for hit playback.
- * @param {object} params - Timing parameters.
- * @param {number} params.noteTimeMs - Target note time in ms (gig clock).
- * @param {number} params.gigTimeMs - Current gig clock time in ms.
- * @param {number} params.audioTimeMs - Current Tone.js audio time in ms.
- * @param {number} [params.maxLeadMs=30] - Maximum lead time in ms for scheduling.
- * @returns {number} Scheduled Tone.js time in ms.
+ * @param params - Timing parameters.
+ * - `params.noteTimeMs` - Target note time in ms (gig clock).
+ * - `params.gigTimeMs` - Current gig clock time in ms.
+ * - `params.audioTimeMs` - Current Tone.js audio time in ms.
+ * - `params.maxLeadMs` - Maximum lead time in ms for scheduling. Defaults to `30`.
+ * @returns Scheduled Tone.js time in ms.
  */
 export const getScheduledHitTimeMs = ({
   noteTimeMs,

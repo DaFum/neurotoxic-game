@@ -4,8 +4,8 @@ import { audioState, resetGigState } from './state'
 
 /**
  * Clears transport event by ID.
- * @param {number|null} id - Event ID.
- * @param {string} name - Event name for logging.
+ * @param id - Event ID.
+ * @param name - Event name for logging.
  */
 export function clearTransportEvent(id: number | null, name: string): void {
   if (id == null) return
@@ -18,8 +18,8 @@ export function clearTransportEvent(id: number | null, name: string): void {
 
 /**
  * Stops and disconnects an audio source safely.
- * @param {AudioNode|null} source - The source node.
- * @param {string} name - Name for logging.
+ * @param source - The source node.
+ * @param name - Name for logging.
  */
 export function stopAndDisconnectSource(
   source: AudioNode | null,

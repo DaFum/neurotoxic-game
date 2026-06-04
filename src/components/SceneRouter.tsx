@@ -64,10 +64,10 @@ interface SceneRouterProps {
 /**
  * Routes the current scene state to the corresponding scene component.
  *
- * @param {Object} props - The component props.
- * @param {string} props.currentScene - The active scene identifier.
- * @param {string} [props.minigameType] - The type of minigame (if applicable).
- * @returns {JSX.Element} The active scene component.
+ * @param props - The component props.
+ * - `props.currentScene` - The active scene identifier.
+ * - `props.minigameType` - Optional. The type of minigame (if applicable).
+ * @returns The active scene component.
  */
 export function SceneRouter({ currentScene, minigameType }: SceneRouterProps) {
   switch (currentScene) {

@@ -4,7 +4,7 @@
  * Note: The recursive context sanitizer redacts sensitive keys, blocks
  * prototype-pollution keys such as __proto__/constructor/prototype, and
  * safely handles cyclic structures via WeakSet.
- * @module errorHandler
+ * Module: `errorHandler`.
  */
 
 import { logger } from './logger'
@@ -14,7 +14,7 @@ import { isPlainRecord, sanitizeTraversableValue } from './objectUtils'
 /**
  * Error severity levels
  * @readonly
- * @enum {string}
+ * Enum: `string`
  */
 export const ErrorSeverity = {
   LOW: 'low',
@@ -26,7 +26,7 @@ export const ErrorSeverity = {
 /**
  * Error categories for classification
  * @readonly
- * @enum {string}
+ * Enum: `string`
  */
 export const ErrorCategory = {
   STATE: 'state',
@@ -41,7 +41,7 @@ export const ErrorCategory = {
 
 /**
  * Base Game Error class
- * @extends Error
+ * Extends `Error`.
  */
 
 export type ErrorSeverityType =
@@ -142,7 +142,7 @@ export class AudioError extends GameError {
 
 /**
  * Error log storage for debugging
- * @type {Array<Object>}
+ * Type: `Array<Object>`.
  */
 const errorLog: ErrorInfoObject[] = []
 const MAX_ERROR_LOG_SIZE = 100
@@ -424,12 +424,12 @@ const showErrorToast = (
 
 /**
  * Handles an error by logging and optionally showing user feedback
- * @param {Error} error - The error to handle
- * @param {Object} [options] - Handler options
- * @param {Function} [options.addToast] - Toast notification function
- * @param {boolean} [options.silent] - Whether to suppress user notifications
- * @param {string} [options.fallbackMessage] - Fallback message for unknown errors
- * @returns {Object} Processed error info
+ * @param error - The error to handle
+ * @param options - Optional. Handler options
+ * - `options.addToast` - Optional. Toast notification function
+ * - `options.silent` - Optional. Whether to suppress user notifications
+ * - `options.fallbackMessage` - Optional. Fallback message for unknown errors
+ * @returns Processed error info
  */
 export const handleError = (error: unknown, options: unknown = {}) => {
   const safeOptions = isPlainRecord(options) ? options : {}
@@ -498,10 +498,10 @@ initGlobalErrorHandling()
 
 /**
  * Creates a safe wrapper for localStorage operations
- * @param {string} operation - Operation name for logging
- * @param {Function} fn - Function to execute
- * @param {*} [fallbackValue] - Value to return on error
- * @returns {*} Result or fallback value
+ * @param operation - Operation name for logging
+ * @param fn - Function to execute
+ * @param fallbackValue - Optional. Value to return on error
+ * @returns Result or fallback value
  */
 export function runSafeStorageOperation<T>(operation: string, fn: () => T): T
 export function runSafeStorageOperation<T>(
