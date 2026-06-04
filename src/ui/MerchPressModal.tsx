@@ -26,7 +26,7 @@ type MerchPressModalProps = {
 }
 
 /**
- * Renders the Merch Press Modal view.
+ * Shows merch-press costs, rewards, availability, and confirmation actions.
  * @param props - Press availability, press action, close handler, and merch-press configuration.
  */
 export const MerchPressModal = ({

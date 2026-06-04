@@ -1,5 +1,5 @@
 /**
- * Supported loan profile identifiers.
+ * Supported loan product identifiers.
  */
 export type LoanProfileId =
   | 'shortTerm'

@@ -13,7 +13,7 @@ type SettingsTabProps = {
 }
 
 /**
- * Renders the Settings Tab view.
+ * Displays settings controls inside Band HQ.
  * @param props - Settings, audio state, settings update callback, audio callbacks, and delete-save callback.
  */
 export const SettingsTab = ({

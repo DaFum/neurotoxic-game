@@ -228,10 +228,10 @@ export const canAfford = (
 }
 
 /**
- * Applies inventory set effect
- * @param effect - Effect configuration
- * @param bandInventory - Current band inventory
- * @returns Band patch to apply
+ * Replaces one inventory entry for a purchase `inventory_set` effect.
+ * @param effect - Catalog effect carrying the inventory key and replacement value.
+ * @param bandInventory - Current band inventory used as the patch base.
+ * @returns Band patch with the requested inventory value set.
  */
 export const applyInventorySet = (
   effect: Effect,
@@ -283,12 +283,12 @@ export const applyInventoryAdd = (
 }
 
 /**
- * Applies stat modifier effect
- * @param effect - Effect configuration
- * @param playerPatch - Current player patch
- * @param player - Player state
- * @param band - Band state
- * @returns Object with updated playerPatch and bandPatch
+ * Applies a catalog stat modifier to the accumulated player or band patch.
+ * @param effect - Stat modifier effect, including target, stat, and raw value.
+ * @param playerPatch - Player patch built by earlier purchase effects.
+ * @param player - Current player state used when the patch does not already contain the stat.
+ * @param band - Current band state used for band-targeted modifiers.
+ * @returns Updated player patch and optional band patch.
  */
 export const applyStatModifier = (
   effect: Effect,
@@ -485,12 +485,12 @@ export const processPurchaseEffect = (
 }
 
 /**
- * Applies unlock upgrade effect
- * @param effect - Effect configuration
- * @param item - Item being purchased
- * @param playerPatch - Current player patch
- * @param playerVan - Current player van state
- * @returns Updated player patch
+ * Adds a van upgrade id to the player patch unless it is already unlocked.
+ * @param effect - Unlock effect that may carry an explicit upgrade id.
+ * @param item - Purchased item used as the fallback upgrade id.
+ * @param playerPatch - Player patch built by earlier purchase effects.
+ * @param playerVan - Current van state used to preserve existing upgrades.
+ * @returns Player patch with the upgrade list preserved or extended.
  */
 export const applyUnlockUpgrade = (
   effect: Effect,
@@ -519,12 +519,12 @@ export const applyUnlockUpgrade = (
 }
 
 /**
- * Applies unlock HQ effect
- * @param item - Item being purchased
- * @param playerPatch - Current player patch
- * @param player - Player state
- * @param band - Band state
- * @returns Object with updated playerPatch, bandPatch and messages
+ * Adds an HQ upgrade and applies any special side effects tied to that purchase.
+ * @param item - Purchased HQ item.
+ * @param playerPatch - Player patch built by earlier purchase effects.
+ * @param player - Current player state used for existing upgrades and fame.
+ * @param band - Current band state used for band-wide upgrade effects.
+ * @returns Updated patches plus unlock feedback messages.
  */
 export const applyUnlockHQ = (
   item: PurchaseItem,
@@ -658,11 +658,11 @@ export const applyUnlockHQ = (
 }
 
 /**
- * Applies passive effect
- * @param effect - Effect configuration
- * @param playerPatch - Current player patch
- * @param player - Player state
- * @returns Object with updated playerPatch and bandPatch
+ * Applies passive catalog effects that persist as player or band flags.
+ * @param effect - Passive effect key and optional value.
+ * @param playerPatch - Player patch built by earlier purchase effects.
+ * @param player - Current player state used for additive passive values.
+ * @returns Updated player patch and optional band patch.
  */
 export const applyPassive = (
   effect: Effect,

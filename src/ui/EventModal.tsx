@@ -85,7 +85,7 @@ const EventOptionButton = ({
 }
 
 /**
- * Renders the Event Modal view.
+ * Presents the active event narrative, options, and precomputed outcomes.
  * @param props - Active event, option-selection callback, and optional wrapper class.
  */
 export const EventModal = ({

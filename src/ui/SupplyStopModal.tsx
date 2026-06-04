@@ -10,7 +10,7 @@ import type { PlayerPatch } from '../types/purchase'
 const BLACK_MARKET_FAME_LOSS = 5
 
 /**
- * Props for the Supply Stop Modal component.
+ * Supply-stop inventory and close callback for the black-market purchase modal.
  */
 export interface SupplyStopModalProps {
   inventory: PurchaseItem[]
@@ -18,7 +18,7 @@ export interface SupplyStopModalProps {
 }
 
 /**
- * Renders the Supply Stop Modal view.
+ * Displays black-market inventory and applies supply-stop purchase consequences.
  * @param props - Supply inventory and close handler for the supply-stop modal.
  */
 export const SupplyStopModal: React.FC<SupplyStopModalProps> = ({

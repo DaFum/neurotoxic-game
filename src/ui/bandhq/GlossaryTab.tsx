@@ -53,7 +53,7 @@ const GLOSSARY_ENTRIES: GlossaryEntry[] = [
 ]
 
 /**
- * Renders the Band HQ glossary reference.
+ * Displays the Band HQ glossary reference.
  */
 export const GlossaryTab = () => {
   const { t } = useTranslation(['ui'])

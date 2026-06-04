@@ -8,7 +8,7 @@ import { LOG_LEVELS } from '../../utils/logger'
 import type { GameSettings } from '../../types'
 
 /**
- * Props for the Settings Panel component.
+ * Settings, audio state, and callbacks used by the settings control groups.
  */
 export interface SettingsPanelProps {
   settings?: Pick<GameSettings, 'crtEnabled' | 'logLevel'>
@@ -25,7 +25,7 @@ export interface SettingsPanelProps {
 }
 
 /**
- * Renders the Settings Panel view.
+ * Groups language, audio, visual, log, and save-data settings controls.
  * @param props - Settings, audio state, and callbacks for updating audio, visual, log, language, and save-data controls.
  */
 export const SettingsPanel = memo(function SettingsPanel({

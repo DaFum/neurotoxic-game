@@ -331,11 +331,11 @@ export const RELATIONSHIP_PEACEMAKER_NEGATIVE_MULTIPLIER = 0.5
  */
 export const RELATIONSHIP_DEFAULT_SCORE = 50
 /**
- * Minimum persisted relationship score.
+ * Lower bound for persisted relationship scores after normalization.
  */
 export const RELATIONSHIP_MIN_SCORE = 0
 /**
- * Maximum persisted relationship score.
+ * Upper bound for persisted relationship scores after normalization.
  */
 export const RELATIONSHIP_MAX_SCORE = 100
 

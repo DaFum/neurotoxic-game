@@ -2,7 +2,7 @@ import React from 'react'
 import { type TranslationCallback } from '../../types/callbacks'
 
 /**
- * Props for the Overworld Header component.
+ * Localized location and travel state displayed in the overworld header.
  */
 export interface OverworldHeaderProps {
   t: TranslationCallback
@@ -11,7 +11,7 @@ export interface OverworldHeaderProps {
 }
 
 /**
- * Renders the Overworld Header view.
+ * Displays current tour location and travel-status copy.
  * @param props - Localized location label and travel state displayed in the overworld header.
  */
 export const OverworldHeader = React.memo(

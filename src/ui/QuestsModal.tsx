@@ -395,7 +395,7 @@ const QuestItem = memo(
 )
 
 /**
- * Renders the Quests Modal view.
+ * Displays active quest progress, deadlines, rewards, and close controls.
  * @param props - Quest list, player context, and close handler for the quest modal.
  */
 export const QuestsModal = ({

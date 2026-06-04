@@ -149,7 +149,7 @@ const DebugLogViewerContent = ({
 }
 
 /**
- * Renders the Debug Log Viewer view.
+ * Displays filtered debug-log entries and viewer controls.
  * @param props - Display data and visual options for the debug log viewer view.
  */
 export const DebugLogViewer = ({ className = '' }: { className?: string }) => {

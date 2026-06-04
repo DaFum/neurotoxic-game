@@ -941,7 +941,7 @@ const BandMembersSection = ({
 // --- Main Component ---
 
 /**
- * Renders the Detailed Stats Tab view.
+ * Displays detailed player, band, social, and run statistics in Band HQ.
  * @param props - Player, band, social, quest, reputation, blacklist, crafting, and amends callbacks for detailed stats.
  */
 export const DetailedStatsTab = ({

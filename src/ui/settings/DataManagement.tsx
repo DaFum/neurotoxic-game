@@ -7,7 +7,7 @@ type DataManagementProps = {
 }
 
 /**
- * Renders the Data Management view.
+ * Displays destructive and recovery-oriented save-data management actions.
  * @param props - Save-deletion callback for the data management controls.
  */
 export const DataManagement = memo(function DataManagement({

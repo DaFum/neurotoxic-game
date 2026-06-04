@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 
 /**
- * Renders the settings screen heading.
+ * Displays the settings screen heading.
  */
 export const SettingsTitle = () => {
   const { t } = useTranslation()

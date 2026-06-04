@@ -211,7 +211,7 @@ const MenuSubmenu = React.memo(
 MenuSubmenu.displayName = 'MenuSubmenu'
 
 /**
- * Renders the Overworld Menu view.
+ * Displays grouped overworld scene and modal actions.
  * @param props - Menu open state, travel/save status, vehicle status, and callbacks for each overworld menu action.
  */
 export const OverworldMenu = React.memo(

@@ -79,7 +79,7 @@ export function playSFX(type: string): void {
 }
 
 /**
- * Sets the SFX volume.
+ * Ramps the SFX gain node to a clamped linear volume.
  * @param vol - Volume between 0 and 1.
  * @returns True when applied to an existing gain node.
  */
@@ -579,8 +579,8 @@ const awaitMaybePromise = async (value: unknown): Promise<void> => {
 }
 
 /**
- * Pauses the audio transport.
- * @returns Resolves when pause is complete.
+ * Pauses Tone transport and gig playback, logging recoverable failures.
+ * @returns Resolves after pause attempts finish.
  */
 export async function pauseAudio(): Promise<void> {
   try {
@@ -598,8 +598,8 @@ export async function pauseAudio(): Promise<void> {
 }
 
 /**
- * Resumes the audio transport.
- * @returns Resolves to the boolean result of resumeGigPlayback() when resume is complete.
+ * Resumes Tone transport and gig playback, preserving paused state on failure.
+ * @returns Whether gig playback is running or was already active.
  */
 export async function resumeAudio(): Promise<boolean> {
   try {
@@ -635,7 +635,7 @@ export function getTransportState(): 'started' | 'stopped' | 'paused' {
 }
 
 /**
- * Applies global destination mute.
+ * Sets Tone's global destination mute flag with a best-effort fallback read.
  * @param muted - Whether the output destination should be muted.
  * @returns The applied mute state.
  */

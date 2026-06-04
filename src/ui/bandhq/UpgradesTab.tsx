@@ -8,7 +8,7 @@ type UpgradesTabProps = Omit<CatalogConsumerProps, 'items'> & {
 }
 
 /**
- * Renders the Upgrades Tab view.
+ * Displays upgrade catalog items available in Band HQ.
  * @param props - Player state, upgrade catalog, purchase handler, ownership/disabled checks, adjusted-cost resolver, and processing lock id.
  */
 export const UpgradesTab = ({

@@ -6,7 +6,7 @@ import type { DarkWebLeakConfig } from '../types'
 import { formatCurrency } from '../utils/numberUtils'
 
 /**
- * Props for the Dark Web Leak Modal component.
+ * Dark-web leak costs, availability state, and confirmation callbacks.
  */
 export interface DarkWebLeakModalProps {
   config: DarkWebLeakConfig
@@ -17,7 +17,7 @@ export interface DarkWebLeakModalProps {
 }
 
 /**
- * Renders the Dark Web Leak Modal view.
+ * Shows the dark-web leak costs, gains, daily lockout, and confirm/cancel actions.
  * @param props - Leak configuration, availability state, confirm/cancel handlers, and daily-use state.
  */
 export const DarkWebLeakModal = ({

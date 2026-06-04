@@ -56,7 +56,7 @@ const ITEMS: CatalogItem[] = (() => {
 })()
 
 /**
- * Renders the Shop Tab view.
+ * Displays shop catalog items available in Band HQ.
  * @param props - Display data, state flags, callbacks, and visual options for the shop tab view.
  */
 export const ShopTab = ({

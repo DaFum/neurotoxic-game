@@ -45,7 +45,7 @@ type SegmentedSliderProps = {
 }
 
 /**
- * Renders the Segmented Slider view.
+ * Displays a slider with segmented track markers for discrete visual feedback.
  * @param props - Numeric input bounds, segment count, active segment count, display label, and change handlers.
  */
 export const SegmentedSlider = memo(function SegmentedSlider({

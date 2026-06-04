@@ -55,7 +55,7 @@ interface StatBoxProps {
 }
 
 /**
- * Renders the Stat Box view.
+ * Displays a labeled stat value with optional icon and color styling.
  * @param props - Statistic label, display value, icon, and optional wrapper classes.
  */
 export const StatBox = memo(function StatBox({
@@ -107,16 +107,16 @@ interface ProgressBarProps extends Omit<
 }
 
 /**
- * ProgressBar - Displays a progress bar with label
+ * Displays clamped progress with optional label, value text, and warning animation.
  * @param props - Progress label/value/max, color class, size variant, value visibility, warning state, and wrapper attributes.
- * - `props.label` - Optional. Progress bar label (optional)
- * - `props.value` - Current value
- * - `props.max` - Maximum value
- * - `props.color` - CSS color class
- * - `props.size` - Size variant (sm, md, mini) Defaults to `'md'`.
- * - `props.showValue` - Whether to show value Defaults to `true`.
- * - `props.warn` - Whether to show warning animation Defaults to `false`.
- * - `props.className` - Optional. Additional CSS classes
+ * - `props.label` - Accessible label and optional visible label text.
+ * - `props.value` - Current value; non-finite values render as `0`.
+ * - `props.max` - Maximum value; values less than or equal to `0` render against `1`.
+ * - `props.color` - CSS class applied to the filled bar.
+ * - `props.size` - Size variant. Defaults to `'md'`.
+ * - `props.showValue` - Whether to show the numeric value text. Defaults to `true`.
+ * - `props.warn` - Whether to apply warning animation styling. Defaults to `false`.
+ * - `props.className` - Additional classes for the outer progressbar element.
  */
 export const ProgressBar = memo(function ProgressBar({
   label,
@@ -178,7 +178,7 @@ interface PanelProps {
 }
 
 /**
- * Panel - A styled container with an optional title.
+ * Provides the shared framed panel shell with optional title and content layout classes.
  * @param props - Display data and visual options for the panel view.
  * - `props.title` - Optional title for the panel header.
  * - `props.children` - Panel content.

@@ -450,7 +450,7 @@ const calculateProgressAmount = (
 }
 
 /**
- * Event-driven quest progress engine.
+ * Applies gameplay events to active quest progress rules.
  */
 export const QuestProgress = {
   applyEvent: (state: GameState, event: QuestProgressEvent): GameState => {
