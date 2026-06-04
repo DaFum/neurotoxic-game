@@ -3,6 +3,7 @@ import globals from 'globals'
 import eslintReact from '@eslint-react/eslint-plugin'
 import tseslint from 'typescript-eslint'
 import prettier from 'eslint-config-prettier'
+import tsdoc from 'eslint-plugin-tsdoc'
 
 // Shared to keep JS/TS rulesets consistent.
 const RESTRICTED_IMPORTS = {
@@ -97,7 +98,8 @@ export default [
     },
     plugins: {
       ...BASE_PLUGINS,
-      '@typescript-eslint': tseslint.plugin
+      '@typescript-eslint': tseslint.plugin,
+      tsdoc
     },
     rules: {
       ...js.configs.recommended.rules,
@@ -111,7 +113,8 @@ export default [
         'warn',
         UNUSED_VARS_IGNORE_PATTERNS
       ],
-      '@typescript-eslint/no-explicit-any': 'error'
+      '@typescript-eslint/no-explicit-any': 'error',
+      'tsdoc/syntax': 'warn'
     }
   },
   {
