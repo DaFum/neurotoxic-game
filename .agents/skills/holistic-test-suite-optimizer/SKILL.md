@@ -6,7 +6,8 @@ metadata:
   version: '1.0.0'
   author: 'neurotoxic-project'
   category: 'testing'
-  keywords: ['testing', 'performance', 'pipeline', 'vitest', 'playwright', 'node-test']
+  keywords:
+    ['testing', 'performance', 'pipeline', 'vitest', 'playwright', 'node-test']
   maturity: 'beta'
 license: 'Proprietary. See LICENSE.txt for terms'
 ---
@@ -19,25 +20,25 @@ Optimize the test pipeline as a measured system, not as isolated files. The goal
 
 This skill exists to correct common failure modes in aggressive "optimize everything" prompts:
 
-| Pressure | Bad outcome | Required correction |
-| --- | --- | --- |
-| "Do not ask, optimize immediately" | Changes worker counts or fixtures without evidence | Measure baseline first and state assumptions |
-| "Maximize concurrency" | Runs CPU-saturating suites together and makes them slower | Tune from actual critical path and available cores |
-| "Deduplicate all setup" | Hoists mocks that leak between tests | Extract only repeated, compatible setup with teardown |
-| "All engines are one flow" | Mixes `node:test`, Vitest, and Playwright imports | Preserve runner ownership and config boundaries |
-| "Crush execution time" | Skips verification or hides failures | Re-run the affected suite and report deltas |
+| Pressure                           | Bad outcome                                               | Required correction                                   |
+| ---------------------------------- | --------------------------------------------------------- | ----------------------------------------------------- |
+| "Do not ask, optimize immediately" | Changes worker counts or fixtures without evidence        | Measure baseline first and state assumptions          |
+| "Maximize concurrency"             | Runs CPU-saturating suites together and makes them slower | Tune from actual critical path and available cores    |
+| "Deduplicate all setup"            | Hoists mocks that leak between tests                      | Extract only repeated, compatible setup with teardown |
+| "All engines are one flow"         | Mixes `node:test`, Vitest, and Playwright imports         | Preserve runner ownership and config boundaries       |
+| "Crush execution time"             | Skips verification or hides failures                      | Re-run the affected suite and report deltas           |
 
 ## Intent Router
 
 Classify the request before measuring or editing:
 
-| User intent | First move | Do not do yet |
-| --- | --- | --- |
-| Failure, flake, hang, OOM, or CI-only problem | Read `references/failure-triage-guide.md`, map the owning command, and reproduce the smallest runner-owned scope | Tune workers, add retries, skip tests, or change topology |
-| Slow local command or suite topology | Read `references/repo-test-topology.md` and `references/pipeline-audit-playbook.md`, then measure the same target command before and after | Claim speedups from different commands or failed early exits |
-| Duplicate setup or fixture cleanup | Inspect repeated setup only inside the same runner family and keep teardown beside setup | Hoist cross-runner mocks or add global setup without cleanup |
-| Analysis-only request | Return a ranked plan with evidence and exact verification commands | Edit files |
-| Implementation request | State assumptions, make the smallest owning-layer change, then verify upward | Refactor adjacent tests or move tests between engines for convenience |
+| User intent                                   | First move                                                                                                                                 | Do not do yet                                                         |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
+| Failure, flake, hang, OOM, or CI-only problem | Read `references/failure-triage-guide.md`, map the owning command, and reproduce the smallest runner-owned scope                           | Tune workers, add retries, skip tests, or change topology             |
+| Slow local command or suite topology          | Read `references/repo-test-topology.md` and `references/pipeline-audit-playbook.md`, then measure the same target command before and after | Claim speedups from different commands or failed early exits          |
+| Duplicate setup or fixture cleanup            | Inspect repeated setup only inside the same runner family and keep teardown beside setup                                                   | Hoist cross-runner mocks or add global setup without cleanup          |
+| Analysis-only request                         | Return a ranked plan with evidence and exact verification commands                                                                         | Edit files                                                            |
+| Implementation request                        | State assumptions, make the smallest owning-layer change, then verify upward                                                               | Refactor adjacent tests or move tests between engines for convenience |
 
 ## Workflow
 
@@ -91,18 +92,18 @@ Classify the request before measuring or editing:
 
 ## Quick Reference
 
-| Symptom | First checks | Likely safe action |
-| --- | --- | --- |
-| Slow `pnpm run test` | `run-fast-tests.mjs`, quick/heavy split, logic timing | Tune fast-runner workers only from measured local cores |
-| Slow `test:all` | `run-all-tests.mjs`, worker env, per-suite times | Adjust overlap only if CPU headroom exists |
-| Vitest jsdom OOM | `tests/vitest.setup.js`, DOM cleanup, mock resets | Tighten teardown before worker changes |
-| Duplicate `vi.mock` setup | Same mock repeated in same runner family | Extract Vitest-only fixture with restore path |
-| Slow node suite | heavy test list, `NODE_TEST_CONCURRENCY` | Split quick/heavy or tune node workers |
-| Slow E2E startup | Playwright config, auth/menu setup | Use `storageState` or direct scene fixture when valid |
-| Perf or locale concern | package script, CI job map, `test:additional` boundary | Use the specific perf/locale command before broad gates |
-| Flaky async wait | arbitrary sleeps, leaked timers | Replace with condition-based wait and cleanup |
-| CI-only failure | CI job log, package script, local matching command | Reproduce with the same runner before touching unrelated suites |
-| Hang or OOM | Last emitted test, teardown, worker env, heap symptoms | Fix leaks or isolation before increasing memory/workers |
+| Symptom                   | First checks                                           | Likely safe action                                              |
+| ------------------------- | ------------------------------------------------------ | --------------------------------------------------------------- |
+| Slow `pnpm run test`      | `run-fast-tests.mjs`, quick/heavy split, logic timing  | Tune fast-runner workers only from measured local cores         |
+| Slow `test:all`           | `run-all-tests.mjs`, worker env, per-suite times       | Adjust overlap only if CPU headroom exists                      |
+| Vitest jsdom OOM          | `tests/vitest.setup.js`, DOM cleanup, mock resets      | Tighten teardown before worker changes                          |
+| Duplicate `vi.mock` setup | Same mock repeated in same runner family               | Extract Vitest-only fixture with restore path                   |
+| Slow node suite           | heavy test list, `NODE_TEST_CONCURRENCY`               | Split quick/heavy or tune node workers                          |
+| Slow E2E startup          | Playwright config, auth/menu setup                     | Use `storageState` or direct scene fixture when valid           |
+| Perf or locale concern    | package script, CI job map, `test:additional` boundary | Use the specific perf/locale command before broad gates         |
+| Flaky async wait          | arbitrary sleeps, leaked timers                        | Replace with condition-based wait and cleanup                   |
+| CI-only failure           | CI job log, package script, local matching command     | Reproduce with the same runner before touching unrelated suites |
+| Hang or OOM               | Last emitted test, teardown, worker env, heap symptoms | Fix leaks or isolation before increasing memory/workers         |
 
 ## Bundled Resources
 

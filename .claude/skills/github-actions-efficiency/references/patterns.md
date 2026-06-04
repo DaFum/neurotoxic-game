@@ -29,9 +29,9 @@ concurrency:
 on:
   push:
     paths:
-      - "src/**"
-      - "tests/**"
-      - "package.json"
+      - 'src/**'
+      - 'tests/**'
+      - 'package.json'
 ```
 
 Use `paths-ignore` when exclusion is easier to maintain than inclusion.

@@ -2,7 +2,7 @@
 
 Use this as a model when a user asks for a complete TSDoc block rather than a quick tag lookup.
 
-```ts
+````ts
 /**
  * Calculates the total price of the items in the cart.
  *
@@ -29,7 +29,7 @@ export function calculateTotal<T extends BaseCurrency>(
 ): number {
   // Implementation
 }
-```
+````
 
 Notice what the comment does not say:
 
