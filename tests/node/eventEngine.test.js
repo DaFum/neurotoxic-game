@@ -43,7 +43,7 @@ mock.module(new URL('../../src/utils/crypto.ts', import.meta.url).href, {
 // Import module under test after mocking
 const { StateError } = await import('../../src/utils/errorHandler.ts')
 const { eventEngine, resolveEventChoice } =
-  await import('../../src/utils/eventEngine.ts')
+  await import('../../src/utils/eventEngine/index.ts')
 
 const TEST_EVENT_VAN_BREAKDOWN = {
   id: 'van_breakdown',

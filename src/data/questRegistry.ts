@@ -11,17 +11,18 @@ export const QUEST_REGISTRY = {
       { event: 'gig.smallVenueGood', amount: 'fixed', fixedAmount: 1 }
     ],
     required: 4,
-    rewardFlag: 'prove_yourself_complete',
     followupQuestId: 'quest_back_from_pit',
     startFlags: ['prove_yourself_active'],
-    failurePenalty: {
-      social: { controversyLevel: 10 },
-      band: { harmony: -20 },
-      flags: ['prove_yourself_failed'],
-      cooldowns: [{ id: 'prove_yourself_retry', days: 20 }]
-    },
     clearFlagsOnComplete: ['prove_yourself_active'],
-    clearFlagsOnFail: ['prove_yourself_active']
+    clearFlagsOnFail: ['prove_yourself_active'],
+    completionFlags: ['prove_yourself_complete'],
+    rewards: [{ type: 'flag.add', flag: 'prove_yourself_complete' }],
+    failurePenalties: [
+      { type: 'social.controversy', amount: 10 },
+      { type: 'band.harmony', amount: -20 },
+      { type: 'flag.add', flag: 'prove_yourself_failed' },
+      { type: 'quest.cooldown', id: 'prove_yourself_retry', days: 20 }
+    ]
   },
   quest_apology_tour: {
     kind: 'story',
@@ -34,16 +35,17 @@ export const QUEST_REGISTRY = {
       { event: 'gig.smallVenueGood', amount: 'fixed', fixedAmount: 1 }
     ],
     required: 3,
-    rewardFlag: 'apology_tour_complete',
     followupQuestId: 'quest_sincere_redemption',
-    failurePenalty: {
-      social: { controversyLevel: 25 },
-      band: { harmony: -20 },
-      flags: ['apology_tour_failed'],
-      cooldowns: [{ id: 'apology_tour_retry', days: 14 }]
-    },
     clearFlagsOnComplete: ['cancel_quest_active'],
-    clearFlagsOnFail: ['cancel_quest_active']
+    clearFlagsOnFail: ['cancel_quest_active'],
+    completionFlags: ['apology_tour_complete'],
+    rewards: [{ type: 'flag.add', flag: 'apology_tour_complete' }],
+    failurePenalties: [
+      { type: 'social.controversy', amount: 25 },
+      { type: 'band.harmony', amount: -20 },
+      { type: 'flag.add', flag: 'apology_tour_failed' },
+      { type: 'quest.cooldown', id: 'apology_tour_retry', days: 14 }
+    ]
   },
   quest_ego_management: {
     kind: 'story',
@@ -60,16 +62,18 @@ export const QUEST_REGISTRY = {
       }
     ],
     required: 50,
-    rewardFlag: 'ego_crisis_resolved',
     followupQuestId: 'quest_band_pact',
-    failurePenalty: {
-      band: { harmony: -25 },
-      social: { controversyLevel: 10, loyalty: -15 },
-      flags: ['ego_crisis_failed'],
-      cooldowns: [{ id: 'ego_management_retry', days: 10 }]
-    },
     clearFlagsOnComplete: ['breakup_quest_active'],
-    clearFlagsOnFail: ['breakup_quest_active']
+    clearFlagsOnFail: ['breakup_quest_active'],
+    completionFlags: ['ego_crisis_resolved'],
+    rewards: [{ type: 'flag.add', flag: 'ego_crisis_resolved' }],
+    failurePenalties: [
+      { type: 'social.controversy', amount: 10 },
+      { type: 'social.loyalty', amount: -15 },
+      { type: 'band.harmony', amount: -25 },
+      { type: 'flag.add', flag: 'ego_crisis_failed' },
+      { type: 'quest.cooldown', id: 'ego_management_retry', days: 10 }
+    ]
   },
   quest_pick_of_destiny: {
     kind: 'side',
@@ -81,12 +85,11 @@ export const QUEST_REGISTRY = {
     progressRules: [{ event: 'gig.good', amount: 'fixed', fixedAmount: 1 }],
     required: 3,
     offer: { trigger: 'random', category: 'special', chance: 0.05 },
-    rewardType: 'item',
-    rewardData: { item: 'lucky_pick' },
-    moneyReward: 200,
-    failurePenalty: {
-      social: { loyalty: -5 }
-    }
+    rewards: [
+      { type: 'money', amount: 200 },
+      { type: 'item.add', itemId: 'lucky_pick' }
+    ],
+    failurePenalties: [{ type: 'social.loyalty', amount: -5 }]
   },
   quest_viral_dance: {
     kind: 'repeatable',
@@ -110,13 +113,11 @@ export const QUEST_REGISTRY = {
       chance: 0.1,
       condition: { social: { maxTiktok: 4999 } }
     },
-    rewardType: 'fame',
-    rewardData: { fame: 500 },
-    moneyReward: 0,
-    failurePenalty: {
-      social: { controversyLevel: 5 },
-      cooldowns: [{ id: 'quest_viral_dance_retry', days: 7 }]
-    }
+    rewards: [{ type: 'fame', amount: 500 }],
+    failurePenalties: [
+      { type: 'social.controversy', amount: 5 },
+      { type: 'quest.cooldown', id: 'quest_viral_dance_retry', days: 7 }
+    ]
   },
   quest_sponsor_demand: {
     kind: 'repeatable',
@@ -136,13 +137,14 @@ export const QUEST_REGISTRY = {
     required: 2,
     cooldownDays: 15,
     offer: { trigger: 'random', category: 'financial', chance: 0.08 },
-    rewardType: 'item',
-    rewardData: { item: 'energy_drink' },
-    moneyReward: 500,
-    failurePenalty: {
-      social: { loyalty: -10 },
-      cooldowns: [{ id: 'quest_sponsor_demand_retry', days: 15 }]
-    }
+    rewards: [
+      { type: 'money', amount: 500 },
+      { type: 'item.add', itemId: 'energy_drink' }
+    ],
+    failurePenalties: [
+      { type: 'social.loyalty', amount: -10 },
+      { type: 'quest.cooldown', id: 'quest_sponsor_demand_retry', days: 15 }
+    ]
   },
   quest_harmony_project: {
     kind: 'side',
@@ -171,12 +173,8 @@ export const QUEST_REGISTRY = {
       chance: 0.3,
       condition: { band: { harmonyBelow: 60 } }
     },
-    rewardType: 'harmony',
-    rewardData: { harmony: 20 },
-    moneyReward: 0,
-    failurePenalty: {
-      band: { harmony: -10 }
-    }
+    rewards: [{ type: 'band.harmony', amount: 20 }],
+    failurePenalties: [{ type: 'band.harmony', amount: -10 }]
   },
   quest_tourbus_inspection: {
     kind: 'side',
@@ -196,10 +194,8 @@ export const QUEST_REGISTRY = {
       chance: 0.07,
       condition: { requiredAssetKind: 'tourbus_chassis' }
     },
-    moneyReward: 300,
-    failurePenalty: {
-      band: { harmony: -5 }
-    }
+    rewards: [{ type: 'money', amount: 300 }],
+    failurePenalties: [{ type: 'band.harmony', amount: -5 }]
   },
   quest_studio_demo: {
     kind: 'side',
@@ -217,11 +213,8 @@ export const QUEST_REGISTRY = {
       chance: 0.06,
       condition: { requiredAssetKind: 'studio_chassis' }
     },
-    rewardType: 'fame',
-    rewardData: { fame: 250 },
-    failurePenalty: {
-      social: { controversyLevel: 3 }
-    }
+    rewards: [{ type: 'fame', amount: 250 }],
+    failurePenalties: [{ type: 'social.controversy', amount: 3 }]
   },
   quest_merch_rush: {
     kind: 'side',
@@ -241,10 +234,8 @@ export const QUEST_REGISTRY = {
       chance: 0.07,
       condition: { requiredAssetKind: 'merch_workshop_chassis' }
     },
-    moneyReward: 400,
-    failurePenalty: {
-      social: { loyalty: -3 }
-    }
+    rewards: [{ type: 'money', amount: 400 }],
+    failurePenalties: [{ type: 'social.loyalty', amount: -3 }]
   },
   quest_venue_residency: {
     kind: 'repeatable',
@@ -268,12 +259,11 @@ export const QUEST_REGISTRY = {
       chance: 0.06,
       condition: { currentNodeType: 'GIG' }
     },
-    rewardType: 'fans',
-    rewardData: { fans: 200 },
-    moneyReward: 250,
-    failurePenalty: {
-      social: { loyalty: -5 }
-    }
+    rewards: [
+      { type: 'money', amount: 250 },
+      { type: 'social.followers', platform: 'instagram', amount: 200 }
+    ],
+    failurePenalties: [{ type: 'social.loyalty', amount: -5 }]
   },
   quest_region_takeover: {
     kind: 'repeatable',
@@ -297,11 +287,8 @@ export const QUEST_REGISTRY = {
       chance: 0.05,
       condition: { requireLocation: true }
     },
-    rewardType: 'fame',
-    rewardData: { fame: 400 },
-    failurePenalty: {
-      social: { controversyLevel: 5 }
-    }
+    rewards: [{ type: 'fame', amount: 400 }],
+    failurePenalties: [{ type: 'social.controversy', amount: 5 }]
   },
   quest_drama_post: {
     kind: 'repeatable',
@@ -320,10 +307,8 @@ export const QUEST_REGISTRY = {
     required: 300,
     cooldownDays: 5,
     offer: { trigger: 'random', category: 'band', chance: 0.06 },
-    moneyReward: 150,
-    failurePenalty: {
-      social: { controversyLevel: 5 }
-    }
+    rewards: [{ type: 'money', amount: 150 }],
+    failurePenalties: [{ type: 'social.controversy', amount: 5 }]
   },
   quest_premium_endorsement: {
     kind: 'repeatable',
@@ -348,11 +333,15 @@ export const QUEST_REGISTRY = {
       chance: 0.04,
       condition: { minFame: 200 }
     },
-    moneyReward: 1500,
-    failurePenalty: {
-      social: { loyalty: -10 },
-      cooldowns: [{ id: 'quest_premium_endorsement_retry', days: 30 }]
-    }
+    rewards: [{ type: 'money', amount: 1500 }],
+    failurePenalties: [
+      { type: 'social.loyalty', amount: -10 },
+      {
+        type: 'quest.cooldown',
+        id: 'quest_premium_endorsement_retry',
+        days: 30
+      }
+    ]
   },
   quest_community_outreach: {
     kind: 'repeatable',
@@ -379,11 +368,8 @@ export const QUEST_REGISTRY = {
         social: { loyaltyBelow: 35, controversyAbove: 30 }
       }
     },
-    rewardType: 'loyalty',
-    rewardData: { loyalty: 15 },
-    failurePenalty: {
-      social: { loyalty: -5 }
-    }
+    rewards: [{ type: 'social.loyalty', amount: 15 }],
+    failurePenalties: [{ type: 'social.loyalty', amount: -5 }]
   },
   quest_back_from_pit: {
     kind: 'story',
@@ -394,13 +380,16 @@ export const QUEST_REGISTRY = {
     progressSource: 'good_gig',
     progressRules: [{ event: 'gig.good', amount: 'fixed', fixedAmount: 1 }],
     required: 3,
-    rewardFlag: 'back_from_pit_complete',
-    rewardType: 'fame',
-    rewardData: { fame: 300 },
-    failurePenalty: {
-      social: { controversyLevel: 5 },
-      flags: ['back_from_pit_failed']
-    }
+    completionFlags: ['back_from_pit_complete'],
+    failureFlags: ['back_from_pit_failed'],
+    rewards: [
+      { type: 'flag.add', flag: 'back_from_pit_complete' },
+      { type: 'fame', amount: 300 }
+    ],
+    failurePenalties: [
+      { type: 'social.controversy', amount: 5 },
+      { type: 'flag.add', flag: 'back_from_pit_failed' }
+    ]
   },
   quest_sincere_redemption: {
     kind: 'story',
@@ -411,13 +400,16 @@ export const QUEST_REGISTRY = {
     progressSource: 'good_gig',
     progressRules: [{ event: 'gig.good', amount: 'fixed', fixedAmount: 1 }],
     required: 2,
-    rewardFlag: 'sincere_redemption_complete',
-    rewardType: 'controversy_reduction',
-    rewardData: { controversy: 20 },
-    failurePenalty: {
-      social: { loyalty: -5 },
-      flags: ['sincere_redemption_failed']
-    }
+    completionFlags: ['sincere_redemption_complete'],
+    failureFlags: ['sincere_redemption_failed'],
+    rewards: [
+      { type: 'flag.add', flag: 'sincere_redemption_complete' },
+      { type: 'social.controversy', amount: -20 }
+    ],
+    failurePenalties: [
+      { type: 'social.loyalty', amount: -5 },
+      { type: 'flag.add', flag: 'sincere_redemption_failed' }
+    ]
   },
   quest_band_pact: {
     kind: 'story',
@@ -434,13 +426,16 @@ export const QUEST_REGISTRY = {
       }
     ],
     required: 70,
-    rewardFlag: 'band_pact_complete',
-    rewardType: 'harmony',
-    rewardData: { harmony: 15 },
-    failurePenalty: {
-      band: { harmony: -10 },
-      flags: ['band_pact_failed']
-    }
+    completionFlags: ['band_pact_complete'],
+    failureFlags: ['band_pact_failed'],
+    rewards: [
+      { type: 'flag.add', flag: 'band_pact_complete' },
+      { type: 'band.harmony', amount: 15 }
+    ],
+    failurePenalties: [
+      { type: 'band.harmony', amount: -10 },
+      { type: 'flag.add', flag: 'band_pact_failed' }
+    ]
   },
   quest_local_legend: {
     kind: 'repeatable',
@@ -463,12 +458,8 @@ export const QUEST_REGISTRY = {
       chance: 0.07,
       condition: { requireLocation: true }
     },
-    rewardType: 'skill_point',
-    rewardData: { memberIndex: 0 },
-    moneyReward: 0,
-    failurePenalty: {
-      social: { loyalty: -15 }
-    }
+    rewards: [{ type: 'skill_point', memberIndex: 0 }],
+    failurePenalties: [{ type: 'social.loyalty', amount: -15 }]
   },
   quest_flawless_run: {
     kind: 'repeatable',
@@ -483,12 +474,11 @@ export const QUEST_REGISTRY = {
     ],
     required: 3,
     offer: { trigger: 'random', category: 'band', chance: 0.08 },
-    rewardType: 'fame',
-    rewardData: { fame: 150 },
-    moneyReward: 0,
-    failurePenalty: {
-      social: { loyalty: -5 }
-    }
+    rewards: [
+      { type: 'venue.reputation', scope: 'current', amount: 15 },
+      { type: 'fame', amount: 150 }
+    ],
+    failurePenalties: [{ type: 'social.loyalty', amount: -5 }]
   },
   quest_sticky_fingers: {
     kind: 'side',
@@ -502,10 +492,8 @@ export const QUEST_REGISTRY = {
     ],
     required: 5,
     offer: { trigger: 'random', category: 'special', chance: 0.06 },
-    moneyReward: 300,
-    failurePenalty: {
-      social: { loyalty: -5 }
-    }
+    rewards: [{ type: 'money', amount: 300 }],
+    failurePenalties: [{ type: 'social.loyalty', amount: -5 }]
   },
   quest_special_delivery: {
     kind: 'repeatable',
@@ -518,12 +506,8 @@ export const QUEST_REGISTRY = {
     progressRules: [{ event: 'item.delivered', amount: 'event.amount' }],
     required: 10,
     offer: { trigger: 'random', category: 'special', chance: 0.06 },
-    rewardType: 'fame',
-    rewardData: { fame: 100 },
-    moneyReward: 0,
-    failurePenalty: {
-      social: { loyalty: -5 }
-    }
+    rewards: [{ type: 'fame', amount: 100 }],
+    failurePenalties: [{ type: 'social.loyalty', amount: -5 }]
   },
   quest_persona_non_grata: {
     kind: 'side',
@@ -537,12 +521,8 @@ export const QUEST_REGISTRY = {
     ],
     required: 1,
     offer: { trigger: 'random', category: 'band', chance: 0.05 },
-    rewardType: 'loyalty',
-    rewardData: { loyalty: 10 },
-    moneyReward: 0,
-    failurePenalty: {
-      social: { loyalty: -5 }
-    }
+    rewards: [{ type: 'social.loyalty', amount: 10 }],
+    failurePenalties: [{ type: 'social.loyalty', amount: -5 }]
   },
   quest_murphys_law: {
     kind: 'side',
@@ -561,10 +541,11 @@ export const QUEST_REGISTRY = {
       chance: 0.05,
       condition: { requiredAssetKind: 'rehearsal' }
     },
-    moneyReward: 250,
-    failurePenalty: {
-      social: { loyalty: -5 }
-    }
+    failurePenalties: [{ type: 'social.loyalty', amount: -5 }],
+    rewards: [
+      { type: 'asset.repair', assetKind: 'rehearsal', amount: 20 },
+      { type: 'money', amount: 250 }
+    ]
   },
   quest_crisis_manager: {
     kind: 'repeatable',
@@ -584,12 +565,14 @@ export const QUEST_REGISTRY = {
       chance: 0.05,
       condition: { requiredAssetKind: 'rehearsal' }
     },
-    rewardType: 'fame',
-    rewardData: { fame: 120 },
-    moneyReward: 0,
-    failurePenalty: {
-      social: { loyalty: -5 }
-    }
+    rewards: [
+      { type: 'brand.trust', alignment: 'corporate', amount: 10 },
+      { type: 'fame', amount: 120 }
+    ],
+    failurePenalties: [
+      { type: 'brand.trust', alignment: 'corporate', amount: -5 },
+      { type: 'social.loyalty', amount: -5 }
+    ]
   },
   quest_chapter_marker: {
     kind: 'side',
@@ -603,12 +586,14 @@ export const QUEST_REGISTRY = {
     ],
     required: 3,
     offer: { trigger: 'random', category: 'special', chance: 0.05 },
-    rewardType: 'skill_point',
-    rewardData: { memberIndex: 0 },
-    moneyReward: 0,
-    failurePenalty: {
-      social: { loyalty: -5 }
-    }
+    rewards: [
+      { type: 'trait.unlock', traitId: 'road_warrior' },
+      { type: 'skill_point', memberIndex: 0 }
+    ],
+    failurePenalties: [
+      { type: 'event.queue', eventId: 'event_bad_press' },
+      { type: 'social.loyalty', amount: -5 }
+    ]
   },
   quest_payday: {
     kind: 'repeatable',
@@ -621,12 +606,8 @@ export const QUEST_REGISTRY = {
     progressRules: [{ event: 'economy.moneyEarned', amount: 'event.amount' }],
     required: 1000,
     offer: { trigger: 'random', category: 'special', chance: 0.06 },
-    rewardType: 'fame',
-    rewardData: { fame: 200 },
-    moneyReward: 0,
-    failurePenalty: {
-      social: { loyalty: -5 }
-    }
+    rewards: [{ type: 'fame', amount: 200 }],
+    failurePenalties: [{ type: 'social.loyalty', amount: -5 }]
   },
   quest_make_amends: {
     kind: 'repeatable',
@@ -641,12 +622,8 @@ export const QUEST_REGISTRY = {
     ],
     required: 1,
     offer: { trigger: 'random', category: 'special', chance: 0.05 },
-    rewardType: 'loyalty',
-    rewardData: { loyalty: 10 },
-    moneyReward: 0,
-    failurePenalty: {
-      social: { loyalty: -5 }
-    }
+    rewards: [{ type: 'social.loyalty', amount: 10 }],
+    failurePenalties: [{ type: 'social.loyalty', amount: -5 }]
   },
   quest_burned_bridges: {
     kind: 'side',
@@ -660,12 +637,8 @@ export const QUEST_REGISTRY = {
     ],
     required: 1,
     offer: { trigger: 'random', category: 'financial', chance: 0.05 },
-    rewardType: 'loyalty',
-    rewardData: { loyalty: 15 },
-    moneyReward: 0,
-    failurePenalty: {
-      social: { loyalty: -5 }
-    }
+    rewards: [{ type: 'social.loyalty', amount: 15 }],
+    failurePenalties: [{ type: 'social.loyalty', amount: -5 }]
   },
   quest_venue_regular: {
     kind: 'repeatable',
@@ -680,12 +653,11 @@ export const QUEST_REGISTRY = {
     ],
     required: 30,
     offer: { trigger: 'random', category: 'gig', chance: 0.06 },
-    rewardType: 'fame',
-    rewardData: { fame: 150 },
-    moneyReward: 0,
-    failurePenalty: {
-      social: { loyalty: -5 }
-    }
+    failurePenalties: [{ type: 'social.loyalty', amount: -5 }],
+    rewards: [
+      { type: 'venue.reputation', scope: 'current', amount: 15 },
+      { type: 'fame', amount: 150 }
+    ]
   },
   quest_brand_ambassador: {
     kind: 'repeatable',
@@ -698,10 +670,8 @@ export const QUEST_REGISTRY = {
     progressRules: [{ event: 'brand.trustChanged', amount: 'event.amount' }],
     required: 20,
     offer: { trigger: 'random', category: 'financial', chance: 0.06 },
-    moneyReward: 600,
-    failurePenalty: {
-      social: { loyalty: -5 }
-    }
+    rewards: [{ type: 'money', amount: 600 }],
+    failurePenalties: [{ type: 'social.loyalty', amount: -5 }]
   },
   quest_alchemist: {
     kind: 'repeatable',
@@ -714,12 +684,14 @@ export const QUEST_REGISTRY = {
     progressRules: [{ event: 'item.crafted', amount: 'fixed', fixedAmount: 1 }],
     required: 2,
     offer: { trigger: 'random', category: 'special', chance: 0.06 },
-    rewardType: 'fame',
-    rewardData: { fame: 120 },
-    moneyReward: 0,
-    failurePenalty: {
-      social: { loyalty: -5 }
-    }
+    rewards: [
+      { type: 'brand.trust', alignment: 'corporate', amount: 10 },
+      { type: 'fame', amount: 120 }
+    ],
+    failurePenalties: [
+      { type: 'brand.trust', alignment: 'corporate', amount: -5 },
+      { type: 'social.loyalty', amount: -5 }
+    ]
   }
 } as const satisfies Record<string, QuestDefinition>
 

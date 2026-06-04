@@ -634,15 +634,43 @@ test('calculateFuelCost applies van tuning upgrade', () => {
 // Note: calculateGigFinancials no longer applies upgrades to fuel because fuel is not in the gig report.
 // Upgrade testing is handled in calculateFuelCost tests.
 
-test('calculateRefuelCost calculates correctly', () => {
-  // Max fuel = 100, Price = 1.75
-  // Current fuel = 50. Missing = 50. Cost = 50 * 1.75 = 87.5 -> 88
-  const cost = calculateRefuelCost(50)
-  const expected = Math.ceil(50 * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE)
-  assert.equal(cost, expected)
+test('calculateRefuelCost handles normal and edge cases', async t => {
+  const maxFuel = EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL
+  const fullRefuel = Math.ceil(maxFuel * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE)
 
-  // Current fuel = 120 (overfilled). Missing = 0. Cost = 0.
-  assert.equal(calculateRefuelCost(120), 0)
+  await t.test('calculates correct cost for partial fuel', () => {
+    const currentFuel = maxFuel / 2
+    const cost = calculateRefuelCost(currentFuel)
+    const expected = Math.ceil(
+      (maxFuel - currentFuel) * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE
+    )
+    assert.equal(cost, expected)
+  })
+
+  await t.test('returns 0 when overfilled', () => {
+    assert.equal(calculateRefuelCost(maxFuel + 20), 0)
+  })
+
+  await t.test(
+    'handles NaN fuel gracefully by returning full refuel cost',
+    () => {
+      assert.equal(calculateRefuelCost(NaN), fullRefuel)
+    }
+  )
+
+  await t.test(
+    'handles negative fuel gracefully by returning full refuel cost',
+    () => {
+      assert.equal(calculateRefuelCost(-10), fullRefuel)
+    }
+  )
+
+  await t.test(
+    'handles undefined fuel gracefully by returning full refuel cost',
+    () => {
+      assert.equal(calculateRefuelCost(undefined), fullRefuel)
+    }
+  )
 })
 
 test('calculateRepairCost handles normal and edge cases', async t => {
@@ -803,6 +831,18 @@ test('calculateEffectiveTicketPrice handles discounts correctly', async t => {
     assert.equal(calculateEffectiveTicketPrice(null, {}), 0)
   })
 
+  await t.test('returns 0 for NaN price', () => {
+    assert.equal(calculateEffectiveTicketPrice({ price: NaN }, {}), 0)
+  })
+
+  await t.test('returns 0 for Infinity price', () => {
+    assert.equal(calculateEffectiveTicketPrice({ price: Infinity }, {}), 0)
+  })
+
+  await t.test('returns 0 for undefined price', () => {
+    assert.equal(calculateEffectiveTicketPrice({ price: undefined }, {}), 0)
+  })
+
   await t.test('returns original price if not discounted', () => {
     const gig = { price: 20 }
     assert.equal(
@@ -862,6 +902,22 @@ test('calculateGigFinancials handles zero capacity venue with zero fame safely',
   )
   assert.equal(ticketItem.value, 0)
   assert.equal(ticketItem.detailParams.sold, 0)
+})
+
+test('calculateGigFinancials clamps negative playerFame to zero management cut', () => {
+  const result = calculateGigFinancials({
+    gigData: buildGigData({ capacity: 200, price: 20, pay: 0 }),
+    performanceScore: 100,
+    modifiers: {},
+    bandInventory: {},
+    playerState: { fame: -50 }
+  })
+  const managementItem = result.expenses.breakdown.find(
+    i => i.labelKey === 'economy:gigExpenses.managementFee.label'
+  )
+  // Negative fame must produce 0% cut, not a negative (income-inflating) cut
+  assert.ok(managementItem, 'Expected management fee expense item')
+  assert.equal(managementItem.value, 0)
 })
 
 test('calculateGigFinancials uses effective price', () => {

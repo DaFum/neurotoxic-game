@@ -176,6 +176,48 @@ test('test, spec, and story files are ignored while React HOCs keep render signa
   }
 })
 
+test('parameter names normalize CRLF source text to LF', () => {
+  const fixtureDir = path.join('src', '__symbolIndexFixtures')
+  const symbolsBeforeFixture = cachedSymbolsText
+
+  try {
+    fs.mkdirSync(fixtureDir, { recursive: true })
+    fs.writeFileSync(
+      path.join(fixtureDir, 'SymbolIndexCrLfParam.ts'),
+      [
+        'export function SymbolIndexCrLfParam({',
+        '  first,',
+        '  second',
+        '}: {',
+        '  first: string',
+        '  second: string',
+        '}) {',
+        '  return `${first}:${second}`',
+        '}',
+        ''
+      ].join('\r\n')
+    )
+
+    runUpdateSymbols()
+    refreshSymbolsCache()
+    const ks = loadSymbols()
+    const crlfFixture = ks.SymbolIndexCrLfParam.find(
+      entry =>
+        entry.path === 'src/__symbolIndexFixtures/SymbolIndexCrLfParam.ts'
+    )
+
+    assert.equal(crlfFixture.parameters[0].name, '{\n  first,\n  second\n}')
+    assert.equal(crlfFixture.parameters[0].bindingKind, 'objectPattern')
+    assert.deepEqual(crlfFixture.parameters[0].destructuredNames, [
+      'first',
+      'second'
+    ])
+  } finally {
+    fs.rmSync(fixtureDir, { recursive: true, force: true })
+    restoreSymbolsCache(symbolsBeforeFixture)
+  }
+})
+
 test('local symbols include signatures, structure, docs, graph, location, and framework metadata', () => {
   const ks = loadSymbols()
 

@@ -107,11 +107,7 @@ export const calculateTicketIncome = (
   }
 
   // Price Sensitivity: Higher price reduces attendance slightly unless Fame is very high
-  const rawTicketPrice = typeof gigData.price === 'number' ? gigData.price : 0
-  const ticketPrice =
-    context.discountedTickets && rawTicketPrice > 10
-      ? Math.floor(rawTicketPrice * 0.5)
-      : rawTicketPrice
+  const ticketPrice = calculateEffectiveTicketPrice(gigData, context)
   if (!context.discountedTickets && ticketPrice > 15) {
     const pricePenalty = (ticketPrice - 15) * 0.02 // -2% per Euro over 15
     const mitigation = fameRatio * 0.5
@@ -341,9 +337,9 @@ export const calculateEffectiveTicketPrice = (
 ) => {
   if (!gigData) return 0
   context = context || {}
-  let price = gigData.price || 0
+  const price = finiteNumberOr(gigData.price, 0)
   if (context.discountedTickets && price > 10) {
-    price = Math.floor(price * 0.5)
+    return Math.floor(price * 0.5)
   }
   return price
 }
@@ -551,7 +547,7 @@ export const calculateGigFinancials = (
   }: GigFinancialParams,
   assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS
 ) => {
-  const playerFame = playerState?.fame ?? 0
+  const playerFame = finiteNumberOr(playerState?.fame, 0)
   const totalSongQualityBonus =
     Math.max(0, finiteNumberOr(assetModifiers.songQualityBonus, 0)) +
     (assetModifiers.flags?.enablesReRecording ? 0.2 : 0)
@@ -698,9 +694,10 @@ export const calculateGigFinancials = (
   }
 
   // 7. Management Cut (fame-progressive: 0% at fame=0, full 15% at fame≥200)
-  const effectiveCutRate = MANAGEMENT_CUT_RATE * Math.min(1, playerFame / 200)
+  const effectiveCutRate =
+    MANAGEMENT_CUT_RATE * Math.max(0, Math.min(1, playerFame / 200))
   const managementCut = Math.floor(report.income.total * effectiveCutRate)
-  if (managementCut > 0) {
+  if (managementCut > 0 || report.income.total > 0) {
     report.expenses.breakdown.push({
       labelKey: 'economy:gigExpenses.managementFee.label',
       value: managementCut,
