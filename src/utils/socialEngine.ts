@@ -245,10 +245,10 @@ export const generatePostOptions = (
 
 /**
  * Resolves the outcome of a social media post based on its defined resolver.
- * @param {object} postOption - The selected post option from POST_OPTIONS.
- * @param {object} gameState - Current state required for resolution.
- * @param {number} [diceRoll=secureRandom()] - Random number between 0 and 1.
- * @returns {object} The full resolution map containing success, followers, and side effects.
+ * @param postOption - The selected post option from POST_OPTIONS.
+ * @param gameState - Current state required for resolution.
+ * @param diceRoll - Random number between 0 and 1. Defaults to `secureRandom()`.
+ * @returns The full resolution map containing success, followers, and side effects.
  */
 export const resolvePost = (
   postOption: SocialPostOption,
@@ -299,8 +299,8 @@ export const resolvePost = (
     return {
       success: result.success ?? true,
       followers: result.followers ?? 0,
-      platform: result.platform || postOption.platform,
-      message: result.message || 'Post completed.',
+      platform: result.platform ?? postOption.platform,
+      message: result.message ?? 'Post completed.',
       // Side effects (optional, will be undefined if not provided)
       moneyChange,
       moodChange: result.moodChange,
@@ -335,13 +335,13 @@ export const resolvePost = (
 
 /**
  * Calculates new followers based on platform growth mechanics.
- * @param {string} platform - 'instagram', 'tiktok', 'youtube', 'newsletter'
- * @param {number} performance - Gig performance score (0-100)
- * @param {number} currentFollowers - Existing follower count
- * @param {boolean} [isViral=false] - Whether a viral event occurred
- * @param {number} [controversyLevel=0] - Current shadowban meter
- * @param {number} [loyalty=0] - Buffer against bad growth
- * @returns {number} Net follower growth
+ * @param platform - 'instagram', 'tiktok', 'youtube', 'newsletter'
+ * @param performance - Gig performance score (0-100)
+ * @param currentFollowers - Existing follower count
+ * @param isViral - Whether a viral event occurred Defaults to `false`.
+ * @param controversyLevel - Current shadowban meter Defaults to `0`.
+ * @param loyalty - Buffer against bad growth Defaults to `0`.
+ * @returns Net follower growth
  */
 // ⚡ Bolt: Pre-calculate platform ID map for O(1) lookups instead of O(N) array allocation and search.
 // Expected Impact: Reduces GC overhead and CPU cycles during the hot-path calculateSocialGrowth function.
@@ -384,10 +384,10 @@ export const calculateSocialGrowth = (
 
 /**
  * Checks if a viral event triggers based on gig stats.
- * @param {object} stats - { accuracy, maxCombo, score }
- * @param {object|number} [options={}] - Options object OR legacy modifiers number.
- * @param {number} [legacyRoll=secureRandom()] - Legacy roll argument (only used if options is number).
- * @returns {boolean} True if viral event occurs
+ * @param stats - `accuracy, maxCombo, score`
+ * @param options - Options object OR legacy modifiers number. Defaults to `{}`.
+ * @param legacyRoll - Legacy roll argument (only used if options is number). Defaults to `secureRandom()`.
+ * @returns True if viral event occurs
  */
 export const checkViralEvent = (
   stats: ViralStats,
@@ -435,9 +435,9 @@ export const checkViralEvent = (
 
 /**
  * Applies organic decay to follower counts.
- * @param {number} followers - Current follower count
- * @param {number} daysSinceLastPost - Days since last engagement
- * @returns {number} New follower count (decreased)
+ * @param followers - Current follower count
+ * @param daysSinceLastPost - Days since last engagement
+ * @returns New follower count (decreased)
  */
 export const applyReputationDecay = (
   followers: number,
@@ -451,8 +451,8 @@ export const applyReputationDecay = (
 /**
  * Generates a daily social media trend.
  *
- * @param {Function} rng - Random number generator.
- * @returns {string} One of 'NEUTRAL', 'DRAMA', 'TECH', 'MUSIC', 'WHOLESOME'.
+ * @param rng - Random number generator.
+ * @returns One of 'NEUTRAL', 'DRAMA', 'TECH', 'MUSIC', 'WHOLESOME'.
  */
 export const generateDailyTrend = (
   rng: RandomFn = secureRandom
@@ -475,9 +475,9 @@ export { generateBrandName } from './brandOfferFlavor'
 
 /**
  * Generates available brand deal offers based on band status and reputation.
- * @param {object} gameState - Current game state.
- * @param {Function} rng - Random number generator.
- * @returns {Array} List of offer objects.
+ * @param gameState - Current game state.
+ * @param rng - Random number generator.
+ * @returns List of offer objects.
  */
 export const calculateZealotryEffects = (
   zealotry: number
@@ -701,11 +701,11 @@ export const generateBrandOffers = (
 
 /**
  * Negotiates a brand deal with risk/reward mechanics.
- * @param {object} deal - The original deal object.
- * @param {string} strategy - 'AGGRESSIVE', 'PERSUASIVE', 'SAFE'.
- * @param {object} gameState - Current game state.
- * @param {Function} rng - Random number generator.
- * @returns {object} { success: boolean, deal: object, feedback: string, status: 'ACCEPTED'|'REVOKED'|'FAILED' }
+ * @param deal - The original deal object.
+ * @param strategy - 'AGGRESSIVE', 'PERSUASIVE', 'SAFE'.
+ * @param gameState - Current game state.
+ * @param rng - Random number generator.
+ * @returns `success: boolean, deal: object, feedback: string, status: 'ACCEPTED'|'REVOKED'|'FAILED'`
  */
 export const negotiateDeal = <TDeal extends BrandDeal>(
   deal: TDeal,

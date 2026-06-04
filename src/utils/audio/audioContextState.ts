@@ -1,9 +1,9 @@
 /**
  * Returns the most reliable AudioContext state using raw context first.
- * @param {object} params - Candidate context states.
- * @param {string|undefined|null} params.rawContextState - Web Audio state.
- * @param {string|undefined|null} params.toneContextState - Tone.js context state.
- * @returns {string} Preferred state string or `unknown` when unavailable.
+ * @param params - Candidate context states.
+ * - `params.rawContextState` - Web Audio state.
+ * - `params.toneContextState` - Tone.js context state.
+ * @returns Preferred state string or `unknown` when unavailable.
  */
 export function getPreferredAudioContextState({
   rawContextState,
@@ -19,8 +19,8 @@ export function getPreferredAudioContextState({
 
 /**
  * Determines whether the AudioContext can be resumed.
- * @param {string} state - AudioContext state.
- * @returns {boolean} True when `resume()` is a valid recovery path.
+ * @param state - AudioContext state.
+ * @returns True when `resume()` is a valid recovery path.
  */
 export function canResumeAudioContextState(state: string): boolean {
   return state === 'suspended' || state === 'interrupted'
@@ -28,8 +28,8 @@ export function canResumeAudioContextState(state: string): boolean {
 
 /**
  * Determines whether the AudioContext state is closed.
- * @param {string} state - AudioContext state.
- * @returns {boolean} True when the context is closed and must be rebuilt.
+ * @param state - AudioContext state.
+ * @returns True when the context is closed and must be rebuilt.
  */
 export function isClosedAudioContextState(state: string): boolean {
   return state === 'closed'

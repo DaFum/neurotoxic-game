@@ -15,8 +15,8 @@ import { isForbiddenKey, isLooseRecord } from './objectUtils'
 
 /**
  * Validates the structure and types of the save data.
- * @param {unknown} data - The parsed JSON data from localStorage.
- * @returns {boolean} True if valid, throws error if invalid.
+ * @param data - The parsed JSON data from localStorage.
+ * @returns True if valid, throws error if invalid.
  */
 export const validateSaveData = (data: unknown): boolean => {
   checkPrototypePollution(data)

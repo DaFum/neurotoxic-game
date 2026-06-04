@@ -54,7 +54,7 @@ class PixiStageController<
   toxicFilterManager: ToxicFilterManager | null
 
   /**
-   * @param {object} params - Controller dependencies.
+   * @param params - Controller dependencies.
    */
   constructor(params: StageControllerOptions<TState>) {
     super(params)
@@ -81,7 +81,7 @@ class PixiStageController<
 
   /**
    * Initializes stage container and toxic filters.
-   * @private
+   * @internal
    */
   _initFilters() {
     this.stageContainer = this.container
@@ -90,8 +90,8 @@ class PixiStageController<
 
   /**
    * Initializes managers and starts asset loading.
-   * @returns {Promise[]} Array of asset loading promises.
-   * @private
+   * @returns Array of asset loading promises.
+   * @internal
    */
   _initManagersAndStartLoading() {
     const app = this.app
@@ -137,7 +137,7 @@ class PixiStageController<
 
   /**
    * Finalizes manager initialization after assets are loaded.
-   * @private
+   * @internal
    */
   _finalizeInit() {
     if (this.isDisposed) return
@@ -151,7 +151,7 @@ class PixiStageController<
 
   /**
    * Manually runs a single update frame, useful for testing without a real ticker.
-   * @param {number} deltaMS - Time delta in milliseconds.
+   * @param deltaMS - Time delta in milliseconds.
    */
   manualUpdate(deltaMS: number) {
     if (!this.app || this.isDisposed) return
@@ -161,7 +161,7 @@ class PixiStageController<
   /**
    * Handles ticker updates from Pixi.js.
    * Called by BaseStageController.handleTicker().
-   * @param {number} deltaMS - Time delta.
+   * @param deltaMS - Time delta.
    */
   update(deltaMS: number) {
     if (!this._canUpdate()) {
@@ -212,8 +212,8 @@ class PixiStageController<
 
   /**
    * Checks if the controller is ready to update.
-   * @returns {boolean} True if ready to update.
-   * @private
+   * @returns True if ready to update.
+   * @internal
    */
   _canUpdate() {
     return !!(
@@ -231,7 +231,6 @@ class PixiStageController<
 
   /**
    * Disposes Pixi resources and removes the canvas.
-   * @returns {void}
    */
   dispose() {
     this.noteManager?.dispose()
@@ -258,8 +257,8 @@ class PixiStageController<
 
 /**
  * Factory for PixiStageController instances.
- * @param {object} params - Controller dependencies.
- * @returns {PixiStageController} Controller instance.
+ * @param params - Controller dependencies.
+ * @returns Controller instance.
  */
 export const createPixiStageController = <
   TState extends RhythmGameRefState = RhythmGameRefState

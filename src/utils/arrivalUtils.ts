@@ -52,24 +52,24 @@ export type ArrivalResult = {
  * Shared logic for handling arrival at a map node.
  * This can be used by both the legacy travel system and the new arrival logic hook.
  *
- * @param {object} params
- * @param {object} params.node - The node being arrived at.
- * @param {object} params.band - Current band state.
- * @param {object} params.player - Current player state (inventory, stats, etc.).
- * @param {Function} params.updateBand - Function to update band state.
- * @param {Function} params.updatePlayer - Function to update player state (handles side effects).
- * @param {Function} params.triggerEvent - Function to trigger events.
- * @param {Function} params.startGig - Function to start a gig.
- * @param {Function} params.addToast - Function to show notifications.
- * @param {Function} [params.changeScene] - Function to change scene (fallback).
- * @param {Function} [params.onShowHQ] - Optional callback to show HQ (for START node).
- * @param {boolean} [params.eventAlreadyActive=false] - Whether an event is already active (to prevent stacking).
- * @param {Function} [params.rng=secureRandom] - RNG function for probabilistic outcomes.
+ * @param params - Params.
+ * - `params.node` - The node being arrived at.
+ * - `params.band` - Current band state.
+ * - `params.player` - Current player state (inventory, stats, etc.).
+ * - `params.updateBand` - Function to update band state.
+ * - `params.updatePlayer` - Function to update player state (handles side effects).
+ * - `params.triggerEvent` - Function to trigger events.
+ * - `params.startGig` - Function to start a gig.
+ * - `params.addToast` - Function to show notifications.
+ * - `params.changeScene` - Optional. Function to change scene (fallback).
+ * - `params.onShowHQ` - Optional callback to show HQ (for START node).
+ * - `params.eventAlreadyActive` - Whether an event is already active (to prevent stacking). Defaults to `false`.
+ * - `params.rng` - RNG function for probabilistic outcomes. Defaults to `secureRandom`.
  */
 /**
  * Calculates new harmony value if band has harmony regen active.
- * @param {object} band - The current band state.
- * @returns {number|null} The new harmony value, or null if regen is not applicable.
+ * @param band - The current band state.
+ * @returns The new harmony value, or null if regen is not applicable.
  */
 export const processHarmonyRegen = (
   band: Pick<BandState, 'harmony' | 'harmonyRegenTravel'> | null | undefined
@@ -82,8 +82,8 @@ export const processHarmonyRegen = (
 
 /**
  * Checks if the current node is a gig node.
- * @param {object} node - The current node.
- * @returns {boolean} True if the node is a GIG, FESTIVAL, or FINALE.
+ * @param node - The current node.
+ * @returns True if the node is a GIG, FESTIVAL, or FINALE.
  */
 export const isGigNode = <T extends { type?: string }>(
   node: T | null | undefined
@@ -99,9 +99,9 @@ type ProcessTravelEventsOptions = {
 
 /**
  * Triggers travel events if applicable for the current node.
- * @param {object} node - The current node.
- * @param {Function} triggerEvent - The function to trigger events.
- * @returns {boolean} True if a travel event was triggered.
+ * @param node - The current node.
+ * @param triggerEvent - The function to trigger events.
+ * @returns True if a travel event was triggered.
  */
 export const processTravelEvents = (
   node: ArrivalNode | null | undefined,

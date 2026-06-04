@@ -6,6 +6,9 @@ import type { PurchaseItem } from './components'
 import type { AssetKind, RiskEventDescriptor } from './assets'
 import type { ActiveQuestState } from './quest'
 
+/**
+ * Relationship delta between two band members.
+ */
 export type RelationshipChange = {
   member1: string
   member2: string
@@ -14,22 +17,43 @@ export type RelationshipChange = {
   timestamp?: number
 }
 
+/**
+ * Scene identifiers that can be stored in game state.
+ */
 export type GamePhase = (typeof GAME_PHASES)[keyof typeof GAME_PHASES]
+/**
+ * Item rarity labels used by inventory and catalog data.
+ */
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic'
 
+/**
+ * Persisted player settings.
+ */
 export interface GameSettings {
   crtEnabled: boolean
   tutorialSeen: boolean
   logLevel: number
 }
 
+/**
+ * Object record used at untrusted or loosely typed boundaries.
+ */
 export type UnknownRecord = Record<string, unknown>
+/**
+ * Untrusted settings payload loaded from storage.
+ */
 export type RawGameSettings = Partial<Record<keyof GameSettings, unknown>>
 
+/**
+ * Persisted contraband stash entry.
+ */
 export type StashEntry = {
   stacks?: number | null
 }
 
+/**
+ * Supported overworld map node categories.
+ */
 export type MapNodeType =
   | 'START'
   | 'GIG'
@@ -41,18 +65,27 @@ export type MapNodeType =
   | 'REST'
   | 'supplyStop'
 
+/**
+ * City-level modifiers that affect demand and local behavior.
+ */
 export interface CityTraitState {
   genreBias: string
   attentionSpan: number
   barSpendingProfile: string
 }
 
+/**
+ * Identifiers for active overlay minigames.
+ */
 export type MinigameType =
   | 'TOURBUS'
   | 'ROADIE'
   | 'KABELSALAT'
   | 'AMP_CALIBRATION'
 
+/**
+ * Persisted state for the currently active minigame overlay.
+ */
 export interface MinigameState {
   type?: MinigameType | null
   isActive?: boolean
@@ -69,6 +102,9 @@ export interface MinigameState {
   [key: string]: unknown
 }
 
+/**
+ * Toast notification payload stored in game state.
+ */
 export interface ToastPayload {
   id: string
   type: 'success' | 'error' | 'warning' | 'info'
@@ -78,6 +114,9 @@ export interface ToastPayload {
   [key: string]: unknown
 }
 
+/**
+ * Top-level persisted and runtime game state.
+ */
 export interface GameState {
   version: number
   currentScene: GamePhase
@@ -123,8 +162,14 @@ export interface GameState {
   rngSeed: number
 }
 
+/**
+ * Untrusted game-save payload loaded from storage.
+ */
 export type RawLoadedGame = UnknownRecord
 
+/**
+ * Generic action envelope used by reducer action unions.
+ */
 export type Action<
   TType extends ActionType,
   TPayload = undefined
@@ -132,6 +177,9 @@ export type Action<
   ? { type: TType }
   : { type: TType; payload: TPayload }
 
+/**
+ * Application reducer action union.
+ */
 export type GameAction =
   | Action<ActionTypes['CHANGE_SCENE'], GamePhase>
   | Action<ActionTypes['UPDATE_PLAYER'], UpdatePlayerPayload>

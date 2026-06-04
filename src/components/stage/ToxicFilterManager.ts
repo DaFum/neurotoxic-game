@@ -16,8 +16,8 @@ export class ToxicFilterManager {
 
   /**
    * Updates toxic mode filter effects based on game state.
-   * @param {object} state - The game state.
-   * @param {number} elapsed - The elapsed gig time.
+   * @param state - The game state.
+   * @param elapsed - The elapsed gig time.
    */
   update(
     state: Pick<RhythmGameRefState, 'isToxicMode'>,
@@ -42,7 +42,7 @@ export class ToxicFilterManager {
 
   /**
    * Checks if the manager is ready for updates.
-   * @returns {boolean}
+   * @returns Whether the toxic filters are available.
    */
   isReady(): boolean {
     return !!this.toxicFilters

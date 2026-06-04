@@ -1,6 +1,9 @@
 import type { Note } from './audio'
 import type { Projectile } from '../utils/hecklerLogic'
 
+/**
+ * Playable rhythm-game lane identifiers.
+ */
 export type RhythmLane = {
   id: 'guitar' | 'drums' | 'bass'
   key: 'ArrowLeft' | 'ArrowDown' | 'ArrowRight'
@@ -11,6 +14,9 @@ export type RhythmLane = {
   renderX?: number
 }
 
+/**
+ * Live rhythm-game scoring and health counters.
+ */
 export type RhythmLiveStats = {
   perfectHits: number
   perfects?: number
@@ -23,6 +29,9 @@ export type RhythmLiveStats = {
   corruptionLevel?: number
 }
 
+/**
+ * Runtime rhythm note scheduled for player input.
+ */
 export type RhythmNote = {
   time: number
   laneIndex: number
@@ -33,6 +42,9 @@ export type RhythmNote = {
   originalNote?: Note
 }
 
+/**
+ * Per-song rhythm performance summary.
+ */
 export type RhythmSongStatsEntry = {
   songId: string
   score: number
@@ -40,6 +52,9 @@ export type RhythmSongStatsEntry = {
   index: number
 }
 
+/**
+ * Final gig performance stats submitted after a setlist.
+ */
 export type GigStats = {
   score: number
   misses: number
@@ -52,8 +67,14 @@ export type GigStats = {
   songStats: RhythmSongStatsEntry[]
 }
 
+/**
+ * Payload shape for updating last-gig statistics.
+ */
 export type SetLastGigStats = (stats: GigStats) => void
 
+/**
+ * Setlist entry accepted by rhythm-game setup.
+ */
 export type RhythmSetlistEntry =
   | string
   | {
@@ -68,6 +89,9 @@ export type RhythmSetlistEntry =
       [key: string]: unknown
     }
 
+/**
+ * Active rhythm gameplay modifiers from band, venue, and prep effects.
+ */
 export type RhythmModifiers = {
   drumMultiplier?: number
   guitarScoreMult?: number
@@ -84,6 +108,9 @@ export type RhythmModifiers = {
   [key: string]: unknown
 }
 
+/**
+ * Mutable rhythm-game state shared across loop, audio, and UI code.
+ */
 export type RhythmGameRefState = {
   notes: RhythmNote[]
   nextMissCheckIndex: number

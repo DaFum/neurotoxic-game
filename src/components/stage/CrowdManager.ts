@@ -32,8 +32,8 @@ export class CrowdManager {
   textureManager: CrowdTextureManager
   colors: CrowdColors
   /**
-   * @param {Application} app
-   * @param {Container} stageContainer
+   * @param app - App.
+   * @param stageContainer - Stage container.
    */
   constructor(app: Application, stageContainer: Container) {
     this.app = app
@@ -85,9 +85,9 @@ export class CrowdManager {
   }
 
   /**
-   * @param {number} radius
-   * @param {number} fallbackColor
-   * @private
+   * @param radius - Radius.
+   * @param fallbackColor - Fallback color.
+   * @internal
    */
   _createCrowdMember(radius: number, fallbackColor: number): CrowdMember {
     const idleTexture = this.textureManager.textures.idle

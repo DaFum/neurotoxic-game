@@ -2,7 +2,7 @@
 import { getSafeUUID } from './crypto'
 
 /**
- * Log levels for the application.
+ * Numeric log levels used for filtering console output and retained history.
  */
 export const LOG_LEVELS = {
   DEBUG: 0,
@@ -12,6 +12,12 @@ export const LOG_LEVELS = {
   NONE: 4
 }
 
+/**
+ * Checks whether a numeric value is one of the supported log levels.
+ *
+ * @param level - Candidate log level.
+ * @returns True when the value maps to a `LOG_LEVELS` entry.
+ */
 export const isValidLogLevel = (level: number): boolean => {
   return (
     Number.isFinite(level) &&
@@ -22,7 +28,7 @@ export const isValidLogLevel = (level: number): boolean => {
 }
 
 /**
- * A configurable logger system for debugging game flow.
+ * Configurable logger that mirrors messages to the console and retained history.
  */
 export class Logger {
   logs: LogEntry[]
@@ -62,8 +68,8 @@ export class Logger {
   }
 
   /**
-   * Set the minimum log level filter.
-   * @param {number} level
+   * Sets the minimum log level and persists it when storage is available.
+   * @param level - Candidate numeric log level.
    */
   setLevel(level: number): void {
     if (!isValidLogLevel(level)) {
@@ -87,9 +93,9 @@ export class Logger {
   }
 
   /**
-   * Subscribe to log updates (for UI).
-   * @param {Function} callback - Callback receiving {type, entry}.
-   * @returns {Function} Unsubscribe function
+   * Subscribes to log-history updates.
+   * @param callback - Callback receiving log add or clear events.
+   * @returns Function that removes the subscription.
    */
   subscribe(callback: (event: LogEvent) => void): () => void {
     this.listeners.push(callback)
@@ -100,8 +106,8 @@ export class Logger {
 
   /**
    * Emits log updates to subscribers.
-   * @param {object} event - Event object { type, entry }.
-   * @private
+   * @param event - Event object `type, entry`.
+   * @internal
    */
   _emit(event: LogEvent): void {
     this.listeners.forEach(cb => {
@@ -111,8 +117,8 @@ export class Logger {
 
   /**
    * Pushes a new log entry and trims history.
-   * @param {object} entry - Log entry.
-   * @private
+   * @param entry - Log entry.
+   * @internal
    */
   _push(entry: LogEntry): void {
     // Return a new array reference to support React useSyncExternalStore
@@ -122,12 +128,12 @@ export class Logger {
 
   /**
    * Formats a log message into a structured object.
-   * @param {string} level - Log level.
-   * @param {string} channel - Source channel.
-   * @param {string} message - Message text.
-   * @param {unknown} data - Associated data.
-   * @returns {object} Formatted log object.
-   * @private
+   * @param level - Log level.
+   * @param channel - Source channel.
+   * @param message - Message text.
+   * @param data - Associated data.
+   * @returns Formatted log object.
+   * @internal
    */
   _format(
     level: string,
@@ -147,9 +153,9 @@ export class Logger {
 
   /**
    * Logs a debug message.
-   * @param {string} channel - The source channel (e.g. 'Audio', 'GameLoop').
-   * @param {string} message - The log message.
-   * @param {unknown} [data] - Optional data to attach.
+   * @param channel - The source channel (e.g. 'Audio', 'GameLoop').
+   * @param message - The log message.
+   * @param data - Optional data to attach.
    */
   debug(channel: string, message: string, data?: unknown): void {
     if (this.minLevel > LOG_LEVELS.DEBUG) return
@@ -161,9 +167,9 @@ export class Logger {
 
   /**
    * Logs an informational message.
-   * @param {string} channel - The source channel.
-   * @param {string} message - The log message.
-   * @param {unknown} [data] - Optional data.
+   * @param channel - The source channel.
+   * @param message - The log message.
+   * @param data - Optional data.
    */
   info(channel: string, message: string, data?: unknown): void {
     if (this.minLevel > LOG_LEVELS.INFO) return
@@ -175,9 +181,9 @@ export class Logger {
 
   /**
    * Logs a warning message.
-   * @param {string} channel - The source channel.
-   * @param {string} message - The log message.
-   * @param {unknown} [data] - Optional data.
+   * @param channel - The source channel.
+   * @param message - The log message.
+   * @param data - Optional data.
    */
   warn(channel: string, message: string, data?: unknown): void {
     if (this.minLevel > LOG_LEVELS.WARN) return
@@ -187,9 +193,9 @@ export class Logger {
 
   /**
    * Logs an error message.
-   * @param {string} channel - The source channel.
-   * @param {string} message - The log message.
-   * @param {unknown} [data] - Optional data (usually the error object).
+   * @param channel - The source channel.
+   * @param message - The log message.
+   * @param data - Optional data (usually the error object).
    */
   error(channel: string, message: string, data?: unknown): void {
     if (this.minLevel > LOG_LEVELS.ERROR) return
@@ -206,16 +212,22 @@ export class Logger {
   }
 
   /**
-   * Dumps logs as a JSON string.
-   * @returns {string} JSON representation of logs.
+   * Serializes retained logs for diagnostics.
+   * @returns Pretty-printed JSON representation of retained logs.
    */
   dump(): string {
     return JSON.stringify(this.logs, null, 2)
   }
 }
 
+/**
+ * Shared application logger instance used by runtime systems and debug UI.
+ */
 export const logger = new Logger()
 
+/**
+ * Structured log entry stored by `Logger`.
+ */
 export type LogEntry = {
   id: string
   timestamp: string
@@ -225,6 +237,9 @@ export type LogEntry = {
   data: unknown
 }
 
+/**
+ * Subscription event emitted when log history changes.
+ */
 export type LogEvent =
   | { type: 'add'; entry: LogEntry }
   | { type: 'clear'; entry?: undefined }

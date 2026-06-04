@@ -39,8 +39,8 @@ const colorCache = new Map<string, number>()
 
 /**
  * Resolves a CSS variable token to a Pixi-compatible numeric color value.
- * @param {string} tokenName - CSS custom property name (for example, "--toxic-green").
- * @returns {number} Pixi numeric hex color.
+ * @param tokenName - CSS custom property name (for example, "--toxic-green").
+ * @returns Pixi numeric hex color.
  */
 export const getPixiColorFromToken = (
   tokenName: string,
@@ -88,10 +88,10 @@ export const getPixiColorFromToken = (
 /**
  * Wraps a promise with a timeout to prevent indefinite hanging.
  * Errors and timeouts are swallowed, logging a warning/error and returning null.
- * @param {Promise} promise - The promise to wrap.
- * @param {string} label - Label for logging.
- * @param {number} [timeoutMs=10000] - Timeout in milliseconds.
- * @returns {Promise<T|null>} The resolved value or null if an error/timeout occurred.
+ * @param promise - The promise to wrap.
+ * @param label - Label for logging.
+ * @param timeoutMs - Timeout in milliseconds. Defaults to `10000`.
+ * @returns The resolved value or null if an error/timeout occurred.
  */
 export const withTimeout = async <T>(
   promise: Promise<T>,
@@ -128,11 +128,11 @@ export const withTimeout = async <T>(
 
 /**
  * Calculates the Y position for a note sprite.
- * @param {number} elapsed - Elapsed time since start in ms.
- * @param {number} noteTime - Scheduled note time in ms.
- * @param {number} targetY - Target hit line Y position.
- * @param {number} speed - Note travel speed.
- * @returns {number} Calculated Y position.
+ * @param elapsed - Elapsed time since start in ms.
+ * @param noteTime - Scheduled note time in ms.
+ * @param targetY - Target hit line Y position.
+ * @param speed - Note travel speed.
+ * @returns Calculated Y position.
  */
 export const calculateNoteY = (
   elapsed: number,
@@ -146,10 +146,10 @@ export const calculateNoteY = (
 
 /**
  * Calculates a crowd member offset based on combo intensity.
- * @param {object} params - Crowd animation inputs.
- * @param {number} params.combo - Current combo count.
- * @param {number} params.timeMs - Current time in ms.
- * @returns {number} The vertical offset.
+ * @param params - Crowd animation inputs.
+ * - `params.combo` - Current combo count.
+ * - `params.timeMs` - Current time in ms.
+ * @returns The vertical offset.
  */
 export const calculateCrowdOffset = ({
   combo,
@@ -164,10 +164,10 @@ export const calculateCrowdOffset = ({
 
 /**
  * Calculates the lane start X position.
- * @param {object} params - Lane layout inputs.
- * @param {number} params.screenWidth - Current screen width.
- * @param {number} params.laneTotalWidth - Total lane width.
- * @returns {number} Lane start X position.
+ * @param params - Lane layout inputs.
+ * - `params.screenWidth` - Current screen width.
+ * - `params.laneTotalWidth` - Total lane width.
+ * @returns Lane start X position.
  */
 const calculateLaneStartX = ({
   screenWidth,
@@ -211,10 +211,10 @@ export const CROWD_LAYOUT = Object.freeze({
 
 /**
  * Builds layout metrics for the rhythm lanes.
- * @param {object} params - Layout inputs.
- * @param {number} params.screenWidth - Current screen width.
- * @param {number} params.screenHeight - Current screen height.
- * @returns {{startX: number, laneWidth: number, laneGap: number, laneHeight: number, laneStrokeWidth: number, hitLineY: number, hitLineHeight: number, hitLineStrokeWidth: number, rhythmOffsetY: number, laneTotalWidth: number}} Layout metrics.
+ * @param params - Layout inputs.
+ * - `params.screenWidth` - Current screen width.
+ * - `params.screenHeight` - Current screen height.
+ * @returns Layout metrics.
  */
 export const buildRhythmLayout = ({
   screenWidth,
@@ -261,14 +261,14 @@ export const buildRhythmLayout = ({
  * Simple cache for textures loaded via the Image element fallback.
  * Separate from Assets.cache to avoid issues with TilingSprite
  * (Image-based textures lack proper source metadata for tiling).
- * @type {Map<string, Texture>}
+ * Type: `Map<string, Texture>`.
  */
 const _imageTextureCache = new Map<string, Texture>()
 
 /**
  * Checks existing caches for a valid texture.
- * @param {string} url - The URL of the texture.
- * @returns {Texture|null} The cached texture or null.
+ * @param url - The URL of the texture.
+ * @returns The cached texture or null.
  */
 const _getCachedTexture = (url: string): Texture | null => {
   const pixiCache = Assets.cache
@@ -291,8 +291,8 @@ const _getCachedTexture = (url: string): Texture | null => {
 
 /**
  * Checks if a URL has a file extension.
- * @param {string} url - The URL to check.
- * @returns {boolean} True if the URL has an extension, false otherwise.
+ * @param url - The URL to check.
+ * @returns True if the URL has an extension, false otherwise.
  */
 const _hasFileExtension = (url: string, baseUrl?: string): boolean => {
   try {
@@ -311,8 +311,8 @@ const _hasFileExtension = (url: string, baseUrl?: string): boolean => {
 
 /**
  * Loads a texture using an Image element fallback.
- * @param {string} url - The URL to load.
- * @returns {Promise<Texture|null>} The loaded texture or null.
+ * @param url - The URL to load.
+ * @returns The loaded texture or null.
  */
 const _loadWithImageFallback = (url: string): Promise<Texture | null> => {
   return new Promise(resolve => {
@@ -343,8 +343,8 @@ const _loadWithImageFallback = (url: string): Promise<Texture | null> => {
 /**
  * Robustly loads a texture, falling back to an Image element if Pixi Assets fails.
  * Useful for generated URLs without extensions or with query parameters.
- * @param {string} url - The URL to load.
- * @returns {Promise<Texture|null>} The loaded texture or null.
+ * @param url - The URL to load.
+ * @returns The loaded texture or null.
  */
 export const loadTexture = async (url: string): Promise<Texture | null> => {
   const cached = _getCachedTexture(url)
@@ -371,7 +371,7 @@ export const loadTexture = async (url: string): Promise<Texture | null> => {
 
 /**
  * Returns an optimized resolution value capped to prevent performance bottlenecks on high-DPI devices.
- * @returns {number} Optimized resolution (1.0 to 2.0).
+ * @returns Optimized resolution (1.0 to 2.0).
  */
 export const getOptimalResolution = () => {
   const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1
@@ -382,9 +382,9 @@ export const getOptimalResolution = () => {
  * Loads multiple textures concurrently and maps the successful results to keys.
  * Handles errors cleanly without throwing, either via a provided callback or logging.
  *
- * @param {Object.<string, string>} urlMap - A record mapping texture keys to their URLs.
- * @param {function(Error, string): void} [onError] - Optional callback to handle individual load errors (receives error and fallback message).
- * @returns {Promise<Object.<string, Texture|null>>} A record mapping the same keys to loaded Textures (or null if failed).
+ * @param urlMap - A record mapping texture keys to their URLs.
+ * @param onError - Optional callback to handle individual load errors (receives error and fallback message).
+ * @returns A record mapping the same keys to loaded Textures (or null if failed).
  */
 export const loadTextures = async (
   urlMap: Record<string, string | null>,

@@ -16,14 +16,17 @@ export { finiteNumberOr, isFiniteNumber } from './finiteNumber'
 /**
  * Clamps a value to be at least 0.
  *
- * @param {number} value - Candidate value.
- * @returns {number} Clamped value ensuring non-negative.
+ * @param value - Candidate value.
+ * @returns Clamped value ensuring non-negative.
  */
 export const clampNonNegative = (value: number): number => {
   if (!Number.isFinite(value)) return 0
   return Math.max(0, value)
 }
 
+/**
+ * Normalizes unknown numeric input to a non-negative integer.
+ */
 export const clampToNonNegativeInt = (value: unknown): number => {
   const n = Number(value)
   return Number.isFinite(n) ? Math.max(0, Math.floor(n)) : 0
@@ -31,6 +34,9 @@ export const clampToNonNegativeInt = (value: unknown): number => {
 
 const MAX_UNIT_RANDOM_EXCLUSIVE = 0.9999999999999999
 
+/**
+ * Clamps unknown random input into the valid 0-inclusive, 1-exclusive range.
+ */
 export const clampUnitRandom = (value: unknown): number | undefined => {
   const n = Number(value)
   if (!Number.isFinite(n)) return undefined
@@ -39,6 +45,9 @@ export const clampUnitRandom = (value: unknown): number | undefined => {
   return n
 }
 
+/**
+ * Checks whether an unknown value has the stash-entry shape.
+ */
 export const isStashEntry = (entry: unknown): entry is StashEntry => {
   if (entry === null || typeof entry !== 'object') return false
   const obj = entry as Record<string, unknown>
@@ -61,8 +70,8 @@ export {
  * Returns true if the object has no enumerable properties.
  * Avoids the array allocation of Object.keys().length === 0.
  *
- * @param {object} obj - The object to check
- * @returns {boolean} True if empty, false otherwise
+ * @param obj - The object to check
+ * @returns True if empty, false otherwise
  */
 export const isEmptyObject = (obj: Record<string, unknown>): boolean => {
   for (const key in obj) {
@@ -75,8 +84,8 @@ export const isEmptyObject = (obj: Record<string, unknown>): boolean => {
 
 /**
  * Derives fame level from raw fame.
- * @param {number} fame - Raw fame amount.
- * @returns {number} Derived fame level.
+ * @param fame - Raw fame amount.
+ * @returns Derived fame level.
  */
 export const calculateFameLevel = (fame: number): number => {
   const clampedFame = clampNonNegative(fame)
@@ -86,9 +95,9 @@ export const calculateFameLevel = (fame: number): number => {
 /**
  * Clamps a band member's stamina to be between 0 and their staminaMax (default 100).
  *
- * @param {number} stamina - Candidate stamina value.
- * @param {number} [staminaMax=100] - The member's maximum stamina.
- * @returns {number} Clamped stamina value.
+ * @param stamina - Candidate stamina value.
+ * @param staminaMax - The member's maximum stamina. Defaults to `100`.
+ * @returns Clamped stamina value.
  */
 export const clampMemberStamina = (
   stamina: number,
@@ -102,8 +111,8 @@ export const clampMemberStamina = (
 /**
  * Clamps a band member's mood to be between 0 and 100.
  *
- * @param {number} mood - Candidate mood value.
- * @returns {number} Clamped mood value.
+ * @param mood - Candidate mood value.
+ * @returns Clamped mood value.
  */
 export const clampMemberMood = (mood: number): number => clamp0to100(mood)
 
@@ -123,8 +132,8 @@ export const normalizePercentageToScale = (
 /**
  * Clamps player fame to be at least 0.
  *
- * @param {number} fame - Candidate fame value.
- * @returns {number} Clamped non-negative fame value.
+ * @param fame - Candidate fame value.
+ * @returns Clamped non-negative fame value.
  */
 export const clampPlayerFame = (fame: number): number => {
   if (!Number.isFinite(fame)) return 0
@@ -147,8 +156,8 @@ export const FAME_PROGRESS_CONSTANTS = Object.freeze({
  * Calculates the raw fame reward for a successful gig before any diminishing returns.
  * Tuned so the full fame catalog remains reachable in roughly 20-30 strong gigs.
  *
- * @param {number} performanceScore - Gig performance score.
- * @returns {number} Raw gig fame reward.
+ * @param performanceScore - Gig performance score.
+ * @returns Raw gig fame reward.
  */
 export const calculateGigFameReward = (performanceScore: number): number => {
   const safePerformanceScore = Number.isFinite(performanceScore)
@@ -166,10 +175,10 @@ export const calculateGigFameReward = (performanceScore: number): number => {
 /**
  * Calculates fame gain with exponential diminishing returns.
  * Ensures the logic is synced across the app and simulation.
- * @param {number} rawGain - The uncapped fame gain calculated from performance.
- * @param {number} currentFame - The player's current fame.
- * @param {number} [maxGain=2000] - Hard cap on raw gain.
- * @returns {number} The final damped fame gain.
+ * @param rawGain - The uncapped fame gain calculated from performance.
+ * @param currentFame - The player's current fame.
+ * @param maxGain - Hard cap on raw gain. Defaults to `2000`.
+ * @returns The final damped fame gain.
  */
 export const calculateFameGain = (
   rawGain: number,
@@ -193,11 +202,17 @@ export const calculateFameGain = (
   return fameGain
 }
 
+/**
+ * Clamps finite numeric input to an integer percentage range.
+ */
 export const clamp0to100 = (value: number): number => {
   if (!Number.isFinite(value)) return 0
   return Math.max(0, Math.min(100, Math.floor(value)))
 }
 
+/**
+ * Clamps finite numeric input to the reputation range.
+ */
 export const clampReputation = (value: number): number => {
   if (!Number.isFinite(value)) return 0
   return Math.max(-100, Math.min(100, Math.floor(value)))
@@ -217,8 +232,8 @@ export const clampAmpDial = (value: number): number => {
 /**
  * Clamps a social controversy level to be between 0 and 100.
  *
- * @param {number} level - Candidate controversy level.
- * @returns {number} Clamped controversy level in range [0, 100].
+ * @param level - Candidate controversy level.
+ * @returns Clamped controversy level in range [0, 100].
  */
 export const clampControversyLevel = (level: number): number =>
   clamp0to100(level)
@@ -227,8 +242,8 @@ export const clampControversyLevel = (level: number): number =>
  * Clamps player money to a safe, non-negative integer.
  * Prevents negative balances and ensures integer boundaries.
  *
- * @param {number} money - Candidate money value.
- * @returns {number} Clamped money value ensuring non-negative integer.
+ * @param money - Candidate money value.
+ * @returns Clamped money value ensuring non-negative integer.
  */
 export const clampPlayerMoney = (money: number): number => {
   if (!Number.isFinite(money)) return 0
@@ -236,6 +251,9 @@ export const clampPlayerMoney = (money: number): number => {
 }
 
 // Shared Balance Constants
+/**
+ * Shared balance constants for fame loss, cancellations, sponsorships, and drains.
+ */
 export const BALANCE_CONSTANTS = {
   FAME_LOSS_BAD_GIG: 9,
   MAX_FAME_GAIN: 2000,
@@ -274,18 +292,36 @@ export const calcCancellationRisk = (
   return 0
 }
 
+/**
+ * Relationship-loss multiplier applied by grudge-holder traits.
+ */
 export const RELATIONSHIP_GRUDGE_HOLDER_MULTIPLIER = 1.5
+/**
+ * Relationship-gain multiplier applied by peacemaker traits.
+ */
 export const RELATIONSHIP_PEACEMAKER_POSITIVE_MULTIPLIER = 1.5
+/**
+ * Relationship-loss multiplier applied by peacemaker traits.
+ */
 export const RELATIONSHIP_PEACEMAKER_NEGATIVE_MULTIPLIER = 0.5
+/**
+ * Default relationship score for missing relationship entries.
+ */
 export const RELATIONSHIP_DEFAULT_SCORE = 50
+/**
+ * Minimum persisted relationship score.
+ */
 export const RELATIONSHIP_MIN_SCORE = 0
+/**
+ * Maximum persisted relationship score.
+ */
 export const RELATIONSHIP_MAX_SCORE = 100
 
 /**
  * Clamps relationship score to the canonical gameplay range.
  *
- * @param {number} score - Candidate relationship score.
- * @returns {number} Clamped relationship value in range [0, 100].
+ * @param score - Candidate relationship score.
+ * @returns Clamped relationship value in range [0, 100].
  */
 export const clampRelationship = (score: number): number => {
   if (!Number.isFinite(score)) return RELATIONSHIP_DEFAULT_SCORE
@@ -298,8 +334,8 @@ export const clampRelationship = (score: number): number => {
 /**
  * Clamps band harmony to the canonical gameplay range.
  *
- * @param {number} harmony - Candidate harmony value.
- * @returns {number} Clamped harmony value in range [1, 100].
+ * @param harmony - Candidate harmony value.
+ * @returns Clamped harmony value in range [1, 100].
  */
 export const clampBandHarmony = (harmony: number): number => {
   if (!Number.isFinite(harmony)) return 1
@@ -310,25 +346,28 @@ export const clampBandHarmony = (harmony: number): number => {
 /**
  * Clamps social loyalty to the canonical gameplay range.
  *
- * @param {number} loyalty - Candidate loyalty value.
- * @returns {number} Clamped loyalty value in range [0, 100].
+ * @param loyalty - Candidate loyalty value.
+ * @returns Clamped loyalty value in range [0, 100].
  */
 export const clampLoyalty = (loyalty: number): number => clamp0to100(loyalty)
+/**
+ * Clamps band stress to the canonical 0-100 range.
+ */
 export const clampBandStress = (stress: number): number => clamp0to100(stress)
 
 /**
  * Clamps social zealotry to the canonical gameplay range.
  *
- * @param {number} zealotry - Candidate zealotry value.
- * @returns {number} Clamped zealotry value in range [0, 100].
+ * @param zealotry - Candidate zealotry value.
+ * @returns Clamped zealotry value in range [0, 100].
  */
 export const clampZealotry = (zealotry: number): number => clamp0to100(zealotry)
 
 /**
  * Clamps van condition to the allowed percentage (0-100).
  *
- * @param {number} condition - Candidate condition value.
- * @returns {number} Clamped condition value.
+ * @param condition - Candidate condition value.
+ * @returns Clamped condition value.
  */
 export const clampVanCondition = (condition: number): number =>
   clamp0to100(condition)
@@ -336,9 +375,9 @@ export const clampVanCondition = (condition: number): number =>
 /**
  * Clamps van fuel to the allowed capacity.
  *
- * @param {number} fuel - Candidate fuel value.
- * @param {number} maxFuel - Maximum capacity.
- * @returns {number} Clamped fuel value.
+ * @param fuel - Candidate fuel value.
+ * @param maxFuel - Maximum capacity.
+ * @returns Clamped fuel value.
  */
 export const clampVanFuel = (
   fuel: number,
@@ -355,9 +394,9 @@ export const clampVanFuel = (
  * consumes `Effect` shapes and builds full band patches, see
  * `applyInventoryAdd` in `purchaseLogicUtils.ts`.
  *
- * @param {boolean|number|undefined} currentValue - Existing inventory value.
- * @param {boolean|number} deltaValue - Delta to apply.
- * @returns {boolean|number|undefined} Updated inventory value.
+ * @param currentValue - Existing inventory value.
+ * @param deltaValue - Delta to apply.
+ * @returns Updated inventory value.
  */
 export const applyInventoryItemDelta = (
   currentValue: boolean | number | undefined,
@@ -379,8 +418,8 @@ export const applyInventoryItemDelta = (
  * Optimized check for forbidden keys in an object.
  * Avoids `Object.keys(obj).some(isForbiddenKey)` which allocates an array.
  *
- * @param {object} obj - The object to check
- * @returns {boolean} True if the object has any forbidden keys
+ * @param obj - The object to check
+ * @returns True if the object has any forbidden keys
  */
 export const hasForbiddenKeys = (obj: Record<string, unknown>): boolean => {
   return (
@@ -394,9 +433,9 @@ export const hasForbiddenKeys = (obj: Record<string, unknown>): boolean => {
  * Applies event delta changes to the current game state.
  * Prevents prototype pollution and merges object properties.
  *
- * @param {object} state - Current game state.
- * @param {object} delta - Event delta payload.
- * @returns {object} Updated game state.
+ * @param state - Current game state.
+ * @param delta - Event delta payload.
+ * @returns Updated game state.
  */
 
 const calculateClampedStatDelta = (
@@ -419,8 +458,8 @@ const calculateClampedControversyDelta = (
 
 /**
  * Copies enumerable own properties from source to a new object, filtering out forbidden keys.
- * @param {object} source - Source object to copy from.
- * @returns {object} New object with filtered properties.
+ * @param source - Source object to copy from.
+ * @returns New object with filtered properties.
  */
 type FilteredRecord = Record<string, unknown>
 
@@ -520,6 +559,9 @@ const isRelationshipChange = (value: unknown): value is RelationshipChange => {
   )
 }
 
+/**
+ * Previews the effective clamped state deltas from an event delta.
+ */
 export const calculateAppliedDelta = (
   state: DeltaPreviewState,
   delta: EventDelta
@@ -764,12 +806,12 @@ export const calculateAppliedDelta = (
 /**
  * Calculates the relationship change between members.
  *
- * @param {object} change - The relationship change data.
- * @param {string} memberName - The name of the member being evaluated.
- * @param {boolean} hasGrudgeHolder - If the member has grudge_holder trait.
- * @param {boolean} hasPeacemaker - If the member has peacemaker trait.
- * @param {object} currentRelationships - The current relationships of the member.
- * @returns {object|null} The calculated change or null if none.
+ * @param change - The relationship change data.
+ * @param memberName - The name of the member being evaluated.
+ * @param hasGrudgeHolder - If the member has grudge_holder trait.
+ * @param hasPeacemaker - If the member has peacemaker trait.
+ * @param currentRelationships - The current relationships of the member.
+ * @returns The calculated change or null if none.
  */
 const calculateMemberRelationshipChange = (
   change: RelationshipChange,
@@ -810,6 +852,9 @@ const calculateMemberRelationshipChange = (
   return { other, newScore }
 }
 
+/**
+ * Applies an event delta to mutable game state while enforcing clamps.
+ */
 export const applyEventDelta = (
   state: MutableGameState,
   delta: EventDelta
@@ -1233,9 +1278,9 @@ export const applyEventDelta = (
  * Checks if a collection (Set or Array) contains an item.
  * Used primarily for optimizedState which passes Sets instead of Arrays for performance.
  *
- * @param {Set|Array} collection - The collection to check.
- * @param {unknown} item - The item to look for.
- * @returns {boolean} True if the collection contains the item.
+ * @param collection - The collection to check.
+ * @param item - The item to look for.
+ * @returns True if the collection contains the item.
  */
 export const hasStateItem = (
   collection: Set<unknown> | unknown[] | null | undefined,
@@ -1248,16 +1293,19 @@ export const hasStateItem = (
 
 /**
  * Checks if the player has an active, non-expired sponsorship brand deal.
- * activeDeals stores deal objects with { id, type, remainingGigs, ... }.
- * Deals with remainingGigs <= 0 are considered expired even if not yet filtered.
- * @param {object} socialState
- * @returns {boolean}
+ * activeDeals stores deal objects with `{ id, type, remainingGigs, ... }`.
+ * Deals with remainingGigs at most 0 are considered expired even if not yet filtered.
+ * @param socialState - Social state.
+ * @returns Whether an active sponsorship deal exists.
  */
 type SponsorshipDealLike = {
   type?: unknown
   remainingGigs?: unknown
 }
 
+/**
+ * Checks whether social state contains an unexpired sponsorship deal.
+ */
 export const hasActiveSponsorship = (
   socialState: { activeDeals?: unknown[] } | null | undefined
 ): boolean => {
@@ -1276,8 +1324,8 @@ export const hasActiveSponsorship = (
 
 /**
  * Normalizes an unknown setlist payload to an array of objects with an 'id' property.
- * @param {unknown} setlist - The setlist payload to normalize.
- * @returns {Array<{ id: string }>} Normalized setlist.
+ * @param setlist - The setlist payload to normalize.
+ * @returns Normalized setlist.
  */
 export const normalizeSetlistForSave = (
   setlist: unknown
@@ -1301,6 +1349,9 @@ export const normalizeSetlistForSave = (
 
 export { safeJsonParse }
 
+/**
+ * Checks whether an event id or scoped event key is still on cooldown.
+ */
 export const isOnCooldown = (
   gameState: {
     eventCooldowns?: string[] | Set<string>

@@ -10,7 +10,7 @@ import type { ContrabandStashItem, StashItem } from '../types'
 
 /**
  * Hook to manage the Contraband Stash UI state and actions.
- * @returns {Object} Stash state and handlers
+ * @returns Stash state and handlers
  */
 export const useContrabandStash = () => {
   const band = useGameSelector(state => state.band)

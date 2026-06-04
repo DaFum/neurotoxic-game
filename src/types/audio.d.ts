@@ -1,6 +1,13 @@
 import type * as Tone from 'tone'
+
+/**
+ * Rhythm-game note categories, including custom string values from song data.
+ */
 export type NoteType = 'tap' | 'hold' | 'slide' | 'special' | string
 
+/**
+ * Parsed note event used by rhythm charts and MIDI-derived song data.
+ */
 export interface Note {
   /** timestamp in milliseconds from song start */
   timestamp?: number
@@ -14,6 +21,9 @@ export interface Note {
   velocity?: number
 }
 
+/**
+ * Song metadata, chart notes, and optional audio source references.
+ */
 export interface Song {
   id: string
   leaderboardId: string
@@ -39,6 +49,9 @@ export interface Song {
   tpb?: number
 }
 
+/**
+ * Snare abstraction that layers noise and membrane synth voices behind one trigger.
+ */
 export interface LayeredSnare {
   triggerAttackRelease: (
     dur: number | string,
@@ -49,6 +62,9 @@ export interface LayeredSnare {
   dispose: () => void
 }
 
+/**
+ * Tone.js drum-kit voices used by gig and MIDI playback.
+ */
 export interface DrumKitSynth {
   kick: Tone.MembraneSynth
   snare: LayeredSnare
@@ -56,17 +72,26 @@ export interface DrumKitSynth {
   crash: Tone.MetalSynth
 }
 
+/**
+ * User-facing audio preference state.
+ */
 export interface AudioState {
   musicVol: number
   sfxVol: number
   isMuted: boolean
 }
 
+/**
+ * Audio preference snapshot plus optional playback status.
+ */
 export interface AudioSnapshot extends AudioState {
   isPlaying?: boolean
   currentSongId?: string | null
 }
 
+/**
+ * Minimal audio manager contract consumed by React hooks and UI controls.
+ */
 export interface AudioManagerLike {
   musicVolume?: number
   sfxVolume?: number
@@ -84,22 +109,34 @@ export interface AudioManagerLike {
   resumeMusic?: () => boolean | Promise<boolean>
 }
 
+/**
+ * Options for polling or subscribing to audio-control state.
+ */
 export interface UseAudioControlOptions {
   pollEvenWithSubscribe?: boolean
   pollMs?: number
 }
 
+/**
+ * Audio-control hook result with current state and command handlers.
+ */
 export interface UseAudioControlResult<TState> {
   audioState: TState
   handleAudioChange: AudioControlHandlers
 }
 
+/**
+ * Volume and mute commands exposed to audio controls.
+ */
 export interface AudioControls {
   setMusic: (value: number) => void
   setSfx: (value: number) => void
   toggleMute: () => void
 }
 
+/**
+ * Full audio command surface used by settings and playback controls.
+ */
 export interface AudioControlHandlers extends AudioControls {
   stopMusic: () => unknown
   resumeMusic: () => Promise<boolean>

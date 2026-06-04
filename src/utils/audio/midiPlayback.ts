@@ -143,10 +143,10 @@ function getSynthConfigForLane(lane: string): {
 
 /**
  * Plays a specific note at a scheduled Tone.js time.
- * @param {number} midiPitch - The MIDI note number.
- * @param {string} lane - The lane ID ('guitar', 'bass', 'drums').
- * @param {number} whenSeconds - Tone.js time in seconds.
- * @param {number} [velocity=127] - The velocity (0-127).
+ * @param midiPitch - The MIDI note number.
+ * @param lane - The lane ID ('guitar', 'bass', 'drums').
+ * @param whenSeconds - Tone.js time in seconds.
+ * @param velocity - The velocity (0-127). Defaults to `127`.
  */
 export function playNoteAtTime(
   midiPitch: number,
@@ -326,8 +326,8 @@ function scheduleSongPlayback(
 
 /**
  * Plays a song using predefined note data.
- * @param {object} song - The song object containing `notes` and `bpm`.
- * @param {number} [delay=0] - Delay in seconds before starting.
+ * @param song - The song object containing `notes` and `bpm`.
+ * @param delay - Delay in seconds before starting. Defaults to `0`.
  */
 function parseFiniteNumber(v: unknown, fallback: number): number {
   if (isFiniteNumber(v)) return v
@@ -416,6 +416,14 @@ async function prepareSongPlayback(song: unknown, options: unknown) {
   return prep
 }
 
+/**
+ * Plays parsed song data through the Tone.js transport.
+ *
+ * @param song - Song-like object containing notes and timing metadata.
+ * @param delay - Delay before playback starts, in seconds.
+ * @param options - Candidate playback options passed through transport preparation.
+ * @returns True when the song is parsed and scheduled.
+ */
 export async function playSongFromData(
   song: unknown,
   delay = 0,
@@ -449,11 +457,11 @@ export async function playSongFromData(
 
 /**
  * Handles the initial setup for MIDI playback, including request ID generation.
- * @param {string} filename - The filename of the MIDI.
- * @param {number} offset - Start offset in seconds.
- * @param {boolean} loop - Whether to loop the playback.
- * @param {number|null} ownedRequestId - Internal request ownership override.
- * @returns {number} The new request ID.
+ * @param filename - The filename of the MIDI.
+ * @param offset - Start offset in seconds.
+ * @param loop - Whether to loop the playback.
+ * @param ownedRequestId - Internal request ownership override.
+ * @returns The new request ID.
  */
 function initializePlaybackRequest(
   filename: string,
@@ -477,8 +485,8 @@ function initializePlaybackRequest(
 
 /**
  * Resolves the URL for a MIDI file.
- * @param {string} filename - The filename of the MIDI.
- * @returns {string|null} The resolved URL or null if not found.
+ * @param filename - The filename of the MIDI.
+ * @returns The resolved URL or null if not found.
  */
 function resolveMidiUrl(filename: string): string | null {
   const { publicBasePath } = getBaseAssetPath()
@@ -497,10 +505,10 @@ function resolveMidiUrl(filename: string): string | null {
 
 /**
  * Fetches the MIDI file as an ArrayBuffer.
- * @param {string} url - The URL of the MIDI file.
- * @param {number} reqId - The request ID to validate against.
- * @param {string} filename - The filename for logging.
- * @returns {Promise<ArrayBuffer|null>} The MIDI data or null on failure.
+ * @param url - The URL of the MIDI file.
+ * @param reqId - The request ID to validate against.
+ * @param filename - The filename for logging.
+ * @returns The MIDI data or null on failure.
  */
 async function fetchWithTimeout(url: string): Promise<Response> {
   const controller = new AbortController()
@@ -542,8 +550,8 @@ async function fetchMidiArrayBuffer(
 
 /**
  * Parses the MIDI ArrayBuffer.
- * @param {ArrayBuffer} arrayBuffer - The MIDI data.
- * @returns {object|null} The parsed MIDI object or null on failure.
+ * @param arrayBuffer - The MIDI data.
+ * @returns The parsed MIDI object or null on failure.
  */
 function parseMidiData(arrayBuffer: ArrayBuffer): unknown | null {
   if (!MidiParser) {
@@ -572,9 +580,9 @@ function parseMidiData(arrayBuffer: ArrayBuffer): unknown | null {
 
 /**
  * Creates Tone.Parts for each track in the MIDI file.
- * @param {object} midi - The parsed MIDI object.
- * @param {boolean} useCleanPlayback - If true, bypass FX for MIDI playback.
- * @returns {Array} An array of created Tone.Part objects.
+ * @param midi - The parsed MIDI object.
+ * @param useCleanPlayback - If true, bypass FX for MIDI playback.
+ * @returns An array of created Tone.Part objects.
  */
 type ProcessedMidiEvent = {
   time: number
@@ -693,8 +701,8 @@ function createMidiParts(
 
 /**
  * Configures the Transport and schedules playback.
- * @param {object} midi - The parsed MIDI object.
- * @param {object} params - Parameters for scheduling.
+ * @param midi - The parsed MIDI object.
+ * @param params - Parameters for scheduling.
  */
 function scheduleEndCallback(
   reqId: number,
@@ -816,17 +824,17 @@ function scheduleMidiTransport(
 
 /**
  * Plays a MIDI file from a URL.
- * @param {object} params - Parameters for playback.
- * @param {string} params.filename - The filename of the MIDI (key in url map).
- * @param {number} [params.offset=0] - Start offset in seconds.
- * @param {boolean} [params.loop=false] - Whether to loop the playback.
- * @param {number} [params.delay=0] - Delay in seconds before starting playback.
- * @param {object} [params.options] - Playback options.
- * @param {boolean} [params.options.useCleanPlayback=true] - If true, bypass FX for MIDI playback.
- * @param {Function} [params.options.onEnded] - Callback invoked after playback ends.
- * @param {number} [params.options.stopAfterSeconds] - Optional playback duration limit in seconds.
- * @param {number} [params.options.startTimeSec] - Absolute Tone.js time to start playback.
- * @param {number|null} [params.ownedRequestId=null] - Internal request ownership override.
+ * @param params - Parameters for playback.
+ * - `params.filename` - The filename of the MIDI (key in url map).
+ * - `params.offset` - Start offset in seconds. Defaults to `0`.
+ * - `params.loop` - Whether to loop the playback. Defaults to `false`.
+ * - `params.delay` - Delay in seconds before starting playback. Defaults to `0`.
+ * - `params.options` - Optional. Playback options.
+ * - `params.options.useCleanPlayback` - If true, bypass FX for MIDI playback. Defaults to `true`.
+ * - `params.options.onEnded` - Optional. Callback invoked after playback ends.
+ * - `params.options.stopAfterSeconds` - Optional playback duration limit in seconds.
+ * - `params.options.startTimeSec` - Optional. Absolute Tone.js time to start playback.
+ * - `params.ownedRequestId` - Internal request ownership override. Defaults to `null`.
  */
 function isRequestValid(reqId: number): boolean {
   return reqId === audioState.playRequestId
@@ -881,6 +889,12 @@ function processMidiPlaybackParams(params: MidiPlaybackParams) {
   return { ...defaults, ...params }
 }
 
+/**
+ * Loads, parses, and schedules MIDI-file playback for the current request.
+ *
+ * @param rawParams - MIDI filename, timing offsets, loop flag, and playback options.
+ * @returns True when MIDI playback was scheduled for the active request.
+ */
 export async function playMidiFileInternal(
   rawParams: MidiPlaybackParams
 ): Promise<boolean> {
@@ -919,15 +933,15 @@ export async function playMidiFileInternal(
 
 /**
  * Plays a MIDI file from a URL.
- * @param {string} filename - The filename of the MIDI (key in url map).
- * @param {number} [offset=0] - Start offset in seconds.
- * @param {boolean} [loop=false] - Whether to loop the playback.
- * @param {number} [delay=0] - Delay in seconds before starting playback.
- * @param {object} [options] - Playback options.
- * @param {boolean} [options.useCleanPlayback=true] - If true, bypass FX for MIDI playback.
- * @param {Function} [options.onEnded] - Callback invoked after playback ends.
- * @param {number} [options.stopAfterSeconds] - Optional playback duration limit in seconds.
- * @param {number} [options.startTimeSec] - Absolute Tone.js time to start playback.
+ * @param filename - The filename of the MIDI (key in url map).
+ * @param offset - Start offset in seconds. Defaults to `0`.
+ * @param loop - Whether to loop the playback. Defaults to `false`.
+ * @param delay - Delay in seconds before starting playback. Defaults to `0`.
+ * @param options - Optional. Playback options.
+ * - `options.useCleanPlayback` - If true, bypass FX for MIDI playback. Defaults to `true`.
+ * - `options.onEnded` - Optional. Callback invoked after playback ends.
+ * - `options.stopAfterSeconds` - Optional playback duration limit in seconds.
+ * - `options.startTimeSec` - Optional. Absolute Tone.js time to start playback.
  */
 export async function playMidiFile(
   filename: string,

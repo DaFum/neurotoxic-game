@@ -2,10 +2,10 @@ import { getSafeRandom } from './crypto'
 
 /**
  * Updates the state of active projectiles.
- * @param {Array} projectiles - Current list of projectiles.
- * @param {number} deltaMS - Time elapsed in milliseconds.
- * @param {number} screenHeight - Height of the screen (to determine despawn).
- * @returns {Array} Updated list of projectiles.
+ * @param projectiles - Current list of projectiles.
+ * @param deltaMS - Time elapsed in milliseconds.
+ * @param screenHeight - Height of the screen (to determine despawn).
+ * @returns Updated list of projectiles.
  */
 // Adaptive difficulty AI tuning based on stats
 export type Projectile = {
@@ -101,10 +101,10 @@ export const processProjectiles = (
 
 /**
  * Determines if a new projectile should be spawned and generates it.
- * @param {object} stats - Game stats (health, combo).
- * @param {Function} [random=getSafeRandom] - Random number generator.
- * @param {number} [screenWidth=1920] - Width of screen for random X position.
- * @returns {object|null} New projectile object or null.
+ * @param stats - Game stats (health, combo).
+ * @param random - Random number generator. Defaults to `getSafeRandom`.
+ * @param screenWidth - Width of screen for random X position. Defaults to `1920`.
+ * @returns New projectile object or null.
  */
 const MAX_PROJECTILE_POOL_SIZE = 64
 

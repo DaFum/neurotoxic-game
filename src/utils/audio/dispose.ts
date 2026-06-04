@@ -9,8 +9,8 @@ import {
 
 /**
  * Safely disposes a Tone.js node, catching errors if the context is closed.
- * @param {object} node - The Tone.js node to dispose.
- * @returns {null} Always returns null.
+ * @param node - The Tone.js node to dispose.
+ * @returns Always returns null.
  */
 export function safeDispose(
   node: { dispose?: () => void } | null | undefined
@@ -31,7 +31,7 @@ export function safeDispose(
  * NOTE: This function duplicates stop logic from playback.js
  * (stopAudioInternal, stopGigPlayback, stopAmbientPlayback) because
  * setup.js must not import from playback.js to preserve the acyclic
- * dependency graph: state -> setup -> playback -> procedural.
+ * dependency graph: state to setup to playback to procedural.
  * If you change stop/cleanup logic in playback.js, update this function too.
  */
 export function disposeAudio() {

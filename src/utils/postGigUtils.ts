@@ -187,6 +187,9 @@ const normalizeResolvedPost = (
     influencerUpdate
   }
 }
+/**
+ * Inputs required to resolve a social post into post-gig state updates.
+ */
 export type CalculatePostGigStateParams = {
   option: SocialPostOption
   player: GameState['player']
@@ -198,6 +201,9 @@ export type CalculatePostGigStateParams = {
   secureRandomValue?: number
 }
 
+/**
+ * Resolves a social post option into player, band, and social state updates.
+ */
 export const calculatePostGigStateUpdates = (
   params: CalculatePostGigStateParams
 ) => {
@@ -479,6 +485,9 @@ const OPPOSING_ALIGNMENT_MAP = {
   [BRAND_ALIGNMENTS.NEUTRAL]: BRAND_ALIGNMENTS.NEUTRAL
 } as const satisfies Record<BrandAlignment, BrandAlignment>
 
+/**
+ * Calculates the money change from accepting a brand deal.
+ */
 export const getAcceptDealMoneyUpdate = ({
   deal,
   player
@@ -501,6 +510,9 @@ export const getAcceptDealMoneyUpdate = ({
   return { nextMoney, appliedMoneyDelta }
 }
 
+/**
+ * Builds the band updater for item rewards from an accepted brand deal.
+ */
 export const getAcceptDealBandUpdateFactory = (deal: BrandDeal) => {
   return (prevBand: GameState['band']): GameState['band'] => {
     if (!deal.offer.item) return prevBand
@@ -511,6 +523,9 @@ export const getAcceptDealBandUpdateFactory = (deal: BrandDeal) => {
   }
 }
 
+/**
+ * Builds the social updater for accepting a brand deal.
+ */
 export const getAcceptDealSocialUpdateFactory = (deal: BrandDeal) => {
   return (prevSocial: GameState['social']): Partial<GameState['social']> => {
     const updates: Partial<GameState['social']> = {}
@@ -547,13 +562,25 @@ export const getAcceptDealSocialUpdateFactory = (deal: BrandDeal) => {
   }
 }
 
+/**
+ * Money cost for spinning the post-gig story.
+ */
 export const SPIN_STORY_MONEY_COST = 200
+/**
+ * Controversy reduction applied by spinning the post-gig story.
+ */
 export const SPIN_STORY_CONTROVERSY_REDUCTION = 25
 
+/**
+ * Result of attempting to pay for a story spin.
+ */
 export type SpinStoryMoneyUpdate =
   | { success: false }
   | { success: true; nextMoney: number; appliedDelta: number }
 
+/**
+ * Calculates whether the player can pay for a story spin and the resulting money delta.
+ */
 export const getSpinStoryMoneyUpdate = ({
   player
 }: {
@@ -575,6 +602,9 @@ export const getSpinStoryMoneyUpdate = ({
   }
 }
 
+/**
+ * Builds the social updater for a successful story spin.
+ */
 export const getSpinStorySocialUpdateFactory = () => {
   return (prevSocial: GameState['social']) => ({
     controversyLevel: clampControversyLevel(
@@ -595,6 +625,9 @@ const assertFiniteNumberAtLeastZero = (value: unknown, label: string) => {
   }
 }
 
+/**
+ * Calculates post-gig money penalties from misses beyond tolerance.
+ */
 export const calculateExcessMissMoneyPenalty = ({
   misses = 0,
   missTolerance,
@@ -617,6 +650,9 @@ export const calculateExcessMissMoneyPenalty = ({
   }
 }
 
+/**
+ * Adds performance miss penalties into the displayed post-gig expense breakdown.
+ */
 export const applyPostGigPerformancePenalty = ({
   financials,
   misses = 0,
@@ -659,16 +695,16 @@ export const applyPostGigPerformancePenalty = ({
 /**
  * Calculates post-gig player stat changes for money and fame.
  *
- * @param params.player             - Current player state.
- * @param params.perfScore          - Gig performance score (0–100).
- * @param params.financials         - Post-gig financial breakdown.
- * @param params.misses             - Total missed notes.
- * @param params.calculateFameGain  - Applies diminishing returns to raw fame gain.
- * @param params.calculateFameLevel - Maps total fame to a fame level.
- * @param params.clampPlayerFame    - Clamps fame to valid range.
- * @param params.clampPlayerMoney   - Clamps money to valid range.
- * @param params.BALANCE_CONSTANTS  - Shared balance tuning values.
- * @returns {{ newMoney, newFame, fameLevel }}
+ * - `params.player` - Current player state.
+ * - `params.perfScore` - Gig performance score (0–100).
+ * - `params.financials` - Post-gig financial breakdown.
+ * - `params.misses` - Total missed notes.
+ * - `params.calculateFameGain` - Applies diminishing returns to raw fame gain.
+ * - `params.calculateFameLevel` - Maps total fame to a fame level.
+ * - `params.clampPlayerFame` - Clamps fame to valid range.
+ * - `params.clampPlayerMoney` - Clamps money to valid range.
+ * - `params.BALANCE_CONSTANTS` - Shared balance tuning values.
+ * @returns Updated money, fame, and fame level.
  */
 export const calculateContinueStats = ({
   player,
@@ -728,6 +764,9 @@ const PERF_SCORE_MIN = 30
 const PERF_SCORE_MAX = 100
 const PERF_SCORE_SCALER = 150
 
+/**
+ * Converts raw rhythm score into the clamped post-gig performance score.
+ */
 export const calculatePerformanceScore = (rawScore: number): number => {
   return Math.min(
     PERF_SCORE_MAX,
@@ -735,6 +774,9 @@ export const calculatePerformanceScore = (rawScore: number): number => {
   )
 }
 
+/**
+ * Derives recent-gig context used by gig financial calculations.
+ */
 export const deriveGigContext = (
   currentGig: GameState['currentGig'],
   social: GameState['social'],
@@ -748,6 +790,9 @@ export const deriveGigContext = (
   }
 }
 
+/**
+ * Derives reconciled post-gig financials from current gig state and modifiers.
+ */
 export const deriveFinancials = ({
   currentGig,
   lastGigStats,
@@ -816,6 +861,9 @@ export const deriveFinancials = ({
   })
 }
 
+/**
+ * Builds available post-gig social options for the completed gig.
+ */
 export const derivePostOptions = ({
   currentGig,
   lastGigStats,

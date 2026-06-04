@@ -327,9 +327,9 @@ export const calculateMerchIncome = (
 
 /**
  * Calculates the effective ticket price after applying ticket discounts.
- * @param {object} gigData - Gig economy data containing the base ticket price.
- * @param {object} context - Context object containing flags like discountedTickets.
- * @returns {number} The effective ticket price.
+ * @param gigData - Gig economy data containing the base ticket price.
+ * @param context - Context object containing flags like discountedTickets.
+ * @returns The effective ticket price.
  */
 export const calculateEffectiveTicketPrice = (
   gigData: GigEconomyData = {},
@@ -527,13 +527,13 @@ export const calculateGigExpenses = (
 
 /**
  * Calculates the full financial breakdown of a gig with Fame Scaling and Hype bonuses.
- * @param {object} params - Parameters object
- * @param {object} params.gigData - { capacity, price, pay (guarantee), dist, diff }
- * @param {number} params.performanceScore - 0 to 100
- * @param {object} params.modifiers - { merch: bool, promo: bool, catering: bool, soundcheck: bool, guestlist: bool }
- * @param {object} params.bandInventory - { shirts, hoodies, etc }
- * @param {object|number} params.playerStateOrFame - Player state object or just fame (number) for legacy support
- * @param {object} params.gigStats - Detailed gig stats (misses, peakHype, etc)
+ * @param params - Parameters object
+ * - `params.gigData` - `capacity, price, pay (guarantee), dist, diff`
+ * - `params.performanceScore` - 0 to 100
+ * - `params.modifiers` - `merch: bool, promo: bool, catering: bool, soundcheck: bool, guestlist: bool`
+ * - `params.bandInventory` - `shirts, hoodies, etc`
+ * - `params.playerStateOrFame` - Player state object or just fame (number) for legacy support
+ * - `params.gigStats` - Detailed gig stats (misses, peakHype, etc)
  */
 export const calculateGigFinancials = (
   {

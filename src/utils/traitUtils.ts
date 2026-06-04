@@ -14,9 +14,9 @@ type TraitDef = {
 
 /**
  * Checks if a specific member has a trait.
- * @param {object} member - The band member object.
- * @param {string} traitId - The ID of the trait to check.
- * @returns {boolean} True if the member has the trait.
+ * @param member - The band member object.
+ * @param traitId - The ID of the trait to check.
+ * @returns True if the member has the trait.
  */
 export const hasTrait = (member: unknown, traitId: string): boolean => {
   if (
@@ -49,9 +49,9 @@ export const hasTrait = (member: unknown, traitId: string): boolean => {
 
 /**
  * Checks if any member in the band has a specific trait.
- * @param {object} bandState - The band state object (containing members array).
- * @param {string} traitId - The ID of the trait to check.
- * @returns {boolean} True if any member has the trait.
+ * @param bandState - The band state object (containing members array).
+ * @param traitId - The ID of the trait to check.
+ * @returns True if any member has the trait.
  */
 export const bandHasTrait = (bandState: unknown, traitId: string): boolean => {
   if (
@@ -73,7 +73,7 @@ export const bandHasTrait = (bandState: unknown, traitId: string): boolean => {
 
 /**
  * Pre-calculated lookup for character trait definitions.
- * Maps: charKey -> { traitId -> traitDef }
+ * Maps: charKey to `traitId to traitDef`
  * Provides O(1) lookup for trait definitions instead of O(N) searching.
  */
 const TRAIT_DEFS_BY_CHAR: Record<
@@ -82,7 +82,7 @@ const TRAIT_DEFS_BY_CHAR: Record<
 > = Object.create(null)
 /**
  * Flat lookup for all trait definitions by traitId.
- * Maps: traitId -> traitDef
+ * Maps: traitId to traitDef
  */
 const TRAIT_DEFS_BY_ID: Map<string, TraitDef> = new Map()
 
@@ -111,8 +111,7 @@ for (const charKey of Object.keys(CHARACTERS) as Array<
 
 /**
  * Helper to fetch a generic trait (e.g., from CLINIC definitions)
- * @param {string} traitId
- * @returns {object|null}
+ * @param traitId - Trait id.
  */
 export const getTraitById = (traitId: string): TraitDef | null => {
   if (!traitId) return null
@@ -122,8 +121,8 @@ export const getTraitById = (traitId: string): TraitDef | null => {
 /**
  * Normalizes a trait map into a null-prototype object.
  * Applies current/hardening logic for legacy shapes.
- * @param {object|Array} traits - The raw traits to normalize.
- * @returns {object} A null-prototype object with normalized trait data.
+ * @param traits - The raw traits to normalize.
+ * @returns A null-prototype object with normalized trait data.
  */
 export const normalizeTraitMap = (
   traits: unknown
@@ -157,9 +156,9 @@ export const normalizeTraitMap = (
  * Applies unlocked traits to the band state immutably and generates toasts.
  * Handles multiple unlocks per member and avoids duplicates.
  *
- * @param {object} currentState - The current full game state (must contain band and toasts).
- * @param {Array} unlocks - Array of { memberId, traitId } objects.
- * @returns {object} An object containing the updated { band, toasts } to be merged into state.
+ * @param currentState - The current full game state (must contain band and toasts).
+ * @param unlocks - Array of `memberId, traitId` objects.
+ * @returns An object containing the updated `band, toasts` to be merged into state.
  */
 export const applyTraitUnlocks = (
   currentState: { band?: BandState; toasts?: ToastPayload[] } | GameState,

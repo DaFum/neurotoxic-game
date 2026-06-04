@@ -15,8 +15,8 @@ export class EffectManager {
   spritePool: EffectSpritePool
 
   /**
-   * @param {Application} app
-   * @param {Container} parentContainer
+   * @param app - App.
+   * @param parentContainer - Parent container.
    */
   constructor(app: Application, parentContainer: Container) {
     this.app = app

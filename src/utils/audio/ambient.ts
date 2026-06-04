@@ -14,8 +14,8 @@ const customSongsMapCache = new WeakMap<Song[], Map<string, Song>>()
 
 /**
  * Memoizes metadata lookup for custom songs arrays to O(1).
- * @param {Array} songs
- * @returns {Map}
+ * @param songs - Songs.
+ * @returns Cached metadata lookup map.
  */
 function getCustomSongsMap(songs: Song[]): Map<string, Song> {
   let map = customSongsMapCache.get(songs)
@@ -34,9 +34,9 @@ function getCustomSongsMap(songs: Song[]): Map<string, Song> {
 
 /**
  * Plays a random MIDI file from the available set for ambient music.
- * @param {Array} [songs] - Song metadata array for excerpt offset lookup.
- * @param {Function} [rng] - Random number generator function.
- * @returns {Promise<boolean>} Whether playback started successfully.
+ * @param songs - Optional. Song metadata array for excerpt offset lookup.
+ * @param rng - Optional. Random number generator function.
+ * @returns Whether playback started successfully.
  */
 export async function playRandomAmbientMidi(
   songs: Song[] = SONGS_DB,
@@ -108,10 +108,10 @@ export async function playRandomAmbientMidi(
  * Plays a random OGG file from the bundled assets for ambient music.
  * Uses raw AudioBufferSourceNode connected to the musicGain bus for
  * lower CPU usage and better quality than MIDI synthesis.
- * @param {Function} [rng] - Random number generator function.
- * @param {object} [options] - Playback options.
- * @param {boolean} [options.skipStop=false] - Skip internal stopAudio() when caller already stopped audio.
- * @returns {Promise<boolean>} Whether playback started successfully.
+ * @param rng - Optional. Random number generator function.
+ * @param options - Optional. Playback options.
+ * - `options.skipStop` - Skip internal stopAudio() when caller already stopped audio. Defaults to `false`.
+ * @returns Whether playback started successfully.
  */
 export async function playRandomAmbientOgg(
   rng = secureRandom,

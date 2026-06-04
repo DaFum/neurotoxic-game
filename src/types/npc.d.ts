@@ -1,3 +1,6 @@
+/**
+ * NPC profile data used by character-driven UI and events.
+ */
 export interface CharacterProfile {
   id: string
   name?: string
@@ -7,6 +10,9 @@ export interface CharacterProfile {
   [key: string]: unknown
 }
 
+/**
+ * NPC or band-character trait metadata shown in UI.
+ */
 export interface CharacterTrait {
   id: string
   name: string

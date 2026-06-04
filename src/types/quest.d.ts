@@ -1,10 +1,22 @@
 import type { UnknownRecord } from './game'
 import type { BrandDealType } from './social'
 
+/**
+ * Quest category used for story, side, repeatable, and tutorial flows.
+ */
 export type QuestKind = 'story' | 'side' | 'repeatable' | 'tutorial'
+/**
+ * Lifecycle status of a quest instance.
+ */
 export type QuestStatus = 'active' | 'completed' | 'failed'
+/**
+ * Policy controlling when a quest can be offered again.
+ */
 export type QuestRepeatPolicy = 'never' | 'cooldown' | 'perVenue' | 'perRegion'
 
+/**
+ * Legacy progress source identifiers accepted by quest rules.
+ */
 export type QuestProgressSource =
   | 'gig_completed'
   | 'good_gig'
@@ -29,6 +41,9 @@ export type QuestProgressSource =
   | 'venue_reputation_changed'
   | 'story_flag_added'
 
+/**
+ * Canonical quest event identifiers emitted by gameplay systems.
+ */
 export type QuestEventType =
   | 'gig.completed'
   | 'gig.good'
@@ -66,6 +81,9 @@ export type QuestEventType =
   | 'region.reputationChanged'
   | 'story.flagAdded'
 
+/**
+ * Structured context attached to quest events for rule matching.
+ */
 export interface QuestEventContext extends UnknownRecord {
   venueId?: string
   region?: string
@@ -102,6 +120,9 @@ export interface QuestEventContext extends UnknownRecord {
   condition?: number
 }
 
+/**
+ * Quest event payload emitted into the quest-progress system.
+ */
 export interface QuestEvent {
   type: QuestEventType
   amount?: number
@@ -110,12 +131,18 @@ export interface QuestEvent {
   context?: QuestEventContext
 }
 
+/**
+ * Mode for deriving progress increments from quest events.
+ */
 export type QuestProgressAmountMode =
   | 'fixed'
   | 'event.amount'
   | 'event.score'
   | 'threshold'
 
+/**
+ * Optional filters that narrow which quest events match a rule.
+ */
 export interface QuestProgressRuleMatch {
   scope?: 'venue' | 'region' | 'none'
   platform?: string | string[]
@@ -136,6 +163,9 @@ export interface QuestProgressRuleMatch {
   success?: boolean
 }
 
+/**
+ * Rule that converts matching quest events into progress.
+ */
 export interface QuestProgressRule {
   event: QuestEventType | QuestProgressSource
   amount?: QuestProgressAmountMode
@@ -144,6 +174,9 @@ export interface QuestProgressRule {
   match?: QuestProgressRuleMatch
 }
 
+/**
+ * Reward effects applied when a quest completes.
+ */
 export type QuestReward =
   | { type: 'money'; amount: number }
   | { type: 'fame'; amount: number }
@@ -171,6 +204,9 @@ export type QuestReward =
   | { type: 'flag.add'; flag: string }
   | { type: 'event.queue'; eventId: string }
 
+/**
+ * Penalty effects applied when a quest fails.
+ */
 export type QuestPenalty =
   | { type: 'social.loyalty'; amount: number }
   | { type: 'social.controversy'; amount: number }
@@ -193,6 +229,9 @@ export type QuestPenalty =
   | { type: 'event.queue'; eventId: string }
   | { type: 'quest.cooldown'; id?: string; days: number }
 
+/**
+ * State predicates that gate random or contextual quest offers.
+ */
 export interface QuestOfferCondition {
   band?: {
     harmonyBelow?: number
@@ -209,6 +248,9 @@ export interface QuestOfferCondition {
   requireLocation?: boolean
 }
 
+/**
+ * Configuration for when and how a quest can be offered.
+ */
 export interface QuestOfferDefinition {
   trigger: 'random' | 'post_gig' | 'story' | 'travel'
   category: string
@@ -216,6 +258,9 @@ export interface QuestOfferDefinition {
   condition?: QuestOfferCondition
 }
 
+/**
+ * Static quest definition merged into runtime quest state.
+ */
 export interface QuestDefinition extends UnknownRecord {
   id?: string
   label?: string
@@ -245,6 +290,9 @@ export interface QuestDefinition extends UnknownRecord {
   followupQuestId?: string
 }
 
+/**
+ * Runtime state for an active quest shown to the player.
+ */
 export interface ActiveQuestState extends UnknownRecord {
   id: string
   progress?: number
@@ -255,6 +303,9 @@ export interface ActiveQuestState extends UnknownRecord {
   startedOnDay?: number
 }
 
+/**
+ * Persisted quest instance with definition and runtime fields.
+ */
 export interface QuestState extends UnknownRecord {
   id: string
   label?: string

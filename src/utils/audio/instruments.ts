@@ -15,8 +15,8 @@ type EnvelopeWithCurves = {
 
 /**
  * Creates a layered snare instrument (noise crack + membrane body) connected to the given bus.
- * @param {object} bus - Tone.js audio node to connect the snare to.
- * @returns {object} Proxy object with triggerAttackRelease, volume, and dispose methods.
+ * @param bus - Tone.js audio node to connect the snare to.
+ * @returns Proxy object with triggerAttackRelease, volume, and dispose methods.
  */
 export function createLayeredSnare(bus: Tone.InputNode): LayeredSnare {
   const snareBus = new Tone.Volume(0).connect(bus)
@@ -48,6 +48,9 @@ export function createLayeredSnare(bus: Tone.InputNode): LayeredSnare {
   }
 }
 
+/**
+ * Creates and wires the shared master limiter, compressor, gain, reverb, and distortion buses.
+ */
 export function setupMasterChain(): void {
   // Nodes
   // Limiter prevents clipping, Compressor glues the mix
@@ -97,6 +100,9 @@ export function setupMasterChain(): void {
   reverbSend.chain(reverb, musicGain)
 }
 
+/**
+ * Creates the lead guitar synth chain and connects it to the master music bus.
+ */
 export function setupGuitar(): void {
   const guitarModulationEnvelope = {
     attack: 0.01,
@@ -140,6 +146,9 @@ export function setupGuitar(): void {
   audioState.guitar.volume.value = -2
 }
 
+/**
+ * Creates the bass synth chain and connects it to the master music bus.
+ */
 export function setupBass(): void {
   // MonoSynth with fatsawtooth-based waveform for warmer, fuller tone
   audioState.bass = new Tone.PolySynth(Tone.MonoSynth, {
@@ -164,6 +173,13 @@ export function setupBass(): void {
   audioState.bass.volume.value = 0
 }
 
+/**
+ * Builds a drum kit routed to the provided bus.
+ *
+ * @param bus - Tone.js node that receives all drum voices.
+ * @param kickOverrides - Optional MembraneSynth options for the kick voice.
+ * @returns Drum kit synth bundle used by MIDI and gig playback.
+ */
 export function buildDrumKit(
   bus: Tone.InputNode,
   kickOverrides: Partial<Tone.MembraneSynthOptions> = {}
@@ -184,6 +200,9 @@ export function buildDrumKit(
   }
 }
 
+/**
+ * Creates the main gig drum bus and balanced drum kit.
+ */
 export function setupDrums(): void {
   // Drum bus with own reverb send
   const musicGain = audioState.musicGain
@@ -204,6 +223,9 @@ export function setupDrums(): void {
   audioState.drumKit.crash.volume.value = -8
 }
 
+/**
+ * Creates the shared sound-effects synth chain.
+ */
 export function setupSFX(): void {
   const masterLimiter = audioState.masterLimiter
   if (!masterLimiter)
@@ -216,6 +238,9 @@ export function setupSFX(): void {
   }).connect(audioState.sfxGain)
 }
 
+/**
+ * Creates the ambient MIDI playback synth chain and drum kit.
+ */
 export function setupMidiChain(): void {
   // Used for ambient playback. Richer synths with subtle spatial processing
   // to faithfully represent the MIDI content without heavy coloration.

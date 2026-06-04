@@ -3,6 +3,7 @@ import {
   CONTRABAND_BY_RARITY
 } from '../data/contraband'
 import { secureRandom } from './crypto'
+import { finiteNumberOr } from './gameStateUtils'
 import type { Rarity } from '../types'
 
 export const DROP_BASE_CHANCE = 0.15
@@ -23,8 +24,8 @@ export const BUST_CHANCE_BY_RARITY = {
 /**
  * Finds the highest-risk contraband item in band.stash.
  * Returns the item ID and rarity with the greatest bust potential.
- * @param {Record<string, unknown>|null|undefined} stash - band.stash dictionary (keyed by item id)
- * @returns {{ bustChance: number, highestRiskItemId: string|null, highestRarity: Rarity|null }}
+ * @param stash - band.stash dictionary (keyed by item id)
+ * @returns Bust chance, highest-risk item id, and highest rarity.
  */
 export function computeStashBustRisk(stash: unknown) {
   if (!stash || typeof stash !== 'object') {
@@ -62,8 +63,8 @@ export function computeStashBustRisk(stash: unknown) {
 
 /**
  * Picks a random rarity based on weights.
- * @param {Function} [rng=secureRandom]
- * @returns {string} rarity tier
+ * @param rng - Defaults to `secureRandom`.
+ * @returns rarity tier
  */
 export function pickRarity(rng = secureRandom) {
   const weights = CONTRABAND_RARITY_WEIGHTS
@@ -87,9 +88,9 @@ export function pickRarity(rng = secureRandom) {
 
 /**
  * Picks a random contraband ID from a specific rarity pool.
- * @param {string} rarity
- * @param {Function} [rng=secureRandom]
- * @returns {string|null} ID of picked contraband or null if none found
+ * @param rarity - Rarity.
+ * @param rng - Defaults to `secureRandom`.
+ * @returns ID of picked contraband or null if none found
  */
 export function pickRandomContrabandByRarity(
   rarity: string,
@@ -103,8 +104,7 @@ export function pickRandomContrabandByRarity(
 
 /**
  * Picks a random contraband ID using the weighted rarity system.
- * @param {Function} [rng=secureRandom]
- * @returns {string|null}
+ * @param rng - Defaults to `secureRandom`.
  */
 export function pickRandomContraband(rng = secureRandom) {
   const rarity = pickRarity(rng)
@@ -113,11 +113,11 @@ export function pickRandomContraband(rng = secureRandom) {
 
 /**
  * Computes the overall chance of dropping contraband based on band luck.
- * @param {number} [base=DROP_BASE_CHANCE]
- * @param {number} [luck=0]
- * @returns {number} probability [0, MAX_DROP_CHANCE]
+ * @param base - Defaults to `DROP_BASE_CHANCE`.
+ * @param luck - Defaults to `0`.
+ * @returns probability [0, MAX_DROP_CHANCE]
  */
 export function computeDropChance(base = DROP_BASE_CHANCE, luck = 0) {
-  const chance = base + (luck || 0) * LUCK_MOD_PER_POINT
+  const chance = base + finiteNumberOr(luck, 0) * LUCK_MOD_PER_POINT
   return Math.min(MAX_DROP_CHANCE, Math.max(0, chance))
 }

@@ -144,5 +144,13 @@ describe('Contraband Utils', () => {
       const chanceWithNull = computeDropChance(0.15, null)
       assert.equal(chanceWithNull, 0.15)
     })
+
+    it('treats non-finite luck as the fallback value', () => {
+      const chanceWithInfinity = computeDropChance(0.15, Infinity)
+      assert.equal(chanceWithInfinity, 0.15)
+
+      const chanceWithNegativeInfinity = computeDropChance(0.15, -Infinity)
+      assert.equal(chanceWithNegativeInfinity, 0.15)
+    })
   })
 })

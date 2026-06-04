@@ -132,7 +132,7 @@ const TOAST_STYLE_MAP = {
  * Note that some components like `usePurchaseLogic.js` pre-translate strings before calling `addToast`,
  * which this component also correctly handles.
  *
- * @returns {JSX.Element} Toast stack overlay.
+ * @returns Toast stack overlay.
  */
 export const ToastOverlay = () => {
   const toasts = useGameSelector(state => state.toasts)

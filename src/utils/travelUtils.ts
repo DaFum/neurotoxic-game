@@ -59,10 +59,10 @@ const isResolvedTravelVenue = (
 
 /**
  * Resolves full venue for capacity checks or fallback naming from VENUES_MAP list
- * @param {Object|string} venue - Venue data or ID
- * @param {string} id - Venue ID
- * @param {Map<string, Object>} venuesMap - Pre-computed map of venues
- * @returns {Object|null} Resolved venue object
+ * @param venue - Venue data or ID
+ * @param id - Venue ID
+ * @param venuesMap - Pre-computed map of venues
+ * @returns Resolved venue object
  */
 export const resolveVenue = (
   venue: VenueLike | string | null | undefined,
@@ -89,11 +89,11 @@ export const resolveTravelVenue = (
 
 /**
  * Gets the translated name for a location
- * @param {string} location - Location name
- * @param {string} venueId - Venue ID
- * @param {Function} t - Translation function
- * @param {Function} translateLocation - Location translation helper
- * @returns {string} Translated location name
+ * @param location - Location name
+ * @param venueId - Venue ID
+ * @param t - Translation function
+ * @param translateLocation - Location translation helper
+ * @returns Translated location name
  */
 export const getLocationName = (
   location: string | undefined,
@@ -111,14 +111,14 @@ export const getLocationName = (
 
 /**
  * Checks if a venue is accessible to the player
- * @param {Object} params
- * @param {Object} params.node - Target node
- * @param {Object} params.player - Player state
- * @param {Object} params.reputationByRegion - Reputation data
- * @param {Array} params.venueBlacklist - Blacklisted venues
- * @param {Map} params.venuesMap - Map of all venues
- * @param {Function} params.getLocationName - Helper to get location name
- * @returns {Object} { allowed: boolean, errorKey?: string, defaultMessage?: string, errorContext?: Object }
+ * @param params - Params.
+ * - `params.node` - Target node
+ * - `params.player` - Player state
+ * - `params.reputationByRegion` - Reputation data
+ * - `params.venueBlacklist` - Blacklisted venues
+ * - `params.venuesMap` - Map of all venues
+ * - `params.getLocationName` - Helper to get location name
+ * @returns `allowed: boolean, errorKey?: string, defaultMessage?: string, errorContext?: Object`
  */
 export const checkVenueAccess = ({
   node,
@@ -193,10 +193,10 @@ export const checkVenueAccess = ({
 
 /**
  * Checks if a travel to a node is physically possible (visibility/connectivity)
- * @param {Object} node - Target node
- * @param {string} visibility - Visibility state
- * @param {boolean} isConnected - Whether target is connected to current
- * @returns {Object} { allowed: boolean, errorKey?: string, defaultMessage?: string }
+ * @param node - Target node
+ * @param visibility - Visibility state
+ * @param isConnected - Whether target is connected to current
+ * @returns `allowed: boolean, errorKey?: string, defaultMessage?: string`
  */
 export const checkTravelPrerequisites = (
   node: MapNode & { type?: string },
@@ -226,10 +226,10 @@ export const checkTravelPrerequisites = (
 
 /**
  * Checks if the player has enough money and fuel for travel
- * @param {number} totalCost - Required money
- * @param {number} fuelLiters - Required fuel
- * @param {Object} player - Player state
- * @returns {Object} { allowed: boolean, errorKey?: string, defaultMessage?: string }
+ * @param totalCost - Required money
+ * @param fuelLiters - Required fuel
+ * @param player - Player state
+ * @returns `allowed: boolean, errorKey?: string, defaultMessage?: string`
  */
 export const checkTravelResources = (
   totalCost: number,

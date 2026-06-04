@@ -74,7 +74,7 @@ const SceneLoadingFallback = () => {
  *
  * Rendert außerdem Lade-, Fehler- und Entwicklungs-Tools (SceneLoadingFallback, ErrorBoundary, DebugLogViewer) und sorgt für Übergangsanimationen zwischen Szenen.
  *
- * @returns {JSX.Element} Das gerenderte React-Element, das die aktive Szene und alle globalen Overlays/Hilfekomponenten enthält.
+ * @returns Das gerenderte React-Element, das die aktive Szene und alle globalen Overlays/Hilfekomponenten enthält.
  */
 function GameContent() {
   const currentScene = useGameSelector(state => state.currentScene)

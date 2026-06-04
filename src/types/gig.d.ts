@@ -1,3 +1,6 @@
+/**
+ * Pre-gig modifier flags applied to gig setup and calculations.
+ */
 export interface GigModifiers {
   promo: boolean
   soundcheck: boolean
@@ -7,6 +10,9 @@ export interface GigModifiers {
   [key: string]: boolean
 }
 
+/**
+ * Persisted summary of the most recent completed gig.
+ */
 export interface PostGigSummary extends UnknownRecord {
   score?: number
   misses?: number

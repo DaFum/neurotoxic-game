@@ -1,27 +1,25 @@
 import type { Song } from '../../types/audio'
 
 /**
- * Normalizes a song entry to its ID.
- * @param {string|object} item - The song entry (ID string or object with ID).
- * @returns {string|undefined} The normalized song ID.
+ * Normalizes a song entry to its ID string.
+ *
+ * @param item - Song ID string or partial song-like object.
+ * @returns Song ID when one is present.
  */
 export const getSongId = (
   item: string | Partial<Pick<Song, 'id'>> | undefined
 ): string | undefined => (typeof item === 'string' ? item : item?.id)
 
 /**
- * Resolves playback window metadata for a song excerpt.
+ * Resolves non-negative excerpt timing for playback.
  *
- * Priority for duration resolution:
- * 1) excerptEndMs - excerptStartMs (when both are finite and positive)
- * 2) excerptDurationMs (legacy normalized value)
- * 3) durationMs (raw authored value)
- * 4) defaultDurationMs fallback
+ * Duration priority is `excerptEndMs - excerptStartMs`, then
+ * `excerptDurationMs`, then `durationMs`, then the default duration fallback.
  *
- * @param {object} song - Song metadata entry.
- * @param {object} [options] - Optional behavior flags.
- * @param {number} [options.defaultDurationMs=0] - Fallback duration.
- * @returns {{ excerptStartMs: number, excerptEndMs: number|null, excerptDurationMs: number }}
+ * @param song - Partial song metadata entry.
+ * @param options - Optional behavior flags. `defaultDurationMs` provides the
+ *   duration fallback in milliseconds and defaults to `0`.
+ * @returns Excerpt start, optional excerpt end, and resolved excerpt duration in milliseconds.
  */
 export const resolveSongPlaybackWindow = (
   song: Partial<Song> | null | undefined,

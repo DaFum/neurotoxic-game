@@ -1,7 +1,7 @@
 /**
  * Determines if a MIDI track should be treated as percussion.
- * @param {object} track - Track metadata from the MIDI parser.
- * @returns {boolean} True when the track is percussion-focused.
+ * @param track - Track metadata from the MIDI parser.
+ * @returns True when the track is percussion-focused.
  */
 export const isPercussionTrack = (track: unknown): boolean => {
   if (typeof track !== 'object' || track === null) return false
@@ -14,8 +14,8 @@ export const isPercussionTrack = (track: unknown): boolean => {
 
 /**
  * Normalizes a MIDI pitch to a finite, in-range value.
- * @param {object} note - Note payload from the MIDI parser.
- * @returns {number|null} MIDI pitch between 0-127, or null if invalid.
+ * @param note - Note payload from the MIDI parser.
+ * @returns MIDI pitch between 0-127, or null if invalid.
  */
 export const normalizeMidiPitch = (note: unknown): number | null => {
   const midi = (note as { midi?: unknown })?.midi
@@ -27,9 +27,9 @@ export const normalizeMidiPitch = (note: unknown): number | null => {
 
 /**
  * Builds normalized MIDI track events from raw notes.
- * @param {Array} notes - Note list from the MIDI parser.
- * @param {boolean} percussionTrack - Whether the track is percussion.
- * @returns {Array} Normalized events with pitch and timing metadata.
+ * @param notes - Note list from the MIDI parser.
+ * @param percussionTrack - Whether the track is percussion.
+ * @returns Normalized events with pitch and timing metadata.
  */
 export const buildMidiTrackEvents = (
   notes: unknown,
@@ -99,8 +99,8 @@ for (let i = 0; i < 128; i++) {
 
 /**
  * Returns the cached note name for a given MIDI pitch.
- * @param {number} midiPitch - The MIDI pitch (0-127).
- * @returns {string|null} The note name (e.g., "C4") or null if invalid.
+ * @param midiPitch - The MIDI pitch (0-127).
+ * @returns The note name (e.g., "C4") or null if invalid.
  */
 export const getNoteName = (midiPitch: number): string | null => {
   if (!Number.isFinite(midiPitch) || midiPitch < 0 || midiPitch > 127) {

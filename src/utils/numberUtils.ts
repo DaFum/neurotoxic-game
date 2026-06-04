@@ -16,6 +16,13 @@ const getFormatter = (
   return numberFormatters.get(key) as Intl.NumberFormat
 }
 
+/**
+ * Formats an integer-like number with the user's selected language.
+ *
+ * @param value - Number to display.
+ * @param language - BCP 47 language tag used by `Intl.NumberFormat`.
+ * @returns Locale-formatted decimal string without fractional digits.
+ */
 export const formatNumber = (value: number, language = 'en'): string => {
   const formatter = getFormatter(language, 'decimal-0', {
     style: 'decimal',
@@ -40,6 +47,14 @@ export const formatSignedFinancialAmount = (
   return formatCurrency(signed, language, 'always')
 }
 
+/**
+ * Formats a euro amount with locale-aware separators and sign handling.
+ *
+ * @param value - Currency amount in euros.
+ * @param language - BCP 47 language tag used by `Intl.NumberFormat`.
+ * @param signDisplay - Intl sign display policy. Defaults to `'auto'`.
+ * @returns Locale-formatted euro currency string.
+ */
 export const formatCurrency = (
   value: number,
   language = 'en',

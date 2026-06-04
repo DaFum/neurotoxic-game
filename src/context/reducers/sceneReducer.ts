@@ -10,9 +10,9 @@ export const isValidGamePhase = (value: string): value is GamePhase => {
 
 /**
  * Handles scene change actions
- * @param {Object} state - Current state
- * @param {string} payload - New scene name
- * @returns {Object} Updated state
+ * @param state - Current state
+ * @param payload - New scene name
+ * @returns Updated state
  */
 export const handleChangeScene = (
   state: GameState,

@@ -1,3 +1,6 @@
+/**
+ * Persisted player progression, resources, van, and statistics state.
+ */
 export interface PlayerState {
   playerId: string | null
   playerName: string

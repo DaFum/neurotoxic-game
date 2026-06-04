@@ -6,11 +6,11 @@ const TEMPLATE_REGEX = /\{([^}]+)\}/gi
 const toLowerCaseCache = Object.create(null)
 
 /**
- * Resolves a template string by replacing {key} with the corresponding value from the context.
+ * Resolves a template string by replacing `{key}` with the corresponding value from the context.
  * Uses a single pre-compiled regex for performance.
- * @param {string} str - The string containing {key} templates.
- * @param {object} context - The context object containing replacement values.
- * @returns {string} The resolved string.
+ * @param str - The string containing `{key}` templates.
+ * @param context - The context object containing replacement values.
+ * @returns The resolved string.
  */
 const resolveTemplateString = (
   str: string,
@@ -62,14 +62,17 @@ const resolveTemplateString = (
 
     const foundKey = (lowerKeysMap as Record<string, string>)[lowerKey]
 
-    if (foundKey && Object.hasOwn(context, foundKey) && typeof context[foundKey] === 'string') {
+    if (
+      foundKey &&
+      Object.hasOwn(context, foundKey) &&
+      typeof context[foundKey] === 'string'
+    ) {
       return context[foundKey]
     }
 
     return match // Return original template if no match is found
   })
 }
-
 
 export const buildTemplateContext = (
   input: Record<string, unknown> | undefined

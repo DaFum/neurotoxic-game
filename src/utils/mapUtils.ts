@@ -14,10 +14,10 @@ const isMapConnection = (value: unknown): value is MapConnection =>
 
 /**
  * Checks if a target node is connected to the source node.
- * @param {object} gameMap - The game map object.
- * @param {string} fromNodeId - The source node ID.
- * @param {string} targetNodeId - The target node ID.
- * @returns {boolean} True if connected.
+ * @param gameMap - The game map object.
+ * @param fromNodeId - The source node ID.
+ * @param targetNodeId - The target node ID.
+ * @returns True if connected.
  */
 export const isConnected = (
   gameMap: GameMapLike,
@@ -40,9 +40,9 @@ export const isConnected = (
 
 /**
  * Determines the visibility state of a node based on its layer.
- * @param {number} nodeLayer - Target node layer.
- * @param {number} currentLayer - Current player layer.
- * @returns {string} 'visible', 'dimmed', or 'hidden'.
+ * @param nodeLayer - Target node layer.
+ * @param currentLayer - Current player layer.
+ * @returns 'visible', 'dimmed', or 'hidden'.
  */
 export const getNodeVisibility = (
   nodeLayer: number,
@@ -55,8 +55,8 @@ export const getNodeVisibility = (
 
 /**
  * Normalizes a venue object or string into a raw ID string, stripping legacy namespacing.
- * @param {object|string} venue - The venue object or string to normalize.
- * @returns {string|null} The normalized string ID, or null.
+ * @param venue - The venue object or string to normalize.
+ * @returns The normalized string ID, or null.
  */
 export const normalizeVenueId = (venue: unknown): string | null => {
   if (!venue) return null
@@ -93,10 +93,10 @@ export const normalizeVenueId = (venue: unknown): string | null => {
 
 /**
  * Checks if the player is softlocked (stranded) due to lack of fuel and money.
- * @param {object} gameMap - The game map object.
- * @param {object} player - The player state object.
- * @param {object} [band=null] - The band state object.
- * @returns {boolean} True if stranded.
+ * @param gameMap - The game map object.
+ * @param player - The player state object.
+ * @param band - The band state object. Defaults to `null`.
+ * @returns True if stranded.
  */
 export const checkSoftlock = (
   gameMap: GameMapLike,

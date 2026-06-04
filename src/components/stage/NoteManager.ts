@@ -45,10 +45,10 @@ export class NoteManager {
   textureManager: NoteTextureManager
 
   /**
-   * @param {Application} app
-   * @param {Container} parentContainer
-   * @param {object} gameStateRef
-   * @param {Function} onHit - Callback when a note is hit (x, y, color)
+   * @param app - App.
+   * @param parentContainer - Parent container.
+   * @param gameStateRef - Game state ref.
+   * @param onHit - Callback when a note is hit (x, y, color)
    */
   constructor(
     app: Application,

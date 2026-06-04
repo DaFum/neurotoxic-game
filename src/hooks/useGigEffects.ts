@@ -13,9 +13,9 @@ type GigVisualStats = {
 
 /**
  * Calculates chaos visual filter styles based on stats.
- * @param {boolean} isToxicMode
- * @param {number} overload
- * @returns {Object} CSS style object
+ * @param isToxicMode - Is toxic mode.
+ * @param overload - Overload.
+ * @returns CSS style object
  */
 export const calculateChaosStyle = (
   isToxicMode: boolean,
@@ -39,9 +39,9 @@ export const calculateChaosStyle = (
 
 /**
  * Plays the band member bounce animation using WAAPI.
- * @param {Element} memberEl - The DOM element to animate
- * @param {Animation} existingAnim - The previously cached animation instance
- * @returns {Animation|null} The created or reused animation instance
+ * @param memberEl - The DOM element to animate
+ * @param existingAnim - The previously cached animation instance
+ * @returns The created or reused animation instance
  */
 export const playBandMemberAnimation = (
   memberEl: Element | null,
@@ -83,11 +83,11 @@ export const playBandMemberAnimation = (
  * Applies random translation jitter to the container element.
  * Wrapped in try/catch to gracefully handle `secureRandom` failures.
  *
- * @param {Element} containerEl - The DOM element to jitter
- * @param {boolean} isToxicMode - Whether chaos is active
- * @param {Function} getRandom - Random value generator, required if `isToxicMode` is true.
- * @param {Function} onError - Callback when an error occurs
- * @returns {boolean} True if successful, False if an error occurred
+ * @param containerEl - The DOM element to jitter
+ * @param isToxicMode - Whether chaos is active
+ * @param getRandom - Random value generator, required if `isToxicMode` is true.
+ * @param onError - Callback when an error occurs
+ * @returns True if successful, False if an error occurred
  */
 export const applyChaosJitter = (
   containerEl: HTMLElement | null,
@@ -117,8 +117,8 @@ export const applyChaosJitter = (
 /**
  * Manages visual effects for the Gig scene, including Chaos Mode jitter and band animations.
  *
- * @param {Object} stats - The current game stats (e.g., isToxicMode, overload).
- * @returns {Object} - Refs and styles for the Gig component.
+ * @param stats - The current game stats (e.g., isToxicMode, overload).
+ * @returns - Refs and styles for the Gig component.
  */
 export const useGigEffects = (stats: GigVisualStats) => {
   const chaosContainerRef = useRef<HTMLDivElement | null>(null)
@@ -130,7 +130,7 @@ export const useGigEffects = (stats: GigVisualStats) => {
 
   /**
    * Returns a stable ref callback for a band member at the given index.
-   * @param {number} index
+   * @param index - Index.
    */
   const setBandMemberRef = useCallback((index: number) => {
     if (!bandMemberSettersRef.current[index]) {
@@ -143,7 +143,7 @@ export const useGigEffects = (stats: GigVisualStats) => {
 
   /**
    * Triggers a CSS animation on the corresponding band member DOM element.
-   * @param {number} laneIndex
+   * @param laneIndex - Lane index.
    */
   const triggerBandAnimation = useCallback((laneIndex: number) => {
     const memberEl = bandMembersRef.current[laneIndex]

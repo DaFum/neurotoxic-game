@@ -5,9 +5,9 @@ import { getRawAudioContext } from './context'
 /**
  * Creates and wires a buffer source to the music bus.
  * Shared logic for gig playback and ambient OGG playback.
- * @param {AudioBuffer} buffer - The buffer to play.
- * @param {(source: AudioBufferSourceNode) => void} [onEnded] - Callback when playback ends naturally.
- * @returns {AudioBufferSourceNode|null} The created source or null on error.
+ * @param buffer - The buffer to play.
+ * @param onEnded - Optional. Callback when playback ends naturally.
+ * @returns The created source or null on error.
  */
 export function createAndConnectBufferSource(
   buffer: AudioBuffer,

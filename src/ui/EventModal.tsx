@@ -24,9 +24,9 @@ type EventOutcome = {
  * A modal dialog for displaying game events and capturing player choices.
  * Traps focus, supports keyboard selection (1-4 number keys), and
  * provides visual hints for option effects.
- * @param {object} props
- * @param {object} props.event - The active event object.
- * @param {Function} props.onOptionSelect - Callback when an option is selected.
+ * @param props - Component props.
+ * - `props.event` - The active event object.
+ * - `props.onOptionSelect` - Callback when an option is selected.
  */
 
 interface EventOptionButtonProps {

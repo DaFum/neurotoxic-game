@@ -21,12 +21,12 @@ import { sanitizeSuccessToast } from './toastSanitizers'
 
 /**
  * Common logic for clinic actions.
- * @param {Object} state - The current game state.
- * @param {Object} payload - The action payload.
- * @param {Object} [payload.successToast] - Optional toast appended to state.toasts on success.
- * @param {Function} [payload.getSuccessToast] - Optional factory for success toast appended to state.toasts.
- * @param {Function} memberUpdater - A function to apply updates to the target member.
- * @returns {Object} The updated state or the original state if validation fails.
+ * @param state - The current game state.
+ * @param payload - The action payload.
+ * - `payload.successToast` - Optional toast appended to state.toasts on success.
+ * - `payload.getSuccessToast` - Optional factory for success toast appended to state.toasts.
+ * @param memberUpdater - A function to apply updates to the target member.
+ * @returns The updated state or the original state if validation fails.
  */
 const executeClinicAction = (
   state: GameState,
@@ -132,13 +132,13 @@ const executeClinicAction = (
 
 /**
  * Handles the healing logic in the Void Clinic.
- * @param {Object} state - The current game state.
- * @param {Object} payload - The payload containing the requested changes.
- * @param {string} payload.memberId - The ID of the band member to heal.
- * @param {string} payload.type - Must be 'heal' or 'enhance'. Used to compute cost from CLINIC_CONFIG.
- * @param {number} payload.staminaGain - The stamina gain.
- * @param {number} payload.moodGain - The mood gain.
- * @returns {Object} The updated game state.
+ * @param state - The current game state.
+ * @param payload - The payload containing the requested changes.
+ * - `payload.memberId` - The ID of the band member to heal.
+ * - `payload.type` - Must be 'heal' or 'enhance'. Used to compute cost from CLINIC_CONFIG.
+ * - `payload.staminaGain` - The stamina gain.
+ * - `payload.moodGain` - The mood gain.
+ * @returns The updated game state.
  */
 export const handleClinicHeal = (
   state: GameState,
@@ -173,14 +173,14 @@ export const handleClinicHeal = (
 
 /**
  * Handles the blood bank donation logic, trading stamina and harmony for money.
- * @param {Object} state - The current game state.
- * @param {Object} payload - The payload containing the requested changes.
- * @param {number} payload.moneyGain - The amount of money to gain.
- * @param {number} payload.harmonyCost - The harmony to lose.
- * @param {number} payload.staminaCost - The stamina to lose per member.
- * @param {number} payload.controversyGain - The controversy to gain.
- * @param {Object} [payload.successToast] - Optional toast on success.
- * @returns {Object} The updated game state.
+ * @param state - The current game state.
+ * @param payload - The payload containing the requested changes.
+ * - `payload.moneyGain` - The amount of money to gain.
+ * - `payload.harmonyCost` - The harmony to lose.
+ * - `payload.staminaCost` - The stamina to lose per member.
+ * - `payload.controversyGain` - The controversy to gain.
+ * - `payload.successToast` - Optional toast on success.
+ * @returns The updated game state.
  */
 export const handleBloodBankDonate = (
   state: GameState,
@@ -285,12 +285,12 @@ export const handleBloodBankDonate = (
 
 /**
  * Handles trait enhancement or other cybernetic grafts in the clinic.
- * @param {Object} state - The current game state.
- * @param {Object} payload - The payload containing the requested changes.
- * @param {string} payload.memberId - The ID of the band member.
- * @param {string} payload.type - Must be 'heal' or 'enhance'. Used to compute cost from CLINIC_CONFIG.
- * @param {string} payload.trait - The trait to add or upgrade.
- * @returns {Object} The updated game state.
+ * @param state - The current game state.
+ * @param payload - The payload containing the requested changes.
+ * - `payload.memberId` - The ID of the band member.
+ * - `payload.type` - Must be 'heal' or 'enhance'. Used to compute cost from CLINIC_CONFIG.
+ * - `payload.trait` - The trait to add or upgrade.
+ * @returns The updated game state.
  */
 export const handleClinicEnhance = (
   state: GameState,

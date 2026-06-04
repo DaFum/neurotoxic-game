@@ -1,15 +1,30 @@
+/**
+ * Long-term asset section identifiers.
+ */
 export type AssetKind =
   | 'tourbus_chassis'
   | 'studio_chassis'
   | 'bandhaus_chassis'
   | 'merch_workshop_chassis'
 
+/**
+ * Acquisition flavor for chassis and compatible modules.
+ */
 export type AssetFlavor = 'legit' | 'diy'
+/**
+ * Supported chassis upgrade tiers.
+ */
 export type ChassisTier = 1 | 2 | 3
+/**
+ * Ways a chassis can be acquired.
+ */
 export type AcquisitionMode = 'cash' | 'loan' | 'crowdfund'
 
 // Slot-Typen sind kategorie-spezifische String-Literals.
 // Ein Modul mit slotType X passt nur in Slots mit slotType X.
+/**
+ * Category-specific module slot identifiers.
+ */
 export type SlotType =
   // Tourbus
   | 'tb_roof'
@@ -49,6 +64,9 @@ export type SlotType =
   | 'mw_sales'
   | 'mw_automation'
 
+/**
+ * Installable slot on a long-term asset chassis.
+ */
 export interface AssetSlot {
   id: string
   slotType: SlotType
@@ -57,6 +75,9 @@ export interface AssetSlot {
   addedByModuleId?: string // bei dynamisch hinzugefügten Slots
 }
 
+/**
+ * Optional stat, economy, and risk modifiers provided by modules.
+ */
 export interface AssetBoni {
   // Cashflow-Boni
   baseDailyRevenueDelta?: number
@@ -86,6 +107,9 @@ export interface AssetBoni {
   diyRiskMultiplier?: number // 1.0 Default, mit existierenden DIY-Risiken multipliziert
 }
 
+/**
+ * Unlock requirements that gate module availability.
+ */
 export interface ModuleUnlockReq {
   // Alle Felder werden AND-kombiniert (alle erfüllt → unlocked)
   minFame?: number
@@ -103,6 +127,9 @@ export interface ModuleUnlockReq {
   requiredOtherModuleInstalled?: string | readonly string[]
 }
 
+/**
+ * Long-term asset module catalogue entry.
+ */
 export interface AssetModule {
   id: string // stabile lower_snake-ID, z.B. 'tb_solar_panel'
   ownerKind: AssetKind
@@ -122,6 +149,9 @@ export interface AssetModule {
   imagePromptKey: string // Schlüssel in MODULE_PROMPTS (mehrere Module dürfen ihn teilen)
 }
 
+/**
+ * Persisted player-owned long-term asset instance.
+ */
 export interface LongTermAsset {
   id: string
   kind: AssetKind
@@ -136,6 +166,9 @@ export interface LongTermAsset {
   baseRiskEventChance: number
 }
 
+/**
+ * Persisted debt or crowdfund liability tied to an asset.
+ */
 export interface Liability {
   id: string
   source: 'loan' | 'crowdfund'
@@ -148,6 +181,9 @@ export interface Liability {
   crowdfundFamePromised?: number
 }
 
+/**
+ * Active crowdfund campaign state until resolution.
+ */
 export interface CrowdfundCampaign {
   id: string
   assetSpec: {
@@ -184,6 +220,9 @@ export interface CrowdfundCampaign {
   resolvedOutcome?: 'success' | 'fail'
 }
 
+/**
+ * Asset risk event categories.
+ */
 export type RiskEventType =
   | 'eviction'
   | 'fire'
@@ -195,6 +234,9 @@ export type RiskEventType =
   | 'paranormal'
   | 'foreclosure'
 
+/**
+ * Resolved asset risk event to apply to state.
+ */
 export interface RiskEventDescriptor {
   assetId: string
   eventType: RiskEventType
@@ -203,6 +245,9 @@ export interface RiskEventDescriptor {
 
 // === Action payloads ===
 
+/**
+ * Failure codes for chassis purchase attempts.
+ */
 export type PurchaseFailureReason =
   | 'DIY_LOAN_NOT_ALLOWED'
   | 'INSUFFICIENT_FUNDS'
@@ -211,6 +256,9 @@ export type PurchaseFailureReason =
   | 'ACQUISITION_ALREADY_ACTIVE'
   | 'UNKNOWN_FLAVOR'
 
+/**
+ * Failure codes for liability refinancing attempts.
+ */
 export type RefinanceFailureReason =
   | 'UNKNOWN_LIABILITY'
   | 'UNKNOWN_KIND_OR_TIER'
@@ -218,6 +266,9 @@ export type RefinanceFailureReason =
   | 'INSUFFICIENT_FUNDS'
   | 'LOAN_IN_DEFAULT'
 
+/**
+ * Failure codes for module installation attempts.
+ */
 export type InstallModuleFailureReason =
   | 'UNKNOWN_MODULE'
   | 'UNKNOWN_ASSET'
@@ -229,11 +280,17 @@ export type InstallModuleFailureReason =
   | 'MAX_PER_ASSET'
   | 'INSUFFICIENT_FUNDS'
 
+/**
+ * Pre-generated dynamic slot id and type pair.
+ */
 export interface NewSlotEntry {
   slotType: SlotType
   id: string
 }
 
+/**
+ * Reducer payload for successful chassis acquisition.
+ */
 export interface PurchaseChassisPayload {
   /** Asset id pre-generated in the action creator (reducer-purity). */
   id: string
@@ -249,6 +306,9 @@ export interface PurchaseChassisPayload {
   today: number
 }
 
+/**
+ * Reducer payload for chassis tier upgrades.
+ */
 export interface UpgradeChassisTierPayload {
   assetId: string
   targetTier: ChassisTier
@@ -256,6 +316,9 @@ export interface UpgradeChassisTierPayload {
   newSlotIds: NewSlotEntry[]
 }
 
+/**
+ * Reducer payload for module installation.
+ */
 export interface InstallModulePayload {
   assetId: string
   slotId: string
@@ -264,12 +327,18 @@ export interface InstallModulePayload {
   newSlotIds?: NewSlotEntry[]
 }
 
+/**
+ * Reducer payload for liability refinancing.
+ */
 export interface RefinanceLiabilityPayload {
   liabilityId: string
   loanProfileId: string
   fee: number
 }
 
+/**
+ * Aggregated active asset modifiers consumed by economy and state logic.
+ */
 export interface AssetModifiers {
   fuelMultiplier: number
   merchCostMultiplier: number

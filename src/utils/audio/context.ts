@@ -16,7 +16,7 @@ type RawAudioContextLike = AudioContext & {
 
 /**
  * Returns the raw Web Audio context used by Tone.js.
- * @returns {AudioContext} The raw AudioContext.
+ * @returns The raw AudioContext.
  */
 export const getRawAudioContext = (): RawAudioContextLike => {
   const toneContext = Tone.getContext()
@@ -25,7 +25,7 @@ export const getRawAudioContext = (): RawAudioContextLike => {
 
 /**
  * Returns the raw AudioContext time in seconds.
- * @returns {number} Current raw AudioContext time in seconds.
+ * @returns Current raw AudioContext time in seconds.
  */
 export const getAudioContextTimeSec = (): number => {
   return getRawAudioContext().currentTime
@@ -33,8 +33,8 @@ export const getAudioContextTimeSec = (): number => {
 
 /**
  * Converts a raw AudioContext start time into a Tone.js time reference.
- * @param {number} rawStartTimeSec - Raw AudioContext time in seconds.
- * @returns {number} Tone.js time in seconds.
+ * @param rawStartTimeSec - Raw AudioContext time in seconds.
+ * @returns Tone.js time in seconds.
  */
 export const getToneStartTimeSec = (rawStartTimeSec: number): number => {
   const lookAhead = Tone.getContext()?.lookAhead ?? 0
@@ -43,7 +43,7 @@ export const getToneStartTimeSec = (rawStartTimeSec: number): number => {
 
 /**
  * Ensures the AudioContext is running and initialized.
- * @returns {Promise<boolean>} True if the AudioContext is running.
+ * @returns True if the AudioContext is running.
  */
 export async function ensureAudioContext(): Promise<boolean> {
   // Synchronous resume attempt to capture user gesture for Web Audio unlock (iOS/Safari).

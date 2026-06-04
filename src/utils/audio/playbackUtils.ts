@@ -4,9 +4,14 @@ import { ensureAudioContext } from './context'
 import { stopTransportAndClear, cleanupTransportEvents } from './cleanupUtils'
 
 /**
- * Prepares the Tone.js transport for playback, returning normalized options and request ID.
- * @param {object} [options] - Playback options.
- * @returns {Promise<{success: boolean, reqId: number, normalizedOptions: object}>}
+ * Claims the next playback request and prepares the Tone.js transport for it.
+ *
+ * Normalizes options, advances the play request ID, unlocks the audio context,
+ * clears existing transport events, and rejects the request if another caller
+ * supersedes it while the audio context is unlocking.
+ *
+ * @param options - Candidate playback options.
+ * @returns Playback preparation status, request ID, and normalized options.
  */
 export async function prepareTransportPlayback(options: unknown = {}): Promise<{
   success: boolean
@@ -29,13 +34,20 @@ export async function prepareTransportPlayback(options: unknown = {}): Promise<{
 }
 
 /**
- * Normalizes MIDI playback options.
- * @param {object} [options] - Optional playback settings.
- * @param {boolean} [options.useCleanPlayback=true] - Whether to bypass FX for MIDI playback.
- * @param {Function} [options.onEnded] - Callback invoked when playback ends.
- * @param {number} [options.stopAfterSeconds] - Optional playback duration limit in seconds.
- * @param {number} [options.startTimeSec] - Absolute Tone.js time to start playback.
- * @returns {{useCleanPlayback: boolean, onEnded: Function|null, stopAfterSeconds: number|null, startTimeSec: number|null}} Normalized options.
+ * Normalizes untrusted playback options for Tone.js scheduling.
+ *
+ * Non-finite timing values become `null`; `useCleanPlayback` defaults to
+ * `true`.
+ *
+ * @param options - Candidate playback settings.
+ *
+ * Supported option fields:
+ * - `useCleanPlayback`: whether to bypass FX for MIDI playback. Defaults to `true`.
+ * - `onEnded`: callback invoked when playback ends.
+ * - `stopAfterSeconds`: playback duration limit in seconds.
+ * - `startTimeSec`: absolute Tone.js time to start playback.
+ *
+ * @returns Safe playback options for MIDI and song-data scheduling.
  */
 export const normalizeMidiPlaybackOptions = (
   options: unknown
@@ -73,16 +85,18 @@ export const normalizeMidiPlaybackOptions = (
 }
 
 /**
- * Path prefix regex to strip leading "./" or "/" from asset paths.
+ * Matches one leading `"./"` or `"/"` prefix to strip from asset paths.
  */
 export const PATH_PREFIX_REGEX = /^\.?\//
 
 let cachedAssetPaths: { baseUrl: string; publicBasePath: string } | null = null
 
 /**
- * Derives the base asset path and public base path from import.meta.
- * Computes once lazily and caches the result for performance.
- * @returns {{baseUrl: string, publicBasePath: string}} The resolved paths.
+ * Derives the Vite base URL and public assets fallback path.
+ *
+ * Computes once lazily and caches the result for repeated asset resolution.
+ *
+ * @returns Base URL and public assets fallback path.
  */
 export const getBaseAssetPath = (): {
   baseUrl: string
@@ -100,17 +114,19 @@ export const getBaseAssetPath = (): {
 }
 
 /**
- * Resets the cached base asset path. Used for testing.
+ * Resets the cached base asset path between tests.
  */
 export const __resetBaseAssetPathCache = (): void => {
   cachedAssetPaths = null
 }
 
 /**
- * Encodes a public asset path segment-by-segment to preserve slashes.
- * Primarily used by resolveAssetUrl; exported for direct testing.
- * @param {string} assetPath - Asset path relative to the public base.
- * @returns {string} Encoded path suitable for URL usage.
+ * Encodes a public asset path segment-by-segment while preserving slashes.
+ *
+ * Primarily used by `resolveAssetUrl`; exported for direct testing.
+ *
+ * @param assetPath - Asset path relative to the public base.
+ * @returns Encoded path suitable for URL usage.
  */
 export const encodePublicAssetPath = (assetPath: string): string => {
   if (typeof assetPath !== 'string') return ''
@@ -122,11 +138,15 @@ export const encodePublicAssetPath = (assetPath: string): string => {
 }
 
 /**
- * Resolves an asset URL from the bundled map or a public fallback path.
- * @param {string} filename - Filename or relative path to the asset.
- * @param {Record<string, string>} assetUrlMap - Map of asset keys to bundled URLs.
- * @param {string} [publicBasePath='/assets'] - Base path for public assets.
- * @returns {{url: string|null, source: 'bundled'|'public'|null}} Resolved URL info.
+ * Resolves an asset URL from the Vite bundle map or public assets fallback.
+ *
+ * Checks an exact relative path key first, then a basename key, then builds an
+ * encoded URL under `publicBasePath`.
+ *
+ * @param filename - Filename or relative path to the asset.
+ * @param assetUrlMap - Map of asset keys to bundled URLs.
+ * @param publicBasePath - Base path for public assets. Defaults to `'/assets'`.
+ * @returns Resolved URL and whether it came from the bundle or public path.
  */
 export const resolveAssetUrl = (
   filename: string,
@@ -161,11 +181,14 @@ export const resolveAssetUrl = (
 }
 
 /**
- * Builds an asset URL map with conflict detection for duplicate basenames.
- * @param {Record<string, string>} assetGlob - Vite glob map of asset paths to URLs.
- * @param {(message: string) => void} [warn] - Warning callback for conflicts.
- * @param {string} [label='Asset'] - Label for conflict warnings.
- * @returns {Record<string, string>} Map of relative paths and basenames to URLs.
+ * Builds an asset URL lookup from a Vite asset glob.
+ *
+ * Duplicate basenames keep the first URL and emit a warning through `warn`.
+ *
+ * @param assetGlob - Vite glob map of asset paths to URLs.
+ * @param warn - Warning callback for basename conflicts.
+ * @param label - Label for conflict warnings. Defaults to `'Asset'`.
+ * @returns Map of relative paths and basenames to URLs.
  */
 export const buildAssetUrlMap = (
   assetGlob: unknown,

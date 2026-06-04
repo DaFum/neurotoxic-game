@@ -1,6 +1,6 @@
 /**
  * Allowed Social Media Trends
- * @constant {readonly ['NEUTRAL', 'DRAMA', 'TECH', 'MUSIC', 'WHOLESOME']}
+ * Constant: `readonly ['NEUTRAL', 'DRAMA', 'TECH', 'MUSIC', 'WHOLESOME']`
  */
 export const ALLOWED_TRENDS = [
   'NEUTRAL',

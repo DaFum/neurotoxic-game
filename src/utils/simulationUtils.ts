@@ -69,9 +69,9 @@ const PRE_GIG_ACTIVE_EFFECTS = {
 
 /**
  * Derives dynamic game modifiers for the Gig scene based on band state and active toggles.
- * @param {object} bandState - The current band state (members, harmony, etc.).
- * @param {object} [gigModifiers={}] - Active PreGig modifiers (e.g. catering, soundcheck).
- * @returns {object} An object containing numeric modifiers and active effect descriptions.
+ * @param bandState - The current band state (members, harmony, etc.).
+ * @param gigModifiers - Active PreGig modifiers (e.g. catering, soundcheck). Defaults to `{}`.
+ * @returns An object containing numeric modifiers and active effect descriptions.
  */
 export const getGigModifiers = (
   bandState: BandState,
@@ -167,8 +167,8 @@ export const getGigModifiers = (
 
 /**
  * Calculates derived physics variables for the Gig scene based on RPG stats.
- * @param {object} bandState
- * @param {object} song
+ * @param bandState - Band state.
+ * @param song - Song.
  */
 export const calculateGigPhysics = (bandState: BandState, song: Song) => {
   const members = Array.isArray(bandState.members) ? bandState.members : []
@@ -289,9 +289,9 @@ export const calculateGigPhysics = (bandState: BandState, song: Song) => {
 
 /**
  * Calculates daily state updates including costs, mood drift, and decay.
- * @param {object} currentState - The full state before update.
- * @param {Function} [rng=getSafeRandom] - Random number generator for determinism.
- * @returns {object} The updated parts of state (player, band, social).
+ * @param currentState - The full state before update.
+ * @param rng - Random number generator for determinism. Defaults to `getSafeRandom`.
+ * @returns The updated parts of state (player, band, social).
  */
 const CONTROVERSY_ACCELERATED_DECAY_THRESHOLD = 55
 const CONTROVERSY_ACCELERATED_DECAY_AMOUNT = 3

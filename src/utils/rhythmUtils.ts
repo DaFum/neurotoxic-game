@@ -16,11 +16,11 @@ interface ParsedGameNote {
 
 /**
  * Generates rhythm game notes for a given song and configuration.
- * @param {object} song - Song metadata (bpm, duration, difficulty).
- * @param {object} options - Configuration options.
- * @param {number} options.leadIn - Time in ms before first note (default 2000).
- * @param {Function} [options.random] - Optional random function (returns 0-1) for deterministic generation.
- * @returns {Array} Array of note objects.
+ * @param song - Song metadata (bpm, duration, difficulty).
+ * @param options - Configuration options.
+ * - `options.leadIn` - Time in ms before first note (default 2000).
+ * - `options.random` - Optional random function (returns 0-1) for deterministic generation.
+ * @returns Array of note objects.
  */
 export const generateNotesForSong = (
   song: Pick<Song, 'id' | 'bpm' | 'duration' | 'difficulty'>,
@@ -76,9 +76,9 @@ export const generateNotesForSong = (
 /**
  * Preprocesses the tempo map to add cumulative time to each entry.
  * This enables O(log N) lookups in calculateTimeFromTicks.
- * @param {Array} tempoMap - Array of tempo changes [{ tick, usPerBeat }].
- * @param {number} tpb - Ticks per beat.
- * @returns {Array} New tempo map with accumulatedMicros.
+ * @param tempoMap - Array of tempo changes [`tick, usPerBeat`].
+ * @param tpb - Ticks per beat.
+ * @returns New tempo map with accumulatedMicros.
  */
 export const preprocessTempoMap = (
   tempoMap: TempoMapEntry[] | undefined,
@@ -114,9 +114,9 @@ export const preprocessTempoMap = (
 
 /**
  * Finds the active tempo segment for a given tick using binary search.
- * @param {Array} processedMap - Preprocessed tempo map.
- * @param {number} ticks - Target ticks.
- * @returns {object} The tempo map entry active for this tick.
+ * @param processedMap - Preprocessed tempo map.
+ * @param ticks - Target ticks.
+ * @returns The tempo map entry active for this tick.
  */
 const findTempoSegment = (
   processedMap: ProcessedTempoMapEntry[],
@@ -150,9 +150,9 @@ const findTempoSegment = (
 
 /**
  * Ensures tempo map entries contain preprocessed timing metadata.
- * @param {Array} tempoMap - Raw or preprocessed tempo map.
- * @param {number} tpb - Ticks per beat.
- * @returns {Array} Preprocessed tempo map.
+ * @param tempoMap - Raw or preprocessed tempo map.
+ * @param tpb - Ticks per beat.
+ * @returns Preprocessed tempo map.
  */
 const ensureProcessedTempoMap = (
   tempoMap: (TempoMapEntry | ProcessedTempoMapEntry)[] | undefined,
@@ -170,11 +170,11 @@ const ensureProcessedTempoMap = (
 
 /**
  * Calculates the time for a given tick count using the song's tempo map.
- * @param {number} ticks - The MIDI tick timestamp.
- * @param {number} tpb - Ticks per beat.
- * @param {Array} tempoMap - Array of tempo changes [{ tick, usPerBeat }].
- * @param {string} [unit='ms'] - Output unit: 'ms' (milliseconds) or 's' (seconds).
- * @returns {number} Time in the specified unit.
+ * @param ticks - The MIDI tick timestamp.
+ * @param tpb - Ticks per beat.
+ * @param tempoMap - Array of tempo changes [`tick, usPerBeat`].
+ * @param unit - Output unit: 'ms' (milliseconds) or 's' (seconds). Defaults to `'ms'`.
+ * @returns Time in the specified unit.
  */
 export const calculateTimeFromTicks = (
   ticks: number,
@@ -197,11 +197,11 @@ export const calculateTimeFromTicks = (
 /**
  * Parses raw song notes into game notes.
  * Applies a 1-in-4 filter to reduce density and ensures single-lane gameplay.
- * @param {object} song - The song object containing notes and metadata.
- * @param {number} [leadIn=2000] - Lead-in time in milliseconds.
- * @param {object} [options={}] - Options object.
- * @param {Function} [options.onWarn] - Callback for warnings (e.g. unknown lanes).
- * @returns {Array} Array of note objects formatted for the game loop.
+ * @param song - The song object containing notes and metadata.
+ * @param leadIn - Lead-in time in milliseconds. Defaults to `2000`.
+ * @param options - Options object. Defaults to `{}`.
+ * - `options.onWarn` - Optional. Callback for warnings (e.g. unknown lanes).
+ * @returns Array of note objects formatted for the game loop.
  */
 export const parseSongNotes = (
   song: Song,
@@ -314,11 +314,11 @@ export const parseSongNotes = (
  * Checks if a note is hit within the window.
  * Uses binary search to narrow the candidate range (O(log n + k) where
  * k = notes inside the time window), instead of scanning every note.
- * @param {Array} notes - Array of note objects sorted by time.
- * @param {number} laneIndex - The lane being triggered.
- * @param {number} elapsed - Current game time in ms.
- * @param {number} hitWindow - Allowed deviation in ms.
- * @returns {object|null} The hit note or null.
+ * @param notes - Array of note objects sorted by time.
+ * @param laneIndex - The lane being triggered.
+ * @param elapsed - Current game time in ms.
+ * @param hitWindow - Allowed deviation in ms.
+ * @returns The hit note or null.
  */
 export const checkHit = (
   notes: ParsedGameNote[],

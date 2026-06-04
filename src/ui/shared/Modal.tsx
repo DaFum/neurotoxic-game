@@ -1,6 +1,6 @@
 /**
  * Modal - A shared overlay component.
- * @module Modal
+ * Module: `Modal`.
  */
 
 import { useEffect, useId, useRef } from 'react'
@@ -11,13 +11,13 @@ import { Tooltip } from './Tooltip'
 
 /**
  * Modal - A shared overlay component.
- * @param {Object} props
- * @param {boolean} props.isOpen - Whether the modal is visible.
- * @param {Function} props.onClose - Callback to close the modal.
- * @param {string} [props.title] - Optional title.
- * @param {React.ReactNode} props.children - Content.
- * @param {string} [props.contentClassName] - Additional CSS classes for the inner content wrapper (defaults to flex-1 min-h-0 flex flex-col max-h-[calc(100svh-3rem)] sm:max-h-[calc(100svh-4rem)] overflow-y-auto overflow-x-hidden).
- * @param {string} [props.className] - Additional CSS classes for the dialog wrapper (defaults to max-w-md).
+ * @param props - Component props.
+ * - `props.isOpen` - Whether the modal is visible.
+ * - `props.onClose` - Callback to close the modal.
+ * - `props.title` - Optional title.
+ * - `props.children` - Content.
+ * - `props.contentClassName` - Optional. Additional CSS classes for the inner content wrapper (defaults to flex-1 min-h-0 flex flex-col max-h-[calc(100svh-3rem)] sm:max-h-[calc(100svh-4rem)] overflow-y-auto overflow-x-hidden).
+ * - `props.className` - Optional. Additional CSS classes for the dialog wrapper (defaults to max-w-md).
  */
 type ModalProps = {
   isOpen: boolean

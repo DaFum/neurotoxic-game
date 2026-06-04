@@ -57,9 +57,9 @@ export const handleSetSetlist = (
 
 /**
  * Handles gig modifier updates
- * @param {Object} state - Current state
- * @param {Object|Function} payload - Modifiers update
- * @returns {Object} Updated state
+ * @param state - Current state
+ * @param payload - Modifiers update
+ * @returns Updated state
  */
 export const handleSetGigModifiers = (
   state: GameState,

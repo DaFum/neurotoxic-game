@@ -49,11 +49,11 @@ const getLeaderboardSyncEnabledFlag = () => {
 
 /**
  * Validates if the player state is ready for leaderboard sync.
- * @param {string} playerId - The player's ID.
- * @param {string} playerName - The player's name.
- * @param {number} day - The current game day.
- * @param {number} money - The player's current money.
- * @returns {boolean} True if valid.
+ * @param playerId - The player's ID.
+ * @param playerName - The player's name.
+ * @param day - The current game day.
+ * @param money - The player's current money.
+ * @returns True if valid.
  */
 const isValidForSync = (
   playerId: string | null | undefined,
@@ -75,8 +75,8 @@ const isValidForSync = (
 
 /**
  * Calculates the total followers from the social state.
- * @param {object} social - The social state object.
- * @returns {number} The total sum of followers.
+ * @param social - The social state object.
+ * @returns The total sum of followers.
  */
 const calculateTotalFollowers = (social: GameState['social']) => {
   return (
@@ -89,16 +89,16 @@ const calculateTotalFollowers = (social: GameState['social']) => {
 
 /**
  * Creates the payload to be sent to the leaderboard API.
- * @param {string} playerId - The player's ID.
- * @param {string} playerName - The player's name.
- * @param {number} money - The player's money.
- * @param {number} day - The current game day.
- * @param {number} fame - The player's fame.
- * @param {number} totalDistance - The total distance traveled.
- * @param {number} conflictsResolved - The total conflicts resolved.
- * @param {number} stageDives - The total stage dives.
- * @param {number} totalFollowers - The calculated total followers.
- * @returns {object} The payload object.
+ * @param playerId - The player's ID.
+ * @param playerName - The player's name.
+ * @param money - The player's money.
+ * @param day - The current game day.
+ * @param fame - The player's fame.
+ * @param totalDistance - The total distance traveled.
+ * @param conflictsResolved - The total conflicts resolved.
+ * @param stageDives - The total stage dives.
+ * @param totalFollowers - The calculated total followers.
+ * @returns The payload object.
  */
 const createSyncPayload = (
   playerId: string,
@@ -126,8 +126,8 @@ const createSyncPayload = (
 
 /**
  * Sends the payload to the leaderboard API.
- * @param {object} payload - The data to sync.
- * @returns {Promise<boolean>} true when synced; false when intentionally skipped.
+ * @param payload - The data to sync.
+ * @returns true when synced; false when intentionally skipped.
  */
 const syncLeaderboardStats = async (payload: LeaderboardStatsPayload) => {
   if (!getLeaderboardSyncEnabledFlag() || leaderboardStatsEndpointUnavailable) {
@@ -161,7 +161,7 @@ const syncLeaderboardStats = async (payload: LeaderboardStatsPayload) => {
 
 /**
  * Hook to sync player stats to the global leaderboards.
- * @param {object} state - The current game state.
+ * @param state - The current game state.
  */
 export const useLeaderboardSync = (state: GameState): void => {
   const { playerId, playerName, money, day, fame, stats } = state.player

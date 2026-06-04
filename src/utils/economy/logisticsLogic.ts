@@ -14,10 +14,14 @@ import {
 import type { MapPoint } from './types'
 
 /**
- * Calculates distance between two nodes or a node and a fallback point.
- * @param {object} nodeA - The target node.
- * @param {object} [nodeB=null] - The source node.
- * @returns {number} The calculated distance.
+ * Calculates map travel distance between two node-like values.
+ *
+ * Reads top-level coordinates first, then legacy `venue` coordinates, and
+ * falls back to the map center when coordinates are missing.
+ *
+ * @param nodeA - Target node-like value.
+ * @param nodeB - Source node-like value. Defaults to `null`.
+ * @returns Distance used by travel and logistics cost formulas.
  */
 export const calculateDistance = (nodeA: unknown, nodeB: unknown = null) => {
   const pointA = (nodeA && typeof nodeA === 'object' ? nodeA : {}) as MapPoint
@@ -36,11 +40,15 @@ export const calculateDistance = (nodeA: unknown, nodeB: unknown = null) => {
 }
 
 /**
- * Calculates fuel consumption and cost based on distance and player upgrades.
- * @param {number} dist - The distance in km.
- * @param {object} [playerState=null] - Optional player state for upgrade checks.
- * @param {object} [bandState=null] - Optional band state for trait checks.
- * @returns {object} { fuelLiters, fuelCost }
+ * Calculates van fuel consumption and equivalent fuel price for a trip.
+ *
+ * Applies van upgrades, band traits, and asset fuel modifiers.
+ *
+ * @param dist - Distance in kilometers.
+ * @param playerState - Optional player state for upgrade checks. Defaults to `null`.
+ * @param bandState - Optional band state for trait checks. Defaults to `null`.
+ * @param assetModifiers - Asset modifiers that adjust fuel usage. Defaults to neutral modifiers.
+ * @returns Fuel liters consumed and fuel price for that usage.
  */
 export const calculateFuelCost = (
   dist: number,
@@ -77,12 +85,15 @@ export const calculateFuelCost = (
 }
 
 /**
- * Calculates the guaranteed daily cost for the player, including lifestyle inflation
- * and potential offsets from social media revenue.
- * @param {object} player - Player state containing fame level.
- * @param {object} band - Band state containing members.
- * @param {object} [social={}] - Social state containing YouTube followers.
- * @returns {number} The calculated daily cost.
+ * Calculates guaranteed daily living cost before assets and liabilities.
+ *
+ * Includes fame-based lifestyle inflation and potential offsets from social
+ * media revenue.
+ *
+ * @param player - Player state containing fame level.
+ * @param band - Band state containing members.
+ * @param social - Social state containing YouTube followers. Defaults to `{}`.
+ * @returns Daily living cost before asset upkeep, asset revenue, and liability payments.
  */
 export const calculateGuaranteedDailyCost = (
   player: Pick<PlayerState, 'fameLevel'>,
@@ -105,11 +116,17 @@ export const calculateGuaranteedDailyCost = (
 }
 
 /**
- * Calculates travel expenses.
- * @param {object} node - The target node.
- * @param {object} [fromNode=null] - The source node.
- * @param {object} [playerState=null] - Optional player state for upgrade-aware costs.
- * @param {object} [bandState=null] - Optional band state for trait checks.
+ * Calculates travel distance, fuel draw, and non-fuel cash logistics cost.
+ *
+ * Fuel is returned as liters to deduct from the van tank; `totalCost` includes
+ * food and logistics only.
+ *
+ * @param node - Target node-like value.
+ * @param fromNode - Source node-like value. Defaults to `null`.
+ * @param playerState - Optional player state for upgrade-aware costs. Defaults to `null`.
+ * @param bandState - Optional band state for trait checks. Defaults to `null`.
+ * @param assetModifiers - Asset modifiers that adjust fuel usage. Defaults to neutral modifiers.
+ * @returns Travel distance, fuel liters to consume, and cash cost excluding fuel.
  */
 export const calculateTravelExpenses = (
   node: unknown,
@@ -154,18 +171,17 @@ export const calculateTravelExpenses = (
 
 /**
  * Calculates the cost to refuel the van to full capacity.
- * @param {number} currentFuel - Current fuel level.
- * @returns {number} Cost in euros.
+ *
+ * @param currentFuel - Current fuel level, clamped to the van's fuel range.
+ * @param assetModifiers - Asset modifiers that adjust fuel price. Defaults to neutral modifiers.
+ * @returns Cost in euros.
  */
 export const calculateRefuelCost = (
   currentFuel: number,
   assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS
 ) => {
   const safeFuel = clamp0to100(finiteNumberOr(currentFuel, 0))
-  const missing = Math.max(
-    0,
-    EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL - safeFuel
-  )
+  const missing = Math.max(0, EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL - safeFuel)
   return Math.ceil(
     missing *
       EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE *
@@ -177,8 +193,8 @@ export const calculateRefuelCost = (
 
 /**
  * Calculates the cost to repair the van to full condition.
- * @param {number} currentCondition - Current condition (0-100).
- * @returns {number} Cost in euros.
+ * @param currentCondition - Current condition (0-100).
+ * @returns Cost in euros.
  */
 export const calculateRepairCost = (currentCondition: number) => {
   const safeCondition = clamp0to100(finiteNumberOr(currentCondition, 0))
@@ -187,15 +203,17 @@ export const calculateRepairCost = (currentCondition: number) => {
 }
 
 /**
- * Decides whether the player should be declared bankrupt.
- * @param {unknown} newMoney - Resulting cash balance; coerced to Number and must
- *   be finite (a TypeError is thrown otherwise). Negative => immediate
- *   bankruptcy, positive => never bankrupt.
- * @param {number | null | undefined} netIncome - Latest net income; defaults to
+ * Decides whether cash and daily obligations should trigger bankruptcy.
+ *
+ * @param newMoney - Resulting cash balance; coerced to Number and must
+ *   be finite (a TypeError is thrown otherwise). Negative returns immediate
+ *   bankruptcy, positive returns never bankrupt.
+ * @param netIncome - Latest net income; defaults to
  *   0 when undefined.
- * @param {number} [totalDailyObligations=0] - Daily obligations folded into the
- *   break-even check when the balance is exactly 0.
- * @returns {boolean} True when bankruptcy should trigger.
+ * @param totalDailyObligations - Daily obligations folded into the
+ *   break-even check when the balance is exactly 0. Defaults to `0`.
+ * @returns True when bankruptcy should trigger.
+ * @throws TypeError when `newMoney` cannot be coerced to a finite number.
  */
 export const shouldTriggerBankruptcy = (
   newMoney: unknown,

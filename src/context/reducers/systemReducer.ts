@@ -1511,9 +1511,9 @@ const sanitizeQuestScopes = (
 
 /**
  * Handles game load with migration and validation
- * @param {Object} state - Current state
- * @param {Object} payload - Loaded save data
- * @returns {Object} Updated state
+ * @param state - Current state
+ * @param payload - Loaded save data
+ * @returns Updated state
  */
 export const handleLoadGame = (
   state: GameState,
@@ -1789,8 +1789,8 @@ const EFFECT_REVERTERS: Record<
 
 /**
  * Processes contraband effect expiry and reversion as a pure function.
- * @param {Object} band - The current band state
- * @returns {Object} Updated band state
+ * @param band - The current band state
+ * @returns Updated band state
  */
 const processContrabandExpiry = (band: BandState): BandState => {
   const activeEffects = band.activeContrabandEffects || []
@@ -1871,8 +1871,8 @@ const applyDailyBankruptcyCheck = (state: GameState): GameState => {
 
 /**
  * Handles day advancement
- * @param {Object} state - Current state
- * @returns {Object} Updated state
+ * @param state - Current state
+ * @returns Updated state
  */
 export const handleAdvanceDay = (
   state: GameState,
@@ -2046,9 +2046,9 @@ export const handleAdvanceDay = (
 
 /**
  * Handles adding an unlock
- * @param {Object} state - Current state
- * @param {string} unlockId - Unlock ID to add
- * @returns {Object} Updated state
+ * @param state - Current state
+ * @param unlockId - Unlock ID to add
+ * @returns Updated state
  */
 export const handleAddUnlock = (
   state: GameState,
@@ -2061,9 +2061,9 @@ export const handleAddUnlock = (
 
 /**
  * Handles setting the pendingBandHQOpen flag
- * @param {Object} state - Current state
- * @param {boolean} isOpen - new flag value
- * @returns {Object} Updated state
+ * @param state - Current state
+ * @param isOpen - new flag value
+ * @returns Updated state
  */
 export const handleSetPendingBandHQOpen = (
   state: GameState,

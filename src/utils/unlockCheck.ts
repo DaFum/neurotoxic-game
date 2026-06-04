@@ -5,7 +5,7 @@ import type { GameState } from '../types'
 /**
  * Domain logic for trait unlock evaluation.
  * Inspects game state + a context envelope and returns the
- * list of { memberId, traitId } pairs that have been earned.
+ * list of `memberId, traitId` pairs that have been earned.
  *
  * Does NOT persist anything. For persistence, see ./unlockManager.ts.
  */
@@ -34,9 +34,9 @@ const hasRelationshipBelow = (
 
 /**
  * Checks for trait unlocks based on game state changes.
- * @param {object} state - The full game state (player, band, etc.).
- * @param {object} context - Contextual data (gigStats, purchaseItem, etc.).
- * @returns {Array} List of { memberId, traitId } to unlock.
+ * @param state - The full game state (player, band, etc.).
+ * @param context - Contextual data (gigStats, purchaseItem, etc.).
+ * @returns List of `memberId, traitId` to unlock.
  */
 export const checkTraitUnlocks = (
   state: UnlockCheckState,
@@ -138,7 +138,7 @@ export const checkTraitUnlocks = (
        * Gear Nerd Unlock Logic
        * The `context.gearCount` is pre-calculated by the caller (usePurchaseLogic)
        * which filters inventory against HQ_ITEMS to ensure only GEAR/INSTRUMENT categories count.
-       * We rely on this count being >= 5.
+       * We rely on this count being at least 5.
        */
       const gearCount = typeof ctx.gearCount === 'number' ? ctx.gearCount : 0
       if ((gearCount || 0) >= 5) {

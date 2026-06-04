@@ -28,9 +28,9 @@ export const calculateTravelMinigameResult = (
 
 /**
  * Calculates effects of Roadie Minigame results.
- * @param {number} equipmentDamage - Total equipment damage.
- * @param {object} bandState - Current band traits/state used by bandHasTrait.
- * @returns {object} { stress, repairCost }
+ * @param equipmentDamage - Total equipment damage.
+ * @param bandState - Current band traits/state used by bandHasTrait.
+ * @returns `stress, repairCost`
  */
 export const calculateRoadieMinigameResult = (
   equipmentDamage: unknown,
@@ -58,9 +58,9 @@ export const calculateRoadieMinigameResult = (
 
 /**
  * Calculates outcome for Amp Calibration minigame
- * @param {number} score - 0 to 100
- * @param {Object} bandState
- * @returns {Object} { stress, reward }
+ * @param score - 0 to 100
+ * @param bandState - Band state.
+ * @returns `stress, reward`
  */
 export const calculateAmpCalibrationResult = (
   score: unknown,
@@ -115,9 +115,9 @@ export const calculateAmpCalibrationResult = (
 
 /**
  * Calculates outcome for Kabelsalat minigame
- * @param {Object} results - { isPoweredOn: boolean, timeLeft: number }
- * @param {Object} bandState
- * @returns {Object} { stress, reward }
+ * @param results - `isPoweredOn: boolean, timeLeft: number`
+ * @param bandState - Band state.
+ * @returns `stress, reward`
  */
 export const calculateKabelsalatMinigameResult = (
   results: unknown,

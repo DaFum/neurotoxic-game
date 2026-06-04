@@ -1,3 +1,6 @@
+/**
+ * One row in an income or expense financial breakdown.
+ */
 export interface FinancialBreakdownItem {
   labelKey: string
   value: number
@@ -5,6 +8,9 @@ export interface FinancialBreakdownItem {
   detailParams?: Record<string, unknown>
 }
 
+/**
+ * Complete post-gig financial summary.
+ */
 export interface PostGigFinancials {
   income: { total: number; breakdown: FinancialBreakdownItem[] }
   expenses: { total: number; breakdown: FinancialBreakdownItem[] }
@@ -12,13 +18,12 @@ export interface PostGigFinancials {
   soldMerch?: Record<string, number>
 }
 
-import type {
-  PlayerState,
-  Venue,
-  GigModifiers
-} from '.'
+import type { PlayerState, Venue, GigModifiers } from '.'
 import type { CityTraitState } from './game'
 
+/**
+ * Minimal gig venue data required by economy calculations.
+ */
 export type GigEconomyData = Partial<
   Pick<Venue, 'capacity' | 'diff' | 'difficulty' | 'name'>
 > & {
@@ -27,6 +32,9 @@ export type GigEconomyData = Partial<
   [key: string]: unknown
 }
 
+/**
+ * Game context inputs consumed by gig economy calculations.
+ */
 export type EconomyContext = {
   daysSinceLastGig?: number
   lastGigDifficulty?: number
@@ -48,12 +56,18 @@ export type EconomyContext = {
   [key: string]: unknown
 }
 
+/**
+ * Performance statistics used by economy and post-gig utilities.
+ */
 export type GigStatsLike = {
   misses?: number
   peakHype?: number
   [key: string]: unknown
 }
 
+/**
+ * Inventory shape required for merch and economy calculations.
+ */
 export type BandInventoryLike = {
   shirts?: number
   hoodies?: number
@@ -63,6 +77,9 @@ export type BandInventoryLike = {
   [key: string]: unknown
 }
 
+/**
+ * Map coordinate and optional venue reference used by economy context.
+ */
 export type MapPoint = {
   x?: number
   y?: number
@@ -73,6 +90,9 @@ export type MapPoint = {
   [key: string]: unknown
 }
 
+/**
+ * Parameters passed to gig financial calculation helpers.
+ */
 export type GigFinancialParams = {
   gigData: GigEconomyData
   performanceScore: number
@@ -83,6 +103,9 @@ export type GigFinancialParams = {
   context?: EconomyContext
 }
 
+/**
+ * Kabelsalat minigame results that affect gig finances.
+ */
 export type KabelsalatResults = {
   isPoweredOn?: boolean
   timeLeft?: number

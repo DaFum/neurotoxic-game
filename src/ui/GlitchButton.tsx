@@ -14,13 +14,13 @@ type GlitchButtonProps = Omit<ComponentPropsWithoutRef<'button'>, 'size'> & {
 
 /**
  * A stylized button component with glitch and hover effects.
- * @param {object} props
- * @param {Function} props.onClick - Click handler.
- * @param {React.ReactNode} props.children - Button content.
- * @param {string} [props.className] - Additional classes.
- * @param {boolean} [props.disabled] - Disabled state.
- * @param {string} [props.size] - Button size ('sm' | 'lg').
- * @param {boolean} [props.isLoading] - Loading state.
+ * @param props - Component props.
+ * - `props.onClick` - Click handler.
+ * - `props.children` - Button content.
+ * - `props.className` - Optional. Additional classes.
+ * - `props.disabled` - Optional. Disabled state.
+ * - `props.size` - Optional. Button size ('sm' | 'lg').
+ * - `props.isLoading` - Optional. Loading state.
  */
 export const GlitchButton = ({
   onClick,
