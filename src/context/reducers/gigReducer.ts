@@ -7,7 +7,7 @@ import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks } from '../../utils/traitUtils'
 import { DEFAULT_GIG_MODIFIERS } from '../initialState'
 import { GAME_PHASES } from '../gameConstants'
-import { isForbiddenKey } from '../../utils/gameStateUtils'
+import { isForbiddenKey, finiteNumberOr } from '../../utils/gameStateUtils'
 import { handleAddVenueBlacklist } from './socialReducer'
 import { QuestLifecycle } from '../../domain/questLifecycle'
 import { QUEST_PROVE_YOURSELF } from '../../data/questsConstants'
@@ -131,7 +131,32 @@ export const handleSetLastGigStats = (
     }
   }
 
-  const safePayload = payload
+  const safePayload = {
+    ...payload,
+    // Only re-clamp numeric fields that are present so the stored stats never
+    // gain explicit `undefined` keys.
+    ...(payload.score !== undefined && {
+      score: finiteNumberOr(payload.score, 0)
+    }),
+    ...(payload.misses !== undefined && {
+      misses: finiteNumberOr(payload.misses, 0)
+    }),
+    ...(payload.accuracy !== undefined && {
+      accuracy: finiteNumberOr(payload.accuracy, 0)
+    }),
+    ...(payload.combo !== undefined && {
+      combo: finiteNumberOr(payload.combo, 0)
+    }),
+    ...(payload.health !== undefined && {
+      health: finiteNumberOr(payload.health, 0)
+    }),
+    ...(payload.overload !== undefined && {
+      overload: finiteNumberOr(payload.overload, 0)
+    }),
+    ...(payload.maxCombo !== undefined && {
+      maxCombo: finiteNumberOr(payload.maxCombo, 0)
+    })
+  }
   // Prevent trait unlocks during practice mode
   if (state.currentGig?.isPractice) {
     return {
@@ -154,7 +179,7 @@ export const handleSetLastGigStats = (
     reputationByVenue: { ...state.reputationByVenue }
   }
 
-  const score = typeof safePayload.score === 'number' ? safePayload.score : 0
+  const score = finiteNumberOr(safePayload.score, 0)
   const location = state.player?.location || 'Unknown'
   const venueId = state.currentGig?.id ?? ''
   const capacity =

@@ -581,7 +581,7 @@ test('calculateTravelExpenses returns correct cost structure', () => {
   const node = { venue: { x: 50, y: 50, name: 'Center' } }
   // Relative to center (default fromNode):
   // dist = 20 (base minimum)
-  // fuelLiters = 2.4 (reported separately)
+  // fuelLiters = 2.4 (paid via the van tank, not as a money cost)
   // foodCost = 24 (3 * 8)
   // logisticsCost = 18 base + 0 distance + 0 fame + 0 cash reserve = 18
   // totalCost = food + logistics = 42

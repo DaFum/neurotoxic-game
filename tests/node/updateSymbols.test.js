@@ -211,12 +211,12 @@ test('local symbols include signatures, structure, docs, graph, location, and fr
   )
 
   const calculateBarCut = ks.calculateBarCut.find(
-    entry => entry.path === 'src/utils/economyEngine.ts'
+    entry => entry.path === 'src/utils/economy/gigLogic.ts'
   )
   assert.ok(
     calculateBarCut.referencedByLocal.some(
       reference =>
-        reference.path === 'src/utils/economyEngine.ts' &&
+        reference.path === 'src/utils/economy/gigLogic.ts' &&
         reference.symbol === 'calculateGigFinancials'
     ),
     'same-file exported helper references should expose local reverse references'
@@ -372,7 +372,7 @@ test('local symbols expose generics, async, heritage, and literal values', () =>
   )
 
   const modifierCosts = ks.MODIFIER_COSTS.find(
-    entry => entry.path === 'src/utils/economyEngine.ts'
+    entry => entry.path === 'src/utils/economy/constants.ts'
   )
   assert.deepEqual(
     modifierCosts.literalKeys,

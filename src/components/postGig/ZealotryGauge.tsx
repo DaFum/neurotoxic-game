@@ -2,7 +2,7 @@ import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ZEALOTRY_PROMO_THRESHOLD } from '../../utils/economyEngine'
 import { clampZealotry } from '../../utils/gameStateUtils'
-import { IMG_PROMPTS, resolveGenImageUrl } from '../../utils/imageGen'
+import { IMG_PROMPTS } from '../../utils/imageGen'
 import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 
 type ZealotryGaugeProps = { zealotryLevel?: number }
@@ -22,8 +22,8 @@ export const ZealotryGauge = memo(
               defaultValue: 'Zealotry Cult'
             })}
             aspectRatio='1:1'
-            className='w-full h-full border-none mix-blend-screen opacity-80'
             variant='inline'
+            className='w-full h-full object-cover mix-blend-screen opacity-80 !border-0 !shadow-none'
           />
         </div>
         <div className='w-full flex-1 flex flex-col'>

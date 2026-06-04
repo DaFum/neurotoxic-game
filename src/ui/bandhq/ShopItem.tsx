@@ -2,9 +2,7 @@ import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { CatalogItem } from '../../types/components'
 import {
-  IMG_PROMPTS,
-  resolveGenImageUrl,
-  getGeneratedImageFallbackUrl
+  IMG_PROMPTS
 } from '../../utils/imageGen'
 import { getPrimaryEffect } from '../../utils/purchaseLogicUtils'
 import { formatCurrency } from '../../utils/numberUtils'
@@ -92,7 +90,7 @@ export const ShopItem = React.memo(
               prompt={sanitizedPrompt}
               alt=''
               aspectRatio='1:1'
-              className='w-12 h-12 shrink-0 border-ash-gray'
+              className='w-12 h-12 shrink-0 object-contain bg-void-black !border-2 !border-ash-gray !shadow-none'
               variant='inline'
             />
             <h4 className='font-bold text-toxic-green leading-tight font-mono uppercase'>

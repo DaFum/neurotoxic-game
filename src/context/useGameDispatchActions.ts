@@ -15,6 +15,7 @@ import type {
   UpdatePlayerPayload,
   GamePhase
 } from '../types'
+import { ActionTypes } from './actionTypes'
 import { GAME_PHASES, PRACTICE_RETURN_SCENES } from './gameConstants'
 import { logger, isValidLogLevel } from '../utils/logger'
 import {
@@ -668,9 +669,18 @@ export function useGameDispatchActions({
   // the snapshot used for validation matches the one the reducer sees.
   const purchaseChassis = useCallback(
     (input: Parameters<typeof purchaseChassisAction>[0]) => {
-      dispatch(purchaseChassisAction(input, stateRef.current))
+      const action = purchaseChassisAction(input, stateRef.current)
+      if (action.type === ActionTypes.PURCHASE_CHASSIS_FAILED) {
+        addToast(
+          tRef.current(
+            `assets:purchaseFailed.${action.payload.reason.toLowerCase()}`
+          ),
+          'error'
+        )
+      }
+      dispatch(action)
     },
-    [dispatch, stateRef]
+    [dispatch, stateRef, addToast, tRef]
   )
   const upgradeChassisTier = useCallback(
     (assetId: string, targetTier: import('../types/assets').ChassisTier) => {
@@ -701,17 +711,37 @@ export function useGameDispatchActions({
       liabilityId: string,
       loanProfileId: import('../utils/loanProfiles').LoanProfileId
     ) => {
-      dispatch(
-        refinanceLiabilityAction(liabilityId, loanProfileId, stateRef.current)
+      const action = refinanceLiabilityAction(
+        liabilityId,
+        loanProfileId,
+        stateRef.current
       )
+      if (action.type === ActionTypes.REFINANCE_LIABILITY_FAILED) {
+        addToast(
+          tRef.current(
+            `assets:refinanceFailed.${action.payload.reason.toLowerCase()}`
+          ),
+          'error'
+        )
+      }
+      dispatch(action)
     },
-    [dispatch, stateRef]
+    [dispatch, stateRef, addToast, tRef]
   )
   const installModule = useCallback(
     (input: Parameters<typeof installModuleAction>[0]) => {
-      dispatch(installModuleAction(input, stateRef.current))
+      const action = installModuleAction(input, stateRef.current)
+      if (action.type === ActionTypes.INSTALL_MODULE_FAILED) {
+        addToast(
+          tRef.current(
+            `assets:installFailed.${action.payload.reason.toLowerCase()}`
+          ),
+          'error'
+        )
+      }
+      dispatch(action)
     },
-    [dispatch, stateRef]
+    [dispatch, stateRef, addToast, tRef]
   )
   const removeModule = useCallback(
     (assetId: string, slotId: string) => {

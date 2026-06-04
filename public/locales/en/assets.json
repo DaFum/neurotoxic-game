@@ -3,7 +3,7 @@
   "scene.subtitle": "Long-term assets and finances",
   "scene.placeholder": "Select a section to manage.",
   "scene.noSectionRegistered": "This section is not yet available.",
-  "scene.back": "\u2190 Back",
+  "scene.back": "← Back",
   "section.tourbus.title": "Tourbus",
   "section.tourbus.description": "Your rolling stage",
   "section.studio.title": "Studio",
@@ -295,5 +295,11 @@
   "chassisAcquisition.loanProfile": "Loan profile",
   "crowdfund.days": "Days",
   "crowdfund.target": "Target",
-  "crowdfund.chance": "% chance"
+  "crowdfund.chance": "% chance",
+  "refinanceFailed.unknown_liability": "Unknown liability.",
+  "refinanceFailed.unknown_kind_or_tier": "Asset configuration not available.",
+  "refinanceFailed.loan_profile_ineligible": "You don't meet the requirements for this loan profile.",
+  "refinanceFailed.insufficient_funds": "Not enough money.",
+  "refinanceFailed.loan_in_default": "Loan is already in default.",
+  "purchaseFailed.unknown_flavor": "Unknown asset style."
 }
