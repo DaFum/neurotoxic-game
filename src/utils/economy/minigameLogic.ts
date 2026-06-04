@@ -2,6 +2,13 @@ import { clamp0to100, finiteNumberOr } from '../gameStateUtils'
 import { bandHasTrait } from '../traitUtils'
 import type { BandState } from '../../types'
 
+/**
+ * Converts Tourbus minigame damage and pickups into travel rewards.
+ *
+ * @param damageTaken - Raw obstacle damage; non-finite values are treated as zero.
+ * @param itemsCollected - Collected item ids from the minigame run.
+ * @returns Condition loss, fuel bonus, and void hazard hit count.
+ */
 export const calculateTravelMinigameResult = (
   damageTaken: unknown,
   itemsCollected: unknown
@@ -30,7 +37,8 @@ export const calculateTravelMinigameResult = (
  * Calculates effects of Roadie Minigame results.
  * @param equipmentDamage - Total equipment damage.
  * @param bandState - Current band traits/state used by bandHasTrait.
- * @returns `stress, repairCost`
+ * @param contrabandDelivered - Count of contraband deliveries completed.
+ * @returns Stress, repair cost, and contraband payout bonus.
  */
 export const calculateRoadieMinigameResult = (
   equipmentDamage: unknown,
@@ -57,10 +65,14 @@ export const calculateRoadieMinigameResult = (
 }
 
 /**
- * Calculates outcome for Amp Calibration minigame
- * @param score - 0 to 100
- * @param bandState - Band state.
- * @returns `stress, reward`
+ * Calculates outcome for Amp Calibration minigame.
+ *
+ * @param score - Calibration score from 0 to 100.
+ * @param bandState - Band traits/state used for reward modifiers.
+ * @param voidResonance - Cleared void resonance converted into bonus reward.
+ * @param purgesUsed - Number of neurotoxic purges used during calibration.
+ * @param hijacksOverridden - Number of Kranker Schrank hijacks overridden.
+ * @returns Stress and reward deltas from the minigame.
  */
 export const calculateAmpCalibrationResult = (
   score: unknown,
@@ -114,10 +126,11 @@ export const calculateAmpCalibrationResult = (
 }
 
 /**
- * Calculates outcome for Kabelsalat minigame
- * @param results - `isPoweredOn: boolean, timeLeft: number`
- * @param bandState - Band state.
- * @returns `stress, reward`
+ * Calculates outcome for Kabelsalat minigame.
+ *
+ * @param results - Raw minigame result object with power, timer, and purge fields.
+ * @param bandState - Band traits/state used for reward modifiers.
+ * @returns Stress and reward deltas from the minigame.
  */
 export const calculateKabelsalatMinigameResult = (
   results: unknown,

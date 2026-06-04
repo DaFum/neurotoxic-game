@@ -6,9 +6,7 @@ import { useTranslation } from 'react-i18next'
 
 import { GlitchButton } from './GlitchButton'
 import { logger } from '../utils/logger'
-import {
-  IMG_PROMPTS
-} from '../utils/imageGen'
+import { IMG_PROMPTS } from '../utils/imageGen'
 
 /**
  * Contraband Stash Modal Component
@@ -228,6 +226,11 @@ const StashCard = ({ item, selectedMember, onUseItem, t }: StashCardProps) => {
   )
 }
 
+/**
+ * Renders the Contraband Stash view from stash, members, selectedMember, setSelectedMember, handleUseItem, and onClose.
+ * @param props - Stash entries, member selection state, item-use handler, and close handler.
+ * @returns The rendered Contraband Stash UI.
+ */
 export const ContrabandStash = ({
   stash = [],
   members = [],

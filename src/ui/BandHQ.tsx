@@ -9,11 +9,19 @@ import { BandHQContentArea } from './bandhq/BandHQContentArea.tsx'
 
 const VOID_TRADER_CONTROVERSY_THRESHOLD = 30
 
+/**
+ * Props for the Band HQ component.
+ */
 export interface BandHQProps {
   onClose: (e?: React.MouseEvent | React.KeyboardEvent | Event) => void
   className?: string
 }
 
+/**
+ * Renders the Band HQ view from onClose and className.
+ * @param props - Close handler and optional wrapper class for the Band HQ modal.
+ * @returns The rendered Band HQ UI.
+ */
 export const BandHQ = ({ onClose, className = '' }: BandHQProps) => {
   const { t } = useTranslation()
   const isOnline = useNetworkStatus()

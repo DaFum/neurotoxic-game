@@ -8,6 +8,11 @@ interface MainMenuSecondaryButtonsProps {
   setShowFeatures: (show: boolean) => void
 }
 
+/**
+ * Renders the Main Menu Secondary Buttons scene from setShowSocials, handleCredits, and setShowFeatures.
+ * @param props - Callbacks that open socials, credits, and feature panels.
+ * @returns The rendered Main Menu Secondary Buttons UI.
+ */
 export const MainMenuSecondaryButtons = ({
   setShowSocials,
   handleCredits,

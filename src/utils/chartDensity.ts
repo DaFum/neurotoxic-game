@@ -2,9 +2,15 @@ import { buildMidiTrackEvents } from './audio/midiUtils'
 import { isFiniteNumber } from './finiteNumber'
 import type { Song } from '../types/audio'
 
+/**
+ * Aggregated note density for one chart timeline bucket.
+ */
 export interface ChartDensityBar {
+  /** Bucket start time in seconds. */
   timestamp: number
+  /** Number of note events inside the bucket. */
   count: number
+  /** Bucket density normalized against the busiest bucket. */
   intensity: number
 }
 
@@ -13,6 +19,13 @@ const toMidiTime = (tick: unknown, tpb: number, bpm: number): number | null => {
   return (tick / tpb) * (60 / bpm)
 }
 
+/**
+ * Builds normalized note-density buckets for one song chart.
+ *
+ * @param song - Song timing and note data used to derive event density.
+ * @param bucketCount - Number of timeline buckets to produce.
+ * @returns Density bars with per-bucket counts and normalized intensity.
+ */
 export const buildSongChartDensity = (
   song: Pick<Song, 'notes' | 'tpb' | 'bpm' | 'duration'>,
   bucketCount = 16
@@ -69,6 +82,13 @@ export const buildSongChartDensity = (
   }))
 }
 
+/**
+ * Combines multiple song density charts into one setlist-level density profile.
+ *
+ * @param songs - Songs whose note charts should be merged.
+ * @param bucketCount - Number of timeline buckets to compute per song.
+ * @returns Density bars using summed counts across the setlist.
+ */
 export const buildSetlistChartDensity = (
   songs: Array<Pick<Song, 'notes' | 'tpb' | 'bpm' | 'duration'>>,
   bucketCount = 16

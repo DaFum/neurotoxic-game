@@ -1,5 +1,8 @@
 import { logger } from './logger'
 
+/**
+ * Requests browser fullscreen mode for the document element when available.
+ */
 export async function enterFullscreen() {
   const element = document.documentElement
 

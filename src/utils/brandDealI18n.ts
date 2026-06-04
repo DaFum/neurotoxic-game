@@ -11,6 +11,9 @@ interface BrandDealDisplayInput {
   description?: unknown
 }
 
+/**
+ * Localized display data for an active or catalog-backed brand deal.
+ */
 export interface BrandDealDisplay {
   key: string
   name: string
@@ -37,6 +40,14 @@ const translateString = (
   return typeof translated === 'string' ? translated : defaultValue
 }
 
+/**
+ * Resolves localized brand deal display text with catalog and inline fallbacks.
+ *
+ * @param deal - Active deal-like object containing optional id, name, and description.
+ * @param t - i18n translator used for catalog-backed deals.
+ * @param index - Stable fallback index for deals without ids.
+ * @returns Display data, or null when no usable name can be derived.
+ */
 export const getTranslatedBrandDealDisplay = (
   deal: BrandDealDisplayInput,
   t: BrandDealTranslator,

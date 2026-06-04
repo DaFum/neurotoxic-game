@@ -3,6 +3,10 @@ import { Header } from './kabelsalat/components/Header.tsx'
 import { Rules } from './kabelsalat/components/Rules.tsx'
 import { KabelsalatBoard } from './kabelsalat/components/KabelsalatBoard.tsx'
 
+/**
+ * Renders the Kabelsalat Scene.
+ * @returns The rendered Kabelsalat Scene UI.
+ */
 export const KabelsalatScene = () => {
   const {
     t,

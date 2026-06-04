@@ -5,6 +5,9 @@ import { useTranslation } from 'react-i18next'
 import type { DarkWebLeakConfig } from '../types'
 import { formatCurrency } from '../utils/numberUtils'
 
+/**
+ * Props for the Dark Web Leak Modal component.
+ */
 export interface DarkWebLeakModalProps {
   config: DarkWebLeakConfig
   canLeak: boolean
@@ -13,6 +16,11 @@ export interface DarkWebLeakModalProps {
   hasLeakedToday: boolean
 }
 
+/**
+ * Renders the Dark Web Leak Modal view from config, canLeak, onConfirm, onCancel, and hasLeakedToday.
+ * @param props - Leak configuration, availability state, confirm/cancel handlers, and daily-use state.
+ * @returns The rendered Dark Web Leak Modal UI.
+ */
 export const DarkWebLeakModal = ({
   config,
   canLeak,

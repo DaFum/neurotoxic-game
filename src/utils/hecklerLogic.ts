@@ -1,13 +1,8 @@
 import { getSafeRandom } from './crypto'
 
 /**
- * Updates the state of active projectiles.
- * @param projectiles - Current list of projectiles.
- * @param deltaMS - Time elapsed in milliseconds.
- * @param screenHeight - Height of the screen (to determine despawn).
- * @returns Updated list of projectiles.
+ * Mutable projectile spawned by the heckler overlay.
  */
-// Adaptive difficulty AI tuning based on stats
 export type Projectile = {
   id: number
   x: number
@@ -18,8 +13,17 @@ export type Projectile = {
   vr: number
   type: 'bottle' | 'tomato'
 } & Record<string, unknown>
+
+/**
+ * Reusable projectile pool for the heckler overlay.
+ */
 export type HecklerSession = { pool: Projectile[]; nextId: number }
 
+/**
+ * Creates an empty heckler projectile session.
+ *
+ * @returns Session state containing a projectile pool and id counter.
+ */
 export const createHecklerSession = (): HecklerSession => ({
   pool: [],
   nextId: 0
@@ -37,6 +41,16 @@ const SPAWN_CHANCE_CONFIG = {
   HEALTH_MEDIUM_BONUS: 0.001
 }
 
+/**
+ * Updates active projectiles, detects hits, and recycles despawned projectiles.
+ *
+ * @param session - Projectile pool session used for recycling.
+ * @param projectiles - Current active projectile list, mutated in place for compaction.
+ * @param deltaMS - Time elapsed in milliseconds.
+ * @param screenHeight - Screen height used for hit and despawn thresholds.
+ * @param onHit - Optional callback invoked when a projectile crosses the hit line.
+ * @returns The compacted active projectile list.
+ */
 export const processProjectiles = (
   session: HecklerSession,
   projectiles: Projectile[],
@@ -99,15 +113,17 @@ export const processProjectiles = (
   return projectiles
 }
 
+const MAX_PROJECTILE_POOL_SIZE = 64
+
 /**
  * Determines if a new projectile should be spawned and generates it.
+ *
+ * @param session - Projectile pool session used for ids and reuse.
  * @param stats - Game stats (health, combo).
  * @param random - Random number generator. Defaults to `getSafeRandom`.
  * @param screenWidth - Width of screen for random X position. Defaults to `1920`.
  * @returns New projectile object or null.
  */
-const MAX_PROJECTILE_POOL_SIZE = 64
-
 export const trySpawnProjectile = (
   session: HecklerSession,
   stats: { combo?: number; health?: number },

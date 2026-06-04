@@ -63,13 +63,17 @@ let cachedVenuesLength: number = -1
 const getVenueCoord = (venue: Venue, axis: 'x' | 'y', fallback: number) =>
   finiteNumberOr(venue[axis], fallback)
 
+const warnedMalformedVenueIds = new Set<string>()
 /**
  * Derives the city key from a venue ID (e.g. 'berlin_so36' → 'berlin').
+ *
  * Returns '' when the ID has no underscore; callers must guard against the
  * empty string. In dev builds a malformed non-empty ID emits a warning so
  * legacy/typo'd venue IDs surface rather than silently disabling city intel.
+ *
+ * @param venueId - Canonical venue id containing a city prefix.
+ * @returns Prefix before the first underscore, or an empty string for malformed ids.
  */
-const warnedMalformedVenueIds = new Set<string>()
 export const getCityKeyFromVenueId = (venueId: string): string => {
   const idx = venueId.indexOf('_')
   if (idx === -1) {
@@ -120,6 +124,9 @@ const hashCityKey = (cityKey: string): number => {
 /**
  * Deterministically derive city traits for a given city key. Used to backfill
  * `cityStates` for saved maps that predate the city intel system.
+ *
+ * @param cityKey - City key extracted from a venue id.
+ * @returns Deterministic city trait profile for genre bias, attention span, and spending.
  */
 export const deriveCityTraits = (
   cityKey: string

@@ -4,6 +4,13 @@ import type { TFunction } from 'i18next'
 import { handleError } from '../../../utils/errorHandler'
 import { audioService } from '../../../utils/audio/audioEngine'
 
+/**
+ * Creates the fire-and-forget audio initialization handler for the main menu.
+ * @param isMountedRef - Mount-state ref used to avoid side effects after unmount.
+ * @param addToast - Toast callback used to report user-facing failures.
+ * @param tRef - Translation callback ref used by delayed effects.
+ * @returns Audio initialization callback.
+ */
 export const useMainMenuAudio = (
   isMountedRef: MutableRefObject<boolean>,
   addToast: (message: string, type?: 'info' | 'error' | 'success') => void,

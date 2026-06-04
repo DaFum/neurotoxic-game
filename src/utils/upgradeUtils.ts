@@ -1,12 +1,3 @@
-/**
- * Checks whether a specific upgrade is owned.
- * Pure function extracted from context state helpers to allow direct testing
- * and avoid recreating the closure on every render.
- *
- * @param upgrades - The player's current upgrades array.
- * @param upgradeId - The ID of the upgrade to check.
- * @returns True if the upgrade is owned.
- */
 const upgradeCache = new WeakMap<string[], Set<string>>()
 
 const getUpgradeSet = (upgrades: string[]): Set<string> => {
@@ -18,6 +9,16 @@ const getUpgradeSet = (upgrades: string[]): Set<string> => {
   return upgradeSet
 }
 
+/**
+ * Checks whether a specific upgrade is owned.
+ *
+ * Pure function extracted from context state helpers to allow direct testing
+ * and avoid recreating the closure on every render.
+ *
+ * @param upgrades - The player's current upgrades array.
+ * @param upgradeId - The ID of the upgrade to check.
+ * @returns True if the upgrade is owned.
+ */
 export const hasUpgrade = (
   upgrades: string[] | null | undefined,
   upgradeId: string

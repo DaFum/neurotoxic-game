@@ -1,6 +1,15 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import type { TFunction } from 'i18next'
 
+/**
+ * Coordinates kabelsalat Void Surge behavior.
+ * @param isPoweredOn - Whether powered on is active.
+ * @param isGameOver - Whether game over is active.
+ * @param isShocked - Whether shocked is active.
+ * @param triggerShock - Callback that activates the Kabelsalat shock state.
+ * @param t - Translation callback used for localized labels and messages.
+ * @returns State, derived values, and callbacks for kabelsalat Void Surge.
+ */
 export const useKabelsalatVoidSurge = (
   isPoweredOn: boolean,
   isGameOver: boolean,

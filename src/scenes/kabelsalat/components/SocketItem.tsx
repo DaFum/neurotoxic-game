@@ -151,5 +151,10 @@ const SocketItemComponent: FC<SocketItemProps> = ({
   )
 }
 
+/**
+ * Renders one Kabelsalat socket target.
+ * @param props - Socket identity, connection state, selected cable, translator, and socket-click handler.
+ * @returns The rendered Socket Item UI.
+ */
 export const SocketItem = React.memo(SocketItemComponent)
 SocketItem.displayName = 'SocketItem'

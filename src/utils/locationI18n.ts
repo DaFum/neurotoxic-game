@@ -9,6 +9,14 @@ const toVenueKey = (location: string) => {
   return `${VENUE_NAMESPACE}${location}${VENUE_NAME_SUFFIX}`
 }
 
+/**
+ * Resolves a venue location string through i18n with a readable fallback.
+ *
+ * @param t - Translation callback.
+ * @param location - Raw venue id, i18n key, or fallback label.
+ * @param fallback - Text returned when no location can be resolved.
+ * @returns Translated venue name or readable fallback text.
+ */
 export const translateLocation = (
   t: TranslationCallback,
   location: string,

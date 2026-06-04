@@ -11,4 +11,8 @@ import type { AssetModule } from '../types/assets'
  * and triggers all section registrations as side effects.
  */
 export const MODULE_REGISTRY: Record<string, AssetModule> = {}
+
+/**
+ * Image prompt text keyed by `AssetModule.imagePromptKey`.
+ */
 export const MODULE_PROMPTS: Record<string, string> = {}

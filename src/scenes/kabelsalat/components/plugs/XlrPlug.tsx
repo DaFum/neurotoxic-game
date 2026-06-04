@@ -1,5 +1,9 @@
 import React from 'react'
 
+/**
+ * Renders the XLR cable plug graphic.
+ * @returns The rendered Xlr Plug UI.
+ */
 export const XlrPlug = React.memo(function XlrPlug() {
   return (
     <g>

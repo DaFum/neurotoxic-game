@@ -3,6 +3,10 @@ import { loadTexture } from '../../../components/stage/stageRenderUtils'
 import { logger } from '../../../utils/logger'
 import { IMG_PROMPTS, resolveGenImageUrl } from '../../../utils/imageGen'
 
+/**
+ * Coordinates kabelsalat Background behavior.
+ * @returns State, derived values, and callbacks for kabelsalat Background.
+ */
 export const useKabelsalatBackground = () => {
   const [bgTextureUrl, setBgTextureUrl] = useState<string | null>(null)
 

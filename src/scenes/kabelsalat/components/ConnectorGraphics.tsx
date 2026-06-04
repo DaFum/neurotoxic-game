@@ -11,6 +11,9 @@ import { IecSocket } from './sockets/IecSocket.tsx'
 import { MidiSocket } from './sockets/MidiSocket.tsx'
 import type { ConnectorType } from '../../../types/kabelsalat'
 
+/**
+ * Registers Kabelsalat connector graphics by connector type.
+ */
 export const CONNECTOR_GRAPHICS: Record<
   ConnectorType,
   { Plug: React.FC; Socket: React.FC }

@@ -20,6 +20,11 @@ interface UseMainMenuStartProps {
   tRef: MutableRefObject<TFunction>
 }
 
+/**
+ * Coordinates the main-menu start flow, including identity restoration, name prompts, audio bootstrapping, and scene transition.
+ * @param params - Start-flow state setters, state actions, audio initializer, prompt setters, player-name input, toast callback, and translator ref.
+ * @returns Start-flow handlers for named and existing-player tour starts.
+ */
 export const useMainMenuStart = ({
   setIsStarting,
   resetState,

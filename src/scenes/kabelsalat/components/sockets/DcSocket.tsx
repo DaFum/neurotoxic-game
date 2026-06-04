@@ -1,5 +1,9 @@
 import React from 'react'
 
+/**
+ * Renders the DC socket graphic.
+ * @returns The rendered Dc Socket UI.
+ */
 export const DcSocket = React.memo(function DcSocket() {
   return (
     <g>

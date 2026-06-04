@@ -41,7 +41,7 @@ export {
 
 /**
  * StatBox - Displays a single statistic with an icon
- * @param props - Component props.
+ * @param props - Statistic label, display value, icon, and optional wrapper classes.
  * - `props.label` - Stat label
  * - `props.value` - Stat value
  * - `props.icon` - Icon or emoji
@@ -54,6 +54,11 @@ interface StatBoxProps {
   className?: string
 }
 
+/**
+ * Renders the Stat Box view from label, value, icon, and className.
+ * @param props - Statistic label, display value, icon, and optional wrapper classes.
+ * @returns The rendered Stat Box UI.
+ */
 export const StatBox = memo(function StatBox({
   label,
   value,
@@ -104,7 +109,7 @@ interface ProgressBarProps extends Omit<
 
 /**
  * ProgressBar - Displays a progress bar with label
- * @param props - Component props.
+ * @param props - Progress label/value/max, color class, size variant, value visibility, warning state, and wrapper attributes.
  * - `props.label` - Optional. Progress bar label (optional)
  * - `props.value` - Current value
  * - `props.max` - Maximum value
@@ -175,7 +180,7 @@ interface PanelProps {
 
 /**
  * Panel - A styled container with an optional title.
- * @param props - Component props.
+ * @param props - Display data and visual options for the panel view.
  * - `props.title` - Optional title for the panel header.
  * - `props.children` - Panel content.
  * - `props.className` - Optional. Additional CSS classes applied to the outer container.

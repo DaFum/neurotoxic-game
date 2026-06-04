@@ -20,6 +20,14 @@ type EffectDelta = {
   score?: unknown
 }
 
+/**
+ * Formats an event effect delta into localized summary text.
+ *
+ * @param rawDelta - Raw effect delta from event resolution.
+ * @param t - Translation callback used for labels and i18n keys.
+ * @param language - Active language for currency formatting.
+ * @returns Localized effect summary, or an empty string when there is no visible effect.
+ */
 export const generateEffectText = (
   rawDelta: object | null | undefined,
   t: TranslationCallback,

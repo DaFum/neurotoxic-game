@@ -7,6 +7,11 @@ type VisualSettingsProps = {
   onToggleCRT: () => void
 }
 
+/**
+ * Renders the Visual Settings view from crtEnabled and onToggleCRT.
+ * @param props - CRT display state and callback for toggling the visual filter.
+ * @returns The rendered Visual Settings UI.
+ */
 export const VisualSettings = memo(function VisualSettings({
   crtEnabled,
   onToggleCRT

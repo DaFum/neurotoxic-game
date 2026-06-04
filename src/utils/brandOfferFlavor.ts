@@ -463,6 +463,9 @@ const applyOfferVariance = (
 
 // ─── Public API ──────────────────────────────────────────────────────────
 
+/**
+ * Context used to add procedural flavor and variance to a brand deal offer.
+ */
 export interface BuildBrandOfferContext {
   tier: 0 | 1 | 2
   isStretched: boolean
@@ -471,6 +474,13 @@ export interface BuildBrandOfferContext {
   totalFollowers: number
 }
 
+/**
+ * Builds a flavored brand offer from a catalog deal and current social context.
+ *
+ * @param deal - Base brand deal definition.
+ * @param ctx - Offer tier, stretched-state flag, game state, RNG, and follower total.
+ * @returns Brand offer with varied payouts and generated flavor metadata.
+ */
 export const buildBrandOffer = (
   deal: BrandDeal,
   ctx: BuildBrandOfferContext

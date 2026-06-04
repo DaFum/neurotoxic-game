@@ -2,6 +2,10 @@ import { motion, useReducedMotion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { AnimatedDivider, AnimatedSubtitle } from '../../ui/shared'
 
+/**
+ * Renders the main menu title lockup.
+ * @returns The rendered Main Menu Header UI.
+ */
 export const MainMenuHeader = () => {
   const { t } = useTranslation()
   const prefersReducedMotion = useReducedMotion()

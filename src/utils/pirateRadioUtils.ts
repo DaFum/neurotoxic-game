@@ -1,6 +1,13 @@
 import { clampPlayerMoney, clampBandHarmony } from './gameStateUtils'
 import { isFiniteNumber } from './finiteNumber'
 
+/**
+ * Checks whether the pirate broadcast action has already run today.
+ *
+ * @param social - Social state slice containing the last broadcast day.
+ * @param playerDay - Current player day.
+ * @returns True when the stored broadcast day matches the current day.
+ */
 export const checkHasBroadcastedToday = (
   social: { lastPirateBroadcastDay?: unknown } | null | undefined,
   playerDay: number
@@ -9,6 +16,15 @@ export const checkHasBroadcastedToday = (
   return social.lastPirateBroadcastDay === playerDay
 }
 
+/**
+ * Validates whether the player can perform a pirate broadcast action.
+ *
+ * @param social - Social state slice containing broadcast history.
+ * @param player - Player state slice containing current day and money.
+ * @param band - Band state slice containing harmony.
+ * @param config - Broadcast cost and harmony-cost configuration.
+ * @returns True when the action has not run today and costs can be paid.
+ */
 export const validatePirateBroadcast = (
   social: { lastPirateBroadcastDay?: unknown } | null | undefined,
   player: { day?: unknown; money?: unknown } | null | undefined,

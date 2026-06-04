@@ -9,6 +9,11 @@ interface HeaderTitleProps {
   isGameOver: boolean
 }
 
+/**
+ * Renders the Header Title scene from t, isShocked, isGameOver, and isPoweredOn.
+ * @param props - Kabelsalat translator plus shock, game-over, and powered-on state.
+ * @returns The rendered Header Title UI.
+ */
 export const HeaderTitle: FC<HeaderTitleProps> = React.memo(
   ({ t, isShocked, isGameOver, isPoweredOn }) => (
     <div>

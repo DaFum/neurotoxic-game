@@ -4,6 +4,11 @@ import { useTranslation } from 'react-i18next'
 import { Modal } from '../../ui/shared'
 import { GlitchButton } from '../../ui/GlitchButton'
 
+/**
+ * Renders the Main Menu Name Input Prompt scene from playerNameInput, setPlayerNameInput, handleNameSubmit, onClose, and inputRef.
+ * @param props - Player-name input state, submit handler, close handler, and input ref.
+ * @returns The rendered Main Menu Name Input Prompt UI.
+ */
 export const MainMenuNameInputPrompt = ({
   playerNameInput,
   setPlayerNameInput,

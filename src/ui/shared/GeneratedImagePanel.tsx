@@ -5,6 +5,9 @@ import {
   appendImageSize
 } from '../../utils/imageGen'
 
+/**
+ * Props for the Generated Image Panel component.
+ */
 export interface GeneratedImagePanelProps {
   prompt: string
   alt: string
@@ -26,6 +29,11 @@ const ASPECT_CSS: Record<
   '21:9': '21 / 9'
 }
 
+/**
+ * Renders the Generated Image Panel view from prompt, alt, aspectRatio, className, onLoad, variant, and sizeHint.
+ * @param props - Image prompt, alt text, sizing, variant, load callback, and wrapper styling.
+ * @returns The rendered Generated Image Panel UI.
+ */
 export const GeneratedImagePanel = ({
   prompt,
   alt,

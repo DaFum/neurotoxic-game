@@ -11,6 +11,11 @@ interface BrandDealsTabProps {
   social: SocialState
 }
 
+/**
+ * Renders the Brand Deals Tab view from social.
+ * @param props - Social sponsorship state shown in the brand deals tab.
+ * @returns The rendered Brand Deals Tab UI.
+ */
 export const BrandDealsTab = ({ social }: BrandDealsTabProps) => {
   const { t, i18n } = useTranslation()
   const isOnline = useNetworkStatus()

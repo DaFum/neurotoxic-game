@@ -8,6 +8,11 @@ interface PoweredOnOverlayProps {
   onAdvance: () => void
 }
 
+/**
+ * Renders the Powered On Overlay scene from t and onAdvance.
+ * @param props - Translator and continuation callback for the powered-on overlay.
+ * @returns The rendered Powered On Overlay UI.
+ */
 export const PoweredOnOverlay: FC<PoweredOnOverlayProps> = React.memo(
   ({ t, onAdvance }) => {
     return (

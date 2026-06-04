@@ -10,6 +10,9 @@ import type { LightningSeed, SocketId } from '../../types/kabelsalat'
 const PATH_OFFSET_MULTIPLIER = 1.5
 const PLUG_DEPTH = 20
 
+/**
+ * Generates deterministic lightning seed positions for cable effects.
+ */
 export const generateLightningSeeds = (): LightningSeed[] => {
   return Array.from({ length: 15 }).map(() => ({
     id: getSafeUUID(),
@@ -21,6 +24,13 @@ export const generateLightningSeeds = (): LightningSeed[] => {
   }))
 }
 
+/**
+ * Builds the messy SVG path for a cable-to-socket connection.
+ * @param cableId - Cable identifier.
+ * @param socketId - Socket identifier.
+ * @param socketOrder - Current socket render order.
+ * @returns Computed result.
+ */
 export const getMessyPath = (
   cableId: CableId,
   socketId: SocketId,

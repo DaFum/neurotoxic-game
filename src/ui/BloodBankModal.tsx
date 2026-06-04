@@ -180,6 +180,11 @@ const DonationCard = ({
   )
 }
 
+/**
+ * Renders the Blood Bank Modal view from onClose, onDonate, canDonate, canDonateMarrow, config, and marrowConfig.
+ * @param props - Donation availability, donation handlers, close handler, and blood-bank reward configuration.
+ * @returns The rendered Blood Bank Modal UI.
+ */
 export const BloodBankModal = ({
   onClose,
   onDonate,

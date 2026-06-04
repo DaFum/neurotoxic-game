@@ -1,5 +1,8 @@
 import React from 'react'
 
+/**
+ * Type contract for HQTab Def.
+ */
 export interface HQTabDef {
   id: string
   key: string
@@ -13,6 +16,11 @@ interface HQTabButtonProps {
   onClick: () => void
 }
 
+/**
+ * Renders the HQ Tab Button view from tab, isActive, label, and onClick.
+ * @param props - Tab id, active state, label, and tab selection callback.
+ * @returns The rendered HQ Tab Button UI.
+ */
 export const HQTabButton = ({
   tab,
   isActive,

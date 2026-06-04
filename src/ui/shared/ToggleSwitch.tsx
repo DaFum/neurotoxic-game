@@ -6,7 +6,7 @@ import { useGlitchPulse } from '../../hooks/useGlitchPulse'
 /**
  * ToggleSwitch - A standardized toggle switch for binary options.
  * Module: `ToggleSwitch`.
- * @param props - Component props.
+ * @param props - Toggle state, accessible label, toggle callback, and optional classes.
  * - `props.isOn` - Current state.
  * - `props.onToggle` - Callback function.
  * - `props.ariaLabel` - Accessible label.
@@ -74,5 +74,10 @@ const ToggleSwitchComponent = ({
   )
 }
 
+/**
+ * Renders an accessible binary toggle switch with glitch feedback.
+ * @param props - Toggle state, accessible label, toggle callback, and optional classes.
+ * @returns The rendered Toggle Switch UI.
+ */
 export const ToggleSwitch = memo(ToggleSwitchComponent)
 ToggleSwitch.displayName = 'ToggleSwitch'

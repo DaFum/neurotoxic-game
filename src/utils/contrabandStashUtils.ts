@@ -1,9 +1,3 @@
-/**
- * Validates if a contraband stash item can be used based on the current selection.
- * @param item - The contraband item.
- * @param selectedMember - The ID of the currently selected band member.
- * @returns Validation result `isValid, errorKey, defaultMessage`
- */
 import type { ValidationResult } from '../types/validation'
 
 type StashItemLike = {
@@ -13,6 +7,12 @@ type StashItemLike = {
   type?: string
 }
 
+/**
+ * Validates if a contraband stash item can be used based on the current selection.
+ * @param item - The contraband item.
+ * @param selectedMember - The ID of the currently selected band member.
+ * @returns Validation result `isValid, errorKey, defaultMessage`
+ */
 export const validateStashItemSelection = (
   item: StashItemLike,
   selectedMember: string | null | undefined

@@ -1,6 +1,13 @@
 import type { BandState } from '../types'
 import { isFiniteNumber } from './finiteNumber'
 
+/**
+ * Validates whether the band can pay the harmony and stamina cost for a blood-bank donation.
+ *
+ * @param band - Band state slice to validate.
+ * @param config - Donation harmony and stamina costs.
+ * @returns True when harmony is above cost and every member can survive the stamina drain.
+ */
 export const validateBloodBankDonation = (
   band: Partial<BandState> | undefined | null,
   config: { harmonyCost: number; staminaCost: number }

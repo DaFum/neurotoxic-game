@@ -78,6 +78,13 @@ export const resolveVenue = (
   return venue
 }
 
+/**
+ * Resolves travel venue input to the full venue shape required by access checks.
+ *
+ * @param venue - Venue object, venue id, or missing venue value from a map node.
+ * @param venuesMap - Precomputed venue lookup keyed by canonical venue id.
+ * @returns Resolved travel venue, or null when the venue cannot be resolved.
+ */
 export const resolveTravelVenue = (
   venue: VenueLike | string | null | undefined,
   venuesMap: VenueMap
@@ -255,6 +262,13 @@ export const checkTravelResources = (
   return { allowed: true }
 }
 
+/**
+ * Builds player and band patches applied after successful travel arrival.
+ *
+ * @param input - Travel arrival inputs containing player, band, destination,
+ * fuel cost, money cost, and active asset modifiers.
+ * @returns Player patch and optional band patch for arrival side effects.
+ */
 export const getTravelArrivalUpdates = ({
   player,
   band,

@@ -35,6 +35,10 @@ const isAbortError = (error: unknown): boolean => {
   return error instanceof DOMException && error.name === 'AbortError'
 }
 
+/**
+ * Renders leaderboard records inside Band HQ.
+ * @returns The rendered Leaderboard Tab UI.
+ */
 export const LeaderboardTab = () => {
   const { t, i18n } = useTranslation()
   const [view, setView] = useState<LeaderboardView>('BALANCE')

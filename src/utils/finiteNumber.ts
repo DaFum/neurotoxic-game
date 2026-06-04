@@ -8,5 +8,11 @@
 export const finiteNumberOr = (value: unknown, fallback: number): number =>
   typeof value === 'number' && Number.isFinite(value) ? value : fallback
 
+/**
+ * Checks whether an unknown value is a finite JavaScript number.
+ *
+ * @param value - Unknown value to inspect.
+ * @returns True when value is a number and not NaN or infinite.
+ */
 export const isFiniteNumber = (value: unknown): value is number =>
   typeof value === 'number' && Number.isFinite(value)

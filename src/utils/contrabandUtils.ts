@@ -6,8 +6,11 @@ import { secureRandom } from './crypto'
 import { finiteNumberOr } from './gameStateUtils'
 import type { Rarity } from '../types'
 
+/** Base probability for a contraband drop after travel. */
 export const DROP_BASE_CHANCE = 0.15
+/** Drop-chance bonus applied per point of band luck. */
 export const LUCK_MOD_PER_POINT = 0.005
+/** Maximum allowed contraband drop chance. */
 export const MAX_DROP_CHANCE = 0.5
 
 /**
@@ -105,6 +108,7 @@ export function pickRandomContrabandByRarity(
 /**
  * Picks a random contraband ID using the weighted rarity system.
  * @param rng - Defaults to `secureRandom`.
+ * @returns ID of picked contraband or null if no rarity pool is available.
  */
 export function pickRandomContraband(rng = secureRandom) {
   const rarity = pickRarity(rng)

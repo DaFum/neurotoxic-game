@@ -3,6 +3,14 @@ import { useGameActions } from '../../../context/GameState'
 import { GAME_PHASES } from '../../../context/gameConstants'
 import { logger } from '../../../utils/logger'
 
+/**
+ * Coordinates kabelsalat Game End behavior.
+ * @param isPoweredOn - Whether powered on is active.
+ * @param isGameOver - Whether game over is active.
+ * @param timeLeft - Time left.
+ * @param voidSurgesPurged - Void surges purged.
+ * @returns State, derived values, and callbacks for kabelsalat Game End.
+ */
 export const useKabelsalatGameEnd = (
   isPoweredOn: boolean,
   isGameOver: boolean,

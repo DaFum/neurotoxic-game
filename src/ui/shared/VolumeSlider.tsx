@@ -3,6 +3,11 @@ import type { ChangeEvent } from 'react'
 
 import { SegmentedSlider } from './SegmentedSlider'
 
+/**
+ * Renders the Volume Slider view from label, value, and onChange.
+ * @param props - Slider label, normalized volume value, and change handler.
+ * @returns The rendered Volume Slider UI.
+ */
 export const VolumeSlider = memo(function VolumeSlider({
   label,
   value,
