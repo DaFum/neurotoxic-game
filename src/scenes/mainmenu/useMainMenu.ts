@@ -7,6 +7,10 @@ import { useMainMenuAudio } from './hooks/useMainMenuAudio'
 import { useMainMenuStart } from './hooks/useMainMenuStart'
 import { useMainMenuLoad } from './hooks/useMainMenuLoad'
 
+/**
+ * Composes main-menu state, audio setup, start/load flows, and modal controls.
+ * @returns Main-menu state, prompt controls, and action handlers.
+ */
 export const useMainMenu = () => {
   const { t } = useTranslation()
   const tRef = useRef(t)

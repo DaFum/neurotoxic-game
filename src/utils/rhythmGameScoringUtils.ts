@@ -3,6 +3,9 @@
  */
 import { logger } from './logger'
 
+/**
+ * Stable lane indices used by rhythm input, note scheduling, and scoring.
+ */
 export const LANE_INDICES = {
   GUITAR: 0,
   DRUMS: 1,

@@ -7,6 +7,9 @@ import { DataManagement } from './DataManagement'
 import { LOG_LEVELS } from '../../utils/logger'
 import type { GameSettings } from '../../types'
 
+/**
+ * Props for the Settings Panel component.
+ */
 export interface SettingsPanelProps {
   settings?: Pick<GameSettings, 'crtEnabled' | 'logLevel'>
   musicVol?: number
@@ -21,6 +24,11 @@ export interface SettingsPanelProps {
   className?: string
 }
 
+/**
+ * Renders the Settings Panel view from settings, musicVol, sfxVol, isMuted, onMusicChange, onSfxChange, onToggleMute, onToggleCRT, onLogLevelChange, onDeleteSave, and className.
+ * @param props - Settings, audio state, and callbacks for updating audio, visual, log, language, and save-data controls.
+ * @returns The rendered Settings Panel UI.
+ */
 export const SettingsPanel = memo(function SettingsPanel({
   settings,
   musicVol = 0,

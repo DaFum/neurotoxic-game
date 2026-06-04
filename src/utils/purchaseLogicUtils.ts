@@ -72,6 +72,9 @@ export const getPrimaryEffect = (
 }
 
 // Pre-compute gear lookup for O(1) checks during purchases
+/**
+ * O(1) lookup of purchasable gear by item id and primary inventory key.
+ */
 export const GEAR_LOOKUP = new Map<string, PurchaseItem>()
 const allGearItems = [
   ...(HQ_ITEMS.gear || []),

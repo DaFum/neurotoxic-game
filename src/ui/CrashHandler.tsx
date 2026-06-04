@@ -92,4 +92,8 @@ class ErrorBoundaryComponent extends React.Component<
     return this.props.children
   }
 }
+/**
+ * Renders the crash fallback for uncaught UI errors.
+ * @returns The rendered Error Boundary UI.
+ */
 export const ErrorBoundary = withTranslation()(ErrorBoundaryComponent)

@@ -8,6 +8,10 @@ import { RoadieControls } from '../components/minigames/roadie/RoadieControls'
 import { useGameActions } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
 
+/**
+ * Renders the Roadie Run Scene.
+ * @returns The rendered Roadie Run Scene UI.
+ */
 export const RoadieRunScene = () => {
   const { t } = useTranslation(['ui'])
   const { uiState, gameStateRef, stats, update, actions } = useRoadieLogic()

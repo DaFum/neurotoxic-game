@@ -1,5 +1,9 @@
 import { useState, useRef, useEffect } from 'react'
 
+/**
+ * Owns transient main-menu UI state and focus refs.
+ * @returns Main-menu booleans, setters, player-name input state, and refs.
+ */
 export const useMainMenuState = () => {
   const isMountedRef = useRef(true)
   const [isStarting, setIsStarting] = useState(false)

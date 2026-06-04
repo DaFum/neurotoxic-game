@@ -4,6 +4,11 @@ interface IconProps extends SVGProps<SVGSVGElement> {
   className?: string
 }
 
+/**
+ * Renders the Razor Play Icon view from className.
+ * @param props - Optional class for the play icon.
+ * @returns The rendered Razor Play Icon UI.
+ */
 export const RazorPlayIcon = memo(function RazorPlayIcon({
   className = ''
 }: IconProps) {
@@ -54,6 +59,11 @@ export const RazorPlayIcon = memo(function RazorPlayIcon({
   )
 })
 
+/**
+ * Renders the Void Skull Icon view from className.
+ * @param props - Optional class for the skull icon.
+ * @returns The rendered Void Skull Icon UI.
+ */
 export const VoidSkullIcon = memo(function VoidSkullIcon({
   className = ''
 }: IconProps) {
@@ -140,6 +150,11 @@ const BaseIcon = memo(function BaseIcon({
   )
 })
 
+/**
+ * Renders the Bandcamp Icon view from className and props.
+ * @param props - Optional class and SVG props for the Bandcamp icon.
+ * @returns The rendered Bandcamp Icon UI.
+ */
 export const BandcampIcon = memo(function BandcampIcon({
   className = '',
   ...props
@@ -165,6 +180,11 @@ export const BandcampIcon = memo(function BandcampIcon({
   )
 })
 
+/**
+ * Renders the Insta Icon view from className and props.
+ * @param props - Optional class and SVG props for the Instagram icon.
+ * @returns The rendered Insta Icon UI.
+ */
 export const InstaIcon = memo(function InstaIcon({
   className = '',
   ...props
@@ -188,6 +208,11 @@ export const InstaIcon = memo(function InstaIcon({
   )
 })
 
+/**
+ * Renders the Tik Tok Icon view from className and props.
+ * @param props - Optional class and SVG props for the TikTok icon.
+ * @returns The rendered Tik Tok Icon UI.
+ */
 export const TikTokIcon = memo(function TikTokIcon({
   className = '',
   ...props
@@ -205,6 +230,11 @@ export const TikTokIcon = memo(function TikTokIcon({
   )
 })
 
+/**
+ * Renders the You Tube Icon view from className and props.
+ * @param props - Optional class and SVG props for the YouTube icon.
+ * @returns The rendered You Tube Icon UI.
+ */
 export const YouTubeIcon = memo(function YouTubeIcon({
   className = '',
   ...props
@@ -228,6 +258,11 @@ export const YouTubeIcon = memo(function YouTubeIcon({
   )
 })
 
+/**
+ * Renders the Blog Icon view from className and props.
+ * @param props - Optional class and SVG props for the blog icon.
+ * @returns The rendered Blog Icon UI.
+ */
 export const BlogIcon = memo(function BlogIcon({
   className = '',
   ...props
@@ -265,6 +300,11 @@ export const BlogIcon = memo(function BlogIcon({
   )
 })
 
+/**
+ * Renders the Game Icon view from className and props.
+ * @param props - Optional class and SVG props for the game icon.
+ * @returns The rendered Game Icon UI.
+ */
 export const GameIcon = memo(function GameIcon({
   className = '',
   ...props
@@ -282,6 +322,11 @@ export const GameIcon = memo(function GameIcon({
   )
 })
 
+/**
+ * Renders the UI Frame Corner view from className.
+ * @param props - Optional class for the frame-corner ornament.
+ * @returns The rendered UI Frame Corner UI.
+ */
 export const UIFrameCorner = memo(function UIFrameCorner({
   className = ''
 }: IconProps) {
@@ -313,6 +358,11 @@ export const UIFrameCorner = memo(function UIFrameCorner({
   )
 })
 
+/**
+ * Renders the Icon Close view from className.
+ * @param props - Optional class for the close icon.
+ * @returns The rendered Icon Close UI.
+ */
 export const IconClose = memo(function IconClose({
   className = 'w-6 h-6'
 }: IconProps) {

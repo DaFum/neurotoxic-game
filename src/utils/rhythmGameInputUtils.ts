@@ -1,3 +1,6 @@
+/**
+ * Minimum milliseconds between accepted lane-down inputs.
+ */
 export const DEBOUNCE_MS = 50
 
 interface LaneState {
@@ -41,13 +44,8 @@ export const canProcessInput = (
 /**
  * Processes an input event for a specific lane.
  *
- * @param params - Input parameters.
- * - `params.laneIndex` - Lane index.
- * - `params.isDown` - Whether the input is pressed.
- * - `params.now` - Current timestamp.
- * - `params.state` - Current game state.
- * - `params.lastInputTimes` - Reference object holding last input times.
- * - `params.handleHit` - Callback to handle a hit.
+ * @param params - Lane index, press state, timestamp, runtime state,
+ * last-input timestamps, and hit callback.
  */
 export const processLaneInput = ({
   laneIndex,

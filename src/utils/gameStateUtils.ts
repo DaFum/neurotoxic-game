@@ -26,6 +26,9 @@ export const clampNonNegative = (value: number): number => {
 
 /**
  * Normalizes unknown numeric input to a non-negative integer.
+ *
+ * @param value - Unknown value to coerce.
+ * @returns Non-negative integer, or 0 for non-finite input.
  */
 export const clampToNonNegativeInt = (value: unknown): number => {
   const n = Number(value)
@@ -36,6 +39,9 @@ const MAX_UNIT_RANDOM_EXCLUSIVE = 0.9999999999999999
 
 /**
  * Clamps unknown random input into the valid 0-inclusive, 1-exclusive range.
+ *
+ * @param value - Unknown random value to normalize.
+ * @returns Clamped random value, or undefined for non-finite input.
  */
 export const clampUnitRandom = (value: unknown): number | undefined => {
   const n = Number(value)
@@ -47,6 +53,9 @@ export const clampUnitRandom = (value: unknown): number | undefined => {
 
 /**
  * Checks whether an unknown value has the stash-entry shape.
+ *
+ * @param entry - Unknown value to inspect.
+ * @returns True when the value has the minimal persisted stash-entry shape.
  */
 export const isStashEntry = (entry: unknown): entry is StashEntry => {
   if (entry === null || typeof entry !== 'object') return false
@@ -119,6 +128,10 @@ export const clampMemberMood = (mood: number): number => clamp0to100(mood)
 /**
  * Maps a 0..100 percentage onto an N-step integer scale (0..steps).
  * Shared by the brutalist HUD meters which all render block-bar gauges.
+ *
+ * @param value - Percentage value in the 0..100 domain.
+ * @param steps - Number of display steps in the target scale.
+ * @returns Integer value in the range 0..steps.
  */
 export const normalizePercentageToScale = (
   value: number,
@@ -204,6 +217,9 @@ export const calculateFameGain = (
 
 /**
  * Clamps finite numeric input to an integer percentage range.
+ *
+ * @param value - Candidate percentage value.
+ * @returns Integer clamped to the range 0..100.
  */
 export const clamp0to100 = (value: number): number => {
   if (!Number.isFinite(value)) return 0
@@ -212,6 +228,9 @@ export const clamp0to100 = (value: number): number => {
 
 /**
  * Clamps finite numeric input to the reputation range.
+ *
+ * @param value - Candidate reputation value.
+ * @returns Integer clamped to the range -100..100.
  */
 export const clampReputation = (value: number): number => {
   if (!Number.isFinite(value)) return 0
@@ -223,6 +242,9 @@ export const clampReputation = (value: number): number => {
  *
  * Non-finite inputs collapse to 0. The result is kept as a floating-point
  * number to preserve sub-integer dial precision.
+ *
+ * @param value - Candidate dial value.
+ * @returns Value clamped to the amp dial range.
  */
 export const clampAmpDial = (value: number): number => {
   if (!Number.isFinite(value)) return 0
@@ -352,6 +374,9 @@ export const clampBandHarmony = (harmony: number): number => {
 export const clampLoyalty = (loyalty: number): number => clamp0to100(loyalty)
 /**
  * Clamps band stress to the canonical 0-100 range.
+ *
+ * @param stress - Candidate stress value.
+ * @returns Stress clamped to the range 0..100.
  */
 export const clampBandStress = (stress: number): number => clamp0to100(stress)
 
@@ -561,6 +586,10 @@ const isRelationshipChange = (value: unknown): value is RelationshipChange => {
 
 /**
  * Previews the effective clamped state deltas from an event delta.
+ *
+ * @param state - Lightweight state preview used as the current clamp baseline.
+ * @param delta - Event delta to preview without mutating state.
+ * @returns Effective player, band, social, flag, and score changes after clamping and filtering.
  */
 export const calculateAppliedDelta = (
   state: DeltaPreviewState,
@@ -854,6 +883,10 @@ const calculateMemberRelationshipChange = (
 
 /**
  * Applies an event delta to mutable game state while enforcing clamps.
+ *
+ * @param state - Mutable-compatible game state receiving the delta.
+ * @param delta - Event delta to apply.
+ * @returns New mutable-compatible state with filtered and clamped delta effects applied.
  */
 export const applyEventDelta = (
   state: MutableGameState,
@@ -1305,6 +1338,9 @@ type SponsorshipDealLike = {
 
 /**
  * Checks whether social state contains an unexpired sponsorship deal.
+ *
+ * @param socialState - Social state slice to inspect.
+ * @returns True when at least one sponsorship deal has remaining gigs.
  */
 export const hasActiveSponsorship = (
   socialState: { activeDeals?: unknown[] } | null | undefined
@@ -1351,6 +1387,11 @@ export { safeJsonParse }
 
 /**
  * Checks whether an event id or scoped event key is still on cooldown.
+ *
+ * @param gameState - State slice containing cooldown entries and the current day.
+ * @param eventId - Event id to check.
+ * @param contextId - Optional context suffix used for scoped cooldown keys.
+ * @returns True when a matching cooldown exists and has not expired.
  */
 export const isOnCooldown = (
   gameState: {

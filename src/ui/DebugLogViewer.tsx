@@ -148,6 +148,11 @@ const DebugLogViewerContent = ({
   )
 }
 
+/**
+ * Renders the Debug Log Viewer view from className.
+ * @param props - Display data and visual options for the debug log viewer view.
+ * @returns The rendered Debug Log Viewer UI.
+ */
 export const DebugLogViewer = ({ className = '' }: { className?: string }) => {
   const [visible, setVisible] = useState(false)
   const [filterLevel, setFilterLevel] = useState<number>(logger.minLevel)

@@ -3,11 +3,20 @@ import type { RhythmSongStatsEntry } from '../types/rhythmGame'
 import { SONGS_BY_ID } from '../data/songs'
 import { logger } from './logger'
 
+/**
+ * Per-song score payload accepted by the song leaderboard endpoint.
+ */
 export type SongStat = Pick<
   RhythmSongStatsEntry,
   'songId' | 'score' | 'accuracy'
 >
 
+/**
+ * Submits per-song leaderboard scores for the last gig.
+ *
+ * @param params - Submission context containing player identity, last gig stats,
+ * current gig, and setlist fallback data.
+ */
 export const submitLeaderboardScores = async ({
   player,
   lastGigStats,

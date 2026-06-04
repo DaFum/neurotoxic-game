@@ -13,6 +13,9 @@ import { useKabelsalatVoidSurge } from './hooks/useKabelsalatVoidSurge'
 
 import type { TFunction } from 'i18next'
 
+/**
+ * State shape for Kabelsalat.
+ */
 export interface KabelsalatState {
   t: TFunction<['ui'], undefined>
   selectedCable: CableId | null
@@ -34,6 +37,10 @@ export interface KabelsalatState {
   purgeVoidSurge: () => void
 }
 
+/**
+ * Coordinates kabelsalat State behavior.
+ * @returns State, derived values, and callbacks for kabelsalat State.
+ */
 export const useKabelsalatState = (): KabelsalatState => {
   const { t } = useTranslation(['ui'])
 

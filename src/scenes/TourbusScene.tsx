@@ -8,6 +8,10 @@ import { TourbusHUD } from '../components/minigames/tourbus/TourbusHUD'
 import { TourbusControls } from '../components/minigames/tourbus/TourbusControls'
 import { calculateTravelMinigameResult } from '../utils/economyEngine'
 
+/**
+ * Renders the Tourbus Scene.
+ * @returns The rendered Tourbus Scene UI.
+ */
 export const TourbusScene = () => {
   const { t } = useTranslation('minigame')
   const { uiState, gameStateRef, stats, update, actions, finishMinigame } =

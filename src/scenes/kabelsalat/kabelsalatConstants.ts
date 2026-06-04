@@ -1,3 +1,6 @@
+/**
+ * Cable definitions used by the Kabelsalat board.
+ */
 export const CABLES = [
   {
     id: 'midi',
@@ -41,17 +44,35 @@ export const CABLES = [
   }
 ] as const
 
+/**
+ * Type contract for Cable.
+ */
 export type Cable = (typeof CABLES)[number]
+/**
+ * Type contract for Cable Id.
+ */
 export type CableId = Cable['id']
 type CableMap = Record<CableId, Cable>
+/**
+ * Cable definitions keyed by cable id for quick lookups.
+ */
 export const CABLE_MAP = CABLES.reduce<CableMap>((acc, cable) => {
   acc[cable.id] = cable
   return acc
 }, {} as CableMap)
 
+/**
+ * Horizontal slot positions for cable and socket layout.
+ */
 export const SLOT_XS = [120, 260, 400, 540, 680]
+/**
+ * Shared vertical position for socket rendering.
+ */
 export const SOCKET_Y = 120
 
+/**
+ * Socket definitions used by the Kabelsalat board.
+ */
 export const SOCKET_DEFS = {
   mic: {
     id: 'mic',
@@ -85,6 +106,9 @@ export const SOCKET_DEFS = {
   }
 } as const
 
+/**
+ * Default socket order before shuffling.
+ */
 export const INITIAL_SOCKET_ORDER = [
   'mic',
   'amp',
@@ -92,4 +116,7 @@ export const INITIAL_SOCKET_ORDER = [
   'power',
   'synth'
 ] as const
+/**
+ * Time limit for the Kabelsalat minigame in seconds.
+ */
 export const TIME_LIMIT = 25

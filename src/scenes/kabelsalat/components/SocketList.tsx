@@ -14,6 +14,11 @@ interface SocketListProps {
   handleSocketClick: (id: SocketId) => void
 }
 
+/**
+ * Renders the Socket List scene from t, socketOrder, connections, isPowerConnected, selectedCable, isGameOver, and handleSocketClick.
+ * @param props - Translator, socket order, connection map, power state, selected cable, game-over state, and socket-click handler.
+ * @returns The rendered Socket List UI.
+ */
 export const SocketList: FC<SocketListProps> = ({
   t,
   socketOrder,

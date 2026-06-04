@@ -7,6 +7,11 @@ interface ShockOverlayProps {
   faultReason: string
 }
 
+/**
+ * Renders the Shock Overlay scene from t and faultReason.
+ * @param props - Translator and fault reason for the shock overlay.
+ * @returns The rendered Shock Overlay UI.
+ */
 export const ShockOverlay: FC<ShockOverlayProps> = React.memo(
   ({ t, faultReason }) => {
     return (

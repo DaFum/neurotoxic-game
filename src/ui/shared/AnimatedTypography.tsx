@@ -2,6 +2,11 @@ import { motion } from 'framer-motion'
 import type { HTMLMotionProps, Transition } from 'framer-motion'
 import type { ReactNode } from 'react'
 
+/**
+ * Renders the Animated Divider view from width, transition, and className.
+ * @param props - Divider width, animation transition, and optional classes.
+ * @returns The rendered Animated Divider UI.
+ */
 export const AnimatedDivider = ({
   width = '100%',
   transition,
@@ -29,6 +34,11 @@ type AnimatedSubtitleProps = {
   children: ReactNode
 }
 
+/**
+ * Renders the Animated Subtitle view from as, initial, animate, transition, className, and children.
+ * @param props - Rendered element type, animation states, transition, classes, and content.
+ * @returns The rendered Animated Subtitle UI.
+ */
 export const AnimatedSubtitle = ({
   as = 'h2',
   initial,

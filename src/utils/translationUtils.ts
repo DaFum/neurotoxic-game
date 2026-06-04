@@ -19,6 +19,13 @@ const isTranslatableKey = (key: unknown): boolean => {
   return false
 }
 
+/**
+ * Recursively translates i18n-looking string values in an event context object.
+ *
+ * @param context - Raw context value, including nested arrays or objects.
+ * @param t - Translation callback for recognized namespaced keys.
+ * @returns A sanitized copy with recognized keys translated, preserving non-object values.
+ */
 export const translateContextKeys = (
   context: unknown,
   t: (key: string) => string

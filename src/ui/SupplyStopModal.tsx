@@ -9,11 +9,19 @@ import type { PlayerPatch } from '../types/purchase'
 
 const BLACK_MARKET_FAME_LOSS = 5
 
+/**
+ * Props for the Supply Stop Modal component.
+ */
 export interface SupplyStopModalProps {
   inventory: PurchaseItem[]
   onClose: () => void
 }
 
+/**
+ * Renders the Supply Stop Modal view from inventory and onClose.
+ * @param props - Supply inventory and close handler for the supply-stop modal.
+ * @returns The rendered Supply Stop Modal UI.
+ */
 export const SupplyStopModal: React.FC<SupplyStopModalProps> = ({
   inventory,
   onClose

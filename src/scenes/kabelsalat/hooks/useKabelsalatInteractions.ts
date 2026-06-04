@@ -17,6 +17,21 @@ const isCableId = (value: string): value is CableId =>
 const isSocketId = (value: string): value is SocketId =>
   Object.hasOwn(SOCKET_DEFS, value)
 
+/**
+ * Coordinates kabelsalat Interactions behavior.
+ * @param t - Translation callback used for localized labels and messages.
+ * @param isPoweredOn - Whether powered on is active.
+ * @param isGameOver - Whether game over is active.
+ * @param isWinningRef - Ref that guards one-shot win transitions.
+ * @param selectedCable - Currently selected cable id.
+ * @param setSelectedCable - State setter for selected cable.
+ * @param connections - Current cable-to-socket connection map.
+ * @param setConnections - State setter for connections.
+ * @param isShocked - Whether shocked is active.
+ * @param setIsShocked - State setter for is shocked.
+ * @param setFaultReason - State setter for fault reason.
+ * @returns State, derived values, and callbacks for kabelsalat Interactions.
+ */
 export const useKabelsalatInteractions = (
   t: TFunction,
   isPoweredOn: boolean,

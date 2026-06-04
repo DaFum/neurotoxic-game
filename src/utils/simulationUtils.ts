@@ -589,6 +589,13 @@ const updatePassiveEffectsAndMembers = (
   }
 }
 
+/**
+ * Calculates the pure daily player, band, social, and pending-flag updates.
+ *
+ * @param currentState - Game state at the start of the day tick.
+ * @param rng - Random source used for deterministic tests and simulations.
+ * @returns Updated player, band, social slices plus pending story flags.
+ */
 export const calculateDailyUpdates = (
   currentState: GameState,
   rng: () => number = getSafeRandom

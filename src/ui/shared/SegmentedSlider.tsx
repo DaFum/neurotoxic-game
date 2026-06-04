@@ -44,6 +44,11 @@ type SegmentedSliderProps = {
   onSegmentSelect: (segment: number) => void
 }
 
+/**
+ * Renders the Segmented Slider view from label, inputValue, inputMin, inputMax, inputStep, activeSegments, segmentCount, valueLabel, onInputChange, and onSegmentSelect.
+ * @param props - Numeric input bounds, segment count, active segment count, display label, and change handlers.
+ * @returns The rendered Segmented Slider UI.
+ */
 export const SegmentedSlider = memo(function SegmentedSlider({
   label,
   inputValue,

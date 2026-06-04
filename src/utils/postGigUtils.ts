@@ -203,6 +203,9 @@ export type CalculatePostGigStateParams = {
 
 /**
  * Resolves a social post option into player, band, and social state updates.
+ *
+ * @param params - Social post context including option, player, band, social state, gig stats, and optional deterministic roll.
+ * @returns Post result plus the player, band, and social deltas needed by post-gig handlers.
  */
 export const calculatePostGigStateUpdates = (
   params: CalculatePostGigStateParams
@@ -487,6 +490,9 @@ const OPPOSING_ALIGNMENT_MAP = {
 
 /**
  * Calculates the money change from accepting a brand deal.
+ *
+ * @param params - Brand deal and current player state.
+ * @returns Next money total and the clamped applied delta.
  */
 export const getAcceptDealMoneyUpdate = ({
   deal,
@@ -512,6 +518,9 @@ export const getAcceptDealMoneyUpdate = ({
 
 /**
  * Builds the band updater for item rewards from an accepted brand deal.
+ *
+ * @param deal - Accepted brand deal that may grant an inventory item.
+ * @returns Functional band updater for the accepted deal reward.
  */
 export const getAcceptDealBandUpdateFactory = (deal: BrandDeal) => {
   return (prevBand: GameState['band']): GameState['band'] => {
@@ -525,6 +534,9 @@ export const getAcceptDealBandUpdateFactory = (deal: BrandDeal) => {
 
 /**
  * Builds the social updater for accepting a brand deal.
+ *
+ * @param deal - Accepted brand deal whose penalties, reputation, and duration should be applied.
+ * @returns Functional social updater for active deals and brand reputation.
  */
 export const getAcceptDealSocialUpdateFactory = (deal: BrandDeal) => {
   return (prevSocial: GameState['social']): Partial<GameState['social']> => {
@@ -580,6 +592,9 @@ export type SpinStoryMoneyUpdate =
 
 /**
  * Calculates whether the player can pay for a story spin and the resulting money delta.
+ *
+ * @param params - Current player state.
+ * @returns Failure when the player cannot pay, otherwise next money and applied delta.
  */
 export const getSpinStoryMoneyUpdate = ({
   player
@@ -604,6 +619,8 @@ export const getSpinStoryMoneyUpdate = ({
 
 /**
  * Builds the social updater for a successful story spin.
+ *
+ * @returns Functional social updater that reduces controversy.
  */
 export const getSpinStorySocialUpdateFactory = () => {
   return (prevSocial: GameState['social']) => ({
@@ -627,6 +644,9 @@ const assertFiniteNumberAtLeastZero = (value: unknown, label: string) => {
 
 /**
  * Calculates post-gig money penalties from misses beyond tolerance.
+ *
+ * @param params - Miss count, miss tolerance, and optional money penalty per excess miss.
+ * @returns Excess misses and total penalty.
  */
 export const calculateExcessMissMoneyPenalty = ({
   misses = 0,
@@ -652,6 +672,9 @@ export const calculateExcessMissMoneyPenalty = ({
 
 /**
  * Adds performance miss penalties into the displayed post-gig expense breakdown.
+ *
+ * @param params - Financial report plus miss-penalty settings.
+ * @returns Financial report with a performance-penalty expense line when applicable.
  */
 export const applyPostGigPerformancePenalty = ({
   financials,
@@ -704,6 +727,7 @@ export const applyPostGigPerformancePenalty = ({
  * - `params.clampPlayerFame` - Clamps fame to valid range.
  * - `params.clampPlayerMoney` - Clamps money to valid range.
  * - `params.BALANCE_CONSTANTS` - Shared balance tuning values.
+ * @param params - Post-gig continuation inputs and helper functions.
  * @returns Updated money, fame, and fame level.
  */
 export const calculateContinueStats = ({
@@ -766,6 +790,9 @@ const PERF_SCORE_SCALER = 150
 
 /**
  * Converts raw rhythm score into the clamped post-gig performance score.
+ *
+ * @param rawScore - Raw rhythm-game score.
+ * @returns Post-gig performance score clamped to the display range.
  */
 export const calculatePerformanceScore = (rawScore: number): number => {
   return Math.min(
@@ -776,6 +803,11 @@ export const calculatePerformanceScore = (rawScore: number): number => {
 
 /**
  * Derives recent-gig context used by gig financial calculations.
+ *
+ * @param currentGig - Current gig venue.
+ * @param social - Social state containing recent gig metadata.
+ * @param player - Player state containing current day.
+ * @returns Recent-gig context, or null when required state is missing.
  */
 export const deriveGigContext = (
   currentGig: GameState['currentGig'],
@@ -792,6 +824,9 @@ export const deriveGigContext = (
 
 /**
  * Derives reconciled post-gig financials from current gig state and modifiers.
+ *
+ * @param params - Current gig, stats, modifiers, inventory, player, social, reputation, and asset context.
+ * @returns Reconciled post-gig financials, or null when current gig or stats are missing.
  */
 export const deriveFinancials = ({
   currentGig,
@@ -863,6 +898,9 @@ export const deriveFinancials = ({
 
 /**
  * Builds available post-gig social options for the completed gig.
+ *
+ * @param params - Completed gig state and active event context.
+ * @returns Available social post options plus any option-derivation error.
  */
 export const derivePostOptions = ({
   currentGig,

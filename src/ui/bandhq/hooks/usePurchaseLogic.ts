@@ -299,6 +299,11 @@ const processPurchaseUnlocks = (
   }
 }
 
+/**
+ * Coordinates purchase Logic behavior from player, band, social, updatePlayer, updateBand, addToast, and transformPlayerPatch.
+ * @param params - Player, band, social state, state update callbacks, toast callback, and optional player-patch transformer.
+ * @returns State, derived values, and callbacks for purchase Logic.
+ */
 export const usePurchaseLogic = ({
   player,
   band,

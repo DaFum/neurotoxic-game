@@ -7,6 +7,9 @@ import { translateLocation } from '../../utils/locationI18n'
 import { useAudioControl } from '../../hooks/useAudioControl'
 import { formatCurrency } from '../../utils/numberUtils'
 
+/**
+ * Props for the Overworld HUD component.
+ */
 export interface OverworldHUDProps {
   player: PlayerState
   band: BandState
@@ -159,6 +162,11 @@ const BandMemberRow = ({
   )
 }
 
+/**
+ * Renders the Overworld HUD view from player and band.
+ * @param props - Player and band state displayed in the overworld HUD.
+ * @returns The rendered Overworld HUD UI.
+ */
 export const OverworldHUD = React.memo(
   ({ player, band }: OverworldHUDProps) => {
     const { t, i18n } = useTranslation(['ui'])

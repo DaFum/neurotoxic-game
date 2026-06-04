@@ -1,15 +1,16 @@
 import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { CatalogItem } from '../../types/components'
-import {
-  IMG_PROMPTS
-} from '../../utils/imageGen'
+import { IMG_PROMPTS } from '../../utils/imageGen'
 import { getPrimaryEffect } from '../../utils/purchaseLogicUtils'
 import { formatCurrency } from '../../utils/numberUtils'
 import { GlitchButton } from '../GlitchButton'
 import { GeneratedImagePanel } from '../shared/GeneratedImagePanel'
 import { Tooltip } from '../shared'
 
+/**
+ * Props for the Shop Item component.
+ */
 export interface ShopItemProps {
   item: CatalogItem
   isOwned: boolean
@@ -22,6 +23,11 @@ export interface ShopItemProps {
 // ⚡ Bolt Optimization: Wrapped ShopItem in React.memo
 // Prevents re-rendering all shop/upgrade items when parent `BandHQ` state changes
 // (e.g. player money updates) if the item's specific props haven't changed.
+/**
+ * Renders the Shop Item view from item, isOwned, isDisabled, adjustedCost, onBuy, and processingItemId.
+ * @param props - Shop item data, cost/ownership state, disabled state, purchase callback, and processing lock id.
+ * @returns The rendered Shop Item UI.
+ */
 export const ShopItem = React.memo(
   ({
     item,

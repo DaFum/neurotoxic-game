@@ -11,7 +11,7 @@ import { Tooltip } from './Tooltip'
 
 /**
  * Modal - A shared overlay component.
- * @param props - Component props.
+ * @param props - Modal visibility, close handler, accessible title/label, content, and wrapper classes.
  * - `props.isOpen` - Whether the modal is visible.
  * - `props.onClose` - Callback to close the modal.
  * - `props.title` - Optional title.
@@ -29,6 +29,11 @@ type ModalProps = {
   className?: string
 }
 
+/**
+ * Renders the Modal view from isOpen, onClose, title, ariaLabel, children, contentClassName, and className.
+ * @param props - Modal visibility, close handler, accessible title or label, content, and styling hooks.
+ * @returns The rendered Modal UI.
+ */
 export const Modal = ({
   isOpen,
   onClose,

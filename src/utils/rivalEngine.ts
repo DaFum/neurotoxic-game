@@ -8,6 +8,13 @@ import { isEmptyObject } from './gameStateUtils'
 
 import type { BrandAlignment } from '../types'
 
+/**
+ * Creates a rival band scaled to the current campaign day.
+ *
+ * @param day - Current player day used to derive rival power.
+ * @param rng - Random number generator used for alignment, id suffix, and name flavor.
+ * @returns New rival band state with no starting location.
+ */
 export const generateRivalBand = (
   day: number,
   rng: () => number = secureRandom
@@ -28,6 +35,14 @@ export const generateRivalBand = (
   }
 }
 
+/**
+ * Moves a rival band to an adjacent or fallback gig node.
+ *
+ * @param rivalBand - Current rival state.
+ * @param gameMap - Map used to find connected gig nodes.
+ * @param rng - Random number generator used for stay chance and destination selection.
+ * @returns Updated rival state, or the original state when no move is possible.
+ */
 export const moveRivalBand = (
   rivalBand: RivalBandState,
   gameMap: GameMap | null,

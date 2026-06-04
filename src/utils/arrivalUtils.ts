@@ -16,11 +16,17 @@ import { normalizeVenueId } from './mapUtils'
 import { VENUES_BY_ID } from '../data/venues'
 import type { BandState, MapNode, PlayerState, Venue } from '../types'
 
+/**
+ * Map-node shape accepted by shared arrival processing.
+ */
 export type ArrivalNode = Omit<Partial<MapNode>, 'type' | 'venue'> & {
   type: string
   venue?: unknown
 }
 
+/**
+ * Arrival node narrowed to venue-bearing gig node types.
+ */
 export type GigArrivalNode<T = ArrivalNode> = T & {
   type: 'GIG' | 'FESTIVAL' | 'FINALE'
 }
@@ -41,6 +47,9 @@ const resolveArrivalVenue = (node: ArrivalNode): Venue | null => {
   return VENUES_BY_ID.get(venueId) ?? null
 }
 
+/**
+ * Result returned by arrival processing for the caller to route scene changes.
+ */
 export type ArrivalResult = {
   /** Scene to navigate to after processing. Hook is responsible for calling changeScene. */
   scene: import('../types/game').GamePhase
@@ -49,25 +58,8 @@ export type ArrivalResult = {
 }
 
 /**
- * Shared logic for handling arrival at a map node.
- * This can be used by both the legacy travel system and the new arrival logic hook.
- *
- * @param params - Params.
- * - `params.node` - The node being arrived at.
- * - `params.band` - Current band state.
- * - `params.player` - Current player state (inventory, stats, etc.).
- * - `params.updateBand` - Function to update band state.
- * - `params.updatePlayer` - Function to update player state (handles side effects).
- * - `params.triggerEvent` - Function to trigger events.
- * - `params.startGig` - Function to start a gig.
- * - `params.addToast` - Function to show notifications.
- * - `params.changeScene` - Optional. Function to change scene (fallback).
- * - `params.onShowHQ` - Optional callback to show HQ (for START node).
- * - `params.eventAlreadyActive` - Whether an event is already active (to prevent stacking). Defaults to `false`.
- * - `params.rng` - RNG function for probabilistic outcomes. Defaults to `secureRandom`.
- */
-/**
  * Calculates new harmony value if band has harmony regen active.
+ *
  * @param band - The current band state.
  * @returns The new harmony value, or null if regen is not applicable.
  */
@@ -82,6 +74,7 @@ export const processHarmonyRegen = (
 
 /**
  * Checks if the current node is a gig node.
+ *
  * @param node - The current node.
  * @returns True if the node is a GIG, FESTIVAL, or FINALE.
  */
@@ -99,8 +92,10 @@ type ProcessTravelEventsOptions = {
 
 /**
  * Triggers travel events if applicable for the current node.
+ *
  * @param node - The current node.
  * @param triggerEvent - The function to trigger events.
+ * @param options - Travel-event options.
  * @returns True if a travel event was triggered.
  */
 export const processTravelEvents = (
@@ -136,6 +131,16 @@ type HandleNodeArrivalParams = {
   rng?: () => number
 }
 
+/**
+ * Shared logic for handling arrival at a map node.
+ *
+ * This can be used by both the legacy travel system and the arrival logic hook.
+ *
+ * @param params - Arrival processing context:
+ * `node`, `band`, `player`, update callbacks, event/gig callbacks, optional
+ * HQ or supply-stop callbacks, active-event state, and RNG.
+ * @returns Arrival scene routing and gig-start status.
+ */
 export const handleNodeArrival = (
   params: HandleNodeArrivalParams
 ): ArrivalResult => {

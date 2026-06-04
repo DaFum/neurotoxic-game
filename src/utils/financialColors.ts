@@ -18,6 +18,12 @@ const EXPENSE_COLORS: FinancialColorClasses = {
   borderLight: 'border-blood-red/40'
 }
 
+/**
+ * Resolves Tailwind utility classes for a financial entry type.
+ *
+ * @param type - Whether the displayed amount is income or expense.
+ * @returns Text and border color classes for the entry.
+ */
 export const getFinancialColors = (
   type: FinancialEntryType
 ): FinancialColorClasses => (type === 'income' ? INCOME_COLORS : EXPENSE_COLORS)

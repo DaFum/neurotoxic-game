@@ -10,6 +10,11 @@ import {
   GameIcon
 } from '../../ui/shared'
 
+/**
+ * Renders the Main Menu Socials scene from onClose.
+ * @param props - Close callback for the socials panel.
+ * @returns The rendered Main Menu Socials UI.
+ */
 export const MainMenuSocials = ({ onClose }: { onClose: () => void }) => {
   const { t } = useTranslation()
 

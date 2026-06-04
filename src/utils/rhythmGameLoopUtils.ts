@@ -35,6 +35,14 @@ interface RhythmTickArgs {
   setCorruptionEffect: (active: boolean) => void
 }
 
+/**
+ * Finalizes a gig exactly once, snapshots stats, stops audio, and exits the gig.
+ *
+ * @param stateRef - Mutable rhythm-game state ref.
+ * @param setLastGigStats - Callback used to persist the final gig stats snapshot.
+ * @param endGig - Callback that leaves the gig flow.
+ * @param stopAudio - Callback that stops currently playing gig audio.
+ */
 export const finalizeGig = (
   stateRef: RhythmGameRefState,
   setLastGigStats: SetLastGigStats,
@@ -55,6 +63,13 @@ export const finalizeGig = (
   endGig()
 }
 
+/**
+ * Advances one rhythm-game frame for overlay pausing, toxic mode, misses, and hecklers.
+ *
+ * @param args - Runtime tick inputs and callbacks for state, transport,
+ * overlays, dimensions, hecklers, frame timing, audio, misses, finalization,
+ * and corruption effects.
+ */
 export const processRhythmGameTick = ({
   stateRef,
   isTransportRunning,

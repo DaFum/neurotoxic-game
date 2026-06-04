@@ -46,6 +46,10 @@ const BROKEN_THRESHOLD = 20
 
 /**
  * Calculates gross sale value from chassis price, condition, age, and module refunds.
+ *
+ * @param asset - Long-term asset being valued for sale.
+ * @param currentDay - Current in-game day used for age-based depreciation.
+ * @returns Gross sale value, or null when the asset's chassis config cannot be resolved.
  */
 export const calculateChassisGrossSaleValue = (
   asset: LongTermAsset,
@@ -75,7 +79,12 @@ export const calculateChassisGrossSaleValue = (
   return configTier.price * conditionFactor * depreciation + moduleRefunds
 }
 
-/** Reads the installed modules of an asset by resolving slot ids against the registry. */
+/**
+ * Reads the installed modules of an asset by resolving slot ids against the registry.
+ *
+ * @param asset - Asset whose slots should be inspected.
+ * @returns Installed module definitions in slot order, excluding unknown module ids.
+ */
 export const getInstalledModules = (asset: LongTermAsset): AssetModule[] => {
   const out: AssetModule[] = []
   for (const s of asset.slots) {
@@ -97,6 +106,9 @@ export const getInstalledModules = (asset: LongTermAsset): AssetModule[] => {
  * Assets with condition less than 20 are treated as broken and contribute no boni —
  * this gives a clear gameplay signal that repair is needed before bonuses
  * apply again.
+ *
+ * @param asset - Asset whose installed modules should be aggregated.
+ * @returns Combined boni contributed by active installed modules, or an empty object when the asset is broken.
  */
 export const getAssetAggregateBoni = (asset: LongTermAsset): AssetBoni => {
   if (asset.condition < BROKEN_THRESHOLD) return {}
@@ -162,7 +174,12 @@ export const getAssetAggregateBoni = (asset: LongTermAsset): AssetBoni => {
   return agg
 }
 
-/** Daily upkeep of an asset including module-provided deltas. */
+/**
+ * Calculates daily upkeep of an asset including module-provided deltas.
+ *
+ * @param asset - Asset whose upkeep should be calculated.
+ * @returns Daily upkeep after installed module boni are applied.
+ */
 export const getAssetTotalUpkeep = (asset: LongTermAsset): number =>
   asset.baseUpkeep + (getAssetAggregateBoni(asset).upkeepDelta ?? 0)
 
@@ -172,6 +189,9 @@ export const getAssetTotalUpkeep = (asset: LongTermAsset): number =>
  * `baseDailyRevenue` is a chassis field and would otherwise still pay out
  * `base * (condition/100)`. Explicit guard keeps broken assets fully silent
  * so the bankruptcy check sees the real obligation.
+ *
+ * @param asset - Asset whose revenue should be calculated.
+ * @returns Daily revenue after module deltas and condition scaling.
  */
 export const getAssetTotalDailyRevenue = (asset: LongTermAsset): number => {
   if (asset.condition < BROKEN_THRESHOLD) return 0
@@ -182,6 +202,10 @@ export const getAssetTotalDailyRevenue = (asset: LongTermAsset): number => {
 
 /**
  * Checks whether an asset kind is already owned or pending through crowdfunding.
+ *
+ * @param state - State slice containing owned assets and active crowdfund campaigns.
+ * @param kind - Asset kind to look up.
+ * @returns True when the kind is already owned or has an active acquisition campaign.
  */
 export const hasActiveAssetAcquisition = (
   state: Pick<GameState, 'assets' | 'crowdfundCampaigns'>,
@@ -199,6 +223,9 @@ export const hasActiveAssetAcquisition = (
 /**
  * Aggregates modifiers from all assets in the state. Returns
  * NEUTRAL_ASSET_MODIFIERS when no assets exist or all are broken.
+ *
+ * @param assets - Assets whose active module boni should be combined.
+ * @returns Aggregate modifiers with neutral defaults for fields no asset changes.
  */
 export const getActiveAssetModifiers = (
   assets: readonly LongTermAsset[]
@@ -248,6 +275,9 @@ export const getActiveAssetModifiers = (
  * space, studio session bookings). Liability payments are flat loan
  * installments (or zero for active crowdfund campaigns, since crowdfund
  * resolution doesn't bill daily).
+ *
+ * @param state - Current game state containing player, band, social, asset, and liability slices.
+ * @returns Guaranteed daily cost plus asset upkeep and liability payments, minus asset revenue.
  */
 export const getTotalDailyObligations = (state: GameState): number => {
   const base = calculateGuaranteedDailyCost(
@@ -337,6 +367,10 @@ const allInstalledModuleIds = (state: GameState): Set<string> => {
  * Pure validator: returns true iff every AND-combined condition in
  * `module.unlock` is currently met by the game state. Lock reasons are
  * NOT collected here — use `getLockReasons` for that.
+ *
+ * @param module - Asset module whose unlock requirements should be evaluated.
+ * @param state - Current game state providing fame, money, flags, skills, and installed modules.
+ * @returns True when every unlock requirement is currently satisfied.
  */
 export const isModuleUnlocked = (
   module: AssetModule,
@@ -401,6 +435,11 @@ export interface LockReason {
 
 /**
  * Returns unmet unlock requirements for a module in the current state.
+ *
+ * @param module - Asset module whose requirements should be evaluated.
+ * @param state - Current game state used for unlock checks.
+ * @param asset - Optional asset used to evaluate chassis-tier requirements.
+ * @returns Structured lock reasons; empty when the module is unlocked for the provided context.
  */
 export const getLockReasons = (
   module: AssetModule,
@@ -462,6 +501,10 @@ export const getLockReasons = (
  * Identifies modules already installed on the same asset that share
  * `exclusiveWithGroup` with the candidate module. Empty array means the
  * candidate may be installed without exclusivity conflict.
+ *
+ * @param asset - Asset whose installed modules should be checked.
+ * @param moduleId - Candidate module id.
+ * @returns Conflict status and ids of installed modules in the same exclusivity group.
  */
 export const getSlotConflicts = (
   asset: LongTermAsset,
@@ -500,6 +543,10 @@ export interface ModulePoolEntry {
  * Returns the full module pool for the given asset's `kind`, annotated with
  * unlock and exclusivity status for the current state. UI consumers can render
  * directly from this list.
+ *
+ * @param asset - Asset whose owner kind determines the module pool.
+ * @param state - Current game state used for unlock checks.
+ * @returns Module pool entries annotated with unlock status and lock reasons.
  */
 export const getModulePoolForAsset = (
   asset: LongTermAsset,
@@ -520,6 +567,9 @@ export const getModulePoolForAsset = (
 
 /**
  * Sums all remaining liability principal.
+ *
+ * @param state - Current game state containing liabilities.
+ * @returns Total outstanding debt principal.
  */
 export const getTotalDebt = (state: GameState): number => {
   return state.liabilities.reduce((sum, l) => sum + l.principalRemaining, 0)
@@ -535,6 +585,9 @@ let assetsMapCache: Map<string, LongTermAsset> | null = null
 
 /**
  * Selects a memoized asset map keyed by asset id.
+ *
+ * @param state - State slice containing assets.
+ * @returns Read-only map of asset id to asset, memoized by assets array identity.
  */
 export const selectAssetsMap = (
   state: Pick<GameState, 'assets'>
@@ -555,6 +608,9 @@ export const selectAssetsMap = (
 
 /**
  * Selects a memoized liability map keyed by asset id.
+ *
+ * @param state - Current game state containing liabilities.
+ * @returns Map of asset id to liability, memoized by liabilities array identity.
  */
 export const selectLiabilitiesMap = (
   state: GameState

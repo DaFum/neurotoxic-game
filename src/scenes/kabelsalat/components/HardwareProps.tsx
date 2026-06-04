@@ -36,6 +36,11 @@ const RackScrewComponent: FC<RackScrewProps> = ({ x, y }) => (
   </g>
 )
 
+/**
+ * Renders a decorative rack screw for Kabelsalat hardware panels.
+ * @param props - SVG coordinates for the screw position.
+ * @returns The rendered Rack Screw UI.
+ */
 export const RackScrew = memo(RackScrewComponent)
 
 const RACK_GEOMETRY = {
@@ -53,6 +58,10 @@ const RACK_GEOMETRY = {
   SCREW_BOTTOM_Y: 170
 }
 
+/**
+ * Renders a decorative rack panel for Kabelsalat hardware framing.
+ * @returns The rendered Rack Panel UI.
+ */
 export const RackPanel = memo(() => (
   <g>
     <rect
@@ -129,4 +138,9 @@ const PowerIndicatorComponent: FC<PowerIndicatorProps> = ({
   </g>
 )
 
+/**
+ * Renders the Kabelsalat power indicator light.
+ * @param props - Translator and power-connection state for the indicator.
+ * @returns The rendered Power Indicator UI.
+ */
 export const PowerIndicator = memo(PowerIndicatorComponent)

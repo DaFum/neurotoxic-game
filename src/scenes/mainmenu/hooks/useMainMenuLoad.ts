@@ -15,6 +15,11 @@ interface UseMainMenuLoadProps {
   tRef: MutableRefObject<TFunction>
 }
 
+/**
+ * Builds handlers for loading an existing save from the main menu.
+ * @param params - Loading-state setter, load action, scene change callback, audio initializer, existing-save prompt setter, toast callback, and translator ref.
+ * @returns Load handlers for the direct load button and existing-save prompt.
+ */
 export const useMainMenuLoad = ({
   setIsLoadingGame,
   loadGame,

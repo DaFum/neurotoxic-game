@@ -16,6 +16,11 @@ type GigModifierButtonProps = {
   disabled?: boolean
 }
 
+/**
+ * Renders a selectable pre-gig modifier with description and localized cost.
+ * @param props - Modifier item, active state, click handler, and disabled state.
+ * @returns The rendered Gig Modifier Button UI.
+ */
 const GigModifierButton = memo(
   ({ item, isActive, onClick, disabled = false }: GigModifierButtonProps) => {
     const { i18n } = useTranslation()

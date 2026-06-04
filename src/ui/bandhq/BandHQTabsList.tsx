@@ -11,6 +11,11 @@ interface BandHQTabsListProps {
   VOID_TRADER_CONTROVERSY_THRESHOLD: number
 }
 
+/**
+ * Renders the Band HQ Tabs List view from currentTab, setActiveTab, controversyLevel, and VOID_TRADER_CONTROVERSY_THRESHOLD.
+ * @param props - Active tab state, tab switch callback, controversy level, and void-trader unlock threshold.
+ * @returns The rendered Band HQ Tabs List UI.
+ */
 export const BandHQTabsList = ({
   currentTab,
   setActiveTab,

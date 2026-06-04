@@ -21,4 +21,7 @@ export const BRAND_COLOR_HEX = Object.freeze({
   'roadie-venue-blue': '#0044cc'
 }) satisfies Readonly<Record<string, string>>
 
+/**
+ * Matches supported CSS hex color literals used by token fallback validation.
+ */
 export const HEX_COLOR_PATTERN = /^#(?:[0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i

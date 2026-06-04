@@ -4,6 +4,9 @@ import { resolveTemplateString } from './templateResolver'
 import { asNumber } from './helpers'
 import type { EffectShape, EngineGameState, TemplateContext } from './types'
 
+/**
+ * Effect handler registry keyed by declarative event effect type.
+ */
 const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
   relationship: (
     eff: EffectShape,
@@ -191,6 +194,10 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
 
 /**
  * Processes a single effect object into state delta modifications.
+ * @param eff - Effect object from an event definition.
+ * @param delta - Mutable event delta accumulator to update.
+ * @param context - Template context used by effects that resolve dynamic fields.
+ * @param gameState - Current game state for effects that need live values.
  */
 const processEffect = (
   eff: EffectShape,

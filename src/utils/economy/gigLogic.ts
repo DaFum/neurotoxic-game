@@ -39,6 +39,12 @@ import {
 
 /**
  * Calculates ticket sales revenue and attendance.
+ *
+ * @param gigData - Venue economy data such as capacity, ticket price, difficulty, and guarantee.
+ * @param playerFame - Current player fame used for attendance scaling.
+ * @param modifiers - Active pre-gig modifiers that can influence draw.
+ * @param context - Reputation, controversy, price, and recent-gig context.
+ * @returns Ticket revenue, tickets sold, and the income breakdown item.
  */
 export const calculateTicketIncome = (
   gigData: GigEconomyData = {},
@@ -133,6 +139,15 @@ export const calculateTicketIncome = (
 
 /**
  * Calculates merch sales revenue and costs.
+ *
+ * @param ticketsSold - Number of attendees eligible to buy merch.
+ * @param performanceScore - Post-gig performance score used for demand.
+ * @param gigStats - Detailed rhythm stats that influence demand.
+ * @param modifiers - Active pre-gig modifiers.
+ * @param bandInventory - Current merch inventory by item key.
+ * @param context - Social, price, and city-trait context for merch demand.
+ * @param assetModifiers - Active asset modifiers that can affect sale price.
+ * @returns Merch revenue, itemized income lines, and units sold by merch key.
  */
 export const calculateMerchIncome = (
   ticketsSold = 0,
@@ -346,6 +361,10 @@ export const calculateEffectiveTicketPrice = (
 
 /**
  * Calculates venue split / promoter cut.
+ *
+ * @param ticketsRevenue - Ticket revenue before venue split.
+ * @param gigData - Venue economy data containing difficulty.
+ * @returns Split amount and optional expense breakdown item.
  */
 export const calculateVenueSplit = (
   ticketsRevenue = 0,
@@ -377,6 +396,9 @@ export const calculateVenueSplit = (
 
 /**
  * Calculates guarantee / base pay.
+ *
+ * @param gigData - Venue economy data containing guaranteed pay.
+ * @returns Guarantee amount and optional income breakdown item.
  */
 export const calculateGuarantee = (gigData: GigEconomyData = {}) => {
   gigData = gigData || {}
@@ -396,6 +418,10 @@ export const calculateGuarantee = (gigData: GigEconomyData = {}) => {
 
 /**
  * Calculates bar cut revenue.
+ *
+ * @param ticketsSold - Number of tickets sold for the gig.
+ * @param modifiers - Active pre-gig modifiers that determine normal versus VIP bar cut.
+ * @returns Bar revenue and income breakdown item.
  */
 export const calculateBarCut = (
   ticketsSold = 0,
@@ -425,6 +451,9 @@ export const calculateBarCut = (
 
 /**
  * Calculates sponsorship bonuses.
+ *
+ * @param gigStats - Rhythm performance stats used to qualify sponsor bonuses.
+ * @returns Total sponsor bonus and income breakdown items.
  */
 export const calculateSponsorshipBonuses = (gigStats: GigStatsLike = {}) => {
   gigStats = gigStats || {}
@@ -457,6 +486,10 @@ export const calculateSponsorshipBonuses = (gigStats: GigStatsLike = {}) => {
 
 /**
  * Calculates expenses for the gig.
+ *
+ * @param modifiers - Active pre-gig modifiers that create gig expenses.
+ * @param assetModifiers - Active asset modifiers that adjust modifier costs.
+ * @returns Total gig expenses and itemized expense breakdown.
  */
 export const calculateGigExpenses = (
   modifiers: Partial<GigModifiers> = {},
@@ -534,6 +567,8 @@ export const calculateGigExpenses = (
  * - `params.bandInventory` - `shirts, hoodies, etc`
  * - `params.playerStateOrFame` - Player state object or just fame (number) for legacy support
  * - `params.gigStats` - Detailed gig stats (misses, peakHype, etc)
+ * @param assetModifiers - Active asset modifiers that affect gig finances.
+ * @returns Reconciled post-gig financial report with income, expenses, net, and sold merch.
  */
 export const calculateGigFinancials = (
   {

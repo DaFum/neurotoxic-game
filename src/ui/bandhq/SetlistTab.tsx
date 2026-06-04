@@ -92,12 +92,20 @@ const getSetlistSongId = (entry: unknown): unknown => {
   return undefined
 }
 
+/**
+ * Props for the Setlist Tab component.
+ */
 export interface SetlistTabProps {
   setlist: RhythmSetlistEntry[]
   setSetlist: (list: RhythmSetlistEntry[]) => void
   addToast: (message: string, level?: string) => void
 }
 
+/**
+ * Renders setlist management inside Band HQ.
+ * @param props - Current setlist plus callback used to persist setlist changes.
+ * @returns The rendered Setlist Tab UI.
+ */
 export const SetlistTab = (props: SetlistTabProps) => {
   const { setlist, setSetlist, addToast } = props
   // { setlist, setSetlist, addToast }) => {

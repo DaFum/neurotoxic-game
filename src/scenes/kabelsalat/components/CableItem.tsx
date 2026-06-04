@@ -129,5 +129,10 @@ const CableItemComponent: FC<CableItemProps> = ({
   )
 }
 
+/**
+ * Renders one draggable Kabelsalat cable entry.
+ * @param props - Cable definition, interaction state, translator, and cable-click handler.
+ * @returns The rendered Cable Item UI.
+ */
 export const CableItem = React.memo(CableItemComponent)
 CableItem.displayName = 'CableItem'

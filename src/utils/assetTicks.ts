@@ -296,9 +296,15 @@ export const processCrowdfundTick = (state: GameState): GameState => {
   }
 }
 
+/**
+ * Result of rolling daily asset risk events against a deterministic RNG stream.
+ */
 export interface RollAssetRiskEventsResult {
+  /** State after condition losses from triggered risk events are applied. */
   state: GameState
+  /** Next unread index in the day RNG stream. */
   cursor: number
+  /** Risk event descriptors triggered during the roll. */
   events: RiskEventDescriptor[]
 }
 

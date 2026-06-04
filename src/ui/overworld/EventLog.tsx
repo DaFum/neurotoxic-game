@@ -2,6 +2,9 @@ import React, { useRef, useEffect, useReducer } from 'react'
 import { ALL_VENUES } from '../../data/venues'
 import { translateLocation } from '../../utils/locationI18n'
 
+/**
+ * Props for the Event Log component.
+ */
 export interface EventLogProps {
   t: import('../../types/callbacks').TranslationCallback
   day: number
@@ -21,6 +24,11 @@ interface EventLogEntry {
   }
 }
 
+/**
+ * Renders the Event Log view from t, day, and locationId.
+ * @param props - Current day and location context used to render translated event log entries.
+ * @returns The rendered Event Log UI.
+ */
 export const EventLog = React.memo(({ t, day, locationId }: EventLogProps) => {
   const bodyRef = useRef<HTMLDivElement | null>(null)
   const entryIdRef = useRef(0)

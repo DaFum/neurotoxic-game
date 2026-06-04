@@ -23,6 +23,9 @@ type BandHQLogicParams = {
   ) => void
 }
 
+/**
+ * State and callbacks returned by the Band HQ orchestration hook.
+ */
 export interface BandHQLogicResult {
   processingItemId: string | null
   handleVoidTrade: (item: VoidTraderItem) => void
@@ -31,6 +34,11 @@ export interface BandHQLogicResult {
   handleBuyWithLock: (item: PurchaseItem) => Promise<void>
 }
 
+/**
+ * Coordinates Band HQ purchase locks and void-trader item handling.
+ * @param params - Player and band state, purchase handler, void-trader action, and toast callback.
+ * @returns Processing state plus locked purchase and void-trader helpers.
+ */
 export const useBandHQLogic = ({
   player,
   band,
