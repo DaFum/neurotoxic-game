@@ -913,10 +913,11 @@ test('calculateGigFinancials clamps negative playerFame to zero management cut',
     playerState: { fame: -50 }
   })
   const managementItem = result.expenses.breakdown.find(
-    i => i.labelKey === 'economy:gigExpenses.managementCut.label'
+    i => i.labelKey === 'economy:gigExpenses.managementFee.label'
   )
   // Negative fame must produce 0% cut, not a negative (income-inflating) cut
-  assert.equal(managementItem === undefined || managementItem.value === 0, true)
+  assert.ok(managementItem, 'Expected management fee expense item')
+  assert.equal(managementItem.value, 0)
 })
 
 test('calculateGigFinancials uses effective price', () => {

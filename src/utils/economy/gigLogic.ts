@@ -697,7 +697,7 @@ export const calculateGigFinancials = (
   const effectiveCutRate =
     MANAGEMENT_CUT_RATE * Math.max(0, Math.min(1, playerFame / 200))
   const managementCut = Math.floor(report.income.total * effectiveCutRate)
-  if (managementCut > 0) {
+  if (managementCut > 0 || report.income.total > 0) {
     report.expenses.breakdown.push({
       labelKey: 'economy:gigExpenses.managementFee.label',
       value: managementCut,
