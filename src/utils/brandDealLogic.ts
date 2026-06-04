@@ -257,8 +257,8 @@ export const negotiateDeal = (
   status: 'ACCEPTED' | 'REVOKED' | 'FAILED'
 } => {
   const band = gameState.band
-  let successChance
-  let feedback
+  let successChance: number
+  let feedback: string
   let status: 'ACCEPTED' | 'REVOKED' | 'FAILED' = 'ACCEPTED'
 
   // Rival Penalty for Negotiations
@@ -282,7 +282,7 @@ export const negotiateDeal = (
 
   // Roll once
   const roll = rng()
-  let isSuccess
+  let isSuccess: boolean
 
   switch (strategy) {
     case 'SAFE':
