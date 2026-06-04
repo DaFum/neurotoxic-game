@@ -2,6 +2,11 @@ import { useCallback, useMemo } from 'react'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import type { PurchaseItem } from '../../types'
 
+/**
+ * Manages pending supply-stop inventory and modal visibility.
+ *
+ * @returns Supply-stop modal visibility, inventory, and open/close callbacks.
+ */
 export const useSupplyStopModal = () => {
   const pendingSupplyStopInventory = useGameSelector(
     state => state.pendingSupplyStopInventory

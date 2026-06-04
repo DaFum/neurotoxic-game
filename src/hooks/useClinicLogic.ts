@@ -128,6 +128,10 @@ const useClinicEnhance = (
   return { enhanceCostFame, enhanceMember }
 }
 
+/**
+ * Provides clinic screen state and actions for healing or enhancing band members.
+ * @returns Clinic resources, calculated costs, and handlers for clinic actions.
+ */
 export const useClinicLogic = (): {
   player: PlayerState | undefined | null
   band: BandState | undefined | null

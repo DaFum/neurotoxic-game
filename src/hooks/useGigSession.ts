@@ -20,6 +20,12 @@ type UseGigSessionReturn = {
   handleQuitGig: () => Promise<void>
 }
 
+/**
+ * Manages gig pause/resume and explicit quit behavior for the rhythm game scene.
+ *
+ * @param props - Toast, post-gig stat, scene-exit, translation, and rhythm-state dependencies.
+ * @returns Pause state plus pause-toggle and quit handlers.
+ */
 export const useGigSession = ({
   addToast,
   setLastGigStats,

@@ -12,6 +12,12 @@ const getInitialOnline = () =>
 
 const NetworkStatusContext = createContext<boolean | null>(null)
 
+/**
+ * Provides browser online/offline status to descendants.
+ *
+ * @param props - Provider props containing child nodes.
+ * @returns React context provider element.
+ */
 export const NetworkStatusProvider = ({
   children
 }: {
@@ -41,6 +47,11 @@ export const NetworkStatusProvider = ({
   )
 }
 
+/**
+ * Reads the current browser online/offline status.
+ *
+ * @returns True when the browser reports online, otherwise false.
+ */
 export const useNetworkStatus = (): boolean => {
   const ctx = use(NetworkStatusContext)
   if (ctx !== null) return ctx

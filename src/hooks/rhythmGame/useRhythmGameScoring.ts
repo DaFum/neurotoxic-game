@@ -60,6 +60,9 @@ type RhythmGameScoringParams = {
   }
 }
 
+/**
+ * Scoring controls and timers exposed by the rhythm game scoring hook.
+ */
 export type RhythmGameScoringReturn = {
   handleHit: (laneIndex: number) => boolean
   handleMiss: (count?: number, isEmptyHit?: boolean) => void
@@ -70,7 +73,7 @@ export type RhythmGameScoringReturn = {
 /**
  * Handles scoring logic including hits, misses, toxic mode, and game over.
  *
- * @param params - Hook parameters.
+ * @param params - Rhythm state ref, UI setters, performance stats, and context actions for scoring.
  * - `params.gameStateRef` - Reference to the mutable game state.
  * - `params.setters` - React state setters from useRhythmGameState.
  * - `params.performance` - Band performance stats (modifiers).

@@ -16,6 +16,9 @@ import type {
 
 type SetterPayload<T> = T | ((current: T) => T)
 
+/**
+ * React-rendered rhythm game state mirrored from the high-frequency game ref.
+ */
 export type RhythmUiState = {
   score: number
   combo: number
@@ -55,6 +58,9 @@ export type {
   RhythmNote
 } from '../../types/rhythmGame'
 
+/**
+ * Setter surface for rhythm UI state used by audio, scoring, and loop hooks.
+ */
 export type RhythmStateSetters = {
   setScore: (score: SetterPayload<number>) => void
   setCombo: (combo: SetterPayload<number>) => void
@@ -74,6 +80,9 @@ export type RhythmStateSetters = {
   setCorruptionState: (level: number, active: boolean) => void
 }
 
+/**
+ * State bundle returned by useRhythmGameState.
+ */
 export type RhythmGameStateHookReturn = {
   gameStateRef: MutableRefObject<RhythmGameRefState>
   state: RhythmUiState

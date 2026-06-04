@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react'
 import { getSafeRandom } from '../../utils/crypto'
 
+/**
+ * Produces intermittent CRT glitch class names for the overworld shell.
+ *
+ * @returns Current glitch class name, or an empty string when idle.
+ */
 export const useGlitchEffect = () => {
   const [glitch, setGlitch] = useState('')
 

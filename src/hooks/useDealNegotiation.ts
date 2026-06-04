@@ -12,6 +12,12 @@ import type { BrandDeal } from '../types/social'
 
 type Deal = BrandDeal
 
+/**
+ * Manages brand-deal negotiation modal state and strategy resolution.
+ *
+ * @param props - Accept callback used when the player confirms a negotiated deal.
+ * @returns Negotiation state, modal controls, and deal negotiation handlers.
+ */
 export const useDealNegotiation = ({
   onAccept
 }: {

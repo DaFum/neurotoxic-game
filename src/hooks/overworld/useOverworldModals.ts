@@ -7,6 +7,11 @@ import { useBloodBank } from '../useBloodBank'
 import { useDarkWebLeak } from '../useDarkWebLeak'
 import { useSupplyStopModal } from './useSupplyStopModal'
 
+/**
+ * Composes all modal state hooks used by the Overworld screen.
+ *
+ * @returns Modal state and controls grouped by modal domain.
+ */
 export const useOverworldModals = () => {
   const hq = useBandHQModal()
   const quests = useQuestsModal()

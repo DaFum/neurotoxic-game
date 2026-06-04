@@ -16,6 +16,12 @@ type UseGigVisualsReturn = {
 
 import { useNetworkStatus } from './useNetworkStatus'
 
+/**
+ * Resolves generated image URLs for the current gig venue and band harmony state.
+ *
+ * @param props - Current gig and band harmony used to choose visual prompts.
+ * @returns Background and band-member image URLs.
+ */
 export const useGigVisuals = ({
   currentGig,
   bandHarmony

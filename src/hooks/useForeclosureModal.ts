@@ -2,6 +2,11 @@ import { useCallback } from 'react'
 import { useGameSelector, useGameActions } from '../context/GameState'
 import type { AssetKind } from '../types/assets'
 
+/**
+ * Derives foreclosure modal visibility and dismissal action from pending notices.
+ *
+ * @returns Current foreclosure notice kind, open flag, and dismiss callback.
+ */
 export const useForeclosureModal = (): {
   isOpen: boolean
   currentKind: AssetKind | null

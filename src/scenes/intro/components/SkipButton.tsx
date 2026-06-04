@@ -5,6 +5,11 @@ type SkipButtonProps = {
   onSkip: () => void
 }
 
+/**
+ * Renders the Skip Button scene from onSkip.
+ * @param props - Skip callback for leaving the intro immediately.
+ * @returns The rendered Skip Button UI.
+ */
 export const SkipButton = ({ onSkip }: SkipButtonProps) => {
   const { t } = useTranslation()
 

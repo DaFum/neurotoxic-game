@@ -3,6 +3,11 @@ import { useGameActions, useGameSelector } from '../context/GameState'
 import { GAME_CONSTANTS } from '../context/gameConstants'
 import { validateBloodBankDonation } from '../utils/bloodBankUtils'
 
+/**
+ * Coordinates blood-bank modal state, donation eligibility, and donation dispatch.
+ *
+ * @returns Modal state, donation actions, eligibility flags, and scaled donation configs.
+ */
 export const useBloodBank = () => {
   const player = useGameSelector(state => state.player)
   const band = useGameSelector(state => state.band)

@@ -1,6 +1,10 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
+/**
+ * Renders the credits footer and return control.
+ * @returns The rendered Credit Footer UI.
+ */
 export const CreditFooter = React.memo(() => {
   const { t } = useTranslation(['ui'])
   return (

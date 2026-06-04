@@ -33,6 +33,11 @@ type RhythmGameLoopParams = {
   }
 }
 
+/**
+ * Creates the per-frame rhythm game update callback.
+ * @param params - Runtime refs, scoring actions, UI setters, and context actions used each tick.
+ * @returns Object containing the `update` function that advances the rhythm simulation.
+ */
 export const useRhythmGameLoop = ({
   gameStateRef,
   scoringActions,

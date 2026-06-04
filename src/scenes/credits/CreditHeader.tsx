@@ -1,6 +1,10 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
+/**
+ * Renders the credits title header.
+ * @returns The rendered Credit Header UI.
+ */
 export const CreditHeader = React.memo(() => {
   const { t } = useTranslation()
   return (

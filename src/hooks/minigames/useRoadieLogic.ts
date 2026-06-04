@@ -86,7 +86,6 @@ function processTraffic(
   return crashed
 }
 
-
 function getInitialGameState(hasContraband: boolean): RoadieLogicState {
   const itemsToDeliver = [
     hasContraband
@@ -128,7 +127,6 @@ function getInitialUiState(game: RoadieLogicState) {
   }
 }
 
-
 function useRoadieKeyboardControls(move: (dx: number, dy: number) => void) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -154,11 +152,10 @@ function useRoadieKeyboardControls(move: (dx: number, dy: number) => void) {
   }, [move])
 }
 
-
 function useRoadieSceneTransition(
   isGameOver: boolean,
   currentScene: string,
-  changeScene: (scene: typeof GAME_PHASES[keyof typeof GAME_PHASES]) => void
+  changeScene: (scene: (typeof GAME_PHASES)[keyof typeof GAME_PHASES]) => void
 ) {
   const currentSceneRef = useRef(currentScene)
   const hasTransitionedRef = useRef(false)
@@ -185,6 +182,11 @@ function useRoadieSceneTransition(
   }, [isGameOver, currentScene, changeScene])
 }
 
+/**
+ * Owns roadie minigame state, traffic updates, movement controls, and completion dispatch.
+ *
+ * @returns Mutable stage state, UI state, movement controls, and update callback.
+ */
 export const useRoadieLogic = () => {
   const currentScene = useGameSelector(state => state.currentScene)
   const band = useGameSelector(state => state.band)
@@ -194,13 +196,17 @@ export const useRoadieLogic = () => {
   const hasContraband = !!(band?.stash && !isEmptyObject(band.stash))
 
   // Mutable Game State
-  const gameStateRef = useRef<RoadieLogicState>(null as unknown as RoadieLogicState)
+  const gameStateRef = useRef<RoadieLogicState>(
+    null as unknown as RoadieLogicState
+  )
   if (!gameStateRef.current) {
     gameStateRef.current = getInitialGameState(hasContraband)
   }
 
   // UI State
-  const [uiState, setUiState] = useState(() => getInitialUiState(gameStateRef.current))
+  const [uiState, setUiState] = useState(() =>
+    getInitialUiState(gameStateRef.current)
+  )
 
   // Stats Ref for Pixi
   const statsRef = useRef({
@@ -294,7 +300,6 @@ export const useRoadieLogic = () => {
 
   useRoadieKeyboardControls(move)
   useRoadieSceneTransition(uiState.isGameOver, currentScene, changeScene)
-
 
   return {
     gameStateRef,

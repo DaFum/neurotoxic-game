@@ -13,6 +13,9 @@ type RhythmGameInputParams = {
   contextState: { activeEvent: unknown }
 }
 
+/**
+ * Input controls exposed by the rhythm game input hook.
+ */
 export type RhythmGameInputReturn = {
   registerInput: (laneIndex: number, isDown: boolean) => void
 }
@@ -20,7 +23,7 @@ export type RhythmGameInputReturn = {
 /**
  * Handles user input for the rhythm game.
  *
- * @param params - Hook parameters.
+ * @param params - Rhythm state ref, scoring actions, and active-event context for input handling.
  * - `params.gameStateRef` - Game state reference.
  * - `params.scoringActions` - Scoring actions (handleHit).
  * - `params.contextState` - Context state (activeEvent).

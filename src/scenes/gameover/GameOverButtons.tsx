@@ -7,6 +7,11 @@ type GameOverButtonsProps = {
   onReturnToMenu: () => void
 }
 
+/**
+ * Renders the Game Over Buttons scene from onRetry and onReturnToMenu.
+ * @param props - Retry and return-to-menu callbacks for game-over recovery actions.
+ * @returns The rendered Game Over Buttons UI.
+ */
 export const GameOverButtons = ({
   onRetry,
   onReturnToMenu

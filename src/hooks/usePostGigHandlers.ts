@@ -56,6 +56,9 @@ import { createSocialPostQuestEvents } from '../quests/producers/socialQuestEven
 import { createRegionReputationChangedQuestEvent } from '../quests/producers/venueQuestEvents'
 import { createMoneyEarnedQuestEvent } from '../quests/producers/economyQuestEvents'
 
+/**
+ * Action handlers and busy state returned to the post-gig scene.
+ */
 export interface UsePostGigHandlersReturn {
   isProcessingAction: boolean
   handlePostSelection: (option: SocialPostOption) => void
@@ -66,6 +69,9 @@ export interface UsePostGigHandlersReturn {
   handleNextPhase: () => void
 }
 
+/**
+ * Inputs required to resolve post-gig social posts, brand deals, and continuation side effects.
+ */
 export interface UsePostGigHandlersProps {
   player: GameState['player']
   band: GameState['band']
@@ -105,6 +111,11 @@ export interface UsePostGigHandlersProps {
   t: (key: string, options?: Record<string, unknown>) => string
 }
 
+/**
+ * Creates guarded post-gig handlers for social posting, deal resolution, story spin, and continuation.
+ * @param props - Current post-gig state, dispatch actions, phase setters, and translator.
+ * @returns Post-gig action handlers and processing state.
+ */
 export const usePostGigHandlers = ({
   player,
   band,

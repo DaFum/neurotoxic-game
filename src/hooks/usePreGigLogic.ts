@@ -69,6 +69,9 @@ export const __testInternals:
     }
   : undefined
 
+/**
+ * UI-ready metadata for one pre-gig modifier option.
+ */
 export type ModifierOption = {
   key: keyof typeof MODIFIER_COSTS
   label: string
@@ -76,6 +79,9 @@ export type ModifierOption = {
   desc: string
 }
 
+/**
+ * View model and handlers consumed by the pre-gig setup scene.
+ */
 export interface PreGigLogicReturn {
   handleUpdateMerchPrice: (merchKey: string, newPrice: number) => void
   handleRestockMerch: (merchKey: string) => void
@@ -100,6 +106,10 @@ export interface PreGigLogicReturn {
   handleStartShow: () => Promise<void>
 }
 
+/**
+ * Builds pre-gig setup state and actions for setlists, modifiers, merch, and show start.
+ * @returns Pre-gig view model and handlers.
+ */
 export const usePreGigLogic = (): PreGigLogicReturn => {
   const { t, i18n } = useTranslation(['ui', 'venues'])
 

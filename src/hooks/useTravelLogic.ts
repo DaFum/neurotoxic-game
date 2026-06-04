@@ -94,22 +94,16 @@ type TravelLogicParams = {
 const TRAVEL_ANIMATION_TIMEOUT_MS = 1510
 
 /**
- * Custom hook for managing travel state and logic
- * @param params - Hook parameters
- * - `params.player` - Player state
- * - `params.band` - Band state
- * - `params.social` - Social state
- * - `params.gameMap` - Game map data
- * - `params.updatePlayer` - Player update function
- * - `params.updateBand` - Band update function
- * - `params.saveGame` - Function to save game state
- * - `params.advanceDay` - Day advancement function
- * - `params.triggerEvent` - Event trigger function
- * - `params.startGig` - Gig start function
- * - `params.addToast` - Toast notification function
- * - `params.changeScene` - Scene change function
- * - `params.onShowHQ` - Optional. Callback when HQ should be shown
- * @returns Travel state and handlers
+ * Calculates route cost and same-day cash impact for a proposed travel target.
+ * @param node - Destination map node.
+ * @param currentStartNode - Current map node, if known.
+ * @param player - Current player state.
+ * @param band - Current band state.
+ * @param social - Current social state.
+ * @param assets - Active long-term assets.
+ * @param liabilities - Active liabilities.
+ * @param assetModifiers - Aggregated modifiers from active assets.
+ * @returns Distance, fuel, travel cost, daily obligations, and total cash impact.
  */
 function calculateTravelCostsAndImpact(
   node: MapNode,
@@ -140,6 +134,11 @@ function calculateTravelCostsAndImpact(
   return { dist, totalCost, fuelLiters, dailyCost, totalCashImpact }
 }
 
+/**
+ * Manages overworld travel state, validation, resource spending, and arrival side effects.
+ * @param params - Travel dependencies, current game slices, dispatch actions, and optional callbacks.
+ * @returns Travel state, route helpers, action handlers, and completion guard ref.
+ */
 export const useTravelLogic = ({
   player,
   band,

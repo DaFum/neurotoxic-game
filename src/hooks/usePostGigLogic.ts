@@ -4,6 +4,10 @@ import { usePostGigHandlers } from './usePostGigHandlers'
 import { usePostGigState } from './postGig/usePostGigState'
 import { usePostGigDerivations } from './postGig/usePostGigDerivations'
 
+/**
+ * Composes post-gig state, derived results, and action handlers for the post-gig scene.
+ * @returns Post-gig view state, financials, social data, and handlers for each phase.
+ */
 export const usePostGigLogic = () => {
   const { t } = useTranslation(['ui'])
 
