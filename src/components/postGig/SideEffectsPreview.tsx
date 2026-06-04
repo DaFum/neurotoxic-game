@@ -4,8 +4,8 @@ import { useTranslation } from 'react-i18next'
 type SideEffectsPreviewProps = { badges?: string[] }
 
 /**
- * Renders the Side Effects Preview component from badges.
- * @param props - Preview badges for social-post side effects.
+ * Renders a preview of social-post side effects represented by badges.
+ * @param props - Props containing badge data for social-post side effects.
  * @returns The rendered Side Effects Preview.
  */
 export const SideEffectsPreview = memo(

@@ -7,7 +7,7 @@ interface ComboDisplayProps {
 }
 
 /**
- * Renders the Combo Display component from combo and accuracy.
+ * Renders the ComboDisplay component showing combo count and accuracy warnings.
  * @param props - Combo and accuracy values displayed during the gig.
  * @returns The rendered Combo Display UI.
  */
@@ -16,29 +16,43 @@ export const ComboDisplay = memo(function ComboDisplay({
   accuracy
 }: ComboDisplayProps) {
   const { t } = useTranslation()
-  const comboTier =
+  const comboColor =
     combo >= 50
-      ? 'text-blood-red animate-pulse'
+      ? 'var(--color-blood-red)'
       : combo >= 20
-        ? 'text-warning-yellow'
+        ? 'var(--color-warning-yellow)'
         : combo > 0
-          ? 'text-toxic-green'
-          : 'text-ash-gray/50'
+          ? 'var(--color-toxic-green)'
+          : 'rgb(var(--color-ash-gray-rgb) / 50%)'
+  const comboPulseClass = combo >= 50 ? 'animate-pulse' : ''
 
   return (
-    <div className='mt-2 bg-void-black/60 backdrop-blur-sm border border-toxic-green/20 px-3 py-1.5 inline-flex items-baseline gap-2'>
+    <div
+      className='mt-2 backdrop-blur-sm border px-3 py-1.5 inline-flex items-baseline gap-2'
+      style={{
+        backgroundColor: 'rgb(var(--color-void-black-rgb) / 60%)',
+        borderColor: 'var(--color-toxic-green-20)'
+      }}
+    >
       <div
-        className={`text-2xl font-bold transition-all duration-100 tabular-nums ${comboTier} ${
+        className={`text-2xl font-bold transition-all duration-100 tabular-nums ${comboPulseClass} ${
           combo > 0 ? 'scale-110' : 'scale-100'
         }`}
+        style={{ color: comboColor }}
       >
         {combo}x
       </div>
-      <div className='text-xs text-ash-gray uppercase tracking-widest'>
+      <div
+        className='text-xs uppercase tracking-widest'
+        style={{ color: 'var(--color-ash-gray)' }}
+      >
         {t('ui:gig.combo', 'COMBO')}
       </div>
       {accuracy < 70 && (
-        <div className='text-xs text-warning-yellow animate-pulse'>
+        <div
+          className='text-xs animate-pulse'
+          style={{ color: 'var(--color-warning-yellow)' }}
+        >
           {t('ui:gig.lowAcc', 'LOW ACC')}
         </div>
       )}
