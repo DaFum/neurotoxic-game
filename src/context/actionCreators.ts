@@ -220,8 +220,9 @@ const sanitizeSocialUpdates = (
 ): Partial<SocialState> => {
   if (!updates || typeof updates !== 'object') return {}
   const out: Record<string, unknown> = {}
-  for (const [key, value] of Object.entries(updates)) {
-    if (isForbiddenKey(key)) continue
+  for (const key in updates) {
+    if (!Object.hasOwn(updates, key) || isForbiddenKey(key)) continue
+    const value = (updates as Record<string, unknown>)[key]
     if (SOCIAL_NUMERIC_FIELDS.has(key)) {
       if (value === null) {
         if (SOCIAL_NULLABLE_FIELDS.has(key)) out[key] = null
