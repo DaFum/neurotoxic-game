@@ -337,7 +337,7 @@ export const calculateEffectiveTicketPrice = (
 ) => {
   if (!gigData) return 0
   context = context || {}
-  const price = typeof gigData.price === 'number' ? gigData.price : 0
+  const price = finiteNumberOr(gigData.price, 0)
   if (context.discountedTickets && price > 10) {
     return Math.floor(price * 0.5)
   }
