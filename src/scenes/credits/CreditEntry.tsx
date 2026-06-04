@@ -8,9 +8,8 @@ type CreditEntryProps = {
 }
 
 /**
- * Renders the Credit Entry scene from role, name, and delay.
+ * Renders the Credit Entry scene.
  * @param props - Credit role, credited name, and animation delay.
- * @returns The rendered Credit Entry UI.
  */
 export const CreditEntry = React.memo(
   ({ role, name, delay }: CreditEntryProps) => {

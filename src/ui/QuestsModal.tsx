@@ -395,9 +395,8 @@ const QuestItem = memo(
 )
 
 /**
- * Renders the Quests Modal view from onClose, activeQuests, and player.
+ * Renders the Quests Modal view.
  * @param props - Quest list, player context, and close handler for the quest modal.
- * @returns The rendered Quests Modal UI.
  */
 export const QuestsModal = ({
   onClose,

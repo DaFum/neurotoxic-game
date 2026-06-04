@@ -9,9 +9,8 @@ interface HeaderTimerProps {
 }
 
 /**
- * Renders the Header Timer scene from t, isPoweredOn, and timeLeft.
+ * Renders the Header Timer scene.
  * @param props - Kabelsalat translator, power state, and remaining time.
- * @returns The rendered Header Timer UI.
  */
 export const HeaderTimer: FC<HeaderTimerProps> = React.memo(
   ({ t, isPoweredOn, timeLeft }) => (

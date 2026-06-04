@@ -8,8 +8,8 @@ interface PauseButtonProps {
 }
 
 /**
- * Renders the Pause Button component from onTogglePause and isGameOver.
- * @param props - Pause callback and game-over state.
+ * Renders the PauseButton control that toggles pause state and disables after game over.
+ * @param props - Props containing `onTogglePause` callback and `isGameOver` disabled state.
  * @returns The rendered Pause Button UI.
  */
 export const PauseButton = memo(function PauseButton({

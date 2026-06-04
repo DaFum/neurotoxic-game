@@ -8,9 +8,8 @@ type UpgradesTabProps = Omit<CatalogConsumerProps, 'items'> & {
 }
 
 /**
- * Renders the Upgrades Tab view from player, upgrades, handleBuy, isItemOwned, isItemDisabled, getAdjustedCost, and processingItemId.
+ * Renders the Upgrades Tab view.
  * @param props - Player state, upgrade catalog, purchase handler, ownership/disabled checks, adjusted-cost resolver, and processing lock id.
- * @returns The rendered Upgrades Tab UI.
  */
 export const UpgradesTab = ({
   player,

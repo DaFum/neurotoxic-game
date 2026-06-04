@@ -55,9 +55,8 @@ interface StatBoxProps {
 }
 
 /**
- * Renders the Stat Box view from label, value, icon, and className.
+ * Renders the Stat Box view.
  * @param props - Statistic label, display value, icon, and optional wrapper classes.
- * @returns The rendered Stat Box UI.
  */
 export const StatBox = memo(function StatBox({
   label,

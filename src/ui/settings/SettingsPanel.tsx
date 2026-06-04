@@ -25,9 +25,8 @@ export interface SettingsPanelProps {
 }
 
 /**
- * Renders the Settings Panel view from settings, musicVol, sfxVol, isMuted, onMusicChange, onSfxChange, onToggleMute, onToggleCRT, onLogLevelChange, onDeleteSave, and className.
+ * Renders the Settings Panel view.
  * @param props - Settings, audio state, and callbacks for updating audio, visual, log, language, and save-data controls.
- * @returns The rendered Settings Panel UI.
  */
 export const SettingsPanel = memo(function SettingsPanel({
   settings,

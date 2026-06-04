@@ -8,7 +8,6 @@ import { GAME_PHASES } from '../context/gameConstants'
 
 /**
  * Renders the Amp Calibration Scene.
- * @returns The rendered Amp Calibration Scene UI.
  */
 export const AmpCalibrationScene = () => {
   const { t } = useTranslation(['ui'])

@@ -4,7 +4,6 @@ import { ActionButton } from '../shared/ActionButton'
 
 /**
  * Renders language selection controls for the settings screen.
- * @returns The rendered Language Settings UI.
  */
 export const LanguageSettings = memo(function LanguageSettings() {
   const { t, i18n } = useTranslation()

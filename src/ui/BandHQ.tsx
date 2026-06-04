@@ -18,9 +18,8 @@ export interface BandHQProps {
 }
 
 /**
- * Renders the Band HQ view from onClose and className.
+ * Renders the Band HQ view.
  * @param props - Close handler and optional wrapper class for the Band HQ modal.
- * @returns The rendered Band HQ UI.
  */
 export const BandHQ = ({ onClose, className = '' }: BandHQProps) => {
   const { t } = useTranslation()

@@ -153,10 +153,13 @@ const readPlayerFundsAndHarmony = (
 }
 
 /**
- * Handles social update actions
- * @param state - Current state
- * @param payload - Social updates
- * @returns Updated state
+ * Applies sanitized social-state updates.
+ *
+ * @param state - Game state before the social patch.
+ * @param payload - Partial social patch or updater function. Numeric fields,
+ * active deals, and trend data are normalized before merge.
+ * @returns State with social updates merged, or the original state when the
+ * payload is invalid.
  */
 export const handleUpdateSocial = (
   state: GameState,
@@ -344,7 +347,8 @@ const VENUE_DEFENSE_LOYALTY_COST = 15
  * Blacklists a venue after a bad gig unless fan loyalty absorbs the penalty.
  *
  * @param state - Current game state before blacklist handling.
- * @param payload - Venue id to blacklist and toast id to use for player feedback.
+ * @param venueId - Venue id to blacklist.
+ * @param toastId - Toast id to use for player feedback.
  * @returns Updated state with a blacklist entry or loyalty-defense side effect.
  */
 export const handleAddVenueBlacklist = (
@@ -414,7 +418,8 @@ export const getUnblacklistCost = (venueId: string): number => {
  * Pays amends to remove a venue from the blacklist and emits venue quest progress.
  *
  * @param state - Current game state before amends are paid.
- * @param payload - Venue id to unblacklist and toast id for feedback.
+ * @param venueId - Venue id to unblacklist.
+ * @param toastId - Toast id for feedback.
  * @returns Updated state with money deducted and venue removed, or feedback when amends are unavailable.
  */
 export const handleUnblacklistVenue = (

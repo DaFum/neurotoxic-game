@@ -6,9 +6,8 @@ type SkipButtonProps = {
 }
 
 /**
- * Renders the Skip Button scene from onSkip.
+ * Renders a skip button that triggers `onSkip` when clicked.
  * @param props - Skip callback for leaving the intro immediately.
- * @returns The rendered Skip Button UI.
  */
 export const SkipButton = ({ onSkip }: SkipButtonProps) => {
   const { t } = useTranslation()

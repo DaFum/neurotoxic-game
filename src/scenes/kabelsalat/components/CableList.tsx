@@ -16,9 +16,8 @@ type CableListProps = {
 }
 
 /**
- * Renders the Cable List scene from t, connections, selectedCable, isShocked, isGameOver, and handleCableClick.
+ * Renders the Cable List scene.
  * @param props - Translator, connection map, selected cable, shock/game-over state, and cable-click handler.
- * @returns The rendered Cable List UI.
  */
 export const CableList = ({
   t,

@@ -26,9 +26,8 @@ type MerchPressModalProps = {
 }
 
 /**
- * Renders the Merch Press Modal view from onClose, onPress, canPress, and config.
+ * Renders the Merch Press Modal view.
  * @param props - Press availability, press action, close handler, and merch-press configuration.
- * @returns The rendered Merch Press Modal UI.
  */
 export const MerchPressModal = ({
   onClose,

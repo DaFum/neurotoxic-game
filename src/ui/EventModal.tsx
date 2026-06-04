@@ -85,9 +85,8 @@ const EventOptionButton = ({
 }
 
 /**
- * Renders the Event Modal view from event, onOptionSelect, and className.
+ * Renders the Event Modal view.
  * @param props - Active event, option-selection callback, and optional wrapper class.
- * @returns The rendered Event Modal UI.
  */
 export const EventModal = ({
   event,

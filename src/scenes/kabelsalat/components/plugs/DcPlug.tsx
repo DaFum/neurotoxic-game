@@ -2,7 +2,6 @@ import React from 'react'
 
 /**
  * Renders the DC cable plug graphic.
- * @returns The rendered Dc Plug UI.
  */
 export const DcPlug = React.memo(function DcPlug() {
   return (

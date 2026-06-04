@@ -83,7 +83,7 @@ function playDrumsLegacy(
  * - `options.stopAfterSeconds` - Number of seconds before playback stops.
  * - `options.startTimeSec` - Absolute Tone.js start time in seconds.
  * @param random - RNG function for deterministic generation. Defaults to `secureRandom`.
- * @returns Promise resolving to whether procedural playback started successfully.
+ * @returns Whether procedural playback started successfully after setup.
  */
 export async function startMetalGenerator(
   song: Partial<Song>,

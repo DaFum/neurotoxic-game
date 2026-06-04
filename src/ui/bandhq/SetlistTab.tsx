@@ -104,7 +104,6 @@ export interface SetlistTabProps {
 /**
  * Renders setlist management inside Band HQ.
  * @param props - Current setlist plus callback used to persist setlist changes.
- * @returns The rendered Setlist Tab UI.
  */
 export const SetlistTab = (props: SetlistTabProps) => {
   const { setlist, setSetlist, addToast } = props

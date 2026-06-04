@@ -13,9 +13,8 @@ type SettingsTabProps = {
 }
 
 /**
- * Renders the Settings Tab view from settings, audioState, onAudioChange, updateSettings, and deleteSave.
+ * Renders the Settings Tab view.
  * @param props - Settings, audio state, settings update callback, audio callbacks, and delete-save callback.
- * @returns The rendered Settings Tab UI.
  */
 export const SettingsTab = ({
   settings,

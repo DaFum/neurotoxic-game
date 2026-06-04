@@ -178,7 +178,7 @@ export class AmpStageController extends BaseStageController<AmpStageOptions> {
 /**
  * Creates an Amp stage controller instance.
  * @param params - Controller factory dependencies.
- * @returns Computed result.
+ * @returns A new AmpStageController instance.
  */
 export const createAmpStageController = (
   params: StageControllerOptions<AmpStageOptions>

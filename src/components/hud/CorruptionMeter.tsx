@@ -10,7 +10,7 @@ interface CorruptionMeterProps {
 }
 
 /**
- * Renders the Corruption Meter component from corruptionLevel and isCorruptionBurstActive.
+ * Renders the CorruptionMeter component for decibel corruption and burst status.
  * @param props - Corruption level and burst-active state.
  * @returns The rendered Corruption Meter UI.
  */
@@ -20,9 +20,19 @@ export const CorruptionMeter = memo(function CorruptionMeter({
 }: CorruptionMeterProps) {
   const { t } = useTranslation('ui')
   return (
-    <div className='mt-3 w-48 bg-void-black/80 p-2 border border-error-red/30 backdrop-blur-sm'>
+    <div
+      className='mt-3 w-48 p-2 border backdrop-blur-sm'
+      style={{
+        backgroundColor: 'rgb(var(--color-void-black-rgb) / 80%)',
+        borderColor:
+          'color-mix(in srgb, var(--color-error-red) 30%, transparent)'
+      }}
+    >
       {isCorruptionBurstActive ? (
-        <div className='text-error-red font-bold text-sm tracking-widest text-center animate-pulse'>
+        <div
+          className='font-bold text-sm tracking-widest text-center animate-pulse'
+          style={{ color: 'var(--color-error-red)' }}
+        >
           {t('ui:hud.burst_armed')}
         </div>
       ) : (

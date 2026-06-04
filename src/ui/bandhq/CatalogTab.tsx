@@ -18,9 +18,8 @@ const hasBalanceMetaKey = (
   Object.hasOwn(BALANCE_DISPLAY_META, key)
 
 /**
- * Renders the Catalog Tab view from items, balances, handleBuyCallback, isItemOwnedCallback, isItemDisabledCallback, getAdjustedCostCallback, and processingItemId.
+ * Renders the Catalog Tab view.
  * @param props - Catalog items, player balances, purchase callbacks, ownership checks, disabled checks, adjusted-cost resolver, and processing lock id.
- * @returns The rendered Catalog Tab UI.
  */
 export const CatalogTab = ({
   items,

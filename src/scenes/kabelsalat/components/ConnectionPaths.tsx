@@ -11,9 +11,8 @@ type ConnectionPathsProps = {
 }
 
 /**
- * Renders the Connection Paths scene from connections, isPowerConnected, and socketOrder.
+ * Renders the Connection Paths scene.
  * @param props - Connection map, power state, and socket order for all rendered paths.
- * @returns The rendered Connection Paths UI.
  */
 export const ConnectionPaths = ({
   connections,

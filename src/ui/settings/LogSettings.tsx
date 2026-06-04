@@ -9,9 +9,8 @@ type LogSettingsProps = {
 }
 
 /**
- * Renders the Log Settings view from logLevel and onLogLevelChange.
+ * Renders the Log Settings view.
  * @param props - Current log level and callback for changing the log verbosity.
- * @returns The rendered Log Settings UI.
  */
 export const LogSettings = memo(function LogSettings({
   logLevel,

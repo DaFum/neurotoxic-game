@@ -163,9 +163,8 @@ const BandMemberRow = ({
 }
 
 /**
- * Renders the Overworld HUD view from player and band.
+ * Renders the Overworld HUD view.
  * @param props - Player and band state displayed in the overworld HUD.
- * @returns The rendered Overworld HUD UI.
  */
 export const OverworldHUD = React.memo(
   ({ player, band }: OverworldHUDProps) => {

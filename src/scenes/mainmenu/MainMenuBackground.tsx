@@ -3,7 +3,6 @@ import { IMG_PROMPTS, resolveGenImageUrl } from '../../utils/imageGen'
 
 /**
  * Renders the animated main menu background layer.
- * @returns The rendered Main Menu Background UI.
  */
 export const MainMenuBackground = () => {
   const isOnline = useNetworkStatus()

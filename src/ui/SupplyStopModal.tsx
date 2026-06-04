@@ -18,9 +18,8 @@ export interface SupplyStopModalProps {
 }
 
 /**
- * Renders the Supply Stop Modal view from inventory and onClose.
+ * Renders the Supply Stop Modal view.
  * @param props - Supply inventory and close handler for the supply-stop modal.
- * @returns The rendered Supply Stop Modal UI.
  */
 export const SupplyStopModal: React.FC<SupplyStopModalProps> = ({
   inventory,

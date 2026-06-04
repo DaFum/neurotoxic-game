@@ -18,7 +18,7 @@ import { GlossaryTab } from './GlossaryTab.tsx'
 import { BrandDealsTab } from './BrandDealsTab.tsx'
 
 /**
- * Props for the Band HQContent Area component.
+ * Props for the Band HQ Content Area component.
  */
 export interface BandHQContentAreaProps {
   currentTab: string
@@ -26,9 +26,8 @@ export interface BandHQContentAreaProps {
 }
 
 /**
- * Renders the Band HQ Content Area view from currentTab and VOID_TRADER_CONTROVERSY_THRESHOLD.
+ * Renders the Band HQ Content Area view.
  * @param props - Active Band HQ tab and void-trader threshold used to choose the tab panel.
- * @returns The rendered Band HQ Content Area UI.
  */
 export const BandHQContentArea = ({
   currentTab,

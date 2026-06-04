@@ -16,7 +16,6 @@ type AudioSettingsProps = {
 /**
  * Renders music/SFX volume sliders and the global mute toggle.
  * @param props - Current audio values plus callbacks for music volume, SFX volume, and mute changes.
- * @returns The rendered Audio Settings UI.
  */
 export const AudioSettings = memo(function AudioSettings({
   musicVol,

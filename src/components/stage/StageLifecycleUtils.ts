@@ -5,10 +5,10 @@ import type { Application } from 'pixi.js'
  * Checks whether a lifecycle race should be ignored during teardown.
  * @param app - Pixi application instance being checked or destroyed.
  * @param currentApp - Currently active Pixi application instance.
- * @param isDisposed - Whether disposed is active.
+ * @param isDisposed - Whether the controller has been disposed.
  * @param handleTicker - Ticker callback registered with the Pixi application.
  * @param contextName - Logging context used for lifecycle diagnostics.
- * @returns Computed result.
+ * @returns `true` if a lifecycle race was detected and teardown was triggered; `false` otherwise.
  */
 export const checkLifecycleRace = (
   app: Application | null,
@@ -26,11 +26,11 @@ export const checkLifecycleRace = (
 
 /**
  * Checks whether an error came from a known lifecycle race.
- * @param e - Candidate error value to classify.
+ * @param e - Error value to classify.
  * @param app - Pixi application instance being checked or destroyed.
  * @param currentApp - Currently active Pixi application instance.
- * @param isDisposed - Whether disposed is active.
- * @returns Computed result.
+ * @param isDisposed - Whether the controller has been disposed.
+ * @returns `true` if the error is from a known lifecycle race; `false` otherwise.
  */
 export const isLifecycleRaceError = (
   e: unknown,

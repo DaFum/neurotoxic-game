@@ -15,7 +15,7 @@ interface MapConnectionProps {
 }
 
 /**
- * Renders the Map Connection component from start, end, startVis, and endVis.
+ * Displays a map edge between two endpoints when both endpoints are visible.
  * @param props - Connection endpoints and visibility states for a map edge.
  * @returns The rendered Map Connection UI.
  */

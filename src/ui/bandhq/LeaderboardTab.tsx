@@ -37,7 +37,6 @@ const isAbortError = (error: unknown): boolean => {
 
 /**
  * Renders leaderboard records inside Band HQ.
- * @returns The rendered Leaderboard Tab UI.
  */
 export const LeaderboardTab = () => {
   const { t, i18n } = useTranslation()

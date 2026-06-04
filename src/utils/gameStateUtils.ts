@@ -840,7 +840,8 @@ export const calculateAppliedDelta = (
  * @param hasGrudgeHolder - If the member has grudge_holder trait.
  * @param hasPeacemaker - If the member has peacemaker trait.
  * @param currentRelationships - The current relationships of the member.
- * @returns The calculated change or null if none.
+ * @returns Relationship target and score when a modifier applies, otherwise
+ * null.
  */
 const calculateMemberRelationshipChange = (
   change: RelationshipChange,

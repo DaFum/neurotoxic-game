@@ -20,9 +20,8 @@ type VoidTraderCatalogItem = VoidTraderItem & {
 }
 
 /**
- * Renders the Void Trader Tab view from player, handleTrade, isItemOwned, isItemDisabled, and processingItemId.
+ * Renders the Void Trader Tab view.
  * @param props - Player state, void-trader purchase handler, ownership/disabled checks, and processing lock id.
- * @returns The rendered Void Trader Tab UI.
  */
 export const VoidTraderTab = ({
   player,

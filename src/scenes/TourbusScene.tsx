@@ -10,7 +10,6 @@ import { calculateTravelMinigameResult } from '../utils/economyEngine'
 
 /**
  * Renders the Tourbus Scene.
- * @returns The rendered Tourbus Scene UI.
  */
 export const TourbusScene = () => {
   const { t } = useTranslation('minigame')

@@ -34,11 +34,13 @@ const DEFAULT_MEMBER_STAMINA = 100
 const DEFAULT_MEMBER_STAMINA_MAX = 100
 
 /**
- * Handles band update actions
- * Clamps band.harmony to valid range 1-100
- * @param state - Current state
- * @param payload - Band updates
- * @returns Updated state
+ * Applies sanitized band updates while preserving reducer-side clamps.
+ *
+ * @param state - Game state before the band patch.
+ * @param payload - Partial band patch or updater function. Forbidden keys and
+ * invalid member payloads leave the state unchanged.
+ * @returns State with valid band updates merged, including harmony clamped to
+ * `1..100`.
  */
 export const handleUpdateBand = (
   state: GameState,
@@ -168,9 +170,11 @@ export const handleUpdateBand = (
 
 /**
  * Handles explicit trait unlocking via action.
- * @param state - Current state
- * @param payload - `memberId, traitId`
- * @returns Updated state
+ *
+ * @param state - Game state before applying the unlock.
+ * @param payload - Member id and trait id to unlock. Invalid or forbidden ids
+ * leave the state unchanged.
+ * @returns State with trait unlock side effects and toasts applied.
  */
 export const handleUnlockTrait = (
   state: GameState,
@@ -199,10 +203,12 @@ export const handleUnlockTrait = (
 }
 
 /**
- * Handles item consumption
- * @param state - Current state
- * @param payload - Item type to consume
- * @returns Updated state
+ * Consumes one inventory item or toggles off a boolean inventory flag.
+ *
+ * @param state - Game state before inventory consumption.
+ * @param payload - Inventory item key to consume. Missing, non-string, or
+ * forbidden keys leave the state unchanged.
+ * @returns State with the inventory count decremented or boolean item cleared.
  */
 export const handleConsumeItem = (
   state: GameState,
@@ -412,7 +418,8 @@ const getStashCount = (
  * Crafts a contraband recipe by consuming stash inputs and adding the recipe output.
  *
  * @param state - Current game state before crafting.
- * @param payload - Recipe id and toast id used for success or failure feedback.
+ * @param recipeId - Recipe id to craft.
+ * @param toastId - Toast id used for success or failure feedback.
  * @returns Updated state with consumed inputs, crafted output, quest progress, and feedback, or the original state when crafting cannot proceed.
  */
 export const handleCraftItem = (
@@ -594,9 +601,12 @@ const applyContrabandEffect = (
 
 /**
  * Handles using a contraband item.
- * @param state - Current state
- * @param payload - `instanceId, contrabandId, memberId`
- * @returns Updated state
+ *
+ * @param state - Game state before consuming the stash item.
+ * @param payload - Contraband instance and item ids, plus an optional member id
+ * for member-targeted effects.
+ * @returns State with the matching stash item consumed and its effect applied,
+ * or the original state when validation fails.
  */
 export const handleUseContraband = (
   state: GameState,
@@ -640,11 +650,15 @@ export const handleUseContraband = (
 }
 
 /**
- * Reducer for band actions.
- * Extracts the subset of actions specific to the band context.
- * @param state - Current state
- * @param action - Action with type and payload
- * @returns New state
+ * Toggles the Neuro Decimator if the band owns it.
+ *
+ * @remarks
+ * Enabling the item costs harmony once; disabling it does not refund harmony.
+ *
+ * @param state - Game state before the toggle request.
+ * @param payload - Requested active state.
+ * @returns State with the active flag changed, or the original state when the
+ * item is missing or already in the requested state.
  */
 export const handleToggleNeuroDecimator = (
   state: GameState,
@@ -679,10 +693,11 @@ export const handleToggleNeuroDecimator = (
 }
 
 /**
- * Main band reducer
- * @param state - Current state
- * @param action - Action with type and payload
- * @returns New state
+ * Routes band-owned actions to their reducer helpers.
+ *
+ * @param state - Game state before the band action.
+ * @param action - Game action that may affect the band slice.
+ * @returns State after the matching band reducer handles the action.
  */
 export const bandReducer = (
   state: GameState,

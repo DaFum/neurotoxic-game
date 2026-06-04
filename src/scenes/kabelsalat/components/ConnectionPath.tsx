@@ -16,9 +16,8 @@ export type ConnectionPathProps = {
 }
 
 /**
- * Renders the Connection Path scene from sockId, cabId, isPowerConnected, and socketOrder.
+ * Renders the Connection Path scene.
  * @param props - Socket/cable ids, power state, and socket order for one rendered connection path.
- * @returns The rendered Connection Path UI.
  */
 export const ConnectionPath: FC<ConnectionPathProps> = ({
   sockId,

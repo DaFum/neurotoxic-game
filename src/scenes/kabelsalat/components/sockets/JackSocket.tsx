@@ -2,7 +2,6 @@ import React from 'react'
 
 /**
  * Renders the jack socket graphic.
- * @returns The rendered Jack Socket UI.
  */
 export const JackSocket = React.memo(function JackSocket() {
   return (

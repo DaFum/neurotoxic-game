@@ -2,7 +2,6 @@ import React from 'react'
 
 /**
  * Renders the MIDI socket graphic.
- * @returns The rendered Midi Socket UI.
  */
 export const MidiSocket = React.memo(function MidiSocket() {
   return (

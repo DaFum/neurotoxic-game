@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 
 /**
  * Renders the main menu footer controls and status text.
- * @returns The rendered Main Menu Footer UI.
  */
 export const MainMenuFooter = () => {
   const { t } = useTranslation()

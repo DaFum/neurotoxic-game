@@ -117,15 +117,16 @@ export const getLocationName = (
 }
 
 /**
- * Checks if a venue is accessible to the player
- * @param params - Params.
+ * Checks reputation, blacklist, and challenge-mode access for a map venue.
+ *
+ * @param params - Venue access inputs from the travel confirmation flow.
  * - `params.node` - Target node
  * - `params.player` - Player state
  * - `params.reputationByRegion` - Reputation data
  * - `params.venueBlacklist` - Blacklisted venues
  * - `params.venuesMap` - Map of all venues
  * - `params.getLocationName` - Helper to get location name
- * @returns `allowed: boolean, errorKey?: string, defaultMessage?: string, errorContext?: Object`
+ * @returns Access result with localized error metadata when travel is blocked.
  */
 export const checkVenueAccess = ({
   node,
@@ -199,11 +200,12 @@ export const checkVenueAccess = ({
 }
 
 /**
- * Checks if a travel to a node is physically possible (visibility/connectivity)
- * @param node - Target node
- * @param visibility - Visibility state
- * @param isConnected - Whether target is connected to current
- * @returns `allowed: boolean, errorKey?: string, defaultMessage?: string`
+ * Checks whether the target node is visible and connected to the current route.
+ *
+ * @param node - Target map node.
+ * @param visibility - Resolved node visibility state.
+ * @param isConnected - Whether the target is connected to the current node.
+ * @returns Access result with localized error metadata when routing is blocked.
  */
 export const checkTravelPrerequisites = (
   node: MapNode & { type?: string },
@@ -232,11 +234,12 @@ export const checkTravelPrerequisites = (
 }
 
 /**
- * Checks if the player has enough money and fuel for travel
- * @param totalCost - Required money
- * @param fuelLiters - Required fuel
- * @param player - Player state
- * @returns `allowed: boolean, errorKey?: string, defaultMessage?: string`
+ * Checks whether the player can pay the money and fuel costs for travel.
+ *
+ * @param totalCost - Required money after travel-cost calculations.
+ * @param fuelLiters - Required fuel in liters.
+ * @param player - Player state used for current money and van fuel.
+ * @returns Access result with localized error metadata when resources are short.
  */
 export const checkTravelResources = (
   totalCost: number,

@@ -41,9 +41,12 @@ const sanitizeContextValue = (value: unknown): unknown => {
 /**
  * Handles purchasing an item from the Void Trader using Fame.
  * Validates cost, clamps new fame state, and calls addContrabandHelper.
- * @param state - Current game state
- * @param payload - `contrabandId, fameCost, instanceId, successToast`
- * @returns Updated state
+ *
+ * @param state - Game state before the trade.
+ * @param payload - Contraband id, fame cost, generated instance id, and optional
+ * success toast.
+ * @returns State with fame deducted and contraband added, or the original state
+ * when validation fails.
  */
 export const handleTradeVoidItem = (
   state: GameState,

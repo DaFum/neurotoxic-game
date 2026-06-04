@@ -125,11 +125,16 @@ export const eventEngine = {
   },
 
   /**
-   * Resolves a player's choice for an event, handling skill checks and immediate effects.
+   * Resolves an event choice into immediate effects and follow-up outcomes.
+   *
+   * @remarks
+   * Skill checks use the supplied RNG for deterministic tests and special-case
+   * luck before falling through to band stat lookup.
+   *
    * @param choice - The choice object selected by the player.
    * @param gameState - The current game state.
    * @param rng - Random number generator. Defaults to `secureRandom`.
-   * @returns The result object containing effects and outcomes.
+   * @returns Effect payload, including any skill-check outcome or next-event id.
    */
   resolveChoice: (
     choice: EventChoice,
@@ -221,10 +226,11 @@ export const eventEngine = {
   },
 
   /**
-   * Post-processes event options to add dynamic context-sensitive choices (e.g. inventory usage).
-   * @param event - The event object.
+   * Adds context-sensitive options to an event before it is displayed.
+   *
+   * @param event - Event definition selected for the current context.
    * @param gameState - The current game state.
-   * @returns The event object with processed options.
+   * @returns Event with processed options, or null when the input event is null.
    */
   processOptions: (
     event: GameEvent,

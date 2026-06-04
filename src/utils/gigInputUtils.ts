@@ -33,8 +33,13 @@ export const createKeyToLaneMap = (
 }
 
 /**
- * Handles keyboard input for a specific lane.
- * @param params - Params.
+ * Handles a keydown event for rhythm lanes and pause toggling.
+ *
+ * @remarks
+ * Repeated keydown events are ignored. The first accepted keydown also asks the
+ * audio layer to unlock playback from the user gesture.
+ *
+ * @param params - Keydown collaborators supplied by the Gig scene input hook.
  * - `params.e` - The keyboard event.
  * - `params.getLaneIndex` - Function returning a lane index given a key string.
  * - `params.actions` - Action dispatchers.
@@ -74,8 +79,9 @@ export const handleKeyDownLogic = ({
 }
 
 /**
- * Handles keyup event for a lane.
- * @param params - Params.
+ * Releases the rhythm lane mapped to a keyup event.
+ *
+ * @param params - Keyup collaborators supplied by the Gig scene input hook.
  * - `params.e` - The keyboard event.
  * - `params.getLaneIndex` - Function returning a lane index given a key string.
  * - `params.actions` - Action dispatchers.

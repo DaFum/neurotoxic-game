@@ -11,9 +11,8 @@ interface MainMenuActionButtonsProps {
 }
 
 /**
- * Renders the Main Menu Action Buttons scene from handleStartTour, isStarting, handleLoad, isLoadingGame, and openHQ.
+ * Renders the Main Menu Action Buttons scene.
  * @param props - Start/load handlers, loading flags, and Band HQ shortcut for the main menu.
- * @returns The rendered Main Menu Action Buttons UI.
  */
 export const MainMenuActionButtons = ({
   handleStartTour,

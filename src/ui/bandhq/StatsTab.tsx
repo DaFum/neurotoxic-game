@@ -10,9 +10,8 @@ type StatsTabProps = {
 }
 
 /**
- * Renders the Stats Tab view from player, band, and social.
+ * Renders the Stats Tab view.
  * @param props - Player, band, and social state shown in the stats tab.
- * @returns The rendered Stats Tab UI.
  */
 export const StatsTab = ({ player, band, social }: StatsTabProps) => {
   const { t, i18n } = useTranslation(['ui'])

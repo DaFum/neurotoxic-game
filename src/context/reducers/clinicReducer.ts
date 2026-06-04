@@ -21,12 +21,14 @@ import { sanitizeSuccessToast } from './toastSanitizers'
 
 /**
  * Common logic for clinic actions.
- * @param state - The current game state.
- * @param payload - The action payload.
+ *
+ * @param state - Game state before the clinic action.
+ * @param payload - Clinic action payload after action-creator normalization.
  * - `payload.successToast` - Optional toast appended to state.toasts on success.
  * - `payload.getSuccessToast` - Optional factory for success toast appended to state.toasts.
  * @param memberUpdater - A function to apply updates to the target member.
- * @returns The updated state or the original state if validation fails.
+ * @returns State with clinic costs, member updates, and success toast applied,
+ * or the original state when validation fails.
  */
 const executeClinicAction = (
   state: GameState,
@@ -132,13 +134,15 @@ const executeClinicAction = (
 
 /**
  * Handles the healing logic in the Void Clinic.
- * @param state - The current game state.
- * @param payload - The payload containing the requested changes.
+ *
+ * @param state - Game state before healing.
+ * @param payload - Clinic heal request.
  * - `payload.memberId` - The ID of the band member to heal.
  * - `payload.type` - Must be 'heal' or 'enhance'. Used to compute cost from CLINIC_CONFIG.
  * - `payload.staminaGain` - The stamina gain.
  * - `payload.moodGain` - The mood gain.
- * @returns The updated game state.
+ * @returns State with clamped stamina/mood restoration and clinic cost applied,
+ * or the original state when validation fails.
  */
 export const handleClinicHeal = (
   state: GameState,
@@ -173,14 +177,16 @@ export const handleClinicHeal = (
 
 /**
  * Handles the blood bank donation logic, trading stamina and harmony for money.
- * @param state - The current game state.
- * @param payload - The payload containing the requested changes.
+ *
+ * @param state - Game state before donation.
+ * @param payload - Blood-bank donation request.
  * - `payload.moneyGain` - The amount of money to gain.
  * - `payload.harmonyCost` - The harmony to lose.
  * - `payload.staminaCost` - The stamina to lose per member.
  * - `payload.controversyGain` - The controversy to gain.
  * - `payload.successToast` - Optional toast on success.
- * @returns The updated game state.
+ * @returns State with money/social gains and stamina/harmony costs applied, or
+ * the original state when validation fails.
  */
 export const handleBloodBankDonate = (
   state: GameState,
@@ -285,12 +291,14 @@ export const handleBloodBankDonate = (
 
 /**
  * Handles trait enhancement or other cybernetic grafts in the clinic.
- * @param state - The current game state.
- * @param payload - The payload containing the requested changes.
+ *
+ * @param state - Game state before enhancement.
+ * @param payload - Clinic enhancement request.
  * - `payload.memberId` - The ID of the band member.
  * - `payload.type` - Must be 'heal' or 'enhance'. Used to compute cost from CLINIC_CONFIG.
  * - `payload.trait` - The trait to add or upgrade.
- * @returns The updated game state.
+ * @returns State with the trait grafted and clinic cost applied, or the
+ * original state when validation fails.
  */
 export const handleClinicEnhance = (
   state: GameState,
