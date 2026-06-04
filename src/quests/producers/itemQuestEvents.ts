@@ -1,5 +1,8 @@
 import type { QuestEvent } from '../../types'
 
+/**
+ * Creates an `item.collected` quest event.
+ */
 export const createItemCollectedQuestEvent = ({
   itemId
 }: {
@@ -12,6 +15,9 @@ export const createItemCollectedQuestEvent = ({
   tags: [itemId]
 })
 
+/**
+ * Creates an `item.used` quest event.
+ */
 export const createItemUsedQuestEvent = ({
   itemId
 }: {
@@ -24,6 +30,9 @@ export const createItemUsedQuestEvent = ({
   tags: [itemId]
 })
 
+/**
+ * Creates an `item.crafted` quest event.
+ */
 export const createItemCraftedQuestEvent = ({
   itemId,
   recipeId
@@ -38,6 +47,9 @@ export const createItemCraftedQuestEvent = ({
   tags: [itemId, recipeId]
 })
 
+/**
+ * Creates an `item.delivered` quest event.
+ */
 export const createItemDeliveredQuestEvent = ({
   itemId,
   amount

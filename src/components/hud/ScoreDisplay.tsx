@@ -5,6 +5,11 @@ interface ScoreDisplayProps {
   score: number
 }
 
+/**
+ * Renders the Score Display component from score.
+ * @param props - Current score value.
+ * @returns The rendered Score Display UI.
+ */
 export const ScoreDisplay = memo(function ScoreDisplay({
   score
 }: ScoreDisplayProps) {

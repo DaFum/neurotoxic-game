@@ -195,6 +195,11 @@ const MapNodeTooltip = memo(
 
 MapNodeTooltip.displayName = 'MapNodeTooltip'
 
+/**
+ * Renders the Map Node View component from node, isCurrent, isTraveling, visibility, isReachable, isPendingConfirm, handleTravel, setHoveredNode, iconUrl, vanUrl, ticketPrice, harmony, and cityTraits.
+ * @param props - Map node data, travel/current/pending states, hover handler, travel handler, translation callback, and route metadata.
+ * @returns The rendered Map Node View UI.
+ */
 export const MapNodeView = memo(
   ({
     node,

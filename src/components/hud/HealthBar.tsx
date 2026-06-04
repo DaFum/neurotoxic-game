@@ -9,6 +9,11 @@ interface HealthBarProps {
   isToxicMode?: boolean
 }
 
+/**
+ * Renders the Health Bar component from health and isToxicMode.
+ * @param props - Current health and toxic-mode state.
+ * @returns The rendered Health Bar UI.
+ */
 export const HealthBar = memo(function HealthBar({
   health,
   isToxicMode = false

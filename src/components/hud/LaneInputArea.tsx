@@ -65,6 +65,11 @@ const LaneInputZone = memo(function LaneInputZone({
   )
 })
 
+/**
+ * Renders the Lane Input Area component from onLaneInput.
+ * @param props - Lane input callback used by rhythm controls.
+ * @returns The rendered Lane Input Area UI.
+ */
 export const LaneInputArea = memo(function LaneInputArea({
   onLaneInput
 }: LaneInputAreaProps) {

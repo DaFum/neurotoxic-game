@@ -19,6 +19,9 @@ import type {
   QuestState
 } from '../types'
 
+/**
+ * Typed side effects returned by event resolution for callers to execute.
+ */
 export type SideEffect =
   | { type: 'persistUnlock'; id: string }
   | { type: 'unlockToast'; id: string }
@@ -86,6 +89,9 @@ function buildQuestActions(quests: unknown, currentDay: number): GameAction[] {
   return actions
 }
 
+/**
+ * Resolves an event choice into reducer actions and caller-owned side effects.
+ */
 export function resolveEvent(
   choice: Record<string, unknown> | null,
   state: GameState

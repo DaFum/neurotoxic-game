@@ -14,6 +14,9 @@ import { QuestLifecycle } from '../domain/questLifecycle'
 import { getQuestDefinition } from '../data/questRegistry'
 import { isForbiddenKey, isLooseRecord } from './objectUtils'
 
+/**
+ * Legacy quest progress event shapes accepted for save and caller compatibility.
+ */
 export type LegacyQuestProgressEvent =
   | {
       type: 'gig_completed'
@@ -62,6 +65,9 @@ export type LegacyQuestProgressEvent =
     }
   | { type: 'travel_completed'; region: string }
 
+/**
+ * Quest progress event accepted by the progress engine.
+ */
 export type QuestProgressEvent = QuestEvent | LegacyQuestProgressEvent
 
 const LEGACY_EVENT_TYPES: Record<QuestProgressSource, QuestEventType> = {
@@ -443,6 +449,9 @@ const calculateProgressAmount = (
   }
 }
 
+/**
+ * Event-driven quest progress engine.
+ */
 export const QuestProgress = {
   applyEvent: (state: GameState, event: QuestProgressEvent): GameState => {
     let nextState = { ...state }

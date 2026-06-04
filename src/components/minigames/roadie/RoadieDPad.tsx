@@ -9,6 +9,11 @@ interface RoadieDPadProps {
   handleMoveRight: () => void
 }
 
+/**
+ * Renders the Roadie D Pad component from showControls, handleMoveUp, handleMoveLeft, handleMoveDown, and handleMoveRight.
+ * @param props - Roadie control visibility flag and directional movement callbacks.
+ * @returns The rendered Roadie D Pad UI.
+ */
 export const RoadieDPad = memo(function RoadieDPad({
   showControls,
   handleMoveUp,

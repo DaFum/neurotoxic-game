@@ -1,4 +1,9 @@
-import type { GameState, QuestState, ToastPayload, ActiveQuestState } from '../types'
+import type {
+  GameState,
+  QuestState,
+  ToastPayload,
+  ActiveQuestState
+} from '../types'
 import { finiteNumberOr, isForbiddenKey } from '../utils/gameStateUtils'
 import { QUEST_PROVE_YOURSELF } from '../data/questsConstants'
 import { getQuestDefinition } from '../data/questRegistry'
@@ -16,6 +21,9 @@ import { canAcceptQuest } from './questAcceptance'
 export { QUEST_SLOT_LIMITS, canAcceptQuest } from './questAcceptance'
 export type { CanAcceptQuestResult } from './questAcceptance'
 
+/**
+ * Pure quest lifecycle operations for adding, advancing, completing, and expiring quests.
+ */
 export const QuestLifecycle = {
   addQuest: (state: GameState, quest: QuestState): GameState => {
     if (

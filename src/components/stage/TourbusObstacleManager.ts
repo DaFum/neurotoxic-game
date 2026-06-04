@@ -2,10 +2,16 @@ import { Container, Graphics, Sprite, Texture } from 'pixi.js'
 import { EffectManager } from './EffectManager'
 import type { TourbusObstacle } from '../../types/tourbus'
 
+/**
+ * State shape for Tourbus Render.
+ */
 export type TourbusRenderState = {
   obstacles: TourbusObstacle[]
 }
 
+/**
+ * Manages Tourbus Obstacle rendering resources and state.
+ */
 export class TourbusObstacleManager {
   container: Container
   effectManager: EffectManager

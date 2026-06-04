@@ -2,6 +2,11 @@ import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { BandMembersLayerProps } from '../../../types/components'
 
+/**
+ * Renders the Band Members Layer component from matzeUrl, mariusUrl, larsUrl, and setBandMemberRef.
+ * @param props - Band member image URLs and ref registration callback.
+ * @returns The rendered Band Members Layer UI.
+ */
 export const BandMembersLayer = memo(
   ({
     matzeUrl,

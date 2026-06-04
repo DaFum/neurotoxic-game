@@ -25,6 +25,9 @@ import {
   WORKSHOP_T3_SLOTS
 } from './assetSections/workshopConfig'
 
+/**
+ * Price, upkeep, revenue, slots, and risk tuning for one chassis tier.
+ */
 export interface ChassisTierConfig {
   price: number
   upkeep: number
@@ -33,11 +36,29 @@ export interface ChassisTierConfig {
   baseRiskEventChance: number
 }
 
+/**
+ * Tier configuration map for one acquisition flavor.
+ */
 export type ChassisFlavorConfig = Record<ChassisTier, ChassisTierConfig>
+
+/**
+ * Flavor configuration map for one asset kind.
+ */
 export type ChassisKindConfig = Record<AssetFlavor, ChassisFlavorConfig>
 
+/**
+ * Price multiplier used to derive DIY chassis tiers from legit tiers.
+ */
 export const DIY_PRICE_MULT = 0.5
+
+/**
+ * Upkeep multiplier used to derive DIY chassis tiers from legit tiers.
+ */
 export const DIY_UPKEEP_MULT = 0.7
+
+/**
+ * Base risk event chance assigned to derived DIY chassis tiers.
+ */
 export const DIY_RISK = 0.03
 
 /**
@@ -47,9 +68,15 @@ export const DIY_RISK = 0.03
  */
 export const UPGRADE_OVERHEAD = 500
 
+/**
+ * Returns the next chassis tier, or null when already at the maximum tier.
+ */
 export const getNextChassisTier = (tier: ChassisTier): ChassisTier | null =>
   tier < 3 ? ((tier + 1) as ChassisTier) : null
 
+/**
+ * Calculates the purchase cost to upgrade from one chassis tier to another.
+ */
 export const calculateChassisUpgradeCost = (
   currentConfig: Pick<ChassisTierConfig, 'price'>,
   targetConfig: Pick<ChassisTierConfig, 'price'>
@@ -83,6 +110,10 @@ export const FORECLOSURE_FAME_PENALTY = 10
  * a constant buffer for future tick stages (crowdfund jitter, etc.).
  */
 export const RNG_ROLLS_PER_ASSET = 2
+
+/**
+ * Extra RNG rolls reserved for non-asset day tick stages.
+ */
 export const RNG_BASE_BUFFER = 8
 
 /**
@@ -199,6 +230,9 @@ const WORKSHOP_LEGIT = {
   }
 } satisfies ChassisFlavorConfig
 
+/**
+ * Single source of chassis pricing, upkeep, revenue, slots, and risk tuning.
+ */
 export const CHASSIS_CONFIG: Record<AssetKind, ChassisKindConfig> = {
   tourbus_chassis: {
     legit: TOURBUS_LEGIT,

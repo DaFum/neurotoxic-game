@@ -7,6 +7,10 @@ const getStepColorClass = (stepId: number, currentStep: number): string => {
   return 'bg-ash-gray/30'
 }
 
+/**
+ * Coordinates tutorial overlay rendering for the current tutorial step.
+ * @returns The rendered Tutorial Manager UI.
+ */
 export const TutorialManager = () => {
   const {
     step,

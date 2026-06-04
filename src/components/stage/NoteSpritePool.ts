@@ -6,6 +6,9 @@ const NOTE_SPRITE_SIZE = 80
 const NOTE_FALLBACK_WIDTH = 90
 const NOTE_FALLBACK_HEIGHT = 20
 const NOTE_INITIAL_Y = -50
+/**
+ * Centering offset applied when positioning note sprites.
+ */
 export const NOTE_CENTER_OFFSET = 50
 const NOTE_LIGHTNING_LANE_INDEX = 1
 
@@ -14,6 +17,9 @@ type LaneData = {
   renderX: number
 }
 
+/**
+ * Type contract for Note Sprite.
+ */
 export type NoteSprite = Sprite & {
   isFallback: boolean
   jitterOffset: number
@@ -102,6 +108,9 @@ class NoteSpriteFactory {
   }
 }
 
+/**
+ * Pools reusable Pixi note sprites for rhythm rendering.
+ */
 export class NoteSpritePool {
   static MAX_POOL_SIZE = 64
   container: Container | null

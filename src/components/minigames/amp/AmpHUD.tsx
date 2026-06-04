@@ -144,6 +144,11 @@ function InterferenceIndicator({
   )
 }
 
+/**
+ * Renders the Amp HUD component from timeLeft, score, heat, isOverheat, voidResonance, isAnomalyActive, interference, isHijackActive, and hijacksOverridden.
+ * @param props - Amp timer, score, heat, void resonance, anomaly/interference/hijack status, and purge/override counters.
+ * @returns The rendered Amp HUD UI.
+ */
 export const AmpHUD = memo(function AmpHUD({
   timeLeft,
   score,

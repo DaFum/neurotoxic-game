@@ -86,8 +86,14 @@ const resolveSkillCheckFailure = (
   return { ...failure, outcome: 'failure' }
 }
 
+/**
+ * Shared event cooldown predicate used by event selection and callers.
+ */
 export const isOnCooldown = isOnCooldownShared
 
+/**
+ * Event engine facade for selecting, resolving, and applying game events.
+ */
 export const eventEngine = {
   handleError,
   processEvent,

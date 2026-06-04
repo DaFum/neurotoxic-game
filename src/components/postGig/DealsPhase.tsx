@@ -70,4 +70,9 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }: DealsPhaseProps) => {
   )
 }
 
+/**
+ * Renders available brand deals and the skip-deals control.
+ * @param props - Brand offers plus accept and skip callbacks.
+ * @returns The rendered Deals Phase UI.
+ */
 export const DealsPhase = memo(DealsPhaseComponent)

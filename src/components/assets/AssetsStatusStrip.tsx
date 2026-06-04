@@ -39,6 +39,10 @@ const StatusCell = ({
   )
 }
 
+/**
+ * Renders liquidity, obligations, debt, and crowdfund status for assets.
+ * @returns The rendered Assets Status Strip UI.
+ */
 export const AssetsStatusStrip = () => {
   const { t, i18n } = useTranslation(['assets'])
   const money = useGameSelector(state => state.player.money)

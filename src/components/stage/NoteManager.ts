@@ -32,6 +32,9 @@ const getLaneRenderX = (lane: StageLane): number =>
   // Before layout completes, render notes at the left edge instead of crashing.
   lane.renderX ?? 0
 
+/**
+ * Manages Note rendering resources and state.
+ */
 export class NoteManager {
   app: Application
   parentContainer: Container

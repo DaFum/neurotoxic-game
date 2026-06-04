@@ -5,12 +5,18 @@ type RoadieCarriedItem = {
   type: string
 }
 
+/**
+ * State shape for Roadie Render.
+ */
 export type RoadieRenderState = {
   playerPos: { x: number; y: number }
   carrying: RoadieCarriedItem | null
   equipmentDamage: number
 }
 
+/**
+ * Manages Roadie Player rendering resources and state.
+ */
 export class RoadiePlayerManager {
   playerContainer: Container | null
   playerSprite: Sprite | Graphics | null

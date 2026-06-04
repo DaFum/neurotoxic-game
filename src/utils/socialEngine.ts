@@ -58,6 +58,12 @@ interface ViralOptions {
 
 /**
  * Calculates viral potential based on performance and events.
+ *
+ * @param performanceScore - Gig performance score from 0 to 100.
+ * @param gigEvents - Event ids emitted during the gig.
+ * @param venue - Venue context used for location-specific bonuses.
+ * @param bandState - Band traits used for social virality bonuses.
+ * @returns Viral chance clamped to the engine cap.
  */
 export const calculateViralityScore = (
   performanceScore: number,
@@ -115,6 +121,11 @@ const COOLDOWN_BLOCKED_IDS = new Set([
 /**
  * Generates options for the "Post-Gig Social Media Strategy" phase.
  * It evaluates conditions from POST_OPTIONS, assigns weights, and selects exactly 3.
+ *
+ * @param gigResult - Reserved gig result input kept for call-site compatibility.
+ * @param gameState - Current state used to evaluate option conditions and weights.
+ * @param rng - Random number generator used to weight eligible options.
+ * @returns Exactly three eligible social post options.
  */
 export const generatePostOptions = (
   gigResult: unknown,
@@ -245,6 +256,11 @@ export const generatePostOptions = (
 
 /**
  * Resolves the outcome of a social media post based on its defined resolver.
+ *
+ * Missing resolver platforms fall back to the option platform. Explicit string
+ * platforms are trimmed, while invalid explicit values pass through for the
+ * post-gig normalizer to reject.
+ *
  * @param postOption - The selected post option from POST_OPTIONS.
  * @param gameState - Current state required for resolution.
  * @param diceRoll - Random number between 0 and 1. Defaults to `secureRandom()`.
@@ -296,10 +312,17 @@ export const resolvePost = (
       harmonyChange = nextHarmony - prevHarmony
     }
 
+    const platform =
+      result.platform === undefined || result.platform === null
+        ? postOption.platform
+        : typeof result.platform === 'string'
+          ? result.platform.trim()
+          : result.platform
+
     return {
       success: result.success ?? true,
       followers: result.followers ?? 0,
-      platform: result.platform ?? postOption.platform,
+      platform,
       message: result.message ?? 'Post completed.',
       // Side effects (optional, will be undefined if not provided)
       moneyChange,
@@ -333,16 +356,6 @@ export const resolvePost = (
   }
 }
 
-/**
- * Calculates new followers based on platform growth mechanics.
- * @param platform - 'instagram', 'tiktok', 'youtube', 'newsletter'
- * @param performance - Gig performance score (0-100)
- * @param currentFollowers - Existing follower count
- * @param isViral - Whether a viral event occurred Defaults to `false`.
- * @param controversyLevel - Current shadowban meter Defaults to `0`.
- * @param loyalty - Buffer against bad growth Defaults to `0`.
- * @returns Net follower growth
- */
 // ⚡ Bolt: Pre-calculate platform ID map for O(1) lookups instead of O(N) array allocation and search.
 // Expected Impact: Reduces GC overhead and CPU cycles during the hot-path calculateSocialGrowth function.
 const PLATFORMS_BY_ID: Record<string, { multiplier: number }> =
@@ -354,6 +367,18 @@ for (const key in SOCIAL_PLATFORMS) {
   }
 }
 
+/**
+ * Calculates net follower growth for a platform after performance, virality,
+ * controversy, and loyalty modifiers.
+ *
+ * @param platform - Platform id such as `instagram`, `tiktok`, `youtube`, or `newsletter`.
+ * @param performance - Gig performance score from 0 to 100.
+ * @param currentFollowers - Existing follower count for viral bonus scaling.
+ * @param isViral - Whether a viral event occurred.
+ * @param controversyLevel - Current shadowban meter from 0 to 100.
+ * @param loyalty - Buffer that offsets low-performance growth penalties.
+ * @returns Net follower delta after platform multiplier and viral bonus.
+ */
 export const calculateSocialGrowth = (
   platform: string,
   performance: number,
@@ -474,10 +499,10 @@ export const generateDailyTrend = (
 export { generateBrandName } from './brandOfferFlavor'
 
 /**
- * Generates available brand deal offers based on band status and reputation.
- * @param gameState - Current game state.
- * @param rng - Random number generator.
- * @returns List of offer objects.
+ * Calculates passive income and raid chance from social zealotry.
+ *
+ * @param zealotry - Raw zealotry score before clamping.
+ * @returns Passive income and raid probability derived from clamped zealotry.
  */
 export const calculateZealotryEffects = (
   zealotry: number
@@ -621,6 +646,14 @@ const scoreEntry = (
   return rep - rivalPenalty - tierPenalty + jitter
 }
 
+/**
+ * Generates available brand deal offers based on follower reach, trend fit,
+ * brand reputation, and nearby rival pressure.
+ *
+ * @param gameState - Current state containing social metrics, band traits, player location, and rival data.
+ * @param rng - Random number generator used for offer scoring jitter.
+ * @returns Up to three generated brand offers, or an empty list when a deal is already active.
+ */
 export const generateBrandOffers = (
   gameState: SocialEngineGameState,
   rng: RandomFn = secureRandom

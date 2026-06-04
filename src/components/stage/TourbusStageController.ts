@@ -301,6 +301,11 @@ class TourbusStageController extends BaseStageController<TourbusControllerState>
   }
 }
 
+/**
+ * Creates a Tourbus stage controller instance.
+ * @param params - Controller factory dependencies.
+ * @returns Computed result.
+ */
 export const createTourbusStageController = (
   params: StageControllerOptions<TourbusControllerState>
 ) => new TourbusStageController(params)

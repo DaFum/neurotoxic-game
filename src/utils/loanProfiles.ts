@@ -1,3 +1,6 @@
+/**
+ * Supported loan profile identifiers.
+ */
 export type LoanProfileId =
   | 'shortTerm'
   | 'mediumTerm'
@@ -5,6 +8,9 @@ export type LoanProfileId =
   | 'loanShark'
   | 'coop'
 
+/**
+ * Loan term, interest, label, and eligibility thresholds.
+ */
 export interface LoanProfile {
   id: LoanProfileId
   termDays: number
@@ -18,6 +24,9 @@ export interface LoanProfile {
   minScenePresenceRequired?: number
 }
 
+/**
+ * Loan profile catalogue keyed by profile id.
+ */
 export const LOAN_PROFILES: Record<LoanProfileId, LoanProfile> = {
   shortTerm: {
     id: 'shortTerm',
@@ -52,8 +61,14 @@ export const LOAN_PROFILES: Record<LoanProfileId, LoanProfile> = {
   }
 }
 
+/**
+ * Flat refinance fee rate applied to remaining principal.
+ */
 export const REFINANCE_FEE_RATE = 0.02
 
+/**
+ * Checks whether fame and scene presence satisfy a loan profile's gates.
+ */
 export const isLoanProfileEligible = (
   profile: LoanProfile,
   values: { fame: number; scenePresence: number }
@@ -76,6 +91,9 @@ export const isLoanProfileEligible = (
   return true
 }
 
+/**
+ * Calculates the refinance fee for remaining principal.
+ */
 export const calculateRefinanceFee = (principal: number): number => {
   if (!Number.isFinite(principal) || principal <= 0) return 0
   return Math.ceil(principal * REFINANCE_FEE_RATE)

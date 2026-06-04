@@ -11,6 +11,11 @@ type PreGigStartButtonProps = {
   onStartShow: () => void | Promise<void>
 }
 
+/**
+ * Renders the Pre Gig Start Button component from t, isStarting, isSetlistEmpty, and onStartShow.
+ * @param props - Translator, start-state flag, setlist-empty flag, and show-start handler.
+ * @returns The rendered Pre Gig Start Button UI.
+ */
 export const PreGigStartButton = React.memo(
   ({ t, isStarting, isSetlistEmpty, onStartShow }: PreGigStartButtonProps) => {
     return (

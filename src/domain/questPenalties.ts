@@ -17,6 +17,9 @@ import {
   queueEvent
 } from './questEffects'
 
+/**
+ * State, story flags, and cooldowns produced by quest failure penalties.
+ */
 export interface QuestPenaltyResult {
   state: GameState
   flagsToAdd: string[]
@@ -101,6 +104,9 @@ const normalizeLegacyPenalties = (quest: QuestState): QuestPenalty[] => {
   return penalties
 }
 
+/**
+ * Returns declarative failure penalties, falling back to legacy penalty fields.
+ */
 export const getQuestPenalties = (quest: QuestState): QuestPenalty[] =>
   Array.isArray(quest.failurePenalties) && quest.failurePenalties.length > 0
     ? quest.failurePenalties
@@ -130,6 +136,9 @@ const applyAssetDamage = (
   return damaged ? { ...state, assets } : state
 }
 
+/**
+ * Applies all failure penalties for a quest without dispatching side effects.
+ */
 export const applyQuestFailurePenalties = (
   state: GameState,
   quest: QuestState,

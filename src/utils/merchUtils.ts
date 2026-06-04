@@ -1,14 +1,26 @@
 import { finiteNumberOr } from './gameStateUtils'
 import { HQ_ITEMS_BY_MERCH_KEY } from '../data/hqItems'
 
+/**
+ * HQ item definition type for merch-backed inventory items.
+ */
 export type HQItemDef =
   typeof HQ_ITEMS_BY_MERCH_KEY extends ReadonlyMap<string, infer T> ? T : never
 
+/**
+ * Base merch carrying capacity before asset modifiers.
+ */
 export const BASE_MERCH_CAPACITY = 100
 
+/**
+ * Calculates merch carrying capacity from a capacity bonus.
+ */
 export const getMerchCapacity = (bonus: unknown): number =>
   BASE_MERCH_CAPACITY + Math.max(0, finiteNumberOr(bonus, 0))
 
+/**
+ * Resolves the number of merch units restored by one restock bundle.
+ */
 export const getMerchBundleAmount = (itemDef?: HQItemDef | null): number => {
   if (!itemDef) return 10
   const effect = itemDef.effect
@@ -25,6 +37,9 @@ export const getMerchBundleAmount = (itemDef?: HQItemDef | null): number => {
   return 10
 }
 
+/**
+ * Sums all merch stock counts from inventory.
+ */
 export const getTotalMerchStock = (
   inventory: Record<string, unknown>
 ): number => {
@@ -36,6 +51,9 @@ export const getTotalMerchStock = (
   return Math.max(0, total)
 }
 
+/**
+ * Calculates the proportional cost for a merch restock amount.
+ */
 export const resolveMerchRestockCost = ({
   itemCost,
   merchCostMultiplier,

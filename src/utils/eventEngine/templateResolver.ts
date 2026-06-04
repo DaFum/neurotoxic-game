@@ -1,6 +1,9 @@
 import { isForbiddenKey } from '../objectUtils'
 import type { TemplateContext } from './types'
 
+/**
+ * Matches `{key}` placeholders in event template strings.
+ */
 const TEMPLATE_REGEX = /\{([^}]+)\}/gi
 
 const toLowerCaseCache = Object.create(null)
@@ -74,6 +77,9 @@ const resolveTemplateString = (
   })
 }
 
+/**
+ * Builds a sanitized string-only template context from unknown event context.
+ */
 export const buildTemplateContext = (
   input: Record<string, unknown> | undefined
 ): TemplateContext => {

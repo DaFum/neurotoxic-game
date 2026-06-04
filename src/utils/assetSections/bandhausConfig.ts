@@ -1,15 +1,26 @@
 import type { SlotType } from '../../types/assets'
 
+/**
+ * Bandhaus tier-1 chassis slot types.
+ */
 export const BANDHAUS_T1_SLOTS = [
   'bh_stage',
   'bh_kitchen',
   'bh_sleeping'
 ] as const
+
+/**
+ * Bandhaus tier-2 chassis slot types, including tier-1 slots.
+ */
 export const BANDHAUS_T2_SLOTS = [
   ...BANDHAUS_T1_SLOTS,
   'bh_lounge',
   'bh_backyard'
 ] as const
+
+/**
+ * Bandhaus tier-3 chassis slot types, including lower-tier slots.
+ */
 export const BANDHAUS_T3_SLOTS = [
   ...BANDHAUS_T2_SLOTS,
   'bh_security',
@@ -23,6 +34,9 @@ export const BANDHAUS_T3_SLOTS = [
 // (bh_secret only ships with Tier 3 chassis). Zones are (centre x/y, w/h)
 // normalised over the background. Partial typing is intentional — only
 // Bandhaus slot types are populated.
+/**
+ * Bandhaus centered slot zones over the portrait cross-section background.
+ */
 export const BANDHAUS_SLOT_ZONES: Partial<
   Record<SlotType, { x: number; y: number; w: number; h: number }>
 > = {

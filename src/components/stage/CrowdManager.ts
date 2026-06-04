@@ -24,6 +24,9 @@ type CrowdSpriteMember = Sprite & CrowdMemberBase & { isSprite: true }
 type CrowdGraphicsMember = Graphics & CrowdMemberBase & { isSprite: false }
 type CrowdMember = CrowdSpriteMember | CrowdGraphicsMember
 
+/**
+ * Manages Crowd rendering resources and state.
+ */
 export class CrowdManager {
   app: Application
   stageContainer: Container

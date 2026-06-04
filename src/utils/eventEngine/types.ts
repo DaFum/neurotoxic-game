@@ -1,6 +1,16 @@
-
+/**
+ * String replacement context for event template resolution.
+ */
 export type TemplateContext = Record<string, string>
+
+/**
+ * Optional trigger point used to filter event pools.
+ */
 export type TriggerPoint = string | null
+
+/**
+ * Event engine input shape used by selection and resolution.
+ */
 export type EngineEvent = {
   id?: string
   trigger?: string
@@ -14,6 +24,10 @@ export type EngineEvent = {
   options?: EventChoice[]
   [key: string]: unknown
 }
+
+/**
+ * Selectable event option with effects, flags, or skill-check data.
+ */
 export type EventChoice = {
   effect?: EffectShape
   flags?: string[]
@@ -26,6 +40,10 @@ export type EventChoice = {
   }
   outcomeText?: string
 }
+
+/**
+ * Event effect payload consumed by event effect handlers.
+ */
 export type EffectShape = {
   type?: string
   effects?: EffectShape[]
@@ -34,6 +52,10 @@ export type EffectShape = {
   nextEventId?: string
   [key: string]: unknown
 }
+
+/**
+ * Game-state slice consumed by the event engine.
+ */
 export type EngineGameState = {
   eventCooldowns?: string[] | Set<string>
   activeStoryFlags?: string[] | Set<string>

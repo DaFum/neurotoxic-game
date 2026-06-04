@@ -1,15 +1,26 @@
 import type { SlotType } from '../../types/assets'
 
+/**
+ * Merch workshop tier-1 chassis slot types.
+ */
 export const WORKSHOP_T1_SLOTS = [
   'mw_print',
   'mw_drying',
   'mw_storage'
 ] as const
+
+/**
+ * Merch workshop tier-2 chassis slot types, including tier-1 slots.
+ */
 export const WORKSHOP_T2_SLOTS = [
   ...WORKSHOP_T1_SLOTS,
   'mw_cutting',
   'mw_packaging'
 ] as const
+
+/**
+ * Merch workshop tier-3 chassis slot types, including lower-tier slots.
+ */
 export const WORKSHOP_T3_SLOTS = [
   ...WORKSHOP_T2_SLOTS,
   'mw_specialty',
@@ -21,6 +32,9 @@ export const WORKSHOP_T3_SLOTS = [
 // normalised over the background: print → drying → cutting → packaging →
 // storage along the conveyor, with specialty/automation attached above and
 // sales as the right-side dispatch gate.
+/**
+ * Merch workshop centered slot zones over the wide production-line background.
+ */
 export const WORKSHOP_SLOT_ZONES: Partial<
   Record<SlotType, { x: number; y: number; w: number; h: number }>
 > = {

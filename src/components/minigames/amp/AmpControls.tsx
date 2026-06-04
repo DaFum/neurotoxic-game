@@ -3,6 +3,11 @@ import { useTranslation } from 'react-i18next'
 import type { AmpControlsProps } from '../../../types/components'
 import { clampAmpDial } from '../../../utils/gameStateUtils'
 
+/**
+ * Renders the Amp Controls component from dialValue, targetValue, setDialValue, isOverdriveActive, setIsOverdriveActive, purgeInterference, interference, isHijackActive, and overrideHijack.
+ * @param props - Dial/target values, overdrive state, interference controls, hijack controls, and related setters.
+ * @returns The rendered Amp Controls UI.
+ */
 export const AmpControls = memo(function AmpControls({
   dialValue,
   targetValue,

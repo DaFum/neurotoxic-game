@@ -11,6 +11,11 @@ interface Props {
   onSlotClick: (slotId: string) => void
 }
 
+/**
+ * Renders the Studio Floorplan View component from asset and onSlotClick.
+ * @param props - Studio asset state and slot-click handler.
+ * @returns The rendered Studio Floorplan View UI.
+ */
 export const StudioFloorplanView = ({ asset, onSlotClick }: Props) => {
   const { t } = useTranslation(['assets'])
   return (

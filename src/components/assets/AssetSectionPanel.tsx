@@ -30,6 +30,11 @@ interface AssetSectionPanelProps {
   ) => ReactNode
 }
 
+/**
+ * Renders the Asset Section Panel component from kind and renderHero.
+ * @param props - Asset kind and hero renderer for the shared asset-section shell.
+ * @returns The rendered Asset Section Panel UI.
+ */
 export const AssetSectionPanel = ({
   kind,
   renderHero

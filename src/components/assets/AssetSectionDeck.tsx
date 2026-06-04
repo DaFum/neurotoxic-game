@@ -14,6 +14,11 @@ interface AssetSectionDeckProps {
   onSell: () => void
 }
 
+/**
+ * Renders the Asset Section Deck component from asset, hero, onSlotClick, onRepair, onUpgrade, and onSell.
+ * @param props - Selected asset, hero renderer, slot-click handler, and chassis repair/upgrade/sell callbacks.
+ * @returns The rendered Asset Section Deck UI.
+ */
 export const AssetSectionDeck = ({
   asset,
   hero,

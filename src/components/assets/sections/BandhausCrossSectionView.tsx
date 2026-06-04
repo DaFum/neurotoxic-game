@@ -11,6 +11,11 @@ interface Props {
   onSlotClick: (slotId: string) => void
 }
 
+/**
+ * Renders the Bandhaus Cross Section View component from asset and onSlotClick.
+ * @param props - Bandhaus asset state and slot-click handler.
+ * @returns The rendered Bandhaus Cross Section View UI.
+ */
 export const BandhausCrossSectionView = ({ asset, onSlotClick }: Props) => {
   const { t } = useTranslation(['assets'])
   return (

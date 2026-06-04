@@ -15,6 +15,11 @@ type FinancialColumnProps = {
   initialX: number
 }
 
+/**
+ * Renders the Financial Column component from titleKey, type, items, total, delay, and initialX.
+ * @param props - Financial section title, entry list, total, animation offset, and income/expense type.
+ * @returns The rendered Financial Column UI.
+ */
 export const FinancialColumn = React.memo(
   ({ titleKey, type, items, total, delay, initialX }: FinancialColumnProps) => {
     const { t, i18n } = useTranslation(['economy', 'ui'])

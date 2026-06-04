@@ -1,5 +1,8 @@
 import type { MinigameType, QuestEvent } from '../../types'
 
+/**
+ * Creates a `minigame.completed` quest event for any minigame result.
+ */
 export const createMinigameCompletedQuestEvent = ({
   minigameId,
   success,
@@ -20,6 +23,9 @@ export const createMinigameCompletedQuestEvent = ({
   )
 })
 
+/**
+ * Creates a `minigame.perfect` quest event for perfect minigame outcomes.
+ */
 export const createMinigamePerfectQuestEvent = ({
   minigameId
 }: {
@@ -32,6 +38,9 @@ export const createMinigamePerfectQuestEvent = ({
   tags: [minigameId]
 })
 
+/**
+ * Creates a `minigame.failed` quest event for failed minigame outcomes.
+ */
 export const createMinigameFailedQuestEvent = ({
   minigameId,
   damage

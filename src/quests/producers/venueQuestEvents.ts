@@ -1,5 +1,8 @@
 import type { QuestEvent } from '../../types'
 
+/**
+ * Creates a `venue.gigCompleted` quest event for a venue gig.
+ */
 export const createVenueGigCompletedQuestEvent = ({
   venueId,
   region,
@@ -16,6 +19,9 @@ export const createVenueGigCompletedQuestEvent = ({
   tags: [venueId, region]
 })
 
+/**
+ * Creates a `venue.goodGig` quest event for a strong venue performance.
+ */
 export const createVenueGoodGigQuestEvent = ({
   venueId,
   region,
@@ -34,6 +40,9 @@ export const createVenueGoodGigQuestEvent = ({
   tags: [venueId, region]
 })
 
+/**
+ * Creates a `venue.reputationChanged` quest event for venue reputation deltas.
+ */
 export const createVenueReputationChangedQuestEvent = ({
   venueId,
   amount,
@@ -52,6 +61,9 @@ export const createVenueReputationChangedQuestEvent = ({
   )
 })
 
+/**
+ * Creates a `region.reputationChanged` quest event for regional reputation deltas.
+ */
 export const createRegionReputationChangedQuestEvent = ({
   region,
   amount,
@@ -70,6 +82,9 @@ export const createRegionReputationChangedQuestEvent = ({
   )
 })
 
+/**
+ * Creates a `venue.blacklisted` quest event for venue blacklisting.
+ */
 export const createVenueBlacklistedQuestEvent = ({
   venueId,
   reason
@@ -84,6 +99,9 @@ export const createVenueBlacklistedQuestEvent = ({
   tags: [venueId, reason]
 })
 
+/**
+ * Creates a `venue.unblacklisted` quest event for removing a blacklist.
+ */
 export const createVenueUnblacklistedQuestEvent = ({
   venueId,
   reason

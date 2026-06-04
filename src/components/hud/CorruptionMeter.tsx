@@ -9,6 +9,11 @@ interface CorruptionMeterProps {
   isCorruptionBurstActive: boolean
 }
 
+/**
+ * Renders the Corruption Meter component from corruptionLevel and isCorruptionBurstActive.
+ * @param props - Corruption level and burst-active state.
+ * @returns The rendered Corruption Meter UI.
+ */
 export const CorruptionMeter = memo(function CorruptionMeter({
   corruptionLevel,
   isCorruptionBurstActive

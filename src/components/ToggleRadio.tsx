@@ -4,6 +4,10 @@ import { useAudioControl } from '../hooks/useAudioControl'
 import { RazorPlayIcon } from '../ui/shared/Icons'
 import { Tooltip } from '../ui/shared'
 
+/**
+ * Renders a labeled two-state radio-style toggle control.
+ * @returns The rendered Toggle Radio UI.
+ */
 export const ToggleRadio = memo(() => {
   const { t } = useTranslation()
   const { audioState: isPlaying, handleAudioChange } = useAudioControl(

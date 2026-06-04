@@ -11,7 +11,17 @@ const HARMONY_DEATH_SPIRAL_THRESHOLD = 30
 const HARMONY_DEATH_SPIRAL_DAMPEN_FACTOR = 0.5
 const INFIGHTING_DAMPER_CHANCE_FACTOR = 0.5
 
-const eventPoolMapCache = new WeakMap()
+type EventPoolById = Record<string, EngineEvent>
+
+/**
+ * WeakMap keyed by event pool array identity.
+ *
+ * Each cached value maps event ids from that pool to their event objects for
+ * pending-event lookup.
+ *
+ * @remarks WeakMap keys are the pool arrays themselves, not event ids.
+ */
+const eventPoolMapCache = new WeakMap<EngineEvent[], EventPoolById>()
 
 const hasInstalledAssetFlag = (
   gameState: EngineGameState,
@@ -40,23 +50,31 @@ const hasInstalledAssetFlag = (
   return false
 }
 
-const getEventMapForPool = (
-  pool: EngineEvent[]
-): Record<string, EngineEvent> => {
-  let map = eventPoolMapCache.get(pool)
-  if (!map) {
-    map = Object.create(null)
-    for (let i = 0; i < pool.length; i++) {
-      const eventId = pool[i]?.id
-      if (typeof eventId === 'string') {
-        map[eventId] = pool[i]
-      }
+const getEventMapForPool = (pool: EngineEvent[]): EventPoolById => {
+  const cachedMap = eventPoolMapCache.get(pool)
+  if (cachedMap) return cachedMap
+
+  const map: EventPoolById = Object.create(null)
+  for (let i = 0; i < pool.length; i++) {
+    const event = pool[i]
+    const eventId = event?.id
+    if (typeof eventId === 'string' && event) {
+      map[eventId] = event
     }
-    eventPoolMapCache.set(pool, map)
   }
+  eventPoolMapCache.set(pool, map)
   return map
 }
 
+/**
+ * Selects one eligible event from a pool using trigger, cooldown, flags, and chance.
+ *
+ * @param pool - Candidate events to evaluate.
+ * @param gameState - State snapshot used for cooldowns, flags, assets, and event conditions.
+ * @param triggerPoint - Trigger category currently requesting an event.
+ * @param rng - Random number generator used for shuffling and chance rolls.
+ * @returns The selected event with resolved template context, or `null` when none qualifies.
+ */
 const selectEvent = (
   pool: EngineEvent[],
   gameState: EngineGameState,
@@ -208,6 +226,5 @@ const selectEvent = (
   }
   return null
 }
-
 
 export { selectEvent, eventPoolMapCache }

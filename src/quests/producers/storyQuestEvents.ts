@@ -1,5 +1,8 @@
 import type { QuestEvent } from '../../types'
 
+/**
+ * Creates a `story.flagAdded` quest event for newly added story flags.
+ */
 export const createStoryFlagAddedQuestEvent = ({
   flag
 }: {

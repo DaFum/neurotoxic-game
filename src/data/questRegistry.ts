@@ -1,5 +1,8 @@
 import type { QuestDefinition } from '../types/quest'
 
+/**
+ * Static quest configuration registry keyed by stable quest id.
+ */
 export const QUEST_REGISTRY = {
   quest_prove_yourself: {
     kind: 'story',
@@ -704,6 +707,9 @@ export const isQuestRegistryId = (
 ): questId is keyof typeof QUEST_REGISTRY =>
   Object.hasOwn(QUEST_REGISTRY, questId)
 
+/**
+ * Looks up a quest's static definition by id.
+ */
 export const getQuestDefinition = (
   questId: string
 ): QuestDefinition | undefined =>

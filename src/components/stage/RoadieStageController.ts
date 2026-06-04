@@ -236,6 +236,11 @@ class RoadieStageController extends BaseStageController<RoadieStageState> {
   }
 }
 
+/**
+ * Creates a Roadie stage controller instance.
+ * @param params - Controller factory dependencies.
+ * @returns Computed result.
+ */
 export const createRoadieStageController = (
   params: StageControllerOptions<RoadieStageState>
 ) => new RoadieStageController(params)

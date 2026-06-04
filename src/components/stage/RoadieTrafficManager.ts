@@ -2,6 +2,9 @@ import { Container, Graphics, Sprite } from 'pixi.js'
 import { logger } from '../../utils/logger'
 import { hashString } from '../../utils/stringUtils'
 
+/**
+ * Type contract for Roadie Car.
+ */
 export type RoadieCar = {
   id: string | number
   x: number
@@ -15,6 +18,9 @@ type RoadieTrafficState = {
   traffic?: RoadieCar[]
 }
 
+/**
+ * Manages Roadie Traffic rendering resources and state.
+ */
 export class RoadieTrafficManager {
   container: Container
   textures: {

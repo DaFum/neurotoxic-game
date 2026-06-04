@@ -16,6 +16,9 @@ const getTags = (
     (entry): entry is string => typeof entry === 'string'
   )
 
+/**
+ * Creates a `social.postResolved` quest event for a resolved post option.
+ */
 export const createSocialPostResolvedQuestEvent = (
   option: Pick<SocialPostOption, 'id' | 'platform' | 'category'>,
   result: Record<string, unknown>
@@ -30,6 +33,9 @@ export const createSocialPostResolvedQuestEvent = (
   tags: getTags(option)
 })
 
+/**
+ * Creates a `social.followersGained` quest event for follower increases.
+ */
 export const createFollowersGainedQuestEvent = ({
   amount,
   platform,
@@ -54,6 +60,9 @@ export const createFollowersGainedQuestEvent = ({
   )
 })
 
+/**
+ * Creates a `social.loyaltyChanged` quest event for loyalty deltas.
+ */
 export const createSocialLoyaltyChangedQuestEvent = ({
   amount,
   reason
@@ -68,6 +77,9 @@ export const createSocialLoyaltyChangedQuestEvent = ({
   tags: [reason].filter((entry): entry is string => typeof entry === 'string')
 })
 
+/**
+ * Creates a `social.controversyChanged` quest event for controversy deltas.
+ */
 export const createSocialControversyChangedQuestEvent = ({
   amount,
   reason
@@ -82,6 +94,9 @@ export const createSocialControversyChangedQuestEvent = ({
   tags: [reason].filter((entry): entry is string => typeof entry === 'string')
 })
 
+/**
+ * Creates a `social.trendMatched` quest event when a post matches a trend.
+ */
 export const createSocialTrendMatchedQuestEvent = ({
   trendId,
   platform,
@@ -100,6 +115,9 @@ export const createSocialTrendMatchedQuestEvent = ({
   )
 })
 
+/**
+ * Creates all quest events produced by resolving one social post.
+ */
 export const createSocialPostQuestEvents = (
   option: Pick<SocialPostOption, 'id' | 'platform' | 'category'>,
   result: Record<string, unknown>

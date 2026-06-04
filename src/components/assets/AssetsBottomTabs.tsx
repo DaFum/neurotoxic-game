@@ -7,6 +7,11 @@ interface AssetsBottomTabsProps {
   onSelect: (kind: AssetKind) => void
 }
 
+/**
+ * Renders the Assets Bottom Tabs component from active and onSelect.
+ * @param props - Active asset section and tab selection callback.
+ * @returns The rendered Assets Bottom Tabs UI.
+ */
 export const AssetsBottomTabs = ({
   active,
   onSelect

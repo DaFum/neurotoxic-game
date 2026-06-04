@@ -14,6 +14,11 @@ interface StatsOverlayProps {
   isCorruptionBurstActive: boolean
 }
 
+/**
+ * Renders the Stats Overlay component from score, combo, accuracy, overload, corruptionLevel, and isCorruptionBurstActive.
+ * @param props - Score, combo, accuracy, overload, corruption, and burst state displayed over the gig.
+ * @returns The rendered Stats Overlay UI.
+ */
 export const StatsOverlay = memo(function StatsOverlay({
   score,
   combo,

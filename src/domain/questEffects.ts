@@ -6,6 +6,9 @@ import {
   isForbiddenKey
 } from '../utils/gameStateUtils'
 
+/**
+ * Resolves the venue reputation key for current or explicit quest scopes.
+ */
 export const getVenueReputationKey = (
   state: GameState,
   scope: 'current' | string | null | undefined
@@ -19,6 +22,9 @@ export const getVenueReputationKey = (
     : undefined
 }
 
+/**
+ * Resolves the region reputation key for current or explicit quest scopes.
+ */
 export const getRegionReputationKey = (
   state: GameState,
   scope: 'current' | string | null | undefined
@@ -32,6 +38,9 @@ export const getRegionReputationKey = (
     : undefined
 }
 
+/**
+ * Applies a clamped region reputation delta to game state.
+ */
 export const applyReputationDelta = (
   state: GameState,
   key: string | undefined,
@@ -48,6 +57,9 @@ export const applyReputationDelta = (
   }
 }
 
+/**
+ * Applies a clamped venue reputation delta to game state.
+ */
 export const applyVenueReputationDelta = (
   state: GameState,
   key: string | undefined,
@@ -64,6 +76,9 @@ export const applyVenueReputationDelta = (
   }
 }
 
+/**
+ * Resolves the brand reputation key from a brand-trust effect.
+ */
 export const getBrandReputationKey = (effect: {
   brandId?: string
   alignment?: string
@@ -74,6 +89,9 @@ export const getBrandReputationKey = (effect: {
     : undefined
 }
 
+/**
+ * Applies a clamped brand trust delta to social state.
+ */
 export const applyBrandTrustDelta = (
   state: GameState,
   effect: { brandId?: string; alignment?: string; amount: number }
@@ -93,6 +111,9 @@ export const applyBrandTrustDelta = (
   }
 }
 
+/**
+ * Queues an event id if it is valid and not already pending.
+ */
 export const queueEvent = (state: GameState, eventId: string): GameState => {
   if (!eventId || isForbiddenKey(eventId)) return state
   if (state.pendingEvents?.includes(eventId)) return state

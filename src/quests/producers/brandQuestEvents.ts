@@ -1,5 +1,8 @@
 import type { BrandDeal, QuestEvent } from '../../types'
 
+/**
+ * Creates a `brand.offerAccepted` quest event for accepting a brand offer.
+ */
 export const createBrandOfferAcceptedQuestEvent = (
   deal: Pick<BrandDeal, 'id' | 'type' | 'alignment'>
 ): QuestEvent => ({
@@ -14,6 +17,9 @@ export const createBrandOfferAcceptedQuestEvent = (
   tags: [deal.type, deal.alignment]
 })
 
+/**
+ * Creates a `brand.dealCompleted` quest event for completing an active deal.
+ */
 export const createBrandDealCompletedQuestEvent = (
   deal: Pick<BrandDeal, 'id' | 'type' | 'alignment'>
 ): QuestEvent => ({
@@ -28,6 +34,9 @@ export const createBrandDealCompletedQuestEvent = (
   tags: [deal.type, deal.alignment]
 })
 
+/**
+ * Creates a `brand.dealFailed` quest event for a failed brand deal.
+ */
 export const createBrandDealFailedQuestEvent = ({
   dealId,
   reason
@@ -42,6 +51,9 @@ export const createBrandDealFailedQuestEvent = ({
   tags: [reason]
 })
 
+/**
+ * Creates a `brand.trustChanged` quest event for brand reputation changes.
+ */
 export const createBrandTrustChangedQuestEvent = ({
   brandId,
   amount

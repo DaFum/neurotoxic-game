@@ -1,5 +1,8 @@
 import type { QuestEvent } from '../../types'
 
+/**
+ * Creates a `travel.completed` quest event for arriving in a region.
+ */
 export const createTravelCompletedQuestEvent = ({
   region
 }: {

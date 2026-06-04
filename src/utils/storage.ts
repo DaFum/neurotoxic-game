@@ -11,8 +11,14 @@ import {
 } from './errorHandler'
 import { isLooseRecord, safeJsonParse } from './objectUtils'
 
+/**
+ * localStorage key for settings shared outside the active save file.
+ */
 export const GLOBAL_SETTINGS_KEY = 'neurotoxic_global_settings'
 
+/**
+ * Runs a storage operation through the shared retry and fallback wrapper.
+ */
 export function safeStorageOperation<T>(operation: string, fn: () => T): T
 export function safeStorageOperation<T>(
   operation: string,
@@ -120,11 +126,17 @@ export function setSafeStorageItem(key: string, value: unknown): void {
   }
 }
 
+/**
+ * Reads global settings from storage as a loose object.
+ */
 export const readGlobalSettings = (): Record<string, unknown> => {
   const settings = getSafeStorageItem<unknown>(GLOBAL_SETTINGS_KEY, {})
   return isLooseRecord(settings) ? settings : {}
 }
 
+/**
+ * Writes global settings to storage.
+ */
 export const writeGlobalSettings = (
   settings: Record<string, unknown>
 ): void => {

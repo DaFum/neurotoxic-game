@@ -21,6 +21,9 @@ export interface SectionView {
   accent: string
 }
 
+/**
+ * Registered asset section views keyed by asset kind.
+ */
 export const SECTION_VIEWS: Partial<Record<AssetKind, SectionView>> = {}
 
 SECTION_VIEWS.tourbus_chassis = {

@@ -3,6 +3,11 @@ import { useTranslation } from 'react-i18next'
 import { GlitchButton } from '../../../ui/GlitchButton'
 import type { AudioLockedOverlayProps } from '../../../types/components'
 
+/**
+ * Renders the Audio Locked Overlay component from onInitializeAudio.
+ * @param props - Callback that retries or starts audio initialization.
+ * @returns The rendered Audio Locked Overlay UI.
+ */
 export const AudioLockedOverlay = memo(
   ({ onInitializeAudio }: AudioLockedOverlayProps) => {
     const { t } = useTranslation()

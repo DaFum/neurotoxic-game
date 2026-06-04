@@ -14,6 +14,11 @@ interface MapConnectionProps {
   endVis: NodeVisibility
 }
 
+/**
+ * Renders the Map Connection component from start, end, startVis, and endVis.
+ * @param props - Connection endpoints and visibility states for a map edge.
+ * @returns The rendered Map Connection UI.
+ */
 export const MapConnection = memo(
   ({ start, end, startVis, endVis }: MapConnectionProps) => {
     if (startVis === 'hidden' || endVis === 'hidden') return null

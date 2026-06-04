@@ -3,6 +3,9 @@ import { getQuestDefinition } from '../data/questRegistry'
 import { hasActiveQuest } from '../utils/questUtils'
 import { finiteNumberOr } from '../utils/gameStateUtils'
 
+/**
+ * Maximum active quest slots by quest kind.
+ */
 export const QUEST_SLOT_LIMITS: Record<QuestKind, number> = {
   story: 1,
   side: 3,
@@ -41,6 +44,9 @@ const getCurrentVenueScopeKey = (state: GameState): string | undefined => {
   return state.gameMap?.nodes?.[nodeId]?.type === 'GIG' ? nodeId : undefined
 }
 
+/**
+ * Result of checking whether the current state can accept a quest.
+ */
 export type CanAcceptQuestResult =
   | { ok: true; scopeKey?: string }
   | {

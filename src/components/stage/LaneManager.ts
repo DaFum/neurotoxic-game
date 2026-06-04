@@ -4,6 +4,9 @@ import type { RefObject } from 'react'
 import { buildRhythmLayout } from './stageRenderUtils'
 import { LaneRenderer } from './LaneRenderer'
 
+/**
+ * Manages Lane rendering resources and state.
+ */
 export class LaneManager {
   app: Application
   stageContainer: Container

@@ -1,10 +1,16 @@
 import { Container, Sprite, Texture } from 'pixi.js'
 
+/**
+ * Type contract for Effect Sprite.
+ */
 export type EffectSprite = Sprite & {
   isSprite: boolean
   life: number
 }
 
+/**
+ * Pools reusable Pixi effect sprites for hit feedback.
+ */
 export class EffectSpritePool {
   static MAX_POOL_SIZE = 50
   spritePool: EffectSprite[]

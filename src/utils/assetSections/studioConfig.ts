@@ -1,15 +1,26 @@
 import type { SlotType } from '../../types/assets'
 
+/**
+ * Studio tier-1 chassis slot types.
+ */
 export const STUDIO_T1_SLOTS = [
   'st_control',
   'st_mic',
   'st_monitoring'
 ] as const
+
+/**
+ * Studio tier-2 chassis slot types, including tier-1 slots.
+ */
 export const STUDIO_T2_SLOTS = [
   ...STUDIO_T1_SLOTS,
   'st_outboard',
   'st_treatment'
 ] as const
+
+/**
+ * Studio tier-3 chassis slot types, including lower-tier slots.
+ */
 export const STUDIO_T3_SLOTS = [
   ...STUDIO_T2_SLOTS,
   'st_software',
@@ -21,6 +32,9 @@ export const STUDIO_T3_SLOTS = [
 // x/y is the centre, w/h is the rectangle size (all normalised 0..1 over
 // the 4:3 background image). The Partial typing is intentional — callers
 // must guard `undefined` (only Studio slot types are populated here).
+/**
+ * Studio centered slot zones over the 4:3 floorplan background.
+ */
 export const STUDIO_SLOT_ZONES: Partial<
   Record<SlotType, { x: number; y: number; w: number; h: number }>
 > = {

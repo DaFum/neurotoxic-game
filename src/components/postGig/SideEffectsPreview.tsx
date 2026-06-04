@@ -3,6 +3,11 @@ import { useTranslation } from 'react-i18next'
 
 type SideEffectsPreviewProps = { badges?: string[] }
 
+/**
+ * Renders the Side Effects Preview component from badges.
+ * @param props - Preview badges for social-post side effects.
+ * @returns The rendered Side Effects Preview.
+ */
 export const SideEffectsPreview = memo(
   ({ badges }: SideEffectsPreviewProps) => {
     const { t } = useTranslation()

@@ -11,6 +11,9 @@ import type {
 import { AmpStageController } from '../../stage/AmpStageController'
 const INACTIVE_UI_STATE = { timeLeft: 0, score: 0, isGameOver: false }
 
+/**
+ * Props for the Amp Calibration View component.
+ */
 export interface AmpCalibrationViewProps {
   t: TFunction<'ui', undefined>
   dialValue: number
@@ -40,6 +43,11 @@ export interface AmpCalibrationViewProps {
   onComplete: () => void
 }
 
+/**
+ * Renders the Amp Calibration View component from t, dialValue, setDialValue, targetValue, timeLeft, score, isGameOver, isOverdriveActive, setIsOverdriveActive, heat, isOverheat, voidResonance, isAnomalyActive, interference, purgeInterference, isHijackActive, hijacksOverridden, overrideHijack, controllerFactory, logic, and onComplete.
+ * @param props - Amp calibration controls, HUD state, stage controller factory, completion handler, and advanced mechanic callbacks.
+ * @returns The rendered Amp Calibration View UI.
+ */
 export const AmpCalibrationView = ({
   t,
   dialValue,

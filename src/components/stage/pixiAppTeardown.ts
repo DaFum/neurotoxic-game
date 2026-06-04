@@ -172,6 +172,12 @@ function handleDestroyError(error: unknown, contextName: string): void {
   }
 }
 
+/**
+ * Handles destroy Pixi App behavior.
+ * @param app - Pixi application instance being checked or destroyed.
+ * @param tickerHandler - Ticker callback to remove during Pixi teardown.
+ * @param contextName - Logging context used for lifecycle diagnostics.
+ */
 export function destroyPixiApp(
   app: unknown,
   tickerHandler?: unknown,

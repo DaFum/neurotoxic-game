@@ -201,6 +201,9 @@ const RHYTHM_LAYOUT = Object.freeze({
   rhythmOffsetRatio: RHYTHM_OFFSET_RATIO
 })
 
+/**
+ * Crowd layout constants for stage rendering.
+ */
 export const CROWD_LAYOUT = Object.freeze({
   containerYRatio: 0.5,
   memberCount: 50,
