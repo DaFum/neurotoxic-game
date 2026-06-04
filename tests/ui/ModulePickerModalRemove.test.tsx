@@ -119,9 +119,9 @@ vi.mock('../../src/ui/shared/Modal', () => ({
 
 vi.mock('../../src/utils/assetSelectors', () => ({
   getModulePoolForAsset: mockGetModulePoolForAsset,
-  selectAssetSlotsMap: (asset: any) => {
+  selectAssetSlotsMap: (asset: LongTermAsset) => {
     const map = new Map()
-    for (const s of asset.slots || []) map.set(s.id, s)
+    for (const s of asset.slots) map.set(s.id, s)
     return map
   },
   getSlotConflicts: () => ({

@@ -583,7 +583,7 @@ let liabilitiesMapCache: Map<string, Liability> | null = null
 const EMPTY_ASSETS: readonly LongTermAsset[] = []
 let lastAssetsForMap: readonly LongTermAsset[] | null = null
 let assetsMapCache: Map<string, LongTermAsset> | null = null
-const assetSlotsCache = new WeakMap<readonly AssetSlot[], Map<string, AssetSlot>>()
+const assetSlotsCache = new WeakMap<readonly AssetSlot[], ReadonlyMap<string, AssetSlot>>()
 
 /**
  * Selects a memoized slot map keyed by slot id for a given asset.
@@ -593,7 +593,7 @@ const assetSlotsCache = new WeakMap<readonly AssetSlot[], Map<string, AssetSlot>
  */
 export const selectAssetSlotsMap = (
   asset: LongTermAsset
-): Map<string, AssetSlot> => {
+): ReadonlyMap<string, AssetSlot> => {
   let map = assetSlotsCache.get(asset.slots)
   if (!map) {
     map = new Map<string, AssetSlot>()
