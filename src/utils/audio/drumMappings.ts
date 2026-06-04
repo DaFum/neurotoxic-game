@@ -19,6 +19,9 @@ type DrumMap = {
 
 type DrumKit = NonNullable<typeof audioState.drumKit>
 
+/**
+ * Direct dispatch table for MIDI drum events after note-to-handler mapping.
+ */
 export const DRUM_HANDLERS: Array<
   (kit: DrumKit, map: DrumMap, time: number, vel: number) => void
 > = [
@@ -165,15 +168,14 @@ DRUM_MAPPING[50] = {
 }
 
 /**
- * Löst entsprechend der MIDI-Note den passenden Schlagzeugklang aus.
+ * Triggers the drum sound mapped to a MIDI percussion pitch.
  *
- * Die übergebene Velocity wird auf den Bereich 0–1 begrenzt. Falls die MIDI-Note
- * keiner Zuordnung entspricht, wird ein geschlossenes HiHat als Fallback ausgelöst.
+ * Velocity is clamped to 0-1. Unknown pitches fall back to a closed hihat.
  *
- * @param midiPitch - Die MIDI-Notennummer, die den zu spielenden Schlagzeugtyp bestimmt.
- * @param time - Zeitpunkt, zu dem der Ton ausgelöst werden soll.
- * @param velocity - Anschlagstärke; Werte außerhalb von 0–1 werden auf diesen Bereich begrenzt.
- * @param kit - Das Schlagzeug-Kit/Synth-Objekt, das die Trigger-Methoden bereitstellt. Defaults to `audioState.drumKit`.
+ * @param midiPitch - MIDI percussion note number.
+ * @param time - Tone.js time when the drum sound should trigger.
+ * @param velocity - Note velocity; non-finite and out-of-range values are clamped.
+ * @param kit - Drum kit to trigger. Defaults to `audioState.drumKit`.
  */
 export function playDrumNote(
   midiPitch: number,

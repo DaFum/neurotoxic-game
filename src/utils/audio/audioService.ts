@@ -22,6 +22,9 @@ const subscribe = (listener: AudioServiceListener): (() => void) => {
   return () => {}
 }
 
+/**
+ * React-facing audio facade with snapshot, subscription, volume, and playback helpers.
+ */
 export const audioService = {
   getState,
   hasNativeSubscribe: () => typeof audioManager.subscribe === 'function',

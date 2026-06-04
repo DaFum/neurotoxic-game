@@ -6,6 +6,10 @@ import { getSafeStorageItem, setSafeStorageItem } from '../storage'
 import { audioState } from './state'
 
 type AudioListener = () => void
+
+/**
+ * Supported short sound-effect identifiers routed through the audio manager.
+ */
 export type AudioSfxType =
   | 'hit'
   | 'miss'
@@ -470,5 +474,8 @@ class AudioSystem {
   }
 }
 
+/**
+ * Singleton audio facade used by non-React callers and the React audio service.
+ */
 export const audioManager = new AudioSystem()
 audioManager.init()

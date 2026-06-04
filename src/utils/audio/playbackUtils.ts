@@ -4,10 +4,11 @@ import { ensureAudioContext } from './context'
 import { stopTransportAndClear, cleanupTransportEvents } from './cleanupUtils'
 
 /**
- * Prepares the Tone.js transport for a new playback request.
+ * Claims the next playback request and prepares the Tone.js transport for it.
  *
  * Normalizes options, advances the play request ID, unlocks the audio context,
- * clears existing transport events, and rejects stale requests.
+ * clears existing transport events, and rejects the request if another caller
+ * supersedes it while the audio context is unlocking.
  *
  * @param options - Candidate playback options.
  * @returns Playback preparation status, request ID, and normalized options.
@@ -33,7 +34,7 @@ export async function prepareTransportPlayback(options: unknown = {}): Promise<{
 }
 
 /**
- * Normalizes untrusted MIDI playback options for scheduling.
+ * Normalizes untrusted playback options for Tone.js scheduling.
  *
  * Non-finite timing values become `null`; `useCleanPlayback` defaults to
  * `true`.
@@ -46,7 +47,7 @@ export async function prepareTransportPlayback(options: unknown = {}): Promise<{
  * - `stopAfterSeconds`: playback duration limit in seconds.
  * - `startTimeSec`: absolute Tone.js time to start playback.
  *
- * @returns Safe playback options for MIDI scheduling.
+ * @returns Safe playback options for MIDI and song-data scheduling.
  */
 export const normalizeMidiPlaybackOptions = (
   options: unknown
@@ -91,11 +92,11 @@ export const PATH_PREFIX_REGEX = /^\.?\//
 let cachedAssetPaths: { baseUrl: string; publicBasePath: string } | null = null
 
 /**
- * Derives the Vite base URL and public assets base path.
+ * Derives the Vite base URL and public assets fallback path.
  *
  * Computes once lazily and caches the result for repeated asset resolution.
  *
- * @returns Base URL and public assets path.
+ * @returns Base URL and public assets fallback path.
  */
 export const getBaseAssetPath = (): {
   baseUrl: string
@@ -113,7 +114,7 @@ export const getBaseAssetPath = (): {
 }
 
 /**
- * Resets the cached base asset path. Used for testing.
+ * Resets the cached base asset path between tests.
  */
 export const __resetBaseAssetPathCache = (): void => {
   cachedAssetPaths = null
@@ -137,7 +138,7 @@ export const encodePublicAssetPath = (assetPath: string): string => {
 }
 
 /**
- * Resolves an asset URL from the bundled map or public assets fallback.
+ * Resolves an asset URL from the Vite bundle map or public assets fallback.
  *
  * Checks an exact relative path key first, then a basename key, then builds an
  * encoded URL under `publicBasePath`.
@@ -180,7 +181,7 @@ export const resolveAssetUrl = (
 }
 
 /**
- * Builds an asset URL lookup by relative path and basename.
+ * Builds an asset URL lookup from a Vite asset glob.
  *
  * Duplicate basenames keep the first URL and emit a warning through `warn`.
  *

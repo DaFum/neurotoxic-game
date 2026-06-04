@@ -29,8 +29,9 @@ const oggGlob = import.meta.glob('../../assets/**/*.ogg', {
   eager: true
 })
 
-// Create a map of relative asset path + basename -> URL
-// Key format in glob is "../../assets/path/to/filename.mid"
+/**
+ * Bundled MIDI asset lookup keyed by relative path and basename.
+ */
 export const midiUrlMap = buildAssetUrlMap(
   midiGlob,
   message => logger.warn('AudioEngine', message),
@@ -58,6 +59,9 @@ for (const k of Object.keys(oggUrlMap)) {
   }
 }
 
+/**
+ * Candidate bundled OGG keys for ambient and gig-audio fallback selection.
+ */
 export const oggCandidates =
   fullPathCandidates.length > 0 ? fullPathCandidates : oggAssetKeys
 

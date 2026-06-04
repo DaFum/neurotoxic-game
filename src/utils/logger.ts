@@ -2,7 +2,7 @@
 import { getSafeUUID } from './crypto'
 
 /**
- * Log levels for the application.
+ * Numeric log levels used for filtering console output and retained history.
  */
 export const LOG_LEVELS = {
   DEBUG: 0,
@@ -28,7 +28,7 @@ export const isValidLogLevel = (level: number): boolean => {
 }
 
 /**
- * A configurable logger system for debugging game flow.
+ * Configurable logger that mirrors messages to the console and retained history.
  */
 export class Logger {
   logs: LogEntry[]
@@ -68,8 +68,8 @@ export class Logger {
   }
 
   /**
-   * Set the minimum log level filter.
-   * @param level - Level.
+   * Sets the minimum log level and persists it when storage is available.
+   * @param level - Candidate numeric log level.
    */
   setLevel(level: number): void {
     if (!isValidLogLevel(level)) {
@@ -93,9 +93,9 @@ export class Logger {
   }
 
   /**
-   * Subscribe to log updates (for UI).
-   * @param callback - Callback receiving `type, entry`.
-   * @returns Unsubscribe function
+   * Subscribes to log-history updates.
+   * @param callback - Callback receiving log add or clear events.
+   * @returns Function that removes the subscription.
    */
   subscribe(callback: (event: LogEvent) => void): () => void {
     this.listeners.push(callback)
@@ -212,8 +212,8 @@ export class Logger {
   }
 
   /**
-   * Dumps logs as a JSON string.
-   * @returns JSON representation of logs.
+   * Serializes retained logs for diagnostics.
+   * @returns Pretty-printed JSON representation of retained logs.
    */
   dump(): string {
     return JSON.stringify(this.logs, null, 2)

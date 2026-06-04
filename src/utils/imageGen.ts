@@ -16,7 +16,7 @@ const GENERATED_IMAGE_OFFLINE_FALLBACK = `${typeof import.meta !== 'undefined' &
 // not necessarily internet access to gen.pollinations.ai. This is a best-effort
 // check.
 /**
- * Checks whether generated images should be requested instead of using fallback art.
+ * Checks whether generated-image URLs should be requested instead of fallback art.
  *
  * @param isOnline - Optional explicit online state; falls back to `navigator.onLine`.
  * @returns True when image generation can be attempted.
@@ -33,10 +33,11 @@ export const getGeneratedImageFallbackUrl = () =>
   GENERATED_IMAGE_OFFLINE_FALLBACK
 
 /**
- * Generates a URL string for a procedurally generated image.
+ * Builds a Pollinations generated-image URL for a prompt.
+ *
  * Use this for direct URL assignment (img src, CSS backgroundImage, PIXI loaders).
  * @param description - The detailed prompt for the image.
- * @returns The complete image URL.
+ * @returns Complete generated-image URL with model, seed, and API key parameters.
  */
 export const getGenImageUrl = (description: string) => {
   const encodedDesc = encodeURIComponent(description)
@@ -60,7 +61,7 @@ export const resolveGenImageUrl = (
     : getGeneratedImageFallbackUrl()
 
 /**
- * Prompt catalogue for generated scene, item, UI, and event imagery.
+ * Prompt catalogue for generated scene, item, UI, asset, and event imagery.
  */
 export const IMG_PROMPTS = {
   // Scenes & Backgrounds
@@ -510,7 +511,7 @@ export const getRepairImagePrompt = (
 }
 
 /**
- * Safely appends width/height query params to a generated-image URL.
+ * Appends width and height query params to a generated-image or fallback URL.
  *
  * Works with Pollinations URLs (which already have `?model=...&seed=...`)
  * and the offline fallback SVG (no query params).

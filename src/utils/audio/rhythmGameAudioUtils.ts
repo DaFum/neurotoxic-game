@@ -26,6 +26,10 @@ import type {
 
 const GIG_LEAD_IN_MS = 2000
 const NOTE_LEAD_IN_MS = 100
+
+/**
+ * Extra note lifetime after the scheduled song window, in milliseconds.
+ */
 export const NOTE_TAIL_MS = 1000
 
 interface MutableRef<T> {
@@ -62,6 +66,17 @@ const hasNotesField = (
   )
 }
 
+/**
+ * Combines band, modifier, venue, and setlist data into rhythm-game physics.
+ *
+ * @param band - Current band state used for modifier resolution.
+ * @param gigModifiers - Active pre-gig modifier flags.
+ * @param currentGigId - Current gig song or venue identifier.
+ * @param gameMap - Current tour map for venue lookup.
+ * @param playerNodeId - Current player node on the map.
+ * @param setlistFirstId - First setlist song ID used as a fallback.
+ * @returns Merged rhythm modifiers, note speed, and lane hit windows.
+ */
 export const setupGigPhysics = (
   band: BandState,
   gigModifiers: Partial<GigModifiers>,
@@ -160,6 +175,12 @@ export const setupGigPhysics = (
   }
 }
 
+/**
+ * Resolves the active setlist to complete song entries with safe defaults and parsed notes.
+ *
+ * @param setlist - Requested rhythm-game setlist entries.
+ * @returns Playable songs used by note generation and audio sequencing.
+ */
 export const resolveActiveSetlist = (
   setlist: RhythmSetlistEntry[]
 ): ActiveSong[] => {
@@ -463,6 +484,15 @@ const handleSongEnded = (
   currentState.currentSongStartMisses = currentMisses
 }
 
+/**
+ * Plays one song from the active setlist and schedules continuation to the next entry.
+ *
+ * @param index - Zero-based setlist index to play.
+ * @param activeSetlist - Resolved playable songs.
+ * @param gameStateRef - Mutable rhythm-game state shared with the render loop.
+ * @param addToast - Callback for now-playing notifications.
+ * @param t - Optional translation callback for user-facing messages.
+ */
 export const playSongSequence = async (
   index: number,
   activeSetlist: ActiveSong[],
@@ -599,6 +629,11 @@ export const playSongSequence = async (
   }
 }
 
+/**
+ * Resets per-gig sequencing flags and score tracking on the rhythm-game state ref.
+ *
+ * @param gameStateRef - Mutable rhythm-game state to reset.
+ */
 export const resetGigStateTracking = (
   gameStateRef: MutableRef<RhythmGameRefState>
 ): void => {

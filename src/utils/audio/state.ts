@@ -17,6 +17,9 @@ type GigEndInfo = {
   offsetMs: number
 }
 
+/**
+ * Mutable audio graph and playback state shared by low-level audio modules.
+ */
 export const audioState = {
   // Instruments
   guitar: null as Nullable<Tone.PolySynth>,

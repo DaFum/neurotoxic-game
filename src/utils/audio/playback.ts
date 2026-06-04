@@ -679,6 +679,9 @@ export function getPlayRequestId(): number {
   return audioState.playRequestId
 }
 
+/**
+ * Crossfades the master bus into the corruption burst distortion path.
+ */
 export const enableCorruptionBurstAudio = (): void => {
   if (
     audioState.isCorruptionAudioActive ||
@@ -691,6 +694,9 @@ export const enableCorruptionBurstAudio = (): void => {
   audioState.masterCorruptionWetGain.gain.rampTo(1, 0.05)
 }
 
+/**
+ * Crossfades the master bus back to the clean corruption bypass path.
+ */
 export const disableCorruptionBurstAudio = (): void => {
   if (
     !audioState.isCorruptionAudioActive ||

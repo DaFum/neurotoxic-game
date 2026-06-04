@@ -1,7 +1,7 @@
 import type { MinigameState, GamePhase } from '../types'
 
 /**
- * Canonical scene identifiers used by game state and routing.
+ * Canonical scene identifiers used by game state, routing, and persistence.
  */
 export const GAME_PHASES = Object.freeze({
   OVERWORLD: 'OVERWORLD',
@@ -21,7 +21,7 @@ export const GAME_PHASES = Object.freeze({
 } as const satisfies Record<string, string>)
 
 /**
- * Whitelist of persisted scene values that can be restored safely.
+ * Whitelist of persisted scene values that can be restored from saves.
  */
 export const ALLOWED_SCENE_VALUES = Object.freeze(
   Object.values(GAME_PHASES) as GamePhase[]
@@ -77,7 +77,7 @@ export const DEFAULT_MINIGAME_STATE: DefaultMinigameState = {
 export const DEFAULT_EQUIPMENT_COUNT = 10
 
 /**
- * Shared balance constants for fixed gameplay systems.
+ * Shared balance constants for fixed gameplay systems that do not need runtime tuning.
  */
 export const GAME_CONSTANTS = Object.freeze({
   BLOOD_BANK: {
@@ -93,7 +93,7 @@ export const GAME_CONSTANTS = Object.freeze({
 })
 
 /**
- * Clinic treatment tuning and trait identifiers.
+ * Clinic treatment tuning and the trait granted by enhancement treatment.
  */
 export const CLINIC_CONFIG = Object.freeze({
   VISIT_MULTIPLIER: 1.2,

@@ -416,6 +416,14 @@ async function prepareSongPlayback(song: unknown, options: unknown) {
   return prep
 }
 
+/**
+ * Plays parsed song data through the Tone.js transport.
+ *
+ * @param song - Song-like object containing notes and timing metadata.
+ * @param delay - Delay before playback starts, in seconds.
+ * @param options - Candidate playback options passed through transport preparation.
+ * @returns True when the song is parsed and scheduled.
+ */
 export async function playSongFromData(
   song: unknown,
   delay = 0,
@@ -881,6 +889,12 @@ function processMidiPlaybackParams(params: MidiPlaybackParams) {
   return { ...defaults, ...params }
 }
 
+/**
+ * Loads, parses, and schedules MIDI-file playback for the current request.
+ *
+ * @param rawParams - MIDI filename, timing offsets, loop flag, and playback options.
+ * @returns True when MIDI playback was scheduled for the active request.
+ */
 export async function playMidiFileInternal(
   rawParams: MidiPlaybackParams
 ): Promise<boolean> {
