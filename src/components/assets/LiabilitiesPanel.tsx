@@ -16,12 +16,13 @@ import { finiteNumberOr } from '../../utils/gameStateUtils'
  */
 export const LiabilitiesPanel = () => {
   const { t, i18n } = useTranslation(['assets'])
-  const liabilities = useGameSelector(s => s.liabilities)
+  const liabilitiesMap = useGameSelector(s => s.liabilities)
+  const liabilities = Object.values(liabilitiesMap || {})
   const { refinanceLiability } = useGameActions()
   const [refinanceTargetId, setRefinanceTargetId] = useState<string | null>(
     null
   )
-  const refinanceTarget = liabilities.find(l => l.id === refinanceTargetId)
+  const refinanceTarget = refinanceTargetId ? liabilitiesMap[refinanceTargetId] : undefined
 
   const handleRefinance = (profile: LoanProfileId) => {
     if (!refinanceTarget) return

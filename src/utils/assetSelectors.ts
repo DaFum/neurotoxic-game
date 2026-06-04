@@ -293,7 +293,7 @@ export const getTotalDailyObligations = (state: GameState): number => {
     assetRevenue += getAssetTotalDailyRevenue(a)
   }
   let liabilityPayments = 0
-  const liabilities = Array.isArray(state.liabilities) ? state.liabilities : []
+  const liabilities = state.liabilities ? Object.values(state.liabilities) : []
   for (const l of liabilities) {
     liabilityPayments += l.dailyPayment
   }
@@ -572,11 +572,11 @@ export const getModulePoolForAsset = (
  * @returns Total outstanding debt principal.
  */
 export const getTotalDebt = (state: GameState): number => {
-  return state.liabilities.reduce((sum, l) => sum + l.principalRemaining, 0)
+  return Object.values(state.liabilities).reduce((sum, l) => sum + l.principalRemaining, 0)
 }
 
-const EMPTY_LIABILITIES: readonly Liability[] = []
-let lastLiabilitiesForMap: readonly Liability[] | null = null
+const EMPTY_LIABILITIES: Readonly<Record<string, Liability>> = {}
+let lastLiabilitiesForMap: Readonly<Record<string, Liability>> | null = null
 let liabilitiesMapCache: Map<string, Liability> | null = null
 
 const EMPTY_ASSETS: readonly LongTermAsset[] = []
@@ -619,7 +619,7 @@ export const selectLiabilitiesMap = (
   if (liabilities !== lastLiabilitiesForMap || !liabilitiesMapCache) {
     lastLiabilitiesForMap = liabilities
     const map = new Map<string, Liability>()
-    for (const l of liabilities) {
+    for (const l of Object.values(liabilities)) {
       map.set(l.assetId, l)
     }
     liabilitiesMapCache = map
