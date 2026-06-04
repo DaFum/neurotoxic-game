@@ -127,7 +127,7 @@ Weak TSDoc repeats the signature:
  * @param limit - The limit number.
  * @returns A promise of users.
  */
-export async function fetchUsers(limit: number): Promise<User[]>
+export async function fetchUsers(limit: number): Promise<User[]>;
 ```
 
 Useful TSDoc explains the contract:
@@ -148,7 +148,7 @@ Useful TSDoc explains the contract:
  *
  * @see https://tsdoc.org/
  */
-export async function fetchUsers(limit: number): Promise<User[]>
+export async function fetchUsers(limit: number): Promise<User[]>;
 ```
 
 ## Review Checklist

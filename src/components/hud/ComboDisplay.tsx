@@ -20,14 +20,14 @@ export const ComboDisplay = memo(function ComboDisplay({
   accuracy
 }: ComboDisplayProps) {
   const { t } = useTranslation()
-  const comboColor =
+  const comboColorClass =
     combo >= 50
-      ? 'var(--color-blood-red)'
+      ? 'text-blood-red'
       : combo >= 20
-        ? 'var(--color-warning-yellow)'
+        ? 'text-warning-yellow'
         : combo > 0
-          ? 'var(--color-toxic-green)'
-          : 'rgb(var(--color-ash-gray-rgb) / 50%)'
+          ? 'text-toxic-green'
+          : 'text-ash-gray/50'
   const comboPulseClass = combo >= 50 ? 'animate-pulse' : ''
 
   return (
@@ -40,10 +40,9 @@ export const ComboDisplay = memo(function ComboDisplay({
       }}
     >
       <div
-        className={`text-2xl font-bold transition-all duration-100 tabular-nums ${comboPulseClass} ${
+        className={`text-2xl font-bold transition-all duration-100 tabular-nums ${comboColorClass} ${comboPulseClass} ${
           combo > 0 ? 'scale-110' : 'scale-100'
         }`}
-        style={{ color: comboColor }}
       >
         {combo}x
       </div>
