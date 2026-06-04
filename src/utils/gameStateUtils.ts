@@ -24,6 +24,9 @@ export const clampNonNegative = (value: number): number => {
   return Math.max(0, value)
 }
 
+/**
+ * Normalizes unknown numeric input to a non-negative integer.
+ */
 export const clampToNonNegativeInt = (value: unknown): number => {
   const n = Number(value)
   return Number.isFinite(n) ? Math.max(0, Math.floor(n)) : 0
@@ -31,6 +34,9 @@ export const clampToNonNegativeInt = (value: unknown): number => {
 
 const MAX_UNIT_RANDOM_EXCLUSIVE = 0.9999999999999999
 
+/**
+ * Clamps unknown random input into the valid 0-inclusive, 1-exclusive range.
+ */
 export const clampUnitRandom = (value: unknown): number | undefined => {
   const n = Number(value)
   if (!Number.isFinite(n)) return undefined
@@ -39,6 +45,9 @@ export const clampUnitRandom = (value: unknown): number | undefined => {
   return n
 }
 
+/**
+ * Checks whether an unknown value has the stash-entry shape.
+ */
 export const isStashEntry = (entry: unknown): entry is StashEntry => {
   if (entry === null || typeof entry !== 'object') return false
   const obj = entry as Record<string, unknown>
@@ -193,11 +202,17 @@ export const calculateFameGain = (
   return fameGain
 }
 
+/**
+ * Clamps finite numeric input to an integer percentage range.
+ */
 export const clamp0to100 = (value: number): number => {
   if (!Number.isFinite(value)) return 0
   return Math.max(0, Math.min(100, Math.floor(value)))
 }
 
+/**
+ * Clamps finite numeric input to the reputation range.
+ */
 export const clampReputation = (value: number): number => {
   if (!Number.isFinite(value)) return 0
   return Math.max(-100, Math.min(100, Math.floor(value)))
@@ -236,6 +251,9 @@ export const clampPlayerMoney = (money: number): number => {
 }
 
 // Shared Balance Constants
+/**
+ * Shared balance constants for fame loss, cancellations, sponsorships, and drains.
+ */
 export const BALANCE_CONSTANTS = {
   FAME_LOSS_BAD_GIG: 9,
   MAX_FAME_GAIN: 2000,
@@ -274,11 +292,29 @@ export const calcCancellationRisk = (
   return 0
 }
 
+/**
+ * Relationship-loss multiplier applied by grudge-holder traits.
+ */
 export const RELATIONSHIP_GRUDGE_HOLDER_MULTIPLIER = 1.5
+/**
+ * Relationship-gain multiplier applied by peacemaker traits.
+ */
 export const RELATIONSHIP_PEACEMAKER_POSITIVE_MULTIPLIER = 1.5
+/**
+ * Relationship-loss multiplier applied by peacemaker traits.
+ */
 export const RELATIONSHIP_PEACEMAKER_NEGATIVE_MULTIPLIER = 0.5
+/**
+ * Default relationship score for missing relationship entries.
+ */
 export const RELATIONSHIP_DEFAULT_SCORE = 50
+/**
+ * Minimum persisted relationship score.
+ */
 export const RELATIONSHIP_MIN_SCORE = 0
+/**
+ * Maximum persisted relationship score.
+ */
 export const RELATIONSHIP_MAX_SCORE = 100
 
 /**
@@ -314,6 +350,9 @@ export const clampBandHarmony = (harmony: number): number => {
  * @returns Clamped loyalty value in range [0, 100].
  */
 export const clampLoyalty = (loyalty: number): number => clamp0to100(loyalty)
+/**
+ * Clamps band stress to the canonical 0-100 range.
+ */
 export const clampBandStress = (stress: number): number => clamp0to100(stress)
 
 /**
@@ -520,6 +559,9 @@ const isRelationshipChange = (value: unknown): value is RelationshipChange => {
   )
 }
 
+/**
+ * Previews the effective clamped state deltas from an event delta.
+ */
 export const calculateAppliedDelta = (
   state: DeltaPreviewState,
   delta: EventDelta
@@ -810,6 +852,9 @@ const calculateMemberRelationshipChange = (
   return { other, newScore }
 }
 
+/**
+ * Applies an event delta to mutable game state while enforcing clamps.
+ */
 export const applyEventDelta = (
   state: MutableGameState,
   delta: EventDelta
@@ -1258,6 +1303,9 @@ type SponsorshipDealLike = {
   remainingGigs?: unknown
 }
 
+/**
+ * Checks whether social state contains an unexpired sponsorship deal.
+ */
 export const hasActiveSponsorship = (
   socialState: { activeDeals?: unknown[] } | null | undefined
 ): boolean => {
@@ -1301,6 +1349,9 @@ export const normalizeSetlistForSave = (
 
 export { safeJsonParse }
 
+/**
+ * Checks whether an event id or scoped event key is still on cooldown.
+ */
 export const isOnCooldown = (
   gameState: {
     eventCooldowns?: string[] | Set<string>

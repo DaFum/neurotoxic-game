@@ -5,9 +5,15 @@ import { NEUTRAL_ASSET_MODIFIERS } from '../assetSelectors'
 import { finiteNumberOr } from '../gameStateUtils'
 
 export { DEFAULT_MERCH_PRICES } from '../../data/merch'
+/**
+ * Stable sorted merch item keys for allocation and display.
+ */
 export const SORTED_MERCH_KEYS = Object.freeze(
   Object.keys(MERCH_PROFILES).sort()
 )
+/**
+ * Stable merch profile list used by economy calculations.
+ */
 export const MERCH_PROFILE_VALUES = Object.freeze(
   Object.values(MERCH_PROFILES)
 ) as ReadonlyArray<MerchItemProfile>
@@ -24,6 +30,9 @@ export const MODIFIER_COSTS = {
   guestlist: 50
 } as const satisfies Record<string, number>
 
+/**
+ * Calculates the effective pre-gig modifier cost after asset modifiers.
+ */
 export const calculateGigModifierCost = (
   key: keyof typeof MODIFIER_COSTS,
   assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS
@@ -38,11 +47,26 @@ export const calculateGigModifierCost = (
   return Math.ceil(baseCost * songCostMultiplier)
 }
 
+/**
+ * Bar-spend rate for high-loyalty gig audiences.
+ */
 export const BAR_RATE_VIP = 0.3
+/**
+ * Default bar-spend rate for gig audiences.
+ */
 export const BAR_RATE_NORMAL = 0.15
+/**
+ * Average bar spend per audience member in euros.
+ */
 export const AVG_SPEND_PER_PERSON_AT_BAR = 5
+/**
+ * Zealotry threshold where promo effects change behavior.
+ */
 export const ZEALOTRY_PROMO_THRESHOLD = 80
 
+/**
+ * Shared expense tuning for daily, travel, food, lodging, gear, and admin costs.
+ */
 export const EXPENSE_CONSTANTS = {
   DAILY: {
     BASE_COST: 62
@@ -77,18 +101,42 @@ export const EXPENSE_CONSTANTS = {
   }
 }
 
+/**
+ * Shared tuning constants for ticket-sales calculations.
+ */
 export const TICKET_SALES_CONSTANTS = {
   BASE_DRAW_RATIO: 0.4,
   FAME_CAPACITY_SCALER: 10,
   FAME_FILL_WEIGHT: 0.55
 }
 
+/**
+ * Maximum fame-scaled management cut rate.
+ */
 export const MANAGEMENT_CUT_RATE = 0.15
+/**
+ * Maximum allowed gig net before overage is surfaced as an expense.
+ */
 export const MAX_GIG_NET = 7500
+/**
+ * Global multiplier applied to gig payout calculations.
+ */
 export const GLOBAL_PAYOUT_NERF = 0.5
+/**
+ * Base logistics expense for gig travel.
+ */
 export const TRAVEL_LOGISTICS_BASE = 18
+/**
+ * Additional logistics expense per 100 kilometers.
+ */
 export const TRAVEL_LOGISTICS_PER_100KM = 4
+/**
+ * Additional logistics expense per fame level.
+ */
 export const TRAVEL_LOGISTICS_PER_FAME_LEVEL = 1.5
+/**
+ * Maximum cash logistics expense contribution.
+ */
 export const TRAVEL_LOGISTICS_CASH_CAP = 45
 
 /**

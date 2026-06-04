@@ -1,7 +1,13 @@
 import type { PurchaseItem } from './components'
 
+/**
+ * Visibility state for overworld map nodes.
+ */
 export type NodeVisibility = 'visible' | 'dimmed' | 'hidden'
 
+/**
+ * One node on the generated overworld map.
+ */
 export interface MapNode {
   id: string
   x: number
@@ -16,6 +22,9 @@ export interface MapNode {
   [key: string]: unknown
 }
 
+/**
+ * Generated overworld map with nodes, edges, and city traits.
+ */
 export interface GameMap {
   nodes: Record<string, MapNode>
   edges?: Array<{ from: string; to: string }>
@@ -24,6 +33,9 @@ export interface GameMap {
   [key: string]: unknown
 }
 
+/**
+ * Venue metadata attached to map nodes and gig state.
+ */
 export interface Venue {
   id: string
   name: string

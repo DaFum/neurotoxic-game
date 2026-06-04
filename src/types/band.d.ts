@@ -1,3 +1,6 @@
+/**
+ * Persisted band-member stats, traits, relationships, and equipment.
+ */
 export interface BandMember extends UnknownRecord {
   id?: string
   name?: string
@@ -16,11 +19,17 @@ export interface BandMember extends UnknownRecord {
   equipment?: Record<string, unknown>
 }
 
+/**
+ * Stacked contraband stash entry.
+ */
 export interface StashItem {
   stacks: number
   [key: string]: unknown
 }
 
+/**
+ * Loose contraband item selected from the stash UI.
+ */
 export type ContrabandStashItem = {
   id?: string
   name?: string
@@ -30,6 +39,9 @@ export type ContrabandStashItem = {
   [key: string]: unknown
 }
 
+/**
+ * Persisted band roster, harmony, inventory, and performance state.
+ */
 export interface BandState {
   members: BandMember[]
   harmony: number

@@ -1,3 +1,6 @@
+/**
+ * Selectable option on a game event.
+ */
 export interface EventOption {
   id?: string
   text?: string
@@ -6,6 +9,9 @@ export interface EventOption {
   [key: string]: unknown
 }
 
+/**
+ * Runtime event definition shown to the player.
+ */
 export interface GameEvent {
   id: string
   category?: string
@@ -18,6 +24,9 @@ export interface GameEvent {
   [key: string]: unknown
 }
 
+/**
+ * State delta containers produced by event resolution.
+ */
 export type EventDelta = {
   score?: number
   player: Record<string, unknown> & {
