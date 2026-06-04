@@ -25,3 +25,13 @@ export const ASSET_SECTION_TABS = [
   { key: 'bandhaus_chassis', shortLabel: 'bandhaus', Icon: House },
   { key: 'merch_workshop_chassis', shortLabel: 'workshop', Icon: Shirt }
 ] as const satisfies readonly AssetSectionTab[]
+
+/**
+ * Optimized record lookup for active asset tab resolution.
+ */
+export const ASSET_SECTION_TABS_MAP: Record<string, AssetSectionTab> = Object.freeze(
+  ASSET_SECTION_TABS.reduce<Record<string, AssetSectionTab>>((acc, tab) => {
+    acc[tab.key] = tab
+    return acc
+  }, {})
+)
