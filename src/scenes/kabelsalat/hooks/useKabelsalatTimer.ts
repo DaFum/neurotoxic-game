@@ -12,7 +12,7 @@ const SOCKET_COUNT = Object.keys(SOCKET_DEFS).length
 import type { SocketId } from '../../../types/kabelsalat'
 
 /**
- * Runs the Kabelsalat countdown and marks win/loss state when time or wiring completes.
+ * Runs the Kabelsalat countdown and mutates supplied state setters when time expires or wiring completes.
  * @param connections - Current cable-to-socket connection map.
  * @param isPoweredOn - Whether powered on is active.
  * @param isGameOver - Whether game over is active.
@@ -20,7 +20,6 @@ import type { SocketId } from '../../../types/kabelsalat'
  * @param setTimeLeft - State setter for time left.
  * @param setIsPoweredOn - State setter for is powered on.
  * @param setIsGameOver - State setter for is game over.
- * @returns Nothing; the hook mutates supplied state setters on timer ticks.
  */
 export const useKabelsalatTimer = (
   connections: Partial<Record<SocketId, CableId>>,
