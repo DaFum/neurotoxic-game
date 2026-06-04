@@ -547,7 +547,7 @@ export const calculateGigFinancials = (
   }: GigFinancialParams,
   assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS
 ) => {
-  const playerFame = playerState?.fame ?? 0
+  const playerFame = finiteNumberOr(playerState?.fame, 0)
   const totalSongQualityBonus =
     Math.max(0, finiteNumberOr(assetModifiers.songQualityBonus, 0)) +
     (assetModifiers.flags?.enablesReRecording ? 0.2 : 0)
