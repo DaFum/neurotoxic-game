@@ -19,6 +19,9 @@ export interface CraftingRecipe {
   descKey: string
 }
 
+/**
+ * Static crafting recipe registry keyed by recipe id.
+ */
 export const CRAFTING_RECIPES = {
   recipe_amped_synth: {
     id: 'recipe_amped_synth',
@@ -43,10 +46,25 @@ export const CRAFTING_RECIPES = {
   }
 } as const satisfies Record<string, CraftingRecipe>
 
+/**
+ * Valid key in the crafting recipe registry.
+ */
 export type CraftingRecipeId = keyof typeof CRAFTING_RECIPES
 
+/**
+ * Checks whether a string is a registered crafting recipe id.
+ *
+ * @param id - Candidate recipe id.
+ * @returns True when the recipe id exists in `CRAFTING_RECIPES`.
+ */
 export const isCraftingRecipeId = (id: string): id is CraftingRecipeId =>
   Object.hasOwn(CRAFTING_RECIPES, id)
 
+/**
+ * Looks up a crafting recipe by id.
+ *
+ * @param id - Candidate recipe id.
+ * @returns Matching recipe, or undefined when the id is unknown.
+ */
 export const getCraftingRecipe = (id: string): CraftingRecipe | undefined =>
   isCraftingRecipeId(id) ? CRAFTING_RECIPES[id] : undefined

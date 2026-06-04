@@ -72,4 +72,7 @@ export const ActionTypes = {
   ASSET_FORECLOSED: 'ASSET_FORECLOSED'
 } as const
 
+/**
+ * Union of every reducer action type string accepted by the game state layer.
+ */
 export type ActionType = (typeof ActionTypes)[keyof typeof ActionTypes]

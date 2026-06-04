@@ -502,8 +502,10 @@ const RAW_VENUES = [
   }
 ]
 
+/** Validated venue list populated from RAW_VENUES at module load. */
 export const ALL_VENUES: (typeof RAW_VENUES)[number][] = []
 
+/** Validated venue lookup keyed by venue id. */
 export const VENUES_BY_ID = new Map<string, (typeof RAW_VENUES)[number]>()
 
 // Runtime schema validation without mutating the raw array directly.

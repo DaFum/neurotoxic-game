@@ -48,6 +48,7 @@ const getFlatRelationships = (members: BandMember[]): RelPair[] => {
   return flat
 }
 
+/** Raw relationship-driven event definitions consumed by the event registry. */
 export const RELATIONSHIP_EVENTS = [
   {
     id: 'toxic_infighting',

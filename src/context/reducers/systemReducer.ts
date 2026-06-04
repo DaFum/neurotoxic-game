@@ -1636,6 +1636,13 @@ export const handleLoadGame = (
   return migratedState
 }
 
+/**
+ * Recreates initial game state while preserving allowed persistent settings and unlocks.
+ *
+ * @param state - Current game state before reset.
+ * @param payload - Optional reset overrides for settings and unlocks.
+ * @returns Fresh initial state seeded with the preserved reset data.
+ */
 export const handleResetState = (
   state: GameState,
   payload: ResetStatePayload = {}
@@ -1662,6 +1669,13 @@ export const handleResetState = (
   return createInitialState(persistedData)
 }
 
+/**
+ * Applies whitelisted settings updates from a raw settings payload.
+ *
+ * @param state - Current game state before settings update.
+ * @param payload - Raw settings object to sanitize and merge.
+ * @returns Updated state with sanitized settings, or the original state for invalid payloads.
+ */
 export const handleUpdateSettings = (
   state: GameState,
   payload: Record<string, unknown>
@@ -1673,6 +1687,13 @@ export const handleUpdateSettings = (
   }
 }
 
+/**
+ * Stores the generated map or records a null map fallback.
+ *
+ * @param state - Current game state before map replacement.
+ * @param payload - Generated game map, or null when generation failed safely.
+ * @returns Updated state with `gameMap` replaced.
+ */
 export const handleSetMap = (
   state: GameState,
   payload: GameMap | null
@@ -1685,6 +1706,13 @@ export const handleSetMap = (
   return { ...state, gameMap: payload }
 }
 
+/**
+ * Appends a toast payload to the active toast queue.
+ *
+ * @param state - Current game state before adding the toast.
+ * @param payload - Toast payload prepared by the caller.
+ * @returns Updated state with the toast appended.
+ */
 export const handleAddToast = (
   state: GameState,
   payload: ToastPayload
@@ -1692,6 +1720,13 @@ export const handleAddToast = (
   return { ...state, toasts: [...state.toasts, payload] }
 }
 
+/**
+ * Removes a toast by id from the active toast queue.
+ *
+ * @param state - Current game state before removing the toast.
+ * @param payload - Toast id to remove.
+ * @returns Updated state with matching toasts filtered out.
+ */
 export const handleRemoveToast = (
   state: GameState,
   payload: string
@@ -1870,9 +1905,11 @@ const applyDailyBankruptcyCheck = (state: GameState): GameState => {
 }
 
 /**
- * Handles day advancement
- * @param state - Current state
- * @returns Updated state
+ * Advances the simulation by one day, including asset ticks, daily economy, social trends, deadlines, and bankruptcy checks.
+ *
+ * @param state - Current game state before the day tick.
+ * @param payload - Optional deterministic RNG stream and next seed supplied by the action creator.
+ * @returns Updated state after all daily systems have run.
  */
 export const handleAdvanceDay = (
   state: GameState,
@@ -2073,6 +2110,13 @@ export const handleSetPendingBandHQOpen = (
   return { ...state, pendingBandHQOpen: isOpen }
 }
 
+/**
+ * Stores the temporary supply-stop inventory shown by the current travel stop.
+ *
+ * @param state - Current game state before pending inventory changes.
+ * @param inventory - Pending supply-stop inventory, or a non-array value to clear it.
+ * @returns Updated state with normalized pending inventory.
+ */
 export const handleSetPendingSupplyStopInventory = (
   state: GameState,
   inventory: GameState['pendingSupplyStopInventory']
@@ -2086,6 +2130,13 @@ export const handleSetPendingSupplyStopInventory = (
   }
 }
 
+/**
+ * Stores or clears the currently pending asset risk event and emits resolution progress when cleared.
+ *
+ * @param state - Current game state before pending risk event changes.
+ * @param event - Risk event descriptor to store, or null to resolve the current pending event.
+ * @returns Updated state with the pending risk event changed or resolved.
+ */
 export const handleSetPendingRiskEvent = (
   state: GameState,
   event: RiskEventDescriptor | null

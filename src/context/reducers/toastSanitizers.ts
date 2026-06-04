@@ -1,6 +1,9 @@
 import type { ToastPayload } from '../../types'
 import { isEmptyObject } from '../../utils/gameStateUtils'
 
+/**
+ * Toast types accepted from runtime and persisted toast payloads.
+ */
 export const ALLOWED_TOAST_TYPES = [
   'success',
   'error',
@@ -33,6 +36,12 @@ const sanitizePrimitiveOptions = (
   return safePrimitives
 }
 
+/**
+ * Sanitizes an optional success-toast payload while applying safe fallbacks.
+ *
+ * @param toast - Raw toast payload.
+ * @returns Sanitized toast payload, or null when no message or key remains.
+ */
 export const sanitizeSuccessToast = (
   toast: unknown,
   {
@@ -84,6 +93,13 @@ export const sanitizeSuccessToast = (
   return safeToast
 }
 
+/**
+ * Sanitizes a toast loaded from persisted state.
+ *
+ * @param toast - Raw persisted toast payload.
+ * @param allowedToastTypes - Toast type allow-list.
+ * @returns Sanitized toast payload, or null when required fields are invalid.
+ */
 export const sanitizeLoadedToast = (
   toast: unknown,
   allowedToastTypes: readonly ToastPayload['type'][] = ALLOWED_TOAST_TYPES

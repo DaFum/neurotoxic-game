@@ -33,6 +33,7 @@ function createCooldownComposite(
   return composite
 }
 
+/** Raw crisis event definitions consumed by the event registry. */
 export const CRISIS_EVENTS = [
   {
     id: 'crisis_bad_review',

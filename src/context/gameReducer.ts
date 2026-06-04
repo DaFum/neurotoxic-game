@@ -248,6 +248,13 @@ const applyZeroConditionForeclosures = (state: GameState): GameState => {
   return nextState
 }
 
+/**
+ * Root game reducer that routes handled actions to domain reducers.
+ *
+ * @param state - Current game state.
+ * @param action - Game action to apply.
+ * @returns Next game state.
+ */
 export const gameReducer = (
   state: GameState,
   action: GameAction

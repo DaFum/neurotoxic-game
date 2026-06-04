@@ -1,4 +1,4 @@
-// Financial Events
+/** Raw financial event definitions consumed by the event registry. */
 export const FINANCIAL_EVENTS = [
   {
     id: 'unexpected_bill',

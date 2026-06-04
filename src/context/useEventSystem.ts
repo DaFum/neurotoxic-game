@@ -119,6 +119,12 @@ function runSideEffects(effects: SideEffect[], ctx: SideEffectContext): void {
   }
 }
 
+/**
+ * Builds event selection and resolution callbacks for the game state provider.
+ *
+ * @param params - Current state ref, dispatch, side-effect callbacks, save callback, and translator ref.
+ * @returns Stable callbacks for setting, triggering, and resolving game events.
+ */
 export function useEventSystem({
   stateRef,
   dispatch,

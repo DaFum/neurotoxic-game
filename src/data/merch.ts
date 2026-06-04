@@ -12,6 +12,9 @@ export type CityGenre =
   | 'noise'
   | 'hardcore'
 
+/**
+ * City spending profile used to scale merch demand.
+ */
 export type SpendingProfile =
   | 'stingy'
   | 'average'
@@ -19,6 +22,9 @@ export type SpendingProfile =
   | 'drunkards'
   | 'merch-hungry'
 
+/**
+ * Demand and pricing configuration for one merch item.
+ */
 export interface MerchItemProfile {
   /** Slug used as inventory key, price key, and i18n suffix. */
   key: string
@@ -36,6 +42,9 @@ export interface MerchItemProfile {
   missSensitivity: number
 }
 
+/**
+ * Canonical merch item profiles keyed by inventory and price key.
+ */
 export const MERCH_PROFILES = {
   patches: {
     key: 'patches',
@@ -120,6 +129,9 @@ export const MERCH_PROFILES = {
   }
 } as const satisfies Record<string, MerchItemProfile>
 
+/**
+ * Merch demand multiplier by city spending profile.
+ */
 export const SPENDING_PROFILE_MERCH_MULTIPLIER = {
   stingy: 0.7,
   average: 1.0,

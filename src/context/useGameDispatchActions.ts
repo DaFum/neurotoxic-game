@@ -89,6 +89,9 @@ import {
   startCrowdfund as startCrowdfundAction
 } from './assetActionCreators'
 
+/**
+ * Stable command surface exposed by GameStateProvider for mutating game state.
+ */
 export type GameDispatchActions = {
   changeScene: (scene: Parameters<typeof createChangeSceneAction>[0]) => void
   updatePlayer: (
@@ -247,6 +250,12 @@ interface UseGameDispatchActionsProps {
   resetMapGenerationRetries: () => void
 }
 
+/**
+ * Creates the memoized dispatch action bundle used by GameStateProvider.
+ *
+ * @param props - Dispatch dependencies, current state snapshots, translator ref, and map retry reset callback.
+ * @returns Stable game action methods for reducers, persistence, events, minigames, and assets.
+ */
 export function useGameDispatchActions({
   dispatch,
   state,

@@ -34,6 +34,12 @@ type UseMapGenerationParams = {
   tRef: MutableRefObject<TFunction>
 }
 
+/**
+ * Generates the overworld map when missing and retries transient generation failures.
+ *
+ * @param params - Current map, reducer dispatch, and translator ref for fallback toasts.
+ * @returns Callback for resetting map-generation retry state.
+ */
 export function useMapGeneration({
   gameMap,
   dispatch,

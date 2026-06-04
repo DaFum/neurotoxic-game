@@ -1509,6 +1509,7 @@ export const VENUE_CHATTER_DB = [
   }
 ]
 
+/** Venue chatter lookup keyed by venue id. */
 export const VENUE_CHATTER_LOOKUP = Object.fromEntries(
   VENUE_CHATTER_DB.map(v => [v.venueId, v])
 )

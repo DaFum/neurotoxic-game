@@ -71,12 +71,7 @@ function useRequiredContext<T>(context: Context<T | null>, name: string): T {
   return value
 }
 
-/**
- * Global State Provider covering Player, Band, Inventory, and Scene Management.
- * @param props - Component props.
- * - `props.children` - Children.
- */
-// Lazy initialization of state to ensure fresh data fetch on mount
+/** Initializes game state with persistent unlocks and optional screenshot-test hydration. */
 const initGameState = (): GameState => {
   const unlocks = safeStorageOperation(
     'loadUnlocks',
@@ -119,6 +114,12 @@ const initGameState = (): GameState => {
   return freshState
 }
 
+/**
+ * Provides global game state and stable dispatch actions to the React tree.
+ *
+ * @param props - Provider props containing optional child nodes.
+ * @returns React context providers wrapping the supplied children.
+ */
 export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   const { t } = useTranslation()
   const tRef = useRef(t)

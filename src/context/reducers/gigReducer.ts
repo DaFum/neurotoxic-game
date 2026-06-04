@@ -30,6 +30,13 @@ import { normalizeSetlistForSave } from '../../utils/gameStateUtils'
 const MIN_REPUTATION = -100
 const MAX_REPUTATION = 100
 
+/**
+ * Stores the currently selected venue or clears it.
+ *
+ * @param state - Current game state before the selection update.
+ * @param payload - Venue to make current, or null to clear the current gig.
+ * @returns Updated state with `currentGig` replaced.
+ */
 export const handleSetGig = (
   state: GameState,
   payload: Venue | null
@@ -38,6 +45,13 @@ export const handleSetGig = (
   return { ...state, currentGig: payload }
 }
 
+/**
+ * Enters the pre-gig scene for a venue and resets gig modifiers to defaults.
+ *
+ * @param state - Current game state before the gig starts.
+ * @param payload - Venue that becomes the current gig.
+ * @returns Updated state ready for pre-gig setup.
+ */
 export const handleStartGig = (state: GameState, payload: Venue): GameState => {
   logger.info('GameState', 'Starting Gig Sequence', payload.name)
   return {
@@ -48,6 +62,13 @@ export const handleStartGig = (state: GameState, payload: Venue): GameState => {
   }
 }
 
+/**
+ * Persists the current rhythm setlist in save-safe form.
+ *
+ * @param state - Current game state before setlist replacement.
+ * @param payload - Setlist entries selected for the gig.
+ * @returns Updated state with a normalized setlist.
+ */
 export const handleSetSetlist = (
   state: GameState,
   payload: RhythmSetlistEntry[]
@@ -120,6 +141,13 @@ const handleRecordGoodShow = (state: GameState): GameState => {
   return nextState
 }
 
+/**
+ * Stores post-gig performance stats and applies reputation, unlock, and quest side effects.
+ *
+ * @param state - Current game state before post-gig stats are recorded.
+ * @param payload - Post-gig summary to store, or null to clear the summary.
+ * @returns Updated state with sanitized stats and any resulting progression changes.
+ */
 export const handleSetLastGigStats = (
   state: GameState,
   payload: PostGigSummary | null

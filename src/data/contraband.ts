@@ -423,6 +423,7 @@ const CONTRABAND_DB = [
   }
 ]
 
+/** Weighted rarity table used for random contraband drops. */
 export const CONTRABAND_RARITY_WEIGHTS = {
   common: 70,
   uncommon: 25,
@@ -430,16 +431,19 @@ export const CONTRABAND_RARITY_WEIGHTS = {
   epic: 1
 }
 
+/** Void trader purchase costs by supported contraband rarity. */
 export const VOID_TRADER_COSTS = {
   epic: 1000,
   rare: 400
 }
 
+/** Lookup map of contraband definition by item id. */
 export const CONTRABAND_BY_ID = new Map<
   string,
   (typeof CONTRABAND_DB)[number]
 >()
 
+/** Contraband definitions grouped by rarity for random selection. */
 export const CONTRABAND_BY_RARITY: Record<
   Rarity,
   (typeof CONTRABAND_DB)[number][]

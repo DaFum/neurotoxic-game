@@ -23,7 +23,7 @@ export { EVENT_CATEGORIES, type EventCategory } from './categories'
 
 const VALID_CATEGORIES = new Set<EventCategory>(EVENT_CATEGORIES)
 
-// Aggregate all raw event definitions from their domain files
+/** Aggregate raw event definitions from every event domain file before validation. */
 export const ALL_RAW_EVENTS = [
   ...TRANSPORT_EVENTS,
   ...BAND_EVENTS,
@@ -36,7 +36,7 @@ export const ALL_RAW_EVENTS = [
   ...QUEST_EVENTS
 ]
 
-// The final registry of playable events
+/** Validated playable events grouped by category. */
 export const EVENTS_DB = Object.fromEntries(
   EVENT_CATEGORIES.map(cat => [cat, [] as UnknownRecord[]])
 ) as Record<EventCategory, UnknownRecord[]>

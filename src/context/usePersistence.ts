@@ -18,6 +18,7 @@ import { createLoadGameAction } from './actionCreators'
 import type { GameAction, GameState } from '../types'
 import type { OptionalToastCallback } from '../types/callbacks'
 
+/** Local-storage key for the current persisted game save. */
 export const SAVE_KEY = 'neurotoxic_v3_save'
 const LOADABLE_SAVE_KEYS = [
   'version',
@@ -61,6 +62,13 @@ type UsePersistenceParams = {
   tRef: MutableRefObject<TFunction>
 }
 
+/**
+ * Builds a reducer load payload from a parsed save by whitelisting persisted fields.
+ *
+ * @param parsedObj - Parsed save object that has already passed basic shape validation.
+ * @param unlocks - Merged persistent unlock ids to include in the load payload.
+ * @returns Raw load payload containing only keys the reducer is allowed to hydrate.
+ */
 export const createRawLoadPayload = (
   parsedObj: Record<string, unknown>,
   unlocks: string[]
@@ -147,6 +155,12 @@ const createPersistedState = (currentState: GameState) => {
   }
 }
 
+/**
+ * Creates save, load, and delete-save callbacks plus post-gig autosave behavior.
+ *
+ * @param params - Current scene, state ref, dispatch, toast callback, and translator ref.
+ * @returns Persistence actions for deleting, saving, and loading the game.
+ */
 export function usePersistence({
   currentScene,
   stateRef,

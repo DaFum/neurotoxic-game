@@ -10,6 +10,7 @@ import { QUEST_APOLOGY_TOUR } from '../questsConstants'
 import { hasActiveQuest } from '../../utils/questUtils'
 import { isOnCooldown } from '../../utils/gameStateUtils'
 
+/** Raw consequence event definitions consumed by the event registry. */
 export const CONSEQUENCE_EVENTS = [
   {
     id: 'consequences_venue_complaint',

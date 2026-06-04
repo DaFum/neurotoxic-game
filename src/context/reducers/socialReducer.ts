@@ -340,6 +340,13 @@ export const handleUpdateSocial = (
 const VENUE_DEFENSE_LOYALTY_THRESHOLD = 30
 const VENUE_DEFENSE_LOYALTY_COST = 15
 
+/**
+ * Blacklists a venue after a bad gig unless fan loyalty absorbs the penalty.
+ *
+ * @param state - Current game state before blacklist handling.
+ * @param payload - Venue id to blacklist and toast id to use for player feedback.
+ * @returns Updated state with a blacklist entry or loyalty-defense side effect.
+ */
 export const handleAddVenueBlacklist = (
   state: GameState,
   { venueId, toastId }: { venueId: string; toastId: string }
@@ -384,8 +391,13 @@ const UNBLACKLIST_BASE_COST = 250
 const UNBLACKLIST_COST_PER_CAPACITY = 2
 
 /**
- * Cost to win a venue back. Bigger rooms have longer memories, so the amends
- * fee scales with capacity on top of a flat base.
+ * Calculates the amends cost required to remove a venue from the blacklist.
+ *
+ * Bigger rooms have longer memories, so the fee scales with capacity on top
+ * of a flat base.
+ *
+ * @param venueId - Venue id to price.
+ * @returns Currency cost to unblacklist the venue.
  */
 export const getUnblacklistCost = (venueId: string): number => {
   const venue = VENUES_BY_ID.get(venueId)
@@ -398,6 +410,13 @@ export const getUnblacklistCost = (venueId: string): number => {
   return UNBLACKLIST_BASE_COST + capacity * UNBLACKLIST_COST_PER_CAPACITY
 }
 
+/**
+ * Pays amends to remove a venue from the blacklist and emits venue quest progress.
+ *
+ * @param state - Current game state before amends are paid.
+ * @param payload - Venue id to unblacklist and toast id for feedback.
+ * @returns Updated state with money deducted and venue removed, or feedback when amends are unavailable.
+ */
 export const handleUnblacklistVenue = (
   state: GameState,
   { venueId, toastId }: { venueId: string; toastId: string }
@@ -453,6 +472,13 @@ export const handleUnblacklistVenue = (
   )
 }
 
+/**
+ * Runs a merch press campaign that trades money and harmony for loyalty, fame, and controversy changes.
+ *
+ * @param state - Current game state before the merch press.
+ * @param payload - Merch press costs, gains, and optional success toast.
+ * @returns Updated state with clamped social/player/band deltas, or the original state when validation fails.
+ */
 export const handleMerchPress = (
   state: GameState,
   payload: MerchPressPayload
@@ -641,6 +667,13 @@ const applyZealotryAction = (
   return nextState
 }
 
+/**
+ * Applies the once-per-day pirate broadcast social action.
+ *
+ * @param state - Current game state before the broadcast.
+ * @param payload - Broadcast cost, optional gains, harmony cost, and optional success toast.
+ * @returns Updated state with zealotry-style deltas, or the original state when validation or cooldown checks fail.
+ */
 export const handlePirateBroadcast = (
   state: GameState,
   payload: PirateBroadcastPayload
@@ -652,6 +685,13 @@ export const handlePirateBroadcast = (
     invalidLogMessage: 'Invalid pirate broadcast payload'
   })
 
+/**
+ * Applies the once-per-day dark-web leak social action.
+ *
+ * @param state - Current game state before the leak.
+ * @param payload - Required leak cost and gains, harmony cost, and optional success toast.
+ * @returns Updated state with zealotry-style deltas, or the original state when validation or cooldown checks fail.
+ */
 export const handleDarkWebLeak = (
   state: GameState,
   payload: DarkWebLeakPayload | null | undefined

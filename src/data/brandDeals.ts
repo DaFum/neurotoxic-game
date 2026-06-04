@@ -2,6 +2,9 @@
 // This file defines the potential brand partnerships a band can attract.
 import type { BrandDeal } from '../types/social'
 
+/**
+ * Canonical brand deal templates available to the social offer engine.
+ */
 export const BRAND_DEALS = [
   {
     id: 'energy_drink_cx',
@@ -1109,7 +1112,7 @@ export const BRAND_DEALS = [
   }
 ] satisfies BrandDeal[]
 
-// Pre-computed map of brand deals for O(1) lookups.
+/** Precomputed brand deal lookup keyed by deal id. */
 export const BRAND_DEALS_BY_ID = new Map<string, BrandDeal>()
 for (const deal of BRAND_DEALS) {
   const transformedDeal: BrandDeal = { ...deal }

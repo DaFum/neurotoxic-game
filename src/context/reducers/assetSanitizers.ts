@@ -86,6 +86,12 @@ const VALID_SLOT_TYPES: ReadonlySet<string> = new Set([
 const isValidSlotType = (value: unknown): value is SlotType =>
   typeof value === 'string' && VALID_SLOT_TYPES.has(value)
 
+/**
+ * Sanitizes persisted asset-kind lists into unique known asset kinds.
+ *
+ * @param raw - Raw persisted asset-kind collection.
+ * @returns Unique valid asset kinds in their original order.
+ */
 export const sanitizeAssetKinds = (raw: unknown): AssetKind[] => {
   if (!Array.isArray(raw)) return []
   const out: AssetKind[] = []
@@ -97,6 +103,12 @@ export const sanitizeAssetKinds = (raw: unknown): AssetKind[] => {
   return out
 }
 
+/**
+ * Sanitizes a pending risk-event descriptor from persisted or hostile input.
+ *
+ * @param raw - Raw risk-event descriptor.
+ * @returns Valid risk-event descriptor, or null when required fields are invalid.
+ */
 export const sanitizeRiskEventDescriptor = (
   raw: unknown
 ): RiskEventDescriptor | null => {
@@ -240,6 +252,12 @@ const sanitizeSlots = (raw: unknown): AssetSlot[] => {
   return finalOut
 }
 
+/**
+ * Sanitizes persisted long-term assets and drops invalid topology entries.
+ *
+ * @param raw - Raw asset collection from loaded state.
+ * @returns Sanitized assets with valid slots, modules, chassis data, and unique ids.
+ */
 export const sanitizeAssets = (raw: unknown): LongTermAsset[] => {
   if (!Array.isArray(raw)) return []
   const out: LongTermAsset[] = []
@@ -288,6 +306,13 @@ export const sanitizeAssets = (raw: unknown): LongTermAsset[] => {
   return out
 }
 
+/**
+ * Sanitizes persisted liabilities and drops entries not tied to active assets.
+ *
+ * @param raw - Raw liability collection from loaded state.
+ * @param assets - Sanitized assets used to validate liability ownership.
+ * @returns Valid liabilities with unique ids and numeric fields normalized.
+ */
 export const sanitizeLiabilities = (
   raw: unknown,
   assets: ReadonlyArray<{ id: string }>
@@ -326,6 +351,13 @@ export const sanitizeLiabilities = (
   return out
 }
 
+/**
+ * Sanitizes persisted crowdfund campaigns and filters duplicate active acquisitions.
+ *
+ * @param raw - Raw campaign collection from loaded state.
+ * @param activeAssets - Assets whose kinds already block another acquisition.
+ * @returns Valid crowdfund campaigns with deterministic materialization ids.
+ */
 export const sanitizeCrowdfundCampaigns = (
   raw: unknown,
   activeAssets: ReadonlyArray<Pick<LongTermAsset, 'kind'>> = []
@@ -398,6 +430,12 @@ export const sanitizeCrowdfundCampaigns = (
   return out
 }
 
+/**
+ * Sanitizes a persisted RNG seed into the unsigned 32-bit range.
+ *
+ * @param raw - Raw seed value.
+ * @returns Non-negative UInt32 seed suitable for mulberry32.
+ */
 export const sanitizeRngSeed = (raw: unknown): number => {
   // Always return a non-negative 32-bit integer seed. The unsigned right-shift
   // coerces to UInt32 (0..2^32-1) which is what mulberry32 expects; `| 0` alone

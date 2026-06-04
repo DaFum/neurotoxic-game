@@ -132,13 +132,18 @@ export function transformSongsData(rawSongs: Record<string, RawSong>): Song[] {
   })
 }
 
-// transformSongsData is the single source of truth for the shape.
-// Runtime uses it here; tests import and call it directly with fixture data.
+/**
+ * Runtime song database transformed from source rhythm data.
+ */
 export const SONGS_DB = transformSongsData(rhythmSongs)
 
-// Pre-computed maps for O(1) lookups.
-// Optimized single-pass population of multiple lookup maps.
+/**
+ * O(1) song lookup by canonical song id.
+ */
 export const SONGS_BY_ID = new Map<string, Song>()
+/**
+ * O(1) song lookup by source MIDI id.
+ */
 export const SONGS_BY_MID = new Map<string, Song>()
 
 for (const song of SONGS_DB) {
