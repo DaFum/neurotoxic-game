@@ -581,10 +581,10 @@ test('calculateTravelExpenses returns correct cost structure', () => {
   const node = { venue: { x: 50, y: 50, name: 'Center' } }
   // Relative to center (default fromNode):
   // dist = 20 (base minimum)
-  // fuelLiters = 2.4, fuelCost = 4
+  // fuelLiters = 2.4 (paid via the van tank, not as a money cost)
   // foodCost = 24 (3 * 8)
-  // logisticsCost = 18 base + 0 distance + 0 fame + 0 cash reserve + 4 fuel = 22
-  // totalCost = food + logistics (incl. fuel) = 46
+  // logisticsCost = 18 base + 0 distance + 0 fame + 0 cash reserve = 18
+  // totalCost = food + logistics = 42
 
   const result = calculateTravelExpenses(node)
 
@@ -599,8 +599,8 @@ test('calculateTravelExpenses returns correct cost structure', () => {
   )
   assert.equal(
     result.totalCost,
-    46,
-    'Total cost should be 46 (Food + Logistics incl. fuel)'
+    42,
+    'Total cost should be 42 (Food + Logistics)'
   )
 })
 

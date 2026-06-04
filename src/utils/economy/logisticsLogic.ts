@@ -119,7 +119,10 @@ export const calculateTravelExpenses = (
   assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS
 ) => {
   const dist = calculateDistance(node, fromNode)
-  const { fuelLiters, fuelCost } = calculateFuelCost(
+  // Fuel is paid by consuming the van's tank (fuelLiters), not as a money cost.
+  // Consumers deduct fuelLiters from van.fuel separately, so fuelCost must NOT
+  // be folded into totalCost or every move would be charged for fuel twice.
+  const { fuelLiters } = calculateFuelCost(
     dist,
     playerState,
     bandState,
@@ -143,11 +146,7 @@ export const calculateTravelExpenses = (
     Math.floor(finiteNumberOr(playerState?.money, 0) / 1000) * 5
   )
   const logisticsCost =
-    TRAVEL_LOGISTICS_BASE +
-    distanceLogistics +
-    fameLogistics +
-    cashReserveFee +
-    fuelCost
+    TRAVEL_LOGISTICS_BASE + distanceLogistics + fameLogistics + cashReserveFee
   const totalCost = foodCost + logisticsCost
 
   return { dist, fuelLiters, totalCost }
