@@ -18,6 +18,8 @@ type EventPoolById = Record<string, EngineEvent>
  *
  * Each cached value maps event ids from that pool to their event objects for
  * pending-event lookup.
+ *
+ * @remarks WeakMap keys are the pool arrays themselves, not event ids.
  */
 const eventPoolMapCache = new WeakMap<EngineEvent[], EventPoolById>()
 
@@ -66,6 +68,12 @@ const getEventMapForPool = (pool: EngineEvent[]): EventPoolById => {
 
 /**
  * Selects one eligible event from a pool using trigger, cooldown, flags, and chance.
+ *
+ * @param pool - Candidate events to evaluate.
+ * @param gameState - State snapshot used for cooldowns, flags, assets, and event conditions.
+ * @param triggerPoint - Trigger category currently requesting an event.
+ * @param rng - Random number generator used for shuffling and chance rolls.
+ * @returns The selected event with resolved template context, or `null` when none qualifies.
  */
 const selectEvent = (
   pool: EngineEvent[],
