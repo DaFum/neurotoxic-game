@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import {
   createGigCompletedQuestEvent,
   createGoodGigQuestEvent,
-  createSmallVenueGoodGigQuestEvent,
+  createSmallVenueGoodQuestEvent,
   createHarmonyChangedQuestEvent
 } from '../../src/quests/producers/gigQuestEvents.ts'
 import {
@@ -77,7 +77,7 @@ test('quest producers create canonical events with matchable context', async t =
         'gig.good'
       )
       assert.equal(
-        createSmallVenueGoodGigQuestEvent({
+        createSmallVenueGoodQuestEvent({
           score: 88,
           capacity: 250,
           venueId: 'venue_a',

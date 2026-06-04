@@ -18,7 +18,7 @@ let lastRawUnlocks: string | null = null
 /**
  * Clears the in-memory cache. Used primarily for testing.
  */
-export const clearCache = (): void => {
+const clearCache = (): void => {
   unlocksCache = null
   lastRawUnlocks = null
 }
@@ -113,3 +113,6 @@ export const addUnlock = (unlockId: string): boolean => {
 
   return success
 }
+
+export const __testInternals: { clearCache: () => void } | undefined =
+  process.env.NODE_ENV === 'test' ? { clearCache } : undefined

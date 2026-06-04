@@ -30,11 +30,9 @@ export const createGoodGigQuestEvent = (
   input: GigQuestEventInput
 ): QuestEvent => createGigEvent('gig.good', input)
 
-export const createSmallVenueGoodGigQuestEvent = (
+export const createSmallVenueGoodQuestEvent = (
   input: GigQuestEventInput
 ): QuestEvent => createGigEvent('gig.smallVenueGood', input)
-
-export const createSmallVenueGoodQuestEvent = createSmallVenueGoodGigQuestEvent
 
 export const createHarmonyChangedQuestEvent = ({
   amount,

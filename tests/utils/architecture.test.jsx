@@ -143,9 +143,7 @@ test('Quests correctly trigger failure when deadlines exceed day advance', () =>
       id: 'test_deadline_quest',
       label: 'Test Deadline Quest',
       deadline: 10,
-      failurePenalty: {
-        social: { controversyLevel: 10 }
-      }
+      failurePenalties: [{ type: 'social.controversy', amount: 10 }]
     },
     {
       id: 'test_safe_quest',
@@ -215,7 +213,7 @@ test('Quest completion paths through gig reducer work correctly', () => {
       label: 'Apology Tour',
       required: 1,
       progress: 0,
-      moneyReward: 100
+      rewards: [{ type: 'money', amount: 100 }]
     }
   ]
   initialState.currentGig = { id: 'test_gig', score: 100, capacity: 200 }

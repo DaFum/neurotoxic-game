@@ -773,12 +773,19 @@ describe('PostGig Component - Complete Phase', () => {
         expect.objectContaining({
           id: 'quest_apology_tour',
           deadline: 19,
-          failurePenalty: expect.objectContaining({
-            flags: ['apology_tour_failed'],
-            band: { harmony: -20 },
-            social: { controversyLevel: 25 },
-            cooldowns: [{ id: 'apology_tour_retry', days: 14 }]
-          })
+          failurePenalties: expect.arrayContaining([
+            expect.objectContaining({ type: 'social.controversy', amount: 25 }),
+            expect.objectContaining({ type: 'band.harmony', amount: -20 }),
+            expect.objectContaining({
+              type: 'flag.add',
+              flag: 'apology_tour_failed'
+            }),
+            expect.objectContaining({
+              type: 'quest.cooldown',
+              id: 'apology_tour_retry',
+              days: 14
+            })
+          ])
         })
       )
       // Don't re-assert registry-owned fields like `required` here — those
@@ -790,12 +797,20 @@ describe('PostGig Component - Complete Phase', () => {
           id: 'quest_ego_management',
           deadline: 10,
           progress: 50 - NEUROTOXIC_PEDAL_HARMONY_PENALTY,
-          failurePenalty: expect.objectContaining({
-            flags: ['ego_crisis_failed'],
-            band: { harmony: -25 },
-            social: { controversyLevel: 10, loyalty: -15 },
-            cooldowns: [{ id: 'ego_management_retry', days: 10 }]
-          })
+          failurePenalties: expect.arrayContaining([
+            expect.objectContaining({ type: 'social.controversy', amount: 10 }),
+            expect.objectContaining({ type: 'social.loyalty', amount: -15 }),
+            expect.objectContaining({ type: 'band.harmony', amount: -25 }),
+            expect.objectContaining({
+              type: 'flag.add',
+              flag: 'ego_crisis_failed'
+            }),
+            expect.objectContaining({
+              type: 'quest.cooldown',
+              id: 'ego_management_retry',
+              days: 10
+            })
+          ])
         })
       )
 
