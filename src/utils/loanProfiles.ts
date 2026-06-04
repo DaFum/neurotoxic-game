@@ -134,3 +134,8 @@ export const computeAmortization = (
   const r = annualInterestRate / 365
   return (principal * (r * (1 + r) ** termDays)) / ((1 + r) ** termDays - 1)
 }
+
+/**
+ * Pre-computed array of loan profiles for faster iteration.
+ */
+export const LOAN_PROFILES_ARRAY = Object.values(LOAN_PROFILES)
