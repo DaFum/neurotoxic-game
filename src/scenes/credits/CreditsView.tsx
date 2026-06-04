@@ -46,7 +46,10 @@ export const CreditsView = React.memo(
 
             {credits.map((c, i) => (
               <CreditEntry
-                key={`${c.role}-${i}`}
+                // Static, never-reordered credits list with no unique id; the
+                // index disambiguates duplicate role+name entries.
+                // eslint-disable-next-line @eslint-react/no-array-index-key
+                key={`${c.role}-${c.name}-${i}`}
                 role={c.role}
                 name={c.name}
                 delay={0.3 + i * 0.3}
