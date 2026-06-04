@@ -147,8 +147,10 @@ export const SPENDING_PROFILE_MERCH_MULTIPLIER = {
 export const DEFAULT_MERCH_PRICES: Record<string, number> = (() => {
   const prices: Record<string, number> = {}
   for (const key in MERCH_PROFILES) {
-    const p = MERCH_PROFILES[key as keyof typeof MERCH_PROFILES]
-    prices[p.key] = p.defaultPrice
+    if (Object.prototype.hasOwnProperty.call(MERCH_PROFILES, key)) {
+      const p = MERCH_PROFILES[key as keyof typeof MERCH_PROFILES]
+      prices[p.key] = p.defaultPrice
+    }
   }
   return prices
 })()
