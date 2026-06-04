@@ -1,3 +1,4 @@
+import React from 'react'
 import { useTranslation } from 'react-i18next'
 import type { CatalogTabProps } from '../../types/components'
 import { logger } from '../../utils/logger'
@@ -47,10 +48,11 @@ export const CatalogTab = ({
     }
   }
 
-  const balanceElements = []
+  const balanceElements: React.JSX.Element[] = []
   const keys = Object.keys(balances)
   for (let i = 0; i < keys.length; i++) {
-    const key = keys[i] as string
+    const key = keys[i]
+    if (key === undefined) continue
     const value = balances[key]
     if (value === undefined) continue
 
