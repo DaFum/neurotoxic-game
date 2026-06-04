@@ -161,9 +161,10 @@ export const calculateRefuelCost = (
   currentFuel: number,
   assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS
 ) => {
+  const safeFuel = finiteNumberOr(currentFuel, 0)
   const missing = Math.max(
     0,
-    EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL - currentFuel
+    EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL - safeFuel
   )
   return Math.ceil(
     missing *
