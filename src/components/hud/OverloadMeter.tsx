@@ -8,6 +8,11 @@ interface OverloadMeterProps {
   overload: number
 }
 
+/**
+ * Renders the Overload Meter component from overload.
+ * @param props - Current overload value.
+ * @returns The rendered Overload Meter UI.
+ */
 export const OverloadMeter = memo(function OverloadMeter({
   overload
 }: OverloadMeterProps) {

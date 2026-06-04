@@ -19,6 +19,11 @@ interface Props {
   onClose: () => void
 }
 
+/**
+ * Renders the Upgrade Confirm Modal component from asset, isOpen, and onClose.
+ * @param props - Asset, modal state, and close handler for chassis upgrade confirmation.
+ * @returns The rendered Upgrade Confirm Modal UI.
+ */
 export const UpgradeConfirmModal = ({ asset, isOpen, onClose }: Props) => {
   const { t, i18n } = useTranslation(['assets'])
   const { upgradeChassisTier } = useGameActions()

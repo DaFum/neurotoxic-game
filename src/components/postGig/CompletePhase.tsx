@@ -12,6 +12,11 @@ import type { CompletePhaseProps } from '../../types/components'
 
 const UNKNOWN_PLATFORM = 'unknown'
 
+/**
+ * Renders the Complete Phase component from result, onContinue, onSpinStory, player, social, and isProcessingAction.
+ * @param props - Post result, player/social state, story-spin and continue handlers, and action-processing state.
+ * @returns The rendered Complete Phase UI.
+ */
 export const CompletePhase = ({
   result,
   onContinue,

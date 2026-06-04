@@ -62,6 +62,11 @@ const isNegotiationResult = (value: unknown): value is NegotiationResult => {
   )
 }
 
+/**
+ * Renders the Negotiation Modal component from isOpen, onClose, negotiationResult, and handleNegotiationSubmit.
+ * @param props - Modal state, close handler, negotiation result, and negotiation-submit handler.
+ * @returns The rendered Negotiation Modal UI.
+ */
 export const NegotiationModal = ({
   isOpen,
   onClose,

@@ -3,6 +3,9 @@ import { getPixiColorFromToken } from './stageRenderUtils'
 import { AMP_CALIBRATION_TOLERANCE } from '../../context/gameConstants'
 import { getSafeRandom } from '../../utils/crypto'
 
+/**
+ * Manages Amp Wave rendering resources and state.
+ */
 export class AmpWaveManager {
   private app: PIXI.Application
   waveGraphics: PIXI.Graphics | null

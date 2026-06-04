@@ -15,6 +15,11 @@ interface Props {
   onClose: () => void
 }
 
+/**
+ * Renders the Repair Confirm Modal component from asset, isOpen, and onClose.
+ * @param props - Asset, modal state, and close handler for chassis repair confirmation.
+ * @returns The rendered Repair Confirm Modal UI.
+ */
 export const RepairConfirmModal = ({ asset, isOpen, onClose }: Props) => {
   const { t, i18n } = useTranslation(['assets'])
   const { repairChassis } = useGameActions()

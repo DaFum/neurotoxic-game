@@ -7,6 +7,11 @@ interface PauseButtonProps {
   isGameOver?: boolean
 }
 
+/**
+ * Renders the Pause Button component from onTogglePause and isGameOver.
+ * @param props - Pause callback and game-over state.
+ * @returns The rendered Pause Button UI.
+ */
 export const PauseButton = memo(function PauseButton({
   onTogglePause,
   isGameOver

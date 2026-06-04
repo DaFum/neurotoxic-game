@@ -17,6 +17,9 @@ interface TaggedGraphics extends Graphics {
   __layer: string
 }
 
+/**
+ * Renders rhythm lane backgrounds and lane highlight effects.
+ */
 export class LaneRenderer {
   static: TaggedGraphics
   active: TaggedGraphics

@@ -2,6 +2,9 @@ import { Application, Container } from 'pixi.js'
 import { EffectTextureManager } from './EffectTextureManager'
 import { EffectSprite, EffectSpritePool } from './EffectSpritePool'
 
+/**
+ * Manages Effect rendering resources and state.
+ */
 export class EffectManager {
   static MAX_ACTIVE_EFFECTS = 50
   app: Application

@@ -3,11 +3,17 @@ import { IMG_PROMPTS, resolveGenImageUrl } from '../../utils/imageGen'
 import { handleError } from '../../utils/errorHandler'
 import { loadTextures } from './stageRenderUtils'
 
+/**
+ * Type contract for Crowd Textures.
+ */
 export type CrowdTextures = {
   idle: Texture | null
   mosh: Texture | null
 }
 
+/**
+ * Manages Crowd Texture rendering resources and state.
+ */
 export class CrowdTextureManager {
   textures: CrowdTextures
 

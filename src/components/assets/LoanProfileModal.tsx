@@ -16,6 +16,11 @@ interface LoanProfileChoiceGridProps {
   onSelect: (profile: LoanProfileId) => void
 }
 
+/**
+ * Renders the Loan Profile Choice Grid component from value and onSelect.
+ * @param props - Selected loan profile and selection callback.
+ * @returns The rendered Loan Profile Choice Grid UI.
+ */
 export const LoanProfileChoiceGrid = ({
   value,
   onSelect
@@ -63,6 +68,11 @@ export const LoanProfileChoiceGrid = ({
   )
 }
 
+/**
+ * Renders the Loan Profile Modal component from isOpen, onClose, onSelect, and title.
+ * @param props - Modal state, close handler, profile selection callback, and title.
+ * @returns The rendered Loan Profile Modal UI.
+ */
 export const LoanProfileModal = ({
   isOpen,
   onClose,

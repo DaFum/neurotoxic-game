@@ -2,6 +2,11 @@ import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { RoadieHUDProps } from '../../../types/components'
 
+/**
+ * Renders the Roadie HUD component from uiState.
+ * @param props - Roadie UI state displayed during the minigame.
+ * @returns The rendered Roadie HUD UI.
+ */
 export const RoadieHUD = memo(function RoadieHUD({ uiState }: RoadieHUDProps) {
   const { t } = useTranslation(['ui'])
 

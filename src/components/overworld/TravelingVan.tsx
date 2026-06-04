@@ -2,6 +2,11 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import type { TravelingVanProps } from '../../types/components'
 
+/**
+ * Renders the Traveling Van component from t, isTraveling, currentNode, travelTarget, vanUrl, travelCompletedRef, and onTravelComplete.
+ * @param props - Travel state, route endpoints, van image URL, completion guard ref, and completion callback.
+ * @returns The rendered Traveling Van UI.
+ */
 export const TravelingVan = React.memo(
   ({
     t,

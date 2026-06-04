@@ -2,6 +2,11 @@ import { useTranslation } from 'react-i18next'
 import { formatCurrency } from '../../utils/numberUtils'
 import type { ClinicHeaderProps } from '../../types/components'
 
+/**
+ * Renders the Clinic Header component from player.
+ * @param props - Player clinic state shown in the clinic header.
+ * @returns The rendered Clinic Header UI.
+ */
 export const ClinicHeader = ({ player }: ClinicHeaderProps) => {
   const { t, i18n } = useTranslation(['ui'])
 

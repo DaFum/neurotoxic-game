@@ -12,6 +12,9 @@ import { checkLifecycleRace, isLifecycleRaceError } from './StageLifecycleUtils'
 import type { RefObject, MutableRefObject } from 'react'
 import type { StageControllerOptions } from '../../types/components'
 
+/**
+ * Coordinates shared stage rendering and lifecycle behavior.
+ */
 export class BaseStageController<TState = unknown> {
   containerRef: RefObject<HTMLElement | null>
   gameStateRef: RefObject<TState>

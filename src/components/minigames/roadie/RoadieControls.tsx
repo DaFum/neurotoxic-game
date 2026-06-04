@@ -4,6 +4,11 @@ import type { RoadieControlsProps } from '../../../types/components'
 import { RoadieTouchSurface } from './RoadieTouchSurface'
 import { RoadieDPad } from './RoadieDPad'
 
+/**
+ * Renders the Roadie Controls component from showControls, setShowControls, handleMoveUp, handleMoveLeft, handleMoveDown, and handleMoveRight.
+ * @param props - Roadie touch-control visibility state, visibility setter, and directional movement callbacks.
+ * @returns The rendered Roadie Controls UI.
+ */
 export const RoadieControls = memo(function RoadieControls({
   showControls,
   setShowControls,

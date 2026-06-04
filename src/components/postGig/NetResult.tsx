@@ -8,6 +8,11 @@ import {
 
 type NetResultProps = { net: number }
 
+/**
+ * Renders the Net Result component from net.
+ * @param props - Net gig result amount for the report summary.
+ * @returns The rendered Net Result UI.
+ */
 export const NetResult = React.memo(({ net }: NetResultProps) => {
   const { t, i18n } = useTranslation(['economy', 'ui'])
 

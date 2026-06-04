@@ -75,6 +75,9 @@ function createGenericHitTexture(app: Application): Texture | null {
   return texture
 }
 
+/**
+ * Manages Effect Texture rendering resources and state.
+ */
 export class EffectTextureManager {
   private app: Application
   private textures: { blood: Texture | null; toxic: Texture | null }

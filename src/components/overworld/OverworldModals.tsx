@@ -13,6 +13,11 @@ interface OverworldModalsProps {
   modals: ReturnType<typeof useOverworldModals>
 }
 
+/**
+ * Renders the Overworld Modals component from modals.
+ * @param props - Modal state bundle for the overworld modal stack.
+ * @returns The rendered Overworld Modals UI.
+ */
 export const OverworldModals = React.memo(
   ({ modals }: OverworldModalsProps) => {
     const {

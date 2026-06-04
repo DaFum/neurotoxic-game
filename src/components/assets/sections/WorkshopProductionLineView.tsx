@@ -11,6 +11,11 @@ interface Props {
   onSlotClick: (slotId: string) => void
 }
 
+/**
+ * Renders the Workshop Production Line View component from asset and onSlotClick.
+ * @param props - Workshop asset state and slot-click handler.
+ * @returns The rendered Workshop Production Line View UI.
+ */
 export const WorkshopProductionLineView = ({ asset, onSlotClick }: Props) => {
   const { t } = useTranslation(['assets'])
   return (

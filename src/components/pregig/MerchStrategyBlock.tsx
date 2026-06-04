@@ -107,6 +107,11 @@ const MerchItemRow: React.FC<MerchItemRowProps> = ({
   )
 }
 
+/**
+ * Renders the Merch Strategy Block component from bandInventory, customPrices, onUpdatePrice, onRestock, restockCostMultiplier, and merchCapacityBonus.
+ * @param props - Merch inventory, custom prices, price/restock handlers, restock cost multiplier, and capacity bonus.
+ * @returns The rendered Merch Strategy Block UI.
+ */
 export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
   bandInventory,
   customPrices,

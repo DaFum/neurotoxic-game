@@ -11,6 +11,11 @@ interface Props {
   onSlotClick: (slotId: string) => void
 }
 
+/**
+ * Renders the Tourbus Vehicle View component from asset and onSlotClick.
+ * @param props - Tourbus asset state and slot-click handler.
+ * @returns The rendered Tourbus Vehicle View UI.
+ */
 export const TourbusVehicleView = ({ asset, onSlotClick }: Props) => {
   const { t } = useTranslation(['assets'])
   const hasTrailer = asset.slots.some(

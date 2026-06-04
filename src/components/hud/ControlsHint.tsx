@@ -7,6 +7,10 @@ const LANES = [
   { id: 'bass', key: '→' }
 ] as const
 
+/**
+ * Renders rhythm-game keyboard and lane-control hints.
+ * @returns The rendered Controls Hint UI.
+ */
 export const ControlsHint = memo(function ControlsHint() {
   const { t } = useTranslation(['ui'])
 

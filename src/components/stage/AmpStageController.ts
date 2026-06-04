@@ -9,6 +9,9 @@ import type {
 } from '../../types/components'
 import { AmpWaveManager } from './AmpWaveManager'
 
+/**
+ * Coordinates Amp stage rendering and lifecycle behavior.
+ */
 export class AmpStageController extends BaseStageController<AmpStageOptions> {
   waveManager: AmpWaveManager | null
   bg: PIXI.Graphics | null
@@ -172,6 +175,11 @@ export class AmpStageController extends BaseStageController<AmpStageOptions> {
   }
 }
 
+/**
+ * Creates an Amp stage controller instance.
+ * @param params - Controller factory dependencies.
+ * @returns Computed result.
+ */
 export const createAmpStageController = (
   params: StageControllerOptions<AmpStageOptions>
 ) => new AmpStageController(params)

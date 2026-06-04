@@ -4,6 +4,9 @@ import { getModuleImagePrompt } from '../../../utils/imageGen'
 import { getSlotButtonAriaLabel } from '../sections/slotLabels'
 import type { SlotType } from '../../../types/assets'
 
+/**
+ * Props for the Asset Slot Button component.
+ */
 export interface AssetSlotButtonProps {
   id: string
   slotType: SlotType
@@ -17,6 +20,11 @@ export interface AssetSlotButtonProps {
   children?: React.ReactNode
 }
 
+/**
+ * Renders the Asset Slot Button component from id, slotType, installedModuleId, onClick, style, className, imageAspectRatio, imageSizeHint, ariaLabel, and children.
+ * @param props - Slot identity/type, installed module state, click handler, positioning style, image metadata, and accessible label.
+ * @returns The rendered Asset Slot Button UI.
+ */
 export const AssetSlotButton = ({
   id,
   slotType,

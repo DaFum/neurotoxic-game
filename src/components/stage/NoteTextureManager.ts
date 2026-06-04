@@ -3,8 +3,14 @@ import { handleError } from '../../utils/errorHandler'
 import { IMG_PROMPTS, resolveGenImageUrl } from '../../utils/imageGen'
 import { loadTextures } from './stageRenderUtils'
 
+/**
+ * Type contract for Note Textures.
+ */
 export type NoteTextures = { skull: Texture | null; lightning: Texture | null }
 
+/**
+ * Manages Note Texture rendering resources and state.
+ */
 export class NoteTextureManager {
   noteTextures: NoteTextures
 

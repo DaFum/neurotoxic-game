@@ -1,3 +1,6 @@
+/**
+ * Handles Pixi stage resizing against the host container.
+ */
 export class StageResizeHandler {
   private resizeObserver: ResizeObserver | null = null
   private _usingWindowResize = false

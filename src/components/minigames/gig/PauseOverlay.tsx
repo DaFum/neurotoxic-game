@@ -2,6 +2,11 @@ import { useTranslation } from 'react-i18next'
 import { GlitchButton } from '../../../ui/GlitchButton'
 import type { PauseOverlayProps } from '../../../types/components'
 
+/**
+ * Renders the Pause Overlay component from isPaused, onResume, and onQuit.
+ * @param props - Pause visibility plus resume and quit callbacks.
+ * @returns The rendered Pause Overlay UI.
+ */
 export const PauseOverlay = ({
   isPaused,
   onResume,

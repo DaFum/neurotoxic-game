@@ -109,6 +109,11 @@ const SongRow = memo(function SongRow({
 
 SongRow.displayName = 'SongRow'
 
+/**
+ * Renders the Setlist Block component from setlist, songsDb, songsDict, selectedSongIds, player, and toggleSong.
+ * @param props - Setlist, song lookup data, selected song ids, player state, and song toggle callback.
+ * @returns The rendered Setlist Block UI.
+ */
 export const SetlistBlock = ({
   setlist,
   songsDb,

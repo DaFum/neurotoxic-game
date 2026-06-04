@@ -7,12 +7,18 @@ type TabIcon = ComponentType<{
   'aria-hidden'?: boolean
 }>
 
+/**
+ * Type contract for Asset Section Tab.
+ */
 export interface AssetSectionTab {
   key: AssetKind
   shortLabel: 'tourbus' | 'studio' | 'bandhaus' | 'workshop'
   Icon: TabIcon
 }
 
+/**
+ * Navigation tab definitions for the asset hub sections.
+ */
 export const ASSET_SECTION_TABS = [
   { key: 'tourbus_chassis', shortLabel: 'tourbus', Icon: Bus },
   { key: 'studio_chassis', shortLabel: 'studio', Icon: SlidersHorizontal },

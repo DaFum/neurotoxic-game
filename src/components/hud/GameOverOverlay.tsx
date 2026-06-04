@@ -5,6 +5,11 @@ interface GameOverOverlayProps {
   isGameOver?: boolean
 }
 
+/**
+ * Renders the Game Over Overlay component from isGameOver.
+ * @param props - Game-over visibility flag for the gig overlay.
+ * @returns The rendered Game Over Overlay UI.
+ */
 export const GameOverOverlay = memo(function GameOverOverlay({
   isGameOver
 }: GameOverOverlayProps) {

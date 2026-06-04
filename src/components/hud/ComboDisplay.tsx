@@ -6,6 +6,11 @@ interface ComboDisplayProps {
   accuracy: number
 }
 
+/**
+ * Renders the Combo Display component from combo and accuracy.
+ * @param props - Combo and accuracy values displayed during the gig.
+ * @returns The rendered Combo Display UI.
+ */
 export const ComboDisplay = memo(function ComboDisplay({
   combo,
   accuracy

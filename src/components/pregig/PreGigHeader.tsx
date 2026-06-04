@@ -12,6 +12,11 @@ type PreGigHeaderProps = {
   calculatedBudget: number
 }
 
+/**
+ * Renders the Pre Gig Header component from t, i18n, currentGig, player, and calculatedBudget.
+ * @param props - Translator, locale, current gig, player state, and calculated pre-gig budget.
+ * @returns The rendered Pre Gig Header UI.
+ */
 export const PreGigHeader = React.memo(
   ({ t, i18n, currentGig, player, calculatedBudget }: PreGigHeaderProps) => {
     return (

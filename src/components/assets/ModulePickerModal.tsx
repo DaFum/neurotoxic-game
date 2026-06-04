@@ -61,6 +61,11 @@ const formatLockReason = (
   }
 }
 
+/**
+ * Renders the Module Picker Modal component from asset, slotId, isOpen, and onClose.
+ * @param props - Asset, slot id, modal state, and close handler for module installation.
+ * @returns The rendered Module Picker Modal UI.
+ */
 export const ModulePickerModal = memo(
   ({ asset, slotId, isOpen, onClose }: Props) => {
     const { t, i18n } = useTranslation(['assets'])
