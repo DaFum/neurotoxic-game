@@ -15,6 +15,7 @@ export const QUEST_REGISTRY = {
     startFlags: ['prove_yourself_active'],
     clearFlagsOnComplete: ['prove_yourself_active'],
     clearFlagsOnFail: ['prove_yourself_active'],
+    completionFlags: ['prove_yourself_complete'],
     rewards: [{ type: 'flag.add', flag: 'prove_yourself_complete' }],
     failurePenalties: [
       { type: 'social.controversy', amount: 10 },
@@ -37,6 +38,7 @@ export const QUEST_REGISTRY = {
     followupQuestId: 'quest_sincere_redemption',
     clearFlagsOnComplete: ['cancel_quest_active'],
     clearFlagsOnFail: ['cancel_quest_active'],
+    completionFlags: ['apology_tour_complete'],
     rewards: [{ type: 'flag.add', flag: 'apology_tour_complete' }],
     failurePenalties: [
       { type: 'social.controversy', amount: 25 },
@@ -63,6 +65,7 @@ export const QUEST_REGISTRY = {
     followupQuestId: 'quest_band_pact',
     clearFlagsOnComplete: ['breakup_quest_active'],
     clearFlagsOnFail: ['breakup_quest_active'],
+    completionFlags: ['ego_crisis_resolved'],
     rewards: [{ type: 'flag.add', flag: 'ego_crisis_resolved' }],
     failurePenalties: [
       { type: 'social.controversy', amount: 10 },
@@ -578,7 +581,7 @@ export const QUEST_REGISTRY = {
     required: 3,
     offer: { trigger: 'random', category: 'special', chance: 0.05 },
     rewards: [
-      { type: 'trait.unlock', traitId: 'veteran' },
+      { type: 'trait.unlock', traitId: 'road_warrior' },
       { type: 'skill_point', memberIndex: 0 }
     ],
     failurePenalties: [
