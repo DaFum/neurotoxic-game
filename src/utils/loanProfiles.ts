@@ -138,4 +138,6 @@ export const computeAmortization = (
 /**
  * Pre-computed array of loan profiles for faster iteration.
  */
-export const LOAN_PROFILES_ARRAY = Object.values(LOAN_PROFILES)
+export const LOAN_PROFILES_ARRAY: readonly LoanProfile[] = Object.freeze(
+  Object.values(LOAN_PROFILES)
+)
