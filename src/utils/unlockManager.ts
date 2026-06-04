@@ -114,5 +114,10 @@ export const addUnlock = (unlockId: string): boolean => {
   return success
 }
 
-export const __testInternals: { clearCache: () => void } | undefined =
-  process.env.NODE_ENV === 'test' ? { clearCache } : undefined
+export const __testInternals = {
+  clearCache: () => {
+    if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') {
+      clearCache()
+    }
+  }
+}
