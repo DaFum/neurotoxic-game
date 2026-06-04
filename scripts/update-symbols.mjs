@@ -252,6 +252,10 @@ function normalizeDocText(text) {
   return text.replace(/\s+/g, ' ').trim()
 }
 
+function normalizeSnippetText(text) {
+  return text.replace(/\r\n?/g, '\n')
+}
+
 function jsDocHosts(decl) {
   const hosts = [decl]
   if (ts.isVariableDeclaration(decl)) {
@@ -391,7 +395,9 @@ function serializeSignature(sym, decl) {
       )
       const name =
         paramDecl && ts.isParameter(paramDecl)
-          ? paramDecl.name.getText(paramDecl.getSourceFile())
+          ? normalizeSnippetText(
+              paramDecl.name.getText(paramDecl.getSourceFile())
+            )
           : param.name
       const entry = {
         name,

@@ -380,6 +380,8 @@ export const QUEST_REGISTRY = {
     progressSource: 'good_gig',
     progressRules: [{ event: 'gig.good', amount: 'fixed', fixedAmount: 1 }],
     required: 3,
+    completionFlags: ['back_from_pit_complete'],
+    failureFlags: ['back_from_pit_failed'],
     rewards: [
       { type: 'flag.add', flag: 'back_from_pit_complete' },
       { type: 'fame', amount: 300 }
@@ -398,6 +400,8 @@ export const QUEST_REGISTRY = {
     progressSource: 'good_gig',
     progressRules: [{ event: 'gig.good', amount: 'fixed', fixedAmount: 1 }],
     required: 2,
+    completionFlags: ['sincere_redemption_complete'],
+    failureFlags: ['sincere_redemption_failed'],
     rewards: [
       { type: 'flag.add', flag: 'sincere_redemption_complete' },
       { type: 'social.controversy', amount: -20 }
@@ -422,6 +426,8 @@ export const QUEST_REGISTRY = {
       }
     ],
     required: 70,
+    completionFlags: ['band_pact_complete'],
+    failureFlags: ['band_pact_failed'],
     rewards: [
       { type: 'flag.add', flag: 'band_pact_complete' },
       { type: 'band.harmony', amount: 15 }

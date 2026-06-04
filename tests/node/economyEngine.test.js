@@ -635,16 +635,20 @@ test('calculateFuelCost applies van tuning upgrade', () => {
 // Upgrade testing is handled in calculateFuelCost tests.
 
 test('calculateRefuelCost handles normal and edge cases', async t => {
-  const fullRefuel = Math.ceil(100 * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE)
+  const maxFuel = EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL
+  const fullRefuel = Math.ceil(maxFuel * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE)
 
   await t.test('calculates correct cost for partial fuel', () => {
-    const cost = calculateRefuelCost(50)
-    const expected = Math.ceil(50 * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE)
+    const currentFuel = maxFuel / 2
+    const cost = calculateRefuelCost(currentFuel)
+    const expected = Math.ceil(
+      (maxFuel - currentFuel) * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE
+    )
     assert.equal(cost, expected)
   })
 
   await t.test('returns 0 when overfilled', () => {
-    assert.equal(calculateRefuelCost(120), 0)
+    assert.equal(calculateRefuelCost(maxFuel + 20), 0)
   })
 
   await t.test(
