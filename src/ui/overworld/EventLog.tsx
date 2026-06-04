@@ -3,7 +3,7 @@ import { ALL_VENUES } from '../../data/venues'
 import { translateLocation } from '../../utils/locationI18n'
 
 /**
- * Props for the Event Log component.
+ * Translation and location context used to append overworld event log entries.
  */
 export interface EventLogProps {
   t: import('../../types/callbacks').TranslationCallback
@@ -25,7 +25,7 @@ interface EventLogEntry {
 }
 
 /**
- * Renders the Event Log view.
+ * Displays append-only overworld event log entries for day and location changes.
  * @param props - Current day and location context used to render translated event log entries.
  */
 export const EventLog = React.memo(({ t, day, locationId }: EventLogProps) => {

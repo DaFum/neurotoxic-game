@@ -30,7 +30,7 @@ type ModalProps = {
 }
 
 /**
- * Renders the Modal view.
+ * Presents an accessible modal dialog with backdrop click, Escape close, and focus handoff.
  * @param props - Modal visibility, close handler, accessible title or label, content, and styling hooks.
  */
 export const Modal = ({

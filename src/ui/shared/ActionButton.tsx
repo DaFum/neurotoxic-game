@@ -1,5 +1,5 @@
 /**
- * ActionButton - A standardized action button for overlays and dialogues.
+ * Shared high-emphasis action button for overlays and dialogue surfaces.
  * Module: `ActionButton`.
  */
 
@@ -17,7 +17,7 @@ type ActionButtonProps = ComponentPropsWithoutRef<'button'> & {
 }
 
 /**
- * ActionButton - A standardized action button for overlays and dialogues.
+ * Standardized high-emphasis button used by overlays and dialogue surfaces.
  */
 export const ActionButton = memo(
   ({

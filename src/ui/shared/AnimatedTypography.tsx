@@ -3,7 +3,7 @@ import type { HTMLMotionProps, Transition } from 'framer-motion'
 import type { ReactNode } from 'react'
 
 /**
- * Renders the Animated Divider view.
+ * Displays an animated divider line with configurable width and timing.
  * @param props - Divider width, animation transition, and optional classes.
  */
 export const AnimatedDivider = ({
@@ -34,7 +34,7 @@ type AnimatedSubtitleProps = {
 }
 
 /**
- * Renders the Animated Subtitle view.
+ * Displays subtitle text with animated entrance timing.
  * @param props - Rendered element type, animation states, transition, classes, and content.
  */
 export const AnimatedSubtitle = ({

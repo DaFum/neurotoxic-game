@@ -53,7 +53,7 @@ interface CrisisModalProps {
 }
 
 /**
- * Renders the Uplink Button view.
+ * Displays the reusable brutalist uplink button surface.
  * @param props - External link title, URL, subtitle, type, and icon component.
  */
 export const UplinkButton = memo(
@@ -168,7 +168,7 @@ export const UplinkButton = memo(
 
 // Optimization: Wrapped in React.memo to prevent unnecessary re-renders of static SVG decorations
 /**
- * Renders the Alert Icon view.
+ * Displays the alert icon with severity-specific styling.
  * @param props - Optional class and accessible title for the alert icon.
  */
 export const AlertIcon = memo(({ className, title }: SvgIconProps) => {
@@ -223,7 +223,7 @@ export const AlertIcon = memo(({ className, title }: SvgIconProps) => {
 
 // Optimization: Wrapped in React.memo to prevent unnecessary re-renders of static SVG decorations
 /**
- * Renders the Hex Node view.
+ * Displays one hex-node status tile.
  * @param props - Optional class and accessible title for the hex-node icon.
  */
 export const HexNode = memo(({ className, title }: SvgIconProps) => {
@@ -310,7 +310,7 @@ const WarningStripe = memo(() => {
 
 // Optimization: Wrapped in React.memo to prevent unnecessary re-renders of static SVG decorations
 /**
- * Renders the Block Meter view.
+ * Displays a segmented block meter for compact numeric status.
  * @param props - Meter label, current value, maximum value, and danger-state flag.
  */
 export const BlockMeter = memo(
@@ -355,7 +355,7 @@ export const BlockMeter = memo(
 
 // 3. Brutalist Tabs
 /**
- * Renders the Crisis Modal view.
+ * Displays a high-priority modal with confirm and cancel actions.
  * @param props - Modal visibility, close handler, title, description, actions, and optional classes.
  */
 export const CrisisModal = memo(
@@ -474,7 +474,7 @@ export const CrisisModal = memo(
 
 // 8. Deadman Button (Hold to Confirm)
 /**
- * Renders the Deadman Button view.
+ * Displays a hold-to-confirm deadman button for dangerous actions.
  * @param props - Button label and confirmation callback.
  */
 export const DeadmanButton = memo(
@@ -604,7 +604,7 @@ export const DeadmanButton = memo(
 
 // 10. Hardware Inventory Slot
 /**
- * Renders the Hazard Ticker view.
+ * Displays a looping hazard ticker with repeated warning text.
  * @param props - Ticker message text.
  */
 export const HazardTicker = memo(({ message }: HazardTickerProps) => {

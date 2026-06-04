@@ -1,5 +1,5 @@
 /**
- * Supported loan profile identifiers.
+ * Loan product identifiers accepted by chassis purchase and refinancing flows.
  */
 export type LoanProfileId =
   | 'shortTerm'

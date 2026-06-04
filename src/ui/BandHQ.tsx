@@ -10,7 +10,7 @@ import { BandHQContentArea } from './bandhq/BandHQContentArea.tsx'
 const VOID_TRADER_CONTROVERSY_THRESHOLD = 30
 
 /**
- * Props for the Band HQ component.
+ * Close behavior and optional wrapper styling for the Band HQ modal.
  */
 export interface BandHQProps {
   onClose: (e?: React.MouseEvent | React.KeyboardEvent | Event) => void
@@ -18,7 +18,7 @@ export interface BandHQProps {
 }
 
 /**
- * Renders the Band HQ view.
+ * Presents the Band HQ modal with tab routing and void-trader gating.
  * @param props - Close handler and optional wrapper class for the Band HQ modal.
  */
 export const BandHQ = ({ onClose, className = '' }: BandHQProps) => {

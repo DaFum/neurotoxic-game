@@ -417,7 +417,7 @@ export const calculateGuarantee = (gigData: GigEconomyData = {}) => {
 }
 
 /**
- * Calculates bar cut revenue.
+ * Calculates bar-cut income from ticket attendance and guestlist/VIP modifiers.
  *
  * @param ticketsSold - Number of tickets sold for the gig.
  * @param modifiers - Active pre-gig modifiers that determine normal versus VIP bar cut.
@@ -450,7 +450,7 @@ export const calculateBarCut = (
 }
 
 /**
- * Calculates sponsorship bonuses.
+ * Calculates performance-triggered sponsorship bonuses for clean and high-hype gigs.
  *
  * @param gigStats - Rhythm performance stats used to qualify sponsor bonuses.
  * @returns Total sponsor bonus and income breakdown items.

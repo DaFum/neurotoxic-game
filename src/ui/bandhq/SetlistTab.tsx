@@ -93,7 +93,7 @@ const getSetlistSongId = (entry: unknown): unknown => {
 }
 
 /**
- * Props for the Setlist Tab component.
+ * Current setlist and callbacks used to persist Band HQ setlist edits.
  */
 export interface SetlistTabProps {
   setlist: RhythmSetlistEntry[]

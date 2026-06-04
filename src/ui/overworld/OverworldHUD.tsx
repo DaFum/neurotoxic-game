@@ -8,7 +8,7 @@ import { useAudioControl } from '../../hooks/useAudioControl'
 import { formatCurrency } from '../../utils/numberUtils'
 
 /**
- * Props for the Overworld HUD component.
+ * Player and band state shown in the overworld resource HUD.
  */
 export interface OverworldHUDProps {
   player: PlayerState
@@ -163,7 +163,7 @@ const BandMemberRow = ({
 }
 
 /**
- * Renders the Overworld HUD view.
+ * Displays animated overworld resources, location, audio, and van status.
  * @param props - Player and band state displayed in the overworld HUD.
  */
 export const OverworldHUD = React.memo(

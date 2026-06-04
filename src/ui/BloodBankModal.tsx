@@ -181,7 +181,7 @@ const DonationCard = ({
 }
 
 /**
- * Renders the Blood Bank Modal view.
+ * Shows blood-bank donation options, availability, and reward/cost details.
  * @param props - Donation availability, donation handlers, close handler, and blood-bank reward configuration.
  */
 export const BloodBankModal = ({

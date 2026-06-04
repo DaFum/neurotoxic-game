@@ -1,7 +1,7 @@
 import React from 'react'
 
 /**
- * Type contract for HQTab Def.
+ * Band HQ tab definition used by tab-list rendering.
  */
 export interface HQTabDef {
   id: string
@@ -17,7 +17,7 @@ interface HQTabButtonProps {
 }
 
 /**
- * Renders the HQ Tab Button view.
+ * Displays one Band HQ tab button with active/locked state.
  * @param props - Tab id, active state, label, and tab selection callback.
  */
 export const HQTabButton = ({

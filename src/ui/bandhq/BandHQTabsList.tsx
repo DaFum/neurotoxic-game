@@ -12,7 +12,7 @@ interface BandHQTabsListProps {
 }
 
 /**
- * Renders the Band HQ Tabs List view.
+ * Displays Band HQ tab buttons with active-tab state and labels.
  * @param props - Active tab state, tab switch callback, controversy level, and void-trader unlock threshold.
  */
 export const BandHQTabsList = ({

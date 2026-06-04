@@ -9,7 +9,7 @@ import { GeneratedImagePanel } from '../shared/GeneratedImagePanel'
 import { Tooltip } from '../shared'
 
 /**
- * Props for the Shop Item component.
+ * Catalog item data, purchase state, and buy callback for one shop row.
  */
 export interface ShopItemProps {
   item: CatalogItem
@@ -24,7 +24,7 @@ export interface ShopItemProps {
 // Prevents re-rendering all shop/upgrade items when parent `BandHQ` state changes
 // (e.g. player money updates) if the item's specific props haven't changed.
 /**
- * Renders the Shop Item view.
+ * Displays one catalog item with price, ownership, disabled, and buy states.
  * @param props - Shop item data, cost/ownership state, disabled state, purchase callback, and processing lock id.
  */
 export const ShopItem = React.memo(

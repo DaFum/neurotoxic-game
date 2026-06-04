@@ -227,7 +227,7 @@ const StashCard = ({ item, selectedMember, onUseItem, t }: StashCardProps) => {
 }
 
 /**
- * Renders the Contraband Stash view.
+ * Displays usable contraband stacks and item actions.
  * @param props - Stash entries, member selection state, item-use handler, and close handler.
  */
 export const ContrabandStash = ({

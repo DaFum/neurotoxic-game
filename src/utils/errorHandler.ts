@@ -12,7 +12,7 @@ import { isPlainRecord, sanitizeTraversableValue } from './objectUtils'
 
 // Public API: shared error taxonomy and base classes for scene/util integration and future extension.
 /**
- * Error severity levels
+ * Ordered severity labels used by centralized error handling and logging.
  * @readonly
  * Enum: `string`
  */
@@ -24,7 +24,7 @@ export const ErrorSeverity = {
 } as const
 
 /**
- * Error categories for classification
+ * Error categories used to classify game, UI, storage, audio, and network failures.
  * @readonly
  * Enum: `string`
  */

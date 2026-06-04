@@ -8,7 +8,7 @@ type VisualSettingsProps = {
 }
 
 /**
- * Renders the Visual Settings view.
+ * Displays visual effect toggles for the settings panel.
  * @param props - CRT display state and callback for toggling the visual filter.
  */
 export const VisualSettings = memo(function VisualSettings({

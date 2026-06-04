@@ -5,7 +5,7 @@ interface IconProps extends SVGProps<SVGSVGElement> {
 }
 
 /**
- * Renders the Razor Play Icon view.
+ * Draws the razor play SVG icon.
  * @param props - Optional class for the play icon.
  */
 export const RazorPlayIcon = memo(function RazorPlayIcon({
@@ -59,7 +59,7 @@ export const RazorPlayIcon = memo(function RazorPlayIcon({
 })
 
 /**
- * Renders the Void Skull Icon view.
+ * Draws the void skull SVG icon.
  * @param props - Optional class for the skull icon.
  */
 export const VoidSkullIcon = memo(function VoidSkullIcon({
@@ -149,7 +149,7 @@ const BaseIcon = memo(function BaseIcon({
 })
 
 /**
- * Renders the Bandcamp Icon view.
+ * Draws the Bandcamp SVG icon.
  * @param props - Optional class and SVG props for the Bandcamp icon.
  */
 export const BandcampIcon = memo(function BandcampIcon({
@@ -178,7 +178,7 @@ export const BandcampIcon = memo(function BandcampIcon({
 })
 
 /**
- * Renders the Insta Icon view.
+ * Draws the Instagram SVG icon.
  * @param props - Optional class and SVG props for the Instagram icon.
  */
 export const InstaIcon = memo(function InstaIcon({
@@ -205,7 +205,7 @@ export const InstaIcon = memo(function InstaIcon({
 })
 
 /**
- * Renders the TikTok social icon.
+ * Draws the TikTok SVG icon.
  * @param props - Optional class and SVG props for the TikTok icon.
  */
 export const TikTokIcon = memo(function TikTokIcon({
@@ -226,7 +226,7 @@ export const TikTokIcon = memo(function TikTokIcon({
 })
 
 /**
- * Renders the YouTube social icon.
+ * Draws the YouTube SVG icon.
  * @param props - Optional class and SVG props for the YouTube icon.
  */
 export const YouTubeIcon = memo(function YouTubeIcon({
@@ -253,7 +253,7 @@ export const YouTubeIcon = memo(function YouTubeIcon({
 })
 
 /**
- * Renders the Blog Icon view.
+ * Draws the blog/newsletter SVG icon.
  * @param props - Optional class and SVG props for the blog icon.
  */
 export const BlogIcon = memo(function BlogIcon({
@@ -294,7 +294,7 @@ export const BlogIcon = memo(function BlogIcon({
 })
 
 /**
- * Renders the Game Icon view.
+ * Draws the generic game SVG icon.
  * @param props - Optional class and SVG props for the game icon.
  */
 export const GameIcon = memo(function GameIcon({
@@ -315,7 +315,7 @@ export const GameIcon = memo(function GameIcon({
 })
 
 /**
- * Renders the UI Frame Corner view.
+ * Draws one reusable UI frame-corner SVG marker.
  * @param props - Optional class for the frame-corner ornament.
  */
 export const UIFrameCorner = memo(function UIFrameCorner({
@@ -350,7 +350,7 @@ export const UIFrameCorner = memo(function UIFrameCorner({
 })
 
 /**
- * Renders the Icon Close view.
+ * Draws the close SVG icon.
  * @param props - Optional class for the close icon.
  */
 export const IconClose = memo(function IconClose({

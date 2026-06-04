@@ -10,7 +10,7 @@ type StatsTabProps = {
 }
 
 /**
- * Renders the Stats Tab view.
+ * Displays compact player, band, and social stats in Band HQ.
  * @param props - Player, band, and social state shown in the stats tab.
  */
 export const StatsTab = ({ player, band, social }: StatsTabProps) => {

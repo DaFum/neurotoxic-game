@@ -4,7 +4,7 @@ import type { ChangeEvent } from 'react'
 import { SegmentedSlider } from './SegmentedSlider'
 
 /**
- * Renders the Volume Slider view.
+ * Displays one labeled volume slider with percentage output.
  * @param props - Slider label, normalized volume value, and change handler.
  */
 export const VolumeSlider = memo(function VolumeSlider({

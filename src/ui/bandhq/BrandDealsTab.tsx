@@ -12,7 +12,7 @@ interface BrandDealsTabProps {
 }
 
 /**
- * Renders the Brand Deals Tab view.
+ * Displays active brand deals and reputation context inside Band HQ.
  * @param props - Social sponsorship state shown in the brand deals tab.
  */
 export const BrandDealsTab = ({ social }: BrandDealsTabProps) => {

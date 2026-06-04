@@ -6,7 +6,7 @@ import {
 } from '../../utils/imageGen'
 
 /**
- * Props for the Generated Image Panel component.
+ * Generated-image prompt, layout, fallback, and load-state inputs.
  */
 export interface GeneratedImagePanelProps {
   prompt: string
@@ -30,7 +30,7 @@ const ASPECT_CSS: Record<
 }
 
 /**
- * Renders the Generated Image Panel view.
+ * Displays a generated image with skeleton loading and offline/error fallback handling.
  * @param props - Image prompt, alt text, sizing, variant, load callback, and wrapper styling.
  */
 export const GeneratedImagePanel = ({
