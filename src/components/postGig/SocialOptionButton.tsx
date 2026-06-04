@@ -22,9 +22,8 @@ const getImagePromptForCategory = (category?: string, badges?: string[]) => {
 }
 
 /**
- * Renders the Social Option Button component from opt, index, and onSelect.
+ * Renders the Social Option Button.
  * @param props - Social option data, list index, and selection callback.
- * @returns The rendered Social Option Button UI.
  */
 export const SocialOptionButton = memo(function SocialOptionButton({
   opt,

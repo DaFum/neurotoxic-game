@@ -48,9 +48,8 @@ const getEffectLabel = (eff: ActiveEffectEntry, t: TranslationCallback) => {
 }
 
 /**
- * Renders the Gig Modifiers Block component from t, gigModifierOptions, gigModifiers, toggleModifier, handleBandMeeting, bandMeetingCost, and currentModifiers.
+ * Renders the Gig Modifiers Block.
  * @param props - Translator, modifier options/state, modifier toggle, band-meeting handler/cost, and active-effect summary.
- * @returns The rendered Gig Modifiers Block UI.
  */
 export const GigModifiersBlock = ({
   t,

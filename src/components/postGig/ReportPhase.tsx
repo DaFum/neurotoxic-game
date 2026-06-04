@@ -6,9 +6,8 @@ import { NetResult } from './NetResult'
 import type { ReportPhaseProps } from '../../types/components'
 
 /**
- * Renders the Report Phase component from financials and onNext.
+ * Renders the Report Phase.
  * @param props - Post-gig financial report and callback that advances to the next phase.
- * @returns The rendered Report Phase UI.
  */
 export const ReportPhase = ({ financials, onNext }: ReportPhaseProps) => {
   const { t } = useTranslation('economy')

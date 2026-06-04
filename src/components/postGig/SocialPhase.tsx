@@ -12,9 +12,8 @@ type SocialPhaseProps = {
 }
 
 /**
- * Renders the Social Phase component from options, onSelect, trend, and zealotryLevel.
+ * Renders the Social Phase.
  * @param props - Social post options, selection callback, trend state, and zealotry level.
- * @returns The rendered Social Phase UI.
  */
 export const SocialPhase = ({
   options,

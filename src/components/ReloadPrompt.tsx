@@ -5,7 +5,6 @@ import './ReloadPrompt.css'
 
 /**
  * Renders the service-worker update reload prompt.
- * @returns The rendered Reload Prompt UI.
  */
 export default function ReloadPrompt() {
   const { t } = useTranslation()

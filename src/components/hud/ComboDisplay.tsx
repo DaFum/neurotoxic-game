@@ -2,14 +2,18 @@ import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 interface ComboDisplayProps {
+  /** Current consecutive hit streak. */
   combo: number
+  /** Current hit accuracy percentage for the active gig. */
   accuracy: number
 }
 
 /**
- * Renders the ComboDisplay component showing combo count and accuracy warnings.
- * @param props - Combo and accuracy values displayed during the gig.
- * @returns The rendered Combo Display UI.
+ * Shows the active hit streak and low-accuracy warning during a gig.
+ *
+ * @remarks
+ * Combo feedback escalates at `20` and `50` hits. Accuracy below `70` displays
+ * the low-accuracy warning beside the combo counter.
  */
 export const ComboDisplay = memo(function ComboDisplay({
   combo,

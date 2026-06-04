@@ -2,9 +2,8 @@ import { useTranslation } from 'react-i18next'
 import type { TourbusControlsProps } from '../../../types/components'
 
 /**
- * Renders the Tourbus Controls component from onMoveLeft and onMoveRight.
+ * Renders the Tourbus Controls.
  * @param props - Left and right movement callbacks for the tourbus minigame.
- * @returns The rendered Tourbus Controls UI.
  */
 export const TourbusControls = ({
   onMoveLeft,

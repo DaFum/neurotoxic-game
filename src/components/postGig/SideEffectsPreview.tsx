@@ -6,7 +6,6 @@ type SideEffectsPreviewProps = { badges?: string[] }
 /**
  * Renders a preview of social-post side effects represented by badges.
  * @param props - Props containing badge data for social-post side effects.
- * @returns The rendered Side Effects Preview.
  */
 export const SideEffectsPreview = memo(
   ({ badges }: SideEffectsPreviewProps) => {

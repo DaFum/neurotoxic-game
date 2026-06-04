@@ -30,9 +30,8 @@ interface GigHUDProps {
 }
 
 /**
- * Renders the Gig HUD component from stats, onLaneInput, gameStateRef, and onTogglePause.
+ * Renders the Gig HUD.
  * @param props - Display data, callbacks, and refs for the gig hud component.
- * @returns The rendered Gig HUD UI.
  */
 export const GigHUD = memo(function GigHUD({
   stats,

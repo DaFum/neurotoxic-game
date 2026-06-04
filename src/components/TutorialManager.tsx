@@ -9,7 +9,6 @@ const getStepColorClass = (stepId: number, currentStep: number): string => {
 
 /**
  * Coordinates tutorial overlay rendering for the current tutorial step.
- * @returns The rendered Tutorial Manager UI.
  */
 export const TutorialManager = () => {
   const {

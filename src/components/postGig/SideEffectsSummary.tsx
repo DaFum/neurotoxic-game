@@ -19,9 +19,8 @@ type SideEffectsSummaryProps = {
 }
 
 /**
- * Renders the Side Effects Summary component from result, i18n, and t.
+ * Renders the Side Effects Summary.
  * @param props - Resolved social-post result, translator, and locale formatter context.
- * @returns The rendered Side Effects Summary UI.
  */
 export const SideEffectsSummary = ({
   result,

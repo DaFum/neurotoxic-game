@@ -332,9 +332,8 @@ const DealActions = memo(
 )
 DealActions.displayName = 'DealActions'
 /**
- * Renders the Deal Card component from deal, negotiationState, brandReputation, handleAcceptDeal, and handleNegotiationStart.
+ * Renders the Deal Card.
  * @param props - Brand deal data, negotiation state, brand reputation, accept handler, and negotiation-start handler.
- * @returns The rendered Deal Card UI.
  */
 export const DealCard = memo(
   ({

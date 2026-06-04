@@ -7,9 +7,8 @@ interface OverloadWarningProps {
 }
 
 /**
- * Renders the Overload Warning component from overload and isToxicMode.
+ * Renders the Overload Warning.
  * @param props - Overload value and toxic-mode state used to decide warning visibility.
- * @returns The rendered Overload Warning UI.
  */
 export const OverloadWarning = memo(function OverloadWarning({
   overload,

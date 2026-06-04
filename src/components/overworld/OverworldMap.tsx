@@ -65,9 +65,8 @@ const RivalMarker = ({
 )
 
 /**
- * Renders the Overworld Map component from t, gameMap, player, currentLayer, isTraveling, pendingTravelNode, getNodeVisibility, isConnected, handleTravel, setHoveredNode, hoveredNode, currentNode, travelTarget, travelCompletedRef, onTravelComplete, activeStoryFlags, rivalBand, and band.
+ * Renders the Overworld Map.
  * @param props - Map state, player state, travel state, node visibility/connectivity helpers, travel handlers, hover state, and visual URL context.
- * @returns The rendered Overworld Map UI.
  */
 export const OverworldMap = React.memo(
   ({

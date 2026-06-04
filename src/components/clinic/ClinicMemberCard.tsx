@@ -22,9 +22,8 @@ const ActionButtonWrapper = ({
   )
 }
 /**
- * Renders the Clinic Member Card component from member, player, healCostMoney, enhanceCostFame, healMember, and enhanceMember.
+ * Renders the Clinic Member Card.
  * @param props - Band member, player resources, clinic costs, and heal/enhance callbacks.
- * @returns The rendered Clinic Member Card UI.
  */
 export const ClinicMemberCard = ({
   member,

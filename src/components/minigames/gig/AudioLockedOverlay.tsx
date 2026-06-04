@@ -4,9 +4,8 @@ import { GlitchButton } from '../../../ui/GlitchButton'
 import type { AudioLockedOverlayProps } from '../../../types/components'
 
 /**
- * Renders the Audio Locked Overlay component from onInitializeAudio.
+ * Renders the Audio Locked Overlay.
  * @param props - Callback that retries or starts audio initialization.
- * @returns The rendered Audio Locked Overlay UI.
  */
 export const AudioLockedOverlay = memo(
   ({ onInitializeAudio }: AudioLockedOverlayProps) => {

@@ -17,7 +17,6 @@ interface StatsOverlayProps {
 /**
  * Renders the StatsOverlay component displaying gameplay statistics.
  * @param props - Props containing `score`, `combo`, `accuracy`, `overload`, `corruptionLevel`, and `isCorruptionBurstActive`.
- * @returns The rendered Stats Overlay UI.
  */
 export const StatsOverlay = memo(function StatsOverlay({
   score,

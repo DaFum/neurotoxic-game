@@ -3,7 +3,6 @@ import { WorkshopProductionLineView } from './WorkshopProductionLineView'
 
 /**
  * Renders the merch workshop asset section through the shared section panel.
- * @returns The rendered Merch Workshop Section UI.
  */
 export const MerchWorkshopSection = () => (
   <AssetSectionPanel

@@ -8,9 +8,8 @@ import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 type ZealotryGaugeProps = { zealotryLevel?: number }
 
 /**
- * Renders the Zealotry Gauge component from zealotryLevel.
+ * Renders the Zealotry Gauge.
  * @param props - Zealotry level displayed in the post-gig social phase.
- * @returns The rendered Zealotry Gauge UI.
  */
 export const ZealotryGauge = memo(
   ({ zealotryLevel = 0 }: ZealotryGaugeProps) => {

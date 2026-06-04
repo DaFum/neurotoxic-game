@@ -40,9 +40,8 @@ export type GigViewProps = {
 }
 
 /**
- * Renders the Gig View component from chaosContainerRef, chaosStyle, isToxicMode, bgUrl, matzeUrl, mariusUrl, larsUrl, setBandMemberRef, t, gameStateRef, update, stats, handleLaneInput, handleTogglePause, isPaused, and handleQuitGig.
+ * Renders the Gig View.
  * @param props - Stage visual refs/styles, band member images, HUD state, audio-lock state, pause state, and input/scene callbacks.
- * @returns The rendered Gig View UI.
  */
 export const GigView = ({
   chaosContainerRef,
