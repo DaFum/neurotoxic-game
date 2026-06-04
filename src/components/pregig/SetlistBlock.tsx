@@ -140,11 +140,15 @@ export const SetlistBlock = ({
     () => buildSetlistChartDensity(selectedSongs),
     [selectedSongs]
   )
-  const densityTotal = densityBars.reduce((sum, bar) => sum + bar.count, 0)
-  const densityPeak = densityBars.reduce(
-    (peak, bar) => Math.max(peak, bar.count),
-    0
-  )
+
+  let densityTotal = 0
+  let densityPeak = 0
+  for (const bar of densityBars) {
+    densityTotal += bar.count
+    if (bar.count > densityPeak) {
+      densityPeak = bar.count
+    }
+  }
 
   return (
     <motion.div
