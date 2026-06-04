@@ -266,24 +266,31 @@ test('resolvePost returns consistent structure', () => {
   assert.ok(typeof result.message === 'string', 'Should have string message')
 })
 
-test('resolvePost preserves falsy result platform and message values', () => {
-  const postOption = {
-    id: 'falsy_result_fields',
-    platform: 'tiktok',
-    resolve: () => ({
-      success: false,
-      followers: 0,
-      platform: '',
-      message: ''
-    })
-  }
+const blankPlatformVariants = [
+  { label: 'empty result platform', platform: '' },
+  { label: 'whitespace result platform', platform: '   ' }
+]
 
-  const result = resolvePost(postOption, mockGameState)
+blankPlatformVariants.forEach(variant => {
+  test(`resolvePost falls back to option platform for ${variant.label}`, () => {
+    const postOption = {
+      id: 'falsy_result_fields',
+      platform: 'tiktok',
+      resolve: () => ({
+        success: false,
+        followers: 0,
+        platform: variant.platform,
+        message: ''
+      })
+    }
 
-  assert.equal(result.success, false)
-  assert.equal(result.followers, 0)
-  assert.equal(result.platform, '')
-  assert.equal(result.message, '')
+    const result = resolvePost(postOption, mockGameState)
+
+    assert.equal(result.success, false)
+    assert.equal(result.followers, 0)
+    assert.equal(result.platform, 'tiktok')
+    assert.equal(result.message, '')
+  })
 })
 
 test('resolvePost clamps harmony bounds between 1-100', () => {

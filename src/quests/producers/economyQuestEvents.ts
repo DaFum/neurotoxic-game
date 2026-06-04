@@ -1,5 +1,8 @@
 import type { QuestEvent } from '../../types'
 
+/**
+ * Creates an `economy.moneyEarned` quest event for money deltas.
+ */
 export const createMoneyEarnedQuestEvent = ({
   amount,
   reason

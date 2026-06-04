@@ -2,13 +2,24 @@ import { finiteNumberOr } from '../gameStateUtils'
 import { logger } from '../logger'
 import type { EngineEvent, EngineGameState } from './types'
 
+/**
+ * Normalizes unknown numeric input for event-engine arithmetic.
+ */
 export const asNumber = (value: unknown): number => finiteNumberOr(value, 0)
 
-export const toStringArray = (value: string[] | Set<string> | undefined): string[] => {
+/**
+ * Converts optional arrays or sets into a string array.
+ */
+export const toStringArray = (
+  value: string[] | Set<string> | undefined
+): string[] => {
   if (!value) return []
   return Array.isArray(value) ? value : Array.from(value)
 }
 
+/**
+ * Logs event condition and processing failures.
+ */
 export const handleError = (err: unknown, eventId?: string) => {
   logger.error(
     'EventEngine',
@@ -17,7 +28,13 @@ export const handleError = (err: unknown, eventId?: string) => {
   )
 }
 
-export const processEvent = (event: EngineEvent, optimizedState: EngineGameState) => {
+/**
+ * Runs an event condition and returns the event with template context when eligible.
+ */
+export const processEvent = (
+  event: EngineEvent,
+  optimizedState: EngineGameState
+) => {
   try {
     if (typeof event.condition !== 'function') {
       handleError(

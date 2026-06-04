@@ -8,6 +8,9 @@ import { QUEST_REGISTRY, getQuestDefinition } from '../data/questRegistry'
 import { canAcceptQuest } from './questLifecycle'
 import { finiteNumberOr } from '../utils/gameStateUtils'
 
+/**
+ * Quest offer available for a trigger after condition and slot checks.
+ */
 export interface AvailableQuestOffer {
   questId: string
   offer: QuestOfferDefinition
@@ -90,6 +93,9 @@ const matchesOfferCondition = (
   return true
 }
 
+/**
+ * Evaluates quest offer availability for triggers and current game state.
+ */
 export const QuestOfferEngine = {
   canOfferQuest: (state: GameState, questId: string): boolean => {
     const definition = getQuestDefinition(questId) as

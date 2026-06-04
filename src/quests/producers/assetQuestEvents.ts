@@ -1,5 +1,8 @@
 import type { AssetKind, QuestEvent } from '../../types'
 
+/**
+ * Creates an `asset.acquired` quest event for a newly acquired asset.
+ */
 export const createAssetAcquiredQuestEvent = ({
   assetId,
   assetKind,
@@ -18,6 +21,9 @@ export const createAssetAcquiredQuestEvent = ({
   tags: [assetKind, flavor, String(tier)]
 })
 
+/**
+ * Creates an `asset.repaired` quest event for asset condition recovery.
+ */
 export const createAssetRepairedQuestEvent = ({
   assetId,
   assetKind,
@@ -33,6 +39,9 @@ export const createAssetRepairedQuestEvent = ({
   context: { assetId, assetKind }
 })
 
+/**
+ * Creates an `asset.moduleInstalled` quest event for installed asset modules.
+ */
 export const createAssetModuleInstalledQuestEvent = ({
   assetId,
   assetKind,
@@ -53,6 +62,9 @@ export const createAssetModuleInstalledQuestEvent = ({
   )
 })
 
+/**
+ * Creates an `asset.riskTriggered` quest event for an asset risk occurrence.
+ */
 export const createAssetRiskTriggeredQuestEvent = ({
   assetId,
   assetKind,
@@ -69,6 +81,9 @@ export const createAssetRiskTriggeredQuestEvent = ({
   tags: [assetKind, riskType]
 })
 
+/**
+ * Creates an `asset.riskResolved` quest event for resolving an asset risk.
+ */
 export const createAssetRiskResolvedQuestEvent = ({
   assetId,
   assetKind,
@@ -87,6 +102,9 @@ export const createAssetRiskResolvedQuestEvent = ({
   tags: [assetKind, riskType]
 })
 
+/**
+ * Creates an `asset.conditionChanged` quest event for asset condition deltas.
+ */
 export const createAssetConditionChangedQuestEvent = ({
   assetId,
   assetKind,

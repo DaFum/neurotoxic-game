@@ -99,6 +99,9 @@ const validateEffect = (
   }
 }
 
+/**
+ * Validates crisis event data and throws a descriptive error on failure.
+ */
 export const validateCrisisEvent = (event: unknown): boolean => {
   if (!event || typeof event !== 'object') {
     throw new Error('Event must be an object')
@@ -225,6 +228,9 @@ export const validateCrisisEvent = (event: unknown): boolean => {
   return true
 }
 
+/**
+ * Validates general game event data and throws a descriptive error on failure.
+ */
 export const validateGameEvent = (event: unknown): boolean => {
   if (!event || typeof event !== 'object') {
     throw new Error('Event must be an object')

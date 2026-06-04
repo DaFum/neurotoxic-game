@@ -1,6 +1,9 @@
 import type { ActiveQuestState, GameState, QuestState } from '../types'
 import { getQuestDefinition } from '../data/questRegistry'
 
+/**
+ * Merges a quest instance with its registry definition when available.
+ */
 export const getQuestWithDefinition = (
   quest: QuestState | ActiveQuestState
 ): QuestState => {
@@ -10,6 +13,9 @@ export const getQuestWithDefinition = (
   return definition ? { ...definition, ...quest } : quest
 }
 
+/**
+ * Builds the runtime-only active quest shape for registry-backed quests.
+ */
 export const createActiveQuestRuntime = (
   quest: QuestState,
   startedOnDay: number,
@@ -27,8 +33,15 @@ export const createActiveQuestRuntime = (
   }
 }
 
-export const getQuestToastName = (quest: QuestState): string => quest.label ?? quest.id
+/**
+ * Resolves the display name key or id used in quest toasts.
+ */
+export const getQuestToastName = (quest: QuestState): string =>
+  quest.label ?? quest.id
 
+/**
+ * Adds valid story flags while preserving existing entries and order.
+ */
 export const addStoryFlags = (
   flags: GameState['activeStoryFlags'],
   additions: unknown[]

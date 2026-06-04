@@ -1,5 +1,8 @@
 import type { SlotType } from '../../types/assets'
 
+/**
+ * Tourbus tier-1 chassis slot types.
+ */
 export const TOURBUS_T1_SLOTS = [
   'tb_roof',
   'tb_front',
@@ -7,12 +10,18 @@ export const TOURBUS_T1_SLOTS = [
   'tb_audio'
 ] as const
 
+/**
+ * Tourbus tier-2 chassis slot types, including tier-1 slots.
+ */
 export const TOURBUS_T2_SLOTS = [
   ...TOURBUS_T1_SLOTS,
   'tb_side',
   'tb_interior_cabin'
 ] as const
 
+/**
+ * Tourbus tier-3 chassis slot types, including lower-tier slots.
+ */
 export const TOURBUS_T3_SLOTS = [
   ...TOURBUS_T2_SLOTS,
   'tb_decal',
@@ -22,6 +31,9 @@ export const TOURBUS_T3_SLOTS = [
 // Positions are normalized 0..1 over the 16:9 background image.
 // tb_trailer_addon uses negative-x because it occupies the trailer overlay area to the left.
 // Partial<Record<…>> is intentional — callers must handle undefined for unlisted slots.
+/**
+ * Tourbus slot hotspot positions over the 16:9 vehicle background.
+ */
 export const TOURBUS_SLOT_POSITIONS: Partial<
   Record<SlotType, { x: number; y: number }>
 > = {

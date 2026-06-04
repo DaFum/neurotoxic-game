@@ -296,10 +296,15 @@ export const resolvePost = (
       harmonyChange = nextHarmony - prevHarmony
     }
 
+    const platform =
+      typeof result.platform === 'string' && result.platform.trim() !== ''
+        ? result.platform
+        : postOption.platform
+
     return {
       success: result.success ?? true,
       followers: result.followers ?? 0,
-      platform: result.platform ?? postOption.platform,
+      platform,
       message: result.message ?? 'Post completed.',
       // Side effects (optional, will be undefined if not provided)
       moneyChange,

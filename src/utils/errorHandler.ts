@@ -46,9 +46,16 @@ export const ErrorCategory = {
 
 export type ErrorSeverityType =
   (typeof ErrorSeverity)[keyof typeof ErrorSeverity]
+
+/**
+ * Error category union derived from `ErrorCategory`.
+ */
 export type ErrorCategoryType =
   (typeof ErrorCategory)[keyof typeof ErrorCategory]
 
+/**
+ * Base application error carrying severity, category, context, and recovery metadata.
+ */
 export class GameError extends Error {
   public category: ErrorCategoryType
   public severity: ErrorSeverityType
@@ -104,6 +111,9 @@ export class GameError extends Error {
   }
 }
 
+/**
+ * Error type for invalid or inconsistent game state.
+ */
 export class StateError extends GameError {
   constructor(message: string, context: Record<string, unknown> = {}) {
     super(message, {
@@ -116,6 +126,9 @@ export class StateError extends GameError {
   }
 }
 
+/**
+ * Error type for localStorage and persistence failures.
+ */
 export class StorageError extends GameError {
   constructor(message: string, context: Record<string, unknown> = {}) {
     super(message, {
@@ -128,6 +141,9 @@ export class StorageError extends GameError {
   }
 }
 
+/**
+ * Error type for audio system failures.
+ */
 export class AudioError extends GameError {
   constructor(message: string, context: Record<string, unknown> = {}) {
     super(message, {

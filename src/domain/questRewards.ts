@@ -28,6 +28,9 @@ import {
   queueEvent
 } from './questEffects'
 
+/**
+ * State and toast payloads produced by applying quest rewards.
+ */
 export interface QuestRewardResult {
   state: GameState
   toasts: ToastPayload[]
@@ -81,6 +84,9 @@ const normalizeLegacyRewards = (quest: QuestState): QuestReward[] => {
   return rewards
 }
 
+/**
+ * Returns declarative quest rewards, falling back to legacy reward fields.
+ */
 export const getQuestRewards = (quest: QuestState): QuestReward[] =>
   Array.isArray(quest.rewards) && quest.rewards.length > 0
     ? quest.rewards
@@ -157,6 +163,9 @@ const applySkillPointReward = (
   return { ...state, band: { ...state.band, members } }
 }
 
+/**
+ * Applies all rewards for a completed quest and returns resulting toasts.
+ */
 export const applyQuestRewards = (
   state: GameState,
   quest: QuestState,

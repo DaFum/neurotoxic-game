@@ -44,6 +44,9 @@ export const NEUTRAL_ASSET_MODIFIERS: AssetModifiers = Object.freeze({
 
 const BROKEN_THRESHOLD = 20
 
+/**
+ * Calculates gross sale value from chassis price, condition, age, and module refunds.
+ */
 export const calculateChassisGrossSaleValue = (
   asset: LongTermAsset,
   currentDay: unknown
@@ -177,6 +180,9 @@ export const getAssetTotalDailyRevenue = (asset: LongTermAsset): number => {
   return (base + delta) * (asset.condition / 100)
 }
 
+/**
+ * Checks whether an asset kind is already owned or pending through crowdfunding.
+ */
 export const hasActiveAssetAcquisition = (
   state: Pick<GameState, 'assets' | 'crowdfundCampaigns'>,
   kind: AssetKind
@@ -393,6 +399,9 @@ export interface LockReason {
   refs?: string[]
 }
 
+/**
+ * Returns unmet unlock requirements for a module in the current state.
+ */
 export const getLockReasons = (
   module: AssetModule,
   state: GameState,
@@ -478,6 +487,9 @@ export const getSlotConflicts = (
   return { canInstall: conflicts.length === 0, conflictingModuleIds: conflicts }
 }
 
+/**
+ * Module entry annotated with unlock reasons for asset module UI.
+ */
 export interface ModulePoolEntry {
   module: AssetModule
   unlocked: boolean
@@ -506,6 +518,9 @@ export const getModulePoolForAsset = (
   return out
 }
 
+/**
+ * Sums all remaining liability principal.
+ */
 export const getTotalDebt = (state: GameState): number => {
   return state.liabilities.reduce((sum, l) => sum + l.principalRemaining, 0)
 }
@@ -518,6 +533,9 @@ const EMPTY_ASSETS: readonly LongTermAsset[] = []
 let lastAssetsForMap: readonly LongTermAsset[] | null = null
 let assetsMapCache: Map<string, LongTermAsset> | null = null
 
+/**
+ * Selects a memoized asset map keyed by asset id.
+ */
 export const selectAssetsMap = (
   state: Pick<GameState, 'assets'>
 ): ReadonlyMap<string, LongTermAsset> => {
@@ -535,6 +553,9 @@ export const selectAssetsMap = (
   return assetsMapCache
 }
 
+/**
+ * Selects a memoized liability map keyed by asset id.
+ */
 export const selectLiabilitiesMap = (
   state: GameState
 ): Map<string, Liability> => {

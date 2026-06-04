@@ -11,6 +11,9 @@ const HARMONY_DEATH_SPIRAL_THRESHOLD = 30
 const HARMONY_DEATH_SPIRAL_DAMPEN_FACTOR = 0.5
 const INFIGHTING_DAMPER_CHANCE_FACTOR = 0.5
 
+/**
+ * Weakly keyed cache of event pools indexed by event id.
+ */
 const eventPoolMapCache = new WeakMap()
 
 const hasInstalledAssetFlag = (
@@ -57,6 +60,9 @@ const getEventMapForPool = (
   return map
 }
 
+/**
+ * Selects one eligible event from a pool using trigger, cooldown, flags, and chance.
+ */
 const selectEvent = (
   pool: EngineEvent[],
   gameState: EngineGameState,
@@ -208,6 +214,5 @@ const selectEvent = (
   }
   return null
 }
-
 
 export { selectEvent, eventPoolMapCache }
