@@ -65,7 +65,7 @@ const makeState = (overrides = {}) => ({
   social: { ...overrides.social },
   activeStoryFlags: overrides.activeStoryFlags ?? [],
   assets: overrides.assets ?? [],
-  liabilities: overrides.liabilities ?? []
+  liabilities: overrides.liabilities ?? {}
 })
 
 describe('NEUTRAL_ASSET_MODIFIERS', () => {

@@ -177,10 +177,13 @@ export const processLiabilityTick = (
   const nextAssets = (state.assets || []).filter(
     a => !foreclosedAssetIds.has(a.id)
   )
-  const finalLiabilities = Object.values(nextLiabilities).reduce((acc, l) => {
-    if (!foreclosedAssetIds.has(l.assetId)) acc[l.id] = l
-    return acc
-  }, {} as Record<string, Liability>)
+  for (const id of Object.keys(nextLiabilities)) {
+    const l = nextLiabilities[id]
+    if (l && foreclosedAssetIds.has(l.assetId)) {
+      delete nextLiabilities[id]
+    }
+  }
+  const finalLiabilities = nextLiabilities
   const foreclosedKinds: AssetKind[] = []
   for (const asset of state.assets || []) {
     if (

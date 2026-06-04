@@ -320,7 +320,7 @@ export const sanitizeLiabilities = (
   if (typeof raw !== 'object' || raw === null) return {}
   const items = Array.isArray(raw) ? raw : Object.values(raw)
   const assetIds = new Set(assets.map(a => a.id))
-  const out: Record<string, Liability> = {}
+  const out: Record<string, Liability> = Object.create(null)
   for (const item of items) {
     if (!isLooseRecord(item)) continue
     const clean = stripHostileKeys(item)

@@ -50,7 +50,7 @@ function makeState({ installedModules = [], scenePresence = 100 } = {}) {
     player: { money: 10000, fame: 100, day: 1 },
     band: { members: [{ id: 'tech-1', skills: { tech: 3 } }] },
     social: { scenePresence },
-    liabilities: [],
+    liabilities: {},
     crowdfundCampaigns: [],
     activeStoryFlags: []
   }

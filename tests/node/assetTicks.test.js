@@ -96,8 +96,8 @@ test('processAssetTick - applies passive fame, mood, and stamina asset boni', ()
 test('processLiabilityTick - liability default counter increment and trigger at 7 days', () => {
   const state = {
     assets: [{ id: 'a1', kind: 'tourbus_chassis', condition: 100, slots: [] }],
-    liabilities: [
-      {
+    liabilities: {
+      'l1': {
         id: 'l1',
         assetId: 'a1',
         dailyPayment: 50,
@@ -105,12 +105,12 @@ test('processLiabilityTick - liability default counter increment and trigger at 
         termDaysRemaining: 20,
         defaultCounter: 6
       }
-    ],
+    },
     player: { money: 10, fame: 50 }
   }
   const { state: next, foreclosedKinds } = processLiabilityTick(state)
   assert.strictEqual(next.assets.length, 0)
-  assert.strictEqual(next.liabilities.length, 0)
+  assert.strictEqual(Object.keys(next.liabilities).length, 0)
   assert.ok(next.player.fame < 50)
   assert.strictEqual(
     next.player.fameLevel,
