@@ -12,6 +12,12 @@ export const LOG_LEVELS = {
   NONE: 4
 }
 
+/**
+ * Checks whether a numeric value is one of the supported log levels.
+ *
+ * @param level - Candidate log level.
+ * @returns True when the value maps to a `LOG_LEVELS` entry.
+ */
 export const isValidLogLevel = (level: number): boolean => {
   return (
     Number.isFinite(level) &&
@@ -214,8 +220,14 @@ export class Logger {
   }
 }
 
+/**
+ * Shared application logger instance used by runtime systems and debug UI.
+ */
 export const logger = new Logger()
 
+/**
+ * Structured log entry stored by `Logger`.
+ */
 export type LogEntry = {
   id: string
   timestamp: string
@@ -225,6 +237,9 @@ export type LogEntry = {
   data: unknown
 }
 
+/**
+ * Subscription event emitted when log history changes.
+ */
 export type LogEvent =
   | { type: 'add'; entry: LogEntry }
   | { type: 'clear'; entry?: undefined }

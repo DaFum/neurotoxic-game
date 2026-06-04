@@ -4,9 +4,13 @@ import { ensureAudioContext } from './context'
 import { stopTransportAndClear, cleanupTransportEvents } from './cleanupUtils'
 
 /**
- * Prepares the Tone.js transport for playback, returning normalized options and request ID.
- * @param options - Optional. Playback options.
- * @returns Playback preparation status, request id, and normalized options.
+ * Prepares the Tone.js transport for a new playback request.
+ *
+ * Normalizes options, advances the play request ID, unlocks the audio context,
+ * clears existing transport events, and rejects stale requests.
+ *
+ * @param options - Candidate playback options.
+ * @returns Playback preparation status, request ID, and normalized options.
  */
 export async function prepareTransportPlayback(options: unknown = {}): Promise<{
   success: boolean
@@ -29,13 +33,20 @@ export async function prepareTransportPlayback(options: unknown = {}): Promise<{
 }
 
 /**
- * Normalizes MIDI playback options.
- * @param options - Optional playback settings.
- * - `options.useCleanPlayback` - Whether to bypass FX for MIDI playback. Defaults to `true`.
- * - `options.onEnded` - Optional. Callback invoked when playback ends.
- * - `options.stopAfterSeconds` - Optional playback duration limit in seconds.
- * - `options.startTimeSec` - Optional. Absolute Tone.js time to start playback.
- * @returns Normalized options.
+ * Normalizes untrusted MIDI playback options for scheduling.
+ *
+ * Non-finite timing values become `null`; `useCleanPlayback` defaults to
+ * `true`.
+ *
+ * @param options - Candidate playback settings.
+ *
+ * Supported option fields:
+ * - `useCleanPlayback`: whether to bypass FX for MIDI playback. Defaults to `true`.
+ * - `onEnded`: callback invoked when playback ends.
+ * - `stopAfterSeconds`: playback duration limit in seconds.
+ * - `startTimeSec`: absolute Tone.js time to start playback.
+ *
+ * @returns Safe playback options for MIDI scheduling.
  */
 export const normalizeMidiPlaybackOptions = (
   options: unknown
@@ -73,16 +84,18 @@ export const normalizeMidiPlaybackOptions = (
 }
 
 /**
- * Path prefix regex to strip leading "./" or "/" from asset paths.
+ * Matches one leading `"./"` or `"/"` prefix to strip from asset paths.
  */
 export const PATH_PREFIX_REGEX = /^\.?\//
 
 let cachedAssetPaths: { baseUrl: string; publicBasePath: string } | null = null
 
 /**
- * Derives the base asset path and public base path from import.meta.
- * Computes once lazily and caches the result for performance.
- * @returns The resolved paths.
+ * Derives the Vite base URL and public assets base path.
+ *
+ * Computes once lazily and caches the result for repeated asset resolution.
+ *
+ * @returns Base URL and public assets path.
  */
 export const getBaseAssetPath = (): {
   baseUrl: string
@@ -107,8 +120,10 @@ export const __resetBaseAssetPathCache = (): void => {
 }
 
 /**
- * Encodes a public asset path segment-by-segment to preserve slashes.
- * Primarily used by resolveAssetUrl; exported for direct testing.
+ * Encodes a public asset path segment-by-segment while preserving slashes.
+ *
+ * Primarily used by `resolveAssetUrl`; exported for direct testing.
+ *
  * @param assetPath - Asset path relative to the public base.
  * @returns Encoded path suitable for URL usage.
  */
@@ -122,11 +137,15 @@ export const encodePublicAssetPath = (assetPath: string): string => {
 }
 
 /**
- * Resolves an asset URL from the bundled map or a public fallback path.
+ * Resolves an asset URL from the bundled map or public assets fallback.
+ *
+ * Checks an exact relative path key first, then a basename key, then builds an
+ * encoded URL under `publicBasePath`.
+ *
  * @param filename - Filename or relative path to the asset.
  * @param assetUrlMap - Map of asset keys to bundled URLs.
  * @param publicBasePath - Base path for public assets. Defaults to `'/assets'`.
- * @returns Resolved URL info.
+ * @returns Resolved URL and whether it came from the bundle or public path.
  */
 export const resolveAssetUrl = (
   filename: string,
@@ -161,9 +180,12 @@ export const resolveAssetUrl = (
 }
 
 /**
- * Builds an asset URL map with conflict detection for duplicate basenames.
+ * Builds an asset URL lookup by relative path and basename.
+ *
+ * Duplicate basenames keep the first URL and emit a warning through `warn`.
+ *
  * @param assetGlob - Vite glob map of asset paths to URLs.
- * @param warn - Optional. Warning callback for conflicts.
+ * @param warn - Warning callback for basename conflicts.
  * @param label - Label for conflict warnings. Defaults to `'Asset'`.
  * @returns Map of relative paths and basenames to URLs.
  */

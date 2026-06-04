@@ -15,9 +15,20 @@ const GENERATED_IMAGE_OFFLINE_FALLBACK = `${typeof import.meta !== 'undefined' &
 // navigator.onLine is true for any network connection (LAN, captive portals),
 // not necessarily internet access to gen.pollinations.ai. This is a best-effort
 // check.
+/**
+ * Checks whether generated images should be requested instead of using fallback art.
+ *
+ * @param isOnline - Optional explicit online state; falls back to `navigator.onLine`.
+ * @returns True when image generation can be attempted.
+ */
 export const isImageGenerationAvailable = (isOnline?: boolean) =>
   isOnline ?? (typeof navigator === 'undefined' || navigator.onLine)
 
+/**
+ * Returns the bundled fallback shown when generated images are unavailable.
+ *
+ * @returns Public URL for the generated-image offline fallback asset.
+ */
 export const getGeneratedImageFallbackUrl = () =>
   GENERATED_IMAGE_OFFLINE_FALLBACK
 
@@ -48,6 +59,9 @@ export const resolveGenImageUrl = (
     ? getGenImageUrl(description)
     : getGeneratedImageFallbackUrl()
 
+/**
+ * Prompt catalogue for generated scene, item, UI, and event imagery.
+ */
 export const IMG_PROMPTS = {
   // Scenes & Backgrounds
   MAIN_MENU_BG:
@@ -353,6 +367,14 @@ const CHASSIS_PARTS: Record<AssetKind, Record<AssetFlavor, string>> = {
   }
 }
 
+/**
+ * Builds a prompt for chassis artwork from kind, flavor, and tier.
+ *
+ * @param kind - Asset section kind.
+ * @param flavor - Chassis acquisition flavor.
+ * @param tier - Chassis upgrade tier.
+ * @returns Prompt describing the chassis visual state.
+ */
 export const getChassisImagePrompt = (
   kind: AssetKind,
   flavor: AssetFlavor,
@@ -363,6 +385,15 @@ export const getChassisImagePrompt = (
 const defaultModulePrompt = (id: string) =>
   `pixel art ${id.replace(/_/g, ' ')} dark moody toxic green accents`
 
+/**
+ * Resolves a module image prompt from the registered module catalogue.
+ *
+ * Unknown or hostile module IDs fall back to a generated prompt based on the
+ * provided ID.
+ *
+ * @param moduleId - Asset module ID.
+ * @returns Module-specific prompt or a safe fallback prompt.
+ */
 export const getModuleImagePrompt = (moduleId: string): string => {
   // Object.hasOwn guards against hostile module ids that would otherwise hit
   // prototype properties (e.g., 'hasOwnProperty', 'constructor').
@@ -377,6 +408,12 @@ export const getModuleImagePrompt = (moduleId: string): string => {
   return MODULE_PROMPTS[m.imagePromptKey] ?? defaultModulePrompt(moduleId)
 }
 
+/**
+ * Builds a generated-image prompt for a loan profile.
+ *
+ * @param profileId - Loan profile ID.
+ * @returns Prompt describing the lender flavor.
+ */
 export const getLoanProfileImagePrompt = (profileId: string): string => {
   const flavorMap: Record<string, string> = {
     shortTerm: 'bank loan officer briefcase legit',
@@ -393,12 +430,25 @@ export const getLoanProfileImagePrompt = (profileId: string): string => {
   return `pixel art ${flavor ?? 'bank loan'} dark moody`
 }
 
+/**
+ * Builds a generated-image prompt for a crowdfund campaign.
+ *
+ * @param kind - Asset section kind being funded.
+ * @param flavor - Chassis acquisition flavor.
+ * @returns Prompt for the campaign poster image.
+ */
 export const getCrowdfundImagePrompt = (
   kind: AssetKind,
   flavor: AssetFlavor
 ): string =>
   `pixel art crowdfunding campaign poster ${CHASSIS_PARTS[kind][flavor]} fans donating diy aesthetic`
 
+/**
+ * Builds a generated-image prompt for an asset risk event.
+ *
+ * @param eventType - Risk event category.
+ * @returns Prompt describing the event outcome.
+ */
 export const getRiskEventImagePrompt = (eventType: RiskEventType): string => {
   const map: Record<RiskEventType, string> = {
     eviction: 'eviction notice landlord punks moving out',
@@ -414,17 +464,39 @@ export const getRiskEventImagePrompt = (eventType: RiskEventType): string => {
   return `pixel art ${map[eventType]} dark moody punk`
 }
 
+/**
+ * Builds a wide background prompt for an asset section.
+ *
+ * @param kind - Asset section kind.
+ * @param flavor - Chassis acquisition flavor.
+ * @returns Prompt for section background artwork.
+ */
 export const getSectionBackgroundPrompt = (
   kind: AssetKind,
   flavor: AssetFlavor
 ): string =>
   `pixel art ${CHASSIS_PARTS[kind][flavor]} background wide shot atmospheric dark moody toxic green accents`
 
+/**
+ * Builds a generated-image prompt for a trailer module.
+ *
+ * @param flavor - Chassis acquisition flavor.
+ * @returns Prompt for trailer side-view artwork.
+ */
 export const getTrailerImagePrompt = (flavor: AssetFlavor): string =>
   `pixel art trailer side view ${
     flavor === 'diy' ? 'self-welded diy duct tape' : 'certified rental'
   } band gear toxic green accents`
 
+/**
+ * Builds a generated-image prompt for repair confirmation artwork.
+ *
+ * @param kind - Asset section kind.
+ * @param flavor - Chassis acquisition flavor.
+ * @param tier - Chassis upgrade tier.
+ * @param condition - Current condition percentage.
+ * @returns Prompt that reflects the asset's damage level.
+ */
 export const getRepairImagePrompt = (
   kind: AssetKind,
   flavor: AssetFlavor,
@@ -439,8 +511,14 @@ export const getRepairImagePrompt = (
 
 /**
  * Safely appends width/height query params to a generated-image URL.
+ *
  * Works with Pollinations URLs (which already have `?model=...&seed=...`)
  * and the offline fallback SVG (no query params).
+ *
+ * @param url - Generated or fallback image URL.
+ * @param width - Requested image width in pixels.
+ * @param height - Requested image height in pixels.
+ * @returns URL with width and height query parameters appended.
  */
 export const appendImageSize = (
   url: string,

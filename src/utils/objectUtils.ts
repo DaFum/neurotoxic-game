@@ -1,10 +1,23 @@
+/**
+ * Narrows unknown values to string-keyed records.
+ */
 export type RecordGuard = (value: unknown) => value is Record<string, unknown>
 
+/**
+ * Object keys that must be dropped when traversing untrusted payloads.
+ */
 export const FORBIDDEN_KEYS: ReadonlySet<string> = new Set([
   '__proto__',
   'constructor',
   'prototype'
 ])
+
+/**
+ * Checks whether a key can mutate object prototypes when copied.
+ *
+ * @param key - Object key to check.
+ * @returns True when the key should be skipped during sanitization.
+ */
 export const isForbiddenKey = (key: string): boolean => FORBIDDEN_KEYS.has(key)
 
 type TraversalOptions = {
@@ -20,11 +33,26 @@ type TraversalOptions = {
   onCircular?: () => unknown
 }
 
+/**
+ * Checks whether a value is a non-array object record.
+ *
+ * This accepts class instances and null-prototype objects; use
+ * `isPlainRecord` when only normal object literals are valid.
+ *
+ * @param value - Candidate value to inspect.
+ * @returns True when the value is object-like and can be traversed as a record.
+ */
 export const isLooseRecord = (
   value: unknown
 ): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
+/**
+ * Checks whether a value is a plain object literal.
+ *
+ * @param value - Candidate value to inspect.
+ * @returns True when the value has `Object.prototype` as its prototype.
+ */
 export const isPlainRecord = (
   value: unknown
 ): value is Record<string, unknown> =>
@@ -32,6 +60,17 @@ export const isPlainRecord = (
   typeof value === 'object' &&
   Object.getPrototypeOf(value) === Object.prototype
 
+/**
+ * Recursively copies traversable values while removing unsafe keys.
+ *
+ * Arrays and records are copied, circular references are replaced through
+ * `onCircular`, and optional transforms can customize leaves or record values.
+ *
+ * @param value - Value to sanitize.
+ * @param options - Traversal hooks and record policy overrides.
+ * @param visited - Active traversal set used to detect circular references.
+ * @returns Sanitized clone or transformed primitive value.
+ */
 export const sanitizeTraversableValue = (
   value: unknown,
   options: TraversalOptions = {},
