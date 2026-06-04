@@ -636,8 +636,8 @@ describe('startCrowdfund / sellChassis / repairChassis / removeModule', () => {
       'asset_1',
       makeState({
         assets: [makeAsset()],
-        liabilities: [
-          {
+        liabilities: {
+          'loan_1': {
             id: 'loan_1',
             source: 'loan',
             assetId: 'asset_1',
@@ -647,7 +647,7 @@ describe('startCrowdfund / sellChassis / repairChassis / removeModule', () => {
             termDaysRemaining: 40,
             defaultCounter: 0
           }
-        ]
+        }
       })
     )
 
@@ -703,8 +703,8 @@ describe('startCrowdfund / sellChassis / repairChassis / removeModule', () => {
       'loan_1',
       'longTerm',
       makeState({
-        liabilities: [
-          {
+        liabilities: {
+          'loan_1': {
             id: 'loan_1',
             source: 'loan',
             assetId: 'asset_1',
@@ -714,7 +714,7 @@ describe('startCrowdfund / sellChassis / repairChassis / removeModule', () => {
             termDaysRemaining: 40,
             defaultCounter: 2
           }
-        ]
+        }
       })
     )
 

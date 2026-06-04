@@ -237,8 +237,8 @@ describe('getTotalDailyObligations', () => {
       },
       social: {},
       assets: [asset],
-      liabilities: [
-        {
+      liabilities: {
+        'l1': {
           id: 'l1',
           source: 'loan',
           assetId: 'asset_1',
@@ -248,7 +248,7 @@ describe('getTotalDailyObligations', () => {
           termDaysRemaining: 60,
           defaultCounter: 0
         }
-      ]
+      }
     })
     // guaranteed daily cost (3 members, fameLevel 0) = 62 + 24 + 0 = 86
     // assetUpkeep = 20, assetRevenue = 10 (condition 100), liability = 17

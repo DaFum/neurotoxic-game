@@ -76,7 +76,7 @@ const getTotalDailyObligationsDefault = state => {
     state?.social
   )
   const assets = Array.isArray(state?.assets) ? state.assets : []
-  const liabilities = Array.isArray(state?.liabilities) ? state.liabilities : []
+  const liabilities = state?.liabilities ? Object.values(state.liabilities) : []
 
   let assetUpkeep = 0
   let assetRevenue = 0
@@ -238,7 +238,7 @@ export const createTravelLogicProps = (overrides = {}) => ({
   },
   band: { members: [], harmony: 50 },
   assets: [],
-  liabilities: [],
+  liabilities: {},
   gameMap: {
     nodes: {
       node_start: {

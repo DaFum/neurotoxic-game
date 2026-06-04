@@ -16,7 +16,7 @@ const mockState = vi.hoisted(() => ({
   band: {},
   social: {},
   assets: [] as LongTermAsset[],
-  liabilities: [],
+  liabilities: {},
   crowdfundCampaigns: [] as CrowdfundCampaign[],
   pendingForeclosureNotices: [] as AssetKind[],
   pendingRiskEvent: null as RiskEventDescriptor | null
@@ -111,7 +111,7 @@ describe('AssetsScene', () => {
   beforeEach(() => {
     mockState.player = { money: 1000 }
     mockState.assets = []
-    mockState.liabilities = []
+    mockState.liabilities = {}
     mockState.crowdfundCampaigns = []
     mockState.pendingForeclosureNotices = []
     mockState.pendingRiskEvent = null

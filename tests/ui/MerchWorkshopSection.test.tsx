@@ -7,7 +7,7 @@ import type { Liability, LongTermAsset, SlotType } from '../../src/types/assets'
 const mockState = vi.hoisted(() => ({
   assets: [] as LongTermAsset[],
   crowdfundCampaigns: [],
-  liabilities: [] as Liability[]
+  liabilities: {}
 }))
 
 const mockRefinanceLiability = vi.hoisted(() => vi.fn())
@@ -128,7 +128,7 @@ const mockAsset = (id: string, kind: LongTermAsset['kind']): LongTermAsset => ({
 describe('MerchWorkshopSection', () => {
   beforeEach(() => {
     mockState.assets = []
-    mockState.liabilities = []
+    mockState.liabilities = {}
     capturedProductionLineProps.length = 0
     mockRefinanceLiability.mockClear()
     vi.clearAllMocks()
@@ -189,8 +189,8 @@ describe('MerchWorkshopSection', () => {
 
   it('translates liability source labels', () => {
     mockState.assets = [mockAsset('workshop-1', 'merch_workshop_chassis')]
-    mockState.liabilities = [
-      {
+    mockState.liabilities = {
+      'liability-1': {
         id: 'liability-1',
         source: 'loan',
         assetId: 'workshop-1',
@@ -200,7 +200,7 @@ describe('MerchWorkshopSection', () => {
         termDaysRemaining: 20,
         defaultCounter: 0
       }
-    ]
+    }
 
     render(<MerchWorkshopSection />)
 
@@ -209,8 +209,8 @@ describe('MerchWorkshopSection', () => {
 
   it('does not offer refinance for loans in default countdown', () => {
     mockState.assets = [mockAsset('workshop-1', 'merch_workshop_chassis')]
-    mockState.liabilities = [
-      {
+    mockState.liabilities = {
+      'liability-1': {
         id: 'liability-1',
         source: 'loan',
         assetId: 'workshop-1',
@@ -220,7 +220,7 @@ describe('MerchWorkshopSection', () => {
         termDaysRemaining: 20,
         defaultCounter: 2
       }
-    ]
+    }
 
     render(<MerchWorkshopSection />)
 

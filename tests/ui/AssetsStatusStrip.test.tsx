@@ -7,7 +7,7 @@ const mockState = vi.hoisted(() => ({
   band: {},
   social: {},
   assets: [],
-  liabilities: [{ id: 'l1', principalRemaining: 450, dailyPayment: 12 }],
+  liabilities: { 'l1': { id: 'l1', principalRemaining: 450, dailyPayment: 12 } },
   crowdfundCampaigns: [{ id: 'c1' }]
 }))
 
