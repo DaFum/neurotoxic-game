@@ -12,7 +12,7 @@ import { isPlainRecord, sanitizeTraversableValue } from './objectUtils'
 
 // Public API: shared error taxonomy and base classes for scene/util integration and future extension.
 /**
- * Ordered severity labels used by centralized error handling and logging.
+ * Severity labels used by centralized error handling and logging.
  * @readonly
  * Enum: `string`
  */

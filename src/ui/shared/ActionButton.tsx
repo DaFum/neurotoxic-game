@@ -1,5 +1,5 @@
 /**
- * Shared high-emphasis action button for overlays and dialogue surfaces.
+ * Shared button primitive module for generic overlay and dialogue actions.
  * Module: `ActionButton`.
  */
 
@@ -17,7 +17,9 @@ type ActionButtonProps = ComponentPropsWithoutRef<'button'> & {
 }
 
 /**
- * Standardized high-emphasis button used by overlays and dialogue surfaces.
+ * Renders a standard `<button>` with shared action styling and forwarded button attributes.
+ *
+ * @param props - Button content, event handlers, optional ref, optional `variant`, and standard button attributes.
  */
 export const ActionButton = memo(
   ({

@@ -109,9 +109,14 @@ interface ProgressBarProps extends Omit<
 /**
  * Displays clamped progress with optional label, value text, and warning animation.
  * @param props - Progress label/value/max, color class, size variant, value visibility, warning state, and wrapper attributes.
+ * - `props.label` - Accessible label and optional visible label text.
  * - `props.value` - Current value; non-finite values render as `0`.
  * - `props.max` - Maximum value; values less than or equal to `0` render against `1`.
+ * - `props.color` - CSS class applied to the filled bar.
  * - `props.size` - Size variant. Defaults to `'md'`.
+ * - `props.showValue` - Whether to show the numeric value text. Defaults to `true`.
+ * - `props.warn` - Whether to apply warning animation styling. Defaults to `false`.
+ * - `props.className` - Additional classes for the outer progressbar element.
  */
 export const ProgressBar = memo(function ProgressBar({
   label,
