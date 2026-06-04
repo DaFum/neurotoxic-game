@@ -11,10 +11,15 @@ const HARMONY_DEATH_SPIRAL_THRESHOLD = 30
 const HARMONY_DEATH_SPIRAL_DAMPEN_FACTOR = 0.5
 const INFIGHTING_DAMPER_CHANCE_FACTOR = 0.5
 
+type EventPoolById = Record<string, EngineEvent>
+
 /**
- * Weakly keyed cache of event pools indexed by event id.
+ * WeakMap keyed by event pool array identity.
+ *
+ * Each cached value maps event ids from that pool to their event objects for
+ * pending-event lookup.
  */
-const eventPoolMapCache = new WeakMap()
+const eventPoolMapCache = new WeakMap<EngineEvent[], EventPoolById>()
 
 const hasInstalledAssetFlag = (
   gameState: EngineGameState,
@@ -43,20 +48,19 @@ const hasInstalledAssetFlag = (
   return false
 }
 
-const getEventMapForPool = (
-  pool: EngineEvent[]
-): Record<string, EngineEvent> => {
-  let map = eventPoolMapCache.get(pool)
-  if (!map) {
-    map = Object.create(null)
-    for (let i = 0; i < pool.length; i++) {
-      const eventId = pool[i]?.id
-      if (typeof eventId === 'string') {
-        map[eventId] = pool[i]
-      }
+const getEventMapForPool = (pool: EngineEvent[]): EventPoolById => {
+  const cachedMap = eventPoolMapCache.get(pool)
+  if (cachedMap) return cachedMap
+
+  const map: EventPoolById = Object.create(null)
+  for (let i = 0; i < pool.length; i++) {
+    const event = pool[i]
+    const eventId = event?.id
+    if (typeof eventId === 'string' && event) {
+      map[eventId] = event
     }
-    eventPoolMapCache.set(pool, map)
   }
+  eventPoolMapCache.set(pool, map)
   return map
 }
 

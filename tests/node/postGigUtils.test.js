@@ -34,6 +34,7 @@ const buildSocial = overrides => ({
 const buildPostGigParams = ({ result = {}, social = {} } = {}) => ({
   option: {
     id: 'post_gig_test_option',
+    platform: 'instagram',
     condition: () => true,
     resolve: () => ({
       success: true,
@@ -135,6 +136,29 @@ test('calculatePostGigStateUpdates rejects non-finite numeric deltas', () => {
       ),
     /Invalid post result moneyChange: NaN/
   )
+})
+
+const invalidPlatformVariants = [
+  { label: 'empty', platform: '' },
+  { label: 'whitespace', platform: '   ' },
+  { label: 'numeric', platform: 404 }
+]
+
+invalidPlatformVariants.forEach(variant => {
+  test(`calculatePostGigStateUpdates rejects explicit ${variant.label} resolver platform`, () => {
+    assert.throws(
+      () =>
+        calculatePostGigStateUpdates(
+          buildPostGigParams({
+            result: {
+              platform: variant.platform,
+              followers: 25
+            }
+          })
+        ),
+      /Invalid social post platform:/
+    )
+  })
 })
 
 test('calculatePostGigStateUpdates rejects malformed active deal remainingGigs', () => {

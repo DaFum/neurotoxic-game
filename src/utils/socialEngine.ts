@@ -297,9 +297,11 @@ export const resolvePost = (
     }
 
     const platform =
-      typeof result.platform === 'string' && result.platform.trim() !== ''
-        ? result.platform
-        : postOption.platform
+      result.platform === undefined || result.platform === null
+        ? postOption.platform
+        : typeof result.platform === 'string'
+          ? result.platform.trim()
+          : result.platform
 
     return {
       success: result.success ?? true,

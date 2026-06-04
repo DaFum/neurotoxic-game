@@ -266,12 +266,12 @@ test('resolvePost returns consistent structure', () => {
   assert.ok(typeof result.message === 'string', 'Should have string message')
 })
 
-const blankPlatformVariants = [
-  { label: 'empty result platform', platform: '' },
-  { label: 'whitespace result platform', platform: '   ' }
+const nullishPlatformVariants = [
+  { label: 'undefined result platform', platform: undefined },
+  { label: 'null result platform', platform: null }
 ]
 
-blankPlatformVariants.forEach(variant => {
+nullishPlatformVariants.forEach(variant => {
   test(`resolvePost falls back to option platform for ${variant.label}`, () => {
     const postOption = {
       id: 'falsy_result_fields',
@@ -291,6 +291,56 @@ blankPlatformVariants.forEach(variant => {
     assert.equal(result.platform, 'tiktok')
     assert.equal(result.message, '')
   })
+})
+
+const invalidPlatformVariants = [
+  { label: 'empty result platform', platform: '', expectedPlatform: '' },
+  {
+    label: 'whitespace result platform',
+    platform: '   ',
+    expectedPlatform: ''
+  },
+  { label: 'numeric result platform', platform: 404, expectedPlatform: 404 }
+]
+
+invalidPlatformVariants.forEach(variant => {
+  test(`resolvePost preserves invalid explicit ${variant.label}`, () => {
+    const postOption = {
+      id: 'invalid_result_platform',
+      platform: 'tiktok',
+      resolve: () => ({
+        success: false,
+        followers: 0,
+        platform: variant.platform,
+        message: ''
+      })
+    }
+
+    const result = resolvePost(postOption, mockGameState)
+
+    assert.equal(result.success, false)
+    assert.equal(result.followers, 0)
+    assert.equal(result.platform, variant.expectedPlatform)
+    assert.equal(result.message, '')
+  })
+})
+
+test('resolvePost trims explicit result platform values', () => {
+  const postOption = {
+    id: 'trimmed_result_platform',
+    platform: 'tiktok',
+    resolve: () => ({
+      success: true,
+      followers: 0,
+      platform: ' instagram ',
+      message: ''
+    })
+  }
+
+  const result = resolvePost(postOption, mockGameState)
+
+  assert.equal(result.platform, 'instagram')
+  assert.equal(result.message, '')
 })
 
 test('resolvePost clamps harmony bounds between 1-100', () => {
