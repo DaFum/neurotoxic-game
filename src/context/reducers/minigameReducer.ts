@@ -40,6 +40,13 @@ import {
   createItemDeliveredQuestEvent
 } from '../../quests/producers/itemQuestEvents'
 
+/**
+ * Starts the tourbus travel minigame for a selected destination node.
+ *
+ * @param state - Current game state before travel starts.
+ * @param payload - Destination node id for the active travel minigame.
+ * @returns Updated state with the travel minigame scene and target destination active.
+ */
 export const handleStartTravelMinigame = (
   state: GameState,
   payload: { targetNodeId: string }
@@ -58,6 +65,13 @@ export const handleStartTravelMinigame = (
   }
 }
 
+/**
+ * Applies travel minigame results while preserving scene continuation for the arrival flow.
+ *
+ * @param state - Current game state with an active travel minigame.
+ * @param payload - Reported damage, collected items, and optional deterministic random value.
+ * @returns Updated state with travel costs, rewards, damage, unlocks, and quest progress applied.
+ */
 export const handleCompleteTravelMinigame = (
   state: GameState,
   payload: {
@@ -276,6 +290,13 @@ export const handleCompleteTravelMinigame = (
   return newState
 }
 
+/**
+ * Starts the roadie minigame for the current gig.
+ *
+ * @param state - Current game state before the roadie minigame starts.
+ * @param payload - Gig id associated with the roadie minigame.
+ * @returns Updated state with the roadie scene and equipment counter initialized.
+ */
 export const handleStartRoadieMinigame = (
   state: GameState,
   payload: { gigId: string }
@@ -295,6 +316,13 @@ export const handleStartRoadieMinigame = (
   }
 }
 
+/**
+ * Starts the amp calibration minigame for the current gig.
+ *
+ * @param state - Current game state before calibration starts.
+ * @param payload - Gig id associated with amp calibration.
+ * @returns Updated state with the amp calibration scene and minigame metadata initialized.
+ */
 export const handleStartAmpCalibration = (
   state: GameState,
   payload: { gigId: string }
@@ -348,6 +376,13 @@ const applyPostMinigameResult = (
   }
 }
 
+/**
+ * Applies amp calibration results while leaving the current scene under overlay continuation control.
+ *
+ * @param state - Current game state with amp calibration results pending.
+ * @param payload - Score and void-interference counters reported by the minigame.
+ * @returns Updated state with harmony, money, modifiers, and quest progress applied.
+ */
 export const handleCompleteAmpCalibration = (
   state: GameState,
   payload: {
@@ -402,6 +437,13 @@ export const handleCompleteAmpCalibration = (
     : nextState
 }
 
+/**
+ * Starts the Kabelsalat minigame for the current gig.
+ *
+ * @param state - Current game state before Kabelsalat starts.
+ * @param payload - Gig id associated with the Kabelsalat minigame.
+ * @returns Updated state with the Kabelsalat scene and minigame metadata initialized.
+ */
 export const handleStartKabelsalatMinigame = (
   state: GameState,
   payload: { gigId: string }
@@ -420,6 +462,13 @@ export const handleStartKabelsalatMinigame = (
   }
 }
 
+/**
+ * Applies Kabelsalat results while leaving the current scene under overlay continuation control.
+ *
+ * @param state - Current game state with Kabelsalat results pending.
+ * @param payload - Raw Kabelsalat result payload consumed by the economy calculation.
+ * @returns Updated state with harmony, money, modifiers, and quest progress applied.
+ */
 export const handleCompleteKabelsalatMinigame = (
   state: GameState,
   payload: { results: unknown }
@@ -465,6 +514,13 @@ export const handleCompleteKabelsalatMinigame = (
     : nextState
 }
 
+/**
+ * Applies roadie minigame results while leaving the current scene under overlay continuation control.
+ *
+ * @param state - Current game state with roadie results pending.
+ * @param payload - Equipment damage and optional delivered contraband count.
+ * @returns Updated state with repair costs, contraband bonus, modifiers, and quest progress applied.
+ */
 export const handleCompleteRoadieMinigame = (
   state: GameState,
   payload: { equipmentDamage: number; contrabandDelivered?: number }

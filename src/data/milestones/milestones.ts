@@ -12,6 +12,9 @@ import i18n from '../../i18n'
 import { formatCurrency } from '../../utils/numberUtils'
 import type { GameState, GameAction } from '../../types'
 
+/**
+ * Static milestone definition with condition and optional reward action factory.
+ */
 export interface Milestone {
   id: string
   condition: (state: GameState) => boolean
@@ -23,6 +26,7 @@ export interface Milestone {
 const totalFollowers = (social: GameState['social']): number =>
   social.tiktok + social.instagram + social.youtube + social.newsletter
 
+/** Canonical milestone definitions evaluated against game state. */
 export const MILESTONES = [
   // === Survival ===
   {

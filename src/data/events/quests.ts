@@ -11,6 +11,7 @@ import {
 const canOfferQuest = (state: GameState, questId: string): boolean =>
   QuestOfferEngine.canOfferQuest(state, questId)
 
+/** Raw quest-offer event definitions consumed by the event registry. */
 export const QUEST_EVENTS = [
   {
     id: 'quest_trigger_pick_of_destiny',

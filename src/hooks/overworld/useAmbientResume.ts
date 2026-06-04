@@ -1,6 +1,9 @@
 import { useEffect } from 'react'
 import { audioService } from '../../utils/audio/audioEngine'
 
+/**
+ * Attempts to resume ambient overworld music once on mount, with one delayed retry.
+ */
 export const useAmbientResume = () => {
   useEffect(() => {
     let cancelled = false

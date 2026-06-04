@@ -62,8 +62,9 @@ function useAmpState() {
     setInterference
   }
 }
-
-
+/**
+ * Mutable refs consumed by the high-frequency amp calibration update loop.
+ */
 export interface AmpGameRefs {
   isCompleteRef: { current: boolean }
   timeLeftRef: { current: number }
@@ -80,6 +81,9 @@ export interface AmpGameRefs {
   voidResonanceRef: { current: number }
 }
 
+/**
+ * React state setters used by the amp calibration update loop.
+ */
 export interface AmpGameSetters {
   setTimeLeft: (value: number | ((prev: number) => number)) => void
   handleComplete: () => void
@@ -93,6 +97,13 @@ export interface AmpGameSetters {
   setVoidResonance: (value: number | ((prev: number) => number)) => void
 }
 
+/**
+ * Advances amp calibration simulation state for one frame.
+ *
+ * @param deltaMS - Milliseconds elapsed since the previous update.
+ * @param refs - Mutable gameplay refs read and updated by the loop.
+ * @param setters - React setters used to synchronize visible state.
+ */
 export function updateAmpGameState(
   deltaMS: number,
   refs: AmpGameRefs,
@@ -278,6 +289,11 @@ export function updateAmpGameState(
   }
 }
 
+/**
+ * Owns amp calibration minigame state, update loop entry point, and completion dispatch.
+ *
+ * @returns Amp calibration state, controls, high-frequency update callback, and stage ref.
+ */
 export function useAmpLogic() {
   const { completeAmpCalibration, changeScene } = useGameActions()
 
@@ -420,7 +436,7 @@ export function useAmpLogic() {
     purgesUsedRef.current += 1
   }, [setInterference])
 
-    // Function called by PixiStage component to get latest state for rendering
+  // Function called by PixiStage component to get latest state for rendering
   const update = useCallback(
     (deltaMS: number) => {
       updateAmpGameState(

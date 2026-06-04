@@ -5,6 +5,10 @@ const SCANLINES_STYLE = {
     'repeating-linear-gradient(0deg, transparent, transparent 2px, var(--color-blood-red) 2px, var(--color-blood-red) 4px)'
 } as const
 
+/**
+ * Renders the decorative game-over background layer.
+ * @returns The rendered Game Over Background UI.
+ */
 export const GameOverBackground = React.memo(() => {
   return (
     <>

@@ -34,6 +34,13 @@ import {
   createAssetRepairedQuestEvent
 } from '../../quests/producers/assetQuestEvents'
 
+/**
+ * Adds a long-term chassis asset purchased with cash or a validated loan.
+ *
+ * @param state - Current game state before the purchase.
+ * @param payload - Validated chassis purchase details, generated asset id, slot ids, and acquisition mode.
+ * @returns Updated state with the asset, any liability, and quest progress applied, or the original state when validation fails.
+ */
 export const handlePurchaseChassis = (
   state: GameState,
   payload: PurchaseChassisPayload
@@ -131,6 +138,13 @@ export const handlePurchaseChassis = (
   )
 }
 
+/**
+ * Installs an asset module into an empty compatible slot and deducts the combined module and install cost.
+ *
+ * @param state - Current game state before the install.
+ * @param payload - Module install target plus any slot ids added by the module.
+ * @returns Updated state with the installed module and quest progress, or the original state when the install cannot be applied.
+ */
 export const handleInstallModule = (
   state: GameState,
   payload: InstallModulePayload
@@ -202,6 +216,13 @@ export const handleInstallModule = (
   return nextState
 }
 
+/**
+ * Removes an installed module, removes its empty child slots, and refunds the configured removal value.
+ *
+ * @param state - Current game state before removal.
+ * @param payload - Asset and slot ids identifying the module to remove.
+ * @returns Updated state after removal, or the original state when child slots are still occupied or the target is missing.
+ */
 export const handleRemoveModule = (
   state: GameState,
   payload: { assetId: string; slotId: string }
@@ -291,6 +312,13 @@ export const handleRemoveModule = (
   return nextState
 }
 
+/**
+ * Upgrades an existing chassis to a higher tier and adds newly unlocked slots.
+ *
+ * @param state - Current game state before the upgrade.
+ * @param payload - Target asset id, desired tier, and pre-generated slot ids for added slots.
+ * @returns Updated state with upgraded chassis stats and deducted cost, or the original state when validation fails.
+ */
 export const handleUpgradeChassisTier = (
   state: GameState,
   payload: UpgradeChassisTierPayload
@@ -364,6 +392,13 @@ export const handleUpgradeChassisTier = (
   return nextState
 }
 
+/**
+ * Sells a chassis when its gross sale value can cover attached loan principal.
+ *
+ * @param state - Current game state before the sale.
+ * @param payload - Asset id of the chassis to sell.
+ * @returns Updated state with the asset and liabilities removed plus net proceeds, or the original state when sale rules fail.
+ */
 export const handleSellChassis = (
   state: GameState,
   payload: { assetId: string }
@@ -415,6 +450,13 @@ export const handleSellChassis = (
   return nextState
 }
 
+/**
+ * Repairs a chassis back to full condition and emits repair and condition-change quest events.
+ *
+ * @param state - Current game state before repair.
+ * @param payload - Asset id of the chassis to repair.
+ * @returns Updated state with repaired condition and deducted repair cost, or the original state when repair is unavailable.
+ */
 export const handleRepairChassis = (
   state: GameState,
   payload: { assetId: string }
@@ -464,6 +506,13 @@ export const handleRepairChassis = (
   )
 }
 
+/**
+ * Refinances a loan liability through an eligible loan profile and charges the refinance fee.
+ *
+ * @param state - Current game state before refinancing.
+ * @param payload - Loan liability id and replacement loan profile id.
+ * @returns Updated state with recalculated loan terms, or the original state when eligibility or payment checks fail.
+ */
 export const handleRefinanceLiability = (
   state: GameState,
   payload: RefinanceLiabilityPayload
@@ -522,6 +571,13 @@ export const handleRefinanceLiability = (
   }
 }
 
+/**
+ * Starts a crowdfund campaign for an asset when that asset kind has no active acquisition.
+ *
+ * @param state - Current game state before campaign creation.
+ * @param payload - Crowdfund campaign prepared by the action creator.
+ * @returns Updated state with the campaign queued, or the original state when acquisition is already active.
+ */
 export const handleStartCrowdfund = (
   state: GameState,
   payload: { campaign: import('../../types/assets').CrowdfundCampaign }
@@ -535,6 +591,13 @@ export const handleStartCrowdfund = (
   }
 }
 
+/**
+ * Removes a foreclosed asset and any liabilities attached to it.
+ *
+ * @param state - Current game state before foreclosure.
+ * @param payload - Asset id to remove.
+ * @returns Updated state with the asset and related liabilities removed.
+ */
 export const handleAssetForeclosed = (
   state: GameState,
   payload: { assetId: string }
@@ -548,6 +611,13 @@ export const handleAssetForeclosed = (
   }
 }
 
+/**
+ * Dismisses pending foreclosure notices for a specific asset kind.
+ *
+ * @param state - Current game state before dismissal.
+ * @param payload - Asset kind whose foreclosure notices should be removed.
+ * @returns Updated state with matching pending notices filtered out.
+ */
 export const handleDismissForeclosureNotice = (
   state: GameState,
   payload: { kind: AssetKind }
@@ -560,4 +630,10 @@ export const handleDismissForeclosureNotice = (
   }
 }
 
+/**
+ * Leaves state unchanged for asset validation failure actions handled outside the reducer.
+ *
+ * @param state - Current game state.
+ * @returns The original state reference.
+ */
 export const handleAssetFailedAction = (state: GameState): GameState => state

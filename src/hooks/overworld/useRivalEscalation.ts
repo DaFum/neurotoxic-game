@@ -4,6 +4,13 @@ import type { RivalBandState } from '../../types'
 
 const ENCOUNTER_POWER_GAIN = 5
 
+/**
+ * Increases rival power once when the rival occupies the player's current node.
+ *
+ * @param rivalBand - Current rival band state.
+ * @param playerNodeId - Player's current map node id.
+ * @param updateRivalBand - Action callback used to patch rival state.
+ */
 export const useRivalEscalation = (
   rivalBand: RivalBandState | null | undefined,
   playerNodeId: string | null | undefined,

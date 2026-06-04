@@ -57,6 +57,7 @@ const getInventoryAmount = (
   return isFiniteNumber(value) ? value : 0
 }
 
+/** Default chatter entries used outside venue-specific chatter pools. */
 export const CHATTER_DB = [
   // --- GENERAL TRAVEL / OVERWORLD ---
   {
@@ -2141,6 +2142,7 @@ export const CHATTER_DB = [
   }
 ]
 
+/** Scenes where default chatter entries may be selected. */
 export const ALLOWED_DEFAULT_SCENES = [
   GAME_PHASES.MENU,
   GAME_PHASES.OVERWORLD,

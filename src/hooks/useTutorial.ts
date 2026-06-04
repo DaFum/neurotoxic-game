@@ -3,9 +3,16 @@ import { useTranslation } from 'react-i18next'
 import { useGameActions, useGameSelector } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
 
+/** Tutorial step ids in progression order. */
 export const TUTORIAL_STEPS = [0, 1, 2, 3]
+/** Total number of tutorial steps. */
 export const TOTAL_STEPS = TUTORIAL_STEPS.length
 
+/**
+ * Derives tutorial overlay content and completion controls from game state.
+ *
+ * @returns Current tutorial step, visible content, visibility flag, and completion controls.
+ */
 export const useTutorial = () => {
   const { t } = useTranslation()
   const player = useGameSelector(state => state.player)

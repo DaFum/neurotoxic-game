@@ -4,6 +4,9 @@ import type { useGameActions } from '../context/GameState'
 
 type UpdateSettings = ReturnType<typeof useGameActions>['updateSettings']
 
+/**
+ * Handlers used by settings UI controls.
+ */
 export type UseSettingsActionsReturn = {
   handleToggleCRT: () => void
   handleLogLevelChange: (level: GameSettings['logLevel']) => void

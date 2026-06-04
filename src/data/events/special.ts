@@ -1,6 +1,6 @@
 import type { GameState } from '../../types'
 
-// Special Events
+/** Raw special-location event definitions consumed by the event registry. */
 export const SPECIAL_EVENTS = [
   {
     id: 'deal_devil',

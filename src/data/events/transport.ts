@@ -1,7 +1,7 @@
 import type { GameState } from '../../types'
 import { computeStashBustRisk } from '../../utils/contrabandUtils'
 
-// Transport Events
+/** Raw transport event definitions consumed by the event registry. */
 export const TRANSPORT_EVENTS = [
   {
     id: 'van_breakdown_tire',

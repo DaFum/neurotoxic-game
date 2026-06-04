@@ -8,6 +8,7 @@ import {
 } from '../utils/darkWebLeakUtils'
 import { logger } from '../utils/logger'
 
+/** Tuning values for the dark-web leak social action. */
 export const DARK_WEB_LEAK_CONFIG: DarkWebLeakConfig = {
   COST: 500,
   FAME_GAIN: 300,
@@ -17,6 +18,11 @@ export const DARK_WEB_LEAK_CONFIG: DarkWebLeakConfig = {
   REQUIRED_CONTROVERSY: 40
 }
 
+/**
+ * Coordinates dark-web leak modal state, validation, and dispatch.
+ *
+ * @returns Modal state, eligibility flags, action callbacks, and leak tuning constants.
+ */
 export const useDarkWebLeak = () => {
   const [showDarkWebLeak, setShowDarkWebLeak] = useState(false)
   const player = useGameSelector(state => state.player)

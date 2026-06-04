@@ -39,6 +39,9 @@ type RhythmGameAudioParams = {
   }
 }
 
+/**
+ * Audio controls exposed by the rhythm game audio hook.
+ */
 export type RhythmGameAudioReturn = {
   retryAudioInitialization: () => Promise<void>
 }
@@ -46,7 +49,7 @@ export type RhythmGameAudioReturn = {
 /**
  * Manages audio initialization, playback, and setup for the gig.
  *
- * @param params - Hook parameters.
+ * @param params - Rhythm state ref, UI setters, game context, and context actions for audio initialization.
  * - `params.gameStateRef` - Game state reference.
  * - `params.setters` - Setters (setIsAudioReady).
  * - `params.contextState` - Context state (band, gameMap, player, setlist, gigModifiers, addToast).

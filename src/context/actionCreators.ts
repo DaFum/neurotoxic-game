@@ -138,6 +138,12 @@ export const createUpdatePlayerAction = (
   }
 }
 
+/**
+ * Creates an update-band action and clamps hostile harmony payloads.
+ *
+ * @param updates - Partial band update object or updater callback.
+ * @returns UPDATE_BAND action with sanitized payload.
+ */
 export const createUpdateBandAction = (
   updates: UpdateBandPayload
 ): Extract<GameAction, { type: typeof ActionTypes.UPDATE_BAND }> => {
@@ -166,6 +172,12 @@ export const createUpdateBandAction = (
   }
 }
 
+/**
+ * Creates an action that toggles the Neuro Decimator gig modifier.
+ *
+ * @param isActive - Whether the modifier should be active.
+ * @returns Toggle action for the reducer.
+ */
 export const toggleNeuroDecimator = (
   isActive: boolean
 ): Extract<
@@ -562,7 +574,8 @@ export const createStartRoadieMinigameAction = (
 
 /**
  * Creates complete roadie minigame action
- * @param results - Results `equipmentDamage`
+ * @param equipmentDamage - Raw equipment damage from the minigame.
+ * @param contrabandDelivered - Optional delivered contraband count.
  * @returns Action object
  */
 export const createCompleteRoadieMinigameAction = (
@@ -582,6 +595,7 @@ export const createCompleteRoadieMinigameAction = (
 /**
  * Creates start kabelsalat minigame action
  * @param gigId - Gig id.
+ * @returns Action object.
  */
 export const createStartKabelsalatMinigameAction = (
   gigId: string
@@ -596,6 +610,7 @@ export const createStartKabelsalatMinigameAction = (
 /**
  * Creates complete kabelsalat minigame action
  * @param results - Results.
+ * @returns Action object.
  */
 export const createCompleteKabelsalatMinigameAction = (
   results: unknown
@@ -623,6 +638,8 @@ export const createStartAmpCalibrationAction = (
  * Action creator to complete Amp Calibration minigame
  * @param score - Score.
  * @param voidResonance - Void resonance.
+ * @param purgesUsed - Number of purges used during calibration.
+ * @param hijacksOverridden - Number of hijacks overridden.
  * @returns Action object
  */
 export const createCompleteAmpCalibrationAction = (
@@ -650,6 +667,12 @@ export const createCompleteAmpCalibrationAction = (
   }
 }
 
+/**
+ * Creates an action that spawns a rival band for the current day.
+ *
+ * @param state - Current game state used to derive rival power.
+ * @returns Spawn-rival action with generated rival state.
+ */
 export const createSpawnRivalBandAction = (
   state: GameState
 ): Extract<GameAction, { type: typeof ActionTypes.SPAWN_RIVAL_BAND }> => {
@@ -660,6 +683,13 @@ export const createSpawnRivalBandAction = (
   }
 }
 
+/**
+ * Creates an action that moves a rival band on the current map.
+ *
+ * @param rivalBand - Current rival band state.
+ * @param gameMap - Map used to choose the rival destination.
+ * @returns Move-rival action with the computed rival state.
+ */
 export const createMoveRivalBandAction = (
   rivalBand: RivalBandState,
   gameMap: GameMap
@@ -668,6 +698,11 @@ export const createMoveRivalBandAction = (
   payload: { rivalBand: moveRivalBand(rivalBand, gameMap, secureRandom) }
 })
 
+/**
+ * Creates an action that checks whether the player encounters the rival band.
+ *
+ * @returns Rival-encounter check action.
+ */
 export const createCheckRivalEncounterAction = (): Extract<
   GameAction,
   { type: typeof ActionTypes.CHECK_RIVAL_ENCOUNTER }
@@ -675,6 +710,12 @@ export const createCheckRivalEncounterAction = (): Extract<
   type: ActionTypes.CHECK_RIVAL_ENCOUNTER
 })
 
+/**
+ * Creates an action that sanitizes and applies rival-band field updates.
+ *
+ * @param payload - Partial rival-band fields to update.
+ * @returns Rival-band update action.
+ */
 export const createUpdateRivalBandAction = (
   payload: Partial<RivalBandState>
 ): Extract<GameAction, { type: typeof ActionTypes.UPDATE_RIVAL_BAND }> => {
@@ -697,7 +738,8 @@ export const createUpdateRivalBandAction = (
 
 /**
  * Creates unlock trait action
- * @param payload - `memberId, traitId`
+ * @param memberId - Target band member id.
+ * @param traitId - Trait id to unlock.
  * @returns Action object
  */
 export const createUnlockTraitAction = (
@@ -915,6 +957,12 @@ export const createSetPendingBandHQOpenAction = (
   payload: isOpen
 })
 
+/**
+ * Creates an action that stores the pending supply-stop inventory.
+ *
+ * @param inventory - Supply-stop inventory or null to clear it.
+ * @returns Pending supply-stop inventory action.
+ */
 export const createSetPendingSupplyStopInventoryAction = (
   inventory: PurchaseItem[] | null
 ): Extract<
@@ -925,6 +973,12 @@ export const createSetPendingSupplyStopInventoryAction = (
   payload: Array.isArray(inventory) ? inventory : null
 })
 
+/**
+ * Creates an action that dismisses a foreclosure notice for an asset kind.
+ *
+ * @param kind - Asset kind whose notice should be dismissed.
+ * @returns Foreclosure-dismissal action.
+ */
 export const dismissForeclosureNotice = (
   kind: AssetKind
 ): Extract<
@@ -935,6 +989,12 @@ export const dismissForeclosureNotice = (
   payload: { kind }
 })
 
+/**
+ * Creates an action that sets or clears the pending asset risk event.
+ *
+ * @param event - Risk event descriptor, or null to clear the pending event.
+ * @returns Pending risk-event action, or null when descriptor sanitization fails.
+ */
 export const createSetPendingRiskEventAction = (
   event: RiskEventDescriptor | null
 ): Extract<
@@ -1048,6 +1108,12 @@ export const createMerchPressAction = (
   ])
 })
 
+/**
+ * Creates the deterministic advance-day action with a pre-rolled RNG stream.
+ *
+ * @param state - Current game state containing assets and RNG seed.
+ * @returns Advance-day action with day RNG stream and next seed.
+ */
 export const advanceDay = (
   state: GameState
 ): Extract<GameAction, { type: typeof ActionTypes.ADVANCE_DAY }> => {
@@ -1068,6 +1134,12 @@ export const advanceDay = (
   }
 }
 
+/**
+ * Creates an action that applies a quest progress event.
+ *
+ * @param event - Quest progress event emitted by gameplay.
+ * @returns Apply-quest-event action.
+ */
 export const createApplyQuestEventAction = (
   event: QuestProgressEvent
 ): Extract<GameAction, { type: typeof ActionTypes.APPLY_QUEST_EVENT }> => ({

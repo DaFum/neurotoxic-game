@@ -36,6 +36,12 @@ interface UsePostGigDerivationsProps {
   triggerEvent: (type: string, id: string) => boolean
 }
 
+/**
+ * Derives post-gig performance, financial, and social-post option data.
+ *
+ * @param props - Completed gig state, reputation context, city traits, assets, and event trigger callback.
+ * @returns Performance score, gig context, financial report, social options, and derivation error.
+ */
 export const usePostGigDerivations = ({
   currentGig,
   player,

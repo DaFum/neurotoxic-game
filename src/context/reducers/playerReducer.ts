@@ -9,12 +9,17 @@ import {
 } from '../../utils/gameStateUtils'
 import type { PlayerState, UpdatePlayerPayload } from '../../types'
 
-/**
- * Handles player update actions
- * Clamps player.money and player.fame to ensure they never go negative
- * and correctly applied.
- */
 type WithPlayer = { player: PlayerState }
+/**
+ * Applies sanitized player updates while preserving derived fame level invariants.
+ *
+ * Money and fame are clamped before merge; malformed or prototype-polluting
+ * payloads leave the original state untouched.
+ *
+ * @param state - State object containing the player slice to update.
+ * @param payload - Player updates or functional updater from the action creator.
+ * @returns Updated state with merged player values, or the original state when the payload is invalid.
+ */
 export const handleUpdatePlayer = <TState extends WithPlayer>(
   state: TState,
   payload: UpdatePlayerPayload

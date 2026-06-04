@@ -44,6 +44,12 @@ const resolveSpeaker = (
   return t('ui:chatter_labels.default_speaker', { defaultValue: 'Band' })
 }
 
+/**
+ * Schedules scene-aware chatter messages for the active game state.
+ * @param gameState - Current state snapshot used when selecting chatter lines.
+ * @param t - Translation callback used for fallback speaker labels.
+ * @returns Active chatter messages and a handler for dismissing a message by id.
+ */
 export const useChatterLogic = (
   gameState: ChatterGameState,
   t: TranslationCallback

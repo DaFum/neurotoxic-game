@@ -193,6 +193,12 @@ const selectRandomChatter = (
   }
 }
 
+/**
+ * Selects random chatter from the current venue and standard chatter pools.
+ *
+ * @param state - Chatter selection state.
+ * @returns Random chatter payload, or null when no chatter is available.
+ */
 export const getRandomChatter = (
   state: ChatterState
 ): { text: string; speaker: string | null; type: string } | null => {

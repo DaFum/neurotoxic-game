@@ -6,7 +6,7 @@ const storyFlagNotSet =
     !Array.isArray(state.activeStoryFlags) ||
     !state.activeStoryFlags.includes(flag)
 
-// Band Events
+/** Raw band-category event definitions consumed by the event registry. */
 export const BAND_EVENTS = [
   {
     id: 'asset_story_found_record_collection',

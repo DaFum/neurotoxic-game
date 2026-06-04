@@ -1,3 +1,4 @@
+/** HQ shop item catalog grouped by shop category. */
 export const HQ_ITEMS = {
   gear: [
     // Standard Consumables

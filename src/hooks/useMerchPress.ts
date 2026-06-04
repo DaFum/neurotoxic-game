@@ -2,6 +2,11 @@ import { useState, useCallback, useMemo } from 'react'
 import { useGameActions, useGameSelector } from '../context/GameState'
 import { secureRandom } from '../utils/crypto'
 
+/**
+ * Coordinates merch-press modal state, eligibility, random outcome, and dispatch.
+ *
+ * @returns Modal state, merch-press action callbacks, eligibility flag, and scaled config.
+ */
 export const useMerchPress = () => {
   const player = useGameSelector(state => state.player)
   const band = useGameSelector(state => state.band)

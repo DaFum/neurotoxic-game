@@ -1,3 +1,4 @@
+/** Canonical band member and NPC character definitions. */
 export const CHARACTERS = {
   MATZE: {
     id: 'matze',

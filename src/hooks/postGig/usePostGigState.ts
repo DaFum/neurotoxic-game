@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { PostResult } from '../../types'
 import type { BrandDeal } from '../../types/social'
 
+/** Ordered phases used by the post-gig flow. */
 export type PostGigPhase = 'REPORT' | 'SOCIAL' | 'DEALS' | 'COMPLETE'
 
 const PHASE_METADATA: Record<PostGigPhase, { key: string; default: string }> = {
@@ -23,6 +24,11 @@ const PHASE_METADATA: Record<PostGigPhase, { key: string; default: string }> = {
   }
 }
 
+/**
+ * Manages post-gig local phase, social-post result, and brand-offer state.
+ *
+ * @returns Post-gig phase state, setters, brand offers, and localized phase title metadata.
+ */
 export const usePostGigState = () => {
   const [phase, setPhase] = useState<PostGigPhase>('REPORT')
   const [postResult, setPostResult] = useState<PostResult | null>(null)

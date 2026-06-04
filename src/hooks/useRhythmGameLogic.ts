@@ -11,6 +11,9 @@ import { useRhythmGameInput } from './rhythmGame/useRhythmGameInput'
 import type { RhythmGameRefState } from '../types/rhythmGame'
 import type { RhythmUiState } from './rhythmGame/useRhythmGameState'
 export type { RhythmUiState } from './rhythmGame/useRhythmGameState'
+/**
+ * Public rhythm game stats shape exposed to the gig scene.
+ */
 export type RhythmGameStats = RhythmUiState
 
 type RhythmGameLogicActions = {
@@ -19,6 +22,9 @@ type RhythmGameLogicActions = {
   retryAudioInitialization: () => Promise<void>
 }
 
+/**
+ * Runtime API returned by the rhythm game orchestration hook.
+ */
 export type RhythmGameLogicReturn = {
   gameStateRef: { current: RhythmGameRefState }
   stats: RhythmUiState

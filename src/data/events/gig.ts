@@ -1,4 +1,4 @@
-// Gig Events
+/** Raw gig event definitions consumed by the event registry. */
 export const GIG_EVENTS = [
   {
     id: 'gig_mid_strings_snapped',

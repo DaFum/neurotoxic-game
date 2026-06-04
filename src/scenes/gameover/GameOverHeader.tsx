@@ -4,6 +4,10 @@ import { motion } from 'framer-motion'
 import { AnimatedDivider, AnimatedSubtitle } from '../../ui/shared'
 import { VoidSkullIcon } from '../../ui/shared/Icons'
 
+/**
+ * Renders the game-over headline and summary heading.
+ * @returns The rendered Game Over Header UI.
+ */
 export const GameOverHeader = React.memo(() => {
   const { t } = useTranslation(['ui'])
 

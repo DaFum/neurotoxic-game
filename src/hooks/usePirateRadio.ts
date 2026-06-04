@@ -7,6 +7,7 @@ import {
 } from '../utils/pirateRadioUtils'
 import { logger } from '../utils/logger'
 
+/** Tuning values for the pirate-radio social action. */
 export const PIRATE_RADIO_CONFIG = {
   COST: 200,
   FAME_GAIN: 150,
@@ -15,6 +16,11 @@ export const PIRATE_RADIO_CONFIG = {
   HARMONY_COST: 10
 }
 
+/**
+ * Coordinates pirate-radio modal state, validation, and dispatch.
+ *
+ * @returns Modal state, eligibility flags, action callbacks, and pirate-radio tuning constants.
+ */
 export const usePirateRadio = () => {
   const [showPirateRadio, setShowPirateRadio] = useState(false)
   const player = useGameSelector(state => state.player)

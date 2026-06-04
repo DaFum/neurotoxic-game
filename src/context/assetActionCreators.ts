@@ -126,11 +126,19 @@ const buildAddedSlotEntries = (moduleId: string): NewSlotEntry[] => {
   return out
 }
 
+/**
+ * Raw chassis purchase request from the asset UI.
+ */
 export interface PurchaseChassisInput {
+  /** Asset section to acquire. */
   kind: AssetKind
+  /** Legit or DIY acquisition flavor. */
   flavor: AssetFlavor
+  /** Chassis tier to acquire. */
   tier: ChassisTier
+  /** Payment/acquisition mode. */
   mode: AcquisitionMode
+  /** Loan profile used when mode is `loan`. */
   loanProfileId?: LoanProfileId
 }
 
@@ -138,6 +146,10 @@ export interface PurchaseChassisInput {
  * Creates a chassis purchase action. Validates flavor/mode combinations,
  * funds available, and (for loans) profile existence. Returns
  * `PURCHASE_CHASSIS_FAILED` on rejection so middleware can surface a toast.
+ *
+ * @param raw - Raw chassis purchase request.
+ * @param state - Current game state used for funds, eligibility, and existing acquisitions.
+ * @returns Purchase action or structured failure action.
  */
 export const purchaseChassis = (
   raw: PurchaseChassisInput,
@@ -206,9 +218,15 @@ export const purchaseChassis = (
   }
 }
 
+/**
+ * Raw module installation request from an asset slot.
+ */
 export interface InstallModuleInput {
+  /** Asset that owns the target slot. */
   assetId: string
+  /** Slot receiving the module. */
   slotId: string
+  /** Module to install. */
   moduleId: string
 }
 
@@ -218,6 +236,10 @@ export interface InstallModuleInput {
  * no exclusivity conflict with already-installed modules, and the
  * `maxPerAsset` cap is not exceeded. Returns `INSTALL_MODULE_FAILED` with a
  * structured reason on rejection.
+ *
+ * @param raw - Raw installation request.
+ * @param state - Current game state used for ownership, unlocks, conflicts, and funds.
+ * @returns Install action or structured failure action.
  */
 export const installModule = (
   raw: InstallModuleInput,
@@ -263,6 +285,13 @@ export const installModule = (
   }
 }
 
+/**
+ * Creates an action that removes a module from an asset slot.
+ *
+ * @param assetId - Asset that owns the slot.
+ * @param slotId - Slot to clear.
+ * @returns Remove-module action.
+ */
 export const removeModule = (
   assetId: string,
   slotId: string
@@ -275,6 +304,11 @@ export const removeModule = (
  * Creates an UPGRADE_CHASSIS_TIER action. Pre-generates ids for the slots
  * that the new tier introduces (slot types present in the higher-tier
  * config but not in the current asset).
+ *
+ * @param assetId - Asset to upgrade.
+ * @param targetTier - Desired chassis tier.
+ * @param state - Current game state used for ownership, config, and funds.
+ * @returns Upgrade action, or null when the upgrade is unavailable.
  */
 export const upgradeChassisTier = (
   assetId: string,
@@ -319,6 +353,13 @@ export const upgradeChassisTier = (
   }
 }
 
+/**
+ * Creates a sell-chassis action after optional liability checks.
+ *
+ * @param assetId - Asset to sell.
+ * @param state - Optional state used to reject sales where debt exceeds value.
+ * @returns Sell action or structured failure action.
+ */
 export const sellChassis = (
   assetId: string,
   state?: GameState
@@ -355,6 +396,13 @@ export const sellChassis = (
   }
 }
 
+/**
+ * Creates a repair action when the chassis is damaged and affordable.
+ *
+ * @param assetId - Asset to repair.
+ * @param state - Current game state used for condition and funds.
+ * @returns Repair action, or null when no repair can be made.
+ */
 export const repairChassis = (
   assetId: string,
   state: GameState
@@ -373,6 +421,14 @@ export const repairChassis = (
   }
 }
 
+/**
+ * Creates a refinance action after validating the liability and loan profile.
+ *
+ * @param liabilityId - Liability to refinance.
+ * @param loanProfileId - Target loan profile.
+ * @param state - Current game state used for eligibility and fee affordability.
+ * @returns Refinance action or structured failure action.
+ */
 export const refinanceLiability = (
   liabilityId: string,
   loanProfileId: LoanProfileId,
@@ -418,12 +474,21 @@ export const refinanceLiability = (
   }
 }
 
+/**
+ * Raw crowdfund campaign setup request.
+ */
 export interface StartCrowdfundInput {
+  /** Asset section to crowdfund. */
   kind: AssetKind
+  /** Chassis flavor to materialize on success. */
   flavor: AssetFlavor
+  /** Chassis tier to materialize on success. */
   tier: ChassisTier
+  /** Target cash amount for the campaign. */
   targetAmount: number
+  /** Fame staked by the player. */
   fameStake: number
+  /** Campaign duration remaining at creation. */
   daysRemaining: number
   /** Pre-rolled 0..1 success roll from the seeded RNG stream. */
   plannedSuccessRoll: number
@@ -434,6 +499,13 @@ export interface StartCrowdfundInput {
   plannedSuccessProbability: number
 }
 
+/**
+ * Creates a crowdfund campaign action with pre-generated materialization ids.
+ *
+ * @param raw - Raw campaign setup request.
+ * @param state - Current asset and campaign state used to prevent duplicate acquisitions.
+ * @returns Start-crowdfund action, or null when the request is invalid.
+ */
 export const startCrowdfund = (
   raw: StartCrowdfundInput,
   state: Pick<GameState, 'assets' | 'crowdfundCampaigns'>
@@ -492,6 +564,12 @@ export const startCrowdfund = (
   }
 }
 
+/**
+ * Creates an action that marks an asset as foreclosed.
+ *
+ * @param assetId - Asset id to foreclose.
+ * @returns Asset-foreclosed action.
+ */
 export const assetForeclosed = (assetId: string): AssetForeclosedAction => ({
   type: ActionTypes.ASSET_FORECLOSED,
   payload: { assetId }

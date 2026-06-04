@@ -1,3 +1,4 @@
+/** Event categories accepted by the event registry and event trigger system. */
 export const EVENT_CATEGORIES = [
   'transport',
   'band',
@@ -6,4 +7,5 @@ export const EVENT_CATEGORIES = [
   'special'
 ] as const
 
+/** Union of event category ids. */
 export type EventCategory = (typeof EVENT_CATEGORIES)[number]

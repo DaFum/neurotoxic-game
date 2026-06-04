@@ -1,6 +1,12 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { logger } from '../../utils/logger'
 
+/**
+ * Wraps manual overworld saves with a short delay and visible saving state.
+ *
+ * @param saveGame - Save callback supplied by game actions.
+ * @returns Saving flag and delayed save trigger.
+ */
 export const useOverworldSave = (saveGame: () => Promise<void> | void) => {
   const [isSaving, setIsSaving] = useState(false)
   const isMountedRef = useRef(true)
