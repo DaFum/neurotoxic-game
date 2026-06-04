@@ -7,9 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { GlitchButton } from './GlitchButton'
 import { logger } from '../utils/logger'
 import {
-  IMG_PROMPTS,
-  resolveGenImageUrl,
-  getGeneratedImageFallbackUrl
+  IMG_PROMPTS
 } from '../utils/imageGen'
 
 /**
@@ -133,8 +131,8 @@ const StashCardDetails = ({ item, t }: StashCardSubComponentProps) => {
               })
             })}
             aspectRatio='1:1'
-            className='w-full h-full border-none'
             variant='inline'
+            className='w-full h-full object-contain !border-0 !shadow-none'
           />
         </div>
       )}

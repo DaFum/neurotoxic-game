@@ -4,7 +4,7 @@ import { ActionButton } from '../../ui/shared'
 import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 import { BRAND_ALIGNMENTS } from '../../context/initialState'
 import { getTranslatedBrandDealDisplay } from '../../utils/brandDealI18n'
-import { IMG_PROMPTS, resolveGenImageUrl } from '../../utils/imageGen'
+import { IMG_PROMPTS } from '../../utils/imageGen'
 import { formatCurrency } from '../../utils/numberUtils'
 import type {
   DealImageProps,
@@ -120,8 +120,8 @@ const DealImage = memo(({ alignment, name }: DealImageProps) => (
       prompt={getAlignmentMetadata(alignment).imagePrompt}
       alt={name}
       aspectRatio='1:1'
-      className='w-full h-full border-none grayscale hover:grayscale-0 transition-all duration-300'
       variant='inline'
+      className='w-full h-full object-cover object-center grayscale hover:grayscale-0 transition-all duration-300 !border-0 !shadow-none'
     />
   </div>
 ))
