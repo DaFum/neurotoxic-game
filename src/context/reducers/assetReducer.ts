@@ -84,7 +84,7 @@ export const handlePurchaseChassis = (
   }
 
   let nextMoney = state.player.money
-  const nextLiabilities = [...(state.liabilities || [])]
+  const nextLiabilities = { ...(state.liabilities || {}) }
 
   if (mode === 'cash') {
     nextMoney -= configTier.price
@@ -114,7 +114,7 @@ export const handlePurchaseChassis = (
       termDaysRemaining: profile.termDays,
       defaultCounter: 0
     }
-    nextLiabilities.push(liability)
+    nextLiabilities[liability.id] = liability
   }
 
   const nextState = {
@@ -412,8 +412,7 @@ export const handleSellChassis = (
   // ⚡ BOLT OPTIMIZATION: Replaced chained .filter().reduce() with a single-pass loop to eliminate intermediate array allocations on hot paths.
   let rawTotalPrincipalRemaining = 0
   if (state.liabilities) {
-    for (let i = 0; i < state.liabilities.length; i++) {
-      const l = state.liabilities[i]
+    for (const l of Object.values(state.liabilities)) {
       if (l && l.assetId === assetId) {
         rawTotalPrincipalRemaining += Math.max(
           0,
@@ -439,9 +438,10 @@ export const handleSellChassis = (
   const nextState: GameState = {
     ...state,
     assets: state.assets.filter(a => a && a.id !== assetId),
-    liabilities: (state.liabilities || []).filter(
-      l => l && l.assetId !== assetId
-    ),
+    liabilities: Object.values(state.liabilities || {}).reduce((acc, l) => {
+      if (l && l.assetId !== assetId) acc[l.id] = l
+      return acc
+    }, {} as Record<string, Liability>),
     player: {
       ...state.player,
       money: state.player.money + net
@@ -531,11 +531,8 @@ export const handleRefinanceLiability = (
     return state
   }
 
-  const targetLiability = state.liabilities.find(
-    liability =>
-      liability.id === payload.liabilityId && liability.source === 'loan'
-  )
-  if (!targetLiability) return state
+  const targetLiability = state.liabilities[payload.liabilityId]
+  if (!targetLiability || targetLiability.source !== 'loan') return state
   if (finiteNumberOr(targetLiability.defaultCounter, 0) > 0) return state
 
   const principal = Math.max(
@@ -545,21 +542,18 @@ export const handleRefinanceLiability = (
   const fee = calculateRefinanceFee(principal)
   if (state.player.money < fee) return state
 
-  const liabilities = state.liabilities.map(liability => {
-    if (liability.id !== payload.liabilityId) return liability
-
-    return {
-      ...liability,
-      interestRate: profile.interestRate,
-      dailyPayment: computeAmortization(
-        principal,
-        profile.interestRate,
-        profile.termDays
-      ),
-      termDaysRemaining: profile.termDays,
-      defaultCounter: 0
-    }
-  })
+  const liabilities = { ...state.liabilities }
+  liabilities[payload.liabilityId] = {
+    ...targetLiability,
+    interestRate: profile.interestRate,
+    dailyPayment: computeAmortization(
+      principal,
+      profile.interestRate,
+      profile.termDays
+    ),
+    termDaysRemaining: profile.termDays,
+    defaultCounter: 0
+  }
 
   return {
     ...state,
@@ -605,9 +599,10 @@ export const handleAssetForeclosed = (
   return {
     ...state,
     assets: state.assets.filter(a => a.id !== payload.assetId),
-    liabilities: (state.liabilities || []).filter(
-      l => l.assetId !== payload.assetId
-    )
+    liabilities: Object.values(state.liabilities || {}).reduce((acc, l) => {
+      if (l.assetId !== payload.assetId) acc[l.id] = l
+      return acc
+    }, {} as Record<string, Liability>)
   }
 }
 

@@ -45,7 +45,6 @@ import {
   getTotalDailyObligations
 } from '../utils/assetSelectors'
 import { createTravelCompletedQuestEvent } from '../quests/producers/travelQuestEvents'
-import type { Liability } from '../types/assets'
 import type {
   BandState,
   GameMap,
@@ -177,7 +176,7 @@ export const useTravelLogic = ({
   const playerRef = useRef(player)
   const bandRef = useRef(band)
   const assetsRef = useRef(assets)
-  const liabilitiesRef = useRef<Liability[]>(liabilities)
+  const liabilitiesRef = useRef<GameState['liabilities']>(liabilities)
   const socialRef = useRef(social)
   const gameMapRef = useRef(gameMap)
   const reputationByRegionRef = useRef(reputationByRegion)

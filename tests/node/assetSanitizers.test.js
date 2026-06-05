@@ -41,23 +41,23 @@ describe('sanitizeAssets', () => {
 
   it('accepts a fully valid asset', () => {
     const out = sanitizeAssets([validAsset()])
-    assert.equal(out.length, 1)
+    assert.equal(Object.keys(out).length, 1)
     assert.equal(out[0].id, 'asset_1')
   })
 
   it('drops items with unknown kind', () => {
     const out = sanitizeAssets([validAsset({ kind: 'not_a_real_kind' })])
-    assert.equal(out.length, 0)
+    assert.equal(Object.keys(out).length, 0)
   })
 
   it('drops items with invalid chassisTier', () => {
     const out = sanitizeAssets([validAsset({ chassisTier: 99 })])
-    assert.equal(out.length, 0)
+    assert.equal(Object.keys(out).length, 0)
   })
 
   it('drops items with unknown acquisitionMode', () => {
     const out = sanitizeAssets([validAsset({ acquisitionMode: 'magic' })])
-    assert.equal(out.length, 0)
+    assert.equal(Object.keys(out).length, 0)
   })
 
   it('clamps condition to 0..100', () => {
@@ -89,7 +89,7 @@ describe('sanitizeAssets', () => {
       '{"__proto__":{"polluted":true},"id":"a","kind":"tourbus_chassis","chassisFlavor":"legit","chassisTier":1,"condition":50,"baseUpkeep":10,"baseDailyRevenue":0,"slots":[],"acquiredOnDay":1,"acquisitionMode":"cash","baseRiskEventChance":0.005}'
     )
     const out = sanitizeAssets([hostile])
-    assert.equal(out.length, 1)
+    assert.equal(Object.keys(out).length, 1)
     // Empty objects must NOT have an own "polluted" property. Reading
     // {}.polluted via the prototype chain would also return undefined
     // legitimately, masking pollution — Object.hasOwn is the convention.
@@ -101,7 +101,7 @@ describe('sanitizeAssets', () => {
       validAsset({ id: 'dup' }),
       validAsset({ id: 'dup' })
     ])
-    assert.equal(out.length, 1)
+    assert.equal(Object.keys(out).length, 1)
   })
 
   it('returns [] for non-array input', () => {
@@ -157,8 +157,8 @@ describe('sanitizeLiabilities', () => {
       ],
       assets
     )
-    assert.equal(out.length, 1)
-    assert.equal(out[0].id, 'l1')
+    assert.equal(Object.keys(out).length, 1)
+    assert.equal(out['l1'].id, 'l1')
   })
 
   it('drops liabilities with unknown source', () => {
@@ -177,7 +177,7 @@ describe('sanitizeLiabilities', () => {
       ],
       [{ id: 'a1' }]
     )
-    assert.equal(out.length, 0)
+    assert.equal(Object.keys(out).length, 0)
   })
 
   it('strips hostile keys and dedupes by id', () => {
@@ -206,7 +206,7 @@ describe('sanitizeLiabilities', () => {
       ],
       [{ id: 'a1' }]
     )
-    assert.equal(out.length, 1)
+    assert.equal(Object.keys(out).length, 1)
   })
 })
 
@@ -226,7 +226,7 @@ describe('sanitizeCrowdfundCampaigns', () => {
         plannedSuccessRoll: 0.4
       }
     ])
-    assert.equal(out.length, 1)
+    assert.equal(Object.keys(out).length, 1)
     assert.equal(out[0].resolvedOutcome, undefined)
   })
 
@@ -279,7 +279,7 @@ describe('sanitizeCrowdfundCampaigns', () => {
         plannedSuccessRoll: 0.4
       }
     ])
-    assert.equal(out.length, 0)
+    assert.equal(Object.keys(out).length, 0)
   })
 
   it('drops campaigns for sections that already have an asset', () => {
@@ -301,7 +301,7 @@ describe('sanitizeCrowdfundCampaigns', () => {
       [validAsset()]
     )
 
-    assert.equal(out.length, 0)
+    assert.equal(Object.keys(out).length, 0)
   })
 
   it('keeps only one campaign per asset section', () => {

@@ -267,7 +267,7 @@ const initialState: GameState = {
   pendingRiskEvent: null,
   completedMilestones: [],
   assets: [],
-  liabilities: [],
+  liabilities: {},
   crowdfundCampaigns: [],
   // Seeded RNG for deterministic asset ticks. Replaced by sanitizer on load
   // when missing; falls back to Date.now() & 0xFFFFFFFF on fresh start.
@@ -322,7 +322,7 @@ export const createInitialState = (
   pendingForeclosureNotices: [],
   pendingRiskEvent: null,
   assets: [],
-  liabilities: [],
+  liabilities: {},
   crowdfundCampaigns: [],
   rngSeed: Date.now() >>> 0
 })

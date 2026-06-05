@@ -8,7 +8,7 @@ const { mockSellChassis, mockState } = vi.hoisted(() => ({
   mockSellChassis: vi.fn(),
   mockState: {
     player: { day: 10 },
-    liabilities: [] as Array<{
+    liabilities: {} as Record<string, {
       assetId: string
       principalRemaining: number
     }>
@@ -79,20 +79,23 @@ describe('SellConfirmModal', () => {
   it('blocks the sale when sanitized liability debt exceeds gross sale value', () => {
     const asset = makeAsset()
     const grossSaleValue = CHASSIS_CONFIG.tourbus_chassis.legit[1].price
-    mockState.liabilities = [
-      {
+    mockState.liabilities = {
+      'l1': {
+        id: 'l1',
         assetId: asset.id,
         principalRemaining: grossSaleValue + 1
       },
-      {
+      'l2': {
+        id: 'l2',
         assetId: asset.id,
         principalRemaining: Number.NaN
       },
-      {
+      'l3': {
+        id: 'l3',
         assetId: asset.id,
         principalRemaining: -10000
       }
-    ]
+    }
 
     render(<SellConfirmModal asset={asset} isOpen onClose={vi.fn()} />)
 

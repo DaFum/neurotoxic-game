@@ -163,8 +163,8 @@ describe('Asset golden path — loan acquisition survives the cycle', () => {
       state
     )
     state = gameReducer(state, action)
-    assert.equal(state.liabilities.length, 1)
-    const originalPrincipal = state.liabilities[0].principalRemaining
+    assert.equal(Object.keys(state.liabilities).length, 1)
+    const originalPrincipal = Object.values(state.liabilities)[0].principalRemaining
     assert.ok(originalPrincipal > 0)
 
     // Cash should NOT have moved — only liability was created.
@@ -174,7 +174,7 @@ describe('Asset golden path — loan acquisition survives the cycle', () => {
     state = gameReducer(state, advanceDay(state))
     assert.ok(state.player.money < 10000, 'liability tick withdrew money')
     assert.ok(
-      state.liabilities[0].principalRemaining < originalPrincipal,
+      Object.values(state.liabilities)[0].principalRemaining < originalPrincipal,
       'principal decreased after payment'
     )
   })

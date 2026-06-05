@@ -134,15 +134,15 @@ export const processAssetTick = (state: GameState): GameState => {
 export const processLiabilityTick = (
   state: GameState
 ): { state: GameState; foreclosedKinds: AssetKind[] } => {
-  if (!state.liabilities || state.liabilities.length === 0) {
+  if (!state.liabilities || Object.keys(state.liabilities).length === 0) {
     return { state, foreclosedKinds: [] }
   }
   let currentMoney = state.player.money
   let nextFame = state.player.fame
-  const nextLiabilities: Liability[] = []
+  const nextLiabilities: Record<string, Liability> = {}
   const foreclosedAssetIds = new Set<string>()
 
-  for (const liability of state.liabilities) {
+  for (const liability of Object.values(state.liabilities)) {
     if (currentMoney >= liability.dailyPayment) {
       currentMoney -= liability.dailyPayment
       const principalRemaining = Math.max(
@@ -151,12 +151,12 @@ export const processLiabilityTick = (
       )
       const termDaysRemaining = liability.termDaysRemaining - 1
       if (termDaysRemaining <= 0 || principalRemaining <= 0) continue
-      nextLiabilities.push({
+      nextLiabilities[liability.id] = {
         ...liability,
         principalRemaining,
         termDaysRemaining,
         defaultCounter: 0
-      })
+      }
     } else {
       const defaultCounter = liability.defaultCounter + 1
       if (defaultCounter >= 7) {
@@ -169,7 +169,7 @@ export const processLiabilityTick = (
           nextFame = Math.max(0, nextFame - FORECLOSURE_FAME_PENALTY)
         }
       } else {
-        nextLiabilities.push({ ...liability, defaultCounter })
+        nextLiabilities[liability.id] = { ...liability, defaultCounter }
       }
     }
   }
@@ -177,9 +177,13 @@ export const processLiabilityTick = (
   const nextAssets = (state.assets || []).filter(
     a => !foreclosedAssetIds.has(a.id)
   )
-  const finalLiabilities = nextLiabilities.filter(
-    l => !foreclosedAssetIds.has(l.assetId)
-  )
+  for (const id of Object.keys(nextLiabilities)) {
+    const l = nextLiabilities[id]
+    if (l && foreclosedAssetIds.has(l.assetId)) {
+      delete nextLiabilities[id]
+    }
+  }
+  const finalLiabilities = nextLiabilities
   const foreclosedKinds: AssetKind[] = []
   for (const asset of state.assets || []) {
     if (

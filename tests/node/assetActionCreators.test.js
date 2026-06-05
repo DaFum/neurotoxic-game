@@ -81,7 +81,7 @@ const makeState = (overrides = {}) => ({
   social: { ...overrides.social },
   activeStoryFlags: overrides.activeStoryFlags ?? [],
   assets: overrides.assets ?? [],
-  liabilities: overrides.liabilities ?? [],
+  liabilities: overrides.liabilities ?? {},
   crowdfundCampaigns: overrides.crowdfundCampaigns ?? []
 })
 
@@ -636,8 +636,8 @@ describe('startCrowdfund / sellChassis / repairChassis / removeModule', () => {
       'asset_1',
       makeState({
         assets: [makeAsset()],
-        liabilities: [
-          {
+        liabilities: {
+          'loan_1': {
             id: 'loan_1',
             source: 'loan',
             assetId: 'asset_1',
@@ -647,7 +647,7 @@ describe('startCrowdfund / sellChassis / repairChassis / removeModule', () => {
             termDaysRemaining: 40,
             defaultCounter: 0
           }
-        ]
+        }
       })
     )
 
@@ -675,8 +675,8 @@ describe('startCrowdfund / sellChassis / repairChassis / removeModule', () => {
       'loan_1',
       'longTerm',
       makeState({
-        liabilities: [
-          {
+        liabilities: {
+          'loan_1': {
             id: 'loan_1',
             source: 'loan',
             assetId: 'asset_1',
@@ -686,7 +686,7 @@ describe('startCrowdfund / sellChassis / repairChassis / removeModule', () => {
             termDaysRemaining: 40,
             defaultCounter: 0
           }
-        ]
+        }
       })
     )
 
@@ -703,8 +703,8 @@ describe('startCrowdfund / sellChassis / repairChassis / removeModule', () => {
       'loan_1',
       'longTerm',
       makeState({
-        liabilities: [
-          {
+        liabilities: {
+          'loan_1': {
             id: 'loan_1',
             source: 'loan',
             assetId: 'asset_1',
@@ -714,7 +714,7 @@ describe('startCrowdfund / sellChassis / repairChassis / removeModule', () => {
             termDaysRemaining: 40,
             defaultCounter: 2
           }
-        ]
+        }
       })
     )
 
@@ -728,8 +728,8 @@ describe('startCrowdfund / sellChassis / repairChassis / removeModule', () => {
       'coop',
       makeState({
         social: { scenePresence: 0 },
-        liabilities: [
-          {
+        liabilities: {
+          'loan_1': {
             id: 'loan_1',
             source: 'loan',
             assetId: 'asset_1',
@@ -739,7 +739,7 @@ describe('startCrowdfund / sellChassis / repairChassis / removeModule', () => {
             termDaysRemaining: 40,
             defaultCounter: 0
           }
-        ]
+        }
       })
     )
 

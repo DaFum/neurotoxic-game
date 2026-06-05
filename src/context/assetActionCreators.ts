@@ -374,7 +374,7 @@ export const sellChassis = (
 
     if (grossSale !== null) {
       let totalPrincipalRemaining = 0
-      for (const liability of state.liabilities ?? []) {
+      for (const liability of Object.values(state.liabilities ?? {})) {
         if (liability.assetId !== assetId) continue
         totalPrincipalRemaining += Math.max(
           0,
@@ -442,7 +442,7 @@ export const refinanceLiability = (
     payload: { reason }
   })
 
-  const liability = state.liabilities.find(l => l.id === liabilityId)
+  const liability = state.liabilities[liabilityId]
   if (!liability || liability.source !== 'loan') {
     return fail('UNKNOWN_LIABILITY')
   }

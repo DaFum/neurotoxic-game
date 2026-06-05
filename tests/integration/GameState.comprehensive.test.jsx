@@ -668,7 +668,7 @@ describe('GameState Context - Save/Load', () => {
           <div data-testid='player-money'>{gameState.player.money}</div>
           <div data-testid='asset-count'>{gameState.assets.length}</div>
           <div data-testid='liability-count'>
-            {gameState.liabilities.length}
+            {Object.keys(gameState.liabilities || {}).length}
           </div>
           <div data-testid='crowdfund-count'>
             {gameState.crowdfundCampaigns.length}

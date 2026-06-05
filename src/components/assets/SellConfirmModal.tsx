@@ -26,7 +26,7 @@ export const SellConfirmModal = ({ asset, isOpen, onClose }: Props) => {
   const { sellChassis } = useGameActions()
   const day = useGameSelector(s => s.player.day)
   const liabilityDebt = useGameSelector(s =>
-    (s.liabilities ?? []).reduce(
+    Object.values(s.liabilities ?? {}).reduce(
       (sum, liability) =>
         liability.assetId === asset.id
           ? sum + Math.max(0, finiteNumberOr(liability.principalRemaining, 0))

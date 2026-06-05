@@ -143,7 +143,7 @@ describe('useTravelLogic', () => {
       },
       band: { members: [{}, {}, {}], harmony: 50 },
       assets: [createObligationAsset()],
-      liabilities: [createLiability()]
+      liabilities: { 'l1': createLiability({ id: 'l1' }) }
     })
 
     act(() => {
@@ -222,7 +222,7 @@ describe('useTravelLogic', () => {
       band: { members: [{}, {}] },
       social: {},
       assets: [createObligationAsset()],
-      liabilities: [createLiability({ dailyPayment: 17 })]
+      liabilities: { 'l1': createLiability({ id: 'l1', dailyPayment: 17 }) }
     })
 
     assert.equal(
@@ -282,7 +282,7 @@ describe('useTravelLogic', () => {
     const { result, props, targetNode } = setupTravelScenario(useTravelLogic, {
       player: { ...defaults.player, money: 150 },
       band: { members: [{}, {}, {}], harmony: 50 },
-      liabilities: [createLiability({ dailyPayment: 25 })]
+      liabilities: { 'l1': createLiability({ id: 'l1', dailyPayment: 25 }) }
     })
 
     act(() => {

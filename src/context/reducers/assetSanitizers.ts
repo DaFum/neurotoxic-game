@@ -316,15 +316,15 @@ export const sanitizeAssets = (raw: unknown): LongTermAsset[] => {
 export const sanitizeLiabilities = (
   raw: unknown,
   assets: ReadonlyArray<{ id: string }>
-): Liability[] => {
-  if (!Array.isArray(raw)) return []
+): Record<string, Liability> => {
+  if (typeof raw !== 'object' || raw === null) return {}
+  const items = Array.isArray(raw) ? raw : Object.values(raw)
   const assetIds = new Set(assets.map(a => a.id))
-  const out: Liability[] = []
-  const seenIds = new Set<string>()
-  for (const item of raw) {
+  const out: Record<string, Liability> = Object.create(null)
+  for (const item of items) {
     if (!isLooseRecord(item)) continue
     const clean = stripHostileKeys(item)
-    if (typeof clean.id !== 'string' || seenIds.has(clean.id)) continue
+    if (typeof clean.id !== 'string') continue
     if (!VALID_SOURCES.has(clean.source as string)) continue
     if (typeof clean.assetId !== 'string' || !assetIds.has(clean.assetId))
       continue
@@ -345,8 +345,7 @@ export const sanitizeLiabilities = (
         0
       )
     }
-    out.push(result)
-    seenIds.add(clean.id)
+    out[result.id] = result
   }
   return out
 }

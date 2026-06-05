@@ -66,7 +66,7 @@ const mockState = {
   player: { money: 1000, day: 10, fame: 100 },
   band: { fame: 100 },
   assets: [],
-  liabilities: [],
+  liabilities: {},
   crowdfundCampaigns: []
 }
 
@@ -412,11 +412,11 @@ test('handleSellChassis - pays off all liabilities for the sold asset', () => {
         baseRiskEventChance: configTier.baseRiskEventChance
       }
     ],
-    liabilities: [
-      { id: 'loan_1', assetId: 'a1', principalRemaining: 300 },
-      { id: 'loan_2', assetId: 'a1', principalRemaining: 400 },
-      { id: 'loan_other', assetId: 'other_asset', principalRemaining: 250 }
-    ]
+    liabilities: {
+      'loan_1': { id: 'loan_1', assetId: 'a1', principalRemaining: 300 },
+      'loan_2': { id: 'loan_2', assetId: 'a1', principalRemaining: 400 },
+      'loan_other': { id: 'loan_other', assetId: 'other_asset', principalRemaining: 250 }
+    }
   }
 
   const next = handleSellChassis(startState, { assetId: 'a1' })
@@ -426,7 +426,7 @@ test('handleSellChassis - pays off all liabilities for the sold asset', () => {
     mockState.player.money + configTier.price - 700
   )
   assert.deepStrictEqual(
-    next.liabilities.map(liability => liability.id),
+    Object.values(next.liabilities).map(liability => liability.id),
     ['loan_other']
   )
 })
@@ -450,13 +450,13 @@ test('handleSellChassis - rejects sale when liability exceeds gross sale value',
         baseRiskEventChance: configTier.baseRiskEventChance
       }
     ],
-    liabilities: [
-      {
+    liabilities: {
+      'loan_1': {
         id: 'loan_1',
         assetId: 'a1',
         principalRemaining: configTier.price + 1
       }
-    ]
+    }
   }
 
   const next = handleSellChassis(startState, { assetId: 'a1' })
@@ -483,15 +483,15 @@ test('handleSellChassis - ignores non-finite liability principal when computing 
         baseRiskEventChance: configTier.baseRiskEventChance
       }
     ],
-    liabilities: [
-      { id: 'loan_1', assetId: 'a1', principalRemaining: 300 },
-      { id: 'loan_nan', assetId: 'a1', principalRemaining: Number.NaN },
-      {
+    liabilities: {
+      'loan_1': { id: 'loan_1', assetId: 'a1', principalRemaining: 300 },
+      'loan_nan': { id: 'loan_nan', assetId: 'a1', principalRemaining: Number.NaN },
+      'loan_inf': {
         id: 'loan_inf',
         assetId: 'a1',
         principalRemaining: Number.POSITIVE_INFINITY
       }
-    ]
+    }
   }
 
   const next = handleSellChassis(startState, { assetId: 'a1' })
@@ -511,8 +511,8 @@ test('handleRefinanceLiability - re-amortizes loan and charges fee', () => {
   const startState = {
     ...mockState,
     player: { ...mockState.player, money: 1000 },
-    liabilities: [
-      {
+    liabilities: {
+      'loan_1': {
         id: 'loan_1',
         source: 'loan',
         assetId: 'asset_1',
@@ -522,7 +522,7 @@ test('handleRefinanceLiability - re-amortizes loan and charges fee', () => {
         termDaysRemaining: 40,
         defaultCounter: 0
       }
-    ]
+    }
   }
 
   const next = handleRefinanceLiability(startState, {
@@ -532,18 +532,18 @@ test('handleRefinanceLiability - re-amortizes loan and charges fee', () => {
   })
 
   assert.strictEqual(next.player.money, 980)
-  assert.strictEqual(next.liabilities[0].interestRate, 0.04)
-  assert.strictEqual(next.liabilities[0].termDaysRemaining, 180)
-  assert.strictEqual(next.liabilities[0].defaultCounter, 0)
-  assert.ok(next.liabilities[0].dailyPayment < 20)
+  assert.strictEqual(Object.values(next.liabilities)[0].interestRate, 0.04)
+  assert.strictEqual(Object.values(next.liabilities)[0].termDaysRemaining, 180)
+  assert.strictEqual(Object.values(next.liabilities)[0].defaultCounter, 0)
+  assert.ok(Object.values(next.liabilities)[0].dailyPayment < 20)
 })
 
 test('handleRefinanceLiability - rejects loans already in default countdown', () => {
   const startState = {
     ...mockState,
     player: { ...mockState.player, money: 1000 },
-    liabilities: [
-      {
+    liabilities: {
+      'loan_1': {
         id: 'loan_1',
         source: 'loan',
         assetId: 'asset_1',
@@ -553,7 +553,7 @@ test('handleRefinanceLiability - rejects loans already in default countdown', ()
         termDaysRemaining: 40,
         defaultCounter: 3
       }
-    ]
+    }
   }
 
   const next = handleRefinanceLiability(startState, {
@@ -569,8 +569,8 @@ test('handleRefinanceLiability - derives fee from principal instead of trusting 
   const startState = {
     ...mockState,
     player: { ...mockState.player, money: 1000 },
-    liabilities: [
-      {
+    liabilities: {
+      'loan_1': {
         id: 'loan_1',
         source: 'loan',
         assetId: 'asset_1',
@@ -580,7 +580,7 @@ test('handleRefinanceLiability - derives fee from principal instead of trusting 
         termDaysRemaining: 40,
         defaultCounter: 0
       }
-    ]
+    }
   }
 
   const next = handleRefinanceLiability(startState, {
@@ -597,8 +597,8 @@ test('handleRefinanceLiability - rejects ineligible loan profile payloads', () =
     ...mockState,
     player: { ...mockState.player, money: 1000, fame: 0 },
     social: { scenePresence: 0 },
-    liabilities: [
-      {
+    liabilities: {
+      'loan_1': {
         id: 'loan_1',
         source: 'loan',
         assetId: 'asset_1',
@@ -608,7 +608,7 @@ test('handleRefinanceLiability - rejects ineligible loan profile payloads', () =
         termDaysRemaining: 40,
         defaultCounter: 0
       }
-    ]
+    }
   }
 
   const next = handleRefinanceLiability(startState, {

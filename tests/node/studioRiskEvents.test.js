@@ -37,7 +37,7 @@ function makeStateWithStudio(moduleSlots, assetOptions = {}) {
     player: { money: 1000, fame: 50, day: 1 },
     band: { members: [] },
     social: {},
-    liabilities: [],
+    liabilities: {},
     crowdfundCampaigns: [],
     activeStoryFlags: []
   }

@@ -47,7 +47,7 @@ function makeStateWithBandhaus(slots, assetOptions = {}) {
     player: { money: 1000, fame: 50, day: 1 },
     band: { members: [] },
     social: {},
-    liabilities: [],
+    liabilities: {},
     crowdfundCampaigns: [],
     activeStoryFlags: []
   }
@@ -79,7 +79,7 @@ describe('Bandhaus integration tests', () => {
       player: { money: 10000, fame: 100, day: 1 },
       band: { members: [] },
       social: {},
-      liabilities: [],
+      liabilities: {},
       crowdfundCampaigns: [],
       activeStoryFlags: []
     }
