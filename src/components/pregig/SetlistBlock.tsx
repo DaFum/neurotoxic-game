@@ -141,14 +141,17 @@ export const SetlistBlock = ({
     [selectedSongs]
   )
 
-  let densityTotal = 0
-  let densityPeak = 0
-  for (const bar of densityBars) {
-    densityTotal += bar.count
-    if (bar.count > densityPeak) {
-      densityPeak = bar.count
+  const { densityTotal, densityPeak } = useMemo(() => {
+    let total = 0
+    let peak = 0
+    for (const bar of densityBars) {
+      total += bar.count
+      if (bar.count > peak) {
+        peak = bar.count
+      }
     }
-  }
+    return { densityTotal: total, densityPeak: peak }
+  }, [densityBars])
 
   return (
     <motion.div
