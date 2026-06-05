@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { Modal } from '../../ui/shared/Modal'
 import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 import { getLoanProfileImagePrompt } from '../../utils/imageGen'
-import { LOAN_PROFILES, type LoanProfileId } from '../../utils/loanProfiles'
+import { LOAN_PROFILES_ARRAY, type LoanProfileId } from '../../utils/loanProfiles'
 
 interface Props {
   isOpen: boolean
@@ -27,7 +27,7 @@ export const LoanProfileChoiceGrid = ({
   const { t } = useTranslation(['assets'])
   return (
     <div className='grid grid-cols-1 gap-3 font-mono text-sm sm:grid-cols-2'>
-      {Object.values(LOAN_PROFILES).map(profile => {
+      {LOAN_PROFILES_ARRAY.map(profile => {
         const isActive = value === profile.id
         return (
           <button

@@ -32,8 +32,11 @@ export const ASSET_SECTION_TABS = [
 export const ASSET_SECTION_TABS_MAP: Readonly<
   Record<AssetKind, AssetSectionTab>
 > = Object.freeze(
-  ASSET_SECTION_TABS.reduce((acc, tab) => {
-    acc[tab.key] = tab
-    return acc
-  }, {} as Record<AssetKind, AssetSectionTab>)
+  ASSET_SECTION_TABS.reduce(
+    (acc, tab) => {
+      acc[tab.key] = tab
+      return acc
+    },
+    {} as Record<AssetKind, AssetSectionTab>
+  )
 )
