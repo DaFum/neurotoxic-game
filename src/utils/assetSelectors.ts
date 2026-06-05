@@ -594,15 +594,16 @@ const assetSlotsCache = new WeakMap<readonly AssetSlot[], ReadonlyMap<string, As
 export const selectAssetSlotsMap = (
   asset: LongTermAsset
 ): ReadonlyMap<string, AssetSlot> => {
-  let map = assetSlotsCache.get(asset.slots)
-  if (!map) {
-    map = new Map<string, AssetSlot>()
+  let cached = assetSlotsCache.get(asset.slots)
+  if (!cached) {
+    const map = new Map<string, AssetSlot>()
     for (const slot of asset.slots) {
       map.set(slot.id, slot)
     }
-    assetSlotsCache.set(asset.slots, map)
+    cached = map
+    assetSlotsCache.set(asset.slots, cached)
   }
-  return map
+  return cached
 }
 
 /**
