@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { MerchWorkshopSection } from '../../src/components/assets/sections/MerchWorkshopSection'
 import { SECTION_VIEWS } from '../../src/components/assets/sectionRegistry'
-import type { Liability, LongTermAsset, SlotType } from '../../src/types/assets'
+import type { LongTermAsset, SlotType } from '../../src/types/assets'
 
 const mockState = vi.hoisted(() => ({
   assets: [] as LongTermAsset[],
