@@ -12,35 +12,55 @@ import type { RhythmGameRefState } from '../types/rhythmGame'
 
 /**
  * Manages Pixi.js stage lifecycle and rendering updates.
+ *
+ * @typeParam TState - Rhythm game ref state consumed by stage managers.
  */
 class PixiStageController<
   TState extends RhythmGameRefState = RhythmGameRefState
 > extends BaseStageController<TState> {
   // Getters and Setters for backward compatibility with existing tests
+  /**
+   * Backwards-compatible alias for the active toxic filter color matrix.
+   */
   get colorMatrix() {
     return this.toxicFilterManager?.colorMatrix ?? null
   }
 
+  /**
+   * Replaces the active toxic filter color matrix when filters are initialized.
+   */
   set colorMatrix(value) {
     if (this.toxicFilterManager) {
       this.toxicFilterManager.colorMatrix = value
     }
   }
 
+  /**
+   * Backwards-compatible alias for the active toxic filter chain.
+   */
   get toxicFilters() {
     return this.toxicFilterManager?.toxicFilters ?? null
   }
 
+  /**
+   * Replaces the active toxic filter chain when filters are initialized.
+   */
   set toxicFilters(value) {
     if (this.toxicFilterManager) {
       this.toxicFilterManager.toxicFilters = value
     }
   }
 
+  /**
+   * Reports whether the toxic filter effect is currently active.
+   */
   get isToxicActive() {
     return this.toxicFilterManager?.isToxicActive ?? false
   }
 
+  /**
+   * Toggles the active toxic filter state when filters are initialized.
+   */
   set isToxicActive(value) {
     if (this.toxicFilterManager) {
       this.toxicFilterManager.isToxicActive = value
@@ -81,7 +101,6 @@ class PixiStageController<
 
   /**
    * Initializes stage container and toxic filters.
-   * @internal
    */
   _initFilters() {
     this.stageContainer = this.container
@@ -91,7 +110,6 @@ class PixiStageController<
   /**
    * Initializes managers and starts asset loading.
    * @returns Array of asset loading promises.
-   * @internal
    */
   _initManagersAndStartLoading() {
     const app = this.app
@@ -137,7 +155,6 @@ class PixiStageController<
 
   /**
    * Finalizes manager initialization after assets are loaded.
-   * @internal
    */
   _finalizeInit() {
     if (this.isDisposed) return
@@ -213,7 +230,6 @@ class PixiStageController<
   /**
    * Checks if the controller is ready to update.
    * @returns True if ready to update.
-   * @internal
    */
   _canUpdate() {
     return !!(
@@ -257,6 +273,8 @@ class PixiStageController<
 
 /**
  * Creates a rhythm-game Pixi stage controller for the shared React stage host.
+ *
+ * @typeParam TState - Rhythm game ref state consumed by the controller.
  * @param params - Container, state ref, and update callback used by the stage lifecycle.
  * @returns Controller instance owned by the caller until disposed.
  */

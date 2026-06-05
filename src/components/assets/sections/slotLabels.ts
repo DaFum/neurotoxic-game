@@ -6,7 +6,7 @@ import type { SlotType } from '../../../types/assets'
  * @param t - Translation callback.
  * @param slotType - Slot type being rendered.
  * @param installedModuleId - Installed module id, if any.
- * @returns Computed result.
+ * @returns Accessible slot label, including the installed module name when present.
  */
 export const getSlotButtonAriaLabel = (
   t: TFunction,

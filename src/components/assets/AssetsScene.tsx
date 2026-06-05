@@ -15,16 +15,10 @@ import './assetsHub.css'
 /**
  * Hub scene for the long-term asset system.
  *
- * Routes between four section tabs (Tourbus, Studio, Bandhaus, Workshop)
- * via the SECTION_VIEWS registry. Each section sets the active accent CSS
- * variable through `--section-accent` so child components (modals, panels)
- * pick up the section-specific brutalist border colour automatically.
- *
- * Section views are registered lazily by section plans 2-5. When a tab's
- * view isn't yet registered, the hub renders a neutral placeholder so the
- * foundation phase remains playable.
+ * @remarks
+ * Routes section tabs through the `SECTION_VIEWS` registry and exposes the
+ * active section accent via `--section-accent` for nested panels and modals.
  */
-
 export const AssetsScene = () => {
   const { t } = useTranslation(['assets'])
   const pendingRiskEvent = useGameSelector(state => state.pendingRiskEvent)

@@ -158,7 +158,6 @@
   "campaign.daysRemaining": "{{count}} Tage",
   "campaign.daysRemaining_one": "{{count}} Tag",
   "campaign.daysRemaining_other": "{{count}} Tage",
-  "common.dailySuffix": "/T",
   "liability.paymentDue": "Fällig: {{amount}}",
   "liability.defaultWarning": "Kredit im Zahlungsausfall: noch {{daysLeft}} Tage bis Pfändung",
   "liability.foreclosureNotice": "Pfändungsbescheid ausgestellt.",

@@ -119,6 +119,8 @@ export interface UseAudioControlOptions {
 
 /**
  * Audio-control hook result with current state and command handlers.
+ *
+ * @typeParam TState - Snapshot shape returned by the audio adapter.
  */
 export interface UseAudioControlResult<TState> {
   audioState: TState

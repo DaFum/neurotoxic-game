@@ -445,7 +445,6 @@ export interface LockReason {
 export const getLockReasons = (
   module: AssetModule,
   state: GameState,
-  /** When provided, also evaluates module.unlock.minChassisTier against this asset's tier. */
   asset?: LongTermAsset
 ): LockReason[] => {
   const reasons: LockReason[] = []
@@ -580,8 +579,6 @@ export const getTotalDebt = (state: GameState): number => {
 }
 
 const EMPTY_LIABILITIES: Readonly<Record<string, Liability>> = {}
-let lastLiabilitiesForMap: Readonly<Record<string, Liability>> | null = null
-let liabilitiesMapCache: Map<string, Liability> | null = null
 
 const EMPTY_ASSETS: readonly LongTermAsset[] = []
 let lastAssetsForMap: readonly LongTermAsset[] | null = null
@@ -633,25 +630,4 @@ export const selectAssetsMap = (
     assetsMapCache = map
   }
   return assetsMapCache
-}
-
-/**
- * Selects a memoized liability map keyed by asset id.
- *
- * @param state - Current game state containing liabilities.
- * @returns Map of asset id to liability, memoized by liabilities array identity.
- */
-export const selectLiabilitiesMap = (
-  state: GameState
-): Map<string, Liability> => {
-  const liabilities = state.liabilities || EMPTY_LIABILITIES
-  if (liabilities !== lastLiabilitiesForMap || !liabilitiesMapCache) {
-    lastLiabilitiesForMap = liabilities
-    const map = new Map<string, Liability>()
-    for (const l of Object.values(liabilities)) {
-      map.set(l.assetId, l)
-    }
-    liabilitiesMapCache = map
-  }
-  return liabilitiesMapCache
 }

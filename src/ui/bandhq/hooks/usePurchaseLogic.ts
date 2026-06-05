@@ -1,7 +1,6 @@
 /**
  * Purchase Logic Hook
  * Encapsulates all purchase-related logic for the BandHQ shop.
- * Module: `usePurchaseLogic`.
  */
 
 import { useCallback } from 'react'

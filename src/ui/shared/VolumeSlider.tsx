@@ -2,6 +2,7 @@ import { memo } from 'react'
 import type { ChangeEvent } from 'react'
 
 import { SegmentedSlider } from './SegmentedSlider'
+import { clampUnit } from '../../utils/numberUtils'
 
 /**
  * Displays one labeled volume slider with percentage output.
@@ -18,9 +19,7 @@ export const VolumeSlider = memo(function VolumeSlider({
     e: ChangeEvent<HTMLInputElement> | { target: { value: number } }
   ) => void
 }) {
-  const clampedValue = Number.isFinite(value)
-    ? Math.max(0, Math.min(1, value))
-    : 0
+  const clampedValue = Number.isFinite(value) ? clampUnit(value) : 0
   const max = 10
   const val = Math.round(clampedValue * max)
   const pct = Math.round(clampedValue * 100)

@@ -10,6 +10,12 @@
  * `src/utils/crypto.ts` instead.
  */
 
+/**
+ * Creates a deterministic Mulberry32 random-number generator.
+ *
+ * @param seed - Integer seed mixed into unsigned 32-bit state.
+ * @returns Function producing repeatable values in the `[0, 1)` range.
+ */
 export const mulberry32 = (seed: number): (() => number) => {
   let a = seed >>> 0
   return () => {

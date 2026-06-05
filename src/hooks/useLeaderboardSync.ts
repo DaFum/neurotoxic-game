@@ -128,6 +128,9 @@ const createSyncPayload = (
  * Sends the payload to the leaderboard API.
  * @param payload - The data to sync.
  * @returns true when synced; false when intentionally skipped.
+ *
+ * @throws {@link Error}
+ * Throws when the stats endpoint exists but returns a non-success response.
  */
 const syncLeaderboardStats = async (payload: LeaderboardStatsPayload) => {
   if (!getLeaderboardSyncEnabledFlag() || leaderboardStatsEndpointUnavailable) {

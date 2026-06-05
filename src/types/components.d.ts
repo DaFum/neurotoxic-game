@@ -117,6 +117,8 @@ export interface PauseOverlayProps {
 
 /**
  * Shared imperative logic contract for Pixi-backed minigames.
+ *
+ * @typeParam TState - Mutable ref state read by the minigame stage controller.
  */
 export interface MinigameLogicBase<TState = unknown> {
   gameStateRef: RefObject<TState>
@@ -127,6 +129,8 @@ export interface MinigameLogicBase<TState = unknown> {
 
 /**
  * Stage, logic, completion, and overlay content for the reusable Pixi minigame shell.
+ *
+ * @typeParam TState - Mutable ref state shared by logic and the Pixi controller.
  */
 export interface MinigameSceneFrameProps<TState = unknown> {
   controllerFactory: (options: StageControllerOptions<TState>) => PixiController
@@ -157,6 +161,8 @@ export interface AmpStageOptions {
 
 /**
  * Shared constructor options for Pixi stage controllers.
+ *
+ * @typeParam TState - Mutable state exposed to the stage controller.
  */
 export interface StageControllerOptions<TState = unknown> {
   containerRef: RefObject<HTMLElement | null>
@@ -166,6 +172,8 @@ export interface StageControllerOptions<TState = unknown> {
 
 /**
  * React host inputs for creating, updating, and disposing a Pixi stage controller.
+ *
+ * @typeParam TState - Mutable ref state consumed by the created controller.
  */
 export interface PixiStageProps<TState = unknown> {
   gameStateRef: RefObject<TState>

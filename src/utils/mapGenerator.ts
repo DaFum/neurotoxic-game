@@ -145,6 +145,9 @@ export const deriveCityTraits = (
  * Procedural generation for the game map using a Directed Acyclic Graph (DAG).
  */
 export class MapGenerator {
+  /**
+   * Mutable RNG seed advanced by `random()`.
+   */
   seed: number
   /**
    * Creates a new MapGenerator instance.
@@ -169,6 +172,9 @@ export class MapGenerator {
    * Structure: Array of Layers. Each Layer has Nodes. Each Node has connections to next layer.
    * @param depth - The number of layers in the map. Defaults to `10`.
    * @returns The generated map object containing layers, nodes, and connections.
+   *
+   * @throws {@link StateError}
+   * Throws when required venue pools are missing or empty.
    */
   generateMap(depth: number = 10): MapGeneratorState {
     const validDepth = Math.floor(depth)
@@ -282,7 +288,7 @@ export class MapGenerator {
   }
 
   /**
-   * Generates determinisic city traits for each unique city found on the generated map.
+   * Generates deterministic city traits for each unique city found on the generated map.
    */
   _populateCityStates(map: MapGeneratorState): void {
     for (const node of map.nodeList) {
@@ -605,7 +611,6 @@ export class MapGenerator {
    * @param cellY - The Y coordinate of the current cell.
    * @param j - The index of the current node to preserve directionality.
    * @returns Array of candidate node indices.
-   * @internal
    */
   _getNeighborCandidates(
     grid: Map<number, number[]>,

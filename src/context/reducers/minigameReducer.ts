@@ -579,12 +579,13 @@ export const handleCompleteRoadieMinigame = (
       score: Math.max(0, 100 - equipmentDamage)
     })
   )
-  if (typeof contrabandDelivered === 'number' && contrabandDelivered > 0) {
+  const deliveredContraband = finiteNumberOr(contrabandDelivered, 0)
+  if (deliveredContraband > 0) {
     nextState = QuestEvents.emit(
       nextState,
       createItemDeliveredQuestEvent({
         itemId: 'contraband',
-        amount: contrabandDelivered
+        amount: deliveredContraband
       })
     )
   }

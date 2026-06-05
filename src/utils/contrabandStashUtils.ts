@@ -11,7 +11,7 @@ type StashItemLike = {
  * Validates if a contraband stash item can be used based on the current selection.
  * @param item - The contraband item.
  * @param selectedMember - The ID of the currently selected band member.
- * @returns Validation result `isValid, errorKey, defaultMessage`
+ * @returns Valid result, or a localized error when a member-scoped item has no selected member.
  */
 export const validateStashItemSelection = (
   item: StashItemLike,
@@ -34,7 +34,7 @@ export const validateStashItemSelection = (
  * Generates the toast message payload for when a stash item is used.
  * @param item - The contraband item.
  * @param t - The translation function.
- * @returns Message payload `key, options`
+ * @returns Toast translation key and options for the used/applied item.
  */
 export const getStashItemUseMessage = (
   item: StashItemLike,

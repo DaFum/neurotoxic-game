@@ -79,6 +79,10 @@ export const createSocialLoyaltyChangedQuestEvent = ({
 
 /**
  * Creates a `social.controversyChanged` quest event for controversy deltas.
+ *
+ * @remarks
+ * Lowering controversy is treated as the successful direction for this quest
+ * event, so `success` is true when `amount <= 0`.
  */
 export const createSocialControversyChangedQuestEvent = ({
   amount,

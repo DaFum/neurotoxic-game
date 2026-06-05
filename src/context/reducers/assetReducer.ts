@@ -25,7 +25,7 @@ import {
   calculateChassisGrossSaleValue,
   hasActiveAssetAcquisition
 } from '../../utils/assetSelectors'
-import { finiteNumberOr } from '../../utils/gameStateUtils'
+import { clampPlayerMoney, finiteNumberOr } from '../../utils/gameStateUtils'
 import { QuestEvents } from '../../utils/questProgress'
 import {
   createAssetAcquiredQuestEvent,
@@ -83,7 +83,7 @@ export const handlePurchaseChassis = (
     baseRiskEventChance: configTier.baseRiskEventChance
   }
 
-  let nextMoney = state.player.money
+  let nextMoney = finiteNumberOr(state.player.money, 0)
   const nextLiabilities = { ...(state.liabilities || {}) }
 
   if (mode === 'cash') {
@@ -121,7 +121,7 @@ export const handlePurchaseChassis = (
     ...state,
     player: {
       ...state.player,
-      money: nextMoney
+      money: clampPlayerMoney(nextMoney)
     },
     assets: [...(state.assets || []), asset],
     liabilities: nextLiabilities
@@ -196,7 +196,9 @@ export const handleInstallModule = (
     assets: nextAssets,
     player: {
       ...state.player,
-      money: state.player.money - installCost
+      money: clampPlayerMoney(
+        finiteNumberOr(state.player.money, 0) - installCost
+      )
     }
   }
 
@@ -306,7 +308,7 @@ export const handleRemoveModule = (
     assets: nextAssets,
     player: {
       ...state.player,
-      money: state.player.money + refund
+      money: clampPlayerMoney(finiteNumberOr(state.player.money, 0) + refund)
     }
   }
   return nextState
@@ -386,7 +388,9 @@ export const handleUpgradeChassisTier = (
     assets: nextAssets,
     player: {
       ...state.player,
-      money: state.player.money - upgradeCost
+      money: clampPlayerMoney(
+        finiteNumberOr(state.player.money, 0) - upgradeCost
+      )
     }
   }
   return nextState
@@ -438,13 +442,16 @@ export const handleSellChassis = (
   const nextState: GameState = {
     ...state,
     assets: state.assets.filter(a => a && a.id !== assetId),
-    liabilities: Object.values(state.liabilities || {}).reduce((acc, l) => {
-      if (l && l.assetId !== assetId) acc[l.id] = l
-      return acc
-    }, {} as Record<string, Liability>),
+    liabilities: Object.values(state.liabilities || {}).reduce(
+      (acc, l) => {
+        if (l && l.assetId !== assetId) acc[l.id] = l
+        return acc
+      },
+      {} as Record<string, Liability>
+    ),
     player: {
       ...state.player,
-      money: state.player.money + net
+      money: clampPlayerMoney(finiteNumberOr(state.player.money, 0) + net)
     }
   }
   return nextState
@@ -482,7 +489,9 @@ export const handleRepairChassis = (
     assets: nextAssets,
     player: {
       ...state.player,
-      money: state.player.money - repairCost
+      money: clampPlayerMoney(
+        finiteNumberOr(state.player.money, 0) - repairCost
+      )
     }
   }
 
@@ -559,7 +568,7 @@ export const handleRefinanceLiability = (
     ...state,
     player: {
       ...state.player,
-      money: state.player.money - fee
+      money: clampPlayerMoney(finiteNumberOr(state.player.money, 0) - fee)
     },
     liabilities
   }
@@ -599,10 +608,13 @@ export const handleAssetForeclosed = (
   return {
     ...state,
     assets: state.assets.filter(a => a.id !== payload.assetId),
-    liabilities: Object.values(state.liabilities || {}).reduce((acc, l) => {
-      if (l.assetId !== payload.assetId) acc[l.id] = l
-      return acc
-    }, {} as Record<string, Liability>)
+    liabilities: Object.values(state.liabilities || {}).reduce(
+      (acc, l) => {
+        if (l.assetId !== payload.assetId) acc[l.id] = l
+        return acc
+      },
+      {} as Record<string, Liability>
+    )
   }
 }
 

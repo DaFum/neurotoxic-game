@@ -134,12 +134,8 @@ export const checkTraitUnlocks = (
 
     // Gear Nerd (Matze): Own 5+ Gear/Instrument items
     if (Matze && !hasTrait(Matze, 'gear_nerd')) {
-      /**
-       * Gear Nerd Unlock Logic
-       * The `context.gearCount` is pre-calculated by the caller (usePurchaseLogic)
-       * which filters inventory against HQ_ITEMS to ensure only GEAR/INSTRUMENT categories count.
-       * We rely on this count being at least 5.
-       */
+      // gearCount is pre-calculated by usePurchaseLogic after filtering
+      // inventory against HQ gear/instrument categories.
       const gearCount = typeof ctx.gearCount === 'number' ? ctx.gearCount : 0
       if ((gearCount || 0) >= 5) {
         newUnlocks.push({ memberId: Matze.name, traitId: 'gear_nerd' })

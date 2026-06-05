@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, cleanup } from '@testing-library/react'
-import { afterEach, describe, expect, test, vi } from 'vitest'
+import { afterEach, beforeAll, describe, expect, test, vi } from 'vitest'
 
 const mockToggleNeuroDecimator = vi.hoisted(() => vi.fn())
 const mockUpdateBand = vi.hoisted(() => vi.fn())
@@ -54,6 +54,12 @@ vi.mock('../../src/utils/locationI18n', () => ({
 }))
 
 describe('HUD', () => {
+  let HUD
+
+  beforeAll(async () => {
+    ;({ HUD } = await import('../../src/ui/HUD'))
+  })
+
   afterEach(() => {
     cleanup()
     mockToggleNeuroDecimator.mockClear()
@@ -64,8 +70,6 @@ describe('HUD', () => {
   })
 
   test('dispatches the dedicated decimator toggle action from the HUD button', async () => {
-    const { HUD } = await import('../../src/ui/HUD')
-
     render(<HUD />)
 
     fireEvent.click(screen.getByRole('button', { name: /toggle decimator/i }))
@@ -76,7 +80,6 @@ describe('HUD', () => {
   })
 
   test('renders the localized fallback for unnamed members', async () => {
-    const { HUD } = await import('../../src/ui/HUD')
     mockGameState.band.members = [
       { id: 'member-no-name', name: '', mood: 50, stamina: 60 }
     ]

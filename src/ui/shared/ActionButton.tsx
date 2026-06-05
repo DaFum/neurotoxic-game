@@ -1,6 +1,5 @@
 /**
  * Shared button primitive module for generic overlay and dialogue actions.
- * Module: `ActionButton`.
  */
 
 import {

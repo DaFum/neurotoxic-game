@@ -107,6 +107,28 @@ test('handlePurchaseChassis - happy path cash', () => {
   assert.strictEqual(next.assets[0].id, 'a1')
 })
 
+test('handlePurchaseChassis - clamps direct cash purchase money writes', () => {
+  const kind = 'tourbus_chassis'
+  const configTier = CHASSIS_CONFIG[kind].legit[1]
+  const slotIds = configTier.slots.map((_, i) => `slot_${i}`)
+  const startState = {
+    ...mockState,
+    player: { ...mockState.player, money: 0 }
+  }
+
+  const next = handlePurchaseChassis(startState, {
+    id: 'a1',
+    kind,
+    flavor: 'legit',
+    tier: 1,
+    mode: 'cash',
+    slotIds,
+    today: mockState.player.day
+  })
+
+  assert.strictEqual(next.player.money, 0)
+})
+
 test('handlePurchaseChassis - uses direct DIY config values', () => {
   const kind = 'tourbus_chassis'
   CHASSIS_CONFIG[kind].legit[1] = {
@@ -207,6 +229,27 @@ test('handleInstallModule - happy path', () => {
     moduleId: 'test_mod'
   })
   assert.strictEqual(next.assets[0].slots[0].installedModuleId, 'test_mod')
+})
+
+test('handleInstallModule - normalizes non-finite money on successful install', () => {
+  const startState = {
+    ...mockState,
+    player: { ...mockState.player, money: Number.POSITIVE_INFINITY },
+    assets: [
+      {
+        id: 'a1',
+        slots: [{ id: 's1', slotType: 'tb_roof', installedModuleId: null }]
+      }
+    ]
+  }
+
+  const next = handleInstallModule(startState, {
+    assetId: 'a1',
+    slotId: 's1',
+    moduleId: 'test_mod'
+  })
+
+  assert.strictEqual(next.player.money, 0)
 })
 
 test('handleInstallModule - rejects insufficient funds', () => {
@@ -316,6 +359,50 @@ test('handleUpgradeChassisTier - never credits money for inverted tier prices', 
   assert.strictEqual(next.player.money, 0)
 })
 
+test('handleUpgradeChassisTier - normalizes non-finite money on upgrade', () => {
+  CHASSIS_CONFIG.tourbus_chassis.legit[1] = {
+    price: 4000,
+    upkeep: 20,
+    revenue: 0,
+    slots: ['tb_roof'],
+    baseRiskEventChance: 0.005
+  }
+  CHASSIS_CONFIG.tourbus_chassis.legit[2] = {
+    price: 9000,
+    upkeep: 35,
+    revenue: 0,
+    slots: ['tb_roof', 'tb_front'],
+    baseRiskEventChance: 0.005
+  }
+  const startState = {
+    ...mockState,
+    player: { ...mockState.player, money: Number.POSITIVE_INFINITY },
+    assets: [
+      {
+        id: 'a1',
+        kind: 'tourbus_chassis',
+        chassisFlavor: 'legit',
+        chassisTier: 1,
+        condition: 100,
+        baseUpkeep: 20,
+        baseDailyRevenue: 0,
+        slots: [{ id: 's1', slotType: 'tb_roof', installedModuleId: null }],
+        acquiredOnDay: 1,
+        acquisitionMode: 'cash',
+        baseRiskEventChance: 0.005
+      }
+    ]
+  }
+
+  const next = handleUpgradeChassisTier(startState, {
+    assetId: 'a1',
+    targetTier: 2,
+    newSlotIds: [{ id: 's2', slotType: 'tb_front' }]
+  })
+
+  assert.strictEqual(next.player.money, 0)
+})
+
 test('handleRepairChassis - rejects insufficient funds', () => {
   const startState = {
     ...mockState,
@@ -331,6 +418,24 @@ test('handleRepairChassis - rejects insufficient funds', () => {
 
   const next = handleRepairChassis(startState, { assetId: 'a1' })
   assert.strictEqual(next, startState)
+})
+
+test('handleRepairChassis - normalizes non-finite money on repair', () => {
+  const startState = {
+    ...mockState,
+    player: { ...mockState.player, money: Number.POSITIVE_INFINITY },
+    assets: [
+      {
+        id: 'a1',
+        condition: 50,
+        slots: []
+      }
+    ]
+  }
+
+  const next = handleRepairChassis(startState, { assetId: 'a1' })
+
+  assert.strictEqual(next.player.money, 0)
 })
 
 test('handleRemoveModule - cleans up added child slots and refunds', () => {
@@ -352,6 +457,26 @@ test('handleRemoveModule - cleans up added child slots and refunds', () => {
   // test_mod is registered with cost: 100, removalRefundFraction: 0.5 →
   // refund of 50 added to the starting 1000.
   assert.strictEqual(next.player.money, mockState.player.money + 50)
+})
+
+test('handleRemoveModule - normalizes non-finite money on refund', () => {
+  const startState = {
+    ...mockState,
+    player: { ...mockState.player, money: Number.POSITIVE_INFINITY },
+    assets: [
+      {
+        id: 'a1',
+        slots: [
+          { id: 's1', installedModuleId: 'test_mod' },
+          { id: 's2', addedByModuleId: 'test_mod' }
+        ]
+      }
+    ]
+  }
+
+  const next = handleRemoveModule(startState, { assetId: 'a1', slotId: 's1' })
+
+  assert.strictEqual(next.player.money, 50)
 })
 
 test('handleSellChassis - uses direct DIY config price', () => {
@@ -393,6 +518,33 @@ test('handleSellChassis - uses direct DIY config price', () => {
   assert.strictEqual(next.player.money, mockState.player.money + 1234)
 })
 
+test('handleSellChassis - normalizes non-finite money on sale', () => {
+  const configTier = CHASSIS_CONFIG.tourbus_chassis.legit[1]
+  const startState = {
+    ...mockState,
+    player: { ...mockState.player, money: Number.POSITIVE_INFINITY },
+    assets: [
+      {
+        id: 'a1',
+        kind: 'tourbus_chassis',
+        chassisFlavor: 'legit',
+        chassisTier: 1,
+        condition: 100,
+        baseUpkeep: configTier.upkeep,
+        baseDailyRevenue: configTier.revenue,
+        slots: [],
+        acquiredOnDay: mockState.player.day,
+        acquisitionMode: 'cash',
+        baseRiskEventChance: configTier.baseRiskEventChance
+      }
+    ]
+  }
+
+  const next = handleSellChassis(startState, { assetId: 'a1' })
+
+  assert.strictEqual(next.player.money, configTier.price)
+})
+
 test('handleSellChassis - pays off all liabilities for the sold asset', () => {
   const configTier = CHASSIS_CONFIG.tourbus_chassis.legit[1]
   const startState = {
@@ -413,9 +565,13 @@ test('handleSellChassis - pays off all liabilities for the sold asset', () => {
       }
     ],
     liabilities: {
-      'loan_1': { id: 'loan_1', assetId: 'a1', principalRemaining: 300 },
-      'loan_2': { id: 'loan_2', assetId: 'a1', principalRemaining: 400 },
-      'loan_other': { id: 'loan_other', assetId: 'other_asset', principalRemaining: 250 }
+      loan_1: { id: 'loan_1', assetId: 'a1', principalRemaining: 300 },
+      loan_2: { id: 'loan_2', assetId: 'a1', principalRemaining: 400 },
+      loan_other: {
+        id: 'loan_other',
+        assetId: 'other_asset',
+        principalRemaining: 250
+      }
     }
   }
 
@@ -451,7 +607,7 @@ test('handleSellChassis - rejects sale when liability exceeds gross sale value',
       }
     ],
     liabilities: {
-      'loan_1': {
+      loan_1: {
         id: 'loan_1',
         assetId: 'a1',
         principalRemaining: configTier.price + 1
@@ -484,9 +640,13 @@ test('handleSellChassis - ignores non-finite liability principal when computing 
       }
     ],
     liabilities: {
-      'loan_1': { id: 'loan_1', assetId: 'a1', principalRemaining: 300 },
-      'loan_nan': { id: 'loan_nan', assetId: 'a1', principalRemaining: Number.NaN },
-      'loan_inf': {
+      loan_1: { id: 'loan_1', assetId: 'a1', principalRemaining: 300 },
+      loan_nan: {
+        id: 'loan_nan',
+        assetId: 'a1',
+        principalRemaining: Number.NaN
+      },
+      loan_inf: {
         id: 'loan_inf',
         assetId: 'a1',
         principalRemaining: Number.POSITIVE_INFINITY
@@ -512,7 +672,7 @@ test('handleRefinanceLiability - re-amortizes loan and charges fee', () => {
     ...mockState,
     player: { ...mockState.player, money: 1000 },
     liabilities: {
-      'loan_1': {
+      loan_1: {
         id: 'loan_1',
         source: 'loan',
         assetId: 'asset_1',
@@ -538,12 +698,39 @@ test('handleRefinanceLiability - re-amortizes loan and charges fee', () => {
   assert.ok(Object.values(next.liabilities)[0].dailyPayment < 20)
 })
 
+test('handleRefinanceLiability - normalizes non-finite money on refinance', () => {
+  const startState = {
+    ...mockState,
+    player: { ...mockState.player, money: Number.POSITIVE_INFINITY },
+    liabilities: {
+      loan_1: {
+        id: 'loan_1',
+        source: 'loan',
+        assetId: 'asset_1',
+        principalRemaining: 1000,
+        interestRate: 0.08,
+        dailyPayment: 20,
+        termDaysRemaining: 40,
+        defaultCounter: 0
+      }
+    }
+  }
+
+  const next = handleRefinanceLiability(startState, {
+    liabilityId: 'loan_1',
+    loanProfileId: 'longTerm',
+    fee: 20
+  })
+
+  assert.strictEqual(next.player.money, 0)
+})
+
 test('handleRefinanceLiability - rejects loans already in default countdown', () => {
   const startState = {
     ...mockState,
     player: { ...mockState.player, money: 1000 },
     liabilities: {
-      'loan_1': {
+      loan_1: {
         id: 'loan_1',
         source: 'loan',
         assetId: 'asset_1',
@@ -570,7 +757,7 @@ test('handleRefinanceLiability - derives fee from principal instead of trusting 
     ...mockState,
     player: { ...mockState.player, money: 1000 },
     liabilities: {
-      'loan_1': {
+      loan_1: {
         id: 'loan_1',
         source: 'loan',
         assetId: 'asset_1',
@@ -598,7 +785,7 @@ test('handleRefinanceLiability - rejects ineligible loan profile payloads', () =
     player: { ...mockState.player, money: 1000, fame: 0 },
     social: { scenePresence: 0 },
     liabilities: {
-      'loan_1': {
+      loan_1: {
         id: 'loan_1',
         source: 'loan',
         assetId: 'asset_1',

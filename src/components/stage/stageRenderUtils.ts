@@ -88,6 +88,7 @@ export const getPixiColorFromToken = (
 /**
  * Wraps a promise with a timeout to prevent indefinite hanging.
  * Errors and timeouts are swallowed, logging a warning/error and returning null.
+ * @typeParam T - Resolved value carried by the wrapped promise.
  * @param promise - The promise to wrap.
  * @param label - Label for logging.
  * @param timeoutMs - Timeout in milliseconds. Defaults to `10000`.
@@ -264,7 +265,6 @@ export const buildRhythmLayout = ({
  * Simple cache for textures loaded via the Image element fallback.
  * Separate from Assets.cache to avoid issues with TilingSprite
  * (Image-based textures lack proper source metadata for tiling).
- * Type: `Map<string, Texture>`.
  */
 const _imageTextureCache = new Map<string, Texture>()
 

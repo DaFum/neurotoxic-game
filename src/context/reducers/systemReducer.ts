@@ -1515,6 +1515,10 @@ const sanitizeQuestScopes = (
  * @param state - Current in-memory state used as a fallback baseline.
  * @param payload - Raw save payload from storage.
  * @returns Migrated and sanitized game state.
+ *
+ * @remarks
+ * Loading a save forces the scene back to `OVERWORLD` and upgrades the persisted
+ * version marker to the current schema version after migrations run.
  */
 export const handleLoadGame = (
   state: GameState,
@@ -1907,6 +1911,11 @@ const applyDailyBankruptcyCheck = (state: GameState): GameState => {
 
 /**
  * Advances the simulation by one day, including asset ticks, daily economy, social trends, deadlines, and bankruptcy checks.
+ *
+ * @remarks
+ * Use the typed `advanceDay(state)` action creator so `dayRngStream` and
+ * `nextRngSeed` are pre-generated. Dispatching a payloadless action skips
+ * deterministic asset risk-event resolution.
  *
  * @param state - Current game state before the day tick.
  * @param payload - Optional deterministic RNG stream and next seed supplied by the action creator.

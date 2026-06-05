@@ -61,6 +61,23 @@ export const isPlainRecord = (
   Object.getPrototypeOf(value) === Object.prototype
 
 /**
+ * Checks whether a value is a plain object or null-prototype record.
+ *
+ * @param value - Candidate value to inspect.
+ * @returns True for object literals and records created with
+ * `Object.create(null)`.
+ */
+export const isPlainOrNullPrototypeRecord = (
+  value: unknown
+): value is Record<string, unknown> => {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    return false
+  }
+  const prototype = Object.getPrototypeOf(value)
+  return prototype === Object.prototype || prototype === null
+}
+
+/**
  * Recursively copies traversable values while removing unsafe keys.
  *
  * Arrays and records are copied, circular references are replaced through
@@ -124,8 +141,9 @@ export const sanitizeTraversableValue = (
  * A secure wrapper around JSON.parse that uses a reviver to strip out
  * potentially dangerous keys associated with prototype pollution.
  *
- * @param text - The JSON string to parse
- * @returns The parsed object, safely filtered
+ * @typeParam T - Expected parsed value shape after caller-side validation.
+ * @param text - JSON string to parse.
+ * @returns Parsed value with forbidden keys dropped by the reviver.
  */
 export const safeJsonParse = <T = unknown>(text: string): T => {
   return JSON.parse(text, (key: string, value: unknown) => {

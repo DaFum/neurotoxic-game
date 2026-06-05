@@ -40,8 +40,8 @@ export const useRhythmGameInput = ({
 
   /**
    * Registers player input for a lane.
-   * @param laneIndex - Lane index.
-   * @param isDown - Whether the input is pressed.
+   * @param laneIndex - Lane receiving the input edge.
+   * @param isDown - True for press, false for release.
    */
   const registerInput = useCallback(
     (laneIndex: number, isDown: boolean) => {
