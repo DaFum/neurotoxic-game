@@ -6,6 +6,27 @@ import {
   isForbiddenKey
 } from '../utils/gameStateUtils'
 
+const isValidReputationKey = (key: unknown): key is string =>
+  typeof key === 'string' && key.length > 0 && !isForbiddenKey(key)
+
+const applyReputationMapDelta = (
+  state: GameState,
+  mapName: 'reputationByRegion' | 'reputationByVenue',
+  key: string | undefined,
+  amount: number
+): GameState => {
+  if (!key) return state
+  const reputationMap = state[mapName] ?? {}
+  const previous = finiteNumberOr(reputationMap[key], 0)
+  return {
+    ...state,
+    [mapName]: {
+      ...reputationMap,
+      [key]: clampReputation(previous + amount)
+    }
+  }
+}
+
 /**
  * Resolves the venue reputation key for current or explicit quest scopes.
  */
@@ -17,9 +38,7 @@ export const getVenueReputationKey = (
     scope === 'current' || scope === null || scope === undefined
       ? (state.currentGig?.id ?? state.player?.currentNodeId)
       : scope
-  return typeof key === 'string' && key.length > 0 && !isForbiddenKey(key)
-    ? key
-    : undefined
+  return isValidReputationKey(key) ? key : undefined
 }
 
 /**
@@ -33,9 +52,7 @@ export const getRegionReputationKey = (
     scope === 'current' || scope === null || scope === undefined
       ? state.player?.location
       : scope
-  return typeof key === 'string' && key.length > 0 && !isForbiddenKey(key)
-    ? key
-    : undefined
+  return isValidReputationKey(key) ? key : undefined
 }
 
 /**
@@ -46,15 +63,7 @@ export const applyReputationDelta = (
   key: string | undefined,
   amount: number
 ): GameState => {
-  if (!key) return state
-  const previous = finiteNumberOr(state.reputationByRegion?.[key], 0)
-  return {
-    ...state,
-    reputationByRegion: {
-      ...(state.reputationByRegion ?? {}),
-      [key]: clampReputation(previous + amount)
-    }
-  }
+  return applyReputationMapDelta(state, 'reputationByRegion', key, amount)
 }
 
 /**
@@ -65,15 +74,7 @@ export const applyVenueReputationDelta = (
   key: string | undefined,
   amount: number
 ): GameState => {
-  if (!key) return state
-  const previous = finiteNumberOr(state.reputationByVenue?.[key], 0)
-  return {
-    ...state,
-    reputationByVenue: {
-      ...(state.reputationByVenue ?? {}),
-      [key]: clampReputation(previous + amount)
-    }
-  }
+  return applyReputationMapDelta(state, 'reputationByVenue', key, amount)
 }
 
 /**
@@ -84,9 +85,7 @@ export const getBrandReputationKey = (effect: {
   alignment?: string
 }): string | undefined => {
   const key = effect.brandId ?? effect.alignment ?? 'global'
-  return typeof key === 'string' && key.length > 0 && !isForbiddenKey(key)
-    ? key
-    : undefined
+  return isValidReputationKey(key) ? key : undefined
 }
 
 /**

@@ -15,6 +15,13 @@ type BackdoorMinigameState = {
 
 /**
  * Owns the shared Pixi minigame shell, completion overlay, and manual continue path.
+ *
+ * @remarks
+ * In development, `Shift+P` force-completes the active minigame for testing.
+ * When the completion overlay opens, focus moves to the continue button and is
+ * restored when the overlay unmounts.
+ *
+ * @typeParam TState - Ref state consumed by the Pixi stage controller.
  * @param props - Stage controller factory, minigame logic, UI state, completion callback, completion copy, stats renderer, and child UI.
  */
 export const MinigameSceneFrame = <TState,>({

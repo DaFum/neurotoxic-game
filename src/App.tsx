@@ -70,11 +70,14 @@ const SceneLoadingFallback = () => {
 }
 
 /**
- * Wählt basierend auf dem aktuellen Spielzustand die passende Szene aus und rendert diese zusammen mit globalen Overlays und Hilfekomponenten (HUD, Toasts, ChatterOverlay, TutorialManager, EventModal) sowie Telemetrie-Komponenten.
+ * Renders global overlays around the scene selected by `SceneRouter`.
  *
- * Rendert außerdem Lade-, Fehler- und Entwicklungs-Tools (SceneLoadingFallback, ErrorBoundary, DebugLogViewer) und sorgt für Übergangsanimationen zwischen Szenen.
+ * @remarks
+ * `GameContent` owns HUD, toast, chatter, tutorial, event modal, error-boundary,
+ * loading, transition, debug, and telemetry surfaces. Scene selection itself is
+ * delegated to `SceneRouter`.
  *
- * @returns Das gerenderte React-Element, das die aktive Szene und alle globalen Overlays/Hilfekomponenten enthält.
+ * @returns The active scene wrapped with global overlays and diagnostics.
  */
 function GameContent() {
   const currentScene = useGameSelector(state => state.currentScene)

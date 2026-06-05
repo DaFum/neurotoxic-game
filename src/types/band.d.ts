@@ -4,10 +4,22 @@
 export interface BandMember extends UnknownRecord {
   id?: string
   name?: string
+  /**
+   * Persisted mood value; stale saves may still supply malformed numerics, so
+   * arithmetic callers must normalize with `finiteNumberOr` before clamping.
+   */
   mood: number
+  /**
+   * Persisted stamina value; stale saves may still supply malformed numerics, so
+   * arithmetic callers must normalize with `finiteNumberOr` before clamping.
+   */
   stamina: number
   staminaMax?: number
   traits: Record<string, unknown>
+  /**
+   * Relationship scores keyed by other member id. A member must never include
+   * its own id here.
+   */
   relationships: Record<string, number>
   baseStats?: Record<string, number>
   skill?: number

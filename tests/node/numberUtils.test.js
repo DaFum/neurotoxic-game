@@ -1,6 +1,10 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { formatNumber, formatCurrency } from '../../src/utils/numberUtils'
+import {
+  clampUnit,
+  formatNumber,
+  formatCurrency
+} from '../../src/utils/numberUtils'
 import { finiteNumberOr } from '../../src/utils/finiteNumber'
 
 // --- formatNumber ---
@@ -54,6 +58,12 @@ test('finiteNumberOr - returns finite numbers and falls back for non-finite valu
   assert.equal(finiteNumberOr(Number.POSITIVE_INFINITY, 99), 99)
   assert.equal(finiteNumberOr(Number.NEGATIVE_INFINITY, 99), 99)
   assert.equal(finiteNumberOr('12', 99), 99)
+})
+
+test('clampUnit - treats non-finite values as 0', () => {
+  assert.equal(clampUnit(Number.NaN), 0)
+  assert.equal(clampUnit(Number.POSITIVE_INFINITY), 0)
+  assert.equal(clampUnit(Number.NEGATIVE_INFINITY), 0)
 })
 
 // --- formatCurrency ---

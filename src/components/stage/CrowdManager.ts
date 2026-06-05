@@ -35,8 +35,8 @@ export class CrowdManager {
   textureManager: CrowdTextureManager
   colors: CrowdColors
   /**
-   * @param app - App.
-   * @param stageContainer - Stage container.
+   * @param app - Pixi application whose screen dimensions drive crowd layout.
+   * @param stageContainer - Parent container that receives the crowd layer.
    */
   constructor(app: Application, stageContainer: Container) {
     this.app = app
@@ -57,10 +57,16 @@ export class CrowdManager {
     return this.textureManager.textures
   }
 
+  /**
+   * Loads crowd textures through the owned texture manager.
+   */
   async loadAssets(): Promise<void> {
     await this.textureManager.loadAssets()
   }
 
+  /**
+   * Creates the crowd container and initial member display objects.
+   */
   init(): void {
     this.container = new Container()
     this.container.y = this.app.screen.height * CROWD_LAYOUT.containerYRatio
@@ -88,9 +94,11 @@ export class CrowdManager {
   }
 
   /**
-   * @param radius - Radius.
-   * @param fallbackColor - Fallback color.
-   * @internal
+   * Creates one crowd member, using a texture when available or graphics fallback otherwise.
+   *
+   * @param radius - Base display radius for the fallback shape and sprite scale.
+   * @param fallbackColor - Token-derived color used for the graphics fallback.
+   * @returns Sprite or Graphics object carrying crowd-member state.
    */
   _createCrowdMember(radius: number, fallbackColor: number): CrowdMember {
     const idleTexture = this.textureManager.textures.idle
@@ -110,6 +118,13 @@ export class CrowdManager {
     }
   }
 
+  /**
+   * Updates crowd motion, tint, and mosh texture state for the current combo.
+   *
+   * @param combo - Current rhythm combo.
+   * @param isToxicMode - Whether toxic mode is active.
+   * @param timeMs - Gig time in milliseconds.
+   */
   update(combo: number, isToxicMode: boolean, timeMs: number): void {
     const yOffset = calculateCrowdOffset({ combo, timeMs })
     const nextColor = isToxicMode
@@ -141,6 +156,9 @@ export class CrowdManager {
     }
   }
 
+  /**
+   * Destroys the crowd container and releases loaded textures.
+   */
   dispose(): void {
     if (this.container) {
       this.container.destroy({ children: true })

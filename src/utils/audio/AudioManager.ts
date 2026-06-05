@@ -2,6 +2,7 @@ import * as audioEngine from './audioEngine'
 import { secureRandom } from '../crypto'
 import { handleError } from '../errorHandler'
 import { logger } from '../logger'
+import { clampUnit } from '../numberUtils'
 import { getSafeStorageItem, setSafeStorageItem } from '../storage'
 import { audioState } from './state'
 
@@ -154,7 +155,7 @@ class AudioSystem {
 
     const clamp01 = (v: number, fallback: number): number => {
       if (!Number.isFinite(v)) return fallback
-      return Math.min(1, Math.max(0, v))
+      return clampUnit(v)
     }
 
     this.musicVolume = clamp01(
@@ -339,7 +340,7 @@ class AudioSystem {
 
   /**
    * Plays a sound effect by key.
-   * @param key - The SFX identifier (e.g., 'CLICK', 'ERROR').
+   * @param key - The SFX identifier, such as `'hit'` or `'miss'`.
    */
   playSFX(key: AudioSfxType): void {
     if (!this.prefsLoaded) return
@@ -359,7 +360,7 @@ class AudioSystem {
       logger.warn('AudioSystem', `Invalid music volume: ${String(vol)}`)
       return false
     }
-    const next = Math.min(1, Math.max(0, vol))
+    const next = clampUnit(vol)
     let operationSucceeded = true
     let appliedNow = false
     try {
@@ -394,7 +395,7 @@ class AudioSystem {
       logger.warn('AudioSystem', `Invalid SFX volume: ${String(vol)}`)
       return false
     }
-    const next = Math.min(1, Math.max(0, vol))
+    const next = clampUnit(vol)
     let operationSucceeded = true
     let appliedNow = false
     try {

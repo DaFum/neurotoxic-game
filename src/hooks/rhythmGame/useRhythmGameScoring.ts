@@ -78,7 +78,7 @@ export type RhythmGameScoringReturn = {
  * - `params.setters` - React state setters from useRhythmGameState.
  * - `params.performance` - Band performance stats (modifiers).
  * - `params.contextActions` - Game action callbacks (addToast, setLastGigStats, endGig).
- * @returns Scoring actions: handleHit, handleMiss, activateToxicMode.
+ * @returns Scoring actions plus the game-over timer ref owned by this hook.
  */
 export const useRhythmGameScoring = ({
   gameStateRef,
@@ -251,6 +251,10 @@ export const useRhythmGameScoring = ({
    * Attempts to register a hit for the active lane.
    * @param laneIndex - Index of the lane to check.
    * @returns True when the hit registers.
+   *
+   * @throws {@link Error}
+   * Throws when the lane array is missing an entry after the index was already
+   * validated.
    */
   const handleHit = useCallback(
     (laneIndex: number) => {

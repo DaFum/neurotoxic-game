@@ -10,7 +10,7 @@ import {
 import { StateError } from '../errorHandler'
 import { selectEvent } from './eventSelection'
 import { processEffect } from './eventEffectHandlers'
-import { asNumber, handleError, processEvent } from './helpers'
+import { asNumber, logEventError, processEvent } from './helpers'
 import type {
   EffectShape,
   EngineEvent,
@@ -95,7 +95,7 @@ export const isOnCooldown = isOnCooldownShared
  * Event engine facade for selecting, resolving, and applying game events.
  */
 export const eventEngine = {
-  handleError,
+  handleError: logEventError,
   processEvent,
 
   /**

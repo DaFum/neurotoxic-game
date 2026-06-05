@@ -9,15 +9,16 @@ import { INITIAL_SOCKET_ORDER } from '../kabelsalatConstants'
 import type { CableId } from '../kabelsalatConstants'
 import type { SocketId } from '../../../types/kabelsalat'
 import { getSafeRandom } from '../../../utils/crypto'
+import { shuffleInPlace } from '../../../utils/shuffleUtils'
 
 /**
  * Shuffles unconnected Kabelsalat sockets while preserving already connected positions and cleaning up scheduled updates.
- * @param isPoweredOn - Whether powered on is active.
- * @param isGameOver - Whether game over is active.
- * @param isShocked - Whether shocked is active.
+ * @param isPoweredOn - Suspends reshuffling after successful wiring.
+ * @param isGameOver - Suspends reshuffling after terminal overlay state.
+ * @param isShocked - Suspends reshuffling during shock recovery.
  * @param connections - Current cable-to-socket connection map.
  * @param isWinningRef - Ref that guards one-shot win transitions.
- * @param setSocketOrder - State setter for socket order.
+ * @param setSocketOrder - Setter receiving the next socket order.
  */
 export const useKabelsalatShuffle = (
   isPoweredOn: boolean,
@@ -48,15 +49,7 @@ export const useKabelsalatShuffle = (
     const interval = setInterval(() => {
       setSocketOrder(prevOrder => {
         const shuffled = [...unconnectedIds]
-
-        for (let i = shuffled.length - 1; i > 0; i--) {
-          const j = Math.floor(randomFn() * (i + 1))
-          const current = shuffled[i]
-          const swap = shuffled[j]
-          if (current === undefined || swap === undefined) continue
-          shuffled[i] = swap
-          shuffled[j] = current
-        }
+        shuffleInPlace(shuffled, randomFn)
 
         let shuffleIndex = 0
         const newOrder = [...prevOrder]

@@ -111,7 +111,7 @@ export const useGigInput = ({
   // Touch/Mouse Input Handlers for Columns
   /**
    * Handles touch/mouse down on a lane column.
-   * @param laneIndex - Lane index.
+   * @param laneIndex - Lane that should receive the pressed input state.
    */
   const handleTouchStart = useCallback(
     (laneIndex: number) => {
@@ -124,7 +124,7 @@ export const useGigInput = ({
 
   /**
    * Handles touch/mouse up on a lane column.
-   * @param laneIndex - Lane index.
+   * @param laneIndex - Lane that should receive the released input state.
    */
   const handleTouchEnd = useCallback(
     (laneIndex: number) => {

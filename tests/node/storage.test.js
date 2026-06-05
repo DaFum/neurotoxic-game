@@ -16,6 +16,18 @@ describe('storage operation wrappers', () => {
     assert.equal(result, 'fallback')
   })
 
+  test('safeStorageOperation treats explicit undefined as a fallback', () => {
+    const result = safeStorageOperation(
+      'testStorageUndefinedFallback',
+      () => {
+        throw new Error('storage unavailable')
+      },
+      undefined
+    )
+
+    assert.equal(result, undefined)
+  })
+
   test('safeStorageOperation throws a StorageError without fallback', () => {
     assert.throws(
       () =>

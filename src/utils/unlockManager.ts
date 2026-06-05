@@ -114,6 +114,9 @@ export const addUnlock = (unlockId: string): boolean => {
   return success
 }
 
+/**
+ * Test-only hooks for resetting unlock-manager module cache.
+ */
 export const __testInternals = {
   clearCache: () => {
     if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') {

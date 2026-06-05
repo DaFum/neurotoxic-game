@@ -20,10 +20,6 @@ const getOwn = <T,>(
 /**
  * Wraps one focusable/hoverable element with an accessible floating tooltip.
  * @param props - Trigger element, tooltip content, placement, and wrapper classes.
- * - `props.children` - The trigger element. Must be a valid React element.
- * - `props.content` - The tooltip content.
- * - `props.className` - Optional. Additional CSS classes for the container.
- * - `props.position` - Optional position for the tooltip to appear relative to the trigger.
  */
 export const Tooltip = ({
   children,

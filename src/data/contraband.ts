@@ -2,14 +2,13 @@
  * Contraband & Relics Data Catalog
  * Artifacts gathered from the void during tour.
  * They either grant immediate consumable effects or passive buffs.
- * Module: `contraband`.
  */
 
 import { logger } from '../utils/logger'
 import type { Rarity } from '../types'
 
 const CONTRABAND_DB = [
-  // ursprüngliche Items (bewahrt)
+  // Original items retained for save compatibility.
   {
     id: 'c_void_energy',
     imagePrompt: 'ITEM_VOID_ENERGY',
@@ -76,7 +75,7 @@ const CONTRABAND_DB = [
     stackable: false
   },
 
-  // viele neue Items
+  // Expanded contraband catalogue.
   {
     id: 'c_phase_metronome',
     imagePrompt: 'ITEM_PHASE_METRONOME',
@@ -470,6 +469,5 @@ for (const item of CONTRABAND_DB) {
 /**
  * Internal DB export for schema and integrity tests only.
  * DO NOT USE in application logic. Use CONTRABAND_BY_ID or CONTRABAND_BY_RARITY instead.
- * @internal
  */
 export { CONTRABAND_DB as _CONTRABAND_DB_FOR_TESTING }

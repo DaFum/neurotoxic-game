@@ -3,6 +3,7 @@ import { secureRandom } from '../crypto'
 import { finiteNumberOr } from '../gameStateUtils'
 import { MODULE_REGISTRY } from '../assetModuleRegistry'
 import { StateError } from '../errorHandler'
+import { shuffleInPlace } from '../shuffleUtils'
 import { resolveTemplateString } from './templateResolver'
 import { toStringArray, processEvent } from './helpers'
 import type { EngineEvent, EngineGameState, TriggerPoint } from './types'
@@ -167,18 +168,11 @@ const selectEvent = (
     'infightingDamper'
   )
 
-  // Fisher-Yates shuffle for unbiased randomness and better performance
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1))
-    const temp = shuffled[i]
-    const other = shuffled[j]
-    if (!temp || !other)
-      throw new StateError(
-        `Dense array invariant violated at shuffle index i=${i}, j=${j}`
-      )
-    shuffled[i] = other
-    shuffled[j] = temp
-  }
+  shuffleInPlace(shuffled, rng, (i, j) => {
+    throw new StateError(
+      `Dense array invariant violated at shuffle index i=${i}, j=${j}`
+    )
+  })
 
   for (const eligible of shuffled) {
     const { event, contextvars } = eligible

@@ -1,4 +1,5 @@
 import { audioState } from './state'
+import { clampUnit } from '../numberUtils'
 
 // ⚡ BOLT OPTIMIZATION: Direct handler dispatch avoids string comparisons and property lookups
 // on the critical audio scheduling path.
@@ -186,7 +187,7 @@ export function playDrumNote(
   if (!kit) return
 
   const velRaw = Number.isFinite(velocity) ? velocity : 0
-  const vel = Math.max(0, Math.min(1, velRaw))
+  const vel = clampUnit(velRaw)
 
   const map = DRUM_MAPPING[midiPitch] as DrumMap | undefined
   const handler = map ? DRUM_HANDLERS[map.handler] : null

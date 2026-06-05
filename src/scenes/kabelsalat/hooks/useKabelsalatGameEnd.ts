@@ -5,11 +5,11 @@ import { logger } from '../../../utils/logger'
 
 /**
  * Guards Kabelsalat end-of-game continuation so StrictMode replays do not double-transition.
- * @param isPoweredOn - Whether powered on is active.
- * @param isGameOver - Whether game over is active.
- * @param timeLeft - Time left.
- * @param voidSurgesPurged - Void surges purged.
- * @returns State, derived values, and callbacks for kabelsalat Game End.
+ * @param isPoweredOn - Successful completion flag.
+ * @param isGameOver - Whether the overlay is already in a terminal state.
+ * @param timeLeft - Remaining seconds reported on successful completion.
+ * @param voidSurgesPurged - Purge count included in completion stats.
+ * @returns `forceAdvance` callback used by auto-advance and manual fallback paths.
  */
 export const useKabelsalatGameEnd = (
   isPoweredOn: boolean,

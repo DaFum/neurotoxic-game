@@ -1,2 +1,2 @@
-// This file is deprecated. Imports should point to src/utils/economy/index.ts instead.
+// Back-compat barrel for legacy imports; new economy modules live under src/utils/economy/.
 export * from './economy'

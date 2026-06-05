@@ -20,7 +20,7 @@ export const toStringArray = (
 /**
  * Logs event condition and processing failures.
  */
-export const handleError = (err: unknown, eventId?: string) => {
+export const logEventError = (err: unknown, eventId?: string) => {
   logger.error(
     'EventEngine',
     `Condition check failed for event ${eventId || 'unknown'}`,
@@ -37,7 +37,7 @@ export const processEvent = (
 ) => {
   try {
     if (typeof event.condition !== 'function') {
-      handleError(
+      logEventError(
         new TypeError(
           `Invalid condition for event ${event.id}: expected function`
         ),
@@ -56,7 +56,7 @@ export const processEvent = (
       }
     }
   } catch (err) {
-    handleError(err, event.id)
+    logEventError(err, event.id)
   }
   return null
 }

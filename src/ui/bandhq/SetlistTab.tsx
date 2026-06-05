@@ -107,7 +107,6 @@ export interface SetlistTabProps {
  */
 export const SetlistTab = (props: SetlistTabProps) => {
   const { setlist, setSetlist, addToast } = props
-  // { setlist, setSetlist, addToast }) => {
   const { t } = useTranslation(['ui', 'venues'])
   const { setCurrentGig, changeScene } = useGameActions()
   const currentScene = useGameSelector(state => state.currentScene)

@@ -19,6 +19,11 @@ const isSocketId = (value: string): value is SocketId =>
 
 /**
  * Handles Kabelsalat cable/socket clicks, invalid-connection shock state, and one-shot win guards.
+ *
+ * @remarks
+ * Invalid socket or cable ids throw only in development builds; production logs
+ * the fault and ignores the click.
+ *
  * @param t - Translation callback used for localized labels and messages.
  * @param isPoweredOn - Whether powered on is active.
  * @param isGameOver - Whether game over is active.
@@ -31,6 +36,10 @@ const isSocketId = (value: string): value is SocketId =>
  * @param setIsShocked - State setter for is shocked.
  * @param setFaultReason - State setter for fault reason.
  * @returns Click handlers and a shock trigger for the Kabelsalat board.
+ *
+ * @throws {@link Error}
+ * Throws in development when a socket id or selected cable id is not part of the
+ * Kabelsalat definitions.
  */
 export const useKabelsalatInteractions = (
   t: TFunction,

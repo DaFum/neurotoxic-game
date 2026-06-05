@@ -1,7 +1,6 @@
 /**
  * Travel Logic Hook
  * Encapsulates all travel-related state and logic for the Overworld scene.
- * Module: `useTravelLogic`.
  */
 
 import { useState, useRef, useCallback, useEffect } from 'react'
@@ -88,7 +87,6 @@ type TravelLogicParams = {
 /**
  * Failsafe timeout duration in milliseconds
  * Travel animation duration (1500ms) + buffer (10ms)
- * Constant: `number`
  */
 const TRAVEL_ANIMATION_TIMEOUT_MS = 1510
 

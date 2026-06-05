@@ -31,9 +31,21 @@ export const isValidLogLevel = (level: number): boolean => {
  * Configurable logger that mirrors messages to the console and retained history.
  */
 export class Logger {
+  /**
+   * Newest-first retained log entries.
+   */
   logs: LogEntry[]
+  /**
+   * Maximum number of log entries retained in memory.
+   */
   maxLogs: number
+  /**
+   * Minimum numeric level mirrored to console and history.
+   */
   minLevel: number
+  /**
+   * Subscribers notified when log history changes.
+   */
   listeners: Array<(event: LogEvent) => void>
   constructor() {
     this.logs = []
@@ -106,8 +118,7 @@ export class Logger {
 
   /**
    * Emits log updates to subscribers.
-   * @param event - Event object `type, entry`.
-   * @internal
+   * @param event - Log-history mutation event.
    */
   _emit(event: LogEvent): void {
     this.listeners.forEach(cb => {
@@ -117,8 +128,7 @@ export class Logger {
 
   /**
    * Pushes a new log entry and trims history.
-   * @param entry - Log entry.
-   * @internal
+   * @param entry - Entry to add to retained history.
    */
   _push(entry: LogEntry): void {
     // Return a new array reference to support React useSyncExternalStore
@@ -131,9 +141,8 @@ export class Logger {
    * @param level - Log level.
    * @param channel - Source channel.
    * @param message - Message text.
-   * @param data - Associated data.
+   * @param data - Optional structured data attached to the entry.
    * @returns Formatted log object.
-   * @internal
    */
   _format(
     level: string,

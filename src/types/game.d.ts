@@ -104,6 +104,11 @@ export interface MinigameState {
 
 /**
  * Toast notification payload stored in game state.
+ *
+ * @remarks
+ * `message` is a pre-baked display string. `messageKey` plus `options` defers
+ * formatting through i18n; currency options should already be localized before
+ * dispatch when reducers/action creators bake toast text.
  */
 export interface ToastPayload {
   id: string
@@ -169,6 +174,13 @@ export type RawLoadedGame = UnknownRecord
 
 /**
  * Generic action envelope used by reducer action unions.
+ *
+ * @remarks
+ * When `TPayload` is `undefined`, the action has no `payload` key. Otherwise
+ * the payload key is required and carries the supplied shape.
+ *
+ * @typeParam TType - Concrete action type discriminant.
+ * @typeParam TPayload - Payload shape for actions that carry data.
  */
 export type Action<
   TType extends ActionType,

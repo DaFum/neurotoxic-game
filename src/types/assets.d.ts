@@ -20,8 +20,6 @@ export type ChassisTier = 1 | 2 | 3
  */
 export type AcquisitionMode = 'cash' | 'loan' | 'crowdfund'
 
-// Slot-Typen sind kategorie-spezifische String-Literals.
-// Ein Modul mit slotType X passt nur in Slots mit slotType X.
 /**
  * Module slot identifiers scoped by asset family; a module fits only matching slot types.
  */
@@ -54,7 +52,7 @@ export type SlotType =
   | 'bh_security'
   | 'bh_identity'
   | 'bh_secret'
-  // Merch-Werkstatt
+  // Merch workshop
   | 'mw_print'
   | 'mw_drying'
   | 'mw_cutting'
@@ -70,29 +68,32 @@ export type SlotType =
 export interface AssetSlot {
   id: string
   slotType: SlotType
-  position: { x: number; y: number } // 0..1, normalisiert über Background-Bild
+  /** Normalized position over the background image, in the `0..1` range. */
+  position: { x: number; y: number }
   installedModuleId: string | null
-  addedByModuleId?: string // bei dynamisch hinzugefügten Slots
+  /** Module id that dynamically added this slot. */
+  addedByModuleId?: string
 }
 
 /**
  * Optional stat, economy, and risk modifiers provided by modules.
  */
 export interface AssetBoni {
-  // Cashflow-Boni
+  // Cashflow bonuses
   baseDailyRevenueDelta?: number
   upkeepDelta?: number
-  // Multiplikative Boni (Default 1.0)
+  // Multiplicative bonuses default to 1.0
   fuelMultiplier?: number
   merchCostMultiplier?: number
   songCostMultiplier?: number
   trainingCostMultiplier?: number
-  // Additive Boni (Default 0)
+  // Additive bonuses default to 0
   staminaRegenBonusPerDay?: number
   travelStaminaRegen?: number
   merchCapacityBonus?: number
   songQualityBonus?: number
-  avgMerchSalePriceBonus?: number // multiplikativ als +X%
+  /** Multiplicative merch-sale-price bonus expressed as `+X%`. */
+  avgMerchSalePriceBonus?: number
   famePassivePerDay?: number
   bandMoodPerDay?: number
   tipBonusGigs?: number
@@ -103,27 +104,29 @@ export interface AssetBoni {
   enablesLimitedEditions?: boolean
   enablesBulkProduction?: boolean
   reducesTheftRiskTravel?: boolean
-  // Modulare Risiko-Modifikation
-  diyRiskMultiplier?: number // 1.0 Default, mit existierenden DIY-Risiken multipliziert
+  /** Modular risk multiplier; defaults to `1.0` and multiplies existing DIY risk. */
+  diyRiskMultiplier?: number
 }
 
 /**
  * Unlock requirements that gate module availability.
  */
 export interface ModuleUnlockReq {
-  // Alle Felder werden AND-kombiniert (alle erfüllt → unlocked)
+  // All fields are AND-combined; every provided requirement must pass.
   minFame?: number
   minMoney?: number
   minScenePresence?: number
   minChassisTier?: ChassisTier
-  requiredStoryFlags?: readonly string[] // ALLE Flags müssen gesetzt sein
+  /** Story flags that all must be active. */
+  requiredStoryFlags?: readonly string[]
   requiredMemberSkill?: {
-    memberId?: string // wenn fehlend: jedes Member mit Skill genügt
+    /** When omitted, any member with the required skill satisfies the gate. */
+    memberId?: string
     skill: string
     tier: number
   }
-  // String: genau dieses Modul muss auf irgendeinem Asset installiert sein.
-  // Array: OR-Set akzeptabler Modul-IDs — eines davon reicht.
+  // String: this exact module must be installed on any asset.
+  // Array: OR-set of acceptable module ids; any one installed module is enough.
   requiredOtherModuleInstalled?: string | readonly string[]
 }
 
@@ -131,22 +134,27 @@ export interface ModuleUnlockReq {
  * Long-term asset module catalogue entry.
  */
 export interface AssetModule {
-  id: string // stabile lower_snake-ID, z.B. 'tb_solar_panel'
+  /** Stable lower_snake id, for example `tb_solar_panel`. */
+  id: string
   ownerKind: AssetKind
   slotType: SlotType
   flavor: AssetFlavor
   cost: number
   installCost: number
-  removalRefundFraction: number // 0..1, beim Ausbau erstattet
+  /** Fraction of module cost refunded on removal, in the `0..1` range. */
+  removalRefundFraction: number
   boni: AssetBoni
   unlock: ModuleUnlockReq
-  exclusiveWithGroup?: string // gleicher Key auf zwei Modulen → gegenseitiger Ausschluss
+  /** Shared group key that makes matching modules mutually exclusive. */
+  exclusiveWithGroup?: string
   addsSlots?: ReadonlyArray<{ slotType: SlotType; count: number }>
-  // Constraint: ein Modul mit slotType=X UND addsSlots-Eintrag mit slotType=X
-  // wird vom Modul-Validator zur Build-Zeit abgelehnt (verhindert Selbst-Stacking)
-  maxPerAsset?: number // optionaler Hard-Cap, Default 1
+  // Constraint: a module whose own slotType also appears in addsSlots is rejected
+  // by the build-time validator to prevent self-stacking.
+  /** Optional per-asset hard cap; defaults to `1`. */
+  maxPerAsset?: number
   riskEventTypes?: readonly RiskEventType[]
-  imagePromptKey: string // Schlüssel in MODULE_PROMPTS (mehrere Module dürfen ihn teilen)
+  /** Key in `MODULE_PROMPTS`; multiple modules may share the same prompt key. */
+  imagePromptKey: string
 }
 
 /**
@@ -194,7 +202,8 @@ export interface CrowdfundCampaign {
   targetAmount: number
   fameStake: number
   daysRemaining: number
-  plannedSuccessRoll: number // 0..1, deterministisch beim START gezogen
+  /** Deterministic roll stamped at campaign start, in the `0..1` range. */
+  plannedSuccessRoll: number
   /**
    * Success threshold stamped at campaign creation, mirroring what the setup
    * modal showed the player. `processCrowdfundTick` resolves success when
@@ -214,9 +223,8 @@ export interface CrowdfundCampaign {
    * on success; ignored on failure.
    */
   materializedSlotIds: readonly string[]
-  // resolvedOutcome ist undefined solange daysRemaining > 0.
-  // processCrowdfundTick setzt den Wert bei daysRemaining === 0,
-  // wendet die Folgen an und entfernt den Eintrag im selben Tick.
+  // Undefined while daysRemaining > 0. processCrowdfundTick sets the value at
+  // daysRemaining === 0, applies the outcome, and removes the entry in the same tick.
   resolvedOutcome?: 'success' | 'fail'
 }
 

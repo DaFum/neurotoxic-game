@@ -1,7 +1,6 @@
 /**
  * Game Reducer Module
  * Handles all state mutations through a centralized reducer pattern.
- * Module: `gameReducer`.
  */
 
 import { ActionTypes } from './actionTypes'
@@ -253,6 +252,10 @@ const applyZeroConditionForeclosures = (state: GameState): GameState => {
  * @param state - Current game state.
  * @param action - Game action to apply.
  * @returns Next game state.
+ *
+ * @throws {@link Error}
+ * Throws through `assertNever` when an unknown action shape bypasses dispatch
+ * validation and reaches the reducer.
  */
 export const gameReducer = (
   state: GameState,

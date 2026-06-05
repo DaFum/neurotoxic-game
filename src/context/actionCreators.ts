@@ -3,7 +3,6 @@ import { RNG_BASE_BUFFER, RNG_ROLLS_PER_ASSET } from '../utils/assetConfig'
 /**
  * Action Creators Module
  * Factory functions for creating dispatch actions.
- * Module: `actionCreators`.
  */
 
 import { ActionTypes } from './actionTypes'
@@ -274,8 +273,8 @@ export const createUpdateSettingsAction = (
 }
 
 /**
- * Creates a map set action
- * @param map - Generated map object
+ * Replaces the persisted overworld map snapshot.
+ * @param map - Generated map object, or null while no map is loaded.
  */
 export const createSetMapAction = (
   map: GameMap | null
@@ -285,8 +284,8 @@ export const createSetMapAction = (
 })
 
 /**
- * Creates a gig set action
- * @param gig - Current gig data
+ * Replaces the current venue object.
+ * @param gig - Venue to make current, or null to clear active gig context.
  */
 export const createSetGigAction = (
   gig: Venue | null
@@ -470,7 +469,7 @@ export const createApplyEventDeltaAction = (
 })
 
 /**
- * Creates a pop pending event action
+ * Advances the pending-event queue by removing its head entry.
  */
 export const createPopPendingEventAction = (): Extract<
   GameAction,
@@ -480,8 +479,8 @@ export const createPopPendingEventAction = (): Extract<
 })
 
 /**
- * Creates a consume item action
- * @param itemType - Item type to consume
+ * Requests consumption of one inventory item by id.
+ * @param itemType - Inventory item id to consume.
  */
 export const createConsumeItemAction = (
   itemType: string
@@ -491,8 +490,8 @@ export const createConsumeItemAction = (
 })
 
 /**
- * Creates an add cooldown action
- * @param eventId - Event ID to add to cooldowns
+ * Adds an event id to the cooldown list.
+ * @param eventId - Event id to suppress until cooldown expiry.
  */
 export const createAddCooldownAction = (
   eventId: string
@@ -830,8 +829,8 @@ export const createAdvanceQuestAction = (
 }
 
 /**
- * Creates an action to add an unlock to the state.
- * @param unlockId - The ID of the unlock.
+ * Adds a newly earned unlock id to state.
+ * @param unlockId - Unlock id to persist.
  */
 export const createAddUnlockAction = (
   unlockId: string

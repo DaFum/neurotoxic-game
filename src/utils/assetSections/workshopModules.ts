@@ -1,6 +1,13 @@
 import type { AssetModule } from '../../types/assets'
 import { MODULE_REGISTRY, MODULE_PROMPTS } from '../assetRegistryStore'
 
+/**
+ * Merch-workshop module catalogue registered into `MODULE_REGISTRY` on import.
+ *
+ * @remarks
+ * Importing this file has the side effect of adding module definitions and
+ * image prompts for the merch-workshop asset section.
+ */
 const MODULES: readonly AssetModule[] = [
   {
     id: 'mw_4color_carousel',

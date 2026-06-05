@@ -16,6 +16,7 @@ type WithPlayer = { player: PlayerState }
  * Money and fame are clamped before merge; malformed or prototype-polluting
  * payloads leave the original state untouched.
  *
+ * @typeParam TState - State shape that carries the player slice.
  * @param state - State object containing the player slice to update.
  * @param payload - Player updates or functional updater from the action creator.
  * @returns Updated state with merged player values, or the original state when the payload is invalid.

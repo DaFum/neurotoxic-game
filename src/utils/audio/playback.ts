@@ -1,5 +1,6 @@
 import * as Tone from 'tone'
 import { logger } from '../logger'
+import { clampUnit } from '../numberUtils'
 import { audioState } from './state'
 import { ensureAudioContext } from './context'
 import { getRawAudioContext, getAudioContextTimeSec } from './context'
@@ -88,7 +89,7 @@ export function setSFXVolume(vol: number): boolean {
   // Convert 0-1 linear to decibels (approximate or use ramp)
   // Tone.Gain accepts linear values if units are default, but volume is typically db.
   // However, Tone.Gain.gain is linear amplitude.
-  audioState.sfxGain.gain.rampTo(Math.max(0, Math.min(1, vol)), 0.1)
+  audioState.sfxGain.gain.rampTo(clampUnit(vol), 0.1)
   return true
 }
 
@@ -99,7 +100,7 @@ export function setSFXVolume(vol: number): boolean {
  */
 export function setMusicVolume(vol: number): boolean {
   if (!audioState.musicGain) return false
-  const next = Math.max(0, Math.min(1, vol))
+  const next = clampUnit(vol)
   audioState.musicGain.gain.rampTo(next, 0.1)
   return true
 }
