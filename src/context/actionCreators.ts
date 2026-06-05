@@ -220,8 +220,8 @@ const sanitizeSocialUpdates = (
 ): Partial<SocialState> => {
   if (!updates || typeof updates !== 'object') return {}
   const out: Record<string, unknown> = {}
-  for (const key of Object.keys(updates)) {
-    if (isForbiddenKey(key)) continue
+  for (const key in updates) {
+    if (!Object.hasOwn(updates, key) || isForbiddenKey(key)) continue
     const value = (updates as Record<string, unknown>)[key]
     if (SOCIAL_NUMERIC_FIELDS.has(key)) {
       if (value === null) {
@@ -261,11 +261,10 @@ export const createUpdateSettingsAction = (
 ): Extract<GameAction, { type: typeof ActionTypes.UPDATE_SETTINGS }> => {
   const filtered: Record<string, unknown> = {}
   if (updates && typeof updates === 'object') {
-    for (const key of Object.keys(updates)) {
-      if (isForbiddenKey(key)) continue
-      if (!ALLOWED_SETTINGS_KEYS.has(key)) continue
-      if (!Object.hasOwn(updates, key)) continue
-      filtered[key] = updates[key]
+    for (const key of ALLOWED_SETTINGS_KEYS) {
+      if (Object.hasOwn(updates, key)) {
+        filtered[key] = updates[key]
+      }
     }
   }
   return {
