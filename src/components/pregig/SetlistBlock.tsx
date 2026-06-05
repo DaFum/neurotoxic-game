@@ -140,11 +140,18 @@ export const SetlistBlock = ({
     () => buildSetlistChartDensity(selectedSongs),
     [selectedSongs]
   )
-  const densityTotal = densityBars.reduce((sum, bar) => sum + bar.count, 0)
-  const densityPeak = densityBars.reduce(
-    (peak, bar) => Math.max(peak, bar.count),
-    0
-  )
+
+  const { densityTotal, densityPeak } = useMemo(() => {
+    let total = 0
+    let peak = 0
+    for (const bar of densityBars) {
+      total += bar.count
+      if (bar.count > peak) {
+        peak = bar.count
+      }
+    }
+    return { densityTotal: total, densityPeak: peak }
+  }, [densityBars])
 
   return (
     <motion.div

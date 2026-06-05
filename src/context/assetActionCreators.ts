@@ -37,7 +37,8 @@ import {
   getLockReasons,
   isModuleUnlocked,
   calculateChassisGrossSaleValue,
-  selectAssetsMap
+  selectAssetsMap,
+  selectAssetSlotsMap
 } from '../utils/assetSelectors'
 import { finiteNumberOr } from '../utils/gameStateUtils'
 import { getSafeUUID } from '../utils/crypto'
@@ -256,7 +257,7 @@ export const installModule = (
   if (!module) return fail('UNKNOWN_MODULE')
   const asset = selectAssetsMap(state).get(raw.assetId)
   if (!asset) return fail('UNKNOWN_ASSET')
-  const slot = asset.slots.find(s => s.id === raw.slotId)
+  const slot = selectAssetSlotsMap(asset).get(raw.slotId)
   if (!slot) return fail('UNKNOWN_SLOT')
   if (slot.installedModuleId !== null) return fail('SLOT_OCCUPIED')
   if (slot.slotType !== module.slotType) return fail('SLOT_TYPE_MISMATCH')
