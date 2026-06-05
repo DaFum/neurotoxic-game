@@ -144,6 +144,13 @@ export const SPENDING_PROFILE_MERCH_MULTIPLIER = {
  * Backwards-compatible derived map. Re-exported by economyEngine.ts so
  * existing imports of DEFAULT_MERCH_PRICES keep working unchanged.
  */
-export const DEFAULT_MERCH_PRICES: Record<string, number> = Object.fromEntries(
-  Object.values(MERCH_PROFILES).map(p => [p.key, p.defaultPrice])
-)
+export const DEFAULT_MERCH_PRICES: Record<string, number> = (() => {
+  const prices: Record<string, number> = {}
+  for (const key in MERCH_PROFILES) {
+    if (Object.hasOwn(MERCH_PROFILES, key)) {
+      const p = MERCH_PROFILES[key as keyof typeof MERCH_PROFILES]
+      prices[p.key] = p.defaultPrice
+    }
+  }
+  return prices
+})()
