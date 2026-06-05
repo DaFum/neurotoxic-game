@@ -571,10 +571,19 @@ export const getModulePoolForAsset = (
  * @returns Total outstanding debt principal.
  */
 export const getTotalDebt = (state: GameState): number => {
-  return Object.values(state.liabilities).reduce(
-    (sum, l) => sum + l.principalRemaining,
-    0
-  )
+  // ⚡ BOLT OPTIMIZATION: Replaced Object.values().reduce() with a single-pass for...in loop
+  // to prevent intermediate array allocations in selector computations.
+  let sum = 0
+  if (state.liabilities) {
+    for (const key in state.liabilities) {
+      if (!Object.hasOwn(state.liabilities, key)) continue
+      const l = state.liabilities[key]
+      if (l) {
+        sum += l.principalRemaining || 0
+      }
+    }
+  }
+  return sum
 }
 
 const EMPTY_ASSETS: readonly LongTermAsset[] = []

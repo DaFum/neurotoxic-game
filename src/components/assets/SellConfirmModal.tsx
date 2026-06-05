@@ -25,15 +25,21 @@ export const SellConfirmModal = ({ asset, isOpen, onClose }: Props) => {
   const { t, i18n } = useTranslation(['assets'])
   const { sellChassis } = useGameActions()
   const day = useGameSelector(s => s.player.day)
-  const liabilityDebt = useGameSelector(s =>
-    Object.values(s.liabilities ?? {}).reduce(
-      (sum, liability) =>
-        liability.assetId === asset.id
-          ? sum + Math.max(0, finiteNumberOr(liability.principalRemaining, 0))
-          : sum,
-      0
-    )
-  )
+  // ⚡ BOLT OPTIMIZATION: Replaced Object.values().reduce() with a single-pass for...in loop
+  // to prevent intermediate array allocations on every Redux state update.
+  const liabilityDebt = useGameSelector(s => {
+    let sum = 0
+    if (s.liabilities) {
+      for (const key in s.liabilities) {
+        if (!Object.hasOwn(s.liabilities, key)) continue
+        const liability = s.liabilities[key]
+        if (liability && liability.assetId === asset.id) {
+          sum += Math.max(0, finiteNumberOr(liability.principalRemaining, 0))
+        }
+      }
+    }
+    return sum
+  })
 
   const grossSale = calculateChassisGrossSaleValue(asset, day) ?? 0
   const net = grossSale - liabilityDebt

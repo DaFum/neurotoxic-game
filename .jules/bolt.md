@@ -174,3 +174,8 @@
 
 **Learning:** `Set.prototype.forEach` creates a callback allocation on every invocation. When this is used within high-frequency loops or state emission paths (e.g., `emitChange` in `AudioManager.ts`), it causes unnecessary GC pressure.
 **Action:** Replace `Set.prototype.forEach` with a `for...of` loop in hot paths. This iterates over the collection without allocating an anonymous function, significantly improving performance and reducing memory footprint.
+
+## 2024-06-05 - Avoid Object.values().reduce() for dictionary aggregations
+
+**Learning:** Using `Object.values(obj).reduce(...)` inside Redux reducers (e.g., `assetReducer.ts`), selectors (`assetSelectors.ts`), and React components computing derived state from Redux creates an intermediate array of all dictionary values. This allocates memory unnecessarily on every state change and degrades performance by forcing a second iteration pass over the data.
+**Action:** Replace `Object.values(obj).reduce(...)` with a single-pass `for...in` loop accompanied by an `Object.hasOwn()` guard when computing sums or accumulating dictionary entries.

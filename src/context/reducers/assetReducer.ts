@@ -446,16 +446,23 @@ export const handleSellChassis = (
 
   const net = gross - totalPrincipalRemaining
 
+  // ⚡ BOLT OPTIMIZATION: Replaced Object.values().reduce() with a single-pass for...in loop
+  // to prevent intermediate array allocations when updating liabilities.
+  const nextLiabilities: Record<string, Liability> = {}
+  if (state.liabilities) {
+    for (const key in state.liabilities) {
+      if (!Object.hasOwn(state.liabilities, key)) continue
+      const l = state.liabilities[key]
+      if (l && l.assetId !== assetId) {
+        nextLiabilities[l.id] = l
+      }
+    }
+  }
+
   const nextState: GameState = {
     ...state,
     assets: state.assets.filter(a => a && a.id !== assetId),
-    liabilities: Object.values(state.liabilities || {}).reduce(
-      (acc, l) => {
-        if (l && l.assetId !== assetId) acc[l.id] = l
-        return acc
-      },
-      {} as Record<string, Liability>
-    ),
+    liabilities: nextLiabilities,
     player: {
       ...state.player,
       money: clampPlayerMoney(finiteNumberOr(state.player.money, 0) + net)
@@ -612,16 +619,23 @@ export const handleAssetForeclosed = (
   state: GameState,
   payload: { assetId: string }
 ): GameState => {
+  // ⚡ BOLT OPTIMIZATION: Replaced Object.values().reduce() with a single-pass for...in loop
+  // to eliminate intermediate array allocations during state updates.
+  const nextLiabilities: Record<string, Liability> = {}
+  if (state.liabilities) {
+    for (const key in state.liabilities) {
+      if (!Object.hasOwn(state.liabilities, key)) continue
+      const l = state.liabilities[key]
+      if (l && l.assetId !== payload.assetId) {
+        nextLiabilities[l.id] = l
+      }
+    }
+  }
+
   return {
     ...state,
     assets: state.assets.filter(a => a.id !== payload.assetId),
-    liabilities: Object.values(state.liabilities || {}).reduce(
-      (acc, l) => {
-        if (l.assetId !== payload.assetId) acc[l.id] = l
-        return acc
-      },
-      {} as Record<string, Liability>
-    )
+    liabilities: nextLiabilities
   }
 }
 
