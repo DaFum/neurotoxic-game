@@ -18,7 +18,7 @@ import {
   clampMemberMood,
   clampMemberStamina,
   finiteNumberOr
-} from './gameStateUtils'
+} from './gameState'
 import { MODULE_REGISTRY } from './assetModuleRegistry'
 import { clampUnit } from './numberUtils'
 import {

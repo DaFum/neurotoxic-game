@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { useGameActions } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
 import { getSafeRandom } from '../../utils/crypto'
-import { clampAmpDial } from '../../utils/gameStateUtils'
+import { clampAmpDial } from '../../utils/gameState'
 import { clampUnit } from '../../utils/numberUtils'
 import type { AmpStageOptions } from '../../types/components'
 

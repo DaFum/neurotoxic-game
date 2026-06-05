@@ -6,7 +6,7 @@ import type {
 } from '../types'
 import { QUEST_REGISTRY, getQuestDefinition } from '../data/questRegistry'
 import { canAcceptQuest } from './questLifecycle'
-import { finiteNumberOr } from '../utils/gameStateUtils'
+import { finiteNumberOr } from '../utils/gameState'
 
 /**
  * Quest offer available for a trigger after condition and slot checks.

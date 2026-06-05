@@ -11,7 +11,7 @@ import {
   hasForbiddenKeys,
   finiteNumberOr,
   isFiniteNumber
-} from '../../utils/gameStateUtils'
+} from '../../utils/gameState'
 import { applyTraitUnlocks } from '../../utils/traitUtils'
 import { ActionTypes } from '../actionTypes'
 import { CONTRABAND_BY_ID } from '../../data/contraband'

@@ -1,5 +1,5 @@
 import { logger } from '../../utils/logger'
-import { applyEventDelta, isForbiddenKey } from '../../utils/gameStateUtils'
+import { applyEventDelta, isForbiddenKey } from '../../utils/gameState'
 import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks } from '../../utils/traitUtils'
 import { QuestEvents } from '../../utils/questProgress'

@@ -3,14 +3,14 @@ import { secureRandom } from './crypto'
 import { POST_OPTIONS } from '../data/postOptions'
 import { SOCIAL_PLATFORMS } from '../data/platforms'
 import { bandHasTrait } from './traitUtils'
-import { clampZealotry } from './gameStateUtils'
+import { clampZealotry } from './gameState'
 import { StateError } from './errorHandler'
 import { ALLOWED_TRENDS } from '../data/socialTrends'
 import {
   hasActiveSponsorship,
   clampPlayerMoney,
   clampBandHarmony
-} from './gameStateUtils'
+} from './gameState'
 import type { SocialEngineGameState, SocialPostOption } from '../types/social'
 import type { RandomFn } from '../types/callbacks'
 

@@ -1,4 +1,4 @@
-import { clamp0to100 } from '../../../utils/gameStateUtils'
+import { clamp0to100 } from '../../../utils/gameState'
 import { Overlays } from './Overlays.tsx'
 import { CableList } from './CableList.tsx'
 import { SocketList } from './SocketList.tsx'

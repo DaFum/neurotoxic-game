@@ -1,5 +1,5 @@
 import type { EventDelta } from '../../types'
-import { finiteNumberOr } from '../gameStateUtils'
+import { finiteNumberOr } from '../gameState'
 import { resolveTemplateString } from './templateResolver'
 import { asNumber } from './helpers'
 import type { EffectShape, EngineGameState, TemplateContext } from './types'

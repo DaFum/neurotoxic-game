@@ -6,7 +6,7 @@ import {
   clampMemberStamina,
   finiteNumberOr,
   isEmptyObject
-} from './gameStateUtils'
+} from './gameState'
 import type { BandState, MapNode, PlayerState, Venue } from '../types'
 import type { AssetModifiers } from '../types/assets'
 import type { TranslationCallback } from '../types/callbacks'

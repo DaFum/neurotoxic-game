@@ -4,7 +4,7 @@ import { BRAND_ALIGNMENTS } from '../context/initialState'
 import { generateBrandName } from './socialEngine'
 import { secureRandom } from './crypto'
 import { RIVAL_STAY_CHANCE } from '../context/gameConstants'
-import { isEmptyObject } from './gameStateUtils'
+import { isEmptyObject } from './gameState'
 
 import type { BrandAlignment } from '../types'
 

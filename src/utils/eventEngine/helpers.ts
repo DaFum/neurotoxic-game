@@ -1,4 +1,4 @@
-import { finiteNumberOr } from '../gameStateUtils'
+import { finiteNumberOr } from '../gameState'
 import { logger } from '../logger'
 import type { EngineEvent, EngineGameState } from './types'
 

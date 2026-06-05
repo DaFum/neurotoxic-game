@@ -26,7 +26,7 @@ import {
   clampPlayerFame,
   calculateFameLevel,
   isForbiddenKey
-} from '../../../utils/gameStateUtils'
+} from '../../../utils/gameState'
 import type {
   BandState,
   PlayerState,

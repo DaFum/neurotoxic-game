@@ -4,7 +4,7 @@ import type {
   ToastPayload,
   ActiveQuestState
 } from '../types'
-import { finiteNumberOr, isForbiddenKey } from '../utils/gameStateUtils'
+import { finiteNumberOr, isForbiddenKey } from '../utils/gameState'
 import { QUEST_PROVE_YOURSELF } from '../data/questsConstants'
 import { getQuestDefinition } from '../data/questRegistry'
 import { hasActiveQuest } from '../utils/questUtils'

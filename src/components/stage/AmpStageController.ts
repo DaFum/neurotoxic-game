@@ -2,7 +2,7 @@ import * as PIXI from 'pixi.js'
 import { getPixiColorFromToken } from './stageRenderUtils'
 import { BaseStageController } from './BaseStageController'
 import { getSafeRandom } from '../../utils/crypto'
-import { clamp0to100, clampAmpDial } from '../../utils/gameStateUtils'
+import { clamp0to100, clampAmpDial } from '../../utils/gameState'
 import type {
   StageControllerOptions,
   AmpStageOptions

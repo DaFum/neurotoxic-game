@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { applyEventDelta } from '../../src/utils/gameStateUtils'
+import { applyEventDelta } from '../../src/utils/gameState'
 
 const buildState = () => ({
   player: {

@@ -8,7 +8,7 @@ import {
   clampMemberStamina,
   clampUnitRandom,
   finiteNumberOr
-} from '../../utils/gameStateUtils'
+} from '../../utils/gameState'
 import {
   calculateTravelExpenses,
   calculateTravelMinigameResult,

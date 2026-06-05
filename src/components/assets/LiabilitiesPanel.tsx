@@ -7,7 +7,7 @@ import {
   calculateRefinanceFee,
   type LoanProfileId
 } from '../../utils/loanProfiles'
-import { finiteNumberOr } from '../../utils/gameStateUtils'
+import { finiteNumberOr } from '../../utils/gameState'
 
 /**
  * Lightweight read-only list of every outstanding liability with the most
@@ -22,7 +22,9 @@ export const LiabilitiesPanel = () => {
   const [refinanceTargetId, setRefinanceTargetId] = useState<string | null>(
     null
   )
-  const refinanceTarget = refinanceTargetId ? liabilitiesMap[refinanceTargetId] : undefined
+  const refinanceTarget = refinanceTargetId
+    ? liabilitiesMap[refinanceTargetId]
+    : undefined
 
   const handleRefinance = (profile: LoanProfileId) => {
     if (!refinanceTarget) return

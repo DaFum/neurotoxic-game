@@ -1,4 +1,4 @@
-import { clamp0to100 } from './gameStateUtils'
+import { clamp0to100 } from './gameState'
 import type { RhythmLiveStats } from '../types/rhythmGame'
 
 /**

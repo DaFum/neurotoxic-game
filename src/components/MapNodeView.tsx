@@ -10,7 +10,7 @@ import { translateLocation } from '../utils/locationI18n'
 import type { MapNode as GameMapNode, CityTraitState } from '../types'
 import type { NodeVisibility } from '../types/map'
 import type { TranslationCallback } from '../types/callbacks'
-import { calcCancellationRisk } from '../utils/gameStateUtils'
+import { calcCancellationRisk } from '../utils/gameState'
 
 const VAN_STYLE = { transform: 'translate(0, -50%)' }
 const MOTION_INITIAL = { scale: 0 }

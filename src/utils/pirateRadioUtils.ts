@@ -1,4 +1,4 @@
-import { clampPlayerMoney, clampBandHarmony } from './gameStateUtils'
+import { clampPlayerMoney, clampBandHarmony } from './gameState'
 import { isFiniteNumber } from './finiteNumber'
 
 /**

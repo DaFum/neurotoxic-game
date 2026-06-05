@@ -1,4 +1,4 @@
-import { finiteNumberOr } from './gameStateUtils'
+import { finiteNumberOr } from './gameState'
 import { HQ_ITEMS_BY_MERCH_KEY } from '../data/hqItems'
 
 /**

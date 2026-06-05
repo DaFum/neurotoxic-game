@@ -1,6 +1,6 @@
 import { formatCurrency } from '../utils/numberUtils'
 import type { BandMember, GameState, Platform } from '../types'
-import { hasActiveSponsorship } from '../utils/gameStateUtils'
+import { hasActiveSponsorship } from '../utils/gameState'
 import { SOCIAL_PLATFORMS } from './platforms'
 import i18n from '../i18n'
 import { getSafeRandom } from '../utils/crypto'

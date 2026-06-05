@@ -10,7 +10,7 @@ import {
   clampBandHarmony,
   clampPlayerMoney,
   clampNonNegative
-} from './gameStateUtils'
+} from './gameState'
 import { isForbiddenKey, isLooseRecord } from './objectUtils'
 
 /**

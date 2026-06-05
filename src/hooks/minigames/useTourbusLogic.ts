@@ -12,7 +12,7 @@ import {
   TOURBUS_TARGET_DISTANCE
 } from './minigameConstants'
 import { getSafeRandom } from '../../utils/crypto'
-import { clamp0to100 } from '../../utils/gameStateUtils'
+import { clamp0to100 } from '../../utils/gameState'
 
 import type { TourbusObstacle, TourbusObstacleType } from '../../types/tourbus'
 

@@ -16,7 +16,7 @@ import {
   clampPlayerFame,
   clampPlayerMoney,
   finiteNumberOr
-} from '../utils/gameStateUtils'
+} from '../utils/gameState'
 import { applyTraitUnlocks } from '../utils/traitUtils'
 import { getQuestToastName } from './questHelpers'
 import {

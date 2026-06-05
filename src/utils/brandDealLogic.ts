@@ -10,7 +10,7 @@ import {
 import { BRAND_DEALS_BY_ID } from '../data/brandDeals'
 import { bandHasTrait } from './traitUtils'
 import { ALLOWED_TRENDS, ALLOWED_TRENDS_SET } from '../data/socialTrends'
-import { finiteNumberOr } from './gameStateUtils'
+import { finiteNumberOr } from './gameState'
 import { buildBrandOffer } from './brandOfferFlavor'
 import type {
   BrandDeal,

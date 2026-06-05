@@ -1,5 +1,5 @@
 import type { QuestEvent, SocialPostOption } from '../../types'
-import { finiteNumberOr } from '../../utils/gameStateUtils'
+import { finiteNumberOr } from '../../utils/gameState'
 
 const getSocialContext = (
   option: Pick<SocialPostOption, 'id' | 'platform' | 'category'>

@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 import { test } from 'vitest'
-import { applyEventDelta } from '../../src/utils/gameStateUtils'
+import { applyEventDelta } from '../../src/utils/gameState'
 
 test('applyEventDelta should not allow prototype pollution via player.stats', () => {
   const state = {

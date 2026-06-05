@@ -25,7 +25,7 @@ import {
   calculateChassisGrossSaleValue,
   hasActiveAssetAcquisition
 } from '../../utils/assetSelectors'
-import { clampPlayerMoney, finiteNumberOr } from '../../utils/gameStateUtils'
+import { clampPlayerMoney, finiteNumberOr } from '../../utils/gameState'
 import { QuestEvents } from '../../utils/questProgress'
 import {
   createAssetAcquiredQuestEvent,

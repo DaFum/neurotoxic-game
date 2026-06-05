@@ -1,4 +1,4 @@
-import { BALANCE_CONSTANTS } from './gameStateUtils'
+import { BALANCE_CONSTANTS } from './gameState'
 import { calculateGigFinancials } from './economyEngine'
 import { generatePostOptions } from './socialEngine'
 
@@ -17,7 +17,7 @@ import {
   clampLoyalty,
   clamp0to100,
   calculateGigFameReward
-} from './gameStateUtils'
+} from './gameState'
 import { BRAND_ALIGNMENTS } from '../context/initialState'
 import { BRAND_DEALS_BY_ID } from '../data/brandDeals'
 import { SOCIAL_PLATFORM_IDS, SOCIAL_PLATFORMS } from '../data/platforms'
@@ -749,7 +749,7 @@ export const calculateContinueStats = ({
   calculateFameLevel: (fame: number) => number
   clampPlayerFame: (n: number) => number
   clampPlayerMoney: (n: number) => number
-  BALANCE_CONSTANTS: typeof import('./gameStateUtils').BALANCE_CONSTANTS
+  BALANCE_CONSTANTS: typeof import('./gameState').BALANCE_CONSTANTS
 }) => {
   const prevFame = player.fame ?? 0
 

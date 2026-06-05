@@ -6,7 +6,7 @@ import {
   useRef
 } from 'react'
 import type { TFunction } from 'i18next'
-import { normalizeSetlistForSave, isLooseRecord } from '../utils/gameStateUtils'
+import { normalizeSetlistForSave, isLooseRecord } from '../utils/gameState'
 import { safeJsonParse } from '../utils/objectUtils'
 import { handleError, StateError, StorageError } from '../utils/errorHandler'
 import { safeStorageOperation } from '../utils/storage'

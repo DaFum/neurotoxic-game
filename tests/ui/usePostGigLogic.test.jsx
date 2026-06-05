@@ -8,7 +8,7 @@ import * as brandDealLogic from '../../src/utils/brandDealLogic'
 import * as crypto from '../../src/utils/crypto'
 import * as assetSelectors from '../../src/utils/assetSelectors'
 import { GAME_PHASES } from '../../src/context/gameConstants'
-import { BALANCE_CONSTANTS } from '../../src/utils/gameStateUtils'
+import { BALANCE_CONSTANTS } from '../../src/utils/gameState'
 
 function mockGameState(state) {
   GameState.useGameSelector.mockImplementation(selector => selector(state))

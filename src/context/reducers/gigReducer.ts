@@ -7,7 +7,7 @@ import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks } from '../../utils/traitUtils'
 import { DEFAULT_GIG_MODIFIERS } from '../initialState'
 import { GAME_PHASES } from '../gameConstants'
-import { isForbiddenKey, finiteNumberOr } from '../../utils/gameStateUtils'
+import { isForbiddenKey, finiteNumberOr } from '../../utils/gameState'
 import { handleAddVenueBlacklist } from './socialReducer'
 import { QuestLifecycle } from '../../domain/questLifecycle'
 import { QUEST_PROVE_YOURSELF } from '../../data/questsConstants'
@@ -25,7 +25,7 @@ import {
   createVenueGigCompletedQuestEvent,
   createVenueGoodGigQuestEvent
 } from '../../quests/producers/venueQuestEvents'
-import { normalizeSetlistForSave } from '../../utils/gameStateUtils'
+import { normalizeSetlistForSave } from '../../utils/gameState'
 
 const MIN_REPUTATION = -100
 const MAX_REPUTATION = 100

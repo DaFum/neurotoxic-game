@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { applyEventDelta } from '../../src/utils/gameStateUtils'
+import { applyEventDelta } from '../../src/utils/gameState'
 
 test('applyEventDelta applies basic relationship changes', () => {
   const state = {

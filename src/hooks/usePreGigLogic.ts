@@ -22,7 +22,7 @@ import {
   clampPlayerMoney,
   clampBandHarmony,
   finiteNumberOr
-} from '../utils/gameStateUtils'
+} from '../utils/gameState'
 import { getGigModifiers } from '../utils/simulationUtils'
 import { getActiveAssetModifiers } from '../utils/assetSelectors'
 import {

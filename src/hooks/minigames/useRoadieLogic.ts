@@ -1,7 +1,7 @@
 import { useRef, useCallback, useEffect, useState } from 'react'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
-import { isEmptyObject } from '../../utils/gameStateUtils'
+import { isEmptyObject } from '../../utils/gameState'
 import {
   checkCollision,
   handleCrash,

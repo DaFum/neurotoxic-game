@@ -8,7 +8,7 @@ import {
   EXPENSE_CONSTANTS
 } from '../../src/utils/economyEngine'
 import { gameReducer, ActionTypes } from '../../src/context/gameReducer'
-import { applyEventDelta } from '../../src/utils/gameStateUtils'
+import { applyEventDelta } from '../../src/utils/gameState'
 
 /**
  * Test helpers

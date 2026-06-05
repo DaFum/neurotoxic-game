@@ -2,7 +2,7 @@ import { useState, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { VOID_TRADER_COSTS } from '../../../data/contraband'
 import { handleError, GameError, StateError } from '../../../utils/errorHandler'
-import { isStashEntry } from '../../../utils/gameStateUtils'
+import { isStashEntry } from '../../../utils/gameState'
 import type {
   BandState,
   PlayerState,

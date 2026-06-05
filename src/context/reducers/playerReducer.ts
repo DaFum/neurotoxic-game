@@ -6,7 +6,7 @@ import {
   clampPlayerFame,
   calculateFameLevel,
   finiteNumberOr
-} from '../../utils/gameStateUtils'
+} from '../../utils/gameState'
 import type { PlayerState, UpdatePlayerPayload } from '../../types'
 
 type WithPlayer = { player: PlayerState }

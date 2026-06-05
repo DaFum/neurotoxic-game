@@ -2,7 +2,7 @@ import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { BlockMeter } from '../../ui/shared'
-import { normalizePercentageToScale } from '../../utils/gameStateUtils'
+import { normalizePercentageToScale } from '../../utils/gameState'
 
 interface OverloadMeterProps {
   overload: number

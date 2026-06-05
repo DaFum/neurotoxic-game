@@ -22,7 +22,7 @@ import {
   clamp0to100,
   clampUnitRandom,
   finiteNumberOr
-} from '../utils/gameStateUtils'
+} from '../utils/gameState'
 import type { RhythmSetlistEntry } from '../types/rhythmGame'
 import type {
   BloodBankDonatePayload,

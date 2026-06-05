@@ -6,7 +6,7 @@ import { bandHasTrait } from '../traitUtils'
 import {
   finiteNumberOr,
   isOnCooldown as isOnCooldownShared
-} from '../gameStateUtils'
+} from '../gameState'
 import { StateError } from '../errorHandler'
 import { selectEvent } from './eventSelection'
 import { processEffect } from './eventEffectHandlers'

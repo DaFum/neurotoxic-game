@@ -1,7 +1,7 @@
 import type { GameState, QuestKind, QuestState } from '../types'
 import { getQuestDefinition } from '../data/questRegistry'
 import { hasActiveQuest } from '../utils/questUtils'
-import { finiteNumberOr } from '../utils/gameStateUtils'
+import { finiteNumberOr } from '../utils/gameState'
 
 /**
  * Maximum active quest slots by quest kind.

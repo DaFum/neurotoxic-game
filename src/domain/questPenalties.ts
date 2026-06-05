@@ -7,7 +7,7 @@ import {
   finiteNumberOr,
   isForbiddenKey,
   isLooseRecord
-} from '../utils/gameStateUtils'
+} from '../utils/gameState'
 import {
   applyBrandTrustDelta,
   applyReputationDelta,

@@ -5,7 +5,7 @@ import { calculateZealotryEffects } from '../../utils/socialEngine'
 import { secureRandom } from '../../utils/crypto'
 import { validateCrisisEvent } from '../../utils/eventValidator'
 import { logger } from '../../utils/logger'
-import { hasStateItem } from '../../utils/gameStateUtils'
+import { hasStateItem } from '../../utils/gameState'
 
 // Crisis Events — reputation damage, recovery arcs, and social fallout
 // These fire when controversyLevel crosses key thresholds.

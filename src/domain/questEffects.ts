@@ -4,7 +4,7 @@ import {
   clampReputation,
   finiteNumberOr,
   isForbiddenKey
-} from '../utils/gameStateUtils'
+} from '../utils/gameState'
 
 const isValidReputationKey = (key: unknown): key is string =>
   typeof key === 'string' && key.length > 0 && !isForbiddenKey(key)
