@@ -1,93 +1,281 @@
-# Neurotoxic Codebase Audit — Logic & Feature Review
+# Neurotoxic Codebase Audit - Verified Findings
 
-**Scope:** read-only audit of `src/` (509 source files) + `public/locales/`. Skipped `node_modules/`, `dist/`, `public/` assets, and test files (except where tests reference deleted/renamed symbols).
-**Method:** five parallel audit agents, one per methodology, each grounded in root + nested `AGENTS.md`/`CLAUDE.md` conventions and cross-checked against `symbols.json` (`usedBy`/`dependencies` graph). Every orphan was Grep-verified; every duplicate was confirmed by reading both implementations.
+**Scope:** verification of the findings previously listed in this report against `src/`, `public/locales/`, `tests/`, and the current project instructions.
 
-**Headline:** The codebase is unusually clean. The action pipeline is fully wired (all 66 `ActionTypes` emitted + handled; all 62 action creators dispatched; all 66 hooks called; all 218 components mounted). Locale key/placeholder parity is perfect across all 10 EN/DE pairs. No hardcoded colors, no `forwardRef`, no `propTypes`, no `@ts-ignore`/`@ts-nocheck`, no stale reducer cases, no broken imports (both typechecks pass). Findings are concentrated in a single orphaned selector, one reducer clamp gap, dead locale keys, and minor utility re-rolls.
+**Verification status:** most actionable findings were confirmed. Two important corrections are now reflected:
 
----
+- `symbols.json` is currently stale. `pnpm run symbols:check` fails with `symbols.json is out of date`, so source searches and direct file reads are the authority for this report.
+- `selectLiabilitiesMap` is a real orphan, but it is keyed by `assetId`. It must not be blindly adopted in selectors that sum all liabilities because multiple liabilities can share one asset and would collapse to one map entry.
 
-## Category 1: Duplicates
+**Commands run:**
 
-No exact copy-paste of nontrivial logic exists. Currency/number formatting, state clamps, finite-number guards, UUID/RNG, color resolution, localStorage wrappers, and forbidden-key checks are all centralized and broadly reused. Action-creator/reducer-handler name pairs are the project's intentional convention, not duplication.
+- `pnpm run typecheck` - passed
+- `pnpm run typecheck:core` - passed
+- `pnpm run symbols:check` - failed because `symbols.json` is stale
+- `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/node/assetReducer.test.js` - passed
+- `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/node/assetSelectors.test.js` - passed
+- `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/node/minigameReducer.test.js` - passed
+- `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/node/economyMinigames.test.js` - passed
+- EN/DE locale key and placeholder parity check across all 10 namespaces - passed
 
-### Near
+## Priority Summary
 
-- **[MED]** `applyReputationDelta` (src/domain/questEffects.ts:44) ⇄ `applyVenueReputationDelta` (src/domain/questEffects.ts:63) — Structurally identical immutable-delta appliers (`finiteNumberOr(...) → clampReputation(prev + amount) → spread back`); diverge only by target slice (`reputationByRegion` vs `reputationByVenue`). Trivially parameterizable. — **Action:** MERGE
-- **[LOW]** `handleError` (src/utils/errorHandler.ts:450) ⇄ `handleError` (src/utils/eventEngine/helpers.ts:23) — Same exported name, different intent (general logger+toast vs tiny event-condition logger). Name collision is a grep/readability hazard, not redundant logic. — **Action:** INTEGRATE (rename event-engine one to `logEventError` or delegate)
-- **[LOW]** inline plain-object guard (src/data/postOptions.ts:56-66) ⇄ `isPlainRecord` (src/utils/objectUtils.ts:56) — Inline guard reproduces `isPlainRecord`, differing only by additionally accepting a null prototype. — **Action:** INTEGRATE
+1. **Fix asset reducer money writes.** This is the only verified medium-risk state invariant bug. A direct reducer call can drive `player.money` negative.
+2. **Delete or redesign `selectLiabilitiesMap`.** It is unused, and its current `assetId` key shape is unsafe for aggregate liability calculations.
+3. **Clean dead locale keys and stale commented code.** These are low-risk hygiene fixes with clear evidence.
+4. **Consider small utility consolidation only where it improves clarity.** The duplicate and re-roll findings are real, but most are low priority and should stay surgical.
 
-### Re-implemented utilities
+## Confirmed Findings
 
-- **[LOW]** Reputation-key validation tail repeated 3× inside src/domain/questEffects.ts — `getVenueReputationKey` (:20), `getRegionReputationKey` (:36), `getBrandReputationKey` (:87) all end with the same `typeof key === 'string' && key.length > 0 && !isForbiddenKey(key) ? key : undefined`. — **Action:** INTEGRATE (extract `validReputationKey`)
-- **[LOW]** Inline `finiteNumberOr` re-roll — src/utils/merchUtils.ts:49 computes `typeof value === 'number' && Number.isFinite(value) ? value : 0`, exactly `finiteNumberOr(value, 0)` (CLAUDE.md discourages this inline form). — **Action:** INTEGRATE
-- **[LOW]** Inline Fisher–Yates shuffle duplicated — src/utils/eventEngine/eventSelection.ts:171 ⇄ src/scenes/kabelsalat/hooks/useKabelsalatShuffle.ts:52. Same algorithm; diverge on sparse-hole handling (throw vs continue). No shared shuffle util exists. — **Action:** INTEGRATE (shared `fisherYatesShuffle(arr, rng)`)
-- **[LOW]** Inline `clamp01` (`Math.max(0, Math.min(1, x))`) repeated across ~15 sites (ui/shared/VolumeSlider.tsx:22, ui/settings/AudioSettings.tsx:41, utils/audio/playback.ts:91/102, utils/audio/midiPlayback.ts:159/603, utils/audio/AudioManager.ts:157/362/397, utils/assetTicks.ts:46-48, utils/economy/gigLogic.ts:733, hooks/minigames/useAmpLogic.ts:201/228, …). No `clamp`/`clamp01` util exists. — **Action:** INTEGRATE (add `clamp01`/`clamp` helper, likely in gameStateUtils.ts)
+### 1. Asset Reducer Money Clamp Gap
 
----
+**Severity:** MED
+**Status:** confirmed
+**Files:** `src/context/reducers/assetReducer.ts`
 
-## Category 2: Orphaned / Unintegrated Exports
+The asset reducer writes raw `player.money` in these paths:
 
-214 of 215 zero-cross-file-consumer symbols are legitimate (same-file Props/Return types, barrel re-exports, dynamic `import()` scene/phase components mounted via `m.Name`, internally-used consts). Exactly one true orphan:
+- `handlePurchaseChassis`: line 124
+- `handleInstallModule`: line 199
+- `handleRemoveModule`: line 309
+- `handleUpgradeChassisTier`: line 389
+- `handleSellChassis`: line 447
+- `handleRepairChassis`: line 485
+- `handleRefinanceLiability`: line 562
 
-- **[MED]** `selectLiabilitiesMap` (src/utils/assetSelectors.ts:644) — Exported memoized `Map<assetId, Liability>` selector with ZERO references in `src/` or `tests/`. Sibling of the live, wired `selectAssetSlotsMap` (:600); produced by the "optimize-liabilities" work but never adopted — callers still iterate `Object.values(state.liabilities)` directly (assetSelectors.ts:297, :576). Its memo cache vars `lastLiabilitiesForMap` (:583) and `liabilitiesMapCache` (:584) are dead with it. **Flagged independently by both the orphan and dead-code agents.** — **Action:** INTEGRATE (replace direct `state.liabilities` iterations) or DELETE if optimization abandoned
+This violates the reducer-side invariant that reducers remain the final authority for clamping computed state. Other money-mutating reducers use `clampPlayerMoney`.
 
----
+The original report said "six paths" while listing seven lines. The verified count is seven raw writes.
 
-## Category 3: Inconsistencies (Convention Violations)
+Concrete repro:
 
-i18n key parity, placeholder parity, hardcoded colors, `||`-vs-`??`, `Tone.now()`, `forwardRef`, `propTypes`, hand-written action objects, `assertNever`/exhaustiveness, and `@ts-ignore`/`@ts-nocheck` were all checked and are **clean** (see notes below). Real findings:
+- A direct cash `handlePurchaseChassis` call with `player.money = 0` and a 4000-cost chassis produced `player.money = -4000`.
 
-### State clamp skips
+**Recommended action:** wrap persisted money writes with `clampPlayerMoney`, using `finiteNumberOr` where stale or malformed state can cross the arithmetic boundary.
 
-- **[MED]** Raw money writes skip `clampPlayerMoney` — src/context/reducers/assetReducer.ts:124, 199, 309, 389, 447, 485, 562 — `money: state.player.money - <cost>` written raw. Every other money-mutating reducer (clinicReducer, playerReducer, socialReducer, minigameReducer) wraps writes with `clampPlayerMoney` (floors at 0, collapses non-finite). assetReducer's six paths skip it, so a malformed/replayed dispatch bypassing the action-creator affordability check can drive `player.money` negative, and stored non-finite money won't be normalized. Violates the documented "reducers remain the final authority, re-clamp computed state" invariant. — **Action:** FIX (wrap each in `clampPlayerMoney`)
+### 2. Orphaned `selectLiabilitiesMap`
 
-### Sanitizer type checks
+**Severity:** MED
+**Status:** confirmed, with corrected action
+**File:** `src/utils/assetSelectors.ts`
 
-- **[LOW]** Bare `typeof contrabandDelivered === 'number'` — src/context/reducers/minigameReducer.ts:582 — Bare typeof in a reducer where convention prefers `Number.isFinite`. Mitigated: input already normalized via `clampNonNegative(Number(...) || 0)` in the creator, and only gates a `> 0` quest emit (NaN fails `> 0`). Cosmetic. — **Action:** FIX (low priority)
+`selectLiabilitiesMap` and its cache state are exported but unused:
 
-### Arithmetic-then-persist without `finiteNumberOr`
+- `lastLiabilitiesForMap`: line 583
+- `liabilitiesMapCache`: line 584
+- `selectLiabilitiesMap`: line 644
 
-- **[LOW]** `band[field] = (band[field] || 0) + value` — src/context/reducers/bandReducer.ts:299 — Additive band-field write without clamp and without wrapping the addend in `finiteNumberOr`. Mitigated: `value` is sourced from static config, not persisted save state, so the save-load corruption boundary doesn't apply (sibling at :571 does use `clampMemberMood(finiteNumberOr(...))`). — **Action:** FIX (defense-in-depth, low priority)
+Search found no `src/` or test caller. `symbols.json` also lists no `usedBy`, but that index is stale, so grep/source evidence is the reliable proof.
 
-### Cleared (no violations)
+Important correction: this selector returns `Map<assetId, Liability>`. It loses data when an asset has multiple liabilities. Existing reducer tests explicitly cover multiple liabilities for one asset during sale payoff, so replacing aggregate `Object.values(state.liabilities)` loops with this map would be incorrect.
 
-Hardcoded colors (only `brandColors.ts` SoT + `rgb(var(--…))`), `||`-vs-`??` (all are `0`-fallbacks or post-`Number()` NaN-collapse), `Tone.now()` (only inside the audio engine layer that defines the timing primitive), `forwardRef` (none), `propTypes` (none), hand-written action objects (the only inline `dispatch({type})` targets a _local_ `useReducer` for rhythm-minigame UI, out of scope), `assertNever` (root reducer + bandReducer switch both trap exhaustively; sub-reducers use `Object.hasOwn` dispatch tables with no `default`), `@ts-ignore`/`@ts-nocheck` (none).
+Concrete check:
 
----
+- Two liabilities with `assetId: 'a1'` became a map of size 1.
+- `getTotalDebt` correctly summed both liabilities.
 
-## Category 3/5: i18n Parity
+**Recommended action:** delete `selectLiabilitiesMap` and its cache unless there is a real per-asset lookup use case. If a lookup is needed, redesign it as `Map<assetId, Liability[]>`.
 
-**Key parity: PERFECT** across all 10 EN/DE pairs (assets 303, chatter 1158, economy 266, events 1042, items 204, minigame 11, traits 45, ui 1375, unlocks 1, venues 66 — identical counts both sides). **Placeholder parity: PERFECT** (no `{{…}}` mismatches). **`ui.json` hardcoded `€`: NONE** (bare `{{amount}}` convention intact). Only genuine findings are untranslated leftovers in the low-traffic feature-catalog panel:
+### 3. Dead Locale Keys
 
-- **[LOW]** `de.ui:featureList.sec13.items.2/3/4` — `"Deadlines"`, `"Rewards"`, `"Failure Penalties"` left in English while sibling list items are translated. — **Action:** FIX
-- **[LOW]** `de.ui:featureList.sec15.items.2/3/4` — `"Loyalty"`, `"Zealotry"`, `"Controversy"` left in English while siblings translated. — **Action:** FIX
+**Severity:** LOW
+**Status:** confirmed
+**Files:** `public/locales/en/*.json`, `public/locales/de/*.json`
 
-(The raw identical-value scan flagged ~300 more, but all are proper nouns, intentional English UI tokens like `SETLIST`/`FAME`, placeholders, or established German loanwords — not defects.)
+The following keys have no live `t()` lookup or known dynamic-prefix use:
 
----
+- `ui:checklist.*` - 7 keys
+- `ui:setlistSelector.*` - 7 keys
+- `ui:decryptor.*` - 4 keys
+- `ui:confirm_delete`
+- `ui:confirm_delete_text`
+- `ui:hqNavigation`
+- `ui:set_label_to_segment`
+- `ui:sign_contract`
+- `assets:common.dailySuffix`
 
-## Category 4: Dead / Unreachable Code
+Notes:
 
-No `if (false)`/`&& false` conditionals, no stale reducer cases (reducerMap exhaustively covers `ActionTypes`), no permanently-false feature gates (`VERCEL_TELEMETRY_ENABLED` etc. resolve from env at runtime), no broken imports (both typechecks pass).
+- The delete-save UI is live, but it uses `ui:delete_save` through `DataManagement` and `DeadmanButton`, not `confirm_delete*`.
+- Band HQ tab navigation uses `ui:hq.sectionsLabel`, not `ui:hqNavigation`.
 
-### Unused declarations
+**Recommended action:** delete these keys from both EN and DE locale files unless a removed UI is intentionally coming back.
 
-- **[MED]** `selectLiabilitiesMap` + memo cache — src/utils/assetSelectors.ts:583-584, 638-657 — Dead exported selector and its module-level cache state (`lastLiabilitiesForMap`, `liabilitiesMapCache`), read/written only inside the dead function. Same finding as Category 2 (corroborated across two agents). Live equivalent is the sibling `selectAssetsMap`. — **Action:** DELETE (verify `Liability` type import still needed elsewhere in the file first)
+### 4. HQ Unlock Target Locale Keys
 
-### Commented-out code
+**Severity:** LOW
+**Status:** partially confirmed
+**Files:** `public/locales/{en,de}/items.json`, `src/data/hqItems.ts`
 
-- **[LOW]** Stale signature fragment — src/ui/bandhq/SetlistTab.tsx:110 — `// { setlist, setSetlist, addToast }) => {` leftover from a prior implementation, below the live destructure on :109. Only commented-out code fragment in `src/`. — **Action:** DELETE
+The display labels for these target IDs are unused:
 
----
+- `hq_coffee.*`
+- `hq_sofa.*`
+- `hq_label.*`
+- `hq_old_couch.*`
+- `hq_poster_wall.*`
+- `hq_cheap_beer_fridge.*`
+- `hq_diy_soundproofing.*`
 
-## Category 5: Missing Integration
+Caveat: the bare IDs are not dead. They are live `unlock_hq` effect targets in `src/data/hqItems.ts`. The rendered catalog items use the `hq_room_*` keys instead.
 
-The action/hook/component/registry pipeline is **fully wired** — no action creator without a dispatch site, no reducer case without an emitting creator, no unmounted component, no uncalled hook, no orphaned registry entry. The only gaps are dead locale keys with no `t()` lookup (dynamic prefixes from `public/locales/AGENTS.md` accounted for):
+**Recommended action:** decide product intent. If unlock-target display is intended, wire a surface that renders these labels. If not, delete only the unused locale labels, not the IDs.
 
-- **[LOW]** `checklist.*` (7 keys: done, header, task1–task4, waiting) — public/locales/{en,de}/ui.json — No `t()`/dynamic-prefix reference; removed/unbuilt checklist UI. — **Action:** DELETE (or WIRE-UP if intended)
-- **[LOW]** `setlistSelector.*` (7 keys: label, diffHard/diffExpert/diffInsane, track1–track3) — ui.json — Zero references. — **Action:** DELETE
-- **[LOW]** `decryptor.*` (4 keys: click, locked_aria, unlocked, unlocked_aria) — ui.json — Zero references. — **Action:** DELETE
-- **[LOW]** `confirm_delete`, `confirm_delete_text`, `hqNavigation`, `set_label_to_segment`, `sign_contract` — ui.json — Standalone keys, no `t()` lookup. — **Action:** DELETE
-- **[LOW]** `assets:common.dailySuffix` — assets.json — Zero references. — **Action:** DELETE
-- **[LOW]** HQ unlock-target keys `hq_coffee.*`, `hq_sofa.*`, `hq_label.*`, `hq_old_couch.*`, `hq_poster_wall.*`, `hq_cheap_beer_fridge.*`, `hq_diy_soundproofing.*` (14 keys) — items.json — Describe `unlock_hq` _target_ ids (never displayed; see hqItems.ts:560 "tracked for ownership only … pending implementation"), distinct from the rendered `hq_room_*` catalog ids. — **Action:** WIRE-UP (unlocked-HQ display is intended)
+### 5. German Feature List Leftovers
+
+**Severity:** LOW
+**Status:** confirmed
+**File:** `public/locales/de/ui.json`
+
+These German strings are still English while neighboring entries are translated:
+
+- `featureList.sec13.items.2`: `Deadlines`
+- `featureList.sec13.items.3`: `Rewards`
+- `featureList.sec13.items.4`: `Failure Penalties`
+- `featureList.sec15.items.2`: `Loyalty`
+- `featureList.sec15.items.3`: `Zealotry`
+- `featureList.sec15.items.4`: `Controversy`
+
+The `featureList.*` keys are live through `MainMenuFeatures`, which reads the feature-list object and then translates each referenced key.
+
+**Recommended action:** translate these six DE strings.
+
+### 6. Stale Commented Code
+
+**Severity:** LOW
+**Status:** confirmed
+**File:** `src/ui/bandhq/SetlistTab.tsx:110`
+
+`// { setlist, setSetlist, addToast }) => {` is a stale signature fragment immediately below the live props destructure.
+
+**Recommended action:** delete the comment.
+
+## Low-Priority Utility Findings
+
+These are real but should only be changed if the edit stays small and local.
+
+### Reputation Delta Helpers
+
+**Status:** confirmed
+**File:** `src/domain/questEffects.ts`
+
+`applyReputationDelta` and `applyVenueReputationDelta` have identical structure and differ only by state slice:
+
+- `reputationByRegion`
+- `reputationByVenue`
+
+**Recommended action:** optional extraction only if it reduces code without obscuring the domain distinction.
+
+### Reputation Key Validation Tail
+
+**Status:** confirmed
+**File:** `src/domain/questEffects.ts`
+
+`getVenueReputationKey`, `getRegionReputationKey`, and `getBrandReputationKey` repeat:
+
+```ts
+typeof key === 'string' && key.length > 0 && !isForbiddenKey(key)
+```
+
+**Recommended action:** optional `validReputationKey` helper.
+
+### `handleError` Name Collision
+
+**Status:** confirmed
+**Files:** `src/utils/errorHandler.ts`, `src/utils/eventEngine/helpers.ts`
+
+Both modules export `handleError`, but the implementations are not duplicate logic:
+
+- `errorHandler.ts` is the general logger/toast/telemetry path.
+- `eventEngine/helpers.ts` logs event condition failures.
+
+**Recommended action:** optionally rename the event-engine helper to `logEventError` for grep clarity.
+
+### Plain Object Guard in `postOptions`
+
+**Status:** confirmed with caveat
+**Files:** `src/data/postOptions.ts`, `src/utils/objectUtils.ts`
+
+`postOptions.ts` has an inline influencer lookup guard that resembles `isPlainRecord`, but it intentionally accepts null-prototype objects. `isPlainRecord` currently accepts only `Object.prototype`.
+
+**Recommended action:** do not replace it with `isPlainRecord` unless null-prototype acceptance is preserved.
+
+### Inline `finiteNumberOr` Re-roll
+
+**Status:** confirmed
+**File:** `src/utils/merchUtils.ts:49`
+
+`getTotalMerchStock` manually checks `typeof value === 'number' && Number.isFinite(value)` despite importing `finiteNumberOr`.
+
+**Recommended action:** replace with `finiteNumberOr(value, 0)` in a small cleanup.
+
+### Fisher-Yates Shuffle Duplication
+
+**Status:** confirmed
+**Files:** `src/utils/eventEngine/eventSelection.ts`, `src/scenes/kabelsalat/hooks/useKabelsalatShuffle.ts`
+
+Both use Fisher-Yates. Behavior differs on sparse/undefined entries:
+
+- event selection throws on a dense-array invariant violation
+- Kabelsalat continues and leaves fallback order intact
+
+**Recommended action:** only extract a shared helper if it can preserve both sparse-entry policies clearly.
+
+### Repeated Clamp-to-Unit Logic
+
+**Status:** confirmed
+**Files:** audio, UI, asset, economy, and minigame modules
+
+There are repeated `Math.max(0, Math.min(1, value))` / `Math.min(1, Math.max(0, value))` patterns.
+
+**Recommended action:** optional shared helper. Be careful with module boundaries: UI/audio code may not want to import broad game-state utilities.
+
+## Verified Non-Issues and Caveats
+
+### Locale Parity
+
+EN/DE key parity and placeholder parity are clean across all checked namespaces:
+
+- `assets`: 303 / 303
+- `chatter`: 1158 / 1158
+- `economy`: 266 / 266
+- `events`: 1042 / 1042
+- `items`: 204 / 204
+- `minigame`: 11 / 11
+- `traits`: 45 / 45
+- `ui`: 1375 / 1375
+- `unlocks`: 1 / 1
+- `venues`: 66 / 66
+
+No placeholder mismatches were found.
+
+### `contrabandDelivered` Type Check
+
+**Original finding:** `typeof contrabandDelivered === 'number'` in `minigameReducer.ts:582`.
+
+**Verified status:** low-risk convention issue only.
+
+`contrabandDelivered` is normalized by `createCompleteRoadieMinigameAction`, sanitized again inside `calculateRoadieMinigameResult`, and quest progress reads event amounts with `Number.isFinite`. The reducer branch should still use `Number.isFinite` for consistency, but this is not currently a data-corruption path.
+
+### Band Additive Effect Arithmetic
+
+**Original finding:** `band[field] = (band[field] || 0) + value` in `bandReducer.ts:299`.
+
+**Verified status:** valid low-risk defensive cleanup.
+
+The value comes from static item config, which mitigates the load-boundary risk. Still, `finiteNumberOr` would match project convention and avoid preserving `Infinity`.
+
+### Cleared Convention Claims
+
+Targeted searches found:
+
+- no `forwardRef` usage in `src/`
+- no active `.propTypes` blocks in `src/`
+- no context-level hand-written action objects; inline `dispatch({ type })` usage is local rhythm-game `useReducer` state
+- `Tone.now()` use is confined to `src/utils/audio/*`
+- `assertNever` runtime traps match reducer instructions
+
+Caveats:
+
+- Test fixtures contain `@ts-ignore`; the clean claim only holds for production `src/`.
+- Hex literals exist in `src/index.css` token definitions and `src/utils/brandColors.ts`, which are expected sources of truth. No ad-hoc source hardcoded-color issue was verified.
