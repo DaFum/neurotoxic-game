@@ -571,11 +571,19 @@ export const getModulePoolForAsset = (
  * @param state - Current game state containing liabilities.
  * @returns Total outstanding debt principal.
  */
-export const getTotalDebt = (state: GameState): number => {
-  return state.liabilities.reduce((sum, l) => sum + l.principalRemaining, 0)
-}
-
 const EMPTY_LIABILITIES: readonly Liability[] = []
+
+export const getTotalDebt = (state: GameState): number => {
+  let sum = 0
+  const liabilities = state.liabilities ?? EMPTY_LIABILITIES
+  for (let i = 0; i < liabilities.length; i++) {
+    const l = liabilities[i]
+    if (l) {
+      sum += l.principalRemaining
+    }
+  }
+  return sum
+}
 let lastLiabilitiesForMap: readonly Liability[] | null = null
 let liabilitiesMapCache: Map<string, Liability> | null = null
 
