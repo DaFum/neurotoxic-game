@@ -253,9 +253,8 @@ const applyZeroConditionForeclosures = (state: GameState): GameState => {
  * @param action - Game action to apply.
  * @returns Next game state.
  *
- * @throws {@link Error}
- * Throws through `assertNever` when an unknown action shape bypasses dispatch
- * validation and reaches the reducer.
+ * @throws Throws an `Error` when an unknown action shape bypasses
+ * dispatch validation and reaches the reducer through `assertNever`.
  */
 export const gameReducer = (
   state: GameState,

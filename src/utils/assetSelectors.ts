@@ -6,8 +6,7 @@ import type {
   AssetModule,
   AssetSlot,
   LongTermAsset,
-  ModuleUnlockReq,
-  Liability
+  ModuleUnlockReq
 } from '../types/assets'
 import { MODULE_REGISTRY } from './assetModuleRegistry'
 import { CHASSIS_CONFIG } from './assetConfig'
@@ -577,8 +576,6 @@ export const getTotalDebt = (state: GameState): number => {
     0
   )
 }
-
-const EMPTY_LIABILITIES: Readonly<Record<string, Liability>> = {}
 
 const EMPTY_ASSETS: readonly LongTermAsset[] = []
 let lastAssetsForMap: readonly LongTermAsset[] | null = null

@@ -516,8 +516,8 @@ initGlobalErrorHandling()
  * `undefined` explicitly still counts as a fallback.
  * @returns Operation result, or the supplied fallback after all retries fail.
  *
- * @throws {@link StorageError}
- * Throws after all retries fail when no fallback argument is supplied.
+ * @throws Throws a `StorageError` after all retries fail when no fallback
+ * argument is supplied.
  */
 export function runSafeStorageOperation<T>(operation: string, fn: () => T): T
 export function runSafeStorageOperation<T>(

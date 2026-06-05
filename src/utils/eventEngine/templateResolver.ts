@@ -13,7 +13,8 @@ const toLowerCaseCache = Object.create(null)
  * Uses a single pre-compiled regex for performance.
  * @param str - The string containing `{key}` templates.
  * @param context - The context object containing replacement values.
- * @returns The resolved string.
+ * @returns The input string with known placeholders substituted; unmatched
+ * placeholders remain unchanged.
  */
 const resolveTemplateString = (
   str: string,

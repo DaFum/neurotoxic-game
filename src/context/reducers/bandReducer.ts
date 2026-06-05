@@ -706,9 +706,8 @@ export const handleToggleNeuroDecimator = (
  * @param action - Game action that may affect the band slice.
  * @returns State after the matching band reducer handles the action.
  *
- * @throws {@link Error}
- * Throws through `assertNever` when an impossible action branch reaches the
- * default case.
+ * @throws Throws an `Error` when an impossible action branch reaches the
+ * default case through `assertNever`.
  */
 export const bandReducer = (
   state: GameState,

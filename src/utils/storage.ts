@@ -26,8 +26,8 @@ export const GLOBAL_SETTINGS_KEY = 'neurotoxic_global_settings'
  * `undefined` explicitly still counts as a fallback.
  * @returns Operation result, or the supplied fallback when one is provided.
  *
- * @throws {@link StorageError}
- * Throws after all retries fail when no fallback argument is supplied.
+ * @throws Throws a `StorageError` after all retries fail when no fallback
+ * argument is supplied.
  */
 export function safeStorageOperation<T>(operation: string, fn: () => T): T
 export function safeStorageOperation<T>(

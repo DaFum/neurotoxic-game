@@ -37,9 +37,8 @@ const isSocketId = (value: string): value is SocketId =>
  * @param setFaultReason - State setter for fault reason.
  * @returns Click handlers and a shock trigger for the Kabelsalat board.
  *
- * @throws {@link Error}
- * Throws in development when a socket id or selected cable id is not part of the
- * Kabelsalat definitions.
+ * @throws Throws an `Error` in development when a socket id or selected
+ * cable id is not part of the Kabelsalat definitions.
  */
 export const useKabelsalatInteractions = (
   t: TFunction,
