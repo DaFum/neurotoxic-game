@@ -55,6 +55,13 @@ export const handlePurchaseChassis = (
   // `any` casts; if the action-creator validation passed, the entry exists.
   const configTier = CHASSIS_CONFIG[kind]?.[flavor]?.[tier]
   if (!configTier) return state
+  if (
+    mode === 'cash' &&
+    (!Number.isFinite(state.player.money) ||
+      state.player.money < configTier.price)
+  ) {
+    return state
+  }
 
   // Bounds-check slotIds: if the action creator under-allocated ids, we
   // generate a deterministic synthetic id so the asset stays consistent

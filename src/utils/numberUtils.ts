@@ -8,7 +8,7 @@ const numberFormatters = new Map<string, Intl.NumberFormat>()
  * @returns `value` bounded to the unit interval.
  */
 export const clampUnit = (value: number): number =>
-  Math.max(0, Math.min(1, value))
+  Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : 0
 
 /**
  * Returns a cached Intl.NumberFormat instance based on language and options.

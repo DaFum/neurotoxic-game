@@ -14,12 +14,12 @@ export const shuffleInPlace = <T>(
 ): T[] => {
   for (let i = items.length - 1; i > 0; i--) {
     const j = Math.floor(rng() * (i + 1))
-    const current = items[i]
-    const swap = items[j]
-    if (current === undefined || swap === undefined) {
+    if (!(i in items) || !(j in items)) {
       onMissingEntry?.(i, j)
       continue
     }
+    const current = items[i] as T
+    const swap = items[j] as T
     items[i] = swap
     items[j] = current
   }

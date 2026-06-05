@@ -92,6 +92,10 @@ test('handlePurchaseChassis - happy path cash', () => {
   const kind = 'tourbus_chassis'
   const configTier = CHASSIS_CONFIG[kind].legit[1]
   const slotIds = configTier.slots.map((_, i) => `slot_${i}`)
+  const startState = {
+    ...mockState,
+    player: { ...mockState.player, money: configTier.price }
+  }
 
   const payload = {
     id: 'a1',
@@ -103,17 +107,17 @@ test('handlePurchaseChassis - happy path cash', () => {
     today: mockState.player.day
   }
 
-  const next = handlePurchaseChassis(mockState, payload)
+  const next = handlePurchaseChassis(startState, payload)
   assert.strictEqual(next.assets[0].id, 'a1')
 })
 
-test('handlePurchaseChassis - clamps direct cash purchase money writes', () => {
+test('handlePurchaseChassis - rejects underfunded direct cash purchase', () => {
   const kind = 'tourbus_chassis'
   const configTier = CHASSIS_CONFIG[kind].legit[1]
   const slotIds = configTier.slots.map((_, i) => `slot_${i}`)
   const startState = {
     ...mockState,
-    player: { ...mockState.player, money: 0 }
+    player: { ...mockState.player, money: configTier.price - 1 }
   }
 
   const next = handlePurchaseChassis(startState, {
@@ -126,7 +130,7 @@ test('handlePurchaseChassis - clamps direct cash purchase money writes', () => {
     today: mockState.player.day
   })
 
-  assert.strictEqual(next.player.money, 0)
+  assert.strictEqual(next, startState)
 })
 
 test('handlePurchaseChassis - uses direct DIY config values', () => {
@@ -147,8 +151,12 @@ test('handlePurchaseChassis - uses direct DIY config values', () => {
   }
   const configTier = CHASSIS_CONFIG[kind].diy[1]
   const slotIds = configTier.slots.map((_, i) => `slot_${i}`)
+  const startState = {
+    ...mockState,
+    player: { ...mockState.player, money: configTier.price }
+  }
 
-  const next = handlePurchaseChassis(mockState, {
+  const next = handlePurchaseChassis(startState, {
     id: 'a1',
     kind,
     flavor: 'diy',
