@@ -8,7 +8,7 @@ import { AssetsBottomTabs } from './AssetsBottomTabs'
 import { AssetsStatusStrip } from './AssetsStatusStrip'
 import { ForeclosureModal } from './ForeclosureModal'
 import { RiskEventModal } from './RiskEventModal'
-import { ASSET_SECTION_TABS } from './sectionTabs'
+import { ASSET_SECTION_TABS, ASSET_SECTION_TABS_MAP } from './sectionTabs'
 import { DEFAULT_SECTION_ACCENT, SECTION_VIEWS } from './sectionRegistry'
 import './assetsHub.css'
 
@@ -38,8 +38,7 @@ export const AssetsScene = () => {
 
   const activeView = SECTION_VIEWS[active]
   const accent = activeView?.accent ?? DEFAULT_SECTION_ACCENT
-  const activeTab =
-    ASSET_SECTION_TABS.find(tab => tab.key === active) ?? ASSET_SECTION_TABS[0]
+  const activeTab = ASSET_SECTION_TABS_MAP[active] ?? ASSET_SECTION_TABS[0]
   const foreclosureAssetLabel = foreclosureModal.currentKind
     ? t(`assets:kind.${foreclosureModal.currentKind}`)
     : undefined
