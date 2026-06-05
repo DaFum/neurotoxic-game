@@ -2,7 +2,10 @@ import { useTranslation } from 'react-i18next'
 import { Modal } from '../../ui/shared/Modal'
 import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 import { getLoanProfileImagePrompt } from '../../utils/imageGen'
-import { LOAN_PROFILES_ARRAY, type LoanProfileId } from '../../utils/loanProfiles'
+import {
+  LOAN_PROFILES_ARRAY,
+  type LoanProfileId
+} from '../../utils/loanProfiles'
 
 interface Props {
   isOpen: boolean
