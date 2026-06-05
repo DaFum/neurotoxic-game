@@ -1,3 +1,4 @@
+import React from 'react'
 import { useTranslation } from 'react-i18next'
 import type { CatalogTabProps } from '../../types/components'
 import { logger } from '../../utils/logger'
@@ -47,27 +48,36 @@ export const CatalogTab = ({
     }
   }
 
+  const balanceElements: React.JSX.Element[] = []
+  const keys = Object.keys(balances)
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i]
+    if (key === undefined) continue
+    const value = balances[key]
+    if (value === undefined) continue
+
+    const meta = hasBalanceMetaKey(key)
+      ? BALANCE_DISPLAY_META[key]
+      : {
+          className: 'text-star-white',
+          suffix: '',
+          isCurrency: false
+        }
+    const display = meta.isCurrency
+      ? formatCurrency(value, i18n.language)
+      : `${value}${meta.suffix}`
+    balanceElements.push(
+      <span key={key}>
+        {t(`ui:bandhq.${key}`)}:{' '}
+        <span className={meta.className}>{display}</span>
+      </span>
+    )
+  }
+
   return (
     <div>
       <div className='mb-4 flex justify-end gap-4 font-mono text-star-white'>
-        {Object.entries(balances).map(([key, value]) => {
-          const meta = hasBalanceMetaKey(key)
-            ? BALANCE_DISPLAY_META[key]
-            : {
-                className: 'text-star-white',
-                suffix: '',
-                isCurrency: false
-              }
-          const display = meta.isCurrency
-            ? formatCurrency(value, i18n.language)
-            : `${value}${meta.suffix}`
-          return (
-            <span key={key}>
-              {t(`ui:bandhq.${key}`)}:{' '}
-              <span className={meta.className}>{display}</span>
-            </span>
-          )
-        })}
+        {balanceElements}
       </div>
 
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4'>
