@@ -60,20 +60,7 @@ export const UplinkButton = memo(
   ({ title, url, subtitle, type, Icon }: UplinkButtonProps) => {
     const [isHovered, setIsHovered] = useState(false)
 
-    /**
-     * ACTUAL UPDATES (#1):
-     * - Implemented robust URL validation using regex for case-insensitive protocol check (http/https).
-     * - Conditionally apply target='_blank' and rel='noopener noreferrer' only for safe URLs.
-     * - Added onClick handler to prevent default behavior (opening a new tab with #) for unsafe URLs.
-     *
-     * NEXT STEPS AND IDEAS (#2):
-     * - Consider moving the URL sanitizer to a shared utility if other components need it.
-     * - Implement a 'copy to clipboard' fallback for unsafe URLs if they appear intended as data but not navigation.
-     *
-     * FOUND ERRORS + SOLUTIONS (#3):
-     * - ERROR: Case-sensitive protocol check was too restrictive. SOLUTION: Used case-insensitive regex.
-     * - ERROR: Clicking unsafe URL with target='_blank' opened an empty tab. SOLUTION: Conditional target and e.preventDefault().
-     */
+    // Only absolute http(s) URLs navigate; unsafe values render inertly.
     const isSafeUrl = url && /^\s*https?:\/\//i.test(url)
     const safeUrl = isSafeUrl ? url.trim() : '#'
 

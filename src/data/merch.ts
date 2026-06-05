@@ -1,6 +1,5 @@
 /**
- * Per-item merch demand profiles. Source of truth for prices and demand
- * curves consumed by economyEngine.calculateMerchIncome.
+ * Per-item merch demand profiles consumed by gig economy calculations.
  */
 
 export type CityGenre =
@@ -141,8 +140,7 @@ export const SPENDING_PROFILE_MERCH_MULTIPLIER = {
 } as const satisfies Record<SpendingProfile, number>
 
 /**
- * Backwards-compatible derived map. Re-exported by economyEngine.ts so
- * existing imports of DEFAULT_MERCH_PRICES keep working unchanged.
+ * Backwards-compatible derived map re-exported through the economyEngine barrel.
  */
 export const DEFAULT_MERCH_PRICES: Record<string, number> = (() => {
   const prices: Record<string, number> = {}

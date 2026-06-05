@@ -1,6 +1,5 @@
 /**
  * Modal - A shared overlay component.
- * Module: `Modal`.
  */
 
 import { useEffect, useId, useRef } from 'react'
@@ -9,16 +8,6 @@ import { useTranslation } from 'react-i18next'
 import { UIFrameCorner } from './Icons'
 import { Tooltip } from './Tooltip'
 
-/**
- * Modal - A shared overlay component.
- * @param props - Modal visibility, close handler, accessible title/label, content, and wrapper classes.
- * - `props.isOpen` - Whether the modal is visible.
- * - `props.onClose` - Callback to close the modal.
- * - `props.title` - Optional title.
- * - `props.children` - Content.
- * - `props.contentClassName` - Optional. Additional CSS classes for the inner content wrapper (defaults to flex-1 min-h-0 flex flex-col max-h-[calc(100svh-3rem)] sm:max-h-[calc(100svh-4rem)] overflow-y-auto overflow-x-hidden).
- * - `props.className` - Optional. Additional CSS classes for the dialog wrapper (defaults to max-w-md).
- */
 type ModalProps = {
   isOpen: boolean
   onClose: () => void

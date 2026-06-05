@@ -135,10 +135,14 @@ const executeClinicAction = (
 /**
  * Handles the healing logic in the Void Clinic.
  *
+ * @remarks
+ * Persisted member numerics are normalized with `finiteNumberOr` before
+ * arithmetic, then clamped by the canonical mood/stamina helpers.
+ *
  * @param state - Game state before healing.
  * @param payload - Clinic heal request.
  * - `payload.memberId` - The ID of the band member to heal.
- * - `payload.type` - Must be 'heal' or 'enhance'. Used to compute cost from CLINIC_CONFIG.
+ * - `payload.type` - Must be `'heal'`; used to compute cost from `CLINIC_CONFIG`.
  * - `payload.staminaGain` - The stamina gain.
  * - `payload.moodGain` - The mood gain.
  * @returns State with clamped stamina/mood restoration and clinic cost applied,
@@ -295,7 +299,7 @@ export const handleBloodBankDonate = (
  * @param state - Game state before enhancement.
  * @param payload - Clinic enhancement request.
  * - `payload.memberId` - The ID of the band member.
- * - `payload.type` - Must be 'heal' or 'enhance'. Used to compute cost from CLINIC_CONFIG.
+ * - `payload.type` - Must be `'enhance'`; used to compute cost from `CLINIC_CONFIG`.
  * - `payload.trait` - The trait to add or upgrade.
  * @returns State with the trait grafted and clinic cost applied, or the
  * original state when validation fails.

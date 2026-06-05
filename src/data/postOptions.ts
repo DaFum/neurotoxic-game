@@ -6,6 +6,7 @@ import i18n from '../i18n'
 import { getSafeRandom } from '../utils/crypto'
 import { QUEST_APOLOGY_TOUR } from './questsConstants'
 import { hasActiveQuest } from '../utils/questUtils'
+import { isPlainOrNullPrototypeRecord } from '../utils/objectUtils'
 
 const getSecureRollOnce = () => {
   return getSafeRandom()
@@ -53,16 +54,7 @@ const isValidAndAffordableInfluencer = (
 const isInfluencerLookup = (
   influencers: unknown
 ): influencers is Record<string, unknown> => {
-  if (
-    typeof influencers !== 'object' ||
-    influencers === null ||
-    Array.isArray(influencers)
-  ) {
-    return false
-  }
-
-  const prototype = Object.getPrototypeOf(influencers)
-  return prototype === Object.prototype || prototype === null
+  return isPlainOrNullPrototypeRecord(influencers)
 }
 
 const visitAffordableInfluencerIds = (

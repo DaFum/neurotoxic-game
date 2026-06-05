@@ -94,5 +94,10 @@ class ErrorBoundaryComponent extends React.Component<
 }
 /**
  * Displays the crash fallback for uncaught UI errors.
+ *
+ * @remarks
+ * The translated wrapper injects `t`, `componentDidCatch` routes captured
+ * errors through the centralized critical error handler, and development builds
+ * show the component stack before the reboot action reloads the page.
  */
 export const ErrorBoundary = withTranslation()(ErrorBoundaryComponent)

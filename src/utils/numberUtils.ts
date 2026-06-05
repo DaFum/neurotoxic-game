@@ -2,6 +2,15 @@
 const numberFormatters = new Map<string, Intl.NumberFormat>()
 
 /**
+ * Clamps a numeric unit interval value to `[0, 1]`.
+ *
+ * @param value - Number to clamp.
+ * @returns `value` bounded to the unit interval.
+ */
+export const clampUnit = (value: number): number =>
+  Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : 0
+
+/**
  * Returns a cached Intl.NumberFormat instance based on language and options.
  */
 const getFormatter = (

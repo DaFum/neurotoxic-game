@@ -3,6 +3,7 @@ import { useGameActions } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
 import { getSafeRandom } from '../../utils/crypto'
 import { clampAmpDial } from '../../utils/gameStateUtils'
+import { clampUnit } from '../../utils/numberUtils'
 import type { AmpStageOptions } from '../../types/components'
 
 const MINIGAME_DURATION = 15
@@ -198,7 +199,7 @@ export function updateAmpGameState(
     !isAnomalyActiveRef.current
   ) {
     // 2% chance per 100ms to spawn an anomaly during overdrive
-    if (getSafeRandom() < Math.max(0, Math.min(1, 0.02 * (deltaMS / 100)))) {
+    if (getSafeRandom() < clampUnit(0.02 * (deltaMS / 100))) {
       isAnomalyActiveRef.current = true
       setIsAnomalyActive(true)
       // Force an extreme target frequency
@@ -225,7 +226,7 @@ export function updateAmpGameState(
 
   if (
     !isAnomalyActiveRef.current &&
-    getSafeRandom() < Math.max(0, Math.min(1, chance * (deltaMS / 100)))
+    getSafeRandom() < clampUnit(chance * (deltaMS / 100))
   ) {
     const shift = (getSafeRandom() - 0.5) * shiftSize
     const nextTarget = clampAmpDial(targetValueRef.current + shift)

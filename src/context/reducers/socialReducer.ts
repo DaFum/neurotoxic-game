@@ -113,6 +113,11 @@ const parseZealotryActionPayload = (
 /**
  * Builds a sanitized success toast (with deltas patched in) and appends it
  * to `nextState.toasts` when present. No-op when `successToast` is falsy.
+ *
+ * @remarks
+ * Currency values in `optionsPatch` must be preformatted with
+ * `formatCurrency(value, i18n.language, signDisplay)` before dispatch because
+ * toast options are baked into state.
  */
 const appendDeltaSuccessToast = (
   nextState: GameState,
@@ -563,7 +568,7 @@ export const handleMerchPress = (
     deltaControversy: nextControversy - currentControversy,
     deltaHarmony: nextHarmony - currentHarmony,
     deltaFame: nextFame - currentFame,
-    cost: currentMoney - nextMoney
+    cost: formatCurrency(nextMoney - currentMoney, i18n.language, 'always')
   })
 
   return nextState

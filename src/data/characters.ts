@@ -1,4 +1,10 @@
-/** Canonical band member and NPC character definitions. */
+/**
+ * Canonical band member and NPC character definitions.
+ *
+ * @remarks
+ * `CLINIC` is an NPC pseudo-character with zero stats and no relationships by
+ * design; it must not be mirrored into self-relationship maps.
+ */
 export const CHARACTERS = {
   MATZE: {
     id: 'matze',

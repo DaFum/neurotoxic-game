@@ -1,6 +1,5 @@
 /**
- * Allowed Social Media Trends
- * Constant: `readonly ['NEUTRAL', 'DRAMA', 'TECH', 'MUSIC', 'WHOLESOME']`
+ * Allowed social-media trend labels for post matching.
  */
 export const ALLOWED_TRENDS = [
   'NEUTRAL',

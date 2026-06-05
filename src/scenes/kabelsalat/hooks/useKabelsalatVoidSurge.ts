@@ -3,12 +3,12 @@ import type { TFunction } from 'i18next'
 
 /**
  * Tracks Kabelsalat void surge buildup and purge state for the board.
- * @param isPoweredOn - Whether powered on is active.
- * @param isGameOver - Whether game over is active.
- * @param isShocked - Whether shocked is active.
+ * @param isPoweredOn - Suspends surge timers after successful wiring.
+ * @param isGameOver - Suspends surge timers after terminal overlay state.
+ * @param isShocked - Suspends surge timers during shock recovery.
  * @param triggerShock - Callback that activates the Kabelsalat shock state.
  * @param t - Translation callback used for localized labels and messages.
- * @returns State, derived values, and callbacks for kabelsalat Void Surge.
+ * @returns Current surge meter, purge count, and purge command.
  */
 export const useKabelsalatVoidSurge = (
   isPoweredOn: boolean,

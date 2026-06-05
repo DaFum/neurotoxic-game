@@ -5,12 +5,7 @@ import { useGlitchPulse } from '../../hooks/useGlitchPulse'
 
 /**
  * ToggleSwitch - A standardized toggle switch for binary options.
- * Module: `ToggleSwitch`.
  * @param props - Toggle state, accessible label, toggle callback, and optional classes.
- * - `props.isOn` - Current state.
- * - `props.onToggle` - Callback function.
- * - `props.ariaLabel` - Accessible label.
- * - `props.className` - Optional. Additional CSS classes.
  */
 type ToggleSwitchProps = {
   isOn: boolean

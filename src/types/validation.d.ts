@@ -6,6 +6,11 @@
  * `validateDarkWebLeak`) a plain `boolean` is preferred — those validators
  * are followed by their own toast/log path and never propagate the rich
  * shape upward.
+ *
+ * @remarks
+ * A false result with `silent: true` means the caller should stop without
+ * showing an error. A false result with `errorKey` and `defaultMessage` is meant
+ * for user-facing feedback.
  */
 export type ValidationResult =
   | {

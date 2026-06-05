@@ -2,6 +2,7 @@ import { NEUTRAL_ASSET_MODIFIERS } from '../assetSelectors'
 import type { AssetModifiers } from '../../types/assets'
 import { logger } from '../logger'
 import { clamp0to100, finiteNumberOr } from '../gameStateUtils'
+import { clampUnit } from '../numberUtils'
 import { SPENDING_PROFILE_MERCH_MULTIPLIER } from '../../data/merch'
 import type {
   CityGenre,
@@ -729,8 +730,7 @@ export const calculateGigFinancials = (
   }
 
   // 7. Management Cut (fame-progressive: 0% at fame=0, full 15% at fame≥200)
-  const effectiveCutRate =
-    MANAGEMENT_CUT_RATE * Math.max(0, Math.min(1, playerFame / 200))
+  const effectiveCutRate = MANAGEMENT_CUT_RATE * clampUnit(playerFame / 200)
   const managementCut = Math.floor(report.income.total * effectiveCutRate)
   if (managementCut > 0 || report.income.total > 0) {
     report.expenses.breakdown.push({

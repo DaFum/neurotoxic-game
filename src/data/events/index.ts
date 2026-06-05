@@ -1,9 +1,9 @@
 /**
- * Architecture (Event Registry):
- * This module is the single declarative source of truth for aggregating and routing game events.
- * It strictly flattens, validates (e.g. checking uniqueness and validity of categories), and routes
- * all raw event definitions into `EVENTS_DB`. New domain events should be added to the raw arrays
- * and let this registry handle the implicit merge, avoiding manual array merging across the codebase.
+ * Aggregates and validates raw game event definitions into `EVENTS_DB`.
+ *
+ * @remarks
+ * Add new domain events to the raw arrays and let this registry flatten,
+ * validate, and merge them instead of manually combining event arrays elsewhere.
  */
 import type { UnknownRecord } from '../../types'
 import { TRANSPORT_EVENTS } from './transport'

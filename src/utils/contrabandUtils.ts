@@ -66,8 +66,9 @@ export function computeStashBustRisk(stash: unknown) {
 
 /**
  * Picks a random rarity based on weights.
- * @param rng - Defaults to `secureRandom`.
- * @returns rarity tier
+ * @param rng - Random source used for the weighted roll.
+ * @defaultValue `secureRandom`
+ * @returns Selected rarity tier.
  */
 export function pickRarity(rng = secureRandom) {
   const weights = CONTRABAND_RARITY_WEIGHTS
@@ -91,9 +92,10 @@ export function pickRarity(rng = secureRandom) {
 
 /**
  * Picks a random contraband ID from a specific rarity pool.
- * @param rarity - Rarity.
- * @param rng - Defaults to `secureRandom`.
- * @returns ID of picked contraband or null if none found
+ * @param rarity - Rarity pool to sample.
+ * @param rng - Random source used to select within the pool.
+ * @defaultValue `secureRandom`
+ * @returns Picked contraband id, or null when the pool is empty.
  */
 export function pickRandomContrabandByRarity(
   rarity: string,
@@ -107,8 +109,9 @@ export function pickRandomContrabandByRarity(
 
 /**
  * Picks a random contraband ID using the weighted rarity system.
- * @param rng - Defaults to `secureRandom`.
- * @returns ID of picked contraband or null if no rarity pool is available.
+ * @param rng - Random source shared across rarity and item selection.
+ * @defaultValue `secureRandom`
+ * @returns Picked contraband id, or null when no rarity pool is available.
  */
 export function pickRandomContraband(rng = secureRandom) {
   const rarity = pickRarity(rng)
@@ -117,9 +120,11 @@ export function pickRandomContraband(rng = secureRandom) {
 
 /**
  * Computes the overall chance of dropping contraband based on band luck.
- * @param base - Defaults to `DROP_BASE_CHANCE`.
- * @param luck - Defaults to `0`.
- * @returns probability [0, MAX_DROP_CHANCE]
+ * @param base - Base drop probability before luck scaling.
+ * @defaultValue `DROP_BASE_CHANCE`
+ * @param luck - Band luck contribution.
+ * @defaultValue `0`
+ * @returns Probability clamped to `[0, MAX_DROP_CHANCE]`.
  */
 export function computeDropChance(base = DROP_BASE_CHANCE, luck = 0) {
   const chance = base + finiteNumberOr(luck, 0) * LUCK_MOD_PER_POINT

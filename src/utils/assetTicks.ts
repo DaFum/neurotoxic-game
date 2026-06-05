@@ -20,6 +20,7 @@ import {
   finiteNumberOr
 } from './gameStateUtils'
 import { MODULE_REGISTRY } from './assetModuleRegistry'
+import { clampUnit } from './numberUtils'
 import {
   CHASSIS_CONFIG,
   CONDITION_DECAY_PER_DAY,
@@ -43,18 +44,20 @@ export const resolveCrowdfundProbability = (
   scenePresence: number,
   targetAmount: number
 ): number => {
-  const fameComponent = Math.min(1, Math.max(0, fame) / 200)
-  const sceneComponent = Math.min(1, Math.max(0, scenePresence) / 100)
-  const difficulty = Math.min(1, Math.max(0, targetAmount) / 30000)
+  const fameComponent = clampUnit(fame / 200)
+  const sceneComponent = clampUnit(scenePresence / 100)
+  const difficulty = clampUnit(targetAmount / 30000)
   const raw =
     0.25 + 0.5 * fameComponent + 0.3 * sceneComponent - 0.4 * difficulty
   return Math.max(0.05, Math.min(0.95, raw))
 }
 
 /**
- * Daily decay of every asset's condition, plus net cashflow (revenue − upkeep)
- * for productive assets. Broken assets (condition less than 20) contribute zero boni
- * via the selector layer; they still decay further until repaired.
+ * Applies daily asset decay, revenue, upkeep, liabilities, and risk events.
+ *
+ * @remarks
+ * Broken assets (condition less than 20) produce no revenue modifiers, but they
+ * still decay and continue to incur upkeep until repaired or sold.
  */
 export const processAssetTick = (state: GameState): GameState => {
   if (!state.assets || state.assets.length === 0) return state

@@ -11,6 +11,7 @@ mock.module('../../src/utils/logger', {
 
 const { handleMerchPress } =
   await import('../../src/context/reducers/socialReducer')
+const { formatCurrency } = await import('../../src/utils/numberUtils')
 
 describe('socialReducer.merchPress', () => {
   test('rejects if insufficient funds', () => {
@@ -57,6 +58,31 @@ describe('socialReducer.merchPress', () => {
 
     assert.strictEqual(result.player.money, 850)
     assert.strictEqual(result.band.harmony, 85)
+  })
+
+  test('formats toast cost at dispatch time', () => {
+    const state = {
+      player: { money: 1000, fame: 0, fameLevel: 0 },
+      band: { harmony: 100, inventory: {} },
+      social: { loyalty: 10, controversyLevel: 0 },
+      toasts: []
+    }
+    const result = handleMerchPress(state, {
+      cost: 150,
+      loyaltyGain: 5,
+      controversyGain: 10,
+      harmonyCost: 0,
+      successToast: {
+        messageKey: 'ui:test',
+        type: 'success',
+        options: {}
+      }
+    })
+
+    assert.strictEqual(
+      result.toasts[0].options.cost,
+      formatCurrency(-150, undefined, 'always')
+    )
   })
 
   test('clamps bounds at 100 and 0', () => {

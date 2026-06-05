@@ -18,16 +18,12 @@ type UseArrivalLogicOptions = {
 
 /**
  * Hook to encapsulate reusable arrival sequence logic for both legacy travel and Minigame integration.
- * Note: arrivalUtils owns the travel-event policy. This hook keeps the default policy
- * that skips GIG, FESTIVAL, and FINALE destinations.
  *
- * Idempotency: `isHandlingRef` stores the nodeId currently being processed rather than a plain
- * boolean. This prevents double-execution for the same node while automatically allowing a fresh
- * arrival when the player navigates to a different node.
- *
- * ARRIVAL_REF_RESET_TRIGGER = 'nodeId' — the ref is cleared in a useEffect cleanup keyed on
- * `player.currentNodeId`, so stale guards never block arrivals at subsequent nodes even after
- * an error or a rapid node change.
+ * @remarks
+ * `arrivalUtils` owns the travel-event policy. This hook keeps the default
+ * policy that skips GIG, FESTIVAL, and FINALE destinations. `isHandlingRef`
+ * stores the node id currently being processed, and cleanup keyed on
+ * `player.currentNodeId` clears stale guards for subsequent arrivals.
  */
 export const useArrivalLogic = ({
   onShowHQ,
@@ -55,7 +51,6 @@ export const useArrivalLogic = ({
   // undefined (not null) is the idle sentinel — null is a valid currentNodeId value.
   const isHandlingRef = useRef<string | null | undefined>(undefined)
 
-  // ARRIVAL_REF_RESET_TRIGGER = 'nodeId'
   // Reset the guard whenever the player moves to a new node so a stale `true` value from a
   // previous arrival (or a failed one) never blocks the next legitimate arrival.
   useEffect(() => {

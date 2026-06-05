@@ -262,7 +262,6 @@ ChatterMessage.displayName = 'ChatterMessage'
  * Visual style adapts per scene — different border colors, accent bars, and icons.
  *
  * @param props - Current game-state snapshot used to choose and display chatter messages.
- * - `props.gameState` - Read-only game state slice.
  */
 export const ChatterOverlay = memo(({ gameState }: ChatterOverlayProps) => {
   const { t } = useTranslation(['chatter', 'ui'])

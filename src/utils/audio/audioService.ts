@@ -24,6 +24,10 @@ const subscribe = (listener: AudioServiceListener): (() => void) => {
 
 /**
  * React-facing audio facade with snapshot, subscription, volume, and playback helpers.
+ *
+ * @remarks
+ * `setSfxVolume` intentionally normalizes the React-facing acronym casing while
+ * delegating to `audioManager.setSFXVolume`.
  */
 export const audioService = {
   getState,

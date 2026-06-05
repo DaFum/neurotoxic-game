@@ -1,7 +1,6 @@
 /**
  * Initial State Definition for the Game
  * This module defines the default state structure for the entire game.
- * Module: `initialState`.
  */
 
 import { CHARACTERS } from '../data/characters'
@@ -34,7 +33,6 @@ export const BRAND_ALIGNMENTS = {
 
 /**
  * Default player state configuration
- * Type: `Object`.
  */
 export const DEFAULT_PLAYER_STATE = {
   playerId: null,
@@ -71,14 +69,12 @@ export const DEFAULT_PLAYER_STATE = {
 
 /**
  * Default rival band state configuration
- * Type: `Object`.
  */
 
 const DEFAULT_RIVAL_BAND_STATE: RivalBandState | null = null
 
 /**
  * Default band state configuration
- * Type: `Object`.
  */
 export const DEFAULT_BAND_STATE: BandState = {
   members: [
@@ -137,7 +133,6 @@ export const DEFAULT_BAND_STATE: BandState = {
 
 /**
  * Default social media state configuration
- * Type: `Object`.
  */
 export const DEFAULT_SOCIAL_STATE = {
   instagram: 228,
@@ -166,7 +161,6 @@ export const DEFAULT_SOCIAL_STATE = {
 
 /**
  * Default gig modifiers configuration
- * Type: `Object`.
  */
 export const DEFAULT_GIG_MODIFIERS = {
   promo: false,
@@ -178,7 +172,6 @@ export const DEFAULT_GIG_MODIFIERS = {
 
 /**
  * Default settings configuration
- * Type: `Object`.
  */
 const getSavedSettings = () => {
   try {
@@ -230,7 +223,6 @@ const sanitizeSettings = (
 
 /**
  * Complete initial state for the game
- * Type: `Object`.
  */
 const initialState: GameState = {
   version: 2,

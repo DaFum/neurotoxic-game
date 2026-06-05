@@ -46,7 +46,7 @@ export const getTotalMerchStock = (
   let total = 0
   for (const merchKey of HQ_ITEMS_BY_MERCH_KEY.keys()) {
     const value = inventory[merchKey]
-    total += typeof value === 'number' && Number.isFinite(value) ? value : 0
+    total += finiteNumberOr(value, 0)
   }
   return Math.max(0, total)
 }

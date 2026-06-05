@@ -14,12 +14,12 @@ import type { SocketId } from '../../../types/kabelsalat'
 /**
  * Runs the Kabelsalat countdown and mutates supplied state setters when time expires or wiring completes.
  * @param connections - Current cable-to-socket connection map.
- * @param isPoweredOn - Whether powered on is active.
- * @param isGameOver - Whether game over is active.
+ * @param isPoweredOn - Stops the countdown after successful wiring.
+ * @param isGameOver - Stops the countdown after timeout or completion.
  * @param isWinningRef - Ref that guards one-shot win transitions.
- * @param setTimeLeft - State setter for time left.
- * @param setIsPoweredOn - State setter for is powered on.
- * @param setIsGameOver - State setter for is game over.
+ * @param setTimeLeft - Setter decremented once per second.
+ * @param setIsPoweredOn - Setter used when every socket is wired.
+ * @param setIsGameOver - Setter used when time expires.
  */
 export const useKabelsalatTimer = (
   connections: Partial<Record<SocketId, CableId>>,

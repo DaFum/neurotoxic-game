@@ -4,7 +4,6 @@
  * Note: The recursive context sanitizer redacts sensitive keys, blocks
  * prototype-pollution keys such as __proto__/constructor/prototype, and
  * safely handles cyclic structures via WeakSet.
- * Module: `errorHandler`.
  */
 
 import { logger } from './logger'
@@ -13,8 +12,6 @@ import { isPlainRecord, sanitizeTraversableValue } from './objectUtils'
 // Public API: shared error taxonomy and base classes for scene/util integration and future extension.
 /**
  * Severity labels used by centralized error handling and logging.
- * @readonly
- * Enum: `string`
  */
 export const ErrorSeverity = {
   LOW: 'low',
@@ -25,8 +22,6 @@ export const ErrorSeverity = {
 
 /**
  * Error categories used to classify game, UI, storage, audio, and network failures.
- * @readonly
- * Enum: `string`
  */
 export const ErrorCategory = {
   STATE: 'state',
@@ -157,8 +152,7 @@ export class AudioError extends GameError {
 }
 
 /**
- * Error log storage for debugging
- * Type: `Array<Object>`.
+ * In-memory error log retained for debugging and the crash handler.
  */
 const errorLog: ErrorInfoObject[] = []
 const MAX_ERROR_LOG_SIZE = 100
@@ -513,11 +507,17 @@ export const initGlobalErrorHandling = () => {
 initGlobalErrorHandling()
 
 /**
- * Creates a safe wrapper for localStorage operations
- * @param operation - Operation name for logging
- * @param fn - Function to execute
- * @param fallbackValue - Optional. Value to return on error
- * @returns Result or fallback value
+ * Runs a storage operation with retry and optional fallback handling.
+ *
+ * @typeParam T - Operation result and fallback value shape.
+ * @param operation - Operation name included in storage diagnostics.
+ * @param fn - Storage operation to execute.
+ * @param fallbackValue - Value returned after retries fail. Passing
+ * `undefined` explicitly still counts as a fallback.
+ * @returns Operation result, or the supplied fallback after all retries fail.
+ *
+ * @throws {@link StorageError}
+ * Throws after all retries fail when no fallback argument is supplied.
  */
 export function runSafeStorageOperation<T>(operation: string, fn: () => T): T
 export function runSafeStorageOperation<T>(

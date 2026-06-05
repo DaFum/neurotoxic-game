@@ -29,7 +29,7 @@ export const generateLightningSeeds = (): LightningSeed[] => {
  * @param cableId - Cable identifier.
  * @param socketId - Socket identifier.
  * @param socketOrder - Current socket render order.
- * @returns Computed result.
+ * @returns SVG path `d` string, or an empty string when the cable or socket position cannot be resolved.
  */
 export const getMessyPath = (
   cableId: CableId,

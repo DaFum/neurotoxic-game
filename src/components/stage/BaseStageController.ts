@@ -14,6 +14,9 @@ import type { StageControllerOptions } from '../../types/components'
 
 /**
  * Coordinates shared stage rendering and lifecycle behavior.
+ *
+ * @typeParam TState - Mutable state shape read by stage subclasses during
+ * ticker updates.
  */
 export class BaseStageController<TState = unknown> {
   containerRef: RefObject<HTMLElement | null>
@@ -144,6 +147,16 @@ export class BaseStageController<TState = unknown> {
     }
   }
 
+  /**
+   * Initializes the Pixi application, root container, resize hooks, and ticker.
+   *
+   * @remarks
+   * Reuses an in-flight init promise so StrictMode-style replays do not create
+   * duplicate apps. Subclasses provide renderer-specific setup through `setup`.
+   *
+   * @param options - Pixi application options merged over the shared defaults.
+   * @returns Promise that resolves after subclass setup and ticker registration.
+   */
   async init(options: Partial<ApplicationOptions> = {}) {
     this.isDisposed = false
     if (this.initPromise) return this.initPromise
@@ -152,16 +165,41 @@ export class BaseStageController<TState = unknown> {
     return this.initPromise
   }
 
-  // Abstract methods to be overridden
+  /**
+   * Creates subclass-owned Pixi resources after the shared app/container exists.
+   *
+   * @remarks
+   * Subclasses override this hook and must clean up any assigned
+   * Graphics/Sprite/Container fields in their own `dispose` before calling
+   * `super.dispose()`.
+   */
   async setup() {}
+
+  /**
+   * Advances subclass simulation for one ticker frame.
+   *
+   * @param _dt - Pixi ticker delta in milliseconds.
+   */
   update(_dt: number) {}
+
+  /**
+   * Redraws subclass geometry after host size changes.
+   */
   draw() {}
 
+  /**
+   * Handles host resize notifications and delegates drawing to the subclass.
+   */
   handleResize() {
     if (!this.app) return
     this.draw()
   }
 
+  /**
+   * Runs one Pixi ticker frame through the external update callback and subclass update hook.
+   *
+   * @param ticker - Pixi ticker object containing the elapsed milliseconds.
+   */
   handleTicker(ticker: Pick<Ticker, 'deltaMS'>) {
     if (this.isDisposed) return
     if (this.updateRef.current) this.updateRef.current(ticker.deltaMS)
@@ -169,6 +207,14 @@ export class BaseStageController<TState = unknown> {
     this.update(ticker.deltaMS)
   }
 
+  /**
+   * Removes resize listeners and destroys the shared Pixi application.
+   *
+   * @remarks
+   * Subclasses must destroy their own Pixi fields before calling this method;
+   * this base cleanup only owns the app, root container reference, ticker, and
+   * host resize subscription.
+   */
   dispose() {
     this.isDisposed = true
     this.initPromise = null

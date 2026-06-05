@@ -1,7 +1,6 @@
 /**
  * Shared UI Components
  * Reusable UI elements used across multiple components.
- * Module: `shared`.
  */
 
 import { memo, type HTMLAttributes, type ReactNode } from 'react'
@@ -42,10 +41,6 @@ export {
 /**
  * StatBox - Displays a single statistic with an icon
  * @param props - Statistic label, display value, icon, and optional wrapper classes.
- * - `props.label` - Stat label
- * - `props.value` - Stat value
- * - `props.icon` - Icon or emoji
- * - `props.className` - Optional. Additional CSS classes
  */
 interface StatBoxProps {
   label: string
@@ -109,14 +104,6 @@ interface ProgressBarProps extends Omit<
 /**
  * Displays clamped progress with optional label, value text, and warning animation.
  * @param props - Progress label/value/max, color class, size variant, value visibility, warning state, and wrapper attributes.
- * - `props.label` - Accessible label and optional visible label text.
- * - `props.value` - Current value; non-finite values render as `0`.
- * - `props.max` - Maximum value; values less than or equal to `0` render against `1`.
- * - `props.color` - CSS class applied to the filled bar.
- * - `props.size` - Size variant. Defaults to `'md'`.
- * - `props.showValue` - Whether to show the numeric value text. Defaults to `true`.
- * - `props.warn` - Whether to apply warning animation styling. Defaults to `false`.
- * - `props.className` - Additional classes for the outer progressbar element.
  */
 export const ProgressBar = memo(function ProgressBar({
   label,
@@ -180,10 +167,6 @@ interface PanelProps {
 /**
  * Provides the shared framed panel shell with optional title and content layout classes.
  * @param props - Display data and visual options for the panel view.
- * - `props.title` - Optional title for the panel header.
- * - `props.children` - Panel content.
- * - `props.className` - Optional. Additional CSS classes applied to the outer container.
- * - `props.contentClassName` - Optional. Additional CSS classes applied to the inner content wrapper.
  */
 export const Panel = memo(function Panel({
   title,

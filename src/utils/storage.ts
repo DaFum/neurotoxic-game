@@ -18,6 +18,16 @@ export const GLOBAL_SETTINGS_KEY = 'neurotoxic_global_settings'
 
 /**
  * Runs a storage operation through the shared retry and fallback wrapper.
+ *
+ * @typeParam T - Operation result and fallback value shape.
+ * @param operation - Operation name included in storage diagnostics.
+ * @param fn - Storage operation to execute.
+ * @param fallbackValue - Value returned after retries fail. Passing
+ * `undefined` explicitly still counts as a fallback.
+ * @returns Operation result, or the supplied fallback when one is provided.
+ *
+ * @throws {@link StorageError}
+ * Throws after all retries fail when no fallback argument is supplied.
  */
 export function safeStorageOperation<T>(operation: string, fn: () => T): T
 export function safeStorageOperation<T>(
@@ -28,15 +38,20 @@ export function safeStorageOperation<T>(
 export function safeStorageOperation<T>(
   operation: string,
   fn: () => T,
-  fallbackValue?: T | null
+  fallbackValue: undefined
+): T | undefined
+export function safeStorageOperation<T>(
+  operation: string,
+  fn: () => T,
+  fallbackValue: null
 ): T | null
 export function safeStorageOperation<T>(
   operation: string,
   fn: () => T,
-  fallbackValue?: T | null
-): T | null {
-  if (fallbackValue !== undefined) {
-    return runSafeStorageOperation(operation, fn, fallbackValue)
+  ...fallbackValue: [] | [T | null | undefined]
+): T | null | undefined {
+  if (fallbackValue.length > 0) {
+    return runSafeStorageOperation(operation, fn, fallbackValue[0])
   }
   return runSafeStorageOperation(operation, fn)
 }

@@ -296,7 +296,7 @@ const applySharedBandEffect = (
         effectType as keyof typeof ADDITIVE_BAND_EFFECT_FIELDS
       ]
     const band = newBand as unknown as Record<string, number | undefined>
-    band[field] = (band[field] || 0) + value
+    band[field] = finiteNumberOr(band[field], 0) + finiteNumberOr(value, 0)
     return true
   }
   if (effectType === 'stamina_max') {
@@ -330,12 +330,11 @@ const applySharedBandEffect = (
 }
 
 /**
- * Architecture (Redux Orchestration / State Transitions):
- * Pure helper function to handle adding contraband.
- * This is exposed as a direct state-update helper rather than an action
- * to allow other reducers (like minigameReducer and tradeReducer) to perform atomic
- * state updates across domain boundaries without requiring complex multi-action orchestration
- * in the hook layer, avoiding potential stale-state race conditions.
+ * Adds contraband to the band stash while preserving stacking and uniqueness rules.
+ *
+ * @remarks
+ * This direct state-update helper lets reducers perform atomic cross-domain
+ * updates without dispatching multiple hook-layer actions.
  */
 export const addContrabandHelper = (
   state: GameState,
@@ -515,11 +514,12 @@ export const handleCraftItem = (
 }
 
 /**
- * Pure helper function to apply the effect of a contraband item.
- * @param band - Current band state
- * @param item - Contraband item to apply
- * @param memberId - Target member ID for targeted effects
- * @returns Updated band object, or null if application fails (e.g. invalid target)
+ * Applies a contraband effect and tracks active temporary modifiers.
+ *
+ * @param band - Current band state.
+ * @param item - Contraband item definition to apply.
+ * @param memberId - Target member id required by member-scoped effects.
+ * @returns Updated band object, or null when the effect cannot target a member.
  */
 const applyContrabandEffect = (
   band: BandState,
@@ -705,6 +705,10 @@ export const handleToggleNeuroDecimator = (
  * @param state - Game state before the band action.
  * @param action - Game action that may affect the band slice.
  * @returns State after the matching band reducer handles the action.
+ *
+ * @throws {@link Error}
+ * Throws through `assertNever` when an impossible action branch reaches the
+ * default case.
  */
 export const bandReducer = (
   state: GameState,

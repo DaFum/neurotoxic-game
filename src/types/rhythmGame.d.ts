@@ -113,6 +113,7 @@ export type RhythmModifiers = {
  */
 export type RhythmGameRefState = {
   notes: RhythmNote[]
+  /** First note index still eligible for automatic miss detection. */
   nextMissCheckIndex: number
   lanes: RhythmLane[]
   speed: number
@@ -130,13 +131,16 @@ export type RhythmGameRefState = {
   hasSubmittedResults: boolean
   songTransitioning: boolean
   songStats: RhythmSongStatsEntry[]
+  /** Index of the most recent setlist song that completed playback. */
   lastEndedSongIndex: number
   currentSongStartScore: number
   rivalPenaltyActive: boolean
   currentSongStartPerfectHits: number
   currentSongStartMisses: number
+  /** Whether every setlist entry has reached its completion boundary. */
   setlistCompleted: boolean
   notesVersion: number
+  /** Whether transport was paused by an overlay rather than normal playback end. */
   transportPausedByOverlay: boolean
   toxicTimeTotal: number
   toxicModeEndTime: number

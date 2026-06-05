@@ -2,10 +2,6 @@ import type { GameState } from '../../types'
 import { hasStateItem } from '../../utils/gameStateUtils'
 import { finiteNumberOr } from '../../utils/finiteNumber'
 
-/**
- * Consequences Event Pool
- */
-
 import { QUEST_APOLOGY_TOUR } from '../questsConstants'
 import { hasActiveQuest } from '../../utils/questUtils'
 import { isOnCooldown } from '../../utils/gameStateUtils'

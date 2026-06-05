@@ -13,8 +13,8 @@ type GigVisualStats = {
 
 /**
  * Calculates chaos visual filter styles based on stats.
- * @param isToxicMode - Is toxic mode.
- * @param overload - Overload.
+ * @param isToxicMode - Forces the toxic-mode filter when active.
+ * @param overload - Drives saturation and hue shift above overload thresholds.
  * @returns CSS style object
  */
 export const calculateChaosStyle = (

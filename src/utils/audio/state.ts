@@ -85,6 +85,10 @@ export const audioState = {
 
 /**
  * Resets the gig state to default values.
+ *
+ * @remarks
+ * This only clears the gig playback subset. Instrument setup, cached buffers,
+ * preferences, and ambient playback state remain owned by their dedicated paths.
  */
 export const resetGigState = () => {
   audioState.gigSource = null

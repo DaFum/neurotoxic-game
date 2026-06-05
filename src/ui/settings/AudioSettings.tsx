@@ -2,6 +2,7 @@ import { memo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { VolumeSlider } from '../shared/VolumeSlider'
 import { ToggleSwitch } from '../shared/ToggleSwitch'
+import { clampUnit } from '../../utils/numberUtils'
 import type { ChangeEvent } from 'react'
 
 type AudioSettingsProps = {
@@ -38,7 +39,7 @@ export const AudioSettings = memo(function AudioSettings({
       // Normalize at the UI boundary to match the slider's max='1' contract;
       // AudioManager re-clamps downstream but defensive clamping here keeps
       // out-of-range numeric inputs from propagating through state.
-      cb(Math.min(1, Math.max(0, parsed)))
+      cb(clampUnit(parsed))
     },
     []
   )

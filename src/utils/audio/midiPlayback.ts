@@ -7,6 +7,7 @@ import { ensureAudioContext } from './context'
 import { stopAudio, stopAudioInternal } from './playback'
 import { midiUrlMap } from './assets'
 import { calculateTimeFromTicks, preprocessTempoMap } from '../rhythmUtils'
+import { clampUnit } from '../numberUtils'
 import type { ProcessedTempoMapEntry } from '../../types/rhythm'
 import type { DrumKitSynth } from '../../types/audio'
 import {
@@ -156,7 +157,7 @@ export function playNoteAtTime(
 ): void {
   if (!audioState.isSetup) return
   const now = Number.isFinite(whenSeconds) ? whenSeconds : Tone.now()
-  const vel = Math.max(0, Math.min(1, velocity / 127))
+  const vel = clampUnit(velocity / 127)
   triggerInstrumentNote(lane, midiPitch, now, vel)
 }
 
@@ -600,7 +601,7 @@ function getClampedDuration(dur: unknown): number {
 
 function getClampedVelocity(vel: unknown): number {
   const base = isFiniteNumber(vel) ? vel : 1
-  return Math.max(0, Math.min(1, base))
+  return clampUnit(base)
 }
 
 type SynthsContext = {
