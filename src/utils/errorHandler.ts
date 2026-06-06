@@ -542,7 +542,7 @@ export function runSafeStorageOperation<T>(
 ): T | null | undefined {
   let retries = 2
   let lastError: unknown = null
-  const hasFallback = fallbackValue.length > 0
+  const hasFallback = arguments.length > 2
 
   while (retries >= 0) {
     try {

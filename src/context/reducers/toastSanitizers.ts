@@ -1,5 +1,5 @@
 import type { ToastPayload } from '../../types'
-import { isEmptyObject } from '../../utils/gameStateUtils'
+import { isEmptyObject } from '../../utils/gameState'
 
 /**
  * Toast types accepted from runtime and persisted toast payloads.

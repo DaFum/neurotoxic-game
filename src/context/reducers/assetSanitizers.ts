@@ -2,7 +2,7 @@ import {
   clamp0to100,
   finiteNumberOr,
   isLooseRecord
-} from '../../utils/gameStateUtils'
+} from '../../utils/gameState'
 import { isForbiddenKey } from '../../utils/objectUtils'
 import { MODULE_REGISTRY } from '../../utils/assetModuleRegistry'
 import { CHASSIS_CONFIG } from '../../utils/assetConfig'

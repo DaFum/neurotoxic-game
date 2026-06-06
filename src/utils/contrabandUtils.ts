@@ -3,7 +3,7 @@ import {
   CONTRABAND_BY_RARITY
 } from '../data/contraband'
 import { secureRandom } from './crypto'
-import { finiteNumberOr } from './gameStateUtils'
+import { finiteNumberOr } from './gameState'
 import type { Rarity } from '../types'
 
 /** Base probability for a contraband drop after travel. */

@@ -9,7 +9,7 @@ import {
   clampBandHarmony,
   BALANCE_CONSTANTS,
   finiteNumberOr
-} from './gameStateUtils'
+} from './gameState'
 import { secureRandom } from './crypto'
 import i18n from '../i18n'
 import { normalizeVenueId } from './mapUtils'

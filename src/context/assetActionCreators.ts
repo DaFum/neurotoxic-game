@@ -40,7 +40,7 @@ import {
   selectAssetsMap,
   selectAssetSlotsMap
 } from '../utils/assetSelectors'
-import { finiteNumberOr } from '../utils/gameStateUtils'
+import { finiteNumberOr } from '../utils/gameState'
 import { getSafeUUID } from '../utils/crypto'
 import {
   VALID_ASSET_ACQUISITION_MODES,

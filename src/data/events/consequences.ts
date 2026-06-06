@@ -1,10 +1,10 @@
 import type { GameState } from '../../types'
-import { hasStateItem } from '../../utils/gameStateUtils'
+import { hasStateItem } from '../../utils/gameState'
 import { finiteNumberOr } from '../../utils/finiteNumber'
 
 import { QUEST_APOLOGY_TOUR } from '../questsConstants'
 import { hasActiveQuest } from '../../utils/questUtils'
-import { isOnCooldown } from '../../utils/gameStateUtils'
+import { isOnCooldown } from '../../utils/gameState'
 
 /** Raw consequence event definitions consumed by the event registry. */
 export const CONSEQUENCE_EVENTS = [

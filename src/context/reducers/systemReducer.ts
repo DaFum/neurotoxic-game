@@ -40,7 +40,7 @@ import {
   isEmptyObject,
   finiteNumberOr,
   isFiniteNumber
-} from '../../utils/gameStateUtils'
+} from '../../utils/gameState'
 import { calculateDailyUpdates } from '../../utils/simulationUtils'
 import {
   DEFAULT_MERCH_PRICES,

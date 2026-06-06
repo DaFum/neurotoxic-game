@@ -1,6 +1,6 @@
 import { logger } from '../logger'
 import { secureRandom } from '../crypto'
-import { calculateAppliedDelta } from '../gameStateUtils'
+import { calculateAppliedDelta } from '../gameState'
 import { buildTemplateContext } from './templateResolver'
 import { eventEngine } from './eventEngineCore'
 import { asNumber } from './helpers'

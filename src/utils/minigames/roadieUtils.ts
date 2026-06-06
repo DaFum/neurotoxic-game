@@ -1,5 +1,5 @@
 import { audioService } from '../audio/audioEngine'
-import { clamp0to100 } from '../gameStateUtils'
+import { clamp0to100 } from '../gameState'
 import { ROADIE_GRID_HEIGHT } from '../../hooks/minigames/minigameConstants'
 import type { RoadieRenderState } from '../../components/stage/RoadiePlayerManager'
 

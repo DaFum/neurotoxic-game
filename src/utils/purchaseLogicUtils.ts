@@ -11,7 +11,7 @@ import {
   clampPlayerFame,
   calculateFameLevel,
   finiteNumberOr
-} from './gameStateUtils'
+} from './gameState'
 import type { PlayerState, BandState, BandMember } from '../types'
 import type { Effect, PurchaseItem, UnlockMessage } from '../types/components'
 import type { PlayerPatch, BandPatch } from '../types/purchase'

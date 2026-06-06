@@ -14,7 +14,7 @@ import {
   clampMemberMood,
   BALANCE_CONSTANTS,
   finiteNumberOr
-} from './gameStateUtils'
+} from './gameState'
 import type {
   PlayerState,
   BandState,

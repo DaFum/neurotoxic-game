@@ -1,5 +1,5 @@
 import { resolveEventChoice } from '../utils/eventEngine'
-import { isLooseRecord } from '../utils/gameStateUtils'
+import { isLooseRecord } from '../utils/gameState'
 import { logger } from '../utils/logger'
 import { gameReducer } from '../context/gameReducer'
 import { GAME_PHASES } from '../context/gameConstants'

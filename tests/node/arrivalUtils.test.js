@@ -5,7 +5,7 @@ import {
   processTravelEvents
 } from '../../src/utils/arrivalUtils'
 import { GAME_PHASES } from '../../src/context/gameConstants'
-import { BALANCE_CONSTANTS } from '../../src/utils/gameStateUtils'
+import { BALANCE_CONSTANTS } from '../../src/utils/gameState'
 
 describe('handleNodeArrival', () => {
   const getMocks = () => ({

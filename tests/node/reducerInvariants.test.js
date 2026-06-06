@@ -19,7 +19,7 @@ import {
   clampVanCondition,
   calcCancellationRisk,
   BALANCE_CONSTANTS
-} from '../../src/utils/gameStateUtils'
+} from '../../src/utils/gameState'
 import { handleUpdatePlayer } from '../../src/context/reducers/playerReducer'
 import { handleUpdateBand } from '../../src/context/reducers/bandReducer'
 import { createInitialState } from '../../src/context/initialState'

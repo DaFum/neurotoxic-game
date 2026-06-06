@@ -1,6 +1,6 @@
 import { logger } from '../logger'
 import { secureRandom } from '../crypto'
-import { finiteNumberOr } from '../gameStateUtils'
+import { finiteNumberOr } from '../gameState'
 import { MODULE_REGISTRY } from '../assetModuleRegistry'
 import { StateError } from '../errorHandler'
 import { shuffleInPlace } from '../shuffleUtils'

@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { calcCancellationRisk } from '../../src/utils/gameStateUtils'
+import { calcCancellationRisk } from '../../src/utils/gameState'
 
 describe('calcCancellationRisk', () => {
   const cases = [

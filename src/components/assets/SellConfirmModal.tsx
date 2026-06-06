@@ -7,7 +7,7 @@ import { getChassisImagePrompt } from '../../utils/imageGen'
 import { formatCurrency } from '../../utils/numberUtils'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import { calculateChassisGrossSaleValue } from '../../utils/assetSelectors'
-import { finiteNumberOr } from '../../utils/gameStateUtils'
+import { finiteNumberOr } from '../../utils/gameState'
 import type { LongTermAsset } from '../../types/assets'
 
 interface Props {

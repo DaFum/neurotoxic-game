@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useGameSelector, useGameActions } from '../context/GameState'
 import { ShopItem } from './bandhq/ShopItem'
 import { usePurchaseLogic } from './bandhq/hooks/usePurchaseLogic'
-import { calculateFameLevel, finiteNumberOr } from '../utils/gameStateUtils'
+import { calculateFameLevel, finiteNumberOr } from '../utils/gameState'
 import type { CatalogItem, PurchaseItem } from '../types/components'
 import type { PlayerPatch } from '../types/purchase'
 

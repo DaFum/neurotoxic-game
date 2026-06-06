@@ -19,7 +19,7 @@ import {
   clampZealotry,
   clampControversyLevel,
   clampNonNegative
-} from '../../utils/gameStateUtils'
+} from '../../utils/gameState'
 import { sanitizeSuccessToast } from './toastSanitizers'
 import { QuestEvents } from '../../utils/questProgress'
 import {

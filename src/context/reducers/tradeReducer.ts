@@ -5,7 +5,7 @@ import {
   calculateFameLevel,
   clampNonNegative,
   isForbiddenKey
-} from '../../utils/gameStateUtils'
+} from '../../utils/gameState'
 import {
   isLooseRecord,
   sanitizeTraversableValue,

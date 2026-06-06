@@ -1,4 +1,4 @@
-import { clamp0to100, finiteNumberOr } from '../gameStateUtils'
+import { clamp0to100, finiteNumberOr } from '../gameState'
 import { bandHasTrait } from '../traitUtils'
 import type { BandState } from '../../types'
 

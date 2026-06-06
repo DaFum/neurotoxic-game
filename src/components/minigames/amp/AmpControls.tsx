@@ -1,7 +1,7 @@
 import { memo, useCallback, type ChangeEvent, type KeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { AmpControlsProps } from '../../../types/components'
-import { clampAmpDial } from '../../../utils/gameStateUtils'
+import { clampAmpDial } from '../../../utils/gameState'
 
 /**
  * Presents amp dial tuning, overdrive, interference purge, and hijack override controls.

@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 import test from 'node:test'
 import { createInitialState } from '../src/context/initialState'
-import { applyEventDelta } from '../src/utils/gameStateUtils'
+import { applyEventDelta } from '../src/utils/gameState'
 import { eventEngine } from '../src/utils/eventEngine'
 import { checkTraitUnlocks } from '../src/utils/unlockCheck'
 

@@ -29,7 +29,7 @@ import {
   calculateFameGain,
   finiteNumberOr,
   BALANCE_CONSTANTS
-} from '../utils/gameStateUtils'
+} from '../utils/gameState'
 import { logger } from '../utils/logger'
 import i18n from '../i18n'
 import { formatCurrency } from '../utils/numberUtils'

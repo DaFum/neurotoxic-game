@@ -10,7 +10,7 @@ import {
 } from '../../utils/audio/audioEngine'
 import { handleError } from '../../utils/errorHandler'
 import { logger } from '../../utils/logger'
-import { clampBandHarmony } from '../../utils/gameStateUtils'
+import { clampBandHarmony } from '../../utils/gameState'
 import { buildGigStatsSnapshot } from '../../utils/gigStats'
 import type { GameMap, GameState, GigModifiers, PlayerState } from '../../types'
 import type {

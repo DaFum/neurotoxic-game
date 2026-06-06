@@ -2,7 +2,7 @@ import { MERCH_PROFILES } from '../../data/merch'
 import type { MerchItemProfile } from '../../data/merch'
 import type { AssetModifiers } from '../../types/assets'
 import { NEUTRAL_ASSET_MODIFIERS } from '../assetSelectors'
-import { finiteNumberOr } from '../gameStateUtils'
+import { finiteNumberOr } from '../gameState'
 
 export { DEFAULT_MERCH_PRICES } from '../../data/merch'
 /**

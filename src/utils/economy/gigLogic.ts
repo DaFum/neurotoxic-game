@@ -1,7 +1,7 @@
 import { NEUTRAL_ASSET_MODIFIERS } from '../assetSelectors'
 import type { AssetModifiers } from '../../types/assets'
 import { logger } from '../logger'
-import { clamp0to100, finiteNumberOr } from '../gameStateUtils'
+import { clamp0to100, finiteNumberOr } from '../gameState'
 import { clampUnit } from '../numberUtils'
 import { SPENDING_PROFILE_MERCH_MULTIPLIER } from '../../data/merch'
 import type {

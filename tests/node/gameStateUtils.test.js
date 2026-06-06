@@ -13,7 +13,7 @@ import {
   FAME_PROGRESS_CONSTANTS,
   calculateAppliedDelta,
   isForbiddenKey
-} from '../../src/utils/gameStateUtils'
+} from '../../src/utils/gameState'
 
 test('clampNonNegative edge cases', () => {
   assert.strictEqual(clampNonNegative(10), 10)

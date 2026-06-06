@@ -14,7 +14,7 @@ import {
   clampBandHarmony,
   clampControversyLevel,
   finiteNumberOr
-} from '../../utils/gameStateUtils'
+} from '../../utils/gameState'
 import { getTraitById, normalizeTraitMap } from '../../utils/traitUtils'
 import { getSafeUUID } from '../../utils/crypto'
 import { sanitizeSuccessToast } from './toastSanitizers'
