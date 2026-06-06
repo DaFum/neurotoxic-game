@@ -23,13 +23,12 @@ import { calculateFameLevel } from './calculations'
 
 
 
-import { isForbiddenKey, isLooseRecord, safeJsonParse } from '../objectUtils'
+import { isForbiddenKey, isLooseRecord } from '../objectUtils'
 
 import type {
   BandMember,
   GameState,
   RelationshipChange,
-  StashEntry,
   EventDelta
 } from '../../types'
 
