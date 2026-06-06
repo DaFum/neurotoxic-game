@@ -60,9 +60,9 @@ const logicEnv = {
 }
 const nodeWorkers = baseEnv.NODE_TEST_CONCURRENCY
 const uiWorkers = baseEnv.VITEST_MAX_WORKERS
-// Use trusted computed values for logging to avoid exposing env-derived data.
-const nodeWorkersForLog = nodeWorkersDefault
-const uiWorkersForLog = uiWorkersDefault
+// Parse env-derived strings to integers to sanitize them for logging and preserve overrides.
+const nodeWorkersForLog = Number.parseInt(nodeWorkers, 10)
+const uiWorkersForLog = Number.parseInt(uiWorkers, 10)
 
 // ---------------------------------------------------------------------------
 // Spawn helper
