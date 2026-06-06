@@ -57,6 +57,14 @@ const resolveBandMeetingCost = (trainingCostMultiplier: unknown): number => {
 const isTestRuntime =
   typeof process !== 'undefined' && process.env?.NODE_ENV === 'test'
 
+/**
+ * Internal testing utilities exposed only during test execution.
+ *
+ * @remarks
+ * This export is `undefined` in production. It exposes hidden module state
+ * and internal helpers strictly to enable isolated unit testing without modifying
+ * production signatures.
+ */
 export const __testInternals:
   | {
       resetLastMinigameFallback: () => void
