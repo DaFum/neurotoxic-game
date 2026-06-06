@@ -117,7 +117,7 @@ const initGameState = (): GameState => {
 /**
  * Provides global game state and stable dispatch actions to the React tree.
  *
- * @param props - Provider props containing optional child nodes.
+ * @param children - Optional child nodes to be wrapped by the context providers.
  * @returns React context providers wrapping the supplied children.
  */
 export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
@@ -219,9 +219,9 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
 }
 
 /**
- * Hook to access the global game dispatch functions only (stable reference).
+ * Hook to access the global game dispatch functions only with a stable reference.
  *
- * @returns The action dispatchers.
+ * @returns An object containing the bound game action dispatchers.
  */
 export const useGameDispatch = () => {
   return useRequiredContext(GameDispatchContext, 'useGameDispatch')
@@ -229,9 +229,11 @@ export const useGameDispatch = () => {
 
 /**
  * Hook to access stable game actions only.
+ *
+ * @remarks
  * This is the preferred action surface for new code.
  *
- * @returns The action dispatchers.
+ * @returns An object containing the bound game action dispatchers.
  */
 export const useGameActions = () => {
   return useRequiredContext(GameDispatchContext, 'useGameActions')
@@ -239,13 +241,13 @@ export const useGameActions = () => {
 
 /**
  * Hook to select a specific state slice.
- * This is the preferred state surface for new code.
- * Note: Re-renders are still triggered by any context update; for
- * equality-based bail-out, memoize the consuming component with React.memo.
  *
- * @typeParam T - Selected state slice type.
- * @param selector - State selector.
- * @returns Selected state slice.
+ * @remarks
+ * This is the preferred state surface for new code. Note that re-renders are still triggered by any context update; for equality-based bail-out, memoize the consuming component with `React.memo`.
+ *
+ * @typeParam T - The expected structure of the selected state slice.
+ * @param selector - Function to extract the desired state slice.
+ * @returns The specific state slice extracted by the selector.
  */
 export function useGameSelector<T>(selector: (state: GameState) => T): T {
   const state = useRequiredContext(GameStateContext, 'useGameSelector')
