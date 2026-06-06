@@ -1,7 +1,7 @@
 import { startMetalGenerator } from './proceduralMetal'
 import { playMidiFile, playSongFromData } from './midiPlayback'
 import { hasAudioAsset } from './assets'
-import { startGigClock, startGigPlayback, getGigTimeMs } from './playback'
+import { startGigClock, startGigPlayback, getGigTimeMs } from './gigPlayback'
 import { getAudioContextTimeSec, getToneStartTimeSec } from './context'
 import { handleError, AudioError } from '../errorHandler'
 import { logger } from '../logger'

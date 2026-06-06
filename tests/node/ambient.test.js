@@ -28,7 +28,7 @@ const mockStopAudio = mock.fn(() => {
   capturedReqIds.push(mockAudioState.playRequestId)
 })
 mock.module(
-  new URL('../../src/utils/audio/playback.ts', import.meta.url).href,
+  new URL('../../src/utils/audio/transportControl.ts', import.meta.url).href,
   {
     namedExports: { stopAudio: mockStopAudio }
   }

@@ -11,7 +11,7 @@ type TonePart = Tone.Part<unknown>
 // Tone sequences can carry either single-note values or nested arrays (polyrhythms).
 type ToneSequence = Tone.Sequence<string | null> | Tone.Sequence<string[]>
 type BufferSource = AudioBufferSourceNode
-type GigEndInfo = {
+export type GigEndInfo = {
   filename: string | null
   durationMs: number | null
   offsetMs: number

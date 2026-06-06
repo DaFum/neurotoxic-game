@@ -70,8 +70,8 @@ test('getGigTimeMs', async t => {
   const ToneModule = await import('tone')
   const mockTone = ToneModule.default || ToneModule.Tone || ToneModule
 
-  const { getGigTimeMs, audioState } =
-    await import('../../src/utils/audio/playback')
+  const { getGigTimeMs } = await import('../../src/utils/audio/gigPlayback')
+  const { audioState } = await import('../../src/utils/audio/state')
   const moduleState =
     audioState || (await import('../../src/utils/audio/state')).audioState
 

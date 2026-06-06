@@ -1,6 +1,6 @@
 import { logger } from '../logger'
 import { audioState } from './state'
-import { stopAudio } from './playback'
+import { stopAudio } from './transportControl'
 import { midiUrlMap, oggCandidates, loadAudioBuffer } from './assets'
 import { createAndConnectBufferSource } from './sharedBufferUtils'
 import { selectRandomItem } from './selectionUtils'

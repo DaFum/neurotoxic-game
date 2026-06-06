@@ -134,7 +134,7 @@ mock.module(new URL('../../src/utils/audio/context.ts', import.meta.url).href, {
 const mockStopAudioInternal = mock.fn()
 const mockStopAudio = mock.fn()
 mock.module(
-  new URL('../../src/utils/audio/playback.ts', import.meta.url).href,
+  new URL('../../src/utils/audio/transportControl.ts', import.meta.url).href,
   {
     namedExports: {
       stopAudioInternal: mockStopAudioInternal,

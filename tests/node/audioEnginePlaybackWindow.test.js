@@ -6,7 +6,8 @@ const { audioEngine, skipIfImportFailed } = await importAudioEngine()
 
 test('playSFX', async t => {
   if (skipIfImportFailed(t)) return
-  const { playSFX, audioState } = await import('../../src/utils/audio/playback')
+  const { playSFX } = await import('../../src/utils/audio/sfx')
+  const { audioState } = await import('../../src/utils/audio/state')
   const moduleState =
     audioState || (await import('../../src/utils/audio/state')).audioState
 
@@ -61,8 +62,8 @@ test('setMusicVolume & setSFXVolume', async t => {
   if (skipIfImportFailed(t)) return
   // audioState may not be directly exported or might be called differently in the real module
   // Check the export and fall back if needed
-  const { setMusicVolume, setSFXVolume, audioState } =
-    await import('../../src/utils/audio/playback')
+  const { setMusicVolume, setSFXVolume } = await import('../../src/utils/audio/sfx')
+  const { audioState } = await import('../../src/utils/audio/state')
   const moduleState =
     audioState || (await import('../../src/utils/audio/state')).audioState
 
@@ -142,8 +143,8 @@ test('setMusicVolume & setSFXVolume', async t => {
 test('stopGigPlayback', async t => {
   if (skipIfImportFailed(t)) return
 
-  const { stopGigPlayback, audioState } =
-    await import('../../src/utils/audio/playback')
+  const { stopGigPlayback } = await import('../../src/utils/audio/gigPlayback')
+  const { audioState } = await import('../../src/utils/audio/state')
   const moduleState =
     audioState || (await import('../../src/utils/audio/state')).audioState
 
