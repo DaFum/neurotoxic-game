@@ -1,18 +1,6 @@
 import { clampNonNegative } from './clamps'
 import { FAME_PROGRESS_CONSTANTS, BALANCE_CONSTANTS } from './constants'
-import { clamp0to100 } from './clamps'
-
 import { finiteNumberOr } from '../finiteNumber'
-
-import { isForbiddenKey, isLooseRecord, safeJsonParse } from '../objectUtils'
-
-import type {
-  BandMember,
-  GameState,
-  RelationshipChange,
-  StashEntry,
-  EventDelta
-} from '../../types'
 
 /**
  * Derives fame level from raw fame.

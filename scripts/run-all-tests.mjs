@@ -59,8 +59,6 @@ const logicEnv = {
   ...baseEnv,
   VITEST_MAX_WORKERS: `${logicWorkers}`
 }
-const nodeWorkers = baseEnv.NODE_TEST_CONCURRENCY
-const uiWorkers = baseEnv.VITEST_MAX_WORKERS
 // Parse env-derived strings to integers to sanitize them for logging and preserve overrides.
 const nodeWorkersForLog = computeWorkerCount('NODE_TEST_CONCURRENCY', nodeWorkersDefault)
 const uiWorkersForLog = computeWorkerCount('VITEST_MAX_WORKERS', uiWorkersDefault)
