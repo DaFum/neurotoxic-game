@@ -21,6 +21,7 @@
  */
 import { spawn } from 'node:child_process'
 import { availableParallelism } from 'node:os'
+import { computeWorkerCount } from './utils/parallelism.mjs'
 
 // ---------------------------------------------------------------------------
 // Worker allocation
@@ -61,8 +62,8 @@ const logicEnv = {
 const nodeWorkers = baseEnv.NODE_TEST_CONCURRENCY
 const uiWorkers = baseEnv.VITEST_MAX_WORKERS
 // Parse env-derived strings to integers to sanitize them for logging and preserve overrides.
-const nodeWorkersForLog = Number.parseInt(nodeWorkers, 10)
-const uiWorkersForLog = Number.parseInt(uiWorkers, 10)
+const nodeWorkersForLog = computeWorkerCount('NODE_TEST_CONCURRENCY', nodeWorkersDefault)
+const uiWorkersForLog = computeWorkerCount('VITEST_MAX_WORKERS', uiWorkersDefault)
 
 // ---------------------------------------------------------------------------
 // Spawn helper
