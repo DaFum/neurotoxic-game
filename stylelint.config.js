@@ -16,6 +16,6 @@ export default {
     'media-feature-range-notation': null,
     'declaration-block-no-redundant-longhand-properties': null,
     'at-rule-empty-line-before': null
-    // Tailwind-spezifische Feineinstellungen falls nötig
+    // Tailwind-specific fine-tuning if necessary
   }
 }
