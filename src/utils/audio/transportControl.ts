@@ -40,13 +40,6 @@ export function stopAudio(): void {
   stopAmbientPlayback()
 }
 
-const awaitMaybePromise = async (value: unknown): Promise<void> => {
-  const maybeThenable = value as { then?: unknown } | null | undefined
-  if (maybeThenable && typeof maybeThenable.then === 'function') {
-    await (value as Promise<unknown>)
-  }
-}
-
 /**
  * Pauses Tone transport and gig playback, logging recoverable failures.
  * @returns Resolves after pause attempts finish.
@@ -54,7 +47,7 @@ const awaitMaybePromise = async (value: unknown): Promise<void> => {
 export async function pauseAudio(): Promise<void> {
   try {
     if (Tone.getTransport().state === 'started') {
-      await awaitMaybePromise(Tone.getTransport().pause())
+      await Tone.getTransport().pause()
     }
   } catch (err) {
     logger.warn('AudioEngine', 'Failed to pause audio transport', err)
@@ -73,7 +66,7 @@ export async function pauseAudio(): Promise<void> {
 export async function resumeAudio(): Promise<boolean> {
   try {
     if (Tone.getTransport().state === 'paused') {
-      await awaitMaybePromise(Tone.getTransport().start())
+      await Tone.getTransport().start()
     }
   } catch (err) {
     logger.warn('AudioEngine', 'Failed to resume audio transport', err)
