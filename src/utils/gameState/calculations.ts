@@ -61,7 +61,7 @@ export const calculateFameGain = (
   const safePrevFame = Math.max(0, finiteNumberOr(currentFame, 0))
   const safeMaxGain = Math.max(1, finiteNumberOr(maxGain, BALANCE_CONSTANTS.MAX_FAME_GAIN))
 
-  let fameGain = Math.min(safeMaxGain, safeRawGain)
+  let fameGain = Math.round(Math.min(safeMaxGain, safeRawGain))
 
   if (
     fameGain > 0 &&

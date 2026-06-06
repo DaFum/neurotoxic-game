@@ -1,4 +1,4 @@
-import { finiteNumberOr } from '../finiteNumber'
+import { finiteNumberOr, isFiniteNumber } from '../finiteNumber'
 import { logger } from '../logger'
 import { hasTrait } from '../traitUtils'
 import {
@@ -210,24 +210,24 @@ export const calculateAppliedDelta = (
   }
 
   if (delta.player) {
-    if (Number.isFinite(delta.player.money)) {
+    if (isFiniteNumber(delta.player.money)) {
       const currentMoney = Math.max(0, finiteNumberOr(state.player?.money, 0))
-      const nextMoney = clampPlayerMoney(currentMoney + (delta.player.money as number))
+      const nextMoney = clampPlayerMoney(currentMoney + delta.player.money)
       applied.player.money = nextMoney - currentMoney
     }
-    if (Number.isFinite(delta.player.time)) {
+    if (isFiniteNumber(delta.player.time)) {
       applied.player.time = delta.player.time // time is unbounded
     }
-    if (Number.isFinite(delta.player.fame)) {
+    if (isFiniteNumber(delta.player.fame)) {
       const currentFame = Math.max(0, finiteNumberOr(state.player?.fame, 0))
-      const nextFame = clampPlayerFame(currentFame + (delta.player.fame as number))
+      const nextFame = clampPlayerFame(currentFame + delta.player.fame)
       applied.player.fame = nextFame - currentFame
     }
     const scoreDelta =
-      Number.isFinite(delta.player?.score)
-        ? (delta.player.score as number)
-        : Number.isFinite(delta.score)
-          ? (delta.score as number)
+      isFiniteNumber(delta.player?.score)
+        ? delta.player.score
+        : isFiniteNumber(delta.score)
+          ? delta.score
           : 0
     if (scoreDelta !== 0) {
       const currentScore = Math.max(0, finiteNumberOr(state.player?.score, 0))
@@ -236,20 +236,20 @@ export const calculateAppliedDelta = (
     }
     if (delta.player.van) {
       applied.player.van = {}
-      if (Number.isFinite(delta.player.van.fuel)) {
+      if (isFiniteNumber(delta.player.van.fuel)) {
         const currentFuel = finiteNumberOr(state.player?.van?.fuel, 0)
-        const nextFuel = clampVanFuel(currentFuel + (delta.player.van.fuel as number))
+        const nextFuel = clampVanFuel(currentFuel + delta.player.van.fuel)
         applied.player.van.fuel = nextFuel - currentFuel
       }
-      if (Number.isFinite(delta.player.van.condition)) {
+      if (isFiniteNumber(delta.player.van.condition)) {
         const currentCondition = finiteNumberOr(state.player?.van?.condition, 0)
         const nextCondition = clampVanCondition(
-          currentCondition + (delta.player.van.condition as number)
+          currentCondition + delta.player.van.condition
         )
         applied.player.van.condition = nextCondition - currentCondition
       }
     }
-    if (Number.isFinite(delta.player.day)) {
+    if (isFiniteNumber(delta.player.day)) {
       applied.player.day = delta.player.day
     }
     if (delta.player.stats) {
@@ -258,28 +258,28 @@ export const calculateAppliedDelta = (
   }
 
   if (delta.social) {
-    if (Number.isFinite(delta.social.controversyLevel)) {
+    if (isFiniteNumber(delta.social.controversyLevel)) {
       applied.social.controversyLevel = calculateClampedControversyDelta(
         state.social?.controversyLevel,
-        delta.social.controversyLevel as number
+        delta.social.controversyLevel
       )
     }
-    if (Number.isFinite(delta.social.viral)) {
+    if (isFiniteNumber(delta.social.viral)) {
       applied.social.viral = calculateClampedStatDelta(
         state.social?.viral,
-        delta.social.viral as number
+        delta.social.viral
       )
     }
-    if (Number.isFinite(delta.social.loyalty)) {
+    if (isFiniteNumber(delta.social.loyalty)) {
       applied.social.loyalty = calculateClampedStatDelta(
         state.social?.loyalty,
-        delta.social.loyalty as number
+        delta.social.loyalty
       )
     }
   }
 
   if (delta.band) {
-    if (Number.isFinite(delta.band.harmony)) {
+    if (isFiniteNumber(delta.band.harmony)) {
       const currentHarmony = clampBandHarmony(
         finiteNumberOr(state.band?.harmony, 1)
       )
@@ -503,25 +503,25 @@ export const applyEventDelta = (
 
   if (delta.player) {
     const nextPlayer = { ...nextState.player }
-    if (typeof delta.player.money === 'number') {
+    if (isFiniteNumber(delta.player.money)) {
       const nextMoney = clampPlayerMoney(
         finiteNumberOr(nextPlayer.money, 0) + delta.player.money
       )
       nextPlayer.money = nextMoney
     }
-    if (typeof delta.player.time === 'number') {
+    if (isFiniteNumber(delta.player.time)) {
       nextPlayer.time = nextPlayer.time + delta.player.time
     }
-    if (typeof delta.player.fame === 'number') {
+    if (isFiniteNumber(delta.player.fame)) {
       nextPlayer.fame = clampPlayerFame(
         finiteNumberOr(nextPlayer.fame, 0) + delta.player.fame
       )
       nextPlayer.fameLevel = calculateFameLevel(nextPlayer.fame)
     }
     const scoreDelta =
-      typeof delta.player.score === 'number'
+      isFiniteNumber(delta.player.score)
         ? delta.player.score
-        : typeof delta.score === 'number'
+        : isFiniteNumber(delta.score)
           ? delta.score
           : 0
 
@@ -543,7 +543,7 @@ export const applyEventDelta = (
         if (isForbiddenKey(key)) continue
 
         const statDelta = delta.player.stats[key]
-        if (typeof statDelta === 'number') {
+        if (isFiniteNumber(statDelta)) {
           const currentStat =
             typeof nextPlayer.stats[key] === 'number'
               ? nextPlayer.stats[key]
@@ -561,12 +561,12 @@ export const applyEventDelta = (
 
     if (delta.player.van) {
       const nextVan = { ...nextPlayer.van }
-      if (typeof delta.player.van.fuel === 'number') {
+      if (isFiniteNumber(delta.player.van.fuel)) {
         nextVan.fuel = clampVanFuel(
           finiteNumberOr(nextVan.fuel, 0) + delta.player.van.fuel
         )
       }
-      if (typeof delta.player.van.condition === 'number') {
+      if (isFiniteNumber(delta.player.van.condition)) {
         const nextCondition = clampVanCondition(
           finiteNumberOr(nextVan.condition, 0) + delta.player.van.condition
         )
@@ -577,7 +577,7 @@ export const applyEventDelta = (
     if (delta.player.location) nextPlayer.location = delta.player.location
     if (delta.player.currentNodeId)
       nextPlayer.currentNodeId = delta.player.currentNodeId
-    if (typeof delta.player.day === 'number')
+    if (isFiniteNumber(delta.player.day))
       nextPlayer.day = nextPlayer.day + delta.player.day
 
     nextState.player = nextPlayer
@@ -585,7 +585,7 @@ export const applyEventDelta = (
 
   if (delta.band) {
     const nextBand = { ...nextState.band }
-    if (typeof delta.band.harmony === 'number') {
+    if (isFiniteNumber(delta.band.harmony)) {
       const nextHarmony = clampBandHarmony(
         finiteNumberOr(nextBand.harmony, 1) + delta.band.harmony
       )
