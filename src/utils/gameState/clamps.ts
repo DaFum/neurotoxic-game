@@ -1,15 +1,11 @@
+import { EXPENSE_CONSTANTS } from '../economyEngine'
 import {
   RELATIONSHIP_DEFAULT_SCORE,
   RELATIONSHIP_MAX_SCORE,
   RELATIONSHIP_MIN_SCORE
 } from './constants'
-import { hasTrait } from '../traitUtils'
-
-import { EXPENSE_CONSTANTS } from '../economyEngine'
 
 import { finiteNumberOr } from '../finiteNumber'
-
-import { logger } from '../logger'
 
 import { isForbiddenKey, isLooseRecord, safeJsonParse } from '../objectUtils'
 

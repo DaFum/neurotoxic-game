@@ -1,3 +1,6 @@
+import { finiteNumberOr } from '../finiteNumber'
+import { logger } from '../logger'
+import { hasTrait } from '../traitUtils'
 import {
   RELATIONSHIP_GRUDGE_HOLDER_MULTIPLIER,
   RELATIONSHIP_PEACEMAKER_NEGATIVE_MULTIPLIER,
@@ -11,22 +14,14 @@ import {
   clampMemberMood,
   clampMemberStamina,
   clampRelationship,
-  clampNonNegative
+  clampNonNegative,
+  clampControversyLevel,
+  clampVanCondition,
+  clampVanFuel
 } from './clamps'
 import { calculateFameLevel } from './calculations'
-import {
-  clampVanFuel,
-  clampVanCondition,
-  clampControversyLevel,
-  clampUnitRandom
-} from './clamps'
-import { hasTrait } from '../traitUtils'
 
-import { EXPENSE_CONSTANTS } from '../economyEngine'
 
-import { finiteNumberOr } from '../finiteNumber'
-
-import { logger } from '../logger'
 
 import { isForbiddenKey, isLooseRecord, safeJsonParse } from '../objectUtils'
 
