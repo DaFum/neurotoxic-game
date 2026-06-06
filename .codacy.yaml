@@ -6,8 +6,18 @@ exclude_paths:
   - "coverage/**"      # Falls du Vitest nutzt
   - ".claude/**"       # KI-Konfigurationen
   - ".agents/**"       # Agenten-Workflows
+  - 'public/locales/**'
+  - 'src/assets/**'
+  - '**/*.mid'
+  - '**/*.ogg'
+  
 
 # Explizite Aktivierung der korrekten ESLint-Engine
 engines:
   eslint-9:
     enabled: true
+  pmd-legacy:
+    enabled: false
+  eslint:
+    enabled: true
+    
