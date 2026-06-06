@@ -2,7 +2,7 @@
 export default {
   extends: [
     'stylelint-config-standard',
-    '@dreamsicle.io/stylelint-config-tailwindcss' // Erlaubt @theme, @utility, @apply etc. nativ
+    '@dreamsicle.io/stylelint-config-tailwindcss' // Allows @theme, @utility, @apply etc. natively
   ],
   rules: {
     'block-no-empty': true,

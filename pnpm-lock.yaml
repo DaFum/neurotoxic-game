@@ -64,7 +64,7 @@ importers:
         version: 15.5.12
     devDependencies:
       '@dreamsicle.io/stylelint-config-tailwindcss':
-        specifier: ^1.2.2
+        specifier: 1.2.2
         version: 1.2.2(stylelint@17.12.0(typescript@6.0.3))
       '@eslint-react/eslint-plugin':
         specifier: 5.8.6
@@ -160,10 +160,10 @@ importers:
         specifier: 7.0.5
         version: 7.0.5
       stylelint:
-        specifier: ^17.12.0
+        specifier: 17.12.0
         version: 17.12.0(typescript@6.0.3)
       stylelint-config-standard:
-        specifier: ^40.0.0
+        specifier: 40.0.0
         version: 40.0.0(stylelint@17.12.0(typescript@6.0.3))
       tailwindcss:
         specifier: 4.3.0
