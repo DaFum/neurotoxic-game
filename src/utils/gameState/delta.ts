@@ -210,24 +210,24 @@ export const calculateAppliedDelta = (
   }
 
   if (delta.player) {
-    if (typeof delta.player.money === 'number') {
+    if (Number.isFinite(delta.player.money)) {
       const currentMoney = Math.max(0, finiteNumberOr(state.player?.money, 0))
-      const nextMoney = clampPlayerMoney(currentMoney + delta.player.money)
+      const nextMoney = clampPlayerMoney(currentMoney + (delta.player.money as number))
       applied.player.money = nextMoney - currentMoney
     }
-    if (typeof delta.player.time === 'number') {
+    if (Number.isFinite(delta.player.time)) {
       applied.player.time = delta.player.time // time is unbounded
     }
-    if (typeof delta.player.fame === 'number') {
+    if (Number.isFinite(delta.player.fame)) {
       const currentFame = Math.max(0, finiteNumberOr(state.player?.fame, 0))
-      const nextFame = clampPlayerFame(currentFame + delta.player.fame)
+      const nextFame = clampPlayerFame(currentFame + (delta.player.fame as number))
       applied.player.fame = nextFame - currentFame
     }
     const scoreDelta =
-      typeof delta.player?.score === 'number'
-        ? delta.player.score
-        : typeof delta.score === 'number'
-          ? delta.score
+      Number.isFinite(delta.player?.score)
+        ? (delta.player.score as number)
+        : Number.isFinite(delta.score)
+          ? (delta.score as number)
           : 0
     if (scoreDelta !== 0) {
       const currentScore = Math.max(0, finiteNumberOr(state.player?.score, 0))
@@ -236,20 +236,20 @@ export const calculateAppliedDelta = (
     }
     if (delta.player.van) {
       applied.player.van = {}
-      if (typeof delta.player.van.fuel === 'number') {
+      if (Number.isFinite(delta.player.van.fuel)) {
         const currentFuel = finiteNumberOr(state.player?.van?.fuel, 0)
-        const nextFuel = clampVanFuel(currentFuel + delta.player.van.fuel)
+        const nextFuel = clampVanFuel(currentFuel + (delta.player.van.fuel as number))
         applied.player.van.fuel = nextFuel - currentFuel
       }
-      if (typeof delta.player.van.condition === 'number') {
+      if (Number.isFinite(delta.player.van.condition)) {
         const currentCondition = finiteNumberOr(state.player?.van?.condition, 0)
         const nextCondition = clampVanCondition(
-          currentCondition + delta.player.van.condition
+          currentCondition + (delta.player.van.condition as number)
         )
         applied.player.van.condition = nextCondition - currentCondition
       }
     }
-    if (typeof delta.player.day === 'number') {
+    if (Number.isFinite(delta.player.day)) {
       applied.player.day = delta.player.day
     }
     if (delta.player.stats) {
@@ -258,28 +258,28 @@ export const calculateAppliedDelta = (
   }
 
   if (delta.social) {
-    if (typeof delta.social.controversyLevel === 'number') {
+    if (Number.isFinite(delta.social.controversyLevel)) {
       applied.social.controversyLevel = calculateClampedControversyDelta(
         state.social?.controversyLevel,
-        delta.social.controversyLevel
+        delta.social.controversyLevel as number
       )
     }
-    if (typeof delta.social.viral === 'number') {
+    if (Number.isFinite(delta.social.viral)) {
       applied.social.viral = calculateClampedStatDelta(
         state.social?.viral,
-        delta.social.viral
+        delta.social.viral as number
       )
     }
-    if (typeof delta.social.loyalty === 'number') {
+    if (Number.isFinite(delta.social.loyalty)) {
       applied.social.loyalty = calculateClampedStatDelta(
         state.social?.loyalty,
-        delta.social.loyalty
+        delta.social.loyalty as number
       )
     }
   }
 
   if (delta.band) {
-    if (typeof delta.band.harmony === 'number') {
+    if (Number.isFinite(delta.band.harmony)) {
       const currentHarmony = clampBandHarmony(
         finiteNumberOr(state.band?.harmony, 1)
       )
