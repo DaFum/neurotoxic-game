@@ -21,6 +21,7 @@
  */
 import { spawn } from 'node:child_process'
 import { availableParallelism } from 'node:os'
+import { computeWorkerCount } from './utils/parallelism.mjs'
 
 // ---------------------------------------------------------------------------
 // Worker allocation
@@ -60,6 +61,9 @@ const logicEnv = {
 }
 const nodeWorkers = baseEnv.NODE_TEST_CONCURRENCY
 const uiWorkers = baseEnv.VITEST_MAX_WORKERS
+// Parse env-derived strings to integers to sanitize them for logging and preserve overrides.
+const nodeWorkersForLog = computeWorkerCount('NODE_TEST_CONCURRENCY', nodeWorkersDefault)
+const uiWorkersForLog = computeWorkerCount('VITEST_MAX_WORKERS', uiWorkersDefault)
 
 // ---------------------------------------------------------------------------
 // Spawn helper
@@ -104,7 +108,7 @@ if (fullyParallel) {
       : `auto high-core (${totalWorkers} workers)`
 
   console.log(
-    `[run-all-tests] Fully parallel (${parallelModeReason}): test:node (${nodeWorkers}) + test:vitest:logic (${logicWorkers}) + test:ui (${uiWorkers})`
+    `[run-all-tests] Fully parallel (${parallelModeReason}): test:node (${nodeWorkersForLog}) + test:vitest:logic (${logicWorkers}) + test:ui (${uiWorkersForLog})`
   )
   const [nodeResult, logicResult, uiResult] = await Promise.all([
     runScript('test:node', baseEnv),
@@ -117,7 +121,7 @@ if (fullyParallel) {
 } else {
   // Phase A — test:node + test:vitest:logic
   console.log(
-    `[run-all-tests] Phase A: test:node (${nodeWorkers} workers) + test:vitest:logic (${logicWorkers} vitest worker, overlapped)`
+    `[run-all-tests] Phase A: test:node (${nodeWorkersForLog} workers) + test:vitest:logic (${logicWorkers} vitest worker, overlapped)`
   )
   const [nodeResult, logicResult] = await Promise.all([
     runScript('test:node', baseEnv),
@@ -130,7 +134,7 @@ if (fullyParallel) {
 
   // Phase B — test:ui (full workers, after Phase A completes)
   console.log(
-    `[run-all-tests] Phase B: test:ui (${uiWorkers} workers, sequential)`
+    `[run-all-tests] Phase B: test:ui (${uiWorkersForLog} workers, sequential)`
   )
   const uiResult = await runScript('test:ui', baseEnv)
   if (bail(uiResult)) {
