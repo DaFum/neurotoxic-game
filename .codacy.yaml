@@ -1,7 +1,13 @@
 ---
+# Verzeichnis-Ausschlüsse für dein React-Vite-TS Setup
 exclude_paths:
-  - "dist/**"          # Vite Build-Output
+  - "dist/**"          # Vite Production Build
   - "node_modules/**"  # Abhängigkeiten
-  - "coverage/**"      # Falls du Vitest für Unit-Tests nutzt
-  - ".claude/**"
-  - ".agents/**"
+  - "coverage/**"      # Falls du Vitest nutzt
+  - ".claude/**"       # KI-Konfigurationen
+  - ".agents/**"       # Agenten-Workflows
+
+# Explizite Aktivierung der korrekten ESLint-Engine
+engines:
+  eslint-9:
+    enabled: true
