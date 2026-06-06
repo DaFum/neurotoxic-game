@@ -42,8 +42,8 @@ jobs:
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           verbose: true
-          output: results.sarif
           format: sarif
+          output: results.sarif
           gh-code-scanning-compat: true
           max-allowed-issues: 2147483647
 
