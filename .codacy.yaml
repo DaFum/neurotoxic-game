@@ -1,5 +1,7 @@
 ---
 exclude_paths:
+  - "dist/**"          # Vite Build-Output
+  - "node_modules/**"  # Abhängigkeiten
+  - "coverage/**"      # Falls du Vitest für Unit-Tests nutzt
   - ".claude/**"
   - ".agents/**"
-
