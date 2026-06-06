@@ -3,7 +3,7 @@ run-name: Lint Fix Preview - PR #${{ github.event.pull_request.number }}
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, edited]
+    types: [opened, synchronize, reopened]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -13,7 +13,7 @@ env:
   POST_ON_DIFF_ONLY: 'true' # set to 'false' to post informational comments too
   JSCPD_MIN_LINES: '8'
   JSCPD_MIN_TOKENS: '60'
-  JSCPD_IGNORE: '**/*.test.js,**/*.spec.js,**/__tests__/**,**/tests/**,**/node_modules/**'
+  JSCPD_IGNORE: '**/dist/**,**/.claude/**,**/.agents/**,**/report/**,**/*.test.js,**/*.spec.js,**/__tests__/**,**/tests/**,**/node_modules/**'
   PNPM_VERSION: '11.2.2'
 
 permissions:
