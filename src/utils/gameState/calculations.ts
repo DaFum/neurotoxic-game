@@ -55,23 +55,26 @@ export const calculateGigFameReward = (performanceScore: number): number => {
 export const calculateFameGain = (
   rawGain: number,
   currentFame: number,
-  maxGain = 2000
+  maxGain = BALANCE_CONSTANTS.MAX_FAME_GAIN
 ): number => {
-  let fameGain = Math.min(maxGain, rawGain)
-  const prevFame = currentFame ?? 0
+  const safeRawGain = Math.max(0, finiteNumberOr(rawGain, 0))
+  const safePrevFame = Math.max(0, finiteNumberOr(currentFame, 0))
+  const safeMaxGain = Math.max(1, finiteNumberOr(maxGain, BALANCE_CONSTANTS.MAX_FAME_GAIN))
+
+  let fameGain = Math.round(Math.min(safeMaxGain, safeRawGain))
 
   if (
     fameGain > 0 &&
-    prevFame > FAME_PROGRESS_CONSTANTS.DIMINISHING_RETURNS_START
+    safePrevFame > FAME_PROGRESS_CONSTANTS.DIMINISHING_RETURNS_START
   ) {
     const diminishingMultiplier = Math.exp(
-      -(prevFame - FAME_PROGRESS_CONSTANTS.DIMINISHING_RETURNS_START) *
+      -(safePrevFame - FAME_PROGRESS_CONSTANTS.DIMINISHING_RETURNS_START) *
         FAME_PROGRESS_CONSTANTS.DIMINISHING_RETURNS_RATE
     )
     fameGain = Math.max(1, Math.round(fameGain * diminishingMultiplier))
   }
 
-  return fameGain
+  return Math.max(0, Math.round(finiteNumberOr(fameGain, 0)))
 }
 
 /**
