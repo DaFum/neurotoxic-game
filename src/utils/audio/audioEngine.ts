@@ -15,10 +15,8 @@ export { disposeAudio, safeDispose } from './dispose'
 
 export { hasAudioAsset, loadAudioBuffer } from './assets'
 
+export { playSFX, setSFXVolume, setMusicVolume } from './sfx'
 export {
-  playSFX,
-  setSFXVolume,
-  setMusicVolume,
   calculateGigTimeMs,
   calculateGigPlaybackWindow,
   getGigTimeMs,
@@ -26,7 +24,9 @@ export {
   startGigClock,
   pauseGigPlayback,
   resumeGigPlayback,
-  stopGigPlayback,
+  stopGigPlayback
+} from './gigPlayback'
+export {
   stopAmbientPlayback,
   isAmbientOggPlaying,
   stopAudio,
@@ -35,11 +35,13 @@ export {
   getTransportState,
   setDestinationMute,
   getToneAbsoluteTimeMs,
-  getPlayRequestId,
+  getPlayRequestId
+} from './transportControl'
+export {
   enableCorruptionBurstAudio,
   disableCorruptionBurstAudio,
   setCorruptionEffect
-} from './playback'
+} from './corruptionEffects'
 
 export { startMetalGenerator } from './proceduralMetal'
 
