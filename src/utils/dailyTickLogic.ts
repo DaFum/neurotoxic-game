@@ -80,7 +80,7 @@ const updateVanCondition = (
       nextPlayer.van.upgrades ?? []
     )
 
-    let conditionMultiplier
+    let conditionMultiplier: number
     if (nextPlayer.van.condition < 30) {
       // Very low condition: significantly higher chance to break down
       conditionMultiplier = 3.0
