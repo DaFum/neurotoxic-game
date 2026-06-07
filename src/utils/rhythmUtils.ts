@@ -1,5 +1,6 @@
 import { resolveSongPlaybackWindow } from './audio/songUtils'
 import { secureRandom } from './crypto'
+import { isFiniteNumber } from './finiteNumber'
 import type { Note, Song } from '../types/audio'
 import type { TempoMapEntry, ProcessedTempoMapEntry } from '../types/rhythm'
 import type { RandomFn } from '../types/callbacks'
@@ -229,7 +230,7 @@ export const parseSongNotes = (
   for (let i = 0; i < song.notes.length; i++) {
     const n = song.notes[i]
     if (!n) continue
-    if (typeof n.t === 'number' && Number.isFinite(n.t)) {
+    if (isFiniteNumber(n.t)) {
       validNotes.push(n)
     }
   }

@@ -200,9 +200,10 @@ an unfamiliar field, read `meta.fieldGuide[field]` rather than guessing.
 
 `symbols.json` is an index, not a replacement for source review.
 
-- `dependencies` are direct local calls, constructor calls, and JSX tag references found in the declaration body; they are not a full runtime graph.
-- `referencedByLocal` is the same-file inverse of direct exported declaration references; it is not a full lexical reference index.
-- `usedBy` tracks production imports, including type-only imports. It does not prove that a value is executed at runtime.
+- `dependencies` are direct local calls, constructor calls, JSX tag references, and bare value references found in the declaration body; they are not a full runtime graph.
+- `referencedByLocal` is the same-file inverse of exported declaration references (calls, JSX, dispatch-table membership, bare reads). For a yes/no "is this used anywhere in its own file (including from module-private helpers)?" signal, use the `referencedInFile` boolean instead.
+- `usedBy` tracks production imports, including type-only imports and resolved dynamic `import()` calls (the latter carry `dynamic: true`). It does not prove that a value is executed at runtime.
+- Orphan check: a symbol is only truly unreferenced when it has none of `usedBy`, `usedByTests`, `referencedByLocal`, or `referencedInFile`. An empty `usedBy` alone is not evidence of dead code (the symbol may be used same-file or only by tests).
 - `usedByTests` tracks test, spec, and story imports separately. It helps find coverage and examples, but direct search is still useful for dynamic access or mocked module shapes.
 - `files[path].imports` lists imported names, not full module specifiers or runtime dependency edges.
 - `literalKeys` lists only top-level keys from object literal `const` exports. It intentionally omits full object values, nested shapes, spreads, and computed keys.

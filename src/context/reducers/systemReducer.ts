@@ -165,7 +165,7 @@ const copySafePrimitiveObject = (
       typeof entry === 'string' ||
       typeof entry === 'boolean' ||
       entry === null ||
-      (typeof entry === 'number' && Number.isFinite(entry))
+      isFiniteNumber(entry)
     ) {
       copied[key] = entry
     }
@@ -182,7 +182,7 @@ const copySafeJsonValue = (value: unknown, depth = 0): unknown => {
     typeof value === 'string' ||
     typeof value === 'boolean' ||
     value === null ||
-    (typeof value === 'number' && Number.isFinite(value))
+    isFiniteNumber(value)
   ) {
     return value
   }
@@ -458,7 +458,7 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
               sanitizedItem.id = v
             }
           } else if (itemKey === 'cost' || itemKey === 'price') {
-            if (typeof v === 'number' && Number.isFinite(v)) {
+            if (isFiniteNumber(v)) {
               ;(sanitizedItem as Record<string, unknown>)[itemKey] = Math.max(
                 0,
                 v
@@ -469,7 +469,7 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
               ;(sanitizedItem as Record<string, unknown>)[itemKey] = v
             }
           } else if (NUMBER_KEYS.has(itemKey)) {
-            if (typeof v === 'number' && Number.isFinite(v)) {
+            if (isFiniteNumber(v)) {
               ;(sanitizedItem as Record<string, unknown>)[itemKey] = v
             }
           } else if (BOOLEAN_KEYS.has(itemKey)) {
@@ -765,7 +765,7 @@ const parseNumericStats = (
     if (ignoredKeys && ignoredKeys.has(normalizedKey)) continue
 
     const value = obj[key as keyof typeof obj]
-    if (typeof value === 'number' && Number.isFinite(value)) {
+    if (isFiniteNumber(value)) {
       result[key] = valueTransformer ? valueTransformer(value) : value
     }
   }
@@ -916,7 +916,7 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
     for (const k of Object.keys(DEFAULT_MERCH_PRICES)) {
       if (!Object.hasOwn(raw, k)) continue
       const v = raw[k]
-      if (typeof v === 'number' && Number.isFinite(v) && v >= 0) {
+      if (isFiniteNumber(v) && v >= 0) {
         sanitized[k] = v
       }
     }
@@ -960,7 +960,7 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
           for (const key in stats) {
             if (!Object.hasOwn(stats, key)) continue
             const value = stats[key]
-            if (typeof value === 'number' && Number.isFinite(value)) {
+            if (isFiniteNumber(value)) {
               result[key] = value
             }
           }
@@ -1143,7 +1143,7 @@ const sanitizeReputationByRegion = (
     if (!Object.hasOwn(value, key)) continue
     if (isForbiddenKey(key)) continue
     const reputation = value[key]
-    if (typeof reputation === 'number' && Number.isFinite(reputation)) {
+    if (isFiniteNumber(reputation)) {
       sanitized[key] = reputation
     }
   }
@@ -1217,7 +1217,7 @@ const sanitizeSocial = (value: unknown): SocialState => {
       if (!Object.hasOwn(safeValue.brandReputation, key)) continue
       if (isForbiddenKey(key)) continue
       const reputation = safeValue.brandReputation[key]
-      if (typeof reputation === 'number' && Number.isFinite(reputation)) {
+      if (isFiniteNumber(reputation)) {
         sanitized.brandReputation[key] = reputation
       }
     }

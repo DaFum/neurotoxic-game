@@ -10,11 +10,19 @@ import {
   clampMemberMood,
   clampPlayerFame,
   calculateFameLevel,
-  finiteNumberOr
+  finiteNumberOr,
+  isFiniteNumber
 } from './gameState'
 import type { PlayerState, BandState, BandMember } from '../types'
 import type { Effect, PurchaseItem, UnlockMessage } from '../types/components'
 import type { PlayerPatch, BandPatch } from '../types/purchase'
+
+/**
+ * Cash advance granted by signing the indie label contract (`hq_room_label`).
+ * Single source of truth shared by the purchase effect and the shop item
+ * description so the displayed bonus cannot drift from the amount applied.
+ */
+export const LABEL_CONTRACT_ADVANCE = 500
 
 type Inventory = Record<string, unknown>
 
@@ -42,7 +50,7 @@ const getNumericProp = (
   if (obj == null || typeof obj !== 'object') return fallback
   const o = obj as Record<string, unknown>
   const raw = o[key]
-  if (typeof raw === 'number' && Number.isFinite(raw)) return raw
+  if (isFiniteNumber(raw)) return raw
   if (
     typeof raw === 'string' &&
     raw.trim() !== '' &&
@@ -266,10 +274,7 @@ export const applyInventoryAdd = (
       ...(bandInventory ?? {}),
       [effect.item]: (() => {
         const previousValue = (bandInventory ?? {})[effect.item]
-        const safePrevious =
-          typeof previousValue === 'number' && Number.isFinite(previousValue)
-            ? previousValue
-            : 0
+        const safePrevious = finiteNumberOr(previousValue, 0)
         const parsedAddend = Number(effect.value ?? 0)
         if (!Number.isFinite(parsedAddend)) {
           throw new StateError(
@@ -599,18 +604,24 @@ export const applyUnlockHQ = (
       break
     }
 
-    case 'hq_room_label':
+    case 'hq_room_label': {
+      const advance = formatCurrency(
+        LABEL_CONTRACT_ADVANCE,
+        i18n.language,
+        'always'
+      )
       nextPlayerPatch.money = clampPlayerMoney(
         ((nextPlayerPatch.money as number | undefined) ?? player.money ?? 0) +
-          500
+          LABEL_CONTRACT_ADVANCE
       )
       messages.push({
         messageKey: 'ui:shop.messages.labelSigned',
-        fallback: `Signed! ${formatCurrency(500, i18n.language, 'always')} Advance.`,
-        options: { advance: formatCurrency(500, i18n.language, 'always') },
+        fallback: `Signed! ${advance} Advance.`,
+        options: { advance },
         type: 'success'
       })
       break
+    }
 
     case 'hq_room_coffee':
     case 'hq_room_sofa':

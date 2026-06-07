@@ -127,6 +127,12 @@ function relPath(abs) {
     : normalized
 }
 
+// Minimal host for resolving dynamic `import('...')` specifiers to source files.
+const moduleResolutionHost = {
+  fileExists: fileName => ts.sys.fileExists(fileName),
+  readFile: fileName => ts.sys.readFile(fileName)
+}
+
 // Determine the declaration kind label from a symbol's declarations
 function kindLabel(sym) {
   const decl = sym.declarations?.[0]
@@ -803,6 +809,7 @@ const dependenciesByEntry = new Map()
 const usedByByEntry = new Map()
 const usedByTestsByEntry = new Map()
 const referencedByLocalByEntry = new Map()
+const referencedInFileEntries = new Set()
 const importsByFile = new Map()
 
 function upsert(name, entry) {
@@ -1068,12 +1075,96 @@ function collectImportUsage(sourceFile) {
   }
 
   ts.forEachChild(sourceFile, visitImport)
+
+  // Dynamic imports (`import('./Scene').then(m => m.Scene)`) are not
+  // ImportDeclarations, so the static pass above misses them. Without this,
+  // lazily-loaded modules (e.g. route-split scene components) look orphaned
+  // because nothing statically imports them. Resolve the target module and
+  // attribute usage to every export it surfaces.
+  const visitDynamicImport = node => {
+    if (
+      ts.isCallExpression(node) &&
+      node.expression.kind === ts.SyntaxKind.ImportKeyword &&
+      node.arguments.length > 0 &&
+      ts.isStringLiteral(node.arguments[0]) &&
+      node.arguments[0].text.startsWith('.')
+    ) {
+      const resolved = ts.resolveModuleName(
+        node.arguments[0].text,
+        sourceFile.fileName,
+        program.getCompilerOptions(),
+        moduleResolutionHost
+      )
+      const targetFile = resolved.resolvedModule?.resolvedFileName
+      if (targetFile && isUnderSrc(targetFile)) {
+        const targetSf = program.getSourceFile(targetFile)
+        const moduleSym = targetSf && checker.getSymbolAtLocation(targetSf)
+        if (moduleSym) {
+          for (const exp of checker.getExportsOfModule(moduleSym)) {
+            if (SKIP_NAMES.has(exp.name) || exp.name.startsWith('_')) continue
+            const resolvedExp = resolveAlias(checker, exp)
+            const decl = resolvedExp.declarations?.[0]
+            if (!decl) continue
+            const entries = entriesByDeclKey.get(declarationKey(decl))
+            if (!entries) continue
+            for (const entry of entries) {
+              addUsage(entry, {
+                path: rel,
+                importedAs: exp.name,
+                dynamic: true
+              })
+            }
+          }
+        }
+      }
+    }
+    ts.forEachChild(node, visitDynamicImport)
+  }
+  ts.forEachChild(sourceFile, visitDynamicImport)
 }
 
 function dependencySymbolNode(expression) {
   if (ts.isIdentifier(expression)) return expression
   if (ts.isPropertyAccessExpression(expression)) return expression.name
   return undefined
+}
+
+// True when an identifier sits in a value/type *reference* position rather than
+// a declaration or property-key position. Declaration names resolve to the
+// entry itself (and are skipped by addTargets), but skipping them up front
+// avoids needless checker lookups; specifier names are already attributed by
+// the import pass. Object-literal keys are not references and must be excluded
+// so that `{ key: value }` does not record `key` as a usage.
+function isReferencePositionIdentifier(id) {
+  const parent = id.parent
+  if (!parent) return false
+  if (
+    (ts.isVariableDeclaration(parent) ||
+      ts.isFunctionDeclaration(parent) ||
+      ts.isClassDeclaration(parent) ||
+      ts.isInterfaceDeclaration(parent) ||
+      ts.isTypeAliasDeclaration(parent) ||
+      ts.isEnumDeclaration(parent) ||
+      ts.isEnumMember(parent) ||
+      ts.isModuleDeclaration(parent) ||
+      ts.isParameter(parent) ||
+      ts.isBindingElement(parent) ||
+      ts.isPropertyDeclaration(parent) ||
+      ts.isPropertySignature(parent) ||
+      ts.isMethodDeclaration(parent) ||
+      ts.isMethodSignature(parent) ||
+      ts.isImportClause(parent) ||
+      ts.isImportSpecifier(parent) ||
+      ts.isExportSpecifier(parent) ||
+      ts.isNamespaceImport(parent)) &&
+    parent.name === id
+  ) {
+    return false
+  }
+  // Object-literal property key (`{ key: value }`); the value side is a
+  // separate child and is kept. Shorthand keys ARE references and are kept.
+  if (ts.isPropertyAssignment(parent) && parent.name === id) return false
+  return true
 }
 
 function collectDeclarationDependencies({ entry, decl }) {
@@ -1102,11 +1193,48 @@ function collectDeclarationDependencies({ entry, decl }) {
     ) {
       const targetNode = dependencySymbolNode(node.tagName)
       if (targetNode) addTargets(targetNode)
+    } else if (ts.isIdentifier(node) && isReferencePositionIdentifier(node)) {
+      // Bare value references (dispatch-table membership like
+      // `EFFECT_HANDLERS = { k: applyX }`, const reads in arithmetic, callback
+      // passing, `m.Scene` member access). Without this, same-file helpers used
+      // outside call/JSX positions look orphaned. The symbol checker resolves
+      // each identifier to its real declaration, so locals/params/keys that do
+      // not map to an exported entry are filtered out by addTargets.
+      addTargets(node)
     }
     ts.forEachChild(node, visit)
   }
 
   visit(decl)
+}
+
+// Whole-file reference scan. `collectDeclarationDependencies` only visits
+// *exported* declarations, so a symbol referenced solely from a module-private
+// helper (e.g. `QUEST_SLOT_LIMITS` read inside the non-exported `hasQuestSlot`)
+// would still look orphaned. This pass marks any same-file entry referenced
+// anywhere in its own file outside its own declaration span, so consumers can
+// distinguish "used internally" from "truly unreferenced".
+function collectSameFileReferences(sourceFile) {
+  const filePathRel = relPath(sourceFile.fileName)
+  const visit = node => {
+    if (ts.isIdentifier(node) && isReferencePositionIdentifier(node)) {
+      const entries = targetEntriesForNode(node, undefined)
+      if (entries.length > 0) {
+        const refLine =
+          sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile))
+            .line + 1
+        for (const entry of entries) {
+          if (entry.path !== filePathRel) continue
+          // Skip references inside the entry's own declaration (recursion,
+          // self-referential initializers) so they do not mask a true orphan.
+          if (refLine >= entry.lineStart && refLine <= entry.lineEnd) continue
+          referencedInFileEntries.add(entry)
+        }
+      }
+    }
+    ts.forEachChild(node, visit)
+  }
+  ts.forEachChild(sourceFile, visit)
 }
 
 for (const filePath of programFiles) {
@@ -1115,6 +1243,14 @@ for (const filePath of programFiles) {
 }
 
 for (const ref of localEntryRefs) collectDeclarationDependencies(ref)
+
+for (const srcFilePath of srcFiles) {
+  const sourceFile = program.getSourceFile(srcFilePath)
+  if (sourceFile && isUnderSrc(sourceFile.fileName))
+    collectSameFileReferences(sourceFile)
+}
+
+for (const entry of referencedInFileEntries) entry.referencedInFile = true
 
 for (const [entry, dependencies] of dependenciesByEntry) {
   const sorted = Array.from(dependencies).sort((a, b) => a.localeCompare(b))
@@ -1450,10 +1586,13 @@ const meta = {
     isHook: 'True for React hooks (use* name with a call signature).',
     jsDoc: 'Parsed JSDoc/TSDoc summary text and tags.',
     dependencies:
-      'Local exported symbols this declaration calls, constructs, or renders.',
+      'Local exported symbols this declaration calls, constructs, renders, or references by name.',
     referencedByLocal:
-      'Same-file exported declarations that directly call, construct, or render this symbol.',
-    usedBy: 'Production files that import this symbol.',
+      'Same-file exported declarations that call, construct, render, or reference this symbol by name (e.g. dispatch-table membership).',
+    referencedInFile:
+      'True when the symbol is referenced anywhere in its own file (including from module-private helpers) outside its own declaration; absence of usedBy/usedByTests/referencedByLocal/referencedInFile means truly unreferenced.',
+    usedBy:
+      'Production files that import this symbol (static imports and resolved dynamic `import()` calls; the latter carry `dynamic: true`).',
     usedByTests:
       'Test, spec, or story files that import this symbol, tracked separately from usedBy.'
   }

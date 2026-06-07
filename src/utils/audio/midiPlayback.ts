@@ -8,6 +8,7 @@ import { stopAudio, stopAudioInternal } from './transportControl'
 import { midiUrlMap } from './assets'
 import { calculateTimeFromTicks, preprocessTempoMap } from '../rhythmUtils'
 import { clampUnit } from '../numberUtils'
+import { isFiniteNumber } from '../finiteNumber'
 import type { ProcessedTempoMapEntry } from '../../types/rhythm'
 import type { DrumKitSynth } from '../../types/audio'
 import {
@@ -180,13 +181,6 @@ function validateSongReady(song: unknown): boolean {
   }
 
   return true
-}
-
-/**
- * Processes song notes into schedulable events.
- */
-function isFiniteNumber(val: unknown): val is number {
-  return typeof val === 'number' && Number.isFinite(val)
 }
 
 function isValidSongNote(

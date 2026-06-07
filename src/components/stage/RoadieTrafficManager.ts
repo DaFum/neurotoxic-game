@@ -1,6 +1,7 @@
 import { Container, Graphics, Sprite } from 'pixi.js'
 import { logger } from '../../utils/logger'
 import { hashString } from '../../utils/stringUtils'
+import { finiteNumberOr } from '../../utils/finiteNumber'
 
 /**
  * Runtime vehicle obstacle tracked by the Roadie traffic manager.
@@ -49,10 +50,10 @@ export class RoadieTrafficManager {
     if (sprite) return sprite
 
     if (this.textures.cars.length > 0) {
-      const textureHash =
-        typeof car.textureHash === 'number' && Number.isFinite(car.textureHash)
-          ? car.textureHash
-          : hashString(String(car.id ?? `car_${car.row}_${car.speed}`))
+      const textureHash = finiteNumberOr(
+        car.textureHash,
+        hashString(String(car.id ?? `car_${car.row}_${car.speed}`))
+      )
       const texIndex =
         Math.floor(Math.abs(textureHash)) % this.textures.cars.length
       const texture = this.textures.cars[texIndex]

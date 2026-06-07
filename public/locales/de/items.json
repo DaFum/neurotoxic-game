@@ -102,7 +102,7 @@
   "hq_room_marketing.name": "Social Media Botnetz",
   "hq_room_marketing.description": "Passive Follower Generation (+10/Tag).",
   "hq_room_label.name": "Plattenvertrag (Indie)",
-  "hq_room_label.description": "Sofort +500€ Bonus.",
+  "hq_room_label.description": "Sofort {{amount}} Bonus.",
   "hq_room_old_couch.name": "Durchgesessene Couch",
   "hq_room_old_couch.description": "Ort zum Abhängen. (+10 Stamina Sofort).",
   "hq_room_poster_wall.name": "DIY Posterwand",

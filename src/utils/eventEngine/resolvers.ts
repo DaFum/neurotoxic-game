@@ -4,6 +4,7 @@ import { calculateAppliedDelta } from '../gameState'
 import { buildTemplateContext } from './templateResolver'
 import { eventEngine } from './eventEngineCore'
 import { asNumber } from './helpers'
+import { isFiniteNumber } from '../finiteNumber'
 import type { EffectShape, EngineGameState, EventChoice } from './types'
 
 /**
@@ -86,10 +87,8 @@ export const getOptionPreviewMoney = (
       const current = gameState?.player?.money ?? 0
       const percentage = asNumber(e.percentage)
       let amount = Math.round(current * (percentage / 100))
-      let min =
-        typeof e.min === 'number' && Number.isFinite(e.min) ? e.min : undefined
-      let max =
-        typeof e.max === 'number' && Number.isFinite(e.max) ? e.max : undefined
+      let min = isFiniteNumber(e.min) ? e.min : undefined
+      let max = isFiniteNumber(e.max) ? e.max : undefined
       if (min !== undefined && max !== undefined && min > max) {
         ;[min, max] = [max, min]
       }

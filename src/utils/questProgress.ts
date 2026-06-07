@@ -13,6 +13,7 @@ import type {
 import { QuestLifecycle } from '../domain/questLifecycle'
 import { getQuestDefinition } from '../data/questRegistry'
 import { isForbiddenKey, isLooseRecord } from './objectUtils'
+import { isFiniteNumber } from './finiteNumber'
 
 /**
  * Legacy quest progress event shapes accepted for save and caller compatibility.
@@ -158,7 +159,7 @@ const readOwnNumber = (
 ): number | undefined => {
   if (!Object.hasOwn(record, key)) return undefined
   const value = record[key]
-  return typeof value === 'number' && Number.isFinite(value) ? value : undefined
+  return isFiniteNumber(value) ? value : undefined
 }
 
 const readOwnBoolean = (

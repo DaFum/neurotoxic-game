@@ -20,6 +20,24 @@ export const FORBIDDEN_KEYS: ReadonlySet<string> = new Set([
  */
 export const isForbiddenKey = (key: string): boolean => FORBIDDEN_KEYS.has(key)
 
+/**
+ * Checks whether an object carries any prototype-polluting own-property.
+ *
+ * Derives from {@link FORBIDDEN_KEYS} so callers do not re-spell the
+ * `__proto__`/`constructor`/`prototype` triad inline (which silently drifts
+ * out of sync when the set changes). Uses `Object.hasOwn` to avoid the array
+ * allocation of `Object.keys(obj).some(isForbiddenKey)`.
+ *
+ * @param obj - The object to check.
+ * @returns True when any forbidden key is an own-property of `obj`.
+ */
+export const hasForbiddenOwnKeys = (obj: object): boolean => {
+  for (const key of FORBIDDEN_KEYS) {
+    if (Object.hasOwn(obj, key)) return true
+  }
+  return false
+}
+
 type TraversalOptions = {
   isRecord?: RecordGuard
   createObject?: () => Record<string, unknown>

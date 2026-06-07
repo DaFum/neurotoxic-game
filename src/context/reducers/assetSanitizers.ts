@@ -1,6 +1,7 @@
 import {
   clamp0to100,
   finiteNumberOr,
+  isFiniteNumber,
   isLooseRecord
 } from '../../utils/gameState'
 import { isForbiddenKey } from '../../utils/objectUtils'
@@ -138,6 +139,10 @@ export const sanitizeRiskEventDescriptor = (
 /**
  * Returns a shallow copy of `obj` with prototype-pollution keys stripped.
  * Used as the first line of defense before reading any persisted asset data.
+ *
+ * Intentionally shallow and type-preserving (returns `T`), unlike the recursive
+ * `sanitizeTraversableValue` in `src/utils/objectUtils.ts`; both consult the
+ * canonical `isForbiddenKey`/`FORBIDDEN_KEYS`.
  */
 const stripHostileKeys = <T extends Record<string, unknown>>(obj: T): T => {
   const out: Record<string, unknown> = {}
@@ -439,7 +444,7 @@ export const sanitizeRngSeed = (raw: unknown): number => {
   // Always return a non-negative 32-bit integer seed. The unsigned right-shift
   // coerces to UInt32 (0..2^32-1) which is what mulberry32 expects; `| 0` alone
   // would produce a signed 32-bit (potentially negative) value.
-  if (typeof raw === 'number' && Number.isFinite(raw)) {
+  if (isFiniteNumber(raw)) {
     return Math.trunc(raw) >>> 0
   }
   return Date.now() >>> 0

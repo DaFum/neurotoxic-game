@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import GigModifierButton from '../../ui/GigModifierButton'
 import { formatCurrency } from '../../utils/numberUtils'
+import { isFiniteNumber } from '../../utils/finiteNumber'
 import type { ModifierOption } from '../../hooks/usePreGigLogic'
 import type { ActiveEffectEntry } from '../../types/components'
 import type { TranslationCallback } from '../../types/callbacks'
@@ -26,7 +27,7 @@ const sanitizeEffectOptions = (
       const value = options[key]
       if (
         typeof value === 'string' ||
-        (typeof value === 'number' && Number.isFinite(value)) ||
+        isFiniteNumber(value) ||
         typeof value === 'boolean' ||
         value === null
       ) {

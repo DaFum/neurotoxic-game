@@ -1,11 +1,8 @@
-
 import { finiteNumberOr } from '../finiteNumber'
 
-import { isLooseRecord } from '../objectUtils'
+import { hasForbiddenOwnKeys, isLooseRecord } from '../objectUtils'
 
-import type {
-  StashEntry
-} from '../../types'
+import type { StashEntry } from '../../types'
 
 /**
  * Checks whether an unknown value has the stash-entry shape.
@@ -47,13 +44,8 @@ export const isEmptyObject = (obj: Record<string, unknown>): boolean => {
  * @param obj - The object to check
  * @returns True if the object has any forbidden keys
  */
-export const hasForbiddenKeys = (obj: Record<string, unknown>): boolean => {
-  return (
-    Object.hasOwn(obj, '__proto__') ||
-    Object.hasOwn(obj, 'constructor') ||
-    Object.hasOwn(obj, 'prototype')
-  )
-}
+export const hasForbiddenKeys = (obj: Record<string, unknown>): boolean =>
+  hasForbiddenOwnKeys(obj)
 
 /**
  * Checks if a collection (Set or Array) contains an item.

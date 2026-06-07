@@ -146,7 +146,7 @@ export const calculateTravelExpenses = (
     assetModifiers
   )
 
-  const bandSize = bandState?.members?.length || 3
+  const bandSize = bandState?.members?.length ?? 3
   const fameLevel = finiteNumberOr(playerState?.fameLevel, 0)
 
   // Base food cost

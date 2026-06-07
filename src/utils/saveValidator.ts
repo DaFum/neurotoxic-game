@@ -11,7 +11,8 @@ import {
   clampPlayerMoney,
   clampNonNegative
 } from './gameState'
-import { isForbiddenKey, isLooseRecord } from './objectUtils'
+import { FORBIDDEN_KEYS, isForbiddenKey, isLooseRecord } from './objectUtils'
+import { isFiniteNumber } from './finiteNumber'
 
 /**
  * Validates the structure and types of the save data.
@@ -109,14 +110,11 @@ const checkPrototypePollution = (obj: unknown): void => {
 
   // Explicitly reject forbidden own-properties before iterating because
   // non-enumerable keys are not guaranteed to be visited by the for...in loop below.
-  if (Object.hasOwn(obj, '__proto__')) {
-    throw new StateError(`Prototype pollution detected: __proto__`)
-  }
-  if (Object.hasOwn(obj, 'constructor')) {
-    throw new StateError(`Prototype pollution detected: constructor`)
-  }
-  if (Object.hasOwn(obj, 'prototype')) {
-    throw new StateError(`Prototype pollution detected: prototype`)
+  // Iterate the canonical FORBIDDEN_KEYS set so this stays in sync as it grows.
+  for (const forbidden of FORBIDDEN_KEYS) {
+    if (Object.hasOwn(obj, forbidden)) {
+      throw new StateError(`Prototype pollution detected: ${forbidden}`)
+    }
   }
 
   // Iterate over properties to recursively check nested objects
@@ -255,7 +253,7 @@ const validateSocial = (social: unknown): void => {
     if (key === 'lastGigDay' && val === null) continue
     if (key === 'lastGigDifficulty') {
       if (val === null) continue
-      if (typeof val === 'number' && Number.isFinite(val)) continue
+      if (isFiniteNumber(val)) continue
       throw new StateError(`Invalid social property format: ${key}`)
     }
     if (key === 'lastPirateBroadcastDay' && val === null) continue
