@@ -69,11 +69,11 @@ export const deriveFinancials = ({
       playerState: player,
       gigStats: lastGigStats,
       context: {
-        controversyLevel: social?.controversyLevel ?? 0,
-        regionRep: reputationByRegion?.[player?.location] ?? 0,
-        loyalty: social?.loyalty ?? 0,
-        zealotry: social?.zealotry ?? 0,
-        discountedTickets: activeStoryFlags?.includes(
+        controversyLevel: social.controversyLevel ?? 0,
+        regionRep: reputationByRegion[player.location] ?? 0,
+        loyalty: social.loyalty ?? 0,
+        zealotry: social.zealotry ?? 0,
+        discountedTickets: activeStoryFlags.includes(
           'discounted_tickets_active'
         ),
         daysSinceLastGig: gigContext?.daysSinceLastGig ?? 0,
@@ -125,7 +125,7 @@ export const derivePostOptions = ({
     lastGigStats,
     activeEvent,
     currentGig,
-    gigEvents: lastGigStats?.events || []
+    gigEvents: lastGigStats.events || []
   }
 
   try {

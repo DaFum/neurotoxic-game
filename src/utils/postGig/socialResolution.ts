@@ -3,14 +3,23 @@ import {
   calculateSocialGrowth,
   resolvePost
 } from '../socialEngine'
-import { clampControversyLevel, finiteNumberOr, clampLoyalty, clamp0to100, clampPlayerMoney, clampMemberMood, clampMemberStamina, clampBandHarmony } from '../gameState'
+import {
+  clampControversyLevel,
+  finiteNumberOr,
+  clampLoyalty,
+  clamp0to100,
+  clampPlayerMoney,
+  clampMemberMood,
+  clampMemberStamina,
+  clampBandHarmony
+} from '../gameState'
 import { SOCIAL_PLATFORM_IDS, SOCIAL_PLATFORMS } from '../../data/platforms'
 import { BRAND_DEALS_BY_ID } from '../../data/brandDeals'
 
 const SOCIAL_PLATFORMS_VALUES = Object.values(SOCIAL_PLATFORMS)
 
 import type { GameState, UnknownRecord } from '../../types'
-import type { Platform } from "../../types/social";
+import type { Platform } from '../../types/social'
 import type { BandMember } from '../../types/band'
 import type { BrandDeal } from '../../types/social'
 import type { CalculatePostGigStateParams, ResolvedPostResult } from './types'
@@ -27,7 +36,6 @@ export const applyClampedMoneyDelta = (
   const nextMoney = clampPlayerMoney(prevMoney + safeDelta)
   return { nextMoney, appliedDelta: nextMoney - prevMoney }
 }
-
 
 const normalizeNumericDelta = (
   value: unknown,
@@ -146,8 +154,6 @@ const normalizeResolvedPost = (
     influencerUpdate
   }
 }
-
-
 
 export const calculatePostGigStateUpdates = (
   params: CalculatePostGigStateParams
@@ -362,8 +368,7 @@ export const calculatePostGigStateUpdates = (
         )
       }
       if (template.penalty.loyalty) {
-        updatedSocial.loyalty = Math.max(
-          0,
+        updatedSocial.loyalty = clampLoyalty(
           (updatedSocial.loyalty ?? 0) + template.penalty.loyalty
         )
       }
@@ -372,18 +377,14 @@ export const calculatePostGigStateUpdates = (
 
   if (result.influencerUpdate) {
     const { id, scoreChange } = result.influencerUpdate
-    const currentInfluencer = social.influencers?.[id]
+    const currentInfluencer = social.influencers[id]
     if (currentInfluencer) {
       updatedSocial.influencers = {
         ...social.influencers,
         [id]: {
           ...currentInfluencer,
-          score: Math.min(
-            100,
-            Math.max(
-              0,
-              finiteNumberOr(currentInfluencer.score, 0) + scoreChange
-            )
+          score: clamp0to100(
+            finiteNumberOr(currentInfluencer.score, 0) + scoreChange
           )
         }
       }
