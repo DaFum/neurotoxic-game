@@ -870,7 +870,7 @@ export const applyEventDelta = (
         if (value === null || isFiniteNumber(value)) {
           nextSocial[key] = value
         }
-      } else if (typeof value === 'number') {
+      } else if (isFiniteNumber(value)) {
         const currentValue = finiteNumberOr(nextSocial[key], 0)
         nextSocial[key] = Math.max(0, currentValue + value)
       }

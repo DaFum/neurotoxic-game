@@ -9,8 +9,7 @@ import { translateLocation } from '../../utils/locationI18n'
 import { getCityKeyFromVenueId } from '../../utils/mapGenerator'
 import { getUnblacklistCost } from '../../context/reducers/socialReducer'
 import { CRAFTING_RECIPES } from '../../data/craftingRecipes'
-import { isEmptyObject } from '../../utils/gameState'
-import { isFiniteNumber } from '../../utils/finiteNumber'
+import { isEmptyObject, isFiniteNumber } from '../../utils/gameState'
 import type {
   PlayerState,
   BandState,

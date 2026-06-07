@@ -2,7 +2,10 @@ import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { CatalogItem } from '../../types/components'
 import { IMG_PROMPTS } from '../../utils/imageGen'
-import { getPrimaryEffect } from '../../utils/purchaseLogicUtils'
+import {
+  getPrimaryEffect,
+  LABEL_CONTRACT_ADVANCE
+} from '../../utils/purchaseLogicUtils'
 import { formatCurrency } from '../../utils/numberUtils'
 import { GlitchButton } from '../GlitchButton'
 import { GeneratedImagePanel } from '../shared/GeneratedImagePanel'
@@ -105,7 +108,20 @@ export const ShopItem = React.memo(
             </h4>
           </div>
           <p className='text-xs text-ash-gray mb-2 font-mono'>
-            {item.description ? t(item.description) : ''}
+            {item.description
+              ? t(
+                  item.description,
+                  item.id === 'hq_room_label'
+                    ? {
+                        amount: formatCurrency(
+                          LABEL_CONTRACT_ADVANCE,
+                          i18n.language,
+                          'always'
+                        )
+                      }
+                    : undefined
+                )
+              : ''}
           </p>
         </div>
         <div className='flex justify-between items-center mt-2'>
