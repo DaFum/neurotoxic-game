@@ -100,7 +100,7 @@ export function useSocialPostHandler({
             createHarmonyChangedQuestEvent({
               amount: appliedHarmonyDelta,
               newHarmony: clampBandHarmony(
-                finiteNumberOr(band?.harmony, 0) + appliedHarmonyDelta
+                finiteNumberOr(band.harmony, 0) + appliedHarmonyDelta
               )
             })
           )

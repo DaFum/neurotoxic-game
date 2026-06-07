@@ -1,12 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type {
-  GamePhase,
-  GameState,
-  Venue,
-  UpdatePlayerPayload,
-  PostResult
-} from '../../../types'
+import type { GamePhase, GameState, Venue, UpdatePlayerPayload, PostResult } from '../../../types'
 import type { BrandDeal } from '../../../types/social'
+import type { QuestProgressEvent } from '../../../utils/questProgress'
+import type { createAddQuestAction } from '../../../context/actionCreators'
 
 export interface BaseHandlerDependencies {
   player: GameState['player']
@@ -30,7 +26,7 @@ export interface HandlerDispatchers {
       | Partial<GameState['social']>
       | ((prev: GameState['social']) => Partial<GameState['social']>)
   ) => void
-  setPhase: (phase: any) => void
+  setPhase: (phase: 'REPORT' | 'SOCIAL' | 'DEALS' | 'COMPLETE') => void
   addQuest: (
     quest: any extends { type: 'ADD_QUEST' } ? any['payload'] : unknown
   ) => void

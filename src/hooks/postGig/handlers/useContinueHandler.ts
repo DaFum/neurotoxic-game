@@ -131,7 +131,7 @@ export function useContinueHandler({
       let postPenaltyHarmony: number | undefined
       if (band.inventory?.neurotoxicPedal) {
         const nextHarmony = clampBandHarmony(
-          finiteNumberOr(band?.harmony, 100) - NEUROTOXIC_PEDAL_HARMONY_PENALTY
+          finiteNumberOr(band.harmony, 100) - NEUROTOXIC_PEDAL_HARMONY_PENALTY
         )
         postPenaltyHarmony = nextHarmony
         updateBand((prevBand: BandState) => {
@@ -167,7 +167,7 @@ export function useContinueHandler({
           const seededProgress =
             def.progressSource === 'harmony_recovered'
               ? (postPenaltyHarmony ??
-                clampBandHarmony(finiteNumberOr(band?.harmony, 0)))
+                clampBandHarmony(finiteNumberOr(band.harmony, 0)))
               : 0
           addQuest({
             ...def,

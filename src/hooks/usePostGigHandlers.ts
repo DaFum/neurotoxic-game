@@ -65,7 +65,7 @@ export interface UsePostGigHandlersProps {
       ? any['payload']
       : unknown
   ) => void
-  setPhase: (phase: any) => void
+  setPhase: (phase: 'REPORT' | 'SOCIAL' | 'DEALS' | 'COMPLETE') => void
   setBrandOffers: (offers: BrandDeal[]) => void
   setPostResult: (result: PostResult) => void
   t?: any
