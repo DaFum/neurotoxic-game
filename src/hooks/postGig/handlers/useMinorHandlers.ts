@@ -55,38 +55,39 @@ export function useMinorHandlers({
     isProcessingActionRef.current = true
     setIsProcessingAction(true)
 
-    const updates = getSpinStoryMoneyUpdate({ player })
+    try {
+      const updates = getSpinStoryMoneyUpdate({ player })
 
-    if (!updates.success) {
+      if (!updates.success) {
+        addToast(
+          t('ui:postGig.notEnoughCashForPr', {
+            defaultValue: 'Not enough cash for PR!'
+          }),
+          'error'
+        )
+        return
+      }
+
+      updatePlayer({ money: updates.nextMoney })
+
+      const socialUpdateFactory = getSpinStorySocialUpdateFactory()
+      updateSocial(socialUpdateFactory)
+
+      const moneyText =
+        updates.appliedDelta !== 0
+          ? ` (${formatCurrency(updates.appliedDelta, i18n.language)})`
+          : ''
       addToast(
-        t('ui:postGig.notEnoughCashForPr', {
-          defaultValue: 'Not enough cash for PR!'
+        t('ui:postGig.storySpunControversyReduced', {
+          moneyText,
+          defaultValue: `Story Spun. Controversy reduced.${moneyText}`
         }),
-        'error'
+        'success'
       )
+    } finally {
       isProcessingActionRef.current = false
       setIsProcessingAction(false)
-      return
     }
-
-    updatePlayer({ money: updates.nextMoney })
-
-    const socialUpdateFactory = getSpinStorySocialUpdateFactory()
-    updateSocial(socialUpdateFactory)
-
-    const moneyText =
-      updates.appliedDelta !== 0
-        ? ` (${formatCurrency(updates.appliedDelta, i18n.language)})`
-        : ''
-    addToast(
-      t('ui:postGig.storySpunControversyReduced', {
-        moneyText,
-        defaultValue: `Story Spun. Controversy reduced.${moneyText}`
-      }),
-      'success'
-    )
-    isProcessingActionRef.current = false
-    setIsProcessingAction(false)
   }, [
     player,
     updatePlayer,

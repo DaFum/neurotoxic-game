@@ -6,6 +6,8 @@ import type {
   PostResult
 } from '../../../types'
 import type { BrandDeal } from '../../../types/social'
+import type { QuestProgressEvent } from '../../../utils/questProgress'
+import type { createAddQuestAction } from '../../../context/actionCreators'
 
 export interface BaseHandlerDependencies {
   player: GameState['player']
