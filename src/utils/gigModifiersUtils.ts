@@ -1,10 +1,7 @@
 import { CHARACTERS } from '../data/characters'
 import { hasTrait } from './traitUtils'
 import { NEUROTOXIC_PEDAL_CROWD_DECAY_MODIFIER } from '../context/gameConstants'
-import type {
-  BandState,
-  BandMember
-} from '../types'
+import type { BandState, BandMember } from '../types'
 import type { Song } from '../types/audio'
 import type { ActiveEffect } from '../types/components'
 
@@ -150,8 +147,8 @@ export const getGigModifiers = (
 
 /**
  * Calculates derived physics variables for the Gig scene based on RPG stats.
- * @param bandState - Band state.
- * @param song - Song.
+ * @param bandState - Band whose members' RPG stats and stamina drive the multipliers and hit windows.
+ * @param song - Song supplying bpm and difficulty, which set base speed and hit-window tightness.
  */
 export const calculateGigPhysics = (bandState: BandState, song: Song) => {
   const members = Array.isArray(bandState.members) ? bandState.members : []

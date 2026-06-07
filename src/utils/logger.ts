@@ -50,7 +50,7 @@ export class Logger {
   constructor() {
     this.logs = []
     this.maxLogs = 1000
-    this.minLevel = LOG_LEVELS.DEBUG // Default to DEBUG for now, can be changed via settings
+    this.minLevel = LOG_LEVELS.DEBUG // Default; overridden below by the saved preference when present
     this.listeners = []
 
     // Load preference if available

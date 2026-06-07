@@ -78,7 +78,7 @@ export class RoadiePlayerManager {
     }
     this.playerContainer.addChild(this.playerSprite)
 
-    // Item Sprite (Placeholder for now, visible only when carrying)
+    // Item sprite: textured and shown only while the roadie is carrying an item.
     this.itemSprite = new Sprite()
     this.itemSprite.anchor.set(0.5)
     this.itemSprite.y = -(cellH * 0.3) // Above head

@@ -1,4 +1,3 @@
-// Legacy PropTypes removed
 import { HQ_ITEMS } from '../../data/hqItems'
 import { isCatalogEffect } from '../../utils/catalogEffectUtils'
 import { CatalogTab } from './CatalogTab'

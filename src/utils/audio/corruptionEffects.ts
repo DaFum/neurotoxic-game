@@ -1,5 +1,12 @@
 import { audioState } from './state'
 
+/**
+ * Crossfades the master bus from the clean bypass path to the wet corruption path.
+ *
+ * @remarks
+ * No-op when the burst is already active or the bypass/wet gain nodes are not yet
+ * built. Reversed by {@link disableCorruptionBurstAudio}.
+ */
 export const enableCorruptionBurstAudio = (): void => {
   if (
     audioState.isCorruptionAudioActive ||

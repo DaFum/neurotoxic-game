@@ -111,7 +111,7 @@ for (const charKey of Object.keys(CHARACTERS) as Array<
 
 /**
  * Helper to fetch a generic trait (e.g., from CLINIC definitions)
- * @param traitId - Trait id.
+ * @param traitId - Id of the trait to resolve from the generic/clinic definitions.
  */
 export const getTraitById = (traitId: string): TraitDef | null => {
   if (!traitId) return null

@@ -14,9 +14,9 @@ const isMapConnection = (value: unknown): value is MapConnection =>
 
 /**
  * Checks if a target node is connected to the source node.
- * @param gameMap - The game map object.
- * @param fromNodeId - The source node ID.
- * @param targetNodeId - The target node ID.
+ * @param gameMap - Map whose `connections` list is scanned for the directed edge.
+ * @param fromNodeId - Edge source; the check is directional (`from` → `to`).
+ * @param targetNodeId - Edge destination; only a matching `from` → `to` connection counts as connected.
  * @returns True if connected.
  */
 export const isConnected = (
@@ -93,7 +93,7 @@ export const normalizeVenueId = (venue: unknown): string | null => {
 
 /**
  * Checks if the player is softlocked (stranded) due to lack of fuel and money.
- * @param gameMap - The game map object.
+ * @param gameMap - Map supplying the current node and its connections used to test for any affordable move.
  * @param player - The player state object.
  * @param band - The band state object. Defaults to `null`.
  * @returns True if stranded.
