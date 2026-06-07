@@ -8,6 +8,8 @@ import type {
   PostResult
 } from '../types'
 import type { BrandDeal, SocialPostOption } from '../types/social'
+import type { QuestProgressEvent } from '../utils/questProgress'
+import type { createAddQuestAction } from '../context/actionCreators'
 import type { PostGigFinancials } from '../types/economy'
 import { useMemo } from 'react'
 import i18n from '../i18n'
@@ -54,14 +56,8 @@ export interface UsePostGigHandlersProps {
   unlockTrait: (memberId: string, traitId: string) => void
   addToast: (message: string, type: 'success' | 'error' | 'info') => void
   changeScene: (scene: GamePhase) => void
-  addQuest: (
-    quest: ReturnType<
-      typeof import('../context/actionCreators').createAddQuestAction
-    >['payload']
-  ) => void
-  applyQuestEvent: (
-    event: import('../utils/questProgress').QuestProgressEvent
-  ) => void
+  addQuest: (quest: Parameters<typeof createAddQuestAction>[0]) => void
+  applyQuestEvent: (event: QuestProgressEvent) => void
   setPhase: (phase: 'REPORT' | 'SOCIAL' | 'DEALS' | 'COMPLETE') => void
   setBrandOffers: (offers: BrandDeal[]) => void
   setPostResult: (result: PostResult) => void

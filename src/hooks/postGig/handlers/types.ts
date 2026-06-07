@@ -32,14 +32,8 @@ export interface HandlerDispatchers {
       | ((prev: GameState['social']) => Partial<GameState['social']>)
   ) => void
   setPhase: (phase: 'REPORT' | 'SOCIAL' | 'DEALS' | 'COMPLETE') => void
-  addQuest: (
-    quest: ReturnType<
-      typeof import('../../../context/actionCreators').createAddQuestAction
-    >['payload']
-  ) => void
-  applyQuestEvent: (
-    event: import('../../../utils/questProgress').QuestProgressEvent
-  ) => void
+  addQuest: (quest: Parameters<typeof createAddQuestAction>[0]) => void
+  applyQuestEvent: (event: QuestProgressEvent) => void
   changeScene: (scene: GamePhase) => void
   setBrandOffers: (offers: BrandDeal[]) => void
   setPostResult: (result: PostResult) => void
