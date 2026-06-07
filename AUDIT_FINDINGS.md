@@ -45,18 +45,16 @@ No action. (Noted only because it was flagged for investigation.)
 
 ## 2. Orphaned / Unintegrated Code
 
-### 2.1 Four orphaned type interfaces — **LOW** — DELETE (or confirm as intended public API)
+### 2.1 Four "orphaned" type interfaces — **FALSE POSITIVE** (corrected during fix pass) — NO ACTION
 
-Declared in a domain `.d.ts`, re-exported through the `src/types/game.d.ts` barrel, but referenced **nowhere** in `src/` (verified: no usage outside the declaring file and the barrel; `symbols.json` reports empty `usedBy`/`referencedByLocal` and `referencedInFile: false`):
+Originally flagged as orphan exports because `symbols.json` reported empty `usedBy`/`referencedByLocal` and `referencedInFile: false`. **On direct ripgrep re-verification, all four are used as field/payload types within `src/types/game.d.ts`** — the symbol index does not attribute cross-file references inside ambient `.d.ts` declaration merging, which produced the false signal:
 
-- `CharacterProfile` — `src/types/npc.d.ts:4`
-- `CompleteTravelMinigamePayload` — `src/types/actions.d.ts:6`
-- `QuestCooldown` — `src/types/quest.d.ts:357`
-- `QuestScopeCompletion` — `src/types/quest.d.ts:368`
+- `CharacterProfile` (`src/types/npc.d.ts:4`) — `npcs: Record<string, CharacterProfile>` at `game.d.ts:150`
+- `CompleteTravelMinigamePayload` (`src/types/actions.d.ts:6`) — types the `COMPLETE_TRAVEL_MINIGAME` action in the dispatch union at `game.d.ts:227` (it IS the SoT, fully integrated)
+- `QuestCooldown` (`src/types/quest.d.ts:357`) — `questCooldowns: QuestCooldown[]` at `game.d.ts:144`
+- `QuestScopeCompletion` (`src/types/quest.d.ts:368`) — `completedQuestScopes: QuestScopeCompletion[]` at `game.d.ts:146`
 
-`CompleteTravelMinigamePayload` is the most suspicious: the `COMPLETE_TRAVEL_MINIGAME` action exists and is handled, yet its dedicated payload type is unused — the reducer/creator likely types the payload inline or via a different name. Worth a glance to confirm the intended payload type isn't drifting from the one that's actually used.
-
-No runtime impact (type-only). DELETE the dead exports, or, if they are an intentional published API surface, leave them.
+These were **not** deleted. Lesson: the symbol index is reliable for `import`-based usage but blind to in-place type references across merged ambient declarations — always ripgrep-confirm type orphans.
 
 ---
 
@@ -118,11 +116,13 @@ The only "incomplete" signal that touches integration is the unused `CompleteTra
 
 ---
 
-## Recommended Fix Priority for the Autonomous Pass
+## Fix Pass — Status
 
-| # | Severity | Finding | Action |
-|---|---|---|---|
-| 3.1 | MED | `postOptions.ts` 16 raw English `message:` strings (+ hardcoded `€` at :818) | Migrate to `ui:postOptions.*` keys (EN+DE), format currency |
-| 3.2a | MED | `bandReducer.ts:310` `staminaMax` not wrapped in `finiteNumberOr` | Wrap addend with `finiteNumberOr(…, 100)` |
-| 3.2b | LOW | `minigameReducer.ts:356/:539` `stress` addend unwrapped | Wrap `stress` with `finiteNumberOr(stress, 0)` |
-| 2.1 | LOW | 4 orphan type interfaces (incl. `CompleteTravelMinigamePayload`) | DELETE unused exports / confirm travel payload type |
+| # | Severity | Finding | Action | Status |
+|---|---|---|---|---|
+| 3.1 | MED | `postOptions.ts` raw English `message:` strings (26, incl. hardcoded `€`) | Migrated all to `ui:postOptions.*` keys (26 EN+DE entries added); `€` now via `formatCurrency` + `{{amount}}` | ✅ FIXED |
+| 3.2a | MED | `bandReducer.ts:310` `staminaMax` not wrapped in `finiteNumberOr` | Replaced bare `typeof` ternary with `finiteNumberOr(staminaMax, 100) + finiteNumberOr(value, 0)` | ✅ FIXED |
+| 3.2b | LOW | `minigameReducer.ts` `stress`/`reward`/`repairCost`/`contrabandBonus` addends unwrapped (2 sites) | Wrapped all computed addends with `finiteNumberOr(…, 0)` | ✅ FIXED |
+| 2.1 | LOW | "4 orphan type interfaces" | Re-verified: all used in `game.d.ts` | ❌ FALSE POSITIVE — no change |
+
+**Verification:** `typecheck:core` ✅, scoped reducer `typecheck` ✅, locale smoke+full (35) ✅, node reducer tests (25) ✅, full Vitest UI suite (862) ✅, `symbols:check` ✅ (regenerated).

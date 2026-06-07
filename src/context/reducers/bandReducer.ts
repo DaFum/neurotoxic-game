@@ -307,9 +307,8 @@ const applySharedBandEffect = (
         updatedMembers[i] = {
           ...currentMember,
           staminaMax:
-            (typeof currentMember.staminaMax === 'number'
-              ? currentMember.staminaMax
-              : 100) + value
+            finiteNumberOr(currentMember.staminaMax, 100) +
+            finiteNumberOr(value, 0)
         } as BandMember
       }
     }
