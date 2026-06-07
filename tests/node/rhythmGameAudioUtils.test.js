@@ -3,7 +3,7 @@ import { test, describe, beforeEach, afterEach } from 'node:test'
 import {
   resetGigStateTracking,
   resolveActiveSetlist
-} from '../../src/utils/audio/rhythmGameAudioUtils'
+} from '../../src/utils/audio/audioEngine'
 import { SONGS_BY_ID } from '../../src/data/songs'
 
 describe('rhythmGameAudioUtils', () => {
