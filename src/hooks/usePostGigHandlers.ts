@@ -1,6 +1,5 @@
 import type { RhythmSetlistEntry } from '../types/rhythmGame'
 import type {
-  BandState,
   GamePhase,
   GameState,
   PostGigSummary,
@@ -9,56 +8,19 @@ import type {
   PostResult
 } from '../types'
 import type { BrandDeal, SocialPostOption } from '../types/social'
+import type { QuestProgressEvent } from '../utils/questProgress'
+import type { createAddQuestAction } from '../context/actionCreators'
 import type { PostGigFinancials } from '../types/economy'
-import { useCallback, useRef, useState } from 'react'
-import {
-  GAME_PHASES,
-  NEUROTOXIC_PEDAL_HARMONY_PENALTY
-} from '../context/gameConstants'
-import { secureRandom } from '../utils/crypto'
-import {
-  QUEST_APOLOGY_TOUR,
-  QUEST_EGO_MANAGEMENT
-} from '../data/questsConstants'
-import { getQuestDefinition } from '../data/questRegistry'
-import {
-  clampPlayerMoney,
-  clampPlayerFame,
-  clampBandHarmony,
-  calculateFameLevel,
-  calculateFameGain,
-  finiteNumberOr,
-  BALANCE_CONSTANTS
-} from '../utils/gameState'
-import { logger } from '../utils/logger'
+import { useMemo } from 'react'
 import i18n from '../i18n'
-import { formatCurrency } from '../utils/numberUtils'
 import {
-  calculatePostGigStateUpdates,
-  getAcceptDealMoneyUpdate,
-  getAcceptDealBandUpdateFactory,
-  getAcceptDealSocialUpdateFactory,
-  getSpinStoryMoneyUpdate,
-  getSpinStorySocialUpdateFactory,
-  calculateContinueStats
-} from '../utils/postGigUtils'
-import { shouldTriggerBankruptcy } from '../utils/economyEngine'
-import { generateBrandOffers } from '../utils/brandDealLogic'
-import { getTranslatedBrandDealDisplay } from '../utils/brandDealI18n'
-import { submitLeaderboardScores } from '../utils/leaderboardUtils'
-import { createHarmonyChangedQuestEvent } from '../quests/producers/gigQuestEvents'
-import {
-  createBrandDealCompletedQuestEvent,
-  createBrandOfferAcceptedQuestEvent,
-  createBrandTrustChangedQuestEvent
-} from '../quests/producers/brandQuestEvents'
-import { createSocialPostQuestEvents } from '../quests/producers/socialQuestEvents'
-import { createRegionReputationChangedQuestEvent } from '../quests/producers/venueQuestEvents'
-import { createMoneyEarnedQuestEvent } from '../quests/producers/economyQuestEvents'
+  useContinueHandler,
+  useSocialPostHandler,
+  useDealHandlers,
+  useMinorHandlers,
+  useProcessingGuard
+} from './postGig/handlers'
 
-/**
- * Action handlers and busy state returned to the post-gig scene.
- */
 export interface UsePostGigHandlersReturn {
   isProcessingAction: boolean
   handlePostSelection: (option: SocialPostOption) => void
@@ -69,9 +31,6 @@ export interface UsePostGigHandlersReturn {
   handleNextPhase: () => void
 }
 
-/**
- * Inputs required to resolve post-gig social posts, brand deals, and continuation side effects.
- */
 export interface UsePostGigHandlersProps {
   player: GameState['player']
   band: GameState['band']
@@ -97,26 +56,15 @@ export interface UsePostGigHandlersProps {
   unlockTrait: (memberId: string, traitId: string) => void
   addToast: (message: string, type: 'success' | 'error' | 'info') => void
   changeScene: (scene: GamePhase) => void
-  addQuest: (
-    quest: Parameters<
-      typeof import('../context/actionCreators').createAddQuestAction
-    >[0]
-  ) => void
-  applyQuestEvent: (
-    event: import('../utils/questProgress').QuestProgressEvent
-  ) => void
+  addQuest: (quest: Parameters<typeof createAddQuestAction>[0]) => void
+  applyQuestEvent: (event: QuestProgressEvent) => void
   setPhase: (phase: 'REPORT' | 'SOCIAL' | 'DEALS' | 'COMPLETE') => void
-  setPostResult: (result: PostResult) => void
   setBrandOffers: (offers: BrandDeal[]) => void
-  t: (key: string, options?: Record<string, unknown>) => string
+  setPostResult: (result: PostResult) => void
+  t?: import('i18next').TFunction
 }
 
-/**
- * Creates guarded post-gig handlers for social posting, deal resolution, story spin, and continuation.
- * @param props - Current post-gig state, dispatch actions, phase setters, and translator.
- * @returns Post-gig action handlers and processing state.
- */
-export const usePostGigHandlers = ({
+export function usePostGigHandlers({
   player,
   band,
   social,
@@ -136,479 +84,82 @@ export const usePostGigHandlers = ({
   addQuest,
   applyQuestEvent,
   setPhase,
-  setPostResult,
   setBrandOffers,
-  t
-}: UsePostGigHandlersProps): UsePostGigHandlersReturn => {
-  const isProcessingActionRef = useRef(false)
-  const [isProcessingAction, setIsProcessingAction] = useState(false)
+  setPostResult,
+  t = i18n.t
+}: UsePostGigHandlersProps): UsePostGigHandlersReturn {
+  const { isProcessingAction, isProcessingActionRef, setIsProcessingAction } =
+    useProcessingGuard()
 
-  const handlePostSelection = useCallback(
-    (option: SocialPostOption) => {
-      if (isProcessingActionRef.current) return
-      isProcessingActionRef.current = true
-      setIsProcessingAction(true)
-      try {
-        let updates: ReturnType<typeof calculatePostGigStateUpdates>
-        try {
-          updates = calculatePostGigStateUpdates({
-            option,
-            player,
-            band,
-            social,
-            lastGigStats,
-            currentGig,
-            perfScore,
-            secureRandomValue: secureRandom()
-          })
-        } catch (e) {
-          logger.error('PostGig', 'Failed to resolve selected post', e)
-          addToast(t('ui:postGig.postResolutionFailed'), 'error')
-          return
-        }
-
-        const {
-          finalResult,
-          newBand,
-          hasBandUpdates,
-          appliedHarmonyDelta,
-          nextMoney,
-          appliedMoneyDelta,
-          updatedSocial
-        } = updates
-
-        setPostResult(finalResult)
-
-        if (hasBandUpdates) {
-          updateBand(newBand)
-        }
-
-        if (appliedHarmonyDelta !== 0) {
-          const sign = appliedHarmonyDelta > 0 ? '+' : ''
-          addToast(
-            `${t('ui:postGig.harmony', { defaultValue: 'Harmony' })} ${sign}${appliedHarmonyDelta}`,
-            appliedHarmonyDelta > 0 ? 'success' : 'error'
-          )
-        }
-        if (appliedHarmonyDelta > 0) {
-          applyQuestEvent(
-            createHarmonyChangedQuestEvent({
-              amount: appliedHarmonyDelta,
-              newHarmony: clampBandHarmony(
-                finiteNumberOr(band?.harmony, 0) + appliedHarmonyDelta
-              )
-            })
-          )
-        }
-
-        if (appliedMoneyDelta !== 0) {
-          updatePlayer({ money: nextMoney })
-          addToast(
-            `${t('ui:postGig.money', { defaultValue: 'Money' })} ${formatCurrency(appliedMoneyDelta, i18n.language, 'always')}`,
-            appliedMoneyDelta > 0 ? 'success' : 'error'
-          )
-        } else if (finalResult.moneyChange) {
-          updatePlayer({ money: nextMoney })
-        }
-
-        if (finalResult.unlockTrait) {
-          unlockTrait(
-            finalResult.unlockTrait.memberId,
-            finalResult.unlockTrait.traitId
-          )
-          const traitName = finalResult.unlockTrait.traitId
-            .replace(/_/g, ' ')
-            .toUpperCase()
-          addToast(
-            t('ui:postGig.traitUnlocked', {
-              traitName,
-              defaultValue: 'Trait Unlocked: {{traitName}}'
-            }),
-            'success'
-          )
-        }
-
-        updateSocial(updatedSocial)
-
-        const followersGained = finiteNumberOr(finalResult.followers, 0)
-        // Pass platform + category as context so per-quest filters can narrow
-        // matches (e.g. TikTok-only viral_dance, Lifestyle-only outreach).
-        for (const questEvent of createSocialPostQuestEvents(option, {
-          ...finalResult,
-          followers: followersGained
-        })) {
-          applyQuestEvent(questEvent)
-        }
-
-        const playerUpdated = { ...player, money: nextMoney }
-        // Generate brand offers with UPDATED state (Post-Social-Update)
-        const updatedGameState = {
-          player: playerUpdated,
-          band: hasBandUpdates ? newBand : band,
-          social: { ...social, ...updatedSocial }
-        } as Partial<GameState> as GameState
-
-        const offers = generateBrandOffers(updatedGameState, secureRandom)
-        setBrandOffers(offers)
-
-        // If there are brand offers, go to DEALS phase, else COMPLETE
-        if (offers.length > 0) {
-          setPhase('DEALS')
-        } else {
-          setPhase('COMPLETE')
-        }
-      } finally {
-        isProcessingActionRef.current = false
-        setIsProcessingAction(false)
-      }
-    },
-    [
-      lastGigStats,
-      perfScore,
-      social,
-      player,
-      band,
-      updateSocial,
-      updateBand,
+  const dispatchers = useMemo(
+    () => ({
       updatePlayer,
-      unlockTrait,
+      updateBand,
+      updateSocial,
+      setPhase,
+      addQuest,
       applyQuestEvent,
-      addToast,
-      currentGig,
-      t,
+      changeScene,
+      setBrandOffers,
       setPostResult,
-      setBrandOffers,
-      setPhase
-    ]
-  )
-
-  const handleAcceptDeal = useCallback(
-    (deal: BrandDeal) => {
-      try {
-        const { nextMoney, appliedMoneyDelta } = getAcceptDealMoneyUpdate({
-          deal,
-          player
-        })
-
-        if (appliedMoneyDelta !== 0) {
-          updatePlayer({ money: nextMoney })
-        }
-
-        if (deal.offer.item) {
-          const bandUpdateFactory = getAcceptDealBandUpdateFactory(deal)
-          updateBand(bandUpdateFactory)
-        }
-
-        const socialUpdateFactory = getAcceptDealSocialUpdateFactory(deal)
-        updateSocial(socialUpdateFactory)
-
-        applyQuestEvent(createBrandOfferAcceptedQuestEvent(deal))
-        applyQuestEvent(createBrandDealCompletedQuestEvent(deal))
-        if (deal.alignment) {
-          // Mirror the accept social factory's clamped +5 so the emitted trust
-          // delta matches the real reputation change (avoids over-crediting
-          // quests when the brand is already near the 100 cap).
-          const currentRep = social.brandReputation?.[deal.alignment] || 0
-          const trustDelta = Math.min(100, currentRep + 5) - currentRep
-          if (trustDelta !== 0) {
-            applyQuestEvent(
-              createBrandTrustChangedQuestEvent({
-                brandId: deal.alignment,
-                amount: trustDelta
-              })
-            )
-          }
-        }
-        if (appliedMoneyDelta > 0) {
-          applyQuestEvent(
-            createMoneyEarnedQuestEvent({
-              amount: appliedMoneyDelta,
-              reason: 'brand_deal'
-            })
-          )
-        }
-
-        const moneyText =
-          appliedMoneyDelta === 0
-            ? ''
-            : ` (${formatCurrency(appliedMoneyDelta, i18n.language, 'always')})`
-        const localizedDealName =
-          getTranslatedBrandDealDisplay(deal, t)?.name ?? deal.name
-        addToast(
-          t('ui:postGig.acceptedDeal', {
-            dealName: localizedDealName,
-            moneyText,
-            defaultValue: 'Accepted deal: {{dealName}}{{moneyText}}'
-          }),
-          'success'
-        )
-
-        // Exclusivity: clear all offers and go to complete
-        setBrandOffers([])
-        setPhase('COMPLETE')
-      } catch (e) {
-        logger.error('PostGig', 'Failed to accept deal', e)
-        addToast(
-          t('ui:postGig.dealFailed', {
-            defaultValue: 'Deal failed'
-          }),
-          'error'
-        )
-      }
-    },
+      unlockTrait,
+      addToast
+    }),
     [
-      player,
-      social.brandReputation,
       updatePlayer,
       updateBand,
       updateSocial,
+      setPhase,
+      addQuest,
       applyQuestEvent,
-      addToast,
-      t,
+      changeScene,
       setBrandOffers,
-      setPhase
+      setPostResult,
+      unlockTrait,
+      addToast
     ]
   )
 
-  const handleRejectDeals = useCallback(() => {
-    // Clears all remaining offers (Reject All / Skip Phase)
-    setBrandOffers([])
-    setPhase('COMPLETE')
-    addToast(
-      t('ui:postGig.skippedBrandDeals', {
-        defaultValue: 'Skipped brand deals.'
-      }),
-      'info'
-    )
-  }, [addToast, t, setBrandOffers, setPhase])
-
-  const handleSpinStory = useCallback(() => {
-    if (isProcessingActionRef.current) return
-    isProcessingActionRef.current = true
-    setIsProcessingAction(true)
-
-    const updates = getSpinStoryMoneyUpdate({ player })
-
-    if (!updates.success) {
-      addToast(
-        t('ui:postGig.notEnoughCashForPr', {
-          defaultValue: 'Not enough cash for PR!'
-        }),
-        'error'
-      )
-      isProcessingActionRef.current = false
-      setIsProcessingAction(false)
-      return
-    }
-
-    updatePlayer({ money: updates.nextMoney })
-
-    const socialUpdateFactory = getSpinStorySocialUpdateFactory()
-    updateSocial(socialUpdateFactory)
-
-    const moneyText =
-      updates.appliedDelta !== 0
-        ? ` (${formatCurrency(updates.appliedDelta, i18n.language)})`
-        : ''
-    addToast(
-      t('ui:postGig.storySpunControversyReduced', {
-        moneyText,
-        defaultValue: `Story Spun. Controversy reduced.${moneyText}`
-      }),
-      'success'
-    )
-    isProcessingActionRef.current = false
-    setIsProcessingAction(false)
-  }, [player, updatePlayer, updateSocial, addToast, t])
-
-  const handleContinue = useCallback(() => {
-    if (!financials) return
-    if (isProcessingActionRef.current) return
-    isProcessingActionRef.current = true
-    setIsProcessingAction(true)
-    try {
-      if (financials.soldMerch) {
-        updateBand((prevBand: BandState) => {
-          const updatedInventory = { ...prevBand.inventory }
-          for (const merchKey in financials.soldMerch) {
-            if (Object.hasOwn(financials.soldMerch, merchKey)) {
-              const soldAmount = financials.soldMerch[merchKey] ?? 0
-              const currentAmount =
-                typeof updatedInventory[merchKey] === 'number'
-                  ? (updatedInventory[merchKey] as number)
-                  : 0
-              updatedInventory[merchKey] = Math.max(
-                0,
-                currentAmount - soldAmount
-              )
-            }
-          }
-          return { ...prevBand, inventory: updatedInventory }
-        })
-      }
-
-      const stats = calculateContinueStats({
-        player,
-        perfScore,
-        financials,
-        misses: lastGigStats?.misses ?? 0,
-        calculateFameGain,
-        calculateFameLevel,
-        clampPlayerFame,
-        clampPlayerMoney,
-        BALANCE_CONSTANTS
-      })
-
-      updatePlayer({
-        money: stats.newMoney,
-        fame: stats.newFame,
-        fameLevel: stats.fameLevel,
-        lastGigNodeId: player.currentNodeId
-      })
-
-      const fameGain = stats.newFame - finiteNumberOr(player.fame, 0)
-      if (fameGain > 0) {
-        // Region context lets perRegion fame quests (quest_local_legend)
-        // gate progress to the actual region where it was earned.
-        applyQuestEvent(
-          createRegionReputationChangedQuestEvent({
-            region: player.location,
-            amount: fameGain,
-            reason: 'post_gig_fame'
-          })
-        )
-      }
-
-      let postPenaltyHarmony: number | undefined
-      if (band.inventory?.neurotoxicPedal) {
-        const nextHarmony = clampBandHarmony(
-          finiteNumberOr(band?.harmony, 100) - NEUROTOXIC_PEDAL_HARMONY_PENALTY
-        )
-        postPenaltyHarmony = nextHarmony
-        updateBand((prevBand: BandState) => {
-          return {
-            ...prevBand,
-            harmony: nextHarmony
-          }
-        })
-      }
-
-      // Quest config (label/deadline/penalty) is owned by QUEST_REGISTRY.
-      // We build the dispatch payload from the registry definition so there is
-      // no inline duplication; the reducer also re-merges defaults defensively.
-      if (activeStoryFlags?.includes('cancel_quest_active')) {
-        const def = getQuestDefinition(QUEST_APOLOGY_TOUR)
-        if (def) {
-          addQuest({
-            ...def,
-            id: QUEST_APOLOGY_TOUR,
-            deadline: player.day + finiteNumberOr(def.deadlineOffset, 0),
-            progress: 0
-          })
-        }
-      }
-
-      if (activeStoryFlags?.includes('breakup_quest_active')) {
-        const def = getQuestDefinition(QUEST_EGO_MANAGEMENT)
-        if (def) {
-          // Threshold-style harmony quest: seed progress with current band
-          // harmony so any harmony recovery that happened earlier this
-          // post-gig phase is not lost. Without this seed the new quest would
-          // miss the harmony_recovered event applied before it was added.
-          const seededProgress =
-            def.progressSource === 'harmony_recovered'
-              ? (postPenaltyHarmony ??
-                clampBandHarmony(finiteNumberOr(band?.harmony, 0)))
-              : 0
-          addQuest({
-            ...def,
-            id: QUEST_EGO_MANAGEMENT,
-            deadline: player.day + finiteNumberOr(def.deadlineOffset, 0),
-            progress: seededProgress
-          })
-        }
-      }
-
-      submitLeaderboardScores({
-        player,
-        lastGigStats,
-        currentGig,
-        setlist
-      }).catch(err =>
-        logger.error('PostGig', 'submitLeaderboardScores failed', {
-          err,
-          player,
-          currentGig
-        })
-      )
-
-      if (shouldTriggerBankruptcy(stats.newMoney, financials.net)) {
-        addToast(
-          t('ui:postGig.gameOverBankrupt', {
-            defaultValue: 'GAME OVER: BANKRUPT! The tour is over.'
-          }),
-          'error'
-        )
-        isProcessingActionRef.current = false
-        setIsProcessingAction(false)
-        changeScene(GAME_PHASES.GAMEOVER)
-      } else {
-        queueMicrotask(() => {
-          isProcessingActionRef.current = false
-          setIsProcessingAction(false)
-          changeScene(GAME_PHASES.OVERWORLD)
-        })
-      }
-    } catch (err) {
-      logger.error(
-        'PostGig handleContinue',
-        'Unexpected error in continue flow',
-        { err, player, currentGig }
-      )
-      isProcessingActionRef.current = false
-      setIsProcessingAction(false)
-    }
-  }, [
+  const handleContinue = useContinueHandler({
     financials,
     perfScore,
     player,
+    band,
     currentGig,
     lastGigStats,
-    updatePlayer,
-    updateBand,
-    addToast,
-    changeScene,
-    activeStoryFlags,
-    addQuest,
-    applyQuestEvent,
     setlist,
+    activeStoryFlags,
+    isProcessingActionRef,
+    setIsProcessingAction,
+    t,
+    dispatchers
+  })
+  const handlePostSelection = useSocialPostHandler({
+    player,
     band,
-    t
-  ])
-
-  const handleNextPhase = useCallback(() => {
-    if (postOptionsDerivationError) {
-      logger.error(
-        'PostGig',
-        'Failed to generate post options',
-        postOptionsDerivationError
-      )
-      const fallbackMsg = t('ui:postGig.socialOptionsUnavailable')
-
-      setPostResult({
-        type: 'ERROR',
-        success: false,
-        totalFollowers: 0,
-        followers: 0,
-        moneyChange: 0,
-        message: fallbackMsg
-      })
-      setPhase('COMPLETE')
-      addToast(fallbackMsg, 'error')
-    } else {
-      setPhase('SOCIAL')
-    }
-  }, [setPhase, postOptionsDerivationError, t, addToast, setPostResult])
+    social,
+    currentGig,
+    perfScore,
+    lastGigStats,
+    isProcessingActionRef,
+    setIsProcessingAction,
+    t,
+    dispatchers
+  })
+  const { handleAcceptDeal, handleRejectDeals } = useDealHandlers({
+    player,
+    social,
+    t,
+    dispatchers
+  })
+  const { handleNextPhase, handleSpinStory } = useMinorHandlers({
+    player,
+    postOptionsDerivationError,
+    isProcessingActionRef,
+    setIsProcessingAction,
+    t,
+    dispatchers
+  })
 
   return {
     isProcessingAction,
