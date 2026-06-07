@@ -244,9 +244,7 @@ export const handleCompleteTravelMinigame = (
         postStashLength > preStashLength || postStacks > preStacks
 
       if (wasAdded) {
-        // We reuse the existing toasts array and append our new toast
-        // For deterministic action tests we could rely on a better ID generation strategy
-        // but keeping it simple as it was for now. Toasts are often tricky.
+        // Append the new toast to the existing toasts array.
         newState.toasts = [
           ...newState.toasts,
           {
