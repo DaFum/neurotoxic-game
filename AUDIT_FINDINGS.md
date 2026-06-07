@@ -1,22 +1,23 @@
 # Neurotoxic Codebase Audit — Categorized Findings
 
 **Scope:** all of `src/` (540 files). Tests checked only for orphan references.
-**Method:** `symbols.json` exported-symbol index (with `usedBy` / `referencedByLocal` / `referencedInFile` / `usedByTests`) for orphan detection, plus ripgrep verification for every semantic claim. No files were modified.
+**Method:** `symbols.json` exported-symbol index (with `usedBy` / `referencedBy` / `referencedByLocal` / `referencedInFile` / `usedByTests`) for orphan detection, plus ripgrep verification for every semantic claim.
+
+> **Status:** All actionable findings this audit raised have been resolved on this branch (see git history). What remains below is the audit's standing record of verified-clean areas and non-findings. The one false-positive class the audit hit — cross-file type references invisible to the symbol index — was fixed at the generator level (`scripts/update-symbols.mjs` now records a `referencedBy` edge for `export *`-reachable type usage and namespace-member access), so it can no longer recur.
 
 ## Headline
 
-The codebase is **unusually clean**. The strong, verified negatives are as important as the findings:
+The codebase is **unusually clean**. The strong, verified negatives:
 
-- **0** orphaned runtime exports (functions/components/hooks/constants). The index reports only 4 orphaned *type* interfaces (below).
+- **0** orphaned runtime exports (functions/components/hooks/constants).
+- **0** orphaned type exports (after the index fix, cross-file ambient `.d.ts` type usages are correctly attributed via `referencedBy`).
 - **0** action creators without a runtime caller (all 50 wired).
 - **0** exported hooks without a runtime consumer (all 72 used).
 - **0** dead reducer cases — all 124 `case` labels in `src/context/reducers/**` map 1:1 to `actionTypes.ts`.
 - **0** `if (false)` / hardcoded-false render gates / `@deprecated` / unreachable-after-return markers.
-- **EN/DE locale key parity is exact** across all 10 locale files (verified by the inconsistency sub-audit).
+- **EN/DE locale key parity is exact** across all 10 locale files.
 - No inline hex color literals in `src/components`, `src/ui`, `src/scenes`.
-- The four name-collisions that looked like duplicates are **not** duplicates (see "Investigated, NOT a finding").
-
-The real findings are a small set: 4 orphan types, one half-finished i18n migration, and two `finiteNumberOr` gaps.
+- The four name-collisions that looked like duplicates are **not** duplicates (see Section 1).
 
 ---
 
@@ -39,57 +40,29 @@ Initial signals suggested `playSFX` / `setMusicVolume` / `playRandomAmbient*` ex
 - `AudioManager.ts` (`import * as audioEngine from './audioEngine'`) **delegates** to those leaf functions (`audioEngine.playSFX(key)` at `AudioManager.ts:351`, `audioEngine.setMusicVolume` at `:367`, `audioEngine.playRandomAmbientOgg` at `:214`, etc.).
 - `audioService.ts` is a facade over the `audioManager` instance; consumers call `audioService.playSFX(...)`.
 
-No action. (Noted only because it was flagged for investigation.)
+No action.
 
 ---
 
 ## 2. Orphaned / Unintegrated Code
 
-### 2.1 Four "orphaned" type interfaces — **FALSE POSITIVE** (corrected during fix pass) — NO ACTION
-
-Originally flagged as orphan exports because `symbols.json` reported empty `usedBy`/`referencedByLocal` and `referencedInFile: false`. **On direct ripgrep re-verification, all four are used as field/payload types within `src/types/game.d.ts`** — the symbol index does not attribute cross-file references inside ambient `.d.ts` declaration merging, which produced the false signal:
-
-- `CharacterProfile` (`src/types/npc.d.ts:4`) — `npcs: Record<string, CharacterProfile>` at `game.d.ts:150`
-- `CompleteTravelMinigamePayload` (`src/types/actions.d.ts:6`) — types the `COMPLETE_TRAVEL_MINIGAME` action in the dispatch union at `game.d.ts:227` (it IS the SoT, fully integrated)
-- `QuestCooldown` (`src/types/quest.d.ts:357`) — `questCooldowns: QuestCooldown[]` at `game.d.ts:144`
-- `QuestScopeCompletion` (`src/types/quest.d.ts:368`) — `completedQuestScopes: QuestScopeCompletion[]` at `game.d.ts:146`
-
-These were **not** deleted. Lesson: the symbol index is reliable for `import`-based usage but blind to in-place type references across merged ambient declarations — always ripgrep-confirm type orphans.
+**None.** No exported symbol (runtime or type) is unreferenced. The four type interfaces an earlier index read flagged (`CharacterProfile`, `CompleteTravelMinigamePayload`, `QuestCooldown`, `QuestScopeCompletion`) are all consumed as field/payload types in `src/types/game.d.ts`; the index now records this via `referencedBy`.
 
 ---
 
 ## 3. Inconsistencies
 
-### 3.1 `postOptions.ts` — half-migrated i18n — **MED** — FIX
+### 3.1 `typeof x === 'number'` audit — mostly benign
 
-`src/data/postOptions.ts` has **16 `message:` fields using `i18n.t('ui:postOptions.…')` and 16 using raw English string literals**, all flowing through the same render path (`result.message` rendered at `src/components/postGig/CompletePhase.tsx:78`). German players see English for the un-migrated half. Examples of raw strings:
+A sweep of all bare `typeof … === 'number'` guards (23 in `systemReducer.ts`, plus scattered others) found they are either (a) paired with `Number.isFinite` on the adjacent line (e.g. `toastSanitizers.ts:150/158`), (b) immediately fed to `finiteNumberOr` which collapses `NaN` (e.g. `assetSanitizers.ts:347`), (c) followed by a canonical clamp that short-circuits `NaN` (e.g. `systemReducer.ts:2020` → `clampBandHarmony`), or (d) pure type discrimination, not finiteness validation (e.g. `bandReducer.ts:462`, `systemReducer.ts:1887`). No action required.
 
-- `postOptions.ts:241` `'The fans are responding well to your honesty.'`
-- `postOptions.ts:273` `'It looked completely staged. Backlash increased.'`
-- `postOptions.ts:294`, `:316`, `:374`, `:433`, `:452`, `:478`, `:494`, `:513`, `:534`, `:818` (the last also hardcodes `€`: `` `…Made ${hypeCash}€.` ``).
-
-Violates AGENTS.md "User-facing text must use namespaced i18n keys." Migrate the remaining 16 to `ui:postOptions.*` keys (add matching EN+DE entries) and format the `€` value with `formatCurrency`.
-
-> Note for contrast: `brandDeals.ts` also contains raw English `description`/`title` strings, but those run through a dedicated translation layer (`src/utils/brandDealI18n.ts`) applied at render, so they are localized fallbacks, **not** a violation.
-
-### 3.2 State-safety: `finiteNumberOr` gaps (arithmetic-then-clamp) — **MED** — FIX
-
-AGENTS.md requires persisted numeric addends to be wrapped with `finiteNumberOr(value, fallback)` because a stale/hostile save can carry non-finite numerics that bare `typeof === 'number'` lets through.
-
-- **`src/context/reducers/bandReducer.ts:310`** — `staminaMax: (typeof currentMember.staminaMax === 'number' ? currentMember.staminaMax : 100) + value`. A `NaN`/`Infinity` `staminaMax` passes the `typeof` guard, and `NaN + value` is persisted. Use `finiteNumberOr(currentMember.staminaMax, 100) + value`.
-- **`src/context/reducers/minigameReducer.ts:356` and `:539`** (`applyPostMinigameResult` / `handleCompleteRoadieMinigame`) — the `stress` addend in `finiteNumberOr(state.band.harmony, 0) - stress` wraps the left operand but not `stress`. The source values appear finite today, so severity is **LOW–MED**; wrapping `stress` with `finiteNumberOr(stress, 0)` aligns with the invariant defensively.
-
-### 3.3 `typeof x === 'number'` audit — mostly benign
-
-A sweep of all bare `typeof … === 'number'` guards (23 in `systemReducer.ts`, plus scattered others) found that — apart from 3.2 above — they are either (a) paired with `Number.isFinite` on the adjacent line (e.g. `toastSanitizers.ts:150/158`), (b) immediately fed to `finiteNumberOr` which collapses `NaN` (e.g. `assetSanitizers.ts:347`), (c) followed by a canonical clamp that short-circuits `NaN` (e.g. `systemReducer.ts:2020` → `clampBandHarmony`), or (d) pure type discrimination, not finiteness validation (e.g. `bandReducer.ts:462`, `systemReducer.ts:1887`). No additional action required.
-
-### 3.4 `||` vs `??`
+### 3.2 `||` vs `??`
 
 Verified clean. Every numeric `||` fallback sampled is either a legitimate post-`Number()` `NaN`-collapse (`Number(x) || 0`, which AGENTS.md explicitly allows) or a fallback on an optional-chain read where `0`/`''`/`false` cannot legitimately occur. No falsy-value-clobbering bugs found.
 
-### 3.5 Colors & locale templates
+### 3.3 Colors & locale templates
 
-No invented CSS var aliases, no inline hex in components, no hardcoded `€` in `public/locales/**` JSON. The only `€` literals in `src/` are code comments (`gameState/constants.ts:25`, `hqItems.ts`), an icon prop (`StatsTab.tsx:30` `icon='€'`), and the `postOptions.ts:818` string already flagged in 3.1.
+No invented CSS var aliases, no inline hex in components, no hardcoded `€` in `public/locales/**` JSON. The only `€` literals in `src/` are code comments (`gameState/constants.ts:25`, `hqItems.ts`) and an icon prop (`StatsTab.tsx:30` `icon='€'`).
 
 ---
 
@@ -110,19 +83,4 @@ No invented CSS var aliases, no inline hex in components, no hardcoded `€` in 
 - **Hooks:** all 72 exported `useX` hooks are imported by a runtime consumer.
 - **Reducers ↔ creators:** 1:1 case/type mapping (Section 4).
 - **Event data:** all 9 event-domain arrays (`TRANSPORT_/BAND_/GIG_/FINANCIAL_/SPECIAL_/CRISIS_/CONSEQUENCE_/RELATIONSHIP_/QUEST_EVENTS`) are imported and spread into `ALL_RAW_EVENTS` → `EVENTS_DB` in `src/data/events/index.ts`. None defined-but-forgotten.
-- **Symbol index:** zero runtime exports with empty `usedBy` + `referencedByLocal` + `referencedInFile` + `usedByTests`.
-
-The only "incomplete" signal that touches integration is the unused `CompleteTravelMinigamePayload` type (2.1) — investigate whether the travel-minigame completion path is meant to use it.
-
----
-
-## Fix Pass — Status
-
-| # | Severity | Finding | Action | Status |
-|---|---|---|---|---|
-| 3.1 | MED | `postOptions.ts` raw English `message:` strings (26, incl. hardcoded `€`) | Migrated all to `ui:postOptions.*` keys (26 EN+DE entries added); `€` now via `formatCurrency` + `{{amount}}` | ✅ FIXED |
-| 3.2a | MED | `bandReducer.ts:310` `staminaMax` not wrapped in `finiteNumberOr` | Replaced bare `typeof` ternary with `finiteNumberOr(staminaMax, 100) + finiteNumberOr(value, 0)` | ✅ FIXED |
-| 3.2b | LOW | `minigameReducer.ts` `stress`/`reward`/`repairCost`/`contrabandBonus` addends unwrapped (2 sites) | Wrapped all computed addends with `finiteNumberOr(…, 0)` | ✅ FIXED |
-| 2.1 | LOW | "4 orphan type interfaces" | Re-verified: all used in `game.d.ts` | ❌ FALSE POSITIVE — no change |
-
-**Verification:** `typecheck:core` ✅, scoped reducer `typecheck` ✅, locale smoke+full (35) ✅, node reducer tests (25) ✅, full Vitest UI suite (862) ✅, `symbols:check` ✅ (regenerated).
+- **Symbol index:** zero runtime exports with empty `usedBy` + `referencedBy` + `referencedByLocal` + `referencedInFile` + `usedByTests`.
