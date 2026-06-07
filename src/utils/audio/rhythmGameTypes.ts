@@ -1,7 +1,5 @@
 import type { Song, Note } from '../../types/audio'
 
-
-
 export const GIG_LEAD_IN_MS = 2000
 export const NOTE_LEAD_IN_MS = 100
 

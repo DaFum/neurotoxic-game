@@ -1,11 +1,148 @@
-import { getGigTimeMs } from './gigPlayback'
+import fs from 'fs'
+const utilsFile = 'src/utils/audio/rhythmGameAudioUtils.ts'
+if (fs.existsSync(utilsFile)) {
+  const file = fs.readFileSync(utilsFile, 'utf-8')
+  const lines = file.split('\n')
+
+  const typesAndConstants = []
+  const gigPhysicsLines = []
+  const setlistResolutionLines = []
+  const playbackStrategiesLines = []
+  const songSequencerLines = []
+
+  for (let i = 24; i < 78; i++) {
+    typesAndConstants.push(lines[i])
+  }
+
+  for (let i = 79; i < 176; i++) {
+    gigPhysicsLines.push(lines[i])
+  }
+
+  for (let i = 177; i < 246; i++) {
+    setlistResolutionLines.push(lines[i])
+  }
+
+  for (let i = 247; i < 442; i++) {
+    playbackStrategiesLines.push(lines[i])
+  }
+
+  for (let i = 443; i < lines.length; i++) {
+    songSequencerLines.push(lines[i])
+  }
+
+  fs.writeFileSync(
+    'src/utils/audio/rhythmGameTypes.ts',
+    `import type { Song, Note } from '../../types/audio'
+
+
+
+export const GIG_LEAD_IN_MS = 2000
+export const NOTE_LEAD_IN_MS = 100
+
+/**
+ * Extra note lifetime after the scheduled song window, in milliseconds.
+ */
+export const NOTE_TAIL_MS = 1000
+
+export interface MutableRef<T> {
+  current: T
+}
+
+export type ActiveSong = Partial<Song> & {
+  id: string
+  name: string
+  bpm: number
+  duration: number
+  difficulty: number
+  notes?: Note[]
+  sourceMid?: string
+  sourceOgg?: string | null
+}
+
+export const hasNotesField = (
+  v: unknown
+): v is {
+  notes: Note[]
+  id?: string
+  name?: string
+  bpm?: number
+  duration?: number
+  difficulty?: number
+  sourceMid?: string
+  sourceOgg?: string | null
+} => {
+  return (
+    typeof v === 'object' &&
+    v !== null &&
+    Array.isArray((v as { notes?: unknown }).notes)
+  )
+}
+`
+  )
+
+  fs.writeFileSync(
+    'src/utils/audio/gigPhysics.ts',
+    `import { logger } from '../logger'
+import { SONGS_DB, SONGS_BY_ID } from '../../data/songs'
+import { calculateGigPhysics, getGigModifiers } from '../simulationUtils'
+import type { Song } from '../../types/audio'
+import type { BandState, GameMap, GigModifiers } from '../../types'
+import type { RhythmModifiers } from '../../types/rhythmGame'
+
+` + gigPhysicsLines.join('\n')
+  )
+
+  fs.writeFileSync(
+    'src/utils/audio/setlistResolution.ts',
+    `import { SONGS_BY_ID } from '../../data/songs'
+import type { Note } from '../../types/audio'
+import type { RhythmSetlistEntry } from '../../types/rhythmGame'
+import type { ActiveSong } from './rhythmGameTypes'
+import { hasNotesField } from './rhythmGameTypes'
+
+` + setlistResolutionLines.join('\n')
+  )
+
+  fs.writeFileSync(
+    'src/utils/audio/playbackStrategies.ts',
+    `import { startMetalGenerator } from './proceduralMetal'
+import { playMidiFile, playSongFromData } from './midiPlayback'
+import { startGigClock, startGigPlayback } from './gigPlayback'
+import { getAudioContextTimeSec, getToneStartTimeSec } from './context'
+import { handleError, AudioError } from '../errorHandler'
+import { hasAudioAsset } from './assets'
+import { logger } from '../logger'
+import { generateNotesForSong } from '../rhythmUtils'
+import { resolveSongPlaybackWindow } from './songUtils'
+import type { ActiveSong } from './rhythmGameTypes'
+import { GIG_LEAD_IN_MS, NOTE_LEAD_IN_MS, NOTE_TAIL_MS } from './rhythmGameTypes'
+import type { Song } from '../../types/audio'
+import type { RhythmNote } from '../../types/rhythmGame'
+import type { RandomFn } from '../../types/callbacks'
+
+` +
+      playbackStrategiesLines.join('\n').slice(0, -56) +
+      `
+export { playAudioForSong }
+`
+  )
+
+  fs.writeFileSync(
+    'src/utils/audio/songSequencer.ts',
+    `import { getGigTimeMs } from './gigPlayback'
 import { handleError } from '../errorHandler'
 import { logger } from '../logger'
 import { parseSongNotes } from '../rhythmUtils'
 import { resolveSongPlaybackWindow } from './songUtils'
 import { getSafeRandom } from '../crypto'
-import type { RhythmGameRefState, RhythmNote } from '../../types/rhythmGame'
-import type { ToastCallback, TranslationCallback } from '../../types/callbacks'
+import type {
+  RhythmGameRefState,
+  RhythmNote
+} from '../../types/rhythmGame'
+import type {
+  ToastCallback,
+  TranslationCallback
+} from '../../types/callbacks'
 import type { ActiveSong, MutableRef } from './rhythmGameTypes'
 import type { Song } from '../../types/audio'
 import { NOTE_LEAD_IN_MS } from './rhythmGameTypes'
@@ -74,10 +211,7 @@ export const playSongSequence = async (
   t: TranslationCallback | undefined
 ): Promise<void> => {
   if (!gameStateRef.current) {
-    logger.error(
-      'RhythmGame',
-      'playSongSequence: gameStateRef.current is null or undefined'
-    )
+    logger.error('RhythmGame', 'playSongSequence: gameStateRef.current is null or undefined')
     return
   }
 
@@ -106,7 +240,7 @@ export const playSongSequence = async (
   if (!currentSong) {
     logger.error(
       'RhythmGame',
-      `playSongSequence: missing song at index ${index}`
+      \`playSongSequence: missing song at index \${index}\`
     )
     if (gameStateRef.current) {
       gameStateRef.current.setlistCompleted = true
@@ -151,7 +285,7 @@ export const playSongSequence = async (
 
     handleSongEnded(gameStateRef, currentSong, index)
 
-    logger.info('RhythmGame', `Song "${currentSong.name}" ended.`)
+    logger.info('RhythmGame', \`Song "\${currentSong.name}" ended.\`)
     gameStateRef.current.songTransitioning = true
     return playSongSequence(
       index + 1,
@@ -203,9 +337,9 @@ export const playSongSequence = async (
     const text = t
       ? t('ui:nowPlaying', {
           name: currentSong.name,
-          defaultValue: `Now Playing: {{name}}`
+          defaultValue: \`Now Playing: {{name}}\`
         })
-      : `Now Playing: ${currentSong.name}`
+      : \`Now Playing: \${currentSong.name}\`
     addToast(text, 'info')
   }
 }
@@ -229,4 +363,42 @@ export const resetGigStateTracking = (
     gameStateRef.current.isGameOver = false
     gameStateRef.current.hasSubmittedResults = false
   }
+}
+`
+  )
+
+  const engineFile = 'src/utils/audio/audioEngine.ts'
+  let code = fs.readFileSync(engineFile, 'utf-8')
+  code = code.replace(
+    `export {
+  setupGigPhysics,
+  resolveActiveSetlist,
+  playSongSequence,
+  resetGigStateTracking
+} from './rhythmGameAudioUtils'`,
+    `export { setupGigPhysics } from './gigPhysics'
+export { resolveActiveSetlist } from './setlistResolution'
+export { playSongSequence, resetGigStateTracking } from './songSequencer'
+export { NOTE_TAIL_MS } from './rhythmGameTypes'`
+  )
+  fs.writeFileSync(engineFile, code)
+
+  let utilsTest = fs.readFileSync(
+    'tests/node/rhythmGameAudioUtils.test.js',
+    'utf-8'
+  )
+  utilsTest = utilsTest.replace(
+    "from '../../src/utils/audio/rhythmGameAudioUtils'",
+    "from '../../src/utils/audio/audioEngine'"
+  )
+  fs.writeFileSync('tests/node/rhythmGameAudioUtils.test.js', utilsTest)
+
+  let songsTest = fs.readFileSync('tests/node/songs-real.test.js', 'utf-8')
+  songsTest = songsTest.replace(
+    "from '../../src/utils/audio/rhythmGameAudioUtils'",
+    "from '../../src/utils/audio/audioEngine'"
+  )
+  fs.writeFileSync('tests/node/songs-real.test.js', songsTest)
+
+  fs.unlinkSync(utilsFile)
 }

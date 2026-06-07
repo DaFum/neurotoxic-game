@@ -8,7 +8,11 @@ import { logger } from '../logger'
 import { generateNotesForSong } from '../rhythmUtils'
 import { resolveSongPlaybackWindow } from './songUtils'
 import type { ActiveSong } from './rhythmGameTypes'
-import { GIG_LEAD_IN_MS, NOTE_LEAD_IN_MS, NOTE_TAIL_MS } from './rhythmGameTypes'
+import {
+  GIG_LEAD_IN_MS,
+  NOTE_LEAD_IN_MS,
+  NOTE_TAIL_MS
+} from './rhythmGameTypes'
 import type { Song } from '../../types/audio'
 import type { RhythmNote } from '../../types/rhythmGame'
 import type { RandomFn } from '../../types/callbacks'
