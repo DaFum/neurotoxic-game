@@ -13,6 +13,12 @@ export const QUEST_SLOT_LIMITS: Record<QuestKind, number> = {
   tutorial: 1
 }
 
+/**
+ * Determines the categorisation kind for slot allocation based on a quest payload.
+ *
+ * @param quest - The partial quest state containing an identifier or explicit kind.
+ * @returns The resolved quest kind string.
+ */
 const getQuestKindForSlots = (quest: Partial<QuestState>): QuestKind => {
   const definition = getQuestDefinition(quest.id ?? '') as
     | Partial<QuestState>
@@ -20,6 +26,13 @@ const getQuestKindForSlots = (quest: Partial<QuestState>): QuestKind => {
   return quest.kind ?? definition?.kind ?? 'side'
 }
 
+/**
+ * Verifies if the player's active quest inventory has remaining capacity for a specific quest kind.
+ *
+ * @param state - The active game state context.
+ * @param quest - The partial quest payload containing the target kind.
+ * @returns A boolean indicating if capacity exists.
+ */
 const hasQuestSlot = (
   state: GameState,
   quest: Partial<QuestState>
@@ -33,6 +46,12 @@ const hasQuestSlot = (
   return activeCount < limit
 }
 
+/**
+ * Extracts the current venue context identifier for location-scoped repeat policies.
+ *
+ * @param state - The active game state context.
+ * @returns The scoped venue identifier, or undefined if not actively in a gig node.
+ */
 const getCurrentVenueScopeKey = (state: GameState): string | undefined => {
   const currentGigId = state.currentGig?.id
   if (typeof currentGigId === 'string' && currentGigId.length > 0) {
@@ -55,15 +74,15 @@ export type CanAcceptQuestResult =
     }
 
 /**
- * Predicate that mirrors `QuestLifecycle.addQuest`'s repeat-policy and scope
- * guards without mutating state. Use in event-condition functions so an offer
- * does not surface when the dispatch would silently refuse it.
+ * Predicate that mirrors `QuestLifecycle.addQuest`'s repeat-policy and scope guards without mutating state.
  *
- * Pass either a `questId` string or a partial `QuestState`; registry defaults
- * (repeatPolicy, completionFlags, rewardFlag) are merged automatically.
+ * @remarks
+ * Use in event-condition functions so an offer does not surface when the dispatch would silently refuse it.
+ * Registry defaults such as `repeatPolicy`, `completionFlags`, and `rewardFlag` are merged automatically prior to validation.
  *
- * Returns `{ ok: true, scopeKey? }` when addQuest would accept, or
- * `{ ok: false, reason }` describing why it would refuse.
+ * @param state - The active game state context.
+ * @param questOrId - Either the quest identifier string or a partial quest state payload.
+ * @returns A structured result object indicating success (with an optional scopeKey for scoped quests) or the specific rejection reason.
  */
 export const canAcceptQuest = (
   state: GameState,
