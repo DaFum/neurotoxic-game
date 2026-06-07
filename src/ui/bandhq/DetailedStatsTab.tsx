@@ -438,7 +438,7 @@ const RegionalStandingSection = ({
                         amount: formatCurrency(cost, i18n.language),
                         defaultValue: 'Make Amends ({{amount}})'
                       })} — ${translateLocation(t, venueId, venueId)}`}
-                      className='text-xs px-2 py-0.5 border border-toxic-green/50 text-toxic-green uppercase tracking-wider disabled:opacity-40 disabled:cursor-not-allowed hover:bg-toxic-green/10'
+                      className='text-xs px-2 py-0.5 border border-toxic-green/50 text-toxic-green uppercase tracking-wider disabled:opacity-40 disabled:cursor-not-allowed hover:bg-toxic-green/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
                     >
                       {t('ui:detailedStats.makeAmends', {
                         amount: formatCurrency(cost, i18n.language),
@@ -638,7 +638,7 @@ const InventoryEquipmentSection = ({
                       item: itemName,
                       defaultValue: `Use ${itemName}`
                     })}
-                    className='min-h-7 border px-2 text-xs uppercase'
+                    className='min-h-7 border px-2 text-xs uppercase focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
                     style={{
                       borderColor: 'var(--color-toxic-green)',
                       color: 'var(--color-toxic-green)'
@@ -715,7 +715,7 @@ const CraftingSection = ({
                   aria-label={`${t('ui:crafting.craft', {
                     defaultValue: 'Craft'
                   })} ${t(recipe.labelKey, { defaultValue: recipe.id })}`}
-                  className='shrink-0 text-xs px-2 py-0.5 border border-toxic-green/50 text-toxic-green uppercase tracking-wider disabled:opacity-40 disabled:cursor-not-allowed hover:bg-toxic-green/10'
+                  className='shrink-0 text-xs px-2 py-0.5 border border-toxic-green/50 text-toxic-green uppercase tracking-wider disabled:opacity-40 disabled:cursor-not-allowed hover:bg-toxic-green/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
                 >
                   {t('ui:crafting.craft', { defaultValue: 'Craft' })}
                 </button>
