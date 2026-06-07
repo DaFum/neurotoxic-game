@@ -4,8 +4,8 @@ import type { RhythmLiveStats } from '../types/rhythmGame'
 /**
  * Calculates hit accuracy as a percentage (0–100).
  * Returns 100 when no notes were attempted (no misses, no hits).
- * @param perfectHits - Perfect hits.
- * @param misses - Misses.
+ * @param perfectHits - Count of perfect hits; the numerator and part of the attempted-note total.
+ * @param misses - Count of missed notes; the remainder of the attempted-note total.
  * @returns Hit accuracy as a percentage.
  */
 export const calculateAccuracy = (

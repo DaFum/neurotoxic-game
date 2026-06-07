@@ -96,8 +96,8 @@ export const resolveTravelVenue = (
 
 /**
  * Gets the translated name for a location
- * @param location - Location name
- * @param venueId - Venue ID
+ * @param location - Location key to translate; used as the key when present.
+ * @param venueId - Venue id used as the key when `location` is absent.
  * @param t - Translation function
  * @param translateLocation - Location translation helper
  * @returns Translated location name

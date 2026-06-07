@@ -544,7 +544,7 @@ export const createCompleteTravelMinigameAction = (
 
 /**
  * Creates start roadie minigame action
- * @param gigId - The gig ID
+ * @param gigId - Id of the gig the roadie minigame precedes.
  */
 export const createStartRoadieMinigameAction = (
   gigId: string
@@ -574,7 +574,7 @@ export const createCompleteRoadieMinigameAction = (
 
 /**
  * Creates start kabelsalat minigame action
- * @param gigId - Gig id.
+ * @param gigId - Id of the gig the Kabelsalat minigame precedes.
  */
 export const createStartKabelsalatMinigameAction = (
   gigId: string
@@ -812,7 +812,7 @@ export const createAddQuestAction = (
 
 /**
  * Creates an action to advance a quest's progress.
- * @param questId - The ID of the quest.
+ * @param questId - Id of the quest whose progress advances.
  * @param amount - The amount to advance progress by. Defaults to `1`.
  */
 export const createAdvanceQuestAction = (
@@ -932,7 +932,7 @@ export const createPirateBroadcastAction = (
 
 /**
  * Creates an action to set pendingBandHQOpen
- * @param isOpen - Is open.
+ * @param isOpen - Whether the Band HQ overlay should be queued to open.
  */
 export const createSetPendingBandHQOpenAction = (
   isOpen: boolean

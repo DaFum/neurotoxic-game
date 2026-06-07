@@ -249,7 +249,7 @@ export const applyInventorySet = (
  * purchase pipeline and produces a full band patch.
  *
  * @param effect - Effect configuration
- * @param bandInventory - Current band inventory
+ * @param bandInventory - Existing inventory the addend stacks onto; treated as empty when omitted.
  * @returns Band patch to apply
  */
 export const applyInventoryAdd = (

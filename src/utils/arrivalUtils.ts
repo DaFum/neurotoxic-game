@@ -75,7 +75,7 @@ export const processHarmonyRegen = (
 /**
  * Checks if the current node is a gig node.
  *
- * @param node - The current node.
+ * @param node - Node to test; nullish or non-gig nodes return false.
  * @returns True if the node is a GIG, FESTIVAL, or FINALE.
  */
 export const isGigNode = <T extends { type?: string }>(
@@ -93,7 +93,7 @@ type ProcessTravelEventsOptions = {
 /**
  * Triggers travel events if applicable for the current node.
  *
- * @param node - The current node.
+ * @param node - Arrival node whose type gates which travel events may fire; a nullish node fires none.
  * @param triggerEvent - The function to trigger events.
  * @param options - Travel-event options.
  * @returns True if a travel event was triggered.

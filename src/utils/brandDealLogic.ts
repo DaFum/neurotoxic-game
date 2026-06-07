@@ -241,7 +241,7 @@ export const generateBrandOffers = (
  * Negotiates a brand deal with risk/reward mechanics.
  * @param deal - The original deal object.
  * @param strategy - 'AGGRESSIVE', 'PERSUASIVE', 'SAFE'.
- * @param gameState - Current game state.
+ * @param gameState - Social-engine state read for band traits, rival proximity, and player location that bias the odds.
  * @param rng - Random number generator.
  * @returns `success: boolean, deal: object, feedback: string, status: 'ACCEPTED'|'REVOKED'|'FAILED'`
  */

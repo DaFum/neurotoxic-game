@@ -5,7 +5,7 @@ import { isFiniteNumber } from './finiteNumber'
  * Checks whether the pirate broadcast action has already run today.
  *
  * @param social - Social state slice containing the last broadcast day.
- * @param playerDay - Current player day.
+ * @param playerDay - Current day index; a non-finite value makes the check return false.
  * @returns True when the stored broadcast day matches the current day.
  */
 export const checkHasBroadcastedToday = (
