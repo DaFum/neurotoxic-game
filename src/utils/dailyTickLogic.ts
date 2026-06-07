@@ -13,12 +13,7 @@ import {
   BALANCE_CONSTANTS,
   finiteNumberOr
 } from './gameState'
-import type {
-  PlayerState,
-  BandState,
-  GameState,
-  SocialState
-} from '../types'
+import type { PlayerState, BandState, GameState, SocialState } from '../types'
 
 /**
  * Calculates daily state updates including costs, mood drift, and decay.
@@ -115,10 +110,14 @@ const updateBandHarmony = (
 ) => {
   // Harmony Decay (Drifts towards 50 like mood)
   if (nextBand.harmony > 50) {
-    const nextHarmonyDecay = clampBandHarmony(Math.max(50, nextBand.harmony - 2))
+    const nextHarmonyDecay = clampBandHarmony(
+      Math.max(50, nextBand.harmony - 2)
+    )
     nextBand.harmony = nextHarmonyDecay
   } else if (nextBand.harmony < 50) {
-    const nextHarmonyRegen = clampBandHarmony(Math.min(50, nextBand.harmony + 3))
+    const nextHarmonyRegen = clampBandHarmony(
+      Math.min(50, nextBand.harmony + 3)
+    )
     nextBand.harmony = nextHarmonyRegen
   }
 
