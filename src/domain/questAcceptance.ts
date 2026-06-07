@@ -82,7 +82,7 @@ export type CanAcceptQuestResult =
  *
  * @param state - The active game state context.
  * @param questOrId - Either the quest identifier string or a partial quest state payload.
- * @returns A structured result object indicating success or the specific rejection reason.
+ * @returns A structured result object indicating success (with an optional scopeKey for scoped quests) or the specific rejection reason.
  */
 export const canAcceptQuest = (
   state: GameState,
