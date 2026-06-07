@@ -1,15 +1,18 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import type { GamePhase, GameState, Venue, UpdatePlayerPayload, PostResult } from '../../../types'
+import type {
+  GamePhase,
+  GameState,
+  Venue,
+  UpdatePlayerPayload,
+  PostResult
+} from '../../../types'
 import type { BrandDeal } from '../../../types/social'
-import type { QuestProgressEvent } from '../../../utils/questProgress'
-import type { createAddQuestAction } from '../../../context/actionCreators'
 
 export interface BaseHandlerDependencies {
   player: GameState['player']
   band: GameState['band']
   social: GameState['social']
   venue: Venue | null
-  t: any
+  t: import('i18next').TFunction
   addToast: (message: string, type: 'success' | 'error' | 'info') => void
 }
 
@@ -28,14 +31,12 @@ export interface HandlerDispatchers {
   ) => void
   setPhase: (phase: 'REPORT' | 'SOCIAL' | 'DEALS' | 'COMPLETE') => void
   addQuest: (
-    quest: any extends { type: 'ADD_QUEST' } ? any['payload'] : unknown
+    quest: ReturnType<
+      typeof import('../../../context/actionCreators').createAddQuestAction
+    >['payload']
   ) => void
   applyQuestEvent: (
-    event: any extends {
-      type: 'APPLY_QUEST_EVENT'
-    }
-      ? any['payload']
-      : unknown
+    event: import('../../../utils/questProgress').QuestProgressEvent
   ) => void
   changeScene: (scene: GamePhase) => void
   setBrandOffers: (offers: BrandDeal[]) => void

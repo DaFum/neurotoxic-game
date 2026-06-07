@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback } from 'react'
 import type { GameState, PostGigSummary, Venue } from '../../../types'
 import type { SocialPostOption } from '../../../types/social'
@@ -22,7 +21,7 @@ export interface UseSocialPostHandlerProps {
   lastGigStats: PostGigSummary | null
   isProcessingActionRef: React.MutableRefObject<boolean>
   setIsProcessingAction: React.Dispatch<React.SetStateAction<boolean>>
-  t: any
+  t: import('i18next').TFunction
   dispatchers: HandlerDispatchers
 }
 

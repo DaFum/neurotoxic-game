@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback } from 'react'
 import type { RhythmSetlistEntry } from '../../../types/rhythmGame'
 import type {
@@ -38,14 +37,13 @@ export interface UseContinueHandlerProps {
   perfScore: number
   player: GameState['player']
   band: GameState['band']
-  social: GameState['social']
   currentGig: Venue | null
   lastGigStats: PostGigSummary | null
   setlist: RhythmSetlistEntry[]
   activeStoryFlags?: string[]
   isProcessingActionRef: React.MutableRefObject<boolean>
   setIsProcessingAction: React.Dispatch<React.SetStateAction<boolean>>
-  t: any
+  t: import('i18next').TFunction
   dispatchers: HandlerDispatchers
 }
 
@@ -131,7 +129,7 @@ export function useContinueHandler({
       let postPenaltyHarmony: number | undefined
       if (band.inventory?.neurotoxicPedal) {
         const nextHarmony = clampBandHarmony(
-          finiteNumberOr(band.harmony, 100) - NEUROTOXIC_PEDAL_HARMONY_PENALTY
+          finiteNumberOr(band.harmony, 80) - NEUROTOXIC_PEDAL_HARMONY_PENALTY
         )
         postPenaltyHarmony = nextHarmony
         updateBand((prevBand: BandState) => {
@@ -167,7 +165,7 @@ export function useContinueHandler({
           const seededProgress =
             def.progressSource === 'harmony_recovered'
               ? (postPenaltyHarmony ??
-                clampBandHarmony(finiteNumberOr(band.harmony, 0)))
+                clampBandHarmony(finiteNumberOr(band.harmony, 80)))
               : 0
           addQuest({
             ...def,
@@ -198,13 +196,9 @@ export function useContinueHandler({
           }),
           'error'
         )
-        isProcessingActionRef.current = false
-        setIsProcessingAction(false)
         changeScene(GAME_PHASES.GAMEOVER)
       } else {
         queueMicrotask(() => {
-          isProcessingActionRef.current = false
-          setIsProcessingAction(false)
           changeScene(GAME_PHASES.OVERWORLD)
         })
       }
@@ -214,6 +208,7 @@ export function useContinueHandler({
         'Unexpected error in continue flow',
         { err, player, currentGig }
       )
+    } finally {
       isProcessingActionRef.current = false
       setIsProcessingAction(false)
     }

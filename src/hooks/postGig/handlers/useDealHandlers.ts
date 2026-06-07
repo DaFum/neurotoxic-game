@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback } from 'react'
 import type { BrandDeal } from '../../../types/social'
 import type { GameState } from '../../../types'
@@ -21,16 +20,13 @@ import type { HandlerDispatchers } from './types'
 
 export interface UseDealHandlersProps {
   player: GameState['player']
-  band: GameState['band']
   social: GameState['social']
-  t: any
+  t: import('i18next').TFunction
   dispatchers: HandlerDispatchers
 }
 
 export function useDealHandlers({
   player,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  band,
   social,
   t,
   dispatchers: {
@@ -69,7 +65,7 @@ export function useDealHandlers({
           // Mirror the accept social factory's clamped +5 so the emitted trust
           // delta matches the real reputation change (avoids over-crediting
           // quests when the brand is already near the 100 cap).
-          const currentRep = social.brandReputation?.[deal.alignment] || 0
+          const currentRep = social.brandReputation?.[deal.alignment] ?? 0
           const trustDelta = Math.min(100, currentRep + 5) - currentRep
           if (trustDelta !== 0) {
             applyQuestEvent(

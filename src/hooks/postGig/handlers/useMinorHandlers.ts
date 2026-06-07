@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback } from 'react'
 import type { GameState } from '../../../types'
 import { logger } from '../../../utils/logger'
@@ -15,7 +14,7 @@ export interface UseMinorHandlersProps {
   postOptionsDerivationError: unknown
   isProcessingActionRef: React.MutableRefObject<boolean>
   setIsProcessingAction: React.Dispatch<React.SetStateAction<boolean>>
-  t: any
+  t: import('i18next').TFunction
   dispatchers: HandlerDispatchers
 }
 

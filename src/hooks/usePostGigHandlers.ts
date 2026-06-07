@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { RhythmSetlistEntry } from '../types/rhythmGame'
 import type {
   GamePhase,
@@ -56,19 +55,17 @@ export interface UsePostGigHandlersProps {
   addToast: (message: string, type: 'success' | 'error' | 'info') => void
   changeScene: (scene: GamePhase) => void
   addQuest: (
-    quest: any extends { type: 'ADD_QUEST' } ? any['payload'] : unknown
+    quest: ReturnType<
+      typeof import('../context/actionCreators').createAddQuestAction
+    >['payload']
   ) => void
   applyQuestEvent: (
-    event: any extends {
-      type: 'APPLY_QUEST_EVENT'
-    }
-      ? any['payload']
-      : unknown
+    event: import('../utils/questProgress').QuestProgressEvent
   ) => void
   setPhase: (phase: 'REPORT' | 'SOCIAL' | 'DEALS' | 'COMPLETE') => void
   setBrandOffers: (offers: BrandDeal[]) => void
   setPostResult: (result: PostResult) => void
-  t?: any
+  t?: import('i18next').TFunction
 }
 
 export function usePostGigHandlers({
@@ -93,7 +90,7 @@ export function usePostGigHandlers({
   setPhase,
   setBrandOffers,
   setPostResult,
-  t = i18n.t as unknown as (key: string, options?: unknown) => string
+  t = i18n.t
 }: UsePostGigHandlersProps): UsePostGigHandlersReturn {
   const { isProcessingAction, isProcessingActionRef, setIsProcessingAction } =
     useProcessingGuard()
@@ -132,7 +129,6 @@ export function usePostGigHandlers({
     perfScore,
     player,
     band,
-    social,
     currentGig,
     lastGigStats,
     setlist,
@@ -156,7 +152,6 @@ export function usePostGigHandlers({
   })
   const { handleAcceptDeal, handleRejectDeals } = useDealHandlers({
     player,
-    band,
     social,
     t,
     dispatchers
