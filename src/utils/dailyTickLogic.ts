@@ -115,10 +115,10 @@ const updateBandHarmony = (
 ) => {
   // Harmony Decay (Drifts towards 50 like mood)
   if (nextBand.harmony > 50) {
-    const nextHarmonyDecay = clampBandHarmony(nextBand.harmony - 2)
+    const nextHarmonyDecay = clampBandHarmony(Math.max(50, nextBand.harmony - 2))
     nextBand.harmony = nextHarmonyDecay
   } else if (nextBand.harmony < 50) {
-    const nextHarmonyRegen = clampBandHarmony(nextBand.harmony + 3)
+    const nextHarmonyRegen = clampBandHarmony(Math.min(50, nextBand.harmony + 3))
     nextBand.harmony = nextHarmonyRegen
   }
 
@@ -236,9 +236,10 @@ const updatePassiveEffectsAndMembers = (
   const hasSofa = hqUpgradesSet.has('hq_room_sofa')
   const hasOldCouch = hqUpgradesSet.has('hq_room_old_couch')
 
-  const nextMembers = new Array(nextBand.members.length)
-  for (let i = 0; i < nextBand.members.length; i++) {
-    const m = nextBand.members[i]
+  const membersArray = Array.isArray(nextBand.members) ? nextBand.members : []
+  const nextMembers = new Array(membersArray.length)
+  for (let i = 0; i < membersArray.length; i++) {
+    const m = membersArray[i]
     if (!m) {
       throw new Error(
         `Sparse nextBand.members invariant violated at index ${i}`
@@ -247,8 +248,8 @@ const updatePassiveEffectsAndMembers = (
 
     // 2a. Base Mood Drift
     let mood = finiteNumberOr(m.mood, 50)
-    if (mood > 50) mood -= 2
-    else if (mood < 50) mood += 2
+    if (mood > 50) mood = Math.max(50, mood - 2)
+    else if (mood < 50) mood = Math.min(50, mood + 2)
     mood = clampMemberMood(mood)
 
     // 2b. High Controversy Mood Penalty
@@ -262,7 +263,7 @@ const updatePassiveEffectsAndMembers = (
     if (nextBand.harmony > 60) stamina += 3
     if ((nextSocial.instagram || 0) >= 10000) stamina += 2
     if (hasTrait(m, 'cyber_lungs')) stamina += 3
-    stamina = clampMemberStamina(stamina, m.staminaMax)
+    stamina = clampMemberStamina(stamina, finiteNumberOr(m.staminaMax, 100))
 
     // 2d. HQ Upgrades
     if (hasCoffee || hasBeerFridge || hasSofa || hasOldCouch) {
@@ -277,7 +278,7 @@ const updatePassiveEffectsAndMembers = (
 
       if (hasSofa) stamina += 3
       if (hasOldCouch) stamina += 1
-      stamina = clampMemberStamina(stamina, m.staminaMax)
+      stamina = clampMemberStamina(stamina, finiteNumberOr(m.staminaMax, 100))
     }
 
     nextMembers[i] = { ...m, mood, stamina }
@@ -286,8 +287,8 @@ const updatePassiveEffectsAndMembers = (
 
   // Apply Party Animal RNG penalty in its original global sequence position
   if (hasBeerFridge) {
-    for (let i = 0; i < nextBand.members.length; i++) {
-      const m = nextBand.members[i]
+    for (let i = 0; i < membersArray.length; i++) {
+      const m = membersArray[i]
       if (!m) {
         throw new Error(
           `Sparse nextBand.members invariant violated at index ${i} in party animal loop`
@@ -297,7 +298,7 @@ const updatePassiveEffectsAndMembers = (
         if (rng() < 0.3) {
           m.stamina = clampMemberStamina(
             finiteNumberOr(m.stamina, 0) - 5,
-            m.staminaMax
+            finiteNumberOr(m.staminaMax, 100)
           )
         }
       }
