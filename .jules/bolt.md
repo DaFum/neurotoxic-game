@@ -174,3 +174,8 @@
 
 **Learning:** `Set.prototype.forEach` creates a callback allocation on every invocation. When this is used within high-frequency loops or state emission paths (e.g., `emitChange` in `AudioManager.ts`), it causes unnecessary GC pressure.
 **Action:** Replace `Set.prototype.forEach` with a `for...of` loop in hot paths. This iterates over the collection without allocating an anonymous function, significantly improving performance and reducing memory footprint.
+
+## 2026-06-05 - Avoid intermediate arrays in selector functions
+
+**Learning:** Using `Object.values(obj).reduce(...)` in selector functions (like `getTotalDebt` and `getTotalDailyObligations`) creates intermediate array allocations on every state change, causing GC pressure in hot paths.
+**Action:** Replace `Object.values()` chains with single-pass `for...in` loops (guarded by `Object.hasOwn()`) to directly calculate aggregations and avoid intermediate memory allocations.

@@ -293,9 +293,13 @@ export const getTotalDailyObligations = (state: GameState): number => {
     assetRevenue += getAssetTotalDailyRevenue(a)
   }
   let liabilityPayments = 0
-  const liabilities = state.liabilities ? Object.values(state.liabilities) : []
-  for (const l of liabilities) {
-    liabilityPayments += l.dailyPayment
+  if (state.liabilities) {
+    for (const key in state.liabilities) {
+      if (Object.hasOwn(state.liabilities, key)) {
+        const l = state.liabilities[key]
+        if (l) liabilityPayments += l.dailyPayment
+      }
+    }
   }
   return base + assetUpkeep - assetRevenue + liabilityPayments
 }
@@ -571,10 +575,16 @@ export const getModulePoolForAsset = (
  * @returns Total outstanding debt principal.
  */
 export const getTotalDebt = (state: GameState): number => {
-  return Object.values(state.liabilities).reduce(
-    (sum, l) => sum + l.principalRemaining,
-    0
-  )
+  let sum = 0
+  if (state.liabilities) {
+    for (const key in state.liabilities) {
+      if (Object.hasOwn(state.liabilities, key)) {
+        const l = state.liabilities[key]
+        if (l) sum += l.principalRemaining
+      }
+    }
+  }
+  return sum
 }
 
 const EMPTY_ASSETS: readonly LongTermAsset[] = []
