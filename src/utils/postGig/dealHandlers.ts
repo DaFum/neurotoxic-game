@@ -1,5 +1,9 @@
 import { applyClampedMoneyDelta } from './socialResolution'
-import { clampControversyLevel, finiteNumberOr } from '../gameState'
+import {
+  clampControversyLevel,
+  clampLoyalty,
+  finiteNumberOr
+} from '../gameState'
 import { BRAND_ALIGNMENTS } from '../../context/initialState'
 
 import type { GameState } from '../../types'
@@ -71,8 +75,7 @@ export const getAcceptDealSocialUpdateFactory = (deal: BrandDeal) => {
 
     if (deal.penalty) {
       if (deal.penalty.loyalty) {
-        updates.loyalty = Math.max(
-          0,
+        updates.loyalty = clampLoyalty(
           (prevSocial.loyalty ?? 0) + deal.penalty.loyalty
         )
       }

@@ -186,7 +186,7 @@ export const calculatePostGigStateUpdates = (
           perfScore,
           band,
           venue: currentGig,
-          events: Array.isArray(lastGigStats?.events)
+          events: Array.isArray(lastGigStats.events)
             ? lastGigStats.events
             : undefined
         },
