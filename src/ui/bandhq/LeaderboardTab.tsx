@@ -5,6 +5,7 @@ import { SONGS_DB } from '../../data/songs'
 import { logger } from '../../utils/logger'
 import { GlitchButton } from '../GlitchButton'
 import { formatCurrency, formatNumber } from '../../utils/numberUtils'
+import { finiteNumberOr } from '../../utils/finiteNumber'
 
 type LeaderboardView =
   | 'BALANCE'
@@ -113,10 +114,7 @@ export const LeaderboardTab = () => {
                   : t('ui:leaderboard.unknownPlayer', {
                       defaultValue: 'Unknown'
                     }),
-              score:
-                typeof item.score === 'number' && Number.isFinite(item.score)
-                  ? item.score
-                  : 0
+              score: finiteNumberOr(item.score, 0)
             })
           }
         }

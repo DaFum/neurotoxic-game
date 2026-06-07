@@ -21,7 +21,8 @@ import {
   clampToNonNegativeInt,
   clamp0to100,
   clampUnitRandom,
-  finiteNumberOr
+  finiteNumberOr,
+  isFiniteNumber
 } from '../utils/gameState'
 import type { RhythmSetlistEntry } from '../types/rhythmGame'
 import type {
@@ -112,7 +113,7 @@ export const createUpdatePlayerAction = (
     safeUpdates = { ...updates }
     if (Object.hasOwn(safeUpdates, 'money')) {
       const moneyValue = (safeUpdates as { money?: unknown }).money
-      if (typeof moneyValue === 'number' && Number.isFinite(moneyValue)) {
+      if (isFiniteNumber(moneyValue)) {
         safeUpdates.money = clampPlayerMoney(moneyValue)
       } else {
         delete safeUpdates.money
@@ -120,7 +121,7 @@ export const createUpdatePlayerAction = (
     }
     if (Object.hasOwn(safeUpdates, 'fame')) {
       const fameValue = (safeUpdates as { fame?: unknown }).fame
-      if (typeof fameValue === 'number' && Number.isFinite(fameValue)) {
+      if (isFiniteNumber(fameValue)) {
         safeUpdates.fame = clampPlayerFame(fameValue)
         safeUpdates.fameLevel = calculateFameLevel(safeUpdates.fame)
       } else {
@@ -156,7 +157,7 @@ export const createUpdateBandAction = (
     safeUpdates = { ...updates }
     if (Object.hasOwn(safeUpdates, 'harmony')) {
       const harmonyValue = (safeUpdates as { harmony?: unknown }).harmony
-      if (typeof harmonyValue === 'number' && Number.isFinite(harmonyValue)) {
+      if (isFiniteNumber(harmonyValue)) {
         safeUpdates.harmony = clampBandHarmony(harmonyValue)
       } else {
         delete (safeUpdates as { harmony?: unknown }).harmony

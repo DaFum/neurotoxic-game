@@ -73,7 +73,7 @@ export const handleUpdateBand = (
   ) => {
     if (!Object.hasOwn(safeUpdates, key)) return
     const raw = safeUpdates[key]
-    if (typeof raw === 'number' && Number.isFinite(raw)) {
+    if (isFiniteNumber(raw)) {
       safeUpdates[key] = clamp(raw)
     } else {
       delete safeUpdates[key]
@@ -408,9 +408,7 @@ const getStashCount = (
   const entry = stash[itemId] as Record<string, unknown> | undefined
   if (!entry) return 0
   const stacks = entry.stacks
-  return typeof stacks === 'number' && Number.isFinite(stacks)
-    ? Math.max(0, stacks)
-    : 1
+  return isFiniteNumber(stacks) ? Math.max(0, stacks) : 1
 }
 
 /**

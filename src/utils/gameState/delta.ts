@@ -21,9 +21,11 @@ import {
 } from './clamps'
 import { calculateFameLevel } from './calculations'
 
-
-
-import { isForbiddenKey, isLooseRecord } from '../objectUtils'
+import {
+  hasForbiddenOwnKeys,
+  isForbiddenKey,
+  isLooseRecord
+} from '../objectUtils'
 
 import type {
   BandMember,
@@ -153,11 +155,7 @@ const copyFilteredProperties = (source: unknown): FilteredRecord => {
   if (typeof source !== 'object' || source === null) return Object.create(null)
 
   // Explicit check for prototype pollution before copying properties
-  if (
-    Object.hasOwn(source, '__proto__') ||
-    Object.hasOwn(source, 'constructor') ||
-    Object.hasOwn(source, 'prototype')
-  ) {
+  if (hasForbiddenOwnKeys(source)) {
     logger?.warn?.(
       'Security',
       'Blocked attempt to copy prototype properties in copyFilteredProperties'
@@ -222,12 +220,11 @@ export const calculateAppliedDelta = (
       const nextFame = clampPlayerFame(currentFame + delta.player.fame)
       applied.player.fame = nextFame - currentFame
     }
-    const scoreDelta =
-      isFiniteNumber(delta.player?.score)
-        ? delta.player.score
-        : isFiniteNumber(delta.score)
-          ? delta.score
-          : 0
+    const scoreDelta = isFiniteNumber(delta.player?.score)
+      ? delta.player.score
+      : isFiniteNumber(delta.score)
+        ? delta.score
+        : 0
     if (scoreDelta !== 0) {
       const currentScore = Math.max(0, finiteNumberOr(state.player?.score, 0))
       const nextScore = Math.max(0, currentScore + scoreDelta)
@@ -517,12 +514,11 @@ export const applyEventDelta = (
       )
       nextPlayer.fameLevel = calculateFameLevel(nextPlayer.fame)
     }
-    const scoreDelta =
-      isFiniteNumber(delta.player.score)
-        ? delta.player.score
-        : isFiniteNumber(delta.score)
-          ? delta.score
-          : 0
+    const scoreDelta = isFiniteNumber(delta.player.score)
+      ? delta.player.score
+      : isFiniteNumber(delta.score)
+        ? delta.score
+        : 0
 
     if (scoreDelta !== 0) {
       const boundedScore = clampNonNegative(nextPlayer.score)
@@ -871,10 +867,7 @@ export const applyEventDelta = (
           nextSocial[key] = value
         }
       } else if (key === 'lastGigDay' || key === 'lastGigDifficulty') {
-        if (
-          value === null ||
-          (typeof value === 'number' && Number.isFinite(value))
-        ) {
+        if (value === null || isFiniteNumber(value)) {
           nextSocial[key] = value
         }
       } else if (typeof value === 'number') {

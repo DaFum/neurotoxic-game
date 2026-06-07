@@ -1,7 +1,7 @@
 import { NEUTRAL_ASSET_MODIFIERS } from '../assetSelectors'
 import type { AssetModifiers } from '../../types/assets'
 import { logger } from '../logger'
-import { clamp0to100, finiteNumberOr } from '../gameState'
+import { clamp0to100, finiteNumberOr, isFiniteNumber } from '../gameState'
 import { clampUnit } from '../numberUtils'
 import { SPENDING_PROFILE_MERCH_MULTIPLIER } from '../../data/merch'
 import type {
@@ -695,7 +695,7 @@ export const calculateGigFinancials = (
       activeDeal.offer.perGig
     ) {
       const perGig = activeDeal.offer.perGig as unknown
-      if (typeof perGig === 'number' && Number.isFinite(perGig)) {
+      if (isFiniteNumber(perGig)) {
         report.income.breakdown.push({
           labelKey: 'economy:gigIncome.brandSponsor.label',
           value: perGig,

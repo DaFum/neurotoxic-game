@@ -147,10 +147,7 @@ export const calculateKabelsalatMinigameResult = (
   const rawTimeLeft = Object.hasOwn(source, 'timeLeft')
     ? source.timeLeft
     : undefined
-  const timeLeft =
-    typeof rawTimeLeft === 'number' && Number.isFinite(rawTimeLeft)
-      ? rawTimeLeft
-      : 0
+  const timeLeft = finiteNumberOr(rawTimeLeft, 0)
   let stress = 0
   let reward = 0
 

@@ -1,22 +1,12 @@
 import type {
   GamePhase,
   GameState,
-  Venue,
   UpdatePlayerPayload,
   PostResult
 } from '../../../types'
 import type { BrandDeal } from '../../../types/social'
 import type { QuestProgressEvent } from '../../../utils/questProgress'
 import type { createAddQuestAction } from '../../../context/actionCreators'
-
-export interface BaseHandlerDependencies {
-  player: GameState['player']
-  band: GameState['band']
-  social: GameState['social']
-  venue: Venue | null
-  t: import('i18next').TFunction
-  addToast: (message: string, type: 'success' | 'error' | 'info') => void
-}
 
 export interface HandlerDispatchers {
   addToast: (message: string, type: 'success' | 'error' | 'info') => void

@@ -10,7 +10,8 @@ import {
   clampMemberMood,
   clampPlayerFame,
   calculateFameLevel,
-  finiteNumberOr
+  finiteNumberOr,
+  isFiniteNumber
 } from './gameState'
 import type { PlayerState, BandState, BandMember } from '../types'
 import type { Effect, PurchaseItem, UnlockMessage } from '../types/components'
@@ -42,7 +43,7 @@ const getNumericProp = (
   if (obj == null || typeof obj !== 'object') return fallback
   const o = obj as Record<string, unknown>
   const raw = o[key]
-  if (typeof raw === 'number' && Number.isFinite(raw)) return raw
+  if (isFiniteNumber(raw)) return raw
   if (
     typeof raw === 'string' &&
     raw.trim() !== '' &&
@@ -266,10 +267,7 @@ export const applyInventoryAdd = (
       ...(bandInventory ?? {}),
       [effect.item]: (() => {
         const previousValue = (bandInventory ?? {})[effect.item]
-        const safePrevious =
-          typeof previousValue === 'number' && Number.isFinite(previousValue)
-            ? previousValue
-            : 0
+        const safePrevious = finiteNumberOr(previousValue, 0)
         const parsedAddend = Number(effect.value ?? 0)
         if (!Number.isFinite(parsedAddend)) {
           throw new StateError(

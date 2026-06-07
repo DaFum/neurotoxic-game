@@ -10,6 +10,7 @@ import { getCityKeyFromVenueId } from '../../utils/mapGenerator'
 import { getUnblacklistCost } from '../../context/reducers/socialReducer'
 import { CRAFTING_RECIPES } from '../../data/craftingRecipes'
 import { isEmptyObject } from '../../utils/gameState'
+import { isFiniteNumber } from '../../utils/finiteNumber'
 import type {
   PlayerState,
   BandState,
@@ -673,9 +674,7 @@ const getStashStacks = (
   // A null/absent `stacks` means a non-stackable item that is owned = 1 unit,
   // mirroring the reducer's getStashCount (the authority on craftability); this
   // is display-only affordability and must agree with that reducer count.
-  return typeof stacks === 'number' && Number.isFinite(stacks)
-    ? Math.max(0, stacks)
-    : 1
+  return isFiniteNumber(stacks) ? Math.max(0, stacks) : 1
 }
 
 const CraftingSection = ({

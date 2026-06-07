@@ -1,4 +1,5 @@
 import type { Song } from '../../types/audio'
+import { isFiniteNumber } from '../finiteNumber'
 
 /**
  * Normalizes a song entry to its ID string.
@@ -30,9 +31,7 @@ export const resolveSongPlaybackWindow = (
   excerptDurationMs: number
 } => {
   const getFiniteNumber = <T>(val: unknown, fallback: T): number | T =>
-    typeof val === 'number' && Number.isFinite(val)
-      ? Math.max(0, val)
-      : fallback
+    isFiniteNumber(val) ? Math.max(0, val) : fallback
 
   const defaultDurationMs = getFiniteNumber(options.defaultDurationMs, 0)
   const excerptStartMs = getFiniteNumber(song?.excerptStartMs, 0)

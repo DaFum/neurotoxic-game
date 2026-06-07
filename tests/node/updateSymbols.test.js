@@ -264,6 +264,34 @@ test('local symbols include signatures, structure, docs, graph, location, and fr
     'same-file exported helper references should expose local reverse references'
   )
 
+  const overworld = ks.Overworld.find(
+    entry => entry.path === 'src/scenes/Overworld.tsx'
+  )
+  assert.ok(
+    overworld.usedBy.some(
+      usage =>
+        usage.path === 'src/components/SceneRouter.tsx' &&
+        usage.dynamic === true
+    ),
+    'dynamically imported (lazy) modules should record usedBy with dynamic: true'
+  )
+
+  const effectHandlers = ks.EFFECT_HANDLERS.find(
+    entry => entry.path === 'src/utils/purchaseLogicUtils.ts'
+  )
+  assert.ok(
+    effectHandlers.referencedInFile === true,
+    'symbols referenced same-file outside call/JSX positions should set referencedInFile'
+  )
+
+  const questSlotLimits = ks.QUEST_SLOT_LIMITS.find(
+    entry => entry.path === 'src/domain/questAcceptance.ts'
+  )
+  assert.ok(
+    questSlotLimits.referencedInFile === true,
+    'symbols referenced only from module-private helpers should set referencedInFile'
+  )
+
   const questState = ks.QuestState.find(
     entry => entry.path === 'src/types/quest.d.ts'
   )
@@ -436,6 +464,7 @@ test('document exposes a self-documenting meta block', () => {
   assert.equal(typeof doc.meta.fieldGuide.localName, 'string')
   assert.equal(typeof doc.meta.fieldGuide.literalKeys, 'string')
   assert.equal(typeof doc.meta.fieldGuide.referencedByLocal, 'string')
+  assert.equal(typeof doc.meta.fieldGuide.referencedInFile, 'string')
   assert.equal(typeof doc.meta.fieldGuide.usedByTests, 'string')
   assert.equal(typeof doc.meta.fieldGuide.usedBy, 'string')
   assert.ok(

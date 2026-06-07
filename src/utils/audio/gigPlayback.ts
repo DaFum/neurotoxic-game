@@ -9,6 +9,7 @@ import {
 import { createAndConnectBufferSource } from './sharedBufferUtils'
 import { cleanupGigPlayback } from './cleanupUtils'
 import { loadAudioBuffer } from './assets'
+import { isFiniteNumber } from '../finiteNumber'
 
 /**
  * Computes elapsed gig time from raw audio-context timestamps.
@@ -114,10 +115,9 @@ export const calculateGigPlaybackWindow = ({
   const safeBufferDurationSec = Number.isFinite(bufferDurationSec)
     ? Math.max(0, bufferDurationSec)
     : 0
-  const safeDurationMs =
-    typeof durationMs === 'number' && Number.isFinite(durationMs)
-      ? Math.max(0, durationMs)
-      : null
+  const safeDurationMs = isFiniteNumber(durationMs)
+    ? Math.max(0, durationMs)
+    : null
   let nextBaseOffsetMs = safeBaseOffsetMs
   let nextSeekOffsetMs = safeSeekOffsetMs
   const requestedOffsetSeconds = (safeBaseOffsetMs + safeSeekOffsetMs) / 1000
@@ -205,10 +205,9 @@ export async function startGigPlayback({
   audioState.gigFilename = filename
   audioState.gigBaseOffsetMs = Math.max(0, bufferOffsetMs)
   audioState.gigSeekOffsetMs = 0
-  audioState.gigDurationMs =
-    typeof durationMs === 'number' && Number.isFinite(durationMs)
-      ? Math.max(0, durationMs)
-      : null
+  audioState.gigDurationMs = isFiniteNumber(durationMs)
+    ? Math.max(0, durationMs)
+    : null
   audioState.gigOnEnded = typeof onEnded === 'function' ? onEnded : null
   audioState.gigIsPaused = false
 

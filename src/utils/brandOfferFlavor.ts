@@ -6,6 +6,7 @@
 // mutating canonical fields: campaign codename, pitch rep, tagline, hook,
 // variant tag, and small numeric variance on the offer terms.
 import { secureRandom } from './crypto'
+import { isFiniteNumber } from './finiteNumber'
 import type { RandomFn } from '../types/callbacks'
 import type {
   BrandAlignment,
@@ -432,8 +433,7 @@ const applyOfferVariance = (
     roundTo(offer.upfront * upfrontJitter * mods.upfrontMul, 50)
   )
 
-  const hasPerGig =
-    typeof offer.perGig === 'number' && Number.isFinite(offer.perGig)
+  const hasPerGig = isFiniteNumber(offer.perGig)
   const newPerGig = hasPerGig
     ? Math.max(
         5,
