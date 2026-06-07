@@ -56,7 +56,8 @@ export const setupGigPhysics = (
     intensity: 'MEDIUM',
     notes: []
   }
-  const activeSong = SONGS_BY_ID.get(songId) || SONGS_DB[0] || DEFAULT_SONG
+  const firstSong = SONGS_DB[0]
+  const activeSong = SONGS_BY_ID.get(songId) || firstSong || DEFAULT_SONG
   const physics = calculateGigPhysics(band, activeSong)
 
   const currentNode = gameMap.nodes[playerNodeId]
