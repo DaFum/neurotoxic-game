@@ -374,6 +374,25 @@ test('local symbols include signatures, structure, docs, graph, location, and fr
   )
   assert.match(questCooldown.jsDoc.summary, /repeatPolicy/)
 
+  // Ambient `.d.ts` types used only as field/payload types in another
+  // declaration file (via `export *` re-export, not an import) must record a
+  // cross-file `referencedBy` edge so they are not mistaken for orphans.
+  assert.ok(
+    questCooldown.referencedBy?.some(
+      ref => ref.path === 'src/types/game.d.ts' && ref.symbol === 'GameState'
+    ),
+    'QuestCooldown should be referencedBy GameState in game.d.ts'
+  )
+  const travelPayload = ks.CompleteTravelMinigamePayload.find(
+    entry => entry.path === 'src/types/actions.d.ts'
+  )
+  assert.ok(
+    travelPayload.referencedBy?.some(
+      ref => ref.path === 'src/types/game.d.ts' && ref.symbol === 'GameAction'
+    ),
+    'CompleteTravelMinigamePayload should be referencedBy GameAction'
+  )
+
   const bandHq = ks.BandHQ.find(entry => entry.path === 'src/ui/BandHQ.tsx')
   assert.equal(bandHq.isComponent, true)
 
@@ -454,7 +473,7 @@ test('local symbols expose generics, async, heritage, and literal values', () =>
 test('document exposes a self-documenting meta block', () => {
   const doc = loadDocument()
 
-  assert.equal(doc.meta.schemaVersion, 3)
+  assert.equal(doc.meta.schemaVersion, 4)
   assert.equal(doc.meta.guidePath, 'docs/agent-symbols-guide.md')
   assert.match(doc.meta.sourceHash, /^[a-f0-9]{64}$/)
   assert.equal(typeof doc.meta.localSymbols, 'number')
