@@ -341,9 +341,9 @@ export const calculatePostGigStateUpdates = (
       if (
         d !== null &&
         typeof d === 'object' &&
-        'type' in d &&
+        Object.hasOwn(d, 'type') &&
         d.type === 'SPONSORSHIP' &&
-        'offer' in d
+        Object.hasOwn(d, 'offer')
       ) {
         deal = d as BrandDeal
         break
@@ -364,7 +364,8 @@ export const calculatePostGigStateUpdates = (
     if (template && template.penalty) {
       if (template.penalty.controversy) {
         updatedSocial.controversyLevel = clampControversyLevel(
-          (updatedSocial.controversyLevel || 0) + template.penalty.controversy
+          finiteNumberOr(updatedSocial.controversyLevel, 0) +
+            template.penalty.controversy
         )
       }
       if (template.penalty.loyalty) {

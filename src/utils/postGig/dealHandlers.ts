@@ -1,5 +1,5 @@
 import { applyClampedMoneyDelta } from './socialResolution'
-import { clampControversyLevel } from '../gameState'
+import { clampControversyLevel, finiteNumberOr } from '../gameState'
 import { BRAND_ALIGNMENTS } from '../../context/initialState'
 
 import type { GameState } from '../../types'
@@ -78,19 +78,23 @@ export const getAcceptDealSocialUpdateFactory = (deal: BrandDeal) => {
       }
       if (deal.penalty.controversy) {
         updates.controversyLevel = clampControversyLevel(
-          (prevSocial.controversyLevel || 0) + deal.penalty.controversy
+          finiteNumberOr(prevSocial.controversyLevel, 0) +
+            deal.penalty.controversy
         )
       }
     }
 
     if (deal.alignment) {
-      updates.brandReputation = { ...(prevSocial.brandReputation || {}) }
-      const currentRep = updates.brandReputation[deal.alignment] || 0
+      updates.brandReputation = { ...(prevSocial.brandReputation ?? {}) }
+      const currentRep = finiteNumberOr(
+        updates.brandReputation[deal.alignment],
+        0
+      )
       updates.brandReputation[deal.alignment] = Math.min(100, currentRep + 5)
 
       const opposing = OPPOSING_ALIGNMENT_MAP[deal.alignment]
       if (opposing !== deal.alignment) {
-        const oppRep = updates.brandReputation[opposing] || 0
+        const oppRep = finiteNumberOr(updates.brandReputation[opposing], 0)
         updates.brandReputation[opposing] = Math.max(0, oppRep - 3)
       }
     }

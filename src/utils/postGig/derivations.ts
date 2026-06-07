@@ -125,7 +125,7 @@ export const derivePostOptions = ({
     lastGigStats,
     activeEvent,
     currentGig,
-    gigEvents: lastGigStats.events || []
+    gigEvents: lastGigStats.events ?? []
   }
 
   try {

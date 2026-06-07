@@ -1,5 +1,5 @@
 import { applyClampedMoneyDelta } from './socialResolution'
-import { clampControversyLevel } from '../gameState'
+import { clampControversyLevel, finiteNumberOr } from '../gameState'
 import type { GameState } from '../../types'
 import type { SpinStoryMoneyUpdate } from './types'
 
@@ -11,7 +11,7 @@ export const getSpinStoryMoneyUpdate = ({
 }: {
   player: GameState['player']
 }): SpinStoryMoneyUpdate => {
-  if ((player.money ?? 0) < SPIN_STORY_MONEY_COST) {
+  if (finiteNumberOr(player.money, 0) < SPIN_STORY_MONEY_COST) {
     return { success: false }
   }
 
@@ -30,7 +30,8 @@ export const getSpinStoryMoneyUpdate = ({
 export const getSpinStorySocialUpdateFactory = () => {
   return (prevSocial: GameState['social']) => ({
     controversyLevel: clampControversyLevel(
-      (prevSocial.controversyLevel || 0) - SPIN_STORY_CONTROVERSY_REDUCTION
+      finiteNumberOr(prevSocial.controversyLevel, 0) -
+        SPIN_STORY_CONTROVERSY_REDUCTION
     )
   })
 }

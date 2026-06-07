@@ -1,4 +1,4 @@
-import { calculateGigFameReward } from '../gameState'
+import { calculateGigFameReward, finiteNumberOr } from '../gameState'
 import type { GameState } from '../../types'
 import type { PostGigFinancials } from '../../types/economy'
 
@@ -121,7 +121,7 @@ export const calculateContinueStats = ({
   clampPlayerMoney: (n: number) => number
   BALANCE_CONSTANTS: typeof import('../gameState').BALANCE_CONSTANTS
 }) => {
-  const prevFame = player.fame ?? 0
+  const prevFame = finiteNumberOr(player.fame, 0)
 
   let finalFameGain = -BALANCE_CONSTANTS.FAME_LOSS_BAD_GIG
   if (perfScore >= 31) {
@@ -143,7 +143,7 @@ export const calculateContinueStats = ({
     }
   }
 
-  const prevMoney = player.money ?? 0
+  const prevMoney = finiteNumberOr(player.money, 0)
   const newMoney = clampPlayerMoney(prevMoney + financials.net)
   const newFame = clampPlayerFame(prevFame + finalFameGain)
 
