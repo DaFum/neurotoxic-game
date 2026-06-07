@@ -5,6 +5,22 @@ import type { Song } from '../../types/audio'
 import type { BandState, GameMap, GigModifiers } from '../../types'
 import type { RhythmModifiers } from '../../types/rhythmGame'
 
+/**
+ * Resolves the per-gig rhythm tuning from band state, modifiers, and map position.
+ *
+ * @remarks
+ * Combines simulation multipliers with active rhythm modifiers and the player's
+ * map layer (deeper layers scale note speed). Falls back to the first song in
+ * `SONGS_DB`, then a built-in default, when `currentGigId`/`setlistFirstId` miss.
+ *
+ * @param band - Current band state used to compute physics multipliers.
+ * @param gigModifiers - Active pre-gig modifiers; narrowed to {@link RhythmModifiers} before use.
+ * @param currentGigId - Song id for the active gig; prefers this over `setlistFirstId`.
+ * @param gameMap - Map providing the node whose layer scales note speed.
+ * @param playerNodeId - Id of the player's current node in `gameMap`.
+ * @param setlistFirstId - Fallback song id when `currentGigId` is undefined.
+ * @returns Merged modifiers, falling-note speed, and per-instrument hit windows, or `null` when `playerNodeId` is not on the map.
+ */
 export const setupGigPhysics = (
   band: BandState,
   gigModifiers: Partial<GigModifiers>,

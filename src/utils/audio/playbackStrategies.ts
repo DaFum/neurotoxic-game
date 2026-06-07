@@ -164,6 +164,21 @@ const playProceduralMetal = async (
   return success
 }
 
+/**
+ * Starts gig background audio for a song, choosing the best available strategy.
+ *
+ * @remarks
+ * Tries strategies in order — OGG/MIDI buffer, MIDI synthesis, note-data
+ * synthesis — and falls back to the procedural metal generator if none start.
+ * When the song has no authored notes, a note set is generated so the playfield
+ * is never empty.
+ *
+ * @param currentSong - Song to play; its `sourceOgg`/`sourceMid` fields select the strategy.
+ * @param notes - Pre-authored rhythm notes; may be empty to trigger generation.
+ * @param onSongEnded - Invoked once the chosen audio source reaches its end.
+ * @param rng - Deterministic random source for note generation and procedural audio.
+ * @returns The notes the playfield should render — the input notes, or freshly generated ones when `notes` was empty.
+ */
 const playAudioForSong = async (
   currentSong: ActiveSong,
   notes: RhythmNote[],

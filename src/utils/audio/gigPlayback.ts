@@ -10,6 +10,19 @@ import { createAndConnectBufferSource } from './sharedBufferUtils'
 import { cleanupGigPlayback } from './cleanupUtils'
 import { loadAudioBuffer } from './assets'
 
+/**
+ * Computes elapsed gig time from raw audio-context timestamps.
+ *
+ * @remarks
+ * Pure helper behind {@link getGigTimeMs}. When `startCtxTimeSec` is `null` or
+ * any timestamp is non-finite, it returns `offsetMs` alone so callers get a
+ * stable baseline before playback has anchored.
+ *
+ * @param contextTimeSec - Current Web Audio context time, in seconds.
+ * @param startCtxTimeSec - Context time captured when the gig began, or `null` before it starts.
+ * @param offsetMs - Playback offset into the song to add to the result. Defaults to `0`.
+ * @returns Elapsed gig time in milliseconds, or `offsetMs` when timestamps are unavailable.
+ */
 export const calculateGigTimeMs = ({
   contextTimeSec,
   startCtxTimeSec,

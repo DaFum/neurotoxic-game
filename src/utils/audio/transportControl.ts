@@ -1,7 +1,11 @@
 import * as Tone from 'tone'
 import { logger } from '../logger'
 import { audioState } from './state'
-import { pauseGigPlayback, resumeGigPlayback, stopGigPlayback } from './gigPlayback'
+import {
+  pauseGigPlayback,
+  resumeGigPlayback,
+  stopGigPlayback
+} from './gigPlayback'
 import { disableCorruptionBurstAudio } from './corruptionEffects'
 import {
   stopTransportAndClear,
@@ -9,6 +13,14 @@ import {
   cleanupTransportEvents
 } from './cleanupUtils'
 
+/**
+ * Tears down the Tone transport, scheduled events, and corruption burst audio.
+ *
+ * @remarks
+ * The shared teardown used by {@link stopAudio}; it does not stop gig or ambient
+ * playback or invalidate pending play requests, so call {@link stopAudio} for a
+ * full stop.
+ */
 export function stopAudioInternal(): void {
   stopTransportAndClear()
   cleanupTransportEvents()

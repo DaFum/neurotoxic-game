@@ -3,6 +3,15 @@ import { logger } from '../logger'
 import { clampUnit } from '../numberUtils'
 import { audioState } from './state'
 
+/**
+ * Plays a one-shot UI/gameplay sound effect on the shared SFX synth.
+ *
+ * @remarks
+ * No-op until the audio engine is set up. An unrecognized `type` is logged as a
+ * warning and produces no sound.
+ *
+ * @param type - Effect id, e.g. `'hit'`, `'miss'`, `'menu'`, `'travel'`, `'cash'`, `'crash'`, `'honk'`, `'pickup'`, `'deliver'`, or `'void_hit'`.
+ */
 export function playSFX(type: string): void {
   if (!audioState.isSetup || !audioState.sfxSynth) return
 
