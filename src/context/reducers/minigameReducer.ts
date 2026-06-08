@@ -353,7 +353,7 @@ const applyPostMinigameResult = (
   failureLogTag: string
 ): GameState => {
   const nextHarmony = clampBandHarmony(
-    finiteNumberOr(state.band.harmony, 0) - finiteNumberOr(stress, 0)
+    finiteNumberOr(state.band.harmony, 1) - finiteNumberOr(stress, 0)
   )
   const nextMoney = clampPlayerMoney(
     finiteNumberOr(state.player.money, 0) + finiteNumberOr(reward, 0)
@@ -534,7 +534,7 @@ export const handleCompleteRoadieMinigame = (
   )
 
   const nextHarmony = clampBandHarmony(
-    finiteNumberOr(state.band.harmony, 0) - finiteNumberOr(stress, 0)
+    finiteNumberOr(state.band.harmony, 1) - finiteNumberOr(stress, 0)
   )
   const nextMoney = clampPlayerMoney(
     finiteNumberOr(state.player.money, 0) -

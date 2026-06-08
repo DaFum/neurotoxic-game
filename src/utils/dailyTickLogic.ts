@@ -108,6 +108,12 @@ const updateBandHarmony = (
   rng: () => number,
   pendingFlags: Record<string, boolean>
 ) => {
+  // Normalize a possibly non-finite persisted harmony up front so every
+  // arithmetic-then-clamp below operates on a finite value (AGENTS.md §101).
+  // The `> 50` / `< 50` guards already skip the decay/regen branch for NaN, but
+  // the bad-show, ego, and controversy clamps further down are unguarded.
+  nextBand.harmony = finiteNumberOr(nextBand.harmony, 1)
+
   // Harmony Decay (Drifts towards 50 like mood)
   if (nextBand.harmony > 50) {
     const nextHarmonyDecay = clampBandHarmony(

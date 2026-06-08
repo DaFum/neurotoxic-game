@@ -17,13 +17,13 @@ The codebase is **unusually clean**. The strong, verified negatives:
 - **0** `if (false)` / hardcoded-false render gates / `@deprecated` / unreachable-after-return markers.
 - **EN/DE locale key parity is exact** across all 10 locale files.
 - No inline hex color literals in `src/components`, `src/ui`, `src/scenes`.
-- The four name-collisions that looked like duplicates are **not** duplicates (see Section 1).
+- The three name-collisions that looked like duplicates are **not** duplicates (see Section 1).
 
 ---
 
 ## 1. Duplicates
 
-**No true duplicates found.** Four exported names are declared in 2+ files; all were investigated and cleared:
+**No true duplicates found.** Three exported-name collisions were investigated and cleared:
 
 | Name | Verdict |
 |---|---|

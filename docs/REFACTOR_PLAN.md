@@ -6,7 +6,7 @@ A plan calibrated to **this** codebase's actual state (React 19 + TypeScript + P
 - 🎯 **Do** — concrete, verified gap worth fixing.
 - ⛔ **Avoid** — requested in the generic brief but conflicts with `AGENTS.md` (pinned deps, surgical-changes, no speculative abstraction); rationale given.
 
-**Guardrails (from `AGENTS.md`/`CLAUDE.md`):** surgical changes only; no new dependencies without discussion; no abstractions for single-use code; match existing style; every changed line traces to a goal. Each phase has a verification gate: `pnpm run lint && pnpm run typecheck:core && pnpm run typecheck && pnpm run test:all && pnpm run symbols:check`.
+**Guardrails (from `AGENTS.md`/`CLAUDE.md`):** surgical changes only; no new dependencies without discussion; no abstractions for single-use code; match existing style; every changed line traces to a goal. Each **code-changing** phase has a verification gate: `pnpm run lint && pnpm run typecheck:core && pnpm run typecheck && pnpm run test:all && pnpm run symbols:check`. The doc/report-only phases (0 and 5) change no source and are exempt — marked `—` in the roadmap.
 
 ---
 
