@@ -179,3 +179,8 @@
 
 **Learning:** Using `Object.values(obj).reduce(...)` in selector functions (like `getTotalDebt` and `getTotalDailyObligations`) creates intermediate array allocations on every state change, causing GC pressure in hot paths.
 **Action:** Replace `Object.values()` chains with single-pass `for...in` loops (guarded by `Object.hasOwn()`) to directly calculate aggregations and avoid intermediate memory allocations.
+
+## 2024-06-12 - Conditional Logging in Dispatch
+
+**Learning:** Unconditional string interpolation in high-frequency hooks (like state reducers) creates unnecessary string allocations even when the underlying logger suppresses output. Additionally, missing property checks on action payloads can cause runtime crashes.
+**Action:** Guard string interpolations and logger calls inside development environment checks (`import.meta.env.DEV`), and verify payload objects before logging their properties in hot dispatch paths.

@@ -136,7 +136,18 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   // forwards to the underlying reducer dispatch with a stable identity.
   const dispatch = useCallback<typeof rawDispatch>(
     action => {
-      logger.debug('GameState', `dispatch ${action.type}`)
+      const isDev =
+        typeof import.meta !== 'undefined' &&
+        !!(import.meta as unknown as Record<string, unknown>).env &&
+        !!(
+          (import.meta as unknown as Record<string, unknown>).env as Record<
+            string,
+            unknown
+          >
+        ).DEV
+      if (isDev && action && typeof action === 'object' && 'type' in action) {
+        logger.debug('GameState', 'dispatch ' + String(action.type))
+      }
       rawDispatch(action)
     },
     [rawDispatch]
