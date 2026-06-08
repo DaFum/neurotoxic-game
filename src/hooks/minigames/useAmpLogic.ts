@@ -99,6 +99,222 @@ export interface AmpGameSetters {
 }
 
 /**
+ * Decrements the round timer; on expiry triggers completion.
+ * @returns True when the round just completed (caller should stop the frame).
+ */
+function advanceAmpTime(
+  deltaSec: number,
+  refs: AmpGameRefs,
+  setters: AmpGameSetters
+): boolean {
+  const nextTimeLeft = refs.timeLeftRef.current - deltaSec
+  if (nextTimeLeft <= 0) {
+    refs.timeLeftRef.current = 0
+    setters.setTimeLeft(0)
+    setters.handleComplete()
+    return true
+  }
+  refs.timeLeftRef.current = nextTimeLeft
+  setters.setTimeLeft(nextTimeLeft)
+  return false
+}
+
+/**
+ * Applies overdrive heat buildup and overheat cooldown.
+ * @returns The resulting overdrive/overheat snapshot for downstream phases.
+ */
+function applyAmpHeat(
+  deltaSec: number,
+  refs: AmpGameRefs,
+  setters: AmpGameSetters
+): { isOverheat: boolean; overdriveActive: boolean } {
+  let currentHeat = refs.heatRef.current
+  let currentIsOverheat = refs.isOverheatRef.current
+  let currentOverdriveActive = refs.isOverdriveActiveRef.current
+
+  if (currentIsOverheat) {
+    // Cooldown mode: disable overdrive automatically
+    if (currentOverdriveActive) {
+      currentOverdriveActive = false
+      refs.isOverdriveActiveRef.current = false
+      setters.setIsOverdriveActive(false)
+    }
+    currentHeat -= 25 * deltaSec // Cool down quickly when overheated
+    if (currentHeat <= 0) {
+      currentHeat = 0
+      currentIsOverheat = false
+      refs.isOverheatRef.current = false
+      setters.setIsOverheat(false)
+    }
+    refs.heatRef.current = currentHeat
+    setters.setHeat(currentHeat)
+  } else {
+    if (currentOverdriveActive) {
+      currentHeat += 35 * deltaSec // Heats up in ~3 seconds
+      if (currentHeat >= 100) {
+        currentHeat = 100
+        currentIsOverheat = true
+        refs.isOverheatRef.current = true
+        setters.setIsOverheat(true)
+        currentOverdriveActive = false
+        refs.isOverdriveActiveRef.current = false
+        setters.setIsOverdriveActive(false) // Force off
+      }
+    } else {
+      currentHeat = Math.max(0, currentHeat - 15 * deltaSec) // Normal cooldown
+    }
+    refs.heatRef.current = currentHeat
+    setters.setHeat(currentHeat)
+  }
+
+  return {
+    isOverheat: currentIsOverheat,
+    overdriveActive: currentOverdriveActive
+  }
+}
+
+/**
+ * Spawns or clears a void anomaly (forces an extreme target during overdrive).
+ */
+function applyAmpVoidAnomaly(
+  deltaMS: number,
+  overdriveActive: boolean,
+  isOverheat: boolean,
+  refs: AmpGameRefs,
+  setters: AmpGameSetters
+): void {
+  if (overdriveActive && !isOverheat && !refs.isAnomalyActiveRef.current) {
+    // 2% chance per 100ms to spawn an anomaly during overdrive
+    if (getSafeRandom() < clampUnit(0.02 * (deltaMS / 100))) {
+      refs.isAnomalyActiveRef.current = true
+      setters.setIsAnomalyActive(true)
+      // Force an extreme target frequency
+      const nextTarget = getSafeRandom() > 0.5 ? 950 : 50
+      refs.targetValueRef.current = nextTarget
+      setters.setTargetValue(nextTarget)
+    }
+  } else if (
+    refs.isAnomalyActiveRef.current &&
+    (!overdriveActive || isOverheat)
+  ) {
+    // Anomaly ends if overdrive is disabled or overheat happens
+    refs.isAnomalyActiveRef.current = false
+    setters.setIsAnomalyActive(false)
+  }
+}
+
+/**
+ * Randomly drifts the target frequency (faster/larger while overheated).
+ */
+function applyAmpTargetDrift(
+  deltaMS: number,
+  isOverheat: boolean,
+  refs: AmpGameRefs,
+  setters: AmpGameSetters
+): void {
+  // Approximately 5% chance per 100ms
+  let chance = 0.05
+  let shiftSize = 200
+  if (isOverheat) {
+    chance = 0.2 // Higher chance when overheated
+    shiftSize = 400
+  }
+
+  if (
+    !refs.isAnomalyActiveRef.current &&
+    getSafeRandom() < clampUnit(chance * (deltaMS / 100))
+  ) {
+    const shift = (getSafeRandom() - 0.5) * shiftSize
+    const nextTarget = clampAmpDial(refs.targetValueRef.current + shift)
+    refs.targetValueRef.current = nextTarget
+    setters.setTargetValue(nextTarget)
+  }
+}
+
+/**
+ * Triggers a Kranker Schrank hijack with a small per-frame probability.
+ */
+function applyAmpHijack(
+  deltaMS: number,
+  refs: AmpGameRefs,
+  setters: AmpGameSetters
+): void {
+  const clampedHijackProbability = Math.max(
+    0,
+    Math.min(1, 0.02 * (deltaMS / 100))
+  )
+  if (
+    !refs.isHijackActiveRef.current &&
+    getSafeRandom() < clampedHijackProbability
+  ) {
+    refs.isHijackActiveRef.current = true
+    setters.setIsHijackActive(true)
+  }
+}
+
+/**
+ * Accumulates the time-weighted accuracy score with overdrive/overheat/hijack
+ * modifiers.
+ * @returns The dial-to-target difference, reused by the resonance phase.
+ */
+function accumulateAmpScore(
+  deltaMS: number,
+  overdriveActive: boolean,
+  isOverheat: boolean,
+  refs: AmpGameRefs,
+  setters: AmpGameSetters
+): number {
+  const diff = Math.abs(refs.dialValueRef.current - refs.targetValueRef.current)
+  let currentScore = Math.max(0, 100 - diff / 10) // Max difference 1000 = 0 score
+
+  if (overdriveActive && !isOverheat) {
+    currentScore *= 1.5 // 50% bonus score for overdrive
+  } else if (isOverheat) {
+    currentScore *= 0.5 // Penalty while overheated
+  }
+
+  if (refs.isHijackActiveRef.current) {
+    currentScore *= 0.2 // Huge penalty during active hijack
+  }
+
+  refs.accumulatedScoreRef.current += currentScore * deltaMS
+  refs.accumulatedMsRef.current += deltaMS
+
+  setters.setScore(
+    refs.accumulatedScoreRef.current /
+      Math.max(1, refs.accumulatedMsRef.current)
+  )
+
+  return diff
+}
+
+/**
+ * Builds void resonance while an active anomaly is dialed in; clears the
+ * anomaly once resonance maxes out.
+ */
+function applyAmpResonance(
+  deltaSec: number,
+  diff: number,
+  refs: AmpGameRefs,
+  setters: AmpGameSetters
+): void {
+  // If dialed in perfectly during anomaly, rapidly gain resonance
+  if (refs.isAnomalyActiveRef.current && diff < 30) {
+    const nextResonance = Math.min(
+      100,
+      refs.voidResonanceRef.current + 20 * deltaSec
+    )
+    refs.voidResonanceRef.current = nextResonance
+    setters.setVoidResonance(nextResonance)
+
+    if (nextResonance >= 100) {
+      refs.isAnomalyActiveRef.current = false
+      setters.setIsAnomalyActive(false)
+    }
+  }
+}
+
+/**
  * Advances amp calibration simulation state for one frame.
  *
  * @param deltaMS - Milliseconds elapsed since the previous update.
@@ -110,184 +326,33 @@ export function updateAmpGameState(
   refs: AmpGameRefs,
   setters: AmpGameSetters
 ) {
-  const {
-    isCompleteRef,
-    timeLeftRef,
-    heatRef,
-    isOverheatRef,
-    isOverdriveActiveRef,
-    isAnomalyActiveRef,
-    isHijackActiveRef,
-    interferenceRef,
-    dialValueRef,
-    targetValueRef,
-    accumulatedScoreRef,
-    accumulatedMsRef,
-    voidResonanceRef
-  } = refs
-
-  const {
-    setTimeLeft,
-    handleComplete,
-    setIsOverdriveActive,
-    setIsOverheat,
-    setHeat,
-    setIsAnomalyActive,
-    setTargetValue,
-    setIsHijackActive,
-    setScore,
-    setVoidResonance
-  } = setters
-
-  if (isCompleteRef.current || !Number.isFinite(deltaMS) || deltaMS <= 0) return
-
-  const deltaSec = deltaMS / 1000
-  const nextTimeLeft = timeLeftRef.current - deltaSec
-  if (nextTimeLeft <= 0) {
-    timeLeftRef.current = 0
-    setTimeLeft(0)
-    handleComplete()
+  if (refs.isCompleteRef.current || !Number.isFinite(deltaMS) || deltaMS <= 0) {
     return
   }
-  timeLeftRef.current = nextTimeLeft
-  setTimeLeft(nextTimeLeft)
 
-  // Overdrive & Heat Logic
-  let currentHeat = heatRef.current
-  let currentIsOverheat = isOverheatRef.current
-  let currentOverdriveActive = isOverdriveActiveRef.current
+  const deltaSec = deltaMS / 1000
 
-  if (currentIsOverheat) {
-    // Cooldown mode: disable overdrive automatically
-    if (currentOverdriveActive) {
-      currentOverdriveActive = false
-      isOverdriveActiveRef.current = false
-      setIsOverdriveActive(false)
-    }
-    currentHeat -= 25 * deltaSec // Cool down quickly when overheated
-    if (currentHeat <= 0) {
-      currentHeat = 0
-      currentIsOverheat = false
-      isOverheatRef.current = false
-      setIsOverheat(false)
-    }
-    heatRef.current = currentHeat
-    setHeat(currentHeat)
-  } else {
-    if (currentOverdriveActive) {
-      currentHeat += 35 * deltaSec // Heats up in ~3 seconds
-      if (currentHeat >= 100) {
-        currentHeat = 100
-        currentIsOverheat = true
-        isOverheatRef.current = true
-        setIsOverheat(true)
-        currentOverdriveActive = false
-        isOverdriveActiveRef.current = false
-        setIsOverdriveActive(false) // Force off
-      }
-    } else {
-      currentHeat = Math.max(0, currentHeat - 15 * deltaSec) // Normal cooldown
-    }
-    heatRef.current = currentHeat
-    setHeat(currentHeat)
-  }
+  if (advanceAmpTime(deltaSec, refs, setters)) return
 
-  // Void Anomaly Logic
-  if (
-    currentOverdriveActive &&
-    !currentIsOverheat &&
-    !isAnomalyActiveRef.current
-  ) {
-    // 2% chance per 100ms to spawn an anomaly during overdrive
-    if (getSafeRandom() < clampUnit(0.02 * (deltaMS / 100))) {
-      isAnomalyActiveRef.current = true
-      setIsAnomalyActive(true)
-      // Force an extreme target frequency
-      const nextTarget = getSafeRandom() > 0.5 ? 950 : 50
-      targetValueRef.current = nextTarget
-      setTargetValue(nextTarget)
-    }
-  } else if (
-    isAnomalyActiveRef.current &&
-    (!currentOverdriveActive || currentIsOverheat)
-  ) {
-    // Anomaly ends if overdrive is disabled or overheat happens
-    isAnomalyActiveRef.current = false
-    setIsAnomalyActive(false)
-  }
-
-  // Approximately 5% chance per 100ms
-  let chance = 0.05
-  let shiftSize = 200
-  if (currentIsOverheat) {
-    chance = 0.2 // Higher chance when overheated
-    shiftSize = 400
-  }
-
-  if (
-    !isAnomalyActiveRef.current &&
-    getSafeRandom() < clampUnit(chance * (deltaMS / 100))
-  ) {
-    const shift = (getSafeRandom() - 0.5) * shiftSize
-    const nextTarget = clampAmpDial(targetValueRef.current + shift)
-    targetValueRef.current = nextTarget
-    setTargetValue(nextTarget)
-  }
-
-  // Kranker Schrank Hijack Logic
-  const clampedHijackProbability = Math.max(
-    0,
-    Math.min(1, 0.02 * (deltaMS / 100))
-  )
-  if (
-    !isHijackActiveRef.current &&
-    getSafeRandom() < clampedHijackProbability
-  ) {
-    isHijackActiveRef.current = true
-    setIsHijackActive(true)
-  }
+  const { isOverheat, overdriveActive } = applyAmpHeat(deltaSec, refs, setters)
+  applyAmpVoidAnomaly(deltaMS, overdriveActive, isOverheat, refs, setters)
+  applyAmpTargetDrift(deltaMS, isOverheat, refs, setters)
+  applyAmpHijack(deltaMS, refs, setters)
 
   // Neurotoxic interference buildup (kept in ref to avoid frame-by-frame React renders)
-  interferenceRef.current = Math.min(
+  refs.interferenceRef.current = Math.min(
     100,
-    interferenceRef.current + (deltaMS / 1000) * 5
+    refs.interferenceRef.current + (deltaMS / 1000) * 5
   )
 
-  // Time-driven tick for score accumulation
-  const diff = Math.abs(dialValueRef.current - targetValueRef.current)
-  let currentScore = Math.max(0, 100 - diff / 10) // Max difference 1000 = 0 score
-
-  if (currentOverdriveActive && !currentIsOverheat) {
-    currentScore *= 1.5 // 50% bonus score for overdrive
-  } else if (currentIsOverheat) {
-    currentScore *= 0.5 // Penalty while overheated
-  }
-
-  if (isHijackActiveRef.current) {
-    currentScore *= 0.2 // Huge penalty during active hijack
-  }
-
-  accumulatedScoreRef.current += currentScore * deltaMS
-  accumulatedMsRef.current += deltaMS
-
-  setScore(accumulatedScoreRef.current / Math.max(1, accumulatedMsRef.current))
-
-  if (isAnomalyActiveRef.current) {
-    // If dialed in perfectly during anomaly, rapidly gain resonance
-    if (diff < 30) {
-      const nextResonance = Math.min(
-        100,
-        voidResonanceRef.current + 20 * deltaSec
-      )
-      voidResonanceRef.current = nextResonance
-      setVoidResonance(nextResonance)
-
-      if (nextResonance >= 100) {
-        isAnomalyActiveRef.current = false
-        setIsAnomalyActive(false)
-      }
-    }
-  }
+  const diff = accumulateAmpScore(
+    deltaMS,
+    overdriveActive,
+    isOverheat,
+    refs,
+    setters
+  )
+  applyAmpResonance(deltaSec, diff, refs, setters)
 }
 
 /**
