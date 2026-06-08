@@ -90,6 +90,53 @@ function buildQuestActions(quests: unknown, currentDay: number): GameAction[] {
 }
 
 /**
+ * Flag fields the event engine may emit on a resolution delta.
+ */
+type EventFlags = {
+  addQuest?: unknown
+  unlock?: unknown
+  gameOver?: unknown
+  addStoryFlag?: string
+}
+
+/**
+ * Normalizes the engine's generic `addStoryFlag` marker into the structured
+ * `addQuest` / `unlock` / `gameOver` flag fields downstream handling expects.
+ * @param flags - Delta flag fields (mutated in place).
+ * @param result - Raw resolution result carrying the flag payload in `value`.
+ */
+function remapStoryFlag(flags: EventFlags, result: unknown): void {
+  if (!flags.addStoryFlag) return
+  if (
+    flags.addStoryFlag === 'addQuest' &&
+    isLooseRecord(result) &&
+    Object.hasOwn(result, 'value')
+  ) {
+    flags.addQuest = result.value
+  } else if (
+    flags.addStoryFlag === 'unlock' &&
+    isLooseRecord(result) &&
+    Object.hasOwn(result, 'value')
+  ) {
+    flags.unlock = result.value
+  } else if (flags.addStoryFlag === 'gameOver') {
+    flags.gameOver = true
+  }
+}
+
+/**
+ * Sanitizes a raw unlock id to the persisted `[a-z0-9_]` form.
+ * @param raw - Raw unlock string from event data.
+ * @returns The normalized id (may be empty if nothing valid remained).
+ */
+function sanitizeUnlockId(raw: string): string {
+  return raw
+    .trim()
+    .replace(/[^a-zA-Z0-9_]/g, '')
+    .toLowerCase()
+}
+
+/**
  * Resolves an event choice into reducer actions and caller-owned side effects.
  */
 export function resolveEvent(
@@ -128,34 +175,13 @@ export function resolveEvent(
   const { result, delta } = resolution
   const outcomeText = selectedChoice.outcomeText ?? resolution.outcomeText ?? ''
   const description = selectedChoice.description ?? resolution.description ?? ''
-  const flags = (delta?.flags ?? {}) as {
-    addQuest?: unknown
-    unlock?: unknown
-    gameOver?: unknown
-    addStoryFlag?: string
-  }
+  const flags = (delta?.flags ?? {}) as EventFlags
 
   // `eventEngine` uses `{ type: 'flag', flag: '<name>', value: <payload> }` for generic flags.
   // The engine handler stores only the flag name in `delta.flags.addStoryFlag` and leaves the
-  // payload in `result.value`. We re-map it here so downstream handling can consistently use the
+  // payload in `result.value`. Re-map it so downstream handling can consistently use the
   // normalized `delta.flags` fields (`unlock`, `addQuest`, and `gameOver`).
-  if (flags.addStoryFlag) {
-    if (
-      flags.addStoryFlag === 'addQuest' &&
-      isLooseRecord(result) &&
-      Object.hasOwn(result as object, 'value')
-    ) {
-      flags.addQuest = result.value
-    } else if (
-      flags.addStoryFlag === 'unlock' &&
-      isLooseRecord(result) &&
-      Object.hasOwn(result as object, 'value')
-    ) {
-      flags.unlock = result.value
-    } else if (flags.addStoryFlag === 'gameOver') {
-      flags.gameOver = true
-    }
-  }
+  remapStoryFlag(flags, result)
 
   const actions: GameAction[] = []
   const sideEffects: SideEffect[] = []
@@ -183,10 +209,7 @@ export function resolveEvent(
     }
 
     if (typeof flags.unlock === 'string') {
-      const safeUnlockId = flags.unlock
-        .trim()
-        .replace(/[^a-zA-Z0-9_]/g, '')
-        .toLowerCase()
+      const safeUnlockId = sanitizeUnlockId(flags.unlock)
       if (safeUnlockId) {
         const unlockAction = createAddUnlockAction(safeUnlockId)
         actions.push(unlockAction)

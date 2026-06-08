@@ -197,29 +197,7 @@ export class MapGenerator {
     }
 
     // Layer 0: Stendal (Home)
-    if (cachedVenuesLength !== ALL_VENUES.length) {
-      cachedHomeVenue = null
-      cachedFinaleVenue = null
-      for (const v of ALL_VENUES) {
-        if (v.id === 'stendal_proberaum') {
-          cachedHomeVenue = v
-        } else if (v.id === 'leipzig_arena') {
-          cachedFinaleVenue = v
-        }
-
-        if (cachedHomeVenue && cachedFinaleVenue) {
-          break
-        }
-      }
-      cachedVenuesLength = ALL_VENUES.length
-    }
-
-    const homeVenue = cachedHomeVenue
-    if (!homeVenue) {
-      throw new StateError(
-        'Home venue "stendal_proberaum" not found in ALL_VENUES'
-      )
-    }
+    const homeVenue = this._resolveHomeVenue()
     const startNode: GeneratedMapNode = {
       id: 'node_0_0',
       layer: 0,
@@ -234,25 +212,12 @@ export class MapGenerator {
     map.nodeList.push(startNode)
 
     // Filter venues by difficulty for progression
-    const easyVenues: Venue[] = []
-    const mediumVenues: Venue[] = []
-    const hardVenues: Venue[] = []
-    for (let i = 0; i < ALL_VENUES.length; i++) {
-      const v = ALL_VENUES[i]
-      if (!v) continue
-      const diff = v.diff
-      if (typeof diff === 'number' && diff <= 2) {
-        if (v.type !== 'HOME') easyVenues.push(v)
-      } else if (diff === 3) {
-        if (v.type !== 'HOME') mediumVenues.push(v)
-      } else if (typeof diff === 'number' && diff >= 4) {
-        if (v.type !== 'HOME') hardVenues.push(v)
-      }
-    }
+    const { easyVenues, mediumVenues, hardVenues } =
+      this._partitionVenuesByDifficulty()
 
     // Track used venues to avoid duplicates
     const usedVenueIds = new Set<string>()
-    if (homeVenue) usedVenueIds.add(homeVenue.id)
+    usedVenueIds.add(homeVenue.id)
 
     const inventoryAddItems = HQ_ITEMS.gear.filter(
       i => i.effect?.type === 'inventory_add'
@@ -306,6 +271,61 @@ export class MapGenerator {
   }
 
   /**
+   * Resolves the home (layer-0) venue, refreshing the module venue cache when
+   * `ALL_VENUES` has changed.
+   * @returns The "stendal_proberaum" home venue.
+   * @throws {@link StateError} When the home venue is absent from `ALL_VENUES`.
+   */
+  _resolveHomeVenue(): Venue {
+    if (cachedVenuesLength !== ALL_VENUES.length) {
+      cachedHomeVenue = null
+      cachedFinaleVenue = null
+      for (const v of ALL_VENUES) {
+        if (v.id === 'stendal_proberaum') {
+          cachedHomeVenue = v
+        } else if (v.id === 'leipzig_arena') {
+          cachedFinaleVenue = v
+        }
+
+        if (cachedHomeVenue && cachedFinaleVenue) {
+          break
+        }
+      }
+      cachedVenuesLength = ALL_VENUES.length
+    }
+
+    if (!cachedHomeVenue) {
+      throw new StateError(
+        'Home venue "stendal_proberaum" not found in ALL_VENUES'
+      )
+    }
+    return cachedHomeVenue
+  }
+
+  /**
+   * Partitions non-home venues into easy/medium/hard difficulty pools.
+   * @returns The three difficulty-bucketed venue pools.
+   */
+  _partitionVenuesByDifficulty(): VenuePools {
+    const easyVenues: Venue[] = []
+    const mediumVenues: Venue[] = []
+    const hardVenues: Venue[] = []
+    for (let i = 0; i < ALL_VENUES.length; i++) {
+      const v = ALL_VENUES[i]
+      if (!v) continue
+      const diff = v.diff
+      if (typeof diff === 'number' && diff <= 2) {
+        if (v.type !== 'HOME') easyVenues.push(v)
+      } else if (diff === 3) {
+        if (v.type !== 'HOME') mediumVenues.push(v)
+      } else if (typeof diff === 'number' && diff >= 4) {
+        if (v.type !== 'HOME') hardVenues.push(v)
+      }
+    }
+    return { easyVenues, mediumVenues, hardVenues }
+  }
+
+  /**
    * Generates intermediate layers of the map.
    * @param map - Mutable map state being populated.
    * @param depth - The total depth of the map.
@@ -337,133 +357,15 @@ export class MapGenerator {
       const nodeCount = Math.floor(this.random() * 3) + 2
 
       // Compute available counts once per layer, then decrement as venues are reserved
-      let easyAvailable = countAvailableVenues(easyVenues)
-      let mediumAvailable = countAvailableVenues(mediumVenues)
-      let hardAvailable = countAvailableVenues(hardVenues)
+      const available = {
+        easy: countAvailableVenues(easyVenues),
+        medium: countAvailableVenues(mediumVenues),
+        hard: countAvailableVenues(hardVenues)
+      }
 
       for (let j = 0; j < nodeCount; j++) {
-        let poolArray: Venue[]
-        let poolLength: number
-
-        if (i < 3) {
-          poolArray = easyVenues
-          poolLength = easyAvailable
-        } else if (i < 7) {
-          poolArray = mediumVenues
-          poolLength = mediumAvailable
-        } else {
-          poolArray = hardVenues
-          poolLength = hardAvailable
-        }
-
-        // Fallback when primary pool is exhausted
-        if (poolLength === 0) {
-          if (i < 3) {
-            poolArray = mediumVenues
-            poolLength = mediumAvailable
-            if (poolLength === 0) {
-              poolArray = hardVenues
-              poolLength = hardAvailable
-            }
-          } else if (i < 7) {
-            poolArray = hardVenues
-            poolLength = hardAvailable
-          } else {
-            // Hard pool exhausted: cascade down through medium then easy
-            poolArray = mediumVenues
-            poolLength = mediumAvailable
-            if (poolLength === 0) {
-              poolArray = easyVenues
-              poolLength = easyAvailable
-            }
-          }
-        }
-
-        let venue: Venue | null = null
-
-        if (poolLength > 0) {
-          // Dynamic subset selection with single pass filtering
-          let targetIndex = Math.floor(this.random() * poolLength)
-          for (let k = 0; k < poolArray.length; k++) {
-            const v = poolArray[k]
-            if (!v) continue
-            if (!usedVenueIds.has(v.id)) {
-              if (targetIndex === 0) {
-                venue = v
-                break
-              }
-              targetIndex--
-            }
-          }
-
-          if (!venue) {
-            throw new StateError(
-              `Failed to select venue from pool at layer=${i} index=${j}`,
-              {
-                layer: i,
-                index: j,
-                targetIndex,
-                poolLength: poolArray.length,
-                usedVenueIds: usedVenueIds.size
-              }
-            )
-          }
-
-          usedVenueIds.add(venue.id)
-          if (poolArray === easyVenues) easyAvailable--
-          else if (poolArray === mediumVenues) mediumAvailable--
-          else hardAvailable--
-        } else {
-          // Absolute zero-resort fallback: allow duplicates from full pool to prevent crash,
-          // but exclude specialized venues.
-          const fallbackArray =
-            i < 3 ? easyVenues : i < 7 ? mediumVenues : hardVenues
-          let fallbackLength = 0
-          for (let k = 0; k < fallbackArray.length; k++) {
-            const v = fallbackArray[k]
-            if (!v) continue
-            if (v.id !== 'leipzig_arena' && v.id !== 'stendal_proberaum') {
-              fallbackLength++
-            }
-          }
-          if (fallbackLength === 0) {
-            throw new StateError(`Empty fallback pool for difficulty ${i}`)
-          }
-
-          let targetIndex = Math.floor(this.random() * fallbackLength)
-          for (let k = 0; k < fallbackArray.length; k++) {
-            const v = fallbackArray[k]
-            if (!v) continue
-            if (v.id !== 'leipzig_arena' && v.id !== 'stendal_proberaum') {
-              if (targetIndex === 0) {
-                venue = v
-                break
-              }
-              targetIndex--
-            }
-          }
-
-          if (!venue) {
-            throw new StateError(
-              `Failed to select venue from fallback pool at layer=${i} index=${j}`,
-              {
-                layer: i,
-                index: j,
-                targetIndex,
-                poolLength: fallbackArray.length
-              }
-            )
-          }
-        }
-
-        // Determine Node Type based on probability and venue
-        // ~70% GIG/FESTIVAL, ~20% REST_STOP, ~10% SPECIAL
-        const typeRoll = this.random()
-        let nodeType: GeneratedMapNode['type'] = 'GIG'
-        if (typeRoll > 0.9) nodeType = 'SPECIAL'
-        else if (typeRoll > 0.8) nodeType = 'supplyStop'
-        else if (typeRoll > 0.7) nodeType = 'REST_STOP'
-        else if ((venue.capacity ?? 0) >= 1000) nodeType = 'FESTIVAL'
+        const venue = this._pickIntermediateVenue(i, j, pools, available)
+        const nodeType = this._rollNodeType(venue)
 
         const node: GeneratedMapNode = {
           id: `node_${i}_${j}`,
@@ -485,6 +387,182 @@ export class MapGenerator {
       }
       map.layers.push(layerNodes)
     }
+  }
+
+  /**
+   * Chooses the difficulty pool to draw from for a layer, cascading to other
+   * pools when the layer's primary pool has no unused venues left. Pure — reads
+   * `available` counts without mutating state or consuming RNG.
+   * @param layerIndex - Current layer index (1-based intermediate layer).
+   * @param pools - Difficulty venue pools.
+   * @param available - Remaining counts per difficulty pool.
+   * @returns The chosen pool array and its remaining-available count.
+   */
+  _selectVenuePool(
+    layerIndex: number,
+    pools: VenuePools,
+    available: { easy: number; medium: number; hard: number }
+  ): { poolArray: Venue[]; poolLength: number } {
+    const { easyVenues, mediumVenues, hardVenues } = pools
+    const i = layerIndex
+
+    let poolArray: Venue[]
+    let poolLength: number
+
+    if (i < 3) {
+      poolArray = easyVenues
+      poolLength = available.easy
+    } else if (i < 7) {
+      poolArray = mediumVenues
+      poolLength = available.medium
+    } else {
+      poolArray = hardVenues
+      poolLength = available.hard
+    }
+
+    // Fallback when primary pool is exhausted
+    if (poolLength === 0) {
+      if (i < 3) {
+        poolArray = mediumVenues
+        poolLength = available.medium
+        if (poolLength === 0) {
+          poolArray = hardVenues
+          poolLength = available.hard
+        }
+      } else if (i < 7) {
+        poolArray = hardVenues
+        poolLength = available.hard
+      } else {
+        // Hard pool exhausted: cascade down through medium then easy
+        poolArray = mediumVenues
+        poolLength = available.medium
+        if (poolLength === 0) {
+          poolArray = easyVenues
+          poolLength = available.easy
+        }
+      }
+    }
+
+    return { poolArray, poolLength }
+  }
+
+  /**
+   * Selects (and reserves) a venue for an intermediate-layer node, cascading
+   * through difficulty pools and a duplicate-allowing fallback when a pool is
+   * exhausted. Mutates `pools.usedVenueIds` and the `available` counts.
+   * @param layerIndex - Current layer index (1-based intermediate layer).
+   * @param nodeIndex - Node index within the layer (for error context).
+   * @param pools - Difficulty venue pools plus the reserved-id set.
+   * @param available - Mutable remaining counts per difficulty pool.
+   * @returns The selected venue.
+   * @throws {@link StateError} When no venue can be selected.
+   */
+  _pickIntermediateVenue(
+    layerIndex: number,
+    nodeIndex: number,
+    pools: VenuePools & { usedVenueIds: Set<string> },
+    available: { easy: number; medium: number; hard: number }
+  ): Venue {
+    const { easyVenues, mediumVenues, hardVenues, usedVenueIds } = pools
+    const i = layerIndex
+    const j = nodeIndex
+
+    const { poolArray, poolLength } = this._selectVenuePool(i, pools, available)
+
+    let venue: Venue | null = null
+
+    if (poolLength > 0) {
+      // Dynamic subset selection with single pass filtering
+      let targetIndex = Math.floor(this.random() * poolLength)
+      for (let k = 0; k < poolArray.length; k++) {
+        const v = poolArray[k]
+        if (!v) continue
+        if (!usedVenueIds.has(v.id)) {
+          if (targetIndex === 0) {
+            venue = v
+            break
+          }
+          targetIndex--
+        }
+      }
+
+      if (!venue) {
+        throw new StateError(
+          `Failed to select venue from pool at layer=${i} index=${j}`,
+          {
+            layer: i,
+            index: j,
+            targetIndex,
+            poolLength: poolArray.length,
+            usedVenueIds: usedVenueIds.size
+          }
+        )
+      }
+
+      usedVenueIds.add(venue.id)
+      if (poolArray === easyVenues) available.easy--
+      else if (poolArray === mediumVenues) available.medium--
+      else available.hard--
+    } else {
+      // Absolute zero-resort fallback: allow duplicates from full pool to prevent crash,
+      // but exclude specialized venues.
+      const fallbackArray =
+        i < 3 ? easyVenues : i < 7 ? mediumVenues : hardVenues
+      let fallbackLength = 0
+      for (let k = 0; k < fallbackArray.length; k++) {
+        const v = fallbackArray[k]
+        if (!v) continue
+        if (v.id !== 'leipzig_arena' && v.id !== 'stendal_proberaum') {
+          fallbackLength++
+        }
+      }
+      if (fallbackLength === 0) {
+        throw new StateError(`Empty fallback pool for difficulty ${i}`)
+      }
+
+      let targetIndex = Math.floor(this.random() * fallbackLength)
+      for (let k = 0; k < fallbackArray.length; k++) {
+        const v = fallbackArray[k]
+        if (!v) continue
+        if (v.id !== 'leipzig_arena' && v.id !== 'stendal_proberaum') {
+          if (targetIndex === 0) {
+            venue = v
+            break
+          }
+          targetIndex--
+        }
+      }
+
+      if (!venue) {
+        throw new StateError(
+          `Failed to select venue from fallback pool at layer=${i} index=${j}`,
+          {
+            layer: i,
+            index: j,
+            targetIndex,
+            poolLength: fallbackArray.length
+          }
+        )
+      }
+    }
+
+    return venue
+  }
+
+  /**
+   * Rolls a node type from a single RNG draw (~70% GIG/FESTIVAL, ~20%
+   * REST_STOP/supplyStop, ~10% SPECIAL); large-capacity gigs become FESTIVAL.
+   * @param venue - Venue used to upgrade large-capacity gigs to FESTIVAL.
+   * @returns The selected node type.
+   */
+  _rollNodeType(venue: Venue): GeneratedMapNode['type'] {
+    const typeRoll = this.random()
+    let nodeType: GeneratedMapNode['type'] = 'GIG'
+    if (typeRoll > 0.9) nodeType = 'SPECIAL'
+    else if (typeRoll > 0.8) nodeType = 'supplyStop'
+    else if (typeRoll > 0.7) nodeType = 'REST_STOP'
+    else if ((venue.capacity ?? 0) >= 1000) nodeType = 'FESTIVAL'
+    return nodeType
   }
 
   /**
@@ -659,21 +737,7 @@ export class MapGenerator {
     for (let i = 0; i < iterations; i++) {
       let moved = false
 
-      const grid = new Map<number, number[]>()
-      for (let j = 0; j < nodeList.length; j++) {
-        const n = nodeList[j]
-        if (!n) continue
-        const cellX = Math.floor(n.x / cellSize)
-        const cellY = Math.floor(n.y / cellSize)
-        const key = cellX * 1000 + cellY
-
-        let cell = grid.get(key)
-        if (!cell) {
-          cell = []
-          grid.set(key, cell)
-        }
-        cell.push(j)
-      }
+      const grid = this._buildSpatialGrid(nodeList, cellSize)
 
       for (let j = 0; j < nodeList.length; j++) {
         const n1 = nodeList[j]
@@ -726,12 +790,7 @@ export class MapGenerator {
       }
 
       // Wall repulsion (keep away from edges)
-      for (const n of nodeList) {
-        if (n.x < padding) n.x += 0.2
-        if (n.x > 100 - padding) n.x -= 0.2
-        if (n.y < padding) n.y += 0.2
-        if (n.y > 100 - padding) n.y -= 0.2
-      }
+      this._applyWallRepulsion(nodeList, padding)
 
       // If no overlaps processed, we can exit early (optional optimization)
       if (!moved) break
@@ -741,6 +800,56 @@ export class MapGenerator {
     }
 
     // Final hard clamp
+    this._clampNodePositions(nodeList)
+  }
+
+  /**
+   * Buckets nodes into a spatial hash grid for O(1) neighbor lookups.
+   * @param nodeList - Nodes to bucket by position.
+   * @param cellSize - Grid cell size in map-percentage units.
+   * @returns Map of packed cell key to node indices.
+   */
+  _buildSpatialGrid(
+    nodeList: GeneratedMapNode[],
+    cellSize: number
+  ): Map<number, number[]> {
+    const grid = new Map<number, number[]>()
+    for (let j = 0; j < nodeList.length; j++) {
+      const n = nodeList[j]
+      if (!n) continue
+      const cellX = Math.floor(n.x / cellSize)
+      const cellY = Math.floor(n.y / cellSize)
+      const key = cellX * 1000 + cellY
+
+      let cell = grid.get(key)
+      if (!cell) {
+        cell = []
+        grid.set(key, cell)
+      }
+      cell.push(j)
+    }
+    return grid
+  }
+
+  /**
+   * Nudges nodes away from the map edges (in place).
+   * @param nodeList - Nodes to adjust.
+   * @param padding - Edge margin in map-percentage units.
+   */
+  _applyWallRepulsion(nodeList: GeneratedMapNode[], padding: number): void {
+    for (const n of nodeList) {
+      if (n.x < padding) n.x += 0.2
+      if (n.x > 100 - padding) n.x -= 0.2
+      if (n.y < padding) n.y += 0.2
+      if (n.y > 100 - padding) n.y -= 0.2
+    }
+  }
+
+  /**
+   * Hard-clamps node coordinates into the visible [5, 95] map range (in place).
+   * @param nodeList - Nodes to clamp.
+   */
+  _clampNodePositions(nodeList: GeneratedMapNode[]): void {
     for (const n of nodeList) {
       n.x = Math.max(5, Math.min(95, n.x))
       n.y = Math.max(5, Math.min(95, n.y))
