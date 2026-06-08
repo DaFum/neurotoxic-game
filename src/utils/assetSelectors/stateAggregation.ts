@@ -7,6 +7,7 @@ import {
   getAssetTotalDailyRevenue
 } from './assetFinancials'
 import { NEUTRAL_ASSET_MODIFIERS, BROKEN_THRESHOLD } from './constants'
+import { finiteNumberOr } from '../finiteNumber'
 
 /**
  * Combines the boni from all non-broken assets into a single aggregate
@@ -85,7 +86,7 @@ export const getTotalDailyObligations = (state: GameState): number => {
     for (const key in state.liabilities) {
       if (Object.hasOwn(state.liabilities, key)) {
         const l = state.liabilities[key]
-        if (l) liabilityPayments += l.dailyPayment
+        if (l) liabilityPayments += finiteNumberOr(l.dailyPayment, 0)
       }
     }
   }
@@ -104,7 +105,7 @@ export const getTotalDebt = (state: GameState): number => {
     for (const key in state.liabilities) {
       if (Object.hasOwn(state.liabilities, key)) {
         const l = state.liabilities[key]
-        if (l) sum += l.principalRemaining
+        if (l) sum += finiteNumberOr(l.principalRemaining, 0)
       }
     }
   }

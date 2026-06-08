@@ -28,6 +28,7 @@ export const calculateChassisGrossSaleValue = (
   let moduleRefunds = 0
   for (const slot of asset.slots) {
     if (!slot.installedModuleId) continue
+    if (!Object.hasOwn(MODULE_REGISTRY, slot.installedModuleId)) continue
     const moduleInfo = MODULE_REGISTRY[slot.installedModuleId]
     if (!moduleInfo) continue
     moduleRefunds +=

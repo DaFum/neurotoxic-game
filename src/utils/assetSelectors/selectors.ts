@@ -2,8 +2,10 @@ import type { GameState } from '../../types'
 import type { AssetSlot, LongTermAsset } from '../../types/assets'
 
 const EMPTY_ASSETS: readonly LongTermAsset[] = []
-let lastAssetsForMap: readonly LongTermAsset[] | null = null
-let assetsMapCache: Map<string, LongTermAsset> | null = null
+const assetsMapCache = new WeakMap<
+  readonly LongTermAsset[],
+  ReadonlyMap<string, LongTermAsset>
+>()
 const assetSlotsCache = new WeakMap<
   readonly AssetSlot[],
   ReadonlyMap<string, AssetSlot>
@@ -39,16 +41,17 @@ export const selectAssetSlotsMap = (
 export const selectAssetsMap = (
   state: Pick<GameState, 'assets'>
 ): ReadonlyMap<string, LongTermAsset> => {
-  const assets = state.assets || EMPTY_ASSETS
-  if (assets !== lastAssetsForMap || !assetsMapCache) {
-    lastAssetsForMap = assets
+  const assets = state.assets ?? EMPTY_ASSETS
+  let cached = assetsMapCache.get(assets)
+  if (!cached) {
     const map = new Map<string, LongTermAsset>()
     for (const a of assets) {
       if (!map.has(a.id)) {
         map.set(a.id, a)
       }
     }
-    assetsMapCache = map
+    cached = map
+    assetsMapCache.set(assets, cached)
   }
-  return assetsMapCache
+  return cached
 }

@@ -62,7 +62,8 @@ const memberHasSkill = (
 
 const allInstalledModuleIds = (state: GameState): Set<string> => {
   const set = new Set<string>()
-  for (const a of state.assets) {
+  const assets = Array.isArray(state.assets) ? state.assets : []
+  for (const a of assets) {
     for (const s of a.slots) {
       if (s.installedModuleId !== null) set.add(s.installedModuleId)
     }
@@ -72,8 +73,9 @@ const allInstalledModuleIds = (state: GameState): Set<string> => {
 
 /**
  * Pure validator: returns true iff every AND-combined condition in
- * `module.unlock` is currently met by the game state. Lock reasons are
- * NOT collected here — use `getLockReasons` for that.
+ * `module.unlock` is currently met by the game state. Note: `minChassisTier`
+ * is explicitly excluded from this check as it requires context of a specific asset.
+ * Lock reasons are NOT collected here — use `getLockReasons` for that.
  *
  * @param module - Asset module whose unlock requirements should be evaluated.
  * @param state - Current game state providing fame, money, flags, skills, and installed modules.
