@@ -244,12 +244,28 @@ function declarationLocation(decl) {
   }
 }
 
+// Serializes one JSDoc comment part. Plain text nodes carry their content in
+// `.text`, but inline `{@link Target}` / `{@linkcode}` / `{@linkplain}` nodes
+// keep the target in `.name` (with optional display text in `.text`), so the
+// bare `.text` read drops the link and yields summaries like "sliced from .".
+// Emit the display text when present, otherwise the link target identifier.
+function jsDocCommentPartText(part) {
+  if (
+    part.kind === ts.SyntaxKind.JSDocLink ||
+    part.kind === ts.SyntaxKind.JSDocLinkCode ||
+    part.kind === ts.SyntaxKind.JSDocLinkPlain
+  ) {
+    const display = typeof part.text === 'string' ? part.text.trim() : ''
+    if (display) return display
+    return part.name ? part.name.getText() : ''
+  }
+  return typeof part.text === 'string' ? part.text : ''
+}
+
 function jsDocText(comment) {
   if (typeof comment === 'string') return comment
   if (Array.isArray(comment)) {
-    return comment
-      .map(part => (typeof part.text === 'string' ? part.text : ''))
-      .join('')
+    return comment.map(part => jsDocCommentPartText(part)).join('')
   }
   return ''
 }
@@ -926,8 +942,7 @@ function addReferencedByLocal(entry, reference) {
 }
 
 function addReferencedBy(entry, reference) {
-  if (!referencedByByEntry.has(entry))
-    referencedByByEntry.set(entry, new Map())
+  if (!referencedByByEntry.has(entry)) referencedByByEntry.set(entry, new Map())
   referencedByByEntry.get(entry).set(JSON.stringify(reference), reference)
 }
 

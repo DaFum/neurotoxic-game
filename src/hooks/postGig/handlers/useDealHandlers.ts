@@ -4,6 +4,7 @@ import type { GameState } from '../../../types'
 import { logger } from '../../../utils/logger'
 import i18n from '../../../i18n'
 import { formatCurrency } from '../../../utils/numberUtils'
+import { finiteNumberOr } from '../../../utils/gameState'
 import {
   getAcceptDealMoneyUpdate,
   getAcceptDealBandUpdateFactory,
@@ -17,6 +18,51 @@ import {
 } from '../../../quests/producers/brandQuestEvents'
 import { createMoneyEarnedQuestEvent } from '../../../quests/producers/economyQuestEvents'
 import type { HandlerDispatchers } from './types'
+
+type QuestEvent = Parameters<HandlerDispatchers['applyQuestEvent']>[0]
+
+/**
+ * Builds the quest events emitted when a brand deal is accepted: offer-accepted,
+ * deal-completed, an optional brand-trust change (mirroring the accept social
+ * factory's clamped +5 so quests are not over-credited near the 100 cap), and
+ * an optional money-earned event (pure).
+ * @returns Quest events to dispatch via `applyQuestEvent`.
+ */
+export function buildAcceptDealQuestEvents(params: {
+  deal: BrandDeal
+  brandReputation: GameState['social']['brandReputation']
+  appliedMoneyDelta: number
+}): QuestEvent[] {
+  const { deal, brandReputation, appliedMoneyDelta } = params
+  const events: QuestEvent[] = [
+    createBrandOfferAcceptedQuestEvent(deal),
+    createBrandDealCompletedQuestEvent(deal)
+  ]
+
+  if (deal.alignment) {
+    const currentRep = finiteNumberOr(brandReputation?.[deal.alignment], 0)
+    const trustDelta = Math.min(100, currentRep + 5) - currentRep
+    if (trustDelta !== 0) {
+      events.push(
+        createBrandTrustChangedQuestEvent({
+          brandId: deal.alignment,
+          amount: trustDelta
+        })
+      )
+    }
+  }
+
+  if (appliedMoneyDelta > 0) {
+    events.push(
+      createMoneyEarnedQuestEvent({
+        amount: appliedMoneyDelta,
+        reason: 'brand_deal'
+      })
+    )
+  }
+
+  return events
+}
 
 export interface UseDealHandlersProps {
   player: GameState['player']
@@ -59,30 +105,12 @@ export function useDealHandlers({
         const socialUpdateFactory = getAcceptDealSocialUpdateFactory(deal)
         updateSocial(socialUpdateFactory)
 
-        applyQuestEvent(createBrandOfferAcceptedQuestEvent(deal))
-        applyQuestEvent(createBrandDealCompletedQuestEvent(deal))
-        if (deal.alignment) {
-          // Mirror the accept social factory's clamped +5 so the emitted trust
-          // delta matches the real reputation change (avoids over-crediting
-          // quests when the brand is already near the 100 cap).
-          const currentRep = social.brandReputation?.[deal.alignment] ?? 0
-          const trustDelta = Math.min(100, currentRep + 5) - currentRep
-          if (trustDelta !== 0) {
-            applyQuestEvent(
-              createBrandTrustChangedQuestEvent({
-                brandId: deal.alignment,
-                amount: trustDelta
-              })
-            )
-          }
-        }
-        if (appliedMoneyDelta > 0) {
-          applyQuestEvent(
-            createMoneyEarnedQuestEvent({
-              amount: appliedMoneyDelta,
-              reason: 'brand_deal'
-            })
-          )
+        for (const questEvent of buildAcceptDealQuestEvents({
+          deal,
+          brandReputation: social.brandReputation,
+          appliedMoneyDelta
+        })) {
+          applyQuestEvent(questEvent)
         }
 
         const moneyText =
