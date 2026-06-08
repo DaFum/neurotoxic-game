@@ -27,6 +27,18 @@ describe('buildSoldMerchInventory', () => {
     })
   })
 
+  it('sanitizes negative/NaN/Infinity sold amounts so inventory is never increased or corrupted', () => {
+    expect(buildSoldMerchInventory({ shirts: 5 }, { shirts: -3 })).toEqual({
+      shirts: 5
+    })
+    expect(buildSoldMerchInventory({ shirts: 5 }, { shirts: NaN })).toEqual({
+      shirts: 5
+    })
+    expect(
+      buildSoldMerchInventory({ shirts: 5 }, { shirts: Infinity })
+    ).toEqual({ shirts: 5 })
+  })
+
   it('returns a new object (does not mutate the input)', () => {
     const inventory = { shirts: 5 }
     const next = buildSoldMerchInventory(inventory, { shirts: 1 })
@@ -108,6 +120,15 @@ describe('buildAcceptDealQuestEvents', () => {
         appliedMoneyDelta: 0
       })
     ).toHaveLength(2)
+    // non-finite rep coerces to 0 -> trustDelta 5 -> trust event (no NaN)
+    const events = buildAcceptDealQuestEvents({
+      deal: aligned,
+      brandReputation: { corp: NaN },
+      appliedMoneyDelta: 0
+    })
+    expect(events).toHaveLength(3)
+    const trustEvent = events.find(e => e.type === 'brand.trustChanged')
+    expect(Number.isFinite(trustEvent.amount)).toBe(true)
   })
 
   it('adds a money-earned event only for positive money deltas', () => {

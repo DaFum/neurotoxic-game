@@ -4,6 +4,7 @@ import type { GameState } from '../../../types'
 import { logger } from '../../../utils/logger'
 import i18n from '../../../i18n'
 import { formatCurrency } from '../../../utils/numberUtils'
+import { finiteNumberOr } from '../../../utils/gameState'
 import {
   getAcceptDealMoneyUpdate,
   getAcceptDealBandUpdateFactory,
@@ -39,7 +40,7 @@ export function buildAcceptDealQuestEvents(params: {
   ]
 
   if (deal.alignment) {
-    const currentRep = brandReputation?.[deal.alignment] ?? 0
+    const currentRep = finiteNumberOr(brandReputation?.[deal.alignment], 0)
     const trustDelta = Math.min(100, currentRep + 5) - currentRep
     if (trustDelta !== 0) {
       events.push(
