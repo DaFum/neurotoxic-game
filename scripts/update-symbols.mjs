@@ -882,7 +882,13 @@ function targetEntriesForNode(node, importedName) {
   if (!sym) return []
   const resolved = resolveAlias(checker, sym)
   let decl = resolved.valueDeclaration ?? resolved.declarations?.[0]
-  if (!decl || !isUnderSrc(normalizePath(decl.getSourceFile().fileName))) {
+  // Only the export-star "transient merged symbol" case has no declaration at
+  // all; fall back to module-export resolution there. A reference that already
+  // resolved to a declaration outside src/ (lib types like `Record`/`Promise`,
+  // external deps) is a real non-local symbol — re-resolving it would never
+  // find a local entry and would pay getExportsOfModule().find() on every such
+  // reference, so skip it.
+  if (!decl) {
     decl = resolveViaModuleExports(node)
   }
   if (!decl) return []

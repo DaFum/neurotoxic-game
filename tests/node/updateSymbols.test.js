@@ -387,7 +387,7 @@ test('local symbols include signatures, structure, docs, graph, location, and fr
     entry => entry.path === 'src/types/actions.d.ts'
   )
   assert.ok(
-    travelPayload.referencedBy?.some(
+    travelPayload?.referencedBy?.some(
       ref => ref.path === 'src/types/game.d.ts' && ref.symbol === 'GameAction'
     ),
     'CompleteTravelMinigamePayload should be referencedBy GameAction'
