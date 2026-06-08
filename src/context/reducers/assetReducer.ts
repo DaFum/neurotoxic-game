@@ -446,16 +446,21 @@ export const handleSellChassis = (
 
   const net = gross - totalPrincipalRemaining
 
+  const nextLiabilities: Record<string, Liability> = {}
+  const currentLiabilities = state.liabilities || {}
+  for (const id in currentLiabilities) {
+    if (Object.hasOwn(currentLiabilities, id)) {
+      const l = currentLiabilities[id]
+      if (l && l.assetId !== assetId) {
+        nextLiabilities[id] = l
+      }
+    }
+  }
+
   const nextState: GameState = {
     ...state,
     assets: state.assets.filter(a => a && a.id !== assetId),
-    liabilities: Object.values(state.liabilities || {}).reduce(
-      (acc, l) => {
-        if (l && l.assetId !== assetId) acc[l.id] = l
-        return acc
-      },
-      {} as Record<string, Liability>
-    ),
+    liabilities: nextLiabilities,
     player: {
       ...state.player,
       money: clampPlayerMoney(finiteNumberOr(state.player.money, 0) + net)
@@ -612,16 +617,21 @@ export const handleAssetForeclosed = (
   state: GameState,
   payload: { assetId: string }
 ): GameState => {
+  const nextLiabilities: Record<string, Liability> = {}
+  const currentLiabilities = state.liabilities || {}
+  for (const id in currentLiabilities) {
+    if (Object.hasOwn(currentLiabilities, id)) {
+      const l = currentLiabilities[id]
+      if (l && l.assetId !== payload.assetId) {
+        nextLiabilities[id] = l
+      }
+    }
+  }
+
   return {
     ...state,
     assets: state.assets.filter(a => a.id !== payload.assetId),
-    liabilities: Object.values(state.liabilities || {}).reduce(
-      (acc, l) => {
-        if (l.assetId !== payload.assetId) acc[l.id] = l
-        return acc
-      },
-      {} as Record<string, Liability>
-    )
+    liabilities: nextLiabilities
   }
 }
 
