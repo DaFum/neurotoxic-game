@@ -64,6 +64,16 @@ const getStableGameDispatchContext =
 const GameStateContext = getStableGameStateContext()
 const GameDispatchContext = getStableGameDispatchContext()
 
+const IS_DEV =
+  typeof import.meta !== 'undefined' &&
+  !!(import.meta as unknown as Record<string, unknown>).env &&
+  !!(
+    (import.meta as unknown as Record<string, unknown>).env as Record<
+      string,
+      unknown
+    >
+  ).DEV
+
 function useRequiredContext<T>(context: Context<T | null>, name: string): T {
   const value = use(context)
   if (value === null) {
@@ -136,16 +146,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   // forwards to the underlying reducer dispatch with a stable identity.
   const dispatch = useCallback<typeof rawDispatch>(
     action => {
-      const isDev =
-        typeof import.meta !== 'undefined' &&
-        !!(import.meta as unknown as Record<string, unknown>).env &&
-        !!(
-          (import.meta as unknown as Record<string, unknown>).env as Record<
-            string,
-            unknown
-          >
-        ).DEV
-      if (isDev && action && typeof action === 'object' && 'type' in action) {
+      if (IS_DEV && action && typeof action === 'object' && 'type' in action) {
         logger.debug('GameState', 'dispatch ' + String(action.type))
       }
       rawDispatch(action)
@@ -215,16 +216,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
 
   useEffect(() => {
     // Safely check for DEV environment to avoid crashes in test runners that don't polyfill import.meta.env
-    const isDev =
-      typeof import.meta !== 'undefined' &&
-      (import.meta as unknown as Record<string, unknown>).env &&
-      (
-        (import.meta as unknown as Record<string, unknown>).env as Record<
-          string,
-          unknown
-        >
-      ).DEV
-    if (isDev) {
+    if (IS_DEV) {
       Object.defineProperty(window, 'gameState', {
         configurable: true,
         get: () => ({ ...stateRef.current, ...dispatchValueRef.current })
