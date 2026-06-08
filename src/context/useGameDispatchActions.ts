@@ -15,7 +15,6 @@ import type {
   UpdatePlayerPayload,
   GamePhase
 } from '../types'
-import { ActionTypes } from './actionTypes'
 import { GAME_PHASES, PRACTICE_RETURN_SCENES } from './gameConstants'
 import { logger, isValidLogLevel } from '../utils/logger'
 import {
@@ -25,9 +24,10 @@ import {
 } from '../utils/storage'
 import { handleError, StateError } from '../utils/errorHandler'
 import { getUnlocks } from '../utils/unlockManager'
-import { secureRandom } from '../utils/crypto'
 import { usePersistence } from './usePersistence'
 import { useEventSystem } from './useEventSystem'
+import { useMinigameDispatchActions } from './useMinigameDispatchActions'
+import { useAssetDispatchActions } from './useAssetDispatchActions'
 import {
   createChangeSceneAction,
   createUpdatePlayerAction,
@@ -80,12 +80,7 @@ import {
 } from './actionCreators'
 import {
   purchaseChassis as purchaseChassisAction,
-  upgradeChassisTier as upgradeChassisTierAction,
-  sellChassis as sellChassisAction,
-  repairChassis as repairChassisAction,
-  refinanceLiability as refinanceLiabilityAction,
   installModule as installModuleAction,
-  removeModule as removeModuleAction,
   startCrowdfund as startCrowdfundAction
 } from './assetActionCreators'
 
@@ -409,89 +404,7 @@ export function useGameDispatchActions({
     addToast(tRef.current('ui:day_advance', { day: nextDay }), 'info')
   }, [dispatch, addToast, stateRef, tRef])
 
-  const startTravelMinigame = useCallback(
-    (payload: Parameters<typeof createStartTravelMinigameAction>[0]) =>
-      startTransition(() => dispatch(createStartTravelMinigameAction(payload))),
-    [dispatch]
-  )
-
-  const completeTravelMinigame = useCallback(
-    (
-      damageTaken: Parameters<typeof createCompleteTravelMinigameAction>[0],
-      itemsCollected: Parameters<typeof createCompleteTravelMinigameAction>[1]
-    ) => {
-      const rngValue = secureRandom() as number
-      dispatch(
-        createCompleteTravelMinigameAction(
-          damageTaken,
-          itemsCollected,
-          rngValue
-        )
-      )
-    },
-    [dispatch]
-  )
-
-  const startRoadieMinigame = useCallback(
-    (payload: Parameters<typeof createStartRoadieMinigameAction>[0]) =>
-      startTransition(() => dispatch(createStartRoadieMinigameAction(payload))),
-    [dispatch]
-  )
-
-  const completeRoadieMinigame = useCallback(
-    (
-      equipmentDamage: Parameters<typeof createCompleteRoadieMinigameAction>[0],
-      contrabandDelivered?: Parameters<
-        typeof createCompleteRoadieMinigameAction
-      >[1]
-    ) =>
-      dispatch(
-        createCompleteRoadieMinigameAction(equipmentDamage, contrabandDelivered)
-      ),
-    [dispatch]
-  )
-
-  const startKabelsalatMinigame = useCallback(
-    (payload: Parameters<typeof createStartKabelsalatMinigameAction>[0]) =>
-      startTransition(() =>
-        dispatch(createStartKabelsalatMinigameAction(payload))
-      ),
-    [dispatch]
-  )
-
-  const completeKabelsalatMinigame = useCallback(
-    (payload: Parameters<typeof createCompleteKabelsalatMinigameAction>[0]) =>
-      dispatch(createCompleteKabelsalatMinigameAction(payload)),
-    [dispatch]
-  )
-
-  const startAmpCalibration = useCallback(
-    (payload: Parameters<typeof createStartAmpCalibrationAction>[0]) =>
-      startTransition(() => dispatch(createStartAmpCalibrationAction(payload))),
-    [dispatch]
-  )
-
-  const completeAmpCalibration = useCallback(
-    (
-      score: Parameters<typeof createCompleteAmpCalibrationAction>[0],
-      voidResonance: Parameters<
-        typeof createCompleteAmpCalibrationAction
-      >[1] = 0,
-      purgesUsed: Parameters<typeof createCompleteAmpCalibrationAction>[2] = 0,
-      hijacksOverridden: Parameters<
-        typeof createCompleteAmpCalibrationAction
-      >[3] = 0
-    ) =>
-      dispatch(
-        createCompleteAmpCalibrationAction(
-          score,
-          voidResonance,
-          purgesUsed,
-          hijacksOverridden
-        )
-      ),
-    [dispatch]
-  )
+  const minigameActions = useMinigameDispatchActions(dispatch)
 
   const unlockTrait = useCallback(
     (
@@ -674,97 +587,12 @@ export function useGameDispatchActions({
     [dispatch]
   )
 
-  // Asset dispatch wrappers — each reads the current state via stateRef so
-  // the snapshot used for validation matches the one the reducer sees.
-  const purchaseChassis = useCallback(
-    (input: Parameters<typeof purchaseChassisAction>[0]) => {
-      const action = purchaseChassisAction(input, stateRef.current)
-      if (action.type === ActionTypes.PURCHASE_CHASSIS_FAILED) {
-        addToast(
-          tRef.current(
-            `assets:purchaseFailed.${action.payload.reason.toLowerCase()}`
-          ),
-          'error'
-        )
-      }
-      dispatch(action)
-    },
-    [dispatch, stateRef, addToast, tRef]
-  )
-  const upgradeChassisTier = useCallback(
-    (assetId: string, targetTier: import('../types/assets').ChassisTier) => {
-      const action = upgradeChassisTierAction(
-        assetId,
-        targetTier,
-        stateRef.current
-      )
-      if (action) dispatch(action)
-    },
-    [dispatch, stateRef]
-  )
-  const sellChassis = useCallback(
-    (assetId: string) => {
-      dispatch(sellChassisAction(assetId, stateRef.current))
-    },
-    [dispatch, stateRef]
-  )
-  const repairChassis = useCallback(
-    (assetId: string) => {
-      const action = repairChassisAction(assetId, stateRef.current)
-      if (action) dispatch(action)
-    },
-    [dispatch, stateRef]
-  )
-  const refinanceLiability = useCallback(
-    (
-      liabilityId: string,
-      loanProfileId: import('../utils/loanProfiles').LoanProfileId
-    ) => {
-      const action = refinanceLiabilityAction(
-        liabilityId,
-        loanProfileId,
-        stateRef.current
-      )
-      if (action.type === ActionTypes.REFINANCE_LIABILITY_FAILED) {
-        addToast(
-          tRef.current(
-            `assets:refinanceFailed.${action.payload.reason.toLowerCase()}`
-          ),
-          'error'
-        )
-      }
-      dispatch(action)
-    },
-    [dispatch, stateRef, addToast, tRef]
-  )
-  const installModule = useCallback(
-    (input: Parameters<typeof installModuleAction>[0]) => {
-      const action = installModuleAction(input, stateRef.current)
-      if (action.type === ActionTypes.INSTALL_MODULE_FAILED) {
-        addToast(
-          tRef.current(
-            `assets:installFailed.${action.payload.reason.toLowerCase()}`
-          ),
-          'error'
-        )
-      }
-      dispatch(action)
-    },
-    [dispatch, stateRef, addToast, tRef]
-  )
-  const removeModule = useCallback(
-    (assetId: string, slotId: string) => {
-      dispatch(removeModuleAction(assetId, slotId))
-    },
-    [dispatch]
-  )
-  const startCrowdfund = useCallback(
-    (input: Parameters<typeof startCrowdfundAction>[0]) => {
-      const action = startCrowdfundAction(input, stateRef.current)
-      if (action) dispatch(action)
-    },
-    [dispatch, stateRef]
-  )
+  const assetActions = useAssetDispatchActions({
+    dispatch,
+    stateRef,
+    addToast,
+    tRef
+  })
 
   return useMemo(
     () => ({
@@ -791,14 +619,7 @@ export function useGameDispatchActions({
       deleteSave,
       resetState,
       updateSettings,
-      startTravelMinigame,
-      completeTravelMinigame,
-      startRoadieMinigame,
-      completeRoadieMinigame,
-      startKabelsalatMinigame,
-      completeKabelsalatMinigame,
-      startAmpCalibration,
-      completeAmpCalibration,
+      ...minigameActions,
       unlockTrait,
       endGig,
       addQuest,
@@ -822,14 +643,7 @@ export function useGameDispatchActions({
       setPendingSupplyStopInventory,
       dismissForeclosureNotice,
       setPendingRiskEvent,
-      purchaseChassis,
-      upgradeChassisTier,
-      sellChassis,
-      repairChassis,
-      refinanceLiability,
-      installModule,
-      removeModule,
-      startCrowdfund
+      ...assetActions
     }),
     [
       changeScene,
@@ -855,14 +669,7 @@ export function useGameDispatchActions({
       deleteSave,
       resetState,
       updateSettings,
-      startTravelMinigame,
-      completeTravelMinigame,
-      startRoadieMinigame,
-      completeRoadieMinigame,
-      startKabelsalatMinigame,
-      completeKabelsalatMinigame,
-      startAmpCalibration,
-      completeAmpCalibration,
+      minigameActions,
       unlockTrait,
       endGig,
       addQuest,
@@ -886,14 +693,7 @@ export function useGameDispatchActions({
       setPendingSupplyStopInventory,
       dismissForeclosureNotice,
       setPendingRiskEvent,
-      purchaseChassis,
-      upgradeChassisTier,
-      sellChassis,
-      repairChassis,
-      refinanceLiability,
-      installModule,
-      removeModule,
-      startCrowdfund
+      assetActions
     ]
   )
 }
