@@ -32,6 +32,81 @@ import { submitLeaderboardScores } from '../../../utils/leaderboardUtils'
 import { createRegionReputationChangedQuestEvent } from '../../../quests/producers/venueQuestEvents'
 import type { HandlerDispatchers } from './types'
 
+type AddQuestInput = Parameters<HandlerDispatchers['addQuest']>[0]
+
+/**
+ * Decrements sold-merch counts from a band inventory, clamped at zero (pure).
+ * @param inventory - Current band inventory.
+ * @param soldMerch - Quantities sold this gig, keyed by merch id.
+ * @returns A new inventory record with sold quantities removed.
+ */
+export function buildSoldMerchInventory(
+  inventory: BandState['inventory'],
+  soldMerch: Record<string, number>
+): BandState['inventory'] {
+  const updatedInventory = { ...inventory }
+  for (const merchKey in soldMerch) {
+    if (Object.hasOwn(soldMerch, merchKey)) {
+      const soldAmount = soldMerch[merchKey] ?? 0
+      const currentAmount =
+        typeof updatedInventory[merchKey] === 'number'
+          ? (updatedInventory[merchKey] as number)
+          : 0
+      updatedInventory[merchKey] = Math.max(0, currentAmount - soldAmount)
+    }
+  }
+  return updatedInventory
+}
+
+/**
+ * Builds the post-gig story-flag quest payloads (apology tour, ego management)
+ * from the quest registry. Threshold-style harmony quests seed progress with
+ * the current/post-penalty harmony so earlier recovery is not lost (pure).
+ * @returns Quest payloads to dispatch via `addQuest` (empty when no flags set).
+ */
+export function buildStoryFlagQuests(params: {
+  activeStoryFlags: string[] | undefined
+  day: number
+  bandHarmony: number | undefined
+  postPenaltyHarmony: number | undefined
+}): AddQuestInput[] {
+  const { activeStoryFlags, day, bandHarmony, postPenaltyHarmony } = params
+  const quests: AddQuestInput[] = []
+
+  if (activeStoryFlags?.includes('cancel_quest_active')) {
+    const def = getQuestDefinition(QUEST_APOLOGY_TOUR)
+    if (def) {
+      quests.push({
+        ...def,
+        id: QUEST_APOLOGY_TOUR,
+        deadline: day + finiteNumberOr(def.deadlineOffset, 0),
+        progress: 0
+      })
+    }
+  }
+
+  if (activeStoryFlags?.includes('breakup_quest_active')) {
+    const def = getQuestDefinition(QUEST_EGO_MANAGEMENT)
+    if (def) {
+      // Threshold-style harmony quest: seed progress with current band harmony
+      // so any harmony recovery earlier this post-gig phase is not lost.
+      const seededProgress =
+        def.progressSource === 'harmony_recovered'
+          ? (postPenaltyHarmony ??
+            clampBandHarmony(finiteNumberOr(bandHarmony, 80)))
+          : 0
+      quests.push({
+        ...def,
+        id: QUEST_EGO_MANAGEMENT,
+        deadline: day + finiteNumberOr(def.deadlineOffset, 0),
+        progress: seededProgress
+      })
+    }
+  }
+
+  return quests
+}
+
 export interface UseContinueHandlerProps {
   financials: PostGigFinancials | null
   perfScore: number
@@ -75,23 +150,11 @@ export function useContinueHandler({
     setIsProcessingAction(true)
     try {
       if (financials.soldMerch) {
-        updateBand((prevBand: BandState) => {
-          const updatedInventory = { ...prevBand.inventory }
-          for (const merchKey in financials.soldMerch) {
-            if (Object.hasOwn(financials.soldMerch, merchKey)) {
-              const soldAmount = financials.soldMerch[merchKey] ?? 0
-              const currentAmount =
-                typeof updatedInventory[merchKey] === 'number'
-                  ? (updatedInventory[merchKey] as number)
-                  : 0
-              updatedInventory[merchKey] = Math.max(
-                0,
-                currentAmount - soldAmount
-              )
-            }
-          }
-          return { ...prevBand, inventory: updatedInventory }
-        })
+        const soldMerch = financials.soldMerch
+        updateBand((prevBand: BandState) => ({
+          ...prevBand,
+          inventory: buildSoldMerchInventory(prevBand.inventory, soldMerch)
+        }))
       }
 
       const stats = calculateContinueStats({
@@ -140,40 +203,16 @@ export function useContinueHandler({
         })
       }
 
-      // Quest config (label/deadline/penalty) is owned by QUEST_REGISTRY.
-      // We build the dispatch payload from the registry definition so there is
-      // no inline duplication; the reducer also re-merges defaults defensively.
-      if (activeStoryFlags?.includes('cancel_quest_active')) {
-        const def = getQuestDefinition(QUEST_APOLOGY_TOUR)
-        if (def) {
-          addQuest({
-            ...def,
-            id: QUEST_APOLOGY_TOUR,
-            deadline: player.day + finiteNumberOr(def.deadlineOffset, 0),
-            progress: 0
-          })
-        }
-      }
-
-      if (activeStoryFlags?.includes('breakup_quest_active')) {
-        const def = getQuestDefinition(QUEST_EGO_MANAGEMENT)
-        if (def) {
-          // Threshold-style harmony quest: seed progress with current band
-          // harmony so any harmony recovery that happened earlier this
-          // post-gig phase is not lost. Without this seed the new quest would
-          // miss the harmony_recovered event applied before it was added.
-          const seededProgress =
-            def.progressSource === 'harmony_recovered'
-              ? (postPenaltyHarmony ??
-                clampBandHarmony(finiteNumberOr(band.harmony, 80)))
-              : 0
-          addQuest({
-            ...def,
-            id: QUEST_EGO_MANAGEMENT,
-            deadline: player.day + finiteNumberOr(def.deadlineOffset, 0),
-            progress: seededProgress
-          })
-        }
+      // Quest config (label/deadline/penalty) is owned by QUEST_REGISTRY;
+      // buildStoryFlagQuests assembles the payloads from registry definitions
+      // (no inline duplication) and the reducer re-merges defaults defensively.
+      for (const quest of buildStoryFlagQuests({
+        activeStoryFlags,
+        day: player.day,
+        bandHarmony: band.harmony,
+        postPenaltyHarmony
+      })) {
+        addQuest(quest)
       }
 
       submitLeaderboardScores({
