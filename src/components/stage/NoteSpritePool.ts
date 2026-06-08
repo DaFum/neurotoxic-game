@@ -30,6 +30,13 @@ type NoteTextures = {
   lightning: Texture | null
 }
 
+/**
+ * Factory for creating and initializing note sprites.
+ *
+ * @remarks
+ * This class abstracts the texture selection and fallback logic for note sprites
+ * so that NoteSpritePool can focus on pooling semantics.
+ */
 class NoteSpriteFactory {
   noteTextures: NoteTextures
 
@@ -37,6 +44,12 @@ class NoteSpriteFactory {
     this.noteTextures = { skull: null, lightning: null }
   }
 
+  /**
+   * Retrieves the appropriate texture for a given lane.
+   *
+   * @param laneIndex - The index of the rhythm lane.
+   * @returns The resolved texture or null if none is available.
+   */
   _getEffectiveTexture(laneIndex: number): Texture | null {
     const useLightning = laneIndex === NOTE_LIGHTNING_LANE_INDEX
     const desiredTexture = useLightning
@@ -49,6 +62,12 @@ class NoteSpriteFactory {
     return desiredTexture || fallbackTexture
   }
 
+  /**
+   * Creates a new uninitialized note sprite for the given lane.
+   *
+   * @param laneIndex - The index of the rhythm lane.
+   * @returns A new sprite instance configured as a note or fallback.
+   */
   createNoteSprite(laneIndex: number): NoteSprite {
     const effectiveTexture = this._getEffectiveTexture(laneIndex)
 
@@ -68,6 +87,13 @@ class NoteSpriteFactory {
     return sprite
   }
 
+  /**
+   * Reinitializes a note sprite with fresh state and textures.
+   *
+   * @param sprite - The sprite instance to reset.
+   * @param lane - Visual data for the target lane.
+   * @param laneIndex - The index of the rhythm lane.
+   */
   initializeNoteSprite(
     sprite: NoteSprite,
     lane: LaneData,
@@ -131,14 +157,33 @@ export class NoteSpritePool {
     this.factory.noteTextures = value
   }
 
+  /**
+   * Retrieves the appropriate texture for a given lane.
+   *
+   * @param laneIndex - The index of the rhythm lane.
+   * @returns The resolved texture or null if none is available.
+   */
   _getEffectiveTexture(laneIndex: number): Texture | null {
     return this.factory._getEffectiveTexture(laneIndex)
   }
 
+  /**
+   * Creates a new uninitialized note sprite for the given lane.
+   *
+   * @param laneIndex - The index of the rhythm lane.
+   * @returns A new sprite instance configured as a note or fallback.
+   */
   createNoteSprite(laneIndex: number): NoteSprite {
     return this.factory.createNoteSprite(laneIndex)
   }
 
+  /**
+   * Reinitializes a note sprite with fresh state and textures.
+   *
+   * @param sprite - The sprite instance to reset.
+   * @param lane - Visual data for the target lane.
+   * @param laneIndex - The index of the rhythm lane.
+   */
   initializeNoteSprite(
     sprite: NoteSprite,
     lane: LaneData,
@@ -147,6 +192,13 @@ export class NoteSpritePool {
     return this.factory.initializeNoteSprite(sprite, lane, laneIndex)
   }
 
+  /**
+   * Retrieves an active note sprite from the pool or creates one if empty.
+   *
+   * @param lane - Visual data for the target lane.
+   * @param laneIndex - The index of the rhythm lane.
+   * @returns A ready-to-render note sprite.
+   */
   acquireSpriteFromPool(lane: LaneData, laneIndex: number): NoteSprite {
     const sprite =
       this.spritePool.pop() ?? this.factory.createNoteSprite(laneIndex)
@@ -154,6 +206,11 @@ export class NoteSpritePool {
     return sprite
   }
 
+  /**
+   * Returns an active sprite to the pool and removes it from the display list.
+   *
+   * @param sprite - The sprite to release.
+   */
   destroyNoteSprite(sprite: NoteSprite | null | undefined): void {
     if (!sprite) return
 
@@ -165,6 +222,11 @@ export class NoteSpritePool {
     this.releaseSpriteToPool(sprite)
   }
 
+  /**
+   * Enqueues a sprite back into the internal pool or destroys it if full.
+   *
+   * @param sprite - The sprite to pool.
+   */
   releaseSpriteToPool(sprite: NoteSprite): void {
     sprite.visible = false
     if (this.spritePool.length < NoteSpritePool.MAX_POOL_SIZE) {
@@ -174,6 +236,9 @@ export class NoteSpritePool {
     }
   }
 
+  /**
+   * Destroys all pooled sprites and references to prepare for garbage collection.
+   */
   dispose(): void {
     // Destroy pooled sprites
     for (let i = 0; i < this.spritePool.length; i++) {
