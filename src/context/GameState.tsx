@@ -146,12 +146,12 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   // forwards to the underlying reducer dispatch with a stable identity.
   const dispatch = useCallback<typeof rawDispatch>(
     action => {
-      if (IS_DEV && action && typeof action === 'object' && 'type' in action) {
-        logger.debug('GameState', 'dispatch ' + String(action.type))
+      if (IS_DEV && action && typeof action === 'object' && Object.hasOwn(action, 'type')) {
+        logger.debug('GameState', 'dispatch ' + String((action as { type: unknown }).type))
       }
       rawDispatch(action)
     },
-    [rawDispatch]
+    []
   )
 
   // Clean up injection marker after mount (deferred from initGameState to
