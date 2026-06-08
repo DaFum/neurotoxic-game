@@ -175,7 +175,10 @@ export function resolveEvent(
   const { result, delta } = resolution
   const outcomeText = selectedChoice.outcomeText ?? resolution.outcomeText ?? ''
   const description = selectedChoice.description ?? resolution.description ?? ''
-  const flags = (delta?.flags ?? {}) as EventFlags
+  // Shallow-copy so remapStoryFlag never mutates the source delta.flags, which
+  // may be a shared/cached `_precomputedResult`. `delta` is optional here (this
+  // runs before the `if (delta)` guard), so keep the `?? {}` undefined-guard.
+  const flags = { ...(delta?.flags ?? {}) } as EventFlags
 
   // `eventEngine` uses `{ type: 'flag', flag: '<name>', value: <payload> }` for generic flags.
   // The engine handler stores only the flag name in `delta.flags.addStoryFlag` and leaves the
