@@ -6,6 +6,8 @@ import {
 } from 'react'
 import type { TFunction } from 'i18next'
 import type { GameAction, GameState } from '../types'
+import type { ChassisTier } from '../types/assets'
+import type { LoanProfileId } from '../utils/loanProfiles'
 import { ActionTypes } from './actionTypes'
 import {
   purchaseChassis as purchaseChassisAction,
@@ -70,7 +72,7 @@ export function useAssetDispatchActions({
     [dispatch, stateRef, addToast, tRef]
   )
   const upgradeChassisTier = useCallback(
-    (assetId: string, targetTier: import('../types/assets').ChassisTier) => {
+    (assetId: string, targetTier: ChassisTier) => {
       const action = upgradeChassisTierAction(
         assetId,
         targetTier,
@@ -94,10 +96,7 @@ export function useAssetDispatchActions({
     [dispatch, stateRef]
   )
   const refinanceLiability = useCallback(
-    (
-      liabilityId: string,
-      loanProfileId: import('../utils/loanProfiles').LoanProfileId
-    ) => {
+    (liabilityId: string, loanProfileId: LoanProfileId) => {
       const action = refinanceLiabilityAction(
         liabilityId,
         loanProfileId,
