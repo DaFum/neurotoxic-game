@@ -18,6 +18,10 @@ const PERF_SCORE_MIN = 30
 const PERF_SCORE_MAX = 100
 const PERF_SCORE_SCALER = 150
 
+/**
+ * Computes the money penalty for misses beyond the tolerance threshold
+ * (`max(0, misses - missTolerance) * missMoneyPenalty`).
+ */
 export const calculateExcessMissMoneyPenalty = ({
   misses = 0,
   missTolerance,

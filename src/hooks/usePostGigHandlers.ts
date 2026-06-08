@@ -21,6 +21,7 @@ import {
   useProcessingGuard
 } from './postGig/handlers'
 
+/** The post-gig handler surface returned by {@link usePostGigHandlers}. */
 export interface UsePostGigHandlersReturn {
   isProcessingAction: boolean
   handlePostSelection: (option: SocialPostOption) => void
@@ -31,6 +32,7 @@ export interface UsePostGigHandlersReturn {
   handleNextPhase: () => void
 }
 
+/** Props for {@link usePostGigHandlers}: post-gig state slices and the flat dispatcher/UI callbacks it threads into the sub-handlers. */
 export interface UsePostGigHandlersProps {
   player: GameState['player']
   band: GameState['band']
@@ -64,6 +66,11 @@ export interface UsePostGigHandlersProps {
   t?: import('i18next').TFunction
 }
 
+/**
+ * Composition root for the post-gig phase: wires the processing guard and the
+ * dispatcher bundle into the continue, social-post, brand-deal, and minor
+ * sub-handlers, and returns the combined handler surface.
+ */
 export function usePostGigHandlers({
   player,
   band,

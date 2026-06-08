@@ -4,6 +4,7 @@ import {
   createContext,
   use,
   useReducer,
+  useCallback,
   useEffect,
   useRef
 } from 'react'
@@ -127,7 +128,19 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
     tRef.current = t
   }, [t])
 
-  const [state, dispatch] = useReducer(gameReducer, undefined, initGameState)
+  const [state, rawDispatch] = useReducer(gameReducer, undefined, initGameState)
+
+  // Dev-only dispatch logging middleware: records each action type before it
+  // reduces. Gated by the logger level (`debug` is suppressed at INFO and
+  // above), so it is silent in production and changes no behavior — it only
+  // forwards to the underlying reducer dispatch with a stable identity.
+  const dispatch = useCallback<typeof rawDispatch>(
+    action => {
+      logger.debug('GameState', `dispatch ${action.type}`)
+      rawDispatch(action)
+    },
+    [rawDispatch]
+  )
 
   // Clean up injection marker after mount (deferred from initGameState to
   // survive React StrictMode's double-invocation of lazy initialisers).

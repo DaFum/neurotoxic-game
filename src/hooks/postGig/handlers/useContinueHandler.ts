@@ -107,6 +107,7 @@ export function buildStoryFlagQuests(params: {
   return quests
 }
 
+/** Props for {@link useContinueHandler}: post-gig financials/stats, state slices, the processing guard, translator, and dispatchers. */
 export interface UseContinueHandlerProps {
   financials: PostGigFinancials | null
   perfScore: number
@@ -122,6 +123,11 @@ export interface UseContinueHandlerProps {
   dispatchers: HandlerDispatchers
 }
 
+/**
+ * Builds the post-gig "continue" handler: settles merch, fame, harmony, and
+ * story-flag quests, submits leaderboard scores, then advances to OVERWORLD or
+ * GAMEOVER (on bankruptcy). Guarded against re-entrancy.
+ */
 export function useContinueHandler({
   financials,
   perfScore,

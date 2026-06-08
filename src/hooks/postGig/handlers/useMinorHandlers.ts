@@ -9,6 +9,7 @@ import {
 } from '../../../utils/postGigUtils'
 import type { HandlerDispatchers } from './types'
 
+/** Props for {@link useMinorHandlers}: state slices, the processing guard, translator, and dispatchers. */
 export interface UseMinorHandlersProps {
   player: GameState['player']
   postOptionsDerivationError: unknown
@@ -18,6 +19,10 @@ export interface UseMinorHandlersProps {
   dispatchers: HandlerDispatchers
 }
 
+/**
+ * Builds the smaller post-gig handlers (spin-story and next-phase advancement),
+ * applying the spin-story money/controversy effects through the dispatchers.
+ */
 export function useMinorHandlers({
   player,
   postOptionsDerivationError,
