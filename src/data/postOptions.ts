@@ -238,7 +238,9 @@ export const POST_OPTIONS = [
       loyaltyChange: 20,
       harmonyChange: 5,
       reputationCooldownSet: 5,
-      message: 'The fans are responding well to your honesty.'
+      message: i18n.t('ui:postOptions.recovery_apology_tour_promo.message', {
+        defaultValue: 'The fans are responding well to your honesty.'
+      })
     })
   },
   {
@@ -260,8 +262,13 @@ export const POST_OPTIONS = [
           controversyChange: -30,
           loyaltyChange: 25,
           reputationCooldownSet: 7,
-          message:
-            'The leak worked beautifully. People think you are misunderstood.'
+          message: i18n.t(
+            'ui:postOptions.recovery_leaked_good_deed.successMessage',
+            {
+              defaultValue:
+                'The leak worked beautifully. People think you are misunderstood.'
+            }
+          )
         }
       } else {
         return {
@@ -270,7 +277,12 @@ export const POST_OPTIONS = [
           platform: SOCIAL_PLATFORMS.TIKTOK.id,
           followers: -500,
           controversyChange: 15,
-          message: 'It looked completely staged. Backlash increased.'
+          message: i18n.t(
+            'ui:postOptions.recovery_leaked_good_deed.failMessage',
+            {
+              defaultValue: 'It looked completely staged. Backlash increased.'
+            }
+          )
         }
       }
     }
@@ -291,7 +303,9 @@ export const POST_OPTIONS = [
       loyaltyChange: 20,
       controversyChange: -10,
       harmonyChange: 5,
-      message: 'Back to your roots. The hardcore fans love this energy.'
+      message: i18n.t('ui:postOptions.recovery_prove_yourself_clip.message', {
+        defaultValue: 'Back to your roots. The hardcore fans love this energy.'
+      })
     })
   },
   {
@@ -313,7 +327,10 @@ export const POST_OPTIONS = [
         followers: 0,
         moneyChange: moneyGain,
         loyaltyChange: -loyaltyBurn,
-        message: 'You tapped your most loyal fans for cash during the crisis.'
+        message: i18n.t('ui:postOptions.comm_loyalty_merch_drive.message', {
+          defaultValue:
+            'You tapped your most loyal fans for cash during the crisis.'
+        })
       }
     }
   },
@@ -371,8 +388,10 @@ export const POST_OPTIONS = [
       followers: 500,
       harmonyChange: 5,
       egoClear: true,
-      message:
-        'A beautiful bonding moment caught on tape. Internal tension eased.'
+      message: i18n.t('ui:postOptions.perf_acoustic_cover.message', {
+        defaultValue:
+          'A beautiful bonding moment caught on tape. Internal tension eased.'
+      })
     })
   },
   {
@@ -430,7 +449,9 @@ export const POST_OPTIONS = [
       controversyChange: 10,
       staminaChange: -5,
       allMembersStaminaChange: true,
-      message: 'People love drama! But the venue owners are talking...'
+      message: i18n.t('ui:postOptions.perf_sound_guy_rant.message', {
+        defaultValue: 'People love drama! But the venue owners are talking...'
+      })
     })
   },
 
@@ -449,7 +470,9 @@ export const POST_OPTIONS = [
       success: true,
       platform: SOCIAL_PLATFORMS.TIKTOK.id,
       followers: 2000,
-      message: 'The wall of death was legendary. TikTok is eating it up!'
+      message: i18n.t('ui:postOptions.perf_moshpit_chaos.message', {
+        defaultValue: 'The wall of death was legendary. TikTok is eating it up!'
+      })
     })
   },
   {
@@ -475,7 +498,9 @@ export const POST_OPTIONS = [
       success: true,
       platform: SOCIAL_PLATFORMS.YOUTUBE.id,
       followers: 800,
-      message: 'Guitar nerds are dissecting every frame.'
+      message: i18n.t('ui:postOptions.perf_tech_playthrough.message', {
+        defaultValue: 'Guitar nerds are dissecting every frame.'
+      })
     })
   },
   {
@@ -491,7 +516,10 @@ export const POST_OPTIONS = [
       platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
       followers: 300,
       egoClear: true,
-      message: 'A solid, consistent post. The band feels like a team again.'
+      message: i18n.t('ui:postOptions.perf_band_selfie.message', {
+        defaultValue:
+          'A solid, consistent post. The band feels like a team again.'
+      })
     })
   },
   {
@@ -510,7 +538,10 @@ export const POST_OPTIONS = [
       harmonyChange: -5,
       allMembersMoodChange: true,
       moodChange: -5,
-      message: 'You got sympathy followers, but the band feels humiliated.'
+      message: i18n.t('ui:postOptions.perf_apology_video.message', {
+        defaultValue:
+          'You got sympathy followers, but the band feels humiliated.'
+      })
     })
   },
 
@@ -531,7 +562,9 @@ export const POST_OPTIONS = [
           followers: 3000,
           moodChange: 10,
           allMembersMoodChange: true,
-          message: 'Massive hit! The fans loved the chaotic energy.'
+          message: i18n.t('ui:postOptions.drama_drunk_stream.successMessage', {
+            defaultValue: 'Massive hit! The fans loved the chaotic energy.'
+          })
         }
       } else {
         return {
@@ -542,7 +575,9 @@ export const POST_OPTIONS = [
           harmonyChange: -20,
           controversyChange: 30, // Big spike towards shadowban
           loyaltyChange: -5, // Hits true fans too
-          message: 'CANCELLATION EVENT. Someone said something awful.'
+          message: i18n.t('ui:postOptions.drama_drunk_stream.failMessage', {
+            defaultValue: 'CANCELLATION EVENT. Someone said something awful.'
+          })
         }
       }
     }
@@ -561,8 +596,10 @@ export const POST_OPTIONS = [
       followers: -1000, // Alienate mainstream
       loyaltyChange: 20, // Converts casuals to hardcore
       controversyChange: 15,
-      message:
-        'Mainstream fans bailed, but the hardcore cult just grew stronger.'
+      message: i18n.t('ui:postOptions.drama_political_take.message', {
+        defaultValue:
+          'Mainstream fans bailed, but the hardcore cult just grew stronger.'
+      })
     })
   },
   {
@@ -580,7 +617,10 @@ export const POST_OPTIONS = [
       platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
       followers: 1500,
       loyaltyChange: 10, // Builds sympathy
-      message: '"We\'ll make it no matter what." Fans eat up the struggle.'
+      message: i18n.t('ui:postOptions.drama_van_breakdown.message', {
+        defaultValue:
+          '"We\'ll make it no matter what." Fans eat up the struggle.'
+      })
     })
   },
   {
@@ -597,8 +637,10 @@ export const POST_OPTIONS = [
       followers: 800, // Newsletter spikes don't need to be huge raw numbers, they are high value
       loyaltyChange: 25, // Massive hype
       harmonyChange: -10, // Manager is pissed
-      message:
-        'The discord is going wild over the new riff. Management is furious.'
+      message: i18n.t('ui:postOptions.drama_leak_demo.message', {
+        defaultValue:
+          'The discord is going wild over the new riff. Management is furious.'
+      })
     })
   },
 
@@ -616,8 +658,10 @@ export const POST_OPTIONS = [
       followers: 5000,
       harmonyChange: -15,
       controversyChange: 25,
-      message:
-        'Massive viral hit, but the fake argument felt a little too real.'
+      message: i18n.t('ui:postOptions.drama_manufactured.message', {
+        defaultValue:
+          'Massive viral hit, but the fake argument felt a little too real.'
+      })
     })
   },
   {
@@ -719,7 +763,9 @@ export const POST_OPTIONS = [
       platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
       followers: 150,
       loyaltyChange: 15,
-      message: 'The fans are connecting red string on message boards.'
+      message: i18n.t('ui:postOptions.drama_cryptic_teaser.message', {
+        defaultValue: 'The fans are connecting red string on message boards.'
+      })
     })
   },
   {
@@ -768,7 +814,9 @@ export const POST_OPTIONS = [
       followers: 1000,
       harmonyChange: 5,
       egoClear: true,
-      message: 'A deep, vulnerable chat. The fans feel closer to you.'
+      message: i18n.t('ui:postOptions.drama_emotional_interview.message', {
+        defaultValue: 'A deep, vulnerable chat. The fans feel closer to you.'
+      })
     })
   },
 
@@ -815,7 +863,10 @@ export const POST_OPTIONS = [
         followers: 0,
         moneyChange: hypeCash,
         loyaltyChange: -hypeBurn,
-        message: `Cashed in on the tour hype! Made ${hypeCash}€.`
+        message: i18n.t('ui:postOptions.comm_tour_merch.message', {
+          amount: formatCurrency(hypeCash, i18n.language),
+          defaultValue: 'Cashed in on the tour hype! Made {{amount}}.'
+        })
       }
     }
   },
@@ -834,8 +885,10 @@ export const POST_OPTIONS = [
       followers: -500, // Looks desperate
       controversyChange: 5,
       moneyChange: 300,
-      message:
-        'You got gas money, but you lost some self-respect and followers.'
+      message: i18n.t('ui:postOptions.comm_crowdfund.message', {
+        defaultValue:
+          'You got gas money, but you lost some self-respect and followers.'
+      })
     })
   },
   {
@@ -1011,8 +1064,10 @@ export const POST_OPTIONS = [
       platform: SOCIAL_PLATFORMS.YOUTUBE.id,
       followers: 1200,
       moneyChange: 50, // Ad revenue
-      message:
-        'The comments section is arguing about cable capacitance. It is glorious.'
+      message: i18n.t('ui:postOptions.tech_rig_rundown.message', {
+        defaultValue:
+          'The comments section is arguing about cable capacitance. It is glorious.'
+      })
     })
   },
   {
@@ -1030,7 +1085,9 @@ export const POST_OPTIONS = [
       harmonyChange: 10,
       moodChange: 5,
       allMembersMoodChange: true,
-      message: 'Fans love seeing the band actually getting along.'
+      message: i18n.t('ui:postOptions.wholesome_dinner.message', {
+        defaultValue: 'Fans love seeing the band actually getting along.'
+      })
     })
   },
   {
@@ -1048,8 +1105,10 @@ export const POST_OPTIONS = [
       platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
       followers: 300,
       loyaltyChange: 15,
-      message:
-        'You explained the use of mixolydian b6. The music nerds are ecstatic.'
+      message: i18n.t('ui:postOptions.music_theory_thread.message', {
+        defaultValue:
+          'You explained the use of mixolydian b6. The music nerds are ecstatic.'
+      })
     })
   },
   {
@@ -1067,8 +1126,10 @@ export const POST_OPTIONS = [
           platform: SOCIAL_PLATFORMS.TIKTOK.id,
           followers: 4000,
           controversyChange: 20,
-          message:
-            'It went viral instantly. The gossip channels are covering it.'
+          message: i18n.t('ui:postOptions.drama_leaked_dms.successMessage', {
+            defaultValue:
+              'It went viral instantly. The gossip channels are covering it.'
+          })
         }
       } else {
         return {
@@ -1078,7 +1139,9 @@ export const POST_OPTIONS = [
           followers: -1000,
           controversyChange: 40,
           harmonyChange: -20,
-          message: 'It backfired. You look petty and everyone hates it.'
+          message: i18n.t('ui:postOptions.drama_leaked_dms.failMessage', {
+            defaultValue: 'It backfired. You look petty and everyone hates it.'
+          })
         }
       }
     }

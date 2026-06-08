@@ -809,6 +809,7 @@ const dependenciesByEntry = new Map()
 const usedByByEntry = new Map()
 const usedByTestsByEntry = new Map()
 const referencedByLocalByEntry = new Map()
+const referencedByByEntry = new Map()
 const referencedInFileEntries = new Set()
 const importsByFile = new Map()
 
@@ -856,11 +857,40 @@ function registerLocalEntry(entry, sym, decl) {
   }
 }
 
+// Resolves an export-star re-exported name referenced inside the re-exporting
+// module itself. `export * from './npc'` brings `CharacterProfile` into
+// game.d.ts's scope, but getSymbolAtLocation on such a reference returns a
+// transient merged symbol with no declarations, so the normal resolution path
+// fails. The name IS a module export of the referencing file, so re-resolving
+// through that module's export table recovers the real declaration (and alias
+// chain) — without this, ambient `.d.ts` types used only as field/payload
+// types look like orphans.
+function resolveViaModuleExports(node) {
+  if (!ts.isIdentifier(node)) return undefined
+  const refModuleSym = checker.getSymbolAtLocation(node.getSourceFile())
+  if (!refModuleSym) return undefined
+  const exp = checker
+    .getExportsOfModule(refModuleSym)
+    .find(s => s.escapedName === node.escapedText)
+  if (!exp) return undefined
+  const resolved = resolveAlias(checker, exp)
+  return resolved.valueDeclaration ?? resolved.declarations?.[0]
+}
+
 function targetEntriesForNode(node, importedName) {
   const sym = checker.getSymbolAtLocation(node)
   if (!sym) return []
   const resolved = resolveAlias(checker, sym)
-  const decl = resolved.valueDeclaration ?? resolved.declarations?.[0]
+  let decl = resolved.valueDeclaration ?? resolved.declarations?.[0]
+  // Only the export-star "transient merged symbol" case has no declaration at
+  // all; fall back to module-export resolution there. A reference that already
+  // resolved to a declaration outside src/ (lib types like `Record`/`Promise`,
+  // external deps) is a real non-local symbol — re-resolving it would never
+  // find a local entry and would pay getExportsOfModule().find() on every such
+  // reference, so skip it.
+  if (!decl) {
+    decl = resolveViaModuleExports(node)
+  }
   if (!decl) return []
   const declFile = normalizePath(decl.getSourceFile().fileName)
   if (!isUnderSrc(declFile)) return []
@@ -893,6 +923,32 @@ function addReferencedByLocal(entry, reference) {
   if (!referencedByLocalByEntry.has(entry))
     referencedByLocalByEntry.set(entry, new Map())
   referencedByLocalByEntry.get(entry).set(JSON.stringify(reference), reference)
+}
+
+function addReferencedBy(entry, reference) {
+  if (!referencedByByEntry.has(entry))
+    referencedByByEntry.set(entry, new Map())
+  referencedByByEntry.get(entry).set(JSON.stringify(reference), reference)
+}
+
+// True when `filePath` already imports `targetEntry` (under any local alias).
+// The import pass records usedBy/usedByTests keyed by the consuming file path
+// regardless of import alias, so this reliably distinguishes a genuine
+// import-backed cross-file use from a non-import reference.
+function fileImportsTarget(targetEntry, filePath) {
+  const usedBy = usedByByEntry.get(targetEntry)
+  if (usedBy) {
+    for (const usage of usedBy.values()) {
+      if (usage.path === filePath) return true
+    }
+  }
+  const usedByTests = usedByTestsByEntry.get(targetEntry)
+  if (usedByTests) {
+    for (const usage of usedByTests.values()) {
+      if (usage.path === filePath) return true
+    }
+  }
+  return false
 }
 
 function addFileImport(filePath, importedName) {
@@ -1177,6 +1233,20 @@ function collectDeclarationDependencies({ entry, decl }) {
           path: entry.path,
           symbol: entry.name
         })
+      } else if (!fileImportsTarget(target, entry.path)) {
+        // Cross-file reference that no `import` of this symbol backs. Two real
+        // cases produce these and the import-only `usedBy` pass misses both,
+        // causing false orphan signals:
+        //   1. Ambient `.d.ts` type usage — a type declared in one declaration
+        //      file used as a field/payload type in another (e.g. GameState's
+        //      `npcs: Record<string, CharacterProfile>`) without an import.
+        //   2. Namespace-member access — `import * as ns` then `ns.foo()`,
+        //      where the import binds `ns`, not `foo`.
+        // Record the inverse edge so the symbol is not mistaken for an orphan.
+        addReferencedBy(target, {
+          path: entry.path,
+          symbol: entry.name
+        })
       }
     }
   }
@@ -1289,6 +1359,13 @@ for (const [entry, referenceByKey] of referencedByLocalByEntry) {
     localReferenceSortKey(a).localeCompare(localReferenceSortKey(b))
   )
   if (sorted.length > 0) entry.referencedByLocal = sorted
+}
+
+for (const [entry, referenceByKey] of referencedByByEntry) {
+  const sorted = Array.from(referenceByKey.values()).sort((a, b) =>
+    localReferenceSortKey(a).localeCompare(localReferenceSortKey(b))
+  )
+  if (sorted.length > 0) entry.referencedBy = sorted
 }
 
 // ---------------------------------------------------------------------------
@@ -1525,7 +1602,7 @@ for (const entries of Object.values(knownSymbols)) {
 }
 
 const meta = {
-  schemaVersion: 3,
+  schemaVersion: 4,
   guidePath: 'docs/agent-symbols-guide.md',
   sourceHash: sourceHash(programFiles),
   description:
@@ -1589,8 +1666,10 @@ const meta = {
       'Local exported symbols this declaration calls, constructs, renders, or references by name.',
     referencedByLocal:
       'Same-file exported declarations that call, construct, render, or reference this symbol by name (e.g. dispatch-table membership).',
+    referencedBy:
+      'Cross-file exported declarations that reference this symbol WITHOUT importing it — ambient `.d.ts` type usage (a type used as a field/payload type in another declaration file) and namespace-member access (`import * as ns; ns.foo()`). These are invisible to the import-based usedBy pass, so they are tracked here to prevent false orphan signals.',
     referencedInFile:
-      'True when the symbol is referenced anywhere in its own file (including from module-private helpers) outside its own declaration; absence of usedBy/usedByTests/referencedByLocal/referencedInFile means truly unreferenced.',
+      'True when the symbol is referenced anywhere in its own file (including from module-private helpers) outside its own declaration; absence of usedBy/usedByTests/referencedBy/referencedByLocal/referencedInFile means truly unreferenced.',
     usedBy:
       'Production files that import this symbol (static imports and resolved dynamic `import()` calls; the latter carry `dynamic: true`).',
     usedByTests:
