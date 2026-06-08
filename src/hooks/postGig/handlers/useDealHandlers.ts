@@ -64,6 +64,7 @@ export function buildAcceptDealQuestEvents(params: {
   return events
 }
 
+/** Props for {@link useDealHandlers}: player/social state, translator, and dispatchers. */
 export interface UseDealHandlersProps {
   player: GameState['player']
   social: GameState['social']
@@ -71,6 +72,11 @@ export interface UseDealHandlersProps {
   dispatchers: HandlerDispatchers
 }
 
+/**
+ * Builds the brand-deal handlers: `handleAcceptDeal` (applies money/band/social
+ * effects + quest events, then completes the phase) and `handleRejectDeals`
+ * (clears offers and completes the phase).
+ */
 export function useDealHandlers({
   player,
   social,

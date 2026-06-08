@@ -1,6 +1,7 @@
 import type { GameState, PostGigSummary, Venue, PostResult } from '../../types'
 import type { Platform, SocialPostOption } from '../../types/social'
 
+/** Inputs to `calculatePostGigStateUpdates` — the selected post plus the state slices and RNG value it resolves against. */
 export type CalculatePostGigStateParams = {
   option: SocialPostOption
   player: GameState['player']
@@ -12,10 +13,12 @@ export type CalculatePostGigStateParams = {
   secureRandomValue?: number
 }
 
+/** Result of resolving a spin-story money effect: either no-op or the clamped next money + applied delta. */
 export type SpinStoryMoneyUpdate =
   | { success: false }
   | { success: true; nextMoney: number; appliedDelta: number }
 
+/** A fully-resolved social-post outcome: the base `PostResult` plus the concrete effect deltas applied this post. */
 export type ResolvedPostResult = PostResult & {
   platform: Platform
   success: boolean

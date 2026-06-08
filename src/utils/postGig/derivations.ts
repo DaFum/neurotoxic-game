@@ -7,6 +7,10 @@ import type { GameState } from '../../types'
 import type { CityTraitState } from '../../types/game'
 import type { AssetModifiers } from '../../types/assets'
 
+/**
+ * Derives the post-gig context for the current venue: gig financials, generated
+ * post options, and performance-adjusted state used to seed the post-gig phase.
+ */
 export const deriveGigContext = (
   currentGig: GameState['currentGig'],
   social: GameState['social'],

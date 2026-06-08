@@ -4,6 +4,7 @@ import {
   createContext,
   use,
   useReducer,
+  useCallback,
   useEffect,
   useRef
 } from 'react'
@@ -62,6 +63,16 @@ const getStableGameDispatchContext =
 
 const GameStateContext = getStableGameStateContext()
 const GameDispatchContext = getStableGameDispatchContext()
+
+const IS_DEV =
+  typeof import.meta !== 'undefined' &&
+  !!(import.meta as unknown as Record<string, unknown>).env &&
+  !!(
+    (import.meta as unknown as Record<string, unknown>).env as Record<
+      string,
+      unknown
+    >
+  ).DEV
 
 function useRequiredContext<T>(context: Context<T | null>, name: string): T {
   const value = use(context)
@@ -127,7 +138,21 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
     tRef.current = t
   }, [t])
 
-  const [state, dispatch] = useReducer(gameReducer, undefined, initGameState)
+  const [state, rawDispatch] = useReducer(gameReducer, undefined, initGameState)
+
+  // Dev-only dispatch logging middleware: records each action type before it
+  // reduces. Gated by the logger level (`debug` is suppressed at INFO and
+  // above), so it is silent in production and changes no behavior — it only
+  // forwards to the underlying reducer dispatch with a stable identity.
+  const dispatch = useCallback<typeof rawDispatch>(
+    action => {
+      if (IS_DEV && action && typeof action === 'object' && Object.hasOwn(action, 'type')) {
+        logger.debug('GameState', 'dispatch ' + String(action.type))
+      }
+      rawDispatch(action)
+    },
+    []
+  )
 
   // Clean up injection marker after mount (deferred from initGameState to
   // survive React StrictMode's double-invocation of lazy initialisers).
@@ -191,16 +216,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
 
   useEffect(() => {
     // Safely check for DEV environment to avoid crashes in test runners that don't polyfill import.meta.env
-    const isDev =
-      typeof import.meta !== 'undefined' &&
-      (import.meta as unknown as Record<string, unknown>).env &&
-      (
-        (import.meta as unknown as Record<string, unknown>).env as Record<
-          string,
-          unknown
-        >
-      ).DEV
-    if (isDev) {
+    if (IS_DEV) {
       Object.defineProperty(window, 'gameState', {
         configurable: true,
         get: () => ({ ...stateRef.current, ...dispatchValueRef.current })

@@ -147,6 +147,7 @@ export function applySocialPostResult(params: {
   }
 }
 
+/** Props for {@link useSocialPostHandler}: state slices, gig context, the processing guard, translator, and dispatchers. */
 export interface UseSocialPostHandlerProps {
   player: GameState['player']
   band: GameState['band']
@@ -160,6 +161,11 @@ export interface UseSocialPostHandlerProps {
   dispatchers: HandlerDispatchers
 }
 
+/**
+ * Builds the social-post selection handler: computes the post outcome via
+ * `calculatePostGigStateUpdates`, applies it through {@link applySocialPostResult},
+ * and routes to the DEALS or COMPLETE phase. Guarded against re-entrancy.
+ */
 export function useSocialPostHandler({
   player,
   band,

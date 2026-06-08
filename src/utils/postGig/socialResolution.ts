@@ -27,6 +27,11 @@ import type { CalculatePostGigStateParams, ResolvedPostResult } from './types'
 const isSocialPlatformId = (value: unknown): value is Platform =>
   typeof value === 'string' && SOCIAL_PLATFORM_IDS.has(value as Platform)
 
+/**
+ * Applies a money delta to a (finite-coerced) balance, clamping the result to
+ * the valid player-money range.
+ * @returns The clamped next money and the delta actually applied after clamping.
+ */
 export const applyClampedMoneyDelta = (
   currentMoney: number,
   delta: number
@@ -155,6 +160,12 @@ const normalizeResolvedPost = (
   }
 }
 
+/**
+ * Resolves a selected social post into the full set of post-gig state updates:
+ * the final result, band/social/player deltas (clamped), applied harmony/money
+ * deltas, and whether band updates are needed. Pure — owns the math the
+ * `useSocialPostHandler` orchestration applies.
+ */
 export const calculatePostGigStateUpdates = (
   params: CalculatePostGigStateParams
 ) => {
