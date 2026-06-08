@@ -151,7 +151,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       }
       rawDispatch(action)
     },
-    [rawDispatch]
+    []
   )
 
   // Clean up injection marker after mount (deferred from initGameState to
