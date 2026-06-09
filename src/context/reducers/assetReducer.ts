@@ -26,7 +26,6 @@ import {
   hasActiveAssetAcquisition
 } from '../../utils/assetSelectors'
 import { clampPlayerMoney, finiteNumberOr } from '../../utils/gameState'
-import { logger } from '../../utils/logger'
 import { QuestEvents } from '../../utils/questProgress'
 import {
   createAssetAcquiredQuestEvent,
@@ -34,8 +33,6 @@ import {
   createAssetModuleInstalledQuestEvent,
   createAssetRepairedQuestEvent
 } from '../../quests/producers/assetQuestEvents'
-
-const IS_DEV = import.meta.env.DEV
 
 /**
  * Adds a long-term chassis asset purchased with cash or a validated loan.
@@ -341,7 +338,8 @@ export const handleUpgradeChassisTier = (
   // Early-return when the target asset doesn't exist. Without this guard the
   // reducer would still spread state and rebuild player.money (with
   // upgradeCost staying at 0 — no functional damage today, but it wastes an
-  // allocation and could mask a buggy dispatch from upstream).
+  // allocation and could mask a buggy dispatch from upstream). Note that to maintain
+  // reducer purity, we do not log errors here; validation belongs in the action creator.
   // ⚡ BOLT OPTIMIZATION: Replaced O(N) array methods (.find, .map)
   // with procedural loops to avoid intermediate array allocations and reduce GC pressure.
   let targetAsset: LongTermAsset | null = null
@@ -354,15 +352,7 @@ export const handleUpgradeChassisTier = (
       break
     }
   }
-  if (!targetAsset) {
-    if (IS_DEV) {
-      logger.error(
-        'AssetReducer',
-        `Attempted to upgrade chassis tier for asset ${assetId} but it doesn't exist.`
-      )
-    }
-    return state
-  }
+  if (!targetAsset) return state
 
   if (targetTier <= targetAsset.chassisTier) return state
   const currentConfigTier =
