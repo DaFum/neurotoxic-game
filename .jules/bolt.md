@@ -189,3 +189,7 @@
 
 **Learning:** Using `Object.values(obj).reduce(...)` in inline selector functions or asset reducers (like when computing total debt or filtering foreclosed liabilities) creates intermediate array allocations on every invocation, causing significant GC pressure in hot paths.
 **Action:** Replace `Object.values()` and chained array methods with single-pass `for...in` loops (guarded by `Object.hasOwn()`) to directly calculate aggregations and filter objects without creating intermediate arrays.
+
+## 2024-11-15 - Optimize O(N) Array.find inside a loop
+**Learning:** Performing an `Array.find` within a loop creates an O(N*M) time complexity trap, heavily increasing CPU time in hot reducers when large lists of events and assets interact.
+**Action:** Always pre-compute a lookup Map or Set in O(N+M) time before iterating, avoiding nested loops and duplicate `find` iterations for repeated keys.

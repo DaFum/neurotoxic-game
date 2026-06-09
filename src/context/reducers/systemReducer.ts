@@ -1986,13 +1986,17 @@ export const handleAdvanceDay = (
         }
       }
       const emittedRisk = new Set<string>()
+      const assetKinds = new Map<string, string>()
+      if (nextStatePre.assets) {
+        for (const asset of nextStatePre.assets) {
+          assetKinds.set(asset.id, asset.kind)
+        }
+      }
       for (const ev of events) {
         const dedupKey = `${ev.assetId}:${ev.eventType}`
         if (emittedRisk.has(dedupKey)) continue
         emittedRisk.add(dedupKey)
-        const assetKind =
-          nextStatePre.assets?.find(asset => asset.id === ev.assetId)?.kind ??
-          'unknown'
+        const assetKind = assetKinds.get(ev.assetId) ?? 'unknown'
         nextStatePre = QuestEvents.emit(
           nextStatePre,
           createAssetRiskTriggeredQuestEvent({
