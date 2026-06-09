@@ -14,7 +14,8 @@ import {
   checkVenueAccess,
   checkTravelPrerequisites,
   checkTravelResources,
-  getLocationName as getLocationNameUtil
+  getLocationName as getLocationNameUtil,
+  getTravelArrivalUpdates
 } from '../../utils/travelUtils'
 import { calculateTravelCostsAndImpact } from '../../utils/travelUtils'
 import { getActiveAssetModifiers } from '../../utils/assetSelectors'
@@ -107,6 +108,34 @@ export const useTravelActions = ({
       const node = target
 
       try {
+        const currentStartNode =
+          refs.gameMapRef.current?.nodes[refs.playerRef.current.currentNodeId]
+        const { fuelLiters, totalCost } = calculateTravelCostsAndImpact(
+          node,
+          currentStartNode,
+          refs.playerRef.current,
+          refs.bandRef.current,
+          refs.socialRef.current,
+          refs.assetsRef.current,
+          refs.liabilitiesRef.current,
+          getActiveAssetModifiers(refs.assetsRef.current)
+        )
+
+        const updates = getTravelArrivalUpdates({
+          player: refs.playerRef.current,
+          band: refs.bandRef.current,
+          node,
+          fuelLiters,
+          totalCost,
+          assetModifiers: getActiveAssetModifiers(refs.assetsRef.current)
+        })
+
+        params.updatePlayer(updates.nextPlayer)
+        if (updates.nextBand) {
+          params.updateBand(updates.nextBand)
+        }
+        params.advanceDay()
+
         const travelEventActive = processTravelEvents(
           node,
           params.triggerEvent,
@@ -166,38 +195,6 @@ export const useTravelActions = ({
         setters.setIsTraveling(true)
         setters.setTravelTarget(node)
 
-        const currentStartNode =
-          refs.gameMapRef.current.nodes[refs.playerRef.current.currentNodeId]
-        const { fuelLiters, totalCost } = calculateTravelCostsAndImpact(
-          node,
-          currentStartNode,
-          refs.playerRef.current,
-          refs.bandRef.current,
-          refs.socialRef.current,
-          refs.assetsRef.current,
-          refs.liabilitiesRef.current,
-          getActiveAssetModifiers(refs.assetsRef.current)
-        )
-
-        params.updatePlayer({
-          money: Math.max(0, (refs.playerRef.current.money ?? 0) - totalCost),
-          van: {
-            ...refs.playerRef.current.van,
-            fuel: Math.max(
-              0,
-              (refs.playerRef.current.van?.fuel ?? 0) - fuelLiters
-            )
-          },
-          location: getLocationName(
-            node.venue?.name,
-            normalizeVenueId(node.venue)
-          ),
-          currentNodeId: node.id,
-          totalTravels: (refs.playerRef.current.totalTravels ?? 0) + 1
-        })
-
-        params.advanceDay()
-
         refs.failsafeTimeoutRef.current = setTimeout(() => {
           if (!refs.travelCompletedRef.current) {
             logger.warn(
@@ -224,7 +221,6 @@ export const useTravelActions = ({
       setters,
       refs,
       params,
-      getLocationName,
       onTravelComplete
     ]
   )
