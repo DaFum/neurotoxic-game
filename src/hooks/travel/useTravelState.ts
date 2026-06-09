@@ -59,34 +59,42 @@ export const useTravelState = (params: TravelLogicParams) => {
     params.checkRivalEncounter
   ])
 
+  // Bundle objects must keep a stable identity across renders so consumer
+  // hooks (useTravelActions) can list `refs`/`setters` in dependency arrays
+  // without churning their callbacks. Every member is itself stable (useRef
+  // objects, useState setters), so capturing the bundle once is safe.
+  const refs = useRef<TravelRefsBundle>({
+    isTravelingRef,
+    travelCompletedRef,
+    pendingTravelNodeRef,
+    pendingTimeoutRef,
+    failsafeTimeoutRef,
+    timeoutRef,
+    playerRef,
+    bandRef,
+    assetsRef,
+    liabilitiesRef,
+    socialRef,
+    gameMapRef,
+    reputationByRegionRef,
+    venueBlacklistRef,
+    moveRivalBandRef,
+    checkRivalEncounterRef
+  }).current
+
+  const setters = useRef<TravelSettersBundle>({
+    setIsTraveling,
+    setTravelTarget,
+    setPendingTravelNode
+  }).current
+
   return {
-    refs: {
-      isTravelingRef,
-      travelCompletedRef,
-      pendingTravelNodeRef,
-      pendingTimeoutRef,
-      failsafeTimeoutRef,
-      timeoutRef,
-      playerRef,
-      bandRef,
-      assetsRef,
-      liabilitiesRef,
-      socialRef,
-      gameMapRef,
-      reputationByRegionRef,
-      venueBlacklistRef,
-      moveRivalBandRef,
-      checkRivalEncounterRef
-    } as TravelRefsBundle,
+    refs,
     state: {
       isTraveling,
       travelTarget,
       pendingTravelNode
     } as TravelStateBundle,
-    setters: {
-      setIsTraveling,
-      setTravelTarget,
-      setPendingTravelNode
-    } as TravelSettersBundle
+    setters
   }
 }
