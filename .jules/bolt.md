@@ -189,3 +189,8 @@
 
 **Learning:** Using `Object.values(obj).reduce(...)` in inline selector functions or asset reducers (like when computing total debt or filtering foreclosed liabilities) creates intermediate array allocations on every invocation, causing significant GC pressure in hot paths.
 **Action:** Replace `Object.values()` and chained array methods with single-pass `for...in` loops (guarded by `Object.hasOwn()`) to directly calculate aggregations and filter objects without creating intermediate arrays.
+
+## 2024-06-25 - Batch Network Requests in High-Frequency Paths
+
+**Learning:** Mapping over an array to create multiple independent HTTP fetch requests for state submission (like per-song leaderboard scores in `submitLeaderboardScores`) causes an N+1 problem. This introduces significant network overhead, backend load, and increased latency as each promise initiates a separate connection.
+**Action:** When a high-frequency path or post-action sync requires multiple submissions to the same endpoint, batch the payloads into a single array and send them via one network request.

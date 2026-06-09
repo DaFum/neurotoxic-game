@@ -283,9 +283,13 @@ describe('PostGig Leaderboard Submission', () => {
           body: JSON.stringify({
             playerId: 'user-uuid',
             playerName: 'TestUser',
-            songId: 'slug-01',
-            score: 12345,
-            accuracy: 95
+            scores: [
+              {
+                songId: 'slug-01',
+                score: 12345,
+                accuracy: 95
+              }
+            ]
           })
         })
       )
@@ -333,9 +337,13 @@ describe('PostGig Leaderboard Submission', () => {
           body: JSON.stringify({
             playerId: 'user-uuid',
             playerName: 'TestUser',
-            songId: 'slug-neurotoxic',
-            score: 12345,
-            accuracy: 95
+            scores: [
+              {
+                songId: 'slug-neurotoxic',
+                score: 12345,
+                accuracy: 95
+              }
+            ]
           })
         })
       )
@@ -407,6 +415,7 @@ describe('PostGig Leaderboard Submission', () => {
   })
 
   it('submits mixed songStats list, processing knowns and skipping unknowns', async () => {
+    global.fetch.mockClear();
     const base = getBaseState()
     useGameState.mockReturnValue({
       ...base,
@@ -477,7 +486,7 @@ describe('PostGig Leaderboard Submission', () => {
       expect(global.fetch).toHaveBeenCalledTimes(1)
       expect(mocks.mockLoggerError).toHaveBeenCalledWith(
         'PostGig',
-        expect.stringContaining('Score submit failed for slug-01'),
+        expect.stringContaining('Batch score submit failed'),
         expect.anything()
       )
     })
@@ -508,7 +517,7 @@ describe('PostGig Leaderboard Submission', () => {
       expect(global.fetch).toHaveBeenCalledTimes(1)
       expect(mocks.mockLoggerError).toHaveBeenCalledWith(
         'PostGig',
-        expect.stringContaining('Score submit failed for slug-01'),
+        expect.stringContaining('Batch score submit failed'),
         expect.any(Error)
       )
     })
@@ -540,11 +549,10 @@ describe('PostGig Leaderboard Submission', () => {
       await screen.findByRole('button', { name: /back to tour/i })
     )
 
-    // Should fetch twice, one for each song
+    // Should fetch once for both songs
     await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledTimes(2)
+      expect(mockFetch).toHaveBeenCalledTimes(1)
 
-      // Song 1
       expect(mockFetch).toHaveBeenCalledWith(
         '/api/leaderboard/song',
         expect.objectContaining({
@@ -552,24 +560,18 @@ describe('PostGig Leaderboard Submission', () => {
           body: JSON.stringify({
             playerId: 'user-uuid',
             playerName: 'TestUser',
-            songId: 'slug-01',
-            score: 10000,
-            accuracy: 80
-          })
-        })
-      )
-
-      // Song 2
-      expect(mockFetch).toHaveBeenCalledWith(
-        '/api/leaderboard/song',
-        expect.objectContaining({
-          method: 'POST',
-          body: JSON.stringify({
-            playerId: 'user-uuid',
-            playerName: 'TestUser',
-            songId: 'slug-neurotoxic',
-            score: 10000,
-            accuracy: 100
+            scores: [
+              {
+                songId: 'slug-01',
+                score: 10000,
+                accuracy: 80
+              },
+              {
+                songId: 'slug-neurotoxic',
+                score: 10000,
+                accuracy: 100
+              }
+            ]
           })
         })
       )

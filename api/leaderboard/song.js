@@ -43,21 +43,21 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Invalid payload structure' })
       }
 
-      const { playerId, playerName, songId, score } = req.body
+      const { playerId, playerName, songId, score, scores } = req.body
 
       // Basic Type Checks
       if (
         typeof playerId !== 'string' ||
-        typeof playerName !== 'string' ||
-        typeof songId !== 'string' ||
-        typeof score !== 'number'
+        typeof playerName !== 'string'
       ) {
         return res.status(400).json({ error: 'Missing required fields' })
       }
 
-      // Detailed Validation
-      if (!Number.isFinite(score) || score < 0 || score > 10000000) {
-        return res.status(400).json({ error: 'Invalid score value' })
+      const hasSingle = typeof songId === 'string' && typeof score === 'number'
+      const hasScores = Array.isArray(scores)
+
+      if (!hasSingle && !hasScores) {
+        return res.status(400).json({ error: 'Missing required fields' })
       }
 
       if (playerName.length > 100) {
@@ -73,23 +73,45 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Invalid playerId format' })
       }
 
-      if (
-        !/^[a-zA-Z0-9_-]+$/.test(songId) ||
-        songId.length > MAX_SONG_ID_LENGTH
-      ) {
-        return res.status(400).json({ error: 'Invalid songId format' })
+      const itemsToProcess = hasScores ? scores : [{ songId, score }]
+
+      if (itemsToProcess.length === 0) {
+        return res.status(400).json({ error: 'No scores provided' })
+      }
+
+      // Validate all items before processing
+      for (let i = 0; i < itemsToProcess.length; i++) {
+        const item = itemsToProcess[i]
+        if (!item || typeof item !== 'object') {
+          return res.status(400).json({ error: 'Invalid score item' })
+        }
+        if (typeof item.songId !== 'string' || typeof item.score !== 'number') {
+          return res.status(400).json({ error: 'Missing required fields' })
+        }
+        if (!Number.isFinite(item.score) || item.score < 0 || item.score > 10000000) {
+          return res.status(400).json({ error: 'Invalid score value' })
+        }
+        if (
+          !/^[a-zA-Z0-9_-]+$/.test(item.songId) ||
+          item.songId.length > MAX_SONG_ID_LENGTH
+        ) {
+          return res.status(400).json({ error: 'Invalid songId format' })
+        }
       }
 
       // v4: hSet accepts object
       await client.hSet('players', { [playerId]: trimmedName })
 
-      // Update score only if new score is greater (GT)
-      // v4: zAdd(key, { score, value }, { GT: true })
-      await client.zAdd(
-        `lb:song:${songId}`,
-        { score, value: playerId },
-        { GT: true }
-      )
+      const multi = client.multi()
+      for (let i = 0; i < itemsToProcess.length; i++) {
+        const item = itemsToProcess[i]
+        multi.zAdd(
+          `lb:song:${item.songId}`,
+          { score: item.score, value: playerId },
+          { GT: true }
+        )
+      }
+      await multi.exec()
 
       return res.status(200).json({ success: true })
     } catch (error) {
