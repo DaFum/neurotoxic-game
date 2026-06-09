@@ -84,7 +84,8 @@ export const useTravelEffects = ({
     addToast,
     saveGame,
     changeScene,
-    state.isTraveling
+    state.isTraveling,
+    refs.timeoutRef
   ])
 
   useEffect(() => {
@@ -102,5 +103,5 @@ export const useTravelEffects = ({
         refs.pendingTimeoutRef.current = null
       }
     }
-  }, [])
+  }, [refs.timeoutRef, refs.failsafeTimeoutRef, refs.pendingTimeoutRef])
 }
