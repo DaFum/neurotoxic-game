@@ -41,7 +41,7 @@ export const selectAssetSlotsMap = (
 export const selectAssetsMap = (
   state: Pick<GameState, 'assets'>
 ): ReadonlyMap<string, LongTermAsset> => {
-  const assets = state.assets ?? EMPTY_ASSETS
+  const assets = Array.isArray(state.assets) ? state.assets : EMPTY_ASSETS
   let cached = assetsMapCache.get(assets)
   if (!cached) {
     const map = new Map<string, LongTermAsset>()
