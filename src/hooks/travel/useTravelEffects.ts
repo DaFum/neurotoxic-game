@@ -19,7 +19,9 @@ export const useTravelEffects = ({
   params: TravelLogicParams
 }) => {
   useEffect(() => {
-    if (!params.gameMap || state.isTraveling || !params.player.currentNodeId) {
+    const { gameMap, player, band, addToast, saveGame, changeScene } = params
+
+    if (!gameMap || state.isTraveling || !player.currentNodeId) {
       if (refs.timeoutRef.current) {
         clearTimeout(refs.timeoutRef.current)
         refs.timeoutRef.current = null
@@ -27,10 +29,10 @@ export const useTravelEffects = ({
       return
     }
 
-    if (checkSoftlock(params.gameMap, params.player, params.band)) {
+    if (checkSoftlock(gameMap, player, band)) {
       if (!refs.timeoutRef.current) {
         logger.error('TravelLogic', 'GAME OVER: Stranded')
-        params.addToast(
+        addToast(
           i18n.t('ui:travel.errors.gameOverStranded', {
             defaultValue:
               'GAME OVER: Stranded! Cannot travel and cannot afford fuel.'
@@ -38,8 +40,8 @@ export const useTravelEffects = ({
           'error'
         )
         refs.timeoutRef.current = setTimeout(() => {
-          params.saveGame(false)
-          params.changeScene(GAME_PHASES.GAMEOVER)
+          saveGame(false)
+          changeScene(GAME_PHASES.GAMEOVER)
         }, 3000)
       }
     } else {
@@ -55,7 +57,7 @@ export const useTravelEffects = ({
         refs.timeoutRef.current = null
       }
     }
-  }, [params, state.isTraveling, refs.timeoutRef])
+  }, [params, state.isTraveling])
 
   useEffect(() => {
     return () => {
@@ -72,5 +74,5 @@ export const useTravelEffects = ({
         refs.pendingTimeoutRef.current = null
       }
     }
-  }, [refs.timeoutRef, refs.failsafeTimeoutRef, refs.pendingTimeoutRef])
+  }, [])
 }
