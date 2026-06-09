@@ -78,6 +78,9 @@ export default async function handler(req, res) {
       if (itemsToProcess.length === 0) {
         return res.status(400).json({ error: 'No scores provided' })
       }
+      if (itemsToProcess.length > 100) {
+        return res.status(400).json({ error: 'Batch size exceeds limit of 100' })
+      }
 
       // Validate all items before processing
       for (let i = 0; i < itemsToProcess.length; i++) {

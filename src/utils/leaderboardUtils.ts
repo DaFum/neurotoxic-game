@@ -60,7 +60,7 @@ export const submitLeaderboardScores = async ({
   }
 
   // Collect all valid scores to submit in a single batch
-  const scoresToSubmit: { songId: string; score: number; accuracy: number }[] = []
+  const scoresToSubmit: SongStat[] = []
   for (let i = 0; i < songsToSubmit.length; i++) {
     const songData = songsToSubmit[i]
     if (songData) {
