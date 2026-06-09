@@ -314,3 +314,57 @@ export const getTravelArrivalUpdates = ({
 
   return { nextPlayer, nextBand }
 }
+
+import { calculateTravelExpenses } from './economyEngine'
+import {
+  getTotalDailyObligations,
+  getActiveAssetModifiers
+} from './assetSelectors'
+import type { GameState, SocialState } from '../types'
+
+export interface TravelCostsParams {
+  node: MapNode
+  player: PlayerState
+  band: BandState
+  social: SocialState
+  assets: GameState['assets']
+  liabilities: GameState['liabilities']
+  assetModifiers: ReturnType<typeof getActiveAssetModifiers>
+}
+
+export interface TravelCostsResult {
+  dist: number
+  totalCost: number
+  fuelLiters: number
+  dailyCost: number
+  totalCashImpact: number
+}
+
+export function calculateTravelCostsAndImpact(
+  node: MapNode,
+  currentStartNode: MapNode | undefined,
+  player: PlayerState,
+  band: BandState,
+  social: SocialState,
+  assets: GameState['assets'],
+  liabilities: GameState['liabilities'],
+  assetModifiers: ReturnType<typeof getActiveAssetModifiers>
+): TravelCostsResult {
+  const { dist, totalCost, fuelLiters } = calculateTravelExpenses(
+    node,
+    currentStartNode,
+    player,
+    band,
+    assetModifiers
+  )
+  const dailyCost = getTotalDailyObligations({
+    player,
+    band,
+    social,
+    assets,
+    liabilities
+  } as GameState)
+  const totalCashImpact = totalCost + dailyCost
+
+  return { dist, totalCost, fuelLiters, dailyCost, totalCashImpact }
+}
