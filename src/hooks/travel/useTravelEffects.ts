@@ -18,9 +18,14 @@ export const useTravelEffects = ({
   state: TravelStateBundle
   params: TravelLogicParams
 }) => {
-  useEffect(() => {
-    const { gameMap, player, band, addToast, saveGame, changeScene } = params
+  // Destructure params into granular values so the softlock effect depends on
+  // the specific state slices it reads instead of the whole `params` object
+  // (which changes reference every render). Depending on `params` would re-run
+  // this effect — and its cleanup — on every render, repeatedly clearing and
+  // rescheduling the game-over timeout so it would never fire.
+  const { gameMap, player, band, addToast, saveGame, changeScene } = params
 
+  useEffect(() => {
     if (!gameMap || state.isTraveling || !player.currentNodeId) {
       if (refs.timeoutRef.current) {
         clearTimeout(refs.timeoutRef.current)
@@ -57,7 +62,15 @@ export const useTravelEffects = ({
         refs.timeoutRef.current = null
       }
     }
-  }, [params, state.isTraveling])
+  }, [
+    gameMap,
+    player,
+    band,
+    addToast,
+    saveGame,
+    changeScene,
+    state.isTraveling
+  ])
 
   useEffect(() => {
     return () => {
