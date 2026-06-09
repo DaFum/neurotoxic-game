@@ -26,6 +26,7 @@ import {
   hasActiveAssetAcquisition
 } from '../../utils/assetSelectors'
 import { clampPlayerMoney, finiteNumberOr } from '../../utils/gameState'
+import { logger } from '../../utils/logger'
 import { QuestEvents } from '../../utils/questProgress'
 import {
   createAssetAcquiredQuestEvent,
@@ -33,6 +34,8 @@ import {
   createAssetModuleInstalledQuestEvent,
   createAssetRepairedQuestEvent
 } from '../../quests/producers/assetQuestEvents'
+
+const IS_DEV = import.meta.env.DEV
 
 /**
  * Adds a long-term chassis asset purchased with cash or a validated loan.
@@ -351,7 +354,15 @@ export const handleUpgradeChassisTier = (
       break
     }
   }
-  if (!targetAsset) return state
+  if (!targetAsset) {
+    if (IS_DEV) {
+      logger.error(
+        'AssetReducer',
+        `Attempted to upgrade chassis tier for asset ${assetId} but it doesn't exist.`
+      )
+    }
+    return state
+  }
 
   if (targetTier <= targetAsset.chassisTier) return state
   const currentConfigTier =
