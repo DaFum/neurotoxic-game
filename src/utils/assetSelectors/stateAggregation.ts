@@ -68,7 +68,7 @@ export const getActiveAssetModifiers = (
  * @param state - Current game state containing player, band, social, asset, and liability slices.
  * @returns Guaranteed daily cost plus asset upkeep and liability payments, minus asset revenue.
  */
-export const getTotalDailyObligations = (state: Pick<GameState, 'player' | 'band' | 'social' | 'assets' | 'liabilities'>): number => {
+export const getTotalDailyObligations = (state: GameState): number => {
   const base = calculateGuaranteedDailyCost(
     state.player,
     state.band,

@@ -14,8 +14,7 @@ import {
   checkVenueAccess,
   checkTravelPrerequisites,
   checkTravelResources,
-  getLocationName as getLocationNameUtil,
-  getTravelArrivalUpdates
+  getLocationName as getLocationNameUtil
 } from '../../utils/travelUtils'
 import { calculateTravelCostsAndImpact } from '../../utils/travelUtils'
 import { getActiveAssetModifiers } from '../../utils/assetSelectors'
@@ -24,7 +23,6 @@ import {
   getNodeVisibility as getNodeVisibilityUtil,
   normalizeVenueId
 } from '../../utils/mapUtils'
-import { audioService } from '../../utils/audio/audioEngine'
 import { translateLocation } from '../../utils/locationI18n'
 import { createTravelCompletedQuestEvent } from '../../quests/producers/travelQuestEvents'
 import type { MapNode } from '../../types'
@@ -69,7 +67,7 @@ export const useTravelActions = ({
         params.changeScene(result.scene)
       }
     },
-    [params.updateBand, params.updatePlayer, params.triggerEvent, params.startGig, params.addToast, params.onShowHQ, params.onShowSupplyStop, params.changeScene, refs.playerRef, refs.bandRef]
+    [params, refs.playerRef, refs.bandRef]
   )
 
   const onTravelComplete = useCallback(
@@ -109,34 +107,6 @@ export const useTravelActions = ({
       const node = target
 
       try {
-        const currentStartNode =
-          refs.gameMapRef.current?.nodes[refs.playerRef.current.currentNodeId]
-        const { fuelLiters, totalCost } = calculateTravelCostsAndImpact(
-          node,
-          currentStartNode,
-          refs.playerRef.current,
-          refs.bandRef.current,
-          refs.socialRef.current,
-          refs.assetsRef.current,
-          refs.liabilitiesRef.current,
-          getActiveAssetModifiers(refs.assetsRef.current)
-        )
-
-        const updates = getTravelArrivalUpdates({
-          player: refs.playerRef.current,
-          band: refs.bandRef.current,
-          node,
-          fuelLiters,
-          totalCost,
-          assetModifiers: getActiveAssetModifiers(refs.assetsRef.current)
-        })
-
-        params.updatePlayer(updates.nextPlayer)
-        if (updates.nextBand) {
-          params.updateBand(updates.nextBand)
-        }
-        params.advanceDay()
-
         const travelEventActive = processTravelEvents(
           node,
           params.triggerEvent,
@@ -153,7 +123,7 @@ export const useTravelActions = ({
         if (params.applyQuestEvent) {
           params.applyQuestEvent(
             createTravelCompletedQuestEvent({
-              region: updates.nextPlayer.location ?? ''
+              region: refs.playerRef.current.location ?? ''
             })
           )
         }
@@ -168,7 +138,7 @@ export const useTravelActions = ({
         })
       }
     },
-    [setters, refs, params.updatePlayer, params.updateBand, params.advanceDay, params.triggerEvent, params.applyQuestEvent, params.saveGame, params.addToast, handleNodeArrivalCallback, state.travelTarget]
+    [setters, refs, params, handleNodeArrivalCallback, state.travelTarget]
   )
 
   const clearPendingTravel = useCallback(() => {
@@ -187,31 +157,14 @@ export const useTravelActions = ({
       if (!refs.gameMapRef.current) return
 
       try {
-        audioService
-          .ensureAudioContext()
-          .then(isReady => {
-            if (!isReady) {
-              logger.warn('useTravelLogic', 'Travel audio context unavailable')
-              return
-            }
-            try {
-              audioService.playSFX('travel')
-            } catch (error) {
-              logger.warn('useTravelLogic', 'Travel SFX playback failed', error)
-            }
-          })
-          .catch(error => {
-            logger.warn('useTravelLogic', 'ensureAudioContext failed', error)
-          })
+        refs.travelCompletedRef.current = false
+        setters.setIsTraveling(true)
+        setters.setTravelTarget(node)
 
         if (params.onStartTravelMinigame) {
           params.onStartTravelMinigame(node.id)
           return
         }
-
-        refs.travelCompletedRef.current = false
-        setters.setIsTraveling(true)
-        setters.setTravelTarget(node)
 
         refs.failsafeTimeoutRef.current = setTimeout(() => {
           if (!refs.travelCompletedRef.current) {
@@ -234,14 +187,7 @@ export const useTravelActions = ({
         setters.setTravelTarget(null)
       }
     },
-    [
-      clearPendingTravel,
-      setters,
-      refs,
-      params.onStartTravelMinigame,
-      params.addToast,
-      onTravelComplete
-    ]
+    [clearPendingTravel, setters, refs, params, onTravelComplete]
   )
 
   const handleTravel = useCallback(
@@ -267,7 +213,7 @@ export const useTravelActions = ({
       }
 
       if (node.id === player.currentNodeId) {
-        if (refs.pendingTravelNodeRef.current?.id === node.id) {
+        if (state.pendingTravelNode?.id === node.id) {
           clearPendingTravel()
         }
 
@@ -430,9 +376,9 @@ export const useTravelActions = ({
       }, 5000)
     },
     [
-      params.addToast,
-      params.onShowHQ,
+      params,
       refs,
+      state,
       startTravelSequence,
       clearPendingTravel,
       getLocationName,

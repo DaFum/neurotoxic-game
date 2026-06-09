@@ -363,7 +363,7 @@ export function calculateTravelCostsAndImpact(
     social,
     assets,
     liabilities
-  })
+  } as GameState)
   const totalCashImpact = totalCost + dailyCost
 
   return { dist, totalCost, fuelLiters, dailyCost, totalCashImpact }
