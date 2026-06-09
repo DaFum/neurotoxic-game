@@ -7,6 +7,20 @@ import type {
   TravelSettersBundle
 } from './types'
 
+/**
+ * Owns the travel hook's React state, refs, and setters.
+ *
+ * @remarks
+ * Initializes the `isTraveling`/`travelTarget`/`pendingTravelNode` state, the
+ * timeout/completion refs, and the param-mirror refs (kept in sync each render
+ * and via an effect). The returned `refs` and `setters` bundles are wrapped in
+ * `useRef` so they hold a stable object identity, letting consumer hooks list
+ * them in dependency arrays without re-creating their callbacks every render.
+ *
+ * @param params - Game state slices to mirror into refs.
+ * @returns `{ refs, state, setters }` — the shared ref bundle (stable),
+ * the reactive state snapshot, and the state setters (stable).
+ */
 export const useTravelState = (params: TravelLogicParams) => {
   const [isTraveling, setIsTraveling] = useState(false)
   const [travelTarget, setTravelTarget] = useState<MapNode | null>(null)

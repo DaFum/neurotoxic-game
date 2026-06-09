@@ -12,6 +12,20 @@ import { calcBaseBreakdownChance } from '../../utils/upgradeUtils'
 import { audioService } from '../../utils/audio/audioEngine'
 import type { VanMaintenanceParams } from './types'
 
+/**
+ * Provides the van refuel and repair handlers.
+ *
+ * @remarks
+ * `handleRefuel` fills the tank to `MAX_FUEL`; `handleRepair` restores condition
+ * to 100 and recomputes breakdown chance from installed upgrades. Both compute
+ * cost from the current value (refuel also applies active asset modifiers),
+ * no-op with an info toast when nothing is needed, reject with an error toast
+ * when the player can't afford it, clamp the resulting money with
+ * `clampPlayerMoney`, and play the `cash` SFX on success. Both are gated by
+ * `isTravelingRef` and do nothing while a trip is in progress.
+ *
+ * @returns `{ handleRefuel, handleRepair }`.
+ */
 export const useVanMaintenance = ({
   isTravelingRef,
   player,

@@ -9,6 +9,21 @@ import type {
   TravelLogicParams
 } from './types'
 
+/**
+ * Runs the travel hook's side effects: stranded-player detection and timer
+ * cleanup.
+ *
+ * @remarks
+ * While not traveling, watches for a softlock (player cannot reach any node and
+ * cannot afford fuel). On detection it shows a game-over toast and schedules a
+ * 3s timeout that saves and switches to the game-over scene; the timeout is
+ * cleared if the softlock resolves or travel begins. A second effect clears all
+ * outstanding travel timers on unmount.
+ *
+ * The softlock effect depends on the individual state slices it reads (not the
+ * whole `params` object) so it does not re-run — and reset the game-over
+ * countdown — on every unrelated render.
+ */
 export const useTravelEffects = ({
   refs,
   state,
