@@ -189,3 +189,8 @@
 
 **Learning:** Using `Object.values(obj).reduce(...)` in inline selector functions or asset reducers (like when computing total debt or filtering foreclosed liabilities) creates intermediate array allocations on every invocation, causing significant GC pressure in hot paths.
 **Action:** Replace `Object.values()` and chained array methods with single-pass `for...in` loops (guarded by `Object.hasOwn()`) to directly calculate aggregations and filter objects without creating intermediate arrays.
+
+## 2026-06-25 - Replace Array.find with Map in render loop
+
+**Learning:** Using `Array.find` inside a React render function on an array derived from `useMemo` causes an O(N) iteration on every render.
+**Action:** Replace `Array.find` lookups inside render loops with a `useMemo` that precomputes a `Map` (or object) for O(1) access, especially when the source array is stable.
