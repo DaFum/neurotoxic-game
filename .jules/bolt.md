@@ -184,3 +184,8 @@
 
 **Learning:** Unconditional string interpolation in high-frequency hooks (like state reducers) creates unnecessary string allocations even when the underlying logger suppresses output. Additionally, missing property checks on action payloads can cause runtime crashes.
 **Action:** Guard string interpolations and logger calls inside development environment checks (`import.meta.env.DEV`), and verify payload objects before logging their properties in hot dispatch paths.
+
+## 2026-06-05 - Avoid intermediate arrays in selectors and reducers
+
+**Learning:** Using `Object.values(obj).reduce(...)` in inline selector functions or asset reducers (like when computing total debt or filtering foreclosed liabilities) creates intermediate array allocations on every invocation, causing significant GC pressure in hot paths.
+**Action:** Replace `Object.values()` and chained array methods with single-pass `for...in` loops (guarded by `Object.hasOwn()`) to directly calculate aggregations and filter objects without creating intermediate arrays.

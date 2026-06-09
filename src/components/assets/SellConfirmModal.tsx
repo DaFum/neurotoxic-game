@@ -25,15 +25,19 @@ export const SellConfirmModal = ({ asset, isOpen, onClose }: Props) => {
   const { t, i18n } = useTranslation(['assets'])
   const { sellChassis } = useGameActions()
   const day = useGameSelector(s => s.player.day)
-  const liabilityDebt = useGameSelector(s =>
-    Object.values(s.liabilities ?? {}).reduce(
-      (sum, liability) =>
-        liability.assetId === asset.id
-          ? sum + Math.max(0, finiteNumberOr(liability.principalRemaining, 0))
-          : sum,
-      0
-    )
-  )
+  const liabilityDebt = useGameSelector(s => {
+    let sum = 0
+    const liabilities = s.liabilities ?? {}
+    for (const id in liabilities) {
+      if (Object.hasOwn(liabilities, id)) {
+        const liability = liabilities[id]
+        if (liability && liability.assetId === asset.id) {
+          sum += Math.max(0, finiteNumberOr(liability.principalRemaining, 0))
+        }
+      }
+    }
+    return sum
+  })
 
   const grossSale = calculateChassisGrossSaleValue(asset, day) ?? 0
   const net = grossSale - liabilityDebt
