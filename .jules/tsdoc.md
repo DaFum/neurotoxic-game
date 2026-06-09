@@ -5,3 +5,4 @@
 | 2026-06-06 | src/hooks/usePreGigLogic.ts | __testInternals |
 | 2026-06-06 | src/domain/questAcceptance.ts | getQuestKindForSlots, hasQuestSlot, getCurrentVenueScopeKey, canAcceptQuest |
 | 2026-06-08 | src/components/stage/NoteSpritePool.ts | NoteSpriteFactory, _getEffectiveTexture, createNoteSprite, initializeNoteSprite, acquireSpriteFromPool, destroyNoteSprite, releaseSpriteToPool, dispose |
+| 2026-06-08 | src/components/stage/RoadieStageController.ts | RoadieStageState, RoadieStageController |
