@@ -143,7 +143,7 @@ describe('useTravelLogic', () => {
       },
       band: { members: [{}, {}, {}], harmony: 50 },
       assets: [createObligationAsset()],
-      liabilities: { 'l1': createLiability({ id: 'l1' }) }
+      liabilities: { l1: createLiability({ id: 'l1' }) }
     })
 
     act(() => {
@@ -222,7 +222,7 @@ describe('useTravelLogic', () => {
       band: { members: [{}, {}] },
       social: {},
       assets: [createObligationAsset()],
-      liabilities: { 'l1': createLiability({ id: 'l1', dailyPayment: 17 }) }
+      liabilities: { l1: createLiability({ id: 'l1', dailyPayment: 17 }) }
     })
 
     assert.equal(
@@ -259,7 +259,7 @@ describe('useTravelLogic', () => {
     assert.equal(mockAudioManager.playSFX.mock.calls.length, 0)
     assert.equal(mockLogger.warn.mock.calls.length, 1)
     assert.deepEqual(mockLogger.warn.mock.calls[0].arguments, [
-      'useTravelLogic',
+      'TravelLogic',
       'Travel audio context unavailable'
     ])
   })
@@ -282,7 +282,7 @@ describe('useTravelLogic', () => {
     const { result, props, targetNode } = setupTravelScenario(useTravelLogic, {
       player: { ...defaults.player, money: 150 },
       band: { members: [{}, {}, {}], harmony: 50 },
-      liabilities: { 'l1': createLiability({ id: 'l1', dailyPayment: 25 }) }
+      liabilities: { l1: createLiability({ id: 'l1', dailyPayment: 25 }) }
     })
 
     act(() => {
@@ -638,5 +638,78 @@ describe('useTravelLogic', () => {
     )
 
     unmount()
+  })
+
+  // A stranded player is one who cannot reach any connected node (insufficient
+  // fuel) and cannot afford to refuel. calculateTravelExpenses is mocked to
+  // require 10L per hop, so fuel < 10 with money below the refuel cost at a
+  // non-GIG node trips checkSoftlock.
+  const createStrandedPlayer = (overrides = {}) => ({
+    money: 10,
+    currentNodeId: 'node_start',
+    van: { fuel: 5, condition: 80 },
+    totalTravels: 0,
+    ...overrides
+  })
+
+  test('schedules game over when the player is stranded (softlock)', t => {
+    t.mock.timers.enable({ apis: ['setTimeout'] })
+    const props = createTravelLogicProps({ player: createStrandedPlayer() })
+
+    renderHook(() => useTravelLogic(props))
+
+    // Synchronous: stranded toast + error log, no scene change yet.
+    const strandedError = mockLogger.error.mock.calls.some(call =>
+      /Stranded/i.test(String(call.arguments[1] ?? call.arguments[0]))
+    )
+    assert.ok(strandedError, 'expected a GAME OVER: Stranded error log')
+    const strandedToast = props.addToast.mock.calls.some(
+      call =>
+        typeof call.arguments[0] === 'string' &&
+        /Stranded/i.test(call.arguments[0]) &&
+        call.arguments[1] === 'error'
+    )
+    assert.ok(strandedToast, 'expected a stranded error toast')
+    assert.equal(props.changeScene.mock.calls.length, 0)
+
+    // After the 3s grace period the game-over transition fires.
+    t.mock.timers.tick(3000)
+    assert.equal(props.saveGame.mock.calls.length, 1)
+    assert.equal(props.saveGame.mock.calls[0].arguments[0], false)
+    const wentGameOver = props.changeScene.mock.calls.some(
+      call => call.arguments[0] === 'GAMEOVER'
+    )
+    assert.ok(wentGameOver, 'expected changeScene(GAMEOVER) after timeout')
+  })
+
+  test('cancels the stranded game-over timer when the softlock resolves', t => {
+    t.mock.timers.enable({ apis: ['setTimeout'] })
+    const props = createTravelLogicProps({ player: createStrandedPlayer() })
+
+    const { rerender } = renderHook(p => useTravelLogic(p), {
+      initialProps: props
+    })
+
+    // Timer was scheduled on the stranded mount.
+    assert.ok(
+      mockLogger.error.mock.calls.some(call =>
+        /Stranded/i.test(String(call.arguments[1] ?? call.arguments[0]))
+      ),
+      'expected the stranded timer to be scheduled'
+    )
+
+    // Player gains funds (can now afford refuel) — the effect re-runs and
+    // clears the pending timeout. Reuse the same callback mocks.
+    rerender({ ...props, player: createStrandedPlayer({ money: 5000 }) })
+
+    t.mock.timers.tick(3000)
+    const wentGameOver = props.changeScene.mock.calls.some(
+      call => call.arguments[0] === 'GAMEOVER'
+    )
+    assert.ok(
+      !wentGameOver,
+      'game-over transition should be cancelled once the softlock resolves'
+    )
+    assert.equal(props.saveGame.mock.calls.length, 0)
   })
 })

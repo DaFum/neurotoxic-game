@@ -284,17 +284,17 @@ export const useTravelActions = ({
           .ensureAudioContext()
           .then(isReady => {
             if (!isReady) {
-              logger.warn('useTravelLogic', 'Travel audio context unavailable')
+              logger.warn('TravelLogic', 'Travel audio context unavailable')
               return
             }
             try {
               audioService.playSFX('travel')
             } catch (error) {
-              logger.warn('useTravelLogic', 'Travel SFX playback failed', error)
+              logger.warn('TravelLogic', 'Travel SFX playback failed', error)
             }
           })
           .catch(error => {
-            logger.warn('useTravelLogic', 'ensureAudioContext failed', error)
+            logger.warn('TravelLogic', 'ensureAudioContext failed', error)
           })
 
         if (onStartTravelMinigame) {
