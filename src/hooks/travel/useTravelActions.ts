@@ -24,6 +24,7 @@ import {
   getNodeVisibility as getNodeVisibilityUtil,
   normalizeVenueId
 } from '../../utils/mapUtils'
+import { audioService } from '../../utils/audio/audioEngine'
 import { translateLocation } from '../../utils/locationI18n'
 import { createTravelCompletedQuestEvent } from '../../quests/producers/travelQuestEvents'
 import type { MapNode } from '../../types'
@@ -68,7 +69,7 @@ export const useTravelActions = ({
         params.changeScene(result.scene)
       }
     },
-    [params, refs.playerRef, refs.bandRef]
+    [params.updateBand, params.updatePlayer, params.triggerEvent, params.startGig, params.addToast, params.onShowHQ, params.onShowSupplyStop, params.changeScene, refs.playerRef, refs.bandRef]
   )
 
   const onTravelComplete = useCallback(
@@ -152,7 +153,7 @@ export const useTravelActions = ({
         if (params.applyQuestEvent) {
           params.applyQuestEvent(
             createTravelCompletedQuestEvent({
-              region: refs.playerRef.current.location ?? ''
+              region: updates.nextPlayer.location ?? ''
             })
           )
         }
@@ -167,7 +168,7 @@ export const useTravelActions = ({
         })
       }
     },
-    [setters, refs, params, handleNodeArrivalCallback, state.travelTarget]
+    [setters, refs, params.updatePlayer, params.updateBand, params.advanceDay, params.triggerEvent, params.applyQuestEvent, params.saveGame, params.addToast, handleNodeArrivalCallback, state.travelTarget]
   )
 
   const clearPendingTravel = useCallback(() => {
@@ -186,6 +187,23 @@ export const useTravelActions = ({
       if (!refs.gameMapRef.current) return
 
       try {
+        audioService
+          .ensureAudioContext()
+          .then(isReady => {
+            if (!isReady) {
+              logger.warn('useTravelLogic', 'Travel audio context unavailable')
+              return
+            }
+            try {
+              audioService.playSFX('travel')
+            } catch (error) {
+              logger.warn('useTravelLogic', 'Travel SFX playback failed', error)
+            }
+          })
+          .catch(error => {
+            logger.warn('useTravelLogic', 'ensureAudioContext failed', error)
+          })
+
         if (params.onStartTravelMinigame) {
           params.onStartTravelMinigame(node.id)
           return
@@ -220,7 +238,8 @@ export const useTravelActions = ({
       clearPendingTravel,
       setters,
       refs,
-      params,
+      params.onStartTravelMinigame,
+      params.addToast,
       onTravelComplete
     ]
   )
@@ -248,7 +267,7 @@ export const useTravelActions = ({
       }
 
       if (node.id === player.currentNodeId) {
-        if (state.pendingTravelNode?.id === node.id) {
+        if (refs.pendingTravelNodeRef.current?.id === node.id) {
           clearPendingTravel()
         }
 
@@ -411,9 +430,9 @@ export const useTravelActions = ({
       }, 5000)
     },
     [
-      params,
+      params.addToast,
+      params.onShowHQ,
       refs,
-      state,
       startTravelSequence,
       clearPendingTravel,
       getLocationName,
