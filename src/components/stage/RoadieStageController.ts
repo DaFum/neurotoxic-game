@@ -18,10 +18,16 @@ import {
 import { handleError, GameError } from '../../utils/errorHandler'
 import type { StageControllerOptions } from '../../types/components'
 
+/**
+ * Internal state for the Roadie stage, combining rendering properties and traffic arrays.
+ */
 type RoadieStageState = RoadieRenderState & {
   traffic?: RoadieCar[]
 }
 
+/**
+ * Coordinates Roadie stage rendering and lifecycle behavior.
+ */
 class RoadieStageController extends BaseStageController<RoadieStageState> {
   effectManager: EffectManager | null
   textures: {
@@ -41,6 +47,10 @@ class RoadieStageController extends BaseStageController<RoadieStageState> {
   trafficManager: RoadieTrafficManager | null
   playerManager: RoadiePlayerManager | null
 
+  /**
+   * Constructs the controller with required options.
+   * @param params - Controller options including external state bindings.
+   */
   constructor(params: StageControllerOptions<RoadieStageState>) {
     super(params)
     this.effectManager = null
@@ -63,6 +73,9 @@ class RoadieStageController extends BaseStageController<RoadieStageState> {
     }
   }
 
+  /**
+   * Initializes resources, creates PIXI layers, and kicks off asset loading.
+   */
   async setup() {
     const app = this.app
     const container = this.container
@@ -96,6 +109,9 @@ class RoadieStageController extends BaseStageController<RoadieStageState> {
     )
   }
 
+  /**
+   * Fetches the image assets used within the minigame context asynchronously.
+   */
   async loadAssets() {
     try {
       // All Roadie sprites need visual distinction (player vs hazards vs pickups),
@@ -140,10 +156,16 @@ class RoadieStageController extends BaseStageController<RoadieStageState> {
     }
   }
 
+  /**
+   * Re-draws core elements manually.
+   */
   draw() {
     this.drawBackground()
   }
 
+  /**
+   * Draws the grid background to establish zones for the minigame grid context.
+   */
   drawBackground() {
     if (!this.container) return
     if (this.bgGraphics) {
@@ -183,6 +205,10 @@ class RoadieStageController extends BaseStageController<RoadieStageState> {
     this.container.addChildAt(g, 0)
   }
 
+  /**
+   * Runs game loop sync using the current state refs and updates positioning.
+   * @param dt - Delta time elapsed since last ticker update.
+   */
   update(dt: number) {
     if (this.isDisposed || !this.app || !this.playerManager?.playerContainer)
       return
@@ -211,6 +237,9 @@ class RoadieStageController extends BaseStageController<RoadieStageState> {
     }
   }
 
+  /**
+   * Cleans up local PIXI structures gracefully.
+   */
   dispose() {
     if (this.playerManager) {
       this.playerManager.dispose()
