@@ -9,6 +9,21 @@ import type {
   Venue
 } from '../../types'
 
+/**
+ * Inputs to {@link useTravelLogic}: the live game-state slices it reads and the
+ * action creators / scene callbacks it dispatches through.
+ *
+ * @remarks
+ * Callback members (`updatePlayer`, `advanceDay`, `addToast`, `changeScene`,
+ * etc.) must keep stable identities — the hook destructures and depends on them
+ * individually to stay referentially stable, so recreating them every render
+ * would defeat that. State slices (`player`, `band`, `assets`, …) may change
+ * each render and are mirrored into refs internally.
+ *
+ * Optional members gate features: omit `onStartTravelMinigame` to use the
+ * timed-animation travel path; omit `onShowHQ`/`onShowSupplyStop` to disable
+ * those arrival overlays; omit `applyQuestEvent` to skip quest progression.
+ */
 export type TravelLogicParams = {
   player: PlayerState
   band: BandState
@@ -38,6 +53,17 @@ export type TravelLogicParams = {
   ) => void
 }
 
+/**
+ * Mutable refs shared between the travel sub-hooks.
+ *
+ * @remarks
+ * `playerRef`/`bandRef`/`assetsRef`/etc. mirror the latest {@link TravelLogicParams}
+ * state so callbacks can read current values without listing those slices as
+ * dependencies. The timeout refs hold the single in-flight timer for each
+ * concern: `pendingTimeoutRef` (confirmation window), `failsafeTimeoutRef`
+ * (travel-animation forced completion), and `timeoutRef` (softlock game-over
+ * countdown). The bundle object keeps a stable identity across renders.
+ */
 export interface TravelRefsBundle {
   isTravelingRef: React.MutableRefObject<boolean>
   travelCompletedRef: React.MutableRefObject<boolean>
@@ -82,6 +108,13 @@ export interface TravelActionsParams {
   params: TravelLogicParams
 }
 
+/**
+ * Inputs to {@link useVanMaintenance}.
+ *
+ * @remarks
+ * `player` is read live for money/van condition; `isTravelingRef` gates the
+ * handlers so refuel/repair are rejected while a trip is in progress.
+ */
 export interface VanMaintenanceParams {
   isTravelingRef: React.MutableRefObject<boolean>
   player: PlayerState

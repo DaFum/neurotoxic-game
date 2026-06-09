@@ -14,7 +14,8 @@ import {
   checkVenueAccess,
   checkTravelPrerequisites,
   checkTravelResources,
-  getLocationName as getLocationNameUtil
+  getLocationName as getLocationNameUtil,
+  getTravelArrivalUpdates
 } from '../../utils/travelUtils'
 import { calculateTravelCostsAndImpact } from '../../utils/travelUtils'
 import { getActiveAssetModifiers } from '../../utils/assetSelectors'
@@ -23,6 +24,7 @@ import {
   getNodeVisibility as getNodeVisibilityUtil,
   normalizeVenueId
 } from '../../utils/mapUtils'
+import { audioService } from '../../utils/audio/audioEngine'
 import { translateLocation } from '../../utils/locationI18n'
 import { createTravelCompletedQuestEvent } from '../../quests/producers/travelQuestEvents'
 import type { MapNode } from '../../types'
@@ -30,12 +32,56 @@ import type { TravelActionsParams } from './types'
 
 const TRAVEL_ANIMATION_TIMEOUT_MS = 1510
 
+/**
+ * Builds the travel action handlers shared by {@link useTravelLogic}.
+ *
+ * @remarks
+ * Returns three behaviors:
+ *
+ * - `handleTravel(node)` — validates access, connectivity, and affordability,
+ *   then arms a 5s click-to-confirm window; a second call for the same node
+ *   starts the trip. Clicking the current node opens HQ, enters a gig, or shows
+ *   a location toast instead of traveling.
+ * - `startTravelSequence(node)` (internal) — plays the travel SFX and either
+ *   delegates to `onStartTravelMinigame` or schedules a failsafe that forces
+ *   completion if the travel animation never reports back.
+ * - `onTravelComplete(node?)` — the single place arrival costs are applied:
+ *   re-checks affordability, deducts money/fuel and regenerates band stats via
+ *   `getTravelArrivalUpdates`, advances the day, then runs travel events, rival
+ *   movement, and node arrival. Guarded by `travelCompletedRef` so it runs once
+ *   per trip.
+ *
+ * All returned callbacks are referentially stable: the hook destructures the
+ * stable callbacks out of `params` and reads live state from `refs`, so it does
+ * not depend on the per-render `params`/`state` objects.
+ *
+ * @returns `{ handleTravel, onTravelComplete, clearPendingTravel, travelCompletedRef }`.
+ */
 export const useTravelActions = ({
   refs,
   state,
   setters,
   params
 }: TravelActionsParams) => {
+  // Destructure the stable callbacks from params. The parent supplies these
+  // with stable identities, so depending on them individually (instead of the
+  // whole `params` object, which changes reference whenever player/band state
+  // updates) keeps the returned handlers referentially stable.
+  const {
+    updatePlayer,
+    updateBand,
+    advanceDay,
+    triggerEvent,
+    startGig,
+    addToast,
+    changeScene,
+    onShowHQ,
+    onShowSupplyStop,
+    onStartTravelMinigame,
+    applyQuestEvent,
+    saveGame
+  } = params
+
   const getLocationName = useCallback(
     (location: string | undefined, venueId?: string | null) => {
       return getLocationNameUtil(
@@ -54,20 +100,30 @@ export const useTravelActions = ({
         node,
         band: refs.bandRef.current,
         player: refs.playerRef.current,
-        updateBand: params.updateBand,
-        updatePlayer: params.updatePlayer,
-        triggerEvent: params.triggerEvent,
-        startGig: params.startGig,
-        addToast: params.addToast,
-        onShowHQ: params.onShowHQ,
-        onShowSupplyStop: params.onShowSupplyStop,
+        updateBand,
+        updatePlayer,
+        triggerEvent,
+        startGig,
+        addToast,
+        onShowHQ,
+        onShowSupplyStop,
         eventAlreadyActive: travelEventActive
       })
       if (!result.gigStarted) {
-        params.changeScene(result.scene)
+        changeScene(result.scene)
       }
     },
-    [params, refs.playerRef, refs.bandRef]
+    [
+      refs,
+      updateBand,
+      updatePlayer,
+      triggerEvent,
+      startGig,
+      addToast,
+      onShowHQ,
+      onShowSupplyStop,
+      changeScene
+    ]
   )
 
   const onTravelComplete = useCallback(
@@ -95,7 +151,7 @@ export const useTravelActions = ({
               : 'Travel complete but no target'
           ),
           {
-            addToast: params.addToast,
+            addToast,
             fallbackMessage: i18n.t('ui:travel.errors.invalidDestination', {
               defaultValue: 'Error: Invalid destination.'
             })
@@ -107,30 +163,81 @@ export const useTravelActions = ({
       const node = target
 
       try {
-        const travelEventActive = processTravelEvents(
-          node,
-          params.triggerEvent,
-          {
-            includeGigNodes: true
-          }
+        const player = refs.playerRef.current
+        const assets = refs.assetsRef.current
+        const assetModifiers = getActiveAssetModifiers(assets)
+        const currentStartNode =
+          refs.gameMapRef.current?.nodes[player.currentNodeId]
+
+        // Calculate and validate costs at arrival.
+        const { fuelLiters, totalCost, totalCashImpact } =
+          calculateTravelCostsAndImpact(
+            node,
+            currentStartNode,
+            player,
+            refs.bandRef.current,
+            refs.socialRef.current,
+            assets,
+            refs.liabilitiesRef.current,
+            assetModifiers
+          )
+
+        const resourceCheck = checkTravelResources(
+          totalCashImpact,
+          fuelLiters,
+          player
         )
+        if (!resourceCheck.allowed) {
+          handleError(new StateError('Insufficient resources upon arrival'), {
+            addToast,
+            fallbackMessage: i18n.t(
+              resourceCheck.errorKey ?? 'ui:travel.errors.invalidDestination',
+              {
+                defaultValue: 'Error: Insufficient resources upon arrival.'
+              }
+            )
+          })
+          return
+        }
+
+        // Apply travel costs and travel-only band changes before the day tick
+        // so daily passive stamina/mood updates compose with them instead of
+        // being overwritten.
+        const updates = getTravelArrivalUpdates({
+          player,
+          band: refs.bandRef.current,
+          node,
+          fuelLiters,
+          totalCost,
+          assetModifiers
+        })
+
+        updatePlayer(updates.nextPlayer)
+        if (updates.nextBand) {
+          updateBand(updates.nextBand)
+        }
+        advanceDay()
+
+        const travelEventActive = processTravelEvents(node, triggerEvent, {
+          includeGigNodes: true
+        })
 
         refs.moveRivalBandRef.current?.()
         refs.checkRivalEncounterRef.current?.()
 
         handleNodeArrivalCallback(node, travelEventActive)
 
-        if (params.applyQuestEvent) {
-          params.applyQuestEvent(
+        if (applyQuestEvent) {
+          applyQuestEvent(
             createTravelCompletedQuestEvent({
-              region: refs.playerRef.current.location ?? ''
+              region: updates.nextPlayer.location ?? ''
             })
           )
         }
-        params.saveGame(false)
+        saveGame(false)
       } catch (error) {
         handleError(error, {
-          addToast: params.addToast,
+          addToast,
           fallbackMessage: i18n.t('ui:travel.errors.arrivalProcessingFailed', {
             defaultValue: 'An error occurred upon arrival.'
           }),
@@ -138,7 +245,19 @@ export const useTravelActions = ({
         })
       }
     },
-    [setters, refs, params, handleNodeArrivalCallback, state.travelTarget]
+    [
+      setters,
+      refs,
+      addToast,
+      triggerEvent,
+      updatePlayer,
+      updateBand,
+      advanceDay,
+      applyQuestEvent,
+      saveGame,
+      handleNodeArrivalCallback,
+      state.travelTarget
+    ]
   )
 
   const clearPendingTravel = useCallback(() => {
@@ -161,8 +280,25 @@ export const useTravelActions = ({
         setters.setIsTraveling(true)
         setters.setTravelTarget(node)
 
-        if (params.onStartTravelMinigame) {
-          params.onStartTravelMinigame(node.id)
+        audioService
+          .ensureAudioContext()
+          .then(isReady => {
+            if (!isReady) {
+              logger.warn('TravelLogic', 'Travel audio context unavailable')
+              return
+            }
+            try {
+              audioService.playSFX('travel')
+            } catch (error) {
+              logger.warn('TravelLogic', 'Travel SFX playback failed', error)
+            }
+          })
+          .catch(error => {
+            logger.warn('TravelLogic', 'ensureAudioContext failed', error)
+          })
+
+        if (onStartTravelMinigame) {
+          onStartTravelMinigame(node.id)
           return
         }
 
@@ -177,7 +313,7 @@ export const useTravelActions = ({
         }, TRAVEL_ANIMATION_TIMEOUT_MS)
       } catch (error) {
         handleError(error, {
-          addToast: params.addToast,
+          addToast,
           fallbackMessage: i18n.t('ui:travel.errors.startFailed', {
             defaultValue: 'Failed to start travel sequence.'
           }),
@@ -187,7 +323,14 @@ export const useTravelActions = ({
         setters.setTravelTarget(null)
       }
     },
-    [clearPendingTravel, setters, refs, params, onTravelComplete]
+    [
+      clearPendingTravel,
+      setters,
+      refs,
+      onStartTravelMinigame,
+      addToast,
+      onTravelComplete
+    ]
   )
 
   const handleTravel = useCallback(
@@ -203,7 +346,7 @@ export const useTravelActions = ({
       const gameMap = refs.gameMapRef.current
 
       if (!node?.venue) {
-        params.addToast(
+        addToast(
           i18n.t('ui:travel.errors.invalidLocation', {
             defaultValue: 'Error: Invalid location.'
           }),
@@ -213,13 +356,13 @@ export const useTravelActions = ({
       }
 
       if (node.id === player.currentNodeId) {
-        if (state.pendingTravelNode?.id === node.id) {
+        if (refs.pendingTravelNodeRef.current?.id === node.id) {
           clearPendingTravel()
         }
 
         if (isGigNode(node)) {
           if (node.id === player.lastGigNodeId) {
-            params.addToast(
+            addToast(
               i18n.t('ui:travel.errors.alreadyPlayedHere', {
                 defaultValue:
                   'You just played a gig here! Hit the road and find a new crowd.'
@@ -237,17 +380,17 @@ export const useTravelActions = ({
           handleNodeArrivalCallback(processedNode, false)
         } else if (node.type === 'START') {
           try {
-            params.onShowHQ?.()
+            onShowHQ?.()
           } catch (error) {
             handleError(error, {
-              addToast: params.addToast,
+              addToast,
               fallbackMessage: i18n.t('ui:travel.errors.failedToOpenHq', {
                 defaultValue: 'Failed to open HQ.'
               })
             })
           }
         } else {
-          params.addToast(
+          addToast(
             i18n.t('ui:travel.currentLocation', {
               defaultValue: 'You are at {{location}}.',
               location: getLocationName(
@@ -280,7 +423,7 @@ export const useTravelActions = ({
       })
 
       if (!accessCheck.allowed) {
-        params.addToast(
+        addToast(
           i18n.t(accessCheck.errorKey ?? 'ui:travel.errors.invalidLocation', {
             defaultValue:
               accessCheck.defaultMessage ?? 'Error: Invalid location.',
@@ -299,7 +442,7 @@ export const useTravelActions = ({
         isConnectedUtil(gameMap, player.currentNodeId, node.id)
       )
       if (!preCheck.allowed) {
-        params.addToast(
+        addToast(
           i18n.t(preCheck.errorKey ?? 'ui:travel.errors.locationNotConnected', {
             defaultValue:
               preCheck.defaultMessage ?? 'Cannot travel: location not connected'
@@ -327,7 +470,7 @@ export const useTravelActions = ({
         player
       )
       if (!resourceCheck.allowed) {
-        params.addToast(
+        addToast(
           i18n.t(
             resourceCheck.errorKey ??
               'ui:travel.errors.notEnoughMoneyForTravel',
@@ -352,7 +495,7 @@ export const useTravelActions = ({
       clearPendingTravel()
       setters.setPendingTravelNode(node)
       refs.pendingTravelNodeRef.current = node
-      params.addToast(
+      addToast(
         i18n.t('ui:travel.confirmTravelPrompt', {
           defaultValue:
             '{{location}} ({{distance}}km) | Travel Costs: {{travelCost}} | Daily Upkeep: {{dailyCost}} | Total Cash Impact: {{totalCost}} | Fuel: {{fuelLiters}}L — Click again to confirm',
@@ -376,14 +519,14 @@ export const useTravelActions = ({
       }, 5000)
     },
     [
-      params,
       refs,
-      state,
+      setters,
+      addToast,
+      onShowHQ,
       startTravelSequence,
       clearPendingTravel,
       getLocationName,
-      handleNodeArrivalCallback,
-      setters
+      handleNodeArrivalCallback
     ]
   )
 

@@ -7,6 +7,20 @@ import type {
   TravelSettersBundle
 } from './types'
 
+/**
+ * Owns the travel hook's React state, refs, and setters.
+ *
+ * @remarks
+ * Initializes the `isTraveling`/`travelTarget`/`pendingTravelNode` state, the
+ * timeout/completion refs, and the param-mirror refs (kept in sync each render
+ * and via an effect). The returned `refs` and `setters` bundles are wrapped in
+ * `useRef` so they hold a stable object identity, letting consumer hooks list
+ * them in dependency arrays without re-creating their callbacks every render.
+ *
+ * @param params - Game state slices to mirror into refs.
+ * @returns `{ refs, state, setters }` — the shared ref bundle (stable),
+ * the reactive state snapshot, and the state setters (stable).
+ */
 export const useTravelState = (params: TravelLogicParams) => {
   const [isTraveling, setIsTraveling] = useState(false)
   const [travelTarget, setTravelTarget] = useState<MapNode | null>(null)
@@ -59,34 +73,42 @@ export const useTravelState = (params: TravelLogicParams) => {
     params.checkRivalEncounter
   ])
 
+  // Bundle objects must keep a stable identity across renders so consumer
+  // hooks (useTravelActions) can list `refs`/`setters` in dependency arrays
+  // without churning their callbacks. Every member is itself stable (useRef
+  // objects, useState setters), so capturing the bundle once is safe.
+  const refs = useRef<TravelRefsBundle>({
+    isTravelingRef,
+    travelCompletedRef,
+    pendingTravelNodeRef,
+    pendingTimeoutRef,
+    failsafeTimeoutRef,
+    timeoutRef,
+    playerRef,
+    bandRef,
+    assetsRef,
+    liabilitiesRef,
+    socialRef,
+    gameMapRef,
+    reputationByRegionRef,
+    venueBlacklistRef,
+    moveRivalBandRef,
+    checkRivalEncounterRef
+  }).current
+
+  const setters = useRef<TravelSettersBundle>({
+    setIsTraveling,
+    setTravelTarget,
+    setPendingTravelNode
+  }).current
+
   return {
-    refs: {
-      isTravelingRef,
-      travelCompletedRef,
-      pendingTravelNodeRef,
-      pendingTimeoutRef,
-      failsafeTimeoutRef,
-      timeoutRef,
-      playerRef,
-      bandRef,
-      assetsRef,
-      liabilitiesRef,
-      socialRef,
-      gameMapRef,
-      reputationByRegionRef,
-      venueBlacklistRef,
-      moveRivalBandRef,
-      checkRivalEncounterRef
-    } as TravelRefsBundle,
+    refs,
     state: {
       isTraveling,
       travelTarget,
       pendingTravelNode
     } as TravelStateBundle,
-    setters: {
-      setIsTraveling,
-      setTravelTarget,
-      setPendingTravelNode
-    } as TravelSettersBundle
+    setters
   }
 }
