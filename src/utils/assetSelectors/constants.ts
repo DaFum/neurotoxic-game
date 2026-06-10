@@ -30,9 +30,9 @@ export const NEUTRAL_ASSET_MODIFIERS: AssetModifiers = Object.freeze({
 }) as AssetModifiers
 
 /**
- * The numerical durability threshold at which an asset module is considered non-functional.
+ * The numerical durability threshold below which an asset module is considered non-functional.
  *
  * @remarks
- * If an asset's condition falls to or below this value, its modifiers and bonuses are entirely negated in state calculations.
+ * If an asset's condition falls below this value, its modifiers and bonuses are entirely negated in state calculations.
  */
 export const BROKEN_THRESHOLD = 20
