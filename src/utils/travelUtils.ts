@@ -322,16 +322,6 @@ import {
 } from './assetSelectors'
 import type { GameState, SocialState } from '../types'
 
-export interface TravelCostsParams {
-  node: MapNode
-  player: PlayerState
-  band: BandState
-  social: SocialState
-  assets: GameState['assets']
-  liabilities: GameState['liabilities']
-  assetModifiers: ReturnType<typeof getActiveAssetModifiers>
-}
-
 export interface TravelCostsResult {
   dist: number
   totalCost: number

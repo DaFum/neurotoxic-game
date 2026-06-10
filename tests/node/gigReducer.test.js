@@ -244,5 +244,38 @@ describe('gigReducer', () => {
       )
       assert.strictEqual(quest, undefined)
     })
+
+    it('should grant base harmony for completing practice mode', () => {
+      baseState.currentGig = { isPractice: true }
+      baseState.band.harmony = 50
+      const nextState = handleSetLastGigStats(baseState, { score: 80 })
+
+      assert.strictEqual(nextState.band.harmony, 51)
+    })
+
+    it('should scale practice harmony gain by band practiceGain effect', () => {
+      baseState.currentGig = { isPractice: true }
+      baseState.band.harmony = 50
+      baseState.band.practiceGain = 1 // +100% practice gains
+      const nextState = handleSetLastGigStats(baseState, { score: 80 })
+
+      assert.strictEqual(nextState.band.harmony, 52)
+    })
+
+    it('should add stress after a real gig and clamp at 100', () => {
+      baseState.currentGig = { id: 'v1', capacity: 100 }
+      const nextState = handleSetLastGigStats(baseState, { score: 70 })
+      assert.strictEqual(nextState.band.stress, 5)
+
+      baseState.band.stress = 98
+      const capped = handleSetLastGigStats(baseState, { score: 70 })
+      assert.strictEqual(capped.band.stress, 100)
+    })
+
+    it('should not add stress for practice mode', () => {
+      baseState.currentGig = { isPractice: true }
+      const nextState = handleSetLastGigStats(baseState, { score: 70 })
+      assert.strictEqual(nextState.band.stress, undefined)
+    })
   })
 })

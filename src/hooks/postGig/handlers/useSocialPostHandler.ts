@@ -116,6 +116,17 @@ export function applySocialPostResult(params: {
     )
   }
 
+  // Track failed stage dives / crowdsurfs; 2 unlock the `clumsy` trait via
+  // the daily SOCIAL_UPDATE pass in checkTraitUnlocks.
+  if (finalResult.failedStageDive) {
+    updatePlayer({
+      stats: {
+        ...player.stats,
+        failedStageDives: finiteNumberOr(player.stats?.failedStageDives, 0) + 1
+      }
+    })
+  }
+
   updateSocial(updatedSocial)
 
   const followersGained = finiteNumberOr(finalResult.followers, 0)

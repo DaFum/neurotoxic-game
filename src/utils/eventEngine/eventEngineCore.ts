@@ -3,10 +3,7 @@ import { EVENTS_DB } from '../../data/events/index'
 import { EVENT_STRINGS } from '../../data/events/constants'
 import { secureRandom } from '../crypto'
 import { bandHasTrait } from '../traitUtils'
-import {
-  finiteNumberOr,
-  isOnCooldown as isOnCooldownShared
-} from '../gameState'
+import { finiteNumberOr } from '../gameState'
 import { StateError } from '../errorHandler'
 import { selectEvent } from './eventSelection'
 import { processEffect } from './eventEffectHandlers'
@@ -85,11 +82,6 @@ const resolveSkillCheckFailure = (
   }
   return { ...failure, outcome: 'failure' }
 }
-
-/**
- * Shared event cooldown predicate used by event selection and callers.
- */
-export const isOnCooldown = isOnCooldownShared
 
 /**
  * Event engine facade for selecting, resolving, and applying game events.

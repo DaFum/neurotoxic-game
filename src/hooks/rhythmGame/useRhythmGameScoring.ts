@@ -17,6 +17,8 @@ import {
   getScheduledHitTimeMs
 } from '../../utils/audio/audioEngine'
 import { checkHit } from '../../utils/rhythmUtils'
+import { clampUnit } from '../../utils/numberUtils'
+import { getSafeRandom } from '../../utils/crypto'
 import {
   calculateDynamicHitWindow,
   calculatePoints,
@@ -34,6 +36,12 @@ type RhythmPerformance = {
   crowdDecay?: number
   guitarDifficulty?: number
   drumMultiplier?: number
+  /** Hit-window bonus fraction from band effects (0.15 = +15% window). */
+  tempo?: number
+  /** Chance (0-1) that a hit scores double points. */
+  critChance?: number
+  /** Fractional reduction of crowd decay from band effects (0-1). */
+  crowdControl?: number
 }
 
 type RhythmGameScoringParams = {
@@ -103,9 +111,12 @@ export const useRhythmGameScoring = ({
   const { addToast, setLastGigStats, endGig } = contextActions
 
   // Extract primitives from performance to stabilise callback dependency arrays
-  const baseCrowdDecay = performance?.crowdDecay ?? 1.0
+  const crowdControl = clampUnit(performance?.crowdControl ?? 0)
+  const baseCrowdDecay = (performance?.crowdDecay ?? 1.0) * (1 - crowdControl)
   const guitarDifficulty = performance?.guitarDifficulty ?? 1.0
   const drumMultiplier = performance?.drumMultiplier ?? 1.0
+  const tempoBonus = Math.max(0, performance?.tempo ?? 0)
+  const critChance = clampUnit(performance?.critChance ?? 0)
 
   const gameOverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -277,7 +288,7 @@ export const useRhythmGameScoring = ({
       }
 
       const hitWindow = calculateDynamicHitWindow(
-        lane.hitWindow,
+        lane.hitWindow * (1 + tempoBonus),
         state.modifiers.hitWindowBonus ?? 0,
         laneIndex,
         guitarDifficulty
@@ -371,7 +382,7 @@ export const useRhythmGameScoring = ({
         )
         setAccuracy(currentAccuracy)
 
-        const finalScore = calculateFinalScore(
+        let finalScore = calculateFinalScore(
           basePoints,
           state.combo,
           toxicModeActive,
@@ -379,6 +390,11 @@ export const useRhythmGameScoring = ({
           currentAccuracy,
           gameStateRef.current.isCorruptionBurstActive
         )
+
+        // Band crit effect (e.g. contraband): chance to double the hit score
+        if (critChance > 0 && getSafeRandom() < critChance) {
+          finalScore *= 2
+        }
 
         // Extract calculations outside state callbacks
         const nextScore = gameStateRef.current.score + finalScore
@@ -437,7 +453,9 @@ export const useRhythmGameScoring = ({
       setCorruptionBurstEndTime,
       setCorruptionState,
       guitarDifficulty,
-      drumMultiplier
+      drumMultiplier,
+      tempoBonus,
+      critChance
     ]
   )
 

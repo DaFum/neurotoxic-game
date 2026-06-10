@@ -13,6 +13,7 @@ import {
 import { secureRandom } from './crypto'
 import i18n from '../i18n'
 import { normalizeVenueId } from './mapUtils'
+import { clampUnit } from './numberUtils'
 import { VENUES_BY_ID } from '../data/venues'
 import type { BandState, MapNode, PlayerState, Venue } from '../types'
 
@@ -231,8 +232,12 @@ export const handleNodeArrival = (
 
       // Show cancellation check: Deterministic for harmony <= 1, probabilistic for low harmony (Chaos Tour Mechanic)
       const isLowHarmony = harmony < BALANCE_CONSTANTS.LOW_HARMONY_THRESHOLD
-      const luckCheck =
-        rng() < BALANCE_CONSTANTS.LOW_HARMONY_CANCELLATION_CHANCE
+      // Band tourSuccess effect (contraband): scales down the probabilistic
+      // cancellation chance; the deterministic harmony <= 1 cancel stands.
+      const tourSuccess = clampUnit(finiteNumberOr(band?.tourSuccess, 0))
+      const cancellationChance =
+        BALANCE_CONSTANTS.LOW_HARMONY_CANCELLATION_CHANCE * (1 - tourSuccess)
+      const luckCheck = rng() < cancellationChance
       const shouldCancel = harmony <= 1 || (isLowHarmony && luckCheck)
 
       if (shouldCancel) {

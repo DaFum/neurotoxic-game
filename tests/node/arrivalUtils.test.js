@@ -232,6 +232,50 @@ describe('handleNodeArrival', () => {
       assert.strictEqual(mocks.startGig.mock.calls.length, 1)
       assert.strictEqual(mocks.updatePlayer.mock.calls.length, 0)
     })
+
+    test(`${type} - band tourSuccess scales down the cancellation chance`, () => {
+      const mocks = getMocks()
+      const node = { type, venue: { name: 'The Club' } }
+      // tourSuccess 0.5 halves the 0.2 base chance to 0.1, so a 0.15 roll
+      // that would otherwise cancel now lets the show go on.
+      const band = { harmony: 10, tourSuccess: 0.5 }
+      const player = { fame: 100 }
+      const rng = () => 0.15
+
+      const result = handleNodeArrival({
+        node,
+        band,
+        player,
+        rng,
+        ...mocks
+      })
+      assert.deepStrictEqual(result, {
+        scene: GAME_PHASES.OVERWORLD,
+        gigStarted: true
+      })
+      assert.strictEqual(mocks.startGig.mock.calls.length, 1)
+    })
+
+    test(`${type} - harmony <= 1 still cancels despite tourSuccess`, () => {
+      const mocks = getMocks()
+      const node = { type, venue: { name: 'The Club' } }
+      const band = { harmony: 1, tourSuccess: 1 }
+      const player = { fame: 100 }
+      const rng = () => 0.99
+
+      const result = handleNodeArrival({
+        node,
+        band,
+        player,
+        rng,
+        ...mocks
+      })
+      assert.deepStrictEqual(result, {
+        scene: GAME_PHASES.OVERWORLD,
+        gigStarted: false
+      })
+      assert.strictEqual(mocks.startGig.mock.calls.length, 0)
+    })
   })
 
   test('GIG - resolves legacy venue string before starting gig', () => {

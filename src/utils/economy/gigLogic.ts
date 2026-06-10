@@ -729,6 +729,24 @@ export const calculateGigFinancials = (
     }
   }
 
+  // Temporary band effect bonus (contraband `gig_modifier`): decimal fraction
+  // applied to income.total as its own line so net stays reconciled.
+  const bandGigModifier = Math.max(
+    0,
+    finiteNumberOr(context.bandGigModifier, 0)
+  )
+  if (bandGigModifier > 0) {
+    const bandBonus = Math.floor(report.income.total * bandGigModifier)
+    if (bandBonus > 0) {
+      report.income.breakdown.push({
+        labelKey: 'economy:gigIncome.bandBonus.label',
+        value: bandBonus,
+        detailKey: 'economy:gigIncome.bandBonus.detail'
+      })
+      report.income.total += bandBonus
+    }
+  }
+
   // 7. Management Cut (fame-progressive: 0% at fame=0, full 15% at fame≥200)
   const effectiveCutRate = MANAGEMENT_CUT_RATE * clampUnit(playerFame / 200)
   const managementCut = Math.floor(report.income.total * effectiveCutRate)

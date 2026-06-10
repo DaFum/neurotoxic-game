@@ -96,6 +96,8 @@ export const applyPostGigPerformancePenalty = ({
  * - `params.perfScore` - Gig performance score (0–100).
  * - `params.financials` - Post-gig financial breakdown.
  * - `params.misses` - Total missed notes.
+ * - `params.bandStyle` - Fractional bonus to positive fame gains from
+ *   temporary band effects (contraband `style`).
  * - `params.calculateFameGain` - Applies diminishing returns to raw fame gain.
  * - `params.calculateFameLevel` - Maps total fame to a fame level.
  * - `params.clampPlayerFame` - Clamps fame to valid range.
@@ -109,6 +111,7 @@ export const calculateContinueStats = ({
   perfScore,
   financials,
   misses,
+  bandStyle,
   calculateFameGain,
   calculateFameLevel,
   clampPlayerFame,
@@ -119,6 +122,7 @@ export const calculateContinueStats = ({
   perfScore: number
   financials: PostGigFinancials
   misses?: number
+  bandStyle?: number
   calculateFameGain: (a: number, b: number, c: number) => number
   calculateFameLevel: (fame: number) => number
   clampPlayerFame: (n: number) => number
@@ -135,6 +139,11 @@ export const calculateContinueStats = ({
       prevFame,
       BALANCE_CONSTANTS.MAX_FAME_GAIN
     )
+    // Band style effect (contraband): boosts positive fame gains only
+    const styleBonus = Math.max(0, finiteNumberOr(bandStyle, 0))
+    if (styleBonus > 0 && finalFameGain > 0) {
+      finalFameGain = Math.round(finalFameGain * (1 + styleBonus))
+    }
   } else {
     // Progressive miss-penalty on bad gigs
     const missCount = misses ?? 0

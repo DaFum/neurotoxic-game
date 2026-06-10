@@ -1,5 +1,7 @@
 # Neurotoxic Codebase Audit — Categorized Findings (2026-06-10)
 
+> **Status: RESOLVED.** All findings below were fixed on this branch in the same session (see git history). 5.1/5.3 took the integrate option: every contraband band stat now has a gameplay read (see `src/context/reducers/AGENTS.md` "Band Effects" for the read map), `stress` got a full gig-stress loop, and `clumsy` unlocks after 2 failed stage dives. The findings text below is kept as the audit record.
+
 **Scope:** all of `src/` (tests checked only for orphan references). No files were modified.
 **Method:** `symbols.json` exported-symbol index (verified current via `pnpm run symbols:check`) for orphan detection; four parallel deep-search passes (duplicates, inconsistencies, dead code, missing integration); every reported finding re-verified by hand with ripgrep + source reading. Findings the search passes raised that did **not** survive verification are listed under "Rejected candidates" so the fix pass doesn't chase them.
 

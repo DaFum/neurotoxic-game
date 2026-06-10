@@ -24,6 +24,8 @@
   "gigExpenses.venueSplit.label": "Venue-Anteil",
   "gigIncome.badShow.detail": "Publikum ist früh gegangen...",
   "gigIncome.badShow.label": "SCHLECHTE SHOW",
+  "gigIncome.bandBonus.detail": "Temporärer Band-Effekt auf Gig-Einnahmen",
+  "gigIncome.bandBonus.label": "Band-Bonus",
   "gigIncome.barCut.detail": "{{percent}}% der Bar",
   "gigIncome.barCut.label": "Bar-Anteil",
   "gigIncome.beerSponsor.detail": "Max. Hype erreicht",

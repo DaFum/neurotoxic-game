@@ -156,6 +156,7 @@ const normalizeResolvedPost = (
       typeof raw.egoDrop === 'string' || raw.egoDrop === null
         ? raw.egoDrop
         : undefined,
+    failedStageDive: raw.failedStageDive === true,
     influencerUpdate
   }
 }
@@ -215,7 +216,13 @@ export const calculatePostGigStateUpdates = (
     finiteNumberOr(social.controversyLevel, 0),
     finiteNumberOr(social.loyalty, 0)
   )
-  const totalFollowers = result.followers + organicGrowth
+  // Band affinity effect (contraband): boosts positive follower gains only
+  const affinityBonus = Math.max(0, finiteNumberOr(band.affinity, 0))
+  const rawTotalFollowers = result.followers + organicGrowth
+  const totalFollowers =
+    affinityBonus > 0 && rawTotalFollowers > 0
+      ? Math.round(rawTotalFollowers * (1 + affinityBonus))
+      : rawTotalFollowers
   const finalResult = { ...result, totalFollowers }
 
   const newBand = { ...band }

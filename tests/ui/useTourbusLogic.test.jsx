@@ -35,16 +35,14 @@ mock.mock('../../src/utils/upgradeUtils', () => ({
   hasUpgrade: mockHasUpgrade
 }))
 
+const { useTourbusLogic, BASE_SPEED, TARGET_DISTANCE, getHitDamage } =
+  await import('../../src/hooks/minigames/useTourbusLogic')
 const {
-  useTourbusLogic,
-  BASE_SPEED,
-  MAX_SPEED,
-  SPAWN_RATE_MS,
-  TARGET_DISTANCE,
-  getHitDamage
-} = await import('../../src/hooks/minigames/useTourbusLogic')
-const { TOURBUS_LANE_COUNT, TOURBUS_BUS_Y_PERCENT } =
-  await import('../../src/hooks/minigames/minigameConstants')
+  TOURBUS_LANE_COUNT,
+  TOURBUS_BUS_Y_PERCENT,
+  TOURBUS_MAX_SPEED: MAX_SPEED,
+  TOURBUS_SPAWN_RATE_MS: SPAWN_RATE_MS
+} = await import('../../src/hooks/minigames/minigameConstants')
 
 describe('getHitDamage', () => {
   beforeEach(() => {
