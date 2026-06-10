@@ -49,15 +49,16 @@ const normalizeHandleErrorOptions = (
 }
 
 const sanitizeErrorInfo = (errorInfo: ErrorInfoObject) => ({
-  message: errorInfo.message ?? 'Critical error',
-  code: errorInfo.category ?? ErrorCategory.UNKNOWN,
-  timestamp: errorInfo.timestamp ?? Date.now()
+  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+  message: errorInfo.message || 'Critical error',
+  code: errorInfo.category || ErrorCategory.UNKNOWN,
+  timestamp: errorInfo.timestamp || Date.now()
 })
 
 const sanitizeTelemetryErrorInfo = (errorInfo: ErrorInfoObject) => ({
   message: 'Error captured',
-  code: errorInfo.category ?? ErrorCategory.UNKNOWN,
-  timestamp: errorInfo.timestamp ?? Date.now()
+  code: errorInfo.category || ErrorCategory.UNKNOWN,
+  timestamp: errorInfo.timestamp || Date.now()
 })
 
 const buildErrorInfo = (
