@@ -49,15 +49,15 @@ const normalizeHandleErrorOptions = (
 }
 
 const sanitizeErrorInfo = (errorInfo: ErrorInfoObject) => ({
-  message: errorInfo.message || 'Critical error',
-  code: errorInfo.category || ErrorCategory.UNKNOWN,
-  timestamp: errorInfo.timestamp || Date.now()
+  message: errorInfo.message ?? 'Critical error',
+  code: errorInfo.category ?? ErrorCategory.UNKNOWN,
+  timestamp: errorInfo.timestamp ?? Date.now()
 })
 
 const sanitizeTelemetryErrorInfo = (errorInfo: ErrorInfoObject) => ({
   message: 'Error captured',
-  code: errorInfo.category || ErrorCategory.UNKNOWN,
-  timestamp: errorInfo.timestamp || Date.now()
+  code: errorInfo.category ?? ErrorCategory.UNKNOWN,
+  timestamp: errorInfo.timestamp ?? Date.now()
 })
 
 const buildErrorInfo = (
@@ -210,11 +210,11 @@ export const initGlobalErrorHandling = () => {
   windowSymbolState[INIT_SYMBOL] = true
   window.addEventListener('unhandledrejection', event => {
     const reason = event.reason
-    let errorToHandle
+    let errorToHandle: unknown
     if (reason instanceof Error) {
       errorToHandle = reason
     } else {
-      let message
+      let message: string
       if (typeof reason === 'string') {
         message = reason
       } else if (reason && typeof reason.message === 'string') {
