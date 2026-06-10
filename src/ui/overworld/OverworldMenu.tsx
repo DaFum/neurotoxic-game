@@ -454,7 +454,15 @@ export const OverworldMenu = React.memo(
     }, [setIsMenuOpen])
     const handleBack = useCallback(() => setActiveCat(null), [])
 
-    const cat = menuCategories.find(c => c.id === activeCat)
+    const categoryMap = useMemo(() => {
+      const map = new Map<string, MenuCategory>()
+      for (const c of menuCategories) {
+        map.set(c.id, c)
+      }
+      return map
+    }, [menuCategories])
+
+    const cat = activeCat ? categoryMap.get(activeCat) : undefined
 
     useEffect(() => {
       if (isMenuOpen) {
