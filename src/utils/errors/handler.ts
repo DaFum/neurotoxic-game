@@ -215,12 +215,23 @@ export const initGlobalErrorHandling = () => {
     if (reason instanceof Error) {
       errorToHandle = reason
     } else {
-      let message: string
+      let message: string | undefined
       if (typeof reason === 'string') {
         message = reason
-      } else if (reason && typeof reason.message === 'string') {
-        message = reason.message
-      } else {
+      } else if (typeof reason === 'object' && reason !== null) {
+        if (Object.hasOwn(reason, 'message')) {
+          try {
+            const val = (reason as Record<string, unknown>)['message']
+            if (typeof val === 'string') {
+              message = val
+            }
+          } catch {
+            // Ignore throwing getter
+          }
+        }
+      }
+
+      if (message === undefined) {
         try {
           message = String(reason)
         } catch {
