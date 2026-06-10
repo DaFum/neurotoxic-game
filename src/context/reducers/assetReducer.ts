@@ -338,7 +338,8 @@ export const handleUpgradeChassisTier = (
   // Early-return when the target asset doesn't exist. Without this guard the
   // reducer would still spread state and rebuild player.money (with
   // upgradeCost staying at 0 — no functional damage today, but it wastes an
-  // allocation and could mask a buggy dispatch from upstream).
+  // allocation and could mask a buggy dispatch from upstream). Note that to maintain
+  // reducer purity, we do not log errors here; validation belongs in the action creator.
   // ⚡ BOLT OPTIMIZATION: Replaced O(N) array methods (.find, .map)
   // with procedural loops to avoid intermediate array allocations and reduce GC pressure.
   let targetAsset: LongTermAsset | null = null
