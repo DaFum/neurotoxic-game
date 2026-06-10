@@ -59,52 +59,55 @@ export const submitLeaderboardScores = async ({
     }
   }
 
-  // Submit each song individually
-  const fetchPromises = songsToSubmit.map((songData: SongStat) => {
-    // Resolve to leaderboardId (API-safe slug)
-    const leaderboardSongId = SONGS_BY_ID.get(songData.songId)?.leaderboardId
-
-    if (leaderboardSongId) {
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 5000)
-
-      return fetch('/api/leaderboard/song', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          playerId: player.playerId,
-          playerName: player.playerName,
+  // Collect all valid scores to submit in a single batch
+  const scoresToSubmit: SongStat[] = []
+  for (let i = 0; i < songsToSubmit.length; i++) {
+    const songData = songsToSubmit[i]
+    if (songData) {
+      const leaderboardSongId = SONGS_BY_ID.get(songData.songId)?.leaderboardId
+      if (leaderboardSongId) {
+        scoresToSubmit.push({
           songId: leaderboardSongId,
           score: songData.score,
           accuracy: songData.accuracy
-        }),
-        signal: controller.signal
-      })
-        .then(async res => {
-          clearTimeout(timeoutId)
-          if (res.status === 404) {
-            logger.info(
-              'PostGig',
-              `Leaderboard endpoint unavailable for ${leaderboardSongId}`
-            )
-            return
-          }
-          if (!res.ok) {
-            const err = await res.text()
-            throw new Error(`HTTP ${res.status}: ${err}`)
-          }
         })
-        .catch(err => {
-          clearTimeout(timeoutId)
-          logger.error(
-            'PostGig',
-            `Score submit failed for ${leaderboardSongId}`,
-            err
-          )
-        })
+      }
     }
-    return Promise.resolve()
-  })
+  }
 
-  await Promise.allSettled(fetchPromises)
+  if (scoresToSubmit.length === 0) return
+
+  // Submit all songs in a single request
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 5000)
+
+  try {
+    const res = await fetch('/api/leaderboard/song', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        playerId: player.playerId,
+        playerName: player.playerName,
+        scores: scoresToSubmit
+      }),
+      signal: controller.signal
+    })
+
+    clearTimeout(timeoutId)
+
+    if (res.status === 404) {
+      logger.info(
+        'PostGig',
+        `Leaderboard endpoint unavailable for batch submission`
+      )
+      return
+    }
+    if (!res.ok) {
+      const err = await res.text()
+      throw new Error(`HTTP ${res.status}: ${err}`)
+    }
+  } catch (err) {
+    clearTimeout(timeoutId)
+    logger.error('PostGig', `Batch score submit failed`, err)
+  }
 }

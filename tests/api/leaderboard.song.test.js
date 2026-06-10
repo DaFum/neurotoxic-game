@@ -27,6 +27,12 @@ vi.mock('../../lib/redis', () => ({
 }))
 
 describe('Leaderboard API - Song', () => {
+  beforeEach(() => {
+    mockClient.multi = vi.fn().mockReturnValue({
+      zAdd: mockClient.zAdd,
+      exec: vi.fn().mockResolvedValue(true)
+    })
+  })
   let handler
 
   beforeEach(async () => {
@@ -210,6 +216,47 @@ describe('Leaderboard API - Song', () => {
       assert.deepStrictEqual(mockClient.zAdd.mock.calls[0], [
         'lb:song:song1',
         { score: 1000, value: 'player1' },
+        { GT: true }
+      ])
+
+      assert.strictEqual(res.status.mock.calls[0][0], 200)
+      assert.deepStrictEqual(res.json.mock.calls[0][0], {
+        success: true
+      })
+    })
+
+    test('successful update with multiple scores calls redis commands and returns 200', async () => {
+      const req = {
+        method: 'POST',
+        headers: { 'x-forwarded-for': '127.0.0.1' },
+        body: {
+          playerId: 'player1',
+          playerName: 'Player One',
+          scores: [
+            { songId: 'song1', score: 1000 },
+            { songId: 'song2', score: 2000 }
+          ]
+        }
+      }
+      const res = createRes()
+
+      await handler(req, res)
+
+      assert.strictEqual(mockClient.hSet.mock.calls.length, 1)
+      assert.deepStrictEqual(mockClient.hSet.mock.calls[0], [
+        'players',
+        { player1: 'Player One' }
+      ])
+
+      assert.strictEqual(mockClient.zAdd.mock.calls.length, 2)
+      assert.deepStrictEqual(mockClient.zAdd.mock.calls[0], [
+        'lb:song:song1',
+        { score: 1000, value: 'player1' },
+        { GT: true }
+      ])
+      assert.deepStrictEqual(mockClient.zAdd.mock.calls[1], [
+        'lb:song:song2',
+        { score: 2000, value: 'player1' },
         { GT: true }
       ])
 
