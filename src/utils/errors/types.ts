@@ -1,3 +1,5 @@
+import { isPlainRecord, sanitizeTraversableValue } from '../objectUtils'
+
 /**
  * Severity labels used by centralized error handling and logging.
  */
@@ -28,6 +30,94 @@ export type ErrorSeverityType =
 export type ErrorCategoryType =
   (typeof ErrorCategory)[keyof typeof ErrorCategory]
 
+const SENSITIVE_CONTEXT_KEYS = new Set([
+  'token',
+  'password',
+  'ssn',
+  'email',
+  'authorization',
+  'cookie'
+])
+
+const SENSITIVE_KEY_PATTERNS = [
+  'token',
+  'secret',
+  'key',
+  'password',
+  'ssn',
+  'email',
+  'auth',
+  'authorization',
+  'cookie'
+]
+
+const escapeRegExp = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+const SENSITIVE_KEY_REGEXP = SENSITIVE_KEY_PATTERNS.some(Boolean)
+  ? new RegExp(
+      SENSITIVE_KEY_PATTERNS.reduce((acc, pattern) => {
+        if (pattern) {
+          const escaped = escapeRegExp(pattern)
+          return acc ? acc + '|' + escaped : escaped
+        }
+        return acc
+      }, '')
+    )
+  : null
+
+const isSensitiveContextKey = (key: string) => {
+  if (SENSITIVE_CONTEXT_KEYS.has(key)) return true
+  return SENSITIVE_KEY_REGEXP ? SENSITIVE_KEY_REGEXP.test(key) : false
+}
+
+export const sanitizeContextValue = (
+  value: unknown,
+  visited: WeakSet<object>
+): unknown =>
+  sanitizeTraversableValue(
+    value,
+    {
+      isRecord: isPlainRecord,
+      createObject: () => ({}),
+      transformRecordValue: (key, rawValue, sanitize) =>
+        isSensitiveContextKey(key.toLowerCase())
+          ? '[REDACTED]'
+          : sanitize(rawValue)
+    },
+    visited
+  )
+
+export const sanitizeContextPayload = (
+  payload: unknown
+): Record<string, unknown> => {
+  const visited = new WeakSet<object>()
+
+  if (isPlainRecord(payload)) {
+    return sanitizeContextValue(payload, visited) as Record<string, unknown>
+  }
+
+  if (payload instanceof Error) {
+    return sanitizeContextValue(
+      {
+        name: payload.name,
+        message: payload.message,
+        stack: payload.stack
+      },
+      visited
+    ) as Record<string, unknown>
+  }
+
+  if (payload !== null && typeof payload === 'object') {
+    visited.add(payload)
+    return sanitizeContextValue(
+      Object.assign({}, payload) as Record<string, unknown>,
+      visited
+    ) as Record<string, unknown>
+  }
+
+  return {}
+}
+
 /**
  * Base application error carrying severity, category, context, and recovery metadata.
  */
@@ -57,7 +147,10 @@ export class GameError extends Error {
     this.name = 'GameError'
     this.category = category
     this.severity = severity
-    this.context = context as Record<string, unknown>
+    this.context = sanitizeContextValue(context, new WeakSet()) as Record<
+      string,
+      unknown
+    >
     this.recoverable = recoverable
     this.timestamp = Date.now()
   }
@@ -126,4 +219,14 @@ export class AudioError extends GameError {
     })
     this.name = 'AudioError'
   }
+}
+
+const VALID_SEVERITIES = new Set(Object.values(ErrorSeverity))
+
+export const normalizeSeverity = (severity: unknown) => {
+  if (typeof severity !== 'string') return null
+  const normalized = severity.toLowerCase()
+  return VALID_SEVERITIES.has(normalized as ErrorSeverityType)
+    ? (normalized as ErrorSeverityType)
+    : null
 }

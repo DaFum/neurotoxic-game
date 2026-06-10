@@ -1,11 +1,13 @@
 import { logger } from '../logger'
-import { isPlainRecord, sanitizeTraversableValue } from '../objectUtils'
+import { isPlainRecord } from '../objectUtils'
 import {
   GameError,
   ErrorCategory,
   ErrorSeverity,
   ErrorSeverityType,
-  ErrorCategoryType
+  ErrorCategoryType,
+  sanitizeContextPayload,
+  normalizeSeverity
 } from './types'
 
 type ErrorInfoObject = {
@@ -22,102 +24,6 @@ type ErrorInfoObject = {
 
 const errorLog: ErrorInfoObject[] = []
 const MAX_ERROR_LOG_SIZE = 100
-
-const VALID_SEVERITIES = new Set(Object.values(ErrorSeverity))
-
-const SENSITIVE_CONTEXT_KEYS = new Set([
-  'token',
-  'password',
-  'ssn',
-  'email',
-  'authorization',
-  'cookie'
-])
-
-const SENSITIVE_KEY_PATTERNS = [
-  'token',
-  'secret',
-  'key',
-  'password',
-  'ssn',
-  'email',
-  'auth',
-  'authorization',
-  'cookie'
-]
-
-const escapeRegExp = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-
-const SENSITIVE_KEY_REGEXP = SENSITIVE_KEY_PATTERNS.some(Boolean)
-  ? new RegExp(
-      SENSITIVE_KEY_PATTERNS.reduce((acc, pattern) => {
-        if (pattern) {
-          const escaped = escapeRegExp(pattern)
-          return acc ? acc + '|' + escaped : escaped
-        }
-        return acc
-      }, '')
-    )
-  : null
-
-const normalizeSeverity = (severity: unknown) => {
-  if (typeof severity !== 'string') return null
-  const normalized = severity.toLowerCase()
-  return VALID_SEVERITIES.has(normalized as ErrorSeverityType)
-    ? (normalized as ErrorSeverityType)
-    : null
-}
-
-const isSensitiveContextKey = (key: string) => {
-  if (SENSITIVE_CONTEXT_KEYS.has(key)) return true
-  return SENSITIVE_KEY_REGEXP ? SENSITIVE_KEY_REGEXP.test(key) : false
-}
-
-const sanitizeContextValue = (
-  value: unknown,
-  visited: WeakSet<object>
-): unknown =>
-  sanitizeTraversableValue(
-    value,
-    {
-      isRecord: isPlainRecord,
-      createObject: () => ({}),
-      transformRecordValue: (key, rawValue, sanitize) =>
-        isSensitiveContextKey(key.toLowerCase())
-          ? '[REDACTED]'
-          : sanitize(rawValue)
-    },
-    visited
-  )
-
-const sanitizeContextPayload = (payload: unknown): Record<string, unknown> => {
-  const visited = new WeakSet<object>()
-
-  if (isPlainRecord(payload)) {
-    return sanitizeContextValue(payload, visited) as Record<string, unknown>
-  }
-
-  if (payload instanceof Error) {
-    return sanitizeContextValue(
-      {
-        name: payload.name,
-        message: payload.message,
-        stack: payload.stack
-      },
-      visited
-    ) as Record<string, unknown>
-  }
-
-  if (payload !== null && typeof payload === 'object') {
-    visited.add(payload)
-    return sanitizeContextValue(
-      Object.assign({}, payload) as Record<string, unknown>,
-      visited
-    ) as Record<string, unknown>
-  }
-
-  return {}
-}
 
 type NormalizedErrorOptions = {
   source: string | undefined

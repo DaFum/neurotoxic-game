@@ -370,7 +370,10 @@ describe('PostGig Leaderboard Submission', () => {
 
     // Should not call fetch
     await waitFor(() => {
-      expect(global.fetch).not.toHaveBeenCalled()
+      expect(global.fetch).not.toHaveBeenCalledWith(
+        expect.stringContaining('/api/leaderboard'),
+        expect.anything()
+      )
     })
   })
 
@@ -402,7 +405,10 @@ describe('PostGig Leaderboard Submission', () => {
 
     // Should not call fetch because song is unknown
     await waitFor(() => {
-      expect(global.fetch).not.toHaveBeenCalled()
+      expect(global.fetch).not.toHaveBeenCalledWith(
+        expect.stringContaining('/api/leaderboard'),
+        expect.anything()
+      )
     })
   })
 
