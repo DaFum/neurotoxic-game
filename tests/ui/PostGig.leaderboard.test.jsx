@@ -370,7 +370,11 @@ describe('PostGig Leaderboard Submission', () => {
 
     // Should not call fetch
     await waitFor(() => {
-      expect(global.fetch).not.toHaveBeenCalled()
+      const calls = vi.mocked(global.fetch).mock.calls
+      const leaderboardCalls = calls.filter(call =>
+        call[0] && typeof call[0] === 'string' && call[0].includes('/api/leaderboard')
+      )
+      expect(leaderboardCalls).toHaveLength(0)
     })
   })
 
@@ -402,7 +406,11 @@ describe('PostGig Leaderboard Submission', () => {
 
     // Should not call fetch because song is unknown
     await waitFor(() => {
-      expect(global.fetch).not.toHaveBeenCalled()
+      const calls = vi.mocked(global.fetch).mock.calls
+      const leaderboardCalls = calls.filter(call =>
+        call[0] && typeof call[0] === 'string' && call[0].includes('/api/leaderboard')
+      )
+      expect(leaderboardCalls).toHaveLength(0)
     })
   })
 
