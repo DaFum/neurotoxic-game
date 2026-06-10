@@ -1,5 +1,11 @@
 import type { AssetModifiers } from '../../types/assets'
 
+/**
+ * The baseline immutable modifiers representing a neutral asset state.
+ *
+ * @remarks
+ * This object is used as a foundation for accumulating net asset effects. It prevents undefined lookups during calculations by initializing all fields to 1.0 (for multipliers) or 0 (for flat bonuses), and sets all boolean flags to false.
+ */
 export const NEUTRAL_ASSET_MODIFIERS: AssetModifiers = Object.freeze({
   fuelMultiplier: 1.0,
   merchCostMultiplier: 1.0,
@@ -23,4 +29,10 @@ export const NEUTRAL_ASSET_MODIFIERS: AssetModifiers = Object.freeze({
   })
 }) as AssetModifiers
 
+/**
+ * The numerical durability threshold at which an asset module is considered non-functional.
+ *
+ * @remarks
+ * If an asset's condition falls to or below this value, its modifiers and bonuses are entirely negated in state calculations.
+ */
 export const BROKEN_THRESHOLD = 20
