@@ -19,6 +19,7 @@
  */
 
 import { ActionTypes } from './actionTypes'
+import { logger } from '../utils/logger'
 import {
   calculateChassisUpgradeCost,
   CHASSIS_CONFIG,
@@ -317,7 +318,12 @@ export const upgradeChassisTier = (
   state: GameState
 ): UpgradeChassisTierAction | null => {
   const asset = selectAssetsMap(state).get(assetId)
-  if (!asset) return null
+  if (!asset) {
+    if (import.meta.env.DEV) {
+      logger.error('AssetActionCreators', `Attempted to create UPGRADE_CHASSIS_TIER action for non-existent asset ${assetId}.`)
+    }
+    return null
+  }
   if (asset.chassisTier >= targetTier) return null
   const targetCfg =
     CHASSIS_CONFIG[asset.kind]?.[asset.chassisFlavor]?.[targetTier]
