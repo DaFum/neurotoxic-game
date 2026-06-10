@@ -74,12 +74,13 @@ export const applyOfferVariance = (
     roundTo(offer.upfront * upfrontJitter * mods.upfrontMul, 50)
   )
 
-  const hasPerGig = isFiniteNumber(offer.perGig)
-  const newPerGig = hasPerGig
+  const { perGig, ...restOffer } = offer
+  const rawPerGig = perGig
+  const newPerGig = isFiniteNumber(rawPerGig)
     ? Math.max(
         5,
         roundTo(
-          (offer.perGig as number) * (0.9 + rng() * 0.2) * mods.perGigMul,
+          rawPerGig * (0.9 + rng() * 0.2) * mods.perGigMul,
           5
         )
       )
@@ -92,7 +93,7 @@ export const applyOfferVariance = (
       : Math.max(1, offer.duration + durationJitter + mods.durationDelta)
 
   const result: BrandDealOffer = {
-    ...offer,
+    ...restOffer,
     upfront: newUpfront,
     duration: newDuration
   }
