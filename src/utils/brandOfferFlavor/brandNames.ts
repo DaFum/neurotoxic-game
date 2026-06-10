@@ -146,5 +146,3 @@ export const generateCampaignCodename = (
   alignment: string,
   rng: RandomFn
 ): string => generateBrandName('Campaign', alignment, rng)
-
-// ─── Pitch Reps ──────────────────────────────────────────────────────────
