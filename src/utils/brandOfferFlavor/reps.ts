@@ -60,9 +60,9 @@ export const buildRep = (alignment: string, rng: RandomFn): BrandOfferRep => {
   )
   const entry = pool[idx] ?? fallback
   return {
-    nameKey: `economy:brandFlavor.reps.${alignment}.${idx}.name`,
+    nameKey: `economy:brandFlavor.reps.${Object.hasOwn(REPS_BY_ALIGNMENT, alignment) ? alignment : "NEUTRAL"}.${idx}.name`,
     nameDefault: entry.name,
-    titleKey: `economy:brandFlavor.reps.${alignment}.${idx}.title`,
+    titleKey: `economy:brandFlavor.reps.${Object.hasOwn(REPS_BY_ALIGNMENT, alignment) ? alignment : "NEUTRAL"}.${idx}.title`,
     titleDefault: entry.title
   }
 }
