@@ -25,7 +25,7 @@ type SuccessToastConfig = {
  *
  * @param prefix - Stable, caller-specific id prefix.
  * @param toasts - Current toast list to avoid collisions with.
- * @returns `${prefix}-${n}` with the smallest n >= toasts.length that is free.
+ * @returns `${prefix}-${n}` with the smallest free n, starting at toasts.length.
  */
 export const buildDeterministicToastId = (
   prefix: string,
