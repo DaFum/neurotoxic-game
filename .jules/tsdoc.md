@@ -7,3 +7,4 @@
 | 2026-06-08 | src/components/stage/NoteSpritePool.ts | NoteSpriteFactory, _getEffectiveTexture, createNoteSprite, initializeNoteSprite, acquireSpriteFromPool, destroyNoteSprite, releaseSpriteToPool, dispose |
 | 2026-06-08 | src/components/stage/RoadieStageController.ts | RoadieStageState, RoadieStageController |
 | 2026-06-08 | src/utils/assetSelectors/constants.ts | NEUTRAL_ASSET_MODIFIERS, BROKEN_THRESHOLD |
+| 2026-06-11 | src/utils/brandOfferFlavor/helpers.ts | pick, roundTo |
