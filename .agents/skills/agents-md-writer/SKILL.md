@@ -326,13 +326,14 @@ If the user provides a repo path, run validation automatically after generating 
 
 1. **Gather info** about the repo (see "Before Writing" above)
 2. **Check for existing config files** — if migrating, read `references/migration-guide.md`
-3. **Identify non-obvious requirements** — things that meet the Golden Rule
-4. **Draft the file** — aim for 200-400 words, use the structure template
-5. **Review against "What to NEVER Include"** — remove anything that fails
-6. **Run the validator** — `python scripts/validate_context_file.py <file>`
-7. **Check each line**: "Would an agent fail without this specific instruction?" If no, cut it.
-8. **Set up multi-tool strategy** — symlinks, imports, tool-specific files as needed
-9. **Save the file(s)** to the repo root
+3. **Reference the template** — read `references/AGENTS.md` to see the standard template
+4. **Identify non-obvious requirements** — things that meet the Golden Rule
+5. **Draft the file** — aim for 200-400 words, use the structure template
+6. **Review against "What to NEVER Include"** — remove anything that fails
+7. **Run the validator** — `python scripts/validate_context_file.py <file>`
+8. **Check each line**: "Would an agent fail without this specific instruction?" If no, cut it.
+9. **Set up multi-tool strategy** — symlinks, imports, tool-specific files as needed
+10. **Save the file(s)** to the repo root
 
 ## Quality Checklist
 
