@@ -49,7 +49,6 @@ const normalizeHandleErrorOptions = (
 }
 
 const sanitizeErrorInfo = (errorInfo: ErrorInfoObject) => ({
-  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
   message: errorInfo.message || 'Critical error',
   code: errorInfo.category || ErrorCategory.UNKNOWN,
   timestamp: errorInfo.timestamp || Date.now()
