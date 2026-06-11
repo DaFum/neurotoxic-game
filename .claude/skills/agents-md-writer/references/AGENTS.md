@@ -13,20 +13,20 @@ Keep this file short, specific, and current. Prefer repo-specific facts over gen
 
 1. Project Snapshot
 
-Field	Value
-
-Project	[PROJECT_NAME]
-Product type	[SaaS / app / API / game / internal tool / library]
-Primary users	[WHO USES THIS]
-Critical flow	[WHAT MUST NOT BREAK]
-Language	[TypeScript / Python / Go / etc.]
-Framework	[Next.js / React / Django / Rails / FastAPI / etc.]
-Package manager	[pnpm / npm / yarn / uv / pip / poetry / cargo]
-Runtime	[Node / Python / etc. version]
-Database	[Postgres / SQLite / MongoDB / none]
-Auth	[Clerk / Auth.js / custom / Firebase / none]
-Deployment	[Vercel / AWS / Render / Docker / etc.]
-Test framework	[Vitest / Jest / Playwright / Pytest / etc.]
+| Field | Value |
+| --- | --- |
+| Project | [PROJECT_NAME] |
+| Product type | [SaaS / app / API / game / internal tool / library] |
+| Primary users | [WHO USES THIS] |
+| Critical flow | [WHAT MUST NOT BREAK] |
+| Language | [TypeScript / Python / Go / etc.] |
+| Framework | [Next.js / React / Django / Rails / FastAPI / etc.] |
+| Package manager | [pnpm / npm / yarn / uv / pip / poetry / cargo] |
+| Runtime | [Node / Python / etc. version] |
+| Database | [Postgres / SQLite / MongoDB / none] |
+| Auth | [Clerk / Auth.js / custom / Firebase / none] |
+| Deployment | [Vercel / AWS / Render / Docker / etc.] |
+| Test framework | [Vitest / Jest / Playwright / Pytest / etc.] |
 
 
 
@@ -78,21 +78,21 @@ Do not claim success without verification.
 
 Check these files before changing related behavior.
 
-Area	Source of Truth	Rule
-
-App entry / providers	[path]	Do not change global wiring without checking startup behavior.
-Routing	[path]	Follow existing route conventions.
-UI components	[path]	Reuse existing primitives before creating new ones.
-Styling / design system	[path]	Do not introduce a second styling system.
-State management	[path]	Do not create duplicate state sources.
-API contracts	[path]	Preserve request/response compatibility unless asked.
-Validation	[path]	Use existing schemas and validation helpers.
-Database schema	[path]	Update migrations, generated types, and tests together.
-Auth / permissions	[path]	Verify roles, sessions, and access checks.
-Billing / plans	[path]	Treat as high-risk. Verify plan access and webhooks.
-Environment config	[path]	Update examples when variables change.
-Tests	[path]	Match existing test style and helpers.
-CI / deployment	[path]	Do not change unless required by the task.
+| Area | Source of Truth | Rule |
+| --- | --- | --- |
+| App entry / providers | [path] | Do not change global wiring without checking startup behavior. |
+| Routing | [path] | Follow existing route conventions. |
+| UI components | [path] | Reuse existing primitives before creating new ones. |
+| Styling / design system | [path] | Do not introduce a second styling system. |
+| State management | [path] | Do not create duplicate state sources. |
+| API contracts | [path] | Preserve request/response compatibility unless asked. |
+| Validation | [path] | Use existing schemas and validation helpers. |
+| Database schema | [path] | Update migrations, generated types, and tests together. |
+| Auth / permissions | [path] | Verify roles, sessions, and access checks. |
+| Billing / plans | [path] | Treat as high-risk. Verify plan access and webhooks. |
+| Environment config | [path] | Update examples when variables change. |
+| Tests | [path] | Match existing test style and helpers. |
+| CI / deployment | [path] | Do not change unless required by the task. |
 
 
 If the requested change conflicts with a source-of-truth file, stop and explain the conflict.
@@ -170,18 +170,18 @@ If a command fails, report the failure and whether it appears related to the cha
 
 6. Verification Matrix
 
-Change Type	Required Verification
-
-Copy-only change	[lint or targeted check]
-UI behavior change	[component/unit test + manual or e2e check]
-API change	[integration/contract test]
-Database change	[migration check + generated types + integration test]
-Auth / permission change	[role/session regression check]
-Billing change	[webhook/checkout/plan-access check]
-State persistence change	[old-state migration/fallback test]
-Dependency change	[install + build + relevant tests]
-Refactor	[existing tests proving behavior unchanged]
-Documentation-only change	[verify commands, paths, and links are accurate]
+| Change Type | Required Verification |
+| --- | --- |
+| Copy-only change | [lint or targeted check] |
+| UI behavior change | [component/unit test + manual or e2e check] |
+| API change | [integration/contract test] |
+| Database change | [migration check + generated types + integration test] |
+| Auth / permission change | [role/session regression check] |
+| Billing change | [webhook/checkout/plan-access check] |
+| State persistence change | [old-state migration/fallback test] |
+| Dependency change | [install + build + relevant tests] |
+| Refactor | [existing tests proving behavior unchanged] |
+| Documentation-only change | [verify commands, paths, and links are accurate] |
 
 
 
@@ -240,13 +240,13 @@ Do not edit generated files unless instructed.
 
 Changes here require extra caution.
 
-Area	Risk	Required Check
-
-[path]	[auth/session/customer data/etc.]	[specific check]
-[path]	[billing/payment/plans/etc.]	[specific check]
-[path]	[persisted state/migrations/etc.]	[specific check]
-[path]	[public API/external client/etc.]	[specific check]
-[path]	[critical UI flow/etc.]	[specific check]
+| Area | Risk | Required Check |
+| --- | --- | --- |
+| [path] | [auth/session/customer data/etc.] | [specific check] |
+| [path] | [billing/payment/plans/etc.] | [specific check] |
+| [path] | [persisted state/migrations/etc.] | [specific check] |
+| [path] | [public API/external client/etc.] | [specific check] |
+| [path] | [critical UI flow/etc.] | [specific check] |
 
 
 High-risk categories include auth, permissions, payments, data deletion, migrations, file uploads, email delivery, background jobs, webhooks, public APIs, analytics, accessibility, internationalization, and customer data exports.
@@ -550,18 +550,18 @@ Remove outdated or conflicting instructions immediately.
 
 Score before relying on this file.
 
-Category	Score 0-2
-
-Project snapshot complete	[0 / 1 / 2]
-Source-of-truth files listed	[0 / 1 / 2]
-Commands are executable	[0 / 1 / 2]
-Verification matrix is specific	[0 / 1 / 2]
-High-risk areas documented	[0 / 1 / 2]
-Gotchas are concrete	[0 / 1 / 2]
-Env/security rules clear	[0 / 1 / 2]
-Final response format defined	[0 / 1 / 2]
-Tool compatibility handled	[0 / 1 / 2]
-Maintenance rule included	[0 / 1 / 2]
+| Category | Score 0-2 |
+| --- | --- |
+| Project snapshot complete | [0 / 1 / 2] |
+| Source-of-truth files listed | [0 / 1 / 2] |
+| Commands are executable | [0 / 1 / 2] |
+| Verification matrix is specific | [0 / 1 / 2] |
+| High-risk areas documented | [0 / 1 / 2] |
+| Gotchas are concrete | [0 / 1 / 2] |
+| Env/security rules clear | [0 / 1 / 2] |
+| Final response format defined | [0 / 1 / 2] |
+| Tool compatibility handled | [0 / 1 / 2] |
+| Maintenance rule included | [0 / 1 / 2] |
 
 
 Score:
