@@ -36,5 +36,7 @@ export type ResolvedPostResult = PostResult & {
   reputationCooldownSet?: number
   egoClear?: boolean
   egoDrop?: string | null
+  /** True when the resolved post represents a failed stage dive / crowdsurf. */
+  failedStageDive?: boolean
   influencerUpdate?: { id: string; scoreChange: number }
 }

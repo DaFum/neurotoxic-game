@@ -2,12 +2,14 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
   applyPostGigPerformancePenalty,
+  calculateContinueStats,
   calculateExcessMissMoneyPenalty,
   calculatePostGigStateUpdates,
   getAcceptDealSocialUpdateFactory,
   getSpinStorySocialUpdateFactory,
   SPIN_STORY_CONTROVERSY_REDUCTION
 } from '../../src/utils/postGigUtils'
+import { BALANCE_CONSTANTS } from '../../src/utils/gameState'
 
 const buildFinancials = () => ({
   income: { total: 500, breakdown: [] },
@@ -193,6 +195,62 @@ test('calculatePostGigStateUpdates grows scene presence after post-gig activity'
   })
 
   assert.equal(updates.updatedSocial.scenePresence, 29)
+})
+
+test('calculatePostGigStateUpdates boosts positive follower gains by band affinity', () => {
+  const params = buildPostGigParams({
+    result: { followers: 100, success: true }
+  })
+  const base = calculatePostGigStateUpdates(params)
+  const boosted = calculatePostGigStateUpdates({
+    ...params,
+    band: { ...params.band, affinity: 0.5 }
+  })
+
+  assert.ok(base.finalResult.totalFollowers > 0)
+  assert.equal(
+    boosted.finalResult.totalFollowers,
+    Math.round(base.finalResult.totalFollowers * 1.5)
+  )
+})
+
+test('calculatePostGigStateUpdates does not soften follower losses via affinity', () => {
+  const params = buildPostGigParams({
+    result: { followers: -500, success: false }
+  })
+  const base = calculatePostGigStateUpdates(params)
+  const boosted = calculatePostGigStateUpdates({
+    ...params,
+    band: { ...params.band, affinity: 0.5 }
+  })
+
+  assert.ok(base.finalResult.totalFollowers < 0)
+  assert.equal(
+    boosted.finalResult.totalFollowers,
+    base.finalResult.totalFollowers
+  )
+})
+
+test('calculateContinueStats boosts positive fame gain by bandStyle', () => {
+  const identity = n => n
+  const params = {
+    player: { money: 100, fame: 100 },
+    perfScore: 80,
+    financials: buildFinancials(),
+    misses: 0,
+    calculateFameGain: raw => raw,
+    calculateFameLevel: () => 1,
+    clampPlayerFame: identity,
+    clampPlayerMoney: identity,
+    BALANCE_CONSTANTS
+  }
+  const base = calculateContinueStats(params)
+  const styled = calculateContinueStats({ ...params, bandStyle: 0.5 })
+
+  const baseGain = base.newFame - 100
+  const styledGain = styled.newFame - 100
+  assert.ok(baseGain > 0)
+  assert.equal(styledGain, Math.round(baseGain * 1.5))
 })
 
 test('getSpinStorySocialUpdateFactory decreases controversyLevel correctly', () => {

@@ -10,6 +10,7 @@ import {
   getCityKeyFromVenueId
 } from '../../utils/mapGenerator'
 import { normalizeVenueId } from '../../utils/mapUtils'
+import { finiteNumberOr } from '../../utils/finiteNumber'
 import { getActiveAssetModifiers } from '../../utils/assetSelectors'
 import type {
   GameState,
@@ -102,6 +103,7 @@ export const usePostGigDerivations = ({
       gigModifiers,
       bandInventory: band.inventory,
       bandMerchPrices: band.merchPrices,
+      bandGigModifier: finiteNumberOr(band.gigModifier, 0),
       player,
       social,
       reputationByRegion,
@@ -117,6 +119,7 @@ export const usePostGigDerivations = ({
     gigModifiers,
     band.inventory,
     band.merchPrices,
+    band.gigModifier,
     player,
     social,
     reputationByRegion,

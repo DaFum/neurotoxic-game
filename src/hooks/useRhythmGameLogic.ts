@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import type { MapNode } from '../types/map'
 import { useGameActions, useGameSelector } from '../context/GameState.tsx'
 import { stopAudio } from '../utils/audio/audioEngine'
+import { finiteNumberOr } from '../utils/finiteNumber'
 import { useRhythmGameState } from './rhythmGame/useRhythmGameState'
 import { useRhythmGameScoring } from './rhythmGame/useRhythmGameScoring'
 import { useRhythmGameAudio } from './rhythmGame/useRhythmGameAudio'
@@ -86,11 +87,23 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
     }
   }, [rivalBand, currentGig, venueIdToNodeIdMap, gameStateRef])
 
+  // Fold temporary band effects (contraband/equipment) into the static
+  // performance values the scoring hook consumes.
+  const scoringPerformance = useMemo(
+    () => ({
+      ...band.performance,
+      tempo: finiteNumberOr(band.tempo, 0),
+      critChance: finiteNumberOr(band.crit, 0),
+      crowdControl: finiteNumberOr(band.crowdControl, 0)
+    }),
+    [band.performance, band.tempo, band.crit, band.crowdControl]
+  )
+
   // 2. Scoring Logic (Hits, Misses, Toxic Mode)
   const scoringActions = useRhythmGameScoring({
     gameStateRef,
     setters,
-    performance: band.performance, // Injected for dynamic stats
+    performance: scoringPerformance, // Injected for dynamic stats
     contextActions: { addToast, setLastGigStats, endGig }
   })
   const { activateToxicMode } = scoringActions

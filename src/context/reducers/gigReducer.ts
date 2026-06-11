@@ -7,7 +7,13 @@ import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks } from '../../utils/traitUtils'
 import { DEFAULT_GIG_MODIFIERS } from '../initialState'
 import { GAME_PHASES } from '../gameConstants'
-import { isForbiddenKey, finiteNumberOr } from '../../utils/gameState'
+import {
+  isForbiddenKey,
+  finiteNumberOr,
+  clampBandHarmony,
+  clampBandStress,
+  BALANCE_CONSTANTS
+} from '../../utils/gameState'
 import { handleAddVenueBlacklist } from './socialReducer'
 import { QuestLifecycle } from '../../domain/questLifecycle'
 import { QUEST_PROVE_YOURSELF } from '../../data/questsConstants'
@@ -189,9 +195,21 @@ export const handleSetLastGigStats = (
   }
   // Prevent trait unlocks during practice mode
   if (state.currentGig?.isPractice) {
+    // Practice reward: small harmony gain, boosted by the band practiceGain
+    // effect (contraband `practice_gain`).
+    const practiceGain = Math.max(0, finiteNumberOr(state.band.practiceGain, 0))
+    const harmonyGain = Math.round(
+      BALANCE_CONSTANTS.PRACTICE_HARMONY_GAIN * (1 + practiceGain)
+    )
     return {
       ...state,
-      lastGigStats: safePayload
+      lastGigStats: safePayload,
+      band: {
+        ...state.band,
+        harmony: clampBandHarmony(
+          finiteNumberOr(state.band.harmony, 1) + harmonyGain
+        )
+      }
     }
   }
   const performanceUnlocks = checkTraitUnlocks(state, {
@@ -203,7 +221,14 @@ export const handleSetLastGigStats = (
   let nextState: GameState = {
     ...state,
     lastGigStats: safePayload,
-    band: traitResult.band,
+    band: {
+      ...traitResult.band,
+      // Real gigs build up band stress; days decay it (handleAdvanceDay)
+      stress: clampBandStress(
+        finiteNumberOr(traitResult.band.stress, 0) +
+          BALANCE_CONSTANTS.STRESS_PER_GIG
+      )
+    },
     toasts: traitResult.toasts,
     reputationByRegion: { ...state.reputationByRegion },
     reputationByVenue: { ...state.reputationByVenue }

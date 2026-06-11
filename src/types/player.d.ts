@@ -29,6 +29,8 @@ export interface PlayerState {
     totalDistance: number
     conflictsResolved: number
     stageDives: number
+    /** Failed stage dives / crowdsurfs; 2 unlock the `clumsy` trait. */
+    failedStageDives?: number
     consecutiveBadShows: number
     proveYourselfMode: boolean
   }

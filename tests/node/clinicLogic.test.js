@@ -64,6 +64,29 @@ test('clinicReducer', async t => {
       assert.equal(nextState.band.members[0].mood, 25)
     })
 
+    await t2.test('drops non-finite gains instead of clamp-maxing them', () => {
+      // Regression: `Number(v) || 0` collapses NaN but passes Infinity, which
+      // the clamp turned into a free full heal. finiteNumberOr drops both.
+      const state = {
+        player: { money: 500, fame: 100, clinicVisits: 0 },
+        band: {
+          members: [{ id: 'm1', name: 'M1', stamina: 50, mood: 50 }]
+        }
+      }
+
+      const payload = {
+        memberId: 'm1',
+        type: 'heal',
+        staminaGain: Infinity,
+        moodGain: -Infinity
+      }
+
+      const nextState = handleClinicHeal(state, payload)
+
+      assert.equal(nextState.band.members[0].stamina, 50)
+      assert.equal(nextState.band.members[0].mood, 50)
+    })
+
     await t2.test('appends successToast to state.toasts on success', () => {
       const state = {
         player: { money: 500, fame: 100, clinicVisits: 0 },

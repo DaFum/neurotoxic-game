@@ -36,8 +36,6 @@ type UiState = {
 // Re-export constants for backward compatibility and tests
 export {
   TOURBUS_BASE_SPEED as BASE_SPEED,
-  TOURBUS_MAX_SPEED as MAX_SPEED,
-  TOURBUS_SPAWN_RATE_MS as SPAWN_RATE_MS,
   TOURBUS_TARGET_DISTANCE as TARGET_DISTANCE
 } from './minigameConstants'
 

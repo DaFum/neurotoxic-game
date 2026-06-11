@@ -28,6 +28,7 @@ import type {
 import { logger } from '../../utils/logger'
 import {
   clampBandHarmony,
+  clampBandStress,
   clampPlayerMoney,
   clampPlayerFame,
   clampMemberStamina,
@@ -39,7 +40,8 @@ import {
   isLooseRecord,
   isEmptyObject,
   finiteNumberOr,
-  isFiniteNumber
+  isFiniteNumber,
+  BALANCE_CONSTANTS
 } from '../../utils/gameState'
 import { calculateDailyUpdates } from '../../utils/simulationUtils'
 import {
@@ -724,6 +726,7 @@ const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
         statsData.stageDives,
         DEFAULT_PLAYER_STATE.stats.stageDives
       ),
+      failedStageDives: finiteNumberOr(statsData.failedStageDives, 0),
       consecutiveBadShows: finiteNumberOr(
         statsData.consecutiveBadShows,
         DEFAULT_PLAYER_STATE.stats.consecutiveBadShows
@@ -904,6 +907,11 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
   ]) {
     const value = finiteOptionalNumber(bandData[key])
     if (value !== undefined) rawBand[key] = value
+  }
+
+  const loadedStress = finiteOptionalNumber(bandData.stress)
+  if (loadedStress !== undefined) {
+    rawBand.stress = clampBandStress(loadedStress)
   }
 
   if (
@@ -2023,6 +2031,24 @@ export const handleAdvanceDay = (
   const nextBand = { ...band }
   if (typeof nextBand.harmony === 'number') {
     nextBand.harmony = clampBandHarmony(nextBand.harmony)
+  }
+
+  // Band stress loop: high stress drains member mood, then decays daily.
+  // Gigs add stress (gigReducer); contraband `stress` effects can reduce it.
+  const currentStress = clampBandStress(finiteNumberOr(nextBand.stress, 0))
+  if (currentStress > 0) {
+    const moodPenalty = Math.floor(
+      currentStress / BALANCE_CONSTANTS.STRESS_MOOD_PENALTY_DIVISOR
+    )
+    if (moodPenalty > 0 && Array.isArray(nextBand.members)) {
+      nextBand.members = nextBand.members.map((member: BandMember) => ({
+        ...member,
+        mood: clampMemberMood(finiteNumberOr(member.mood, 0) - moodPenalty)
+      }))
+    }
+    nextBand.stress = clampBandStress(
+      currentStress - BALANCE_CONSTANTS.STRESS_DAILY_DECAY
+    )
   }
 
   const socialUnlockState: Pick<GameState, 'player' | 'band' | 'social'> = {

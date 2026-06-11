@@ -37,6 +37,7 @@ export const deriveFinancials = ({
   gigModifiers,
   bandInventory,
   bandMerchPrices,
+  bandGigModifier,
   player,
   social,
   reputationByRegion,
@@ -51,6 +52,8 @@ export const deriveFinancials = ({
   gigModifiers: GameState['gigModifiers']
   bandInventory: GameState['band']['inventory']
   bandMerchPrices?: GameState['band']['merchPrices']
+  /** Temporary band gig-income bonus fraction (contraband `gig_modifier`). */
+  bandGigModifier?: number
   player: GameState['player']
   social: GameState['social']
   reputationByRegion: GameState['reputationByRegion']
@@ -83,6 +86,7 @@ export const deriveFinancials = ({
         daysSinceLastGig: gigContext?.daysSinceLastGig ?? 0,
         lastGigDifficulty: gigContext?.lastGigDifficulty ?? undefined,
         merchPrices: bandMerchPrices,
+        bandGigModifier,
         social,
         cityTraits
       }

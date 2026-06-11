@@ -44,6 +44,11 @@ export type EconomyContext = {
   regionRep?: number
   discountedTickets?: boolean
   merchPrices?: Record<string, number>
+  /**
+   * Fractional income bonus from temporary band effects (e.g. contraband
+   * `gig_modifier`); applied to gig income as a separate breakdown line.
+   */
+  bandGigModifier?: number
   cityTraits?: CityTraitState
   social?: {
     zealotry?: number

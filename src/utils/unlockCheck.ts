@@ -156,6 +156,13 @@ export const checkTraitUnlocks = (
         newUnlocks.push({ memberId: Lars.name, traitId: 'social_manager' })
       }
     }
+
+    // Clumsy (Marius): 2 failed stage dives (tracked via social drama posts)
+    if (Marius && !hasTrait(Marius, 'clumsy')) {
+      if ((player.stats?.failedStageDives || 0) >= 2) {
+        newUnlocks.push({ memberId: Marius.name, traitId: 'clumsy' })
+      }
+    }
   }
 
   // 5. Event Unlocks

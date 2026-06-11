@@ -141,6 +141,47 @@ test('Economy Asset Modifiers', async t => {
     assert.ok(hasTipItem, 'Should have tip bonus breakdown item')
   })
 
+  await t.test(
+    'calculateGigFinancials applies context.bandGigModifier as income line',
+    () => {
+      const gigData = { capacity: 100, price: 10, pay: 100, name: 'Test Gig' }
+      const baseParams = {
+        gigData,
+        performanceScore: 100,
+        modifiers: {},
+        bandInventory: {},
+        gigStats: {}
+      }
+      const legacy = calculateGigFinancials(baseParams, NEUTRAL_ASSET_MODIFIERS)
+
+      const modified = calculateGigFinancials(
+        { ...baseParams, context: { bandGigModifier: 0.12 } },
+        NEUTRAL_ASSET_MODIFIERS
+      )
+
+      assert.ok(
+        modified.income.total > legacy.income.total,
+        'Income should increase with band gig modifier'
+      )
+      const bonusItem = modified.income.breakdown.find(
+        i => i.labelKey === 'economy:gigIncome.bandBonus.label'
+      )
+      assert.ok(bonusItem, 'Should have band bonus breakdown item')
+      // Net must stay reconciled: income - expenses === net
+      assert.strictEqual(
+        modified.net,
+        modified.income.total - modified.expenses.total
+      )
+
+      // Non-finite modifiers are ignored
+      const hostile = calculateGigFinancials(
+        { ...baseParams, context: { bandGigModifier: Infinity } },
+        NEUTRAL_ASSET_MODIFIERS
+      )
+      assert.strictEqual(hostile.income.total, legacy.income.total)
+    }
+  )
+
   await t.test('calculateGigFinancials applies songQualityBonus', () => {
     const params = {
       gigData: { capacity: 150, price: 12, pay: 100, name: 'Test Gig' },

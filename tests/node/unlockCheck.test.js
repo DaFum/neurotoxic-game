@@ -188,6 +188,35 @@ describe('checkTraitUnlocks', () => {
         { memberId: 'Lars', traitId: 'social_manager' }
       ])
     })
+
+    it('unlocks Clumsy for Marius when failed stage dives >= 2', () => {
+      const marius = createMember('Marius')
+      const state = createState([marius], { failedStageDives: 2 })
+      const context = { type: 'SOCIAL_UPDATE' }
+
+      const unlocks = checkTraitUnlocks(state, context)
+      assert.deepStrictEqual(unlocks, [
+        { memberId: 'Marius', traitId: 'clumsy' }
+      ])
+    })
+
+    it('does not unlock Clumsy below 2 failed stage dives', () => {
+      const marius = createMember('Marius')
+      const state = createState([marius], { failedStageDives: 1 })
+      const context = { type: 'SOCIAL_UPDATE' }
+
+      const unlocks = checkTraitUnlocks(state, context)
+      assert.deepStrictEqual(unlocks, [])
+    })
+
+    it('does not re-unlock Clumsy when Marius already has it', () => {
+      const marius = createMember('Marius', { clumsy: true })
+      const state = createState([marius], { failedStageDives: 5 })
+      const context = { type: 'SOCIAL_UPDATE' }
+
+      const unlocks = checkTraitUnlocks(state, context)
+      assert.deepStrictEqual(unlocks, [])
+    })
   })
 
   // 5. EVENT_RESOLVED Scenarios

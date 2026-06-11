@@ -30,7 +30,14 @@ export const BALANCE_CONSTANTS = {
   WEALTH_DRAIN_THRESHOLD: 2000,
   WEALTH_DRAIN_CHANCE: 0.12,
   WEALTH_DRAIN_MIN_RATE: 0.015,
-  WEALTH_DRAIN_MAX_RATE: 0.05
+  WEALTH_DRAIN_MAX_RATE: 0.05,
+  // Band stress loop: gigs add stress, days decay it, high stress drains mood
+  STRESS_PER_GIG: 5,
+  STRESS_DAILY_DECAY: 2,
+  // Members lose floor(stress / divisor) mood per day (0 below 25 stress)
+  STRESS_MOOD_PENALTY_DIVISOR: 25,
+  // Base harmony gained from completing a practice session (scaled by practiceGain)
+  PRACTICE_HARMONY_GAIN: 1
 }
 
 /**

@@ -62,6 +62,7 @@ export const DEFAULT_PLAYER_STATE = {
     totalDistance: 0,
     conflictsResolved: 0,
     stageDives: 0,
+    failedStageDives: 0,
     consecutiveBadShows: 0,
     proveYourselfMode: false
   }

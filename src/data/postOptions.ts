@@ -7,6 +7,7 @@ import { getSafeRandom } from '../utils/crypto'
 import { QUEST_APOLOGY_TOUR } from './questsConstants'
 import { hasActiveQuest } from '../utils/questUtils'
 import { isPlainOrNullPrototypeRecord } from '../utils/objectUtils'
+import { selectRandomItem } from '../utils/audio/selectionUtils'
 
 const getSecureRollOnce = () => {
   return getSafeRandom()
@@ -350,9 +351,7 @@ export const POST_OPTIONS = [
       band.members.length > 0,
     resolve: ({ band, diceRoll }: GameState & { diceRoll: number }) => {
       const members = requireBandMembers(band, 'perf_smashed_gear')
-      const rawIndex = Math.floor(diceRoll * members.length)
-      const safeIndex = Math.min(Math.max(0, rawIndex), members.length - 1)
-      const target = members[safeIndex]?.name
+      const target = selectRandomItem(members, () => diceRoll)?.name
       const targetName =
         target ??
         i18n.t('ui:postOptions.errors.unknownMemberFallback', {
@@ -674,16 +673,14 @@ export const POST_OPTIONS = [
       Array.isArray(band?.members) && band.members.length > 0,
     resolve: ({ band, diceRoll }: GameState & { diceRoll: number }) => {
       const members = requireBandMembers(band, 'drama_crowdsurf_fail')
-      const rawIndex = Math.floor(diceRoll * members.length)
-      const safeIndex = Math.min(Math.max(0, rawIndex), members.length - 1)
-      const targetObj = members[safeIndex]
+      const targetObj = selectRandomItem(members, () => diceRoll)
       const target =
         targetObj?.name ??
         i18n.t('ui:postOptions.errors.unknownMemberFallback', {
           defaultValue: 'Unknown'
         })
       let successChance = 0.5
-      if (hasMemberWithTrait([targetObj], 'clumsy')) {
+      if (targetObj && hasMemberWithTrait([targetObj], 'clumsy')) {
         successChance = 0.7 // Clumsy requires a higher roll (>0.7) to succeed
       }
 
@@ -712,6 +709,7 @@ export const POST_OPTIONS = [
           followers: -500,
           targetMember: target,
           staminaChange: -5,
+          failedStageDive: true,
           message: i18n.t('ui:postOptions.drama_crowdsurf_fail.failMessage', {
             defaultValue: '{{member}} got dropped. It was just sad to watch.',
             member: target

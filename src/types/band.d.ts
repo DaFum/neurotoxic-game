@@ -60,6 +60,27 @@ export interface BandState {
   harmonyRegenTravel: boolean
   inventorySlots: number
   luck: number
+  /**
+   * Accumulated band pressure (0-100). Gigs add stress, days decay it, and
+   * high stress drains member mood on `ADVANCE_DAY`. Contraband can reduce it.
+   */
+  stress?: number
+  /** Hit-window bonus fraction for the rhythm game (0.15 = +15% window). */
+  tempo?: number
+  /** Chance (0-1) that a rhythm-game hit scores double points. */
+  crit?: number
+  /** Fractional reduction of crowd decay in the rhythm game (0-1). */
+  crowdControl?: number
+  /** Fractional bonus to positive social follower gains (0.1 = +10%). */
+  affinity?: number
+  /** Fractional bonus to positive post-gig fame gains (0.1 = +10%). */
+  style?: number
+  /** Fractional reduction of the low-harmony show-cancellation chance (0-1). */
+  tourSuccess?: number
+  /** Fractional bonus applied to gig income as a separate income line. */
+  gigModifier?: number
+  /** Fractional bonus to the harmony gained from completing practice mode. */
+  practiceGain?: number
   stash: Record<string, StashItem>
   activeContrabandEffects: unknown[]
   performance: {

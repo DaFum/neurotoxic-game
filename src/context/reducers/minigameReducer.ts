@@ -176,7 +176,7 @@ export const handleCompleteTravelMinigame = (
     },
     stats: {
       ...state.player.stats,
-      totalDistance: (state.player.stats?.totalDistance || 0) + dist
+      totalDistance: finiteNumberOr(state.player.stats?.totalDistance, 0) + dist
     }
   }
 
@@ -200,7 +200,7 @@ export const handleCompleteTravelMinigame = (
   }
 
   // --- Contraband drop logic ---
-  const luck = newState.band?.luck || 0
+  const luck = finiteNumberOr(newState.band?.luck, 0)
   const chance = computeDropChance(undefined, luck)
 
   if (safeRngValue !== undefined && safeRngValue < chance) {
