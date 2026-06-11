@@ -166,7 +166,8 @@ const updateSocialDecay = (
   rng: () => number
 ) => {
   // 3. Social Decay
-  nextSocial.viral = nextSocial.viral || 0
+  // finiteNumberOr also rejects Infinity, which `|| 0` would let through.
+  nextSocial.viral = finiteNumberOr(nextSocial.viral, 0)
   // Viral decay
   if (nextSocial.viral > 0) nextSocial.viral -= 1
 
@@ -290,10 +291,12 @@ const updatePassiveEffectsAndMembers = (
   }
   nextBand.members = nextMembers
 
-  // Apply Party Animal RNG penalty in its original global sequence position
+  // Apply Party Animal RNG penalty in its original global sequence position.
+  // Operates on the freshly copied nextMembers so the penalty lands in the
+  // returned state and the previous state's member objects stay untouched.
   if (hasBeerFridge) {
-    for (let i = 0; i < membersArray.length; i++) {
-      const m = membersArray[i]
+    for (let i = 0; i < nextMembers.length; i++) {
+      const m = nextMembers[i]
       if (!m) {
         throw new Error(
           `Sparse nextBand.members invariant violated at index ${i} in party animal loop`
@@ -301,10 +304,13 @@ const updatePassiveEffectsAndMembers = (
       }
       if (m.name === CHARACTERS.MARIUS.name && hasTrait(m, 'party_animal')) {
         if (rng() < 0.3) {
-          m.stamina = clampMemberStamina(
-            finiteNumberOr(m.stamina, 0) - 5,
-            finiteNumberOr(m.staminaMax, 100)
-          )
+          nextMembers[i] = {
+            ...m,
+            stamina: clampMemberStamina(
+              finiteNumberOr(m.stamina, 0) - 5,
+              finiteNumberOr(m.staminaMax, 100)
+            )
+          }
         }
       }
     }
@@ -321,10 +327,12 @@ const updatePassiveEffectsAndMembers = (
     const nextHarmonyTravel = clampBandHarmony(nextBand.harmony + 4)
     nextBand.harmony = nextHarmonyTravel
   }
-  if (nextPlayer.passiveFollowers) {
+  // Persisted addend: a truthy check alone lets Infinity through (NaN is falsy).
+  const passiveFollowers = finiteNumberOr(nextPlayer.passiveFollowers, 0)
+  if (passiveFollowers) {
     // Passive followers currently funnel into Instagram only
     nextSocial.instagram =
-      (nextSocial.instagram || 0) + nextPlayer.passiveFollowers
+      finiteNumberOr(nextSocial.instagram, 0) + passiveFollowers
   }
 }
 

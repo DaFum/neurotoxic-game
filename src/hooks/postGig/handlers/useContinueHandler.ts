@@ -117,6 +117,7 @@ export interface UseContinueHandlerProps {
   lastGigStats: PostGigSummary | null
   setlist: RhythmSetlistEntry[]
   activeStoryFlags?: string[]
+  totalDailyObligations: number
   isProcessingActionRef: React.MutableRefObject<boolean>
   setIsProcessingAction: React.Dispatch<React.SetStateAction<boolean>>
   t: import('i18next').TFunction
@@ -137,6 +138,7 @@ export function useContinueHandler({
   lastGigStats,
   setlist,
   activeStoryFlags,
+  totalDailyObligations,
   isProcessingActionRef,
   setIsProcessingAction,
   t,
@@ -235,7 +237,13 @@ export function useContinueHandler({
         })
       )
 
-      if (shouldTriggerBankruptcy(stats.newMoney, financials.net)) {
+      if (
+        shouldTriggerBankruptcy(
+          stats.newMoney,
+          financials.net,
+          totalDailyObligations
+        )
+      ) {
         addToast(
           t('ui:postGig.gameOverBankrupt', {
             defaultValue: 'GAME OVER: BANKRUPT! The tour is over.'
@@ -269,6 +277,7 @@ export function useContinueHandler({
     addToast,
     changeScene,
     activeStoryFlags,
+    totalDailyObligations,
     addQuest,
     applyQuestEvent,
     setlist,

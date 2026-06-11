@@ -352,7 +352,10 @@ export const checkHit = (
     }
   }
 
-  // Scan forward through candidates within the time window
+  // Scan forward through candidates within the time window. The hit window is
+  // the open interval (windowStart, windowEnd): the Math.abs check below is
+  // the single boundary authority; the binary search and the break are only
+  // candidate bounds and may include the exact boundaries.
   for (let i = firstValidIndex; i < notes.length; i++) {
     const n = notes[i]
     if (!n) continue
@@ -363,7 +366,6 @@ export const checkHit = (
       !n.hit &&
       n.laneIndex === laneIndex &&
       n.type === 'note' &&
-      n.time > windowStart &&
       Math.abs(n.time - elapsed) < hitWindow
     ) {
       return n

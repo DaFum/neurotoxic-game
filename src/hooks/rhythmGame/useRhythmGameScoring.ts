@@ -344,6 +344,9 @@ export const useRhythmGameScoring = ({
           Boolean(state.modifiers.guestlist)
         )
 
+        // Inclusive <= is intentional: the perfect threshold is a strict
+        // subset of checkHit's exclusive (< hitWindow) window, so a note at
+        // exactly 0.4 * hitWindow still counts as perfect.
         const isPerfect = Math.abs(elapsed - note.time) <= hitWindow * 0.4
 
         if (isPerfect) {

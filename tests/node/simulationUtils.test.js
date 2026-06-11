@@ -591,3 +591,40 @@ test('calculateDailyUpdates skips wealth-scaled drain when money < 2000', () => 
     'Wealth-scaled drain must be skipped when money is below the threshold'
   )
 })
+
+test('calculateDailyUpdates applies party animal penalty to returned state without mutating input', () => {
+  const band = buildBandWithMembers(
+    [
+      {
+        name: 'Marius',
+        stamina: 75,
+        traits: { party_animal: { id: 'party_animal' } }
+      }
+    ],
+    { harmony: 50 }
+  )
+  const currentState = {
+    player: {
+      day: 1,
+      money: 100,
+      van: null,
+      hqUpgrades: ['hq_room_cheap_beer_fridge']
+    },
+    band,
+    social: { viral: 0 }
+  }
+
+  // Only rng call in this setup is the 30% party animal trigger.
+  const { band: nextBand } = calculateDailyUpdates(currentState, () => 0.1)
+
+  const marius = nextBand.members.find(m => m.name === 'Marius')
+  // Daily drift: 75 - 5 = 70, then party animal penalty: 70 - 5 = 65.
+  assert.equal(marius.stamina, 65, 'Penalty must land in the returned state')
+
+  const originalMarius = band.members.find(m => m.name === 'Marius')
+  assert.equal(
+    originalMarius.stamina,
+    75,
+    'Input state member must not be mutated'
+  )
+})

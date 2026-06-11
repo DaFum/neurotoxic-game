@@ -41,6 +41,7 @@ import {
   isEmptyObject,
   finiteNumberOr,
   isFiniteNumber,
+  clampNonNegative,
   BALANCE_CONSTANTS
 } from '../../utils/gameState'
 import { calculateDailyUpdates } from '../../utils/simulationUtils'
@@ -714,22 +715,34 @@ const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
       DEFAULT_PLAYER_STATE.passiveFollowers
     ),
     stats: {
-      totalDistance: finiteNumberOr(
-        statsData.totalDistance,
-        DEFAULT_PLAYER_STATE.stats.totalDistance
+      // Stats feed >= milestone/unlock checks; clamp corrupted negative
+      // values from stale saves to keep eligibility evaluation sound.
+      totalDistance: clampNonNegative(
+        finiteNumberOr(
+          statsData.totalDistance,
+          DEFAULT_PLAYER_STATE.stats.totalDistance
+        )
       ),
-      conflictsResolved: finiteNumberOr(
-        statsData.conflictsResolved,
-        DEFAULT_PLAYER_STATE.stats.conflictsResolved
+      conflictsResolved: clampNonNegative(
+        finiteNumberOr(
+          statsData.conflictsResolved,
+          DEFAULT_PLAYER_STATE.stats.conflictsResolved
+        )
       ),
-      stageDives: finiteNumberOr(
-        statsData.stageDives,
-        DEFAULT_PLAYER_STATE.stats.stageDives
+      stageDives: clampNonNegative(
+        finiteNumberOr(
+          statsData.stageDives,
+          DEFAULT_PLAYER_STATE.stats.stageDives
+        )
       ),
-      failedStageDives: finiteNumberOr(statsData.failedStageDives, 0),
-      consecutiveBadShows: finiteNumberOr(
-        statsData.consecutiveBadShows,
-        DEFAULT_PLAYER_STATE.stats.consecutiveBadShows
+      failedStageDives: clampNonNegative(
+        finiteNumberOr(statsData.failedStageDives, 0)
+      ),
+      consecutiveBadShows: clampNonNegative(
+        finiteNumberOr(
+          statsData.consecutiveBadShows,
+          DEFAULT_PLAYER_STATE.stats.consecutiveBadShows
+        )
       ),
       proveYourselfMode:
         typeof statsData.proveYourselfMode === 'boolean'
@@ -746,6 +759,7 @@ const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
     fame: validatedFame,
     fameLevel: calculateFameLevel(validatedFame),
     day: Math.max(1, rawPlayer.day),
+    time: clampNonNegative(rawPlayer.time),
     van: {
       ...rawPlayer.van,
       fuel: clampVanFuel(rawPlayer.van.fuel)
@@ -1907,7 +1921,9 @@ const processContrabandExpiry = (band: BandState): BandState => {
 
 const applyDailyBankruptcyCheck = (state: GameState): GameState => {
   const totalDailyObligations = getTotalDailyObligations(state)
-  if (!shouldTriggerBankruptcy(state.player.money, -totalDailyObligations)) {
+  // No gig income during day advance; obligations go through the dedicated
+  // third parameter instead of being smuggled through netIncome.
+  if (!shouldTriggerBankruptcy(state.player.money, 0, totalDailyObligations)) {
     return state
   }
 

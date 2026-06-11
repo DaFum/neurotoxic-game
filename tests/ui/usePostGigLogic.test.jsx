@@ -35,6 +35,7 @@ vi.mock('../../src/utils/economyEngine', () => ({
   shouldTriggerBankruptcy: vi.fn()
 }))
 vi.mock('../../src/utils/assetSelectors', () => ({
+  getTotalDailyObligations: vi.fn(() => 0),
   getActiveAssetModifiers: vi.fn(() => ({
     fuelMultiplier: 1,
     merchCostMultiplier: 1,
@@ -808,6 +809,32 @@ describe('usePostGigLogic', () => {
         'error'
       )
       expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.GAMEOVER)
+    })
+
+    it('passes total daily obligations into the bankruptcy check', async () => {
+      mockGameState(getBaseState())
+      assetSelectors.getTotalDailyObligations.mockReturnValue(50)
+      economyEngine.shouldTriggerBankruptcy.mockReturnValue(false)
+      economyEngine.calculateGigFinancials.mockReturnValue({
+        net: -600,
+        income: { total: 100, breakdown: [] },
+        expenses: { total: 700, breakdown: [] }
+      })
+
+      const { result } = renderHook(() => usePostGigLogic())
+      await waitFor(() => expect(result.current.financials).toBeTruthy())
+
+      act(() => {
+        result.current.handleContinue()
+      })
+
+      expect(economyEngine.shouldTriggerBankruptcy).toHaveBeenCalledWith(
+        expect.any(Number),
+        -600,
+        50
+      )
+      // vi.clearAllMocks() does not undo mockReturnValue; restore the default.
+      assetSelectors.getTotalDailyObligations.mockReturnValue(0)
     })
 
     it('applies miss penalty on bad gig with excess misses', async () => {

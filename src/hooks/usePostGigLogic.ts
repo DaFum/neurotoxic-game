@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useGameActions, useGameSelector } from '../context/GameState'
+import { getTotalDailyObligations } from '../utils/assetSelectors'
 import { usePostGigHandlers } from './usePostGigHandlers'
 import { usePostGigState } from './postGig/usePostGigState'
 import { usePostGigDerivations } from './postGig/usePostGigDerivations'
@@ -24,6 +25,9 @@ export const usePostGigLogic = () => {
   const activeStoryFlags = useGameSelector(state => state.activeStoryFlags)
   const cityStates = useGameSelector(state => state.gameMap?.cityStates)
   const setlist = useGameSelector(state => state.setlist)
+  // Bankruptcy must consult total daily obligations (asset upkeep/revenue and
+  // liability payments), not just the gig net (AGENTS.md invariant).
+  const totalDailyObligations = useGameSelector(getTotalDailyObligations)
 
   // Game Actions
   const {
@@ -87,6 +91,7 @@ export const usePostGigLogic = () => {
     financials,
     activeStoryFlags,
     setlist,
+    totalDailyObligations,
     updatePlayer,
     updateBand,
     updateSocial,

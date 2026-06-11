@@ -44,6 +44,7 @@ export interface UsePostGigHandlersProps {
   financials: PostGigFinancials | null
   activeStoryFlags: string[]
   setlist: RhythmSetlistEntry[]
+  totalDailyObligations: number
   updatePlayer: (updates: UpdatePlayerPayload) => void
   updateBand: (
     updates:
@@ -82,6 +83,7 @@ export function usePostGigHandlers({
   financials,
   activeStoryFlags,
   setlist,
+  totalDailyObligations,
   updatePlayer,
   updateBand,
   updateSocial,
@@ -136,6 +138,7 @@ export function usePostGigHandlers({
     lastGigStats,
     setlist,
     activeStoryFlags,
+    totalDailyObligations,
     isProcessingActionRef,
     setIsProcessingAction,
     t,

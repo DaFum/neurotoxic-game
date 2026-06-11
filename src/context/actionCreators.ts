@@ -8,7 +8,7 @@ import { RNG_BASE_BUFFER, RNG_ROLLS_PER_ASSET } from '../utils/assetConfig'
 import { ActionTypes } from './actionTypes'
 import type { QuestProgressEvent } from '../utils/questProgress'
 import { getSafeUUID, secureRandom } from '../utils/crypto'
-import { isForbiddenKey } from '../utils/objectUtils'
+import { isForbiddenKey, isLooseRecord } from '../utils/objectUtils'
 import { generateRivalBand, moveRivalBand } from '../utils/rivalEngine'
 import { sanitizeRiskEventDescriptor } from './reducers/assetSanitizers'
 import type { RivalBandState } from '../types'
@@ -30,6 +30,7 @@ import type {
   ClinicActionPayload,
   GameAction,
   GameState,
+  RelationshipChange,
   GameMap,
   GameEvent,
   GigModifiers,
@@ -459,6 +460,33 @@ export const createResetStateAction = (
 })
 
 /**
+ * Stamps banter relationship changes that lack a finite timestamp with the
+ * current time. Timestamps must be generated here (not in the reducer) so
+ * `applyEventDelta` stays pure and deterministic.
+ */
+const stampBanterTimestamps = (delta: EventDeltaPayload): EventDeltaPayload => {
+  const rawRC = delta.band?.relationshipChange as unknown
+  if (!rawRC) return delta
+  const needsStamp = (rc: unknown): rc is RelationshipChange =>
+    isLooseRecord(rc) && rc.source === 'banter' && !isFiniteNumber(rc.timestamp)
+  const hasUnstamped = Array.isArray(rawRC)
+    ? rawRC.some(needsStamp)
+    : needsStamp(rawRC)
+  if (!hasUnstamped) return delta
+  const now = Date.now()
+  const stamp = (rc: unknown): unknown =>
+    needsStamp(rc) ? { ...rc, timestamp: now } : rc
+  const stamped = Array.isArray(rawRC) ? rawRC.map(stamp) : stamp(rawRC)
+  return {
+    ...delta,
+    band: {
+      ...delta.band,
+      relationshipChange: stamped as RelationshipChange[]
+    }
+  }
+}
+
+/**
  * Creates an event delta application action
  * @param delta - State delta to apply
  */
@@ -466,7 +494,7 @@ export const createApplyEventDeltaAction = (
   delta: EventDeltaPayload
 ): Extract<GameAction, { type: typeof ActionTypes.APPLY_EVENT_DELTA }> => ({
   type: ActionTypes.APPLY_EVENT_DELTA,
-  payload: delta
+  payload: stampBanterTimestamps(delta)
 })
 
 /**
@@ -880,6 +908,13 @@ export const createClinicHealAction = (
   if (safePayload.moodGain != null) {
     safePayload.moodGain = clampNonNegative(Number(safePayload.moodGain) || 0)
   }
+  if (safePayload.successToast) {
+    // UUIDs are generated here so the reducer stays pure.
+    safePayload.successToast = {
+      ...safePayload.successToast,
+      id: getSafeUUID()
+    }
+  }
   return {
     type: ActionTypes.CLINIC_HEAL,
     payload: safePayload
@@ -903,7 +938,13 @@ export const createClinicEnhanceAction = (
   payload: ClinicActionPayload
 ): Extract<GameAction, { type: typeof ActionTypes.CLINIC_ENHANCE }> => ({
   type: ActionTypes.CLINIC_ENHANCE,
-  payload
+  payload: payload?.successToast
+    ? // UUIDs are generated here so the reducer stays pure.
+      {
+        ...payload,
+        successToast: { ...payload.successToast, id: getSafeUUID() }
+      }
+    : payload
 })
 
 /**

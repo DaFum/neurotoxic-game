@@ -12,7 +12,7 @@ import {
   clampNonNegative
 } from './gameState'
 import { FORBIDDEN_KEYS, isForbiddenKey, isLooseRecord } from './objectUtils'
-import { isFiniteNumber } from './finiteNumber'
+import { isFiniteNumber, finiteNumberOr } from './finiteNumber'
 
 /**
  * Validates the structure and types of the save data.
@@ -60,14 +60,19 @@ const validatePlayer = (player: unknown): void => {
   const p = player as Record<string, unknown>
 
   const numericFields = ['money', 'day', 'time', 'score', 'fame', 'fameLevel']
+  const nonNegativeFields = ['time', 'score', 'fame', 'fameLevel']
   for (const field of numericFields) {
     const val = p[field]
     if (val !== undefined && typeof val !== 'number') {
       throw new StateError(`player.${field} must be a number`)
     }
-    if ((field === 'fame' || field === 'score') && val !== undefined) {
+    if (nonNegativeFields.includes(field) && val !== undefined) {
       p[field] = clampNonNegative(val as number)
     }
+  }
+  // Day is 1-based; clamp corrupted saves up to the minimum valid day.
+  if (typeof p.day === 'number') {
+    p.day = Math.max(1, finiteNumberOr(p.day, 1))
   }
 
   if (p.money !== undefined) {
