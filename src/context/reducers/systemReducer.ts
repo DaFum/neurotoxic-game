@@ -715,22 +715,34 @@ const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
       DEFAULT_PLAYER_STATE.passiveFollowers
     ),
     stats: {
-      totalDistance: finiteNumberOr(
-        statsData.totalDistance,
-        DEFAULT_PLAYER_STATE.stats.totalDistance
+      // Stats feed >= milestone/unlock checks; clamp corrupted negative
+      // values from stale saves to keep eligibility evaluation sound.
+      totalDistance: clampNonNegative(
+        finiteNumberOr(
+          statsData.totalDistance,
+          DEFAULT_PLAYER_STATE.stats.totalDistance
+        )
       ),
-      conflictsResolved: finiteNumberOr(
-        statsData.conflictsResolved,
-        DEFAULT_PLAYER_STATE.stats.conflictsResolved
+      conflictsResolved: clampNonNegative(
+        finiteNumberOr(
+          statsData.conflictsResolved,
+          DEFAULT_PLAYER_STATE.stats.conflictsResolved
+        )
       ),
-      stageDives: finiteNumberOr(
-        statsData.stageDives,
-        DEFAULT_PLAYER_STATE.stats.stageDives
+      stageDives: clampNonNegative(
+        finiteNumberOr(
+          statsData.stageDives,
+          DEFAULT_PLAYER_STATE.stats.stageDives
+        )
       ),
-      failedStageDives: finiteNumberOr(statsData.failedStageDives, 0),
-      consecutiveBadShows: finiteNumberOr(
-        statsData.consecutiveBadShows,
-        DEFAULT_PLAYER_STATE.stats.consecutiveBadShows
+      failedStageDives: clampNonNegative(
+        finiteNumberOr(statsData.failedStageDives, 0)
+      ),
+      consecutiveBadShows: clampNonNegative(
+        finiteNumberOr(
+          statsData.consecutiveBadShows,
+          DEFAULT_PLAYER_STATE.stats.consecutiveBadShows
+        )
       ),
       proveYourselfMode:
         typeof statsData.proveYourselfMode === 'boolean'
