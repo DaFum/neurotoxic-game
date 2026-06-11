@@ -97,7 +97,7 @@ test('processLiabilityTick - liability default counter increment and trigger at 
   const state = {
     assets: [{ id: 'a1', kind: 'tourbus_chassis', condition: 100, slots: [] }],
     liabilities: {
-      'l1': {
+      l1: {
         id: 'l1',
         assetId: 'a1',
         dailyPayment: 50,

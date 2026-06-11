@@ -87,21 +87,21 @@ flowchart TD
 Every action type in `gameReducer`'s dispatch table routes to exactly one
 domain reducer module under `src/context/reducers/`:
 
-| Module | Representative actions |
-|---|---|
-| `sceneReducer` | `CHANGE_SCENE` |
-| `playerReducer` | `UPDATE_PLAYER` |
-| `bandReducer` | `UPDATE_BAND` (+ shared band effects) |
-| `socialReducer` | `UPDATE_SOCIAL`, `PIRATE_BROADCAST`, `MERCH_PRESS`, `DARK_WEB_LEAK`, `UNBLACKLIST_VENUE` |
-| `gigReducer` | `SET_GIG`, `START_GIG`, `SET_SETLIST`, `SET_LAST_GIG_STATS`, `SET_GIG_MODIFIERS` |
-| `eventReducer` | `SET_ACTIVE_EVENT`, `APPLY_EVENT_DELTA`, `POP_PENDING_EVENT` |
-| `minigameReducer` | `START_/COMPLETE_` × `TRAVEL`, `ROADIE`, `KABELSALAT`, `AMP_CALIBRATION` |
-| `clinicReducer` | `CLINIC_HEAL`, `CLINIC_ENHANCE`, `BLOOD_BANK_DONATE` |
-| `questReducer` | `ADD_QUEST`, `ADVANCE_QUEST`, `APPLY_QUEST_EVENT` |
-| `rivalReducer` | `SPAWN_/MOVE_/CHECK_/UPDATE_RIVAL_BAND` |
-| `tradeReducer` | `TRADE_VOID_ITEM` |
-| `assetReducer` | `PURCHASE_/UPGRADE_/SELL_/REPAIR_CHASSIS`, `INSTALL_/REMOVE_MODULE`, `START_CROWDFUND`, `REFINANCE_LIABILITY`, `ASSET_FORECLOSED`, `*_FAILED` |
-| `systemReducer` | `UPDATE_SETTINGS`, `SET_MAP`, `ADD_/REMOVE_TOAST`, `LOAD_GAME`, `RESET_STATE`, `ADVANCE_DAY`, `ADD_COOLDOWN`, `ADD_UNLOCK`, `SET_PENDING_*`, `DISMISS_FORECLOSURE_NOTICE`, `SET_PENDING_RISK_EVENT` |
+| Module            | Representative actions                                                                                                                                                                              |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sceneReducer`    | `CHANGE_SCENE`                                                                                                                                                                                      |
+| `playerReducer`   | `UPDATE_PLAYER`                                                                                                                                                                                     |
+| `bandReducer`     | `UPDATE_BAND` (+ shared band effects)                                                                                                                                                               |
+| `socialReducer`   | `UPDATE_SOCIAL`, `PIRATE_BROADCAST`, `MERCH_PRESS`, `DARK_WEB_LEAK`, `UNBLACKLIST_VENUE`                                                                                                            |
+| `gigReducer`      | `SET_GIG`, `START_GIG`, `SET_SETLIST`, `SET_LAST_GIG_STATS`, `SET_GIG_MODIFIERS`                                                                                                                    |
+| `eventReducer`    | `SET_ACTIVE_EVENT`, `APPLY_EVENT_DELTA`, `POP_PENDING_EVENT`                                                                                                                                        |
+| `minigameReducer` | `START_/COMPLETE_` × `TRAVEL`, `ROADIE`, `KABELSALAT`, `AMP_CALIBRATION`                                                                                                                            |
+| `clinicReducer`   | `CLINIC_HEAL`, `CLINIC_ENHANCE`, `BLOOD_BANK_DONATE`                                                                                                                                                |
+| `questReducer`    | `ADD_QUEST`, `ADVANCE_QUEST`, `APPLY_QUEST_EVENT`                                                                                                                                                   |
+| `rivalReducer`    | `SPAWN_/MOVE_/CHECK_/UPDATE_RIVAL_BAND`                                                                                                                                                             |
+| `tradeReducer`    | `TRADE_VOID_ITEM`                                                                                                                                                                                   |
+| `assetReducer`    | `PURCHASE_/UPGRADE_/SELL_/REPAIR_CHASSIS`, `INSTALL_/REMOVE_MODULE`, `START_CROWDFUND`, `REFINANCE_LIABILITY`, `ASSET_FORECLOSED`, `*_FAILED`                                                       |
+| `systemReducer`   | `UPDATE_SETTINGS`, `SET_MAP`, `ADD_/REMOVE_TOAST`, `LOAD_GAME`, `RESET_STATE`, `ADVANCE_DAY`, `ADD_COOLDOWN`, `ADD_UNLOCK`, `SET_PENDING_*`, `DISMISS_FORECLOSURE_NOTICE`, `SET_PENDING_RISK_EVENT` |
 
 New actions must update `actionTypes`, the reducer handler, and `actionCreators`
 together.

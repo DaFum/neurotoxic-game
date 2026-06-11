@@ -60,8 +60,14 @@ const logicEnv = {
   VITEST_MAX_WORKERS: `${logicWorkers}`
 }
 // Parse env-derived strings to integers to sanitize them for logging and preserve overrides.
-const nodeWorkersForLog = computeWorkerCount('NODE_TEST_CONCURRENCY', nodeWorkersDefault)
-const uiWorkersForLog = computeWorkerCount('VITEST_MAX_WORKERS', uiWorkersDefault)
+const nodeWorkersForLog = computeWorkerCount(
+  'NODE_TEST_CONCURRENCY',
+  nodeWorkersDefault
+)
+const uiWorkersForLog = computeWorkerCount(
+  'VITEST_MAX_WORKERS',
+  uiWorkersDefault
+)
 
 // ---------------------------------------------------------------------------
 // Spawn helper

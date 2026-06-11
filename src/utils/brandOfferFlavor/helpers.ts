@@ -9,6 +9,5 @@ export const pick = <T>(arr: readonly T[], rng: RandomFn): T | undefined => {
   return arr[idx]
 }
 
-
 export const roundTo = (value: number, step: number): number =>
   Math.round(value / step) * step

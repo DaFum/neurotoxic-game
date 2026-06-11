@@ -62,7 +62,6 @@ export const pickVariantId = (
   return pool[idx] ?? 'standard'
 }
 
-
 export const applyOfferVariance = (
   offer: BrandDealOffer,
   rng: RandomFn,
@@ -77,13 +76,7 @@ export const applyOfferVariance = (
   const { perGig, ...restOffer } = offer
   const rawPerGig = perGig
   const newPerGig = isFiniteNumber(rawPerGig)
-    ? Math.max(
-        5,
-        roundTo(
-          rawPerGig * (0.9 + rng() * 0.2) * mods.perGigMul,
-          5
-        )
-      )
+    ? Math.max(5, roundTo(rawPerGig * (0.9 + rng() * 0.2) * mods.perGigMul, 5))
     : undefined
 
   const durationJitter = Math.floor(rng() * 4) - 1 // -1..+2
