@@ -21,7 +21,7 @@ export const pick = <T>(arr: readonly T[], rng: RandomFn): T | undefined => {
  * Rounds a numeric value to the nearest multiple of a specified step.
  *
  * @param value - The original numeric value to be rounded.
- * @param step - The interval to which the value should be rounded.
+ * @param step - The interval to which the value should be rounded. Must be a positive, non-zero number to avoid division by zero.
  * @returns The rounded value aligned to the nearest step.
  */
 export const roundTo = (value: number, step: number): number =>
