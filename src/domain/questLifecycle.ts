@@ -68,8 +68,9 @@ export const QuestLifecycle = {
     let nextStoryFlags = state.activeStoryFlags
     if (Array.isArray(merged.startFlags) && merged.startFlags.length > 0) {
       const base = state.activeStoryFlags ?? []
+      const baseSet = new Set(base)
       const additions = merged.startFlags.filter(
-        f => typeof f === 'string' && !base.includes(f)
+        f => typeof f === 'string' && !baseSet.has(f)
       )
       if (additions.length > 0) nextStoryFlags = [...base, ...additions]
     }
