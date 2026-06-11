@@ -16,7 +16,10 @@ import {
   finiteNumberOr
 } from '../../utils/gameState'
 import { getTraitById, normalizeTraitMap } from '../../utils/traitUtils'
-import { sanitizeSuccessToast } from './toastSanitizers'
+import {
+  sanitizeSuccessToast,
+  buildDeterministicToastId
+} from './toastSanitizers'
 
 /**
  * Common logic for clinic actions.
@@ -124,7 +127,7 @@ const executeClinicAction = (
   // Action creators stamp toast UUIDs; this fallback only covers reducer-built
   // or malformed toasts and must stay deterministic (reducer purity).
   const safeToast = sanitizeSuccessToast(finalSuccessToast, {
-    fallbackId: `clinic-toast-${(state.toasts || []).length}`
+    fallbackId: buildDeterministicToastId('clinic-toast', state.toasts)
   })
   if (safeToast) {
     nextState.toasts = [...(state.toasts || []), safeToast]
@@ -278,7 +281,7 @@ export const handleBloodBankDonate = (
     const deltaControversy = nextControversy - currentControversy
 
     const safeToast = sanitizeSuccessToast(successToast, {
-      fallbackId: `blood-bank-toast-${(state.toasts || []).length}`,
+      fallbackId: buildDeterministicToastId('blood-bank-toast', state.toasts),
       optionsPatch: {
         deltaMoney: formatCurrency(deltaMoney, i18n.language, 'always'),
         deltaHarmony,

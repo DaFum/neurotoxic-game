@@ -19,7 +19,10 @@ import {
   clampControversyLevel,
   clampNonNegative
 } from '../../utils/gameState'
-import { sanitizeSuccessToast } from './toastSanitizers'
+import {
+  sanitizeSuccessToast,
+  buildDeterministicToastId
+} from './toastSanitizers'
 import { QuestEvents } from '../../utils/questProgress'
 import {
   createSocialControversyChangedQuestEvent,
@@ -128,7 +131,7 @@ const appendDeltaSuccessToast = (
   // Action creators stamp toast UUIDs; this fallback only covers malformed
   // direct dispatches and must stay deterministic (reducer purity).
   const safeToast = sanitizeSuccessToast(successToast, {
-    fallbackId: `social-toast-${(prevToasts || []).length}`,
+    fallbackId: buildDeterministicToastId('social-toast', prevToasts),
     optionsPatch
   })
   if (safeToast) {
@@ -313,7 +316,7 @@ export const handleUpdateSocial = (
         ...(nextState.toasts || []),
         {
           // Deterministic id keeps the reducer pure (no RNG in reducers).
-          id: `deals-broken-toast-${(nextState.toasts || []).length}`,
+          id: buildDeterministicToastId('deals-broken-toast', nextState.toasts),
           messageKey: 'ui:toast.dealsBroken',
           type: 'error'
         }

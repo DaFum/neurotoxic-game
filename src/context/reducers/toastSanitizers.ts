@@ -18,6 +18,29 @@ type SuccessToastConfig = {
   optionsPatch?: Record<string, unknown>
 }
 
+/**
+ * Builds a deterministic toast id that cannot collide with ids already in the
+ * toast list. Reducers must not call RNG/UUID helpers (purity), but a plain
+ * length-based id could be reissued after earlier toasts were dismissed.
+ *
+ * @param prefix - Stable, caller-specific id prefix.
+ * @param toasts - Current toast list to avoid collisions with.
+ * @returns `${prefix}-${n}` with the smallest n >= toasts.length that is free.
+ */
+export const buildDeterministicToastId = (
+  prefix: string,
+  toasts: readonly ToastPayload[] | undefined
+): string => {
+  const existing = new Set((toasts || []).map(t => t.id))
+  let i = (toasts || []).length
+  let id = `${prefix}-${i}`
+  while (existing.has(id)) {
+    i += 1
+    id = `${prefix}-${i}`
+  }
+  return id
+}
+
 const sanitizePrimitiveOptions = (
   options: Record<string, unknown>
 ): Record<string, unknown> => {

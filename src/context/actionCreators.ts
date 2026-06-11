@@ -8,7 +8,7 @@ import { RNG_BASE_BUFFER, RNG_ROLLS_PER_ASSET } from '../utils/assetConfig'
 import { ActionTypes } from './actionTypes'
 import type { QuestProgressEvent } from '../utils/questProgress'
 import { getSafeUUID, secureRandom } from '../utils/crypto'
-import { isForbiddenKey } from '../utils/objectUtils'
+import { isForbiddenKey, isLooseRecord } from '../utils/objectUtils'
 import { generateRivalBand, moveRivalBand } from '../utils/rivalEngine'
 import { sanitizeRiskEventDescriptor } from './reducers/assetSanitizers'
 import type { RivalBandState } from '../types'
@@ -467,18 +467,15 @@ export const createResetStateAction = (
 const stampBanterTimestamps = (delta: EventDeltaPayload): EventDeltaPayload => {
   const rawRC = delta.band?.relationshipChange as unknown
   if (!rawRC) return delta
-  const needsStamp = (rc: unknown): boolean =>
-    rc !== null &&
-    typeof rc === 'object' &&
-    (rc as RelationshipChange).source === 'banter' &&
-    !isFiniteNumber((rc as RelationshipChange).timestamp)
+  const needsStamp = (rc: unknown): rc is RelationshipChange =>
+    isLooseRecord(rc) && rc.source === 'banter' && !isFiniteNumber(rc.timestamp)
   const hasUnstamped = Array.isArray(rawRC)
     ? rawRC.some(needsStamp)
     : needsStamp(rawRC)
   if (!hasUnstamped) return delta
   const now = Date.now()
   const stamp = (rc: unknown): unknown =>
-    needsStamp(rc) ? { ...(rc as RelationshipChange), timestamp: now } : rc
+    needsStamp(rc) ? { ...rc, timestamp: now } : rc
   const stamped = Array.isArray(rawRC) ? rawRC.map(stamp) : stamp(rawRC)
   return {
     ...delta,
