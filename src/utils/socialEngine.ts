@@ -442,6 +442,13 @@ export const checkViralEvent = (
 
 /**
  * Applies organic decay to follower counts.
+ *
+ * The single-call rate grows with inactivity (1% on day 3, 2% on day 4, ...,
+ * capped at 50%). The daily tick calls this every idle day on the already
+ * decayed value, so the total loss intentionally compounds and accelerates
+ * the longer the band stays inactive (day 3: x0.99, day 4: additionally
+ * x0.98, ...) - it is a pressure mechanic, not a flat 1%/day.
+ *
  * @param followers - Current follower count
  * @param daysSinceLastPost - Days since last engagement
  * @returns New follower count (decreased)
@@ -451,7 +458,7 @@ export const applyReputationDecay = (
   daysSinceLastPost: number
 ): number => {
   if (daysSinceLastPost < 3) return followers
-  const decayRate = 0.01 * (daysSinceLastPost - 2) // 1% per day after day 2
+  const decayRate = 0.01 * (daysSinceLastPost - 2)
   return Math.floor(followers * (1 - Math.min(0.5, decayRate)))
 }
 
