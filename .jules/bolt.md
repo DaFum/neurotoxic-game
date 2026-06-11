@@ -204,3 +204,8 @@
 
 **Learning:** Mapping over an array to create multiple independent HTTP fetch requests for state submission (like per-song leaderboard scores in `submitLeaderboardScores`) causes an N+1 problem. This introduces significant network overhead, backend load, and increased latency as each promise initiates a separate connection.
 **Action:** When a high-frequency path or post-action sync requires multiple submissions to the same endpoint, batch the payloads into a single array and send them via one network request.
+
+## 2026-10-24 - Array Map/Filter/Reduce in Hot Paths
+
+**Learning:** Replaced chained `.filter()` loops with single-pass `for...of` loops in hot logic paths like `questLifecycle.ts`. Functional array methods like `.filter()` invoke a callback for every element, which creates intermediate allocations and closure overhead, adding memory pressure and increasing GC pause times.
+**Action:** Always prefer basic `for` or `for...of` loop iterations with accumulators or early returns over array chaining and functional array methods on heavily used data paths.
