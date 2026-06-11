@@ -172,7 +172,7 @@ export const QuestLifecycle = {
     if (toClear.size > 0) {
       const activeFlags = nextState.activeStoryFlags ?? []
       const newFlags: string[] = []
-      let changed = activeFlags.length === 0 && nextState.activeStoryFlags === undefined
+      let changed = false
       for (const f of activeFlags) {
         if (!toClear.has(f)) {
           newFlags.push(f)
@@ -360,7 +360,7 @@ export const QuestLifecycle = {
 
     if (flagsToAdd.length > 0 || flagsToRemove.size > 0) {
       const baseFlags = nextState.activeStoryFlags ?? []
-      let changed = baseFlags.length === 0 && nextState.activeStoryFlags === undefined
+      let changed = false
       const filteredFlags: string[] = []
       for (const f of baseFlags) {
         if (!flagsToRemove.has(f)) {
