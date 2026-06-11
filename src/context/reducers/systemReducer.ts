@@ -2101,6 +2101,8 @@ export const handleAdvanceDay = (
   // day, while legacy untimed daily cooldowns (no `:`) reset every day as
   // before. Without this filter the new ego_management_retry / failure cooldown
   // entries would silently evaporate on the next advanceDay.
+  // NOTE: All new event cooldowns must use the `eventId:expiryDay` format.
+  // Legacy format without ':' will be intentionally dropped every day.
   const activeEventCooldowns = (state.eventCooldowns ?? []).filter(cd => {
     if (typeof cd !== 'string') return false
     const idx = cd.indexOf(':')
