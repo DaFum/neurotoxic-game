@@ -911,6 +911,13 @@ export const createClinicHealAction = (
   if (safePayload.moodGain != null) {
     safePayload.moodGain = clampNonNegative(Number(safePayload.moodGain) || 0)
   }
+  if (safePayload.successToast) {
+    // UUIDs are generated here so the reducer stays pure.
+    safePayload.successToast = {
+      ...safePayload.successToast,
+      id: getSafeUUID()
+    }
+  }
   return {
     type: ActionTypes.CLINIC_HEAL,
     payload: safePayload
@@ -934,7 +941,13 @@ export const createClinicEnhanceAction = (
   payload: ClinicActionPayload
 ): Extract<GameAction, { type: typeof ActionTypes.CLINIC_ENHANCE }> => ({
   type: ActionTypes.CLINIC_ENHANCE,
-  payload
+  payload: payload?.successToast
+    ? // UUIDs are generated here so the reducer stays pure.
+      {
+        ...payload,
+        successToast: { ...payload.successToast, id: getSafeUUID() }
+      }
+    : payload
 })
 
 /**
