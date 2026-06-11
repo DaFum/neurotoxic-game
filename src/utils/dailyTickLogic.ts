@@ -166,7 +166,8 @@ const updateSocialDecay = (
   rng: () => number
 ) => {
   // 3. Social Decay
-  nextSocial.viral = nextSocial.viral || 0
+  // finiteNumberOr also rejects Infinity, which `|| 0` would let through.
+  nextSocial.viral = finiteNumberOr(nextSocial.viral, 0)
   // Viral decay
   if (nextSocial.viral > 0) nextSocial.viral -= 1
 
@@ -326,10 +327,12 @@ const updatePassiveEffectsAndMembers = (
     const nextHarmonyTravel = clampBandHarmony(nextBand.harmony + 4)
     nextBand.harmony = nextHarmonyTravel
   }
-  if (nextPlayer.passiveFollowers) {
+  // Persisted addend: a truthy check alone lets Infinity through (NaN is falsy).
+  const passiveFollowers = finiteNumberOr(nextPlayer.passiveFollowers, 0)
+  if (passiveFollowers) {
     // Passive followers currently funnel into Instagram only
     nextSocial.instagram =
-      (nextSocial.instagram || 0) + nextPlayer.passiveFollowers
+      finiteNumberOr(nextSocial.instagram, 0) + passiveFollowers
   }
 }
 
