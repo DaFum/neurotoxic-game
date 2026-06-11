@@ -9,6 +9,8 @@ Purity-Verletzungen, Stale-Closure-Probleme etc.).
 
 Alle High-/Medium-Funde wurden im Quellcode gegenverifiziert. Drei ursprüngliche
 Verdachtsfälle stellten sich dabei als False Positives heraus (siehe letzter Abschnitt).
+Ein zweiter, manueller Audit-Durchgang (zentrale Logikpfade wie `dailyTickLogic.ts`,
+Locale-Vollabgleich, Timer-/RNG-/Equality-Muster) ergänzte die Befunde H2, M7 und L5.
 
 ---
 
@@ -16,9 +18,9 @@ Verdachtsfälle stellten sich dabei als False Positives heraus (siehe letzter Ab
 
 | Schweregrad | Anzahl |
 |---|---|
-| Hoch | 1 |
-| Mittel | 6 |
-| Niedrig | 4 |
+| Hoch | 2 |
+| Mittel | 7 |
+| Niedrig | 5 |
 
 Die Codebase ist insgesamt in sehr gutem Zustand: Die meisten dokumentierten
 Invarianten (Action-Konsistenz, Clamping mit `finiteNumberOr`, Reducer-Szenen-Regeln,
@@ -44,6 +46,40 @@ macht den Reducer nicht-deterministisch und verletzt die Projektregel, dass Redu
 pur sein müssen (vgl. das Muster bei `advanceDay`, das RNG-Daten im Payload
 vorgeneriert). Banter-Event-Timestamps sollten analog im Action Creator vorab
 erzeugt und über den Payload hereingereicht werden.
+
+### H2 — Party-Animal-Stamina-Strafe mutiert den Vorzustand und ist im Folgezustand wirkungslos
+
+**Datei:** `src/utils/dailyTickLogic.ts:294-311`
+
+```ts
+const membersArray = Array.isArray(nextBand.members) ? nextBand.members : []
+// ... nextMembers werden als Kopien { ...m, mood, stamina } erzeugt ...
+nextBand.members = nextMembers
+
+// Apply Party Animal RNG penalty in its original global sequence position
+if (hasBeerFridge) {
+  for (let i = 0; i < membersArray.length; i++) {
+    const m = membersArray[i]
+    // ...
+    m.stamina = clampMemberStamina(
+      finiteNumberOr(m.stamina, 0) - 5, ...
+```
+
+`membersArray` referenziert die **originalen** Member-Objekte aus
+`currentState.band.members` (Shallow-Copy von `band`). Die Party-Animal-Schleife
+läuft nach der Zuweisung `nextBand.members = nextMembers` aber weiterhin über
+`membersArray` und schreibt `m.stamina` direkt auf die alten Objekte. Folgen:
+
+1. **Die −5-Stamina-Strafe geht verloren** — sie landet nie in den zurückgegebenen
+   `nextMembers`, der Effekt ist im neuen State ein No-op.
+2. **Der vorherige State wird mutiert** — `calculateDailyUpdates` ist als pure
+   Funktion dokumentiert; die Mutation des Eingabe-States kann Memo-Vergleiche,
+   Tests und Replays korrumpieren.
+3. Zusätzlich rechnet die Strafe auf dem **Vor-Drift-Wert** von `stamina` statt
+   auf dem in 2c/2d aktualisierten Wert.
+
+Fix: Schleife über `nextBand.members` (`nextMembers`) führen und immutabel
+aktualisieren; die RNG-Aufruf-Reihenfolge bleibt dabei erhalten.
 
 ---
 
@@ -131,6 +167,26 @@ vorgeneriert und über den Payload gelesen werden (so wie es die Asset-Reducer
 handhaben). Praktische Auswirkung gering (nur Fallback-Toast-ID), aber
 inkonsistent mit der Purity-Invariante.
 
+### M7 — `passiveFollowers` ohne `finiteNumberOr` addiert; `Infinity` korrumpiert Follower-Zahl
+
+**Datei:** `src/utils/dailyTickLogic.ts:324-328`
+
+```ts
+if (nextPlayer.passiveFollowers) {
+  nextSocial.instagram =
+    (nextSocial.instagram || 0) + nextPlayer.passiveFollowers
+}
+```
+
+`passiveFollowers` ist ein persistiertes numerisches Feld und wird entgegen der
+Invariante („persistierte Addenden mit `finiteNumberOr` wrappen") ungeprüft
+addiert. Der Truthiness-Guard fängt zwar `NaN` (falsy) ab, aber **nicht
+`Infinity`** — ein korruptes Save setzt `instagram` damit dauerhaft auf
+`Infinity`, was nachgelagerte Perk-Schwellen (`>= 10000`) und Decay-Logik
+verfälscht. Es fehlt zudem jeglicher Clamp auf das Ergebnis. Gleiches Muster im
+selben File bei `nextSocial.viral -= 1` (Z. 171): `Infinity > 0` bleibt nach dem
+Dekrement `Infinity`.
+
 ---
 
 ## Niedrig
@@ -180,6 +236,24 @@ Casts nach `typeof === 'object'`-Check statt sauberem Narrowing. Laufzeitsicher,
 weil nachgelagerte Property-Checks existieren, widerspricht aber der
 TypeScript-Regel „`unknown` an Boundaries narrowen, nicht casten".
 
+### L5 — Follower-Decay kombiniert kumulativ wachsende Tagesraten
+
+**Dateien:** `src/utils/socialEngine.ts:449-456`, `src/utils/dailyTickLogic.ts:203-223`
+
+```ts
+const decayRate = 0.01 * (daysSinceLastPost - 2) // 1% per day after day 2
+return Math.floor(followers * (1 - Math.min(0.5, decayRate)))
+```
+
+`applyReputationDecay` liest sich als **Gesamt**-Decay seit dem letzten Gig
+(„1 % pro Tag nach Tag 2"). Der tägliche Tick ruft die Funktion aber **jeden Tag
+erneut** auf den bereits dezimierten Wert auf — mit täglich wachsendem
+`daysSinceActivity` (Tag 3: ×0.99, Tag 4: zusätzlich ×0.98, Tag 5: ×0.97 …).
+Der effektive Verlust wächst dadurch deutlich schneller als die dokumentierten
+1 %/Tag. Falls die Eskalation beabsichtigt ist, sollte der Kommentar/JSDoc das
+festhalten; sonst sollte die Rate konstant sein oder einmalig pro Inaktivitäts-
+periode angewendet werden.
+
 ---
 
 ## Geprüfte Invarianten — konform ✓
@@ -207,6 +281,10 @@ TypeScript-Regel „`unknown` an Boundaries narrowen, nicht casten".
 - **i18n:** EN/DE-Locale-Dateien sind deckungsgleich (Keys und Platzhalter); keine hartkodierten User-Strings, kein `€` in `ui.json`.
 - **React 19:** Keine `.propTypes`-Blöcke; Hook-Dependency-Arrays inkl. `t` stichprobenartig korrekt.
 - **Pixi/Audio-Lifecycle:** Teardown mit Race-Guards; Ticker/Listener werden entfernt; keine ungekündigten rAF-Loops; Divisionen gegen 0 abgesichert.
+- **Timer-Cleanup in Hooks:** Alle `setTimeout`/`setInterval`-Verwendungen in `src/hooks/` (Travel, Amp, Glitch, AudioControl, OverworldSave u. a.) räumen über Refs bzw. Effect-Cleanups auf.
+- **Locale-Vollabgleich:** Programmatischer Diff aller EN/DE-Namespace-Dateien — Keys, Platzhalter (`{{…}}`) und Dateibestand sind deckungsgleich; keine durch `JSON.parse` verschluckten Duplikat-Keys.
+- **Seeded RNG:** `crisis.ts`-Raid-Roll nutzt `secureRandom()`, Chatter/Shuffles nutzen `getSafeRandom()`/Fisher-Yates; kein rohes `Math.random()` außerhalb der `crypto.ts`-Fallbacks; kein `sort(() => random - 0.5)`.
+- **Nullish-Checks:** Alle `==`/`!=`-Vorkommen sind idiomatische `== null`-Checks; keine versehentliche lose Gleichheit.
 
 ---
 
