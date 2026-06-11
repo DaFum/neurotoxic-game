@@ -204,3 +204,8 @@
 
 **Learning:** Mapping over an array to create multiple independent HTTP fetch requests for state submission (like per-song leaderboard scores in `submitLeaderboardScores`) causes an N+1 problem. This introduces significant network overhead, backend load, and increased latency as each promise initiates a separate connection.
 **Action:** When a high-frequency path or post-action sync requires multiple submissions to the same endpoint, batch the payloads into a single array and send them via one network request.
+
+## 2024-06-28 - Avoid Array.find overhead in asset reducers
+
+**Learning:** Using `Array.find` introduces closure allocation overhead and adds up to significant GC pressure on hot execution paths in large arrays within reducers, compared to basic looping.
+**Action:** Replace `Array.find` lookups inside reducers with a fast procedural loop.
