@@ -1921,7 +1921,9 @@ const processContrabandExpiry = (band: BandState): BandState => {
 
 const applyDailyBankruptcyCheck = (state: GameState): GameState => {
   const totalDailyObligations = getTotalDailyObligations(state)
-  if (!shouldTriggerBankruptcy(state.player.money, -totalDailyObligations)) {
+  // No gig income during day advance; obligations go through the dedicated
+  // third parameter instead of being smuggled through netIncome.
+  if (!shouldTriggerBankruptcy(state.player.money, 0, totalDailyObligations)) {
     return state
   }
 
