@@ -205,6 +205,9 @@
 **Learning:** Mapping over an array to create multiple independent HTTP fetch requests for state submission (like per-song leaderboard scores in `submitLeaderboardScores`) causes an N+1 problem. This introduces significant network overhead, backend load, and increased latency as each promise initiates a separate connection.
 **Action:** When a high-frequency path or post-action sync requires multiple submissions to the same endpoint, batch the payloads into a single array and send them via one network request.
 
+## 2025-02-23 - Optimize map/filter chain in buildSetlistChartDensity
+**Learning:** Chained array methods like `.map().filter()` when processing song charts create intermediate array allocations that add up to significant GC pressure on hot paths.
+**Action:** Replaced array iteration method chains with procedural `for` loops to directly construct the filtered and mapped lists in a single pass.
 ## 2024-06-11 - Replace O(N) array includes with Set lookup in filter loops
 **Learning:** In `questLifecycle.ts`, using `base.includes(f)` within `merged.startFlags.filter` creates an O(N) lookup for each item in the array, making the operation O(N*M). When the source arrays are large, this causes significant CPU overhead.
 **Action:** When filtering an array based on whether items exist in another array, convert the base array into a `Set` before the loop to ensure O(1) membership lookups.
