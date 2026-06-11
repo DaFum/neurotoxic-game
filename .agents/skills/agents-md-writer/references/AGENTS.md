@@ -1,3 +1,5 @@
+<!-- DIVERGENCE POLICY: This file is a duplicated reference template for the agents-md-writer skill. It exists in both .agents/ and .claude/ directories. Any changes made here should be explicitly synced to the other directory to prevent maintenance drift unless the instructions are intentionally tool-specific. -->
+
 AGENTS.md
 
 Agent Contract

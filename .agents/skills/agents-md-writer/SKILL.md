@@ -326,7 +326,7 @@ If the user provides a repo path, run validation automatically after generating 
 
 1. **Gather info** about the repo (see "Before Writing" above)
 2. **Check for existing config files** — if migrating, read `references/migration-guide.md`
-3. **Review the example checklist** — read `references/AGENTS.md` for examples of what to include, but **do not copy it as a template** as it exceeds the 400-word limit. Use the structure template below instead.
+3. **Review the example checklist** — read `references/AGENTS.md` to learn what comprehensive agent instructions look like; do not submit it verbatim—produce a tailored 200–400 word file inspired by it. Use the structure template below instead.
 4. **Identify non-obvious requirements** — things that meet the Golden Rule
 5. **Draft the file** — aim for 200-400 words, use the structure template
 6. **Review against "What to NEVER Include"** — remove anything that fails

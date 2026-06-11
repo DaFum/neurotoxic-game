@@ -345,14 +345,14 @@ def validate(file_path: str, readme_path: Optional[str] = None) -> ValidationRes
                 break
 
     # --- Check 5: Word count ---
-    if word_count > 1000 and "references/AGENTS.md" not in str(path):
+    if word_count > 1000 and not path.match("**/references/AGENTS.md"):
         result.add(Issue(
             severity="error",
             check="word_count",
             message=f"File is {word_count} words — research shows files over 1000 words significantly hurt performance",
             suggestion="Aggressively trim. Aim for 200-400 words. Use imports or subdirectory files for overflow."
         ))
-    elif word_count > 500 and "references/AGENTS.md" not in str(path):
+    elif word_count > 500 and not path.match("**/references/AGENTS.md"):
         result.add(Issue(
             severity="warning",
             check="word_count",
