@@ -10,7 +10,12 @@ import { generateCampaignCodename } from './brandNames'
 import { buildRep } from './reps'
 import { pickTagline } from './taglines'
 import { pickContextualHook } from './hooks'
-import { pickVariantId, applyOfferVariance, VARIANT_LABELS, VARIANT_MODS } from './variants'
+import {
+  pickVariantId,
+  applyOfferVariance,
+  VARIANT_LABELS,
+  VARIANT_MODS
+} from './variants'
 
 // ─── Public API ──────────────────────────────────────────────────────────
 

@@ -12,16 +12,16 @@ A plan calibrated to **this** codebase's actual state (React 19 + TypeScript + P
 
 ## Grounding snapshot (measured, not assumed)
 
-| Signal | Value |
-|---|---|
-| Function-like declarations > 100 lines (AST scan, all src, incl. private/nested) | **16** |
-| Runtime dependencies / dev dependencies | 18 / 45 |
-| ESLint / Stylelint / Prettier / `typecheck:core` / reducer `typecheck` | all clean |
-| Orphaned exports (post symbol-index fix) | 0 |
-| CI workflows | `eslint.yml`, `test.yml`, `codeql.yml`, `deploy.yml`, `lint-fix-preview.yml` |
-| Pre-commit | husky + lint-staged (`eslint --fix`, `prettier --write`) |
+| Signal                                                                           | Value                                                                        |
+| -------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Function-like declarations > 100 lines (AST scan, all src, incl. private/nested) | **16**                                                                       |
+| Runtime dependencies / dev dependencies                                          | 18 / 45                                                                      |
+| ESLint / Stylelint / Prettier / `typecheck:core` / reducer `typecheck`           | all clean                                                                    |
+| Orphaned exports (post symbol-index fix)                                         | 0                                                                            |
+| CI workflows                                                                     | `eslint.yml`, `test.yml`, `codeql.yml`, `deploy.yml`, `lint-fix-preview.yml` |
+| Pre-commit                                                                       | husky + lint-staged (`eslint --fix`, `prettier --write`)                     |
 
-The codebase is already lint-clean, type-clean, has centralized state, a `GameError` hierarchy, and CI. The high-value work is concentrated in **Modularization (item 1)**; items 2/4/5 are largely *maintenance* of existing systems; item 3 is *document, don't replace*.
+The codebase is already lint-clean, type-clean, has centralized state, a `GameError` hierarchy, and CI. The high-value work is concentrated in **Modularization (item 1)**; items 2/4/5 are largely _maintenance_ of existing systems; item 3 is _document, don't replace_.
 
 ---
 
@@ -31,32 +31,33 @@ The codebase is already lint-clean, type-clean, has centralized state, a `GameEr
 
 Data registries (`CHATTER_DB`, `BRAND_DEALS`, `POST_OPTIONS`, `*_EVENTS`, `HQ_ITEMS`, `QUEST_REGISTRY`, `MILESTONES`) are **excluded** — they are flat config arrays, not "monolithic functions"; splitting them adds indirection with no benefit. The genuine function candidates:
 
-| Lines | Symbol | File | Notes |
-|---|---|---|---|
-| 641 | `useGameDispatchActions` | `src/context/useGameDispatchActions.ts` | **Top priority.** Bundles ~50 dispatch wrappers; cleanly splittable by domain. |
-| 249 | `useAmpLogic` | `src/hooks/minigames/useAmpLogic.ts` | Hook + nested `updateAmpGameState` (184). |
-| 187 | `useContinueHandler` | `src/hooks/postGig/handlers/useContinueHandler.ts` | |
-| 175 | `_generateIntermediateLayers()` | `src/utils/mapGenerator.ts` | Pure logic — easiest, lowest-risk to decompose + test. |
-| 165 | `useSocialPostHandler` | `src/hooks/postGig/handlers/useSocialPostHandler.ts` | |
-| 150 | `resolveEvent` | `src/domain/eventResolver.ts` | Pure domain logic. |
-| 145 | `ensureAudioContext` | `src/utils/audio/context.ts` | Lifecycle-sensitive — touch with care. |
-| 133 | `usePersistence` | `src/context/usePersistence.ts` | |
-| 116 | `drawWaves()` | `src/components/stage/AmpWaveManager.ts` | Pixi render loop — perf-sensitive. |
-| 116 | `useDealHandlers` | `src/hooks/postGig/handlers/useDealHandlers.ts` | |
-| 110 | `generateMap()` | `src/utils/mapGenerator.ts` | |
-| 107 | `usePostGigHandlers` | `src/hooks/usePostGigHandlers.ts` | |
-| 107 | `startGigPlayback` | `src/utils/audio/gigPlayback.ts` | Audio timing — care. |
-| 106 | `disposeAudio` | `src/utils/audio/dispose.ts` | |
-| 101 | `resolveOverlaps()` | `src/utils/mapGenerator.ts` | Pure logic. |
+| Lines | Symbol                          | File                                                 | Notes                                                                          |
+| ----- | ------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------ |
+| 641   | `useGameDispatchActions`        | `src/context/useGameDispatchActions.ts`              | **Top priority.** Bundles ~50 dispatch wrappers; cleanly splittable by domain. |
+| 249   | `useAmpLogic`                   | `src/hooks/minigames/useAmpLogic.ts`                 | Hook + nested `updateAmpGameState` (184).                                      |
+| 187   | `useContinueHandler`            | `src/hooks/postGig/handlers/useContinueHandler.ts`   |                                                                                |
+| 175   | `_generateIntermediateLayers()` | `src/utils/mapGenerator.ts`                          | Pure logic — easiest, lowest-risk to decompose + test.                         |
+| 165   | `useSocialPostHandler`          | `src/hooks/postGig/handlers/useSocialPostHandler.ts` |                                                                                |
+| 150   | `resolveEvent`                  | `src/domain/eventResolver.ts`                        | Pure domain logic.                                                             |
+| 145   | `ensureAudioContext`            | `src/utils/audio/context.ts`                         | Lifecycle-sensitive — touch with care.                                         |
+| 133   | `usePersistence`                | `src/context/usePersistence.ts`                      |                                                                                |
+| 116   | `drawWaves()`                   | `src/components/stage/AmpWaveManager.ts`             | Pixi render loop — perf-sensitive.                                             |
+| 116   | `useDealHandlers`               | `src/hooks/postGig/handlers/useDealHandlers.ts`      |                                                                                |
+| 110   | `generateMap()`                 | `src/utils/mapGenerator.ts`                          |                                                                                |
+| 107   | `usePostGigHandlers`            | `src/hooks/usePostGigHandlers.ts`                    |                                                                                |
+| 107   | `startGigPlayback`              | `src/utils/audio/gigPlayback.ts`                     | Audio timing — care.                                                           |
+| 106   | `disposeAudio`                  | `src/utils/audio/dispose.ts`                         |                                                                                |
+| 101   | `resolveOverlaps()`             | `src/utils/mapGenerator.ts`                          | Pure logic.                                                                    |
 
 (16 total — note "long" hooks are often a list of small `useCallback`s; length alone isn't a defect. Prioritize by **branching complexity**, not raw lines.)
 
 ### Actions
+
 - 🎯 **Decompose `useGameDispatchActions` (641)** — group the dispatch wrappers into domain sub-hooks (`useBandDispatch`, `useAssetDispatch`, `useMinigameDispatch`, …) that the parent composes. Pure mechanical extraction; public hook signature unchanged. Highest payoff.
 - 🎯 **Decompose the pure-logic functions first** (`mapGenerator` helpers, `resolveEvent`) — extract single-responsibility helpers behind explicit signatures; these are the lowest risk because they're side-effect-free and already test-covered.
-- ⛔ **Do NOT touch `drawWaves`, `startGigPlayback`, `ensureAudioContext` for length alone** — these are perf/timing/lifecycle-critical (Pixi ticker, Tone.js timing via `getGigTimeMs`, AudioContext unlock). Splitting risks regressions for cosmetic gain; only refactor if a *behavioral* bug is found.
+- ⛔ **Do NOT touch `drawWaves`, `startGigPlayback`, `ensureAudioContext` for length alone** — these are perf/timing/lifecycle-critical (Pixi ticker, Tone.js timing via `getGigTimeMs`, AudioContext unlock). Splitting risks regressions for cosmetic gain; only refactor if a _behavioral_ bug is found.
 - 🎯 **Interfaces/contracts:** each extracted module gets an explicit TypeScript signature (params/return types — `AGENTS.md` requires this on public members) and a TSDoc summary. No `any`; narrow `unknown` at boundaries.
-- 🎯 **Regression safety:** TDD — characterize current behavior with a test *before* extracting, then refactor until green. Use the existing runners (`node:test` for pure logic, Vitest for hooks/components per the same-file convention).
+- 🎯 **Regression safety:** TDD — characterize current behavior with a test _before_ extracting, then refactor until green. Use the existing runners (`node:test` for pure logic, Vitest for hooks/components per the same-file convention).
 - ✅ **Architecture diagram:** see the Mermaid state diagram below; per-subsystem diagrams generated on demand from `symbols.json` `dependencies`/`usedBy`.
 
 **Gate per function:** behavior test green before+after; `typecheck:core`; `symbols:update` + `symbols:check`.
@@ -103,7 +104,7 @@ flowchart TD
 - ✅ **Single source of truth:** `GameState` via `useReducer`; all updates go through action creators → `gameReducer` dispatch table → domain sub-reducers (`AGENTS.md`: "All state updates go through action creators"). Two-layer payload safety (creators normalize; reducers re-clamp/reject) is already enforced and was hardened earlier this branch.
 - ⛔ **"Implement Redux / MobX":** NOT recommended. Adding a state library = a new runtime dependency (forbidden without discussion) **and** a large rewrite of a working, idiomatic React-19 reducer system that already gives predictable, immutable transitions. This is the textbook "refactor things that aren't broken" anti-pattern.
 - 🎯 **Document state transitions:** add a `docs/state-machine.md` with scene/phase flow (INTRO→MENU→OVERWORLD→PREGIG→GIG→POSTGIG→GAMEOVER) and the action→reducer map — the diagram above is the seed. Low risk, high onboarding value.
-- 🎯 **State-change logging:** a thin dev-only logging middleware around `dispatch` (gated by the existing `logger` + log level) for debuggability — *no* behavior change in production.
+- 🎯 **State-change logging:** a thin dev-only logging middleware around `dispatch` (gated by the existing `logger` + log level) for debuggability — _no_ behavior change in production.
 - ✅ **Review enforcement:** the `state-safety-action-creator-guard` skill + reducer `typecheck` gate + `tests/context/reducers` already enforce best practices.
 
 ---
@@ -127,14 +128,14 @@ flowchart TD
 
 ## Phased roadmap
 
-| Phase | Scope | Risk | Gate |
-|---|---|---|---|
-| **0** | Land docs: this plan + `docs/state-machine.md` (item 3 diagram) | none | — |
-| **1** | Modularize the 3 pure-logic functions (`mapGenerator` ×3, `resolveEvent`) behind tests | low | behavior tests + typecheck + symbols |
-| **2** | Decompose `useGameDispatchActions` (641) into domain sub-hooks | medium | full gate + golden-path tests |
-| **3** | Decompose remaining postGig/minigame handler hooks (where complexity, not just length, warrants it) | medium | full gate |
-| **4** | TSDoc coverage pass; dev-only dispatch logging middleware | low | full gate |
-| **5** | Dependency-review *report* (playwright placement, motion internals) for maintainer sign-off | none (report) | — |
+| Phase | Scope                                                                                               | Risk          | Gate                                 |
+| ----- | --------------------------------------------------------------------------------------------------- | ------------- | ------------------------------------ |
+| **0** | Land docs: this plan + `docs/state-machine.md` (item 3 diagram)                                     | none          | —                                    |
+| **1** | Modularize the 3 pure-logic functions (`mapGenerator` ×3, `resolveEvent`) behind tests              | low           | behavior tests + typecheck + symbols |
+| **2** | Decompose `useGameDispatchActions` (641) into domain sub-hooks                                      | medium        | full gate + golden-path tests        |
+| **3** | Decompose remaining postGig/minigame handler hooks (where complexity, not just length, warrants it) | medium        | full gate                            |
+| **4** | TSDoc coverage pass; dev-only dispatch logging middleware                                           | low           | full gate                            |
+| **5** | Dependency-review _report_ (playwright placement, motion internals) for maintainer sign-off         | none (report) | —                                    |
 
 **Deliberately not in scope:** Redux/MobX migration, a DI container, dependency upgrades, splitting perf/timing-critical audio & Pixi functions for length alone, and reformatting/refactoring code with no measured defect — all per `AGENTS.md` (surgical changes, pinned deps, no speculative abstraction).
 
@@ -143,5 +144,5 @@ flowchart TD
 ## Open decisions for the maintainer
 
 1. Approve Phase 2 (`useGameDispatchActions` split) — it's mechanical but touches the dispatch surface many components consume.
-2. Confirm the dependency-review items are wanted as a *report* (no version changes without your go-ahead).
+2. Confirm the dependency-review items are wanted as a _report_ (no version changes without your go-ahead).
 3. Confirm Redux/MobX and DI are intentionally **out** (recommended), or say if you specifically want one despite the cost.
