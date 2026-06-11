@@ -69,7 +69,7 @@ const ALIGNMENT_METADATA = {
     imagePrompt: IMG_PROMPTS.SOCIAL_POST_COMMERCIAL,
     badgeKey: 'ui:deals.alignment.good',
     defaultLabel: '🕊️ GOOD',
-    colorClass: 'text-pure-white'
+    colorClass: 'text-star-white'
   },
   [BRAND_ALIGNMENTS.NEUTRAL]: {
     imagePrompt: IMG_PROMPTS.SOCIAL_POST_COMMERCIAL,
