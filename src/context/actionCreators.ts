@@ -30,6 +30,7 @@ import type {
   ClinicActionPayload,
   GameAction,
   GameState,
+  RelationshipChange,
   GameMap,
   GameEvent,
   GigModifiers,
@@ -459,6 +460,36 @@ export const createResetStateAction = (
 })
 
 /**
+ * Stamps banter relationship changes that lack a finite timestamp with the
+ * current time. Timestamps must be generated here (not in the reducer) so
+ * `applyEventDelta` stays pure and deterministic.
+ */
+const stampBanterTimestamps = (delta: EventDeltaPayload): EventDeltaPayload => {
+  const rawRC = delta.band?.relationshipChange as unknown
+  if (!rawRC) return delta
+  const needsStamp = (rc: unknown): boolean =>
+    rc !== null &&
+    typeof rc === 'object' &&
+    (rc as RelationshipChange).source === 'banter' &&
+    !isFiniteNumber((rc as RelationshipChange).timestamp)
+  const hasUnstamped = Array.isArray(rawRC)
+    ? rawRC.some(needsStamp)
+    : needsStamp(rawRC)
+  if (!hasUnstamped) return delta
+  const now = Date.now()
+  const stamp = (rc: unknown): unknown =>
+    needsStamp(rc) ? { ...(rc as RelationshipChange), timestamp: now } : rc
+  const stamped = Array.isArray(rawRC) ? rawRC.map(stamp) : stamp(rawRC)
+  return {
+    ...delta,
+    band: {
+      ...delta.band,
+      relationshipChange: stamped as RelationshipChange[]
+    }
+  }
+}
+
+/**
  * Creates an event delta application action
  * @param delta - State delta to apply
  */
@@ -466,7 +497,7 @@ export const createApplyEventDeltaAction = (
   delta: EventDeltaPayload
 ): Extract<GameAction, { type: typeof ActionTypes.APPLY_EVENT_DELTA }> => ({
   type: ActionTypes.APPLY_EVENT_DELTA,
-  payload: delta
+  payload: stampBanterTimestamps(delta)
 })
 
 /**

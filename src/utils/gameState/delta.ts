@@ -602,7 +602,6 @@ export const applyEventDelta = (
         delta: number
         timestamp: number
       }> | null = null
-      let now = 0
       for (let i = 0; i < rawRC.length; i++) {
         const rc = rawRC[i]
         if (isRelationshipChange(rc) && isNotSelfRelationship(rc)) {
@@ -610,12 +609,13 @@ export const applyEventDelta = (
           const rcr = rc
           if (rcr.source === 'banter') {
             if (newBanterEvents === null) newBanterEvents = []
-            if (now === 0) now = Date.now()
+            // Timestamps are stamped by createApplyEventDeltaAction; the
+            // fallback stays deterministic so this reducer path remains pure.
             newBanterEvents.push({
               member1: rcr.member1,
               member2: rcr.member2,
               delta: rcr.change,
-              timestamp: rcr.timestamp ?? now
+              timestamp: finiteNumberOr(rcr.timestamp, 0)
             })
           }
         }
@@ -636,7 +636,7 @@ export const applyEventDelta = (
             member1: rcr.member1,
             member2: rcr.member2,
             delta: rcr.change,
-            timestamp: rcr.timestamp ?? Date.now()
+            timestamp: finiteNumberOr(rcr.timestamp, 0)
           }
         ].slice(-50)
       }
