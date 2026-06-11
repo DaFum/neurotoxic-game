@@ -21,7 +21,7 @@ test('AdvanceDay Integration - Assets Tick', () => {
       }
     ],
     liabilities: {
-      'l1': {
+      l1: {
         id: 'l1',
         assetId: 'a1',
         principalRemaining: 500,
@@ -44,8 +44,14 @@ test('AdvanceDay Integration - Assets Tick', () => {
 
   assert.strictEqual(nextState.rngSeed, 54321)
   assert.strictEqual(nextState.assets[0].condition, 99.7)
-  assert.strictEqual(Object.values(nextState.liabilities)[0].principalRemaining, 450)
-  assert.strictEqual(Object.values(nextState.liabilities)[0].termDaysRemaining, 9)
+  assert.strictEqual(
+    Object.values(nextState.liabilities)[0].principalRemaining,
+    450
+  )
+  assert.strictEqual(
+    Object.values(nextState.liabilities)[0].termDaysRemaining,
+    9
+  )
   assert.strictEqual(nextState.player.money, 918)
 })
 
@@ -76,7 +82,7 @@ test('AdvanceDay handler leaves zero-condition foreclosures to the action orches
       }
     ],
     liabilities: {
-      'loan_broken_asset': {
+      loan_broken_asset: {
         id: 'loan_broken_asset',
         source: 'loan',
         assetId: 'broken_asset',
@@ -137,7 +143,7 @@ test('AdvanceDay handler records liability foreclosure notices', () => {
       }
     ],
     liabilities: {
-      'loan_defaulted_asset': {
+      loan_defaulted_asset: {
         id: 'loan_defaulted_asset',
         source: 'loan',
         assetId: 'defaulted_asset',
@@ -194,7 +200,7 @@ test('AdvanceDay Integration - zero-condition assets are foreclosed through ASSE
       }
     ],
     liabilities: {
-      'loan_broken_asset': {
+      loan_broken_asset: {
         id: 'loan_broken_asset',
         source: 'loan',
         assetId: 'broken_asset',

@@ -3,6 +3,7 @@ import type {
   BrandOfferUrgency,
   SocialEngineGameState
 } from '../../types/social'
+import { finiteNumberOr } from '../gameState'
 
 // ─── Contextual Hooks ────────────────────────────────────────────────────
 
@@ -32,12 +33,8 @@ export const pickContextualHook = (
   rng: RandomFn
 ): { key: string; default: string; urgency: BrandOfferUrgency } => {
   const social = gameState.social ?? {}
-  const controversy =
-    typeof social.controversyLevel === 'number' ? social.controversyLevel : 0
-  const fame =
-    gameState.player && typeof gameState.player.fame === 'number'
-      ? gameState.player.fame
-      : 0
+  const controversy = finiteNumberOr(gameState.social?.controversyLevel, 0)
+  const fame = finiteNumberOr(gameState.player?.fame, 0)
 
   let chosen: HookId
   let urgency: BrandOfferUrgency

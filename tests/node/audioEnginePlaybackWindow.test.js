@@ -62,7 +62,8 @@ test('setMusicVolume & setSFXVolume', async t => {
   if (skipIfImportFailed(t)) return
   // audioState may not be directly exported or might be called differently in the real module
   // Check the export and fall back if needed
-  const { setMusicVolume, setSFXVolume } = await import('../../src/utils/audio/sfx')
+  const { setMusicVolume, setSFXVolume } =
+    await import('../../src/utils/audio/sfx')
   const { audioState } = await import('../../src/utils/audio/state')
   const moduleState =
     audioState || (await import('../../src/utils/audio/state')).audioState

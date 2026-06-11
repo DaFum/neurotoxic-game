@@ -194,9 +194,12 @@
 
 **Learning:** Using `Array.find` inside a React render function on an array derived from `useMemo` causes an O(N) iteration on every render.
 **Action:** Replace `Array.find` lookups inside render loops with a `useMemo` that precomputes a `Map` (or object) for O(1) access, especially when the source array is stable.
+
 ## 2024-11-15 - Optimize O(N) Array.find inside a loop
-**Learning:** Performing an `Array.find` within a loop creates an O(N*M) time complexity trap, heavily increasing CPU time in hot reducers when large lists of events and assets interact.
+
+**Learning:** Performing an `Array.find` within a loop creates an O(N\*M) time complexity trap, heavily increasing CPU time in hot reducers when large lists of events and assets interact.
 **Action:** Always pre-compute a lookup Map or Set in O(N+M) time before iterating, avoiding nested loops and duplicate `find` iterations for repeated keys.
+
 ## 2024-06-25 - Batch Network Requests in High-Frequency Paths
 
 **Learning:** Mapping over an array to create multiple independent HTTP fetch requests for state submission (like per-song leaderboard scores in `submitLeaderboardScores`) causes an N+1 problem. This introduces significant network overhead, backend load, and increased latency as each promise initiates a separate connection.

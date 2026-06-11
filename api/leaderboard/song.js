@@ -46,10 +46,7 @@ export default async function handler(req, res) {
       const { playerId, playerName, songId, score, scores } = req.body
 
       // Basic Type Checks
-      if (
-        typeof playerId !== 'string' ||
-        typeof playerName !== 'string'
-      ) {
+      if (typeof playerId !== 'string' || typeof playerName !== 'string') {
         return res.status(400).json({ error: 'Missing required fields' })
       }
 
@@ -79,7 +76,9 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'No scores provided' })
       }
       if (itemsToProcess.length > 100) {
-        return res.status(400).json({ error: 'Batch size exceeds limit of 100' })
+        return res
+          .status(400)
+          .json({ error: 'Batch size exceeds limit of 100' })
       }
 
       // Validate all items before processing
@@ -91,7 +90,11 @@ export default async function handler(req, res) {
         if (typeof item.songId !== 'string' || typeof item.score !== 'number') {
           return res.status(400).json({ error: 'Missing required fields' })
         }
-        if (!Number.isFinite(item.score) || item.score < 0 || item.score > 10000000) {
+        if (
+          !Number.isFinite(item.score) ||
+          item.score < 0 ||
+          item.score > 10000000
+        ) {
           return res.status(400).json({ error: 'Invalid score value' })
         }
         if (

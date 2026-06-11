@@ -379,8 +379,11 @@ describe('PostGig Leaderboard Submission', () => {
     // Should not call fetch
     await waitFor(() => {
       const calls = vi.mocked(global.fetch).mock.calls
-      const leaderboardCalls = calls.filter(call =>
-        call[0] && typeof call[0] === 'string' && call[0].includes('/api/leaderboard')
+      const leaderboardCalls = calls.filter(
+        call =>
+          call[0] &&
+          typeof call[0] === 'string' &&
+          call[0].includes('/api/leaderboard')
       )
       expect(leaderboardCalls).toHaveLength(0)
     })
@@ -415,15 +418,18 @@ describe('PostGig Leaderboard Submission', () => {
     // Should not call fetch because song is unknown
     await waitFor(() => {
       const calls = vi.mocked(global.fetch).mock.calls
-      const leaderboardCalls = calls.filter(call =>
-        call[0] && typeof call[0] === 'string' && call[0].includes('/api/leaderboard')
+      const leaderboardCalls = calls.filter(
+        call =>
+          call[0] &&
+          typeof call[0] === 'string' &&
+          call[0].includes('/api/leaderboard')
       )
       expect(leaderboardCalls).toHaveLength(0)
     })
   })
 
   it('submits mixed songStats list, processing knowns and skipping unknowns', async () => {
-    global.fetch.mockClear();
+    global.fetch.mockClear()
     const base = getBaseState()
     useGameState.mockReturnValue({
       ...base,

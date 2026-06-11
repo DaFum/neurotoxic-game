@@ -238,7 +238,7 @@ describe('getTotalDailyObligations', () => {
       social: {},
       assets: [asset],
       liabilities: {
-        'l1': {
+        l1: {
           id: 'l1',
           source: 'loan',
           assetId: 'asset_1',
