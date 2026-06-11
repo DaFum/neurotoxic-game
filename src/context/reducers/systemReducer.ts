@@ -116,16 +116,17 @@ const inferLoadedMapNodeLayer = (
 ): number => {
   if (
     typeof nodeRecord.layer === 'number' &&
-    Number.isFinite(nodeRecord.layer)
+    isFiniteNumber(nodeRecord.layer)
   ) {
     return nodeRecord.layer
   }
 
-  const layerMatch = /^node_(\d+)_/.exec(id)
+  const boundedId = typeof id === 'string' ? id.slice(0, 50) : ''
+  const layerMatch = /^node_(\d+)_/.exec(boundedId)
   const rawLayer = layerMatch?.[1]
   if (rawLayer !== undefined) {
     const parsedLayer = Number(rawLayer)
-    if (Number.isFinite(parsedLayer)) return parsedLayer
+    if (isFiniteNumber(parsedLayer)) return parsedLayer
   }
 
   return 0
