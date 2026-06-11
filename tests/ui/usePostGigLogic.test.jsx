@@ -35,6 +35,7 @@ vi.mock('../../src/utils/economyEngine', () => ({
   shouldTriggerBankruptcy: vi.fn()
 }))
 vi.mock('../../src/utils/assetSelectors', () => ({
+  getTotalDailyObligations: vi.fn(() => 0),
   getActiveAssetModifiers: vi.fn(() => ({
     fuelMultiplier: 1,
     merchCostMultiplier: 1,
