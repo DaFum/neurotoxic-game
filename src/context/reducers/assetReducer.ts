@@ -209,7 +209,17 @@ export const handleInstallModule = (
     }
   }
 
-  const assetForEvent = state.assets.find(asset => asset.id === assetId)
+  // ⚡ BOLT OPTIMIZATION: Replaced O(N) Array.find with a procedural loop
+  // to avoid closure overhead and reduce GC pressure on hot paths.
+  let assetForEvent: LongTermAsset | null = null
+  for (let i = 0; i < state.assets.length; i++) {
+    const asset = state.assets[i]
+    if (asset && asset.id === assetId) {
+      assetForEvent = asset
+      break
+    }
+  }
+
   if (assetForEvent) {
     nextState = QuestEvents.emit(
       nextState,
@@ -418,7 +428,16 @@ export const handleSellChassis = (
   const { assetId } = payload
   if (!state.assets) return state
 
-  const asset = state.assets.find(a => a.id === assetId)
+  // ⚡ BOLT OPTIMIZATION: Replaced O(N) Array.find with a procedural loop
+  // to avoid closure overhead and reduce GC pressure on hot paths.
+  let asset: LongTermAsset | null = null
+  for (let i = 0; i < state.assets.length; i++) {
+    const a = state.assets[i]
+    if (a && a.id === assetId) {
+      asset = a
+      break
+    }
+  }
   if (!asset) return state
 
   // ⚡ BOLT OPTIMIZATION: Replaced chained .filter().reduce() with a single-pass loop to eliminate intermediate array allocations on hot paths.
@@ -487,7 +506,16 @@ export const handleRepairChassis = (
   // Mirror the early-return pattern from handleUpgradeChassisTier: if no
   // asset matches, return state unchanged rather than allocating a fresh
   // state with a zero-cost repair.
-  const targetAsset = state.assets.find(a => a.id === assetId)
+  // ⚡ BOLT OPTIMIZATION: Replaced O(N) Array.find with a procedural loop
+  // to avoid closure overhead and reduce GC pressure on hot paths.
+  let targetAsset: LongTermAsset | null = null
+  for (let i = 0; i < state.assets.length; i++) {
+    const a = state.assets[i]
+    if (a && a.id === assetId) {
+      targetAsset = a
+      break
+    }
+  }
   if (!targetAsset) return state
 
   const repairCost = (100 - targetAsset.condition) * REPAIR_COST_PER_POINT

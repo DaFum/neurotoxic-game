@@ -209,3 +209,13 @@
 
 **Learning:** Using `value.map()` inside recursive functions like `sanitizeTraversableValue` creates unnecessary closure allocations and intermediate arrays, hurting performance on deep traversals.
 **Action:** Replace `Array.prototype.map()` in recursive paths with a pre-allocated procedural `for` loop to avoid closure overhead and array mapping overhead.
+## 2024-06-28 - Avoid Array.find overhead in asset reducers
+
+**Learning:** Using `Array.find` introduces closure allocation overhead and adds up to significant GC pressure on hot execution paths in large arrays within reducers, compared to basic looping.
+**Action:** Replace `Array.find` lookups inside reducers with a fast procedural loop.
+## 2025-02-23 - Optimize map/filter chain in buildSetlistChartDensity
+**Learning:** Chained array methods like `.map().filter()` when processing song charts create intermediate array allocations that add up to significant GC pressure on hot paths.
+**Action:** Replaced array iteration method chains with procedural `for` loops to directly construct the filtered and mapped lists in a single pass.
+## 2024-06-11 - Replace O(N) array includes with Set lookup in filter loops
+**Learning:** In `questLifecycle.ts`, using `base.includes(f)` within `merged.startFlags.filter` creates an O(N) lookup for each item in the array, making the operation O(N*M). When the source arrays are large, this causes significant CPU overhead.
+**Action:** When filtering an array based on whether items exist in another array, convert the base array into a `Set` before the loop to ensure O(1) membership lookups.
