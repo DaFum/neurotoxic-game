@@ -174,9 +174,19 @@ export const QuestLifecycle = {
       for (const f of quest.startFlags) toClear.add(f)
     }
     if (toClear.size > 0) {
-      nextState.activeStoryFlags = (nextState.activeStoryFlags ?? []).filter(
-        f => !toClear.has(f)
-      )
+      const activeFlags = nextState.activeStoryFlags ?? []
+      const newFlags: string[] = []
+      let changed = false
+      for (const f of activeFlags) {
+        if (!toClear.has(f)) {
+          newFlags.push(f)
+        } else {
+          changed = true
+        }
+      }
+      if (changed) {
+        nextState.activeStoryFlags = newFlags
+      }
     }
 
     // Cooldown-policy quests start a re-add cooldown on completion.
@@ -353,13 +363,25 @@ export const QuestLifecycle = {
     }
 
     if (flagsToAdd.length > 0 || flagsToRemove.size > 0) {
-      const baseFlags = (nextState.activeStoryFlags ?? []).filter(
-        f => !flagsToRemove.has(f)
-      )
-      for (const flag of flagsToAdd) {
-        if (!baseFlags.includes(flag)) baseFlags.push(flag)
+      const baseFlags = nextState.activeStoryFlags ?? []
+      let changed = false
+      const filteredFlags: string[] = []
+      for (const f of baseFlags) {
+        if (!flagsToRemove.has(f)) {
+          filteredFlags.push(f)
+        } else {
+          changed = true
+        }
       }
-      nextState.activeStoryFlags = baseFlags
+      for (const flag of flagsToAdd) {
+        if (!filteredFlags.includes(flag)) {
+          filteredFlags.push(flag)
+          changed = true
+        }
+      }
+      if (changed) {
+        nextState.activeStoryFlags = filteredFlags
+      }
     }
 
     if (cooldownsToAdd.length > 0) {
