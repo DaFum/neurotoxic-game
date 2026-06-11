@@ -41,6 +41,7 @@ import {
   isEmptyObject,
   finiteNumberOr,
   isFiniteNumber,
+  clampNonNegative,
   BALANCE_CONSTANTS
 } from '../../utils/gameState'
 import { calculateDailyUpdates } from '../../utils/simulationUtils'
@@ -746,6 +747,7 @@ const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
     fame: validatedFame,
     fameLevel: calculateFameLevel(validatedFame),
     day: Math.max(1, rawPlayer.day),
+    time: clampNonNegative(rawPlayer.time),
     van: {
       ...rawPlayer.van,
       fuel: clampVanFuel(rawPlayer.van.fuel)
