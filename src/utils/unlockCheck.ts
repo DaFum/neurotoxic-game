@@ -1,5 +1,6 @@
 import { hasTrait } from './traitUtils'
 import { CHARACTERS } from '../data/characters'
+import { isLooseRecord } from './objectUtils'
 import type { GameState } from '../types'
 
 /**
@@ -16,10 +17,10 @@ const hasRelationshipBelow = (
   relationships: unknown,
   threshold: number
 ): boolean => {
-  if (!relationships || typeof relationships !== 'object') return false
+  if (!isLooseRecord(relationships)) return false
   for (const key in relationships) {
     if (Object.hasOwn(relationships, key)) {
-      const score = (relationships as Record<string, unknown>)[key]
+      const score = relationships[key]
       if (
         typeof score === 'number' &&
         Number.isFinite(score) &&
@@ -43,7 +44,7 @@ export const checkTraitUnlocks = (
   context: unknown = {}
 ) => {
   const newUnlocks: { memberId: string; traitId: string }[] = []
-  const ctx = context as Record<string, unknown>
+  const ctx: Record<string, unknown> = isLooseRecord(context) ? context : {}
   const { band, player, social } = state
   const members = band?.members || []
 
@@ -58,17 +59,12 @@ export const checkTraitUnlocks = (
   }
 
   // 1. Performance Unlocks (Post-Gig)
-  if (
-    ctx?.['type'] === 'GIG_COMPLETE' &&
-    ctx.gigStats &&
-    typeof ctx.gigStats === 'object'
-  ) {
-    const gigStats = ctx.gigStats as Record<string, unknown>
+  if (ctx?.['type'] === 'GIG_COMPLETE' && isLooseRecord(ctx.gigStats)) {
+    const gigStats = ctx.gigStats
     const accuracy =
       typeof gigStats.accuracy === 'number' ? gigStats.accuracy : 0
     const misses = typeof gigStats.misses === 'number' ? gigStats.misses : 0
-    const song =
-      (gigStats.song as Record<string, unknown> | undefined) ?? undefined
+    const song = isLooseRecord(gigStats.song) ? gigStats.song : undefined
     const maxCombo =
       typeof gigStats.maxCombo === 'number' ? gigStats.maxCombo : 0
 
@@ -119,7 +115,7 @@ export const checkTraitUnlocks = (
 
   // 3. Purchase Unlocks
   if (ctx?.['type'] === 'PURCHASE') {
-    const item = ctx.item as Record<string, unknown> | undefined
+    const item = isLooseRecord(ctx.item) ? ctx.item : undefined
 
     // Party Animal (Marius): Own a Beer Fridge
     if (Marius && !hasTrait(Marius, 'party_animal')) {
