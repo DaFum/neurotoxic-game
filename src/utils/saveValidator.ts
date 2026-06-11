@@ -63,8 +63,13 @@ const validatePlayer = (player: unknown): void => {
   const nonNegativeFields = ['time', 'score', 'fame', 'fameLevel']
   for (const field of numericFields) {
     const val = p[field]
-    if (val !== undefined && typeof val !== 'number') {
-      throw new StateError(`player.${field} must be a number`)
+    if (val !== undefined) {
+      if (typeof val !== 'number') {
+        throw new StateError(`player.${field} must be a number`)
+      }
+      if (!Number.isFinite(val)) {
+        throw new StateError(`player.${field} must be a finite number`)
+      }
     }
     if (nonNegativeFields.includes(field) && val !== undefined) {
       p[field] = clampNonNegative(val as number)
