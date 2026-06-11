@@ -205,6 +205,10 @@
 **Learning:** Mapping over an array to create multiple independent HTTP fetch requests for state submission (like per-song leaderboard scores in `submitLeaderboardScores`) causes an N+1 problem. This introduces significant network overhead, backend load, and increased latency as each promise initiates a separate connection.
 **Action:** When a high-frequency path or post-action sync requires multiple submissions to the same endpoint, batch the payloads into a single array and send them via one network request.
 
+## 2024-05-31 - Replace Array map in recursive functions
+
+**Learning:** Using `value.map()` inside recursive functions like `sanitizeTraversableValue` creates unnecessary closure allocations and intermediate arrays, hurting performance on deep traversals.
+**Action:** Replace `Array.prototype.map()` in recursive paths with a pre-allocated procedural `for` loop to avoid closure overhead and array mapping overhead.
 ## 2024-06-28 - Avoid Array.find overhead in asset reducers
 
 **Learning:** Using `Array.find` introduces closure allocation overhead and adds up to significant GC pressure on hot execution paths in large arrays within reducers, compared to basic looping.
