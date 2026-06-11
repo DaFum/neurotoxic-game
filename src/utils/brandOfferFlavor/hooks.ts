@@ -1,5 +1,8 @@
 import type { RandomFn } from '../../types/callbacks'
-import type { BrandOfferUrgency, SocialEngineGameState } from '../../types/social'
+import type {
+  BrandOfferUrgency,
+  SocialEngineGameState
+} from '../../types/social'
 
 // ─── Contextual Hooks ────────────────────────────────────────────────────
 
@@ -32,7 +35,9 @@ export const pickContextualHook = (
   const controversy =
     typeof social.controversyLevel === 'number' ? social.controversyLevel : 0
   const fame =
-    gameState.player && typeof gameState.player.fame === 'number' ? gameState.player.fame : 0
+    gameState.player && typeof gameState.player.fame === 'number'
+      ? gameState.player.fame
+      : 0
 
   let chosen: HookId
   let urgency: BrandOfferUrgency

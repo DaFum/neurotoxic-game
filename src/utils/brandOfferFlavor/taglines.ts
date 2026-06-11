@@ -54,7 +54,7 @@ export const pickTagline = (
     Math.min(pool.length - 1, Math.floor(rng() * pool.length))
   )
   return {
-    key: `economy:brandFlavor.taglines.${Object.hasOwn(TAGLINES_BY_ALIGNMENT, alignment) ? alignment : "NEUTRAL"}.${idx}`,
+    key: `economy:brandFlavor.taglines.${Object.hasOwn(TAGLINES_BY_ALIGNMENT, alignment) ? alignment : 'NEUTRAL'}.${idx}`,
     default: pool[idx] ?? ''
   }
 }

@@ -144,15 +144,17 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   // reduces. Gated by the logger level (`debug` is suppressed at INFO and
   // above), so it is silent in production and changes no behavior — it only
   // forwards to the underlying reducer dispatch with a stable identity.
-  const dispatch = useCallback<typeof rawDispatch>(
-    action => {
-      if (IS_DEV && action && typeof action === 'object' && Object.hasOwn(action, 'type')) {
-        logger.debug('GameState', 'dispatch ' + String(action.type))
-      }
-      rawDispatch(action)
-    },
-    []
-  )
+  const dispatch = useCallback<typeof rawDispatch>(action => {
+    if (
+      IS_DEV &&
+      action &&
+      typeof action === 'object' &&
+      Object.hasOwn(action, 'type')
+    ) {
+      logger.debug('GameState', 'dispatch ' + String(action.type))
+    }
+    rawDispatch(action)
+  }, [])
 
   // Clean up injection marker after mount (deferred from initGameState to
   // survive React StrictMode's double-invocation of lazy initialisers).

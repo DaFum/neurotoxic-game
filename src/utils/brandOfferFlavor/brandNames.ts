@@ -2,7 +2,6 @@ import { secureRandom } from '../crypto'
 import type { RandomFn } from '../../types/callbacks'
 import { pick } from './helpers'
 
-
 type BrandNameParts = {
   prefixes: string[]
   suffixes: string[]
