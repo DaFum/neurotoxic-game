@@ -5,7 +5,28 @@ import {
   QUEST_VIRAL_DANCE,
   QUEST_SPONSOR_DEMAND,
   QUEST_HARMONY_PROJECT,
-  QUEST_LOCAL_LEGEND
+  QUEST_LOCAL_LEGEND,
+  QUEST_TOURBUS_INSPECTION,
+  QUEST_STUDIO_DEMO,
+  QUEST_MERCH_RUSH,
+  QUEST_VENUE_RESIDENCY,
+  QUEST_REGION_TAKEOVER,
+  QUEST_DRAMA_POST,
+  QUEST_PREMIUM_ENDORSEMENT,
+  QUEST_COMMUNITY_OUTREACH,
+  QUEST_FLAWLESS_RUN,
+  QUEST_STICKY_FINGERS,
+  QUEST_SPECIAL_DELIVERY,
+  QUEST_PERSONA_NON_GRATA,
+  QUEST_MURPHYS_LAW,
+  QUEST_CRISIS_MANAGER,
+  QUEST_CHAPTER_MARKER,
+  QUEST_PAYDAY,
+  QUEST_MAKE_AMENDS,
+  QUEST_BURNED_BRIDGES,
+  QUEST_VENUE_REGULAR,
+  QUEST_BRAND_AMBASSADOR,
+  QUEST_ALCHEMIST
 } from '../questsConstants'
 
 const canOfferQuest = (state: GameState, questId: string): boolean =>
@@ -144,11 +165,11 @@ export const QUEST_EVENTS = [
     trigger: 'random',
     chance: 0.07,
     condition: (state: GameState) =>
-      canOfferQuest(state, 'quest_tourbus_inspection'),
+      canOfferQuest(state, QUEST_TOURBUS_INSPECTION),
     options: [
       {
         label: 'events:quest_trigger_tourbus_inspection.opt1.label',
-        effect: { type: 'quest', quest: { id: 'quest_tourbus_inspection' } },
+        effect: { type: 'quest', quest: { id: QUEST_TOURBUS_INSPECTION } },
         outcomeText: 'events:quest_trigger_tourbus_inspection.opt1.outcome'
       },
       {
@@ -165,11 +186,11 @@ export const QUEST_EVENTS = [
     description: 'events:quest_trigger_studio_demo.desc',
     trigger: 'random',
     chance: 0.06,
-    condition: (state: GameState) => canOfferQuest(state, 'quest_studio_demo'),
+    condition: (state: GameState) => canOfferQuest(state, QUEST_STUDIO_DEMO),
     options: [
       {
         label: 'events:quest_trigger_studio_demo.opt1.label',
-        effect: { type: 'quest', quest: { id: 'quest_studio_demo' } },
+        effect: { type: 'quest', quest: { id: QUEST_STUDIO_DEMO } },
         outcomeText: 'events:quest_trigger_studio_demo.opt1.outcome'
       },
       {
@@ -186,11 +207,11 @@ export const QUEST_EVENTS = [
     description: 'events:quest_trigger_merch_rush.desc',
     trigger: 'random',
     chance: 0.07,
-    condition: (state: GameState) => canOfferQuest(state, 'quest_merch_rush'),
+    condition: (state: GameState) => canOfferQuest(state, QUEST_MERCH_RUSH),
     options: [
       {
         label: 'events:quest_trigger_merch_rush.opt1.label',
-        effect: { type: 'quest', quest: { id: 'quest_merch_rush' } },
+        effect: { type: 'quest', quest: { id: QUEST_MERCH_RUSH } },
         outcomeText: 'events:quest_trigger_merch_rush.opt1.outcome'
       },
       {
@@ -208,11 +229,11 @@ export const QUEST_EVENTS = [
     trigger: 'random',
     chance: 0.06,
     condition: (state: GameState) =>
-      canOfferQuest(state, 'quest_venue_residency'),
+      canOfferQuest(state, QUEST_VENUE_RESIDENCY),
     options: [
       {
         label: 'events:quest_trigger_venue_residency.opt1.label',
-        effect: { type: 'quest', quest: { id: 'quest_venue_residency' } },
+        effect: { type: 'quest', quest: { id: QUEST_VENUE_RESIDENCY } },
         outcomeText: 'events:quest_trigger_venue_residency.opt1.outcome'
       },
       {
@@ -230,11 +251,11 @@ export const QUEST_EVENTS = [
     trigger: 'random',
     chance: 0.05,
     condition: (state: GameState) =>
-      canOfferQuest(state, 'quest_region_takeover'),
+      canOfferQuest(state, QUEST_REGION_TAKEOVER),
     options: [
       {
         label: 'events:quest_trigger_region_takeover.opt1.label',
-        effect: { type: 'quest', quest: { id: 'quest_region_takeover' } },
+        effect: { type: 'quest', quest: { id: QUEST_REGION_TAKEOVER } },
         outcomeText: 'events:quest_trigger_region_takeover.opt1.outcome'
       },
       {
@@ -251,11 +272,11 @@ export const QUEST_EVENTS = [
     description: 'events:quest_trigger_drama_post.desc',
     trigger: 'random',
     chance: 0.06,
-    condition: (state: GameState) => canOfferQuest(state, 'quest_drama_post'),
+    condition: (state: GameState) => canOfferQuest(state, QUEST_DRAMA_POST),
     options: [
       {
         label: 'events:quest_trigger_drama_post.opt1.label',
-        effect: { type: 'quest', quest: { id: 'quest_drama_post' } },
+        effect: { type: 'quest', quest: { id: QUEST_DRAMA_POST } },
         outcomeText: 'events:quest_trigger_drama_post.opt1.outcome'
       },
       {
@@ -273,11 +294,11 @@ export const QUEST_EVENTS = [
     trigger: 'random',
     chance: 0.04,
     condition: (state: GameState) =>
-      canOfferQuest(state, 'quest_premium_endorsement'),
+      canOfferQuest(state, QUEST_PREMIUM_ENDORSEMENT),
     options: [
       {
         label: 'events:quest_trigger_premium_endorsement.opt1.label',
-        effect: { type: 'quest', quest: { id: 'quest_premium_endorsement' } },
+        effect: { type: 'quest', quest: { id: QUEST_PREMIUM_ENDORSEMENT } },
         outcomeText: 'events:quest_trigger_premium_endorsement.opt1.outcome'
       },
       {
@@ -295,11 +316,11 @@ export const QUEST_EVENTS = [
     trigger: 'random',
     chance: 0.08,
     condition: (state: GameState) =>
-      canOfferQuest(state, 'quest_community_outreach'),
+      canOfferQuest(state, QUEST_COMMUNITY_OUTREACH),
     options: [
       {
         label: 'events:quest_trigger_community_outreach.opt1.label',
-        effect: { type: 'quest', quest: { id: 'quest_community_outreach' } },
+        effect: { type: 'quest', quest: { id: QUEST_COMMUNITY_OUTREACH } },
         outcomeText: 'events:quest_trigger_community_outreach.opt1.outcome'
       },
       {
@@ -316,11 +337,11 @@ export const QUEST_EVENTS = [
     description: 'events:quest_trigger_flawless_run.desc',
     trigger: 'random',
     chance: 0.08,
-    condition: (state: GameState) => canOfferQuest(state, 'quest_flawless_run'),
+    condition: (state: GameState) => canOfferQuest(state, QUEST_FLAWLESS_RUN),
     options: [
       {
         label: 'events:quest_trigger_flawless_run.opt1.label',
-        effect: { type: 'quest', quest: { id: 'quest_flawless_run' } },
+        effect: { type: 'quest', quest: { id: QUEST_FLAWLESS_RUN } },
         outcomeText: 'events:quest_trigger_flawless_run.opt1.outcome'
       },
       {
@@ -338,11 +359,11 @@ export const QUEST_EVENTS = [
     trigger: 'random',
     chance: 0.06,
     condition: (state: GameState) =>
-      canOfferQuest(state, 'quest_sticky_fingers'),
+      canOfferQuest(state, QUEST_STICKY_FINGERS),
     options: [
       {
         label: 'events:quest_trigger_sticky_fingers.opt1.label',
-        effect: { type: 'quest', quest: { id: 'quest_sticky_fingers' } },
+        effect: { type: 'quest', quest: { id: QUEST_STICKY_FINGERS } },
         outcomeText: 'events:quest_trigger_sticky_fingers.opt1.outcome'
       },
       {
@@ -360,11 +381,11 @@ export const QUEST_EVENTS = [
     trigger: 'random',
     chance: 0.06,
     condition: (state: GameState) =>
-      canOfferQuest(state, 'quest_special_delivery'),
+      canOfferQuest(state, QUEST_SPECIAL_DELIVERY),
     options: [
       {
         label: 'events:quest_trigger_special_delivery.opt1.label',
-        effect: { type: 'quest', quest: { id: 'quest_special_delivery' } },
+        effect: { type: 'quest', quest: { id: QUEST_SPECIAL_DELIVERY } },
         outcomeText: 'events:quest_trigger_special_delivery.opt1.outcome'
       },
       {
@@ -382,11 +403,11 @@ export const QUEST_EVENTS = [
     trigger: 'random',
     chance: 0.05,
     condition: (state: GameState) =>
-      canOfferQuest(state, 'quest_persona_non_grata'),
+      canOfferQuest(state, QUEST_PERSONA_NON_GRATA),
     options: [
       {
         label: 'events:quest_trigger_persona_non_grata.opt1.label',
-        effect: { type: 'quest', quest: { id: 'quest_persona_non_grata' } },
+        effect: { type: 'quest', quest: { id: QUEST_PERSONA_NON_GRATA } },
         outcomeText: 'events:quest_trigger_persona_non_grata.opt1.outcome'
       },
       {
@@ -403,11 +424,11 @@ export const QUEST_EVENTS = [
     description: 'events:quest_trigger_murphys_law.desc',
     trigger: 'random',
     chance: 0.05,
-    condition: (state: GameState) => canOfferQuest(state, 'quest_murphys_law'),
+    condition: (state: GameState) => canOfferQuest(state, QUEST_MURPHYS_LAW),
     options: [
       {
         label: 'events:quest_trigger_murphys_law.opt1.label',
-        effect: { type: 'quest', quest: { id: 'quest_murphys_law' } },
+        effect: { type: 'quest', quest: { id: QUEST_MURPHYS_LAW } },
         outcomeText: 'events:quest_trigger_murphys_law.opt1.outcome'
       },
       {
@@ -425,11 +446,11 @@ export const QUEST_EVENTS = [
     trigger: 'random',
     chance: 0.05,
     condition: (state: GameState) =>
-      canOfferQuest(state, 'quest_crisis_manager'),
+      canOfferQuest(state, QUEST_CRISIS_MANAGER),
     options: [
       {
         label: 'events:quest_trigger_crisis_manager.opt1.label',
-        effect: { type: 'quest', quest: { id: 'quest_crisis_manager' } },
+        effect: { type: 'quest', quest: { id: QUEST_CRISIS_MANAGER } },
         outcomeText: 'events:quest_trigger_crisis_manager.opt1.outcome'
       },
       {
@@ -447,11 +468,11 @@ export const QUEST_EVENTS = [
     trigger: 'random',
     chance: 0.05,
     condition: (state: GameState) =>
-      canOfferQuest(state, 'quest_chapter_marker'),
+      canOfferQuest(state, QUEST_CHAPTER_MARKER),
     options: [
       {
         label: 'events:quest_trigger_chapter_marker.opt1.label',
-        effect: { type: 'quest', quest: { id: 'quest_chapter_marker' } },
+        effect: { type: 'quest', quest: { id: QUEST_CHAPTER_MARKER } },
         outcomeText: 'events:quest_trigger_chapter_marker.opt1.outcome'
       },
       {
@@ -468,11 +489,11 @@ export const QUEST_EVENTS = [
     description: 'events:quest_trigger_payday.desc',
     trigger: 'random',
     chance: 0.06,
-    condition: (state: GameState) => canOfferQuest(state, 'quest_payday'),
+    condition: (state: GameState) => canOfferQuest(state, QUEST_PAYDAY),
     options: [
       {
         label: 'events:quest_trigger_payday.opt1.label',
-        effect: { type: 'quest', quest: { id: 'quest_payday' } },
+        effect: { type: 'quest', quest: { id: QUEST_PAYDAY } },
         outcomeText: 'events:quest_trigger_payday.opt1.outcome'
       },
       {
@@ -489,11 +510,11 @@ export const QUEST_EVENTS = [
     description: 'events:quest_trigger_make_amends.desc',
     trigger: 'random',
     chance: 0.05,
-    condition: (state: GameState) => canOfferQuest(state, 'quest_make_amends'),
+    condition: (state: GameState) => canOfferQuest(state, QUEST_MAKE_AMENDS),
     options: [
       {
         label: 'events:quest_trigger_make_amends.opt1.label',
-        effect: { type: 'quest', quest: { id: 'quest_make_amends' } },
+        effect: { type: 'quest', quest: { id: QUEST_MAKE_AMENDS } },
         outcomeText: 'events:quest_trigger_make_amends.opt1.outcome'
       },
       {
@@ -511,11 +532,11 @@ export const QUEST_EVENTS = [
     trigger: 'random',
     chance: 0.05,
     condition: (state: GameState) =>
-      canOfferQuest(state, 'quest_burned_bridges'),
+      canOfferQuest(state, QUEST_BURNED_BRIDGES),
     options: [
       {
         label: 'events:quest_trigger_burned_bridges.opt1.label',
-        effect: { type: 'quest', quest: { id: 'quest_burned_bridges' } },
+        effect: { type: 'quest', quest: { id: QUEST_BURNED_BRIDGES } },
         outcomeText: 'events:quest_trigger_burned_bridges.opt1.outcome'
       },
       {
@@ -533,11 +554,11 @@ export const QUEST_EVENTS = [
     trigger: 'random',
     chance: 0.06,
     condition: (state: GameState) =>
-      canOfferQuest(state, 'quest_venue_regular'),
+      canOfferQuest(state, QUEST_VENUE_REGULAR),
     options: [
       {
         label: 'events:quest_trigger_venue_regular.opt1.label',
-        effect: { type: 'quest', quest: { id: 'quest_venue_regular' } },
+        effect: { type: 'quest', quest: { id: QUEST_VENUE_REGULAR } },
         outcomeText: 'events:quest_trigger_venue_regular.opt1.outcome'
       },
       {
@@ -555,11 +576,11 @@ export const QUEST_EVENTS = [
     trigger: 'random',
     chance: 0.06,
     condition: (state: GameState) =>
-      canOfferQuest(state, 'quest_brand_ambassador'),
+      canOfferQuest(state, QUEST_BRAND_AMBASSADOR),
     options: [
       {
         label: 'events:quest_trigger_brand_ambassador.opt1.label',
-        effect: { type: 'quest', quest: { id: 'quest_brand_ambassador' } },
+        effect: { type: 'quest', quest: { id: QUEST_BRAND_AMBASSADOR } },
         outcomeText: 'events:quest_trigger_brand_ambassador.opt1.outcome'
       },
       {
@@ -576,11 +597,11 @@ export const QUEST_EVENTS = [
     description: 'events:quest_trigger_alchemist.desc',
     trigger: 'random',
     chance: 0.06,
-    condition: (state: GameState) => canOfferQuest(state, 'quest_alchemist'),
+    condition: (state: GameState) => canOfferQuest(state, QUEST_ALCHEMIST),
     options: [
       {
         label: 'events:quest_trigger_alchemist.opt1.label',
-        effect: { type: 'quest', quest: { id: 'quest_alchemist' } },
+        effect: { type: 'quest', quest: { id: QUEST_ALCHEMIST } },
         outcomeText: 'events:quest_trigger_alchemist.opt1.outcome'
       },
       {

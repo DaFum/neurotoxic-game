@@ -8,8 +8,8 @@ import { finiteNumberOr } from '../utils/gameState'
  */
 export const QUEST_SLOT_LIMITS: Record<QuestKind, number> = {
   story: 1,
-  side: 3,
-  repeatable: 3,
+  side: 2,
+  repeatable: 2,
   tutorial: 1
 }
 
