@@ -93,9 +93,13 @@ export const buildSetlistChartDensity = (
   songs: Array<Pick<Song, 'notes' | 'tpb' | 'bpm' | 'duration'>>,
   bucketCount = 16
 ): ChartDensityBar[] => {
-  const densitySets = songs
-    .map(song => buildSongChartDensity(song, bucketCount))
-    .filter(bars => bars.length > 0)
+  const densitySets: ChartDensityBar[][] = []
+  for (const song of songs) {
+    const bars = buildSongChartDensity(song, bucketCount)
+    if (bars.length > 0) {
+      densitySets.push(bars)
+    }
+  }
   const firstSet = densitySets[0]
   if (!firstSet) return []
 
