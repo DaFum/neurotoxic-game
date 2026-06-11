@@ -290,10 +290,12 @@ const updatePassiveEffectsAndMembers = (
   }
   nextBand.members = nextMembers
 
-  // Apply Party Animal RNG penalty in its original global sequence position
+  // Apply Party Animal RNG penalty in its original global sequence position.
+  // Operates on the freshly copied nextMembers so the penalty lands in the
+  // returned state and the previous state's member objects stay untouched.
   if (hasBeerFridge) {
-    for (let i = 0; i < membersArray.length; i++) {
-      const m = membersArray[i]
+    for (let i = 0; i < nextMembers.length; i++) {
+      const m = nextMembers[i]
       if (!m) {
         throw new Error(
           `Sparse nextBand.members invariant violated at index ${i} in party animal loop`
@@ -301,10 +303,13 @@ const updatePassiveEffectsAndMembers = (
       }
       if (m.name === CHARACTERS.MARIUS.name && hasTrait(m, 'party_animal')) {
         if (rng() < 0.3) {
-          m.stamina = clampMemberStamina(
-            finiteNumberOr(m.stamina, 0) - 5,
-            finiteNumberOr(m.staminaMax, 100)
-          )
+          nextMembers[i] = {
+            ...m,
+            stamina: clampMemberStamina(
+              finiteNumberOr(m.stamina, 0) - 5,
+              finiteNumberOr(m.staminaMax, 100)
+            )
+          }
         }
       }
     }
