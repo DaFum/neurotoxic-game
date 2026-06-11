@@ -123,7 +123,28 @@ export const sanitizeTraversableValue = (
     if (visited.has(value)) return onCircular()
     visited.add(value)
     try {
-      return value.map(item => sanitizeTraversableValue(item, options, visited))
+      const len = value.length
+      let result = value
+      let modified = false
+      for (let i = 0; i < len; i++) {
+        if (Object.hasOwn(value, i)) {
+          const original = value[i]
+          const sanitized = sanitizeTraversableValue(original, options, visited)
+          if (sanitized !== original) {
+            if (!modified) {
+              modified = true
+              result = new Array(len)
+              for (let j = 0; j < i; j++) {
+                if (Object.hasOwn(value, j)) result[j] = value[j]
+              }
+            }
+            result[i] = sanitized
+          } else if (modified) {
+            result[i] = original
+          }
+        }
+      }
+      return result
     } finally {
       visited.delete(value)
     }
