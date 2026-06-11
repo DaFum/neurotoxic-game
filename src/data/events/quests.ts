@@ -358,8 +358,7 @@ export const QUEST_EVENTS = [
     description: 'events:quest_trigger_sticky_fingers.desc',
     trigger: 'random',
     chance: 0.06,
-    condition: (state: GameState) =>
-      canOfferQuest(state, QUEST_STICKY_FINGERS),
+    condition: (state: GameState) => canOfferQuest(state, QUEST_STICKY_FINGERS),
     options: [
       {
         label: 'events:quest_trigger_sticky_fingers.opt1.label',
@@ -445,8 +444,7 @@ export const QUEST_EVENTS = [
     description: 'events:quest_trigger_crisis_manager.desc',
     trigger: 'random',
     chance: 0.05,
-    condition: (state: GameState) =>
-      canOfferQuest(state, QUEST_CRISIS_MANAGER),
+    condition: (state: GameState) => canOfferQuest(state, QUEST_CRISIS_MANAGER),
     options: [
       {
         label: 'events:quest_trigger_crisis_manager.opt1.label',
@@ -467,8 +465,7 @@ export const QUEST_EVENTS = [
     description: 'events:quest_trigger_chapter_marker.desc',
     trigger: 'random',
     chance: 0.05,
-    condition: (state: GameState) =>
-      canOfferQuest(state, QUEST_CHAPTER_MARKER),
+    condition: (state: GameState) => canOfferQuest(state, QUEST_CHAPTER_MARKER),
     options: [
       {
         label: 'events:quest_trigger_chapter_marker.opt1.label',
@@ -531,8 +528,7 @@ export const QUEST_EVENTS = [
     description: 'events:quest_trigger_burned_bridges.desc',
     trigger: 'random',
     chance: 0.05,
-    condition: (state: GameState) =>
-      canOfferQuest(state, QUEST_BURNED_BRIDGES),
+    condition: (state: GameState) => canOfferQuest(state, QUEST_BURNED_BRIDGES),
     options: [
       {
         label: 'events:quest_trigger_burned_bridges.opt1.label',
@@ -553,8 +549,7 @@ export const QUEST_EVENTS = [
     description: 'events:quest_trigger_venue_regular.desc',
     trigger: 'random',
     chance: 0.06,
-    condition: (state: GameState) =>
-      canOfferQuest(state, QUEST_VENUE_REGULAR),
+    condition: (state: GameState) => canOfferQuest(state, QUEST_VENUE_REGULAR),
     options: [
       {
         label: 'events:quest_trigger_venue_regular.opt1.label',
