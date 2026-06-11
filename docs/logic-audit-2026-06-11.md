@@ -1,5 +1,25 @@
 # Logic-Audit — NEUROTOXIC Codebase
 
+> **Status-Update (2026-06-11):** Alle Befunde wurden behoben (je ein Commit pro
+> Befund auf diesem Branch). Status je Befund:
+>
+> | Befund | Behebung |
+> |---|---|
+> | H1 | Banter-Timestamps werden in `createApplyEventDeltaAction` gestempelt; Reducer-Fallback deterministisch (`finiteNumberOr(timestamp, 0)`) |
+> | H2 | Party-Animal-Schleife arbeitet auf `nextMembers` (immutabel); Regressionstest ergänzt |
+> | M1 | `getTotalDailyObligations` via Selector durch `usePostGigLogic` → `useContinueHandler` verdrahtet |
+> | M2 | `time` wird in `sanitizePlayer` mit `clampNonNegative` geklemmt. Korrektur zum Befund: `day` war dort bereits via `Math.max(1, …)` geklemmt |
+> | M3 | `saveValidator` klemmt jetzt `time`/`score`/`fame`/`fameLevel` nicht-negativ und `day` auf ≥1 |
+> | M4 | Alle fünf Stats-Felder beim Laden mit `clampNonNegative` geklemmt |
+> | M5 | `text-pure-white` → `text-star-white` |
+> | M6 | Toast-UUIDs in Clinic-Action-Creators gestempelt; deterministische Fallback-IDs in `clinicReducer` und `socialReducer` (inkl. dritter Fundstelle `dealsBroken`-Toast) |
+> | M7 | `passiveFollowers`/`viral` mit `finiteNumberOr` abgesichert |
+> | L1 | Verpflichtungen laufen über den dedizierten dritten Parameter |
+> | L2 | Redundanter `> windowStart`-Check entfernt; `Math.abs < hitWindow` ist die einzige Grenz-Autorität (dokumentiert) |
+> | L3 | Absicht des inklusiven `<=` dokumentiert |
+> | L4 | Casts durch `isLooseRecord`-Narrowing ersetzt |
+> | L5 | Eskalierender Decay als beabsichtigte Mechanik im JSDoc dokumentiert (Tests verankern das Verhalten) |
+
 **Datum:** 2026-06-11
 **Umfang:** Gesamte Codebase (`src/`, 566 Source-Dateien), geprüft in fünf Domänen:
 State Management, Economy/Assets, Audio/Gig/Minigames, UI/i18n, Persistenz/Unlocks/Utils.
