@@ -874,14 +874,14 @@ async function fetchAndParseMidi(
 }
 
 function processMidiPlaybackParams(params: MidiPlaybackParams) {
-  const defaults = {
-    offset: 0,
-    loop: false,
-    delay: 0,
-    options: {},
-    ownedRequestId: null
+  return {
+    filename: params.filename,
+    offset: params.offset ?? 0,
+    loop: params.loop ?? false,
+    delay: params.delay ?? 0,
+    options: params.options ?? {},
+    ownedRequestId: params.ownedRequestId ?? null
   }
-  return { ...defaults, ...params }
 }
 
 /**
