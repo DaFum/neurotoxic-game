@@ -447,5 +447,8 @@ export const sanitizeRngSeed = (raw: unknown): number => {
   if (isFiniteNumber(raw)) {
     return Math.trunc(raw) >>> 0
   }
+  // Deliberate purity exception: only reachable when hydrating a save whose
+  // seed is missing/corrupt. A fresh wall-clock seed is preferable to a fixed
+  // constant (which would make every recovered save share one RNG timeline).
   return Date.now() >>> 0
 }
