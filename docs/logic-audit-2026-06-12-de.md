@@ -4,6 +4,29 @@ Tiefes Audit der Codebase auf Logikfehler und Inkonsistenzen. Geprüft wurden di
 
 Severity: **HOCH** = korrumpiert State oder Spielerlebnis direkt · **MITTEL** = falsches Verhalten unter realistischen Bedingungen · **NIEDRIG** = Inkonsistenz/Randfall, geringe praktische Auswirkung.
 
+> **Status-Update (2026-06-12):** Alle Befunde wurden behoben (je ein Commit pro Befund auf `claude/magical-curie-upvnsm`).
+>
+> | Befund | Status | Commit |
+> |---|---|---|
+> | 1.1 + 1.2 | ✅ Gefixt + Regressionstests | `4b42a53` |
+> | 1.3 | ✅ Gefixt (kanonischer Spread + `stacks`-Sanitization) + Test | `3db518a` |
+> | 1.4 | ✅ Gefixt (No-op ohne Besitz, auch bei Count 0) + Tests | `0492bdf` |
+> | 1.5 | ✅ Gefixt (aktueller Key gewinnt) + Tests | `8bf7030` |
+> | 1.6 | ✅ Gefixt (standalone `fameLevel` wird verworfen) + Test | `482887e` |
+> | 1.7 | ✅ Gefixt (`sanitizeStringArray`) + Test | `4073139` |
+> | 1.8 | ✅ Gefixt (`buildDeterministicToastId` statt UUID) | `7a71611` |
+> | 1.9 | ✅ Als bewusste Ausnahme dokumentiert | `ae9a60a` |
+> | 2.1 | ✅ Gefixt (`fameLevel` recompute) + Test | `4aeebb1` |
+> | 2.2 | ✅ Gefixt (Zins-/Tilgungssplit, exakte Schlussrate) + Tests | `4bdde57` |
+> | 2.3 | ✅ Gefixt (Multiplier nur noch auf Verbrauch) + Tests | `31dbf47` |
+> | 2.4 | ✅ Gefixt (`calculateChassisRepairCost` als SoT, gerundet) | `255fa6c` |
+> | 2.5 | ✅ Gefixt (Erfolg = Asset + Fame, keine Cash-Auszahlung) + Test | `dbd0021` |
+> | 2.6 | ✅ Invariante dokumentiert (Clamp würde Schulden erlassen) | `732b77e` |
+> | 3 (Harmony-Sweep) | ✅ Alle 8 Stellen auf `finiteNumberOr` umgestellt | `90df2e8` |
+> | 4.1 | ✅ Bereits auf `main` behoben (Finite-Check in der Schleife vorhanden) | — |
+> | 4.2 | ✅ Bereits auf `main` behoben (rein RNG-basierte ID ohne `Date.now`) | — |
+> | 5.2 + 5.3 | ✅ 37 featureList-Einträge + `flat_battery`-Label übersetzt | `5062aa4` |
+
 ---
 
 ## 1) Reducer & Payload-Sicherheit
