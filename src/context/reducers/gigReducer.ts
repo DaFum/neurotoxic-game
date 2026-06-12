@@ -2,7 +2,7 @@ import type { GameState, PostGigSummary, Venue } from '../../types'
 import type { GigModifiers } from '../../types/gig'
 import type { RhythmSetlistEntry } from '../../types/rhythmGame'
 import { logger } from '../../utils/logger'
-import { getSafeUUID } from '../../utils/crypto'
+import { buildDeterministicToastId } from './toastSanitizers'
 import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks } from '../../utils/traitUtils'
 import { DEFAULT_GIG_MODIFIERS } from '../initialState'
@@ -128,7 +128,10 @@ const handleRecordBadShow = (state: GameState): GameState => {
     nextState.toasts = [
       ...(nextState.toasts || []),
       {
-        id: getSafeUUID(),
+        id: buildDeterministicToastId(
+          'three-disasters-toast',
+          nextState.toasts
+        ),
         message: 'ui:toast.three_disasters',
         type: 'error'
       }

@@ -1,5 +1,5 @@
 import type { GameState, RivalBandState, ToastPayload } from '../../types'
-import { getSafeUUID } from '../../utils/crypto'
+import { buildDeterministicToastId } from './toastSanitizers'
 import type {
   SpawnRivalBandPayload,
   MoveRivalBandPayload
@@ -57,7 +57,7 @@ export const handleCheckRivalEncounter = (state: GameState): GameState => {
   ) {
     const rivalName = state.rivalBand.name
     const toast: ToastPayload = {
-      id: getSafeUUID(),
+      id: buildDeterministicToastId('rival-encounter-toast', state.toasts),
       type: 'warning',
       messageKey: 'ui:travel.rivalEncounter',
       options: { rivalName }
