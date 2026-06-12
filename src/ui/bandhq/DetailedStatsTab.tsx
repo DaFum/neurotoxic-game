@@ -9,7 +9,7 @@ import { translateLocation } from '../../utils/locationI18n'
 import { getCityKeyFromVenueId } from '../../utils/mapGenerator'
 import { getUnblacklistCost } from '../../context/reducers/socialReducer'
 import { CRAFTING_RECIPES } from '../../data/craftingRecipes'
-import { isEmptyObject, isFiniteNumber } from '../../utils/gameState'
+import { isEmptyObject, isFiniteNumber, finiteNumberOr } from '../../utils/gameState'
 import type {
   PlayerState,
   BandState,
@@ -116,7 +116,7 @@ const CareerOverviewSection = ({
       />
       <DetailRow
         label={t('ui:stats.fame', { defaultValue: 'Fame' })}
-        value={player.fame}
+        value={Math.floor(finiteNumberOr(player?.fame, 0))}
         subtext={`${t('ui:ui.level', { defaultValue: 'Level' })} ${player.fameLevel || 0}`}
       />
       <DetailRow

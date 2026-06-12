@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import type { BandState, PlayerState, SocialState } from '../../types'
 import { StatBox, ProgressBar } from '../shared'
 import { formatCurrency } from '../../utils/numberUtils'
+import { finiteNumberOr } from '../../utils/gameState'
 
 type StatsTabProps = {
   player: Pick<PlayerState, 'money' | 'fame' | 'day' | 'van'>
@@ -31,7 +32,7 @@ export const StatsTab = ({ player, band, social }: StatsTabProps) => {
             />
             <StatBox
               label={t('ui:stats.fame', { defaultValue: 'Fame' })}
-              value={player.fame}
+              value={Math.floor(finiteNumberOr(player?.fame, 0))}
               icon='★'
             />
             <StatBox

@@ -193,7 +193,7 @@ export const HUD = memo(() => {
                   })}
                 />
                 <span className='text-xs text-ash-gray w-8 text-right tabular-nums'>
-                  {Math.round(fuel)}
+                  {Math.floor(fuel)}
                 </span>
               </div>
             </Tooltip>
@@ -216,7 +216,7 @@ export const HUD = memo(() => {
                   })}
                 />
                 <span className='text-xs text-ash-gray w-8 text-right tabular-nums'>
-                  {Math.round(condition)}
+                  {Math.floor(condition)}
                 </span>
               </div>
             </Tooltip>
@@ -374,7 +374,7 @@ export const HUD = memo(() => {
               <span
                 className={`text-xs tabular-nums ${band.harmony < 40 ? 'text-blood-red' : 'text-toxic-green'}`}
               >
-                {band.harmony}%
+                {Math.floor(band.harmony ?? 0)}%
               </span>
             </div>
           </div>
