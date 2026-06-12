@@ -146,11 +146,19 @@ export const processLiabilityTick = (
   const foreclosedAssetIds = new Set<string>()
 
   for (const liability of Object.values(state.liabilities)) {
-    if (currentMoney >= liability.dailyPayment) {
-      currentMoney -= liability.dailyPayment
+    // Split the payment into interest and principal so the tracked balance
+    // matches the amortization model that priced `dailyPayment`
+    // (computeAmortization, annualRate / 365). On the final day, charge only
+    // the actual payoff instead of a full payment.
+    const dailyRate = finiteNumberOr(liability.interestRate, 0) / 365
+    const interestPortion = liability.principalRemaining * dailyRate
+    const payoff = liability.principalRemaining + interestPortion
+    const payment = Math.min(liability.dailyPayment, payoff)
+    if (currentMoney >= payment) {
+      currentMoney -= payment
       const principalRemaining = Math.max(
         0,
-        liability.principalRemaining - liability.dailyPayment
+        liability.principalRemaining - (payment - interestPortion)
       )
       const termDaysRemaining = liability.termDaysRemaining - 1
       if (termDaysRemaining <= 0 || principalRemaining <= 0) continue
