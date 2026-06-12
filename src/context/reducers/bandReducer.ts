@@ -46,20 +46,20 @@ const sanitizeMemberRelationships = (
   member: Pick<BandMember, 'id' | 'name'>
 ): Record<string, number> => {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {}
+  // Lowercase-only set with lowercased lookups so mixed-case keys ("M1",
+  // "MATZE") cannot bypass the self-reference filter.
   const selfKeys = new Set<string>()
   if (typeof member.id === 'string') {
-    selfKeys.add(member.id)
     selfKeys.add(member.id.toLowerCase())
   }
   if (typeof member.name === 'string') {
-    selfKeys.add(member.name)
     selfKeys.add(member.name.toLowerCase())
   }
   const result: Record<string, number> = {}
   const record = raw as Record<string, unknown>
   for (const key in record) {
     if (!Object.hasOwn(record, key)) continue
-    if (isForbiddenKey(key) || selfKeys.has(key)) continue
+    if (isForbiddenKey(key) || selfKeys.has(key.toLowerCase())) continue
     const value = record[key]
     if (isFiniteNumber(value)) {
       result[key] = clampRelationship(value)
@@ -177,10 +177,14 @@ export const handleUpdateBand = (
         next.mood = clampMemberMood(next.mood)
       }
       if (Object.hasOwn(patch, 'relationships')) {
-        next.relationships = sanitizeMemberRelationships(
-          patch.relationships,
-          next
-        )
+        const rel = patch.relationships
+        if (rel && typeof rel === 'object' && !Array.isArray(rel)) {
+          next.relationships = sanitizeMemberRelationships(rel, next)
+        } else {
+          // Invalid payloads keep the prior map instead of erasing it —
+          // the spread above already copied the garbage value into next.
+          next.relationships = existing?.relationships ?? {}
+        }
       }
       if (typeof next.id === 'string') {
         sanitizedById.set(next.id, next)
