@@ -42,7 +42,7 @@ describe('Tooltip Component', () => {
     expect(queryByText('Tooltip Content')).toBeNull()
   })
 
-  test('regression: does not call child event handlers if disabled', () => {
+  test('regression: does not call child event handlers if disabled and wrapper has cursor-not-allowed', () => {
     const onMouseEnter = vi.fn()
     const onMouseLeave = vi.fn()
     const onFocus = vi.fn()
@@ -64,6 +64,7 @@ describe('Tooltip Component', () => {
     )
 
     const triggerWrapper = getByText('Disabled Button').parentElement
+    expect(triggerWrapper.className).toContain('cursor-not-allowed')
 
     fireEvent.mouseEnter(triggerWrapper)
     expect(getByText('Tooltip Content')).toBeInTheDocument()
