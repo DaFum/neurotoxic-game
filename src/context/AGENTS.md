@@ -23,6 +23,7 @@
 
 - Asset action creators (`assetActionCreators.ts`) normalize payloads via `finiteNumberOr` and strip prototype keys before validation. DIY+loan returns `PURCHASE_CHASSIS_FAILED` (typed) — never `null`.
 - `purchaseChassis` enforces loan-profile eligibility against `state.player.fame` (NOT `state.band.fame`) and `state.social.scenePresence`; ineligible profiles return `PURCHASE_CHASSIS_FAILED` with reason `LOAN_PROFILE_INELIGIBLE`. Add new gating fields to the same union when extending `LoanProfile`.
+- `purchaseChassis` rejects `mode: 'crowdfund'` (`CROWDFUND_REQUIRES_CAMPAIGN`) and `handlePurchaseChassis` only accepts `cash`/`loan` payloads — crowdfund acquisition exists solely via `startCrowdfund` + `processCrowdfundTick`. Without both guards a crowdfund-mode dispatch would mint a free chassis (neither payment branch fires).
 - `startCrowdfund` clamps `plannedSuccessProbability` into `[0.05, 0.95]` and `plannedSuccessRoll` into `[0, 1]` before stamping the campaign payload. Callers MUST pass the probability the UI shows the player so the tick can resolve `roll < probability` against the displayed odds.
 - IDs for slots (chassis + dynamically-added) and crowdfund asset materialization are generated in the action creator (`getSafeUUID`) and passed via payload. The reducer reads them 1:1.
 - `advanceDay(state)` (in `actionCreators.ts`) is the only entry point that produces the `ADVANCE_DAY` action with `{ dayRngStream, nextRngSeed }` payload. Migrate any remaining `createAdvanceDayAction()` callers to this signature — RNG determinism depends on it.

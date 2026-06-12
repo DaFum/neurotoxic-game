@@ -263,6 +263,7 @@ export type PurchaseFailureReason =
   | 'LOAN_PROFILE_INELIGIBLE'
   | 'ACQUISITION_ALREADY_ACTIVE'
   | 'UNKNOWN_FLAVOR'
+  | 'CROWDFUND_REQUIRES_CAMPAIGN'
 
 /**
  * Failure codes for liability refinancing attempts.

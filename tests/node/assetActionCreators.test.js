@@ -146,6 +146,16 @@ describe('purchaseChassis', () => {
     assert.equal(action.payload.reason, 'DIY_LOAN_NOT_ALLOWED')
   })
 
+  it('returns FAILED for crowdfund mode (campaigns go through startCrowdfund)', () => {
+    setupTourbusT1()
+    const action = purchaseChassis(
+      { kind: 'tourbus_chassis', flavor: 'legit', tier: 1, mode: 'crowdfund' },
+      makeState()
+    )
+    assert.equal(action.type, ActionTypes.PURCHASE_CHASSIS_FAILED)
+    assert.equal(action.payload.reason, 'CROWDFUND_REQUIRES_CAMPAIGN')
+  })
+
   it('returns FAILED for insufficient funds', () => {
     setupTourbusT1()
     const action = purchaseChassis(

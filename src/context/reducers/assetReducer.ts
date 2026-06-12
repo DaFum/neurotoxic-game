@@ -55,6 +55,10 @@ export const handlePurchaseChassis = (
   // `any` casts; if the action-creator validation passed, the entry exists.
   const configTier = CHASSIS_CONFIG[kind]?.[flavor]?.[tier]
   if (!configTier) return state
+  // Final authority: only cash/loan payloads may add a chassis here. Any
+  // other mode (e.g. 'crowdfund') would fall through both payment branches
+  // below and mint a free asset; crowdfund materializes via its tick instead.
+  if (mode !== 'cash' && mode !== 'loan') return state
   if (
     mode === 'cash' &&
     (!Number.isFinite(state.player.money) ||

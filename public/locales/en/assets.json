@@ -182,6 +182,7 @@
   "purchaseFailed.unknown_kind_or_tier": "Asset configuration not available.",
   "purchaseFailed.loan_profile_ineligible": "You don't meet the requirements for this loan profile.",
   "purchaseFailed.acquisition_already_active": "This section already has an asset or active campaign.",
+  "purchaseFailed.crowdfund_requires_campaign": "Crowdfunding runs as a campaign — start one instead of buying directly.",
   "installFailed.unknown_module": "Unknown module.",
   "installFailed.unknown_asset": "Unknown asset.",
   "installFailed.unknown_slot": "Unknown slot.",
