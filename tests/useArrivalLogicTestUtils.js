@@ -13,6 +13,8 @@ const mockGameState = {
   addToast: vi.fn(),
   setPendingBandHQOpen: vi.fn(),
   setPendingSupplyStopInventory: vi.fn(),
+  moveRivalBand: vi.fn(),
+  checkRivalEncounter: vi.fn(),
   band: { harmony: 50, harmonyRegenTravel: false, members: [] },
   gameMap: { nodes: {} },
   player: { currentNodeId: 'node_start' }
@@ -49,6 +51,8 @@ export const resetMockGameState = () => {
   mockGameState.addToast.mockReset()
   mockGameState.setPendingBandHQOpen.mockReset()
   mockGameState.setPendingSupplyStopInventory.mockReset()
+  mockGameState.moveRivalBand.mockReset()
+  mockGameState.checkRivalEncounter.mockReset()
 
   mockGameState.band = { harmony: 50, harmonyRegenTravel: false, members: [] }
   mockGameState.gameMap = { nodes: {} }

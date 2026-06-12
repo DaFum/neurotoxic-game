@@ -568,12 +568,19 @@ describe('useTravelLogic', () => {
         lastGigNodeId: 'node_gig'
       },
       gameMap: {
-        connections: [],
+        // A reachable onward connection keeps the (correctly) stricter
+        // softlock detection from also firing its stranded toast here.
+        connections: [{ from: 'node_gig', to: 'node_next' }],
         nodes: {
           node_gig: {
             id: 'node_gig',
             type: 'GIG',
             venue: { id: 'venue_1', capacity: 100, name: 'Venue 1' }
+          },
+          node_next: {
+            id: 'node_next',
+            type: 'GIG',
+            venue: { id: 'venue_2', capacity: 100, name: 'Venue 2' }
           }
         }
       }

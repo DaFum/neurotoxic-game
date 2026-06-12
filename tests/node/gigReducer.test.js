@@ -18,7 +18,7 @@ describe('gigReducer', () => {
       player: {
         stats: { consecutiveBadShows: 0 },
         day: 1,
-        location: 'venues:some_venue'
+        location: 'venues:some_venue.name'
       },
       band: {
         harmony: 50,
@@ -28,7 +28,7 @@ describe('gigReducer', () => {
       currentGig: null,
       currentScene: GAME_PHASES.OVERWORLD,
       gigModifiers: {},
-      reputationByRegion: { 'venues:some_venue': 0 },
+      reputationByRegion: { some: 0 },
       activeQuests: [],
       activeStoryFlags: [],
       toasts: [],
@@ -67,7 +67,7 @@ describe('gigReducer', () => {
       const nextState = handleSetLastGigStats(baseState, payload)
 
       assert.deepStrictEqual(nextState.lastGigStats, payload)
-      assert.strictEqual(nextState.reputationByRegion['venues:some_venue'], 0) // no rep change
+      assert.strictEqual(nextState.reputationByRegion.some, 0) // no rep change
     })
 
     it('should process bad show correctly', () => {
@@ -76,7 +76,7 @@ describe('gigReducer', () => {
       const nextState = handleSetLastGigStats(baseState, payload)
 
       assert.strictEqual(nextState.player.stats.consecutiveBadShows, 1)
-      assert.strictEqual(nextState.reputationByRegion['venues:some_venue'], -10)
+      assert.strictEqual(nextState.reputationByRegion.some, -10)
     })
 
     it('should process 3 bad shows into prove yourself quest', () => {
@@ -96,11 +96,11 @@ describe('gigReducer', () => {
 
     it('should handle venue blacklisting on terrible reputation', () => {
       baseState.currentGig = { id: 'v1' }
-      baseState.reputationByRegion['venues:some_venue'] = -25
+      baseState.reputationByRegion.some = -25
       const payload = { score: 20 }
       const nextState = handleSetLastGigStats(baseState, payload)
 
-      assert.strictEqual(nextState.reputationByRegion['venues:some_venue'], -35)
+      assert.strictEqual(nextState.reputationByRegion.some, -35)
       // blacklisting occurs <= -30
       assert.ok(nextState.venueBlacklist?.includes('v1'))
     })
@@ -112,7 +112,7 @@ describe('gigReducer', () => {
       const nextState = handleSetLastGigStats(baseState, payload)
 
       assert.strictEqual(nextState.player.stats.consecutiveBadShows, 0)
-      assert.strictEqual(nextState.reputationByRegion['venues:some_venue'], 5)
+      assert.strictEqual(nextState.reputationByRegion.some, 5)
     })
 
     it('should apply bonus reputation for very high score', () => {
@@ -120,7 +120,7 @@ describe('gigReducer', () => {
       const payload = { score: 95 }
       const nextState = handleSetLastGigStats(baseState, payload)
 
-      assert.strictEqual(nextState.reputationByRegion['venues:some_venue'], 10)
+      assert.strictEqual(nextState.reputationByRegion.some, 10)
     })
 
     it('should advance apology tour quest on good score and small capacity', () => {

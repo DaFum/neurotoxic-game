@@ -108,14 +108,14 @@ const makeProgressEvent = (source, rule) => {
       return {
         type: eventSource,
         assetId: 'test_asset',
-        assetKind: firstMatchValue(match.assetKind) ?? 'rehearsal',
+        assetKind: firstMatchValue(match.assetKind) ?? 'bandhaus_chassis',
         riskType: firstMatchValue(match.riskType) ?? 'fire'
       }
     case 'asset.riskResolved':
       return {
         type: eventSource,
         assetId: 'test_asset',
-        assetKind: firstMatchValue(match.assetKind) ?? 'rehearsal',
+        assetKind: firstMatchValue(match.assetKind) ?? 'bandhaus_chassis',
         riskType: firstMatchValue(match.riskType) ?? 'fire',
         success: true
       }

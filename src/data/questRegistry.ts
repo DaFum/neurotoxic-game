@@ -542,11 +542,11 @@ export const QUEST_REGISTRY = {
       trigger: 'random',
       category: 'special',
       chance: 0.05,
-      condition: { requiredAssetKind: 'rehearsal' }
+      condition: { requiredAssetKind: 'bandhaus_chassis' }
     },
     failurePenalties: [{ type: 'social.loyalty', amount: -5 }],
     rewards: [
-      { type: 'asset.repair', assetKind: 'rehearsal', amount: 20 },
+      { type: 'asset.repair', assetKind: 'bandhaus_chassis', amount: 20 },
       { type: 'money', amount: 250 }
     ]
   },
@@ -566,7 +566,7 @@ export const QUEST_REGISTRY = {
       trigger: 'random',
       category: 'special',
       chance: 0.05,
-      condition: { requiredAssetKind: 'rehearsal' }
+      condition: { requiredAssetKind: 'bandhaus_chassis' }
     },
     rewards: [
       { type: 'brand.trust', alignment: 'corporate', amount: 10 },

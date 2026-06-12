@@ -15,9 +15,8 @@ import {
   BALANCE_CONSTANTS
 } from '../../utils/gameState'
 import { handleAddVenueBlacklist } from './socialReducer'
-import { QuestLifecycle } from '../../domain/questLifecycle'
+import { QuestLifecycle, canAcceptQuest } from '../../domain/questLifecycle'
 import { QUEST_PROVE_YOURSELF } from '../../data/questsConstants'
-import { hasActiveQuest } from '../../utils/questUtils'
 import { QuestEvents } from '../../utils/questProgress'
 import {
   createGigCompletedQuestEvent,
@@ -32,6 +31,7 @@ import {
   createVenueGoodGigQuestEvent
 } from '../../quests/producers/venueQuestEvents'
 import { normalizeSetlistForSave } from '../../utils/gameState'
+import { getRegionKeyForLocation } from '../../utils/mapUtils'
 
 const MIN_REPUTATION = -100
 const MAX_REPUTATION = 100
@@ -111,9 +111,13 @@ const handleRecordBadShow = (state: GameState): GameState => {
     stats: { ...nextState.player.stats, consecutiveBadShows: currentBadShows }
   }
 
+  // canAcceptQuest mirrors addQuest's full gating (active, completed,
+  // failure-retry cooldown, slots), so proveYourselfMode and the toast only
+  // fire when the quest is actually (re-)added — not e.g. during the 20-day
+  // retry cooldown after a failed run.
   if (
     currentBadShows >= 3 &&
-    !hasActiveQuest(nextState.activeQuests, QUEST_PROVE_YOURSELF)
+    canAcceptQuest(nextState, QUEST_PROVE_YOURSELF).ok
   ) {
     // Config (label/deadline/required/failurePenalty/startFlags) lives in
     // QUEST_REGISTRY. addQuest merges those defaults and applies startFlags,
@@ -238,7 +242,11 @@ export const handleSetLastGigStats = (
   }
 
   const score = finiteNumberOr(safePayload.score, 0)
-  const location = state.player?.location || 'Unknown'
+  // Region reputation and region-scoped quest events are keyed per city.
+  // player.location is the `venues:<id>.name` display key, so derive the
+  // canonical city key — checkVenueAccess reads the same key for the
+  // regional booking ban.
+  const location = getRegionKeyForLocation(state.player?.location) ?? 'Unknown'
   const venueId = state.currentGig?.id ?? ''
   const capacity =
     typeof state.currentGig?.capacity === 'number' &&

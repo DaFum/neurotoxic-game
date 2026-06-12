@@ -5,6 +5,7 @@ import {
   finiteNumberOr,
   isForbiddenKey
 } from '../utils/gameState'
+import { getRegionKeyForLocation } from '../utils/mapUtils'
 
 const isValidReputationKey = (key: unknown): key is string =>
   typeof key === 'string' && key.length > 0 && !isForbiddenKey(key)
@@ -50,7 +51,9 @@ export const getRegionReputationKey = (
 ): string | undefined => {
   const key =
     scope === 'current' || scope === null || scope === undefined
-      ? state.player?.location
+      ? // player.location is the venue display key; region reputation is
+        // keyed per canonical city key.
+        getRegionKeyForLocation(state.player?.location)
       : scope
   return isValidReputationKey(key) ? key : undefined
 }

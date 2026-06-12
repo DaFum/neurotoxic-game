@@ -30,6 +30,7 @@ import { calculateContinueStats } from '../../../utils/postGigUtils'
 import { shouldTriggerBankruptcy } from '../../../utils/economyEngine'
 import { submitLeaderboardScores } from '../../../utils/leaderboardUtils'
 import { createRegionReputationChangedQuestEvent } from '../../../quests/producers/venueQuestEvents'
+import { getRegionKeyForLocation } from '../../../utils/mapUtils'
 import type { HandlerDispatchers } from './types'
 
 type AddQuestInput = Parameters<HandlerDispatchers['addQuest']>[0]
@@ -188,10 +189,12 @@ export function useContinueHandler({
       const fameGain = stats.newFame - finiteNumberOr(player.fame, 0)
       if (fameGain > 0) {
         // Region context lets perRegion fame quests (quest_local_legend)
-        // gate progress to the actual region where it was earned.
+        // gate progress to the actual region where it was earned. Use the
+        // canonical city key so it matches the stamped quest scopeKey.
         applyQuestEvent(
           createRegionReputationChangedQuestEvent({
-            region: player.location,
+            region:
+              getRegionKeyForLocation(player.location) ?? player.location ?? '',
             amount: fameGain,
             reason: 'post_gig_fame'
           })

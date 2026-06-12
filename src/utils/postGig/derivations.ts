@@ -2,6 +2,7 @@ import { calculateGigFinancials } from '../economyEngine'
 import { generatePostOptions } from '../socialEngine'
 import { applyPostGigPerformancePenalty } from './performanceLogic'
 import { BALANCE_CONSTANTS } from '../gameState'
+import { getRegionKeyForLocation } from '../mapUtils'
 
 import type { GameState } from '../../types'
 import type { CityTraitState } from '../../types/game'
@@ -77,7 +78,10 @@ export const deriveFinancials = ({
       gigStats: lastGigStats,
       context: {
         controversyLevel: social.controversyLevel ?? 0,
-        regionRep: reputationByRegion[player.location] ?? 0,
+        regionRep:
+          reputationByRegion[
+            getRegionKeyForLocation(player.location) ?? player.location
+          ] ?? 0,
         loyalty: social.loyalty ?? 0,
         zealotry: social.zealotry ?? 0,
         discountedTickets: activeStoryFlags.includes(

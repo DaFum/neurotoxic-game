@@ -373,7 +373,9 @@
     {
       "title": "ui:featureList.sec6.title",
       "type": "bullets",
-      "items": ["ui:featureList.sec6.items.0"],
+      "items": [
+        "ui:featureList.sec6.items.0"
+      ],
       "description": "ui:featureList.sec6.description"
     },
     {
@@ -954,7 +956,6 @@
   "hud.bandHarmony": "Band Harmony",
   "hud.burst_armed": "BURST ARMED",
   "hud.decibel_corruption": "DECIBEL CORRUPTION",
-
   "hud.day": "Day",
   "hud.decimatorActive": "DECIMATOR: ON",
   "hud.decimatorInactive": "DECIMATOR: OFF",
@@ -1473,7 +1474,11 @@
   "quests.penalty.label": "Risk:",
   "quests.penalty.loyalty": "{{count}} loyalty on failure",
   "quests.progress": "Progress",
+  "quests.progressSource.asset_risk_resolved": "Progress: Resolve asset emergencies",
+  "quests.progressSource.asset_risk_triggered": "Progress: Weather asset disasters",
   "quests.progressSource.brand_deal_completed": "Progress: Complete brand deals",
+  "quests.progressSource.brand_deal_failed": "Progress: Lose a brand deal",
+  "quests.progressSource.brand_trust_changed": "Progress: Build brand trust",
   "quests.progressSource.fame_gained": "Progress: Gain fame",
   "quests.progressSource.followers_gained": "Progress: Gain followers",
   "quests.progressSource.gig_completed": "Progress: Play gigs",
@@ -1482,9 +1487,13 @@
   "quests.progressSource.harmony_threshold": "Progress: Reach {{target}} band harmony",
   "quests.repeatableAfter": "Repeatable after {{count}}d cooldown",
   "quests.progressSource.item_collected": "Progress: Collect items",
+  "quests.progressSource.item_crafted": "Progress: Craft items",
+  "quests.progressSource.item_delivered": "Progress: Deliver contraband",
+  "quests.progressSource.minigame_perfected": "Progress: Finish minigames perfectly",
   "quests.progressSource.money_earned": "Progress: Earn money",
   "quests.progressSource.small_venue_good_gig": "Progress: Play good gigs at small venues",
   "quests.progressSource.social_post": "Progress: Post on social media",
+  "quests.progressSource.story_flag_added": "Progress: Hit story beats",
   "quests.progressSource.travel_completed": "Progress: Travel between cities",
   "quests.proveYourself.title": "PROVE YOURSELF",
   "quests.repeatable": "Repeatable",
@@ -1749,5 +1758,8 @@
       "voidAltar": "The abyss stares back. Luck +10.",
       "shrineAltar": "The Rock Gods bless you. Luck +10."
     }
-  }
+  },
+  "quests.progressSource.venue_blacklisted": "Progress: Get blacklisted by a venue",
+  "quests.progressSource.venue_reputation_changed": "Progress: Build venue reputation",
+  "quests.progressSource.venue_unblacklisted": "Progress: Win back a blacklisted venue"
 }
