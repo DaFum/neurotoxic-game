@@ -111,6 +111,11 @@ export interface SoftlockContext {
   assetModifiers?: AssetModifiers
   /** Max net sale proceeds available to the player from owned assets (requires checking gross > principal and net > 0). */
   assetProceeds?: number
+  /** Optional post-sale context with new obligations and modifiers for evaluating the asset sale escape hatch. */
+  postSaleContext?: {
+    dailyObligations?: number
+    assetModifiers?: AssetModifiers
+  }
 }
 
 const GIG_LIKE_NODE_TYPES = new Set(['GIG', 'FESTIVAL', 'FINALE'])
@@ -224,7 +229,20 @@ export const checkSoftlock = (
   const dailyObligations = finiteNumberOr(context.dailyObligations, 0)
   const assetModifiers = context.assetModifiers
 
-  const checkReachabilityWithMoneyAndFuel = (fuel: number, money: number): boolean => {
+  const checkReachabilityWithMoneyAndFuel = (
+    fuel: number,
+    money: number,
+    customContext?: { dailyObligations?: number; assetModifiers?: AssetModifiers }
+  ): boolean => {
+    const activeDailyObligations =
+      customContext && customContext.dailyObligations !== undefined
+        ? finiteNumberOr(customContext.dailyObligations, 0)
+        : dailyObligations
+    const activeAssetModifiers =
+      customContext && customContext.assetModifiers !== undefined
+        ? customContext.assetModifiers
+        : assetModifiers
+
     for (let i = 0; i < connections.length; i++) {
       const c = connections[i]
       if (!isMapConnection(c)) continue
@@ -236,11 +254,11 @@ export const checkSoftlock = (
             currentNode,
             { ...playerStateForTravel, money, van: { ...playerStateForTravel.van, fuel } },
             bandStateForTravel,
-            assetModifiers
+            activeAssetModifiers
           )
           if (
             fuel >= finiteNumberOr(fuelLiters, 0) &&
-            money >= finiteNumberOr(totalCost, 0) + dailyObligations
+            money >= finiteNumberOr(totalCost, 0) + activeDailyObligations
           ) {
             return true
           }
@@ -311,11 +329,12 @@ export const checkSoftlock = (
   const assetProceeds = finiteNumberOr(context.assetProceeds, 0)
   if (assetProceeds > 0) {
     const totalMoney = playerMoney + assetProceeds
-    if (checkReachabilityWithMoneyAndFuel(currentFuel, totalMoney)) {
+    const evalContext = context.postSaleContext || undefined
+    if (checkReachabilityWithMoneyAndFuel(currentFuel, totalMoney, evalContext)) {
       return false
     }
     if (refuelCost > 0 && totalMoney >= refuelCost) {
-      if (checkReachabilityWithMoneyAndFuel(EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL, totalMoney - refuelCost)) {
+      if (checkReachabilityWithMoneyAndFuel(EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL, totalMoney - refuelCost, evalContext)) {
         return false
       }
     }

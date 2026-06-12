@@ -68,7 +68,9 @@ export const useTravelEffects = ({
       return
     }
 
-    let maxAssetProceeds = 0
+    let totalSellableAssetProceeds = 0
+    const assetsToSell: string[] = []
+
     if (assets) {
       for (const asset of assets) {
         const gross = calculateChassisGrossSaleValue(asset, player.day)
@@ -86,11 +88,36 @@ export const useTravelEffects = ({
           }
           if (gross >= rawTotalPrincipalRemaining) {
             const net = gross - rawTotalPrincipalRemaining
-            if (net > maxAssetProceeds) {
-              maxAssetProceeds = net
+            if (net > 0) {
+              totalSellableAssetProceeds += net
+              assetsToSell.push(asset.id)
             }
           }
         }
+      }
+    }
+
+    let postSaleContext = undefined
+    if (assetsToSell.length > 0 && assets) {
+      const retainedAssets = assets.filter(a => !assetsToSell.includes(a.id))
+      const retainedLiabilities = liabilities
+        ? Object.fromEntries(
+            Object.entries(liabilities).filter(
+
+              ([_, l]) => l && !assetsToSell.includes(l.assetId)
+            )
+          )
+        : {}
+
+      postSaleContext = {
+        dailyObligations: getTotalDailyObligations({
+          player,
+          band,
+          social,
+          assets: retainedAssets,
+          liabilities: retainedLiabilities
+        } as GameState),
+        assetModifiers: getActiveAssetModifiers(retainedAssets)
       }
     }
 
@@ -105,7 +132,8 @@ export const useTravelEffects = ({
         liabilities
       } as GameState),
       assetModifiers: getActiveAssetModifiers(assets),
-      assetProceeds: maxAssetProceeds
+      assetProceeds: totalSellableAssetProceeds,
+      postSaleContext
     }
 
     if (checkSoftlock(gameMap, player, band, softlockContext)) {
