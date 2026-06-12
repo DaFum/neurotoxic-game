@@ -327,5 +327,42 @@ export const CONSEQUENCE_EVENTS = [
         outcomeText: 'events:consequences_comeback_album.opt2.outcome'
       }
     ]
+  },
+  {
+    // Queue-only consequence: quest failure penalties enqueue this id via
+    // `{ type: 'event.queue', eventId: 'event_bad_press' }` (questRegistry).
+    id: 'event_bad_press',
+    category: 'special',
+    title: 'events:event_bad_press.title',
+    description: 'events:event_bad_press.desc',
+    trigger: 'post_gig',
+    chance: 1.0,
+    condition: (state: GameState) =>
+      hasStateItem(state.pendingEvents, 'event_bad_press'),
+    options: [
+      {
+        label: 'events:event_bad_press.opt1.label',
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'resource', resource: 'money', value: -150 },
+            { type: 'stat', stat: 'controversyLevel', value: -10 },
+            { type: 'stat', stat: 'loyalty', value: 5 }
+          ]
+        },
+        outcomeText: 'events:event_bad_press.opt1.outcome'
+      },
+      {
+        label: 'events:event_bad_press.opt2.label',
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'stat', stat: 'controversyLevel', value: 15 },
+            { type: 'stat', stat: 'viral', value: 2 }
+          ]
+        },
+        outcomeText: 'events:event_bad_press.opt2.outcome'
+      }
+    ]
   }
 ]

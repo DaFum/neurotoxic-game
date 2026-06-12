@@ -36,6 +36,16 @@ test('Minigame Economy Calculations', async t => {
     }
   )
 
+  await t.test(
+    'Travel Minigame caps oversized damage payloads at 50 condition loss',
+    () => {
+      // Direct dispatches are not bounded by the minigame UI; the documented
+      // maximum of 50 condition loss must hold for any damage input.
+      const result = calculateTravelMinigameResult(10000, [])
+      assert.strictEqual(result.conditionLoss, 50)
+    }
+  )
+
   await t.test('Roadie Minigame Results', () => {
     // 50 damage -> 10 stress, 100 cost
     const result = calculateRoadieMinigameResult(50)

@@ -124,7 +124,7 @@ const DebugLogViewerContent = ({
           <button
             type='button'
             onClick={onClose}
-            aria-label='Close log'
+            aria-label={t('ui:action_close')}
             className='border-2 border-blood-red bg-void-black text-blood-red px-2 py-1 shadow-[4px_4px_0px_var(--color-blood-red)] hover:bg-blood-red hover:text-void-black uppercase font-bold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blood-red focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
           >
             CLOSE

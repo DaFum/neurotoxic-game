@@ -60,6 +60,7 @@ import {
   deriveCityTraits
 } from '../../utils/mapGenerator'
 import { CONTRABAND_BY_ID } from '../../data/contraband'
+import { BRAND_DEALS_BY_ID } from '../../data/brandDeals'
 import {
   createInitialState,
   DEFAULT_GIG_MODIFIERS,
@@ -1242,11 +1243,28 @@ const sanitizeSocial = (value: unknown): SocialState => {
       if (
         !copied ||
         typeof copied.id !== 'string' ||
-        typeof copied.remainingGigs !== 'number'
+        typeof copied.remainingGigs !== 'number' ||
+        !Number.isInteger(copied.remainingGigs) ||
+        copied.remainingGigs <= 0
       ) {
         return []
       }
-      return [{ id: copied.id, remainingGigs: copied.remainingGigs }]
+      // Rehydrate the full deal from the static registry: runtime consumers
+      // (hasActiveSponsorship, per-gig payouts, sellout penalties) require
+      // `type` and `offer`, which the persisted blob must not be trusted to
+      // carry. Only `remainingGigs` is player progress and survives the load.
+      // Ids without a registry entry (deals removed in a patch, hostile
+      // saves) are dropped — a stub without type/offer matches no consumer.
+      const registryDeal = BRAND_DEALS_BY_ID.get(copied.id)
+      if (!registryDeal) {
+        return []
+      }
+      return [
+        {
+          ...registryDeal,
+          remainingGigs: copied.remainingGigs
+        }
+      ]
     })
   }
 
@@ -1805,13 +1823,14 @@ const EFFECT_REVERTERS: Record<
       ...band.performance,
       guitarDifficulty: Math.max(
         0.1,
-        (band.performance?.guitarDifficulty ?? 1) - finiteEffectValue(value)
+        finiteNumberOr(band.performance?.guitarDifficulty, 1) -
+          finiteEffectValue(value)
       )
     }
   }),
   luck: (band: BandState, value: unknown) => ({
     ...band,
-    luck: Math.max(0, ((band.luck as number) ?? 0) - finiteEffectValue(value))
+    luck: Math.max(0, finiteNumberOr(band.luck, 0) - finiteEffectValue(value))
   }),
   stamina_max: (band: BandState, value: unknown) => ({
     ...band,
@@ -1819,55 +1838,55 @@ const EFFECT_REVERTERS: Record<
       ...m,
       staminaMax: Math.max(
         0,
-        ((m.staminaMax as number) ?? 100) - finiteEffectValue(value)
+        finiteNumberOr(m.staminaMax, 100) - finiteEffectValue(value)
       )
     }))
   }),
   style: (band: BandState, value: unknown) => ({
     ...band,
-    style: Math.max(0, ((band.style as number) ?? 0) - finiteEffectValue(value))
+    style: Math.max(0, finiteNumberOr(band.style, 0) - finiteEffectValue(value))
   }),
   tour_success: (band: BandState, value: unknown) => ({
     ...band,
     tourSuccess: Math.max(
       0,
-      ((band.tourSuccess as number) ?? 0) - finiteEffectValue(value)
+      finiteNumberOr(band.tourSuccess, 0) - finiteEffectValue(value)
     )
   }),
   gig_modifier: (band: BandState, value: unknown) => ({
     ...band,
     gigModifier: Math.max(
       0,
-      ((band.gigModifier as number) ?? 0) - finiteEffectValue(value)
+      finiteNumberOr(band.gigModifier, 0) - finiteEffectValue(value)
     )
   }),
   tempo: (band: BandState, value: unknown) => ({
     ...band,
-    tempo: Math.max(0, ((band.tempo as number) ?? 0) - finiteEffectValue(value))
+    tempo: Math.max(0, finiteNumberOr(band.tempo, 0) - finiteEffectValue(value))
   }),
   practice_gain: (band: BandState, value: unknown) => ({
     ...band,
     practiceGain: Math.max(
       0,
-      ((band.practiceGain as number) ?? 0) - finiteEffectValue(value)
+      finiteNumberOr(band.practiceGain, 0) - finiteEffectValue(value)
     )
   }),
   crit: (band: BandState, value: unknown) => ({
     ...band,
-    crit: Math.max(0, ((band.crit as number) ?? 0) - finiteEffectValue(value))
+    crit: Math.max(0, finiteNumberOr(band.crit, 0) - finiteEffectValue(value))
   }),
   affinity: (band: BandState, value: unknown) => ({
     ...band,
     affinity: Math.max(
       0,
-      ((band.affinity as number) ?? 0) - finiteEffectValue(value)
+      finiteNumberOr(band.affinity, 0) - finiteEffectValue(value)
     )
   }),
   crowd_control: (band: BandState, value: unknown) => ({
     ...band,
     crowdControl: Math.max(
       0,
-      ((band.crowdControl as number) ?? 0) - finiteEffectValue(value)
+      finiteNumberOr(band.crowdControl, 0) - finiteEffectValue(value)
     )
   })
 }

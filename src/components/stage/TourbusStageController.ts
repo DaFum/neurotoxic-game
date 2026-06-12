@@ -106,7 +106,12 @@ class TourbusStageController extends BaseStageController<TourbusControllerState>
 
     // Load Assets
     await this.loadAssets()
+    // dispose() can run while the awaits above are pending (fast scene exit);
+    // it nulls effectManager and destroys the containers, so bail out instead
+    // of dereferencing torn-down state.
+    if (this.isDisposed || !this.effectManager) return
     await this.effectManager.loadAssets()
+    if (this.isDisposed) return
 
     // Initial Draw
     this.drawRoad()
@@ -295,6 +300,26 @@ class TourbusStageController extends BaseStageController<TourbusControllerState>
     if (this.obstacleManager) {
       this.obstacleManager.dispose()
       this.obstacleManager = null
+    }
+
+    if (this.busSprite) {
+      this.busSprite.destroy()
+      this.busSprite = null
+    }
+
+    if (this.roadStripes) {
+      this.roadStripes.destroy()
+      this.roadStripes = null
+    }
+
+    if (this.roadContainer) {
+      this.roadContainer.destroy({ children: true })
+      this.roadContainer = null
+    }
+
+    if (this.obstacleContainer) {
+      this.obstacleContainer.destroy({ children: true })
+      this.obstacleContainer = null
     }
 
     super.dispose()

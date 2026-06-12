@@ -5,7 +5,8 @@ import type { BandState } from '../../types'
 /**
  * Converts Tourbus minigame damage and pickups into travel rewards.
  *
- * @param damageTaken - Raw obstacle damage; non-finite values are treated as zero.
+ * @param damageTaken - Raw obstacle damage; non-finite values are treated as
+ * zero and values are clamped into `0..100` before scaling.
  * @param itemsCollected - Collected item ids from the minigame run.
  * @returns Condition loss, fuel bonus, and void hazard hit count.
  */
@@ -13,11 +14,15 @@ export const calculateTravelMinigameResult = (
   damageTaken: unknown,
   itemsCollected: unknown
 ) => {
-  // 50% damage scaling: 100 damage -> 50 condition loss
+  // 50% damage scaling: 100 damage -> 50 condition loss. The minigame deals
+  // at most 100 damage, so the cap enforces the documented max of 50
+  // condition loss against oversized direct-dispatch payloads.
   const safeDamageTaken = Number.isFinite(Number(damageTaken))
     ? Number(damageTaken)
     : 0
-  const conditionLoss = Math.floor(Math.max(0, safeDamageTaken) / 2)
+  const conditionLoss = Math.floor(
+    Math.min(100, Math.max(0, safeDamageTaken)) / 2
+  )
 
   // Fuel bonus re-enabled: each fuel item grants 0.5 liters of fuel bonus
   let fuelItems = 0

@@ -1,6 +1,12 @@
-import { type Dispatch, type MutableRefObject, useCallback } from 'react'
+import {
+  type Dispatch,
+  type MutableRefObject,
+  useCallback,
+  useRef
+} from 'react'
 import type { TFunction } from 'i18next'
 import { addUnlock } from '../utils/unlockManager'
+import { KNOWN_EVENT_IDS } from '../data/events'
 import { eventEngine } from '../utils/eventEngine'
 import { logger } from '../utils/logger'
 import { GAME_PHASES } from './gameConstants'
@@ -139,11 +145,40 @@ export function useEventSystem({
     [dispatch]
   )
 
+  // Queue instance that already received a drain pop. Callers chain
+  // triggerEvent fallbacks synchronously against the same stale stateRef
+  // snapshot; without this guard each chained call would pop again and
+  // remove valid pending events behind the unknown head.
+  const drainedQueueRef = useRef<unknown>(null)
+
   const triggerEvent = useCallback(
     (category: string, triggerPoint: string | null = null) => {
       const currentState = stateRef.current
       if (currentState.currentScene === GAME_PHASES.GIG) return false
       if ((currentState.player?.eventsTriggeredToday ?? 0) >= 2) return false
+
+      // Drain orphaned queue heads: an id that exists in no event pool is
+      // never returned by selection and would block every later pending
+      // event (the queue only pops when the head is actually played).
+      const pendingHead = currentState.pendingEvents?.[0]
+      if (
+        typeof pendingHead === 'string' &&
+        !KNOWN_EVENT_IDS.has(pendingHead)
+      ) {
+        if (drainedQueueRef.current !== currentState.pendingEvents) {
+          drainedQueueRef.current = currentState.pendingEvents
+          logger.warn(
+            'EventSystem',
+            `Dropping unknown pending event id: ${pendingHead}`
+          )
+          dispatch(createPopPendingEventAction())
+        }
+        // Stop here: selection against the stale snapshot could play a
+        // pending-gated event from position [1] without popping it (the
+        // pop-on-played check compares against the old head), replaying it
+        // on the next trigger. The caller retries once the queue is drained.
+        return false
+      }
 
       const event = eventEngine.checkEvent(category, currentState, triggerPoint)
       if (!event) return false

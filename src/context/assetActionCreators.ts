@@ -146,8 +146,10 @@ export interface PurchaseChassisInput {
 
 /**
  * Creates a chassis purchase action. Validates flavor/mode combinations,
- * funds available, and (for loans) profile existence. Returns
- * `PURCHASE_CHASSIS_FAILED` on rejection so middleware can surface a toast.
+ * funds available, and (for loans) profile existence. Crowdfund mode is
+ * rejected here (`CROWDFUND_REQUIRES_CAMPAIGN`) — campaigns go through
+ * {@link startCrowdfund} instead. Returns `PURCHASE_CHASSIS_FAILED` on
+ * rejection so middleware can surface a toast.
  *
  * @param raw - Raw chassis purchase request.
  * @param state - Current game state used for funds, eligibility, and existing acquisitions.
@@ -178,6 +180,11 @@ export const purchaseChassis = (
   // DIY chassis can't be financed via loan — banks won't underwrite squats.
   if (raw.flavor === 'diy' && raw.mode === 'loan') {
     return fail('DIY_LOAN_NOT_ALLOWED')
+  }
+  // Crowdfund acquisitions run through startCrowdfund + processCrowdfundTick;
+  // a direct purchase with mode 'crowdfund' would skip payment entirely.
+  if (raw.mode === 'crowdfund') {
+    return fail('CROWDFUND_REQUIRES_CAMPAIGN')
   }
   const cfg = CHASSIS_CONFIG[raw.kind]?.[raw.flavor]?.[raw.tier]
   if (!cfg || cfg.price <= 0) {
@@ -527,6 +534,15 @@ export const startCrowdfund = (
   if (!state || hasActiveAssetAcquisition(state, raw.kind)) {
     return null
   }
+  // Reject degenerate campaigns: a non-positive target or duration would
+  // resolve immediately or invert payout math, and a negative fame stake
+  // would credit fame on failure.
+  const targetAmount = finiteNumberOr(raw.targetAmount, 0)
+  const fameStake = finiteNumberOr(raw.fameStake, 0)
+  const daysRemaining = finiteNumberOr(raw.daysRemaining, 0)
+  if (targetAmount <= 0 || daysRemaining <= 0 || fameStake < 0) {
+    return null
+  }
   // Pre-generate the materialized-asset ids here so processCrowdfundTick
   // stays pure (reducer-purity invariant). The number of slot ids matches
   // the chassis-config slot count for this kind/flavor/tier. If the section
@@ -550,9 +566,9 @@ export const startCrowdfund = (
           flavor: raw.flavor,
           chassisTier: raw.tier
         },
-        targetAmount: finiteNumberOr(raw.targetAmount, 0),
-        fameStake: finiteNumberOr(raw.fameStake, 0),
-        daysRemaining: finiteNumberOr(raw.daysRemaining, 0),
+        targetAmount,
+        fameStake,
+        daysRemaining,
         materializedAssetId,
         materializedSlotIds,
         // Clamp to [0, 1] — defensively. The roll is meant to come from

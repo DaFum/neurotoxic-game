@@ -333,10 +333,12 @@ describe('GameState Context - Event System', () => {
           <button
             type='button'
             onClick={() => {
+              // Head must be a KNOWN event id: unknown heads are now
+              // intentionally drained by triggerEvent (orphan cleanup).
               localStorage.setItem(
                 'neurotoxic_v3_save',
                 JSON.stringify({
-                  pendingEvents: ['event_head', 'event_second']
+                  pendingEvents: ['event_bad_press', 'event_second']
                 })
               )
               gameState.loadGame()
@@ -361,14 +363,14 @@ describe('GameState Context - Event System', () => {
       screen.getByText('Load Pending').click()
     })
     expect(screen.getByTestId('pending-events')).toHaveTextContent(
-      '["event_head","event_second"]'
+      '["event_bad_press","event_second"]'
     )
 
     act(() => {
       screen.getByText('Trigger Event').click()
     })
     expect(screen.getByTestId('pending-events')).toHaveTextContent(
-      '["event_head","event_second"]'
+      '["event_bad_press","event_second"]'
     )
   })
 

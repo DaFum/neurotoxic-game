@@ -1,6 +1,7 @@
 /// <reference types="vite/client" />
 import { useEffect } from 'react'
 import { getSafeStorageItem, setSafeStorageItem } from '../utils/storage'
+import { finiteNumberOr } from '../utils/finiteNumber'
 import { logger } from '../utils/logger'
 import type { GameState } from '../types'
 
@@ -18,11 +19,16 @@ type LeaderboardStatsPayload = {
 
 let leaderboardStatsEndpointUnavailable = false
 let hasLoggedUnavailableEndpoint = false
+// Dedupes concurrent syncs: the effect fires per stat change and the
+// last-synced-day marker is only written after the fetch resolves, so without
+// this every stat change within one day launched another POST.
+const inFlightSyncs = new Set<string>()
 
 if (import.meta.hot) {
   import.meta.hot.dispose(() => {
     leaderboardStatsEndpointUnavailable = false
     hasLoggedUnavailableEndpoint = false
+    inFlightSyncs.clear()
   })
 }
 
@@ -182,11 +188,22 @@ export const useLeaderboardSync = (state: GameState): void => {
     const syncStats = async () => {
       // 2. Check if already synced for this day (Player-Specific)
       const syncKey = `neurotoxic_last_synced_day:${playerId}`
-      const lastSyncedDay = getSafeStorageItem<number>(syncKey, 0)
+      // localStorage is untrusted: the parsed marker may be any JSON value.
+      const lastSyncedDay = finiteNumberOr(
+        getSafeStorageItem<unknown>(syncKey, 0),
+        0
+      )
 
       if (day <= lastSyncedDay) return
 
-      // 3. Sync Logic
+      // 3. Dedupe: one request per player and day. The marker below is only
+      // written after the await, so concurrent effect runs would all pass the
+      // lastSyncedDay check and POST duplicate intermediate snapshots.
+      const flightKey = `${playerId}:${day}`
+      if (inFlightSyncs.has(flightKey)) return
+      inFlightSyncs.add(flightKey)
+
+      // 4. Sync Logic
       try {
         const payload = createSyncPayload(
           playerId ?? '',
@@ -203,12 +220,19 @@ export const useLeaderboardSync = (state: GameState): void => {
         const didSync = await syncLeaderboardStats(payload)
         if (!didSync) return
 
-        // 4. Update Synced State
-        setSafeStorageItem(syncKey, day)
+        // 5. Update Synced State. Keep the marker monotonic: a slower sync
+        // for an earlier day must not lower it after a later day completed.
+        const markerDay = finiteNumberOr(
+          getSafeStorageItem<unknown>(syncKey, 0),
+          0
+        )
+        setSafeStorageItem(syncKey, Math.max(markerDay, day))
         logger.info('Leaderboard', `Synced stats for day ${day}`)
       } catch (error) {
         // Silent fail for leaderboard sync to not disrupt gameplay
         logger.warn('Leaderboard', 'Stats sync failed', error)
+      } finally {
+        inFlightSyncs.delete(flightKey)
       }
     }
 

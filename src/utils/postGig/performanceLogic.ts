@@ -169,12 +169,13 @@ export const calculateContinueStats = ({
 /**
  * Converts raw rhythm score into the clamped post-gig performance score.
  *
- * @param rawScore - Raw rhythm-game score.
+ * @param rawScore - Raw rhythm-game score; non-finite values collapse to `0`
+ * (NaN would otherwise pass straight through both clamp bounds).
  * @returns Post-gig performance score clamped to the display range.
  */
 export const calculatePerformanceScore = (rawScore: number): number => {
   return Math.min(
     PERF_SCORE_MAX,
-    Math.max(PERF_SCORE_MIN, rawScore / PERF_SCORE_SCALER)
+    Math.max(PERF_SCORE_MIN, finiteNumberOr(rawScore, 0) / PERF_SCORE_SCALER)
   )
 }

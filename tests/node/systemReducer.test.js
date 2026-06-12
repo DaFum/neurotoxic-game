@@ -116,6 +116,30 @@ test('handleAdvanceDay ignores non-finite expired additive effect values', () =>
   assert.equal(nextState.band.crowdControl, controlNextState.band.crowdControl)
 })
 
+test('handleAdvanceDay reverts effects on non-finite band stats without persisting NaN', () => {
+  const state = createInitialState()
+  state.player.money = 10000
+  state.rngSeed = 123
+  // Stale-save corruption: the stat itself is NaN while the expiring effect
+  // value is finite. `?? 0` would let NaN flow through the subtraction.
+  state.band.luck = Number.NaN
+  state.band.tempo = Number.NaN
+  state.band.activeContrabandEffects = [
+    { effectType: 'luck', value: 2, remainingDuration: 1 },
+    { effectType: 'tempo', value: 3, remainingDuration: 1 }
+  ]
+  const payload = {
+    dayRngStream: [],
+    nextRngSeed: state.rngSeed,
+    rng: () => 0.5
+  }
+
+  const nextState = handleAdvanceDay(state, payload)
+
+  assert.ok(Number.isFinite(nextState.band.luck))
+  assert.ok(Number.isFinite(nextState.band.tempo))
+})
+
 test('systemReducer - LOAD_GAME', async t => {
   await t.test(
     'loads game and sanitizes player, band, and social state',
@@ -632,9 +656,9 @@ test('systemReducer - LOAD_GAME', async t => {
       assert.equal(nextState.social.lastPirateBroadcastDay, 7)
       assert.equal(nextState.social.egoFocus, 'Matze')
       assert.equal(nextState.social.trend, 'DRAMA')
-      assert.deepEqual(nextState.social.activeDeals, [
-        { id: 'deal1', remainingGigs: 2 }
-      ])
+      // 'deal1' has no BRAND_DEALS_BY_ID entry: unknown deals are dropped on
+      // load because a stub without type/offer matches no runtime consumer.
+      assert.deepEqual(nextState.social.activeDeals, [])
       assert.deepEqual(nextState.social.brandReputation, { EVIL: 30 })
       assert.deepEqual(nextState.social.influencers, {
         local: { tier: 'Micro', trait: 'tastemaker', score: 12 }
@@ -643,6 +667,81 @@ test('systemReducer - LOAD_GAME', async t => {
       assert.equal(Object.hasOwn(nextState.social, '__proto__'), false)
     }
   )
+
+  await t.test(
+    'rehydrates known active deals from the brand deal registry on load',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = JSON.parse(`{
+      "social": {
+        "activeDeals": [
+          { "id": "energy_drink_cx", "remainingGigs": 3, "type": "TAMPERED", "offer": { "perGig": 99999 } }
+        ]
+      }
+    }`)
+
+      const nextState = handleLoadGame(initialState, loadedState)
+      const deal = nextState.social.activeDeals[0]
+
+      // Registry fields win over persisted blobs; only remainingGigs is
+      // player progress. Without type/offer, hasActiveSponsorship and
+      // per-gig payouts silently stop matching after a save/load cycle.
+      assert.equal(deal.id, 'energy_drink_cx')
+      assert.equal(deal.remainingGigs, 3)
+      assert.equal(deal.type, 'SPONSORSHIP')
+      assert.equal(deal.offer.perGig, 50)
+    }
+  )
+
+  await t.test(
+    'drops loaded active deals when remainingGigs is non-integer or non-positive',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = JSON.parse(`{
+      "social": {
+        "activeDeals": [
+          { "id": "energy_drink_cx", "remainingGigs": 2.5 }
+        ]
+      }
+    }`)
+
+      const nextState = handleLoadGame(initialState, loadedState)
+      assert.equal(nextState.social.activeDeals.length, 0)
+
+      const negativeState = handleLoadGame(
+        initialState,
+        JSON.parse(
+          `{"social":{"activeDeals":[{"id":"energy_drink_cx","remainingGigs":-3}]}}`
+        )
+      )
+      assert.equal(negativeState.social.activeDeals.length, 0)
+
+      const zeroState = handleLoadGame(
+        initialState,
+        JSON.parse(
+          `{"social":{"activeDeals":[{"id":"energy_drink_cx","remainingGigs":0}]}}`
+        )
+      )
+      assert.equal(zeroState.social.activeDeals.length, 0)
+    }
+  )
+
+  await t.test('drops active deals with unknown registry ids on load', () => {
+    const initialState = createInitialState()
+    const loadedState = JSON.parse(`{
+      "social": {
+        "activeDeals": [
+          { "id": "removed_in_patch", "remainingGigs": 3 },
+          { "id": "energy_drink_cx", "remainingGigs": 2 }
+        ]
+      }
+    }`)
+
+    const nextState = handleLoadGame(initialState, loadedState)
+
+    assert.equal(nextState.social.activeDeals.length, 1)
+    assert.equal(nextState.social.activeDeals[0].id, 'energy_drink_cx')
+  })
 
   await t.test(
     'sanitizes loaded activeEvent instead of trusting raw casts',

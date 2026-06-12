@@ -133,6 +133,28 @@ test('handlePurchaseChassis - rejects underfunded direct cash purchase', () => {
   assert.strictEqual(next, startState)
 })
 
+test('handlePurchaseChassis - rejects crowdfund-mode payload (no free chassis)', () => {
+  const kind = 'tourbus_chassis'
+  const configTier = CHASSIS_CONFIG[kind].legit[1]
+  const slotIds = configTier.slots.map((_, i) => `slot_${i}`)
+  const startState = {
+    ...mockState,
+    player: { ...mockState.player, money: configTier.price }
+  }
+
+  const next = handlePurchaseChassis(startState, {
+    id: 'a1',
+    kind,
+    flavor: 'legit',
+    tier: 1,
+    mode: 'crowdfund',
+    slotIds,
+    today: mockState.player.day
+  })
+
+  assert.strictEqual(next, startState)
+})
+
 test('handlePurchaseChassis - uses direct DIY config values', () => {
   const kind = 'tourbus_chassis'
   CHASSIS_CONFIG[kind].legit[1] = {

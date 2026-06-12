@@ -100,6 +100,68 @@ describe('bandReducer', () => {
       assert.strictEqual(newMember.mood, 50)
     })
 
+    it('should strip self-relationships and non-finite values from member patches', () => {
+      const nextState = handleUpdateBand(baseState, {
+        members: [
+          {
+            id: 'm1',
+            relationships: {
+              m1: 50,
+              Matze: 40,
+              matze: 30,
+              m2: 250,
+              m3: NaN,
+              m4: 10
+            }
+          }
+        ]
+      })
+
+      const member = nextState.band.members[0]
+      assert.strictEqual(Object.hasOwn(member.relationships, 'm1'), false)
+      assert.strictEqual(Object.hasOwn(member.relationships, 'Matze'), false)
+      assert.strictEqual(Object.hasOwn(member.relationships, 'matze'), false)
+      assert.strictEqual(Object.hasOwn(member.relationships, 'm3'), false)
+      assert.strictEqual(member.relationships.m2, 100)
+      assert.strictEqual(member.relationships.m4, 10)
+    })
+
+    it('should strip mixed-case self-relationship keys', () => {
+      const nextState = handleUpdateBand(baseState, {
+        members: [
+          {
+            id: 'm1',
+            relationships: { M1: 50, MATZE: 40, MaTzE: 30, m2: 10 }
+          }
+        ]
+      })
+
+      const member = nextState.band.members[0]
+      assert.deepStrictEqual(member.relationships, { m2: 10 })
+    })
+
+    it('should keep existing relationships when the patch value is invalid', () => {
+      baseState.band.members = [
+        {
+          id: 'm1',
+          name: 'Matze',
+          traits: {},
+          relationships: { m2: 40 }
+        }
+      ]
+
+      for (const invalid of [null, undefined, 'broken', 7, ['m2']]) {
+        const nextState = handleUpdateBand(baseState, {
+          members: [{ id: 'm1', relationships: invalid }]
+        })
+        assert.deepStrictEqual(
+          nextState.band.members[0].relationships,
+          { m2: 40 },
+          `invalid payload ${String(invalid)} must not erase relationships`
+        )
+      }
+    })
+
     it('should safely ignore invalid payloads', () => {
       const invalidPayloads = [null, undefined, [], 'string', 123]
 

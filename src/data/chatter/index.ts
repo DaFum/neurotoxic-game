@@ -67,12 +67,16 @@ const getVenueChatter = (state: ChatterState): ChatterPoolItem[] => {
 
   // 1) Venue Specific Chatter (Scene-aware)
   const currentNode = state.gameMap?.nodes[state.player.currentNodeId]
+  // Accept both node shapes like the city-intel path does: full `venue`
+  // objects (map generator) and `venueId`-only nodes (slimmed/persisted maps).
   const venueId =
     currentNode &&
     Object.hasOwn(currentNode, 'venue') &&
     hasVenueId(currentNode.venue)
       ? currentNode.venue.id
-      : undefined
+      : typeof currentNode?.venueId === 'string'
+        ? currentNode.venueId
+        : undefined
 
   if (venueId) {
     const venueEntry = VENUE_CHATTER_LOOKUP[venueId] as

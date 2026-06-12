@@ -156,6 +156,32 @@ test('applyEventDelta preserves deltas when persisted numeric bases are stale', 
   assert.equal(nextState.band.luck, 3)
 })
 
+test('applyEventDelta ignores non-finite luck/skill deltas and sanitizes non-finite member skill base', () => {
+  const state = {
+    band: {
+      luck: 10,
+      members: [
+        {
+          mood: 50,
+          stamina: 50,
+          baseStats: { skill: Number.NaN }
+        }
+      ]
+    }
+  }
+  const delta = {
+    band: {
+      skill: 1,
+      luck: Number.POSITIVE_INFINITY
+    }
+  }
+
+  const nextState = applyEventDelta(state, delta)
+
+  assert.equal(nextState.band.members[0].baseStats.skill, 6)
+  assert.equal(nextState.band.luck, 10)
+})
+
 test('applyEventDelta handles band inventory updates', () => {
   const state = {
     band: { inventory: { shirts: 10, golden_pick: false } }
@@ -240,6 +266,14 @@ test('applyInventoryItemDelta handles numeric and boolean deltas', () => {
   assert.equal(applyInventoryItemDelta(0, -5), 0)
   assert.equal(applyInventoryItemDelta(undefined, 3), 3)
   assert.equal(applyInventoryItemDelta(true, false), false)
+})
+
+test('applyInventoryItemDelta rejects non-finite values instead of storing NaN', () => {
+  // NaN passes `typeof === 'number'`; the finite guard must drop the delta.
+  assert.equal(applyInventoryItemDelta(2, Number.NaN), 2)
+  assert.equal(applyInventoryItemDelta(2, Infinity), 2)
+  // A corrupted current count collapses to 0 before the addition.
+  assert.equal(applyInventoryItemDelta(Number.NaN, 3), 3)
 })
 
 test('calculateAppliedDelta calculates correctly with limits and forbidden keys', () => {

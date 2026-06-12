@@ -50,6 +50,7 @@ mock.module('pixi.js', {
         this.addChild = mock.fn()
         this.removeChild = mock.fn()
         this.removeChildren = mock.fn()
+        this.destroy = mock.fn()
       }
     },
     Graphics: class {
@@ -275,6 +276,7 @@ describe('TourbusStageController', () => {
         this.addChild = mock.fn()
         this.removeChild = mock.fn()
         this.removeChildren = mock.fn()
+        this.destroy = mock.fn()
       }
     })()
 
@@ -377,6 +379,45 @@ describe('TourbusStageController', () => {
     controller.handleTicker({ deltaMS: 16 })
 
     assert.strictEqual(controller.obstacleManager.obstacleMap.size, 0)
+  })
+
+  it('should survive dispose during setup asset loading', async () => {
+    // dispose() mid-await previously left setup() dereferencing the nulled
+    // effectManager (TypeError on fast scene exit).
+    let resolveLoad
+    controller.loadAssets = () =>
+      new Promise(resolve => {
+        resolveLoad = resolve
+      })
+
+    const setupPromise = controller.setup()
+    controller.dispose()
+    resolveLoad()
+
+    await assert.doesNotReject(setupPromise)
+    assert.strictEqual(controller.effectManager, null)
+  })
+
+  it('should survive dispose while effect manager assets are loading', async () => {
+    let resolveEffectLoad
+    controller.loadAssets = () => {
+      if (controller.effectManager) {
+        controller.effectManager.loadAssets = () =>
+          new Promise(resolve => {
+            resolveEffectLoad = resolve
+          })
+      }
+      return Promise.resolve()
+    }
+
+    const setupPromise = controller.setup()
+    await Promise.resolve()
+    controller.dispose()
+    assert.ok(resolveEffectLoad)
+    resolveEffectLoad()
+
+    await assert.doesNotReject(setupPromise)
+    assert.strictEqual(controller.effectManager, null)
   })
 
   it('should dispose correctly', async () => {
