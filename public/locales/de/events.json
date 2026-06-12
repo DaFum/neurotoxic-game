@@ -1,6 +1,6 @@
 {
   "quest_alchemist.label": "Hinterhof-Alchemist",
-  "quest_alchemist.desc": "Stelle einen Gegenstand aus erbeuteter Schmuggelware her.",
+  "quest_alchemist.desc": "Stelle 2 Gegenstände aus erbeuteter Schmuggelware her.",
   "quest_trigger_alchemist.title": "BRAU WAS ZUSAMMEN",
   "quest_trigger_alchemist.desc": "Ein Roadie schwört, du könntest Schrott-Schmuggelware zu etwas Brauchbarem verschmelzen.",
   "quest_trigger_alchemist.opt1.label": "Anfangen zu basteln",
