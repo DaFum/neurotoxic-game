@@ -694,7 +694,7 @@ test('systemReducer - LOAD_GAME', async t => {
   )
 
   await t.test(
-    'normalizes loaded remainingGigs to a non-negative integer',
+    'drops loaded active deals when remainingGigs is non-integer or non-positive',
     () => {
       const initialState = createInitialState()
       const loadedState = JSON.parse(`{
@@ -706,10 +706,7 @@ test('systemReducer - LOAD_GAME', async t => {
     }`)
 
       const nextState = handleLoadGame(initialState, loadedState)
-
-      // normalizeRemainingGigs in post-gig resolution throws on decimals
-      // and negatives, so the sanitizer must coerce here.
-      assert.equal(nextState.social.activeDeals[0].remainingGigs, 2)
+      assert.equal(nextState.social.activeDeals.length, 0)
 
       const negativeState = handleLoadGame(
         initialState,
@@ -717,7 +714,15 @@ test('systemReducer - LOAD_GAME', async t => {
           `{"social":{"activeDeals":[{"id":"energy_drink_cx","remainingGigs":-3}]}}`
         )
       )
-      assert.equal(negativeState.social.activeDeals[0].remainingGigs, 0)
+      assert.equal(negativeState.social.activeDeals.length, 0)
+
+      const zeroState = handleLoadGame(
+        initialState,
+        JSON.parse(
+          `{"social":{"activeDeals":[{"id":"energy_drink_cx","remainingGigs":0}]}}`
+        )
+      )
+      assert.equal(zeroState.social.activeDeals.length, 0)
     }
   )
 

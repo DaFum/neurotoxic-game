@@ -635,13 +635,12 @@ export const applyEventDelta = (
         ].slice(-50)
       }
     }
-    const skillDelta = delta.band.skill
+    const rawSkillDelta = delta.band.skill
+    const skillDelta = Number.isFinite(rawSkillDelta)
+      ? finiteNumberOr(rawSkillDelta, 0)
+      : null
 
-    if (
-      membersDelta ||
-      relationshipChange.length > 0 ||
-      typeof skillDelta === 'number'
-    ) {
+    if (membersDelta || relationshipChange.length > 0 || skillDelta !== null) {
       const isArrayDelta = Array.isArray(membersDelta)
       const memberCount = nextBand.members.length
       let updatedMembers: BandMember[] | null = null
@@ -741,11 +740,8 @@ export const applyEventDelta = (
         }
 
         // 3. Skill
-        if (typeof skillDelta === 'number' && skillDelta !== 0) {
-          const currentSkill =
-            member.baseStats && typeof member.baseStats.skill === 'number'
-              ? member.baseStats.skill
-              : 5
+        if (skillDelta !== null && skillDelta !== 0) {
+          const currentSkill = finiteNumberOr(member.baseStats?.skill, 5)
           const newSkill = Math.max(1, Math.min(10, currentSkill + skillDelta))
 
           if (newSkill !== currentSkill) {
@@ -809,9 +805,11 @@ export const applyEventDelta = (
       }
     }
 
-    if (typeof delta.band.luck === 'number') {
+    const rawLuckDelta = delta.band.luck
+    if (Number.isFinite(rawLuckDelta)) {
+      const luckDelta = finiteNumberOr(rawLuckDelta, 0)
       const boundedLuck = Math.max(0, finiteNumberOr(nextBand.luck, 0))
-      nextBand.luck = boundedLuck + delta.band.luck
+      nextBand.luck = boundedLuck + luckDelta
     }
     nextState.band = nextBand
   }

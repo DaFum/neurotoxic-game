@@ -302,6 +302,26 @@ class TourbusStageController extends BaseStageController<TourbusControllerState>
       this.obstacleManager = null
     }
 
+    if (this.busSprite) {
+      this.busSprite.destroy()
+      this.busSprite = null
+    }
+
+    if (this.roadStripes) {
+      this.roadStripes.destroy()
+      this.roadStripes = null
+    }
+
+    if (this.roadContainer) {
+      this.roadContainer.destroy({ children: true })
+      this.roadContainer = null
+    }
+
+    if (this.obstacleContainer) {
+      this.obstacleContainer.destroy({ children: true })
+      this.obstacleContainer = null
+    }
+
     super.dispose()
   }
 }
