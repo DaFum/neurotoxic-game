@@ -1,6 +1,7 @@
 /// <reference types="vite/client" />
 import { useEffect } from 'react'
 import { getSafeStorageItem, setSafeStorageItem } from '../utils/storage'
+import { finiteNumberOr } from '../utils/finiteNumber'
 import { logger } from '../utils/logger'
 import type { GameState } from '../types'
 
@@ -187,7 +188,11 @@ export const useLeaderboardSync = (state: GameState): void => {
     const syncStats = async () => {
       // 2. Check if already synced for this day (Player-Specific)
       const syncKey = `neurotoxic_last_synced_day:${playerId}`
-      const lastSyncedDay = getSafeStorageItem<number>(syncKey, 0)
+      // localStorage is untrusted: the parsed marker may be any JSON value.
+      const lastSyncedDay = finiteNumberOr(
+        getSafeStorageItem<unknown>(syncKey, 0),
+        0
+      )
 
       if (day <= lastSyncedDay) return
 
@@ -217,7 +222,10 @@ export const useLeaderboardSync = (state: GameState): void => {
 
         // 5. Update Synced State. Keep the marker monotonic: a slower sync
         // for an earlier day must not lower it after a later day completed.
-        const markerDay = getSafeStorageItem<number>(syncKey, 0)
+        const markerDay = finiteNumberOr(
+          getSafeStorageItem<unknown>(syncKey, 0),
+          0
+        )
         setSafeStorageItem(syncKey, Math.max(markerDay, day))
         logger.info('Leaderboard', `Synced stats for day ${day}`)
       } catch (error) {
