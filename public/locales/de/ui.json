@@ -373,7 +373,9 @@
     {
       "title": "ui:featureList.sec6.title",
       "type": "bullets",
-      "items": ["ui:featureList.sec6.items.0"],
+      "items": [
+        "ui:featureList.sec6.items.0"
+      ],
       "description": "ui:featureList.sec6.description"
     },
     {
@@ -1472,7 +1474,11 @@
   "quests.penalty.label": "Risiko:",
   "quests.penalty.loyalty": "{{count}} Loyalität bei Scheitern",
   "quests.progress": "Fortschritt",
+  "quests.progressSource.asset_risk_resolved": "Fortschritt: Equipment-Notfälle entschärfen",
+  "quests.progressSource.asset_risk_triggered": "Fortschritt: Equipment-Katastrophen überstehen",
   "quests.progressSource.brand_deal_completed": "Fortschritt: Markendeals abschließen",
+  "quests.progressSource.brand_deal_failed": "Fortschritt: Einen Markendeal verlieren",
+  "quests.progressSource.brand_trust_changed": "Fortschritt: Markenvertrauen aufbauen",
   "quests.progressSource.fame_gained": "Fortschritt: Ruhm gewinnen",
   "quests.progressSource.followers_gained": "Fortschritt: Follower gewinnen",
   "quests.progressSource.gig_completed": "Fortschritt: Gigs spielen",
@@ -1481,9 +1487,13 @@
   "quests.progressSource.harmony_threshold": "Fortschritt: Erreiche {{target}} Bandharmonie",
   "quests.repeatableAfter": "Wiederholbar nach {{count}}T Cooldown",
   "quests.progressSource.item_collected": "Fortschritt: Gegenstände sammeln",
+  "quests.progressSource.item_crafted": "Fortschritt: Gegenstände herstellen",
+  "quests.progressSource.item_delivered": "Fortschritt: Schmuggelware ausliefern",
+  "quests.progressSource.minigame_perfected": "Fortschritt: Minispiele perfekt abschließen",
   "quests.progressSource.money_earned": "Fortschritt: Geld verdienen",
   "quests.progressSource.small_venue_good_gig": "Fortschritt: Gute Gigs in kleinen Venues spielen",
   "quests.progressSource.social_post": "Fortschritt: In sozialen Medien posten",
+  "quests.progressSource.story_flag_added": "Fortschritt: Story-Momente erleben",
   "quests.progressSource.travel_completed": "Fortschritt: Zwischen Städten reisen",
   "quests.proveYourself.title": "BEWEIS ES ALLEN",
   "quests.repeatable": "Wiederholbar",
@@ -1748,5 +1758,8 @@
       "voidAltar": "Der Abgrund starrt zurück. Glück +10.",
       "shrineAltar": "Die Rockgötter segnen dich. Glück +10."
     }
-  }
+  },
+  "quests.progressSource.venue_blacklisted": "Fortschritt: Von einer Venue auf die schwarze Liste kommen",
+  "quests.progressSource.venue_reputation_changed": "Fortschritt: Venue-Ruf aufbauen",
+  "quests.progressSource.venue_unblacklisted": "Fortschritt: Eine Venue zurückgewinnen"
 }

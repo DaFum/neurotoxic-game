@@ -40,7 +40,10 @@ findet (`src/domain/questRewards.ts:95-115`).
 Verschärfend: `tests/node/questSystem.test.js:111` und `:118` verwenden `'rehearsal'`
 als Fallback-`assetKind` in synthetischen Events und maskieren das Problem dadurch.
 
-### 1.2 Elf fehlende `ui:quests.progressSource.*`-Übersetzungsschlüssel (EN **und** DE)
+### 1.2 ✅ ERLEDIGT — Elf fehlende `ui:quests.progressSource.*`-Übersetzungsschlüssel (EN **und** DE)
+
+> **Fix:** Alle 11 Schlüssel wurden in `public/locales/en/ui.json` und
+> `public/locales/de/ui.json` im Stil der bestehenden Einträge ergänzt.
 
 `QuestsModal` rendert `t('ui:quests.progressSource.<source>')`
 (`src/ui/QuestsModal.tsx:326-336`). Für folgende Sources fehlt der Key in **beiden**
@@ -305,7 +308,7 @@ Als Vorhalt für künftige Quests legitim, sollte aber bewusst gepflegt werden
 
 1. ✅ **Hoch:** `'rehearsal'` durch einen gültigen `AssetKind` ersetzen (vermutlich
    `bandhaus_chassis`) — in Offer-Conditions, Repair-Reward und Test-Fallback (1.1).
-2. **Hoch:** Die 11 fehlenden `ui:quests.progressSource.*`-Keys in EN+DE ergänzen (1.2).
+2. ✅ **Hoch:** Die 11 fehlenden `ui:quests.progressSource.*`-Keys in EN+DE ergänzen (1.2).
 3. **Hoch:** Retry-Cooldown-Mechanik vereinheitlichen: entweder `canAcceptQuest` lässt
    Cooldowns auch bei `repeatPolicy: 'never'` greifen, oder die Re-Offer-Pfade
    (gigReducer, consequences) prüfen `questCooldowns` explizit; den
