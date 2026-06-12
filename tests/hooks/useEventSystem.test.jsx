@@ -49,6 +49,25 @@ describe('useEventSystem.triggerEvent pending-queue drain', () => {
     })
   })
 
+  it('pops at most once per queue instance across chained fallback calls', () => {
+    params.stateRef.current = buildState({
+      pendingEvents: ['removed_in_patch_event', 'event_bad_press']
+    })
+
+    const { result } = renderHook(() => useEventSystem(params))
+    // Callers chain categories synchronously against the same stale
+    // snapshot; only the first call may pop, or valid events behind the
+    // unknown head would be drained too.
+    result.current.triggerEvent('financial', 'post_gig')
+    result.current.triggerEvent('special', 'post_gig')
+    result.current.triggerEvent('band', 'post_gig')
+
+    const pops = dispatch.mock.calls.filter(
+      ([action]) => action.type === ActionTypes.POP_PENDING_EVENT
+    )
+    expect(pops).toHaveLength(1)
+  })
+
   it('does not pop known pending event ids', () => {
     params.stateRef.current = buildState({
       currentScene: 'GIG',
