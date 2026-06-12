@@ -116,6 +116,30 @@ test('handleAdvanceDay ignores non-finite expired additive effect values', () =>
   assert.equal(nextState.band.crowdControl, controlNextState.band.crowdControl)
 })
 
+test('handleAdvanceDay reverts effects on non-finite band stats without persisting NaN', () => {
+  const state = createInitialState()
+  state.player.money = 10000
+  state.rngSeed = 123
+  // Stale-save corruption: the stat itself is NaN while the expiring effect
+  // value is finite. `?? 0` would let NaN flow through the subtraction.
+  state.band.luck = Number.NaN
+  state.band.tempo = Number.NaN
+  state.band.activeContrabandEffects = [
+    { effectType: 'luck', value: 2, remainingDuration: 1 },
+    { effectType: 'tempo', value: 3, remainingDuration: 1 }
+  ]
+  const payload = {
+    dayRngStream: [],
+    nextRngSeed: state.rngSeed,
+    rng: () => 0.5
+  }
+
+  const nextState = handleAdvanceDay(state, payload)
+
+  assert.ok(Number.isFinite(nextState.band.luck))
+  assert.ok(Number.isFinite(nextState.band.tempo))
+})
+
 test('systemReducer - LOAD_GAME', async t => {
   await t.test(
     'loads game and sanitizes player, band, and social state',
