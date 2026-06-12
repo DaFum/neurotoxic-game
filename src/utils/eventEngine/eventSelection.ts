@@ -205,12 +205,11 @@ const selectEvent = (
     // them (up to the daily-tick cap), suspension upgrades lower them.
     if (event.tags?.includes('breakdown')) {
       const breakdownChance = finiteNumberOr(
-        (gameState.player as { van?: { breakdownChance?: number } } | undefined)
-          ?.van?.breakdownChance,
+        gameState.player?.van?.breakdownChance,
         BASE_BREAKDOWN_CHANCE
       )
       const factor = Math.max(
-        0,
+
         Math.min(
           BREAKDOWN_CHANCE_FACTOR_CAP,
           breakdownChance / BASE_BREAKDOWN_CHANCE
