@@ -534,6 +534,15 @@ export const startCrowdfund = (
   if (!state || hasActiveAssetAcquisition(state, raw.kind)) {
     return null
   }
+  // Reject degenerate campaigns: a non-positive target or duration would
+  // resolve immediately or invert payout math, and a negative fame stake
+  // would credit fame on failure.
+  const targetAmount = finiteNumberOr(raw.targetAmount, 0)
+  const fameStake = finiteNumberOr(raw.fameStake, 0)
+  const daysRemaining = finiteNumberOr(raw.daysRemaining, 0)
+  if (targetAmount <= 0 || daysRemaining <= 0 || fameStake < 0) {
+    return null
+  }
   // Pre-generate the materialized-asset ids here so processCrowdfundTick
   // stays pure (reducer-purity invariant). The number of slot ids matches
   // the chassis-config slot count for this kind/flavor/tier. If the section
@@ -557,9 +566,9 @@ export const startCrowdfund = (
           flavor: raw.flavor,
           chassisTier: raw.tier
         },
-        targetAmount: finiteNumberOr(raw.targetAmount, 0),
-        fameStake: finiteNumberOr(raw.fameStake, 0),
-        daysRemaining: finiteNumberOr(raw.daysRemaining, 0),
+        targetAmount,
+        fameStake,
+        daysRemaining,
         materializedAssetId,
         materializedSlotIds,
         // Clamp to [0, 1] — defensively. The roll is meant to come from

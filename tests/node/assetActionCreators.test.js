@@ -595,6 +595,37 @@ describe('startCrowdfund / sellChassis / repairChassis / removeModule', () => {
     assert.equal(typeof action.payload.campaign.id, 'string')
   })
 
+  it('startCrowdfund rejects non-positive amounts and negative fame stakes', () => {
+    const base = {
+      kind: 'tourbus_chassis',
+      flavor: 'legit',
+      tier: 1,
+      targetAmount: 5000,
+      fameStake: 50,
+      daysRemaining: 14,
+      plannedSuccessRoll: 0.42,
+      plannedSuccessProbability: 0.5
+    }
+    assert.equal(
+      startCrowdfund({ ...base, targetAmount: 0 }, makeState()),
+      null
+    )
+    assert.equal(
+      startCrowdfund({ ...base, targetAmount: -500 }, makeState()),
+      null
+    )
+    assert.equal(
+      startCrowdfund({ ...base, daysRemaining: 0 }, makeState()),
+      null
+    )
+    assert.equal(startCrowdfund({ ...base, fameStake: -10 }, makeState()), null)
+    // Zero stake stays valid (the UI slider starts at 0).
+    assert.notEqual(
+      startCrowdfund({ ...base, fameStake: 0 }, makeState()),
+      null
+    )
+  })
+
   it('startCrowdfund returns null when an asset already exists for the section', () => {
     const action = startCrowdfund(
       {
