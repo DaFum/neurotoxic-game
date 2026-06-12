@@ -2,6 +2,7 @@ import type { GameState, QuestKind, QuestState } from '../types'
 import { getQuestDefinition } from '../data/questRegistry'
 import { hasActiveQuest } from '../utils/questUtils'
 import { finiteNumberOr } from '../utils/gameState'
+import { getRegionKeyForLocation } from '../utils/mapUtils'
 
 /**
  * Maximum active quest slots by quest kind.
@@ -131,7 +132,9 @@ export const canAcceptQuest = (
       merged.scopeKey ??
       (repeatPolicy === 'perVenue'
         ? getCurrentVenueScopeKey(state)
-        : state.player?.location)
+        : // perRegion scopes are stamped with the canonical city key so
+          // region quest events (also city-keyed) can match progress.
+          (getRegionKeyForLocation(state.player?.location) ?? undefined))
     if (typeof scopeKey !== 'string' || scopeKey.length === 0) {
       return { ok: false, reason: 'scope' }
     }

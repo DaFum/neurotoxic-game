@@ -137,6 +137,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 ## Gotchas
 
 - `currentGig` is the venue object. Use `state.currentGig?.capacity` and `.id`, not `state.currentGig?.venue`.
+- `player.location` is the `venues:<id>.name` display key. Anything region-keyed (`reputationByRegion`, `region.reputationChanged` events, perRegion quest scopes) must derive the city key via `getRegionKeyForLocation` from `src/utils/mapUtils.ts`; keying by raw `player.location` silently splits regional state per venue.
 - Never add band members to their own `relationships` map; self-relationships corrupt trait and infighting logic.
 - `START_GIG` resets `gigModifiers` to defaults.
 - Minigame completion reducers must not change `currentScene` (`COMPLETE_TRAVEL_MINIGAME`, `COMPLETE_AMP_CALIBRATION`, `COMPLETE_KABELSALAT_MINIGAME`, `COMPLETE_ROADIE_MINIGAME`); arrival/overlay continuation callbacks own scene changes.

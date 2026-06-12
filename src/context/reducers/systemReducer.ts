@@ -54,7 +54,7 @@ import { getTotalDailyObligations } from '../../utils/assetSelectors'
 import { generateDailyTrend } from '../../utils/socialEngine'
 import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks, normalizeTraitMap } from '../../utils/traitUtils'
-import { normalizeVenueId } from '../../utils/mapUtils'
+import { normalizeVenueId, getRegionKeyForLocation } from '../../utils/mapUtils'
 import {
   getCityKeyFromVenueId,
   deriveCityTraits
@@ -1692,7 +1692,45 @@ export const handleLoadGame = (
         if (migrated.length > 0) acc.push(migrated)
       }
       return acc
-    })()
+    })(),
+    // Region reputation is keyed per canonical city key. Older saves keyed
+    // entries by `venues:<id>.name` (the player.location display key), which
+    // the regional booking ban in checkVenueAccess never read. Remap; on
+    // collision keep the entry with the larger magnitude so blacklist-grade
+    // negatives and earned reputation both survive.
+    reputationByRegion: (() => {
+      const migrated: GameState['reputationByRegion'] = {}
+      for (const [key, value] of Object.entries(safeState.reputationByRegion)) {
+        const regionKey = getRegionKeyForLocation(key) ?? key
+        if (isForbiddenKey(regionKey)) continue
+        const existing = migrated[regionKey]
+        if (existing === undefined || Math.abs(value) > Math.abs(existing)) {
+          migrated[regionKey] = value
+        }
+      }
+      return migrated
+    })(),
+    // perRegion quest scopes were stamped from player.location and may carry
+    // the venue display key; progress events now emit city keys, so remap.
+    activeQuests: safeState.activeQuests.map(quest => {
+      if (!quest || typeof quest.scopeKey !== 'string') return quest
+      if (getQuestDefinition(quest.id)?.repeatPolicy !== 'perRegion') {
+        return quest
+      }
+      const regionKey = getRegionKeyForLocation(quest.scopeKey)
+      return regionKey && regionKey !== quest.scopeKey
+        ? { ...quest, scopeKey: regionKey }
+        : quest
+    }),
+    completedQuestScopes: safeState.completedQuestScopes.map(scope => {
+      if (getQuestDefinition(scope.questId)?.repeatPolicy !== 'perRegion') {
+        return scope
+      }
+      const regionKey = getRegionKeyForLocation(scope.scopeKey)
+      return regionKey && regionKey !== scope.scopeKey
+        ? { ...scope, scopeKey: regionKey }
+        : scope
+    })
   }
 
   // Version Migration Map

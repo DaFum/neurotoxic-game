@@ -96,7 +96,18 @@ Weitere Lücken in `checkSoftlock`:
   `assetModifiers`, `mapUtils.ts:161-166`) und Zugangs-Blocks (Blacklist,
   Prove-Yourself-Modus) ebenfalls — ein „erreichbarer" Nachbar kann real gesperrt sein.
 
-### 1.3 `player.location`-Formatdrift bricht die regionale Buchungssperre
+### 1.3 ✅ ERLEDIGT — `player.location`-Formatdrift bricht die regionale Buchungssperre
+
+> **Fix:** `venues:<id>.name` bleibt das kanonische Anzeigeformat von
+> `player.location` (so legt es die bestehende `migratePlayerLocation` fest).
+> Stattdessen leitet der neue gemeinsame Helper
+> `getRegionKeyForLocation` (`mapUtils.ts`) an **allen** Region-Grenzen den
+> City-Key ab: Reputations-Schreibpfade (`gigReducer`), Region-Quest-Events
+> (`useContinueHandler`), Quest-Rewards (`questEffects`), perRegion-Scope-
+> Stamping (`questAcceptance`) und Financials-Lesepfad (`derivations`).
+> Damit liest die Buchungssperre (`checkVenueAccess`, City-Key) dieselben
+> Schlüssel, die geschrieben werden. Alte Saves werden beim Laden migriert:
+> `reputationByRegion`-Keys und perRegion-Quest-Scopes (`systemReducer`).
 
 Drei Schreibweisen für denselben Zustand:
 
@@ -262,9 +273,10 @@ beschreibt den toten Pfad; im echten Pfad gibt es gar keine Quest-Progression (1
    `money ≥ totalCashImpact` UND keine erreichbare Geldquelle) und die GIG-Ausnahme um
    FESTIVAL/FINALE + `lastGigNodeId` korrigieren; alternativ eine „Tag
    überspringen/Notverkauf"-Aktion als designtes Ventil einbauen (1.2).
-3. **Hoch:** `player.location` auf ein kanonisches Format (City-Key) normalisieren —
+3. ✅ **Hoch:** `player.location` auf ein kanonisches Format (City-Key) normalisieren —
    inkl. Save-Migration — damit Regions-Reputation, Buchungssperre und Quest-Scopes
-   denselben Schlüssel verwenden (1.3).
+   denselben Schlüssel verwenden (1.3). *Umgesetzt als zentrale City-Key-Ableitung
+   an allen Region-Grenzen statt Formatwechsel von `player.location`, siehe 1.3.*
 4. **Mittel:** `breakdownChance` tatsächlich würfeln (z. B. als Zusatz-Chance auf
    `van_breakdown_*` beim Reisen) oder die Mechanik samt irreführender
    Upgrade-Versprechen entfernen (1.4).

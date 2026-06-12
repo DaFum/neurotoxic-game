@@ -114,6 +114,30 @@ export interface SoftlockContext {
 const GIG_LIKE_NODE_TYPES = new Set(['GIG', 'FESTIVAL', 'FINALE'])
 
 /**
+ * Derives the canonical region (city) reputation key from a location value.
+ *
+ * @remarks
+ * `player.location` is canonically stored as `venues:<venue_id>.name` (see
+ * `migratePlayerLocation`), while regional reputation and perRegion quest
+ * scopes must be keyed per city. This helper is the single converter both
+ * writers (gig reputation, region quest events) and readers (booking refusal,
+ * quest scope stamping) share — mixing raw locations and city keys is what
+ * previously made the regional booking ban unreachable. City derivation
+ * mirrors `getCityKeyFromVenueId` (prefix before the first underscore) but
+ * falls back to the full id for underscore-less city keys like `stendal`
+ * instead of returning an empty string.
+ *
+ * @param location - Raw location value (`venues:<id>.name` key, bare venue id, or city key).
+ * @returns The city key, or null when no usable string was provided.
+ */
+export const getRegionKeyForLocation = (location: unknown): string | null => {
+  const venueId = normalizeVenueId(location)
+  if (!venueId) return null
+  const idx = venueId.indexOf('_')
+  return idx > 0 ? venueId.slice(0, idx) : venueId
+}
+
+/**
  * Checks if the player is softlocked (stranded): no connected node is
  * affordable in both fuel and cash, and no in-place escape exists.
  *

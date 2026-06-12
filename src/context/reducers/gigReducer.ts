@@ -31,6 +31,7 @@ import {
   createVenueGoodGigQuestEvent
 } from '../../quests/producers/venueQuestEvents'
 import { normalizeSetlistForSave } from '../../utils/gameState'
+import { getRegionKeyForLocation } from '../../utils/mapUtils'
 
 const MIN_REPUTATION = -100
 const MAX_REPUTATION = 100
@@ -241,7 +242,11 @@ export const handleSetLastGigStats = (
   }
 
   const score = finiteNumberOr(safePayload.score, 0)
-  const location = state.player?.location || 'Unknown'
+  // Region reputation and region-scoped quest events are keyed per city.
+  // player.location is the `venues:<id>.name` display key, so derive the
+  // canonical city key — checkVenueAccess reads the same key for the
+  // regional booking ban.
+  const location = getRegionKeyForLocation(state.player?.location) ?? 'Unknown'
   const venueId = state.currentGig?.id ?? ''
   const capacity =
     typeof state.currentGig?.capacity === 'number' &&
