@@ -2,8 +2,10 @@ import { useEffect } from 'react'
 import { checkSoftlock } from '../../utils/mapUtils'
 import {
   getActiveAssetModifiers,
-  getTotalDailyObligations
+  getTotalDailyObligations,
+  calculateChassisGrossSaleValue
 } from '../../utils/assetSelectors'
+import { finiteNumberOr } from '../../utils/finiteNumber'
 import type { GameState } from '../../types'
 import { logger } from '../../utils/logger'
 import i18n from '../../i18n'
@@ -66,6 +68,78 @@ export const useTravelEffects = ({
       return
     }
 
+    const sellableAssets: { id: string; net: number }[] = []
+
+    if (assets) {
+      for (const asset of assets) {
+        const gross = calculateChassisGrossSaleValue(asset, player.day)
+        if (gross !== null) {
+          let rawTotalPrincipalRemaining = 0
+          if (liabilities) {
+            for (const l of Object.values(liabilities)) {
+              if (l && l.assetId === asset.id) {
+                rawTotalPrincipalRemaining += Math.max(
+                  0,
+                  finiteNumberOr(l.principalRemaining, 0)
+                )
+              }
+            }
+          }
+          if (gross >= rawTotalPrincipalRemaining) {
+            const net = gross - rawTotalPrincipalRemaining
+            if (net > 0) {
+              sellableAssets.push({ id: asset.id, net })
+            }
+          }
+        }
+      }
+    }
+
+    const postSaleScenarios: {
+      assetProceeds: number
+      dailyObligations: number
+      assetModifiers: import('../../types/assets').AssetModifiers
+    }[] = []
+    if (sellableAssets.length > 0 && assets) {
+      sellableAssets.sort((a, b) => b.net - a.net)
+      const numAssets = Math.min(sellableAssets.length, 10)
+      const numCombinations = 1 << numAssets
+      for (let i = 1; i < numCombinations; i++) {
+        const comboAssetIds: string[] = []
+        let comboProceeds = 0
+        for (let j = 0; j < numAssets; j++) {
+          if ((i & (1 << j)) !== 0) {
+            const assetToSell = sellableAssets[j]
+            if (assetToSell) {
+              comboAssetIds.push(assetToSell.id)
+              comboProceeds += assetToSell.net
+            }
+          }
+        }
+
+        const retainedAssets = assets.filter(a => !comboAssetIds.includes(a.id))
+        const retainedLiabilities = liabilities
+          ? Object.fromEntries(
+              Object.entries(liabilities).filter(
+                ([_, l]) => l && !comboAssetIds.includes(l.assetId)
+              )
+            )
+          : {}
+
+        postSaleScenarios.push({
+          assetProceeds: comboProceeds,
+          dailyObligations: getTotalDailyObligations({
+            player,
+            band,
+            social,
+            assets: retainedAssets,
+            liabilities: retainedLiabilities
+          } as GameState),
+          assetModifiers: getActiveAssetModifiers(retainedAssets)
+        })
+      }
+    }
+
     // Mirror the travel gate: each neighbor must be affordable in fuel AND
     // cash including the daily obligations that arrival's advanceDay bills.
     const softlockContext = {
@@ -76,7 +150,8 @@ export const useTravelEffects = ({
         assets,
         liabilities
       } as GameState),
-      assetModifiers: getActiveAssetModifiers(assets)
+      assetModifiers: getActiveAssetModifiers(assets),
+      postSaleScenarios
     }
 
     if (checkSoftlock(gameMap, player, band, softlockContext)) {

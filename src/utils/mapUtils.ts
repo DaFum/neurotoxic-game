@@ -109,6 +109,12 @@ export interface SoftlockContext {
   dailyObligations?: number
   /** Active asset modifiers applied to fuel-consumption estimates. */
   assetModifiers?: AssetModifiers
+  /** Array of hypothetical post-sale combinations, each specifying the generated proceeds and the resulting obligations/modifiers if those specific assets were sold. */
+  postSaleScenarios?: {
+    assetProceeds: number
+    dailyObligations: number
+    assetModifiers: AssetModifiers
+  }[]
 }
 
 const GIG_LIKE_NODE_TYPES = new Set(['GIG', 'FESTIVAL', 'FINALE'])
@@ -219,38 +225,56 @@ export const checkSoftlock = (
   // Same daily-obligation term the travel gate adds on top of travel cost
   // (arrival advances the day). Without context this stays 0, keeping the
   // check conservative for legacy callers.
-  const dailyObligations = Math.max(
-    0,
-    finiteNumberOr(context.dailyObligations, 0)
-  )
+  const dailyObligations = finiteNumberOr(context.dailyObligations, 0)
   const assetModifiers = context.assetModifiers
 
-  const neighborCosts: { fuelLiters: number; cashImpact: number }[] = []
-  for (let i = 0; i < connections.length; i++) {
-    const c = connections[i]
-    if (!isMapConnection(c)) continue
-    if (c.from === player.currentNodeId && typeof c.to === 'string') {
-      const n = nodes[c.to]
-      if (n) {
-        const { fuelLiters, totalCost } = calculateTravelExpenses(
-          n,
-          currentNode,
-          playerStateForTravel,
-          bandStateForTravel,
-          assetModifiers
-        )
-        neighborCosts.push({
-          fuelLiters: finiteNumberOr(fuelLiters, 0),
-          cashImpact: finiteNumberOr(totalCost, 0) + dailyObligations
-        })
+  const checkReachabilityWithMoneyAndFuel = (
+    fuel: number,
+    money: number,
+    customContext?: {
+      dailyObligations?: number
+      assetModifiers?: AssetModifiers
+    }
+  ): boolean => {
+    const activeDailyObligations =
+      customContext && customContext.dailyObligations !== undefined
+        ? finiteNumberOr(customContext.dailyObligations, 0)
+        : dailyObligations
+    const activeAssetModifiers =
+      customContext && customContext.assetModifiers !== undefined
+        ? customContext.assetModifiers
+        : assetModifiers
+
+    for (let i = 0; i < connections.length; i++) {
+      const c = connections[i]
+      if (!isMapConnection(c)) continue
+      if (c.from === player.currentNodeId && typeof c.to === 'string') {
+        const n = nodes[c.to]
+        if (n) {
+          const { fuelLiters, totalCost } = calculateTravelExpenses(
+            n,
+            currentNode,
+            {
+              ...playerStateForTravel,
+              money,
+              van: { ...playerStateForTravel.van, fuel }
+            },
+            bandStateForTravel,
+            activeAssetModifiers
+          )
+          if (
+            fuel >= finiteNumberOr(fuelLiters, 0) &&
+            money >= finiteNumberOr(totalCost, 0) + activeDailyObligations
+          ) {
+            return true
+          }
+        }
       }
     }
+    return false
   }
 
-  const canReach = (fuel: number, money: number): boolean =>
-    neighborCosts.some(n => fuel >= n.fuelLiters && money >= n.cashImpact)
-
-  if (canReach(currentFuel, playerMoney)) return false
+  if (checkReachabilityWithMoneyAndFuel(currentFuel, playerMoney)) return false
 
   // Escape hatch: an unplayed gig at the current node can still earn money.
   if (
@@ -263,22 +287,71 @@ export const checkSoftlock = (
 
   // Escape hatch: a blood-bank donation is a cash source without traveling.
   const bandForDonation = bandStateForTravel as Partial<BandState> | null
+  const fameMultiplier = 1 + finiteNumberOr(player.fameLevel, 0) * 0.2
+
   if (
+    validateBloodBankDonation(bandForDonation, {
+      harmonyCost: GAME_CONSTANTS.BLOOD_BANK.MARROW_HARMONY_COST,
+      staminaCost: GAME_CONSTANTS.BLOOD_BANK.MARROW_STAMINA_COST
+    })
+  ) {
+    const marrowMoney = Math.floor(
+      GAME_CONSTANTS.BLOOD_BANK.MARROW_BASE_MONEY * fameMultiplier
+    )
+    if (
+      checkReachabilityWithMoneyAndFuel(currentFuel, playerMoney + marrowMoney)
+    ) {
+      return false
+    }
+  } else if (
     validateBloodBankDonation(bandForDonation, {
       harmonyCost: GAME_CONSTANTS.BLOOD_BANK.BLOOD_HARMONY_COST,
       staminaCost: GAME_CONSTANTS.BLOOD_BANK.BLOOD_STAMINA_COST
     })
   ) {
-    return false
+    const bloodMoney = Math.floor(
+      GAME_CONSTANTS.BLOOD_BANK.BLOOD_BASE_MONEY * fameMultiplier
+    )
+    if (
+      checkReachabilityWithMoneyAndFuel(currentFuel, playerMoney + bloodMoney)
+    ) {
+      return false
+    }
   }
 
   // Escape hatch: an affordable refuel that makes a neighbor reachable.
   const refuelCost = calculateRefuelCost(currentFuel)
   if (refuelCost > 0 && playerMoney >= refuelCost) {
     if (
-      canReach(EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL, playerMoney - refuelCost)
+      checkReachabilityWithMoneyAndFuel(
+        EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL,
+        playerMoney - refuelCost
+      )
     ) {
       return false
+    }
+  }
+
+  // Escape hatch: positive net asset proceeds across possible sale combinations.
+  if (context.postSaleScenarios && context.postSaleScenarios.length > 0) {
+    for (const scenario of context.postSaleScenarios) {
+      const totalMoney = playerMoney + finiteNumberOr(scenario.assetProceeds, 0)
+      if (
+        checkReachabilityWithMoneyAndFuel(currentFuel, totalMoney, scenario)
+      ) {
+        return false
+      }
+      if (refuelCost > 0 && totalMoney >= refuelCost) {
+        if (
+          checkReachabilityWithMoneyAndFuel(
+            EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL,
+            totalMoney - refuelCost,
+            scenario
+          )
+        ) {
+          return false
+        }
+      }
     }
   }
 

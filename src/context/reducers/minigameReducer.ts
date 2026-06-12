@@ -20,7 +20,7 @@ import { getActiveAssetModifiers } from '../../utils/assetSelectors'
 import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks } from '../../utils/traitUtils'
 import { computeDropChance } from '../../utils/contrabandUtils'
-import { normalizeVenueId } from '../../utils/mapUtils'
+import { normalizeVenueId, getRegionKeyForLocation } from '../../utils/mapUtils'
 import { addContrabandHelper } from './bandReducer'
 import { pickRandomContraband } from '../../utils/contrabandUtils'
 import {
@@ -310,7 +310,9 @@ export const handleCompleteTravelMinigame = (
   // same event but never runs while onStartTravelMinigame is wired.
   newState = QuestEvents.emit(
     newState,
-    createTravelCompletedQuestEvent({ region: nextLocation })
+    createTravelCompletedQuestEvent({
+      region: getRegionKeyForLocation(nextLocation) ?? nextLocation
+    })
   )
 
   return newState
