@@ -379,6 +379,23 @@ describe('TourbusStageController', () => {
     assert.strictEqual(controller.obstacleManager.obstacleMap.size, 0)
   })
 
+  it('should survive dispose during setup asset loading', async () => {
+    // dispose() mid-await previously left setup() dereferencing the nulled
+    // effectManager (TypeError on fast scene exit).
+    let resolveLoad
+    controller.loadAssets = () =>
+      new Promise(resolve => {
+        resolveLoad = resolve
+      })
+
+    const setupPromise = controller.setup()
+    controller.dispose()
+    resolveLoad()
+
+    await assert.doesNotReject(setupPromise)
+    assert.strictEqual(controller.effectManager, null)
+  })
+
   it('should dispose correctly', async () => {
     controller.isDisposed = false
 
