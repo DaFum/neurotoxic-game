@@ -198,5 +198,9 @@
     }
   },
   "hq_room_void_altar.name": "Altar of the Void",
-  "hq_room_void_altar.description": "An unsettling monolith that hums. (+10 Luck immediate)."
+  "hq_room_void_altar.description": "An unsettling monolith that hums. (+10 Luck immediate).",
+  "lucky_pick.name": "Pick of Destiny",
+  "lucky_pick.description": "A battered guitar pick that survived three good gigs in a row. The band swears it hums.",
+  "energy_drink.name": "Sponsor Energy Drink",
+  "energy_drink.description": "A crate of neon-green sponsor fuel. Tastes like battery acid and broken promises."
 }
