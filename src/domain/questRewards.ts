@@ -249,7 +249,7 @@ export const applyQuestRewards = (
         )
         break
       case 'band.harmony': {
-        const previousHarmony = nextState.band?.harmony ?? 1
+        const previousHarmony = finiteNumberOr(nextState.band?.harmony, 1)
         const newHarmony = clampBandHarmony(previousHarmony + reward.amount)
         const appliedDelta = newHarmony - previousHarmony
         nextState = {

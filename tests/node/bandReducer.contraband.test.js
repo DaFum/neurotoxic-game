@@ -133,6 +133,60 @@ describe('bandReducer - Contraband', () => {
       assert.equal(newState.band.harmony, 5)
     })
 
+    it('uses finite fallbacks for stress consumable effects', () => {
+      const state = {
+        band: {
+          ...DEFAULT_BAND_STATE,
+          stress: 40,
+          stash: {
+            c_test_stress: {
+              id: 'c_test_stress',
+              instanceId: 'test-stress',
+              type: 'consumable',
+              effectType: 'stress',
+              value: Number.NaN
+            }
+          }
+        }
+      }
+      const payload = {
+        instanceId: 'test-stress',
+        contrabandId: 'c_test_stress'
+      }
+
+      const newState = handleUseContraband(state, payload)
+
+      // A non-finite value must no-op the addend instead of collapsing stress to 0.
+      assert.equal(newState.band.stress, 40)
+    })
+
+    it('uses finite fallbacks for guitar_difficulty effects', () => {
+      const state = {
+        band: {
+          ...DEFAULT_BAND_STATE,
+          performance: { guitarDifficulty: 1.5 },
+          stash: {
+            c_test_gd: {
+              id: 'c_test_gd',
+              instanceId: 'test-gd',
+              type: 'equipment',
+              effectType: 'guitar_difficulty',
+              value: Number.NaN
+            }
+          }
+        }
+      }
+      const payload = {
+        instanceId: 'test-gd',
+        contrabandId: 'c_test_gd'
+      }
+
+      const newState = handleUseContraband(state, payload)
+
+      // A non-finite value must not poison guitarDifficulty with NaN.
+      assert.equal(newState.band.performance.guitarDifficulty, 1.5)
+    })
+
     it('applies persistent untargeted effects directly if duration is not set', () => {
       const state = {
         band: {

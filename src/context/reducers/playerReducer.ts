@@ -14,7 +14,9 @@ type WithPlayer = { player: PlayerState }
  * Applies sanitized player updates while preserving derived fame level invariants.
  *
  * Money and fame are clamped before merge; malformed or prototype-polluting
- * payloads leave the original state untouched.
+ * payloads leave the original state untouched. `fameLevel` is always derived
+ * from `fame` — a payload carrying `fameLevel` without `fame` has the field
+ * dropped to keep the pair in sync.
  *
  * @typeParam TState - State shape that carries the player slice.
  * @param state - State object containing the player slice to update.
@@ -44,6 +46,10 @@ export const handleUpdatePlayer = <TState extends WithPlayer>(
     const clampedFame = clampPlayerFame(nextFame)
     safeUpdates.fame = clampedFame
     safeUpdates.fameLevel = calculateFameLevel(clampedFame)
+  } else if (Object.hasOwn(safeUpdates, 'fameLevel')) {
+    // fameLevel is derived from fame; a standalone fameLevel update would
+    // desync the pair, so drop it.
+    delete safeUpdates.fameLevel
   }
 
   const mergedPlayer = {

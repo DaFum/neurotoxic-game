@@ -498,10 +498,9 @@ describe('useTravelLogic', () => {
     )
     assert.ok(travelCall)
     assert.equal(travelCall.arguments[4].fuelMultiplier, 0.5)
-    assert.equal(
-      mockCalculateRefuelCost.mock.calls[0].arguments[1].fuelMultiplier,
-      0.5
-    )
+    // Refuel must NOT receive the modifier: fuelMultiplier is consumption-only
+    // (fewer liters per trip); discounting the pump price too would apply it twice.
+    assert.equal(mockCalculateRefuelCost.mock.calls[0].arguments[1], undefined)
   })
 
   test('handleRepair fixes van and deducts money', () => {

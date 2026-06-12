@@ -382,7 +382,7 @@
   "ego_clash_2.opt2.outcome": "Schlaf gewinnt. Freundschaften verlieren.",
   "ego_clash_2.title": "EGO-KONFLIKT II",
   "flat_battery.desc": "Der Van springt an der Raststätte nicht an.",
-  "flat_battery.opt1.label": "Jump start [-1h]",
+  "flat_battery.opt1.label": "Starthilfe [-1h]",
   "flat_battery.opt1.outcome": "Zurück auf der Straße.",
   "flat_battery.opt2.label": "Hilfe rufen [{{amount}}]",
   "flat_battery.opt2.outcome": "Peinlich, aber gelöst.",

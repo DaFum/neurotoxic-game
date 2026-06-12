@@ -91,6 +91,18 @@ export const calculateChassisUpgradeCost = (
  */
 export const REPAIR_COST_PER_POINT = 8
 
+/**
+ * Canonical chassis repair cost for a given condition. Rounded to whole euros
+ * because condition decays fractionally (0.3/day): the modal, the action
+ * creator's affordability check, and the reducer charge must all agree on the
+ * same integer amount.
+ */
+export const calculateChassisRepairCost = (condition: number): number => {
+  const missing = 100 - condition
+  if (!Number.isFinite(missing) || missing <= 0) return 0
+  return Math.round(missing * REPAIR_COST_PER_POINT)
+}
+
 /** Daily condition decay applied to every asset during `processAssetTick`. */
 export const CONDITION_DECAY_PER_DAY = 0.3
 

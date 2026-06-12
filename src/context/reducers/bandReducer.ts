@@ -209,6 +209,8 @@ export const handleUnlockTrait = (
  * @param payload - Inventory item key to consume. Missing, non-string, or
  * forbidden keys leave the state unchanged.
  * @returns State with the inventory count decremented or boolean item cleared.
+ * Unowned or zero-count items return the original state unchanged — no
+ * item-used quest event is emitted unless something was actually consumed.
  */
 export const handleConsumeItem = (
   state: GameState,
@@ -228,14 +230,24 @@ export const handleConsumeItem = (
   // Deep clone inventory
   nextBand.inventory = { ...state.band.inventory }
 
+  let consumed = false
   if (nextBand.inventory[itemType] === true) {
     nextBand.inventory[itemType] = false
-  } else if (typeof nextBand.inventory[itemType] === 'number') {
+    consumed = true
+  } else if (
+    typeof nextBand.inventory[itemType] === 'number' &&
+    (nextBand.inventory[itemType] as number) > 0
+  ) {
     nextBand.inventory[itemType] = applyInventoryItemDelta(
       nextBand.inventory[itemType] as number,
       -1
     )
+    consumed = true
   }
+
+  // Only advance item-used quest progress when something was actually
+  // consumed; dispatching for an unowned item must leave state unchanged.
+  if (!consumed) return state
 
   return QuestEvents.emit(
     { ...state, band: nextBand },
@@ -320,7 +332,8 @@ const applySharedBandEffect = (
       ...newBand.performance,
       guitarDifficulty: Math.max(
         0.1,
-        (newBand.performance?.guitarDifficulty ?? 1) + value
+        finiteNumberOr(newBand.performance?.guitarDifficulty, 1) +
+          finiteNumberOr(value, 0)
       )
     }
     return true
@@ -528,7 +541,7 @@ const applyContrabandEffect = (
   if (item.effectType === 'stress') {
     newBand.stress = clampBandStress(
       Math.floor(
-        ((newBand.stress as number | undefined) ?? 0) + (item.value as number)
+        finiteNumberOr(newBand.stress, 0) + finiteNumberOr(item.value, 0)
       )
     )
   } else if (item.effectType === 'stamina' || item.effectType === 'mood') {

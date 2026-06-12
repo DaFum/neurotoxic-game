@@ -82,6 +82,11 @@ export const processAssetTick = (state: GameState): GameState => {
 
   const currentFame = finiteNumberOr(state.player.fame, 0)
   const nextFame = Math.max(0, currentFame + fameDelta)
+  // Money is deliberately NOT clamped here: a transiently negative balance
+  // must survive until later day-tick stages (e.g. merch/newsletter income in
+  // calculateDailyUpdates) have been applied — clamping per stage would
+  // silently forgive debt. handleAdvanceDay's final calculateDailyUpdates
+  // pass owns the clamp; this function must only run inside that pipeline.
   const nextPlayer =
     fameDelta !== 0
       ? {
@@ -131,8 +136,12 @@ export const processAssetTick = (state: GameState): GameState => {
 }
 
 /**
- * Settles liability payments. On shortfall, increments defaultCounter; on
- * 7-day default, removes the asset (foreclosure) and applies a fame penalty.
+ * Settles liability payments. Each payment is split into an interest portion
+ * (`principalRemaining × interestRate / 365`) and a principal reduction, so
+ * `principalRemaining` tracks the amortization balance that priced
+ * `dailyPayment`; the final payment charges only the remaining payoff. On
+ * shortfall, increments defaultCounter; on 7-day default, removes the asset
+ * (foreclosure) and applies a fame penalty.
  */
 export const processLiabilityTick = (
   state: GameState
@@ -146,11 +155,19 @@ export const processLiabilityTick = (
   const foreclosedAssetIds = new Set<string>()
 
   for (const liability of Object.values(state.liabilities)) {
-    if (currentMoney >= liability.dailyPayment) {
-      currentMoney -= liability.dailyPayment
+    // Split the payment into interest and principal so the tracked balance
+    // matches the amortization model that priced `dailyPayment`
+    // (computeAmortization, annualRate / 365). On the final day, charge only
+    // the actual payoff instead of a full payment.
+    const dailyRate = finiteNumberOr(liability.interestRate, 0) / 365
+    const interestPortion = liability.principalRemaining * dailyRate
+    const payoff = liability.principalRemaining + interestPortion
+    const payment = Math.min(liability.dailyPayment, payoff)
+    if (currentMoney >= payment) {
+      currentMoney -= payment
       const principalRemaining = Math.max(
         0,
-        liability.principalRemaining - liability.dailyPayment
+        liability.principalRemaining - (payment - interestPortion)
       )
       const termDaysRemaining = liability.termDaysRemaining - 1
       if (termDaysRemaining <= 0 || principalRemaining <= 0) continue
@@ -214,11 +231,12 @@ export const processLiabilityTick = (
 }
 
 /**
- * Resolves expiring crowdfund campaigns. On success: the player receives
- * `targetAmount`, gains `fameStake`, and a fresh asset is materialized from
- * `assetSpec`. On fail: the player loses `fameStake` (clamped at 0). Either
- * way, the campaign is REMOVED from the active list — completed campaigns
- * never linger in state.
+ * Resolves expiring crowdfund campaigns. On success: the player gains
+ * `fameStake` and a fresh asset is materialized from `assetSpec` — the raised
+ * `targetAmount` pays for the build and is NOT paid out as cash on top (that
+ * would double-count the funding versus cash/loan acquisition). On fail: the
+ * player loses `fameStake` (clamped at 0). Either way, the campaign is
+ * REMOVED from the active list — completed campaigns never linger in state.
  */
 export const processCrowdfundTick = (state: GameState): GameState => {
   if (!state.crowdfundCampaigns || state.crowdfundCampaigns.length === 0)
@@ -230,7 +248,6 @@ export const processCrowdfundTick = (state: GameState): GameState => {
     (state.assets ?? []).map(asset => asset.kind)
   )
   const seenCampaignKinds = new Set<CrowdfundCampaign['assetSpec']['kind']>()
-  let money = state.player.money
   let fame = state.player.fame
 
   for (const campaign of state.crowdfundCampaigns) {
@@ -252,7 +269,6 @@ export const processCrowdfundTick = (state: GameState): GameState => {
     const success =
       campaign.plannedSuccessRoll < campaign.plannedSuccessProbability
     if (success) {
-      money += campaign.targetAmount
       fame += campaign.fameStake
       // Materialize the asset deterministically from pre-generated ids
       // (stamped by startCrowdfund at campaign creation). No UUID generation
@@ -297,7 +313,11 @@ export const processCrowdfundTick = (state: GameState): GameState => {
 
   return {
     ...state,
-    player: { ...state.player, money, fame },
+    player: {
+      ...state.player,
+      fame,
+      fameLevel: calculateFameLevel(fame)
+    },
     assets: [...(state.assets ?? []), ...newAssetsWithDay],
     crowdfundCampaigns: remaining
   }

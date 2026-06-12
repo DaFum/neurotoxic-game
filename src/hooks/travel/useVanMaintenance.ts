@@ -2,7 +2,6 @@ import { useCallback } from 'react'
 import i18n from '../../i18n'
 import { formatCurrency } from '../../utils/numberUtils'
 import { clampPlayerMoney } from '../../utils/gameState'
-import { getActiveAssetModifiers } from '../../utils/assetSelectors'
 import {
   calculateRefuelCost,
   calculateRepairCost,
@@ -18,7 +17,7 @@ import type { VanMaintenanceParams } from './types'
  * @remarks
  * `handleRefuel` fills the tank to `MAX_FUEL`; `handleRepair` restores condition
  * to 100 and recomputes breakdown chance from installed upgrades. Both compute
- * cost from the current value (refuel also applies active asset modifiers),
+ * cost from the current value,
  * no-op with an info toast when nothing is needed, reject with an error toast
  * when the player can't afford it, clamp the resulting money with
  * `clampPlayerMoney`, and play the `cash` SFX on success. Both are gated by
@@ -29,7 +28,6 @@ import type { VanMaintenanceParams } from './types'
 export const useVanMaintenance = ({
   isTravelingRef,
   player,
-  assetsRef,
   updatePlayer,
   addToast
 }: VanMaintenanceParams) => {
@@ -37,8 +35,7 @@ export const useVanMaintenance = ({
     if (isTravelingRef.current) return
 
     const currentFuel = player.van?.fuel ?? 0
-    const assetModifiers = getActiveAssetModifiers(assetsRef.current)
-    const cost = calculateRefuelCost(currentFuel, assetModifiers)
+    const cost = calculateRefuelCost(currentFuel)
 
     if (cost <= 0) {
       addToast(
@@ -78,7 +75,7 @@ export const useVanMaintenance = ({
     } catch (_e) {
       // Ignore audio errors
     }
-  }, [player, updatePlayer, addToast, isTravelingRef, assetsRef])
+  }, [player, updatePlayer, addToast, isTravelingRef])
 
   const handleRepair = useCallback(() => {
     if (isTravelingRef.current) return

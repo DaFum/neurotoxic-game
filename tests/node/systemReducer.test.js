@@ -290,6 +290,73 @@ test('systemReducer - LOAD_GAME', async t => {
     assert.ok(hydratedStash['c_void_energy'].rarity)
   })
 
+  await t.test(
+    'stash hydration: canonical definition fields win over save data',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = {
+        player: { money: 500, fame: 100, day: 5, van: { fuel: 80 } },
+        band: {
+          stash: {
+            c_void_energy: {
+              id: 'c_void_energy',
+              instanceId: 'inst-1',
+              // Hostile/corrupted save data trying to override definition fields
+              effectType: 'harmony',
+              value: 'NaN-bait',
+              type: 'equipment',
+              maxStacks: 9999,
+              stacks: 'not-a-number'
+            }
+          }
+        }
+      }
+
+      const nextState = handleLoadGame(initialState, loadedState)
+      const item = nextState.band.stash['c_void_energy']
+
+      assert.ok(item)
+      // Canonical fields from CONTRABAND_BY_ID must win
+      assert.equal(item.effectType, 'stamina')
+      assert.equal(item.value, 50)
+      assert.equal(item.type, 'consumable')
+      assert.equal(item.maxStacks, 5)
+      // Per-instance fields survive; invalid stacks falls back to 1
+      assert.equal(item.instanceId, 'inst-1')
+      assert.equal(item.stacks, 1)
+    }
+  )
+
+  await t.test(
+    'gigModifiers hydration: current catering key wins over legacy energy alias',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = {
+        player: { money: 500, fame: 100, day: 5, van: { fuel: 80 } },
+        gigModifiers: { catering: true, energy: false }
+      }
+
+      const nextState = handleLoadGame(initialState, loadedState)
+
+      assert.equal(nextState.gigModifiers.catering, true)
+    }
+  )
+
+  await t.test(
+    'gigModifiers hydration: legacy energy alias still migrates when catering is absent',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = {
+        player: { money: 500, fame: 100, day: 5, van: { fuel: 80 } },
+        gigModifiers: { energy: true }
+      }
+
+      const nextState = handleLoadGame(initialState, loadedState)
+
+      assert.equal(nextState.gigModifiers.catering, true)
+    }
+  )
+
   await t.test('hydrates array-based contraband stash (migration)', () => {
     const initialState = createInitialState()
     const loadedState = {
@@ -1078,6 +1145,16 @@ test('systemReducer - RESET_STATE', async t => {
       assert.deepEqual(nextState.unlocks, ['unlock1', 'unlock2']) // Preserved from current state
     }
   )
+
+  await t.test('drops non-string entries from payload unlocks', () => {
+    const currentState = createInitialState()
+
+    const nextState = handleResetState(currentState, {
+      unlocks: ['unlock1', 42, null, { evil: true }, 'unlock2']
+    })
+
+    assert.deepEqual(nextState.unlocks, ['unlock1', 'unlock2'])
+  })
 })
 
 test('systemReducer - UPDATE_SETTINGS', () => {

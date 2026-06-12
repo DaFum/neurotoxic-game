@@ -846,8 +846,17 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
           const baseItem = CONTRABAND_BY_ID.get(itemObj.id as string)
           if (!baseItem) continue
           if (Object.hasOwn(item, '__proto__')) continue
-          const copy = { ...baseItem, ...itemObj } as Record<string, unknown>
+          // Spread the canonical definition last so save data cannot override
+          // definition fields (value, effectType, duration, type, maxStacks);
+          // per-instance runtime fields (instanceId, applied, stacks) survive.
+          const copy = { ...itemObj, ...baseItem } as Record<string, unknown>
           copy.id = itemObj.id as string
+          if (Object.hasOwn(itemObj, 'stacks')) {
+            copy.stacks =
+              Number.isInteger(itemObj.stacks) && (itemObj.stacks as number) > 0
+                ? itemObj.stacks
+                : 1
+          }
           if (
             Object.hasOwn(item, 'remainingDuration') &&
             Number.isFinite(itemObj.remainingDuration as number)
@@ -874,8 +883,15 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
           if (!item || typeof item !== 'object' || Array.isArray(item)) continue
           const itemObj = item as Record<string, unknown>
           if (Object.hasOwn(item, '__proto__')) continue
-          const copy = { ...baseItem, ...itemObj } as Record<string, unknown>
+          // Canonical definition fields win over save data (see array branch).
+          const copy = { ...itemObj, ...baseItem } as Record<string, unknown>
           copy.id = id
+          if (Object.hasOwn(itemObj, 'stacks')) {
+            copy.stacks =
+              Number.isInteger(itemObj.stacks) && (itemObj.stacks as number) > 0
+                ? itemObj.stacks
+                : 1
+          }
           if (
             Object.hasOwn(item, 'remainingDuration') &&
             Number.isFinite(itemObj.remainingDuration as number)
@@ -1367,7 +1383,13 @@ const sanitizeGigModifiers = (value: unknown): GameState['gigModifiers'] => {
       ] as boolean
     }
   }
-  if (typeof value.energy === 'boolean') {
+  // Legacy `energy` → `catering` migration: only applies when the save does
+  // not already carry the current key, so `catering` always wins over the
+  // stale alias.
+  if (
+    typeof value.energy === 'boolean' &&
+    typeof value.catering !== 'boolean'
+  ) {
     sanitized.catering = value.energy
   }
   return sanitized
@@ -1690,7 +1712,7 @@ export const handleResetState = (
         ? sanitizeSettingsPayload(payload.settings as RawGameSettings)
         : state.settings,
     unlocks: Array.isArray(payload.unlocks)
-      ? (payload.unlocks as string[])
+      ? sanitizeStringArray(payload.unlocks)
       : (state.unlocks ?? [])
   }
 

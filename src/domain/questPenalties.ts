@@ -167,7 +167,7 @@ export const applyQuestFailurePenalties = (
       case 'band.harmony': {
         nextState = { ...nextState, band: { ...nextState.band } }
         nextState.band.harmony = clampBandHarmony(
-          (nextState.band.harmony ?? 1) + penalty.amount
+          finiteNumberOr(nextState.band.harmony, 1) + penalty.amount
         )
         break
       }

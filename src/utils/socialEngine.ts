@@ -9,7 +9,8 @@ import { ALLOWED_TRENDS } from '../data/socialTrends'
 import {
   hasActiveSponsorship,
   clampPlayerMoney,
-  clampBandHarmony
+  clampBandHarmony,
+  finiteNumberOr
 } from './gameState'
 import type { SocialEngineGameState, SocialPostOption } from '../types/social'
 import type { RandomFn } from '../types/callbacks'
@@ -289,7 +290,7 @@ export const resolvePost = (
       Number.isFinite(harmonyChange) &&
       gameState.band?.harmony !== undefined
     ) {
-      const prevHarmony = Number(gameState.band.harmony ?? 0)
+      const prevHarmony = finiteNumberOr(gameState.band.harmony, 0)
       const nextHarmony = clampBandHarmony(prevHarmony + harmonyChange)
       harmonyChange = nextHarmony - prevHarmony
     }

@@ -58,6 +58,10 @@ baseline instead of duplicating formulas.
 
 - `calculateMerchIncome` in `economyEngine.ts` computes `rawShare` for every item regardless of inventory; the cap is applied only at allocation (`sold = min(desired, inventory)`). Out-of-stock demand is intentionally lost, not redistributed — skipping zero-stock items at the share step would normalize in-stock shares to 1.0 and silently absorb missed sales.
 
+## Purchase effects
+
+- `EffectHandler` in `purchaseLogicUtils.ts` declares `band: BandState | null`, but several handlers forward it via `band as BandState` casts. Helper functions behind those casts must access band fields null-safely (`band?.harmony`) — the static non-null type is a lie at runtime.
+
 ## triggerEvent
 
 - The `triggerEvent` callback across utilities uses the signature `(category: string, triggerPoint?: string) => boolean`. It returns `true` only after an event is selected, processed, and set active; `false` means no event was triggered.
@@ -70,11 +74,15 @@ baseline instead of duplicating formulas.
 - `MODULE_PROMPTS` is keyed by `AssetModule.imagePromptKey` (multiple modules may share a key). A test enforces that every module's key exists in the map.
 - `NEUTRAL_ASSET_MODIFIERS` (`assetSelectors.ts`) is the identity for `AssetModifiers` aggregation: multipliers = 1.0, additives = 0, flags = false. Economy functions accept the modifiers parameter as optional with this default.
 - `getActiveAssetModifiers` aggregates multipliers with `!== undefined` checks (not truthy) so a legit `fuelMultiplier: 0` ("free fuel") still applies; truthy guards would silently drop it.
+- `fuelMultiplier` is a CONSUMPTION modifier: it scales liters burned per trip in `calculateFuelCost` only. `calculateRefuelCost` must NOT apply it to the pump price — the tank deficit is physical liters, so discounting the price as well squares the discount (0.85 → ~28% instead of the advertised 15%).
+- `calculateChassisRepairCost(condition)` in `assetConfig.ts` is the single rounded (whole-euro) source of truth for chassis repair costs. `RepairConfirmModal`, the `repairChassis` action creator, and `handleRepairChassis` must all call it — condition decays fractionally (0.3/day), so independent computations drift between displayed and charged amounts.
 - `getTotalDailyObligations` = `calculateGuaranteedDailyCost + assetUpkeep − assetRevenue + liabilityPayments`. This is the SoT for the bankruptcy check and for any same-day affordability/resource check that covers an imminent `advanceDay()` tick.
 - `getTotalDebt(state)` = sum of `liability.principalRemaining`. UI status surfaces (e.g. `AssetsStatusStrip`) must use this selector — never reduce `state.liabilities` inline.
 - `seededRng.ts` (`mulberry32`, `createRngStream`, `nextSeed`): the RNG stream is pre-rolled in the `advanceDay` action creator (sized via `RNG_ROLLS_PER_ASSET × assetCount + RNG_BASE_BUFFER`) and consumed deterministically by `rollAssetRiskEvents`. Reducers must never generate random values directly.
-- Fame lives on `state.player.fame` (canonical, per `src/types/player.d.ts`). Asset ticks and action creators MUST read/write fame through `state.player` — `state.band` has no `fame` field, and assigning to `state.band.fame` no-ops silently while corrupting the round-trip.
+- Fame lives on `state.player.fame` (canonical, per `src/types/player.d.ts`). Asset ticks and action creators MUST read/write fame through `state.player` — `state.band` has no `fame` field, and assigning to `state.band.fame` no-ops silently while corrupting the round-trip. Any tick or reducer that writes `fame` must recompute `fameLevel` via `calculateFameLevel` in the same update — a stale `fameLevel` corrupts lifestyle inflation in `calculateGuaranteedDailyCost`.
 - `processLiabilityTick` deduplicates `FORECLOSURE_FAME_PENALTY` per asset via the `foreclosedAssetIds` set: when an asset has multiple liabilities (loan + future top-up), the penalty fires exactly once on the day the asset is first foreclosed.
+- `processLiabilityTick` splits each payment into an interest portion (`principalRemaining × interestRate / 365`) and a principal reduction so `principalRemaining` tracks the amortization balance priced by `computeAmortization`; the final payment charges `min(dailyPayment, payoff)`, never a full installment past the payoff. Do not revert to subtracting the whole payment from principal.
+- Crowdfund success grants the materialized asset plus `fameStake` only — `targetAmount` is NOT paid out as cash on top (the raised funds pay for the build). Paying it out would make crowdfunding strictly dominate cash/loan acquisition.
 - `resolveCrowdfundProbability(fame, scenePresence, target)` is exported from `assetTicks.ts` and is the SoT for the crowdfund odds formula. `CrowdfundSetupModal` uses it for its preview AND passes the computed value into `startCrowdfund` as `plannedSuccessProbability`; the action creator stamps it on the campaign, and `processCrowdfundTick` resolves `roll < probability`. Tune the formula in one place and both surfaces stay aligned.
 - `economyEngine.calculateMerchIncome`: `merchCapacityBonus` is a carry-cap modifier (raises the restock ceiling), NOT phantom sellable stock. At gig time, `sold = min(desired, inventoryCount)` — do not add `capacityBonus` to the sell-time allocation.
 - `loanProfiles.computeAmortization` short-circuits to 0 on non-finite inputs or `termDays <= 0`. Callers can rely on a safe numeric return; do not pre-guard inputs at every call site.

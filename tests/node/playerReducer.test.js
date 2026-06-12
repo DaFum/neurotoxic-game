@@ -132,6 +132,14 @@ describe('playerReducer', () => {
           assert.strictEqual(newState.player.fame, initialState.player.fame)
         })
       }
+
+      it('should drop a standalone fameLevel update (derived from fame)', () => {
+        const newState = handleUpdatePlayer(initialState, { fameLevel: 99 })
+        assert.strictEqual(
+          newState.player.fameLevel,
+          initialState.player.fameLevel
+        )
+      })
     })
 
     describe('Dispatch Paths', () => {

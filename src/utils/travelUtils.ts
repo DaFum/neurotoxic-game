@@ -294,7 +294,7 @@ export const getTravelArrivalUpdates = ({
 
   const bandPatch: Partial<BandState> = {}
   if (band?.harmonyRegenTravel) {
-    bandPatch.harmony = clampBandHarmony((band.harmony ?? 0) + 5)
+    bandPatch.harmony = clampBandHarmony(finiteNumberOr(band.harmony, 0) + 5)
   }
   const travelStaminaRegen = finiteNumberOr(
     assetModifiers?.travelStaminaRegen,

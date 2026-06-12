@@ -172,23 +172,18 @@ export const calculateTravelExpenses = (
 /**
  * Calculates the cost to refuel the van to full capacity.
  *
+ * `fuelMultiplier` deliberately does NOT apply here: it is a consumption
+ * modifier (fewer liters burned per trip, see `calculateFuelCost`). The tank
+ * deficit being refilled is physical liters, so discounting the pump price
+ * as well would apply the modifier twice (multiplier squared).
+ *
  * @param currentFuel - Current fuel level, clamped to the van's fuel range.
- * @param assetModifiers - Asset modifiers that adjust fuel price. Defaults to neutral modifiers.
  * @returns Cost in euros.
  */
-export const calculateRefuelCost = (
-  currentFuel: number,
-  assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS
-) => {
+export const calculateRefuelCost = (currentFuel: number) => {
   const safeFuel = clamp0to100(finiteNumberOr(currentFuel, 0))
   const missing = Math.max(0, EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL - safeFuel)
-  return Math.ceil(
-    missing *
-      EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE *
-      // Nullish fallback (not truthy) so a legitimate fuelMultiplier === 0
-      // applies as zero rather than collapsing to 1.
-      (assetModifiers.fuelMultiplier ?? 1)
-  )
+  return Math.ceil(missing * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE)
 }
 
 /**

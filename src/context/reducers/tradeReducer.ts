@@ -12,8 +12,10 @@ import {
   safeJsonParse
 } from '../../utils/objectUtils'
 import { addContrabandHelper } from './bandReducer'
-import { getSafeUUID } from '../../utils/crypto'
-import { sanitizeSuccessToast } from './toastSanitizers'
+import {
+  buildDeterministicToastId,
+  sanitizeSuccessToast
+} from './toastSanitizers'
 
 const ESCAPE_MAP = {
   '&': '&amp;',
@@ -97,7 +99,9 @@ export const handleTradeVoidItem = (
       'Failed to add void item to stash (max stacks or invalid item)'
     )
     const failureToast: ToastPayload = {
-      id: instanceId ?? getSafeUUID(),
+      id:
+        instanceId ??
+        buildDeterministicToastId('void-trade-toast', state.toasts),
       messageKey: 'ui:shop.messages.purchaseFailed',
       type: 'error'
     }
@@ -119,7 +123,9 @@ export const handleTradeVoidItem = (
 
     let enrichedToast: ToastPayload | null
 
-    const toastId = instanceId ?? getSafeUUID()
+    const toastId =
+      instanceId ??
+      buildDeterministicToastId('void-trade-toast', nextState.toasts)
 
     if (
       typeof successToastObj.messageKey === 'string' &&

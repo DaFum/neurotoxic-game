@@ -134,6 +134,27 @@ describe('bandReducer', () => {
 
       assert.strictEqual(nextState.band.inventory.non_existent_item, undefined)
     })
+
+    it('should return state unchanged (no quest event) for unowned items', () => {
+      const nextState = handleConsumeItem(baseState, 'non_existent_item')
+
+      // Unowned item must be a strict no-op so item-used quest progress
+      // cannot be farmed by dispatching CONSUME_ITEM without ownership.
+      assert.strictEqual(nextState, baseState)
+    })
+
+    it('should not consume or emit for a zero-count item', () => {
+      const zeroState = {
+        ...baseState,
+        band: {
+          ...baseState.band,
+          inventory: { ...baseState.band.inventory, consumable_item: 0 }
+        }
+      }
+      const nextState = handleConsumeItem(zeroState, 'consumable_item')
+
+      assert.strictEqual(nextState, zeroState)
+    })
   })
 
   describe('handleUnlockTrait', () => {
