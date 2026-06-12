@@ -109,13 +109,12 @@ export interface SoftlockContext {
   dailyObligations?: number
   /** Active asset modifiers applied to fuel-consumption estimates. */
   assetModifiers?: AssetModifiers
-  /** Max net sale proceeds available to the player from owned assets (requires checking gross > principal and net > 0). */
-  assetProceeds?: number
-  /** Optional post-sale context with new obligations and modifiers for evaluating the asset sale escape hatch. */
-  postSaleContext?: {
-    dailyObligations?: number
-    assetModifiers?: AssetModifiers
-  }
+  /** Array of hypothetical post-sale combinations, each specifying the generated proceeds and the resulting obligations/modifiers if those specific assets were sold. */
+  postSaleScenarios?: {
+    assetProceeds: number
+    dailyObligations: number
+    assetModifiers: AssetModifiers
+  }[]
 }
 
 const GIG_LIKE_NODE_TYPES = new Set(['GIG', 'FESTIVAL', 'FINALE'])
@@ -232,7 +231,10 @@ export const checkSoftlock = (
   const checkReachabilityWithMoneyAndFuel = (
     fuel: number,
     money: number,
-    customContext?: { dailyObligations?: number; assetModifiers?: AssetModifiers }
+    customContext?: {
+      dailyObligations?: number
+      assetModifiers?: AssetModifiers
+    }
   ): boolean => {
     const activeDailyObligations =
       customContext && customContext.dailyObligations !== undefined
@@ -252,7 +254,11 @@ export const checkSoftlock = (
           const { fuelLiters, totalCost } = calculateTravelExpenses(
             n,
             currentNode,
-            { ...playerStateForTravel, money, van: { ...playerStateForTravel.van, fuel } },
+            {
+              ...playerStateForTravel,
+              money,
+              van: { ...playerStateForTravel.van, fuel }
+            },
             bandStateForTravel,
             activeAssetModifiers
           )
@@ -289,12 +295,11 @@ export const checkSoftlock = (
       staminaCost: GAME_CONSTANTS.BLOOD_BANK.MARROW_STAMINA_COST
     })
   ) {
-    const marrowMoney = Math.floor(GAME_CONSTANTS.BLOOD_BANK.MARROW_BASE_MONEY * fameMultiplier)
+    const marrowMoney = Math.floor(
+      GAME_CONSTANTS.BLOOD_BANK.MARROW_BASE_MONEY * fameMultiplier
+    )
     if (
-      checkReachabilityWithMoneyAndFuel(
-        currentFuel,
-        playerMoney + marrowMoney
-      )
+      checkReachabilityWithMoneyAndFuel(currentFuel, playerMoney + marrowMoney)
     ) {
       return false
     }
@@ -304,12 +309,11 @@ export const checkSoftlock = (
       staminaCost: GAME_CONSTANTS.BLOOD_BANK.BLOOD_STAMINA_COST
     })
   ) {
-    const bloodMoney = Math.floor(GAME_CONSTANTS.BLOOD_BANK.BLOOD_BASE_MONEY * fameMultiplier)
+    const bloodMoney = Math.floor(
+      GAME_CONSTANTS.BLOOD_BANK.BLOOD_BASE_MONEY * fameMultiplier
+    )
     if (
-      checkReachabilityWithMoneyAndFuel(
-        currentFuel,
-        playerMoney + bloodMoney
-      )
+      checkReachabilityWithMoneyAndFuel(currentFuel, playerMoney + bloodMoney)
     ) {
       return false
     }
@@ -319,23 +323,34 @@ export const checkSoftlock = (
   const refuelCost = calculateRefuelCost(currentFuel)
   if (refuelCost > 0 && playerMoney >= refuelCost) {
     if (
-      checkReachabilityWithMoneyAndFuel(EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL, playerMoney - refuelCost)
+      checkReachabilityWithMoneyAndFuel(
+        EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL,
+        playerMoney - refuelCost
+      )
     ) {
       return false
     }
   }
 
-  // Escape hatch: positive net asset proceeds.
-  const assetProceeds = finiteNumberOr(context.assetProceeds, 0)
-  if (assetProceeds > 0) {
-    const totalMoney = playerMoney + assetProceeds
-    const evalContext = context.postSaleContext || undefined
-    if (checkReachabilityWithMoneyAndFuel(currentFuel, totalMoney, evalContext)) {
-      return false
-    }
-    if (refuelCost > 0 && totalMoney >= refuelCost) {
-      if (checkReachabilityWithMoneyAndFuel(EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL, totalMoney - refuelCost, evalContext)) {
+  // Escape hatch: positive net asset proceeds across possible sale combinations.
+  if (context.postSaleScenarios && context.postSaleScenarios.length > 0) {
+    for (const scenario of context.postSaleScenarios) {
+      const totalMoney = playerMoney + finiteNumberOr(scenario.assetProceeds, 0)
+      if (
+        checkReachabilityWithMoneyAndFuel(currentFuel, totalMoney, scenario)
+      ) {
         return false
+      }
+      if (refuelCost > 0 && totalMoney >= refuelCost) {
+        if (
+          checkReachabilityWithMoneyAndFuel(
+            EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL,
+            totalMoney - refuelCost,
+            scenario
+          )
+        ) {
+          return false
+        }
       }
     }
   }

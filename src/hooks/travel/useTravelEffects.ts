@@ -68,8 +68,7 @@ export const useTravelEffects = ({
       return
     }
 
-    let totalSellableAssetProceeds = 0
-    const assetsToSell: string[] = []
+    const sellableAssets: { id: string; net: number }[] = []
 
     if (assets) {
       for (const asset of assets) {
@@ -89,35 +88,54 @@ export const useTravelEffects = ({
           if (gross >= rawTotalPrincipalRemaining) {
             const net = gross - rawTotalPrincipalRemaining
             if (net > 0) {
-              totalSellableAssetProceeds += net
-              assetsToSell.push(asset.id)
+              sellableAssets.push({ id: asset.id, net })
             }
           }
         }
       }
     }
 
-    let postSaleContext = undefined
-    if (assetsToSell.length > 0 && assets) {
-      const retainedAssets = assets.filter(a => !assetsToSell.includes(a.id))
-      const retainedLiabilities = liabilities
-        ? Object.fromEntries(
-            Object.entries(liabilities).filter(
+    const postSaleScenarios: {
+      assetProceeds: number
+      dailyObligations: number
+      assetModifiers: import('../../types/assets').AssetModifiers
+    }[] = []
+    if (sellableAssets.length > 0 && assets) {
+      const numAssets = sellableAssets.length
+      const numCombinations = 1 << numAssets
+      for (let i = 1; i < numCombinations; i++) {
+        const comboAssetIds: string[] = []
+        let comboProceeds = 0
+        for (let j = 0; j < numAssets; j++) {
+          if ((i & (1 << j)) !== 0) {
+            const assetToSell = sellableAssets[j]
+            if (assetToSell) {
+              comboAssetIds.push(assetToSell.id)
+              comboProceeds += assetToSell.net
+            }
+          }
+        }
 
-              ([_, l]) => l && !assetsToSell.includes(l.assetId)
+        const retainedAssets = assets.filter(a => !comboAssetIds.includes(a.id))
+        const retainedLiabilities = liabilities
+          ? Object.fromEntries(
+              Object.entries(liabilities).filter(
+                ([_, l]) => l && !comboAssetIds.includes(l.assetId)
+              )
             )
-          )
-        : {}
+          : {}
 
-      postSaleContext = {
-        dailyObligations: getTotalDailyObligations({
-          player,
-          band,
-          social,
-          assets: retainedAssets,
-          liabilities: retainedLiabilities
-        } as GameState),
-        assetModifiers: getActiveAssetModifiers(retainedAssets)
+        postSaleScenarios.push({
+          assetProceeds: comboProceeds,
+          dailyObligations: getTotalDailyObligations({
+            player,
+            band,
+            social,
+            assets: retainedAssets,
+            liabilities: retainedLiabilities
+          } as GameState),
+          assetModifiers: getActiveAssetModifiers(retainedAssets)
+        })
       }
     }
 
@@ -132,8 +150,7 @@ export const useTravelEffects = ({
         liabilities
       } as GameState),
       assetModifiers: getActiveAssetModifiers(assets),
-      assetProceeds: totalSellableAssetProceeds,
-      postSaleContext
+      postSaleScenarios
     }
 
     if (checkSoftlock(gameMap, player, band, softlockContext)) {

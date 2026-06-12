@@ -414,10 +414,14 @@ test('negative dailyObligations makes travel affordable', () => {
     localMap,
     localPlayer, // Player has 50 money, travel costs 100
     null,
-    { dailyObligations: -100 }    // Negative obligations should make effective cost 0
+    { dailyObligations: -100 } // Negative obligations should make effective cost 0
   )
 
-  assert.equal(result, false, 'Player should not be stranded if negative obligations cover the travel cost shortfall')
+  assert.equal(
+    result,
+    false,
+    'Player should not be stranded if negative obligations cover the travel cost shortfall'
+  )
 })
 
 test('post-refuel money changes travel affordability', () => {
@@ -428,14 +432,16 @@ test('post-refuel money changes travel affordability', () => {
   const localPlayer = { currentNodeId: 'A', van: { fuel: 20 }, money: 100 }
 
   // Mock calculateTravelExpenses to return different values depending on the money passed
-  mockCalculateTravelExpenses.mock.mockImplementation((n, cNode, playerState) => {
-    // Let's pretend cash reserve fee makes the cost higher if player has more money
-    if (playerState.money >= 100) {
-      return { fuelLiters: 20, totalCost: 50 } // Too expensive
-    } else {
-      return { fuelLiters: 20, totalCost: 20 } // Affordable after spending money
+  mockCalculateTravelExpenses.mock.mockImplementation(
+    (n, cNode, playerState) => {
+      // Let's pretend cash reserve fee makes the cost higher if player has more money
+      if (playerState.money >= 100) {
+        return { fuelLiters: 20, totalCost: 50 } // Too expensive
+      } else {
+        return { fuelLiters: 20, totalCost: 20 } // Affordable after spending money
+      }
     }
-  })
+  )
 
   mockCalculateRefuelCost.mock.mockImplementation(() => 50) // Refuel costs 50
 
@@ -446,7 +452,11 @@ test('post-refuel money changes travel affordability', () => {
     {}
   )
 
-  assert.equal(result, false, 'Player should not be stranded if refuel reduces money and thus reduces travel expenses')
+  assert.equal(
+    result,
+    false,
+    'Player should not be stranded if refuel reduces money and thus reduces travel expenses'
+  )
 })
 
 test('donation possible but insufficient to unlock travel does not prevent softlock', () => {
@@ -466,14 +476,13 @@ test('donation possible but insufficient to unlock travel does not prevent softl
     members: [{ stamina: 50 }]
   }
 
-  const result = checkSoftlock(
-    localMap,
-    localPlayer,
-    mockBand,
-    {}
-  )
+  const result = checkSoftlock(localMap, localPlayer, mockBand, {})
 
-  assert.equal(result, true, 'Player should be stranded if blood bank donation is insufficient to make travel affordable')
+  assert.equal(
+    result,
+    true,
+    'Player should be stranded if blood bank donation is insufficient to make travel affordable'
+  )
 })
 test('owned asset with positive net sale value enough to travel avoids softlock', () => {
   const localMap = {
@@ -492,10 +501,18 @@ test('owned asset with positive net sale value enough to travel avoids softlock'
     localMap,
     localPlayer,
     null,
-    { assetProceeds: 150 } // Asset proceeds will cover travel cost
+    {
+      postSaleScenarios: [
+        { assetProceeds: 150, dailyObligations: 0, assetModifiers: {} }
+      ]
+    } // Asset proceeds will cover travel cost
   )
 
-  assert.equal(result, false, 'Player should not be stranded if asset sale proceeds can cover travel cost')
+  assert.equal(
+    result,
+    false,
+    'Player should not be stranded if asset sale proceeds can cover travel cost'
+  )
 })
 
 test('owned asset with positive net sale value enough to refuel and travel avoids softlock', () => {
@@ -505,19 +522,29 @@ test('owned asset with positive net sale value enough to refuel and travel avoid
   }
   const localPlayer = { currentNodeId: 'A', van: { fuel: 0 }, money: 0 } // Player has no fuel and no money
 
-  mockCalculateTravelExpenses.mock.mockImplementation((n, cNode, playerState) => {
-    return { fuelLiters: 10, totalCost: 100 } // Player needs 100 money and 10 fuel to travel
-  })
+  mockCalculateTravelExpenses.mock.mockImplementation(
+    (n, cNode, playerState) => {
+      return { fuelLiters: 10, totalCost: 100 } // Player needs 100 money and 10 fuel to travel
+    }
+  )
   mockCalculateRefuelCost.mock.mockImplementation(() => 50) // Refuel costs 50
 
   const result = checkSoftlock(
     localMap,
     localPlayer,
     null,
-    { assetProceeds: 150 } // Asset proceeds will cover refuel (50) and travel cost (100)
+    {
+      postSaleScenarios: [
+        { assetProceeds: 150, dailyObligations: 0, assetModifiers: {} }
+      ]
+    } // Asset proceeds will cover refuel (50) and travel cost (100)
   )
 
-  assert.equal(result, false, 'Player should not be stranded if asset sale proceeds can cover both refuel and travel cost')
+  assert.equal(
+    result,
+    false,
+    'Player should not be stranded if asset sale proceeds can cover both refuel and travel cost'
+  )
 })
 
 test('asset with liabilities exceeding gross value remains softlocked', () => {
@@ -537,8 +564,65 @@ test('asset with liabilities exceeding gross value remains softlocked', () => {
     localMap,
     localPlayer,
     null,
-    { assetProceeds: -50 } // Net negative proceeds, should not help
+    {
+      postSaleScenarios: [
+        { assetProceeds: -50, dailyObligations: 0, assetModifiers: {} }
+      ]
+    } // Net negative proceeds, should not help
   )
 
-  assert.equal(result, true, 'Player should be stranded if asset proceeds do not cover travel cost')
+  assert.equal(
+    result,
+    true,
+    'Player should be stranded if asset proceeds do not cover travel cost'
+  )
+})
+
+test('asset sale checks combinations without false softlock', () => {
+  const localMap = {
+    nodes: { A: { id: 'A' }, B: { id: 'B' } },
+    connections: [{ from: 'A', to: 'B' }]
+  }
+  const localPlayer = { currentNodeId: 'A', van: { fuel: 10 }, money: 0 }
+
+  mockCalculateTravelExpenses.mock.mockImplementation(
+    (n, cNode, playerState, band, assetModifiers) => {
+      // If the fuel modifier is lost, the fuel cost is 15. If it's kept, fuel cost is 10.
+      const fuelCost =
+        assetModifiers && assetModifiers.fuelMultiplier === 0.5 ? 10 : 15
+      return { fuelLiters: fuelCost, totalCost: 100 }
+    }
+  )
+  mockCalculateRefuelCost.mock.mockImplementation(() => 0)
+
+  const mockPostSaleScenarios = [
+    // Scenario 1: sell Asset A only
+    {
+      assetProceeds: 150,
+      dailyObligations: 0,
+      assetModifiers: { fuelMultiplier: 0.5 } // Keep Asset B's modifier
+    },
+    // Scenario 2: sell Asset B only
+    {
+      assetProceeds: 150,
+      dailyObligations: 0,
+      assetModifiers: { fuelMultiplier: 1.0 } // Lose modifier
+    },
+    // Scenario 3: sell Asset A and B
+    {
+      assetProceeds: 300,
+      dailyObligations: 0,
+      assetModifiers: { fuelMultiplier: 1.0 } // Lose modifier
+    }
+  ]
+
+  const result = checkSoftlock(localMap, localPlayer, null, {
+    postSaleScenarios: mockPostSaleScenarios
+  })
+
+  assert.equal(
+    result,
+    false,
+    'Player is not softlocked because Scenario 1 makes travel possible'
+  )
 })
