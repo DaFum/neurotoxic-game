@@ -9,7 +9,9 @@ const mockCalculateRefuelCost = mock.fn()
 mock.module(new URL('../../src/utils/economyEngine.ts', import.meta.url).href, {
   namedExports: {
     calculateTravelExpenses: mockCalculateTravelExpenses,
-    calculateRefuelCost: mockCalculateRefuelCost
+    calculateRefuelCost: mockCalculateRefuelCost,
+    // checkSoftlock reads MAX_FUEL for its refuel escape hatch.
+    EXPENSE_CONSTANTS: { TRANSPORT: { MAX_FUEL: 100 } }
   }
 })
 
@@ -210,6 +212,105 @@ describe('mapUtils', () => {
       assert.ok(calls.length > 0)
       // Fourth argument should be the band
       assert.equal(calls[0].arguments[3], band)
+    })
+
+    test('detects money-blocked stranding despite a full tank', () => {
+      mockCalculateTravelExpenses.mock.mockImplementation(() => ({
+        fuelLiters: 10,
+        totalCost: 60
+      }))
+      mockCalculateRefuelCost.mock.mockImplementation(() => 0)
+      const player = { currentNodeId: 'A', van: { fuel: 100 }, money: 50 }
+
+      assert.equal(
+        checkSoftlock(gameMap, player, null, { dailyObligations: 80 }),
+        true
+      )
+    })
+
+    test('money-blocked player with travel-affordable cash is not stranded', () => {
+      mockCalculateTravelExpenses.mock.mockImplementation(() => ({
+        fuelLiters: 10,
+        totalCost: 60
+      }))
+      const player = { currentNodeId: 'A', van: { fuel: 100 }, money: 150 }
+
+      assert.equal(
+        checkSoftlock(gameMap, player, null, { dailyObligations: 80 }),
+        false
+      )
+    })
+
+    test('viable blood-bank donation defuses a stranded verdict', () => {
+      mockCalculateTravelExpenses.mock.mockImplementation(() => ({
+        fuelLiters: 10,
+        totalCost: 60
+      }))
+      mockCalculateRefuelCost.mock.mockImplementation(() => 0)
+      const player = { currentNodeId: 'A', van: { fuel: 100 }, money: 0 }
+      const band = {
+        harmony: 80,
+        members: [{ stamina: 100, staminaMax: 100 }]
+      }
+
+      assert.equal(checkSoftlock(gameMap, player, band), false)
+    })
+
+    test('an unplayed FESTIVAL at the current node counts as an escape', () => {
+      mockCalculateTravelExpenses.mock.mockImplementation(() => ({
+        fuelLiters: 30,
+        totalCost: 60
+      }))
+      mockCalculateRefuelCost.mock.mockImplementation(() => 50)
+      const festivalMap = {
+        nodes: {
+          A: { id: 'A', type: 'FESTIVAL' },
+          B: { id: 'B' }
+        },
+        connections: [{ from: 'A', to: 'B' }]
+      }
+      const player = { currentNodeId: 'A', van: { fuel: 20 }, money: 40 }
+
+      assert.equal(checkSoftlock(festivalMap, player), false)
+    })
+
+    test('a gig already played at the current node is no escape', () => {
+      mockCalculateTravelExpenses.mock.mockImplementation(() => ({
+        fuelLiters: 30,
+        totalCost: 60
+      }))
+      mockCalculateRefuelCost.mock.mockImplementation(() => 50)
+      const gigMap = {
+        nodes: {
+          A: { id: 'A', type: 'GIG' },
+          B: { id: 'B' }
+        },
+        connections: [{ from: 'A', to: 'B' }]
+      }
+      const player = {
+        currentNodeId: 'A',
+        lastGigNodeId: 'A',
+        van: { fuel: 20 },
+        money: 40
+      }
+
+      assert.equal(checkSoftlock(gigMap, player), true)
+    })
+
+    test('the FINALE node is never reported as stranded', () => {
+      mockCalculateRefuelCost.mock.mockImplementation(() => 50)
+      const finaleMap = {
+        nodes: { A: { id: 'A', type: 'FINALE' } },
+        connections: []
+      }
+      const player = {
+        currentNodeId: 'A',
+        lastGigNodeId: 'A',
+        van: { fuel: 0 },
+        money: 0
+      }
+
+      assert.equal(checkSoftlock(finaleMap, player), false)
     })
   })
 

@@ -51,7 +51,16 @@ Zudem widersprechen sich die Event-Policies der beiden Pfade: der tote Pfad feue
 Travel-Events auch an Gig-Nodes (`includeGigNodes: true`, `useTravelActions.ts:221-223`),
 der echte Pfad überspringt Gig-Ziele (`useArrivalLogic.ts:88`, Default-Policy).
 
-### 1.2 Soft-Lock "zu wenig Geld zum Reisen" wird nicht erkannt
+### 1.2 ✅ ERLEDIGT — Soft-Lock "zu wenig Geld zum Reisen" wird nicht erkannt
+
+> **Fix:** `checkSoftlock` prüft Nachbarn jetzt auf Sprit **und** Cash
+> (Reisekosten + Tagesobligationen, von `useTravelEffects` via
+> `getTotalDailyObligations`/`getActiveAssetModifiers` zugeliefert). Die
+> Gig-Ausnahme umfasst GIG/FESTIVAL/FINALE und respektiert `lastGigNodeId`;
+> eine machbare Blood-Bank-Spende und ein bezahlbarer Refuel, der einen
+> Nachbarn erreichbar macht, entschärfen das Stranded-Urteil; der FINALE-Node
+> wird nie als gestrandet gemeldet. Regressionstests in
+> `tests/node/mapUtils.test.js`.
 
 `checkSoftlock` (`mapUtils.ts:101-183`) prüft ausschließlich **Sprit**: erreichbar ist ein
 Nachbar, wenn `currentFuel >= fuelLiters`; gestrandet ist man nur, wenn zusätzlich der
@@ -249,7 +258,7 @@ beschreibt den toten Pfad; im echten Pfad gibt es gar keine Quest-Progression (1
    `travel.completed`-Quest-Event, Rival-Bewegung/Encounter und `travelStaminaRegen`
    in `handleArrivalSequence` bzw. den Minigame-Abschluss verlagern — oder den toten
    Pfad samt TravelingVan/Failsafe entfernen (1.1).
-2. **Hoch:** `checkSoftlock` um die Geld-Dimension erweitern (kein Nachbar mit
+2. ✅ **Hoch:** `checkSoftlock` um die Geld-Dimension erweitern (kein Nachbar mit
    `money ≥ totalCashImpact` UND keine erreichbare Geldquelle) und die GIG-Ausnahme um
    FESTIVAL/FINALE + `lastGigNodeId` korrigieren; alternativ eine „Tag
    überspringen/Notverkauf"-Aktion als designtes Ventil einbauen (1.2).

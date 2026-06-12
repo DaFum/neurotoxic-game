@@ -1,6 +1,13 @@
-import { calculateRefuelCost, calculateTravelExpenses } from './economyEngine'
+import {
+  calculateRefuelCost,
+  calculateTravelExpenses,
+  EXPENSE_CONSTANTS
+} from './economyEngine'
+import { validateBloodBankDonation } from './bloodBankUtils'
+import { GAME_CONSTANTS } from '../context/gameConstants'
 import { finiteNumberOr } from './finiteNumber'
 import type { BandState } from '../types'
+import type { AssetModifiers } from '../types/assets'
 
 type MapConnection = { from?: unknown; to?: unknown }
 type GameNode = { type?: unknown }
@@ -92,10 +99,39 @@ export const normalizeVenueId = (venue: unknown): string | null => {
 }
 
 /**
- * Checks if the player is softlocked (stranded) due to lack of fuel and money.
+ * Optional precomputed values that let {@link checkSoftlock} mirror the real
+ * travel gate (`totalCost + getTotalDailyObligations`) and asset fuel
+ * modifiers. Callers compute these with `getTotalDailyObligations` /
+ * `getActiveAssetModifiers`; mapUtils stays free of those dependencies.
+ */
+export interface SoftlockContext {
+  /** Total daily obligations added on top of each neighbor's travel cost. */
+  dailyObligations?: number
+  /** Active asset modifiers applied to fuel-consumption estimates. */
+  assetModifiers?: AssetModifiers
+}
+
+const GIG_LIKE_NODE_TYPES = new Set(['GIG', 'FESTIVAL', 'FINALE'])
+
+/**
+ * Checks if the player is softlocked (stranded): no connected node is
+ * affordable in both fuel and cash, and no in-place escape exists.
+ *
+ * @remarks
+ * Mirrors the travel gate: a neighbor counts as reachable only when the tank
+ * covers its fuel draw AND cash covers travel cost plus total daily
+ * obligations (arrival advances the day). Escape hatches that defuse a
+ * stranded verdict: the current node is a playable gig (GIG/FESTIVAL/FINALE
+ * not yet played, i.e. not `lastGigNodeId`), a blood-bank donation is still
+ * possible (cash source without traveling), or an affordable refuel would
+ * make a neighbor reachable. The FINALE node is never reported as stranded:
+ * it has no outgoing connections by map design, so being there is the end of
+ * the route, not a resource failure.
+ *
  * @param gameMap - Map supplying the current node and its connections used to test for any affordable move.
  * @param player - The player state object.
  * @param band - The band state object. Defaults to `null`.
+ * @param context - Optional precomputed daily obligations and asset modifiers for travel-gate accuracy. Defaults to `{}`.
  * @returns True if stranded.
  */
 export const checkSoftlock = (
@@ -107,10 +143,14 @@ export const checkSoftlock = (
       >)
     | null
     | undefined,
-  band: unknown = null
+  band: unknown = null,
+  context: SoftlockContext = {}
 ): boolean => {
   if (!gameMap || !player || typeof player.currentNodeId !== 'string')
     return false
+
+  // The finale has no outgoing connections by design — never stranded there.
+  if (gameMap.nodes?.[player.currentNodeId]?.type === 'FINALE') return false
 
   const van =
     typeof player.van === 'object' && player.van !== null
@@ -122,6 +162,7 @@ export const checkSoftlock = (
         })
       : undefined
   const currentFuel = finiteNumberOr(van?.fuel, 0)
+  const playerMoney = Math.max(0, finiteNumberOr(player.money, 0))
   const nodes = gameMap.nodes ?? {}
   const currentNode = nodes[player.currentNodeId]
   const bandStateForTravel = (
@@ -137,7 +178,7 @@ export const checkSoftlock = (
     : []
 
   const playerStateForTravel = {
-    money: finiteNumberOr(player.money, 0),
+    money: playerMoney,
     fameLevel: finiteNumberOr(player.fameLevel, 0),
     van: {
       fuel: currentFuel,
@@ -151,33 +192,71 @@ export const checkSoftlock = (
     }
   }
 
-  let canReachAny = false
+  // Same daily-obligation term the travel gate adds on top of travel cost
+  // (arrival advances the day). Without context this stays 0, keeping the
+  // check conservative for legacy callers.
+  const dailyObligations = Math.max(
+    0,
+    finiteNumberOr(context.dailyObligations, 0)
+  )
+  const assetModifiers = context.assetModifiers
+
+  const neighborCosts: { fuelLiters: number; cashImpact: number }[] = []
   for (let i = 0; i < connections.length; i++) {
     const c = connections[i]
     if (!isMapConnection(c)) continue
     if (c.from === player.currentNodeId && typeof c.to === 'string') {
       const n = nodes[c.to]
       if (n) {
-        const { fuelLiters } = calculateTravelExpenses(
+        const { fuelLiters, totalCost } = calculateTravelExpenses(
           n,
           currentNode,
           playerStateForTravel,
-          bandStateForTravel
+          bandStateForTravel,
+          assetModifiers
         )
-        if (currentFuel >= fuelLiters) {
-          canReachAny = true
-          break
-        }
+        neighborCosts.push({
+          fuelLiters: finiteNumberOr(fuelLiters, 0),
+          cashImpact: finiteNumberOr(totalCost, 0) + dailyObligations
+        })
       }
     }
   }
 
-  // If cannot reach any neighbor, check if can afford refuel
-  // EXCEPTION: If current node is a GIG, player can earn money, so not stranded.
-  if (!canReachAny && currentNode?.type !== 'GIG') {
-    const refuelCost = calculateRefuelCost(currentFuel)
-    const playerMoney = Math.max(0, finiteNumberOr(player.money, 0))
-    return playerMoney < refuelCost
+  const canReach = (fuel: number, money: number): boolean =>
+    neighborCosts.some(n => fuel >= n.fuelLiters && money >= n.cashImpact)
+
+  if (canReach(currentFuel, playerMoney)) return false
+
+  // Escape hatch: an unplayed gig at the current node can still earn money.
+  if (
+    typeof currentNode?.type === 'string' &&
+    GIG_LIKE_NODE_TYPES.has(currentNode.type) &&
+    player.lastGigNodeId !== player.currentNodeId
+  ) {
+    return false
   }
-  return false
+
+  // Escape hatch: a blood-bank donation is a cash source without traveling.
+  const bandForDonation = bandStateForTravel as Partial<BandState> | null
+  if (
+    validateBloodBankDonation(bandForDonation, {
+      harmonyCost: GAME_CONSTANTS.BLOOD_BANK.BLOOD_HARMONY_COST,
+      staminaCost: GAME_CONSTANTS.BLOOD_BANK.BLOOD_STAMINA_COST
+    })
+  ) {
+    return false
+  }
+
+  // Escape hatch: an affordable refuel that makes a neighbor reachable.
+  const refuelCost = calculateRefuelCost(currentFuel)
+  if (refuelCost > 0 && playerMoney >= refuelCost) {
+    if (
+      canReach(EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL, playerMoney - refuelCost)
+    ) {
+      return false
+    }
+  }
+
+  return true
 }

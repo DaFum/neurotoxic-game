@@ -1,5 +1,10 @@
 import { useEffect } from 'react'
 import { checkSoftlock } from '../../utils/mapUtils'
+import {
+  getActiveAssetModifiers,
+  getTotalDailyObligations
+} from '../../utils/assetSelectors'
+import type { GameState } from '../../types'
 import { logger } from '../../utils/logger'
 import i18n from '../../i18n'
 import { GAME_PHASES } from '../../context/gameConstants'
@@ -14,8 +19,10 @@ import type {
  * cleanup.
  *
  * @remarks
- * While not traveling, watches for a softlock (player cannot reach any node and
- * cannot afford fuel). On detection it shows a game-over toast and schedules a
+ * While not traveling, watches for a softlock (no connected node is affordable
+ * in fuel AND cash — including daily obligations — and no in-place escape such
+ * as an unplayed gig, a blood-bank donation, or an affordable refuel exists).
+ * On detection it shows a game-over toast and schedules a
  * 3s timeout that saves and switches to the game-over scene; the timeout is
  * cleared if the softlock resolves or travel begins. A second effect clears all
  * outstanding travel timers on unmount.
@@ -38,7 +45,17 @@ export const useTravelEffects = ({
   // (which changes reference every render). Depending on `params` would re-run
   // this effect — and its cleanup — on every render, repeatedly clearing and
   // rescheduling the game-over timeout so it would never fire.
-  const { gameMap, player, band, addToast, saveGame, changeScene } = params
+  const {
+    gameMap,
+    player,
+    band,
+    social,
+    assets,
+    liabilities,
+    addToast,
+    saveGame,
+    changeScene
+  } = params
 
   useEffect(() => {
     if (!gameMap || state.isTraveling || !player.currentNodeId) {
@@ -49,7 +66,20 @@ export const useTravelEffects = ({
       return
     }
 
-    if (checkSoftlock(gameMap, player, band)) {
+    // Mirror the travel gate: each neighbor must be affordable in fuel AND
+    // cash including the daily obligations that arrival's advanceDay bills.
+    const softlockContext = {
+      dailyObligations: getTotalDailyObligations({
+        player,
+        band,
+        social,
+        assets,
+        liabilities
+      } as GameState),
+      assetModifiers: getActiveAssetModifiers(assets)
+    }
+
+    if (checkSoftlock(gameMap, player, band, softlockContext)) {
       if (!refs.timeoutRef.current) {
         logger.error('TravelLogic', 'GAME OVER: Stranded')
         addToast(
@@ -81,6 +111,9 @@ export const useTravelEffects = ({
     gameMap,
     player,
     band,
+    social,
+    assets,
+    liabilities,
     addToast,
     saveGame,
     changeScene,
