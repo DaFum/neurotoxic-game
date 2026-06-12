@@ -3,6 +3,10 @@
 **Datum:** 2026-06-12
 **Umfang:** Gesamte Codebase (`src/**`, Locale-Daten), statisches Audit über parallele Domänen-Reviews (State/Reducer, Economy/Assets, Spiellogik-Utils, Hooks, Komponenten/Szenen, Audio/Daten/i18n). Jeder gelistete Befund wurde anschließend direkt im Quellcode verifiziert; Zeilenangaben beziehen sich auf den Stand von Commit `3f69a2c8`.
 
+> **Status (2026-06-12):** Alle Befunde behoben auf Branch `audit-logic-fix`, ein Conventional Commit pro Befund.
+> H1 `c898b0f4` · H2 `4a734291` · H3 `64d4d65a` · M1 `9f78e69b` · M2 `c46424ce`+`612a0fef` · M3 `b01d34d2` · M4 `61cabc7b` · M5 `1365f4df` · M6 `2d9a874c` · N1 `edf4e5df` · N2 `59713906` · N3 `c40e55a9` · N4 `4499a301` · N5 `2bd27d4f` · N6 `72a0a247`
+> Entscheidungslage „integrieren statt entfernen“: H2 wurde durch Definition des fehlenden Events `event_bad_press` gelöst (plus defensivem Queue-Drain), H3 durch Registry-Rehydration statt Feld-Drop, N4 durch Unterstützung beider Node-Shapes.
+
 ---
 
 ## Hoch
