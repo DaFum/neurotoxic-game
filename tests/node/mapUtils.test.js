@@ -522,11 +522,9 @@ test('owned asset with positive net sale value enough to refuel and travel avoid
   }
   const localPlayer = { currentNodeId: 'A', van: { fuel: 0 }, money: 0 } // Player has no fuel and no money
 
-  mockCalculateTravelExpenses.mock.mockImplementation(
-    (n, cNode, playerState) => {
-      return { fuelLiters: 10, totalCost: 100 } // Player needs 100 money and 10 fuel to travel
-    }
-  )
+  mockCalculateTravelExpenses.mock.mockImplementation(() => {
+    return { fuelLiters: 10, totalCost: 100 } // Player needs 100 money and 10 fuel to travel
+  })
   mockCalculateRefuelCost.mock.mockImplementation(() => 50) // Refuel costs 50
 
   const result = checkSoftlock(

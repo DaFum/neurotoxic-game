@@ -132,11 +132,16 @@ mock.module(new URL('../src/utils/economyEngine.ts', import.meta.url).href, {
   }
 })
 
+const calculateChassisGrossSaleValueDefault = () => 0
+const mockCalculateChassisGrossSaleValue = mock.fn(
+  calculateChassisGrossSaleValueDefault
+)
+
 mock.module(new URL('../src/utils/assetSelectors.ts', import.meta.url).href, {
   namedExports: {
     getActiveAssetModifiers: mockGetActiveAssetModifiers,
     getTotalDailyObligations: mockGetTotalDailyObligations,
-    calculateChassisGrossSaleValue: mock.fn(() => 0)
+    calculateChassisGrossSaleValue: mockCalculateChassisGrossSaleValue
   }
 })
 
@@ -191,6 +196,10 @@ export const resetTravelLogicMockState = () => {
   mockGetTotalDailyObligations.mock.mockImplementation(
     getTotalDailyObligationsDefault
   )
+  mockCalculateChassisGrossSaleValue.mock.mockImplementation(
+    calculateChassisGrossSaleValueDefault
+  )
+  mockCalculateChassisGrossSaleValue.mock.resetCalls()
   mockGetTotalDailyObligations.mock.resetCalls()
   mockCalculateRefuelCost.mock.mockImplementation(calculateRefuelCostDefault)
   mockCalculateRefuelCost.mock.resetCalls()
@@ -214,6 +223,7 @@ export const mockTravelLogicDependencies = {
   mockAudioManager,
   mockCalculateGuaranteedDailyCost,
   mockGetTotalDailyObligations,
+  mockCalculateChassisGrossSaleValue,
   mockLogger,
   mockHandleError,
   setEnsureAudioContextResult: value => {
