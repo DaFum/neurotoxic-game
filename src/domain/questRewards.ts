@@ -142,7 +142,10 @@ const applySkillPointReward = (
       ...member,
       baseStats: {
         ...baseStats,
-        skill: skillValue + 1
+        // Same 1..10 range as event skill deltas (gameState/delta.ts); an
+        // unclamped increment would let repeated quest rewards push the stat
+        // out of the range balancing formulas assume.
+        skill: Math.max(1, Math.min(10, skillValue + 1))
       }
     }
   })

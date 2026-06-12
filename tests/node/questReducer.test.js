@@ -158,8 +158,8 @@ test('questReducer - Rewards Logic', async t => {
       ],
       band: {
         members: [
-          { name: 'Singer', baseStats: { skill: 10 } },
-          { name: 'Drummer', baseStats: { skill: 10 } }
+          { name: 'Singer', baseStats: { skill: 5 } },
+          { name: 'Drummer', baseStats: { skill: 5 } }
         ]
       }
     }
@@ -169,7 +169,7 @@ test('questReducer - Rewards Logic', async t => {
       (acc, m) => acc + m.baseStats.skill,
       0
     )
-    assert.equal(totalSkill, 21, 'One member should have gained +1 skill')
+    assert.equal(totalSkill, 11, 'One member should have gained +1 skill')
     assert.equal(
       nextState.toasts[0].messageKey,
       'ui:toast.quest_complete_skill'

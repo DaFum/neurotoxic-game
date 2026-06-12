@@ -556,6 +556,21 @@ test('QuestLifecycle', async t => {
       }
     )
 
+    await t.test('skill point reward never pushes skill above 10', () => {
+      const state = {
+        activeQuests: [
+          {
+            id: 'q1',
+            rewardType: 'skill_point',
+            rewardData: { memberIndex: 0 }
+          }
+        ],
+        band: { members: [{ name: 'A', baseStats: { skill: 10 } }] }
+      }
+      const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
+      assert.equal(nextState.band.members[0].baseStats.skill, 10)
+    })
+
     await t.test(
       'applies skill point reward with invalid string memberIndex falling back to randomIdx / 0',
       () => {
@@ -570,7 +585,8 @@ test('QuestLifecycle', async t => {
           band: { members: [{ skill: 10 }] }
         }
         const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
-        assert.equal(nextState.band.members[0].baseStats.skill, 11)
+        // Skill is capped at 10, matching event skill deltas.
+        assert.equal(nextState.band.members[0].baseStats.skill, 10)
         assert.deepEqual(nextState.toasts[0].options, {
           name: 'q1',
           member: ''
