@@ -222,11 +222,12 @@ export const processLiabilityTick = (
 }
 
 /**
- * Resolves expiring crowdfund campaigns. On success: the player receives
- * `targetAmount`, gains `fameStake`, and a fresh asset is materialized from
- * `assetSpec`. On fail: the player loses `fameStake` (clamped at 0). Either
- * way, the campaign is REMOVED from the active list — completed campaigns
- * never linger in state.
+ * Resolves expiring crowdfund campaigns. On success: the player gains
+ * `fameStake` and a fresh asset is materialized from `assetSpec` — the raised
+ * `targetAmount` pays for the build and is NOT paid out as cash on top (that
+ * would double-count the funding versus cash/loan acquisition). On fail: the
+ * player loses `fameStake` (clamped at 0). Either way, the campaign is
+ * REMOVED from the active list — completed campaigns never linger in state.
  */
 export const processCrowdfundTick = (state: GameState): GameState => {
   if (!state.crowdfundCampaigns || state.crowdfundCampaigns.length === 0)
@@ -238,7 +239,6 @@ export const processCrowdfundTick = (state: GameState): GameState => {
     (state.assets ?? []).map(asset => asset.kind)
   )
   const seenCampaignKinds = new Set<CrowdfundCampaign['assetSpec']['kind']>()
-  let money = state.player.money
   let fame = state.player.fame
 
   for (const campaign of state.crowdfundCampaigns) {
@@ -260,7 +260,6 @@ export const processCrowdfundTick = (state: GameState): GameState => {
     const success =
       campaign.plannedSuccessRoll < campaign.plannedSuccessProbability
     if (success) {
-      money += campaign.targetAmount
       fame += campaign.fameStake
       // Materialize the asset deterministically from pre-generated ids
       // (stamped by startCrowdfund at campaign creation). No UUID generation
@@ -307,7 +306,6 @@ export const processCrowdfundTick = (state: GameState): GameState => {
     ...state,
     player: {
       ...state.player,
-      money,
       fame,
       fameLevel: calculateFameLevel(fame)
     },

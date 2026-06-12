@@ -165,7 +165,7 @@ test('processLiabilityTick - final payment charges only the remaining payoff', (
   assert.strictEqual(next.assets.length, 1)
 })
 
-test('processCrowdfundTick - successful resolution awards money/fame and creates asset', () => {
+test('processCrowdfundTick - successful resolution awards fame and creates asset (no cash payout)', () => {
   const state = {
     crowdfundCampaigns: [
       {
@@ -190,8 +190,10 @@ test('processCrowdfundTick - successful resolution awards money/fame and creates
   const next = processCrowdfundTick(state)
   // Campaign is removed (not lingering with resolvedOutcome set).
   assert.strictEqual(next.crowdfundCampaigns.length, 0)
-  // Rewards applied.
-  assert.strictEqual(next.player.money, 4100)
+  // Rewards applied: the raised target funds the build itself, so money is
+  // unchanged — paying out targetAmount on top of the free asset would
+  // double-count the funding versus cash/loan acquisition.
+  assert.strictEqual(next.player.money, 100)
   assert.strictEqual(next.player.fame, 80)
   // Derived fameLevel must be recomputed alongside fame.
   assert.strictEqual(next.player.fameLevel, calculateFameLevel(80))
