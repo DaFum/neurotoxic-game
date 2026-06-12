@@ -396,3 +396,82 @@ describe('mapUtils', () => {
     })
   })
 })
+// Test additions for regression coverage
+test('negative dailyObligations makes travel affordable', () => {
+  const localMap = {
+    nodes: { A: { id: 'A' }, B: { id: 'B' } },
+    connections: [{ from: 'A', to: 'B' }]
+  }
+  const localPlayer = { currentNodeId: 'A', van: { fuel: 20 }, money: 50 }
+
+  // Mock implementations
+  mockCalculateTravelExpenses.mock.mockImplementation(() => ({
+    fuelLiters: 10,
+    totalCost: 100
+  }))
+
+  const result = checkSoftlock(
+    localMap,
+    localPlayer, // Player has 50 money, travel costs 100
+    null,
+    { dailyObligations: -100 }    // Negative obligations should make effective cost 0
+  )
+
+  assert.equal(result, false, 'Player should not be stranded if negative obligations cover the travel cost shortfall')
+})
+
+test('post-refuel money changes travel affordability', () => {
+  const localMap = {
+    nodes: { A: { id: 'A' }, B: { id: 'B' } },
+    connections: [{ from: 'A', to: 'B' }]
+  }
+  const localPlayer = { currentNodeId: 'A', van: { fuel: 20 }, money: 100 }
+
+  // Mock calculateTravelExpenses to return different values depending on the money passed
+  mockCalculateTravelExpenses.mock.mockImplementation((n, cNode, playerState) => {
+    // Let's pretend cash reserve fee makes the cost higher if player has more money
+    if (playerState.money >= 100) {
+      return { fuelLiters: 20, totalCost: 50 } // Too expensive
+    } else {
+      return { fuelLiters: 20, totalCost: 20 } // Affordable after spending money
+    }
+  })
+
+  mockCalculateRefuelCost.mock.mockImplementation(() => 50) // Refuel costs 50
+
+  const result = checkSoftlock(
+    localMap,
+    localPlayer, // Player has 100 money. If they refuel, they have 50 left.
+    null,
+    {}
+  )
+
+  assert.equal(result, false, 'Player should not be stranded if refuel reduces money and thus reduces travel expenses')
+})
+
+test('donation possible but insufficient to unlock travel does not prevent softlock', () => {
+  const localMap = {
+    nodes: { A: { id: 'A' }, B: { id: 'B' } },
+    connections: [{ from: 'A', to: 'B' }]
+  }
+  const localPlayer = { currentNodeId: 'A', van: { fuel: 20 }, money: 10 }
+
+  mockCalculateTravelExpenses.mock.mockImplementation(() => ({
+    fuelLiters: 10,
+    totalCost: 500 // Too expensive even with blood bank
+  }))
+
+  const mockBand = {
+    harmony: 50,
+    members: [{ stamina: 50 }]
+  }
+
+  const result = checkSoftlock(
+    localMap,
+    localPlayer,
+    mockBand,
+    {}
+  )
+
+  assert.equal(result, true, 'Player should be stranded if blood bank donation is insufficient to make travel affordable')
+})

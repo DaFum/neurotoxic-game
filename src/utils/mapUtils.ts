@@ -219,38 +219,36 @@ export const checkSoftlock = (
   // Same daily-obligation term the travel gate adds on top of travel cost
   // (arrival advances the day). Without context this stays 0, keeping the
   // check conservative for legacy callers.
-  const dailyObligations = Math.max(
-    0,
-    finiteNumberOr(context.dailyObligations, 0)
-  )
+  const dailyObligations = finiteNumberOr(context.dailyObligations, 0)
   const assetModifiers = context.assetModifiers
 
-  const neighborCosts: { fuelLiters: number; cashImpact: number }[] = []
-  for (let i = 0; i < connections.length; i++) {
-    const c = connections[i]
-    if (!isMapConnection(c)) continue
-    if (c.from === player.currentNodeId && typeof c.to === 'string') {
-      const n = nodes[c.to]
-      if (n) {
-        const { fuelLiters, totalCost } = calculateTravelExpenses(
-          n,
-          currentNode,
-          playerStateForTravel,
-          bandStateForTravel,
-          assetModifiers
-        )
-        neighborCosts.push({
-          fuelLiters: finiteNumberOr(fuelLiters, 0),
-          cashImpact: finiteNumberOr(totalCost, 0) + dailyObligations
-        })
+  const checkReachabilityWithMoney = (fuel: number, money: number): boolean => {
+    for (let i = 0; i < connections.length; i++) {
+      const c = connections[i]
+      if (!isMapConnection(c)) continue
+      if (c.from === player.currentNodeId && typeof c.to === 'string') {
+        const n = nodes[c.to]
+        if (n) {
+          const { fuelLiters, totalCost } = calculateTravelExpenses(
+            n,
+            currentNode,
+            { ...playerStateForTravel, money },
+            bandStateForTravel,
+            assetModifiers
+          )
+          if (
+            fuel >= finiteNumberOr(fuelLiters, 0) &&
+            money >= finiteNumberOr(totalCost, 0) + dailyObligations
+          ) {
+            return true
+          }
+        }
       }
     }
+    return false
   }
 
-  const canReach = (fuel: number, money: number): boolean =>
-    neighborCosts.some(n => fuel >= n.fuelLiters && money >= n.cashImpact)
-
-  if (canReach(currentFuel, playerMoney)) return false
+  if (checkReachabilityWithMoney(currentFuel, playerMoney)) return false
 
   // Escape hatch: an unplayed gig at the current node can still earn money.
   if (
@@ -269,14 +267,21 @@ export const checkSoftlock = (
       staminaCost: GAME_CONSTANTS.BLOOD_BANK.BLOOD_STAMINA_COST
     })
   ) {
-    return false
+    if (
+      checkReachabilityWithMoney(
+        currentFuel,
+        playerMoney + GAME_CONSTANTS.BLOOD_BANK.BLOOD_BASE_MONEY
+      )
+    ) {
+      return false
+    }
   }
 
   // Escape hatch: an affordable refuel that makes a neighbor reachable.
   const refuelCost = calculateRefuelCost(currentFuel)
   if (refuelCost > 0 && playerMoney >= refuelCost) {
     if (
-      canReach(EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL, playerMoney - refuelCost)
+      checkReachabilityWithMoney(EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL, playerMoney - refuelCost)
     ) {
       return false
     }
