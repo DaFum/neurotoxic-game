@@ -44,6 +44,10 @@ export const handleUpdatePlayer = <TState extends WithPlayer>(
     const clampedFame = clampPlayerFame(nextFame)
     safeUpdates.fame = clampedFame
     safeUpdates.fameLevel = calculateFameLevel(clampedFame)
+  } else if (Object.hasOwn(safeUpdates, 'fameLevel')) {
+    // fameLevel is derived from fame; a standalone fameLevel update would
+    // desync the pair, so drop it.
+    delete safeUpdates.fameLevel
   }
 
   const mergedPlayer = {
