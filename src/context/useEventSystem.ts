@@ -159,6 +159,11 @@ export function useEventSystem({
           `Dropping unknown pending event id: ${pendingHead}`
         )
         dispatch(createPopPendingEventAction())
+        // Stop here: selection against the stale snapshot could play a
+        // pending-gated event from position [1] without popping it (the
+        // pop-on-played check compares against the old head), replaying it
+        // on the next trigger. The caller retries once the queue is drained.
+        return false
       }
 
       const event = eventEngine.checkEvent(category, currentState, triggerPoint)
