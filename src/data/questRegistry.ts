@@ -424,7 +424,7 @@ export const QUEST_REGISTRY = {
     progressSource: 'fame_gained',
     progressRules: [
       {
-        event: 'region.reputationChanged',
+        event: 'fame.gained',
         amount: 'event.amount',
         match: { scope: 'region' }
       }

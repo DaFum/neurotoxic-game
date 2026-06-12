@@ -29,7 +29,7 @@ import { logger } from '../../../utils/logger'
 import { calculateContinueStats } from '../../../utils/postGigUtils'
 import { shouldTriggerBankruptcy } from '../../../utils/economyEngine'
 import { submitLeaderboardScores } from '../../../utils/leaderboardUtils'
-import { createRegionReputationChangedQuestEvent } from '../../../quests/producers/venueQuestEvents'
+import { createFameGainedQuestEvent } from '../../../quests/producers/economyQuestEvents'
 import { getRegionKeyForLocation } from '../../../utils/mapUtils'
 import type { HandlerDispatchers } from './types'
 
@@ -200,7 +200,7 @@ export function useContinueHandler({
         // gate progress to the actual region where it was earned. Use the
         // canonical city key so it matches the stamped quest scopeKey.
         applyQuestEvent(
-          createRegionReputationChangedQuestEvent({
+          createFameGainedQuestEvent({
             region:
               getRegionKeyForLocation(player.location) ?? player.location ?? '',
             amount: fameGain,

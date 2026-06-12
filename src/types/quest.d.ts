@@ -72,6 +72,7 @@ export type QuestEventType =
   | 'minigame.failed'
   | 'travel.completed'
   | 'economy.moneyEarned'
+  | 'fame.gained'
   | 'band.harmonyChanged'
   | 'venue.gigCompleted'
   | 'venue.goodGig'

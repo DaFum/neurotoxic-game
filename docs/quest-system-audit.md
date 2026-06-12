@@ -147,7 +147,14 @@ Quest-Lifecycle (`completionFlags`, `startFlags`, `flag.add`-Rewards in
 Story-Quests (z. B. `apology_tour_complete`) zählen nicht — schwer nachvollziehbar
 für Spieler und inkonsistent gegenüber dem Eventnamen.
 
-### 2.3 Semantik-Konflation `fame_gained` ↔ `region.reputationChanged`
+### 2.3 ✅ ERLEDIGT — Semantik-Konflation `fame_gained` ↔ `region.reputationChanged`
+
+> **Fix:** Neuer kanonischer Eventtyp `fame.gained`
+> (`createFameGainedQuestEvent`, `economyQuestEvents.ts`): Post-Gig-Fame
+> emittiert jetzt `fame.gained` (mit City-Key als Region-Kontext),
+> `quest_local_legend` matcht darauf, und das Legacy-Mapping `fame_gained`
+> zeigt auf den neuen Typ. `region.reputationChanged` trägt nur noch echte
+> Regions-Reputations-Deltas.
 
 Das Legacy-Mapping setzt `fame_gained → region.reputationChanged`
 (`src/utils/questProgress.ts:80`). Dadurch speist sich `quest_local_legend`
@@ -352,6 +359,6 @@ Als Vorhalt für künftige Quests legitim, sollte aber bewusst gepflegt werden
    `eventCooldowns`/`questCooldowns`-Mismatch bei `ego_management_retry` auflösen (1.3, 1.4).
 4. ✅ **Mittel:** `lucky_pick`/`energy_drink` als echte Items anlegen oder Rewards ersetzen (1.5).
 5. ✅ **Mittel:** Locale-Abdeckungs- und Registry-Konsistenz-Tests ergänzen (Abschnitt 4).
-6. **Niedrig:** Flag-Doppelungen konsolidieren, totes `QuestCooldown.id` entfernen oder
+6. ✅ **Niedrig:** Flag-Doppelungen konsolidieren, totes `QuestCooldown.id` entfernen oder
    auswerten, `quest_alchemist`-Copy korrigieren, `fame.gained` als eigenen Eventtyp
    einführen.

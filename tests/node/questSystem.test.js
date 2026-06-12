@@ -17,7 +17,7 @@ const LEGACY_EVENT_BY_CANONICAL = {
   'gig.smallVenueGood': 'small_venue_good_gig',
   'social.postResolved': 'social_post',
   'social.followersGained': 'followers_gained',
-  'region.reputationChanged': 'fame_gained',
+  'fame.gained': 'fame_gained',
   'economy.moneyEarned': 'money_earned',
   'band.harmonyChanged': 'harmony_recovered',
   'item.collected': 'item_collected',
