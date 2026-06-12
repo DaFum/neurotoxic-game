@@ -1,5 +1,8 @@
 import type { QuestEvent } from '../../types'
 
+const filterStringTags = (...values: (string | undefined)[]): string[] =>
+  values.filter((v): v is string => v !== undefined)
+
 /**
  * Creates an `economy.moneyEarned` quest event for money deltas.
  */
@@ -14,7 +17,7 @@ export const createMoneyEarnedQuestEvent = ({
   amount,
   success: amount >= 0,
   context: { reason },
-  tags: [reason].filter((entry): entry is string => typeof entry === 'string')
+  tags: filterStringTags(reason)
 })
 
 /**
@@ -39,7 +42,5 @@ export const createFameGainedQuestEvent = ({
   amount,
   success: amount >= 0,
   context: { region, reason },
-  tags: [region, reason].filter(
-    (entry): entry is string => typeof entry === 'string'
-  )
+  tags: filterStringTags(region, reason)
 })
