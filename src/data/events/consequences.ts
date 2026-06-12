@@ -2,8 +2,8 @@ import type { GameState } from '../../types'
 import { hasStateItem } from '../../utils/gameState'
 import { finiteNumberOr } from '../../utils/finiteNumber'
 
-import { QUEST_APOLOGY_TOUR } from '../questsConstants'
-import { hasActiveQuest } from '../../utils/questUtils'
+import { QUEST_APOLOGY_TOUR, QUEST_EGO_MANAGEMENT } from '../questsConstants'
+import { QuestOfferEngine } from '../../domain/questOfferEngine'
 import { isOnCooldown } from '../../utils/gameState'
 
 /** Raw consequence event definitions consumed by the event registry. */
@@ -205,11 +205,13 @@ export const CONSEQUENCE_EVENTS = [
     condition: (state: GameState) => {
       const controversy = state.social?.controversyLevel || 0
       const flags = state.activeStoryFlags || []
-      const quests = state.activeQuests || []
+      // canOfferQuest mirrors addQuest gating (active quest, completion,
+      // failure-retry cooldown), so the offer never surfaces while the
+      // post-gig addQuest dispatch would silently refuse the quest.
       return (
         controversy >= 85 &&
         !hasStateItem(flags, 'cancel_quest_active') &&
-        !hasActiveQuest(quests, QUEST_APOLOGY_TOUR)
+        QuestOfferEngine.canOfferQuest(state, QUEST_APOLOGY_TOUR)
       )
     },
     options: [
@@ -246,7 +248,13 @@ export const CONSEQUENCE_EVENTS = [
     trigger: 'travel',
     chance: 0.8,
     condition: (state: GameState) => {
+      // Decline path (opt2) writes an event cooldown; quest failure writes a
+      // questCooldowns retry entry. canOfferQuest covers the latter plus
+      // active/completed gating, isOnCooldown covers the former.
       if (isOnCooldown(state, 'ego_management_retry')) return false
+      if (!QuestOfferEngine.canOfferQuest(state, QUEST_EGO_MANAGEMENT)) {
+        return false
+      }
 
       const harmony = finiteNumberOr(state.band?.harmony, 0)
       const egoFocus = state.social?.egoFocus || null

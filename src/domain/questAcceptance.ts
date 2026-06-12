@@ -79,6 +79,7 @@ export type CanAcceptQuestResult =
  * @remarks
  * Use in event-condition functions so an offer does not surface when the dispatch would silently refuse it.
  * Registry defaults such as `repeatPolicy`, `completionFlags`, and `rewardFlag` are merged automatically prior to validation.
+ * Unexpired `questCooldowns` entries block acceptance for every repeat policy — failure-penalty retry cooldowns on `'never'` story quests are enforced here too.
  *
  * @param state - The active game state context.
  * @param questOrId - Either the quest identifier string or a partial quest state payload.
@@ -115,7 +116,10 @@ export const canAcceptQuest = (
       return { ok: false, reason: 'flag' }
     }
   }
-  if (repeatPolicy === 'cooldown') {
+  // Cooldowns gate every repeat policy, not just 'cooldown': failure
+  // penalties (`quest.cooldown`) write `questCooldowns` entries keyed by the
+  // quest id for 'never' story quests too, so their retry delay must hold.
+  {
     const currentDay = finiteNumberOr(state.player?.day, 0)
     const onCooldown = (state.questCooldowns ?? []).some(
       cd => cd.questId === questId && cd.expiresOnDay > currentDay

@@ -67,7 +67,11 @@ Das betrifft 11 von 31 Registry-Quests. Alle übrigen Quest-Keys (Labels, Beschr
 Trigger-Events, Toast-Keys, Reward-/Penalty-Chips) sind in EN und DE vollständig vorhanden
 (219 Keys geprüft).
 
-### 1.3 Retry-Cooldowns der Story-Quests sind wirkungslos
+### 1.3 ✅ ERLEDIGT — Retry-Cooldowns der Story-Quests sind wirkungslos
+
+> **Fix:** `canAcceptQuest` prüft `questCooldowns` jetzt für **alle** Repeat-Policies
+> (`questAcceptance.ts`); `handleRecordBadShow` (gigReducer) und die
+> Consequence-Event-Bedingungen gaten über `canAcceptQuest`/`canOfferQuest`.
 
 Die Failure-Penalties `{ type: 'quest.cooldown', id: 'prove_yourself_retry', days: 20 }`
 (`questRegistry.ts:27`), `apology_tour_retry` (`:50`) und `ego_management_retry` (`:78`)
@@ -83,7 +87,13 @@ ebenso kann `consequences_cancel_culture_quest` die Apology-Tour sofort wieder a
 (die Event-Condition prüft nur Controversy ≥ 85 und Aktiv-Flags,
 `src/data/events/consequences.ts:205-214`).
 
-### 1.4 System-Mismatch: `ego_management_retry` schreibt Quest-Cooldown, gelesen wird Event-Cooldown
+### 1.4 ✅ ERLEDIGT — System-Mismatch: `ego_management_retry` schreibt Quest-Cooldown, gelesen wird Event-Cooldown
+
+> **Fix:** `consequences_ego_breakup_threat` prüft zusätzlich
+> `QuestOfferEngine.canOfferQuest(state, QUEST_EGO_MANAGEMENT)` — der
+> questCooldowns-Retry-Eintrag des Quest-Fehlschlags greift damit; der
+> Event-Cooldown des Ablehnen-Pfads bleibt über `isOnCooldown` wirksam.
+> `consequences_cancel_culture_quest` gate-t analog über `canOfferQuest`.
 
 `consequences_ego_breakup_threat` gate-t über
 `isOnCooldown(state, 'ego_management_retry')` (`src/data/events/consequences.ts:249`).
@@ -309,7 +319,7 @@ Als Vorhalt für künftige Quests legitim, sollte aber bewusst gepflegt werden
 1. ✅ **Hoch:** `'rehearsal'` durch einen gültigen `AssetKind` ersetzen (vermutlich
    `bandhaus_chassis`) — in Offer-Conditions, Repair-Reward und Test-Fallback (1.1).
 2. ✅ **Hoch:** Die 11 fehlenden `ui:quests.progressSource.*`-Keys in EN+DE ergänzen (1.2).
-3. **Hoch:** Retry-Cooldown-Mechanik vereinheitlichen: entweder `canAcceptQuest` lässt
+3. ✅ **Hoch:** Retry-Cooldown-Mechanik vereinheitlichen: entweder `canAcceptQuest` lässt
    Cooldowns auch bei `repeatPolicy: 'never'` greifen, oder die Re-Offer-Pfade
    (gigReducer, consequences) prüfen `questCooldowns` explizit; den
    `eventCooldowns`/`questCooldowns`-Mismatch bei `ego_management_retry` auflösen (1.3, 1.4).
