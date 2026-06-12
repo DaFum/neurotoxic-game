@@ -228,14 +228,24 @@ export const handleConsumeItem = (
   // Deep clone inventory
   nextBand.inventory = { ...state.band.inventory }
 
+  let consumed = false
   if (nextBand.inventory[itemType] === true) {
     nextBand.inventory[itemType] = false
-  } else if (typeof nextBand.inventory[itemType] === 'number') {
+    consumed = true
+  } else if (
+    typeof nextBand.inventory[itemType] === 'number' &&
+    (nextBand.inventory[itemType] as number) > 0
+  ) {
     nextBand.inventory[itemType] = applyInventoryItemDelta(
       nextBand.inventory[itemType] as number,
       -1
     )
+    consumed = true
   }
+
+  // Only advance item-used quest progress when something was actually
+  // consumed; dispatching for an unowned item must leave state unchanged.
+  if (!consumed) return state
 
   return QuestEvents.emit(
     { ...state, band: nextBand },
