@@ -21,9 +21,11 @@ type UseArrivalLogicOptions = {
  *
  * @remarks
  * `arrivalUtils` owns the travel-event policy. This hook keeps the default
- * policy that skips GIG, FESTIVAL, and FINALE destinations. `isHandlingRef`
- * stores the node id currently being processed, and cleanup keyed on
- * `player.currentNodeId` clears stale guards for subsequent arrivals.
+ * policy that skips GIG, FESTIVAL, and FINALE destinations. It also moves the
+ * rival band and checks for an encounter after each arrival (the minigame
+ * path is the production travel path, so rival reactions must happen here).
+ * `isHandlingRef` stores the node id currently being processed, and cleanup
+ * keyed on `player.currentNodeId` clears stale guards for subsequent arrivals.
  */
 export const useArrivalLogic = ({
   onShowHQ,
@@ -43,7 +45,9 @@ export const useArrivalLogic = ({
     changeScene,
     addToast,
     setPendingBandHQOpen,
-    setPendingSupplyStopInventory
+    setPendingSupplyStopInventory,
+    moveRivalBand,
+    checkRivalEncounter
   } = useGameActions()
 
   // Stores the nodeId being processed; undefined means idle. Using the nodeId rather than a
@@ -87,6 +91,11 @@ export const useArrivalLogic = ({
       // there). If that guard is ever removed, this call must add its own check.
       const travelEventActive = processTravelEvents(currentNode, triggerEvent)
 
+      // 4b. Rival band reacts to the trip (movement + possible encounter),
+      // mirroring the legacy onTravelComplete path.
+      moveRivalBand()
+      checkRivalEncounter()
+
       // 5. Handle Node Arrival & Routing
       // Delegates routing (HQ, Gig, Rest Stop) to shared utility
       const arrivalResult = currentNode
@@ -126,6 +135,8 @@ export const useArrivalLogic = ({
     // player.currentNodeId handles the reset when the node changes.
   }, [
     advanceDay,
+    moveRivalBand,
+    checkRivalEncounter,
     saveGame,
     updateBand,
     updatePlayer,

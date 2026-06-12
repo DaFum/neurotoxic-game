@@ -20,7 +20,13 @@ i18n: Alle 29 im Travel-Code referenzierten `ui:`-Schlüssel sind in EN und DE v
 
 ## 1. Kritische Befunde
 
-### 1.1 Der Nicht-Minigame-Ankunftspfad ist toter Code — und nur er trägt Quests, Rivalen und Stamina-Regen
+### 1.1 ✅ ERLEDIGT — Der Nicht-Minigame-Ankunftspfad ist toter Code — und nur er trägt Quests, Rivalen und Stamina-Regen
+
+> **Fix:** `handleCompleteTravelMinigame` emittiert jetzt `travel.completed`
+> (Quest-Fortschritt, u. a. `quest_tourbus_inspection`) und wendet den
+> `travelStaminaRegen`-Asset-Modifier an; `useArrivalLogic.handleArrivalSequence`
+> führt Rival-Band-Bewegung + Encounter-Check aus. Der Legacy-Pfad bleibt als
+> Fallback bestehen (Event-Policy-Differenz s. u. weiterhin offen).
 
 `Overworld.tsx:95` übergibt **immer** `onStartTravelMinigame: startTravelMinigame`. In
 `startTravelSequence` (`useTravelActions.ts:300-303`) führt das zu einem frühen Return —
@@ -239,7 +245,7 @@ beschreibt den toten Pfad; im echten Pfad gibt es gar keine Quest-Progression (1
 
 ## 5. Priorisierte Empfehlungen
 
-1. **Hoch:** Die Lücken des toten Pfads in den echten Pfad portieren:
+1. ✅ **Hoch:** Die Lücken des toten Pfads in den echten Pfad portieren:
    `travel.completed`-Quest-Event, Rival-Bewegung/Encounter und `travelStaminaRegen`
    in `handleArrivalSequence` bzw. den Minigame-Abschluss verlagern — oder den toten
    Pfad samt TravelingVan/Failsafe entfernen (1.1).

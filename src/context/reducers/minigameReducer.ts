@@ -39,6 +39,7 @@ import {
   createItemCollectedQuestEvent,
   createItemDeliveredQuestEvent
 } from '../../quests/producers/itemQuestEvents'
+import { createTravelCompletedQuestEvent } from '../../quests/producers/travelQuestEvents'
 
 /**
  * Starts the tourbus travel minigame for a selected destination node.
@@ -101,12 +102,13 @@ export const handleCompleteTravelMinigame = (
     }
   }
 
+  const assetModifiers = getActiveAssetModifiers(state.assets ?? [])
   const { dist, totalCost, fuelLiters } = calculateTravelExpenses(
     targetNode,
     currentNode,
     state.player,
     state.band,
-    getActiveAssetModifiers(state.assets ?? [])
+    assetModifiers
   )
   const { conditionLoss, fuelBonus, voidHazardHits } =
     calculateTravelMinigameResult(damageTaken, itemsCollected)
@@ -122,6 +124,24 @@ export const handleCompleteTravelMinigame = (
   )
 
   let nextMembers = state.band.members
+
+  // Asset modifier: tourbus modules can regenerate member stamina per trip.
+  const travelStaminaRegen = finiteNumberOr(
+    assetModifiers.travelStaminaRegen,
+    0
+  )
+  if (travelStaminaRegen > 0 && nextMembers.length > 0) {
+    nextMembers = nextMembers.map(
+      (member: GameState['band']['members'][number]) => ({
+        ...member,
+        stamina: clampMemberStamina(
+          finiteNumberOr(member.stamina, 0) + travelStaminaRegen,
+          finiteNumberOr(member.staminaMax, 100)
+        )
+      })
+    )
+  }
+
   if (voidHazardHits && voidHazardHits > 0 && nextMembers.length > 0) {
     const baseRng = safeRngValue ?? 0
     const memberIndex = Math.floor(baseRng * nextMembers.length)
@@ -284,6 +304,14 @@ export const handleCompleteTravelMinigame = (
       })
     )
   }
+
+  // The tourbus minigame is the production travel path, so travel-progress
+  // quests must be fed here; the legacy onTravelComplete hook path emits the
+  // same event but never runs while onStartTravelMinigame is wired.
+  newState = QuestEvents.emit(
+    newState,
+    createTravelCompletedQuestEvent({ region: nextLocation })
+  )
 
   return newState
 }
