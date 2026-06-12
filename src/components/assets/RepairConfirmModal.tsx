@@ -4,7 +4,7 @@ import { Tooltip } from '../../ui/shared/Tooltip'
 import { ActionButton } from '../../ui/shared/ActionButton'
 import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 import { getRepairImagePrompt } from '../../utils/imageGen'
-import { REPAIR_COST_PER_POINT } from '../../utils/assetConfig'
+import { calculateChassisRepairCost } from '../../utils/assetConfig'
 import { formatCurrency } from '../../utils/numberUtils'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import type { LongTermAsset } from '../../types/assets'
@@ -23,7 +23,7 @@ export const RepairConfirmModal = ({ asset, isOpen, onClose }: Props) => {
   const { t, i18n } = useTranslation(['assets'])
   const { repairChassis } = useGameActions()
   const money = useGameSelector(state => state.player.money)
-  const cost = Math.max(0, (100 - asset.condition) * REPAIR_COST_PER_POINT)
+  const cost = calculateChassisRepairCost(asset.condition)
 
   return (
     <Modal

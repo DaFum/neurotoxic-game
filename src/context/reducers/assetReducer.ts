@@ -10,9 +10,9 @@ import type {
   AssetKind
 } from '../../types/assets'
 import {
+  calculateChassisRepairCost,
   calculateChassisUpgradeCost,
-  CHASSIS_CONFIG,
-  REPAIR_COST_PER_POINT
+  CHASSIS_CONFIG
 } from '../../utils/assetConfig'
 import {
   LOAN_PROFILES,
@@ -518,7 +518,7 @@ export const handleRepairChassis = (
   }
   if (!targetAsset) return state
 
-  const repairCost = (100 - targetAsset.condition) * REPAIR_COST_PER_POINT
+  const repairCost = calculateChassisRepairCost(targetAsset.condition)
   if (repairCost <= 0 || state.player.money < repairCost) return state
 
   const nextAssets = state.assets.map(asset =>

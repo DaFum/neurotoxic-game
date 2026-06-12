@@ -21,9 +21,9 @@
 import { ActionTypes } from './actionTypes'
 import { logger } from '../utils/logger'
 import {
+  calculateChassisRepairCost,
   calculateChassisUpgradeCost,
-  CHASSIS_CONFIG,
-  REPAIR_COST_PER_POINT
+  CHASSIS_CONFIG
 } from '../utils/assetConfig'
 import { MODULE_REGISTRY } from '../utils/assetModuleRegistry'
 import {
@@ -419,10 +419,7 @@ export const repairChassis = (
 ): RepairChassisAction | null => {
   const asset = selectAssetsMap(state).get(assetId)
   if (!asset) return null
-  const repairCost = Math.max(
-    0,
-    (100 - asset.condition) * REPAIR_COST_PER_POINT
-  )
+  const repairCost = calculateChassisRepairCost(asset.condition)
   if (repairCost <= 0) return null
   if (state.player.money < repairCost) return null
   return {
