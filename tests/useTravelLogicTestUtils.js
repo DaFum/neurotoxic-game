@@ -135,7 +135,8 @@ mock.module(new URL('../src/utils/economyEngine.ts', import.meta.url).href, {
 mock.module(new URL('../src/utils/assetSelectors.ts', import.meta.url).href, {
   namedExports: {
     getActiveAssetModifiers: mockGetActiveAssetModifiers,
-    getTotalDailyObligations: mockGetTotalDailyObligations
+    getTotalDailyObligations: mockGetTotalDailyObligations,
+    calculateChassisGrossSaleValue: mock.fn(() => 0)
   }
 })
 
