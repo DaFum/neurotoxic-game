@@ -1257,7 +1257,14 @@ const sanitizeSocial = (value: unknown): SocialState => {
       if (!registryDeal) {
         return []
       }
-      return [{ ...registryDeal, remainingGigs: copied.remainingGigs }]
+      // normalizeRemainingGigs (post-gig resolution) throws on decimals and
+      // negatives, so coerce the persisted count to an integer >= 0 here.
+      return [
+        {
+          ...registryDeal,
+          remainingGigs: Math.max(0, Math.floor(copied.remainingGigs))
+        }
+      ]
     })
   }
 
