@@ -345,7 +345,7 @@ export const MapNodeView = memo(
             <img
               src={vanUrl}
               alt={t('ui:map.vanAlt')}
-              crossOrigin='anonymous'
+              crossOrigin={vanUrl.startsWith('data:') ? undefined : 'anonymous'}
               className='w-12 h-8 object-contain drop-shadow-[0_0_10px_var(--color-toxic-green)]'
             />
           </div>
@@ -366,7 +366,7 @@ export const MapNodeView = memo(
             <img
               src={iconUrl}
               alt={getPinAltText(t, node.type)}
-              crossOrigin='anonymous'
+              crossOrigin={iconUrl.startsWith('data:') ? undefined : 'anonymous'}
               className='w-6 h-6 object-contain drop-shadow-[0_0_8px_var(--color-void-black)]'
             />
           </div>

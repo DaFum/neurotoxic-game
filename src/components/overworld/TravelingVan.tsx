@@ -41,7 +41,7 @@ export const TravelingVan = React.memo(
           alt={t('ui:overworld.traveling_van', {
             defaultValue: 'Traveling Van'
           })}
-          crossOrigin='anonymous'
+          crossOrigin={vanUrl.startsWith('data:') ? undefined : 'anonymous'}
           className='w-12 h-8 object-contain drop-shadow-[0_0_10px_var(--color-toxic-green)]'
           style={{ transform: 'translate(0, -50%)' }}
         />
