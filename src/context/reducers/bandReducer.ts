@@ -46,7 +46,11 @@ const sanitizeMemberRelationships = (
   member: Pick<BandMember, 'id' | 'name'>
 ): Record<string, number> => {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {}
-  const selfKeys = new Set<string>([member.id, member.id.toLowerCase()])
+  const selfKeys = new Set<string>()
+  if (typeof member.id === 'string') {
+    selfKeys.add(member.id)
+    selfKeys.add(member.id.toLowerCase())
+  }
   if (typeof member.name === 'string') {
     selfKeys.add(member.name)
     selfKeys.add(member.name.toLowerCase())
