@@ -350,7 +350,7 @@ export const OverworldHUD = React.memo(
                   {t('ui:overworld.career_fame', { defaultValue: 'FAME' })}
                 </span>
                 <span className='career-value'>
-                  {Math.round(finiteNumberOr(player?.fame, 0))}
+                  {Math.floor(finiteNumberOr(player?.fame, 0))}
                 </span>
               </div>
               <div className='career-cell'>

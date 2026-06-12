@@ -32,7 +32,7 @@ export const StatsTab = ({ player, band, social }: StatsTabProps) => {
             />
             <StatBox
               label={t('ui:stats.fame', { defaultValue: 'Fame' })}
-              value={Math.round(finiteNumberOr(player?.fame, 0))}
+              value={Math.floor(finiteNumberOr(player?.fame, 0))}
               icon='★'
             />
             <StatBox
