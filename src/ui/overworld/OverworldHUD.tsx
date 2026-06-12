@@ -86,7 +86,7 @@ const VanStatRow = ({
         className='mini-num'
         style={{ color: isLow ? lowColor : undefined }}
       >
-        {value !== undefined ? value : notAvailableLabel}
+        {value !== undefined ? Math.round(value) : notAvailableLabel}
       </span>
     </div>
   )
@@ -348,7 +348,9 @@ export const OverworldHUD = React.memo(
                 <span className='career-label'>
                   {t('ui:overworld.career_fame', { defaultValue: 'FAME' })}
                 </span>
-                <span className='career-value'>{player.fame ?? 0}</span>
+                <span className='career-value'>
+                  {Math.round(player.fame ?? 0)}
+                </span>
               </div>
               <div className='career-cell'>
                 <span className='career-label'>

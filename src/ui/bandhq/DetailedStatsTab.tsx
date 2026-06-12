@@ -116,7 +116,7 @@ const CareerOverviewSection = ({
       />
       <DetailRow
         label={t('ui:stats.fame', { defaultValue: 'Fame' })}
-        value={player.fame}
+        value={Math.round(player.fame ?? 0)}
         subtext={`${t('ui:ui.level', { defaultValue: 'Level' })} ${player.fameLevel || 0}`}
       />
       <DetailRow

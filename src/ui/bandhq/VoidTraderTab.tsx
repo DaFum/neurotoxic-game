@@ -74,7 +74,7 @@ export const VoidTraderTab = ({
             {t('ui:stats.fame', { defaultValue: 'FAME' })}
           </p>
           <p className='text-xl font-bold text-toxic-green tracking-widest'>
-            {player.fame}
+            {Math.round(player.fame ?? 0)}
           </p>
         </div>
       </div>
