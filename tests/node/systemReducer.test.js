@@ -327,6 +327,36 @@ test('systemReducer - LOAD_GAME', async t => {
     }
   )
 
+  await t.test(
+    'gigModifiers hydration: current catering key wins over legacy energy alias',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = {
+        player: { money: 500, fame: 100, day: 5, van: { fuel: 80 } },
+        gigModifiers: { catering: true, energy: false }
+      }
+
+      const nextState = handleLoadGame(initialState, loadedState)
+
+      assert.equal(nextState.gigModifiers.catering, true)
+    }
+  )
+
+  await t.test(
+    'gigModifiers hydration: legacy energy alias still migrates when catering is absent',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = {
+        player: { money: 500, fame: 100, day: 5, van: { fuel: 80 } },
+        gigModifiers: { energy: true }
+      }
+
+      const nextState = handleLoadGame(initialState, loadedState)
+
+      assert.equal(nextState.gigModifiers.catering, true)
+    }
+  )
+
   await t.test('hydrates array-based contraband stash (migration)', () => {
     const initialState = createInitialState()
     const loadedState = {

@@ -1383,7 +1383,13 @@ const sanitizeGigModifiers = (value: unknown): GameState['gigModifiers'] => {
       ] as boolean
     }
   }
-  if (typeof value.energy === 'boolean') {
+  // Legacy `energy` → `catering` migration: only applies when the save does
+  // not already carry the current key, so `catering` always wins over the
+  // stale alias.
+  if (
+    typeof value.energy === 'boolean' &&
+    typeof value.catering !== 'boolean'
+  ) {
     sanitized.catering = value.energy
   }
   return sanitized
