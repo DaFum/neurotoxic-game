@@ -7,6 +7,7 @@ import {
   QUEST_REGISTRY,
   getQuestDefinition
 } from '../../src/data/questRegistry'
+import * as questsConstants from '../../src/data/questsConstants'
 
 test('every quest with required > 0 has a progressSource', () => {
   for (const [id, quest] of Object.entries(QUEST_REGISTRY)) {
@@ -62,4 +63,14 @@ test('quest lookups only return own registry definitions', () => {
   assert.equal(getQuestDefinition('__proto__'), undefined)
   assert.equal(getQuestDefinition('constructor'), undefined)
   assert.equal(getQuestDefinition('toString'), undefined)
+})
+
+test('every quest id in registry has a corresponding exported constant', () => {
+  const exportedValues = Object.values(questsConstants)
+  for (const id of Object.keys(QUEST_REGISTRY)) {
+    assert.ok(
+      exportedValues.includes(id),
+      `Quest ID "${id}" from QUEST_REGISTRY is missing an exported constant in src/data/questsConstants.ts`
+    )
+  }
 })
