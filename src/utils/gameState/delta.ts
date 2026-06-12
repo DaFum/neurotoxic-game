@@ -53,8 +53,8 @@ export const applyInventoryItemDelta = (
     return deltaValue
   }
 
-  if (typeof deltaValue === 'number') {
-    const currentCount = typeof currentValue === 'number' ? currentValue : 0
+  if (isFiniteNumber(deltaValue)) {
+    const currentCount = finiteNumberOr(currentValue, 0)
     return Math.max(0, currentCount + deltaValue)
   }
 
@@ -183,7 +183,7 @@ const isRelationshipChange = (value: unknown): value is RelationshipChange => {
   return (
     typeof value.member1 === 'string' &&
     typeof value.member2 === 'string' &&
-    typeof value.change === 'number'
+    isFiniteNumber(value.change)
   )
 }
 
@@ -294,12 +294,9 @@ export const calculateAppliedDelta = (
         if (isForbiddenKey(itemId)) continue
 
         const qty = delta.band.inventory[itemId]
-        const currentCount =
-          typeof state.band?.inventory?.[itemId] === 'number'
-            ? state.band.inventory[itemId]
-            : 0
+        const currentCount = finiteNumberOr(state.band?.inventory?.[itemId], 0)
 
-        if (typeof qty === 'number') {
+        if (isFiniteNumber(qty)) {
           if (qty !== 0) {
             const nextCount = Math.max(0, currentCount + qty)
             const actualChange = nextCount - currentCount
@@ -377,13 +374,13 @@ export const calculateAppliedDelta = (
       applied.band.membersDelta = computedMembersDelta
     }
 
-    if (typeof delta.band.luck === 'number') {
+    if (isFiniteNumber(delta.band.luck)) {
       const currentLuck = finiteNumberOr(state.band?.luck, 0)
       const nextLuck = Math.max(0, currentLuck + delta.band.luck)
       applied.band.luck = nextLuck - currentLuck
     }
 
-    if (typeof delta.band.skill === 'number') {
+    if (isFiniteNumber(delta.band.skill)) {
       const members = Array.isArray(state.band?.members)
         ? state.band.members
         : []
@@ -392,10 +389,7 @@ export const calculateAppliedDelta = (
       for (let i = 0; i < members.length; i++) {
         const member = members[i]
         if (!member) continue
-        const currentSkill =
-          member.baseStats && typeof member.baseStats.skill === 'number'
-            ? member.baseStats.skill
-            : 5
+        const currentSkill = finiteNumberOr(member.baseStats?.skill, 5)
         const nextSkill = Math.max(
           1,
           Math.min(10, currentSkill + delta.band.skill)
