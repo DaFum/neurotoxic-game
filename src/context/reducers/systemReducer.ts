@@ -60,6 +60,7 @@ import {
   deriveCityTraits
 } from '../../utils/mapGenerator'
 import { CONTRABAND_BY_ID } from '../../data/contraband'
+import { BRAND_DEALS_BY_ID } from '../../data/brandDeals'
 import {
   createInitialState,
   DEFAULT_GIG_MODIFIERS,
@@ -1242,11 +1243,19 @@ const sanitizeSocial = (value: unknown): SocialState => {
       if (
         !copied ||
         typeof copied.id !== 'string' ||
-        typeof copied.remainingGigs !== 'number'
+        !isFiniteNumber(copied.remainingGigs)
       ) {
         return []
       }
-      return [{ id: copied.id, remainingGigs: copied.remainingGigs }]
+      // Rehydrate the full deal from the static registry: runtime consumers
+      // (hasActiveSponsorship, per-gig payouts, sellout penalties) require
+      // `type` and `offer`, which the persisted blob must not be trusted to
+      // carry. Only `remainingGigs` is player progress and survives the load.
+      const registryDeal = BRAND_DEALS_BY_ID.get(copied.id)
+      if (!registryDeal) {
+        return [{ id: copied.id, remainingGigs: copied.remainingGigs }]
+      }
+      return [{ ...registryDeal, remainingGigs: copied.remainingGigs }]
     })
   }
 

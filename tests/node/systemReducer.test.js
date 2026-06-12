@@ -645,6 +645,31 @@ test('systemReducer - LOAD_GAME', async t => {
   )
 
   await t.test(
+    'rehydrates known active deals from the brand deal registry on load',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = JSON.parse(`{
+      "social": {
+        "activeDeals": [
+          { "id": "energy_drink_cx", "remainingGigs": 3, "type": "TAMPERED", "offer": { "perGig": 99999 } }
+        ]
+      }
+    }`)
+
+      const nextState = handleLoadGame(initialState, loadedState)
+      const deal = nextState.social.activeDeals[0]
+
+      // Registry fields win over persisted blobs; only remainingGigs is
+      // player progress. Without type/offer, hasActiveSponsorship and
+      // per-gig payouts silently stop matching after a save/load cycle.
+      assert.equal(deal.id, 'energy_drink_cx')
+      assert.equal(deal.remainingGigs, 3)
+      assert.equal(deal.type, 'SPONSORSHIP')
+      assert.equal(deal.offer.perGig, 50)
+    }
+  )
+
+  await t.test(
     'sanitizes loaded activeEvent instead of trusting raw casts',
     () => {
       const initialState = createInitialState()
