@@ -320,7 +320,8 @@ const applySharedBandEffect = (
       ...newBand.performance,
       guitarDifficulty: Math.max(
         0.1,
-        (newBand.performance?.guitarDifficulty ?? 1) + value
+        finiteNumberOr(newBand.performance?.guitarDifficulty, 1) +
+          finiteNumberOr(value, 0)
       )
     }
     return true
@@ -528,7 +529,7 @@ const applyContrabandEffect = (
   if (item.effectType === 'stress') {
     newBand.stress = clampBandStress(
       Math.floor(
-        ((newBand.stress as number | undefined) ?? 0) + (item.value as number)
+        finiteNumberOr(newBand.stress, 0) + finiteNumberOr(item.value, 0)
       )
     )
   } else if (item.effectType === 'stamina' || item.effectType === 'mood') {
