@@ -1,0 +1,5 @@
+1. Cap `numAssets` in `useTravelEffects` to a safe limit (e.g., 10) to prevent exponential explosion and 32-bit overflow. Since players rarely have more than a few positive-net assets, checking up to 10 covers `2^10 = 1024` combinations, which is perfectly safe to run synchronously while providing thorough coverage for realistic game states.
+2. In `src/hooks/travel/useTravelEffects.ts`, replace `const numAssets = sellableAssets.length` with `const numAssets = Math.min(sellableAssets.length, 10)`. We can also sort the `sellableAssets` by `net` proceeds descending before capping so we evaluate the highest-value assets if the player happens to have an unnaturally huge stash.
+3. Test locally.
+4. Run pre-commit steps.
+5. Submit.

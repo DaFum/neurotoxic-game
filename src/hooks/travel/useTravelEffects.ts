@@ -101,7 +101,8 @@ export const useTravelEffects = ({
       assetModifiers: import('../../types/assets').AssetModifiers
     }[] = []
     if (sellableAssets.length > 0 && assets) {
-      const numAssets = sellableAssets.length
+      sellableAssets.sort((a, b) => b.net - a.net)
+      const numAssets = Math.min(sellableAssets.length, 10)
       const numCombinations = 1 << numAssets
       for (let i = 1; i < numCombinations; i++) {
         const comboAssetIds: string[] = []
