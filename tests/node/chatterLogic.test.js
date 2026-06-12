@@ -105,6 +105,21 @@ test('getRandomChatter returns venue-specific chatter', t => {
   assert.strictEqual(result.text, 'Venue Special')
 })
 
+test('getRandomChatter resolves venue chatter from venueId-only nodes', t => {
+  const state = buildState({
+    currentScene: 'SPECIAL',
+    gameMap: {
+      nodes: {
+        node1: { id: 'node1', type: 'CITY', venueId: 'v1' }
+      }
+    }
+  })
+
+  t.mock.method(Math, 'random', () => 0)
+  const result = getRandomChatter(state)
+  assert.strictEqual(result.text, 'Venue Special')
+})
+
 test('getRandomChatter falls back to ANY venue chatter', t => {
   const state = buildState({
     currentScene: 'OTHER',
