@@ -26,6 +26,7 @@ export const BandMembersLayer = memo(
           <img
             src={matzeUrl}
             alt={t('minigame:bandMembers.matze', { defaultValue: 'Matze' })}
+            crossOrigin='anonymous'
             className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--color-blood-red)]'
           />
         </div>
@@ -38,6 +39,7 @@ export const BandMembersLayer = memo(
           <img
             src={mariusUrl}
             alt={t('minigame:bandMembers.marius', { defaultValue: 'Marius' })}
+            crossOrigin='anonymous'
             className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--color-toxic-green-glow)]'
           />
         </div>
@@ -50,6 +52,7 @@ export const BandMembersLayer = memo(
           <img
             src={larsUrl}
             alt={t('minigame:bandMembers.lars', { defaultValue: 'Lars' })}
+            crossOrigin='anonymous'
             className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--color-toxic-green)]'
           />
         </div>

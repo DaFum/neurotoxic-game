@@ -97,6 +97,7 @@ export const GeneratedImagePanel = ({
         src={src}
         alt={alt}
         loading='lazy'
+        crossOrigin='anonymous'
         onLoad={() => {
           setLoaded(true)
           onLoad?.()
