@@ -6,6 +6,7 @@ import {
   clampBandStress,
   clampMemberMood,
   clampMemberStamina,
+  clampRelationship,
   applyInventoryItemDelta,
   isForbiddenKey,
   hasForbiddenKeys,
@@ -32,6 +33,36 @@ import type {
 const DEFAULT_MEMBER_MOOD = 50
 const DEFAULT_MEMBER_STAMINA = 100
 const DEFAULT_MEMBER_STAMINA_MAX = 100
+
+/**
+ * Sanitizes a patched member relationships map: keeps only finite numeric
+ * values (clamped to the relationship range) and drops forbidden keys plus
+ * self-references by member id or name. Self-relationships corrupt trait and
+ * infighting logic, so the reducer must strip them even when callers send
+ * whole member objects through UPDATE_BAND.
+ */
+const sanitizeMemberRelationships = (
+  raw: unknown,
+  member: Pick<BandMember, 'id' | 'name'>
+): Record<string, number> => {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {}
+  const selfKeys = new Set<string>([member.id, member.id.toLowerCase()])
+  if (typeof member.name === 'string') {
+    selfKeys.add(member.name)
+    selfKeys.add(member.name.toLowerCase())
+  }
+  const result: Record<string, number> = {}
+  const record = raw as Record<string, unknown>
+  for (const key in record) {
+    if (!Object.hasOwn(record, key)) continue
+    if (isForbiddenKey(key) || selfKeys.has(key)) continue
+    const value = record[key]
+    if (isFiniteNumber(value)) {
+      result[key] = clampRelationship(value)
+    }
+  }
+  return result
+}
 
 /**
  * Applies sanitized band updates while preserving reducer-side clamps.
@@ -140,6 +171,12 @@ export const handleUpdateBand = (
       }
       if (isFiniteNumber(next.mood)) {
         next.mood = clampMemberMood(next.mood)
+      }
+      if (Object.hasOwn(patch, 'relationships')) {
+        next.relationships = sanitizeMemberRelationships(
+          patch.relationships,
+          next
+        )
       }
       if (typeof next.id === 'string') {
         sanitizedById.set(next.id, next)
