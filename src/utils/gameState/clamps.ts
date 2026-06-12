@@ -212,6 +212,23 @@ export const clampVanCondition = (condition: number): number =>
   clamp0to100(condition)
 
 /**
+ * Wraps a flavor-clock hour into the 0..23 day range.
+ *
+ * @remarks
+ * `player.time` is a cosmetic time-of-day clock that event "lost hours"
+ * effects move. It must stay a sane hour — historically it accumulated
+ * unbounded (negative) values because deltas were applied without wrapping.
+ *
+ * @param hour - Candidate hour value.
+ * @returns The hour wrapped into 0..23; non-finite input falls back to 12.
+ */
+export const wrapClockHour = (hour: number): number => {
+  if (!Number.isFinite(hour)) return 12
+  const wrapped = Math.floor(hour) % 24
+  return wrapped < 0 ? wrapped + 24 : wrapped
+}
+
+/**
  * Clamps van fuel to the allowed capacity.
  *
  * @param fuel - Candidate fuel value.

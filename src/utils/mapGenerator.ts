@@ -37,7 +37,7 @@ type GeneratedMapNode = {
     | 'REST_STOP'
     | 'FESTIVAL'
     | 'FINALE'
-    | 'supplyStop'
+    | 'SUPPLY_STOP'
   >
   x: number
   y: number
@@ -377,7 +377,7 @@ export class MapGenerator {
           y: getVenueCoord(venue, 'y', i * 10 + 10)
         }
 
-        if (nodeType === 'supplyStop') {
+        if (nodeType === 'SUPPLY_STOP') {
           node.shopInventory = this.pickRandomSubset(inventoryAddItems, 3)
         }
 
@@ -551,7 +551,7 @@ export class MapGenerator {
 
   /**
    * Rolls a node type from a single RNG draw (~70% GIG/FESTIVAL, ~20%
-   * REST_STOP/supplyStop, ~10% SPECIAL); large-capacity gigs become FESTIVAL.
+   * REST_STOP/SUPPLY_STOP, ~10% SPECIAL); large-capacity gigs become FESTIVAL.
    * @param venue - Venue used to upgrade large-capacity gigs to FESTIVAL.
    * @returns The selected node type.
    */
@@ -559,7 +559,7 @@ export class MapGenerator {
     const typeRoll = this.random()
     let nodeType: GeneratedMapNode['type'] = 'GIG'
     if (typeRoll > 0.9) nodeType = 'SPECIAL'
-    else if (typeRoll > 0.8) nodeType = 'supplyStop'
+    else if (typeRoll > 0.8) nodeType = 'SUPPLY_STOP'
     else if (typeRoll > 0.7) nodeType = 'REST_STOP'
     else if ((venue.capacity ?? 0) >= 1000) nodeType = 'FESTIVAL'
     return nodeType

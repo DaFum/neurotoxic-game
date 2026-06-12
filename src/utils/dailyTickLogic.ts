@@ -63,7 +63,9 @@ const updateVanCondition = (
   nextPlayer: PlayerState,
   controversySnapshot: number
 ) => {
-  // Van condition decay (wear from daily travel)
+  // Flat daily van wear — applied every day tick regardless of distance
+  // traveled (days mostly advance through travel, so this approximates
+  // per-trip wear; it is intentionally not distance-scaled).
   if (nextPlayer.van) {
     nextPlayer.van = { ...nextPlayer.van }
     nextPlayer.van.condition = clampVanCondition(

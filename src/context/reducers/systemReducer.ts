@@ -42,7 +42,8 @@ import {
   finiteNumberOr,
   isFiniteNumber,
   clampNonNegative,
-  BALANCE_CONSTANTS
+  BALANCE_CONSTANTS,
+  wrapClockHour
 } from '../../utils/gameState'
 import { calculateDailyUpdates } from '../../utils/simulationUtils'
 import {
@@ -105,7 +106,7 @@ const ALLOWED_MAP_NODE_TYPES = new Set<MapNodeType>([
   'FINALE',
   'CITY',
   'REST',
-  'supplyStop'
+  'SUPPLY_STOP'
 ])
 
 const isMapNodeType = (value: unknown): value is MapNodeType =>
@@ -137,6 +138,9 @@ const inferLoadedMapNodeType = (
   nodeRecord: Record<string, unknown>,
   id: string
 ): MapNodeType => {
+  // Legacy saves used the camelCase variant before the node-type naming was
+  // unified to SCREAMING_SNAKE_CASE.
+  if (nodeRecord.type === 'supplyStop') return 'SUPPLY_STOP'
   if (isMapNodeType(nodeRecord.type)) return nodeRecord.type
   if (id === 'start' || id === 'node_0_0') return 'START'
   if (
@@ -749,7 +753,8 @@ const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
       proveYourselfMode:
         typeof statsData.proveYourselfMode === 'boolean'
           ? statsData.proveYourselfMode
-          : DEFAULT_PLAYER_STATE.stats.proveYourselfMode
+          : DEFAULT_PLAYER_STATE.stats.proveYourselfMode,
+      tourCompleted: statsData.tourCompleted === true
     }
   }
 
@@ -761,7 +766,7 @@ const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
     fame: validatedFame,
     fameLevel: calculateFameLevel(validatedFame),
     day: Math.max(1, rawPlayer.day),
-    time: clampNonNegative(rawPlayer.time),
+    time: wrapClockHour(rawPlayer.time),
     van: {
       ...rawPlayer.van,
       fuel: clampVanFuel(rawPlayer.van.fuel)
@@ -1537,19 +1542,9 @@ const sanitizeQuestCooldowns = (
     if (isForbiddenKey(entry.questId)) return []
     const expiresOnDay = finiteOptionalNumber(entry.expiresOnDay)
     if (expiresOnDay === undefined) return []
-    const sanitized: GameState['questCooldowns'][number] = {
-      questId: entry.questId,
-      expiresOnDay
-    }
-    if (
-      Object.hasOwn(entry, 'id') &&
-      typeof entry.id === 'string' &&
-      entry.id.length > 0 &&
-      !isForbiddenKey(entry.id)
-    ) {
-      sanitized.id = entry.id
-    }
-    return [sanitized]
+    // Legacy saves may carry a decorative `id` label; cooldown matching is
+    // keyed by questId alone, so it is dropped on load.
+    return [{ questId: entry.questId, expiresOnDay }]
   })
 }
 

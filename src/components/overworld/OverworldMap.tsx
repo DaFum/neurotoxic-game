@@ -150,7 +150,7 @@ export const OverworldMap = React.memo(
         else if (node.type === 'REST_STOP') iconUrl = pinRestUrl
         else if (node.type === 'SPECIAL') iconUrl = pinSpecialUrl
         else if (node.type === 'FINALE') iconUrl = pinFinaleUrl
-        else if (node.type === 'supplyStop') iconUrl = pinSupplyUrl
+        else if (node.type === 'SUPPLY_STOP') iconUrl = pinSupplyUrl
 
         const nodeVenueId = normalizeVenueId(node.venueId ?? node.venue)
         const cityKey = nodeVenueId ? getCityKeyFromVenueId(nodeVenueId) : ''

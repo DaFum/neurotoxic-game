@@ -89,14 +89,9 @@ const normalizeLegacyPenalties = (quest: QuestState): QuestPenalty[] => {
       if (!isLooseRecord(cooldown)) continue
       const days = finiteNumberOr(cooldown.days, Number.NaN)
       if (Number.isFinite(days)) {
-        const cooldownId =
-          Object.hasOwn(cooldown, 'id') &&
-          typeof cooldown.id === 'string' &&
-          cooldown.id.length > 0 &&
-          !isForbiddenKey(cooldown.id)
-            ? cooldown.id
-            : quest.id
-        penalties.push({ type: 'quest.cooldown', id: cooldownId, days })
+        // Legacy `id` labels are dropped: cooldown matching is keyed by the
+        // quest id alone (canAcceptQuest compares cd.questId).
+        penalties.push({ type: 'quest.cooldown', days })
       }
     }
   }
@@ -197,20 +192,12 @@ export const applyQuestFailurePenalties = (
       case 'event.queue':
         nextState = queueEvent(nextState, penalty.eventId)
         break
-      case 'quest.cooldown': {
-        const cooldownId =
-          typeof penalty.id === 'string' &&
-          penalty.id.length > 0 &&
-          !isForbiddenKey(penalty.id)
-            ? penalty.id
-            : undefined
+      case 'quest.cooldown':
         cooldownsToAdd.push({
           questId: quest.id,
-          ...(cooldownId ? { id: cooldownId } : {}),
           expiresOnDay: currentDay + penalty.days
         })
         break
-      }
     }
   }
 

@@ -17,7 +17,7 @@ const LEGACY_EVENT_BY_CANONICAL = {
   'gig.smallVenueGood': 'small_venue_good_gig',
   'social.postResolved': 'social_post',
   'social.followersGained': 'followers_gained',
-  'region.reputationChanged': 'fame_gained',
+  'fame.gained': 'fame_gained',
   'economy.moneyEarned': 'money_earned',
   'band.harmonyChanged': 'harmony_recovered',
   'item.collected': 'item_collected',
@@ -282,11 +282,18 @@ describe('Quest System Registry Validation', () => {
   })
 
   it('content gate: quest trigger events mirror registry offer metadata', () => {
+    let checked = 0
     for (const event of QUEST_EVENTS) {
+      // Quest effects reference the quest either as a bare id string or as an
+      // inline `{ id }` payload — accept both, otherwise this gate is a no-op.
       const questId = event.options
-        ?.map(option => option?.effect?.quest?.id)
+        ?.map(option => {
+          const quest = option?.effect?.quest
+          return typeof quest === 'string' ? quest : quest?.id
+        })
         .find(id => typeof id === 'string')
       if (!questId) continue
+      checked++
       const offer = QUEST_REGISTRY[questId]?.offer
       assert.ok(
         offer,
@@ -299,6 +306,83 @@ describe('Quest System Registry Validation', () => {
         `${event.id} category drifted`
       )
       assert.equal(event.chance, offer.chance, `${event.id} chance drifted`)
+    }
+    assert.ok(checked > 0, 'offer-metadata gate matched no quest events')
+  })
+
+  it('content gate: registry label/description keys exist in EN and DE', async () => {
+    const fs = await import('node:fs')
+    const locales = {}
+    for (const lang of ['en', 'de']) {
+      locales[lang] = {
+        ui: JSON.parse(
+          fs.readFileSync(`public/locales/${lang}/ui.json`, 'utf8')
+        ),
+        events: JSON.parse(
+          fs.readFileSync(`public/locales/${lang}/events.json`, 'utf8')
+        )
+      }
+    }
+    const assertKey = (key, context) => {
+      const [ns, rest] = key.split(':')
+      for (const lang of ['en', 'de']) {
+        assert.ok(
+          Object.hasOwn(locales[lang][ns] ?? {}, rest),
+          `${context}: missing ${lang.toUpperCase()} locale key ${key}`
+        )
+      }
+    }
+    for (const [questId, quest] of Object.entries(QUEST_REGISTRY)) {
+      if (typeof quest.label === 'string') {
+        assertKey(quest.label, `${questId}.label`)
+      }
+      if (typeof quest.description === 'string') {
+        assertKey(quest.description, `${questId}.description`)
+      }
+      if (typeof quest.progressSource === 'string') {
+        assertKey(
+          `ui:quests.progressSource.${quest.progressSource}`,
+          `${questId}.progressSource`
+        )
+      }
+    }
+    for (const event of QUEST_EVENTS) {
+      assertKey(event.title, `${event.id}.title`)
+      assertKey(event.description, `${event.id}.description`)
+      for (const option of event.options ?? []) {
+        assertKey(option.label, `${event.id} option label`)
+        assertKey(option.outcomeText, `${event.id} option outcome`)
+      }
+    }
+  })
+
+  it('content gate: item.add reward ids resolve to an items locale entry', async () => {
+    const fs = await import('node:fs')
+    const itemsEn = JSON.parse(
+      fs.readFileSync('public/locales/en/items.json', 'utf8')
+    )
+    const itemsDe = JSON.parse(
+      fs.readFileSync('public/locales/de/items.json', 'utf8')
+    )
+    for (const [questId, quest] of Object.entries(QUEST_REGISTRY)) {
+      for (const reward of quest.rewards ?? []) {
+        if (reward.type !== 'item.add') continue
+        // Inventory UI renders `items:<id>.name`; contraband uses the
+        // namespaced `contraband.<id>.name` form.
+        const candidates = [
+          `${reward.itemId}.name`,
+          `contraband.${reward.itemId}.name`
+        ]
+        for (const [lang, items] of [
+          ['EN', itemsEn],
+          ['DE', itemsDe]
+        ]) {
+          assert.ok(
+            candidates.some(key => Object.hasOwn(items, key)),
+            `${questId}: item.add reward '${reward.itemId}' has no ${lang} items locale entry — phantom item`
+          )
+        }
+      }
     }
   })
 

@@ -6,11 +6,14 @@ import { StateError } from '../errorHandler'
 import { shuffleInPlace } from '../shuffleUtils'
 import { resolveTemplateString } from './templateResolver'
 import { toStringArray, processEvent } from './helpers'
+import { BASE_BREAKDOWN_CHANCE } from '../upgradeUtils'
 import type { EngineEvent, EngineGameState, TriggerPoint } from './types'
 
 const HARMONY_DEATH_SPIRAL_THRESHOLD = 30
 const HARMONY_DEATH_SPIRAL_DAMPEN_FACTOR = 0.5
 const INFIGHTING_DAMPER_CHANCE_FACTOR = 0.5
+// Cap matches the daily-tick worst case (condition < 30 plus controversy: 3.5x).
+const BREAKDOWN_CHANCE_FACTOR_CAP = 4
 
 type EventPoolById = Record<string, EngineEvent>
 
@@ -194,6 +197,25 @@ const selectEvent = (
 
     if (infightingDamperActive && event.tags?.includes('conflict')) {
       chance *= INFIGHTING_DAMPER_CHANCE_FACTOR
+    }
+
+    // Van wear matters: breakdown-tagged transport events scale with the
+    // daily-computed van.breakdownChance relative to the unmodified baseline.
+    // A fresh van (factor 1) keeps authored chances; low condition raises
+    // them (up to the daily-tick cap), suspension upgrades lower them.
+    if (event.tags?.includes('breakdown')) {
+      const breakdownChance = finiteNumberOr(
+        gameState.player?.van?.breakdownChance,
+        BASE_BREAKDOWN_CHANCE
+      )
+      const factor = Math.max(
+
+        Math.min(
+          BREAKDOWN_CHANCE_FACTOR_CAP,
+          breakdownChance / BASE_BREAKDOWN_CHANCE
+        )
+      )
+      chance *= factor
     }
 
     if (!Number.isFinite(chance)) chance = 0

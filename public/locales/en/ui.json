@@ -1761,5 +1761,8 @@
   },
   "quests.progressSource.venue_blacklisted": "Progress: Get blacklisted by a venue",
   "quests.progressSource.venue_reputation_changed": "Progress: Build venue reputation",
-  "quests.progressSource.venue_unblacklisted": "Progress: Win back a blacklisted venue"
+  "quests.progressSource.venue_unblacklisted": "Progress: Win back a blacklisted venue",
+  "gameOver.tourComplete": "TOUR COMPLETE",
+  "tour.conqueredTheVoid": "THE VOID TOUR IS CONQUERED",
+  "postGig.tourComplete": "TOUR COMPLETE: You survived the void tour!"
 }

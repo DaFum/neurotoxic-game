@@ -33,6 +33,8 @@ export interface PlayerState {
     failedStageDives?: number
     consecutiveBadShows: number
     proveYourselfMode: boolean
+    /** Set when the FINALE gig was completed; routes to the victory end screen. */
+    tourCompleted?: boolean
   }
   [key: string]: unknown
 }

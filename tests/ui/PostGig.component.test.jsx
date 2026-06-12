@@ -774,16 +774,12 @@ describe('PostGig Component - Complete Phase', () => {
         expect.objectContaining({
           id: 'quest_apology_tour',
           deadline: 19,
+          failureFlags: ['apology_tour_failed'],
           failurePenalties: expect.arrayContaining([
             expect.objectContaining({ type: 'social.controversy', amount: 25 }),
             expect.objectContaining({ type: 'band.harmony', amount: -20 }),
             expect.objectContaining({
-              type: 'flag.add',
-              flag: 'apology_tour_failed'
-            }),
-            expect.objectContaining({
               type: 'quest.cooldown',
-              id: 'apology_tour_retry',
               days: 14
             })
           ])
@@ -798,17 +794,13 @@ describe('PostGig Component - Complete Phase', () => {
           id: 'quest_ego_management',
           deadline: 10,
           progress: 50 - NEUROTOXIC_PEDAL_HARMONY_PENALTY,
+          failureFlags: ['ego_crisis_failed'],
           failurePenalties: expect.arrayContaining([
             expect.objectContaining({ type: 'social.controversy', amount: 10 }),
             expect.objectContaining({ type: 'social.loyalty', amount: -15 }),
             expect.objectContaining({ type: 'band.harmony', amount: -25 }),
             expect.objectContaining({
-              type: 'flag.add',
-              flag: 'ego_crisis_failed'
-            }),
-            expect.objectContaining({
               type: 'quest.cooldown',
-              id: 'ego_management_retry',
               days: 10
             })
           ])

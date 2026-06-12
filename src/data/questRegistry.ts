@@ -19,12 +19,11 @@ export const QUEST_REGISTRY = {
     clearFlagsOnComplete: ['prove_yourself_active'],
     clearFlagsOnFail: ['prove_yourself_active'],
     completionFlags: ['prove_yourself_complete'],
-    rewards: [{ type: 'flag.add', flag: 'prove_yourself_complete' }],
+    failureFlags: ['prove_yourself_failed'],
     failurePenalties: [
       { type: 'social.controversy', amount: 10 },
       { type: 'band.harmony', amount: -20 },
-      { type: 'flag.add', flag: 'prove_yourself_failed' },
-      { type: 'quest.cooldown', id: 'prove_yourself_retry', days: 20 }
+      { type: 'quest.cooldown', days: 20 }
     ]
   },
   quest_apology_tour: {
@@ -42,12 +41,11 @@ export const QUEST_REGISTRY = {
     clearFlagsOnComplete: ['cancel_quest_active'],
     clearFlagsOnFail: ['cancel_quest_active'],
     completionFlags: ['apology_tour_complete'],
-    rewards: [{ type: 'flag.add', flag: 'apology_tour_complete' }],
+    failureFlags: ['apology_tour_failed'],
     failurePenalties: [
       { type: 'social.controversy', amount: 25 },
       { type: 'band.harmony', amount: -20 },
-      { type: 'flag.add', flag: 'apology_tour_failed' },
-      { type: 'quest.cooldown', id: 'apology_tour_retry', days: 14 }
+      { type: 'quest.cooldown', days: 14 }
     ]
   },
   quest_ego_management: {
@@ -69,13 +67,12 @@ export const QUEST_REGISTRY = {
     clearFlagsOnComplete: ['breakup_quest_active'],
     clearFlagsOnFail: ['breakup_quest_active'],
     completionFlags: ['ego_crisis_resolved'],
-    rewards: [{ type: 'flag.add', flag: 'ego_crisis_resolved' }],
+    failureFlags: ['ego_crisis_failed'],
     failurePenalties: [
       { type: 'social.controversy', amount: 10 },
       { type: 'social.loyalty', amount: -15 },
       { type: 'band.harmony', amount: -25 },
-      { type: 'flag.add', flag: 'ego_crisis_failed' },
-      { type: 'quest.cooldown', id: 'ego_management_retry', days: 10 }
+      { type: 'quest.cooldown', days: 10 }
     ]
   },
   quest_pick_of_destiny: {
@@ -119,7 +116,7 @@ export const QUEST_REGISTRY = {
     rewards: [{ type: 'fame', amount: 500 }],
     failurePenalties: [
       { type: 'social.controversy', amount: 5 },
-      { type: 'quest.cooldown', id: 'quest_viral_dance_retry', days: 7 }
+      { type: 'quest.cooldown', days: 7 }
     ]
   },
   quest_sponsor_demand: {
@@ -146,7 +143,7 @@ export const QUEST_REGISTRY = {
     ],
     failurePenalties: [
       { type: 'social.loyalty', amount: -10 },
-      { type: 'quest.cooldown', id: 'quest_sponsor_demand_retry', days: 15 }
+      { type: 'quest.cooldown', days: 15 }
     ]
   },
   quest_harmony_project: {
@@ -339,11 +336,7 @@ export const QUEST_REGISTRY = {
     rewards: [{ type: 'money', amount: 1500 }],
     failurePenalties: [
       { type: 'social.loyalty', amount: -10 },
-      {
-        type: 'quest.cooldown',
-        id: 'quest_premium_endorsement_retry',
-        days: 30
-      }
+      { type: 'quest.cooldown', days: 30 }
     ]
   },
   quest_community_outreach: {
@@ -385,14 +378,8 @@ export const QUEST_REGISTRY = {
     required: 3,
     completionFlags: ['back_from_pit_complete'],
     failureFlags: ['back_from_pit_failed'],
-    rewards: [
-      { type: 'flag.add', flag: 'back_from_pit_complete' },
-      { type: 'fame', amount: 300 }
-    ],
-    failurePenalties: [
-      { type: 'social.controversy', amount: 5 },
-      { type: 'flag.add', flag: 'back_from_pit_failed' }
-    ]
+    rewards: [{ type: 'fame', amount: 300 }],
+    failurePenalties: [{ type: 'social.controversy', amount: 5 }]
   },
   quest_sincere_redemption: {
     kind: 'story',
@@ -405,14 +392,8 @@ export const QUEST_REGISTRY = {
     required: 2,
     completionFlags: ['sincere_redemption_complete'],
     failureFlags: ['sincere_redemption_failed'],
-    rewards: [
-      { type: 'flag.add', flag: 'sincere_redemption_complete' },
-      { type: 'social.controversy', amount: -20 }
-    ],
-    failurePenalties: [
-      { type: 'social.loyalty', amount: -5 },
-      { type: 'flag.add', flag: 'sincere_redemption_failed' }
-    ]
+    rewards: [{ type: 'social.controversy', amount: -20 }],
+    failurePenalties: [{ type: 'social.loyalty', amount: -5 }]
   },
   quest_band_pact: {
     kind: 'story',
@@ -431,14 +412,8 @@ export const QUEST_REGISTRY = {
     required: 70,
     completionFlags: ['band_pact_complete'],
     failureFlags: ['band_pact_failed'],
-    rewards: [
-      { type: 'flag.add', flag: 'band_pact_complete' },
-      { type: 'band.harmony', amount: 15 }
-    ],
-    failurePenalties: [
-      { type: 'band.harmony', amount: -10 },
-      { type: 'flag.add', flag: 'band_pact_failed' }
-    ]
+    rewards: [{ type: 'band.harmony', amount: 15 }],
+    failurePenalties: [{ type: 'band.harmony', amount: -10 }]
   },
   quest_local_legend: {
     kind: 'repeatable',
@@ -449,7 +424,7 @@ export const QUEST_REGISTRY = {
     progressSource: 'fame_gained',
     progressRules: [
       {
-        event: 'region.reputationChanged',
+        event: 'fame.gained',
         amount: 'event.amount',
         match: { scope: 'region' }
       }

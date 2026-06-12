@@ -126,7 +126,16 @@ dadurch praktisch nie auslösen.** Nur die venue-spezifische Blacklist funktioni
 (`gigReducer.ts:285-289`). Auch perRegion-Quest-Scopes und `cityStates`
 (City-Key-basiert, `mapGenerator.ts:261-268`) arbeiten mit gemischten Formaten.
 
-### 1.4 `breakdownChance` und Van-Condition sind tote Mechaniken
+### 1.4 ✅ ERLEDIGT — `breakdownChance` und Van-Condition sind tote Mechaniken
+
+> **Fix:** Die mechanischen Pannen-Events (`van_breakdown_tire`,
+> `van_breakdown_engine`, `fuel_leak`, `flat_battery`, `tire_pressure_warning`)
+> tragen jetzt `tags: ['breakdown']` und werden in der Event-Selektion mit
+> `van.breakdownChance / BASE_BREAKDOWN_CHANCE` (0.05, Cap 4×) skaliert —
+> derselbe Mechanismus wie Harmony-/Infighting-Damper. Damit wirken Condition
+> (über den täglichen Multiplikator) und die Suspension-Upgrades (Faktor < 1)
+> erstmals tatsächlich auf das Pannenrisiko; ein frischer Van behält die
+> Author-Chancen. Test: `eventEngine.test.js`.
 
 `breakdownChance` wird täglich aus Upgrades × Condition × Controversy berechnet
 (`dailyTickLogic.ts:62-101`), bei Reparatur zurückgesetzt (`useVanMaintenance.ts:107-117`)
@@ -143,7 +152,14 @@ Konsequenzen:
   blockiert weder Reisen noch erhöht es Eventrisiken. Verschleiß ist nur eine versteckte
   Geld-Senke (siehe 2.2).
 
-### 1.5 Kein Endzustand am FINALE-Node
+### 1.5 ✅ ERLEDIGT — Kein Endzustand am FINALE-Node
+
+> **Fix:** Der Post-Gig-Continue erkennt den FINALE-Node (`isFinaleGig` via
+> `usePostGigLogic`), setzt das persistente `player.stats.tourCompleted` und
+> routet auf den GameOver-Screen in neuer **Sieg-Variante** („TOUR COMPLETE",
+> toxic-green) statt zurück in die Sackgassen-Overworld. Bankrott am Finale
+> gewinnt weiterhin (Bankruptcy-Check läuft zuerst). Das Stranded-Urteil am
+> FINALE war bereits mit Befund 1.2 deaktiviert worden.
 
 Der Map-Graph ist ein streng vorwärts gerichteter DAG (`mapGenerator.ts:573-666`,
 Verbindungen nur Layer i → i+1; `isConnected` prüft direktional, `mapUtils.ts:22-39`).
@@ -167,7 +183,11 @@ ohne Verbindungen:
 wird still auf 0 € geklemmt statt — wie im toten Pfad — die Ankunft abzubrechen. Zwei
 gegensätzliche Fehlerstrategien für denselben Fall.
 
-### 2.2 Täglicher Pauschal-Verschleiß −2 mit irreführendem Kommentar
+### 2.2 ✅ ERLEDIGT (Kommentar) — Täglicher Pauschal-Verschleiß −2 mit irreführendem Kommentar
+
+> **Fix:** Der Kommentar in `dailyTickLogic.ts` beschreibt den Verschleiß jetzt
+> korrekt als pauschalen Tages-Verschleiß (bewusst nicht distanzskaliert).
+> Seit Befund 1.4 wirkt die Condition zudem real auf das Pannenrisiko.
 
 `updateVanCondition` zieht **jeden Tag** 2 Condition ab — kommentiert als „wear from
 daily travel" (`dailyTickLogic.ts:66-71`), unabhängig davon, ob gefahren wurde. Da Tage
@@ -176,7 +196,13 @@ distanzunabhängig (20 km kosten so viel Condition wie 700 km) und zusätzlich z
 Minigame-Schaden (max. 50 Condition pro Fahrt, 50 %-Skalierung,
 `minigameLogic.ts:13-39`). Effektiv versteckte ~12 €/Tag (2 × 6 € Reparatur).
 
-### 2.3 `time`-Stat: akkumuliert, wirkt nie
+### 2.3 ✅ ERLEDIGT (als Tagesuhr begrenzt) — `time`-Stat: akkumuliert, wirkt nie
+
+> **Fix:** `player.time` ist jetzt eine konsistente Flavor-Tagesuhr: Deltas
+> werden über den neuen Helper `wrapClockHour` in 0–23 gewrappt (Delta-Apply,
+> Load-Sanitizer), die Anzeige formatiert korrekt mit führender Null und zeigt
+> bei `time === 0` nicht mehr fälschlich „12:00". Eine echte
+> Gameplay-Wirkung der verlorenen Stunden bleibt eine offene Design-Entscheidung.
 
 Transport-Events ziehen „Stunden" ab (`stat: 'time', value: -2` …), der Delta-Handler
 addiert unbegrenzt (`delta.ts:215-216` „time is unbounded", `eventEffectHandlers.ts:71-72`),
@@ -185,7 +211,13 @@ es gibt keinen Tages-Überlauf und keinen Konsumenten außer der Anzeige
 `||` fälschlich „12:00" zeigt und bei negativen Werten „-3:00". Eine reine
 Pseudo-Mechanik, die Spielern Konsequenzen suggeriert.
 
-### 2.4 Tote Event-Flags und Legacy-Node-Typen
+### 2.4 TEILWEISE ERLEDIGT — Tote Event-Flags und Legacy-Node-Typen
+
+> **Update:** `VAN_DAMAGED`/`RENTAL_VAN` wurden aus den Transport-Events
+> entfernt. Der Node-Typ heißt jetzt einheitlich `SUPPLY_STOP`
+> (SCREAMING_SNAKE_CASE wie alle anderen); alte Saves mit `supplyStop`
+> werden beim Laden migriert. Die Legacy-Typen `CITY`/`REST` bleiben als
+> tolerierte Lade-Werte bestehen.
 
 - `VAN_DAMAGED` und `RENTAL_VAN` werden von `van_breakdown_engine`/`van_critical_failure`
   gesetzt (`transport.ts:98,146`), aber nirgendwo gelesen.
@@ -277,11 +309,11 @@ beschreibt den toten Pfad; im echten Pfad gibt es gar keine Quest-Progression (1
    inkl. Save-Migration — damit Regions-Reputation, Buchungssperre und Quest-Scopes
    denselben Schlüssel verwenden (1.3). *Umgesetzt als zentrale City-Key-Ableitung
    an allen Region-Grenzen statt Formatwechsel von `player.location`, siehe 1.3.*
-4. **Mittel:** `breakdownChance` tatsächlich würfeln (z. B. als Zusatz-Chance auf
+4. ✅ **Mittel:** `breakdownChance` tatsächlich würfeln (z. B. als Zusatz-Chance auf
    `van_breakdown_*` beim Reisen) oder die Mechanik samt irreführender
    Upgrade-Versprechen entfernen (1.4).
-5. **Mittel:** Endzustand für das FINALE definieren (Sieg-Szene oder Loop-Neustart) und
+5. ✅ **Mittel:** Endzustand für das FINALE definieren (Sieg-Szene oder Loop-Neustart) und
    `checkSoftlock` am Finale deaktivieren (1.5).
-6. **Niedrig:** `time`-Stat entfernen oder mit Wirkung versehen; tote Flags
+6. ✅ **Niedrig:** `time`-Stat entfernen oder mit Wirkung versehen; tote Flags
    (`VAN_DAMAGED`, `RENTAL_VAN`) aufräumen; `supplyStop`-Naming vereinheitlichen;
    Verschleiß-Kommentar korrigieren oder Verschleiß distanzabhängig machen.

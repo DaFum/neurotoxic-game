@@ -44,6 +44,8 @@ export interface UsePostGigHandlersProps {
   financials: PostGigFinancials | null
   activeStoryFlags: string[]
   setlist: RhythmSetlistEntry[]
+  /** True when the completed gig sits on the FINALE map node. */
+  isFinaleGig?: boolean
   totalDailyObligations: number
   updatePlayer: (updates: UpdatePlayerPayload) => void
   updateBand: (
@@ -83,6 +85,7 @@ export function usePostGigHandlers({
   financials,
   activeStoryFlags,
   setlist,
+  isFinaleGig,
   totalDailyObligations,
   updatePlayer,
   updateBand,
@@ -138,6 +141,7 @@ export function usePostGigHandlers({
     lastGigStats,
     setlist,
     activeStoryFlags,
+    isFinaleGig,
     totalDailyObligations,
     isProcessingActionRef,
     setIsProcessingAction,

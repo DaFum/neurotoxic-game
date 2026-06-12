@@ -1761,5 +1761,8 @@
   },
   "quests.progressSource.venue_blacklisted": "Fortschritt: Von einer Venue auf die schwarze Liste kommen",
   "quests.progressSource.venue_reputation_changed": "Fortschritt: Venue-Ruf aufbauen",
-  "quests.progressSource.venue_unblacklisted": "Fortschritt: Eine Venue zurückgewinnen"
+  "quests.progressSource.venue_unblacklisted": "Fortschritt: Eine Venue zurückgewinnen",
+  "gameOver.tourComplete": "TOUR VOLLENDET",
+  "tour.conqueredTheVoid": "DIE VOID-TOUR IST BEZWUNGEN",
+  "postGig.tourComplete": "TOUR VOLLENDET: Ihr habt die Void-Tour überlebt!"
 }

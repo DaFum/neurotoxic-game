@@ -24,6 +24,12 @@ export const usePostGigLogic = () => {
   const reputationByRegion = useGameSelector(state => state.reputationByRegion)
   const activeStoryFlags = useGameSelector(state => state.activeStoryFlags)
   const cityStates = useGameSelector(state => state.gameMap?.cityStates)
+  // FINALE detection: the finale node has no outgoing connections, so the
+  // continue handler ends the run on the victory screen instead.
+  const isFinaleGig = useGameSelector(
+    state =>
+      state.gameMap?.nodes?.[state.player.currentNodeId]?.type === 'FINALE'
+  )
   const setlist = useGameSelector(state => state.setlist)
   // Bankruptcy must consult total daily obligations (asset upkeep/revenue and
   // liability payments), not just the gig net (AGENTS.md invariant).
@@ -91,6 +97,7 @@ export const usePostGigLogic = () => {
     financials,
     activeStoryFlags,
     setlist,
+    isFinaleGig,
     totalDailyObligations,
     updatePlayer,
     updateBand,

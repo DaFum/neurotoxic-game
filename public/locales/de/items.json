@@ -198,5 +198,9 @@
     }
   },
   "hq_room_void_altar.name": "Altar der Leere",
-  "hq_room_void_altar.description": "Ein beunruhigender Monolith, der summt. (+10 Glück Sofort)."
+  "hq_room_void_altar.description": "Ein beunruhigender Monolith, der summt. (+10 Glück Sofort).",
+  "lucky_pick.name": "Plektrum des Schicksals",
+  "lucky_pick.description": "Ein ramponiertes Plektrum, das drei gute Gigs in Folge überlebt hat. Die Band schwört, es summt.",
+  "energy_drink.name": "Sponsoren-Energydrink",
+  "energy_drink.description": "Eine Kiste neongrüner Sponsorenbrause. Schmeckt nach Batteriesäure und gebrochenen Versprechen."
 }

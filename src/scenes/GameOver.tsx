@@ -7,7 +7,8 @@ import { GameOverStats } from './gameover/GameOverStats'
 import { GameOverButtons } from './gameover/GameOverButtons'
 
 /**
- * Scene displayed when the game ends (bankruptcy or health failure).
+ * Scene displayed when the game ends — defeat (bankruptcy, stranded) or
+ * victory (FINALE gig completed, `player.stats.tourCompleted`).
  */
 export const GameOver = () => {
   const player = useGameSelector(state => state.player)
@@ -35,7 +36,7 @@ export const GameOver = () => {
   return (
     <div className='flex flex-col items-center justify-center h-full w-full bg-void-black z-(--z-overlay) text-center p-8 relative overflow-hidden'>
       <GameOverBackground />
-      <GameOverHeader />
+      <GameOverHeader victory={player?.stats?.tourCompleted === true} />
       <GameOverStats player={player} />
       <GameOverButtons
         onRetry={handleRetry}

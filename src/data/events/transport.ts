@@ -6,6 +6,7 @@ export const TRANSPORT_EVENTS = [
   {
     id: 'van_breakdown_tire',
     category: 'transport',
+    tags: ['breakdown'],
     title: 'events:van_breakdown_tire.title',
     description: 'events:van_breakdown_tire.desc',
     trigger: 'travel',
@@ -58,6 +59,7 @@ export const TRANSPORT_EVENTS = [
   {
     id: 'van_breakdown_engine',
     category: 'transport',
+    tags: ['breakdown'],
     title: 'events:van_breakdown_engine.title',
     description: 'events:van_breakdown_engine.desc',
     trigger: 'travel',
@@ -94,8 +96,7 @@ export const TRANSPORT_EVENTS = [
             type: 'composite',
             effects: [
               { type: 'stat', stat: 'time', value: -6 },
-              { type: 'chain', eventId: 'van_critical_failure' },
-              { type: 'flag', flag: 'VAN_DAMAGED' }
+              { type: 'chain', eventId: 'van_critical_failure' }
             ]
           }
         },
@@ -135,16 +136,10 @@ export const TRANSPORT_EVENTS = [
       {
         label: 'events:van_critical_failure.opt3.label',
         effect: {
-          type: 'composite',
-          effects: [
-            {
-              type: 'percentage_resource',
-              resource: 'money',
-              percentage: -40,
-              min: -500
-            },
-            { type: 'flag', flag: 'RENTAL_VAN' }
-          ]
+          type: 'percentage_resource',
+          resource: 'money',
+          percentage: -40,
+          min: -500
         },
         outcomeText: 'events:van_critical_failure.opt3.outcome'
       }
@@ -530,6 +525,7 @@ export const TRANSPORT_EVENTS = [
   {
     id: 'fuel_leak',
     category: 'transport',
+    tags: ['breakdown'],
     title: 'events:fuel_leak.title',
     description: 'events:fuel_leak.desc',
     trigger: 'travel',
@@ -566,6 +562,7 @@ export const TRANSPORT_EVENTS = [
   {
     id: 'flat_battery',
     category: 'transport',
+    tags: ['breakdown'],
     title: 'events:flat_battery.title',
     description: 'events:flat_battery.desc',
     trigger: 'travel',
@@ -768,6 +765,7 @@ export const TRANSPORT_EVENTS = [
   {
     id: 'tire_pressure_warning',
     category: 'transport',
+    tags: ['breakdown'],
     title: 'events:tire_pressure_warning.title',
     description: 'events:tire_pressure_warning.desc',
     trigger: 'travel',

@@ -160,7 +160,7 @@ export const handleNodeArrival = (
     rng = secureRandom
   } = params
   switch (node.type) {
-    case 'supplyStop': {
+    case 'SUPPLY_STOP': {
       addToast(
         i18n.t('ui:arrival.supplyStop', {
           defaultValue: 'You arrived at a Supply Stop.'

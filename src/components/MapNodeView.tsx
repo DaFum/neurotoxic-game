@@ -57,7 +57,7 @@ const getPinAltText = (t: TranslationCallback, type: string): string => {
 
 const getNodeTypeLabel = (t: TranslationCallback, type: string): string => {
   if (type === 'GIG') return t('ui:map.nodeType.gig')
-  if (type === 'supplyStop')
+  if (type === 'SUPPLY_STOP')
     return t('ui:map.nodeType.supply_stop', { defaultValue: 'SUPPLY STOP' })
   if (type === 'REST_STOP') return t('ui:map.nodeType.rest')
   return t('ui:map.nodeType.fallback', {
@@ -178,7 +178,7 @@ const MapNodeTooltip = memo(
             {t('ui:map.finale_desc')}
           </div>
         )}
-        {node.type === 'supplyStop' && (
+        {node.type === 'SUPPLY_STOP' && (
           <div className='text-xs text-toxic-green font-mono'>
             {t('ui:map.supply_stop_desc', { defaultValue: 'Supply Stop' })}
           </div>
@@ -366,7 +366,9 @@ export const MapNodeView = memo(
             <img
               src={iconUrl}
               alt={getPinAltText(t, node.type)}
-              crossOrigin={iconUrl.startsWith('data:') ? undefined : 'anonymous'}
+              crossOrigin={
+                iconUrl.startsWith('data:') ? undefined : 'anonymous'
+              }
               className='w-6 h-6 object-contain drop-shadow-[0_0_8px_var(--color-void-black)]'
             />
           </div>
