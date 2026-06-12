@@ -77,7 +77,7 @@ describe('PauseButton', () => {
 
     const button = container.querySelector('button')
     expect(button.className).toContain('opacity-50')
-    expect(button.className).toContain('cursor-not-allowed')
+    expect(button.className).toContain('pointer-events-none')
   })
 
   test('does not have disabled styles when game is active', async () => {

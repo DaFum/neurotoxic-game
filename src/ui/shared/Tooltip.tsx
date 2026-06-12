@@ -138,7 +138,7 @@ export const Tooltip = ({
 
   const trigger = isDisabled ? (
     <span
-      className={`inline-block ${isFullWidth ? 'w-full' : ''}`}
+      className={`inline-block cursor-not-allowed ${isFullWidth ? 'w-full' : ''}`}
       tabIndex={0}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
