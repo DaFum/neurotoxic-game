@@ -656,9 +656,9 @@ test('systemReducer - LOAD_GAME', async t => {
       assert.equal(nextState.social.lastPirateBroadcastDay, 7)
       assert.equal(nextState.social.egoFocus, 'Matze')
       assert.equal(nextState.social.trend, 'DRAMA')
-      assert.deepEqual(nextState.social.activeDeals, [
-        { id: 'deal1', remainingGigs: 2 }
-      ])
+      // 'deal1' has no BRAND_DEALS_BY_ID entry: unknown deals are dropped on
+      // load because a stub without type/offer matches no runtime consumer.
+      assert.deepEqual(nextState.social.activeDeals, [])
       assert.deepEqual(nextState.social.brandReputation, { EVIL: 30 })
       assert.deepEqual(nextState.social.influencers, {
         local: { tier: 'Micro', trait: 'tastemaker', score: 12 }
@@ -692,6 +692,23 @@ test('systemReducer - LOAD_GAME', async t => {
       assert.equal(deal.offer.perGig, 50)
     }
   )
+
+  await t.test('drops active deals with unknown registry ids on load', () => {
+    const initialState = createInitialState()
+    const loadedState = JSON.parse(`{
+      "social": {
+        "activeDeals": [
+          { "id": "removed_in_patch", "remainingGigs": 3 },
+          { "id": "energy_drink_cx", "remainingGigs": 2 }
+        ]
+      }
+    }`)
+
+    const nextState = handleLoadGame(initialState, loadedState)
+
+    assert.equal(nextState.social.activeDeals.length, 1)
+    assert.equal(nextState.social.activeDeals[0].id, 'energy_drink_cx')
+  })
 
   await t.test(
     'sanitizes loaded activeEvent instead of trusting raw casts',

@@ -1251,9 +1251,11 @@ const sanitizeSocial = (value: unknown): SocialState => {
       // (hasActiveSponsorship, per-gig payouts, sellout penalties) require
       // `type` and `offer`, which the persisted blob must not be trusted to
       // carry. Only `remainingGigs` is player progress and survives the load.
+      // Ids without a registry entry (deals removed in a patch, hostile
+      // saves) are dropped — a stub without type/offer matches no consumer.
       const registryDeal = BRAND_DEALS_BY_ID.get(copied.id)
       if (!registryDeal) {
-        return [{ id: copied.id, remainingGigs: copied.remainingGigs }]
+        return []
       }
       return [{ ...registryDeal, remainingGigs: copied.remainingGigs }]
     })
