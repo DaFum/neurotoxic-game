@@ -1712,7 +1712,7 @@ export const handleResetState = (
         ? sanitizeSettingsPayload(payload.settings as RawGameSettings)
         : state.settings,
     unlocks: Array.isArray(payload.unlocks)
-      ? (payload.unlocks as string[])
+      ? sanitizeStringArray(payload.unlocks)
       : (state.unlocks ?? [])
   }
 

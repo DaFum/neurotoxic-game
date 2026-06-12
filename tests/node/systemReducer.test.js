@@ -1145,6 +1145,16 @@ test('systemReducer - RESET_STATE', async t => {
       assert.deepEqual(nextState.unlocks, ['unlock1', 'unlock2']) // Preserved from current state
     }
   )
+
+  await t.test('drops non-string entries from payload unlocks', () => {
+    const currentState = createInitialState()
+
+    const nextState = handleResetState(currentState, {
+      unlocks: ['unlock1', 42, null, { evil: true }, 'unlock2']
+    })
+
+    assert.deepEqual(nextState.unlocks, ['unlock1', 'unlock2'])
+  })
 })
 
 test('systemReducer - UPDATE_SETTINGS', () => {
