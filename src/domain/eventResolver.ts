@@ -57,10 +57,16 @@ function buildQuestActions(quests: unknown, currentDay: number): GameAction[] {
   const actions: GameAction[] = []
   for (const q of quests) {
     // Extract the quest representation properly whether it's a string ID or an object
-    const rawQuestId = typeof q === 'string' ? q : isLooseRecord(q) && typeof q.id === 'string' ? q.id : undefined;
-    if (!rawQuestId) continue;
-    const baseQuestObj = typeof q === 'string' ? { id: q } : (q as Record<string, unknown>);
-    const questToAdd = { ...baseQuestObj };
+    const rawQuestId =
+      typeof q === 'string'
+        ? q
+        : isLooseRecord(q) && typeof q.id === 'string'
+          ? q.id
+          : undefined
+    if (!rawQuestId) continue
+    const baseQuestObj =
+      typeof q === 'string' ? { id: q } : (q as Record<string, unknown>)
+    const questToAdd = { ...baseQuestObj }
     if (questToAdd.deadlineOffset != null) {
       const rawOffset = questToAdd.deadlineOffset
       const deadlineOffset =
