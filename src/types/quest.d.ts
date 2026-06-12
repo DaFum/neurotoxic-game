@@ -227,7 +227,7 @@ export type QuestPenalty =
     }
   | { type: 'flag.add'; flag: string }
   | { type: 'event.queue'; eventId: string }
-  | { type: 'quest.cooldown'; id?: string; days: number }
+  | { type: 'quest.cooldown'; days: number }
 
 /**
  * State predicates that gate random or contextual quest offers.
@@ -356,7 +356,6 @@ export interface QuestState extends UnknownRecord {
  */
 export interface QuestCooldown {
   questId: string
-  id?: string
   expiresOnDay: number
 }
 

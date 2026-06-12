@@ -1751,7 +1751,6 @@ test('QuestLifecycle', async t => {
         c => c.questId === 'quest_viral_dance'
       )
       assert.ok(cd)
-      assert.equal(cd.id, 'quest_viral_dance_retry')
       assert.equal(cd.expiresOnDay, 17)
       assert.equal(
         QuestLifecycle.addQuest(next, { id: 'quest_viral_dance' }),
@@ -1801,7 +1800,7 @@ test('QuestLifecycle', async t => {
               { type: 'social.controversy', amount: 8 },
               { type: 'band.harmony', amount: -5 },
               { type: 'flag.add', flag: 'q_new_penalties_failed' },
-              { type: 'quest.cooldown', id: 'retry_specific', days: 3 }
+              { type: 'quest.cooldown', days: 3 }
             ]
           }
         ]
@@ -1812,7 +1811,7 @@ test('QuestLifecycle', async t => {
       assert.equal(next.band.harmony, 45)
       assert.ok(next.activeStoryFlags.includes('q_new_penalties_failed'))
       assert.deepEqual(next.questCooldowns, [
-        { questId: 'q_new_penalties', id: 'retry_specific', expiresOnDay: 13 }
+        { questId: 'q_new_penalties', expiresOnDay: 13 }
       ])
     })
 

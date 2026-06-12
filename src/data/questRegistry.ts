@@ -23,7 +23,7 @@ export const QUEST_REGISTRY = {
     failurePenalties: [
       { type: 'social.controversy', amount: 10 },
       { type: 'band.harmony', amount: -20 },
-      { type: 'quest.cooldown', id: 'prove_yourself_retry', days: 20 }
+      { type: 'quest.cooldown', days: 20 }
     ]
   },
   quest_apology_tour: {
@@ -45,7 +45,7 @@ export const QUEST_REGISTRY = {
     failurePenalties: [
       { type: 'social.controversy', amount: 25 },
       { type: 'band.harmony', amount: -20 },
-      { type: 'quest.cooldown', id: 'apology_tour_retry', days: 14 }
+      { type: 'quest.cooldown', days: 14 }
     ]
   },
   quest_ego_management: {
@@ -72,7 +72,7 @@ export const QUEST_REGISTRY = {
       { type: 'social.controversy', amount: 10 },
       { type: 'social.loyalty', amount: -15 },
       { type: 'band.harmony', amount: -25 },
-      { type: 'quest.cooldown', id: 'ego_management_retry', days: 10 }
+      { type: 'quest.cooldown', days: 10 }
     ]
   },
   quest_pick_of_destiny: {
@@ -116,7 +116,7 @@ export const QUEST_REGISTRY = {
     rewards: [{ type: 'fame', amount: 500 }],
     failurePenalties: [
       { type: 'social.controversy', amount: 5 },
-      { type: 'quest.cooldown', id: 'quest_viral_dance_retry', days: 7 }
+      { type: 'quest.cooldown', days: 7 }
     ]
   },
   quest_sponsor_demand: {
@@ -143,7 +143,7 @@ export const QUEST_REGISTRY = {
     ],
     failurePenalties: [
       { type: 'social.loyalty', amount: -10 },
-      { type: 'quest.cooldown', id: 'quest_sponsor_demand_retry', days: 15 }
+      { type: 'quest.cooldown', days: 15 }
     ]
   },
   quest_harmony_project: {
@@ -336,11 +336,7 @@ export const QUEST_REGISTRY = {
     rewards: [{ type: 'money', amount: 1500 }],
     failurePenalties: [
       { type: 'social.loyalty', amount: -10 },
-      {
-        type: 'quest.cooldown',
-        id: 'quest_premium_endorsement_retry',
-        days: 30
-      }
+      { type: 'quest.cooldown', days: 30 }
     ]
   },
   quest_community_outreach: {

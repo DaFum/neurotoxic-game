@@ -1538,19 +1538,9 @@ const sanitizeQuestCooldowns = (
     if (isForbiddenKey(entry.questId)) return []
     const expiresOnDay = finiteOptionalNumber(entry.expiresOnDay)
     if (expiresOnDay === undefined) return []
-    const sanitized: GameState['questCooldowns'][number] = {
-      questId: entry.questId,
-      expiresOnDay
-    }
-    if (
-      Object.hasOwn(entry, 'id') &&
-      typeof entry.id === 'string' &&
-      entry.id.length > 0 &&
-      !isForbiddenKey(entry.id)
-    ) {
-      sanitized.id = entry.id
-    }
-    return [sanitized]
+    // Legacy saves may carry a decorative `id` label; cooldown matching is
+    // keyed by questId alone, so it is dropped on load.
+    return [{ questId: entry.questId, expiresOnDay }]
   })
 }
 
