@@ -209,6 +209,8 @@ export const handleUnlockTrait = (
  * @param payload - Inventory item key to consume. Missing, non-string, or
  * forbidden keys leave the state unchanged.
  * @returns State with the inventory count decremented or boolean item cleared.
+ * Unowned or zero-count items return the original state unchanged — no
+ * item-used quest event is emitted unless something was actually consumed.
  */
 export const handleConsumeItem = (
   state: GameState,

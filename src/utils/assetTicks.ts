@@ -136,8 +136,12 @@ export const processAssetTick = (state: GameState): GameState => {
 }
 
 /**
- * Settles liability payments. On shortfall, increments defaultCounter; on
- * 7-day default, removes the asset (foreclosure) and applies a fame penalty.
+ * Settles liability payments. Each payment is split into an interest portion
+ * (`principalRemaining × interestRate / 365`) and a principal reduction, so
+ * `principalRemaining` tracks the amortization balance that priced
+ * `dailyPayment`; the final payment charges only the remaining payoff. On
+ * shortfall, increments defaultCounter; on 7-day default, removes the asset
+ * (foreclosure) and applies a fame penalty.
  */
 export const processLiabilityTick = (
   state: GameState

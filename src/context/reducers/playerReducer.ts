@@ -14,7 +14,9 @@ type WithPlayer = { player: PlayerState }
  * Applies sanitized player updates while preserving derived fame level invariants.
  *
  * Money and fame are clamped before merge; malformed or prototype-polluting
- * payloads leave the original state untouched.
+ * payloads leave the original state untouched. `fameLevel` is always derived
+ * from `fame` — a payload carrying `fameLevel` without `fame` has the field
+ * dropped to keep the pair in sync.
  *
  * @typeParam TState - State shape that carries the player slice.
  * @param state - State object containing the player slice to update.

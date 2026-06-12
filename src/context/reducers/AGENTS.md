@@ -7,6 +7,8 @@
 - `cityStates` sanitization uses `Number.isFinite(attentionSpan)` (not `typeof === 'number'`) to reject `NaN` and `Infinity`.
 - `for...in` over default-shape constants (e.g. `DEFAULT_BAND_STATE.inventory` in `sanitizeBandInventory`) must guard each key with `if (!Object.hasOwn(defaults, key)) continue`. Without the guard, hostile `Object.prototype` additions leak into the sanitized save result.
 - Prototype-pollution rejection in reducers must return the **identical memory reference** (`nextState === baseState`), not just a deep-equal copy. `{ ...state }` "safe copy" still fails `tests/node/reducerInvariants.test.js` and `tests/node/bandReducer.security.test.js` — the forbidden-key branch must short-circuit before any state copy.
+- Stash hydration in `sanitizeBand` spreads the canonical `CONTRABAND_BY_ID` definition LAST (`{ ...itemObj, ...baseItem }`) so save data can never override definition fields (`value`, `effectType`, `duration`, `type`, `maxStacks`); only per-instance runtime fields (`instanceId`, `applied`, `stacks`) survive from the save, and `stacks` is sanitized to a positive integer. Do not flip the spread order back.
+- Legacy-key migrations in sanitizers (e.g. `energy → catering` in `sanitizeGigModifiers`) must only apply when the save lacks the current key — the current key always wins over a stale alias.
 
 ## Band Effects
 
@@ -17,6 +19,9 @@
 ## Reducer Flow
 
 - Reducer-side numeric payload handling must reject/drop non-finite numbers with `Number.isFinite` or `finiteNumberOr` before clamping. Do not rely on clamps turning `NaN`/`Infinity` into `0`; malformed direct dispatches should leave the field unchanged unless a reducer has an explicit legacy fallback contract.
+- Toast ids created inside reducers must come from `buildDeterministicToastId(prefix, state.toasts)` (`toastSanitizers.ts`) or a pre-generated payload id — never `getSafeUUID()`/RNG (reducer purity).
+- Reducers that emit quest-progress events (`QuestEvents.emit`) must emit only when the state actually changed; e.g. `handleConsumeItem` returns the original state (no event) for unowned or zero-count items so quests can't be farmed via no-op dispatches.
+- `fameLevel` is derived from `fame` and only ever recomputed alongside it (`calculateFameLevel`); `handleUpdatePlayer` drops a standalone `fameLevel` payload field.
 - `questReducer.ts` is only an integration point; quest progress/completion/deadline logic lives in `src/domain/questLifecycle.ts`. Do not move domain logic into the reducer.
 - Reducer typing regressions fail `pnpm run typecheck`; whole-project issues belong to `pnpm run typecheck:core`.
 - `gameReducer`'s default branch logs the malformed action, then uses `assertNever(action as never)` as a **runtime** trap, not a compile-time exhaustiveness check. The `as never` cast is intentional — `Object.hasOwn` guards already filter known action types, so the branch is a defense-in-depth net against malformed dispatches. Removing the cast (or "fixing" the assertNever pattern) re-introduces compile errors and removes the runtime guard.
@@ -34,5 +39,5 @@
 - `condition < 20` → aggregated boni neutralized via selectors. `condition === 0` → `ASSET_FORECLOSED` dispatched by tick orchestrator.
 - `assetSanitizers.ts` enforces referential integrity: orphan liabilities and orphan `addedByModuleId` slots are dropped on load. The `VALID_SLOT_TYPES` allow-list mirrors the `SlotType` union (TS erases it at runtime) and is validated before any cast.
 - Crowdfund sanitizer clamps `plannedSuccessRoll` into `[0, 1]` and `plannedSuccessProbability` into `[0.05, 0.95]` (default `0.5` for legacy saves that predate the field). Add equivalent clamps for any new probability fields.
-- `sanitizeRngSeed` returns an unsigned 32-bit integer (`>>> 0`) so `mulberry32` sees a valid UInt32 seed even on saves from a build that wrote signed values.
+- `sanitizeRngSeed` returns an unsigned 32-bit integer (`>>> 0`) so `mulberry32` sees a valid UInt32 seed even on saves from a build that wrote signed values. Its `Date.now()` fallback for missing/corrupt seeds is a deliberate purity exception — a fixed constant would give every recovered save the same RNG timeline.
 - `BASE_STATE` (Playwright fixture) must mirror `createInitialState` including `assets`, `liabilities`, `crowdfundCampaigns`, and `rngSeed`.
