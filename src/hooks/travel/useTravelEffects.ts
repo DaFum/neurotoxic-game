@@ -142,6 +142,8 @@ export const useTravelEffects = ({
 
     // Mirror the travel gate: each neighbor must be affordable in fuel AND
     // cash including the daily obligations that arrival's advanceDay bills.
+    // getTotalDailyObligations guards missing assets internally;
+    // getActiveAssetModifiers does not, so fall back to an empty array.
     const softlockContext = {
       dailyObligations: getTotalDailyObligations({
         player,
@@ -150,7 +152,7 @@ export const useTravelEffects = ({
         assets,
         liabilities
       } as GameState),
-      assetModifiers: getActiveAssetModifiers(assets),
+      assetModifiers: getActiveAssetModifiers(assets ?? []),
       postSaleScenarios
     }
 
