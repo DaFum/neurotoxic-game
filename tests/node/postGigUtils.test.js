@@ -4,12 +4,22 @@ import {
   applyPostGigPerformancePenalty,
   calculateContinueStats,
   calculateExcessMissMoneyPenalty,
+  calculatePerformanceScore,
   calculatePostGigStateUpdates,
   getAcceptDealSocialUpdateFactory,
   getSpinStorySocialUpdateFactory,
   SPIN_STORY_CONTROVERSY_REDUCTION
 } from '../../src/utils/postGigUtils'
 import { BALANCE_CONSTANTS } from '../../src/utils/gameState'
+
+test('calculatePerformanceScore clamps and rejects non-finite raw scores', () => {
+  assert.equal(calculatePerformanceScore(15000), 100)
+  assert.equal(calculatePerformanceScore(0), 30)
+  // NaN passes through Math.min/Math.max untouched; the finite guard must
+  // collapse it to the lower bound instead of returning NaN.
+  assert.equal(calculatePerformanceScore(Number.NaN), 30)
+  assert.equal(calculatePerformanceScore(Infinity), 30)
+})
 
 const buildFinancials = () => ({
   income: { total: 500, breakdown: [] },
