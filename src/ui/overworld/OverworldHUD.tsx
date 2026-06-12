@@ -6,6 +6,7 @@ import { type BandState, type PlayerState } from '../../types'
 import { translateLocation } from '../../utils/locationI18n'
 import { useAudioControl } from '../../hooks/useAudioControl'
 import { formatCurrency } from '../../utils/numberUtils'
+import { finiteNumberOr } from '../../utils/gameState'
 
 /**
  * Player and band state shown in the overworld resource HUD.
@@ -86,7 +87,7 @@ const VanStatRow = ({
         className='mini-num'
         style={{ color: isLow ? lowColor : undefined }}
       >
-        {value !== undefined ? Math.round(value) : notAvailableLabel}
+        {value !== undefined ? Math.floor(value) : notAvailableLabel}
       </span>
     </div>
   )
@@ -349,7 +350,7 @@ export const OverworldHUD = React.memo(
                   {t('ui:overworld.career_fame', { defaultValue: 'FAME' })}
                 </span>
                 <span className='career-value'>
-                  {Math.round(player.fame ?? 0)}
+                  {Math.round(finiteNumberOr(player?.fame, 0))}
                 </span>
               </div>
               <div className='career-cell'>
@@ -437,7 +438,7 @@ export const OverworldHUD = React.memo(
                 <span
                   className={`text-xs w-7 text-right ${(band.harmony ?? 0) < 40 ? 'text-error-red' : 'text-toxic-green'}`}
                 >
-                  {Math.round(band.harmony ?? 0)}%
+                  {Math.floor(band.harmony ?? 0)}%
                 </span>
               </div>
             </div>

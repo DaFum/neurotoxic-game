@@ -4,6 +4,7 @@ import { ActionButton } from '../shared/ActionButton'
 import { CONTRABAND_BY_RARITY, VOID_TRADER_COSTS } from '../../data/contraband'
 import type { PlayerState } from '../../types'
 import type { VoidTraderItem } from '../../types/components'
+import { finiteNumberOr } from '../../utils/gameState'
 
 interface VoidTraderTabProps {
   player: PlayerState
@@ -74,7 +75,7 @@ export const VoidTraderTab = ({
             {t('ui:stats.fame', { defaultValue: 'FAME' })}
           </p>
           <p className='text-xl font-bold text-toxic-green tracking-widest'>
-            {Math.round(player.fame ?? 0)}
+            {Math.round(finiteNumberOr(player?.fame, 0))}
           </p>
         </div>
       </div>

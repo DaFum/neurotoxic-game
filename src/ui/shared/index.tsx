@@ -125,7 +125,7 @@ export const ProgressBar = memo(function ProgressBar({
     <div
       className={`w-full ${className}`}
       role='progressbar'
-      aria-valuenow={Math.round(safeValue)}
+      aria-valuenow={Math.floor(safeValue)}
       aria-valuemin={0}
       aria-valuemax={safeMax}
       aria-label={label}
@@ -136,7 +136,7 @@ export const ProgressBar = memo(function ProgressBar({
           {label && <span className='text-ash-gray'>{label}</span>}
           {showValue && (
             <span className='text-ash-gray'>
-              {Math.round(safeValue)}/{max}
+              {Math.floor(safeValue)}/{max}
             </span>
           )}
         </div>
