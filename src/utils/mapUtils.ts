@@ -109,6 +109,8 @@ export interface SoftlockContext {
   dailyObligations?: number
   /** Active asset modifiers applied to fuel-consumption estimates. */
   assetModifiers?: AssetModifiers
+  /** Max net sale proceeds available to the player from owned assets (requires checking gross > principal and net > 0). */
+  assetProceeds?: number
 }
 
 const GIG_LIKE_NODE_TYPES = new Set(['GIG', 'FESTIVAL', 'FINALE'])
@@ -222,7 +224,7 @@ export const checkSoftlock = (
   const dailyObligations = finiteNumberOr(context.dailyObligations, 0)
   const assetModifiers = context.assetModifiers
 
-  const checkReachabilityWithMoney = (fuel: number, money: number): boolean => {
+  const checkReachabilityWithMoneyAndFuel = (fuel: number, money: number): boolean => {
     for (let i = 0; i < connections.length; i++) {
       const c = connections[i]
       if (!isMapConnection(c)) continue
@@ -232,7 +234,7 @@ export const checkSoftlock = (
           const { fuelLiters, totalCost } = calculateTravelExpenses(
             n,
             currentNode,
-            { ...playerStateForTravel, money },
+            { ...playerStateForTravel, money, van: { ...playerStateForTravel.van, fuel } },
             bandStateForTravel,
             assetModifiers
           )
@@ -248,7 +250,7 @@ export const checkSoftlock = (
     return false
   }
 
-  if (checkReachabilityWithMoney(currentFuel, playerMoney)) return false
+  if (checkReachabilityWithMoneyAndFuel(currentFuel, playerMoney)) return false
 
   // Escape hatch: an unplayed gig at the current node can still earn money.
   if (
@@ -261,16 +263,34 @@ export const checkSoftlock = (
 
   // Escape hatch: a blood-bank donation is a cash source without traveling.
   const bandForDonation = bandStateForTravel as Partial<BandState> | null
+  const fameMultiplier = 1 + finiteNumberOr(player.fameLevel, 0) * 0.2
+
   if (
+    validateBloodBankDonation(bandForDonation, {
+      harmonyCost: GAME_CONSTANTS.BLOOD_BANK.MARROW_HARMONY_COST,
+      staminaCost: GAME_CONSTANTS.BLOOD_BANK.MARROW_STAMINA_COST
+    })
+  ) {
+    const marrowMoney = Math.floor(GAME_CONSTANTS.BLOOD_BANK.MARROW_BASE_MONEY * fameMultiplier)
+    if (
+      checkReachabilityWithMoneyAndFuel(
+        currentFuel,
+        playerMoney + marrowMoney
+      )
+    ) {
+      return false
+    }
+  } else if (
     validateBloodBankDonation(bandForDonation, {
       harmonyCost: GAME_CONSTANTS.BLOOD_BANK.BLOOD_HARMONY_COST,
       staminaCost: GAME_CONSTANTS.BLOOD_BANK.BLOOD_STAMINA_COST
     })
   ) {
+    const bloodMoney = Math.floor(GAME_CONSTANTS.BLOOD_BANK.BLOOD_BASE_MONEY * fameMultiplier)
     if (
-      checkReachabilityWithMoney(
+      checkReachabilityWithMoneyAndFuel(
         currentFuel,
-        playerMoney + GAME_CONSTANTS.BLOOD_BANK.BLOOD_BASE_MONEY
+        playerMoney + bloodMoney
       )
     ) {
       return false
@@ -281,9 +301,23 @@ export const checkSoftlock = (
   const refuelCost = calculateRefuelCost(currentFuel)
   if (refuelCost > 0 && playerMoney >= refuelCost) {
     if (
-      checkReachabilityWithMoney(EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL, playerMoney - refuelCost)
+      checkReachabilityWithMoneyAndFuel(EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL, playerMoney - refuelCost)
     ) {
       return false
+    }
+  }
+
+  // Escape hatch: positive net asset proceeds.
+  const assetProceeds = finiteNumberOr(context.assetProceeds, 0)
+  if (assetProceeds > 0) {
+    const totalMoney = playerMoney + assetProceeds
+    if (checkReachabilityWithMoneyAndFuel(currentFuel, totalMoney)) {
+      return false
+    }
+    if (refuelCost > 0 && totalMoney >= refuelCost) {
+      if (checkReachabilityWithMoneyAndFuel(EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL, totalMoney - refuelCost)) {
+        return false
+      }
     }
   }
 

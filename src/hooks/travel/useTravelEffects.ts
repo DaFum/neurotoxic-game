@@ -2,8 +2,10 @@ import { useEffect } from 'react'
 import { checkSoftlock } from '../../utils/mapUtils'
 import {
   getActiveAssetModifiers,
-  getTotalDailyObligations
+  getTotalDailyObligations,
+  calculateChassisGrossSaleValue
 } from '../../utils/assetSelectors'
+import { finiteNumberOr } from '../../utils/finiteNumber'
 import type { GameState } from '../../types'
 import { logger } from '../../utils/logger'
 import i18n from '../../i18n'
@@ -66,6 +68,32 @@ export const useTravelEffects = ({
       return
     }
 
+    let maxAssetProceeds = 0
+    if (assets) {
+      for (const asset of assets) {
+        const gross = calculateChassisGrossSaleValue(asset, player.day)
+        if (gross !== null) {
+          let rawTotalPrincipalRemaining = 0
+          if (liabilities) {
+            for (const l of Object.values(liabilities)) {
+              if (l && l.assetId === asset.id) {
+                rawTotalPrincipalRemaining += Math.max(
+                  0,
+                  finiteNumberOr(l.principalRemaining, 0)
+                )
+              }
+            }
+          }
+          if (gross >= rawTotalPrincipalRemaining) {
+            const net = gross - rawTotalPrincipalRemaining
+            if (net > maxAssetProceeds) {
+              maxAssetProceeds = net
+            }
+          }
+        }
+      }
+    }
+
     // Mirror the travel gate: each neighbor must be affordable in fuel AND
     // cash including the daily obligations that arrival's advanceDay bills.
     const softlockContext = {
@@ -76,7 +104,8 @@ export const useTravelEffects = ({
         assets,
         liabilities
       } as GameState),
-      assetModifiers: getActiveAssetModifiers(assets)
+      assetModifiers: getActiveAssetModifiers(assets),
+      assetProceeds: maxAssetProceeds
     }
 
     if (checkSoftlock(gameMap, player, band, softlockContext)) {

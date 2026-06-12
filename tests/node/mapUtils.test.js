@@ -475,3 +475,70 @@ test('donation possible but insufficient to unlock travel does not prevent softl
 
   assert.equal(result, true, 'Player should be stranded if blood bank donation is insufficient to make travel affordable')
 })
+test('owned asset with positive net sale value enough to travel avoids softlock', () => {
+  const localMap = {
+    nodes: { A: { id: 'A' }, B: { id: 'B' } },
+    connections: [{ from: 'A', to: 'B' }]
+  }
+  const localPlayer = { currentNodeId: 'A', van: { fuel: 20 }, money: 0 }
+
+  mockCalculateTravelExpenses.mock.mockImplementation(() => ({
+    fuelLiters: 10,
+    totalCost: 100 // Player needs 100 money to travel
+  }))
+  mockCalculateRefuelCost.mock.mockImplementation(() => 0)
+
+  const result = checkSoftlock(
+    localMap,
+    localPlayer,
+    null,
+    { assetProceeds: 150 } // Asset proceeds will cover travel cost
+  )
+
+  assert.equal(result, false, 'Player should not be stranded if asset sale proceeds can cover travel cost')
+})
+
+test('owned asset with positive net sale value enough to refuel and travel avoids softlock', () => {
+  const localMap = {
+    nodes: { A: { id: 'A' }, B: { id: 'B' } },
+    connections: [{ from: 'A', to: 'B' }]
+  }
+  const localPlayer = { currentNodeId: 'A', van: { fuel: 0 }, money: 0 } // Player has no fuel and no money
+
+  mockCalculateTravelExpenses.mock.mockImplementation((n, cNode, playerState) => {
+    return { fuelLiters: 10, totalCost: 100 } // Player needs 100 money and 10 fuel to travel
+  })
+  mockCalculateRefuelCost.mock.mockImplementation(() => 50) // Refuel costs 50
+
+  const result = checkSoftlock(
+    localMap,
+    localPlayer,
+    null,
+    { assetProceeds: 150 } // Asset proceeds will cover refuel (50) and travel cost (100)
+  )
+
+  assert.equal(result, false, 'Player should not be stranded if asset sale proceeds can cover both refuel and travel cost')
+})
+
+test('asset with liabilities exceeding gross value remains softlocked', () => {
+  const localMap = {
+    nodes: { A: { id: 'A' }, B: { id: 'B' } },
+    connections: [{ from: 'A', to: 'B' }]
+  }
+  const localPlayer = { currentNodeId: 'A', van: { fuel: 20 }, money: 0 }
+
+  mockCalculateTravelExpenses.mock.mockImplementation(() => ({
+    fuelLiters: 10,
+    totalCost: 100 // Player needs 100 money to travel
+  }))
+  mockCalculateRefuelCost.mock.mockImplementation(() => 0)
+
+  const result = checkSoftlock(
+    localMap,
+    localPlayer,
+    null,
+    { assetProceeds: -50 } // Net negative proceeds, should not help
+  )
+
+  assert.equal(result, true, 'Player should be stranded if asset proceeds do not cover travel cost')
+})
