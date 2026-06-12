@@ -2,21 +2,32 @@ import { StorageError } from './types'
 import { handleError } from './handler'
 
 /**
+ * Executes a storage operation safely with built-in retries.
+ *
+ * @remarks
+ * This function attempts to run the provided storage operation up to three times (initial try plus 2 retries)
+ * before failing. If the operation continues to fail, a StorageError is thrown.
+ *
+ * @typeParam T - The expected return type of the storage operation.
+ * @param operation - A descriptive identifier for the storage operation being executed.
+ * @param fn - The storage operation function to execute.
+ * @returns The result of the storage operation.
+ * @throws {@link StorageError} If the operation fails after all retries.
+ */
+export function runSafeStorageOperation<T>(operation: string, fn: () => T): T
+/**
  * Executes a storage operation safely with built-in retries and error fallback handling.
  *
  * @remarks
  * This function attempts to run the provided storage operation up to three times (initial try plus 2 retries)
- * before failing. If a fallback value is provided and the operation continues to fail, the error is handled
- * silently and the fallback value is returned. If no fallback is provided, a `StorageError` is thrown.
+ * before failing. If the operation continues to fail, the error is handled silently and the fallback value is returned.
  *
  * @typeParam T - The expected return type of the storage operation.
  * @param operation - A descriptive identifier for the storage operation being executed.
  * @param fn - The storage operation function to execute.
  * @param fallbackValue - An optional value to return if the operation fails after all retries.
- * @returns The result of the storage operation, or the fallback value if provided and the operation fails.
- * @throws {@link StorageError} If the operation fails after all retries and no fallback value was provided.
+ * @returns The result of the storage operation, or the fallback value if the operation fails.
  */
-export function runSafeStorageOperation<T>(operation: string, fn: () => T): T
 export function runSafeStorageOperation<T>(
   operation: string,
   fn: () => T,
