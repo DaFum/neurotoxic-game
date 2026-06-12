@@ -183,7 +183,11 @@ ohne Verbindungen:
 wird still auf 0 € geklemmt statt — wie im toten Pfad — die Ankunft abzubrechen. Zwei
 gegensätzliche Fehlerstrategien für denselben Fall.
 
-### 2.2 Täglicher Pauschal-Verschleiß −2 mit irreführendem Kommentar
+### 2.2 ✅ ERLEDIGT (Kommentar) — Täglicher Pauschal-Verschleiß −2 mit irreführendem Kommentar
+
+> **Fix:** Der Kommentar in `dailyTickLogic.ts` beschreibt den Verschleiß jetzt
+> korrekt als pauschalen Tages-Verschleiß (bewusst nicht distanzskaliert).
+> Seit Befund 1.4 wirkt die Condition zudem real auf das Pannenrisiko.
 
 `updateVanCondition` zieht **jeden Tag** 2 Condition ab — kommentiert als „wear from
 daily travel" (`dailyTickLogic.ts:66-71`), unabhängig davon, ob gefahren wurde. Da Tage
@@ -201,7 +205,11 @@ es gibt keinen Tages-Überlauf und keinen Konsumenten außer der Anzeige
 `||` fälschlich „12:00" zeigt und bei negativen Werten „-3:00". Eine reine
 Pseudo-Mechanik, die Spielern Konsequenzen suggeriert.
 
-### 2.4 Tote Event-Flags und Legacy-Node-Typen
+### 2.4 TEILWEISE ERLEDIGT — Tote Event-Flags und Legacy-Node-Typen
+
+> **Update:** `VAN_DAMAGED`/`RENTAL_VAN` wurden aus den Transport-Events
+> entfernt. Das Node-Typ-Naming (`supplyStop` vs. UPPER_CASE) und die
+> Legacy-Typen `CITY`/`REST` sind separat adressiert (s. u.).
 
 - `VAN_DAMAGED` und `RENTAL_VAN` werden von `van_breakdown_engine`/`van_critical_failure`
   gesetzt (`transport.ts:98,146`), aber nirgendwo gelesen.

@@ -96,8 +96,7 @@ export const TRANSPORT_EVENTS = [
             type: 'composite',
             effects: [
               { type: 'stat', stat: 'time', value: -6 },
-              { type: 'chain', eventId: 'van_critical_failure' },
-              { type: 'flag', flag: 'VAN_DAMAGED' }
+              { type: 'chain', eventId: 'van_critical_failure' }
             ]
           }
         },
@@ -137,16 +136,10 @@ export const TRANSPORT_EVENTS = [
       {
         label: 'events:van_critical_failure.opt3.label',
         effect: {
-          type: 'composite',
-          effects: [
-            {
-              type: 'percentage_resource',
-              resource: 'money',
-              percentage: -40,
-              min: -500
-            },
-            { type: 'flag', flag: 'RENTAL_VAN' }
-          ]
+          type: 'percentage_resource',
+          resource: 'money',
+          percentage: -40,
+          min: -500
         },
         outcomeText: 'events:van_critical_failure.opt3.outcome'
       }
