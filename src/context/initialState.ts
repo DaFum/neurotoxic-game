@@ -64,7 +64,8 @@ export const DEFAULT_PLAYER_STATE = {
     stageDives: 0,
     failedStageDives: 0,
     consecutiveBadShows: 0,
-    proveYourselfMode: false
+    proveYourselfMode: false,
+    tourCompleted: false
   }
 }
 

@@ -749,7 +749,8 @@ const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
       proveYourselfMode:
         typeof statsData.proveYourselfMode === 'boolean'
           ? statsData.proveYourselfMode
-          : DEFAULT_PLAYER_STATE.stats.proveYourselfMode
+          : DEFAULT_PLAYER_STATE.stats.proveYourselfMode,
+      tourCompleted: statsData.tourCompleted === true
     }
   }
 

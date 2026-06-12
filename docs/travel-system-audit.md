@@ -152,7 +152,14 @@ Konsequenzen:
   blockiert weder Reisen noch erhöht es Eventrisiken. Verschleiß ist nur eine versteckte
   Geld-Senke (siehe 2.2).
 
-### 1.5 Kein Endzustand am FINALE-Node
+### 1.5 ✅ ERLEDIGT — Kein Endzustand am FINALE-Node
+
+> **Fix:** Der Post-Gig-Continue erkennt den FINALE-Node (`isFinaleGig` via
+> `usePostGigLogic`), setzt das persistente `player.stats.tourCompleted` und
+> routet auf den GameOver-Screen in neuer **Sieg-Variante** („TOUR COMPLETE",
+> toxic-green) statt zurück in die Sackgassen-Overworld. Bankrott am Finale
+> gewinnt weiterhin (Bankruptcy-Check läuft zuerst). Das Stranded-Urteil am
+> FINALE war bereits mit Befund 1.2 deaktiviert worden.
 
 Der Map-Graph ist ein streng vorwärts gerichteter DAG (`mapGenerator.ts:573-666`,
 Verbindungen nur Layer i → i+1; `isConnected` prüft direktional, `mapUtils.ts:22-39`).
@@ -289,7 +296,7 @@ beschreibt den toten Pfad; im echten Pfad gibt es gar keine Quest-Progression (1
 4. ✅ **Mittel:** `breakdownChance` tatsächlich würfeln (z. B. als Zusatz-Chance auf
    `van_breakdown_*` beim Reisen) oder die Mechanik samt irreführender
    Upgrade-Versprechen entfernen (1.4).
-5. **Mittel:** Endzustand für das FINALE definieren (Sieg-Szene oder Loop-Neustart) und
+5. ✅ **Mittel:** Endzustand für das FINALE definieren (Sieg-Szene oder Loop-Neustart) und
    `checkSoftlock` am Finale deaktivieren (1.5).
 6. **Niedrig:** `time`-Stat entfernen oder mit Wirkung versehen; tote Flags
    (`VAN_DAMAGED`, `RENTAL_VAN`) aufräumen; `supplyStop`-Naming vereinheitlichen;

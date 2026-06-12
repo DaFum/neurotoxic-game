@@ -118,6 +118,8 @@ export interface UseContinueHandlerProps {
   lastGigStats: PostGigSummary | null
   setlist: RhythmSetlistEntry[]
   activeStoryFlags?: string[]
+  /** True when the completed gig sits on the FINALE map node — routes to the victory end screen instead of the overworld. */
+  isFinaleGig?: boolean
   totalDailyObligations: number
   isProcessingActionRef: React.MutableRefObject<boolean>
   setIsProcessingAction: React.Dispatch<React.SetStateAction<boolean>>
@@ -139,6 +141,7 @@ export function useContinueHandler({
   lastGigStats,
   setlist,
   activeStoryFlags,
+  isFinaleGig = false,
   totalDailyObligations,
   isProcessingActionRef,
   setIsProcessingAction,
@@ -183,7 +186,12 @@ export function useContinueHandler({
         money: stats.newMoney,
         fame: stats.newFame,
         fameLevel: stats.fameLevel,
-        lastGigNodeId: player.currentNodeId
+        lastGigNodeId: player.currentNodeId,
+        // Surviving the FINALE gig completes the tour; the flag persists in
+        // the save and drives the victory variant of the game-over screen.
+        ...(isFinaleGig && {
+          stats: { ...player.stats, tourCompleted: true }
+        })
       })
 
       const fameGain = stats.newFame - finiteNumberOr(player.fame, 0)
@@ -254,6 +262,18 @@ export function useContinueHandler({
           'error'
         )
         changeScene(GAME_PHASES.GAMEOVER)
+      } else if (isFinaleGig) {
+        // The FINALE node has no outgoing connections by design — instead of
+        // returning to a dead-end overworld, end the run on the victory screen.
+        addToast(
+          t('ui:postGig.tourComplete', {
+            defaultValue: 'TOUR COMPLETE: You survived the void tour!'
+          }),
+          'success'
+        )
+        queueMicrotask(() => {
+          changeScene(GAME_PHASES.GAMEOVER)
+        })
       } else {
         queueMicrotask(() => {
           changeScene(GAME_PHASES.OVERWORLD)
@@ -272,6 +292,7 @@ export function useContinueHandler({
   }, [
     financials,
     perfScore,
+    isFinaleGig,
     player,
     currentGig,
     lastGigStats,
