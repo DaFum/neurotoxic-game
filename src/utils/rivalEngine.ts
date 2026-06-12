@@ -27,7 +27,7 @@ export const generateRivalBand = (
   const powerLevel = Math.max(1, Math.floor(day / 5) + 1)
 
   return {
-    id: `rival_${Date.now()}_${Math.floor(rng() * 1000)}`,
+    id: "rival_" + Math.floor(rng() * 1000000000),
     name: generateBrandName('Rivals', alignment, rng),
     alignment,
     powerLevel,

@@ -49,7 +49,7 @@ export const QUEST_EVENTS = [
         effect: {
           type: 'quest',
           // Config lives in QUEST_REGISTRY; addQuest merges defaults by id.
-          quest: { id: QUEST_PICK_OF_DESTINY }
+          quest: QUEST_PICK_OF_DESTINY
         },
         outcomeText: 'events:quest_trigger_pick_of_destiny.opt1.outcome'
       },
@@ -73,7 +73,7 @@ export const QUEST_EVENTS = [
         label: 'events:quest_trigger_viral_dance.opt1.label',
         effect: {
           type: 'quest',
-          quest: { id: QUEST_VIRAL_DANCE }
+          quest: QUEST_VIRAL_DANCE
         },
         outcomeText: 'events:quest_trigger_viral_dance.opt1.outcome'
       },
@@ -97,7 +97,7 @@ export const QUEST_EVENTS = [
         label: 'events:quest_trigger_sponsor_demand.opt1.label',
         effect: {
           type: 'quest',
-          quest: { id: QUEST_SPONSOR_DEMAND }
+          quest: QUEST_SPONSOR_DEMAND
         },
         outcomeText: 'events:quest_trigger_sponsor_demand.opt1.outcome'
       },
@@ -122,7 +122,7 @@ export const QUEST_EVENTS = [
         label: 'events:quest_trigger_harmony_project.opt1.label',
         effect: {
           type: 'quest',
-          quest: { id: QUEST_HARMONY_PROJECT }
+          quest: QUEST_HARMONY_PROJECT
         },
         outcomeText: 'events:quest_trigger_harmony_project.opt1.outcome'
       },
@@ -146,7 +146,7 @@ export const QUEST_EVENTS = [
         label: 'events:quest_trigger_local_legend.opt1.label',
         effect: {
           type: 'quest',
-          quest: { id: QUEST_LOCAL_LEGEND }
+          quest: QUEST_LOCAL_LEGEND
         },
         outcomeText: 'events:quest_trigger_local_legend.opt1.outcome'
       },
@@ -169,7 +169,7 @@ export const QUEST_EVENTS = [
     options: [
       {
         label: 'events:quest_trigger_tourbus_inspection.opt1.label',
-        effect: { type: 'quest', quest: { id: QUEST_TOURBUS_INSPECTION } },
+        effect: { type: 'quest', quest: 'quest_tourbus_inspection' },
         outcomeText: 'events:quest_trigger_tourbus_inspection.opt1.outcome'
       },
       {
@@ -190,7 +190,7 @@ export const QUEST_EVENTS = [
     options: [
       {
         label: 'events:quest_trigger_studio_demo.opt1.label',
-        effect: { type: 'quest', quest: { id: QUEST_STUDIO_DEMO } },
+        effect: { type: 'quest', quest: 'quest_studio_demo' },
         outcomeText: 'events:quest_trigger_studio_demo.opt1.outcome'
       },
       {
@@ -211,12 +211,12 @@ export const QUEST_EVENTS = [
     options: [
       {
         label: 'events:quest_trigger_merch_rush.opt1.label',
-        effect: { type: 'quest', quest: { id: QUEST_MERCH_RUSH } },
+        effect: { type: 'quest', quest: 'quest_merch_rush' },
         outcomeText: 'events:quest_trigger_merch_rush.opt1.outcome'
       },
       {
         label: 'events:quest_trigger_merch_rush.opt2.label',
-        effect: { type: 'stat', stat: 'money', value: 50 },
+        effect: { type: 'resource', resource: 'money', value: 50 },
         outcomeText: 'events:quest_trigger_merch_rush.opt2.outcome'
       }
     ]
@@ -233,7 +233,7 @@ export const QUEST_EVENTS = [
     options: [
       {
         label: 'events:quest_trigger_venue_residency.opt1.label',
-        effect: { type: 'quest', quest: { id: QUEST_VENUE_RESIDENCY } },
+        effect: { type: 'quest', quest: 'quest_venue_residency' },
         outcomeText: 'events:quest_trigger_venue_residency.opt1.outcome'
       },
       {
@@ -255,7 +255,7 @@ export const QUEST_EVENTS = [
     options: [
       {
         label: 'events:quest_trigger_region_takeover.opt1.label',
-        effect: { type: 'quest', quest: { id: QUEST_REGION_TAKEOVER } },
+        effect: { type: 'quest', quest: 'quest_region_takeover' },
         outcomeText: 'events:quest_trigger_region_takeover.opt1.outcome'
       },
       {
@@ -276,7 +276,7 @@ export const QUEST_EVENTS = [
     options: [
       {
         label: 'events:quest_trigger_drama_post.opt1.label',
-        effect: { type: 'quest', quest: { id: QUEST_DRAMA_POST } },
+        effect: { type: 'quest', quest: 'quest_drama_post' },
         outcomeText: 'events:quest_trigger_drama_post.opt1.outcome'
       },
       {
@@ -298,12 +298,12 @@ export const QUEST_EVENTS = [
     options: [
       {
         label: 'events:quest_trigger_premium_endorsement.opt1.label',
-        effect: { type: 'quest', quest: { id: QUEST_PREMIUM_ENDORSEMENT } },
+        effect: { type: 'quest', quest: 'quest_premium_endorsement' },
         outcomeText: 'events:quest_trigger_premium_endorsement.opt1.outcome'
       },
       {
         label: 'events:quest_trigger_premium_endorsement.opt2.label',
-        effect: { type: 'stat', stat: 'money', value: 100 },
+        effect: { type: 'resource', resource: 'money', value: 100 },
         outcomeText: 'events:quest_trigger_premium_endorsement.opt2.outcome'
       }
     ]
@@ -320,7 +320,7 @@ export const QUEST_EVENTS = [
     options: [
       {
         label: 'events:quest_trigger_community_outreach.opt1.label',
-        effect: { type: 'quest', quest: { id: QUEST_COMMUNITY_OUTREACH } },
+        effect: { type: 'quest', quest: 'quest_community_outreach' },
         outcomeText: 'events:quest_trigger_community_outreach.opt1.outcome'
       },
       {
@@ -341,7 +341,7 @@ export const QUEST_EVENTS = [
     options: [
       {
         label: 'events:quest_trigger_flawless_run.opt1.label',
-        effect: { type: 'quest', quest: { id: QUEST_FLAWLESS_RUN } },
+        effect: { type: 'quest', quest: 'quest_flawless_run' },
         outcomeText: 'events:quest_trigger_flawless_run.opt1.outcome'
       },
       {
@@ -362,7 +362,7 @@ export const QUEST_EVENTS = [
     options: [
       {
         label: 'events:quest_trigger_sticky_fingers.opt1.label',
-        effect: { type: 'quest', quest: { id: QUEST_STICKY_FINGERS } },
+        effect: { type: 'quest', quest: 'quest_sticky_fingers' },
         outcomeText: 'events:quest_trigger_sticky_fingers.opt1.outcome'
       },
       {
@@ -384,7 +384,7 @@ export const QUEST_EVENTS = [
     options: [
       {
         label: 'events:quest_trigger_special_delivery.opt1.label',
-        effect: { type: 'quest', quest: { id: QUEST_SPECIAL_DELIVERY } },
+        effect: { type: 'quest', quest: 'quest_special_delivery' },
         outcomeText: 'events:quest_trigger_special_delivery.opt1.outcome'
       },
       {
@@ -406,7 +406,7 @@ export const QUEST_EVENTS = [
     options: [
       {
         label: 'events:quest_trigger_persona_non_grata.opt1.label',
-        effect: { type: 'quest', quest: { id: QUEST_PERSONA_NON_GRATA } },
+        effect: { type: 'quest', quest: 'quest_persona_non_grata' },
         outcomeText: 'events:quest_trigger_persona_non_grata.opt1.outcome'
       },
       {
@@ -427,7 +427,7 @@ export const QUEST_EVENTS = [
     options: [
       {
         label: 'events:quest_trigger_murphys_law.opt1.label',
-        effect: { type: 'quest', quest: { id: QUEST_MURPHYS_LAW } },
+        effect: { type: 'quest', quest: 'quest_murphys_law' },
         outcomeText: 'events:quest_trigger_murphys_law.opt1.outcome'
       },
       {
@@ -448,7 +448,7 @@ export const QUEST_EVENTS = [
     options: [
       {
         label: 'events:quest_trigger_crisis_manager.opt1.label',
-        effect: { type: 'quest', quest: { id: QUEST_CRISIS_MANAGER } },
+        effect: { type: 'quest', quest: 'quest_crisis_manager' },
         outcomeText: 'events:quest_trigger_crisis_manager.opt1.outcome'
       },
       {
@@ -469,7 +469,7 @@ export const QUEST_EVENTS = [
     options: [
       {
         label: 'events:quest_trigger_chapter_marker.opt1.label',
-        effect: { type: 'quest', quest: { id: QUEST_CHAPTER_MARKER } },
+        effect: { type: 'quest', quest: 'quest_chapter_marker' },
         outcomeText: 'events:quest_trigger_chapter_marker.opt1.outcome'
       },
       {
@@ -490,7 +490,7 @@ export const QUEST_EVENTS = [
     options: [
       {
         label: 'events:quest_trigger_payday.opt1.label',
-        effect: { type: 'quest', quest: { id: QUEST_PAYDAY } },
+        effect: { type: 'quest', quest: 'quest_payday' },
         outcomeText: 'events:quest_trigger_payday.opt1.outcome'
       },
       {
@@ -511,7 +511,7 @@ export const QUEST_EVENTS = [
     options: [
       {
         label: 'events:quest_trigger_make_amends.opt1.label',
-        effect: { type: 'quest', quest: { id: QUEST_MAKE_AMENDS } },
+        effect: { type: 'quest', quest: 'quest_make_amends' },
         outcomeText: 'events:quest_trigger_make_amends.opt1.outcome'
       },
       {
@@ -532,7 +532,7 @@ export const QUEST_EVENTS = [
     options: [
       {
         label: 'events:quest_trigger_burned_bridges.opt1.label',
-        effect: { type: 'quest', quest: { id: QUEST_BURNED_BRIDGES } },
+        effect: { type: 'quest', quest: 'quest_burned_bridges' },
         outcomeText: 'events:quest_trigger_burned_bridges.opt1.outcome'
       },
       {
@@ -553,7 +553,7 @@ export const QUEST_EVENTS = [
     options: [
       {
         label: 'events:quest_trigger_venue_regular.opt1.label',
-        effect: { type: 'quest', quest: { id: QUEST_VENUE_REGULAR } },
+        effect: { type: 'quest', quest: 'quest_venue_regular' },
         outcomeText: 'events:quest_trigger_venue_regular.opt1.outcome'
       },
       {
@@ -575,7 +575,7 @@ export const QUEST_EVENTS = [
     options: [
       {
         label: 'events:quest_trigger_brand_ambassador.opt1.label',
-        effect: { type: 'quest', quest: { id: QUEST_BRAND_AMBASSADOR } },
+        effect: { type: 'quest', quest: 'quest_brand_ambassador' },
         outcomeText: 'events:quest_trigger_brand_ambassador.opt1.outcome'
       },
       {
@@ -596,7 +596,7 @@ export const QUEST_EVENTS = [
     options: [
       {
         label: 'events:quest_trigger_alchemist.opt1.label',
-        effect: { type: 'quest', quest: { id: QUEST_ALCHEMIST } },
+        effect: { type: 'quest', quest: 'quest_alchemist' },
         outcomeText: 'events:quest_trigger_alchemist.opt1.outcome'
       },
       {
