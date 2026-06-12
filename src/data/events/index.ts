@@ -95,3 +95,17 @@ for (let i = 0; i < ALL_RAW_EVENTS.length; i++) {
 
   EVENTS_DB[category].push(eObj as UnknownRecord)
 }
+
+/**
+ * Ids of every event that passed validation and is playable via `EVENTS_DB`.
+ *
+ * @remarks
+ * Used to detect orphaned `pendingEvents` queue entries: an unknown id at the
+ * queue head is never returned by event selection and would otherwise block
+ * the queue forever.
+ */
+export const KNOWN_EVENT_IDS: ReadonlySet<string> = new Set(
+  Object.values(EVENTS_DB).flatMap(pool =>
+    pool.map(e => e.id).filter((id): id is string => typeof id === 'string')
+  )
+)

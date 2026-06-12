@@ -1,6 +1,7 @@
 import { type Dispatch, type MutableRefObject, useCallback } from 'react'
 import type { TFunction } from 'i18next'
 import { addUnlock } from '../utils/unlockManager'
+import { KNOWN_EVENT_IDS } from '../data/events'
 import { eventEngine } from '../utils/eventEngine'
 import { logger } from '../utils/logger'
 import { GAME_PHASES } from './gameConstants'
@@ -144,6 +145,21 @@ export function useEventSystem({
       const currentState = stateRef.current
       if (currentState.currentScene === GAME_PHASES.GIG) return false
       if ((currentState.player?.eventsTriggeredToday ?? 0) >= 2) return false
+
+      // Drain orphaned queue heads: an id that exists in no event pool is
+      // never returned by selection and would block every later pending
+      // event (the queue only pops when the head is actually played).
+      const pendingHead = currentState.pendingEvents?.[0]
+      if (
+        typeof pendingHead === 'string' &&
+        !KNOWN_EVENT_IDS.has(pendingHead)
+      ) {
+        logger.warn(
+          'EventSystem',
+          `Dropping unknown pending event id: ${pendingHead}`
+        )
+        dispatch(createPopPendingEventAction())
+      }
 
       const event = eventEngine.checkEvent(category, currentState, triggerPoint)
       if (!event) return false
