@@ -118,7 +118,6 @@ export interface TravelActionsParams {
 export interface VanMaintenanceParams {
   isTravelingRef: React.MutableRefObject<boolean>
   player: PlayerState
-  assetsRef: React.MutableRefObject<GameState['assets']>
   updatePlayer: (updates: Partial<PlayerState>) => void
   addToast: (message: string, type?: string) => void
 }

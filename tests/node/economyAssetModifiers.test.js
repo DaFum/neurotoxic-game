@@ -20,14 +20,13 @@ test('Economy Asset Modifiers', async t => {
   })
 
   await t.test(
-    'calculateRefuelCost halves cost with 0.5 fuelMultiplier',
+    'calculateRefuelCost ignores fuelMultiplier (consumption-only modifier)',
     () => {
+      // fuelMultiplier reduces liters burned per trip (calculateFuelCost);
+      // applying it to the pump price too would square the discount.
       const legacy = calculateRefuelCost(0)
-      const modified = calculateRefuelCost(0, {
-        ...NEUTRAL_ASSET_MODIFIERS,
-        fuelMultiplier: 0.5
-      })
-      assert.strictEqual(modified, Math.ceil(legacy * 0.5))
+      assert.ok(legacy > 0)
+      assert.strictEqual(calculateRefuelCost(0), legacy)
     }
   )
 

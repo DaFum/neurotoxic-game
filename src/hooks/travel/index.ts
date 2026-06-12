@@ -46,7 +46,6 @@ export const useTravelLogic = (params: TravelLogicParams) => {
   const { handleRefuel, handleRepair } = useVanMaintenance({
     isTravelingRef: refs.isTravelingRef,
     player: params.player,
-    assetsRef: refs.assetsRef,
     updatePlayer: params.updatePlayer,
     addToast: params.addToast
   })
