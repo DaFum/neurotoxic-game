@@ -82,6 +82,11 @@ export const processAssetTick = (state: GameState): GameState => {
 
   const currentFame = finiteNumberOr(state.player.fame, 0)
   const nextFame = Math.max(0, currentFame + fameDelta)
+  // Money is deliberately NOT clamped here: a transiently negative balance
+  // must survive until later day-tick stages (e.g. merch/newsletter income in
+  // calculateDailyUpdates) have been applied — clamping per stage would
+  // silently forgive debt. handleAdvanceDay's final calculateDailyUpdates
+  // pass owns the clamp; this function must only run inside that pipeline.
   const nextPlayer =
     fameDelta !== 0
       ? {
