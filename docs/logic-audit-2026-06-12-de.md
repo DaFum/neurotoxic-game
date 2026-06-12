@@ -266,7 +266,11 @@ Geprüft und ohne Befund — zur Abgrenzung des Audit-Umfangs:
 
 Vollständig tief gelesen: alle Haupt-Reducer (`system`, `band`, `social`, `event`, `player`, `quest`, `asset`, `minigame` teilweise), Economy-Engine inkl. `assetTicks`/`assetSelectors`/`logisticsLogic`/`gigLogic`, Save-Validator, RNG-/Tick-Pfad, PostGig-Finanzlogik. Per gezielter Invarianten-Prüfung (Greps + Stichproben-Reads) abgedeckt: Rhythm-Game-Hooks, Stage-/Pixi-Lifecycle, Travel-/Arrival-Hooks, UI-Komponenten, Locales. **Nicht** zeilenweise gelesen: die einzelnen Minigame-Komponenten (`amp`, `roadie`, `tourbus`, `kabelsalat`-Szenen), Quest-Producer und Chatter-Daten — dort sind nur die dokumentierten Invarianten verifiziert.
 
-## 8) Empfohlene Priorisierung
+## 8) Historische Priorisierung — bereits abgeschlossen
+
+> Diese Liste war die ursprüngliche Fix-Reihenfolge aus dem Audit. Alle Punkte
+> sind inzwischen umgesetzt (siehe Status-Tabelle am Dokumentanfang); sie bleibt
+> nur zur Nachverfolgung erhalten.
 
 1. **1.1–1.3** zusammen fixen (Stash-Sanitization kanonisieren + zwei fehlende `finiteNumberOr`) — ein PR, schließt die NaN-Pfade an der Wurzel.
 2. **2.1** (`fameLevel` im Crowdfund-Tick) — Einzeiler, direkter Gameplay-Effekt.
