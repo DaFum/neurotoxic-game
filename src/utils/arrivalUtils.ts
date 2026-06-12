@@ -68,7 +68,7 @@ export const processHarmonyRegen = (
   band: Pick<BandState, 'harmony' | 'harmonyRegenTravel'> | null | undefined
 ): number | null => {
   if (band?.harmonyRegenTravel) {
-    return clampBandHarmony((band.harmony ?? 0) + 5)
+    return clampBandHarmony(finiteNumberOr(band.harmony, 0) + 5)
   }
   return null
 }

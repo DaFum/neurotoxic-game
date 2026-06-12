@@ -303,7 +303,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
       return
     }
 
-    const prevHarmony = band.harmony ?? 1
+    const prevHarmony = finiteNumberOr(band.harmony, 1)
     if (prevHarmony >= 100) {
       addToast(
         typedT('ui:pregig.toasts.meetingHeldMax', {
