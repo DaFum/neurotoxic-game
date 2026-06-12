@@ -67,7 +67,7 @@
     "react-dom": "19.2.7",
     "react-i18next": "17.0.8",
     "redis": "5.12.1",
-    "tone": "15.5.12"
+    "tone": "15.5.13"
   },
   "devDependencies": {
     "@dreamsicle.io/stylelint-config-tailwindcss": "1.2.2",
