@@ -297,7 +297,12 @@ export const processCrowdfundTick = (state: GameState): GameState => {
 
   return {
     ...state,
-    player: { ...state.player, money, fame },
+    player: {
+      ...state.player,
+      money,
+      fame,
+      fameLevel: calculateFameLevel(fame)
+    },
     assets: [...(state.assets ?? []), ...newAssetsWithDay],
     crowdfundCampaigns: remaining
   }
