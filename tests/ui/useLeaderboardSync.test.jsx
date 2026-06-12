@@ -162,6 +162,52 @@ describe('useLeaderboardSync', () => {
     expect(localStorage.getItem('neurotoxic_last_synced_day:id-123')).toBe('5')
   })
 
+  it('dedupes concurrent syncs for the same player and day', async () => {
+    localStorage.setItem('neurotoxic_last_synced_day:id-123', '4')
+    let resolveFetch
+    mockFetch.mockImplementation(
+      () =>
+        new Promise(resolve => {
+          resolveFetch = () => resolve({ ok: true })
+        })
+    )
+
+    const makeState = money => ({
+      player: {
+        playerId: 'id-123',
+        playerName: 'Player1',
+        money,
+        fame: 100,
+        day: 5,
+        stats: {
+          totalDistance: 120,
+          conflictsResolved: 3,
+          stageDives: 10
+        }
+      },
+      social: { instagram: 1000 }
+    })
+
+    // The marker is only written after the fetch resolves; a second effect
+    // run during the in-flight request must not start another POST.
+    const { rerender } = renderHook(state => useLeaderboardSync(state), {
+      initialProps: makeState(500)
+    })
+    rerender(makeState(600))
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledTimes(1)
+    })
+
+    resolveFetch()
+    await waitFor(() => {
+      expect(localStorage.getItem('neurotoxic_last_synced_day:id-123')).toBe(
+        '5'
+      )
+    })
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+  })
+
   it('does not update localStorage if sync fails', async () => {
     localStorage.setItem('neurotoxic_last_synced_day:id-123', '4')
     mockFetch.mockResolvedValue({ ok: false, statusText: 'Server Error' })
