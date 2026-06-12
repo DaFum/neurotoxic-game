@@ -385,25 +385,6 @@ function parseSongParameters(sObj: Record<string, unknown>) {
   return { bpm, tpb, notes }
 }
 
-function executeSongPlayback(
-  res: { events: ProcessedSongEvent[]; lastTime: number },
-  bpm: number,
-  delay: number,
-  reqId: number,
-  onEnded: ((...args: unknown[]) => void) | null | undefined
-) {
-  Tone.getTransport().bpm.value = bpm
-  audioState.part = createSongPart(res.events)
-
-  const validDelay = isFiniteNumber(delay) ? Math.max(0, delay) : 0
-  scheduleSongPlayback(
-    res.lastTime,
-    validDelay,
-    reqId,
-    onEnded as (() => void) | null
-  )
-}
-
 async function prepareSongPlayback(song: unknown, options: unknown) {
   if (!validateSongReady(song)) return null
   const prep = await prepareTransportPlayback(options)
@@ -440,13 +421,17 @@ export async function playSongFromData(
   )
   if (!res) return false
 
-  executeSongPlayback(
-    res,
-    p.bpm,
-    delay,
+  Tone.getTransport().bpm.value = p.bpm
+  audioState.part = createSongPart(res.events)
+
+  const validDelay = isFiniteNumber(delay) ? Math.max(0, delay) : 0
+  scheduleSongPlayback(
+    res.lastTime,
+    validDelay,
     prep.reqId,
-    prep.normalizedOptions.onEnded
+    prep.normalizedOptions.onEnded as (() => void) | null
   )
+
   return true
 }
 
