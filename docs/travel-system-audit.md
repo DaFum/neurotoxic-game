@@ -196,7 +196,13 @@ distanzunabhängig (20 km kosten so viel Condition wie 700 km) und zusätzlich z
 Minigame-Schaden (max. 50 Condition pro Fahrt, 50 %-Skalierung,
 `minigameLogic.ts:13-39`). Effektiv versteckte ~12 €/Tag (2 × 6 € Reparatur).
 
-### 2.3 `time`-Stat: akkumuliert, wirkt nie
+### 2.3 ✅ ERLEDIGT (als Tagesuhr begrenzt) — `time`-Stat: akkumuliert, wirkt nie
+
+> **Fix:** `player.time` ist jetzt eine konsistente Flavor-Tagesuhr: Deltas
+> werden über den neuen Helper `wrapClockHour` in 0–23 gewrappt (Delta-Apply,
+> Load-Sanitizer), die Anzeige formatiert korrekt mit führender Null und zeigt
+> bei `time === 0` nicht mehr fälschlich „12:00". Eine echte
+> Gameplay-Wirkung der verlorenen Stunden bleibt eine offene Design-Entscheidung.
 
 Transport-Events ziehen „Stunden" ab (`stat: 'time', value: -2` …), der Delta-Handler
 addiert unbegrenzt (`delta.ts:215-216` „time is unbounded", `eventEffectHandlers.ts:71-72`),
@@ -308,6 +314,6 @@ beschreibt den toten Pfad; im echten Pfad gibt es gar keine Quest-Progression (1
    Upgrade-Versprechen entfernen (1.4).
 5. ✅ **Mittel:** Endzustand für das FINALE definieren (Sieg-Szene oder Loop-Neustart) und
    `checkSoftlock` am Finale deaktivieren (1.5).
-6. **Niedrig:** `time`-Stat entfernen oder mit Wirkung versehen; tote Flags
+6. ✅ **Niedrig:** `time`-Stat entfernen oder mit Wirkung versehen; tote Flags
    (`VAN_DAMAGED`, `RENTAL_VAN`) aufräumen; `supplyStop`-Naming vereinheitlichen;
    Verschleiß-Kommentar korrigieren oder Verschleiß distanzabhängig machen.

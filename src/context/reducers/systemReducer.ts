@@ -42,7 +42,8 @@ import {
   finiteNumberOr,
   isFiniteNumber,
   clampNonNegative,
-  BALANCE_CONSTANTS
+  BALANCE_CONSTANTS,
+  wrapClockHour
 } from '../../utils/gameState'
 import { calculateDailyUpdates } from '../../utils/simulationUtils'
 import {
@@ -765,7 +766,7 @@ const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
     fame: validatedFame,
     fameLevel: calculateFameLevel(validatedFame),
     day: Math.max(1, rawPlayer.day),
-    time: clampNonNegative(rawPlayer.time),
+    time: wrapClockHour(rawPlayer.time),
     van: {
       ...rawPlayer.van,
       fuel: clampVanFuel(rawPlayer.van.fuel)

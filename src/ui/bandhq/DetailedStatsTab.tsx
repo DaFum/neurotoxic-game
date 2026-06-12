@@ -9,7 +9,12 @@ import { translateLocation } from '../../utils/locationI18n'
 import { getCityKeyFromVenueId } from '../../utils/mapGenerator'
 import { getUnblacklistCost } from '../../context/reducers/socialReducer'
 import { CRAFTING_RECIPES } from '../../data/craftingRecipes'
-import { isEmptyObject, isFiniteNumber, finiteNumberOr } from '../../utils/gameState'
+import {
+  isEmptyObject,
+  isFiniteNumber,
+  finiteNumberOr,
+  wrapClockHour
+} from '../../utils/gameState'
 import type {
   PlayerState,
   BandState,
@@ -125,7 +130,7 @@ const CareerOverviewSection = ({
       />
       <DetailRow
         label={t('ui:ui.time', { defaultValue: 'Time' })}
-        value={`${player.time || '12'}:00`}
+        value={`${String(wrapClockHour(finiteNumberOr(player.time, 12))).padStart(2, '0')}:00`}
       />
       <DetailRow
         label={t('ui:ui.location', { defaultValue: 'Location' })}

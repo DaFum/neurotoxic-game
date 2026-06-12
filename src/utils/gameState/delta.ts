@@ -17,7 +17,8 @@ import {
   clampNonNegative,
   clampControversyLevel,
   clampVanCondition,
-  clampVanFuel
+  clampVanFuel,
+  wrapClockHour
 } from './clamps'
 import { calculateFameLevel } from './calculations'
 
@@ -213,7 +214,9 @@ export const calculateAppliedDelta = (
       applied.player.money = nextMoney - currentMoney
     }
     if (isFiniteNumber(delta.player.time)) {
-      applied.player.time = delta.player.time // time is unbounded
+      // Flavor clock: the applied delta is reported as requested; the state
+      // apply below wraps the resulting hour into 0..23.
+      applied.player.time = delta.player.time
     }
     if (isFiniteNumber(delta.player.fame)) {
       const currentFame = Math.max(0, finiteNumberOr(state.player?.fame, 0))
@@ -500,7 +503,9 @@ export const applyEventDelta = (
       nextPlayer.money = nextMoney
     }
     if (isFiniteNumber(delta.player.time)) {
-      nextPlayer.time = nextPlayer.time + delta.player.time
+      nextPlayer.time = wrapClockHour(
+        finiteNumberOr(nextPlayer.time, 12) + delta.player.time
+      )
     }
     if (isFiniteNumber(delta.player.fame)) {
       nextPlayer.fame = clampPlayerFame(
