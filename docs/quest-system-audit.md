@@ -18,7 +18,11 @@ Untersuchte Kernmodule:
 
 ## 1. Kritische Befunde (Bugs)
 
-### 1.1 `'rehearsal'` ist kein gültiger `AssetKind` → zwei Quests sind totes Content
+### 1.1 ✅ ERLEDIGT — `'rehearsal'` ist kein gültiger `AssetKind` → zwei Quests sind totes Content
+
+> **Fix:** `'rehearsal'` wurde in Offer-Conditions und Repair-Reward durch
+> `'bandhaus_chassis'` ersetzt (`questRegistry.ts`); der Test-Fallback in
+> `tests/node/questSystem.test.js` verwendet jetzt ebenfalls einen gültigen Kind.
 
 `quest_murphys_law` und `quest_crisis_manager` verlangen in ihrer Offer-Condition
 `requiredAssetKind: 'rehearsal'` (`src/data/questRegistry.ts:545`, `:569`). Gültige
@@ -299,7 +303,7 @@ Als Vorhalt für künftige Quests legitim, sollte aber bewusst gepflegt werden
 
 ## 6. Priorisierte Empfehlungen
 
-1. **Hoch:** `'rehearsal'` durch einen gültigen `AssetKind` ersetzen (vermutlich
+1. ✅ **Hoch:** `'rehearsal'` durch einen gültigen `AssetKind` ersetzen (vermutlich
    `bandhaus_chassis`) — in Offer-Conditions, Repair-Reward und Test-Fallback (1.1).
 2. **Hoch:** Die 11 fehlenden `ui:quests.progressSource.*`-Keys in EN+DE ergänzen (1.2).
 3. **Hoch:** Retry-Cooldown-Mechanik vereinheitlichen: entweder `canAcceptQuest` lässt
