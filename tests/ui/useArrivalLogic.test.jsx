@@ -323,7 +323,7 @@ describe('useArrivalLogic', () => {
       gameMap: {
         nodes: {
           node_start: {
-            type: 'supplyStop',
+            type: 'SUPPLY_STOP',
             shopInventory
           }
         }

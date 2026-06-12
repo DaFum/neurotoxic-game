@@ -63,7 +63,7 @@ export type MapNodeType =
   | 'FINALE'
   | 'CITY'
   | 'REST'
-  | 'supplyStop'
+  | 'SUPPLY_STOP'
 
 /**
  * City-level modifiers that affect demand and local behavior.

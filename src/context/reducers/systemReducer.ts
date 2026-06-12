@@ -105,7 +105,7 @@ const ALLOWED_MAP_NODE_TYPES = new Set<MapNodeType>([
   'FINALE',
   'CITY',
   'REST',
-  'supplyStop'
+  'SUPPLY_STOP'
 ])
 
 const isMapNodeType = (value: unknown): value is MapNodeType =>
@@ -137,6 +137,9 @@ const inferLoadedMapNodeType = (
   nodeRecord: Record<string, unknown>,
   id: string
 ): MapNodeType => {
+  // Legacy saves used the camelCase variant before the node-type naming was
+  // unified to SCREAMING_SNAKE_CASE.
+  if (nodeRecord.type === 'supplyStop') return 'SUPPLY_STOP'
   if (isMapNodeType(nodeRecord.type)) return nodeRecord.type
   if (id === 'start' || id === 'node_0_0') return 'START'
   if (

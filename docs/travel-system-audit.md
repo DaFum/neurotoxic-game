@@ -208,8 +208,10 @@ Pseudo-Mechanik, die Spielern Konsequenzen suggeriert.
 ### 2.4 TEILWEISE ERLEDIGT — Tote Event-Flags und Legacy-Node-Typen
 
 > **Update:** `VAN_DAMAGED`/`RENTAL_VAN` wurden aus den Transport-Events
-> entfernt. Das Node-Typ-Naming (`supplyStop` vs. UPPER_CASE) und die
-> Legacy-Typen `CITY`/`REST` sind separat adressiert (s. u.).
+> entfernt. Der Node-Typ heißt jetzt einheitlich `SUPPLY_STOP`
+> (SCREAMING_SNAKE_CASE wie alle anderen); alte Saves mit `supplyStop`
+> werden beim Laden migriert. Die Legacy-Typen `CITY`/`REST` bleiben als
+> tolerierte Lade-Werte bestehen.
 
 - `VAN_DAMAGED` und `RENTAL_VAN` werden von `van_breakdown_engine`/`van_critical_failure`
   gesetzt (`transport.ts:98,146`), aber nirgendwo gelesen.
