@@ -207,7 +207,7 @@ describe('UI missing-target smoke/branch tests', () => {
     expect(await screen.findByText('NEUROTOXIC DEBUGGER')).toBeInTheDocument()
 
     fireEvent.click(screen.getByText('ui:action_clear'))
-    fireEvent.click(screen.getByLabelText('Close log'))
+    fireEvent.click(screen.getByLabelText('ui:action_close'))
   })
 
   it('icon components render with and without accessibility title', () => {
