@@ -220,6 +220,56 @@ test('eventEngine.selectEvent does not dampen non-random band events even at low
   }
 })
 
+test('eventEngine.selectEvent scales breakdown-tagged events by van.breakdownChance', () => {
+  const MOCK_POOL = [
+    {
+      id: 'van_breakdown_tire',
+      trigger: 'travel',
+      category: 'transport',
+      tags: ['breakdown'],
+      chance: 0.4
+    }
+  ]
+  // Baseline van (0.05) keeps the authored chance; a worn van (0.15 = 3x)
+  // raises it; a suspension-upgraded van (0.025 = 0.5x) lowers it below the
+  // rolled value.
+  const baselineState = {
+    band: { harmony: 80 },
+    activeStoryFlags: [],
+    player: { van: { breakdownChance: 0.05 } }
+  }
+  const wornState = {
+    ...baselineState,
+    player: { van: { breakdownChance: 0.15 } }
+  }
+  const upgradedState = {
+    ...baselineState,
+    player: { van: { breakdownChance: 0.025 } }
+  }
+
+  mockSecureRandom.mock.mockImplementation(() => 0.3)
+
+  try {
+    // roll 0.3 < 0.4 * 1.0 → selected at baseline
+    assert.equal(
+      eventEngine.selectEvent(MOCK_POOL, baselineState, 'travel')?.id,
+      'van_breakdown_tire'
+    )
+    // roll 0.3 < min(1, 0.4 * 3) → selected when worn
+    assert.equal(
+      eventEngine.selectEvent(MOCK_POOL, wornState, 'travel')?.id,
+      'van_breakdown_tire'
+    )
+    // roll 0.3 >= 0.4 * 0.5 → rejected with the suspension upgrade
+    assert.equal(
+      eventEngine.selectEvent(MOCK_POOL, upgradedState, 'travel'),
+      null
+    )
+  } finally {
+    mockSecureRandom.mock.mockImplementation(() => 0.5)
+  }
+})
+
 test('eventEngine.selectEvent dampens conflict events when infightingDamper is active', () => {
   const MOCK_POOL = [
     {

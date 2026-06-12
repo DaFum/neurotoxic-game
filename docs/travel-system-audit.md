@@ -126,7 +126,16 @@ dadurch praktisch nie auslösen.** Nur die venue-spezifische Blacklist funktioni
 (`gigReducer.ts:285-289`). Auch perRegion-Quest-Scopes und `cityStates`
 (City-Key-basiert, `mapGenerator.ts:261-268`) arbeiten mit gemischten Formaten.
 
-### 1.4 `breakdownChance` und Van-Condition sind tote Mechaniken
+### 1.4 ✅ ERLEDIGT — `breakdownChance` und Van-Condition sind tote Mechaniken
+
+> **Fix:** Die mechanischen Pannen-Events (`van_breakdown_tire`,
+> `van_breakdown_engine`, `fuel_leak`, `flat_battery`, `tire_pressure_warning`)
+> tragen jetzt `tags: ['breakdown']` und werden in der Event-Selektion mit
+> `van.breakdownChance / BASE_BREAKDOWN_CHANCE` (0.05, Cap 4×) skaliert —
+> derselbe Mechanismus wie Harmony-/Infighting-Damper. Damit wirken Condition
+> (über den täglichen Multiplikator) und die Suspension-Upgrades (Faktor < 1)
+> erstmals tatsächlich auf das Pannenrisiko; ein frischer Van behält die
+> Author-Chancen. Test: `eventEngine.test.js`.
 
 `breakdownChance` wird täglich aus Upgrades × Condition × Controversy berechnet
 (`dailyTickLogic.ts:62-101`), bei Reparatur zurückgesetzt (`useVanMaintenance.ts:107-117`)
@@ -277,7 +286,7 @@ beschreibt den toten Pfad; im echten Pfad gibt es gar keine Quest-Progression (1
    inkl. Save-Migration — damit Regions-Reputation, Buchungssperre und Quest-Scopes
    denselben Schlüssel verwenden (1.3). *Umgesetzt als zentrale City-Key-Ableitung
    an allen Region-Grenzen statt Formatwechsel von `player.location`, siehe 1.3.*
-4. **Mittel:** `breakdownChance` tatsächlich würfeln (z. B. als Zusatz-Chance auf
+4. ✅ **Mittel:** `breakdownChance` tatsächlich würfeln (z. B. als Zusatz-Chance auf
    `van_breakdown_*` beim Reisen) oder die Mechanik samt irreführender
    Upgrade-Versprechen entfernen (1.4).
 5. **Mittel:** Endzustand für das FINALE definieren (Sieg-Szene oder Loop-Neustart) und

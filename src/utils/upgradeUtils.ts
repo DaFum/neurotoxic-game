@@ -31,6 +31,13 @@ const BREAKDOWN_REDUCTIONS = {
 } as const satisfies Record<string, number>
 
 /**
+ * Baseline breakdown chance of an unmodified van. Doubles as the reference
+ * point for scaling breakdown-tagged travel events: a van at exactly this
+ * chance keeps the authored event probabilities.
+ */
+export const BASE_BREAKDOWN_CHANCE = 0.05
+
+/**
  * Calculates the base breakdown chance after applying all upgrade reductions.
  * Centralises the subtraction logic shared by daily simulation and van repair.
  *
@@ -40,7 +47,7 @@ const BREAKDOWN_REDUCTIONS = {
 export const calcBaseBreakdownChance = (
   upgrades: string[] | null | undefined
 ): number => {
-  let base = 0.05
+  let base = BASE_BREAKDOWN_CHANCE
   if (!Array.isArray(upgrades)) return base
 
   const uniqueUpgrades = getUpgradeSet(upgrades)
