@@ -105,7 +105,13 @@ Ablehnen-Pfad (Opt2) wirkt, weil er einen echten Event-Cooldown setzt
 `consequences.ts:282`). Wer das Quest annimmt und scheitert, bekommt das Breakup-Event
 ggf. sofort erneut; wer ablehnt, hat 10 Tage Ruhe — vermutlich genau verkehrt herum.
 
-### 1.5 Phantom-Item-IDs in Rewards: `lucky_pick` und `energy_drink`
+### 1.5 ✅ ERLEDIGT — Phantom-Item-IDs in Rewards: `lucky_pick` und `energy_drink`
+
+> **Fix:** Beide IDs haben jetzt EN/DE-Einträge in `items.json`
+> (`lucky_pick.name/.description`, `energy_drink.name/.description`) und
+> erscheinen damit als benannte Trophäen-Items im Inventar (das Inventar-UI
+> rendert `items:<id>.name`). Ein neues Content-Gate verhindert künftige
+> Phantom-IDs (siehe Abschnitt 4).
 
 `quest_pick_of_destiny` belohnt `{ type: 'item.add', itemId: 'lucky_pick' }`
 (`questRegistry.ts:93`), `quest_sponsor_demand` `itemId: 'energy_drink'` (`:145`).
@@ -284,6 +290,15 @@ Als Vorhalt für künftige Quests legitim, sollte aber bewusst gepflegt werden
 
 ## 4. Test-/Absicherungslücken
 
+> **Status:** ✅ Weitgehend geschlossen. `tests/node/questSystem.test.js` enthält
+> jetzt Content-Gates für (a) Registry-Label-/Description-/progressSource-Keys
+> in EN+DE inkl. aller `quest_trigger_*`-Eventtexte, (b) `item.add`-Reward-IDs
+> gegen `items.json` (Phantom-Item-Schutz) und (c) das reparierte
+> Offer-Metadata-Gate: es extrahierte `effect.quest.id`, die Events referenzieren
+> Quests aber als String — das Gate prüfte daher nie etwas; jetzt akzeptiert es
+> beide Formen und schlägt fehl, wenn es keine Events matcht. Der
+> `'rehearsal'`-Test-Fallback wurde bereits mit Befund 1.1 korrigiert.
+
 - `tests/node/questSystem.test.js:111,118` benutzt `'rehearsal'` als Fallback-AssetKind
   und kaschiert damit Befund 1.1 — der Fallback sollte ein gültiger `AssetKind` sein.
 - Kein Test validiert, dass alle Registry-`label`/`description`-Keys und die
@@ -323,8 +338,8 @@ Als Vorhalt für künftige Quests legitim, sollte aber bewusst gepflegt werden
    Cooldowns auch bei `repeatPolicy: 'never'` greifen, oder die Re-Offer-Pfade
    (gigReducer, consequences) prüfen `questCooldowns` explizit; den
    `eventCooldowns`/`questCooldowns`-Mismatch bei `ego_management_retry` auflösen (1.3, 1.4).
-4. **Mittel:** `lucky_pick`/`energy_drink` als echte Items anlegen oder Rewards ersetzen (1.5).
-5. **Mittel:** Locale-Abdeckungs- und Registry-Konsistenz-Tests ergänzen (Abschnitt 4).
+4. ✅ **Mittel:** `lucky_pick`/`energy_drink` als echte Items anlegen oder Rewards ersetzen (1.5).
+5. ✅ **Mittel:** Locale-Abdeckungs- und Registry-Konsistenz-Tests ergänzen (Abschnitt 4).
 6. **Niedrig:** Flag-Doppelungen konsolidieren, totes `QuestCooldown.id` entfernen oder
    auswerten, `quest_alchemist`-Copy korrigieren, `fame.gained` als eigenen Eventtyp
    einführen.
