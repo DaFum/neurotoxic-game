@@ -344,4 +344,30 @@ describe('CompletePhase', () => {
     )
     expect(moneyElement).toBeTruthy()
   })
+
+  test('shows neurotoxic pedal harmony warning when penalty present', () => {
+    render(
+      <CompletePhase
+        result={mockResult}
+        onContinue={vi.fn()}
+        player={mockPlayer}
+        social={mockSocial}
+        pedalHarmonyPenalty={5}
+      />
+    )
+    expect(screen.getByText(/NEUROTOXIC PEDAL/i)).toBeTruthy()
+  })
+
+  test('hides pedal harmony warning when no penalty', () => {
+    render(
+      <CompletePhase
+        result={mockResult}
+        onContinue={vi.fn()}
+        player={mockPlayer}
+        social={mockSocial}
+        pedalHarmonyPenalty={0}
+      />
+    )
+    expect(screen.queryByText(/NEUROTOXIC PEDAL/i)).toBeNull()
+  })
 })

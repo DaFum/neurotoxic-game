@@ -42,6 +42,7 @@ export const PostGig = () => {
     social,
     player,
     changeScene,
+    pedalHarmonyPenalty,
     handlePostSelection,
     handleAcceptDeal,
     handleRejectDeals,
@@ -126,6 +127,7 @@ export const PostGig = () => {
               onSpinStory={handleSpinStory}
               player={player}
               social={social}
+              pedalHarmonyPenalty={pedalHarmonyPenalty}
             />
           )}
         </Suspense>

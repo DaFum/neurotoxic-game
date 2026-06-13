@@ -1311,6 +1311,7 @@
   "postGig.mood": "Stimmung",
   "postGig.negotiationFailed": "Verhandlung unerwartet fehlgeschlagen",
   "postGig.notEnoughCashForPr": "Nicht genug Geld für PR!",
+  "postGig.pedalHarmonyWarning": "NEUROTOXIC-PEDAL: -{{penalty}} Harmonie beim Fortfahren",
   "postGig.phaseBrandOffers": "MARKENANGEBOTE",
   "postGig.phaseReport": "GIG-BERICHT",
   "postGig.phaseSocialStrategy": "SOCIAL-MEDIA-STRATEGIE",
