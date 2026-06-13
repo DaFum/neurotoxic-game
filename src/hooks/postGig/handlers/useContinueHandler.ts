@@ -279,13 +279,15 @@ export function useContinueHandler({
           changeScene(GAME_PHASES.OVERWORLD)
         })
       }
+      // Guard intentionally NOT reset here: the scene transition (queued via
+      // queueMicrotask) owns the lifecycle. Resetting before the microtask runs
+      // would re-open a settlement window for rapid double-clicks.
     } catch (err) {
       logger.error(
         'PostGig handleContinue',
         'Unexpected error in continue flow',
         { err, player, currentGig }
       )
-    } finally {
       isProcessingActionRef.current = false
       setIsProcessingAction(false)
     }
