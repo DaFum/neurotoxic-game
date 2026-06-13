@@ -20,6 +20,7 @@ import {
   sanitizeSuccessToast,
   buildDeterministicToastId
 } from './toastSanitizers'
+import { validateBloodBankDonation } from '../../utils/bloodBankUtils'
 
 /**
  * Common logic for clinic actions.
@@ -219,6 +220,11 @@ export const handleBloodBankDonate = (
   const staminaCost = Math.max(0, Number(safePayload.staminaCost) || 0)
   const controversyGain = Math.max(0, Number(safePayload.controversyGain) || 0)
   const successToast = safePayload.successToast
+
+  if (!validateBloodBankDonation(state.band, { harmonyCost, staminaCost })) {
+    logger.warn('ClinicReducer', 'Rejected unaffordable blood-bank donation')
+    return state
+  }
 
   // Validate members array
   if (!Array.isArray(state.band.members) || state.band.members.length === 0) {
