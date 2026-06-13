@@ -196,7 +196,7 @@ export function useContinueHandler({
         // Surviving the FINALE gig completes the tour; the flag persists in
         // the save and drives the victory variant of the game-over screen.
         ...(isFinaleGig && !bankrupt
-          ? { stats: { ...player.stats, tourCompleted: true } }
+          ? { stats: { ...player?.stats, tourCompleted: true } }
           : {})
       })
 
