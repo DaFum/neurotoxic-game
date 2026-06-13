@@ -314,7 +314,10 @@ export const handleBloodBankDonate = (
     const deltaControversy = nextControversy - currentControversy
 
     const safeToast = sanitizeSuccessToast(successToast, {
-      fallbackId: buildDeterministicToastId('blood-bank-toast', state.toasts),
+      fallbackId: buildDeterministicToastId(
+        'blood-bank-toast',
+        normalizedState.toasts
+      ),
       optionsPatch: {
         deltaMoney: formatCurrency(deltaMoney, i18n.language, 'always'),
         deltaHarmony,
@@ -323,7 +326,7 @@ export const handleBloodBankDonate = (
       }
     })
     if (safeToast) {
-      nextState.toasts = [...(state.toasts || []), safeToast]
+      nextState.toasts = [...(normalizedState.toasts || []), safeToast]
     }
   }
 

@@ -24,10 +24,15 @@ vi.mock('../../src/components/postGig/ReportPhase', () => ({
 }))
 
 vi.mock('../../src/components/postGig/SocialPhase', () => ({
-  SocialPhase: ({ options = [], onSelect }) => (
+  SocialPhase: ({ options = [], onSelect, disabled = false }) => (
     <div data-testid='mock-social-phase'>
       {options.map(opt => (
-        <button type='button' key={opt.id} onClick={() => onSelect(opt)}>
+        <button
+          type='button'
+          key={opt.id}
+          onClick={() => onSelect(opt)}
+          disabled={disabled}
+        >
           {opt.name}
         </button>
       ))}
@@ -36,9 +41,9 @@ vi.mock('../../src/components/postGig/SocialPhase', () => ({
 }))
 
 vi.mock('../../src/components/postGig/DealsPhase', () => ({
-  DealsPhase: ({ onSkip }) => (
+  DealsPhase: ({ onSkip, isProcessing = false }) => (
     <div data-testid='mock-deals-phase'>
-      <button type='button' onClick={onSkip}>
+      <button type='button' onClick={onSkip} disabled={isProcessing}>
         Skip Deals
       </button>
     </div>
@@ -53,7 +58,7 @@ vi.mock('../../src/components/postGig/CompletePhase', () => ({
       data-testid='mock-complete-phase'
       data-is-processing={String(isProcessingAction)}
     >
-      <button type='button' onClick={onContinue}>
+      <button type='button' onClick={onContinue} disabled={isProcessingAction}>
         back to tour
       </button>
     </div>
