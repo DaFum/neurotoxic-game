@@ -125,6 +125,7 @@ export const usePostGigLogic = () => {
     phaseTitleDefault,
     social,
     player,
+    changeScene,
     isProcessingAction,
     handlePostSelection,
     handleAcceptDeal,

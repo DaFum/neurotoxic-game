@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion'
 import { IMG_PROMPTS, resolveGenImageUrl } from '../utils/imageGen'
 import { usePostGigLogic } from '../hooks/usePostGigLogic'
+import { GAME_PHASES } from '../context/gameConstants'
+import { ActionButton } from '../ui/shared'
 
 import { lazy, Suspense } from 'react'
 const ReportPhase = lazy(() =>
@@ -39,6 +41,7 @@ export const PostGig = () => {
     phaseTitleDefault,
     social,
     player,
+    changeScene,
     handlePostSelection,
     handleAcceptDeal,
     handleRejectDeals,
@@ -48,12 +51,21 @@ export const PostGig = () => {
   } = usePostGigLogic()
   if (!financials)
     return (
-      <div className='w-full h-full flex flex-col items-center justify-center bg-void-black px-4 text-center'>
+      <div className='w-full h-full flex flex-col items-center justify-center bg-void-black px-4 text-center gap-6'>
         <div className='text-2xl sm:text-3xl text-toxic-green font-display animate-pulse tracking-widest'>
           {t('ui:postGig.tallyingReceipts', {
             defaultValue: 'TALLYING RECEIPTS...'
           })}
         </div>
+        <ActionButton
+          onClick={() => changeScene(GAME_PHASES.OVERWORLD)}
+          variant='secondary'
+          className='min-h-11 px-6 py-3'
+        >
+          {t('ui:postGig.backToOverworld', {
+            defaultValue: 'Back to Overworld'
+          })}
+        </ActionButton>
       </div>
     )
 
