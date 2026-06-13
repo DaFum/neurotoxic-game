@@ -34,6 +34,15 @@ const SCENES_WITHOUT_HUD: Set<GamePhase> = new Set([
   GAME_PHASES.ASSETS
 ])
 
+/**
+ * Resolves whether Vercel telemetry should be enabled based on environment variables.
+ *
+ * @remarks
+ * Checks Vite injected environment, process environment variables, and the Node environment
+ * to safely determine telemetry status across build types and execution contexts.
+ *
+ * @returns A boolean indicating whether telemetry is globally active.
+ */
 const resolveVercelTelemetryEnabled = () => {
   const viteFlag = import.meta.env?.VITE_ENABLE_VERCEL_TELEMETRY
   if (typeof viteFlag === 'string') {
@@ -58,6 +67,11 @@ const resolveVercelTelemetryEnabled = () => {
 }
 const VERCEL_TELEMETRY_ENABLED = resolveVercelTelemetryEnabled()
 
+/**
+ * Provides a highly visible, styled fallback UI during asynchronous scene module loading.
+ *
+ * @returns A React functional component rendering a toxic-green loading text element.
+ */
 const SceneLoadingFallback = () => {
   const { t } = useTranslation()
   return (
@@ -163,8 +177,13 @@ function GameContent() {
 }
 
 /**
- * Root Application Component.
- * Wraps the game in the GameStateProvider.
+ * Root application component.
+ *
+ * @remarks
+ * Wraps the main game content tree in required context providers such as the ErrorBoundary,
+ * NetworkStatusProvider, and GameStateProvider. Also injects global non-interactive elements like the noise overlay.
+ *
+ * @returns The fully wrapped and initialized game application.
  */
 export default function App() {
   return (
