@@ -511,7 +511,47 @@ git commit -m "fix: resolve confirmed section-2 audit findings and update audit 
 
 ---
 
-## Task 6: Gesamtverifikation, Symbols-Index, Push
+## Task 6: AGENTS.md- & TSDoc-Abschlussprüfung
+
+**Vom Haupt-Agenten selbst auszuführen** (nicht an Subagent delegieren). Prüfen, ob die Änderungen aus Tasks 1-5 eine durable Instruktion (`AGENTS.md`) oder TSDoc-Aktualisierung erfordern; nur bei echtem, nicht-offensichtlichem Bedarf editieren (gemäß AGENTS.md: chirurgisch, kein spekulatives Doku-Wachstum).
+
+**Files (Kandidaten):**
+- `AGENTS.md`, `CLAUDE.md` (Root)
+- `src/utils/AGENTS.md` (enthält bereits Gig-Modifier-/perfScore-Notizen)
+- `src/components/postGig/AGENTS.md`, `src/context/reducers/AGENTS.md`, `src/scenes/AGENTS.md` (falls vorhanden)
+- Geänderte Quell-Dateien aus Tasks 1-4 (TSDoc)
+
+- [ ] **Step 1: AGENTS.md-Scopes prüfen**
+
+Relevante `AGENTS.md` lesen. Bewerten:
+  - `src/utils/AGENTS.md`: Lohnt eine Zeile zu `damaged_gear` (jetzt konsumiert in `getGigModifiers`, Kombi-Strafe Jitter/−10ms/×0.9)? Nur ergänzen, wenn es künftige Fehler verhindert (z. B. „Modifier wird konsumiert, nicht nur gesetzt").
+  - `src/components/postGig/AGENTS.md`: Lohnt ein Hinweis, dass `pedalHarmonyPenalty` nur **angezeigt** wird, die Mutation aber im `useContinueHandler` bleibt (keine Doppel-Anwendung)?
+  - Sonstige Scopes: nur falls eine konkrete, neue Invariante entstand.
+
+- [ ] **Step 2: TSDoc der geänderten Symbole prüfen/aktualisieren**
+
+  - `getGigModifiers` (`src/utils/gigModifiersUtils.ts`): `@param gigModifiers` ggf. um `damaged_gear` ergänzen.
+  - `usePostGigLogic` (`src/hooks/usePostGigLogic.ts`): `@returns`-Beschreibung um `changeScene`/`pedalHarmonyPenalty` ergänzen, falls die bestehende Doku die Rückgaben aufzählt.
+  - `CompletePhaseProps` / `CompletePhase` (`src/types/components.d.ts`, `CompletePhase.tsx`): neues Prop dokumentieren, falls dort TSDoc-Konvention herrscht.
+  Nur ändern, wo bereits TSDoc existiert oder die Konvention es klar verlangt — keine neuen Doc-Blöcke erzwingen.
+
+- [ ] **Step 3: Verifikation**
+
+Run: `pnpm run typecheck:core`
+Expected: keine Fehler (TSDoc-Änderungen sind kommentar-only, dürfen nichts brechen).
+
+- [ ] **Step 4: Commit (nur falls geändert)**
+
+```bash
+git add -A
+git commit -m "docs: update AGENTS notes and TSDoc for audit-finding fixes"
+```
+
+Falls keine Änderung nötig war: kein Commit, Begründung in der Task-Notiz festhalten.
+
+---
+
+## Task 7: Gesamtverifikation, Symbols-Index, Push
 
 **Files:** ggf. `symbols.json`
 
@@ -546,6 +586,6 @@ git push -u origin claude/charming-hamilton-3ksxsl
 
 ## Self-Review Notes
 
-- **Spec-Coverage:** 1.1→Task 1, 1.2→Task 4, 1.3→Task 2, 1.4→Task 3, Abschnitt 2→Task 5, Verifikation/i18n/Symbols→Task 6. Vollständig.
+- **Spec-Coverage:** 1.1→Task 1, 1.2→Task 4, 1.3→Task 2, 1.4→Task 3, Abschnitt 2→Task 5, AGENTS.md/TSDoc→Task 6, Verifikation/i18n/Symbols/Push→Task 7. Vollständig.
 - **Typ-Konsistenz:** `pedalHarmonyPenalty` (number) und `changeScene` durchgehend gleich benannt in `usePostGigLogic` (Return), `PostGig.tsx` (Destructuring + Props), `CompletePhaseProps`, `CompletePhase` (Prop). i18n-Key `ui:pregig.effects.damagedGear` identisch in Impl (Task 1 Step 3), Test (Step 1) und Locale (Step 4). `ui:postGig.backToOverworld` und `ui:postGig.pedalHarmonyWarning` konsistent zwischen Impl, Test und Locale.
 - **Keine Platzhalter:** Alle Code-Schritte enthalten vollständigen Code.
