@@ -48,6 +48,14 @@ Legende Schweregrad: 🔴 hoch · 🟡 mittel · 🟢 niedrig
 
 Diese Punkte sind statisch plausibel, ihre tatsächliche Auslösbarkeit zur Laufzeit wurde nicht durch Reproduktion bestätigt. Vor einem Fix lohnt ein gezielter Reproduktions-/Testversuch.
 
+> **Verifikation (2026-06-13):** Alle sechs Verdachtsfälle wurden per Code-Trace nachverfolgt und sind **WIDERLEGT** (Soll-Verhalten/abgesichert) — kein Fix nötig:
+> - **2.1** Dispatch ist synchron, der Reducer wirft strukturell nie; der `finally`-`changeScene(GIG)` ist bewusste Softlock-Vermeidung. Reducer ändert `currentScene` nicht (`src/context/reducers/AGENTS.md:28`).
+> - **2.2** Alle 45 Venues in `src/data/venues.ts` setzen `capacity` explizit (45/45 verifiziert); der `null`-Pfad ist praktisch unerreichbar.
+> - **2.3** `useTravelEffects.ts:71-141` simuliert Asset-Verkaufs-Szenarien (`postSaleScenarios`) vor `checkSoftlock` (`mapUtils.ts:336-355`); der Toast feuert nur, wenn auch nach Verkauf keine Route leistbar ist — Text faktisch korrekt.
+> - **2.4** Alle 6 `arrival.*`-Keys existieren in EN und DE (6/6 in beiden); `defaultValue`s sind reine Pre-Load-Fallbacks.
+> - **2.5** Kein `triggerEvent`-Aufrufer liegt in `TRAVEL_MINIGAME`/`PRE_GIG_MINIGAME`/`PRACTICE`; der fehlende Guard ist folgenlos.
+> - **2.6** `isHandlingRef` (Node-ID-Vergleich) und `isProcessingActionRef` (synchron vor Dispatches gesetzt) schützen die kritischen Bereiche; kein Code-Pfad erzwingt einen Doppel-Effekt.
+
 ### 2.1 🟡 PreGig/Minigame Scene-Transition-Architektur ist uneinheitlich
 
 - **Datei:** `src/scenes/kabelsalat/hooks/useKabelsalatGameEnd.ts:65-67`
