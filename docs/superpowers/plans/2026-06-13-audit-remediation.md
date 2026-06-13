@@ -227,7 +227,12 @@ git commit -m "fix(persistence): persist and sanitize rivalBand across save/load
 
 - [ ] **Step 1: Failing-Test** — Tourbus-Completion+Arrival speichert Snapshot inkl. Ziel, Tageswechsel, Daily-Effekte, Arrival-Flags/Routing, ggf. Gig-Start.
 - [ ] **Step 2: → FAIL** (Save passiert vor Side-Effects).
-- [ ] **Step 3: Implementieren** — `saveGame(false)` aus dem Kopf entfernen und als letzten Schritt von `handleArrivalSequence` (nach allen Side-Effects/Routing) aufrufen. **Hinweis:** GAMEOVER-Kurzschluss aus Task 9 berücksichtigen (kein Save überschreibt Gameover-Routing).
+- [ ] **Step 3: Implementieren** — `saveGame(false)` aus dem Kopf entfernen. **Kanonische Single-Save-Sequenz (gemeinsam mit Task 9, genau EIN Save pro Pfad):**
+  1. `advanceDay()` aufrufen.
+  2. Resultierende Szene aus `stateRef.current.currentScene` lesen.
+  3. **Wenn `=== GAME_PHASES.GAMEOVER`:** `saveGame(false)` SOFORT aufrufen, Arrival-Routing (`changeScene(...)`) überspringen, früh zurückkehren. (Save passiert, überschreibt aber die GAMEOVER-Szene nicht — kein `changeScene`.)
+  4. **Sonst:** alle Arrival-Side-Effects + Routing ausführen, danach `saveGame(false)` GENAU EINMAL am Ende.
+  Kein Pfad ruft `saveGame(false)` doppelt; kein Pfad überspringt den Save. Diese Sequenz ist die einzige Save-Autorität in `handleArrivalSequence`.
 - [ ] **Step 4: → PASS.**
 - [ ] **Step 5: AGENTS (`src/hooks/AGENTS.md`)/TSDoc, Commit & Push.**
 
@@ -262,9 +267,9 @@ git commit -m "fix(arrival): preserve gameover scene over arrival routing"
 - Modify: `src/context/useGameDispatchActions.ts` (`endGig` 550-564)
 - Test: `tests/.../useGameDispatchActions.*` (oder passender Hook-Test)
 
-- [ ] **Step 1: Failing-Test** — Practice-Rückkehr-Matrix: `sourceScene` OVERWORLD → HQ-pending true; MENU → HQ-pending false (Szene = MENU); ungültig/fehlend → OVERWORLD + HQ-pending true.
+- [ ] **Step 1: Failing-Test** — Practice-Rückkehr-Matrix (drei Fälle): `sourceScene` OVERWORLD → HQ-pending true; MENU → HQ-pending false (Szene = MENU); ungültig/fehlend → **normalisiert auf OVERWORLD** + HQ-pending true.
 - [ ] **Step 2: → FAIL** (aktuell immer `setPendingBandHQOpen(true)`).
-- [ ] **Step 3: Implementieren** — `setPendingBandHQOpen(true)` nur wenn `targetScene === GAME_PHASES.OVERWORLD`.
+- [ ] **Step 3: Implementieren** — **zuerst normalisieren, dann gaten.** Das bestehende `endGig` berechnet bereits `targetScene = isValidTarget ? rawTarget : GAME_PHASES.OVERWORLD` (ungültig/fehlend → OVERWORLD). Dieses bereits-normalisierte `targetScene` ist die kanonische Quelle: `setPendingBandHQOpen(true)` NUR aufrufen wenn `targetScene === GAME_PHASES.OVERWORLD`. Dadurch öffnet der invalid/missing-Pfad korrekt HQ (weil er auf OVERWORLD normalisiert wurde), während ein gültiges MENU kein HQ öffnet. NICHT gegen `rawTarget` gaten.
 - [ ] **Step 4: → PASS.**
 - [ ] **Step 5: AGENTS/TSDoc, Commit & Push.**
 
