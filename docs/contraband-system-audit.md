@@ -6,6 +6,8 @@
 
 Alle Befunde sind mit `Datei:Zeile`-Referenzen belegt und am Quellcode verifiziert (sofern nicht ausdrücklich als „nicht direkt verifiziert" markiert).
 
+> **Status (Update):** Die kritischen und mittleren Befunde wurden auf diesem Branch behoben — siehe Tabelle in Abschnitt 5. Die als „Design" markierten Befunde (3.1, 3.2, 3.3, 3.5, 3.6, 3.7) wurden als beabsichtigtes Verhalten belassen; 3.4 wurde defensiv abgesichert.
+
 ---
 
 ## 0. Systemüberblick
@@ -174,15 +176,16 @@ Auch Drop-Wahrscheinlichkeit (`computeDropChance` mit `DROP_BASE_CHANCE`/`LUCK_M
 
 ## 5. Empfohlene Priorisierung
 
-| # | Befund | Schwere | Aufwand |
+| # | Befund | Schwere | Status |
 |---|---|---|---|
-| 1.1 | 4 Items verschachtelt in items.json → „Unknown Item" (EN+DE) | Kritisch | Klein |
-| 1.2 | Equipment-Effekte permanent / Konfiszierung rollt nicht zurück | Kritisch | Mittel |
-| 1.3 | Stapelbare Dauer-Consumables leaken Buff dauerhaft | Kritisch | Mittel |
-| 2.1 | Dauer in Tagen statt „Gigs" (UI/Text-Mismatch) | Mittel | Klein–Mittel |
-| 2.2 | `c_neon_patch`-Stacks ohne Wirkung | Mittel | Klein |
-| 2.3 | Drops nur über Tourbus-Minispiel | Mittel | Design |
-| 2.4 | Stack-Anzahl nicht in UI sichtbar | Mittel | Klein |
-| 3.x | Diverse Design-/Konsistenz-Hinweise | Niedrig | — |
+| 1.1 | 4 Items verschachtelt in items.json → „Unknown Item" (EN+DE) | Kritisch | ✅ Behoben — flache Keys + Regressionstest |
+| 1.2 | Equipment-Effekte permanent / Konfiszierung rollt nicht zurück | Kritisch | ✅ Behoben — Revert in `delta.ts` über geteilten `contrabandEffects`-Helper |
+| 1.3 | Stapelbare Dauer-Consumables leaken Buff dauerhaft | Kritisch | ✅ Behoben — ein Tracking-Eintrag pro Anwendung |
+| 2.1 | Dauer in Tagen statt „Gigs" (UI/Text-Mismatch) | Mittel | ✅ Behoben — UI-Label „DAYS/TAGE" + Beschreibungen angeglichen |
+| 2.2 | `c_neon_patch`-Stacks ohne Wirkung | Mittel | ✅ Behoben — Item non-stackable |
+| 2.3 | Drops nur über Tourbus-Minispiel | Mittel | ✅ Klargestellt — Kommentar an tatsächliches Verhalten angepasst |
+| 2.4 | Stack-Anzahl nicht in UI sichtbar | Mittel | ✅ Behoben — „×N"-Anzeige im Stash |
+| 3.4 | Latente USE-Allowlist-Lücke für Equipment | Niedrig | ✅ Abgesichert |
+| 3.1/3.2/3.3/3.5/3.6/3.7 | Design-/Konsistenz-Hinweise | Niedrig | Als Design belassen |
 
 > Vorschlag für Test-Härtung: Ein Test, der **jede** `CONTRABAND_DB`-ID und jede Recipe-ID gegen vorhandene `name`/`description`- bzw. `label`/`desc`-Keys in **EN und DE** prüft (würde 1.1 dauerhaft verhindern).

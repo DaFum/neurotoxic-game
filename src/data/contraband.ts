@@ -325,8 +325,10 @@ const CONTRABAND_DB = [
     rarity: 'common',
     icon: 'icon_patch',
     applyOnAdd: true,
-    stackable: true,
-    maxStacks: 4
+    // Non-stackable: apply-on-add equipment applies its effect only on the
+    // first add, so extra stacks would carry no effect and could not be
+    // reverted on confiscation.
+    stackable: false
   },
   {
     id: 'c_abyssal_microphone',

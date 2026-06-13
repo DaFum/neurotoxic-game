@@ -240,14 +240,14 @@ describe('Contraband Schema (with imagePrompt)', () => {
         item => item.type === 'equipment'
       )
       for (const item of equipmentItems) {
-        // Exception: c_neon_patch is stackable equipment
-        if (item.id !== 'c_neon_patch') {
-          assert.equal(
-            item.stackable,
-            false,
-            `Equipment item ${item.id} should not be stackable (except c_neon_patch)`
-          )
-        }
+        // Apply-on-add equipment applies its effect only on the first add, so
+        // equipment must be non-stackable — extra stacks would carry no effect
+        // and could not be reverted on confiscation.
+        assert.equal(
+          item.stackable,
+          false,
+          `Equipment item ${item.id} should not be stackable`
+        )
       }
     })
 

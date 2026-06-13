@@ -31,6 +31,7 @@ type DisplayStashItem = ContrabandStashItem & {
   id: string
   rarity?: string
   duration?: number
+  stacks?: number | null
   imagePrompt?: string
   description?: string
   applied?: boolean
@@ -92,6 +93,9 @@ const StashCardHeader = ({ item, t }: StashCardSubComponentProps) => {
               defaultValue: item.rarity?.toUpperCase() ?? 'UNKNOWN'
             })}
           </span>
+          {typeof item.stacks === 'number' && item.stacks > 1 && (
+            <span className='text-star-white'>×{item.stacks}</span>
+          )}
         </div>
       </div>
       <div className='flex flex-col gap-1 items-end'>
@@ -108,7 +112,7 @@ const StashCardHeader = ({ item, t }: StashCardSubComponentProps) => {
         </span>
         {item.duration && (
           <span className='text-xs text-ash-gray italic'>
-            {item.duration} {t('ui:contraband.gigs', { defaultValue: 'GIGS' })}
+            {item.duration} {t('ui:contraband.days', { defaultValue: 'DAYS' })}
           </span>
         )}
       </div>

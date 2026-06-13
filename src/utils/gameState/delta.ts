@@ -1,4 +1,8 @@
 import { finiteNumberOr, isFiniteNumber } from '../finiteNumber'
+import {
+  applySharedBandEffect,
+  EQUIPMENT_APPLY_ON_ADD_EFFECTS
+} from '../contrabandEffects'
 import { logger } from '../logger'
 import { hasTrait } from '../traitUtils'
 import {
@@ -805,6 +809,29 @@ export const applyEventDelta = (
         const itemId = delta.band.stashRemove[i]
         if (!itemId) continue
         if (typeof itemId === 'string' && !isForbiddenKey(itemId)) {
+          // Revert any active apply-on-add equipment bonus before the item
+          // leaves the stash; confiscation must not orphan the band-stat buff
+          // (the effect was never tracked in activeContrabandEffects).
+          const entry = nextBand.stash[itemId] as
+            | Record<string, unknown>
+            | undefined
+          if (
+            entry &&
+            typeof entry === 'object' &&
+            entry.type === 'equipment' &&
+            entry.applyOnAdd === true &&
+            entry.applied === true
+          ) {
+            const stacks = isFiniteNumber(entry.stacks)
+              ? Math.max(1, entry.stacks)
+              : 1
+            applySharedBandEffect(
+              nextBand,
+              entry.effectType,
+              -finiteNumberOr(entry.value, 0) * stacks,
+              EQUIPMENT_APPLY_ON_ADD_EFFECTS
+            )
+          }
           delete nextBand.stash[itemId]
         }
       }

@@ -201,6 +201,55 @@ test('applyEventDelta handles band inventory updates', () => {
   assert.equal(nextState.band.inventory.golden_pick, true)
 })
 
+test('applyEventDelta reverts apply-on-add equipment bonus on stash confiscation', () => {
+  const state = {
+    band: {
+      luck: 12, // 7 baseline + 5 from the equipped item
+      stash: {
+        c_rusty_strings: {
+          id: 'c_rusty_strings',
+          type: 'equipment',
+          effectType: 'luck',
+          value: 5,
+          applyOnAdd: true,
+          applied: true,
+          stacks: null
+        }
+      }
+    }
+  }
+  const delta = { band: { stashRemove: ['c_rusty_strings'] } }
+
+  const nextState = applyEventDelta(state, delta)
+  // Item removed AND its permanent bonus reverted, not orphaned.
+  assert.equal(Object.hasOwn(nextState.band.stash, 'c_rusty_strings'), false)
+  assert.equal(nextState.band.luck, 7)
+})
+
+test('applyEventDelta does not revert effect for an unapplied confiscated item', () => {
+  const state = {
+    band: {
+      luck: 7,
+      stash: {
+        c_rusty_strings: {
+          id: 'c_rusty_strings',
+          type: 'equipment',
+          effectType: 'luck',
+          value: 5,
+          applyOnAdd: true,
+          applied: false,
+          stacks: null
+        }
+      }
+    }
+  }
+  const delta = { band: { stashRemove: ['c_rusty_strings'] } }
+
+  const nextState = applyEventDelta(state, delta)
+  assert.equal(Object.hasOwn(nextState.band.stash, 'c_rusty_strings'), false)
+  assert.equal(nextState.band.luck, 7)
+})
+
 test('applyEventDelta applies per-member deltas', () => {
   const state = {
     band: {

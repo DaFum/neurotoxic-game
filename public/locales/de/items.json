@@ -130,13 +130,13 @@
   "contraband.c_rusty_strings.name": "Rostige Saiten",
   "contraband.c_rusty_strings.description": "Sie schneiden dir in die Finger, aber das Blut beschwört bessere Gig-Modifikatoren (+5 Luck).",
   "contraband.c_cursed_pick.name": "Verfluchtes Plektrum des Schicksals",
-  "contraband.c_cursed_pick.description": "Ein leuchtendes Plektrum, das flüstert. Senkt die Gitarren-Schwierigkeit für einen Gig um 0.2.",
+  "contraband.c_cursed_pick.description": "Ein leuchtendes Plektrum, das flüstert. Senkt die Gitarren-Schwierigkeit für einen Tag um 0.2.",
   "contraband.c_mystery_pills.name": "Mysteriöse Tankstellen-Pillen",
   "contraband.c_mystery_pills.description": "Fragwürdige Herkunft. Erhöht die Stimmung eines Mitglieds um 30.",
   "contraband.c_blood_pact.name": "Blutpakt-Vertrag",
   "contraband.c_blood_pact.description": "Bindet die Band in dunkler Synergie zusammen. +15 Harmonie.",
   "contraband.c_phase_metronome.name": "Phasen-Metronom",
-  "contraband.c_phase_metronome.description": "Verschiebt das interne Tempo der Band. Tempo-bedingte Schwierigkeiten beim nächsten Gig um 15% reduziert.",
+  "contraband.c_phase_metronome.description": "Verschiebt das interne Tempo der Band. Tempo-bedingte Schwierigkeiten für einen Tag um 15% reduziert.",
   "contraband.c_shattered_ear.name": "Zerschmetterter Ohr-Talisman",
   "contraband.c_shattered_ear.description": "Ein Splitter, der die Wahrnehmung schärft. +5% kritische Performance-Würfe, wenn ausgerüstet.",
   "contraband.c_amped_synth.name": "Verstärktes Synth-Modul",
@@ -144,7 +144,7 @@
   "contraband.c_gig_program.name": "Gig-Programm",
   "contraband.c_gig_program.description": "Optimiert das Routing & PR für den nächsten Tour-Abschnitt (+20% Chance auf ein positives Tour-Ergebnis).",
   "contraband.c_sticky_plectrum.name": "Klebriges Plektrum",
-  "contraband.c_sticky_plectrum.description": "Verbessert die Plektrum-Kontrolle und erleichtert die Gitarren-Schwierigkeit für einen Gig leicht.",
+  "contraband.c_sticky_plectrum.description": "Verbessert die Plektrum-Kontrolle und erleichtert die Gitarren-Schwierigkeit für einen Tag leicht.",
   "contraband.c_night_vision_glasses.name": "Nachtsichtbrille",
   "contraband.c_night_vision_glasses.description": "Lass dich die Stimmung der Crowd klarer sehen; leichter passiver Bonus auf Crowd-Control/Effekte.",
   "contraband.c_sonic_resonator.name": "Schall-Resonator",
@@ -170,7 +170,7 @@
   "contraband.c_forgotten_road_map.name": "Vergessene Straßenkarte",
   "contraband.c_forgotten_road_map.description": "Karten zu verborgenen Routen. Erhöht einmalig stark die Chance auf reibungslose Tour-Logistik.",
   "contraband.c_sticky_logo_sticker.name": "Klebriger Logo-Sticker",
-  "contraband.c_sticky_logo_sticker.description": "Kleb ihn auf einen Amp oder ein Bühnenelement — leichter Crowd-Control-Buff für den nächsten Gig.",
+  "contraband.c_sticky_logo_sticker.description": "Kleb ihn auf einen Amp oder ein Bühnenelement — leichter Crowd-Control-Buff für einen Tag.",
   "contraband.c_neon_patch.name": "Neon-Patch",
   "contraband.c_neon_patch.description": "Ein Patch, das die Style-Bewertung der Band anheizt. Ästhetisch, aber effektiv.",
   "contraband.c_abyssal_microphone.name": "Abgründiges Mikrofon",
@@ -179,24 +179,14 @@
   "contraband.c_silver_tongue.description": "Steigert Charisma für Interviews; +20 Stimmung für das Mitglied bei Verwendung.",
   "contraband.c_broken_compass.name": "Kaputter Kompass",
   "contraband.c_broken_compass.description": "Zeigt seltsamerweise auf profitable Entscheidungen; kleiner, aber beständiger Tour-Vorteil.",
-  "contraband": {
-    "c_neuro_mold_spores": {
-      "name": "Neuro-Schimmel Sporen",
-      "description": "Reduziert den Band-Stress drastisch. Riecht nach Cyber-Fäule."
-    },
-    "c_cybernetic_plectrum_implant": {
-      "name": "Kybernetisches Plektrum-Implantat",
-      "description": "Senkt die Gitarren-Schwierigkeit dauerhaft."
-    },
-    "c_fermented_void_juice": {
-      "name": "Fermentierter Void-Saft",
-      "description": "Ein extremer Stimmungs-Booster direkt aus dem Abgrund."
-    },
-    "c_hyper_adrenaline_ampoule": {
-      "name": "Hyper-Adrenalin Ampulle",
-      "description": "Erhöht die maximale Ausdauer dauerhaft."
-    }
-  },
+  "contraband.c_neuro_mold_spores.name": "Neuro-Schimmel Sporen",
+  "contraband.c_neuro_mold_spores.description": "Reduziert den Band-Stress drastisch. Riecht nach Cyber-Fäule.",
+  "contraband.c_cybernetic_plectrum_implant.name": "Kybernetisches Plektrum-Implantat",
+  "contraband.c_cybernetic_plectrum_implant.description": "Senkt die Gitarren-Schwierigkeit dauerhaft.",
+  "contraband.c_fermented_void_juice.name": "Fermentierter Void-Saft",
+  "contraband.c_fermented_void_juice.description": "Ein extremer Stimmungs-Booster direkt aus dem Abgrund.",
+  "contraband.c_hyper_adrenaline_ampoule.name": "Hyper-Adrenalin Ampulle",
+  "contraband.c_hyper_adrenaline_ampoule.description": "Erhöht die maximale Ausdauer dauerhaft.",
   "hq_room_void_altar.name": "Altar der Leere",
   "hq_room_void_altar.description": "Ein beunruhigender Monolith, der summt. (+10 Glück Sofort).",
   "lucky_pick.name": "Plektrum des Schicksals",

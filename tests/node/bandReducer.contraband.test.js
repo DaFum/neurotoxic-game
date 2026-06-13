@@ -107,6 +107,43 @@ describe('bandReducer - Contraband', () => {
       )
     })
 
+    it('tracks one revertible effect per use of a stacked duration consumable', () => {
+      // Regression: a second use of a stacked consumable must register a second
+      // tracked effect so expiry reverts the full applied bonus (no leak).
+      const baseState = {
+        band: {
+          ...DEFAULT_BAND_STATE,
+          tempo: 0,
+          activeContrabandEffects: [],
+          stash: {
+            c_phase_metronome: {
+              id: 'c_phase_metronome',
+              instanceId: 'metro-1',
+              type: 'consumable',
+              effectType: 'tempo',
+              value: 0.15,
+              duration: 1,
+              stacks: 2
+            }
+          }
+        }
+      }
+      const payload = {
+        instanceId: 'metro-1',
+        contrabandId: 'c_phase_metronome'
+      }
+
+      const afterFirst = handleUseContraband(baseState, payload)
+      assert.equal(afterFirst.band.activeContrabandEffects.length, 1)
+      assert.ok(Math.abs(afterFirst.band.tempo - 0.15) < 1e-9)
+
+      const afterSecond = handleUseContraband(afterFirst, payload)
+      // Both applications are tracked so both can be reverted symmetrically.
+      assert.equal(afterSecond.band.activeContrabandEffects.length, 2)
+      assert.ok(Math.abs(afterSecond.band.tempo - 0.3) < 1e-9)
+      assert.equal(Object.keys(afterSecond.band.stash).length, 0)
+    })
+
     it('uses finite fallbacks for harmony consumable effects', () => {
       const state = {
         band: {
