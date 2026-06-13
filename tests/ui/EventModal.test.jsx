@@ -10,7 +10,11 @@ vi.mock('react-i18next', () => ({
       translationBehavior.useDefaultValue
         ? (options?.defaultValue ?? key)
         : key,
-    i18n: { changeLanguage: () => new Promise(() => {}) }
+    i18n: {
+      language: 'en',
+      changeLanguage: () => new Promise(() => {}),
+      options: {}
+    }
   }),
   initReactI18next: { type: '3rdParty', init: () => {} }
 }))

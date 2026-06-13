@@ -255,18 +255,20 @@ export const handleBloodBankDonate = (
     return normalizedState
   }
 
-  const currentMoney = Number.isFinite(state.player.money)
-    ? state.player.money
+  const currentMoney = Number.isFinite(normalizedState.player.money)
+    ? normalizedState.player.money
     : 0
   const nextMoney = clampPlayerMoney(currentMoney + moneyGain)
 
-  const currentHarmony = Number.isFinite(state.band.harmony)
-    ? state.band.harmony
+  const currentHarmony = Number.isFinite(normalizedState.band.harmony)
+    ? normalizedState.band.harmony
     : 50
   const nextHarmony = clampBandHarmony(currentHarmony - harmonyCost)
 
-  const currentControversy = Number.isFinite(state.social.controversyLevel)
-    ? state.social.controversyLevel
+  const currentControversy = Number.isFinite(
+    normalizedState.social.controversyLevel
+  )
+    ? normalizedState.social.controversyLevel
     : 0
   const nextControversy = clampControversyLevel(
     currentControversy + controversyGain
@@ -274,18 +276,20 @@ export const handleBloodBankDonate = (
 
   // Apply stamina drain to all members and calculate actual loss
   let totalStaminaLost = 0
-  const updatedMembers = normalizedState.band.members.map((member: BandMember) => {
-    const prevStamina = finiteNumberOr(member.stamina, 0)
-    const nextStamina = clampMemberStamina(
-      prevStamina - staminaCost,
-      member.staminaMax
-    )
-    totalStaminaLost += prevStamina - nextStamina
-    return {
-      ...member,
-      stamina: nextStamina
+  const updatedMembers = normalizedState.band.members.map(
+    (member: BandMember) => {
+      const prevStamina = finiteNumberOr(member.stamina, 0)
+      const nextStamina = clampMemberStamina(
+        prevStamina - staminaCost,
+        member.staminaMax
+      )
+      totalStaminaLost += prevStamina - nextStamina
+      return {
+        ...member,
+        stamina: nextStamina
+      }
     }
-  })
+  )
 
   const nextState = {
     ...normalizedState,

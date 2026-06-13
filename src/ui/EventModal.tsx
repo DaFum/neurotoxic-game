@@ -122,9 +122,13 @@ export const EventModal = ({
     setPrevEventId(event?.id)
     setOutcome(null)
     setPreviewError(false)
-    resolvedRef.current = false
     setIsResolved(false)
   }
+
+  // Reset the double-submit guard when the event changes (useEffect to avoid render-phase side effects)
+  useEffect(() => {
+    resolvedRef.current = false
+  }, [event?.id])
 
   // Keep game state ref stable so handleOptionSelect doesn't refresh constantly, resetting the keyboard listener
   const gameStateRef = useRef(gameState)
