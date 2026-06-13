@@ -112,7 +112,10 @@ const StashCardHeader = ({ item, t }: StashCardSubComponentProps) => {
         </span>
         {item.duration && (
           <span className='text-xs text-ash-gray italic'>
-            {item.duration} {t('ui:contraband.days', { defaultValue: 'DAYS' })}
+            {t('ui:contraband.days', {
+              count: item.duration,
+              defaultValue: '{{count}} DAYS'
+            })}
           </span>
         )}
       </div>

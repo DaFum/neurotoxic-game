@@ -185,7 +185,8 @@ Auch Drop-Wahrscheinlichkeit (`computeDropChance` mit `DROP_BASE_CHANCE`/`LUCK_M
 | 2.2 | `c_neon_patch`-Stacks ohne Wirkung | Mittel | ✅ Behoben — Item non-stackable |
 | 2.3 | Drops nur über Tourbus-Minispiel | Mittel | ✅ Klargestellt — Kommentar an tatsächliches Verhalten angepasst |
 | 2.4 | Stack-Anzahl nicht in UI sichtbar | Mittel | ✅ Behoben — „×N"-Anzeige im Stash |
+| 3.2 | `guitar_difficulty` Apply/Revert-Asymmetrie durch Floor-Clamp | Niedrig | ✅ Behoben — Floor nur noch beim Lesen (`GUITAR_MIN_DIFFICULTY`); Apply/Revert sind exakte Inverse |
 | 3.4 | Latente USE-Allowlist-Lücke für Equipment | Niedrig | ✅ Abgesichert |
-| 3.1/3.2/3.3/3.5/3.6/3.7 | Design-/Konsistenz-Hinweise | Niedrig | Als Design belassen |
+| 3.1/3.3/3.5/3.6/3.7 | Design-/Konsistenz-Hinweise | Niedrig | Als Design belassen |
 
 > Vorschlag für Test-Härtung: Ein Test, der **jede** `CONTRABAND_DB`-ID und jede Recipe-ID gegen vorhandene `name`/`description`- bzw. `label`/`desc`-Keys in **EN und DE** prüft (würde 1.1 dauerhaft verhindern).

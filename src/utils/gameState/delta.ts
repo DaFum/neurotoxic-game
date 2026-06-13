@@ -822,13 +822,13 @@ export const applyEventDelta = (
             entry.applyOnAdd === true &&
             entry.applied === true
           ) {
-            const stacks = isFiniteNumber(entry.stacks)
-              ? Math.max(1, entry.stacks)
-              : 1
+            // Apply-on-add equipment applies its bonus exactly once on add,
+            // regardless of stack count, so always revert a single application
+            // (legacy saves may still carry stacks > 1).
             applySharedBandEffect(
               nextBand,
               entry.effectType,
-              -finiteNumberOr(entry.value, 0) * stacks,
+              -finiteNumberOr(entry.value, 0),
               EQUIPMENT_APPLY_ON_ADD_EFFECTS
             )
           }

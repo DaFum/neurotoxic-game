@@ -863,6 +863,12 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
                 ? itemObj.stacks
                 : 1
           }
+          // Non-stackable definitions can hold at most one (legacy saves from
+          // before a stackable→false change). Cap so confiscation/revert and
+          // UI never act on a phantom stack count.
+          if (baseItem.stackable === false && (copy.stacks as number) > 1) {
+            copy.stacks = 1
+          }
           if (
             Object.hasOwn(item, 'remainingDuration') &&
             Number.isFinite(itemObj.remainingDuration as number)
@@ -897,6 +903,12 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
               Number.isInteger(itemObj.stacks) && (itemObj.stacks as number) > 0
                 ? itemObj.stacks
                 : 1
+          }
+          // Non-stackable definitions can hold at most one (legacy saves from
+          // before a stackable→false change). Cap so confiscation/revert and
+          // UI never act on a phantom stack count.
+          if (baseItem.stackable === false && (copy.stacks as number) > 1) {
+            copy.stacks = 1
           }
           if (
             Object.hasOwn(item, 'remainingDuration') &&
@@ -1854,11 +1866,11 @@ const EFFECT_REVERTERS: Record<
     ...band,
     performance: {
       ...band.performance,
-      guitarDifficulty: Math.max(
-        0.1,
+      // Exact additive inverse of the apply path (no floor); the rhythm game
+      // clamps the divisor to GUITAR_MIN_DIFFICULTY at read time.
+      guitarDifficulty:
         finiteNumberOr(band.performance?.guitarDifficulty, 1) -
-          finiteEffectValue(value)
-      )
+        finiteEffectValue(value)
     }
   }),
   luck: (band: BandState, value: unknown) => ({

@@ -136,7 +136,7 @@
   "contraband.c_blood_pact.name": "Blutpakt-Vertrag",
   "contraband.c_blood_pact.description": "Bindet die Band in dunkler Synergie zusammen. +15 Harmonie.",
   "contraband.c_phase_metronome.name": "Phasen-Metronom",
-  "contraband.c_phase_metronome.description": "Verschiebt das interne Tempo der Band. Tempo-bedingte Schwierigkeiten für einen Tag um 15% reduziert.",
+  "contraband.c_phase_metronome.description": "Verschiebt das interne Tempo der Band. Tempo-bedingte Schwierigkeiten werden für einen Tag um 15% reduziert.",
   "contraband.c_shattered_ear.name": "Zerschmetterter Ohr-Talisman",
   "contraband.c_shattered_ear.description": "Ein Splitter, der die Wahrnehmung schärft. +5% kritische Performance-Würfe, wenn ausgerüstet.",
   "contraband.c_amped_synth.name": "Verstärktes Synth-Modul",

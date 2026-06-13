@@ -40,9 +40,9 @@ export const EQUIPMENT_APPLY_ON_ADD_EFFECTS: ReadonlySet<string> = new Set([
  *
  * @remarks
  * Passing a negated `value` reverts a previously applied effect — the math is
- * a mirror of the forward application (including the `guitar_difficulty` floor
- * and `stamina_max` per-member fan-out), which the contraband confiscation and
- * effect-expiry paths rely on.
+ * an exact additive inverse of the forward application (no floor; the
+ * `stamina_max` per-member fan-out is mirrored), which the contraband
+ * confiscation and effect-expiry paths rely on.
  *
  * @param newBand - Band reference to mutate in place (caller owns cloning).
  * @param effectType - Contraband effect type to apply.
@@ -69,7 +69,8 @@ export const applySharedBandEffect = (
     return true
   }
   if (effectType === 'stamina_max') {
-    const updatedMembers = [...(newBand.members ?? [])]
+    if (!newBand.members || newBand.members.length === 0) return false
+    const updatedMembers = [...newBand.members]
     for (let i = 0; i < updatedMembers.length; i++) {
       const currentMember = updatedMembers[i]
       if (currentMember) {
@@ -85,13 +86,14 @@ export const applySharedBandEffect = (
     return true
   }
   if (effectType === 'guitar_difficulty') {
+    // No floor here: apply/revert must be exact additive inverses so a
+    // confiscated/expired effect reverts to the original value. The rhythm
+    // game clamps the divisor to GUITAR_MIN_DIFFICULTY at read time.
     newBand.performance = {
       ...newBand.performance,
-      guitarDifficulty: Math.max(
-        0.1,
+      guitarDifficulty:
         finiteNumberOr(newBand.performance?.guitarDifficulty, 1) +
-          finiteNumberOr(value, 0)
-      )
+        finiteNumberOr(value, 0)
     }
     return true
   }

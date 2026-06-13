@@ -226,6 +226,30 @@ test('applyEventDelta reverts apply-on-add equipment bonus on stash confiscation
   assert.equal(nextState.band.luck, 7)
 })
 
+test('applyEventDelta reverts a single application for apply-on-add equipment with legacy stacks > 1', () => {
+  const state = {
+    band: {
+      luck: 12, // 7 baseline + a single 5 application (apply-on-add applies once)
+      stash: {
+        c_rusty_strings: {
+          id: 'c_rusty_strings',
+          type: 'equipment',
+          effectType: 'luck',
+          value: 5,
+          applyOnAdd: true,
+          applied: true,
+          stacks: 4 // legacy save before stackable→false; must not over-revert
+        }
+      }
+    }
+  }
+  const delta = { band: { stashRemove: ['c_rusty_strings'] } }
+
+  const nextState = applyEventDelta(state, delta)
+  assert.equal(Object.hasOwn(nextState.band.stash, 'c_rusty_strings'), false)
+  assert.equal(nextState.band.luck, 7) // reverted by 5, not 5 × 4
+})
+
 test('applyEventDelta does not revert effect for an unapplied confiscated item', () => {
   const state = {
     band: {
