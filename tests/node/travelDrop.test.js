@@ -16,7 +16,7 @@ describe('minigameReducer - Travel Complete Drops', () => {
         van: { fuel: 100, condition: 100 }
       },
       band: { ...DEFAULT_BAND_STATE, stash: {}, luck: 0 },
-      minigame: { targetDestination: 'node_2' },
+      minigame: { active: true, type: 'TOURBUS', targetDestination: 'node_2' },
       gameMap: {
         nodes: {
           node_1: { id: 'node_1', coordinates: { x: 0, y: 0 } },
@@ -47,7 +47,7 @@ describe('minigameReducer - Travel Complete Drops', () => {
         van: { fuel: 100, condition: 100 }
       },
       band: { ...DEFAULT_BAND_STATE, stash: {}, luck: 0 },
-      minigame: { targetDestination: 'node_2' },
+      minigame: { active: true, type: 'TOURBUS', targetDestination: 'node_2' },
       gameMap: {
         nodes: {
           node_1: { id: 'node_1', coordinates: { x: 0, y: 0 } },

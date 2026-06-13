@@ -348,6 +348,9 @@ test('EventModal double-click on Continue calls onOptionSelect exactly once', as
   })
 
   fireEvent.click(continueButton)
+
+  expect(continueButton).toBeDisabled()
+
   fireEvent.click(continueButton)
 
   expect(handleSelect).toHaveBeenCalledTimes(1)
