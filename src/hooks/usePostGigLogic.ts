@@ -108,6 +108,7 @@ export const usePostGigLogic = () => {
     changeScene,
     addQuest,
     applyQuestEvent,
+    phase,
     setPhase,
     setPostResult,
     setBrandOffers,

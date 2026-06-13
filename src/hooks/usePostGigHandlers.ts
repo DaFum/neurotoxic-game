@@ -11,7 +11,7 @@ import type { BrandDeal, SocialPostOption } from '../types/social'
 import type { QuestProgressEvent } from '../utils/questProgress'
 import type { createAddQuestAction } from '../context/actionCreators'
 import type { PostGigFinancials } from '../types/economy'
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import i18n from '../i18n'
 import {
   useContinueHandler,
@@ -63,6 +63,7 @@ export interface UsePostGigHandlersProps {
   changeScene: (scene: GamePhase) => void
   addQuest: (quest: Parameters<typeof createAddQuestAction>[0]) => void
   applyQuestEvent: (event: QuestProgressEvent) => void
+  phase: 'REPORT' | 'SOCIAL' | 'DEALS' | 'COMPLETE'
   setPhase: (phase: 'REPORT' | 'SOCIAL' | 'DEALS' | 'COMPLETE') => void
   setBrandOffers: (offers: BrandDeal[]) => void
   setPostResult: (result: PostResult) => void
@@ -95,6 +96,7 @@ export function usePostGigHandlers({
   changeScene,
   addQuest,
   applyQuestEvent,
+  phase,
   setPhase,
   setBrandOffers,
   setPostResult,
@@ -102,6 +104,13 @@ export function usePostGigHandlers({
 }: UsePostGigHandlersProps): UsePostGigHandlersReturn {
   const { isProcessingAction, isProcessingActionRef, setIsProcessingAction } =
     useProcessingGuard()
+
+  // Release the shared guard on every phase change so the first action of each
+  // new phase is not blocked by a guard set in the previous phase.
+  useEffect(() => {
+    isProcessingActionRef.current = false
+    setIsProcessingAction(false)
+  }, [phase, isProcessingActionRef, setIsProcessingAction])
 
   const dispatchers = useMemo(
     () => ({
