@@ -29,10 +29,11 @@ function makeProps(overrides = {}) {
     financials: null,
     activeStoryFlags: [],
     setlist: [],
+    totalDailyObligations: 0,
     updatePlayer: vi.fn(),
     updateBand: vi.fn(),
     updateSocial: vi.fn(),
-    unlockTrait: vi.fn(),
+
     addToast: vi.fn(),
     changeScene: vi.fn(),
     addQuest: vi.fn(),
