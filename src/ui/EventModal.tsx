@@ -114,12 +114,16 @@ export const EventModal = ({
   const [outcome, setOutcome] = useState<EventOutcome | null>(null)
   const [previewError, setPreviewError] = useState(false)
   const [prevEventId, setPrevEventId] = useState<string | undefined>(event?.id)
+  const [continueDisabled, setContinueDisabled] = useState(false)
+  const resolvedRef = useRef(false)
 
-  // Reset outcome on new events
+  // Reset outcome and resolved guard on new events
   if (event?.id !== prevEventId) {
     setPrevEventId(event?.id)
     setOutcome(null)
     setPreviewError(false)
+    setContinueDisabled(false)
+    resolvedRef.current = false
   }
 
   // Keep game state ref stable so handleOptionSelect doesn't refresh constantly, resetting the keyboard listener
@@ -156,7 +160,9 @@ export const EventModal = ({
   }, [])
 
   const handleContinue = useCallback(() => {
-    if (outcome) {
+    if (outcome && !resolvedRef.current) {
+      resolvedRef.current = true
+      setContinueDisabled(true)
       onOptionSelect({
         ...outcome.option,
         _precomputedResult: outcome._precomputedResult
@@ -310,8 +316,9 @@ export const EventModal = ({
               </div>
               <button
                 type='button'
+                disabled={continueDisabled}
                 onClick={handleContinue}
-                className='w-full p-3 border border-toxic-green bg-toxic-green/20 hover:bg-toxic-green hover:text-void-black text-toxic-green font-bold tracking-widest uppercase transition-colors text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
+                className='w-full p-3 border border-toxic-green bg-toxic-green/20 hover:bg-toxic-green hover:text-void-black text-toxic-green font-bold tracking-widest uppercase transition-colors text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black disabled:opacity-50 disabled:cursor-not-allowed'
               >
                 [ {t('ui:continue', { defaultValue: 'CONTINUE' })} ]
               </button>

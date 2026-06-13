@@ -212,6 +212,15 @@ export function useEventSystem({
     (
       choice: Record<string, unknown> | null
     ): { outcomeText: string; description: string; result: unknown } => {
+      if (!stateRef.current.activeEvent) {
+        return {
+          outcomeText:
+            typeof choice?.outcomeText === 'string' ? choice.outcomeText : '',
+          description:
+            typeof choice?.description === 'string' ? choice.description : '',
+          result: null
+        }
+      }
       try {
         const resolution = resolveEvent(choice, stateRef.current)
         resolution.actions.forEach(dispatch)

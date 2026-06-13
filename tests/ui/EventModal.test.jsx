@@ -329,3 +329,49 @@ test('EventModal preserves raw title/description text when translation lookup mi
     translationBehavior.useDefaultValue = false
   }
 })
+
+test('EventModal double-click on Continue calls onOptionSelect exactly once', async () => {
+  const mockEvent = {
+    id: 'double_click_test',
+    title: 'Double Click Test',
+    description: 'Testing double-click guard.',
+    options: [{ label: 'Option 1', outcomeText: 'Good Outcome' }]
+  }
+  const handleSelect = vi.fn()
+
+  render(<EventModal event={mockEvent} onOptionSelect={handleSelect} />)
+
+  fireEvent.click(screen.getByText('Option 1'))
+
+  await waitFor(() => {
+    expect(screen.getByText(/CONTINUE/i)).toBeInTheDocument()
+  })
+
+  const continueButton = screen.getByText(/CONTINUE/i)
+  fireEvent.click(continueButton)
+  fireEvent.click(continueButton)
+
+  expect(handleSelect).toHaveBeenCalledTimes(1)
+})
+
+test('EventModal Continue button is disabled after first click', async () => {
+  const mockEvent = {
+    id: 'disabled_after_click_test',
+    title: 'Disabled After Click',
+    description: 'Continue button should be disabled after first click.',
+    options: [{ label: 'Option 1' }]
+  }
+  const handleSelect = vi.fn()
+
+  render(<EventModal event={mockEvent} onOptionSelect={handleSelect} />)
+
+  fireEvent.click(screen.getByText('Option 1'))
+
+  const continueButton = await screen.findByRole('button', {
+    name: /CONTINUE/i
+  })
+
+  fireEvent.click(continueButton)
+
+  expect(continueButton).toBeDisabled()
+})
