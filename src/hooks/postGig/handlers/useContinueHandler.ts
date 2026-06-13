@@ -182,6 +182,12 @@ export function useContinueHandler({
         BALANCE_CONSTANTS
       })
 
+      const bankrupt = shouldTriggerBankruptcy(
+        stats.newMoney,
+        financials.net,
+        totalDailyObligations
+      )
+
       updatePlayer({
         money: stats.newMoney,
         fame: stats.newFame,
@@ -189,9 +195,9 @@ export function useContinueHandler({
         lastGigNodeId: player.currentNodeId,
         // Surviving the FINALE gig completes the tour; the flag persists in
         // the save and drives the victory variant of the game-over screen.
-        ...(isFinaleGig && {
-          stats: { ...player.stats, tourCompleted: true }
-        })
+        ...(isFinaleGig && !bankrupt
+          ? { stats: { ...player?.stats, tourCompleted: true } }
+          : {})
       })
 
       const fameGain = stats.newFame - finiteNumberOr(player.fame, 0)
@@ -248,13 +254,7 @@ export function useContinueHandler({
         })
       )
 
-      if (
-        shouldTriggerBankruptcy(
-          stats.newMoney,
-          financials.net,
-          totalDailyObligations
-        )
-      ) {
+      if (bankrupt) {
         addToast(
           t('ui:postGig.gameOverBankrupt', {
             defaultValue: 'GAME OVER: BANKRUPT! The tour is over.'

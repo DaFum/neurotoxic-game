@@ -224,8 +224,7 @@ export const clampVanCondition = (condition: number): number =>
  */
 export const wrapClockHour = (hour: number): number => {
   if (!Number.isFinite(hour)) return 12
-  const wrapped = Math.floor(hour) % 24
-  return wrapped < 0 ? wrapped + 24 : wrapped
+  return ((hour % 24) + 24) % 24
 }
 
 /**

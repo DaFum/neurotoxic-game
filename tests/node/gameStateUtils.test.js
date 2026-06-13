@@ -14,6 +14,12 @@ import {
   calculateAppliedDelta,
   isForbiddenKey
 } from '../../src/utils/gameState'
+import { wrapClockHour } from '../../src/utils/gameState/clamps'
+
+test('wrapClockHour wraps fractional values correctly', () => {
+  assert.strictEqual(wrapClockHour(11.5), 11.5)
+  assert.strictEqual(wrapClockHour(-0.5), 23.5)
+})
 
 test('clampNonNegative edge cases', () => {
   assert.strictEqual(clampNonNegative(10), 10)

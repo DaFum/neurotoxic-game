@@ -17,6 +17,7 @@ test('MapGenerator generates supplyStop nodes with inventory_add items determini
   for (let i = 0; i < 50; i++) {
     const map = generator.generateMap(5)
     for (const nodeId in map.nodes) {
+      if (!Object.hasOwn(map.nodes, nodeId)) continue;
       if (map.nodes[nodeId].type === 'SUPPLY_STOP') {
         foundSupplyStop = true
         supplyStopNode = map.nodes[nodeId]
