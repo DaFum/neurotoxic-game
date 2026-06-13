@@ -106,6 +106,7 @@
   "contraband.button": "VERSTECK",
   "contraband.close": "VERSTECK SCHLIESSEN",
   "contraband.description": "Artefakte und seltsame Überreste, gesammelt aus der Leere. Mit Vorsicht verwenden.",
+  "contraband.days": "{{count}} TAGE",
   "contraband.days_one": "{{count}} TAG",
   "contraband.days_other": "{{count}} TAGE",
   "contraband.dropped": "Schmuggelware gefunden!",

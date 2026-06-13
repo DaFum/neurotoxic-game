@@ -106,6 +106,7 @@
   "contraband.button": "STASH",
   "contraband.close": "CLOSE STASH",
   "contraband.description": "Artifacts and strange detritus gathered from the void. Use with caution.",
+  "contraband.days": "{{count}} DAYS",
   "contraband.days_one": "{{count}} DAY",
   "contraband.days_other": "{{count}} DAYS",
   "contraband.dropped": "Found contraband!",
