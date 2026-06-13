@@ -69,6 +69,8 @@ export const handleStartTravelMinigame = (
 /**
  * Applies travel minigame results while preserving scene continuation for the arrival flow.
  *
+ * Returns unchanged state when no matching minigame is active (replay guard).
+ *
  * @param state - Current game state with an active travel minigame.
  * @param payload - Reported damage, collected items, and optional deterministic random value.
  * @returns Updated state with travel costs, rewards, damage, unlocks, and quest progress applied.
@@ -81,6 +83,12 @@ export const handleCompleteTravelMinigame = (
     rngValue?: number
   }
 ): GameState => {
+  if (
+    state.minigame?.active !== true ||
+    state.minigame?.type !== MINIGAME_TYPES.TOURBUS
+  ) {
+    return state
+  }
   const { damageTaken: rawDamage, itemsCollected: rawItems, rngValue } = payload
   const damageTaken = Number.isFinite(rawDamage) ? Math.max(0, rawDamage) : 0
   const itemsCollected = Array.isArray(rawItems) ? rawItems : []
@@ -407,6 +415,8 @@ const applyPostMinigameResult = (
 /**
  * Applies amp calibration results while leaving the current scene under overlay continuation control.
  *
+ * Returns unchanged state when no matching minigame is active (replay guard).
+ *
  * @param state - Current game state with amp calibration results pending.
  * @param payload - Score and void-interference counters reported by the minigame.
  * @returns Updated state with harmony, money, modifiers, and quest progress applied.
@@ -420,6 +430,12 @@ export const handleCompleteAmpCalibration = (
     hijacksOverridden: number
   }
 ): GameState => {
+  if (
+    state.minigame?.active !== true ||
+    state.minigame?.type !== MINIGAME_TYPES.AMP_CALIBRATION
+  ) {
+    return state
+  }
   const { score, voidResonance, purgesUsed, hijacksOverridden } = payload
   logger.info('GameState', 'Amp Calibration Minigame Complete', payload)
 
@@ -493,6 +509,8 @@ export const handleStartKabelsalatMinigame = (
 /**
  * Applies Kabelsalat results while leaving the current scene under overlay continuation control.
  *
+ * Returns unchanged state when no matching minigame is active (replay guard).
+ *
  * @param state - Current game state with Kabelsalat results pending.
  * @param payload - Raw Kabelsalat result payload consumed by the economy calculation.
  * @returns Updated state with harmony, money, modifiers, and quest progress applied.
@@ -501,6 +519,12 @@ export const handleCompleteKabelsalatMinigame = (
   state: GameState,
   payload: { results: unknown }
 ): GameState => {
+  if (
+    state.minigame?.active !== true ||
+    state.minigame?.type !== MINIGAME_TYPES.KABELSALAT
+  ) {
+    return state
+  }
   const { results } = payload
   logger.info('GameState', 'Kabelsalat Minigame Complete', payload)
 
@@ -545,6 +569,8 @@ export const handleCompleteKabelsalatMinigame = (
 /**
  * Applies roadie minigame results while leaving the current scene under overlay continuation control.
  *
+ * Returns unchanged state when no matching minigame is active (replay guard).
+ *
  * @param state - Current game state with roadie results pending.
  * @param payload - Equipment damage and optional delivered contraband count.
  * @returns Updated state with repair costs, contraband bonus, modifiers, and quest progress applied.
@@ -553,6 +579,12 @@ export const handleCompleteRoadieMinigame = (
   state: GameState,
   payload: { equipmentDamage: number; contrabandDelivered?: number }
 ): GameState => {
+  if (
+    state.minigame?.active !== true ||
+    state.minigame?.type !== MINIGAME_TYPES.ROADIE
+  ) {
+    return state
+  }
   const { equipmentDamage, contrabandDelivered } = payload
   logger.info('GameState', 'Roadie Minigame Complete', payload)
 

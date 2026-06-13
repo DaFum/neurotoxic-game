@@ -29,6 +29,20 @@ after(() => {
   }
 })
 
+/**
+ * Returns a copy of the given state with minigame set to active for the specified type.
+ */
+function withActiveMinigame(state, type) {
+  return {
+    ...state,
+    minigame: {
+      ...state.minigame,
+      active: true,
+      type
+    }
+  }
+}
+
 describe('minigameReducer', () => {
   let baseState
 
@@ -73,9 +87,10 @@ describe('minigameReducer', () => {
 
   describe('handleCompleteTravelMinigame', () => {
     it('should update state properly on valid target', () => {
-      baseState.minigame.targetDestination = 'node2'
+      const activeState = withActiveMinigame(baseState, MINIGAME_TYPES.TOURBUS)
+      activeState.minigame.targetDestination = 'node2'
       const payload = { damageTaken: 10, itemsCollected: 5 }
-      const nextState = handleCompleteTravelMinigame(baseState, payload)
+      const nextState = handleCompleteTravelMinigame(activeState, payload)
 
       // economic details are handled by economyEngine; here we only assert on state changes
       assert.ok(nextState.player.money < baseState.player.money)
@@ -104,38 +119,46 @@ describe('minigameReducer', () => {
         unlock: {},
         imagePromptKey: 'test_minigame_fuel'
       }
-      baseState.minigame.targetDestination = 'node2'
-      const baseline = handleCompleteTravelMinigame(baseState, {
+      const baselineState = withActiveMinigame(
+        baseState,
+        MINIGAME_TYPES.TOURBUS
+      )
+      baselineState.minigame.targetDestination = 'node2'
+      const baseline = handleCompleteTravelMinigame(baselineState, {
         damageTaken: 0,
         itemsCollected: []
       })
 
-      const boostedState = {
-        ...baseState,
-        assets: [
-          {
-            id: 'asset_fuel',
-            kind: 'tourbus_chassis',
-            chassisFlavor: 'legit',
-            chassisTier: 1,
-            condition: 100,
-            baseUpkeep: 0,
-            baseDailyRevenue: 0,
-            slots: [
-              {
-                id: 'slot_fuel',
-                slotType: 'tb_roof',
-                position: { x: 0, y: 0 },
-                installedModuleId: travelFuelModuleId
-              }
-            ],
-            acquiredOnDay: 1,
-            acquisitionMode: 'cash',
-            baseRiskEventChance: 0
-          }
-        ]
-      }
-      const boosted = handleCompleteTravelMinigame(boostedState, {
+      const boostedBase = withActiveMinigame(
+        {
+          ...baseState,
+          assets: [
+            {
+              id: 'asset_fuel',
+              kind: 'tourbus_chassis',
+              chassisFlavor: 'legit',
+              chassisTier: 1,
+              condition: 100,
+              baseUpkeep: 0,
+              baseDailyRevenue: 0,
+              slots: [
+                {
+                  id: 'slot_fuel',
+                  slotType: 'tb_roof',
+                  position: { x: 0, y: 0 },
+                  installedModuleId: travelFuelModuleId
+                }
+              ],
+              acquiredOnDay: 1,
+              acquisitionMode: 'cash',
+              baseRiskEventChance: 0
+            }
+          ]
+        },
+        MINIGAME_TYPES.TOURBUS
+      )
+      boostedBase.minigame.targetDestination = 'node2'
+      const boosted = handleCompleteTravelMinigame(boostedBase, {
         damageTaken: 0,
         itemsCollected: []
       })
@@ -144,16 +167,23 @@ describe('minigameReducer', () => {
     })
 
     it('should prefer venue.id over venue.name when both exist', () => {
-      baseState.gameMap.nodes.node2 = {
-        id: 'node2',
-        venue: { id: 'berlin_end_venue', name: 'some_other_name' },
-        x: 100,
-        y: 0
+      const activeState = withActiveMinigame(baseState, MINIGAME_TYPES.TOURBUS)
+      activeState.gameMap = {
+        ...baseState.gameMap,
+        nodes: {
+          ...baseState.gameMap.nodes,
+          node2: {
+            id: 'node2',
+            venue: { id: 'berlin_end_venue', name: 'some_other_name' },
+            x: 100,
+            y: 0
+          }
+        }
       }
-      baseState.minigame.targetDestination = 'node2'
+      activeState.minigame.targetDestination = 'node2'
 
       const payload = { damageTaken: 10, itemsCollected: [] }
-      const nextState = handleCompleteTravelMinigame(baseState, payload)
+      const nextState = handleCompleteTravelMinigame(activeState, payload)
 
       assert.strictEqual(
         nextState.player.location,
@@ -162,22 +192,32 @@ describe('minigameReducer', () => {
     })
 
     it('should return safely if invalid targetNode and preserve currentScene', () => {
-      baseState.currentScene = GAME_PHASES.TRAVEL_MINIGAME
-      baseState.minigame.targetDestination = 'invalid_node'
+      const activeState = withActiveMinigame(baseState, MINIGAME_TYPES.TOURBUS)
+      activeState.currentScene = GAME_PHASES.TRAVEL_MINIGAME
+      activeState.minigame.targetDestination = 'invalid_node'
       const payload = { damageTaken: 10, itemsCollected: 5 }
-      const nextState = handleCompleteTravelMinigame(baseState, payload)
+      const nextState = handleCompleteTravelMinigame(activeState, payload)
       assert.strictEqual(nextState.currentScene, GAME_PHASES.TRAVEL_MINIGAME) // should preserve the initial scene without overriding it
       assert.deepStrictEqual(nextState.minigame, { ...DEFAULT_MINIGAME_STATE })
     })
 
     it('clamps non-finite rngValue before applying void hazard stamina loss', () => {
-      baseState.minigame.targetDestination = 'node2'
-      baseState.band.members = [
-        { id: 'matze', stamina: 100, staminaMax: 100 },
-        { id: 'marius', stamina: 100, staminaMax: 100 }
-      ]
+      const activeState = withActiveMinigame(
+        {
+          ...baseState,
+          band: {
+            ...baseState.band,
+            members: [
+              { id: 'matze', stamina: 100, staminaMax: 100 },
+              { id: 'marius', stamina: 100, staminaMax: 100 }
+            ]
+          }
+        },
+        MINIGAME_TYPES.TOURBUS
+      )
+      activeState.minigame.targetDestination = 'node2'
 
-      const nextState = handleCompleteTravelMinigame(baseState, {
+      const nextState = handleCompleteTravelMinigame(activeState, {
         damageTaken: 0,
         itemsCollected: ['VOID_HAZARD'],
         rngValue: Number.POSITIVE_INFINITY
@@ -280,8 +320,9 @@ describe('minigameReducer', () => {
 
   describe('handleCompleteRoadieMinigame', () => {
     it('should update player money and band harmony', () => {
+      const activeState = withActiveMinigame(baseState, MINIGAME_TYPES.ROADIE)
       const payload = { equipmentDamage: 60 }
-      const nextState = handleCompleteRoadieMinigame(baseState, payload)
+      const nextState = handleCompleteRoadieMinigame(activeState, payload)
 
       // 50 - 12
       assert.strictEqual(nextState.band.harmony, 38)
@@ -290,16 +331,63 @@ describe('minigameReducer', () => {
       assert.strictEqual(nextState.gigModifiers.damaged_gear, true)
       // Scene transition is driven by the UI overlay's CONTINUE button, so the
       // reducer must not touch currentScene here.
-      assert.strictEqual(nextState.currentScene, baseState.currentScene)
+      assert.strictEqual(nextState.currentScene, activeState.currentScene)
       assert.strictEqual(nextState.minigame.active, false)
-      assert.strictEqual(nextState.minigame.type, baseState.minigame.type)
+      assert.strictEqual(nextState.minigame.type, MINIGAME_TYPES.ROADIE)
     })
 
     it('should not set damaged_gear if equipmentDamage is low', () => {
+      const activeState = withActiveMinigame(baseState, MINIGAME_TYPES.ROADIE)
       const payload = { equipmentDamage: 20 }
-      const nextState = handleCompleteRoadieMinigame(baseState, payload)
+      const nextState = handleCompleteRoadieMinigame(activeState, payload)
 
       assert.strictEqual(nextState.gigModifiers.damaged_gear, undefined)
+    })
+  })
+
+  describe('replay guards (idempotency)', () => {
+    it('amp calibration completion is idempotent on replay', () => {
+      const activeState = withActiveMinigame(
+        baseState,
+        MINIGAME_TYPES.AMP_CALIBRATION
+      )
+      const payload = {
+        score: 100,
+        voidResonance: 0,
+        purgesUsed: 0,
+        hijacksOverridden: 0
+      }
+      const once = handleCompleteAmpCalibration(activeState, payload)
+      const twice = handleCompleteAmpCalibration(once, payload)
+      assert.strictEqual(twice, once) // identical reference — no re-apply
+    })
+
+    it('kabelsalat completion is idempotent on replay', () => {
+      const activeState = withActiveMinigame(
+        baseState,
+        MINIGAME_TYPES.KABELSALAT
+      )
+      const payload = { results: { isPoweredOn: true, timeLeft: 30 } }
+      const once = handleCompleteKabelsalatMinigame(activeState, payload)
+      const twice = handleCompleteKabelsalatMinigame(once, payload)
+      assert.strictEqual(twice, once) // identical reference — no re-apply
+    })
+
+    it('roadie completion is idempotent on replay', () => {
+      const activeState = withActiveMinigame(baseState, MINIGAME_TYPES.ROADIE)
+      const payload = { equipmentDamage: 60 }
+      const once = handleCompleteRoadieMinigame(activeState, payload)
+      const twice = handleCompleteRoadieMinigame(once, payload)
+      assert.strictEqual(twice, once) // identical reference — no re-apply
+    })
+
+    it('tourbus completion is idempotent on replay', () => {
+      const activeState = withActiveMinigame(baseState, MINIGAME_TYPES.TOURBUS)
+      activeState.minigame.targetDestination = 'node2'
+      const payload = { damageTaken: 0, itemsCollected: [] }
+      const once = handleCompleteTravelMinigame(activeState, payload)
+      const twice = handleCompleteTravelMinigame(once, payload)
+      assert.strictEqual(twice, once) // identical reference — no re-apply
     })
   })
 })
