@@ -16,6 +16,10 @@ import {
 import { applyTraitUnlocks } from '../../utils/traitUtils'
 import { ActionTypes } from '../actionTypes'
 import { CONTRABAND_BY_ID } from '../../data/contraband'
+import {
+  applySharedBandEffect,
+  EQUIPMENT_APPLY_ON_ADD_EFFECTS
+} from '../../utils/contrabandEffects'
 import { QuestEvents } from '../../utils/questProgress'
 import {
   createItemUsedQuestEvent,
@@ -301,92 +305,6 @@ export const handleConsumeItem = (
 }
 
 /**
- * Effect types that simply add `value` to a numeric band property
- * (defaulting to 0 when missing). Keys must match BandState fields.
- */
-const ADDITIVE_BAND_EFFECT_FIELDS = {
-  luck: 'luck',
-  crit: 'crit',
-  crowd_control: 'crowdControl',
-  affinity: 'affinity',
-  style: 'style',
-  tour_success: 'tourSuccess',
-  gig_modifier: 'gigModifier',
-  tempo: 'tempo',
-  practice_gain: 'practiceGain'
-} as const
-
-/**
- * Effect types historically supported by the equipment apply-on-add path.
- * The contraband path supports a superset; equipment must remain restricted
- * to this list to preserve prior behavior.
- */
-const EQUIPMENT_APPLY_ON_ADD_EFFECTS: ReadonlySet<string> = new Set([
-  'luck',
-  'stamina_max',
-  'guitar_difficulty',
-  'crit',
-  'crowd_control',
-  'affinity',
-  'style',
-  'tour_success'
-])
-
-/**
- * Applies a single equipment/contraband numeric effect to the band, mutating
- * the supplied `newBand` reference. Returns true when a recognized effect was
- * applied; false otherwise (caller may then fall through to specialized paths).
- * When `allowedEffectTypes` is provided, unrecognized-by-set effect types are
- * skipped (used to preserve the equipment apply-on-add allowlist).
- */
-const applySharedBandEffect = (
-  newBand: BandState,
-  effectType: unknown,
-  value: number,
-  allowedEffectTypes?: ReadonlySet<string>
-): boolean => {
-  if (typeof effectType !== 'string') return false
-  if (allowedEffectTypes && !allowedEffectTypes.has(effectType)) return false
-  if (Object.hasOwn(ADDITIVE_BAND_EFFECT_FIELDS, effectType)) {
-    const field =
-      ADDITIVE_BAND_EFFECT_FIELDS[
-        effectType as keyof typeof ADDITIVE_BAND_EFFECT_FIELDS
-      ]
-    const band = newBand as unknown as Record<string, number | undefined>
-    band[field] = finiteNumberOr(band[field], 0) + finiteNumberOr(value, 0)
-    return true
-  }
-  if (effectType === 'stamina_max') {
-    const updatedMembers = [...(newBand.members ?? [])]
-    for (let i = 0; i < updatedMembers.length; i++) {
-      const currentMember = updatedMembers[i]
-      if (currentMember) {
-        updatedMembers[i] = {
-          ...currentMember,
-          staminaMax:
-            finiteNumberOr(currentMember.staminaMax, 100) +
-            finiteNumberOr(value, 0)
-        } as BandMember
-      }
-    }
-    newBand.members = updatedMembers
-    return true
-  }
-  if (effectType === 'guitar_difficulty') {
-    newBand.performance = {
-      ...newBand.performance,
-      guitarDifficulty: Math.max(
-        0.1,
-        finiteNumberOr(newBand.performance?.guitarDifficulty, 1) +
-          finiteNumberOr(value, 0)
-      )
-    }
-    return true
-  }
-  return false
-}
-
-/**
  * Adds contraband to the band stash while preserving stacking and uniqueness rules.
  *
  * @remarks
@@ -634,28 +552,29 @@ const applyContrabandEffect = (
       finiteNumberOr(newBand.harmony, 1) + finiteNumberOr(item.value, 0)
     )
   } else {
-    applySharedBandEffect(newBand, item.effectType, item.value as number)
+    applySharedBandEffect(
+      newBand,
+      item.effectType,
+      item.value as number,
+      item.type === 'equipment' ? EQUIPMENT_APPLY_ON_ADD_EFFECTS : undefined
+    )
   }
 
   if (item.duration != null) {
-    const effectExists =
-      item.instanceId != null &&
-      (
-        (newBand.activeContrabandEffects as Array<Record<string, unknown>>) ??
-        []
-      ).some(e => e.instanceId != null && e.instanceId === item.instanceId)
-    if (!effectExists) {
-      newBand.activeContrabandEffects = [
-        ...(newBand.activeContrabandEffects ?? []),
-        {
-          instanceId: item.instanceId,
-          effectType: item.effectType,
-          value: item.value,
-          remainingDuration: item.duration,
-          ...(memberId ? { memberId } : {})
-        }
-      ]
-    }
+    // One tracked effect per use. The forward effect above is applied once
+    // per call, so tracking must mirror it 1:1 — deduping by instanceId would
+    // let a second use of a stacked consumable apply the buff again while only
+    // registering a single revertible effect, leaking the bonus permanently.
+    newBand.activeContrabandEffects = [
+      ...(newBand.activeContrabandEffects ?? []),
+      {
+        instanceId: item.instanceId,
+        effectType: item.effectType,
+        value: item.value,
+        remainingDuration: item.duration,
+        ...(memberId ? { memberId } : {})
+      }
+    ]
   }
 
   return newBand

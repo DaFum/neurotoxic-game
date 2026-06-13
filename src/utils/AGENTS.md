@@ -12,6 +12,10 @@
 
 - Use `formatNumber(value, i18n.language)` from `numberUtils.ts` for non-currency integer displays. Bare `value.toLocaleString()` defaults to the runtime locale, which diverges from the user-selected i18n language.
 
+## Contraband effects
+
+- `contrabandEffects.ts` (`applySharedBandEffect`, `ADDITIVE_BAND_EFFECT_FIELDS`, `EQUIPMENT_APPLY_ON_ADD_EFFECTS`) is the single source of truth for applying additive band-stat effects. `bandReducer` (apply) and `gameState/delta.ts` (revert on stash confiscation, via a negated value) both consume it — do not reinline the field map or the apply/clamp math. Passing a negated `value` is the canonical revert — an exact additive inverse (no floor; the rhythm game clamps `guitar_difficulty` to `GUITAR_MIN_DIFFICULTY` at read time).
+
 ## Economy invariants
 
 Source-of-truth priority: runtime helpers/constants win. If simulations,

@@ -6,7 +6,11 @@ import { secureRandom } from './crypto'
 import { finiteNumberOr } from './gameState'
 import type { Rarity } from '../types'
 
-/** Base probability for a contraband drop after travel. */
+/**
+ * Base probability for a contraband drop. Drops are currently rolled only on
+ * completion of the tourbus travel minigame (see `minigameReducer`), not on
+ * every travel arrival.
+ */
 export const DROP_BASE_CHANCE = 0.15
 /** Drop-chance bonus applied per point of band luck. */
 export const LUCK_MOD_PER_POINT = 0.005

@@ -130,13 +130,13 @@
   "contraband.c_rusty_strings.name": "Rusty Strings",
   "contraband.c_rusty_strings.description": "They cut your fingers, but the blood summons better gig modifiers (+5 Luck).",
   "contraband.c_cursed_pick.name": "Cursed Pick of Destiny",
-  "contraband.c_cursed_pick.description": "A glowing pick that whispers. Lowers Guitar Difficulty by 0.2 for one gig.",
+  "contraband.c_cursed_pick.description": "A glowing pick that whispers. Lowers Guitar Difficulty by 0.2 for one day.",
   "contraband.c_mystery_pills.name": "Mystery Gas Station Pills",
   "contraband.c_mystery_pills.description": "Questionable origin. Boosts a member's Mood by 30.",
   "contraband.c_blood_pact.name": "Blood Pact Contract",
   "contraband.c_blood_pact.description": "Binds the band together in dark synergy. +15 Harmony.",
   "contraband.c_phase_metronome.name": "Phase Metronome",
-  "contraband.c_phase_metronome.description": "Shifts the band's internal tempo. Next gig tempo-related difficulties reduced by 15%.",
+  "contraband.c_phase_metronome.description": "Shifts the band's internal tempo. For one day, tempo-related difficulties are reduced by 15%.",
   "contraband.c_shattered_ear.name": "Shattered Ear Talisman",
   "contraband.c_shattered_ear.description": "A shard that sharpens perception. +5% critical performance rolls while equipped.",
   "contraband.c_amped_synth.name": "Amped Synth Module",
@@ -144,7 +144,7 @@
   "contraband.c_gig_program.name": "Gig Program",
   "contraband.c_gig_program.description": "Optimizes routing & PR for the next tour leg (+20% chance of positive tour outcome).",
   "contraband.c_sticky_plectrum.name": "Sticky Plectrum",
-  "contraband.c_sticky_plectrum.description": "Improves pick control, slightly easing guitar difficulty for one gig.",
+  "contraband.c_sticky_plectrum.description": "Improves pick control, slightly easing guitar difficulty for one day.",
   "contraband.c_night_vision_glasses.name": "Night Vision Glasses",
   "contraband.c_night_vision_glasses.description": "See the crowd's mood more clearly; slight passive boost to crowd control/effects.",
   "contraband.c_sonic_resonator.name": "Sonic Resonator",
@@ -170,7 +170,7 @@
   "contraband.c_forgotten_road_map.name": "Forgotten Road Map",
   "contraband.c_forgotten_road_map.description": "Maps to hidden routes. Greatly increases chance of smooth tour logistics once.",
   "contraband.c_sticky_logo_sticker.name": "Sticky Logo Sticker",
-  "contraband.c_sticky_logo_sticker.description": "Stick on an amp or stage fixture — slight crowd control buff for next gig.",
+  "contraband.c_sticky_logo_sticker.description": "Stick on an amp or stage fixture — slight crowd control buff for one day.",
   "contraband.c_neon_patch.name": "Neon Patch",
   "contraband.c_neon_patch.description": "A patch that pumps up band style rating. Aesthetic but effective.",
   "contraband.c_abyssal_microphone.name": "Abyssal Microphone",
@@ -179,24 +179,14 @@
   "contraband.c_silver_tongue.description": "Boosts charisma for interviews; +20 Mood for member when used.",
   "contraband.c_broken_compass.name": "Broken Compass",
   "contraband.c_broken_compass.description": "Strangely points to profitable choices; small persistent tour benefit.",
-  "contraband": {
-    "c_neuro_mold_spores": {
-      "name": "Neuro-Mold Spores",
-      "description": "Reduces band stress significantly. Smells like cyber-rot."
-    },
-    "c_cybernetic_plectrum_implant": {
-      "name": "Cybernetic Plectrum Implant",
-      "description": "Lowers guitar minigame difficulty permanently."
-    },
-    "c_fermented_void_juice": {
-      "name": "Fermented Void Juice",
-      "description": "An intense mood booster extracted from the abyss."
-    },
-    "c_hyper_adrenaline_ampoule": {
-      "name": "Hyper-Adrenaline Ampoule",
-      "description": "Increases maximum stamina permanently."
-    }
-  },
+  "contraband.c_neuro_mold_spores.name": "Neuro-Mold Spores",
+  "contraband.c_neuro_mold_spores.description": "Reduces band stress significantly. Smells like cyber-rot.",
+  "contraband.c_cybernetic_plectrum_implant.name": "Cybernetic Plectrum Implant",
+  "contraband.c_cybernetic_plectrum_implant.description": "Lowers guitar minigame difficulty permanently.",
+  "contraband.c_fermented_void_juice.name": "Fermented Void Juice",
+  "contraband.c_fermented_void_juice.description": "An intense mood booster extracted from the abyss.",
+  "contraband.c_hyper_adrenaline_ampoule.name": "Hyper-Adrenaline Ampoule",
+  "contraband.c_hyper_adrenaline_ampoule.description": "Increases maximum stamina permanently.",
   "hq_room_void_altar.name": "Altar of the Void",
   "hq_room_void_altar.description": "An unsettling monolith that hums. (+10 Luck immediate).",
   "lucky_pick.name": "Pick of Destiny",
