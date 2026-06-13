@@ -134,6 +134,18 @@ export const getGigModifiers = (
     })
   }
 
+  // Damaged gear: set on a botched setup minigame (roadie/kabelsalat/amp).
+  // Combo penalty stacks on top of harmony/member effects via compound ops.
+  if (gigModifiers.damaged_gear === true) {
+    modifiers.noteJitter = true
+    modifiers.hitWindowBonus -= 10
+    modifiers.guitarScoreMult *= 0.9
+    modifiers.activeEffects.push({
+      key: 'ui:pregig.effects.damagedGear',
+      fallback: 'DAMAGED GEAR: Sloppy timing & weak tone'
+    })
+  }
+
   if (bandState.inventory?.neurotoxicPedal) {
     modifiers.crowdDecay = NEUROTOXIC_PEDAL_CROWD_DECAY_MODIFIER
     modifiers.activeEffects.push({

@@ -1389,6 +1389,7 @@
   "pregig.costs": "COSTS:",
   "pregig.diff": "Diff:",
   "pregig.effects.catering": "CATERING: Counters Tired Band Penalty",
+  "pregig.effects.damagedGear": "DAMAGED GEAR: Sloppy timing & weak tone",
   "pregig.effects.disconnect": "DISCONNECT (Harmony < 40): Notes Jitter",
   "pregig.effects.grumpy": "GRUMPY {{name}}: Guitar Score -50%",
   "pregig.effects.guestlist": "GUEST LIST: VIP Bar Revenue",

@@ -1389,6 +1389,7 @@
   "pregig.costs": "KOSTEN:",
   "pregig.diff": "Schw.:",
   "pregig.effects.catering": "CATERING: Vermeidet den Müdigkeits-Malus",
+  "pregig.effects.damagedGear": "DEFEKTES EQUIPMENT: Schludriges Timing & schwacher Ton",
   "pregig.effects.disconnect": "DISCONNECT (Harmonie < 40): Noten zittern",
   "pregig.effects.grumpy": "GRUMPY {{name}}: Gitarren-Score -50%",
   "pregig.effects.guestlist": "GÄSTELISTE: VIP-Bareinnahmen",
