@@ -40,11 +40,16 @@ const hasQuestSlot = (
 ): boolean => {
   const kind = getQuestKindForSlots(quest)
   const limit = QUEST_SLOT_LIMITS[kind]
-  const activeCount = (state.activeQuests ?? []).filter(activeQuest => {
-    if (!activeQuest) return false
-    return getQuestKindForSlots(activeQuest) === kind
-  }).length
-  return activeCount < limit
+  const activeQuests = state.activeQuests ?? []
+  let activeCount = 0
+  for (let i = 0; i < activeQuests.length; i++) {
+    const activeQuest = activeQuests[i]
+    if (activeQuest && getQuestKindForSlots(activeQuest) === kind) {
+      activeCount++
+      if (activeCount >= limit) return false
+    }
+  }
+  return true
 }
 
 /**
@@ -113,8 +118,10 @@ export const canAcceptQuest = (
       ...(merged.completionFlags ?? []),
       ...(merged.rewardFlag ? [merged.rewardFlag] : [])
     ]
-    if (completionFlags.some(flag => activeFlags.includes(flag))) {
-      return { ok: false, reason: 'flag' }
+    for (let i = 0; i < completionFlags.length; i++) {
+      if (activeFlags.includes(completionFlags[i] as string)) {
+        return { ok: false, reason: 'flag' }
+      }
     }
   }
   // Cooldowns gate every repeat policy, not just 'cooldown': failure
@@ -122,9 +129,15 @@ export const canAcceptQuest = (
   // quest id for 'never' story quests too, so their retry delay must hold.
   {
     const currentDay = finiteNumberOr(state.player?.day, 0)
-    const onCooldown = (state.questCooldowns ?? []).some(
-      cd => cd.questId === questId && cd.expiresOnDay > currentDay
-    )
+    const cooldowns = state.questCooldowns ?? []
+    let onCooldown = false
+    for (let i = 0; i < cooldowns.length; i++) {
+      const cd = cooldowns[i]
+      if (cd && cd.questId === questId && cd.expiresOnDay > currentDay) {
+        onCooldown = true
+        break
+      }
+    }
     if (onCooldown) return { ok: false, reason: 'cooldown' }
   }
   if (repeatPolicy === 'perVenue' || repeatPolicy === 'perRegion') {
@@ -138,9 +151,15 @@ export const canAcceptQuest = (
     if (typeof scopeKey !== 'string' || scopeKey.length === 0) {
       return { ok: false, reason: 'scope' }
     }
-    const alreadyDone = (state.completedQuestScopes ?? []).some(
-      c => c.questId === questId && c.scopeKey === scopeKey
-    )
+    const scopes = state.completedQuestScopes ?? []
+    let alreadyDone = false
+    for (let i = 0; i < scopes.length; i++) {
+      const c = scopes[i]
+      if (c && c.questId === questId && c.scopeKey === scopeKey) {
+        alreadyDone = true
+        break
+      }
+    }
     if (alreadyDone) return { ok: false, reason: 'scope' }
   }
   if (!hasQuestSlot(state, merged)) {

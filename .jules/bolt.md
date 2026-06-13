@@ -229,3 +229,7 @@
 
 **Learning:** In `questLifecycle.ts`, using `base.includes(f)` within `merged.startFlags.filter` creates an O(N) lookup for each item in the array, making the operation O(N\*M). When the source arrays are large, this causes significant CPU overhead.
 **Action:** When filtering an array based on whether items exist in another array, convert the base array into a `Set` before the loop to ensure O(1) membership lookups.
+## 2026-11-04 - Array Methods inside Reducers and Engines
+
+**Learning:** Using `Array.some` or `Array.filter` inside core domain engines (like `questAcceptance.ts` and `questOfferEngine.ts`) forces callback allocations and intermediate array creation. In high-frequency scenarios (such as evaluating conditions and availability), this produces significant GC spikes. Re-evaluating dictionaries with `Object.entries().flatMap()` creates multiple unneeded tuples and arrays before collapsing.
+**Action:** Replace `Array.some` and `Array.filter` loops with procedural `for` loops in engine files. Replace `Object.entries().flatMap` pattern with a single-pass `for...in` loop (guarded by `Object.hasOwn`) to reduce multiple intermediate memory allocations.
