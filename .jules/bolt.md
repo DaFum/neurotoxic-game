@@ -233,3 +233,7 @@
 
 **Learning:** Using `Array.some` or `Array.filter` inside core domain engines (like `questAcceptance.ts` and `questOfferEngine.ts`) forces callback allocations and intermediate array creation. In high-frequency scenarios (such as evaluating conditions and availability), this produces significant GC spikes. Re-evaluating dictionaries with `Object.entries().flatMap()` creates multiple unneeded tuples and arrays before collapsing.
 **Action:** Replace `Array.some` and `Array.filter` loops with procedural `for` loops in engine files. Replace `Object.entries().flatMap` pattern with a single-pass `for...in` loop (guarded by `Object.hasOwn`) to reduce multiple intermediate memory allocations.
+## 2026-11-04 - Type-Safe Registry Iteration
+
+**Learning:** When replacing `Object.entries(REGISTRY)` with a `for...in` loop to avoid intermediate tuple allocations, TypeScript widens the iteration key to `string`. Attempting to index the registry directly (`REGISTRY[key]`) results in a TS7053 error because the registry lacks a string index signature.
+**Action:** When indexing a registry inside a `for...in` loop, explicitly assert the key type: `REGISTRY[key as keyof typeof REGISTRY]` to maintain type safety without allocating intermediate arrays.

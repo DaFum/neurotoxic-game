@@ -40,6 +40,10 @@ const hasQuestSlot = (
 ): boolean => {
   const kind = getQuestKindForSlots(quest)
   const limit = QUEST_SLOT_LIMITS[kind]
+
+  if (limit <= 0) return false
+
+  // ⚡ BOLT OPTIMIZATION: Replaced chained .filter().length with a single-pass loop and early exit
   const activeQuests = state.activeQuests ?? []
   let activeCount = 0
   for (let i = 0; i < activeQuests.length; i++) {
@@ -118,6 +122,7 @@ export const canAcceptQuest = (
       ...(merged.completionFlags ?? []),
       ...(merged.rewardFlag ? [merged.rewardFlag] : [])
     ]
+    // ⚡ BOLT OPTIMIZATION: Replaced Array.some with a procedural loop
     for (let i = 0; i < completionFlags.length; i++) {
       if (activeFlags.includes(completionFlags[i] as string)) {
         return { ok: false, reason: 'flag' }
@@ -131,9 +136,10 @@ export const canAcceptQuest = (
     const currentDay = finiteNumberOr(state.player?.day, 0)
     const cooldowns = state.questCooldowns ?? []
     let onCooldown = false
+    // ⚡ BOLT OPTIMIZATION: Replaced Array.some with a procedural loop
     for (let i = 0; i < cooldowns.length; i++) {
       const cd = cooldowns[i]
-      if (cd && cd.questId === questId && cd.expiresOnDay > currentDay) {
+      if (cd && cd?.questId === questId && finiteNumberOr(cd?.expiresOnDay, 0) > currentDay) {
         onCooldown = true
         break
       }
@@ -153,9 +159,10 @@ export const canAcceptQuest = (
     }
     const scopes = state.completedQuestScopes ?? []
     let alreadyDone = false
+    // ⚡ BOLT OPTIMIZATION: Replaced Array.some with a procedural loop
     for (let i = 0; i < scopes.length; i++) {
       const c = scopes[i]
-      if (c && c.questId === questId && c.scopeKey === scopeKey) {
+      if (c && c?.questId === questId && c?.scopeKey === scopeKey) {
         alreadyDone = true
         break
       }

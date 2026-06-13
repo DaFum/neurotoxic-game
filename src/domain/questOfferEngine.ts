@@ -24,6 +24,7 @@ const matchesSocialCondition = (
   const controversy = finiteNumberOr(state.social?.controversyLevel, 0)
   const tiktok = finiteNumberOr(state.social?.tiktok, 0)
 
+  // ⚡ BOLT OPTIMIZATION: Replaced intermediate array allocation and .some(Boolean) check
   let hasDamageCheck = false
   let damageCheckPassed = false
 
@@ -76,9 +77,10 @@ const matchesOfferCondition = (
   if (condition.requiredAssetKind) {
     let hasAsset = false
     const assets = state.assets ?? []
+    // ⚡ BOLT OPTIMIZATION: Replaced Array.some with a procedural loop
     for (let i = 0; i < assets.length; i++) {
       const asset = assets[i]
-      if (asset && asset.kind === condition.requiredAssetKind) {
+      if (asset && asset?.kind === condition.requiredAssetKind) {
         hasAsset = true
         break
       }
@@ -124,9 +126,10 @@ export const QuestOfferEngine = {
     trigger: QuestOfferDefinition['trigger']
   ): AvailableQuestOffer[] => {
     const available: AvailableQuestOffer[] = []
+    // ⚡ BOLT OPTIMIZATION: Replaced Object.entries().flatMap with a single-pass loop
     for (const questId in QUEST_REGISTRY) {
       if (!Object.hasOwn(QUEST_REGISTRY, questId)) continue
-      const definition = QUEST_REGISTRY[questId] as Partial<QuestState>
+      const definition = QUEST_REGISTRY[questId as keyof typeof QUEST_REGISTRY] as Partial<QuestState>
       const offer = definition?.offer
       if (!offer || offer.trigger !== trigger) continue
       if (QuestOfferEngine.canOfferQuest(state, questId)) {
