@@ -115,6 +115,7 @@ export const EventModal = ({
   const [previewError, setPreviewError] = useState(false)
   const [prevEventId, setPrevEventId] = useState<string | undefined>(event?.id)
   const resolvedRef = useRef(false)
+  const [isResolved, setIsResolved] = useState(false)
 
   // Reset outcome and resolved guard on new events
   if (event?.id !== prevEventId) {
@@ -122,6 +123,7 @@ export const EventModal = ({
     setOutcome(null)
     setPreviewError(false)
     resolvedRef.current = false
+    setIsResolved(false)
   }
 
   // Keep game state ref stable so handleOptionSelect doesn't refresh constantly, resetting the keyboard listener
@@ -160,6 +162,7 @@ export const EventModal = ({
   const handleContinue = useCallback(() => {
     if (outcome && !resolvedRef.current) {
       resolvedRef.current = true
+      setIsResolved(true)
       onOptionSelect({
         ...outcome.option,
         _precomputedResult: outcome._precomputedResult
@@ -313,7 +316,7 @@ export const EventModal = ({
               </div>
               <button
                 type='button'
-                disabled={resolvedRef.current}
+                disabled={isResolved}
                 onClick={handleContinue}
                 className='w-full p-3 border border-toxic-green bg-toxic-green/20 hover:bg-toxic-green hover:text-void-black text-toxic-green font-bold tracking-widest uppercase transition-colors text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black disabled:opacity-50 disabled:cursor-not-allowed'
               >

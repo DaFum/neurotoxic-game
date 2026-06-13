@@ -221,15 +221,31 @@ export const handleBloodBankDonate = (
   const controversyGain = Math.max(0, Number(safePayload.controversyGain) || 0)
   const successToast = safePayload.successToast
 
-  if (!validateBloodBankDonation(state.band, { harmonyCost, staminaCost })) {
-    logger.warn('ClinicReducer', 'Rejected unaffordable blood-bank donation')
-    return state
-  }
-
   // Validate members array
   if (!Array.isArray(state.band.members) || state.band.members.length === 0) {
     logger.warn('ClinicReducer', 'band.members is missing or empty')
     return state
+  }
+
+  const normalizedMembers = state.band.members.map((member: BandMember) => ({
+    ...member,
+    stamina: finiteNumberOr(member.stamina, 0),
+    staminaMax: finiteNumberOr(member.staminaMax, 100)
+  }))
+
+  const normalizedState =
+    normalizedMembers === state.band.members
+      ? state
+      : { ...state, band: { ...state.band, members: normalizedMembers } }
+
+  if (
+    !validateBloodBankDonation(normalizedState.band, {
+      harmonyCost,
+      staminaCost
+    })
+  ) {
+    logger.warn('ClinicReducer', 'Rejected unaffordable blood-bank donation')
+    return normalizedState
   }
 
   const currentMoney = Number.isFinite(state.player.money)
@@ -251,7 +267,7 @@ export const handleBloodBankDonate = (
 
   // Apply stamina drain to all members and calculate actual loss
   let totalStaminaLost = 0
-  const updatedMembers = state.band.members.map((member: BandMember) => {
+  const updatedMembers = normalizedState.band.members.map((member: BandMember) => {
     const prevStamina = finiteNumberOr(member.stamina, 0)
     const nextStamina = clampMemberStamina(
       prevStamina - staminaCost,
@@ -265,18 +281,18 @@ export const handleBloodBankDonate = (
   })
 
   const nextState = {
-    ...state,
+    ...normalizedState,
     player: {
-      ...state.player,
+      ...normalizedState.player,
       money: nextMoney
     },
     band: {
-      ...state.band,
+      ...normalizedState.band,
       harmony: nextHarmony,
       members: updatedMembers
     },
     social: {
-      ...state.social,
+      ...normalizedState.social,
       controversyLevel: nextControversy
     }
   }

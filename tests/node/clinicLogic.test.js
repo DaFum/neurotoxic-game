@@ -211,13 +211,13 @@ test('clinicReducer', async t => {
 
   await t.test('handleBloodBankDonate', async t2 => {
     await t2.test(
-      'drains a member whose persisted stamina is NaN from a 0 base',
+      'normalizes and rejects without economy effects when a member has NaN stamina (which coerces to 0)',
       () => {
         // Regression mirror of the heal case: a stale save can carry NaN stamina.
         // handleBloodBankDonate must coerce the NaN base to 0 (finiteNumberOr) so
-        // the drain computes from 0 and NaN never propagates into stored stamina.
-        // From a 0 base the drain clamps to 0 — you cannot lose stamina you do
-        // not have — so the reported deltaStamina is 0, not the requested cost.
+        // NaN never propagates into stored stamina.
+        // Since 0 < staminaCost + 10, the affordability check will reject the donation,
+        // returning the normalized state without economy effects or toasts.
         const staminaCost = 20
         const state = {
           player: { money: 100, fame: 0, clinicVisits: 0 },
@@ -237,14 +237,16 @@ test('clinicReducer', async t => {
           successToast: { id: 'bb-toast', message: 'Donated', type: 'success' }
         })
 
-        // Base 0 - drain, clamped at 0; result is finite, not NaN.
-        assert.equal(
-          nextState.band.members[0].stamina,
-          Math.max(0, 0 - staminaCost)
-        )
+        // Stamina is normalized to 0.
+        assert.equal(nextState.band.members[0].stamina, 0)
         assert.equal(Number.isNaN(nextState.band.members[0].stamina), false)
-        // Toast delta uses the same coerced baseline (0), so no phantom drain.
-        assert.equal(nextState.toasts[0].options.deltaStamina, 0)
+
+        // No economy effects applied.
+        assert.equal(nextState.player.money, 100)
+        assert.equal(nextState.band.harmony, 50)
+
+        // No toast generated because the action was rejected.
+        assert.equal(nextState.toasts.length, 0)
       }
     )
   })

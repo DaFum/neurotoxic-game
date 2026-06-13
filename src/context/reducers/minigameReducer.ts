@@ -83,9 +83,13 @@ export const handleCompleteTravelMinigame = (
     rngValue?: number
   }
 ): GameState => {
+  const isLegacyShape =
+    state.minigame?.active === undefined &&
+    typeof state.minigame?.targetDestination === 'string'
   if (
-    state.minigame?.active !== true ||
-    state.minigame?.type !== MINIGAME_TYPES.TOURBUS
+    !isLegacyShape &&
+    (state.minigame?.active !== true ||
+      state.minigame?.type !== MINIGAME_TYPES.TOURBUS)
   ) {
     return state
   }
