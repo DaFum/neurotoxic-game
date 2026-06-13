@@ -29,6 +29,7 @@ baseline instead of duplicating formulas.
 - `MAX_GIG_NET`, `MANAGEMENT_CUT_RATE`, and `BASE_DRAW_RATIO` are mirrored by `scripts/game-balance-simulation.mjs` via direct import. Changing them invalidates `reports/game-balance-simulation-baseline.json`; re-run `pnpm run simulate:balance:baseline`.
 - Fame level is `Math.floor(Math.sqrt(fame / 200))` (`calculateFameLevel` in `gameStateUtils.ts`). External formulas (sim scripts, tooltips) must import this helper, not duplicate the math.
 - Gig pass/fail uses `perfScore >= 31` with `PERF_SCORE_MIN = 30` and `PERF_SCORE_SCALER = 150` in `postGigUtils.ts`. Simulation scripts must import `calculatePerformanceScore()` rather than re-implement it.
+- The `damaged_gear` gigModifier (set by botched setup minigames in `minigameReducer`) is consumed in `getGigModifiers` (`gigModifiersUtils.ts`): it forces `noteJitter`, subtracts 10ms `hitWindowBonus`, and multiplies `guitarScoreMult` by 0.9. It is a live mechanic — do not treat it as dead code or remove the setter.
 
 ## Gig / merch threading
 

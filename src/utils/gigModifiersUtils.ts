@@ -50,7 +50,8 @@ const PRE_GIG_ACTIVE_EFFECTS = {
 /**
  * Derives dynamic game modifiers for the Gig scene based on band state and active toggles.
  * @param bandState - The current band state (members, harmony, etc.).
- * @param gigModifiers - Active PreGig modifiers (e.g. catering, soundcheck). Defaults to `{}`.
+ * @param gigModifiers - Active PreGig modifiers (e.g. catering, soundcheck) plus the
+ * `damaged_gear` flag set by botched setup minigames. Defaults to `{}`.
  * @returns An object containing numeric modifiers and active effect descriptions.
  */
 export const getGigModifiers = (
