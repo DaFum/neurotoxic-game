@@ -110,6 +110,7 @@ export const PostGig = () => {
               onSelect={handlePostSelection}
               trend={social.trend}
               zealotryLevel={social?.zealotry || 0}
+              disabled={isProcessingAction}
             />
           )}
 
@@ -118,6 +119,7 @@ export const PostGig = () => {
               offers={brandOffers}
               onAccept={handleAcceptDeal}
               onSkip={handleRejectDeals}
+              isProcessing={isProcessingAction}
             />
           )}
 

@@ -289,7 +289,8 @@ const DealActions = memo(
     hasNegotiated,
     negotiationState,
     handleAcceptDeal,
-    handleNegotiationStart
+    handleNegotiationStart,
+    isProcessing = false
   }: DealActionsProps) => {
     const { t } = useTranslation()
     const negotiationStatus = getNegotiationStatus(negotiationState)
@@ -300,6 +301,7 @@ const DealActions = memo(
           <>
             <ActionButton
               onClick={() => handleAcceptDeal(displayDeal)}
+              disabled={isProcessing}
               className='w-full min-h-11 bg-toxic-green text-void-black font-bold uppercase hover:scale-105'
             >
               {t('ui:deals.accept', { defaultValue: 'ACCEPT' })}
@@ -333,7 +335,7 @@ const DealActions = memo(
 DealActions.displayName = 'DealActions'
 /**
  * Presents one brand-deal offer with localized copy, negotiation state, and accept/negotiate actions.
- * @param props - Brand deal data, negotiation state, brand reputation, accept handler, and negotiation-start handler.
+ * @param props - Brand deal data, negotiation state, brand reputation, accept handler, negotiation-start handler, and processing flag.
  */
 export const DealCard = memo(
   ({
@@ -341,7 +343,8 @@ export const DealCard = memo(
     negotiationState,
     brandReputation,
     handleAcceptDeal,
-    handleNegotiationStart
+    handleNegotiationStart,
+    isProcessing = false
   }: DealCardProps) => {
     const { t } = useTranslation(['ui', 'economy'])
     const isRevoked = getNegotiationStatus(negotiationState) === 'REVOKED'
@@ -388,6 +391,7 @@ export const DealCard = memo(
           negotiationState={negotiationState}
           handleAcceptDeal={handleAcceptDeal}
           handleNegotiationStart={handleNegotiationStart}
+          isProcessing={isProcessing}
         />
       </div>
     )

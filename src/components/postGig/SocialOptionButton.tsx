@@ -23,12 +23,13 @@ const getImagePromptForCategory = (category?: string, badges?: string[]) => {
 
 /**
  * Shows one selectable post-gig social strategy with staggered animation.
- * @param props - Social option data, list index, and selection callback.
+ * @param props - Social option data, list index, selection callback, and disabled flag.
  */
 export const SocialOptionButton = memo(function SocialOptionButton({
   opt,
   index,
-  onSelect
+  onSelect,
+  disabled = false
 }: SocialOptionButtonProps) {
   const { t } = useTranslation()
   const handleClick = useCallback(() => onSelect(opt), [onSelect, opt])
@@ -42,6 +43,7 @@ export const SocialOptionButton = memo(function SocialOptionButton({
     >
       <ActionButton
         onClick={handleClick}
+        disabled={disabled}
         className='flex flex-col h-full items-start justify-start p-3 sm:p-4 min-h-40 sm:min-h-48 text-left relative overflow-hidden w-full group'
       >
         {/* Background Image Watermark */}

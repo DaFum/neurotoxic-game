@@ -60,39 +60,39 @@ export function useMinorHandlers({
     isProcessingActionRef.current = true
     setIsProcessingAction(true)
 
-    try {
-      const updates = getSpinStoryMoneyUpdate({ player })
+    const updates = getSpinStoryMoneyUpdate({ player })
 
-      if (!updates.success) {
-        addToast(
-          t('ui:postGig.notEnoughCashForPr', {
-            defaultValue: 'Not enough cash for PR!'
-          }),
-          'error'
-        )
-        return
-      }
-
-      updatePlayer({ money: updates.nextMoney })
-
-      const socialUpdateFactory = getSpinStorySocialUpdateFactory()
-      updateSocial(socialUpdateFactory)
-
-      const moneyText =
-        updates.appliedDelta !== 0
-          ? ` (${formatCurrency(updates.appliedDelta, i18n.language)})`
-          : ''
+    if (!updates.success) {
       addToast(
-        t('ui:postGig.storySpunControversyReduced', {
-          moneyText,
-          defaultValue: `Story Spun. Controversy reduced.${moneyText}`
+        t('ui:postGig.notEnoughCashForPr', {
+          defaultValue: 'Not enough cash for PR!'
         }),
-        'success'
+        'error'
       )
-    } finally {
       isProcessingActionRef.current = false
       setIsProcessingAction(false)
+      return
     }
+
+    updatePlayer({ money: updates.nextMoney })
+
+    const socialUpdateFactory = getSpinStorySocialUpdateFactory()
+    updateSocial(socialUpdateFactory)
+
+    const moneyText =
+      updates.appliedDelta !== 0
+        ? ` (${formatCurrency(updates.appliedDelta, i18n.language)})`
+        : ''
+    addToast(
+      t('ui:postGig.storySpunControversyReduced', {
+        moneyText,
+        defaultValue: `Story Spun. Controversy reduced.${moneyText}`
+      }),
+      'success'
+    )
+    // Guard intentionally NOT reset here: the spin has no phase transition
+    // but the caller's component will unmount/disable. Keeping the guard
+    // held prevents a rapid second spin duplicating money/social effects.
   }, [
     player,
     updatePlayer,

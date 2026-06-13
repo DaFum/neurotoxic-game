@@ -163,6 +163,8 @@ export function usePostGigHandlers({
   const { handleAcceptDeal, handleRejectDeals } = useDealHandlers({
     player,
     social,
+    isProcessingActionRef,
+    setIsProcessingAction,
     t,
     dispatchers
   })

@@ -104,6 +104,8 @@ export interface SocialOptionButtonProps {
   opt: SocialOption
   index: number
   onSelect: (option: SocialOption) => void
+  /** When true the button is disabled (e.g. another action is in-flight). */
+  disabled?: boolean
 }
 
 /**
@@ -336,6 +338,8 @@ export interface DealCardProps {
   brandReputation?: Record<string, number>
   handleAcceptDeal: (deal: BrandDeal) => void | Promise<void>
   handleNegotiationStart: (deal: BrandDeal) => void
+  /** When true the accept button is disabled (e.g. another deal action is in-flight). */
+  isProcessing?: boolean
 }
 
 /**
@@ -379,6 +383,8 @@ export interface DealActionsProps {
   negotiationState?: DealCardProps['negotiationState']
   handleAcceptDeal: (deal: BrandDeal) => void | Promise<void>
   handleNegotiationStart: (deal: BrandDeal) => void
+  /** When true the accept button is disabled (e.g. another deal action is in-flight). */
+  isProcessing?: boolean
 }
 
 /**
@@ -425,6 +431,8 @@ export interface DealsPhaseProps {
   offers: BrandDeal[]
   onAccept: (deal: BrandDeal) => void | Promise<void>
   onSkip: () => void
+  /** When true the accept buttons are disabled (e.g. a deal action is in-flight). */
+  isProcessing?: boolean
 }
 
 /**

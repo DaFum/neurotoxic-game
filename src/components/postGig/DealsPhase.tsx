@@ -6,7 +6,12 @@ import { DealCard } from './DealCard'
 import { NegotiationModal } from './NegotiationModal'
 import type { DealsPhaseProps } from '../../types/components'
 
-const DealsPhaseComponent = ({ offers, onAccept, onSkip }: DealsPhaseProps) => {
+const DealsPhaseComponent = ({
+  offers,
+  onAccept,
+  onSkip,
+  isProcessing = false
+}: DealsPhaseProps) => {
   const { t } = useTranslation()
   const social = useGameSelector(state => state.social)
 
@@ -44,6 +49,7 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }: DealsPhaseProps) => {
             brandReputation={social?.brandReputation}
             handleAcceptDeal={handleAcceptDeal}
             handleNegotiationStart={handleNegotiationStart}
+            isProcessing={isProcessing}
           />
         ))}
       </div>
