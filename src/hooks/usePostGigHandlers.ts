@@ -11,7 +11,7 @@ import type { BrandDeal, SocialPostOption } from '../types/social'
 import type { QuestProgressEvent } from '../utils/questProgress'
 import type { createAddQuestAction } from '../context/actionCreators'
 import type { PostGigFinancials } from '../types/economy'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import i18n from '../i18n'
 import {
   useContinueHandler,
@@ -24,6 +24,7 @@ import {
 /** The post-gig handler surface returned by {@link usePostGigHandlers}. */
 export interface UsePostGigHandlersReturn {
   isProcessingAction: boolean
+  hasSpun: boolean
   handlePostSelection: (option: SocialPostOption) => void
   handleAcceptDeal: (deal: BrandDeal) => void
   handleRejectDeals: () => void
@@ -105,11 +106,18 @@ export function usePostGigHandlers({
   const { isProcessingAction, isProcessingActionRef, setIsProcessingAction } =
     useProcessingGuard()
 
-  // Release the shared guard on every phase change so the first action of each
-  // new phase is not blocked by a guard set in the previous phase.
+  // Spin-story one-shot guard: decoupled from the shared continue guard so a
+  // completed spin cannot permanently block the "Back to Tour" button.
+  const hasSpunRef = useRef(false)
+  const [hasSpun, setHasSpun] = useState(false)
+
+  // Release the shared guard and spin guard on every phase change so each new
+  // phase starts unblocked (e.g. fresh post-gig after returning to overworld).
   useEffect(() => {
     isProcessingActionRef.current = false
     setIsProcessingAction(false)
+    hasSpunRef.current = false
+    setHasSpun(false)
   }, [phase, isProcessingActionRef, setIsProcessingAction])
 
   const dispatchers = useMemo(
@@ -180,14 +188,15 @@ export function usePostGigHandlers({
   const { handleNextPhase, handleSpinStory } = useMinorHandlers({
     player,
     postOptionsDerivationError,
-    isProcessingActionRef,
-    setIsProcessingAction,
+    hasSpunRef,
+    setHasSpun,
     t,
     dispatchers
   })
 
   return {
     isProcessingAction,
+    hasSpun,
     handlePostSelection,
     handleAcceptDeal,
     handleRejectDeals,

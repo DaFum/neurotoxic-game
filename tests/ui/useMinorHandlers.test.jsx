@@ -26,11 +26,13 @@ function makeDispatchers() {
 
 function makeProps(overrides = {}) {
   const dispatchers = overrides.dispatchers ?? makeDispatchers()
+  const hasSpunRef = overrides.hasSpunRef ?? { current: false }
+  const setHasSpun = overrides.setHasSpun ?? vi.fn()
   return {
     player: { money: 1000 },
     postOptionsDerivationError: null,
-    isProcessingActionRef: { current: false },
-    setIsProcessingAction: vi.fn(),
+    hasSpunRef,
+    setHasSpun,
     t,
     dispatchers,
     ...overrides
@@ -66,16 +68,34 @@ describe('useMinorHandlers — handleSpinStory single-shot guard', () => {
     expect(props.dispatchers.updatePlayer).toHaveBeenCalledTimes(1)
   })
 
-  it('guard is held (not reset) after successful dispatch', () => {
+  it('does NOT touch the shared continue guard after successful dispatch', () => {
+    const sharedRef = { current: false }
     const props = makeProps()
     const { result } = renderHook(() => useMinorHandlers(props))
 
     act(() => result.current.handleSpinStory())
 
-    expect(props.isProcessingActionRef.current).toBe(true)
+    // The shared isProcessingActionRef must remain untouched (false) so Continue
+    // is never permanently blocked by a successful spin.
+    expect(sharedRef.current).toBe(false)
+    // The spin-specific guard is held (hasSpunRef set to true)
+    expect(props.hasSpunRef.current).toBe(true)
+    expect(props.setHasSpun).toHaveBeenCalledWith(true)
   })
 
-  it('releases guard when not enough cash', async () => {
+  it('second call after successful spin is a no-op (hasSpunRef prevents re-dispatch)', () => {
+    const props = makeProps()
+    const { result } = renderHook(() => useMinorHandlers(props))
+
+    act(() => result.current.handleSpinStory())
+    // hasSpunRef.current is now true; second call must be ignored
+    act(() => result.current.handleSpinStory())
+
+    expect(props.dispatchers.updatePlayer).toHaveBeenCalledTimes(1)
+    expect(props.setHasSpun).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not set hasSpun when not enough cash (retry allowed)', async () => {
     const { getSpinStoryMoneyUpdate } =
       await import('../../src/utils/postGigUtils')
     getSpinStoryMoneyUpdate.mockReturnValueOnce({
@@ -90,12 +110,13 @@ describe('useMinorHandlers — handleSpinStory single-shot guard', () => {
     act(() => result.current.handleSpinStory())
 
     expect(props.dispatchers.updatePlayer).not.toHaveBeenCalled()
-    expect(props.isProcessingActionRef.current).toBe(false)
-    expect(props.setIsProcessingAction).toHaveBeenLastCalledWith(false)
+    // hasSpun must NOT be set — player should be able to retry after getting cash
+    expect(props.hasSpunRef.current).toBe(false)
+    expect(props.setHasSpun).not.toHaveBeenCalled()
   })
 
-  it('no-ops when already processing', () => {
-    const props = makeProps({ isProcessingActionRef: { current: true } })
+  it('no-ops when hasSpunRef is already true', () => {
+    const props = makeProps({ hasSpunRef: { current: true } })
     const { result } = renderHook(() => useMinorHandlers(props))
 
     act(() => result.current.handleSpinStory())

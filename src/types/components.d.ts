@@ -326,6 +326,7 @@ export interface CompletePhaseProps {
     [key: string]: unknown
   }
   isProcessingAction?: boolean
+  hasSpun?: boolean
   pedalHarmonyPenalty?: number
 }
 
