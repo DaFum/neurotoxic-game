@@ -87,4 +87,30 @@ describe('usePostGigHandlers (characterization)', () => {
     rerender()
     expect(result.current.handleRejectDeals).toBe(first)
   })
+
+  it('handleContinue prevents tourCompleted and routes to GAMEOVER on finale gig if bankrupt', () => {
+    const props = makeProps({
+      isFinaleGig: true,
+      player: {
+        money: 10,
+        fame: 10,
+        day: 3,
+        location: 'berlin',
+        currentNodeId: 'n1',
+        stats: { tourCompleted: false }
+      },
+      financials: { net: -1000 }, // massive debt
+      totalDailyObligations: 100 // causes bankruptcy
+    })
+    const { result } = renderHook(() => usePostGigHandlers(props))
+
+    act(() => result.current.handleContinue())
+
+    expect(props.updatePlayer).toHaveBeenCalledWith(
+      expect.not.objectContaining({
+        stats: expect.objectContaining({ tourCompleted: true })
+      })
+    )
+    expect(props.changeScene).toHaveBeenCalledWith('GAMEOVER')
+  })
 })
