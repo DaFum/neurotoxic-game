@@ -2,7 +2,7 @@ import { afterEach, describe, expect, test, vi } from 'vitest'
 import { render, cleanup, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 
-const changeScene = vi.fn()
+const mockChangeScene = vi.fn()
 
 vi.mock('../../src/hooks/usePostGigLogic', () => ({
   usePostGigLogic: () => ({
@@ -17,7 +17,7 @@ vi.mock('../../src/hooks/usePostGigLogic', () => ({
     social: {},
     player: {},
     pedalHarmonyPenalty: 0,
-    changeScene,
+    changeScene: mockChangeScene,
     isProcessingAction: false,
     handlePostSelection: vi.fn(),
     handleAcceptDeal: vi.fn(),
@@ -37,7 +37,7 @@ import { PostGig } from '../../src/scenes/PostGig'
 
 afterEach(() => {
   cleanup()
-  changeScene.mockClear()
+  mockChangeScene.mockClear()
 })
 
 describe('PostGig loading fallback', () => {
@@ -46,6 +46,6 @@ describe('PostGig loading fallback', () => {
     const button = screen.getByText('Back to Overworld')
     expect(button).toBeTruthy()
     await userEvent.click(button)
-    expect(changeScene).toHaveBeenCalledWith('OVERWORLD')
+    expect(mockChangeScene).toHaveBeenCalledWith('OVERWORLD')
   })
 })

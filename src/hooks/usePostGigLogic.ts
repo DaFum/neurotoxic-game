@@ -116,7 +116,10 @@ export const usePostGigLogic = () => {
 
   // 4. Expose API
   const pedalHarmonyPenalty = band?.inventory?.neurotoxicPedal
-    ? NEUROTOXIC_PEDAL_HARMONY_PENALTY
+    ? Math.min(
+        NEUROTOXIC_PEDAL_HARMONY_PENALTY,
+        Math.max(0, (band.harmony ?? 0) - 1)
+      )
     : 0
 
   return {
