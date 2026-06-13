@@ -227,16 +227,23 @@ export const handleBloodBankDonate = (
     return state
   }
 
-  const normalizedMembers = state.band.members.map((member: BandMember) => ({
-    ...member,
-    stamina: finiteNumberOr(member.stamina, 0),
-    staminaMax: finiteNumberOr(member.staminaMax, 100)
-  }))
+  let membersChanged = false
+  const normalizedMembers = (state?.band?.members || []).map(
+    (member: BandMember) => {
+      const stamina = finiteNumberOr(member?.stamina, 0)
+      const staminaMax = finiteNumberOr(member?.staminaMax, 100)
 
-  const normalizedState =
-    normalizedMembers === state.band.members
-      ? state
-      : { ...state, band: { ...state.band, members: normalizedMembers } }
+      if (stamina !== member?.stamina || staminaMax !== member?.staminaMax) {
+        membersChanged = true
+        return { ...member, stamina, staminaMax }
+      }
+      return member
+    }
+  )
+
+  const normalizedState = membersChanged
+    ? { ...state, band: { ...state?.band, members: normalizedMembers } }
+    : state
 
   if (
     !validateBloodBankDonation(normalizedState.band, {
