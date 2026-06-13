@@ -22,6 +22,7 @@ export const CompletePhase = ({
   onSpinStory,
   player,
   social,
+  pedalHarmonyPenalty = 0,
   isProcessingAction = false
 }: CompletePhaseProps) => {
   const { t, i18n } = useTranslation()
@@ -96,6 +97,16 @@ export const CompletePhase = ({
             })}
           </div>
         </motion.div>
+
+        {pedalHarmonyPenalty > 0 ? (
+          <div className='mb-4 font-mono text-sm text-blood-red'>
+            ⚠️{' '}
+            {t('ui:postGig.pedalHarmonyWarning', {
+              penalty: pedalHarmonyPenalty,
+              defaultValue: `NEUROTOXIC PEDAL: -${pedalHarmonyPenalty} Harmony on continue`
+            })}
+          </div>
+        ) : null}
 
         <SideEffectsSummary result={result} i18n={i18n} t={t} />
 

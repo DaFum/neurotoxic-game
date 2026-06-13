@@ -628,3 +628,37 @@ test('calculateDailyUpdates applies party animal penalty to returned state witho
     'Input state member must not be mutated'
   )
 })
+
+test('getGigModifiers applies damaged_gear combo penalty', () => {
+  const band = buildBandState()
+  const baseline = getGigModifiers(band)
+  const modifiers = getGigModifiers(band, { damaged_gear: true })
+
+  assert.equal(modifiers.noteJitter, true, 'damaged_gear forces jitter')
+  assert.equal(
+    modifiers.hitWindowBonus,
+    baseline.hitWindowBonus - 10,
+    'damaged_gear subtracts 10ms hit window'
+  )
+  assert.ok(
+    Math.abs(modifiers.guitarScoreMult - baseline.guitarScoreMult * 0.9) < 1e-9,
+    'damaged_gear multiplies guitar score by 0.9'
+  )
+  assert.ok(
+    modifiers.activeEffects.some(
+      e => e.key === 'ui:pregig.effects.damagedGear'
+    ),
+    'damaged_gear pushes its active effect label'
+  )
+})
+
+test('getGigModifiers without damaged_gear is unaffected', () => {
+  const band = buildBandState()
+  const modifiers = getGigModifiers(band)
+  assert.ok(
+    !modifiers.activeEffects.some(
+      e => e.key === 'ui:pregig.effects.damagedGear'
+    ),
+    'no damaged_gear effect when flag absent'
+  )
+})

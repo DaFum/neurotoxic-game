@@ -270,7 +270,7 @@ export const handleCompleteTravelMinigame = (
           {
             id: `toast-${instanceId}`,
             messageKey: 'ui:contraband.dropped',
-            type: 'info' // Could be 'success'
+            type: 'success'
           }
         ]
         newState = QuestEvents.emit(

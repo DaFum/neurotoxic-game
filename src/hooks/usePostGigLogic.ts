@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useGameActions, useGameSelector } from '../context/GameState'
+import { NEUROTOXIC_PEDAL_HARMONY_PENALTY } from '../context/gameConstants'
 import { getTotalDailyObligations } from '../utils/assetSelectors'
 import { usePostGigHandlers } from './usePostGigHandlers'
 import { usePostGigState } from './postGig/usePostGigState'
@@ -114,6 +115,13 @@ export const usePostGigLogic = () => {
   })
 
   // 4. Expose API
+  const pedalHarmonyPenalty = band?.inventory?.neurotoxicPedal
+    ? Math.min(
+        NEUROTOXIC_PEDAL_HARMONY_PENALTY,
+        Math.max(0, (band.harmony ?? 0) - 1)
+      )
+    : 0
+
   return {
     t,
     phase,
@@ -125,6 +133,8 @@ export const usePostGigLogic = () => {
     phaseTitleDefault,
     social,
     player,
+    changeScene,
+    pedalHarmonyPenalty,
     isProcessingAction,
     handlePostSelection,
     handleAcceptDeal,

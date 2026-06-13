@@ -50,7 +50,8 @@ const PRE_GIG_ACTIVE_EFFECTS = {
 /**
  * Derives dynamic game modifiers for the Gig scene based on band state and active toggles.
  * @param bandState - The current band state (members, harmony, etc.).
- * @param gigModifiers - Active PreGig modifiers (e.g. catering, soundcheck). Defaults to `{}`.
+ * @param gigModifiers - Active PreGig modifiers (e.g. catering, soundcheck) plus the
+ * `damaged_gear` flag set by botched setup minigames. Defaults to `{}`.
  * @returns An object containing numeric modifiers and active effect descriptions.
  */
 export const getGigModifiers = (
@@ -131,6 +132,18 @@ export const getGigModifiers = (
       key: 'ui:pregig.effects.tired',
       options: { name: CHARACTERS.MARIUS.name.toUpperCase() },
       fallback: `TIRED ${CHARACTERS.MARIUS.name.toUpperCase()}: Rushing Tempo`
+    })
+  }
+
+  // Damaged gear: set on a botched setup minigame (roadie/kabelsalat/amp).
+  // Combo penalty stacks on top of harmony/member effects via compound ops.
+  if (gigModifiers.damaged_gear === true) {
+    modifiers.noteJitter = true
+    modifiers.hitWindowBonus -= 10
+    modifiers.guitarScoreMult *= 0.9
+    modifiers.activeEffects.push({
+      key: 'ui:pregig.effects.damagedGear',
+      fallback: 'DAMAGED GEAR: Sloppy timing & weak tone'
     })
   }
 
