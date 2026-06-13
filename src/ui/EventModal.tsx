@@ -114,7 +114,6 @@ export const EventModal = ({
   const [outcome, setOutcome] = useState<EventOutcome | null>(null)
   const [previewError, setPreviewError] = useState(false)
   const [prevEventId, setPrevEventId] = useState<string | undefined>(event?.id)
-  const [continueDisabled, setContinueDisabled] = useState(false)
   const resolvedRef = useRef(false)
 
   // Reset outcome and resolved guard on new events
@@ -122,7 +121,6 @@ export const EventModal = ({
     setPrevEventId(event?.id)
     setOutcome(null)
     setPreviewError(false)
-    setContinueDisabled(false)
     resolvedRef.current = false
   }
 
@@ -162,7 +160,6 @@ export const EventModal = ({
   const handleContinue = useCallback(() => {
     if (outcome && !resolvedRef.current) {
       resolvedRef.current = true
-      setContinueDisabled(true)
       onOptionSelect({
         ...outcome.option,
         _precomputedResult: outcome._precomputedResult
@@ -316,7 +313,7 @@ export const EventModal = ({
               </div>
               <button
                 type='button'
-                disabled={continueDisabled}
+                disabled={resolvedRef.current}
                 onClick={handleContinue}
                 className='w-full p-3 border border-toxic-green bg-toxic-green/20 hover:bg-toxic-green hover:text-void-black text-toxic-green font-bold tracking-widest uppercase transition-colors text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black disabled:opacity-50 disabled:cursor-not-allowed'
               >

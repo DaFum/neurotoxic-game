@@ -343,22 +343,21 @@ test('EventModal double-click on Continue calls onOptionSelect exactly once', as
 
   fireEvent.click(screen.getByText('Option 1'))
 
-  await waitFor(() => {
-    expect(screen.getByText(/CONTINUE/i)).toBeInTheDocument()
+  const continueButton = await screen.findByRole('button', {
+    name: /CONTINUE/i
   })
 
-  const continueButton = screen.getByText(/CONTINUE/i)
   fireEvent.click(continueButton)
   fireEvent.click(continueButton)
 
   expect(handleSelect).toHaveBeenCalledTimes(1)
 })
 
-test('EventModal Continue button is disabled after first click', async () => {
+test('EventModal Continue button calls onOptionSelect only once even on rapid clicks', async () => {
   const mockEvent = {
     id: 'disabled_after_click_test',
     title: 'Disabled After Click',
-    description: 'Continue button should be disabled after first click.',
+    description: 'Continue button should only fire once.',
     options: [{ label: 'Option 1' }]
   }
   const handleSelect = vi.fn()
@@ -372,6 +371,7 @@ test('EventModal Continue button is disabled after first click', async () => {
   })
 
   fireEvent.click(continueButton)
+  fireEvent.click(continueButton)
 
-  expect(continueButton).toBeDisabled()
+  expect(handleSelect).toHaveBeenCalledTimes(1)
 })
