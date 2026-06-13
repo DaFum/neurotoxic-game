@@ -123,12 +123,12 @@ export const EventModal = ({
     setOutcome(null)
     setPreviewError(false)
     setIsResolved(false)
-  }
-
-  // Reset the double-submit guard when the event changes (useEffect to avoid render-phase side effects)
-  useEffect(() => {
+    // Reset the synchronous double-submit guard in the same guarded block as
+    // isResolved so the ref and the button's disabled state never diverge.
+    // (A useEffect reset would lag a render behind, leaving a window where the
+    // button is enabled but handleContinue still no-ops.)
     resolvedRef.current = false
-  }, [event?.id])
+  }
 
   // Keep game state ref stable so handleOptionSelect doesn't refresh constantly, resetting the keyboard listener
   const gameStateRef = useRef(gameState)
@@ -322,7 +322,7 @@ export const EventModal = ({
                 type='button'
                 disabled={isResolved}
                 onClick={handleContinue}
-                className='w-full p-3 border border-toxic-green bg-toxic-green/20 hover:bg-toxic-green hover:text-void-black text-toxic-green font-bold tracking-widest uppercase transition-colors text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black disabled:opacity-50 disabled:cursor-not-allowed'
+                className='w-full p-3 border border-toxic-green bg-toxic-green/20 hover:bg-toxic-green hover:text-void-black text-toxic-green font-bold tracking-widest uppercase transition-colors text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-toxic-green/20 disabled:hover:text-toxic-green'
               >
                 [ {t('ui:continue', { defaultValue: 'CONTINUE' })} ]
               </button>
