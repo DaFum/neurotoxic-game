@@ -439,11 +439,12 @@ export const handleCompleteAmpCalibration = (
     return state
   }
   const { score, voidResonance, purgesUsed, hijacksOverridden } = payload
+  const safeScore = Math.max(0, Math.min(finiteNumberOr(score, 0), 100))
   logger.info('GameState', 'Amp Calibration Minigame Complete', payload)
 
   // Apply Results
   const { stress, reward } = calculateAmpCalibrationResult(
-    score,
+    safeScore,
     state.band,
     finiteNumberOr(voidResonance, 0),
     finiteNumberOr(purgesUsed, 0),
@@ -461,7 +462,7 @@ export const handleCompleteAmpCalibration = (
     createMinigameCompletedQuestEvent({
       minigameId: MINIGAME_TYPES.AMP_CALIBRATION,
       success: stress === 0,
-      score
+      score: safeScore
     })
   )
   if (stress === 0) {
@@ -592,6 +593,7 @@ export const handleCompleteRoadieMinigame = (
     return state
   }
   const { equipmentDamage, contrabandDelivered, deliveredStashItemId } = payload
+  const safeEquipmentDamage = Math.max(0, finiteNumberOr(equipmentDamage, 0))
   logger.info('GameState', 'Roadie Minigame Complete', payload)
 
   // Contraband bonus only applies when a real stash item was loaded and delivered.
@@ -610,12 +612,12 @@ export const handleCompleteRoadieMinigame = (
 
   // Effective contraband count: only credit when a real stash item was present.
   const effectiveContrabandDelivered = stashItemPresent
-    ? finiteNumberOr(contrabandDelivered, 0)
+    ? Math.min(finiteNumberOr(contrabandDelivered, 0), 1)
     : 0
 
   // Apply Results
   const { stress, repairCost, contrabandBonus } = calculateRoadieMinigameResult(
-    equipmentDamage,
+    safeEquipmentDamage,
     state.band,
     effectiveContrabandDelivered
   )
@@ -653,7 +655,7 @@ export const handleCompleteRoadieMinigame = (
 
   // Pass damage to gig modifiers or stats?
   const nextModifiers = { ...state.gigModifiers }
-  if (equipmentDamage > 50) {
+  if (safeEquipmentDamage > 50) {
     // Apply a penalty for heavily damaged gear
     logger.warn(
       'GameState',
@@ -674,8 +676,8 @@ export const handleCompleteRoadieMinigame = (
     nextState,
     createMinigameCompletedQuestEvent({
       minigameId: MINIGAME_TYPES.ROADIE,
-      success: equipmentDamage <= 50,
-      score: Math.max(0, 100 - equipmentDamage)
+      success: safeEquipmentDamage <= 50,
+      score: Math.max(0, 100 - safeEquipmentDamage)
     })
   )
   if (effectiveContrabandDelivered > 0) {
@@ -687,18 +689,18 @@ export const handleCompleteRoadieMinigame = (
       })
     )
   }
-  if (equipmentDamage === 0) {
+  if (safeEquipmentDamage === 0) {
     nextState = QuestEvents.emit(
       nextState,
       createMinigamePerfectQuestEvent({ minigameId: MINIGAME_TYPES.ROADIE })
     )
   }
-  return equipmentDamage > 50
+  return safeEquipmentDamage > 50
     ? QuestEvents.emit(
         nextState,
         createMinigameFailedQuestEvent({
           minigameId: MINIGAME_TYPES.ROADIE,
-          damage: equipmentDamage
+          damage: safeEquipmentDamage
         })
       )
     : nextState
