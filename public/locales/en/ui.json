@@ -1625,6 +1625,7 @@
   "start_game": "Start Tour",
   "stash.actionApplied": "Applied",
   "stash.actionUsed": "Used",
+  "stash.alreadyUsed": "That item can't be used right now.",
   "stash.itemUsed": "{{action}} {{itemName}}!",
   "stash.missingItemId": "Unable to use contraband: missing item id",
   "stash.selectMemberFirst": "Select a band member first!",

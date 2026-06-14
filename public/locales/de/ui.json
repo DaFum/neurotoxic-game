@@ -1625,6 +1625,7 @@
   "start_game": "Tour Starten",
   "stash.actionApplied": "Angewendet",
   "stash.actionUsed": "Benutzt",
+  "stash.alreadyUsed": "Dieser Gegenstand kann gerade nicht verwendet werden.",
   "stash.itemUsed": "{{itemName}} {{action}}!",
   "stash.missingItemId": "Kontrabande kann nicht verwendet werden: Gegenstands-ID fehlt",
   "stash.selectMemberFirst": "Wähle zuerst ein Bandmitglied aus!",
