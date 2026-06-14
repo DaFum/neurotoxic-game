@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useGameActions, useGameSelector } from '../context/GameState'
 import {
   handleNodeArrival,
@@ -26,6 +26,13 @@ type UseArrivalLogicOptions = {
  * path is the production travel path, so rival reactions must happen here).
  * `isHandlingRef` stores the node id currently being processed, and cleanup
  * keyed on `player.currentNodeId` clears stale guards for subsequent arrivals.
+ *
+ * Routing and the single arrival save run in a post-commit `useEffect` keyed on
+ * `[pendingRoute, currentScene]`. This ensures `saveGame` captures final
+ * post-arrival state (not stale pre-commit state). If `advanceDay()` triggers
+ * bankruptcy the reducer sets `currentScene = GAMEOVER`; the effect detects this
+ * and short-circuits routing while still saving once — so GAMEOVER is never
+ * overwritten by an arrival scene.
  */
 export const useArrivalLogic = ({
   onShowHQ,
@@ -35,6 +42,7 @@ export const useArrivalLogic = ({
   const band = useGameSelector(state => state.band)
   const gameMap = useGameSelector(state => state.gameMap)
   const player = useGameSelector(state => state.player)
+  const currentScene = useGameSelector(state => state.currentScene)
   const {
     advanceDay,
     saveGame,
@@ -55,6 +63,13 @@ export const useArrivalLogic = ({
   // undefined (not null) is the idle sentinel — null is a valid currentNodeId value.
   const isHandlingRef = useRef<string | null | undefined>(undefined)
 
+  // Pending route set by handleArrivalSequence; consumed by the post-commit effect.
+  const pendingRouteRef = useRef<{
+    scene: GamePhase
+    gigStarted: boolean
+  } | null>(null)
+  const [pendingRoute, setPendingRoute] = useState(false)
+
   // Reset the guard whenever the player moves to a new node so a stale `true` value from a
   // previous arrival (or a failed one) never blocks the next legitimate arrival.
   useEffect(() => {
@@ -62,6 +77,31 @@ export const useArrivalLogic = ({
       isHandlingRef.current = undefined
     }
   }, [player.currentNodeId])
+
+  // Post-commit effect: routing + single save after all dispatches have committed.
+  // Runs after pendingRoute is set by handleArrivalSequence.
+  // GAMEOVER short-circuit: if advanceDay() triggered bankruptcy, the reducer sets
+  // currentScene=GAMEOVER. We detect this here and skip routing to preserve GAMEOVER,
+  // while still saving once.
+  useEffect(() => {
+    if (!pendingRoute) return
+    const route = pendingRouteRef.current
+    // Clear first to avoid re-firing on subsequent re-renders
+    pendingRouteRef.current = null
+    setPendingRoute(false)
+
+    if (currentScene === GAME_PHASES.GAMEOVER) {
+      // GAMEOVER: save the post-bankruptcy state and do NOT overwrite the scene
+      saveGame(false)
+      return
+    }
+
+    // Normal path: route then save
+    if (route && !route.gigStarted) {
+      changeScene(route.scene)
+    }
+    saveGame(false)
+  }, [pendingRoute, currentScene, saveGame, changeScene])
 
   const handleArrivalSequence = useCallback(() => {
     const nodeId = player.currentNodeId
@@ -72,16 +112,13 @@ export const useArrivalLogic = ({
       // 1. Advance Day
       advanceDay()
 
-      // 2. Save Game
-      saveGame(false)
-
-      // 3. Harmony Regen (if applicable)
+      // 2. Harmony Regen (if applicable)
       const newHarmony = processHarmonyRegen(band)
       if (newHarmony !== null) {
         updateBand({ harmony: newHarmony })
       }
 
-      // 4. Trigger Events
+      // 3. Trigger Events
       // Only trigger travel events for non-GIG destinations.
       // GIG destinations get events in the PreGig scene instead.
       const currentNode = gameMap?.nodes[player.currentNodeId]
@@ -91,12 +128,12 @@ export const useArrivalLogic = ({
       // there). If that guard is ever removed, this call must add its own check.
       const travelEventActive = processTravelEvents(currentNode, triggerEvent)
 
-      // 4b. Rival band reacts to the trip (movement + possible encounter),
+      // 3b. Rival band reacts to the trip (movement + possible encounter),
       // mirroring the legacy onTravelComplete path.
       moveRivalBand()
       checkRivalEncounter()
 
-      // 5. Handle Node Arrival & Routing
+      // 4. Handle Node Arrival & Routing
       // Delegates routing (HQ, Gig, Rest Stop) to shared utility
       const arrivalResult = currentNode
         ? handleNodeArrival({
@@ -123,9 +160,14 @@ export const useArrivalLogic = ({
           })
         : { scene: GAME_PHASES.OVERWORLD as GamePhase, gigStarted: false }
 
-      if (!arrivalResult.gigStarted) {
-        changeScene(arrivalResult.scene)
+      // 5. Defer routing + save to a post-commit effect so:
+      //    a) saveGame reads final committed state (Task 8)
+      //    b) GAMEOVER from advanceDay bankruptcy is detected before routing (Task 9)
+      pendingRouteRef.current = {
+        scene: arrivalResult.scene,
+        gigStarted: arrivalResult.gigStarted
       }
+      setPendingRoute(true)
     } catch (e) {
       // Reset guard so the user can retry the same node after an error
       isHandlingRef.current = undefined
@@ -137,12 +179,10 @@ export const useArrivalLogic = ({
     advanceDay,
     moveRivalBand,
     checkRivalEncounter,
-    saveGame,
     updateBand,
     updatePlayer,
     triggerEvent,
     startGig,
-    changeScene,
     addToast,
     band,
     gameMap,

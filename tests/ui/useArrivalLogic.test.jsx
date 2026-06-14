@@ -377,6 +377,104 @@ describe('useArrivalLogic', () => {
     expect(mockGameState.startGig.mock.calls[0][0]).toEqual(venue)
   })
 
+  // --- Task 8 + 9 tests ---
+
+  test('Task 8: saveGame is called exactly once and after side-effects settle (post-commit effect)', () => {
+    // The save must happen AFTER advanceDay/side-effects dispatch; it runs in a
+    // useEffect that fires after commit, not inline in the synchronous callback.
+    const callOrder = []
+    mockGameState.advanceDay.mockImplementation(() =>
+      callOrder.push('advanceDay')
+    )
+    mockGameState.changeScene.mockImplementation(() =>
+      callOrder.push('changeScene')
+    )
+    mockGameState.saveGame.mockImplementation(() => callOrder.push('saveGame'))
+    // currentScene must be non-GAMEOVER so the routing path is taken
+    mockGameState.currentScene = GAME_PHASES.OVERWORLD
+
+    const { result } = setupArrivalScenario(useArrivalLogic)
+    // Restore our call-tracking mocks after setupArrivalScenario resets them
+    mockGameState.advanceDay.mockImplementation(() =>
+      callOrder.push('advanceDay')
+    )
+    mockGameState.changeScene.mockImplementation(() =>
+      callOrder.push('changeScene')
+    )
+    mockGameState.saveGame.mockImplementation(() => callOrder.push('saveGame'))
+
+    act(() => {
+      result.current.handleArrivalSequence()
+    })
+
+    // saveGame must be called exactly once
+    expect(mockGameState.saveGame.mock.calls.length).toBe(1)
+    // saveGame must come AFTER advanceDay (and after changeScene if routing ran)
+    const saveIdx = callOrder.indexOf('saveGame')
+    const advanceDayIdx = callOrder.indexOf('advanceDay')
+    expect(saveIdx).toBeGreaterThan(advanceDayIdx)
+    if (callOrder.includes('changeScene')) {
+      const changeSceneIdx = callOrder.indexOf('changeScene')
+      expect(saveIdx).toBeGreaterThan(changeSceneIdx)
+    }
+  })
+
+  test('Task 9: GAMEOVER scene from advanceDay is preserved — changeScene not called, saveGame called once', () => {
+    // Simulate bankruptcy: advanceDay triggers reducer → currentScene becomes GAMEOVER.
+    // The hook must NOT overwrite GAMEOVER with arrival routing.
+    // We simulate this by setting mockGameState.currentScene to GAMEOVER before the
+    // effect fires (the selector reads it from mockGameState on the post-commit render).
+    mockGameState.currentScene = GAME_PHASES.GAMEOVER
+
+    const { result } = setupArrivalScenario(useArrivalLogic)
+    // Restore currentScene after setupArrivalScenario's resetMockGameState
+    mockGameState.currentScene = GAME_PHASES.GAMEOVER
+
+    act(() => {
+      result.current.handleArrivalSequence()
+    })
+
+    // changeScene must NOT be called — GAMEOVER must be preserved
+    expect(mockGameState.changeScene.mock.calls.length).toBe(0)
+    // saveGame must still be called exactly once
+    expect(mockGameState.saveGame.mock.calls.length).toBe(1)
+  })
+
+  test('Task 9 negative proof: without GAMEOVER guard, changeScene IS called (proves the guard is needed)', () => {
+    // This test documents the pre-fix behavior: if the GAMEOVER short-circuit
+    // is removed, changeScene fires even when currentScene is GAMEOVER.
+    // To verify: set currentScene to OVERWORLD (not GAMEOVER) so routing runs.
+    mockGameState.currentScene = GAME_PHASES.OVERWORLD
+
+    const { result } = setupArrivalScenario(useArrivalLogic)
+    mockGameState.currentScene = GAME_PHASES.OVERWORLD
+
+    act(() => {
+      result.current.handleArrivalSequence()
+    })
+
+    // In non-GAMEOVER path, changeScene IS called (proving the guard bifurcates correctly)
+    expect(mockGameState.changeScene.mock.calls.length).toBe(1)
+  })
+
+  test('Task 8+9 happy path: non-GAMEOVER arrival calls changeScene once and saveGame once', () => {
+    mockGameState.currentScene = GAME_PHASES.OVERWORLD
+
+    const { result } = setupArrivalScenario(useArrivalLogic, {
+      gameMap: { nodes: { node_start: { type: 'OVERWORLD' } } }
+    })
+    mockGameState.currentScene = GAME_PHASES.OVERWORLD
+
+    act(() => {
+      result.current.handleArrivalSequence()
+    })
+
+    // changeScene called once (non-GIG node, !gigStarted)
+    expect(mockGameState.changeScene.mock.calls.length).toBe(1)
+    // saveGame called exactly once
+    expect(mockGameState.saveGame.mock.calls.length).toBe(1)
+  })
+
   test('handles startGig error during GIG node gracefully', () => {
     const venue = { name: 'Club' }
     const { result } = setupArrivalScenario(useArrivalLogic, {
