@@ -101,7 +101,15 @@ export const useArrivalLogic = ({
       return
     }
 
-    // Normal path: route then save
+    // Normal path: route then save.
+    // The save snapshot may still carry the pre-route currentScene
+    // (TRAVEL_MINIGAME) because changeScene dispatches via startTransition and
+    // has not committed yet. This is intentionally NOT snapshot-corrected:
+    // handleLoadGame hard-sets currentScene to OVERWORLD on load
+    // (systemReducer handleLoadGame), so the persisted scene value is discarded
+    // and never restored. The post-arrival fields that DO matter (day, cash,
+    // harmony, events, rivalBand) are captured correctly because this effect
+    // runs after advanceDay() and the side-effect dispatches have committed.
     if (!route.gigStarted) {
       changeScene(route.scene)
     }

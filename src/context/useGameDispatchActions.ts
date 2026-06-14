@@ -559,6 +559,11 @@ export function useGameDispatchActions({
         rawTarget !== undefined &&
         PRACTICE_RETURN_SCENES.has(rawTarget as GamePhase)
       const targetScene = isValidTarget ? rawTarget : GAME_PHASES.OVERWORLD
+      // Product decision: returning from PRACTICE must ALWAYS reopen the Band HQ,
+      // regardless of whether the source scene was OVERWORLD or MENU. Do NOT gate
+      // setPendingBandHQOpen on targetScene === OVERWORLD — that breaks the MENU
+      // return path. (Raised in review more than once; the unconditional open is
+      // intentional.)
       setPendingBandHQOpen(true)
       changeScene(targetScene as GamePhase)
     } else {
