@@ -68,17 +68,14 @@ describe('useMinorHandlers — handleSpinStory single-shot guard', () => {
     expect(props.dispatchers.updatePlayer).toHaveBeenCalledTimes(1)
   })
 
-  it('does NOT touch the shared continue guard after successful dispatch', () => {
-    const sharedRef = { current: false }
+  it('sets the spin-specific guard after successful dispatch', () => {
     const props = makeProps()
     const { result } = renderHook(() => useMinorHandlers(props))
 
     act(() => result.current.handleSpinStory())
 
-    // The shared isProcessingActionRef must remain untouched (false) so Continue
-    // is never permanently blocked by a successful spin.
-    expect(sharedRef.current).toBe(false)
-    // The spin-specific guard is held (hasSpunRef set to true)
+    // The spin-specific guard is held (hasSpunRef set to true) so a successful
+    // spin is one-shot, while the shared continue guard stays decoupled.
     expect(props.hasSpunRef.current).toBe(true)
     expect(props.setHasSpun).toHaveBeenCalledWith(true)
   })
