@@ -18,10 +18,8 @@ describe('updateSettings global storage sanitization', () => {
   it('does not persist invalid or unknown keys to global settings', () => {
     const { result } = renderHook(() => useGameActions(), { wrapper })
 
-    const originalSetItem = window.localStorage.setItem
+    const setItemSpy = vi.spyOn(window.localStorage, 'setItem')
     try {
-      window.localStorage.setItem = vi.fn(originalSetItem)
-
       act(() => {
         result.current.updateSettings({
           logLevel: 'bad',
@@ -36,7 +34,7 @@ describe('updateSettings global storage sanitization', () => {
       // Valid whitelisted keys still persist.
       expect(persisted.crtEnabled).toBe(true)
     } finally {
-      window.localStorage.setItem = originalSetItem
+      setItemSpy.mockRestore()
     }
   })
 })
