@@ -255,21 +255,16 @@ export const handleBloodBankDonate = (
     return normalizedState
   }
 
-  const currentMoney = Number.isFinite(normalizedState.player.money)
-    ? normalizedState.player.money
-    : 0
+  const currentMoney = finiteNumberOr(normalizedState.player?.money, 0)
   const nextMoney = clampPlayerMoney(currentMoney + moneyGain)
 
-  const currentHarmony = Number.isFinite(normalizedState.band.harmony)
-    ? normalizedState.band.harmony
-    : 50
+  const currentHarmony = finiteNumberOr(normalizedState.band?.harmony, 50)
   const nextHarmony = clampBandHarmony(currentHarmony - harmonyCost)
 
-  const currentControversy = Number.isFinite(
-    normalizedState.social.controversyLevel
+  const currentControversy = finiteNumberOr(
+    normalizedState.social?.controversyLevel,
+    0
   )
-    ? normalizedState.social.controversyLevel
-    : 0
   const nextControversy = clampControversyLevel(
     currentControversy + controversyGain
   )

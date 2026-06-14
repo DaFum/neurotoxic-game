@@ -17,6 +17,10 @@ export const sanitizeSettingsPayload = (
 ): Partial<GameSettings> => {
   const sanitized: Partial<GameSettings> = {}
 
+  if (rawSettings == null || typeof rawSettings !== 'object') {
+    return sanitized
+  }
+
   if (
     Object.hasOwn(rawSettings, 'crtEnabled') &&
     typeof rawSettings.crtEnabled === 'boolean'

@@ -603,7 +603,8 @@ export const createCompleteRoadieMinigameAction = (
     // Only include the key when a valid stash id was delivered, so the payload
     // stays clean (no `deliveredStashItemId: undefined`) for normal completions.
     ...(typeof deliveredStashItemId === 'string' &&
-    deliveredStashItemId.length > 0
+    deliveredStashItemId.length > 0 &&
+    !isForbiddenKey(deliveredStashItemId)
       ? { deliveredStashItemId }
       : {})
   }
