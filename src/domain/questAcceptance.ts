@@ -122,10 +122,29 @@ export const canAcceptQuest = (
       ...(merged.completionFlags ?? []),
       ...(merged.rewardFlag ? [merged.rewardFlag] : [])
     ]
-    // ⚡ BOLT OPTIMIZATION: Replaced Array.some with a procedural loop
-    for (let i = 0; i < completionFlags.length; i++) {
-      if (activeFlags.includes(completionFlags[i] as string)) {
-        return { ok: false, reason: 'flag' }
+    // ⚡ BOLT OPTIMIZATION: Dynamically use Set for O(1) lookups on large intersections
+    if (activeFlags.length * completionFlags.length > 50) {
+      const smaller =
+        activeFlags.length > completionFlags.length
+          ? completionFlags
+          : activeFlags
+      const larger =
+        activeFlags.length > completionFlags.length
+          ? activeFlags
+          : completionFlags
+      const set = new Set(smaller)
+      for (let i = 0; i < larger.length; i++) {
+        const flag = larger[i]
+        if (typeof flag === 'string' && set.has(flag)) {
+          return { ok: false, reason: 'flag' }
+        }
+      }
+    } else {
+      for (let i = 0; i < completionFlags.length; i++) {
+        const flag = completionFlags[i]
+        if (typeof flag === 'string' && activeFlags.includes(flag)) {
+          return { ok: false, reason: 'flag' }
+        }
       }
     }
   }
