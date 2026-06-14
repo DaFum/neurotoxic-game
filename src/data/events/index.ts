@@ -105,7 +105,14 @@ for (let i = 0; i < ALL_RAW_EVENTS.length; i++) {
  * the queue forever.
  */
 export const KNOWN_EVENT_IDS: ReadonlySet<string> = new Set(
-  Object.values(EVENTS_DB).flatMap(pool =>
-    pool.map(e => e.id).filter((id): id is string => typeof id === 'string')
-  )
+  Object.values(EVENTS_DB).flatMap(pool => {
+    const ids: string[] = []
+    for (let i = 0; i < pool.length; i++) {
+      const id = pool[i]?.id
+      if (typeof id === 'string') {
+        ids.push(id)
+      }
+    }
+    return ids
+  })
 )
