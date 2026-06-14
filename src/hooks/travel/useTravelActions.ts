@@ -226,9 +226,11 @@ export const useTravelActions = ({
         }
         advanceDay()
 
-        const travelEventActive = processTravelEvents(node, triggerEvent, {
-          includeGigNodes: true
-        })
+        // Use the same default gig-node policy as the production arrival path
+        // (`useArrivalLogic`): skip travel events on GIG/FESTIVAL/FINALE nodes so
+        // gig destinations surface their events in PreGig instead. Keep both
+        // paths aligned — do not reintroduce `{ includeGigNodes: true }` here.
+        const travelEventActive = processTravelEvents(node, triggerEvent)
 
         refs.moveRivalBandRef.current?.()
         refs.checkRivalEncounterRef.current?.()

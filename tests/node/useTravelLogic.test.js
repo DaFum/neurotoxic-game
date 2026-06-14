@@ -374,6 +374,24 @@ describe('useTravelLogic', () => {
     assert.equal(props.saveGame.mock.calls.length, 1)
   })
 
+  test('onTravelComplete skips travel events on a gig node (matches useArrivalLogic policy)', () => {
+    const { result, props, targetNode } = setupTravelScenario(useTravelLogic)
+    assert.equal(targetNode.type, 'GIG')
+
+    act(() => {
+      result.current.onTravelComplete(targetNode)
+    })
+
+    // Production arrival (useArrivalLogic) defers gig-node events to PreGig, so
+    // the legacy fallback must use the same default policy and not fire a
+    // travel event on a gig destination.
+    const firedTravelEvent = props.triggerEvent.mock.calls.some(
+      call =>
+        call.arguments[0] === 'transport' && call.arguments[1] === 'travel'
+    )
+    assert.equal(firedTravelEvent, false)
+  })
+
   test('onTravelComplete emits quest event with canonical arrival region', () => {
     const applyQuestEvent = mock.fn()
     const { result, targetNode } = setupTravelScenario(useTravelLogic, {
