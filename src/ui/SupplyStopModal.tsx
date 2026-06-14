@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useGameSelector, useGameActions } from '../context/GameState'
 import { ShopItem } from './bandhq/ShopItem'
 import { usePurchaseLogic } from './bandhq/hooks/usePurchaseLogic'
+import { usePurchaseLock } from './bandhq/hooks/usePurchaseLock'
 import { calculateFameLevel, finiteNumberOr } from '../utils/gameState'
 import type { CatalogItem, PurchaseItem } from '../types/components'
 import type { PlayerPatch } from '../types/purchase'
@@ -58,19 +59,26 @@ export const SupplyStopModal: React.FC<SupplyStopModalProps> = ({
     transformPlayerPatch: applyBlackMarketFamePenalty
   })
 
-  const handlePurchaseWithConsequences = (item: PurchaseItem) => {
-    const purchased = purchaseLogic.handleBuy(item)
-    if (!purchased) {
-      return
-    }
+  const { processingItemId, runWithLock } = usePurchaseLock()
 
-    addToast(
-      t('ui:shop.black_market_purchase', {
-        amount: fameLostRef.current,
-        defaultValue: 'Purchased from Black Market! Lost {{amount}} Fame.'
-      }),
-      'warning'
-    )
+  const handlePurchaseWithConsequences = (item: PurchaseItem) => {
+    if (item.id == null) return
+    // Reuse the shared purchase lock so a rapid double-click applies the
+    // black-market fame penalty (and its toast) only once per purchase.
+    void runWithLock(String(item.id), () => {
+      const purchased = purchaseLogic.handleBuy(item)
+      if (!purchased) {
+        return
+      }
+
+      addToast(
+        t('ui:shop.black_market_purchase', {
+          amount: fameLostRef.current,
+          defaultValue: 'Purchased from Black Market! Lost {{amount}} Fame.'
+        }),
+        'warning'
+      )
+    })
   }
 
   return (
@@ -117,6 +125,7 @@ export const SupplyStopModal: React.FC<SupplyStopModalProps> = ({
                 isDisabled={disabled}
                 adjustedCost={adjustedCost}
                 onBuy={handlePurchaseWithConsequences}
+                processingItemId={processingItemId ?? undefined}
               />
             )
           })}
