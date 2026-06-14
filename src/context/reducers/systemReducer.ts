@@ -5,6 +5,7 @@ import {
   rollAssetRiskEvents
 } from '../../utils/assetTicks'
 import { QuestEvents } from '../../utils/questProgress'
+import { sanitizeSettingsPayload } from '../../utils/settingsSanitizer'
 import {
   createAssetRiskTriggeredQuestEvent,
   createAssetRiskResolvedQuestEvent
@@ -1062,34 +1063,6 @@ const sanitizeToasts = (loadedToasts: unknown): ToastPayload[] => {
     if (safeToast) acc.push(safeToast)
   }
   return acc
-}
-
-const sanitizeSettingsPayload = (
-  rawSettings: RawGameSettings | Record<string, unknown>
-): Partial<GameSettings> => {
-  const sanitized: Partial<GameSettings> = {}
-
-  if (
-    Object.hasOwn(rawSettings, 'crtEnabled') &&
-    typeof rawSettings.crtEnabled === 'boolean'
-  ) {
-    sanitized.crtEnabled = rawSettings.crtEnabled
-  }
-  if (
-    Object.hasOwn(rawSettings, 'tutorialSeen') &&
-    typeof rawSettings.tutorialSeen === 'boolean'
-  ) {
-    sanitized.tutorialSeen = rawSettings.tutorialSeen
-  }
-  if (
-    Object.hasOwn(rawSettings, 'logLevel') &&
-    typeof rawSettings.logLevel === 'number' &&
-    Number.isFinite(rawSettings.logLevel)
-  ) {
-    sanitized.logLevel = Math.floor(rawSettings.logLevel)
-  }
-
-  return sanitized
 }
 
 const migratePlayerLocation = (location: unknown): string => {

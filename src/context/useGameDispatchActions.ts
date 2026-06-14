@@ -24,6 +24,7 @@ import {
 } from '../utils/storage'
 import { handleError, StateError } from '../utils/errorHandler'
 import { getUnlocks } from '../utils/unlockManager'
+import { sanitizeSettingsPayload } from '../utils/settingsSanitizer'
 import { usePersistence } from './usePersistence'
 import { useEventSystem } from './useEventSystem'
 import { useMinigameDispatchActions } from './useMinigameDispatchActions'
@@ -588,8 +589,15 @@ export function useGameDispatchActions({
         }
       }
 
+      // Sanitize before writing to global storage so malformed or unknown keys
+      // (e.g. a non-numeric logLevel) never leak past the reducer's validation
+      // into persisted global settings. Shared sanitizer keeps storage, reducer,
+      // and load in sync.
       safeStorageOperation('saveGlobalSettings', () => {
-        writeGlobalSettings({ ...readGlobalSettings(), ...updates })
+        writeGlobalSettings({
+          ...readGlobalSettings(),
+          ...sanitizeSettingsPayload(updates)
+        })
       })
     },
     [dispatch]
