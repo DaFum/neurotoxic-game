@@ -71,11 +71,11 @@ export const useTravelLogic = (params: TravelLogicParams) => {
     (targetNodeId: string) => {
       return isConnectedUtil(
         params.gameMap,
-        params.player.currentNodeId,
+        params.player?.currentNodeId ?? '',
         targetNodeId
       )
     },
-    [params.gameMap, params.player.currentNodeId]
+    [params.gameMap, params.player?.currentNodeId]
   )
 
   // ⚡ Bolt Optimization: Memoize getNodeVisibility to stabilize the prop reference
