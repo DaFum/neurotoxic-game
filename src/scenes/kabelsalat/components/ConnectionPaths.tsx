@@ -1,3 +1,4 @@
+import type { JSX } from 'react'
 import { ConnectionPath } from './ConnectionPath.tsx'
 import type { ConnectionPathProps } from './ConnectionPath.tsx'
 import type { SocketId } from '../../../types/kabelsalat'
@@ -19,21 +20,24 @@ export const ConnectionPaths = ({
   isPowerConnected,
   socketOrder
 }: ConnectionPathsProps) => {
-  return (
-    <>
-      {Object.entries(connections).map(([sockId, cabId]) => {
-        if (!cabId) return null
-        const s = sockId as SocketId
-        return (
-          <ConnectionPath
-            key={s}
-            sockId={s}
-            cabId={cabId as CableId}
-            isPowerConnected={isPowerConnected}
-            socketOrder={socketOrder}
-          />
-        )
-      })}
-    </>
-  )
+  const paths: JSX.Element[] = []
+  for (const sockId in connections) {
+    if (!Object.hasOwn(connections, sockId)) continue
+
+    const s = sockId as SocketId
+    const cabId = connections[s]
+    if (!cabId) continue
+
+    paths.push(
+      <ConnectionPath
+        key={s}
+        sockId={s}
+        cabId={cabId}
+        isPowerConnected={isPowerConnected}
+        socketOrder={socketOrder}
+      />
+    )
+  }
+
+  return <>{paths}</>
 }
