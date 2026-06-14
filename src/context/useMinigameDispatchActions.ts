@@ -71,10 +71,17 @@ export function useMinigameDispatchActions(
       equipmentDamage: Parameters<typeof createCompleteRoadieMinigameAction>[0],
       contrabandDelivered?: Parameters<
         typeof createCompleteRoadieMinigameAction
-      >[1]
+      >[1],
+      deliveredStashItemId?: Parameters<
+        typeof createCompleteRoadieMinigameAction
+      >[2]
     ) =>
       dispatch(
-        createCompleteRoadieMinigameAction(equipmentDamage, contrabandDelivered)
+        createCompleteRoadieMinigameAction(
+          equipmentDamage,
+          contrabandDelivered,
+          deliveredStashItemId
+        )
       ),
     [dispatch]
   )

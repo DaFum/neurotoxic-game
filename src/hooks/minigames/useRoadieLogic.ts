@@ -86,10 +86,10 @@ function processTraffic(
   return crashed
 }
 
-function getInitialGameState(hasContraband: boolean): RoadieLogicState {
+function getInitialGameState(stashItemId: string | null): RoadieLogicState {
   const itemsToDeliver = [
-    hasContraband
-      ? { id: 'contraband', type: 'CONTRABAND', weight: 1.5 }
+    stashItemId !== null
+      ? { id: stashItemId, type: 'CONTRABAND', weight: 1.5 }
       : null,
     { id: 'amp', type: 'AMP', weight: 2 },
     { id: 'drums', type: 'DRUMS', weight: 1.5 },
@@ -192,15 +192,23 @@ export const useRoadieLogic = () => {
   const band = useGameSelector(state => state.band)
   const { completeRoadieMinigame, changeScene } = useGameActions()
 
-  // Conditionally inject contraband to escort if present in stash
-  const hasContraband = !!(band?.stash && !isEmptyObject(band.stash))
+  // Pick the first real stash item to escort, if any; capture its id for
+  // the completion callback so the reducer can consume the right item.
+  // Stored in a ref so callbacks always reference the id loaded at game init.
+  const stashItemIdRef = useRef<string | null>(null)
 
   // Mutable Game State
   const gameStateRef = useRef<RoadieLogicState>(
     null as unknown as RoadieLogicState
   )
   if (!gameStateRef.current) {
-    gameStateRef.current = getInitialGameState(hasContraband)
+    const stashItemId: string | null = (() => {
+      if (!band?.stash || isEmptyObject(band.stash)) return null
+      const keys = Object.keys(band.stash)
+      return keys[0] ?? null
+    })()
+    stashItemIdRef.current = stashItemId
+    gameStateRef.current = getInitialGameState(stashItemId)
   }
 
   // UI State
@@ -237,7 +245,9 @@ export const useRoadieLogic = () => {
       game.lastMoveTime = now
 
       handlePickup(game)
-      handleDelivery(game, completeRoadieMinigame)
+      handleDelivery(game, (dmg, cnt) =>
+        completeRoadieMinigame(dmg, cnt, stashItemIdRef.current ?? undefined)
+      )
 
       // Update UI immediately for responsiveness
       setUiState(prev => ({
@@ -268,14 +278,22 @@ export const useRoadieLogic = () => {
             currentDamage: 100,
             isGameOver: true
           }))
-          completeRoadieMinigame(100, game.contrabandCount ?? 0)
+          completeRoadieMinigame(
+            100,
+            game.contrabandCount ?? 0,
+            stashItemIdRef.current ?? undefined
+          )
           return
         }
       }
 
       spawnTraffic(game, deltaMS)
       const crashed = processTraffic(game, deltaMS, (damage: number) =>
-        completeRoadieMinigame(damage, game.contrabandCount ?? 0)
+        completeRoadieMinigame(
+          damage,
+          game.contrabandCount ?? 0,
+          stashItemIdRef.current ?? undefined
+        )
       )
 
       if (crashed || (game.carrying && game.carrying.type === 'CONTRABAND')) {

@@ -148,7 +148,10 @@ export type GameDispatchActions = {
     equipmentDamage: Parameters<typeof createCompleteRoadieMinigameAction>[0],
     contrabandDelivered?: Parameters<
       typeof createCompleteRoadieMinigameAction
-    >[1]
+    >[1],
+    deliveredStashItemId?: Parameters<
+      typeof createCompleteRoadieMinigameAction
+    >[2]
   ) => void
   startKabelsalatMinigame: (
     payload: Parameters<typeof createStartKabelsalatMinigameAction>[0]

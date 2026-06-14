@@ -343,6 +343,148 @@ describe('minigameReducer', () => {
 
       assert.strictEqual(nextState.gigModifiers.damaged_gear, undefined)
     })
+
+    // --- Stash consumption tests ---
+
+    it('pays contraband bonus and consumes stash on first delivery, then pays nothing on second', () => {
+      // Band has exactly one stackable stash item with 1 stack (c_void_energy)
+      const stashWithOneItem = Object.assign(Object.create(null), {
+        c_void_energy: {
+          id: 'c_void_energy',
+          type: 'consumable',
+          stacks: 1,
+          instanceId: 'test-inst-1'
+        }
+      })
+      const stateWithStash = withActiveMinigame(
+        { ...baseState, band: { ...baseState.band, stash: stashWithOneItem } },
+        MINIGAME_TYPES.ROADIE
+      )
+
+      // First completion: deliver 1 contraband with a real stash item id
+      const payload1 = {
+        equipmentDamage: 0,
+        contrabandDelivered: 1,
+        deliveredStashItemId: 'c_void_energy'
+      }
+      const afterFirst = handleCompleteRoadieMinigame(stateWithStash, payload1)
+
+      // Should have received 50 bonus (contrabandBonus = 1 * 50)
+      assert.strictEqual(afterFirst.player.money, 1050)
+      // Stash item should be consumed (removed, since only 1 stack)
+      assert.ok(
+        !afterFirst.band.stash ||
+          !Object.hasOwn(afterFirst.band.stash, 'c_void_energy'),
+        'stash item should be consumed after delivery'
+      )
+      // currentScene must be unchanged
+      assert.strictEqual(afterFirst.currentScene, stateWithStash.currentScene)
+
+      // Second completion (same payload, but stash is now empty):
+      // Re-activate the minigame on the resulting state
+      const stateForSecond = withActiveMinigame(
+        afterFirst,
+        MINIGAME_TYPES.ROADIE
+      )
+      const afterSecond = handleCompleteRoadieMinigame(stateForSecond, payload1)
+
+      // No contraband bonus: stash empty, so deliveredStashItemId points to nothing
+      assert.strictEqual(
+        afterSecond.player.money,
+        afterFirst.player.money,
+        'no contraband bonus on second run when stash is empty'
+      )
+      // No item.delivered quest event (quest events do not pay money, but we can
+      // verify money did not increase by 50 again)
+      assert.strictEqual(afterSecond.currentScene, stateForSecond.currentScene)
+    })
+
+    it('pays contraband bonus and decrements stacks (not removes) when stash item has multiple stacks', () => {
+      const stashWithTwoStacks = Object.assign(Object.create(null), {
+        c_void_energy: {
+          id: 'c_void_energy',
+          type: 'consumable',
+          stacks: 2,
+          instanceId: 'test-inst-2'
+        }
+      })
+      const stateWithStash = withActiveMinigame(
+        {
+          ...baseState,
+          band: { ...baseState.band, stash: stashWithTwoStacks }
+        },
+        MINIGAME_TYPES.ROADIE
+      )
+      const payload = {
+        equipmentDamage: 0,
+        contrabandDelivered: 1,
+        deliveredStashItemId: 'c_void_energy'
+      }
+      const nextState = handleCompleteRoadieMinigame(stateWithStash, payload)
+
+      // Bonus applied
+      assert.strictEqual(nextState.player.money, 1050)
+      // Stacks decremented from 2 to 1, item still present
+      assert.ok(
+        nextState.band.stash &&
+          Object.hasOwn(nextState.band.stash, 'c_void_energy'),
+        'stash item should still exist after decrement'
+      )
+      const entry = nextState.band.stash['c_void_energy']
+      assert.strictEqual(
+        entry.stacks,
+        1,
+        'stacks should be decremented from 2 to 1'
+      )
+    })
+
+    it('skips contraband bonus when deliveredStashItemId is absent (no real stash item loaded)', () => {
+      const stateNoStash = withActiveMinigame(baseState, MINIGAME_TYPES.ROADIE)
+      // contrabandDelivered > 0 but no deliveredStashItemId (old synthetic behavior)
+      const payload = { equipmentDamage: 0, contrabandDelivered: 1 }
+      const nextState = handleCompleteRoadieMinigame(stateNoStash, payload)
+
+      // No bonus when no real stash item was delivered
+      assert.strictEqual(
+        nextState.player.money,
+        1000,
+        'no contraband bonus without a real deliveredStashItemId'
+      )
+    })
+
+    it('preserves currentScene on both delivery runs', () => {
+      const stashWithOneItem = Object.assign(Object.create(null), {
+        c_void_energy: {
+          id: 'c_void_energy',
+          type: 'consumable',
+          stacks: 1,
+          instanceId: 'test-inst-3'
+        }
+      })
+      const stateWithStash = withActiveMinigame(
+        {
+          ...baseState,
+          currentScene: GAME_PHASES.PRE_GIG_MINIGAME,
+          band: { ...baseState.band, stash: stashWithOneItem }
+        },
+        MINIGAME_TYPES.ROADIE
+      )
+
+      const payload = {
+        equipmentDamage: 0,
+        contrabandDelivered: 1,
+        deliveredStashItemId: 'c_void_energy'
+      }
+      const afterFirst = handleCompleteRoadieMinigame(stateWithStash, payload)
+      assert.strictEqual(afterFirst.currentScene, GAME_PHASES.PRE_GIG_MINIGAME)
+
+      const stateForSecond = withActiveMinigame(
+        afterFirst,
+        MINIGAME_TYPES.ROADIE
+      )
+      const afterSecond = handleCompleteRoadieMinigame(stateForSecond, payload)
+      assert.strictEqual(afterSecond.currentScene, GAME_PHASES.PRE_GIG_MINIGAME)
+    })
   })
 
   describe('replay guards (idempotency)', () => {

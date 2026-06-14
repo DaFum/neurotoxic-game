@@ -7,7 +7,9 @@ import {
   clampVanFuel,
   clampMemberStamina,
   clampUnitRandom,
-  finiteNumberOr
+  finiteNumberOr,
+  isForbiddenKey,
+  isFiniteNumber
 } from '../../utils/gameState'
 import {
   calculateTravelExpenses,
@@ -572,12 +574,16 @@ export const handleCompleteKabelsalatMinigame = (
  * Returns unchanged state when no matching minigame is active (replay guard).
  *
  * @param state - Current game state with roadie results pending.
- * @param payload - Equipment damage and optional delivered contraband count.
+ * @param payload - Equipment damage, optional delivered contraband count, and the real stash item id that was escorted.
  * @returns Updated state with repair costs, contraband bonus, modifiers, and quest progress applied.
  */
 export const handleCompleteRoadieMinigame = (
   state: GameState,
-  payload: { equipmentDamage: number; contrabandDelivered?: number }
+  payload: {
+    equipmentDamage: number
+    contrabandDelivered?: number
+    deliveredStashItemId?: string
+  }
 ): GameState => {
   if (
     state.minigame?.active !== true ||
@@ -585,14 +591,33 @@ export const handleCompleteRoadieMinigame = (
   ) {
     return state
   }
-  const { equipmentDamage, contrabandDelivered } = payload
+  const { equipmentDamage, contrabandDelivered, deliveredStashItemId } = payload
   logger.info('GameState', 'Roadie Minigame Complete', payload)
+
+  // Contraband bonus only applies when a real stash item was loaded and delivered.
+  // Consume one stack of that item BEFORE applying the bonus so the same item
+  // cannot be farmed across multiple completions.
+  const safeItemId =
+    typeof deliveredStashItemId === 'string' &&
+    deliveredStashItemId.length > 0 &&
+    !isForbiddenKey(deliveredStashItemId)
+      ? deliveredStashItemId
+      : null
+
+  const stash = state.band.stash
+  const stashItemPresent =
+    safeItemId !== null && stash != null && Object.hasOwn(stash, safeItemId)
+
+  // Effective contraband count: only credit when a real stash item was present.
+  const effectiveContrabandDelivered = stashItemPresent
+    ? finiteNumberOr(contrabandDelivered, 0)
+    : 0
 
   // Apply Results
   const { stress, repairCost, contrabandBonus } = calculateRoadieMinigameResult(
     equipmentDamage,
     state.band,
-    contrabandDelivered
+    effectiveContrabandDelivered
   )
 
   const nextHarmony = clampBandHarmony(
@@ -604,9 +629,21 @@ export const handleCompleteRoadieMinigame = (
       finiteNumberOr(contrabandBonus, 0)
   )
 
-  const nextBand = {
-    ...state.band,
-    harmony: nextHarmony
+  // Consume the stash item (decrement stacks or remove) when present.
+  let nextBand = { ...state.band, harmony: nextHarmony }
+  if (stashItemPresent && safeItemId !== null && stash != null) {
+    const entry = stash[safeItemId] as Record<string, unknown> | undefined
+    const currentStacks =
+      entry && isFiniteNumber(entry.stacks)
+        ? Math.max(0, entry.stacks as number)
+        : 1
+    const newStash = Object.assign(Object.create(null), stash)
+    if (currentStacks > 1 && entry && typeof entry.stacks === 'number') {
+      newStash[safeItemId] = { ...entry, stacks: currentStacks - 1 }
+    } else {
+      delete newStash[safeItemId]
+    }
+    nextBand = { ...nextBand, stash: newStash }
   }
 
   const nextPlayer = {
@@ -641,13 +678,12 @@ export const handleCompleteRoadieMinigame = (
       score: Math.max(0, 100 - equipmentDamage)
     })
   )
-  const deliveredContraband = finiteNumberOr(contrabandDelivered, 0)
-  if (deliveredContraband > 0) {
+  if (effectiveContrabandDelivered > 0) {
     nextState = QuestEvents.emit(
       nextState,
       createItemDeliveredQuestEvent({
-        itemId: 'contraband',
-        amount: deliveredContraband
+        itemId: safeItemId ?? 'contraband',
+        amount: effectiveContrabandDelivered
       })
     )
   }

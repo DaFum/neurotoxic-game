@@ -229,7 +229,11 @@ export type GameAction =
   | Action<ActionTypes['START_ROADIE_MINIGAME'], { gigId: string }>
   | Action<
       ActionTypes['COMPLETE_ROADIE_MINIGAME'],
-      { equipmentDamage: number; contrabandDelivered?: number }
+      {
+        equipmentDamage: number
+        contrabandDelivered?: number
+        deliveredStashItemId?: string
+      }
     >
   | Action<ActionTypes['START_KABELSALAT_MINIGAME'], { gigId: string }>
   | Action<ActionTypes['COMPLETE_KABELSALAT_MINIGAME'], { results: unknown }>
