@@ -64,11 +64,14 @@ export const useArrivalLogic = ({
   const isHandlingRef = useRef<string | null | undefined>(undefined)
 
   // Pending route set by handleArrivalSequence; consumed by the post-commit effect.
+  // The ref holds the payload; the nonce is bumped to trigger the effect after the
+  // arrival dispatches commit. The effect guards on the ref (not a boolean state)
+  // so it never has to call a setState synchronously inside the effect.
   const pendingRouteRef = useRef<{
     scene: GamePhase
     gigStarted: boolean
   } | null>(null)
-  const [pendingRoute, setPendingRoute] = useState(false)
+  const [routeNonce, setRouteNonce] = useState(0)
 
   // Reset the guard whenever the player moves to a new node so a stale `true` value from a
   // previous arrival (or a failed one) never blocks the next legitimate arrival.
@@ -79,16 +82,18 @@ export const useArrivalLogic = ({
   }, [player.currentNodeId])
 
   // Post-commit effect: routing + single save after all dispatches have committed.
-  // Runs after pendingRoute is set by handleArrivalSequence.
+  // Triggered by routeNonce (bumped in handleArrivalSequence). It consumes the
+  // pending route from the ref exactly once — guarding on the ref means no setState
+  // is called inside the effect. When changeScene fires it re-runs via currentScene,
+  // but the ref is already null so it is a no-op.
   // GAMEOVER short-circuit: if advanceDay() triggered bankruptcy, the reducer sets
   // currentScene=GAMEOVER. We detect this here and skip routing to preserve GAMEOVER,
   // while still saving once.
   useEffect(() => {
-    if (!pendingRoute) return
     const route = pendingRouteRef.current
-    // Clear first to avoid re-firing on subsequent re-renders
+    if (!route) return
+    // Consume the pending route exactly once
     pendingRouteRef.current = null
-    setPendingRoute(false)
 
     if (currentScene === GAME_PHASES.GAMEOVER) {
       // GAMEOVER: save the post-bankruptcy state and do NOT overwrite the scene
@@ -97,11 +102,11 @@ export const useArrivalLogic = ({
     }
 
     // Normal path: route then save
-    if (route && !route.gigStarted) {
+    if (!route.gigStarted) {
       changeScene(route.scene)
     }
     saveGame(false)
-  }, [pendingRoute, currentScene, saveGame, changeScene])
+  }, [routeNonce, currentScene, saveGame, changeScene])
 
   const handleArrivalSequence = useCallback(() => {
     const nodeId = player.currentNodeId
@@ -167,7 +172,7 @@ export const useArrivalLogic = ({
         scene: arrivalResult.scene,
         gigStarted: arrivalResult.gigStarted
       }
-      setPendingRoute(true)
+      setRouteNonce(n => n + 1)
     } catch (e) {
       // Reset guard so the user can retry the same node after an error
       isHandlingRef.current = undefined
