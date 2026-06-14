@@ -155,22 +155,11 @@ describe('AssetsScene', () => {
     ).toBeInTheDocument()
   })
 
-  it('renders and dismisses the pending foreclosure notice', () => {
+  // Risk-event and foreclosure modals are owned globally by AssetNotifications
+  // (see tests/ui/AssetNotifications.test.tsx), not by AssetsScene, so they can
+  // surface from any scene. AssetsScene must not render them itself.
+  it('does not render asset notification modals itself', () => {
     mockState.pendingForeclosureNotices = ['tourbus_chassis']
-
-    render(<AssetsScene />)
-
-    expect(screen.getByRole('dialog', { name: 'Foreclosure' })).toBeVisible()
-    expect(
-      screen.getByText('Foreclosure notice issued. Tourbus was removed.')
-    ).toBeInTheDocument()
-
-    fireEvent.click(screen.getByRole('button', { name: 'Close' }))
-
-    expect(mockDismissForeclosureNotice).toHaveBeenCalledWith('tourbus_chassis')
-  })
-
-  it('renders and clears the pending risk event modal', async () => {
     mockState.pendingRiskEvent = {
       assetId: 'asset_1',
       eventType: 'fire',
@@ -179,10 +168,6 @@ describe('AssetsScene', () => {
 
     render(<AssetsScene />)
 
-    expect(await screen.findByRole('dialog', { name: 'Fire' })).toBeVisible()
-
-    fireEvent.click(screen.getByRole('button', { name: 'Close' }))
-
-    expect(mockSetPendingRiskEvent).toHaveBeenCalledWith(null)
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 })

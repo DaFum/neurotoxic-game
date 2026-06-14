@@ -16,7 +16,9 @@ export const useForeclosureModal = (): {
     state => state.pendingForeclosureNotices
   )
   const { dismissForeclosureNotice } = useGameActions()
-  const currentKind = pendingForeclosureNotices[0] ?? null
+  // Defensive access: legacy/hand-edited saves (and partial test states) may
+  // lack `pendingForeclosureNotices` even though the type marks it required.
+  const currentKind = pendingForeclosureNotices?.[0] ?? null
 
   const dismiss = useCallback(() => {
     if (currentKind !== null) {
@@ -25,7 +27,7 @@ export const useForeclosureModal = (): {
   }, [currentKind, dismissForeclosureNotice])
 
   return {
-    isOpen: pendingForeclosureNotices.length > 0,
+    isOpen: (pendingForeclosureNotices?.length ?? 0) > 0,
     currentKind,
     dismiss
   }
