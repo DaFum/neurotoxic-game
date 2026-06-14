@@ -63,6 +63,41 @@ type UsePersistenceParams = {
   tRef: MutableRefObject<TFunction>
 }
 
+const EXPECTED_TYPES: Record<typeof LOADABLE_SAVE_KEYS[number], 'string' | 'number' | 'boolean' | 'array' | 'object' | 'object-or-array' | 'nullable-object' | 'number-or-string'> = {
+  version: 'number-or-string',
+  currentScene: 'string',
+  player: 'object',
+  band: 'object',
+  social: 'object',
+  gameMap: 'nullable-object',
+  currentGig: 'nullable-object',
+  lastGigStats: 'nullable-object',
+  activeEvent: 'nullable-object',
+  activeStoryFlags: 'array',
+  eventCooldowns: 'array',
+  pendingEvents: 'array',
+  venueBlacklist: 'array',
+  pendingForeclosureNotices: 'array',
+  pendingRiskEvent: 'nullable-object',
+  activeQuests: 'array',
+  questCooldowns: 'array',
+  completedQuestIds: 'array',
+  completedQuestScopes: 'array',
+  reputationByRegion: 'object',
+  reputationByVenue: 'object',
+  settings: 'object',
+  npcs: 'object',
+  gigModifiers: 'object',
+  setlist: 'array',
+  minigame: 'nullable-object',
+  completedMilestones: 'array',
+  assets: 'array',
+  liabilities: 'object-or-array',
+  crowdfundCampaigns: 'array',
+  rngSeed: 'number',
+  rivalBand: 'nullable-object'
+}
+
 /**
  * Builds a reducer load payload from a parsed save by whitelisting persisted fields.
  *
@@ -77,7 +112,29 @@ export const createRawLoadPayload = (
   const payload: Record<string, unknown> = { unlocks }
   for (const key of LOADABLE_SAVE_KEYS) {
     if (Object.hasOwn(parsedObj, key)) {
-      payload[key] = parsedObj[key]
+      const value = parsedObj[key]
+      const expectedType = EXPECTED_TYPES[key]
+      let isValid: boolean
+
+      if (expectedType === 'array') {
+        isValid = Array.isArray(value)
+      } else if (expectedType === 'object') {
+        isValid = typeof value === 'object' && value !== null && !Array.isArray(value)
+      } else if (expectedType === 'nullable-object') {
+        isValid = value === null || (typeof value === 'object' && !Array.isArray(value))
+      } else if (expectedType === 'object-or-array') {
+        isValid = typeof value === 'object' && value !== null
+      } else if (expectedType === 'number-or-string') {
+        isValid = typeof value === 'number' || typeof value === 'string'
+      } else {
+        isValid = typeof value === expectedType
+      }
+
+      if (isValid) {
+        payload[key] = value
+      } else {
+        throw new StateError(`Invalid type for loadable save key: ${key}`)
+      }
     }
   }
   return payload
