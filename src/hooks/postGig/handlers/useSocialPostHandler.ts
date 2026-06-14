@@ -224,28 +224,35 @@ export function useSocialPostHandler({
         return
       }
 
-      applySocialPostResult({
-        option,
-        updates,
-        player,
-        band,
-        social,
-        t,
-        dispatchers: {
-          updateBand,
-          updatePlayer,
-          updateSocial,
-          unlockTrait,
-          applyQuestEvent,
-          addToast,
-          setPostResult,
-          setBrandOffers,
-          setPhase
-        }
-      })
-      // Guard intentionally NOT reset here: the phase transition owns the
-      // lifecycle. Resetting before it runs would re-open the settlement
-      // window for rapid double-clicks.
+      try {
+        applySocialPostResult({
+          option,
+          updates,
+          player,
+          band,
+          social,
+          t,
+          dispatchers: {
+            updateBand,
+            updatePlayer,
+            updateSocial,
+            unlockTrait,
+            applyQuestEvent,
+            addToast,
+            setPostResult,
+            setBrandOffers,
+            setPhase
+          }
+        })
+        // Guard intentionally NOT reset here: the phase transition owns the
+        // lifecycle. Resetting before it runs would re-open the settlement
+        // window for rapid double-clicks.
+      } catch (e) {
+        logger.error('PostGig', 'Failed to apply selected post result', e)
+        addToast(t('ui:postGig.postResolutionFailed'), 'error')
+        isProcessingActionRef.current = false
+        setIsProcessingAction(false)
+      }
     },
     [
       lastGigStats,
