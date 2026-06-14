@@ -1,3 +1,4 @@
+import type { JSX } from 'react'
 import { ConnectionPath } from './ConnectionPath.tsx'
 import type { ConnectionPathProps } from './ConnectionPath.tsx'
 import type { SocketId } from '../../../types/kabelsalat'
@@ -19,19 +20,19 @@ export const ConnectionPaths = ({
   isPowerConnected,
   socketOrder
 }: ConnectionPathsProps) => {
-  const paths = []
+  const paths: JSX.Element[] = []
   for (const sockId in connections) {
     if (!Object.hasOwn(connections, sockId)) continue
 
-    // Memory rule: safe typing for indexing
-    const cabId = connections[sockId as keyof typeof connections]
+    const s = sockId as SocketId
+    const cabId = connections[s]
     if (!cabId) continue
 
     paths.push(
       <ConnectionPath
-        key={sockId}
-        sockId={sockId as SocketId}
-        cabId={cabId as CableId}
+        key={s}
+        sockId={s}
+        cabId={cabId}
         isPowerConnected={isPowerConnected}
         socketOrder={socketOrder}
       />
