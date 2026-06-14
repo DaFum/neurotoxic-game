@@ -63,6 +63,41 @@ type UsePersistenceParams = {
   tRef: MutableRefObject<TFunction>
 }
 
+const EXPECTED_TYPES: Record<typeof LOADABLE_SAVE_KEYS[number], 'string' | 'number' | 'boolean' | 'array' | 'object'> = {
+  version: 'number',
+  currentScene: 'string',
+  player: 'object',
+  band: 'object',
+  social: 'object',
+  gameMap: 'object',
+  currentGig: 'object',
+  lastGigStats: 'object',
+  activeEvent: 'object',
+  activeStoryFlags: 'array',
+  eventCooldowns: 'array',
+  pendingEvents: 'array',
+  venueBlacklist: 'array',
+  pendingForeclosureNotices: 'array',
+  pendingRiskEvent: 'object',
+  activeQuests: 'array',
+  questCooldowns: 'array',
+  completedQuestIds: 'array',
+  completedQuestScopes: 'array',
+  reputationByRegion: 'object',
+  reputationByVenue: 'object',
+  settings: 'object',
+  npcs: 'object',
+  gigModifiers: 'object',
+  setlist: 'array',
+  minigame: 'object',
+  completedMilestones: 'array',
+  assets: 'array',
+  liabilities: 'object',
+  crowdfundCampaigns: 'array',
+  rngSeed: 'number',
+  rivalBand: 'object'
+}
+
 /**
  * Builds a reducer load payload from a parsed save by whitelisting persisted fields.
  *
@@ -77,7 +112,26 @@ export const createRawLoadPayload = (
   const payload: Record<string, unknown> = { unlocks }
   for (const key of LOADABLE_SAVE_KEYS) {
     if (Object.hasOwn(parsedObj, key)) {
-      payload[key] = parsedObj[key]
+      const value = parsedObj[key]
+      const expectedType = EXPECTED_TYPES[key]
+      let isValid: boolean
+
+      if (expectedType === 'array') {
+        isValid = Array.isArray(value)
+      } else if (expectedType === 'object') {
+        isValid = value === null || (typeof value === 'object' && !Array.isArray(value))
+      } else {
+        isValid = typeof value === expectedType
+      }
+
+      if (isValid) {
+        payload[key] = value
+      } else {
+        logger.warn('System', `Invalid type for loadable save key: ${key}`, {
+          expected: expectedType,
+          received: value === null ? 'null' : Array.isArray(value) ? 'array' : typeof value
+        })
+      }
     }
   }
   return payload
