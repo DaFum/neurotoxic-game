@@ -61,7 +61,7 @@ export const useContrabandStash = () => {
       // Dispatch does not update refs synchronously, so predict acceptance from
       // the live pre-dispatch stash to keep success feedback honest. Object.hasOwn
       // guards prototype keys; the entry checks mirror the reducer's state gates.
-      const stash = band.stash ?? {}
+      const stash = band?.stash ?? {}
       const entry = Object.hasOwn(stash, item.id)
         ? (stash[item.id] as Record<string, unknown> | undefined)
         : undefined
@@ -84,7 +84,7 @@ export const useContrabandStash = () => {
       const message = getStashItemUseMessage(item, t)
       addToast(t(message.key, message.options), 'success')
     },
-    [band.stash, dispatchUseContraband, selectedMember, addToast, t]
+    [band?.stash, dispatchUseContraband, selectedMember, addToast, t]
   )
 
   return {

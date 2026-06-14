@@ -606,7 +606,7 @@ export const handleCompleteRoadieMinigame = (
       ? deliveredStashItemId
       : null
 
-  const stash = state.band.stash
+  const stash = state?.band?.stash
   const stashEntry =
     safeItemId !== null && stash != null && Object.hasOwn(stash, safeItemId)
       ? (stash[safeItemId] as Record<string, unknown> | undefined)
@@ -644,7 +644,7 @@ export const handleCompleteRoadieMinigame = (
 
   // Consume the stash item (decrement stacks or remove) only when a delivery was
   // actually credited; otherwise a zero-count payload would burn inventory for no bonus.
-  let nextBand = { ...state.band, harmony: nextHarmony }
+  let nextBand = { ...state?.band, harmony: nextHarmony }
   if (
     effectiveContrabandDelivered > 0 &&
     safeItemId !== null &&
