@@ -1650,7 +1650,7 @@ test('systemReducer - rivalBand persistence', async t => {
 
     const nextState = handleLoadGame(initialState, loadedState)
 
-    assert.ok(Number.isFinite(nextState.rivalBand?.powerLevel))
+    assert.equal(nextState.rivalBand?.powerLevel, 0)
   })
 
   await t.test(
