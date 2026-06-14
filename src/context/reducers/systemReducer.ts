@@ -1487,7 +1487,7 @@ const sanitizeRivalBand = (value: unknown): GameState['rivalBand'] => {
   if (!isLooseRecord(value)) return null
   const raw = value as Record<string, unknown>
   if (typeof raw.id !== 'string' || raw.id.length === 0) return null
-  if (typeof raw.name !== 'string') return null
+  if (typeof raw.name !== 'string' || raw.name.length === 0) return null
   if (isForbiddenKey(raw.id)) return null
 
   const alignment = isBrandAlignment(raw.alignment) ? raw.alignment : 'NEUTRAL'
