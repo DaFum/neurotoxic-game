@@ -126,7 +126,12 @@ class RoadieStageController extends BaseStageController<RoadieStageState> {
         carC: online ? getGenImageUrl(IMG_PROMPTS.MINIGAME_CAR_C) : null,
         amp: online ? getGenImageUrl(IMG_PROMPTS.MINIGAME_ITEM_AMP) : null,
         drums: online ? getGenImageUrl(IMG_PROMPTS.MINIGAME_ITEM_DRUMS) : null,
-        guitar: online ? getGenImageUrl(IMG_PROMPTS.MINIGAME_ITEM_GUITAR) : null
+        guitar: online
+          ? getGenImageUrl(IMG_PROMPTS.MINIGAME_ITEM_GUITAR)
+          : null,
+        contraband: online
+          ? getGenImageUrl(IMG_PROMPTS.MINIGAME_ITEM_CONTRABAND)
+          : null
       }
 
       const loaded = (await loadTextures(urls, undefined)) as Record<
@@ -145,7 +150,8 @@ class RoadieStageController extends BaseStageController<RoadieStageState> {
       this.textures.items = {
         AMP: loaded.amp ?? undefined,
         DRUMS: loaded.drums ?? undefined,
-        GUITAR: loaded.guitar ?? undefined
+        GUITAR: loaded.guitar ?? undefined,
+        CONTRABAND: loaded.contraband ?? undefined
       }
     } catch (e) {
       handleError(

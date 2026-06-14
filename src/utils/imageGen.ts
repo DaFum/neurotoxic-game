@@ -240,6 +240,8 @@ export const IMG_PROMPTS = {
     'pixel art drum kit isolated on solid black background no shadow flat icon small',
   MINIGAME_ITEM_GUITAR:
     'pixel art guitar hard case isolated on solid black background no shadow flat icon small',
+  MINIGAME_ITEM_CONTRABAND:
+    'pixel art toxic green glowing contraband crate biohazard symbol isolated on solid black background no shadow flat icon small',
   MINIGAME_KABELSALAT_BG:
     'pixel art tangled audio cables on a stage floor, dark gritty aesthetic, moody lighting',
 
