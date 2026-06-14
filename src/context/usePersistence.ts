@@ -63,22 +63,22 @@ type UsePersistenceParams = {
   tRef: MutableRefObject<TFunction>
 }
 
-const EXPECTED_TYPES: Record<typeof LOADABLE_SAVE_KEYS[number], 'string' | 'number' | 'boolean' | 'array' | 'object'> = {
-  version: 'number',
+const EXPECTED_TYPES: Record<typeof LOADABLE_SAVE_KEYS[number], 'string' | 'number' | 'boolean' | 'array' | 'object' | 'object-or-array' | 'nullable-object' | 'number-or-string'> = {
+  version: 'number-or-string',
   currentScene: 'string',
   player: 'object',
   band: 'object',
   social: 'object',
-  gameMap: 'object',
-  currentGig: 'object',
-  lastGigStats: 'object',
-  activeEvent: 'object',
+  gameMap: 'nullable-object',
+  currentGig: 'nullable-object',
+  lastGigStats: 'nullable-object',
+  activeEvent: 'nullable-object',
   activeStoryFlags: 'array',
   eventCooldowns: 'array',
   pendingEvents: 'array',
   venueBlacklist: 'array',
   pendingForeclosureNotices: 'array',
-  pendingRiskEvent: 'object',
+  pendingRiskEvent: 'nullable-object',
   activeQuests: 'array',
   questCooldowns: 'array',
   completedQuestIds: 'array',
@@ -89,13 +89,13 @@ const EXPECTED_TYPES: Record<typeof LOADABLE_SAVE_KEYS[number], 'string' | 'numb
   npcs: 'object',
   gigModifiers: 'object',
   setlist: 'array',
-  minigame: 'object',
+  minigame: 'nullable-object',
   completedMilestones: 'array',
   assets: 'array',
-  liabilities: 'object',
+  liabilities: 'object-or-array',
   crowdfundCampaigns: 'array',
   rngSeed: 'number',
-  rivalBand: 'object'
+  rivalBand: 'nullable-object'
 }
 
 /**
@@ -119,7 +119,13 @@ export const createRawLoadPayload = (
       if (expectedType === 'array') {
         isValid = Array.isArray(value)
       } else if (expectedType === 'object') {
+        isValid = typeof value === 'object' && value !== null && !Array.isArray(value)
+      } else if (expectedType === 'nullable-object') {
         isValid = value === null || (typeof value === 'object' && !Array.isArray(value))
+      } else if (expectedType === 'object-or-array') {
+        isValid = typeof value === 'object' && value !== null
+      } else if (expectedType === 'number-or-string') {
+        isValid = typeof value === 'number' || typeof value === 'string'
       } else {
         isValid = typeof value === expectedType
       }
@@ -127,10 +133,7 @@ export const createRawLoadPayload = (
       if (isValid) {
         payload[key] = value
       } else {
-        logger.warn('System', `Invalid type for loadable save key: ${key}`, {
-          expected: expectedType,
-          received: value === null ? 'null' : Array.isArray(value) ? 'array' : typeof value
-        })
+        throw new StateError(`Invalid type for loadable save key: ${key}`)
       }
     }
   }
