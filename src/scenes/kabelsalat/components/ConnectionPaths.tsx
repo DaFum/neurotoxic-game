@@ -19,21 +19,24 @@ export const ConnectionPaths = ({
   isPowerConnected,
   socketOrder
 }: ConnectionPathsProps) => {
-  return (
-    <>
-      {Object.entries(connections).map(([sockId, cabId]) => {
-        if (!cabId) return null
-        const s = sockId as SocketId
-        return (
-          <ConnectionPath
-            key={s}
-            sockId={s}
-            cabId={cabId as CableId}
-            isPowerConnected={isPowerConnected}
-            socketOrder={socketOrder}
-          />
-        )
-      })}
-    </>
-  )
+  const paths = []
+  for (const sockId in connections) {
+    if (!Object.hasOwn(connections, sockId)) continue
+
+    // Memory rule: safe typing for indexing
+    const cabId = connections[sockId as keyof typeof connections]
+    if (!cabId) continue
+
+    paths.push(
+      <ConnectionPath
+        key={sockId}
+        sockId={sockId as SocketId}
+        cabId={cabId as CableId}
+        isPowerConnected={isPowerConnected}
+        socketOrder={socketOrder}
+      />
+    )
+  }
+
+  return <>{paths}</>
 }
