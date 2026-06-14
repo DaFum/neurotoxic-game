@@ -110,6 +110,7 @@ export const KNOWN_EVENT_IDS: ReadonlySet<string> = new Set(
     const pools = Object.values(EVENTS_DB)
     for (let i = 0; i < pools.length; i++) {
       const pool = pools[i]
+      if (!pool) continue
       for (let j = 0; j < pool.length; j++) {
         const id = pool[j]?.id
         if (typeof id === 'string') {
