@@ -24,14 +24,20 @@ const matchesSocialCondition = (
   const controversy = finiteNumberOr(state.social?.controversyLevel, 0)
   const tiktok = finiteNumberOr(state.social?.tiktok, 0)
 
-  const socialDamageChecks: boolean[] = []
+  // ⚡ BOLT OPTIMIZATION: Replaced intermediate array allocation and .some(Boolean) check
+  let hasDamageCheck = false
+  let damageCheckPassed = false
+
   if (typeof social.loyaltyBelow === 'number') {
-    socialDamageChecks.push(loyalty < social.loyaltyBelow)
+    hasDamageCheck = true
+    if (loyalty < social.loyaltyBelow) damageCheckPassed = true
   }
   if (typeof social.controversyAbove === 'number') {
-    socialDamageChecks.push(controversy > social.controversyAbove)
+    hasDamageCheck = true
+    if (controversy > social.controversyAbove) damageCheckPassed = true
   }
-  if (socialDamageChecks.length > 0 && !socialDamageChecks.some(Boolean)) {
+
+  if (hasDamageCheck && !damageCheckPassed) {
     return false
   }
   if (typeof social.minTiktok === 'number' && tiktok < social.minTiktok) {
@@ -69,9 +75,16 @@ const matchesOfferCondition = (
   }
 
   if (condition.requiredAssetKind) {
-    const hasAsset = (state.assets ?? []).some(
-      asset => asset.kind === condition.requiredAssetKind
-    )
+    let hasAsset = false
+    const assets = state.assets ?? []
+    // ⚡ BOLT OPTIMIZATION: Replaced Array.some with a procedural loop
+    for (let i = 0; i < assets.length; i++) {
+      const asset = assets[i]
+      if (asset && asset?.kind === condition.requiredAssetKind) {
+        hasAsset = true
+        break
+      }
+    }
     if (!hasAsset) return false
   }
 
@@ -111,12 +124,20 @@ export const QuestOfferEngine = {
   getAvailableOffers: (
     state: GameState,
     trigger: QuestOfferDefinition['trigger']
-  ): AvailableQuestOffer[] =>
-    Object.entries(QUEST_REGISTRY).flatMap(([questId, definition]) => {
-      const offer = (definition as Partial<QuestState>).offer
-      if (!offer || offer.trigger !== trigger) return []
-      return QuestOfferEngine.canOfferQuest(state, questId)
-        ? [{ questId, offer }]
-        : []
-    })
+  ): AvailableQuestOffer[] => {
+    const available: AvailableQuestOffer[] = []
+    // ⚡ BOLT OPTIMIZATION: Replaced Object.entries().flatMap with a single-pass loop
+    for (const questId in QUEST_REGISTRY) {
+      if (!Object.hasOwn(QUEST_REGISTRY, questId)) continue
+      const definition = QUEST_REGISTRY[
+        questId as keyof typeof QUEST_REGISTRY
+      ] as Partial<QuestState>
+      const offer = definition?.offer
+      if (!offer || offer.trigger !== trigger) continue
+      if (QuestOfferEngine.canOfferQuest(state, questId)) {
+        available.push({ questId, offer })
+      }
+    }
+    return available
+  }
 }
