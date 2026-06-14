@@ -1623,13 +1623,6 @@ test('systemReducer - rivalBand persistence', async t => {
     'handleLoadGame strips hostile __proto__ key from rivalBand',
     () => {
       const initialState = createInitialState()
-      const rawRivalBand = {
-        id: 'rival_hostile',
-        name: 'Hostile Band',
-        alignment: 'EVIL',
-        powerLevel: 60,
-        currentLocationId: null
-      }
       // Simulate a parsed JSON object with a hostile __proto__ key
       const hostileRivalBand = JSON.parse(
         '{"id":"rival_hostile","name":"Hostile Band","alignment":"EVIL","powerLevel":60,"currentLocationId":null,"__proto__":{"polluted":true}}'
