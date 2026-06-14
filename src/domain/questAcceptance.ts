@@ -124,24 +124,25 @@ export const canAcceptQuest = (
     ]
     // ⚡ BOLT OPTIMIZATION: Dynamically use Set for O(1) lookups on large intersections
     if (activeFlags.length * completionFlags.length > 50) {
-      if (activeFlags.length > completionFlags.length) {
-        const compSet = new Set(completionFlags)
-        for (let i = 0; i < activeFlags.length; i++) {
-          if (compSet.has(activeFlags[i] as string)) {
-            return { ok: false, reason: 'flag' }
-          }
-        }
-      } else {
-        const activeSet = new Set(activeFlags)
-        for (let i = 0; i < completionFlags.length; i++) {
-          if (activeSet.has(completionFlags[i] as string)) {
-            return { ok: false, reason: 'flag' }
-          }
+      const smaller =
+        activeFlags.length > completionFlags.length
+          ? completionFlags
+          : activeFlags
+      const larger =
+        activeFlags.length > completionFlags.length
+          ? activeFlags
+          : completionFlags
+      const set = new Set(smaller)
+      for (let i = 0; i < larger.length; i++) {
+        const flag = larger[i]
+        if (typeof flag === 'string' && set.has(flag)) {
+          return { ok: false, reason: 'flag' }
         }
       }
     } else {
       for (let i = 0; i < completionFlags.length; i++) {
-        if (activeFlags.includes(completionFlags[i] as string)) {
+        const flag = completionFlags[i]
+        if (typeof flag === 'string' && activeFlags.includes(flag)) {
           return { ok: false, reason: 'flag' }
         }
       }
