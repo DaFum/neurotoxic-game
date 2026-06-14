@@ -84,8 +84,8 @@ export const handleCompleteTravelMinigame = (
   }
 ): GameState => {
   const isLegacyShape =
-    state.minigame?.active === undefined &&
-    state.minigame?.type === undefined &&
+    (state.minigame?.active === undefined || state.minigame?.active === false) &&
+    (state.minigame?.type === undefined || state.minigame?.type === null) &&
     typeof state.minigame?.targetDestination === 'string'
   if (
     !isLegacyShape &&

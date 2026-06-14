@@ -34,8 +34,6 @@ test('travel.completed emits canonical city key', t => {
     },
     minigame: {
       ...DEFAULT_MINIGAME_STATE,
-      active: true,
-      type: 'TOURBUS',
       targetDestination: 'node2'
     },
     toasts: []

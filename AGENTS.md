@@ -73,7 +73,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 - Use `pnpm` only. Do not use `npm` or `yarn`.
 - Test scope picker: `pnpm run test` for fast local, `pnpm run test:all` for full PR, `pnpm run test:ui` for Vitest/UI, `pnpm run test:node` for legacy node, `pnpm run test:additional` for perf/locale.
-- Single-file tests: use `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/<file>.test.js` for `node:test`. For Vitest run the file(s) directly with `pnpm exec vitest run tests/<file>.test.jsx [tests/<other>.test.jsx ...]` (append `2>&1 | grep -E "✓|×|FAIL|PASS|Tests |Test Files " | head -20` for a compact summary). Do NOT use `pnpm run test:ui:file -- <multiple files>`: with more than one path that wrapper does not scope the run to only those files, so unrelated suites leak into the output and you have to grep them back out.
+- Single-file tests: use `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/<file>.test.js` for `node:test`. For Vitest run the file(s) directly with `npx vitest run tests/<file>.test.jsx [tests/<other>.test.jsx ...]` (append `2>&1 | grep -E "✓|×|FAIL|PASS|Tests |Test Files " | head -20` for a compact summary). Do NOT use `pnpm run test:ui:file -- <multiple files>`: with more than one path that wrapper does not scope the run to only those files, so unrelated suites leak into the output and you have to grep them back out.
 - Type gates: `pnpm run typecheck:core`; `pnpm run typecheck` is the scoped reducer gate.
 - Symbol index: `pnpm run symbols:update` regenerates `symbols.json`; `pnpm run symbols:check` verifies it is current.
 

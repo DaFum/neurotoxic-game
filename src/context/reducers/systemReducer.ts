@@ -1482,7 +1482,9 @@ const sanitizeRivalBand = (value: unknown): GameState['rivalBand'] => {
   ]
   const alignment =
     typeof raw.alignment === 'string' &&
-    validAlignments.includes(raw.alignment as import('../../types/social').BrandAlignment)
+    validAlignments.includes(
+      raw.alignment as import('../../types/social').BrandAlignment
+    )
       ? (raw.alignment as import('../../types/social').BrandAlignment)
       : 'NEUTRAL'
   const powerLevel = Math.max(0, finiteNumberOr(raw.powerLevel, 0))
