@@ -1550,3 +1550,134 @@ test('systemReducer - ADVANCE_DAY core logic', async t => {
     }
   )
 })
+
+test('systemReducer - rivalBand persistence', async t => {
+  await t.test(
+    'handleLoadGame preserves rivalBand id, name, alignment, currentLocationId, and clamps powerLevel',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = {
+        rivalBand: {
+          id: 'rival_001',
+          name: 'Die Konkurrenten',
+          alignment: 'CORPORATE',
+          powerLevel: 75,
+          currentLocationId: 'node_2_3'
+        }
+      }
+
+      const nextState = handleLoadGame(initialState, loadedState)
+
+      assert.equal(nextState.rivalBand?.id, 'rival_001')
+      assert.equal(nextState.rivalBand?.name, 'Die Konkurrenten')
+      assert.equal(nextState.rivalBand?.alignment, 'CORPORATE')
+      assert.equal(nextState.rivalBand?.powerLevel, 75)
+      assert.equal(nextState.rivalBand?.currentLocationId, 'node_2_3')
+    }
+  )
+
+  await t.test(
+    'handleLoadGame returns null rivalBand when save has no rivalBand',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = { player: { money: 100 } }
+
+      const nextState = handleLoadGame(initialState, loadedState)
+
+      assert.equal(nextState.rivalBand, null)
+    }
+  )
+
+  await t.test(
+    'handleLoadGame returns null rivalBand when save rivalBand is null',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = { rivalBand: null }
+
+      const nextState = handleLoadGame(initialState, loadedState)
+
+      assert.equal(nextState.rivalBand, null)
+    }
+  )
+
+  await t.test(
+    'handleLoadGame returns null rivalBand when save rivalBand is malformed (missing required id)',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = {
+        rivalBand: {
+          name: 'No ID Band',
+          alignment: 'INDIE',
+          powerLevel: 50,
+          currentLocationId: null
+        }
+      }
+
+      const nextState = handleLoadGame(initialState, loadedState)
+
+      assert.equal(nextState.rivalBand, null)
+    }
+  )
+
+  await t.test(
+    'handleLoadGame strips hostile __proto__ key from rivalBand',
+    () => {
+      const initialState = createInitialState()
+      const rawRivalBand = {
+        id: 'rival_hostile',
+        name: 'Hostile Band',
+        alignment: 'EVIL',
+        powerLevel: 60,
+        currentLocationId: null
+      }
+      // Simulate a parsed JSON object with a hostile __proto__ key
+      const hostileRivalBand = JSON.parse(
+        '{"id":"rival_hostile","name":"Hostile Band","alignment":"EVIL","powerLevel":60,"currentLocationId":null,"__proto__":{"polluted":true}}'
+      )
+      const loadedState = { rivalBand: hostileRivalBand }
+
+      const nextState = handleLoadGame(initialState, loadedState)
+
+      assert.equal(nextState.rivalBand?.id, 'rival_hostile')
+      assert.equal(Object.hasOwn(nextState.rivalBand ?? {}, '__proto__'), false)
+    }
+  )
+
+  await t.test('handleLoadGame clamps non-finite powerLevel to 0', () => {
+    const initialState = createInitialState()
+    const loadedState = {
+      rivalBand: {
+        id: 'rival_nan',
+        name: 'NaN Band',
+        alignment: 'NEUTRAL',
+        powerLevel: NaN,
+        currentLocationId: null
+      }
+    }
+
+    const nextState = handleLoadGame(initialState, loadedState)
+
+    assert.ok(Number.isFinite(nextState.rivalBand?.powerLevel))
+  })
+
+  await t.test(
+    'handleLoadGame handles rivalBand with null currentLocationId',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = {
+        rivalBand: {
+          id: 'rival_002',
+          name: 'Wandering Band',
+          alignment: 'INDIE',
+          powerLevel: 30,
+          currentLocationId: null
+        }
+      }
+
+      const nextState = handleLoadGame(initialState, loadedState)
+
+      assert.equal(nextState.rivalBand?.currentLocationId, null)
+      assert.equal(nextState.rivalBand?.id, 'rival_002')
+    }
+  )
+})

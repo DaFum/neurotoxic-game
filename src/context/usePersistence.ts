@@ -51,7 +51,8 @@ const LOADABLE_SAVE_KEYS = [
   'assets',
   'liabilities',
   'crowdfundCampaigns',
-  'rngSeed'
+  'rngSeed',
+  'rivalBand'
 ] as const
 
 type UsePersistenceParams = {
@@ -115,7 +116,8 @@ const createPersistedState = (currentState: GameState) => {
     assets,
     liabilities,
     crowdfundCampaigns,
-    rngSeed
+    rngSeed,
+    rivalBand
   } = currentState
 
   return {
@@ -151,6 +153,7 @@ const createPersistedState = (currentState: GameState) => {
     liabilities,
     crowdfundCampaigns,
     rngSeed,
+    rivalBand,
     setlist: normalizeSetlistForSave(setlist)
   }
 }

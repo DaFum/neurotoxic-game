@@ -1458,6 +1458,35 @@ const sanitizeVenue = (value: unknown): GameState['currentGig'] => {
   return venue
 }
 
+/**
+ * Sanitizes a raw `rivalBand` save entry into a valid `RivalBandState` or null.
+ *
+ * Whitelists fields individually and rejects hostile prototype-pollution keys.
+ * `powerLevel` is clamped to a non-negative finite number; missing or malformed
+ * required fields (`id`, `name`) cause the entry to be dropped (returns null).
+ */
+const sanitizeRivalBand = (value: unknown): GameState['rivalBand'] => {
+  if (!isLooseRecord(value)) return null
+  const raw = value as Record<string, unknown>
+  if (typeof raw.id !== 'string' || raw.id.length === 0) return null
+  if (typeof raw.name !== 'string') return null
+  if (isForbiddenKey(raw.id)) return null
+
+  const alignment =
+    typeof raw.alignment === 'string' ? raw.alignment : 'NEUTRAL'
+  const powerLevel = Math.max(0, finiteNumberOr(raw.powerLevel, 0))
+  const currentLocationId =
+    typeof raw.currentLocationId === 'string' ? raw.currentLocationId : null
+
+  return {
+    id: raw.id,
+    name: raw.name,
+    alignment: alignment as import('../../types/social').BrandAlignment,
+    powerLevel,
+    currentLocationId
+  }
+}
+
 const sanitizeLastGigStats = (value: unknown): GameState['lastGigStats'] => {
   if (!isLooseRecord(value)) return null
   const sanitized: NonNullable<GameState['lastGigStats']> = {}
@@ -1679,7 +1708,8 @@ export const handleLoadGame = (
       loadedState.crowdfundCampaigns,
       sanitizedAssets
     ),
-    rngSeed: sanitizeRngSeed(loadedState.rngSeed)
+    rngSeed: sanitizeRngSeed(loadedState.rngSeed),
+    rivalBand: sanitizeRivalBand(loadedState.rivalBand)
   }
 
   // Apply venue migrations using spreads
