@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import {
   GameStateProvider,
@@ -18,18 +18,25 @@ describe('updateSettings global storage sanitization', () => {
   it('does not persist invalid or unknown keys to global settings', () => {
     const { result } = renderHook(() => useGameActions(), { wrapper })
 
-    act(() => {
-      result.current.updateSettings({
-        logLevel: 'bad',
-        unknown: true,
-        crtEnabled: true
-      })
-    })
+    const originalSetItem = window.localStorage.setItem
+    try {
+      window.localStorage.setItem = vi.fn(originalSetItem)
 
-    const persisted = readGlobalSettings()
-    expect(Object.hasOwn(persisted, 'unknown')).toBe(false)
-    expect(persisted.logLevel).not.toBe('bad')
-    // Valid whitelisted keys still persist.
-    expect(persisted.crtEnabled).toBe(true)
+      act(() => {
+        result.current.updateSettings({
+          logLevel: 'bad',
+          unknown: true,
+          crtEnabled: true
+        })
+      })
+
+      const persisted = readGlobalSettings()
+      expect(Object.hasOwn(persisted, 'unknown')).toBe(false)
+      expect(persisted.logLevel).not.toBe('bad')
+      // Valid whitelisted keys still persist.
+      expect(persisted.crtEnabled).toBe(true)
+    } finally {
+      window.localStorage.setItem = originalSetItem
+    }
   })
 })
