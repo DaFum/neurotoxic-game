@@ -271,6 +271,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
   )
 
   const [isStarting, setIsStarting] = useState(false)
+  const isStartingRef = useRef(false)
   const currentModifiers = getGigModifiers(band, gigModifiers)
 
   const selectedSongIds = useMemo(() => {
@@ -397,10 +398,13 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
   )
 
   const handleStartShow = useCallback(async () => {
+    if (isStartingRef.current) return
+    isStartingRef.current = true
     setIsStarting(true)
     try {
       const audioOk = await audioService.ensureAudioContext()
       if (!audioOk) {
+        isStartingRef.current = false
         setIsStarting(false)
         addToast(typedT('ui:pregig.toasts.audioFail'), 'error')
         return
@@ -454,6 +458,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
         startAmpCalibration(gigId)
       }
     } catch (err) {
+      isStartingRef.current = false
       setIsStarting(false)
       handleError(err, {
         addToast,

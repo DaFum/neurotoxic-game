@@ -685,6 +685,44 @@ describe('PreGig', () => {
     expect(mockUseGameState.updatePlayer).toHaveBeenCalledWith({ money: 387 })
   })
 
+  test('synchronous re-entry guard: double-click dispatches only one start-minigame action', async () => {
+    const { audioManager } = await import('../../src/utils/audio/AudioManager')
+    const originalEnsure = audioManager.ensureAudioContext
+
+    // Create a promise that we can resolve manually to simulate a pending await
+    let resolveAudio
+    audioManager.ensureAudioContext = vi.fn().mockReturnValue(
+      new Promise(res => {
+        resolveAudio = res
+      })
+    )
+
+    try {
+      mockUseGameState.setlist = [{ id: 'song1' }]
+      vi.mocked(getSafeRandom).mockReturnValue(0.1) // picks roadie
+
+      const { findByText } = render(React.createElement(PreGig))
+      const startBtn = await findByText(/ui:pregig.startShow/i)
+
+      // Two synchronous clicks before the audio Promise resolves
+      fireEvent.click(startBtn)
+      fireEvent.click(startBtn)
+
+      // Now resolve the audio context
+      resolveAudio(true)
+      await new Promise(resolve => setTimeout(resolve, 0))
+
+      // Only one start action should have been dispatched
+      const totalDispatches =
+        mockUseGameState.startRoadieMinigame.mock.calls.length +
+        mockUseGameState.startKabelsalatMinigame.mock.calls.length +
+        mockUseGameState.startAmpCalibration.mock.calls.length
+      expect(totalDispatches).toBe(1)
+    } finally {
+      audioManager.ensureAudioContext = originalEnsure
+    }
+  })
+
   test('merch capacity blocks restock until an asset raises the ceiling', async () => {
     mockUseGameState.band = {
       harmony: 50,
