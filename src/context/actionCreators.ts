@@ -600,11 +600,12 @@ export const createCompleteRoadieMinigameAction = (
   payload: {
     equipmentDamage: clamp0to100(Number(equipmentDamage) || 0),
     contrabandDelivered: clampNonNegative(Number(contrabandDelivered) || 0),
-    deliveredStashItemId:
-      typeof deliveredStashItemId === 'string' &&
-      deliveredStashItemId.length > 0
-        ? deliveredStashItemId
-        : undefined
+    // Only include the key when a valid stash id was delivered, so the payload
+    // stays clean (no `deliveredStashItemId: undefined`) for normal completions.
+    ...(typeof deliveredStashItemId === 'string' &&
+    deliveredStashItemId.length > 0
+      ? { deliveredStashItemId }
+      : {})
   }
 })
 
