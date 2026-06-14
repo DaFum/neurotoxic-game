@@ -1458,12 +1458,30 @@ const sanitizeVenue = (value: unknown): GameState['currentGig'] => {
   return venue
 }
 
+const VALID_BRAND_ALIGNMENTS = [
+  'EVIL',
+  'CORPORATE',
+  'INDIE',
+  'SUSTAINABLE',
+  'GOOD',
+  'NEUTRAL'
+] as const satisfies readonly import('../../types/social').BrandAlignment[]
+
+/** Narrows an untrusted value to a finite {@link BrandAlignment} union member. */
+const isBrandAlignment = (
+  value: unknown
+): value is import('../../types/social').BrandAlignment =>
+  typeof value === 'string' &&
+  (VALID_BRAND_ALIGNMENTS as readonly string[]).includes(value)
+
 /**
  * Sanitizes a raw `rivalBand` save entry into a valid `RivalBandState` or null.
  *
  * Whitelists fields individually and rejects hostile prototype-pollution keys.
- * `powerLevel` is clamped to a non-negative finite number; missing or malformed
- * required fields (`id`, `name`) cause the entry to be dropped (returns null).
+ * `powerLevel` is clamped to a non-negative finite number; `alignment` falls
+ * back to `'NEUTRAL'` when it is not a valid {@link BrandAlignment}; missing or
+ * malformed required fields (`id`, `name`) cause the entry to be dropped
+ * (returns null).
  */
 const sanitizeRivalBand = (value: unknown): GameState['rivalBand'] => {
   if (!isLooseRecord(value)) return null
@@ -1472,8 +1490,7 @@ const sanitizeRivalBand = (value: unknown): GameState['rivalBand'] => {
   if (typeof raw.name !== 'string') return null
   if (isForbiddenKey(raw.id)) return null
 
-  const alignment =
-    typeof raw.alignment === 'string' ? raw.alignment : 'NEUTRAL'
+  const alignment = isBrandAlignment(raw.alignment) ? raw.alignment : 'NEUTRAL'
   const powerLevel = Math.max(0, finiteNumberOr(raw.powerLevel, 0))
   const currentLocationId =
     typeof raw.currentLocationId === 'string' ? raw.currentLocationId : null
@@ -1481,7 +1498,7 @@ const sanitizeRivalBand = (value: unknown): GameState['rivalBand'] => {
   return {
     id: raw.id,
     name: raw.name,
-    alignment: alignment as import('../../types/social').BrandAlignment,
+    alignment,
     powerLevel,
     currentLocationId
   }
