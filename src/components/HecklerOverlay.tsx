@@ -20,7 +20,17 @@ interface HecklerOverlayProps {
   gameStateRef: HecklerStateRef
 }
 
-// Helper to update/create DOM nodes and remove stale ones in a single pass
+/**
+ * Updates, creates, and removes DOM nodes for heckler projectiles in a single optimized pass.
+ *
+ * @remarks
+ * This function bypasses standard React rendering cycles to manually mutate the DOM for high-performance animations. It uses 3D transforms (`translate3d`) to ensure hardware acceleration and prevent expensive layout thrashing.
+ *
+ * @param projectiles - The active array of projectile data entities to display on screen.
+ * @param nodeCache - A mutable map storing references to generated DOM elements, keyed by projectile ID.
+ * @param seenIds - A mutable set used internally to track which projectile IDs were processed during the current frame, allowing for stale node cleanup.
+ * @param container - The parent DOM element where projectile nodes are injected.
+ */
 function updateOverlayNodes(
   projectiles: Projectile[],
   nodeCache: Map<ProjectileId, HTMLDivElement>,

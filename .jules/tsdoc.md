@@ -11,3 +11,4 @@
 | 2026-06-11        | src/utils/brandOfferFlavor/helpers.ts         | pick, roundTo                                                                                                                                            |
 | 2026-06-12        | src/utils/errors/safeStorage.ts               | runSafeStorageOperation                                                                                                                                  |
 | 2026-06-13 | src/App.tsx | resolveVercelTelemetryEnabled, SceneLoadingFallback, App |
+| 2026-06-14 | src/components/HecklerOverlay.tsx | updateOverlayNodes |
