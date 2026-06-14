@@ -631,9 +631,14 @@ export const handleCompleteRoadieMinigame = (
       finiteNumberOr(contrabandBonus, 0)
   )
 
-  // Consume the stash item (decrement stacks or remove) when present.
+  // Consume the stash item (decrement stacks or remove) only when a delivery was
+  // actually credited; otherwise a zero-count payload would burn inventory for no bonus.
   let nextBand = { ...state.band, harmony: nextHarmony }
-  if (stashItemPresent && safeItemId !== null && stash != null) {
+  if (
+    effectiveContrabandDelivered > 0 &&
+    safeItemId !== null &&
+    stash != null
+  ) {
     const entry = stash[safeItemId] as Record<string, unknown> | undefined
     const currentStacks =
       entry && isFiniteNumber(entry.stacks)
