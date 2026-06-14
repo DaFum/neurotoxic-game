@@ -306,17 +306,18 @@ function scheduleSongPlayback(
 ): void {
   const minLookahead = 0.1
   const startTime = Tone.now() + Math.max(minLookahead, delay)
+  const transport = Tone.getTransport()
 
   if (onEnded) {
     const duration = lastTime + Tone.Time('4n').toSeconds()
 
-    Tone.getTransport().scheduleOnce(() => {
+    transport.scheduleOnce(() => {
       if (reqId !== audioState.playRequestId) return
       onEnded()
     }, duration)
   }
 
-  Tone.getTransport().start(startTime)
+  transport.start(startTime)
 }
 
 /**
@@ -692,7 +693,8 @@ function scheduleEndCallback(
   onEnded: ((info: MidiPlaybackEndInfo) => void) | null
 ) {
   if (onEnded && duration > 0) {
-    audioState.transportEndEventId = Tone.getTransport().scheduleOnce(() => {
+    const transport = Tone.getTransport()
+    audioState.transportEndEventId = transport.scheduleOnce(() => {
       if (reqId === audioState.playRequestId) {
         onEnded({ filename, duration, offsetSeconds: requestedOffset })
       }
@@ -710,7 +712,8 @@ function scheduleStopCallback(
     : null
   if (finiteStopAfter !== null && finiteStopAfter > 0) {
     const stopTime = requestedOffset + finiteStopAfter
-    audioState.transportStopEventId = Tone.getTransport().scheduleOnce(() => {
+    const transport = Tone.getTransport()
+    audioState.transportStopEventId = transport.scheduleOnce(() => {
       if (reqId === audioState.playRequestId) stopAudio()
     }, stopTime)
   }
@@ -768,8 +771,9 @@ function scheduleMidiTransport(
   midi: ParsedMidi,
   params: MidiTransportParams
 ): void {
+  const transport = Tone.getTransport()
   const firstTempo = midi.header.tempos[0]
-  if (firstTempo) Tone.getTransport().bpm.value = firstTempo.bpm
+  if (firstTempo) transport.bpm.value = firstTempo.bpm
 
   const validDelay = isFiniteNumber(params.delay)
     ? Math.max(0, params.delay)
@@ -799,7 +803,7 @@ function scheduleMidiTransport(
     params.startTimeSec,
     validDelay
   )
-  Tone.getTransport().start(transportStartTime, requestedOffset)
+  transport.start(transportStartTime, requestedOffset)
 }
 
 /**
