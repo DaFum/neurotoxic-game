@@ -1472,8 +1472,19 @@ const sanitizeRivalBand = (value: unknown): GameState['rivalBand'] => {
   if (typeof raw.name !== 'string') return null
   if (isForbiddenKey(raw.id)) return null
 
+  const validAlignments: import('../../types/social').BrandAlignment[] = [
+    'EVIL',
+    'CORPORATE',
+    'INDIE',
+    'SUSTAINABLE',
+    'GOOD',
+    'NEUTRAL'
+  ]
   const alignment =
-    typeof raw.alignment === 'string' ? raw.alignment : 'NEUTRAL'
+    typeof raw.alignment === 'string' &&
+    validAlignments.includes(raw.alignment as import('../../types/social').BrandAlignment)
+      ? (raw.alignment as import('../../types/social').BrandAlignment)
+      : 'NEUTRAL'
   const powerLevel = Math.max(0, finiteNumberOr(raw.powerLevel, 0))
   const currentLocationId =
     typeof raw.currentLocationId === 'string' ? raw.currentLocationId : null
@@ -1481,7 +1492,7 @@ const sanitizeRivalBand = (value: unknown): GameState['rivalBand'] => {
   return {
     id: raw.id,
     name: raw.name,
-    alignment: alignment as import('../../types/social').BrandAlignment,
+    alignment,
     powerLevel,
     currentLocationId
   }

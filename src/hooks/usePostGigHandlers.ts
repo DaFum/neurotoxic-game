@@ -11,7 +11,7 @@ import type { BrandDeal, SocialPostOption } from '../types/social'
 import type { QuestProgressEvent } from '../utils/questProgress'
 import type { createAddQuestAction } from '../context/actionCreators'
 import type { PostGigFinancials } from '../types/economy'
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import i18n from '../i18n'
 import {
   useContinueHandler,
@@ -113,15 +113,12 @@ export function usePostGigHandlers({
 
   // Release the shared guard and spin guard on every phase change so each new
   // phase starts unblocked (e.g. fresh post-gig after returning to overworld).
-  // Uses the render-phase "store previous prop" pattern to avoid setState-in-effect.
-  const [prevPhase, setPrevPhase] = useState(phase)
-  if (phase !== prevPhase) {
-    setPrevPhase(phase)
+  useEffect(() => {
     isProcessingActionRef.current = false
     setIsProcessingAction(false)
     hasSpunRef.current = false
     setHasSpun(false)
-  }
+  }, [phase, isProcessingActionRef, setIsProcessingAction, setHasSpun])
 
   const dispatchers = useMemo(
     () => ({

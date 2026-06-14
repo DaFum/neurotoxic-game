@@ -73,13 +73,13 @@ export function useMinorHandlers({
       return
     }
 
-    hasSpunRef.current = true
-    setHasSpun(true)
-
     updatePlayer({ money: updates.nextMoney })
 
     const socialUpdateFactory = getSpinStorySocialUpdateFactory()
     updateSocial(socialUpdateFactory)
+
+    hasSpunRef.current = true
+    setHasSpun(true)
 
     const moneyText =
       updates.appliedDelta !== 0
