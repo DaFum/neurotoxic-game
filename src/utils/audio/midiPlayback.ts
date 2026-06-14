@@ -302,11 +302,11 @@ function scheduleSongPlayback(
   lastTime: number,
   delay: number,
   reqId: number,
+  transport: ReturnType<typeof Tone.getTransport>,
   onEnded?: (() => void) | null
 ): void {
   const minLookahead = 0.1
   const startTime = Tone.now() + Math.max(minLookahead, delay)
-  const transport = Tone.getTransport()
 
   if (onEnded) {
     const duration = lastTime + Tone.Time('4n').toSeconds()
@@ -422,7 +422,8 @@ export async function playSongFromData(
   )
   if (!res) return false
 
-  Tone.getTransport().bpm.value = p.bpm
+  const transport = Tone.getTransport()
+  transport.bpm.value = p.bpm
   audioState.part = createSongPart(res.events)
 
   const validDelay = isFiniteNumber(delay) ? Math.max(0, delay) : 0
@@ -430,6 +431,7 @@ export async function playSongFromData(
     res.lastTime,
     validDelay,
     prep.reqId,
+    transport,
     prep.normalizedOptions.onEnded as (() => void) | null
   )
 
@@ -690,10 +692,10 @@ function scheduleEndCallback(
   filename: string,
   duration: number,
   requestedOffset: number,
-  onEnded: ((info: MidiPlaybackEndInfo) => void) | null
+  onEnded: ((info: MidiPlaybackEndInfo) => void) | null,
+  transport: ReturnType<typeof Tone.getTransport>
 ) {
   if (onEnded && duration > 0) {
-    const transport = Tone.getTransport()
     audioState.transportEndEventId = transport.scheduleOnce(() => {
       if (reqId === audioState.playRequestId) {
         onEnded({ filename, duration, offsetSeconds: requestedOffset })
@@ -705,14 +707,14 @@ function scheduleEndCallback(
 function scheduleStopCallback(
   reqId: number,
   requestedOffset: number,
-  stopAfterSeconds: number | null
+  stopAfterSeconds: number | null,
+  transport: ReturnType<typeof Tone.getTransport>
 ) {
   const finiteStopAfter = isFiniteNumber(stopAfterSeconds)
     ? stopAfterSeconds
     : null
   if (finiteStopAfter !== null && finiteStopAfter > 0) {
     const stopTime = requestedOffset + finiteStopAfter
-    const transport = Tone.getTransport()
     audioState.transportStopEventId = transport.scheduleOnce(() => {
       if (reqId === audioState.playRequestId) stopAudio()
     }, stopTime)
@@ -725,18 +727,19 @@ function scheduleMidiEndEvents(
   duration: number,
   requestedOffset: number,
   onEnded: ((info: MidiPlaybackEndInfo) => void) | null,
-  stopAfterSeconds: number | null
+  stopAfterSeconds: number | null,
+  transport: ReturnType<typeof Tone.getTransport>
 ): void {
-  scheduleEndCallback(reqId, filename, duration, requestedOffset, onEnded)
-  scheduleStopCallback(reqId, requestedOffset, stopAfterSeconds)
+  scheduleEndCallback(reqId, filename, duration, requestedOffset, onEnded, transport)
+  scheduleStopCallback(reqId, requestedOffset, stopAfterSeconds, transport)
 }
 
 function configureTransportLoop(
   loop: boolean,
   duration: number,
-  requestedOffset: number
+  requestedOffset: number,
+  transport: ReturnType<typeof Tone.getTransport>
 ) {
-  const transport = Tone.getTransport()
   transport.loop = loop
   if (loop) {
     transport.loopEnd = duration
@@ -786,7 +789,7 @@ function scheduleMidiTransport(
     `Starting Transport. Delay=${validDelay}, Offset=${requestedOffset}`
   )
 
-  configureTransportLoop(params.loop, midi.duration, requestedOffset)
+  configureTransportLoop(params.loop, midi.duration, requestedOffset, transport)
 
   if (!params.loop) {
     scheduleMidiEndEvents(
@@ -795,7 +798,8 @@ function scheduleMidiTransport(
       duration,
       requestedOffset,
       params.onEnded,
-      params.stopAfterSeconds
+      params.stopAfterSeconds,
+      transport
     )
   }
 
