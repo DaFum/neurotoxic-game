@@ -261,20 +261,20 @@ git commit -m "fix(arrival): save tourbus arrival after side effects complete"
 git commit -m "fix(arrival): preserve gameover scene over arrival routing"
 ```
 
-### Task 10: Practice-HQ nur bei OVERWORLD öffnen
+### Task 10: Practice-HQ unbedingt öffnen (MENU-Rückkehr erhalten)
 
 **Files:**
-- Modify: `src/context/useGameDispatchActions.ts` (`endGig` 550-564)
+- Modify: `src/context/useGameDispatchActions.ts` (`endGig` 550-568)
 - Test: `tests/.../useGameDispatchActions.*` (oder passender Hook-Test)
 
-- [ ] **Step 1: Failing-Test** — Practice-Rückkehr-Matrix (drei Fälle): `sourceScene` OVERWORLD → HQ-pending true; MENU → HQ-pending false (Szene = MENU); ungültig/fehlend → **normalisiert auf OVERWORLD** + HQ-pending true.
-- [ ] **Step 2: → FAIL** (aktuell immer `setPendingBandHQOpen(true)`).
-- [ ] **Step 3: Implementieren** — **zuerst normalisieren, dann gaten.** Das bestehende `endGig` berechnet bereits `targetScene = isValidTarget ? rawTarget : GAME_PHASES.OVERWORLD` (ungültig/fehlend → OVERWORLD). Dieses bereits-normalisierte `targetScene` ist die kanonische Quelle: `setPendingBandHQOpen(true)` NUR aufrufen wenn `targetScene === GAME_PHASES.OVERWORLD`. Dadurch öffnet der invalid/missing-Pfad korrekt HQ (weil er auf OVERWORLD normalisiert wurde), während ein gültiges MENU kein HQ öffnet. NICHT gegen `rawTarget` gaten.
+- [ ] **Step 1: Test** — Practice-Rückkehr: `setPendingBandHQOpen(true)` wird unabhängig vom `sourceScene` aufgerufen (OVERWORLD und MENU); `targetScene` (normalisiert: ungültig/fehlend → OVERWORLD) steuert ausschließlich `changeScene`.
+- [ ] **Step 2: → FAIL/PASS** je nach Ausgangslage.
+- [ ] **Step 3: Implementieren** — Das bestehende `endGig` berechnet `targetScene = isValidTarget ? rawTarget : GAME_PHASES.OVERWORLD` und routet damit. `setPendingBandHQOpen(true)` UNBEDINGT aufrufen (NICHT auf `targetScene === GAME_PHASES.OVERWORLD` gaten) — sonst bricht der MENU-Rückkehrpfad, der das HQ ebenfalls öffnen soll.
 - [ ] **Step 4: → PASS.**
 - [ ] **Step 5: AGENTS/TSDoc, Commit & Push.**
 
 ```bash
-git commit -m "fix(practice): only open band hq when returning to overworld"
+git commit -m "fix(practice): keep band hq open on practice return"
 ```
 
 ---

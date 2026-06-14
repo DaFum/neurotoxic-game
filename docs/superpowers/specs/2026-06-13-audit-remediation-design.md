@@ -21,7 +21,7 @@ Reducer- oder Transaktionsgrenze. Der Ansatz dieser Arbeit:
 | Finding | Entscheidung |
 | --- | --- |
 | Roadie-Contraband (Major #10) | **Echten Stash-Eintrag konsumieren**: konkretes Stash-Item bei Minigame-Start wählen, bei erfolgreicher Lieferung einen Stack verbrauchen, erst danach zahlen/Quest fortschreiben. |
-| Practice-Rückkehr (Major #9) | **HQ nur bei `OVERWORLD` öffnen**: `setPendingBandHQOpen(true)` nur wenn `targetScene === OVERWORLD`. MENU bleibt gültiges Rückkehrziel ohne HQ-Popup. |
+| Practice-Rückkehr (Major #9) | **HQ unbedingt öffnen**: `setPendingBandHQOpen(true)` wird unabhängig vom Zielszenen-Wert aufgerufen — NICHT auf `targetScene === OVERWORLD` gaten, da das den MENU-Rückkehrpfad bricht. Das (normalisierte) `targetScene` steuert nur `changeScene`, nicht das HQ-Popup. |
 | Asset-Modals (Minor) | **Globaler Owner nahe `App`**: RiskEvent-/Foreclosure-Modals szenenübergreifend mounten. |
 
 ---

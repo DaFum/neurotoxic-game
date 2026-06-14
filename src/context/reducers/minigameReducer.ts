@@ -607,12 +607,23 @@ export const handleCompleteRoadieMinigame = (
       : null
 
   const stash = state.band.stash
-  const stashItemPresent =
+  const stashEntry =
     safeItemId !== null && stash != null && Object.hasOwn(stash, safeItemId)
+      ? (stash[safeItemId] as Record<string, unknown> | undefined)
+      : undefined
+  // A missing `stacks` field counts as one stack; an explicit non-positive
+  // `stacks` means the item is effectively empty and grants no bonus.
+  const stashStacks = isFiniteNumber(stashEntry?.stacks)
+    ? Math.max(0, stashEntry?.stacks as number)
+    : stashEntry
+      ? 1
+      : 0
+  const stashItemPresent = stashStacks > 0
 
-  // Effective contraband count: only credit when a real stash item was present.
+  // Effective contraband count: only credit a positive, real delivery, clamped
+  // non-negative so a malformed payload cannot grant a reverse bonus.
   const effectiveContrabandDelivered = stashItemPresent
-    ? Math.min(finiteNumberOr(contrabandDelivered, 0), 1)
+    ? Math.max(0, Math.min(finiteNumberOr(contrabandDelivered, 0), 1))
     : 0
 
   // Apply Results
@@ -639,14 +650,9 @@ export const handleCompleteRoadieMinigame = (
     safeItemId !== null &&
     stash != null
   ) {
-    const entry = stash[safeItemId] as Record<string, unknown> | undefined
-    const currentStacks =
-      entry && isFiniteNumber(entry.stacks)
-        ? Math.max(0, entry.stacks as number)
-        : 1
     const newStash = Object.assign(Object.create(null), stash)
-    if (currentStacks > 1 && entry && typeof entry.stacks === 'number') {
-      newStash[safeItemId] = { ...entry, stacks: currentStacks - 1 }
+    if (stashStacks > 1 && isFiniteNumber(stashEntry?.stacks)) {
+      newStash[safeItemId] = { ...stashEntry, stacks: stashStacks - 1 }
     } else {
       delete newStash[safeItemId]
     }
