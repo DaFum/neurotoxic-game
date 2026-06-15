@@ -392,7 +392,7 @@ describe('useTravelLogic', () => {
     assert.equal(firedTravelEvent, false)
   })
 
-  test('onTravelComplete emits quest event with canonical arrival region', () => {
+  test('onTravelComplete does not emit quest event', () => {
     // This test is deliberately removed or modified to assert no emit:
     // The quest event emission has been moved to the reducer per the plan.
     const applyQuestEvent = mock.fn()
