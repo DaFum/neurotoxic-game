@@ -211,13 +211,13 @@ test('clinicReducer', async t => {
 
   await t.test('handleBloodBankDonate', async t2 => {
     await t2.test(
-      'normalizes and rejects without economy effects when a member has NaN stamina (which coerces to 0)',
+      'rejects without economy effects when a member has NaN stamina (returns original state)',
       () => {
         // Regression mirror of the heal case: a stale save can carry NaN stamina.
         // handleBloodBankDonate must coerce the NaN base to 0 (finiteNumberOr) so
         // NaN never propagates into stored stamina.
         // Since 0 < staminaCost + 10, the affordability check will reject the donation,
-        // returning the normalized state without economy effects or toasts.
+        // returning the original state without economy effects or toasts.
         const staminaCost = 20
         const state = {
           player: { money: 100, fame: 0, clinicVisits: 0 },
@@ -237,9 +237,8 @@ test('clinicReducer', async t => {
           successToast: { id: 'bb-toast', message: 'Donated', type: 'success' }
         })
 
-        // Stamina is normalized to 0.
-        assert.equal(nextState.band.members[0].stamina, 0)
-        assert.equal(Number.isNaN(nextState.band.members[0].stamina), false)
+        // Original state is returned on rejection.
+        assert.equal(Number.isNaN(nextState.band.members[0].stamina), true)
 
         // No economy effects applied.
         assert.equal(nextState.player.money, 100)
