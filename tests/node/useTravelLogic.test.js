@@ -393,6 +393,8 @@ describe('useTravelLogic', () => {
   })
 
   test('onTravelComplete emits quest event with canonical arrival region', () => {
+    // This test is deliberately removed or modified to assert no emit:
+    // The quest event emission has been moved to the reducer per the plan.
     const applyQuestEvent = mock.fn()
     const { result, targetNode } = setupTravelScenario(useTravelLogic, {
       applyQuestEvent
@@ -402,14 +404,7 @@ describe('useTravelLogic', () => {
       result.current.onTravelComplete(targetNode)
     })
 
-    assert.equal(applyQuestEvent.mock.calls.length, 1)
-    assert.deepEqual(applyQuestEvent.mock.calls[0].arguments[0], {
-      type: 'travel.completed',
-      amount: 1,
-      success: true,
-      context: { region: 'club' },
-      tags: ['club']
-    })
+    assert.equal(applyQuestEvent.mock.calls.length, 0)
   })
 
   test('onTravelComplete applies travel band patch before advancing the day', () => {
