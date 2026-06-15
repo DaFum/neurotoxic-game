@@ -126,10 +126,17 @@ describe('QuestModal Helper Functions', () => {
       expect(hint.options.scope).toBe('Hamburg');
     });
 
-    it('handles perVenue', () => {
-      const hint = getQuestScopeHint({ id: 'q1', repeatPolicy: 'perVenue', scopeKey: 'SO36' }, player);
+    it('handles matching perVenue', () => {
+      const hint = getQuestScopeHint({ id: 'q1', repeatPolicy: 'perVenue', scopeKey: 'SO36' }, { ...player, location: 'SO36' });
       expect(hint.matching).toBe(true);
       expect(hint.text).toBe('ui:quests.hint.scope.venue.only');
+    });
+
+    it('handles mismatching perVenue', () => {
+      const hint = getQuestScopeHint({ id: 'q1', repeatPolicy: 'perVenue', scopeKey: 'SO36' }, { ...player, location: 'Astra' });
+      expect(hint.matching).toBe(false);
+      expect(hint.text).toBe('ui:quests.hint.scope.venue.mismatch');
+      expect(hint.options.scope).toBe('SO36');
     });
   });
 

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ProgressBar } from './shared/index.tsx'
 import { GlitchButton } from './GlitchButton.tsx'
 import { useTranslation } from 'react-i18next'
+import { getRegionKeyForLocation } from '../utils/mapUtils'
 import { useId, memo, useState, type MouseEvent, type ReactNode } from 'react'
 import { formatCurrency } from '../utils/numberUtils'
 import { getQuestDefinition } from '../data/questRegistry'
@@ -257,7 +258,7 @@ export const getQuestDeadlineView = (
     return { level: 'urgent', text: 'ui:quests.hint.deadline.urgent', count: 2 }
   }
   if (timeRemaining <= 5) {
-    return { level: 'soon', text: 'ui:quests.hint.deadline.safe', count: timeRemaining }
+    return { level: 'soon', text: 'ui:quests.hint.deadline.soon', count: timeRemaining }
   }
   return { level: 'safe', text: 'ui:quests.hint.deadline.safe', count: timeRemaining }
 }
@@ -269,7 +270,8 @@ export const getQuestScopeHint = (
   if (!quest.scopeKey) return null
 
   if (quest.repeatPolicy === 'perRegion') {
-    const isMatching = player?.location === quest.scopeKey
+    const normalizedLocation = player?.location ? (getRegionKeyForLocation(player.location) ?? player.location) : undefined
+    const isMatching = normalizedLocation === quest.scopeKey
     return {
       matching: isMatching,
       text: isMatching
@@ -280,10 +282,13 @@ export const getQuestScopeHint = (
   }
 
   if (quest.repeatPolicy === 'perVenue') {
-    // Venue-specific checks can be expanded later if player.venue is available
+    // Determine the current venue (gig node id takes precedence, falling back to location if it's a venue)
+    const isMatching = player?.currentNodeId === quest.scopeKey || player?.location === quest.scopeKey
     return {
-      matching: true,
-      text: 'ui:quests.hint.scope.venue.only',
+      matching: isMatching,
+      text: isMatching
+        ? 'ui:quests.hint.scope.venue.only'
+        : 'ui:quests.hint.scope.venue.mismatch',
       options: { scope: quest.scopeKey }
     }
   }
