@@ -25,8 +25,8 @@
   "bandhq.metadata.dur": "DAUER",
   "bandhq.money": "GELD",
   "bandhq.setlist.selectOne": "Wähle mindestens einen Song zum Üben!",
-  "bandhq.setlist.songRemoved": "{{song}} aus {{scope}} entfernt.",
-  "bandhq.setlist.songSelected": "{{song}} für {{scope}} ausgewählt.",
+  "bandhq.setlist.songRemoved": "{{song}} aus {{venue}} entfernt.",
+  "bandhq.setlist.songSelected": "{{song}} für {{venue}} ausgewählt.",
   "bandhq.venue": "Band HQ",
   "blood_bank.action": "BLUT SPENDEN",
   "blood_bank.action_marrow": "MARK EXTRAHIEREN",
@@ -1599,12 +1599,6 @@
   "settings.return": "ZURÜCK",
   "settings.systemConfig": "SYSTEMKONFIGURATION",
   "sfx_volume": "SFX LAUTSTÄRKE",
-  "shop": {
-    "messages": {
-      "voidAltar": "Der Abgrund starrt zurück. Glück +10.",
-      "shrineAltar": "Die Rockgötter segnen dich. Glück +10."
-    }
-  },
   "shop.black_market_purchase": "Auf dem Schwarzmarkt gekauft! {{amount}} Fame verloren.",
   "shop.insufficient_funds": "Ungenügend Geld.",
   "shop.messages.alreadyOwned": "{{itemName}} bereits in Besitz!",
@@ -1798,5 +1792,7 @@
   "quests.hint.scope.venue.only": "Nur Aktionen an diesem Venue zählen.",
   "quests.hint.scope.venue.mismatch": "Nicht am richtigen Ort: Gehe zu {{scope}}.",
   "quests.details.title": "Warum zählt Fortschritt?",
-  "quests.hint.nextLabel": "Nächster Schritt:"
+  "quests.hint.nextLabel": "Nächster Schritt:",
+  "shop.messages.voidAltar": "Der Abgrund starrt zurück. Glück +10.",
+  "shop.messages.shrineAltar": "Die Rockgötter segnen dich. Glück +10."
 }

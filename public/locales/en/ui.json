@@ -25,8 +25,8 @@
   "bandhq.metadata.dur": "DUR",
   "bandhq.money": "MONEY",
   "bandhq.setlist.selectOne": "Select at least one song to practice!",
-  "bandhq.setlist.songRemoved": "Removed {{song}} from {{scope}}.",
-  "bandhq.setlist.songSelected": "Selected {{song}} for {{scope}}.",
+  "bandhq.setlist.songRemoved": "Removed {{song}} from {{venue}}.",
+  "bandhq.setlist.songSelected": "Selected {{song}} for {{venue}}.",
   "bandhq.venue": "Band HQ",
   "blood_bank.action": "DONATE BLOOD",
   "blood_bank.action_marrow": "EXTRACT MARROW",
@@ -1599,12 +1599,6 @@
   "settings.return": "RETURN",
   "settings.systemConfig": "SYSTEM CONFIG",
   "sfx_volume": "SFX VOLUME",
-  "shop": {
-    "messages": {
-      "voidAltar": "The abyss stares back. Luck +10.",
-      "shrineAltar": "The Rock Gods bless you. Luck +10."
-    }
-  },
   "shop.black_market_purchase": "Purchased from Black Market! Lost {{amount}} Fame.",
   "shop.insufficient_funds": "Insufficient funds.",
   "shop.messages.alreadyOwned": "Already owned {{itemName}}!",
@@ -1798,5 +1792,7 @@
   "quests.hint.scope.venue.only": "Only actions at this venue count.",
   "quests.hint.scope.venue.mismatch": "Wrong venue. Travel to {{scope}}.",
   "quests.details.title": "Why does this count?",
-  "quests.hint.nextLabel": "Next:"
+  "quests.hint.nextLabel": "Next:",
+  "shop.messages.voidAltar": "The abyss stares back. Luck +10.",
+  "shop.messages.shrineAltar": "The Rock Gods bless you. Luck +10."
 }
