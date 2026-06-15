@@ -806,7 +806,7 @@ test('QuestLifecycle', async t => {
 
       nextState = QuestLifecycle.advanceQuest(state, {
         questId: 'q1',
-        amount: Number.Infinity
+        amount: Infinity
       })
       assert.equal(nextState.activeQuests[0].progress, 3) // Infinity becomes 1 due to finiteNumberOr default
     })
