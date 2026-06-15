@@ -215,9 +215,9 @@ export function useEventSystem({
       if (!stateRef.current.activeEvent) {
         return {
           outcomeText:
-            typeof choice?.outcomeText === 'string' ? choice.outcomeText : '',
+            choice && Object.hasOwn(choice, 'outcomeText') && typeof choice.outcomeText === 'string' ? choice.outcomeText : '',
           description:
-            typeof choice?.description === 'string' ? choice.description : '',
+            choice && Object.hasOwn(choice, 'description') && typeof choice.description === 'string' ? choice.description : '',
           result: null
         }
       }
@@ -241,9 +241,9 @@ export function useEventSystem({
         dispatch(createSetActiveEventAction(null))
         return {
           outcomeText:
-            typeof choice?.outcomeText === 'string' ? choice.outcomeText : '',
+            choice && Object.hasOwn(choice, 'outcomeText') && typeof choice.outcomeText === 'string' ? choice.outcomeText : '',
           description:
-            typeof choice?.description === 'string' ? choice.description : '',
+            choice && Object.hasOwn(choice, 'description') && typeof choice.description === 'string' ? choice.description : '',
           result: null
         }
       }

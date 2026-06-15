@@ -52,7 +52,7 @@ export const resolveEventChoice = (
     result,
     delta,
     appliedDelta,
-    outcomeText: choice.outcomeText ?? '',
+    outcomeText: Object.hasOwn(choice, 'outcomeText') && typeof choice.outcomeText === 'string' ? choice.outcomeText : '',
     description: String(result?.description ?? '')
   }
 }

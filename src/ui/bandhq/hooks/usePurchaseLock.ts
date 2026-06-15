@@ -42,6 +42,8 @@ export const usePurchaseLock = (): PurchaseLockResult => {
       setProcessingItemId(itemId)
       try {
         await run()
+        // Hold the lock briefly to allow React to render the disabled state
+        await new Promise(resolve => setTimeout(resolve, 100))
       } finally {
         processingItemIdRef.current = null
         setProcessingItemId(null)

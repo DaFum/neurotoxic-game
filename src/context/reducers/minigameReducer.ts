@@ -26,6 +26,10 @@ import { normalizeVenueId, getRegionKeyForLocation } from '../../utils/mapUtils'
 import { addContrabandHelper } from './bandReducer'
 import { pickRandomContraband } from '../../utils/contrabandUtils'
 import {
+  applySharedBandEffect,
+  EQUIPMENT_APPLY_ON_ADD_EFFECTS
+} from '../../utils/contrabandEffects'
+import {
   MINIGAME_TYPES,
   DEFAULT_MINIGAME_STATE,
   DEFAULT_EQUIPMENT_COUNT
@@ -654,6 +658,20 @@ export const handleCompleteRoadieMinigame = (
     if (stashStacks > 1 && isFiniteNumber(stashEntry?.stacks)) {
       newStash[safeItemId] = { ...stashEntry, stacks: stashStacks - 1 }
     } else {
+      if (
+        stashEntry &&
+        typeof stashEntry === 'object' &&
+        stashEntry.type === 'equipment' &&
+        stashEntry.applyOnAdd === true &&
+        stashEntry.applied === true
+      ) {
+        applySharedBandEffect(
+          nextBand,
+          stashEntry.effectType,
+          -finiteNumberOr(stashEntry.value, 0),
+          EQUIPMENT_APPLY_ON_ADD_EFFECTS
+        )
+      }
       delete newStash[safeItemId]
     }
     nextBand = { ...nextBand, stash: newStash }
