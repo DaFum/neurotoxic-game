@@ -63,7 +63,17 @@ type UsePersistenceParams = {
   tRef: MutableRefObject<TFunction>
 }
 
-const EXPECTED_TYPES: Record<typeof LOADABLE_SAVE_KEYS[number], 'string' | 'number' | 'boolean' | 'array' | 'object' | 'object-or-array' | 'nullable-object' | 'number-or-string'> = {
+const EXPECTED_TYPES: Record<
+  (typeof LOADABLE_SAVE_KEYS)[number],
+  | 'string'
+  | 'number'
+  | 'boolean'
+  | 'array'
+  | 'object'
+  | 'object-or-array'
+  | 'nullable-object'
+  | 'number-or-string'
+> = {
   version: 'number-or-string',
   currentScene: 'string',
   player: 'object',
@@ -119,9 +129,11 @@ export const createRawLoadPayload = (
       if (expectedType === 'array') {
         isValid = Array.isArray(value)
       } else if (expectedType === 'object') {
-        isValid = typeof value === 'object' && value !== null && !Array.isArray(value)
+        isValid =
+          typeof value === 'object' && value !== null && !Array.isArray(value)
       } else if (expectedType === 'nullable-object') {
-        isValid = value === null || (typeof value === 'object' && !Array.isArray(value))
+        isValid =
+          value === null || (typeof value === 'object' && !Array.isArray(value))
       } else if (expectedType === 'object-or-array') {
         isValid = typeof value === 'object' && value !== null
       } else if (expectedType === 'number-or-string') {
@@ -133,7 +145,10 @@ export const createRawLoadPayload = (
       if (isValid) {
         payload[key] = value
       } else {
-        logger.warn('Persistence', `Skipping invalid type for loadable save key: ${key}`)
+        logger.warn(
+          'Persistence',
+          `Skipping invalid type for loadable save key: ${key}`
+        )
       }
     }
   }

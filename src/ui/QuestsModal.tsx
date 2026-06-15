@@ -227,7 +227,6 @@ const sortQuests = (quests: QuestDisplayState[]): QuestDisplayState[] =>
     return da - db
   })
 
-
 export type QuestDeadlineView =
   | { level: 'none'; text: null }
   | { level: 'safe'; text: string; count: number }
@@ -258,19 +257,33 @@ export const getQuestDeadlineView = (
     return { level: 'urgent', text: 'ui:quests.hint.deadline.urgent', count: 2 }
   }
   if (timeRemaining <= 5) {
-    return { level: 'soon', text: 'ui:quests.hint.deadline.soon', count: timeRemaining }
+    return {
+      level: 'soon',
+      text: 'ui:quests.hint.deadline.soon',
+      count: timeRemaining
+    }
   }
-  return { level: 'safe', text: 'ui:quests.hint.deadline.safe', count: timeRemaining }
+  return {
+    level: 'safe',
+    text: 'ui:quests.hint.deadline.safe',
+    count: timeRemaining
+  }
 }
 
 export const getQuestScopeHint = (
   quest: QuestDisplayState,
   player: PlayerState
-): { matching: boolean; text: string; options?: Record<string, unknown> } | null => {
+): {
+  matching: boolean
+  text: string
+  options?: Record<string, unknown>
+} | null => {
   if (!quest.scopeKey) return null
 
   if (quest.repeatPolicy === 'perRegion') {
-    const normalizedLocation = player?.location ? getRegionKeyForLocation(player.location) : undefined
+    const normalizedLocation = player?.location
+      ? getRegionKeyForLocation(player.location)
+      : undefined
     const isMatching = normalizedLocation === quest.scopeKey
     return {
       matching: isMatching,
@@ -283,7 +296,9 @@ export const getQuestScopeHint = (
 
   if (quest.repeatPolicy === 'perVenue') {
     // Determine the current venue (gig node id takes precedence, falling back to location if it's a venue)
-    const isMatching = player?.currentNodeId === quest.scopeKey || player?.location === quest.scopeKey
+    const isMatching =
+      player?.currentNodeId === quest.scopeKey ||
+      player?.location === quest.scopeKey
     return {
       matching: isMatching,
       text: isMatching
@@ -301,7 +316,10 @@ export const getQuestNextStepHint = (
   t: (key: string, options?: Record<string, unknown>) => string
 ): string | null => {
   if (quest.progressSource) {
-    const translatedNextStep = t(`ui:quests.hint.nextStep.${quest.progressSource}`, { defaultValue: '' })
+    const translatedNextStep = t(
+      `ui:quests.hint.nextStep.${quest.progressSource}`,
+      { defaultValue: '' }
+    )
     if (translatedNextStep) {
       return translatedNextStep
     }
@@ -315,15 +333,18 @@ export const getQuestPrimaryHint = ({
   nextStepHint,
   t
 }: {
-  deadlineView: QuestDeadlineView,
-  scopeHint: ReturnType<typeof getQuestScopeHint>,
-  nextStepHint: string | null,
+  deadlineView: QuestDeadlineView
+  scopeHint: ReturnType<typeof getQuestScopeHint>
+  nextStepHint: string | null
   t: (key: string, options?: Record<string, unknown>) => string
 }): { text: string; type: 'error' | 'warning' | 'info' | 'success' } | null => {
   // 1. Overdue / heute fällig
   if (deadlineView.level === 'overdue' || deadlineView.level === 'today') {
     return {
-      text: t(deadlineView.text, 'count' in deadlineView ? { count: deadlineView.count } : undefined),
+      text: t(
+        deadlineView.text,
+        'count' in deadlineView ? { count: deadlineView.count } : undefined
+      ),
       type: 'error'
     }
   }
@@ -339,7 +360,10 @@ export const getQuestPrimaryHint = ({
   // 3. Deadline bald
   if (deadlineView.level === 'urgent' || deadlineView.level === 'lastChance') {
     return {
-      text: t(deadlineView.text, 'count' in deadlineView ? { count: deadlineView.count } : undefined),
+      text: t(
+        deadlineView.text,
+        'count' in deadlineView ? { count: deadlineView.count } : undefined
+      ),
       type: 'warning'
     }
   }
@@ -397,9 +421,18 @@ const QuestItem = memo(
 
     const nextStepHint = getQuestNextStepHint(quest, t)
     const scopeHint = getQuestScopeHint(quest, player)
-    const primaryHint = getQuestPrimaryHint({ deadlineView, scopeHint, nextStepHint, t })
+    const primaryHint = getQuestPrimaryHint({
+      deadlineView,
+      scopeHint,
+      nextStepHint,
+      t
+    })
 
-    const hasUrgentDeadline = deadlineView.level === 'urgent' || deadlineView.level === 'lastChance' || deadlineView.level === 'today' || deadlineView.level === 'overdue'
+    const hasUrgentDeadline =
+      deadlineView.level === 'urgent' ||
+      deadlineView.level === 'lastChance' ||
+      deadlineView.level === 'today' ||
+      deadlineView.level === 'overdue'
 
     return (
       <motion.div
@@ -446,26 +479,42 @@ const QuestItem = memo(
               className={`flex items-center gap-1 text-xs font-mono px-2 py-1 ${hasUrgentDeadline ? 'bg-error-red/20 text-error-red' : 'bg-fuel-yellow/10 text-fuel-yellow'}`}
             >
               <IconClock className='w-3 h-3' />
-              <span>{deadlineView.text ? t(deadlineView.text, 'count' in deadlineView ? { count: deadlineView.count } : undefined) : ''}</span>
+              <span>
+                {deadlineView.text
+                  ? t(
+                      deadlineView.text,
+                      'count' in deadlineView
+                        ? { count: deadlineView.count }
+                        : undefined
+                    )
+                  : ''}
+              </span>
             </div>
           )}
         </div>
 
         {/* 2. Statuszeile: Was ist gerade wichtig? */}
         {primaryHint && (
-          <div className={`text-sm font-mono flex items-center gap-2 p-2 rounded ${
-            primaryHint.type === 'error' ? 'bg-blood-red/10 text-blood-red border border-blood-red/20' :
-            primaryHint.type === 'warning' ? 'bg-fuel-yellow/10 text-fuel-yellow border border-fuel-yellow/20' :
-            'bg-toxic-green/5 text-toxic-green/90'
-          }`}>
-             <span className="font-bold">{t('ui:quests.hint.nextLabel')}</span> {primaryHint.text}
+          <div
+            className={`text-sm font-mono flex items-center gap-2 p-2 rounded ${
+              primaryHint.type === 'error'
+                ? 'bg-blood-red/10 text-blood-red border border-blood-red/20'
+                : primaryHint.type === 'warning'
+                  ? 'bg-fuel-yellow/10 text-fuel-yellow border border-fuel-yellow/20'
+                  : 'bg-toxic-green/5 text-toxic-green/90'
+            }`}
+          >
+            <span className='font-bold'>{t('ui:quests.hint.nextLabel')}</span>{' '}
+            {primaryHint.text}
           </div>
         )}
 
         {/* 3. Progressbar + Fortschrittswert */}
         <div>
           <div className='flex justify-between text-xs text-ash-gray mb-1 font-mono'>
-            <span>{safeProgress} / {safeRequired}</span>
+            <span>
+              {safeProgress} / {safeRequired}
+            </span>
           </div>
           <ProgressBar
             value={progressPercent}
@@ -498,13 +547,19 @@ const QuestItem = memo(
         </div>
 
         {/* Optionaler Details-Toggle */}
-        <div className="mt-2">
+        <div className='mt-2'>
           <button
             onClick={() => setShowDetails(!showDetails)}
-            className="min-w-[44px] min-h-[44px] text-xs text-ash-gray/70 hover:text-toxic-green font-mono flex items-center gap-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green"
+            className='min-w-[44px] min-h-[44px] text-xs text-ash-gray/70 hover:text-toxic-green font-mono flex items-center gap-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
           >
-            {showDetails ? <IconChevronUp className="w-3 h-3" /> : <IconChevronDown className="w-3 h-3" />}
-            {showDetails ? t('ui:quests.details.hide') : t('ui:quests.details.show')}
+            {showDetails ? (
+              <IconChevronUp className='w-3 h-3' />
+            ) : (
+              <IconChevronDown className='w-3 h-3' />
+            )}
+            {showDetails
+              ? t('ui:quests.details.hide')
+              : t('ui:quests.details.show')}
           </button>
 
           <AnimatePresence>
@@ -514,25 +569,33 @@ const QuestItem = memo(
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
-                className="overflow-hidden"
+                className='overflow-hidden'
               >
-                <div className="pt-3 pb-1 text-xs text-ash-gray/90 font-mono space-y-2">
-                   <p className="font-bold text-ash-gray">{t('ui:quests.details.title')}</p>
-                   <p>
-                     {quest.description ? t(quest.description) : ''}
-                   </p>
-                   {quest.progressSource && (
-                     <p className='italic text-toxic-green/70'>
-                       {quest.progressSource === 'harmony_recovered' && typeof quest.required === 'number' && quest.required > 1
-                         ? t('ui:quests.progressSource.harmony_threshold', { target: quest.required })
-                         : t(`ui:quests.progressSource.${quest.progressSource}`)}
-                     </p>
-                   )}
-                   {quest.repeatPolicy === 'cooldown' && typeof quest.cooldownDays === 'number' && quest.cooldownDays > 0 && (
-                     <p>
-                       {t('ui:quests.repeatableAfter', { count: quest.cooldownDays })}
-                     </p>
-                   )}
+                <div className='pt-3 pb-1 text-xs text-ash-gray/90 font-mono space-y-2'>
+                  <p className='font-bold text-ash-gray'>
+                    {t('ui:quests.details.title')}
+                  </p>
+                  <p>{quest.description ? t(quest.description) : ''}</p>
+                  {quest.progressSource && (
+                    <p className='italic text-toxic-green/70'>
+                      {quest.progressSource === 'harmony_recovered' &&
+                      typeof quest.required === 'number' &&
+                      quest.required > 1
+                        ? t('ui:quests.progressSource.harmony_threshold', {
+                            target: quest.required
+                          })
+                        : t(`ui:quests.progressSource.${quest.progressSource}`)}
+                    </p>
+                  )}
+                  {quest.repeatPolicy === 'cooldown' &&
+                    typeof quest.cooldownDays === 'number' &&
+                    quest.cooldownDays > 0 && (
+                      <p>
+                        {t('ui:quests.repeatableAfter', {
+                          count: quest.cooldownDays
+                        })}
+                      </p>
+                    )}
                 </div>
               </motion.div>
             )}
