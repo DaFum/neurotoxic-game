@@ -1,9 +1,10 @@
-import { IconClose } from './shared/Icons'
+import { IconClose, IconChevronDown, IconChevronUp } from './shared/Icons'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ProgressBar } from './shared/index.tsx'
 import { GlitchButton } from './GlitchButton.tsx'
 import { useTranslation } from 'react-i18next'
-import { useId, memo, type MouseEvent, type ReactNode } from 'react'
+import { getRegionKeyForLocation } from '../utils/mapUtils'
+import { useId, memo, useState, type MouseEvent, type ReactNode } from 'react'
 import { formatCurrency } from '../utils/numberUtils'
 import { getQuestDefinition } from '../data/questRegistry'
 import { getQuestPenalties } from '../domain/questPenalties'
@@ -226,6 +227,134 @@ const sortQuests = (quests: QuestDisplayState[]): QuestDisplayState[] =>
     return da - db
   })
 
+
+export type QuestDeadlineView =
+  | { level: 'none'; text: null }
+  | { level: 'safe'; text: string; count: number }
+  | { level: 'soon'; text: string; count: number }
+  | { level: 'urgent'; text: string; count: number }
+  | { level: 'lastChance'; text: string }
+  | { level: 'today'; text: string }
+  | { level: 'overdue'; text: string }
+
+export const getQuestDeadlineView = (
+  quest: QuestDisplayState,
+  currentDay: number
+): QuestDeadlineView => {
+  if (quest.deadline == null) return { level: 'none', text: null }
+
+  const timeRemaining = quest.deadline - currentDay
+
+  if (timeRemaining < 0) {
+    return { level: 'overdue', text: 'ui:quests.hint.deadline.overdue' }
+  }
+  if (timeRemaining === 0) {
+    return { level: 'today', text: 'ui:quests.hint.deadline.today' }
+  }
+  if (timeRemaining === 1) {
+    return { level: 'lastChance', text: 'ui:quests.hint.deadline.lastChance' }
+  }
+  if (timeRemaining === 2) {
+    return { level: 'urgent', text: 'ui:quests.hint.deadline.urgent', count: 2 }
+  }
+  if (timeRemaining <= 5) {
+    return { level: 'soon', text: 'ui:quests.hint.deadline.soon', count: timeRemaining }
+  }
+  return { level: 'safe', text: 'ui:quests.hint.deadline.safe', count: timeRemaining }
+}
+
+export const getQuestScopeHint = (
+  quest: QuestDisplayState,
+  player: PlayerState
+): { matching: boolean; text: string; options?: Record<string, unknown> } | null => {
+  if (!quest.scopeKey) return null
+
+  if (quest.repeatPolicy === 'perRegion') {
+    const normalizedLocation = player?.location ? getRegionKeyForLocation(player.location) : undefined
+    const isMatching = normalizedLocation === quest.scopeKey
+    return {
+      matching: isMatching,
+      text: isMatching
+        ? 'ui:quests.hint.scope.region.matching'
+        : 'ui:quests.hint.scope.region.mismatch',
+      options: { scope: quest.scopeKey }
+    }
+  }
+
+  if (quest.repeatPolicy === 'perVenue') {
+    // Determine the current venue (gig node id takes precedence, falling back to location if it's a venue)
+    const isMatching = player?.currentNodeId === quest.scopeKey || player?.location === quest.scopeKey
+    return {
+      matching: isMatching,
+      text: isMatching
+        ? 'ui:quests.hint.scope.venue.only'
+        : 'ui:quests.hint.scope.venue.mismatch',
+      options: { scope: quest.scopeKey }
+    }
+  }
+
+  return null
+}
+
+export const getQuestNextStepHint = (
+  quest: QuestDisplayState,
+  t: (key: string, options?: Record<string, unknown>) => string
+): string | null => {
+  if (quest.progressSource) {
+    const translatedNextStep = t(`ui:quests.hint.nextStep.${quest.progressSource}`, { defaultValue: '' })
+    if (translatedNextStep) {
+      return translatedNextStep
+    }
+  }
+  return t('ui:quests.hint.nextStep.default')
+}
+
+export const getQuestPrimaryHint = ({
+  deadlineView,
+  scopeHint,
+  nextStepHint,
+  t
+}: {
+  deadlineView: QuestDeadlineView,
+  scopeHint: ReturnType<typeof getQuestScopeHint>,
+  nextStepHint: string | null,
+  t: (key: string, options?: Record<string, unknown>) => string
+}): { text: string; type: 'error' | 'warning' | 'info' | 'success' } | null => {
+  // 1. Overdue / heute fällig
+  if (deadlineView.level === 'overdue' || deadlineView.level === 'today') {
+    return {
+      text: t(deadlineView.text, 'count' in deadlineView ? { count: deadlineView.count } : undefined),
+      type: 'error'
+    }
+  }
+
+  // 2. Falscher Scope
+  if (scopeHint && !scopeHint.matching) {
+    return {
+      text: t(scopeHint.text, scopeHint.options),
+      type: 'warning'
+    }
+  }
+
+  // 3. Deadline bald
+  if (deadlineView.level === 'urgent' || deadlineView.level === 'lastChance') {
+    return {
+      text: t(deadlineView.text, 'count' in deadlineView ? { count: deadlineView.count } : undefined),
+      type: 'warning'
+    }
+  }
+
+  // 4. Normaler nächster Schritt
+  if (nextStepHint) {
+    return {
+      text: nextStepHint,
+      type: 'info'
+    }
+  }
+
+  return null
+}
+
 const questItemVariants = {
   hidden: { opacity: 0, x: -20 },
   visible: { opacity: 1, x: 0, transition: { duration: 0.3 } }
@@ -235,16 +364,20 @@ const QuestItem = memo(
   ({
     quest,
     index,
-    currentDay,
+    player,
     variants
   }: {
     quest: QuestDisplayState
     index: number
-    currentDay: number
+    player: PlayerState
     variants: Variants
   }) => {
     const { t, i18n } = useTranslation(['ui', 'events'])
-    const isOverdue = quest.deadline != null && currentDay > quest.deadline
+    const [showDetails, setShowDetails] = useState(false)
+
+    const currentDay = player?.day ?? 1
+    const deadlineView = getQuestDeadlineView(quest, currentDay)
+    const isOverdue = deadlineView.level === 'overdue'
 
     const safeProgress = quest.progress ?? 0
     const safeRequired = quest.required ?? 0
@@ -259,11 +392,14 @@ const QuestItem = memo(
       Math.min(100, Number.isFinite(progressPercent) ? progressPercent : 0)
     )
 
-    const timeRemaining =
-      quest.deadline != null ? Math.max(0, quest.deadline - currentDay) : null
-
     const rewardChips = getQuestRewards(quest)
     const penaltyTexts = getPenaltyTexts(quest, t)
+
+    const nextStepHint = getQuestNextStepHint(quest, t)
+    const scopeHint = getQuestScopeHint(quest, player)
+    const primaryHint = getQuestPrimaryHint({ deadlineView, scopeHint, nextStepHint, t })
+
+    const hasUrgentDeadline = deadlineView.level === 'urgent' || deadlineView.level === 'lastChance' || deadlineView.level === 'today' || deadlineView.level === 'overdue'
 
     return (
       <motion.div
@@ -272,9 +408,10 @@ const QuestItem = memo(
         initial='hidden'
         animate='visible'
         transition={{ delay: index * 0.1 }}
-        className={`p-4 border-l-4 ${isOverdue ? 'border-blood-red' : 'border-toxic-green'} bg-ash-gray/5`}
+        className={`p-4 border-l-4 ${isOverdue ? 'border-blood-red' : 'border-toxic-green'} bg-ash-gray/5 flex flex-col gap-3`}
       >
-        <div className='flex justify-between items-start mb-2'>
+        {/* 1. Titel + Kategorie + Repeat/Scope-Chips */}
+        <div className='flex justify-between items-start'>
           <div className='flex flex-col gap-1'>
             <h3 className='text-xl font-bold text-star-white uppercase tracking-wide'>
               {quest.label ? t(quest.label) : ''}
@@ -304,51 +441,31 @@ const QuestItem = memo(
               )}
             </div>
           </div>
-          {timeRemaining !== null && (
+          {deadlineView.level !== 'none' && (
             <div
-              className={`flex items-center gap-1 text-xs font-mono px-2 py-1 ${timeRemaining <= 2 ? 'bg-error-red/20 text-error-red' : 'bg-fuel-yellow/10 text-fuel-yellow'}`}
+              className={`flex items-center gap-1 text-xs font-mono px-2 py-1 ${hasUrgentDeadline ? 'bg-error-red/20 text-error-red' : 'bg-fuel-yellow/10 text-fuel-yellow'}`}
             >
               <IconClock className='w-3 h-3' />
-              <span>
-                {timeRemaining}{' '}
-                {timeRemaining === 1
-                  ? t('ui:quests.days.singular')
-                  : t('ui:quests.days.plural')}
-              </span>
+              <span>{deadlineView.text ? t(deadlineView.text, 'count' in deadlineView ? { count: deadlineView.count } : undefined) : ''}</span>
             </div>
           )}
         </div>
 
-        <p className='text-sm text-ash-gray mb-2 font-mono'>
-          {quest.description ? t(quest.description) : ''}
-        </p>
-
-        {quest.progressSource && (
-          <p className='text-xs text-toxic-green/80 mb-3 font-mono italic'>
-            {quest.progressSource === 'harmony_recovered' &&
-            typeof quest.required === 'number' &&
-            quest.required > 1
-              ? t('ui:quests.progressSource.harmony_threshold', {
-                  target: quest.required
-                })
-              : t(`ui:quests.progressSource.${quest.progressSource}`)}
-          </p>
+        {/* 2. Statuszeile: Was ist gerade wichtig? */}
+        {primaryHint && (
+          <div className={`text-sm font-mono flex items-center gap-2 p-2 rounded ${
+            primaryHint.type === 'error' ? 'bg-blood-red/10 text-blood-red border border-blood-red/20' :
+            primaryHint.type === 'warning' ? 'bg-fuel-yellow/10 text-fuel-yellow border border-fuel-yellow/20' :
+            'bg-toxic-green/5 text-toxic-green/90'
+          }`}>
+             <span className="font-bold">{t('ui:quests.hint.nextLabel')}</span> {primaryHint.text}
+          </div>
         )}
 
-        {quest.repeatPolicy === 'cooldown' &&
-          typeof quest.cooldownDays === 'number' &&
-          quest.cooldownDays > 0 && (
-            <p className='text-xs text-ash-gray/70 mb-3 font-mono'>
-              {t('ui:quests.repeatableAfter', { count: quest.cooldownDays })}
-            </p>
-          )}
-
-        <div className='mb-3'>
+        {/* 3. Progressbar + Fortschrittswert */}
+        <div>
           <div className='flex justify-between text-xs text-ash-gray mb-1 font-mono'>
-            <span>{t('ui:quests.progress')}</span>
-            <span>
-              {safeProgress} / {safeRequired}
-            </span>
+            <span>{safeProgress} / {safeRequired}</span>
           </div>
           <ProgressBar
             value={progressPercent}
@@ -358,11 +475,8 @@ const QuestItem = memo(
           />
         </div>
 
-        <div className='flex flex-wrap gap-2 mt-4 pt-3 border-t border-ash-gray/10'>
-          <span className='text-xs text-ash-gray uppercase font-bold mr-2 self-center'>
-            {t('ui:quests.rewards')}
-          </span>
-
+        {/* 4. Rewards und Penalties */}
+        <div className='flex flex-wrap gap-2 mt-1 pt-2 border-t border-ash-gray/10'>
           {rewardChips.map((reward, rewardIndex) => (
             <span
               key={`reward-${reward.type}-${rewardIndex}`} /* eslint-disable-line @eslint-react/no-array-index-key */
@@ -372,23 +486,58 @@ const QuestItem = memo(
               {getRewardText(reward, t, i18n.language)}
             </span>
           ))}
+
+          {penaltyTexts.map(text => (
+            <span
+              key={text}
+              className='inline-flex items-center gap-1 bg-blood-red/10 text-blood-red px-2 py-1 text-xs font-mono'
+            >
+              {text}
+            </span>
+          ))}
         </div>
 
-        {penaltyTexts.length > 0 && (
-          <div className='flex flex-wrap gap-2 mt-3'>
-            <span className='text-xs text-blood-red uppercase font-bold mr-2 self-center'>
-              {t('ui:quests.penalty.label')}
-            </span>
-            {penaltyTexts.map(text => (
-              <span
-                key={text}
-                className='inline-flex items-center gap-1 bg-blood-red/10 text-blood-red px-2 py-1 text-xs font-mono'
+        {/* Optionaler Details-Toggle */}
+        <div className="mt-2">
+          <button
+            onClick={() => setShowDetails(!showDetails)}
+            className="min-w-[44px] min-h-[44px] text-xs text-ash-gray/70 hover:text-toxic-green font-mono flex items-center gap-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green"
+          >
+            {showDetails ? <IconChevronUp className="w-3 h-3" /> : <IconChevronDown className="w-3 h-3" />}
+            {showDetails ? t('ui:quests.details.hide') : t('ui:quests.details.show')}
+          </button>
+
+          <AnimatePresence>
+            {showDetails && (
+              <motion.div
+                id={`quest-details-${quest.id}`}
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="overflow-hidden"
               >
-                {text}
-              </span>
-            ))}
-          </div>
-        )}
+                <div className="pt-3 pb-1 text-xs text-ash-gray/90 font-mono space-y-2">
+                   <p className="font-bold text-ash-gray">{t('ui:quests.details.title')}</p>
+                   <p>
+                     {quest.description ? t(quest.description) : ''}
+                   </p>
+                   {quest.progressSource && (
+                     <p className='italic text-toxic-green/70'>
+                       {quest.progressSource === 'harmony_recovered' && typeof quest.required === 'number' && quest.required > 1
+                         ? t('ui:quests.progressSource.harmony_threshold', { target: quest.required })
+                         : t(`ui:quests.progressSource.${quest.progressSource}`)}
+                     </p>
+                   )}
+                   {quest.repeatPolicy === 'cooldown' && typeof quest.cooldownDays === 'number' && quest.cooldownDays > 0 && (
+                     <p>
+                       {t('ui:quests.repeatableAfter', { count: quest.cooldownDays })}
+                     </p>
+                   )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </motion.div>
     )
   }
@@ -476,7 +625,7 @@ export const QuestsModal = ({
                     key={quest.id}
                     quest={quest}
                     index={index}
-                    currentDay={player.day}
+                    player={player}
                     variants={questItemVariants}
                   />
                 )
