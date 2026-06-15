@@ -279,6 +279,42 @@ test('systemReducer - LOAD_GAME', async t => {
     assert.equal(nextState.currentGig?.sourceScene, undefined)
   })
 
+  await t.test(
+    'stale gig data on a loaded save never reopens gig/post-gig UI',
+    () => {
+      const initialState = createInitialState()
+      // A tampered/legacy save claiming a post-gig scene with leftover gig data
+      // (including a leaderboard-bearing songId) and stale rhythm stats.
+      const loadedState = {
+        currentScene: GAME_PHASES.POST_GIG,
+        currentGig: {
+          id: 'old_gig',
+          name: 'Old Venue',
+          songId: 'some_song'
+        },
+        lastGigStats: {
+          score: 9999,
+          misses: 0,
+          accuracy: 100,
+          combo: 50,
+          maxCombo: 50
+        }
+      }
+
+      const nextState = handleLoadGame(initialState, loadedState)
+
+      // handleLoadGame always lands the player on OVERWORLD, so neither the GIG
+      // nor POST_GIG scene can run from a load. The leaderboard submit happens
+      // during gig completion and practice-return happens in endGig — both are
+      // scene-gated, so stale currentGig/lastGigStats stay inert after load.
+      assert.equal(nextState.currentScene, GAME_PHASES.OVERWORLD)
+      assert.notEqual(nextState.currentScene, GAME_PHASES.GIG)
+      assert.notEqual(nextState.currentScene, GAME_PHASES.POST_GIG)
+      // Not a practice gig, so the practice-return side channel is inert too.
+      assert.notEqual(nextState.currentGig?.isPractice, true)
+    }
+  )
+
   await t.test('hydrates contraband stash with static properties', () => {
     const initialState = createInitialState()
     const loadedState = {
