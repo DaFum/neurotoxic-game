@@ -50,8 +50,8 @@ export const usePurchaseLock = (): PurchaseLockResult => {
       setProcessingItemId(itemId)
       try {
         await run()
-        // Yield once so a second synchronous click before React re-renders is still blocked.
-        await new Promise<void>(resolve => queueMicrotask(resolve))
+        // Yield to the macrotask queue so React can commit the state update and disable the button before the lock is released.
+        await new Promise<void>(resolve => setTimeout(resolve, 0))
       } finally {
         if (isMounted.current) {
           processingItemIdRef.current = null
