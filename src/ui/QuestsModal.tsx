@@ -270,6 +270,11 @@ export const getQuestDeadlineView = (
   }
 }
 
+const deadlineCount = (
+  view: QuestDeadlineView
+): { count: number } | undefined =>
+  'count' in view ? { count: view.count } : undefined
+
 export const getQuestScopeHint = (
   quest: QuestDisplayState,
   player: PlayerState
@@ -341,10 +346,7 @@ export const getQuestPrimaryHint = ({
   // 1. Overdue / heute fällig
   if (deadlineView.level === 'overdue' || deadlineView.level === 'today') {
     return {
-      text: t(
-        deadlineView.text,
-        'count' in deadlineView ? { count: deadlineView.count } : undefined
-      ),
+      text: t(deadlineView.text, deadlineCount(deadlineView)),
       type: 'error'
     }
   }
@@ -360,10 +362,7 @@ export const getQuestPrimaryHint = ({
   // 3. Deadline bald
   if (deadlineView.level === 'urgent' || deadlineView.level === 'lastChance') {
     return {
-      text: t(
-        deadlineView.text,
-        'count' in deadlineView ? { count: deadlineView.count } : undefined
-      ),
+      text: t(deadlineView.text, deadlineCount(deadlineView)),
       type: 'warning'
     }
   }
@@ -481,12 +480,7 @@ const QuestItem = memo(
               <IconClock className='w-3 h-3' />
               <span>
                 {deadlineView.text
-                  ? t(
-                      deadlineView.text,
-                      'count' in deadlineView
-                        ? { count: deadlineView.count }
-                        : undefined
-                    )
+                  ? t(deadlineView.text, deadlineCount(deadlineView))
                   : ''}
               </span>
             </div>

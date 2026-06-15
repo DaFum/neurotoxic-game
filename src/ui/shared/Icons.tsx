@@ -377,9 +377,13 @@ export const IconClose = memo(function IconClose({
   )
 })
 
-export const IconChevronDown = memo(function IconChevronDown({
-  className = 'w-5 h-5'
-}: IconProps) {
+const IconChevronBase = memo(function IconChevronBase({
+  className,
+  d
+}: {
+  className: string
+  d: string
+}) {
   return (
     <svg
       aria-hidden='true'
@@ -394,29 +398,19 @@ export const IconChevronDown = memo(function IconChevronDown({
       strokeLinecap='round'
       strokeLinejoin='round'
     >
-      <path d='m6 9 6 6 6-6' />
+      <path d={d} />
     </svg>
   )
+})
+
+export const IconChevronDown = memo(function IconChevronDown({
+  className = 'w-5 h-5'
+}: IconProps) {
+  return <IconChevronBase className={className} d='m6 9 6 6 6-6' />
 })
 
 export const IconChevronUp = memo(function IconChevronUp({
   className = 'w-5 h-5'
 }: IconProps) {
-  return (
-    <svg
-      aria-hidden='true'
-      focusable='false'
-      role='presentation'
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      className={className}
-      strokeWidth={2}
-      strokeLinecap='round'
-      strokeLinejoin='round'
-    >
-      <path d='m18 15-6-6-6 6' />
-    </svg>
-  )
+  return <IconChevronBase className={className} d='m18 15-6-6-6 6' />
 })
