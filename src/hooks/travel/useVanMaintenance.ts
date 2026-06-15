@@ -23,7 +23,7 @@ import type { VanMaintenanceParams } from './types'
  * `clampPlayerMoney`, and play the `cash` SFX on success. Both are gated by
  * `isTravelingRef` and do nothing while a trip is in progress.
  *
- * @returns `{ handleRefuel, handleRepair }`.
+ * @returns An object containing the `handleRefuel` and `handleRepair` functions.
  */
 export const useVanMaintenance = ({
   isTravelingRef,
