@@ -789,6 +789,28 @@ test('QuestLifecycle', async t => {
       }
     )
 
+    await t.test('handles invalid amounts without corrupting state', () => {
+      const state = { activeQuests: [{ id: 'q1', progress: 2, required: 5 }] }
+
+      let nextState = QuestLifecycle.advanceQuest(state, {
+        questId: 'q1',
+        amount: -999
+      })
+      assert.equal(nextState.activeQuests[0].progress, 2)
+
+      nextState = QuestLifecycle.advanceQuest(state, {
+        questId: 'q1',
+        amount: Number.NaN
+      })
+      assert.equal(nextState.activeQuests[0].progress, 3) // NaN becomes 1 due to finiteNumberOr default
+
+      nextState = QuestLifecycle.advanceQuest(state, {
+        questId: 'q1',
+        amount: Number.Infinity
+      })
+      assert.equal(nextState.activeQuests[0].progress, 3) // Infinity becomes 1 due to finiteNumberOr default
+    })
+
     await t.test('advances progress', () => {
       const state = { activeQuests: [{ id: 'q1', progress: 0, required: 5 }] }
       const nextState = QuestLifecycle.advanceQuest(state, {

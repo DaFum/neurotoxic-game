@@ -29,7 +29,10 @@ import { logger } from '../../../utils/logger'
 import { calculateContinueStats } from '../../../utils/postGigUtils'
 import { shouldTriggerBankruptcy } from '../../../utils/economyEngine'
 import { submitLeaderboardScores } from '../../../utils/leaderboardUtils'
-import { createFameGainedQuestEvent } from '../../../quests/producers/economyQuestEvents'
+import {
+  createFameGainedQuestEvent,
+  createMoneyEarnedQuestEvent
+} from '../../../quests/producers/economyQuestEvents'
 import { getRegionKeyForLocation } from '../../../utils/mapUtils'
 import type { HandlerDispatchers } from './types'
 
@@ -211,6 +214,14 @@ export function useContinueHandler({
               getRegionKeyForLocation(player.location) ?? player.location ?? '',
             amount: fameGain,
             reason: 'post_gig_fame'
+          })
+        )
+      }
+
+      if (financials.net > 0) {
+        applyQuestEvent(
+          createMoneyEarnedQuestEvent({
+            amount: financials.net
           })
         )
       }
