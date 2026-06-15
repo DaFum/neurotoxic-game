@@ -310,7 +310,8 @@ const DealActions = memo(
               <button
                 type='button'
                 onClick={() => handleNegotiationStart(deal)}
-                className='w-full min-h-11 px-4 py-2 border border-warning-yellow text-warning-yellow text-xs font-bold uppercase hover:bg-warning-yellow hover:text-void-black transition-colors'
+                disabled={isProcessing}
+                className='w-full min-h-11 px-4 py-2 border border-warning-yellow text-warning-yellow text-xs font-bold uppercase hover:bg-warning-yellow hover:text-void-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
               >
                 {t('ui:deals.negotiate', { defaultValue: 'NEGOTIATE' })}
               </button>

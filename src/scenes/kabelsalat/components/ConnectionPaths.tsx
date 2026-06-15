@@ -21,17 +21,16 @@ export const ConnectionPaths = ({
   socketOrder
 }: ConnectionPathsProps) => {
   const paths: JSX.Element[] = []
-  for (const sockId in connections) {
-    if (!Object.hasOwn(connections, sockId)) continue
-
-    const s = sockId as SocketId
-    const cabId = connections[s]
+  // Iterate the typed socketOrder (SocketId[]) rather than `for...in` over the
+  // connections record, which would widen keys to `string` and require a cast.
+  for (const sockId of socketOrder) {
+    const cabId = connections[sockId]
     if (!cabId) continue
 
     paths.push(
       <ConnectionPath
-        key={s}
-        sockId={s}
+        key={sockId}
+        sockId={sockId}
         cabId={cabId}
         isPowerConnected={isPowerConnected}
         socketOrder={socketOrder}

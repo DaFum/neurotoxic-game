@@ -30,7 +30,7 @@ Nach dem grünen Test und vor `git push`:
 
 Einzeldatei-Tests:
 - `node:test`: `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/<file>.test.js`
-- Vitest: `pnpm run test:ui:file -- tests/<file>.test.jsx`
+- Vitest: `pnpm exec vitest run tests/<file>.test.jsx` (nicht den `pnpm run test:ui:file`-Wrapper mit mehreren Dateien nutzen — er scoped nicht und lässt fremde Suites durchsickern)
 
 ---
 

@@ -1,4 +1,5 @@
 import type { GameSettings, RawGameSettings } from '../types'
+import { isValidLogLevel } from './logger'
 
 /**
  * Canonical sanitizer for game settings updates.
@@ -38,7 +39,12 @@ export const sanitizeSettingsPayload = (
     typeof rawSettings.logLevel === 'number' &&
     Number.isFinite(rawSettings.logLevel)
   ) {
-    sanitized.logLevel = Math.floor(rawSettings.logLevel)
+    // Drop out-of-range levels (e.g. -1, 999) so stored settings can't drift
+    // from the logger's supported range. isValidLogLevel is the canonical check.
+    const flooredLevel = Math.floor(rawSettings.logLevel)
+    if (isValidLogLevel(flooredLevel)) {
+      sanitized.logLevel = flooredLevel
+    }
   }
 
   return sanitized

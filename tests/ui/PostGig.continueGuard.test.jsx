@@ -126,7 +126,12 @@ const mockAddQuest = vi.fn()
 const mockApplyQuestEvent = vi.fn()
 
 const createBaseState = (overrides = {}) => ({
-  currentGig: { songId: 'test_song', venue: 'Test Venue', payout: 500 },
+  currentGig: {
+    songId: 'test_song',
+    id: 'test_venue',
+    capacity: 500,
+    payout: 500
+  },
   player: {
     money: 500,
     fame: 100,

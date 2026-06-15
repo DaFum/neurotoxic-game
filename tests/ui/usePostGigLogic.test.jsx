@@ -440,7 +440,7 @@ describe('usePostGigLogic', () => {
         penalty: null
       }
       {
-        let { result } = renderHook(() => usePostGigLogic())
+        let { result, unmount } = renderHook(() => usePostGigLogic())
         await waitFor(() => expect(result.current.financials).toBeTruthy())
         act(() => {
           result.current.handleAcceptDeal(deal)
@@ -448,6 +448,7 @@ describe('usePostGigLogic', () => {
         expect(mockUpdatePlayer).toHaveBeenCalledWith(
           expect.objectContaining({ money: 1500 })
         ) // 500 + 1000
+        unmount()
       }
 
       // Accept deal (Item)
@@ -459,12 +460,13 @@ describe('usePostGigLogic', () => {
         penalty: null
       }
       {
-        let { result } = renderHook(() => usePostGigLogic())
+        let { result, unmount } = renderHook(() => usePostGigLogic())
         await waitFor(() => expect(result.current.financials).toBeTruthy())
         act(() => {
           result.current.handleAcceptDeal(dealItem)
         })
         expect(mockUpdateBand).toHaveBeenCalledWith(expect.any(Function))
+        unmount()
       }
 
       // Accept deal (Error handling)
@@ -479,7 +481,7 @@ describe('usePostGigLogic', () => {
         penalty: null
       }
       {
-        let { result } = renderHook(() => usePostGigLogic())
+        let { result, unmount } = renderHook(() => usePostGigLogic())
         await waitFor(() => expect(result.current.financials).toBeTruthy())
         expect(() => {
           act(() => {
@@ -490,6 +492,7 @@ describe('usePostGigLogic', () => {
           expect.stringContaining('Deal failed'),
           'error'
         )
+        unmount()
       }
 
       let dealWithPenalty = {
@@ -501,12 +504,13 @@ describe('usePostGigLogic', () => {
       }
       {
         mockUpdateSocial.mockClear()
-        let { result } = renderHook(() => usePostGigLogic())
+        let { result, unmount } = renderHook(() => usePostGigLogic())
         await waitFor(() => expect(result.current.financials).toBeTruthy())
         act(() => {
           result.current.handleAcceptDeal(dealWithPenalty)
         })
         expect(mockUpdateSocial).toHaveBeenCalledWith(expect.any(Function))
+        unmount()
       }
 
       // Reject deals
@@ -518,7 +522,7 @@ describe('usePostGigLogic', () => {
             offer: { upfront: 1000, duration: 3 }
           }
         ])
-        let { result } = renderHook(() => usePostGigLogic())
+        let { result, unmount } = renderHook(() => usePostGigLogic())
         await waitFor(() => expect(result.current.postOptions).toHaveLength(1))
         act(() => {
           result.current.handlePostSelection(result.current.postOptions[0])
@@ -529,6 +533,7 @@ describe('usePostGigLogic', () => {
           result.current.handleRejectDeals()
         })
         expect(result.current.phase).toBe('COMPLETE')
+        unmount()
       }
     })
 
