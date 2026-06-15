@@ -7,12 +7,6 @@ import type { MinigameSceneFrameProps } from '../types/components'
 import { MINIGAME_TYPES } from '../context/gameConstants'
 import { logger } from '../utils/logger'
 
-type BackdoorMinigameState = {
-  minigame?: {
-    type?: string | null
-  }
-}
-
 /**
  * Owns the shared Pixi minigame shell, completion overlay, and manual continue path.
  *
@@ -35,6 +29,9 @@ export const MinigameSceneFrame = <TState,>({
   children
 }: MinigameSceneFrameProps<TState>) => {
   const settings = useGameSelector(state => state.settings)
+  // Canonical active minigame type from reducer state — used by the DEV
+  // Shift+P backdoor instead of the non-canonical `window.gameState` global.
+  const minigameType = useGameSelector(state => state.minigame?.type)
   const {
     completeTravelMinigame,
     completeRoadieMinigame,
@@ -80,46 +77,28 @@ export const MinigameSceneFrame = <TState,>({
           const currentLogic = logicRef.current
           if (currentLogic?.finishMinigame) {
             currentLogic.finishMinigame()
+          } else if (minigameType === MINIGAME_TYPES.TOURBUS) {
+            completeTravelMinigame(0, [])
+            return
+          } else if (minigameType === MINIGAME_TYPES.ROADIE) {
+            completeRoadieMinigame(0)
+            onComplete()
+            return
+          } else if (minigameType === MINIGAME_TYPES.KABELSALAT) {
+            completeKabelsalatMinigame({ isPoweredOn: true, timeLeft: 0 })
+            onComplete()
+            return
+          } else if (minigameType === MINIGAME_TYPES.AMP_CALIBRATION) {
+            completeAmpCalibration(100)
+            onComplete()
+            return
           } else {
-            const gameStateSnapshot = currentLogic?.gameStateRef?.current
-            const minigameTypeSource =
-              gameStateSnapshot && typeof gameStateSnapshot === 'object'
-                ? (gameStateSnapshot as BackdoorMinigameState).minigame
-                : undefined
-            const windowGameState =
-              window.gameState &&
-              typeof window.gameState === 'object' &&
-              'minigame' in window.gameState
-                ? (window.gameState as BackdoorMinigameState)
-                : undefined
-            const currentType =
-              minigameTypeSource && typeof minigameTypeSource === 'object'
-                ? minigameTypeSource.type
-                : windowGameState?.minigame?.type
-
-            if (currentType === MINIGAME_TYPES.TOURBUS) {
-              completeTravelMinigame(0, [])
-              return
-            } else if (currentType === MINIGAME_TYPES.ROADIE) {
-              completeRoadieMinigame(0)
-              onComplete()
-              return
-            } else if (currentType === MINIGAME_TYPES.KABELSALAT) {
-              completeKabelsalatMinigame({ isPoweredOn: true, timeLeft: 0 })
-              onComplete()
-              return
-            } else if (currentType === MINIGAME_TYPES.AMP_CALIBRATION) {
-              completeAmpCalibration(100)
-              onComplete()
-              return
-            } else {
-              logger.warn(
-                'Minigame',
-                'Unhandled minigame type for completion',
-                currentType
-              )
-              return
-            }
+            logger.warn(
+              'Minigame',
+              'Unhandled minigame type for completion',
+              minigameType
+            )
+            return
           }
         }
       }
@@ -129,6 +108,7 @@ export const MinigameSceneFrame = <TState,>({
   }, [
     onComplete,
     uiState?.isGameOver,
+    minigameType,
     completeTravelMinigame,
     completeRoadieMinigame,
     completeKabelsalatMinigame,
