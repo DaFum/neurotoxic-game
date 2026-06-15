@@ -1563,6 +1563,7 @@
   "roadieRun.hud.itemsRemaining": "VERBLEIBENDE TEILE:",
   "roadieRun.hud.title": "ROADIE RUN",
   "roadieRun.itemTypes.AMP": "Verstärker",
+  "roadieRun.itemTypes.CONTRABAND": "Schmuggelware",
   "roadieRun.itemTypes.DRUMS": "Schlagzeug",
   "roadieRun.itemTypes.GUITAR": "Gitarre",
   "roadieRun.itemTypes.unknown": "Unbekannt",

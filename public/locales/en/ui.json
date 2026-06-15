@@ -1563,6 +1563,7 @@
   "roadieRun.hud.itemsRemaining": "ITEMS REMAINING:",
   "roadieRun.hud.title": "ROADIE RUN",
   "roadieRun.itemTypes.AMP": "Amp",
+  "roadieRun.itemTypes.CONTRABAND": "Contraband",
   "roadieRun.itemTypes.DRUMS": "Drums",
   "roadieRun.itemTypes.GUITAR": "Guitar",
   "roadieRun.itemTypes.unknown": "Unknown item",
