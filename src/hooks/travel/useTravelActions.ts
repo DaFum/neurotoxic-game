@@ -26,7 +26,6 @@ import {
 } from '../../utils/mapUtils'
 import { audioService } from '../../utils/audio/audioEngine'
 import { translateLocation } from '../../utils/locationI18n'
-import { createTravelCompletedQuestEvent } from '../../quests/producers/travelQuestEvents'
 import type { MapNode } from '../../types'
 import type { TravelActionsParams } from './types'
 
@@ -78,7 +77,6 @@ export const useTravelActions = ({
     onShowHQ,
     onShowSupplyStop,
     onStartTravelMinigame,
-    applyQuestEvent,
     saveGame
   } = params
 
@@ -237,13 +235,6 @@ export const useTravelActions = ({
 
         handleNodeArrivalCallback(node, travelEventActive)
 
-        if (applyQuestEvent) {
-          applyQuestEvent(
-            createTravelCompletedQuestEvent({
-              region: updates.nextPlayer.location ?? ''
-            })
-          )
-        }
         saveGame(false)
       } catch (error) {
         handleError(error, {
@@ -263,7 +254,6 @@ export const useTravelActions = ({
       updatePlayer,
       updateBand,
       advanceDay,
-      applyQuestEvent,
       saveGame,
       handleNodeArrivalCallback,
       state.travelTarget

@@ -17,6 +17,7 @@ import {
   DEFAULT_MINIGAME_STATE
 } from '../../src/context/gameConstants.ts'
 import { MODULE_REGISTRY } from '../../src/utils/assetModuleRegistry.ts'
+import { QuestEvents } from '../../src/utils/questProgress.ts'
 
 const travelFuelModuleId = 'test_minigame_fuel_discount'
 const originalTravelFuelModule = MODULE_REGISTRY[travelFuelModuleId]
@@ -198,6 +199,31 @@ describe('minigameReducer', () => {
       const payload = { damageTaken: 10, itemsCollected: 5 }
       const nextState = handleCompleteTravelMinigame(activeState, payload)
       assert.strictEqual(nextState.currentScene, GAME_PHASES.TRAVEL_MINIGAME) // should preserve the initial scene without overriding it
+      assert.deepStrictEqual(nextState.minigame, { ...DEFAULT_MINIGAME_STATE })
+    })
+
+    it('emits a single travel completed quest event via side effect mock', t => {
+      const activeState = withActiveMinigame(baseState, MINIGAME_TYPES.TOURBUS)
+      activeState.minigame.targetDestination = 'node2'
+
+      let emitCount = 0
+      t.mock.method(QuestEvents, 'emit', (state, event) => {
+        if (event.type === 'travel.completed') {
+          emitCount++
+        }
+        return state
+      })
+
+      const nextState = handleCompleteTravelMinigame(activeState, {
+        damageTaken: 0,
+        itemsCollected: []
+      })
+
+      assert.strictEqual(
+        emitCount,
+        1,
+        'Should emit travel completed quest event exactly once'
+      )
       assert.deepStrictEqual(nextState.minigame, { ...DEFAULT_MINIGAME_STATE })
     })
 
