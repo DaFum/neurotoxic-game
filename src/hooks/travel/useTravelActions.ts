@@ -26,7 +26,6 @@ import {
 } from '../../utils/mapUtils'
 import { audioService } from '../../utils/audio/audioEngine'
 import { translateLocation } from '../../utils/locationI18n'
-import { createTravelCompletedQuestEvent } from '../../quests/producers/travelQuestEvents'
 import type { MapNode } from '../../types'
 import type { TravelActionsParams } from './types'
 
@@ -78,7 +77,6 @@ export const useTravelActions = ({
     onShowHQ,
     onShowSupplyStop,
     onStartTravelMinigame,
-    applyQuestEvent,
     saveGame
   } = params
 
@@ -109,6 +107,14 @@ export const useTravelActions = ({
         onShowSupplyStop,
         eventAlreadyActive: travelEventActive
       })
+      // NOTE (Task 9 / legacy path): In production, `onStartTravelMinigame` is always
+      // provided (Overworld.tsx line 95), so this callback is only reached via the
+      // animation-failsafe `onTravelComplete` path which is unreachable in normal play.
+      // A synchronous GAMEOVER guard is architecturally impossible here because
+      // `advanceDay()` dispatches are batched — committed scene is only observable
+      // post-render. The production arrival path uses `useArrivalLogic` which applies
+      // the effect-based GAMEOVER guard (Task 8 + 9). If this legacy path is ever
+      // reinstated as a production path, migrate it to the same effect-based pattern.
       if (!result.gigStarted) {
         changeScene(result.scene)
       }
@@ -218,22 +224,17 @@ export const useTravelActions = ({
         }
         advanceDay()
 
-        const travelEventActive = processTravelEvents(node, triggerEvent, {
-          includeGigNodes: true
-        })
+        // Use the same default gig-node policy as the production arrival path
+        // (`useArrivalLogic`): skip travel events on GIG/FESTIVAL/FINALE nodes so
+        // gig destinations surface their events in PreGig instead. Keep both
+        // paths aligned — do not reintroduce `{ includeGigNodes: true }` here.
+        const travelEventActive = processTravelEvents(node, triggerEvent)
 
         refs.moveRivalBandRef.current?.()
         refs.checkRivalEncounterRef.current?.()
 
         handleNodeArrivalCallback(node, travelEventActive)
 
-        if (applyQuestEvent) {
-          applyQuestEvent(
-            createTravelCompletedQuestEvent({
-              region: updates.nextPlayer.location ?? ''
-            })
-          )
-        }
         saveGame(false)
       } catch (error) {
         handleError(error, {
@@ -253,7 +254,6 @@ export const useTravelActions = ({
       updatePlayer,
       updateBand,
       advanceDay,
-      applyQuestEvent,
       saveGame,
       handleNodeArrivalCallback,
       state.travelTarget

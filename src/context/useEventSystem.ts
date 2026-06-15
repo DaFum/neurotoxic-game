@@ -212,6 +212,15 @@ export function useEventSystem({
     (
       choice: Record<string, unknown> | null
     ): { outcomeText: string; description: string; result: unknown } => {
+      if (!stateRef.current.activeEvent) {
+        return {
+          outcomeText:
+            choice && Object.hasOwn(choice, 'outcomeText') && typeof choice.outcomeText === 'string' ? choice.outcomeText : '',
+          description:
+            choice && Object.hasOwn(choice, 'description') && typeof choice.description === 'string' ? choice.description : '',
+          result: null
+        }
+      }
       try {
         const resolution = resolveEvent(choice, stateRef.current)
         resolution.actions.forEach(dispatch)
@@ -232,9 +241,9 @@ export function useEventSystem({
         dispatch(createSetActiveEventAction(null))
         return {
           outcomeText:
-            typeof choice?.outcomeText === 'string' ? choice.outcomeText : '',
+            choice && Object.hasOwn(choice, 'outcomeText') && typeof choice.outcomeText === 'string' ? choice.outcomeText : '',
           description:
-            typeof choice?.description === 'string' ? choice.description : '',
+            choice && Object.hasOwn(choice, 'description') && typeof choice.description === 'string' ? choice.description : '',
           result: null
         }
       }

@@ -5,6 +5,7 @@ import {
   rollAssetRiskEvents
 } from '../../utils/assetTicks'
 import { QuestEvents } from '../../utils/questProgress'
+import { sanitizeSettingsPayload } from '../../utils/settingsSanitizer'
 import {
   createAssetRiskTriggeredQuestEvent,
   createAssetRiskResolvedQuestEvent
@@ -1064,34 +1065,6 @@ const sanitizeToasts = (loadedToasts: unknown): ToastPayload[] => {
   return acc
 }
 
-const sanitizeSettingsPayload = (
-  rawSettings: RawGameSettings | Record<string, unknown>
-): Partial<GameSettings> => {
-  const sanitized: Partial<GameSettings> = {}
-
-  if (
-    Object.hasOwn(rawSettings, 'crtEnabled') &&
-    typeof rawSettings.crtEnabled === 'boolean'
-  ) {
-    sanitized.crtEnabled = rawSettings.crtEnabled
-  }
-  if (
-    Object.hasOwn(rawSettings, 'tutorialSeen') &&
-    typeof rawSettings.tutorialSeen === 'boolean'
-  ) {
-    sanitized.tutorialSeen = rawSettings.tutorialSeen
-  }
-  if (
-    Object.hasOwn(rawSettings, 'logLevel') &&
-    typeof rawSettings.logLevel === 'number' &&
-    Number.isFinite(rawSettings.logLevel)
-  ) {
-    sanitized.logLevel = Math.floor(rawSettings.logLevel)
-  }
-
-  return sanitized
-}
-
 const migratePlayerLocation = (location: unknown): string => {
   if (typeof location !== 'string') return ''
 
@@ -1458,6 +1431,56 @@ const sanitizeVenue = (value: unknown): GameState['currentGig'] => {
   return venue
 }
 
+const VALID_BRAND_ALIGNMENTS = [
+  'EVIL',
+  'CORPORATE',
+  'INDIE',
+  'SUSTAINABLE',
+  'GOOD',
+  'NEUTRAL'
+] as const satisfies readonly import('../../types/social').BrandAlignment[]
+
+/** Narrows an untrusted value to a finite {@link BrandAlignment} union member. */
+const isBrandAlignment = (
+  value: unknown
+): value is import('../../types/social').BrandAlignment =>
+  typeof value === 'string' &&
+  (VALID_BRAND_ALIGNMENTS as readonly string[]).includes(value)
+
+/**
+ * Sanitizes a raw `rivalBand` save entry into a valid `RivalBandState` or null.
+ *
+ * Whitelists fields individually and rejects hostile prototype-pollution keys.
+ * `powerLevel` is clamped to a non-negative finite number; `alignment` falls
+ * back to `'NEUTRAL'` when it is not a valid {@link BrandAlignment}; missing or
+ * malformed required fields (`id`, `name`) cause the entry to be dropped
+ * (returns null).
+ */
+const sanitizeRivalBand = (value: unknown): GameState['rivalBand'] => {
+  if (!isLooseRecord(value)) return null
+  const raw = value as Record<string, unknown>
+
+  if (!Object.hasOwn(raw, 'id')) return null
+  if (typeof raw.id !== 'string' || raw.id.length === 0) return null
+  if (isForbiddenKey(raw.id)) return null
+
+  if (!Object.hasOwn(raw, 'name')) return null
+  if (typeof raw.name !== 'string' || raw.name.length === 0) return null
+
+  const alignment = Object.hasOwn(raw, 'alignment') && isBrandAlignment(raw.alignment) ? raw.alignment : 'NEUTRAL'
+  const powerLevel = Object.hasOwn(raw, 'powerLevel') ? Math.max(0, finiteNumberOr(raw.powerLevel, 0)) : 0
+  const currentLocationId =
+    Object.hasOwn(raw, 'currentLocationId') && typeof raw.currentLocationId === 'string' ? raw.currentLocationId : null
+
+  return {
+    id: raw.id,
+    name: raw.name,
+    alignment,
+    powerLevel,
+    currentLocationId
+  }
+}
+
 const sanitizeLastGigStats = (value: unknown): GameState['lastGigStats'] => {
   if (!isLooseRecord(value)) return null
   const sanitized: NonNullable<GameState['lastGigStats']> = {}
@@ -1679,7 +1702,8 @@ export const handleLoadGame = (
       loadedState.crowdfundCampaigns,
       sanitizedAssets
     ),
-    rngSeed: sanitizeRngSeed(loadedState.rngSeed)
+    rngSeed: sanitizeRngSeed(loadedState.rngSeed),
+    rivalBand: sanitizeRivalBand(loadedState.rivalBand)
   }
 
   // Apply venue migrations using spreads
@@ -2293,9 +2317,8 @@ export const handleSetPendingRiskEvent = (
   if (event === null) {
     if (state.pendingRiskEvent === null) return state
     const resolved = state.pendingRiskEvent
-    const assetKind =
-      state.assets?.find(asset => asset.id === resolved.assetId)?.kind ??
-      'unknown'
+    const asset = state.assets?.find(a => a.id === resolved.assetId)
+    const assetKind = asset?.kind ?? 'unknown'
     return QuestEvents.emit(
       {
         ...state,

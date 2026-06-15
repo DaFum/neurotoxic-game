@@ -9,17 +9,20 @@ type SocialPhaseProps = {
   onSelect: (option: SocialOption) => void
   trend?: string
   zealotryLevel?: number
+  /** When true all option buttons are disabled (e.g. a selection is in-flight). */
+  disabled?: boolean
 }
 
 /**
  * Lets the player choose a post-gig social strategy, with trend and zealotry context.
- * @param props - Social post options, selection callback, trend state, and zealotry level.
+ * @param props - Social post options, selection callback, trend state, zealotry level, and disabled flag.
  */
 export const SocialPhase = ({
   options,
   onSelect,
   trend,
-  zealotryLevel = 0
+  zealotryLevel = 0,
+  disabled = false
 }: SocialPhaseProps) => {
   const { t } = useTranslation()
   return (
@@ -54,6 +57,7 @@ export const SocialPhase = ({
             opt={opt}
             index={i}
             onSelect={onSelect}
+            disabled={disabled}
           />
         ))}
       </div>

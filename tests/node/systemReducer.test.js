@@ -279,6 +279,42 @@ test('systemReducer - LOAD_GAME', async t => {
     assert.equal(nextState.currentGig?.sourceScene, undefined)
   })
 
+  await t.test(
+    'stale gig data on a loaded save never reopens gig/post-gig UI',
+    () => {
+      const initialState = createInitialState()
+      // A tampered/legacy save claiming a post-gig scene with leftover gig data
+      // (including a leaderboard-bearing songId) and stale rhythm stats.
+      const loadedState = {
+        currentScene: GAME_PHASES.POST_GIG,
+        currentGig: {
+          id: 'old_gig',
+          name: 'Old Venue',
+          songId: 'some_song'
+        },
+        lastGigStats: {
+          score: 9999,
+          misses: 0,
+          accuracy: 100,
+          combo: 50,
+          maxCombo: 50
+        }
+      }
+
+      const nextState = handleLoadGame(initialState, loadedState)
+
+      // handleLoadGame always lands the player on OVERWORLD, so neither the GIG
+      // nor POST_GIG scene can run from a load. The leaderboard submit happens
+      // during gig completion and practice-return happens in endGig — both are
+      // scene-gated, so stale currentGig/lastGigStats stay inert after load.
+      assert.equal(nextState.currentScene, GAME_PHASES.OVERWORLD)
+      assert.notEqual(nextState.currentScene, GAME_PHASES.GIG)
+      assert.notEqual(nextState.currentScene, GAME_PHASES.POST_GIG)
+      // Not a practice gig, so the practice-return side channel is inert too.
+      assert.notEqual(nextState.currentGig?.isPractice, true)
+    }
+  )
+
   await t.test('hydrates contraband stash with static properties', () => {
     const initialState = createInitialState()
     const loadedState = {
@@ -1547,6 +1583,130 @@ test('systemReducer - ADVANCE_DAY core logic', async t => {
         nextState.toasts.at(-1)?.messageKey,
         'assets:risk.event.fire'
       )
+    }
+  )
+})
+
+test('systemReducer - rivalBand persistence', async t => {
+  await t.test(
+    'handleLoadGame preserves rivalBand id, name, alignment, currentLocationId, and clamps powerLevel',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = {
+        rivalBand: {
+          id: 'rival_001',
+          name: 'Die Konkurrenten',
+          alignment: 'CORPORATE',
+          powerLevel: 75,
+          currentLocationId: 'node_2_3'
+        }
+      }
+
+      const nextState = handleLoadGame(initialState, loadedState)
+
+      assert.equal(nextState.rivalBand?.id, 'rival_001')
+      assert.equal(nextState.rivalBand?.name, 'Die Konkurrenten')
+      assert.equal(nextState.rivalBand?.alignment, 'CORPORATE')
+      assert.equal(nextState.rivalBand?.powerLevel, 75)
+      assert.equal(nextState.rivalBand?.currentLocationId, 'node_2_3')
+    }
+  )
+
+  await t.test(
+    'handleLoadGame returns null rivalBand when save has no rivalBand',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = { player: { money: 100 } }
+
+      const nextState = handleLoadGame(initialState, loadedState)
+
+      assert.equal(nextState.rivalBand, null)
+    }
+  )
+
+  await t.test(
+    'handleLoadGame returns null rivalBand when save rivalBand is null',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = { rivalBand: null }
+
+      const nextState = handleLoadGame(initialState, loadedState)
+
+      assert.equal(nextState.rivalBand, null)
+    }
+  )
+
+  await t.test(
+    'handleLoadGame returns null rivalBand when save rivalBand is malformed (missing required id)',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = {
+        rivalBand: {
+          name: 'No ID Band',
+          alignment: 'INDIE',
+          powerLevel: 50,
+          currentLocationId: null
+        }
+      }
+
+      const nextState = handleLoadGame(initialState, loadedState)
+
+      assert.equal(nextState.rivalBand, null)
+    }
+  )
+
+  await t.test(
+    'handleLoadGame strips hostile __proto__ key from rivalBand',
+    () => {
+      const initialState = createInitialState()
+      // Simulate a parsed JSON object with a hostile __proto__ key
+      const hostileRivalBand = JSON.parse(
+        '{"id":"rival_hostile","name":"Hostile Band","alignment":"EVIL","powerLevel":60,"currentLocationId":null,"__proto__":{"polluted":true}}'
+      )
+      const loadedState = { rivalBand: hostileRivalBand }
+
+      const nextState = handleLoadGame(initialState, loadedState)
+
+      assert.equal(nextState.rivalBand?.id, 'rival_hostile')
+      assert.equal(Object.hasOwn(nextState.rivalBand ?? {}, '__proto__'), false)
+    }
+  )
+
+  await t.test('handleLoadGame clamps non-finite powerLevel to 0', () => {
+    const initialState = createInitialState()
+    const loadedState = {
+      rivalBand: {
+        id: 'rival_nan',
+        name: 'NaN Band',
+        alignment: 'NEUTRAL',
+        powerLevel: NaN,
+        currentLocationId: null
+      }
+    }
+
+    const nextState = handleLoadGame(initialState, loadedState)
+
+    assert.equal(nextState.rivalBand?.powerLevel, 0)
+  })
+
+  await t.test(
+    'handleLoadGame handles rivalBand with null currentLocationId',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = {
+        rivalBand: {
+          id: 'rival_002',
+          name: 'Wandering Band',
+          alignment: 'INDIE',
+          powerLevel: 30,
+          currentLocationId: null
+        }
+      }
+
+      const nextState = handleLoadGame(initialState, loadedState)
+
+      assert.equal(nextState.rivalBand?.currentLocationId, null)
+      assert.equal(nextState.rivalBand?.id, 'rival_002')
     }
   )
 })

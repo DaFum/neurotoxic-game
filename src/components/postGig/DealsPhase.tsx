@@ -6,7 +6,12 @@ import { DealCard } from './DealCard'
 import { NegotiationModal } from './NegotiationModal'
 import type { DealsPhaseProps } from '../../types/components'
 
-const DealsPhaseComponent = ({ offers, onAccept, onSkip }: DealsPhaseProps) => {
+const DealsPhaseComponent = ({
+  offers,
+  onAccept,
+  onSkip,
+  isProcessing = false
+}: DealsPhaseProps) => {
   const { t } = useTranslation()
   const social = useGameSelector(state => state.social)
 
@@ -44,6 +49,7 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }: DealsPhaseProps) => {
             brandReputation={social?.brandReputation}
             handleAcceptDeal={handleAcceptDeal}
             handleNegotiationStart={handleNegotiationStart}
+            isProcessing={isProcessing}
           />
         ))}
       </div>
@@ -52,7 +58,8 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }: DealsPhaseProps) => {
         <button
           type='button'
           onClick={onSkip}
-          className='min-h-11 w-full sm:w-auto px-4 py-2 border border-ash-gray/40 text-sm text-ash-gray hover:text-star-white hover:border-star-white transition-colors'
+          disabled={isProcessing}
+          className='min-h-11 w-full sm:w-auto px-4 py-2 border border-ash-gray/40 text-sm text-ash-gray hover:text-star-white hover:border-star-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
         >
           {t('ui:deals.rejectAll', {
             defaultValue: 'Reject All Offers & Continue >'

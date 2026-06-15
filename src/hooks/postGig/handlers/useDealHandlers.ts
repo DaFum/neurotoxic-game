@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import type React from 'react'
 import type { BrandDeal } from '../../../types/social'
 import type { GameState } from '../../../types'
 import { logger } from '../../../utils/logger'
@@ -64,10 +65,12 @@ export function buildAcceptDealQuestEvents(params: {
   return events
 }
 
-/** Props for {@link useDealHandlers}: player/social state, translator, and dispatchers. */
+/** Props for {@link useDealHandlers}: player/social state, the processing guard, translator, and dispatchers. */
 export interface UseDealHandlersProps {
   player: GameState['player']
   social: GameState['social']
+  isProcessingActionRef: React.MutableRefObject<boolean>
+  setIsProcessingAction: React.Dispatch<React.SetStateAction<boolean>>
   t: import('i18next').TFunction
   dispatchers: HandlerDispatchers
 }
@@ -75,11 +78,14 @@ export interface UseDealHandlersProps {
 /**
  * Builds the brand-deal handlers: `handleAcceptDeal` (applies money/band/social
  * effects + quest events, then completes the phase) and `handleRejectDeals`
- * (clears offers and completes the phase).
+ * (clears offers and completes the phase). `handleAcceptDeal` is guarded against
+ * re-entrancy; the lock is held until the phase transition (not reset after dispatch).
  */
 export function useDealHandlers({
   player,
   social,
+  isProcessingActionRef,
+  setIsProcessingAction,
   t,
   dispatchers: {
     updatePlayer,
@@ -93,6 +99,9 @@ export function useDealHandlers({
 }: UseDealHandlersProps) {
   const handleAcceptDeal = useCallback(
     (deal: BrandDeal) => {
+      if (isProcessingActionRef.current) return
+      isProcessingActionRef.current = true
+      setIsProcessingAction(true)
       try {
         const { nextMoney, appliedMoneyDelta } = getAcceptDealMoneyUpdate({
           deal,
@@ -137,6 +146,9 @@ export function useDealHandlers({
         // Exclusivity: clear all offers and go to complete
         setBrandOffers([])
         setPhase('COMPLETE')
+        // Guard intentionally NOT reset here: the phase transition owns the
+        // lifecycle. Resetting before it runs would re-open the settlement
+        // window for rapid double-clicks.
       } catch (e) {
         logger.error('PostGig', 'Failed to accept deal', e)
         addToast(
@@ -145,6 +157,8 @@ export function useDealHandlers({
           }),
           'error'
         )
+        isProcessingActionRef.current = false
+        setIsProcessingAction(false)
       }
     },
     [
@@ -157,7 +171,9 @@ export function useDealHandlers({
       addToast,
       t,
       setBrandOffers,
-      setPhase
+      setPhase,
+      isProcessingActionRef,
+      setIsProcessingAction
     ]
   )
 

@@ -24,6 +24,7 @@ import {
 } from '../utils/storage'
 import { handleError, StateError } from '../utils/errorHandler'
 import { getUnlocks } from '../utils/unlockManager'
+import { sanitizeSettingsPayload } from '../utils/settingsSanitizer'
 import { usePersistence } from './usePersistence'
 import { useEventSystem } from './useEventSystem'
 import { useMinigameDispatchActions } from './useMinigameDispatchActions'
@@ -148,7 +149,10 @@ export type GameDispatchActions = {
     equipmentDamage: Parameters<typeof createCompleteRoadieMinigameAction>[0],
     contrabandDelivered?: Parameters<
       typeof createCompleteRoadieMinigameAction
-    >[1]
+    >[1],
+    deliveredStashItemId?: Parameters<
+      typeof createCompleteRoadieMinigameAction
+    >[2]
   ) => void
   startKabelsalatMinigame: (
     payload: Parameters<typeof createStartKabelsalatMinigameAction>[0]
@@ -556,6 +560,11 @@ export function useGameDispatchActions({
         rawTarget !== undefined &&
         PRACTICE_RETURN_SCENES.has(rawTarget as GamePhase)
       const targetScene = isValidTarget ? rawTarget : GAME_PHASES.OVERWORLD
+      // Product decision: returning from PRACTICE must ALWAYS reopen the Band HQ,
+      // regardless of whether the source scene was OVERWORLD or MENU. Do NOT gate
+      // setPendingBandHQOpen on targetScene === OVERWORLD — that breaks the MENU
+      // return path. (Raised in review more than once; the unconditional open is
+      // intentional.)
       setPendingBandHQOpen(true)
       changeScene(targetScene as GamePhase)
     } else {
@@ -580,8 +589,15 @@ export function useGameDispatchActions({
         }
       }
 
+      // Sanitize before writing to global storage so malformed or unknown keys
+      // (e.g. a non-numeric logLevel) never leak past the reducer's validation
+      // into persisted global settings. Shared sanitizer keeps storage, reducer,
+      // and load in sync.
       safeStorageOperation('saveGlobalSettings', () => {
-        writeGlobalSettings({ ...readGlobalSettings(), ...updates })
+        writeGlobalSettings({
+          ...readGlobalSettings(),
+          ...sanitizeSettingsPayload(updates)
+        })
       })
     },
     [dispatch]

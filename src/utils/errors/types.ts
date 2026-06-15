@@ -53,16 +53,19 @@ const SENSITIVE_KEY_PATTERNS = [
 
 const escapeRegExp = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
-const SENSITIVE_KEY_REGEXP = SENSITIVE_KEY_PATTERNS.some(Boolean)
-  ? new RegExp(
-      SENSITIVE_KEY_PATTERNS.reduce((acc, pattern) => {
-        if (pattern) {
-          const escaped = escapeRegExp(pattern)
-          return acc ? acc + '|' + escaped : escaped
-        }
-        return acc
-      }, '')
-    )
+let sensitivePatternString = ''
+for (let i = 0; i < SENSITIVE_KEY_PATTERNS.length; i++) {
+  const pattern = SENSITIVE_KEY_PATTERNS[i]
+  if (pattern) {
+    const escaped = escapeRegExp(pattern)
+    sensitivePatternString = sensitivePatternString
+      ? sensitivePatternString + '|' + escaped
+      : escaped
+  }
+}
+
+const SENSITIVE_KEY_REGEXP = sensitivePatternString
+  ? new RegExp(sensitivePatternString)
   : null
 
 const isSensitiveContextKey = (key: string) => {

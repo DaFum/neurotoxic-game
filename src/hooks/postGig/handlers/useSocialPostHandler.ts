@@ -204,25 +204,27 @@ export function useSocialPostHandler({
       if (isProcessingActionRef.current) return
       isProcessingActionRef.current = true
       setIsProcessingAction(true)
+      let updates: ReturnType<typeof calculatePostGigStateUpdates>
       try {
-        let updates: ReturnType<typeof calculatePostGigStateUpdates>
-        try {
-          updates = calculatePostGigStateUpdates({
-            option,
-            player,
-            band,
-            social,
-            lastGigStats,
-            currentGig,
-            perfScore,
-            secureRandomValue: secureRandom()
-          })
-        } catch (e) {
-          logger.error('PostGig', 'Failed to resolve selected post', e)
-          addToast(t('ui:postGig.postResolutionFailed'), 'error')
-          return
-        }
+        updates = calculatePostGigStateUpdates({
+          option,
+          player,
+          band,
+          social,
+          lastGigStats,
+          currentGig,
+          perfScore,
+          secureRandomValue: secureRandom()
+        })
+      } catch (e) {
+        logger.error('PostGig', 'Failed to resolve selected post', e)
+        addToast(t('ui:postGig.postResolutionFailed'), 'error')
+        isProcessingActionRef.current = false
+        setIsProcessingAction(false)
+        return
+      }
 
+      try {
         applySocialPostResult({
           option,
           updates,
@@ -242,7 +244,12 @@ export function useSocialPostHandler({
             setPhase
           }
         })
-      } finally {
+        // Guard intentionally NOT reset here: the phase transition owns the
+        // lifecycle. Resetting before it runs would re-open the settlement
+        // window for rapid double-clicks.
+      } catch (e) {
+        logger.error('PostGig', 'Failed to apply selected post result', e)
+        addToast(t('ui:postGig.postResolutionFailed'), 'error')
         isProcessingActionRef.current = false
         setIsProcessingAction(false)
       }

@@ -7,7 +7,9 @@ import {
   clampVanFuel,
   clampMemberStamina,
   clampUnitRandom,
-  finiteNumberOr
+  finiteNumberOr,
+  isForbiddenKey,
+  isFiniteNumber
 } from '../../utils/gameState'
 import {
   calculateTravelExpenses,
@@ -23,6 +25,10 @@ import { computeDropChance } from '../../utils/contrabandUtils'
 import { normalizeVenueId, getRegionKeyForLocation } from '../../utils/mapUtils'
 import { addContrabandHelper } from './bandReducer'
 import { pickRandomContraband } from '../../utils/contrabandUtils'
+import {
+  applySharedBandEffect,
+  EQUIPMENT_APPLY_ON_ADD_EFFECTS
+} from '../../utils/contrabandEffects'
 import {
   MINIGAME_TYPES,
   DEFAULT_MINIGAME_STATE,
@@ -69,6 +75,8 @@ export const handleStartTravelMinigame = (
 /**
  * Applies travel minigame results while preserving scene continuation for the arrival flow.
  *
+ * Returns unchanged state when no matching minigame is active (replay guard).
+ *
  * @param state - Current game state with an active travel minigame.
  * @param payload - Reported damage, collected items, and optional deterministic random value.
  * @returns Updated state with travel costs, rewards, damage, unlocks, and quest progress applied.
@@ -81,6 +89,12 @@ export const handleCompleteTravelMinigame = (
     rngValue?: number
   }
 ): GameState => {
+  if (
+    state.minigame?.active !== true ||
+    state.minigame?.type !== MINIGAME_TYPES.TOURBUS
+  ) {
+    return state
+  }
   const { damageTaken: rawDamage, itemsCollected: rawItems, rngValue } = payload
   const damageTaken = Number.isFinite(rawDamage) ? Math.max(0, rawDamage) : 0
   const itemsCollected = Array.isArray(rawItems) ? rawItems : []
@@ -407,6 +421,8 @@ const applyPostMinigameResult = (
 /**
  * Applies amp calibration results while leaving the current scene under overlay continuation control.
  *
+ * Returns unchanged state when no matching minigame is active (replay guard).
+ *
  * @param state - Current game state with amp calibration results pending.
  * @param payload - Score and void-interference counters reported by the minigame.
  * @returns Updated state with harmony, money, modifiers, and quest progress applied.
@@ -420,12 +436,19 @@ export const handleCompleteAmpCalibration = (
     hijacksOverridden: number
   }
 ): GameState => {
+  if (
+    state.minigame?.active !== true ||
+    state.minigame?.type !== MINIGAME_TYPES.AMP_CALIBRATION
+  ) {
+    return state
+  }
   const { score, voidResonance, purgesUsed, hijacksOverridden } = payload
+  const safeScore = Math.max(0, Math.min(finiteNumberOr(score, 0), 100))
   logger.info('GameState', 'Amp Calibration Minigame Complete', payload)
 
   // Apply Results
   const { stress, reward } = calculateAmpCalibrationResult(
-    score,
+    safeScore,
     state.band,
     finiteNumberOr(voidResonance, 0),
     finiteNumberOr(purgesUsed, 0),
@@ -443,7 +466,7 @@ export const handleCompleteAmpCalibration = (
     createMinigameCompletedQuestEvent({
       minigameId: MINIGAME_TYPES.AMP_CALIBRATION,
       success: stress === 0,
-      score
+      score: safeScore
     })
   )
   if (stress === 0) {
@@ -493,6 +516,8 @@ export const handleStartKabelsalatMinigame = (
 /**
  * Applies Kabelsalat results while leaving the current scene under overlay continuation control.
  *
+ * Returns unchanged state when no matching minigame is active (replay guard).
+ *
  * @param state - Current game state with Kabelsalat results pending.
  * @param payload - Raw Kabelsalat result payload consumed by the economy calculation.
  * @returns Updated state with harmony, money, modifiers, and quest progress applied.
@@ -501,6 +526,12 @@ export const handleCompleteKabelsalatMinigame = (
   state: GameState,
   payload: { results: unknown }
 ): GameState => {
+  if (
+    state.minigame?.active !== true ||
+    state.minigame?.type !== MINIGAME_TYPES.KABELSALAT
+  ) {
+    return state
+  }
   const { results } = payload
   logger.info('GameState', 'Kabelsalat Minigame Complete', payload)
 
@@ -545,22 +576,65 @@ export const handleCompleteKabelsalatMinigame = (
 /**
  * Applies roadie minigame results while leaving the current scene under overlay continuation control.
  *
+ * Returns unchanged state when no matching minigame is active (replay guard).
+ *
  * @param state - Current game state with roadie results pending.
- * @param payload - Equipment damage and optional delivered contraband count.
+ * @param payload - Equipment damage, optional delivered contraband count, and the real stash item id that was escorted.
  * @returns Updated state with repair costs, contraband bonus, modifiers, and quest progress applied.
  */
 export const handleCompleteRoadieMinigame = (
   state: GameState,
-  payload: { equipmentDamage: number; contrabandDelivered?: number }
+  payload: {
+    equipmentDamage: number
+    contrabandDelivered?: number
+    deliveredStashItemId?: string
+  }
 ): GameState => {
-  const { equipmentDamage, contrabandDelivered } = payload
+  if (
+    state.minigame?.active !== true ||
+    state.minigame?.type !== MINIGAME_TYPES.ROADIE
+  ) {
+    return state
+  }
+  const { equipmentDamage, contrabandDelivered, deliveredStashItemId } = payload
+  const safeEquipmentDamage = Math.max(0, finiteNumberOr(equipmentDamage, 0))
   logger.info('GameState', 'Roadie Minigame Complete', payload)
+
+  // Contraband bonus only applies when a real stash item was loaded and delivered.
+  // Consume one stack of that item BEFORE applying the bonus so the same item
+  // cannot be farmed across multiple completions.
+  const safeItemId =
+    typeof deliveredStashItemId === 'string' &&
+    deliveredStashItemId.length > 0 &&
+    !isForbiddenKey(deliveredStashItemId)
+      ? deliveredStashItemId
+      : null
+
+  const stash = state?.band?.stash
+  const stashEntry =
+    safeItemId !== null && stash != null && Object.hasOwn(stash, safeItemId)
+      ? (stash[safeItemId] as Record<string, unknown> | undefined)
+      : undefined
+  // A missing `stacks` field counts as one stack; an explicit non-positive
+  // `stacks` means the item is effectively empty and grants no bonus.
+  const stashStacks = isFiniteNumber(stashEntry?.stacks)
+    ? Math.max(0, stashEntry?.stacks as number)
+    : stashEntry
+      ? 1
+      : 0
+  const stashItemPresent = stashStacks > 0
+
+  // Effective contraband count: only credit a positive, real delivery, clamped
+  // non-negative so a malformed payload cannot grant a reverse bonus.
+  const effectiveContrabandDelivered = stashItemPresent
+    ? Math.max(0, Math.min(finiteNumberOr(contrabandDelivered, 0), 1))
+    : 0
 
   // Apply Results
   const { stress, repairCost, contrabandBonus } = calculateRoadieMinigameResult(
-    equipmentDamage,
+    safeEquipmentDamage,
     state.band,
-    contrabandDelivered
+    effectiveContrabandDelivered
   )
 
   const nextHarmony = clampBandHarmony(
@@ -572,9 +646,35 @@ export const handleCompleteRoadieMinigame = (
       finiteNumberOr(contrabandBonus, 0)
   )
 
-  const nextBand = {
-    ...state.band,
-    harmony: nextHarmony
+  // Consume the stash item (decrement stacks or remove) only when a delivery was
+  // actually credited; otherwise a zero-count payload would burn inventory for no bonus.
+  let nextBand = { ...state?.band, harmony: nextHarmony }
+  if (
+    effectiveContrabandDelivered > 0 &&
+    safeItemId !== null &&
+    stash != null
+  ) {
+    const newStash = Object.assign(Object.create(null), stash)
+    if (stashStacks > 1 && isFiniteNumber(stashEntry?.stacks)) {
+      newStash[safeItemId] = { ...stashEntry, stacks: stashStacks - 1 }
+    } else {
+      if (
+        stashEntry &&
+        typeof stashEntry === 'object' &&
+        stashEntry.type === 'equipment' &&
+        stashEntry.applyOnAdd === true &&
+        stashEntry.applied === true
+      ) {
+        applySharedBandEffect(
+          nextBand,
+          stashEntry.effectType,
+          -finiteNumberOr(stashEntry.value, 0),
+          EQUIPMENT_APPLY_ON_ADD_EFFECTS
+        )
+      }
+      delete newStash[safeItemId]
+    }
+    nextBand = { ...nextBand, stash: newStash }
   }
 
   const nextPlayer = {
@@ -584,7 +684,7 @@ export const handleCompleteRoadieMinigame = (
 
   // Pass damage to gig modifiers or stats?
   const nextModifiers = { ...state.gigModifiers }
-  if (equipmentDamage > 50) {
+  if (safeEquipmentDamage > 50) {
     // Apply a penalty for heavily damaged gear
     logger.warn(
       'GameState',
@@ -605,32 +705,31 @@ export const handleCompleteRoadieMinigame = (
     nextState,
     createMinigameCompletedQuestEvent({
       minigameId: MINIGAME_TYPES.ROADIE,
-      success: equipmentDamage <= 50,
-      score: Math.max(0, 100 - equipmentDamage)
+      success: safeEquipmentDamage <= 50,
+      score: Math.max(0, 100 - safeEquipmentDamage)
     })
   )
-  const deliveredContraband = finiteNumberOr(contrabandDelivered, 0)
-  if (deliveredContraband > 0) {
+  if (effectiveContrabandDelivered > 0) {
     nextState = QuestEvents.emit(
       nextState,
       createItemDeliveredQuestEvent({
-        itemId: 'contraband',
-        amount: deliveredContraband
+        itemId: safeItemId ?? 'contraband',
+        amount: effectiveContrabandDelivered
       })
     )
   }
-  if (equipmentDamage === 0) {
+  if (safeEquipmentDamage === 0) {
     nextState = QuestEvents.emit(
       nextState,
       createMinigamePerfectQuestEvent({ minigameId: MINIGAME_TYPES.ROADIE })
     )
   }
-  return equipmentDamage > 50
+  return safeEquipmentDamage > 50
     ? QuestEvents.emit(
         nextState,
         createMinigameFailedQuestEvent({
           minigameId: MINIGAME_TYPES.ROADIE,
-          damage: equipmentDamage
+          damage: safeEquipmentDamage
         })
       )
     : nextState

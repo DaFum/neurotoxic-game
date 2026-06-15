@@ -46,6 +46,19 @@ describe('useContrabandStash', () => {
         type: 'consumable',
         effectType: 'stamina',
         name: 'Energy Drink'
+      },
+      c_guitar_strings: {
+        id: 'c_guitar_strings',
+        instanceId: 'item2',
+        type: 'equipment',
+        name: 'Guitar Strings'
+      },
+      c_applied_relic: {
+        id: 'c_applied_relic',
+        instanceId: 'item3',
+        type: 'equipment',
+        applied: true,
+        name: 'Cursed Relic'
       }
     }
   }
@@ -149,7 +162,7 @@ describe('useContrabandStash', () => {
 
     act(() => {
       result.current.stashProps.handleUseItem('item1', {
-        id: 'energy_drink',
+        id: 'c_energy_drink',
         type: 'consumable',
         name: 'Energy Drink'
       })
@@ -157,7 +170,7 @@ describe('useContrabandStash', () => {
 
     expect(mockUseContraband).toHaveBeenCalledWith(
       'item1',
-      'energy_drink',
+      'c_energy_drink',
       'member1'
     )
     expect(mockAddToast).toHaveBeenCalledWith('Used Energy Drink!', 'success')
@@ -168,7 +181,7 @@ describe('useContrabandStash', () => {
 
     act(() => {
       result.current.stashProps.handleUseItem('item2', {
-        id: 'guitar_strings',
+        id: 'c_guitar_strings',
         type: 'equipment',
         name: 'Guitar Strings'
       })
@@ -176,12 +189,56 @@ describe('useContrabandStash', () => {
 
     expect(mockUseContraband).toHaveBeenCalledWith(
       'item2',
-      'guitar_strings',
+      'c_guitar_strings',
       'member1'
     )
     expect(mockAddToast).toHaveBeenCalledWith(
       'Applied Guitar Strings!',
       'success'
+    )
+  })
+
+  it('does not show success for a stale instanceId (reducer would no-op)', () => {
+    const { result } = renderHook(() => useContrabandStash())
+
+    act(() => {
+      result.current.stashProps.handleUseItem('STALE_ID', {
+        id: 'c_energy_drink',
+        type: 'consumable',
+        name: 'Energy Drink'
+      })
+    })
+
+    expect(mockUseContraband).not.toHaveBeenCalled()
+    expect(mockAddToast).not.toHaveBeenCalledWith(
+      'Used Energy Drink!',
+      'success'
+    )
+    expect(mockAddToast).toHaveBeenCalledWith(
+      "That item can't be used right now.",
+      'warning'
+    )
+  })
+
+  it('does not show success for an already-applied item (reducer would no-op)', () => {
+    const { result } = renderHook(() => useContrabandStash())
+
+    act(() => {
+      result.current.stashProps.handleUseItem('item3', {
+        id: 'c_applied_relic',
+        type: 'equipment',
+        name: 'Cursed Relic'
+      })
+    })
+
+    expect(mockUseContraband).not.toHaveBeenCalled()
+    expect(mockAddToast).not.toHaveBeenCalledWith(
+      'Applied Cursed Relic!',
+      'success'
+    )
+    expect(mockAddToast).toHaveBeenCalledWith(
+      "That item can't be used right now.",
+      'warning'
     )
   })
 

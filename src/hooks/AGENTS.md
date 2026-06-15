@@ -16,6 +16,7 @@
 - `useArrivalLogic` keys `isHandlingRef` on the arriving `nodeId` with sentinel `undefined`. `player.currentNodeId` can be `null`, so `null` is a real guarded value and cannot mean "idle".
 - Do not reset `isHandlingRef` in the arrival success path; the `useEffect` cleanup keyed on `player.currentNodeId` owns that lifecycle. Error paths may reset it so the same node can be retried.
 - Band harmony is clamped to minimum `1` (never `0`). `arrivalUtils` uses `harmony <= 1` as the deterministic gig-cancellation check with probabilistic cancellation above that. A `harmony <= 0` branch is unreachable — do not reintroduce one.
+- Both travel arrival paths must call `processTravelEvents` with the same gig-node policy (the default, which skips GIG/FESTIVAL/FINALE so gig events fire in PreGig): the production path is `useArrivalLogic.handleArrivalSequence`; the legacy animation-failsafe `useTravelActions.onTravelComplete` (unreachable while `onStartTravelMinigame` is wired in `Overworld.tsx`) must stay aligned. Do not pass `{ includeGigNodes: true }` in the fallback.
 
 ## Venue IDs
 

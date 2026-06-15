@@ -19,6 +19,7 @@ import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/react'
 import { GAME_PHASES } from './context/gameConstants'
 import { SceneRouter } from './components/SceneRouter.tsx'
+import { AssetNotifications } from './components/assets/AssetNotifications'
 import type { GamePhase } from './types/game'
 
 const SCENES_WITHOUT_HUD: Set<GamePhase> = new Set([
@@ -146,6 +147,10 @@ function GameContent() {
       {activeEvent && (
         <EventModal event={activeEvent} onOptionSelect={resolveEvent} />
       )}
+
+      {/* Global asset risk/foreclosure modals: advanceDay can raise these from
+          any scene, so they are owned here rather than inside AssetsScene. */}
+      <AssetNotifications />
 
       <ErrorBoundary>
         <Suspense fallback={<SceneLoadingFallback />}>

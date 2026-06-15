@@ -586,10 +586,12 @@ export const createStartRoadieMinigameAction = (
  * Creates complete roadie minigame action
  * @param equipmentDamage - Raw equipment damage from the minigame.
  * @param contrabandDelivered - Optional delivered contraband count.
+ * @param deliveredStashItemId - Optional real stash item id that was delivered as contraband.
  */
 export const createCompleteRoadieMinigameAction = (
   equipmentDamage: number,
-  contrabandDelivered?: number
+  contrabandDelivered?: number,
+  deliveredStashItemId?: string
 ): Extract<
   GameAction,
   { type: typeof ActionTypes.COMPLETE_ROADIE_MINIGAME }
@@ -597,7 +599,14 @@ export const createCompleteRoadieMinigameAction = (
   type: ActionTypes.COMPLETE_ROADIE_MINIGAME,
   payload: {
     equipmentDamage: clamp0to100(Number(equipmentDamage) || 0),
-    contrabandDelivered: clampNonNegative(Number(contrabandDelivered) || 0)
+    contrabandDelivered: clampNonNegative(Number(contrabandDelivered) || 0),
+    // Only include the key when a valid stash id was delivered, so the payload
+    // stays clean (no `deliveredStashItemId: undefined`) for normal completions.
+    ...(typeof deliveredStashItemId === 'string' &&
+    deliveredStashItemId.length > 0 &&
+    !isForbiddenKey(deliveredStashItemId)
+      ? { deliveredStashItemId }
+      : {})
   }
 })
 

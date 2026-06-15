@@ -10,7 +10,11 @@ vi.mock('react-i18next', () => ({
       translationBehavior.useDefaultValue
         ? (options?.defaultValue ?? key)
         : key,
-    i18n: { changeLanguage: () => new Promise(() => {}) }
+    i18n: {
+      language: 'en',
+      changeLanguage: () => new Promise(() => {}),
+      options: {}
+    }
   }),
   initReactI18next: { type: '3rdParty', init: () => {} }
 }))
@@ -328,4 +332,53 @@ test('EventModal preserves raw title/description text when translation lookup mi
   } finally {
     translationBehavior.useDefaultValue = false
   }
+})
+
+test('EventModal double-click on Continue calls onOptionSelect exactly once', async () => {
+  const mockEvent = {
+    id: 'double_click_test',
+    title: 'Double Click Test',
+    description: 'Testing double-click guard.',
+    options: [{ label: 'Option 1', outcomeText: 'Good Outcome' }]
+  }
+  const handleSelect = vi.fn()
+
+  render(<EventModal event={mockEvent} onOptionSelect={handleSelect} />)
+
+  fireEvent.click(screen.getByText('Option 1'))
+
+  const continueButton = await screen.findByRole('button', {
+    name: /CONTINUE/i
+  })
+
+  fireEvent.click(continueButton)
+
+  expect(continueButton).toBeDisabled()
+
+  fireEvent.click(continueButton)
+
+  expect(handleSelect).toHaveBeenCalledTimes(1)
+})
+
+test('EventModal Continue button calls onOptionSelect only once even on rapid clicks', async () => {
+  const mockEvent = {
+    id: 'disabled_after_click_test',
+    title: 'Disabled After Click',
+    description: 'Continue button should only fire once.',
+    options: [{ label: 'Option 1' }]
+  }
+  const handleSelect = vi.fn()
+
+  render(<EventModal event={mockEvent} onOptionSelect={handleSelect} />)
+
+  fireEvent.click(screen.getByText('Option 1'))
+
+  const continueButton = await screen.findByRole('button', {
+    name: /CONTINUE/i
+  })
+
+  fireEvent.click(continueButton)
+  fireEvent.click(continueButton)
+
+  expect(handleSelect).toHaveBeenCalledTimes(1)
 })

@@ -101,8 +101,8 @@ describe('useSocialPostHandler (characterization)', () => {
     expect(d.applyQuestEvent).toHaveBeenCalledWith({ type: 'social.post' })
     expect(d.setBrandOffers).toHaveBeenCalledWith([])
     expect(d.setPhase).toHaveBeenCalledWith('COMPLETE')
-    expect(props.setIsProcessingAction).toHaveBeenLastCalledWith(false)
-    expect(props.isProcessingActionRef.current).toBe(false)
+    // Guard is held after success — NOT reset until phase change/unmount
+    expect(props.isProcessingActionRef.current).toBe(true)
   })
 
   it('routes to DEALS when brand offers are generated', () => {
@@ -163,5 +163,32 @@ describe('useSocialPostHandler (characterization)', () => {
 
     expect(props.dispatchers.setPostResult).not.toHaveBeenCalled()
     expect(calculatePostGigStateUpdates).not.toHaveBeenCalled()
+  })
+
+  it('double-click only applies side-effects once (guard held after dispatch)', () => {
+    calculatePostGigStateUpdates.mockReturnValue(makeUpdates())
+    const props = makeProps()
+    const { result } = renderHook(() => useSocialPostHandler(props))
+
+    act(() => {
+      result.current({ id: 'post_1' })
+      result.current({ id: 'post_1' })
+    })
+
+    expect(props.dispatchers.setPhase).toHaveBeenCalledTimes(1)
+    expect(calculatePostGigStateUpdates).toHaveBeenCalledTimes(1)
+  })
+
+  it('releases guard in the error path so the player can retry', () => {
+    calculatePostGigStateUpdates.mockImplementation(() => {
+      throw new Error('boom')
+    })
+    const props = makeProps()
+    const { result } = renderHook(() => useSocialPostHandler(props))
+
+    act(() => result.current({ id: 'post_1' }))
+
+    expect(props.isProcessingActionRef.current).toBe(false)
+    expect(props.setIsProcessingAction).toHaveBeenLastCalledWith(false)
   })
 })

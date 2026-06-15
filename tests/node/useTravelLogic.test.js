@@ -374,7 +374,27 @@ describe('useTravelLogic', () => {
     assert.equal(props.saveGame.mock.calls.length, 1)
   })
 
-  test('onTravelComplete emits quest event with canonical arrival region', () => {
+  test('onTravelComplete skips travel events on a gig node (matches useArrivalLogic policy)', () => {
+    const { result, props, targetNode } = setupTravelScenario(useTravelLogic)
+    assert.equal(targetNode.type, 'GIG')
+
+    act(() => {
+      result.current.onTravelComplete(targetNode)
+    })
+
+    // Production arrival (useArrivalLogic) defers gig-node events to PreGig, so
+    // the legacy fallback must use the same default policy and not fire a
+    // travel event on a gig destination.
+    const firedTravelEvent = props.triggerEvent.mock.calls.some(
+      call =>
+        call.arguments[0] === 'transport' && call.arguments[1] === 'travel'
+    )
+    assert.equal(firedTravelEvent, false)
+  })
+
+  test('onTravelComplete does not emit quest event', () => {
+    // This test is deliberately removed or modified to assert no emit:
+    // The quest event emission has been moved to the reducer per the plan.
     const applyQuestEvent = mock.fn()
     const { result, targetNode } = setupTravelScenario(useTravelLogic, {
       applyQuestEvent
@@ -384,14 +404,7 @@ describe('useTravelLogic', () => {
       result.current.onTravelComplete(targetNode)
     })
 
-    assert.equal(applyQuestEvent.mock.calls.length, 1)
-    assert.deepEqual(applyQuestEvent.mock.calls[0].arguments[0], {
-      type: 'travel.completed',
-      amount: 1,
-      success: true,
-      context: { region: 'club' },
-      tags: ['club']
-    })
+    assert.equal(applyQuestEvent.mock.calls.length, 0)
   })
 
   test('onTravelComplete applies travel band patch before advancing the day', () => {

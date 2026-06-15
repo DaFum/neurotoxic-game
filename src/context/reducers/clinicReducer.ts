@@ -20,6 +20,7 @@ import {
   sanitizeSuccessToast,
   buildDeterministicToastId
 } from './toastSanitizers'
+import { validateBloodBankDonation } from '../../utils/bloodBankUtils'
 
 /**
  * Common logic for clinic actions.
@@ -226,51 +227,78 @@ export const handleBloodBankDonate = (
     return state
   }
 
-  const currentMoney = Number.isFinite(state.player.money)
-    ? state.player.money
-    : 0
+  let membersChanged = false
+  const normalizedMembers = (state?.band?.members || []).map(
+    (member: BandMember) => {
+      const stamina = finiteNumberOr(member?.stamina, 0)
+      const staminaMax = finiteNumberOr(member?.staminaMax, 100)
+
+      if (stamina !== member?.stamina || staminaMax !== member?.staminaMax) {
+        membersChanged = true
+        return { ...member, stamina, staminaMax }
+      }
+      return member
+    }
+  )
+
+  const normalizedState = membersChanged
+    ? { ...state, band: { ...state?.band, members: normalizedMembers } }
+    : state
+
+  if (
+    !validateBloodBankDonation(normalizedState.band, {
+      harmonyCost,
+      staminaCost
+    })
+  ) {
+    logger.warn('ClinicReducer', 'Rejected unaffordable blood-bank donation')
+    return state
+  }
+
+  const currentMoney = finiteNumberOr(normalizedState.player?.money, 0)
   const nextMoney = clampPlayerMoney(currentMoney + moneyGain)
 
-  const currentHarmony = Number.isFinite(state.band.harmony)
-    ? state.band.harmony
-    : 50
+  const currentHarmony = finiteNumberOr(normalizedState.band?.harmony, 50)
   const nextHarmony = clampBandHarmony(currentHarmony - harmonyCost)
 
-  const currentControversy = Number.isFinite(state.social.controversyLevel)
-    ? state.social.controversyLevel
-    : 0
+  const currentControversy = finiteNumberOr(
+    normalizedState.social?.controversyLevel,
+    0
+  )
   const nextControversy = clampControversyLevel(
     currentControversy + controversyGain
   )
 
   // Apply stamina drain to all members and calculate actual loss
   let totalStaminaLost = 0
-  const updatedMembers = state.band.members.map((member: BandMember) => {
-    const prevStamina = finiteNumberOr(member.stamina, 0)
-    const nextStamina = clampMemberStamina(
-      prevStamina - staminaCost,
-      member.staminaMax
-    )
-    totalStaminaLost += prevStamina - nextStamina
-    return {
-      ...member,
-      stamina: nextStamina
+  const updatedMembers = normalizedState.band.members.map(
+    (member: BandMember) => {
+      const prevStamina = finiteNumberOr(member.stamina, 0)
+      const nextStamina = clampMemberStamina(
+        prevStamina - staminaCost,
+        member.staminaMax
+      )
+      totalStaminaLost += prevStamina - nextStamina
+      return {
+        ...member,
+        stamina: nextStamina
+      }
     }
-  })
+  )
 
   const nextState = {
-    ...state,
+    ...normalizedState,
     player: {
-      ...state.player,
+      ...normalizedState.player,
       money: nextMoney
     },
     band: {
-      ...state.band,
+      ...normalizedState.band,
       harmony: nextHarmony,
       members: updatedMembers
     },
     social: {
-      ...state.social,
+      ...normalizedState.social,
       controversyLevel: nextControversy
     }
   }
@@ -281,7 +309,10 @@ export const handleBloodBankDonate = (
     const deltaControversy = nextControversy - currentControversy
 
     const safeToast = sanitizeSuccessToast(successToast, {
-      fallbackId: buildDeterministicToastId('blood-bank-toast', state.toasts),
+      fallbackId: buildDeterministicToastId(
+        'blood-bank-toast',
+        normalizedState.toasts
+      ),
       optionsPatch: {
         deltaMoney: formatCurrency(deltaMoney, i18n.language, 'always'),
         deltaHarmony,
@@ -290,7 +321,7 @@ export const handleBloodBankDonate = (
       }
     })
     if (safeToast) {
-      nextState.toasts = [...(state.toasts || []), safeToast]
+      nextState.toasts = [...(normalizedState.toasts || []), safeToast]
     }
   }
 

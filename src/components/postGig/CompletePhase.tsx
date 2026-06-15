@@ -23,7 +23,8 @@ export const CompletePhase = ({
   player,
   social,
   pedalHarmonyPenalty = 0,
-  isProcessingAction = false
+  isProcessingAction = false,
+  hasSpun = false
 }: CompletePhaseProps) => {
   const { t, i18n } = useTranslation()
   const hasPR = player?.hqUpgrades?.includes('pr_manager_contract')
@@ -119,7 +120,7 @@ export const CompletePhase = ({
           {hasPR && isHighControversy && onSpinStory && (
             <ActionButton
               onClick={onSpinStory}
-              disabled={isProcessingAction}
+              disabled={isProcessingAction || hasSpun}
               className='w-full sm:w-auto min-h-11 bg-blood-red text-star-white px-6 py-2 border-2 border-blood-red hover:bg-star-white hover:text-blood-red disabled:opacity-50'
             >
               {t('ui:postGig.spinStory', {

@@ -34,8 +34,8 @@ describe('handleBloodBankDonate Reducer', () => {
   test('successfully applies donation effects and clamps correctly', () => {
     const initialState = getInitialState()
 
-    // Set members stamina close to 0 to test clamping
-    initialState.band.members[1].stamina = 10
+    // Set members[1].stamina to a survivable value: must be >= staminaCost + 10 = 30
+    initialState.band.members[1].stamina = 30
 
     const payload = {
       moneyGain: 200,
@@ -56,11 +56,11 @@ describe('handleBloodBankDonate Reducer', () => {
     // Social controversy should increase (10 + 5)
     assert.strictEqual(result.social.controversyLevel, 15)
 
-    // Members stamina should decrease, and clamp at 0
+    // Members stamina should decrease
     // m1: 80 - 20 = 60
     assert.strictEqual(result.band.members[0].stamina, 60)
-    // m2: 10 - 20 = -10 => 0
-    assert.strictEqual(result.band.members[1].stamina, 0)
+    // m2: 30 - 20 = 10
+    assert.strictEqual(result.band.members[1].stamina, 10)
 
     // Toast should be added
     assert.strictEqual(result.toasts.length, 1)
@@ -77,25 +77,26 @@ describe('handleBloodBankDonate Reducer', () => {
     assert.strictEqual(options.deltaControversy, 5) // 15 - 10
     // deltaStamina should be the total actual loss:
     // m1: 80 -> 60 = 20 lost
-    // m2: 10 -> 0 = 10 lost
-    // total = 30
-    assert.strictEqual(options.deltaStamina, 30)
+    // m2: 30 -> 10 = 20 lost
+    // total = 40
+    assert.strictEqual(options.deltaStamina, 40)
   })
 
-  test('clamps harmony to minimum of 1', () => {
+  test('rejects donation when harmony is insufficient (affordability guard)', () => {
     const initialState = getInitialState()
     initialState.band.harmony = 10
 
     const payload = {
       moneyGain: 100,
-      harmonyCost: 50, // 10 - 50 = -40 => should clamp to 1
+      harmonyCost: 50, // 10 > 50 is false — guard rejects
       staminaCost: 0,
       controversyGain: 0
     }
 
     const result = handleBloodBankDonate(initialState, payload)
 
-    assert.strictEqual(result.band.harmony, 1)
+    // Guard fires: state must be returned unchanged
+    assert.strictEqual(result, initialState)
   })
 
   test('returns original state and warns if missing band or player state', () => {

@@ -55,12 +55,36 @@ export const useContrabandStash = () => {
         })
         return
       }
+
+      // The reducer (`handleUseContraband`) is the authority and no-ops for a
+      // stale instanceId or an already-applied item, returning unchanged state.
+      // Dispatch does not update refs synchronously, so predict acceptance from
+      // the live pre-dispatch stash to keep success feedback honest. Object.hasOwn
+      // guards prototype keys; the entry checks mirror the reducer's state gates.
+      const stash = band?.stash ?? {}
+      const entry = Object.hasOwn(stash, item.id)
+        ? (stash[item.id] as Record<string, unknown> | undefined)
+        : undefined
+      const willApply =
+        entry != null &&
+        (entry.instanceId === undefined || entry.instanceId === instanceId) &&
+        entry.applied !== true
+      if (!willApply) {
+        addToast(
+          t('ui:stash.alreadyUsed', {
+            defaultValue: "That item can't be used right now."
+          }),
+          'warning'
+        )
+        return
+      }
+
       dispatchUseContraband(instanceId, item.id, selectedMember)
 
       const message = getStashItemUseMessage(item, t)
       addToast(t(message.key, message.options), 'success')
     },
-    [dispatchUseContraband, selectedMember, addToast, t]
+    [band?.stash, dispatchUseContraband, selectedMember, addToast, t]
   )
 
   return {

@@ -129,7 +129,9 @@ export const QuestOfferEngine = {
     // ⚡ BOLT OPTIMIZATION: Replaced Object.entries().flatMap with a single-pass loop
     for (const questId in QUEST_REGISTRY) {
       if (!Object.hasOwn(QUEST_REGISTRY, questId)) continue
-      const definition = QUEST_REGISTRY[questId as keyof typeof QUEST_REGISTRY] as Partial<QuestState>
+      const definition = QUEST_REGISTRY[
+        questId as keyof typeof QUEST_REGISTRY
+      ] as Partial<QuestState>
       const offer = definition?.offer
       if (!offer || offer.trigger !== trigger) continue
       if (QuestOfferEngine.canOfferQuest(state, questId)) {

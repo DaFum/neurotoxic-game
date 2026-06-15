@@ -9,12 +9,12 @@ import {
 } from '../../../utils/postGigUtils'
 import type { HandlerDispatchers } from './types'
 
-/** Props for {@link useMinorHandlers}: state slices, the processing guard, translator, and dispatchers. */
+/** Props for {@link useMinorHandlers}: state slices, the spin-specific one-shot guard, translator, and dispatchers. */
 export interface UseMinorHandlersProps {
   player: GameState['player']
   postOptionsDerivationError: unknown
-  isProcessingActionRef: React.MutableRefObject<boolean>
-  setIsProcessingAction: React.Dispatch<React.SetStateAction<boolean>>
+  hasSpunRef: React.MutableRefObject<boolean>
+  setHasSpun: React.Dispatch<React.SetStateAction<boolean>>
   t: import('i18next').TFunction
   dispatchers: HandlerDispatchers
 }
@@ -22,12 +22,15 @@ export interface UseMinorHandlersProps {
 /**
  * Builds the smaller post-gig handlers (spin-story and next-phase advancement),
  * applying the spin-story money/controversy effects through the dispatchers.
+ *
+ * Spin-story uses its own one-shot guard (`hasSpunRef`/`setHasSpun`) so it
+ * cannot block the shared continue guard (`isProcessingActionRef`).
  */
 export function useMinorHandlers({
   player,
   postOptionsDerivationError,
-  isProcessingActionRef,
-  setIsProcessingAction,
+  hasSpunRef,
+  setHasSpun,
   t,
   dispatchers: { updatePlayer, updateSocial, addToast, setPhase, setPostResult }
 }: UseMinorHandlersProps) {
@@ -56,52 +59,40 @@ export function useMinorHandlers({
   }, [setPhase, postOptionsDerivationError, t, addToast, setPostResult])
 
   const handleSpinStory = useCallback(() => {
-    if (isProcessingActionRef.current) return
-    isProcessingActionRef.current = true
-    setIsProcessingAction(true)
+    if (hasSpunRef.current) return
 
-    try {
-      const updates = getSpinStoryMoneyUpdate({ player })
+    const updates = getSpinStoryMoneyUpdate({ player })
 
-      if (!updates.success) {
-        addToast(
-          t('ui:postGig.notEnoughCashForPr', {
-            defaultValue: 'Not enough cash for PR!'
-          }),
-          'error'
-        )
-        return
-      }
-
-      updatePlayer({ money: updates.nextMoney })
-
-      const socialUpdateFactory = getSpinStorySocialUpdateFactory()
-      updateSocial(socialUpdateFactory)
-
-      const moneyText =
-        updates.appliedDelta !== 0
-          ? ` (${formatCurrency(updates.appliedDelta, i18n.language)})`
-          : ''
+    if (!updates.success) {
       addToast(
-        t('ui:postGig.storySpunControversyReduced', {
-          moneyText,
-          defaultValue: `Story Spun. Controversy reduced.${moneyText}`
+        t('ui:postGig.notEnoughCashForPr', {
+          defaultValue: 'Not enough cash for PR!'
         }),
-        'success'
+        'error'
       )
-    } finally {
-      isProcessingActionRef.current = false
-      setIsProcessingAction(false)
+      return
     }
-  }, [
-    player,
-    updatePlayer,
-    updateSocial,
-    addToast,
-    t,
-    isProcessingActionRef,
-    setIsProcessingAction
-  ])
+
+    updatePlayer({ money: updates.nextMoney })
+
+    const socialUpdateFactory = getSpinStorySocialUpdateFactory()
+    updateSocial(socialUpdateFactory)
+
+    hasSpunRef.current = true
+    setHasSpun(true)
+
+    const moneyText =
+      updates.appliedDelta !== 0
+        ? ` (${formatCurrency(updates.appliedDelta, i18n.language)})`
+        : ''
+    addToast(
+      t('ui:postGig.storySpunControversyReduced', {
+        moneyText,
+        defaultValue: `Story Spun. Controversy reduced.${moneyText}`
+      }),
+      'success'
+    )
+  }, [player, updatePlayer, updateSocial, addToast, t, hasSpunRef, setHasSpun])
 
   return { handleNextPhase, handleSpinStory }
 }

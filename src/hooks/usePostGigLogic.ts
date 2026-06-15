@@ -81,6 +81,7 @@ export const usePostGigLogic = () => {
   // 3. Handlers
   const {
     isProcessingAction,
+    hasSpun,
     handlePostSelection,
     handleAcceptDeal,
     handleRejectDeals,
@@ -108,6 +109,7 @@ export const usePostGigLogic = () => {
     changeScene,
     addQuest,
     applyQuestEvent,
+    phase,
     setPhase,
     setPostResult,
     setBrandOffers,
@@ -136,6 +138,7 @@ export const usePostGigLogic = () => {
     changeScene,
     pedalHarmonyPenalty,
     isProcessingAction,
+    hasSpun,
     handlePostSelection,
     handleAcceptDeal,
     handleRejectDeals,

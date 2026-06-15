@@ -114,12 +114,20 @@ export const EventModal = ({
   const [outcome, setOutcome] = useState<EventOutcome | null>(null)
   const [previewError, setPreviewError] = useState(false)
   const [prevEventId, setPrevEventId] = useState<string | undefined>(event?.id)
+  const resolvedRef = useRef(false)
+  const [isResolved, setIsResolved] = useState(false)
 
-  // Reset outcome on new events
+  // Reset outcome and resolved guard on new events
   if (event?.id !== prevEventId) {
     setPrevEventId(event?.id)
     setOutcome(null)
     setPreviewError(false)
+    setIsResolved(false)
+    // Reset the synchronous double-submit guard in the same guarded block as
+    // isResolved so the ref and the button's disabled state never diverge.
+    // (A useEffect reset would lag a render behind, leaving a window where the
+    // button is enabled but handleContinue still no-ops.)
+    resolvedRef.current = false
   }
 
   // Keep game state ref stable so handleOptionSelect doesn't refresh constantly, resetting the keyboard listener
@@ -156,7 +164,9 @@ export const EventModal = ({
   }, [])
 
   const handleContinue = useCallback(() => {
-    if (outcome) {
+    if (outcome && !resolvedRef.current) {
+      resolvedRef.current = true
+      setIsResolved(true)
       onOptionSelect({
         ...outcome.option,
         _precomputedResult: outcome._precomputedResult
@@ -310,8 +320,9 @@ export const EventModal = ({
               </div>
               <button
                 type='button'
+                disabled={isResolved}
                 onClick={handleContinue}
-                className='w-full p-3 border border-toxic-green bg-toxic-green/20 hover:bg-toxic-green hover:text-void-black text-toxic-green font-bold tracking-widest uppercase transition-colors text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
+                className='w-full p-3 border border-toxic-green bg-toxic-green/20 hover:bg-toxic-green hover:text-void-black text-toxic-green font-bold tracking-widest uppercase transition-colors text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-toxic-green/20 disabled:hover:text-toxic-green'
               >
                 [ {t('ui:continue', { defaultValue: 'CONTINUE' })} ]
               </button>

@@ -2,6 +2,7 @@ import type { TranslationCallback } from '../types/callbacks'
 import type { UnknownRecord } from '../types'
 import { formatCurrency } from './numberUtils'
 import { isFiniteNumber } from './finiteNumber'
+import { getQuestDefinition } from '../data/questRegistry'
 
 type EffectDelta = {
   [key: string]: unknown
@@ -68,14 +69,24 @@ export const generateEffectText = (
   const getQuestLabel = (quest: unknown) => {
     if (!quest || typeof quest !== 'object') {
       const raw = String(quest)
-      return translateMaybeKey(raw, raw)
+      // A bare quest id (e.g. 'quest_region_takeover') has no direct i18n key;
+      // resolve its display label from the quest registry (an i18n key like
+      // 'ui:quests.regionTakeover.title') so the effect shows a translated name.
+      const registryLabel = getQuestDefinition(raw)?.label
+      return registryLabel
+        ? translateMaybeKey(registryLabel, raw)
+        : translateMaybeKey(raw, raw)
     }
 
     const record = quest as UnknownRecord
     const rawTitle = typeof record.title === 'string' ? record.title : ''
     const rawLabel = typeof record.label === 'string' ? record.label : ''
     const id = typeof record.id === 'string' ? record.id : 'ui:quest.unknown'
-    const labelSource = rawTitle || rawLabel || id
+    // When the object carries no explicit title/label, fall back to the
+    // registry label for its id rather than rendering the raw id.
+    const registryLabel =
+      !rawTitle && !rawLabel ? getQuestDefinition(id)?.label : undefined
+    const labelSource = rawTitle || rawLabel || registryLabel || id
     const fallback =
       rawTitle && !rawTitle.includes(':')
         ? rawTitle

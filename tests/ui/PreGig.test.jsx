@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import React from 'react'
-import { render, fireEvent } from '@testing-library/react'
+import { render, fireEvent, renderHook, act } from '@testing-library/react'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 
@@ -143,7 +143,8 @@ vi.mock('../../src/context/GameState', () => ({
 }))
 // Import PreGig after mocks
 const { PreGig } = await import('../../src/scenes/PreGig.tsx')
-const { __testInternals } = await import('../../src/hooks/usePreGigLogic')
+const { __testInternals, usePreGigLogic } =
+  await import('../../src/hooks/usePreGigLogic')
 const { getSafeRandom } = await import('../../src/utils/crypto')
 const { resolveMerchRestockCost } = await import('../../src/utils/merchUtils')
 
@@ -683,6 +684,45 @@ describe('PreGig', () => {
     fireEvent.click(restockBtns[0])
 
     expect(mockUseGameState.updatePlayer).toHaveBeenCalledWith({ money: 387 })
+  })
+
+  test('synchronous re-entry guard: double-call dispatches only one start-minigame action', async () => {
+    const { audioManager } = await import('../../src/utils/audio/AudioManager')
+
+    // Create a promise that we can resolve manually to simulate a pending await.
+    // Both synchronous handler calls happen BEFORE this resolves, so only the
+    // isStartingRef guard (not the disabled-button state) can prevent double dispatch.
+    let resolveAudio
+    audioManager.ensureAudioContext = vi.fn().mockReturnValue(
+      new Promise(res => {
+        resolveAudio = res
+      })
+    )
+
+    mockUseGameState.setlist = [{ id: 'song1' }]
+    vi.mocked(getSafeRandom).mockReturnValue(0.1) // picks roadie
+
+    // Render the hook directly — bypasses the button's disabled state entirely.
+    const { result } = renderHook(() => usePreGigLogic())
+
+    // Call handleStartShow twice synchronously inside a single act() batch,
+    // before the audio promise resolves. Only the ref guard can stop the second call.
+    await act(async () => {
+      void result.current.handleStartShow()
+      void result.current.handleStartShow()
+    })
+
+    // Resolve the pending audio context promise and flush microtasks.
+    await act(async () => {
+      resolveAudio(true)
+    })
+
+    // Only one start action should have been dispatched regardless of which minigame was chosen.
+    const totalDispatches =
+      mockUseGameState.startRoadieMinigame.mock.calls.length +
+      mockUseGameState.startKabelsalatMinigame.mock.calls.length +
+      mockUseGameState.startAmpCalibration.mock.calls.length
+    expect(totalDispatches).toBe(1)
   })
 
   test('merch capacity blocks restock until an asset raises the ceiling', async () => {
