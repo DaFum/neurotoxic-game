@@ -789,6 +789,28 @@ test('QuestLifecycle', async t => {
       }
     )
 
+    await t.test('handles invalid amounts without corrupting state', () => {
+      const state = { activeQuests: [{ id: 'q1', progress: 2, required: 5 }] }
+
+      let nextState = QuestLifecycle.advanceQuest(state, {
+        questId: 'q1',
+        amount: -999
+      })
+      assert.equal(nextState.activeQuests[0].progress, 2)
+
+      nextState = QuestLifecycle.advanceQuest(state, {
+        questId: 'q1',
+        amount: Number.NaN
+      })
+      assert.equal(nextState.activeQuests[0].progress, 2)
+
+      nextState = QuestLifecycle.advanceQuest(state, {
+        questId: 'q1',
+        amount: Infinity
+      })
+      assert.equal(nextState.activeQuests[0].progress, 2)
+    })
+
     await t.test('advances progress', () => {
       const state = { activeQuests: [{ id: 'q1', progress: 0, required: 5 }] }
       const nextState = QuestLifecycle.advanceQuest(state, {
@@ -813,13 +835,13 @@ test('QuestLifecycle', async t => {
       assert.equal(nextState.activeQuests[0].progress, 1)
     })
 
-    await t.test('advances progress with amount null falling back to 1', () => {
+    await t.test('advances progress with amount null rejecting and leaving progress unchanged', () => {
       const state = { activeQuests: [{ id: 'q1', progress: 0, required: 5 }] }
       const nextState = QuestLifecycle.advanceQuest(state, {
         questId: 'q1',
         amount: null
       })
-      assert.equal(nextState.activeQuests[0].progress, 1)
+      assert.equal(nextState.activeQuests[0].progress, 0)
     })
 
     await t.test('does not advance if id does not match', () => {

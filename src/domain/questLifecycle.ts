@@ -246,16 +246,29 @@ export const QuestLifecycle = {
     nextState.activeQuests = nextState.activeQuests.map(q => {
       if (q.id === questId) {
         const questConfig = getQuestWithDefinition(q)
-        const required = q.required ?? questConfig.required
-        const progress = q.progress ?? 0
-        if (typeof required !== 'number') {
+        const rawRequired = q.required ?? questConfig.required
+        const safeRequired = finiteNumberOr(rawRequired, Number.NaN)
+
+        if (!Number.isFinite(safeRequired) || safeRequired <= 0) {
           return q
         }
-        const newProgress = Math.min(required, progress + (amount ?? 1))
-        if (newProgress >= required) {
+
+        if (amount !== undefined && typeof amount !== 'number') {
+          return q
+        }
+
+        if (amount !== undefined && (!Number.isFinite(amount) || amount < 0)) {
+          return q
+        }
+
+        const safeAmount = amount ?? 1
+        const safeProgress = Math.max(0, finiteNumberOr(q.progress, 0))
+
+        const newProgress = Math.min(safeRequired, safeProgress + safeAmount)
+        if (newProgress >= safeRequired) {
           questCompleted = true
         }
-        return { ...q, required, progress: newProgress }
+        return { ...q, required: safeRequired, progress: newProgress }
       }
       return q
     })
