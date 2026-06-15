@@ -1,4 +1,5 @@
 // Orchestrator
+import { useCallback } from 'react'
 import { useTravelState } from './useTravelState'
 import { useTravelActions } from './useTravelActions'
 import { useVanMaintenance } from './useVanMaintenance'
@@ -64,17 +65,27 @@ export const useTravelLogic = (params: TravelLogicParams) => {
 
   useTravelEffects({ refs, state, params })
 
-  const isConnected = (targetNodeId: string) => {
-    return isConnectedUtil(
-      params.gameMap,
-      params.player.currentNodeId,
-      targetNodeId
-    )
-  }
+  // ⚡ Bolt Optimization: Memoize isConnected to prevent unnecessary invalidation
+  // of the expensive connection rendering useMemo in OverworldMap.tsx.
+  const isConnected = useCallback(
+    (targetNodeId: string) => {
+      return isConnectedUtil(
+        params.gameMap,
+        params.player?.currentNodeId ?? '',
+        targetNodeId
+      )
+    },
+    [params.gameMap, params.player?.currentNodeId]
+  )
 
-  const getNodeVisibility = (nodeLayer: number, currentLayer: number) => {
-    return getNodeVisibilityUtil(nodeLayer, currentLayer)
-  }
+  // ⚡ Bolt Optimization: Memoize getNodeVisibility to stabilize the prop reference
+  // passed to OverworldMap.tsx and prevent downstream re-renders.
+  const getNodeVisibility = useCallback(
+    (nodeLayer: number, currentLayer: number) => {
+      return getNodeVisibilityUtil(nodeLayer, currentLayer)
+    },
+    []
+  )
 
   return {
     isTraveling: state.isTraveling,

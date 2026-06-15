@@ -237,3 +237,8 @@
 
 **Learning:** When replacing `Object.entries(REGISTRY)` with a `for...in` loop to avoid intermediate tuple allocations, TypeScript widens the iteration key to `string`. Attempting to index the registry directly (`REGISTRY[key]`) results in a TS7053 error because the registry lacks a string index signature.
 **Action:** When indexing a registry inside a `for...in` loop, explicitly assert the key type: `REGISTRY[key as keyof typeof REGISTRY]` to maintain type safety without allocating intermediate arrays.
+
+## 2026-06-14 - Memoizing Stable Props for React.memo Components
+
+**Learning:** When passing hook-derived functions (like `isConnected` from `useTravelLogic`) to heavily memoized child components (like `OverworldMap`), failing to wrap them in `useCallback` causes them to act as unstable object references. This invalidates `React.memo` and forces expensive downstream `useMemo` recomputations on every parent render.
+**Action:** Always wrap functions returned by custom hooks in `useCallback` with proper dependency arrays if they are intended to be passed as props to memoized components.
