@@ -110,7 +110,7 @@ export const QuestLifecycle = {
     { questId, randomIdx }: { questId: string; randomIdx?: number }
   ): GameState => {
     if (!state.activeQuests) return state
-    const questIndex = state.activeQuests.findIndex(q => q.id === questId)
+    const questIndex = state.activeQuests.findIndex(q => q?.id === questId)
     if (questIndex === -1) return state
 
     const activeQuest = state.activeQuests[questIndex]
@@ -240,7 +240,7 @@ export const QuestLifecycle = {
     }: { questId: string; amount?: number; randomIdx?: number }
   ): GameState => {
     if (!state.activeQuests) return state
-    const questIndex = state.activeQuests.findIndex(q => q.id === questId)
+    const questIndex = state.activeQuests.findIndex(q => q?.id === questId)
     if (questIndex === -1) return state
 
     const nextState = { ...state }
@@ -272,7 +272,11 @@ export const QuestLifecycle = {
 
     // ⚡ BOLT OPTIMIZATION: Replaced activeQuests.map() with targeted array indexing to avoid array allocations in hot path
     nextState.activeQuests = [...state.activeQuests]
-    nextState.activeQuests[questIndex] = { ...q, required: safeRequired, progress: newProgress }
+    nextState.activeQuests[questIndex] = {
+      ...q,
+      required: safeRequired,
+      progress: newProgress
+    }
 
     if (newProgress >= safeRequired) {
       return QuestLifecycle.completeQuest(nextState, { questId, randomIdx })
@@ -291,7 +295,7 @@ export const QuestLifecycle = {
     { questId, progress }: { questId: string; progress: number }
   ): GameState => {
     if (!state.activeQuests) return state
-    const questIndex = state.activeQuests.findIndex(q => q.id === questId)
+    const questIndex = state.activeQuests.findIndex(q => q?.id === questId)
     if (questIndex === -1) return state
 
     const nextState = { ...state }
@@ -300,17 +304,22 @@ export const QuestLifecycle = {
     if (!q) return state
 
     const questConfig = getQuestWithDefinition(q)
-    const required = q.required ?? questConfig.required
-    const prev = q.progress ?? 0
+    const rawRequired = q.required ?? questConfig.required
+    const required = finiteNumberOr(rawRequired, Number.NaN)
+    const prev = finiteNumberOr(q.progress, 0)
     const next = Math.max(prev, finiteNumberOr(progress, prev))
-    const capped =
-      typeof required === 'number' ? Math.min(required, next) : next
+    const hasRequired = Number.isFinite(required)
+    const capped = hasRequired ? Math.min(required, next) : next
 
     // ⚡ BOLT OPTIMIZATION: Replaced activeQuests.map() with targeted array indexing to avoid array allocations in hot path
     nextState.activeQuests = [...state.activeQuests]
-    nextState.activeQuests[questIndex] = { ...q, required, progress: capped }
+    nextState.activeQuests[questIndex] = {
+      ...q,
+      required: hasRequired ? required : rawRequired,
+      progress: capped
+    }
 
-    if (typeof required === 'number' && capped >= required) {
+    if (hasRequired && capped >= required) {
       return QuestLifecycle.completeQuest(nextState, { questId })
     }
     return nextState
