@@ -802,13 +802,13 @@ test('QuestLifecycle', async t => {
         questId: 'q1',
         amount: Number.NaN
       })
-      assert.equal(nextState.activeQuests[0].progress, 2) // NaN becomes 0 due to finiteNumberOr default
+      assert.equal(nextState.activeQuests[0].progress, 2)
 
       nextState = QuestLifecycle.advanceQuest(state, {
         questId: 'q1',
         amount: Infinity
       })
-      assert.equal(nextState.activeQuests[0].progress, 2) // Infinity becomes 0 due to finiteNumberOr default
+      assert.equal(nextState.activeQuests[0].progress, 2)
     })
 
     await t.test('advances progress', () => {
