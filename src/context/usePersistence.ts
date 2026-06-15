@@ -133,7 +133,7 @@ export const createRawLoadPayload = (
       if (isValid) {
         payload[key] = value
       } else {
-        throw new StateError(`Invalid type for loadable save key: ${key}`)
+        logger.warn('Persistence', `Skipping invalid type for loadable save key: ${key}`)
       }
     }
   }

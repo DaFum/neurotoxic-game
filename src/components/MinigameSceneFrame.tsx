@@ -79,6 +79,7 @@ export const MinigameSceneFrame = <TState,>({
             currentLogic.finishMinigame()
           } else if (minigameType === MINIGAME_TYPES.TOURBUS) {
             completeTravelMinigame(0, [])
+            onComplete()
             return
           } else if (minigameType === MINIGAME_TYPES.ROADIE) {
             completeRoadieMinigame(0)

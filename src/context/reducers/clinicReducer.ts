@@ -252,7 +252,7 @@ export const handleBloodBankDonate = (
     })
   ) {
     logger.warn('ClinicReducer', 'Rejected unaffordable blood-bank donation')
-    return normalizedState
+    return state
   }
 
   const currentMoney = finiteNumberOr(normalizedState.player?.money, 0)

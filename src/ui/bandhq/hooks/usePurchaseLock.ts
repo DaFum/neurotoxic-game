@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 
 /**
  * State and helper returned by {@link usePurchaseLock}.
@@ -34,6 +34,14 @@ export interface PurchaseLockResult {
 export const usePurchaseLock = (): PurchaseLockResult => {
   const [processingItemId, setProcessingItemId] = useState<string | null>(null)
   const processingItemIdRef = useRef<string | null>(null)
+  const isMounted = useRef(true)
+
+  useEffect(() => {
+    isMounted.current = true
+    return () => {
+      isMounted.current = false
+    }
+  }, [])
 
   const runWithLock = useCallback(
     async (itemId: string, run: () => void | Promise<void>) => {
@@ -42,9 +50,13 @@ export const usePurchaseLock = (): PurchaseLockResult => {
       setProcessingItemId(itemId)
       try {
         await run()
+        // Hold the lock briefly to allow React to render the disabled state
+        await new Promise(resolve => setTimeout(resolve, 100))
       } finally {
-        processingItemIdRef.current = null
-        setProcessingItemId(null)
+        if (isMounted.current) {
+          processingItemIdRef.current = null
+          setProcessingItemId(null)
+        }
       }
     },
     []
