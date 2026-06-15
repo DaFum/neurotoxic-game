@@ -129,6 +129,26 @@ test('generateEffectText translates namespaced quest labels in addQuest effect t
   )
 })
 
+test('generateEffectText translates a bare quest id via the quest registry label', () => {
+  // A bare quest id string (as pushed by the addQuest effect handler) must
+  // resolve to its registry label i18n key instead of being shown raw.
+  const mockT = vi.fn((key, options) => {
+    if (key === 'ui:quests.regionTakeover.title') {
+      return 'REGION-ÜBERNAHME'
+    }
+    return options?.defaultValue ?? key
+  })
+  const delta = {
+    flags: {
+      addQuest: 'quest_region_takeover'
+    }
+  }
+
+  const result = generateEffectText(delta, mockT)
+
+  expect(result).toBe('Effects: New Quest: REGION-ÜBERNAHME')
+})
+
 test('generateEffectText handles empty or null deltas safely', () => {
   const mockT = vi.fn(key => key)
 
