@@ -218,10 +218,11 @@ export function useContinueHandler({
         )
       }
 
-      if (financials.net > 0) {
+      const moneyGain = stats.newMoney - finiteNumberOr(player.money, 0)
+      if (moneyGain > 0) {
         applyQuestEvent(
           createMoneyEarnedQuestEvent({
-            amount: financials.net
+            amount: moneyGain
           })
         )
       }

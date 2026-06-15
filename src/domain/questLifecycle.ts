@@ -253,7 +253,15 @@ export const QuestLifecycle = {
           return q
         }
 
-        const safeAmount = Math.max(0, finiteNumberOr(amount, 1))
+        if (amount !== undefined && typeof amount !== 'number') {
+          return q
+        }
+
+        if (amount !== undefined && (!Number.isFinite(amount) || amount < 0)) {
+          return q
+        }
+
+        const safeAmount = amount ?? 1
         const safeProgress = Math.max(0, finiteNumberOr(q.progress, 0))
 
         const newProgress = Math.min(safeRequired, safeProgress + safeAmount)
