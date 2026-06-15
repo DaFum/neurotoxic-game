@@ -34,12 +34,12 @@ export interface PurchaseLockResult {
 export const usePurchaseLock = (): PurchaseLockResult => {
   const [processingItemId, setProcessingItemId] = useState<string | null>(null)
   const processingItemIdRef = useRef<string | null>(null)
-  const isMounted = useRef(true)
+  const isMountedRef = useRef(true)
 
   useEffect(() => {
-    isMounted.current = true
+    isMountedRef.current = true
     return () => {
-      isMounted.current = false
+      isMountedRef.current = false
     }
   }, [])
 
@@ -50,10 +50,10 @@ export const usePurchaseLock = (): PurchaseLockResult => {
       setProcessingItemId(itemId)
       try {
         await run()
-        // Hold the lock briefly to allow React to render the disabled state
-        await new Promise(resolve => setTimeout(resolve, 100))
+        // Yield to the macrotask queue so React can commit the state update and disable the button before the lock is released.
+        await new Promise<void>(resolve => setTimeout(resolve, 0))
       } finally {
-        if (isMounted.current) {
+        if (isMountedRef.current) {
           processingItemIdRef.current = null
           setProcessingItemId(null)
         }
