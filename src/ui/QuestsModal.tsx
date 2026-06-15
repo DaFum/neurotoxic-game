@@ -269,7 +269,7 @@ export const getQuestScopeHint = (
   if (!quest.scopeKey) return null
 
   if (quest.repeatPolicy === 'perRegion') {
-    const isMatching = player.location === quest.scopeKey
+    const isMatching = player?.location === quest.scopeKey
     return {
       matching: isMatching,
       text: isMatching
@@ -318,7 +318,7 @@ export const getQuestPrimaryHint = ({
   // 1. Overdue / heute fällig
   if (deadlineView.level === 'overdue' || deadlineView.level === 'today') {
     return {
-      text: t(deadlineView.text as string, (deadlineView as { count?: number }).count ? { count: (deadlineView as { count?: number }).count } : undefined),
+      text: t(deadlineView.text, 'count' in deadlineView ? { count: deadlineView.count } : undefined),
       type: 'error'
     }
   }
@@ -334,7 +334,7 @@ export const getQuestPrimaryHint = ({
   // 3. Deadline bald
   if (deadlineView.level === 'urgent' || deadlineView.level === 'lastChance') {
     return {
-      text: t(deadlineView.text as string, (deadlineView as { count?: number }).count ? { count: (deadlineView as { count?: number }).count } : undefined),
+      text: t(deadlineView.text, 'count' in deadlineView ? { count: deadlineView.count } : undefined),
       type: 'warning'
     }
   }
@@ -370,7 +370,7 @@ const QuestItem = memo(
     const { t, i18n } = useTranslation(['ui', 'events'])
     const [showDetails, setShowDetails] = useState(false)
 
-    const currentDay = player.day
+    const currentDay = player?.day ?? 1
     const deadlineView = getQuestDeadlineView(quest, currentDay)
     const isOverdue = deadlineView.level === 'overdue'
 
@@ -441,7 +441,7 @@ const QuestItem = memo(
               className={`flex items-center gap-1 text-xs font-mono px-2 py-1 ${hasUrgentDeadline ? 'bg-error-red/20 text-error-red' : 'bg-fuel-yellow/10 text-fuel-yellow'}`}
             >
               <IconClock className='w-3 h-3' />
-              <span>{deadlineView.text ? t(deadlineView.text as string, (deadlineView as { count?: number }).count ? { count: (deadlineView as { count?: number }).count } : undefined) : ''}</span>
+              <span>{deadlineView.text ? t(deadlineView.text, 'count' in deadlineView ? { count: deadlineView.count } : undefined) : ''}</span>
             </div>
           )}
         </div>
