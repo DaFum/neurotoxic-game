@@ -270,7 +270,7 @@ export const getQuestScopeHint = (
   if (!quest.scopeKey) return null
 
   if (quest.repeatPolicy === 'perRegion') {
-    const normalizedLocation = player?.location ? (getRegionKeyForLocation(player.location) ?? player.location) : undefined
+    const normalizedLocation = player?.location ? getRegionKeyForLocation(player.location) : undefined
     const isMatching = normalizedLocation === quest.scopeKey
     return {
       matching: isMatching,
