@@ -380,6 +380,9 @@ export const IconClose = memo(function IconClose({
 export const IconChevronDown = memo(function IconChevronDown({ className = 'w-5 h-5' }: IconProps) {
   return (
   <svg
+    aria-hidden="true"
+    focusable="false"
+    role="presentation"
     xmlns='http://www.w3.org/2000/svg'
     viewBox='0 0 24 24'
     fill='none'
@@ -397,6 +400,9 @@ export const IconChevronDown = memo(function IconChevronDown({ className = 'w-5 
 export const IconChevronUp = memo(function IconChevronUp({ className = 'w-5 h-5' }: IconProps) {
   return (
   <svg
+    aria-hidden="true"
+    focusable="false"
+    role="presentation"
     xmlns='http://www.w3.org/2000/svg'
     viewBox='0 0 24 24'
     fill='none'

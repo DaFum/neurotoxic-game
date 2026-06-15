@@ -198,7 +198,7 @@ describe('QuestModal Helper Functions', () => {
 });
 
   describe('QuestItem rendering interactions', () => {
-    it('toggles description when details clicked', async () => {
+    it('toggles description and updates ARIA attributes when details clicked', async () => {
       const user = userEvent.setup(); render(
         <QuestsModal
           onClose={vi.fn()}
