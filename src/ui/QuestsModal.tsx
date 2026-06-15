@@ -501,7 +501,7 @@ const QuestItem = memo(
         <div className="mt-2">
           <button
             onClick={() => setShowDetails(!showDetails)}
-            className="text-xs text-ash-gray/70 hover:text-toxic-green font-mono flex items-center gap-1 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-toxic-green"
+            className="min-w-[44px] min-h-[44px] text-xs text-ash-gray/70 hover:text-toxic-green font-mono flex items-center gap-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green"
           >
             {showDetails ? <IconChevronUp className="w-3 h-3" /> : <IconChevronDown className="w-3 h-3" />}
             {showDetails ? t('ui:quests.details.hide') : t('ui:quests.details.show')}
@@ -510,6 +510,7 @@ const QuestItem = memo(
           <AnimatePresence>
             {showDetails && (
               <motion.div
+                id={`quest-details-${quest.id}`}
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
