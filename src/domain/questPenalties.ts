@@ -5,7 +5,6 @@ import {
   clampControversyLevel,
   clampLoyalty,
   finiteNumberOr,
-  isForbiddenKey,
   isLooseRecord
 } from '../utils/gameState'
 import {
