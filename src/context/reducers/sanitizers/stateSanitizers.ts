@@ -1,4 +1,7 @@
-import { getCityKeyFromVenueId, deriveCityTraits } from '../../../utils/mapGenerator'
+import {
+  getCityKeyFromVenueId,
+  deriveCityTraits
+} from '../../../utils/mapGenerator'
 import { CONTRABAND_BY_ID } from '../../../data/contraband'
 import { DEFAULT_MERCH_PRICES } from '../../../utils/economyEngine'
 import { BRAND_DEALS_BY_ID } from '../../../data/brandDeals'
@@ -9,8 +12,29 @@ import { DEFAULT_MINIGAME_STATE } from '../../gameConstants'
 import { normalizeTraitMap } from '../../../utils/traitUtils'
 import { clampMemberMood } from '../../../utils/gameState'
 import { EXPENSE_CONSTANTS } from '../../../utils/economyEngine'
-import { DEFAULT_GIG_MODIFIERS, DEFAULT_PLAYER_STATE, DEFAULT_BAND_STATE, DEFAULT_SOCIAL_STATE } from '../../initialState'
-import { isLooseRecord, isFiniteNumber, isForbiddenKey, isEmptyObject, finiteNumberOr, clampNonNegative, clampVanFuel, clampRelationship, calculateFameLevel, clampPlayerFame, clampMemberStamina, clampPlayerMoney, clampBandHarmony, clampBandStress, wrapClockHour } from '../../../utils/gameState'
+import {
+  DEFAULT_GIG_MODIFIERS,
+  DEFAULT_PLAYER_STATE,
+  DEFAULT_BAND_STATE,
+  DEFAULT_SOCIAL_STATE
+} from '../../initialState'
+import {
+  isLooseRecord,
+  isFiniteNumber,
+  isForbiddenKey,
+  isEmptyObject,
+  finiteNumberOr,
+  clampNonNegative,
+  clampVanFuel,
+  clampRelationship,
+  calculateFameLevel,
+  clampPlayerFame,
+  clampMemberStamina,
+  clampPlayerMoney,
+  clampBandHarmony,
+  clampBandStress,
+  wrapClockHour
+} from '../../../utils/gameState'
 import { MINIGAME_TYPES } from '../../gameConstants'
 import type { MinigameType } from '../../../types/game'
 import { ALLOWED_TOAST_TYPES, sanitizeLoadedToast } from '../toastSanitizers'
@@ -25,7 +49,7 @@ import type {
   ToastPayload,
   GameMap,
   GamePhase,
-    MapNodeType
+  MapNodeType
 } from '../../../types'
 
 const ALLOWED_MINIGAME_TYPES = new Set<MinigameType>(
@@ -167,7 +191,9 @@ const copySafeEffectPayload = (
   return copySafePrimitiveObject(value)
 }
 
-export const sanitizeBandInventory = (value: unknown): BandState['inventory'] => {
+export const sanitizeBandInventory = (
+  value: unknown
+): BandState['inventory'] => {
   const sanitized: BandState['inventory'] = { ...DEFAULT_BAND_STATE.inventory }
   if (!isLooseRecord(value)) return sanitized
 
@@ -395,7 +421,8 @@ export const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
         const raw = nodeRecord.shopInventory[i]
         if (!raw || typeof raw !== 'object' || Array.isArray(raw)) continue
         const itemRecord = raw as Record<string, unknown>
-        const sanitizedItem: import('../../../types/components').PurchaseItem = {}
+        const sanitizedItem: import('../../../types/components').PurchaseItem =
+          {}
         for (const itemKey in itemRecord) {
           if (!Object.hasOwn(itemRecord, itemKey)) continue
           if (isForbiddenKey(itemKey)) continue
@@ -607,9 +634,7 @@ export const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
     day: finiteNumberOr(playerData.day, DEFAULT_PLAYER_STATE.day),
     time: finiteNumberOr(playerData.time, DEFAULT_PLAYER_STATE.time),
     location: Object.hasOwn(playerData, 'location')
-      ? typeof playerData.location === 'string' ||
-        playerData.location === null ||
-        playerData.location === undefined
+      ? typeof playerData.location === 'string'
         ? (playerData.location as PlayerState['location'])
         : DEFAULT_PLAYER_STATE.location
       : DEFAULT_PLAYER_STATE.location,
@@ -793,8 +818,17 @@ export const sanitizeBand = (loadedBand: unknown): BandState => {
           // Spread the canonical definition last so save data cannot override
           // definition fields (value, effectType, duration, type, maxStacks);
           // per-instance runtime fields (instanceId, applied, stacks) survive.
-          const copy = { ...itemObj, ...baseItem } as Record<string, unknown>
-          copy.id = itemObj.id as string
+          const safeItemObj: Record<string, unknown> = {}
+          for (const k in itemObj) {
+            if (Object.hasOwn(itemObj, k) && !isForbiddenKey(k)) {
+              safeItemObj[k] = itemObj[k]
+            }
+          }
+          const copy = { ...safeItemObj, ...baseItem } as Record<
+            string,
+            unknown
+          >
+          copy.id = (itemObj?.id ?? '') as string
           if (Object.hasOwn(itemObj, 'stacks')) {
             copy.stacks =
               Number.isInteger(itemObj.stacks) && (itemObj.stacks as number) > 0
@@ -834,7 +868,16 @@ export const sanitizeBand = (loadedBand: unknown): BandState => {
           const itemObj = item as Record<string, unknown>
           if (Object.hasOwn(item, '__proto__')) continue
           // Canonical definition fields win over save data (see array branch).
-          const copy = { ...itemObj, ...baseItem } as Record<string, unknown>
+          const safeItemObj: Record<string, unknown> = {}
+          for (const k in itemObj) {
+            if (Object.hasOwn(itemObj, k) && !isForbiddenKey(k)) {
+              safeItemObj[k] = itemObj[k]
+            }
+          }
+          const copy = { ...safeItemObj, ...baseItem } as Record<
+            string,
+            unknown
+          >
           copy.id = id
           if (Object.hasOwn(itemObj, 'stacks')) {
             copy.stacks =
@@ -1023,7 +1066,9 @@ export const migrateLegacyVenueId = (id: unknown): string => {
   return normalizeVenueId(id) ?? id
 }
 
-export const sanitizeMinigameState = (rawMinigame: unknown): GameState['minigame'] => {
+export const sanitizeMinigameState = (
+  rawMinigame: unknown
+): GameState['minigame'] => {
   if (
     typeof rawMinigame !== 'object' ||
     rawMinigame === null ||
@@ -1230,7 +1275,9 @@ export const sanitizeSocial = (value: unknown): SocialState => {
   return sanitized
 }
 
-export const sanitizeActiveEventOption = (value: unknown): EventOption | null => {
+export const sanitizeActiveEventOption = (
+  value: unknown
+): EventOption | null => {
   if (!isLooseRecord(value)) return null
 
   const option: EventOption = {}
@@ -1243,7 +1290,11 @@ export const sanitizeActiveEventOption = (value: unknown): EventOption | null =>
     'description',
     'nextEventId'
   ]) {
-    if (typeof value[key] === 'string') option[key] = value[key]
+    if (
+      Object.hasOwn(value, key) &&
+      typeof (value as Record<string, unknown>)[key] === 'string'
+    )
+      option[key as keyof EventOption] = (value as Record<string, unknown>)[key]
   }
   for (const key of ['effects', 'effect']) {
     const copied = copySafeEffectPayload(value[key])
@@ -1261,7 +1312,9 @@ export const sanitizeActiveEventOption = (value: unknown): EventOption | null =>
   return !isEmptyObject(option) ? option : null
 }
 
-export const sanitizeActiveEvent = (value: unknown): GameState['activeEvent'] => {
+export const sanitizeActiveEvent = (
+  value: unknown
+): GameState['activeEvent'] => {
   if (!isLooseRecord(value) || typeof value.id !== 'string') return null
 
   const event: GameEvent = { id: value.id }
@@ -1273,7 +1326,11 @@ export const sanitizeActiveEvent = (value: unknown): GameState['activeEvent'] =>
     'descriptionKey',
     'trigger'
   ]) {
-    if (typeof value[key] === 'string') event[key] = value[key]
+    if (
+      Object.hasOwn(value, key) &&
+      typeof (value as Record<string, unknown>)[key] === 'string'
+    )
+      event[key as keyof GameEvent] = (value as Record<string, unknown>)[key]
   }
 
   const context = copySafePrimitiveObject(value.context)
@@ -1318,14 +1375,19 @@ export const sanitizeNpcs = (value: unknown): GameState['npcs'] => {
   return sanitized
 }
 
-export const sanitizeGigModifiers = (value: unknown): GameState['gigModifiers'] => {
+export const sanitizeGigModifiers = (
+  value: unknown
+): GameState['gigModifiers'] => {
   const sanitized = { ...DEFAULT_GIG_MODIFIERS }
   if (!isLooseRecord(value)) return sanitized
   for (const key of Object.keys(DEFAULT_GIG_MODIFIERS)) {
-    if (typeof value[key] === 'boolean') {
-      sanitized[key as keyof typeof DEFAULT_GIG_MODIFIERS] = value[
-        key
-      ] as boolean
+    if (
+      Object.hasOwn(value, key) &&
+      typeof (value as Record<string, unknown>)[key] === 'boolean'
+    ) {
+      sanitized[key as keyof typeof DEFAULT_GIG_MODIFIERS] = (
+        value as Record<string, unknown>
+      )[key]
     }
   }
   // Legacy `energy` → `catering` migration: only applies when the save does
@@ -1350,11 +1412,22 @@ export const sanitizeVenue = (value: unknown): GameState['currentGig'] => {
     name: value.name
   }
   for (const key of ['city', 'region']) {
-    if (typeof value[key] === 'string') venue[key] = value[key]
+    if (
+      Object.hasOwn(value, key) &&
+      typeof (value as Record<string, unknown>)[key] === 'string'
+    )
+      venue[key as keyof typeof venue] = (value as Record<string, unknown>)[
+        key
+      ] as never
   }
   for (const key of ['capacity', 'difficulty', 'diff', 'reputation']) {
-    const parsed = finiteOptionalNumber(value[key])
-    if (parsed !== undefined) venue[key] = parsed
+    if (Object.hasOwn(value, key)) {
+      const parsed = finiteOptionalNumber(
+        (value as Record<string, unknown>)[key]
+      )
+      if (parsed !== undefined)
+        venue[key as keyof typeof venue] = parsed as never
+    }
   }
   if (typeof value.isPractice === 'boolean') {
     venue.isPractice = value.isPractice
@@ -1426,7 +1499,9 @@ export const sanitizeRivalBand = (value: unknown): GameState['rivalBand'] => {
   }
 }
 
-export const sanitizeLastGigStats = (value: unknown): GameState['lastGigStats'] => {
+export const sanitizeLastGigStats = (
+  value: unknown
+): GameState['lastGigStats'] => {
   if (!isLooseRecord(value)) return null
   const sanitized: NonNullable<GameState['lastGigStats']> = {}
   for (const key of [
@@ -1444,7 +1519,9 @@ export const sanitizeLastGigStats = (value: unknown): GameState['lastGigStats'] 
   return !isEmptyObject(sanitized) ? sanitized : null
 }
 
-export const sanitizeActiveQuests = (value: unknown): GameState['activeQuests'] => {
+export const sanitizeActiveQuests = (
+  value: unknown
+): GameState['activeQuests'] => {
   if (!Array.isArray(value)) return []
   return value.flatMap(quest => {
     if (!isLooseRecord(quest) || typeof quest.id !== 'string') return []
@@ -1495,7 +1572,10 @@ export const sanitizeActiveQuests = (value: unknown): GameState['activeQuests'] 
     }
     const sanitized: GameState['activeQuests'][number] = { id: quest.id }
     for (const key of ['label', 'description', 'rewardType', 'rewardFlag']) {
-      if (typeof quest[key] === 'string') sanitized[key] = quest[key]
+      if (Object.hasOwn(quest, key) && typeof quest[key] === 'string')
+        sanitized[key as 'title' | 'description' | 'state'] = quest[
+          key
+        ] as never
     }
     for (const key of ['deadline', 'progress', 'required', 'moneyReward']) {
       if (quest[key] === null && key === 'deadline') {

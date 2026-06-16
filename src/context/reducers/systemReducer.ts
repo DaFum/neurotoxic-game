@@ -1,4 +1,25 @@
-import { sanitizePlayer, sanitizeBand, sanitizeSocial, sanitizeStringArray, sanitizeSetlist, sanitizeActiveEvent, sanitizeToasts, sanitizeReputationByRegion, sanitizeActiveQuests, sanitizeQuestCooldowns, sanitizeQuestScopes, sanitizeNpcs, sanitizeGigModifiers, sanitizeVenue, sanitizeLastGigStats, sanitizeMinigameState, sanitizeRivalBand, normalizeLoadedGameMap, migratePlayerLocation, migrateLegacyVenueId } from './sanitizers/stateSanitizers'
+import {
+  sanitizePlayer,
+  sanitizeBand,
+  sanitizeSocial,
+  sanitizeStringArray,
+  sanitizeSetlist,
+  sanitizeActiveEvent,
+  sanitizeToasts,
+  sanitizeReputationByRegion,
+  sanitizeActiveQuests,
+  sanitizeQuestCooldowns,
+  sanitizeQuestScopes,
+  sanitizeNpcs,
+  sanitizeGigModifiers,
+  sanitizeVenue,
+  sanitizeLastGigStats,
+  sanitizeMinigameState,
+  sanitizeRivalBand,
+  normalizeLoadedGameMap,
+  migratePlayerLocation,
+  migrateLegacyVenueId
+} from './sanitizers/stateSanitizers'
 import {
   processAssetTick,
   processLiabilityTick,
@@ -19,8 +40,8 @@ import type {
   GameMap,
   GameSettings,
   RawGameSettings,
-  ResetStatePayload,
-  } from '../../types'
+  ResetStatePayload
+} from '../../types'
 import { logger } from '../../utils/logger'
 import {
   clampBandHarmony,
@@ -28,23 +49,17 @@ import {
   clampMemberMood,
   isForbiddenKey,
   finiteNumberOr,
-  BALANCE_CONSTANTS,
-  } from '../../utils/gameState'
+  BALANCE_CONSTANTS
+} from '../../utils/gameState'
 import { calculateDailyUpdates } from '../../utils/simulationUtils'
-import {
-  shouldTriggerBankruptcy
-} from '../../utils/economyEngine'
+import { shouldTriggerBankruptcy } from '../../utils/economyEngine'
 import { getTotalDailyObligations } from '../../utils/assetSelectors'
 import { generateDailyTrend } from '../../utils/socialEngine'
 import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks } from '../../utils/traitUtils'
 import { getRegionKeyForLocation } from '../../utils/mapUtils'
-import {
-  createInitialState,
-  } from '../initialState'
-import {
-  GAME_PHASES,
-  } from '../gameConstants'
+import { createInitialState } from '../initialState'
+import { GAME_PHASES } from '../gameConstants'
 import { QuestLifecycle } from '../../domain/questLifecycle'
 import { getQuestDefinition } from '../../data/questRegistry'
 import { getSafeRandom } from '../../utils/crypto'
@@ -57,7 +72,6 @@ import {
   sanitizeRngSeed
 } from './assetSanitizers'
 import type { RiskEventDescriptor } from '../../types/assets'
-
 
 /**
  * Loads persisted state through migration and sanitizer gates.
