@@ -3,7 +3,7 @@ import {
   deriveCityTraits
 } from '../../../utils/mapGenerator'
 import { CONTRABAND_BY_ID } from '../../../data/contraband'
-import { DEFAULT_MERCH_PRICES } from '../../../utils/economyEngine'
+import { DEFAULT_MERCH_PRICES } from '../../../utils/economy'
 import { BRAND_DEALS_BY_ID } from '../../../data/brandDeals'
 import { PRACTICE_RETURN_SCENES } from '../../gameConstants'
 import { getQuestDefinition } from '../../../data/questRegistry'
@@ -11,7 +11,7 @@ import { normalizeVenueId } from '../../../utils/mapUtils'
 import { DEFAULT_MINIGAME_STATE } from '../../gameConstants'
 import { normalizeTraitMap } from '../../../utils/traitUtils'
 import { clampMemberMood } from '../../../utils/gameState'
-import { EXPENSE_CONSTANTS } from '../../../utils/economyEngine'
+import { EXPENSE_CONSTANTS } from '../../../utils/economy'
 import {
   DEFAULT_GIG_MODIFIERS,
   DEFAULT_PLAYER_STATE,
@@ -1387,7 +1387,7 @@ export const sanitizeGigModifiers = (
     ) {
       sanitized[key as keyof typeof DEFAULT_GIG_MODIFIERS] = (
         value as Record<string, unknown>
-      )[key]
+      )[key] as boolean
     }
   }
   // Legacy `energy` → `catering` migration: only applies when the save does

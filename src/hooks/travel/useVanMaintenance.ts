@@ -6,7 +6,7 @@ import {
   calculateRefuelCost,
   calculateRepairCost,
   EXPENSE_CONSTANTS
-} from '../../utils/economy'
+} from '../../utils/economyEngine'
 import { calcBaseBreakdownChance } from '../../utils/upgradeUtils'
 import { audioService } from '../../utils/audio/audioEngine'
 import type { VanMaintenanceParams } from './types'

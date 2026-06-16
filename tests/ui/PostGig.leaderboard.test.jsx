@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { PostGig } from '../../src/scenes/PostGig'
 import { useGameState } from '../../src/context/GameState'
 import { GAME_PHASES } from '../../src/context/gameConstants'
-import * as economy from '../../src/utils/economy'
+import * as economyEngine from '../../src/utils/economyEngine'
 import * as socialEngine from '../../src/utils/socialEngine'
 import * as brandDealLogic from '../../src/utils/brandDealLogic'
 
@@ -203,7 +203,7 @@ describe('PostGig Leaderboard Submission', () => {
     global.fetch = mockFetch
 
     // Mock Economy and Social Engines to simplify flow
-    vi.spyOn(economy, 'calculateGigFinancials').mockReturnValue({
+    vi.spyOn(economyEngine, 'calculateGigFinancials').mockReturnValue({
       net: 100,
       income: {
         total: 250,

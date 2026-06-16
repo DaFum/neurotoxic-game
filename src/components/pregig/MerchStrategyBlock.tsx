@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { DEFAULT_MERCH_PRICES } from '../../utils/economy'
+import { DEFAULT_MERCH_PRICES } from '../../utils/economyEngine'
 import { formatCurrency } from '../../utils/numberUtils'
 import {
   getMerchCapacity,

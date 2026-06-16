@@ -7,7 +7,6 @@ export * from './setlist'
 export { finiteNumberOr, isFiniteNumber } from '../finiteNumber'
 export {
   FORBIDDEN_KEYS,
-  cloneNullSafe,
   isForbiddenKey,
   isLooseRecord,
   isPlainRecord

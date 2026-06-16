@@ -1,6 +1,6 @@
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ZEALOTRY_PROMO_THRESHOLD } from '../../utils/economy'
+import { ZEALOTRY_PROMO_THRESHOLD } from '../../utils/economyEngine'
 import { clampZealotry } from '../../utils/gameState'
 import { IMG_PROMPTS } from '../../utils/imageGen'
 import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'

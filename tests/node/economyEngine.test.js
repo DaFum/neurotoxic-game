@@ -15,7 +15,7 @@ import {
   calculateBarCut,
   calculateSponsorshipBonuses,
   calculateGigExpenses
-} from '../../src/utils/economy'
+} from '../../src/utils/economyEngine'
 
 const buildGigData = (overrides = {}) => ({
   capacity: 300,

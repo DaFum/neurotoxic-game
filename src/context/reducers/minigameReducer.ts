@@ -17,7 +17,7 @@ import {
   calculateRoadieMinigameResult,
   calculateKabelsalatMinigameResult,
   calculateAmpCalibrationResult
-} from '../../utils/economy'
+} from '../../utils/economyEngine'
 import { getActiveAssetModifiers } from '../../utils/assetSelectors'
 import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks } from '../../utils/traitUtils'

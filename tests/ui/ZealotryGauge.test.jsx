@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import { ZealotryGauge } from '../../src/components/postGig/ZealotryGauge'
-import { ZEALOTRY_PROMO_THRESHOLD } from '../../src/utils/economy'
+import { ZEALOTRY_PROMO_THRESHOLD } from '../../src/utils/economyEngine'
 
 // Mock imageGen
 vi.mock('../../src/utils/imageGen', () => ({

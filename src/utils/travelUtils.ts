@@ -315,7 +315,7 @@ export const getTravelArrivalUpdates = ({
   return { nextPlayer, nextBand }
 }
 
-import { calculateTravelExpenses } from './economy'
+import { calculateTravelExpenses } from './economyEngine'
 import {
   getTotalDailyObligations,
   getActiveAssetModifiers

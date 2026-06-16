@@ -17,7 +17,7 @@ import { GAME_PHASES } from '../context/gameConstants'
 import {
   MODIFIER_COSTS,
   calculateGigModifierCost
-} from '../utils/economy'
+} from '../utils/economyEngine'
 import {
   clampPlayerMoney,
   clampBandHarmony,

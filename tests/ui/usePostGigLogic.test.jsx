@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act, waitFor } from '@testing-library/react'
 import { usePostGigLogic } from '../../src/hooks/usePostGigLogic'
 import * as GameState from '../../src/context/GameState'
-import * as economy from '../../src/utils/economy'
+import * as economyEngine from '../../src/utils/economyEngine'
 import * as socialEngine from '../../src/utils/socialEngine'
 import * as brandDealLogic from '../../src/utils/brandDealLogic'
 import * as crypto from '../../src/utils/crypto'
@@ -30,7 +30,7 @@ vi.mock('../../src/context/GameState', () => {
     extractActions
   }
 })
-vi.mock('../../src/utils/economy', () => ({
+vi.mock('../../src/utils/economyEngine', () => ({
   calculateGigFinancials: vi.fn(),
   shouldTriggerBankruptcy: vi.fn()
 }))
@@ -171,7 +171,7 @@ describe('usePostGigLogic', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    economy.calculateGigFinancials.mockReturnValue({
+    economyEngine.calculateGigFinancials.mockReturnValue({
       net: 200,
       income: {
         total: 500,
@@ -184,7 +184,7 @@ describe('usePostGigLogic', () => {
         breakdown: [{ labelKey: 'venueCut', label: 'Venue Cut', value: 300 }]
       }
     })
-    economy.shouldTriggerBankruptcy.mockReturnValue(false)
+    economyEngine.shouldTriggerBankruptcy.mockReturnValue(false)
     socialEngine.generatePostOptions.mockReturnValue([
       { id: 'post_1', name: 'Test Post', platform: 'instagram', type: 'basic' }
     ])
@@ -210,7 +210,7 @@ describe('usePostGigLogic', () => {
         expect(result.current.financials).toBeTruthy()
         expect(result.current.postOptions.length).toBeGreaterThan(0)
       })
-      expect(economy.calculateGigFinancials).toHaveBeenCalledWith(
+      expect(economyEngine.calculateGigFinancials).toHaveBeenCalledWith(
         expect.objectContaining({
           gigData: expect.objectContaining({ songId: 'test_song' }),
           performanceScore: 100
@@ -258,7 +258,7 @@ describe('usePostGigLogic', () => {
       )
       renderHook(() => usePostGigLogic())
       await waitFor(() => {
-        expect(economy.calculateGigFinancials).toHaveBeenCalledWith(
+        expect(economyEngine.calculateGigFinancials).toHaveBeenCalledWith(
           expect.objectContaining({ performanceScore: 30 }),
           expect.any(Object)
         )
@@ -298,7 +298,7 @@ describe('usePostGigLogic', () => {
         expect(assetSelectors.getActiveAssetModifiers).toHaveBeenCalledWith(
           assets
         )
-        expect(economy.calculateGigFinancials).toHaveBeenCalledWith(
+        expect(economyEngine.calculateGigFinancials).toHaveBeenCalledWith(
           expect.any(Object),
           assetModifiers
         )
@@ -836,8 +836,8 @@ describe('usePostGigLogic', () => {
 
     it('handles bankruptcy and story quests on continue', async () => {
       mockGameState(getBaseState({ activeStoryFlags: ['cancel_quest_active'] }))
-      economy.shouldTriggerBankruptcy.mockReturnValue(true)
-      economy.calculateGigFinancials.mockReturnValue({
+      economyEngine.shouldTriggerBankruptcy.mockReturnValue(true)
+      economyEngine.calculateGigFinancials.mockReturnValue({
         net: -600,
         income: { total: 100, breakdown: [] },
         expenses: { total: 700, breakdown: [] }
@@ -865,8 +865,8 @@ describe('usePostGigLogic', () => {
     it('passes total daily obligations into the bankruptcy check', async () => {
       mockGameState(getBaseState())
       assetSelectors.getTotalDailyObligations.mockReturnValue(50)
-      economy.shouldTriggerBankruptcy.mockReturnValue(false)
-      economy.calculateGigFinancials.mockReturnValue({
+      economyEngine.shouldTriggerBankruptcy.mockReturnValue(false)
+      economyEngine.calculateGigFinancials.mockReturnValue({
         net: -600,
         income: { total: 100, breakdown: [] },
         expenses: { total: 700, breakdown: [] }
@@ -879,7 +879,7 @@ describe('usePostGigLogic', () => {
         result.current.handleContinue()
       })
 
-      expect(economy.shouldTriggerBankruptcy).toHaveBeenCalledWith(
+      expect(economyEngine.shouldTriggerBankruptcy).toHaveBeenCalledWith(
         expect.any(Number),
         -600,
         50
