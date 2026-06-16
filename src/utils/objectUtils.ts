@@ -190,3 +190,14 @@ export const safeJsonParse = <T = unknown>(text: string): T => {
     return value
   })
 }
+
+/**
+ * Clones an object using a null prototype to safely prevent prototype pollution.
+ *
+ * @param sources - One or more objects to merge into the new null-prototype object.
+ * @returns A new object with no prototype containing properties from the sources.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const cloneNullSafe = <T extends Record<string, any>>(...sources: any[]): T => {
+  return Object.assign(Object.create(null), ...sources) as T
+}
