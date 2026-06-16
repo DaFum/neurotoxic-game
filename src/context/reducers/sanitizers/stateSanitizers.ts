@@ -634,13 +634,9 @@ export const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
     day: finiteNumberOr(playerData.day, DEFAULT_PLAYER_STATE.day),
     time: finiteNumberOr(playerData.time, DEFAULT_PLAYER_STATE.time),
     location:
-      playerData.location === null
-        ? null
-        : playerData.location === undefined
-          ? undefined
-          : typeof playerData.location === 'string'
-            ? playerData.location
-            : DEFAULT_PLAYER_STATE.location,
+      typeof playerData?.location === 'string'
+        ? playerData.location
+        : DEFAULT_PLAYER_STATE.location,
     currentNodeId:
       typeof playerData.currentNodeId === 'string'
         ? playerData.currentNodeId
@@ -1052,8 +1048,7 @@ export const sanitizeToasts = (loadedToasts: unknown): ToastPayload[] => {
   return acc
 }
 
-export const migratePlayerLocation = (location: unknown): string | null => {
-  if (location === null || location === undefined) return null
+export const migratePlayerLocation = (location: unknown): string => {
   if (typeof location !== 'string') return ''
 
   let legacyLocation = location
@@ -1063,7 +1058,7 @@ export const migratePlayerLocation = (location: unknown): string | null => {
 
   const normalizedLocation = normalizeVenueId(legacyLocation)
   if (!normalizedLocation || normalizedLocation === 'Unknown') {
-    return (location === null ? null : location) as string | null
+    return location as string
   }
 
   return `venues:${normalizedLocation}.name`
