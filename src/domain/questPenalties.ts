@@ -1,9 +1,10 @@
 import type { GameState, QuestPenalty, QuestState } from '../types'
 import {
-  clampBandHarmony,
   clamp0to100,
+  clampBandHarmony,
   clampControversyLevel,
   clampLoyalty,
+  cloneNullSafe,
   finiteNumberOr,
   isLooseRecord
 } from '../utils/gameState'
@@ -27,14 +28,14 @@ export interface QuestPenaltyResult {
 
 const normalizeLegacyPenalties = (quest: QuestState): QuestPenalty[] => {
   const penalty = isLooseRecord(quest.failurePenalty)
-    ? Object.assign(Object.create(null), quest.failurePenalty)
+    ? cloneNullSafe(quest.failurePenalty)
     : undefined
   if (!penalty) return []
 
   const penalties: QuestPenalty[] = []
   const socialPenalty =
     Object.hasOwn(penalty, 'social') && isLooseRecord(penalty.social)
-      ? Object.assign(Object.create(null), penalty.social)
+      ? cloneNullSafe(penalty.social)
       : undefined
   if (
     socialPenalty &&
@@ -61,7 +62,7 @@ const normalizeLegacyPenalties = (quest: QuestState): QuestPenalty[] => {
 
   const bandPenalty =
     Object.hasOwn(penalty, 'band') && isLooseRecord(penalty.band)
-      ? Object.assign(Object.create(null), penalty.band)
+      ? cloneNullSafe(penalty.band)
       : undefined
   if (
     bandPenalty &&
