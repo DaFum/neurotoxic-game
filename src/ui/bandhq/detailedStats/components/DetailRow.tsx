@@ -8,17 +8,17 @@ export const DetailRow = ({
   className = ''
 }: DetailRowProps) => (
   <div
-    className={`flex justify-between items-center py-1 border-b border-[var(--color-ash-gray)]/20 font-mono text-sm ${locked ? 'opacity-40 grayscale' : ''} ${className}`}
+    className={`flex justify-between items-center py-1 border-b border-ash-gray/20 font-mono text-sm ${locked ? 'opacity-40 grayscale' : ''} ${className}`}
   >
-    <span className='text-[var(--color-ash-gray)]'>{label}</span>
+    <span className='text-ash-gray'>{label}</span>
     <div className='text-right'>
       <div
-        className={`font-bold ${locked ? 'text-[var(--color-ash-gray)]' : 'text-[var(--color-star-white)]'}`}
+        className={`font-bold ${locked ? 'text-ash-gray' : 'text-star-white'}`}
       >
         {value}
       </div>
       {subtext != null && (
-        <div className='text-xs text-[var(--color-ash-gray)]/60'>{subtext}</div>
+        <div className='text-xs text-ash-gray/60'>{subtext}</div>
       )}
     </div>
   </div>

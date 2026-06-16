@@ -36,10 +36,13 @@ export const MemberTraits = ({
         if (
           rt &&
           typeof rt === 'object' &&
-          'id' in rt &&
+          Object.hasOwn(rt, 'id') &&
           typeof (rt as Record<string, unknown>).id === 'string' &&
+          Object.hasOwn(rt, 'name') &&
           typeof (rt as Record<string, unknown>).name === 'string' &&
+          Object.hasOwn(rt, 'desc') &&
           typeof (rt as Record<string, unknown>).desc === 'string' &&
+          Object.hasOwn(rt, 'unlockHint') &&
           typeof (rt as Record<string, unknown>).unlockHint === 'string'
         ) {
           const validRt = rt as unknown as CharacterTrait
