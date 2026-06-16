@@ -252,16 +252,12 @@ test('local symbols include signatures, structure, docs, graph, location, and fr
     'applyQuestRewards should list imported local helpers it calls'
   )
 
-  const calculateBarCut = ks.calculateBarCut.find(
-    entry => entry.path === 'src/utils/economy/gigLogic.ts'
+  const calculateGigFinancials = ks.calculateGigFinancials.find(
+    entry => entry.path === 'src/utils/economy/gigLogic/index.ts'
   )
   assert.ok(
-    calculateBarCut.referencedByLocal.some(
-      reference =>
-        reference.path === 'src/utils/economy/gigLogic.ts' &&
-        reference.symbol === 'calculateGigFinancials'
-    ),
-    'same-file exported helper references should expose local reverse references'
+    calculateGigFinancials.dependencies.includes('calculateBarCut'),
+    'calculateGigFinancials should list calculateBarCut as a dependency'
   )
 
   const overworld = ks.Overworld.find(
