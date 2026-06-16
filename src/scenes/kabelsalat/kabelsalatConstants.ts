@@ -62,6 +62,7 @@ for (let i = 0; i < CABLES.length; i++) {
   if (!cable) continue
   _CABLE_MAP[cable.id] = cable
 }
+// Skip satisfies pattern here: TS1360 prevents "as const satisfies" on mapped Record<string, T> outputs from dynamic loops without casting.
 export const CABLE_MAP = _CABLE_MAP as CableMap
 
 /**

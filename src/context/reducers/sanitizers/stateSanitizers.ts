@@ -634,9 +634,13 @@ export const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
     day: finiteNumberOr(playerData.day, DEFAULT_PLAYER_STATE.day),
     time: finiteNumberOr(playerData.time, DEFAULT_PLAYER_STATE.time),
     location:
-      typeof playerData.location === 'string'
-        ? playerData.location
-        : DEFAULT_PLAYER_STATE.location,
+      playerData.location === null
+        ? null
+        : playerData.location === undefined
+          ? undefined
+          : typeof playerData.location === 'string'
+            ? playerData.location
+            : DEFAULT_PLAYER_STATE.location,
     currentNodeId:
       typeof playerData.currentNodeId === 'string'
         ? playerData.currentNodeId
@@ -967,17 +971,20 @@ export const sanitizeBand = (loadedBand: unknown): BandState => {
     (rawMember: unknown, i: number) => {
       if (!isLooseRecord(rawMember)) return []
       const m = rawMember
-      const id =
-        typeof m.id === 'string'
+      let id =
+        typeof m?.id === 'string'
           ? m.id
-          : typeof m.name === 'string'
+          : typeof m?.name === 'string'
             ? m.name.toLowerCase()
-            : typeof m.id === 'number' ||
-                typeof m.id === 'boolean' ||
-                typeof m.id === 'bigint' ||
-                typeof m.id === 'symbol'
+            : typeof m?.id === 'number' ||
+                typeof m?.id === 'boolean' ||
+                typeof m?.id === 'bigint' ||
+                typeof m?.id === 'symbol'
               ? String(m.id)
               : `member-${i}`
+      if (isForbiddenKey(id)) {
+        id = `member-${i}`
+      }
       const name = typeof m.name === 'string' ? m.name : undefined
       const selfRelationshipKeys = new Set([id, id.toLowerCase()])
       if (name !== undefined) {
@@ -991,11 +998,12 @@ export const sanitizeBand = (loadedBand: unknown): BandState => {
         mood: clampMemberMood(finiteNumberOr(m.mood, 50)),
         stamina: clampMemberStamina(finiteNumberOr(m.stamina, 100), staminaMax),
         baseStats: (() => {
-          const stats = m.baseStats
+          const stats = m?.baseStats || {}
           if (!isLooseRecord(stats)) return {}
           const result: Record<string, number> = {}
           for (const key in stats) {
             if (!Object.hasOwn(stats, key)) continue
+            if (isForbiddenKey(key)) continue
             const value = stats[key]
             if (isFiniteNumber(value)) {
               result[key] = value
@@ -1044,7 +1052,8 @@ export const sanitizeToasts = (loadedToasts: unknown): ToastPayload[] => {
   return acc
 }
 
-export const migratePlayerLocation = (location: unknown): string => {
+export const migratePlayerLocation = (location: unknown): string | null => {
+  if (location === null || location === undefined) return null
   if (typeof location !== 'string') return ''
 
   let legacyLocation = location
@@ -1054,7 +1063,7 @@ export const migratePlayerLocation = (location: unknown): string => {
 
   const normalizedLocation = normalizeVenueId(legacyLocation)
   if (!normalizedLocation || normalizedLocation === 'Unknown') {
-    return location
+    return (location === null ? null : location) as string | null
   }
 
   return `venues:${normalizedLocation}.name`
@@ -1296,16 +1305,29 @@ export const sanitizeActiveEventOption = (
       option[key as keyof EventOption] = (value as Record<string, unknown>)[key]
   }
   for (const key of ['effects', 'effect']) {
-    const copied = copySafeEffectPayload(value[key])
+    if (!Object.hasOwn(value, key)) continue
+    const copied = copySafeEffectPayload(
+      (value as Record<string, unknown>)[key]
+    )
     if (copied !== undefined) option[key] = copied
   }
-  const skillCheck = copySafeJsonValue(value.skillCheck)
-  if (skillCheck !== undefined) option.skillCheck = skillCheck
-  if (Array.isArray(value.flags)) {
-    option.flags = sanitizeStringArray(value.flags)
+  if (Object.hasOwn(value, 'skillCheck')) {
+    const skillCheck = copySafeJsonValue(
+      (value as Record<string, unknown>).skillCheck
+    )
+    if (skillCheck !== undefined) option.skillCheck = skillCheck
   }
-  if (typeof value.disabled === 'boolean') {
-    option.disabled = value.disabled
+  if (
+    Object.hasOwn(value, 'flags') &&
+    Array.isArray((value as Record<string, unknown>).flags)
+  ) {
+    option.flags = sanitizeStringArray((value as Record<string, unknown>).flags)
+  }
+  if (
+    Object.hasOwn(value, 'disabled') &&
+    typeof (value as Record<string, unknown>).disabled === 'boolean'
+  ) {
+    option.disabled = (value as Record<string, unknown>).disabled as boolean
   }
 
   return !isEmptyObject(option) ? option : null
@@ -1332,14 +1354,27 @@ export const sanitizeActiveEvent = (
       event[key as keyof GameEvent] = (value as Record<string, unknown>)[key]
   }
 
-  const context = copySafePrimitiveObject(value.context)
-  if (context) event.context = context
+  if (Object.hasOwn(value, 'context')) {
+    const context = copySafePrimitiveObject(
+      (value as Record<string, unknown>).context
+    )
+    if (context) event.context = context
+  }
 
-  const effects = copySafeEffectPayload(value.effects)
-  if (effects !== undefined) event.effects = effects as GameEvent['effects']
+  if (Object.hasOwn(value, 'effects')) {
+    const effects = copySafeEffectPayload(
+      (value as Record<string, unknown>).effects
+    )
+    if (effects !== undefined) event.effects = effects as GameEvent['effects']
+  }
 
-  if (Array.isArray(value.options)) {
-    const options = value.options.flatMap(option => {
+  if (
+    Object.hasOwn(value, 'options') &&
+    Array.isArray((value as Record<string, unknown>).options)
+  ) {
+    const options = (
+      (value as Record<string, unknown>).options as unknown[]
+    ).flatMap(option => {
       const sanitized = sanitizeActiveEventOption(option)
       return sanitized ? [sanitized] : []
     })
@@ -1393,10 +1428,12 @@ export const sanitizeGigModifiers = (
   // not already carry the current key, so `catering` always wins over the
   // stale alias.
   if (
-    typeof value.energy === 'boolean' &&
-    typeof value.catering !== 'boolean'
+    Object.hasOwn(value, 'energy') &&
+    typeof (value as Record<string, unknown>).energy === 'boolean' &&
+    (!Object.hasOwn(value, 'catering') ||
+      typeof (value as Record<string, unknown>).catering !== 'boolean')
   ) {
-    sanitized.catering = value.energy
+    sanitized.catering = (value as Record<string, unknown>).energy as boolean
   }
   return sanitized
 }
@@ -1428,14 +1465,21 @@ export const sanitizeVenue = (value: unknown): GameState['currentGig'] => {
         venue[key as keyof typeof venue] = parsed as never
     }
   }
-  if (typeof value.isPractice === 'boolean') {
-    venue.isPractice = value.isPractice
+  if (
+    Object.hasOwn(value, 'isPractice') &&
+    typeof (value as Record<string, unknown>).isPractice === 'boolean'
+  ) {
+    venue.isPractice = (value as Record<string, unknown>).isPractice as boolean
   }
   if (
-    typeof value.sourceScene === 'string' &&
-    PRACTICE_RETURN_SCENES.has(value.sourceScene as GamePhase)
+    Object.hasOwn(value, 'sourceScene') &&
+    typeof (value as Record<string, unknown>).sourceScene === 'string' &&
+    PRACTICE_RETURN_SCENES.has(
+      (value as Record<string, unknown>).sourceScene as GamePhase
+    )
   ) {
-    venue.sourceScene = value.sourceScene as GamePhase
+    venue.sourceScene = (value as Record<string, unknown>)
+      .sourceScene as GamePhase
   }
   return venue
 }
@@ -1577,17 +1621,32 @@ export const sanitizeActiveQuests = (
         ] as never
     }
     for (const key of ['deadline', 'progress', 'required', 'moneyReward']) {
-      if (quest[key] === null && key === 'deadline') {
+      if (!Object.hasOwn(quest, key)) continue
+      if (
+        (quest as Record<string, unknown>)[key] === null &&
+        key === 'deadline'
+      ) {
         sanitized.deadline = null
         continue
       }
-      const parsed = finiteOptionalNumber(quest[key])
+      const parsed = finiteOptionalNumber(
+        (quest as Record<string, unknown>)[key]
+      )
       if (parsed !== undefined) sanitized[key] = parsed
     }
-    const rewardData = copySafePrimitiveObject(quest.rewardData)
-    if (rewardData !== undefined) sanitized.rewardData = rewardData
-    const failurePenalty = copySafeJsonValue(quest.failurePenalty)
-    if (isLooseRecord(failurePenalty)) sanitized.failurePenalty = failurePenalty
+    if (Object.hasOwn(quest, 'rewardData')) {
+      const rewardData = copySafePrimitiveObject(
+        (quest as Record<string, unknown>).rewardData
+      )
+      if (rewardData !== undefined) sanitized.rewardData = rewardData
+    }
+    if (Object.hasOwn(quest, 'failurePenalty')) {
+      const failurePenalty = copySafeJsonValue(
+        (quest as Record<string, unknown>).failurePenalty
+      )
+      if (isLooseRecord(failurePenalty))
+        sanitized.failurePenalty = failurePenalty
+    }
     return [sanitized]
   })
 }

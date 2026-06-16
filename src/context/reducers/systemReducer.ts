@@ -183,9 +183,13 @@ export const handleLoadGame = (
     player: {
       ...safeState.player,
       location:
-        typeof safeState.player.location === 'string'
-          ? migratePlayerLocation(safeState.player.location)
-          : safeState.player.location
+        safeState.player.location === null
+          ? null
+          : safeState.player.location === undefined
+            ? undefined
+            : typeof safeState.player.location === 'string'
+              ? migratePlayerLocation(safeState.player.location)
+              : safeState.player.location
     },
     venueBlacklist: (() => {
       const acc: string[] = []
