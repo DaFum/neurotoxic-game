@@ -242,3 +242,8 @@
 
 **Learning:** When passing hook-derived functions (like `isConnected` from `useTravelLogic`) to heavily memoized child components (like `OverworldMap`), failing to wrap them in `useCallback` causes them to act as unstable object references. This invalidates `React.memo` and forces expensive downstream `useMemo` recomputations on every parent render.
 **Action:** Always wrap functions returned by custom hooks in `useCallback` with proper dependency arrays if they are intended to be passed as props to memoized components.
+
+## 2026-06-15 - Replace Array.map with Targeted Array Indexing in Hot Paths
+
+**Learning:** Using `Array.prototype.map()` to update a single item within an array creates unnecessary iterations and completely new objects/array allocations. In hot update paths like `questLifecycle.ts` (e.g. `advanceQuest` and `setQuestProgress`), this generates excessive GC overhead.
+**Action:** When updating a single known item in an array within a reducer or engine logic, use `findIndex` to locate the item, then shallow clone the array (`[...arr]`) and update only the targeted index (`arr[index] = newItem`). This avoids iterating and re-allocating objects for unmodified items.
