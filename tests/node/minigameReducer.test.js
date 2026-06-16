@@ -93,7 +93,7 @@ describe('minigameReducer', () => {
       const payload = { damageTaken: 10, itemsCollected: 5 }
       const nextState = handleCompleteTravelMinigame(activeState, payload)
 
-      // economic details are handled by economy; here we only assert on state changes
+      // economic details are handled by economyEngine; here we only assert on state changes
       assert.ok(nextState.player.money < baseState.player.money)
       assert.strictEqual(nextState.player.location, 'Node 2 Venue')
       assert.strictEqual(nextState.player.currentNodeId, 'node2')

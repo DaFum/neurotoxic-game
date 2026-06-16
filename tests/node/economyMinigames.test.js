@@ -5,7 +5,7 @@ import {
   calculateRoadieMinigameResult,
   calculateKabelsalatMinigameResult,
   calculateAmpCalibrationResult
-} from '../../src/utils/economy'
+} from '../../src/utils/economyEngine'
 
 test('Minigame Economy Calculations', async t => {
   await t.test('Travel Minigame Results', () => {

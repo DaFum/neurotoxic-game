@@ -18,7 +18,7 @@ import { createInitialState } from '../../src/context/initialState'
 import {
   calculateGigFinancials,
   EXPENSE_CONSTANTS
-} from '../../src/utils/economy'
+} from '../../src/utils/economyEngine'
 import { buildGigStatsSnapshot } from '../../src/utils/gigStats'
 
 // --- Test Helpers ---

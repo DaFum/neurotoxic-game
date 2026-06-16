@@ -6,7 +6,7 @@ import { createTourbusStageController } from '../components/stage/TourbusStageCo
 import { MinigameSceneFrame } from '../components/MinigameSceneFrame'
 import { TourbusHUD } from '../components/minigames/tourbus/TourbusHUD'
 import { TourbusControls } from '../components/minigames/tourbus/TourbusControls'
-import { calculateTravelMinigameResult } from '../utils/economy'
+import { calculateTravelMinigameResult } from '../utils/economyEngine'
 
 /**
  * Hosts the tourbus travel minigame and hands completion to the arrival sequence.

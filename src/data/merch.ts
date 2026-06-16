@@ -140,7 +140,7 @@ export const SPENDING_PROFILE_MERCH_MULTIPLIER = {
 } as const satisfies Record<SpendingProfile, number>
 
 /**
- * Backwards-compatible derived map re-exported through the economy barrel.
+ * Backwards-compatible derived map re-exported through the economyEngine barrel.
  */
 export const DEFAULT_MERCH_PRICES: Record<string, number> = (() => {
   const prices: Record<string, number> = {}

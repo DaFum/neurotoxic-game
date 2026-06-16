@@ -7,7 +7,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { PostGig } from '../../src/scenes/PostGig'
 import { useGameState } from '../../src/context/GameState'
-import * as economy from '../../src/utils/economy'
+import * as economyEngine from '../../src/utils/economyEngine'
 import * as socialEngine from '../../src/utils/socialEngine'
 import * as brandDealLogic from '../../src/utils/brandDealLogic'
 
@@ -179,7 +179,7 @@ const createBaseState = (overrides = {}) => ({
 })
 
 const setupCommonMocks = () => {
-  vi.spyOn(economy, 'calculateGigFinancials').mockReturnValue({
+  vi.spyOn(economyEngine, 'calculateGigFinancials').mockReturnValue({
     net: 200,
     income: {
       total: 500,
@@ -192,7 +192,7 @@ const setupCommonMocks = () => {
       breakdown: [{ labelKey: 'venueCut', label: 'Venue Cut', value: 300 }]
     }
   })
-  vi.spyOn(economy, 'shouldTriggerBankruptcy').mockReturnValue(false)
+  vi.spyOn(economyEngine, 'shouldTriggerBankruptcy').mockReturnValue(false)
   vi.spyOn(socialEngine, 'generatePostOptions').mockReturnValue([
     { id: 'post_1', name: 'Test Post', platform: 'instagram', type: 'basic' }
   ])
