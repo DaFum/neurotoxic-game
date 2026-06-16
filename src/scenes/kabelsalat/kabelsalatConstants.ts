@@ -56,10 +56,12 @@ type CableMap = Record<CableId, Cable>
 /**
  * Cable definitions keyed by cable id for quick lookups.
  */
-export const CABLE_MAP = CABLES.reduce<CableMap>((acc, cable) => {
-  acc[cable.id] = cable
-  return acc
-}, {} as CableMap)
+const _CABLE_MAP: Partial<CableMap> = {}
+for (let i = 0; i < CABLES.length; i++) {
+  const cable = CABLES[i]
+  _CABLE_MAP[cable.id] = cable
+}
+export const CABLE_MAP = _CABLE_MAP as CableMap
 
 /**
  * Horizontal slot positions for cable and socket layout.

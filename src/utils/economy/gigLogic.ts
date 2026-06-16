@@ -249,15 +249,14 @@ export const calculateMerchIncome = (
 
   const rawShare: Record<string, number> = {}
   const priceByKey: Record<string, number> = {}
-  // Bolt Optimization: Calculate totalRawShare cumulatively to avoid an extra
-  // Object.values().reduce() call and its associated intermediate array allocation.
   let totalRawShare = 0
 
   // Compute raw share for every item regardless of inventory. Out-of-stock
   // items still contribute to totalRawShare so their portion of demand is
   // lost (capped at 0 in the allocation loop) rather than redistributed to
   // in-stock items.
-  for (const profile of MERCH_PROFILE_VALUES) {
+  for (let i = 0; i < MERCH_PROFILE_VALUES.length; i++) {
+    const profile = MERCH_PROFILE_VALUES[i]
     const genreMult = profile.genreAffinity[genreBias] ?? 1.0
     const perfLift =
       1 +
@@ -293,7 +292,8 @@ export const calculateMerchIncome = (
   // merchCapacityBonus is a carry-cap modifier (raises restock ceiling),
   // NOT phantom stock. Selling is bounded by actual on-hand inventory.
 
-  for (const key of sortedKeys) {
+  for (let i = 0; i < sortedKeys.length; i++) {
+    const key = sortedKeys[i]
     const share = (rawShare[key] ?? 0) / totalRawShare
     const desired = Math.floor(effectiveBuyers * share)
     const inventoryCount =
