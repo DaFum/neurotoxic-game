@@ -117,11 +117,13 @@ export const useTravelEffects = ({
           }
         }
 
-        const retainedAssets = assets.filter(a => !comboAssetIds.includes(a.id))
+        const comboAssetIdsSet = new Set(comboAssetIds)
+
+        const retainedAssets = assets.filter(a => !comboAssetIdsSet.has(a.id))
         const retainedLiabilities = liabilities
           ? Object.fromEntries(
               Object.entries(liabilities).filter(
-                ([_, l]) => l && !comboAssetIds.includes(l.assetId)
+                ([_, l]) => l && !comboAssetIdsSet.has(l.assetId)
               )
             )
           : {}
