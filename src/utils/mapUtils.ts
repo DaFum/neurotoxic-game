@@ -2,7 +2,7 @@ import {
   calculateRefuelCost,
   calculateTravelExpenses,
   EXPENSE_CONSTANTS
-} from './economyEngine'
+} from './economy'
 import { validateBloodBankDonation } from './bloodBankUtils'
 import { GAME_CONSTANTS } from '../context/gameConstants'
 import { finiteNumberOr } from './finiteNumber'

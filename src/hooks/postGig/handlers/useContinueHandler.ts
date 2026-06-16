@@ -27,7 +27,7 @@ import {
 } from '../../../utils/gameState'
 import { logger } from '../../../utils/logger'
 import { calculateContinueStats } from '../../../utils/postGigUtils'
-import { shouldTriggerBankruptcy } from '../../../utils/economyEngine'
+import { shouldTriggerBankruptcy } from '../../../utils/economy'
 import { submitLeaderboardScores } from '../../../utils/leaderboardUtils'
 import {
   createFameGainedQuestEvent,

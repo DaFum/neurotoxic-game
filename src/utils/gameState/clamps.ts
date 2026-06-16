@@ -1,4 +1,4 @@
-import { EXPENSE_CONSTANTS } from '../economyEngine'
+import { EXPENSE_CONSTANTS } from '../economy'
 import {
   RELATIONSHIP_DEFAULT_SCORE,
   RELATIONSHIP_MAX_SCORE,

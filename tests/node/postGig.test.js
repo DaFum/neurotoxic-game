@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { shouldTriggerBankruptcy } from '../../src/utils/economyEngine'
+import { shouldTriggerBankruptcy } from '../../src/utils/economy'
 
 test('shouldTriggerBankruptcy returns true for negative money', () => {
   // If you are in debt, you are bankrupt regardless of income
