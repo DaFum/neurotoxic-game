@@ -22,7 +22,7 @@ export const MemberEquipment = ({
       </span>
       <span>
         {typeof v === 'string'
-          ? t(`items:items.${v}.name`, { defaultValue: v })
+          ? t(`items:${v}.name`, { defaultValue: v })
           : String(v)}
       </span>
     </div>

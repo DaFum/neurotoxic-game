@@ -37,7 +37,10 @@ export const MemberTraits = ({
           rt &&
           typeof rt === 'object' &&
           'id' in rt &&
-          typeof (rt as Record<string, unknown>).id === 'string'
+          typeof (rt as Record<string, unknown>).id === 'string' &&
+          typeof (rt as Record<string, unknown>).name === 'string' &&
+          typeof (rt as Record<string, unknown>).desc === 'string' &&
+          typeof (rt as Record<string, unknown>).unlockHint === 'string'
         ) {
           const validRt = rt as unknown as CharacterTrait
           if (!seen.has(validRt.id)) {
