@@ -128,7 +128,7 @@ export const normalizeTraitMap = (
   traits: unknown
 ): Record<string, TraitDef> => {
   if (Array.isArray(traits)) {
-    const traitsMap: Record<string, TraitDef> = {}
+    const traitsMap: Record<string, TraitDef> = Object.create(null)
     for (const t of traits) {
       if (t && typeof t === 'object' && Object.hasOwn(t, 'id')) {
         const td = t as TraitDef
@@ -138,7 +138,7 @@ export const normalizeTraitMap = (
     return traitsMap
   }
   if (traits && typeof traits === 'object') {
-    const traitsMap: Record<string, TraitDef> = {}
+    const traitsMap: Record<string, TraitDef> = Object.create(null)
     for (const key in traits as Record<string, unknown>) {
       if (!Object.hasOwn(traits as Record<string, unknown>, key)) continue
       const t = (traits as Record<string, unknown>)[key]
@@ -149,7 +149,7 @@ export const normalizeTraitMap = (
     }
     return traitsMap
   }
-  return {}
+  return Object.create(null)
 }
 
 /**

@@ -28,14 +28,14 @@ export interface QuestPenaltyResult {
 
 const normalizeLegacyPenalties = (quest: QuestState): QuestPenalty[] => {
   const penalty = isLooseRecord(quest.failurePenalty)
-    ? { ...quest.failurePenalty }
+    ? Object.assign(Object.create(null), quest.failurePenalty)
     : undefined
   if (!penalty) return []
 
   const penalties: QuestPenalty[] = []
   const socialPenalty =
     Object.hasOwn(penalty, 'social') && isLooseRecord(penalty.social)
-      ? { ...penalty.social }
+      ? Object.assign(Object.create(null), penalty.social)
       : undefined
   if (
     socialPenalty &&
@@ -62,7 +62,7 @@ const normalizeLegacyPenalties = (quest: QuestState): QuestPenalty[] => {
 
   const bandPenalty =
     Object.hasOwn(penalty, 'band') && isLooseRecord(penalty.band)
-      ? { ...penalty.band }
+      ? Object.assign(Object.create(null), penalty.band)
       : undefined
   if (
     bandPenalty &&
