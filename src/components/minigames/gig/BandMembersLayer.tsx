@@ -39,7 +39,9 @@ export const BandMembersLayer = memo(
           <img
             src={mariusUrl}
             alt={t('minigame:bandMembers.marius', { defaultValue: 'Marius' })}
-            crossOrigin={mariusUrl.startsWith('data:') ? undefined : 'anonymous'}
+            crossOrigin={
+              mariusUrl.startsWith('data:') ? undefined : 'anonymous'
+            }
             className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--color-toxic-green-glow)]'
           />
         </div>

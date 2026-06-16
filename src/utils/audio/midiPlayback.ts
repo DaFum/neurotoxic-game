@@ -730,7 +730,14 @@ function scheduleMidiEndEvents(
   stopAfterSeconds: number | null,
   transport: ReturnType<typeof Tone.getTransport>
 ): void {
-  scheduleEndCallback(reqId, filename, duration, requestedOffset, onEnded, transport)
+  scheduleEndCallback(
+    reqId,
+    filename,
+    duration,
+    requestedOffset,
+    onEnded,
+    transport
+  )
   scheduleStopCallback(reqId, requestedOffset, stopAfterSeconds, transport)
 }
 

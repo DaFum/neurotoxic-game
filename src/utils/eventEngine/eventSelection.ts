@@ -209,7 +209,6 @@ const selectEvent = (
         BASE_BREAKDOWN_CHANCE
       )
       const factor = Math.max(
-
         Math.min(
           BREAKDOWN_CHANCE_FACTOR_CAP,
           breakdownChance / BASE_BREAKDOWN_CHANCE

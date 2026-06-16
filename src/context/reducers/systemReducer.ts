@@ -1467,10 +1467,18 @@ const sanitizeRivalBand = (value: unknown): GameState['rivalBand'] => {
   if (!Object.hasOwn(raw, 'name')) return null
   if (typeof raw.name !== 'string' || raw.name.length === 0) return null
 
-  const alignment = Object.hasOwn(raw, 'alignment') && isBrandAlignment(raw.alignment) ? raw.alignment : 'NEUTRAL'
-  const powerLevel = Object.hasOwn(raw, 'powerLevel') ? Math.max(0, finiteNumberOr(raw.powerLevel, 0)) : 0
+  const alignment =
+    Object.hasOwn(raw, 'alignment') && isBrandAlignment(raw.alignment)
+      ? raw.alignment
+      : 'NEUTRAL'
+  const powerLevel = Object.hasOwn(raw, 'powerLevel')
+    ? Math.max(0, finiteNumberOr(raw.powerLevel, 0))
+    : 0
   const currentLocationId =
-    Object.hasOwn(raw, 'currentLocationId') && typeof raw.currentLocationId === 'string' ? raw.currentLocationId : null
+    Object.hasOwn(raw, 'currentLocationId') &&
+    typeof raw.currentLocationId === 'string'
+      ? raw.currentLocationId
+      : null
 
   return {
     id: raw.id,
