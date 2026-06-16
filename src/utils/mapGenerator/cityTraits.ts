@@ -1,4 +1,5 @@
 import { logger } from '../logger'
+import type { CityTraitState } from '../../types'
 
 const warnedMalformedVenueIds = new Set<string>()
 
@@ -66,9 +67,7 @@ const hashCityKey = (cityKey: string): number => {
  * @param cityKey - City key extracted from a venue id.
  * @returns Deterministic city trait profile for genre bias, attention span, and spending.
  */
-export const deriveCityTraits = (
-  cityKey: string
-): import('../../types/game').CityTraitState => {
+export const deriveCityTraits = (cityKey: string): CityTraitState => {
   const h = hashCityKey(cityKey)
   const genreBias = CITY_TRAIT_GENRES[h % CITY_TRAIT_GENRES.length] ?? 'unknown'
   const attentionSpan = 15 + ((h >>> 8) % 45)
