@@ -6,7 +6,7 @@ import {
   calculateMerchIncome,
   calculateGigFinancials,
   calculateRefuelCost
-} from '../../src/utils/economy/index.ts'
+} from '../../src/utils/economy'
 import { NEUTRAL_ASSET_MODIFIERS } from '../../src/utils/assetSelectors.ts'
 
 test('Economy Asset Modifiers', async t => {
