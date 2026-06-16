@@ -28,6 +28,7 @@ import {
 } from '../../utils/assetTicks'
 import { QuestEvents } from '../../utils/questProgress'
 import { sanitizeSettingsPayload } from '../../utils/settingsSanitizer'
+import { DEFAULT_PLAYER_STATE } from '../initialState'
 import {
   createAssetRiskTriggeredQuestEvent,
   createAssetRiskResolvedQuestEvent
@@ -185,7 +186,7 @@ export const handleLoadGame = (
       location:
         typeof safeState.player.location === 'string'
           ? migratePlayerLocation(safeState.player.location)
-          : safeState.player.location
+          : DEFAULT_PLAYER_STATE.location
     },
     venueBlacklist: (() => {
       const acc: string[] = []

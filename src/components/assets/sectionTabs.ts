@@ -36,6 +36,7 @@ for (let i = 0; i < ASSET_SECTION_TABS.length; i++) {
 /**
  * Optimized record lookup for active asset tab resolution.
  */
+// Skip satisfies pattern here: TS1360 prevents "as const satisfies" on mapped Record<string, T> outputs from dynamic loops without casting.
 export const ASSET_SECTION_TABS_MAP: Readonly<
   Record<AssetKind, AssetSectionTab>
 > = Object.freeze(_ASSET_SECTION_TABS_MAP as Record<AssetKind, AssetSectionTab>)
