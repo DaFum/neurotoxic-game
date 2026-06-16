@@ -6,7 +6,7 @@ import { calculateDailyUpdates } from '../../src/utils/simulationUtils'
 import {
   calculateGigFinancials,
   EXPENSE_CONSTANTS
-} from '../../src/utils/economyEngine'
+} from '../../src/utils/economy'
 import { gameReducer, ActionTypes } from '../../src/context/gameReducer'
 import { applyEventDelta } from '../../src/utils/gameState'
 

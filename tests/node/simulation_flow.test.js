@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import {
   calculateTravelExpenses,
   EXPENSE_CONSTANTS
-} from '../../src/utils/economyEngine'
+} from '../../src/utils/economy'
 import { calculateDailyUpdates } from '../../src/utils/simulationUtils'
 
 test('Game Loop Logic Simulation', async t => {

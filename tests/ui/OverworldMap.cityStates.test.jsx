@@ -26,7 +26,7 @@ vi.mock('../../src/utils/imageGen', () => ({
   IMG_PROMPTS: {}
 }))
 
-vi.mock('../../src/utils/economyEngine', () => ({
+vi.mock('../../src/utils/economy', () => ({
   calculateEffectiveTicketPrice: () => 10
 }))
 

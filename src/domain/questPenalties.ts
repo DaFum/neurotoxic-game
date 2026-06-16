@@ -1,9 +1,10 @@
 import type { GameState, QuestPenalty, QuestState } from '../types'
 import {
-  clampBandHarmony,
   clamp0to100,
+  clampBandHarmony,
   clampControversyLevel,
   clampLoyalty,
+  cloneNullSafe,
   finiteNumberOr,
   isLooseRecord
 } from '../utils/gameState'

@@ -6,7 +6,7 @@ import {
   GAME_PHASES,
   NEUROTOXIC_PEDAL_HARMONY_PENALTY
 } from '../../src/context/gameConstants'
-import * as economyEngine from '../../src/utils/economyEngine'
+import * as economy from '../../src/utils/economy'
 import * as socialEngine from '../../src/utils/socialEngine'
 import * as brandDealLogic from '../../src/utils/brandDealLogic'
 import { BRAND_ALIGNMENTS } from '../../src/context/initialState'
@@ -209,7 +209,7 @@ const createBaseState = (overrides = {}) => ({
 
 // Shared setup function for all describes
 const setupCommonMocks = () => {
-  vi.spyOn(economyEngine, 'calculateGigFinancials').mockReturnValue({
+  vi.spyOn(economy, 'calculateGigFinancials').mockReturnValue({
     net: 200,
     income: {
       total: 500,
@@ -223,7 +223,7 @@ const setupCommonMocks = () => {
     }
   })
 
-  vi.spyOn(economyEngine, 'shouldTriggerBankruptcy').mockReturnValue(false)
+  vi.spyOn(economy, 'shouldTriggerBankruptcy').mockReturnValue(false)
 
   vi.spyOn(socialEngine, 'generatePostOptions').mockReturnValue([
     {
@@ -740,7 +740,7 @@ describe('PostGig Component - Complete Phase', () => {
   })
 
   it('handles multiple continue effects correctly', async () => {
-    vi.spyOn(economyEngine, 'shouldTriggerBankruptcy').mockReturnValue(false)
+    vi.spyOn(economy, 'shouldTriggerBankruptcy').mockReturnValue(false)
     useGameState.mockReturnValue(
       createBaseState({
         band: {
@@ -813,8 +813,8 @@ describe('PostGig Component - Complete Phase', () => {
   })
 
   it('triggers bankruptcy when shouldTriggerBankruptcy returns true', async () => {
-    vi.spyOn(economyEngine, 'shouldTriggerBankruptcy').mockReturnValue(true)
-    vi.spyOn(economyEngine, 'calculateGigFinancials').mockReturnValue({
+    vi.spyOn(economy, 'shouldTriggerBankruptcy').mockReturnValue(true)
+    vi.spyOn(economy, 'calculateGigFinancials').mockReturnValue({
       net: -600,
       income: { total: 100, breakdown: [] },
       expenses: { total: 700, breakdown: [] }
@@ -940,7 +940,7 @@ describe('PostGig Component - Edge Cases', () => {
 
     // Performance score should be clamped to PERF_SCORE_MAX (100)
     await waitFor(() => {
-      expect(economyEngine.calculateGigFinancials).toHaveBeenCalledWith(
+      expect(economy.calculateGigFinancials).toHaveBeenCalledWith(
         expect.objectContaining({
           performanceScore: 100 // Max clamped
         }),

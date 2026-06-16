@@ -2,7 +2,7 @@
 
 ## Rules
 
-- Modifier costs come from `MODIFIER_COSTS` (`src/utils/economyEngine.ts`); do not duplicate prices in UI.
+- Modifier costs come from `MODIFIER_COSTS` (`src/utils/economy.ts`); do not duplicate prices in UI.
 - `START_GIG` resets `gigModifiers` — UI state must initialize from current defaults, not persisted prior selections.
 - Price adjustment buttons need an `aria-label` containing the item name.
 
