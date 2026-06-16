@@ -2,8 +2,6 @@ import { isFiniteNumber } from '../../../utils/gameState'
 import type { CharacterDefinition } from './types'
 
 import { CHARACTERS } from '../../../data/characters'
-import type { TFunction } from 'i18next'
-import type { QuestState } from '../../../types'
 
 export const isUnlocked = (val: unknown) => {
   if (typeof val === 'number') return val > 0
