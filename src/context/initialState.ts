@@ -294,7 +294,7 @@ export const createInitialState = (
     })),
     performance: { ...DEFAULT_BAND_STATE.performance },
     inventory: { ...DEFAULT_BAND_STATE.inventory },
-    stash: Object.assign(Object.create(null), DEFAULT_BAND_STATE.stash),
+    stash: { ...DEFAULT_BAND_STATE.stash },
     activeContrabandEffects: [...DEFAULT_BAND_STATE.activeContrabandEffects]
   },
   rivalBand: null,

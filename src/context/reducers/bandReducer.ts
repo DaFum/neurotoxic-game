@@ -334,12 +334,13 @@ export const addContrabandHelper = (
       const currentStacks = (existingItem.stacks as number | undefined) ?? 1
       const max = (item.maxStacks as number) || Infinity
       if (currentStacks < max) {
-        newBand.stash = Object.assign(Object.create(null), currentStash, {
+        newBand.stash = {
+          ...currentStash,
           [item.id]: {
             ...existingItem,
             stacks: currentStacks + 1
           }
-        })
+        }
         return { ...state, band: newBand }
       } else {
         return state // Reached max stacks
@@ -355,9 +356,10 @@ export const addContrabandHelper = (
     stacks: item.stackable ? 1 : null
   }
 
-  newBand.stash = Object.assign(Object.create(null), currentStash, {
+  newBand.stash = {
+    ...currentStash,
     [item.id]: newInstance
-  })
+  }
 
   if (item.applyOnAdd && item.type === 'equipment') {
     applySharedBandEffect(
@@ -430,7 +432,7 @@ export const handleCraftItem = (
   }
 
   // Consume inputs.
-  const newStash = Object.assign(Object.create(null), stash)
+  const newStash = { ...stash }
   for (const [itemId, qty] of Object.entries(recipe.inputs)) {
     const entry = newStash[itemId] as Record<string, unknown>
     const current = getStashCount(newStash, itemId)
@@ -614,7 +616,7 @@ export const handleUseContraband = (
   const newBand = applyContrabandEffect(state.band, item, memberId)
   if (!newBand) return state
 
-  const newStash = Object.assign(Object.create(null), stash)
+  const newStash = { ...stash }
 
   if (item.type === 'consumable') {
     if ((item.stacks as number) > 1) {

@@ -192,9 +192,9 @@ test('systemReducer - LOAD_GAME', async t => {
         baseStats: {},
         equipment: {},
         relationships: {},
-        traits: Object.assign(Object.create(null), {
+        traits: {
           trait1: { id: 'trait1', name: 'Trait 1' }
-        })
+        }
       })
       assert.equal(nextState.social.controversyLevel, 10)
       assert.deepEqual(nextState.setlist, ['song1'])
@@ -233,14 +233,14 @@ test('systemReducer - LOAD_GAME', async t => {
 
       const nextState = handleLoadGame(initialState, loadedState)
 
-      const expectedTraits = Object.create(null)
+      const expectedTraits = {}
       expectedTraits['trait1'] = { id: 'trait1', name: 'Trait 1' }
       expectedTraits['trait2'] = { id: 'trait2', name: 'Trait 2' }
 
       assert.deepEqual(nextState.band.members[0].traits, expectedTraits)
       assert.equal(
         Object.getPrototypeOf(nextState.band.members[0].traits),
-        null
+        Object.prototype
       )
     }
   )

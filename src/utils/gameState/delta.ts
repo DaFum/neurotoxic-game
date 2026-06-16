@@ -804,7 +804,7 @@ export const applyEventDelta = (
     }
 
     if (delta.band.stashRemove && Array.isArray(delta.band.stashRemove)) {
-      nextBand.stash = Object.assign(Object.create(null), nextBand.stash || {})
+      nextBand.stash = { ...(nextBand.stash || {}) }
       for (let i = 0; i < delta.band.stashRemove.length; i++) {
         const itemId = delta.band.stashRemove[i]
         if (!itemId) continue

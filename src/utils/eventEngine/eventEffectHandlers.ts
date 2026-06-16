@@ -7,7 +7,7 @@ import type { EffectShape, EngineGameState, TemplateContext } from './types'
 /**
  * Effect handler registry keyed by declarative event effect type.
  */
-const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
+const EVENT_EFFECT_HANDLERS: Record<string, (eff: EffectShape, delta: EventDelta, context: TemplateContext, gameState: EngineGameState | null) => void> = {
   relationship: (
     eff: EffectShape,
     delta: EventDelta,
@@ -190,7 +190,7 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
       delta.band.stashRemove.push(itemId)
     }
   }
-})
+}
 
 /**
  * Processes a single effect object into state delta modifications.
@@ -205,7 +205,7 @@ const processEffect = (
   context: TemplateContext = {},
   gameState: EngineGameState | null = null
 ) => {
-  const handler = EVENT_EFFECT_HANDLERS[String(eff.type)]
+  const handler = Object.hasOwn(EVENT_EFFECT_HANDLERS, String(eff.type)) ? EVENT_EFFECT_HANDLERS[String(eff.type)] : undefined
   if (typeof handler === 'function') {
     handler(eff, delta, context, gameState)
   }

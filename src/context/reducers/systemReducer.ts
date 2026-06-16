@@ -651,7 +651,7 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
 
 const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
   const playerData = isLooseRecord(loadedPlayer)
-    ? Object.assign(Object.create(null), loadedPlayer)
+    ? { ...loadedPlayer }
     : {}
   const vanData = isLooseRecord(playerData.van) ? playerData.van : {}
   const statsData = isLooseRecord(playerData.stats) ? playerData.stats : {}
@@ -799,7 +799,7 @@ const parseNumericStats = (
 
 const sanitizeBand = (loadedBand: unknown): BandState => {
   const bandData = isLooseRecord(loadedBand)
-    ? Object.assign(Object.create(null), loadedBand)
+    ? { ...loadedBand }
     : {}
   const rawBand: BandState = {
     ...DEFAULT_BAND_STATE,
@@ -1188,7 +1188,7 @@ const sanitizeSocial = (value: unknown): SocialState => {
     influencers: { ...DEFAULT_SOCIAL_STATE.influencers }
   }
   if (!isLooseRecord(value)) return sanitized
-  const safeValue = Object.assign(Object.create(null), value)
+  const safeValue = { ...value }
 
   for (const key of [
     'instagram',
@@ -2015,7 +2015,7 @@ const processContrabandExpiry = (band: BandState): BandState => {
     if (nextBand.stash) {
       // Lazy clone stash once if needed
       if (nextBand.stash === band.stash) {
-        nextBand.stash = Object.assign(Object.create(null), band.stash)
+        nextBand.stash = { ...band.stash }
       }
       for (const itemKey in nextBand.stash) {
         if (!Object.hasOwn(nextBand.stash, itemKey)) continue

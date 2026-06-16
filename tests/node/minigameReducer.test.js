@@ -374,14 +374,14 @@ describe('minigameReducer', () => {
 
     it('pays contraband bonus and consumes stash on first delivery, then pays nothing on second', () => {
       // Band has exactly one stackable stash item with 1 stack (c_void_energy)
-      const stashWithOneItem = Object.assign(Object.create(null), {
+      const stashWithOneItem = {
         c_void_energy: {
           id: 'c_void_energy',
           type: 'consumable',
           stacks: 1,
           instanceId: 'test-inst-1'
         }
-      })
+      }
       const stateWithStash = withActiveMinigame(
         { ...baseState, band: { ...baseState.band, stash: stashWithOneItem } },
         MINIGAME_TYPES.ROADIE
@@ -426,14 +426,14 @@ describe('minigameReducer', () => {
     })
 
     it('pays contraband bonus and decrements stacks (not removes) when stash item has multiple stacks', () => {
-      const stashWithTwoStacks = Object.assign(Object.create(null), {
+      const stashWithTwoStacks = {
         c_void_energy: {
           id: 'c_void_energy',
           type: 'consumable',
           stacks: 2,
           instanceId: 'test-inst-2'
         }
-      })
+      }
       const stateWithStash = withActiveMinigame(
         {
           ...baseState,
@@ -479,14 +479,14 @@ describe('minigameReducer', () => {
     })
 
     it('preserves currentScene on both delivery runs', () => {
-      const stashWithOneItem = Object.assign(Object.create(null), {
+      const stashWithOneItem = {
         c_void_energy: {
           id: 'c_void_energy',
           type: 'consumable',
           stacks: 1,
           instanceId: 'test-inst-3'
         }
-      })
+      }
       const stateWithStash = withActiveMinigame(
         {
           ...baseState,

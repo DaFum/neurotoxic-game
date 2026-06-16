@@ -654,7 +654,7 @@ export const handleCompleteRoadieMinigame = (
     safeItemId !== null &&
     stash != null
   ) {
-    const newStash = Object.assign(Object.create(null), stash)
+    const newStash = { ...stash }
     if (stashStacks > 1 && isFiniteNumber(stashEntry?.stacks)) {
       newStash[safeItemId] = { ...stashEntry, stacks: stashStacks - 1 }
     } else {
