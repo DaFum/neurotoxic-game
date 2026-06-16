@@ -322,6 +322,9 @@ import {
 } from './assetSelectors'
 import type { GameState, SocialState } from '../types'
 
+/**
+ * Summarized results of a travel cost simulation.
+ */
 export interface TravelCostsResult {
   dist: number
   totalCost: number
@@ -330,6 +333,19 @@ export interface TravelCostsResult {
   totalCashImpact: number
 }
 
+/**
+ * Calculates the complete financial and resource impact of traveling to a specific map node.
+ *
+ * @param node - The destination map node.
+ * @param currentStartNode - The origin map node, used to calculate distance.
+ * @param player - Current player state containing monetary and vehicle statistics.
+ * @param band - Current band state including members and reputation.
+ * @param social - Current social state of the band.
+ * @param assets - Game assets which might affect costs.
+ * @param liabilities - Game liabilities adding to daily obligations.
+ * @param assetModifiers - Aggregated modifiers derived from active equipment and traits.
+ * @returns An object containing calculated distance, immediate costs, fuel consumption, daily obligations, and total cash impact.
+ */
 export function calculateTravelCostsAndImpact(
   node: MapNode,
   currentStartNode: MapNode | undefined,
