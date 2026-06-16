@@ -51,7 +51,7 @@ import {
   DEFAULT_MERCH_PRICES,
   EXPENSE_CONSTANTS,
   shouldTriggerBankruptcy
-} from '../../utils/economyEngine'
+} from '../../utils/economy'
 import { getTotalDailyObligations } from '../../utils/assetSelectors'
 import { generateDailyTrend } from '../../utils/socialEngine'
 import { checkTraitUnlocks } from '../../utils/unlockCheck'

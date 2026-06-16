@@ -28,7 +28,7 @@ vi.mock('../../src/utils/audio/AudioManager', () => ({
     play: vi.fn()
   }
 }))
-// Mock MerchStrategyBlock to avoid HQ_ITEMS/economyEngine dependency in these tests
+// Mock MerchStrategyBlock to avoid HQ_ITEMS/economy dependency in these tests
 const mockOnUpdatePrice = vi.fn()
 const mockOnRestock = vi.fn()
 vi.mock('../../src/components/pregig/MerchStrategyBlock', () => ({
@@ -79,7 +79,7 @@ vi.mock('../../src/utils/crypto', () => ({
 vi.mock('../../src/utils/simulationUtils', () => ({
   getGigModifiers: vi.fn(() => ({ activeEffects: [] }))
 }))
-vi.mock('../../src/utils/economyEngine', () => ({
+vi.mock('../../src/utils/economy', () => ({
   MODIFIER_COSTS: {
     soundcheck: 50,
     promo: 100,

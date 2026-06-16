@@ -1,6 +1,6 @@
 import type { GameState } from '../../types'
 import type { AssetModifiers, LongTermAsset } from '../../types/assets'
-import { calculateGuaranteedDailyCost } from '../economyEngine'
+import { calculateGuaranteedDailyCost } from '../economy'
 import {
   getAssetTotalUpkeep,
   getAssetAggregateBoni,
