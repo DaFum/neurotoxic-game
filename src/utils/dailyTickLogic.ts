@@ -1,5 +1,5 @@
 import { CHARACTERS } from '../data/characters'
-import { calculateGuaranteedDailyCost } from './economyEngine'
+import { calculateGuaranteedDailyCost } from './economy'
 import { applyReputationDecay } from './socialEngine'
 import { calcBaseBreakdownChance } from './upgradeUtils'
 import { hasTrait } from './traitUtils'

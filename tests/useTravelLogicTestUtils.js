@@ -120,7 +120,7 @@ const mockHandleError = mock.fn()
 class MockStateError extends Error {}
 
 // Mock modules
-mock.module(new URL('../src/utils/economyEngine.ts', import.meta.url).href, {
+mock.module(new URL('../src/utils/economy/index.ts', import.meta.url).href, {
   namedExports: {
     calculateTravelExpenses: mockCalculateTravelExpenses,
     calculateRefuelCost: mockCalculateRefuelCost,
