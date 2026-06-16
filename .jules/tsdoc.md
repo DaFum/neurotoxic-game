@@ -13,3 +13,4 @@
 | 2026-06-13 | src/App.tsx | resolveVercelTelemetryEnabled, SceneLoadingFallback, App |
 | 2026-06-14 | src/components/HecklerOverlay.tsx | updateOverlayNodes |
 | 2026-06-15 | src/hooks/travel/useVanMaintenance.ts | useVanMaintenance |
+| 2026-06-16 | src/utils/travelUtils.ts | TravelCostsResult, calculateTravelCostsAndImpact |
