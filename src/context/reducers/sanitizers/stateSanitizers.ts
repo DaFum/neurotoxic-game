@@ -633,11 +633,10 @@ export const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
     money: finiteNumberOr(playerData.money, DEFAULT_PLAYER_STATE.money),
     day: finiteNumberOr(playerData.day, DEFAULT_PLAYER_STATE.day),
     time: finiteNumberOr(playerData.time, DEFAULT_PLAYER_STATE.time),
-    location: Object.hasOwn(playerData, 'location')
-      ? typeof playerData.location === 'string'
-        ? (playerData.location as PlayerState['location'])
-        : DEFAULT_PLAYER_STATE.location
-      : DEFAULT_PLAYER_STATE.location,
+    location:
+      typeof playerData.location === 'string'
+        ? playerData.location
+        : DEFAULT_PLAYER_STATE.location,
     currentNodeId:
       typeof playerData.currentNodeId === 'string'
         ? playerData.currentNodeId
