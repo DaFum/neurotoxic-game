@@ -204,15 +204,13 @@ export const processLiabilityTick = (
     }
   }
   const finalLiabilities = nextLiabilities
-  const foreclosedKinds: AssetKind[] = []
+  const foreclosedKindsSet = new Set<AssetKind>()
   for (const asset of state.assets || []) {
-    if (
-      foreclosedAssetIds.has(asset.id) &&
-      !foreclosedKinds.includes(asset.kind)
-    ) {
-      foreclosedKinds.push(asset.kind)
+    if (foreclosedAssetIds.has(asset.id)) {
+      foreclosedKindsSet.add(asset.kind)
     }
   }
+  const foreclosedKinds = Array.from(foreclosedKindsSet)
 
   return {
     state: {
