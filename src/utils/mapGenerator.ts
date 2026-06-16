@@ -5,6 +5,7 @@
  * - Hoisted constant definitions (`padding = 10`) outside the main simulation iteration loop in `resolveOverlaps`.
  * - Optimized `pickRandomSubset` to avoid shallow copying the source array when picking small subsets (k = 1 or k = 2), avoiding heap allocations in hot loops.
  * - Added a sparse Fisher-Yates shuffle optimization using a Map for small sample sizes (`k < n/4`) to avoid `O(n)` array shallow copy overhead.
+ * - Refactored MapGenerator into smaller files to improve maintainability and readability.
  *
  * - Monitor performance for exceptionally large maps (depth > 50).
  * - Consider WebWorker offloading if `resolveOverlaps` becomes a bottleneck on mobile.
@@ -19,42 +20,25 @@
 import { ALL_VENUES } from '../data/venues'
 import { StateError } from './errorHandler'
 import { HQ_ITEMS } from '../data/hqItems'
-import { logger } from './logger'
 import { finiteNumberOr } from './finiteNumber'
-import type { MapNodeType, Venue, CityTraitState } from '../types'
+import type { Venue } from '../types'
+import {
+  getCityKeyFromVenueId,
+  deriveCityTraits
+} from './mapGenerator/cityTraits'
+import {
+  assignInitialCoordinates,
+  resolveOverlaps
+} from './mapGenerator/layout'
+import { pickRandomSubset } from './mapGenerator/mathUtils'
+import type {
+  GeneratedMapNode,
+  MapGeneratorState,
+  VenuePools
+} from './mapGenerator/types'
 
-type MapConnection = { from: string; to: string }
-type GeneratedMapNode = {
-  id: string
-  layer: number
-  venue: Venue
-  status: 'unlocked' | 'completed' | 'locked'
-  type: Extract<
-    MapNodeType,
-    | 'START'
-    | 'GIG'
-    | 'SPECIAL'
-    | 'REST_STOP'
-    | 'FESTIVAL'
-    | 'FINALE'
-    | 'SUPPLY_STOP'
-  >
-  x: number
-  y: number
-  shopInventory?: import('../types/components').PurchaseItem[]
-}
-type MapGeneratorState = {
-  layers: GeneratedMapNode[][]
-  nodes: Record<string, GeneratedMapNode>
-  nodeList: GeneratedMapNode[]
-  connections: MapConnection[]
-  cityStates: Record<string, CityTraitState>
-}
-type VenuePools = {
-  easyVenues: Venue[]
-  mediumVenues: Venue[]
-  hardVenues: Venue[]
-}
+export { getCityKeyFromVenueId, deriveCityTraits }
+export type { GeneratedMapNode, MapGeneratorState, VenuePools }
 
 let cachedHomeVenue: Venue | null = null
 let cachedFinaleVenue: Venue | null = null
@@ -62,84 +46,6 @@ let cachedVenuesLength: number = -1
 
 const getVenueCoord = (venue: Venue, axis: 'x' | 'y', fallback: number) =>
   finiteNumberOr(venue[axis], fallback)
-
-const warnedMalformedVenueIds = new Set<string>()
-/**
- * Derives the city key from a venue ID (e.g. 'berlin_so36' → 'berlin').
- *
- * Returns '' when the ID has no underscore; callers must guard against the
- * empty string. In dev builds a malformed non-empty ID emits a warning so
- * legacy/typo'd venue IDs surface rather than silently disabling city intel.
- *
- * @param venueId - Canonical venue id containing a city prefix.
- * @returns Prefix before the first underscore, or an empty string for malformed ids.
- */
-export const getCityKeyFromVenueId = (venueId: string): string => {
-  const idx = venueId.indexOf('_')
-  if (idx === -1) {
-    if (
-      venueId.length > 0 &&
-      typeof process !== 'undefined' &&
-      process.env?.NODE_ENV !== 'production' &&
-      !warnedMalformedVenueIds.has(venueId)
-    ) {
-      warnedMalformedVenueIds.add(venueId)
-      logger.warn(
-        'mapGenerator',
-        `Malformed venue ID "${venueId}" has no underscore; city intel will be empty`
-      )
-    }
-    return ''
-  }
-  return venueId.slice(0, idx)
-}
-
-const CITY_TRAIT_GENRES = [
-  'punk',
-  'metal',
-  'goth',
-  'indie',
-  'synth',
-  'noise',
-  'hardcore'
-] as const
-
-const CITY_TRAIT_SPENDING_PROFILES = [
-  'stingy',
-  'average',
-  'generous',
-  'drunkards',
-  'merch-hungry'
-] as const
-
-const hashCityKey = (cityKey: string): number => {
-  let h = 2166136261
-  for (let i = 0; i < cityKey.length; i++) {
-    h ^= cityKey.charCodeAt(i)
-    h = Math.imul(h, 16777619)
-  }
-  return h >>> 0
-}
-
-/**
- * Deterministically derive city traits for a given city key. Used to backfill
- * `cityStates` for saved maps that predate the city intel system.
- *
- * @param cityKey - City key extracted from a venue id.
- * @returns Deterministic city trait profile for genre bias, attention span, and spending.
- */
-export const deriveCityTraits = (
-  cityKey: string
-): import('../types/game').CityTraitState => {
-  const h = hashCityKey(cityKey)
-  const genreBias = CITY_TRAIT_GENRES[h % CITY_TRAIT_GENRES.length] ?? 'unknown'
-  const attentionSpan = 15 + ((h >>> 8) % 45)
-  const barSpendingProfile =
-    CITY_TRAIT_SPENDING_PROFILES[
-      (h >>> 16) % CITY_TRAIT_SPENDING_PROFILES.length
-    ] ?? 'average'
-  return { genreBias, attentionSpan, barSpendingProfile }
-}
 
 /**
  * Procedural generation for the game map using a Directed Acyclic Graph (DAG).
@@ -149,6 +55,7 @@ export class MapGenerator {
    * Mutable RNG seed advanced by `random()`.
    */
   seed: number
+
   /**
    * Creates a new MapGenerator instance.
    * @param seed - The seed for the random number generator.
@@ -236,16 +143,10 @@ export class MapGenerator {
     this._generateIntermediateLayers(map, validDepth, pools, inventoryAddItems)
     this._generateConnections(map, validDepth)
     this._generateFinaleLayer(map, validDepth, hardVenues, pools)
-    this._assignInitialCoordinates(map)
 
-    // To ensure purity, we clone the nodes before resolving overlaps if possible,
-    // but here we are mutating the map object we just created, which is local to this function.
-    // However, the resolveOverlaps method signature implies it works on an array.
-    // Given the context of "generating" a map, mutating the *newly created* nodes is acceptable locally,
-    // but technically the method `resolveOverlaps` mutates its input.
-    // For strict purity, we'd return new nodes, but `generateMap` owns `map`.
-    // We will keep it mutating the *internal* map structure being built.
-    this.resolveOverlaps(map.nodeList)
+    // Extracted layout logic
+    assignInitialCoordinates(map.nodeList, () => this.random())
+    resolveOverlaps(map.nodeList, () => this.random())
 
     this._populateCityStates(map)
 
@@ -378,7 +279,9 @@ export class MapGenerator {
         }
 
         if (nodeType === 'SUPPLY_STOP') {
-          node.shopInventory = this.pickRandomSubset(inventoryAddItems, 3)
+          node.shopInventory = pickRandomSubset(inventoryAddItems, 3, () =>
+            this.random()
+          )
         }
 
         layerNodes.push(node)
@@ -595,7 +498,9 @@ export class MapGenerator {
       for (const node of currentLayer) {
         // Pick 1-2 random targets in next layer
         const numTargets = Math.floor(this.random() * 2) + 1
-        const targets = this.pickRandomSubset(nextLayer, numTargets)
+        const targets = pickRandomSubset(nextLayer, numTargets, () =>
+          this.random()
+        )
         for (const target of targets) {
           map.connections.push({ from: node.id, to: target.id })
           connectedToIds.add(target.id)
@@ -667,283 +572,9 @@ export class MapGenerator {
   }
 
   /**
-   * Assigns initial coordinates to map nodes.
-   * @param map - Mutable map state whose nodes need layout coordinates.
-   */
-  _assignInitialCoordinates(map: MapGeneratorState): void {
-    // Assign initial coordinates with jitter and resolve overlaps
-    // Increased jitter to +/- 5 to help initial separation
-    const nodeList = map.nodeList
-    for (const node of nodeList) {
-      const baseX = node.x
-      const baseY = node.y
-      node.x = baseX + (this.random() * 10 - 5)
-      node.y = baseY + (this.random() * 10 - 5)
-    }
-  }
-
-  /**
-   * Retrieves candidate node indices from neighboring cells that have an index greater than j.
-   * @param grid - The spatial partitioning grid.
-   * @param cellX - The X coordinate of the current cell.
-   * @param cellY - The Y coordinate of the current cell.
-   * @param j - The index of the current node to preserve directionality.
-   * @returns Array of candidate node indices.
-   */
-  _getNeighborCandidates(
-    grid: Map<number, number[]>,
-    cellX: number,
-    cellY: number,
-    j: number
-  ): number[] {
-    const candidates: number[] = []
-
-    for (let cx = cellX - 1; cx <= cellX + 1; cx++) {
-      for (let cy = cellY - 1; cy <= cellY + 1; cy++) {
-        const key = cx * 1000 + cy
-        const cell = grid.get(key)
-        if (!cell) continue
-
-        for (let c = 0; c < cell.length; c++) {
-          const k = cell[c]
-          if (k === undefined) continue
-          // Check only pairs once and preserve j < k direction
-          if (k > j) {
-            candidates.push(k)
-          }
-        }
-      }
-    }
-
-    return candidates
-  }
-
-  /**
-   * Iteratively pushes overlapping nodes apart to ensure visibility.
-   * Note: This method mutates the node objects in the provided list.
-   * @param nodeList - The list of nodes.
-   */
-  resolveOverlaps(nodeList: GeneratedMapNode[]): void {
-    const iterations = 150 // Increased iterations
-    const minDistance = 6 // % of map width/height (approx 2x pin size)
-    const minDistanceSq = minDistance * minDistance
-    const padding = 10 // Wall repulsion bounds
-    // Reduce movement strength over time to stabilize
-    let strength = 0.5
-
-    // Optimization: Spatial partitioning to avoid O(N^2) checks
-    const cellSize = minDistance
-
-    for (let i = 0; i < iterations; i++) {
-      let moved = false
-
-      const grid = this._buildSpatialGrid(nodeList, cellSize)
-
-      for (let j = 0; j < nodeList.length; j++) {
-        const n1 = nodeList[j]
-        if (!n1) continue
-        const cellX = Math.floor(n1.x / cellSize)
-        const cellY = Math.floor(n1.y / cellSize)
-
-        // Gather candidates from neighboring cells
-        const candidates = this._getNeighborCandidates(grid, cellX, cellY, j)
-
-        candidates.sort((a, b) => a - b)
-
-        for (let c = 0; c < candidates.length; c++) {
-          const k = candidates[c]
-          if (k === undefined) continue
-          const n2 = nodeList[k]
-          if (!n2) continue
-
-          let dx = n1.x - n2.x
-          let dy = n1.y - n2.y
-          const distSq = dx * dx + dy * dy
-
-          if (distSq < minDistanceSq) {
-            moved = true
-            let dist = Math.sqrt(distSq)
-
-            if (dist < 0.1) {
-              // Exact overlap (or very close), push randomly. Guard against
-              // a zero offset (which would collapse `dist` to 0 and break
-              // the resolution math below) by falling back to a small bias.
-              const rawDx = this.random() - 0.5
-              const rawDy = this.random() - 0.5
-              dx = rawDx === 0 ? 0.1 : rawDx
-              dy = rawDy === 0 ? 0.1 : rawDy
-              dist = Math.sqrt(dx * dx + dy * dy)
-            }
-
-            const overlap = minDistance - dist
-            const push = overlap * strength
-
-            const moveX = (dx / dist) * push
-            const moveY = (dy / dist) * push
-
-            n1.x += moveX
-            n1.y += moveY
-            n2.x -= moveX
-            n2.y -= moveY
-          }
-        }
-      }
-
-      // Wall repulsion (keep away from edges)
-      this._applyWallRepulsion(nodeList, padding)
-
-      // If no overlaps processed, we can exit early (optional optimization)
-      if (!moved) break
-
-      // Damping
-      strength *= 0.995
-    }
-
-    // Final hard clamp
-    this._clampNodePositions(nodeList)
-  }
-
-  /**
-   * Buckets nodes into a spatial hash grid for O(1) neighbor lookups.
-   * @param nodeList - Nodes to bucket by position.
-   * @param cellSize - Grid cell size in map-percentage units.
-   * @returns Map of packed cell key to node indices.
-   */
-  _buildSpatialGrid(
-    nodeList: GeneratedMapNode[],
-    cellSize: number
-  ): Map<number, number[]> {
-    const grid = new Map<number, number[]>()
-    for (let j = 0; j < nodeList.length; j++) {
-      const n = nodeList[j]
-      if (!n) continue
-      const cellX = Math.floor(n.x / cellSize)
-      const cellY = Math.floor(n.y / cellSize)
-      const key = cellX * 1000 + cellY
-
-      let cell = grid.get(key)
-      if (!cell) {
-        cell = []
-        grid.set(key, cell)
-      }
-      cell.push(j)
-    }
-    return grid
-  }
-
-  /**
-   * Nudges nodes away from the map edges (in place).
-   * @param nodeList - Nodes to adjust.
-   * @param padding - Edge margin in map-percentage units.
-   */
-  _applyWallRepulsion(nodeList: GeneratedMapNode[], padding: number): void {
-    for (const n of nodeList) {
-      if (n.x < padding) n.x += 0.2
-      if (n.x > 100 - padding) n.x -= 0.2
-      if (n.y < padding) n.y += 0.2
-      if (n.y > 100 - padding) n.y -= 0.2
-    }
-  }
-
-  /**
-   * Hard-clamps node coordinates into the visible [5, 95] map range (in place).
-   * @param nodeList - Nodes to clamp.
-   */
-  _clampNodePositions(nodeList: GeneratedMapNode[]): void {
-    for (const n of nodeList) {
-      n.x = Math.max(5, Math.min(95, n.x))
-      n.y = Math.max(5, Math.min(95, n.y))
-    }
-  }
-
-  /**
-   * Picks a random subset of items from an array.
-   * @param arr - The source array.
-   * @param count - The number of items to pick.
-   * @returns A new array with the selected items.
+   * Legacy interface to support tests.
    */
   pickRandomSubset<T>(arr: readonly T[], count: number): T[] {
-    const n = arr.length
-    const countInt = Math.floor(count)
-    if (!Number.isFinite(countInt)) return []
-    const k = Math.min(countInt, n)
-    if (k <= 0) return []
-
-    if (k === 1) {
-      const value = arr[Math.floor(this.random() * n)]
-      if (value === undefined) {
-        throw new StateError(
-          'Sparse array invariant violated in pickRandomSubset(k=1)'
-        )
-      }
-      return [value]
-    }
-
-    if (k === 2) {
-      const idx1 = Math.floor(this.random() * n)
-      let idx2 = Math.floor(this.random() * (n - 1))
-      if (idx2 >= idx1) idx2++
-      const first = arr[idx1]
-      const second = arr[idx2]
-      if (first === undefined || second === undefined) {
-        throw new StateError(
-          'Sparse array invariant violated in pickRandomSubset(k=2)'
-        )
-      }
-      return [first, second]
-    }
-
-    // Sparse Fisher-Yates shuffle using Map to avoid O(n) copy for small k relative to n
-    if (k < n / 4) {
-      const result: T[] = []
-      const swaps = new Map<number, T>()
-      for (let i = 0; i < k; i++) {
-        const j = i + Math.floor(this.random() * (n - i))
-
-        // Retrieve values, falling back to original array if not swapped
-        const valI = swaps.has(i) ? swaps.get(i) : arr[i]
-        const valJ = swaps.has(j) ? swaps.get(j) : arr[j]
-        if (valI === undefined || valJ === undefined) {
-          throw new StateError(
-            `Sparse array invariant violated in pickRandomSubset(fisher-yates) at i=${i}, j=${j}`
-          )
-        }
-
-        result.push(valJ)
-        // Since j = i + Math.floor(this.random() * (n - i)), it is guaranteed that j >= i.
-        // Therefore, subsequent iterations will never need to read indices < i again,
-        // so we only need to record what value is placed into position j in the swaps Map.
-        // We will never need the original value at i again to populate the result array.
-        swaps.set(j, valI)
-      }
-      return result
-    }
-
-    // For large k, full shallow copy is more efficient than Map overhead
-    const shuffled = [...arr]
-    for (let i = 0; i < k; i++) {
-      const j = i + Math.floor(this.random() * (n - i))
-      const valueI = shuffled[i]
-      const valueJ = shuffled[j]
-      if (valueI === undefined || valueJ === undefined) {
-        throw new StateError(
-          `Sparse array invariant violated in pickRandomSubset(shallow-copy) at i=${i}, j=${j}`
-        )
-      }
-      shuffled[i] = valueJ
-      shuffled[j] = valueI
-    }
-    const rawResult = shuffled.slice(0, k)
-    const result: T[] = []
-    for (let i = 0; i < rawResult.length; i++) {
-      const value = rawResult[i]
-      if (value === undefined) {
-        throw new StateError(
-          `Sparse array invariant violated in pickRandomSubset(result-slice) at i=${i}`
-        )
-      }
-      result.push(value)
-    }
-    return result
+    return pickRandomSubset(arr, count, () => this.random())
   }
 }
