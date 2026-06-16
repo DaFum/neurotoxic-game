@@ -39,6 +39,26 @@ type SideEffectContext = {
   tRef: MutableRefObject<TFunction>
 }
 
+function choiceTextFallback(choice: Record<string, unknown> | null): {
+  outcomeText: string
+  description: string
+} {
+  return {
+    outcomeText:
+      choice &&
+      Object.hasOwn(choice, 'outcomeText') &&
+      typeof choice.outcomeText === 'string'
+        ? choice.outcomeText
+        : '',
+    description:
+      choice &&
+      Object.hasOwn(choice, 'description') &&
+      typeof choice.description === 'string'
+        ? choice.description
+        : ''
+  }
+}
+
 function runSideEffects(effects: SideEffect[], ctx: SideEffectContext): void {
   const { addToast, changeScene, saveGame, tRef } = ctx
   const t = tRef.current
@@ -213,21 +233,7 @@ export function useEventSystem({
       choice: Record<string, unknown> | null
     ): { outcomeText: string; description: string; result: unknown } => {
       if (!stateRef.current.activeEvent) {
-        return {
-          outcomeText:
-            choice &&
-            Object.hasOwn(choice, 'outcomeText') &&
-            typeof choice.outcomeText === 'string'
-              ? choice.outcomeText
-              : '',
-          description:
-            choice &&
-            Object.hasOwn(choice, 'description') &&
-            typeof choice.description === 'string'
-              ? choice.description
-              : '',
-          result: null
-        }
+        return { ...choiceTextFallback(choice), result: null }
       }
       try {
         const resolution = resolveEvent(choice, stateRef.current)
@@ -247,21 +253,7 @@ export function useEventSystem({
         logger.error('Event', 'Failed to resolve event choice:', error)
         addToast(tRef.current('ui:event_error'), 'error')
         dispatch(createSetActiveEventAction(null))
-        return {
-          outcomeText:
-            choice &&
-            Object.hasOwn(choice, 'outcomeText') &&
-            typeof choice.outcomeText === 'string'
-              ? choice.outcomeText
-              : '',
-          description:
-            choice &&
-            Object.hasOwn(choice, 'description') &&
-            typeof choice.description === 'string'
-              ? choice.description
-              : '',
-          result: null
-        }
+        return { ...choiceTextFallback(choice), result: null }
       }
     },
     [addToast, changeScene, dispatch, saveGame, stateRef, tRef]
