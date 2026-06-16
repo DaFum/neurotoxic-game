@@ -29,6 +29,7 @@ export const ASSET_SECTION_TABS = [
 const _ASSET_SECTION_TABS_MAP: Partial<Record<AssetKind, AssetSectionTab>> = {}
 for (let i = 0; i < ASSET_SECTION_TABS.length; i++) {
   const tab = ASSET_SECTION_TABS[i]
+  if (!tab) continue
   _ASSET_SECTION_TABS_MAP[tab.key] = tab
 }
 

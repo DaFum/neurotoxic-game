@@ -257,6 +257,7 @@ export const calculateMerchIncome = (
   // in-stock items.
   for (let i = 0; i < MERCH_PROFILE_VALUES.length; i++) {
     const profile = MERCH_PROFILE_VALUES[i]
+    if (!profile) continue
     const genreMult = profile.genreAffinity[genreBias] ?? 1.0
     const perfLift =
       1 +
@@ -294,6 +295,7 @@ export const calculateMerchIncome = (
 
   for (let i = 0; i < sortedKeys.length; i++) {
     const key = sortedKeys[i]
+    if (!key) continue
     const share = (rawShare[key] ?? 0) / totalRawShare
     const desired = Math.floor(effectiveBuyers * share)
     const inventoryCount =

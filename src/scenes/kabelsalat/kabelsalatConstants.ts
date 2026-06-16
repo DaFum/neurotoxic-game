@@ -59,6 +59,7 @@ type CableMap = Record<CableId, Cable>
 const _CABLE_MAP: Partial<CableMap> = {}
 for (let i = 0; i < CABLES.length; i++) {
   const cable = CABLES[i]
+  if (!cable) continue
   _CABLE_MAP[cable.id] = cable
 }
 export const CABLE_MAP = _CABLE_MAP as CableMap
