@@ -326,10 +326,15 @@ import type { GameState, SocialState } from '../types'
  * Summarized results of a travel cost simulation.
  */
 export interface TravelCostsResult {
+  /** Calculated distance to the destination map node. */
   dist: number
+  /** Immediate financial costs associated with travel. */
   totalCost: number
+  /** Amount of fuel consumed during the trip. */
   fuelLiters: number
+  /** Total daily obligations added to the travel cost. */
   dailyCost: number
+  /** Sum of immediate costs and daily obligations. */
   totalCashImpact: number
 }
 
