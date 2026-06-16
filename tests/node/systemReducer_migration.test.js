@@ -128,7 +128,7 @@ test('systemReducer - handleLoadGame legacy venue migration', async t => {
       assert.equal(
         migratedState2.player.location,
         'venues:stendal.name',
-        'Location remains undefined since object spreads overwrite properties with undefined values'
+        'Location should fall back to default when undefined'
       )
     }
   )
