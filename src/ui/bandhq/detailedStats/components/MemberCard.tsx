@@ -14,7 +14,7 @@ export const MemberCard = ({
     <div className='flex justify-between items-baseline mb-4'>
       <h4 className='text-lg font-bold text-toxic-green'>{member.name}</h4>
       <span className='text-xs text-ash-gray uppercase'>
-        {member.role ||
+        {member.role ??
           t('ui:detailedStats.member', { defaultValue: 'Member' })}
       </span>
     </div>
@@ -24,14 +24,14 @@ export const MemberCard = ({
         label={t('ui:detailedStats.stamina', {
           defaultValue: 'Stamina'
         })}
-        value={member.stamina}
+        value={member?.stamina ?? 0}
         max={100}
         color='bg-stamina-green'
         size='sm'
       />
       <ProgressBar
         label={t('ui:detailedStats.mood', { defaultValue: 'Mood' })}
-        value={member.mood}
+        value={member?.mood ?? 0}
         max={100}
         color='bg-mood-pink'
         size='sm'

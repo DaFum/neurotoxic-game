@@ -31,15 +31,15 @@ export const CareerOverviewSection = ({
       <DetailRow
         label={t('ui:stats.fame', { defaultValue: 'Fame' })}
         value={Math.floor(finiteNumberOr(player?.fame, 0))}
-        subtext={`${t('ui:ui.level', { defaultValue: 'Level' })} ${player.fameLevel || 0}`}
+        subtext={`${t('ui:ui.level', { defaultValue: 'Level' })} ${finiteNumberOr(player?.fameLevel, 0)}`}
       />
       <DetailRow
         label={t('ui:ui.day', { defaultValue: 'Day' })}
-        value={player.day}
+        value={finiteNumberOr(player?.day, 1)}
       />
       <DetailRow
         label={t('ui:ui.time', { defaultValue: 'Time' })}
-        value={`${String(wrapClockHour(finiteNumberOr(player.time, 12))).padStart(2, '0')}:00`}
+        value={`${String(wrapClockHour(finiteNumberOr(player?.time, 12))).padStart(2, '0')}:00`}
       />
       <DetailRow
         label={t('ui:ui.location', { defaultValue: 'Location' })}
@@ -47,14 +47,14 @@ export const CareerOverviewSection = ({
       />
       <DetailRow
         label={t('ui:detailedStats.totalTravels')}
-        value={player.totalTravels}
+        value={finiteNumberOr(player?.totalTravels, 0)}
       />
       <DetailRow
         label={t('ui:detailedStats.passiveFollowers')}
         value={t('ui:detailedStats.passiveFollowersPerDay', {
-          count: player.passiveFollowers
+          count: finiteNumberOr(player?.passiveFollowers, 0)
         })}
-        locked={!isUnlocked(player.passiveFollowers)}
+        locked={!isUnlocked(finiteNumberOr(player?.passiveFollowers, 0))}
       />
       <DetailRow
         label={t('ui:detailedStats.hqUpgrades.count')}

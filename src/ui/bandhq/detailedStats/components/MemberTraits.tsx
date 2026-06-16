@@ -14,7 +14,7 @@ export const MemberTraits = ({
   const potentialTraits = useMemo(() => {
     // Combine static defining traits with any dynamically grafted traits (e.g. clinic)
     const baseTraits = def?.traits || []
-    const memberTraits = member?.traits || {}
+    const memberTraits = member?.traits ?? {}
 
     if (baseTraits.length === 0) {
       let hasRuntime = false
@@ -32,10 +32,18 @@ export const MemberTraits = ({
 
     for (const key in memberTraits) {
       if (Object.hasOwn(memberTraits, key)) {
-        const rt = memberTraits[key] as CharacterTrait
-        if (rt?.id && !seen.has(rt.id)) {
-          merged.push(rt)
-          seen.add(rt.id)
+        const rt = memberTraits[key]
+        if (
+          rt &&
+          typeof rt === 'object' &&
+          'id' in rt &&
+          typeof (rt as Record<string, unknown>).id === 'string'
+        ) {
+          const validRt = rt as unknown as CharacterTrait
+          if (!seen.has(validRt.id)) {
+            merged.push(validRt)
+            seen.add(validRt.id)
+          }
         }
       }
     }
@@ -50,7 +58,9 @@ export const MemberTraits = ({
     )
 
   return potentialTraits.map(trait => {
-    const isTraitActive = !!member.traits?.[trait.id]
+    const isTraitActive = member.traits
+      ? Object.hasOwn(member.traits, trait.id) && !!member.traits[trait.id]
+      : false
     return (
       <Tooltip
         key={trait.id}
@@ -70,7 +80,8 @@ export const MemberTraits = ({
           </div>
         }
       >
-        <div
+        <button
+          type='button'
           className={`w-full text-xs flex justify-between items-center ${isTraitActive ? 'text-toxic-green' : 'text-ash-gray opacity-50'}`}
         >
           <span className='underline decoration-dotted decoration-ash-gray/50 cursor-help'>
@@ -85,7 +96,7 @@ export const MemberTraits = ({
               {t('ui:detailedStats.locked', { defaultValue: 'Locked' })}
             </span>
           )}
-        </div>
+        </button>
       </Tooltip>
     )
   })

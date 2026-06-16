@@ -11,7 +11,7 @@ export const BandMembersSection = ({
       {t('ui:detailedStats.bandMembers', { defaultValue: 'BAND MEMBERS' })}
     </h3>
     <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-      {(members || []).map(member => (
+      {(members ?? []).map(member => (
         <MemberCard key={member.name} member={member} t={t} />
       ))}
     </div>

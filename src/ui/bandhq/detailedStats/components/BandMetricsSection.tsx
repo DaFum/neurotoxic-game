@@ -13,7 +13,7 @@ export const BandMetricsSection = ({
     <div className='mb-4'>
       <ProgressBar
         label={t('ui:stats.harmony', { defaultValue: 'Harmony' })}
-        value={band.harmony}
+        value={band?.harmony ?? 0}
         max={100}
         color='bg-toxic-green'
       />
@@ -29,7 +29,7 @@ export const BandMetricsSection = ({
       label={t('ui:detailedStats.inventorySlots', {
         defaultValue: 'Inventory Slots'
       })}
-      value={band.inventorySlots}
+      value={band?.inventorySlots ?? 0}
     />
     {social.egoFocus && (
       <DetailRow

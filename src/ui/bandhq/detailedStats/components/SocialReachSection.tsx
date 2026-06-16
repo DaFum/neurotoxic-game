@@ -9,16 +9,16 @@ export const SocialReachSection = ({
   social,
   t
 }: { social: SocialData } & BasicTProps) => {
-  const activeDeals = social.activeDeals ?? []
+  const activeDeals = social?.activeDeals ?? []
   const activeDealDisplays = activeDeals.flatMap((deal, index) => {
     const display = getTranslatedBrandDealDisplay(deal, t, index)
     return display ? [display] : []
   })
   const totalReach =
-    (social.instagram ?? 0) +
-    (social.tiktok ?? 0) +
-    (social.youtube ?? 0) +
-    (social.newsletter ?? 0)
+    (social?.instagram ?? 0) +
+    (social?.tiktok ?? 0) +
+    (social?.youtube ?? 0) +
+    (social?.newsletter ?? 0)
 
   return (
     <Panel
@@ -29,23 +29,23 @@ export const SocialReachSection = ({
       <div className='grid grid-cols-1 sm:grid-cols-2 gap-x-4'>
         <DetailRow
           label={t('ui:stats.instagram', { defaultValue: 'Instagram' })}
-          value={social.instagram}
-          locked={!isUnlocked(social.instagram)}
+          value={social?.instagram ?? 0}
+          locked={!isUnlocked(social?.instagram ?? 0)}
         />
         <DetailRow
           label={t('ui:stats.tiktok', { defaultValue: 'TikTok' })}
-          value={social.tiktok}
-          locked={!isUnlocked(social.tiktok)}
+          value={social?.tiktok ?? 0}
+          locked={!isUnlocked(social?.tiktok ?? 0)}
         />
         <DetailRow
           label={t('ui:stats.youtube', { defaultValue: 'YouTube' })}
-          value={social.youtube}
-          locked={!isUnlocked(social.youtube)}
+          value={social?.youtube ?? 0}
+          locked={!isUnlocked(social?.youtube ?? 0)}
         />
         <DetailRow
           label={t('ui:stats.newsletter', { defaultValue: 'Newsletter' })}
-          value={social.newsletter}
-          locked={!isUnlocked(social.newsletter)}
+          value={social?.newsletter ?? 0}
+          locked={!isUnlocked(social?.newsletter ?? 0)}
         />
         <DetailRow
           label={t('ui:stats.totalReach', { defaultValue: 'Total Reach' })}

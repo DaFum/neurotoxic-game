@@ -30,19 +30,6 @@ for (const key in CHARACTERS) {
   }
 }
 
-export const getQuestLabel = (quest: QuestState, t: TFunction) => {
-  if (quest.completed) {
-    return t('ui:detailedStats.quests.completed', {
-      name: quest.name,
-      defaultValue: `${quest.name} (Completed)`
-    })
-  }
-  if (quest.progress !== undefined && quest.target !== undefined) {
-    return `${quest.name} (${quest.progress}/${quest.target})`
-  }
-  return quest.name
-}
-
 export const getStashStacks = (
   stash: Record<string, unknown> | undefined,
   itemId: string
@@ -50,7 +37,9 @@ export const getStashStacks = (
   if (!stash || !Object.hasOwn(stash, itemId)) return 0
   const entry = stash[itemId]
   if (!entry || typeof entry !== 'object') return 0
-  const stacks = (entry as Record<string, unknown>).stacks
+  const stacks = Object.hasOwn(entry as Record<string, unknown>, 'stacks')
+    ? (entry as Record<string, unknown>).stacks
+    : undefined
   // Stash entries are always contraband objects (never boolean-owned flags).
   // A null/absent `stacks` means a non-stackable item that is owned = 1 unit,
   // mirroring the reducer's getStashCount (the authority on craftability); this
