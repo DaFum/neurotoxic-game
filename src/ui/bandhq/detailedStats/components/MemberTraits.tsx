@@ -16,19 +16,31 @@ export const MemberTraits = ({
     const baseTraits = def?.traits || []
     const memberTraits = member?.traits ?? {}
 
-    if (baseTraits.length === 0) {
-      let hasRuntime = false
-      for (const key in memberTraits) {
-        if (Object.hasOwn(memberTraits, key)) {
-          hasRuntime = true
-          break
-        }
+    // Check if there are any runtime traits to merge
+    let hasRuntime = false
+    for (const key in memberTraits) {
+      if (Object.hasOwn(memberTraits, key)) {
+        hasRuntime = true
+        break
       }
-      if (!hasRuntime) return []
     }
 
+    // ⚡ BOLT OPTIMIZATION: Removed temporary array allocation and Set instantiation when not needed
+    // Why: baseTraits.map creates an intermediate array, and allocating a Set and copied array is unnecessary when there are no dynamic traits to merge.
+    // Impact: Completely bypasses array copying, Set allocations, and loops for members without dynamic traits.
+    if (!hasRuntime) {
+      return baseTraits
+    }
+
+    // Otherwise, perform the merge
     const merged = [...baseTraits]
-    const seen = new Set(baseTraits.map((bt: CharacterTrait) => bt.id))
+    const seen = new Set<string>()
+    for (let i = 0; i < baseTraits.length; i++) {
+      const bt = baseTraits[i]
+      if (bt) {
+        seen.add(bt.id)
+      }
+    }
 
     for (const key in memberTraits) {
       if (Object.hasOwn(memberTraits, key)) {
