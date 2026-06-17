@@ -1,22 +1,3 @@
-// Generates a directed acyclic graph (DAG) for the tour
-/*
- * #1 Updates:
- * - Refactored index-based `for` loops (previously converted from `forEach` closures) to `for...of` loops across multiple map generation steps to improve readability while maintaining the performance benefits of avoiding closure allocations.
- * - Hoisted constant definitions (`padding = 10`) outside the main simulation iteration loop in `resolveOverlaps`.
- * - Optimized `pickRandomSubset` to avoid shallow copying the source array when picking small subsets (k = 1 or k = 2), avoiding heap allocations in hot loops.
- * - Added a sparse Fisher-Yates shuffle optimization using a Map for small sample sizes (`k < n/4`) to avoid `O(n)` array shallow copy overhead.
- * - Refactored MapGenerator into smaller files to improve maintainability and readability.
- *
- * - Monitor performance for exceptionally large maps (depth > 50).
- * - Consider WebWorker offloading if `resolveOverlaps` becomes a bottleneck on mobile.
- *
- * #3 Errors + Solutions:
- * - Issue: `pickRandomSubset` was performing a shallow copy of the entire array via the spread operator `[...arr]` on every invocation, causing performance bottlenecks in hot loops.
- * - Solution: Added fast-paths for `k = 1` and `k = 2` that select random elements directly via index calculation, avoiding a full shallow copy of the source array for the most common use cases while still allocating the returned subset array.
- * - Issue: The shallow copy strategy was also causing unnecessary heap allocations for other small random subset selections (`k < n/4`).
- * - Solution: Implemented the sparse Fisher-Yates shuffle optimization.
- */
-
 import { ALL_VENUES } from '../data/venues'
 import { StateError } from './errorHandler'
 import { HQ_ITEMS } from '../data/hqItems'
