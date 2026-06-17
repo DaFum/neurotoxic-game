@@ -369,7 +369,17 @@ export const sanitizeCrowdfundCampaigns = (
   if (!Array.isArray(raw)) return []
   const out: CrowdfundCampaign[] = []
   const seenIds = new Set<string>()
-  const unavailableKinds = new Set(activeAssets.map(asset => asset.kind))
+
+  // ⚡ BOLT OPTIMIZATION: Replaced map() inside Set constructor with explicit loop.
+  // Why: Avoids intermediate array allocation from .map().
+  // Impact: Reduces memory allocation and garbage collection overhead.
+  const unavailableKinds = new Set<LongTermAsset['kind']>()
+  for (let i = 0; i < activeAssets.length; i++) {
+    const asset = activeAssets[i]
+    if (!asset) continue
+    unavailableKinds.add(asset.kind)
+  }
+
   const seenKinds = new Set<CrowdfundCampaign['assetSpec']['kind']>()
   for (const item of raw) {
     if (!isLooseRecord(item)) continue
