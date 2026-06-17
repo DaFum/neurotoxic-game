@@ -389,16 +389,6 @@ export const handleClinicEnhance = (
     const updatedTraits = normalizeTraitMap(member.traits)
     updatedTraits[resolvedTrait.id] = resolvedTrait
 
-    // Remove mutually exclusive traits
-    if (Array.isArray(resolvedTrait.exclusiveWith)) {
-      for (let i = 0; i < resolvedTrait.exclusiveWith.length; i++) {
-        const exclusiveTraitId = resolvedTrait.exclusiveWith[i]
-        if (typeof exclusiveTraitId === 'string' && updatedTraits[exclusiveTraitId]) {
-          delete updatedTraits[exclusiveTraitId]
-        }
-      }
-    }
-
     return {
       ...member,
       traits: updatedTraits
