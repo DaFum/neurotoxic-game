@@ -1,9 +1,5 @@
 import { finiteNumberOr } from '../../../gameState'
-import type {} from '../../../../data/merch'
 import type { GigEconomyData, EconomyContext } from '../../types'
-import type {} from '../../../../types'
-import type {} from '../../../../types/economy'
-import type {} from '../../../../types/assets'
 /**
  * Calculates the effective ticket price after applying ticket discounts.
  * @param gigData - Gig economy data containing the base ticket price.

@@ -1,9 +1,5 @@
-import type {} from '../../../../data/merch'
 import type { GigEconomyData } from '../../types'
-import type {} from '../../../../types'
-import type {} from '../../../../types/economy'
 import { VENUE_SPLIT_RATES } from '../../constants'
-import type {} from '../../../../types/assets'
 /**
  * Calculates venue split / promoter cut.
  *
@@ -16,7 +12,7 @@ export const calculateVenueSplit = (
   gigData: GigEconomyData = {}
 ) => {
   gigData = gigData || {}
-  const diff = gigData.diff ?? gigData.difficulty ?? 0
+  const diff = finiteNumberOr(gigData.diff ?? gigData.difficulty, 0)
   const splitRate =
     diff >= 5
       ? 0.7

@@ -1,8 +1,3 @@
-import type {} from '../../../../data/merch'
-import type {} from '../../types'
-import type {} from '../../../../types'
-import type {} from '../../../../types/economy'
-import type {} from '../../../../types/assets'
 export * from './calculateTicketIncome'
 export * from './calculateMerchIncome'
 export * from './calculateEffectiveTicketPrice'

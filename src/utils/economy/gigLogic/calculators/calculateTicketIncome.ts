@@ -1,11 +1,8 @@
 import { finiteNumberOr } from '../../../gameState'
-import type {} from '../../../../data/merch'
 import type { GigEconomyData, EconomyContext } from '../../types'
 import type { GigModifiers } from '../../../../types'
-import type {} from '../../../../types/economy'
 import { TICKET_SALES_CONSTANTS } from '../../constants'
 import { calculateEffectiveTicketPrice } from './calculateEffectiveTicketPrice'
-import type {} from '../../../../types/assets'
 /**
  * Calculates ticket sales revenue and attendance.
  *

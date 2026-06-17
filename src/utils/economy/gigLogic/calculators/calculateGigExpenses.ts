@@ -1,5 +1,3 @@
-import type {} from '../../../../data/merch'
-import type {} from '../../types'
 import type { GigModifiers } from '../../../../types'
 import type { FinancialBreakdownItem } from '../../../../types/economy'
 import { calculateGigModifierCost } from '../../constants'

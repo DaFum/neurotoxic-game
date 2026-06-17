@@ -1,13 +1,9 @@
-import type {} from '../../../../data/merch'
-import type {} from '../../types'
 import type { GigModifiers } from '../../../../types'
-import type {} from '../../../../types/economy'
 import {
   BAR_RATE_VIP,
   BAR_RATE_NORMAL,
   AVG_SPEND_PER_PERSON_AT_BAR
 } from '../../constants'
-import type {} from '../../../../types/assets'
 /**
  * Calculates bar-cut income from ticket attendance and guestlist/VIP modifiers.
  *

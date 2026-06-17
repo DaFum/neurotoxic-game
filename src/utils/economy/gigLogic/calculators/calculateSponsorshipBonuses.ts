@@ -1,8 +1,4 @@
-import type {} from '../../../../data/merch'
 import type { GigStatsLike } from '../../types'
-import type {} from '../../../../types'
-import type {} from '../../../../types/economy'
-import type {} from '../../../../types/assets'
 /**
  * Calculates performance-triggered sponsorship bonuses for clean and high-hype gigs.
  *

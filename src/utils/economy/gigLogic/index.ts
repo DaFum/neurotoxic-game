@@ -2,7 +2,6 @@ import { logger } from '../../logger'
 import { clamp0to100, finiteNumberOr, isFiniteNumber } from '../../gameState'
 import { clampUnit } from '../../numberUtils'
 import type { GigFinancialParams } from '../types'
-import type {} from '../../../types'
 import type { PostGigFinancials } from '../../../types/economy'
 import { calculateZealotryEffects } from '../../socialEngine'
 import {
@@ -153,13 +152,9 @@ export const calculateGigFinancials = (
   for (let i = 0; i < activeDeals.length; i++) {
     const activeDeal = activeDeals[i]
     if (!activeDeal) continue
-    if (
-      activeDeal.type === 'SPONSORSHIP' &&
-      activeDeal.offer &&
-      activeDeal.offer.perGig
-    ) {
-      const perGig = activeDeal.offer.perGig as unknown
-      if (isFiniteNumber(perGig)) {
+    if (activeDeal.type === 'SPONSORSHIP') {
+      const perGig = finiteNumberOr(activeDeal.offer?.perGig, 0)
+      if (perGig > 0) {
         report.income.breakdown.push({
           labelKey: 'economy:gigIncome.brandSponsor.label',
           value: perGig,

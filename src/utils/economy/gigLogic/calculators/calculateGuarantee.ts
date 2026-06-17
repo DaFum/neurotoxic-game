@@ -1,9 +1,5 @@
 import { finiteNumberOr } from '../../../gameState'
-import type {} from '../../../../data/merch'
 import type { GigEconomyData } from '../../types'
-import type {} from '../../../../types'
-import type {} from '../../../../types/economy'
-import type {} from '../../../../types/assets'
 /**
  * Calculates guarantee / base pay.
  *
