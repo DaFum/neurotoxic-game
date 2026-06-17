@@ -330,8 +330,9 @@ export const sanitizeLiabilities = (
   const assetIds = new Set<string>()
   for (let i = 0; i < assets.length; i++) {
     const asset = assets[i]
-    if (asset) {
-      assetIds.add(asset.id)
+    const assetId = asset?.id
+    if (typeof assetId === 'string') {
+      assetIds.add(assetId)
     }
   }
   const out: Record<string, Liability> = Object.create(null)
