@@ -1,5 +1,5 @@
 import { logger } from '../../logger'
-import { clamp0to100, finiteNumberOr, isFiniteNumber } from '../../gameState'
+import { clamp0to100, finiteNumberOr } from '../../gameState'
 import { clampUnit } from '../../numberUtils'
 import type { GigFinancialParams } from '../types'
 import type { PostGigFinancials } from '../../../types/economy'

@@ -1,3 +1,4 @@
+import { finiteNumberOr } from '../../../gameState'
 import type { GigEconomyData } from '../../types'
 import { VENUE_SPLIT_RATES } from '../../constants'
 /**
