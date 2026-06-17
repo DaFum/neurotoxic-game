@@ -154,6 +154,26 @@ export const normalizeTraitMap = (
 }
 
 /**
+ * Removes mutually exclusive traits from a traits map based on a newly added trait definition.
+ *
+ * @param traitsMap - The object containing the current traits.
+ * @param traitDef - The trait definition of the newly added trait.
+ */
+export const removeExclusiveTraits = (
+  traitsMap: Record<string, TraitDef>,
+  traitDef: TraitDef
+): void => {
+  if (Array.isArray(traitDef.exclusiveWith)) {
+    for (let i = 0; i < traitDef.exclusiveWith.length; i++) {
+      const exclusiveTraitId = traitDef.exclusiveWith[i]
+      if (typeof exclusiveTraitId === 'string' && Object.hasOwn(traitsMap, exclusiveTraitId)) {
+        delete traitsMap[exclusiveTraitId]
+      }
+    }
+  }
+}
+
+/**
  * Applies unlocked traits to the band state immutably and generates toasts.
  * Handles multiple unlocks per member and avoids duplicates.
  *
@@ -268,14 +288,7 @@ export const applyTraitUnlocks = (
     member.traits[traitId] = traitDef
 
     // Remove mutually exclusive traits
-    if (Array.isArray(traitDef.exclusiveWith)) {
-      for (let i = 0; i < traitDef.exclusiveWith.length; i++) {
-        const exclusiveTraitId = traitDef.exclusiveWith[i]
-        if (typeof exclusiveTraitId === 'string' && member.traits[exclusiveTraitId]) {
-          delete member.traits[exclusiveTraitId]
-        }
-      }
-    }
+    removeExclusiveTraits(member.traits, traitDef)
 
     // Add toast with a unique ID
     nextToasts.push({
