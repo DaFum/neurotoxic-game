@@ -117,8 +117,9 @@ export const SetlistTab = (props: SetlistTabProps) => {
   // Impact: Minor CPU/memory overhead reduction on component render.
   const selectedSongIds = useMemo(() => {
     const ids = new Set<unknown>()
-    for (let i = 0; i < setlist.length; i++) {
-      ids.add(getSetlistSongId(setlist[i]))
+    const list = setlist || []
+    for (let i = 0; i < list.length; i++) {
+      ids.add(getSetlistSongId(list[i]))
     }
     return ids
   }, [setlist])
