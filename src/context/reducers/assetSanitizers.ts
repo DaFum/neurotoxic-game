@@ -376,8 +376,9 @@ export const sanitizeCrowdfundCampaigns = (
   const unavailableKinds = new Set<LongTermAsset['kind']>()
   for (let i = 0; i < activeAssets.length; i++) {
     const asset = activeAssets[i]
-    if (!asset) continue
-    unavailableKinds.add(asset.kind)
+    if (asset?.kind) {
+      unavailableKinds.add(asset.kind)
+    }
   }
 
   const seenKinds = new Set<CrowdfundCampaign['assetSpec']['kind']>()
