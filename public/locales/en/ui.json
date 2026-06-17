@@ -1794,5 +1794,6 @@
   "quests.details.title": "Why does this count?",
   "quests.hint.nextLabel": "Next:",
   "shop.messages.voidAltar": "The abyss stares back. Luck +10.",
-  "shop.messages.shrineAltar": "The Rock Gods bless you. Luck +10."
+  "shop.messages.shrineAltar": "The Rock Gods bless you. Luck +10.",
+  "gig.controlsHint": "Game Controls"
 }
