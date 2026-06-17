@@ -324,7 +324,17 @@ export const sanitizeLiabilities = (
 ): Record<string, Liability> => {
   if (typeof raw !== 'object' || raw === null) return {}
   const items = Array.isArray(raw) ? raw : Object.values(raw)
-  const assetIds = new Set(assets.map(a => a.id))
+  // ⚡ BOLT OPTIMIZATION: Replaced map() inside Set constructor with explicit loop.
+  // Why: Avoids intermediate array allocation from .map().
+  // Impact: Reduces memory allocation and garbage collection overhead.
+  const assetIds = new Set<string>()
+  for (let i = 0; i < assets.length; i++) {
+    const asset = assets[i]
+    const assetId = asset?.id
+    if (typeof assetId === 'string') {
+      assetIds.add(assetId)
+    }
+  }
   const out: Record<string, Liability> = Object.create(null)
   for (const item of items) {
     if (!isLooseRecord(item)) continue
