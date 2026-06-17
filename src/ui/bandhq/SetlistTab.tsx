@@ -112,8 +112,15 @@ export const SetlistTab = (props: SetlistTabProps) => {
   const currentScene = useGameSelector(state => state.currentScene)
 
   const latestSetlistRef = useRef(setlist)
+  // ⚡ BOLT OPTIMIZATION: Replaced Array.map() with explicit for loop for Set initialization
+  // Why: Avoids unnecessary intermediate array allocations inside a hot useMemo hook.
+  // Impact: Minor CPU/memory overhead reduction on component render.
   const selectedSongIds = useMemo(() => {
-    return new Set(setlist.map((s: unknown) => getSetlistSongId(s)))
+    const ids = new Set<unknown>()
+    for (let i = 0; i < setlist.length; i++) {
+      ids.add(getSetlistSongId(setlist[i]))
+    }
+    return ids
   }, [setlist])
 
   const latestSelectedIdsRef = useRef(selectedSongIds)
@@ -169,9 +176,11 @@ export const SetlistTab = (props: SetlistTabProps) => {
         nextSetlist = [{ id: songId }]
       }
       latestSetlistRef.current = nextSetlist
-      latestSelectedIdsRef.current = new Set(
-        nextSetlist.map((s: unknown) => getSetlistSongId(s))
-      )
+      const nextIds = new Set<unknown>()
+      for (let i = 0; i < nextSetlist.length; i++) {
+        nextIds.add(getSetlistSongId(nextSetlist[i]))
+      }
+      latestSelectedIdsRef.current = nextIds
 
       setSetlist(nextSetlist)
     },
