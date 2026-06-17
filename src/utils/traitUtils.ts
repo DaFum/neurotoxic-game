@@ -1,7 +1,7 @@
 import { CHARACTERS } from '../data/characters'
 import { logger } from '../utils/logger'
-import { getSafeUUID } from '../utils/crypto'
 import type { GameState, BandMember, BandState, ToastPayload } from '../types'
+import { buildDeterministicToastId } from '../context/reducers/toastSanitizers'
 
 type TraitDef = {
   id: string
@@ -292,7 +292,7 @@ export const applyTraitUnlocks = (
 
     // Add toast with a unique ID
     nextToasts.push({
-      id: `trait-${getSafeUUID()}`,
+      id: buildDeterministicToastId('trait', nextToasts),
       messageKey: 'ui:shop.messages.traitUnlocked',
       options: { traitName: traitDef.name, memberId },
       message: `Unlocked Trait: ${traitDef.name} (${memberId})`,

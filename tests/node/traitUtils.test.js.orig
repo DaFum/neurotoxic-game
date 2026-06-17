@@ -59,7 +59,6 @@ describe('Trait Utils', () => {
     assert.equal(Object.keys(member.traits).length, 1)
     assert.equal(result.toasts.length, 0)
   })
-})
 
   test('applyTraitUnlocks removes mutually exclusive traits', () => {
     const state = {
@@ -126,3 +125,4 @@ describe('Trait Utils', () => {
     assert.ok(member.traits['grudge_holder'])
     assert.equal(member.traits['peacemaker'], undefined)
   })
+})
