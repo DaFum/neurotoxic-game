@@ -1794,5 +1794,6 @@
   "quests.details.title": "Warum zählt Fortschritt?",
   "quests.hint.nextLabel": "Nächster Schritt:",
   "shop.messages.voidAltar": "Der Abgrund starrt zurück. Glück +10.",
-  "shop.messages.shrineAltar": "Die Rockgötter segnen dich. Glück +10."
+  "shop.messages.shrineAltar": "Die Rockgötter segnen dich. Glück +10.",
+  "gig.controlsHint": "Spielsteuerung"
 }

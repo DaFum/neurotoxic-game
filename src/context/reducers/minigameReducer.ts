@@ -124,12 +124,6 @@ export const handleCompleteTravelMinigame = (
     state.band,
     assetModifiers
   )
-
-  if (finiteNumberOr(state.player.money, 0) < totalCost) {
-    logger.warn('GameState', 'Complete Travel: Insufficient Funds')
-    return state
-  }
-
   const { conditionLoss, fuelBonus, voidHazardHits } =
     calculateTravelMinigameResult(damageTaken, itemsCollected)
 
@@ -642,11 +636,6 @@ export const handleCompleteRoadieMinigame = (
     state.band,
     effectiveContrabandDelivered
   )
-
-  if (finiteNumberOr(state.player.money, 0) < finiteNumberOr(repairCost, 0)) {
-    logger.warn('GameState', 'Complete Roadie: Insufficient Funds for repair')
-    return state
-  }
 
   const nextHarmony = clampBandHarmony(
     finiteNumberOr(state.band.harmony, 1) - finiteNumberOr(stress, 0)
