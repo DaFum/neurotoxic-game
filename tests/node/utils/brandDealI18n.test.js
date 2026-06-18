@@ -7,8 +7,15 @@ import { getTranslatedBrandDealDisplay } from '../../../src/utils/brandDealI18n'
 describe('getTranslatedBrandDealDisplay', () => {
   before(() => {
     // Add fake items to the real Map for testing
-    BRAND_DEALS_BY_ID.set('test-deal-1', { id: 'test-deal-1', name: 'Catalog Name', description: 'Catalog Desc' })
-    BRAND_DEALS_BY_ID.set('test-deal-no-desc', { id: 'test-deal-no-desc', name: 'Catalog Name No Desc' })
+    BRAND_DEALS_BY_ID.set('test-deal-1', {
+      id: 'test-deal-1',
+      name: 'Catalog Name',
+      description: 'Catalog Desc'
+    })
+    BRAND_DEALS_BY_ID.set('test-deal-no-desc', {
+      id: 'test-deal-no-desc',
+      name: 'Catalog Name No Desc'
+    })
   })
 
   after(() => {
@@ -29,7 +36,10 @@ describe('getTranslatedBrandDealDisplay', () => {
     const t = mock.fn(() => '')
     // No id, no name
     assert.equal(getTranslatedBrandDealDisplay({}, t), null)
-    assert.equal(getTranslatedBrandDealDisplay({ description: 'only desc' }, t), null)
+    assert.equal(
+      getTranslatedBrandDealDisplay({ description: 'only desc' }, t),
+      null
+    )
   })
 
   it('handles an inline deal (no id or id not in catalog)', () => {
@@ -49,7 +59,11 @@ describe('getTranslatedBrandDealDisplay', () => {
 
   it('handles an inline deal with id but not in catalog', () => {
     const t = mock.fn()
-    const deal = { id: 'unknown-id', name: 'Inline Name', description: 'Inline Desc' }
+    const deal = {
+      id: 'unknown-id',
+      name: 'Inline Name',
+      description: 'Inline Desc'
+    }
 
     const result = getTranslatedBrandDealDisplay(deal, t, 2)
 
@@ -59,7 +73,11 @@ describe('getTranslatedBrandDealDisplay', () => {
       description: 'Inline Desc'
     })
 
-    assert.equal(t.mock.callCount(), 0, 'Should not translate if not in catalog')
+    assert.equal(
+      t.mock.callCount(),
+      0,
+      'Should not translate if not in catalog'
+    )
   })
 
   it('uses deal id as fallback name if name is missing but not in catalog', () => {
@@ -77,8 +95,10 @@ describe('getTranslatedBrandDealDisplay', () => {
 
   it('handles a catalog deal with translation', () => {
     const t = mock.fn((key, options) => {
-      if (key === 'economy:brandDeals.test-deal-1.name') return 'Translated Name'
-      if (key === 'economy:brandDeals.test-deal-1.description') return 'Translated Desc'
+      if (key === 'economy:brandDeals.test-deal-1.name')
+        return 'Translated Name'
+      if (key === 'economy:brandDeals.test-deal-1.description')
+        return 'Translated Desc'
       return options?.defaultValue ?? ''
     })
 
@@ -114,7 +134,11 @@ describe('getTranslatedBrandDealDisplay', () => {
   it('translates catalog deal but uses inline overrides as default values if provided', () => {
     const t = mock.fn((key, options) => options?.defaultValue)
 
-    const deal = { id: 'test-deal-1', name: 'Override Name', description: 'Override Desc' }
+    const deal = {
+      id: 'test-deal-1',
+      name: 'Override Name',
+      description: 'Override Desc'
+    }
 
     const result = getTranslatedBrandDealDisplay(deal, t, 1)
 
