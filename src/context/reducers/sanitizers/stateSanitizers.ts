@@ -1593,7 +1593,7 @@ export const sanitizeActiveQuests = (
         if (deadline !== undefined) sanitized.deadline = deadline
       }
       const progress = finiteOptionalNumber(quest.progress)
-      sanitized.progress = progress ?? 0
+      sanitized.progress = isFiniteNumber(progress) ? progress : 0
       const required = finiteOptionalNumber(quest.required)
       if (required !== undefined) {
         sanitized.required = required

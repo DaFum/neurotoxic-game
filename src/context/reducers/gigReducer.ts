@@ -104,7 +104,8 @@ export const handleSetGigModifiers = (
 
 const handleRecordBadShow = (state: GameState): GameState => {
   let nextState = { ...state }
-  const currentBadShows = (nextState.player.stats?.consecutiveBadShows ?? 0) + 1
+  const currentBadShows =
+    finiteNumberOr(nextState.player.stats?.consecutiveBadShows, 0) + 1
 
   nextState.player = {
     ...nextState.player,
@@ -246,8 +247,8 @@ export const handleSetLastGigStats = (
   // player.location is the `venues:<id>.name` display key, so derive the
   // canonical city key — checkVenueAccess reads the same key for the
   // regional booking ban.
-  const location = getRegionKeyForLocation(state.player?.location) ?? 'Unknown'
-  const venueId = state.currentGig?.id ?? ''
+  const location = getRegionKeyForLocation(state.player?.location) || 'Unknown'
+  const venueId = state.currentGig?.id || ''
   const capacity =
     typeof state.currentGig?.capacity === 'number' &&
     Number.isFinite(state.currentGig.capacity)
@@ -258,8 +259,8 @@ export const handleSetLastGigStats = (
     nextState,
     createGigCompletedQuestEvent({
       score,
-      capacity: capacity ?? 0,
-      venueId: state.currentGig?.id ?? '',
+      capacity: finiteNumberOr(capacity, 0),
+      venueId: state.currentGig?.id || '',
       region: location
     })
   )
@@ -267,7 +268,7 @@ export const handleSetLastGigStats = (
     nextState,
     createVenueGigCompletedQuestEvent({
       score,
-      venueId: state.currentGig?.id ?? '',
+      venueId: state.currentGig?.id || '',
       region: location
     })
   )
@@ -294,7 +295,7 @@ export const handleSetLastGigStats = (
         const gigVenueId = state.currentGig?.id || 'unknown_venue'
         nextState = handleAddVenueBlacklist(nextState, {
           venueId: gigVenueId,
-          toastId: payload.toastId ?? `${gigVenueId}-blacklisted`
+          toastId: payload.toastId || `${gigVenueId}-blacklisted`
         })
       }
     }
@@ -361,8 +362,8 @@ export const handleSetLastGigStats = (
       nextState,
       createGoodGigQuestEvent({
         score,
-        capacity: capacity ?? 0,
-        venueId: state.currentGig?.id ?? '',
+        capacity: finiteNumberOr(capacity, 0),
+        venueId: state.currentGig?.id || '',
         region: location
       })
     )
@@ -370,8 +371,8 @@ export const handleSetLastGigStats = (
       nextState,
       createVenueGoodGigQuestEvent({
         score,
-        capacity: capacity ?? undefined,
-        venueId: state.currentGig?.id ?? '',
+        capacity: capacity || undefined,
+        venueId: state.currentGig?.id || '',
         region: location
       })
     )
@@ -381,7 +382,7 @@ export const handleSetLastGigStats = (
         createSmallVenueGoodQuestEvent({
           score,
           capacity,
-          venueId: state.currentGig?.id ?? '',
+          venueId: state.currentGig?.id || '',
           region: location
         })
       )

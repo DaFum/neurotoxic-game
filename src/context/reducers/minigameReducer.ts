@@ -157,7 +157,7 @@ export const handleCompleteTravelMinigame = (
   }
 
   if (voidHazardHits && voidHazardHits > 0 && nextMembers.length > 0) {
-    const baseRng = safeRngValue ?? 0
+    const baseRng = finiteNumberOr(safeRngValue, 0)
     const memberIndex = Math.floor(baseRng * nextMembers.length)
     const hitMember = nextMembers[memberIndex]
     if (hitMember) {
@@ -259,7 +259,7 @@ export const handleCompleteTravelMinigame = (
               | undefined)
           : undefined
       const preStacks = preStashItem
-        ? ((preStashItem.stacks as number | null | undefined) ?? 0)
+        ? finiteNumberOr(preStashItem.stacks, 0)
         : 0
 
       newState = addContrabandHelper(newState, { contrabandId, instanceId })
@@ -269,9 +269,7 @@ export const handleCompleteTravelMinigame = (
         newState.band.stash && Object.hasOwn(newState.band.stash, contrabandId)
           ? (newState.band.stash[contrabandId] as Record<string, unknown>)
           : undefined
-      const postStacks = postItem
-        ? ((postItem.stacks as number | null | undefined) ?? 0)
-        : 0
+      const postStacks = postItem ? finiteNumberOr(postItem.stacks, 0) : 0
       const postStashLength = Object.keys(newState.band?.stash || {}).length
 
       const wasAdded =
@@ -325,7 +323,7 @@ export const handleCompleteTravelMinigame = (
   newState = QuestEvents.emit(
     newState,
     createTravelCompletedQuestEvent({
-      region: getRegionKeyForLocation(nextLocation) ?? nextLocation
+      region: getRegionKeyForLocation(nextLocation) || nextLocation
     })
   )
 
@@ -713,7 +711,7 @@ export const handleCompleteRoadieMinigame = (
     nextState = QuestEvents.emit(
       nextState,
       createItemDeliveredQuestEvent({
-        itemId: safeItemId ?? 'contraband',
+        itemId: safeItemId || 'contraband',
         amount: effectiveContrabandDelivered
       })
     )
