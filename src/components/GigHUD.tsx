@@ -11,27 +11,42 @@ import { ToxicHazardTicker } from './hud/ToxicHazardTicker'
 import { OverloadWarning } from './hud/OverloadWarning'
 
 interface GigHUDStats {
+  /** The player's current accumulated score for the active gig. */
   score: number
+  /** The current consecutive sequence of correctly hit notes. */
   combo: number
+  /** The remaining crowd energy or health pool of the player. */
   health: number
+  /** The current toxic overload accumulation percentage. */
   overload: number
+  /** Indicates whether the gig has entered a terminal failure state. */
   isGameOver: boolean
+  /** The hit accuracy percentage across all resolved notes in the current gig. */
   accuracy?: number
+  /** Indicates whether the environmental toxic modifier is currently active. */
   isToxicMode?: boolean
+  /** The decibel corruption level accumulated during gameplay. */
   corruptionLevel?: number
+  /** Indicates whether a corruption burst sequence is actively executing. */
   isCorruptionBurstActive?: boolean
 }
 
 interface GigHUDProps {
+  /** The consolidated gameplay statistics to visualize in the overlay. */
   stats: GigHUDStats
+  /** Callback triggered when a rhythm lane receives an interaction down/up event. */
   onLaneInput?: (laneIndex: number, isDown: boolean, now?: number) => void
+  /** Mutable reference containing non-reactive projectile entities for the heckler overlay. */
   gameStateRef: { current: { projectiles?: unknown[] } | null }
+  /** Callback triggered when the player attempts to toggle the active pause state. */
   onTogglePause?: () => void
 }
 
 /**
  * Composes the live gig overlay for input lanes, stats, hazards, and pause/game-over controls.
- * @param props - Current gig stats, input callbacks, projectile state ref, and pause callback.
+ *
+ * @param props - Component configuration defining stats and interactions.
+ * @returns The composed HUD overlay element for active gameplay.
  */
 export const GigHUD = memo(function GigHUD({
   stats,

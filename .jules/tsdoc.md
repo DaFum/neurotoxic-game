@@ -15,3 +15,4 @@
 | 2026-06-15 | src/hooks/travel/useVanMaintenance.ts | useVanMaintenance |
 | 2026-06-16 | src/utils/travelUtils.ts | TravelCostsResult, calculateTravelCostsAndImpact |
 | 2026-06-16 | src/components/hud/LaneInputArea.tsx | LaneInputAreaProps, LaneInputZoneProps, LaneInputZone, LaneInputArea |
+| 2026-06-18 | src/components/GigHUD.tsx | GigHUDStats, GigHUDProps, GigHUD |
