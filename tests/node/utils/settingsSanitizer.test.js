@@ -4,10 +4,10 @@ import { sanitizeSettingsPayload } from '../../../src/utils/settingsSanitizer.ts
 
 describe('sanitizeSettingsPayload', () => {
   it('returns empty object for null, undefined, and non-object inputs', () => {
-    assert.deepEqual(sanitizeSettingsPayload(null as any), {})
-    assert.deepEqual(sanitizeSettingsPayload(undefined as any), {})
-    assert.deepEqual(sanitizeSettingsPayload('not-an-object' as any), {})
-    assert.deepEqual(sanitizeSettingsPayload(123 as any), {})
+    assert.deepEqual(sanitizeSettingsPayload(null), {})
+    assert.deepEqual(sanitizeSettingsPayload(undefined), {})
+    assert.deepEqual(sanitizeSettingsPayload('not-an-object'), {})
+    assert.deepEqual(sanitizeSettingsPayload(123), {})
   })
 
   it('keeps valid boolean crtEnabled and drops invalid types', () => {
@@ -17,9 +17,9 @@ describe('sanitizeSettingsPayload', () => {
     assert.deepEqual(sanitizeSettingsPayload({ crtEnabled: false }), {
       crtEnabled: false
     })
-    assert.deepEqual(sanitizeSettingsPayload({ crtEnabled: 'true' as any }), {})
-    assert.deepEqual(sanitizeSettingsPayload({ crtEnabled: 1 as any }), {})
-    assert.deepEqual(sanitizeSettingsPayload({ crtEnabled: null as any }), {})
+    assert.deepEqual(sanitizeSettingsPayload({ crtEnabled: 'true' }), {})
+    assert.deepEqual(sanitizeSettingsPayload({ crtEnabled: 1 }), {})
+    assert.deepEqual(sanitizeSettingsPayload({ crtEnabled: null }), {})
   })
 
   it('keeps valid boolean tutorialSeen and drops invalid types', () => {
@@ -29,12 +29,9 @@ describe('sanitizeSettingsPayload', () => {
     assert.deepEqual(sanitizeSettingsPayload({ tutorialSeen: false }), {
       tutorialSeen: false
     })
-    assert.deepEqual(
-      sanitizeSettingsPayload({ tutorialSeen: 'true' as any }),
-      {}
-    )
-    assert.deepEqual(sanitizeSettingsPayload({ tutorialSeen: 1 as any }), {})
-    assert.deepEqual(sanitizeSettingsPayload({ tutorialSeen: null as any }), {})
+    assert.deepEqual(sanitizeSettingsPayload({ tutorialSeen: 'true' }), {})
+    assert.deepEqual(sanitizeSettingsPayload({ tutorialSeen: 1 }), {})
+    assert.deepEqual(sanitizeSettingsPayload({ tutorialSeen: null }), {})
   })
 
   it('keeps valid logLevel and drops invalid types or out of bounds values', () => {
@@ -44,8 +41,8 @@ describe('sanitizeSettingsPayload', () => {
     assert.deepEqual(sanitizeSettingsPayload({ logLevel: 4 }), { logLevel: 4 })
 
     // Invalid types
-    assert.deepEqual(sanitizeSettingsPayload({ logLevel: '1' as any }), {})
-    assert.deepEqual(sanitizeSettingsPayload({ logLevel: null as any }), {})
+    assert.deepEqual(sanitizeSettingsPayload({ logLevel: '1' }), {})
+    assert.deepEqual(sanitizeSettingsPayload({ logLevel: null }), {})
 
     // Out of bounds
     assert.deepEqual(sanitizeSettingsPayload({ logLevel: -1 }), {})
