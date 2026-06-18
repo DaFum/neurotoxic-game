@@ -15,7 +15,7 @@ import {
   clampControversyLevel,
   finiteNumberOr
 } from '../../utils/gameState'
-import { getTraitById, normalizeTraitMap } from '../../utils/traitUtils'
+import { getTraitById, normalizeTraitMap, hasTrait, removeExclusiveTraits } from '../../utils/traitUtils'
 import {
   sanitizeSuccessToast,
   buildDeterministicToastId
@@ -39,7 +39,7 @@ const executeClinicAction = (
   memberUpdater: (member: BandMember) => Record<string, unknown>
 ): GameState => {
   const { memberId, type, successToast, getSuccessToast } = payload
-  const currentVisits = state.player?.clinicVisits ?? 0
+  const currentVisits = finiteNumberOr(state.player?.clinicVisits, 0)
   // Calculate costs directly from state
   const cost =
     type === 'heal'
@@ -106,7 +106,7 @@ const executeClinicAction = (
       money: clampPlayerMoney(playerMoney - cost),
       fame: nextFame,
       fameLevel: calculateFameLevel(nextFame),
-      clinicVisits: state.player.clinicVisits + 1
+      clinicVisits: currentVisits + 1
     },
     band: {
       ...state.band,
@@ -371,11 +371,7 @@ export const handleClinicEnhance = (
     }
     if (
       targetMember &&
-      targetMember.traits &&
-      Object.hasOwn(
-        targetMember.traits as Record<string, unknown>,
-        resolvedTrait.id
-      )
+      hasTrait(targetMember, resolvedTrait.id)
     ) {
       logger.debug(
         'ClinicReducer',
@@ -388,6 +384,9 @@ export const handleClinicEnhance = (
   return executeClinicAction(state, payload, member => {
     const updatedTraits = normalizeTraitMap(member.traits)
     updatedTraits[resolvedTrait.id] = resolvedTrait
+
+    // Remove mutually exclusive traits
+    removeExclusiveTraits(updatedTraits, resolvedTrait)
 
     return {
       ...member,

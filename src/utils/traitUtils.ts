@@ -1,7 +1,7 @@
 import { CHARACTERS } from '../data/characters'
 import { logger } from '../utils/logger'
-import { getSafeUUID } from '../utils/crypto'
 import type { GameState, BandMember, BandState, ToastPayload } from '../types'
+import { buildDeterministicToastId } from '../context/reducers/toastSanitizers'
 
 type TraitDef = {
   id: string
@@ -9,6 +9,7 @@ type TraitDef = {
   desc?: string
   effect?: string
   unlockHint?: string
+  exclusiveWith?: string[]
   [key: string]: unknown
 }
 
@@ -153,6 +154,26 @@ export const normalizeTraitMap = (
 }
 
 /**
+ * Removes mutually exclusive traits from a traits map based on a newly added trait definition.
+ *
+ * @param traitsMap - The object containing the current traits.
+ * @param traitDef - The trait definition of the newly added trait.
+ */
+export const removeExclusiveTraits = (
+  traitsMap: Record<string, TraitDef>,
+  traitDef: TraitDef
+): void => {
+  if (Array.isArray(traitDef.exclusiveWith)) {
+    for (let i = 0; i < traitDef.exclusiveWith.length; i++) {
+      const exclusiveTraitId = traitDef.exclusiveWith[i]
+      if (typeof exclusiveTraitId === 'string' && Object.hasOwn(traitsMap, exclusiveTraitId)) {
+        delete traitsMap[exclusiveTraitId]
+      }
+    }
+  }
+}
+
+/**
  * Applies unlocked traits to the band state immutably and generates toasts.
  * Handles multiple unlocks per member and avoids duplicates.
  *
@@ -224,9 +245,8 @@ export const applyTraitUnlocks = (
       typeof member.name === 'string' && member.name
         ? (member.name.toUpperCase() as keyof typeof CHARACTERS)
         : null
-    const traitDef = charKey
-      ? (TRAIT_DEFS_BY_CHAR[charKey as string] ?? {})[u.traitId]
-      : undefined
+    let traitDef = charKey ? (TRAIT_DEFS_BY_CHAR[charKey as string] ?? {})[u.traitId] : undefined
+    if (!traitDef) traitDef = TRAIT_DEFS_BY_ID.get(u.traitId)
 
     if (!traitDef) continue
 
@@ -267,9 +287,12 @@ export const applyTraitUnlocks = (
     // Apply trait
     member.traits[traitId] = traitDef
 
+    // Remove mutually exclusive traits
+    removeExclusiveTraits(member.traits, traitDef)
+
     // Add toast with a unique ID
     nextToasts.push({
-      id: `trait-${getSafeUUID()}`,
+      id: buildDeterministicToastId('trait', nextToasts),
       messageKey: 'ui:shop.messages.traitUnlocked',
       options: { traitName: traitDef.name, memberId },
       message: `Unlocked Trait: ${traitDef.name} (${memberId})`,

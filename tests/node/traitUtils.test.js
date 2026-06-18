@@ -59,4 +59,71 @@ describe('Trait Utils', () => {
     assert.equal(Object.keys(member.traits).length, 1)
     assert.equal(result.toasts.length, 0)
   })
+
+
+  test('applyTraitUnlocks removes mutually exclusive traits', () => {
+    const state = {
+      band: {
+        members: [
+          {
+            id: 'lars',
+            name: 'Lars',
+            traits: { grudge_holder: { id: 'grudge_holder' } }
+          }
+        ]
+      },
+      toasts: []
+    }
+    const unlocks = [{ memberId: 'lars', traitId: 'peacemaker' }]
+
+    const result = applyTraitUnlocks(state, unlocks)
+
+    const member = result.band.members[0]
+    assert.ok(member.traits['peacemaker'])
+    assert.equal(member.traits['grudge_holder'], undefined)
+  })
+
+  test('applyTraitUnlocks removes mutually exclusive traits reverse', () => {
+    const state = {
+      band: {
+        members: [
+          {
+            id: 'lars',
+            name: 'Lars',
+            traits: { peacemaker: { id: 'peacemaker' } }
+          }
+        ]
+      },
+      toasts: []
+    }
+    const unlocks = [{ memberId: 'lars', traitId: 'grudge_holder' }]
+
+    const result = applyTraitUnlocks(state, unlocks)
+
+    const member = result.band.members[0]
+    assert.ok(member.traits['grudge_holder'])
+    assert.equal(member.traits['peacemaker'], undefined)
+  })
+
+  test('applyTraitUnlocks correctly finds trait definitions in applyTraitUnlocks when no traitDef is explicitly provided', () => {
+    const state = {
+      band: {
+        members: [
+          {
+            id: 'matze',
+            name: 'Matze',
+            traits: { peacemaker: { id: 'peacemaker' } }
+          }
+        ]
+      },
+      toasts: []
+    }
+    const unlocks = [{ memberId: 'matze', traitId: 'grudge_holder' }]
+
+    const result = applyTraitUnlocks(state, unlocks)
+
+    const member = result.band.members[0]
+    assert.ok(member.traits['grudge_holder'])
+    assert.equal(member.traits['peacemaker'], undefined)
+  })
 })

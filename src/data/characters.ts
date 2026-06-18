@@ -46,7 +46,8 @@ export const CHARACTERS = {
         name: 'traits:grudgeHolder.name',
         desc: 'traits:grudgeHolder.desc',
         effect: 'rel_neg_amp',
-        unlockHint: 'traits:grudgeHolder.unlockHint'
+        unlockHint: 'traits:grudgeHolder.unlockHint',
+        exclusiveWith: ['peacemaker']
       }
     ],
     equipment: {
@@ -138,7 +139,8 @@ export const CHARACTERS = {
         name: 'traits:peacemaker.name',
         desc: 'traits:peacemaker.desc',
         effect: 'rel_pos_amp',
-        unlockHint: 'traits:peacemaker.unlockHint'
+        unlockHint: 'traits:peacemaker.unlockHint',
+        exclusiveWith: ['grudge_holder']
       }
     ],
     equipment: { bass: 'Ibanez SR505', amp: 'Ampeg SVT-3 Pro' }

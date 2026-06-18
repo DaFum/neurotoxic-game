@@ -8,7 +8,8 @@ import { GAME_PHASES } from '../../src/context/gameConstants'
 import {
   bandHasTrait,
   hasTrait,
-  normalizeTraitMap
+  normalizeTraitMap,
+  removeExclusiveTraits
 } from '../../src/utils/traitUtils'
 
 // Mock applyTraitUnlocks with improved matching logic
@@ -56,7 +57,8 @@ mock.module(new URL('../../src/utils/traitUtils.ts', import.meta.url).href, {
     bandHasTrait,
     getTraitById: mock.fn(traitId => ({ id: traitId })),
     hasTrait,
-    normalizeTraitMap
+    normalizeTraitMap,
+    removeExclusiveTraits
   }
 })
 
