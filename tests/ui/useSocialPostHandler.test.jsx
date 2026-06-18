@@ -21,7 +21,7 @@ vi.mock('../../src/utils/crypto', () => ({
   getSafeUUID: vi.fn(() => 'test-uuid')
 }))
 
-import { useSocialPostHandler } from '../../src/hooks/postGig/handlers/useSocialPostHandler'
+import { useSocialPostHandler, applySocialPostResult } from '../../src/hooks/postGig/handlers/useSocialPostHandler'
 import { calculatePostGigStateUpdates } from '../../src/utils/postGigUtils'
 import { generateBrandOffers } from '../../src/utils/brandDealLogic'
 
@@ -190,5 +190,162 @@ describe('useSocialPostHandler (characterization)', () => {
 
     expect(props.isProcessingActionRef.current).toBe(false)
     expect(props.setIsProcessingAction).toHaveBeenLastCalledWith(false)
+  })
+})
+
+
+describe('applySocialPostResult', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    generateBrandOffers.mockReturnValue([])
+  })
+
+  function makeApplyProps(overrides = {}) {
+    const dispatchers = overrides.dispatchers ?? makeDispatchers()
+    const updates = makeUpdates(overrides.updatesOverrides ?? {})
+    return {
+      option: { id: 'post_1' },
+      updates,
+      player: { money: 1000, fame: 10, day: 3, location: 'berlin', stats: { failedStageDives: 1 } },
+      band: { harmony: 80, members: [], inventory: {} },
+      social: { followers: 500, brandReputation: {} },
+      t,
+      dispatchers,
+      ...overrides
+    }
+  }
+
+  it('fires core dispatchers and routes to COMPLETE when there are no brand offers and hasBandUpdates is true', () => {
+    const props = makeApplyProps()
+    applySocialPostResult(props)
+
+    const d = props.dispatchers
+    expect(d.setPostResult).toHaveBeenCalledWith(props.updates.finalResult)
+    expect(d.updateBand).toHaveBeenCalledWith(props.updates.newBand)
+    expect(d.updatePlayer).toHaveBeenCalledWith({ money: 1100 })
+    expect(d.updateSocial).toHaveBeenCalledWith(props.updates.updatedSocial)
+    expect(d.setBrandOffers).toHaveBeenCalledWith([])
+    expect(d.setPhase).toHaveBeenCalledWith('COMPLETE')
+  })
+
+  it('does not fire updateBand when hasBandUpdates is false', () => {
+    const props = makeApplyProps({
+      updatesOverrides: { hasBandUpdates: false }
+    })
+    applySocialPostResult(props)
+
+    const d = props.dispatchers
+    expect(d.updateBand).not.toHaveBeenCalled()
+  })
+
+  it('shows success toast and fires quest event for positive harmony delta', () => {
+    const props = makeApplyProps({
+      updatesOverrides: { appliedHarmonyDelta: 5 }
+    })
+    applySocialPostResult(props)
+
+    const d = props.dispatchers
+    expect(d.addToast).toHaveBeenCalledWith(expect.stringContaining('+5'), 'success')
+    expect(d.applyQuestEvent).toHaveBeenCalledWith({ type: 'harmony.changed' })
+  })
+
+  it('shows error toast for negative harmony delta and no quest event', () => {
+    const props = makeApplyProps({
+      updatesOverrides: { appliedHarmonyDelta: -5 }
+    })
+    applySocialPostResult(props)
+
+    const d = props.dispatchers
+    expect(d.addToast).toHaveBeenCalledWith(expect.stringContaining('-5'), 'error')
+    // it will call social.post, but not harmony.changed
+    expect(d.applyQuestEvent).not.toHaveBeenCalledWith({ type: 'harmony.changed' })
+  })
+
+  it('shows success toast and updates player money for positive money delta', () => {
+    const props = makeApplyProps({
+      updatesOverrides: { appliedMoneyDelta: 100, nextMoney: 1100 }
+    })
+    applySocialPostResult(props)
+
+    const d = props.dispatchers
+    expect(d.updatePlayer).toHaveBeenCalledWith({ money: 1100 })
+    expect(d.addToast).toHaveBeenCalledWith(expect.stringContaining('100'), 'success')
+  })
+
+  it('shows error toast and updates player money for negative money delta', () => {
+    const props = makeApplyProps({
+      updatesOverrides: { appliedMoneyDelta: -50, nextMoney: 950 }
+    })
+    applySocialPostResult(props)
+
+    const d = props.dispatchers
+    expect(d.updatePlayer).toHaveBeenCalledWith({ money: 950 })
+    expect(d.addToast).toHaveBeenCalledWith(expect.stringContaining('50'), 'error')
+  })
+
+  it('updates player money when money delta is zero but finalResult.moneyChange is truthy', () => {
+    const props = makeApplyProps({
+      updatesOverrides: { appliedMoneyDelta: 0, nextMoney: 1000, finalResult: { moneyChange: true } }
+    })
+    applySocialPostResult(props)
+
+    const d = props.dispatchers
+    expect(d.updatePlayer).toHaveBeenCalledWith({ money: 1000 })
+    expect(d.addToast).not.toHaveBeenCalledWith(expect.stringContaining('Money'), expect.anything())
+  })
+
+  it('unlocks a trait if finalResult carries one', () => {
+    const props = makeApplyProps({
+      updatesOverrides: { finalResult: { unlockTrait: { memberId: 'm1', traitId: 'shredder' } } }
+    })
+    applySocialPostResult(props)
+
+    const d = props.dispatchers
+    expect(d.unlockTrait).toHaveBeenCalledWith('m1', 'shredder')
+    expect(d.addToast).toHaveBeenCalledWith(expect.stringContaining('Trait Unlocked'), 'success')
+  })
+
+  it('updates player stats for failed stage dive', () => {
+    const props = makeApplyProps({
+      updatesOverrides: { finalResult: { failedStageDive: true } }
+    })
+    applySocialPostResult(props)
+
+    const d = props.dispatchers
+    expect(d.updatePlayer).toHaveBeenCalledWith(expect.objectContaining({
+      stats: expect.objectContaining({ failedStageDives: 2 })
+    }))
+  })
+
+  it('updates player stats for failed stage dive when player.stats is undefined', () => {
+    const props = makeApplyProps({
+      player: { money: 1000, fame: 10, day: 3, location: 'berlin' },
+      updatesOverrides: { finalResult: { failedStageDive: true } }
+    })
+    applySocialPostResult(props)
+
+    const d = props.dispatchers
+    expect(d.updatePlayer).toHaveBeenCalledWith(expect.objectContaining({
+      stats: { failedStageDives: 1 }
+    }))
+  })
+
+
+  it('routes to DEALS phase when brand offers are generated', () => {
+    generateBrandOffers.mockReturnValue([{ id: 'deal_1' }])
+    const props = makeApplyProps()
+    applySocialPostResult(props)
+
+    const d = props.dispatchers
+    expect(generateBrandOffers).toHaveBeenCalledWith(
+      expect.objectContaining({
+        player: expect.objectContaining({ money: 1100 }),
+        band: expect.objectContaining({ harmony: 85 }),
+        social: expect.objectContaining({ followers: 510 })
+      }),
+      expect.any(Function)
+    )
+    expect(d.setBrandOffers).toHaveBeenCalledWith([{ id: 'deal_1' }])
+    expect(d.setPhase).toHaveBeenCalledWith('DEALS')
   })
 })
