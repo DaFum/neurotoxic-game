@@ -20,8 +20,14 @@ vi.mock('../../src/utils/crypto', () => ({
   getSafeRandom: vi.fn(() => 0.5),
   getSafeUUID: vi.fn(() => 'test-uuid')
 }))
+vi.mock('../../src/utils/logger', () => ({
+  logger: {
+    error: vi.fn()
+  }
+}))
 
 import { useSocialPostHandler, applySocialPostResult } from '../../src/hooks/postGig/handlers/useSocialPostHandler'
+import { logger } from '../../src/utils/logger'
 import { calculatePostGigStateUpdates } from '../../src/utils/postGigUtils'
 import { generateBrandOffers } from '../../src/utils/brandDealLogic'
 
@@ -137,8 +143,9 @@ describe('useSocialPostHandler (characterization)', () => {
   })
 
   it('shows an error and bails when the resolver throws', () => {
+    const error = new Error('boom')
     calculatePostGigStateUpdates.mockImplementation(() => {
-      throw new Error('boom')
+      throw error
     })
     const props = makeProps()
     const { result } = renderHook(() => useSocialPostHandler(props))
@@ -148,6 +155,11 @@ describe('useSocialPostHandler (characterization)', () => {
     expect(props.dispatchers.addToast).toHaveBeenCalledWith(
       expect.any(String),
       'error'
+    )
+    expect(logger.error).toHaveBeenCalledWith(
+      'PostGig',
+      'Failed to resolve selected post',
+      error
     )
     expect(props.dispatchers.setPostResult).not.toHaveBeenCalled()
     // guard still released
@@ -188,6 +200,30 @@ describe('useSocialPostHandler (characterization)', () => {
 
     act(() => result.current({ id: 'post_1' }))
 
+    expect(props.isProcessingActionRef.current).toBe(false)
+    expect(props.setIsProcessingAction).toHaveBeenLastCalledWith(false)
+  })
+
+  it('logs an error and releases guard when applySocialPostResult throws', () => {
+    calculatePostGigStateUpdates.mockReturnValue(makeUpdates())
+    const props = makeProps()
+    const error = new Error('apply failure')
+    props.dispatchers.setPostResult.mockImplementation(() => {
+      throw error
+    })
+    const { result } = renderHook(() => useSocialPostHandler(props))
+
+    act(() => result.current({ id: 'post_1' }))
+
+    expect(props.dispatchers.addToast).toHaveBeenCalledWith(
+      expect.any(String),
+      'error'
+    )
+    expect(logger.error).toHaveBeenCalledWith(
+      'PostGig',
+      'Failed to apply selected post result',
+      error
+    )
     expect(props.isProcessingActionRef.current).toBe(false)
     expect(props.setIsProcessingAction).toHaveBeenLastCalledWith(false)
   })
