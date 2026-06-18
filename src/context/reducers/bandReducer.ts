@@ -350,7 +350,9 @@ export const addContrabandHelper = (
   const newInstance = {
     ...item,
     instanceId,
-    remainingDuration: (item.duration as number | undefined) ?? null,
+    remainingDuration: isFiniteNumber(item.duration)
+      ? (item.duration as number)
+      : null,
     applied: !!item.applyOnAdd,
     stacks: item.stackable ? 1 : null
   }
@@ -658,7 +660,7 @@ export const handleToggleNeuroDecimator = (
     return state
   }
 
-  const currentHarmony = state.band.harmony ?? 1
+  const currentHarmony = finiteNumberOr(state.band.harmony, 1)
   const nextHarmony = isActive
     ? clampBandHarmony(currentHarmony - 5)
     : currentHarmony

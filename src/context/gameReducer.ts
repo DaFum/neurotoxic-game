@@ -231,7 +231,7 @@ const applyZeroConditionForeclosures = (state: GameState): GameState => {
   if (foreclosedKinds.length === 0) return nextState
 
   const pendingForeclosureNotices = [
-    ...(nextState.pendingForeclosureNotices ?? [])
+    ...(nextState.pendingForeclosureNotices || [])
   ]
   for (const kind of foreclosedKinds) {
     if (!pendingForeclosureNotices.includes(kind)) {
