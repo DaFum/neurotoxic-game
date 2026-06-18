@@ -1,8 +1,8 @@
 import { describe, it, mock, before, after } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { BRAND_DEALS_BY_ID } from '../../../src/data/brandDeals.ts'
-import { getTranslatedBrandDealDisplay } from '../../../src/utils/brandDealI18n.ts'
+import { BRAND_DEALS_BY_ID } from '../../../src/data/brandDeals'
+import { getTranslatedBrandDealDisplay } from '../../../src/utils/brandDealI18n'
 
 describe('getTranslatedBrandDealDisplay', () => {
   before(() => {
@@ -18,7 +18,7 @@ describe('getTranslatedBrandDealDisplay', () => {
   })
 
   it('returns null for non-object or null inputs', () => {
-    const t = mock.fn()
+    const t = mock.fn(() => '')
     assert.equal(getTranslatedBrandDealDisplay(null, t), null)
     assert.equal(getTranslatedBrandDealDisplay(undefined, t), null)
     assert.equal(getTranslatedBrandDealDisplay(123, t), null)
@@ -26,7 +26,7 @@ describe('getTranslatedBrandDealDisplay', () => {
   })
 
   it('returns null if no fallback name can be derived', () => {
-    const t = mock.fn()
+    const t = mock.fn(() => '')
     // No id, no name
     assert.equal(getTranslatedBrandDealDisplay({}, t), null)
     assert.equal(getTranslatedBrandDealDisplay({ description: 'only desc' }, t), null)
@@ -79,7 +79,7 @@ describe('getTranslatedBrandDealDisplay', () => {
     const t = mock.fn((key, options) => {
       if (key === 'economy:brandDeals.test-deal-1.name') return 'Translated Name'
       if (key === 'economy:brandDeals.test-deal-1.description') return 'Translated Desc'
-      return options.defaultValue
+      return options?.defaultValue ?? ''
     })
 
     const deal = { id: 'test-deal-1' }
