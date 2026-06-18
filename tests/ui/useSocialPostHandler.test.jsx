@@ -317,12 +317,34 @@ describe('applySocialPostResult', () => {
     }))
   })
 
+  it('updates player stats for failed stage dive when player.stats is undefined', () => {
+    const props = makeApplyProps({
+      player: { money: 1000, fame: 10, day: 3, location: 'berlin' },
+      updatesOverrides: { finalResult: { failedStageDive: true } }
+    })
+    applySocialPostResult(props)
+
+    const d = props.dispatchers
+    expect(d.updatePlayer).toHaveBeenCalledWith(expect.objectContaining({
+      stats: { failedStageDives: 1 }
+    }))
+  })
+
+
   it('routes to DEALS phase when brand offers are generated', () => {
     generateBrandOffers.mockReturnValue([{ id: 'deal_1' }])
     const props = makeApplyProps()
     applySocialPostResult(props)
 
     const d = props.dispatchers
+    expect(generateBrandOffers).toHaveBeenCalledWith(
+      expect.objectContaining({
+        player: expect.objectContaining({ money: 1100 }),
+        band: expect.objectContaining({ harmony: 85 }),
+        social: expect.objectContaining({ followers: 510 })
+      }),
+      expect.any(Function)
+    )
     expect(d.setBrandOffers).toHaveBeenCalledWith([{ id: 'deal_1' }])
     expect(d.setPhase).toHaveBeenCalledWith('DEALS')
   })
