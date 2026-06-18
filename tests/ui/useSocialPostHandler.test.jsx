@@ -22,8 +22,11 @@ vi.mock('../../src/utils/crypto', () => ({
 }))
 
 import { useSocialPostHandler, applySocialPostResult } from '../../src/hooks/postGig/handlers/useSocialPostHandler'
+import { logger } from '../../src/utils/logger'
 import { calculatePostGigStateUpdates } from '../../src/utils/postGigUtils'
 import { generateBrandOffers } from '../../src/utils/brandDealLogic'
+
+vi.spyOn(logger, 'error').mockImplementation(() => {})
 
 const t = (key, opts) => opts?.defaultValue ?? key
 
@@ -137,8 +140,9 @@ describe('useSocialPostHandler (characterization)', () => {
   })
 
   it('shows an error and bails when the resolver throws', () => {
+    const error = new Error('boom')
     calculatePostGigStateUpdates.mockImplementation(() => {
-      throw new Error('boom')
+      throw error
     })
     const props = makeProps()
     const { result } = renderHook(() => useSocialPostHandler(props))
@@ -148,6 +152,11 @@ describe('useSocialPostHandler (characterization)', () => {
     expect(props.dispatchers.addToast).toHaveBeenCalledWith(
       expect.any(String),
       'error'
+    )
+    expect(logger.error).toHaveBeenCalledWith(
+      'PostGig',
+      'Failed to resolve selected post',
+      error
     )
     expect(props.dispatchers.setPostResult).not.toHaveBeenCalled()
     // guard still released
@@ -191,6 +200,7 @@ describe('useSocialPostHandler (characterization)', () => {
     expect(props.isProcessingActionRef.current).toBe(false)
     expect(props.setIsProcessingAction).toHaveBeenLastCalledWith(false)
   })
+
 })
 
 
