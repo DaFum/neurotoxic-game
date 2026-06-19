@@ -6,7 +6,9 @@ import {
   useReducer,
   useCallback,
   useEffect,
-  useRef
+  useLayoutEffect,
+  useRef,
+  useSyncExternalStore
 } from 'react'
 import { useTranslation } from 'react-i18next'
 import { logger, isValidLogLevel } from '../utils/logger'
@@ -35,15 +37,20 @@ import {
 } from './useGameDispatchActions'
 export type { GameDispatchActions }
 
+export type GameStore = {
+  getState: () => GameState
+  subscribe: (listener: () => void) => () => void
+}
+
 type HotGameStateContextStore = typeof globalThis & {
-  __NEUROTOXIC_GAME_STATE_CONTEXT__?: Context<GameState | null>
+  __NEUROTOXIC_GAME_STATE_CONTEXT__?: Context<GameStore | null>
   __NEUROTOXIC_GAME_DISPATCH_CONTEXT__?: Context<GameDispatchActions | null>
 }
 
-const getStableGameStateContext = (): Context<GameState | null> => {
+const getStableGameStateContext = (): Context<GameStore | null> => {
   const store = globalThis as HotGameStateContextStore
   if (!store.__NEUROTOXIC_GAME_STATE_CONTEXT__) {
-    const GameStateContext = createContext<GameState | null>(null)
+    const GameStateContext = createContext<GameStore | null>(null)
     store.__NEUROTOXIC_GAME_STATE_CONTEXT__ = GameStateContext
   }
   return store.__NEUROTOXIC_GAME_STATE_CONTEXT__
@@ -132,6 +139,7 @@ const initGameState = (): GameState => {
  * @returns React context providers wrapping the supplied children.
  */
 export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
+  const listenersRef = useRef<Set<() => void>>(new Set())
   const { t } = useTranslation()
   const tRef = useRef(t)
   useEffect(() => {
@@ -180,6 +188,24 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   // This allows actions to be stable (memoized once) while still accessing current state.
   const stateRef = useRef(state)
   stateRef.current = state
+
+  const storeRef = useRef<GameStore | null>(null)
+  if (!storeRef.current) {
+    storeRef.current = {
+      getState: () => stateRef.current,
+      subscribe: (listener: () => void) => {
+        listenersRef.current.add(listener)
+        return () => {
+          listenersRef.current.delete(listener)
+        }
+      }
+    }
+  }
+
+  // Notify subscribers whenever state changes (immediately after DOM mutations to prevent tearing)
+  useLayoutEffect(() => {
+    listenersRef.current.forEach(listener => listener())
+  }, [state])
   const { resetMapGenerationRetries } = useMapGeneration({
     gameMap: state.gameMap,
     dispatch,
@@ -231,7 +257,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
 
   return (
     <GameDispatchContext value={dispatchValue}>
-      <GameStateContext value={state}>{children}</GameStateContext>
+      <GameStateContext value={storeRef.current}>{children}</GameStateContext>
     </GameDispatchContext>
   )
 }
@@ -268,6 +294,45 @@ export const useGameActions = () => {
  * @returns The specific state slice extracted by the selector.
  */
 export function useGameSelector<T>(selector: (state: GameState) => T): T {
-  const state = useRequiredContext(GameStateContext, 'useGameSelector')
-  return selector(state)
+  const store = useRequiredContext(GameStateContext, 'useGameSelector')
+  const instRef = useRef<{
+    hasValue: boolean
+    state: GameState | null
+    selector: ((state: GameState) => T) | null
+    value: T | null
+  }>({
+    hasValue: false,
+    state: null,
+    selector: null,
+    value: null
+  })
+
+  const getSnapshot = useCallback(() => {
+    const nextState = store.getState()
+    const inst = instRef.current
+
+    if (
+      inst.hasValue &&
+      inst.state === nextState &&
+      inst.selector === selector
+    ) {
+      return inst.value as T
+    }
+
+    const nextValue = selector(nextState)
+
+    if (inst.hasValue && Object.is(inst.value, nextValue)) {
+      inst.state = nextState
+      inst.selector = selector
+      return inst.value as T
+    }
+
+    inst.hasValue = true
+    inst.state = nextState
+    inst.selector = selector
+    inst.value = nextValue
+    return nextValue
+  }, [store, selector])
+
+  return useSyncExternalStore(store.subscribe, getSnapshot)
 }

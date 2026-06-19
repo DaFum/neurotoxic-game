@@ -35,6 +35,30 @@ describe('useGameActions referential stability', () => {
     expect(second).toBe(first)
   })
 
+
+  it('prevents consumer re-renders on unrelated state changes (useGameSelector bailout)', () => {
+    let renderCount = 0
+    const { result, rerender } = renderHook(() => {
+      renderCount++
+      return useGameSelector(s => s.player)
+    }, { wrapper })
+
+    expect(renderCount).toBe(1)
+    const initialPlayer = result.current
+
+    // Trigger an unrelated state mutation (e.g. adding a toast)
+    const { result: actionsResult } = renderHook(() => useGameActions(), { wrapper })
+    act(() => {
+      actionsResult.current.addToast('Unrelated update', 'info')
+    })
+
+    // We must manually rerender the test hook if it was going to rerender, but actually
+    // the provider changes, and if the hook bails out, renderCount stays 1.
+    // Let's just check the returned state.
+    expect(result.current).toBe(initialPlayer)
+    expect(renderCount).toBe(1) // Should not have re-rendered!
+  })
+
   it('keeps individual action references stable across a no-op state change', () => {
     const { result } = renderHook(() => useGameActions(), { wrapper })
 
