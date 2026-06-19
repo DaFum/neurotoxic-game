@@ -1,13 +1,13 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { LeaderboardTab } from '../../../src/ui/bandhq/LeaderboardTab.tsx'
+import { LeaderboardTab } from '../../../../src/ui/bandhq/leaderboard/LeaderboardTab.tsx'
 
 const loggerMocks = vi.hoisted(() => ({
   error: vi.fn(),
   info: vi.fn()
 }))
 
-vi.mock('../../../src/utils/logger', () => ({
+vi.mock('../../../../src/utils/logger', () => ({
   logger: {
     error: loggerMocks.error,
     info: loggerMocks.info,
@@ -15,7 +15,7 @@ vi.mock('../../../src/utils/logger', () => ({
   }
 }))
 
-vi.mock('../../../src/data/songs', () => ({
+vi.mock('../../../../src/data/songs', () => ({
   SONGS_DB: [{ id: 'song-1', title: 'Song One', leaderboardId: 'song-one' }],
   SONGS_BY_ID: new Map([
     ['song-1', { id: 'song-1', title: 'Song One', leaderboardId: 'song-one' }]
