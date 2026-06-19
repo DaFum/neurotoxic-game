@@ -48,7 +48,11 @@ export class AmpStageController extends BaseStageController<AmpStageOptions> {
 
     this.syncState()
     this.drawBackground()
-    this.waveManager.drawWaves(
+    this.renderWaves()
+  }
+
+  private renderWaves() {
+    this.waveManager?.drawWaves(
       this.targetFreq,
       this.currentFreq,
       this.time,
@@ -136,30 +140,12 @@ export class AmpStageController extends BaseStageController<AmpStageOptions> {
       this.container.y = 0
     }
 
-    this.waveManager?.drawWaves(
-      this.targetFreq,
-      this.currentFreq,
-      this.time,
-      this.isOverdriveActive,
-      this.isOverheat,
-      this.isAnomalyActive,
-      this.interference,
-      this.isHijackActive
-    )
+    this.renderWaves()
   }
 
   draw() {
     this.drawBackground()
-    this.waveManager?.drawWaves(
-      this.targetFreq,
-      this.currentFreq,
-      this.time,
-      this.isOverdriveActive,
-      this.isOverheat,
-      this.isAnomalyActive,
-      this.interference,
-      this.isHijackActive
-    )
+    this.renderWaves()
   }
 
   dispose() {
