@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { GeneratedImagePanel } from '../../../ui/shared/GeneratedImagePanel'
 import { getSectionBackgroundPrompt } from '../../../utils/imageGen'
 import { BANDHAUS_SLOT_ZONES } from '../../../utils/assetSections/bandhausConfig'
-import { formatSlotZonePercent } from '../../../utils/assetSections/slotLayout'
+import { getSlotZonePositionStyle } from '../../../utils/assetSections/slotLayout'
 import { AssetSlotButton } from '../shared/AssetSlotButton'
 import type { LongTermAsset } from '../../../types/assets'
 
@@ -54,10 +54,7 @@ export const BandhausCrossSectionView = ({ asset, onSlotClick }: Props) => {
                 : { width: 256, height: 256 }
             }
             style={{
-              left: formatSlotZonePercent((zone.x - zone.w / 2) * 100),
-              top: formatSlotZonePercent((zone.y - zone.h / 2) * 100),
-              width: formatSlotZonePercent(zone.w * 100),
-              height: formatSlotZonePercent(zone.h * 100),
+              ...getSlotZonePositionStyle(zone),
               border:
                 '2px dashed var(--section-accent, var(--color-cosmic-purple))',
               background
