@@ -119,7 +119,7 @@ export function dispatchEconomyQuests(
   stats: { newFame: number; newMoney: number },
   applyQuestEvent: HandlerDispatchers['applyQuestEvent']
 ): void {
-  const fameGain = stats.newFame - finiteNumberOr(player.fame, 0)
+  const fameGain = stats.newFame - finiteNumberOr(player?.fame, 0)
   if (fameGain > 0) {
     // Region context lets perRegion fame quests (quest_local_legend)
     // gate progress to the actual region where it was earned. Use the
@@ -127,14 +127,14 @@ export function dispatchEconomyQuests(
     applyQuestEvent(
       createFameGainedQuestEvent({
         region:
-          getRegionKeyForLocation(player.location) ?? player.location ?? '',
+          getRegionKeyForLocation(player?.location) ?? player?.location ?? '',
         amount: fameGain,
         reason: 'post_gig_fame'
       })
     )
   }
 
-  const moneyGain = stats.newMoney - finiteNumberOr(player.money, 0)
+  const moneyGain = stats.newMoney - finiteNumberOr(player?.money, 0)
   if (moneyGain > 0) {
     applyQuestEvent(
       createMoneyEarnedQuestEvent({
