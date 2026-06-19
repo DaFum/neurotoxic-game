@@ -163,6 +163,35 @@ describe('useSocialPostHandler (characterization)', () => {
     expect(props.isProcessingActionRef.current).toBe(false)
   })
 
+  it('shows an error and releases guard when applySocialPostResult throws', () => {
+    const error = new Error('apply boom')
+    calculatePostGigStateUpdates.mockReturnValue(makeUpdates())
+
+    // Inject a dispatcher that throws to force applySocialPostResult to throw
+    const dispatchers = makeDispatchers()
+    dispatchers.setPostResult.mockImplementation(() => {
+      throw error
+    })
+
+    const props = makeProps({ dispatchers })
+    const { result } = renderHook(() => useSocialPostHandler(props))
+
+    act(() => result.current({ id: 'post_1' }))
+
+    expect(props.dispatchers.addToast).toHaveBeenCalledWith(
+      expect.any(String),
+      'error'
+    )
+    expect(logger.error).toHaveBeenCalledWith(
+      'PostGig',
+      'Failed to apply selected post result',
+      error
+    )
+    // guard must be released so the player can retry
+    expect(props.isProcessingActionRef.current).toBe(false)
+    expect(props.setIsProcessingAction).toHaveBeenCalledWith(false)
+  })
+
   it('no-ops while another action is processing', () => {
     calculatePostGigStateUpdates.mockReturnValue(makeUpdates())
     const props = makeProps({ isProcessingActionRef: { current: true } })
