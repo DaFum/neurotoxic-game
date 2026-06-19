@@ -40,22 +40,22 @@ describe('useGameActions referential stability', () => {
     let renderCount = 0
     const { result } = renderHook(() => {
       renderCount++
-      return useGameSelector(s => s.player)
+      const player = useGameSelector(s => s.player)
+      const actions = useGameActions()
+      return { player, actions }
     }, { wrapper })
 
     expect(renderCount).toBe(1)
-    const initialPlayer = result.current
+    const initialPlayer = result.current.player
 
     // Trigger an unrelated state mutation (e.g. adding a toast)
-    const { result: actionsResult } = renderHook(() => useGameActions(), { wrapper })
     act(() => {
-      actionsResult.current.addToast('Unrelated update', 'info')
+      result.current.actions.addToast('Unrelated update', 'info')
     })
 
-    // We must manually rerender the test hook if it was going to rerender, but actually
-    // the provider changes, and if the hook bails out, renderCount stays 1.
-    // Let's just check the returned state.
-    expect(result.current).toBe(initialPlayer)
+    // The provider changes, but because the selected player state hasn't changed,
+    // useGameSelector should bail out of re-rendering this hook.
+    expect(result.current.player).toBe(initialPlayer)
     expect(renderCount).toBe(1) // Should not have re-rendered!
   })
 

@@ -204,7 +204,8 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
 
   // Notify subscribers whenever state changes (immediately after DOM mutations to prevent tearing)
   useLayoutEffect(() => {
-    listenersRef.current.forEach(listener => listener())
+    const listeners = Array.from(listenersRef.current)
+    listeners.forEach(listener => listener())
   }, [state])
   const { resetMapGenerationRetries } = useMapGeneration({
     gameMap: state.gameMap,
@@ -321,7 +322,32 @@ export function useGameSelector<T>(selector: (state: GameState) => T): T {
 
     const nextValue = selector(nextState)
 
-    if (inst.hasValue && Object.is(inst.value, nextValue)) {
+    const isShallowEqual = (a: unknown, b: unknown): boolean => {
+      if (Object.is(a, b)) return true
+      if (
+        typeof a !== 'object' ||
+        a === null ||
+        typeof b !== 'object' ||
+        b === null
+      ) {
+        return false
+      }
+      const objA = a as Record<string, unknown>
+      const objB = b as Record<string, unknown>
+      const keysA = Object.keys(objA)
+      const keysB = Object.keys(objB)
+      if (keysA.length !== keysB.length) return false
+      for (let i = 0; i < keysA.length; i++) {
+        const key = keysA[i]
+        if (!key) continue
+        if (!Object.hasOwn(objB, key) || !Object.is(objA[key], objB[key])) {
+          return false
+        }
+      }
+      return true
+    }
+
+    if (inst.hasValue && isShallowEqual(inst.value, nextValue)) {
       inst.state = nextState
       inst.selector = selector
       return inst.value as T
