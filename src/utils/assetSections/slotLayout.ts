@@ -6,3 +6,16 @@
  */
 export const formatSlotZonePercent = (value: number): string =>
   `${Number(value.toFixed(4))}%`
+
+/**
+ * Calculates and formats the CSS positioning properties for a slot zone.
+ *
+ * @param zone - The zone rectangle containing normalised coordinates (x, y) and dimensions (w, h).
+ * @returns An object containing `left`, `top`, `width`, and `height` properties formatted as CSS percentages.
+ */
+export const getSlotZonePositionStyle = (zone: { x: number; y: number; w: number; h: number }) => ({
+  left: formatSlotZonePercent((zone.x - zone.w / 2) * 100),
+  top: formatSlotZonePercent((zone.y - zone.h / 2) * 100),
+  width: formatSlotZonePercent(zone.w * 100),
+  height: formatSlotZonePercent(zone.h * 100)
+})
