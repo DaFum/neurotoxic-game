@@ -151,16 +151,19 @@ const applySkillPointReward = (
   const members: BandMember[] = []
   for (let i = 0; i < originalMembers.length; i++) {
     const member = originalMembers[i]
-    if (!member) continue
+    if (!member) {
+      members.push(member as unknown as BandMember)
+      continue
+    }
 
     if (i !== memberIdx) {
       members.push(member)
     } else {
-      const baseStats = (member.baseStats ?? {}) as Record<string, unknown>
-      const currentSkill = member.baseStats
-        ? Number((member.baseStats as Record<string, unknown>).skill)
-        : Number(member.skill)
-      const skillValue = Number.isFinite(currentSkill) ? currentSkill : 0
+      const baseStats = (member?.baseStats ?? {}) as Record<string, unknown>
+      const skillValue = finiteNumberOr(
+        member?.baseStats?.skill ?? member?.skill,
+        0
+      )
       members.push({
         ...member,
         baseStats: {
