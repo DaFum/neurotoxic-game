@@ -1,7 +1,12 @@
 import { describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { QuestsModal, getQuestDeadlineView, getQuestScopeHint, getQuestPrimaryHint } from '../../src/ui/QuestsModal.tsx'
+import {
+  QuestsModal,
+  getQuestDeadlineView,
+  getQuestScopeHint,
+  getQuestPrimaryHint
+} from '../../src/ui/QuestsModal.tsx'
 
 describe('QuestsModal', () => {
   it('renders translated accepted quests and progress', () => {
@@ -57,88 +62,99 @@ describe('QuestsModal', () => {
   })
 })
 
-
 describe('QuestModal Helper Functions', () => {
   const mockT = (key, options) => {
-    if (options && options.count !== undefined) return `${key}-${options.count}`;
-    if (options && options.scope) return `${key}-${options.scope}`;
-    return key;
-  };
+    if (options && options.count !== undefined) return `${key}-${options.count}`
+    if (options && options.scope) return `${key}-${options.scope}`
+    return key
+  }
 
   describe('getQuestDeadlineView', () => {
-    const quest = { id: 'q1', deadline: 10 };
+    const quest = { id: 'q1', deadline: 10 }
 
     it('returns none if no deadline', () => {
-      expect(getQuestDeadlineView({ id: 'q1' }, 5).level).toBe('none');
-    });
+      expect(getQuestDeadlineView({ id: 'q1' }, 5).level).toBe('none')
+    })
 
     it('returns safe if > 5 days left', () => {
-      const view = getQuestDeadlineView(quest, 2);
-      expect(view.level).toBe('safe');
-      expect(view.count).toBe(8);
-    });
+      const view = getQuestDeadlineView(quest, 2)
+      expect(view.level).toBe('safe')
+      expect(view.count).toBe(8)
+    })
 
     it('returns soon if <= 5 and > 2 days left', () => {
-      const view = getQuestDeadlineView(quest, 5);
-      expect(view.level).toBe('soon');
-      expect(view.count).toBe(5);
-    });
+      const view = getQuestDeadlineView(quest, 5)
+      expect(view.level).toBe('soon')
+      expect(view.count).toBe(5)
+    })
 
     it('returns urgent if 2 days left', () => {
-      const view = getQuestDeadlineView(quest, 8);
-      expect(view.level).toBe('urgent');
-      expect(view.count).toBe(2);
-    });
+      const view = getQuestDeadlineView(quest, 8)
+      expect(view.level).toBe('urgent')
+      expect(view.count).toBe(2)
+    })
 
     it('returns lastChance if 1 day left', () => {
-      const view = getQuestDeadlineView(quest, 9);
-      expect(view.level).toBe('lastChance');
-    });
+      const view = getQuestDeadlineView(quest, 9)
+      expect(view.level).toBe('lastChance')
+    })
 
     it('returns today if 0 days left', () => {
-      const view = getQuestDeadlineView(quest, 10);
-      expect(view.level).toBe('today');
-    });
+      const view = getQuestDeadlineView(quest, 10)
+      expect(view.level).toBe('today')
+    })
 
     it('returns overdue if < 0 days left', () => {
-      const view = getQuestDeadlineView(quest, 11);
-      expect(view.level).toBe('overdue');
-    });
-  });
+      const view = getQuestDeadlineView(quest, 11)
+      expect(view.level).toBe('overdue')
+    })
+  })
 
   describe('getQuestScopeHint', () => {
-    const player = { location: 'Berlin' };
+    const player = { location: 'Berlin' }
 
     it('returns null if no scopeKey', () => {
-      expect(getQuestScopeHint({ id: 'q1' }, player)).toBeNull();
-    });
+      expect(getQuestScopeHint({ id: 'q1' }, player)).toBeNull()
+    })
 
     it('handles matching perRegion', () => {
-      const hint = getQuestScopeHint({ id: 'q1', repeatPolicy: 'perRegion', scopeKey: 'Berlin' }, player);
-      expect(hint.matching).toBe(true);
-      expect(hint.text).toBe('ui:quests.hint.scope.region.matching');
-    });
+      const hint = getQuestScopeHint(
+        { id: 'q1', repeatPolicy: 'perRegion', scopeKey: 'Berlin' },
+        player
+      )
+      expect(hint.matching).toBe(true)
+      expect(hint.text).toBe('ui:quests.hint.scope.region.matching')
+    })
 
     it('handles mismatching perRegion', () => {
-      const hint = getQuestScopeHint({ id: 'q1', repeatPolicy: 'perRegion', scopeKey: 'Hamburg' }, player);
-      expect(hint.matching).toBe(false);
-      expect(hint.text).toBe('ui:quests.hint.scope.region.mismatch');
-      expect(hint.options.scope).toBe('Hamburg');
-    });
+      const hint = getQuestScopeHint(
+        { id: 'q1', repeatPolicy: 'perRegion', scopeKey: 'Hamburg' },
+        player
+      )
+      expect(hint.matching).toBe(false)
+      expect(hint.text).toBe('ui:quests.hint.scope.region.mismatch')
+      expect(hint.options.scope).toBe('Hamburg')
+    })
 
     it('handles matching perVenue', () => {
-      const hint = getQuestScopeHint({ id: 'q1', repeatPolicy: 'perVenue', scopeKey: 'SO36' }, { ...player, location: 'SO36' });
-      expect(hint.matching).toBe(true);
-      expect(hint.text).toBe('ui:quests.hint.scope.venue.only');
-    });
+      const hint = getQuestScopeHint(
+        { id: 'q1', repeatPolicy: 'perVenue', scopeKey: 'SO36' },
+        { ...player, location: 'SO36' }
+      )
+      expect(hint.matching).toBe(true)
+      expect(hint.text).toBe('ui:quests.hint.scope.venue.only')
+    })
 
     it('handles mismatching perVenue', () => {
-      const hint = getQuestScopeHint({ id: 'q1', repeatPolicy: 'perVenue', scopeKey: 'SO36' }, { ...player, location: 'Astra' });
-      expect(hint.matching).toBe(false);
-      expect(hint.text).toBe('ui:quests.hint.scope.venue.mismatch');
-      expect(hint.options.scope).toBe('SO36');
-    });
-  });
+      const hint = getQuestScopeHint(
+        { id: 'q1', repeatPolicy: 'perVenue', scopeKey: 'SO36' },
+        { ...player, location: 'Astra' }
+      )
+      expect(hint.matching).toBe(false)
+      expect(hint.text).toBe('ui:quests.hint.scope.venue.mismatch')
+      expect(hint.options.scope).toBe('SO36')
+    })
+  })
 
   describe('getQuestPrimaryHint', () => {
     it('prioritizes overdue/today over everything else', () => {
@@ -147,10 +163,10 @@ describe('QuestModal Helper Functions', () => {
         scopeHint: { matching: false, text: 'mismatch_key' },
         nextStepHint: 'next_step_key',
         t: mockT
-      });
-      expect(hint.type).toBe('error');
-      expect(hint.text).toBe('overdue_key');
-    });
+      })
+      expect(hint.type).toBe('error')
+      expect(hint.text).toBe('overdue_key')
+    })
 
     it('prioritizes wrong scope over urgent deadline and next step', () => {
       const hint = getQuestPrimaryHint({
@@ -158,10 +174,10 @@ describe('QuestModal Helper Functions', () => {
         scopeHint: { matching: false, text: 'mismatch_key' },
         nextStepHint: 'next_step_key',
         t: mockT
-      });
-      expect(hint.type).toBe('warning');
-      expect(hint.text).toBe('mismatch_key');
-    });
+      })
+      expect(hint.type).toBe('warning')
+      expect(hint.text).toBe('mismatch_key')
+    })
 
     it('prioritizes urgent deadline over next step if scope matches', () => {
       const hint = getQuestPrimaryHint({
@@ -169,10 +185,10 @@ describe('QuestModal Helper Functions', () => {
         scopeHint: { matching: true, text: 'match_key' },
         nextStepHint: 'next_step_key',
         t: mockT
-      });
-      expect(hint.type).toBe('warning');
-      expect(hint.text).toBe('lastChance_key');
-    });
+      })
+      expect(hint.type).toBe('warning')
+      expect(hint.text).toBe('lastChance_key')
+    })
 
     it('returns next step if safe deadline and matching scope', () => {
       const hint = getQuestPrimaryHint({
@@ -180,10 +196,10 @@ describe('QuestModal Helper Functions', () => {
         scopeHint: { matching: true, text: 'match_key' },
         nextStepHint: 'next_step_key',
         t: mockT
-      });
-      expect(hint.type).toBe('info');
-      expect(hint.text).toBe('next_step_key');
-    });
+      })
+      expect(hint.type).toBe('info')
+      expect(hint.text).toBe('next_step_key')
+    })
 
     it('returns null if nothing is relevant', () => {
       const hint = getQuestPrimaryHint({
@@ -191,38 +207,41 @@ describe('QuestModal Helper Functions', () => {
         scopeHint: null,
         nextStepHint: null,
         t: mockT
-      });
-      expect(hint).toBeNull();
-    });
-  });
-});
+      })
+      expect(hint).toBeNull()
+    })
+  })
+})
 
-  describe('QuestItem rendering interactions', () => {
-    it('toggles description and updates ARIA attributes when details clicked', async () => {
-      const user = userEvent.setup(); render(
-        <QuestsModal
-          onClose={vi.fn()}
-          player={{ day: 7 }}
-          activeQuests={[
-            {
-              id: 'q1',
-              label: 'Label',
-              description: 'My Description',
-              progress: 0,
-              required: 1
-            }
-          ]}
-        />
-      );
+describe('QuestItem rendering interactions', () => {
+  it('toggles description and updates ARIA attributes when details clicked', async () => {
+    const user = userEvent.setup()
+    render(
+      <QuestsModal
+        onClose={vi.fn()}
+        player={{ day: 7 }}
+        activeQuests={[
+          {
+            id: 'q1',
+            label: 'Label',
+            description: 'My Description',
+            progress: 0,
+            required: 1
+          }
+        ]}
+      />
+    )
 
-      // Description is hidden
-      expect(screen.queryByText('My Description')).not.toBeInTheDocument();
+    // Description is hidden
+    expect(screen.queryByText('My Description')).not.toBeInTheDocument()
 
-      // Click show details
-      const toggle = screen.getByRole('button', { name: /ui:quests\.details\.show/i });
-      await user.click(toggle);
+    // Click show details
+    const toggle = screen.getByRole('button', {
+      name: /ui:quests\.details\.show/i
+    })
+    await user.click(toggle)
 
-      // Now it is visible
-      expect(screen.getByText('My Description')).toBeInTheDocument();
-    });
-  });
+    // Now it is visible
+    expect(screen.getByText('My Description')).toBeInTheDocument()
+  })
+})

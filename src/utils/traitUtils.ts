@@ -166,7 +166,10 @@ export const removeExclusiveTraits = (
   if (Array.isArray(traitDef.exclusiveWith)) {
     for (let i = 0; i < traitDef.exclusiveWith.length; i++) {
       const exclusiveTraitId = traitDef.exclusiveWith[i]
-      if (typeof exclusiveTraitId === 'string' && Object.hasOwn(traitsMap, exclusiveTraitId)) {
+      if (
+        typeof exclusiveTraitId === 'string' &&
+        Object.hasOwn(traitsMap, exclusiveTraitId)
+      ) {
         delete traitsMap[exclusiveTraitId]
       }
     }
@@ -245,7 +248,9 @@ export const applyTraitUnlocks = (
       typeof member.name === 'string' && member.name
         ? (member.name.toUpperCase() as keyof typeof CHARACTERS)
         : null
-    let traitDef = charKey ? (TRAIT_DEFS_BY_CHAR[charKey as string] ?? {})[u.traitId] : undefined
+    let traitDef = charKey
+      ? (TRAIT_DEFS_BY_CHAR[charKey as string] ?? {})[u.traitId]
+      : undefined
     if (!traitDef) traitDef = TRAIT_DEFS_BY_ID.get(u.traitId)
 
     if (!traitDef) continue

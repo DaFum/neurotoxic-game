@@ -111,6 +111,99 @@ export function buildStoryFlagQuests(params: {
   return quests
 }
 
+/**
+ * Evaluates fame and money gains to apply economy quest events.
+ */
+export function dispatchEconomyQuests(
+  player: GameState['player'],
+  stats: { newFame: number; newMoney: number },
+  applyQuestEvent: HandlerDispatchers['applyQuestEvent']
+): void {
+  const fameGain = stats.newFame - finiteNumberOr(player.fame, 0)
+  if (fameGain > 0) {
+    // Region context lets perRegion fame quests (quest_local_legend)
+    // gate progress to the actual region where it was earned. Use the
+    // canonical city key so it matches the stamped quest scopeKey.
+    applyQuestEvent(
+      createFameGainedQuestEvent({
+        region:
+          getRegionKeyForLocation(player.location) ?? player.location ?? '',
+        amount: fameGain,
+        reason: 'post_gig_fame'
+      })
+    )
+  }
+
+  const moneyGain = stats.newMoney - finiteNumberOr(player.money, 0)
+  if (moneyGain > 0) {
+    applyQuestEvent(
+      createMoneyEarnedQuestEvent({
+        amount: moneyGain
+      })
+    )
+  }
+}
+
+/**
+ * Applies the neurotoxic pedal harmony penalty, returning the post-penalty harmony level.
+ */
+export function applyNeurotoxicPenalty(
+  band: GameState['band'],
+  updateBand: HandlerDispatchers['updateBand']
+): number | undefined {
+  if (band.inventory?.neurotoxicPedal) {
+    const nextHarmony = clampBandHarmony(
+      finiteNumberOr(band.harmony, 80) - NEUROTOXIC_PEDAL_HARMONY_PENALTY
+    )
+    updateBand((prevBand: BandState) => {
+      return {
+        ...prevBand,
+        harmony: nextHarmony
+      }
+    })
+    return nextHarmony
+  }
+  return undefined
+}
+
+/**
+ * Handles the scene transitions, including toasts and microtasks for bankrupt/finale scenarios.
+ */
+export function handleContinueSceneTransition(params: {
+  bankrupt: boolean
+  isFinaleGig: boolean
+  addToast: HandlerDispatchers['addToast']
+  changeScene: HandlerDispatchers['changeScene']
+  t: import('i18next').TFunction
+}): void {
+  const { bankrupt, isFinaleGig, addToast, changeScene, t } = params
+  if (bankrupt) {
+    addToast(
+      t('ui:postGig.gameOverBankrupt', {
+        defaultValue: 'GAME OVER: BANKRUPT! The tour is over.'
+      }),
+      'error'
+    )
+    changeScene(GAME_PHASES.GAMEOVER)
+  } else if (isFinaleGig) {
+    // The FINALE node has no outgoing connections by design — instead of
+    // returning to a dead-end overworld, end the run on the victory screen.
+    addToast(
+      t('ui:postGig.tourComplete', {
+        defaultValue: 'TOUR COMPLETE: You survived the void tour!'
+      }),
+      'success'
+    )
+    queueMicrotask(() => {
+      changeScene(GAME_PHASES.GAMEOVER)
+    })
+  } else {
+    queueMicrotask(() => {
+      changeScene(GAME_PHASES.OVERWORLD)
+    })
+  }
+}
+
 /** Props for {@link useContinueHandler}: post-gig financials/stats, state slices, the processing guard, translator, and dispatchers. */
 export interface UseContinueHandlerProps {
   financials: PostGigFinancials | null
@@ -203,43 +296,9 @@ export function useContinueHandler({
           : {})
       })
 
-      const fameGain = stats.newFame - finiteNumberOr(player.fame, 0)
-      if (fameGain > 0) {
-        // Region context lets perRegion fame quests (quest_local_legend)
-        // gate progress to the actual region where it was earned. Use the
-        // canonical city key so it matches the stamped quest scopeKey.
-        applyQuestEvent(
-          createFameGainedQuestEvent({
-            region:
-              getRegionKeyForLocation(player.location) ?? player.location ?? '',
-            amount: fameGain,
-            reason: 'post_gig_fame'
-          })
-        )
-      }
+      dispatchEconomyQuests(player, stats, applyQuestEvent)
 
-      const moneyGain = stats.newMoney - finiteNumberOr(player.money, 0)
-      if (moneyGain > 0) {
-        applyQuestEvent(
-          createMoneyEarnedQuestEvent({
-            amount: moneyGain
-          })
-        )
-      }
-
-      let postPenaltyHarmony: number | undefined
-      if (band.inventory?.neurotoxicPedal) {
-        const nextHarmony = clampBandHarmony(
-          finiteNumberOr(band.harmony, 80) - NEUROTOXIC_PEDAL_HARMONY_PENALTY
-        )
-        postPenaltyHarmony = nextHarmony
-        updateBand((prevBand: BandState) => {
-          return {
-            ...prevBand,
-            harmony: nextHarmony
-          }
-        })
-      }
+      const postPenaltyHarmony = applyNeurotoxicPenalty(band, updateBand)
 
       // Quest config (label/deadline/penalty) is owned by QUEST_REGISTRY;
       // buildStoryFlagQuests assembles the payloads from registry definitions
@@ -266,31 +325,13 @@ export function useContinueHandler({
         })
       )
 
-      if (bankrupt) {
-        addToast(
-          t('ui:postGig.gameOverBankrupt', {
-            defaultValue: 'GAME OVER: BANKRUPT! The tour is over.'
-          }),
-          'error'
-        )
-        changeScene(GAME_PHASES.GAMEOVER)
-      } else if (isFinaleGig) {
-        // The FINALE node has no outgoing connections by design — instead of
-        // returning to a dead-end overworld, end the run on the victory screen.
-        addToast(
-          t('ui:postGig.tourComplete', {
-            defaultValue: 'TOUR COMPLETE: You survived the void tour!'
-          }),
-          'success'
-        )
-        queueMicrotask(() => {
-          changeScene(GAME_PHASES.GAMEOVER)
-        })
-      } else {
-        queueMicrotask(() => {
-          changeScene(GAME_PHASES.OVERWORLD)
-        })
-      }
+      handleContinueSceneTransition({
+        bankrupt,
+        isFinaleGig,
+        addToast,
+        changeScene,
+        t
+      })
       // Guard intentionally NOT reset here: the scene transition (queued via
       // queueMicrotask) owns the lifecycle. Resetting before the microtask runs
       // would re-open a settlement window for rapid double-clicks.
