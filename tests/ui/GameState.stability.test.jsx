@@ -38,7 +38,7 @@ describe('useGameActions referential stability', () => {
 
   it('prevents consumer re-renders on unrelated state changes (useGameSelector bailout)', () => {
     let renderCount = 0
-    const { result, rerender } = renderHook(() => {
+    const { result } = renderHook(() => {
       renderCount++
       return useGameSelector(s => s.player)
     }, { wrapper })
