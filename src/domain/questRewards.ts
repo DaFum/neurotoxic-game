@@ -107,18 +107,18 @@ const applyAssetRepair = (
     if (!asset) continue
 
     const matchesId =
-      typeof reward.assetId === 'string' && asset.id === reward.assetId
+      typeof reward.assetId === 'string' && asset?.id === reward.assetId
     const matchesKind =
       reward.assetId == null &&
       typeof reward.assetKind === 'string' &&
-      asset.kind === reward.assetKind
+      asset?.kind === reward.assetKind
 
     if (matchesId || matchesKind) {
       const newAssets = [...assets]
       newAssets[i] = {
         ...asset,
         condition: clamp0to100(
-          finiteNumberOr(asset.condition, 0) + reward.amount
+          finiteNumberOr(asset?.condition, 0) + reward.amount
         )
       }
       return { ...state, assets: newAssets }
