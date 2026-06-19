@@ -99,7 +99,7 @@
     "jsdom": "29.1.1",
     "lint-staged": "17.0.7",
     "postcss": "8.5.15",
-    "prettier": "3.8.3",
+    "prettier": "3.8.4",
     "rollup-plugin-visualizer": "7.0.1",
     "serialize-javascript": "7.0.5",
     "stylelint": "17.12.0",
