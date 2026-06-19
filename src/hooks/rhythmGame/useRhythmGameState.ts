@@ -32,15 +32,15 @@ export type RhythmUiState = {
   isToxicMode: boolean
   /** Indicates if the current song has ended via failure or completion. */
   isGameOver: boolean
-  /** Represents the readiness state of the underlying audio engine. */
+  /** Represents the readiness state of the underlying audio engine, or null if uninitialized. */
   isAudioReady: boolean | null
-  /** Calculated ratio of successful hits versus total attempts. */
+  /** Calculated percentage of successful hits versus total attempts (0 to 100). */
   accuracy: number
   /** Accumulated level of corruption impacting gameplay metrics. */
   corruptionLevel: number
   /** Indicates whether a critical corruption event is actively ongoing. */
   isCorruptionBurstActive: boolean
-  /** Timestamp when the current corruption burst effect will conclude. */
+  /** Relative gig time in milliseconds when the current corruption burst effect will conclude. */
   corruptionBurstEndTime: number
   /** Indicates whether corruption mechanics are currently active in the scene. */
   isCorruptionActive: boolean
@@ -96,7 +96,7 @@ export type RhythmStateSetters = {
   setIsCorruptionBurstActive: (
     isCorruptionBurstActive: SetterPayload<boolean>
   ) => void
-  /** Updates the termination timestamp for an active corruption burst. */
+  /** Updates the termination gig time in milliseconds for an active corruption burst. */
   setCorruptionBurstEndTime: (
     corruptionBurstEndTime: SetterPayload<number>
   ) => void
