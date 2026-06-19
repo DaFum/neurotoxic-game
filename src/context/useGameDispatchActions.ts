@@ -9,7 +9,6 @@ import {
 import type {
   GameState,
   GameAction,
-  RivalBandState,
   SocialState,
   UpdateBandPayload,
   UpdatePlayerPayload,
@@ -29,6 +28,18 @@ import { usePersistence } from './usePersistence'
 import { useEventSystem } from './useEventSystem'
 import { useMinigameDispatchActions } from './useMinigameDispatchActions'
 import { useAssetDispatchActions } from './useAssetDispatchActions'
+import {
+  useFacilityDispatchActions,
+  type FacilityDispatchActions
+} from './useFacilityDispatchActions'
+import {
+  useQuestDispatchActions,
+  type QuestDispatchActions
+} from './useQuestDispatchActions'
+import {
+  useRivalBandDispatchActions,
+  type RivalBandDispatchActions
+} from './useRivalBandDispatchActions'
 import {
   createChangeSceneAction,
   createUpdatePlayerAction,
@@ -55,24 +66,7 @@ import {
   createCompleteKabelsalatMinigameAction,
   createStartAmpCalibrationAction,
   createCompleteAmpCalibrationAction,
-  createSpawnRivalBandAction,
-  createMoveRivalBandAction,
-  createCheckRivalEncounterAction,
-  createUpdateRivalBandAction,
   createUnlockTraitAction,
-  createAddQuestAction,
-  createAdvanceQuestAction,
-  createApplyQuestEventAction,
-  createUseContrabandAction,
-  createClinicHealAction,
-  createClinicEnhanceAction,
-  createPirateBroadcastAction,
-  createDarkWebLeakAction,
-  createMerchPressAction,
-  createTradeVoidItemAction,
-  createBloodBankDonateAction,
-  createUnblacklistVenueAction,
-  createCraftItemAction,
   createSetPendingBandHQOpenAction,
   createSetPendingSupplyStopInventoryAction,
   dismissForeclosureNotice as dismissForeclosureNoticeAction,
@@ -85,10 +79,7 @@ import {
   startCrowdfund as startCrowdfundAction
 } from './assetActionCreators'
 
-/**
- * Stable command surface exposed by GameStateProvider for mutating game state.
- */
-export type GameDispatchActions = {
+export type BaseGameDispatchActions = {
   changeScene: (scene: Parameters<typeof createChangeSceneAction>[0]) => void
   updatePlayer: (
     updates: Parameters<typeof createUpdatePlayerAction>[0]
@@ -174,38 +165,6 @@ export type GameDispatchActions = {
     traitId: Parameters<typeof createUnlockTraitAction>[1]
   ) => void
   endGig: () => void
-  addQuest: (payload: Parameters<typeof createAddQuestAction>[0]) => void
-  advanceQuest: (
-    questId: Parameters<typeof createAdvanceQuestAction>[0],
-    progressAmount: Parameters<typeof createAdvanceQuestAction>[1]
-  ) => void
-  applyQuestEvent: (
-    event: Parameters<typeof createApplyQuestEventAction>[0]
-  ) => void
-  unblacklistVenue: (
-    payload: Parameters<typeof createUnblacklistVenueAction>[0]
-  ) => void
-  craftItem: (payload: Parameters<typeof createCraftItemAction>[0]) => void
-  useContraband: (
-    instanceId: Parameters<typeof createUseContrabandAction>[0],
-    contrabandId: Parameters<typeof createUseContrabandAction>[1],
-    memberId?: Parameters<typeof createUseContrabandAction>[2]
-  ) => void
-  clinicHeal: (payload: Parameters<typeof createClinicHealAction>[0]) => void
-  clinicEnhance: (
-    payload: Parameters<typeof createClinicEnhanceAction>[0]
-  ) => void
-  darkWebLeak: (payload: Parameters<typeof createDarkWebLeakAction>[0]) => void
-  pirateBroadcast: (
-    payload: Parameters<typeof createPirateBroadcastAction>[0]
-  ) => void
-  merchPress: (payload: Parameters<typeof createMerchPressAction>[0]) => void
-  tradeVoidItem: (
-    payload: Parameters<typeof createTradeVoidItemAction>[0]
-  ) => void
-  bloodBankDonate: (
-    payload: Parameters<typeof createBloodBankDonateAction>[0]
-  ) => void
   setPendingBandHQOpen: (isOpen: boolean) => void
   setPendingSupplyStopInventory: (
     inventory: GameState['pendingSupplyStopInventory']
@@ -216,10 +175,6 @@ export type GameDispatchActions = {
   setPendingRiskEvent: (
     event: Parameters<typeof createSetPendingRiskEventAction>[0]
   ) => void
-  spawnRivalBand: () => void
-  moveRivalBand: () => void
-  checkRivalEncounter: () => void
-  updateRivalBand: (patch: Partial<RivalBandState>) => void
 
   // Long-term asset actions — every helper takes the resolved input and
   // delegates to the asset action creators. Failures surface as typed
@@ -240,6 +195,14 @@ export type GameDispatchActions = {
   removeModule: (assetId: string, slotId: string) => void
   startCrowdfund: (input: Parameters<typeof startCrowdfundAction>[0]) => void
 }
+
+/**
+ * Stable command surface exposed by GameStateProvider for mutating game state.
+ */
+export type GameDispatchActions = BaseGameDispatchActions &
+  FacilityDispatchActions &
+  QuestDispatchActions &
+  RivalBandDispatchActions
 
 interface UseGameDispatchActionsProps {
   dispatch: Dispatch<GameAction>
@@ -409,120 +372,15 @@ export function useGameDispatchActions({
   }, [dispatch, addToast, stateRef, tRef])
 
   const minigameActions = useMinigameDispatchActions(dispatch)
+  const facilityActions = useFacilityDispatchActions(dispatch)
+  const questActions = useQuestDispatchActions(dispatch)
+  const rivalBandActions = useRivalBandDispatchActions({ dispatch, stateRef })
 
   const unlockTrait = useCallback(
     (
       memberId: Parameters<typeof createUnlockTraitAction>[0],
       traitId: Parameters<typeof createUnlockTraitAction>[1]
     ) => dispatch(createUnlockTraitAction(memberId, traitId)),
-    [dispatch]
-  )
-
-  const addQuest = useCallback(
-    (payload: Parameters<typeof createAddQuestAction>[0]) =>
-      dispatch(createAddQuestAction(payload)),
-    [dispatch]
-  )
-
-  const advanceQuest = useCallback(
-    (
-      questId: Parameters<typeof createAdvanceQuestAction>[0],
-      progressAmount: Parameters<typeof createAdvanceQuestAction>[1]
-    ) => dispatch(createAdvanceQuestAction(questId, progressAmount)),
-    [dispatch]
-  )
-
-  const applyQuestEvent = useCallback(
-    (event: Parameters<typeof createApplyQuestEventAction>[0]) =>
-      dispatch(createApplyQuestEventAction(event)),
-    [dispatch]
-  )
-
-  const unblacklistVenue = useCallback(
-    (payload: Parameters<typeof createUnblacklistVenueAction>[0]) =>
-      dispatch(createUnblacklistVenueAction(payload)),
-    [dispatch]
-  )
-
-  const craftItem = useCallback(
-    (payload: Parameters<typeof createCraftItemAction>[0]) =>
-      dispatch(createCraftItemAction(payload)),
-    [dispatch]
-  )
-
-  const useContraband = useCallback(
-    (
-      instanceId: Parameters<typeof createUseContrabandAction>[0],
-      contrabandId: Parameters<typeof createUseContrabandAction>[1],
-      memberId?: Parameters<typeof createUseContrabandAction>[2]
-    ) =>
-      dispatch(createUseContrabandAction(instanceId, contrabandId, memberId)),
-    [dispatch]
-  )
-
-  const clinicHeal = useCallback(
-    (payload: Parameters<typeof createClinicHealAction>[0]) =>
-      dispatch(createClinicHealAction(payload)),
-    [dispatch]
-  )
-
-  const clinicEnhance = useCallback(
-    (payload: Parameters<typeof createClinicEnhanceAction>[0]) =>
-      dispatch(createClinicEnhanceAction(payload)),
-    [dispatch]
-  )
-
-  const pirateBroadcast = useCallback(
-    (payload: Parameters<typeof createPirateBroadcastAction>[0]) =>
-      dispatch(createPirateBroadcastAction(payload)),
-    [dispatch]
-  )
-
-  const darkWebLeak = useCallback(
-    (payload: Parameters<typeof createDarkWebLeakAction>[0]) =>
-      dispatch(createDarkWebLeakAction(payload)),
-    [dispatch]
-  )
-
-  const merchPress = useCallback(
-    (payload: Parameters<typeof createMerchPressAction>[0]) =>
-      dispatch(createMerchPressAction(payload)),
-    [dispatch]
-  )
-
-  const tradeVoidItem = useCallback(
-    (payload: Parameters<typeof createTradeVoidItemAction>[0]) =>
-      dispatch(createTradeVoidItemAction(payload)),
-    [dispatch]
-  )
-
-  const bloodBankDonate = useCallback(
-    (payload: Parameters<typeof createBloodBankDonateAction>[0]) =>
-      dispatch(createBloodBankDonateAction(payload)),
-    [dispatch]
-  )
-
-  const spawnRivalBand = useCallback(
-    () => dispatch(createSpawnRivalBandAction(stateRef.current)),
-    [dispatch, stateRef]
-  )
-
-  const moveRivalBand = useCallback(() => {
-    const currentState = stateRef.current
-    if (!currentState.rivalBand || !currentState.gameMap) return
-    dispatch(
-      createMoveRivalBandAction(currentState.rivalBand, currentState.gameMap)
-    )
-  }, [dispatch, stateRef])
-
-  const checkRivalEncounter = useCallback(
-    () => dispatch(createCheckRivalEncounterAction()),
-    [dispatch]
-  )
-
-  const updateRivalBand = useCallback(
-    (patch: Partial<RivalBandState>) =>
-      dispatch(createUpdateRivalBandAction(patch)),
     [dispatch]
   )
 
@@ -636,25 +494,11 @@ export function useGameDispatchActions({
       resetState,
       updateSettings,
       ...minigameActions,
+      ...facilityActions,
+      ...questActions,
+      ...rivalBandActions,
       unlockTrait,
       endGig,
-      addQuest,
-      advanceQuest,
-      applyQuestEvent,
-      unblacklistVenue,
-      craftItem,
-      useContraband,
-      clinicHeal,
-      clinicEnhance,
-      pirateBroadcast,
-      darkWebLeak,
-      merchPress,
-      tradeVoidItem,
-      bloodBankDonate,
-      spawnRivalBand,
-      moveRivalBand,
-      checkRivalEncounter,
-      updateRivalBand,
       setPendingBandHQOpen,
       setPendingSupplyStopInventory,
       dismissForeclosureNotice,
@@ -686,25 +530,11 @@ export function useGameDispatchActions({
       resetState,
       updateSettings,
       minigameActions,
+      facilityActions,
+      questActions,
+      rivalBandActions,
       unlockTrait,
       endGig,
-      addQuest,
-      advanceQuest,
-      applyQuestEvent,
-      unblacklistVenue,
-      craftItem,
-      useContraband,
-      clinicHeal,
-      clinicEnhance,
-      pirateBroadcast,
-      darkWebLeak,
-      merchPress,
-      tradeVoidItem,
-      bloodBankDonate,
-      spawnRivalBand,
-      moveRivalBand,
-      checkRivalEncounter,
-      updateRivalBand,
       setPendingBandHQOpen,
       setPendingSupplyStopInventory,
       dismissForeclosureNotice,
