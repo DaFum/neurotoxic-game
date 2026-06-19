@@ -186,7 +186,7 @@ export const ModulePickerModal = memo(
                     onClose()
                   }}
                   disabled={removalBlocked}
-                  className='mt-1 min-h-11 self-start border-2 px-2 py-2 disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-toxic-green focus-visible:ring-offset-void-black'
+                  className='mt-1 min-h-11 self-start border-2 px-2 py-2 disabled:opacity-30 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-void-black'
                   style={{
                     background: removalBlocked
                       ? 'transparent'
@@ -289,7 +289,7 @@ export const ModulePickerModal = memo(
                           onClose()
                         }}
                         disabled={blocked}
-                        className='mt-1 min-h-11 self-start border-2 px-2 py-2 disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-toxic-green focus-visible:ring-offset-void-black'
+                        className='mt-1 min-h-11 self-start border-2 px-2 py-2 disabled:opacity-30 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-void-black'
                         style={{
                           background: blocked
                             ? 'transparent'

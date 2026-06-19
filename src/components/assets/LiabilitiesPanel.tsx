@@ -80,7 +80,7 @@ export const LiabilitiesPanel = () => {
                 <button
                   type='button'
                   onClick={() => setRefinanceTargetId(l.id)}
-                  className='border px-2 py-1 uppercase focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-toxic-green focus-visible:ring-offset-void-black'
+                  className='border px-2 py-1 uppercase focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-void-black'
                   style={{
                     borderColor:
                       'var(--section-accent, var(--color-toxic-green))'
