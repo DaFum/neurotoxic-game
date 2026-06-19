@@ -789,7 +789,18 @@ export const handleSetPendingRiskEvent = (
   if (event === null) {
     if (state.pendingRiskEvent === null) return state
     const resolved = state.pendingRiskEvent
-    const asset = state.assets?.find(a => a.id === resolved.assetId)
+
+    let asset: NonNullable<typeof state.assets>[number] | undefined;
+    if (state.assets) {
+      for (let i = 0; i < state.assets.length; i++) {
+        const a = state.assets[i];
+        if (a?.id === resolved.assetId) {
+          asset = a;
+          break;
+        }
+      }
+    }
+
     const assetKind = asset?.kind ?? 'unknown'
     return QuestEvents.emit(
       {
