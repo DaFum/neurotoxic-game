@@ -789,7 +789,20 @@ export const handleSetPendingRiskEvent = (
   if (event === null) {
     if (state.pendingRiskEvent === null) return state
     const resolved = state.pendingRiskEvent
-    const asset = state.assets?.find(a => a.id === resolved.assetId)
+
+    // ⚡ BOLT OPTIMIZATION: Replaced Array.find with procedural loop
+    // Why: avoiding Array methods that allocate a closure helps reduce GC pauses in hot paths
+    // Impact: Avoids unnecessary allocation of a function object on every call to handleSetPendingRiskEvent when event is null.
+    let asset;
+    if (state.assets) {
+      for (let i = 0; i < state.assets.length; i++) {
+        if (state.assets[i].id === resolved.assetId) {
+          asset = state.assets[i];
+          break;
+        }
+      }
+    }
+
     const assetKind = asset?.kind ?? 'unknown'
     return QuestEvents.emit(
       {
