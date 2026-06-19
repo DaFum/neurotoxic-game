@@ -58,9 +58,7 @@ export type ChatterGameState = Pick<
 /**
  * Game-state inputs required to select and render scene-aware chatter.
  */
-export interface ChatterOverlayProps {
-  gameState: ChatterGameState
-}
+export interface ChatterOverlayProps {}
 
 /**
  * Message data and callbacks required to render and dismiss one chatter entry.

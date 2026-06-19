@@ -2,6 +2,7 @@ import { useEffect, useMemo, memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
 import { GAME_PHASES } from '../context/gameConstants'
+import { useGameSelector } from '../context/GameState'
 import { useChatterLogic } from '../hooks/useChatterLogic'
 import type {
   ChatterMessageData,
@@ -260,14 +261,32 @@ ChatterMessage.displayName = 'ChatterMessage'
  * Mobile lowers chatter further below touch menus and dialogs.
  *
  * Visual style adapts per scene — different border colors, accent bars, and icons.
- *
- * @param props - Current game-state snapshot used to choose and display chatter messages.
  */
-export const ChatterOverlay = memo(({ gameState }: ChatterOverlayProps) => {
+export const ChatterOverlay = memo(({}: ChatterOverlayProps) => {
   const { t } = useTranslation(['chatter', 'ui'])
-  const { messages, removeMessage } = useChatterLogic(gameState, t)
 
-  const currentScene = gameState.currentScene
+  const currentScene = useGameSelector(state => state.currentScene)
+  const band = useGameSelector(state => state.band)
+  const player = useGameSelector(state => state.player)
+  const gameMap = useGameSelector(state => state.gameMap)
+  const social = useGameSelector(state => state.social)
+  const lastGigStats = useGameSelector(state => state.lastGigStats)
+  const gigModifiers = useGameSelector(state => state.gigModifiers)
+
+  const chatterState = useMemo(
+    () => ({
+      currentScene,
+      band,
+      player,
+      gameMap,
+      social,
+      lastGigStats,
+      gigModifiers
+    }),
+    [currentScene, band, player, gameMap, social, lastGigStats, gigModifiers]
+  )
+
+  const { messages, removeMessage } = useChatterLogic(chatterState, t)
 
   // Scene-aware positioning:
   // OVERWORLD / TRAVEL_MINIGAME = bottom-left (near the bus), everything else = bottom-center

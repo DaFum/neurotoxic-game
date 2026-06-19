@@ -28,17 +28,21 @@ vi.mock('../../src/hooks/useChatterLogic', () => ({
 test('ChatterOverlay uses responsive stacking classes', async () => {
   // Use a dynamic import to ensure mocks are applied if needed (though here we mock before import anyway)
   // But for consistency with existing tests:
+  vi.doMock('../../src/context/GameState', () => ({
+    useGameSelector: (selector) => selector({
+      currentScene: GAME_PHASES.GIG,
+      band: { members: [] },
+      player: { currentNodeId: 'none' },
+      gameMap: { nodes: {} }
+    })
+  }))
+
   const { ChatterOverlay } =
     await import('../../src/components/ChatterOverlay.tsx')
 
-  const gameState = {
-    currentScene: GAME_PHASES.GIG,
-    band: { members: [] },
-    player: { currentNodeId: 'none' },
-    gameMap: { nodes: {} }
-  }
-
-  const { getByRole } = render(<ChatterOverlay gameState={gameState} />)
+  const { getByRole } = render(
+    <ChatterOverlay />
+  )
 
   const container = getByRole('status')
 

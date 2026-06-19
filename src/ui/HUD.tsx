@@ -103,11 +103,21 @@ const BandMemberRow = ({ m, idx, t }: BandMemberRowProps) => {
  * Heads-Up Display overlay showing player stats, band status, and volume controls.
  */
 export const HUD = memo(() => {
-  const player = useGameSelector(state => state.player)
-  const band = useGameSelector(state => state.band)
+  const playerMoney = useGameSelector(state => state.player.money)
+  const playerLocation = useGameSelector(state => state.player.location)
+  const playerDay = useGameSelector(state => state.player.day)
+  const playerVanFuel = useGameSelector(state => state.player.van?.fuel ?? 0)
+  const playerVanCondition = useGameSelector(state => state.player.van?.condition ?? 100)
+
+  const hasNeuroDecimator = useGameSelector(state => !!state.band.inventory?.neuroDecimator)
+  const neuroDecimatorActive = useGameSelector(state => !!state.band.neuroDecimatorActive)
+  const hasNeurotoxicPedal = useGameSelector(state => !!state.band.inventory?.neurotoxicPedal)
+  const bandHarmony = useGameSelector(state => state.band.harmony)
+  const bandMembers = useGameSelector(state => state.band.members)
+
   const { toggleNeuroDecimator } = useGameDispatch()
   const { t, i18n } = useTranslation(['ui', 'venues'])
-  const locationName = translateLocation(t, player.location, player.location)
+  const locationName = translateLocation(t, playerLocation, playerLocation)
   const [showHelp, setShowHelp] = useState(false)
   const { audioState, handleAudioChange } = useAudioControl()
 
@@ -145,9 +155,6 @@ export const HUD = memo(() => {
     return () => window.removeEventListener('keydown', handleKey)
   }, [handleAudioChange])
 
-  const fuel = player.van?.fuel ?? 0
-  const condition = player.van?.condition ?? 100
-
   return (
     <div className='absolute top-0 left-0 w-full p-3 flex justify-between items-start pointer-events-none z-(--z-hud) text-xs font-mono'>
       {/* Left Panel - Player Info */}
@@ -157,19 +164,19 @@ export const HUD = memo(() => {
             <DollarSign
               size={14}
               className={
-                player.money < 40 ? 'text-blood-red' : 'text-warning-yellow'
+                playerMoney < 40 ? 'text-blood-red' : 'text-warning-yellow'
               }
             />
             <span
-              className={`text-sm font-bold tabular-nums ${player.money < 40 ? 'text-blood-red' : ''}`}
+              className={`text-sm font-bold tabular-nums ${playerMoney < 40 ? 'text-blood-red' : ''}`}
             >
-              {formatCurrency(player.money, i18n.language)}
+              {formatCurrency(playerMoney, i18n.language)}
             </span>
           </div>
           <div className='flex items-center gap-2 mb-2'>
             <MapIcon size={14} />
             <span className='text-star-white/80'>
-              {t('ui:hud.day', { defaultValue: 'Day' })} {player.day} —{' '}
+              {t('ui:hud.day', { defaultValue: 'Day' })} {playerDay} —{' '}
               {locationName}
             </span>
           </div>
@@ -183,17 +190,17 @@ export const HUD = memo(() => {
               <div className='flex items-center gap-2 pointer-events-auto'>
                 <Fuel size={12} className='text-fuel-yellow shrink-0' />
                 <ProgressBar
-                  value={fuel}
+                  value={playerVanFuel}
                   max={100}
                   color='bg-fuel-yellow'
-                  warn={fuel < 20}
+                  warn={playerVanFuel < 20}
                   size='mini'
                   aria-label={t('ui:hud.fuelLevel', {
                     defaultValue: 'Fuel Level'
                   })}
                 />
                 <span className='text-xs text-ash-gray w-8 text-right tabular-nums'>
-                  {Math.floor(fuel)}
+                  {Math.floor(playerVanFuel)}
                 </span>
               </div>
             </Tooltip>
@@ -206,17 +213,17 @@ export const HUD = memo(() => {
               <div className='flex items-center gap-2 pointer-events-auto'>
                 <Wrench size={12} className='text-condition-blue shrink-0' />
                 <ProgressBar
-                  value={condition}
+                  value={playerVanCondition}
                   max={100}
                   color='bg-condition-blue'
-                  warn={condition < 25}
+                  warn={playerVanCondition < 25}
                   size='mini'
                   aria-label={t('ui:hud.vanCondition', {
                     defaultValue: 'Van Condition'
                   })}
                 />
                 <span className='text-xs text-ash-gray w-8 text-right tabular-nums'>
-                  {Math.floor(condition)}
+                  {Math.floor(playerVanCondition)}
                 </span>
               </div>
             </Tooltip>
@@ -305,10 +312,10 @@ export const HUD = memo(() => {
 
       {/* Right Panel - Band Status */}
       <div className='flex flex-col gap-2 items-end'>
-        {Boolean(band?.inventory?.neuroDecimator) && (
+        {hasNeuroDecimator && (
           <button
             onClick={() => {
-              const nextState = !band.neuroDecimatorActive
+              const nextState = !neuroDecimatorActive
               toggleNeuroDecimator(nextState)
               audioService.setNeuroDecimator(nextState)
             }}
@@ -316,16 +323,16 @@ export const HUD = memo(() => {
             aria-label={t('ui:hud.toggleDecimator', {
               defaultValue: 'Toggle decimator'
             })}
-            aria-pressed={!!band.neuroDecimatorActive}
+            aria-pressed={neuroDecimatorActive}
             className={`pointer-events-auto flex-1 min-h-0 border-2 px-3 py-1.5 mb-2 transition-all duration-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void-black focus-visible:ring-toxic-green ${
-              band.neuroDecimatorActive
+              neuroDecimatorActive
                 ? 'bg-blood-red text-void-black border-blood-red shadow-[4px_4px_0px_var(--color-blood-red)]'
                 : 'bg-void-black text-blood-red border-blood-red hover:bg-blood-red/20'
             }`}
           >
             <Skull size={14} className='inline mr-2' />
             <span className='font-black uppercase tracking-wider text-xs'>
-              {band.neuroDecimatorActive
+              {neuroDecimatorActive
                 ? t('ui:hud.decimatorActive', { defaultValue: 'DECIMATOR: ON' })
                 : t('ui:hud.decimatorInactive', {
                     defaultValue: 'DECIMATOR: OFF'
@@ -333,7 +340,7 @@ export const HUD = memo(() => {
             </span>
           </button>
         )}
-        {Boolean(band?.inventory?.neurotoxicPedal) && (
+        {hasNeurotoxicPedal && (
           <div className='bg-void-black text-toxic-green border-2 border-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)] px-3 py-1.5 flex items-center gap-2 animate-pulse mb-2 pointer-events-auto'>
             <Skull size={14} className='text-toxic-green' />
             <span className='font-black uppercase tracking-wider text-xs'>
@@ -347,7 +354,7 @@ export const HUD = memo(() => {
           <div className='text-right border-b border-toxic-green/30 mb-2 pb-1 text-xs tracking-widest text-ash-gray'>
             {t('ui:bandStatus', { defaultValue: 'BAND STATUS' })}
           </div>
-          {band.members.map((m: BandMember, idx: number) => (
+          {bandMembers.map((m: BandMember, idx: number) => (
             <BandMemberRow
               key={m.id ?? m.name ?? `member-${idx}`}
               m={m}
@@ -362,9 +369,9 @@ export const HUD = memo(() => {
             <div className='flex items-center gap-2'>
               <div className='w-20'>
                 <ProgressBar
-                  value={band.harmony}
+                  value={bandHarmony}
                   max={100}
-                  color={band.harmony < 40 ? 'bg-blood-red' : 'bg-toxic-green'}
+                  color={bandHarmony < 40 ? 'bg-blood-red' : 'bg-toxic-green'}
                   size='mini'
                   aria-label={t('ui:hud.bandHarmony', {
                     defaultValue: 'Band Harmony'
@@ -372,9 +379,9 @@ export const HUD = memo(() => {
                 />
               </div>
               <span
-                className={`text-xs tabular-nums ${band.harmony < 40 ? 'text-blood-red' : 'text-toxic-green'}`}
+                className={`text-xs tabular-nums ${bandHarmony < 40 ? 'text-blood-red' : 'text-toxic-green'}`}
               >
-                {Math.floor(band.harmony ?? 0)}%
+                {Math.floor(bandHarmony ?? 0)}%
               </span>
             </div>
           </div>
