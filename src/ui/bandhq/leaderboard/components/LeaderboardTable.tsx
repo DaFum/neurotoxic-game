@@ -90,7 +90,7 @@ export const LeaderboardTable = ({
                           ? t('ui:leaderboard.col_value_km', {
                               value: formatNumber(entry.score, i18n.language),
                               unit: t('ui:unit.km', { defaultValue: 'km' }),
-                              defaultValue: `${formatNumber(entry.score, i18n.language)} km`
+                              defaultValue: '{{value}} {{unit}}'
                             })
                           : formatNumber(entry.score, i18n.language)}
                     </td>
