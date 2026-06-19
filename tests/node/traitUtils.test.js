@@ -60,7 +60,6 @@ describe('Trait Utils', () => {
     assert.equal(result.toasts.length, 0)
   })
 
-
   test('applyTraitUnlocks removes mutually exclusive traits', () => {
     const state = {
       band: {

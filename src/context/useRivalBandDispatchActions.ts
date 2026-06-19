@@ -1,4 +1,9 @@
-import { useCallback, useMemo, type Dispatch, type MutableRefObject } from 'react'
+import {
+  useCallback,
+  useMemo,
+  type Dispatch,
+  type MutableRefObject
+} from 'react'
 import type { GameAction, GameState, RivalBandState } from '../types'
 import {
   createSpawnRivalBandAction,

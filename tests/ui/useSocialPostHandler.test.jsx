@@ -21,7 +21,10 @@ vi.mock('../../src/utils/crypto', () => ({
   getSafeUUID: vi.fn(() => 'test-uuid')
 }))
 
-import { useSocialPostHandler, applySocialPostResult } from '../../src/hooks/postGig/handlers/useSocialPostHandler'
+import {
+  useSocialPostHandler,
+  applySocialPostResult
+} from '../../src/hooks/postGig/handlers/useSocialPostHandler'
 import { logger } from '../../src/utils/logger'
 import { calculatePostGigStateUpdates } from '../../src/utils/postGigUtils'
 import { generateBrandOffers } from '../../src/utils/brandDealLogic'
@@ -229,9 +232,7 @@ describe('useSocialPostHandler (characterization)', () => {
     expect(props.isProcessingActionRef.current).toBe(false)
     expect(props.setIsProcessingAction).toHaveBeenLastCalledWith(false)
   })
-
 })
-
 
 describe('applySocialPostResult', () => {
   beforeEach(() => {
@@ -245,7 +246,13 @@ describe('applySocialPostResult', () => {
     return {
       option: { id: 'post_1' },
       updates,
-      player: { money: 1000, fame: 10, day: 3, location: 'berlin', stats: { failedStageDives: 1 } },
+      player: {
+        money: 1000,
+        fame: 10,
+        day: 3,
+        location: 'berlin',
+        stats: { failedStageDives: 1 }
+      },
       band: { harmony: 80, members: [], inventory: {} },
       social: { followers: 500, brandReputation: {} },
       t,
@@ -284,7 +291,10 @@ describe('applySocialPostResult', () => {
     applySocialPostResult(props)
 
     const d = props.dispatchers
-    expect(d.addToast).toHaveBeenCalledWith(expect.stringContaining('+5'), 'success')
+    expect(d.addToast).toHaveBeenCalledWith(
+      expect.stringContaining('+5'),
+      'success'
+    )
     expect(d.applyQuestEvent).toHaveBeenCalledWith({ type: 'harmony.changed' })
   })
 
@@ -295,9 +305,14 @@ describe('applySocialPostResult', () => {
     applySocialPostResult(props)
 
     const d = props.dispatchers
-    expect(d.addToast).toHaveBeenCalledWith(expect.stringContaining('-5'), 'error')
+    expect(d.addToast).toHaveBeenCalledWith(
+      expect.stringContaining('-5'),
+      'error'
+    )
     // it will call social.post, but not harmony.changed
-    expect(d.applyQuestEvent).not.toHaveBeenCalledWith({ type: 'harmony.changed' })
+    expect(d.applyQuestEvent).not.toHaveBeenCalledWith({
+      type: 'harmony.changed'
+    })
   })
 
   it('shows success toast and updates player money for positive money delta', () => {
@@ -308,7 +323,10 @@ describe('applySocialPostResult', () => {
 
     const d = props.dispatchers
     expect(d.updatePlayer).toHaveBeenCalledWith({ money: 1100 })
-    expect(d.addToast).toHaveBeenCalledWith(expect.stringContaining('100'), 'success')
+    expect(d.addToast).toHaveBeenCalledWith(
+      expect.stringContaining('100'),
+      'success'
+    )
   })
 
   it('shows error toast and updates player money for negative money delta', () => {
@@ -319,29 +337,44 @@ describe('applySocialPostResult', () => {
 
     const d = props.dispatchers
     expect(d.updatePlayer).toHaveBeenCalledWith({ money: 950 })
-    expect(d.addToast).toHaveBeenCalledWith(expect.stringContaining('50'), 'error')
+    expect(d.addToast).toHaveBeenCalledWith(
+      expect.stringContaining('50'),
+      'error'
+    )
   })
 
   it('updates player money when money delta is zero but finalResult.moneyChange is truthy', () => {
     const props = makeApplyProps({
-      updatesOverrides: { appliedMoneyDelta: 0, nextMoney: 1000, finalResult: { moneyChange: true } }
+      updatesOverrides: {
+        appliedMoneyDelta: 0,
+        nextMoney: 1000,
+        finalResult: { moneyChange: true }
+      }
     })
     applySocialPostResult(props)
 
     const d = props.dispatchers
     expect(d.updatePlayer).toHaveBeenCalledWith({ money: 1000 })
-    expect(d.addToast).not.toHaveBeenCalledWith(expect.stringContaining('Money'), expect.anything())
+    expect(d.addToast).not.toHaveBeenCalledWith(
+      expect.stringContaining('Money'),
+      expect.anything()
+    )
   })
 
   it('unlocks a trait if finalResult carries one', () => {
     const props = makeApplyProps({
-      updatesOverrides: { finalResult: { unlockTrait: { memberId: 'm1', traitId: 'shredder' } } }
+      updatesOverrides: {
+        finalResult: { unlockTrait: { memberId: 'm1', traitId: 'shredder' } }
+      }
     })
     applySocialPostResult(props)
 
     const d = props.dispatchers
     expect(d.unlockTrait).toHaveBeenCalledWith('m1', 'shredder')
-    expect(d.addToast).toHaveBeenCalledWith(expect.stringContaining('Trait Unlocked'), 'success')
+    expect(d.addToast).toHaveBeenCalledWith(
+      expect.stringContaining('Trait Unlocked'),
+      'success'
+    )
   })
 
   it('updates player stats for failed stage dive', () => {
@@ -351,9 +384,11 @@ describe('applySocialPostResult', () => {
     applySocialPostResult(props)
 
     const d = props.dispatchers
-    expect(d.updatePlayer).toHaveBeenCalledWith(expect.objectContaining({
-      stats: expect.objectContaining({ failedStageDives: 2 })
-    }))
+    expect(d.updatePlayer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        stats: expect.objectContaining({ failedStageDives: 2 })
+      })
+    )
   })
 
   it('updates player stats for failed stage dive when player.stats is undefined', () => {
@@ -364,11 +399,12 @@ describe('applySocialPostResult', () => {
     applySocialPostResult(props)
 
     const d = props.dispatchers
-    expect(d.updatePlayer).toHaveBeenCalledWith(expect.objectContaining({
-      stats: { failedStageDives: 1 }
-    }))
+    expect(d.updatePlayer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        stats: { failedStageDives: 1 }
+      })
+    )
   })
-
 
   it('routes to DEALS phase when brand offers are generated', () => {
     generateBrandOffers.mockReturnValue([{ id: 'deal_1' }])

@@ -10,10 +10,10 @@
 | 2026-06-08        | src/utils/assetSelectors/constants.ts         | NEUTRAL_ASSET_MODIFIERS, BROKEN_THRESHOLD                                                                                                                |
 | 2026-06-11        | src/utils/brandOfferFlavor/helpers.ts         | pick, roundTo                                                                                                                                            |
 | 2026-06-12        | src/utils/errors/safeStorage.ts               | runSafeStorageOperation                                                                                                                                  |
-| 2026-06-13 | src/App.tsx | resolveVercelTelemetryEnabled, SceneLoadingFallback, App |
-| 2026-06-14 | src/components/HecklerOverlay.tsx | updateOverlayNodes |
-| 2026-06-15 | src/hooks/travel/useVanMaintenance.ts | useVanMaintenance |
-| 2026-06-16 | src/utils/travelUtils.ts | TravelCostsResult, calculateTravelCostsAndImpact |
-| 2026-06-16 | src/components/hud/LaneInputArea.tsx | LaneInputAreaProps, LaneInputZoneProps, LaneInputZone, LaneInputArea |
-| 2026-06-18 | src/components/GigHUD.tsx | GigHUDStats, GigHUDProps, GigHUD |
-| 2026-06-19 | src/hooks/rhythmGame/useRhythmGameState.ts | RhythmUiState, RhythmStateSetters, RhythmGameStateHookReturn, useRhythmGameState |
+| 2026-06-13        | src/App.tsx                                   | resolveVercelTelemetryEnabled, SceneLoadingFallback, App                                                                                                 |
+| 2026-06-14        | src/components/HecklerOverlay.tsx             | updateOverlayNodes                                                                                                                                       |
+| 2026-06-15        | src/hooks/travel/useVanMaintenance.ts         | useVanMaintenance                                                                                                                                        |
+| 2026-06-16        | src/utils/travelUtils.ts                      | TravelCostsResult, calculateTravelCostsAndImpact                                                                                                         |
+| 2026-06-16        | src/components/hud/LaneInputArea.tsx          | LaneInputAreaProps, LaneInputZoneProps, LaneInputZone, LaneInputArea                                                                                     |
+| 2026-06-18        | src/components/GigHUD.tsx                     | GigHUDStats, GigHUDProps, GigHUD                                                                                                                         |
+| 2026-06-19        | src/hooks/rhythmGame/useRhythmGameState.ts    | RhythmUiState, RhythmStateSetters, RhythmGameStateHookReturn, useRhythmGameState                                                                         |

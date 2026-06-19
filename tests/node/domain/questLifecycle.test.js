@@ -835,14 +835,17 @@ test('QuestLifecycle', async t => {
       assert.equal(nextState.activeQuests[0].progress, 1)
     })
 
-    await t.test('advances progress with amount null rejecting and leaving progress unchanged', () => {
-      const state = { activeQuests: [{ id: 'q1', progress: 0, required: 5 }] }
-      const nextState = QuestLifecycle.advanceQuest(state, {
-        questId: 'q1',
-        amount: null
-      })
-      assert.equal(nextState.activeQuests[0].progress, 0)
-    })
+    await t.test(
+      'advances progress with amount null rejecting and leaving progress unchanged',
+      () => {
+        const state = { activeQuests: [{ id: 'q1', progress: 0, required: 5 }] }
+        const nextState = QuestLifecycle.advanceQuest(state, {
+          questId: 'q1',
+          amount: null
+        })
+        assert.equal(nextState.activeQuests[0].progress, 0)
+      }
+    )
 
     await t.test('does not advance if id does not match', () => {
       const state = { activeQuests: [{ id: 'q2', progress: 0, required: 5 }] }

@@ -15,7 +15,12 @@ import {
   clampControversyLevel,
   finiteNumberOr
 } from '../../utils/gameState'
-import { getTraitById, normalizeTraitMap, hasTrait, removeExclusiveTraits } from '../../utils/traitUtils'
+import {
+  getTraitById,
+  normalizeTraitMap,
+  hasTrait,
+  removeExclusiveTraits
+} from '../../utils/traitUtils'
 import {
   sanitizeSuccessToast,
   buildDeterministicToastId
@@ -369,10 +374,7 @@ export const handleClinicEnhance = (
         break
       }
     }
-    if (
-      targetMember &&
-      hasTrait(targetMember, resolvedTrait.id)
-    ) {
+    if (targetMember && hasTrait(targetMember, resolvedTrait.id)) {
       logger.debug(
         'ClinicReducer',
         `Member ${memberId} already has trait ${resolvedTrait.id}, skipping`
