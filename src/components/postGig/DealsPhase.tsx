@@ -59,7 +59,7 @@ const DealsPhaseComponent = ({
           type='button'
           onClick={onSkip}
           disabled={isProcessing}
-          className='min-h-11 w-full sm:w-auto px-4 py-2 border border-ash-gray/40 text-sm text-ash-gray hover:text-star-white hover:border-star-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+          className='min-h-11 w-full sm:w-auto px-4 py-2 border border-ash-gray/40 text-sm text-ash-gray hover:text-star-white hover:border-star-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ash-gray focus-visible:ring-offset-void-black'
         >
           {t('ui:deals.rejectAll', {
             defaultValue: 'Reject All Offers & Continue >'
