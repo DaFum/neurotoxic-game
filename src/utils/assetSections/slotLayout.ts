@@ -13,9 +13,17 @@ export const formatSlotZonePercent = (value: number): string =>
  * @param zone - The zone rectangle containing normalised coordinates (x, y) and dimensions (w, h).
  * @returns An object containing `left`, `top`, `width`, and `height` properties formatted as CSS percentages.
  */
-export const getSlotZonePositionStyle = (zone: { x: number; y: number; w: number; h: number }) => ({
-  left: formatSlotZonePercent((zone.x - zone.w / 2) * 100),
-  top: formatSlotZonePercent((zone.y - zone.h / 2) * 100),
-  width: formatSlotZonePercent(zone.w * 100),
-  height: formatSlotZonePercent(zone.h * 100)
-})
+export const getSlotZonePositionStyle = (zone?: {
+  x: number
+  y: number
+  w: number
+  h: number
+}) => {
+  const { x = 0, y = 0, w = 0, h = 0 } = zone || {}
+  return {
+    left: formatSlotZonePercent((x - w / 2) * 100),
+    top: formatSlotZonePercent((y - h / 2) * 100),
+    width: formatSlotZonePercent(w * 100),
+    height: formatSlotZonePercent(h * 100)
+  }
+}

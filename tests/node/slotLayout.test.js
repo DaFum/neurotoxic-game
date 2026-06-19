@@ -1,6 +1,9 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { formatSlotZonePercent, getSlotZonePositionStyle } from '../../src/utils/assetSections/slotLayout.ts'
+import {
+  formatSlotZonePercent,
+  getSlotZonePositionStyle
+} from '../../src/utils/assetSections/slotLayout.ts'
 
 describe('slot layout helpers', () => {
   it('formats percent rectangle values as stable CSS percentages', () => {
@@ -17,6 +20,16 @@ describe('slot layout helpers', () => {
       top: '45%',
       width: '30%',
       height: '20%'
+    })
+  })
+
+  it('handles undefined or partial zone coordinates gracefully', () => {
+    const style = getSlotZonePositionStyle(undefined)
+    assert.deepEqual(style, {
+      left: '0%',
+      top: '0%',
+      width: '0%',
+      height: '0%'
     })
   })
 })
