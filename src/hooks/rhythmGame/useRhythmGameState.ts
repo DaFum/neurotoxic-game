@@ -20,17 +20,29 @@ type SetterPayload<T> = T | ((current: T) => T)
  * React-rendered rhythm game state mirrored from the high-frequency game ref.
  */
 export type RhythmUiState = {
+  /** Current performance score accumulated during the song. */
   score: number
+  /** Consecutive notes hit without missing. */
   combo: number
+  /** Player's remaining health points, usually out of 100. */
   health: number
+  /** Current level of accumulated overload from special interactions. */
   overload: number
+  /** Indicates whether the game is currently in a hazardous or altered mode. */
   isToxicMode: boolean
+  /** Indicates if the current song has ended via failure or completion. */
   isGameOver: boolean
+  /** Represents the readiness state of the underlying audio engine. */
   isAudioReady: boolean | null
+  /** Calculated ratio of successful hits versus total attempts. */
   accuracy: number
+  /** Accumulated level of corruption impacting gameplay metrics. */
   corruptionLevel: number
+  /** Indicates whether a critical corruption event is actively ongoing. */
   isCorruptionBurstActive: boolean
+  /** Timestamp when the current corruption burst effect will conclude. */
   corruptionBurstEndTime: number
+  /** Indicates whether corruption mechanics are currently active in the scene. */
   isCorruptionActive: boolean
 }
 
@@ -62,21 +74,33 @@ export type {
  * Setter surface for rhythm UI state used by audio, scoring, and loop hooks.
  */
 export type RhythmStateSetters = {
+  /** Updates the performance score state. */
   setScore: (score: SetterPayload<number>) => void
+  /** Updates the current consecutive hit combo state. */
   setCombo: (combo: SetterPayload<number>) => void
+  /** Updates the remaining health state. */
   setHealth: (health: SetterPayload<number>) => void
+  /** Updates the accumulated overload state. */
   setOverload: (overload: SetterPayload<number>) => void
+  /** Toggles the active status of the hazardous toxic mode. */
   setIsToxicMode: (isToxicMode: SetterPayload<boolean>) => void
+  /** Updates the completion or failure status of the current game session. */
   setIsGameOver: (isGameOver: SetterPayload<boolean>) => void
+  /** Updates the availability status of the underlying audio engine. */
   setIsAudioReady: (isAudioReady: SetterPayload<boolean | null>) => void
+  /** Updates the calculated accuracy percentage state. */
   setAccuracy: (accuracy: SetterPayload<number>) => void
+  /** Updates the accumulated corruption level state. */
   setCorruptionLevel: (corruptionLevel: SetterPayload<number>) => void
+  /** Toggles the active status of the critical corruption burst effect. */
   setIsCorruptionBurstActive: (
     isCorruptionBurstActive: SetterPayload<boolean>
   ) => void
+  /** Updates the termination timestamp for an active corruption burst. */
   setCorruptionBurstEndTime: (
     corruptionBurstEndTime: SetterPayload<number>
   ) => void
+  /** Applies combined level and activity updates to the corruption state. */
   setCorruptionState: (level: number, active: boolean) => void
 }
 
@@ -84,8 +108,11 @@ export type RhythmStateSetters = {
  * State bundle returned by useRhythmGameState.
  */
 export type RhythmGameStateHookReturn = {
+  /** High-frequency mutable state reference avoiding React render cycles. */
   gameStateRef: MutableRefObject<RhythmGameRefState>
+  /** React-reactive state exposed for UI rendering updates. */
   state: RhythmUiState
+  /** Collection of dispatched setter actions modifying the UI state. */
   setters: RhythmStateSetters
 }
 
@@ -258,7 +285,7 @@ const INITIAL_GAME_STATE_REF: Omit<RhythmGameRefState, 'rng'> = {
  * Manages the state for the rhythm game, including React state for UI
  * and a Ref for the high-frequency game loop.
  *
- * @returns State and setters.
+ * @returns State bundle containing the reactive UI state, setter surface, and high-frequency reference.
  */
 export const useRhythmGameState = (): RhythmGameStateHookReturn => {
   // React State for UI
