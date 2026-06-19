@@ -7,8 +7,7 @@ import { useChatterLogic } from '../hooks/useChatterLogic'
 import type {
   ChatterMessageData,
   ChatterMessageProps,
-  ChatterMessageType,
-  ChatterOverlayProps
+  ChatterMessageType
 } from '../types/components'
 
 const MESSAGE_LIFETIME_MS = 10000
@@ -262,7 +261,7 @@ ChatterMessage.displayName = 'ChatterMessage'
  *
  * Visual style adapts per scene — different border colors, accent bars, and icons.
  */
-export const ChatterOverlay = memo(({}: ChatterOverlayProps) => {
+export const ChatterOverlay = memo(() => {
   const { t } = useTranslation(['chatter', 'ui'])
 
   const currentScene = useGameSelector(state => state.currentScene)

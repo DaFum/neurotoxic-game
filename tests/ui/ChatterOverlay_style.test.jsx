@@ -29,12 +29,15 @@ test('ChatterOverlay uses responsive stacking classes', async () => {
   // Use a dynamic import to ensure mocks are applied if needed (though here we mock before import anyway)
   // But for consistency with existing tests:
   vi.doMock('../../src/context/GameState', () => ({
-    useGameSelector: (selector) => selector({
+    useGameSelector: vi.fn((selector) => selector({
       currentScene: GAME_PHASES.GIG,
       band: { members: [] },
       player: { currentNodeId: 'none' },
-      gameMap: { nodes: {} }
-    })
+      gameMap: { nodes: {} },
+      social: {},
+      lastGigStats: null,
+      gigModifiers: null
+    }))
   }))
 
   const { ChatterOverlay } =
