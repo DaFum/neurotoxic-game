@@ -59,6 +59,30 @@ describe('useGameActions referential stability', () => {
     expect(renderCount).toBe(1) // Should not have re-rendered!
   })
 
+
+  it('prevents consumer re-renders for inline object selectors (shallowEqual bailout)', () => {
+    let renderCount = 0
+    const { result } = renderHook(() => {
+      renderCount++
+      const selected = useGameSelector(s => ({ name: s.player.name }))
+      const actions = useGameActions()
+      return { selected, actions }
+    }, { wrapper })
+
+    expect(renderCount).toBe(1)
+    const firstSelected = result.current.selected
+
+    // Trigger an unrelated state mutation (e.g. adding a toast)
+    act(() => {
+      result.current.actions.addToast('Unrelated update', 'info')
+    })
+
+    // The provider changes, but because the selected inline object is shallowly equal,
+    // useGameSelector should bail out and return the cached reference.
+    expect(result.current.selected).toBe(firstSelected)
+    expect(renderCount).toBe(1) // Should not have re-rendered!
+  })
+
   it('keeps individual action references stable across a no-op state change', () => {
     const { result } = renderHook(() => useGameActions(), { wrapper })
 
