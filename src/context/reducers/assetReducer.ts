@@ -196,7 +196,7 @@ export const handleInstallModule = (
   if (targetAssetIndex === -1 || !targetAsset) return state;
 
   let installed = false;
-  const nextSlots = [...targetAsset.slots];
+  const nextSlots = targetAsset.slots ? [...targetAsset.slots] : [];
   for (let i = 0; i < nextSlots.length; i++) {
     const slot = nextSlots[i];
     if (slot && slot.id === slotId && slot.installedModuleId === null) {
@@ -208,10 +208,20 @@ export const handleInstallModule = (
 
   if (!installed) return state;
 
-  if (newSlotIds && newSlotIds.length > 0) {
+  if (newSlotIds && newSlotIds.length > 0 && moduleInfo.addsSlots) {
+    const allowedSlotTypes: Record<string, number> = {};
+    for (let i = 0; i < moduleInfo.addsSlots.length; i++) {
+      const def = moduleInfo.addsSlots[i];
+      if (def) {
+        allowedSlotTypes[def.slotType] = def.count;
+      }
+    }
+
     for (let i = 0; i < newSlotIds.length; i++) {
       const newSlot = newSlotIds[i];
-      if (newSlot) {
+      const count = newSlot ? allowedSlotTypes[newSlot.slotType] : 0;
+      if (newSlot && count !== undefined && count > 0) {
+        allowedSlotTypes[newSlot.slotType] = count - 1;
         nextSlots.push({
           id: newSlot.id,
           slotType: newSlot.slotType,
