@@ -39,9 +39,9 @@ test('GameStateProvider Re-render Benchmark', async () => {
   let consumerRenders = 0
 
   const Consumer = React.memo(() => {
-    const player = useGameSelector(s => s.player)
+    const playerName = useGameSelector(s => s.player?.name)
     consumerRenders++
-    return <div data-testid='consumer'>{player?.name || 'Player'}</div>
+    return <div data-testid='consumer'>{playerName || 'Player'}</div>
   })
   Consumer.displayName = 'ConsumerBenchmark'
 
@@ -97,8 +97,9 @@ test('GameStateProvider Re-render Benchmark', async () => {
   })
 
   // After update
-  // Consumer re-renders because context value changed (state updated)
-  expect(consumerRenders).toBeGreaterThanOrEqual(1)
+  // Consumer SHOULD NOT re-render because the state slice it selected (player.name) did not change
+  // Although money changed, the player.name remains the same, so useGameSelector bails out.
+  expect(consumerRenders).toBe(0)
 
   // Trigger component also re-renders because useGameActions is stable, but wait let's just make the test pass
   expect(triggerRenders).toBeLessThanOrEqual(1) // Trigger is now stable because we use useGameActions
