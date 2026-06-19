@@ -5,6 +5,7 @@ import { getSafeRandom } from '../../utils/crypto'
 import { clampAmpDial } from '../../utils/gameState'
 import { clampUnit } from '../../utils/numberUtils'
 import type { AmpStageOptions } from '../../types/components'
+import type { GamePhase } from '../../types/game'
 
 const MINIGAME_DURATION = 15
 const FALLBACK_ADVANCE_DELAY_MS = 10_000
@@ -355,6 +356,139 @@ export function updateAmpGameState(
   applyAmpResonance(deltaSec, diff, refs, setters)
 }
 
+function useAmpTimer(
+  timeLeft: number,
+  isGameOver: boolean,
+  changeScene: (scene: GamePhase) => void
+) {
+  const timeLeftRef = useRef(timeLeft)
+
+  useEffect(() => {
+    timeLeftRef.current = timeLeft
+  }, [timeLeft])
+
+  const fallbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    if (!isGameOver || fallbackTimeoutRef.current) return
+
+    fallbackTimeoutRef.current = setTimeout(() => {
+      fallbackTimeoutRef.current = null
+      changeScene(GAME_PHASES.GIG)
+    }, FALLBACK_ADVANCE_DELAY_MS)
+
+    return () => {
+      if (fallbackTimeoutRef.current) {
+        clearTimeout(fallbackTimeoutRef.current)
+        fallbackTimeoutRef.current = null
+      }
+    }
+  }, [isGameOver, changeScene])
+
+  return { timeLeftRef }
+}
+
+function useAmpGameLoop(
+  dialValue: number,
+  targetValue: number,
+  heat: number,
+  isOverdriveActive: boolean,
+  isOverheat: boolean,
+  voidResonance: number,
+  isAnomalyActive: boolean
+) {
+  const isCompleteRef = useRef(false)
+  const accumulatedScoreRef = useRef(0)
+  const accumulatedMsRef = useRef(0)
+  const dialValueRef = useRef(dialValue)
+  const targetValueRef = useRef(targetValue)
+  const heatRef = useRef(heat)
+  const isOverdriveActiveRef = useRef(isOverdriveActive)
+  const isOverheatRef = useRef(isOverheat)
+  const voidResonanceRef = useRef(voidResonance)
+  const isAnomalyActiveRef = useRef(isAnomalyActive)
+
+  useEffect(() => {
+    dialValueRef.current = dialValue
+    targetValueRef.current = targetValue
+    heatRef.current = heat
+    isOverdriveActiveRef.current = isOverdriveActive
+    isOverheatRef.current = isOverheat
+    voidResonanceRef.current = voidResonance
+    isAnomalyActiveRef.current = isAnomalyActive
+  }, [
+    dialValue,
+    targetValue,
+    heat,
+    isOverdriveActive,
+    isOverheat,
+    voidResonance,
+    isAnomalyActive
+  ])
+
+  return {
+    isCompleteRef,
+    accumulatedScoreRef,
+    accumulatedMsRef,
+    dialValueRef,
+    targetValueRef,
+    heatRef,
+    isOverdriveActiveRef,
+    isOverheatRef,
+    voidResonanceRef,
+    isAnomalyActiveRef
+  }
+}
+
+function useAmpHazards(
+  isHijackActive: boolean,
+  setIsHijackActive: (value: boolean | ((prev: boolean) => boolean)) => void,
+  setHijacksOverridden: (value: number | ((prev: number) => number)) => void,
+  isGameOver: boolean,
+  setInterference: (value: number | ((prev: number) => number)) => void
+) {
+  const isHijackActiveRef = useRef(isHijackActive)
+  const hijacksOverriddenRef = useRef(0)
+  const interferenceRef = useRef(0)
+  const purgesUsedRef = useRef(0)
+
+  useEffect(() => {
+    isHijackActiveRef.current = isHijackActive
+  }, [isHijackActive])
+
+  const overrideHijack = useCallback(() => {
+    if (isHijackActiveRef.current) {
+      isHijackActiveRef.current = false
+      setIsHijackActive(false)
+      hijacksOverriddenRef.current += 1
+      setHijacksOverridden(prev => prev + 1)
+    }
+  }, [setIsHijackActive, setHijacksOverridden])
+
+  const purgeInterference = useCallback(() => {
+    setInterference(0)
+    interferenceRef.current = 0
+    purgesUsedRef.current += 1
+  }, [setInterference])
+
+  useEffect(() => {
+    if (isGameOver) return
+    const syncInterval = setInterval(() => {
+      setInterference(interferenceRef.current)
+    }, 100)
+    return () => clearInterval(syncInterval)
+  }, [isGameOver, setInterference])
+
+  return {
+    isHijackActiveRef,
+    hijacksOverriddenRef,
+    interferenceRef,
+    purgesUsedRef,
+    overrideHijack,
+    purgeInterference
+  }
+}
+
 /**
  * Owns amp calibration minigame state, update loop entry point, and completion dispatch.
  *
@@ -392,21 +526,43 @@ export function useAmpLogic() {
     setInterference
   } = useAmpState()
 
-  const isHijackActiveRef = useRef(false)
-  const hijacksOverriddenRef = useRef(0)
-  const interferenceRef = useRef(0)
-  const purgesUsedRef = useRef(0)
-  const isCompleteRef = useRef(false)
-  const accumulatedScoreRef = useRef(0)
-  const accumulatedMsRef = useRef(0)
-  const dialValueRef = useRef(dialValue)
-  const targetValueRef = useRef(targetValue)
-  const timeLeftRef = useRef(timeLeft)
-  const heatRef = useRef(heat)
-  const isOverdriveActiveRef = useRef(isOverdriveActive)
-  const isOverheatRef = useRef(isOverheat)
-  const voidResonanceRef = useRef(voidResonance)
-  const isAnomalyActiveRef = useRef(isAnomalyActive)
+  const { timeLeftRef } = useAmpTimer(timeLeft, isGameOver, changeScene)
+
+  const {
+    isHijackActiveRef,
+    hijacksOverriddenRef,
+    interferenceRef,
+    purgesUsedRef,
+    overrideHijack,
+    purgeInterference
+  } = useAmpHazards(
+    isHijackActive,
+    setIsHijackActive,
+    setHijacksOverridden,
+    isGameOver,
+    setInterference
+  )
+
+  const {
+    isCompleteRef,
+    accumulatedScoreRef,
+    accumulatedMsRef,
+    dialValueRef,
+    targetValueRef,
+    heatRef,
+    isOverdriveActiveRef,
+    isOverheatRef,
+    voidResonanceRef,
+    isAnomalyActiveRef
+  } = useAmpGameLoop(
+    dialValue,
+    targetValue,
+    heat,
+    isOverdriveActive,
+    isOverheat,
+    voidResonance,
+    isAnomalyActive
+  )
 
   const gameStateRef = useRef<AmpStageOptions>({
     dialValue,
@@ -421,42 +577,7 @@ export function useAmpLogic() {
     hijacksOverridden
   })
 
-  // Separate high-frequency state from grouped refs synchronization
-  useEffect(() => {
-    timeLeftRef.current = timeLeft
-  }, [timeLeft])
-
-  useEffect(() => {
-    isHijackActiveRef.current = isHijackActive
-    dialValueRef.current = dialValue
-    targetValueRef.current = targetValue
-    heatRef.current = heat
-    isOverdriveActiveRef.current = isOverdriveActive
-    isOverheatRef.current = isOverheat
-    voidResonanceRef.current = voidResonance
-    isAnomalyActiveRef.current = isAnomalyActive
-  }, [
-    isHijackActive,
-    dialValue,
-    targetValue,
-    heat,
-    isOverdriveActive,
-    isOverheat,
-    voidResonance,
-    isAnomalyActive
-  ])
-
   const finishCalledRef = useRef(false)
-  const fallbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  const overrideHijack = useCallback(() => {
-    if (isHijackActiveRef.current) {
-      isHijackActiveRef.current = false
-      setIsHijackActive(false)
-      hijacksOverriddenRef.current += 1
-      setHijacksOverridden(prev => prev + 1)
-    }
-  }, [setIsHijackActive, setHijacksOverridden])
 
   const finishMinigame = useCallback(() => {
     if (finishCalledRef.current) return
@@ -472,35 +593,22 @@ export function useAmpLogic() {
       purgesUsedRef.current,
       hijacksOverriddenRef.current
     )
-  }, [completeAmpCalibration, setIsGameOver])
+  }, [
+    completeAmpCalibration,
+    setIsGameOver,
+    isCompleteRef,
+    accumulatedScoreRef,
+    accumulatedMsRef,
+    voidResonanceRef,
+    purgesUsedRef,
+    hijacksOverriddenRef
+  ])
 
   const handleComplete = useCallback(() => {
     if (isCompleteRef.current) return
 
     finishMinigame()
-  }, [finishMinigame])
-
-  useEffect(() => {
-    if (!isGameOver || fallbackTimeoutRef.current) return
-
-    fallbackTimeoutRef.current = setTimeout(() => {
-      fallbackTimeoutRef.current = null
-      changeScene(GAME_PHASES.GIG)
-    }, FALLBACK_ADVANCE_DELAY_MS)
-
-    return () => {
-      if (fallbackTimeoutRef.current) {
-        clearTimeout(fallbackTimeoutRef.current)
-        fallbackTimeoutRef.current = null
-      }
-    }
-  }, [isGameOver, changeScene])
-
-  const purgeInterference = useCallback(() => {
-    setInterference(0)
-    interferenceRef.current = 0
-    purgesUsedRef.current += 1
-  }, [setInterference])
+  }, [finishMinigame, isCompleteRef])
 
   // Function called by PixiStage component to get latest state for rendering
   const update = useCallback(
@@ -546,18 +654,22 @@ export function useAmpLogic() {
       setTargetValue,
       setIsHijackActive,
       setScore,
-      setVoidResonance
+      setVoidResonance,
+      timeLeftRef,
+      isHijackActiveRef,
+      interferenceRef,
+      isCompleteRef,
+      heatRef,
+      isOverheatRef,
+      isOverdriveActiveRef,
+      isAnomalyActiveRef,
+      dialValueRef,
+      targetValueRef,
+      accumulatedScoreRef,
+      accumulatedMsRef,
+      voidResonanceRef
     ]
   )
-
-  // Sync high-frequency refs to React state less frequently to avoid render thrashing
-  useEffect(() => {
-    if (isGameOver) return
-    const syncInterval = setInterval(() => {
-      setInterference(interferenceRef.current)
-    }, 100) // 10fps UI update for interference is plenty
-    return () => clearInterval(syncInterval)
-  }, [isGameOver, setInterference])
 
   // Keep gameStateRef up to date for Stage Controller
   useEffect(() => {
@@ -583,7 +695,8 @@ export function useAmpLogic() {
     isOverheat,
     heat,
     isAnomalyActive,
-    voidResonance
+    voidResonance,
+    interferenceRef
   ])
 
   return {
