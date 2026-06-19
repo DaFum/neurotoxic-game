@@ -125,6 +125,8 @@ const applyAssetDamage = (
 
   for (let i = 0; i < len; i++) {
     const asset = state.assets[i]
+    if (!asset) continue
+
     if (isIdPenalty && asset.id === penalty.assetId) {
       targetIndex = i
       break
@@ -137,6 +139,10 @@ const applyAssetDamage = (
   if (targetIndex === -1) return state
 
   const asset = state.assets[targetIndex]
+  // In the extremely rare case the array element is completely missing/undefined,
+  // we cannot safely clone and update its condition, so we bail out.
+  if (!asset) return state
+
   const assets = [...state.assets]
   assets[targetIndex] = {
     ...asset,
