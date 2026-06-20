@@ -46,7 +46,14 @@ const isSafeSvgColorValue = (value: string): boolean => {
   return HEX_COLOR_PATTERN.test(trimmedValue)
 }
 
+const svgTokenCache = new Map<SvgTokenName, string>()
+
 const resolveSvgTokenValue = (tokenName: SvgTokenName): string => {
+  const cached = svgTokenCache.get(tokenName)
+  if (cached !== undefined) {
+    return cached
+  }
+
   const fallback = SVG_TOKEN_FALLBACKS[tokenName]
   if (
     typeof window === 'undefined' ||
@@ -61,7 +68,9 @@ const resolveSvgTokenValue = (tokenName: SvgTokenName): string => {
     .getPropertyValue(tokenName)
     .trim()
 
-  return isSafeSvgColorValue(resolvedValue) ? resolvedValue : fallback
+  const finalValue = isSafeSvgColorValue(resolvedValue) ? resolvedValue : fallback
+  svgTokenCache.set(tokenName, finalValue)
+  return finalValue
 }
 
 const createSvgTokenStyle = (): string => {
