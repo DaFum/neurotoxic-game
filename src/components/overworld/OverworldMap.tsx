@@ -7,6 +7,7 @@ import { getCityKeyFromVenueId } from '../../utils/mapGenerator'
 import { normalizeVenueId } from '../../utils/mapUtils'
 import { useNetworkStatus } from '../../hooks/useNetworkStatus'
 import { useOverworldUrls } from './hooks'
+import { getNodeIconUrl } from './utils'
 
 import type {
   MapNode as GameMapNode,
@@ -97,14 +98,7 @@ export const OverworldMap = React.memo(
     const {
       mapBgUrl,
       vanUrl,
-      rivalVanUrl,
-      pinFestivalUrl,
-      pinHomeUrl,
-      pinClubUrl,
-      pinRestUrl,
-      pinSpecialUrl,
-      pinFinaleUrl,
-      pinSupplyUrl
+      rivalVanUrl
     } = urls
 
     // Memoized connection rendering
@@ -144,13 +138,7 @@ export const OverworldMap = React.memo(
         const visibility = getNodeVisibility(node.layer, currentLayer)
         const isReachable = isConnected(node.id) || node.type === 'START'
 
-        let iconUrl = pinClubUrl
-        if (node.type === 'FESTIVAL') iconUrl = pinFestivalUrl
-        else if (node.type === 'START') iconUrl = pinHomeUrl
-        else if (node.type === 'REST_STOP') iconUrl = pinRestUrl
-        else if (node.type === 'SPECIAL') iconUrl = pinSpecialUrl
-        else if (node.type === 'FINALE') iconUrl = pinFinaleUrl
-        else if (node.type === 'SUPPLY_STOP') iconUrl = pinSupplyUrl
+        const iconUrl = getNodeIconUrl(node.type, urls)
 
         const nodeVenueId = normalizeVenueId(node.venueId ?? node.venue)
         const cityKey = nodeVenueId ? getCityKeyFromVenueId(nodeVenueId) : ''
@@ -208,13 +196,7 @@ export const OverworldMap = React.memo(
       getNodeVisibility,
       isConnected,
       handleTravel,
-      pinClubUrl,
-      pinFestivalUrl,
-      pinHomeUrl,
-      pinRestUrl,
-      pinSpecialUrl,
-      pinFinaleUrl,
-      pinSupplyUrl,
+      urls,
       vanUrl,
       activeStoryFlags,
       setHoveredNode,
