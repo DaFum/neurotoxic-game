@@ -18,8 +18,9 @@ export class EffectManager {
   spritePool: EffectSpritePool
 
   /**
-   * @param app - App.
-   * @param parentContainer - Parent container.
+   * Initializes the manager with circular buffer pooling and assigns parent rendering resources.
+   * @param app - The host Pixi application instance managing the rendering loop.
+   * @param parentContainer - The parent Pixi container where effect sprites will be injected.
    */
   constructor(app: Application, parentContainer: Container) {
     this.app = app
@@ -49,9 +50,13 @@ export class EffectManager {
   }
 
   /**
-   * Releases an effect sprite to the pool.
-   * NOTE: This method must ONLY be used for effects NOT tracked in the circular buffer (activeEffects),
-   * or the buffer state will become inconsistent.
+   * Releases an effect sprite to the underlying sprite pool.
+   *
+   * @remarks
+   * This method must ONLY be used for effects NOT currently tracked in the circular buffer (`activeEffects`),
+   * otherwise the buffer state tracking will become permanently inconsistent.
+   *
+   * @param effect - The effect sprite to release.
    */
   releaseEffectToPool(effect: EffectSprite | null): void {
     this.spritePool.releaseSprite(effect)
@@ -67,6 +72,17 @@ export class EffectManager {
     this.effectCount--
   }
 
+  /**
+   * Spawns a new visual hit effect at the specified world coordinates.
+   *
+   * @remarks
+   * This method manages a circular buffer. If the maximum capacity of active effects
+   * is reached, it deterministically evicts the oldest effect in O(1) time without shifting.
+   *
+   * @param x - The x-coordinate location to spawn the effect.
+   * @param y - The y-coordinate location to spawn the effect.
+   * @param color - The hexadecimal color value to tint the spawned effect.
+   */
   spawnHitEffect(x: number, y: number, color: number): void {
     if (!this.container) return
 
@@ -123,6 +139,15 @@ export class EffectManager {
     }
   }
 
+  /**
+   * Advances the animation timeline and opacity decay for all currently active effect sprites.
+   *
+   * @remarks
+   * This update loop skips destroyed or released effects. If an effect decays below visibility,
+   * it is automatically released back to the local object pool and cleared from the buffer.
+   *
+   * @param deltaMS - The elapsed time since the last frame in milliseconds.
+   */
   update(deltaMS: number): void {
     const deltaSec = deltaMS / 1000
     const decay = deltaSec * 3
@@ -156,6 +181,10 @@ export class EffectManager {
     }
   }
 
+  /**
+   * Purges all active effect sprites, clears tracked rendering resources, and destroys
+   * the underlying texture managers and sprite pools.
+   */
   dispose(): void {
     this.activeEffects = new Array(EffectManager.MAX_ACTIVE_EFFECTS)
     this.effectCount = 0
