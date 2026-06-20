@@ -96,19 +96,19 @@ describe('NoteSpritePool', () => {
     pool.noteTextures.lightning = { id: 'lightning' }
 
     // Skull lane
-    assert.equal(pool._getEffectiveTexture(0).id, 'skull')
+    assert.equal(pool.factory._getEffectiveTexture(0).id, 'skull')
 
     // Lightning lane
-    assert.equal(pool._getEffectiveTexture(1).id, 'lightning')
+    assert.equal(pool.factory._getEffectiveTexture(1).id, 'lightning')
 
     // Missing lightning falls back to skull
     pool.noteTextures.lightning = null
-    assert.equal(pool._getEffectiveTexture(1).id, 'skull')
+    assert.equal(pool.factory._getEffectiveTexture(1).id, 'skull')
 
     // Missing skull falls back to lightning
     pool.noteTextures.lightning = { id: 'lightning' }
     pool.noteTextures.skull = null
-    assert.equal(pool._getEffectiveTexture(0).id, 'lightning')
+    assert.equal(pool.factory._getEffectiveTexture(0).id, 'lightning')
   })
 
   afterEach(() => {
@@ -158,7 +158,7 @@ describe('NoteSpritePool', () => {
   test('createNoteSprite creates a fallback Sprite with WHITE texture if texture is missing', () => {
     pool.noteTextures = { skull: null, lightning: null }
 
-    const sprite = pool.createNoteSprite(0)
+    const sprite = pool.factory.createNoteSprite(0)
 
     assert.ok(sprite instanceof PIXI.Sprite)
     assert.equal(sprite.texture.id, 'white')
@@ -175,7 +175,7 @@ describe('NoteSpritePool', () => {
     const sprite = new PIXI.Sprite(PIXI.Texture.WHITE)
     sprite.isFallback = true
 
-    pool.initializeNoteSprite(sprite, lane, 0)
+    pool.factory.initializeNoteSprite(sprite, lane, 0)
 
     assert.equal(sprite.x, 350) // 300 + 50
     assert.equal(sprite.y, -50)
@@ -212,7 +212,7 @@ describe('NoteSpritePool', () => {
 
       const sprite = new PIXI.Sprite()
 
-      pool.initializeNoteSprite(sprite, lane, variant.laneIndex)
+      pool.factory.initializeNoteSprite(sprite, lane, variant.laneIndex)
 
       assert.equal(
         sprite.texture.id,
@@ -253,7 +253,7 @@ describe('NoteSpritePool', () => {
     const lane = { color: 0x00ff00, renderX: 100 }
     const sprite = new PIXI.Sprite()
 
-    pool.initializeNoteSprite(sprite, lane, 0)
+    pool.factory.initializeNoteSprite(sprite, lane, 0)
 
     assert.equal(typeof sprite.jitterOffset, 'number')
     // NOTE_JITTER_RANGE is 10, so range is -5 to 5
