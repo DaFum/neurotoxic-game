@@ -37,7 +37,7 @@ type NoteTextures = {
  * This class abstracts the texture selection and fallback logic for note sprites
  * so that NoteSpritePool can focus on pooling semantics.
  */
-class NoteSpriteFactory {
+export class NoteSpriteFactory {
   noteTextures: NoteTextures
 
   constructor() {
