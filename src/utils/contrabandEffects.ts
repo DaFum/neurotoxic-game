@@ -14,7 +14,8 @@ export const ADDITIVE_BAND_EFFECT_FIELDS = {
   tour_success: 'tourSuccess',
   gig_modifier: 'gigModifier',
   tempo: 'tempo',
-  practice_gain: 'practiceGain'
+  practice_gain: 'practiceGain',
+  harmony: 'harmony'
 } as const
 
 /**
@@ -31,7 +32,8 @@ export const EQUIPMENT_APPLY_ON_ADD_EFFECTS: ReadonlySet<string> = new Set([
   'affinity',
   'style',
   'tour_success',
-  'stress'
+  'stress',
+  'harmony'
 ])
 
 /**

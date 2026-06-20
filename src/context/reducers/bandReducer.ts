@@ -433,19 +433,36 @@ export const handleCraftItem = (
 
   // Consume inputs.
   const newStash = Object.assign(Object.create(null), stash)
+  let consumedBand = { ...state.band }
+
   for (const [itemId, qty] of Object.entries(recipe.inputs)) {
     const entry = newStash[itemId] as Record<string, unknown>
     const current = getStashCount(newStash, itemId)
-    if (current - qty > 0 && typeof entry.stacks === 'number') {
-      newStash[itemId] = { ...entry, stacks: current - qty }
-    } else {
+
+    // Revert apply-on-add equipment effects if the item is being fully deleted
+    if (current - qty <= 0) {
+      const itemDef = CONTRABAND_BY_ID.get(itemId)
+      if (itemDef?.applyOnAdd && itemDef.type === 'equipment') {
+        applySharedBandEffect(
+          consumedBand,
+          itemDef.effectType,
+          -(itemDef.value as number),
+          EQUIPMENT_APPLY_ON_ADD_EFFECTS
+        )
+      }
       delete newStash[itemId]
+    } else {
+      if (typeof entry.stacks === 'number') {
+        newStash[itemId] = { ...entry, stacks: current - qty }
+      }
     }
   }
 
+  consumedBand.stash = newStash
+
   const consumedState: GameState = {
     ...state,
-    band: { ...state.band, stash: newStash }
+    band: consumedBand
   }
 
   // Add the output. Abort (without consuming) if it cannot be added, e.g. a

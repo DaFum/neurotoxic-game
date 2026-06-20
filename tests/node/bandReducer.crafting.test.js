@@ -10,6 +10,29 @@ const makeState = stash => ({
 })
 
 describe('bandReducer - handleCraftItem', () => {
+  it('reverts apply-on-add equipment effects when consumed as a crafting input', () => {
+    // c_rusty_strings adds +5 luck. When it's consumed for recipe_blood_pick, that luck should be reverted.
+    const state = makeState({
+      c_bone_dust: { id: 'c_bone_dust', stacks: 2 },
+      c_rusty_strings: { id: 'c_rusty_strings', stacks: 1 }
+    })
+    state.band.luck = 5 // Simulate the luck from having equipped c_rusty_strings
+
+    const next = handleCraftItem(state, {
+      recipeId: 'recipe_blood_pick',
+      instanceId: 'crafted-blood-pick',
+      toastId: 'craft_toast_blood_pick'
+    })
+
+    // The luck should be reduced by 5, down to 0
+    assert.equal(next.band.luck, 0)
+    // Both inputs consumed
+    assert.ok(!Object.hasOwn(next.band.stash, 'c_rusty_strings'))
+    assert.ok(!Object.hasOwn(next.band.stash, 'c_bone_dust'))
+    // Output added
+    assert.ok(Object.hasOwn(next.band.stash, 'c_blood_pick'))
+  })
+
   it('consumes inputs and adds the crafted output', () => {
     // recipe_cursed_pick: 2x c_sticky_plectrum -> c_cursed_pick
     const state = makeState({
