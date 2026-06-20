@@ -3,7 +3,7 @@ import { GeneratedImagePanel } from '../../../ui/shared/GeneratedImagePanel'
 import { getSectionBackgroundPrompt } from '../../../utils/imageGen'
 import { TOURBUS_SLOT_POSITIONS } from '../../../utils/assetSections/tourbusConfig'
 import { TourbusTrailerOverlay } from './TourbusTrailerOverlay'
-import { AssetSlotButton } from '../shared/AssetSlotButton'
+import { TourbusSlotButton } from './TourbusSlotButton'
 import type { LongTermAsset } from '../../../types/assets'
 
 interface Props {
@@ -41,36 +41,15 @@ export const TourbusVehicleView = ({ asset, onSlotClick }: Props) => {
             if (!pos) return null
             const installed = slot.installedModuleId
             return (
-              <AssetSlotButton
+              <TourbusSlotButton
                 key={slot.id}
                 id={slot.id}
                 slotType={slot.slotType}
                 installedModuleId={installed}
                 onClick={onSlotClick}
-                className='absolute h-9 w-9 -translate-x-1/2 -translate-y-1/2 border-2 sm:h-12 sm:w-12 md:h-16 md:w-16'
-                imageSizeHint={{ width: 128, height: 128 }}
-                style={{
-                  left: `${pos.x * 100}%`,
-                  top: `${pos.y * 100}%`,
-                  borderColor:
-                    'var(--section-accent, var(--color-toxic-green))',
-                  borderRadius: '50%',
-                  background: installed
-                    ? 'transparent'
-                    : 'var(--color-hotspot-bg)'
-                }}
-              >
-                {!installed && (
-                  <span
-                    className='text-base sm:text-xl md:text-2xl'
-                    style={{
-                      color: 'var(--section-accent, var(--color-toxic-green))'
-                    }}
-                  >
-                    +
-                  </span>
-                )}
-              </AssetSlotButton>
+                left={`${pos.x * 100}%`}
+                top={`${pos.y * 100}%`}
+              />
             )
           })}
       </div>
