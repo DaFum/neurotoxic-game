@@ -433,7 +433,7 @@ export const handleCraftItem = (
 
   // Consume inputs.
   const newStash = Object.assign(Object.create(null), stash)
-  let consumedBand = { ...state.band }
+  const consumedBand = { ...state.band }
 
   for (const [itemId, qty] of Object.entries(recipe.inputs)) {
     const entry = newStash[itemId] as Record<string, unknown>
