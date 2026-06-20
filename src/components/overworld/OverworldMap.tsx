@@ -95,11 +95,7 @@ export const OverworldMap = React.memo(
 
     const urls = useOverworldUrls(isOnlineNetwork, t)
 
-    const {
-      mapBgUrl,
-      vanUrl,
-      rivalVanUrl
-    } = urls
+    const { mapBgUrl, vanUrl, rivalVanUrl } = urls
 
     // Memoized connection rendering
     const renderedConnections = useMemo(() => {
