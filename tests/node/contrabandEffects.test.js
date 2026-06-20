@@ -31,4 +31,11 @@ describe('contrabandEffects.applySharedBandEffect', () => {
     assert.equal(applySharedBandEffect(band, 'tempo', 0.2, allowed), false)
     assert.equal(band.tempo, 0)
   })
+
+  it('applies stress modifiers to the band for stress effectType', () => {
+    const band = { stress: 10 }
+    const handled = applySharedBandEffect(band, 'stress', -10)
+    assert.equal(handled, true)
+    assert.equal(band.stress, 0)
+  })
 })

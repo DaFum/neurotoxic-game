@@ -31,6 +31,34 @@ describe('bandReducer - handleCraftItem', () => {
     )
   })
 
+  it('correctly crafts cursed setlist and consumes occult materials', () => {
+    // recipe_cursed_setlist: 3x c_grimoire_page + 1x c_void_ash -> c_cursed_setlist
+    const state = makeState({
+      c_grimoire_page: { id: 'c_grimoire_page', stacks: 3 },
+      c_void_ash: { id: 'c_void_ash', stacks: 2 }
+    })
+    const next = handleCraftItem(state, {
+      recipeId: 'recipe_cursed_setlist',
+      instanceId: 'crafted-setlist',
+      toastId: 'craft_toast_setlist'
+    })
+
+    // Grimoire page fully consumed
+    assert.ok(!Object.hasOwn(next.band.stash, 'c_grimoire_page'))
+    // Void ash consumed 1 unit, 1 remaining
+    assert.ok(Object.hasOwn(next.band.stash, 'c_void_ash'))
+    assert.equal(next.band.stash.c_void_ash.stacks, 1)
+
+    // Output added
+    assert.ok(Object.hasOwn(next.band.stash, 'c_cursed_setlist'))
+    assert.equal(next.band.stash.c_cursed_setlist.instanceId, 'crafted-setlist')
+    assert.ok(
+      next.toasts.some(
+        t => t.type === 'success' && t.messageKey === 'ui:toast.crafted'
+      )
+    )
+  })
+
   it('leaves leftover input stacks when more than required', () => {
     const state = makeState({
       c_sticky_plectrum: { id: 'c_sticky_plectrum', stacks: 5 }

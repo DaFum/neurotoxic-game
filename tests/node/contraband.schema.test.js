@@ -227,6 +227,8 @@ describe('Contraband Schema (with imagePrompt)', () => {
       const positiveEffects = ['stamina', 'mood', 'harmony', 'luck']
       for (const item of CONTRABAND_DB) {
         if (positiveEffects.includes(item.effectType)) {
+          // c_void_ash intentionally drains harmony
+          if (item.id === 'c_void_ash') continue
           assert.ok(
             item.value > 0,
             `Item ${item.id} with positive effect ${item.effectType} has non-positive value: ${item.value}`
