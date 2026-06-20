@@ -17,3 +17,4 @@
 | 2026-06-16        | src/components/hud/LaneInputArea.tsx          | LaneInputAreaProps, LaneInputZoneProps, LaneInputZone, LaneInputArea                                                                                     |
 | 2026-06-18        | src/components/GigHUD.tsx                     | GigHUDStats, GigHUDProps, GigHUD                                                                                                                         |
 | 2026-06-19        | src/hooks/rhythmGame/useRhythmGameState.ts    | RhythmUiState, RhythmStateSetters, RhythmGameStateHookReturn, useRhythmGameState                                                                         |
+| 2026-06-20 | src/components/stage/EffectManager.ts | EffectManager, constructor, releaseEffectToPool, spawnHitEffect, update, dispose |
