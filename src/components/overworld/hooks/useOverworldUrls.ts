@@ -68,9 +68,11 @@ const resolveSvgTokenValue = (tokenName: SvgTokenName): string => {
     .getPropertyValue(tokenName)
     .trim()
 
-  const finalValue = isSafeSvgColorValue(resolvedValue) ? resolvedValue : fallback
-  svgTokenCache.set(tokenName, finalValue)
-  return finalValue
+  if (isSafeSvgColorValue(resolvedValue)) {
+    svgTokenCache.set(tokenName, resolvedValue)
+    return resolvedValue
+  }
+  return fallback
 }
 
 const createSvgTokenStyle = (): string => {
