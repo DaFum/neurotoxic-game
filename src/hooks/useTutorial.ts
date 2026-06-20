@@ -2,7 +2,8 @@ import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameActions, useGameSelector } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
-import { GamePhase } from '../types'
+import type { GamePhase } from '../types'
+import { finiteNumberOr } from '../utils/gameState'
 
 /** Tutorial step ids in progression order. */
 export const TUTORIAL_STEPS = [0, 1, 2, 3]
@@ -68,7 +69,7 @@ export const useTutorial = () => {
   const currentScene = useGameSelector(state => state.currentScene)
   const settings = useGameSelector(state => state.settings)
   const { updatePlayer, updateSettings } = useGameActions()
-  const step = player.tutorialStep ?? 0
+  const step = finiteNumberOr(player?.tutorialStep, 0)
 
   const completeStep = useCallback(() => {
     const nextStep = step + 1
