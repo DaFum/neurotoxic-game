@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next'
 import { Modal } from '../../ui/shared/Modal'
 import { Tooltip } from '../../ui/shared/Tooltip'
-import { ActionButton } from '../../ui/shared/ActionButton'
+import { CancelButton } from './shared/CancelButton'
+import { ConfirmButton } from './shared/ConfirmButton'
 import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 import { getChassisImagePrompt } from '../../utils/imageGen'
 import {
@@ -78,13 +79,7 @@ export const UpgradeConfirmModal = ({ asset, isOpen, onClose }: Props) => {
           </p>
         )}
         <div className='flex justify-end gap-2'>
-          <ActionButton
-            onClick={onClose}
-            variant='custom'
-            className='bg-void-black text-ash-gray border-2 border-ash-gray px-3 py-2 text-sm hover:bg-ash-gray hover:text-void-black'
-          >
-            {t('ui:action_cancel')}
-          </ActionButton>
+          <CancelButton onClick={onClose} />
           <Tooltip
             content={
               insufficient
@@ -92,22 +87,16 @@ export const UpgradeConfirmModal = ({ asset, isOpen, onClose }: Props) => {
                 : undefined
             }
           >
-            <ActionButton
+            <ConfirmButton
               onClick={() => {
                 if (nextTier === null) return
                 upgradeChassisTier(asset.id, nextTier)
                 onClose()
               }}
               disabled={blocked}
-              variant='custom'
-              className='px-3 py-2 text-sm disabled:opacity-40'
-              style={{
-                background: 'var(--section-accent, var(--color-toxic-green))',
-                color: 'var(--color-void-black)'
-              }}
             >
               {t('assets:actions.upgrade')}
-            </ActionButton>
+            </ConfirmButton>
           </Tooltip>
         </div>
       </div>

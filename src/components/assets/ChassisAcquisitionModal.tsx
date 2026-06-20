@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Modal } from '../../ui/shared/Modal'
 import { Tooltip } from '../../ui/shared/Tooltip'
-import { ActionButton } from '../../ui/shared/ActionButton'
+import { CancelButton } from './shared/CancelButton'
+import { ConfirmButton } from './shared/ConfirmButton'
 import { CrowdfundSetupModal } from './CrowdfundSetupModal'
 import { LoanProfileChoiceGrid } from './LoanProfileModal'
 import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
@@ -247,13 +248,7 @@ const ChassisAcquisitionFooter = ({
         {formatCurrency(price, i18n.language)}
       </span>
       <div className='flex gap-2'>
-        <ActionButton
-          onClick={onClose}
-          variant='custom'
-          className='bg-void-black text-ash-gray border-2 border-ash-gray px-3 py-2 text-sm hover:bg-ash-gray hover:text-void-black'
-        >
-          {t('ui:action_cancel')}
-        </ActionButton>
+        <CancelButton onClick={onClose} />
         <Tooltip
           content={
             acquisitionBlocked
@@ -265,7 +260,7 @@ const ChassisAcquisitionFooter = ({
                   : undefined
           }
         >
-          <ActionButton
+          <ConfirmButton
             onClick={onConfirm}
             disabled={
               acquisitionBlocked ||
@@ -273,15 +268,9 @@ const ChassisAcquisitionFooter = ({
               insufficient ||
               price === 0
             }
-            variant='custom'
-            className='px-3 py-2 text-sm disabled:opacity-40'
-            style={{
-              background: 'var(--section-accent, var(--color-toxic-green))',
-              color: 'var(--color-void-black)'
-            }}
           >
             {t('assets:actions.purchase')}
-          </ActionButton>
+          </ConfirmButton>
         </Tooltip>
       </div>
     </div>
