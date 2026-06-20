@@ -141,7 +141,7 @@ export class NoteSpritePool {
   static MAX_POOL_SIZE = 64
   container: Container | null
   spritePool: NoteSprite[]
-  private factory: NoteSpriteFactory
+  factory: NoteSpriteFactory
 
   constructor(container: Container | null) {
     this.container = container
@@ -155,41 +155,6 @@ export class NoteSpritePool {
 
   set noteTextures(value: NoteTextures) {
     this.factory.noteTextures = value
-  }
-
-  /**
-   * Retrieves the appropriate texture for a given lane.
-   *
-   * @param laneIndex - The index of the rhythm lane.
-   * @returns The resolved texture or null if none is available.
-   */
-  _getEffectiveTexture(laneIndex: number): Texture | null {
-    return this.factory._getEffectiveTexture(laneIndex)
-  }
-
-  /**
-   * Creates a new uninitialized note sprite for the given lane.
-   *
-   * @param laneIndex - The index of the rhythm lane.
-   * @returns A new sprite instance configured as a note or fallback.
-   */
-  createNoteSprite(laneIndex: number): NoteSprite {
-    return this.factory.createNoteSprite(laneIndex)
-  }
-
-  /**
-   * Reinitializes a note sprite with fresh state and textures.
-   *
-   * @param sprite - The sprite instance to reset.
-   * @param lane - Visual data for the target lane.
-   * @param laneIndex - The index of the rhythm lane.
-   */
-  initializeNoteSprite(
-    sprite: NoteSprite,
-    lane: LaneData,
-    laneIndex: number
-  ): void {
-    return this.factory.initializeNoteSprite(sprite, lane, laneIndex)
   }
 
   /**
