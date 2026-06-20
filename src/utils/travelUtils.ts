@@ -301,31 +301,22 @@ export const getTravelArrivalUpdates = ({
     0
   )
   if (travelStaminaRegen > 0 && Array.isArray(band?.members)) {
-    const updatedMembers: NonNullable<typeof bandPatch.members> = []
-
-    for (let i = 0; i < band.members.length; i++) {
-      const member = band.members[i]
-      if (!member) {
-        continue
-      }
-
-      const currentStamina = finiteNumberOr(member?.stamina, 0)
-      const maxStamina = finiteNumberOr(member?.staminaMax, 100)
-
-      if (currentStamina !== maxStamina) {
-        updatedMembers.push({
+    const updatedMembers = band.members.flatMap(member => {
+      if (!member) return []
+      const currentStamina = finiteNumberOr(member.stamina, 0)
+      const maxStamina = finiteNumberOr(member.staminaMax, 100)
+      if (currentStamina >= maxStamina) return []
+      return [
+        {
           ...member,
-          stamina: clampMemberStamina(
-            currentStamina + travelStaminaRegen,
-            maxStamina
-          )
-        })
-      }
-    }
+          stamina: clampMemberStamina(currentStamina + travelStaminaRegen, maxStamina)
+        }
+      ]
+    })
 
     if (updatedMembers.length > 0) {
       bandPatch.members = updatedMembers
-    }
+
   }
 
   const nextBand = !isEmptyObject(bandPatch) ? bandPatch : null
