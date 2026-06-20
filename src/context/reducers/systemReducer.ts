@@ -215,25 +215,48 @@ export const handleLoadGame = (
     })(),
     // perRegion quest scopes were stamped from player.location and may carry
     // the venue display key; progress events now emit city keys, so remap.
-    activeQuests: safeState.activeQuests.map(quest => {
-      if (!quest || typeof quest.scopeKey !== 'string') return quest
-      if (getQuestDefinition(quest.id)?.repeatPolicy !== 'perRegion') {
-        return quest
+    activeQuests: (() => {
+      // ⚡ BOLT OPTIMIZATION: Replaced .map() with procedural loop.
+      // Why: Avoids closure allocation and intermediate arrays in hot paths.
+      const out = []
+      for (let i = 0; i < safeState.activeQuests.length; i++) {
+        const quest = safeState.activeQuests[i]
+        if (!quest || typeof quest.scopeKey !== 'string') {
+          out.push(quest as GameState['activeQuests'][number])
+          continue
+        }
+        if (getQuestDefinition(quest.id)?.repeatPolicy !== 'perRegion') {
+          out.push(quest as GameState['activeQuests'][number])
+          continue
+        }
+        const regionKey = getRegionKeyForLocation(quest.scopeKey)
+        if (regionKey && regionKey !== quest.scopeKey) {
+          out.push({ ...quest, scopeKey: regionKey })
+        } else {
+          out.push(quest as GameState['activeQuests'][number])
+        }
       }
-      const regionKey = getRegionKeyForLocation(quest.scopeKey)
-      return regionKey && regionKey !== quest.scopeKey
-        ? { ...quest, scopeKey: regionKey }
-        : quest
-    }),
-    completedQuestScopes: safeState.completedQuestScopes.map(scope => {
-      if (getQuestDefinition(scope.questId)?.repeatPolicy !== 'perRegion') {
-        return scope
+      return out
+    })(),
+    completedQuestScopes: (() => {
+      // ⚡ BOLT OPTIMIZATION: Replaced .map() with procedural loop.
+      // Why: Avoids closure allocation and intermediate arrays in hot paths.
+      const out = []
+      for (let i = 0; i < safeState.completedQuestScopes.length; i++) {
+        const scope = safeState.completedQuestScopes[i]
+        if (!scope || getQuestDefinition(scope.questId)?.repeatPolicy !== 'perRegion') {
+          out.push(scope as GameState['completedQuestScopes'][number])
+          continue
+        }
+        const regionKey = getRegionKeyForLocation(scope.scopeKey)
+        if (regionKey && regionKey !== scope.scopeKey) {
+          out.push({ ...scope, scopeKey: regionKey })
+        } else {
+          out.push(scope as GameState['completedQuestScopes'][number])
+        }
       }
-      const regionKey = getRegionKeyForLocation(scope.scopeKey)
-      return regionKey && regionKey !== scope.scopeKey
-        ? { ...scope, scopeKey: regionKey }
-        : scope
-    })
+      return out
+    })()
   }
 
   // Version Migration Map
@@ -373,16 +396,27 @@ const EFFECT_REVERTERS: Record<
     ...band,
     luck: Math.max(0, finiteNumberOr(band.luck, 0) - finiteEffectValue(value))
   }),
-  stamina_max: (band: BandState, value: unknown) => ({
-    ...band,
-    members: (band.members || []).map((m: BandMember) => ({
-      ...m,
-      staminaMax: Math.max(
-        0,
-        finiteNumberOr(m.staminaMax, 100) - finiteEffectValue(value)
-      )
-    }))
-  }),
+  stamina_max: (band: BandState, value: unknown) => {
+    // ⚡ BOLT OPTIMIZATION: Replaced .map() with procedural loop.
+    // Why: Avoids closure allocation and intermediate arrays.
+    const sourceMembers = band.members || []
+    const newMembers = new Array(sourceMembers.length)
+    const effectVal = finiteEffectValue(value)
+    for (let i = 0; i < sourceMembers.length; i++) {
+      const m = sourceMembers[i]
+      newMembers[i] = {
+        ...m,
+        staminaMax: Math.max(
+          0,
+          finiteNumberOr(m?.staminaMax, 100) - effectVal
+        )
+      }
+    }
+    return {
+      ...band,
+      members: newMembers as BandMember[]
+    }
+  },
   style: (band: BandState, value: unknown) => ({
     ...band,
     style: Math.max(0, finiteNumberOr(band.style, 0) - finiteEffectValue(value))
@@ -640,10 +674,18 @@ export const handleAdvanceDay = (
       currentStress / BALANCE_CONSTANTS.STRESS_MOOD_PENALTY_DIVISOR
     )
     if (moodPenalty > 0 && Array.isArray(nextBand.members)) {
-      nextBand.members = nextBand.members.map((member: BandMember) => ({
-        ...member,
-        mood: clampMemberMood(finiteNumberOr(member.mood, 0) - moodPenalty)
-      }))
+      // ⚡ BOLT OPTIMIZATION: Replaced .map() with procedural loop.
+      // Why: Avoids closure allocation and intermediate arrays.
+      const sourceMembers = nextBand.members
+      const newMembers = new Array(sourceMembers.length)
+      for (let i = 0; i < sourceMembers.length; i++) {
+        const member = sourceMembers[i]
+        newMembers[i] = {
+          ...member,
+          mood: clampMemberMood(finiteNumberOr(member?.mood, 0) - moodPenalty)
+        }
+      }
+      nextBand.members = newMembers as BandMember[]
     }
     nextBand.stress = clampBandStress(
       currentStress - BALANCE_CONSTANTS.STRESS_DAILY_DECAY

@@ -31,8 +31,14 @@ export const buildDeterministicToastId = (
   prefix: string,
   toasts: readonly ToastPayload[] | undefined
 ): string => {
-  const existing = new Set((toasts || []).map(t => t.id))
-  let i = (toasts || []).length
+  // ⚡ BOLT OPTIMIZATION: Replaced .map() inside Set constructor with procedural loop.
+  // Why: Avoids intermediate array allocation from .map().
+  const existing = new Set<string>()
+  const safeToasts = toasts || []
+  for (let idx = 0; idx < safeToasts.length; idx++) {
+    existing.add(safeToasts[idx]!.id)
+  }
+  let i = safeToasts.length
   let id = `${prefix}-${i}`
   while (existing.has(id)) {
     i += 1

@@ -258,3 +258,7 @@
 
 **Learning:** When generating child slots based on a module installation (`handleInstallModule` in `assetReducer.ts`), naively iterating over `payload.newSlotIds` without verifying against the module's actual `addsSlots` configuration introduces a vulnerability where malicious or malformed payloads can generate unauthorized slots.
 **Action:** Always validate arrays passed in payloads against the canonical configuration logic (e.g. `moduleInfo.addsSlots`) before executing state updates based on those payload sizes. Use `for` loops to correlate allowed slot types to requested entries to avoid unnecessary iteration and closure allocations on hot paths.
+
+## 2026-06-20 - Replace .map() chains with procedural loops in state reducers
+**Learning:** Using `Array.prototype.map()` to transform lists (like band members, active quests, or contraband effects) inside core reducers and state sanitizers creates unnecessary intermediate array allocations and closure overhead on every state change or load sequence, leading to severe GC pressure in hot paths.
+**Action:** Replaced `.map()` array iterations with procedural `for` loops in reducers (e.g., `systemReducer.ts`, `clinicReducer.ts`, `minigameReducer.ts`, etc.). Pre-allocate the result array when the length is known (`new Array(source.length)`) to further reduce dynamic reallocation overhead.
