@@ -282,13 +282,15 @@ export const handleBloodBankDonate = (
   let totalStaminaLost = 0
   // ⚡ BOLT OPTIMIZATION: Replaced .map() with procedural loop.
   // Why: Avoids closure allocation and intermediate arrays in hot paths.
-  const updatedMembers: BandMember[] = new Array(normalizedState.band.members.length)
+  const updatedMembers: BandMember[] = new Array(
+    normalizedState.band.members.length
+  )
   for (let i = 0; i < normalizedState.band.members.length; i++) {
     const member = normalizedState.band.members[i] as BandMember
-    const prevStamina = finiteNumberOr(member.stamina, 0)
+    const prevStamina = finiteNumberOr(member?.stamina, 0)
     const nextStamina = clampMemberStamina(
       prevStamina - staminaCost,
-      member.staminaMax
+      finiteNumberOr(member?.staminaMax, 100)
     )
     totalStaminaLost += prevStamina - nextStamina
     updatedMembers[i] = {

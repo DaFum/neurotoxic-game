@@ -36,7 +36,10 @@ export const buildDeterministicToastId = (
   const existing = new Set<string>()
   const safeToasts = toasts || []
   for (let idx = 0; idx < safeToasts.length; idx++) {
-    existing.add(safeToasts[idx]!.id)
+    const toast = safeToasts[idx]
+    if (toast?.id) {
+      existing.add(toast.id)
+    }
   }
   let i = safeToasts.length
   let id = `${prefix}-${i}`

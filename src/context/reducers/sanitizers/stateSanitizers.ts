@@ -915,7 +915,9 @@ export const sanitizeBand = (loadedBand: unknown): BandState => {
       const out = new Array(rawEffects.length)
       for (let i = 0; i < rawEffects.length; i++) {
         const effect = rawEffects[i]
-        const effectObj = isLooseRecord(effect) ? (effect as Record<string, unknown>) : {}
+        const effectObj = isLooseRecord(effect)
+          ? (effect as Record<string, unknown>)
+          : {}
         out[i] = {
           ...(copySafePrimitiveObject(effectObj) ?? {}),
           remainingDuration:

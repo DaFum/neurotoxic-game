@@ -218,22 +218,23 @@ export const handleLoadGame = (
     activeQuests: (() => {
       // ⚡ BOLT OPTIMIZATION: Replaced .map() with procedural loop.
       // Why: Avoids closure allocation and intermediate arrays in hot paths.
-      const out = []
-      for (let i = 0; i < safeState.activeQuests.length; i++) {
+      const len = safeState.activeQuests.length
+      const out = new Array(len)
+      for (let i = 0; i < len; i++) {
         const quest = safeState.activeQuests[i]
         if (!quest || typeof quest.scopeKey !== 'string') {
-          out.push(quest as GameState['activeQuests'][number])
+          out[i] = quest as GameState['activeQuests'][number]
           continue
         }
         if (getQuestDefinition(quest.id)?.repeatPolicy !== 'perRegion') {
-          out.push(quest as GameState['activeQuests'][number])
+          out[i] = quest as GameState['activeQuests'][number]
           continue
         }
         const regionKey = getRegionKeyForLocation(quest.scopeKey)
         if (regionKey && regionKey !== quest.scopeKey) {
-          out.push({ ...quest, scopeKey: regionKey })
+          out[i] = { ...quest, scopeKey: regionKey }
         } else {
-          out.push(quest as GameState['activeQuests'][number])
+          out[i] = quest as GameState['activeQuests'][number]
         }
       }
       return out
@@ -241,18 +242,22 @@ export const handleLoadGame = (
     completedQuestScopes: (() => {
       // ⚡ BOLT OPTIMIZATION: Replaced .map() with procedural loop.
       // Why: Avoids closure allocation and intermediate arrays in hot paths.
-      const out = []
-      for (let i = 0; i < safeState.completedQuestScopes.length; i++) {
+      const len = safeState.completedQuestScopes.length
+      const out = new Array(len)
+      for (let i = 0; i < len; i++) {
         const scope = safeState.completedQuestScopes[i]
-        if (!scope || getQuestDefinition(scope.questId)?.repeatPolicy !== 'perRegion') {
-          out.push(scope as GameState['completedQuestScopes'][number])
+        if (
+          !scope ||
+          getQuestDefinition(scope.questId)?.repeatPolicy !== 'perRegion'
+        ) {
+          out[i] = scope as GameState['completedQuestScopes'][number]
           continue
         }
         const regionKey = getRegionKeyForLocation(scope.scopeKey)
         if (regionKey && regionKey !== scope.scopeKey) {
-          out.push({ ...scope, scopeKey: regionKey })
+          out[i] = { ...scope, scopeKey: regionKey }
         } else {
-          out.push(scope as GameState['completedQuestScopes'][number])
+          out[i] = scope as GameState['completedQuestScopes'][number]
         }
       }
       return out
@@ -406,10 +411,7 @@ const EFFECT_REVERTERS: Record<
       const m = sourceMembers[i]
       newMembers[i] = {
         ...m,
-        staminaMax: Math.max(
-          0,
-          finiteNumberOr(m?.staminaMax, 100) - effectVal
-        )
+        staminaMax: Math.max(0, finiteNumberOr(m?.staminaMax, 100) - effectVal)
       }
     }
     return {
@@ -832,13 +834,13 @@ export const handleSetPendingRiskEvent = (
     if (state.pendingRiskEvent === null) return state
     const resolved = state.pendingRiskEvent
 
-    let asset: NonNullable<typeof state.assets>[number] | undefined;
+    let asset: NonNullable<typeof state.assets>[number] | undefined
     if (state.assets) {
       for (let i = 0; i < state.assets.length; i++) {
-        const a = state.assets[i];
+        const a = state.assets[i]
         if (a?.id === resolved.assetId) {
-          asset = a;
-          break;
+          asset = a
+          break
         }
       }
     }
