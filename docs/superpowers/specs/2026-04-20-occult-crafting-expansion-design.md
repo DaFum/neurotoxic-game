@@ -28,3 +28,6 @@ No new UI panels are strictly required since we are hooking into the existing `C
 
 ## 5. N3UR0-FORGE Journal
 Update `.jules/N3UR0-FORGE.md` with the new feature entry.
+
+## 6. Implementation Retrospective
+The implementation introduced `stress`, `harmony`, and `crit` correctly as effect types that applied via the asset system hooks to the band state when equipping these cursed items. We updated the actual effect mappings in `src/utils/contrabandEffects.ts` by adding them to `EQUIPMENT_APPLY_ON_ADD_EFFECTS` and `ADDITIVE_BAND_EFFECT_FIELDS`, and updating tests accordingly in `tests/node/contrabandEffects.test.js`.

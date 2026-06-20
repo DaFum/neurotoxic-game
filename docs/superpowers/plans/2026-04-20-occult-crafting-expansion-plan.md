@@ -15,7 +15,7 @@
 - Run `pnpm run typecheck:core` and `pnpm run test` to ensure the recipes are valid and break no type definitions.
 
 ## Step 3: Tests
-- Open `tests/node/logic/crafting.test.ts` (or create it if it doesn't exist, checking where crafting is currently tested, likely `tests/node/reducers/bandReducer.test.ts` or a dedicated file).
+- Open `tests/node/bandReducer.crafting.test.js` and `tests/node/contrabandEffects.test.js`.
 - Add a specific test case that asserts crafting a `recipe_cursed_setlist` correctly consumes `c_grimoire_page` and `c_void_ash` and produces `c_cursed_setlist`.
 - Run `pnpm run test:node` to verify the test passes.
 
