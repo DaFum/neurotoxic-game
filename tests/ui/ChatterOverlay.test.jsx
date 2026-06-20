@@ -25,18 +25,26 @@ test('ChatterOverlay passes scene state to getRandomChatter', async () => {
 
   vi.useFakeTimers({ apis: ['setTimeout', 'Date'] })
 
+  vi.doMock('../../src/context/GameState', () => ({
+    useGameSelector: vi.fn(selector =>
+      selector({
+        currentScene: GAME_PHASES.GIG,
+        band: { members: [] },
+        player: { currentNodeId: 'none' },
+        gameMap: { nodes: {} },
+        social: {},
+        lastGigStats: null,
+        gigModifiers: {}
+      })
+    )
+  }))
+
   // Dynamic import to apply mock
   const { ChatterOverlay } =
     await import('../../src/components/ChatterOverlay.tsx')
 
-  const gameState = {
-    currentScene: GAME_PHASES.GIG,
-    band: { members: [] },
-    player: { currentNodeId: 'none' },
-    gameMap: { nodes: {} }
-  }
   await act(async () => {
-    render(<ChatterOverlay gameState={gameState} />)
+    render(<ChatterOverlay />)
   })
 
   // Fast-forward time to trigger chatter generation

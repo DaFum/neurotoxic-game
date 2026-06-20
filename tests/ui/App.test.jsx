@@ -294,18 +294,9 @@ describe('App', () => {
     expect(crtOverlay).toBeTruthy()
   })
 
-  test('passes the expected gameState slice to chatter overlay', () => {
-    mockGameState.currentScene = GAME_PHASES.GIG
-    mockGameState.band = { members: [{ name: 'Test' }] }
-    mockGameState.player = { money: 500 }
-
+  test('renders chatter overlay', () => {
     render(<App />)
     expect(screen.getByTestId('chatter')).toBeTruthy()
-    expect(chatterProps.current?.gameState?.currentScene).toBe(GAME_PHASES.GIG)
-    expect(chatterProps.current?.gameState?.band).toEqual(mockGameState.band)
-    expect(chatterProps.current?.gameState?.player).toEqual(
-      mockGameState.player
-    )
   })
 
   test('keeps the expected game container styling', () => {
