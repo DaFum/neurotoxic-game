@@ -27,12 +27,7 @@ import { OverworldModals } from '../components/overworld/OverworldModals'
  */
 export const Overworld = () => {
   const { t } = useTranslation(['ui', 'venues'])
-  const playerLocation = useGameSelector(state => state.player.location)
-  const playerDay = useGameSelector(state => state.player.day)
-  const playerCurrentNodeId = useGameSelector(state => state.player.currentNodeId)
-  const playerVan = useGameSelector(state => state.player.van)
-
-  const player = useGameSelector(state => state.player) // Keeping for prop drilling
+  const player = useGameSelector(state => state.player)
   const gameMap = useGameSelector(state => state.gameMap)
   const band = useGameSelector(state => state.band)
   const assets = useGameSelector(state => state.assets)
@@ -62,7 +57,7 @@ export const Overworld = () => {
   const [hoveredNode, setHoveredNode] = useState<MapNode | null>(null)
 
   useSpawnRivalBand(rivalBand, gameMap, spawnRivalBand)
-  useRivalEscalation(rivalBand, playerCurrentNodeId, updateRivalBand)
+  useRivalEscalation(rivalBand, player.currentNodeId, updateRivalBand)
   const glitch = useGlitchEffect()
 
   const modals = useOverworldModals()
@@ -105,7 +100,7 @@ export const Overworld = () => {
 
   const { isSaving, handleSaveWithDelay } = useOverworldSave(saveGame)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const locationName = translateLocation(t, playerLocation, playerLocation)
+  const locationName = translateLocation(t, player.location, player.location)
   const openClinic = useCallback(() => {
     changeScene(GAME_PHASES.CLINIC)
   }, [changeScene])
@@ -113,9 +108,7 @@ export const Overworld = () => {
     changeScene(GAME_PHASES.ASSETS)
   }, [changeScene])
 
-  const currentNode = playerCurrentNodeId !== null && playerCurrentNodeId !== undefined
-    ? gameMap?.nodes[playerCurrentNodeId]
-    : undefined
+  const currentNode = gameMap?.nodes[player.currentNodeId]
   const currentLayer = currentNode?.layer || 0
 
   useAmbientResume()
@@ -144,8 +137,8 @@ export const Overworld = () => {
         isMenuOpen={isMenuOpen}
         setIsMenuOpen={setIsMenuOpen}
         isTraveling={isTraveling}
-        vanFuel={playerVan?.fuel}
-        vanCondition={playerVan?.condition}
+        vanFuel={player.van?.fuel}
+        vanCondition={player.van?.condition}
         isSaving={isSaving}
         openStash={modals.stash.openStash}
         openQuests={modals.quests.openQuests}
@@ -182,7 +175,7 @@ export const Overworld = () => {
         activeStoryFlags={activeStoryFlags}
       />
 
-      <EventLog t={t} day={playerDay} locationId={playerLocation} />
+      <EventLog t={t} day={player.day} locationId={player.location} />
 
       <OverworldModals modals={modals} />
     </div>
