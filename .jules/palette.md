@@ -139,3 +139,8 @@
 
 **Learning:** When adding focus rings (`focus-visible:ring-2`) to shared components like modals, hardcoding a color like `toxic-green` breaks the thematic consistency of sections that use dynamic accents (e.g., Bandhaus, Merch Workshop).
 **Action:** Use Tailwind's arbitrary values with CSS variables to ensure the focus ring always matches the current section's dynamic accent color, providing a fallback: `focus-visible:ring-[var(--section-accent,var(--color-toxic-green))]`.
+
+## 2026-06-21 - Focus Rings on Nested Data View Buttons
+
+**Learning:** Interactive elements nested deep within data views (like "Craft", "Make Amends", or "Use" buttons inside `DetailedStats` panels) are often overlooked for keyboard navigation styling, breaking accessibility for users trying to take action on specific rows of data.
+**Action:** Always verify that interactive buttons within lists, tables, or detailed views have explicit `focus-visible` utility classes applied (e.g., `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black`) to ensure they are visually apparent when navigating by keyboard.
