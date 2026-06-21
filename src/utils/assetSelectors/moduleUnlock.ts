@@ -197,7 +197,15 @@ export const getLockReasons = (
       ? u.requiredOtherModuleInstalled
       : [u.requiredOtherModuleInstalled]
     const installed = allInstalledModuleIds(state)
-    const anySatisfied = required.some(r => installed.has(r))
+    // ⚡ BOLT OPTIMIZATION: Replaced Array.some() with procedural loop to avoid closure allocations.
+    let anySatisfied = false
+    for (let i = 0; i < required.length; i++) {
+      const req = required[i]
+      if (req !== undefined && installed.has(req)) {
+        anySatisfied = true
+        break
+      }
+    }
     if (!anySatisfied) {
       reasons.push({ kind: 'otherModule', refs: [...required] })
     }
