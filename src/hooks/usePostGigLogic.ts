@@ -44,6 +44,7 @@ export const usePostGigLogic = () => {
     updateSocial,
     addToast,
     changeScene,
+    cleanupGigSession,
     unlockTrait,
     addQuest,
     applyQuestEvent
@@ -107,6 +108,7 @@ export const usePostGigLogic = () => {
     unlockTrait,
     addToast,
     changeScene,
+    cleanupGigSession,
     addQuest,
     applyQuestEvent,
     phase,

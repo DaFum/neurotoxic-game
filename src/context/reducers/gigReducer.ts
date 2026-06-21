@@ -6,7 +6,7 @@ import { buildDeterministicToastId } from './toastSanitizers'
 import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks } from '../../utils/traitUtils'
 import { DEFAULT_GIG_MODIFIERS } from '../initialState'
-import { GAME_PHASES } from '../gameConstants'
+import { DEFAULT_MINIGAME_STATE, GAME_PHASES } from '../gameConstants'
 import {
   isForbiddenKey,
   finiteNumberOr,
@@ -65,6 +65,29 @@ export const handleStartGig = (state: GameState, payload: Venue): GameState => {
     currentGig: payload,
     currentScene: GAME_PHASES.PRE_GIG,
     gigModifiers: { ...DEFAULT_GIG_MODIFIERS }
+  }
+}
+
+/**
+ * Tears down a finished gig session so stale data cannot leak into a later
+ * gig or minigame. Clears the current venue, the last post-gig summary, and
+ * resets minigame state to its defaults.
+ *
+ * @remarks
+ * Intentionally does NOT touch `currentScene` — the scene transition is owned
+ * by the post-gig continue/arrival callback (per the minigame-completion
+ * invariant). Dispatch this only after those callbacks have read the session
+ * state and changed scene, so the consuming UI has already unmounted.
+ *
+ * @param state - Current game state after the gig has been settled.
+ * @returns State with `currentGig`, `lastGigStats`, and `minigame` reset.
+ */
+export const handleCleanupGigSession = (state: GameState): GameState => {
+  return {
+    ...state,
+    currentGig: null,
+    lastGigStats: null,
+    minigame: { ...DEFAULT_MINIGAME_STATE }
   }
 }
 

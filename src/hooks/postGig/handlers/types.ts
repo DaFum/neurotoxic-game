@@ -29,6 +29,8 @@ export interface HandlerDispatchers {
   addQuest: (quest: Parameters<typeof createAddQuestAction>[0]) => void
   applyQuestEvent: (event: QuestProgressEvent) => void
   changeScene: (scene: GamePhase) => void
+  /** Clears `currentGig`/`lastGigStats` and resets minigame state after the gig session ends. */
+  cleanupGigSession: () => void
   setBrandOffers: (offers: BrandDeal[]) => void
   setPostResult: (result: PostResult) => void
   unlockTrait: (memberId: string, traitId: string) => void

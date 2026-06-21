@@ -62,6 +62,7 @@ export interface UsePostGigHandlersProps {
   unlockTrait: (memberId: string, traitId: string) => void
   addToast: (message: string, type: 'success' | 'error' | 'info') => void
   changeScene: (scene: GamePhase) => void
+  cleanupGigSession: () => void
   addQuest: (quest: Parameters<typeof createAddQuestAction>[0]) => void
   applyQuestEvent: (event: QuestProgressEvent) => void
   phase: 'REPORT' | 'SOCIAL' | 'DEALS' | 'COMPLETE'
@@ -95,6 +96,7 @@ export function usePostGigHandlers({
   unlockTrait,
   addToast,
   changeScene,
+  cleanupGigSession,
   addQuest,
   applyQuestEvent,
   phase,
@@ -132,6 +134,7 @@ export function usePostGigHandlers({
       addQuest,
       applyQuestEvent,
       changeScene,
+      cleanupGigSession,
       setBrandOffers,
       setPostResult,
       unlockTrait,
@@ -145,6 +148,7 @@ export function usePostGigHandlers({
       addQuest,
       applyQuestEvent,
       changeScene,
+      cleanupGigSession,
       setBrandOffers,
       setPostResult,
       unlockTrait,
