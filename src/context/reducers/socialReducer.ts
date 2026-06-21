@@ -221,7 +221,7 @@ export const handleUpdateSocial = (
           d &&
           typeof d === 'object' &&
           typeof d.id === 'string' &&
-          typeof d.remainingGigs === 'number'
+          Number.isFinite(d.remainingGigs)
       )
       if (validDeals.length !== updates.activeDeals.length) {
         logger.warn(

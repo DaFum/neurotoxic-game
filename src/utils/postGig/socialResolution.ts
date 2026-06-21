@@ -230,7 +230,9 @@ export const calculatePostGigStateUpdates = (
   let appliedHarmonyDelta = 0
 
   if (result.harmonyChange) {
-    const prevHarmony = newBand.harmony ?? 1
+    // finiteNumberOr (not ??) so a persisted NaN harmony collapses to the
+    // fallback before the clamp instead of silently dropping harmonyChange.
+    const prevHarmony = finiteNumberOr(newBand.harmony, 1)
     const nextHarmony = clampBandHarmony(prevHarmony + result.harmonyChange)
     appliedHarmonyDelta = nextHarmony - prevHarmony
     newBand.harmony = nextHarmony
