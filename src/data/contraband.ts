@@ -421,6 +421,88 @@ const CONTRABAND_DB = [
     rarity: 'epic',
     icon: 'icon_ampoule',
     stackable: false
+  },
+  // Occult Expansion Items
+  {
+    id: 'c_bone_dust',
+    imagePrompt: 'ITEM_BONE_DUST',
+    name: 'items:contraband.c_bone_dust.name',
+    type: 'consumable',
+    effectType: 'stamina',
+    value: 10,
+    description: 'items:contraband.c_bone_dust.description',
+    rarity: 'common',
+    icon: 'icon_bone_dust',
+    stackable: true,
+    maxStacks: 10
+  },
+  {
+    id: 'c_grimoire_page',
+    imagePrompt: 'ITEM_GRIMOIRE_PAGE',
+    name: 'items:contraband.c_grimoire_page.name',
+    type: 'consumable',
+    effectType: 'luck',
+    value: 5,
+    description: 'items:contraband.c_grimoire_page.description',
+    rarity: 'common',
+    icon: 'icon_grimoire_page',
+    stackable: true,
+    maxStacks: 10
+  },
+  {
+    id: 'c_void_ash',
+    imagePrompt: 'ITEM_VOID_ASH',
+    name: 'items:contraband.c_void_ash.name',
+    type: 'consumable',
+    effectType: 'harmony',
+    value: -5,
+    description: 'items:contraband.c_void_ash.description',
+    rarity: 'uncommon',
+    icon: 'icon_void_ash',
+    stackable: true,
+    maxStacks: 5
+  },
+  {
+    id: 'c_cursed_setlist',
+    imagePrompt: 'ITEM_CURSED_SETLIST',
+    name: 'items:contraband.c_cursed_setlist.name',
+    type: 'equipment',
+    effectType: 'luck',
+    value: 15,
+    description: 'items:contraband.c_cursed_setlist.description',
+    rarity: 'epic',
+    icon: 'icon_cursed_setlist',
+    stackable: false,
+    maxStacks: 1,
+    applyOnAdd: true
+  },
+  {
+    id: 'c_blood_pick',
+    imagePrompt: 'ITEM_BLOOD_PICK',
+    name: 'items:contraband.c_blood_pick.name',
+    type: 'equipment',
+    effectType: 'crit',
+    value: 0.2,
+    description: 'items:contraband.c_blood_pick.description',
+    rarity: 'epic',
+    icon: 'icon_blood_pick',
+    stackable: false,
+    maxStacks: 1,
+    applyOnAdd: true
+  },
+  {
+    id: 'c_abyssal_pendant',
+    imagePrompt: 'ITEM_ABYSSAL_PENDANT',
+    name: 'items:contraband.c_abyssal_pendant.name',
+    type: 'equipment',
+    effectType: 'harmony',
+    value: -10,
+    description: 'items:contraband.c_abyssal_pendant.description',
+    rarity: 'rare',
+    icon: 'icon_abyssal_pendant',
+    stackable: false,
+    maxStacks: 1,
+    applyOnAdd: true
   }
 ]
 

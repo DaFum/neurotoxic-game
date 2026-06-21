@@ -108,3 +108,15 @@ After travel the band can get an item with specials to use.
 
 **Feature:** Dark Web Data Leak Minigame/Event
 **Description:** Created a modal and action dispatch to let the user leak their track early for a quick hit of Fame and Zealotry, while damaging Harmony and increasing Controversy. Fully validated bounds with native helpers.
+
+## 2026-06-20 - Cursed Crafting Expansion
+
+**Feature:** Occult Crafting Expansion
+
+**Description:**
+- Lore Integration:
+  The band discovers the dark art of combining occult artifacts gathered from the void into forbidden, cursed equipment. Cursed gear grants massive power in one area but often demands a sacrifice in harmony or stress.
+- State Impact:
+  src/data/contraband.ts: Added occult consumables (`c_bone_dust`, `c_grimoire_page`, `c_void_ash`) and cursed equipment (`c_cursed_setlist`, `c_blood_pick`, `c_abyssal_pendant`).
+  src/data/craftingRecipes.ts: Added new crafting recipes (`recipe_cursed_setlist`, `recipe_blood_pick`) enabling the combination of these new artifacts.
+  src/utils/contrabandEffects.ts: Expanded `EQUIPMENT_APPLY_ON_ADD_EFFECTS` and the effect application logic to properly handle `stress` and other new effects on the band state when equipping cursed items.

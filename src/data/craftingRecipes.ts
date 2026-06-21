@@ -43,6 +43,20 @@ export const CRAFTING_RECIPES = {
     output: 'c_blood_pact',
     labelKey: 'items:crafting.recipe_blood_pact.label',
     descKey: 'items:crafting.recipe_blood_pact.desc'
+  },
+  recipe_cursed_setlist: {
+    id: 'recipe_cursed_setlist',
+    inputs: { c_grimoire_page: 3, c_void_ash: 1 },
+    output: 'c_cursed_setlist',
+    labelKey: 'items:crafting.recipe_cursed_setlist.label',
+    descKey: 'items:crafting.recipe_cursed_setlist.desc'
+  },
+  recipe_blood_pick: {
+    id: 'recipe_blood_pick',
+    inputs: { c_bone_dust: 2, c_rusty_strings: 1 },
+    output: 'c_blood_pick',
+    labelKey: 'items:crafting.recipe_blood_pick.label',
+    descKey: 'items:crafting.recipe_blood_pick.desc'
   }
 } as const satisfies Record<string, CraftingRecipe>
 

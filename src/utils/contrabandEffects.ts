@@ -14,7 +14,8 @@ export const ADDITIVE_BAND_EFFECT_FIELDS = {
   tour_success: 'tourSuccess',
   gig_modifier: 'gigModifier',
   tempo: 'tempo',
-  practice_gain: 'practiceGain'
+  practice_gain: 'practiceGain',
+  harmony: 'harmony'
 } as const
 
 /**
@@ -30,7 +31,9 @@ export const EQUIPMENT_APPLY_ON_ADD_EFFECTS: ReadonlySet<string> = new Set([
   'crowd_control',
   'affinity',
   'style',
-  'tour_success'
+  'tour_success',
+  'stress',
+  'harmony'
 ])
 
 /**
@@ -83,6 +86,11 @@ export const applySharedBandEffect = (
       }
     }
     newBand.members = updatedMembers
+    return true
+  }
+  if (effectType === 'stress') {
+    const band = newBand as unknown as Record<string, number | undefined>
+    band.stress = finiteNumberOr(band.stress, 0) + finiteNumberOr(value, 0)
     return true
   }
   if (effectType === 'guitar_difficulty') {

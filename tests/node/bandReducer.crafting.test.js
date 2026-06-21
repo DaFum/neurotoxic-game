@@ -10,6 +10,29 @@ const makeState = stash => ({
 })
 
 describe('bandReducer - handleCraftItem', () => {
+  it('reverts apply-on-add equipment effects when consumed as a crafting input', () => {
+    // c_rusty_strings adds +5 luck. When it's consumed for recipe_blood_pick, that luck should be reverted.
+    const state = makeState({
+      c_bone_dust: { id: 'c_bone_dust', stacks: 2 },
+      c_rusty_strings: { id: 'c_rusty_strings', stacks: 1 }
+    })
+    state.band.luck = 5 // Simulate the luck from having equipped c_rusty_strings
+
+    const next = handleCraftItem(state, {
+      recipeId: 'recipe_blood_pick',
+      instanceId: 'crafted-blood-pick',
+      toastId: 'craft_toast_blood_pick'
+    })
+
+    // The luck should be reduced by 5, down to 0
+    assert.equal(next.band.luck, 0)
+    // Both inputs consumed
+    assert.ok(!Object.hasOwn(next.band.stash, 'c_rusty_strings'))
+    assert.ok(!Object.hasOwn(next.band.stash, 'c_bone_dust'))
+    // Output added
+    assert.ok(Object.hasOwn(next.band.stash, 'c_blood_pick'))
+  })
+
   it('consumes inputs and adds the crafted output', () => {
     // recipe_cursed_pick: 2x c_sticky_plectrum -> c_cursed_pick
     const state = makeState({
@@ -24,6 +47,34 @@ describe('bandReducer - handleCraftItem', () => {
     assert.ok(!Object.hasOwn(next.band.stash, 'c_sticky_plectrum'))
     assert.ok(Object.hasOwn(next.band.stash, 'c_cursed_pick'))
     assert.equal(next.band.stash.c_cursed_pick.instanceId, 'crafted-pick')
+    assert.ok(
+      next.toasts.some(
+        t => t.type === 'success' && t.messageKey === 'ui:toast.crafted'
+      )
+    )
+  })
+
+  it('correctly crafts cursed setlist and consumes occult materials', () => {
+    // recipe_cursed_setlist: 3x c_grimoire_page + 1x c_void_ash -> c_cursed_setlist
+    const state = makeState({
+      c_grimoire_page: { id: 'c_grimoire_page', stacks: 3 },
+      c_void_ash: { id: 'c_void_ash', stacks: 2 }
+    })
+    const next = handleCraftItem(state, {
+      recipeId: 'recipe_cursed_setlist',
+      instanceId: 'crafted-setlist',
+      toastId: 'craft_toast_setlist'
+    })
+
+    // Grimoire page fully consumed
+    assert.ok(!Object.hasOwn(next.band.stash, 'c_grimoire_page'))
+    // Void ash consumed 1 unit, 1 remaining
+    assert.ok(Object.hasOwn(next.band.stash, 'c_void_ash'))
+    assert.equal(next.band.stash.c_void_ash.stacks, 1)
+
+    // Output added
+    assert.ok(Object.hasOwn(next.band.stash, 'c_cursed_setlist'))
+    assert.equal(next.band.stash.c_cursed_setlist.instanceId, 'crafted-setlist')
     assert.ok(
       next.toasts.some(
         t => t.type === 'success' && t.messageKey === 'ui:toast.crafted'
