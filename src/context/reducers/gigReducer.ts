@@ -54,6 +54,13 @@ export const handleSetGig = (
 /**
  * Enters the pre-gig scene for a venue and resets gig modifiers to defaults.
  *
+ * @remarks
+ * Also resets minigame state to defaults at this entry boundary (symmetric
+ * with the gig-modifier reset). This clears any leftover minigame state from a
+ * prior abandoned setup minigame so it cannot leak into this gig. `lastGigStats`
+ * is intentionally NOT cleared here — it is consumed by gig milestone checks
+ * (`first_gig_done`, `flawless_gig`, `big_combo`) on the next `ADVANCE_DAY`.
+ *
  * @param state - Current game state before the gig starts.
  * @param payload - Venue that becomes the current gig.
  * @returns Updated state ready for pre-gig setup.
@@ -64,29 +71,7 @@ export const handleStartGig = (state: GameState, payload: Venue): GameState => {
     ...state,
     currentGig: payload,
     currentScene: GAME_PHASES.PRE_GIG,
-    gigModifiers: { ...DEFAULT_GIG_MODIFIERS }
-  }
-}
-
-/**
- * Tears down a finished gig session so stale data cannot leak into a later
- * gig or minigame. Clears the current venue, the last post-gig summary, and
- * resets minigame state to its defaults.
- *
- * @remarks
- * Intentionally does NOT touch `currentScene` — the scene transition is owned
- * by the post-gig continue/arrival callback (per the minigame-completion
- * invariant). Dispatch this only after those callbacks have read the session
- * state and changed scene, so the consuming UI has already unmounted.
- *
- * @param state - Current game state after the gig has been settled.
- * @returns State with `currentGig`, `lastGigStats`, and `minigame` reset.
- */
-export const handleCleanupGigSession = (state: GameState): GameState => {
-  return {
-    ...state,
-    currentGig: null,
-    lastGigStats: null,
+    gigModifiers: { ...DEFAULT_GIG_MODIFIERS },
     minigame: { ...DEFAULT_MINIGAME_STATE }
   }
 }

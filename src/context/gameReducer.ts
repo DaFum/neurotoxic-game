@@ -37,7 +37,6 @@ import {
   handleStartGig,
   handleSetSetlist,
   handleSetLastGigStats,
-  handleCleanupGigSession,
   handleSetGigModifiers
 } from './reducers/gigReducer'
 import {
@@ -138,7 +137,6 @@ const reducerMap: ReducerMap = {
   [ActionTypes.START_GIG]: handleStartGig,
   [ActionTypes.SET_SETLIST]: handleSetSetlist,
   [ActionTypes.SET_LAST_GIG_STATS]: handleSetLastGigStats,
-  [ActionTypes.CLEANUP_GIG_SESSION]: handleCleanupGigSession,
   [ActionTypes.SET_ACTIVE_EVENT]: handleSetActiveEvent,
   [ActionTypes.ADD_TOAST]: handleAddToast,
   [ActionTypes.REMOVE_TOAST]: handleRemoveToast,

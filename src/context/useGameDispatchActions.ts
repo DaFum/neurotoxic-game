@@ -51,7 +51,6 @@ import {
   createStartGigAction,
   createSetSetlistAction,
   createSetLastGigStatsAction,
-  createCleanupGigSessionAction,
   createSetActiveEventAction,
   createAddToastAction,
   createRemoveToastAction,
@@ -101,7 +100,6 @@ export type BaseGameDispatchActions = {
   setLastGigStats: (
     stats: Parameters<typeof createSetLastGigStatsAction>[0]
   ) => void
-  cleanupGigSession: () => void
   setActiveEvent: (
     event: Parameters<typeof createSetActiveEventAction>[0]
   ) => void
@@ -321,11 +319,6 @@ export function useGameDispatchActions({
     [dispatch]
   )
 
-  const cleanupGigSession = useCallback(
-    () => dispatch(createCleanupGigSessionAction()),
-    [dispatch]
-  )
-
   const removeToast = useCallback(
     (id: Parameters<typeof createRemoveToastAction>[0]) => {
       dispatch(createRemoveToastAction(id))
@@ -487,7 +480,6 @@ export function useGameDispatchActions({
       startGig,
       setSetlist,
       setLastGigStats,
-      cleanupGigSession,
       setActiveEvent,
       triggerEvent,
       resolveEvent,
@@ -524,7 +516,6 @@ export function useGameDispatchActions({
       startGig,
       setSetlist,
       setLastGigStats,
-      cleanupGigSession,
       setActiveEvent,
       triggerEvent,
       resolveEvent,

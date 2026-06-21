@@ -366,22 +366,6 @@ export const createSetLastGigStatsAction = (
 }
 
 /**
- * Creates the gig-session cleanup action.
- *
- * @remarks
- * Clears `currentGig`, `lastGigStats`, and resets `minigame` state. Dispatch
- * after the post-gig continue/arrival callback has changed scene so a finished
- * gig cannot leak stale venue/minigame state into a later gig. Carries no
- * payload and does not change `currentScene`.
- */
-export const createCleanupGigSessionAction = (): Extract<
-  GameAction,
-  { type: typeof ActionTypes.CLEANUP_GIG_SESSION }
-> => ({
-  type: ActionTypes.CLEANUP_GIG_SESSION
-})
-
-/**
  * Creates an active event action
  * @param event - Event object or null
  */

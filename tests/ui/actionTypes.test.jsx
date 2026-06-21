@@ -15,7 +15,6 @@ describe('ActionTypes', () => {
       'START_GIG',
       'SET_SETLIST',
       'SET_LAST_GIG_STATS',
-      'CLEANUP_GIG_SESSION',
       'SET_ACTIVE_EVENT',
       'ADD_TOAST',
       'REMOVE_TOAST',

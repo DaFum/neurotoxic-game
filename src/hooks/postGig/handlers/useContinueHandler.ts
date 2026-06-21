@@ -174,11 +174,9 @@ export function handleContinueSceneTransition(params: {
   isFinaleGig: boolean
   addToast: HandlerDispatchers['addToast']
   changeScene: HandlerDispatchers['changeScene']
-  cleanupGigSession: HandlerDispatchers['cleanupGigSession']
   t: import('i18next').TFunction
 }): void {
-  const { bankrupt, isFinaleGig, addToast, changeScene, cleanupGigSession, t } =
-    params
+  const { bankrupt, isFinaleGig, addToast, changeScene, t } = params
   if (bankrupt) {
     addToast(
       t('ui:postGig.gameOverBankrupt', {
@@ -202,12 +200,6 @@ export function handleContinueSceneTransition(params: {
   } else {
     queueMicrotask(() => {
       changeScene(GAME_PHASES.OVERWORLD)
-      // Tear down the finished gig session in the same microtask as the scene
-      // change so they batch into one render: by the time React re-renders,
-      // currentScene is OVERWORLD and PostGig has unmounted, so clearing
-      // currentGig/lastGigStats cannot null-crash the post-gig UI. Prevents a
-      // stale venue/minigame state from leaking into the next gig.
-      cleanupGigSession()
     })
   }
 }
@@ -255,7 +247,6 @@ export function useContinueHandler({
     updateBand,
     addToast,
     changeScene,
-    cleanupGigSession,
     addQuest,
     applyQuestEvent
   }
@@ -339,7 +330,6 @@ export function useContinueHandler({
         isFinaleGig,
         addToast,
         changeScene,
-        cleanupGigSession,
         t
       })
       // Guard intentionally NOT reset here: the scene transition (queued via
@@ -365,7 +355,6 @@ export function useContinueHandler({
     updateBand,
     addToast,
     changeScene,
-    cleanupGigSession,
     activeStoryFlags,
     totalDailyObligations,
     addQuest,

@@ -204,7 +204,6 @@ export type GameAction =
   | Action<ActionTypes['START_GIG'], Venue>
   | Action<ActionTypes['SET_SETLIST'], RhythmSetlistEntry[]>
   | Action<ActionTypes['SET_LAST_GIG_STATS'], PostGigSummary | null>
-  | Action<ActionTypes['CLEANUP_GIG_SESSION']>
   | Action<ActionTypes['SET_ACTIVE_EVENT'], GameEvent | null>
   | Action<ActionTypes['ADD_TOAST'], ToastPayload>
   | Action<ActionTypes['REMOVE_TOAST'], string>

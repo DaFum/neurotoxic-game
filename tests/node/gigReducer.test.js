@@ -4,8 +4,7 @@ import assert from 'node:assert/strict'
 import {
   handleSetGig,
   handleStartGig,
-  handleSetLastGigStats,
-  handleCleanupGigSession
+  handleSetLastGigStats
 } from '../../src/context/reducers/gigReducer'
 import { DEFAULT_GIG_MODIFIERS } from '../../src/context/initialState'
 import {
@@ -62,26 +61,19 @@ describe('gigReducer', () => {
       assert.strictEqual(nextState.currentScene, GAME_PHASES.PRE_GIG)
       assert.deepStrictEqual(nextState.gigModifiers, DEFAULT_GIG_MODIFIERS)
     })
-  })
 
-  describe('handleCleanupGigSession', () => {
-    it('clears currentGig, lastGigStats, and resets minigame state', () => {
-      baseState.currentGig = { id: 'gig3', name: 'Finished Gig' }
-      baseState.lastGigStats = { score: 80 }
+    it('resets stale minigame state from a prior abandoned setup minigame', () => {
       baseState.minigame = { active: true, type: 'ROADIE', someField: 1 }
+      const nextState = handleStartGig(baseState, { id: 'gig2', name: 'Gig' })
 
-      const nextState = handleCleanupGigSession(baseState)
-
-      assert.strictEqual(nextState.currentGig, null)
-      assert.strictEqual(nextState.lastGigStats, null)
       assert.deepStrictEqual(nextState.minigame, DEFAULT_MINIGAME_STATE)
     })
 
-    it('does not change currentScene (transition is owned elsewhere)', () => {
-      baseState.currentScene = GAME_PHASES.POST_GIG
-      const nextState = handleCleanupGigSession(baseState)
+    it('does not clear lastGigStats (needed by gig milestones on ADVANCE_DAY)', () => {
+      baseState.lastGigStats = { score: 80 }
+      const nextState = handleStartGig(baseState, { id: 'gig2', name: 'Gig' })
 
-      assert.strictEqual(nextState.currentScene, GAME_PHASES.POST_GIG)
+      assert.deepStrictEqual(nextState.lastGigStats, { score: 80 })
     })
   })
 
