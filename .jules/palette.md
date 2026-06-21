@@ -143,4 +143,4 @@
 ## 2026-06-21 - Focus Rings on Nested Data View Buttons
 
 **Learning:** Interactive elements nested deep within data views (like "Craft", "Make Amends", or "Use" buttons inside `DetailedStats` panels) are often overlooked for keyboard navigation styling, breaking accessibility for users trying to take action on specific rows of data.
-**Action:** Always verify that interactive buttons within lists, tables, or detailed views have explicit `focus-visible` utility classes applied (e.g., `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black`) to ensure they are visually apparent when navigating by keyboard.
+**Action:** Always verify that interactive buttons within lists, tables, or detailed views have explicit `focus-visible` utility classes applied (e.g., `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-abyss-black` if nested inside Panel components with `bg-abyss-black` backgrounds) to ensure they are visually apparent when navigating by keyboard without creating visual seams.
