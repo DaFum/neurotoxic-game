@@ -217,11 +217,15 @@ export const handleUpdateSocial = (
     } else {
       // Validate structure of items
       const validDeals = updates.activeDeals.filter(
-        d =>
+        (d: unknown) =>
           d &&
           typeof d === 'object' &&
+          'id' in d &&
           typeof d.id === 'string' &&
-          Number.isFinite(d.remainingGigs)
+          'remainingGigs' in d &&
+          typeof d.remainingGigs === 'number' &&
+          Number.isInteger(d.remainingGigs) &&
+          d.remainingGigs > 0
       )
       if (validDeals.length !== updates.activeDeals.length) {
         logger.warn(
