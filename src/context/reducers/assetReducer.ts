@@ -199,7 +199,12 @@ export const handleInstallModule = (
   const nextSlots = targetAsset.slots ? [...targetAsset.slots] : []
   for (let i = 0; i < nextSlots.length; i++) {
     const slot = nextSlots[i]
-    if (slot && slot.id === slotId && slot.installedModuleId === null) {
+    if (
+      slot &&
+      slot.id === slotId &&
+      slot.installedModuleId === null &&
+      slot.slotType === moduleInfo.slotType
+    ) {
       installed = true
       nextSlots[i] = { ...slot, installedModuleId: moduleId }
       break
