@@ -179,9 +179,18 @@ const readOwnStringArray = (
   if (!Object.hasOwn(record, key) || !Array.isArray(record[key])) {
     return undefined
   }
-  return (record[key] as unknown[]).filter(
-    (entry): entry is string => typeof entry === 'string'
-  )
+  const arr = record[key] as unknown[]
+  const len = arr.length
+  const result = new Array(len)
+  let resultIdx = 0
+  for (let i = 0; i < len; i++) {
+    const entry = arr[i]
+    if (typeof entry === 'string') {
+      result[resultIdx++] = entry
+    }
+  }
+  result.length = resultIdx
+  return result
 }
 
 const canonicalizeEventType = (
