@@ -31,8 +31,6 @@ vi.mock('../../src/components/SceneRouter.tsx', () => ({
         return <div data-testid='gig-scene'>Gig</div>
       case GAME_PHASES.POST_GIG:
         return <div data-testid='postgig-scene'>PostGig</div>
-      case GAME_PHASES.SETTINGS:
-        return <div data-testid='settings-scene'>Settings</div>
       case GAME_PHASES.CREDITS:
         return <div data-testid='credits-scene'>Credits</div>
       case GAME_PHASES.GAMEOVER:
@@ -77,10 +75,6 @@ vi.mock('../../src/scenes/TourbusScene.tsx', () => ({
 
 vi.mock('../../src/scenes/RoadieRunScene.tsx', () => ({
   RoadieRunScene: () => <div data-testid='roadie-scene'>Roadie Run</div>
-}))
-
-vi.mock('../../src/scenes/Settings.tsx', () => ({
-  Settings: () => <div data-testid='settings-scene'>Settings</div>
 }))
 
 vi.mock('../../src/scenes/Credits.tsx', () => ({
@@ -221,7 +215,6 @@ describe('App', () => {
       { scene: GAME_PHASES.GIG, testId: 'gig-scene' },
       { scene: GAME_PHASES.PRACTICE, testId: 'gig-scene' },
       { scene: GAME_PHASES.POST_GIG, testId: 'postgig-scene' },
-      { scene: GAME_PHASES.SETTINGS, testId: 'settings-scene' },
       { scene: GAME_PHASES.CREDITS, testId: 'credits-scene' },
       { scene: GAME_PHASES.GAMEOVER, testId: 'gameover-scene' },
       { scene: GAME_PHASES.TRAVEL_MINIGAME, testId: 'tourbus-scene' },
@@ -246,7 +239,6 @@ describe('App', () => {
     const scenesWithoutHud = [
       GAME_PHASES.INTRO,
       GAME_PHASES.MENU,
-      GAME_PHASES.SETTINGS,
       GAME_PHASES.CREDITS,
       GAME_PHASES.GAMEOVER,
       GAME_PHASES.OVERWORLD,

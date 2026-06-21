@@ -6,7 +6,7 @@ import { buildDeterministicToastId } from './toastSanitizers'
 import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks } from '../../utils/traitUtils'
 import { DEFAULT_GIG_MODIFIERS } from '../initialState'
-import { GAME_PHASES } from '../gameConstants'
+import { DEFAULT_MINIGAME_STATE, GAME_PHASES } from '../gameConstants'
 import {
   isForbiddenKey,
   finiteNumberOr,
@@ -54,6 +54,13 @@ export const handleSetGig = (
 /**
  * Enters the pre-gig scene for a venue and resets gig modifiers to defaults.
  *
+ * @remarks
+ * Also resets minigame state to defaults at this entry boundary (symmetric
+ * with the gig-modifier reset). This clears any leftover minigame state from a
+ * prior abandoned setup minigame so it cannot leak into this gig. `lastGigStats`
+ * is intentionally NOT cleared here — it is consumed by gig milestone checks
+ * (`first_gig_done`, `flawless_gig`, `big_combo`) on the next `ADVANCE_DAY`.
+ *
  * @param state - Current game state before the gig starts.
  * @param payload - Venue that becomes the current gig.
  * @returns Updated state ready for pre-gig setup.
@@ -64,7 +71,8 @@ export const handleStartGig = (state: GameState, payload: Venue): GameState => {
     ...state,
     currentGig: payload,
     currentScene: GAME_PHASES.PRE_GIG,
-    gigModifiers: { ...DEFAULT_GIG_MODIFIERS }
+    gigModifiers: { ...DEFAULT_GIG_MODIFIERS },
+    minigame: { ...DEFAULT_MINIGAME_STATE }
   }
 }
 

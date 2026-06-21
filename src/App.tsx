@@ -25,7 +25,6 @@ import type { GamePhase } from './types/game'
 const SCENES_WITHOUT_HUD: Set<GamePhase> = new Set([
   GAME_PHASES.INTRO,
   GAME_PHASES.MENU,
-  GAME_PHASES.SETTINGS,
   GAME_PHASES.CREDITS,
   GAME_PHASES.GAMEOVER,
   GAME_PHASES.OVERWORLD,

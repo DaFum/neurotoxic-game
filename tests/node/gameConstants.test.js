@@ -17,7 +17,6 @@ test('gameConstants - GAME_PHASES exports expected values', () => {
   assert.equal(GAME_PHASES.POST_GIG, 'POSTGIG')
   assert.equal(GAME_PHASES.PRACTICE, 'PRACTICE')
   assert.equal(GAME_PHASES.MENU, 'MENU')
-  assert.equal(GAME_PHASES.SETTINGS, 'SETTINGS')
   assert.equal(GAME_PHASES.CREDITS, 'CREDITS')
   assert.equal(GAME_PHASES.GAMEOVER, 'GAMEOVER')
   assert.equal(GAME_PHASES.INTRO, 'INTRO')
@@ -34,7 +33,6 @@ test('gameConstants - GAME_PHASES exports expected values', () => {
     'POST_GIG',
     'PRACTICE',
     'MENU',
-    'SETTINGS',
     'CREDITS',
     'GAMEOVER',
     'INTRO',

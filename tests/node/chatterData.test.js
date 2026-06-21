@@ -157,7 +157,6 @@ test('getRandomChatter supports default chatter in all top-level scenes', () => 
 test('disallowed scenes are not in ALLOWED_DEFAULT_SCENES', () => {
   const disallowedScenes = [
     GAME_PHASES.GIG,
-    GAME_PHASES.SETTINGS,
     GAME_PHASES.CREDITS,
     GAME_PHASES.GAMEOVER
   ]

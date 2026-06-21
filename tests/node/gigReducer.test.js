@@ -7,7 +7,10 @@ import {
   handleSetLastGigStats
 } from '../../src/context/reducers/gigReducer'
 import { DEFAULT_GIG_MODIFIERS } from '../../src/context/initialState'
-import { GAME_PHASES } from '../../src/context/gameConstants'
+import {
+  DEFAULT_MINIGAME_STATE,
+  GAME_PHASES
+} from '../../src/context/gameConstants'
 import { QuestLifecycle } from '../../src/domain/questLifecycle.ts'
 
 describe('gigReducer', () => {
@@ -57,6 +60,20 @@ describe('gigReducer', () => {
       assert.deepStrictEqual(nextState.currentGig, payload)
       assert.strictEqual(nextState.currentScene, GAME_PHASES.PRE_GIG)
       assert.deepStrictEqual(nextState.gigModifiers, DEFAULT_GIG_MODIFIERS)
+    })
+
+    it('resets stale minigame state from a prior abandoned setup minigame', () => {
+      baseState.minigame = { active: true, type: 'ROADIE', someField: 1 }
+      const nextState = handleStartGig(baseState, { id: 'gig2', name: 'Gig' })
+
+      assert.deepStrictEqual(nextState.minigame, DEFAULT_MINIGAME_STATE)
+    })
+
+    it('does not clear lastGigStats (needed by gig milestones on ADVANCE_DAY)', () => {
+      baseState.lastGigStats = { score: 80 }
+      const nextState = handleStartGig(baseState, { id: 'gig2', name: 'Gig' })
+
+      assert.deepStrictEqual(nextState.lastGigStats, { score: 80 })
     })
   })
 

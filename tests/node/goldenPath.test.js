@@ -550,11 +550,7 @@ test('Golden Path: LOAD_GAME sanitizes corrupted save data', async t => {
 test('Golden Path: Scene sequence matches state machine', async t => {
   const validTransitions = {
     [GAME_PHASES.INTRO]: [GAME_PHASES.MENU],
-    [GAME_PHASES.MENU]: [
-      GAME_PHASES.OVERWORLD,
-      GAME_PHASES.SETTINGS,
-      GAME_PHASES.CREDITS
-    ],
+    [GAME_PHASES.MENU]: [GAME_PHASES.OVERWORLD, GAME_PHASES.CREDITS],
     [GAME_PHASES.OVERWORLD]: [
       GAME_PHASES.PRE_GIG,
       GAME_PHASES.GAMEOVER,
@@ -564,7 +560,6 @@ test('Golden Path: Scene sequence matches state machine', async t => {
     [GAME_PHASES.GIG]: [GAME_PHASES.POST_GIG, GAME_PHASES.OVERWORLD],
     [GAME_PHASES.POST_GIG]: [GAME_PHASES.OVERWORLD, GAME_PHASES.GAMEOVER],
     [GAME_PHASES.GAMEOVER]: [GAME_PHASES.MENU],
-    [GAME_PHASES.SETTINGS]: [GAME_PHASES.MENU],
     [GAME_PHASES.CREDITS]: [GAME_PHASES.MENU]
   }
 
