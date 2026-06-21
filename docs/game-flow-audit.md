@@ -65,10 +65,10 @@ Diese beiden Punkte sind **keine** Auffälligkeiten.
 - **Befund:** Sanitization ist asymmetrisch nur beim Laden. Ein künftiger Reducer-Regress, der einen nicht-finiten Wert einführt, würde beim Speichern zu `null` (via `JSON.stringify`) und beim Laden via `finiteNumberOr` still zum Fallback – Korruption wird maskiert statt sichtbar gemacht.
 - **Warum es zählt:** Geringe Wahrscheinlichkeit angesichts der Reducer-Disziplin, aber die Asymmetrie ist eine latente Lücke.
 
-#### M5 — `relationships`-Self-Key wird beim Laden nicht defensiv entfernt
-- **Ort:** Band-Member-Sanitizer in `src/context/reducers/sanitizers/stateSanitizers.ts`.
-- **Befund:** Die Invariante „nie Bandmitglied in eigene `relationships`-Map" wird von *Schreibern* eingehalten, aber ein handeditierter/korrupter Save mit `relationships[selfId]` wird beim Laden nicht gestrippt. Laut AGENTS.md korrumpieren Self-Relationships Trait- und Infighting-Logik.
-- **Warum es zählt:** Aktuell schützt nur Write-Time-Disziplin; ein Load-Time-Guard würde den Hostile-Save-Vektor schließen.
+#### M5 — ~~`relationships`-Self-Key wird beim Laden nicht defensiv entfernt~~ **[WIDERLEGT]**
+- **Ort:** `sanitizeBand` in `src/context/reducers/sanitizers/stateSanitizers.ts:992-1022`.
+- **Korrektur:** Der ursprüngliche Befund war **falsch**. `sanitizeBand` baut `selfRelationshipKeys = new Set([id, id.toLowerCase(), name, name.toLowerCase()])` (`:992-996`) und übergibt es als `ignoredKeys` an `parseNumericStats` (`:1018-1022`). Dort werden sowohl der exakte (`:748`) als auch der lowercased Key (`:750-751`) übersprungen. Ein geladenes `relationships[selfId]` wird also bereits **beim Laden** gestrippt – der Hostile-Save-Vektor ist geschlossen.
+- **Status:** Kein Befund. Hier ist keine Folgearbeit nötig.
 
 #### M6 — Arithmetik-dann-Clamp mit `??` statt `finiteNumberOr` (lässt `NaN` durch) — Band-Harmony bei PostGig
 - **Ort (verifiziert):** `src/utils/postGig/socialResolution.ts:233-234` – `const prevHarmony = newBand.harmony ?? 1` gefolgt von `clampBandHarmony(prevHarmony + result.harmonyChange)`.
@@ -104,6 +104,10 @@ Diese beiden Punkte sind **keine** Auffälligkeiten.
 - **Ort:** `shouldTriggerBankruptcy`, `logisticsLogic.ts:228` (`val < 0`-Branch); `clampPlayerMoney` floort bei 0 (`clamps.ts:152`).
 - **Befund:** Jeder durch einen Reducer gelaufene State kann nie negatives Geld zeigen, daher triggert Bankrott nur über den `val === 0 && income − obligations < 0`-Branch. Kein Bug (Kommentar erkennt es an), aber die „negative Schulden sind fatal"-Semantik ist im Live-Pfad unerreichbar; ein Spieler kann unbegrenzt bei exakt 0 sitzen, solange `income ≥ obligations`.
 
+#### L6 — `isNearTrackEnd`-Threshold vs. sehr kurze Tracks
+- **Ort:** Audio-End-Detection, `rhythmGameLoopUtils.ts:200-205`.
+- **Befund:** Ist eine Songdauer kürzer als das `isNearTrackEnd`-Lookahead-Fenster, kann „near end" ab t=0 true sein und den Setlist-Eintrag vorzeitig abschließen. Geringe Praxis-Wirkung (echte Songs sind lang genug), relevant v. a. für Test-/Kurz-Fixtures.
+
 #### L7 — Bares `typeof === 'number'`-Guard in Asset-/System-Sanitizern
 - **Ort:** `src/context/reducers/assetSanitizers.ts:357` (`crowdfundFamePromised`) und `src/context/reducers/systemReducer.ts:528` (`stacks` bei Stash-Contraband-Reaktivierung).
 - **Befund:** Beide nutzen `typeof x === 'number'` statt `Number.isFinite`/`isFiniteNumber`. assetSanitizers ist funktional sicher (innerer `finiteNumberOr`-Wrap), setzt aber bei `NaN` das optionale Feld auf 0 statt es wegzulassen. systemReducer schreibt einen `NaN`-`stacks` unverändert zurück. In-State-Werte, daher geringes Risiko – aber Konventionsverstoß.
@@ -111,10 +115,6 @@ Diese beiden Punkte sind **keine** Auffälligkeiten.
 #### L8 — `sanitizePrimitiveOptions` ohne `isForbiddenKey`-Filter (Prototype-Pollution-Konsistenzlücke)
 - **Ort:** `src/context/reducers/toastSanitizers.ts:53-69`.
 - **Befund:** Iteriert `Object.entries(options)` und kopiert jeden primitiven Key per Bracket-Assignment in ein `{}` – **ohne** `isForbiddenKey`-Filter, anders als `copySafePrimitiveObject` (`stateSanitizers.ts:126`). Verwendet auf persistierte Toast-Options und rohe Success-Toast-Payloads. Exploitability begrenzt (nur Primitives passieren; `obj['__proto__'] = primitive` ist ein No-Op), aber inkonsistente Verteidigung und Konventionsverstoß.
-
-#### L6 — `isNearTrackEnd`-Threshold vs. sehr kurze Tracks
-- **Ort:** Audio-End-Detection, `rhythmGameLoopUtils.ts:200-205`.
-- **Befund:** Ist eine Songdauer kürzer als das `isNearTrackEnd`-Lookahead-Fenster, kann „near end" ab t=0 true sein und den Setlist-Eintrag vorzeitig abschließen. Geringe Praxis-Wirkung (echte Songs sind lang genug), relevant v. a. für Test-/Kurz-Fixtures.
 
 ### INFORMATIONAL / By Design
 
@@ -132,8 +132,9 @@ Diese beiden Punkte sind **keine** Auffälligkeiten.
 1. **H1** – `SETTINGS`-Szene/Route/Komponente entfernen *oder* verdrahten; den irreführenden goldenPath-Test entsprechend anpassen.
 2. **M1 / M2 / L4** – Explizites Cleanup beim Gig-/Minigame-Exit: `currentGig`, `lastGigStats` und `minigame`-State beim Verlassen leeren (z. B. eigene `ABANDON_GIG`/Cleanup-Action), statt sich auf nachgelagerte Überschreibungen zu verlassen.
 3. **M6 / M7 / M8** – Konkrete Konventionsverstöße beheben: `??` → `finiteNumberOr` in `socialResolution.ts:233` und `questPenalties.ts:181`; `typeof === 'number'` → `Number.isFinite` in `socialReducer.ts:224`. Kleine, lokale, klar definierte Fixes.
-4. **M3 / M4 / M5** – Defense-in-Depth: Addend in `assetTicks.ts` mit `finiteNumberOr` umwickeln; Write-Time-Finite-Guard in der Persistence; Load-Time-Strip des `relationships`-Self-Keys.
+4. **M3 / M4** – Defense-in-Depth: Addend in `assetTicks.ts` mit `finiteNumberOr` umwickeln; Write-Time-Finite-Guard in der Persistence. (M5 ist widerlegt – keine Arbeit nötig.)
 5. **L1 / L2 / L7 / L8** – Konsistenter Exit-Vertrag für Minigames; lokaler Idempotenz-Guard in `useRoadieLogic`; `isForbiddenKey`-Filter in `sanitizePrimitiveOptions`; Sanitizer-Guards auf `Number.isFinite` vereinheitlichen.
+6. **L3 / L5 / L6 — Nur dokumentieren, keine Code-Änderung nötig:** L3 (implizite `currentScene`-Writes) ist konform und nur als Lesbarkeits-/Auffindbarkeits-Hinweis geführt; L5 (unerreichbarer Negativ-Guthaben-Bankrott) ist toter, aber harmloser Defensiv-Branch; L6 (`isNearTrackEnd`-Lookahead bei sehr kurzen Tracks) ist praktisch nur für Test-/Kurz-Fixtures relevant. Optional: ein Guard für L6, falls Kurz-Fixtures eingeführt werden.
 
 ---
 
