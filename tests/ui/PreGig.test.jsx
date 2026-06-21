@@ -375,7 +375,9 @@ describe('PreGig', () => {
     const meetingBtn = await findByText(/ui:pregig.bandMeeting.label/i)
     fireEvent.click(meetingBtn)
 
-    expect(mockUseGameState.updatePlayer).toHaveBeenCalledWith({ money: 450 })
+    expect(mockUseGameState.updatePlayer).toHaveBeenCalled()
+    const updateFn = mockUseGameState.updatePlayer.mock.calls[0][0]
+    expect(updateFn({ money: 500 })).toEqual({ money: 450 })
     expect(mockUseGameState.updateBand).toHaveBeenCalledWith({ harmony: 65 })
     expect(mockUseGameState.addToast).toHaveBeenCalledWith(
       'ui:pregig.toasts.meetingHeld',
@@ -399,7 +401,9 @@ describe('PreGig', () => {
     const meetingBtn = await findByText(/ui:pregig.bandMeeting.label/i)
     fireEvent.click(meetingBtn)
 
-    expect(mockUseGameState.updatePlayer).toHaveBeenCalledWith({ money: 457 })
+    expect(mockUseGameState.updatePlayer).toHaveBeenCalled()
+    const updateFn = mockUseGameState.updatePlayer.mock.calls[0][0]
+    expect(updateFn({ money: 500 })).toEqual({ money: 457 })
     expect(mockUseGameState.updateBand).toHaveBeenCalledWith({ harmony: 65 })
   })
 
@@ -683,7 +687,9 @@ describe('PreGig', () => {
     const restockBtns = await findAllByText(/ui:pregig.merchStrategy.restock/i)
     fireEvent.click(restockBtns[0])
 
-    expect(mockUseGameState.updatePlayer).toHaveBeenCalledWith({ money: 387 })
+    expect(mockUseGameState.updatePlayer).toHaveBeenCalled()
+    const updateFn = mockUseGameState.updatePlayer.mock.calls[0][0]
+    expect(updateFn({ money: 500 })).toEqual({ money: 387 })
   })
 
   test('synchronous re-entry guard: double-call dispatches only one start-minigame action', async () => {
@@ -762,6 +768,8 @@ describe('PreGig', () => {
     restockBtns = await findAllByText(/ui:pregig.merchStrategy.restock/i)
     fireEvent.click(restockBtns[0])
 
-    expect(mockUseGameState.updatePlayer).toHaveBeenCalledWith({ money: 350 })
+    expect(mockUseGameState.updatePlayer).toHaveBeenCalled()
+    const updateFn = mockUseGameState.updatePlayer.mock.calls[0][0]
+    expect(updateFn({ money: 500 })).toEqual({ money: 350 })
   })
 })
