@@ -139,7 +139,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - `currentGig` is the venue object. Use `state.currentGig?.capacity` and `.id`, not `state.currentGig?.venue`.
 - `player.location` is the `venues:<id>.name` display key. Anything region-keyed (`reputationByRegion`, `region.reputationChanged` events, perRegion quest scopes) must derive the city key via `getRegionKeyForLocation` from `src/utils/mapUtils.ts`; keying by raw `player.location` silently splits regional state per venue.
 - Never add band members to their own `relationships` map; self-relationships corrupt trait and infighting logic.
-- `START_GIG` resets `gigModifiers` to defaults.
+- `START_GIG` resets both `gigModifiers` and `minigame` state to defaults at this entry boundary. Minigame state is reset here, not on the post-gig return, so a finished or abandoned setup minigame cannot leak into the next gig — do NOT add a separate post-gig minigame cleanup (a racing cleanup dispatch fights the `startTransition` scene change and can null state mid-render).
 - Minigame completion reducers must not change `currentScene` (`COMPLETE_TRAVEL_MINIGAME`, `COMPLETE_AMP_CALIBRATION`, `COMPLETE_KABELSALAT_MINIGAME`, `COMPLETE_ROADIE_MINIGAME`); arrival/overlay continuation callbacks own scene changes.
 - Tourbus minigame damage is intentionally converted to van condition loss via `calculateTravelMinigameResult()` at 50% scaling; 100 damage means max 50 condition loss.
 - Travel confirmation/resource checks must disclose and cover travel cost plus total daily obligations (`getTotalDailyObligations(state)`) because arrival also calls `advanceDay()`; do not use `calculateGuaranteedDailyCost` alone where assets/liabilities can apply.
