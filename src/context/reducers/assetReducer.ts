@@ -219,7 +219,10 @@ export const handleInstallModule = (
 
     for (let i = 0; i < newSlotIds.length; i++) {
       const newSlot = newSlotIds[i]
-      const count = newSlot ? allowedSlotTypes[newSlot.slotType] : 0
+      const count =
+        newSlot && Object.hasOwn(allowedSlotTypes, newSlot.slotType)
+          ? allowedSlotTypes[newSlot.slotType]
+          : 0
       if (newSlot && count !== undefined && count > 0) {
         allowedSlotTypes[newSlot.slotType] = count - 1
         nextSlots.push({

@@ -108,17 +108,17 @@ export const HUD = memo(() => {
   const playerDay = useGameSelector(state => state.player.day)
   const playerVanFuel = useGameSelector(state => state.player.van?.fuel ?? 0)
   const playerVanCondition = useGameSelector(
-    state => state.player.van?.condition ?? 100
+    state => state.player?.van?.condition ?? 100
   )
 
   const hasNeuroDecimator = useGameSelector(
-    state => !!state.band.inventory?.neuroDecimator
+    state => !!state.band?.inventory?.neuroDecimator
   )
   const neuroDecimatorActive = useGameSelector(
-    state => !!state.band.neuroDecimatorActive
+    state => !!state.band?.neuroDecimatorActive
   )
   const hasNeurotoxicPedal = useGameSelector(
-    state => !!state.band.inventory?.neurotoxicPedal
+    state => !!state.band?.inventory?.neurotoxicPedal
   )
   const bandHarmony = useGameSelector(state => state.band.harmony)
   const bandMembers = useGameSelector(state => state.band.members)
