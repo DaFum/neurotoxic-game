@@ -166,9 +166,16 @@ export const QuestLifecycle = {
 
     // Scope-policy quests record (id, scopeKey) so other scopes stay open.
     if (typeof quest.scopeKey === 'string' && quest.scopeKey.length > 0) {
-      const exists = (nextState.completedQuestScopes ?? []).some(
-        c => c.questId === quest.id && c.scopeKey === quest.scopeKey
-      )
+      // ⚡ BOLT OPTIMIZATION: Replaced Array.some() with procedural loop to avoid closure allocation.
+      const scopes = nextState.completedQuestScopes ?? []
+      let exists = false
+      for (let i = 0; i < scopes.length; i++) {
+        const c = scopes[i]
+        if (c?.questId === quest.id && c?.scopeKey === quest.scopeKey) {
+          exists = true
+          break
+        }
+      }
       if (!exists) {
         nextState.completedQuestScopes = [
           ...(nextState.completedQuestScopes ?? []),

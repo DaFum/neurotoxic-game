@@ -81,14 +81,19 @@ export const hasActiveSponsorship = (
   if (!Array.isArray(socialState?.activeDeals)) {
     return false
   }
-  return socialState.activeDeals.some(deal => {
-    if (!isLooseRecord(deal)) return false
+  // ⚡ BOLT OPTIMIZATION: Replaced Array.some() with procedural loop to avoid intermediate allocations and reduce GC pressure.
+  for (let i = 0; i < socialState.activeDeals.length; i++) {
+    const deal = socialState.activeDeals[i]
+    if (!isLooseRecord(deal)) continue
     const d: SponsorshipDealLike = deal
-    return (
+    if (
       d.type === 'SPONSORSHIP' &&
       (typeof d.remainingGigs === 'number' ? d.remainingGigs : 1) > 0
-    )
-  })
+    ) {
+      return true
+    }
+  }
+  return false
 }
 
 /**
