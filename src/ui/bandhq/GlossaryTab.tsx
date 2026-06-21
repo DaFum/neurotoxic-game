@@ -50,8 +50,7 @@ const GlossaryItem = memo(({ entry }: { entry: GlossaryEntry }) => {
         {t(entry.termKey)}
         {liveValue !== null && (
           <span className='text-toxic-green text-sm px-2 py-1 bg-toxic-green/10 '>
-            [{t('ui:glossary.liveValue', { defaultValue: 'Live' })}: {liveValue}
-            ]
+            {"[" + t('ui:glossary.liveValue', { defaultValue: 'Live' }) + ": " + liveValue + "]"}
           </span>
         )}
       </h4>
