@@ -48,7 +48,7 @@ export const InventoryEquipmentSection = ({
                       item: itemName,
                       defaultValue: `Use ${itemName}`
                     })}
-                    className='min-h-7 border px-2 text-xs uppercase disabled:opacity-50 disabled:cursor-not-allowed'
+                    className='min-h-7 border px-2 text-xs uppercase disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-abyss-black'
                     style={{
                       borderColor: 'var(--color-toxic-green)',
                       color: 'var(--color-toxic-green)'
