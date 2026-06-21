@@ -18,3 +18,4 @@
 | 2026-06-18        | src/components/GigHUD.tsx                     | GigHUDStats, GigHUDProps, GigHUD                                                                                                                         |
 | 2026-06-19        | src/hooks/rhythmGame/useRhythmGameState.ts    | RhythmUiState, RhythmStateSetters, RhythmGameStateHookReturn, useRhythmGameState                                                                         |
 | 2026-06-20 | src/components/stage/EffectManager.ts | EffectManager, constructor, releaseEffectToPool, spawnHitEffect, update, dispose |
+| 2026-06-21 | src/components/overworld/utils.ts | getNodeIconUrl |
