@@ -236,7 +236,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
         return
       }
 
-      updatePlayer({ money: Math.max(0, clampPlayerMoney(player.money - cost)) })
+      updatePlayer({ money: clampPlayerMoney(finiteNumberOr(player?.money, 0) - cost) })
 
       updateBand((prevBand: BandState) => {
         const currentInventory = prevBand.inventory ?? {}
@@ -315,12 +315,11 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
       return
     }
 
-    updatePlayer({ money: Math.max(0, clampPlayerMoney(player.money - cost)) })
+    updatePlayer({ money: clampPlayerMoney(finiteNumberOr(player?.money, 0) - cost) })
     const newHarmony = clampBandHarmony(prevHarmony + 15)
-    const clampedHarmony = Math.max(1, Math.min(100, newHarmony))
-    const appliedDelta = clampedHarmony - prevHarmony
+    const appliedDelta = newHarmony - prevHarmony
 
-    updateBand({ harmony: clampedHarmony })
+    updateBand({ harmony: newHarmony })
 
     addToast(
       typedT('ui:pregig.toasts.meetingHeld', { amount: appliedDelta }),

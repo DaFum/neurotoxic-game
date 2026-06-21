@@ -70,7 +70,7 @@ export default [
     ignores: [
       'dist/**',
       'node_modules/**',
-      'src/data/Songs.js',
+      'src/data/songs.ts',
       '.agents/**',
       'report/**',
       '.claude/**'
