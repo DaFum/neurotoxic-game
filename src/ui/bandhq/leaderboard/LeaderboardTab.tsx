@@ -165,7 +165,12 @@ export const LeaderboardTab = () => {
     <div className='h-full flex flex-col gap-4'>
       <LeaderboardTabs view={view} setView={setView} views={views} />
 
-      {view === 'SONG' && <SongSelector activeSongId={activeSongId} setSelectedSongId={setSelectedSongId} />}
+      {view === 'SONG' && (
+        <SongSelector
+          activeSongId={activeSongId}
+          setSelectedSongId={setSelectedSongId}
+        />
+      )}
 
       <LeaderboardTable
         view={view}

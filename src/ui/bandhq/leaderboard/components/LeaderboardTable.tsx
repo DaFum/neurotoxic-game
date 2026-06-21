@@ -56,9 +56,7 @@ export const LeaderboardTable = ({
             <thead className='text-ash-gray border-b border-ash-gray/30 text-xs uppercase sticky top-0 bg-void-black'>
               <tr>
                 <th className='py-2 px-2'>#</th>
-                <th className='py-2 px-2'>
-                  {t('ui:leaderboard.col_player')}
-                </th>
+                <th className='py-2 px-2'>{t('ui:leaderboard.col_player')}</th>
                 <th className='py-2 px-2 text-right'>
                   {view === 'BALANCE'
                     ? t('ui:leaderboard.col_net_worth')
@@ -77,9 +75,7 @@ export const LeaderboardTable = ({
                     key={entry.playerId}
                     className='border-b border-ash-gray/10 hover:bg-toxic-green/10 transition-colors'
                   >
-                    <td className='py-2 px-2 text-toxic-green'>
-                      {entry.rank}
-                    </td>
+                    <td className='py-2 px-2 text-toxic-green'>{entry.rank}</td>
                     <td className='py-2 px-2 text-star-white'>
                       {entry.playerName}
                     </td>
