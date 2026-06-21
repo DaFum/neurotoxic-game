@@ -180,16 +180,13 @@ const readOwnStringArray = (
     return undefined
   }
   const arr = record[key] as unknown[]
-  const len = arr.length
-  const result = new Array(len)
-  let resultIdx = 0
-  for (let i = 0; i < len; i++) {
+  const result: string[] = []
+  for (let i = 0; i < arr.length; i++) {
     const entry = arr[i]
     if (typeof entry === 'string') {
-      result[resultIdx++] = entry
+      result.push(entry)
     }
   }
-  result.length = resultIdx
   return result
 }
 
