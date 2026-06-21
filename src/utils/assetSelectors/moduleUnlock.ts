@@ -200,7 +200,8 @@ export const getLockReasons = (
     // ⚡ BOLT OPTIMIZATION: Replaced Array.some() with procedural loop to avoid closure allocations.
     let anySatisfied = false
     for (let i = 0; i < required.length; i++) {
-      if (installed.has(required[i]!)) {
+      const req = required[i]
+      if (req !== undefined && installed.has(req)) {
         anySatisfied = true
         break
       }

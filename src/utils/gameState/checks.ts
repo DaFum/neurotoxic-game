@@ -78,12 +78,13 @@ type SponsorshipDealLike = {
 export const hasActiveSponsorship = (
   socialState: { activeDeals?: unknown[] } | null | undefined
 ): boolean => {
-  if (!Array.isArray(socialState?.activeDeals)) {
+  const activeDeals = socialState?.activeDeals
+  if (!Array.isArray(activeDeals)) {
     return false
   }
   // ⚡ BOLT OPTIMIZATION: Replaced Array.some() with procedural loop to avoid intermediate allocations and reduce GC pressure.
-  for (let i = 0; i < socialState.activeDeals.length; i++) {
-    const deal = socialState.activeDeals[i]
+  for (let i = 0; i < activeDeals.length; i++) {
+    const deal = activeDeals[i]
     if (!isLooseRecord(deal)) continue
     const d: SponsorshipDealLike = deal
     if (
