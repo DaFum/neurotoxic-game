@@ -236,7 +236,9 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
         return
       }
 
-      updatePlayer({ money: clampPlayerMoney(finiteNumberOr(player?.money, 0) - cost) })
+      updatePlayer({
+        money: clampPlayerMoney(finiteNumberOr(player?.money, 0) - cost)
+      })
 
       updateBand((prevBand: BandState) => {
         const currentInventory = prevBand.inventory ?? {}
@@ -315,7 +317,9 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
       return
     }
 
-    updatePlayer({ money: clampPlayerMoney(finiteNumberOr(player?.money, 0) - cost) })
+    updatePlayer({
+      money: clampPlayerMoney(finiteNumberOr(player?.money, 0) - cost)
+    })
     const newHarmony = clampBandHarmony(prevHarmony + 15)
     const appliedDelta = newHarmony - prevHarmony
 

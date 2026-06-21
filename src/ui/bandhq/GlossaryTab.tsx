@@ -8,7 +8,10 @@ interface GlossaryEntry {
   termKey: string
   descriptionKey: string
   selector: (state: GameState) => string | number | null
-  formatValue: (value: string | number | null, t: TFunction<['ui'], undefined>) => string | null
+  formatValue: (
+    value: string | number | null,
+    t: TFunction<['ui'], undefined>
+  ) => string | null
 }
 
 const GLOSSARY_ENTRIES: GlossaryEntry[] = [
@@ -16,7 +19,7 @@ const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     termKey: 'ui:glossary.terms.harmony',
     descriptionKey: 'ui:glossary.desc.harmony',
     selector: (state: GameState) => state.band.harmony,
-    formatValue: (value) => (typeof value === 'number' ? `${value}/100` : null)
+    formatValue: value => (typeof value === 'number' ? `${value}/100` : null)
   },
   {
     termKey: 'ui:glossary.terms.hype',
@@ -32,7 +35,7 @@ const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     termKey: 'ui:glossary.terms.zealotry',
     descriptionKey: 'ui:glossary.desc.zealotry',
     selector: (state: GameState) => state.social.zealotry,
-    formatValue: (value) => (typeof value === 'number' ? `${value}/100` : null)
+    formatValue: value => (typeof value === 'number' ? `${value}/100` : null)
   }
 ]
 
@@ -47,7 +50,8 @@ const GlossaryItem = memo(({ entry }: { entry: GlossaryEntry }) => {
         {t(entry.termKey)}
         {liveValue !== null && (
           <span className='text-toxic-green text-sm px-2 py-1 bg-toxic-green/10 '>
-            [{t('ui:glossary.liveValue', { defaultValue: 'Live' })}: {liveValue}]
+            [{t('ui:glossary.liveValue', { defaultValue: 'Live' })}: {liveValue}
+            ]
           </span>
         )}
       </h4>
