@@ -38,9 +38,6 @@ const AmpCalibrationScene = lazy(() =>
     default: m.AmpCalibrationScene
   }))
 )
-const Settings = lazy(() =>
-  import('../scenes/Settings.tsx').then(m => ({ default: m.Settings }))
-)
 const Credits = lazy(() =>
   import('../scenes/Credits.tsx').then(m => ({ default: m.Credits }))
 )
@@ -73,8 +70,6 @@ export function SceneRouter({ currentScene, minigameType }: SceneRouterProps) {
       return <IntroVideo />
     case GAME_PHASES.MENU:
       return <MainMenu />
-    case GAME_PHASES.SETTINGS:
-      return <Settings />
     case GAME_PHASES.CREDITS:
       return <Credits />
     case GAME_PHASES.GAMEOVER:
