@@ -145,15 +145,20 @@ export const handleCompleteTravelMinigame = (
     0
   )
   if (travelStaminaRegen > 0 && nextMembers.length > 0) {
-    nextMembers = nextMembers.map(
-      (member: GameState['band']['members'][number]) => ({
+    // ⚡ BOLT OPTIMIZATION: Replaced .map() with procedural loop.
+    // Why: Avoids closure allocation and intermediate arrays in hot paths.
+    const newMembers = new Array(nextMembers.length)
+    for (let i = 0; i < nextMembers.length; i++) {
+      const member = nextMembers[i]
+      newMembers[i] = {
         ...member,
         stamina: clampMemberStamina(
-          finiteNumberOr(member.stamina, 0) + travelStaminaRegen,
-          finiteNumberOr(member.staminaMax, 100)
+          finiteNumberOr(member?.stamina, 0) + travelStaminaRegen,
+          finiteNumberOr(member?.staminaMax, 100)
         )
-      })
-    )
+      }
+    }
+    nextMembers = newMembers as GameState['band']['members']
   }
 
   if (voidHazardHits && voidHazardHits > 0 && nextMembers.length > 0) {

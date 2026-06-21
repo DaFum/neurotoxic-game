@@ -905,23 +905,30 @@ export const sanitizeBand = (loadedBand: unknown): BandState => {
       }
       return defaultStash
     })(),
-    activeContrabandEffects: Array.isArray(bandData.activeContrabandEffects)
-      ? (bandData.activeContrabandEffects as unknown[]).map(
-          (effect: unknown) => {
-            const effectObj = isLooseRecord(effect)
-              ? (effect as Record<string, unknown>)
-              : {}
-            return {
-              ...(copySafePrimitiveObject(effectObj) ?? {}),
-              remainingDuration:
-                Number.isFinite(effectObj.remainingDuration as number) &&
-                (effectObj.remainingDuration as number) >= 0
-                  ? (effectObj.remainingDuration as number)
-                  : 0
-            }
-          }
-        )
-      : [...DEFAULT_BAND_STATE.activeContrabandEffects]
+    activeContrabandEffects: (() => {
+      // ⚡ BOLT OPTIMIZATION: Replaced .map() with procedural loop.
+      // Why: Avoids closure allocation and intermediate arrays in hot paths.
+      if (!Array.isArray(bandData.activeContrabandEffects)) {
+        return [...DEFAULT_BAND_STATE.activeContrabandEffects]
+      }
+      const rawEffects = bandData.activeContrabandEffects as unknown[]
+      const out = new Array(rawEffects.length)
+      for (let i = 0; i < rawEffects.length; i++) {
+        const effect = rawEffects[i]
+        const effectObj = isLooseRecord(effect)
+          ? (effect as Record<string, unknown>)
+          : {}
+        out[i] = {
+          ...(copySafePrimitiveObject(effectObj) ?? {}),
+          remainingDuration:
+            Number.isFinite(effectObj.remainingDuration as number) &&
+            (effectObj.remainingDuration as number) >= 0
+              ? (effectObj.remainingDuration as number)
+              : 0
+        }
+      }
+      return out
+    })()
   }
 
   for (const key of [
