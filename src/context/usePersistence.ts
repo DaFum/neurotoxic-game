@@ -263,12 +263,12 @@ export function usePersistence({
           // numbers to null deterministically and surface a warning so the
           // corruption is visible rather than hidden.
           let hadNonFinite = false
-          const nonFiniteKeys: string[] = []
+          const nonFiniteKeys = new Set<string>()
           const serialized = JSON.stringify(saveData, (key, value) => {
             if (typeof value === 'number' && !Number.isFinite(value)) {
               hadNonFinite = true
               if (key) {
-                nonFiniteKeys.push(key)
+                nonFiniteKeys.add(key)
               }
               return null
             }
@@ -277,7 +277,7 @@ export function usePersistence({
           if (hadNonFinite) {
             logger.warn(
               'Persistence',
-              `Non-finite numeric value detected while saving (keys: ${nonFiniteKeys.join(', ')}); coerced to null`
+              `Non-finite numeric value detected while saving (keys: ${Array.from(nonFiniteKeys).join(', ')}); coerced to null`
             )
           }
           localStorage.setItem(SAVE_KEY, serialized)
