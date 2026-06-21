@@ -6,7 +6,10 @@ interface SongSelectorProps {
   setSelectedSongId: (id: string) => void
 }
 
-export const SongSelector = ({ activeSongId, setSelectedSongId }: SongSelectorProps) => {
+export const SongSelector = ({
+  activeSongId,
+  setSelectedSongId
+}: SongSelectorProps) => {
   const { t } = useTranslation()
 
   return (

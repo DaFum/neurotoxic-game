@@ -7,7 +7,11 @@ interface LeaderboardTabsProps {
   views: Array<{ id: LeaderboardView; label: string }>
 }
 
-export const LeaderboardTabs = ({ view, setView, views }: LeaderboardTabsProps) => {
+export const LeaderboardTabs = ({
+  view,
+  setView,
+  views
+}: LeaderboardTabsProps) => {
   return (
     <div
       role='tablist'

@@ -73,17 +73,17 @@ export const handlePurchaseChassis = (
   // ⚡ BOLT OPTIMIZATION: Replaced Array.map with a procedural loop
   // Why: Avoids intermediate array allocation and closure overhead.
   // Impact: Reduces GC pressure.
-  const slots: AssetSlot[] = [];
+  const slots: AssetSlot[] = []
   for (let i = 0; i < configTier.slots.length; i++) {
-    const slotType = configTier.slots[i];
+    const slotType = configTier.slots[i]
     if (slotType !== undefined) {
-      const slotId = slotIds[i] ?? `${id}_slot_${i}`;
+      const slotId = slotIds[i] ?? `${id}_slot_${i}`
       slots.push({
         id: slotId,
         slotType,
         position: { x: 0, y: 0 },
         installedModuleId: null
-      });
+      })
     }
   }
 
@@ -182,59 +182,59 @@ export const handleInstallModule = (
   // ⚡ BOLT OPTIMIZATION: Replaced Array.map with targeted array indexing
   // Why: Avoids unnecessary iterations and object allocations for unmodified items.
   // Impact: Reduces GC pressure in high-frequency update paths.
-  let targetAssetIndex = -1;
-  let targetAsset = null;
+  let targetAssetIndex = -1
+  let targetAsset = null
   for (let i = 0; i < state.assets.length; i++) {
     const asset = state.assets[i]
     if (asset && asset.id === assetId) {
-      targetAssetIndex = i;
-      targetAsset = asset;
-      break;
+      targetAssetIndex = i
+      targetAsset = asset
+      break
     }
   }
 
-  if (targetAssetIndex === -1 || !targetAsset) return state;
+  if (targetAssetIndex === -1 || !targetAsset) return state
 
-  let installed = false;
-  const nextSlots = targetAsset.slots ? [...targetAsset.slots] : [];
+  let installed = false
+  const nextSlots = targetAsset.slots ? [...targetAsset.slots] : []
   for (let i = 0; i < nextSlots.length; i++) {
-    const slot = nextSlots[i];
+    const slot = nextSlots[i]
     if (slot && slot.id === slotId && slot.installedModuleId === null) {
-      installed = true;
-      nextSlots[i] = { ...slot, installedModuleId: moduleId };
-      break;
+      installed = true
+      nextSlots[i] = { ...slot, installedModuleId: moduleId }
+      break
     }
   }
 
-  if (!installed) return state;
+  if (!installed) return state
 
   if (newSlotIds && newSlotIds.length > 0 && moduleInfo.addsSlots) {
-    const allowedSlotTypes: Record<string, number> = {};
+    const allowedSlotTypes: Record<string, number> = {}
     for (let i = 0; i < moduleInfo.addsSlots.length; i++) {
-      const def = moduleInfo.addsSlots[i];
+      const def = moduleInfo.addsSlots[i]
       if (def) {
-        allowedSlotTypes[def.slotType] = def.count;
+        allowedSlotTypes[def.slotType] = def.count
       }
     }
 
     for (let i = 0; i < newSlotIds.length; i++) {
-      const newSlot = newSlotIds[i];
-      const count = newSlot ? allowedSlotTypes[newSlot.slotType] : 0;
+      const newSlot = newSlotIds[i]
+      const count = newSlot ? allowedSlotTypes[newSlot.slotType] : 0
       if (newSlot && count !== undefined && count > 0) {
-        allowedSlotTypes[newSlot.slotType] = count - 1;
+        allowedSlotTypes[newSlot.slotType] = count - 1
         nextSlots.push({
           id: newSlot.id,
           slotType: newSlot.slotType,
           position: { x: 0, y: 0 },
           installedModuleId: null,
           addedByModuleId: moduleId
-        });
+        })
       }
     }
   }
 
-  const nextAssets = [...state.assets];
-  nextAssets[targetAssetIndex] = { ...targetAsset, slots: nextSlots };
+  const nextAssets = [...state.assets]
+  nextAssets[targetAssetIndex] = { ...targetAsset, slots: nextSlots }
 
   let nextState: GameState = {
     ...state,
@@ -564,9 +564,9 @@ export const handleRepairChassis = (
   // ⚡ BOLT OPTIMIZATION: Replaced Array.map with targeted array indexing
   // Why: Avoids recreating objects for unmodified items in the array.
   // Impact: Reduces GC overhead in update paths.
-  const nextAssets = [...state.assets];
+  const nextAssets = [...state.assets]
   if (targetAssetIndex !== -1) {
-    nextAssets[targetAssetIndex] = { ...targetAsset, condition: 100 };
+    nextAssets[targetAssetIndex] = { ...targetAsset, condition: 100 }
   }
 
   let nextState: GameState = {
