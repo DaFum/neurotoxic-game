@@ -144,3 +144,8 @@
 
 **Learning:** Interactive elements nested deep within data views (like "Craft", "Make Amends", or "Use" buttons inside `DetailedStats` panels) are often overlooked for keyboard navigation styling, breaking accessibility for users trying to take action on specific rows of data.
 **Action:** Always verify that interactive buttons within lists, tables, or detailed views have explicit `focus-visible` utility classes applied (e.g., `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-abyss-black` if nested inside Panel components with `bg-abyss-black` backgrounds) to ensure they are visually apparent when navigating by keyboard without creating visual seams.
+
+## 2026-06-22 - Focus Rings on Member Traits
+
+**Learning:** Interactive trait buttons within detailed member views lacked explicit focus rings, making them unreachable via keyboard navigation for users who rely on tab navigation to interact with tooltip information or trait statuses.
+**Action:** Always add explicit focus-visible rings (e.g. `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black`) to inner buttons of nested interactive components like Member Traits to ensure complete accessibility without degrading visual style.
