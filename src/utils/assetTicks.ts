@@ -73,10 +73,18 @@ export const processAssetTick = (state: GameState): GameState => {
       0,
       Math.min(100, asset.condition - CONDITION_DECAY_PER_DAY)
     )
-    moneyDelta += getAssetTotalDailyRevenue(asset) - getAssetTotalUpkeep(asset)
-    fameDelta += boni.famePassivePerDay ?? 0
-    moodDelta += boni.bandMoodPerDay ?? 0
-    staminaDelta += boni.staminaRegenBonusPerDay ?? 0
+    moneyDelta += finiteNumberOr(
+      getAssetTotalDailyRevenue(asset) - getAssetTotalUpkeep(asset),
+      0
+    )
+    // Same per-asset finite guard for fame/mood/stamina deltas: a non-finite
+    // boni value (?? 0 lets NaN through) would otherwise poison the
+    // accumulator. A NaN fameDelta propagates straight into fame/fameLevel
+    // (the fameDelta !== 0 branch is true for NaN); NaN mood/stamina deltas
+    // collapse to 0 in the member clamp, silently wiping the stat.
+    fameDelta += finiteNumberOr(boni.famePassivePerDay, 0)
+    moodDelta += finiteNumberOr(boni.bandMoodPerDay, 0)
+    staminaDelta += finiteNumberOr(boni.staminaRegenBonusPerDay, 0)
     return { ...asset, condition }
   })
 
@@ -87,17 +95,23 @@ export const processAssetTick = (state: GameState): GameState => {
   // calculateDailyUpdates) have been applied — clamping per stage would
   // silently forgive debt. handleAdvanceDay's final calculateDailyUpdates
   // pass owns the clamp; this function must only run inside that pipeline.
+  // Wrap both addends with finiteNumberOr: a persisted non-finite money (or a
+  // non-finite delta) would otherwise propagate NaN until the final
+  // calculateDailyUpdates clamp short-circuits it to 0, silently zeroing the
+  // balance instead of preserving it (AGENTS.md arithmetic-then-clamp rule).
+  const nextMoney =
+    finiteNumberOr(state.player.money, 0) + finiteNumberOr(moneyDelta, 0)
   const nextPlayer =
     fameDelta !== 0
       ? {
           ...state.player,
-          money: state.player.money + moneyDelta,
+          money: nextMoney,
           fame: nextFame,
           fameLevel: calculateFameLevel(nextFame)
         }
       : {
           ...state.player,
-          money: state.player.money + moneyDelta
+          money: nextMoney
         }
 
   const nextBand =

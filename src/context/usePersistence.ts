@@ -257,7 +257,30 @@ export function usePersistence({
       const success = safeStorageOperation(
         'saveGame',
         () => {
-          localStorage.setItem(SAVE_KEY, JSON.stringify(saveData))
+          // Write-time finite guard: load-side sanitization is asymmetric, so a
+          // reducer regression that introduces NaN/Infinity would otherwise be
+          // silently written as null and masked on load. Coerce non-finite
+          // numbers to null deterministically and surface a warning so the
+          // corruption is visible rather than hidden.
+          let hadNonFinite = false
+          const nonFiniteKeys = new Set<string>()
+          const serialized = JSON.stringify(saveData, (key, value) => {
+            if (typeof value === 'number' && !Number.isFinite(value)) {
+              hadNonFinite = true
+              if (key) {
+                nonFiniteKeys.add(key)
+              }
+              return null
+            }
+            return value
+          })
+          if (hadNonFinite) {
+            logger.warn(
+              'Persistence',
+              `Non-finite numeric value detected while saving (keys: ${Array.from(nonFiniteKeys).join(', ')}); coerced to null`
+            )
+          }
+          localStorage.setItem(SAVE_KEY, serialized)
           return true
         },
         false

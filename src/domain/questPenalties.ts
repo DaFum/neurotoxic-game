@@ -171,14 +171,14 @@ export const applyQuestFailurePenalties = (
       case 'social.controversy': {
         nextState = { ...nextState, social: { ...nextState.social } }
         nextState.social.controversyLevel = clampControversyLevel(
-          (nextState.social.controversyLevel ?? 0) + penalty.amount
+          finiteNumberOr(nextState.social.controversyLevel, 0) + penalty.amount
         )
         break
       }
       case 'social.loyalty': {
         nextState = { ...nextState, social: { ...nextState.social } }
         nextState.social.loyalty = clampLoyalty(
-          (nextState.social.loyalty ?? 0) + penalty.amount
+          finiteNumberOr(nextState.social.loyalty, 0) + penalty.amount
         )
         break
       }

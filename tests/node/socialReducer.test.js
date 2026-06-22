@@ -141,6 +141,20 @@ describe('socialReducer', () => {
       assert.strictEqual(nextState.social.activeDeals[1].id, 'valid2')
     })
 
+    it('should filter deals with non-finite remainingGigs (NaN/Infinity)', () => {
+      const payload = {
+        activeDeals: [
+          { id: 'valid1', remainingGigs: 3 },
+          { id: 'nan', remainingGigs: Number.NaN }, // invalid
+          { id: 'inf', remainingGigs: Number.POSITIVE_INFINITY } // invalid
+        ]
+      }
+      const nextState = handleUpdateSocial(baseState, payload)
+
+      assert.strictEqual(nextState.social.activeDeals.length, 1)
+      assert.strictEqual(nextState.social.activeDeals[0].id, 'valid1')
+    })
+
     it('should reject non-array activeDeals', () => {
       const payload = { activeDeals: 'not-an-array' }
       const nextState = handleUpdateSocial(baseState, payload)
