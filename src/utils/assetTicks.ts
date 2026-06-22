@@ -77,9 +77,14 @@ export const processAssetTick = (state: GameState): GameState => {
       getAssetTotalDailyRevenue(asset) - getAssetTotalUpkeep(asset),
       0
     )
-    fameDelta += boni.famePassivePerDay ?? 0
-    moodDelta += boni.bandMoodPerDay ?? 0
-    staminaDelta += boni.staminaRegenBonusPerDay ?? 0
+    // Same per-asset finite guard for fame/mood/stamina deltas: a non-finite
+    // boni value (?? 0 lets NaN through) would otherwise poison the
+    // accumulator. A NaN fameDelta propagates straight into fame/fameLevel
+    // (the fameDelta !== 0 branch is true for NaN); NaN mood/stamina deltas
+    // collapse to 0 in the member clamp, silently wiping the stat.
+    fameDelta += finiteNumberOr(boni.famePassivePerDay, 0)
+    moodDelta += finiteNumberOr(boni.bandMoodPerDay, 0)
+    staminaDelta += finiteNumberOr(boni.staminaRegenBonusPerDay, 0)
     return { ...asset, condition }
   })
 
