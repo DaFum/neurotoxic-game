@@ -219,6 +219,14 @@ export const handleUpdateSocial = (
       const validDeals = updates.activeDeals.filter((d: unknown) => {
         if (!d || typeof d !== 'object') return false
         const deal = d as Record<string, unknown>
+        // Own-property checks before reading untrusted fields so inherited
+        // prototype-chain values can't pass validation (project convention).
+        if (
+          !Object.hasOwn(deal, 'id') ||
+          !Object.hasOwn(deal, 'remainingGigs')
+        ) {
+          return false
+        }
         const { id, remainingGigs } = deal
         return (
           typeof id === 'string' &&
