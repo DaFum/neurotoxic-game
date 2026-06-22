@@ -24,6 +24,11 @@ export class AmpStageController extends BaseStageController<AmpStageOptions> {
   interference: number
   isHijackActive: boolean
 
+  /**
+   * Initializes the AmpStageController with the provided options.
+   *
+   * @param options - Configuration options for the stage controller.
+   */
   constructor(options: StageControllerOptions<AmpStageOptions>) {
     super(options)
 
@@ -39,6 +44,13 @@ export class AmpStageController extends BaseStageController<AmpStageOptions> {
     this.isHijackActive = false
   }
 
+  /**
+   * Prepares the stage by creating the background graphic and initializing the wave manager.
+   *
+   * @remarks
+   * This is called automatically after the Pixi application and container are created.
+   * It also performs an initial state sync and render pass.
+   */
   async setup() {
     if (!this.container || !this.app) return
     this.bg = new PIXI.Graphics()
@@ -51,6 +63,9 @@ export class AmpStageController extends BaseStageController<AmpStageOptions> {
     this.renderWaves()
   }
 
+  /**
+   * Delegates the drawing of the amplifier waves to the wave manager.
+   */
   private renderWaves() {
     this.waveManager?.drawWaves(
       this.targetFreq,
@@ -64,6 +79,13 @@ export class AmpStageController extends BaseStageController<AmpStageOptions> {
     )
   }
 
+  /**
+   * Synchronizes the controller's internal state with the external game state reference.
+   *
+   * @remarks
+   * Reads target frequency, current dial value, and various active effect flags
+   * (overdrive, overheat, anomaly, hijack, interference) to drive rendering logic.
+   */
   syncState() {
     if (this.gameStateRef && this.gameStateRef.current) {
       const state = this.gameStateRef.current
@@ -104,6 +126,9 @@ export class AmpStageController extends BaseStageController<AmpStageOptions> {
     }
   }
 
+  /**
+   * Clears and redraws the background graphic, applying visual tints based on active effects.
+   */
   drawBackground() {
     if (!this.bg || !this.app) return
     this.bg.clear()
@@ -124,6 +149,11 @@ export class AmpStageController extends BaseStageController<AmpStageOptions> {
     }
   }
 
+  /**
+   * Advances the stage's simulation by a given time step.
+   *
+   * @param dt - Delta time elapsed since the last update frame.
+   */
   update(dt: number) {
     if (!this.container) return
     this.syncState()
@@ -143,11 +173,17 @@ export class AmpStageController extends BaseStageController<AmpStageOptions> {
     this.renderWaves()
   }
 
+  /**
+   * Redraws the stage geometry, including the background and wave visualization.
+   */
   draw() {
     this.drawBackground()
     this.renderWaves()
   }
 
+  /**
+   * Cleans up Pixi resources specifically allocated by this controller.
+   */
   dispose() {
     if (this.waveManager) {
       this.waveManager.dispose()
@@ -164,7 +200,7 @@ export class AmpStageController extends BaseStageController<AmpStageOptions> {
 /**
  * Creates an Amp stage controller instance.
  * @param params - Controller factory dependencies.
- * @returns A new AmpStageController instance.
+ * @returns An initialized stage controller ready to be attached to a Pixi application.
  */
 export const createAmpStageController = (
   params: StageControllerOptions<AmpStageOptions>
