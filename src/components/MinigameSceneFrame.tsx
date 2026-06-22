@@ -31,6 +31,7 @@ export const MinigameSceneFrame = <TState,>({
 }: MinigameSceneFrameProps<TState>) => {
   const { t } = useTranslation(['ui'])
   const settings = useGameSelector(state => state.settings)
+  const band = useGameSelector(state => state.band)
   // Canonical active minigame type from reducer state — used by the DEV
   // Shift+P backdoor instead of the non-canonical `window.gameState` global.
   const minigameType = useGameSelector(state => state.minigame?.type)
@@ -118,21 +119,24 @@ export const MinigameSceneFrame = <TState,>({
     completeAmpCalibration
   ])
 
-  // Player-initiated skip: forfeits the minigame's reward and proceeds, giving
-  // the same explicit exit affordance CLINIC/ASSETS have. Uses NEUTRAL/forfeit
-  // values (no bonus) — deliberately NOT the dev Shift+P best-case values
-  // (e.g. amp score 100), which as a player action would be an exploit. The
-  // completion reducers reset minigame state and leave currentScene untouched;
-  // onComplete owns the scene change.
+  // Player-initiated skip for the pre-gig setup minigames: an explicit exit
+  // affordance like CLINIC/ASSETS have. Skip is a FORFEIT classified as a failed
+  // run (never a perfect/best-case clear), so it can't be used to farm rewards:
+  //  - Amp score 0 / Kabelsalat not-powered → stress > 0 → failed run, no bonus.
+  //  - Roadie max equipment damage (> 50 → failed) AND the escorted contraband
+  //    is consumed (stashItemId), so skipping can't dodge damage or keep it.
+  // Travel (Tourbus) is deliberately excluded: its arrival continuation reads
+  // not-yet-committed travel state, so a synchronous skip would misroute arrival.
+  // The completion reducers reset minigame state and leave currentScene
+  // untouched; onComplete owns the scene change.
   const handleSkip = useCallback(() => {
     if (uiState?.isGameOver) return
     switch (minigameType) {
-      case MINIGAME_TYPES.TOURBUS:
-        completeTravelMinigame(0, [])
+      case MINIGAME_TYPES.ROADIE: {
+        const stashItemId = band?.stash ? Object.keys(band.stash)[0] : undefined
+        completeRoadieMinigame(100, 0, stashItemId)
         break
-      case MINIGAME_TYPES.ROADIE:
-        completeRoadieMinigame(0, 0)
-        break
+      }
       case MINIGAME_TYPES.KABELSALAT:
         completeKabelsalatMinigame({ isPoweredOn: false, timeLeft: 0 })
         break
@@ -140,19 +144,26 @@ export const MinigameSceneFrame = <TState,>({
         completeAmpCalibration(0)
         break
       default:
-        logger.warn('Minigame', 'Skip: unhandled minigame type', minigameType)
+        logger.warn('Minigame', 'Skip: unsupported minigame type', minigameType)
         return
     }
     onComplete()
   }, [
     uiState?.isGameOver,
     minigameType,
-    completeTravelMinigame,
+    band,
     completeRoadieMinigame,
     completeKabelsalatMinigame,
     completeAmpCalibration,
     onComplete
   ])
+
+  // Skip is only offered for the pre-gig setup minigames (not travel).
+  const canSkip =
+    !uiState?.isGameOver &&
+    (minigameType === MINIGAME_TYPES.ROADIE ||
+      minigameType === MINIGAME_TYPES.KABELSALAT ||
+      minigameType === MINIGAME_TYPES.AMP_CALIBRATION)
 
   return (
     <div className='w-full h-full bg-void-black relative overflow-hidden flex flex-col items-center justify-center'>
@@ -168,9 +179,10 @@ export const MinigameSceneFrame = <TState,>({
         <div className='crt-overlay pointer-events-none fixed inset-0 z-(--z-crt)' />
       )}
 
-      {/* Player-initiated exit: forfeits the reward and continues. Hidden once
-          the completion overlay is shown (CONTINUE owns that path). */}
-      {!uiState?.isGameOver && (
+      {/* Player-initiated exit: forfeits the run and continues. Offered only for
+          pre-gig setup minigames, and hidden once the completion overlay is
+          shown (CONTINUE owns that path). */}
+      {canSkip && (
         <button
           type='button'
           onClick={handleSkip}
