@@ -100,7 +100,7 @@ export const MemberTraits = ({
       >
         <button
           type='button'
-          className={`w-full text-xs flex justify-between items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-abyss-black ${isTraitActive ? 'text-toxic-green' : 'text-ash-gray opacity-50'}`}
+          className={`w-full text-xs flex justify-between items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${isTraitActive ? 'text-toxic-green' : 'text-ash-gray opacity-50'}`}
         >
           <span className='underline decoration-dotted decoration-ash-gray/50 cursor-help'>
             {t(trait.name)}
