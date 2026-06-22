@@ -221,6 +221,25 @@ export const useRoadieLogic = () => {
     health: 100
   })
 
+  // Local idempotency guard: completeRoadieMinigame can be reached from three
+  // paths (delivery, passive contraband damage at 100, traffic crash). The
+  // reducer has its own replay guard, but mirror the belt-and-suspenders local
+  // guard used by useAmpLogic/useTourbusLogic so no path double-dispatches
+  // repair costs / contraband consumption within a single run.
+  const completedRef = useRef(false)
+  const finishRoadie = useCallback(
+    (equipmentDamage: number, contrabandCount: number | undefined) => {
+      if (completedRef.current) return
+      completedRef.current = true
+      completeRoadieMinigame(
+        equipmentDamage,
+        contrabandCount,
+        stashItemIdRef.current ?? undefined
+      )
+    },
+    [completeRoadieMinigame]
+  )
+
   const move = useCallback(
     (dx: number, dy: number) => {
       const game = gameStateRef.current
@@ -245,9 +264,7 @@ export const useRoadieLogic = () => {
       game.lastMoveTime = now
 
       handlePickup(game)
-      handleDelivery(game, (dmg, cnt) =>
-        completeRoadieMinigame(dmg, cnt, stashItemIdRef.current ?? undefined)
-      )
+      handleDelivery(game, (dmg, cnt) => finishRoadie(dmg, cnt))
 
       // Update UI immediately for responsiveness
       setUiState(prev => ({
@@ -258,7 +275,7 @@ export const useRoadieLogic = () => {
         isGameOver: game.isGameOver
       }))
     },
-    [completeRoadieMinigame]
+    [finishRoadie]
   )
 
   const update = useCallback(
@@ -278,22 +295,14 @@ export const useRoadieLogic = () => {
             currentDamage: 100,
             isGameOver: true
           }))
-          completeRoadieMinigame(
-            100,
-            game.contrabandCount ?? 0,
-            stashItemIdRef.current ?? undefined
-          )
+          finishRoadie(100, game.contrabandCount ?? 0)
           return
         }
       }
 
       spawnTraffic(game, deltaMS)
       const crashed = processTraffic(game, deltaMS, (damage: number) =>
-        completeRoadieMinigame(
-          damage,
-          game.contrabandCount ?? 0,
-          stashItemIdRef.current ?? undefined
-        )
+        finishRoadie(damage, game.contrabandCount ?? 0)
       )
 
       if (crashed || (game.carrying && game.carrying.type === 'CONTRABAND')) {
@@ -313,7 +322,7 @@ export const useRoadieLogic = () => {
         })
       }
     },
-    [completeRoadieMinigame]
+    [finishRoadie]
   )
 
   useRoadieKeyboardControls(move)

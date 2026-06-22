@@ -1,5 +1,6 @@
 import type { ToastPayload } from '../../types'
 import { isEmptyObject } from '../../utils/gameState'
+import { isForbiddenKey } from '../../utils/objectUtils'
 
 /**
  * Toast types accepted from runtime and persisted toast payloads.
@@ -55,6 +56,9 @@ const sanitizePrimitiveOptions = (
 ): Record<string, unknown> => {
   const safePrimitives: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(options)) {
+    // Skip prototype-pollution keys before copying, consistent with
+    // copySafePrimitiveObject in stateSanitizers.ts.
+    if (isForbiddenKey(key)) continue
     const valueType = typeof value
     if (
       valueType === 'string' ||
