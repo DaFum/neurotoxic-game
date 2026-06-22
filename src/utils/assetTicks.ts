@@ -73,7 +73,10 @@ export const processAssetTick = (state: GameState): GameState => {
       0,
       Math.min(100, asset.condition - CONDITION_DECAY_PER_DAY)
     )
-    moneyDelta += getAssetTotalDailyRevenue(asset) - getAssetTotalUpkeep(asset)
+    moneyDelta += finiteNumberOr(
+      getAssetTotalDailyRevenue(asset) - getAssetTotalUpkeep(asset),
+      0
+    )
     fameDelta += boni.famePassivePerDay ?? 0
     moodDelta += boni.bandMoodPerDay ?? 0
     staminaDelta += boni.staminaRegenBonusPerDay ?? 0

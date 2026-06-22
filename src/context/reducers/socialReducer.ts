@@ -216,13 +216,17 @@ export const handleUpdateSocial = (
       delete updates.activeDeals
     } else {
       // Validate structure of items
-      const validDeals = updates.activeDeals.filter(
-        d =>
-          d &&
-          typeof d === 'object' &&
-          typeof d.id === 'string' &&
-          Number.isFinite(d.remainingGigs)
-      )
+      const validDeals = updates.activeDeals.filter((d: unknown) => {
+        if (!d || typeof d !== 'object') return false
+        const deal = d as Record<string, unknown>
+        const { id, remainingGigs } = deal
+        return (
+          typeof id === 'string' &&
+          typeof remainingGigs === 'number' &&
+          Number.isInteger(remainingGigs) &&
+          remainingGigs > 0
+        )
+      })
       if (validDeals.length !== updates.activeDeals.length) {
         logger.warn(
           'GameState',
