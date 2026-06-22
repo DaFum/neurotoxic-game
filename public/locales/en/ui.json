@@ -369,7 +369,9 @@
     {
       "title": "ui:featureList.sec6.title",
       "type": "bullets",
-      "items": ["ui:featureList.sec6.items.0"],
+      "items": [
+        "ui:featureList.sec6.items.0"
+      ],
       "description": "ui:featureList.sec6.description"
     },
     {
@@ -1793,5 +1795,11 @@
   "quests.details.title": "Why does this count?",
   "quests.hint.nextLabel": "Next:",
   "shop.messages.voidAltar": "The abyss stares back. Luck +10.",
-  "shop.messages.shrineAltar": "The Rock Gods bless you. Luck +10."
+  "shop.messages.shrineAltar": "The Rock Gods bless you. Luck +10.",
+  "debug": {
+    "title": "NEUROTOXIC DEBUGGER",
+    "dump": "DUMP TO CONSOLE",
+    "copyLogs": "COPY LOGS",
+    "close": "CLOSE"
+  }
 }

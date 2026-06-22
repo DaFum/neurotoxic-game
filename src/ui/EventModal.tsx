@@ -267,7 +267,7 @@ export const EventModal = ({
       <motion.div
         initial={{ scale: 0.9, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
-        className='relative w-full max-w-4xl border-4 border-toxic-green p-3 sm:p-6 bg-void-black shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)] motion-safe:animate-[glitch-anim_0.2s_ease-in-out]'
+        className='relative w-full max-w-4xl border-4 border-toxic-green p-3 sm:p-6 bg-void-black shadow-[4px_4px_0px_theme(colors.toxic-green)] sm:shadow-[8px_8px_0px_theme(colors.toxic-green)] motion-safe:animate-[glitch-anim_0.2s_ease-in-out]'
       >
         {/* Hardware details */}
         <div className='absolute top-0 left-0 w-full h-1 bg-toxic-green'></div>

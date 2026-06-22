@@ -369,7 +369,9 @@
     {
       "title": "ui:featureList.sec6.title",
       "type": "bullets",
-      "items": ["ui:featureList.sec6.items.0"],
+      "items": [
+        "ui:featureList.sec6.items.0"
+      ],
       "description": "ui:featureList.sec6.description"
     },
     {
@@ -1793,5 +1795,11 @@
   "quests.details.title": "Warum zählt Fortschritt?",
   "quests.hint.nextLabel": "Nächster Schritt:",
   "shop.messages.voidAltar": "Der Abgrund starrt zurück. Glück +10.",
-  "shop.messages.shrineAltar": "Die Rockgötter segnen dich. Glück +10."
+  "shop.messages.shrineAltar": "Die Rockgötter segnen dich. Glück +10.",
+  "debug": {
+    "title": "NEUROTOXIC DEBUGGER",
+    "dump": "DUMP TO CONSOLE",
+    "copyLogs": "COPY LOGS",
+    "close": "CLOSE"
+  }
 }

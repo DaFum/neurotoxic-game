@@ -71,6 +71,8 @@ export default [
       'dist/**',
       'node_modules/**',
       'src/data/songs.ts',
+      '**/Songs.js',
+      '**/songs.js',
       '.agents/**',
       'report/**',
       '.claude/**'

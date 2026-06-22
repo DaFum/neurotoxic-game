@@ -115,7 +115,7 @@ describe('BandHQ UI tests', () => {
 
     expect(dialog).toHaveClass('h-[calc(100svh-1rem)]')
     expect(dialog).toHaveClass('max-h-[calc(100svh-1rem)]')
-    expect(dialog).toHaveClass('shadow-[4px_4px_0px_var(--color-toxic-green)]')
+    expect(dialog).toHaveClass('shadow-[4px_4px_0px_theme(colors.toxic-green)]')
     expect(leaveButton).toHaveClass('w-full')
     expect(leaveButton).toHaveClass('sm:w-auto')
     expect(tablist).toHaveClass('shrink-0')

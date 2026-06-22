@@ -74,7 +74,7 @@ const DebugLogViewerContent = ({
         <div className='flex justify-between items-center p-2 bg-shadow-black border-b border-ash-gray'>
           <div className='flex gap-2'>
             <span className='text-toxic-green font-bold'>
-              NEUROTOXIC DEBUGGER
+              {t('ui:debug.title', { defaultValue: 'NEUROTOXIC DEBUGGER' })}
             </span>
             <select
               value={filterLevel}
@@ -94,9 +94,9 @@ const DebugLogViewerContent = ({
                   console.info(logger.logs)
                 }
               }}
-              className='text-ash-gray hover:text-star-white hover:bg-void-black px-2 border-2 border-ash-gray uppercase shadow-[4px_4px_0px_var(--color-ash-gray)] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ash-gray focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
+              className='text-ash-gray hover:text-star-white hover:bg-void-black px-2 border-2 border-ash-gray uppercase shadow-[4px_4px_0px_theme(colors.ash-gray)] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ash-gray focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
             >
-              DUMP TO CONSOLE
+              {t('ui:debug.dump', { defaultValue: 'DUMP TO CONSOLE' })}
             </button>
             <button
               type='button'
@@ -107,16 +107,16 @@ const DebugLogViewerContent = ({
                     logger.error('DebugLogViewer', 'Failed to copy logs', e)
                   )
               }
-              className='text-ash-gray hover:text-star-white hover:bg-void-black px-2 border-2 border-ash-gray uppercase shadow-[4px_4px_0px_var(--color-ash-gray)] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ash-gray focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
+              className='text-ash-gray hover:text-star-white hover:bg-void-black px-2 border-2 border-ash-gray uppercase shadow-[4px_4px_0px_theme(colors.ash-gray)] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ash-gray focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
             >
-              COPY LOGS
+              {t('ui:debug.copyLogs', { defaultValue: 'COPY LOGS' })}
             </button>
             <button
               type='button'
               onClick={() => {
                 logger.clear()
               }}
-              className='text-ash-gray hover:text-star-white hover:bg-void-black px-2 border-2 border-ash-gray uppercase shadow-[4px_4px_0px_var(--color-ash-gray)] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ash-gray focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
+              className='text-ash-gray hover:text-star-white hover:bg-void-black px-2 border-2 border-ash-gray uppercase shadow-[4px_4px_0px_theme(colors.ash-gray)] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ash-gray focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
             >
               {t('ui:action_clear')}
             </button>
@@ -125,9 +125,9 @@ const DebugLogViewerContent = ({
             type='button'
             onClick={onClose}
             aria-label={t('ui:action_close')}
-            className='border-2 border-blood-red bg-void-black text-blood-red px-2 py-1 shadow-[4px_4px_0px_var(--color-blood-red)] hover:bg-blood-red hover:text-void-black uppercase font-bold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blood-red focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
+            className='border-2 border-blood-red bg-void-black text-blood-red px-2 py-1 shadow-[4px_4px_0px_theme(colors.blood-red)] hover:bg-blood-red hover:text-void-black uppercase font-bold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blood-red focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
           >
-            CLOSE
+            {t('ui:debug.close', { defaultValue: 'CLOSE' })}
           </button>
         </div>
 

@@ -79,7 +79,7 @@ describe('Modal Component', () => {
 
     expect(overlay).toHaveClass('p-3')
     expect(dialog).toHaveClass('w-[min(calc(100vw-1.5rem),100%)]')
-    expect(dialog).toHaveClass('shadow-[4px_4px_0px_var(--color-toxic-green)]')
+    expect(dialog).toHaveClass('shadow-[4px_4px_0px_theme(colors.toxic-green)]')
     expect(closeButton.parentElement).toHaveClass('top-2')
     expect(closeButton.parentElement).toHaveClass('right-2')
   })
