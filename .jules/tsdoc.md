@@ -19,3 +19,4 @@
 | 2026-06-19        | src/hooks/rhythmGame/useRhythmGameState.ts    | RhythmUiState, RhythmStateSetters, RhythmGameStateHookReturn, useRhythmGameState                                                                         |
 | 2026-06-20 | src/components/stage/EffectManager.ts | EffectManager, constructor, releaseEffectToPool, spawnHitEffect, update, dispose |
 | 2026-06-21 | src/components/overworld/utils.ts | getNodeIconUrl |
+| 2026-06-22 | src/components/stage/AmpStageController.ts | AmpStageController, constructor, setup, renderWaves, syncState, drawBackground, update, draw, dispose, createAmpStageController |
