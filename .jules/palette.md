@@ -125,7 +125,7 @@
 
 **Learning:** React native disabled elements do not fire pointer events like onMouseEnter, which means tooltips on standard disabled buttons don't fire without wrappers. The `Tooltip` component handles this automatically by wrapping disabled inputs in a tab/hover friendly \`<span>\`, BUT rendering an empty \`Tooltip\` shell conditionally based on its content (e.g., \`<Tooltip content={undefined}>\`) breaks accessibility. Always conditionally render the _Tooltip component itself_, rather than relying on it to disappear when its content prop is falsy, to ensure native \`aria-labels\` and screen-reader behaviors aren't overridden by ghost wrappers.
 
-## 2025-05-30 - [Missing Tooltips for Icon-Only Actions]
+## 2025-05-30 - Missing Tooltips for Icon-Only Actions
 
 **Learning:** Icon-only buttons (like the `?` shortcuts toggle in OverworldHUD) often lack visual hover feedback to explain their purpose to sighted users, despite having proper `aria-label`s for screen readers. The `Tooltip` component from `src/ui/shared` is standard practice across the HUD for resolving this.
 **Action:** When inspecting or adding icon-only buttons, systematically wrap them in the existing `Tooltip` component, ensuring the `content` string matches or closely aligns with the `aria-label` for consistency across all user types.
