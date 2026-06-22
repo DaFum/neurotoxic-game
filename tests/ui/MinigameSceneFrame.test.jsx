@@ -343,4 +343,48 @@ describe('MinigameSceneFrame', () => {
     expect(screen.getByText('COMPLETE')).toBeTruthy()
     expect(screen.getByRole('button', { name: /continue/i })).toBeTruthy()
   })
+
+  test('shows SKIP button during play and forfeits with neutral result', async () => {
+    const completeAmpCalibration = vi.fn()
+    mockGameState.minigame = { type: 'AMP_CALIBRATION' }
+    mockGameState.completeTravelMinigame = vi.fn()
+    mockGameState.completeRoadieMinigame = vi.fn()
+    mockGameState.completeKabelsalatMinigame = vi.fn()
+    mockGameState.completeAmpCalibration = completeAmpCalibration
+
+    render(
+      <MinigameSceneFrame
+        controllerFactory={mockControllerFactory}
+        logic={mockLogic}
+        uiState={{ isGameOver: false }}
+        onComplete={mockOnComplete}
+      />
+    )
+
+    const skipButton = screen.getByRole('button', {
+      name: /skip|überspringen/i
+    })
+    await userEvent.click(skipButton)
+
+    // Forfeit value (0), NOT the dev Shift+P best-case (100)
+    expect(completeAmpCalibration).toHaveBeenCalledWith(0)
+    expect(mockOnComplete).toHaveBeenCalledTimes(1)
+  })
+
+  test('hides SKIP button once the game is over', async () => {
+    mockGameState.minigame = { type: 'AMP_CALIBRATION' }
+
+    render(
+      <MinigameSceneFrame
+        controllerFactory={mockControllerFactory}
+        logic={mockLogic}
+        uiState={{ isGameOver: true }}
+        onComplete={mockOnComplete}
+      />
+    )
+
+    expect(
+      screen.queryByRole('button', { name: /skip|überspringen/i })
+    ).toBeNull()
+  })
 })

@@ -1,5 +1,6 @@
-import { useEffect, useLayoutEffect, useRef } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import { useGameActions, useGameSelector } from '../context/GameState'
 import { PixiStage } from './PixiStage'
 import { ActionButton } from '../ui/shared'
@@ -28,6 +29,7 @@ export const MinigameSceneFrame = <TState,>({
   completionButtonText = 'CONTINUE',
   children
 }: MinigameSceneFrameProps<TState>) => {
+  const { t } = useTranslation(['ui'])
   const settings = useGameSelector(state => state.settings)
   // Canonical active minigame type from reducer state — used by the DEV
   // Shift+P backdoor instead of the non-canonical `window.gameState` global.
@@ -116,6 +118,42 @@ export const MinigameSceneFrame = <TState,>({
     completeAmpCalibration
   ])
 
+  // Player-initiated skip: forfeits the minigame's reward and proceeds, giving
+  // the same explicit exit affordance CLINIC/ASSETS have. Uses NEUTRAL/forfeit
+  // values (no bonus) — deliberately NOT the dev Shift+P best-case values
+  // (e.g. amp score 100), which as a player action would be an exploit. The
+  // completion reducers reset minigame state and leave currentScene untouched;
+  // onComplete owns the scene change.
+  const handleSkip = useCallback(() => {
+    if (uiState?.isGameOver) return
+    switch (minigameType) {
+      case MINIGAME_TYPES.TOURBUS:
+        completeTravelMinigame(0, [])
+        break
+      case MINIGAME_TYPES.ROADIE:
+        completeRoadieMinigame(0, 0)
+        break
+      case MINIGAME_TYPES.KABELSALAT:
+        completeKabelsalatMinigame({ isPoweredOn: false, timeLeft: 0 })
+        break
+      case MINIGAME_TYPES.AMP_CALIBRATION:
+        completeAmpCalibration(0)
+        break
+      default:
+        logger.warn('Minigame', 'Skip: unhandled minigame type', minigameType)
+        return
+    }
+    onComplete()
+  }, [
+    uiState?.isGameOver,
+    minigameType,
+    completeTravelMinigame,
+    completeRoadieMinigame,
+    completeKabelsalatMinigame,
+    completeAmpCalibration,
+    onComplete
+  ])
+
   return (
     <div className='w-full h-full bg-void-black relative overflow-hidden flex flex-col items-center justify-center'>
       <div className='absolute inset-0 pointer-events-none'>
@@ -128,6 +166,18 @@ export const MinigameSceneFrame = <TState,>({
 
       {settings?.crtEnabled && (
         <div className='crt-overlay pointer-events-none fixed inset-0 z-(--z-crt)' />
+      )}
+
+      {/* Player-initiated exit: forfeits the reward and continues. Hidden once
+          the completion overlay is shown (CONTINUE owns that path). */}
+      {!uiState?.isGameOver && (
+        <button
+          type='button'
+          onClick={handleSkip}
+          className='absolute top-4 right-4 z-(--z-modal) pointer-events-auto border-2 border-toxic-green/60 bg-void-black/70 px-3 py-1 text-sm text-toxic-green hover:bg-toxic-green/10'
+        >
+          {t('ui:minigames.skip', { defaultValue: 'SKIP' })}
+        </button>
       )}
 
       {/* Custom UI Elements (HUD, Controls) */}

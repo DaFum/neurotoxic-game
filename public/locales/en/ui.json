@@ -1229,6 +1229,7 @@
   "minigames.kabelsalat.timeValue_other": "{{count}}s",
   "minigames.kabelsalat.title": "HARDWARE_RIGGING",
   "minigames.kabelsalat.voidSurge": "VOID SURGE",
+  "minigames.skip": "SKIP",
   "module": "module",
   "moveDown": "Move Down",
   "moveLeft": "Move Left",
