@@ -343,4 +343,96 @@ describe('MinigameSceneFrame', () => {
     expect(screen.getByText('COMPLETE')).toBeTruthy()
     expect(screen.getByRole('button', { name: /continue/i })).toBeTruthy()
   })
+
+  test('SKIP forfeits amp as a failed run (score 0, not best-case 100)', async () => {
+    const user = userEvent.setup()
+    const completeAmpCalibration = vi.fn()
+    mockGameState.minigame = { type: 'AMP_CALIBRATION' }
+    mockGameState.band = {}
+    mockGameState.completeTravelMinigame = vi.fn()
+    mockGameState.completeRoadieMinigame = vi.fn()
+    mockGameState.completeKabelsalatMinigame = vi.fn()
+    mockGameState.completeAmpCalibration = completeAmpCalibration
+
+    render(
+      <MinigameSceneFrame
+        controllerFactory={mockControllerFactory}
+        logic={mockLogic}
+        uiState={{ isGameOver: false }}
+        onComplete={mockOnComplete}
+      />
+    )
+
+    const skipButton = screen.getByRole('button', {
+      name: /skip|überspringen/i
+    })
+    await user.click(skipButton)
+
+    // Failed-run forfeit (0), NOT the dev Shift+P best-case (100)
+    expect(completeAmpCalibration).toHaveBeenCalledWith(0)
+    expect(mockOnComplete).toHaveBeenCalledTimes(1)
+  })
+
+  test('SKIP forfeits roadie with max damage and consumes the escorted contraband', async () => {
+    const user = userEvent.setup()
+    const completeRoadieMinigame = vi.fn()
+    mockGameState.minigame = { type: 'ROADIE' }
+    mockGameState.band = { stash: { contraband_x: { stacks: 1 } } }
+    mockGameState.completeTravelMinigame = vi.fn()
+    mockGameState.completeRoadieMinigame = completeRoadieMinigame
+    mockGameState.completeKabelsalatMinigame = vi.fn()
+    mockGameState.completeAmpCalibration = vi.fn()
+
+    render(
+      <MinigameSceneFrame
+        controllerFactory={mockControllerFactory}
+        logic={mockLogic}
+        uiState={{ isGameOver: false }}
+        onComplete={mockOnComplete}
+      />
+    )
+
+    await user.click(screen.getByRole('button', { name: /skip|überspringen/i }))
+
+    // Max damage (> 50 → failed run, never perfect) + stash id so the escorted
+    // contraband is consumed rather than kept on a skipped run.
+    expect(completeRoadieMinigame).toHaveBeenCalledWith(100, 0, 'contraband_x')
+    expect(mockOnComplete).toHaveBeenCalledTimes(1)
+  })
+
+  test('does not offer SKIP for the travel (Tourbus) minigame', async () => {
+    mockGameState.minigame = { type: 'TOURBUS' }
+    mockGameState.band = {}
+
+    render(
+      <MinigameSceneFrame
+        controllerFactory={mockControllerFactory}
+        logic={mockLogic}
+        uiState={{ isGameOver: false }}
+        onComplete={mockOnComplete}
+      />
+    )
+
+    expect(
+      screen.queryByRole('button', { name: /skip|überspringen/i })
+    ).toBeNull()
+  })
+
+  test('hides SKIP button once the game is over', async () => {
+    mockGameState.minigame = { type: 'AMP_CALIBRATION' }
+    mockGameState.band = {}
+
+    render(
+      <MinigameSceneFrame
+        controllerFactory={mockControllerFactory}
+        logic={mockLogic}
+        uiState={{ isGameOver: true }}
+        onComplete={mockOnComplete}
+      />
+    )
+
+    expect(
+      screen.queryByRole('button', { name: /skip|überspringen/i })
+    ).toBeNull()
+  })
 })

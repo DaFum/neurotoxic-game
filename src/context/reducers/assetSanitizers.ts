@@ -354,11 +354,8 @@ export const sanitizeLiabilities = (
       termDaysRemaining: finiteNumberOr(clean.termDaysRemaining, 0),
       defaultCounter: finiteNumberOr(clean.defaultCounter, 0)
     }
-    if (typeof clean.crowdfundFamePromised === 'number') {
-      result.crowdfundFamePromised = finiteNumberOr(
-        clean.crowdfundFamePromised,
-        0
-      )
+    if (isFiniteNumber(clean.crowdfundFamePromised)) {
+      result.crowdfundFamePromised = clean.crowdfundFamePromised
     }
     out[result.id] = result
   }
