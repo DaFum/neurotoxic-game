@@ -46,17 +46,24 @@ export const HecklerOverlay = memo(function HecklerOverlay({
 
   return (
     <div className='absolute inset-0 pointer-events-none overflow-hidden z-(--z-stage)'>
-      {projectiles.map((p) => (
-        <div
-          key={p.id}
-          className='absolute text-4xl drop-shadow-lg'
-          style={{
-            transform: `translate3d(${p.x}px, ${p.y}px, 0) rotate(${p.rotation * (180 / Math.PI)}deg)`
-          }}
-        >
-          {p.type === 'bottle' ? '🍾' : '🍅'}
-        </div>
-      ))}
+      {projectiles
+        .filter((p): p is Projectile => !!p && p.id !== undefined)
+        .map((p) => {
+          const x = p.x ?? 0
+          const y = p.y ?? 0
+          const rotation = p.rotation ?? 0
+          return (
+            <div
+              key={p.id}
+              className='absolute text-4xl drop-shadow-lg'
+              style={{
+                transform: `translate3d(${x}px, ${y}px, 0) rotate(${rotation * (180 / Math.PI)}deg)`
+              }}
+            >
+              {p.type === 'bottle' ? '🍾' : '🍅'}
+            </div>
+          )
+        })}
     </div>
   )
 })
