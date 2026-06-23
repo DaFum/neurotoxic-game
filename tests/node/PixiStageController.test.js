@@ -585,6 +585,24 @@ describe('PixiStageController', () => {
       controller.colorMatrix.hue = hueMethod
     })
 
+    test('applies contrast transformation in toxic mode', async () => {
+      await controller.init()
+      gameStateRef.current.isToxicMode = true
+
+      const contrastMethod = controller.colorMatrix.contrast
+      controller.colorMatrix.contrast = mock.fn()
+
+      controller.handleTicker({ deltaMS: 16 })
+
+      assert.ok(controller.colorMatrix.contrast.mock.calls.length > 0)
+      const [contrastValue, multiply] =
+        controller.colorMatrix.contrast.mock.calls[0].arguments
+      assert.equal(contrastValue, 1.5)
+      assert.equal(multiply, true)
+
+      controller.colorMatrix.contrast = contrastMethod
+    })
+
     test('does not apply hue when colorMatrix is null', async () => {
       await controller.init()
       const originalMatrix = controller.colorMatrix
