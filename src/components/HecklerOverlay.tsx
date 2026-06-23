@@ -32,15 +32,24 @@ export const HecklerOverlay = memo(function HecklerOverlay({
 
   useEffect(() => {
     let rAF = 0
+    let wasActive = false
     const loop = () => {
-      forceRender()
+      const hasProjectiles =
+        (gameStateRef.current?.projectiles?.length ?? 0) > 0
+
+      // Render if active, or if we just became inactive (to clear the DOM)
+      if (hasProjectiles || wasActive) {
+        forceRender()
+      }
+      wasActive = hasProjectiles
+
       rAF = requestAnimationFrame(loop)
     }
     loop()
     return () => {
       cancelAnimationFrame(rAF)
     }
-  }, [])
+  }, [gameStateRef])
 
   const projectiles = (gameStateRef.current?.projectiles ?? []) as Projectile[]
 
