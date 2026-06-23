@@ -42,7 +42,7 @@ export const MainMenuHeader = () => {
       {/* jscpd:ignore-start */}
       <AnimatedSubtitle
         initial={
-          prefersReducedMotion ? false : { opacity: 0, letterSpacing: '0.5em' }
+          prefersReducedMotion ? false : { opacity: 0, letterSpacing: '0.1em' }
         }
         animate={{ opacity: 1, letterSpacing: '0.5em' }}
         transition={
