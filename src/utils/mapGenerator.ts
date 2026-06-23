@@ -289,7 +289,10 @@ export class MapGenerator {
   ): { poolArray: Venue[]; poolLength: number } {
     const { easyVenues, mediumVenues, hardVenues } = pools
 
-    const preferences =
+    const preferences: [
+      { poolArray: Venue[]; poolLength: number },
+      ...{ poolArray: Venue[]; poolLength: number }[]
+    ] =
       layerIndex < 3
         ? [
             { poolArray: easyVenues, poolLength: available.easy },
@@ -313,7 +316,7 @@ export class MapGenerator {
 
     // If all preferred pools are exhausted, return the primary to trigger
     // the zero-resort fallback logic in the caller.
-    return preferences[0] as { poolArray: Venue[]; poolLength: number }
+    return preferences[0]
   }
 
   /**
