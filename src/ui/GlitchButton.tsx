@@ -42,22 +42,22 @@ export const GlitchButton = ({
       case 'danger':
         return `border-2 border-blood-red text-star-white
                 hover:bg-blood-red hover:text-void-black
-                hover:translate-x-1 hover:-translate-y-1
-                hover:shadow-[4px_4px_0px_var(--color-toxic-green)]
-                active:translate-x-0 active:translate-y-0 active:shadow-none`
+                hover:scale-[1.02]
+                hover:shadow-[4px_4px_0px_theme(colors.toxic-green)]
+                active:scale-[0.98] active:shadow-none`
       case 'warning':
         return `border-2 border-warning-yellow text-warning-yellow
                 hover:bg-warning-yellow hover:text-void-black
-                hover:translate-x-1 hover:-translate-y-1
-                hover:shadow-[4px_4px_0px_var(--color-toxic-green)]
-                active:translate-x-0 active:translate-y-0 active:shadow-none`
+                hover:scale-[1.02]
+                hover:shadow-[4px_4px_0px_theme(colors.toxic-green)]
+                active:scale-[0.98] active:shadow-none`
       case 'primary':
       default:
         return `border-2 border-toxic-green text-toxic-green
                 hover:bg-toxic-green hover:text-void-black
-                hover:translate-x-1 hover:-translate-y-1
-                hover:shadow-[4px_4px_0px_var(--color-blood-red)]
-                active:translate-x-0 active:translate-y-0 active:shadow-none`
+                hover:scale-[1.02]
+                hover:shadow-[4px_4px_0px_theme(colors.blood-red)]
+                active:scale-[0.98] active:shadow-none`
     }
   }
 
@@ -107,7 +107,7 @@ export const GlitchButton = ({
           className='absolute inset-0 pointer-events-none opacity-10'
           style={{
             backgroundImage:
-              'repeating-linear-gradient(45deg, transparent, transparent 4px, var(--color-ash-gray) 4px, var(--color-ash-gray) 6px)'
+              'repeating-linear-gradient(45deg, transparent, transparent 4px, theme(colors.ash-gray) 4px, theme(colors.ash-gray) 6px)'
           }}
         />
       )}

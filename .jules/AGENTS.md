@@ -7,6 +7,7 @@ This directory contains learning journals and specific agent configurations.
 - **Journaling Format:** When journaling performance learnings in `.jules/bolt.md`, only record critical app-specific discoveries using the exact format:
   ```markdown
   ## YYYY-MM-DD - [Title]
+
   **Learning:** [Insight]
   **Action:** [How to apply next time]
   ```
@@ -19,6 +20,7 @@ This directory contains learning journals and specific agent configurations.
 - **Journaling Format:** When journaling UX/accessibility learnings in `.jules/palette.md`, log only critical app-specific discoveries using the exact format:
   ```markdown
   ## YYYY-MM-DD - [Title]
+
   **Learning:** [Insight]
   **Action:** [How to apply next time]
   ```

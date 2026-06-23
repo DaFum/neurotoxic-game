@@ -22,6 +22,8 @@ const MockPIXI = {
   ColorMatrixFilter: class {
     destroy() {}
     hue() {}
+    contrast() {}
+    brightness() {}
   }
 }
 

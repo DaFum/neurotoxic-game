@@ -16,6 +16,14 @@ export const MainMenuBackground = () => {
         }}
       />
       <div className='absolute inset-0 z-0 bg-gradient-to-b from-void-black/0 to-void-black/90 pointer-events-none' />
+      <div
+        className='absolute inset-0 z-0 pointer-events-none mix-blend-overlay opacity-30'
+        style={{
+          backgroundImage:
+            'repeating-linear-gradient(0deg, transparent, transparent 2px, var(--color-void-black) 2px, var(--color-void-black) 4px)'
+        }}
+        aria-hidden='true'
+      />
 
       {/* Atmosphere: slow scanning bar */}
       <div
