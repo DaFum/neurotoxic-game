@@ -1,4 +1,4 @@
-import { useEffect, useRef, memo } from 'react'
+import { useEffect, useReducer, memo } from 'react'
 
 type ProjectileId = string | number
 
@@ -21,105 +21,42 @@ interface HecklerOverlayProps {
 }
 
 /**
- * Updates, creates, and removes DOM nodes for heckler projectiles in a single optimized pass.
- *
- * @remarks
- * This function bypasses standard React rendering cycles to manually mutate the DOM for high-performance animations. It uses 3D transforms (`translate3d`) to ensure hardware acceleration and prevent expensive layout thrashing.
- *
- * @param projectiles - The active array of projectile data entities to display on screen.
- * @param nodeCache - A mutable map storing references to generated DOM elements, keyed by projectile ID.
- * @param seenIds - A mutable set used internally to track which projectile IDs were processed during the current frame, allowing for stale node cleanup.
- * @param container - The parent DOM element where projectile nodes are injected.
- */
-function updateOverlayNodes(
-  projectiles: Projectile[],
-  nodeCache: Map<ProjectileId, HTMLDivElement>,
-  seenIds: Set<ProjectileId>,
-  container: HTMLDivElement
-): void {
-  seenIds.clear()
-
-  // 1. Update existing nodes and add new ones
-  for (let i = 0; i < projectiles.length; i++) {
-    const p = projectiles[i]
-    if (!p) continue
-    seenIds.add(p.id)
-    let node = nodeCache.get(p.id)
-
-    if (!node) {
-      // Create element if it doesn't exist
-      node = document.createElement('div')
-      node.className = 'absolute text-4xl drop-shadow-lg'
-      node.textContent = p.type === 'bottle' ? '🍾' : '🍅'
-      container.appendChild(node)
-      nodeCache.set(p.id, node)
-    }
-
-    // Update position and rotation directly bypassing React render
-    // Use translate3d to force hardware acceleration and avoid layout thrashing
-    // by not modifying top/left which triggers paint/layout cycles
-    node.style.transform = `translate3d(${p.x}px, ${p.y}px, 0) rotate(${p.rotation * (180 / Math.PI)}deg)`
-  }
-
-  // 2. Remove old nodes that are no longer in the state.
-  // Optimization: `nodeCache` will always contain at least every ID in `seenIds`
-  // after the loop above (either pre-existing or newly created). Therefore, if
-  // sizes match, there are exactly zero stale nodes to remove.
-  if (nodeCache.size > seenIds.size) {
-    if (seenIds.size === 0) {
-      // Fast path: all projectiles removed
-      container.replaceChildren()
-      nodeCache.clear()
-    } else {
-      // Partial removal
-      nodeCache.forEach((node, id) => {
-        if (!seenIds.has(id)) {
-          container.removeChild(node)
-          nodeCache.delete(id)
-        }
-      })
-    }
-  }
-}
-
-/**
  * Overlay component that renders projectiles (heckler items).
- * Optimized to bypass React renders during animation.
+ * Uses requestAnimationFrame to map state directly, rendering declaratively.
  * @param props - Display data and refs for the heckler overlay component.
  */
 export const HecklerOverlay = memo(function HecklerOverlay({
   gameStateRef
 }: HecklerOverlayProps) {
-  const containerRef = useRef<HTMLDivElement | null>(null)
-  // Cache for created DOM nodes, keyed by projectile ID
-  const nodeCacheRef = useRef<Map<ProjectileId, HTMLDivElement>>(new Map())
-  // Persistent Set to avoid GC allocations during O(1) lookups
-  const seenIdsRef = useRef<Set<ProjectileId>>(new Set())
+  const [, forceRender] = useReducer((x) => x + 1, 0)
 
   useEffect(() => {
     let rAF = 0
     const loop = () => {
-      if (gameStateRef.current && containerRef.current) {
-        const projectiles = (gameStateRef.current.projectiles ??
-          []) as Projectile[]
-        const container = containerRef.current
-        const nodeCache = nodeCacheRef.current
-        const seenIds = seenIdsRef.current
-
-        updateOverlayNodes(projectiles, nodeCache, seenIds, container)
-      }
+      forceRender()
       rAF = requestAnimationFrame(loop)
     }
     loop()
     return () => {
       cancelAnimationFrame(rAF)
     }
-  }, [gameStateRef])
+  }, [])
+
+  const projectiles = (gameStateRef.current?.projectiles ?? []) as Projectile[]
 
   return (
-    <div
-      ref={containerRef}
-      className='absolute inset-0 pointer-events-none overflow-hidden z-(--z-stage)'
-    />
+    <div className='absolute inset-0 pointer-events-none overflow-hidden z-(--z-stage)'>
+      {projectiles.map((p) => (
+        <div
+          key={p.id}
+          className='absolute text-4xl drop-shadow-lg'
+          style={{
+            transform: `translate3d(${p.x}px, ${p.y}px, 0) rotate(${p.rotation * (180 / Math.PI)}deg)`
+          }}
+        >
+          {p.type === 'bottle' ? '🍾' : '🍅'}
+        </div>
+      ))}
+    </div>
   )
 })
