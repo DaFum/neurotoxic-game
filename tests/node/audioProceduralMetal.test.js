@@ -105,6 +105,15 @@ mock.module(new URL('../../src/utils/audio/context.ts', import.meta.url).href, {
   }
 })
 
+// Mock drumMappings
+const mockPlayDrumNote = mock.fn()
+mock.module(
+  new URL('../../src/utils/audio/drumMappings.ts', import.meta.url).href,
+  {
+    namedExports: { playDrumNote: mockPlayDrumNote }
+  }
+)
+
 // Mock PlaybackUtils
 const mockStopTransportAndClear = mock.fn()
 mock.module(
@@ -238,6 +247,7 @@ test('startMetalGenerator Tests', async t => {
     mockAudioState.drumKit.kick.triggerAttackRelease.mock.resetCalls()
     mockAudioState.drumKit.snare.triggerAttackRelease.mock.resetCalls()
     mockAudioState.drumKit.hihat.triggerAttackRelease.mock.resetCalls()
+    mockPlayDrumNote.mock.resetCalls()
 
     mockEnsureAudioContext.mock.mockImplementation(async () => true)
   })
@@ -420,28 +430,23 @@ test('startMetalGenerator Tests', async t => {
     assert.strictEqual(guitarArgs[0], 'E2')
     assert.strictEqual(guitarArgs[2], 100)
 
-    // Check drum trigger (playDrumsLegacy)
+    // Check drum trigger (playProceduralDrums via playDrumNote)
     // difficulty 5 -> kick, snare (random > 0.5), hihat
     // random() returns 0.05.
     // kick is always triggered at diff 5
-    assert.strictEqual(
-      mockAudioState.drumKit.kick.triggerAttackRelease.mock.calls.length,
-      1
-    )
+    // snare requires random > 0.5, so it is skipped
+    // hihat is always triggered
+    // Total calls: 2 (kick, hihat)
+    assert.strictEqual(mockPlayDrumNote.mock.calls.length, 2)
 
-    // random > 0.5 for snare? 0.05 is not > 0.5. So no snare?
-    // Wait, let's check code:
-    // `if (diff === 5) { ... if (random() > 0.5) ... }`
-    // So with 0.05, snare is NOT triggered.
-    assert.strictEqual(
-      mockAudioState.drumKit.snare.triggerAttackRelease.mock.calls.length,
-      0
-    )
+    // Kick: pitch 36
+    assert.strictEqual(mockPlayDrumNote.mock.calls[0].arguments[0], 36)
+    assert.strictEqual(mockPlayDrumNote.mock.calls[0].arguments[1], 100) // time
+    assert.strictEqual(mockPlayDrumNote.mock.calls[0].arguments[2], 1) // velocity
 
-    // Hihat always triggered at diff 5
-    assert.strictEqual(
-      mockAudioState.drumKit.hihat.triggerAttackRelease.mock.calls.length,
-      1
-    )
+    // HiHat: pitch 42
+    assert.strictEqual(mockPlayDrumNote.mock.calls[1].arguments[0], 42)
+    assert.strictEqual(mockPlayDrumNote.mock.calls[1].arguments[1], 100) // time
+    assert.strictEqual(mockPlayDrumNote.mock.calls[1].arguments[2], 0.7) // velocity
   })
 })
