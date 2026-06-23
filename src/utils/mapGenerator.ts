@@ -288,46 +288,35 @@ export class MapGenerator {
     available: { easy: number; medium: number; hard: number }
   ): { poolArray: Venue[]; poolLength: number } {
     const { easyVenues, mediumVenues, hardVenues } = pools
-    const i = layerIndex
 
-    let poolArray: Venue[]
-    let poolLength: number
+    const preferences: [
+      { poolArray: Venue[]; poolLength: number },
+      ...{ poolArray: Venue[]; poolLength: number }[]
+    ] =
+      layerIndex < 3
+        ? [
+            { poolArray: easyVenues, poolLength: available.easy },
+            { poolArray: mediumVenues, poolLength: available.medium },
+            { poolArray: hardVenues, poolLength: available.hard }
+          ]
+        : layerIndex < 7
+          ? [
+              { poolArray: mediumVenues, poolLength: available.medium },
+              { poolArray: hardVenues, poolLength: available.hard }
+            ]
+          : [
+              { poolArray: hardVenues, poolLength: available.hard },
+              { poolArray: mediumVenues, poolLength: available.medium },
+              { poolArray: easyVenues, poolLength: available.easy }
+            ]
 
-    if (i < 3) {
-      poolArray = easyVenues
-      poolLength = available.easy
-    } else if (i < 7) {
-      poolArray = mediumVenues
-      poolLength = available.medium
-    } else {
-      poolArray = hardVenues
-      poolLength = available.hard
+    for (const pool of preferences) {
+      if (pool.poolLength > 0) return pool
     }
 
-    // Fallback when primary pool is exhausted
-    if (poolLength === 0) {
-      if (i < 3) {
-        poolArray = mediumVenues
-        poolLength = available.medium
-        if (poolLength === 0) {
-          poolArray = hardVenues
-          poolLength = available.hard
-        }
-      } else if (i < 7) {
-        poolArray = hardVenues
-        poolLength = available.hard
-      } else {
-        // Hard pool exhausted: cascade down through medium then easy
-        poolArray = mediumVenues
-        poolLength = available.medium
-        if (poolLength === 0) {
-          poolArray = easyVenues
-          poolLength = available.easy
-        }
-      }
-    }
-
-    return { poolArray, poolLength }
+    // If all preferred pools are exhausted, return the primary to trigger
+    // the zero-resort fallback logic in the caller.
+    return preferences[0]
   }
 
   /**
