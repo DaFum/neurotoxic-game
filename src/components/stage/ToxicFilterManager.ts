@@ -27,6 +27,7 @@ export class ToxicFilterManager {
     if (state.isToxicMode) {
       if (this.colorMatrix) {
         this.colorMatrix.hue(Math.sin(elapsed / 100) * 180, false)
+        this.colorMatrix.contrast(1.5, false)
       }
       if (!this.isToxicActive && stageContainer) {
         stageContainer.filters = this.toxicFilters

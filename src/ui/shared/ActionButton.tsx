@@ -37,8 +37,8 @@ export const ActionButton = memo(
     const variantStyles =
       variant === 'primary'
         ? `px-8 py-4 bg-toxic-green text-void-black
-                hover:scale-105 hover:bg-toxic-green-bright
-                disabled:hover:scale-100 disabled:hover:bg-toxic-green`
+                hover:translate-x-1 hover:-translate-y-1 hover:shadow-[4px_4px_0px_var(--color-toxic-green-bright)]
+                disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-none disabled:hover:bg-toxic-green`
         : ''
 
     return (
