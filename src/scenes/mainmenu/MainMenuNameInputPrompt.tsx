@@ -1,13 +1,9 @@
-import { useCallback } from 'react'
-import type { ChangeEvent, KeyboardEvent, RefObject } from 'react'
+import { useActionState } from 'react'
+import type { RefObject } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Modal } from '../../ui/shared'
 import { GlitchButton } from '../../ui/GlitchButton'
 
-/**
- * Prompts for the player name before starting a new tour.
- * @param props - Player-name input state, submit handler, close handler, and input ref.
- */
 export const MainMenuNameInputPrompt = ({
   playerNameInput,
   setPlayerNameInput,
@@ -23,18 +19,20 @@ export const MainMenuNameInputPrompt = ({
 }) => {
   const { t } = useTranslation()
 
-  const handleNameChange = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => setPlayerNameInput(e.target.value),
-    [setPlayerNameInput]
-  )
-
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === 'Enter') {
-        handleNameSubmit()
+  // React 19 Action State Paradigm
+  const [error, submitAction] = useActionState(
+    async (previousState: string | null, formData: FormData) => {
+      const name = formData.get('playerName') as string
+      if (!name || name.trim() === '') {
+        return t('ui:enter_name_error', { defaultValue: 'Please enter a name' })
       }
+      setPlayerNameInput(name.trim())
+      // Allow state update to propagate
+      await new Promise(resolve => setTimeout(resolve, 0))
+      handleNameSubmit()
+      return null
     },
-    [handleNameSubmit]
+    null
   )
 
   return (
@@ -45,7 +43,7 @@ export const MainMenuNameInputPrompt = ({
       className='max-w-md'
       ariaLabel={t('ui:identity_required')}
     >
-      <div className='flex flex-col gap-4'>
+      <form action={submitAction} className='flex flex-col gap-4'>
         <label
           htmlFor='playerName'
           className='text-ash-gray font-mono text-sm cursor-pointer'
@@ -54,20 +52,22 @@ export const MainMenuNameInputPrompt = ({
         </label>
         <input
           id='playerName'
+          name='playerName'
           ref={inputRef}
           type='text'
-          value={playerNameInput}
-          onChange={handleNameChange}
+          defaultValue={playerNameInput}
           placeholder={t('ui:enter_name_placeholder')}
           className='bg-void-black border border-toxic-green p-2 text-toxic-green font-mono text-base sm:text-lg focus:outline-none focus:ring-1 focus:ring-toxic-green uppercase min-w-0'
           maxLength={20}
-          onKeyDown={handleKeyDown}
           aria-label={t('ui:enter_alias_desc')}
         />
-        <GlitchButton onClick={handleNameSubmit} className='w-full'>
+        {error && (
+          <div className='text-blood-red font-mono text-sm'>{error}</div>
+        )}
+        <GlitchButton type='submit' className='w-full'>
           {t('ui:confirm_identity')}
         </GlitchButton>
-      </div>
+      </form>
     </Modal>
   )
 }

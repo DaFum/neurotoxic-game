@@ -31,14 +31,7 @@ export const ComboDisplay = memo(function ComboDisplay({
   const comboPulseClass = combo >= 50 ? 'animate-pulse' : ''
 
   return (
-    <div
-      className='mt-2 backdrop-blur-sm border px-3 py-1.5 inline-flex items-baseline gap-2'
-      style={{
-        backgroundColor: 'rgb(var(--color-void-black-rgb) / 60%)',
-        borderColor:
-          'color-mix(in srgb, var(--color-toxic-green) 20%, transparent)'
-      }}
-    >
+    <div className='mt-2 backdrop-blur-sm border px-3 py-1.5 inline-flex items-baseline gap-2 bg-void-black/60 border-[color-mix(in_srgb,var(--color-toxic-green)_20%,transparent)]'>
       <div
         className={`text-2xl font-bold transition-all duration-100 tabular-nums ${comboColorClass} ${comboPulseClass} ${
           combo > 0 ? 'scale-110' : 'scale-100'
@@ -46,17 +39,11 @@ export const ComboDisplay = memo(function ComboDisplay({
       >
         {combo}x
       </div>
-      <div
-        className='text-xs uppercase tracking-widest'
-        style={{ color: 'var(--color-ash-gray)' }}
-      >
+      <div className='text-xs uppercase tracking-widest text-ash-gray'>
         {t('ui:gig.combo', 'COMBO')}
       </div>
       {accuracy < 70 && (
-        <div
-          className='text-xs animate-pulse'
-          style={{ color: 'var(--color-warning-yellow)' }}
-        >
+        <div className='text-xs animate-pulse text-warning-yellow'>
           {t('ui:gig.lowAcc', 'LOW ACC')}
         </div>
       )}

@@ -230,8 +230,21 @@ export function useGameDispatchActions({
    * @param scene - The target scene name (e.g., GAME_PHASES.OVERWORLD).
    */
   const changeScene = useCallback(
-    (scene: Parameters<typeof createChangeSceneAction>[0]) =>
-      startTransition(() => dispatch(createChangeSceneAction(scene))),
+    (scene: Parameters<typeof createChangeSceneAction>[0]) => {
+      // Use CSS View Transitions if supported, otherwise fallback to React startTransition
+      if (
+        typeof document !== 'undefined' &&
+        'startViewTransition' in document
+      ) {
+        // @ts-expect-error - TS doesn't fully support View Transition API in some older DOM lib versions
+        document.startViewTransition(() => {
+          // Flush sync ensures React applies the new scene DOM inside the transition snapshot window
+          startTransition(() => dispatch(createChangeSceneAction(scene)))
+        })
+      } else {
+        startTransition(() => dispatch(createChangeSceneAction(scene)))
+      }
+    },
     [dispatch]
   )
 

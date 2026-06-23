@@ -1,17 +1,105 @@
 import { ColorMatrixFilter, Container } from 'pixi.js'
+import * as PIXI from 'pixi.js'
 import type { RhythmGameRefState } from '../../types/rhythmGame'
+
+// Brutalist CRT / Aberration / Glitch Shader
+const crtFrag = `
+  precision mediump float;
+  varying vec2 vTextureCoord;
+  uniform sampler2D uTexture; // PIXI v8 uses uTexture
+  uniform float uTime;
+  uniform float uIntensity;
+
+  void main(void) {
+    vec2 uv = vTextureCoord;
+
+    // Chromatic Aberration
+    float r = texture2D(uTexture, uv + vec2(0.003 * uIntensity, 0.0)).r;
+    float g = texture2D(uTexture, uv).g;
+    float b = texture2D(uTexture, uv - vec2(0.003 * uIntensity, 0.0)).b;
+
+    // Scanline Effect
+    float scanline = sin(uv.y * 800.0) * 0.04 * uIntensity;
+
+    // Glitch
+    float glitchOffset = sin(uTime * 10.0 + uv.y * 20.0) * 0.005 * uIntensity;
+    if(sin(uTime * 5.0) > 0.95) {
+       uv.x += glitchOffset;
+    }
+
+    vec4 color = vec4(r, g, b, 1.0);
+    color.rgb -= scanline;
+
+    gl_FragColor = color;
+  }
+`
+
+const defaultVert = `
+  precision highp float;
+  attribute vec2 aPosition;
+  attribute vec2 aTexCoord;
+  varying vec2 vTextureCoord;
+  uniform mat3 uProjectionMatrix;
+  void main() {
+    vTextureCoord = aTexCoord;
+    vec3 position = vec3(aPosition, 1.0);
+    gl_Position = vec4((uProjectionMatrix * position).xy, 0.0, 1.0);
+  }
+`
+
+const BaseFilter = PIXI.Filter || class {}
+
+export class BrutalistFilter extends BaseFilter {
+  constructor() {
+    if (!PIXI.Filter || !PIXI.GlProgram) {
+      super()
+      return
+    }
+    const glProgram = PIXI.GlProgram.from({
+      vertex: defaultVert,
+      fragment: crtFrag,
+      name: 'brutalist-filter'
+    })
+
+    super({
+      glProgram,
+      resources: {
+        filterUniforms: {
+          uTime: { type: 'f32', value: 0 },
+          uIntensity: { type: 'f32', value: 1.0 }
+        }
+      }
+    })
+  }
+
+  update(time: number, intensity: number) {
+    if (this.resources?.filterUniforms) {
+      this.resources.filterUniforms.uniforms.uTime = time * 0.001
+      this.resources.filterUniforms.uniforms.uIntensity = intensity
+    }
+  }
+
+  destroy() {
+    if (typeof super.destroy === 'function') {
+      super.destroy()
+    }
+  }
+}
 
 /**
  * Manages toxic mode filter effects for the stage.
  */
 export class ToxicFilterManager {
   colorMatrix: ColorMatrixFilter | null
-  toxicFilters: ColorMatrixFilter[] | null
+  brutalistFilter: BrutalistFilter | null
+  toxicFilters: PIXI.Filter[] | null
   isToxicActive: boolean
+
   constructor() {
     this.isToxicActive = false
     this.colorMatrix = new ColorMatrixFilter()
-    this.toxicFilters = [this.colorMatrix]
+    this.brutalistFilter = new BrutalistFilter()
+    this.toxicFilters = [this.colorMatrix, this.brutalistFilter]
   }
 
   /**
@@ -20,13 +108,18 @@ export class ToxicFilterManager {
    * @param elapsed - The elapsed gig time.
    */
   update(
-    state: Pick<RhythmGameRefState, 'isToxicMode'>,
+    state: Pick<RhythmGameRefState, 'isToxicMode' | 'combo'>,
     elapsed: number,
     stageContainer: Container
   ): void {
     if (state.isToxicMode) {
       if (this.colorMatrix) {
         this.colorMatrix.hue(Math.sin(elapsed / 100) * 180, false)
+      }
+      if (this.brutalistFilter) {
+        // Increase glitch intensity with combo, but keep a base intensity
+        const comboIntensity = Math.min((state.combo || 0) / 100, 1.0)
+        this.brutalistFilter.update(elapsed, 1.0 + comboIntensity * 2.0)
       }
       if (!this.isToxicActive && stageContainer) {
         stageContainer.filters = this.toxicFilters
@@ -55,6 +148,10 @@ export class ToxicFilterManager {
     if (this.colorMatrix) {
       this.colorMatrix.destroy()
       this.colorMatrix = null
+    }
+    if (this.brutalistFilter) {
+      this.brutalistFilter.destroy()
+      this.brutalistFilter = null
     }
 
     this.toxicFilters = null
