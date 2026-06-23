@@ -25,7 +25,7 @@ const SliderSegment = memo(function SliderSegment({
       <div
         style={{ height }}
         className={`w-full transition-colors duration-75 border-b-2 border-transparent hover:border-void-black
-          ${isActive ? 'bg-toxic-green shadow-[0_0_8px_theme(colors.toxic-green)]' : 'bg-toxic-green/20'}`}
+          ${isActive ? 'bg-toxic-green shadow-[0_0_8px_var(--color-toxic-green)]' : 'bg-toxic-green/20'}`}
       ></div>
     </button>
   )

@@ -63,7 +63,7 @@ export const CompletePhase = ({
           transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
           className={`text-3xl sm:text-4xl font-display mb-3 sm:mb-4 break-words ${
             result.success === true
-              ? 'text-toxic-green drop-shadow-[0_0_20px_theme(colors.toxic-green)] animate-neon-flicker'
+              ? 'text-toxic-green drop-shadow-[0_0_20px_var(--color-toxic-green)] animate-neon-flicker'
               : 'text-blood-red'
           }`}
         >

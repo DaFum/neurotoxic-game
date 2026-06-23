@@ -27,7 +27,7 @@ export const BandMembersLayer = memo(
             src={matzeUrl}
             alt={t('minigame:bandMembers.matze', { defaultValue: 'Matze' })}
             crossOrigin={matzeUrl.startsWith('data:') ? undefined : 'anonymous'}
-            className='w-full h-full object-contain filter drop-shadow-[0_0_10px_theme(colors.blood-red)]'
+            className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--color-blood-red)]'
           />
         </div>
         {/* Marius (Drums) - Center Back */}
@@ -42,7 +42,7 @@ export const BandMembersLayer = memo(
             crossOrigin={
               mariusUrl.startsWith('data:') ? undefined : 'anonymous'
             }
-            className='w-full h-full object-contain filter drop-shadow-[0_0_10px_theme(colors.toxic-green-glow)]'
+            className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--color-toxic-green-glow)]'
           />
         </div>
         {/* Lars (Bass) - Right */}
@@ -55,7 +55,7 @@ export const BandMembersLayer = memo(
             src={larsUrl}
             alt={t('minigame:bandMembers.lars', { defaultValue: 'Lars' })}
             crossOrigin={larsUrl.startsWith('data:') ? undefined : 'anonymous'}
-            className='w-full h-full object-contain filter drop-shadow-[0_0_10px_theme(colors.toxic-green)]'
+            className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--color-toxic-green)]'
           />
         </div>
       </div>

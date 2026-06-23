@@ -42,7 +42,7 @@ export const TravelingVan = React.memo(
             defaultValue: 'Traveling Van'
           })}
           crossOrigin={vanUrl.startsWith('data:') ? undefined : 'anonymous'}
-          className='w-12 h-8 object-contain drop-shadow-[0_0_10px_theme(colors.toxic-green)]'
+          className='w-12 h-8 object-contain drop-shadow-[0_0_10px_var(--color-toxic-green)]'
           style={{ transform: 'translate(0, -50%)' }}
         />
       </motion.div>

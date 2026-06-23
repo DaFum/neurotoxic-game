@@ -176,7 +176,7 @@ export const Panel = memo(function Panel({
 }: PanelProps) {
   return (
     <div
-      className={`relative bg-abyss-black border-4 border-steel-gray p-4 group overflow-hidden shadow-[4px_4px_0px_theme(colors.steel-gray)] ${className}`}
+      className={`relative bg-abyss-black border-4 border-steel-gray p-4 group overflow-hidden shadow-[4px_4px_0px_var(--color-steel-gray)] ${className}`}
     >
       {/* Brutalist Frame Corners */}
       <UIFrameCorner className='absolute top-0 left-0 w-6 h-6 text-steel-gray opacity-30 transition-opacity group-hover:opacity-60' />

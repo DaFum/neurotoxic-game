@@ -53,12 +53,12 @@ export const KabelsalatBoard: FC<KabelsalatBoardProps> = ({
 }) => {
   return (
     <div
-      className={`relative w-full aspect-[4/3] border-4 bg-void-black transition-all duration-100 select-none overflow-hidden shadow-[inset_0_0_50px_theme(colors.shadow-black)]
+      className={`relative w-full aspect-[4/3] border-4 bg-void-black transition-all duration-100 select-none overflow-hidden shadow-[inset_0_0_50px_var(--color-shadow-black)]
         ${
           isShocked
             ? 'border-error-red motion-safe:animate-[shake_0.1s_infinite]'
             : isPoweredOn
-              ? 'border-success-green shadow-[0_0_30px_theme(colors.success-green)]'
+              ? 'border-success-green shadow-[0_0_30px_var(--color-success-green)]'
               : isGameOver
                 ? 'border-blood-red'
                 : 'border-concrete-gray'

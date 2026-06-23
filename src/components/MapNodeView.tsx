@@ -346,7 +346,7 @@ export const MapNodeView = memo(
               src={vanUrl}
               alt={t('ui:map.vanAlt')}
               crossOrigin={vanUrl.startsWith('data:') ? undefined : 'anonymous'}
-              className='w-12 h-8 object-contain drop-shadow-[0_0_10px_theme(colors.toxic-green)]'
+              className='w-12 h-8 object-contain drop-shadow-[0_0_10px_var(--color-toxic-green)]'
             />
           </div>
         )}
@@ -359,7 +359,7 @@ export const MapNodeView = memo(
           className='relative z-(--z-stage-bg) flex items-center justify-center'
         >
           <HexNode
-            className={`w-12 h-12 transition-all duration-200 ${isHoveredLocal || isPendingConfirm ? 'text-star-white drop-shadow-[0_0_15px_theme(colors.toxic-green)]' : 'text-toxic-green'}`}
+            className={`w-12 h-12 transition-all duration-200 ${isHoveredLocal || isPendingConfirm ? 'text-star-white drop-shadow-[0_0_15px_var(--color-toxic-green)]' : 'text-toxic-green'}`}
           />
 
           <div className='absolute inset-0 flex items-center justify-center pointer-events-none'>
@@ -369,7 +369,7 @@ export const MapNodeView = memo(
               crossOrigin={
                 iconUrl.startsWith('data:') ? undefined : 'anonymous'
               }
-              className='w-6 h-6 object-contain drop-shadow-[0_0_8px_theme(colors.void-black)]'
+              className='w-6 h-6 object-contain drop-shadow-[0_0_8px_var(--color-void-black)]'
             />
           </div>
         </motion.div>

@@ -63,7 +63,7 @@ export const MerchPressModal = ({
           initial={{ scale: 0.95, y: 20 }}
           animate={{ scale: 1, y: 0 }}
           exit={{ scale: 0.95, y: 20 }}
-          className='relative w-full max-w-4xl border-4 border-toxic-green p-3 sm:p-6 bg-void-black shadow-[4px_4px_0px_theme(colors.toxic-green)] sm:shadow-[8px_8px_0px_theme(colors.toxic-green)] max-h-[calc(100svh-4rem)] overflow-y-auto overflow-x-hidden custom-scrollbar'
+          className='relative w-full max-w-4xl border-4 border-toxic-green p-3 sm:p-6 bg-void-black shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)] max-h-[calc(100svh-4rem)] overflow-y-auto overflow-x-hidden custom-scrollbar'
         >
           {/* Background Image with Overlay */}
           <div

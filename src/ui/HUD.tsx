@@ -167,7 +167,7 @@ export const HUD = memo(() => {
     <div className='absolute top-0 left-0 w-full p-3 flex justify-between items-start pointer-events-none z-(--z-hud) text-xs font-mono'>
       {/* Left Panel - Player Info */}
       <div className='flex flex-col gap-2'>
-        <div className='bg-void-black border-2 border-toxic-green p-2.5 text-toxic-green shadow-[4px_4px_0px_theme(colors.toxic-green)]'>
+        <div className='bg-void-black border-2 border-toxic-green p-2.5 text-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)]'>
           <div className='flex items-center gap-2 mb-1.5'>
             <DollarSign
               size={14}
@@ -294,7 +294,7 @@ export const HUD = memo(() => {
         {showHelp && (
           <div
             id='shortcuts-panel'
-            className='pointer-events-auto bg-void-black/95 border border-toxic-green p-3 shadow-[0_0_12px_theme(colors.toxic-green-20)] w-52'
+            className='pointer-events-auto bg-void-black/95 border border-toxic-green p-3 shadow-[0_0_12px_var(--color-toxic-green-20)] w-52'
           >
             <div className='text-xs text-toxic-green tracking-widest uppercase mb-2 border-b border-toxic-green/30 pb-1'>
               {t('ui:keyboardShortcuts', {
@@ -334,7 +334,7 @@ export const HUD = memo(() => {
             aria-pressed={neuroDecimatorActive}
             className={`pointer-events-auto flex-1 min-h-0 border-2 px-3 py-1.5 mb-2 transition-all duration-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void-black focus-visible:ring-toxic-green ${
               neuroDecimatorActive
-                ? 'bg-blood-red text-void-black border-blood-red shadow-[4px_4px_0px_theme(colors.blood-red)]'
+                ? 'bg-blood-red text-void-black border-blood-red shadow-[4px_4px_0px_var(--color-blood-red)]'
                 : 'bg-void-black text-blood-red border-blood-red hover:bg-blood-red/20'
             }`}
           >
@@ -349,7 +349,7 @@ export const HUD = memo(() => {
           </button>
         )}
         {hasNeurotoxicPedal && (
-          <div className='bg-void-black text-toxic-green border-2 border-toxic-green shadow-[4px_4px_0px_theme(colors.toxic-green)] px-3 py-1.5 flex items-center gap-2 animate-pulse mb-2 pointer-events-auto'>
+          <div className='bg-void-black text-toxic-green border-2 border-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)] px-3 py-1.5 flex items-center gap-2 animate-pulse mb-2 pointer-events-auto'>
             <Skull size={14} className='text-toxic-green' />
             <span className='font-black uppercase tracking-wider text-xs'>
               {t('ui:hud.neurotoxicActive', {
@@ -358,7 +358,7 @@ export const HUD = memo(() => {
             </span>
           </div>
         )}
-        <div className='bg-void-black border-2 border-toxic-green p-2.5 text-toxic-green shadow-[4px_4px_0px_theme(colors.toxic-green)]'>
+        <div className='bg-void-black border-2 border-toxic-green p-2.5 text-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)]'>
           <div className='text-right border-b border-toxic-green/30 mb-2 pb-1 text-xs tracking-widest text-ash-gray'>
             {t('ui:bandStatus', { defaultValue: 'BAND STATUS' })}
           </div>

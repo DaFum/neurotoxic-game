@@ -21,7 +21,16 @@ export interface BandHQProps {
  * Presents the Band HQ modal with tab routing and void-trader gating.
  * @param props - Close handler and optional wrapper class for the Band HQ modal.
  */
+import { useEffect } from 'react'
+
 export const BandHQ = ({ onClose, className = '' }: BandHQProps) => {
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handleEscape)
+    return () => window.removeEventListener('keydown', handleEscape)
+  }, [onClose])
   const { t } = useTranslation()
   const isOnline = useNetworkStatus()
   const [activeTab, setActiveTab] = useState('STATS')
@@ -55,7 +64,7 @@ export const BandHQ = ({ onClose, className = '' }: BandHQProps) => {
       />
 
       <div
-        className='relative z-(--z-modal) w-full max-w-4xl h-[calc(100svh-1rem)] max-h-[calc(100svh-1rem)] sm:h-[calc(100svh-4rem)] border-4 border-toxic-green bg-void-black flex flex-col overflow-hidden shadow-[4px_4px_0px_theme(colors.toxic-green)] sm:shadow-[8px_8px_0px_theme(colors.toxic-green)]'
+        className='relative z-(--z-modal) w-full max-w-4xl h-[calc(100svh-1rem)] max-h-[calc(100svh-1rem)] sm:h-[calc(100svh-4rem)] border-4 border-toxic-green bg-void-black flex flex-col overflow-hidden shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)]'
         role='dialog'
         aria-modal='true'
         aria-labelledby='band-hq-title'
@@ -65,7 +74,7 @@ export const BandHQ = ({ onClose, className = '' }: BandHQProps) => {
           <div className='min-w-0'>
             <h2
               id='band-hq-title'
-              className='text-3xl sm:text-4xl text-toxic-green font-display drop-shadow-[0_0_5px_theme(colors.toxic-green)]'
+              className='text-3xl sm:text-4xl text-toxic-green font-display drop-shadow-[0_0_5px_var(--color-toxic-green)]'
             >
               {t('ui:hq.title', { defaultValue: 'BAND HQ' })}
             </h2>
