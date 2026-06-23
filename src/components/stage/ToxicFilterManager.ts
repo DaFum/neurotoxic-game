@@ -1,6 +1,7 @@
 import { ColorMatrixFilter, Container } from 'pixi.js'
 import * as PIXI from 'pixi.js'
 import type { RhythmGameRefState } from '../../types/rhythmGame'
+import { finiteNumberOr } from '../../utils/finiteNumber'
 
 // Brutalist CRT / Aberration / Glitch Shader
 const crtFrag = `
@@ -13,6 +14,12 @@ const crtFrag = `
   void main(void) {
     vec2 uv = vTextureCoord;
 
+    // Glitch
+    float glitchOffset = sin(uTime * 10.0 + uv.y * 20.0) * 0.005 * uIntensity;
+    if(sin(uTime * 5.0) > 0.95) {
+       uv.x += glitchOffset;
+    }
+
     // Chromatic Aberration
     float r = texture2D(uTexture, uv + vec2(0.003 * uIntensity, 0.0)).r;
     float g = texture2D(uTexture, uv).g;
@@ -20,12 +27,6 @@ const crtFrag = `
 
     // Scanline Effect
     float scanline = sin(uv.y * 800.0) * 0.04 * uIntensity;
-
-    // Glitch
-    float glitchOffset = sin(uTime * 10.0 + uv.y * 20.0) * 0.005 * uIntensity;
-    if(sin(uTime * 5.0) > 0.95) {
-       uv.x += glitchOffset;
-    }
 
     vec4 color = vec4(r, g, b, 1.0);
     color.rgb -= scanline;
@@ -52,7 +53,7 @@ const BaseFilter = PIXI.Filter || class {}
 export class BrutalistFilter extends BaseFilter {
   constructor() {
     if (!PIXI.Filter || !PIXI.GlProgram) {
-      super()
+      super({})
       return
     }
     const glProgram = PIXI.GlProgram.from({
@@ -118,7 +119,7 @@ export class ToxicFilterManager {
       }
       if (this.brutalistFilter) {
         // Increase glitch intensity with combo, but keep a base intensity
-        const comboIntensity = Math.min((state.combo || 0) / 100, 1.0)
+        const comboIntensity = Math.min(finiteNumberOr(state.combo, 0) / 100, 1.0)
         this.brutalistFilter.update(elapsed, 1.0 + comboIntensity * 2.0)
       }
       if (!this.isToxicActive && stageContainer) {

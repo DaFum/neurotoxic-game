@@ -21,14 +21,12 @@ export const MainMenuNameInputPrompt = ({
 
   // React 19 Action State Paradigm
   const [error, submitAction] = useActionState(
-    async (previousState: string | null, formData: FormData) => {
-      const name = formData.get('playerName') as string
-      if (!name || name.trim() === '') {
+    async () => {
+      const name = playerNameInput.trim()
+      if (!name) {
         return t('ui:enter_name_error', { defaultValue: 'Please enter a name' })
       }
-      setPlayerNameInput(name.trim())
-      // Allow state update to propagate
-      await new Promise(resolve => setTimeout(resolve, 0))
+      setPlayerNameInput(name)
       handleNameSubmit()
       return null
     },
@@ -55,7 +53,8 @@ export const MainMenuNameInputPrompt = ({
           name='playerName'
           ref={inputRef}
           type='text'
-          defaultValue={playerNameInput}
+          value={playerNameInput}
+          onChange={(e) => setPlayerNameInput(e.target.value)}
           placeholder={t('ui:enter_name_placeholder')}
           className='bg-void-black border border-toxic-green p-2 text-toxic-green font-mono text-base sm:text-lg focus:outline-none focus:ring-1 focus:ring-toxic-green uppercase min-w-0'
           maxLength={20}
