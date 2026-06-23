@@ -1,3 +1,4 @@
+import { flushSync } from 'react-dom'
 import type { TFunction } from 'i18next'
 import {
   useCallback,
@@ -231,9 +232,10 @@ export function useGameDispatchActions({
    */
   const changeScene = useCallback(
     (scene: Parameters<typeof createChangeSceneAction>[0]) => {
-      if (document.startViewTransition) {
+      if (typeof document !== 'undefined' && document.startViewTransition) {
         document.startViewTransition(() => {
-          startTransition(() => dispatch(createChangeSceneAction(scene)))
+          // eslint-disable-next-line @eslint-react/dom-no-flush-sync
+          flushSync(() => dispatch(createChangeSceneAction(scene)))
         })
       } else {
         startTransition(() => dispatch(createChangeSceneAction(scene)))

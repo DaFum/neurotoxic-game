@@ -31,7 +31,7 @@ export class ToxicFilterManager {
         this.colorMatrix.hue(Math.sin(elapsed / 100) * 180, false)
         // Add a brutalist contrast boost if contrast method exists
         if (typeof this.colorMatrix.contrast === 'function') {
-          this.colorMatrix.contrast(1.2, false)
+          this.colorMatrix.contrast(1.2, true)
         }
       }
       if (!this.isToxicActive && stageContainer) {
