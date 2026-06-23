@@ -101,7 +101,7 @@ export const UplinkButton = memo(
           {/* Icon Block */}
           <div
             className={`w-12 h-12 sm:w-14 sm:h-14 border-2 flex items-center justify-center shrink-0 transition-colors
-          ${isHovered ? 'border-toxic-green bg-toxic-green text-void-black shadow-[0_0_15px_var(--color-toxic-green)]' : 'border-toxic-green/50 text-toxic-green'}`}
+          ${isHovered ? 'border-toxic-green bg-toxic-green text-void-black shadow-[0_0_15px_theme(colors.toxic-green)]' : 'border-toxic-green/50 text-toxic-green'}`}
           >
             {Icon && <Icon className='w-6 h-6 sm:w-8 sm:h-8 shrink-0' />}
           </div>
@@ -329,8 +329,8 @@ export const BlockMeter = memo(
               'flex-1 border border-toxic-green/30 transition-all duration-300'
             if (isFilled) {
               blockClass = isDanger
-                ? 'flex-1 bg-blood-red border-blood-red shadow-[0_0_10px_var(--color-blood-red)]'
-                : 'flex-1 bg-toxic-green border-toxic-green shadow-[0_0_5px_var(--color-toxic-green-50)]'
+                ? 'flex-1 bg-blood-red border-blood-red shadow-[0_0_10px_theme(colors.blood-red)]'
+                : 'flex-1 bg-toxic-green border-toxic-green shadow-[0_0_5px_theme(colors.toxic-green-50)]'
             }
             return <div key={block} className={blockClass}></div>
           })}
@@ -410,7 +410,7 @@ export const CrisisModal = memo(
 
         {/* Modal Box */}
         <div
-          className={`relative w-full max-w-4xl border-2 border-toxic-green bg-void-black shadow-[0_0_40px_var(--color-toxic-green-glow)] motion-safe:animate-[glitch-anim_0.2s_ease-in-out] ${className || ''}`}
+          className={`relative w-full max-w-4xl border-2 border-toxic-green bg-void-black shadow-[0_0_40px_theme(colors.toxic-green-glow)] motion-safe:animate-[glitch-anim_0.2s_ease-in-out] ${className || ''}`}
         >
           {/* Hardware details */}
           <div className='absolute top-0 left-0 w-full h-1 bg-toxic-green'></div>

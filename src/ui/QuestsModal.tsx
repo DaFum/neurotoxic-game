@@ -650,13 +650,13 @@ export const QuestsModal = ({
         onClick={onClose}
       >
         <motion.div
-          className='relative w-full max-w-4xl border-4 border-toxic-green p-3 sm:p-6 bg-void-black shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)] max-h-[calc(100svh-4rem)] overflow-y-auto'
+          className='relative w-full max-w-4xl border-4 border-toxic-green p-3 sm:p-6 bg-void-black shadow-[4px_4px_0px_theme(colors.toxic-green)] sm:shadow-[8px_8px_0px_theme(colors.toxic-green)] max-h-[calc(100svh-4rem)] overflow-y-auto'
           variants={modalVariants}
           onClick={(e: MouseEvent<HTMLDivElement>) => e.stopPropagation()}
         >
           {/* Header */}
           <div className='flex justify-between items-center mb-6 border-b border-toxic-green pb-2'>
-            <h2 className='text-3xl font-display text-toxic-green tracking-wider drop-shadow-[0_0_8px_var(--color-toxic-green)]'>
+            <h2 className='text-3xl font-display text-toxic-green tracking-wider drop-shadow-[0_0_8px_theme(colors.toxic-green)]'>
               {t('ui:quests.title')}
             </h2>
             <button

@@ -32,7 +32,7 @@ function VoidResonanceIndicator({
           {Math.floor(voidResonance)}%
         </span>
       </div>
-      <div className='h-2 w-full bg-void-black border border-electric-blue overflow-hidden shadow-[0_0_5px_var(--color-electric-blue)]'>
+      <div className='h-2 w-full bg-void-black border border-electric-blue overflow-hidden shadow-[0_0_5px_theme(colors.electric-blue)]'>
         <div
           className={`h-full bg-electric-blue transition-all duration-100 ${isAnomalyActive ? 'motion-safe:animate-pulse' : ''}`}
           style={{ width: `${voidResonance}%` }}
@@ -134,7 +134,7 @@ function InterferenceIndicator({
           {Math.floor(interference)}%
         </span>
       </div>
-      <div className='h-2 w-full bg-void-black border border-error-red overflow-hidden shadow-[0_0_5px_var(--color-error-red)]'>
+      <div className='h-2 w-full bg-void-black border border-error-red overflow-hidden shadow-[0_0_5px_theme(colors.error-red)]'>
         <div
           className='h-full bg-error-red transition-all duration-100'
           style={{ width: `${interference}%` }}
@@ -162,7 +162,7 @@ export const AmpHUD = memo(function AmpHUD({
   const { t } = useTranslation(['ui'])
 
   return (
-    <div className='absolute scale-75 sm:scale-100 origin-top-left top-4 left-4 z-(--z-stage-overlay) text-star-white font-mono pointer-events-none bg-void-black/80 p-4 border-2 border-toxic-green shadow-[0_0_15px_var(--color-toxic-green)]'>
+    <div className='absolute scale-75 sm:scale-100 origin-top-left top-4 left-4 z-(--z-stage-overlay) text-star-white font-mono pointer-events-none bg-void-black/80 p-4 border-2 border-toxic-green shadow-[0_0_15px_theme(colors.toxic-green)]'>
       <h2 className='text-2xl font-bold text-toxic-green tracking-widest uppercase mb-2'>
         {t('ui:minigames.amp.title', { defaultValue: 'AMP CALIBRATION' })}
       </h2>

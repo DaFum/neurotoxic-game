@@ -80,7 +80,7 @@ const ToastItem = memo(({ toast, removeToast, style }: ToastItemProps) => {
       transition={{ duration: 0.2, ease: 'easeOut' }}
       className={`
         w-[min(34rem,94vw)] border-2 ${style.border} bg-void-black/90 backdrop-blur-md
-        shadow-[0_0_0_1px_var(--color-void-black),0_10px_24px_var(--color-shadow-overlay)]
+        shadow-[0_0_0_1px_theme(colors.void-black),0_10px_24px_theme(colors.shadow-overlay)]
       `}
       aria-atomic='true'
     >

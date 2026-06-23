@@ -52,7 +52,7 @@ const SongRow = memo(function SongRow({
       className={`p-3 border-2 flex justify-between items-center transition-all w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${isLocked ? 'cursor-not-allowed' : 'cursor-pointer'}
         ${
           isSelected
-            ? 'border-toxic-green bg-toxic-green/10 text-toxic-green shadow-[0_0_8px_var(--color-toxic-green-20)]'
+            ? 'border-toxic-green bg-toxic-green/10 text-toxic-green shadow-[0_0_8px_theme(colors.toxic-green-20)]'
             : isLocked
               ? 'border-blood-red/50 bg-blood-red/10 text-blood-red-bright'
               : 'border-ash-gray/20 hover:border-star-white/40 text-ash-gray'

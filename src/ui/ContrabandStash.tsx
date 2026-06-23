@@ -80,7 +80,7 @@ const StashCardHeader = ({ item, t }: StashCardSubComponentProps) => {
   return (
     <div className='flex justify-between items-start mb-2'>
       <div className='flex flex-col gap-1'>
-        <h4 className='text-toxic-green font-bold text-lg font-display tracking-wider uppercase drop-shadow-[0_0_5px_var(--color-toxic-green-20)]'>
+        <h4 className='text-toxic-green font-bold text-lg font-display tracking-wider uppercase drop-shadow-[0_0_5px_theme(colors.toxic-green-20)]'>
           {t(`items:contraband.${item.id}.name`, {
             defaultValue: t('ui:item.unknown', {
               defaultValue: 'Unknown Item'
@@ -127,7 +127,7 @@ const StashCardDetails = ({ item, t }: StashCardSubComponentProps) => {
   return (
     <div className='flex flex-row gap-4 items-start mb-4'>
       {item.imagePrompt && Object.hasOwn(IMG_PROMPTS, item.imagePrompt) && (
-        <div className='w-20 h-20 shrink-0 border border-toxic-green-20 bg-void-black flex items-center justify-center p-1 overflow-hidden shadow-[0_0_10px_var(--color-toxic-green-10)]'>
+        <div className='w-20 h-20 shrink-0 border border-toxic-green-20 bg-void-black flex items-center justify-center p-1 overflow-hidden shadow-[0_0_10px_theme(colors.toxic-green-10)]'>
           <GeneratedImagePanel
             prompt={IMG_PROMPTS[item.imagePrompt as keyof typeof IMG_PROMPTS]}
             alt={t(`items:contraband.${item.id}.name`, {

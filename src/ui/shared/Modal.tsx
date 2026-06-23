@@ -80,7 +80,7 @@ export const Modal = ({
     >
       <div
         ref={dialogRef}
-        className={`relative w-[min(calc(100vw-1.5rem),100%)] sm:w-full max-h-[calc(100svh-1rem)] border-4 border-toxic-green p-3 sm:p-6 bg-void-black shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)] cursor-auto focus:outline-none group ${className}`}
+        className={`relative w-[min(calc(100vw-1.5rem),100%)] sm:w-full max-h-[calc(100svh-1rem)] border-4 border-toxic-green p-3 sm:p-6 bg-void-black shadow-[4px_4px_0px_theme(colors.toxic-green)] sm:shadow-[8px_8px_0px_theme(colors.toxic-green)] cursor-auto focus:outline-none group ${className}`}
         role='dialog'
         aria-modal='true'
         aria-label={dialogAriaLabel}

@@ -27,7 +27,7 @@ export const PreGigStartButton = React.memo(
         <ActionButton
           onClick={onStartShow}
           disabled={isSetlistEmpty || isStarting}
-          className='w-full px-8 sm:px-12 py-3 sm:py-4 text-lg sm:text-2xl tracking-widest shadow-[4px_4px_0px_var(--color-blood-red)] hover:shadow-[4px_4px_0px_var(--color-blood-red)] flex items-center justify-center gap-3 sm:gap-4'
+          className='w-full px-8 sm:px-12 py-3 sm:py-4 text-lg sm:text-2xl tracking-widest shadow-[4px_4px_0px_theme(colors.blood-red)] hover:shadow-[4px_4px_0px_theme(colors.blood-red)] flex items-center justify-center gap-3 sm:gap-4'
         >
           {!isStarting && <RazorPlayIcon className='w-5 h-5 text-void-black' />}
           {isStarting ? t('ui:pregig.initializing') : t('ui:pregig.startShow')}

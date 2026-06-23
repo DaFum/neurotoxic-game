@@ -230,8 +230,15 @@ export function useGameDispatchActions({
    * @param scene - The target scene name (e.g., GAME_PHASES.OVERWORLD).
    */
   const changeScene = useCallback(
-    (scene: Parameters<typeof createChangeSceneAction>[0]) =>
-      startTransition(() => dispatch(createChangeSceneAction(scene))),
+    (scene: Parameters<typeof createChangeSceneAction>[0]) => {
+      if (document.startViewTransition) {
+        document.startViewTransition(() => {
+          startTransition(() => dispatch(createChangeSceneAction(scene)))
+        })
+      } else {
+        startTransition(() => dispatch(createChangeSceneAction(scene)))
+      }
+    },
     [dispatch]
   )
 

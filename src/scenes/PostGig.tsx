@@ -88,9 +88,9 @@ export const PostGig = () => {
         data-testid='post-gig-panel'
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className='max-w-4xl w-full max-h-[calc(100svh-1.5rem)] sm:max-h-[calc(100svh-3rem)] border-4 border-toxic-green p-3 sm:p-6 lg:p-8 bg-void-black relative z-10 shadow-[0_0_24px_var(--color-toxic-green-glow)] sm:shadow-[0_0_50px_var(--color-toxic-green-glow)] flex flex-col gap-4 sm:gap-6 overflow-y-auto'
+        className='max-w-4xl w-full max-h-[calc(100svh-1.5rem)] sm:max-h-[calc(100svh-3rem)] border-4 border-toxic-green p-3 sm:p-6 lg:p-8 bg-void-black relative z-10 shadow-[0_0_24px_theme(colors.toxic-green-glow)] sm:shadow-[0_0_50px_theme(colors.toxic-green-glow)] flex flex-col gap-4 sm:gap-6 overflow-y-auto'
       >
-        <h2 className='text-3xl sm:text-5xl text-center font-display text-toxic-green mb-1 sm:mb-2 break-words text-shadow-[0_0_10px_var(--color-toxic-green)]'>
+        <h2 className='text-3xl sm:text-5xl text-center font-display text-toxic-green mb-1 sm:mb-2 break-words text-shadow-[0_0_10px_theme(colors.toxic-green)]'>
           {t(phaseTitleKey, { defaultValue: phaseTitleDefault })}
         </h2>
 

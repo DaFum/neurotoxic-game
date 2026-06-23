@@ -61,8 +61,8 @@ const ProfitRow = ({
 }) => {
   const valueClass =
     size === 'lg'
-      ? 'text-2xl sm:text-3xl font-bold text-toxic-green drop-shadow-[0_0_8px_var(--color-toxic-green)]'
-      : 'text-xl sm:text-2xl font-bold text-toxic-green drop-shadow-[0_0_4px_var(--color-toxic-green)]'
+      ? 'text-2xl sm:text-3xl font-bold text-toxic-green drop-shadow-[0_0_8px_theme(colors.toxic-green)]'
+      : 'text-xl sm:text-2xl font-bold text-toxic-green drop-shadow-[0_0_4px_theme(colors.toxic-green)]'
   return (
     <div className='flex justify-between items-center gap-3 bg-toxic-green/10 p-2'>
       <span className='text-toxic-green font-mono uppercase tracking-widest text-xs sm:text-sm'>
@@ -104,7 +104,7 @@ const DONATION_VARIANTS = {
     title: 'text-blood-red border-b border-blood-red',
     warning: 'text-blood-red',
     buttonEnabled:
-      'bg-blood-red text-void-black border-blood-red hover:bg-void-black hover:text-blood-red shadow-[0_0_15px_var(--color-blood-red)]',
+      'bg-blood-red text-void-black border-blood-red hover:bg-void-black hover:text-blood-red shadow-[0_0_15px_theme(colors.blood-red)]',
     titleKey: 'ui:blood_bank.blood_title',
     titleDefault: 'BLOOD DONATION',
     actionKey: 'ui:blood_bank.action',
@@ -119,7 +119,7 @@ const DONATION_VARIANTS = {
       'text-warning-yellow border-b border-warning-yellow flex items-center justify-center gap-2',
     warning: 'text-warning-yellow',
     buttonEnabled:
-      'bg-warning-yellow text-void-black border-warning-yellow hover:bg-void-black hover:text-warning-yellow shadow-[0_0_20px_var(--color-warning-yellow)]',
+      'bg-warning-yellow text-void-black border-warning-yellow hover:bg-void-black hover:text-warning-yellow shadow-[0_0_20px_theme(colors.warning-yellow)]',
     titleKey: 'ui:blood_bank.marrow_title',
     titleDefault: 'MARROW EXTRACTION',
     actionKey: 'ui:blood_bank.action_marrow',
@@ -234,7 +234,7 @@ export const BloodBankModal = ({
 
       <div
         data-testid='blood-bank-sheet'
-        className='relative z-(--z-modal) w-full max-w-4xl max-h-[calc(100svh-1rem)] border-4 border-blood-red bg-void-black flex flex-col shadow-[4px_4px_0px_var(--color-blood-red)] sm:shadow-[8px_8px_0px_var(--color-blood-red)] overflow-hidden p-3 sm:p-6'
+        className='relative z-(--z-modal) w-full max-w-4xl max-h-[calc(100svh-1rem)] border-4 border-blood-red bg-void-black flex flex-col shadow-[4px_4px_0px_theme(colors.blood-red)] sm:shadow-[8px_8px_0px_theme(colors.blood-red)] overflow-hidden p-3 sm:p-6'
       >
         {/* Background Image */}
         <div
@@ -250,7 +250,7 @@ export const BloodBankModal = ({
             <div className='min-w-0'>
               <h2
                 id='blood-bank-title'
-                className='text-3xl sm:text-4xl text-blood-red font-display drop-shadow-[0_0_5px_var(--color-blood-red)] uppercase'
+                className='text-3xl sm:text-4xl text-blood-red font-display drop-shadow-[0_0_5px_theme(colors.blood-red)] uppercase'
               >
                 {t('ui:blood_bank.title', { defaultValue: 'THE VOID CLINIC' })}
               </h2>

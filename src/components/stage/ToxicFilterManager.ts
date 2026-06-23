@@ -18,6 +18,7 @@ export class ToxicFilterManager {
    * Updates toxic mode filter effects based on game state.
    * @param state - The game state.
    * @param elapsed - The elapsed gig time.
+   * @param stageContainer - The container to apply the filters to.
    */
   update(
     state: Pick<RhythmGameRefState, 'isToxicMode'>,
@@ -26,7 +27,12 @@ export class ToxicFilterManager {
   ): void {
     if (state.isToxicMode) {
       if (this.colorMatrix) {
+        // Apply Hue change based on time
         this.colorMatrix.hue(Math.sin(elapsed / 100) * 180, false)
+        // Add a brutalist contrast boost if contrast method exists
+        if (typeof this.colorMatrix.contrast === 'function') {
+          this.colorMatrix.contrast(1.2, false)
+        }
       }
       if (!this.isToxicActive && stageContainer) {
         stageContainer.filters = this.toxicFilters

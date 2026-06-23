@@ -25,8 +25,8 @@ export const GameOverHeader = React.memo(
       : t('ui:tour.endedPrematurely')
     const accentText = victory ? 'text-toxic-green' : 'text-blood-red'
     const accentShadow = victory
-      ? 'drop-shadow-[0_0_20px_var(--color-toxic-green)]'
-      : 'drop-shadow-[0_0_20px_var(--color-blood-red)]'
+      ? 'drop-shadow-[0_0_20px_theme(colors.toxic-green)]'
+      : 'drop-shadow-[0_0_20px_theme(colors.blood-red)]'
     const dividerVia = victory ? 'via-toxic-green' : 'via-blood-red'
 
     return (

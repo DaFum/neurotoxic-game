@@ -31,7 +31,7 @@ export default function ReloadPrompt() {
     <div className='ReloadPrompt-container'>
       <div
         role='status'
-        className='ReloadPrompt-toast bg-void-black border-2 border-toxic-green text-toxic-green p-4 font-mono shadow-[4px_4px_0px_var(--color-toxic-green)]'
+        className='ReloadPrompt-toast bg-void-black border-2 border-toxic-green text-toxic-green p-4 font-mono shadow-[4px_4px_0px_theme(colors.toxic-green)]'
       >
         <div className='ReloadPrompt-message mb-2'>
           {offlineReady ? (

@@ -63,7 +63,7 @@ export const PirateRadioModal = memo(
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.95, opacity: 0 }}
-          className={`border-4 border-toxic-green p-3 sm:p-6 bg-void-black shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)] max-w-4xl w-full max-h-[calc(100svh-4rem)] flex flex-col ${contentClassName}`}
+          className={`border-4 border-toxic-green p-3 sm:p-6 bg-void-black shadow-[4px_4px_0px_theme(colors.toxic-green)] sm:shadow-[8px_8px_0px_theme(colors.toxic-green)] max-w-4xl w-full max-h-[calc(100svh-4rem)] flex flex-col ${contentClassName}`}
         >
           <div className='flex justify-between items-start border-b-2 border-toxic-green/50 pb-4 shrink-0'>
             <h2
