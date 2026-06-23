@@ -29,7 +29,7 @@ export const MainMenuNameInputPrompt = ({
       }
 
       setPlayerNameInput(name)
-      setTimeout(() => handleNameSubmit(name), 0)
+      handleNameSubmit(name)
       return null
     },
     null
