@@ -99,8 +99,9 @@ export const useMainMenuStart = ({
     void enterFullscreen()
   }, [startNewTourFlow, setShowExistingSavePrompt])
 
-  const handleNameSubmit = useCallback(() => {
-    if (!playerNameInput.trim()) {
+  const handleNameSubmit = useCallback((explicitName?: string) => {
+    const resolvedName = (explicitName || playerNameInput).trim()
+    if (!resolvedName) {
       addToast(
         tRef.current('ui:enter_name_error', {
           defaultValue: 'Please enter a name'
@@ -111,18 +112,17 @@ export const useMainMenuStart = ({
     }
 
     const newId = getSafeUUID()
-    const newName = playerNameInput.trim()
 
     safeStorageOperation('setPlayerId', () =>
       localStorage.setItem('neurotoxic_player_id', newId)
     )
     safeStorageOperation('setPlayerName', () =>
-      localStorage.setItem('neurotoxic_player_name', newName)
+      localStorage.setItem('neurotoxic_player_name', resolvedName)
     )
 
     updatePlayer({
       playerId: newId,
-      playerName: newName
+      playerName: resolvedName
     })
 
     setShowNameInput(false)
