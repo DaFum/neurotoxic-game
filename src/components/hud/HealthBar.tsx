@@ -4,14 +4,20 @@ import { useTranslation } from 'react-i18next'
 import { BlockMeter } from '../../ui/shared'
 import { normalizePercentageToScale } from '../../utils/gameState'
 
+/**
+ * Properties for the {@link HealthBar} component.
+ */
 interface HealthBarProps {
+  /** The current health/crowd energy level, represented as a percentage. */
   health: number
+  /** Indicates whether the toxic mode visual modifiers should be applied. */
   isToxicMode?: boolean
 }
 
 /**
  * Displays crowd energy with toxic-mode visual treatment.
- * @param props - Current health and toxic-mode state.
+ *
+ * @returns A JSX element containing the health bar meter and optional toxic mode warning.
  */
 export const HealthBar = memo(function HealthBar({
   health,

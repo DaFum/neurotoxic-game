@@ -20,3 +20,4 @@
 | 2026-06-20 | src/components/stage/EffectManager.ts | EffectManager, constructor, releaseEffectToPool, spawnHitEffect, update, dispose |
 | 2026-06-21 | src/components/overworld/utils.ts | getNodeIconUrl |
 | 2026-06-22 | src/components/stage/AmpStageController.ts | AmpStageController, constructor, setup, renderWaves, syncState, drawBackground, update, draw, dispose, createAmpStageController |
+| 2026-06-23 | src/components/hud/HealthBar.tsx | HealthBarProps, HealthBar |
