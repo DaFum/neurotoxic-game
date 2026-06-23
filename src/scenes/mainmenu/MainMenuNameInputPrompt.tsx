@@ -13,7 +13,7 @@ export const MainMenuNameInputPrompt = ({
 }: {
   playerNameInput: string
   setPlayerNameInput: (value: string) => void
-  handleNameSubmit: () => void
+  handleNameSubmit: (name?: string) => void
   onClose: () => void
   inputRef?: RefObject<HTMLInputElement | null>
 }) => {
@@ -21,13 +21,15 @@ export const MainMenuNameInputPrompt = ({
 
   // React 19 Action State Paradigm
   const [error, submitAction] = useActionState(
-    async () => {
-      const name = playerNameInput.trim()
+    async (_previousState: string | null, formData: FormData) => {
+      const name = String(formData.get('playerName') ?? '').trim()
+
       if (!name) {
         return t('ui:enter_name_error', { defaultValue: 'Please enter a name' })
       }
+
       setPlayerNameInput(name)
-      handleNameSubmit()
+      setTimeout(() => handleNameSubmit(name), 0)
       return null
     },
     null
@@ -61,7 +63,9 @@ export const MainMenuNameInputPrompt = ({
           aria-label={t('ui:enter_alias_desc')}
         />
         {error && (
-          <div className='text-blood-red font-mono text-sm'>{error}</div>
+          <div className='text-blood-red font-mono text-sm' role='alert'>
+            {error}
+          </div>
         )}
         <GlitchButton type='submit' className='w-full'>
           {t('ui:confirm_identity')}
