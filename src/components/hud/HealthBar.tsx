@@ -17,7 +17,6 @@ interface HealthBarProps {
 /**
  * Displays crowd energy with toxic-mode visual treatment.
  *
- * @param props - Component properties.
  * @returns A JSX element containing the health bar meter and optional toxic mode warning.
  */
 export const HealthBar = memo(function HealthBar({
