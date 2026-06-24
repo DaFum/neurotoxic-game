@@ -14,7 +14,7 @@ export const ScoreDisplay = memo(function ScoreDisplay({
 }: ScoreDisplayProps) {
   const { t } = useTranslation()
   return (
-    <div className='bg-void-black/90 backdrop-blur-sm border-2 border-toxic-green/50 shadow-[4px_4px_0px_theme(colors.toxic-green/30)] px-4 py-2 inline-block'>
+    <div className='bg-void-black/90 backdrop-blur-sm border-2 border-toxic-green/50 shadow-[4px_4px_0px_var(--color-toxic-green-20)] px-4 py-2 inline-block'>
       <div className='text-xs text-ash-gray tracking-widest mb-0.5'>
         {t('ui:gig.score', 'SCORE')}
       </div>

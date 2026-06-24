@@ -294,8 +294,10 @@ describe('MainMenu Component', () => {
       fireEvent.change(input, { target: { value: 'TestPlayer' } })
 
       await act(async () => {
-        fireEvent.change(input, { target: { value: 'TestPlayer' } })
-        fireEvent.submit(input.closest('form'))
+        const userEvent = require('@testing-library/user-event').default
+        const user = userEvent.setup()
+        await user.clear(input)
+        await user.type(input, 'TestPlayer{Enter}')
       })
 
       await waitFor(() => {
