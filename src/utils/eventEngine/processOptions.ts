@@ -31,7 +31,7 @@ export const processOptions = (
             type: 'stat',
             stat: 'time',
             value: -0.5,
-            description: 'Quick fix.'
+            description: 'events:van_breakdown_tire.opt3.d_quickfix'
           }
         ]
       },
