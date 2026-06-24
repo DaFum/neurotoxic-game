@@ -15,6 +15,7 @@ import { useGameActions, useGameSelector } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
 import { MODIFIER_COSTS } from '../utils/economyEngine'
 
+import { resetLastMinigameFallback, resolveBandMeetingCost } from './preGig/preGigUtils'
 import { usePreGigDerivations } from './preGig/usePreGigDerivations'
 import { usePreGigHandlers } from './preGig/usePreGigHandlers'
 
@@ -32,10 +33,12 @@ const isTestRuntime =
 export const __testInternals:
   | {
       resetLastMinigameFallback: () => void
+      resolveBandMeetingCost: (trainingCostMultiplier: unknown) => number
     }
   | undefined = isTestRuntime
   ? {
       resetLastMinigameFallback,
+      resolveBandMeetingCost
     }
   : undefined
 
