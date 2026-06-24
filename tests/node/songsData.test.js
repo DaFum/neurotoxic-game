@@ -126,3 +126,51 @@ describe('songs transform (fixture-focused)', () => {
     assert.equal(song.excerptDurationMs, 30000)
   })
 })
+
+describe('transformSongsData error handling & edge cases', () => {
+  test('throws when rawSongs input is null or undefined', () => {
+    assert.throws(
+      () => transformSongsData(null),
+      TypeError,
+      'Cannot convert undefined or null to object'
+    )
+    assert.throws(
+      () => transformSongsData(undefined),
+      TypeError,
+      'Cannot convert undefined or null to object'
+    )
+  })
+
+  test('throws TypeError when a specific song object in the record is null', () => {
+    // The loop gets the raw song `rawSongs[id]`, assumes it's an object,
+    // and immediately tries to access properties like `song.durationMs`
+    assert.throws(
+      () => transformSongsData({ 'null-song': null }),
+      TypeError,
+      "Cannot read properties of null (reading 'durationMs')"
+    )
+  })
+
+  test('safely handles deeply nested malformed notes without throwing', () => {
+    const result = transformSongsData({
+      'malformed-notes': {
+        name: 'Malformed Notes',
+        notes: [
+          null,
+          undefined,
+          { t: 'string', velocity: 'not-number' },
+          { t: NaN, lane: null },
+          // A structurally valid note missing some data
+          { t: 100 }
+        ]
+      }
+    })
+
+    assert.equal(result.length, 1)
+    const notes = result[0].notes
+
+    // Only the strictly valid note gets mapped
+    assert.equal(notes.length, 1)
+    assert.equal(notes[0].t, 100)
+  })
+})
