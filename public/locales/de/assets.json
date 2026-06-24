@@ -167,6 +167,8 @@
   "crowdfund.success": "Kampagne erfolgreich!",
   "crowdfund.fail": "Kampagne gescheitert.",
   "crowdfund.fameStake": "Fame-Einsatz: {{amount}}",
+  "crowdfund.fameStakeAria": "{{amount}} Fame",
+  "crowdfund.daysAria": "{{days}} Tage",
   "risk.event.eviction": "Räumung!",
   "risk.event.fire": "Feuer!",
   "risk.event.theft": "Diebstahl!",

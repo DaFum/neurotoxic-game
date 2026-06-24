@@ -84,24 +84,40 @@ export const CrowdfundSetupModal = ({
           aspectRatio='16:9'
           sizeHint={{ width: 640, height: 360 }}
         />
-        <label className='flex items-center justify-between'>
+        <label
+          htmlFor='fameStake'
+          className='flex items-center justify-between'
+        >
           {t('assets:crowdfund.fameStake', { amount: fameStake })}
           <input
+            id='fameStake'
             type='range'
             min={0}
             max={fame}
             value={fameStake}
             onChange={e => setFameStake(Number(e.target.value))}
+            aria-valuetext={t('assets:crowdfund.fameStakeAria', {
+              amount: fameStake,
+              defaultValue: `${fameStake} Fame`
+            })}
           />
         </label>
-        <label className='flex items-center justify-between'>
+        <label
+          htmlFor='crowdfundDays'
+          className='flex items-center justify-between'
+        >
           {t('assets:crowdfund.days')}: {days}
           <input
+            id='crowdfundDays'
             type='range'
             min={3}
             max={30}
             value={days}
             onChange={e => setDays(Number(e.target.value))}
+            aria-valuetext={t('assets:crowdfund.daysAria', {
+              days: days,
+              defaultValue: `${days} Days`
+            })}
           />
         </label>
         <p>
