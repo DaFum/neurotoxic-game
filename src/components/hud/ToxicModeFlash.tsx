@@ -1,12 +1,17 @@
 import { memo } from 'react'
 
+/**
+ * Properties for the ToxicModeFlash component.
+ */
 interface ToxicModeFlashProps {
+  /** Indicates whether the toxic-mode modifier is currently active. */
   isToxicMode?: boolean
 }
 
 /**
  * Shows the full-screen toxic-mode flash when the modifier is active.
- * @param props - Toxic-mode state used to show the flash overlay.
+ *
+ * @returns The flash overlay element if active, or null otherwise.
  */
 export const ToxicModeFlash = memo(function ToxicModeFlash({
   isToxicMode
