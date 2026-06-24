@@ -547,6 +547,15 @@ const QuestItem = memo(
             onClick={() => setShowDetails(!showDetails)}
             aria-expanded={showDetails}
             aria-controls={`quest-details-${quest.id}`}
+            aria-label={
+              showDetails
+                ? t('ui:quests.details.hideAria', {
+                    defaultValue: 'Hide quest details'
+                  })
+                : t('ui:quests.details.showAria', {
+                    defaultValue: 'Show quest details'
+                  })
+            }
             className='min-w-[44px] min-h-[44px] text-xs text-ash-gray/70 hover:text-toxic-green font-mono flex items-center gap-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
           >
             {showDetails ? (

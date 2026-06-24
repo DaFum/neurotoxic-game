@@ -129,23 +129,23 @@ describe('songs transform (fixture-focused)', () => {
 
 describe('transformSongsData error handling & edge cases', () => {
   test('throws when rawSongs input is null or undefined', () => {
-    assert.throws(
-      () => transformSongsData(null),
-      { name: 'TypeError', message: /Cannot convert undefined or null to object/ }
-    )
-    assert.throws(
-      () => transformSongsData(undefined),
-      { name: 'TypeError', message: /Cannot convert undefined or null to object/ }
-    )
+    assert.throws(() => transformSongsData(null), {
+      name: 'TypeError',
+      message: /Cannot convert undefined or null to object/
+    })
+    assert.throws(() => transformSongsData(undefined), {
+      name: 'TypeError',
+      message: /Cannot convert undefined or null to object/
+    })
   })
 
   test('throws TypeError when a specific song object in the record is null', () => {
     // The loop gets the raw song `rawSongs[id]`, assumes it's an object,
     // and immediately tries to access properties like `song.durationMs`
-    assert.throws(
-      () => transformSongsData({ 'null-song': null }),
-      { name: 'TypeError', message: /durationMs/ }
-    )
+    assert.throws(() => transformSongsData({ 'null-song': null }), {
+      name: 'TypeError',
+      message: /durationMs/
+    })
   })
 
   test('safely handles deeply nested malformed notes without throwing', () => {

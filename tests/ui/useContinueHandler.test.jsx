@@ -474,7 +474,9 @@ describe('useContinueHandler hook', () => {
   })
 
   it('logs an error if submitLeaderboardScores fails', async () => {
-    submitLeaderboardScores.mockRejectedValueOnce(new Error('Leaderboard error'))
+    submitLeaderboardScores.mockRejectedValueOnce(
+      new Error('Leaderboard error')
+    )
     const props = makeProps()
     const { result } = renderHook(() => useContinueHandler(props))
 
