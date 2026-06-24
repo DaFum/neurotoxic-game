@@ -133,10 +133,10 @@ export class ToxicFilterManager {
       }
       if (this.brutalistFilter) {
         // Increase glitch intensity with combo, but keep a base intensity
-        const comboIntensity = Math.min(
+        const comboIntensity = Math.max(0, Math.min(
           finiteNumberOr(state.combo, 0) / 100,
           1.0
-        )
+        ))
         this.brutalistFilter.update(elapsed, 1.0 + comboIntensity * 2.0)
       }
       if (!this.isToxicActive && stageContainer) {
