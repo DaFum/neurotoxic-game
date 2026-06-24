@@ -45,10 +45,10 @@ type AddQuestInput = Parameters<HandlerDispatchers['addQuest']>[0]
  * @returns A new inventory record with sold quantities removed.
  */
 export function buildSoldMerchInventory(
-  inventory: BandState['inventory'],
+  inventory: BandState['inventory'] | undefined | null,
   soldMerch: Record<string, number>
 ): BandState['inventory'] {
-  const updatedInventory = { ...inventory }
+  const updatedInventory = { ...(inventory || {}) }
   for (const merchKey in soldMerch) {
     if (Object.hasOwn(soldMerch, merchKey)) {
       const soldAmount = Math.max(0, finiteNumberOr(soldMerch[merchKey], 0))
