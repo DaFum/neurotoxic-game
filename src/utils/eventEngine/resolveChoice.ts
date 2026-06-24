@@ -59,7 +59,8 @@ const resolveSkillCheckFailure = (
   // Pre-consume RNG for determinism regardless of trait presence
   const bandleaderRoll = rng()
   const isConflict = gameState.activeEvent?.tags?.includes('conflict') ?? false
-  const hasBandleader = isConflict && bandHasTrait(gameState.band, 'bandleader')
+  const hasBandleader =
+    isConflict && gameState.band && bandHasTrait(gameState.band, 'bandleader')
 
   if (hasBandleader && bandleaderRoll < 0.5) {
     return {
