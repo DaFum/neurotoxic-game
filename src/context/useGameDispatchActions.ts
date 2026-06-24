@@ -1,4 +1,3 @@
-import { flushSync } from 'react-dom'
 import type { TFunction } from 'i18next'
 import {
   useCallback,
@@ -7,6 +6,7 @@ import {
   type MutableRefObject,
   type Dispatch
 } from 'react'
+import { flushSync } from 'react-dom'
 import type {
   GameState,
   GameAction,
@@ -231,16 +231,8 @@ export function useGameDispatchActions({
    * @param scene - The target scene name (e.g., GAME_PHASES.OVERWORLD).
    */
   const changeScene = useCallback(
-    (scene: Parameters<typeof createChangeSceneAction>[0]) => {
-      if (typeof document !== 'undefined' && document.startViewTransition) {
-        document.startViewTransition(() => {
-          // eslint-disable-next-line @eslint-react/dom-no-flush-sync
-          flushSync(() => dispatch(createChangeSceneAction(scene)))
-        })
-      } else {
-        startTransition(() => dispatch(createChangeSceneAction(scene)))
-      }
-    },
+    (scene: Parameters<typeof createChangeSceneAction>[0]) =>
+      startTransition(() => dispatch(createChangeSceneAction(scene))),
     [dispatch]
   )
 

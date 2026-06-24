@@ -127,7 +127,10 @@ describe('MainMenu Identity Flow', () => {
     // Enter Name
     const input = screen.getByPlaceholderText('ui:enter_name_placeholder')
     fireEvent.change(input, { target: { value: 'TestPlayer' } })
-    fireEvent.click(screen.getByText('ui:confirm_identity'))
+    fireEvent.submit(input.closest('form'))
+
+    // The form submission uses setTimeout for `useActionState` compatibility
+    await vi.advanceTimersByTimeAsync(10)
 
     expect(localStorage.getItem('neurotoxic_player_id')).toBe('mock-uuid-1234')
     expect(localStorage.getItem('neurotoxic_player_name')).toBe('TestPlayer')

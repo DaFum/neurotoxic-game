@@ -37,6 +37,13 @@ const { MockPIXI, createMockManager, mockAudioEngine, filterTracker } =
       ColorMatrixFilter: class {
         destroy() {}
         hue() {}
+      },
+      Filter: class {
+        constructor() {}
+        destroy() {}
+      },
+      GlProgram: {
+        from: vi.fn()
       }
     }
 

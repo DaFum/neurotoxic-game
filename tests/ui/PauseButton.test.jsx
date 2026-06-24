@@ -16,7 +16,7 @@ describe('PauseButton', () => {
     let button = screen.getByRole('button', { name: 'Pause Game' })
     expect(button).toBeTruthy()
     expect(button.className).toContain('focus-visible:outline-none')
-    expect(button.className).toContain('focus-visible:ring-2')
+    expect(button.className).toContain('focus-visible:ring-4')
     expect(button.className).toContain('focus-visible:ring-toxic-green')
     expect(button.disabled).toBe(false)
 
