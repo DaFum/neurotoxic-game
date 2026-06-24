@@ -2,6 +2,7 @@ import { trySpawnProjectile, processProjectiles } from './hecklerLogic'
 import { buildGigStatsSnapshot } from './gigStats'
 import { logger } from './logger'
 import { disableCorruptionBurstAudio } from './audio/audioEngine'
+import { finiteNumberOr } from './finiteNumber'
 import type { RhythmGameRefState, SetLastGigStats } from '../types/rhythmGame'
 import type { HecklerSession } from './hecklerLogic'
 import type {
@@ -58,13 +59,20 @@ export const handleOverlayResume = (
         stateRef.transportPausedByOverlay = false
         const res = resumeAudio()
         if (res && typeof res === 'object' && typeof res.catch === 'function') {
-          res.catch((err: unknown) => {
-            logger.debug('RhythmGameLoop', 'Failed to resume audio via overlay', err)
-            stateRef.transportPausedByOverlay = true
-          })
+          res
+            .then(success => {
+              if (success === false) {
+                stateRef.transportPausedByOverlay = true
+              }
+            })
+            .catch((err: unknown) => {
+              logger.debug('RhythmGameLoop', 'Failed to resume audio via overlay', err)
+              stateRef.transportPausedByOverlay = true
+            })
         }
       } catch (err) {
         logger.debug('RhythmGameLoop', 'Sync error resuming audio via overlay', err)
+        stateRef.transportPausedByOverlay = true
       }
     } else {
       stateRef.transportPausedByOverlay = false
@@ -134,7 +142,7 @@ export const processCorruptionBurst = (
     stateRef.isCorruptionBurstActive = false
     stateRef.corruptionBurstEndTime = 0
     setIsCorruptionBurstActive(false)
-    setCorruptionState(stateRef.stats.corruptionLevel ?? 0, false)
+    setCorruptionState(finiteNumberOr(stateRef.stats?.corruptionLevel, 0), false)
     setCorruptionEffect(false)
     disableCorruptionBurstAudio()
   }
