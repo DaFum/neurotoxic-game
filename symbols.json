@@ -110296,8 +110296,8 @@
         "jsDoc": {
           "summary": "Manages toxic mode filter effects for the stage."
         },
-        "lineEnd": 62,
-        "lineStart": 7,
+        "lineEnd": 173,
+        "lineStart": 107,
         "name": "ToxicFilterManager",
         "path": "src/components/stage/ToxicFilterManager.ts",
         "source": "local",
