@@ -69,6 +69,8 @@ export const handleOverlayResume = (
               logger.debug('RhythmGameLoop', 'Failed to resume audio via overlay', err)
               stateRef.transportPausedByOverlay = true
             })
+        } else if (res === false) {
+          stateRef.transportPausedByOverlay = true
         }
       } catch (err) {
         logger.debug('RhythmGameLoop', 'Sync error resuming audio via overlay', err)
@@ -97,9 +99,12 @@ export const handleOverlayPause = (
           logger.debug('RhythmGameLoop', 'Failed to pause audio via overlay', err)
           stateRef.transportPausedByOverlay = false
         })
+      } else if (res as unknown as boolean === false) {
+        stateRef.transportPausedByOverlay = false
       }
     } catch (err) {
       logger.debug('RhythmGameLoop', 'Sync error pausing audio via overlay', err)
+      stateRef.transportPausedByOverlay = false
     }
   }
 }
