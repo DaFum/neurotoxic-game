@@ -60,6 +60,10 @@ const { MockPIXI, createMockManager, mockAudioEngine, filterTracker } =
 // Mock PIXI module
 vi.mock('pixi.js', () => {
   return {
+    Filter: class Filter {
+      constructor() {}
+    },
+    GlProgram: { from: () => ({}) },
     ...MockPIXI,
     default: MockPIXI,
     Assets: {

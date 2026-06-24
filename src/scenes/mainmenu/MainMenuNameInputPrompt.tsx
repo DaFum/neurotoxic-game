@@ -1,4 +1,4 @@
-import { useActionState } from 'react'
+import { useActionState, useCallback } from 'react'
 import type { RefObject } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Modal } from '../../ui/shared'
@@ -19,17 +19,30 @@ export const MainMenuNameInputPrompt = ({
 }) => {
   const { t } = useTranslation()
 
-  // React 19 Action State Paradigm
-  const [error, submitAction] = useActionState(
-    async (previousState: string | null, formData: FormData) => {
+  // Shared validator to keep action and fallback paths synchronized
+  const validateAndSubmit = useCallback(
+    (formData: FormData) => {
       const rawName = formData.get('playerName')
       if (typeof rawName !== 'string' || rawName.trim() === '') {
-        return t('ui:enter_name_error', { defaultValue: 'Please enter a name' })
+        return {
+          error: t('ui:enter_name_error', {
+            defaultValue: 'Please enter a name'
+          })
+        }
       }
       const trimmedName = rawName.trim()
       setPlayerNameInput(trimmedName)
       handleNameSubmit(trimmedName)
-      return null
+      return { error: null }
+    },
+    [t, setPlayerNameInput, handleNameSubmit]
+  )
+
+  // React 19 Action State Paradigm
+  const [error, submitAction] = useActionState(
+    async (previousState: string | null, formData: FormData) => {
+      const result = validateAndSubmit(formData)
+      return result.error
     },
     null
   )
@@ -52,12 +65,10 @@ export const MainMenuNameInputPrompt = ({
           ) {
             e.preventDefault()
             const formData = new FormData(e.currentTarget)
-            const rawName = formData.get('playerName')
-            if (typeof rawName !== 'string' || rawName.trim() === '') {
-              handleNameSubmit('') // trigger empty check
-            } else {
-              setPlayerNameInput(rawName.trim())
-              handleNameSubmit(rawName.trim())
+            const result = validateAndSubmit(formData)
+            // Trigger toast for tests if invalid
+            if (result.error) {
+              handleNameSubmit('')
             }
           }
         }}

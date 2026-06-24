@@ -96,7 +96,7 @@ Diese beiden Punkte sind **keine** Auffälligkeiten.
 #### L1 — Minigame-Szenen ohne Cancel/Back; Timeouts erzwingen Vorwärts-Advance in den Gig
 
 - **Ort:** `useRoadieLogic.ts:179` (10 s Failsafe), `useAmpLogic.ts:378`; TourbusScene/RoadieRunScene/AmpCalibrationScene/KabelsalatScene.
-- **Befund:** Kein Escape-Pfad zurück nach OVERWORLD/PRE_GIG. Ein abgebrochenes Minigame _advanced via Timeout in den GIG_, statt abzubrechen – inkonsistenter Exit-Vertrag gegenüber CLINIC/ASSETS (die explizite „Leave"-Buttons haben). Keine State-Korruption, aber UX-Inkonsistenz.
+- **Befund:** Kein Escape-Pfad zurück nach OVERWORLD/PRE*GIG. Ein abgebrochenes Minigame \_advanced via Timeout in den GIG*, statt abzubrechen – inkonsistenter Exit-Vertrag gegenüber CLINIC/ASSETS (die explizite „Leave"-Buttons haben). Keine State-Korruption, aber UX-Inkonsistenz.
 
 #### L2 — `useRoadieLogic` ohne lokalen Idempotenz-Guard
 
