@@ -926,6 +926,7 @@
   "van_breakdown_tire.opt2.d_f283": "Quick fix!",
   "van_breakdown_tire.opt2.label": "Change it yourself [Stamina Check]",
   "van_breakdown_tire.opt2.outcome": "You decided to get your hands dirty.",
+  "van_breakdown_tire.opt3.d_quickfix": "Quick fix.",
   "van_breakdown_tire.opt3.label": "Use Spare Tire (Inventory)",
   "van_breakdown_tire.opt3.outcome": "You swapped the tire in record time.",
   "van_breakdown_tire.title": "VAN BREAKDOWN: TIRE",
