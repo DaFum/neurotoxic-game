@@ -6,7 +6,6 @@ import {
   type MutableRefObject,
   type Dispatch
 } from 'react'
-import { flushSync } from 'react-dom'
 import type {
   GameState,
   GameAction,
