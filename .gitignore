@@ -43,3 +43,6 @@ diff*.txt
 # Claude Code internal worktrees
 .claude/worktrees/
 .claude/settings.local.json
+
+# DEV files 
+symbols.json
