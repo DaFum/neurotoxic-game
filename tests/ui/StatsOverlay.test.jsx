@@ -97,7 +97,12 @@ test('StatsOverlay renders four UIFrameCorner icons with correct classes', () =>
   expect(corners[3]).toHaveClass('bottom-0 left-0 -rotate-90')
 
   // Verify common classes
-  corners.forEach(corner => {
-    expect(corner).toHaveClass('absolute w-4 h-4 text-ash-gray opacity-50')
+  corners.forEach((corner, index) => {
+    expect(corner).toHaveClass('absolute w-4 h-4')
+    if (index === 0) {
+      expect(corner).toHaveClass('text-toxic-green opacity-80')
+    } else {
+      expect(corner).toHaveClass('text-ash-gray opacity-50')
+    }
   })
 })
