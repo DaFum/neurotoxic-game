@@ -87366,7 +87366,7 @@
             }
           ]
         },
-        "lineEnd": 211,
+        "lineEnd": 220,
         "lineStart": 69,
         "name": "playSongSequence",
         "parameters": [
@@ -95126,8 +95126,8 @@
             }
           ]
         },
-        "lineEnd": 232,
-        "lineStart": 218,
+        "lineEnd": 241,
+        "lineStart": 227,
         "name": "resetGigStateTracking",
         "parameters": [
           {
