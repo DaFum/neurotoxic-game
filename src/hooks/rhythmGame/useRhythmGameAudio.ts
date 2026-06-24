@@ -128,14 +128,12 @@ const applyGigPhysicsSetup = ({
       ? currentSetlist[0]
       : currentSetlist?.[0]?.id
 
-  if (!currentGameMap?.nodes || !currentPlayer?.currentNodeId) {
+  if (!currentBand || !currentGameMap?.nodes || !currentPlayer?.currentNodeId) {
     logger.error(
       'RhythmGame',
-      'Missing gameMap nodes or current player node before gig physics setup'
+      'Missing band, gameMap nodes, or current player node before gig physics setup'
     )
-    if (hasInitializedRef.current) {
-      setAudioReady(false)
-    }
+    setAudioReady(false)
     hasInitializedRef.current = false
     return false
   }
@@ -149,9 +147,7 @@ const applyGigPhysicsSetup = ({
     typeof setlistFirstId === 'string' ? setlistFirstId : undefined
   )
   if (!physicsSetup) {
-    if (hasInitializedRef.current) {
-      setAudioReady(false)
-    }
+    setAudioReady(false)
     hasInitializedRef.current = false
     return false
   }
