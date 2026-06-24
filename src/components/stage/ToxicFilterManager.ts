@@ -1,8 +1,6 @@
 import { ColorMatrixFilter, Container } from 'pixi.js'
 import * as PIXI from 'pixi.js'
 import type { RhythmGameRefState } from '../../types/rhythmGame'
-import { finiteNumberOr } from '../../utils/finiteNumber'
-
 // Brutalist CRT / Aberration / Glitch Shader
 const crtFrag = `in vec2 vTextureCoord;
 uniform sampler2D uTexture; // PIXI v8 uses uTexture
