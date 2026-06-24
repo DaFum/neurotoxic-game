@@ -131,13 +131,11 @@ describe('transformSongsData error handling & edge cases', () => {
   test('throws when rawSongs input is null or undefined', () => {
     assert.throws(
       () => transformSongsData(null),
-      TypeError,
-      'Cannot convert undefined or null to object'
+      { name: 'TypeError', message: /Cannot convert undefined or null to object/ }
     )
     assert.throws(
       () => transformSongsData(undefined),
-      TypeError,
-      'Cannot convert undefined or null to object'
+      { name: 'TypeError', message: /Cannot convert undefined or null to object/ }
     )
   })
 
@@ -146,8 +144,7 @@ describe('transformSongsData error handling & edge cases', () => {
     // and immediately tries to access properties like `song.durationMs`
     assert.throws(
       () => transformSongsData({ 'null-song': null }),
-      TypeError,
-      "Cannot read properties of null (reading 'durationMs')"
+      { name: 'TypeError', message: /durationMs/ }
     )
   })
 
