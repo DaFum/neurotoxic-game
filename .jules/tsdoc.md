@@ -17,7 +17,8 @@
 | 2026-06-16        | src/components/hud/LaneInputArea.tsx          | LaneInputAreaProps, LaneInputZoneProps, LaneInputZone, LaneInputArea                                                                                     |
 | 2026-06-18        | src/components/GigHUD.tsx                     | GigHUDStats, GigHUDProps, GigHUD                                                                                                                         |
 | 2026-06-19        | src/hooks/rhythmGame/useRhythmGameState.ts    | RhythmUiState, RhythmStateSetters, RhythmGameStateHookReturn, useRhythmGameState                                                                         |
-| 2026-06-20        | src/components/stage/EffectManager.ts         | EffectManager, constructor, releaseEffectToPool, spawnHitEffect, update, dispose                                                                         |
-| 2026-06-21        | src/components/overworld/utils.ts             | getNodeIconUrl                                                                                                                                           |
-| 2026-06-22        | src/components/stage/AmpStageController.ts    | AmpStageController, constructor, setup, renderWaves, syncState, drawBackground, update, draw, dispose, createAmpStageController                          |
-| 2026-06-23        | src/components/hud/HealthBar.tsx              | HealthBarProps, HealthBar                                                                                                                                |
+| 2026-06-20 | src/components/stage/EffectManager.ts | EffectManager, constructor, releaseEffectToPool, spawnHitEffect, update, dispose |
+| 2026-06-21 | src/components/overworld/utils.ts | getNodeIconUrl |
+| 2026-06-22 | src/components/stage/AmpStageController.ts | AmpStageController, constructor, setup, renderWaves, syncState, drawBackground, update, draw, dispose, createAmpStageController |
+| 2026-06-23 | src/components/hud/HealthBar.tsx | HealthBarProps, HealthBar |
+| 2026-06-24 | src/components/hud/ToxicModeFlash.tsx | ToxicModeFlashProps, ToxicModeFlash |
