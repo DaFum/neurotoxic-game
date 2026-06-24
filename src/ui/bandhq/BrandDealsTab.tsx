@@ -19,14 +19,17 @@ export const BrandDealsTab = ({ social }: BrandDealsTabProps) => {
   const { t, i18n } = useTranslation()
   const isOnline = useNetworkStatus()
 
-  const activeDealIds = useMemo(() => {
+  // ⚡ BOLT OPTIMIZATION: Replaced activeDealIds Set and O(N) Array.find() inside render loop with a precomputed Map for O(1) lookups.
+  const activeDealsMap = useMemo(() => {
     const deals = social?.activeDeals ?? []
-    const ids = new Set<string>()
+    const map = new Map<string, unknown>()
     for (let i = 0; i < deals.length; i++) {
       const deal = deals[i]
-      if (deal && typeof deal.id === 'string') ids.add(deal.id)
+      if (deal && typeof deal === 'object' && 'id' in deal && typeof deal.id === 'string') {
+        map.set(deal.id, deal)
+      }
     }
-    return ids
+    return map
   }, [social?.activeDeals])
 
   return (
@@ -37,17 +40,8 @@ export const BrandDealsTab = ({ social }: BrandDealsTabProps) => {
           t
         )
 
-        const isActive = activeDealIds.has(deal.id)
-
-        const activeDeal = isActive
-          ? social?.activeDeals?.find(
-              (d: unknown) =>
-                d !== null &&
-                typeof d === 'object' &&
-                'id' in d &&
-                d.id === deal.id
-            )
-          : null
+        const isActive = activeDealsMap.has(deal.id)
+        const activeDeal = activeDealsMap.get(deal.id) ?? null
 
         // Generate a specific, fitting image prompt for each deal
         const prompt = `pixel art logo for ${deal.name}, ${deal.description}, dark grunge aesthetic, high contrast, visually striking`

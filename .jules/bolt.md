@@ -264,3 +264,8 @@
 
 **Learning:** Using `Array.prototype.some()` creates inline closure allocations that can cause noticeable garbage collection overhead when invoked inside hot data selectors and core domain logic loops (like module unlocks and quest engine checks). Benchmarks showed that replacing this with procedural `for` loops and `for...in` patterns yields an up to ~82.3x speedup on large collections.
 **Action:** Replaced `.some()` loops with explicit `for` or `for...in` loops in frequently called utility files (`checks.ts`, `assetFinancials.ts`, `moduleUnlock.ts`, `questLifecycle.ts`) to avoid callback creation and minimize garbage collection spikes.
+
+## 2026-06-24 - Replace O(N) Array.find with Map in React components
+
+**Learning:** Using `Array.find()` inside a React render function on an array derived from `useMemo` causes an O(N*M) iteration trap on every render when mapping over another array. This heavily increases CPU time in components with many items.
+**Action:** Replace `Array.find` lookups inside render loops with a `useMemo` that precomputes a `Map` for O(1) access. Ensure type safety using explicit type guarding inside the `useMemo` loop before setting Map values.
