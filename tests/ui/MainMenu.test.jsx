@@ -1,4 +1,5 @@
 import { render, screen, fireEvent, act } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { MainMenu } from '../../src/scenes/MainMenu'
 import { useGameState } from '../../src/context/GameState'
@@ -298,28 +299,18 @@ describe('MainMenu Component', () => {
     })
 
     it('submits name when Enter key pressed', async () => {
+      const user = userEvent.setup()
       render(<MainMenu />)
 
-      fireEvent.click(screen.getByText('ui:start_game'))
+      await user.click(screen.getByText('ui:start_game'))
 
       const input = screen.getByPlaceholderText('ui:enter_name_placeholder')
-      fireEvent.change(input, { target: { value: 'TestPlayer' } })
+      await user.type(input, 'TestPlayer')
 
       await act(async () => {
-        fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' })
-        // Although the UI component uses a form submit, some testing frameworks
-        // don't submit the form automatically on Enter keydown in the input.
-        // If it does, we need to wait for setTimeout to resolve.
+        await user.type(input, '{Enter}')
         await new Promise((r) => setTimeout(r, 0))
       })
-
-      // Try explicit form submission for test environment compatibility
-      if (localStorage.getItem('neurotoxic_player_name') !== 'TestPlayer') {
-         await act(async () => {
-           fireEvent.submit(input.closest('form'))
-           await new Promise((r) => setTimeout(r, 0))
-         })
-      }
 
       expect(localStorage.getItem('neurotoxic_player_name')).toBe('TestPlayer')
       expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
