@@ -23,6 +23,7 @@ const MockPIXI = {
     destroy() {}
     hue() {}
     contrast() {}
+    brightness() {}
   }
 }
 

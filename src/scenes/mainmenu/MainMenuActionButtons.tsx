@@ -29,7 +29,7 @@ export const MainMenuActionButtons = ({
       initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={
-        prefersReducedMotion ? { duration: 0 } : { duration: 0.5, delay: 0.8 }
+        prefersReducedMotion ? { duration: 0 } : { duration: 0.5, delay: 0.2 }
       }
       className='flex w-full max-w-xs flex-col gap-3'
     >

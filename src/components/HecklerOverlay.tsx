@@ -28,7 +28,7 @@ interface HecklerOverlayProps {
 export const HecklerOverlay = memo(function HecklerOverlay({
   gameStateRef
 }: HecklerOverlayProps) {
-  const [, forceRender] = useReducer((x) => x + 1, 0)
+  const [, forceRender] = useReducer(x => x + 1, 0)
 
   useEffect(() => {
     let rAF = 0
@@ -57,7 +57,7 @@ export const HecklerOverlay = memo(function HecklerOverlay({
     <div className='absolute inset-0 pointer-events-none overflow-hidden z-(--z-stage)'>
       {projectiles
         .filter((p): p is Projectile => !!p && p.id !== undefined)
-        .map((p) => {
+        .map(p => {
           const x = p.x ?? 0
           const y = p.y ?? 0
           const rotation = p.rotation ?? 0

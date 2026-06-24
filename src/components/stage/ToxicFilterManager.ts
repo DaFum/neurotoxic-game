@@ -132,6 +132,8 @@ export class ToxicFilterManager {
       if (this.colorMatrix) {
         // Apply Hue change based on time
         this.colorMatrix.hue(Math.sin(elapsed / 100) * 180, false)
+        this.colorMatrix.contrast(1.5, true)
+        this.colorMatrix.brightness(1.2, true)
       }
       if (!this.isToxicActive && stageContainer) {
         stageContainer.filters = this.toxicFilters
