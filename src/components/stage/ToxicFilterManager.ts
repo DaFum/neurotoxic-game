@@ -132,18 +132,6 @@ export class ToxicFilterManager {
       if (this.colorMatrix) {
         // Apply Hue change based on time
         this.colorMatrix.hue(Math.sin(elapsed / 100) * 180, false)
-        // Add a brutalist contrast boost if contrast method exists
-        if (typeof this.colorMatrix.contrast === 'function') {
-          this.colorMatrix.contrast(1.2, true)
-        }
-      }
-      if (this.brutalistFilter) {
-        // Increase glitch intensity with combo, but keep a base intensity
-        const comboIntensity = Math.max(
-          0,
-          Math.min(finiteNumberOr(state.combo, 0) / 100, 1.0)
-        )
-        this.brutalistFilter.update(elapsed, 1.0 + comboIntensity * 2.0)
       }
       if (!this.isToxicActive && stageContainer) {
         stageContainer.filters = this.toxicFilters
