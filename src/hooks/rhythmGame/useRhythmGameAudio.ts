@@ -39,6 +39,173 @@ type RhythmGameAudioParams = {
   }
 }
 
+type HarmonyGuardParams = {
+  currentHarmony: number
+  hasResolvedLowHarmonyRef: { current: boolean }
+  gameStateRef: { current: RhythmGameRefState }
+  setGameOver: (isGameOver: boolean) => void
+  setAudioReady: (isAudioReady: boolean) => void
+  currentT: TFunction
+  currentAddToast: (message: string, type?: string) => void
+  currentSetLastGigStats: SetLastGigStats
+  currentEndGig: () => void
+}
+
+const handleHarmonyGuard = ({
+  currentHarmony,
+  hasResolvedLowHarmonyRef,
+  gameStateRef,
+  setGameOver,
+  setAudioReady,
+  currentT,
+  currentAddToast,
+  currentSetLastGigStats,
+  currentEndGig
+}: HarmonyGuardParams): boolean => {
+  if (currentHarmony <= 1) {
+    logger.warn('RhythmGame', 'Band harmony too low to start gig.')
+    if (!hasResolvedLowHarmonyRef.current) {
+      hasResolvedLowHarmonyRef.current = true
+      const currentRhythmState = gameStateRef.current
+      currentRhythmState.isGameOver = true
+      setGameOver(true)
+      setAudioReady(true)
+
+      const message = currentT('ui:gig.toasts.bandCollapsed', {
+        defaultValue: 'BAND COLLAPSED'
+      })
+      currentAddToast(
+        typeof message === 'string' ? message : 'BAND COLLAPSED',
+        'error'
+      )
+
+      currentSetLastGigStats(
+        buildGigStatsSnapshot(
+          0,
+          {
+            perfectHits: 0,
+            misses: 0,
+            maxCombo: 0,
+            peakHype: 0,
+            corruptionLevel: 0
+          },
+          0,
+          []
+        )
+      )
+      currentEndGig()
+    }
+    return true
+  }
+  return false
+}
+
+type PhysicsSetupParams = {
+  currentBand: GameState['band']
+  currentGigModifiers: GigModifiers
+  activeGig: GameState['currentGig']
+  currentGameMap: GameMap | null
+  currentPlayer: PlayerState
+  currentSetlist: RhythmSetlistEntry[]
+  gameStateRef: { current: RhythmGameRefState }
+  setAudioReady: (ready: boolean) => void
+  hasInitializedRef: { current: boolean }
+}
+
+const applyGigPhysicsSetup = ({
+  currentBand,
+  currentGigModifiers,
+  activeGig,
+  currentGameMap,
+  currentPlayer,
+  currentSetlist,
+  gameStateRef,
+  setAudioReady,
+  hasInitializedRef
+}: PhysicsSetupParams): boolean => {
+  const setlistFirstId =
+    typeof currentSetlist?.[0] === 'string'
+      ? currentSetlist[0]
+      : currentSetlist?.[0]?.id
+
+  if (!currentBand || !currentGameMap?.nodes || !currentPlayer?.currentNodeId) {
+    logger.error(
+      'RhythmGame',
+      'Missing band, gameMap nodes, or current player node before gig physics setup'
+    )
+    setAudioReady(false)
+    hasInitializedRef.current = false
+    return false
+  }
+
+  const physicsSetup = setupGigPhysics(
+    currentBand,
+    currentGigModifiers,
+    typeof activeGig?.songId === 'string' ? activeGig.songId : undefined,
+    currentGameMap,
+    currentPlayer?.currentNodeId,
+    typeof setlistFirstId === 'string' ? setlistFirstId : undefined
+  )
+  if (!physicsSetup) {
+    setAudioReady(false)
+    hasInitializedRef.current = false
+    return false
+  }
+
+  gameStateRef.current.modifiers = physicsSetup.mergedModifiers
+  gameStateRef.current.speed = physicsSetup.speed
+  const lanes = gameStateRef.current.lanes
+  const hitWindows = physicsSetup.hitWindows
+  if (!Array.isArray(lanes) || lanes.length < 3) {
+    logger.error(
+      'RhythmGame',
+      'Rhythm game lanes are not initialized correctly'
+    )
+    setAudioReady(false)
+    hasInitializedRef.current = false
+    return false
+  }
+  if (!Array.isArray(hitWindows) || hitWindows.length < 3) {
+    logger.error(
+      'RhythmGame',
+      'Gig physics hit windows are not initialized correctly'
+    )
+    setAudioReady(false)
+    hasInitializedRef.current = false
+    return false
+  }
+  const lane0 = lanes[0]
+  const lane1 = lanes[1]
+  const lane2 = lanes[2]
+  const hitWindow0 = hitWindows[0]
+  const hitWindow1 = hitWindows[1]
+  const hitWindow2 = hitWindows[2]
+  if (!lane0 || !lane1 || !lane2) {
+    logger.error('RhythmGame', 'Rhythm game lane entries are missing')
+    setAudioReady(false)
+    hasInitializedRef.current = false
+    return false
+  }
+  if (
+    typeof hitWindow0 !== 'number' ||
+    !Number.isFinite(hitWindow0) ||
+    typeof hitWindow1 !== 'number' ||
+    !Number.isFinite(hitWindow1) ||
+    typeof hitWindow2 !== 'number' ||
+    !Number.isFinite(hitWindow2)
+  ) {
+    logger.error('RhythmGame', 'Gig physics hit window values are invalid')
+    setAudioReady(false)
+    hasInitializedRef.current = false
+    return false
+  }
+  lane0.hitWindow = hitWindow0
+  lane1.hitWindow = hitWindow1
+  lane2.hitWindow = hitWindow2
+
+  return true
+}
+
 /**
  * Audio controls exposed by the rhythm game audio hook.
  */
@@ -153,39 +320,19 @@ export const useRhythmGameAudio = ({
       const currentHarmony = clampBandHarmony(currentBand?.harmony)
 
       // Harmony Guard
-      if (currentHarmony <= 1) {
-        logger.warn('RhythmGame', 'Band harmony too low to start gig.')
-        if (!hasResolvedLowHarmonyRef.current) {
-          hasResolvedLowHarmonyRef.current = true
-          const currentRhythmState = gameStateRef.current
-          currentRhythmState.isGameOver = true
-          setGameOver(true)
-          setAudioReady(true)
+      const isBandCollapsed = handleHarmonyGuard({
+        currentHarmony,
+        hasResolvedLowHarmonyRef,
+        gameStateRef,
+        setGameOver,
+        setAudioReady,
+        currentT,
+        currentAddToast,
+        currentSetLastGigStats,
+        currentEndGig
+      })
 
-          const message = currentT('ui:gig.toasts.bandCollapsed', {
-            defaultValue: 'BAND COLLAPSED'
-          })
-          currentAddToast(
-            typeof message === 'string' ? message : 'BAND COLLAPSED',
-            'error'
-          )
-
-          currentSetLastGigStats(
-            buildGigStatsSnapshot(
-              0,
-              {
-                perfectHits: 0,
-                misses: 0,
-                maxCombo: 0,
-                peakHype: 0,
-                corruptionLevel: 0
-              },
-              0,
-              []
-            )
-          )
-          currentEndGig()
-        }
+      if (isBandCollapsed) {
         return
       }
 
@@ -207,89 +354,21 @@ export const useRhythmGameAudio = ({
       // Reset cross-song tracking state for a new gig
       resetGigStateTracking(gameStateRef)
 
-      const setlistFirstId =
-        typeof currentSetlist?.[0] === 'string'
-          ? currentSetlist[0]
-          : currentSetlist?.[0]?.id
-
-      if (!currentGameMap?.nodes || !currentPlayer?.currentNodeId) {
-        logger.error(
-          'RhythmGame',
-          'Missing gameMap nodes or current player node before gig physics setup'
-        )
-        if (hasInitializedRef.current) {
-          setAudioReady(false)
-        }
-        hasInitializedRef.current = false
-        return
-      }
-
-      const physicsSetup = setupGigPhysics(
+      const physicsSuccess = applyGigPhysicsSetup({
         currentBand,
         currentGigModifiers,
-        typeof activeGig?.songId === 'string' ? activeGig.songId : undefined,
+        activeGig,
         currentGameMap,
-        currentPlayer?.currentNodeId,
-        typeof setlistFirstId === 'string' ? setlistFirstId : undefined
-      )
-      if (!physicsSetup) {
-        if (hasInitializedRef.current) {
-          setAudioReady(false)
-        }
-        hasInitializedRef.current = false
-        return
-      }
+        currentPlayer,
+        currentSetlist,
+        gameStateRef,
+        setAudioReady,
+        hasInitializedRef
+      })
 
-      gameStateRef.current.modifiers = physicsSetup.mergedModifiers
-      gameStateRef.current.speed = physicsSetup.speed
-      const lanes = gameStateRef.current.lanes
-      const hitWindows = physicsSetup.hitWindows
-      if (!Array.isArray(lanes) || lanes.length < 3) {
-        logger.error(
-          'RhythmGame',
-          'Rhythm game lanes are not initialized correctly'
-        )
-        setAudioReady(false)
-        hasInitializedRef.current = false
+      if (!physicsSuccess) {
         return
       }
-      if (!Array.isArray(hitWindows) || hitWindows.length < 3) {
-        logger.error(
-          'RhythmGame',
-          'Gig physics hit windows are not initialized correctly'
-        )
-        setAudioReady(false)
-        hasInitializedRef.current = false
-        return
-      }
-      const lane0 = lanes[0]
-      const lane1 = lanes[1]
-      const lane2 = lanes[2]
-      const hitWindow0 = hitWindows[0]
-      const hitWindow1 = hitWindows[1]
-      const hitWindow2 = hitWindows[2]
-      if (!lane0 || !lane1 || !lane2) {
-        logger.error('RhythmGame', 'Rhythm game lane entries are missing')
-        setAudioReady(false)
-        hasInitializedRef.current = false
-        return
-      }
-      if (
-        typeof hitWindow0 !== 'number' ||
-        !Number.isFinite(hitWindow0) ||
-        typeof hitWindow1 !== 'number' ||
-        !Number.isFinite(hitWindow1) ||
-        typeof hitWindow2 !== 'number' ||
-        !Number.isFinite(hitWindow2)
-      ) {
-        logger.error('RhythmGame', 'Gig physics hit window values are invalid')
-        setAudioReady(false)
-        hasInitializedRef.current = false
-        return
-      }
-      lane0.hitWindow = hitWindow0
-      lane1.hitWindow = hitWindow1
-      lane2.hitWindow = hitWindow2
 
       const activeSetlist = resolveActiveSetlist(currentSetlist)
 

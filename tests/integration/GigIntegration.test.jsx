@@ -170,7 +170,9 @@ vi.mock('../../src/context/GameState.tsx', async importOriginal => {
   const mockGameState = {
     currentGig: { name: 'Test Gig', diff: 1, songId: 'test_song' },
     band: { harmony: 50 },
-    player: {},
+    player: { currentNodeId: 'node1' },
+    gameMap: { nodes: { node1: { layer: 1 } } },
+    setlist: [],
     settings: { volume: 50 },
     addToast: vi.fn(),
     changeScene: vi.fn(),
