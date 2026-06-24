@@ -42,7 +42,10 @@ export const BrandDealsTab = ({ social }: BrandDealsTabProps) => {
         const activeDeal = isActive
           ? social?.activeDeals?.find(
               (d: unknown) =>
-                d !== null && typeof d === 'object' && 'id' in d && d.id === deal.id
+                d !== null &&
+                typeof d === 'object' &&
+                'id' in d &&
+                d.id === deal.id
             )
           : null
 
@@ -106,8 +109,12 @@ export const BrandDealsTab = ({ social }: BrandDealsTabProps) => {
               <div className='flex justify-between mb-1'>
                 <span className='text-ash-gray'>
                   {isActive
-                    ? t('ui:brandDeals.remaining', { defaultValue: 'Remaining:' })
-                    : t('ui:brandDeals.duration', { defaultValue: 'Duration:' })}
+                    ? t('ui:brandDeals.remaining', {
+                        defaultValue: 'Remaining:'
+                      })
+                    : t('ui:brandDeals.duration', {
+                        defaultValue: 'Duration:'
+                      })}
                 </span>
                 <span className='text-star-white'>
                   {t('ui:brandDeals.durationValue', {

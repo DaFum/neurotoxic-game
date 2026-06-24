@@ -50,6 +50,7 @@
   "brandDeals.durationValue": "{{count}} Gigs",
   "brandDeals.durationValue_one": "{{count}} Gig",
   "brandDeals.durationValue_other": "{{count}} Gigs",
+  "brandDeals.remaining": "Verbleibend",
   "brandDeals.upfront": "Vorab:",
   "button.cancel": "ABBRECHEN",
   "button.close": "Schließen",

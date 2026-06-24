@@ -16,14 +16,16 @@ describe('Brand Deals Lifecycle Edge Case', () => {
       social: {
         instagram: 10000,
         trend: 'TECH',
-        activeDeals: [
-          { ...initialDeal, remainingGigs: 9 }
-        ]
+        activeDeals: [{ ...initialDeal, remainingGigs: 9 }]
       }
     }
 
     // 2. Play the gig, resolving social options
-    const option = { id: 'some_option', platform: 'instagram', resolve: () => ({ platform: 'instagram', success: true }) }
+    const option = {
+      id: 'some_option',
+      platform: 'instagram',
+      resolve: () => ({ platform: 'instagram', success: true })
+    }
     const result = calculatePostGigStateUpdates({
       option,
       player: gameState.player,
@@ -36,8 +38,16 @@ describe('Brand Deals Lifecycle Edge Case', () => {
     // Check next state active deals
     const nextActiveDeals = result.updatedSocial.activeDeals
     assert.ok(Array.isArray(nextActiveDeals))
-    assert.strictEqual(nextActiveDeals.length, 1, 'Active deal should still exist')
-    assert.strictEqual(nextActiveDeals[0].remainingGigs, 8, 'Remaining gigs should drop to 8')
+    assert.strictEqual(
+      nextActiveDeals.length,
+      1,
+      'Active deal should still exist'
+    )
+    assert.strictEqual(
+      nextActiveDeals[0].remainingGigs,
+      8,
+      'Remaining gigs should drop to 8'
+    )
 
     // 3. Generate new offers with the next state
     const nextGameState = {
@@ -51,6 +61,10 @@ describe('Brand Deals Lifecycle Edge Case', () => {
     const offers = generateBrandOffers(nextGameState, () => 0.1)
 
     assert.ok(Array.isArray(offers))
-    assert.strictEqual(offers.length, 0, 'Should generate 0 offers when there is an active deal')
+    assert.strictEqual(
+      offers.length,
+      0,
+      'Should generate 0 offers when there is an active deal'
+    )
   })
 })
