@@ -578,17 +578,13 @@ export const handleAdvanceDay = (
   const liabilityTick = processLiabilityTick(nextStatePre)
   nextStatePre = liabilityTick.state
   if (liabilityTick.foreclosedKinds.length > 0) {
-    const pendingForeclosureNotices = [
-      ...(nextStatePre.pendingForeclosureNotices ?? [])
-    ]
+    const pendingSet = new Set(nextStatePre.pendingForeclosureNotices ?? [])
     for (const kind of liabilityTick.foreclosedKinds) {
-      if (!pendingForeclosureNotices.includes(kind)) {
-        pendingForeclosureNotices.push(kind)
-      }
+      pendingSet.add(kind)
     }
     nextStatePre = {
       ...nextStatePre,
-      pendingForeclosureNotices
+      pendingForeclosureNotices: Array.from(pendingSet)
     }
   }
   nextStatePre = processCrowdfundTick(nextStatePre)
