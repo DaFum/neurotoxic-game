@@ -4,48 +4,62 @@ import type { RhythmGameRefState } from '../../types/rhythmGame'
 import { finiteNumberOr } from '../../utils/finiteNumber'
 
 // Brutalist CRT / Aberration / Glitch Shader
-const crtFrag = `
-  precision mediump float;
-  varying vec2 vTextureCoord;
-  uniform sampler2D uTexture; // PIXI v8 uses uTexture
-  uniform float uTime;
-  uniform float uIntensity;
+const crtFrag = `in vec2 vTextureCoord;
+uniform sampler2D uTexture; // PIXI v8 uses uTexture
+uniform float uTime;
+uniform float uIntensity;
+out vec4 finalColor;
 
-  void main(void) {
-    vec2 uv = vTextureCoord;
+void main(void) {
+  vec2 uv = vTextureCoord;
 
-    // Glitch
-    float glitchOffset = sin(uTime * 10.0 + uv.y * 20.0) * 0.005 * uIntensity;
-    if(sin(uTime * 5.0) > 0.95) {
-       uv.x += glitchOffset;
-    }
-
-    // Chromatic Aberration
-    float r = texture2D(uTexture, uv + vec2(0.003 * uIntensity, 0.0)).r;
-    float g = texture2D(uTexture, uv).g;
-    float b = texture2D(uTexture, uv - vec2(0.003 * uIntensity, 0.0)).b;
-
-    // Scanline Effect
-    float scanline = sin(uv.y * 800.0) * 0.04 * uIntensity;
-
-    vec4 color = vec4(r, g, b, 1.0);
-    color.rgb -= scanline;
-
-    gl_FragColor = color;
+  // Glitch
+  float glitchOffset = sin(uTime * 10.0 + uv.y * 20.0) * 0.005 * uIntensity;
+  if(sin(uTime * 5.0) > 0.95) {
+     uv.x += glitchOffset;
   }
+
+  // Chromatic Aberration
+  float r = texture(uTexture, uv + vec2(0.003 * uIntensity, 0.0)).r;
+  float g = texture(uTexture, uv).g;
+  float b = texture(uTexture, uv - vec2(0.003 * uIntensity, 0.0)).b;
+
+  // Scanline Effect
+  float scanline = sin(uv.y * 800.0) * 0.04 * uIntensity;
+
+  vec4 color = vec4(r, g, b, 1.0);
+  color.rgb -= scanline;
+
+  finalColor = color;
+}
 `
 
-const defaultVert = `
-  precision highp float;
-  attribute vec2 aPosition;
-  attribute vec2 aTexCoord;
-  varying vec2 vTextureCoord;
-  uniform mat3 uProjectionMatrix;
-  void main() {
-    vTextureCoord = aTexCoord;
-    vec3 position = vec3(aPosition, 1.0);
-    gl_Position = vec4((uProjectionMatrix * position).xy, 0.0, 1.0);
-  }
+const defaultVert = `in vec2 aPosition;
+out vec2 vTextureCoord;
+
+uniform vec4 uInputSize;
+uniform vec4 uOutputFrame;
+uniform vec4 uOutputTexture;
+
+vec4 filterVertexPosition( void )
+{
+    vec2 position = aPosition * uOutputFrame.zw + uOutputFrame.xy;
+
+    position.x = position.x * (2.0 / uOutputTexture.x) - 1.0;
+    position.y = position.y * (2.0*uOutputTexture.z / uOutputTexture.y) - uOutputTexture.w;
+
+    return vec4(position, 0.0, 1.0);
+}
+
+vec2 filterTextureCoord( void )
+{
+    return aPosition * (uOutputFrame.zw * uInputSize.zw);
+}
+
+void main() {
+  vTextureCoord = filterTextureCoord();
+  gl_Position = filterVertexPosition();
+}
 `
 
 const BaseFilter = PIXI.Filter || class {}
