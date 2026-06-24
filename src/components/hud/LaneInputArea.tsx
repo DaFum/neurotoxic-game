@@ -70,7 +70,7 @@ const LaneInputZone = memo(function LaneInputZone({
     <button
       type='button'
       aria-label={ariaLabel}
-      className='flex-1 h-full cursor-pointer hover:bg-star-white/5 active:bg-star-white/20 border-b-4 border-transparent active:border-star-white/50 transition-colors duration-75 pointer-events-auto relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-inset'
+      className='group flex-1 h-full cursor-pointer hover:bg-toxic-green/10 hover:border-b-toxic-green active:bg-toxic-green/30 border-b-8 border-transparent active:border-b-blood-red transition-all duration-75 pointer-events-auto relative focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-toxic-green focus-visible:ring-inset motion-safe:hover:scale-[1.01]'
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
@@ -79,7 +79,7 @@ const LaneInputZone = memo(function LaneInputZone({
     >
       {/* Separator lines between lanes */}
       {laneIndex < 2 && (
-        <div className='absolute right-0 top-0 h-full w-[1px] bg-toxic-green/10 pointer-events-none' />
+        <div className='absolute right-0 top-0 h-full w-1 bg-ash-gray/20 pointer-events-none group-hover:bg-toxic-green/50' />
       )}
     </button>
   )

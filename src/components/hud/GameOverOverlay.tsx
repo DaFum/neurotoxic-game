@@ -20,21 +20,14 @@ export const GameOverOverlay = memo(function GameOverOverlay({
   if (!isGameOver) return null
   return (
     <div
-      className='absolute inset-0 z-(--z-modal) flex flex-col items-center justify-center pointer-events-none'
-      style={{ backgroundColor: 'rgb(var(--color-void-black-rgb) / 90%)' }}
+      className='absolute inset-0 z-(--z-modal) flex flex-col items-center justify-center pointer-events-none bg-void-black/90'
       role='alert'
       aria-live='assertive'
     >
-      <h1
-        className='text-7xl font-display animate-doom-zoom'
-        style={{ color: 'var(--color-blood-red)' }}
-      >
+      <h1 className='text-7xl font-display animate-doom-zoom text-blood-red'>
         {t('ui:game-over.booed-off-stage', { defaultValue: 'BOOED OFF STAGE' })}
       </h1>
-      <div
-        className='mt-4 font-mono text-sm animate-pulse tracking-widest'
-        style={{ color: 'var(--color-ash-gray)' }}
-      >
+      <div className='mt-4 font-mono text-sm animate-pulse tracking-widest text-ash-gray'>
         {t('ui:game-over.crowd-spoken', {
           defaultValue: 'THE CROWD HAS SPOKEN'
         })}

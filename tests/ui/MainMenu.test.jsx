@@ -1,4 +1,5 @@
 import { render, screen, fireEvent, act } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { MainMenu } from '../../src/scenes/MainMenu'
 import { useGameState } from '../../src/context/GameState'
@@ -242,29 +243,37 @@ describe('MainMenu Component', () => {
       localStorage.clear()
     })
 
-    it('shows error toast when submitting empty name', () => {
+    it('shows error toast when submitting empty name', async () => {
       render(<MainMenu />)
 
       fireEvent.click(screen.getByText('ui:start_game'))
 
       const input = screen.getByPlaceholderText('ui:enter_name_placeholder')
       fireEvent.change(input, { target: { value: '' } })
-      fireEvent.click(screen.getByText('ui:confirm_identity'))
 
-      expect(mockAddToast).toHaveBeenCalledWith('Please enter a name', 'error')
+      await act(async () => {
+        fireEvent.submit(input.closest('form'))
+      })
+
+      expect(await screen.findByText('Please enter a name')).toBeInTheDocument()
+      expect(mockAddToast).not.toHaveBeenCalled()
       expect(mockChangeScene).not.toHaveBeenCalled()
     })
 
-    it('shows error toast when submitting whitespace-only name', () => {
+    it('shows error toast when submitting whitespace-only name', async () => {
       render(<MainMenu />)
 
       fireEvent.click(screen.getByText('ui:start_game'))
 
       const input = screen.getByPlaceholderText('ui:enter_name_placeholder')
       fireEvent.change(input, { target: { value: '   ' } })
-      fireEvent.click(screen.getByText('ui:confirm_identity'))
 
-      expect(mockAddToast).toHaveBeenCalledWith('Please enter a name', 'error')
+      await act(async () => {
+        fireEvent.submit(input.closest('form'))
+      })
+
+      expect(await screen.findByText('Please enter a name')).toBeInTheDocument()
+      expect(mockAddToast).not.toHaveBeenCalled()
       expect(mockChangeScene).not.toHaveBeenCalled()
     })
 
@@ -275,7 +284,12 @@ describe('MainMenu Component', () => {
 
       const input = screen.getByPlaceholderText('ui:enter_name_placeholder')
       fireEvent.change(input, { target: { value: '  TestPlayer  ' } })
-      fireEvent.click(screen.getByText('ui:confirm_identity'))
+
+      await act(async () => {
+        fireEvent.click(screen.getByText('ui:confirm_identity'))
+        // flush the setTimeout
+        await new Promise(r => setTimeout(r, 0))
+      })
 
       expect(localStorage.getItem('neurotoxic_player_name')).toBe('TestPlayer')
       expect(mockUpdatePlayer).toHaveBeenCalledWith({
@@ -285,15 +299,17 @@ describe('MainMenu Component', () => {
     })
 
     it('submits name when Enter key pressed', async () => {
+      const user = userEvent.setup()
       render(<MainMenu />)
 
-      fireEvent.click(screen.getByText('ui:start_game'))
+      await user.click(screen.getByText('ui:start_game'))
 
       const input = screen.getByPlaceholderText('ui:enter_name_placeholder')
-      fireEvent.change(input, { target: { value: 'TestPlayer' } })
+      await user.type(input, 'TestPlayer')
 
       await act(async () => {
-        fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' })
+        await user.type(input, '{Enter}')
+        await new Promise(r => setTimeout(r, 0))
       })
 
       expect(localStorage.getItem('neurotoxic_player_name')).toBe('TestPlayer')

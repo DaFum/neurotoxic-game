@@ -720,7 +720,7 @@ describe('PixiStageController', () => {
       await controller.init()
 
       assert.ok(Array.isArray(controller.toxicFilters))
-      assert.equal(controller.toxicFilters.length, 1)
+      assert.equal(controller.toxicFilters.length, 2)
       assert.equal(controller.toxicFilters[0], controller.colorMatrix)
     })
 
