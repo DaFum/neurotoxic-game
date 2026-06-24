@@ -21,7 +21,16 @@ export interface BandHQProps {
  * Presents the Band HQ modal with tab routing and void-trader gating.
  * @param props - Close handler and optional wrapper class for the Band HQ modal.
  */
+import { useEffect } from 'react'
+
 export const BandHQ = ({ onClose, className = '' }: BandHQProps) => {
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handleEscape)
+    return () => window.removeEventListener('keydown', handleEscape)
+  }, [onClose])
   const { t } = useTranslation()
   const isOnline = useNetworkStatus()
   const [activeTab, setActiveTab] = useState('STATS')
