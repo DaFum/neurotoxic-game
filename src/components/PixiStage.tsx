@@ -64,6 +64,7 @@ const PixiStageComponent = <TState = RhythmGameRefState,>(
     <div
       className='absolute inset-0 z-(--z-stage) pointer-events-none'
       ref={containerRef}
+      style={{ viewTransitionName: 'pixi-stage' }}
     />
   )
 }

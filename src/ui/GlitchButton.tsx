@@ -1,11 +1,11 @@
 import { Loader2 } from 'lucide-react'
 import type { ComponentPropsWithoutRef, ReactNode } from 'react'
+import { useFormStatus } from 'react-dom'
 
 type GlitchButtonVariant = 'primary' | 'danger' | 'owned' | 'warning'
 type GlitchButtonSize = 'sm' | 'lg'
 
 type GlitchButtonProps = Omit<ComponentPropsWithoutRef<'button'>, 'size'> & {
-  onClick: NonNullable<ComponentPropsWithoutRef<'button'>['onClick']>
   children: ReactNode
   variant?: GlitchButtonVariant
   size?: GlitchButtonSize
@@ -14,10 +14,9 @@ type GlitchButtonProps = Omit<ComponentPropsWithoutRef<'button'>, 'size'> & {
 
 /**
  * A stylized button component with glitch and hover effects.
- * @param props - Button click handler, content, variant/size state, disabled/loading state, and pass-through button props.
+ * Uses React 19 useFormStatus for implicit loading state during form actions.
  */
 export const GlitchButton = ({
-  onClick,
   children,
   className = '',
   disabled = false,
@@ -26,11 +25,12 @@ export const GlitchButton = ({
   isLoading = false,
   ...props
 }: GlitchButtonProps) => {
-  // If loading or owned, treat as disabled for interactions
-  const isIntervention = disabled || isLoading || variant === 'owned'
+  const { pending } = useFormStatus()
+  const effectiveLoading = isLoading || pending
+
+  const isIntervention = disabled || effectiveLoading || variant === 'owned'
 
   const getVariantClasses = () => {
-    // Owned variant takes precedence over generic disabled state to maintain visibility
     if (variant === 'owned') {
       return 'border-2 border-ash-gray text-ash-gray cursor-default opacity-100'
     }
@@ -42,22 +42,22 @@ export const GlitchButton = ({
       case 'danger':
         return `border-2 border-blood-red text-star-white
                 hover:bg-blood-red hover:text-void-black
-                hover:translate-x-1 hover:-translate-y-1
+                hover:scale-[1.02]
                 hover:shadow-[4px_4px_0px_var(--color-toxic-green)]
-                active:translate-x-0 active:translate-y-0 active:shadow-none`
+                active:scale-[0.98] active:shadow-none`
       case 'warning':
         return `border-2 border-warning-yellow text-warning-yellow
                 hover:bg-warning-yellow hover:text-void-black
-                hover:translate-x-1 hover:-translate-y-1
+                hover:scale-[1.02]
                 hover:shadow-[4px_4px_0px_var(--color-toxic-green)]
-                active:translate-x-0 active:translate-y-0 active:shadow-none`
+                active:scale-[0.98] active:shadow-none`
       case 'primary':
       default:
         return `border-2 border-toxic-green text-toxic-green
                 hover:bg-toxic-green hover:text-void-black
-                hover:translate-x-1 hover:-translate-y-1
+                hover:scale-[1.02]
                 hover:shadow-[4px_4px_0px_var(--color-blood-red)]
-                active:translate-x-0 active:translate-y-0 active:shadow-none`
+                active:scale-[0.98] active:shadow-none`
     }
   }
 
@@ -68,11 +68,9 @@ export const GlitchButton = ({
 
   return (
     <button
-      type='button'
-      onClick={onClick}
       disabled={isIntervention}
       aria-disabled={isIntervention}
-      aria-busy={isLoading}
+      aria-busy={effectiveLoading}
       className={`
         relative ${sizeClasses[size]} min-w-11 min-h-11 bg-void-black
         font-display font-bold uppercase tracking-widest
@@ -87,12 +85,12 @@ export const GlitchButton = ({
       <span
         className={`relative z-(--z-hud) flex min-w-0 max-w-full items-center justify-center gap-2 whitespace-normal break-words [overflow-wrap:anywhere] ${
           isIntervention ? '' : 'motion-safe:group-hover:animate-pulse'
-        } ${isLoading ? 'opacity-0' : 'opacity-100'}`}
+        } ${effectiveLoading ? 'opacity-0' : 'opacity-100'}`}
       >
         {children}
       </span>
 
-      {isLoading && (
+      {effectiveLoading && (
         <span
           className='absolute inset-0 flex items-center justify-center z-(--z-hud)'
           aria-hidden='true'
@@ -101,7 +99,6 @@ export const GlitchButton = ({
         </span>
       )}
 
-      {/* Diagonal stripe overlay when disabled (but not for owned items which are just static) */}
       {isIntervention && variant !== 'owned' && (
         <span
           className='absolute inset-0 pointer-events-none opacity-10'
@@ -111,18 +108,15 @@ export const GlitchButton = ({
           }}
         />
       )}
-      {/* Glitch Overlay Effect on Hover */}
       {!isIntervention && (
         <>
           <span className='absolute inset-0 bg-star-white opacity-0 group-hover:opacity-10 mix-blend-difference pointer-events-none' />
-          {/* Diagonal shimmer sweep on hover */}
           <span
             className='absolute inset-0 overflow-hidden pointer-events-none'
             aria-hidden='true'
           >
             <span className='absolute top-0 left-0 h-full w-1/3 -translate-x-full bg-gradient-to-r from-transparent via-star-white/20 to-transparent skew-x-[-12deg] motion-safe:group-hover:animate-[shimmer_700ms_ease-out]' />
           </span>
-          {/* Sharp corner ticks */}
           <span
             aria-hidden='true'
             className='absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-current opacity-60 pointer-events-none'
