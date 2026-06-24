@@ -231,21 +231,8 @@ export function useGameDispatchActions({
    * @param scene - The target scene name (e.g., GAME_PHASES.OVERWORLD).
    */
   const changeScene = useCallback(
-    (scene: Parameters<typeof createChangeSceneAction>[0]) => {
-      // Use CSS View Transitions if supported, otherwise fallback to React startTransition
-      if (
-        typeof document !== 'undefined' &&
-        'startViewTransition' in document
-      ) {
-        document.startViewTransition(() => {
-          // Flush sync ensures React applies the new scene DOM inside the transition snapshot window
-          // eslint-disable-next-line @eslint-react/dom-no-flush-sync
-          flushSync(() => dispatch(createChangeSceneAction(scene)))
-        })
-      } else {
-        startTransition(() => dispatch(createChangeSceneAction(scene)))
-      }
-    },
+    (scene: Parameters<typeof createChangeSceneAction>[0]) =>
+      startTransition(() => dispatch(createChangeSceneAction(scene))),
     [dispatch]
   )
 

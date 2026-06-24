@@ -121,6 +121,7 @@ export class ToxicFilterManager {
    * Updates toxic mode filter effects based on game state.
    * @param state - The game state.
    * @param elapsed - The elapsed gig time.
+   * @param stageContainer - The container to apply the filters to.
    */
   update(
     state: Pick<RhythmGameRefState, 'isToxicMode' | 'combo'>,
@@ -129,14 +130,19 @@ export class ToxicFilterManager {
   ): void {
     if (state.isToxicMode) {
       if (this.colorMatrix) {
+        // Apply Hue change based on time
         this.colorMatrix.hue(Math.sin(elapsed / 100) * 180, false)
+        // Add a brutalist contrast boost if contrast method exists
+        if (typeof this.colorMatrix.contrast === 'function') {
+          this.colorMatrix.contrast(1.2, true)
+        }
       }
       if (this.brutalistFilter) {
         // Increase glitch intensity with combo, but keep a base intensity
-        const comboIntensity = Math.max(0, Math.min(
-          finiteNumberOr(state.combo, 0) / 100,
-          1.0
-        ))
+        const comboIntensity = Math.max(
+          0,
+          Math.min(finiteNumberOr(state.combo, 0) / 100, 1.0)
+        )
         this.brutalistFilter.update(elapsed, 1.0 + comboIntensity * 2.0)
       }
       if (!this.isToxicActive && stageContainer) {
