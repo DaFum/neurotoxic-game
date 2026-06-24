@@ -2,6 +2,7 @@ import { trySpawnProjectile, processProjectiles } from './hecklerLogic'
 import { buildGigStatsSnapshot } from './gigStats'
 import { logger } from './logger'
 import { disableCorruptionBurstAudio } from './audio/audioEngine'
+import { finiteNumberOr } from './finiteNumber'
 import type { RhythmGameRefState, SetLastGigStats } from '../types/rhythmGame'
 import type { HecklerSession } from './hecklerLogic'
 import type {
@@ -43,6 +44,188 @@ interface RhythmTickArgs {
  * @param endGig - Callback that leaves the gig flow.
  * @param stopAudio - Callback that stops currently playing gig audio.
  */
+
+/**
+ * Handles resuming the audio track via the overlay when the game is unpaused.
+ */
+export const handleOverlayResume = (
+  stateRef: RhythmGameRefState,
+  transportState: string,
+  resumeAudio: AsyncBooleanCallback
+): void => {
+  if (stateRef.transportPausedByOverlay) {
+    if (transportState === 'paused') {
+      try {
+        stateRef.transportPausedByOverlay = false
+        const res = resumeAudio()
+        if (res && typeof res === 'object' && typeof res.catch === 'function') {
+          res
+            .then(success => {
+              if (success === false) {
+                stateRef.transportPausedByOverlay = true
+              }
+            })
+            .catch((err: unknown) => {
+              logger.debug(
+                'RhythmGameLoop',
+                'Failed to resume audio via overlay',
+                err
+              )
+              stateRef.transportPausedByOverlay = true
+            })
+        } else if (res === false) {
+          stateRef.transportPausedByOverlay = true
+        }
+      } catch (err) {
+        logger.debug(
+          'RhythmGameLoop',
+          'Sync error resuming audio via overlay',
+          err
+        )
+        stateRef.transportPausedByOverlay = true
+      }
+    } else {
+      stateRef.transportPausedByOverlay = false
+    }
+  }
+}
+
+/**
+ * Handles pausing the audio track via the overlay when the game is paused.
+ */
+export const handleOverlayPause = (
+  stateRef: RhythmGameRefState,
+  isTransportRunning: boolean,
+  pauseAudio: AsyncVoidCallback
+): void => {
+  if (isTransportRunning && !stateRef.transportPausedByOverlay) {
+    try {
+      stateRef.transportPausedByOverlay = true
+      const res = pauseAudio()
+      if (res && typeof res.catch === 'function') {
+        res.catch(err => {
+          logger.debug(
+            'RhythmGameLoop',
+            'Failed to pause audio via overlay',
+            err
+          )
+          stateRef.transportPausedByOverlay = false
+        })
+      } else if ((res as unknown as boolean) === false) {
+        stateRef.transportPausedByOverlay = false
+      }
+    } catch (err) {
+      logger.debug(
+        'RhythmGameLoop',
+        'Sync error pausing audio via overlay',
+        err
+      )
+      stateRef.transportPausedByOverlay = false
+    }
+  }
+}
+
+/**
+ * Updates toxic mode state, managing its remaining duration and total accumulated time.
+ */
+export const processToxicMode = (
+  stateRef: RhythmGameRefState,
+  now: number,
+  deltaMS: number,
+  setIsToxicMode: ToggleBooleanCallback
+): void => {
+  if (stateRef.isToxicMode) {
+    if (now > stateRef.toxicModeEndTime) {
+      const remaining = stateRef.toxicModeEndTime - (now - deltaMS)
+      stateRef.toxicTimeTotal += Math.max(0, Math.min(deltaMS, remaining))
+      setIsToxicMode(false)
+      stateRef.isToxicMode = false
+    } else {
+      stateRef.toxicTimeTotal += deltaMS
+    }
+  }
+}
+
+/**
+ * Resolves active corruption bursts when their effect duration expires.
+ */
+export const processCorruptionBurst = (
+  stateRef: RhythmGameRefState,
+  now: number,
+  setIsCorruptionBurstActive: ToggleBooleanCallback,
+  setCorruptionState: (level: number, active: boolean) => void,
+  setCorruptionEffect: (active: boolean) => void
+): void => {
+  if (
+    stateRef.isCorruptionBurstActive &&
+    now > stateRef.corruptionBurstEndTime
+  ) {
+    stateRef.isCorruptionBurstActive = false
+    stateRef.corruptionBurstEndTime = 0
+    setIsCorruptionBurstActive(false)
+    setCorruptionState(
+      finiteNumberOr(stateRef.stats?.corruptionLevel, 0),
+      false
+    )
+    setCorruptionEffect(false)
+    disableCorruptionBurstAudio()
+  }
+}
+
+/**
+ * Processes missed notes by sweeping the notes array forward up to the current time window.
+ */
+export const processMissedNotes = (
+  stateRef: RhythmGameRefState,
+  now: number,
+  handleMiss: MissHandler
+): void => {
+  let missCount = 0
+  const notes = stateRef.notes
+  let i = stateRef.nextMissCheckIndex
+
+  while (i < notes.length) {
+    const note = notes[i]
+    if (!note) {
+      logger.error(
+        'RhythmGameLoop',
+        `Sparse notes invariant violated at index ${i}`
+      )
+      if (i === stateRef.nextMissCheckIndex) {
+        stateRef.nextMissCheckIndex++
+      }
+      i++
+      continue
+    }
+
+    if (note.time > now + NOTE_MISS_WINDOW_MS) {
+      break
+    }
+
+    if (!note.visible || note.hit) {
+      if (i === stateRef.nextMissCheckIndex) {
+        stateRef.nextMissCheckIndex++
+      }
+      i++
+      continue
+    }
+
+    if (now > note.time + NOTE_MISS_WINDOW_MS) {
+      note.visible = false
+      missCount++
+      if (i === stateRef.nextMissCheckIndex) {
+        stateRef.nextMissCheckIndex++
+      }
+    }
+
+    i++
+  }
+
+  if (missCount > 0) {
+    handleMiss(missCount, false)
+  }
+}
+
 export const finalizeGig = (
   stateRef: RhythmGameRefState,
   setLastGigStats: SetLastGigStats,
@@ -90,57 +273,11 @@ export const processRhythmGameTick = ({
   setCorruptionEffect
 }: RhythmTickArgs): void => {
   if (activeEvent || stateRef.isGameOver || stateRef.songTransitioning) {
-    if (isTransportRunning && !stateRef.transportPausedByOverlay) {
-      try {
-        stateRef.transportPausedByOverlay = true
-        const res = pauseAudio()
-        if (res && typeof res.catch === 'function') {
-          res.catch(err => {
-            logger.debug(
-              'RhythmGameLoop',
-              'Failed to pause audio via overlay',
-              err
-            )
-            stateRef.transportPausedByOverlay = false
-          })
-        }
-      } catch (err) {
-        logger.debug(
-          'RhythmGameLoop',
-          'Sync error pausing audio via overlay',
-          err
-        )
-      }
-    }
+    handleOverlayPause(stateRef, isTransportRunning, pauseAudio)
     return
   }
 
-  if (stateRef.transportPausedByOverlay) {
-    if (transportState === 'paused') {
-      try {
-        stateRef.transportPausedByOverlay = false
-        const res = resumeAudio()
-        if (res && typeof res === 'object' && typeof res.catch === 'function') {
-          res.catch((err: unknown) => {
-            logger.debug(
-              'RhythmGameLoop',
-              'Failed to resume audio via overlay',
-              err
-            )
-            stateRef.transportPausedByOverlay = true
-          })
-        }
-      } catch (err) {
-        logger.debug(
-          'RhythmGameLoop',
-          'Sync error resuming audio via overlay',
-          err
-        )
-      }
-    } else {
-      stateRef.transportPausedByOverlay = false
-    }
-  }
+  handleOverlayResume(stateRef, transportState, resumeAudio)
 
   if (!isTransportRunning) {
     return
@@ -174,28 +311,15 @@ export const processRhythmGameTick = ({
     stateRef.projectiles.push(newProjectile)
   }
 
-  if (stateRef.isToxicMode) {
-    if (now > stateRef.toxicModeEndTime) {
-      const remaining = stateRef.toxicModeEndTime - (now - deltaMS)
-      stateRef.toxicTimeTotal += Math.max(0, Math.min(deltaMS, remaining))
-      setIsToxicMode(false)
-      stateRef.isToxicMode = false
-    } else {
-      stateRef.toxicTimeTotal += deltaMS
-    }
-  }
+  processToxicMode(stateRef, now, deltaMS, setIsToxicMode)
 
-  if (
-    stateRef.isCorruptionBurstActive &&
-    now > stateRef.corruptionBurstEndTime
-  ) {
-    stateRef.isCorruptionBurstActive = false
-    stateRef.corruptionBurstEndTime = 0
-    setIsCorruptionBurstActive(false)
-    setCorruptionState(stateRef.stats.corruptionLevel ?? 0, false)
-    setCorruptionEffect(false)
-    disableCorruptionBurstAudio()
-  }
+  processCorruptionBurst(
+    stateRef,
+    now,
+    setIsCorruptionBurstActive,
+    setCorruptionState,
+    setCorruptionEffect
+  )
 
   const isNearTrackEnd = duration <= 0 || now >= duration - NOTE_MISS_WINDOW_MS
 
@@ -204,48 +328,5 @@ export const processRhythmGameTick = ({
     return
   }
 
-  let missCount = 0
-  const notes = stateRef.notes
-  let i = stateRef.nextMissCheckIndex
-
-  while (i < notes.length) {
-    const note = notes[i]
-    if (!note) {
-      logger.error(
-        'RhythmGameLoop',
-        `Sparse notes invariant violated at index ${i}`
-      )
-      if (i === stateRef.nextMissCheckIndex) {
-        stateRef.nextMissCheckIndex++
-      }
-      i++
-      continue
-    }
-
-    if (note.time > now + NOTE_MISS_WINDOW_MS) {
-      break
-    }
-
-    if (!note.visible || note.hit) {
-      if (i === stateRef.nextMissCheckIndex) {
-        stateRef.nextMissCheckIndex++
-      }
-      i++
-      continue
-    }
-
-    if (now > note.time + NOTE_MISS_WINDOW_MS) {
-      note.visible = false
-      missCount++
-      if (i === stateRef.nextMissCheckIndex) {
-        stateRef.nextMissCheckIndex++
-      }
-    }
-
-    i++
-  }
-
-  if (missCount > 0) {
-    handleMiss(missCount, false)
-  }
+  processMissedNotes(stateRef, now, handleMiss)
 }
