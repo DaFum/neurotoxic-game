@@ -114,6 +114,7 @@ After travel, the band can acquire an item with special effects to use.
 **Feature:** Occult Crafting Expansion
 
 **Description:**
+
 - Lore Integration:
   The band discovers the dark art of combining occult artifacts gathered from the void into forbidden, cursed equipment. Cursed gear grants massive power in one area but often demands a sacrifice in harmony or stress.
 - State Impact:

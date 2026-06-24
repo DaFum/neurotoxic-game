@@ -35,15 +35,17 @@ describe('useGameActions referential stability', () => {
     expect(second).toBe(first)
   })
 
-
   it('prevents consumer re-renders on unrelated state changes (useGameSelector bailout)', () => {
     let renderCount = 0
-    const { result } = renderHook(() => {
-      renderCount++
-      const player = useGameSelector(s => s.player)
-      const actions = useGameActions()
-      return { player, actions }
-    }, { wrapper })
+    const { result } = renderHook(
+      () => {
+        renderCount++
+        const player = useGameSelector(s => s.player)
+        const actions = useGameActions()
+        return { player, actions }
+      },
+      { wrapper }
+    )
 
     expect(renderCount).toBe(1)
     const initialPlayer = result.current.player
@@ -59,15 +61,17 @@ describe('useGameActions referential stability', () => {
     expect(renderCount).toBe(1) // Should not have re-rendered!
   })
 
-
   it('prevents consumer re-renders for inline object selectors (shallowEqual bailout)', () => {
     let renderCount = 0
-    const { result } = renderHook(() => {
-      renderCount++
-      const selected = useGameSelector(s => ({ name: s.player.name }))
-      const actions = useGameActions()
-      return { selected, actions }
-    }, { wrapper })
+    const { result } = renderHook(
+      () => {
+        renderCount++
+        const selected = useGameSelector(s => ({ name: s.player.name }))
+        const actions = useGameActions()
+        return { selected, actions }
+      },
+      { wrapper }
+    )
 
     expect(renderCount).toBe(1)
     const firstSelected = result.current.selected

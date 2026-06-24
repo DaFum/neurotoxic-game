@@ -1,7 +1,7 @@
+import { finiteNumberOr } from '../../utils/finiteNumber'
 import { ColorMatrixFilter, Container } from 'pixi.js'
 import * as PIXI from 'pixi.js'
 import type { RhythmGameRefState } from '../../types/rhythmGame'
-import { finiteNumberOr } from '../../utils/finiteNumber'
 
 // Brutalist CRT / Aberration / Glitch Shader
 const crtFrag = `
@@ -14,7 +14,7 @@ const crtFrag = `
   void main(void) {
     vec2 uv = vTextureCoord;
 
-    // Glitch
+    // Glitch (Must happen BEFORE sampling)
     float glitchOffset = sin(uTime * 10.0 + uv.y * 20.0) * 0.005 * uIntensity;
     if(sin(uTime * 5.0) > 0.95) {
        uv.x += glitchOffset;
@@ -48,7 +48,11 @@ const defaultVert = `
   }
 `
 
-const BaseFilter = PIXI.Filter || class {}
+const BaseFilter =
+  PIXI.Filter ||
+  class {
+    constructor(_options?: unknown) {}
+  }
 
 export class BrutalistFilter extends BaseFilter {
   constructor() {
@@ -119,7 +123,10 @@ export class ToxicFilterManager {
       }
       if (this.brutalistFilter) {
         // Increase glitch intensity with combo, but keep a base intensity
-        const comboIntensity = Math.min(finiteNumberOr(state.combo, 0) / 100, 1.0)
+        const comboIntensity = Math.min(
+          finiteNumberOr(state.combo, 0) / 100,
+          1.0
+        )
         this.brutalistFilter.update(elapsed, 1.0 + comboIntensity * 2.0)
       }
       if (!this.isToxicActive && stageContainer) {

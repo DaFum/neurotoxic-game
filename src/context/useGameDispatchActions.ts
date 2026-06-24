@@ -6,7 +6,6 @@ import {
   type MutableRefObject,
   type Dispatch
 } from 'react'
-import { flushSync } from 'react-dom'
 import type {
   GameState,
   GameAction,
@@ -239,8 +238,7 @@ export function useGameDispatchActions({
       ) {
         document.startViewTransition(() => {
           // Flush sync ensures React applies the new scene DOM inside the transition snapshot window
-          // eslint-disable-next-line @eslint-react/dom-no-flush-sync
-          flushSync(() => dispatch(createChangeSceneAction(scene)))
+          startTransition(() => dispatch(createChangeSceneAction(scene)))
         })
       } else {
         startTransition(() => dispatch(createChangeSceneAction(scene)))
