@@ -169,6 +169,12 @@ export const playSongSequence = async (
     })
   }
 
+  const currentElapsedMs = index > 0 ? getGigTimeMs() : 0
+  const safeElapsedMs =
+    Number.isFinite(currentElapsedMs) && currentElapsedMs > 0
+      ? currentElapsedMs
+      : 0
+
   const rawFinalNotes = await playAudioForSong(
     currentSong,
     notes,
@@ -176,12 +182,11 @@ export const playSongSequence = async (
     rng
   )
 
-  const currentElapsedMs = index > 0 ? getGigTimeMs() : 0
   const finalNotes =
-    currentElapsedMs > 0
+    safeElapsedMs > 0
       ? rawFinalNotes.map(n => ({
           ...n,
-          time: n.time + currentElapsedMs
+          time: n.time + safeElapsedMs
         }))
       : rawFinalNotes
 
@@ -203,7 +208,8 @@ export const playSongSequence = async (
     const audioDuration = resolveSongPlaybackWindow(currentSong, {
       defaultDurationMs: 0
     }).excerptDurationMs
-    gameStateRef.current.totalDuration = Math.max(noteDuration, audioDuration)
+    const absoluteAudioDuration = safeElapsedMs + audioDuration
+    gameStateRef.current.totalDuration = Math.max(noteDuration, absoluteAudioDuration)
   }
 
   gameStateRef.current.songTransitioning = false
