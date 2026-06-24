@@ -169,12 +169,21 @@ export const playSongSequence = async (
     })
   }
 
-  const finalNotes = await playAudioForSong(
+  const rawFinalNotes = await playAudioForSong(
     currentSong,
     notes,
     onSongEnded,
     rng
   )
+
+  const currentElapsedMs = index > 0 ? getGigTimeMs() : 0
+  const finalNotes =
+    currentElapsedMs > 0
+      ? rawFinalNotes.map(n => ({
+          ...n,
+          time: n.time + currentElapsedMs
+        }))
+      : rawFinalNotes
 
   gameStateRef.current.notes = finalNotes
   gameStateRef.current.nextMissCheckIndex = 0
