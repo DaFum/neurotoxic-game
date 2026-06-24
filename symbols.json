@@ -3711,6 +3711,364 @@
         "QUEST_REGISTRY"
       ],
       "imports": [
+        "quest_alchemist",
+        "quest_apology_tour",
+        "quest_back_from_pit",
+        "quest_band_pact",
+        "quest_brand_ambassador",
+        "quest_burned_bridges",
+        "quest_chapter_marker",
+        "quest_community_outreach",
+        "quest_crisis_manager",
+        "quest_drama_post",
+        "quest_ego_management",
+        "quest_flawless_run",
+        "quest_harmony_project",
+        "quest_local_legend",
+        "quest_make_amends",
+        "quest_merch_rush",
+        "quest_murphys_law",
+        "quest_payday",
+        "quest_persona_non_grata",
+        "quest_pick_of_destiny",
+        "quest_premium_endorsement",
+        "quest_prove_yourself",
+        "quest_region_takeover",
+        "quest_sincere_redemption",
+        "quest_special_delivery",
+        "quest_sponsor_demand",
+        "quest_sticky_fingers",
+        "quest_studio_demo",
+        "quest_tourbus_inspection",
+        "quest_venue_regular",
+        "quest_venue_residency",
+        "quest_viral_dance",
+        "QuestDefinition"
+      ],
+      "components": [],
+      "hooks": []
+    },
+    "src/data/quests/index.ts": {
+      "exports": [],
+      "imports": [],
+      "components": [],
+      "hooks": []
+    },
+    "src/data/quests/quest_alchemist.ts": {
+      "exports": [
+        "quest_alchemist"
+      ],
+      "imports": [
+        "QuestDefinition"
+      ],
+      "components": [],
+      "hooks": []
+    },
+    "src/data/quests/quest_apology_tour.ts": {
+      "exports": [
+        "quest_apology_tour"
+      ],
+      "imports": [
+        "QuestDefinition"
+      ],
+      "components": [],
+      "hooks": []
+    },
+    "src/data/quests/quest_back_from_pit.ts": {
+      "exports": [
+        "quest_back_from_pit"
+      ],
+      "imports": [
+        "QuestDefinition"
+      ],
+      "components": [],
+      "hooks": []
+    },
+    "src/data/quests/quest_band_pact.ts": {
+      "exports": [
+        "quest_band_pact"
+      ],
+      "imports": [
+        "QuestDefinition"
+      ],
+      "components": [],
+      "hooks": []
+    },
+    "src/data/quests/quest_brand_ambassador.ts": {
+      "exports": [
+        "quest_brand_ambassador"
+      ],
+      "imports": [
+        "QuestDefinition"
+      ],
+      "components": [],
+      "hooks": []
+    },
+    "src/data/quests/quest_burned_bridges.ts": {
+      "exports": [
+        "quest_burned_bridges"
+      ],
+      "imports": [
+        "QuestDefinition"
+      ],
+      "components": [],
+      "hooks": []
+    },
+    "src/data/quests/quest_chapter_marker.ts": {
+      "exports": [
+        "quest_chapter_marker"
+      ],
+      "imports": [
+        "QuestDefinition"
+      ],
+      "components": [],
+      "hooks": []
+    },
+    "src/data/quests/quest_community_outreach.ts": {
+      "exports": [
+        "quest_community_outreach"
+      ],
+      "imports": [
+        "QuestDefinition"
+      ],
+      "components": [],
+      "hooks": []
+    },
+    "src/data/quests/quest_crisis_manager.ts": {
+      "exports": [
+        "quest_crisis_manager"
+      ],
+      "imports": [
+        "QuestDefinition"
+      ],
+      "components": [],
+      "hooks": []
+    },
+    "src/data/quests/quest_drama_post.ts": {
+      "exports": [
+        "quest_drama_post"
+      ],
+      "imports": [
+        "QuestDefinition"
+      ],
+      "components": [],
+      "hooks": []
+    },
+    "src/data/quests/quest_ego_management.ts": {
+      "exports": [
+        "quest_ego_management"
+      ],
+      "imports": [
+        "QuestDefinition"
+      ],
+      "components": [],
+      "hooks": []
+    },
+    "src/data/quests/quest_flawless_run.ts": {
+      "exports": [
+        "quest_flawless_run"
+      ],
+      "imports": [
+        "QuestDefinition"
+      ],
+      "components": [],
+      "hooks": []
+    },
+    "src/data/quests/quest_harmony_project.ts": {
+      "exports": [
+        "quest_harmony_project"
+      ],
+      "imports": [
+        "QuestDefinition"
+      ],
+      "components": [],
+      "hooks": []
+    },
+    "src/data/quests/quest_local_legend.ts": {
+      "exports": [
+        "quest_local_legend"
+      ],
+      "imports": [
+        "QuestDefinition"
+      ],
+      "components": [],
+      "hooks": []
+    },
+    "src/data/quests/quest_make_amends.ts": {
+      "exports": [
+        "quest_make_amends"
+      ],
+      "imports": [
+        "QuestDefinition"
+      ],
+      "components": [],
+      "hooks": []
+    },
+    "src/data/quests/quest_merch_rush.ts": {
+      "exports": [
+        "quest_merch_rush"
+      ],
+      "imports": [
+        "QuestDefinition"
+      ],
+      "components": [],
+      "hooks": []
+    },
+    "src/data/quests/quest_murphys_law.ts": {
+      "exports": [
+        "quest_murphys_law"
+      ],
+      "imports": [
+        "QuestDefinition"
+      ],
+      "components": [],
+      "hooks": []
+    },
+    "src/data/quests/quest_payday.ts": {
+      "exports": [
+        "quest_payday"
+      ],
+      "imports": [
+        "QuestDefinition"
+      ],
+      "components": [],
+      "hooks": []
+    },
+    "src/data/quests/quest_persona_non_grata.ts": {
+      "exports": [
+        "quest_persona_non_grata"
+      ],
+      "imports": [
+        "QuestDefinition"
+      ],
+      "components": [],
+      "hooks": []
+    },
+    "src/data/quests/quest_pick_of_destiny.ts": {
+      "exports": [
+        "quest_pick_of_destiny"
+      ],
+      "imports": [
+        "QuestDefinition"
+      ],
+      "components": [],
+      "hooks": []
+    },
+    "src/data/quests/quest_premium_endorsement.ts": {
+      "exports": [
+        "quest_premium_endorsement"
+      ],
+      "imports": [
+        "QuestDefinition"
+      ],
+      "components": [],
+      "hooks": []
+    },
+    "src/data/quests/quest_prove_yourself.ts": {
+      "exports": [
+        "quest_prove_yourself"
+      ],
+      "imports": [
+        "QuestDefinition"
+      ],
+      "components": [],
+      "hooks": []
+    },
+    "src/data/quests/quest_region_takeover.ts": {
+      "exports": [
+        "quest_region_takeover"
+      ],
+      "imports": [
+        "QuestDefinition"
+      ],
+      "components": [],
+      "hooks": []
+    },
+    "src/data/quests/quest_sincere_redemption.ts": {
+      "exports": [
+        "quest_sincere_redemption"
+      ],
+      "imports": [
+        "QuestDefinition"
+      ],
+      "components": [],
+      "hooks": []
+    },
+    "src/data/quests/quest_special_delivery.ts": {
+      "exports": [
+        "quest_special_delivery"
+      ],
+      "imports": [
+        "QuestDefinition"
+      ],
+      "components": [],
+      "hooks": []
+    },
+    "src/data/quests/quest_sponsor_demand.ts": {
+      "exports": [
+        "quest_sponsor_demand"
+      ],
+      "imports": [
+        "QuestDefinition"
+      ],
+      "components": [],
+      "hooks": []
+    },
+    "src/data/quests/quest_sticky_fingers.ts": {
+      "exports": [
+        "quest_sticky_fingers"
+      ],
+      "imports": [
+        "QuestDefinition"
+      ],
+      "components": [],
+      "hooks": []
+    },
+    "src/data/quests/quest_studio_demo.ts": {
+      "exports": [
+        "quest_studio_demo"
+      ],
+      "imports": [
+        "QuestDefinition"
+      ],
+      "components": [],
+      "hooks": []
+    },
+    "src/data/quests/quest_tourbus_inspection.ts": {
+      "exports": [
+        "quest_tourbus_inspection"
+      ],
+      "imports": [
+        "QuestDefinition"
+      ],
+      "components": [],
+      "hooks": []
+    },
+    "src/data/quests/quest_venue_regular.ts": {
+      "exports": [
+        "quest_venue_regular"
+      ],
+      "imports": [
+        "QuestDefinition"
+      ],
+      "components": [],
+      "hooks": []
+    },
+    "src/data/quests/quest_venue_residency.ts": {
+      "exports": [
+        "quest_venue_residency"
+      ],
+      "imports": [
+        "QuestDefinition"
+      ],
+      "components": [],
+      "hooks": []
+    },
+    "src/data/quests/quest_viral_dance.ts": {
+      "exports": [
+        "quest_viral_dance"
+      ],
+      "imports": [
         "QuestDefinition"
       ],
       "components": [],
@@ -62092,8 +62450,8 @@
         "jsDoc": {
           "summary": "Looks up a quest's static definition by id."
         },
-        "lineEnd": 691,
-        "lineStart": 688,
+        "lineEnd": 88,
+        "lineStart": 85,
         "name": "getQuestDefinition",
         "parameters": [
           {
@@ -75169,8 +75527,8 @@
         "jsDoc": {
           "summary": "Looks up a quest's static definition by id. Returns `undefined` for unknown ids so callers can fall back to inline payloads."
         },
-        "lineEnd": 683,
-        "lineStart": 680,
+        "lineEnd": 80,
+        "lineStart": 77,
         "name": "isQuestRegistryId",
         "parameters": [
           {
@@ -90329,6 +90687,45 @@
         "typeOnly": true
       }
     ],
+    "quest_alchemist": [
+      {
+        "columnEnd": 37,
+        "columnStart": 14,
+        "dependencies": [
+          "QuestDefinition"
+        ],
+        "exportedName": "quest_alchemist",
+        "exportKind": "named",
+        "exportPath": "src/data/quests/index.ts",
+        "isDefault": false,
+        "lineEnd": 22,
+        "lineStart": 3,
+        "literalKeys": [
+          "cooldownDays",
+          "deadlineOffset",
+          "description",
+          "failurePenalties",
+          "kind",
+          "label",
+          "offer",
+          "progressRules",
+          "progressSource",
+          "repeatPolicy",
+          "required",
+          "rewards"
+        ],
+        "name": "quest_alchemist",
+        "path": "src/data/quests/quest_alchemist.ts",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/data/questRegistry.ts",
+            "importedAs": "quest_alchemist"
+          }
+        ]
+      }
+    ],
     "QUEST_ALCHEMIST": [
       {
         "columnEnd": 49,
@@ -90349,6 +90746,47 @@
           }
         ],
         "value": "quest_alchemist"
+      }
+    ],
+    "quest_apology_tour": [
+      {
+        "columnEnd": 37,
+        "columnStart": 14,
+        "dependencies": [
+          "QuestDefinition"
+        ],
+        "exportedName": "quest_apology_tour",
+        "exportKind": "named",
+        "exportPath": "src/data/quests/index.ts",
+        "isDefault": false,
+        "lineEnd": 24,
+        "lineStart": 3,
+        "literalKeys": [
+          "clearFlagsOnComplete",
+          "clearFlagsOnFail",
+          "completionFlags",
+          "deadlineOffset",
+          "description",
+          "failureFlags",
+          "failurePenalties",
+          "followupQuestId",
+          "kind",
+          "label",
+          "progressRules",
+          "progressSource",
+          "repeatPolicy",
+          "required"
+        ],
+        "name": "quest_apology_tour",
+        "path": "src/data/quests/quest_apology_tour.ts",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/data/questRegistry.ts",
+            "importedAs": "quest_apology_tour"
+          }
+        ]
       }
     ],
     "QUEST_APOLOGY_TOUR": [
@@ -90394,6 +90832,45 @@
         "value": "quest_apology_tour"
       }
     ],
+    "quest_back_from_pit": [
+      {
+        "columnEnd": 37,
+        "columnStart": 14,
+        "dependencies": [
+          "QuestDefinition"
+        ],
+        "exportedName": "quest_back_from_pit",
+        "exportKind": "named",
+        "exportPath": "src/data/quests/index.ts",
+        "isDefault": false,
+        "lineEnd": 16,
+        "lineStart": 3,
+        "literalKeys": [
+          "completionFlags",
+          "deadlineOffset",
+          "description",
+          "failureFlags",
+          "failurePenalties",
+          "kind",
+          "label",
+          "progressRules",
+          "progressSource",
+          "repeatPolicy",
+          "required",
+          "rewards"
+        ],
+        "name": "quest_back_from_pit",
+        "path": "src/data/quests/quest_back_from_pit.ts",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/data/questRegistry.ts",
+            "importedAs": "quest_back_from_pit"
+          }
+        ]
+      }
+    ],
     "QUEST_BACK_FROM_PIT": [
       {
         "columnEnd": 57,
@@ -90410,6 +90887,45 @@
         "value": "quest_back_from_pit"
       }
     ],
+    "quest_band_pact": [
+      {
+        "columnEnd": 37,
+        "columnStart": 14,
+        "dependencies": [
+          "QuestDefinition"
+        ],
+        "exportedName": "quest_band_pact",
+        "exportKind": "named",
+        "exportPath": "src/data/quests/index.ts",
+        "isDefault": false,
+        "lineEnd": 22,
+        "lineStart": 3,
+        "literalKeys": [
+          "completionFlags",
+          "deadlineOffset",
+          "description",
+          "failureFlags",
+          "failurePenalties",
+          "kind",
+          "label",
+          "progressRules",
+          "progressSource",
+          "repeatPolicy",
+          "required",
+          "rewards"
+        ],
+        "name": "quest_band_pact",
+        "path": "src/data/quests/quest_band_pact.ts",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/data/questRegistry.ts",
+            "importedAs": "quest_band_pact"
+          }
+        ]
+      }
+    ],
     "QUEST_BAND_PACT": [
       {
         "columnEnd": 49,
@@ -90424,6 +90940,45 @@
         "source": "local",
         "type": "const",
         "value": "quest_band_pact"
+      }
+    ],
+    "quest_brand_ambassador": [
+      {
+        "columnEnd": 37,
+        "columnStart": 14,
+        "dependencies": [
+          "QuestDefinition"
+        ],
+        "exportedName": "quest_brand_ambassador",
+        "exportKind": "named",
+        "exportPath": "src/data/quests/index.ts",
+        "isDefault": false,
+        "lineEnd": 16,
+        "lineStart": 3,
+        "literalKeys": [
+          "cooldownDays",
+          "deadlineOffset",
+          "description",
+          "failurePenalties",
+          "kind",
+          "label",
+          "offer",
+          "progressRules",
+          "progressSource",
+          "repeatPolicy",
+          "required",
+          "rewards"
+        ],
+        "name": "quest_brand_ambassador",
+        "path": "src/data/quests/quest_brand_ambassador.ts",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/data/questRegistry.ts",
+            "importedAs": "quest_brand_ambassador"
+          }
+        ]
       }
     ],
     "QUEST_BRAND_AMBASSADOR": [
@@ -90448,6 +91003,44 @@
         "value": "quest_brand_ambassador"
       }
     ],
+    "quest_burned_bridges": [
+      {
+        "columnEnd": 37,
+        "columnStart": 14,
+        "dependencies": [
+          "QuestDefinition"
+        ],
+        "exportedName": "quest_burned_bridges",
+        "exportKind": "named",
+        "exportPath": "src/data/quests/index.ts",
+        "isDefault": false,
+        "lineEnd": 17,
+        "lineStart": 3,
+        "literalKeys": [
+          "deadlineOffset",
+          "description",
+          "failurePenalties",
+          "kind",
+          "label",
+          "offer",
+          "progressRules",
+          "progressSource",
+          "repeatPolicy",
+          "required",
+          "rewards"
+        ],
+        "name": "quest_burned_bridges",
+        "path": "src/data/quests/quest_burned_bridges.ts",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/data/questRegistry.ts",
+            "importedAs": "quest_burned_bridges"
+          }
+        ]
+      }
+    ],
     "QUEST_BURNED_BRIDGES": [
       {
         "columnEnd": 59,
@@ -90468,6 +91061,44 @@
           }
         ],
         "value": "quest_burned_bridges"
+      }
+    ],
+    "quest_chapter_marker": [
+      {
+        "columnEnd": 37,
+        "columnStart": 14,
+        "dependencies": [
+          "QuestDefinition"
+        ],
+        "exportedName": "quest_chapter_marker",
+        "exportKind": "named",
+        "exportPath": "src/data/quests/index.ts",
+        "isDefault": false,
+        "lineEnd": 23,
+        "lineStart": 3,
+        "literalKeys": [
+          "deadlineOffset",
+          "description",
+          "failurePenalties",
+          "kind",
+          "label",
+          "offer",
+          "progressRules",
+          "progressSource",
+          "repeatPolicy",
+          "required",
+          "rewards"
+        ],
+        "name": "quest_chapter_marker",
+        "path": "src/data/quests/quest_chapter_marker.ts",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/data/questRegistry.ts",
+            "importedAs": "quest_chapter_marker"
+          }
+        ]
       }
     ],
     "QUEST_CHAPTER_MARKER": [
@@ -90492,6 +91123,45 @@
         "value": "quest_chapter_marker"
       }
     ],
+    "quest_community_outreach": [
+      {
+        "columnEnd": 37,
+        "columnStart": 14,
+        "dependencies": [
+          "QuestDefinition"
+        ],
+        "exportedName": "quest_community_outreach",
+        "exportKind": "named",
+        "exportPath": "src/data/quests/index.ts",
+        "isDefault": false,
+        "lineEnd": 30,
+        "lineStart": 3,
+        "literalKeys": [
+          "cooldownDays",
+          "deadlineOffset",
+          "description",
+          "failurePenalties",
+          "kind",
+          "label",
+          "offer",
+          "progressRules",
+          "progressSource",
+          "repeatPolicy",
+          "required",
+          "rewards"
+        ],
+        "name": "quest_community_outreach",
+        "path": "src/data/quests/quest_community_outreach.ts",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/data/questRegistry.ts",
+            "importedAs": "quest_community_outreach"
+          }
+        ]
+      }
+    ],
     "QUEST_COMMUNITY_OUTREACH": [
       {
         "columnEnd": 67,
@@ -90512,6 +91182,45 @@
           }
         ],
         "value": "quest_community_outreach"
+      }
+    ],
+    "quest_crisis_manager": [
+      {
+        "columnEnd": 37,
+        "columnStart": 14,
+        "dependencies": [
+          "QuestDefinition"
+        ],
+        "exportedName": "quest_crisis_manager",
+        "exportKind": "named",
+        "exportPath": "src/data/quests/index.ts",
+        "isDefault": false,
+        "lineEnd": 29,
+        "lineStart": 3,
+        "literalKeys": [
+          "cooldownDays",
+          "deadlineOffset",
+          "description",
+          "failurePenalties",
+          "kind",
+          "label",
+          "offer",
+          "progressRules",
+          "progressSource",
+          "repeatPolicy",
+          "required",
+          "rewards"
+        ],
+        "name": "quest_crisis_manager",
+        "path": "src/data/quests/quest_crisis_manager.ts",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/data/questRegistry.ts",
+            "importedAs": "quest_crisis_manager"
+          }
+        ]
       }
     ],
     "QUEST_CRISIS_MANAGER": [
@@ -90536,6 +91245,45 @@
         "value": "quest_crisis_manager"
       }
     ],
+    "quest_drama_post": [
+      {
+        "columnEnd": 37,
+        "columnStart": 14,
+        "dependencies": [
+          "QuestDefinition"
+        ],
+        "exportedName": "quest_drama_post",
+        "exportKind": "named",
+        "exportPath": "src/data/quests/index.ts",
+        "isDefault": false,
+        "lineEnd": 22,
+        "lineStart": 3,
+        "literalKeys": [
+          "cooldownDays",
+          "deadlineOffset",
+          "description",
+          "failurePenalties",
+          "kind",
+          "label",
+          "offer",
+          "progressRules",
+          "progressSource",
+          "repeatPolicy",
+          "required",
+          "rewards"
+        ],
+        "name": "quest_drama_post",
+        "path": "src/data/quests/quest_drama_post.ts",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/data/questRegistry.ts",
+            "importedAs": "quest_drama_post"
+          }
+        ]
+      }
+    ],
     "QUEST_DRAMA_POST": [
       {
         "columnEnd": 51,
@@ -90556,6 +91304,47 @@
           }
         ],
         "value": "quest_drama_post"
+      }
+    ],
+    "quest_ego_management": [
+      {
+        "columnEnd": 37,
+        "columnStart": 14,
+        "dependencies": [
+          "QuestDefinition"
+        ],
+        "exportedName": "quest_ego_management",
+        "exportKind": "named",
+        "exportPath": "src/data/quests/index.ts",
+        "isDefault": false,
+        "lineEnd": 29,
+        "lineStart": 3,
+        "literalKeys": [
+          "clearFlagsOnComplete",
+          "clearFlagsOnFail",
+          "completionFlags",
+          "deadlineOffset",
+          "description",
+          "failureFlags",
+          "failurePenalties",
+          "followupQuestId",
+          "kind",
+          "label",
+          "progressRules",
+          "progressSource",
+          "repeatPolicy",
+          "required"
+        ],
+        "name": "quest_ego_management",
+        "path": "src/data/quests/quest_ego_management.ts",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/data/questRegistry.ts",
+            "importedAs": "quest_ego_management"
+          }
+        ]
       }
     ],
     "QUEST_EGO_MANAGEMENT": [
@@ -90656,6 +91445,45 @@
         ]
       }
     ],
+    "quest_flawless_run": [
+      {
+        "columnEnd": 37,
+        "columnStart": 14,
+        "dependencies": [
+          "QuestDefinition"
+        ],
+        "exportedName": "quest_flawless_run",
+        "exportKind": "named",
+        "exportPath": "src/data/quests/index.ts",
+        "isDefault": false,
+        "lineEnd": 21,
+        "lineStart": 3,
+        "literalKeys": [
+          "cooldownDays",
+          "deadlineOffset",
+          "description",
+          "failurePenalties",
+          "kind",
+          "label",
+          "offer",
+          "progressRules",
+          "progressSource",
+          "repeatPolicy",
+          "required",
+          "rewards"
+        ],
+        "name": "quest_flawless_run",
+        "path": "src/data/quests/quest_flawless_run.ts",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/data/questRegistry.ts",
+            "importedAs": "quest_flawless_run"
+          }
+        ]
+      }
+    ],
     "QUEST_FLAWLESS_RUN": [
       {
         "columnEnd": 55,
@@ -90676,6 +91504,44 @@
           }
         ],
         "value": "quest_flawless_run"
+      }
+    ],
+    "quest_harmony_project": [
+      {
+        "columnEnd": 37,
+        "columnStart": 14,
+        "dependencies": [
+          "QuestDefinition"
+        ],
+        "exportedName": "quest_harmony_project",
+        "exportKind": "named",
+        "exportPath": "src/data/quests/index.ts",
+        "isDefault": false,
+        "lineEnd": 32,
+        "lineStart": 3,
+        "literalKeys": [
+          "deadlineOffset",
+          "description",
+          "failurePenalties",
+          "kind",
+          "label",
+          "offer",
+          "progressRules",
+          "progressSource",
+          "repeatPolicy",
+          "required",
+          "rewards"
+        ],
+        "name": "quest_harmony_project",
+        "path": "src/data/quests/quest_harmony_project.ts",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/data/questRegistry.ts",
+            "importedAs": "quest_harmony_project"
+          }
+        ]
       }
     ],
     "QUEST_HARMONY_PROJECT": [
@@ -90703,6 +91569,44 @@
         "value": "quest_harmony_project"
       }
     ],
+    "quest_local_legend": [
+      {
+        "columnEnd": 37,
+        "columnStart": 14,
+        "dependencies": [
+          "QuestDefinition"
+        ],
+        "exportedName": "quest_local_legend",
+        "exportKind": "named",
+        "exportPath": "src/data/quests/index.ts",
+        "isDefault": false,
+        "lineEnd": 26,
+        "lineStart": 3,
+        "literalKeys": [
+          "deadlineOffset",
+          "description",
+          "failurePenalties",
+          "kind",
+          "label",
+          "offer",
+          "progressRules",
+          "progressSource",
+          "repeatPolicy",
+          "required",
+          "rewards"
+        ],
+        "name": "quest_local_legend",
+        "path": "src/data/quests/quest_local_legend.ts",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/data/questRegistry.ts",
+            "importedAs": "quest_local_legend"
+          }
+        ]
+      }
+    ],
     "QUEST_LOCAL_LEGEND": [
       {
         "columnEnd": 55,
@@ -90728,6 +91632,45 @@
         "value": "quest_local_legend"
       }
     ],
+    "quest_make_amends": [
+      {
+        "columnEnd": 37,
+        "columnStart": 14,
+        "dependencies": [
+          "QuestDefinition"
+        ],
+        "exportedName": "quest_make_amends",
+        "exportKind": "named",
+        "exportPath": "src/data/quests/index.ts",
+        "isDefault": false,
+        "lineEnd": 18,
+        "lineStart": 3,
+        "literalKeys": [
+          "cooldownDays",
+          "deadlineOffset",
+          "description",
+          "failurePenalties",
+          "kind",
+          "label",
+          "offer",
+          "progressRules",
+          "progressSource",
+          "repeatPolicy",
+          "required",
+          "rewards"
+        ],
+        "name": "quest_make_amends",
+        "path": "src/data/quests/quest_make_amends.ts",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/data/questRegistry.ts",
+            "importedAs": "quest_make_amends"
+          }
+        ]
+      }
+    ],
     "QUEST_MAKE_AMENDS": [
       {
         "columnEnd": 53,
@@ -90748,6 +91691,45 @@
           }
         ],
         "value": "quest_make_amends"
+      }
+    ],
+    "quest_merch_rush": [
+      {
+        "columnEnd": 37,
+        "columnStart": 14,
+        "dependencies": [
+          "QuestDefinition"
+        ],
+        "exportedName": "quest_merch_rush",
+        "exportKind": "named",
+        "exportPath": "src/data/quests/index.ts",
+        "isDefault": false,
+        "lineEnd": 21,
+        "lineStart": 3,
+        "literalKeys": [
+          "cooldownDays",
+          "deadlineOffset",
+          "description",
+          "failurePenalties",
+          "kind",
+          "label",
+          "offer",
+          "progressRules",
+          "progressSource",
+          "repeatPolicy",
+          "required",
+          "rewards"
+        ],
+        "name": "quest_merch_rush",
+        "path": "src/data/quests/quest_merch_rush.ts",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/data/questRegistry.ts",
+            "importedAs": "quest_merch_rush"
+          }
+        ]
       }
     ],
     "QUEST_MERCH_RUSH": [
@@ -90772,6 +91754,44 @@
         "value": "quest_merch_rush"
       }
     ],
+    "quest_murphys_law": [
+      {
+        "columnEnd": 37,
+        "columnStart": 14,
+        "dependencies": [
+          "QuestDefinition"
+        ],
+        "exportedName": "quest_murphys_law",
+        "exportKind": "named",
+        "exportPath": "src/data/quests/index.ts",
+        "isDefault": false,
+        "lineEnd": 25,
+        "lineStart": 3,
+        "literalKeys": [
+          "deadlineOffset",
+          "description",
+          "failurePenalties",
+          "kind",
+          "label",
+          "offer",
+          "progressRules",
+          "progressSource",
+          "repeatPolicy",
+          "required",
+          "rewards"
+        ],
+        "name": "quest_murphys_law",
+        "path": "src/data/quests/quest_murphys_law.ts",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/data/questRegistry.ts",
+            "importedAs": "quest_murphys_law"
+          }
+        ]
+      }
+    ],
     "QUEST_MURPHYS_LAW": [
       {
         "columnEnd": 53,
@@ -90792,6 +91812,45 @@
           }
         ],
         "value": "quest_murphys_law"
+      }
+    ],
+    "quest_payday": [
+      {
+        "columnEnd": 37,
+        "columnStart": 14,
+        "dependencies": [
+          "QuestDefinition"
+        ],
+        "exportedName": "quest_payday",
+        "exportKind": "named",
+        "exportPath": "src/data/quests/index.ts",
+        "isDefault": false,
+        "lineEnd": 16,
+        "lineStart": 3,
+        "literalKeys": [
+          "cooldownDays",
+          "deadlineOffset",
+          "description",
+          "failurePenalties",
+          "kind",
+          "label",
+          "offer",
+          "progressRules",
+          "progressSource",
+          "repeatPolicy",
+          "required",
+          "rewards"
+        ],
+        "name": "quest_payday",
+        "path": "src/data/quests/quest_payday.ts",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/data/questRegistry.ts",
+            "importedAs": "quest_payday"
+          }
+        ]
       }
     ],
     "QUEST_PAYDAY": [
@@ -90816,6 +91875,44 @@
         "value": "quest_payday"
       }
     ],
+    "quest_persona_non_grata": [
+      {
+        "columnEnd": 37,
+        "columnStart": 14,
+        "dependencies": [
+          "QuestDefinition"
+        ],
+        "exportedName": "quest_persona_non_grata",
+        "exportKind": "named",
+        "exportPath": "src/data/quests/index.ts",
+        "isDefault": false,
+        "lineEnd": 17,
+        "lineStart": 3,
+        "literalKeys": [
+          "deadlineOffset",
+          "description",
+          "failurePenalties",
+          "kind",
+          "label",
+          "offer",
+          "progressRules",
+          "progressSource",
+          "repeatPolicy",
+          "required",
+          "rewards"
+        ],
+        "name": "quest_persona_non_grata",
+        "path": "src/data/quests/quest_persona_non_grata.ts",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/data/questRegistry.ts",
+            "importedAs": "quest_persona_non_grata"
+          }
+        ]
+      }
+    ],
     "QUEST_PERSONA_NON_GRATA": [
       {
         "columnEnd": 65,
@@ -90836,6 +91933,44 @@
           }
         ],
         "value": "quest_persona_non_grata"
+      }
+    ],
+    "quest_pick_of_destiny": [
+      {
+        "columnEnd": 37,
+        "columnStart": 14,
+        "dependencies": [
+          "QuestDefinition"
+        ],
+        "exportedName": "quest_pick_of_destiny",
+        "exportKind": "named",
+        "exportPath": "src/data/quests/index.ts",
+        "isDefault": false,
+        "lineEnd": 18,
+        "lineStart": 3,
+        "literalKeys": [
+          "deadlineOffset",
+          "description",
+          "failurePenalties",
+          "kind",
+          "label",
+          "offer",
+          "progressRules",
+          "progressSource",
+          "repeatPolicy",
+          "required",
+          "rewards"
+        ],
+        "name": "quest_pick_of_destiny",
+        "path": "src/data/quests/quest_pick_of_destiny.ts",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/data/questRegistry.ts",
+            "importedAs": "quest_pick_of_destiny"
+          }
+        ]
       }
     ],
     "QUEST_PICK_OF_DESTINY": [
@@ -90863,6 +91998,45 @@
         "value": "quest_pick_of_destiny"
       }
     ],
+    "quest_premium_endorsement": [
+      {
+        "columnEnd": 37,
+        "columnStart": 14,
+        "dependencies": [
+          "QuestDefinition"
+        ],
+        "exportedName": "quest_premium_endorsement",
+        "exportKind": "named",
+        "exportPath": "src/data/quests/index.ts",
+        "isDefault": false,
+        "lineEnd": 31,
+        "lineStart": 3,
+        "literalKeys": [
+          "cooldownDays",
+          "deadlineOffset",
+          "description",
+          "failurePenalties",
+          "kind",
+          "label",
+          "offer",
+          "progressRules",
+          "progressSource",
+          "repeatPolicy",
+          "required",
+          "rewards"
+        ],
+        "name": "quest_premium_endorsement",
+        "path": "src/data/quests/quest_premium_endorsement.ts",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/data/questRegistry.ts",
+            "importedAs": "quest_premium_endorsement"
+          }
+        ]
+      }
+    ],
     "QUEST_PREMIUM_ENDORSEMENT": [
       {
         "columnEnd": 69,
@@ -90883,6 +92057,47 @@
           }
         ],
         "value": "quest_premium_endorsement"
+      }
+    ],
+    "quest_prove_yourself": [
+      {
+        "columnEnd": 37,
+        "columnStart": 14,
+        "dependencies": [
+          "QuestDefinition"
+        ],
+        "exportedName": "quest_prove_yourself",
+        "exportKind": "named",
+        "exportPath": "src/data/quests/index.ts",
+        "isDefault": false,
+        "lineEnd": 24,
+        "lineStart": 3,
+        "literalKeys": [
+          "clearFlagsOnComplete",
+          "clearFlagsOnFail",
+          "completionFlags",
+          "deadlineOffset",
+          "failureFlags",
+          "failurePenalties",
+          "followupQuestId",
+          "kind",
+          "label",
+          "progressRules",
+          "progressSource",
+          "repeatPolicy",
+          "required",
+          "startFlags"
+        ],
+        "name": "quest_prove_yourself",
+        "path": "src/data/quests/quest_prove_yourself.ts",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/data/questRegistry.ts",
+            "importedAs": "quest_prove_yourself"
+          }
+        ]
       }
     ],
     "QUEST_PROVE_YOURSELF": [
@@ -90920,6 +92135,44 @@
         "value": "quest_prove_yourself"
       }
     ],
+    "quest_region_takeover": [
+      {
+        "columnEnd": 37,
+        "columnStart": 14,
+        "dependencies": [
+          "QuestDefinition"
+        ],
+        "exportedName": "quest_region_takeover",
+        "exportKind": "named",
+        "exportPath": "src/data/quests/index.ts",
+        "isDefault": false,
+        "lineEnd": 27,
+        "lineStart": 3,
+        "literalKeys": [
+          "deadlineOffset",
+          "description",
+          "failurePenalties",
+          "kind",
+          "label",
+          "offer",
+          "progressRules",
+          "progressSource",
+          "repeatPolicy",
+          "required",
+          "rewards"
+        ],
+        "name": "quest_region_takeover",
+        "path": "src/data/quests/quest_region_takeover.ts",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/data/questRegistry.ts",
+            "importedAs": "quest_region_takeover"
+          }
+        ]
+      }
+    ],
     "QUEST_REGION_TAKEOVER": [
       {
         "columnEnd": 61,
@@ -90955,8 +92208,8 @@
         "jsDoc": {
           "summary": "Static quest configuration registry keyed by stable quest id."
         },
-        "lineEnd": 674,
-        "lineStart": 6,
+        "lineEnd": 71,
+        "lineStart": 38,
         "literalKeys": [
           "quest_alchemist",
           "quest_apology_tour",
@@ -91032,6 +92285,45 @@
         ]
       }
     ],
+    "quest_sincere_redemption": [
+      {
+        "columnEnd": 37,
+        "columnStart": 14,
+        "dependencies": [
+          "QuestDefinition"
+        ],
+        "exportedName": "quest_sincere_redemption",
+        "exportKind": "named",
+        "exportPath": "src/data/quests/index.ts",
+        "isDefault": false,
+        "lineEnd": 16,
+        "lineStart": 3,
+        "literalKeys": [
+          "completionFlags",
+          "deadlineOffset",
+          "description",
+          "failureFlags",
+          "failurePenalties",
+          "kind",
+          "label",
+          "progressRules",
+          "progressSource",
+          "repeatPolicy",
+          "required",
+          "rewards"
+        ],
+        "name": "quest_sincere_redemption",
+        "path": "src/data/quests/quest_sincere_redemption.ts",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/data/questRegistry.ts",
+            "importedAs": "quest_sincere_redemption"
+          }
+        ]
+      }
+    ],
     "QUEST_SINCERE_REDEMPTION": [
       {
         "columnEnd": 67,
@@ -91077,6 +92369,45 @@
         "type": "const"
       }
     ],
+    "quest_special_delivery": [
+      {
+        "columnEnd": 37,
+        "columnStart": 14,
+        "dependencies": [
+          "QuestDefinition"
+        ],
+        "exportedName": "quest_special_delivery",
+        "exportKind": "named",
+        "exportPath": "src/data/quests/index.ts",
+        "isDefault": false,
+        "lineEnd": 16,
+        "lineStart": 3,
+        "literalKeys": [
+          "cooldownDays",
+          "deadlineOffset",
+          "description",
+          "failurePenalties",
+          "kind",
+          "label",
+          "offer",
+          "progressRules",
+          "progressSource",
+          "repeatPolicy",
+          "required",
+          "rewards"
+        ],
+        "name": "quest_special_delivery",
+        "path": "src/data/quests/quest_special_delivery.ts",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/data/questRegistry.ts",
+            "importedAs": "quest_special_delivery"
+          }
+        ]
+      }
+    ],
     "QUEST_SPECIAL_DELIVERY": [
       {
         "columnEnd": 63,
@@ -91097,6 +92428,45 @@
           }
         ],
         "value": "quest_special_delivery"
+      }
+    ],
+    "quest_sponsor_demand": [
+      {
+        "columnEnd": 37,
+        "columnStart": 14,
+        "dependencies": [
+          "QuestDefinition"
+        ],
+        "exportedName": "quest_sponsor_demand",
+        "exportKind": "named",
+        "exportPath": "src/data/quests/index.ts",
+        "isDefault": false,
+        "lineEnd": 29,
+        "lineStart": 3,
+        "literalKeys": [
+          "cooldownDays",
+          "deadlineOffset",
+          "description",
+          "failurePenalties",
+          "kind",
+          "label",
+          "offer",
+          "progressRules",
+          "progressSource",
+          "repeatPolicy",
+          "required",
+          "rewards"
+        ],
+        "name": "quest_sponsor_demand",
+        "path": "src/data/quests/quest_sponsor_demand.ts",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/data/questRegistry.ts",
+            "importedAs": "quest_sponsor_demand"
+          }
+        ]
       }
     ],
     "QUEST_SPONSOR_DEMAND": [
@@ -91124,6 +92494,44 @@
         "value": "quest_sponsor_demand"
       }
     ],
+    "quest_sticky_fingers": [
+      {
+        "columnEnd": 37,
+        "columnStart": 14,
+        "dependencies": [
+          "QuestDefinition"
+        ],
+        "exportedName": "quest_sticky_fingers",
+        "exportKind": "named",
+        "exportPath": "src/data/quests/index.ts",
+        "isDefault": false,
+        "lineEnd": 15,
+        "lineStart": 3,
+        "literalKeys": [
+          "deadlineOffset",
+          "description",
+          "failurePenalties",
+          "kind",
+          "label",
+          "offer",
+          "progressRules",
+          "progressSource",
+          "repeatPolicy",
+          "required",
+          "rewards"
+        ],
+        "name": "quest_sticky_fingers",
+        "path": "src/data/quests/quest_sticky_fingers.ts",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/data/questRegistry.ts",
+            "importedAs": "quest_sticky_fingers"
+          }
+        ]
+      }
+    ],
     "QUEST_STICKY_FINGERS": [
       {
         "columnEnd": 59,
@@ -91144,6 +92552,45 @@
           }
         ],
         "value": "quest_sticky_fingers"
+      }
+    ],
+    "quest_studio_demo": [
+      {
+        "columnEnd": 37,
+        "columnStart": 14,
+        "dependencies": [
+          "QuestDefinition"
+        ],
+        "exportedName": "quest_studio_demo",
+        "exportKind": "named",
+        "exportPath": "src/data/quests/index.ts",
+        "isDefault": false,
+        "lineEnd": 21,
+        "lineStart": 3,
+        "literalKeys": [
+          "cooldownDays",
+          "deadlineOffset",
+          "description",
+          "failurePenalties",
+          "kind",
+          "label",
+          "offer",
+          "progressRules",
+          "progressSource",
+          "repeatPolicy",
+          "required",
+          "rewards"
+        ],
+        "name": "quest_studio_demo",
+        "path": "src/data/quests/quest_studio_demo.ts",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/data/questRegistry.ts",
+            "importedAs": "quest_studio_demo"
+          }
+        ]
       }
     ],
     "QUEST_STUDIO_DEMO": [
@@ -91168,6 +92615,45 @@
         "value": "quest_studio_demo"
       }
     ],
+    "quest_tourbus_inspection": [
+      {
+        "columnEnd": 37,
+        "columnStart": 14,
+        "dependencies": [
+          "QuestDefinition"
+        ],
+        "exportedName": "quest_tourbus_inspection",
+        "exportKind": "named",
+        "exportPath": "src/data/quests/index.ts",
+        "isDefault": false,
+        "lineEnd": 23,
+        "lineStart": 3,
+        "literalKeys": [
+          "cooldownDays",
+          "deadlineOffset",
+          "description",
+          "failurePenalties",
+          "kind",
+          "label",
+          "offer",
+          "progressRules",
+          "progressSource",
+          "repeatPolicy",
+          "required",
+          "rewards"
+        ],
+        "name": "quest_tourbus_inspection",
+        "path": "src/data/quests/quest_tourbus_inspection.ts",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/data/questRegistry.ts",
+            "importedAs": "quest_tourbus_inspection"
+          }
+        ]
+      }
+    ],
     "QUEST_TOURBUS_INSPECTION": [
       {
         "columnEnd": 67,
@@ -91188,6 +92674,45 @@
           }
         ],
         "value": "quest_tourbus_inspection"
+      }
+    ],
+    "quest_venue_regular": [
+      {
+        "columnEnd": 37,
+        "columnStart": 14,
+        "dependencies": [
+          "QuestDefinition"
+        ],
+        "exportedName": "quest_venue_regular",
+        "exportKind": "named",
+        "exportPath": "src/data/quests/index.ts",
+        "isDefault": false,
+        "lineEnd": 19,
+        "lineStart": 3,
+        "literalKeys": [
+          "cooldownDays",
+          "deadlineOffset",
+          "description",
+          "failurePenalties",
+          "kind",
+          "label",
+          "offer",
+          "progressRules",
+          "progressSource",
+          "repeatPolicy",
+          "required",
+          "rewards"
+        ],
+        "name": "quest_venue_regular",
+        "path": "src/data/quests/quest_venue_regular.ts",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/data/questRegistry.ts",
+            "importedAs": "quest_venue_regular"
+          }
+        ]
       }
     ],
     "QUEST_VENUE_REGULAR": [
@@ -91212,6 +92737,44 @@
         "value": "quest_venue_regular"
       }
     ],
+    "quest_venue_residency": [
+      {
+        "columnEnd": 37,
+        "columnStart": 14,
+        "dependencies": [
+          "QuestDefinition"
+        ],
+        "exportedName": "quest_venue_residency",
+        "exportKind": "named",
+        "exportPath": "src/data/quests/index.ts",
+        "isDefault": false,
+        "lineEnd": 30,
+        "lineStart": 3,
+        "literalKeys": [
+          "deadlineOffset",
+          "description",
+          "failurePenalties",
+          "kind",
+          "label",
+          "offer",
+          "progressRules",
+          "progressSource",
+          "repeatPolicy",
+          "required",
+          "rewards"
+        ],
+        "name": "quest_venue_residency",
+        "path": "src/data/quests/quest_venue_residency.ts",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/data/questRegistry.ts",
+            "importedAs": "quest_venue_residency"
+          }
+        ]
+      }
+    ],
     "QUEST_VENUE_RESIDENCY": [
       {
         "columnEnd": 61,
@@ -91232,6 +92795,45 @@
           }
         ],
         "value": "quest_venue_residency"
+      }
+    ],
+    "quest_viral_dance": [
+      {
+        "columnEnd": 37,
+        "columnStart": 14,
+        "dependencies": [
+          "QuestDefinition"
+        ],
+        "exportedName": "quest_viral_dance",
+        "exportKind": "named",
+        "exportPath": "src/data/quests/index.ts",
+        "isDefault": false,
+        "lineEnd": 30,
+        "lineStart": 3,
+        "literalKeys": [
+          "cooldownDays",
+          "deadlineOffset",
+          "description",
+          "failurePenalties",
+          "kind",
+          "label",
+          "offer",
+          "progressRules",
+          "progressSource",
+          "repeatPolicy",
+          "required",
+          "rewards"
+        ],
+        "name": "quest_viral_dance",
+        "path": "src/data/quests/quest_viral_dance.ts",
+        "source": "local",
+        "type": "const",
+        "usedBy": [
+          {
+            "path": "src/data/questRegistry.ts",
+            "importedAs": "quest_viral_dance"
+          }
+        ]
       }
     ],
     "QUEST_VIRAL_DANCE": [
@@ -91631,6 +93233,166 @@
         "usedBy": [
           {
             "path": "src/data/questRegistry.ts",
+            "importedAs": "QuestDefinition",
+            "typeOnly": true
+          },
+          {
+            "path": "src/data/quests/quest_alchemist.ts",
+            "importedAs": "QuestDefinition",
+            "typeOnly": true
+          },
+          {
+            "path": "src/data/quests/quest_apology_tour.ts",
+            "importedAs": "QuestDefinition",
+            "typeOnly": true
+          },
+          {
+            "path": "src/data/quests/quest_back_from_pit.ts",
+            "importedAs": "QuestDefinition",
+            "typeOnly": true
+          },
+          {
+            "path": "src/data/quests/quest_band_pact.ts",
+            "importedAs": "QuestDefinition",
+            "typeOnly": true
+          },
+          {
+            "path": "src/data/quests/quest_brand_ambassador.ts",
+            "importedAs": "QuestDefinition",
+            "typeOnly": true
+          },
+          {
+            "path": "src/data/quests/quest_burned_bridges.ts",
+            "importedAs": "QuestDefinition",
+            "typeOnly": true
+          },
+          {
+            "path": "src/data/quests/quest_chapter_marker.ts",
+            "importedAs": "QuestDefinition",
+            "typeOnly": true
+          },
+          {
+            "path": "src/data/quests/quest_community_outreach.ts",
+            "importedAs": "QuestDefinition",
+            "typeOnly": true
+          },
+          {
+            "path": "src/data/quests/quest_crisis_manager.ts",
+            "importedAs": "QuestDefinition",
+            "typeOnly": true
+          },
+          {
+            "path": "src/data/quests/quest_drama_post.ts",
+            "importedAs": "QuestDefinition",
+            "typeOnly": true
+          },
+          {
+            "path": "src/data/quests/quest_ego_management.ts",
+            "importedAs": "QuestDefinition",
+            "typeOnly": true
+          },
+          {
+            "path": "src/data/quests/quest_flawless_run.ts",
+            "importedAs": "QuestDefinition",
+            "typeOnly": true
+          },
+          {
+            "path": "src/data/quests/quest_harmony_project.ts",
+            "importedAs": "QuestDefinition",
+            "typeOnly": true
+          },
+          {
+            "path": "src/data/quests/quest_local_legend.ts",
+            "importedAs": "QuestDefinition",
+            "typeOnly": true
+          },
+          {
+            "path": "src/data/quests/quest_make_amends.ts",
+            "importedAs": "QuestDefinition",
+            "typeOnly": true
+          },
+          {
+            "path": "src/data/quests/quest_merch_rush.ts",
+            "importedAs": "QuestDefinition",
+            "typeOnly": true
+          },
+          {
+            "path": "src/data/quests/quest_murphys_law.ts",
+            "importedAs": "QuestDefinition",
+            "typeOnly": true
+          },
+          {
+            "path": "src/data/quests/quest_payday.ts",
+            "importedAs": "QuestDefinition",
+            "typeOnly": true
+          },
+          {
+            "path": "src/data/quests/quest_persona_non_grata.ts",
+            "importedAs": "QuestDefinition",
+            "typeOnly": true
+          },
+          {
+            "path": "src/data/quests/quest_pick_of_destiny.ts",
+            "importedAs": "QuestDefinition",
+            "typeOnly": true
+          },
+          {
+            "path": "src/data/quests/quest_premium_endorsement.ts",
+            "importedAs": "QuestDefinition",
+            "typeOnly": true
+          },
+          {
+            "path": "src/data/quests/quest_prove_yourself.ts",
+            "importedAs": "QuestDefinition",
+            "typeOnly": true
+          },
+          {
+            "path": "src/data/quests/quest_region_takeover.ts",
+            "importedAs": "QuestDefinition",
+            "typeOnly": true
+          },
+          {
+            "path": "src/data/quests/quest_sincere_redemption.ts",
+            "importedAs": "QuestDefinition",
+            "typeOnly": true
+          },
+          {
+            "path": "src/data/quests/quest_special_delivery.ts",
+            "importedAs": "QuestDefinition",
+            "typeOnly": true
+          },
+          {
+            "path": "src/data/quests/quest_sponsor_demand.ts",
+            "importedAs": "QuestDefinition",
+            "typeOnly": true
+          },
+          {
+            "path": "src/data/quests/quest_sticky_fingers.ts",
+            "importedAs": "QuestDefinition",
+            "typeOnly": true
+          },
+          {
+            "path": "src/data/quests/quest_studio_demo.ts",
+            "importedAs": "QuestDefinition",
+            "typeOnly": true
+          },
+          {
+            "path": "src/data/quests/quest_tourbus_inspection.ts",
+            "importedAs": "QuestDefinition",
+            "typeOnly": true
+          },
+          {
+            "path": "src/data/quests/quest_venue_regular.ts",
+            "importedAs": "QuestDefinition",
+            "typeOnly": true
+          },
+          {
+            "path": "src/data/quests/quest_venue_residency.ts",
+            "importedAs": "QuestDefinition",
+            "typeOnly": true
+          },
+          {
+            "path": "src/data/quests/quest_viral_dance.ts",
             "importedAs": "QuestDefinition",
             "typeOnly": true
           }

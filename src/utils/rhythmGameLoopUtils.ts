@@ -66,14 +66,22 @@ export const handleOverlayResume = (
               }
             })
             .catch((err: unknown) => {
-              logger.debug('RhythmGameLoop', 'Failed to resume audio via overlay', err)
+              logger.debug(
+                'RhythmGameLoop',
+                'Failed to resume audio via overlay',
+                err
+              )
               stateRef.transportPausedByOverlay = true
             })
         } else if (res === false) {
           stateRef.transportPausedByOverlay = true
         }
       } catch (err) {
-        logger.debug('RhythmGameLoop', 'Sync error resuming audio via overlay', err)
+        logger.debug(
+          'RhythmGameLoop',
+          'Sync error resuming audio via overlay',
+          err
+        )
         stateRef.transportPausedByOverlay = true
       }
     } else {
@@ -96,14 +104,22 @@ export const handleOverlayPause = (
       const res = pauseAudio()
       if (res && typeof res.catch === 'function') {
         res.catch(err => {
-          logger.debug('RhythmGameLoop', 'Failed to pause audio via overlay', err)
+          logger.debug(
+            'RhythmGameLoop',
+            'Failed to pause audio via overlay',
+            err
+          )
           stateRef.transportPausedByOverlay = false
         })
-      } else if (res as unknown as boolean === false) {
+      } else if ((res as unknown as boolean) === false) {
         stateRef.transportPausedByOverlay = false
       }
     } catch (err) {
-      logger.debug('RhythmGameLoop', 'Sync error pausing audio via overlay', err)
+      logger.debug(
+        'RhythmGameLoop',
+        'Sync error pausing audio via overlay',
+        err
+      )
       stateRef.transportPausedByOverlay = false
     }
   }
@@ -147,7 +163,10 @@ export const processCorruptionBurst = (
     stateRef.isCorruptionBurstActive = false
     stateRef.corruptionBurstEndTime = 0
     setIsCorruptionBurstActive(false)
-    setCorruptionState(finiteNumberOr(stateRef.stats?.corruptionLevel, 0), false)
+    setCorruptionState(
+      finiteNumberOr(stateRef.stats?.corruptionLevel, 0),
+      false
+    )
     setCorruptionEffect(false)
     disableCorruptionBurstAudio()
   }
@@ -168,7 +187,10 @@ export const processMissedNotes = (
   while (i < notes.length) {
     const note = notes[i]
     if (!note) {
-      logger.error('RhythmGameLoop', `Sparse notes invariant violated at index ${i}`)
+      logger.error(
+        'RhythmGameLoop',
+        `Sparse notes invariant violated at index ${i}`
+      )
       if (i === stateRef.nextMissCheckIndex) {
         stateRef.nextMissCheckIndex++
       }
