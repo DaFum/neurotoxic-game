@@ -237,7 +237,7 @@ describe('QuestItem rendering interactions', () => {
 
     // Click show details
     const toggle = screen.getByRole('button', {
-      name: /Show quest details/i
+      name: /Show details for Label/i
     })
     await user.click(toggle)
 
