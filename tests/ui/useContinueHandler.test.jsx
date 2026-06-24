@@ -141,6 +141,12 @@ describe('Pure Functions in useContinueHandler.ts', () => {
       // The current code expects numbers; if it's not a number it treats it as 0.
       expect(buildSoldMerchInventory(inventory, sold)).toEqual({ shirt: 0 })
     })
+
+    it('handles undefined or null inventory gracefully', () => {
+      const sold = { shirt: 2 }
+      expect(buildSoldMerchInventory(undefined, sold)).toEqual({ shirt: 0 })
+      expect(buildSoldMerchInventory(null, sold)).toEqual({ shirt: 0 })
+    })
   })
 
   describe('buildStoryFlagQuests', () => {
@@ -458,8 +464,30 @@ describe('useContinueHandler hook', () => {
       result.current()
     })
 
-    expect(logger.error).toHaveBeenCalled()
+    expect(logger.error).toHaveBeenCalledWith(
+      'PostGig handleContinue',
+      'Unexpected error in continue flow',
+      expect.objectContaining({ err: expect.any(Error) })
+    )
     expect(props.isProcessingActionRef.current).toBe(false)
     expect(props.setIsProcessingAction).toHaveBeenCalledWith(false)
+  })
+
+  it('logs an error if submitLeaderboardScores fails', async () => {
+    submitLeaderboardScores.mockRejectedValueOnce(new Error('Leaderboard error'))
+    const props = makeProps()
+    const { result } = renderHook(() => useContinueHandler(props))
+
+    act(() => {
+      result.current()
+    })
+
+    await flushMicrotasks()
+
+    expect(logger.error).toHaveBeenCalledWith(
+      'PostGig',
+      'submitLeaderboardScores failed',
+      expect.objectContaining({ err: expect.any(Error) })
+    )
   })
 })
