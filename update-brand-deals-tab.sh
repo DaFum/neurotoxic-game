@@ -1,0 +1,1 @@
+sed -i "s/const isActive = activeDealIds.has(deal.id)/const isActive = activeDealIds.has(deal.id)\n\n        const activeDeal = isActive\n          ? (social?.activeDeals?.find((d: any) => d \&\& d.id === deal.id) as any)\n          : null/" src/ui/bandhq/BrandDealsTab.tsx

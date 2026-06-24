@@ -39,6 +39,13 @@ export const BrandDealsTab = ({ social }: BrandDealsTabProps) => {
 
         const isActive = activeDealIds.has(deal.id)
 
+        const activeDeal = isActive
+          ? social?.activeDeals?.find(
+              (d: unknown) =>
+                d !== null && typeof d === 'object' && 'id' in d && d.id === deal.id
+            )
+          : null
+
         // Generate a specific, fitting image prompt for each deal
         const prompt = `pixel art logo for ${deal.name}, ${deal.description}, dark grunge aesthetic, high contrast, visually striking`
         const imageUrl = resolveGenImageUrl(prompt, isOnline)
@@ -98,11 +105,20 @@ export const BrandDealsTab = ({ social }: BrandDealsTabProps) => {
               </div>
               <div className='flex justify-between mb-1'>
                 <span className='text-ash-gray'>
-                  {t('ui:brandDeals.duration', { defaultValue: 'Duration:' })}
+                  {isActive
+                    ? t('ui:brandDeals.remaining', { defaultValue: 'Remaining:' })
+                    : t('ui:brandDeals.duration', { defaultValue: 'Duration:' })}
                 </span>
                 <span className='text-star-white'>
                   {t('ui:brandDeals.durationValue', {
-                    count: deal.offer.duration,
+                    count:
+                      isActive &&
+                      activeDeal !== null &&
+                      typeof activeDeal === 'object' &&
+                      'remainingGigs' in activeDeal &&
+                      typeof activeDeal.remainingGigs === 'number'
+                        ? activeDeal.remainingGigs
+                        : deal.offer.duration,
                     defaultValue: '{{count}} Gigs'
                   })}
                 </span>
