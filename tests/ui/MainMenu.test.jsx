@@ -288,7 +288,7 @@ describe('MainMenu Component', () => {
       await act(async () => {
         fireEvent.click(screen.getByText('ui:confirm_identity'))
         // flush the setTimeout
-        await new Promise((r) => setTimeout(r, 0))
+        await new Promise(r => setTimeout(r, 0))
       })
 
       expect(localStorage.getItem('neurotoxic_player_name')).toBe('TestPlayer')
@@ -309,7 +309,7 @@ describe('MainMenu Component', () => {
 
       await act(async () => {
         await user.type(input, '{Enter}')
-        await new Promise((r) => setTimeout(r, 0))
+        await new Promise(r => setTimeout(r, 0))
       })
 
       expect(localStorage.getItem('neurotoxic_player_name')).toBe('TestPlayer')

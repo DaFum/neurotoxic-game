@@ -99,42 +99,45 @@ export const useMainMenuStart = ({
     void enterFullscreen()
   }, [startNewTourFlow, setShowExistingSavePrompt])
 
-  const handleNameSubmit = useCallback((explicitName?: string) => {
-    const resolvedName = (explicitName || playerNameInput).trim()
-    if (!resolvedName) {
-      addToast(
-        tRef.current('ui:enter_name_error', {
-          defaultValue: 'Please enter a name'
-        }),
-        'error'
+  const handleNameSubmit = useCallback(
+    (explicitName?: string) => {
+      const resolvedName = (explicitName ?? playerNameInput).trim()
+      if (!resolvedName) {
+        addToast(
+          tRef.current('ui:enter_name_error', {
+            defaultValue: 'Please enter a name'
+          }),
+          'error'
+        )
+        return
+      }
+
+      const newId = getSafeUUID()
+
+      safeStorageOperation('setPlayerId', () =>
+        localStorage.setItem('neurotoxic_player_id', newId)
       )
-      return
-    }
+      safeStorageOperation('setPlayerName', () =>
+        localStorage.setItem('neurotoxic_player_name', resolvedName)
+      )
 
-    const newId = getSafeUUID()
+      updatePlayer({
+        playerId: newId,
+        playerName: resolvedName
+      })
 
-    safeStorageOperation('setPlayerId', () =>
-      localStorage.setItem('neurotoxic_player_id', newId)
-    )
-    safeStorageOperation('setPlayerName', () =>
-      localStorage.setItem('neurotoxic_player_name', resolvedName)
-    )
-
-    updatePlayer({
-      playerId: newId,
-      playerName: resolvedName
-    })
-
-    setShowNameInput(false)
-    proceedToTour()
-  }, [
-    playerNameInput,
-    addToast,
-    proceedToTour,
-    updatePlayer,
-    setShowNameInput,
-    tRef
-  ])
+      setShowNameInput(false)
+      proceedToTour()
+    },
+    [
+      playerNameInput,
+      addToast,
+      proceedToTour,
+      updatePlayer,
+      setShowNameInput,
+      tRef
+    ]
+  )
 
   const closeNameInput = useCallback(
     () => setShowNameInput(false),

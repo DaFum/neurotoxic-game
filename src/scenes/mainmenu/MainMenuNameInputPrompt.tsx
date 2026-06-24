@@ -56,7 +56,7 @@ export const MainMenuNameInputPrompt = ({
           ref={inputRef}
           type='text'
           value={playerNameInput}
-          onChange={(e) => setPlayerNameInput(e.target.value)}
+          onChange={e => setPlayerNameInput(e.target.value)}
           placeholder={t('ui:enter_name_placeholder')}
           className='bg-void-black border border-toxic-green p-2 text-toxic-green font-mono text-base sm:text-lg focus:outline-none focus:ring-1 focus:ring-toxic-green uppercase min-w-0'
           maxLength={20}
