@@ -21,12 +21,16 @@ export const BrandDealsTab = ({ social }: BrandDealsTabProps) => {
 
   // ⚡ BOLT OPTIMIZATION: Replaced activeDealIds Set and O(N) Array.find() inside render loop with a precomputed Map for O(1) lookups.
   const activeDealsMap = useMemo(() => {
-    const deals = social?.activeDeals ?? []
+    const deals = social?.activeDeals
     const map = new Map<string, unknown>()
-    for (let i = 0; i < deals.length; i++) {
-      const deal = deals[i]
-      if (deal && typeof deal === 'object' && 'id' in deal && typeof deal.id === 'string') {
-        map.set(deal.id, deal)
+    if (Array.isArray(deals)) {
+      for (let i = 0; i < deals.length; i++) {
+        const deal = deals[i]
+        if (deal && typeof deal === 'object' && 'id' in deal && typeof deal.id === 'string') {
+          if (!map.has(deal.id)) {
+            map.set(deal.id, deal)
+          }
+        }
       }
     }
     return map
