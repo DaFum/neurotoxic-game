@@ -1492,7 +1492,23 @@ export const VENUE_CHATTER_DB = [
       ANY: [
         'chatter:venues.stendal_proberaum.ANY_01',
         'chatter:venues.stendal_proberaum.ANY_02',
-        'chatter:venues.stendal_proberaum.ANY_03'
+        'chatter:venues.stendal_proberaum.ANY_03',
+        'chatter:venues.stendal_proberaum.ANY_04',
+        'chatter:venues.stendal_proberaum.ANY_05',
+        'chatter:venues.stendal_proberaum.ANY_06',
+        'chatter:venues.stendal_proberaum.ANY_07',
+        'chatter:venues.stendal_proberaum.ANY_08',
+        'chatter:venues.stendal_proberaum.ANY_09',
+        'chatter:venues.stendal_proberaum.ANY_10',
+        'chatter:venues.stendal_proberaum.ANY_11',
+        'chatter:venues.stendal_proberaum.ANY_12',
+        'chatter:venues.stendal_proberaum.ANY_13',
+        'chatter:venues.stendal_proberaum.ANY_14',
+        'chatter:venues.stendal_proberaum.ANY_15',
+        'chatter:venues.stendal_proberaum.ANY_16',
+        'chatter:venues.stendal_proberaum.ANY_17',
+        'chatter:venues.stendal_proberaum.ANY_18',
+        'chatter:venues.stendal_proberaum.ANY_19'
       ]
     }
   },
@@ -1504,6 +1520,30 @@ export const VENUE_CHATTER_DB = [
         'chatter:venues.stendal_stadtfest.ANY_01',
         'chatter:venues.stendal_stadtfest.ANY_02',
         'chatter:venues.stendal_stadtfest.ANY_03'
+      ],
+      GIG: [
+        'chatter:venues.stendal_stadtfest.GIG_01',
+        'chatter:venues.stendal_stadtfest.GIG_02',
+        'chatter:venues.stendal_stadtfest.GIG_03',
+        'chatter:venues.stendal_stadtfest.GIG_04'
+      ],
+      OVERWORLD: [
+        'chatter:venues.stendal_stadtfest.OVERWORLD_01',
+        'chatter:venues.stendal_stadtfest.OVERWORLD_02',
+        'chatter:venues.stendal_stadtfest.OVERWORLD_03',
+        'chatter:venues.stendal_stadtfest.OVERWORLD_04'
+      ],
+      PREGIG: [
+        'chatter:venues.stendal_stadtfest.PREGIG_01',
+        'chatter:venues.stendal_stadtfest.PREGIG_02',
+        'chatter:venues.stendal_stadtfest.PREGIG_03',
+        'chatter:venues.stendal_stadtfest.PREGIG_04'
+      ],
+      POSTGIG: [
+        'chatter:venues.stendal_stadtfest.POSTGIG_01',
+        'chatter:venues.stendal_stadtfest.POSTGIG_02',
+        'chatter:venues.stendal_stadtfest.POSTGIG_03',
+        'chatter:venues.stendal_stadtfest.POSTGIG_04'
       ]
     }
   }
