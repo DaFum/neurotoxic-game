@@ -9,6 +9,7 @@ import {
   getTotalMerchStock
 } from '../../utils/merchUtils'
 import { HQ_ITEMS_BY_MERCH_KEY } from '../../data/hqItems'
+import { IMG_PROMPTS, resolveGenImageUrl } from '../../utils/imageGen'
 
 interface MerchStrategyBlockProps {
   bandInventory: Record<string, unknown>
@@ -17,6 +18,7 @@ interface MerchStrategyBlockProps {
   onRestock: (merchKey: string) => void
   restockCostMultiplier?: number
   merchCapacityBonus?: number
+  playerMoney: number
 }
 
 interface MerchItem {
@@ -27,6 +29,7 @@ interface MerchItem {
   defaultPrice: number
   restockCost: number
   restockAmount: number
+  imgUrl?: string
 }
 
 interface MerchItemRowProps {
@@ -35,6 +38,7 @@ interface MerchItemRowProps {
   onUpdatePrice: (merchKey: string, newPrice: number) => void
   onRestock: (merchKey: string) => void
   t: ReturnType<typeof useTranslation>['t']
+  playerMoney: number
 }
 
 const MerchItemRow: React.FC<MerchItemRowProps> = ({
@@ -42,19 +46,29 @@ const MerchItemRow: React.FC<MerchItemRowProps> = ({
   language,
   onUpdatePrice,
   onRestock,
-  t
+  t,
+  playerMoney
 }) => {
-  const restockDisabled = item.restockAmount <= 0
+  const restockDisabled = item.restockAmount <= 0 || playerMoney < item.restockCost
 
   return (
     <div className='flex justify-between items-center bg-charcoal-gray p-3 border border-concrete-gray'>
-      <div className='flex flex-col'>
-        <span className='text-toxic-green font-mono uppercase'>
-          {item.name}
-        </span>
-        <span className='text-ash-gray font-mono text-sm'>
-          {t('ui:pregig.merchStrategy.stock', { count: item.stock })}
-        </span>
+      <div className='flex items-center gap-3'>
+        {item.imgUrl && (
+          <div
+            className='w-12 h-12 bg-contain bg-center bg-no-repeat shrink-0 opacity-80'
+            style={{ backgroundImage: `url("${item.imgUrl}")` }}
+            aria-hidden='true'
+          />
+        )}
+        <div className='flex flex-col'>
+          <span className='text-toxic-green font-mono uppercase'>
+            {item.name}
+          </span>
+          <span className='text-ash-gray font-mono text-sm'>
+            {t('ui:pregig.merchStrategy.stock', { count: item.stock })}
+          </span>
+        </div>
       </div>
 
       <div className='flex items-center gap-4'>
@@ -117,7 +131,8 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
   onUpdatePrice,
   onRestock,
   restockCostMultiplier = 1,
-  merchCapacityBonus = 0
+  merchCapacityBonus = 0,
+  playerMoney
 }) => {
   const { t, i18n } = useTranslation(['economy', 'ui'])
 
@@ -150,6 +165,8 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
           bundleAmount
         })
 
+        const imgUrl = itemDef?.img ? resolveGenImageUrl(IMG_PROMPTS[itemDef.img as keyof typeof IMG_PROMPTS]) : undefined
+
         items.push({
           key,
           name: t(`economy:gigIncome.merchSales.${key}.label`, {
@@ -159,7 +176,8 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
           currentPrice,
           defaultPrice,
           restockCost,
-          restockAmount
+          restockAmount,
+          imgUrl
         })
       }
     }
@@ -187,6 +205,7 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
             onUpdatePrice={onUpdatePrice}
             onRestock={onRestock}
             t={t}
+            playerMoney={playerMoney}
           />
         ))}
       </div>
