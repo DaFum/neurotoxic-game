@@ -94,12 +94,13 @@ export const PreGig = () => {
           </div>
         ) : (
           <MerchStrategyBlock
-            bandInventory={band.inventory || {}}
-            customPrices={band.merchPrices || {}}
+            bandInventory={band?.inventory ?? {}}
+            customPrices={band?.merchPrices ?? {}}
             onUpdatePrice={handleUpdateMerchPrice}
             onRestock={handleRestockMerch}
             restockCostMultiplier={assetModifiers.merchCostMultiplier}
             merchCapacityBonus={assetModifiers.merchCapacityBonus}
+            playerMoney={player.money ?? 0}
           />
         )}
       </div>

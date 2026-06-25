@@ -108,7 +108,7 @@ export const usePreGigHandlers = ({
       if (!itemDef) return
 
       const bundleAmount = getMerchBundleAmount(itemDef)
-      const currentInventory = band.inventory ?? {}
+      const currentInventory = band?.inventory ?? {}
       const merchCapacity = getMerchCapacity(assetModifiers.merchCapacityBonus)
       const remainingCapacity = Math.max(
         0,
@@ -161,7 +161,7 @@ export const usePreGigHandlers = ({
     },
     [
       player.money,
-      band.inventory,
+      band?.inventory,
       assetModifiers.merchCapacityBonus,
       assetModifiers.merchCostMultiplier,
       updatePlayer,
@@ -178,7 +178,7 @@ export const usePreGigHandlers = ({
       return
     }
 
-    const prevHarmony = finiteNumberOr(band.harmony, 1)
+    const prevHarmony = finiteNumberOr(band?.harmony, 1)
     if (prevHarmony >= 100) {
       addToast(
         typedT('ui:pregig.toasts.meetingHeldMax', {
@@ -207,7 +207,7 @@ export const usePreGigHandlers = ({
     addToast,
     typedT,
     updatePlayer,
-    band.harmony,
+    band?.harmony,
     updateBand
   ])
 
