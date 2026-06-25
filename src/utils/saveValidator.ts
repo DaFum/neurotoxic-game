@@ -14,14 +14,14 @@ import {
 import { FORBIDDEN_KEYS, isForbiddenKey, isLooseRecord } from './objectUtils'
 import { isFiniteNumber, finiteNumberOr } from './finiteNumber'
 
+const PLAYER_NUMERIC_FIELDS = ['money', 'day', 'time', 'score', 'fame', 'fameLevel'] as const
+const PLAYER_NON_NEGATIVE_FIELDS: ReadonlySet<string> = new Set(['time', 'score', 'fame', 'fameLevel'])
+
 /**
  * Validates the structure and types of the save data.
  * @param data - The parsed JSON data from localStorage.
  * @returns True if valid, throws error if invalid.
  */
-const PLAYER_NUMERIC_FIELDS = ['money', 'day', 'time', 'score', 'fame', 'fameLevel']
-const PLAYER_NON_NEGATIVE_FIELDS = new Set(['time', 'score', 'fame', 'fameLevel'])
-
 export const validateSaveData = (data: unknown): boolean => {
   checkPrototypePollution(data)
 
