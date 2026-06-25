@@ -133,6 +133,10 @@ export const playSongSequence = async (
   }
 
   const onSongEnded = () => {
+    if (!gameStateRef.current) {
+      return Promise.resolve()
+    }
+
     if (gameStateRef.current.lastEndedSongIndex === index) {
       return Promise.resolve()
     }
@@ -164,8 +168,10 @@ export const playSongSequence = async (
         addToast,
         fallbackMessage: 'Failed to start next song!'
       })
-      gameStateRef.current.setlistCompleted = true
-      gameStateRef.current.songTransitioning = false
+      if (gameStateRef.current) {
+        gameStateRef.current.setlistCompleted = true
+        gameStateRef.current.songTransitioning = false
+      }
     })
   }
 
