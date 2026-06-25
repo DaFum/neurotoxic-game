@@ -135,7 +135,8 @@ export const processToxicMode = (
   setIsToxicMode: ToggleBooleanCallback
 ): void => {
   if (stateRef.isToxicMode) {
-    if (now > stateRef.toxicModeEndTime) {
+    // If the clock resets (e.g. new song), `now` will be much smaller than the scheduled end time
+    if (now > stateRef.toxicModeEndTime || stateRef.toxicModeEndTime > now + 20000) {
       const remaining = stateRef.toxicModeEndTime - (now - deltaMS)
       stateRef.toxicTimeTotal += Math.max(0, Math.min(deltaMS, remaining))
       setIsToxicMode(false)
@@ -158,7 +159,7 @@ export const processCorruptionBurst = (
 ): void => {
   if (
     stateRef.isCorruptionBurstActive &&
-    now > stateRef.corruptionBurstEndTime
+    (now > stateRef.corruptionBurstEndTime || stateRef.corruptionBurstEndTime > now + 10000)
   ) {
     stateRef.isCorruptionBurstActive = false
     stateRef.corruptionBurstEndTime = 0
