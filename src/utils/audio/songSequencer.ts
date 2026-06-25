@@ -176,6 +176,10 @@ export const playSongSequence = async (
     rng
   )
 
+  if (!gameStateRef.current) {
+    return
+  }
+
   gameStateRef.current.notes = finalNotes
   gameStateRef.current.nextMissCheckIndex = 0
   gameStateRef.current.notesVersion = gameStateRef.current.notesVersion + 1
