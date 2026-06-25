@@ -32,14 +32,14 @@ import {
   isLooseRecord
 } from '../objectUtils'
 
-const cooldownsSetCache = new WeakMap<string[], Set<string>>()
-
 import type {
   BandMember,
   GameState,
   RelationshipChange,
   EventDelta
 } from '../../types'
+
+const cooldownsSetCache = new WeakMap<string[], Set<string>>()
 
 /**
  * Applies an inventory delta to a single inventory slot. Used by the
@@ -920,6 +920,9 @@ export const applyEventDelta = (
       ]
     }
     if (typeof delta.flags.addCooldown === 'string') {
+      if (!Array.isArray(nextState.eventCooldowns)) {
+        nextState.eventCooldowns = []
+      }
       let cachedSet = cooldownsSetCache.get(nextState.eventCooldowns)
       if (!cachedSet) {
         cachedSet = new Set(nextState.eventCooldowns)
@@ -931,10 +934,6 @@ export const applyEventDelta = (
           ...nextState.eventCooldowns,
           delta.flags.addCooldown
         ]
-
-        const nextSet = new Set(cachedSet)
-        nextSet.add(delta.flags.addCooldown)
-        cooldownsSetCache.set(nextState.eventCooldowns, nextSet)
       }
     }
   }
