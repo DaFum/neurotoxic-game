@@ -20,7 +20,10 @@ export const checkDeadlines = (state: GameState): GameState => {
     if (!activeQuest) continue
     const quest = getQuestWithDefinition(activeQuest)
 
-    if (typeof quest.deadline === 'number' && currentDay > quest.deadline) {
+    if (
+      Number.isFinite(quest.deadline) &&
+      currentDay > (quest.deadline as number)
+    ) {
       hasExpired = true
       const penaltyResult = applyQuestFailurePenalties(
         nextState,

@@ -98,7 +98,7 @@ export const setQuestProgress = (
   const required = finiteNumberOr(rawRequired, Number.NaN)
   const prev = finiteNumberOr(q.progress, 0)
   const next = Math.max(prev, finiteNumberOr(progress, prev))
-  const hasRequired = Number.isFinite(required)
+  const hasRequired = Number.isFinite(required) && required > 0
   const capped = hasRequired ? Math.min(required, next) : next
 
   // ⚡ BOLT OPTIMIZATION: Replaced activeQuests.map() with targeted array indexing to avoid array allocations in hot path
