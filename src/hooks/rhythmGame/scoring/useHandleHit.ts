@@ -18,6 +18,7 @@ import {
   calculatePoints,
   calculateFinalScore
 } from '../../../utils/rhythmGameScoringUtils'
+import { finiteNumberOr } from '../../../utils/finiteNumber'
 import type { RhythmGameRefState } from '../../../types/rhythmGame'
 import type { RhythmStateSetters } from '../useRhythmGameState'
 
@@ -214,7 +215,7 @@ export const useHandleHit = ({
         setCombo(nextCombo)
         setHealth(nextHealth)
 
-        const currentOverload = gameStateRef.current.overload ?? 0
+        const currentOverload = finiteNumberOr(gameStateRef.current.overload, 0)
         const gain = 4 // Increased gain to make Toxic Mode reachable
 
         let nextOverload = currentOverload

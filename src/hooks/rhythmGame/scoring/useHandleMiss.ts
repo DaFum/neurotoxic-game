@@ -12,6 +12,7 @@ import {
 } from '../../../utils/audio/audioEngine'
 import { calculateMissImpact } from '../../../utils/rhythmGameScoringUtils'
 import { RIVAL_GIG_CROWD_DECAY_PENALTY } from '../../../context/gameConstants'
+import { finiteNumberOr } from '../../../utils/finiteNumber'
 import type {
   RhythmGameRefState,
   SetLastGigStats
@@ -70,8 +71,8 @@ export const useHandleMiss = ({
       setCombo(0)
       gameStateRef.current.combo = 0
 
-      const currentHealth = gameStateRef.current.health
-      const currentOverload = gameStateRef.current.overload
+      const currentHealth = finiteNumberOr(gameStateRef.current.health, 100)
+      const currentOverload = finiteNumberOr(gameStateRef.current.overload, 0)
 
       let activeCrowdDecay = baseCrowdDecay
       if (gameStateRef.current.modifiers?.crowdDecay !== undefined) {
@@ -133,6 +134,7 @@ export const useHandleMiss = ({
       if (gameOverTimerRef.current) return
 
       gameOverTimerRef.current = setTimeout(() => {
+        gameOverTimerRef.current = null
         // Bail if another audio session started in the 4s window (e.g. external endGig call)
         if (getPlayRequestId() !== failReqId) return
         if (!Array.isArray(gameStateRef.current.songStats)) {
