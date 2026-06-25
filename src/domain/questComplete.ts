@@ -133,11 +133,13 @@ export const completeQuest = (
   }
 
   // Hardcoded old quest logic
-  if (quest.id === QUEST_PROVE_YOURSELF && nextState.player) {
+  if (quest.id === QUEST_PROVE_YOURSELF) {
     nextState.venueBlacklist = (nextState.venueBlacklist || []).slice(2) // clear 2
-    nextState.player = {
-      ...nextState.player,
-      stats: { ...(nextState.player?.stats ?? {}), proveYourselfMode: false }
+    if (nextState.player) {
+      nextState.player = {
+        ...nextState.player,
+        stats: { ...(nextState.player.stats ?? {}), proveYourselfMode: false }
+      }
     }
   }
 
