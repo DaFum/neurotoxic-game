@@ -96,17 +96,10 @@ const isValidSlotType = (value: unknown): value is SlotType =>
 export const sanitizeAssetKinds = (raw: unknown): AssetKind[] => {
   if (!Array.isArray(raw)) return []
   const out: AssetKind[] = []
-  const seen = new Set<string>()
-  for (let i = 0, len = raw.length; i < len; i++) {
-    const item = raw[i]
-    if (
-      typeof item === 'string' &&
-      VALID_ASSET_KINDS.has(item) &&
-      !seen.has(item)
-    ) {
-      seen.add(item)
-      out.push(item as AssetKind)
-    }
+  for (const item of raw) {
+    if (typeof item !== 'string' || !VALID_ASSET_KINDS.has(item)) continue
+    const kind = item as AssetKind
+    if (!out.includes(kind)) out.push(kind)
   }
   return out
 }
