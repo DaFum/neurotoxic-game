@@ -132,11 +132,11 @@ export const processToxicMode = (
   stateRef: RhythmGameRefState,
   now: number,
   deltaMS: number,
-  setIsToxicMode: ToggleBooleanCallback
+  setIsToxicMode: ToggleBooleanCallback,
+  clockReset: boolean
 ): void => {
   if (stateRef.isToxicMode) {
-    // If the clock resets (e.g. new song), `now` will be much smaller than the scheduled end time
-    if (now > stateRef.toxicModeEndTime || stateRef.toxicModeEndTime > now + 20000) {
+    if (clockReset || now > stateRef.toxicModeEndTime) {
       const remaining = stateRef.toxicModeEndTime - (now - deltaMS)
       stateRef.toxicTimeTotal += Math.max(0, Math.min(deltaMS, remaining))
       setIsToxicMode(false)
@@ -155,11 +155,12 @@ export const processCorruptionBurst = (
   now: number,
   setIsCorruptionBurstActive: ToggleBooleanCallback,
   setCorruptionState: (level: number, active: boolean) => void,
-  setCorruptionEffect: (active: boolean) => void
+  setCorruptionEffect: (active: boolean) => void,
+  clockReset: boolean
 ): void => {
   if (
     stateRef.isCorruptionBurstActive &&
-    (now > stateRef.corruptionBurstEndTime || stateRef.corruptionBurstEndTime > now + 10000)
+    (clockReset || now > stateRef.corruptionBurstEndTime)
   ) {
     stateRef.isCorruptionBurstActive = false
     stateRef.corruptionBurstEndTime = 0
@@ -312,14 +313,19 @@ export const processRhythmGameTick = ({
     stateRef.projectiles.push(newProjectile)
   }
 
-  processToxicMode(stateRef, now, deltaMS, setIsToxicMode)
+  const clockReset =
+    stateRef.lastTickTimeMs !== undefined && now < stateRef.lastTickTimeMs
+  stateRef.lastTickTimeMs = now
+
+  processToxicMode(stateRef, now, deltaMS, setIsToxicMode, clockReset)
 
   processCorruptionBurst(
     stateRef,
     now,
     setIsCorruptionBurstActive,
     setCorruptionState,
-    setCorruptionEffect
+    setCorruptionEffect,
+    clockReset
   )
 
   const isNearTrackEnd = duration <= 0 || now >= duration - NOTE_MISS_WINDOW_MS

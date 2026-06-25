@@ -277,7 +277,8 @@ const INITIAL_GAME_STATE_REF: Omit<RhythmGameRefState, 'rng'> = {
   toxicModeEndTime: 0,
   corruptionLevel: 0,
   isCorruptionBurstActive: false,
-  corruptionBurstEndTime: 0
+  corruptionBurstEndTime: 0,
+  lastTickTimeMs: 0
   // Note: rng is attached in the ref directly since it isn't cloning friendly
 }
 
