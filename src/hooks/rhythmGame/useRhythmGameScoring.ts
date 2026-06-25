@@ -1,36 +1,14 @@
 import { useCallback, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-  updateGigPerformanceStats,
-  buildGigStatsSnapshot,
-  calculateAccuracy
-} from '../../utils/gigStats'
-import {
-  audioService,
-  getGigTimeMs,
-  getToneAbsoluteTimeMs,
-  playNoteAtTime,
-  stopAudio,
-  getPlayRequestId,
-  enableCorruptionBurstAudio,
-  setCorruptionEffect,
-  getScheduledHitTimeMs
-} from '../../utils/audio/audioEngine'
-import { checkHit } from '../../utils/rhythmUtils'
+import { getGigTimeMs } from '../../utils/audio/audioEngine'
 import { clampUnit } from '../../utils/numberUtils'
-import { getSafeRandom } from '../../utils/crypto'
-import {
-  calculateDynamicHitWindow,
-  calculatePoints,
-  calculateFinalScore,
-  calculateMissImpact
-} from '../../utils/rhythmGameScoringUtils'
-import { RIVAL_GIG_CROWD_DECAY_PENALTY } from '../../context/gameConstants'
 import type {
   RhythmGameRefState,
   SetLastGigStats
 } from '../../types/rhythmGame'
 import type { RhythmStateSetters } from './useRhythmGameState'
+import { useHandleMiss } from './scoring/useHandleMiss'
+import { useHandleHit } from './scoring/useHandleHit'
 
 type RhythmPerformance = {
   crowdDecay?: number
@@ -95,20 +73,8 @@ export const useRhythmGameScoring = ({
   contextActions
 }: RhythmGameScoringParams): RhythmGameScoringReturn => {
   const { t } = useTranslation('ui')
-  const {
-    setScore,
-    setCombo,
-    setHealth,
-    setOverload,
-    setIsToxicMode,
-    setIsGameOver,
-    setAccuracy,
-    setCorruptionLevel,
-    setIsCorruptionBurstActive,
-    setCorruptionBurstEndTime,
-    setCorruptionState
-  } = setters
-  const { addToast, setLastGigStats, endGig } = contextActions
+  const { setIsToxicMode } = setters
+  const { addToast } = contextActions
 
   // Extract primitives from performance to stabilise callback dependency arrays
   const crowdControl = clampUnit(performance?.crowdControl ?? 0)
@@ -140,327 +106,26 @@ export const useRhythmGameScoring = ({
     addToast(t('ui:gig.toasts.toxicOverload', 'TOXIC OVERLOAD!'), 'success')
   }, [addToast, gameStateRef, setIsToxicMode, t])
 
-  /**
-   * Applies a miss penalty and updates state/refs.
-   * @param count - Number of misses to process (default 1)
-   * @param isEmptyHit - Whether this was an empty hit (hitting without a note).
-   */
-  const handleMiss = useCallback(
-    (count = 1, isEmptyHit = false) => {
-      if (count <= 0) return
+  const handleMiss = useHandleMiss({
+    gameStateRef,
+    setters,
+    contextActions,
+    baseCrowdDecay,
+    gameOverTimerRef
+  })
 
-      // Immediate deactivation of Toxic Mode on real miss (not empty hits)
-      if (gameStateRef.current.isToxicMode && !isEmptyHit) {
-        setIsToxicMode(false)
-        gameStateRef.current.isToxicMode = false
-        addToast(t('ui:gig.toasts.toxicModeLost', 'TOXIC MODE LOST!'), 'error')
-      }
-
-      setCombo(0)
-      gameStateRef.current.combo = 0
-
-      const currentHealth = gameStateRef.current.health
-      const currentOverload = gameStateRef.current.overload
-
-      let activeCrowdDecay = baseCrowdDecay
-      if (gameStateRef.current.modifiers?.crowdDecay !== undefined) {
-        activeCrowdDecay *= gameStateRef.current.modifiers.crowdDecay
-      }
-
-      const crowdDecay = gameStateRef.current.rivalPenaltyActive
-        ? activeCrowdDecay * RIVAL_GIG_CROWD_DECAY_PENALTY
-        : activeCrowdDecay
-
-      // Calculate new overload and stats outside the setState callback
-      const { nextOverload, nextHealth } = calculateMissImpact(
-        count,
-        isEmptyHit,
-        currentOverload,
-        currentHealth,
-        crowdDecay
-      )
-
-      gameStateRef.current.overload = nextOverload
-      const updatedStats = updateGigPerformanceStats(
-        {
-          ...gameStateRef.current.stats,
-          misses: gameStateRef.current.stats.misses + count,
-          corruptionLevel: gameStateRef.current.stats.corruptionLevel
-        },
-        { combo: 0, overload: nextOverload }
-      )
-      gameStateRef.current.stats = updatedStats
-
-      const newAccuracy = calculateAccuracy(
-        updatedStats.perfectHits + (updatedStats.hits ?? 0),
-        updatedStats.misses
-      )
-
-      setOverload(nextOverload)
-      if (typeof setAccuracy === 'function') {
-        setAccuracy(newAccuracy)
-      }
-
-      // Only play miss SFX if it's a real miss
-      if (!isEmptyHit) {
-        audioService.playSFX('miss')
-      }
-
-      gameStateRef.current.health = nextHealth
-      setHealth(nextHealth)
-
-      if (nextHealth > 0 || gameStateRef.current.isGameOver) return
-
-      setIsGameOver(true)
-      gameStateRef.current.isGameOver = true
-      // Stop audio immediately to prevent further hit processing after collapse
-      stopAudio()
-      const failReqId = getPlayRequestId()
-      addToast(t('ui:gig.toasts.bandCollapsed', 'BAND COLLAPSED'), 'error')
-
-      // Schedule exit from Gig if failed (prevents softlock)
-      if (gameOverTimerRef.current) return
-
-      gameOverTimerRef.current = setTimeout(() => {
-        // Bail if another audio session started in the 4s window (e.g. external endGig call)
-        if (getPlayRequestId() !== failReqId) return
-        if (!Array.isArray(gameStateRef.current.songStats)) {
-          gameStateRef.current.songStats = []
-        }
-        addToast(
-          t('ui:gig.toasts.gigFailed', 'Gig Failed! Reviewing impact...'),
-          'info'
-        )
-        setLastGigStats(
-          buildGigStatsSnapshot(
-            gameStateRef.current.score,
-            gameStateRef.current.stats,
-            gameStateRef.current.toxicTimeTotal,
-            gameStateRef.current.songStats
-          )
-        )
-        endGig()
-      }, 4000)
-    },
-    [
-      addToast,
-      endGig,
-      setLastGigStats,
-      gameStateRef,
-      setCombo,
-      setHealth,
-      setIsGameOver,
-      setIsToxicMode,
-      setOverload,
-      setAccuracy,
-      baseCrowdDecay,
-      t
-    ]
-  )
-
-  /**
-   * Attempts to register a hit for the active lane.
-   * @param laneIndex - Index of the lane to check.
-   * @returns True when the hit registers.
-   *
-   * @throws {@link Error}
-   * Throws when the lane array is missing an entry after the index was already
-   * validated.
-   */
-  const handleHit = useCallback(
-    (laneIndex: number) => {
-      const state = gameStateRef.current
-      if (
-        !Number.isInteger(laneIndex) ||
-        laneIndex < 0 ||
-        laneIndex >= state.lanes.length
-      ) {
-        return false
-      }
-      // Use Tone.js AudioContext clock for hit detection
-      const elapsed = getGigTimeMs()
-      const toxicModeActive = state.isToxicMode
-      const lane = state.lanes[laneIndex]
-      if (!lane) {
-        throw new Error(
-          `Missing lane at index ${laneIndex} during hit handling`
-        )
-      }
-
-      const hitWindow = calculateDynamicHitWindow(
-        lane.hitWindow * (1 + tempoBonus),
-        state.modifiers.hitWindowBonus ?? 0,
-        laneIndex,
-        guitarDifficulty
-      )
-
-      const note = checkHit(state.notes, laneIndex, elapsed, hitWindow)
-
-      if (note) {
-        note.hit = true
-        note.visible = false // consumed
-
-        // Play the specific note pitch
-        const originalNote = note.originalNote
-        if (
-          originalNote &&
-          Number.isInteger(originalNote.p) &&
-          (originalNote.p as number) >= 0 &&
-          (originalNote.p as number) <= 127
-        ) {
-          const velocity =
-            typeof originalNote.velocity === 'number' &&
-            Number.isFinite(originalNote.velocity)
-              ? originalNote.velocity
-              : 127
-          // Using Tone's absolute time is necessary here for proper MIDI note scheduling.
-          // For all other gig logic, getGigTimeMs() handles relative timing.
-          const toneNowMs = getToneAbsoluteTimeMs()
-          const scheduledMs = getScheduledHitTimeMs({
-            noteTimeMs: note.time,
-            gigTimeMs: elapsed,
-            audioTimeMs: toneNowMs,
-            maxLeadMs: 30
-          })
-          playNoteAtTime(
-            originalNote.p as number,
-            lane.id,
-            scheduledMs / 1000,
-            velocity
-          )
-        } else {
-          audioService.playSFX('hit') // Fallback
-        }
-
-        // Prefer the value written into modifiers by audio init (physics-aware), fall back to
-        // the static performance value if audio hasn't initialized yet.
-        const activeDrumMultiplier =
-          state.modifiers.drumMultiplier ?? drumMultiplier
-        const basePoints = calculatePoints(
-          laneIndex,
-          activeDrumMultiplier,
-          state.modifiers.guitarScoreMult ?? 1.0,
-          state.modifiers.bassScoreMult ?? 1.0,
-          Boolean(state.modifiers.guestlist)
-        )
-
-        // Inclusive <= is intentional: the perfect threshold is a strict
-        // subset of checkHit's exclusive (< hitWindow) window, so a note at
-        // exactly 0.4 * hitWindow still counts as perfect.
-        const isPerfect = Math.abs(elapsed - note.time) <= hitWindow * 0.4
-
-        if (isPerfect) {
-          gameStateRef.current.stats.perfectHits++
-
-          if (!gameStateRef.current.isCorruptionBurstActive) {
-            const currentCorruption = gameStateRef.current.corruptionLevel ?? 0
-            const nextCorruption = Math.min(100, currentCorruption + 5)
-            gameStateRef.current.corruptionLevel = nextCorruption
-            gameStateRef.current.stats.corruptionLevel = nextCorruption
-            setCorruptionLevel(nextCorruption)
-
-            if (nextCorruption >= 100) {
-              const burstEndTime = elapsed + 1000
-              gameStateRef.current.corruptionLevel = 0
-              gameStateRef.current.stats.corruptionLevel = 0
-              gameStateRef.current.isCorruptionBurstActive = true
-              gameStateRef.current.corruptionBurstEndTime = burstEndTime
-              setIsCorruptionBurstActive(true)
-              setCorruptionBurstEndTime(burstEndTime)
-              setCorruptionState(0, true)
-              enableCorruptionBurstAudio()
-              setCorruptionEffect(true)
-            }
-          }
-        } else {
-          if (!gameStateRef.current.stats.hits)
-            gameStateRef.current.stats.hits = 0
-          gameStateRef.current.stats.hits++
-        }
-
-        const currentAccuracy = calculateAccuracy(
-          gameStateRef.current.stats.perfectHits +
-            (gameStateRef.current.stats.hits ?? 0),
-          gameStateRef.current.stats.misses
-        )
-        setAccuracy(currentAccuracy)
-
-        let finalScore = calculateFinalScore(
-          basePoints,
-          state.combo,
-          toxicModeActive,
-          Boolean(state.modifiers.hasPerfektionist),
-          currentAccuracy,
-          gameStateRef.current.isCorruptionBurstActive
-        )
-
-        // Band crit effect (e.g. contraband): chance to double the hit score
-        if (critChance > 0 && getSafeRandom() < critChance) {
-          finalScore *= 2
-        }
-
-        // Extract calculations outside state callbacks
-        const nextScore = gameStateRef.current.score + finalScore
-        const nextCombo = gameStateRef.current.combo + 1
-        const nextHealth = Math.max(
-          0,
-          Math.min(100, gameStateRef.current.health + (toxicModeActive ? 1 : 2))
-        )
-
-        gameStateRef.current.score = nextScore
-        gameStateRef.current.combo = nextCombo
-        gameStateRef.current.health = nextHealth
-
-        setScore(nextScore)
-        setCombo(nextCombo)
-        setHealth(nextHealth)
-
-        if (!toxicModeActive) {
-          const gain = 4 // Increased gain to make Toxic Mode reachable
-          const currentOverload = gameStateRef.current.overload ?? 0
-          const next = currentOverload + gain
-          const peakCandidate = Math.min(next, 100)
-
-          gameStateRef.current.stats = updateGigPerformanceStats(
-            gameStateRef.current.stats,
-            { combo: gameStateRef.current.combo, overload: peakCandidate }
-          )
-
-          if (next >= 100) {
-            activateToxicMode()
-            gameStateRef.current.overload = 0
-            setOverload(0)
-          } else {
-            gameStateRef.current.overload = next
-            setOverload(next)
-          }
-        }
-
-        return true
-      } else {
-        handleMiss(1, true) // Pass true for isEmptyHit
-        return false
-      }
-    },
-    [
-      activateToxicMode,
-      handleMiss,
-      gameStateRef,
-      setCombo,
-      setHealth,
-      setOverload,
-      setScore,
-      setAccuracy,
-      setCorruptionLevel,
-      setIsCorruptionBurstActive,
-      setCorruptionBurstEndTime,
-      setCorruptionState,
+  const handleHit = useHandleHit({
+    gameStateRef,
+    setters,
+    performance: {
       guitarDifficulty,
       drumMultiplier,
       tempoBonus,
       critChance
-    ]
-  )
+    },
+    activateToxicMode,
+    handleMiss
+  })
 
   return {
     handleHit,
