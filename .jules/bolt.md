@@ -269,3 +269,6 @@
 
 **Learning:** Using `Array.find()` inside a React render function on an array derived from `useMemo` causes an O(N*M) iteration trap on every render when mapping over another array. This heavily increases CPU time in components with many items.
 **Action:** Replace `Array.find` lookups inside render loops with a `useMemo` that precomputes a `Map` for O(1) access. Ensure type safety using explicit type guarding inside the `useMemo` loop before setting Map values.
+## 2025-02-12 - WeakMap Caching for O(1) Lookups on Immutable Arrays
+**Learning:** Using `Array.includes()` on large state arrays in immutable reducers causes $O(N)$ operations which degrade performance. Changing state structures to `Set` can cause architectural friction.
+**Action:** Use a module-scoped `WeakMap<T[], Set<T>>` to lazily cache the array as a `Set`. Lookups become amortized $O(1)$ and memory clears cleanly with old state arrays.
