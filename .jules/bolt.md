@@ -269,3 +269,6 @@
 
 **Learning:** Using `Array.find()` inside a React render function on an array derived from `useMemo` causes an O(N*M) iteration trap on every render when mapping over another array. This heavily increases CPU time in components with many items.
 **Action:** Replace `Array.find` lookups inside render loops with a `useMemo` that precomputes a `Map` for O(1) access. Ensure type safety using explicit type guarding inside the `useMemo` loop before setting Map values.
+## 2024-11-20 - Array.includes vs Set
+**Learning:** Using `Array.includes` inside loops with O(N*M) time complexity is extremely inefficient in hot paths like the `processLiabilityTick` asset ticks reducer.
+**Action:** Replace `Array.includes` in loops with `Set.has()` lookups and refactor iterator allocations (`for...of`) to traditional indexed arrays to significantly boost operations per second.
