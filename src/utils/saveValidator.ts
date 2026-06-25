@@ -19,6 +19,9 @@ import { isFiniteNumber, finiteNumberOr } from './finiteNumber'
  * @param data - The parsed JSON data from localStorage.
  * @returns True if valid, throws error if invalid.
  */
+const PLAYER_NUMERIC_FIELDS = ['money', 'day', 'time', 'score', 'fame', 'fameLevel']
+const PLAYER_NON_NEGATIVE_FIELDS = new Set(['time', 'score', 'fame', 'fameLevel'])
+
 export const validateSaveData = (data: unknown): boolean => {
   checkPrototypePollution(data)
 
@@ -59,9 +62,7 @@ const validatePlayer = (player: unknown): void => {
 
   const p = player as Record<string, unknown>
 
-  const numericFields = ['money', 'day', 'time', 'score', 'fame', 'fameLevel']
-  const nonNegativeFields = ['time', 'score', 'fame', 'fameLevel']
-  for (const field of numericFields) {
+  for (const field of PLAYER_NUMERIC_FIELDS) {
     const val = p[field]
     if (val !== undefined) {
       if (typeof val !== 'number') {
@@ -71,7 +72,7 @@ const validatePlayer = (player: unknown): void => {
         throw new StateError(`player.${field} must be a finite number`)
       }
     }
-    if (nonNegativeFields.includes(field) && val !== undefined) {
+    if (PLAYER_NON_NEGATIVE_FIELDS.has(field) && val !== undefined) {
       p[field] = clampNonNegative(val as number)
     }
   }
