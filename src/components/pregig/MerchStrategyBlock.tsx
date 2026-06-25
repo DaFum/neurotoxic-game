@@ -49,7 +49,8 @@ const MerchItemRow: React.FC<MerchItemRowProps> = ({
   t,
   playerMoney
 }) => {
-  const restockDisabled = item.restockAmount <= 0 || playerMoney < item.restockCost
+  const restockDisabled =
+    item.restockAmount <= 0 || playerMoney < item.restockCost
 
   return (
     <div className='flex justify-between items-center bg-charcoal-gray p-3 border border-concrete-gray'>
@@ -165,7 +166,10 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
           bundleAmount
         })
 
-        const imgUrl = itemDef?.img ? resolveGenImageUrl(IMG_PROMPTS[itemDef.img as keyof typeof IMG_PROMPTS]) : undefined
+        const prompt = itemDef?.img
+          ? IMG_PROMPTS[itemDef.img as keyof typeof IMG_PROMPTS]
+          : undefined
+        const imgUrl = prompt ? resolveGenImageUrl(prompt) : undefined
 
         items.push({
           key,
