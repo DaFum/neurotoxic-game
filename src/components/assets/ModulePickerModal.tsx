@@ -96,7 +96,7 @@ const InstalledModuleCard = memo(
     return (
       <div
         className='flex gap-3 border-2 p-2'
-        style={{ borderColor: 'var(--section-accent)' }}
+        style={{ borderColor: 'var(--section-accent, var(--color-cosmic-purple))' }}
       >
         {installedModule && (
           <div className='w-24 shrink-0'>
@@ -167,7 +167,8 @@ interface AvailableModuleCardProps {
   module: AssetModule
   unlocked: boolean
   lockReasons: LockReason[]
-  conflict: { canInstall: boolean; conflictingModuleIds: string[] }
+  canInstall: boolean
+  conflictingModuleNames: string
   money: number
   onClose: () => void
   installModule: (payload: { assetId: string; slotId: string; moduleId: string }) => void
@@ -182,7 +183,8 @@ const AvailableModuleCard = memo(
     module,
     unlocked,
     lockReasons,
-    conflict,
+    canInstall,
+    conflictingModuleNames,
     money,
     onClose,
     installModule,
@@ -191,12 +193,12 @@ const AvailableModuleCard = memo(
   }: AvailableModuleCardProps) => {
     const installCost = module.cost + module.installCost
     const insufficientFunds = money < installCost
-    const blocked = !unlocked || !conflict.canInstall || insufficientFunds
+    const blocked = !unlocked || !canInstall || insufficientFunds
 
     return (
       <div
         className='flex gap-3 border-2 p-2'
-        style={{ borderColor: 'var(--section-accent)' }}
+        style={{ borderColor: 'var(--section-accent, var(--color-cosmic-purple))' }}
       >
         <div className='w-24 shrink-0'>
           <GeneratedImagePanel
@@ -238,13 +240,13 @@ const AvailableModuleCard = memo(
               ))}
             </ul>
           )}
-          {!conflict.canInstall && (
+          {!canInstall && (
             <span
               className='text-xs'
               style={{ color: 'var(--color-warning-yellow)' }}
             >
               {t('assets:modulePicker.exclusivityConflict', {
-                otherName: conflict.conflictingModuleIds.join(', ')
+                otherName: conflictingModuleNames
               })}
             </span>
           )}
@@ -386,7 +388,10 @@ export const ModulePickerModal = memo(
                     module={module}
                     unlocked={unlocked}
                     lockReasons={lockReasons}
-                    conflict={conflict}
+                    canInstall={conflict.canInstall}
+                    conflictingModuleNames={conflict.conflictingModuleIds
+                      .map(id => t(`assets:module.${id}.name`, { defaultValue: id }))
+                      .join(', ')}
                     money={money}
                     onClose={onClose}
                     installModule={installModule}
