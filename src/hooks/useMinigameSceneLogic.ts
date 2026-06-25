@@ -15,8 +15,8 @@ export const useMinigameSceneLogic = <TState,>({
   uiState,
   onComplete
 }: UseMinigameSceneLogicProps<TState>) => {
-  const band = useGameSelector(state => state.band)
-  const minigameType = useGameSelector(state => state.minigame?.type)
+  const band = useGameSelector(state => state?.band)
+  const minigameType = useGameSelector(state => state?.minigame?.type)
   const {
     completeTravelMinigame,
     completeRoadieMinigame,
