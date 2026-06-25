@@ -39,6 +39,8 @@ import type {
   EventDelta
 } from '../../types'
 
+const cooldownsSetCache = new WeakMap<string[], Set<string>>()
+
 /**
  * Applies an inventory delta to a single inventory slot. Used by the
  * `EVENT_DELTA` reducer path to merge boolean overwrites or numeric
@@ -918,7 +920,16 @@ export const applyEventDelta = (
       ]
     }
     if (typeof delta.flags.addCooldown === 'string') {
-      if (!nextState.eventCooldowns.includes(delta.flags.addCooldown)) {
+      if (!Array.isArray(nextState.eventCooldowns)) {
+        nextState.eventCooldowns = []
+      }
+      let cachedSet = cooldownsSetCache.get(nextState.eventCooldowns)
+      if (!cachedSet) {
+        cachedSet = new Set(nextState.eventCooldowns)
+        cooldownsSetCache.set(nextState.eventCooldowns, cachedSet)
+      }
+
+      if (!cachedSet.has(delta.flags.addCooldown)) {
         nextState.eventCooldowns = [
           ...nextState.eventCooldowns,
           delta.flags.addCooldown
