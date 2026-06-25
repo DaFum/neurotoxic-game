@@ -13,7 +13,7 @@ import {
   type LockReason
 } from '../../utils/assetSelectors'
 import { useGameActions, useGameSelector } from '../../context/GameState'
-import type { LongTermAsset } from '../../types/assets'
+import type { LongTermAsset, AssetModule } from '../../types/assets'
 
 interface Props {
   asset: LongTermAsset
@@ -66,6 +66,226 @@ const formatLockReason = (
  * Presents installable modules for a selected asset slot.
  * @param props - Asset, slot id, modal state, and close handler for module installation.
  */
+
+interface InstalledModuleCardProps {
+  assetId: string
+  slotId: string
+  installedModuleId: string
+  installedModule?: AssetModule
+  removalRefund: number
+  removalBlocked: boolean
+  onClose: () => void
+  removeModule: (assetId: string, slotId: string) => void
+  t: TFunction<readonly ['assets'], undefined>
+  language: string
+}
+
+const InstalledModuleCard = memo(
+  ({
+    assetId,
+    slotId,
+    installedModuleId,
+    installedModule,
+    removalRefund,
+    removalBlocked,
+    onClose,
+    removeModule,
+    t,
+    language
+  }: InstalledModuleCardProps) => {
+    return (
+      <div
+        className='flex gap-3 border-2 p-2'
+        style={{ borderColor: 'var(--section-accent, var(--color-cosmic-purple))' }}
+      >
+        {installedModule && (
+          <div className='w-24 shrink-0'>
+            <GeneratedImagePanel
+              prompt={getModuleImagePrompt(installedModule.id)}
+              alt={t(`assets:module.${installedModule.id}.name`, {
+                defaultValue: installedModule.id
+              })}
+              aspectRatio='1:1'
+              sizeHint={{ width: 128, height: 128 }}
+            />
+          </div>
+        )}
+        <div className='flex flex-1 flex-col gap-1'>
+          <strong>
+            {installedModule
+              ? t(`assets:module.${installedModule.id}.name`, {
+                  defaultValue: installedModule.id
+                })
+              : installedModuleId}
+          </strong>
+          {installedModule && (
+            <span className='text-xs opacity-60'>
+              {t(`assets:module.${installedModule.id}.description`, {
+                defaultValue: ''
+              })}
+            </span>
+          )}
+          <span className='text-xs'>
+            {t('assets:modulePicker.removeRefund', {
+              amount: formatCurrency(removalRefund, language)
+            })}
+          </span>
+          <p className='text-xs opacity-70'>
+            {t('assets:actions.removeModuleConfirm', {
+              amount: formatCurrency(removalRefund, language)
+            })}
+          </p>
+          <button
+            type='button'
+            onClick={() => {
+              removeModule(assetId, slotId)
+              onClose()
+            }}
+            disabled={removalBlocked}
+            className='mt-1 min-h-11 self-start border-2 px-2 py-2 disabled:opacity-30 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-void-black'
+            style={{
+              background: removalBlocked
+                ? 'transparent'
+                : 'var(--section-accent)',
+              color: removalBlocked
+                ? 'inherit'
+                : 'var(--color-void-black)'
+            }}
+          >
+            {t('assets:actions.remove')}
+          </button>
+        </div>
+      </div>
+    )
+  }
+)
+InstalledModuleCard.displayName = 'InstalledModuleCard'
+
+interface AvailableModuleCardProps {
+  assetId: string
+  slotId: string
+  module: AssetModule
+  unlocked: boolean
+  lockReasons: LockReason[]
+  canInstall: boolean
+  conflictingModuleNames: string
+  money: number
+  onClose: () => void
+  installModule: (payload: { assetId: string; slotId: string; moduleId: string }) => void
+  t: TFunction<readonly ['assets'], undefined>
+  language: string
+}
+
+const AvailableModuleCard = memo(
+  ({
+    assetId,
+    slotId,
+    module,
+    unlocked,
+    lockReasons,
+    canInstall,
+    conflictingModuleNames,
+    money,
+    onClose,
+    installModule,
+    t,
+    language
+  }: AvailableModuleCardProps) => {
+    const installCost = module.cost + module.installCost
+    const insufficientFunds = money < installCost
+    const blocked = !unlocked || !canInstall || insufficientFunds
+
+    return (
+      <div
+        className='flex gap-3 border-2 p-2'
+        style={{ borderColor: 'var(--section-accent, var(--color-cosmic-purple))' }}
+      >
+        <div className='w-24 shrink-0'>
+          <GeneratedImagePanel
+            prompt={getModuleImagePrompt(module.id)}
+            alt={t(`assets:module.${module.id}.name`, {
+              defaultValue: module.id
+            })}
+            aspectRatio='1:1'
+            sizeHint={{ width: 128, height: 128 }}
+          />
+        </div>
+        <div className='flex flex-1 flex-col gap-1'>
+          <strong>
+            {t(`assets:module.${module.id}.name`, {
+              defaultValue: module.id
+            })}
+          </strong>
+          <span className='text-xs opacity-60'>
+            {t(`assets:module.${module.id}.description`, {
+              defaultValue: ''
+            })}
+          </span>
+          <span className='text-xs'>
+            {t('assets:modulePicker.installCost', {
+              amount: formatCurrency(installCost, language)
+            })}
+          </span>
+          {lockReasons.length > 0 && (
+            <ul
+              className='text-xs'
+              style={{ color: 'var(--color-blood-red)' }}
+            >
+              {lockReasons.map(r => (
+                <li
+                  key={`${r.kind}-${r.ref ?? ''}-${r.amount ?? ''}-${r.refs?.join(',') ?? ''}`}
+                >
+                  {formatLockReason(r, t)}
+                </li>
+              ))}
+            </ul>
+          )}
+          {!canInstall && (
+            <span
+              className='text-xs'
+              style={{ color: 'var(--color-warning-yellow)' }}
+            >
+              {t('assets:modulePicker.exclusivityConflict', {
+                otherName: conflictingModuleNames
+              })}
+            </span>
+          )}
+          {insufficientFunds && (
+            <span
+              className='text-xs'
+              style={{ color: 'var(--color-blood-red)' }}
+            >
+              {t('assets:modulePicker.insufficientFunds')}
+            </span>
+          )}
+          <button
+            type='button'
+            onClick={() => {
+              installModule({
+                assetId,
+                slotId,
+                moduleId: module.id
+              })
+              onClose()
+            }}
+            disabled={blocked}
+            className='mt-1 min-h-11 self-start border-2 px-2 py-2 disabled:opacity-30 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-void-black'
+            style={{
+              background: blocked
+                ? 'transparent'
+                : 'var(--section-accent)',
+              color: blocked ? 'inherit' : 'var(--color-void-black)'
+            }}
+          >
+            {t('assets:actions.install')}
+          </button>
+        </div>
+      </div>
+    )
+  }
+)
+AvailableModuleCard.displayName = 'AvailableModuleCard'
+
 export const ModulePickerModal = memo(
   ({ asset, slotId, isOpen, onClose }: Props) => {
     const { t, i18n } = useTranslation(['assets'])
@@ -138,169 +358,46 @@ export const ModulePickerModal = memo(
       >
         <div className='flex flex-col gap-3 p-4 font-mono text-sm'>
           {installedModuleId !== null && (
-            <div
-              className='flex gap-3 border-2 p-2'
-              style={{ borderColor: 'var(--section-accent)' }}
-            >
-              {installedModule && (
-                <div className='w-24 shrink-0'>
-                  <GeneratedImagePanel
-                    prompt={getModuleImagePrompt(installedModule.id)}
-                    alt={t(`assets:module.${installedModule.id}.name`, {
-                      defaultValue: installedModule.id
-                    })}
-                    aspectRatio='1:1'
-                    sizeHint={{ width: 128, height: 128 }}
-                  />
-                </div>
-              )}
-              <div className='flex flex-1 flex-col gap-1'>
-                <strong>
-                  {installedModule
-                    ? t(`assets:module.${installedModule.id}.name`, {
-                        defaultValue: installedModule.id
-                      })
-                    : installedModuleId}
-                </strong>
-                {installedModule && (
-                  <span className='text-xs opacity-60'>
-                    {t(`assets:module.${installedModule.id}.description`, {
-                      defaultValue: ''
-                    })}
-                  </span>
-                )}
-                <span className='text-xs'>
-                  {t('assets:modulePicker.removeRefund', {
-                    amount: formatCurrency(removalRefund, i18n.language)
-                  })}
-                </span>
-                <p className='text-xs opacity-70'>
-                  {t('assets:actions.removeModuleConfirm', {
-                    amount: formatCurrency(removalRefund, i18n.language)
-                  })}
-                </p>
-                <button
-                  type='button'
-                  onClick={() => {
-                    removeModule(asset.id, slot.id)
-                    onClose()
-                  }}
-                  disabled={removalBlocked}
-                  className='mt-1 min-h-11 self-start border-2 px-2 py-2 disabled:opacity-30 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-void-black'
-                  style={{
-                    background: removalBlocked
-                      ? 'transparent'
-                      : 'var(--section-accent)',
-                    color: removalBlocked
-                      ? 'inherit'
-                      : 'var(--color-void-black)'
-                  }}
-                >
-                  {t('assets:actions.remove')}
-                </button>
-              </div>
-            </div>
+            <InstalledModuleCard
+              assetId={asset.id}
+              slotId={slot.id}
+              installedModuleId={installedModuleId}
+              installedModule={installedModule}
+              removalRefund={removalRefund}
+              removalBlocked={removalBlocked}
+              onClose={onClose}
+              removeModule={removeModule}
+              t={t}
+              language={i18n.language}
+            />
           )}
           {installedModuleId === null && pool.length === 0 && (
             <p className='opacity-60'>
               {t('assets:modulePicker.noModulesAvailable')}
             </p>
           )}
-          {installedModuleId === null && (
+          {installedModuleId === null && pool.length > 0 && (
             <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
               {pool.map(({ module, unlocked, lockReasons }) => {
                 const conflict = getSlotConflicts(asset, module.id)
-                const installCost = module.cost + module.installCost
-                const insufficientFunds = money < installCost
-                const blocked =
-                  !unlocked || !conflict.canInstall || insufficientFunds
                 return (
-                  <div
+                  <AvailableModuleCard
                     key={module.id}
-                    className='flex gap-3 border-2 p-2'
-                    style={{ borderColor: 'var(--section-accent)' }}
-                  >
-                    <div className='w-24 shrink-0'>
-                      <GeneratedImagePanel
-                        prompt={getModuleImagePrompt(module.id)}
-                        alt={t(`assets:module.${module.id}.name`, {
-                          defaultValue: module.id
-                        })}
-                        aspectRatio='1:1'
-                        sizeHint={{ width: 128, height: 128 }}
-                      />
-                    </div>
-                    <div className='flex flex-1 flex-col gap-1'>
-                      <strong>
-                        {t(`assets:module.${module.id}.name`, {
-                          defaultValue: module.id
-                        })}
-                      </strong>
-                      <span className='text-xs opacity-60'>
-                        {t(`assets:module.${module.id}.description`, {
-                          defaultValue: ''
-                        })}
-                      </span>
-                      <span className='text-xs'>
-                        {t('assets:modulePicker.installCost', {
-                          amount: formatCurrency(installCost, i18n.language)
-                        })}
-                      </span>
-                      {lockReasons.length > 0 && (
-                        <ul
-                          className='text-xs'
-                          style={{ color: 'var(--color-blood-red)' }}
-                        >
-                          {lockReasons.map(r => (
-                            <li
-                              key={`${r.kind}-${r.ref ?? ''}-${r.amount ?? ''}-${r.refs?.join(',') ?? ''}`}
-                            >
-                              {formatLockReason(r, t)}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                      {!conflict.canInstall && (
-                        <span
-                          className='text-xs'
-                          style={{ color: 'var(--color-warning-yellow)' }}
-                        >
-                          {t('assets:modulePicker.exclusivityConflict', {
-                            otherName: conflict.conflictingModuleIds.join(', ')
-                          })}
-                        </span>
-                      )}
-                      {insufficientFunds && (
-                        <span
-                          className='text-xs'
-                          style={{ color: 'var(--color-blood-red)' }}
-                        >
-                          {t('assets:modulePicker.insufficientFunds')}
-                        </span>
-                      )}
-                      <button
-                        type='button'
-                        onClick={() => {
-                          installModule({
-                            assetId: asset.id,
-                            slotId: slot.id,
-                            moduleId: module.id
-                          })
-                          onClose()
-                        }}
-                        disabled={blocked}
-                        className='mt-1 min-h-11 self-start border-2 px-2 py-2 disabled:opacity-30 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-void-black'
-                        style={{
-                          background: blocked
-                            ? 'transparent'
-                            : 'var(--section-accent)',
-                          color: blocked ? 'inherit' : 'var(--color-void-black)'
-                        }}
-                      >
-                        {t('assets:actions.install')}
-                      </button>
-                    </div>
-                  </div>
+                    assetId={asset.id}
+                    slotId={slot.id}
+                    module={module}
+                    unlocked={unlocked}
+                    lockReasons={lockReasons}
+                    canInstall={conflict.canInstall}
+                    conflictingModuleNames={conflict.conflictingModuleIds
+                      .map(id => t(`assets:module.${id}.name`, { defaultValue: id }))
+                      .join(', ')}
+                    money={money}
+                    onClose={onClose}
+                    installModule={installModule}
+                    t={t}
+                    language={i18n.language}
+                  />
                 )
               })}
             </div>
