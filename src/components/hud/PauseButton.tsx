@@ -2,14 +2,23 @@ import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Tooltip } from '../../ui/shared'
 
+/**
+ * Configuration properties for the gig pause button.
+ */
 interface PauseButtonProps {
+  /** Callback invoked when the user toggles the pause state. */
   onTogglePause?: () => void
+  /** Indicates whether the gig is over, disabling the pause functionality. */
   isGameOver?: boolean
 }
 
 /**
- * Provides the gig pause toggle and disables it once the gig is over.
- * @param props - Props containing `onTogglePause` callback and `isGameOver` disabled state.
+ * Provides the gig pause toggle button.
+ *
+ * @remarks
+ * This button becomes disabled and visually dimmed once the gig is over.
+ *
+ * @returns A React button element wrapped in a tooltip for pausing the game.
  */
 export const PauseButton = memo(function PauseButton({
   onTogglePause,
