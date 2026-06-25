@@ -32,6 +32,8 @@ import {
   isLooseRecord
 } from '../objectUtils'
 
+const cooldownsSetCache = new WeakMap<string[], Set<string>>()
+
 import type {
   BandMember,
   GameState,
@@ -918,11 +920,21 @@ export const applyEventDelta = (
       ]
     }
     if (typeof delta.flags.addCooldown === 'string') {
-      if (!nextState.eventCooldowns.includes(delta.flags.addCooldown)) {
+      let cachedSet = cooldownsSetCache.get(nextState.eventCooldowns)
+      if (!cachedSet) {
+        cachedSet = new Set(nextState.eventCooldowns)
+        cooldownsSetCache.set(nextState.eventCooldowns, cachedSet)
+      }
+
+      if (!cachedSet.has(delta.flags.addCooldown)) {
         nextState.eventCooldowns = [
           ...nextState.eventCooldowns,
           delta.flags.addCooldown
         ]
+
+        const nextSet = new Set(cachedSet)
+        nextSet.add(delta.flags.addCooldown)
+        cooldownsSetCache.set(nextState.eventCooldowns, nextSet)
       }
     }
   }
