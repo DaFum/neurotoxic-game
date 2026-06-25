@@ -76,12 +76,15 @@ export const useTravelEffects = ({
         if (gross !== null) {
           let rawTotalPrincipalRemaining = 0
           if (liabilities) {
-            for (const l of Object.values(liabilities)) {
-              if (l && l.assetId === asset.id) {
-                rawTotalPrincipalRemaining += Math.max(
-                  0,
-                  finiteNumberOr(l.principalRemaining, 0)
-                )
+            for (const key in liabilities) {
+              if (Object.hasOwn(liabilities, key)) {
+                const l = liabilities[key]
+                if (l && l.assetId === asset.id) {
+                  rawTotalPrincipalRemaining += Math.max(
+                    0,
+                    finiteNumberOr(l.principalRemaining, 0)
+                  )
+                }
               }
             }
           }
@@ -117,14 +120,27 @@ export const useTravelEffects = ({
           }
         }
 
-        const retainedAssets = assets.filter(a => !comboAssetIds.includes(a.id))
-        const retainedLiabilities = liabilities
-          ? Object.fromEntries(
-              Object.entries(liabilities).filter(
-                ([_, l]) => l && !comboAssetIds.includes(l.assetId)
-              )
-            )
-          : {}
+        const retainedAssets: typeof assets = []
+        for (let k = 0, len = assets.length; k < len; k++) {
+          const a = assets[k]
+          if (a && !comboAssetIds.includes(a.id)) {
+            retainedAssets.push(a)
+          }
+        }
+
+        const retainedLiabilities = Object.create(
+          null
+        ) as NonNullable<typeof liabilities>
+        if (liabilities) {
+          for (const key in liabilities) {
+            if (Object.hasOwn(liabilities, key)) {
+              const l = liabilities[key]
+              if (l && !comboAssetIds.includes(l.assetId)) {
+                retainedLiabilities[key] = l
+              }
+            }
+          }
+        }
 
         postSaleScenarios.push({
           assetProceeds: comboProceeds,
