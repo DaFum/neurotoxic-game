@@ -13,7 +13,6 @@ import {
   getScheduledHitTimeMs
 } from '../../../utils/audio/audioEngine'
 import { checkHit } from '../../../utils/rhythmUtils'
-import { getSafeRandom } from '../../../utils/crypto'
 import {
   calculateDynamicHitWindow,
   calculatePoints,
@@ -195,7 +194,7 @@ export const useHandleHit = ({
         )
 
         // Band crit effect (e.g. contraband): chance to double the hit score
-        if (critChance > 0 && getSafeRandom() < critChance) {
+        if (critChance > 0 && state.rng() < critChance) {
           finalScore *= 2
         }
 
