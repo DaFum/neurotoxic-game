@@ -147,5 +147,7 @@ export type RhythmGameRefState = {
   corruptionLevel: number
   isCorruptionBurstActive: boolean
   corruptionBurstEndTime: number
+  /** The clock time observed during the last process tick. Used to detect resets. */
+  lastTickTimeMs?: number
   rng: () => number
 }

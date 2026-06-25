@@ -71,8 +71,9 @@ export const processLaneInput = ({
   if (isDown) {
     if (!lastInputTimes) return
     const lastInputTime = lastInputTimes[laneIndex] ?? -Infinity
-    // Debounce to prevent multiple hits within 50ms
-    if (now - lastInputTime < DEBOUNCE_MS) return
+    // Debounce to prevent multiple hits within 50ms.
+    // If now < lastInputTime, the clock has reset (e.g. new song started), so we should allow the hit.
+    if (now >= lastInputTime && now - lastInputTime < DEBOUNCE_MS) return
     lastInputTimes[laneIndex] = now
 
     handleHit(laneIndex)

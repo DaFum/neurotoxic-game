@@ -133,6 +133,10 @@ export const playSongSequence = async (
   }
 
   const onSongEnded = () => {
+    if (!gameStateRef.current) {
+      return Promise.resolve()
+    }
+
     if (gameStateRef.current.lastEndedSongIndex === index) {
       return Promise.resolve()
     }
@@ -164,31 +168,23 @@ export const playSongSequence = async (
         addToast,
         fallbackMessage: 'Failed to start next song!'
       })
-      gameStateRef.current.setlistCompleted = true
-      gameStateRef.current.songTransitioning = false
+      if (gameStateRef.current) {
+        gameStateRef.current.setlistCompleted = true
+        gameStateRef.current.songTransitioning = false
+      }
     })
   }
 
-  const currentElapsedMs = index > 0 ? getGigTimeMs() : 0
-  const safeElapsedMs =
-    Number.isFinite(currentElapsedMs) && currentElapsedMs > 0
-      ? currentElapsedMs
-      : 0
-
-  const rawFinalNotes = await playAudioForSong(
+  const finalNotes = await playAudioForSong(
     currentSong,
     notes,
     onSongEnded,
     rng
   )
 
-  const finalNotes =
-    safeElapsedMs > 0
-      ? rawFinalNotes.map(n => ({
-          ...n,
-          time: n.time + safeElapsedMs
-        }))
-      : rawFinalNotes
+  if (!gameStateRef.current) {
+    return
+  }
 
   gameStateRef.current.notes = finalNotes
   gameStateRef.current.nextMissCheckIndex = 0
@@ -208,10 +204,9 @@ export const playSongSequence = async (
     const audioDuration = resolveSongPlaybackWindow(currentSong, {
       defaultDurationMs: 0
     }).excerptDurationMs
-    const absoluteAudioDuration = safeElapsedMs + audioDuration
     gameStateRef.current.totalDuration = Math.max(
       noteDuration,
-      absoluteAudioDuration
+      audioDuration
     )
   }
 
