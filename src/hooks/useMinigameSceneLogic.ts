@@ -27,10 +27,12 @@ export const useMinigameSceneLogic = <TState,>({
   const continueButtonRef = useRef<HTMLButtonElement | null>(null)
   const previousFocusRef = useRef<HTMLElement | null>(null)
   const logicRef = useRef(logic)
+  const onCompleteRef = useRef(onComplete)
 
   useLayoutEffect(() => {
     logicRef.current = logic
-  }, [logic])
+    onCompleteRef.current = onComplete
+  }, [logic, onComplete])
 
   useLayoutEffect(() => {
     if (uiState?.isGameOver) {
@@ -52,7 +54,7 @@ export const useMinigameSceneLogic = <TState,>({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (uiState?.isGameOver && e.key === 'Escape') {
-        onComplete()
+        onCompleteRef.current()
       } else if (
         import.meta.env?.DEV &&
         e.shiftKey &&
@@ -65,19 +67,19 @@ export const useMinigameSceneLogic = <TState,>({
             currentLogic.finishMinigame()
           } else if (minigameType === MINIGAME_TYPES.TOURBUS) {
             completeTravelMinigame(0, [])
-            onComplete()
+            onCompleteRef.current()
             return
           } else if (minigameType === MINIGAME_TYPES.ROADIE) {
             completeRoadieMinigame(0)
-            onComplete()
+            onCompleteRef.current()
             return
           } else if (minigameType === MINIGAME_TYPES.KABELSALAT) {
             completeKabelsalatMinigame({ isPoweredOn: true, timeLeft: 0 })
-            onComplete()
+            onCompleteRef.current()
             return
           } else if (minigameType === MINIGAME_TYPES.AMP_CALIBRATION) {
             completeAmpCalibration(100)
-            onComplete()
+            onCompleteRef.current()
             return
           } else {
             logger.warn(
@@ -93,7 +95,6 @@ export const useMinigameSceneLogic = <TState,>({
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [
-    onComplete,
     uiState?.isGameOver,
     minigameType,
     completeTravelMinigame,
@@ -130,15 +131,14 @@ export const useMinigameSceneLogic = <TState,>({
         logger.warn('Minigame', 'Skip: unsupported minigame type', minigameType)
         return
     }
-    onComplete()
+    onCompleteRef.current()
   }, [
     uiState?.isGameOver,
     minigameType,
     band,
     completeRoadieMinigame,
     completeKabelsalatMinigame,
-    completeAmpCalibration,
-    onComplete
+    completeAmpCalibration
   ])
 
   // Skip is only offered for the pre-gig setup minigames (not travel).
