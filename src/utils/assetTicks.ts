@@ -227,13 +227,16 @@ export const processLiabilityTick = (
   if (stateAssets) {
     for (let i = 0, len = stateAssets.length; i < len; i++) {
       const asset = stateAssets[i]
+      const assetId = asset?.id
+      const assetKind = asset?.kind
       if (
-        asset &&
-        foreclosedAssetIds.has(asset.id) &&
-        !foreclosedKindsSet.has(asset.kind)
+        assetId !== undefined &&
+        assetKind !== undefined &&
+        foreclosedAssetIds.has(assetId) &&
+        !foreclosedKindsSet.has(assetKind)
       ) {
-        foreclosedKindsSet.add(asset.kind)
-        foreclosedKinds.push(asset.kind)
+        foreclosedKindsSet.add(assetKind)
+        foreclosedKinds.push(assetKind)
       }
     }
   }
