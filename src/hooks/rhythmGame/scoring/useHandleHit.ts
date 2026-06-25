@@ -214,24 +214,29 @@ export const useHandleHit = ({
         setCombo(nextCombo)
         setHealth(nextHealth)
 
+        const currentOverload = gameStateRef.current.overload ?? 0
+        const gain = 4 // Increased gain to make Toxic Mode reachable
+
+        let nextOverload = currentOverload
         if (!toxicModeActive) {
-          const gain = 4 // Increased gain to make Toxic Mode reachable
-          const currentOverload = gameStateRef.current.overload ?? 0
-          const next = currentOverload + gain
-          const peakCandidate = Math.min(next, 100)
+          nextOverload = currentOverload + gain
+        }
 
-          gameStateRef.current.stats = updateGigPerformanceStats(
-            gameStateRef.current.stats,
-            { combo: gameStateRef.current.combo, overload: peakCandidate }
-          )
+        const peakCandidate = Math.min(nextOverload, 100)
 
-          if (next >= 100) {
+        gameStateRef.current.stats = updateGigPerformanceStats(
+          gameStateRef.current.stats,
+          { combo: gameStateRef.current.combo, overload: toxicModeActive ? currentOverload : peakCandidate }
+        )
+
+        if (!toxicModeActive) {
+          if (nextOverload >= 100) {
             activateToxicMode()
             gameStateRef.current.overload = 0
             setOverload(0)
           } else {
-            gameStateRef.current.overload = next
-            setOverload(next)
+            gameStateRef.current.overload = nextOverload
+            setOverload(nextOverload)
           }
         }
 
