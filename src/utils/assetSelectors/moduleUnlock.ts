@@ -11,13 +11,15 @@ const SKILL_ALIASES: Record<string, readonly string[]> = {
   tech: ['tech', 'technical']
 }
 
-const storyFlagsCache = new WeakMap<string[], Set<string>>()
+const storyFlagsCache = new WeakMap<readonly string[], Set<string>>()
+const EMPTY_FLAGS: readonly string[] = []
 
-const hasStoryFlag = (flags: string[], flag: string): boolean => {
-  let set = storyFlagsCache.get(flags)
+const hasStoryFlag = (flags: readonly string[] | undefined, flag: string): boolean => {
+  const safeFlags = Array.isArray(flags) ? flags : EMPTY_FLAGS
+  let set = storyFlagsCache.get(safeFlags)
   if (!set) {
-    set = new Set(flags)
-    storyFlagsCache.set(flags, set)
+    set = new Set(safeFlags)
+    storyFlagsCache.set(safeFlags, set)
   }
   return set.has(flag)
 }
