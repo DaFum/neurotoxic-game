@@ -31,12 +31,14 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
     gameState: EngineGameState | null
   ) => {
     if (eff.resource === 'money') {
-      const current = finiteNumberOr(gameState?.player?.money, 0)
       const prevDelta = asNumber(delta.player.money)
       let change = asNumber(eff.value)
-      // Prevent intermediate debt from swallowing subsequent gains
-      if (current + prevDelta + change < 0) {
-        change = -(current + prevDelta)
+      if (gameState) {
+        const current = finiteNumberOr(gameState.player?.money, 0)
+        // Prevent intermediate debt from swallowing subsequent gains
+        if (current + prevDelta + change < 0) {
+          change = -(current + prevDelta)
+        }
       }
       delta.player.money = prevDelta + change
     }
@@ -91,13 +93,15 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
     if (eff.stat === 'fame')
       delta.player.fame = asNumber(delta.player.fame) + asNumber(eff.value)
     if (eff.stat === 'harmony') {
-      const current = finiteNumberOr(gameState?.band?.harmony, 1)
       const prevDelta = asNumber(delta.band.harmony)
       let change = asNumber(eff.value)
-      if (current + prevDelta + change < 1) {
-        change = 1 - (current + prevDelta)
-      } else if (current + prevDelta + change > 100) {
-        change = 100 - (current + prevDelta)
+      if (gameState) {
+        const current = finiteNumberOr(gameState.band?.harmony, 1)
+        if (current + prevDelta + change < 1) {
+          change = 1 - (current + prevDelta)
+        } else if (current + prevDelta + change > 100) {
+          change = 100 - (current + prevDelta)
+        }
       }
       delta.band.harmony = prevDelta + change
     }

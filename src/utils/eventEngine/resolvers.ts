@@ -1,3 +1,4 @@
+import { finiteNumberOr } from '../gameState'
 import { logger } from '../logger'
 import { secureRandom } from '../crypto'
 import { calculateAppliedDelta } from '../gameState'
@@ -85,7 +86,15 @@ export const getOptionPreviewMoney = (
       for (const child of e.effects) visit(child)
     }
     if (e.type === 'resource' && e.resource === 'money') {
-      total += asNumber(e.value)
+      let change = asNumber(e.value)
+      if (gameState) {
+        const current = finiteNumberOr(gameState.player?.money, 0)
+        // Prevent intermediate debt from swallowing subsequent gains
+        if (current + total + change < 0) {
+          change = -(current + total)
+        }
+      }
+      total += change
       found = true
     } else if (e.type === 'percentage_resource' && e.resource === 'money') {
       const current = gameState?.player?.money ?? 0
