@@ -34,6 +34,7 @@ import {
   calculateGigPhysics,
   getGigModifiers
 } from '../src/utils/simulationUtils.js'
+import { getTotalDailyObligations } from '../src/utils/assetSelectors.js'
 import {
   clampBandHarmony,
   clampMemberMood,
@@ -1239,7 +1240,8 @@ const runSingleSimulation = (scenario, seed) => {
 
     // Bankruptcy from daily costs draining the player to zero
     const dailyNetChange = state.player.money - moneyBeforeDay
-    if (shouldTriggerBankruptcy(state.player.money, dailyNetChange)) {
+    const dailyObligations = getTotalDailyObligations(state)
+    if (shouldTriggerBankruptcy(state.player.money, dailyNetChange, dailyObligations)) {
       counters.bankrupt = true
       break
     }
@@ -1347,7 +1349,7 @@ const runSingleSimulation = (scenario, seed) => {
         cancelled: true
       })
 
-      if (shouldTriggerBankruptcy(state.player.money, 0)) {
+      if (shouldTriggerBankruptcy(state.player.money, 0, dailyObligations)) {
         counters.bankrupt = true
         break
       }
@@ -1474,7 +1476,7 @@ const runSingleSimulation = (scenario, seed) => {
       sponsorActive: hasActiveSponsorship(state.social)
     })
 
-    if (shouldTriggerBankruptcy(state.player.money, financials.net)) {
+    if (shouldTriggerBankruptcy(state.player.money, financials.net, dailyObligations)) {
       counters.bankrupt = true
       break
     }
