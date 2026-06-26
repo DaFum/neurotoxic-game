@@ -10,7 +10,7 @@ export interface UseMinigameSceneLogicProps<TState> {
   onComplete: () => void
 }
 
-export const useMinigameSceneLogic = <TState,>({
+export const useMinigameSceneLogic = <TState>({
   logic,
   uiState,
   onComplete

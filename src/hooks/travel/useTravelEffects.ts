@@ -128,9 +128,9 @@ export const useTravelEffects = ({
           }
         }
 
-        const retainedLiabilities = Object.create(
-          null
-        ) as NonNullable<typeof liabilities>
+        const retainedLiabilities = Object.create(null) as NonNullable<
+          typeof liabilities
+        >
         if (liabilities) {
           for (const key in liabilities) {
             if (Object.hasOwn(liabilities, key)) {

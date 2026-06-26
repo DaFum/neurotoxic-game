@@ -22,7 +22,9 @@ export const setLastMinigameFallback = (minigame: Minigame): void => {
 
 const BAND_MEETING_COST = 50
 
-export const resolveBandMeetingCost = (trainingCostMultiplier: unknown): number => {
+export const resolveBandMeetingCost = (
+  trainingCostMultiplier: unknown
+): number => {
   const safeMultiplier = Math.max(0, finiteNumberOr(trainingCostMultiplier, 1))
   return Math.ceil(Math.max(0, BAND_MEETING_COST * safeMultiplier))
 }

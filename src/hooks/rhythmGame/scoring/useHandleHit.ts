@@ -227,7 +227,10 @@ export const useHandleHit = ({
 
         gameStateRef.current.stats = updateGigPerformanceStats(
           gameStateRef.current.stats,
-          { combo: gameStateRef.current.combo, overload: toxicModeActive ? currentOverload : peakCandidate }
+          {
+            combo: gameStateRef.current.combo,
+            overload: toxicModeActive ? currentOverload : peakCandidate
+          }
         )
 
         if (!toxicModeActive) {

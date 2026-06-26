@@ -8,7 +8,10 @@ import type { TravelActionsParams } from '../types'
 
 const TRAVEL_ANIMATION_TIMEOUT_MS = 1510
 
-interface UseStartTravelSequenceParams extends Pick<TravelActionsParams, 'refs' | 'setters' | 'params'> {
+interface UseStartTravelSequenceParams extends Pick<
+  TravelActionsParams,
+  'refs' | 'setters' | 'params'
+> {
   clearPendingTravel: () => void
   onTravelComplete: (node?: MapNode | null) => void
 }

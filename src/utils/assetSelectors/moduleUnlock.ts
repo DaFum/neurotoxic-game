@@ -14,7 +14,10 @@ const SKILL_ALIASES: Record<string, readonly string[]> = {
 const storyFlagsCache = new WeakMap<readonly string[], Set<string>>()
 const EMPTY_FLAGS: readonly string[] = []
 
-const hasStoryFlag = (flags: readonly string[] | undefined, flag: string): boolean => {
+const hasStoryFlag = (
+  flags: readonly string[] | undefined,
+  flag: string
+): boolean => {
   const safeFlags = Array.isArray(flags) ? flags : EMPTY_FLAGS
   let set = storyFlagsCache.get(safeFlags)
   if (!set) {
@@ -109,7 +112,8 @@ export const isModuleUnlocked = (
   if (u.requiredStoryFlags) {
     for (let i = 0, len = u.requiredStoryFlags.length; i < len; i++) {
       const f = u.requiredStoryFlags[i]
-      if (f !== undefined && !hasStoryFlag(state.activeStoryFlags, f)) return false
+      if (f !== undefined && !hasStoryFlag(state.activeStoryFlags, f))
+        return false
     }
   }
   if (u.requiredMemberSkill) {

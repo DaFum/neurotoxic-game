@@ -149,6 +149,8 @@
 
 **Learning:** Interactive trait buttons within detailed member views lacked explicit focus rings, making them unreachable via keyboard navigation for users who rely on tab navigation to interact with tooltip information or trait statuses.
 **Action:** Always add explicit focus-visible rings (e.g. `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black`) to inner buttons of nested interactive components like Member Traits to ensure complete accessibility without degrading visual style.
+
 ## 2024-06-24 - Form Input Accessibility
+
 **Learning:** Native `<label>` elements wrapping inputs without `htmlFor` and `id` bindings may fail certain strict screen-reader tests or contexts, especially for inputs like `<input type="range">`. Additionally, `type="range"` inputs often lack context when their values are read as plain numbers.
 **Action:** Always bind labels and inputs explicitly using `htmlFor` and `id`. Provide `aria-valuetext` for range sliders to give screen readers meaningful context for numeric values (e.g., `aria-valuetext="50 Fame"` instead of just "50").

@@ -1,5 +1,11 @@
 import { useState, useCallback, useRef } from 'react'
-import type { GameState, PlayerState, BandState, Venue, GigModifiers } from '../../types'
+import type {
+  GameState,
+  PlayerState,
+  BandState,
+  Venue,
+  GigModifiers
+} from '../../types'
 import type { RhythmSetlistEntry } from '../../types/rhythmGame'
 import type { Song } from '../../types/audio'
 import type { AssetModifiers } from '../../types/assets'
@@ -48,7 +54,9 @@ export interface UsePreGigHandlersProps {
   ) => void
   setSetlist: (setlist: RhythmSetlistEntry[]) => void
   setGigModifiers: (
-    mods: Partial<GigModifiers> | ((prev: GigModifiers) => Partial<GigModifiers>)
+    mods:
+      | Partial<GigModifiers>
+      | ((prev: GigModifiers) => Partial<GigModifiers>)
   ) => void
   addToast: (message: string, type: 'success' | 'error' | 'info') => void
   startRoadieMinigame: (gigId: string) => void

@@ -26,7 +26,12 @@ export const BrandDealsTab = ({ social }: BrandDealsTabProps) => {
     if (Array.isArray(deals)) {
       for (let i = 0; i < deals.length; i++) {
         const deal = deals[i]
-        if (deal && typeof deal === 'object' && 'id' in deal && typeof deal.id === 'string') {
+        if (
+          deal &&
+          typeof deal === 'object' &&
+          'id' in deal &&
+          typeof deal.id === 'string'
+        ) {
           if (!map.has(deal.id)) {
             map.set(deal.id, deal)
           }

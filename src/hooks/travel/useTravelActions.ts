@@ -39,7 +39,10 @@ export const useTravelActions = ({
 }: TravelActionsParams) => {
   const getLocationName = useGetLocationName()
   const clearPendingTravel = useClearPendingTravel({ refs, setters })
-  const handleNodeArrivalCallback = useHandleNodeArrivalCallback({ refs, params })
+  const handleNodeArrivalCallback = useHandleNodeArrivalCallback({
+    refs,
+    params
+  })
 
   const onTravelComplete = useOnTravelComplete({
     refs,
