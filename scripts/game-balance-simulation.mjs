@@ -28,13 +28,13 @@ import {
   MODIFIER_COSTS,
   TICKET_SALES_CONSTANTS,
   shouldTriggerBankruptcy
-} from '../src/utils/economyEngine.js'
+} from '../src/utils/economy/index.js'
 import {
   calculateDailyUpdates,
   calculateGigPhysics,
   getGigModifiers
 } from '../src/utils/simulationUtils.js'
-import { getTotalDailyObligations } from '../src/utils/assetSelectors/index.js'
+import { getTotalDailyObligations, getActiveAssetModifiers } from '../src/utils/assetSelectors/index.js'
 import {
   clampBandHarmony,
   clampMemberMood,
@@ -48,7 +48,7 @@ import {
   BALANCE_CONSTANTS,
   applyEventDelta,
   hasActiveSponsorship
-} from '../src/utils/gameStateUtils.js'
+} from '../src/utils/gameState/index.js'
 import {
   validatePurchase,
   processPurchaseEffect
@@ -56,7 +56,7 @@ import {
 import {
   calculateContinueStats,
   calculatePerformanceScore as normalizePerformanceScore
-} from '../src/utils/postGigUtils.js'
+} from '../src/utils/postGig/index.js'
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -1375,32 +1375,37 @@ const runSingleSimulation = (scenario, seed) => {
       Math.round((100 - performanceScore) * (0.12 + rng() * 0.1))
     )
 
-    const financials = calculateGigFinancials({
-      gigData: venue,
-      performanceScore,
-      modifiers,
-      bandInventory: state.band.inventory,
-      playerState: state.player,
-      gigStats: {
-        misses,
-        hitRate: performanceScore / 100,
-        peakHype: Math.round(performanceScore + rng() * 12)
+    const assetModifiers = getActiveAssetModifiers(state.assets || [])
+
+    const financials = calculateGigFinancials(
+      {
+        gigData: venue,
+        performanceScore,
+        modifiers,
+        bandInventory: state.band.inventory,
+        playerState: state.player,
+        gigStats: {
+          misses,
+          hitRate: performanceScore / 100,
+          peakHype: Math.round(performanceScore + rng() * 12)
+        },
+        context: {
+          social: state.social,
+          discountedTickets: rng() < scenario.ticketDiscountChance,
+          controversyLevel: state.social.controversyLevel,
+          loyalty: state.social.loyalty,
+          zealotry: state.social.zealotry,
+          instagramFollowers: state.social.instagram,
+          regionRep: Math.round(
+            (state.player.fame - state.social.controversyLevel) * 0.4
+          ),
+          daysSinceLastGig:
+            state.player.day - (state.social.lastGigDay ?? state.player.day),
+          lastGigDifficulty: state.social.lastGigDifficulty ?? null
+        }
       },
-      context: {
-        social: state.social,
-        discountedTickets: rng() < scenario.ticketDiscountChance,
-        controversyLevel: state.social.controversyLevel,
-        loyalty: state.social.loyalty,
-        zealotry: state.social.zealotry,
-        instagramFollowers: state.social.instagram,
-        regionRep: Math.round(
-          (state.player.fame - state.social.controversyLevel) * 0.4
-        ),
-        daysSinceLastGig:
-          state.player.day - (state.social.lastGigDay ?? state.player.day),
-        lastGigDifficulty: state.social.lastGigDifficulty ?? null
-      }
-    })
+      assetModifiers
+    )
 
     const previousFame = state.player.fame
 

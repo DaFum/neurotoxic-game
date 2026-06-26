@@ -1,6 +1,6 @@
 # Game Balance Simulation – Analyse
 
-Erstellt am: 2026-06-26T12:47:15.152Z
+Erstellt am: 2026-06-26T18:10:41.625Z
 
 ## Simulationseinstellungen
 
@@ -214,16 +214,16 @@ Zieldefinition: Insolvenz, Endgeld und Fame-Fortschritt pro Gig je Szenario (kal
 
 | Szenario | Δ Insolvenzrate | Δ Endgeld | Δ Fame/Gig | Δ Gigs |
 |---|---:|---:|---:|---:|
-| Baseline Touring | 0% | €12.186 | -11.78 | -0.45 |
-| Bootstrap Struggle | -1.92% | €2.471 | -6.83 | 0.22 |
-| Aggressive Marketing | 0.38% | €5.204 | -7.57 | -0.37 |
-| Scandal Recovery | -2.69% | €2.475 | -3.99 | 0.49 |
-| Festival Push | 0.39% | €1.589 | -0.89 | -0.14 |
-| Chaos Tour | -0.38% | €3.781 | 4.29 | -0.11 |
-| Cult Hypergrowth | 1.15% | €4.727 | -1.71 | -0.26 |
-| Early Game Probe (Fame 0–50) | 0% | €941 | -1.7 | 0.03 |
-| Mid Game Probe (Fame 60–150) | 0% | €278 | -1.91 | -0.04 |
-| Late Game Probe (Fame 175+) | 0% | €5.410 | -5.13 | -0.09 |
+| Baseline Touring | 0% | €0 | 0 | 0 |
+| Bootstrap Struggle | 0% | €0 | 0 | 0 |
+| Aggressive Marketing | 0% | €0 | 0 | 0 |
+| Scandal Recovery | 0% | €0 | 0 | 0 |
+| Festival Push | 0% | €0 | 0 | 0 |
+| Chaos Tour | 0% | €0 | 0 | 0 |
+| Cult Hypergrowth | 0% | €0 | 0 | 0 |
+| Early Game Probe (Fame 0–50) | 0% | €0 | 0 | 0 |
+| Mid Game Probe (Fame 60–150) | 0% | €0 | 0 | 0 |
+| Late Game Probe (Fame 175+) | 0% | €0 | 0 | 0 |
 
 ## Feature-Abdeckung in der Simulation
 
