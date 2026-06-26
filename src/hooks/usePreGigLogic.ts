@@ -1,10 +1,5 @@
 import { useEffect, useCallback, useRef } from 'react'
-import type {
-  PlayerState,
-  Venue,
-  GigModifiers,
-  GameState
-} from '../types'
+import type { PlayerState, Venue, GigModifiers, GameState } from '../types'
 import type { RhythmSetlistEntry } from '../types/rhythmGame'
 import type { Song } from '../types/audio'
 import type { ActiveEffectEntry } from '../types/components'
@@ -15,7 +10,10 @@ import { useGameActions, useGameSelector } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
 import { MODIFIER_COSTS } from '../utils/economyEngine'
 
-import { resetLastMinigameFallback, resolveBandMeetingCost } from './preGig/preGigUtils'
+import {
+  resetLastMinigameFallback,
+  resolveBandMeetingCost
+} from './preGig/preGigUtils'
 import { usePreGigDerivations } from './preGig/usePreGigDerivations'
 import { usePreGigHandlers } from './preGig/usePreGigHandlers'
 

@@ -96,7 +96,9 @@ const InstalledModuleCard = memo(
     return (
       <div
         className='flex gap-3 border-2 p-2'
-        style={{ borderColor: 'var(--section-accent, var(--color-cosmic-purple))' }}
+        style={{
+          borderColor: 'var(--section-accent, var(--color-cosmic-purple))'
+        }}
       >
         {installedModule && (
           <div className='w-24 shrink-0'>
@@ -147,9 +149,7 @@ const InstalledModuleCard = memo(
               background: removalBlocked
                 ? 'transparent'
                 : 'var(--section-accent)',
-              color: removalBlocked
-                ? 'inherit'
-                : 'var(--color-void-black)'
+              color: removalBlocked ? 'inherit' : 'var(--color-void-black)'
             }}
           >
             {t('assets:actions.remove')}
@@ -171,7 +171,11 @@ interface AvailableModuleCardProps {
   conflictingModuleNames: string
   money: number
   onClose: () => void
-  installModule: (payload: { assetId: string; slotId: string; moduleId: string }) => void
+  installModule: (payload: {
+    assetId: string
+    slotId: string
+    moduleId: string
+  }) => void
   t: TFunction<readonly ['assets'], undefined>
   language: string
 }
@@ -198,7 +202,9 @@ const AvailableModuleCard = memo(
     return (
       <div
         className='flex gap-3 border-2 p-2'
-        style={{ borderColor: 'var(--section-accent, var(--color-cosmic-purple))' }}
+        style={{
+          borderColor: 'var(--section-accent, var(--color-cosmic-purple))'
+        }}
       >
         <div className='w-24 shrink-0'>
           <GeneratedImagePanel
@@ -227,10 +233,7 @@ const AvailableModuleCard = memo(
             })}
           </span>
           {lockReasons.length > 0 && (
-            <ul
-              className='text-xs'
-              style={{ color: 'var(--color-blood-red)' }}
-            >
+            <ul className='text-xs' style={{ color: 'var(--color-blood-red)' }}>
               {lockReasons.map(r => (
                 <li
                   key={`${r.kind}-${r.ref ?? ''}-${r.amount ?? ''}-${r.refs?.join(',') ?? ''}`}
@@ -271,9 +274,7 @@ const AvailableModuleCard = memo(
             disabled={blocked}
             className='mt-1 min-h-11 self-start border-2 px-2 py-2 disabled:opacity-30 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-void-black'
             style={{
-              background: blocked
-                ? 'transparent'
-                : 'var(--section-accent)',
+              background: blocked ? 'transparent' : 'var(--section-accent)',
               color: blocked ? 'inherit' : 'var(--color-void-black)'
             }}
           >
@@ -390,7 +391,9 @@ export const ModulePickerModal = memo(
                     lockReasons={lockReasons}
                     canInstall={conflict.canInstall}
                     conflictingModuleNames={conflict.conflictingModuleIds
-                      .map(id => t(`assets:module.${id}.name`, { defaultValue: id }))
+                      .map(id =>
+                        t(`assets:module.${id}.name`, { defaultValue: id })
+                      )
                       .join(', ')}
                     money={money}
                     onClose={onClose}

@@ -14,8 +14,20 @@ import {
 import { FORBIDDEN_KEYS, isForbiddenKey, isLooseRecord } from './objectUtils'
 import { isFiniteNumber, finiteNumberOr } from './finiteNumber'
 
-const PLAYER_NUMERIC_FIELDS = ['money', 'day', 'time', 'score', 'fame', 'fameLevel'] as const
-const PLAYER_NON_NEGATIVE_FIELDS: ReadonlySet<string> = new Set(['time', 'score', 'fame', 'fameLevel'])
+const PLAYER_NUMERIC_FIELDS = [
+  'money',
+  'day',
+  'time',
+  'score',
+  'fame',
+  'fameLevel'
+] as const
+const PLAYER_NON_NEGATIVE_FIELDS: ReadonlySet<string> = new Set([
+  'time',
+  'score',
+  'fame',
+  'fameLevel'
+])
 
 /**
  * Validates the structure and types of the save data.

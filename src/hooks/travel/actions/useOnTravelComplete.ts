@@ -3,12 +3,19 @@ import i18n from '../../../i18n'
 import type { MapNode } from '../../../types'
 import { handleError, StateError } from '../../../utils/errorHandler'
 import { getActiveAssetModifiers } from '../../../utils/assetSelectors'
-import { calculateTravelCostsAndImpact, getTravelArrivalUpdates, checkTravelResources } from '../../../utils/travelUtils'
+import {
+  calculateTravelCostsAndImpact,
+  getTravelArrivalUpdates,
+  checkTravelResources
+} from '../../../utils/travelUtils'
 import { processTravelEvents } from '../../../utils/arrivalUtils'
 import type { TravelActionsParams } from '../types'
 
 interface UseOnTravelCompleteParams extends TravelActionsParams {
-  handleNodeArrivalCallback: (node: MapNode, travelEventActive?: boolean) => void
+  handleNodeArrivalCallback: (
+    node: MapNode,
+    travelEventActive?: boolean
+  ) => void
 }
 
 export const useOnTravelComplete = ({

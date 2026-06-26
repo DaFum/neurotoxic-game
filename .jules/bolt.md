@@ -267,14 +267,20 @@
 
 ## 2026-06-24 - Replace O(N) Array.find with Map in React components
 
-**Learning:** Using `Array.find()` inside a React render function on an array derived from `useMemo` causes an O(N*M) iteration trap on every render when mapping over another array. This heavily increases CPU time in components with many items.
+**Learning:** Using `Array.find()` inside a React render function on an array derived from `useMemo` causes an O(N\*M) iteration trap on every render when mapping over another array. This heavily increases CPU time in components with many items.
 **Action:** Replace `Array.find` lookups inside render loops with a `useMemo` that precomputes a `Map` for O(1) access. Ensure type safety using explicit type guarding inside the `useMemo` loop before setting Map values.
+
 ## 2024-11-20 - Avoid redundant Set allocations in combinatorial loops
+
 **Learning:** Instantiating `new Set()` inside a combinatorial loop (that runs `1 << N` times per render) creates excessive memory allocations and GC pressure, defeating the purpose of an O(1) lookup, especially if N is small (e.g., N=10).
 **Action:** For small collections inside hot combinatorial loops, retain simple `Array.includes` lookups or hoist the collection outside the loop to avoid continuous reallocation overhead.
+
 ## 2024-11-20 - Array.includes vs Set
-**Learning:** Using `Array.includes` inside loops with O(N*M) time complexity is extremely inefficient in hot paths like the `processLiabilityTick` asset ticks reducer.
+
+**Learning:** Using `Array.includes` inside loops with O(N\*M) time complexity is extremely inefficient in hot paths like the `processLiabilityTick` asset ticks reducer.
 **Action:** Replace `Array.includes` in loops with `Set.has()` lookups and refactor iterator allocations (`for...of`) to traditional indexed arrays to significantly boost operations per second.
+
 ## 2025-02-12 - WeakMap Caching for O(1) Lookups on Immutable Arrays
+
 **Learning:** Using `Array.includes()` on large state arrays in immutable reducers causes $O(N)$ operations which degrade performance. Changing state structures to `Set` can cause architectural friction.
 **Action:** Use a module-scoped `WeakMap<T[], Set<T>>` to lazily cache the array as a `Set`. Lookups become amortized $O(1)$ and memory clears cleanly with old state arrays.

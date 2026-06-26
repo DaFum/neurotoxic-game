@@ -551,11 +551,15 @@ const QuestItem = memo(
               showDetails
                 ? t('ui:quests.details.hideAria', {
                     quest: quest.label ? t(quest.label) : '',
-                    defaultValue: 'Hide details for ' + (quest.label ? t(quest.label) : 'quest')
+                    defaultValue:
+                      'Hide details for ' +
+                      (quest.label ? t(quest.label) : 'quest')
                   })
                 : t('ui:quests.details.showAria', {
                     quest: quest.label ? t(quest.label) : '',
-                    defaultValue: 'Show details for ' + (quest.label ? t(quest.label) : 'quest')
+                    defaultValue:
+                      'Show details for ' +
+                      (quest.label ? t(quest.label) : 'quest')
                   })
             }
             className='min-w-[44px] min-h-[44px] text-xs text-ash-gray/70 hover:text-toxic-green font-mono flex items-center gap-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'

@@ -21,9 +21,18 @@ import {
 } from '../../../utils/mapUtils'
 import type { TravelActionsParams } from '../types'
 
-interface UseHandleTravelParams extends Pick<TravelActionsParams, 'refs' | 'setters' | 'params'> {
-  getLocationName: (location: string | undefined, venueId?: string | null) => string
-  handleNodeArrivalCallback: (node: MapNode, travelEventActive?: boolean) => void
+interface UseHandleTravelParams extends Pick<
+  TravelActionsParams,
+  'refs' | 'setters' | 'params'
+> {
+  getLocationName: (
+    location: string | undefined,
+    venueId?: string | null
+  ) => string
+  handleNodeArrivalCallback: (
+    node: MapNode,
+    travelEventActive?: boolean
+  ) => void
   clearPendingTravel: () => void
   startTravelSequence: (node: MapNode) => void
 }

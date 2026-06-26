@@ -204,10 +204,7 @@ export const playSongSequence = async (
     const audioDuration = resolveSongPlaybackWindow(currentSong, {
       defaultDurationMs: 0
     }).excerptDurationMs
-    gameStateRef.current.totalDuration = Math.max(
-      noteDuration,
-      audioDuration
-    )
+    gameStateRef.current.totalDuration = Math.max(noteDuration, audioDuration)
   }
 
   gameStateRef.current.songTransitioning = false
