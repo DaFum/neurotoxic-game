@@ -12,7 +12,7 @@ import { SOCIAL_PLATFORMS } from '../src/data/platforms.js'
 import { _CONTRABAND_DB_FOR_TESTING } from '../src/data/contraband.js'
 import { HQ_ITEMS } from '../src/data/hqItems.js'
 import { getUnifiedUpgradeCatalog } from '../src/data/upgradeCatalog.js'
-import { eventEngine, resolveEventChoice } from '../src/utils/eventEngine.js'
+import { eventEngine, resolveEventChoice } from '../src/utils/eventEngine/index.js'
 import { normalizeTraitMap } from '../src/utils/traitUtils.js'
 import {
   calculateFuelCost,
@@ -34,7 +34,7 @@ import {
   calculateGigPhysics,
   getGigModifiers
 } from '../src/utils/simulationUtils.js'
-import { getTotalDailyObligations } from '../src/utils/assetSelectors.js'
+import { getTotalDailyObligations } from '../src/utils/assetSelectors/index.js'
 import {
   clampBandHarmony,
   clampMemberMood,
