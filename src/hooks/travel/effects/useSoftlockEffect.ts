@@ -13,10 +13,7 @@ import type {
   TravelStateBundle,
   TravelLogicParams
 } from '../types'
-import {
-  getSellableAssets,
-  getPostSaleScenarios
-} from '../travelSoftlockUtils'
+import { getSellableAssets, getPostSaleScenarios } from '../travelSoftlockUtils'
 
 export const useSoftlockEffect = ({
   refs,

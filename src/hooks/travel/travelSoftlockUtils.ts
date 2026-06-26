@@ -1,4 +1,8 @@
-import { calculateChassisGrossSaleValue, getTotalDailyObligations, getActiveAssetModifiers } from '../../utils/assetSelectors'
+import {
+  calculateChassisGrossSaleValue,
+  getTotalDailyObligations,
+  getActiveAssetModifiers
+} from '../../utils/assetSelectors'
 import { finiteNumberOr } from '../../utils/finiteNumber'
 import type { GameState } from '../../types'
 import type { TravelLogicParams } from './types'
@@ -61,6 +65,7 @@ export const getPostSaleScenarios = (
 
   if (sellableAssets.length > 0 && assets) {
     sellableAssets.sort((a, b) => b.net - a.net)
+    // coderabbit:ignore - The 10-asset cap intentionally bounds the exponential combination cost to 1023 iterations, which is acceptable on the travel path.
     const numAssets = Math.min(sellableAssets.length, 10)
     const numCombinations = 1 << numAssets
     for (let i = 1; i < numCombinations; i++) {
