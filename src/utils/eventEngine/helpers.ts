@@ -8,6 +8,24 @@ import type { EngineEvent, EngineGameState } from './types'
 export const asNumber = (value: unknown): number => finiteNumberOr(value, 0)
 
 /**
+ * Clamps a raw money change to prevent intermediate debt from swallowing subsequent gains.
+ * @param current - Current money in game state.
+ * @param runningDelta - Accumulating money change delta.
+ * @param rawChange - Raw change from the effect.
+ * @returns The clamped change that won't drop effective money below 0.
+ */
+export const clampMoneyChange = (
+  current: number,
+  runningDelta: number,
+  rawChange: number
+): number => {
+  if (current + runningDelta + rawChange < 0) {
+    return -(current + runningDelta)
+  }
+  return rawChange
+}
+
+/**
  * Converts optional arrays or sets into a string array.
  */
 export const toStringArray = (

@@ -4,7 +4,7 @@ import { secureRandom } from '../crypto'
 import { calculateAppliedDelta } from '../gameState'
 import { buildTemplateContext } from './templateResolver'
 import { eventEngine } from './eventEngineCore'
-import { asNumber } from './helpers'
+import { asNumber, clampMoneyChange } from './helpers'
 import { isFiniteNumber } from '../finiteNumber'
 import type { EffectShape, EngineGameState, EventChoice } from './types'
 
@@ -89,10 +89,7 @@ export const getOptionPreviewMoney = (
       let change = asNumber(e.value)
       if (gameState) {
         const current = finiteNumberOr(gameState.player?.money, 0)
-        // Prevent intermediate debt from swallowing subsequent gains
-        if (current + total + change < 0) {
-          change = -(current + total)
-        }
+        change = clampMoneyChange(current, total, change)
       }
       total += change
       found = true

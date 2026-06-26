@@ -1,7 +1,7 @@
 import type { EventDelta } from '../../types'
 import { finiteNumberOr } from '../gameState'
 import { resolveTemplateString } from './templateResolver'
-import { asNumber } from './helpers'
+import { asNumber, clampMoneyChange } from './helpers'
 import type { EffectShape, EngineGameState, TemplateContext } from './types'
 
 /**
@@ -35,10 +35,7 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
       let change = asNumber(eff.value)
       if (gameState) {
         const current = finiteNumberOr(gameState.player?.money, 0)
-        // Prevent intermediate debt from swallowing subsequent gains
-        if (current + prevDelta + change < 0) {
-          change = -(current + prevDelta)
-        }
+        change = clampMoneyChange(current, prevDelta, change)
       }
       delta.player.money = prevDelta + change
     }
