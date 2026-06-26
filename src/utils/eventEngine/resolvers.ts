@@ -1,9 +1,10 @@
+import { finiteNumberOr } from '../gameState'
 import { logger } from '../logger'
 import { secureRandom } from '../crypto'
 import { calculateAppliedDelta } from '../gameState'
 import { buildTemplateContext } from './templateResolver'
 import { eventEngine } from './eventEngineCore'
-import { asNumber } from './helpers'
+import { asNumber, clampMoneyChange } from './helpers'
 import { isFiniteNumber } from '../finiteNumber'
 import type { EffectShape, EngineGameState, EventChoice } from './types'
 
@@ -85,7 +86,12 @@ export const getOptionPreviewMoney = (
       for (const child of e.effects) visit(child)
     }
     if (e.type === 'resource' && e.resource === 'money') {
-      total += asNumber(e.value)
+      let change = asNumber(e.value)
+      if (gameState) {
+        const current = finiteNumberOr(gameState.player?.money, 0)
+        change = clampMoneyChange(current, total, change)
+      }
+      total += change
       found = true
     } else if (e.type === 'percentage_resource' && e.resource === 'money') {
       const current = gameState?.player?.money ?? 0

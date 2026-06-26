@@ -12,7 +12,7 @@ import { SOCIAL_PLATFORMS } from '../src/data/platforms.js'
 import { _CONTRABAND_DB_FOR_TESTING } from '../src/data/contraband.js'
 import { HQ_ITEMS } from '../src/data/hqItems.js'
 import { getUnifiedUpgradeCatalog } from '../src/data/upgradeCatalog.js'
-import { eventEngine, resolveEventChoice } from '../src/utils/eventEngine.js'
+import { eventEngine, resolveEventChoice } from '../src/utils/eventEngine/index.js'
 import { normalizeTraitMap } from '../src/utils/traitUtils.js'
 import {
   calculateFuelCost,
@@ -34,6 +34,7 @@ import {
   calculateGigPhysics,
   getGigModifiers
 } from '../src/utils/simulationUtils.js'
+import { getTotalDailyObligations } from '../src/utils/assetSelectors/index.js'
 import {
   clampBandHarmony,
   clampMemberMood,
@@ -1239,7 +1240,8 @@ const runSingleSimulation = (scenario, seed) => {
 
     // Bankruptcy from daily costs draining the player to zero
     const dailyNetChange = state.player.money - moneyBeforeDay
-    if (shouldTriggerBankruptcy(state.player.money, dailyNetChange)) {
+    const dailyObligations = getTotalDailyObligations(state)
+    if (shouldTriggerBankruptcy(state.player.money, dailyNetChange, dailyObligations)) {
       counters.bankrupt = true
       break
     }
@@ -1347,7 +1349,7 @@ const runSingleSimulation = (scenario, seed) => {
         cancelled: true
       })
 
-      if (shouldTriggerBankruptcy(state.player.money, 0)) {
+      if (shouldTriggerBankruptcy(state.player.money, 0, getTotalDailyObligations(state))) {
         counters.bankrupt = true
         break
       }
@@ -1474,7 +1476,7 @@ const runSingleSimulation = (scenario, seed) => {
       sponsorActive: hasActiveSponsorship(state.social)
     })
 
-    if (shouldTriggerBankruptcy(state.player.money, financials.net)) {
+    if (shouldTriggerBankruptcy(state.player.money, financials.net, getTotalDailyObligations(state))) {
       counters.bankrupt = true
       break
     }

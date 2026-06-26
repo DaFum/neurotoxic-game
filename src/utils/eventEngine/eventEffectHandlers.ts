@@ -1,7 +1,7 @@
 import type { EventDelta } from '../../types'
 import { finiteNumberOr } from '../gameState'
 import { resolveTemplateString } from './templateResolver'
-import { asNumber } from './helpers'
+import { asNumber, clampMoneyChange } from './helpers'
 import type { EffectShape, EngineGameState, TemplateContext } from './types'
 
 /**
@@ -24,9 +24,21 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
       change: parsedChange
     })
   },
-  resource: (eff: EffectShape, delta: EventDelta) => {
-    if (eff.resource === 'money')
-      delta.player.money = asNumber(delta.player.money) + asNumber(eff.value)
+  resource: (
+    eff: EffectShape,
+    delta: EventDelta,
+    _context: TemplateContext,
+    gameState: EngineGameState | null
+  ) => {
+    if (eff.resource === 'money') {
+      const prevDelta = asNumber(delta.player.money)
+      let change = asNumber(eff.value)
+      if (gameState) {
+        const current = finiteNumberOr(gameState.player?.money, 0)
+        change = clampMoneyChange(current, prevDelta, change)
+      }
+      delta.player.money = prevDelta + change
+    }
     if (eff.resource === 'fuel') {
       delta.player.van = { ...(delta.player.van || {}) }
       delta.player.van.fuel =
@@ -67,13 +79,29 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
       delta.player.money = asNumber(delta.player.money) + amount
     }
   },
-  stat: (eff: EffectShape, delta: EventDelta) => {
+  stat: (
+    eff: EffectShape,
+    delta: EventDelta,
+    _context: TemplateContext,
+    gameState: EngineGameState | null
+  ) => {
     if (eff.stat === 'time')
       delta.player.time = asNumber(delta.player.time) + asNumber(eff.value)
     if (eff.stat === 'fame')
       delta.player.fame = asNumber(delta.player.fame) + asNumber(eff.value)
-    if (eff.stat === 'harmony')
-      delta.band.harmony = asNumber(delta.band.harmony) + asNumber(eff.value)
+    if (eff.stat === 'harmony') {
+      const prevDelta = asNumber(delta.band.harmony)
+      let change = asNumber(eff.value)
+      if (gameState) {
+        const current = finiteNumberOr(gameState.band?.harmony, 1)
+        if (current + prevDelta + change < 1) {
+          change = 1 - (current + prevDelta)
+        } else if (current + prevDelta + change > 100) {
+          change = 100 - (current + prevDelta)
+        }
+      }
+      delta.band.harmony = prevDelta + change
+    }
     if (eff.stat === 'mood') {
       delta.band.membersDelta = {
         ...(delta.band.membersDelta || {}),

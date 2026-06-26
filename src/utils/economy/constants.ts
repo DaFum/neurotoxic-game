@@ -72,7 +72,7 @@ export const EXPENSE_CONSTANTS = {
     BASE_COST: 62
   },
   TRANSPORT: {
-    FUEL_PER_100KM: 12, // Liters
+    FUEL_PER_100KM: 10, // Liters
     FUEL_PRICE: 1.75, // Euro per Liter
     MAX_FUEL: 100, // Liters
     REPAIR_COST_PER_UNIT: 6, // Per 1% condition
@@ -129,7 +129,7 @@ export const TRAVEL_LOGISTICS_BASE = 18
 /**
  * Additional logistics expense per 100 kilometers.
  */
-export const TRAVEL_LOGISTICS_PER_100KM = 4
+export const TRAVEL_LOGISTICS_PER_100KM = 3
 /**
  * Additional logistics expense per fame level.
  */
@@ -142,4 +142,4 @@ export const TRAVEL_LOGISTICS_CASH_CAP = 45
 /**
  * Venue split rates by difficulty.
  */
-export const VENUE_SPLIT_RATES: Record<number, number> = { 3: 0.35, 4: 0.55 }
+export const VENUE_SPLIT_RATES: Record<number, number> = { 3: 0.30, 4: 0.50 }

@@ -581,7 +581,7 @@ test('calculateTravelExpenses returns correct cost structure', () => {
   const node = { venue: { x: 50, y: 50, name: 'Center' } }
   // Relative to center (default fromNode):
   // dist = 20 (base minimum)
-  // fuelLiters = 2.4 (paid via the van tank, not as a money cost)
+  // fuelLiters = 2.0 (paid via the van tank, not as a money cost)
   // foodCost = 24 (3 * 8)
   // logisticsCost = 18 base + 0 distance + 0 fame + 0 cash reserve = 18
   // totalCost = food + logistics = 42
@@ -594,8 +594,8 @@ test('calculateTravelExpenses returns correct cost structure', () => {
     'Distance should be 20 (base cost) for center node'
   )
   assert.ok(
-    Math.abs(result.fuelLiters - 2.4) < 0.001,
-    'Fuel liters should be approx 2.4'
+    Math.abs(result.fuelLiters - 2.0) < 0.001,
+    'Fuel liters should be approx 2.0'
   )
   assert.equal(
     result.totalCost,
@@ -619,7 +619,7 @@ test('calculateFuelCost applies van tuning upgrade', () => {
   const dist = 100
   // Without upgrade
   const res1 = calculateFuelCost(dist, null)
-  assert.equal(res1.fuelLiters, 12)
+  assert.equal(res1.fuelLiters, 10)
 
   // With upgrade
   const playerState = {
@@ -628,7 +628,7 @@ test('calculateFuelCost applies van tuning upgrade', () => {
     }
   }
   const res2 = calculateFuelCost(dist, playerState)
-  assert.equal(res2.fuelLiters, 12 * 0.8)
+  assert.equal(res2.fuelLiters, 10 * 0.8)
 })
 
 // Note: calculateGigFinancials no longer applies upgrades to fuel because fuel is not in the gig report.
@@ -734,7 +734,7 @@ test('calculateFuelCost applies road_warrior trait discount', () => {
   const dist = 100
   // Without trait
   const res1 = calculateFuelCost(dist, null, null)
-  assert.equal(res1.fuelLiters, 12)
+  assert.equal(res1.fuelLiters, 10)
 
   // With trait (object map format required by hasTrait)
   const bandState = {
@@ -745,9 +745,9 @@ test('calculateFuelCost applies road_warrior trait discount', () => {
     ]
   }
   const res2 = calculateFuelCost(dist, null, bandState)
-  // 12 * 0.85 = 10.2
+  // 10 * 0.85 = 8.5
   assert.ok(
-    Math.abs(res2.fuelLiters - 10.2) < 1e-6,
+    Math.abs(res2.fuelLiters - 8.5) < 1e-6,
     'fuelLiters within tolerance'
   )
 })
