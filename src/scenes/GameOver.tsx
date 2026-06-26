@@ -9,6 +9,12 @@ import { GameOverButtons } from './gameover/GameOverButtons'
 /**
  * Scene displayed when the game ends — defeat (bankruptcy, stranded) or
  * victory (FINALE gig completed, `player.stats.tourCompleted`).
+ *
+ * @remarks
+ * Handles routing back to the main menu and conditionally reloading the game
+ * based on the player's final state and retry choice.
+ *
+ * @returns A rendered game over overlay with stats, header, and action buttons.
  */
 export const GameOver = () => {
   const player = useGameSelector(state => state.player)
