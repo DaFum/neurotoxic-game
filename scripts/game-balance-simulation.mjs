@@ -1349,7 +1349,7 @@ const runSingleSimulation = (scenario, seed) => {
         cancelled: true
       })
 
-      if (shouldTriggerBankruptcy(state.player.money, 0, dailyObligations)) {
+      if (shouldTriggerBankruptcy(state.player.money, 0, getTotalDailyObligations(state))) {
         counters.bankrupt = true
         break
       }
@@ -1476,7 +1476,7 @@ const runSingleSimulation = (scenario, seed) => {
       sponsorActive: hasActiveSponsorship(state.social)
     })
 
-    if (shouldTriggerBankruptcy(state.player.money, financials.net, dailyObligations)) {
+    if (shouldTriggerBankruptcy(state.player.money, financials.net, getTotalDailyObligations(state))) {
       counters.bankrupt = true
       break
     }
