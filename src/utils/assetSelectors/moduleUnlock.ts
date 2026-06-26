@@ -11,6 +11,19 @@ const SKILL_ALIASES: Record<string, readonly string[]> = {
   tech: ['tech', 'technical']
 }
 
+const storyFlagsCache = new WeakMap<readonly string[], Set<string>>()
+const EMPTY_FLAGS: readonly string[] = []
+
+const hasStoryFlag = (flags: readonly string[] | undefined, flag: string): boolean => {
+  const safeFlags = Array.isArray(flags) ? flags : EMPTY_FLAGS
+  let set = storyFlagsCache.get(safeFlags)
+  if (!set) {
+    set = new Set(safeFlags)
+    storyFlagsCache.set(safeFlags, set)
+  }
+  return set.has(flag)
+}
+
 const readOwnFiniteNumber = (
   source: unknown,
   key: string
@@ -94,8 +107,9 @@ export const isModuleUnlocked = (
     if (scene < u.minScenePresence) return false
   }
   if (u.requiredStoryFlags) {
-    for (const f of u.requiredStoryFlags) {
-      if (!state.activeStoryFlags.includes(f)) return false
+    for (let i = 0, len = u.requiredStoryFlags.length; i < len; i++) {
+      const f = u.requiredStoryFlags[i]
+      if (f !== undefined && !hasStoryFlag(state.activeStoryFlags, f)) return false
     }
   }
   if (u.requiredMemberSkill) {
@@ -176,8 +190,9 @@ export const getLockReasons = (
     }
   }
   if (u.requiredStoryFlags) {
-    for (const f of u.requiredStoryFlags) {
-      if (!state.activeStoryFlags.includes(f)) {
+    for (let i = 0, len = u.requiredStoryFlags.length; i < len; i++) {
+      const f = u.requiredStoryFlags[i]
+      if (f !== undefined && !hasStoryFlag(state.activeStoryFlags, f)) {
         reasons.push({ kind: 'story', ref: f })
       }
     }
