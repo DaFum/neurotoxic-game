@@ -1444,13 +1444,15 @@ const runSingleSimulation = (scenario, seed) => {
       Math.round((100 - performanceScore) * (0.12 + rng() * 0.1))
     )
 
-    const financials = deriveFinancials({
-    currentGig: venue,
-    lastGigStats: {
+    const currentGigStats = {
       misses,
       hitRate: performanceScore / 100,
       peakHype: Math.round(performanceScore + rng() * 12)
-    },
+    };
+
+    const financials = deriveFinancials({
+    currentGig: venue,
+    lastGigStats: currentGigStats,
     perfScore: performanceScore,
     gigModifiers: getGigModifiers(
       state.band.inventory,
@@ -1486,11 +1488,7 @@ const runSingleSimulation = (scenario, seed) => {
     )
     state.band.inventory = depleteInventory(state.band.inventory, buyers)
 
-    maybeApplyPostPulse(state, rng, counters, venue, {
-      misses,
-      hitRate: performanceScore / 100,
-      peakHype: Math.round(performanceScore + rng() * 12)
-    }, state.activeEvent || null, performanceScore)
+    maybeApplyPostPulse(state, rng, counters, venue, currentGigStats, state.activeEvent || null, performanceScore)
 
     if (state.social.activeDeals && state.social.activeDeals.length > 0) {
       // Count payout before decrementing so the final gig's payout is captured
