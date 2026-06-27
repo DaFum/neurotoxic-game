@@ -272,14 +272,16 @@ test('stage utils', async t => {
         }
       }
 
-      // '://invalid' throws in new URL() and hits the catch block in _hasFileExtension
-      const texture = await loadTexture('://invalid')
+      try {
+        // '://invalid' throws in new URL() and hits the catch block in _hasFileExtension
+        const texture = await loadTexture('://invalid')
 
-      assert.ok(texture)
-      assert.ok(createdImage)
-      assert.equal(createdImage.src, '://invalid')
-
-      globalThis.Image = OriginalImage
+        assert.ok(texture)
+        assert.ok(createdImage)
+        assert.equal(createdImage.src, '://invalid')
+      } finally {
+        globalThis.Image = OriginalImage
+      }
     })
 
     await sub.test(
