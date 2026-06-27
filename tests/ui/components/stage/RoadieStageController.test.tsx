@@ -12,10 +12,10 @@ vi.mock('../../../../src/components/stage/stageRenderUtils', () => ({
 vi.mock('../../../../src/utils/errorHandler', () => ({
   handleError: vi.fn(),
   GameError: class extends Error {
-    context: unknown;
+    context: unknown
     constructor(message: string, options?: { context?: unknown }) {
       super(message)
-      this.context = options?.context;
+      this.context = options?.context
     }
   }
 }))
@@ -38,7 +38,11 @@ describe('RoadieStageController', () => {
     const error = new Error('Network failure')
     vi.mocked(stageRenderUtils.loadTextures).mockRejectedValueOnce(error)
 
-    const controller = createRoadieStageController(container)
+    const controller = createRoadieStageController({
+      container,
+      app: {} as unknown,
+      gameStateRef: { current: {} } as unknown
+    } as Parameters<typeof createRoadieStageController>[0])
     await controller.loadAssets()
 
     expect(errorHandler.handleError).toHaveBeenCalled()
