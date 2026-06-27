@@ -1159,6 +1159,7 @@ const calculatePerformanceScore = (state, venue, modifiers, rng) => {
   const rawScore = Math.max(0, score) * 150
   return {
     score: normalizePerformanceScore(rawScore),
+    rawScore,
     gigModifiers,
     physics
   }
@@ -1453,9 +1454,11 @@ const runSingleSimulation = (scenario, seed) => {
     )
 
     const currentGigStats = {
-      score: performanceScore * 100, // Scale to approximate raw rhythm points
-      accuracy: performanceScore, // Accuracy is a percentage (0-100)
+      score: perfResults.rawScore,
+      accuracy: performanceScore,
       misses,
+      maxCombo: Math.round(performanceScore),
+      combo: Math.round(performanceScore * 0.8),
       hitRate: performanceScore / 100,
       peakHype: Math.round(performanceScore + rng() * 12)
     };
