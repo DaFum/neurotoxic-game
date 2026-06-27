@@ -1485,7 +1485,7 @@ const runSingleSimulation = (scenario, seed) => {
   })
 
     // Standard post-gig adjustments
-    applyPostGigState(state, venue, performanceScore, financials ? financials : { net: 0, income: { total: 0 }, expenses: { total: 0 }, soldMerch: 0 }, rng, misses)
+    applyPostGigState(state, venue, performanceScore, financials ? financials : { net: 0, income: { total: 0, breakdown: [] }, expenses: { total: 0, breakdown: [] }, soldMerch: {} }, rng, misses)
 
     // Deplete merch inventory based on actual sold merch
     if (financials?.soldMerch) {
