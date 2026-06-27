@@ -1486,8 +1486,11 @@ const runSingleSimulation = (scenario, seed) => {
 
     // Deplete merch inventory based on actual sold merch
     if (financials?.soldMerch) {
-      for (const merchKey in financials.soldMerch) {
-        const soldAmount = Math.max(0, financials.soldMerch[merchKey] || 0)
+      if (!state.band.inventory) {
+        state.band.inventory = {}
+      }
+      for (const [merchKey, amount] of Object.entries(financials.soldMerch)) {
+        const soldAmount = Math.max(0, amount || 0)
         state.band.inventory[merchKey] = Math.max(
           0,
           (state.band.inventory[merchKey] || 0) - soldAmount
