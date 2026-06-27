@@ -15,7 +15,6 @@ import { getUnifiedUpgradeCatalog } from '../src/data/upgradeCatalog.js'
 import { eventEngine, resolveEventChoice } from '../src/utils/eventEngine/index.js'
 import { normalizeTraitMap } from '../src/utils/traitUtils.js'
 import {
-  calculateFuelCost,
   calculateGigFinancials,
   calculateKabelsalatMinigameResult,
   calculateRefuelCost,
@@ -1315,14 +1314,7 @@ const runSingleSimulation = (scenario, seed) => {
       state.band,
       assetModifiers
     )
-    const { fuelCost } = calculateFuelCost(
-      travel.dist,
-      state.player,
-      state.band,
-      assetModifiers
-    )
-    const safeFuelCost = Number.isFinite(fuelCost) ? fuelCost : 0
-    const totalTravelCost = travel.totalCost + safeFuelCost
+    const totalTravelCost = travel.totalCost
 
     state.player.money = clampPlayerMoney(state.player.money - totalTravelCost)
     totalTravelCostGigs += totalTravelCost
