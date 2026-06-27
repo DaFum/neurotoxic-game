@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import { StrictMode } from 'react'
 import { useKabelsalatGameEnd } from '../../src/scenes/kabelsalat/hooks/useKabelsalatGameEnd'
+import { logger } from '../../src/utils/logger'
+import * as errorHandler from '../../src/utils/errorHandler'
 
 const mockCompleteKabelsalatMinigame = vi.fn()
 const mockChangeScene = vi.fn()
@@ -20,6 +22,15 @@ vi.mock('../../src/context/GameState', () => ({
   useGameState: () => ({ ...mockGameState, ...mockGameActions }),
   useGameActions: () => mockGameActions,
   useGameSelector: selector => selector(mockGameState)
+}))
+
+vi.mock('../../src/utils/logger', () => ({
+  logger: { error: vi.fn() }
+}))
+
+vi.mock('../../src/utils/errorHandler', () => ({
+  handleError: vi.fn(),
+  StateError: class StateError extends Error {}
 }))
 
 describe('useKabelsalatGameEnd', () => {
@@ -115,6 +126,29 @@ describe('useKabelsalatGameEnd', () => {
       voidSurgesPurged: 0
     })
     expect(mockChangeScene).toHaveBeenCalledTimes(1)
+    expect(mockChangeScene).toHaveBeenCalledWith('GIG')
+  })
+
+  it('logs an error when import error occurs during error handling', async () => {
+    mockCompleteKabelsalatMinigame.mockImplementationOnce(() => {
+      throw new Error('sync minigame error')
+    })
+    errorHandler.handleError.mockImplementationOnce(() => {
+      throw new Error('handle error failure')
+    })
+
+    const { result } = renderHook(() => useKabelsalatGameEnd(false, false, 7))
+
+    result.current.forceAdvance(true)
+
+    await vi.runAllTimersAsync()
+
+    expect(logger.error).toHaveBeenCalledTimes(1)
+    expect(logger.error).toHaveBeenCalledWith(
+      'Kabelsalat',
+      'Failed to complete minigame (import error)',
+      expect.any(Error)
+    )
     expect(mockChangeScene).toHaveBeenCalledWith('GIG')
   })
 })
