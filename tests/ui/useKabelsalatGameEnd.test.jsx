@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { renderHook } from '@testing-library/react'
+import { renderHook, waitFor } from '@testing-library/react'
 import { StrictMode } from 'react'
 import { useKabelsalatGameEnd } from '../../src/scenes/kabelsalat/hooks/useKabelsalatGameEnd'
 import { logger } from '../../src/utils/logger'
@@ -130,10 +130,17 @@ describe('useKabelsalatGameEnd', () => {
   })
 
   it('logs an error when import error occurs during error handling', async () => {
+    // If fake timers are used, waitFor might timeout if it's waiting for microtasks/promises
+    // Vitest's vi.useFakeTimers() is set in beforeEach.
+    // For waitFor to work, it often needs real timers or advanced timer handling,
+    // but runAllTimersAsync is still better for promise resolution with fake timers.
+    // Let's use real timers for this specific test so waitFor behaves properly with promises.
+    vi.useRealTimers()
+
     mockCompleteKabelsalatMinigame.mockImplementationOnce(() => {
       throw new Error('sync minigame error')
     })
-    errorHandler.handleError.mockImplementationOnce(() => {
+    vi.mocked(errorHandler.handleError).mockImplementationOnce(() => {
       throw new Error('handle error failure')
     })
 
@@ -141,9 +148,10 @@ describe('useKabelsalatGameEnd', () => {
 
     result.current.forceAdvance(true)
 
-    await vi.runAllTimersAsync()
+    await waitFor(() => {
+      expect(logger.error).toHaveBeenCalledTimes(1)
+    })
 
-    expect(logger.error).toHaveBeenCalledTimes(1)
     expect(logger.error).toHaveBeenCalledWith(
       'Kabelsalat',
       'Failed to complete minigame (import error)',
