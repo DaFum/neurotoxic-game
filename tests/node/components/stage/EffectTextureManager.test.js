@@ -1,4 +1,4 @@
-import { test, mock, describe } from 'node:test'
+import { test, mock } from 'node:test'
 import assert from 'node:assert/strict'
 
 const mockLogger = {
