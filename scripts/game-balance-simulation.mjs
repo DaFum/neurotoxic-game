@@ -15,8 +15,7 @@ import { getUnifiedUpgradeCatalog } from '../src/data/upgradeCatalog.js'
 import { eventEngine, resolveEventChoice } from '../src/utils/eventEngine/index.js'
 import { normalizeTraitMap } from '../src/utils/traitUtils.js'
 import {
-  calculateGigFinancials,
-  calculateKabelsalatMinigameResult,
+    calculateKabelsalatMinigameResult,
   calculateRefuelCost,
   calculateRepairCost,
   calculateRoadieMinigameResult,
@@ -59,6 +58,10 @@ import {
   calculateContinueStats,
   calculatePerformanceScore as normalizePerformanceScore
 } from '../src/utils/postGig/index.js'
+import { deriveFinancials, derivePostOptions } from '../src/utils/postGig/derivations.js'
+import { calculatePostGigStateUpdates } from '../src/utils/postGig/socialResolution.js'
+import { processAssetTick, processCrowdfundTick, rollAssetRiskEvents, processLiabilityTick } from '../src/utils/assetTicks.js'
+
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -281,6 +284,44 @@ export const SCENARIOS = [
   },
   // ── Phase probes: fixed fame starting points, short runs ──────────────────
   {
+    id: 'no_social_probe',
+    name: 'No Social (Fame 0-50)',
+    description: 'A build that completely ignores social media.',
+    ticketDiscountChance: 0.1,
+    daysOverride: 75,
+    gigGapDays: 2,
+    assetStrategies: {
+      promo: 0,
+      merch: 0.1,
+      soundcheck: 0.1,
+      guestlist: 0.1
+    },
+    initialOverrides: {
+      player: { money: 500, fame: 0 },
+      band: { harmony: 80 },
+      social: { controversyLevel: 0, loyalty: 0, zealotry: 0 }
+    }
+  },
+  {
+    id: 'high_controversy_probe',
+    name: 'High Controversy',
+    description: 'Max controversy strategy.',
+    ticketDiscountChance: 0.1,
+    daysOverride: 75,
+    gigGapDays: 2,
+    assetStrategies: {
+      promo: 0.2,
+      merch: 0.2,
+      soundcheck: 0.1,
+      guestlist: 0.2
+    },
+    initialOverrides: {
+      player: { money: 500, fame: 0 },
+      band: { harmony: 80 },
+      social: { controversyLevel: 80, loyalty: 0, zealotry: 0 }
+    }
+  },
+  {
     id: 'early_game_probe',
     name: 'Early Game Probe (Fame 0–50)',
     description:
@@ -451,14 +492,14 @@ const simulateFameCatalogClear = (catalog, performanceScore) => {
 
 const getFameAuditVerdict = ({ gigsToBuyShopPlusLegacy }) => {
   if (gigsToBuyShopPlusLegacy > 30) {
-    return 'Fame-Gewinn ist zu niedrig fuer das Ziel von 20-30 guten Gigs bis 23.730 Fame.'
+    return 'Fame-Gewinn ist zu niedrig fuer das Ziel von 20-30 guten Gigs bis 24.390 Fame.'
   }
 
   if (gigsToBuyShopPlusLegacy < 20) {
-    return 'Fame-Gewinn ist zu hoch fuer das Ziel von 20-30 guten Gigs bis 23.730 Fame.'
+    return 'Fame-Gewinn ist zu hoch fuer das Ziel von 20-30 guten Gigs bis 24.390 Fame.'
   }
 
-  return 'Fame-Gewinn liegt im Zielkorridor von 20-30 guten Gigs bis 23.730 Fame.'
+  return 'Fame-Gewinn liegt im Zielkorridor von 20-30 guten Gigs bis 24.390 Fame.'
 }
 
 const buildFameBalanceAudit = () => {
@@ -602,11 +643,11 @@ const pickVenueForState = (state, rng) => {
 
 const calculateModifiers = (scenario, rng) => {
   const modifiers = {
-    promo: pickWeightedBool(scenario.modifierBias.promo, rng),
-    merch: pickWeightedBool(scenario.modifierBias.merch, rng),
-    catering: pickWeightedBool(scenario.modifierBias.catering, rng),
-    soundcheck: pickWeightedBool(scenario.modifierBias.soundcheck, rng),
-    guestlist: pickWeightedBool(scenario.modifierBias.guestlist, rng)
+    promo: pickWeightedBool(scenario.modifierBias?.promo ?? scenario.assetStrategies.promo, rng),
+    merch: pickWeightedBool(scenario.modifierBias?.merch ?? scenario.assetStrategies.merch, rng),
+    catering: pickWeightedBool(scenario.modifierBias?.catering ?? 0, rng),
+    soundcheck: pickWeightedBool(scenario.modifierBias?.soundcheck ?? scenario.assetStrategies.soundcheck, rng),
+    guestlist: pickWeightedBool(scenario.modifierBias?.guestlist ?? scenario.assetStrategies.guestlist, rng)
   }
 
   if (rng() < SIMULATION_CONSTANTS.randomModifierChance) {
@@ -729,26 +770,36 @@ const maybeActivateBrandDeal = (state, rng, counters) => {
   counters.brandDealsActivated += 1
 }
 
-const maybeApplyPostPulse = (state, rng, counters) => {
+const maybeApplyPostPulse = (state, rng, counters, currentGig, lastGigStats, activeEvent, performanceScore) => {
   if (rng() >= SIMULATION_CONSTANTS.postPulseChance) return
-  const post = POST_OPTIONS[Math.floor(rng() * POST_OPTIONS.length)]
+
+  const { options } = derivePostOptions({
+    currentGig,
+    lastGigStats,
+    player: state.player,
+    band: state.band,
+    social: state.social,
+    activeEvent
+  })
+
+  if (!options || options.length === 0) return
+
+  const post = options[Math.floor(rng() * options.length)]
   if (!post) return
 
-  const platformValues = Object.values(SOCIAL_PLATFORMS)
-  const platform = platformValues[Math.floor(rng() * platformValues.length)]
-  const multiplier = platform?.multiplier || 1
-  const reach = Math.round((120 + rng() * 360) * multiplier)
+  const { updatedSocial, nextMoney, newBand } = calculatePostGigStateUpdates({
+    option: post,
+    social: state.social,
+    player: state.player,
+    band: state.band,
+    lastGigStats,
+    currentGig,
+    secureRandomValue: rng()
+  })
 
-  const id = platform?.id || 'instagram'
-  state.social[id] = (state.social[id] || 0) + reach
-
-  // High-risk posts can raise controversy.
-  if ((post.id || '').includes('drama') || rng() < 0.15) {
-    state.social.controversyLevel = Math.min(
-      100,
-      (state.social.controversyLevel || 0) + 2
-    )
-  }
+  if (updatedSocial) state.social = { ...state.social, ...updatedSocial }
+  if (nextMoney !== undefined) state.player.money = nextMoney
+  if (newBand) state.band = newBand
 
   counters.postPulses += 1
 }
@@ -1232,7 +1283,16 @@ const runSingleSimulation = (scenario, seed) => {
     if (day === 60) moneyAtDay60 = state.player.money
 
     const moneyBeforeDay = state.player.money
-    const updates = calculateDailyUpdates(state, rng)
+    let preState = state;
+    preState = processAssetTick(preState) || preState;
+    const liabilityResult = processLiabilityTick(preState);
+    preState = liabilityResult.state || preState;
+    preState = processCrowdfundTick(preState) || preState;
+    const assetCount = preState.assets ? preState.assets.length : 0;
+    const riskResult = rollAssetRiskEvents(preState, Array.from({length: assetCount * 2 + 10}, () => rng()), 0);
+    preState = riskResult.state || preState;
+    const updates = calculateDailyUpdates(preState, rng)
+    state = preState;
     state = {
       ...state,
       player: { ...state.player, ...updates.player },
@@ -1280,7 +1340,6 @@ const runSingleSimulation = (scenario, seed) => {
     if (!hadSponsorBeforeActivation && hasActiveSponsorship(state.social)) {
       counters.sponsorSignings += 1
     }
-    maybeApplyPostPulse(state, rng, counters)
     maybeApplyContrabandDrop(state, rng, counters)
     maybeMaintainVanAndResources(state, scenario, rng, counters)
     maybeBuyCatalogUpgrade(state, rng, counters)
@@ -1385,40 +1444,39 @@ const runSingleSimulation = (scenario, seed) => {
       Math.round((100 - performanceScore) * (0.12 + rng() * 0.1))
     )
 
-    const financials = calculateGigFinancials(
-      {
-        gigData: venue,
-        performanceScore,
-        modifiers,
-        bandInventory: state.band.inventory,
-        playerState: state.player,
-        gigStats: {
-          misses,
-          hitRate: performanceScore / 100,
-          peakHype: Math.round(performanceScore + rng() * 12)
-        },
-        context: {
-          social: state.social,
-          discountedTickets: rng() < scenario.ticketDiscountChance,
-          controversyLevel: state.social.controversyLevel,
-          loyalty: state.social.loyalty,
-          zealotry: state.social.zealotry,
-          instagramFollowers: state.social.instagram,
-          regionRep: Math.round(
-            (state.player.fame - state.social.controversyLevel) * 0.4
-          ),
-          daysSinceLastGig:
-            state.player.day - (state.social.lastGigDay ?? state.player.day),
-          lastGigDifficulty: state.social.lastGigDifficulty ?? null
-        }
-      },
-      assetModifiers
-    )
+    const currentGigStats = {
+      misses,
+      hitRate: performanceScore / 100,
+      peakHype: Math.round(performanceScore + rng() * 12)
+    };
+
+    const financials = deriveFinancials({
+    currentGig: venue,
+    lastGigStats: currentGigStats,
+    perfScore: performanceScore,
+    gigModifiers: getGigModifiers(
+      state.band.inventory,
+      scenario.assetStrategies
+    ),
+    bandInventory: state.band.inventory,
+    bandMerchPrices: state.band.merchPrices || {},
+    bandGigModifier: state.band.gigModifier,
+    player: state.player,
+    social: state.social,
+    reputationByRegion: {},
+    activeStoryFlags: scenario.ticketDiscountChance > rng() ? ['discounted_tickets_active'] : [],
+    gigContext: {
+      daysSinceLastGig: state.player.day - (state.social.lastGigDay ?? state.player.day),
+      lastGigDifficulty: state.social.lastGigDifficulty ?? null
+    },
+    cityTraits: [],
+    assetModifiers: getActiveAssetModifiers(state.assets || [])
+  })
 
     const previousFame = state.player.fame
 
     // Standard post-gig adjustments
-    applyPostGigState(state, venue, performanceScore, financials, rng, misses)
+    applyPostGigState(state, venue, performanceScore, financials ? financials : { net: 0, income: { total: 0 }, expenses: { total: 0 }, soldMerch: 0 }, rng, misses)
 
     // Deplete merch inventory based on estimated buyers this gig
     const buyers = estimateMerchBuyers(
@@ -1429,6 +1487,8 @@ const runSingleSimulation = (scenario, seed) => {
       previousFame
     )
     state.band.inventory = depleteInventory(state.band.inventory, buyers)
+
+    maybeApplyPostPulse(state, rng, counters, venue, currentGigStats, state.activeEvent || null, performanceScore)
 
     if (state.social.activeDeals && state.social.activeDeals.length > 0) {
       // Count payout before decrementing so the final gig's payout is captured
@@ -1442,8 +1502,9 @@ const runSingleSimulation = (scenario, seed) => {
 
     currentNode = venue
     counters.gigsPlayed += 1
-    totalGigNet += financials.net
-    if (financials.net >= MAX_GIG_NET) counters.gigCapHits += 1
+    const gigNet = (financials ? financials.net : 0);
+    totalGigNet += gigNet
+    if (gigNet >= MAX_GIG_NET) counters.gigCapHits += 1
     peakMoney = Math.max(peakMoney, state.player.money)
     lowestMoney = Math.min(lowestMoney, state.player.money)
 
@@ -1472,7 +1533,7 @@ const runSingleSimulation = (scenario, seed) => {
       venueId: venue.id,
       venueDiff: venue.diff,
       performanceScore,
-      net: financials.net,
+      net: gigNet,
       travelCost: totalTravelCost,
       misses,
       modifierEffects: gigModifiers.activeEffects.length,
@@ -1492,7 +1553,7 @@ const runSingleSimulation = (scenario, seed) => {
     if (
       shouldTriggerBankruptcy(
         state.player.money,
-        financials.net,
+        gigNet,
         getTotalDailyObligations(state)
       )
     ) {
@@ -1749,7 +1810,7 @@ const getScenarioInsight = summary => {
     return '⚠️ Harmonie zu instabil – mehr Recovery/Trade-offs in Events einbauen.'
   }
 
-  return '✅ Szenario liegt im robusten Simulationskorridor.'
+  return summary.kpisPassed ? '✅ Szenario liegt im robusten Simulationskorridor.' : '⚠️ KPI-Verstöße vorhanden – siehe Health Check.'
 }
 
 const getEconomyInsight = s => {
@@ -2316,7 +2377,7 @@ const buildMarkdownReport = payload => {
       label: 'Höchstes Ø Endfame',
       key: s => s.avgFinalFame,
       fmt: v => String(v),
-      bewertung: 'Festival-Fokus priorisiert Fame über kurzfristige Einnahmen.'
+      bewertung: 'Fokus auf Touring und Performance maximiert den Fame-Aufbau.'
     },
     {
       label: 'Höchste Insolvenzrate',
@@ -2384,7 +2445,7 @@ const buildMarkdownReport = payload => {
   }
   lines.push('')
 
-  if (payload.regressionComparison?.length) {
+  if (payload.regressionComparison?.length && payload.regressionComparison.some(s => Object.values(s.metrics).some(m => m.delta !== 0))) {
     lines.push('## Rebalance-Regressionsvergleich (Alt vs Neu)')
     lines.push('')
     lines.push(
@@ -2512,6 +2573,8 @@ export const runSimulationSuite = async (options = {}) => {
     }
 
     const summary = summarizeScenario(runs)
+    const kpis = checkKpi(scenario.id, summary)
+    summary.kpisPassed = !kpis || kpis.every(c => c.pass)
     results.push({
       id: scenario.id,
       name: scenario.name,
