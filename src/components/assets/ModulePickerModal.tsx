@@ -62,11 +62,6 @@ const formatLockReason = (
   }
 }
 
-/**
- * Presents installable modules for a selected asset slot.
- * @param props - Asset, slot id, modal state, and close handler for module installation.
- */
-
 interface InstalledModuleCardProps {
   assetId: string
   slotId: string
@@ -287,6 +282,16 @@ const AvailableModuleCard = memo(
 )
 AvailableModuleCard.displayName = 'AvailableModuleCard'
 
+/**
+ * Presents installable modules for a selected asset slot.
+ *
+ * @remarks
+ * Evaluates available modules against player state (fame, money, story flags, etc.)
+ * and slot constraints to present valid installation or removal options.
+ *
+ * @param props - Contains the target asset, the specific slot ID, modal visibility state, and close handler.
+ * @returns A modal component containing the module selection interface, or null if the slot is invalid.
+ */
 export const ModulePickerModal = memo(
   ({ asset, slotId, isOpen, onClose }: Props) => {
     const { t, i18n } = useTranslation(['assets'])

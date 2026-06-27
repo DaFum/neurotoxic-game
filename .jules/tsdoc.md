@@ -24,3 +24,4 @@
 | 2026-06-24        | src/components/hud/ToxicModeFlash.tsx         | ToxicModeFlashProps, ToxicModeFlash                                                                                                                      |
 | 2026-06-25        | src/components/hud/PauseButton.tsx            | PauseButtonProps, PauseButton                                                                                                                            |
 | 2026-06-26        | src/scenes/GameOver.tsx                       | GameOver                                                                                                                                                 |
+| 2026-06-27 | src/components/assets/ModulePickerModal.tsx | ModulePickerModal |
