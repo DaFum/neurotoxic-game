@@ -85,7 +85,7 @@ export const buildSongChartDensity = (
 
   const result = new Array<ChartDensityBar>(len)
   for (let index = 0; index < len; index++) {
-    const count = counts[index] as number
+    const count = counts[index] ?? 0
     result[index] = {
       timestamp: (index / safeBucketCount) * duration,
       count,
