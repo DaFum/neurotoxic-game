@@ -211,23 +211,34 @@ export const generateBrandOffers = (
         )
       : 0
 
-  let top1: PoolEntry | null = null; let score1 = -Infinity;
-  let top2: PoolEntry | null = null; let score2 = -Infinity;
-  let top3: PoolEntry | null = null; let score3 = -Infinity;
+  let top1: PoolEntry | null = null
+  let score1 = -Infinity
+  let top2: PoolEntry | null = null
+  let score2 = -Infinity
+  let top3: PoolEntry | null = null
+  let score3 = -Infinity
 
   for (let i = 0, len = pool.length; i < len; i++) {
-    const entry = pool[i];
-    const score = scoreEntry(entry, gameState, rivalPower, rng);
+    const entry = pool[i]
+    if (!entry) continue
+
+    const score = scoreEntry(entry, gameState, rivalPower, rng)
 
     if (score > score1) {
-      top3 = top2; score3 = score2;
-      top2 = top1; score2 = score1;
-      top1 = entry; score1 = score;
+      top3 = top2
+      score3 = score2
+      top2 = top1
+      score2 = score1
+      top1 = entry
+      score1 = score
     } else if (score > score2) {
-      top3 = top2; score3 = score2;
-      top2 = entry; score2 = score;
+      top3 = top2
+      score3 = score2
+      top2 = entry
+      score2 = score
     } else if (score > score3) {
-      top3 = entry; score3 = score;
+      top3 = entry
+      score3 = score
     }
   }
 
@@ -237,10 +248,10 @@ export const generateBrandOffers = (
   // never duplicate offers — duplicate ids would collide on the React key
   // in `DealsPhase`, on the negotiation map (`negotiatedDeals[id]`), and
   // on the i18n + canonical-name lookup in `brandDealI18n`.
-  const picked: PoolEntry[] = [];
-  if (top1) picked.push(top1);
-  if (top2) picked.push(top2);
-  if (top3) picked.push(top3);
+  const picked: PoolEntry[] = []
+  if (top1) picked.push(top1)
+  if (top2) picked.push(top2)
+  if (top3) picked.push(top3)
 
   return picked.map(entry =>
     buildBrandOffer(entry.deal, {
