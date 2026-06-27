@@ -659,10 +659,13 @@ export const applyUnlockHQ = (
             mood: clampMemberMood(finiteNumberOr(m.mood, 0) + 5)
           })
       }
-      const members = band.members ?? []
+      const members = band?.members ?? []
+      const len = members.length
       const transformedMembers: BandMember[] = []
-      for (let i = 0, len = members.length; i < len; i++) {
-        transformedMembers.push(transform(members[i]))
+      for (let i = 0; i < len; i++) {
+        const member = members[i]
+        if (!member) continue
+        transformedMembers.push(transform(member))
       }
       nextBandPatch = { ...(nextBandPatch ?? {}), members: transformedMembers }
       break
