@@ -1453,8 +1453,8 @@ const runSingleSimulation = (scenario, seed) => {
     )
 
     const currentGigStats = {
-      score: performanceScore,
-      accuracy: performanceScore / 100,
+      score: performanceScore * 100, // Scale to approximate raw rhythm points
+      accuracy: performanceScore, // Accuracy is a percentage (0-100)
       misses,
       hitRate: performanceScore / 100,
       peakHype: Math.round(performanceScore + rng() * 12)
