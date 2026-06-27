@@ -290,6 +290,8 @@ export const SCENARIOS = [
     ticketDiscountChance: 0.1,
     daysOverride: 75,
     gigGapDays: 2,
+    socialStrategy: 'none',
+    brandDealsEnabled: false,
     assetStrategies: {
       promo: 0,
       merch: 0.1,
@@ -771,7 +773,7 @@ const maybeActivateBrandDeal = (state, rng, counters) => {
 }
 
 const maybeApplyPostPulse = (state, rng, counters, currentGig, lastGigStats, activeEvent, performanceScore) => {
-  if (rng() >= SIMULATION_CONSTANTS.postPulseChance) return
+  if (rng() >= SIMULATION_CONSTANTS.postPulseChance) return false
 
   const { options } = derivePostOptions({
     currentGig,
@@ -782,26 +784,28 @@ const maybeApplyPostPulse = (state, rng, counters, currentGig, lastGigStats, act
     activeEvent
   })
 
-  if (!options || options.length === 0) return
+  if (!options || options.length === 0) return false
 
   const post = options[Math.floor(rng() * options.length)]
-  if (!post) return
+  if (!post) return false
 
-  const { updatedSocial, nextMoney, newBand } = calculatePostGigStateUpdates({
+  const { updatedSocial, nextMoney, newBand, hasBandUpdates } = calculatePostGigStateUpdates({
     option: post,
     social: state.social,
     player: state.player,
     band: state.band,
     lastGigStats,
     currentGig,
+    perfScore: performanceScore,
     secureRandomValue: rng()
   })
 
   if (updatedSocial) state.social = { ...state.social, ...updatedSocial }
   if (nextMoney !== undefined) state.player.money = nextMoney
-  if (newBand) state.band = newBand
+  if (hasBandUpdates && newBand) state.band = newBand
 
   counters.postPulses += 1
+  return true
 }
 
 const maybeApplyContrabandDrop = (state, rng, counters) => {
@@ -903,6 +907,7 @@ const maybeBuyCatalogUpgrade = (state, rng, counters) => {
   applyCatalogPurchase(state, candidate, counters)
 }
 
+// eslint-disable-next-line no-unused-vars
 const estimateMerchBuyers = (
   venue,
   performanceScore,
@@ -938,6 +943,7 @@ const estimateMerchBuyers = (
   return Math.min(Math.floor(ticketsSold * buyRate), totalInventory)
 }
 
+// eslint-disable-next-line no-unused-vars
 const depleteInventory = (inventory, buyers) => {
   if (!inventory || buyers <= 0) return inventory
   const skus = ['shirts', 'hoodies', 'cds', 'patches', 'vinyl']
@@ -1336,7 +1342,9 @@ const runSingleSimulation = (scenario, seed) => {
       applyWorldEvents(state, scenario, rng, counters, shouldPlayGig)
     maybeShiftSocialTrend(state, rng, counters)
     const hadSponsorBeforeActivation = hasActiveSponsorship(state.social)
-    maybeActivateBrandDeal(state, rng, counters)
+    if (scenario.brandDealsEnabled !== false) {
+      maybeActivateBrandDeal(state, rng, counters)
+    }
     if (!hadSponsorBeforeActivation && hasActiveSponsorship(state.social)) {
       counters.sponsorSignings += 1
     }
@@ -1445,6 +1453,8 @@ const runSingleSimulation = (scenario, seed) => {
     )
 
     const currentGigStats = {
+      score: performanceScore,
+      accuracy: performanceScore / 100,
       misses,
       hitRate: performanceScore / 100,
       peakHype: Math.round(performanceScore + rng() * 12)
@@ -1454,47 +1464,45 @@ const runSingleSimulation = (scenario, seed) => {
     currentGig: venue,
     lastGigStats: currentGigStats,
     perfScore: performanceScore,
-    gigModifiers: getGigModifiers(
-      state.band.inventory,
-      scenario.assetStrategies
-    ),
+    gigModifiers: modifiers,
     bandInventory: state.band.inventory,
     bandMerchPrices: state.band.merchPrices || {},
     bandGigModifier: state.band.gigModifier,
     player: state.player,
     social: state.social,
-    reputationByRegion: {},
+    reputationByRegion: state.reputationByRegion ?? {},
     activeStoryFlags: scenario.ticketDiscountChance > rng() ? ['discounted_tickets_active'] : [],
     gigContext: {
       daysSinceLastGig: state.player.day - (state.social.lastGigDay ?? state.player.day),
       lastGigDifficulty: state.social.lastGigDifficulty ?? null
     },
+    // Note: Region/City effects in Balance-Run are not fully simulated here.
     cityTraits: [],
     assetModifiers: getActiveAssetModifiers(state.assets || [])
   })
 
-    const previousFame = state.player.fame
-
     // Standard post-gig adjustments
     applyPostGigState(state, venue, performanceScore, financials ? financials : { net: 0, income: { total: 0 }, expenses: { total: 0 }, soldMerch: 0 }, rng, misses)
 
-    // Deplete merch inventory based on estimated buyers this gig
-    const buyers = estimateMerchBuyers(
-      venue,
-      performanceScore,
-      modifiers,
-      state,
-      previousFame
-    )
-    state.band.inventory = depleteInventory(state.band.inventory, buyers)
-
-    maybeApplyPostPulse(state, rng, counters, venue, currentGigStats, state.activeEvent || null, performanceScore)
-
-    if (state.social.activeDeals && state.social.activeDeals.length > 0) {
-      // Count payout before decrementing so the final gig's payout is captured
-      if (hasActiveSponsorship(state.social)) {
-        counters.sponsorPayouts += 1
+    // Deplete merch inventory based on actual sold merch
+    if (financials?.soldMerch) {
+      for (const merchKey in financials.soldMerch) {
+        const soldAmount = Math.max(0, financials.soldMerch[merchKey] || 0)
+        state.band.inventory[merchKey] = Math.max(
+          0,
+          (state.band.inventory[merchKey] || 0) - soldAmount
+        )
       }
+    }
+
+    const sponsorActiveBeforePostPulse = hasActiveSponsorship(state.social)
+    const postPulseApplied = scenario.socialStrategy !== 'none' && maybeApplyPostPulse(state, rng, counters, venue, currentGigStats, state.activeEvent || null, performanceScore)
+
+    if (sponsorActiveBeforePostPulse) {
+      counters.sponsorPayouts += 1
+    }
+
+    if (!postPulseApplied && state.social.activeDeals?.length > 0) {
       state.social.activeDeals = state.social.activeDeals
         .map(d => ({ ...d, remainingGigs: d.remainingGigs - 1 }))
         .filter(d => d.remainingGigs > 0)
