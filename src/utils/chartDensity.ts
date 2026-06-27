@@ -74,12 +74,25 @@ export const buildSongChartDensity = (
     if (current !== undefined) counts[index] = current + 1
   }
 
-  const peak = Math.max(1, ...counts)
-  return counts.map((count, index) => ({
-    timestamp: (index / safeBucketCount) * duration,
-    count,
-    intensity: count / peak
-  }))
+  let peak = 1
+  const len = counts.length
+  for (let i = 0; i < len; i++) {
+    const current = counts[i]
+    if (current !== undefined && current > peak) {
+      peak = current
+    }
+  }
+
+  const result = new Array<ChartDensityBar>(len)
+  for (let index = 0; index < len; index++) {
+    const count = counts[index] ?? 0
+    result[index] = {
+      timestamp: (index / safeBucketCount) * duration,
+      count,
+      intensity: count / peak
+    }
+  }
+  return result
 }
 
 /**
