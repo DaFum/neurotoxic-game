@@ -12,8 +12,8 @@ vi.mock('../../../../src/components/stage/stageRenderUtils', () => ({
 vi.mock('../../../../src/utils/errorHandler', () => ({
   handleError: vi.fn(),
   GameError: class extends Error {
-    context: any;
-    constructor(message: string, options: any) {
+    context: unknown;
+    constructor(message: string, options?: { context?: unknown }) {
       super(message)
       this.context = options?.context;
     }
