@@ -1457,8 +1457,6 @@ const runSingleSimulation = (scenario, seed) => {
       score: perfResults.rawScore,
       accuracy: performanceScore,
       misses,
-      maxCombo: Math.round(performanceScore),
-      combo: Math.round(performanceScore * 0.8),
       hitRate: performanceScore / 100,
       peakHype: Math.round(performanceScore + rng() * 12)
     };
