@@ -1,6 +1,6 @@
 # Game Balance Simulation – Analyse
 
-Erstellt am: 2026-06-27T06:46:54.732Z
+Erstellt am: 2026-06-27T08:09:02.789Z
 
 ## Simulationseinstellungen
 
