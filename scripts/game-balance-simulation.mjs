@@ -1288,7 +1288,7 @@ const runSingleSimulation = (scenario, seed) => {
     const liabilityResult = processLiabilityTick(preState);
     preState = liabilityResult.state || preState;
     preState = processCrowdfundTick(preState) || preState;
-    const riskResult = rollAssetRiskEvents(preState, [], 0);
+    const riskResult = rollAssetRiskEvents(preState, Array.from({length: 300}, () => rng()), 0);
     preState = riskResult.state || preState;
     const updates = calculateDailyUpdates(preState, rng)
     state = preState;
