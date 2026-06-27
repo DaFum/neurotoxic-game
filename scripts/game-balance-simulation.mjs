@@ -34,7 +34,10 @@ import {
   calculateGigPhysics,
   getGigModifiers
 } from '../src/utils/simulationUtils.js'
-import { getTotalDailyObligations, getActiveAssetModifiers } from '../src/utils/assetSelectors/index.js'
+import {
+  getActiveAssetModifiers,
+  getTotalDailyObligations
+} from '../src/utils/assetSelectors/index.js'
 import {
   clampBandHarmony,
   clampMemberMood,
@@ -1241,7 +1244,13 @@ const runSingleSimulation = (scenario, seed) => {
     // Bankruptcy from daily costs draining the player to zero
     const dailyNetChange = state.player.money - moneyBeforeDay
     const dailyObligations = getTotalDailyObligations(state)
-    if (shouldTriggerBankruptcy(state.player.money, dailyNetChange, dailyObligations)) {
+    if (
+      shouldTriggerBankruptcy(
+        state.player.money,
+        dailyNetChange,
+        dailyObligations
+      )
+    ) {
       counters.bankrupt = true
       break
     }
@@ -1298,16 +1307,19 @@ const runSingleSimulation = (scenario, seed) => {
     }
 
     const venue = pickVenueForState(state, rng)
+    const assetModifiers = getActiveAssetModifiers(state.assets || [])
     const travel = calculateTravelExpenses(
       venue,
       currentNode,
       state.player,
-      state.band
+      state.band,
+      assetModifiers
     )
     const { fuelCost } = calculateFuelCost(
       travel.dist,
       state.player,
-      state.band
+      state.band,
+      assetModifiers
     )
     const safeFuelCost = Number.isFinite(fuelCost) ? fuelCost : 0
     const totalTravelCost = travel.totalCost + safeFuelCost
@@ -1349,7 +1361,13 @@ const runSingleSimulation = (scenario, seed) => {
         cancelled: true
       })
 
-      if (shouldTriggerBankruptcy(state.player.money, 0, getTotalDailyObligations(state))) {
+      if (
+        shouldTriggerBankruptcy(
+          state.player.money,
+          0,
+          getTotalDailyObligations(state)
+        )
+      ) {
         counters.bankrupt = true
         break
       }
@@ -1374,8 +1392,6 @@ const runSingleSimulation = (scenario, seed) => {
       0,
       Math.round((100 - performanceScore) * (0.12 + rng() * 0.1))
     )
-
-    const assetModifiers = getActiveAssetModifiers(state.assets || [])
 
     const financials = calculateGigFinancials(
       {
@@ -1481,7 +1497,13 @@ const runSingleSimulation = (scenario, seed) => {
       sponsorActive: hasActiveSponsorship(state.social)
     })
 
-    if (shouldTriggerBankruptcy(state.player.money, financials.net, getTotalDailyObligations(state))) {
+    if (
+      shouldTriggerBankruptcy(
+        state.player.money,
+        financials.net,
+        getTotalDailyObligations(state)
+      )
+    ) {
       counters.bankrupt = true
       break
     }
