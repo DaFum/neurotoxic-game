@@ -770,7 +770,7 @@ const maybeActivateBrandDeal = (state, rng, counters) => {
   counters.brandDealsActivated += 1
 }
 
-const maybeApplyPostPulse = (state, rng, counters, currentGig, lastGigStats, activeEvent) => {
+const maybeApplyPostPulse = (state, rng, counters, currentGig, lastGigStats, activeEvent, performanceScore) => {
   if (rng() >= SIMULATION_CONSTANTS.postPulseChance) return
 
   const { options } = derivePostOptions({
@@ -797,7 +797,7 @@ const maybeApplyPostPulse = (state, rng, counters, currentGig, lastGigStats, act
     secureRandomValue: rng()
   })
 
-  if (updatedSocial) state.social = updatedSocial
+  if (updatedSocial) state.social = { ...state.social, ...updatedSocial }
   if (nextMoney !== undefined) state.player.money = nextMoney
   if (newBand) state.band = newBand
 
@@ -1288,7 +1288,8 @@ const runSingleSimulation = (scenario, seed) => {
     const liabilityResult = processLiabilityTick(preState);
     preState = liabilityResult.state || preState;
     preState = processCrowdfundTick(preState) || preState;
-    const riskResult = rollAssetRiskEvents(preState, Array.from({length: 300}, () => rng()), 0);
+    const assetCount = preState.assets ? preState.assets.length : 0;
+    const riskResult = rollAssetRiskEvents(preState, Array.from({length: assetCount * 2 + 10}, () => rng()), 0);
     preState = riskResult.state || preState;
     const updates = calculateDailyUpdates(preState, rng)
     state = preState;
@@ -1339,7 +1340,6 @@ const runSingleSimulation = (scenario, seed) => {
     if (!hadSponsorBeforeActivation && hasActiveSponsorship(state.social)) {
       counters.sponsorSignings += 1
     }
-    maybeApplyPostPulse(state, rng, counters, state.currentGig || null, state.lastGigStats || null, state.activeEvent || null)
     maybeApplyContrabandDrop(state, rng, counters)
     maybeMaintainVanAndResources(state, scenario, rng, counters)
     maybeBuyCatalogUpgrade(state, rng, counters)
@@ -1486,6 +1486,12 @@ const runSingleSimulation = (scenario, seed) => {
     )
     state.band.inventory = depleteInventory(state.band.inventory, buyers)
 
+    maybeApplyPostPulse(state, rng, counters, venue, {
+      misses,
+      hitRate: performanceScore / 100,
+      peakHype: Math.round(performanceScore + rng() * 12)
+    }, state.activeEvent || null, performanceScore)
+
     if (state.social.activeDeals && state.social.activeDeals.length > 0) {
       // Count payout before decrementing so the final gig's payout is captured
       if (hasActiveSponsorship(state.social)) {
@@ -1549,7 +1555,7 @@ const runSingleSimulation = (scenario, seed) => {
     if (
       shouldTriggerBankruptcy(
         state.player.money,
-        financials ? financials.net : 0,
+        gigNet,
         getTotalDailyObligations(state)
       )
     ) {
