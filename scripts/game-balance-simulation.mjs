@@ -60,10 +60,7 @@ import {
 } from '../src/utils/postGig/index.js'
 import { deriveFinancials, derivePostOptions } from '../src/utils/postGig/derivations.js'
 import { calculatePostGigStateUpdates } from '../src/utils/postGig/socialResolution.js'
-import { getAcceptDealMoneyUpdate, getAcceptDealBandUpdateFactory, getAcceptDealSocialUpdateFactory } from '../src/utils/postGig/dealHandlers.js'
 import { processAssetTick, processCrowdfundTick, rollAssetRiskEvents, processLiabilityTick } from '../src/utils/assetTicks.js'
-import { handleNodeArrival } from '../src/utils/arrivalUtils.js'
-import { calculateTravelCostsAndImpact } from '../src/utils/travelUtils.js'
 
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
 
@@ -646,11 +643,11 @@ const pickVenueForState = (state, rng) => {
 
 const calculateModifiers = (scenario, rng) => {
   const modifiers = {
-    promo: pickWeightedBool(scenario.modifierBias.promo, rng),
-    merch: pickWeightedBool(scenario.modifierBias.merch, rng),
-    catering: pickWeightedBool(scenario.modifierBias.catering, rng),
-    soundcheck: pickWeightedBool(scenario.modifierBias.soundcheck, rng),
-    guestlist: pickWeightedBool(scenario.modifierBias.guestlist, rng)
+    promo: pickWeightedBool(scenario.modifierBias?.promo ?? scenario.assetStrategies.promo, rng),
+    merch: pickWeightedBool(scenario.modifierBias?.merch ?? scenario.assetStrategies.merch, rng),
+    catering: pickWeightedBool(scenario.modifierBias?.catering ?? 0, rng),
+    soundcheck: pickWeightedBool(scenario.modifierBias?.soundcheck ?? scenario.assetStrategies.soundcheck, rng),
+    guestlist: pickWeightedBool(scenario.modifierBias?.guestlist ?? scenario.assetStrategies.guestlist, rng)
   }
 
   if (rng() < SIMULATION_CONSTANTS.randomModifierChance) {
@@ -790,17 +787,19 @@ const maybeApplyPostPulse = (state, rng, counters, currentGig, lastGigStats, act
   const post = options[Math.floor(rng() * options.length)]
   if (!post) return
 
-  const updates = calculatePostGigStateUpdates({
-    post,
+  const { updatedSocial, nextMoney, newBand } = calculatePostGigStateUpdates({
+    option: post,
     social: state.social,
     player: state.player,
     band: state.band,
-    rngValue: rng()
+    lastGigStats,
+    currentGig,
+    secureRandomValue: rng()
   })
 
-  state.social = { ...state.social, ...updates.social }
-  if (updates.player) state.player = { ...state.player, ...updates.player }
-  if (updates.band) state.band = { ...state.band, ...updates.band }
+  if (updatedSocial) state.social = updatedSocial
+  if (nextMoney !== undefined) state.player.money = nextMoney
+  if (newBand) state.band = newBand
 
   counters.postPulses += 1
 }
@@ -1336,10 +1335,7 @@ const runSingleSimulation = (scenario, seed) => {
       applyWorldEvents(state, scenario, rng, counters, shouldPlayGig)
     maybeShiftSocialTrend(state, rng, counters)
     const hadSponsorBeforeActivation = hasActiveSponsorship(state.social)
-    const availableDeals = BRAND_DEALS.filter(d => d.requirement?.platform && state.social[d.requirement.platform] >= (d.requirement.minFollowers || 0))
-    if (availableDeals.length > 0) {
-      maybeActivateBrandDeal(state, availableDeals[Math.floor(rng() * availableDeals.length)], counters)
-    }
+    maybeActivateBrandDeal(state, rng, counters)
     if (!hadSponsorBeforeActivation && hasActiveSponsorship(state.social)) {
       counters.sponsorSignings += 1
     }
@@ -1449,8 +1445,12 @@ const runSingleSimulation = (scenario, seed) => {
     )
 
     const financials = deriveFinancials({
-    currentGig: { venue: venue.id },
-    lastGigStats: state.lastGigStats || null,
+    currentGig: venue,
+    lastGigStats: {
+      misses,
+      hitRate: performanceScore / 100,
+      peakHype: Math.round(performanceScore + rng() * 12)
+    },
     perfScore: performanceScore,
     gigModifiers: getGigModifiers(
       state.band.inventory,
@@ -1462,8 +1462,11 @@ const runSingleSimulation = (scenario, seed) => {
     player: state.player,
     social: state.social,
     reputationByRegion: {},
-    activeStoryFlags: scenario.ticketDiscountChance > rng() ? ['TICKET_DISCOUNT'] : [],
-    gigContext: {},
+    activeStoryFlags: scenario.ticketDiscountChance > rng() ? ['discounted_tickets_active'] : [],
+    gigContext: {
+      daysSinceLastGig: state.player.day - (state.social.lastGigDay ?? state.player.day),
+      lastGigDifficulty: state.social.lastGigDifficulty ?? null
+    },
     cityTraits: [],
     assetModifiers: getActiveAssetModifiers(state.assets || [])
   })
@@ -1471,7 +1474,7 @@ const runSingleSimulation = (scenario, seed) => {
     const previousFame = state.player.fame
 
     // Standard post-gig adjustments
-    applyPostGigState(state, venue, performanceScore, financials ? (financials.financials || financials) : { net: 0, income: { total: 0 }, expenses: { total: 0 }, soldMerch: 0 }, rng, misses)
+    applyPostGigState(state, venue, performanceScore, financials ? financials : { net: 0, income: { total: 0 }, expenses: { total: 0 }, soldMerch: 0 }, rng, misses)
 
     // Deplete merch inventory based on estimated buyers this gig
     const buyers = estimateMerchBuyers(
@@ -1495,8 +1498,9 @@ const runSingleSimulation = (scenario, seed) => {
 
     currentNode = venue
     counters.gigsPlayed += 1
-    totalGigNet += (financials ? (financials.financials ? financials.financials.net : financials.net) : 0)
-    if ((financials ? (financials.financials ? financials.financials.net : financials.net) : 0) >= MAX_GIG_NET) counters.gigCapHits += 1
+    const gigNet = (financials ? financials.net : 0);
+    totalGigNet += gigNet
+    if (gigNet >= MAX_GIG_NET) counters.gigCapHits += 1
     peakMoney = Math.max(peakMoney, state.player.money)
     lowestMoney = Math.min(lowestMoney, state.player.money)
 
@@ -1525,7 +1529,7 @@ const runSingleSimulation = (scenario, seed) => {
       venueId: venue.id,
       venueDiff: venue.diff,
       performanceScore,
-      net: (financials ? (financials.financials ? financials.financials.net : financials.net) : 0),
+      net: gigNet,
       travelCost: totalTravelCost,
       misses,
       modifierEffects: gigModifiers.activeEffects.length,
@@ -1545,7 +1549,7 @@ const runSingleSimulation = (scenario, seed) => {
     if (
       shouldTriggerBankruptcy(
         state.player.money,
-        financials.net,
+        financials ? financials.net : 0,
         getTotalDailyObligations(state)
       )
     ) {
