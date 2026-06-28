@@ -13,7 +13,8 @@ export type CancelButtonProps = Omit<
 /**
  * Renders a standardized cancel button using Brutalist UI aesthetics.
  *
- * @param props - The component properties.
+ * @param className - Additional CSS class names to apply to the button.
+ * @param rest - Remaining properties passed to the underlying ActionButton.
  * @returns A localized cancel button element.
  */
 export const CancelButton = ({
