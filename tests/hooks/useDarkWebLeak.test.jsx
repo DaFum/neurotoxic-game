@@ -4,6 +4,8 @@ import {
   useDarkWebLeak,
   DARK_WEB_LEAK_CONFIG
 } from '../../src/hooks/useDarkWebLeak'
+import * as darkWebLeakUtils from '../../src/utils/darkWebLeakUtils'
+import { logger } from '../../src/utils/logger'
 
 vi.mock('../../src/utils/audio/audioEngine', () => {
   const playSFX = vi.fn()
@@ -69,6 +71,27 @@ describe('useDarkWebLeak', () => {
     const { result } = renderHook(() => useDarkWebLeak())
 
     expect(result.current.canLeak).toBe(false)
+  })
+
+  it('handles errors when validating dark web leak', () => {
+    const errorSpy = vi.spyOn(logger, 'error').mockImplementation(() => {})
+    const validateSpy = vi
+      .spyOn(darkWebLeakUtils, 'validateDarkWebLeak')
+      .mockImplementationOnce(() => {
+        throw new Error('Test Error')
+      })
+
+    const { result } = renderHook(() => useDarkWebLeak())
+
+    expect(result.current.canLeak).toBe(false)
+    expect(errorSpy).toHaveBeenCalledWith(
+      'DarkWebLeak',
+      'validateDarkWebLeak failed while deriving canLeak',
+      expect.objectContaining({ error: expect.any(Error) })
+    )
+
+    validateSpy.mockRestore()
+    errorSpy.mockRestore()
   })
 
   it('cannot leak without enough money for the cost', () => {
