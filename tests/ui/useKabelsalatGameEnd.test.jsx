@@ -129,6 +129,28 @@ describe('useKabelsalatGameEnd', () => {
     expect(mockChangeScene).toHaveBeenCalledWith('GIG')
   })
 
+  it('calls handleError when completeKabelsalatMinigame throws an error', async () => {
+    vi.useRealTimers()
+
+    const syncError = new Error('sync minigame error')
+    mockCompleteKabelsalatMinigame.mockImplementationOnce(() => {
+      throw syncError
+    })
+
+    const { result } = renderHook(() => useKabelsalatGameEnd(false, false, 7))
+
+    result.current.forceAdvance(true)
+
+    await waitFor(() => {
+      expect(errorHandler.handleError).toHaveBeenCalledTimes(1)
+    })
+
+    expect(errorHandler.handleError).toHaveBeenCalledWith(
+      expect.any(errorHandler.StateError)
+    )
+    expect(mockChangeScene).toHaveBeenCalledWith('GIG')
+  })
+
   it('logs an error when import error occurs during error handling', async () => {
     // If fake timers are used, waitFor might timeout if it's waiting for microtasks/promises
     // Vitest's vi.useFakeTimers() is set in beforeEach.
