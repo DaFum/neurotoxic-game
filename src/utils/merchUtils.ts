@@ -27,12 +27,12 @@ export const getMerchBundleAmount = (itemDef?: HQItemDef | null): number => {
   if (
     effect &&
     typeof effect === 'object' &&
-    Object.hasOwn(effect, 'value') &&
-    typeof effect.value === 'number' &&
-    Number.isFinite(effect.value) &&
-    effect.value > 0
+    'value' in effect &&
+    typeof (effect as { value?: unknown }).value === 'number' &&
+    Number.isFinite((effect as { value?: unknown }).value) &&
+    ((effect as { value?: unknown }).value as number) > 0
   ) {
-    return effect.value
+    return (effect as { value?: unknown }).value as number
   }
   return 10
 }
