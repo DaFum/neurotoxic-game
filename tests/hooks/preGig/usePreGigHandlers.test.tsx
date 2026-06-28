@@ -17,6 +17,7 @@ vi.mock('../../../src/utils/audio/audioEngine', () => ({
   audioService: {
     ensureAudioContext: vi.fn().mockResolvedValue(true)
   },
+  audioManager: {},
   getSongId: vi.fn(s => s.id)
 }))
 
