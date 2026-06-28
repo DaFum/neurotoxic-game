@@ -3,6 +3,10 @@ import assert from 'node:assert/strict'
 
 const mockHandleError = mock.fn()
 
+// Dynamic mock function setup using closure
+let _loadTexturesImpl = async () => {}
+const mockLoadTextures = mock.fn(async (...args) => _loadTexturesImpl(...args))
+
 mock.module(
   new URL('../../../../src/utils/errorHandler.ts', import.meta.url).href,
   {
@@ -19,9 +23,7 @@ mock.module(
   ).href,
   {
     namedExports: {
-      loadTextures: mock.fn(async () => {
-        throw new Error('Test load error')
-      })
+      loadTextures: mockLoadTextures
     }
   }
 )
@@ -46,6 +48,10 @@ test('CrowdTextureManager', async t => {
 
   await t.test('loadAssets - handles error path', async () => {
     mockHandleError.mock.resetCalls()
+    mockLoadTextures.mock.resetCalls()
+    _loadTexturesImpl = async () => {
+      throw new Error('Test load error')
+    }
 
     const manager = new CrowdTextureManager()
     await manager.loadAssets()
@@ -59,5 +65,57 @@ test('CrowdTextureManager', async t => {
       fallbackMessage: 'Critical error loading crowd textures.',
       silent: true
     })
+  })
+
+  await t.test('loadAssets - handles happy path', async () => {
+    mockHandleError.mock.resetCalls()
+    mockLoadTextures.mock.resetCalls()
+
+    const mockTextures = {
+      idle: { destroy: mock.fn() },
+      mosh: { destroy: mock.fn() }
+    }
+
+    _loadTexturesImpl = async () => mockTextures
+
+    const manager = new CrowdTextureManager()
+    await manager.loadAssets()
+
+    assert.equal(mockHandleError.mock.calls.length, 0)
+    assert.equal(manager.textures.idle, mockTextures.idle)
+    assert.equal(manager.textures.mosh, mockTextures.mosh)
+  })
+
+  await t.test('dispose - destroys textures and clears state', async () => {
+    const manager = new CrowdTextureManager()
+    const mockIdleDestroy = mock.fn()
+    const mockMoshDestroy = mock.fn()
+
+    manager.textures = {
+      idle: { destroy: mockIdleDestroy },
+      mosh: { destroy: mockMoshDestroy }
+    }
+
+    manager.dispose()
+
+    assert.equal(mockIdleDestroy.mock.calls.length, 1)
+    assert.equal(mockMoshDestroy.mock.calls.length, 1)
+    assert.equal(manager.textures.idle, null)
+    assert.equal(manager.textures.mosh, null)
+  })
+
+  await t.test('dispose - handles duplicate textures uniquely', async () => {
+    const manager = new CrowdTextureManager()
+    const mockDestroy = mock.fn()
+    const sharedTexture = { destroy: mockDestroy }
+
+    manager.textures = {
+      idle: sharedTexture,
+      mosh: sharedTexture
+    }
+
+    manager.dispose()
+
+    assert.equal(mockDestroy.mock.calls.length, 1)
   })
 })
