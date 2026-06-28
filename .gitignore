@@ -46,3 +46,4 @@ diff*.txt
 
 # DEV files 
 symbols.json
+src/__symbolIndexFixtures/SymbolIndexCrLfParam.ts
