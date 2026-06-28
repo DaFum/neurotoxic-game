@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { IMG_PROMPTS, resolveGenImageUrl } from '../utils/imageGen'
 import { useNetworkStatus } from '../hooks/useNetworkStatus'
@@ -21,8 +21,6 @@ export interface BandHQProps {
  * Presents the Band HQ modal with tab routing and void-trader gating.
  * @param props - Close handler and optional wrapper class for the Band HQ modal.
  */
-import { useEffect } from 'react'
-
 export const BandHQ = ({ onClose, className = '' }: BandHQProps) => {
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
