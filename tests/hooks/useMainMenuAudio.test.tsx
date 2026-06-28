@@ -155,4 +155,28 @@ describe("useMainMenuAudio", () => {
     // Should not throw and crash the test
     expect(handleError).toHaveBeenCalled()
   })
+
+  it("reports an issue when startAmbientSafely throws synchronously inside then", async () => {
+    vi.mocked(audioService.ensureAudioContext).mockResolvedValue(true)
+    const error = new Error("Sync ambient failure")
+    vi.mocked(audioService.startAmbient).mockImplementation(() => {
+      throw error
+    })
+
+    const { result } = renderHook(() => useMainMenuAudio(isMountedRef, addToast, tRef))
+
+    act(() => {
+      result.current.initializeAudio()
+    })
+
+    await flushPromises()
+
+    expect(handleError).toHaveBeenCalledWith(
+      expect.any(Error),
+      expect.objectContaining({
+        addToast,
+        fallbackMessage: "Audio initialization failed"
+      })
+    )
+  })
 })
