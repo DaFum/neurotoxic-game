@@ -280,16 +280,8 @@
 **Learning:** Using `Array.includes` inside loops with O(N\*M) time complexity is extremely inefficient in hot paths like the `processLiabilityTick` asset ticks reducer.
 **Action:** Replace `Array.includes` in loops with `Set.has()` lookups and refactor iterator allocations (`for...of`) to traditional indexed arrays to significantly boost operations per second.
 
-## 2025-02-12 - WeakMap Caching for O(1) Lookups on Immutable Arrays
 
-**Learning:** Using `Array.includes()` on large state arrays in immutable reducers causes $O(N)$ operations which degrade performance. Changing state structures to `Set` can cause architectural friction.
-**Action:** Use a module-scoped `WeakMap<T[], Set<T>>` to lazily cache the array as a `Set`. Lookups become amortized $O(1)$ and memory clears cleanly with old state arrays.
-## 2026-06-28 - [Avoid O(N log N) sorting for top N extraction]
-**Learning:** Using  to extract the top N elements (e.g., top 3) from a collection has an (N \log N)$ time complexity and introduces sorting overhead. This creates unnecessary CPU overhead in hot paths like `generatePostOptions`.
-**Action:** Replace  with an (N)$ procedural single-pass loop that tracks the top N elements directly when N is small.
 ## 2026-06-28 - Avoid O(N log N) sorting for top N extraction
-**Learning:** Using .sort() to extract the top N elements (e.g., top 3) from a collection has an O(N log N) time complexity and introduces sorting overhead. This creates unnecessary CPU overhead in hot paths like generatePostOptions.
-**Action:** Replace .sort() with an O(N) procedural single-pass loop that tracks the top N elements directly when N is small.
-## 2026-06-28 - Avoid O(N log N) sorting for top N extraction
-**Learning:** Using .sort() to extract the top N elements (e.g., top 3) from a collection has an O(N log N) time complexity and introduces sorting overhead. This creates unnecessary CPU overhead in hot paths like generatePostOptions.
-**Action:** Replace .sort() with an O(N) procedural single-pass loop that tracks the top N elements directly when N is small.
+
+**Learning:** Using `.sort()` to extract the top N elements (e.g., top 3) from a collection has an O(N log N) time complexity and introduces sorting overhead. This creates unnecessary CPU overhead in hot paths like `generatePostOptions`.
+**Action:** Replace `.sort()` with an O(N) procedural single-pass loop that tracks the top N elements directly when N is small.
