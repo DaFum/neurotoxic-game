@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
-import { usePreGigHandlers } from '../../src/hooks/preGig/usePreGigHandlers'
+import { usePreGigHandlers, UsePreGigHandlersProps } from '../../src/hooks/preGig/usePreGigHandlers'
 import { audioService } from '../../src/utils/audio/audioEngine'
-import { getSafeUUID } from '../../src/utils/crypto'
 
 vi.mock('../../src/utils/audio/audioEngine', () => ({
   audioService: {
@@ -27,14 +26,15 @@ describe('usePreGigHandlers', () => {
     vi.mocked(audioService.ensureAudioContext).mockResolvedValue(true)
   })
 
-  it('handles sessionStorage errors gracefully during handleStartShow', async () => {
-    const originalGetItem = Storage.prototype.getItem
-    const originalSetItem = Storage.prototype.setItem
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
 
-    Storage.prototype.getItem = vi.fn().mockImplementation(() => {
+  it('handles sessionStorage errors gracefully during handleStartShow', async () => {
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
       throw new Error('Mock Storage Read Error')
     })
-    Storage.prototype.setItem = vi.fn().mockImplementation(() => {
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
       throw new Error('Mock Storage Write Error')
     })
 
@@ -63,7 +63,7 @@ describe('usePreGigHandlers', () => {
       startRoadieMinigame,
       startKabelsalatMinigame,
       startAmpCalibration
-    } as any
+    } as unknown as UsePreGigHandlersProps
 
     const { result } = renderHook(() => usePreGigHandlers(props))
 
@@ -78,7 +78,6 @@ describe('usePreGigHandlers', () => {
       startAmpCalibration.mock.calls.length
     ).toBeGreaterThan(0)
 
-    Storage.prototype.getItem = originalGetItem
-    Storage.prototype.setItem = originalSetItem
+    // Spies are automatically restored in afterEach
   })
 })
