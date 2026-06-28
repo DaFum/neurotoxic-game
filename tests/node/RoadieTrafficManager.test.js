@@ -32,3 +32,31 @@ test('RoadieTrafficManager clears stale sprites when traffic is malformed', () =
   assert.equal(manager.carSprites.size, 0)
   assert.equal(manager.currentIds.size, 0)
 })
+
+test('RoadieTrafficManager handles errors when removing or destroying sprites safely', () => {
+  const container = {
+    addChild() {},
+    removeChild() {
+      throw new Error('Fake remove error')
+    }
+  }
+  const sprite = {
+    destroyed: false,
+    destroy() {
+      throw new Error('Fake destroy error')
+    }
+  }
+  const manager = new RoadieTrafficManager(
+    container,
+    { cars: [] },
+    { bloodRed: 0 }
+  )
+
+  manager.carSprites.set('error-car', sprite)
+
+  manager.cleanupTraffic()
+
+  // Verify sprite was deleted from tracking despite errors
+  assert.equal(manager.carSprites.size, 0)
+  assert.equal(manager.currentIds.size, 0)
+})
