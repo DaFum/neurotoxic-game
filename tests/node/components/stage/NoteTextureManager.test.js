@@ -50,9 +50,8 @@ mock.module(
 )
 
 test('NoteTextureManager', async t => {
-  const { NoteTextureManager } = await import(
-    '../../../../src/components/stage/NoteTextureManager.ts'
-  )
+  const { NoteTextureManager } =
+    await import('../../../../src/components/stage/NoteTextureManager.ts')
 
   await t.test('loadAssets - handles error path', async () => {
     mockErrorHandler.handleError.mock.resetCalls()

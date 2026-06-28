@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
-import { usePreGigHandlers, UsePreGigHandlersProps } from '../../src/hooks/preGig/usePreGigHandlers'
+import {
+  usePreGigHandlers,
+  UsePreGigHandlersProps
+} from '../../src/hooks/preGig/usePreGigHandlers'
 import { audioService } from '../../src/utils/audio/audioEngine'
 
 vi.mock('../../src/utils/audio/audioEngine', () => ({
@@ -42,7 +45,7 @@ describe('usePreGigHandlers', () => {
     const startKabelsalatMinigame = vi.fn()
     const startAmpCalibration = vi.fn()
     const addToast = vi.fn()
-    const typedT = vi.fn().mockImplementation((key) => key)
+    const typedT = vi.fn().mockImplementation(key => key)
 
     const props = {
       band: {},
@@ -74,8 +77,8 @@ describe('usePreGigHandlers', () => {
     // Assert that a minigame was started despite storage errors
     expect(
       startRoadieMinigame.mock.calls.length +
-      startKabelsalatMinigame.mock.calls.length +
-      startAmpCalibration.mock.calls.length
+        startKabelsalatMinigame.mock.calls.length +
+        startAmpCalibration.mock.calls.length
     ).toBeGreaterThan(0)
 
     // Spies are automatically restored in afterEach

@@ -168,10 +168,12 @@ describe('useMainMenuAudio', () => {
     expect(handleError).toHaveBeenCalled()
   })
 
-  it("bails out early if unmounted when an error occurs", async () => {
-    const error = new Error("Any issue")
+  it('bails out early if unmounted when an error occurs', async () => {
+    const error = new Error('Any issue')
 
-    const { result } = renderHook(() => useMainMenuAudio(isMountedRef, addToast, tRef))
+    const { result } = renderHook(() =>
+      useMainMenuAudio(isMountedRef, addToast, tRef)
+    )
 
     isMountedRef.current = false
 

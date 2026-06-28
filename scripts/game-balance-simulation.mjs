@@ -12,10 +12,13 @@ import { SOCIAL_PLATFORMS } from '../src/data/platforms.js'
 import { _CONTRABAND_DB_FOR_TESTING } from '../src/data/contraband.js'
 import { HQ_ITEMS } from '../src/data/hqItems.js'
 import { getUnifiedUpgradeCatalog } from '../src/data/upgradeCatalog.js'
-import { eventEngine, resolveEventChoice } from '../src/utils/eventEngine/index.js'
+import {
+  eventEngine,
+  resolveEventChoice
+} from '../src/utils/eventEngine/index.js'
 import { normalizeTraitMap } from '../src/utils/traitUtils.js'
 import {
-    calculateKabelsalatMinigameResult,
+  calculateKabelsalatMinigameResult,
   calculateRefuelCost,
   calculateRepairCost,
   calculateRoadieMinigameResult,
@@ -58,9 +61,17 @@ import {
   calculateContinueStats,
   calculatePerformanceScore as normalizePerformanceScore
 } from '../src/utils/postGig/index.js'
-import { deriveFinancials, derivePostOptions } from '../src/utils/postGig/derivations.js'
+import {
+  deriveFinancials,
+  derivePostOptions
+} from '../src/utils/postGig/derivations.js'
 import { calculatePostGigStateUpdates } from '../src/utils/postGig/socialResolution.js'
-import { processAssetTick, processCrowdfundTick, rollAssetRiskEvents, processLiabilityTick } from '../src/utils/assetTicks.js'
+import {
+  processAssetTick,
+  processCrowdfundTick,
+  rollAssetRiskEvents,
+  processLiabilityTick
+} from '../src/utils/assetTicks.js'
 
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
 
@@ -645,11 +656,23 @@ const pickVenueForState = (state, rng) => {
 
 const calculateModifiers = (scenario, rng) => {
   const modifiers = {
-    promo: pickWeightedBool(scenario.modifierBias?.promo ?? scenario.assetStrategies.promo, rng),
-    merch: pickWeightedBool(scenario.modifierBias?.merch ?? scenario.assetStrategies.merch, rng),
+    promo: pickWeightedBool(
+      scenario.modifierBias?.promo ?? scenario.assetStrategies.promo,
+      rng
+    ),
+    merch: pickWeightedBool(
+      scenario.modifierBias?.merch ?? scenario.assetStrategies.merch,
+      rng
+    ),
     catering: pickWeightedBool(scenario.modifierBias?.catering ?? 0, rng),
-    soundcheck: pickWeightedBool(scenario.modifierBias?.soundcheck ?? scenario.assetStrategies.soundcheck, rng),
-    guestlist: pickWeightedBool(scenario.modifierBias?.guestlist ?? scenario.assetStrategies.guestlist, rng)
+    soundcheck: pickWeightedBool(
+      scenario.modifierBias?.soundcheck ?? scenario.assetStrategies.soundcheck,
+      rng
+    ),
+    guestlist: pickWeightedBool(
+      scenario.modifierBias?.guestlist ?? scenario.assetStrategies.guestlist,
+      rng
+    )
   }
 
   if (rng() < SIMULATION_CONSTANTS.randomModifierChance) {
@@ -772,7 +795,15 @@ const maybeActivateBrandDeal = (state, rng, counters) => {
   counters.brandDealsActivated += 1
 }
 
-const maybeApplyPostPulse = (state, rng, counters, currentGig, lastGigStats, activeEvent, performanceScore) => {
+const maybeApplyPostPulse = (
+  state,
+  rng,
+  counters,
+  currentGig,
+  lastGigStats,
+  activeEvent,
+  performanceScore
+) => {
   if (rng() >= SIMULATION_CONSTANTS.postPulseChance) return false
 
   const { options } = derivePostOptions({
@@ -789,16 +820,17 @@ const maybeApplyPostPulse = (state, rng, counters, currentGig, lastGigStats, act
   const post = options[Math.floor(rng() * options.length)]
   if (!post) return false
 
-  const { updatedSocial, nextMoney, newBand, hasBandUpdates } = calculatePostGigStateUpdates({
-    option: post,
-    social: state.social,
-    player: state.player,
-    band: state.band,
-    lastGigStats,
-    currentGig,
-    perfScore: performanceScore,
-    secureRandomValue: rng()
-  })
+  const { updatedSocial, nextMoney, newBand, hasBandUpdates } =
+    calculatePostGigStateUpdates({
+      option: post,
+      social: state.social,
+      player: state.player,
+      band: state.band,
+      lastGigStats,
+      currentGig,
+      perfScore: performanceScore,
+      secureRandomValue: rng()
+    })
 
   if (updatedSocial) state.social = { ...state.social, ...updatedSocial }
   if (nextMoney !== undefined) state.player.money = nextMoney
@@ -1290,16 +1322,20 @@ const runSingleSimulation = (scenario, seed) => {
     if (day === 60) moneyAtDay60 = state.player.money
 
     const moneyBeforeDay = state.player.money
-    let preState = state;
-    preState = processAssetTick(preState) || preState;
-    const liabilityResult = processLiabilityTick(preState);
-    preState = liabilityResult.state || preState;
-    preState = processCrowdfundTick(preState) || preState;
-    const assetCount = preState.assets ? preState.assets.length : 0;
-    const riskResult = rollAssetRiskEvents(preState, Array.from({length: assetCount * 2 + 10}, () => rng()), 0);
-    preState = riskResult.state || preState;
+    let preState = state
+    preState = processAssetTick(preState) || preState
+    const liabilityResult = processLiabilityTick(preState)
+    preState = liabilityResult.state || preState
+    preState = processCrowdfundTick(preState) || preState
+    const assetCount = preState.assets ? preState.assets.length : 0
+    const riskResult = rollAssetRiskEvents(
+      preState,
+      Array.from({ length: assetCount * 2 + 10 }, () => rng()),
+      0
+    )
+    preState = riskResult.state || preState
     const updates = calculateDailyUpdates(preState, rng)
-    state = preState;
+    state = preState
     state = {
       ...state,
       player: { ...state.player, ...updates.player },
@@ -1459,31 +1495,49 @@ const runSingleSimulation = (scenario, seed) => {
       misses,
       hitRate: performanceScore / 100,
       peakHype: Math.round(performanceScore + rng() * 12)
-    };
+    }
 
     const financials = deriveFinancials({
-    currentGig: venue,
-    lastGigStats: currentGigStats,
-    perfScore: performanceScore,
-    gigModifiers: modifiers,
-    bandInventory: state.band.inventory,
-    bandMerchPrices: state.band.merchPrices || {},
-    bandGigModifier: state.band.gigModifier,
-    player: state.player,
-    social: state.social,
-    reputationByRegion: state.reputationByRegion ?? {},
-    activeStoryFlags: scenario.ticketDiscountChance > rng() ? ['discounted_tickets_active'] : [],
-    gigContext: {
-      daysSinceLastGig: state.player.day - (state.social.lastGigDay ?? state.player.day),
-      lastGigDifficulty: state.social.lastGigDifficulty ?? null
-    },
-    // Note: Region/City effects in Balance-Run are not fully simulated here.
-    cityTraits: [],
-    assetModifiers: getActiveAssetModifiers(state.assets || [])
-  })
+      currentGig: venue,
+      lastGigStats: currentGigStats,
+      perfScore: performanceScore,
+      gigModifiers: modifiers,
+      bandInventory: state.band.inventory,
+      bandMerchPrices: state.band.merchPrices || {},
+      bandGigModifier: state.band.gigModifier,
+      player: state.player,
+      social: state.social,
+      reputationByRegion: state.reputationByRegion ?? {},
+      activeStoryFlags:
+        scenario.ticketDiscountChance > rng()
+          ? ['discounted_tickets_active']
+          : [],
+      gigContext: {
+        daysSinceLastGig:
+          state.player.day - (state.social.lastGigDay ?? state.player.day),
+        lastGigDifficulty: state.social.lastGigDifficulty ?? null
+      },
+      // Note: Region/City effects in Balance-Run are not fully simulated here.
+      cityTraits: [],
+      assetModifiers: getActiveAssetModifiers(state.assets || [])
+    })
 
     // Standard post-gig adjustments
-    applyPostGigState(state, venue, performanceScore, financials ? financials : { net: 0, income: { total: 0, breakdown: [] }, expenses: { total: 0, breakdown: [] }, soldMerch: {} }, rng, misses)
+    applyPostGigState(
+      state,
+      venue,
+      performanceScore,
+      financials
+        ? financials
+        : {
+            net: 0,
+            income: { total: 0, breakdown: [] },
+            expenses: { total: 0, breakdown: [] },
+            soldMerch: {}
+          },
+      rng,
+      misses
+    )
 
     // Deplete merch inventory based on actual sold merch
     if (financials?.soldMerch) {
@@ -1500,7 +1554,17 @@ const runSingleSimulation = (scenario, seed) => {
     }
 
     const sponsorActiveBeforePostPulse = hasActiveSponsorship(state.social)
-    const postPulseApplied = scenario.socialStrategy !== 'none' && maybeApplyPostPulse(state, rng, counters, venue, currentGigStats, state.activeEvent || null, performanceScore)
+    const postPulseApplied =
+      scenario.socialStrategy !== 'none' &&
+      maybeApplyPostPulse(
+        state,
+        rng,
+        counters,
+        venue,
+        currentGigStats,
+        state.activeEvent || null,
+        performanceScore
+      )
 
     if (sponsorActiveBeforePostPulse) {
       counters.sponsorPayouts += 1
@@ -1514,7 +1578,7 @@ const runSingleSimulation = (scenario, seed) => {
 
     currentNode = venue
     counters.gigsPlayed += 1
-    const gigNet = (financials ? financials.net : 0);
+    const gigNet = financials ? financials.net : 0
     totalGigNet += gigNet
     if (gigNet >= MAX_GIG_NET) counters.gigCapHits += 1
     peakMoney = Math.max(peakMoney, state.player.money)
@@ -1822,7 +1886,9 @@ const getScenarioInsight = summary => {
     return '⚠️ Harmonie zu instabil – mehr Recovery/Trade-offs in Events einbauen.'
   }
 
-  return summary.kpisPassed ? '✅ Szenario liegt im robusten Simulationskorridor.' : '⚠️ KPI-Verstöße vorhanden – siehe Health Check.'
+  return summary.kpisPassed
+    ? '✅ Szenario liegt im robusten Simulationskorridor.'
+    : '⚠️ KPI-Verstöße vorhanden – siehe Health Check.'
 }
 
 const getEconomyInsight = s => {
@@ -2457,7 +2523,12 @@ const buildMarkdownReport = payload => {
   }
   lines.push('')
 
-  if (payload.regressionComparison?.length && payload.regressionComparison.some(s => Object.values(s.metrics).some(m => m.delta !== 0))) {
+  if (
+    payload.regressionComparison?.length &&
+    payload.regressionComparison.some(s =>
+      Object.values(s.metrics).some(m => m.delta !== 0)
+    )
+  ) {
     lines.push('## Rebalance-Regressionsvergleich (Alt vs Neu)')
     lines.push('')
     lines.push(

@@ -257,32 +257,35 @@ test('stage utils', async t => {
       }
     )
 
-    await sub.test('falls back to Image element when URL parsing fails', async () => {
-      const OriginalImage = globalThis.Image
+    await sub.test(
+      'falls back to Image element when URL parsing fails',
+      async () => {
+        const OriginalImage = globalThis.Image
 
-      let createdImage = null
-      globalThis.Image = class {
-        constructor() {
-          this.crossOrigin = ''
-          this.src = ''
-          createdImage = this
-          setTimeout(() => {
-            if (this.onload) this.onload()
-          }, 0)
+        let createdImage = null
+        globalThis.Image = class {
+          constructor() {
+            this.crossOrigin = ''
+            this.src = ''
+            createdImage = this
+            setTimeout(() => {
+              if (this.onload) this.onload()
+            }, 0)
+          }
+        }
+
+        try {
+          // '://invalid' throws in new URL() and hits the catch block in _hasFileExtension
+          const texture = await loadTexture('://invalid')
+
+          assert.ok(texture)
+          assert.ok(createdImage)
+          assert.equal(createdImage.src, '://invalid')
+        } finally {
+          globalThis.Image = OriginalImage
         }
       }
-
-      try {
-        // '://invalid' throws in new URL() and hits the catch block in _hasFileExtension
-        const texture = await loadTexture('://invalid')
-
-        assert.ok(texture)
-        assert.ok(createdImage)
-        assert.equal(createdImage.src, '://invalid')
-      } finally {
-        globalThis.Image = OriginalImage
-      }
-    })
+    )
 
     await sub.test(
       'returns null when Image fallback is unavailable',

@@ -2,7 +2,11 @@ import { buildGigStatsSnapshot } from '../../src/utils/gigStats'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { useGigSession } from '../../src/hooks/useGigSession'
-import { stopAudio, pauseAudio, resumeAudio } from '../../src/utils/audio/audioEngine'
+import {
+  stopAudio,
+  pauseAudio,
+  resumeAudio
+} from '../../src/utils/audio/audioEngine'
 import { handleError } from '../../src/utils/errorHandler'
 import type { TFunction } from 'i18next'
 import type { RhythmGameRefState } from '../../src/types/rhythmGame'
@@ -33,7 +37,9 @@ describe('useGigSession', () => {
     const mockSetLastGigStats = vi.fn()
     const mockEndGig = vi.fn()
     const mockTRef = {
-      current: vi.fn((key, options) => options.defaultValue) as unknown as TFunction
+      current: vi.fn(
+        (key, options) => options.defaultValue
+      ) as unknown as TFunction
     }
     const mockGameStateRef = {
       current: {
@@ -63,10 +69,13 @@ describe('useGigSession', () => {
       await result.current.handleQuitGig()
     })
 
-    expect(handleError).toHaveBeenCalledWith(mockError, expect.objectContaining({
-      addToast: mockAddToast,
-      fallbackMessage: 'Audio cleanup failed.'
-    }))
+    expect(handleError).toHaveBeenCalledWith(
+      mockError,
+      expect.objectContaining({
+        addToast: mockAddToast,
+        fallbackMessage: 'Audio cleanup failed.'
+      })
+    )
 
     // It should still call setLastGigStats and endGig due to finally block
     expect(mockSetLastGigStats).toHaveBeenCalled()
@@ -95,7 +104,9 @@ describe('useGigSession', () => {
     const mockSetLastGigStats = vi.fn()
     const mockEndGig = vi.fn()
     const mockTRef = {
-      current: vi.fn((key, options) => options.defaultValue) as unknown as TFunction
+      current: vi.fn(
+        (key, options) => options.defaultValue
+      ) as unknown as TFunction
     }
     const mockGameStateRef = {
       current: undefined as unknown as RhythmGameRefState
@@ -140,7 +151,11 @@ describe('useGigSession', () => {
     const mockAddToast = vi.fn()
     const mockSetLastGigStats = vi.fn()
     const mockEndGig = vi.fn()
-    const mockTRef = { current: vi.fn((key, options) => options.defaultValue) as unknown as TFunction }
+    const mockTRef = {
+      current: vi.fn(
+        (key, options) => options.defaultValue
+      ) as unknown as TFunction
+    }
     const mockGameStateRef = { current: {} as unknown as RhythmGameRefState }
 
     const { result } = renderHook(() =>
@@ -166,7 +181,11 @@ describe('useGigSession', () => {
     const mockAddToast = vi.fn()
     const mockSetLastGigStats = vi.fn()
     const mockEndGig = vi.fn()
-    const mockTRef = { current: vi.fn((key, options) => options.defaultValue) as unknown as TFunction }
+    const mockTRef = {
+      current: vi.fn(
+        (key, options) => options.defaultValue
+      ) as unknown as TFunction
+    }
     const mockGameStateRef = { current: {} as unknown as RhythmGameRefState }
 
     const { result } = renderHook(() =>

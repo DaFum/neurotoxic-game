@@ -122,7 +122,9 @@ describe('useKabelsalatBackground', () => {
     const texturePromise = new Promise<unknown>(resolve => {
       resolveTexture = resolve
     })
-    vi.mocked(loadTexture).mockReturnValue(texturePromise as unknown as Promise<Texture | null>)
+    vi.mocked(loadTexture).mockReturnValue(
+      texturePromise as unknown as Promise<Texture | null>
+    )
 
     const { result, unmount } = renderHook(() => useKabelsalatBackground())
 
@@ -155,7 +157,9 @@ describe('useKabelsalatBackground', () => {
     const texturePromise = new Promise<unknown>((_, reject) => {
       rejectTexture = reject
     })
-    vi.mocked(loadTexture).mockReturnValue(texturePromise as unknown as Promise<Texture | null>)
+    vi.mocked(loadTexture).mockReturnValue(
+      texturePromise as unknown as Promise<Texture | null>
+    )
 
     const { unmount } = renderHook(() => useKabelsalatBackground())
 

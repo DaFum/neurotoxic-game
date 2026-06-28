@@ -3,12 +3,12 @@ import { vi } from 'vitest'
 import { usePreGigHandlers } from '../../../src/hooks/preGig/usePreGigHandlers'
 
 // Mock preGigUtils
-vi.mock('../../../src/hooks/preGig/preGigUtils', async (importOriginal) => {
+vi.mock('../../../src/hooks/preGig/preGigUtils', async importOriginal => {
   const actual = await importOriginal()
   return {
     ...actual,
     getLastMinigameFallback: vi.fn(() => null),
-    setLastMinigameFallback: vi.fn(),
+    setLastMinigameFallback: vi.fn()
   }
 })
 
