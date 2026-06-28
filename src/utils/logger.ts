@@ -85,7 +85,7 @@ export class Logger {
    */
   setLevel(level: number): void {
     if (!isValidLogLevel(level)) {
-      console.warn(`[Logger] Invalid log level: ${level}, ignoring`)
+      this.warn('Logger', `Invalid log level: ${level}, ignoring`)
       return
     }
     this.minLevel = level
