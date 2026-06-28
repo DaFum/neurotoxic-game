@@ -177,6 +177,14 @@ describe('useMainMenuAudio', () => {
 
     // Use a dummy issue manually or trigger a catch flow.
     vi.mocked(audioService.ensureAudioContext).mockRejectedValue(error)
+
+    act(() => {
+      result.current.initializeAudio()
+    })
+
+    await flushPromises()
+
+    expect(handleError).not.toHaveBeenCalled()
   })
 
   it('reports an issue when startAmbientSafely throws synchronously inside then', async () => {
