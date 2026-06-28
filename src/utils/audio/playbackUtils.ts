@@ -1,4 +1,5 @@
 import * as Tone from 'tone'
+import { logger } from '../logger'
 import { audioState } from './state'
 import { ensureAudioContext } from './context'
 import { stopTransportAndClear, cleanupTransportEvents } from './cleanupUtils'
@@ -192,7 +193,7 @@ export const resolveAssetUrl = (
  */
 export const buildAssetUrlMap = (
   assetGlob: unknown,
-  warn: (message: string) => void = console.warn,
+  warn: (message: string) => void = (msg) => logger.warn('AudioEngine', msg.replace('[audioEngine] ', '')),
   label = 'Asset'
 ): Record<string, string> => {
   const accumulator: Record<string, string> = Object.create(null)
