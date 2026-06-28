@@ -155,4 +155,23 @@ describe("useMainMenuAudio", () => {
     // Should not throw and crash the test
     expect(handleError).toHaveBeenCalled()
   })
+
+  it("bails out early if unmounted when an error occurs", async () => {
+    const error = new Error("Any issue")
+
+    const { result } = renderHook(() => useMainMenuAudio(isMountedRef, addToast, tRef))
+
+    isMountedRef.current = false
+
+    // Use a dummy issue manually or trigger a catch flow.
+    vi.mocked(audioService.ensureAudioContext).mockRejectedValue(error)
+
+    act(() => {
+      result.current.initializeAudio()
+    })
+
+    await flushPromises()
+
+    expect(handleError).not.toHaveBeenCalled()
+  })
 })
