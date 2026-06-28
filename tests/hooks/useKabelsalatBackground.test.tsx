@@ -1,9 +1,10 @@
 import { renderHook, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { Texture } from 'pixi.js'
 import { useKabelsalatBackground } from '../../src/scenes/kabelsalat/hooks/useKabelsalatBackground'
 import { loadTexture } from '../../src/components/stage/stageRenderUtils'
 import { logger } from '../../src/utils/logger'
-import { IMG_PROMPTS, resolveGenImageUrl } from '../../src/utils/imageGen'
+import { resolveGenImageUrl } from '../../src/utils/imageGen'
 
 vi.mock('../../src/components/stage/stageRenderUtils', () => ({
   loadTexture: vi.fn()
@@ -63,7 +64,7 @@ describe('useKabelsalatBackground', () => {
           src: textureUrl
         }
       }
-    } as any)
+    } as unknown as Texture)
 
     const { result } = renderHook(() => useKabelsalatBackground())
 
@@ -89,7 +90,7 @@ describe('useKabelsalatBackground', () => {
           src: '' // Empty src
         }
       }
-    } as any)
+    } as unknown as Texture)
 
     const { result } = renderHook(() => useKabelsalatBackground())
 
@@ -117,11 +118,11 @@ describe('useKabelsalatBackground', () => {
     const rawUrl = 'mock-raw-url.png'
     vi.mocked(resolveGenImageUrl).mockReturnValue(rawUrl)
 
-    let resolveTexture: any
-    const texturePromise = new Promise(resolve => {
+    let resolveTexture!: (value: unknown) => void
+    const texturePromise = new Promise<unknown>(resolve => {
       resolveTexture = resolve
     })
-    vi.mocked(loadTexture).mockReturnValue(texturePromise as any)
+    vi.mocked(loadTexture).mockReturnValue(texturePromise as unknown as Promise<Texture | null>)
 
     const { result, unmount } = renderHook(() => useKabelsalatBackground())
 
@@ -139,8 +140,8 @@ describe('useKabelsalatBackground', () => {
       }
     })
 
-    // Wait a bit to ensure state updates would have happened
-    await new Promise(resolve => setTimeout(resolve, 50))
+    // Flush microtasks to allow the promise chain to execute
+    await Promise.resolve()
 
     // Just verify no warnings/errors are thrown
     expect(logger.warn).not.toHaveBeenCalled()
@@ -150,13 +151,13 @@ describe('useKabelsalatBackground', () => {
     const rawUrl = 'mock-raw-url.png'
     vi.mocked(resolveGenImageUrl).mockReturnValue(rawUrl)
 
-    let rejectTexture: any
-    const texturePromise = new Promise((resolve, reject) => {
+    let rejectTexture!: (reason: unknown) => void
+    const texturePromise = new Promise<unknown>((_, reject) => {
       rejectTexture = reject
     })
-    vi.mocked(loadTexture).mockReturnValue(texturePromise as any)
+    vi.mocked(loadTexture).mockReturnValue(texturePromise as unknown as Promise<Texture | null>)
 
-    const { result, unmount } = renderHook(() => useKabelsalatBackground())
+    const { unmount } = renderHook(() => useKabelsalatBackground())
 
     // Unmount before rejecting
     unmount()
@@ -165,8 +166,8 @@ describe('useKabelsalatBackground', () => {
     const mockError = new Error('Failed to load texture')
     rejectTexture(mockError)
 
-    // Wait a bit to ensure catch block runs
-    await new Promise(resolve => setTimeout(resolve, 50))
+    // Flush microtasks to allow the promise chain to execute
+    await Promise.resolve()
 
     // Verify error was logged (catch block still runs)
     expect(logger.warn).toHaveBeenCalledWith(
