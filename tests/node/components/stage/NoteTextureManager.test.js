@@ -14,6 +14,10 @@ mock.module(
   }
 )
 
+let loadTexturesImpl = async () => {
+  throw new Error('Test load error')
+}
+
 mock.module(
   new URL(
     '../../../../src/components/stage/stageRenderUtils.ts',
@@ -21,9 +25,7 @@ mock.module(
   ).href,
   {
     namedExports: {
-      loadTextures: mock.fn(async () => {
-        throw new Error('Test load error')
-      })
+      loadTextures: mock.fn(async (...args) => loadTexturesImpl(...args))
     }
   }
 )
