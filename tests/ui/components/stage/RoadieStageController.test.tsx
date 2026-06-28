@@ -23,6 +23,7 @@ vi.mock('../../../../src/utils/errorHandler', () => ({
 vi.mock('../../../../src/utils/imageGen', () => ({
   getGenImageUrl: vi.fn(),
   isImageGenerationAvailable: vi.fn().mockReturnValue(true),
+  getGeneratedImageFallbackUrl: vi.fn(),
   IMG_PROMPTS: {}
 }))
 
@@ -48,6 +49,8 @@ describe('RoadieStageController', () => {
     expect(errorHandler.handleError).toHaveBeenCalled()
     const errorArg = vi.mocked(errorHandler.handleError).mock.calls[0][0]
     expect(errorArg.message).toBe('Asset load failed')
-    expect(errorArg.context.originalError).toBe(error)
+    expect((errorArg.context as { originalError: Error }).originalError).toBe(
+      error
+    )
   })
 })
