@@ -177,6 +177,8 @@ describe('useMainMenuAudio', () => {
 
     // Use a dummy issue manually or trigger a catch flow.
     vi.mocked(audioService.ensureAudioContext).mockRejectedValue(error)
+  })
+
   it('reports an issue when startAmbientSafely throws synchronously inside then', async () => {
     vi.mocked(audioService.ensureAudioContext).mockResolvedValue(true)
     const error = new Error('Sync ambient failure')
@@ -194,7 +196,6 @@ describe('useMainMenuAudio', () => {
 
     await flushPromises()
 
-    expect(handleError).not.toHaveBeenCalled()
     expect(handleError).toHaveBeenCalledWith(
       error,
       expect.objectContaining({
