@@ -4,7 +4,6 @@ import {
   useDarkWebLeak,
   DARK_WEB_LEAK_CONFIG
 } from '../../src/hooks/useDarkWebLeak'
-import * as darkWebLeakUtils from '../../src/utils/darkWebLeakUtils'
 import { logger } from '../../src/utils/logger'
 
 vi.mock('../../src/utils/audio/audioEngine', () => {
@@ -75,23 +74,33 @@ describe('useDarkWebLeak', () => {
 
   it('handles errors when validating dark web leak', () => {
     const errorSpy = vi.spyOn(logger, 'error').mockImplementation(() => {})
-    const validateSpy = vi
-      .spyOn(darkWebLeakUtils, 'validateDarkWebLeak')
-      .mockImplementationOnce(() => {
+    const originalMoney = mockGameState.player.money
+
+    Object.defineProperty(mockGameState.player, 'money', {
+      get() {
         throw new Error('Test Error')
+      },
+      configurable: true
+    })
+
+    try {
+      const { result } = renderHook(() => useDarkWebLeak())
+
+      expect(result.current.canLeak).toBe(false)
+      expect(errorSpy).toHaveBeenCalledWith(
+        'DarkWebLeak',
+        'validateDarkWebLeak failed while deriving canLeak',
+        expect.objectContaining({ error: expect.any(Error) })
+      )
+    } finally {
+      Object.defineProperty(mockGameState.player, 'money', {
+        value: originalMoney,
+        writable: true,
+        configurable: true,
+        enumerable: true
       })
-
-    const { result } = renderHook(() => useDarkWebLeak())
-
-    expect(result.current.canLeak).toBe(false)
-    expect(errorSpy).toHaveBeenCalledWith(
-      'DarkWebLeak',
-      'validateDarkWebLeak failed while deriving canLeak',
-      expect.objectContaining({ error: expect.any(Error) })
-    )
-
-    validateSpy.mockRestore()
-    errorSpy.mockRestore()
+      errorSpy.mockRestore()
+    }
   })
 
   it('cannot leak without enough money for the cost', () => {
