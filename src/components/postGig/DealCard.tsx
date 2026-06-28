@@ -132,6 +132,24 @@ const urgencyClass = (urgency: string | undefined): string => {
   return 'text-warning-yellow'
 }
 
+const formatPenalty = (
+  penalty: Record<string, unknown> | undefined
+): string => {
+  if (!penalty || typeof penalty !== 'object' || Array.isArray(penalty))
+    return ''
+  let result = ''
+  for (const k in penalty) {
+    if (Object.hasOwn(penalty, k)) {
+      const val = penalty[k]
+      if (val !== null && typeof val === 'object') continue
+
+      if (result) result += ', '
+      result += `${k}: ${String(val)}`
+    }
+  }
+  return result
+}
+
 const DealInfo = memo(
   ({ displayDeal, isRevoked, brandReputation }: DealInfoProps) => {
     const { t, i18n } = useTranslation()
@@ -140,6 +158,9 @@ const DealInfo = memo(
     const alignmentReputation =
       alignment != null ? brandReputation?.[alignment] : undefined
     const flavor = displayDeal.flavor
+    const formattedPenalty = displayDeal.penalty
+      ? formatPenalty(displayDeal.penalty as Record<string, unknown>)
+      : ''
 
     return (
       <div className='flex-1 min-w-0'>
@@ -240,12 +261,10 @@ const DealInfo = memo(
               {displayDeal.offer.item}
             </div>
           )}
-          {displayDeal.penalty && (
+          {formattedPenalty && (
             <div className='text-blood-red'>
               ⚠️ {t('ui:deals.risk', { defaultValue: 'Risk' })}:{' '}
-              {Object.entries(displayDeal.penalty)
-                .map(([k, v]) => `${k}: ${v}`)
-                .join(', ')}
+              {formattedPenalty}
             </div>
           )}
         </div>
