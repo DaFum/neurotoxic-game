@@ -132,13 +132,18 @@ const urgencyClass = (urgency: string | undefined): string => {
   return 'text-warning-yellow'
 }
 
-const formatPenalty = (penalty: Record<string, unknown> | undefined): string => {
-  if (!penalty) return ''
+const formatPenalty = (
+  penalty: Record<string, unknown> | undefined,
+  t: (key: string, options?: { defaultValue?: string }) => string
+): string => {
+  if (!penalty || typeof penalty !== 'object' || Array.isArray(penalty))
+    return ''
   let result = ''
   for (const k in penalty) {
     if (Object.hasOwn(penalty, k)) {
       if (result) result += ', '
-      result += `${k}: ${penalty[k]}`
+      const localizedKey = t('ui:deals.penalty.' + k, { defaultValue: k })
+      result += localizedKey + ': ' + String(penalty[k])
     }
   }
   return result
@@ -255,7 +260,7 @@ const DealInfo = memo(
           {displayDeal.penalty && (
             <div className='text-blood-red'>
               ⚠️ {t('ui:deals.risk', { defaultValue: 'Risk' })}:{' '}
-              {formatPenalty(displayDeal.penalty as Record<string, unknown>)}
+              {formatPenalty(displayDeal.penalty as Record<string, unknown>, t)}
             </div>
           )}
         </div>
