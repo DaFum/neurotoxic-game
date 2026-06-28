@@ -111,7 +111,7 @@ const FeatureTable = ({ headers, rows, title }: FeatureTableProps) => {
         <tbody>
           {rows.map((row: string[]) => {
             if (!row || row.length === 0) {
-              logger.error(`MainMenuFeatures: empty row in section "${title}"`)
+              logger.error('MainMenu', `empty row in section "${title}"`)
               return null
             }
             const rowKey = row[0]
