@@ -193,7 +193,7 @@ export const resolveAssetUrl = (
  */
 export const buildAssetUrlMap = (
   assetGlob: unknown,
-  warn: (message: string) => void = (msg) => logger.warn('audioEngine', msg),
+  warn: (message: string) => void = (msg) => logger.warn('AudioEngine', msg.replace('[audioEngine] ', '')),
   label = 'Asset'
 ): Record<string, string> => {
   const accumulator: Record<string, string> = Object.create(null)
