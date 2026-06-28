@@ -2,11 +2,21 @@ import { useTranslation } from 'react-i18next'
 import type { ComponentPropsWithoutRef } from 'react'
 import { ActionButton } from '../../../ui/shared/ActionButton'
 
+/**
+ * Properties for the CancelButton component, extending ActionButton props but omitting children.
+ */
 export type CancelButtonProps = Omit<
   ComponentPropsWithoutRef<typeof ActionButton>,
   'children'
 >
 
+/**
+ * Renders a standardized cancel button using Brutalist UI aesthetics.
+ *
+ * @param className - Additional CSS class names to apply to the button.
+ * @param rest - Remaining properties passed to the underlying ActionButton.
+ * @returns A localized cancel button element.
+ */
 export const CancelButton = ({
   className = '',
   ...rest

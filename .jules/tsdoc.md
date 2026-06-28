@@ -25,3 +25,4 @@
 | 2026-06-25        | src/components/hud/PauseButton.tsx            | PauseButtonProps, PauseButton                                                                                                                            |
 | 2026-06-26        | src/scenes/GameOver.tsx                       | GameOver                                                                                                                                                 |
 | 2026-06-27 | src/components/assets/ModulePickerModal.tsx | ModulePickerModal |
+| 2026-06-28 | src/components/assets/shared/CancelButton.tsx | CancelButtonProps, CancelButton |
