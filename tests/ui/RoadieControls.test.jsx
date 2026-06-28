@@ -91,6 +91,24 @@ describe('RoadieControls touch input', () => {
     expect(handlers.handleMoveDown).toHaveBeenCalledTimes(1)
   })
 
+  test('silently ignores pointer capture errors', () => {
+    const { surface } = setup()
+    surface.setPointerCapture = vi.fn(() => {
+      throw new Error('Test error')
+    })
+
+    expect(() =>
+      fireEvent.pointerDown(surface, {
+        clientX: 80,
+        clientY: 120,
+        pointerId: 1,
+        pointerType: 'touch'
+      })
+    ).not.toThrow()
+
+    expect(surface.setPointerCapture).toHaveBeenCalled()
+  })
+
   test('moves by tap quadrant when there is no swipe', () => {
     const { handlers, surface } = setup()
 
