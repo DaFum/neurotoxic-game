@@ -154,3 +154,8 @@
 
 **Learning:** Native `<label>` elements wrapping inputs without `htmlFor` and `id` bindings may fail certain strict screen-reader tests or contexts, especially for inputs like `<input type="range">`. Additionally, `type="range"` inputs often lack context when their values are read as plain numbers.
 **Action:** Always bind labels and inputs explicitly using `htmlFor` and `id`. Provide `aria-valuetext` for range sliders to give screen readers meaningful context for numeric values (e.g., `aria-valuetext="50 Fame"` instead of just "50").
+
+## 2026-10-25 - ARIA toggle groups using ActionButton
+
+**Learning:** Custom toggle groups in settings (like the Language selector) use standard `<button>` elements (via `ActionButton`) instead of semantic radio inputs. Without explicit state attributes, screen reader users cannot identify which language is currently active when navigating the settings.
+**Action:** When using multiple `ActionButton` components to act as a mutually exclusive toggle group, always supply `aria-pressed={isActiveCondition}` to explicitly convey the selected state to assistive technologies.
