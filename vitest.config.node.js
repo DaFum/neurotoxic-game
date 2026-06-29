@@ -30,8 +30,10 @@ export default defineConfig({
       'tests/security/**/*.spec.js',
       'tests/social/**/*.test.js',
       'tests/social/**/*.spec.js',
-      'tests/utils/**/*.test.{js,ts}',
-      'tests/utils/**/*.spec.{js,ts}'
+      'tests/utils/**/*.test.js',
+      'tests/utils/**/*.spec.js',
+      'tests/utils/**/*.test.ts',
+      'tests/utils/**/*.spec.ts'
     ],
     // Keep AmpStageController under jsdom (it touches DOM APIs).
     exclude: ['tests/logic/AmpStageController.test.js']
