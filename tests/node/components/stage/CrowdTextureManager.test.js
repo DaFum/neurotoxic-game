@@ -42,9 +42,8 @@ mock.module(
 )
 
 test('CrowdTextureManager', async t => {
-  const { CrowdTextureManager } = await import(
-    '../../../../src/components/stage/CrowdTextureManager.ts'
-  )
+  const { CrowdTextureManager } =
+    await import('../../../../src/components/stage/CrowdTextureManager.ts')
 
   await t.test('loadAssets - handles error path', async () => {
     mockHandleError.mock.resetCalls()

@@ -35,9 +35,15 @@ test('RoadieTrafficManager gracefully handles and logs errors during sprite clea
     manager.renderTraffic({ traffic: 'not an array' }, 10, 10)
 
     assert.equal(loggedErrors.length, 2)
-    assert.equal(loggedErrors[0].message, 'Error removing sprite from container for id error-car:')
+    assert.equal(
+      loggedErrors[0].message,
+      'Error removing sprite from container for id error-car:'
+    )
     assert.equal(loggedErrors[0].error.message, 'removeChild failed')
-    assert.equal(loggedErrors[1].message, 'Error destroying sprite for id error-car:')
+    assert.equal(
+      loggedErrors[1].message,
+      'Error destroying sprite for id error-car:'
+    )
     assert.equal(loggedErrors[1].error.message, 'destroy failed')
     assert.equal(manager.carSprites.size, 0)
     assert.equal(manager.currentIds.size, 0)
@@ -77,7 +83,7 @@ test('RoadieTrafficManager clears stale sprites when traffic is malformed', () =
   assert.equal(manager.currentIds.size, 0)
 })
 
-test('RoadieTrafficManager handles errors when removing or destroying sprites safely', async (t) => {
+test('RoadieTrafficManager handles errors when removing or destroying sprites safely', async t => {
   const { logger } = await import('../../src/utils/logger')
   const errorMock = t.mock.method(logger, 'error', () => {})
 

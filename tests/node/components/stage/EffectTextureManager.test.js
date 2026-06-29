@@ -57,9 +57,8 @@ mock.module(
 )
 
 test('EffectTextureManager', async t => {
-  const { EffectTextureManager } = await import(
-    '../../../../src/components/stage/EffectTextureManager.ts'
-  )
+  const { EffectTextureManager } =
+    await import('../../../../src/components/stage/EffectTextureManager.ts')
 
   await t.test('loadAssets - handles error path', async () => {
     mockLogger.warn.mock.resetCalls()

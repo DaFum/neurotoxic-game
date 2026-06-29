@@ -142,4 +142,4 @@ export const TRAVEL_LOGISTICS_CASH_CAP = 45
 /**
  * Venue split rates by difficulty.
  */
-export const VENUE_SPLIT_RATES: Record<number, number> = { 3: 0.30, 4: 0.50 }
+export const VENUE_SPLIT_RATES: Record<number, number> = { 3: 0.3, 4: 0.5 }
