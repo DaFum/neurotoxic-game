@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { getUnlocks, addUnlock, __testInternals } from '../../src/utils/unlockManager'
-import * as storageHelpers from '../../src/utils/storage'
 
 describe('unlockManager', () => {
   let mockStorage: Record<string, string>
@@ -26,9 +25,6 @@ describe('unlockManager', () => {
 
     vi.stubGlobal('localStorage', localStorageMock)
 
-    // We spy on safeStorageOperation but let it call the actual implementation
-    // to test the full flow, unless we explicitly mock it to simulate failures.
-    vi.spyOn(storageHelpers, 'safeStorageOperation')
   })
 
   afterEach(() => {
@@ -87,8 +83,8 @@ describe('unlockManager', () => {
 
   describe('addUnlock', () => {
     it('returns false for non-string inputs', () => {
-      expect(addUnlock(123 as any)).toBe(false)
-      expect(addUnlock(null as any)).toBe(false)
+      expect(addUnlock(123 as unknown as string)).toBe(false)
+      expect(addUnlock(null as unknown as string)).toBe(false)
     })
 
     it('adds a valid unlock to storage and returns true', () => {
@@ -129,20 +125,10 @@ describe('unlockManager', () => {
       // Initialize cache
       getUnlocks()
 
-      // We can't mock safeStorageOperation like that because it causes call stack exceeded
-      // when spy is tracking itself. Better to mock the underlying setItem directly to simulate failure.
-      // But wait, safeStorageOperation wraps localStorage.setItem and catches errors?
-      // No, safeStorageOperation wraps the function and relies on runSafeStorageOperation.
-      // Actually, since we're in Vitest, let's just make the function return false directly if it's our saveUnlocks call.
-
-      vi.spyOn(storageHelpers, 'safeStorageOperation').mockImplementation((operation: string, fn: any, fallback: any) => {
-        if (operation === 'saveUnlocks') return false
-        // For others, just call the function directly (bypass the actual safe wrapper for this test)
-        try {
-            return fn()
-        } catch {
-            return fallback
-        }
+      // Simulate localStorage write failure (e.g. QuotaExceededError)
+      // Since safeStorageOperation retries 3 times, we need to fail all 3 times
+      vi.spyOn(localStorage, 'setItem').mockImplementation(() => {
+        throw new Error('QuotaExceededError')
       })
 
       const success = addUnlock('failed_unlock')
@@ -161,7 +147,6 @@ describe('unlockManager', () => {
       getUnlocks()
 
       // Clear cache
-      process.env.NODE_ENV = 'test'
       __testInternals.clearCache()
 
       // Instead of relying on addUnlock which calls getUnlocks again,
