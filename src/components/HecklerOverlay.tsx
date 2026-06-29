@@ -55,13 +55,12 @@ export const HecklerOverlay = memo(function HecklerOverlay({
 
   return (
     <div className='absolute inset-0 pointer-events-none overflow-hidden z-(--z-stage)'>
-      {projectiles
-        .filter((p): p is Projectile => !!p && p.id !== undefined)
-        .map(p => {
+      {projectiles.reduce<React.ReactNode[]>((acc, p) => {
+        if (p && p.id !== undefined) {
           const x = p.x ?? 0
           const y = p.y ?? 0
           const rotation = p.rotation ?? 0
-          return (
+          acc.push(
             <div
               key={p.id}
               className='absolute text-4xl drop-shadow-lg'
@@ -72,7 +71,9 @@ export const HecklerOverlay = memo(function HecklerOverlay({
               {p.type === 'bottle' ? '🍾' : '🍅'}
             </div>
           )
-        })}
+        }
+        return acc
+      }, [])}
     </div>
   )
 })
