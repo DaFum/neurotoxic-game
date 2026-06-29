@@ -1,13 +1,26 @@
 import assert from 'node:assert/strict'
-import { test, describe } from 'vitest'
+import { test, describe, vi, beforeEach } from 'vitest'
 import {
   resolveVenue,
   resolveTravelVenue,
   getLocationName,
   checkVenueAccess,
   checkTravelPrerequisites,
-  checkTravelResources
+  checkTravelResources,
+  calculateTravelCostsAndImpact
 } from '../../src/utils/travelUtils'
+import { calculateTravelExpenses } from '../../src/utils/economyEngine'
+import { getTotalDailyObligations } from '../../src/utils/assetSelectors'
+
+vi.mock('../../src/utils/economyEngine', async (importOriginal) => ({
+  ...await importOriginal(),
+  calculateTravelExpenses: vi.fn()
+}))
+
+vi.mock('../../src/utils/assetSelectors', async (importOriginal) => ({
+  ...await importOriginal(),
+  getTotalDailyObligations: vi.fn()
+}))
 
 describe('travelUtils', () => {
   const venuesMap = new Map([
@@ -251,5 +264,66 @@ describe('travelUtils', () => {
         })
       }
     )
+  })
+
+  describe('calculateTravelCostsAndImpact', () => {
+    beforeEach(() => {
+      vi.clearAllMocks()
+    })
+
+    test('calculates correct travel costs and impact based on mocks and forwards correct inputs', () => {
+      vi.mocked(calculateTravelExpenses).mockReturnValue({
+        dist: 100,
+        totalCost: 50,
+        fuelLiters: 10
+      })
+      vi.mocked(getTotalDailyObligations).mockReturnValue(20)
+
+      const mockNode = { id: 'node_1' }
+      const mockCurrentStartNode = { id: 'node_0' }
+      const mockPlayer = { money: 1000 }
+      const mockBand = { harmony: 50 }
+      const mockSocial = { followers: 10 }
+      const mockAssets = { items: [] }
+      const mockLiabilities = { loans: [] }
+      const mockAssetModifiers = { travelStaminaRegen: 5 }
+
+      const result = calculateTravelCostsAndImpact(
+        mockNode,
+        mockCurrentStartNode,
+        mockPlayer,
+        mockBand,
+        mockSocial,
+        mockAssets,
+        mockLiabilities,
+        mockAssetModifiers
+      )
+
+      assert.deepStrictEqual(result, {
+        dist: 100,
+        totalCost: 50,
+        fuelLiters: 10,
+        dailyCost: 20,
+        totalCashImpact: 70
+      })
+
+      assert.strictEqual(vi.mocked(calculateTravelExpenses).mock.calls.length, 1)
+      assert.deepStrictEqual(vi.mocked(calculateTravelExpenses).mock.calls[0], [
+        mockNode,
+        mockCurrentStartNode,
+        mockPlayer,
+        mockBand,
+        mockAssetModifiers
+      ])
+
+      assert.strictEqual(vi.mocked(getTotalDailyObligations).mock.calls.length, 1)
+      assert.deepStrictEqual(vi.mocked(getTotalDailyObligations).mock.calls[0], [{
+        player: mockPlayer,
+        band: mockBand,
+        social: mockSocial,
+        assets: mockAssets,
+        liabilities: mockLiabilities
+      }])
+    })
   })
 })
