@@ -43,7 +43,9 @@ export default defineConfig({
       'tests/ui/**/*.test.js',
       'tests/ui/**/*.spec.js',
       'tests/integration/**/*.test.js',
-      'tests/integration/**/*.spec.js'
+      'tests/integration/**/*.spec.js',
+      'tests/context/**/*.test.tsx',
+      'tests/context/**/*.spec.tsx'
     ]
   }
 })
