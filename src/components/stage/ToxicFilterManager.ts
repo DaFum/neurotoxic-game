@@ -62,7 +62,14 @@ void main() {
 
 const BaseFilter = PIXI.Filter || class {}
 
+/**
+ * Applies a brutalist CRT, chromatic aberration, and glitch effect shader.
+ * @remarks Extends PIXI.Filter and sets up the custom GLProgram with predefined vertex and fragment shaders.
+ */
 export class BrutalistFilter extends BaseFilter {
+  /**
+   * Initializes the BrutalistFilter with its GLProgram and uniforms.
+   */
   constructor() {
     if (!PIXI.Filter || !PIXI.GlProgram) {
       super({})
@@ -85,6 +92,11 @@ export class BrutalistFilter extends BaseFilter {
     })
   }
 
+  /**
+   * Updates the shader uniforms for the current frame.
+   * @param time - The current elapsed time in milliseconds used for animation.
+   * @param intensity - The intensity multiplier for the effect.
+   */
   update(time: number, intensity: number) {
     if (this.resources?.filterUniforms) {
       this.resources.filterUniforms.uniforms.uTime = time * 0.001
@@ -92,6 +104,9 @@ export class BrutalistFilter extends BaseFilter {
     }
   }
 
+  /**
+   * Destroys the filter and cleans up its resources.
+   */
   destroy() {
     if (typeof super.destroy === 'function') {
       super.destroy()
@@ -108,6 +123,9 @@ export class ToxicFilterManager {
   toxicFilters: PIXI.Filter[] | null
   isToxicActive: boolean
 
+  /**
+   * Initializes the ToxicFilterManager with its required filters.
+   */
   constructor() {
     this.isToxicActive = false
     this.colorMatrix = new ColorMatrixFilter()
@@ -117,9 +135,9 @@ export class ToxicFilterManager {
 
   /**
    * Updates toxic mode filter effects based on game state.
-   * @param state - The game state.
-   * @param elapsed - The elapsed gig time.
-   * @param stageContainer - The container to apply the filters to.
+   * @param state - The current rhythm game reference state.
+   * @param elapsed - The elapsed gig time in milliseconds.
+   * @param stageContainer - The PixiJS container to apply the filters to.
    */
   update(
     state: Pick<RhythmGameRefState, 'isToxicMode' | 'combo'>,
@@ -147,14 +165,14 @@ export class ToxicFilterManager {
 
   /**
    * Checks if the manager is ready for updates.
-   * @returns Whether the toxic filters are available.
+   * @returns A boolean indicating whether the toxic filters are available.
    */
   isReady(): boolean {
     return !!this.toxicFilters
   }
 
   /**
-   * Disposes Pixi resources related to toxic filters.
+   * Disposes PixiJS resources related to toxic filters.
    */
   dispose(): void {
     if (this.colorMatrix) {
