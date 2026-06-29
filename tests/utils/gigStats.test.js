@@ -93,10 +93,11 @@ describe('gigStats', () => {
         corruptionLevel: 10
       }
 
-      const snapshot = buildGigStatsSnapshot(1000, stats, 15, [
+      const songStats = [
         { songId: 'song1', score: 500, accuracy: 90, index: 0 },
         { songId: 'song2', score: 500, accuracy: 85, index: 1 }
-      ])
+      ]
+      const snapshot = buildGigStatsSnapshot(1000, stats, 15, songStats)
 
       expect(snapshot).toEqual({
         score: 1000,
@@ -112,6 +113,9 @@ describe('gigStats', () => {
           { songId: 'song2', score: 500, accuracy: 85, index: 1 }
         ]
       })
+
+      expect(snapshot.songStats).not.toBe(songStats)
+      expect(snapshot.songStats[0]).not.toBe(songStats[0])
     })
 
     it('defaults songStats to empty array and handles missing optional stats fields', () => {
