@@ -102,8 +102,14 @@ export function resolveOverlaps(
       const n1 = nodeList[j]
       if (!n1) continue
 
-      const cellX = Math.floor(n1.x / cellSize)
-      const cellY = Math.floor(n1.y / cellSize)
+      const cellX = Math.max(
+        0,
+        Math.min(gridWidth - 1, Math.floor(n1.x / cellSize))
+      )
+      const cellY = Math.max(
+        0,
+        Math.min(gridHeight - 1, Math.floor(n1.y / cellSize))
+      )
 
       // Gather candidates from neighboring cells
       for (let cx = cellX - 1; cx <= cellX + 1; cx++) {
