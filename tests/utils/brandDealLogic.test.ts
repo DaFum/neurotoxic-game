@@ -1,11 +1,10 @@
 import { describe, it, expect, vi } from 'vitest'
 import { generateBrandOffers, negotiateDeal } from '../../src/utils/brandDealLogic'
-import { SocialEngineGameState } from '../../src/types/social'
-import { BRAND_DEALS } from '../../src/data/brandDeals'
+import { SocialEngineGameState, BrandDeal, BrandOffer } from '../../src/types/social'
 
 // We will mock buildBrandOffer to easily test what gets passed to it
 vi.mock('../../src/utils/brandOfferFlavor', async (importOriginal) => {
-  const actual: any = await importOriginal()
+  const actual = await importOriginal<typeof import('../../src/utils/brandOfferFlavor')>()
   return {
     ...actual,
     buildBrandOffer: vi.fn((deal, ctx) => ({ ...deal, _testCtx: ctx }))
@@ -39,7 +38,7 @@ describe('brandDealLogic', () => {
       } as unknown as SocialEngineGameState
 
       const rng = () => 0.5 // Stable rng
-      const offers = generateBrandOffers(gameState, rng) as any[]
+      const offers = generateBrandOffers(gameState, rng) as (BrandOffer & { _testCtx: { totalFollowers: number } })[]
 
       // We expect it to process 1000 followers and output up to 3 offers
       expect(offers.length).toBeGreaterThan(0)
@@ -65,10 +64,10 @@ describe('brandDealLogic', () => {
   })
 
   describe('negotiateDeal', () => {
-    const mockDeal: any = {
+    const mockDeal = {
       id: 'test_deal',
       offer: { upfront: 1000, perGig: 100, duration: 5 }
-    }
+    } as unknown as BrandDeal
 
     it('handles SAFE strategy with success', () => {
       const gameState = { band: {}, social: {} } as SocialEngineGameState
@@ -181,7 +180,11 @@ describe('brandDealLogic', () => {
     it('throws error on invalid strategy', () => {
       const gameState = { band: {}, social: {} } as SocialEngineGameState
       expect(() => {
-        negotiateDeal(mockDeal, 'INVALID' as any, gameState)
+        negotiateDeal(
+          mockDeal,
+          'INVALID' as 'SAFE' | 'PERSUASIVE' | 'AGGRESSIVE',
+          gameState
+        )
       }).toThrow('Unknown strategy: INVALID')
     })
   })
