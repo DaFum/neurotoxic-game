@@ -203,4 +203,40 @@ describe('useMapGeneration', () => {
 
     expect(generateMapSpy).toHaveBeenCalledTimes(1)
   })
+
+  it('should handle map generation failure when a non-Error string is thrown', () => {
+    const generateMapSpy = vi
+      .spyOn(MapGenerator.prototype, 'generateMap')
+      .mockImplementation(() => {
+        // eslint-disable-next-line no-throw-literal
+        throw 'Non-error string thrown'
+      })
+
+    renderHook(() =>
+      useMapGeneration({
+        gameMap: null,
+        dispatch: mockDispatch,
+        tRef: mockTRef
+      })
+    )
+
+    expect(handleError).toHaveBeenCalled()
+    expect(mockDispatch).not.toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'SET_MAP' })
+    )
+
+    // Initial attempt throws, schedules retry
+    expect(generateMapSpy).toHaveBeenCalledTimes(1)
+
+    // Verify handleError was called with our string literal message
+    expect(handleError).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: 'Failed to generate map',
+        details: expect.objectContaining({
+          originalError: 'Non-error string thrown'
+        })
+      }),
+      expect.anything()
+    )
+  })
 })
