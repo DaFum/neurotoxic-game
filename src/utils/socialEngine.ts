@@ -191,17 +191,42 @@ export const generatePostOptions = (
     }
   }
 
-  // 2. Sort by weight descending
-  eligibleOptions.sort((a, b) => b._weight - a._weight)
-
-  // 3. Fill remaining slots to reach 3 total
   const needed = 3 - results.length
-  for (let i = 0; i < needed && i < eligibleOptions.length; i++) {
+
+  // ⚡ BOLT OPTIMIZATION: Replaced O(N log N) sorting with an O(N) procedural single-pass loop to find the top weighted options.
+  let top1: WeightedPostOption | null = null
+  let top2: WeightedPostOption | null = null
+  let top3: WeightedPostOption | null = null
+  let score1 = -Infinity
+  let score2 = -Infinity
+  let score3 = -Infinity
+
+  for (let i = 0; i < eligibleOptions.length; i++) {
     const opt = eligibleOptions[i]
-    if (opt) {
-      results.push(opt)
+    if (!opt) continue
+
+    const score = opt._weight
+    if (score > score1) {
+      top3 = top2
+      score3 = score2
+      top2 = top1
+      score2 = score1
+      top1 = opt
+      score1 = score
+    } else if (score > score2) {
+      top3 = top2
+      score3 = score2
+      top2 = opt
+      score2 = score
+    } else if (score > score3) {
+      top3 = opt
+      score3 = score
     }
   }
+
+  if (needed > 0 && top1) results.push(top1)
+  if (needed > 1 && top2) results.push(top2)
+  if (needed > 2 && top3) results.push(top3)
 
   // 3a. Validate that exactly 3 options are available
   if (results.length !== 3) {
