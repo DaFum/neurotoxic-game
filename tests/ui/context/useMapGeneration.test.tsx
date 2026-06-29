@@ -208,7 +208,7 @@ describe('useMapGeneration', () => {
     const generateMapSpy = vi
       .spyOn(MapGenerator.prototype, 'generateMap')
       .mockImplementation(() => {
-        // eslint-disable-next-line no-throw-literal
+
         throw 'Non-error string thrown'
       })
 
