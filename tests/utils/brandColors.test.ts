@@ -17,7 +17,7 @@ describe('BRAND_COLOR_HEX', () => {
   })
 
   it('all values are valid hex colors', () => {
-    for (const [key, value] of Object.entries(BRAND_COLOR_HEX)) {
+    for (const [_key, value] of Object.entries(BRAND_COLOR_HEX)) {
       expect(value).toMatch(HEX_COLOR_PATTERN)
     }
   })
