@@ -76,6 +76,35 @@ describe('checkTraitUnlocks', () => {
       assert.deepStrictEqual(unlocks, [])
     })
 
+    it('does not unlock Grudge Holder for Matze if relationships is not a loose record', () => {
+      const matze = createMember('Matze', {}, "invalid")
+      const state = createState([matze])
+      const context = { type: 'EVENT_RESOLVED' }
+
+      const unlocks = checkTraitUnlocks(state, context)
+      assert.deepStrictEqual(unlocks, [])
+    })
+
+    it('does not unlock Grudge Holder for Matze if relationships has inherited properties', () => {
+      const relationships = Object.create({ Inherited: 10 })
+      relationships.Lars = 50
+      const matze = createMember('Matze', {}, relationships)
+      const state = createState([matze])
+      const context = { type: 'EVENT_RESOLVED' }
+
+      const unlocks = checkTraitUnlocks(state, context)
+      assert.deepStrictEqual(unlocks, [])
+    })
+
+    it('does not unlock Grudge Holder for Matze if relationships value is infinite or NaN', () => {
+      const matze = createMember('Matze', {}, { Lars: -Infinity, Marius: NaN })
+      const state = createState([matze])
+      const context = { type: 'EVENT_RESOLVED' }
+
+      const unlocks = checkTraitUnlocks(state, context)
+      assert.deepStrictEqual(unlocks, [])
+    })
+
     it('unlocks Melodic Genius for Lars with slow song (<120 BPM) and maxCombo > 30', () => {
       const lars = createMember('Lars')
       const state = createState([lars])
@@ -107,6 +136,36 @@ describe('checkTraitUnlocks', () => {
         { memberId: 'Matze', traitId: 'tech_wizard' }
       ])
     })
+
+    it('does not unlock Tech Wizard if song difficulty is <= 3', () => {
+      const matze = createMember('Matze')
+      const state = createState([matze])
+      const context = {
+        type: 'GIG_COMPLETE',
+        gigStats: { song: { difficulty: 3 }, accuracy: 100 }
+      }
+
+      const unlocks = checkTraitUnlocks(state, context)
+      assert.ok(
+        !unlocks.some(u => u.traitId === 'tech_wizard'),
+        'tech_wizard should not unlock'
+      )
+    })
+
+    it('does not unlock Tech Wizard if accuracy is < 100', () => {
+      const matze = createMember('Matze')
+      const state = createState([matze])
+      const context = {
+        type: 'GIG_COMPLETE',
+        gigStats: { song: { difficulty: 4 }, accuracy: 99 }
+      }
+
+      const unlocks = checkTraitUnlocks(state, context)
+      assert.ok(
+        !unlocks.some(u => u.traitId === 'tech_wizard'),
+        'tech_wizard should not unlock'
+      )
+    })
   })
 
   // 2. TRAVEL_COMPLETE Scenarios
@@ -125,6 +184,16 @@ describe('checkTraitUnlocks', () => {
     it('does not unlock Road Warrior for Lars with < 5000 total distance', () => {
       const lars = createMember('Lars')
       const state = createState([lars], { totalDistance: 4999 })
+      const context = { type: 'TRAVEL_COMPLETE' }
+
+      const unlocks = checkTraitUnlocks(state, context)
+      assert.deepStrictEqual(unlocks, [])
+    })
+
+    it('does not unlock Road Warrior for Lars if player.stats is undefined', () => {
+      const lars = createMember('Lars')
+      const state = createState([lars])
+      delete state.player.stats // Force stats to be undefined
       const context = { type: 'TRAVEL_COMPLETE' }
 
       const unlocks = checkTraitUnlocks(state, context)
@@ -169,6 +238,25 @@ describe('checkTraitUnlocks', () => {
       assert.deepStrictEqual(unlocks, [
         { memberId: 'Matze', traitId: 'gear_nerd' }
       ])
+    })
+
+    it('does not unlock Gear Nerd for Matze if gearCount is undefined', () => {
+      const matze = createMember('Matze')
+      const state = createState([matze])
+      const context = { type: 'PURCHASE' } // missing gearCount
+
+      const unlocks = checkTraitUnlocks(state, context)
+      assert.deepStrictEqual(unlocks, [])
+    })
+
+    it('does not unlock Party Animal for Marius if player.hqUpgrades is undefined and item does not match', () => {
+      const marius = createMember('Marius')
+      const state = createState([marius])
+      delete state.player.hqUpgrades
+      const context = { type: 'PURCHASE', item: { id: 'some_other_item' } }
+
+      const unlocks = checkTraitUnlocks(state, context)
+      assert.deepStrictEqual(unlocks, [])
     })
   })
 
@@ -217,6 +305,26 @@ describe('checkTraitUnlocks', () => {
       const unlocks = checkTraitUnlocks(state, context)
       assert.deepStrictEqual(unlocks, [])
     })
+
+    it('does not unlock Clumsy for Marius if player.stats is undefined', () => {
+      const marius = createMember('Marius')
+      const state = createState([marius])
+      delete state.player.stats
+      const context = { type: 'SOCIAL_UPDATE' }
+
+      const unlocks = checkTraitUnlocks(state, context)
+      assert.deepStrictEqual(unlocks, [])
+    })
+
+    it('does not unlock Social Manager for Lars if social channels are undefined', () => {
+      const lars = createMember('Lars')
+      const state = createState([lars])
+      // social object exists but no channels
+      const context = { type: 'SOCIAL_UPDATE' }
+
+      const unlocks = checkTraitUnlocks(state, context)
+      assert.deepStrictEqual(unlocks, [])
+    })
   })
 
   // 5. EVENT_RESOLVED Scenarios
@@ -230,6 +338,16 @@ describe('checkTraitUnlocks', () => {
       assert.deepStrictEqual(unlocks, [
         { memberId: 'Lars', traitId: 'bandleader' }
       ])
+    })
+
+    it('does not unlock Bandleader for Lars if player.stats is undefined', () => {
+      const lars = createMember('Lars')
+      const state = createState([lars])
+      delete state.player.stats
+      const context = { type: 'EVENT_RESOLVED' }
+
+      const unlocks = checkTraitUnlocks(state, context)
+      assert.deepStrictEqual(unlocks, [])
     })
 
     it('unlocks Showman for Marius when stage dives >= 3', () => {
@@ -254,6 +372,24 @@ describe('checkTraitUnlocks', () => {
       ])
     })
 
+    it('does not unlock Grudge Holder for Matze if relationships are undefined', () => {
+      const matze = createMember('Matze', {}, undefined)
+      const state = createState([matze])
+      const context = { type: 'EVENT_RESOLVED' }
+
+      const unlocks = checkTraitUnlocks(state, context)
+      assert.deepStrictEqual(unlocks, [])
+    })
+
+    it('does not unlock Grudge Holder for Matze if relationships values are not numbers', () => {
+      const matze = createMember('Matze', {}, { Marius: 'good', Lars: null })
+      const state = createState([matze])
+      const context = { type: 'EVENT_RESOLVED' }
+
+      const unlocks = checkTraitUnlocks(state, context)
+      assert.deepStrictEqual(unlocks, [])
+    })
+
     it('unlocks Peacemaker for Lars when band harmony >= 90', () => {
       const lars = createMember('Lars')
       const state = createState([lars], {}, {}, 90)
@@ -263,6 +399,26 @@ describe('checkTraitUnlocks', () => {
       assert.deepStrictEqual(unlocks, [
         { memberId: 'Lars', traitId: 'peacemaker' }
       ])
+    })
+
+    it('does not unlock Peacemaker for Lars if band.harmony is undefined and fallback < 90', () => {
+      const lars = createMember('Lars')
+      const state = createState([lars])
+      delete state.band.harmony
+      const context = { type: 'EVENT_RESOLVED' }
+
+      const unlocks = checkTraitUnlocks(state, context)
+      assert.deepStrictEqual(unlocks, [])
+    })
+
+    it('does not unlock Showman for Marius if player.stats is undefined', () => {
+      const marius = createMember('Marius')
+      const state = createState([marius])
+      delete state.player.stats
+      const context = { type: 'EVENT_RESOLVED' }
+
+      const unlocks = checkTraitUnlocks(state, context)
+      assert.deepStrictEqual(unlocks, [])
     })
   })
 
@@ -291,6 +447,38 @@ describe('checkTraitUnlocks', () => {
       }
       const unlocks = checkTraitUnlocks(state, context)
       assert.deepStrictEqual(unlocks, [])
+    })
+
+    it('returns empty array if context is invalid', () => {
+      const matze = createMember('Matze')
+      const state = createState([matze])
+      const context = null // invalid context
+      const unlocks = checkTraitUnlocks(state, context)
+      assert.deepStrictEqual(unlocks, [])
+    })
+
+    it('returns empty array if band members is undefined', () => {
+      const state = createState([])
+      delete state.band.members
+      const context = {
+        type: 'GIG_COMPLETE',
+        gigStats: { misses: 0 }
+      }
+      const unlocks = checkTraitUnlocks(state, context)
+      assert.deepStrictEqual(unlocks, [])
+    })
+
+    it('skips empty members in band array', () => {
+      const state = createState([null, undefined, createMember('Matze')])
+      const context = {
+        type: 'GIG_COMPLETE',
+        gigStats: { misses: 0, accuracy: 100 }
+      }
+      const unlocks = checkTraitUnlocks(state, context)
+      assert.deepStrictEqual(unlocks, [
+        { memberId: 'Matze', traitId: 'virtuoso' },
+        { memberId: 'Matze', traitId: 'perfektionist' }
+      ])
     })
 
     it('returns empty array for unknown context type', () => {
