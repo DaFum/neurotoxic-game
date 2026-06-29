@@ -138,7 +138,10 @@ describe('checkTraitUnlocks', () => {
     })
 
     it('does not unlock Tech Wizard if song difficulty is <= 3', () => {
-      const matze = createMember('Matze')
+      const matze = createMember('Matze', {
+        perfektionist: { id: 'perfektionist' },
+        virtuoso: { id: 'virtuoso' }
+      })
       const state = createState([matze])
       const context = {
         type: 'GIG_COMPLETE',
@@ -146,14 +149,14 @@ describe('checkTraitUnlocks', () => {
       }
 
       const unlocks = checkTraitUnlocks(state, context)
-      assert.ok(
-        !unlocks.some(u => u.traitId === 'tech_wizard'),
-        'tech_wizard should not unlock'
-      )
+      assert.deepStrictEqual(unlocks, [])
     })
 
     it('does not unlock Tech Wizard if accuracy is < 100', () => {
-      const matze = createMember('Matze')
+      const matze = createMember('Matze', {
+        perfektionist: { id: 'perfektionist' },
+        virtuoso: { id: 'virtuoso' }
+      })
       const state = createState([matze])
       const context = {
         type: 'GIG_COMPLETE',
@@ -161,10 +164,7 @@ describe('checkTraitUnlocks', () => {
       }
 
       const unlocks = checkTraitUnlocks(state, context)
-      assert.ok(
-        !unlocks.some(u => u.traitId === 'tech_wizard'),
-        'tech_wizard should not unlock'
-      )
+      assert.deepStrictEqual(unlocks, [])
     })
   })
 
