@@ -1,13 +1,24 @@
 import assert from 'node:assert/strict'
-import { test, describe } from 'vitest'
+import { test, describe, vi } from 'vitest'
 import {
   resolveVenue,
   resolveTravelVenue,
   getLocationName,
   checkVenueAccess,
   checkTravelPrerequisites,
-  checkTravelResources
+  checkTravelResources,
+  calculateTravelCostsAndImpact
 } from '../../src/utils/travelUtils'
+import { calculateTravelExpenses } from '../../src/utils/economyEngine'
+import { getTotalDailyObligations } from '../../src/utils/assetSelectors'
+
+vi.mock('../../src/utils/economyEngine', () => ({
+  calculateTravelExpenses: vi.fn()
+}))
+
+vi.mock('../../src/utils/assetSelectors', () => ({
+  getTotalDailyObligations: vi.fn()
+}))
 
 describe('travelUtils', () => {
   const venuesMap = new Map([
@@ -251,5 +262,35 @@ describe('travelUtils', () => {
         })
       }
     )
+  })
+
+  describe('calculateTravelCostsAndImpact', () => {
+    test('calculates correct travel costs and impact based on mocks', () => {
+      vi.mocked(calculateTravelExpenses).mockReturnValue({
+        dist: 100,
+        totalCost: 50,
+        fuelLiters: 10
+      })
+      vi.mocked(getTotalDailyObligations).mockReturnValue(20)
+
+      const result = calculateTravelCostsAndImpact(
+        {}, // node
+        {}, // currentStartNode
+        {}, // player
+        {}, // band
+        {}, // social
+        {}, // assets
+        {}, // liabilities
+        {}  // assetModifiers
+      )
+
+      assert.deepStrictEqual(result, {
+        dist: 100,
+        totalCost: 50,
+        fuelLiters: 10,
+        dailyCost: 20,
+        totalCashImpact: 70
+      })
+    })
   })
 })
