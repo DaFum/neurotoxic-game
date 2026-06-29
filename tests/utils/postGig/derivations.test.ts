@@ -1,8 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
-import { derivePostOptions, deriveGigContext, deriveFinancials } from '../../../src/utils/postGig/derivations'
+import { derivePostOptions } from '../../../src/utils/postGig/derivations'
 import * as socialEngine from '../../../src/utils/socialEngine'
-import * as economyEngine from '../../../src/utils/economyEngine'
-import * as performanceLogic from '../../../src/utils/postGig/performanceLogic'
+import type { GameState } from '../../../src/types/game'
 
 vi.mock('../../../src/utils/socialEngine', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../src/utils/socialEngine')>()
@@ -15,15 +14,15 @@ vi.mock('../../../src/utils/socialEngine', async (importOriginal) => {
 describe('derivePostOptions', () => {
   it('returns successful options from generatePostOptions', () => {
     const mockOptions = [{ id: 'opt1' }]
-    vi.mocked(socialEngine.generatePostOptions).mockReturnValue(mockOptions as any)
+    vi.mocked(socialEngine.generatePostOptions).mockReturnValue(mockOptions as unknown as socialEngine.SocialPostOption[])
 
     const result = derivePostOptions({
-      currentGig: { id: 'test-gig' } as any,
-      lastGigStats: { score: 100 } as any,
-      player: { money: 100 } as any,
-      band: { name: 'The Testers' } as any,
-      social: { followers: 1000 } as any,
-      activeEvent: null as any
+      currentGig: { id: 'test-gig' } as unknown as GameState['currentGig'],
+      lastGigStats: { score: 100 } as unknown as GameState['lastGigStats'],
+      player: { money: 100 } as unknown as GameState['player'],
+      band: { name: 'The Testers' } as unknown as GameState['band'],
+      social: { followers: 1000 } as unknown as GameState['social'],
+      activeEvent: null as unknown as GameState['activeEvent']
     })
 
     expect(result.options).toEqual(mockOptions)
@@ -37,12 +36,12 @@ describe('derivePostOptions', () => {
     })
 
     const result = derivePostOptions({
-      currentGig: { id: 'test-gig' } as any,
-      lastGigStats: { score: 100 } as any,
-      player: { money: 100 } as any,
-      band: { name: 'The Testers' } as any,
-      social: { followers: 1000 } as any,
-      activeEvent: null as any
+      currentGig: { id: 'test-gig' } as unknown as GameState['currentGig'],
+      lastGigStats: { score: 100 } as unknown as GameState['lastGigStats'],
+      player: { money: 100 } as unknown as GameState['player'],
+      band: { name: 'The Testers' } as unknown as GameState['band'],
+      social: { followers: 1000 } as unknown as GameState['social'],
+      activeEvent: null as unknown as GameState['activeEvent']
     })
 
     expect(result.options).toEqual([])
@@ -51,12 +50,12 @@ describe('derivePostOptions', () => {
 
   it('returns empty options when currentGig or lastGigStats are missing', () => {
     const result = derivePostOptions({
-      currentGig: null as any,
-      lastGigStats: null as any,
-      player: {} as any,
-      band: {} as any,
-      social: {} as any,
-      activeEvent: null as any
+      currentGig: null as unknown as GameState['currentGig'],
+      lastGigStats: null as unknown as GameState['lastGigStats'],
+      player: {} as unknown as GameState['player'],
+      band: {} as unknown as GameState['band'],
+      social: {} as unknown as GameState['social'],
+      activeEvent: null as unknown as GameState['activeEvent']
     })
 
     expect(result.options).toEqual([])
