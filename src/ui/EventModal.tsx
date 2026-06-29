@@ -75,6 +75,146 @@ const EventOptionButton = ({
   )
 }
 
+interface EventHeaderProps {
+  event: EventModalEvent
+  eventContext: Record<string, unknown> | undefined
+  titleKey: string
+  descriptionKey: string
+  t: ReturnType<typeof useTranslation>['t']
+}
+
+const EventHeader = ({
+  event,
+  eventContext,
+  titleKey,
+  descriptionKey,
+  t
+}: EventHeaderProps) => (
+  <div className='flex items-start gap-4 border-b border-toxic-green/30 pb-6'>
+    {event.category === 'special' ? (
+      <VoidSkullIcon className='w-12 h-12 text-toxic-green animate-pulse shrink-0 mt-1' />
+    ) : (
+      <AlertIcon className='w-12 h-12 text-toxic-green animate-pulse shrink-0 mt-1' />
+    )}
+    <div>
+      <h2
+        id='event-title'
+        className='text-2xl font-bold tracking-[0.1em] uppercase text-toxic-green'
+      >
+        {t(titleKey, {
+          defaultValue: event.title ?? t('ui:event.untitled'),
+          ...eventContext
+        })}
+      </h2>
+      <p className='mt-2 text-sm opacity-80 leading-relaxed text-star-white font-mono'>
+        {t(descriptionKey, {
+          defaultValue: event.description ?? t('ui:event.noDescription'),
+          ...eventContext
+        })}
+      </p>
+    </div>
+  </div>
+)
+
+interface EventOutcomeViewProps {
+  outcomeMessage: string
+  memoizedEffectText: string
+  isResolved: boolean
+  handleContinue: () => void
+  t: ReturnType<typeof useTranslation>['t']
+}
+
+const EventOutcomeView = ({
+  outcomeMessage,
+  memoizedEffectText,
+  isResolved,
+  handleContinue,
+  t
+}: EventOutcomeViewProps) => (
+  <motion.div
+    className='flex flex-col gap-4'
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+  >
+    <div className='p-4 border border-toxic-green bg-toxic-green/5'>
+      <p className='text-star-white font-mono leading-relaxed'>
+        {outcomeMessage}
+      </p>
+      {memoizedEffectText && (
+        <p className='text-toxic-green font-mono mt-4 text-sm font-bold bg-toxic-green/10 inline-block p-2'>
+          {memoizedEffectText}
+        </p>
+      )}
+    </div>
+    <button
+      type='button'
+      disabled={isResolved}
+      onClick={handleContinue}
+      className='w-full p-3 border border-toxic-green bg-toxic-green/20 hover:bg-toxic-green hover:text-void-black text-toxic-green font-bold tracking-widest uppercase transition-colors text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-toxic-green/20 disabled:hover:text-toxic-green'
+    >
+      [ {t('ui:continue', { defaultValue: 'CONTINUE' })} ]
+    </button>
+  </motion.div>
+)
+
+interface EventOptionsListProps {
+  eventOptions: EventModalOption[]
+  eventContext: Record<string, unknown> | undefined
+  gameState: EngineGameState
+  i18n: ReturnType<typeof useTranslation>['i18n']
+  handleOptionSelect: (option: EventModalOption) => void
+  t: ReturnType<typeof useTranslation>['t']
+}
+
+const EventOptionsList = ({
+  eventOptions,
+  eventContext,
+  gameState,
+  i18n,
+  handleOptionSelect,
+  t
+}: EventOptionsListProps) => (
+  <>
+    {/* Keyboard hint */}
+    <p className='text-xs text-ash-gray font-mono uppercase tracking-widest text-center'>
+      {t('ui:keyboardHint', { count: eventOptions.length })}
+    </p>
+
+    <motion.div
+      className='flex flex-col gap-3'
+      initial='hidden'
+      animate='visible'
+      variants={{
+        visible: { transition: { staggerChildren: 0.08 } }
+      }}
+    >
+      {eventOptions.map((option, index) => {
+        const optionLabel =
+          option.label ?? option.textKey ?? option.text ?? 'ui:event.option'
+        const key = option.id ?? option.nextEventId ?? `${optionLabel}-${index}`
+        // Localized currency for the optional `{{amount}}` placeholder
+        // in money-bearing option labels. Sourced deterministically
+        // from the option's effect (null money → 0) so the formatted
+        // amount matches the mechanical effect and localizes per locale.
+        const previewMoney = getOptionPreviewMoney(option, gameState)
+        const amount = formatCurrency(previewMoney ?? 0, i18n.language, 'always')
+        return (
+          <EventOptionButton
+            key={key}
+            option={option}
+            index={index}
+            optionLabel={optionLabel}
+            eventContext={eventContext}
+            amount={amount}
+            onSelect={handleOptionSelect}
+            t={t}
+          />
+        )
+      })}
+    </motion.div>
+  </>
+)
+
 /**
  * Presents the active event narrative, options, and precomputed outcomes.
  * @param props - Active event, option-selection callback, and optional wrapper class.
@@ -276,105 +416,31 @@ export const EventModal = ({
         </div>
 
         <div className='flex flex-col gap-6 max-h-[calc(100svh-4rem)] overflow-y-auto custom-scrollbar'>
-          <div className='flex items-start gap-4 border-b border-toxic-green/30 pb-6'>
-            {event.category === 'special' ? (
-              <VoidSkullIcon className='w-12 h-12 text-toxic-green animate-pulse shrink-0 mt-1' />
-            ) : (
-              <AlertIcon className='w-12 h-12 text-toxic-green animate-pulse shrink-0 mt-1' />
-            )}
-            <div>
-              <h2
-                id='event-title'
-                className='text-2xl font-bold tracking-[0.1em] uppercase text-toxic-green'
-              >
-                {t(titleKey, {
-                  defaultValue: event.title ?? t('ui:event.untitled'),
-                  ...eventContext
-                })}
-              </h2>
-              <p className='mt-2 text-sm opacity-80 leading-relaxed text-star-white font-mono'>
-                {t(descriptionKey, {
-                  defaultValue:
-                    event.description ?? t('ui:event.noDescription'),
-                  ...eventContext
-                })}
-              </p>
-            </div>
-          </div>
+          <EventHeader
+            event={event}
+            eventContext={eventContext}
+            titleKey={titleKey}
+            descriptionKey={descriptionKey}
+            t={t}
+          />
 
           {outcome ? (
-            <motion.div
-              className='flex flex-col gap-4'
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <div className='p-4 border border-toxic-green bg-toxic-green/5'>
-                <p className='text-star-white font-mono leading-relaxed'>
-                  {outcomeMessage}
-                </p>
-                {memoizedEffectText && (
-                  <p className='text-toxic-green font-mono mt-4 text-sm font-bold bg-toxic-green/10 inline-block p-2'>
-                    {memoizedEffectText}
-                  </p>
-                )}
-              </div>
-              <button
-                type='button'
-                disabled={isResolved}
-                onClick={handleContinue}
-                className='w-full p-3 border border-toxic-green bg-toxic-green/20 hover:bg-toxic-green hover:text-void-black text-toxic-green font-bold tracking-widest uppercase transition-colors text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-toxic-green/20 disabled:hover:text-toxic-green'
-              >
-                [ {t('ui:continue', { defaultValue: 'CONTINUE' })} ]
-              </button>
-            </motion.div>
+            <EventOutcomeView
+              outcomeMessage={outcomeMessage}
+              memoizedEffectText={memoizedEffectText}
+              isResolved={isResolved}
+              handleContinue={handleContinue}
+              t={t}
+            />
           ) : (
-            <>
-              {/* Keyboard hint */}
-              <p className='text-xs text-ash-gray font-mono uppercase tracking-widest text-center'>
-                {t('ui:keyboardHint', { count: eventOptions.length })}
-              </p>
-
-              <motion.div
-                className='flex flex-col gap-3'
-                initial='hidden'
-                animate='visible'
-                variants={{
-                  visible: { transition: { staggerChildren: 0.08 } }
-                }}
-              >
-                {eventOptions.map((option, index) => {
-                  const optionLabel =
-                    option.label ??
-                    option.textKey ??
-                    option.text ??
-                    'ui:event.option'
-                  const key =
-                    option.id ?? option.nextEventId ?? `${optionLabel}-${index}`
-                  // Localized currency for the optional `{{amount}}` placeholder
-                  // in money-bearing option labels. Sourced deterministically
-                  // from the option's effect (null money → 0) so the formatted
-                  // amount matches the mechanical effect and localizes per locale.
-                  const previewMoney = getOptionPreviewMoney(option, gameState)
-                  const amount = formatCurrency(
-                    previewMoney ?? 0,
-                    i18n.language,
-                    'always'
-                  )
-                  return (
-                    <EventOptionButton
-                      key={key}
-                      option={option}
-                      index={index}
-                      optionLabel={optionLabel}
-                      eventContext={eventContext}
-                      amount={amount}
-                      onSelect={handleOptionSelect}
-                      t={t}
-                    />
-                  )
-                })}
-              </motion.div>
-            </>
+            <EventOptionsList
+              eventOptions={eventOptions}
+              eventContext={eventContext}
+              gameState={gameState}
+              i18n={i18n}
+              handleOptionSelect={handleOptionSelect}
+              t={t}
+            />
           )}
         </div>
       </motion.div>
