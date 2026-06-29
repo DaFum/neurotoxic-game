@@ -94,7 +94,7 @@ export class BrutalistFilter extends BaseFilter {
 
   /**
    * Updates the shader uniforms for the current frame.
-   * @param time - The current elapsed time used for animation.
+   * @param time - The current elapsed time in milliseconds used for animation.
    * @param intensity - The intensity multiplier for the effect.
    */
   update(time: number, intensity: number) {

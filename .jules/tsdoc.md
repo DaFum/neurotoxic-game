@@ -26,4 +26,4 @@
 | 2026-06-26        | src/scenes/GameOver.tsx                       | GameOver                                                                                                                                                 |
 | 2026-06-27        | src/components/assets/ModulePickerModal.tsx   | ModulePickerModal                                                                                                                                        |
 | 2026-06-28        | src/components/assets/shared/CancelButton.tsx | CancelButtonProps, CancelButton                                                                                                                          |
-| 2026-06-29 | src/components/stage/ToxicFilterManager.ts | BrutalistFilter, update, destroy, ToxicFilterManager, isReady, dispose |
+| 2026-06-29 | src/components/stage/ToxicFilterManager.ts | BrutalistFilter, constructor, update, destroy, ToxicFilterManager, constructor, update, isReady, dispose |
