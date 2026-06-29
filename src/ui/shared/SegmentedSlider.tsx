@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { memo, useId } from 'react'
 import type { ChangeEvent } from 'react'
 
 type SliderSegmentProps = {
@@ -65,26 +65,28 @@ export const SegmentedSlider = memo(function SegmentedSlider({
       ? Math.floor(segmentCount)
       : 1
   const segments = Array.from({ length: safeSegmentCount }, (_, i) => i + 1)
+  const inputId = useId()
 
   return (
     <div className='w-full max-w-sm flex flex-col gap-2'>
       <div className='flex justify-between items-end'>
-        <span
+        <label
+          htmlFor={inputId}
           className='text-xs tracking-widest uppercase opacity-80'
-          aria-hidden='true'
         >
           {label}
-        </span>
+        </label>
         <span className='text-sm font-bold text-toxic-green'>{valueLabel}</span>
       </div>
       <input
+        id={inputId}
         type='range'
         min={inputMin}
         max={inputMax}
         step={inputStep}
         value={inputValue}
         onChange={onInputChange}
-        aria-label={label}
+        aria-valuetext={valueLabel}
         className='sr-only peer'
       />
       <div
