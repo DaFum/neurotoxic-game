@@ -8,7 +8,10 @@ interface OverloadWarningProps {
 
 /**
  * Displays the skull warning only when overload is critical or toxic mode is active.
- * @param props - Overload value and toxic-mode state used to decide warning visibility.
+ *
+ * @param overload - The current system overload percentage.
+ * @param isToxicMode - Whether the game is currently in toxic mode.
+ * @returns A React node rendering the warning visual if thresholds are met, or null otherwise.
  */
 export const OverloadWarning = memo(function OverloadWarning({
   overload,
