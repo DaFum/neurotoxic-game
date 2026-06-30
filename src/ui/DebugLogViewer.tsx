@@ -86,46 +86,44 @@ const DebugLogViewerContent = ({
               <option value={LOG_LEVELS.WARN}>WARN</option>
               <option value={LOG_LEVELS.ERROR}>ERROR</option>
             </select>
-            <Tooltip content={t('ui:debug_log_viewer.dump_console', { defaultValue: 'Dump logs to console' })}>
-              <button
-                type='button'
-                onClick={() => {
-                  if (import.meta.env.DEV) {
-                    // DEV-only debugging dump
-                    console.info(logger.logs)
-                  }
-                }}
-                className='text-ash-gray hover:text-star-white hover:bg-void-black px-2 border-2 border-ash-gray uppercase shadow-[4px_4px_0px_var(--color-ash-gray)] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ash-gray focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
-              >
-                DUMP TO CONSOLE
-              </button>
-            </Tooltip>
-            <Tooltip content={t('ui:debug_log_viewer.copy_logs', { defaultValue: 'Copy logs to clipboard' })}>
-              <button
-                type='button'
-                onClick={() =>
-                  navigator.clipboard
-                    .writeText(logger.dump())
-                    .catch(e =>
-                      logger.error('DebugLogViewer', 'Failed to copy logs', e)
-                    )
+            <button
+              type='button'
+              onClick={() => {
+                if (import.meta.env.DEV) {
+                  // DEV-only debugging dump
+                  console.info(logger.logs)
                 }
-                className='text-ash-gray hover:text-star-white hover:bg-void-black px-2 border-2 border-ash-gray uppercase shadow-[4px_4px_0px_var(--color-ash-gray)] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ash-gray focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
-              >
-                COPY LOGS
-              </button>
-            </Tooltip>
-            <Tooltip content={t('ui:debug_log_viewer.clear_logs', { defaultValue: 'Clear all logs' })}>
-              <button
-                type='button'
-                onClick={() => {
-                  logger.clear()
-                }}
-                className='text-ash-gray hover:text-star-white hover:bg-void-black px-2 border-2 border-ash-gray uppercase shadow-[4px_4px_0px_var(--color-ash-gray)] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ash-gray focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
-              >
-                {t('ui:action_clear')}
-              </button>
-            </Tooltip>
+              }}
+              className='text-ash-gray hover:text-star-white hover:bg-void-black px-2 border-2 border-ash-gray uppercase shadow-[4px_4px_0px_var(--color-ash-gray)] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ash-gray focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
+            >
+              DUMP TO CONSOLE
+            </button>
+            <button
+              type='button'
+              onClick={() => {
+                if (!navigator.clipboard) {
+                  logger.error('DebugLogViewer', 'Clipboard API not available')
+                  return
+                }
+                navigator.clipboard
+                  .writeText(logger.dump())
+                  .catch(e =>
+                    logger.error('DebugLogViewer', 'Failed to copy logs', e)
+                  )
+              }}
+              className='text-ash-gray hover:text-star-white hover:bg-void-black px-2 border-2 border-ash-gray uppercase shadow-[4px_4px_0px_var(--color-ash-gray)] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ash-gray focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
+            >
+              COPY LOGS
+            </button>
+            <button
+              type='button'
+              onClick={() => {
+                logger.clear()
+              }}
+              className='text-ash-gray hover:text-star-white hover:bg-void-black px-2 border-2 border-ash-gray uppercase shadow-[4px_4px_0px_var(--color-ash-gray)] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ash-gray focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
+            >
+              {t('ui:action_clear')}
+            </button>
           </div>
           <button
             type='button'
