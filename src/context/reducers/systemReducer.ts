@@ -484,7 +484,7 @@ const processContrabandExpiry = (band: BandState): BandState => {
     const effectObj = effect as Record<string, unknown>
     const updatedEffect = {
       ...effectObj,
-      remainingDuration: (effectObj.remainingDuration as number) - 1
+      remainingDuration: finiteNumberOr(effectObj.remainingDuration, 0) - 1
     }
     if (updatedEffect.remainingDuration > 0) {
       stillActive.push(updatedEffect)

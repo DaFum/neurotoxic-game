@@ -117,26 +117,26 @@ export const getSafeUUID = (): string => {
   buffer[8] = ((buffer[8] ?? 0) & 0x3f) | 0x80
 
   return (
-    (lut[buffer[0] ?? 0] || '') +
-    (lut[buffer[1] ?? 0] || '') +
-    (lut[buffer[2] ?? 0] || '') +
-    (lut[buffer[3] ?? 0] || '') +
+    (lut[buffer[0] ?? 0] ?? '') +
+    (lut[buffer[1] ?? 0] ?? '') +
+    (lut[buffer[2] ?? 0] ?? '') +
+    (lut[buffer[3] ?? 0] ?? '') +
     '-' +
-    (lut[buffer[4] ?? 0] || '') +
-    (lut[buffer[5] ?? 0] || '') +
+    (lut[buffer[4] ?? 0] ?? '') +
+    (lut[buffer[5] ?? 0] ?? '') +
     '-' +
-    (lut[buffer[6] ?? 0] || '') +
-    (lut[buffer[7] ?? 0] || '') +
+    (lut[buffer[6] ?? 0] ?? '') +
+    (lut[buffer[7] ?? 0] ?? '') +
     '-' +
-    (lut[buffer[8] ?? 0] || '') +
-    (lut[buffer[9] ?? 0] || '') +
+    (lut[buffer[8] ?? 0] ?? '') +
+    (lut[buffer[9] ?? 0] ?? '') +
     '-' +
-    (lut[buffer[10] ?? 0] || '') +
-    (lut[buffer[11] ?? 0] || '') +
-    (lut[buffer[12] ?? 0] || '') +
-    (lut[buffer[13] ?? 0] || '') +
-    (lut[buffer[14] ?? 0] || '') +
-    (lut[buffer[15] ?? 0] || '')
+    (lut[buffer[10] ?? 0] ?? '') +
+    (lut[buffer[11] ?? 0] ?? '') +
+    (lut[buffer[12] ?? 0] ?? '') +
+    (lut[buffer[13] ?? 0] ?? '') +
+    (lut[buffer[14] ?? 0] ?? '') +
+    (lut[buffer[15] ?? 0] ?? '')
   )
 }
 

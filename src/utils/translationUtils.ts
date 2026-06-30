@@ -1,4 +1,4 @@
-import { isForbiddenKey } from './gameState'
+import { isForbiddenKey } from './objectUtils'
 
 const VALID_NAMESPACES = [
   'ui',

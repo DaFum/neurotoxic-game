@@ -33,12 +33,6 @@ type UiState = {
   isGameOver: boolean
 }
 
-// Re-export constants for backward compatibility and tests
-export {
-  TOURBUS_BASE_SPEED as BASE_SPEED,
-  TOURBUS_TARGET_DISTANCE as TARGET_DISTANCE
-} from './minigameConstants'
-
 /** Damage from a standard obstacle hit with no mitigation upgrades. */
 export const HIT_DAMAGE_BASE = 10
 /** Damage from a standard obstacle hit when van armor is installed. */

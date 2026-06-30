@@ -7,9 +7,9 @@ import {
 } from 'react'
 import { SOCKET_DEFS } from '../kabelsalatConstants'
 import type { CableId } from '../kabelsalatConstants'
+import type { SocketId } from '../../../types/kabelsalat'
 
 const SOCKET_COUNT = Object.keys(SOCKET_DEFS).length
-import type { SocketId } from '../../../types/kabelsalat'
 
 /**
  * Runs the Kabelsalat countdown and mutates supplied state setters when time expires or wiring completes.

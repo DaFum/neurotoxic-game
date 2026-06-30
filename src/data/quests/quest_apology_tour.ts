@@ -1,4 +1,5 @@
 import type { QuestDefinition } from '../../types/quest'
+import { QUEST_SINCERE_REDEMPTION } from '../questsConstants'
 
 export const quest_apology_tour = {
   kind: 'story',
@@ -11,7 +12,7 @@ export const quest_apology_tour = {
     { event: 'gig.smallVenueGood', amount: 'fixed', fixedAmount: 1 }
   ],
   required: 3,
-  followupQuestId: 'quest_sincere_redemption',
+  followupQuestId: QUEST_SINCERE_REDEMPTION,
   clearFlagsOnComplete: ['cancel_quest_active'],
   clearFlagsOnFail: ['cancel_quest_active'],
   completionFlags: ['apology_tour_complete'],

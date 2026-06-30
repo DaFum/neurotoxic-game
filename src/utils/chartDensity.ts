@@ -26,14 +26,13 @@ const toMidiTime = (tick: unknown, tpb: number, bpm: number): number | null => {
  * @param bucketCount - Number of timeline buckets to produce.
  * @returns Density bars with per-bucket counts and normalized intensity.
  */
-export const buildSongChartDensity = (
-  song: Pick<Song, 'notes' | 'tpb' | 'bpm' | 'duration'>,
-  bucketCount = 16
-): ChartDensityBar[] => {
-  const safeBucketCount =
-    Number.isFinite(bucketCount) && bucketCount >= 1
-      ? Math.floor(bucketCount)
-      : 16
+/**
+ * Builds the MIDI events and effective duration for one song chart. Shared by
+ * {@link buildSongChartDensity} and {@link buildSetlistChartDensity}.
+ */
+const buildSongDensityEvents = (
+  song: Pick<Song, 'notes' | 'tpb' | 'bpm' | 'duration'>
+): { events: ReturnType<typeof buildMidiTrackEvents>; duration: number } => {
   const tpb = isFiniteNumber(song.tpb) && song.tpb > 0 ? song.tpb : 480
   const bpm = isFiniteNumber(song.bpm) && song.bpm > 0 ? song.bpm : 120
   const notes = Array.isArray(song.notes) ? song.notes : []
@@ -64,8 +63,19 @@ export const buildSongChartDensity = (
     }
   }
 
-  const counts = new Int32Array(safeBucketCount)
+  return { events, duration }
+}
 
+/**
+ * Buckets a song's MIDI events into a shared count array, normalized against the
+ * supplied effective duration. Shared by the per-song and setlist builders.
+ */
+const accumulateDensityCounts = (
+  events: ReturnType<typeof buildMidiTrackEvents>,
+  duration: number,
+  counts: Int32Array,
+  safeBucketCount: number
+): void => {
   for (const event of events) {
     const index = Math.min(
       safeBucketCount - 1,
@@ -73,6 +83,21 @@ export const buildSongChartDensity = (
     )
     counts[index] = (counts[index] ?? 0) + 1
   }
+}
+
+export const buildSongChartDensity = (
+  song: Pick<Song, 'notes' | 'tpb' | 'bpm' | 'duration'>,
+  bucketCount = 16
+): ChartDensityBar[] => {
+  const safeBucketCount =
+    Number.isFinite(bucketCount) && bucketCount >= 1
+      ? Math.floor(bucketCount)
+      : 16
+
+  const { events, duration } = buildSongDensityEvents(song)
+
+  const counts = new Int32Array(safeBucketCount)
+  accumulateDensityCounts(events, duration, counts, safeBucketCount)
 
   let peak = 1
   for (let i = 0; i < safeBucketCount; i++) {
@@ -120,47 +145,14 @@ export const buildSetlistChartDensity = (
     const song = songs[s]
     if (!song) continue
 
-    const tpb = isFiniteNumber(song.tpb) && song.tpb > 0 ? song.tpb : 480
-    const bpm = isFiniteNumber(song.bpm) && song.bpm > 0 ? song.bpm : 120
-    const notes = Array.isArray(song.notes) ? song.notes : []
-    const midiNotes: Array<{ time: number; midi: unknown; velocity?: unknown }> = []
-
-    for (let i = 0; i < notes.length; i++) {
-      const note = notes[i]
-      if (!note) continue
-      const time = toMidiTime(note?.t, tpb, bpm)
-      if (time === null) continue
-      midiNotes.push({
-        time,
-        midi: note?.p,
-        velocity: note?.velocity
-      })
-    }
-
-    const events = buildMidiTrackEvents(midiNotes)
-    let duration = 1
-    if (isFiniteNumber(song.duration) && song.duration > 0) {
-      duration = song.duration
-    } else {
-      for (const event of events) {
-        if (event.time > duration) {
-          duration = event.time
-        }
-      }
-    }
+    const { events, duration } = buildSongDensityEvents(song)
 
     if (!hasFirstSet) {
       firstSetDuration = duration
       hasFirstSet = true
     }
 
-    for (const event of events) {
-      const index = Math.min(
-        safeBucketCount - 1,
-        Math.max(0, Math.floor((event.time / duration) * safeBucketCount))
-      )
-      counts[index] = (counts[index] ?? 0) + 1
-    }
+    accumulateDensityCounts(events, duration, counts, safeBucketCount)
   }
 
   if (!hasFirstSet) return []

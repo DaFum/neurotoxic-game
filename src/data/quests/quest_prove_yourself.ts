@@ -1,4 +1,5 @@
 import type { QuestDefinition } from '../../types/quest'
+import { QUEST_BACK_FROM_PIT } from '../questsConstants'
 
 export const quest_prove_yourself = {
   kind: 'story',
@@ -10,7 +11,7 @@ export const quest_prove_yourself = {
     { event: 'gig.smallVenueGood', amount: 'fixed', fixedAmount: 1 }
   ],
   required: 4,
-  followupQuestId: 'quest_back_from_pit',
+  followupQuestId: QUEST_BACK_FROM_PIT,
   startFlags: ['prove_yourself_active'],
   clearFlagsOnComplete: ['prove_yourself_active'],
   clearFlagsOnFail: ['prove_yourself_active'],

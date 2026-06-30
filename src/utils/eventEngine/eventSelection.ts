@@ -208,11 +208,9 @@ const selectEvent = (
         gameState.player?.van?.breakdownChance,
         BASE_BREAKDOWN_CHANCE
       )
-      const factor = Math.max(
-        Math.min(
-          BREAKDOWN_CHANCE_FACTOR_CAP,
-          breakdownChance / BASE_BREAKDOWN_CHANCE
-        )
+      const factor = Math.min(
+        BREAKDOWN_CHANCE_FACTOR_CAP,
+        breakdownChance / BASE_BREAKDOWN_CHANCE
       )
       chance *= factor
     }
