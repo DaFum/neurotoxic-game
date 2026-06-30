@@ -285,3 +285,8 @@
 
 **Learning:** Using `.sort()` to extract the top N elements (e.g., top 3) from a collection has an O(N log N) time complexity and introduces sorting overhead. This creates unnecessary CPU overhead in hot paths like `generatePostOptions`.
 **Action:** Replace `.sort()` with an O(N) procedural single-pass loop that tracks the top N elements directly when N is small.
+
+## 2024-07-02 - Combine Object iteration and Array.filter in hot UI selectors
+
+**Learning:** Using `Object.values()` to extract an array from a registry, and then using `.filter()` on the resulting array to perform domain logic within a selector (like `getModulePoolForAsset`) creates two unnecessary O(N) array allocations. When this selector is used in a React component dependent on frequently changing state (like player money), it generates significant garbage collection overhead.
+**Action:** Replace `Object.values().filter()` patterns in hot selectors with a single-pass `for...in` loop (guarded by `Object.hasOwn()`), and push the filtering constraint down into the selector as an argument to avoid intermediate array allocations.

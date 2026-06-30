@@ -2,6 +2,7 @@ import type { GameState } from '../../types'
 import type {
   AssetModule,
   LongTermAsset,
+  SlotType,
   ModuleUnlockReq
 } from '../../types/assets'
 import { MODULE_REGISTRY } from '../assetModuleRegistry'
@@ -285,11 +286,15 @@ export interface ModulePoolEntry {
  */
 export const getModulePoolForAsset = (
   asset: LongTermAsset,
-  state: GameState
+  state: GameState,
+  slotTypeFilter?: SlotType
 ): ModulePoolEntry[] => {
   const out: ModulePoolEntry[] = []
-  for (const m of Object.values(MODULE_REGISTRY)) {
-    if (m.ownerKind !== asset.kind) continue
+  for (const key in MODULE_REGISTRY) {
+    if (!Object.hasOwn(MODULE_REGISTRY, key)) continue
+    const m = MODULE_REGISTRY[key as keyof typeof MODULE_REGISTRY]
+    if (!m || m.ownerKind !== asset.kind) continue
+    if (slotTypeFilter && m.slotType !== slotTypeFilter) continue
     const lockReasons = getLockReasons(m, state, asset)
     out.push({
       module: m,
