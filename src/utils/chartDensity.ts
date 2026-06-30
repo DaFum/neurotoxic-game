@@ -1,4 +1,3 @@
-import { buildMidiTrackEvents } from './audio/midiUtils'
 import { isFiniteNumber } from './finiteNumber'
 import type { Song } from '../types/audio'
 
@@ -19,6 +18,11 @@ const toMidiTime = (tick: unknown, tpb: number, bpm: number): number | null => {
   return (tick / tpb) * (60 / bpm)
 }
 
+const isValidMidiPitch = (p: unknown): boolean => {
+  const midiPitch = Number(p)
+  return Number.isFinite(midiPitch) && midiPitch >= 0 && midiPitch <= 127
+}
+
 /**
  * Builds normalized note-density buckets for one song chart.
  *
@@ -37,55 +41,45 @@ export const buildSongChartDensity = (
   const tpb = isFiniteNumber(song.tpb) && song.tpb > 0 ? song.tpb : 480
   const bpm = isFiniteNumber(song.bpm) && song.bpm > 0 ? song.bpm : 120
   const notes = Array.isArray(song.notes) ? song.notes : []
-  const midiNotes: Array<{ time: number; midi: unknown; velocity?: unknown }> =
-    []
 
-  for (let i = 0; i < notes.length; i++) {
-    const note = notes[i]
-    if (!note) continue
-    const time = toMidiTime(note?.t, tpb, bpm)
-    if (time === null) continue
-    midiNotes.push({
-      time,
-      midi: note?.p,
-      velocity: note?.velocity
-    })
-  }
-
-  const events = buildMidiTrackEvents(midiNotes)
   let duration = 1
   if (isFiniteNumber(song.duration) && song.duration > 0) {
     duration = song.duration
   } else {
-    for (const event of events) {
-      if (event.time > duration) {
-        duration = event.time
+    for (let i = 0; i < notes.length; i++) {
+      const note = notes[i]
+      if (!note) continue
+      const time = toMidiTime(note.t, tpb, bpm)
+      if (time !== null && time > duration && isValidMidiPitch(note.p)) {
+        duration = time
       }
     }
   }
-  const counts = Array.from({ length: safeBucketCount }, () => 0)
 
-  for (const event of events) {
+  const counts = new Int32Array(safeBucketCount)
+  for (let i = 0; i < notes.length; i++) {
+    const note = notes[i]
+    if (!note) continue
+    const time = toMidiTime(note.t, tpb, bpm)
+    if (time === null || !isValidMidiPitch(note.p)) continue
+
     const index = Math.min(
       safeBucketCount - 1,
-      Math.max(0, Math.floor((event.time / duration) * safeBucketCount))
+      Math.max(0, Math.floor((time / duration) * safeBucketCount))
     )
-    const current = counts[index]
-    if (current !== undefined) counts[index] = current + 1
+    counts[index]++
   }
 
   let peak = 1
-  const len = counts.length
-  for (let i = 0; i < len; i++) {
-    const current = counts[i]
-    if (current !== undefined && current > peak) {
-      peak = current
+  for (let i = 0; i < safeBucketCount; i++) {
+    if (counts[i] > peak) {
+      peak = counts[i]
     }
   }
 
-  const result = new Array<ChartDensityBar>(len)
-  for (let index = 0; index < len; index++) {
-    const count = counts[index] ?? 0
+  const result = new Array<ChartDensityBar>(safeBucketCount)
+  for (let index = 0; index < safeBucketCount; index++) {
+    const count = counts[index]
     result[index] = {
       timestamp: (index / safeBucketCount) * duration,
       count,
@@ -106,47 +100,75 @@ export const buildSetlistChartDensity = (
   songs: Array<Pick<Song, 'notes' | 'tpb' | 'bpm' | 'duration'>>,
   bucketCount = 16
 ): ChartDensityBar[] => {
-  const densitySets: ChartDensityBar[][] = []
-  for (const song of songs) {
-    const bars = buildSongChartDensity(song, bucketCount)
-    if (bars.length > 0) {
-      densitySets.push(bars)
-    }
-  }
-  const firstSet = densitySets[0]
-  if (!firstSet) return []
+  const safeBucketCount =
+    Number.isFinite(bucketCount) && bucketCount > 0
+      ? Math.floor(bucketCount)
+      : 16
 
-  const numBuckets = firstSet.length
-  const counts = new Array(numBuckets).fill(0)
-  const numSets = densitySets.length
+  if (!songs || songs.length === 0) return []
 
-  for (let i = 0; i < numSets; i++) {
-    const bars = densitySets[i]
-    if (!bars) continue
-    for (let j = 0; j < numBuckets; j++) {
-      const bar = bars[j]
-      if (bar) {
-        counts[j] += bar.count
+  const counts = new Int32Array(safeBucketCount)
+  let firstSetDuration = 0
+  let hasFirstSet = false
+
+  for (let s = 0; s < songs.length; s++) {
+    const song = songs[s]
+    if (!song) continue
+
+    const tpb = isFiniteNumber(song.tpb) && song.tpb > 0 ? song.tpb : 480
+    const bpm = isFiniteNumber(song.bpm) && song.bpm > 0 ? song.bpm : 120
+    const notes = Array.isArray(song.notes) ? song.notes : []
+
+    let duration = 1
+    if (isFiniteNumber(song.duration) && song.duration > 0) {
+      duration = song.duration
+    } else {
+      for (let i = 0; i < notes.length; i++) {
+        const note = notes[i]
+        if (!note) continue
+        const time = toMidiTime(note.t, tpb, bpm)
+        if (time !== null && time > duration && isValidMidiPitch(note.p)) {
+          duration = time
+        }
       }
     }
+
+    if (!hasFirstSet) {
+      firstSetDuration = duration
+      hasFirstSet = true
+    }
+
+    for (let i = 0; i < notes.length; i++) {
+      const note = notes[i]
+      if (!note) continue
+      const time = toMidiTime(note.t, tpb, bpm)
+      if (time === null || !isValidMidiPitch(note.p)) continue
+
+      const index = Math.min(
+        safeBucketCount - 1,
+        Math.max(0, Math.floor((time / duration) * safeBucketCount))
+      )
+      counts[index]++
+    }
   }
+
+  if (!hasFirstSet) return []
 
   let peak = 1
-  for (let i = 0; i < numBuckets; i++) {
-    const currentCount = counts[i] ?? 0
-    if (currentCount > peak) peak = currentCount
+  for (let i = 0; i < safeBucketCount; i++) {
+    if (counts[i] > peak) {
+      peak = counts[i]
+    }
   }
 
-  const result = new Array(numBuckets)
-  for (let index = 0; index < numBuckets; index++) {
-    const count = counts[index] ?? 0
-    const firstSetBar = firstSet[index]
+  const result = new Array<ChartDensityBar>(safeBucketCount)
+  for (let index = 0; index < safeBucketCount; index++) {
+    const count = counts[index]
     result[index] = {
-      timestamp: firstSetBar ? firstSetBar.timestamp : index,
+      timestamp: (index / safeBucketCount) * firstSetDuration,
       count,
       intensity: count / peak
     }
   }
-
   return result
 }
