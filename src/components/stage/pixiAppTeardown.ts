@@ -45,43 +45,35 @@ function isBenignDestroyError(error: unknown): boolean {
   return benignPhrases.some(phrase => message.includes(phrase))
 }
 
-function teardownCancelResize(app: DestroyableApp): void {
+function safeIgnore(fn: () => void): void {
   try {
-    if (typeof app._cancelResize === 'function') {
-      app._cancelResize()
-    }
-  } catch {
-    // Ignore plugin teardown races
-  }
-}
-
-function teardownResizeTo(app: DestroyableApp): void {
-  try {
-    if ('resizeTo' in app) {
-      app.resizeTo = null
-    }
-  } catch {
-    // Ignore plugin teardown races
-  }
-}
-
-function teardownQueueResize(app: DestroyableApp): void {
-  try {
-    if (
-      typeof globalThis?.removeEventListener === 'function' &&
-      typeof app.queueResize === 'function'
-    ) {
-      globalThis.removeEventListener('resize', app.queueResize)
-    }
+    fn()
   } catch {
     // Ignore plugin teardown races
   }
 }
 
 function teardownResizePlugin(app: DestroyableApp): void {
-  teardownCancelResize(app)
-  teardownResizeTo(app)
-  teardownQueueResize(app)
+  safeIgnore(() => {
+    if (typeof app._cancelResize === 'function') {
+      app._cancelResize()
+    }
+  })
+
+  safeIgnore(() => {
+    if ('resizeTo' in app) {
+      app.resizeTo = null
+    }
+  })
+
+  safeIgnore(() => {
+    if (
+      typeof globalThis?.removeEventListener === 'function' &&
+      typeof app.queueResize === 'function'
+    ) {
+      globalThis.removeEventListener('resize', app.queueResize)
+    }
+  })
 
   if (typeof app._cancelResize !== 'function') {
     app._cancelResize = () => {}
