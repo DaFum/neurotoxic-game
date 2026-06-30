@@ -100,9 +100,9 @@ Three sites handle the **same** `harmonyRegenTravel` flag with **two** different
 - `src/data/questsConstants.ts:50-52` — `QUEST_BACK_FROM_PIT`, `QUEST_SINCERE_REDEMPTION`, `QUEST_BAND_PACT` have **no non-test `src/` consumer**, while the other 29 constants are imported into `events/quests.ts`. The quests themselves are **not** dead — they are registered in `questRegistry.ts` and reached via `followupQuestId: 'quest_back_from_pit'` etc. (string literals) in `quest_prove_yourself`/`quest_apology_tour`/`quest_ego_management`. The constants are also required by `tests/data/questRegistry.test.js` (every registry id must have an exported constant), so deleting them breaks tests.
 - **Action: INTEGRATE** — replace the raw `followupQuestId` string literals with the exported constants so the references become real and consistent with the other 29.
 
-### 3.4 — LOW — `BASE_SPEED` / `TARGET_DISTANCE` re-export with no `src` consumer
-- `src/hooks/minigames/useTourbusLogic.ts:36-40` — re-exported "for backward compatibility and tests"; only tests reference them.
-- **Action: DELETE** the re-export (tests can import from `minigameConstants` directly).
+### 3.4 — ~~LOW — `BASE_SPEED` / `TARGET_DISTANCE` re-export with no `src` consumer~~ (RETRACTED — required fixture)
+- `src/hooks/minigames/useTourbusLogic.ts` — re-exported "for backward compatibility and tests"; only tests reference them.
+- **Action: KEEP.** This was initially deleted, but it is the canonical *aliased re-export fixture* that `tests/node/updateSymbols.test.js` asserts against (`ks.BASE_SPEED` with `isAlias`/`localName`, and `meta.aliasedReexports >= 1`). Removing it drops `aliasedReexports` to 0 and reds the Node.js test suite. Restored with an explicit comment; not a true orphan.
 
 ### 3.5 — LOW — Unused error-API surface
 - `src/utils/errors/index.ts:3` — `ErrorCategory` re-export has no `src/` consumer (`ErrorSeverity` does). **Action: DELETE** the re-export or document as intended API.
