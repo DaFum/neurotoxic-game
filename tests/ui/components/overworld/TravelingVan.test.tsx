@@ -7,7 +7,15 @@ import type { MapNode } from '../../../../src/types/components'
 // Mock framer-motion to simplify testing animations
 vi.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, onAnimationComplete, className, style, ...props }: any) => {
+    div: ({
+      children,
+      onAnimationComplete,
+      className,
+      style,
+      ...props
+    }: React.ComponentPropsWithoutRef<'div'> & {
+      onAnimationComplete?: () => void
+    }) => {
       // Create a wrapper that fires onAnimationComplete when clicked
       return (
         <div
