@@ -1,8 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
-import { usePersistence, SAVE_KEY } from '../../src/context/usePersistence'
-import { handleError, StateError } from '../../src/utils/errorHandler'
-import { safeStorageOperation } from '../../src/utils/storage'
 
 vi.mock('../../src/utils/errorHandler', () => ({
   handleError: vi.fn(),
@@ -17,27 +14,14 @@ vi.mock('../../src/utils/errorHandler', () => ({
 }))
 
 vi.mock('../../src/utils/storage', () => ({
-  safeStorageOperation: vi.fn((operation, fn, fallback) => {
-    try {
-      return fn()
-    } catch (e) {
-      if (fallback !== undefined) return fallback
-      return false
-    }
-  })
+  safeStorageOperation: vi.fn((_operation, fn) => fn())
 }))
 
-vi.mock('../../src/utils/gameState', () => ({
-  normalizeSetlistForSave: vi.fn()
-}))
-
-vi.mock('../../src/utils/objectUtils', async importOriginal => {
-  const actual = await importOriginal()
+vi.mock('../../src/utils/gameState', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../src/utils/gameState')>()
   return {
     ...actual,
-    safeJsonParse: vi.fn(() => {
-      throw new Error('JSON Parse error')
-    }),
+    normalizeSetlistForSave: vi.fn(),
     isLooseRecord: vi.fn().mockReturnValue(true)
   }
 })
@@ -52,7 +36,7 @@ vi.mock('../../src/utils/unlockManager', () => ({
 }))
 
 vi.mock('../../src/utils/logger', async importOriginal => {
-  const actual = await importOriginal()
+  const actual = await importOriginal<typeof import('../../src/utils/logger')>()
   return {
     ...actual,
     logger: {
@@ -63,11 +47,15 @@ vi.mock('../../src/utils/logger', async importOriginal => {
   }
 })
 
+const { usePersistence, SAVE_KEY } = await import('../../src/context/usePersistence')
+const { handleError, StateError } = await import('../../src/utils/errorHandler')
+const { safeStorageOperation } = await import('../../src/utils/storage')
+
 describe('usePersistence', () => {
-  let mockStateRef: any
-  let mockDispatch: any
-  let mockAddToast: any
-  let mockTRef: any
+  let mockStateRef: { current: unknown }
+  let mockDispatch: ReturnType<typeof vi.fn>
+  let mockAddToast: ReturnType<typeof vi.fn>
+  let mockTRef: { current: unknown }
 
   beforeEach(() => {
     vi.resetAllMocks()
@@ -82,6 +70,8 @@ describe('usePersistence', () => {
     vi.spyOn(Storage.prototype, 'getItem')
     vi.spyOn(Storage.prototype, 'setItem')
     vi.spyOn(Storage.prototype, 'removeItem')
+
+    vi.mocked(safeStorageOperation).mockImplementation((_operation, fn) => fn())
   })
 
   afterEach(() => {
@@ -90,8 +80,8 @@ describe('usePersistence', () => {
 
   describe('loadGame', () => {
     it('should return false and call handleError when save file contains invalid JSON', () => {
-      vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => '{invalid-json}')
       localStorage.setItem(SAVE_KEY, '{invalid-json}')
+      vi.spyOn(Storage.prototype, 'getItem').mockReturnValue('{invalid-json}')
 
       const { result } = renderHook(() =>
         usePersistence({
@@ -107,6 +97,8 @@ describe('usePersistence', () => {
       act(() => {
         loadResult = result.current.loadGame()
       })
+
+      expect(safeStorageOperation).toHaveBeenCalledTimes(1)
 
       expect(loadResult).toBe(false)
       expect(handleError).toHaveBeenCalledTimes(1)
