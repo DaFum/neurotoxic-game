@@ -1,21 +1,23 @@
 # Neurotoxic — Code-Quality Audit Findings
 
 **Scope:** complete codebase under `src/`. `node_modules`, `dist`, and `tests/` excluded from the primary audit (tests consulted only to confirm orphan/contract claims).
-**Method:** symbols index (`symbols.json`) mined for orphans/duplicate names + 5 parallel subsystem audits + ripgrep verification of every substantive claim. No files were modified.
+**Method:** symbols index (`symbols.json`) mined for orphans/duplicate names + 5 parallel subsystem audits + ripgrep verification of every substantive claim.
+**Baseline:** audited 2026-06-30 against PR base `e5fb198`. All `file:line` references and code snippets below describe the **pre-fix** state.
+**Status:** every finding below was *resolved in this PR* (fix commits `5df1e8a` + `f16ac7a`) **except** rows/sections explicitly marked *Retracted*/*Kept*/*Deferred*. See the Status column and per-finding **Resolution** notes — the snippets are intentionally left as the original findings so the document stays a faithful before/after record.
 
 ## Executive summary
 
 This codebase is **unusually clean**. The state/payload-safety layer, React/Pixi style rules (no hardcoded colors, no `.propTypes`, no invented CSS aliases), i18n EN/DE key parity, and action-type→reducer coverage are all effectively compliant. There are **no true orphan components, no missing features, no dead action handlers, and no EN/DE key gaps.**
 
-Genuine findings are few and concentrated. The headline items:
+Genuine findings are few and concentrated. The headline items (all resolved in this PR):
 
-| # | Severity | Finding | Action |
-|---|----------|---------|--------|
-| 1 | **HIGH** | `harmonyRegenTravel` applies **+4** in daily tick vs **+5** in both travel/arrival paths, and skips the `finiteNumberOr` addend wrap the other two use | FIX |
-| 2 | MED | `buildSongChartDensity` is orphaned (test-only) AND its per-song bucketing loop is copy-pasted inside `buildSetlistChartDensity` | INTEGRATE |
-| 3 | MED | Byte-identical "BOLT OPTIMIZATION" quest-index loop duplicated in `questAdvance.ts` (×2) | MERGE |
-| 4 | MED | `crisis.opt1` locale string hardcodes `-$250` (wrong symbol + no `{{amount}}`), in an unreachable default-actions branch | FIX |
-| 5 | MED | 3 quest id constants + `negotiateDeal`/`generateBrandOffers` rival-proximity duplication + others | INTEGRATE/MERGE |
+| # | Severity | Finding | Action | Status |
+|---|----------|---------|--------|--------|
+| 1 | HIGH | `harmonyRegenTravel` applied **+4** in daily tick vs **+5** in both travel/arrival paths, and skipped the `finiteNumberOr` addend wrap the other two use | FIX | ✅ Fixed → standardized to +5 with `finiteNumberOr` |
+| 2 | MED | `buildSongChartDensity` is orphaned (test-only) AND its per-song bucketing loop is copy-pasted inside `buildSetlistChartDensity` | INTEGRATE | ✅ Fixed → shared `buildSongDensityEvents`/`accumulateDensityCounts` |
+| 3 | MED | Byte-identical "BOLT OPTIMIZATION" quest-index loop duplicated in `questAdvance.ts` (×2) | MERGE | ✅ Fixed → `findActiveQuestIndex` |
+| 4 | MED | `crisis.opt1` locale string hardcodes `-$250` (wrong symbol + no `{{amount}}`), in an unreachable default-actions branch | FIX | ✅ Fixed → amount removed (EN+DE) |
+| 5 | MED | 3 quest id constants + `negotiateDeal`/`generateBrandOffers` rival-proximity duplication + others | INTEGRATE/MERGE | ✅ Fixed → constants wired + `isRivalInPlayerLocation`/`selectTop3ByScore` |
 
 ---
 
@@ -26,8 +28,9 @@ Genuine findings are few and concentrated. The headline items:
 - **`src/utils/travelUtils.ts:296`** (`getTravelArrivalUpdates`) applies `clampBandHarmony(finiteNumberOr(band.harmony, 0) + 5)`.
 - **`src/utils/arrivalUtils.ts:72`** (`processHarmonyRegen`) applies `clampBandHarmony(finiteNumberOr(band.harmony, 0) + 5)`.
 
-Three sites handle the **same** `harmonyRegenTravel` flag with **two** different magnitudes (+4 vs +5). The daily-tick site is also the only one that does **not** wrap the addend with `finiteNumberOr`, violating the CLAUDE.md arithmetic-then-clamp rule — a persisted `undefined`/`NaN` harmony silently drops the bonus (clamp short-circuits NaN→0).
-- **Action: FIX** — wrap the daily-tick addend with `finiteNumberOr(nextBand.harmony, 0)` (unambiguous). Confirm whether +4 vs +5 is intentional (per-day passive vs one-time arrival bonus); if not, standardize to +5.
+Three sites handle the **same** `harmonyRegenTravel` flag with **two** different magnitudes (+4 vs +5). The daily-tick site is also the only one that does **not** wrap the addend with `finiteNumberOr`, violating the [`CLAUDE.md`](./CLAUDE.md) arithmetic-then-clamp rule (wrap persisted addends with `finiteNumberOr(value, fallback)` before calling clamp helpers) — a persisted `undefined`/`NaN` harmony silently drops the bonus (clamp short-circuits NaN→0).
+- **Action: FIX** — wrap the daily-tick addend with `finiteNumberOr(nextBand.harmony, 0)` and standardize to +5 to match the travel/arrival paths.
+- **Resolution (this PR):** ✅ Fixed — `dailyTickLogic.ts` now applies `clampBandHarmony(finiteNumberOr(nextBand.harmony, 0) + 5)`.
 
 ### 1.2 — MED — Inconsistent import path for `isForbiddenKey`
 - `src/utils/translationUtils.ts:1` imports it from the `./gameState` barrel; `saveValidator.ts` imports it from its definition site `./objectUtils`.

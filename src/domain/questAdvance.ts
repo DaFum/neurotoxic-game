@@ -5,12 +5,11 @@ import { getQuestWithDefinition } from './questHelpers'
 import { completeQuest } from './questComplete'
 
 /**
- * Finds the index of an active quest by id using a procedural loop.
+ * Finds the index of an active quest by id, or -1 when not present.
  *
  * @remarks
- * ⚡ BOLT OPTIMIZATION: avoids the per-iteration callback allocation of
- * `Array.findIndex` in this hot path (~23% faster index lookups, reducing GC
- * pressure). Returns -1 when the quest is not present.
+ * Uses an explicit loop rather than `Array.findIndex` to avoid the
+ * per-iteration predicate callback on this hot path.
  */
 const findActiveQuestIndex = (
   activeQuests: ActiveQuestState[],
