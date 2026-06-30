@@ -1,4 +1,5 @@
 import { IconClose } from './shared/Icons'
+import { Tooltip } from './shared/Tooltip'
 
 import { memo } from 'react'
 import { motion } from 'framer-motion'
@@ -76,15 +77,16 @@ export const PirateRadioModal = memo(
                 defaultValue: 'PIRATE RADIO BROADCAST'
               })}
             </h2>
-            <button
-              type='button'
-              onClick={onClose}
-              className='text-toxic-green hover:text-star-white hover:bg-toxic-green px-2 border border-transparent hover:border-toxic-green transition-colors font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
-              title={t('ui:button.close', { defaultValue: 'Close' })}
-              aria-label={t('ui:button.close', { defaultValue: 'Close' })}
-            >
-              <IconClose />
-            </button>
+            <Tooltip content={t('ui:button.close', { defaultValue: 'Close' })}>
+              <button
+                type='button'
+                onClick={onClose}
+                className='text-toxic-green hover:text-star-white hover:bg-toxic-green px-2 border border-transparent hover:border-toxic-green transition-colors font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
+                aria-label={t('ui:button.close', { defaultValue: 'Close' })}
+              >
+                <IconClose />
+              </button>
+            </Tooltip>
           </div>
 
           <div className='text-ash-gray font-mono text-sm leading-relaxed space-y-4 flex-1 min-h-0 overflow-y-auto py-4 sm:py-6 pr-2'>
