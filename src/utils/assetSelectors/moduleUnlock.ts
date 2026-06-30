@@ -281,15 +281,20 @@ export interface ModulePoolEntry {
  *
  * @param asset - Asset whose owner kind determines the module pool.
  * @param state - Current game state used for unlock checks.
+ * @param slotTypeFilter - Optional slot type to pre-filter modules, avoiding intermediate array allocations.
  * @returns Module pool entries annotated with unlock status and lock reasons.
  */
 export const getModulePoolForAsset = (
   asset: LongTermAsset,
-  state: GameState
+  state: GameState,
+  slotTypeFilter?: string
 ): ModulePoolEntry[] => {
   const out: ModulePoolEntry[] = []
-  for (const m of Object.values(MODULE_REGISTRY)) {
-    if (m.ownerKind !== asset.kind) continue
+  for (const key in MODULE_REGISTRY) {
+    if (!Object.hasOwn(MODULE_REGISTRY, key)) continue
+    const m = MODULE_REGISTRY[key]
+    if (!m || m.ownerKind !== asset.kind) continue
+    if (slotTypeFilter && m.slotType !== slotTypeFilter) continue
     const lockReasons = getLockReasons(m, state, asset)
     out.push({
       module: m,
