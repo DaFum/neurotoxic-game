@@ -64,7 +64,7 @@ describe('usePersistence', () => {
     mockDispatch = vi.fn()
     mockAddToast = vi.fn()
     mockTRef = {
-      current: vi.fn((key, options) => options?.defaultValue || key)
+      current: vi.fn((key, options) => options?.defaultValue ?? key)
     }
 
     vi.spyOn(Storage.prototype, 'getItem')
@@ -107,7 +107,11 @@ describe('usePersistence', () => {
         expect.objectContaining({ addToast: mockAddToast })
       )
 
-      const errorArg = vi.mocked(handleError).mock.calls[0][0] as Error
+      const mockCalls = vi.mocked(handleError).mock.calls
+      expect(mockCalls.length).toBeGreaterThan(0)
+      const firstCall = mockCalls[0]
+      expect(firstCall).toBeDefined()
+      const errorArg = firstCall![0] as Error
       expect(errorArg.message).toBe('Save file parsing failed. Falling back to initial state.')
     })
   })
