@@ -210,6 +210,164 @@ const MenuSubmenu = React.memo(
 )
 MenuSubmenu.displayName = 'MenuSubmenu'
 
+const useMenuCategories = (
+  t: import('../../types/callbacks').TranslationCallback
+) => {
+  return useMemo<MenuCategory[]>(
+    () => [
+      {
+        id: 'management',
+        label: t('ui:menu.management', { defaultValue: 'MANAGEMENT' }),
+        icon: '📋',
+        color: 'var(--color-toxic-green)',
+        items: [
+          {
+            label: t('ui:overworld.band_hq_button', {
+              defaultValue: 'BAND HQ'
+            }),
+            desc: t('ui:menu.hq_desc', {
+              defaultValue: 'Manage members & gear'
+            }),
+            icon: '🤘',
+            v: 'p',
+            action: 'openHQ'
+          },
+          {
+            label: t('ui:overworld.assets_hub_button', {
+              defaultValue: 'INVESTMENTS'
+            }),
+            desc: t('ui:menu.assets_desc', {
+              defaultValue: 'Long-term assets & finances'
+            }),
+            icon: '🏦',
+            v: 'p',
+            action: 'openAssets'
+          },
+          {
+            label: t('ui:quests.button', { defaultValue: 'QUESTS' }),
+            desc: t('ui:menu.quests_desc', {
+              defaultValue: 'Active objectives'
+            }),
+            icon: '★',
+            v: 'w',
+            action: 'openQuests'
+          },
+          {
+            label: t('ui:contraband.button', { defaultValue: 'STASH' }),
+            desc: t('ui:menu.stash_desc', {
+              defaultValue: 'Contraband & inventory'
+            }),
+            icon: '📦',
+            v: 'd',
+            action: 'openStash'
+          }
+        ]
+      },
+      {
+        id: 'hustles',
+        label: t('ui:menu.side_hustles', { defaultValue: 'SIDE HUSTLES' }),
+        icon: '💰',
+        color: 'var(--color-warning-yellow)',
+        items: [
+          {
+            label: t('ui:pirate_radio.button', {
+              defaultValue: 'PIRATE RADIO'
+            }),
+            desc: t('ui:menu.radio_desc', {
+              defaultValue: 'Boost reputation'
+            }),
+            icon: '📻',
+            v: 'w',
+            action: 'openPirateRadio'
+          },
+          {
+            label: t('ui:merch_press.button', {
+              defaultValue: 'MERCH PRESS'
+            }),
+            desc: t('ui:menu.merch_desc', { defaultValue: 'Print bootlegs' }),
+            icon: '👕',
+            v: 'p',
+            action: 'openMerchPress'
+          },
+          {
+            label: t('ui:dark_web_leak.button', {
+              defaultValue: 'DARK WEB LEAK'
+            }),
+            desc: t('ui:menu.darkweb_desc', {
+              defaultValue: 'Leak new tracks'
+            }),
+            icon: '🕸',
+            v: 'd',
+            action: 'openDarkWebLeak'
+          }
+        ]
+      },
+      {
+        id: 'logistics',
+        label: t('ui:menu.logistics', { defaultValue: 'LOGISTICS' }),
+        icon: '🚐',
+        color: 'var(--color-condition-blue)',
+        items: [
+          {
+            label: t('ui:overworld.refuel', { defaultValue: 'REFUEL' }),
+            desc: t('ui:menu.refuel_desc', {
+              defaultValue: 'Gas up the van'
+            }),
+            icon: '⛽',
+            v: 'w',
+            cond: 'fuel',
+            action: 'handleRefuel'
+          },
+          {
+            label: t('ui:overworld.repair', { defaultValue: 'REPAIR' }),
+            desc: t('ui:menu.repair_desc', {
+              defaultValue: 'Fix van damage'
+            }),
+            icon: '🔧',
+            v: 'p',
+            cond: 'repair',
+            action: 'handleRepair'
+          },
+          {
+            label: t('ui:blood_bank.button', { defaultValue: 'BLOOD BANK' }),
+            desc: t('ui:menu.bloodbank_desc', {
+              defaultValue: 'Trade blood for cash'
+            }),
+            icon: '🩸',
+            v: 'd',
+            action: 'openBloodBank'
+          },
+          {
+            label: t('ui:overworld.void_clinic_button', {
+              defaultValue: 'VOID CLINIC'
+            }),
+            desc: t('ui:menu.clinic_desc', { defaultValue: 'Heal members' }),
+            icon: '🏥',
+            v: 'd',
+            action: 'openClinic'
+          }
+        ]
+      },
+      {
+        id: 'system',
+        label: t('ui:menu.system', { defaultValue: 'SYSTEM' }),
+        icon: '⚙',
+        color: 'var(--color-ash-gray)',
+        items: [
+          {
+            label: t('ui:overworld.save_game', { defaultValue: 'SAVE GAME' }),
+            desc: t('ui:menu.save_desc', { defaultValue: 'Record progress' }),
+            icon: '💾',
+            v: 'p',
+            action: 'handleSaveWithDelay'
+          }
+        ]
+      }
+    ],
+    [t]
+  )
+}
+
 /**
  * Displays grouped overworld scene and modal actions.
  * @param props - Menu open state, travel/save status, vehicle status, and callbacks for each overworld menu action.
@@ -236,159 +394,7 @@ export const OverworldMenu = React.memo(
     handleRepair,
     handleSaveWithDelay
   }: OverworldMenuProps) => {
-    const menuCategories = useMemo<MenuCategory[]>(
-      () => [
-        {
-          id: 'management',
-          label: t('ui:menu.management', { defaultValue: 'MANAGEMENT' }),
-          icon: '📋',
-          color: 'var(--color-toxic-green)',
-          items: [
-            {
-              label: t('ui:overworld.band_hq_button', {
-                defaultValue: 'BAND HQ'
-              }),
-              desc: t('ui:menu.hq_desc', {
-                defaultValue: 'Manage members & gear'
-              }),
-              icon: '🤘',
-              v: 'p',
-              action: 'openHQ'
-            },
-            {
-              label: t('ui:overworld.assets_hub_button', {
-                defaultValue: 'INVESTMENTS'
-              }),
-              desc: t('ui:menu.assets_desc', {
-                defaultValue: 'Long-term assets & finances'
-              }),
-              icon: '🏦',
-              v: 'p',
-              action: 'openAssets'
-            },
-            {
-              label: t('ui:quests.button', { defaultValue: 'QUESTS' }),
-              desc: t('ui:menu.quests_desc', {
-                defaultValue: 'Active objectives'
-              }),
-              icon: '★',
-              v: 'w',
-              action: 'openQuests'
-            },
-            {
-              label: t('ui:contraband.button', { defaultValue: 'STASH' }),
-              desc: t('ui:menu.stash_desc', {
-                defaultValue: 'Contraband & inventory'
-              }),
-              icon: '📦',
-              v: 'd',
-              action: 'openStash'
-            }
-          ]
-        },
-        {
-          id: 'hustles',
-          label: t('ui:menu.side_hustles', { defaultValue: 'SIDE HUSTLES' }),
-          icon: '💰',
-          color: 'var(--color-warning-yellow)',
-          items: [
-            {
-              label: t('ui:pirate_radio.button', {
-                defaultValue: 'PIRATE RADIO'
-              }),
-              desc: t('ui:menu.radio_desc', {
-                defaultValue: 'Boost reputation'
-              }),
-              icon: '📻',
-              v: 'w',
-              action: 'openPirateRadio'
-            },
-            {
-              label: t('ui:merch_press.button', {
-                defaultValue: 'MERCH PRESS'
-              }),
-              desc: t('ui:menu.merch_desc', { defaultValue: 'Print bootlegs' }),
-              icon: '👕',
-              v: 'p',
-              action: 'openMerchPress'
-            },
-            {
-              label: t('ui:dark_web_leak.button', {
-                defaultValue: 'DARK WEB LEAK'
-              }),
-              desc: t('ui:menu.darkweb_desc', {
-                defaultValue: 'Leak new tracks'
-              }),
-              icon: '🕸',
-              v: 'd',
-              action: 'openDarkWebLeak'
-            }
-          ]
-        },
-        {
-          id: 'logistics',
-          label: t('ui:menu.logistics', { defaultValue: 'LOGISTICS' }),
-          icon: '🚐',
-          color: 'var(--color-condition-blue)',
-          items: [
-            {
-              label: t('ui:overworld.refuel', { defaultValue: 'REFUEL' }),
-              desc: t('ui:menu.refuel_desc', {
-                defaultValue: 'Gas up the van'
-              }),
-              icon: '⛽',
-              v: 'w',
-              cond: 'fuel',
-              action: 'handleRefuel'
-            },
-            {
-              label: t('ui:overworld.repair', { defaultValue: 'REPAIR' }),
-              desc: t('ui:menu.repair_desc', {
-                defaultValue: 'Fix van damage'
-              }),
-              icon: '🔧',
-              v: 'p',
-              cond: 'repair',
-              action: 'handleRepair'
-            },
-            {
-              label: t('ui:blood_bank.button', { defaultValue: 'BLOOD BANK' }),
-              desc: t('ui:menu.bloodbank_desc', {
-                defaultValue: 'Trade blood for cash'
-              }),
-              icon: '🩸',
-              v: 'd',
-              action: 'openBloodBank'
-            },
-            {
-              label: t('ui:overworld.void_clinic_button', {
-                defaultValue: 'VOID CLINIC'
-              }),
-              desc: t('ui:menu.clinic_desc', { defaultValue: 'Heal members' }),
-              icon: '🏥',
-              v: 'd',
-              action: 'openClinic'
-            }
-          ]
-        },
-        {
-          id: 'system',
-          label: t('ui:menu.system', { defaultValue: 'SYSTEM' }),
-          icon: '⚙',
-          color: 'var(--color-ash-gray)',
-          items: [
-            {
-              label: t('ui:overworld.save_game', { defaultValue: 'SAVE GAME' }),
-              desc: t('ui:menu.save_desc', { defaultValue: 'Record progress' }),
-              icon: '💾',
-              v: 'p',
-              action: 'handleSaveWithDelay'
-            }
-          ]
-        }
-      ],
-      [t]
-    )
+    const menuCategories = useMenuCategories(t)
 
     const [activeCat, setActiveCat] = useState<string | null>(null)
     const menuRootRef = useRef<HTMLDivElement | null>(null)
