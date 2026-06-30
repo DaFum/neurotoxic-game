@@ -78,7 +78,7 @@ export const MerchPressModal = ({
           <div className='absolute inset-0 bg-gradient-to-t from-void-black via-void-black/80 to-transparent z-0 pointer-events-none' />
 
           <div className='relative z-10 p-6'>
-            <MerchPressHeader onClose={onClose} t={t} />
+            <MerchPressHeader onClose={onClose} />
 
             {/* Content */}
             <div className='space-y-6'>
@@ -89,14 +89,12 @@ export const MerchPressModal = ({
                 })}
               </p>
 
-              <MerchPressCostsAndGains config={config} t={t} i18n={i18n} />
+              <MerchPressCostsAndGains config={config} />
 
-              <MerchPressRiskWarning config={config} t={t} />
+              <MerchPressRiskWarning config={config} />
 
               <MerchPressCurrentStats
                 config={config}
-                t={t}
-                i18n={i18n}
                 player={player}
                 band={band}
                 isAffordable={isAffordable}
@@ -109,7 +107,6 @@ export const MerchPressModal = ({
               onPress={onPress}
               canPress={canPress}
               disabledReason={disabledReason}
-              t={t}
             />
 
             {/* Corner Decorations */}
@@ -126,10 +123,10 @@ export const MerchPressModal = ({
 
 type MerchPressHeaderProps = {
   onClose: () => void
-  t: ReturnType<typeof useTranslation>['t']
 }
 
-function MerchPressHeader({ onClose, t }: MerchPressHeaderProps) {
+function MerchPressHeader({ onClose }: MerchPressHeaderProps) {
+  const { t } = useTranslation(['ui'])
   return (
     <div className='flex justify-between items-start mb-6 border-b border-toxic-green-20 pb-4'>
       <div>
@@ -165,15 +162,12 @@ function MerchPressHeader({ onClose, t }: MerchPressHeaderProps) {
 
 type MerchPressCostsAndGainsProps = {
   config: MerchPressConfig
-  t: ReturnType<typeof useTranslation>['t']
-  i18n: ReturnType<typeof useTranslation>['i18n']
 }
 
 function MerchPressCostsAndGains({
-  config,
-  t,
-  i18n
+  config
 }: MerchPressCostsAndGainsProps) {
+  const { t, i18n } = useTranslation(['ui'])
   return (
     <div className='grid grid-cols-2 gap-4'>
       <div className='bg-void-black border border-error-red/20 p-3 flex flex-col items-center justify-center relative overflow-hidden group'>
@@ -205,10 +199,10 @@ function MerchPressCostsAndGains({
 
 type MerchPressRiskWarningProps = {
   config: MerchPressConfig
-  t: ReturnType<typeof useTranslation>['t']
 }
 
-function MerchPressRiskWarning({ config, t }: MerchPressRiskWarningProps) {
+function MerchPressRiskWarning({ config }: MerchPressRiskWarningProps) {
+  const { t } = useTranslation(['ui'])
   return (
     <div className='bg-error-red/20 border border-error-red/20 p-4 mt-4'>
       <p className='text-error-red text-sm text-center font-bold'>
@@ -224,8 +218,6 @@ function MerchPressRiskWarning({ config, t }: MerchPressRiskWarningProps) {
 
 type MerchPressCurrentStatsProps = {
   config: MerchPressConfig
-  t: ReturnType<typeof useTranslation>['t']
-  i18n: ReturnType<typeof useTranslation>['i18n']
   player: PlayerState | null
   band: BandState | null
   isAffordable: boolean
@@ -234,13 +226,12 @@ type MerchPressCurrentStatsProps = {
 
 function MerchPressCurrentStats({
   config,
-  t,
-  i18n,
   player,
   band,
   isAffordable,
   hasEnoughHarmony
 }: MerchPressCurrentStatsProps) {
+  const { t, i18n } = useTranslation(['ui'])
   return (
     <div className='border border-toxic-green-20 p-4 space-y-4'>
       <h3 className='text-toxic-green text-sm uppercase tracking-widest mb-2'>
@@ -300,16 +291,15 @@ type MerchPressActionsProps = {
   onPress: () => void
   canPress: boolean
   disabledReason: string | null
-  t: ReturnType<typeof useTranslation>['t']
 }
 
 function MerchPressActions({
   onClose,
   onPress,
   canPress,
-  disabledReason,
-  t
+  disabledReason
 }: MerchPressActionsProps) {
+  const { t } = useTranslation(['ui'])
   return (
     <div className='mt-8 flex flex-col sm:flex-row justify-end gap-4'>
       <GlitchButton
