@@ -22,7 +22,7 @@ export const SongSelector = ({
       </label>
       <select
         id='songSelect'
-        className='bg-void-black border border-toxic-green text-toxic-green p-2 font-mono uppercase focus:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
+        className='bg-void-black border border-toxic-green text-toxic-green p-2 font-mono uppercase focus:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
         value={activeSongId}
         onChange={event => setSelectedSongId(event.target.value)}
       >

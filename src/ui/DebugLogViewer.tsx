@@ -1,6 +1,7 @@
 import { useState, useEffect, useSyncExternalStore } from 'react'
 import { useTranslation } from 'react-i18next'
 import { logger, LOG_LEVELS } from '../utils/logger'
+import { Tooltip } from './shared/Tooltip'
 
 type LogLevelName = keyof typeof LOG_LEVELS
 
@@ -32,12 +33,11 @@ const LogRow = ({ log }: { log: LogEntry }) => (
     <span className={`font-bold w-12 shrink-0 ${getLevelColor(log.level)}`}>
       {log.level}
     </span>
-    <span
-      className='text-toxic-green w-24 shrink-0 truncate'
-      title={log.channel}
-    >
-      [{log.channel}]
-    </span>
+    <Tooltip content={log.channel}>
+      <span className='text-toxic-green w-24 shrink-0 truncate block'>
+        [{log.channel}]
+      </span>
+    </Tooltip>
     <span className='text-star-white/80 break-all'>
       {log.message}
       {log.data !== undefined && log.data !== null && (
@@ -79,47 +79,53 @@ const DebugLogViewerContent = ({
             <select
               value={filterLevel}
               onChange={e => setFilterLevel(parseInt(e.target.value, 10))}
-              className='bg-void-black text-star-white border-2 border-ash-gray px-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green transition-colors cursor-pointer'
+              className='bg-void-black text-star-white border-2 border-ash-gray px-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black transition-colors cursor-pointer'
             >
               <option value={LOG_LEVELS.DEBUG}>DEBUG</option>
               <option value={LOG_LEVELS.INFO}>INFO</option>
               <option value={LOG_LEVELS.WARN}>WARN</option>
               <option value={LOG_LEVELS.ERROR}>ERROR</option>
             </select>
-            <button
-              type='button'
-              onClick={() => {
-                if (import.meta.env.DEV) {
-                  // DEV-only debugging dump
-                  console.info(logger.logs)
+            <Tooltip content={t('ui:debug_log_viewer.dump_console', { defaultValue: 'Dump logs to console' })}>
+              <button
+                type='button'
+                onClick={() => {
+                  if (import.meta.env.DEV) {
+                    // DEV-only debugging dump
+                    console.info(logger.logs)
+                  }
+                }}
+                className='text-ash-gray hover:text-star-white hover:bg-void-black px-2 border-2 border-ash-gray uppercase shadow-[4px_4px_0px_var(--color-ash-gray)] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ash-gray focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
+              >
+                DUMP TO CONSOLE
+              </button>
+            </Tooltip>
+            <Tooltip content={t('ui:debug_log_viewer.copy_logs', { defaultValue: 'Copy logs to clipboard' })}>
+              <button
+                type='button'
+                onClick={() =>
+                  navigator.clipboard
+                    .writeText(logger.dump())
+                    .catch(e =>
+                      logger.error('DebugLogViewer', 'Failed to copy logs', e)
+                    )
                 }
-              }}
-              className='text-ash-gray hover:text-star-white hover:bg-void-black px-2 border-2 border-ash-gray uppercase shadow-[4px_4px_0px_var(--color-ash-gray)] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ash-gray focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
-            >
-              DUMP TO CONSOLE
-            </button>
-            <button
-              type='button'
-              onClick={() =>
-                navigator.clipboard
-                  .writeText(logger.dump())
-                  .catch(e =>
-                    logger.error('DebugLogViewer', 'Failed to copy logs', e)
-                  )
-              }
-              className='text-ash-gray hover:text-star-white hover:bg-void-black px-2 border-2 border-ash-gray uppercase shadow-[4px_4px_0px_var(--color-ash-gray)] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ash-gray focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
-            >
-              COPY LOGS
-            </button>
-            <button
-              type='button'
-              onClick={() => {
-                logger.clear()
-              }}
-              className='text-ash-gray hover:text-star-white hover:bg-void-black px-2 border-2 border-ash-gray uppercase shadow-[4px_4px_0px_var(--color-ash-gray)] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ash-gray focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
-            >
-              {t('ui:action_clear')}
-            </button>
+                className='text-ash-gray hover:text-star-white hover:bg-void-black px-2 border-2 border-ash-gray uppercase shadow-[4px_4px_0px_var(--color-ash-gray)] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ash-gray focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
+              >
+                COPY LOGS
+              </button>
+            </Tooltip>
+            <Tooltip content={t('ui:debug_log_viewer.clear_logs', { defaultValue: 'Clear all logs' })}>
+              <button
+                type='button'
+                onClick={() => {
+                  logger.clear()
+                }}
+                className='text-ash-gray hover:text-star-white hover:bg-void-black px-2 border-2 border-ash-gray uppercase shadow-[4px_4px_0px_var(--color-ash-gray)] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ash-gray focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
+              >
+                {t('ui:action_clear')}
+              </button>
+            </Tooltip>
           </div>
           <button
             type='button'
