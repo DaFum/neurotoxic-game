@@ -22,7 +22,7 @@ export const selectTop3ByScore = <T>(
 
   for (let i = 0; i < items.length; i++) {
     const item = items[i]
-    if (!item) continue
+    if (item === null || item === undefined) continue
 
     const score = scoreOf(item)
     if (score > score1) {
