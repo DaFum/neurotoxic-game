@@ -41,13 +41,18 @@ Three sites handle the **same** `harmonyRegenTravel` flag with **two** different
 ### 1.4 — LOW — `||` fallbacks where falsy could matter
 - `src/utils/rhythmUtils.ts:32,35` — `song.bpm || 120`, `song.difficulty || 2` (mirrored at `gigModifiersUtils.ts:171`); a `0` difficulty silently becomes 2. Invalid data anyway → low impact.
 - `src/domain/questAdd.ts:77` — `[...(state.activeQuests || []), ...]` on an array; harmless but `??` is project convention.
+- `src/utils/crypto.ts:120-139` — the `(lut[buffer[n] ?? 0] || '')` chain mixes `??` and `||`; the `|| ''` is redundant since `lut` is a string array with no falsy non-empty entries and `?? 0` already guarantees a valid index. **Action: FIX** — drop the `|| ''` suffixes.
 - **Action: FIX** (low value).
+
+### 1.8 — LOW — Legacy dual-signature invites misuse
+- `src/utils/socialEngine.ts:432-441` — `calculateViralChance` accepts `options: ViralOptions | number` for backward compatibility; a caller passing `0` (intending "no modifiers") routes through the numeric branch, which is correct but easy to misuse. **Action: FIX** — add a `@deprecated` JSDoc on the numeric overload to steer callers to the object signature.
 
 ### 1.5 — LOW — `normalizeVenueId` null/empty-string convention mismatch
 - `src/utils/mapUtils.ts` `normalizeVenueId` returns `null` for malformed input while `getCityKeyFromVenueId` (mapGenerator) returns `''`; callers must guard both. **Action: FIX** — unify.
 
 ### 1.6 — LOW — Type mismatch threaded through kabelsalat
 - `src/scenes/kabelsalat/useKabelsalatState.ts:24` — `faultReason` initialized as `''` (string) but consumer props (`KabelsalatBoard`/overlays) declare `string | null`, forcing defensive `??`. **Action: FIX** — pick one type end-to-end.
+- `src/scenes/kabelsalat/hooks/useKabelsalatTimer.ts:11-12` — a `import type { SocketId }` sits below code that already uses a sibling import; compiles fine, but breaks conventional import ordering. **Action: FIX** (style only).
 
 ### 1.7 — LOW (parity-only, transitively safe)
 - `src/utils/assetTicks.ts:166-167` (`processLiabilityTick`) seeds `currentMoney`/`nextFame` from raw `state.player.*` without `finiteNumberOr`, unlike the sibling `processAssetTick` (lines 91-103). Defended transitively (asset tick runs first and emits finite money/fame), but a future reorder would propagate NaN into `fame`/`fameLevel`. **Action: FIX** for parity.
@@ -103,7 +108,7 @@ Three sites handle the **same** `harmonyRegenTravel` flag with **two** different
 - `src/utils/errors/index.ts:3` — `ErrorCategory` re-export has no `src/` consumer (`ErrorSeverity` does). **Action: DELETE** the re-export or document as intended API.
 - `src/utils/errors/types.ts` — `GameError.State` and `GameError.Audio` static factories are never called (callers use `new GameError(...)`/`StateError`). **Action: DELETE.**
 
-*Note — over-exported but used in-file (33 symbols, LOW):* a programmatic pass found 33 exports whose only references are within their own defining file (e.g. `EFFECT_HANDLERS`, `DRUM_HANDLERS`, `TUTORIAL_STEPS`, `handleToggleNeuroDecimator`, `getQuestNextStepHint`, `resolveVenue`). These are used (dispatch tables, test seams) but exported unnecessarily. Bulk un-export is optional cleanup, not a defect.
+*Note — over-exported but used in-file (33 symbols, LOW):* a programmatic pass found 33 exports whose only references are within their own defining file (e.g. `EFFECT_HANDLERS`, `DRUM_HANDLERS`, `TUTORIAL_STEPS`, `handleToggleNeuroDecimator`, `getQuestNextStepHint`, `resolveVenue`, the `eventEngine/helpers.ts` trio `toStringArray`/`logEventError`/`processEvent`, and the type-only `questProgress.ts:21` `LegacyQuestProgressEvent`). These are used (dispatch tables, test seams, save-compat type unions) but exported unnecessarily. Bulk un-export is optional cleanup, not a defect — and `LegacyQuestProgressEvent` should be confirmed against save-file compatibility before any change.
 
 ---
 
@@ -118,6 +123,9 @@ Three sites handle the **same** `harmonyRegenTravel` flag with **two** different
 
 ### 4.3 — LOW — Misleading single-arg `Math.max`
 - `src/utils/eventEngine/eventSelection.ts:212` — `Math.max(Math.min(CAP, x))`; the outer single-arg `Math.max` is a no-op. **Action: FIX** — drop the outer `Math.max`.
+
+### 4.4 — LOW — Never-exercised inner guard in `normalizeVenueId`
+- `src/utils/mapUtils.ts:91-95` — the `if (hasName && id.includes(':'))` branch is never taken by real data: production venue ids always have the colon before the `.name` suffix (`venues:<id>.name`), so the two conditions never co-occur in the shape this branch targets. Defensive, not strictly dead. **Action: FIX** — remove the inner guard or document the intended malformed-input case.
 
 *Non-findings (verified, deliberately kept):*
 - `useStartTravelSequence.ts:61-69` failsafe `setTimeout`/`onTravelComplete` is unreachable in production but is a documented deliberate fallback (hooks/AGENTS.md) — **KEEP.**
@@ -140,3 +148,11 @@ Two items warrant a glance (behavioral, not orphans):
 - Orphan claims cross-checked against `symbols.json` usage graph (`usedBy`/`usedByTests`/`referencedBy`/`referencedByLocal`/`referencedInFile`) and ripgrep. The 8 audio functions (`playSFX`, `setMusicVolume`, etc.) that appeared test-only are **false positives** — re-exported via the `audioEngine` barrel and called as `audioEngine.x()`.
 - EN/DE locale parity verified across all 10 file pairs (identical flattened key sets); all `ns:key` literals in `src/data` resolve in both locales.
 - 162 event ids and 32 quest definitions confirmed unique/registered exactly once.
+
+### Reconciled false positives (raised by deep-read helpers, rejected after context)
+Severities below were corrected against the relevant `AGENTS.md` rules; they are recorded here so the fix pass does not re-introduce them as defects.
+- **`changeScene` in minigame end-hooks** (`useAmpLogic.ts:377`, `useRoadieLogic.ts:177`, `useKabelsalatGameEnd.ts:66`) — flagged HIGH ×3 by an automated sweep. **NOT violations.** The ban applies to the `handleComplete*` reducers (verified clean in `minigameReducer.ts`); scene-side hooks owning routing is explicitly mandated by kabelsalat `AGENTS.md`. See §4 Non-findings.
+- **`useGigEffects` exported seams** (`calculateChaosStyle`/`playBandMemberAnimation`/`applyChaosJitter`) — not dead; covered by `tests/node/useGigEffects.test.js`.
+- **`mapUtils.ts:79` `rawId === 0`** — downgraded MED→LOW: defensive check at an `unknown` boundary, not unreachable dead code.
+- **`logger.ts` direct `localStorage`** — downgraded HIGH→LOW: logger is a low-level bootstrap dependency; routing through `storage.ts` may introduce a circular dependency (see §5).
+- **Orphaned JSDoc / venue-parse duplication** — these are documentation/DRY cleanups, not correctness HIGHs; rated LOW (§4.2) and LOW (§2.5).
