@@ -2,13 +2,16 @@ import { memo } from 'react'
 import { VoidSkullIcon } from '../../ui/shared/Icons'
 
 interface OverloadWarningProps {
+  /** The current system overload percentage. */
   overload: number
+  /** Whether the game is currently in toxic mode. */
   isToxicMode: boolean
 }
 
 /**
  * Displays the skull warning only when overload is critical or toxic mode is active.
- * @param props - Overload value and toxic-mode state used to decide warning visibility.
+ *
+ * @returns A React node rendering the warning visual if thresholds are met, or null otherwise.
  */
 export const OverloadWarning = memo(function OverloadWarning({
   overload,
