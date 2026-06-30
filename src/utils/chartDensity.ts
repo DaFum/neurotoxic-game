@@ -1,3 +1,4 @@
+import { buildMidiTrackEvents } from './audio/midiUtils'
 import { isFiniteNumber } from './finiteNumber'
 import type { Song } from '../types/audio'
 
@@ -18,11 +19,6 @@ const toMidiTime = (tick: unknown, tpb: number, bpm: number): number | null => {
   return (tick / tpb) * (60 / bpm)
 }
 
-const isValidMidiPitch = (p: unknown): boolean => {
-  const midiPitch = Number(p)
-  return Number.isFinite(midiPitch) && midiPitch >= 0 && midiPitch <= 127
-}
-
 /**
  * Builds normalized note-density buckets for one song chart.
  *
@@ -35,51 +31,60 @@ export const buildSongChartDensity = (
   bucketCount = 16
 ): ChartDensityBar[] => {
   const safeBucketCount =
-    Number.isFinite(bucketCount) && bucketCount > 0
+    Number.isFinite(bucketCount) && bucketCount >= 1
       ? Math.floor(bucketCount)
       : 16
   const tpb = isFiniteNumber(song.tpb) && song.tpb > 0 ? song.tpb : 480
   const bpm = isFiniteNumber(song.bpm) && song.bpm > 0 ? song.bpm : 120
   const notes = Array.isArray(song.notes) ? song.notes : []
+  const midiNotes: Array<{ time: number; midi: unknown; velocity?: unknown }> =
+    []
 
+  for (let i = 0; i < notes.length; i++) {
+    const note = notes[i]
+    if (!note) continue
+    const time = toMidiTime(note?.t, tpb, bpm)
+    if (time === null) continue
+    midiNotes.push({
+      time,
+      midi: note?.p,
+      velocity: note?.velocity
+    })
+  }
+
+  const events = buildMidiTrackEvents(midiNotes)
   let duration = 1
   if (isFiniteNumber(song.duration) && song.duration > 0) {
     duration = song.duration
   } else {
-    for (let i = 0; i < notes.length; i++) {
-      const note = notes[i]
-      if (!note) continue
-      const time = toMidiTime(note.t, tpb, bpm)
-      if (time !== null && time > duration && isValidMidiPitch(note.p)) {
-        duration = time
+    for (const event of events) {
+      if (event.time > duration) {
+        duration = event.time
       }
     }
   }
 
   const counts = new Int32Array(safeBucketCount)
-  for (let i = 0; i < notes.length; i++) {
-    const note = notes[i]
-    if (!note) continue
-    const time = toMidiTime(note.t, tpb, bpm)
-    if (time === null || !isValidMidiPitch(note.p)) continue
 
+  for (const event of events) {
     const index = Math.min(
       safeBucketCount - 1,
-      Math.max(0, Math.floor((time / duration) * safeBucketCount))
+      Math.max(0, Math.floor((event.time / duration) * safeBucketCount))
     )
-    counts[index]++
+    counts[index] = (counts[index] ?? 0) + 1
   }
 
   let peak = 1
   for (let i = 0; i < safeBucketCount; i++) {
-    if (counts[i] > peak) {
-      peak = counts[i]
+    const current = counts[i] ?? 0
+    if (current > peak) {
+      peak = current
     }
   }
 
   const result = new Array<ChartDensityBar>(safeBucketCount)
   for (let index = 0; index < safeBucketCount; index++) {
-    const count = counts[index]
+    const count = counts[index] ?? 0
     result[index] = {
       timestamp: (index / safeBucketCount) * duration,
       count,
@@ -101,7 +106,7 @@ export const buildSetlistChartDensity = (
   bucketCount = 16
 ): ChartDensityBar[] => {
   const safeBucketCount =
-    Number.isFinite(bucketCount) && bucketCount > 0
+    Number.isFinite(bucketCount) && bucketCount >= 1
       ? Math.floor(bucketCount)
       : 16
 
@@ -118,17 +123,28 @@ export const buildSetlistChartDensity = (
     const tpb = isFiniteNumber(song.tpb) && song.tpb > 0 ? song.tpb : 480
     const bpm = isFiniteNumber(song.bpm) && song.bpm > 0 ? song.bpm : 120
     const notes = Array.isArray(song.notes) ? song.notes : []
+    const midiNotes: Array<{ time: number; midi: unknown; velocity?: unknown }> = []
 
+    for (let i = 0; i < notes.length; i++) {
+      const note = notes[i]
+      if (!note) continue
+      const time = toMidiTime(note?.t, tpb, bpm)
+      if (time === null) continue
+      midiNotes.push({
+        time,
+        midi: note?.p,
+        velocity: note?.velocity
+      })
+    }
+
+    const events = buildMidiTrackEvents(midiNotes)
     let duration = 1
     if (isFiniteNumber(song.duration) && song.duration > 0) {
       duration = song.duration
     } else {
-      for (let i = 0; i < notes.length; i++) {
-        const note = notes[i]
-        if (!note) continue
-        const time = toMidiTime(note.t, tpb, bpm)
-        if (time !== null && time > duration && isValidMidiPitch(note.p)) {
-          duration = time
+      for (const event of events) {
+        if (event.time > duration) {
+          duration = event.time
         }
       }
     }
@@ -138,17 +154,12 @@ export const buildSetlistChartDensity = (
       hasFirstSet = true
     }
 
-    for (let i = 0; i < notes.length; i++) {
-      const note = notes[i]
-      if (!note) continue
-      const time = toMidiTime(note.t, tpb, bpm)
-      if (time === null || !isValidMidiPitch(note.p)) continue
-
+    for (const event of events) {
       const index = Math.min(
         safeBucketCount - 1,
-        Math.max(0, Math.floor((time / duration) * safeBucketCount))
+        Math.max(0, Math.floor((event.time / duration) * safeBucketCount))
       )
-      counts[index]++
+      counts[index] = (counts[index] ?? 0) + 1
     }
   }
 
@@ -156,19 +167,19 @@ export const buildSetlistChartDensity = (
 
   let peak = 1
   for (let i = 0; i < safeBucketCount; i++) {
-    if (counts[i] > peak) {
-      peak = counts[i]
-    }
+    const currentCount = counts[i] ?? 0
+    if (currentCount > peak) peak = currentCount
   }
 
   const result = new Array<ChartDensityBar>(safeBucketCount)
   for (let index = 0; index < safeBucketCount; index++) {
-    const count = counts[index]
+    const count = counts[index] ?? 0
     result[index] = {
       timestamp: (index / safeBucketCount) * firstSetDuration,
       count,
       intensity: count / peak
     }
   }
+
   return result
 }
