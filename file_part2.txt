@@ -1,150 +1,3 @@
-import { IconClose } from './shared/Icons'
-
-import { motion, AnimatePresence } from 'framer-motion'
-import { useTranslation } from 'react-i18next'
-import { GlitchButton } from './GlitchButton'
-import { ProgressBar, Tooltip } from './shared/index.tsx'
-import { useGameSelector } from '../context/GameState'
-import { IMG_PROMPTS, resolveGenImageUrl } from '../utils/imageGen'
-import { PlayerState, BandState } from '../types'
-import { formatCurrency } from '../utils/numberUtils'
-
-type MerchPressConfig = {
-  cost: number
-  loyaltyGain: number
-  controversyGain: number
-  fameGain: number
-  failChance: number
-  harmonyCostOnFail: number
-}
-
-type MerchPressModalProps = {
-  onClose: () => void
-  onPress: () => void
-  canPress: boolean
-  config: MerchPressConfig
-}
-
-/**
- * Shows merch-press costs, rewards, availability, and confirmation actions.
- * @param props - Press availability, press action, close handler, and merch-press configuration.
- */
-export const MerchPressModal = ({
-  onClose,
-  onPress,
-  canPress,
-  config
-}: MerchPressModalProps) => {
-  const { t, i18n } = useTranslation(['ui'])
-  const player = useGameSelector(state => state.player)
-  const band = useGameSelector(state => state.band)
-
-  const isAffordable = (player?.money ?? 0) >= (config.cost ?? 0)
-  const hasEnoughHarmony =
-    (band?.harmony ?? 0) >= (config.harmonyCostOnFail ?? 0)
-
-  const disabledReason = !isAffordable
-    ? t('ui:merch_press.not_enough_money', { defaultValue: 'Not enough money' })
-    : !hasEnoughHarmony
-      ? t('ui:merch_press.not_enough_harmony', {
-          defaultValue: 'Not enough harmony'
-        })
-      : null
-
-  return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className='fixed inset-0 z-(--z-modal) flex items-center justify-center p-4 bg-void-black/90 backdrop-blur-sm'
-      >
-        <motion.div
-          initial={{ scale: 0.95, y: 20 }}
-          animate={{ scale: 1, y: 0 }}
-          exit={{ scale: 0.95, y: 20 }}
-          className='relative w-full max-w-4xl border-4 border-toxic-green p-3 sm:p-6 bg-void-black shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)] max-h-[calc(100svh-4rem)] overflow-y-auto overflow-x-hidden custom-scrollbar'
-        >
-          {/* Background Image with Overlay */}
-          <div
-            className='absolute inset-0 z-0 opacity-20 pointer-events-none'
-            style={{
-              backgroundImage: `url('${resolveGenImageUrl(IMG_PROMPTS.MERCH_PRESS_BG)}')`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              mixBlendMode: 'screen'
-            }}
-          />
-          <div className='absolute inset-0 bg-gradient-to-t from-void-black via-void-black/80 to-transparent z-0 pointer-events-none' />
-
-          <div className='relative z-10 p-6'>
-            <MerchPressHeader onClose={onClose} />
-
-            {/* Content */}
-            <div className='space-y-6'>
-              <p className='text-ash-gray text-sm leading-relaxed border-l-2 border-toxic-green-50 pl-4 py-1'>
-                {t('ui:merch_press.description', {
-                  defaultValue:
-                    'Print bootleg shirts and press illegal vinyls in the basement. High risk, high reward.'
-                })}
-              </p>
-
-              <MerchPressCostsAndGains config={config} />
-
-              <MerchPressRiskWarning config={config} />
-
-              <MerchPressCurrentStats
-                config={config}
-                player={player}
-                band={band}
-                isAffordable={isAffordable}
-                hasEnoughHarmony={hasEnoughHarmony}
-              />
-            </div>
-
-            <MerchPressActions
-              onClose={onClose}
-              onPress={onPress}
-              canPress={canPress}
-              disabledReason={disabledReason}
-            />
-
-            {/* Corner Decorations */}
-            <div className='absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-toxic-green pointer-events-none' />
-            <div className='absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-toxic-green pointer-events-none' />
-            <div className='absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-toxic-green pointer-events-none' />
-            <div className='absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-toxic-green pointer-events-none' />
-          </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
-  )
-}
-
-type MerchPressHeaderProps = {
-  onClose: () => void
-}
-
-function MerchPressHeader({ onClose }: MerchPressHeaderProps) {
-  const { t } = useTranslation(['ui'])
-  return (
-    <div className='flex justify-between items-start mb-6 border-b border-toxic-green-20 pb-4'>
-      <div>
-        <h2
-          className='text-2xl font-display text-toxic-green tracking-widest uppercase glitch-text'
-          data-text={t('ui:merch_press.title', {
-            defaultValue: 'UNDERGROUND MERCH PRESS'
-          })}
-        >
-          {t('ui:merch_press.title', {
-            defaultValue: 'UNDERGROUND MERCH PRESS'
-          })}
-        </h2>
-        <p className='text-sm text-ash-gray mt-1 uppercase tracking-wider'>
-          {t('ui:merch_press.subtitle', {
-            defaultValue: 'BOOTLEG OPERATION'
-          })}
-        </p>
       </div>
       <Tooltip content={t('ui:menu.close')}>
         <button
@@ -162,12 +15,15 @@ function MerchPressHeader({ onClose }: MerchPressHeaderProps) {
 
 type MerchPressCostsAndGainsProps = {
   config: MerchPressConfig
+  t: ReturnType<typeof useTranslation>['t']
+  i18n: ReturnType<typeof useTranslation>['i18n']
 }
 
 function MerchPressCostsAndGains({
-  config
+  config,
+  t,
+  i18n
 }: MerchPressCostsAndGainsProps) {
-  const { t, i18n } = useTranslation(['ui'])
   return (
     <div className='grid grid-cols-2 gap-4'>
       <div className='bg-void-black border border-error-red/20 p-3 flex flex-col items-center justify-center relative overflow-hidden group'>
@@ -199,10 +55,10 @@ function MerchPressCostsAndGains({
 
 type MerchPressRiskWarningProps = {
   config: MerchPressConfig
+  t: ReturnType<typeof useTranslation>['t']
 }
 
-function MerchPressRiskWarning({ config }: MerchPressRiskWarningProps) {
-  const { t } = useTranslation(['ui'])
+function MerchPressRiskWarning({ config, t }: MerchPressRiskWarningProps) {
   return (
     <div className='bg-error-red/20 border border-error-red/20 p-4 mt-4'>
       <p className='text-error-red text-sm text-center font-bold'>
@@ -218,6 +74,8 @@ function MerchPressRiskWarning({ config }: MerchPressRiskWarningProps) {
 
 type MerchPressCurrentStatsProps = {
   config: MerchPressConfig
+  t: ReturnType<typeof useTranslation>['t']
+  i18n: ReturnType<typeof useTranslation>['i18n']
   player: PlayerState | null
   band: BandState | null
   isAffordable: boolean
@@ -226,12 +84,13 @@ type MerchPressCurrentStatsProps = {
 
 function MerchPressCurrentStats({
   config,
+  t,
+  i18n,
   player,
   band,
   isAffordable,
   hasEnoughHarmony
 }: MerchPressCurrentStatsProps) {
-  const { t, i18n } = useTranslation(['ui'])
   return (
     <div className='border border-toxic-green-20 p-4 space-y-4'>
       <h3 className='text-toxic-green text-sm uppercase tracking-widest mb-2'>
@@ -291,15 +150,16 @@ type MerchPressActionsProps = {
   onPress: () => void
   canPress: boolean
   disabledReason: string | null
+  t: ReturnType<typeof useTranslation>['t']
 }
 
 function MerchPressActions({
   onClose,
   onPress,
   canPress,
-  disabledReason
+  disabledReason,
+  t
 }: MerchPressActionsProps) {
-  const { t } = useTranslation(['ui'])
   return (
     <div className='mt-8 flex flex-col sm:flex-row justify-end gap-4'>
       <GlitchButton
