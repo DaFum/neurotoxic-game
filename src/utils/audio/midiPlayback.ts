@@ -94,7 +94,15 @@ type MidiTransportParams = {
 /**
  * Internal helper to trigger instrument notes.
  */
-function triggerSynthNote(config: {
+function triggerSynthNote({
+  synth,
+  midiPitch,
+  time,
+  velocity,
+  duration,
+  defaultFreq,
+  noteName
+}: {
   synth: Tone.PolySynth | null | undefined
   midiPitch: number
   time: number
@@ -103,8 +111,6 @@ function triggerSynthNote(config: {
   defaultFreq: string
   noteName: string | null
 }): void {
-  const { synth, midiPitch, time, velocity, duration, defaultFreq, noteName } =
-    config
   const freq = noteName ?? getNoteName(midiPitch) ?? defaultFreq
   synth?.triggerAttackRelease(freq, duration, time, velocity)
 }
