@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { generateBrandOffers, negotiateDeal } from '../../src/utils/brandDealLogic'
 import { SocialEngineGameState, BrandDeal, BrandOffer } from '../../src/types/social'
+import { DEAL_NEGOTIATION_SAFE_CHANCE, DEAL_NEGOTIATION_PERSUASIVE_CHANCE, DEAL_NEGOTIATION_AGGRESSIVE_CHANCE } from '../../src/context/gameConstants'
 
 // We will mock buildBrandOffer to easily test what gets passed to it
 vi.mock('../../src/utils/brandOfferFlavor', async (importOriginal) => {
@@ -71,8 +72,8 @@ describe('brandDealLogic', () => {
 
     it('handles SAFE strategy with success', () => {
       const gameState = { band: {}, social: {} } as SocialEngineGameState
-      // Force success
-      const rng = () => 0.1
+      // Test at exact threshold minus epsilon
+      const rng = () => DEAL_NEGOTIATION_SAFE_CHANCE - 0.01
 
       const result = negotiateDeal(mockDeal, 'SAFE', gameState, rng)
 
@@ -84,8 +85,8 @@ describe('brandDealLogic', () => {
 
     it('handles SAFE strategy with failure', () => {
       const gameState = { band: {}, social: {} } as SocialEngineGameState
-      // Force failure
-      const rng = () => 0.99
+      // Test at exact threshold plus epsilon
+      const rng = () => DEAL_NEGOTIATION_SAFE_CHANCE + 0.01
 
       const result = negotiateDeal(mockDeal, 'SAFE', gameState, rng)
 
@@ -97,8 +98,8 @@ describe('brandDealLogic', () => {
 
     it('handles PERSUASIVE strategy with success', () => {
       const gameState = { band: {}, social: {} } as SocialEngineGameState
-      // Force success
-      const rng = () => 0.1
+      // Test at exact threshold minus epsilon
+      const rng = () => DEAL_NEGOTIATION_PERSUASIVE_CHANCE - 0.01
 
       const result = negotiateDeal(mockDeal, 'PERSUASIVE', gameState, rng)
 
@@ -108,10 +109,27 @@ describe('brandDealLogic', () => {
       expect(result.deal?.offer.perGig).toBe(110) // 100 * 1.1
     })
 
+    it('handles PERSUASIVE strategy with success when perGig is absent', () => {
+      const gameState = { band: {}, social: {} } as SocialEngineGameState
+      const mockDealNoPerGig = {
+        id: 'test_deal_no_pergig',
+        offer: { upfront: 1000, duration: 5 }
+      } as unknown as BrandDeal
+      // Test at exact threshold minus epsilon
+      const rng = () => DEAL_NEGOTIATION_PERSUASIVE_CHANCE - 0.01
+
+      const result = negotiateDeal(mockDealNoPerGig, 'PERSUASIVE', gameState, rng)
+
+      expect(result.success).toBe(true)
+      expect(result.status).toBe('ACCEPTED')
+      expect(result.deal?.offer.upfront).toBe(1200) // 1000 * 1.2
+      expect(result.deal?.offer.perGig).toBeUndefined()
+    })
+
     it('handles PERSUASIVE strategy with failure', () => {
       const gameState = { band: {}, social: {} } as SocialEngineGameState
-      // Force failure
-      const rng = () => 0.99
+      // Test at exact threshold plus epsilon
+      const rng = () => DEAL_NEGOTIATION_PERSUASIVE_CHANCE + 0.01
 
       const result = negotiateDeal(mockDeal, 'PERSUASIVE', gameState, rng)
 
@@ -122,8 +140,8 @@ describe('brandDealLogic', () => {
 
     it('handles AGGRESSIVE strategy with success', () => {
       const gameState = { band: {}, social: {} } as SocialEngineGameState
-      // Force success
-      const rng = () => 0.05 // Aggressive base chance is 0.3
+      // Test at exact threshold minus epsilon
+      const rng = () => DEAL_NEGOTIATION_AGGRESSIVE_CHANCE - 0.01
 
       const result = negotiateDeal(mockDeal, 'AGGRESSIVE', gameState, rng)
 
@@ -134,8 +152,8 @@ describe('brandDealLogic', () => {
 
     it('handles AGGRESSIVE strategy with failure (REVOKED)', () => {
       const gameState = { band: {}, social: {} } as SocialEngineGameState
-      // Force failure
-      const rng = () => 0.99
+      // Test at exact threshold plus epsilon
+      const rng = () => DEAL_NEGOTIATION_AGGRESSIVE_CHANCE + 0.01
 
       const result = negotiateDeal(mockDeal, 'AGGRESSIVE', gameState, rng)
 
