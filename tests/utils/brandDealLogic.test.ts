@@ -72,8 +72,8 @@ describe('brandDealLogic', () => {
 
     it('handles SAFE strategy with success', () => {
       const gameState = { band: {}, social: {} } as SocialEngineGameState
-      // Test at exact threshold minus epsilon
-      const rng = () => DEAL_NEGOTIATION_SAFE_CHANCE - 0.01
+      // Test at exact threshold minus epsilon, clamped to valid [0, 1) range
+      const rng = () => Math.max(0, DEAL_NEGOTIATION_SAFE_CHANCE - 0.01)
 
       const result = negotiateDeal(mockDeal, 'SAFE', gameState, rng)
 
@@ -85,8 +85,8 @@ describe('brandDealLogic', () => {
 
     it('handles SAFE strategy with failure', () => {
       const gameState = { band: {}, social: {} } as SocialEngineGameState
-      // Test at exact threshold plus epsilon
-      const rng = () => DEAL_NEGOTIATION_SAFE_CHANCE + 0.01
+      // Test at exact threshold plus epsilon, clamped to valid [0, 1) range
+      const rng = () => Math.min(0.99, DEAL_NEGOTIATION_SAFE_CHANCE + 0.01)
 
       const result = negotiateDeal(mockDeal, 'SAFE', gameState, rng)
 
@@ -98,8 +98,8 @@ describe('brandDealLogic', () => {
 
     it('handles PERSUASIVE strategy with success', () => {
       const gameState = { band: {}, social: {} } as SocialEngineGameState
-      // Test at exact threshold minus epsilon
-      const rng = () => DEAL_NEGOTIATION_PERSUASIVE_CHANCE - 0.01
+      // Test at exact threshold minus epsilon, clamped to valid [0, 1) range
+      const rng = () => Math.max(0, DEAL_NEGOTIATION_PERSUASIVE_CHANCE - 0.01)
 
       const result = negotiateDeal(mockDeal, 'PERSUASIVE', gameState, rng)
 
@@ -115,8 +115,8 @@ describe('brandDealLogic', () => {
         id: 'test_deal_no_pergig',
         offer: { upfront: 1000, duration: 5 }
       } as unknown as BrandDeal
-      // Test at exact threshold minus epsilon
-      const rng = () => DEAL_NEGOTIATION_PERSUASIVE_CHANCE - 0.01
+      // Test at exact threshold minus epsilon, clamped to valid [0, 1) range
+      const rng = () => Math.max(0, DEAL_NEGOTIATION_PERSUASIVE_CHANCE - 0.01)
 
       const result = negotiateDeal(mockDealNoPerGig, 'PERSUASIVE', gameState, rng)
 
@@ -128,8 +128,8 @@ describe('brandDealLogic', () => {
 
     it('handles PERSUASIVE strategy with failure', () => {
       const gameState = { band: {}, social: {} } as SocialEngineGameState
-      // Test at exact threshold plus epsilon
-      const rng = () => DEAL_NEGOTIATION_PERSUASIVE_CHANCE + 0.01
+      // Test at exact threshold plus epsilon, clamped to valid [0, 1) range
+      const rng = () => Math.min(0.99, DEAL_NEGOTIATION_PERSUASIVE_CHANCE + 0.01)
 
       const result = negotiateDeal(mockDeal, 'PERSUASIVE', gameState, rng)
 
@@ -140,8 +140,8 @@ describe('brandDealLogic', () => {
 
     it('handles AGGRESSIVE strategy with success', () => {
       const gameState = { band: {}, social: {} } as SocialEngineGameState
-      // Test at exact threshold minus epsilon
-      const rng = () => DEAL_NEGOTIATION_AGGRESSIVE_CHANCE - 0.01
+      // Test at exact threshold minus epsilon, clamped to valid [0, 1) range
+      const rng = () => Math.max(0, DEAL_NEGOTIATION_AGGRESSIVE_CHANCE - 0.01)
 
       const result = negotiateDeal(mockDeal, 'AGGRESSIVE', gameState, rng)
 
@@ -152,8 +152,8 @@ describe('brandDealLogic', () => {
 
     it('handles AGGRESSIVE strategy with failure (REVOKED)', () => {
       const gameState = { band: {}, social: {} } as SocialEngineGameState
-      // Test at exact threshold plus epsilon
-      const rng = () => DEAL_NEGOTIATION_AGGRESSIVE_CHANCE + 0.01
+      // Test at exact threshold plus epsilon, clamped to valid [0, 1) range
+      const rng = () => Math.min(0.99, DEAL_NEGOTIATION_AGGRESSIVE_CHANCE + 0.01)
 
       const result = negotiateDeal(mockDeal, 'AGGRESSIVE', gameState, rng)
 
