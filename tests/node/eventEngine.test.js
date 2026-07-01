@@ -827,6 +827,22 @@ const inventoryVariants = [
         -5,
         'Should allow negative inventory in delta for consumption'
       )
+  },
+  {
+    label: 'skip non-finite numeric item value and preserve existing value',
+    result: {
+      type: 'composite',
+      effects: [
+        { type: 'item', item: 'golden_pick', value: true },
+        { type: 'item', item: 'golden_pick', value: NaN }
+      ]
+    },
+    validate: delta =>
+      assert.equal(
+        delta.band.inventory.golden_pick,
+        true,
+        'Should skip NaN and not overwrite existing boolean value'
+      )
   }
 ]
 
