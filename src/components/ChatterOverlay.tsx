@@ -49,6 +49,9 @@ const PRE_GIG_BASE_STYLE = {
   speakerColor: 'text-toxic-green'
 }
 
+/**
+ * Defines the style properties used to construct a scene's visual theme.
+ */
 interface SceneStyle {
   accent: string
   accentGlow: string
@@ -60,8 +63,10 @@ interface SceneStyle {
 }
 
 /**
- * Per-scene visual theme for the chatter box.
- * Each entry defines border color, accent color, icon, etc.
+ * Defines the visual theme for the chatter box based on the current scene.
+ *
+ * @remarks
+ * Each entry specifies the border color, accent color, and icon for a particular scene.
  */
 const SCENE_STYLES: Record<string, SceneStyle> = {
   [GAME_PHASES.OVERWORLD]: OVERWORLD_STYLE,
@@ -104,21 +109,37 @@ const SCENE_STYLES: Record<string, SceneStyle> = {
 const DEFAULT_STYLE: SceneStyle =
   SCENE_STYLES[GAME_PHASES.MENU] ?? OVERWORLD_STYLE
 
+/**
+ * Defines the properties for the header section of a chatter message.
+ */
 interface ChatterMessageHeaderProps {
   sceneStyle: SceneStyle
   sceneLabel: string
   speaker: string
 }
 
+/**
+ * Defines the properties for the body content of a chatter message.
+ */
 interface ChatterMessageBodyProps {
   text: string
   textColorClass: string
 }
 
+/**
+ * Defines the properties for the lifetime duration bar of a chatter message.
+ */
 interface ChatterMessageLifetimeBarProps {
   barColorClass: string
 }
 
+/**
+ * Determines the text color class for a chatter message based on its type and the current scene.
+ *
+ * @param msgType - The classification of the chatter message
+ * @param currentScene - The key representing the active game scene
+ * @returns A string containing the corresponding Tailwind text color classes
+ */
 const resolveMessageTextColor = (
   msgType: ChatterMessageType,
   currentScene: string
@@ -129,6 +150,12 @@ const resolveMessageTextColor = (
   return 'text-star-white'
 }
 
+/**
+ * Renders the header section of a chatter message, displaying the scene label and speaker name.
+ *
+ * @param props - Component properties containing styling and display text
+ * @returns The header container component
+ */
 const ChatterMessageHeader = memo(
   ({ sceneStyle, sceneLabel, speaker }: ChatterMessageHeaderProps) => (
     <div className='pl-3 pr-2 py-1.5 border-b border-ash-gray/20 flex items-center justify-between gap-2'>
@@ -151,6 +178,12 @@ const ChatterMessageHeader = memo(
 
 ChatterMessageHeader.displayName = 'ChatterMessageHeader'
 
+/**
+ * Renders the body content of a chatter message.
+ *
+ * @param props - Component properties containing the message text and its color class
+ * @returns The body container component
+ */
 const ChatterMessageBody = memo(
   ({ text, textColorClass }: ChatterMessageBodyProps) => (
     <div className='pl-3 pr-2 py-2.5'>
@@ -163,6 +196,12 @@ const ChatterMessageBody = memo(
 
 ChatterMessageBody.displayName = 'ChatterMessageBody'
 
+/**
+ * Renders an animated progress bar indicating the remaining lifetime of a chatter message.
+ *
+ * @param props - Component properties specifying the color class for the bar
+ * @returns The animated lifetime bar component
+ */
 const ChatterMessageLifetimeBar = memo(
   ({ barColorClass }: ChatterMessageLifetimeBarProps) => (
     <div className='h-[2px] w-full bg-ash-gray/10'>
@@ -181,6 +220,12 @@ const ChatterMessageLifetimeBar = memo(
 
 ChatterMessageLifetimeBar.displayName = 'ChatterMessageLifetimeBar'
 
+/**
+ * Renders an individual, animated social chatter message.
+ *
+ * @param props - Component properties containing the message data, removal callback, and translation function
+ * @returns The animated chatter message component
+ */
 const ChatterMessage = memo(({ msg, onRemove, t }: ChatterMessageProps) => {
   const messageScene = msg.scene
   const sceneStyle = useMemo(
@@ -250,16 +295,18 @@ const ChatterMessage = memo(({ msg, onRemove, t }: ChatterMessageProps) => {
 ChatterMessage.displayName = 'ChatterMessage'
 
 /**
- * Displays an animated social chatter box that is always visible on top of all content.
+ * Displays an animated social chatter box that remains visible across various scenes.
  *
- * Positioning:
- * - OVERWORLD: bottom-left near the bus / event log area
- * - All other scenes: bottom-center of the window
+ * @remarks
+ * The visual style adapts per scene by updating border colors, accent bars, and icons.
  *
- * Desktop uses --z-chatter above opaque scene roots and below modal chrome.
- * Mobile lowers chatter further below touch menus and dialogs.
+ * Positioning logic:
+ * - OVERWORLD: bottom-left near the bus/event log area.
+ * - All other scenes: bottom-center of the window.
  *
- * Visual style adapts per scene — different border colors, accent bars, and icons.
+ * Desktop uses `--z-chatter` above opaque scene roots and below modal chrome, while mobile lowers it further below touch menus.
+ *
+ * @returns The persistent chatter overlay container
  */
 export const ChatterOverlay = memo(() => {
   const { t } = useTranslation(['chatter', 'ui'])
