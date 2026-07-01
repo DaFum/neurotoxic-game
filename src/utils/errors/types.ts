@@ -158,13 +158,6 @@ export class GameError extends Error {
     this.timestamp = Date.now()
   }
 
-  static State(message: string, context: Record<string, unknown> = {}) {
-    return new StateError(message, context)
-  }
-
-  static Audio(message: string, context: Record<string, unknown> = {}) {
-    return new AudioError(message, context)
-  }
   toLogObject() {
     return {
       name: this.name,

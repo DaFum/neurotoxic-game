@@ -74,7 +74,7 @@ export const addQuest = (state: GameState, quest: QuestState): GameState => {
   const nextState = {
     ...state,
     activeStoryFlags: nextStoryFlags,
-    activeQuests: [...(state.activeQuests || []), activeQuest]
+    activeQuests: [...(state.activeQuests ?? []), activeQuest]
   }
   const required = finiteNumberOr(activeQuest.required, Number.NaN)
   const progress = finiteNumberOr(activeQuest.progress, Number.NaN)

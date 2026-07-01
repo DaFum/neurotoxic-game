@@ -664,6 +664,14 @@ export const applyUnlockHQ = (
             )
           })
           break
+        case 'hq_room_cheap_beer_fridge':
+          // One-time unlock mood bonus for the beer fridge (intentionally a
+          // larger morale boost than its recurring daily-tick effect).
+          transform = m => ({
+            ...m,
+            mood: clampMemberMood(finiteNumberOr(m.mood, 0) + 5)
+          })
+          break
         default:
           transform = m => ({
             ...m,

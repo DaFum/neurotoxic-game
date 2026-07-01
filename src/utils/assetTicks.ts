@@ -163,8 +163,8 @@ export const processLiabilityTick = (
   if (!state.liabilities || Object.keys(state.liabilities).length === 0) {
     return { state, foreclosedKinds: [] }
   }
-  let currentMoney = state.player.money
-  let nextFame = state.player.fame
+  let currentMoney = finiteNumberOr(state.player.money, 0)
+  let nextFame = finiteNumberOr(state.player.fame, 0)
   const nextLiabilities: Record<string, Liability> = {}
   const foreclosedAssetIds = new Set<string>()
 

@@ -325,8 +325,12 @@ const updatePassiveEffectsAndMembers = (
   }
 
   if (nextBand.harmonyRegenTravel) {
-    // increase harmony by 4 then clamp
-    const nextHarmonyTravel = clampBandHarmony(nextBand.harmony + 4)
+    // increase harmony by 5 then clamp — matches the travel/arrival regen
+    // (getTravelArrivalUpdates, processHarmonyRegen); wrap the addend so a
+    // stale undefined/NaN harmony does not silently drop the bonus.
+    const nextHarmonyTravel = clampBandHarmony(
+      finiteNumberOr(nextBand.harmony, 0) + 5
+    )
     nextBand.harmony = nextHarmonyTravel
   }
   // Persisted addend: a truthy check alone lets Infinity through (NaN is falsy).

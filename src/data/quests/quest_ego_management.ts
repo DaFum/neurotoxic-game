@@ -1,4 +1,5 @@
 import type { QuestDefinition } from '../../types/quest'
+import { QUEST_BAND_PACT } from '../questsConstants'
 
 export const quest_ego_management = {
   kind: 'story',
@@ -15,7 +16,7 @@ export const quest_ego_management = {
     }
   ],
   required: 50,
-  followupQuestId: 'quest_band_pact',
+  followupQuestId: QUEST_BAND_PACT,
   clearFlagsOnComplete: ['breakup_quest_active'],
   clearFlagsOnFail: ['breakup_quest_active'],
   completionFlags: ['ego_crisis_resolved'],

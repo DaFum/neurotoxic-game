@@ -5,6 +5,7 @@ import { SOCIAL_PLATFORMS } from '../data/platforms'
 import { bandHasTrait } from './traitUtils'
 import { clampZealotry } from './gameState'
 import { StateError } from './errorHandler'
+import { selectTop3ByScore } from './topSelection'
 import { ALLOWED_TRENDS } from '../data/socialTrends'
 import {
   hasActiveSponsorship,
@@ -116,7 +117,7 @@ export const generatePostOptions = (
   rng: RandomFn = secureRandom
 ): SocialPostOption[] => {
   // 1. Evaluate and collect eligible options
-  const isCooldownActive = (gameState.social?.reputationCooldown || 0) > 0
+  const isCooldownActive = (gameState.social?.reputationCooldown ?? 0) > 0
 
   const eligibleOptions: WeightedPostOption[] = []
   let sponsorIdx = -1
@@ -193,36 +194,11 @@ export const generatePostOptions = (
 
   const needed = 3 - results.length
 
-  // ⚡ BOLT OPTIMIZATION: Replaced O(N log N) sorting with an O(N) procedural single-pass loop to find the top weighted options.
-  let top1: WeightedPostOption | null = null
-  let top2: WeightedPostOption | null = null
-  let top3: WeightedPostOption | null = null
-  let score1 = -Infinity
-  let score2 = -Infinity
-  let score3 = -Infinity
-
-  for (let i = 0; i < eligibleOptions.length; i++) {
-    const opt = eligibleOptions[i]
-    if (!opt) continue
-
-    const score = opt._weight
-    if (score > score1) {
-      top3 = top2
-      score3 = score2
-      top2 = top1
-      score2 = score1
-      top1 = opt
-      score1 = score
-    } else if (score > score2) {
-      top3 = top2
-      score3 = score2
-      top2 = opt
-      score2 = score
-    } else if (score > score3) {
-      top3 = opt
-      score3 = score
-    }
-  }
+  // Single-pass top-3 selection (avoids O(N log N) sort allocation on this hot path).
+  const [top1, top2, top3] = selectTop3ByScore(
+    eligibleOptions,
+    opt => opt._weight
+  )
 
   if (needed > 0 && top1) results.push(top1)
   if (needed > 1 && top2) results.push(top2)
@@ -419,8 +395,12 @@ export const calculateSocialGrowth = (
  * Checks if a viral event triggers based on gig stats.
  * @param stats - `accuracy, maxCombo, score`
  * @param options - Options object OR legacy modifiers number. Defaults to `{}`.
+ *   Passing a bare number is the legacy signature; prefer the `ViralOptions`
+ *   object form. The numeric form treats `0` as "no modifiers".
  * @param legacyRoll - Legacy roll argument (only used if options is number). Defaults to `secureRandom()`.
  * @returns True if viral event occurs
+ * @deprecated The numeric `options`/`legacyRoll` overload is retained only for
+ *   backward compatibility; new callers should pass a `ViralOptions` object.
  */
 export const checkViralEvent = (
   stats: ViralStats,
@@ -436,7 +416,7 @@ export const checkViralEvent = (
     modifiers = options
   } else {
     // New signature usage
-    modifiers = options.modifiers || 0
+    modifiers = options.modifiers ?? 0
     roll = options.roll !== undefined ? options.roll : secureRandom()
     context = options.context
   }

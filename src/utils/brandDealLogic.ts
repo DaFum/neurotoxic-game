@@ -12,6 +12,7 @@ import { bandHasTrait } from './traitUtils'
 import { ALLOWED_TRENDS, ALLOWED_TRENDS_SET } from '../data/socialTrends'
 import { finiteNumberOr } from './gameState'
 import { buildBrandOffer } from './brandOfferFlavor'
+import { selectTop3ByScore } from './topSelection'
 import type {
   BrandDeal,
   BrandOffer,
@@ -30,6 +31,15 @@ interface DealMatchContext {
   controversy: number
   band: SocialEngineGameState['band']
 }
+
+/**
+ * True when the rival band currently occupies the player's map node, which
+ * penalizes both brand-offer generation and negotiation odds.
+ */
+const isRivalInPlayerLocation = (gameState: SocialEngineGameState): boolean =>
+  gameState.rivalBand?.currentLocationId != null &&
+  gameState.player?.currentNodeId != null &&
+  gameState.rivalBand.currentLocationId === gameState.player.currentNodeId
 
 const matchesStrict = (deal: BrandDeal, ctx: DealMatchContext): boolean => {
   if (ctx.totalFollowers < deal.requirements.followers) return false
@@ -196,10 +206,7 @@ export const generateBrandOffers = (
   const pool = buildEligibilityPool(matchCtx)
   if (pool.length === 0) return []
 
-  const rivalInLocation =
-    gameState.rivalBand?.currentLocationId != null &&
-    gameState.player?.currentNodeId != null &&
-    gameState.rivalBand.currentLocationId === gameState.player.currentNodeId
+  const rivalInLocation = isRivalInPlayerLocation(gameState)
 
   const rivalPower =
     rivalInLocation && gameState.rivalBand
@@ -211,36 +218,9 @@ export const generateBrandOffers = (
         )
       : 0
 
-  let top1: PoolEntry | null = null
-  let score1 = -Infinity
-  let top2: PoolEntry | null = null
-  let score2 = -Infinity
-  let top3: PoolEntry | null = null
-  let score3 = -Infinity
-
-  for (let i = 0, len = pool.length; i < len; i++) {
-    const entry = pool[i]
-    if (!entry) continue
-
-    const score = scoreEntry(entry, gameState, rivalPower, rng)
-
-    if (score > score1) {
-      top3 = top2
-      score3 = score2
-      top2 = top1
-      score2 = score1
-      top1 = entry
-      score1 = score
-    } else if (score > score2) {
-      top3 = top2
-      score3 = score2
-      top2 = entry
-      score2 = score
-    } else if (score > score3) {
-      top3 = entry
-      score3 = score
-    }
-  }
+  const [top1, top2, top3] = selectTop3ByScore(pool, entry =>
+    scoreEntry(entry, gameState, rivalPower, rng)
+  )
 
   // `buildEligibilityPool` is guaranteed to surface ≥ 3 distinct catalog
   // entries when the static `BRAND_DEALS` catalog has ≥ 3 entries (it
@@ -289,12 +269,9 @@ export const negotiateDeal = (
   let status: 'ACCEPTED' | 'REVOKED' | 'FAILED' = 'ACCEPTED'
 
   // Rival Penalty for Negotiations
-  const rivalPenalty =
-    gameState.rivalBand?.currentLocationId != null &&
-    gameState.player?.currentNodeId != null &&
-    gameState.rivalBand.currentLocationId === gameState.player.currentNodeId
-      ? RIVAL_NEGOTIATION_PENALTY
-      : 0
+  const rivalPenalty = isRivalInPlayerLocation(gameState)
+    ? RIVAL_NEGOTIATION_PENALTY
+    : 0
 
   // Optimization: structuredClone is slow for hot paths. Manual shallow copy
   // with nested offer copy is ~98% faster.

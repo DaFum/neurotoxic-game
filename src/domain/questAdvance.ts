@@ -1,7 +1,25 @@
 import type { GameState } from '../types'
+import type { ActiveQuestState } from '../types/quest'
 import { finiteNumberOr } from '../utils/gameState'
 import { getQuestWithDefinition } from './questHelpers'
 import { completeQuest } from './questComplete'
+
+/**
+ * Finds the index of an active quest by id, or -1 when not present.
+ *
+ * @remarks
+ * Uses an explicit loop rather than `Array.findIndex` to avoid the
+ * per-iteration predicate callback on this hot path.
+ */
+const findActiveQuestIndex = (
+  activeQuests: ActiveQuestState[],
+  questId: string
+): number => {
+  for (let i = 0; i < activeQuests.length; i++) {
+    if (activeQuests[i]?.id === questId) return i
+  }
+  return -1
+}
 
 export const advanceQuest = (
   state: GameState,
@@ -12,16 +30,7 @@ export const advanceQuest = (
   }: { questId: string; amount?: number; randomIdx?: number }
 ): GameState => {
   if (!state.activeQuests) return state
-  // ⚡ BOLT OPTIMIZATION: Replaced Array.findIndex with procedural loop
-  // Why: Avoids callback allocation per iteration in a hot path
-  // Impact: ~23% faster index lookups, reducing garbage collection pressure
-  let questIndex = -1
-  for (let i = 0; i < state.activeQuests.length; i++) {
-    if (state.activeQuests[i]?.id === questId) {
-      questIndex = i
-      break
-    }
-  }
+  const questIndex = findActiveQuestIndex(state.activeQuests, questId)
   if (questIndex === -1) return state
 
   const nextState = { ...state }
@@ -76,16 +85,7 @@ export const setQuestProgress = (
   { questId, progress }: { questId: string; progress: number }
 ): GameState => {
   if (!state.activeQuests) return state
-  // ⚡ BOLT OPTIMIZATION: Replaced Array.findIndex with procedural loop
-  // Why: Avoids callback allocation per iteration in a hot path
-  // Impact: ~23% faster index lookups, reducing garbage collection pressure
-  let questIndex = -1
-  for (let i = 0; i < state.activeQuests.length; i++) {
-    if (state.activeQuests[i]?.id === questId) {
-      questIndex = i
-      break
-    }
-  }
+  const questIndex = findActiveQuestIndex(state.activeQuests, questId)
   if (questIndex === -1) return state
 
   const nextState = { ...state }

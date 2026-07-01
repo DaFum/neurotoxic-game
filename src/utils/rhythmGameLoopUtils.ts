@@ -37,15 +37,6 @@ interface RhythmTickArgs {
 }
 
 /**
- * Finalizes a gig exactly once, snapshots stats, stops audio, and exits the gig.
- *
- * @param stateRef - Mutable rhythm-game state ref.
- * @param setLastGigStats - Callback used to persist the final gig stats snapshot.
- * @param endGig - Callback that leaves the gig flow.
- * @param stopAudio - Callback that stops currently playing gig audio.
- */
-
-/**
  * Handles resuming the audio track via the overlay when the game is unpaused.
  */
 export const handleOverlayResume = (

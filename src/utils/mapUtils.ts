@@ -88,10 +88,8 @@ export const normalizeVenueId = (venue: unknown): string | null => {
       id = id.slice(7, -5)
     } else if (isVenues) {
       id = id.slice(7)
-    } else if (hasName) {
-      if (!id.includes(':')) {
-        id = id.slice(0, -5)
-      }
+    } else if (hasName && !id.includes(':')) {
+      id = id.slice(0, -5)
     }
   }
 

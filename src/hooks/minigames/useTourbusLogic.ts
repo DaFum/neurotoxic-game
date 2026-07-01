@@ -33,7 +33,10 @@ type UiState = {
   isGameOver: boolean
 }
 
-// Re-export constants for backward compatibility and tests
+// Aliased re-export kept intentionally: it is the canonical aliased-re-export
+// fixture that `tests/node/updateSymbols.test.js` asserts against (it expects
+// `ks.BASE_SPEED` with `isAlias`/`localName` and `meta.aliasedReexports >= 1`).
+// Do not remove without updating that symbol-index test.
 export {
   TOURBUS_BASE_SPEED as BASE_SPEED,
   TOURBUS_TARGET_DISTANCE as TARGET_DISTANCE

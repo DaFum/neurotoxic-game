@@ -141,7 +141,7 @@
   "credits.role.thanks": "SPECIAL THANKS IN CAPS OF GORE",
   "creditsScreen.return": "RETURN",
   "crisis.desc": "The transmission just dropped halfway to Leipzig. You have a gig in 4 hours. Do you burn through your cash for a sketchy mechanic, or risk showing up late and losing face?",
-  "crisis.opt1": "Pay mechanic (-$250)",
+  "crisis.opt1": "Pay mechanic",
   "crisis.opt2": "Hitchhike (-20 Rep)",
   "crisis.opt3": "Fix it yourselves (+1hr)",
   "crisis.risk": "RISK",
