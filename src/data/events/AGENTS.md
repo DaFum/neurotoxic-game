@@ -8,7 +8,7 @@
 
 ## Special Events
 
-- `events/special.js` entries require `category: 'special'`, `events:` i18n keys, and unique IDs.
+- `special.ts` entries require `category: 'special'`, `events:` i18n keys, and unique IDs.
 
 ## Tests
 
