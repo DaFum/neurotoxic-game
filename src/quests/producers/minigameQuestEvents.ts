@@ -1,4 +1,5 @@
 import type { MinigameType, QuestEvent } from '../../types'
+import { sanitizeStringArray } from '../../utils/gameState'
 
 /**
  * Creates a `minigame.completed` quest event for any minigame result.
@@ -18,9 +19,7 @@ export const createMinigameCompletedQuestEvent = ({
   amount: 1,
   success,
   context: { minigameId, score, grade },
-  tags: [minigameId, grade].filter(
-    (entry): entry is string => typeof entry === 'string'
-  )
+  tags: sanitizeStringArray([minigameId, grade])
 })
 
 /**

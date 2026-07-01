@@ -9,5 +9,7 @@ export {
   FORBIDDEN_KEYS,
   isForbiddenKey,
   isLooseRecord,
-  isPlainRecord
+  isPlainRecord,
+  copySafePrimitiveEntries,
+  sanitizeStringArray
 } from '../objectUtils'

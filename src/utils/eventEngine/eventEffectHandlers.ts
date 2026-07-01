@@ -156,7 +156,7 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
           typeof delta.band.inventory[eff.item] === 'number'
             ? delta.band.inventory[eff.item]
             : 0
-        delta.band.inventory[eff.item] = asNumber(current) + eff.value
+        delta.band.inventory[eff.item] = asNumber(current) + asNumber(eff.value)
       } else {
         const val = eff.value !== undefined ? eff.value : true
         delta.band.inventory[eff.item] = val

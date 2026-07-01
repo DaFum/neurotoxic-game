@@ -1,4 +1,5 @@
 import type { QuestEvent } from '../../types'
+import { sanitizeStringArray } from '../../utils/gameState'
 
 /**
  * Creates a `venue.gigCompleted` quest event for a venue gig.
@@ -56,9 +57,7 @@ export const createVenueReputationChangedQuestEvent = ({
   amount,
   success: amount >= 0,
   context: { venueId, reason },
-  tags: [venueId, reason].filter(
-    (entry): entry is string => typeof entry === 'string'
-  )
+  tags: sanitizeStringArray([venueId, reason])
 })
 
 /**
@@ -77,9 +76,7 @@ export const createRegionReputationChangedQuestEvent = ({
   amount,
   success: amount >= 0,
   context: { region, reason },
-  tags: [region, reason].filter(
-    (entry): entry is string => typeof entry === 'string'
-  )
+  tags: sanitizeStringArray([region, reason])
 })
 
 /**

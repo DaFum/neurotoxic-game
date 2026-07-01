@@ -2,7 +2,6 @@ import {
   sanitizePlayer,
   sanitizeBand,
   sanitizeSocial,
-  sanitizeStringArray,
   sanitizeSetlist,
   sanitizeActiveEvent,
   sanitizeToasts,
@@ -50,6 +49,7 @@ import {
   clampMemberMood,
   isForbiddenKey,
   finiteNumberOr,
+  sanitizeStringArray,
   BALANCE_CONSTANTS
 } from '../../utils/gameState'
 import { calculateDailyUpdates } from '../../utils/simulationUtils'

@@ -1,5 +1,5 @@
 import type { QuestEvent, SocialPostOption } from '../../types'
-import { finiteNumberOr } from '../../utils/gameState'
+import { finiteNumberOr, sanitizeStringArray } from '../../utils/gameState'
 
 const getSocialContext = (
   option: Pick<SocialPostOption, 'id' | 'platform' | 'category'>
@@ -11,10 +11,7 @@ const getSocialContext = (
 
 const getTags = (
   option: Pick<SocialPostOption, 'platform' | 'category'>
-): string[] =>
-  [option.platform, option.category].filter(
-    (entry): entry is string => typeof entry === 'string'
-  )
+): string[] => sanitizeStringArray([option.platform, option.category])
 
 /**
  * Creates a `social.postResolved` quest event for a resolved post option.
@@ -55,9 +52,7 @@ export const createFollowersGainedQuestEvent = ({
     postCategory,
     postId
   },
-  tags: [platform, postCategory].filter(
-    (entry): entry is string => typeof entry === 'string'
-  )
+  tags: sanitizeStringArray([platform, postCategory])
 })
 
 /**
@@ -74,7 +69,7 @@ export const createSocialLoyaltyChangedQuestEvent = ({
   amount,
   success: amount >= 0,
   context: { reason },
-  tags: [reason].filter((entry): entry is string => typeof entry === 'string')
+  tags: sanitizeStringArray([reason])
 })
 
 /**
@@ -95,7 +90,7 @@ export const createSocialControversyChangedQuestEvent = ({
   amount,
   success: amount <= 0,
   context: { reason },
-  tags: [reason].filter((entry): entry is string => typeof entry === 'string')
+  tags: sanitizeStringArray([reason])
 })
 
 /**
@@ -114,9 +109,7 @@ export const createSocialTrendMatchedQuestEvent = ({
   amount: 1,
   success: true,
   context: { trendId, platform, postCategory },
-  tags: [trendId, platform, postCategory].filter(
-    (entry): entry is string => typeof entry === 'string'
-  )
+  tags: sanitizeStringArray([trendId, platform, postCategory])
 })
 
 /**

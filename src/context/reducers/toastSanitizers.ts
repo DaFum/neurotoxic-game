@@ -1,6 +1,6 @@
 import type { ToastPayload } from '../../types'
 import { isEmptyObject } from '../../utils/gameState'
-import { isForbiddenKey } from '../../utils/objectUtils'
+import { copySafePrimitiveEntries } from '../../utils/objectUtils'
 
 /**
  * Toast types accepted from runtime and persisted toast payloads.
@@ -53,24 +53,7 @@ export const buildDeterministicToastId = (
 
 const sanitizePrimitiveOptions = (
   options: Record<string, unknown>
-): Record<string, unknown> => {
-  const safePrimitives: Record<string, unknown> = {}
-  for (const [key, value] of Object.entries(options)) {
-    // Skip prototype-pollution keys before copying, consistent with
-    // copySafePrimitiveObject in stateSanitizers.ts.
-    if (isForbiddenKey(key)) continue
-    const valueType = typeof value
-    if (
-      valueType === 'string' ||
-      valueType === 'number' ||
-      valueType === 'boolean' ||
-      value === null
-    ) {
-      safePrimitives[key] = value
-    }
-  }
-  return safePrimitives
-}
+): Record<string, unknown> => copySafePrimitiveEntries(options)
 
 /**
  * Sanitizes an optional success-toast payload while applying safe fallbacks.
