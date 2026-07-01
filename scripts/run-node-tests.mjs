@@ -11,10 +11,36 @@ const hasFlag = flag => normalizedArgs.includes(flag)
 
 const flagSkipHeavy = hasFlag('--skip-heavy')
 const flagOnlyHeavy = hasFlag('--only-heavy')
+
+// Optional sharding: --shard=<index>/<total> (1-based index). Splits the
+// discovered test-file list into <total> deterministic shards so CI can run
+// the node tier in parallel jobs. Ignored when specific test files are passed.
+const shardArg = normalizedArgs.find(arg => arg.startsWith('--shard='))
+let shardIndex = 0
+let shardTotal = 0
+if (shardArg) {
+  const [rawIndex, rawTotal] = shardArg.slice('--shard='.length).split('/')
+  shardIndex = Number(rawIndex)
+  shardTotal = Number(rawTotal)
+  if (
+    !Number.isInteger(shardIndex) ||
+    !Number.isInteger(shardTotal) ||
+    shardTotal < 1 ||
+    shardIndex < 1 ||
+    shardIndex > shardTotal
+  ) {
+    console.error(
+      `Invalid --shard value "${shardArg}"; expected --shard=<index>/<total> with 1 <= index <= total.`
+    )
+    process.exit(1)
+  }
+}
+
 const nodeTestArgs = normalizedArgs.filter(
   arg =>
     arg !== '--skip-heavy' &&
     arg !== '--only-heavy' &&
+    !arg.startsWith('--shard=') &&
     !arg.startsWith('--test-concurrency')
 )
 
@@ -168,11 +194,22 @@ if (!isSpecificFile && shouldOnlyHeavy) {
   }
 }
 
+// Distribute a sorted file list across shards by round-robin on the sorted
+// index. Sorting first makes the assignment stable regardless of readdir order,
+// and round-robin keeps heavy/light files spread evenly across shards.
+const applyShard = testFiles => {
+  if (shardTotal < 2) return testFiles
+  const sorted = [...testFiles].sort((a, b) =>
+    normalizeTestPath(a).localeCompare(normalizeTestPath(b))
+  )
+  return sorted.filter((_, idx) => idx % shardTotal === shardIndex - 1)
+}
+
 const finalArgs = isSpecificFile
   ? [...commandArgs, ...nodeTestArgs]
   : [
       ...commandArgs,
-      ...filterByHeavyMode(getRemainingTestFiles()),
+      ...applyShard(filterByHeavyMode(getRemainingTestFiles())),
       ...nodeTestArgs
     ]
 

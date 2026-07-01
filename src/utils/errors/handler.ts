@@ -139,8 +139,11 @@ const reportErrorRemote = (errorInfo: ErrorInfoObject) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(sanitizeTelemetryErrorInfo(errorInfo))
-      }).catch(() => {
-        // Silently fail if tracking is blocked or endpoint doesn't exist
+      }).catch(reason => {
+        // Non-recursive debug log only: this runs inside the error handler, so
+        // escalating (warn/error) could re-enter reportErrorRemote. Debug is a
+        // no-op in production but surfaces telemetry outages during debugging.
+        logger.debug('ErrorHandler', 'Remote error report failed', reason)
       })
     } catch (_e) {
       // Ignore tracking errors

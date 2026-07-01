@@ -35,7 +35,7 @@ export const MerchPressModal = ({
   canPress,
   config
 }: MerchPressModalProps) => {
-  const { t, i18n } = useTranslation(['ui'])
+  const { t } = useTranslation(['ui'])
   const player = useGameSelector(state => state.player)
   const band = useGameSelector(state => state.band)
 
@@ -164,9 +164,7 @@ type MerchPressCostsAndGainsProps = {
   config: MerchPressConfig
 }
 
-function MerchPressCostsAndGains({
-  config
-}: MerchPressCostsAndGainsProps) {
+function MerchPressCostsAndGains({ config }: MerchPressCostsAndGainsProps) {
   const { t, i18n } = useTranslation(['ui'])
   return (
     <div className='grid grid-cols-2 gap-4'>

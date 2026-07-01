@@ -1,6 +1,7 @@
 # tests/node - Agent Instructions
 
 - Use `test:node:quick` for normal local loops and `test:node:heavy` for Pixi/render-heavy suites.
+- `run-node-tests.mjs` accepts `--shard=<index>/<total>` (1-based) to split the discovered file list into deterministic shards (sorted round-robin); CI runs the node tier as a shard matrix. Combine with the heavy flags, e.g. `pnpm run test:node -- --shard=1/2`. Ignored when specific test files are passed.
 - `updateSymbols.test.js` pins the generated `symbols.json` schema. When changing symbol metadata, cover enriched fields there: signatures, `properties`/union `variants`, JSDoc tags, `dependencies`/`usedBy`, positions, React metadata, and export details.
 - Travel/location assertions need both legacy and canonical venue ID cases.
 - Load/reset tests verify whitelist sanitization, not raw spread assumptions.

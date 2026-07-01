@@ -75,6 +75,46 @@ import {
 import type { RiskEventDescriptor } from '../../types/assets'
 
 /**
+ * Remaps `perRegion` quest scope keys from legacy venue-display keys to canonical
+ * city keys. Older saves stamped scope keys from `player.location` (a
+ * `venues:<id>.name` display key); quest progress events now emit region keys, so
+ * both active quests and completed scopes must be migrated on load. Items whose
+ * quest is not `perRegion`, or that lack a string `scopeKey`, pass through
+ * unchanged. Uses a preallocated procedural loop to avoid intermediate arrays.
+ *
+ * @param items - The active-quest or completed-scope entries to migrate.
+ * @param getQuestId - Reads the quest id from an entry (`id` vs `questId`).
+ * @returns A new array with `perRegion` scope keys remapped to region keys.
+ */
+const remapPerRegionScopeKeys = <T extends { scopeKey?: unknown }>(
+  items: readonly T[],
+  getQuestId: (item: T) => string
+): T[] => {
+  const len = items.length
+  const out: T[] = new Array<T>(len)
+  for (let i = 0; i < len; i++) {
+    const item = items[i]
+    // Sanitized arrays have no holes; the undefined check only satisfies
+    // noUncheckedIndexedAccess and narrows `item` to T for the rest.
+    if (item === undefined) continue
+    const scopeKey = item.scopeKey
+    if (
+      typeof scopeKey !== 'string' ||
+      getQuestDefinition(getQuestId(item))?.repeatPolicy !== 'perRegion'
+    ) {
+      out[i] = item
+      continue
+    }
+    const regionKey = getRegionKeyForLocation(scopeKey)
+    out[i] =
+      regionKey && regionKey !== scopeKey
+        ? { ...item, scopeKey: regionKey }
+        : item
+  }
+  return out
+}
+
+/**
  * Loads persisted state through migration and sanitizer gates.
  *
  * @param state - Current in-memory state used as a fallback baseline.
@@ -215,53 +255,14 @@ export const handleLoadGame = (
     })(),
     // perRegion quest scopes were stamped from player.location and may carry
     // the venue display key; progress events now emit city keys, so remap.
-    activeQuests: (() => {
-      // ⚡ BOLT OPTIMIZATION: Replaced .map() with procedural loop.
-      // Why: Avoids closure allocation and intermediate arrays in hot paths.
-      const len = safeState.activeQuests.length
-      const out = new Array(len)
-      for (let i = 0; i < len; i++) {
-        const quest = safeState.activeQuests[i]
-        if (!quest || typeof quest.scopeKey !== 'string') {
-          out[i] = quest as GameState['activeQuests'][number]
-          continue
-        }
-        if (getQuestDefinition(quest.id)?.repeatPolicy !== 'perRegion') {
-          out[i] = quest as GameState['activeQuests'][number]
-          continue
-        }
-        const regionKey = getRegionKeyForLocation(quest.scopeKey)
-        if (regionKey && regionKey !== quest.scopeKey) {
-          out[i] = { ...quest, scopeKey: regionKey }
-        } else {
-          out[i] = quest as GameState['activeQuests'][number]
-        }
-      }
-      return out
-    })(),
-    completedQuestScopes: (() => {
-      // ⚡ BOLT OPTIMIZATION: Replaced .map() with procedural loop.
-      // Why: Avoids closure allocation and intermediate arrays in hot paths.
-      const len = safeState.completedQuestScopes.length
-      const out = new Array(len)
-      for (let i = 0; i < len; i++) {
-        const scope = safeState.completedQuestScopes[i]
-        if (
-          !scope ||
-          getQuestDefinition(scope.questId)?.repeatPolicy !== 'perRegion'
-        ) {
-          out[i] = scope as GameState['completedQuestScopes'][number]
-          continue
-        }
-        const regionKey = getRegionKeyForLocation(scope.scopeKey)
-        if (regionKey && regionKey !== scope.scopeKey) {
-          out[i] = { ...scope, scopeKey: regionKey }
-        } else {
-          out[i] = scope as GameState['completedQuestScopes'][number]
-        }
-      }
-      return out
-    })()
+    activeQuests: remapPerRegionScopeKeys(
+      safeState.activeQuests,
+      quest => quest.id
+    ),
+    completedQuestScopes: remapPerRegionScopeKeys(
+      safeState.completedQuestScopes,
+      scope => scope.questId
+    )
   }
 
   // Version Migration Map
