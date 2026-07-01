@@ -26,6 +26,28 @@ This review **complements** the existing `AUDIT_REPORT.md` (a narrow duplicate/d
 
 ---
 
+## Resolution log (2026-07-01, follow-up pass)
+
+All findings were actioned. Several dissolved under verification — the original sweep searched the wrong test directories — and two were deliberately declined with rationale (documented below rather than churned).
+
+| # | Finding | Outcome |
+|---|---------|---------|
+| 1 | Build + e2e not in CI | **FIXED** — added `build` + sharded `e2e` (2 shards, `playwright install chromium`) jobs to `test.yml` |
+| 2 | pnpm drift in deploy | **FIXED** — `deploy.yml` bumped `10.30.3` → `11.2.2` |
+| 3 | Slow node tier | **FIXED** — added `--shard=i/n` to `run-node-tests.mjs`; `node-tests` CI job is now a 2-shard matrix (verified: shard 1/2 = 1180 tests, green) |
+| 4 | Coverage gaps (reducers, audio) | **FALSE POSITIVE** — reducers *are* tested (`tests/node/{player,quest,rival,event}Reducer.test.js`, `tests/logic/tradeReducer.test.js`, 84–247 LOC each); audio has 23 suites incl. `audioManager`, `audioPlaybackUtils`. The `START_GIG` minigame-reset invariant is covered at `gigReducer.test.js:65`. No hollow tests added. |
+| 5 | `handleLoadGame` complexity | **FIXED** — extracted `remapPerRegionScopeKeys` helper, collapsing the two duplicated migration loops (verified: typecheck clean, `systemReducer` 68/68) |
+| 6 | `actionCreators.ts` split | **DECLINED** — pure cosmetic reorg of a 1190-LOC file with no behavior/perf change; high diff churn + import-path risk for zero functional gain conflicts with the repo's "Surgical Changes / don't refactor what isn't broken" rule. Available on request. |
+| 7 | Non-finite save coercion | **ALREADY DONE** — `usePersistence.ts:265-282` already detects, coerces, *and* `logger.warn`s the offending keys. Report over-stated it; no change. |
+| 8 | `playerName` unescaped / CORS | **FIXED (name) / N-A (CORS)** — added shared `sanitizePlayerName` (strips C0/C1/DEL control chars) applied before the length check in both endpoints. CORS is unnecessary: the frontend calls the API via **relative** `/api/...` URLs (same-origin). |
+| 9 | Unused `i18n` (lint warning) | **FIXED** — removed the line-38 binding; lint now 0 warnings |
+| 10 | Swallowed telemetry errors | **FIXED** — `handler.ts` now `logger.debug`s the failure reason (debug-level to avoid re-entering the error handler) |
+| 2c | e2e crash-`skip` → fail | **DECLINED** — the `test.skip()` calls guard against **headless Chromium crashing on audio/WebGL init** (via `raceWithCrash`), not product bugs. Converting them to hard failures would make the new e2e gate flaky-red from infra instability. The recommendation was wrong; skips retained by design. |
+
+**Post-fix verification:** `typecheck:core` ✅ · `typecheck` (reducers) ✅ · `lint` ✅ 0 warnings · node shard 1/2 ✅ 1180/1180 · `systemReducer` ✅ 68/68 · API+security suites ✅ 36/36 · `vitest:logic` + `build` (see final run).
+
+---
+
 ## Findings at a glance
 
 | # | Area | Severity | Location | Action |

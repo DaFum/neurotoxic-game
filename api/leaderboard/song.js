@@ -1,5 +1,9 @@
 import client from '../../lib/redis.js'
-import { normalizeIp, hasPrototypePollution } from '../../lib/apiUtils.js'
+import {
+  normalizeIp,
+  hasPrototypePollution,
+  sanitizePlayerName
+} from '../../lib/apiUtils.js'
 
 const MAX_SONG_ID_LENGTH = 64
 
@@ -60,7 +64,7 @@ export default async function handler(req, res) {
       if (playerName.length > 100) {
         return res.status(400).json({ error: 'Invalid playerName length' })
       }
-      const trimmedName = playerName.trim()
+      const trimmedName = sanitizePlayerName(playerName).trim()
       if (trimmedName.length < 1) {
         return res.status(400).json({ error: 'Invalid playerName length' })
       }
