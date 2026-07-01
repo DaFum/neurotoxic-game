@@ -201,6 +201,22 @@ test('applyEventDelta handles band inventory updates', () => {
   assert.equal(nextState.band.inventory.golden_pick, true)
 })
 
+test('applyEventDelta does not overwrite boolean inventory with numeric 0 from non-finite delta', () => {
+  const state = {
+    band: { inventory: { golden_pick: true } }
+  }
+  const delta = {
+    band: {} // Represents a delta where the non-finite item update was skipped
+  }
+
+  const nextState = applyEventDelta(state, delta)
+  assert.equal(
+    nextState.band.inventory.golden_pick,
+    true,
+    'Should retain existing boolean values if delta skips inventory update'
+  )
+})
+
 test('applyEventDelta reverts apply-on-add equipment bonus on stash confiscation', () => {
   const state = {
     band: {
