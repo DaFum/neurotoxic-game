@@ -152,11 +152,13 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
     if (typeof eff.item === 'string' && eff.item.length > 0) {
       if (!delta.band.inventory) delta.band.inventory = {}
       if (typeof eff.value === 'number') {
-        const current =
-          typeof delta.band.inventory[eff.item] === 'number'
-            ? delta.band.inventory[eff.item]
-            : 0
-        delta.band.inventory[eff.item] = asNumber(current) + asNumber(eff.value)
+        if (Number.isFinite(eff.value)) {
+          const current =
+            typeof delta.band.inventory[eff.item] === 'number'
+              ? delta.band.inventory[eff.item]
+              : 0
+          delta.band.inventory[eff.item] = asNumber(current) + eff.value
+        }
       } else {
         const val = eff.value !== undefined ? eff.value : true
         delta.band.inventory[eff.item] = val
