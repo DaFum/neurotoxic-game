@@ -60,8 +60,10 @@ interface SceneStyle {
 }
 
 /**
- * Per-scene visual theme for the chatter box.
- * Each entry defines border color, accent color, icon, etc.
+ * Defines the visual theme for the chatter box based on the current scene.
+ *
+ * @remarks
+ * Each entry specifies the border color, accent color, and icon for a particular game phase.
  */
 const SCENE_STYLES: Record<string, SceneStyle> = {
   [GAME_PHASES.OVERWORLD]: OVERWORLD_STYLE,
@@ -119,6 +121,13 @@ interface ChatterMessageLifetimeBarProps {
   barColorClass: string
 }
 
+/**
+ * Determines the text color class for a chatter message based on its type and the current scene.
+ *
+ * @param msgType - The classification of the chatter message
+ * @param currentScene - The key representing the active game scene
+ * @returns A string containing the corresponding Tailwind text color classes
+ */
 const resolveMessageTextColor = (
   msgType: ChatterMessageType,
   currentScene: string
@@ -181,6 +190,14 @@ const ChatterMessageLifetimeBar = memo(
 
 ChatterMessageLifetimeBar.displayName = 'ChatterMessageLifetimeBar'
 
+/**
+ * Renders an individual, animated social chatter message.
+ *
+ * @param msg - The data payload for the message
+ * @param onRemove - Callback executed when the message lifetime expires
+ * @param t - Translation function for localized text
+ * @returns The animated chatter message component
+ */
 const ChatterMessage = memo(({ msg, onRemove, t }: ChatterMessageProps) => {
   const messageScene = msg.scene
   const sceneStyle = useMemo(
@@ -250,16 +267,18 @@ const ChatterMessage = memo(({ msg, onRemove, t }: ChatterMessageProps) => {
 ChatterMessage.displayName = 'ChatterMessage'
 
 /**
- * Displays an animated social chatter box that is always visible on top of all content.
+ * Displays an animated social chatter box that remains visible across various scenes.
  *
- * Positioning:
- * - OVERWORLD: bottom-left near the bus / event log area
- * - All other scenes: bottom-center of the window
+ * @remarks
+ * The visual style adapts per scene by updating border colors, accent bars, and icons.
  *
- * Desktop uses --z-chatter above opaque scene roots and below modal chrome.
- * Mobile lowers chatter further below touch menus and dialogs.
+ * Positioning logic:
+ * - OVERWORLD: bottom-left near the bus/event log area.
+ * - All other scenes: bottom-center of the window.
  *
- * Visual style adapts per scene — different border colors, accent bars, and icons.
+ * Desktop uses `--z-chatter` above opaque scene roots and below modal chrome, while mobile lowers it further below touch menus.
+ *
+ * @returns The persistent chatter overlay container
  */
 export const ChatterOverlay = memo(() => {
   const { t } = useTranslation(['chatter', 'ui'])
