@@ -1,13 +1,15 @@
 # Agent Guidelines for `.jules/` Directory
 
-This directory contains learning journals and specific agent configurations. These
-are append-only journals and ledgers (`bolt.md`, `palette.md`, the `tsdoc.md`
-documentation ledger, and the `N3UR0-FORGE.md` feature log) — **not** the canonical
-project spec. Authoritative, enforced conventions live in the root and nested
-`AGENTS.md` files, `CLAUDE.md`, and the skills; when this folder and those disagree,
-those win. Before appending, confirm the insight is a critical, app-specific
-discovery that is not already captured by an existing entry (do not restate the same
-generic lesson) and use a real, current date in the `## YYYY-MM-DD - [Title]` format.
+This directory contains curated learning journals and specific agent configurations.
+These journals and ledgers (`bolt.md`, `palette.md`, the `tsdoc.md` documentation
+ledger, and the `N3UR0-FORGE.md` feature log) are **not** the canonical project spec.
+Authoritative, enforced conventions live in the root and nested `AGENTS.md` files,
+`CLAUDE.md`, and the skills; when this folder and those disagree, those win. Keep the
+journals curated rather than blindly append-only: before adding an entry, confirm the
+insight is a critical, app-specific discovery not already captured (do not restate the
+same lesson), and periodically consolidate duplicate entries into one canonical note
+rather than letting them accumulate — prior history stays recoverable in git. Use a
+real, current date in the `## YYYY-MM-DD - [Title]` format.
 
 ## Performance Agent (Bolt) Guidelines (`bolt.md`)
 

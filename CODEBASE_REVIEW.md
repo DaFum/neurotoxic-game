@@ -32,7 +32,7 @@ All findings were actioned. Several dissolved under verification — the origina
 
 | # | Finding | Outcome |
 |---|---------|---------|
-| 1 | Build + e2e not in CI | **FIXED** — added `build` + sharded `e2e` (2 shards, `playwright install chromium`) jobs to `test.yml` |
+| 1 | Build + e2e not in CI | **PARTIAL / CORRECTED** — added a `build` job (valuable, kept). The e2e-in-CI recommendation was **wrong**: `tests/node/githubWorkflowEfficiency.test.js` codifies that Playwright/e2e is *intentionally excluded* from required PR CI (headless audio-context flakiness — see `.jules/bolt.md`), and the added e2e job also failed on a Windows-only visual baseline. The e2e job was reverted. |
 | 2 | pnpm drift in deploy | **FIXED** — `deploy.yml` bumped `10.30.3` → `11.2.2` |
 | 3 | Slow node tier | **FIXED** — added `--shard=i/n` to `run-node-tests.mjs`; `node-tests` CI job is now a 2-shard matrix (verified: shard 1/2 = 1180 tests, green) |
 | 4 | Coverage gaps (reducers, audio) | **FALSE POSITIVE** — reducers *are* tested (`tests/node/{player,quest,rival,event}Reducer.test.js`, `tests/logic/tradeReducer.test.js`, 84–247 LOC each); audio has 23 suites incl. `audioManager`, `audioPlaybackUtils`. The `START_GIG` minigame-reset invariant is covered at `gigReducer.test.js:65`. No hollow tests added. |
