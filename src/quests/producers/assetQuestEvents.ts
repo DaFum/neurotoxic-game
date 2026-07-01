@@ -1,4 +1,5 @@
 import type { AssetKind, QuestEvent } from '../../types'
+import { sanitizeStringArray } from '../../utils/gameState'
 
 /**
  * Creates an `asset.acquired` quest event for a newly acquired asset.
@@ -57,9 +58,7 @@ export const createAssetModuleInstalledQuestEvent = ({
   amount: 1,
   success: true,
   context: { assetId, assetKind, moduleId, slotType },
-  tags: [assetKind, moduleId, slotType].filter(
-    (entry): entry is string => typeof entry === 'string'
-  )
+  tags: sanitizeStringArray([assetKind, moduleId, slotType])
 })
 
 /**

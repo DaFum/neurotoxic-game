@@ -1,3 +1,5 @@
+import { isFiniteNumber } from './finiteNumber'
+
 /**
  * Narrows unknown values to string-keyed records.
  */
@@ -36,6 +38,50 @@ export const hasForbiddenOwnKeys = (obj: object): boolean => {
     if (Object.hasOwn(obj, key)) return true
   }
   return false
+}
+
+/**
+ * Filters a value to the subset of its entries that are strings.
+ *
+ * Non-arrays yield an empty array, so the result is always a safe `string[]`.
+ *
+ * @param value - Arbitrary value, typically from an untrusted payload.
+ * @returns A new array containing only the string entries.
+ */
+export const sanitizeStringArray = (value: unknown): string[] => {
+  if (!Array.isArray(value)) return []
+  return value.filter((entry): entry is string => typeof entry === 'string')
+}
+
+/**
+ * Copies the safe primitive entries (`string`, finite `number`, `boolean`,
+ * `null`) of a record, skipping prototype-polluting keys. Non-finite numbers
+ * (`NaN`/`Infinity`) are dropped, matching the project payload-safety rule.
+ *
+ * Shared by the toast-option and persisted-state sanitizers so the two do not
+ * drift; callers decide how to treat an empty result.
+ *
+ * @param record - Source record whose entries are inspected.
+ * @returns A new record containing only the safe primitive entries.
+ */
+export const copySafePrimitiveEntries = (
+  record: Record<string, unknown>
+): Record<string, string | number | boolean | null> => {
+  const copied: Record<string, string | number | boolean | null> = {}
+  for (const key in record) {
+    if (!Object.hasOwn(record, key)) continue
+    if (isForbiddenKey(key)) continue
+    const entry = record[key]
+    if (
+      typeof entry === 'string' ||
+      typeof entry === 'boolean' ||
+      entry === null ||
+      isFiniteNumber(entry)
+    ) {
+      copied[key] = entry
+    }
+  }
+  return copied
 }
 
 type TraversalOptions = {

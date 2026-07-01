@@ -12,6 +12,7 @@ import {
   finiteNumberOr,
   clampBandHarmony,
   clampBandStress,
+  clampReputation,
   BALANCE_CONSTANTS
 } from '../../utils/gameState'
 import { handleAddVenueBlacklist } from './socialReducer'
@@ -32,9 +33,6 @@ import {
 } from '../../quests/producers/venueQuestEvents'
 import { normalizeSetlistForSave } from '../../utils/gameState'
 import { getRegionKeyForLocation } from '../../utils/mapUtils'
-
-const MIN_REPUTATION = -100
-const MAX_REPUTATION = 100
 
 /**
  * Stores the currently selected venue or clears it.
@@ -283,9 +281,8 @@ export const handleSetLastGigStats = (
 
   if (score < 30) {
     if (!isForbiddenKey(location)) {
-      nextState.reputationByRegion[location] = Math.max(
-        MIN_REPUTATION,
-        (nextState.reputationByRegion[location] || 0) - 10
+      nextState.reputationByRegion[location] = clampReputation(
+        finiteNumberOr(nextState.reputationByRegion[location], 0) - 10
       )
       nextState = QuestEvents.emit(
         nextState,
@@ -308,9 +305,8 @@ export const handleSetLastGigStats = (
       }
     }
     if (venueId && !isForbiddenKey(venueId)) {
-      nextState.reputationByVenue[venueId] = Math.max(
-        MIN_REPUTATION,
-        (nextState.reputationByVenue[venueId] || 0) - 10
+      nextState.reputationByVenue[venueId] = clampReputation(
+        finiteNumberOr(nextState.reputationByVenue[venueId], 0) - 10
       )
       nextState = QuestEvents.emit(
         nextState,
@@ -325,13 +321,14 @@ export const handleSetLastGigStats = (
   } else if (score >= 60) {
     // Increase reputation on good gigs up to 100 max
     if (!isForbiddenKey(location)) {
-      const currentRep = nextState.reputationByRegion[location] || 0
-      if (currentRep < MAX_REPUTATION) {
-        const bonus = score >= 90 ? 10 : 5
-        nextState.reputationByRegion[location] = Math.max(
-          MIN_REPUTATION,
-          Math.min(MAX_REPUTATION, currentRep + bonus)
-        )
+      const currentRep = finiteNumberOr(
+        nextState.reputationByRegion[location],
+        0
+      )
+      const bonus = score >= 90 ? 10 : 5
+      const nextRep = clampReputation(currentRep + bonus)
+      if (nextRep > currentRep) {
+        nextState.reputationByRegion[location] = nextRep
         nextState = QuestEvents.emit(
           nextState,
           createRegionReputationChangedQuestEvent({
@@ -347,13 +344,14 @@ export const handleSetLastGigStats = (
       }
     }
     if (venueId && !isForbiddenKey(venueId)) {
-      const currentVenueRep = nextState.reputationByVenue[venueId] || 0
-      if (currentVenueRep < MAX_REPUTATION) {
-        const venueBonus = score >= 90 ? 10 : 5
-        nextState.reputationByVenue[venueId] = Math.max(
-          MIN_REPUTATION,
-          Math.min(MAX_REPUTATION, currentVenueRep + venueBonus)
-        )
+      const currentVenueRep = finiteNumberOr(
+        nextState.reputationByVenue[venueId],
+        0
+      )
+      const venueBonus = score >= 90 ? 10 : 5
+      const nextVenueRep = clampReputation(currentVenueRep + venueBonus)
+      if (nextVenueRep > currentVenueRep) {
+        nextState.reputationByVenue[venueId] = nextVenueRep
         nextState = QuestEvents.emit(
           nextState,
           createVenueReputationChangedQuestEvent({

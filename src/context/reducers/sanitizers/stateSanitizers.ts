@@ -23,6 +23,8 @@ import {
   isFiniteNumber,
   isForbiddenKey,
   isEmptyObject,
+  copySafePrimitiveEntries,
+  sanitizeStringArray,
   finiteNumberOr,
   clampNonNegative,
   clampVanFuel,
@@ -118,29 +120,11 @@ const inferLoadedMapNodeType = (
 const finiteOptionalNumber = (value: unknown): number | undefined =>
   isFiniteNumber(value) ? value : undefined
 
-export const sanitizeStringArray = (value: unknown): string[] => {
-  if (!Array.isArray(value)) return []
-  return value.filter((entry): entry is string => typeof entry === 'string')
-}
-
 const copySafePrimitiveObject = (
   value: unknown
 ): Record<string, string | number | boolean | null> | undefined => {
   if (!isLooseRecord(value)) return undefined
-  const copied: Record<string, string | number | boolean | null> = {}
-  for (const key in value) {
-    if (!Object.hasOwn(value, key)) continue
-    if (isForbiddenKey(key)) continue
-    const entry = value[key]
-    if (
-      typeof entry === 'string' ||
-      typeof entry === 'boolean' ||
-      entry === null ||
-      isFiniteNumber(entry)
-    ) {
-      copied[key] = entry
-    }
-  }
+  const copied = copySafePrimitiveEntries(value)
   return !isEmptyObject(copied) ? copied : undefined
 }
 

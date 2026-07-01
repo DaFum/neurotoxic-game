@@ -7,6 +7,7 @@ import {
   clampVanFuel,
   clampMemberStamina,
   clampUnitRandom,
+  clamp0to100,
   finiteNumberOr,
   isForbiddenKey,
   isFiniteNumber
@@ -446,7 +447,7 @@ export const handleCompleteAmpCalibration = (
     return state
   }
   const { score, voidResonance, purgesUsed, hijacksOverridden } = payload
-  const safeScore = Math.max(0, Math.min(finiteNumberOr(score, 0), 100))
+  const safeScore = clamp0to100(finiteNumberOr(score, 0))
   logger.info('GameState', 'Amp Calibration Minigame Complete', payload)
 
   // Apply Results
