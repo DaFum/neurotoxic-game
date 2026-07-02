@@ -27,7 +27,6 @@ interface StatsOverlayProps {
  * Renders the primary status tracking overlay for active gigs.
  * It displays the score, combo, accuracy, overload, and corruption meters.
  *
- * @param props - The properties configuring the display values.
  * @returns A React element rendering the floating status HUD.
  */
 export const StatsOverlay = memo(function StatsOverlay({
