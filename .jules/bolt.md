@@ -142,3 +142,6 @@
 
 **Learning:** Using `.sort()` to extract the top N elements (e.g., top 3) is O(N log N) and adds sorting overhead in hot paths like `generatePostOptions`.
 **Action:** Replace `.sort()` with an O(N) single-pass loop that tracks the top N directly when N is small.
+## 2025-02-12 - Rejected micro-optimization pattern: .filter().map() -> .reduce()
+**Learning:** Replaced chained array methods (.filter().map()) with .reduce() to prevent intermediate array allocations in a React component's hot render loop (DebugLogViewer). While this avoids memory churn, code reviewers rejected it as a micro-optimization that degrades readability without providing a measurable performance impact compared to the cost of React rendering.
+**Action:** Do not optimize array iteration patterns like .filter().map() using .reduce() in React render cycles just to save an intermediate array unless it's proven to be a bottleneck. Focus on macro-optimizations like React.memo(), useMemo, or structural architectural changes instead.
