@@ -1,4 +1,9 @@
-import React, { useState, useEffect, useSyncExternalStore } from 'react'
+import {
+  useState,
+  useEffect,
+  useSyncExternalStore,
+  type ReactNode
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import { logger, LOG_LEVELS } from '../utils/logger'
 import { Tooltip } from './shared/Tooltip'
@@ -137,19 +142,15 @@ const DebugLogViewerContent = ({
 
         {/* Log Stream */}
         <div className='flex-1 overflow-y-auto p-2 space-y-1'>
-          {
-            // ⚡ BOLT OPTIMIZATION: Replaced chained .filter().map() with a single-pass .reduce() loop.
-            // Why: Eliminates O(N) intermediate array allocations during hot React render cycles.
-            // Impact: Reduces garbage collection overhead when the log stream UI frequently updates.
-            logs.reduce<React.ReactNode[]>((acc, log) => {
-              if (
-                isLogLevelName(log.level) ? LOG_LEVELS[log.level] >= filterLevel : false
-              ) {
-                acc.push(<LogRow key={log.id} log={log} />)
-              }
-              return acc
-            }, [])
-          }
+          {logs
+            .filter(l =>
+              isLogLevelName(l.level)
+                ? LOG_LEVELS[l.level] >= filterLevel
+                : false
+            )
+            .map(log => (
+              <LogRow key={log.id} log={log} />
+            ))}
         </div>
       </div>
     </div>
