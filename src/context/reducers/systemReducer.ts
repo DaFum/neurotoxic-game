@@ -125,6 +125,29 @@ const remapPerRegionScopeKeys = <T extends { scopeKey?: unknown }>(
  * Loading a save forces the scene back to `OVERWORLD` and upgrades the persisted
  * version marker to the current schema version after migrations run.
  */
+const migrateVenueBlacklist = (blacklist: string[]): string[] => {
+  if (!Array.isArray(blacklist)) return []
+  const acc: string[] = []
+  for (let i = 0; i < blacklist.length; i++) {
+    const id = blacklist[i]
+    if (!id) continue
+    const migrated = migrateLegacyVenueId(id)
+    if (migrated.length > 0) acc.push(migrated)
+  }
+  return acc
+}
+
+/**
+ * Loads persisted state through migration and sanitizer gates.
+ *
+ * @param state - Current in-memory state used as a fallback baseline.
+ * @param payload - Raw save payload from storage.
+ * @returns Migrated and sanitized game state.
+ *
+ * @remarks
+ * Loading a save forces the scene back to `OVERWORLD` and upgrades the persisted
+ * version marker to the current schema version after migrations run.
+ */
 export const handleLoadGame = (
   state: GameState,
   payload: unknown
@@ -216,17 +239,6 @@ export const handleLoadGame = (
     ),
     rngSeed: sanitizeRngSeed(loadedState.rngSeed),
     rivalBand: sanitizeRivalBand(loadedState.rivalBand)
-  }
-
-  const migrateVenueBlacklist = (blacklist: string[]): string[] => {
-    const acc: string[] = []
-    for (let i = 0; i < blacklist.length; i++) {
-      const id = blacklist[i]
-      if (!id) continue
-      const migrated = migrateLegacyVenueId(id)
-      if (migrated.length > 0) acc.push(migrated)
-    }
-    return acc
   }
 
   // Apply venue migrations using spreads
