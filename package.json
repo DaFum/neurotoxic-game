@@ -89,7 +89,7 @@
     "@vitest/coverage-v8": "4.1.9",
     "autoprefixer": "10.5.0",
     "benchmark": "2.1.4",
-    "eslint": "10.4.0",
+    "eslint": "10.6.0",
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-react-refresh": "0.5.3",
     "eslint-plugin-tsdoc": "^0.5.2",
