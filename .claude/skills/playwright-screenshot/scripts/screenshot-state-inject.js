@@ -9,6 +9,13 @@
  * (POSTGIG, GAMEOVER, CLINIC, deep OVERWORLD state) without playing through
  * the entire golden-path flow.
  *
+ * IMPORTANT: the game's LOAD_GAME reducer (`handleLoadGame`) always forces
+ * `currentScene` back to OVERWORLD, so injecting `currentScene: 'POSTGIG'` alone
+ * lands on OVERWORLD. After hydration we navigate to the fixture's intended scene
+ * via the DEV-only `window.gameState.changeScene()` API (see navigateToFixtureScene).
+ * The injected state (lastGigStats, currentGig, etc.) survives the load, so the
+ * target scene renders correctly once we switch to it.
+ *
  * Usage:
  *   node .claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js <fixture> [outfile]
  *
@@ -242,14 +249,17 @@ const FIXTURES = {
     description: 'PreGig preparation screen',
     state: {
       currentScene: 'PREGIG',
+      // `currentGig` is the Venue object (see src/types/map.d.ts): the scene
+      // reads `currentGig.id`/`.name`/`.capacity`, NOT `venueId`/`venueName`.
+      // Using the wrong keys leaves `currentGig.id` undefined and PreGig never
+      // mounts, so the fixture must mirror the real Venue shape.
       currentGig: {
-        venueId: 'goldgrube',
-        venueName: 'Goldgrube',
-        songId: null,
-        setlist: [],
+        id: 'goldgrube',
+        name: 'Goldgrube',
         capacity: 120,
-        basePay: 80,
-        nodeId: 'node_2_1'
+        pay: 80,
+        difficulty: 2,
+        songId: null
       },
       activeEvent: null,
       pendingEvents: [],
@@ -262,17 +272,44 @@ const FIXTURES = {
           .getByRole('heading', { name: /preparation|pregig/i })
           .waitFor({ state: 'visible', timeout: 15000 })
       } catch {
-        // Fallback: wait for gig modifier options (core pregig UI)
+        // Fallback: the "Start Show" CTA is the stable anchor for PreGig
         return await page
-          .getByRole('heading', { name: /modifier/i })
-          .or(
-            page
-              .locator('button')
-              .filter({ hasText: /soundcheck|promo/i })
-              .first()
-          )
+          .getByRole('button', { name: /start show/i })
           .waitFor({ state: 'visible', timeout: 2000 })
       }
+    },
+    capture: async page => {
+      // Entering PreGig can roll a chain of random event modals over the prep
+      // screen (resolving one may surface a consequence/next event). Clear up to
+      // a few of them — numbered options or a CONTINUE button — then wait for the
+      // PreGig heading underneath. Resolution keeps us in the PREGIG scene.
+      for (let i = 0; i < 5; i++) {
+        const dialog = page.getByRole('dialog').first()
+        // isVisible() is an immediate check and ignores a timeout option, so a
+        // still-animating dialog would be missed — wait for it explicitly.
+        const dialogShown = await dialog
+          .waitFor({ state: 'visible', timeout: 800 })
+          .then(() => true)
+          .catch(() => false)
+        if (!dialogShown) break
+        const numbered = dialog
+          .locator('button')
+          .filter({ hasText: /\[\d\]/ })
+          .first()
+        const cont = dialog.getByRole('button', { name: /continue/i }).first()
+        if (await numbered.isVisible().catch(() => false)) {
+          await numbered.click().catch(() => {})
+        } else if (await cont.isVisible().catch(() => false)) {
+          await cont.click().catch(() => {})
+        } else {
+          break
+        }
+        await page.waitForTimeout(400)
+      }
+      await page
+        .getByRole('heading', { name: /preparation/i })
+        .waitFor({ state: 'visible', timeout: 5000 })
+        .catch(() => {})
     }
   },
 
@@ -280,14 +317,15 @@ const FIXTURES = {
     description: 'Post-gig report screen after a successful gig',
     state: {
       currentScene: 'POSTGIG',
+      // Real Venue shape (src/types/map.d.ts): id/name/capacity/pay, not
+      // venueId/venueName — sanitizeVenue nulls venues without a string id/name.
       currentGig: {
-        venueId: 'goldgrube',
-        venueName: 'Goldgrube',
-        songId: '01 Kranker Schrank',
-        setlist: ['01 Kranker Schrank'],
+        id: 'goldgrube',
+        name: 'Goldgrube',
         capacity: 120,
-        basePay: 80,
-        nodeId: 'node_2_1'
+        pay: 80,
+        difficulty: 2,
+        songId: '01 Kranker Schrank'
       },
       lastGigStats: {
         venueName: 'Goldgrube',
@@ -305,44 +343,25 @@ const FIXTURES = {
       pendingEvents: []
     },
     waitFor: async page => {
-      // Wait for POSTGIG scene to fully load (stats animation + render), 10s max
-      const startTime = Date.now()
-
-      while (Date.now() - startTime < 10000) {
-        try {
-          // Try heading first
-          const isHeading = await page
-            .getByRole('heading', { name: /gig report|postgig/i })
-            .waitFor({ state: 'visible', timeout: 500 })
-            .then(() => true)
-            .catch(() => false)
-          if (isHeading) return
-        } catch {
-          // Continue to next attempt
-        }
-
-        try {
-          // Try finding any text with stats keywords
-          const bodyText = await page.evaluate(() => document.body.innerText)
-          if (
-            bodyText.includes('Earnings') ||
-            bodyText.includes('earnings') ||
-            bodyText.includes('Crowd') ||
-            bodyText.includes('crowd') ||
-            bodyText.includes('Fame') ||
-            bodyText.includes('fame')
-          ) {
-            return // Stats are visible
-          }
-        } catch {
-          // Continue
-        }
-
-        // Small explicit wait before next check
-        await page.waitForTimeout(100)
-      }
-
-      // Stats haven't appeared in 10s but page is loaded — proceed anyway
+      // POSTGIG shows a brief "TALLYING RECEIPTS…" state before the report.
+      // Anchor on POSTGIG-specific UI (report heading or its continue CTA) —
+      // NOT generic "Fame/Day" text, which also appears on the OVERWORLD HUD
+      // and would false-pass if navigation ever failed.
+      await page
+        .getByRole('heading', { name: /gig report|postgig/i })
+        .or(
+          page.getByRole('button', {
+            name: /continue to socials|back to (tour|overworld)/i
+          })
+        )
+        .first()
+        .waitFor({ state: 'visible', timeout: 15000 })
+      // NOTE: injected POSTGIG shows the report *shell* ("TALLYING RECEIPTS…" +
+      // "BACK TO OVERWORLD"); the populated figures are computed by the live
+      // END_GIG flow, which state-injection + changeScene bypasses. For a fully
+      // rendered gig report, capture POSTGIG via the live golden-path flow
+      // (screenshot-game-flow.js) instead. Short settle for the scene shell:
+      await page.waitForTimeout(600)
     }
   },
 
@@ -353,35 +372,33 @@ const FIXTURES = {
       player: { money: 0, fame: 0, day: 14 },
       band: { harmony: 1 }
     },
-    waitFor: async page => {
-      try {
-        return await page
-          .getByRole('heading', { name: /game over/i })
-          .waitFor({ state: 'visible', timeout: 15000 })
-      } catch {
-        // Fallback: wait for gameover stats section
-        return await page
-          .locator('[class*="flex"]')
-          .filter({ hasText: /bankruptcy|stats|day/i })
-          .first()
-          .waitFor({ state: 'visible', timeout: 2000 })
-      }
-    }
+    waitFor: async page =>
+      // The GAMEOVER heading reads "SOLD OUT" / "THE TOUR HAS ENDED PREMATURELY"
+      // (the literal "GAME OVER" string is only a toast). Anchor on the real
+      // heading or the final-stats panel, never generic "day/stats" text.
+      page
+        .getByRole('heading', { name: /sold out|tour has ended|game over/i })
+        .or(page.getByText(/final statistics|load last save/i).first())
+        .first()
+        .waitFor({ state: 'visible', timeout: 15000 })
   },
 
   gig: {
     description: 'GIG scene with PixiJS canvas',
     state: {
       currentScene: 'GIG',
+      // Real Venue shape (src/types/map.d.ts): id/name/capacity/pay, not
+      // venueId/venueName — sanitizeVenue nulls venues without a string id/name,
+      // which would bounce GIG straight back to OVERWORLD.
       currentGig: {
-        venueId: 'goldgrube',
-        venueName: 'Goldgrube',
-        songId: '01 Kranker Schrank',
-        setlist: ['01 Kranker Schrank'],
+        id: 'goldgrube',
+        name: 'Goldgrube',
         capacity: 120,
-        basePay: 80,
-        nodeId: 'node_2_1'
-      }
+        pay: 80,
+        difficulty: 2,
+        songId: '01 Kranker Schrank'
+      },
+      setlist: ['01 Kranker Schrank']
     },
     waitFor: async page => {
       // Check if "SYSTEM LOCKED" overlay is present (audio-locking scenario)
@@ -587,6 +604,10 @@ async function injectAndCapture(fixtureName, outFile) {
       }
     }
 
+    // handleLoadGame forces OVERWORLD on hydration; switch to the fixture's
+    // intended scene before waiting for its UI.
+    await navigateToFixtureScene(page, fixtureName)
+
     // Wait for the scene to be ready
     await fixture.waitFor(page)
     // Let Framer Motion transitions settle (no condition to wait for — purely visual)
@@ -637,6 +658,47 @@ export async function injectSave(page, fixtureName) {
       settings: { tutorialSeen: true, crtEnabled: true }
     }
   )
+}
+
+/**
+ * The scene a fixture intends to display (defaults to OVERWORLD).
+ * @param {{ state?: { currentScene?: string } }} fixture
+ * @returns {string}
+ */
+function fixtureScene(fixture) {
+  return fixture.state?.currentScene ?? 'OVERWORLD'
+}
+
+/**
+ * Navigate to a fixture's intended scene after injection.
+ *
+ * `handleLoadGame` always resets `currentScene` to OVERWORLD, so injected
+ * POSTGIG/GAMEOVER/PREGIG/CLINIC/MENU states land on OVERWORLD. This switches to
+ * the target scene via the DEV-only `window.gameState.changeScene()` API (exposed
+ * only when `import.meta.env.DEV` — i.e. under `pnpm run dev`). No-op for OVERWORLD
+ * fixtures and overworld overlays (e.g. event-modal) that render on OVERWORLD.
+ *
+ * @param {import('@playwright/test').Page} page
+ * @param {string} fixtureName
+ */
+export async function navigateToFixtureScene(page, fixtureName) {
+  const fixture = FIXTURES[fixtureName]
+  if (!fixture) throw new Error(`Unknown fixture "${fixtureName}"`)
+  const target = fixtureScene(fixture)
+  if (target === 'OVERWORLD') return
+
+  // waitForFunction signature is (pageFunction, arg?, options?); the options
+  // object must be the THIRD argument. Passing it as the second makes it the
+  // page-function arg and the timeout is ignored — the wait would then hang if
+  // window.gameState is never exposed (e.g. a non-DEV preview/prod build).
+  await page.waitForFunction(
+    () => typeof window.gameState?.changeScene === 'function',
+    undefined,
+    { timeout: 10000 }
+  )
+  await page.evaluate(scene => {
+    window.gameState.changeScene(scene)
+  }, target)
 }
 
 /**

@@ -60,8 +60,13 @@ The Playwright test runner auto-starts the server via `webServer` config. The st
 The scripts now have automatic fallback logic:
 
 1. First attempt: Download latest Playwright browser (requires `storage.googleapis.com` access)
-2. Second attempt: Use cached Chromium browser from `~/.cache/ms-playwright/` if available
-3. Final fallback: Return helpful error with recovery steps
+2. Second attempt: Use a pre-installed Chromium found under any of (in order):
+   `$PLAYWRIGHT_BROWSERS_PATH` → `/opt/pw-browsers` → `~/.cache/ms-playwright/`.
+   This covers managed/CI containers (e.g. Claude Code on the web sets
+   `PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`), which the old cache-only search missed.
+   Falls back to the `headless_shell` build if the full `chrome` binary is absent.
+3. Third attempt: `BROWSER_PATH` env var, if set
+4. Final fallback: Return helpful error with recovery steps
 
 **To manually provide a browser path:**
 
@@ -71,11 +76,16 @@ BROWSER_PATH=/path/to/chrome \
 node .claude/skills/playwright-screenshot/scripts/screenshot-all-scenes.js
 ```
 
-**To find available cached browsers:**
+**To find available pre-installed browsers:**
 
 ```bash
-find ~/.cache/ms-playwright -name "chrome" -o -name "firefox" 2>/dev/null
+find "${PLAYWRIGHT_BROWSERS_PATH:-/opt/pw-browsers}" ~/.cache/ms-playwright \
+  -name chrome -o -name headless_shell 2>/dev/null
 ```
+
+> The launcher auto-discovers these paths, so an explicit `BROWSER_PATH` is
+> usually unnecessary in managed environments — a bare `node …/screenshot-*.js`
+> will find `/opt/pw-browsers/chromium-*/chrome-linux/chrome` on its own.
 
 If no browsers are cached, and CDN is unreachable, the environment is air-gapped. In that case:
 
@@ -230,6 +240,18 @@ See `references/scene-navigation.md` for complete step-by-step flows. Summary:
 | **Event modal**      | inject `event-modal`                                  | `getByRole('dialog')` visible                    |
 
 **Fastest paths for hard-to-reach scenes:** use state injection — no need to play through. GAMEOVER and CLINIC cannot be reliably reached without injection.
+
+> **How injection reaches non-OVERWORLD scenes:** the `LOAD_GAME` reducer always
+> forces `currentScene` to OVERWORLD on hydration, so `screenshot-state-inject.js`
+> injects the save, reloads, then calls `window.gameState.changeScene(<target>)`
+> (DEV-only API) to switch to the fixture's scene — see `navigateToFixtureScene`.
+> Cleanly injectable: **MENU, OVERWORLD, PREGIG, GIG, GAMEOVER, CLINIC, BAND HQ, event-modal**
+> (each fixture's `currentGig` must use the real `Venue` shape — `id`/`name`/`capacity`,
+> not `venueId`/`venueName` — or `sanitizeVenue` nulls it and the scene bounces to OVERWORLD).
+> **POSTGIG** reaches the right scene but shows only the report *shell*
+> ("TALLYING RECEIPTS…"); the final figures are computed by the live END_GIG flow
+> that injection bypasses — capture POSTGIG via the live golden-path
+> `screenshot-game-flow.js` when you need the fully-rendered report.
 
 ---
 
