@@ -374,7 +374,7 @@ export const MapNodeView = memo(
           </div>
         </motion.div>
 
-        <div className='text-xxs font-bold uppercase tracking-wide text-ash-gray mt-1 pointer-events-none'>
+        <div className='text-xxs font-bold uppercase tracking-wide text-ash-gray mt-1 pointer-events-none [text-shadow:0_1px_2px_var(--color-void-black),0_0_4px_var(--color-void-black)]'>
           {getNodeTypeLabel(t, node.type)}
         </div>
 
@@ -388,7 +388,7 @@ export const MapNodeView = memo(
         {/* Node Label (Always visible, matching BrutalistUI style) */}
         <div className='mt-2 flex flex-col items-center z-(--z-stage-bg) pointer-events-none'>
           <span
-            className={`text-xs font-bold tracking-widest uppercase text-center transition-colors ${isHoveredLocal || isPendingConfirm ? 'text-star-white' : 'text-toxic-green'}`}
+            className={`text-xs font-bold tracking-widest uppercase text-center transition-colors [text-shadow:0_1px_2px_var(--color-void-black),0_0_5px_var(--color-void-black)] ${isHoveredLocal || isPendingConfirm ? 'text-star-white' : 'text-toxic-green'}`}
           >
             {nodeLocationName}
           </span>
