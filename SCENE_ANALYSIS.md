@@ -7,10 +7,13 @@
 
 **The scenes render correctly and on-brand. One real legibility defect was found and fixed** (overworld node-label collisions); everything else is either a sandbox image-CDN artifact or an intentional, verified click-safe ambient overlay. Details below.
 
-## Fix applied
+## Fixes applied
 
-**Overworld node labels — legibility text-shadow** (`src/components/MapNodeView.tsx`).
+**1. Overworld node labels — legibility text-shadow** (`src/components/MapNodeView.tsx`).
 Node type + location labels blended into the busy map and overran each other in dense clusters. Added a `void-black` `text-shadow` halo to both labels (matching the existing `drop-shadow-[…var(--color-void-black)]` convention already used on the node icon two lines above). Layout-neutral, uses brand tokens only, verified via re-capture: labels now stay readable over connection lines, icons, and neighbouring labels. (This does not reposition nodes — true collision-avoidance for extreme overlap remains a larger, separate feature; see follow-up.)
+
+**2. Chatter box relocates off overlapping UI** (`src/components/ChatterOverlay.tsx`).
+The ambient chatter box sat at a fixed bottom-center / bottom-left anchor and could visually sit over interactive UI (credits RETURN, pregig START SHOW, band-hq tabs). It now measures its own rect and, when its default anchor would overlap any interactive element (`button`, `[role=button]`, links, tabs, dialogs), re-places itself to the first candidate anchor that's clear (fanning out to the opposite edge/corners); when the default is clear it stays put. Position is applied imperatively from a `useLayoutEffect` (no extra render, no first-paint flash) and re-evaluated when the message set changes or the window resizes. Verified: typecheck + lint clean, and the anchor-selection geometry provably relocates off an overlapping button and keeps the default otherwise.
 
 ## Environment caveat (important when reading the shots)
 
@@ -38,14 +41,12 @@ These are **environment artifacts, not bugs** — the code requests the images c
 
 ## Ambient chatter overlay — investigated, not a bug
 
-The `ChatterOverlay` ("TOUR FEED" / "MAIN FEED" / "PRE-GIG FEED" / "LIVE FEED") renders bottom-left (OVERWORLD) or bottom-center (all other scenes) and can visually overlap content or a CTA (credits RETURN, pregig START SHOW, band-hq VAN STATUS). This is **intentional transient ambient flavor** and is **click-safe**: its container is `pointer-events-none` and its z-index sits below modal chrome (`ChatterOverlay.tsx:343-348`), so it never intercepts interaction. No fix needed.
-- *Optional polish (design decision, not a defect):* have chatter avoid the bottom-center CTA band, or fade further, so it never momentarily sits over a primary button.
+The `ChatterOverlay` ("TOUR FEED" / "MAIN FEED" / "PRE-GIG FEED" / "LIVE FEED") renders bottom-left (OVERWORLD) or bottom-center (all other scenes). It was already **click-safe** (`pointer-events-none`, z below modal chrome) but could still *visually* sit over a CTA (credits RETURN, pregig START SHOW, band-hq tabs). **Now fixed** — see Fix #2: the box relocates to the first anchor clear of interactive UI, so it no longer covers buttons/tabs/links/dialogs.
 
-## Optional follow-ups (not addressed here — larger/design decisions)
+## Optional follow-up (not addressed here — larger feature)
 
-1. **True map-label collision-avoidance.** The text-shadow fix restores legibility, but with ~45 procedurally-placed nodes, labels in the tightest clusters can still physically overlap. Real de-collision (offset/stagger labels, or opaque chips) is a scoped feature, not a one-line patch — left for a dedicated pass.
-2. **Chatter placement vs. CTAs.** The ambient overlay is click-safe but can momentarily sit over a primary button (credits RETURN, pregig START SHOW). Nudging it out of the bottom-center CTA band is an optional design polish.
+**True map-label collision-avoidance.** The text-shadow fix restores legibility, but with ~45 procedurally-placed nodes, labels in the tightest clusters can still physically overlap. Real de-collision (offset/stagger labels, or opaque chips) is a scoped feature, not a one-line patch — left for a dedicated pass.
 
 ## Conclusion
 
-One real defect found and fixed (overworld label legibility); the remaining scenes are visually sound and consistent with the brutalist design system. The apparent problems elsewhere are sandbox image-CDN artifacts (would render in a networked build) or the intentional, click-safe chatter overlay — neither warrants a code change. The two items above are deliberate follow-ups, not QA-sweep fixes.
+Two defects found and fixed — overworld label legibility and the chatter box overlapping interactive UI. The remaining scenes are visually sound and consistent with the brutalist design system; the other apparent problems are sandbox image-CDN artifacts (would render in a networked build), not code issues. Only the procedural map-label de-collision remains as a deliberate, larger follow-up.

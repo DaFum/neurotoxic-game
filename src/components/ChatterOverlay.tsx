@@ -1,4 +1,11 @@
-import { useEffect, useMemo, memo } from 'react'
+import {
+  useEffect,
+  useMemo,
+  memo,
+  useRef,
+  useLayoutEffect,
+  type RefObject
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
 import { GAME_PHASES } from '../context/gameConstants'
@@ -294,6 +301,142 @@ const ChatterMessage = memo(({ msg, onRemove, t }: ChatterMessageProps) => {
 
 ChatterMessage.displayName = 'ChatterMessage'
 
+const EDGE_MARGIN = 16
+
+type Rect = { left: number; top: number; right: number; bottom: number }
+type Anchor = { left: number; top: number }
+
+const rectsIntersect = (a: Rect, b: Rect): boolean =>
+  a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top
+
+// Interactive / high-value elements the chatter box must never sit on top of.
+// (Static flavour text isn't included — the box would otherwise never find a
+// clear spot, since something is always behind it.)
+const OBSTACLE_SELECTOR =
+  'button,[role="button"],a[href],[role="dialog"],[role="tab"],[role="tablist"]'
+
+const collectObstacleRects = (self: HTMLElement): Rect[] => {
+  const rects: Rect[] = []
+  for (const el of document.querySelectorAll<HTMLElement>(OBSTACLE_SELECTOR)) {
+    if (self.contains(el) || el.contains(self)) continue
+    const r = el.getBoundingClientRect()
+    if (r.width > 0 && r.height > 0) {
+      rects.push({ left: r.left, top: r.top, right: r.right, bottom: r.bottom })
+    }
+  }
+  return rects
+}
+
+// Candidate top-left anchors, preferred first: the scene default leads, then
+// fallbacks fan out to the opposite edge and corners.
+const candidateAnchors = (
+  isOverworld: boolean,
+  vw: number,
+  vh: number,
+  w: number,
+  h: number
+): Anchor[] => {
+  const left = EDGE_MARGIN + (isOverworld ? EDGE_MARGIN : 0)
+  const center = Math.max(EDGE_MARGIN, (vw - w) / 2)
+  const right = Math.max(EDGE_MARGIN, vw - w - EDGE_MARGIN)
+  const top = EDGE_MARGIN
+  const bottom = Math.max(EDGE_MARGIN, vh - h - (isOverworld ? 112 : 64))
+  const bottomTight = Math.max(EDGE_MARGIN, vh - h - EDGE_MARGIN)
+  return isOverworld
+    ? [
+        { left, top: bottom },
+        { left, top },
+        { left: right, top: bottom },
+        { left: right, top },
+        { left: center, top: bottomTight }
+      ]
+    : [
+        { left: center, top: bottom },
+        { left: center, top },
+        { left: right, top: bottom },
+        { left: right, top },
+        { left, top: bottom },
+        { left, top }
+      ]
+}
+
+/**
+ * Positions the chatter box at its scene-default anchor, but re-places it to the
+ * first candidate anchor that clears all interactive UI whenever the default
+ * would overlap something. Returns a ref for the container and the inline style
+ * to apply (undefined = keep the CSS-class default position).
+ *
+ * @param isOverworld - Whether the current scene uses the overworld anchor set.
+ * @param revision - Changes when the visible messages change, to re-evaluate.
+ */
+const clearPositionOverride = (el: HTMLElement): void => {
+  el.style.left = ''
+  el.style.top = ''
+  el.style.right = ''
+  el.style.bottom = ''
+  el.style.transform = ''
+}
+
+const useNonOverlappingPosition = (
+  isOverworld: boolean,
+  revision: string
+): RefObject<HTMLDivElement | null> => {
+  const ref = useRef<HTMLDivElement>(null)
+
+  // Position is derived from live DOM measurement, so it is applied imperatively
+  // to the element (no React state → no extra render, no first-paint flash).
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+
+    const reposition = () => {
+      // Revert to the CSS-class default before measuring/deciding.
+      clearPositionOverride(el)
+      const box = el.getBoundingClientRect()
+      const w = box.width
+      const h = box.height
+      if (w === 0 || h === 0) return
+
+      const obstacles = collectObstacleRects(el)
+      const anchors = candidateAnchors(
+        isOverworld,
+        window.innerWidth,
+        window.innerHeight,
+        w,
+        h
+      )
+      const clear = anchors.find(
+        a =>
+          !obstacles.some(o =>
+            rectsIntersect(
+              {
+                left: a.left,
+                top: a.top,
+                right: a.left + w,
+                bottom: a.top + h
+              },
+              o
+            )
+          )
+      )
+      // Default anchor already clear (or nothing fits) → keep the CSS default.
+      if (!clear || clear === anchors[0]) return
+
+      el.style.left = `${Math.round(clear.left)}px`
+      el.style.top = `${Math.round(clear.top)}px`
+      el.style.right = 'auto'
+      el.style.bottom = 'auto'
+      el.style.transform = 'none'
+    }
+
+    reposition()
+    window.addEventListener('resize', reposition)
+    return () => window.removeEventListener('resize', reposition)
+  }, [isOverworld, revision])
+
+  return ref
+}
+
 /**
  * Displays an animated social chatter box that remains visible across various scenes.
  *
@@ -303,6 +446,8 @@ ChatterMessage.displayName = 'ChatterMessage'
  * Positioning logic:
  * - OVERWORLD: bottom-left near the bus/event log area.
  * - All other scenes: bottom-center of the window.
+ * - Either default is re-placed to the first clear anchor when it would overlap
+ *   interactive UI (see `useNonOverlappingPosition`).
  *
  * Desktop uses `--z-chatter` above opaque scene roots and below modal chrome, while mobile lowers it further below touch menus.
  *
@@ -343,8 +488,13 @@ export const ChatterOverlay = memo(() => {
     ? 'fixed bottom-28 left-8 pointer-events-none w-[min(22rem,85vw)]'
     : 'fixed bottom-16 left-1/2 -translate-x-1/2 pointer-events-none w-[min(24rem,90vw)]'
 
+  // Re-evaluate placement whenever the visible message set changes.
+  const revision = messages.map((m: ChatterMessageData) => m.id).join(',')
+  const ref = useNonOverlappingPosition(isOverworld, revision)
+
   return (
     <div
+      ref={ref}
       className={`${positionClassName} z-(--z-chatter) max-sm:z-(--z-chatter-mobile)`}
       role='status'
       aria-live='polite'
