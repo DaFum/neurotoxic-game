@@ -379,6 +379,7 @@ const clearPositionOverride = (el: HTMLElement): void => {
 
 const useNonOverlappingPosition = (
   isOverworld: boolean,
+  sceneKey: string,
   revision: string
 ): RefObject<HTMLDivElement | null> => {
   const ref = useRef<HTMLDivElement>(null)
@@ -430,9 +431,20 @@ const useNonOverlappingPosition = (
     }
 
     reposition()
-    window.addEventListener('resize', reposition)
-    return () => window.removeEventListener('resize', reposition)
-  }, [isOverworld, revision])
+    // Throttle resize to one measurement per frame to avoid layout thrashing.
+    let rafId = 0
+    const handleResize = () => {
+      cancelAnimationFrame(rafId)
+      rafId = requestAnimationFrame(reposition)
+    }
+    window.addEventListener('resize', handleResize)
+    return () => {
+      cancelAnimationFrame(rafId)
+      window.removeEventListener('resize', handleResize)
+    }
+    // `sceneKey` re-measures on scene navigation (this overlay is mounted
+    // globally, so it does not remount between scenes).
+  }, [isOverworld, sceneKey, revision])
 
   return ref
 }
@@ -490,7 +502,7 @@ export const ChatterOverlay = memo(() => {
 
   // Re-evaluate placement whenever the visible message set changes.
   const revision = messages.map((m: ChatterMessageData) => m.id).join(',')
-  const ref = useNonOverlappingPosition(isOverworld, revision)
+  const ref = useNonOverlappingPosition(isOverworld, currentScene, revision)
 
   return (
     <div
