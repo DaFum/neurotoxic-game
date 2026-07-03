@@ -218,6 +218,17 @@ export const handleLoadGame = (
     rivalBand: sanitizeRivalBand(loadedState.rivalBand)
   }
 
+  const migrateVenueBlacklist = (blacklist: string[]): string[] => {
+    const acc: string[] = []
+    for (let i = 0; i < blacklist.length; i++) {
+      const id = blacklist[i]
+      if (!id) continue
+      const migrated = migrateLegacyVenueId(id)
+      if (migrated.length > 0) acc.push(migrated)
+    }
+    return acc
+  }
+
   // Apply venue migrations using spreads
   const migratedState: GameState = {
     ...safeState,
@@ -228,14 +239,7 @@ export const handleLoadGame = (
           ? migratePlayerLocation(safeState.player.location)
           : DEFAULT_PLAYER_STATE.location
     },
-    venueBlacklist: (() => {
-      const acc: string[] = []
-      for (const id of safeState.venueBlacklist) {
-        const migrated = migrateLegacyVenueId(id)
-        if (migrated.length > 0) acc.push(migrated)
-      }
-      return acc
-    })(),
+    venueBlacklist: migrateVenueBlacklist(safeState.venueBlacklist),
     // Region reputation is keyed per canonical city key. Older saves keyed
     // entries by `venues:<id>.name` (the player.location display key), which
     // the regional booking ban in checkVenueAccess never read. Remap; on
