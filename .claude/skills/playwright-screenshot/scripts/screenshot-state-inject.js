@@ -285,8 +285,13 @@ const FIXTURES = {
       // PreGig heading underneath. Resolution keeps us in the PREGIG scene.
       for (let i = 0; i < 5; i++) {
         const dialog = page.getByRole('dialog').first()
-        if (!(await dialog.isVisible({ timeout: 800 }).catch(() => false)))
-          break
+        // isVisible() is an immediate check and ignores a timeout option, so a
+        // still-animating dialog would be missed — wait for it explicitly.
+        const dialogShown = await dialog
+          .waitFor({ state: 'visible', timeout: 800 })
+          .then(() => true)
+          .catch(() => false)
+        if (!dialogShown) break
         const numbered = dialog
           .locator('button')
           .filter({ hasText: /\[\d\]/ })
