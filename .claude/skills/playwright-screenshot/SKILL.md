@@ -245,11 +245,13 @@ See `references/scene-navigation.md` for complete step-by-step flows. Summary:
 > forces `currentScene` to OVERWORLD on hydration, so `screenshot-state-inject.js`
 > injects the save, reloads, then calls `window.gameState.changeScene(<target>)`
 > (DEV-only API) to switch to the fixture's scene — see `navigateToFixtureScene`.
-> Cleanly injectable: **MENU, OVERWORLD, PREGIG, GAMEOVER, CLINIC, BAND HQ, event-modal**.
-> **POSTGIG** and **GIG** reach the right scene but only show the shell (the gig
-> report figures and the rhythm playfield are populated by the live END_GIG/play
-> flow, which injection bypasses) — capture those two via the live golden-path
-> `screenshot-game-flow.js` when you need the fully-rendered scene.
+> Cleanly injectable: **MENU, OVERWORLD, PREGIG, GIG, GAMEOVER, CLINIC, BAND HQ, event-modal**
+> (each fixture's `currentGig` must use the real `Venue` shape — `id`/`name`/`capacity`,
+> not `venueId`/`venueName` — or `sanitizeVenue` nulls it and the scene bounces to OVERWORLD).
+> **POSTGIG** reaches the right scene but shows only the report *shell*
+> ("TALLYING RECEIPTS…"); the final figures are computed by the live END_GIG flow
+> that injection bypasses — capture POSTGIG via the live golden-path
+> `screenshot-game-flow.js` when you need the fully-rendered report.
 
 ---
 

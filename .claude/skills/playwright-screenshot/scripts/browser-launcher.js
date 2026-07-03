@@ -40,8 +40,10 @@ const DEFAULT_ARGS = [
 function browserSearchRoots() {
   const roots = []
   const envRoot = process.env.PLAYWRIGHT_BROWSERS_PATH
-  // "0" is Playwright's sentinel for "skip download", not a real path.
-  if (envRoot && envRoot !== '0') roots.push(envRoot)
+  // PLAYWRIGHT_BROWSERS_PATH="0" selects Playwright's hermetic install
+  // (node_modules/.local-browsers), which the standard launch (strategy 1) already
+  // resolves; it is not a real directory here, so the existsSync filter drops it.
+  if (envRoot) roots.push(envRoot)
   roots.push('/opt/pw-browsers')
   roots.push(resolve(homedir(), '.cache', 'ms-playwright'))
   return [...new Set(roots)].filter(r => existsSync(r))

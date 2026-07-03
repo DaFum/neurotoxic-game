@@ -317,14 +317,15 @@ const FIXTURES = {
     description: 'Post-gig report screen after a successful gig',
     state: {
       currentScene: 'POSTGIG',
+      // Real Venue shape (src/types/map.d.ts): id/name/capacity/pay, not
+      // venueId/venueName — sanitizeVenue nulls venues without a string id/name.
       currentGig: {
-        venueId: 'goldgrube',
-        venueName: 'Goldgrube',
-        songId: '01 Kranker Schrank',
-        setlist: ['01 Kranker Schrank'],
+        id: 'goldgrube',
+        name: 'Goldgrube',
         capacity: 120,
-        basePay: 80,
-        nodeId: 'node_2_1'
+        pay: 80,
+        difficulty: 2,
+        songId: '01 Kranker Schrank'
       },
       lastGigStats: {
         venueName: 'Goldgrube',
@@ -386,15 +387,18 @@ const FIXTURES = {
     description: 'GIG scene with PixiJS canvas',
     state: {
       currentScene: 'GIG',
+      // Real Venue shape (src/types/map.d.ts): id/name/capacity/pay, not
+      // venueId/venueName — sanitizeVenue nulls venues without a string id/name,
+      // which would bounce GIG straight back to OVERWORLD.
       currentGig: {
-        venueId: 'goldgrube',
-        venueName: 'Goldgrube',
-        songId: '01 Kranker Schrank',
-        setlist: ['01 Kranker Schrank'],
+        id: 'goldgrube',
+        name: 'Goldgrube',
         capacity: 120,
-        basePay: 80,
-        nodeId: 'node_2_1'
-      }
+        pay: 80,
+        difficulty: 2,
+        songId: '01 Kranker Schrank'
+      },
+      setlist: ['01 Kranker Schrank']
     },
     waitFor: async page => {
       // Check if "SYSTEM LOCKED" overlay is present (audio-locking scenario)
@@ -683,8 +687,13 @@ export async function navigateToFixtureScene(page, fixtureName) {
   const target = fixtureScene(fixture)
   if (target === 'OVERWORLD') return
 
+  // waitForFunction signature is (pageFunction, arg?, options?); the options
+  // object must be the THIRD argument. Passing it as the second makes it the
+  // page-function arg and the timeout is ignored — the wait would then hang if
+  // window.gameState is never exposed (e.g. a non-DEV preview/prod build).
   await page.waitForFunction(
     () => typeof window.gameState?.changeScene === 'function',
+    undefined,
     { timeout: 10000 }
   )
   await page.evaluate(scene => {
