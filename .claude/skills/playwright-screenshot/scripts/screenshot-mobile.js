@@ -72,12 +72,14 @@ async function captureFixture(browser, fixtureName) {
     const dest = `${OUT_DIR}/${fixtureName}.png`
     await page.screenshot({ path: dest, timeout: 120000 })
     console.log(`✓ ${fixtureName} → ${dest}`)
+    return true
   } catch (err) {
     console.error(`✗ ${fixtureName}: ${err.message}`)
     // capture whatever rendered for triage
     await page
       .screenshot({ path: `${OUT_DIR}/${fixtureName}-FAILED.png` })
       .catch(() => {})
+    return false
   } finally {
     await context.close()
   }
@@ -88,14 +90,23 @@ async function main() {
   const fixtures = requested.length ? requested : ALL_FIXTURES
   await mkdir(OUT_DIR, { recursive: true })
   const browser = await launchBrowserWithFallback({ headless: HEADLESS })
+  const failed = []
   try {
     for (const f of fixtures) {
-      await captureFixture(browser, f)
+      const ok = await captureFixture(browser, f)
+      if (!ok) failed.push(f)
     }
   } finally {
     await browser.close()
   }
   console.log(`\n📁 Mobile screenshots saved to: ${OUT_DIR}`)
+  // Fail the run so CI / scripts don't mistake a partial capture for success.
+  if (failed.length) {
+    console.error(
+      `\n✗ ${failed.length} fixture(s) failed: ${failed.join(', ')}`
+    )
+    process.exitCode = 1
+  }
 }
 
 main().catch(err => {
