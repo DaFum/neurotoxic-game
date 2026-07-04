@@ -27,7 +27,7 @@ export const StatsOverlay = memo(function StatsOverlay({
   isCorruptionBurstActive
 }: StatsOverlayProps) {
   return (
-    <div className='absolute top-32 left-4 max-sm:top-20 max-sm:left-2 max-sm:scale-75 max-sm:origin-top-left z-(--z-stage-overlay) text-star-white font-mono pointer-events-none p-4 group bg-void-black/40 backdrop-blur-sm border-l-2 border-toxic-green'>
+    <div className='absolute top-32 left-4 max-sm:top-48 max-sm:left-2 max-sm:scale-75 max-sm:origin-top-left z-(--z-stage-overlay) text-star-white font-mono pointer-events-none p-4 group bg-void-black/40 backdrop-blur-sm border-l-2 border-toxic-green'>
       <UIFrameCorner className='absolute top-0 left-0 w-4 h-4 text-toxic-green opacity-80' />
       <UIFrameCorner className='absolute top-0 right-0 w-4 h-4 text-ash-gray rotate-90 opacity-50' />
       <UIFrameCorner className='absolute bottom-0 right-0 w-4 h-4 text-ash-gray rotate-180 opacity-50' />

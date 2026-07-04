@@ -920,10 +920,12 @@
   .map-wrap {
     order: 3;
     width: 100%;
-    height: clamp(320px, 52svh, 620px);
+    /* Taller on mobile so percentage-positioned nodes get more vertical
+       spread and their labels collide less in the cramped portrait viewport. */
+    height: clamp(380px, 64svh, 680px);
     max-width: none;
     max-height: none;
-    min-height: 320px;
+    min-height: 380px;
     border-width: 4px;
   }
 
