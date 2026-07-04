@@ -3,6 +3,7 @@ import type { MutableRefObject } from 'react'
 import { safeStorageOperation } from '../../../utils/storage'
 import { getSafeUUID } from '../../../utils/crypto'
 import { GAME_PHASES } from '../../../context/gameConstants'
+import { SAVE_KEY } from '../../../context/usePersistence'
 import { enterFullscreen } from '../../../utils/fullscreen'
 import type { GamePhase } from '../../../types/game'
 import type { TFunction } from 'i18next'
@@ -88,7 +89,7 @@ export const useMainMenuStart = ({
 
   const handleStartTour = useCallback(() => {
     const savedGameExists = !!safeStorageOperation('checkSaveExists', () =>
-      localStorage.getItem('neurotoxic_v3_save')
+      localStorage.getItem(SAVE_KEY)
     )
     if (savedGameExists) {
       setShowExistingSavePrompt(true)

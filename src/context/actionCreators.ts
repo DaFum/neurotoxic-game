@@ -229,7 +229,7 @@ const sanitizeSocialUpdates = (
         if (SOCIAL_NULLABLE_FIELDS.has(key)) out[key] = null
         continue
       }
-      if (typeof value !== 'number' || !Number.isFinite(value)) continue
+      if (!isFiniteNumber(value)) continue
     }
     out[key] = value
   }

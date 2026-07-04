@@ -176,7 +176,7 @@ const validateBand = (band: unknown): void => {
       for (const stat of ['mood', 'stamina'] as const) {
         const val = m[stat]
         if (val !== undefined) {
-          if (typeof val !== 'number' || !Number.isFinite(val)) {
+          if (!isFiniteNumber(val)) {
             throw new StateError(
               `band.members[${index}].${stat} must be a finite number`
             )
@@ -192,7 +192,7 @@ const validateBand = (band: unknown): void => {
         'composition'
       ] as const) {
         const val = m[stat]
-        if (val != null && (typeof val !== 'number' || !Number.isFinite(val))) {
+        if (val != null && !isFiniteNumber(val)) {
           throw new StateError(
             `band.members[${index}].${stat} must be a finite number`
           )
