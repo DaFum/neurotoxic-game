@@ -138,13 +138,14 @@ export const useClinicLogic = (): {
   healCostMoney: number
   enhanceCostFame: number
   healMember: (memberId: string) => void
+  graftNeuroOverclock: (memberId: string) => void
   enhanceMember: (memberId: string, traitId: string) => void
   leaveClinic: () => void
 } => {
   const { t } = useTranslation(['ui'])
   const player = useGameSelector(state => state.player)
   const band = useGameSelector(state => state.band)
-  const { changeScene, addToast, clinicHeal, clinicEnhance } = useGameActions()
+  const { changeScene, addToast, clinicHeal, clinicEnhance, graftNeuroOverclock } = useGameActions()
 
   const currentVisits = player?.clinicVisits ?? 0
 
@@ -190,6 +191,7 @@ export const useClinicLogic = (): {
     enhanceCostFame,
     healMember,
     enhanceMember,
+    graftNeuroOverclock,
     leaveClinic
   }
 }

@@ -5,6 +5,7 @@ import {
   createCraftItemAction,
   createUseContrabandAction,
   createClinicHealAction,
+  graftNeuroOverclock as createGraftNeuroOverclockAction,
   createClinicEnhanceAction,
   createPirateBroadcastAction,
   createDarkWebLeakAction,
@@ -27,6 +28,7 @@ export interface FacilityDispatchActions {
     memberId?: Parameters<typeof createUseContrabandAction>[2]
   ) => void
   clinicHeal: (payload: Parameters<typeof createClinicHealAction>[0]) => void
+  graftNeuroOverclock: (memberId: string) => void
   clinicEnhance: (
     payload: Parameters<typeof createClinicEnhanceAction>[0]
   ) => void
@@ -80,6 +82,11 @@ export function useFacilityDispatchActions(
     [dispatch]
   )
 
+  const graftNeuroOverclock = useCallback(
+    (memberId: string) => dispatch(createGraftNeuroOverclockAction(memberId) as any),
+    [dispatch]
+  )
+
   const clinicEnhance = useCallback(
     (payload: Parameters<typeof createClinicEnhanceAction>[0]) =>
       dispatch(createClinicEnhanceAction(payload)),
@@ -122,6 +129,7 @@ export function useFacilityDispatchActions(
       craftItem,
       useContraband,
       clinicHeal,
+      graftNeuroOverclock,
       clinicEnhance,
       pirateBroadcast,
       darkWebLeak,

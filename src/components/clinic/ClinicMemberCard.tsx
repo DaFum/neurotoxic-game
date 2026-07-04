@@ -3,7 +3,9 @@ import { useTranslation } from 'react-i18next'
 import { formatCurrency } from '../../utils/numberUtils'
 import { GlitchButton } from '../../ui/GlitchButton'
 import { Tooltip } from '../../ui/shared'
-import { CLINIC_CONFIG } from '../../context/gameConstants'
+import { CLINIC_CONFIG, CLINIC_GRAFT_COST } from '../../context/gameConstants'
+import { GraftModal } from './GraftModal'
+import { useState } from 'react'
 import type {
   ClinicMemberCardProps,
   ActionButtonWrapperProps
@@ -31,7 +33,8 @@ export const ClinicMemberCard = ({
   healCostMoney,
   enhanceCostFame,
   healMember,
-  enhanceMember
+  enhanceMember,
+  graftNeuroOverclock
 }: ClinicMemberCardProps) => {
   const { t, i18n } = useTranslation(['ui'])
   const memberId = member.id

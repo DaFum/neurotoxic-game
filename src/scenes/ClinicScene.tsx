@@ -16,6 +16,7 @@ export const ClinicScene = () => {
     enhanceCostFame,
     healMember,
     enhanceMember,
+    graftNeuroOverclock,
     leaveClinic
   } = useClinicLogic()
 
@@ -45,6 +46,7 @@ export const ClinicScene = () => {
               enhanceCostFame={enhanceCostFame}
               healMember={healMember}
               enhanceMember={enhanceMember}
+              graftNeuroOverclock={graftNeuroOverclock}
             />
           ))}
         </div>

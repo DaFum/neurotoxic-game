@@ -3,7 +3,7 @@ import { formatCurrency } from '../../utils/numberUtils'
 import type { GameState } from '../../types'
 import type { ClinicActionPayload, BloodBankDonatePayload } from '../../types'
 import type { BandMember } from '../../types'
-import { CLINIC_CONFIG, calculateClinicCost } from '../gameConstants'
+import { CLINIC_CONFIG, calculateClinicCost, CLINIC_GRAFT_COST } from '../gameConstants'
 import { logger } from '../../utils/logger'
 import {
   clampPlayerMoney,
@@ -352,6 +352,55 @@ export const handleBloodBankDonate = (
  * @returns State with the trait grafted and clinic cost applied, or the
  * original state when validation fails.
  */
+/**
+ * Handles grafting the Neuro-Overclock trait onto a band member.
+ * Costs money and permanently mutates the member's traits.
+ * Enforces state safety boundaries.
+ */
+export const handleGraftNeuroOverclock = (state: GameState, payload: any): GameState => {
+  if (!state.player || !state.band) {
+    console.error('handleGraftNeuroOverclock: Missing player or band state')
+    return state
+  }
+
+  if (state.player.money < CLINIC_GRAFT_COST) {
+    return state // Can't afford
+  }
+
+  const { memberId } = payload
+  const memberIndex = state.band.members.findIndex((m: any) => m.id === memberId)
+
+  if (memberIndex === -1) {
+    console.error(`handleGraftNeuroOverclock: Member ${memberId} not found`)
+    return state
+  }
+
+  const member = state.band.members[memberIndex]
+  if (member.traits?.includes('neuro_overclock')) {
+    return state // Already grafted
+  }
+
+  return {
+    ...state,
+    player: {
+      ...state.player,
+      money: Math.max(0, state.player.money - CLINIC_GRAFT_COST)
+    },
+    band: {
+      ...state.band,
+      members: state.band.members.map((m: any, i: number) => {
+        if (i !== memberIndex) return m
+        return {
+          ...m,
+          health: Math.max(1, m.health - 20),
+          stress: Math.min(100, (m.stress || 0) + 30),
+          traits: [...(m.traits || []), 'neuro_overclock']
+        }
+      })
+    }
+  }
+}
+
 export const handleClinicEnhance = (
   state: GameState,
   payload: ClinicActionPayload
