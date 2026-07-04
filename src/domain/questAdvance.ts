@@ -21,6 +21,34 @@ const findActiveQuestIndex = (
   return -1
 }
 
+/**
+ * Locates an active quest and resolves the pieces both progress mutators share:
+ * a shallow-cloned next state, the quest entry, its index, and the raw
+ * `required` threshold (instance value falling back to the definition).
+ * Returns null when the quest is absent, so callers bail with unchanged state.
+ */
+const resolveActiveQuest = (
+  state: GameState,
+  questId: string
+): {
+  nextState: GameState
+  q: ActiveQuestState
+  questIndex: number
+  rawRequired: number | undefined
+} | null => {
+  if (!state.activeQuests) return null
+  const questIndex = findActiveQuestIndex(state.activeQuests, questId)
+  if (questIndex === -1) return null
+
+  const nextState = { ...state }
+  const q = nextState.activeQuests[questIndex]
+  if (!q) return null
+
+  const questConfig = getQuestWithDefinition(q)
+  const rawRequired = q.required ?? questConfig.required
+  return { nextState, q, questIndex, rawRequired }
+}
+
 export const advanceQuest = (
   state: GameState,
   {
@@ -29,18 +57,9 @@ export const advanceQuest = (
     randomIdx
   }: { questId: string; amount?: number; randomIdx?: number }
 ): GameState => {
-  if (!state.activeQuests) return state
-  const questIndex = findActiveQuestIndex(state.activeQuests, questId)
-  if (questIndex === -1) return state
-
-  const nextState = { ...state }
-  const q = nextState.activeQuests[questIndex]
-
-  // TypeScript strict mode validation
-  if (!q) return state
-
-  const questConfig = getQuestWithDefinition(q)
-  const rawRequired = q.required ?? questConfig.required
+  const resolved = resolveActiveQuest(state, questId)
+  if (!resolved) return state
+  const { nextState, q, questIndex, rawRequired } = resolved
   const safeRequired = finiteNumberOr(rawRequired, Number.NaN)
 
   if (!Number.isFinite(safeRequired) || safeRequired <= 0) {
@@ -84,17 +103,9 @@ export const setQuestProgress = (
   state: GameState,
   { questId, progress }: { questId: string; progress: number }
 ): GameState => {
-  if (!state.activeQuests) return state
-  const questIndex = findActiveQuestIndex(state.activeQuests, questId)
-  if (questIndex === -1) return state
-
-  const nextState = { ...state }
-  const q = nextState.activeQuests[questIndex]
-
-  if (!q) return state
-
-  const questConfig = getQuestWithDefinition(q)
-  const rawRequired = q.required ?? questConfig.required
+  const resolved = resolveActiveQuest(state, questId)
+  if (!resolved) return state
+  const { nextState, q, questIndex, rawRequired } = resolved
   const required = finiteNumberOr(rawRequired, Number.NaN)
   const prev = finiteNumberOr(q.progress, 0)
   const next = Math.max(prev, finiteNumberOr(progress, prev))

@@ -20,6 +20,8 @@ import {
   useMinorHandlers,
   useProcessingGuard
 } from './postGig/handlers'
+import type { HandlerDispatchers } from './postGig/handlers/types'
+import type { PostGigPhase } from './postGig/usePostGigState'
 
 /** The post-gig handler surface returned by {@link usePostGigHandlers}. */
 export interface UsePostGigHandlersReturn {
@@ -34,7 +36,7 @@ export interface UsePostGigHandlersReturn {
 }
 
 /** Props for {@link usePostGigHandlers}: post-gig state slices and the flat dispatcher/UI callbacks it threads into the sub-handlers. */
-export interface UsePostGigHandlersProps {
+export interface UsePostGigHandlersProps extends HandlerDispatchers {
   player: GameState['player']
   band: GameState['band']
   social: GameState['social']
@@ -48,26 +50,7 @@ export interface UsePostGigHandlersProps {
   /** True when the completed gig sits on the FINALE map node. */
   isFinaleGig?: boolean
   totalDailyObligations: number
-  updatePlayer: (updates: UpdatePlayerPayload) => void
-  updateBand: (
-    updates:
-      | Partial<GameState['band']>
-      | ((prev: GameState['band']) => GameState['band'])
-  ) => void
-  updateSocial: (
-    updates:
-      | Partial<GameState['social']>
-      | ((prev: GameState['social']) => Partial<GameState['social']>)
-  ) => void
-  unlockTrait: (memberId: string, traitId: string) => void
-  addToast: (message: string, type: 'success' | 'error' | 'info') => void
-  changeScene: (scene: GamePhase) => void
-  addQuest: (quest: Parameters<typeof createAddQuestAction>[0]) => void
-  applyQuestEvent: (event: QuestProgressEvent) => void
-  phase: 'REPORT' | 'SOCIAL' | 'DEALS' | 'COMPLETE'
-  setPhase: (phase: 'REPORT' | 'SOCIAL' | 'DEALS' | 'COMPLETE') => void
-  setBrandOffers: (offers: BrandDeal[]) => void
-  setPostResult: (result: PostResult) => void
+  phase: PostGigPhase
   t?: import('i18next').TFunction
 }
 

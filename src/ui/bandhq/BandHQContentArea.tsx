@@ -1,6 +1,7 @@
 import React, { Suspense, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getUnifiedUpgradeCatalog } from '../../data/upgradeCatalog'
+import type { CatalogItem } from '../../types/components'
 import { usePurchaseLogic } from './hooks/usePurchaseLogic'
 import { useBandHQLogic } from './hooks/useBandHQLogic'
 import { useGameActions, useGameSelector } from '../../context/GameState.tsx'
@@ -87,6 +88,23 @@ export const BandHQContentArea = ({
     addToast
   })
 
+  // Shared props for the SHOP and UPGRADES catalog tabs. The purchase-logic
+  // predicates are typed for concrete item shapes while both tabs consume the
+  // generic CatalogItem surface, so the cast is centralized here once instead
+  // of being repeated per tab.
+  const catalogTabProps = {
+    player,
+    handleBuy: (item: CatalogItem) => {
+      void handleBuyWithLock(item)
+    },
+    isItemOwned: isItemOwned as unknown as (item: CatalogItem) => boolean,
+    isItemDisabled: isItemDisabled as unknown as (item: CatalogItem) => boolean,
+    getAdjustedCost: getAdjustedCost as unknown as (
+      item: CatalogItem
+    ) => number | undefined,
+    processingItemId: processingItemId ?? undefined
+  }
+
   return (
     <div
       role='tabpanel'
@@ -120,55 +138,10 @@ export const BandHQContentArea = ({
           />
         )}
 
-        {currentTab === 'SHOP' && (
-          <ShopTab
-            player={player}
-            handleBuy={(item: import('../../types/components').CatalogItem) => {
-              void handleBuyWithLock(item)
-            }}
-            isItemOwned={
-              isItemOwned as unknown as (
-                item: import('../../types/components').CatalogItem
-              ) => boolean
-            }
-            isItemDisabled={
-              isItemDisabled as unknown as (
-                item: import('../../types/components').CatalogItem
-              ) => boolean
-            }
-            getAdjustedCost={
-              getAdjustedCost as unknown as (
-                item: import('../../types/components').CatalogItem
-              ) => number | undefined
-            }
-            processingItemId={processingItemId ?? undefined}
-          />
-        )}
+        {currentTab === 'SHOP' && <ShopTab {...catalogTabProps} />}
 
         {currentTab === 'UPGRADES' && (
-          <UpgradesTab
-            player={player}
-            upgrades={unifiedUpgradeCatalog}
-            handleBuy={(item: import('../../types/components').CatalogItem) => {
-              void handleBuyWithLock(item)
-            }}
-            isItemOwned={
-              isItemOwned as unknown as (
-                item: import('../../types/components').CatalogItem
-              ) => boolean
-            }
-            isItemDisabled={
-              isItemDisabled as unknown as (
-                item: import('../../types/components').CatalogItem
-              ) => boolean
-            }
-            getAdjustedCost={
-              getAdjustedCost as unknown as (
-                item: import('../../types/components').CatalogItem
-              ) => number | undefined
-            }
-            processingItemId={processingItemId ?? undefined}
-          />
+          <UpgradesTab {...catalogTabProps} upgrades={unifiedUpgradeCatalog} />
         )}
 
         {currentTab === 'SETLIST' && (
