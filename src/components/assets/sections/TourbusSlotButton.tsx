@@ -22,7 +22,6 @@ interface Props {
  * Displays either a vehicle or trailer styled slot button, visually indicating if a module is installed
  * and providing an interface for module management.
  *
- * @param props - The component configuration properties
  * @returns The rendered slot button element
  */
 export const TourbusSlotButton = ({
