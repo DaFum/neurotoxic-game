@@ -176,58 +176,54 @@ export interface QuestProgressRule {
 }
 
 /**
- * Reward effects applied when a quest completes.
+ * Effect variants shared by both quest rewards and penalties (the sign/meaning
+ * of `amount` is interpreted by the applying reducer). Extracted so the common
+ * variants are declared once instead of in each union.
  */
-export type QuestReward =
-  | { type: 'money'; amount: number }
-  | { type: 'fame'; amount: number }
-  | { type: 'social.followers'; platform?: string; amount: number }
+export type QuestEffectCommon =
   | { type: 'social.loyalty'; amount: number }
   | { type: 'social.controversy'; amount: number }
   | { type: 'band.harmony'; amount: number }
+  | { type: 'venue.reputation'; amount: number; scope?: 'current' | string }
+  | { type: 'region.reputation'; amount: number; scope?: 'current' | string }
+  | {
+      type: 'brand.trust'
+      brandId?: string
+      alignment?: string
+      amount: number
+    }
+  | { type: 'flag.add'; flag: string }
+  | { type: 'event.queue'; eventId: string }
+
+/**
+ * Reward effects applied when a quest completes.
+ */
+export type QuestReward =
+  | QuestEffectCommon
+  | { type: 'money'; amount: number }
+  | { type: 'fame'; amount: number }
+  | { type: 'social.followers'; platform?: string; amount: number }
   | {
       type: 'asset.repair'
       assetId?: string
       assetKind?: string
       amount: number
     }
-  | { type: 'venue.reputation'; amount: number; scope?: 'current' | string }
-  | { type: 'region.reputation'; amount: number; scope?: 'current' | string }
-  | {
-      type: 'brand.trust'
-      brandId?: string
-      alignment?: string
-      amount: number
-    }
   | { type: 'item.add'; itemId: string; amount?: number }
   | { type: 'trait.unlock'; memberId?: string; traitId: string }
   | { type: 'skill_point'; memberIndex?: number }
-  | { type: 'flag.add'; flag: string }
-  | { type: 'event.queue'; eventId: string }
 
 /**
  * Penalty effects applied when a quest fails.
  */
 export type QuestPenalty =
-  | { type: 'social.loyalty'; amount: number }
-  | { type: 'social.controversy'; amount: number }
-  | { type: 'band.harmony'; amount: number }
+  | QuestEffectCommon
   | {
       type: 'asset.damage'
       assetId?: string
       assetKind?: string
       amount: number
     }
-  | { type: 'venue.reputation'; amount: number; scope?: 'current' | string }
-  | { type: 'region.reputation'; amount: number; scope?: 'current' | string }
-  | {
-      type: 'brand.trust'
-      brandId?: string
-      alignment?: string
-      amount: number
-    }
-  | { type: 'flag.add'; flag: string }
-  | { type: 'event.queue'; eventId: string }
   | { type: 'quest.cooldown'; days: number }
 
 /**
@@ -260,10 +256,11 @@ export interface QuestOfferDefinition {
 }
 
 /**
- * Static quest definition merged into runtime quest state.
+ * Fields shared by the static {@link QuestDefinition} and the persisted
+ * {@link QuestState}. Declared once so a new quest field is added in a single
+ * place rather than being duplicated (and silently dropped from one side).
  */
-export interface QuestDefinition extends UnknownRecord {
-  id?: string
+export interface QuestCommon extends UnknownRecord {
   label?: string
   description?: string
   deadlineOffset?: number
@@ -289,6 +286,13 @@ export interface QuestDefinition extends UnknownRecord {
   clearFlagsOnFail?: string[]
   cooldownDays?: number
   followupQuestId?: string
+}
+
+/**
+ * Static quest definition merged into runtime quest state.
+ */
+export interface QuestDefinition extends QuestCommon {
+  id?: string
 }
 
 /**
@@ -307,47 +311,17 @@ export interface ActiveQuestState extends UnknownRecord {
 /**
  * Persisted quest instance with definition and runtime fields.
  */
-export interface QuestState extends UnknownRecord {
+export interface QuestState extends QuestCommon {
   id: string
-  label?: string
-  description?: string
   deadline?: number | null
-  deadlineOffset?: number
   progress?: number
-  required?: number
-  rewardType?: string
-  rewardData?: UnknownRecord
-  rewardFlag?: string
-  moneyReward?: number
-  failurePenalty?: UnknownRecord
-
-  kind?: QuestKind
   status?: QuestStatus
-  repeatPolicy?: QuestRepeatPolicy
-  progressSource?: QuestProgressSource
-  progressRule?: QuestProgressRule
-  progressRules?: QuestProgressRule[]
-  rewards?: QuestReward[]
-  failurePenalties?: QuestPenalty[]
-  offer?: QuestOfferDefinition
-  startFlags?: string[]
-  completionFlags?: string[]
-  failureFlags?: string[]
-  clearFlagsOnComplete?: string[]
-  clearFlagsOnFail?: string[]
-  cooldownDays?: number
 
   /**
    * For `perVenue`/`perRegion` quests, the scope key (venue id or region name)
    * the quest instance is bound to. Stamped by `addQuest` from current state.
    */
   scopeKey?: string
-
-  /**
-   * Quest id automatically added when this quest completes. Lets story arcs
-   * branch into follow-up quests without bespoke reducer hooks.
-   */
-  followupQuestId?: string
   startedOnDay?: number
 }
 
