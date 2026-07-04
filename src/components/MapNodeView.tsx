@@ -305,7 +305,7 @@ export const MapNodeView = memo(
     return (
       <div
         className={`map-node ${isReachable ? 'clickable' : ''} absolute flex flex-col items-center justify-center w-16 h-20 -ml-8 -mt-10 group
-          ${isCurrent ? 'z-(--z-stage-controls)' : 'z-(--z-stage-bg)'}
+          ${isCurrent || isHoveredLocal || isPendingConfirm ? 'z-(--z-stage-controls)' : 'z-(--z-stage-bg)'}
           ${!isReachable && !isCurrent ? 'opacity-30 grayscale pointer-events-none' : 'opacity-100'}
           ${isReachable ? 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black' : ''}
       `}
@@ -374,7 +374,7 @@ export const MapNodeView = memo(
           </div>
         </motion.div>
 
-        <div className='text-xxs font-bold uppercase tracking-wide text-ash-gray mt-1 pointer-events-none [text-shadow:0_1px_2px_var(--color-void-black),0_0_4px_var(--color-void-black)]'>
+        <div className='text-xxs font-bold uppercase tracking-wide text-ash-gray mt-1 px-1 bg-void-black/90 pointer-events-none'>
           {getNodeTypeLabel(t, node.type)}
         </div>
 
@@ -385,10 +385,13 @@ export const MapNodeView = memo(
           </div>
         )}
 
-        {/* Node Label (Always visible, matching BrutalistUI style) */}
+        {/* Node Label (Always visible, matching BrutalistUI style). Opaque chip
+            so overlapping labels in dense map clusters occlude cleanly instead
+            of blending; the hovered/current node raises its z-index (above) so
+            its label reads on top. */}
         <div className='mt-2 flex flex-col items-center z-(--z-stage-bg) pointer-events-none'>
           <span
-            className={`text-xs font-bold tracking-widest uppercase text-center transition-colors [text-shadow:0_1px_2px_var(--color-void-black),0_0_5px_var(--color-void-black)] ${isHoveredLocal || isPendingConfirm ? 'text-star-white' : 'text-toxic-green'}`}
+            className={`text-xs font-bold tracking-widest uppercase text-center transition-colors px-1.5 py-0.5 bg-void-black/90 border ${isHoveredLocal || isPendingConfirm ? 'text-star-white border-toxic-green' : 'text-toxic-green border-toxic-green/20'}`}
           >
             {nodeLocationName}
           </span>

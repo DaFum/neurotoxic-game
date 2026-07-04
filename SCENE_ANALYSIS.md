@@ -9,8 +9,12 @@
 
 ## Fixes applied
 
-**1. Overworld node labels — legibility text-shadow** (`src/components/MapNodeView.tsx`).
-Node type + location labels blended into the busy map and overran each other in dense clusters. Added a `void-black` `text-shadow` halo to both labels (matching the existing `drop-shadow-[…var(--color-void-black)]` convention already used on the node icon two lines above). Layout-neutral, uses brand tokens only, verified via re-capture: labels now stay readable over connection lines, icons, and neighbouring labels. (This does not reposition nodes — true collision-avoidance for extreme overlap remains a larger, separate feature; see follow-up.)
+**1. Overworld node-label de-collision** (`src/components/MapNodeView.tsx`).
+Node type + location labels blended into the busy map and overran each other in dense clusters. Two-part fix:
+- **Opaque chips** — each label now sits on a solid `bg-void-black/90` chip (the location name adds a `toxic-green` border that brightens on hover), so where labels overlap they occlude cleanly instead of blending into green-on-green mush. Matches the existing brutalist chip style (the pending-confirm label already used this pattern).
+- **Hover/active z-raise** — the current or hovered node's container is bumped to `--z-stage-controls`, so the label you're pointing at always renders on top of its neighbours.
+
+Uses brand tokens only, layout-neutral (no node repositioning), verified via re-capture: overlapping labels now read as distinct solid boxes and the active one comes forward.
 
 **2. Chatter box relocates off overlapping UI** (`src/components/ChatterOverlay.tsx`).
 The ambient chatter box sat at a fixed bottom-center / bottom-left anchor and could visually sit over interactive UI (credits RETURN, pregig START SHOW, band-hq tabs). It now measures its own rect and, when its default anchor would overlap any interactive element (`button`, `[role=button]`, links, tabs, dialogs), re-places itself to the first candidate anchor that's clear (fanning out to the opposite edge/corners); when the default is clear it stays put. Position is applied imperatively from a `useLayoutEffect` (no extra render, no first-paint flash) and re-evaluated when the message set changes or the window resizes. Verified: typecheck + lint clean, and the anchor-selection geometry provably relocates off an overlapping button and keeps the default otherwise.
@@ -43,10 +47,10 @@ These are **environment artifacts, not bugs** — the code requests the images c
 
 The `ChatterOverlay` ("TOUR FEED" / "MAIN FEED" / "PRE-GIG FEED" / "LIVE FEED") renders bottom-left (OVERWORLD) or bottom-center (all other scenes). It was already **click-safe** (`pointer-events-none`, z below modal chrome) but could still *visually* sit over a CTA (credits RETURN, pregig START SHOW, band-hq tabs). **Now fixed** — see Fix #2: the box relocates to the first anchor clear of interactive UI, so it no longer covers buttons/tabs/links/dialogs.
 
-## Optional follow-up (not addressed here — larger feature)
+## Residual note
 
-**True map-label collision-avoidance.** The text-shadow fix restores legibility, but with ~45 procedurally-placed nodes, labels in the tightest clusters can still physically overlap. Real de-collision (offset/stagger labels, or opaque chips) is a scoped feature, not a one-line patch — left for a dedicated pass.
+The opaque-chip + z-raise de-collision resolves label *readability* in dense clusters (overlapping labels occlude cleanly; the active one comes forward). It does not physically move labels apart — a full geometric solver (measure every label rect and nudge/stagger) would eliminate the remaining spatial overlap entirely, but that's a heavier, measurement-driven layout pass with its own regression surface (hover, map regen, mobile, per-render cost). The chip approach was chosen as the robust, deterministic solution; a measured solver can be a future enhancement if fully non-overlapping placement is required.
 
 ## Conclusion
 
-Two defects found and fixed — overworld label legibility and the chatter box overlapping interactive UI. The remaining scenes are visually sound and consistent with the brutalist design system; the other apparent problems are sandbox image-CDN artifacts (would render in a networked build), not code issues. Only the procedural map-label de-collision remains as a deliberate, larger follow-up.
+Three defects found and fixed — overworld label legibility, overworld label de-collision (opaque chips + z-raise), and the chatter box overlapping interactive UI (relocation). The remaining scenes are visually sound and consistent with the brutalist design system; the other apparent problems are sandbox image-CDN artifacts (would render in a networked build), not code issues.
