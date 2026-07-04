@@ -5,7 +5,7 @@
 
 ## Verdict
 
-**The scenes render correctly and on-brand. One real legibility defect was found and fixed** (overworld node-label collisions); everything else is either a sandbox image-CDN artifact or an intentional, verified click-safe ambient overlay. Details below.
+**The scenes render correctly and on-brand. Two real defects were found and fixed** — overworld node-label collisions and the chatter box visually overlapping interactive UI. Everything else is a sandbox image-CDN artifact. The per-scene table below records the *post-fix* state. Details follow.
 
 ## Fixes applied
 
@@ -33,8 +33,8 @@ These are **environment artifacts, not bugs** — the code requests the images c
 |-------|--------|-------|
 | **MENU** | ✅ Clean | Title, tagline, version chip, button stack (START TOUR / LOAD GAME[red=no-save] / BAND HQ / SOCIALS / CREDITS / FEATURES), footer — all aligned and on-brand. |
 | **MENU + Tutorial** | ✅ Clean | Tutorial step 1 modal ("WELCOME TO THE GRIND") renders over the menu. It does not dim the backdrop (deliberate — tutorials point at live UI); readable, no clipping. |
-| **CREDITS** | ✅ Clean | Title + credit rows render correctly. Ambient chatter overlaps the RETURN button *visually* (see overlay note) but does not block it. |
-| **OVERWORLD** | ✅ Fixed | HUD, tour-plan header, band-status, event log, map render. Node labels blended/collided in dense clusters → **fixed** with a legibility text-shadow (see Fix applied). |
+| **CREDITS** | ✅ Fixed | Title + credit rows render correctly. The ambient chatter overlay previously sat over the RETURN button (visual only — it was already click-safe); now relocates off it (Fix #2). |
+| **OVERWORLD** | ✅ Fixed | HUD, tour-plan header, band-status, event log, map render. Node labels blended/collided in dense clusters → **fixed** with opaque chips + hover/active z-raise (Fix #1). |
 | **PREGIG** | ✅ Clean | Full Preparation screen: budget allocation, setlist, Start Show, band status. |
 | **GIG** | ✅ Clean | Rhythm playfield: score/combo, TOXIC OVERLOAD & DECIBEL CORRUPTION meters, crowd-energy bars, lane inputs (GUITAR/DRUMS/BASS), band members. |
 | **POSTGIG** | ✅ (see note) | Under state-injection shows the report *shell* ("TALLYING RECEIPTS…"); the figures are computed by the live END_GIG flow, so this is an injection limitation, **not** a scene bug. |
@@ -53,4 +53,4 @@ The opaque-chip + z-raise de-collision resolves label *readability* in dense clu
 
 ## Conclusion
 
-Three defects found and fixed — overworld label legibility, overworld label de-collision (opaque chips + z-raise), and the chatter box overlapping interactive UI (relocation). The remaining scenes are visually sound and consistent with the brutalist design system; the other apparent problems are sandbox image-CDN artifacts (would render in a networked build), not code issues.
+Two defects found and fixed — overworld node-label de-collision (opaque chips + hover/active z-raise) and the chatter box overlapping interactive UI (relocation off buttons/tabs/links/dialogs). The remaining scenes are visually sound and consistent with the brutalist design system; the other apparent problems are sandbox image-CDN artifacts (would render in a networked build), not code issues.

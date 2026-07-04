@@ -360,15 +360,6 @@ const candidateAnchors = (
       ]
 }
 
-/**
- * Positions the chatter box at its scene-default anchor, but re-places it to the
- * first candidate anchor that clears all interactive UI whenever the default
- * would overlap something. Returns a ref for the container and the inline style
- * to apply (undefined = keep the CSS-class default position).
- *
- * @param isOverworld - Whether the current scene uses the overworld anchor set.
- * @param revision - Changes when the visible messages change, to re-evaluate.
- */
 const clearPositionOverride = (el: HTMLElement): void => {
   el.style.left = ''
   el.style.top = ''
@@ -377,6 +368,18 @@ const clearPositionOverride = (el: HTMLElement): void => {
   el.style.transform = ''
 }
 
+/**
+ * Positions the chatter box at its scene-default anchor, re-placing it to the
+ * first candidate anchor that clears all interactive UI whenever the default
+ * would overlap something. The position is applied imperatively to the returned
+ * ref's element (no React state → no extra render, no first-paint flash).
+ *
+ * @param isOverworld - Whether the current scene uses the overworld anchor set.
+ * @param sceneKey - Current scene key; re-measures on scene navigation (this
+ *   overlay is mounted globally, so it does not remount between scenes).
+ * @param revision - Changes when the visible messages change, to re-evaluate.
+ * @returns A ref to attach to the overlay container element.
+ */
 const useNonOverlappingPosition = (
   isOverworld: boolean,
   sceneKey: string,
