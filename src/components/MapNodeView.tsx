@@ -290,6 +290,14 @@ export const MapNodeView = memo(
       [node.x, node.y]
     )
 
+    // On the cramped mobile map, labels for distant/unreachable nodes pile up
+    // and collide. Show labels only for actionable nodes there; desktop keeps
+    // all labels. Applied via `max-sm:hidden` so only the small breakpoint hides.
+    const labelMobileHiddenClass =
+      isCurrent || isReachable || isHoveredLocal || isPendingConfirm
+        ? ''
+        : 'max-sm:hidden'
+
     // Determine visuals based on props
     if (visibility === 'hidden' && node.type !== 'START') {
       return (
@@ -374,7 +382,9 @@ export const MapNodeView = memo(
           </div>
         </motion.div>
 
-        <div className='text-xxs font-bold uppercase tracking-wide text-ash-gray mt-1 px-1 bg-void-black/90 pointer-events-none'>
+        <div
+          className={`text-xxs font-bold uppercase tracking-wide text-ash-gray mt-1 px-1 bg-void-black/90 pointer-events-none ${labelMobileHiddenClass}`}
+        >
           {getNodeTypeLabel(t, node.type)}
         </div>
 
@@ -389,7 +399,9 @@ export const MapNodeView = memo(
             so overlapping labels in dense map clusters occlude cleanly instead
             of blending; the hovered/current node raises its z-index (above) so
             its label reads on top. */}
-        <div className='mt-2 flex flex-col items-center z-(--z-stage-bg) pointer-events-none'>
+        <div
+          className={`mt-2 flex flex-col items-center z-(--z-stage-bg) pointer-events-none ${labelMobileHiddenClass}`}
+        >
           <span
             className={`text-xs font-bold tracking-widest uppercase text-center transition-colors px-1.5 py-0.5 bg-void-black/90 border ${isHoveredLocal || isPendingConfirm ? 'text-star-white border-toxic-green' : 'text-toxic-green border-toxic-green/20'}`}
           >
