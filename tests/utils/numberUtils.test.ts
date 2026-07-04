@@ -65,17 +65,17 @@ describe('numberUtils', () => {
 
   describe('formatSignedFinancialAmount', () => {
     it('formats income correctly', () => {
-      expect(formatSignedFinancialAmount(50, 'income')).toBe('+€50')
+      expect(formatSignedFinancialAmount(50, 'income', 'en')).toBe('+€50')
       // Even if raw value is negative, income forces a leading +
-      expect(formatSignedFinancialAmount(-50, 'income')).toBe('+€50')
-      expect(formatSignedFinancialAmount(0, 'income')).toBe('+€0')
+      expect(formatSignedFinancialAmount(-50, 'income', 'en')).toBe('+€50')
+      expect(formatSignedFinancialAmount(0, 'income', 'en')).toBe('+€0')
     })
 
     it('formats expenses correctly', () => {
-      expect(formatSignedFinancialAmount(50, 'expense')).toBe('-€50')
+      expect(formatSignedFinancialAmount(50, 'expense', 'en')).toBe('-€50')
       // Even if raw value is negative, expense forces a leading -
-      expect(formatSignedFinancialAmount(-50, 'expense')).toBe('-€50')
-      expect(formatSignedFinancialAmount(0, 'expense')).toBe('-€0')
+      expect(formatSignedFinancialAmount(-50, 'expense', 'en')).toBe('-€50')
+      expect(formatSignedFinancialAmount(0, 'expense', 'en')).toBe('-€0')
     })
 
     it('uses the specified locale', () => {
