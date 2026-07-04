@@ -277,7 +277,7 @@ export const resolvePost = (
       Number.isFinite(moneyChange) &&
       gameState.player?.money !== undefined
     ) {
-      const prevMoney = gameState.player.money ?? 0
+      const prevMoney = finiteNumberOr(gameState.player.money, 0)
       const nextMoney = clampPlayerMoney(prevMoney + moneyChange)
       moneyChange = nextMoney - prevMoney
     }

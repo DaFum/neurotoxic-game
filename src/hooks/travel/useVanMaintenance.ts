@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import i18n from '../../i18n'
 import { formatCurrency } from '../../utils/numberUtils'
-import { clampPlayerMoney } from '../../utils/gameState'
+import { clampPlayerMoney, finiteNumberOr } from '../../utils/gameState'
 import {
   calculateRefuelCost,
   calculateRepairCost,
@@ -59,7 +59,7 @@ export const useVanMaintenance = ({
     }
 
     updatePlayer({
-      money: clampPlayerMoney((player.money ?? 0) - cost),
+      money: clampPlayerMoney(finiteNumberOr(player.money, 0) - cost),
       van: { ...player.van, fuel: EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL }
     })
     addToast(
@@ -109,7 +109,7 @@ export const useVanMaintenance = ({
     )
 
     updatePlayer({
-      money: clampPlayerMoney((player.money ?? 0) - cost),
+      money: clampPlayerMoney(finiteNumberOr(player.money, 0) - cost),
       van: {
         ...player.van,
         condition: 100,
