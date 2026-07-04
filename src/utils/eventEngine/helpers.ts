@@ -1,4 +1,5 @@
 import { finiteNumberOr } from '../gameState'
+import { isFiniteNumber } from '../finiteNumber'
 import { logger } from '../logger'
 import type { EngineEvent, EngineGameState } from './types'
 
@@ -6,6 +7,38 @@ import type { EngineEvent, EngineGameState } from './types'
  * Normalizes unknown numeric input for event-engine arithmetic.
  */
 export const asNumber = (value: unknown): number => finiteNumberOr(value, 0)
+
+/**
+ * Computes a percentage-of-resource change, clamped by optional min/max bounds.
+ *
+ * For negative amounts, `min` acts as the maximum *loss* (a floor for the
+ * value, enforced via Math.max) and `max` acts as the minimum *loss* (a
+ * ceiling, enforced via Math.min); the pair is swapped if `min > max`. Only
+ * finite min/max bounds apply (`isFiniteNumber`) — NaN/Infinity bounds are
+ * ignored rather than corrupting the result.
+ *
+ * @param current - Current resource value the percentage is taken of.
+ * @param percentage - Raw percentage (coerced via `asNumber`).
+ * @param min - Optional lower bound on the computed amount.
+ * @param max - Optional upper bound on the computed amount.
+ * @returns The clamped, rounded amount to apply.
+ */
+export const clampPercentageAmount = (
+  current: number,
+  percentage: unknown,
+  min: unknown,
+  max: unknown
+): number => {
+  let amount = Math.round(current * (asNumber(percentage) / 100))
+  let lo = isFiniteNumber(min) ? min : undefined
+  let hi = isFiniteNumber(max) ? max : undefined
+  if (lo !== undefined && hi !== undefined && lo > hi) {
+    ;[lo, hi] = [hi, lo]
+  }
+  if (lo !== undefined) amount = Math.max(lo, amount)
+  if (hi !== undefined) amount = Math.min(hi, amount)
+  return amount
+}
 
 /**
  * Clamps a raw money change to prevent intermediate debt from swallowing subsequent gains.

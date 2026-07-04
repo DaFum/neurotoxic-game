@@ -1,5 +1,6 @@
 import { CHARACTERS } from '../data/characters'
 import { hasTrait } from './traitUtils'
+import { finiteNumberOr, isFiniteNumber } from './finiteNumber'
 import { NEUROTOXIC_PEDAL_CROWD_DECAY_MODIFIER } from '../context/gameConstants'
 import type { BandState, BandMember } from '../types'
 import type { Song } from '../types/audio'
@@ -185,11 +186,11 @@ export const calculateGigPhysics = (bandState: BandState, song: Song) => {
     const baseStatsValue = member.baseStats
     if (typeof baseStatsValue === 'object' && baseStatsValue !== null) {
       const skillValue = (baseStatsValue as Record<string, unknown>).skill
-      if (typeof skillValue === 'number') {
+      if (isFiniteNumber(skillValue)) {
         return skillValue
       }
     }
-    return typeof member.skill === 'number' ? member.skill : 0
+    return finiteNumberOr(member.skill, 0)
   }
   const hitWindows = {
     guitar: 120 + getMemberSkill(matze) * 4,

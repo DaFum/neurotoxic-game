@@ -1,7 +1,7 @@
 import type { EventDelta } from '../../types'
 import { finiteNumberOr } from '../gameState'
 import { resolveTemplateString } from './templateResolver'
-import { asNumber, clampMoneyChange } from './helpers'
+import { asNumber, clampMoneyChange, clampPercentageAmount } from './helpers'
 import type { EffectShape, EngineGameState, TemplateContext } from './types'
 
 /**
@@ -61,21 +61,12 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
 
     if (eff.resource === 'money') {
       const current = gameState.player.money ?? 0
-      const percentage = asNumber(eff.percentage)
-      let amount = Math.round(current * (percentage / 100))
-
-      // Defensive guard: swap if min > max
-      let min = typeof eff.min === 'number' ? eff.min : undefined
-      let max = typeof eff.max === 'number' ? eff.max : undefined
-      if (min !== undefined && max !== undefined && min > max) {
-        ;[min, max] = [max, min]
-      }
-
-      // Note: for negative amounts, 'min' acts as the maximum *loss* (a floor for the value)
-      // using Math.max, and 'max' acts as the minimum *loss* (ceiling) using Math.min.
-      if (min !== undefined) amount = Math.max(min, amount)
-      if (max !== undefined) amount = Math.min(max, amount)
-
+      const amount = clampPercentageAmount(
+        current,
+        eff.percentage,
+        eff.min,
+        eff.max
+      )
       delta.player.money = asNumber(delta.player.money) + amount
     }
   },

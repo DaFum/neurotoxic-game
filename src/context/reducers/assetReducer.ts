@@ -33,6 +33,51 @@ import {
   createAssetModuleInstalledQuestEvent,
   createAssetRepairedQuestEvent
 } from '../../quests/producers/assetQuestEvents'
+import { getAssetSaleQuote } from '../../utils/assetSelectors/assetSaleQuote'
+
+/**
+ * Finds an asset by id via a single procedural scan.
+ *
+ * @param assets - Asset array to search.
+ * @param id - Asset id to match.
+ * @returns The matching asset and its index, or `{ asset: null, index: -1 }`.
+ */
+const findAssetById = (
+  assets: readonly LongTermAsset[],
+  id: string
+): { asset: LongTermAsset | null; index: number } => {
+  for (let i = 0; i < assets.length; i++) {
+    const a = assets[i]
+    if (a && a.id === id) {
+      return { asset: a, index: i }
+    }
+  }
+  return { asset: null, index: -1 }
+}
+
+/**
+ * Rebuilds a liabilities map excluding those attached to a given asset.
+ *
+ * @param liabilities - Current liabilities map, or undefined.
+ * @param assetId - Asset whose liabilities should be omitted.
+ * @returns A new liabilities map without the asset's liabilities.
+ */
+const omitLiabilitiesForAsset = (
+  liabilities: Record<string, Liability> | undefined,
+  assetId: string
+): Record<string, Liability> => {
+  const next: Record<string, Liability> = {}
+  const current = liabilities || {}
+  for (const id in current) {
+    if (Object.hasOwn(current, id)) {
+      const l = current[id]
+      if (l && l.assetId !== assetId) {
+        next[id] = l
+      }
+    }
+  }
+  return next
+}
 
 /**
  * Adds a long-term chassis asset purchased with cash or a validated loan.

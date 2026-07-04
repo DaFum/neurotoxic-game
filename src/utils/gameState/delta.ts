@@ -858,7 +858,7 @@ export const applyEventDelta = (
       const value = delta.social[key]
 
       if (key === 'controversyLevel') {
-        if (typeof value === 'number') {
+        if (isFiniteNumber(value)) {
           const newValue = clampControversyLevel(
             finiteNumberOr(nextSocial[key], 0) + value
           )

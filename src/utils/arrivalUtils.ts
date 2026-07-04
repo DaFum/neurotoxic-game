@@ -251,7 +251,7 @@ export const handleNodeArrival = (
 
         // Apply fame penalty directly (double the standard bad gig loss)
         if (player && updatePlayer) {
-          const currentFame = player.fame ?? 0
+          const currentFame = finiteNumberOr(player.fame, 0)
           const loss = BALANCE_CONSTANTS.FAME_LOSS_BAD_GIG * 2
           const newFame = clampPlayerFame(currentFame - loss)
           updatePlayer({

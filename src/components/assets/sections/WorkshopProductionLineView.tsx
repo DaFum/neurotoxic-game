@@ -2,8 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { GeneratedImagePanel } from '../../../ui/shared/GeneratedImagePanel'
 import { getSectionBackgroundPrompt } from '../../../utils/imageGen'
 import { WORKSHOP_SLOT_ZONES } from '../../../utils/assetSections/workshopConfig'
-import { getSlotZonePositionStyle } from '../../../utils/assetSections/slotLayout'
-import { AssetSlotButton } from '../shared/AssetSlotButton'
+import { SlotZoneButtons } from './SlotZoneButtons'
 import type { LongTermAsset } from '../../../types/assets'
 
 interface Props {
@@ -42,26 +41,12 @@ export const WorkshopProductionLineView = ({ asset, onSlotClick }: Props) => {
           opacity: 0.4
         }}
       />
-      {asset.slots.map(slot => {
-        const zone = WORKSHOP_SLOT_ZONES[slot.slotType]
-        if (!zone) return null
-        const installed = slot.installedModuleId
-        return (
-          <AssetSlotButton
-            key={slot.id}
-            id={slot.id}
-            slotType={slot.slotType}
-            installedModuleId={installed}
-            onClick={onSlotClick}
-            style={{
-              ...getSlotZonePositionStyle(zone),
-              border:
-                '2px dashed var(--section-accent, var(--color-warning-yellow))',
-              background: installed ? 'transparent' : 'var(--color-hotspot-bg)'
-            }}
-          />
-        )
-      })}
+      <SlotZoneButtons
+        slots={asset.slots}
+        zones={WORKSHOP_SLOT_ZONES}
+        accent='var(--color-warning-yellow)'
+        onSlotClick={onSlotClick}
+      />
     </div>
   )
 }

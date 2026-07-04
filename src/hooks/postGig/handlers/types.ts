@@ -7,6 +7,7 @@ import type {
 import type { BrandDeal } from '../../../types/social'
 import type { QuestProgressEvent } from '../../../utils/questProgress'
 import type { createAddQuestAction } from '../../../context/actionCreators'
+import type { PostGigPhase } from '../usePostGigState'
 
 /**
  * State-mutation and UI callbacks injected into the post-gig handler hooks,

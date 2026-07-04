@@ -126,8 +126,7 @@ export function dispatchEconomyQuests(
     // canonical city key so it matches the stamped quest scopeKey.
     applyQuestEvent(
       createFameGainedQuestEvent({
-        region:
-          getRegionKeyForLocation(player?.location) ?? player?.location ?? '',
+        region: getRegionKeyForLocation(player?.location) ?? 'Unknown',
         amount: fameGain,
         reason: 'post_gig_fame'
       })

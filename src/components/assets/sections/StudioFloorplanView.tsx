@@ -2,8 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { GeneratedImagePanel } from '../../../ui/shared/GeneratedImagePanel'
 import { getSectionBackgroundPrompt } from '../../../utils/imageGen'
 import { STUDIO_SLOT_ZONES } from '../../../utils/assetSections/studioConfig'
-import { getSlotZonePositionStyle } from '../../../utils/assetSections/slotLayout'
-import { AssetSlotButton } from '../shared/AssetSlotButton'
+import { SlotZoneButtons } from './SlotZoneButtons'
 import type { LongTermAsset } from '../../../types/assets'
 
 interface Props {
@@ -28,26 +27,12 @@ export const StudioFloorplanView = ({ asset, onSlotClick }: Props) => {
         aspectRatio='4:3'
         sizeHint={{ width: 1024, height: 768 }}
       />
-      {asset.slots.map(slot => {
-        const zone = STUDIO_SLOT_ZONES[slot.slotType]
-        if (!zone) return null
-        const installed = slot.installedModuleId
-        return (
-          <AssetSlotButton
-            key={slot.id}
-            id={slot.id}
-            slotType={slot.slotType}
-            installedModuleId={installed}
-            onClick={onSlotClick}
-            style={{
-              ...getSlotZonePositionStyle(zone),
-              border:
-                '2px dashed var(--section-accent, var(--color-electric-blue))',
-              background: installed ? 'transparent' : 'var(--color-hotspot-bg)'
-            }}
-          />
-        )
-      })}
+      <SlotZoneButtons
+        slots={asset.slots}
+        zones={STUDIO_SLOT_ZONES}
+        accent='var(--color-electric-blue)'
+        onSlotClick={onSlotClick}
+      />
     </div>
   )
 }

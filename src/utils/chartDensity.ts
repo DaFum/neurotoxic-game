@@ -20,15 +20,8 @@ const toMidiTime = (tick: unknown, tpb: number, bpm: number): number | null => {
 }
 
 /**
- * Builds normalized note-density buckets for one song chart.
- *
- * @param song - Song timing and note data used to derive event density.
- * @param bucketCount - Number of timeline buckets to produce.
- * @returns Density bars with per-bucket counts and normalized intensity.
- */
-/**
  * Builds the MIDI events and effective duration for one song chart. Shared by
- * {@link buildSongChartDensity} and {@link buildSetlistChartDensity}.
+ * {@link buildSetlistChartDensity}.
  */
 const buildSongDensityEvents = (
   song: Pick<Song, 'notes' | 'tpb' | 'bpm' | 'duration'>
@@ -83,40 +76,6 @@ const accumulateDensityCounts = (
     )
     counts[index] = (counts[index] ?? 0) + 1
   }
-}
-
-export const buildSongChartDensity = (
-  song: Pick<Song, 'notes' | 'tpb' | 'bpm' | 'duration'>,
-  bucketCount = 16
-): ChartDensityBar[] => {
-  const safeBucketCount =
-    Number.isFinite(bucketCount) && bucketCount >= 1
-      ? Math.floor(bucketCount)
-      : 16
-
-  const { events, duration } = buildSongDensityEvents(song)
-
-  const counts = new Int32Array(safeBucketCount)
-  accumulateDensityCounts(events, duration, counts, safeBucketCount)
-
-  let peak = 1
-  for (let i = 0; i < safeBucketCount; i++) {
-    const current = counts[i] ?? 0
-    if (current > peak) {
-      peak = current
-    }
-  }
-
-  const result = new Array<ChartDensityBar>(safeBucketCount)
-  for (let index = 0; index < safeBucketCount; index++) {
-    const count = counts[index] ?? 0
-    result[index] = {
-      timestamp: (index / safeBucketCount) * duration,
-      count,
-      intensity: count / peak
-    }
-  }
-  return result
 }
 
 /**

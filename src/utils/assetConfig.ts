@@ -4,6 +4,7 @@ import type {
   ChassisTier,
   SlotType
 } from '../types/assets'
+import { clampNonNegative } from './gameState'
 import {
   TOURBUS_T1_SLOTS,
   TOURBUS_T2_SLOTS,
@@ -82,7 +83,7 @@ export const calculateChassisUpgradeCost = (
   targetConfig: Pick<ChassisTierConfig, 'price'>
 ): number => {
   const rawCost = targetConfig.price - currentConfig.price + UPGRADE_OVERHEAD
-  return Number.isFinite(rawCost) ? Math.max(0, rawCost) : 0
+  return clampNonNegative(rawCost)
 }
 
 /**
