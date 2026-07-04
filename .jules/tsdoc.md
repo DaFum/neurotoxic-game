@@ -29,3 +29,4 @@
 | 2026-06-29 | src/components/stage/ToxicFilterManager.ts | BrutalistFilter, constructor, update, destroy, ToxicFilterManager, constructor, update, isReady, dispose |
 | 2026-06-30 | src/components/hud/OverloadWarning.tsx | OverloadWarning |
 | 2026-07-01 | src/components/ChatterOverlay.tsx | SCENE_STYLES, resolveMessageTextColor, ChatterMessage, ChatterOverlay |
+| 2026-07-02 | src/components/assets/sections/TourbusSlotButton.tsx | Props, TourbusSlotButton |
