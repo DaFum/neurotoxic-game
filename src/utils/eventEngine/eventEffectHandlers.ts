@@ -141,13 +141,11 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
   },
   item: (eff: EffectShape, delta: EventDelta) => {
     if (typeof eff.item === 'string' && eff.item.length > 0) {
-      if (typeof eff.value === 'number') {
-        if (Number.isFinite(eff.value)) {
-          if (!delta.band.inventory) delta.band.inventory = {}
-          delta.band.inventory[eff.item] =
-            asNumber(delta.band.inventory[eff.item]) + asNumber(eff.value)
-        }
-      } else {
+      if (Number.isFinite(eff.value)) {
+        if (!delta.band.inventory) delta.band.inventory = {}
+        delta.band.inventory[eff.item] =
+          asNumber(delta.band.inventory[eff.item]) + asNumber(eff.value)
+      } else if (typeof eff.value !== 'number') {
         if (!delta.band.inventory) delta.band.inventory = {}
         const val = eff.value !== undefined ? eff.value : true
         delta.band.inventory[eff.item] = val
