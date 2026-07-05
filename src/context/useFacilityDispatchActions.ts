@@ -83,7 +83,7 @@ export function useFacilityDispatchActions(
   )
 
   const graftNeuroOverclock = useCallback(
-    (memberId: string) => dispatch(createGraftNeuroOverclockAction(memberId) as any),
+    (memberId: string) => dispatch(createGraftNeuroOverclockAction(memberId)),
     [dispatch]
   )
 
@@ -142,6 +142,7 @@ export function useFacilityDispatchActions(
       craftItem,
       useContraband,
       clinicHeal,
+      graftNeuroOverclock,
       clinicEnhance,
       pirateBroadcast,
       darkWebLeak,

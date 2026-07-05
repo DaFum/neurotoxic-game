@@ -145,7 +145,13 @@ export const useClinicLogic = (): {
   const { t } = useTranslation(['ui'])
   const player = useGameSelector(state => state.player)
   const band = useGameSelector(state => state.band)
-  const { changeScene, addToast, clinicHeal, clinicEnhance, graftNeuroOverclock } = useGameActions()
+  const {
+    changeScene,
+    addToast,
+    clinicHeal,
+    clinicEnhance,
+    graftNeuroOverclock
+  } = useGameActions()
 
   const currentVisits = player?.clinicVisits ?? 0
 

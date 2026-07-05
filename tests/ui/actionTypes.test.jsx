@@ -48,6 +48,7 @@ describe('ActionTypes', () => {
       'USE_CONTRABAND',
       'CLINIC_HEAL',
       'CLINIC_ENHANCE',
+      'GRAFT_NEURO_OVERCLOCK',
       'PIRATE_BROADCAST',
       'MERCH_PRESS',
       'TRADE_VOID_ITEM',

@@ -1189,7 +1189,9 @@ export const createApplyQuestEventAction = (
   payload: event
 })
 
-export const graftNeuroOverclock = (memberId: string) => ({
+export const graftNeuroOverclock = (
+  memberId: string
+): Extract<GameAction, { type: 'GRAFT_NEURO_OVERCLOCK' }> => ({
   type: ActionTypes.GRAFT_NEURO_OVERCLOCK,
   payload: { memberId }
 })

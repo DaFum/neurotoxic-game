@@ -370,7 +370,9 @@
     {
       "title": "ui:featureList.sec6.title",
       "type": "bullets",
-      "items": ["ui:featureList.sec6.items.0"],
+      "items": [
+        "ui:featureList.sec6.items.0"
+      ],
       "description": "ui:featureList.sec6.description"
     },
     {
@@ -1796,5 +1798,16 @@
   "quests.details.title": "Why does this count?",
   "quests.hint.nextLabel": "Next:",
   "shop.messages.voidAltar": "The abyss stares back. Luck +10.",
-  "shop.messages.shrineAltar": "The Rock Gods bless you. Luck +10."
+  "shop.messages.shrineAltar": "The Rock Gods bless you. Luck +10.",
+  "clinic": {
+    "graft_title": "EXPERIMENTAL GRAFT",
+    "graft_warning": "WARNING: IRREVERSIBLE MUTATION",
+    "graft_desc": "You are about to graft the Neuro-Overclock module into {{memberName}}'s neural pathways. Cost: ${{cost}}",
+    "graft_stat1": "Rhythm Precision: +50%",
+    "graft_stat2": "Stress Accumulation: Severe (+30 Base)",
+    "graft_stat3": "Health Decay: Invasive (-20 HP)",
+    "graft_prompt": "Do you wish to proceed with the operation?",
+    "abort": "ABORT",
+    "execute_mutation": "EXECUTE MUTATION"
+  }
 }

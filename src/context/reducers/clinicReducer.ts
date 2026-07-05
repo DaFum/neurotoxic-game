@@ -3,7 +3,11 @@ import { formatCurrency } from '../../utils/numberUtils'
 import type { GameState } from '../../types'
 import type { ClinicActionPayload, BloodBankDonatePayload } from '../../types'
 import type { BandMember } from '../../types'
-import { CLINIC_CONFIG, calculateClinicCost, CLINIC_GRAFT_COST } from '../gameConstants'
+import {
+  CLINIC_CONFIG,
+  calculateClinicCost,
+  CLINIC_GRAFT_COST
+} from '../gameConstants'
 import { logger } from '../../utils/logger'
 import {
   clampPlayerMoney,
@@ -357,18 +361,26 @@ export const handleBloodBankDonate = (
  * Costs money and permanently mutates the member's traits.
  * Enforces state safety boundaries.
  */
-export const handleGraftNeuroOverclock = (state: GameState, payload: any): GameState => {
+export const handleGraftNeuroOverclock = (
+  state: GameState,
+  payload: { memberId: string }
+): GameState => {
   if (!state.player || !state.band) {
     console.error('handleGraftNeuroOverclock: Missing player or band state')
     return state
   }
 
-  if (state.player.money < CLINIC_GRAFT_COST) {
+  if (
+    !Number.isFinite(state.player.money) ||
+    state.player.money < CLINIC_GRAFT_COST
+  ) {
     return state // Can't afford
   }
 
   const { memberId } = payload
-  const memberIndex = state.band.members.findIndex((m: any) => m.id === memberId)
+  const memberIndex = state.band.members.findIndex(
+    (m: import('../../types/band').BandMember) => m.id === memberId
+  )
 
   if (memberIndex === -1) {
     console.error(`handleGraftNeuroOverclock: Member ${memberId} not found`)
@@ -388,15 +400,30 @@ export const handleGraftNeuroOverclock = (state: GameState, payload: any): GameS
     },
     band: {
       ...state.band,
-      members: state.band.members.map((m: any, i: number) => {
-        if (i !== memberIndex) return m
-        return {
-          ...m,
-          health: Math.max(1, m.health - 20),
-          stress: Math.min(100, (m.stress || 0) + 30),
-          traits: [...(m.traits || []), 'neuro_overclock']
+      members: state.band.members.map(
+        (
+          m: import('../../types/band').BandMember & {
+            health?: number
+            stress?: number
+            traits?: string[]
+          },
+          i: number
+        ) => {
+          if (i !== memberIndex) return m
+          return {
+            ...m,
+            health: Math.max(
+              1,
+              (Number.isFinite(m.health) ? m.health! : 100) - 20
+            ),
+            stress: Math.min(
+              100,
+              (Number.isFinite(m.stress) ? m.stress! : 0) + 30
+            ),
+            traits: [...(m.traits || []), 'neuro_overclock']
+          }
         }
-      })
+      )
     }
   }
 }
