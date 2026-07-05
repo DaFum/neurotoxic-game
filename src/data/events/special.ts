@@ -19,6 +19,29 @@ export const SPECIAL_EVENTS = [
         label: 'events:deal_devil.opt2.label',
         effect: { type: 'stat', stat: 'luck', value: 1 },
         outcomeText: 'events:deal_devil.opt2.outcome'
+      },
+      {
+        // Opt-in Faustian gamble: the one place a single event can end the run.
+        // Gated behind an explicit "all or nothing" choice and a luck check, so
+        // the game-over outcome is chosen, never random.
+        label: 'events:deal_devil.opt3.label',
+        skillCheck: {
+          stat: 'luck',
+          threshold: 8,
+          success: {
+            type: 'composite',
+            effects: [
+              { type: 'stat', stat: 'fame', value: 150 },
+              { type: 'resource', resource: 'money', value: 1000 }
+            ],
+            description: 'events:deal_devil.opt3.success'
+          },
+          failure: {
+            type: 'game_over',
+            description: 'events:deal_devil.opt3.failure'
+          }
+        },
+        outcomeText: 'events:deal_devil.opt3.outcome'
       }
     ]
   },
