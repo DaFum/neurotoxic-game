@@ -1,18 +1,17 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { MainMenu } from '../../src/scenes/MainMenu'
-import { useGameState } from '../../src/context/GameState'
+import { useGameActions } from '../../src/context/GameState'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 import { useBandHQModal } from '../../src/hooks/useBandHQModal'
 
 // Mock dependencies
 
 vi.mock('../../src/context/GameState', () => {
-  const useGameState = vi.fn()
+  const useGameActions = vi.fn()
   return {
-    useGameState,
-    useGameActions: useGameState,
-    useGameSelector: selector => selector(useGameState())
+    useGameActions,
+    useGameSelector: selector => selector(useGameActions())
   }
 })
 
@@ -80,7 +79,7 @@ describe('MainMenu Identity Flow', () => {
     localStorage.clear()
     vi.stubGlobal('crypto', { randomUUID: vi.fn(() => 'mock-uuid-1234') })
 
-    useGameState.mockReturnValue({
+    useGameActions.mockReturnValue({
       changeScene: mockChangeScene,
       updatePlayer: mockUpdatePlayer,
       resetState: mockResetState,

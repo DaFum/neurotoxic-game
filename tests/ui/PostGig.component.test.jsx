@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { PostGig } from '../../src/scenes/PostGig'
-import { useGameState } from '../../src/context/GameState'
+import { useGameActions } from '../../src/context/GameState'
 import {
   GAME_PHASES,
   NEUROTOXIC_PEDAL_HARMONY_PENALTY
@@ -13,11 +13,10 @@ import { BRAND_ALIGNMENTS } from '../../src/context/initialState'
 
 // Mock dependencies
 vi.mock('../../src/context/GameState', () => {
-  const useGameState = vi.fn()
+  const useGameActions = vi.fn()
   return {
-    useGameState,
-    useGameActions: useGameState,
-    useGameSelector: selector => selector(useGameState())
+    useGameActions,
+    useGameSelector: selector => selector(useGameActions())
   }
 })
 
@@ -245,7 +244,7 @@ const setupCommonMocks = () => {
   vi.spyOn(socialEngine, 'calculateSocialGrowth').mockReturnValue(25)
   vi.spyOn(brandDealLogic, 'generateBrandOffers').mockReturnValue([])
 
-  useGameState.mockReturnValue(createBaseState())
+  useGameActions.mockReturnValue(createBaseState())
 }
 
 describe('PostGig Component - Phase Management', () => {
@@ -259,7 +258,7 @@ describe('PostGig Component - Phase Management', () => {
   })
 
   it('initializes in REPORT phase and displays loading when no financials', () => {
-    useGameState.mockReturnValue(
+    useGameActions.mockReturnValue(
       createBaseState({ lastGigStats: null, currentGig: null })
     )
     render(<PostGig />)
@@ -293,7 +292,7 @@ describe('PostGig Component - Phase Management', () => {
   })
 
   it('does not trigger events when an active event exists', () => {
-    useGameState.mockReturnValue(
+    useGameActions.mockReturnValue(
       createBaseState({ activeEvent: { id: 'some_event', type: 'financial' } })
     )
     render(<PostGig />)
@@ -519,7 +518,7 @@ describe('PostGig Component - Brand Deals', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     setupCommonMocks()
-    useGameState.mockReturnValue(
+    useGameActions.mockReturnValue(
       createBaseState({
         social: {
           ...createBaseState().social,
@@ -625,7 +624,7 @@ describe('PostGig Component - Complete Phase', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     setupCommonMocks()
-    useGameState.mockReturnValue(
+    useGameActions.mockReturnValue(
       createBaseState({
         social: {
           ...createBaseState().social,
@@ -640,7 +639,7 @@ describe('PostGig Component - Complete Phase', () => {
   })
 
   it('spins story to reduce controversy when player has enough money', async () => {
-    useGameState.mockReturnValue(
+    useGameActions.mockReturnValue(
       createBaseState({
         player: {
           money: 500,
@@ -695,7 +694,7 @@ describe('PostGig Component - Complete Phase', () => {
   })
 
   it('rejects spin story when player does not have enough money', async () => {
-    useGameState.mockReturnValue(
+    useGameActions.mockReturnValue(
       createBaseState({
         player: {
           money: 100,
@@ -741,7 +740,7 @@ describe('PostGig Component - Complete Phase', () => {
 
   it('handles multiple continue effects correctly', async () => {
     vi.spyOn(economyEngine, 'shouldTriggerBankruptcy').mockReturnValue(false)
-    useGameState.mockReturnValue(
+    useGameActions.mockReturnValue(
       createBaseState({
         band: {
           ...createBaseState().band,
@@ -842,7 +841,7 @@ describe('PostGig Component - Edge Cases', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     setupCommonMocks()
-    useGameState.mockReturnValue(createBaseState())
+    useGameActions.mockReturnValue(createBaseState())
   })
 
   afterEach(() => {
@@ -872,7 +871,7 @@ describe('PostGig Component - Edge Cases', () => {
   })
 
   it('clamps member mood to valid range', async () => {
-    useGameState.mockReturnValue(
+    useGameActions.mockReturnValue(
       createBaseState({
         band: {
           inventory: {},
@@ -930,7 +929,7 @@ describe('PostGig Component - Edge Cases', () => {
   })
 
   it('calculates performance score with clamping', async () => {
-    useGameState.mockReturnValue(
+    useGameActions.mockReturnValue(
       createBaseState({
         lastGigStats: { score: 1000000, accuracy: 100, events: [] }
       })
@@ -950,7 +949,7 @@ describe('PostGig Component - Edge Cases', () => {
   })
 
   it('handles missing optional social properties', async () => {
-    useGameState.mockReturnValue(
+    useGameActions.mockReturnValue(
       createBaseState({
         social: {
           instagram: 100,

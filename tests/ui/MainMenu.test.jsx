@@ -2,7 +2,7 @@ import { render, screen, fireEvent, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { MainMenu } from '../../src/scenes/MainMenu'
-import { useGameState } from '../../src/context/GameState'
+import { useGameActions } from '../../src/context/GameState'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 import { useBandHQModal } from '../../src/hooks/useBandHQModal'
 import { BandHQ } from '../../src/ui/BandHQ'
@@ -10,11 +10,10 @@ import { BandHQ } from '../../src/ui/BandHQ'
 // Mock dependencies
 
 vi.mock('../../src/context/GameState', () => {
-  const useGameState = vi.fn()
+  const useGameActions = vi.fn()
   return {
-    useGameState,
-    useGameActions: useGameState,
-    useGameSelector: selector => selector(useGameState())
+    useGameActions,
+    useGameSelector: selector => selector(useGameActions())
   }
 })
 
@@ -87,7 +86,7 @@ describe('MainMenu Component', () => {
     localStorage.clear()
     vi.stubGlobal('crypto', { randomUUID: vi.fn(() => 'mock-uuid-1234') })
 
-    useGameState.mockReturnValue({
+    useGameActions.mockReturnValue({
       changeScene: mockChangeScene,
       updatePlayer: mockUpdatePlayer,
       resetState: mockResetState,
