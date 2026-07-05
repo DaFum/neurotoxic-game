@@ -192,7 +192,9 @@ const validateBand = (band: unknown): void => {
         'composition'
       ] as const) {
         const val = m[stat]
-        if (val !== undefined && !isFiniteNumber(val)) {
+        // Skip both null and undefined (an older save may persist null for an
+        // optional stat); only reject a present non-finite value.
+        if (val != null && !isFiniteNumber(val)) {
           throw new StateError(
             `band.members[${index}].${stat} must be a finite number`
           )
