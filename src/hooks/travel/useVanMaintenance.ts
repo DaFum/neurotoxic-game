@@ -47,7 +47,7 @@ export const useVanMaintenance = ({
       return
     }
 
-    if ((player.money ?? 0) < cost) {
+    if (finiteNumberOr(player.money, 0) < cost) {
       addToast(
         i18n.t('ui:travel.refuel.notEnoughMoney', {
           defaultValue: 'Not enough money! Need {{cost}} to fill up.',
@@ -93,7 +93,7 @@ export const useVanMaintenance = ({
       return
     }
 
-    if ((player.money ?? 0) < cost) {
+    if (finiteNumberOr(player.money, 0) < cost) {
       addToast(
         i18n.t('ui:travel.repair.notEnoughMoney', {
           defaultValue: 'Not enough money! Need {{cost}} to repair.',

@@ -46,6 +46,8 @@ export const getAssetSaleQuote = (
   const debt = Math.max(0, finiteNumberOr(rawDebt, 0))
   const gross = calculateChassisGrossSaleValue(asset, day)
   const net = (gross ?? 0) - debt
-  const blocked = net < 0
+  // A null gross means the sale is uncomputable — the reducer rejects it, so
+  // the modal must treat it as blocked too (net could otherwise read as 0).
+  const blocked = gross === null || net < 0
   return { gross, debt, net, blocked }
 }

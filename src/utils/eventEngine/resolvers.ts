@@ -93,7 +93,7 @@ export const getOptionPreviewMoney = (
       total += change
       found = true
     } else if (e.type === 'percentage_resource' && e.resource === 'money') {
-      const current = gameState?.player?.money ?? 0
+      const current = finiteNumberOr(gameState?.player?.money, 0)
       total += clampPercentageAmount(current, e.percentage, e.min, e.max)
       found = true
     }

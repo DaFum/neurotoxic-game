@@ -4,7 +4,6 @@
  */
 
 import { memo, type HTMLAttributes, type ReactNode } from 'react'
-import { clampNonNegative } from '../../utils/gameState'
 
 // Export components
 export { SettingsPanel } from '../settings/SettingsPanel'
@@ -118,7 +117,7 @@ export const ProgressBar = memo(function ProgressBar({
   ...props
 }: ProgressBarProps) {
   const safeMax = max > 0 ? max : 1
-  const safeValue = clampNonNegative(value)
+  const safeValue = Number.isFinite(value) ? Math.max(0, value) : 0
   const pct = Math.min(100, (safeValue / safeMax) * 100)
   const isMini = size === 'mini'
 

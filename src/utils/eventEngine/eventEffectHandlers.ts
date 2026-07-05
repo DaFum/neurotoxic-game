@@ -60,7 +60,7 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
     if (!gameState || !gameState.player) return
 
     if (eff.resource === 'money') {
-      const current = gameState.player.money ?? 0
+      const current = finiteNumberOr(gameState.player.money, 0)
       const amount = clampPercentageAmount(
         current,
         eff.percentage,

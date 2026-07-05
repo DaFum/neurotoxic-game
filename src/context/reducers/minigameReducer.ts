@@ -331,7 +331,7 @@ export const handleCompleteTravelMinigame = (
   newState = QuestEvents.emit(
     newState,
     createTravelCompletedQuestEvent({
-      region: getRegionKeyForLocation(nextLocation) || 'Unknown'
+      region: getRegionKeyForLocation(nextLocation) ?? 'Unknown'
     })
   )
 

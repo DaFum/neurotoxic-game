@@ -23,9 +23,12 @@ const findActiveQuestIndex = (
 
 /**
  * Locates an active quest and resolves the pieces both progress mutators share:
- * a shallow-cloned next state, the quest entry, its index, and the raw
- * `required` threshold (instance value falling back to the definition).
- * Returns null when the quest is absent, so callers bail with unchanged state.
+ * a next state with a freshly-cloned `activeQuests` array holding a cloned copy
+ * of the target quest, the quest index, and the raw `required` threshold
+ * (instance value falling back to the definition). Cloning the array and the
+ * quest here means callers can update the returned `q`/array without mutating
+ * the original state. Returns null when the quest is absent, so callers bail
+ * with unchanged state.
  */
 const resolveActiveQuest = (
   state: GameState,
@@ -40,9 +43,12 @@ const resolveActiveQuest = (
   const questIndex = findActiveQuestIndex(state.activeQuests, questId)
   if (questIndex === -1) return null
 
-  const nextState = { ...state }
-  const q = nextState.activeQuests[questIndex]
-  if (!q) return null
+  const nextActiveQuests = [...state.activeQuests]
+  const original = nextActiveQuests[questIndex]
+  if (!original) return null
+  const q = { ...original }
+  nextActiveQuests[questIndex] = q
+  const nextState = { ...state, activeQuests: nextActiveQuests }
 
   const questConfig = getQuestWithDefinition(q)
   const rawRequired = q.required ?? questConfig.required
@@ -79,8 +85,8 @@ export const advanceQuest = (
 
   const newProgress = Math.min(safeRequired, safeProgress + safeAmount)
 
-  // ⚡ BOLT OPTIMIZATION: Replaced activeQuests.map() with targeted array indexing to avoid array allocations in hot path
-  nextState.activeQuests = [...state.activeQuests]
+  // nextState.activeQuests is already a fresh clone from resolveActiveQuest;
+  // replace the target entry with the updated quest.
   nextState.activeQuests[questIndex] = {
     ...q,
     required: safeRequired,
@@ -112,8 +118,8 @@ export const setQuestProgress = (
   const hasRequired = Number.isFinite(required) && required > 0
   const capped = hasRequired ? Math.min(required, next) : next
 
-  // ⚡ BOLT OPTIMIZATION: Replaced activeQuests.map() with targeted array indexing to avoid array allocations in hot path
-  nextState.activeQuests = [...state.activeQuests]
+  // nextState.activeQuests is already a fresh clone from resolveActiveQuest;
+  // replace the target entry with the updated quest.
   nextState.activeQuests[questIndex] = {
     ...q,
     required: hasRequired ? required : rawRequired,
