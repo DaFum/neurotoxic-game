@@ -366,7 +366,10 @@ export const handleGraftNeuroOverclock = (
   payload: { memberId: string }
 ): GameState => {
   if (!state.player || !state.band) {
-    console.error('handleGraftNeuroOverclock: Missing player or band state')
+    logger.warn(
+      'ClinicReducer',
+      'handleGraftNeuroOverclock: Missing player or band state'
+    )
     return state
   }
 
@@ -383,7 +386,10 @@ export const handleGraftNeuroOverclock = (
   )
 
   if (memberIndex === -1) {
-    console.error(`handleGraftNeuroOverclock: Member ${memberId} not found`)
+    logger.warn(
+      'ClinicReducer',
+      `handleGraftNeuroOverclock: Member ${memberId} not found`
+    )
     return state
   }
 

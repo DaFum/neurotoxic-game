@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { formatCurrency } from '../../utils/numberUtils'
 import { Modal } from '../../ui/shared/Modal'
 import { GlitchButton } from '../../ui/GlitchButton'
 
@@ -17,7 +18,7 @@ export const GraftModal = ({
   memberName,
   cost
 }: GraftModalProps) => {
-  const { t } = useTranslation(['ui'])
+  const { t, i18n } = useTranslation(['ui'])
 
   return (
     <Modal
@@ -34,9 +35,9 @@ export const GraftModal = ({
         <p>
           {t('ui:clinic.graft_desc', {
             defaultValue:
-              'You are about to graft the Neuro-Overclock module into {{memberName}}s neural pathways. Cost: ${{cost}}',
+              'You are about to graft the Neuro-Overclock module into {{memberName}}s neural pathways. Cost: {{cost}}',
             memberName,
-            cost
+            cost: formatCurrency(cost, i18n.language)
           })}
         </p>
         <ul className='list-disc pl-5 text-ash-gray'>

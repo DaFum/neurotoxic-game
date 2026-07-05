@@ -140,16 +140,33 @@ export const ClinicMemberCard = ({
         </ActionButtonWrapper>
 
         <div className='mt-3 border-t border-toxic-green/30 pt-3'>
-          <GlitchButton
-            onClick={() => setIsGraftModalOpen(true)}
-            disabled={!canAffordGraft || hasGraft}
-            variant='danger'
-            className='w-full text-xs py-2'
+          <ActionButtonWrapper
+            disabledReason={
+              missingMemberReason ??
+              (!canAffordGraft
+                ? t('ui:clinic.notEnoughMoney', {
+                    defaultValue: 'Not enough money'
+                  })
+                : hasGraft
+                  ? t('ui:clinic.alreadyEnhanced', {
+                      defaultValue: 'Member already has this enhancement'
+                    })
+                  : null)
+            }
           >
-            {hasGraft
-              ? '[ GRAFTED ]'
-              : `[ GRAFT: NEURO-OVERCLOCK ${formatCurrency(CLINIC_GRAFT_COST, i18n.language)} ]`}
-          </GlitchButton>
+            {disabled => (
+              <GlitchButton
+                onClick={() => setIsGraftModalOpen(true)}
+                disabled={disabled}
+                variant='danger'
+                className='w-full text-xs py-2'
+              >
+                {hasGraft
+                  ? '[ GRAFTED ]'
+                  : `[ GRAFT: NEURO-OVERCLOCK ${formatCurrency(CLINIC_GRAFT_COST, i18n.language)} ]`}
+              </GlitchButton>
+            )}
+          </ActionButtonWrapper>
         </div>
       </div>
 
@@ -162,7 +179,10 @@ export const ClinicMemberCard = ({
           }
           setIsGraftModalOpen(false)
         }}
-        memberName={member.name || 'Unknown'}
+        memberName={
+          member.name ||
+          t('ui:clinic.unknown_member', { defaultValue: 'Unknown' })
+        }
         cost={CLINIC_GRAFT_COST}
       />
     </motion.div>

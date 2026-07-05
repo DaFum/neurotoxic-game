@@ -1799,15 +1799,14 @@
   "quests.hint.nextLabel": "Next:",
   "shop.messages.voidAltar": "The abyss stares back. Luck +10.",
   "shop.messages.shrineAltar": "The Rock Gods bless you. Luck +10.",
-  "clinic": {
-    "graft_title": "EXPERIMENTAL GRAFT",
-    "graft_warning": "WARNING: IRREVERSIBLE MUTATION",
-    "graft_desc": "You are about to graft the Neuro-Overclock module into {{memberName}}'s neural pathways. Cost: ${{cost}}",
-    "graft_stat1": "Rhythm Precision: +50%",
-    "graft_stat2": "Stress Accumulation: Severe (+30 Base)",
-    "graft_stat3": "Health Decay: Invasive (-20 HP)",
-    "graft_prompt": "Do you wish to proceed with the operation?",
-    "abort": "ABORT",
-    "execute_mutation": "EXECUTE MUTATION"
-  }
+  "clinic.graft_title": "EXPERIMENTAL GRAFT",
+  "clinic.graft_warning": "WARNING: IRREVERSIBLE MUTATION",
+  "clinic.graft_desc": "You are about to graft the Neuro-Overclock module into {{memberName}}'s neural pathways. Cost: {{cost}}",
+  "clinic.graft_stat1": "Rhythm Precision: +50%",
+  "clinic.graft_stat2": "Stress Accumulation: Severe (+30 Base)",
+  "clinic.graft_stat3": "Health Decay: Invasive (-20 HP)",
+  "clinic.graft_prompt": "Do you wish to proceed with the operation?",
+  "clinic.abort": "ABORT",
+  "clinic.execute_mutation": "EXECUTE MUTATION",
+  "clinic.unknown_member": "Unknown"
 }

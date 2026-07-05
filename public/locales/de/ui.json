@@ -1799,15 +1799,14 @@
   "quests.hint.nextLabel": "Nächster Schritt:",
   "shop.messages.voidAltar": "Der Abgrund starrt zurück. Glück +10.",
   "shop.messages.shrineAltar": "Die Rockgötter segnen dich. Glück +10.",
-  "clinic": {
-    "graft_title": "EXPERIMENTELLES IMPLANTAT",
-    "graft_warning": "WARNUNG: IRREVERSIBLE MUTATION",
-    "graft_desc": "Du bist dabei, das Neuro-Overclock Modul in die neuronalen Bahnen von {{memberName}} zu implantieren. Kosten: ${{cost}}",
-    "graft_stat1": "Rhythmus-Präzision: +50%",
-    "graft_stat2": "Stressaufbau: Schwer (+30 Basis)",
-    "graft_stat3": "Gesundheitsverlust: Invasiv (-20 HP)",
-    "graft_prompt": "Möchtest du mit der Operation fortfahren?",
-    "abort": "ABBRECHEN",
-    "execute_mutation": "MUTATION AUSFÜHREN"
-  }
+  "clinic.graft_title": "EXPERIMENTELLES IMPLANTAT",
+  "clinic.graft_warning": "WARNUNG: IRREVERSIBLE MUTATION",
+  "clinic.graft_desc": "Du bist dabei, das Neuro-Overclock Modul in die neuronalen Bahnen von {{memberName}} zu implantieren. Kosten: {{cost}}",
+  "clinic.graft_stat1": "Rhythmus-Präzision: +50%",
+  "clinic.graft_stat2": "Stressaufbau: Schwer (+30 Basis)",
+  "clinic.graft_stat3": "Gesundheitsverlust: Invasiv (-20 HP)",
+  "clinic.graft_prompt": "Möchtest du mit der Operation fortfahren?",
+  "clinic.abort": "ABBRECHEN",
+  "clinic.execute_mutation": "MUTATION AUSFÜHREN",
+  "clinic.unknown_member": "Unbekannt"
 }
