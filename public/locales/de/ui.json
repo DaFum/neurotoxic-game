@@ -1808,5 +1808,8 @@
   "clinic.graft_prompt": "Möchtest du mit der Operation fortfahren?",
   "clinic.abort": "ABBRECHEN",
   "clinic.execute_mutation": "MUTATION AUSFÜHREN",
-  "clinic.unknown_member": "Unbekannt"
+  "clinic.unknown_member": "Unbekannt",
+  "clinic": {},
+  "clinic.graft_button": "[ IMPLANTAT: NEURO-OVERCLOCK {{cost}} ]",
+  "clinic.graft_button_applied": "[ IMPLANTIERT ]"
 }

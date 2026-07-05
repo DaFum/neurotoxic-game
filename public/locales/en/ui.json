@@ -1808,5 +1808,8 @@
   "clinic.graft_prompt": "Do you wish to proceed with the operation?",
   "clinic.abort": "ABORT",
   "clinic.execute_mutation": "EXECUTE MUTATION",
-  "clinic.unknown_member": "Unknown"
+  "clinic.unknown_member": "Unknown",
+  "clinic": {},
+  "clinic.graft_button": "[ GRAFT: NEURO-OVERCLOCK {{cost}} ]",
+  "clinic.graft_button_applied": "[ GRAFTED ]"
 }

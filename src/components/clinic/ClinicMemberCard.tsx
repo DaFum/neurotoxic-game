@@ -162,8 +162,13 @@ export const ClinicMemberCard = ({
                 className='w-full text-xs py-2'
               >
                 {hasGraft
-                  ? '[ GRAFTED ]'
-                  : `[ GRAFT: NEURO-OVERCLOCK ${formatCurrency(CLINIC_GRAFT_COST, i18n.language)} ]`}
+                  ? t('ui:clinic.graft_button_applied', {
+                      defaultValue: '[ GRAFTED ]'
+                    })
+                  : t('ui:clinic.graft_button', {
+                      defaultValue: '[ GRAFT: NEURO-OVERCLOCK {{cost}} ]',
+                      cost: formatCurrency(CLINIC_GRAFT_COST, i18n.language)
+                    })}
               </GlitchButton>
             )}
           </ActionButtonWrapper>

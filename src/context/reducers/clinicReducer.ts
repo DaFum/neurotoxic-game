@@ -394,7 +394,7 @@ export const handleGraftNeuroOverclock = (
   }
 
   const member = state.band.members[memberIndex]
-  if (member.traits?.includes('neuro_overclock')) {
+  if (member.traits && member.traits['neuro_overclock']) {
     return state // Already grafted
   }
 
@@ -418,15 +418,12 @@ export const handleGraftNeuroOverclock = (
           if (i !== memberIndex) return m
           return {
             ...m,
-            health: Math.max(
-              1,
-              (Number.isFinite(m.health) ? m.health! : 100) - 20
-            ),
-            stress: Math.min(
-              100,
-              (Number.isFinite(m.stress) ? m.stress! : 0) + 30
-            ),
-            traits: [...(m.traits || []), 'neuro_overclock']
+            health: Math.max(1, finiteNumberOr(m.health, 100) - 20),
+            stress: Math.min(100, finiteNumberOr(m.stress, 0) + 30),
+            traits: {
+              ...(m.traits || {}),
+              neuro_overclock: true
+            }
           }
         }
       )
