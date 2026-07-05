@@ -1,6 +1,6 @@
 import type { ToastPayload } from '../../types'
 import { isEmptyObject } from '../../utils/gameState'
-import { copySafePrimitiveEntries } from '../../utils/objectUtils'
+import { copySafePrimitiveObject } from '../../utils/objectUtils'
 
 /**
  * Toast types accepted from runtime and persisted toast payloads.
@@ -51,10 +51,6 @@ export const buildDeterministicToastId = (
   return id
 }
 
-const sanitizePrimitiveOptions = (
-  options: Record<string, unknown>
-): Record<string, unknown> => copySafePrimitiveEntries(options)
-
 /**
  * Sanitizes an optional success-toast payload while applying safe fallbacks.
  *
@@ -96,8 +92,8 @@ export const sanitizeSuccessToast = (
       : {}
 
   // Whitelist primitive-only values to match sanitizeLoadedToast pattern
-  const safePrimitives = sanitizePrimitiveOptions(baseOptions)
-  const safeOptionsPatch = sanitizePrimitiveOptions(optionsPatch)
+  const safePrimitives = copySafePrimitiveObject(baseOptions) ?? {}
+  const safeOptionsPatch = copySafePrimitiveObject(optionsPatch) ?? {}
 
   const safeToast: ToastPayload = {
     id,
@@ -159,7 +155,7 @@ export const sanitizeLoadedToast = (
     !Array.isArray(toastObj.options)
   ) {
     const opts = toastObj.options as Record<string, unknown>
-    const safePrimitives = sanitizePrimitiveOptions(opts)
+    const safePrimitives = copySafePrimitiveObject(opts) ?? {}
     if (!isEmptyObject(safePrimitives)) {
       safeToast.options = safePrimitives
     }

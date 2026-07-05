@@ -32,7 +32,7 @@ const getFormatter = (
  * @param language - BCP 47 language tag used by `Intl.NumberFormat`.
  * @returns Locale-formatted decimal string without fractional digits.
  */
-export const formatNumber = (value: number, language = 'en'): string => {
+export const formatNumber = (value: number, language: string): string => {
   const formatter = getFormatter(language, 'decimal-0', {
     style: 'decimal',
     maximumFractionDigits: 0
@@ -49,7 +49,7 @@ export const formatNumber = (value: number, language = 'en'): string => {
 export const formatSignedFinancialAmount = (
   value: number,
   type: 'income' | 'expense',
-  language = 'en'
+  language: string
 ): string => {
   const magnitude = Math.abs(value)
   const signed = type === 'income' ? magnitude : -magnitude
@@ -66,7 +66,7 @@ export const formatSignedFinancialAmount = (
  */
 export const formatCurrency = (
   value: number,
-  language = 'en',
+  language: string,
   signDisplay: Intl.NumberFormatOptions['signDisplay'] = 'auto'
 ): string => {
   const formatter = getFormatter(language, `currency-EUR-0-${signDisplay}`, {

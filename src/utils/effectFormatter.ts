@@ -32,7 +32,7 @@ type EffectDelta = {
 export const generateEffectText = (
   rawDelta: object | null | undefined,
   t: TranslationCallback,
-  language = 'en'
+  language: string
 ) => {
   if (!rawDelta) return ''
   const delta = rawDelta as EffectDelta
