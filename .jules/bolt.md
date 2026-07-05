@@ -142,3 +142,6 @@
 
 **Learning:** Using `.sort()` to extract the top N elements (e.g., top 3) is O(N log N) and adds sorting overhead in hot paths like `generatePostOptions`.
 **Action:** Replace `.sort()` with an O(N) single-pass loop that tracks the top N directly when N is small.
+## 2026-07-02 - React runtime import omission for types
+**Learning:** Pulled in a runtime `React` import only to use `ReactNode` in a type context, causing CI pipeline failure due to the `isolatedModules` strict rule requiring type-only imports for types.
+**Action:** Always use type-only imports (`import type { Foo }` or `import { type Foo }`) when importing items solely used as types, specifically `ReactNode` from `react`, to comply with strict module parsing bounds in the project.
