@@ -34,7 +34,7 @@ export const useVanMaintenance = ({
   const handleRefuel = useCallback(() => {
     if (isTravelingRef.current) return
 
-    const currentFuel = player.van?.fuel ?? 0
+    const currentFuel = finiteNumberOr(player.van?.fuel, 0)
     const cost = calculateRefuelCost(currentFuel)
 
     if (cost <= 0) {
@@ -80,7 +80,7 @@ export const useVanMaintenance = ({
   const handleRepair = useCallback(() => {
     if (isTravelingRef.current) return
 
-    const currentCondition = player.van?.condition ?? 100
+    const currentCondition = finiteNumberOr(player.van?.condition, 100)
     const cost = calculateRepairCost(currentCondition)
 
     if (cost <= 0) {

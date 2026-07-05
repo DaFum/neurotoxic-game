@@ -175,7 +175,9 @@ const validateBand = (band: unknown): void => {
       }
       for (const stat of ['mood', 'stamina'] as const) {
         const val = m[stat]
-        if (val !== undefined) {
+        // Treat null the same as missing (legacy saves) — matching the
+        // skill/charisma loop below; only reject present non-finite values.
+        if (val != null) {
           if (!isFiniteNumber(val)) {
             throw new StateError(
               `band.members[${index}].${stat} must be a finite number`
