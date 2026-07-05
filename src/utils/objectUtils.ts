@@ -84,6 +84,19 @@ export const copySafePrimitiveEntries = (
   return copied
 }
 
+export const copySafePrimitiveObject = (
+  value: unknown
+): Record<string, string | number | boolean | null> | undefined => {
+  if (!isLooseRecord(value)) return undefined
+  const copied = copySafePrimitiveEntries(value)
+  for (const key in copied) {
+    if (Object.hasOwn(copied, key)) {
+      return copied
+    }
+  }
+  return undefined
+}
+
 type TraversalOptions = {
   isRecord?: RecordGuard
   createObject?: () => Record<string, unknown>

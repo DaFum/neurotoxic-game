@@ -1,6 +1,6 @@
 import type { ToastPayload } from '../../types'
 import { isEmptyObject } from '../../utils/gameState'
-import { copySafePrimitiveEntries } from '../../utils/objectUtils'
+import { copySafePrimitiveObject } from '../../utils/objectUtils'
 
 /**
  * Toast types accepted from runtime and persisted toast payloads.

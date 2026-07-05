@@ -23,7 +23,7 @@ import {
   isFiniteNumber,
   isForbiddenKey,
   isEmptyObject,
-  copySafePrimitiveEntries,
+  copySafePrimitiveObject,
   sanitizeStringArray,
   finiteNumberOr,
   clampNonNegative,

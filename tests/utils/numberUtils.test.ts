@@ -28,8 +28,8 @@ describe('numberUtils', () => {
 
   describe('formatNumber', () => {
     it('formats numbers using en locale by default', () => {
-      expect(formatNumber(1234)).toBe('1,234')
-      expect(formatNumber(1234567.89)).toBe('1,234,568') // Rounds and formats
+      expect(formatNumber(1234, 'en')).toBe('1,234')
+      expect(formatNumber(1234567.89, 'en')).toBe('1,234,568') // Rounds and formats
     })
 
     it('formats numbers using specified locale', () => {
@@ -42,8 +42,8 @@ describe('numberUtils', () => {
   describe('formatCurrency', () => {
     it('formats currency using en locale by default', () => {
       // 'en' locale currency formatting for EUR
-      expect(formatCurrency(50)).toBe('€50')
-      expect(formatCurrency(1234.56)).toBe('€1,235') // Rounds to 0 fraction digits
+      expect(formatCurrency(50, 'en')).toBe('€50')
+      expect(formatCurrency(1234.56, 'en')).toBe('€1,235') // Rounds to 0 fraction digits
     })
 
     it('formats currency using specified locale', () => {
@@ -65,17 +65,17 @@ describe('numberUtils', () => {
 
   describe('formatSignedFinancialAmount', () => {
     it('formats income correctly', () => {
-      expect(formatSignedFinancialAmount(50, 'income')).toBe('+€50')
+      expect(formatSignedFinancialAmount(50, 'income', 'en')).toBe('+€50')
       // Even if raw value is negative, income forces a leading +
-      expect(formatSignedFinancialAmount(-50, 'income')).toBe('+€50')
-      expect(formatSignedFinancialAmount(0, 'income')).toBe('+€0')
+      expect(formatSignedFinancialAmount(-50, 'income', 'en')).toBe('+€50')
+      expect(formatSignedFinancialAmount(0, 'income', 'en')).toBe('+€0')
     })
 
     it('formats expenses correctly', () => {
-      expect(formatSignedFinancialAmount(50, 'expense')).toBe('-€50')
+      expect(formatSignedFinancialAmount(50, 'expense', 'en')).toBe('-€50')
       // Even if raw value is negative, expense forces a leading -
-      expect(formatSignedFinancialAmount(-50, 'expense')).toBe('-€50')
-      expect(formatSignedFinancialAmount(0, 'expense')).toBe('-€0')
+      expect(formatSignedFinancialAmount(-50, 'expense', 'en')).toBe('-€50')
+      expect(formatSignedFinancialAmount(0, 'expense', 'en')).toBe('-€0')
     })
 
     it('uses the specified locale', () => {
