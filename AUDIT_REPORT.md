@@ -10,7 +10,9 @@
 
 > ## Resolution status (autonomous fix pass, branch `claude/neurotoxic-audit-1ky38w`)
 >
-> **Fixed & verified (7 commits, all typecheck + affected test suites green):**
+> **Fixed & verified (11 commits, all typecheck + affected test suites green):**
+> - **Missing integration (user chose "integrate and retune"):** **M1** — wired the in-gig event system: `gig_intro`/`gig_mid` fire from `useRhythmGameLogic` (at gig start / halfway) and are exempt from the GIG-scene block + daily-event cap; the pre-existing pause-on-`activeEvent` infrastructure handles the modal. This makes the 19 events reachable and cascades to **M2** (`showman` trait now obtainable via `stageDives`) and **M3** `stage_diver` milestone. **M4** — wired the built game-over path via an opt-in `deal_devil` "sign in blood" gamble (luck check; failure → `game_over`). **M6** — the roadside-shrine reward now grants the wired `golden_pick` instead of the no-op `mystery_pick`.
+> - **Retuned content:** **M3** `collector` → `>= 1` unlock (only one exists in data) with updated EN/DE copy; **M3** `full_band` milestone removed (roster hard-fixed at 3, unretunable) with its EN/DE keys.
 > - **Safety cluster** I1–I9 (`finiteNumberOr`/`isFiniteNumber` on persisted money/fame/skill/controversy/score addends) and D10/I12 (shared `REGION_BLACKLIST_THRESHOLD` + finite read); I11 (unify null-region-key fallback to the `'Unknown'` bucket).
 > - **Duplicates** D1 (shared `sanitizeStashItem` for both stash branches — HIGH), D2 (`buildSocialActionNextState`/`readPlayerFundsAndHarmony` reuse), D3/D4 (`findAssetById`/`omitLiabilitiesForAsset`), D6 (`buildBarsFromCounts`) + M5/O1 (delete test-only `buildSongChartDensity`), D7 (shared `catalogTabProps`), D8 (shared `SlotZoneButtons` across all three hero views), D9 (shared `clampPercentageAmount`, fixes the drifted `typeof` guard), D11 (`getAssetSaleQuote` selector across modal + reducer), D13 (`resolveActiveQuest`), D17/D18/D19 (canonical `clampNonNegative`/`isFiniteNumber`/`clampUnit`), D20 (`SAVE_KEY` import), D21/D24 (`QuestCommon`/`QuestEffectCommon` type bases), D22/D23 (`UsePostGigHandlersProps extends HandlerDispatchers` + `PostGigPhase`).
 > - **Dead code** X5 (delete unreferenced `schemas/crisis.json`), X6 (declare `VITE_ENABLE_VERCEL_TELEMETRY`).
@@ -22,12 +24,10 @@
 > - **X1** (dead `remapStoryFlag`) — a confirmed no-op, but deletion touches story-flag handling; low payoff, kept as-is.
 > - **I13** (decorative `€` glyph), **X4** (dead `category: 'travel'` on 55 chatter entries), **D15/D16/D25** (optional micro-dedups) — LOW / Simplicity-First: not worth the churn.
 >
-> **Awaiting a product decision (NOT actioned — both directions are significant and irreversible-ish; the clarifying question could not be delivered):**
-> - **M1** in-gig event system + its cascade **M2** (`showman` trait), **M3** (`stage_diver` milestone), **X2/X3** (dead stage-dive tracking, `pre_gig` fallback): *integrate* (wire `gig_intro`/`gig_mid`, risky gameplay change needing playtesting) **vs** *delete* (remove 19 authored events + trait + milestone + locale strings).
-> - **M3** (`collector`/`full_band` milestones), **M4** (event-driven game-over path), **M6** (`mystery_pick` reward): *delete/retune* **vs** *leave as future-content scaffolding*.
-> - **O2** (8 UI test files mock a stale `useGameState` API): a test-only migration, left pending.
->
-> _To proceed on the awaiting-decision items, tell me "integrate" or "delete" for the gig-event system and "delete/retune" or "leave" for the smaller unwired features._
+> **Recommended next (not a product decision, but out of scope for this pass):**
+> - **O2** (8 UI test files mock a stale `useGameState` API): a test-only migration to `useGameSelector`/`useGameActions`. The tests currently pass (the mock fabricates the old API), so this is hygiene, not a bug; left as a follow-up to avoid destabilizing the suite at the end of this pass.
+> - **X2/X3** are resolved by M1: the stage-dive tracking block is now live, and the `pre_gig` `'gig'` fallback is harmless alongside the in-gig triggers.
+> - A **manual playtest of the in-gig events** (drive a gig past 0% and 50%, resolve the modal, confirm audio resumes) is advisable — the wiring is covered by the existing rhythm-loop/gig-scene test suites, but nothing here exercised it on a live canvas.
 >
 > ---
 
