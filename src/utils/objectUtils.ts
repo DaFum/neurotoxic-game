@@ -89,8 +89,10 @@ export const copySafePrimitiveObject = (
 ): Record<string, string | number | boolean | null> | undefined => {
   if (!isLooseRecord(value)) return undefined
   const copied = copySafePrimitiveEntries(value)
-  for (const _ in copied) {
-    return copied
+  for (const key in copied) {
+    if (Object.hasOwn(copied, key)) {
+      return copied
+    }
   }
   return undefined
 }
