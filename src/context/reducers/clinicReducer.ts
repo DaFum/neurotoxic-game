@@ -1,4 +1,3 @@
-import { getSafeUUID } from '../../utils/crypto'
 import i18n from '../../i18n'
 import { formatCurrency } from '../../utils/numberUtils'
 import type { GameState } from '../../types'
@@ -441,8 +440,8 @@ export const handleGraftNeuroOverclock = (
     toasts: [
       ...(state.toasts || []),
       {
-        id: getSafeUUID(),
-        message: 'Grafted Neuro-Overclock module.',
+        id: buildDeterministicToastId('clinic-graft-toast', state.toasts),
+        messageKey: 'ui:clinic.graft_success',
         type: 'success'
       }
     ]
