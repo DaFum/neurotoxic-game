@@ -1,5 +1,6 @@
 import { HQ_ITEMS } from '../../data/hqItems'
 import { isCatalogEffect } from '../../utils/catalogEffectUtils'
+import { isFiniteNumber } from '../../utils/finiteNumber'
 import { CatalogTab } from './CatalogTab'
 import type {
   CatalogConsumerProps,
@@ -35,7 +36,7 @@ const ITEMS: CatalogItem[] = (() => {
     for (let i = 0; i < source.length; i++) {
       const item = source[i]
       if (item == null || item.id == null) continue
-      if (typeof item.cost !== 'number' || !Number.isFinite(item.cost)) continue
+      if (!isFiniteNumber(item.cost)) continue
 
       if (item.effect != null && !isCatalogEffect(item.effect)) {
         throw new Error(

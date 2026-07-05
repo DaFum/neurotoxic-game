@@ -1,4 +1,8 @@
-import { calculateGigFameReward, finiteNumberOr } from '../gameState'
+import {
+  calculateGigFameReward,
+  finiteNumberOr,
+  isFiniteNumber
+} from '../gameState'
 import type { GameState } from '../../types'
 import type { PostGigFinancials } from '../../types/economy'
 
@@ -9,7 +13,7 @@ const assertFiniteIntegerAtLeastZero = (value: unknown, label: string) => {
 }
 
 const assertFiniteNumberAtLeastZero = (value: unknown, label: string) => {
-  if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) {
+  if (!isFiniteNumber(value) || value < 0) {
     throw new Error(`${label} must be a finite number >= 0`)
   }
 }

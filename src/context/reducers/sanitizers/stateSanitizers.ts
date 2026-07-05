@@ -120,14 +120,6 @@ const inferLoadedMapNodeType = (
 const finiteOptionalNumber = (value: unknown): number | undefined =>
   isFiniteNumber(value) ? value : undefined
 
-export const copySafePrimitiveObject = (
-  value: unknown
-): Record<string, string | number | boolean | null> | undefined => {
-  if (!isLooseRecord(value)) return undefined
-  const copied = copySafePrimitiveEntries(value as Record<string, unknown>)
-  return !isEmptyObject(copied) ? copied : undefined
-}
-
 const MAX_SAFE_JSON_COPY_DEPTH = 12
 
 const copySafeJsonValue = (value: unknown, depth = 0): unknown => {
@@ -173,6 +165,59 @@ const copySafeEffectPayload = (
     return effects.length > 0 ? effects : undefined
   }
   return copySafePrimitiveObject(value)
+}
+
+/**
+ * Builds a sanitized stash entry from raw save data and its canonical
+ * contraband definition. Strips forbidden keys, spreads the canonical
+ * definition last so save data cannot override definition fields, clamps
+ * `stacks` (capping non-stackable items at 1), and derives `remainingDuration`.
+ * Shared by both the array and object stash-migration branches so a security
+ * fix cannot land in one branch and miss the other.
+ *
+ * @param itemObj - Raw per-instance stash entry from the save.
+ * @param baseItem - Canonical contraband definition for this id.
+ * @param id - Resolved item id to stamp onto the entry.
+ * @returns The sanitized stash entry.
+ */
+const sanitizeStashItem = (
+  itemObj: Record<string, unknown>,
+  baseItem: NonNullable<ReturnType<typeof CONTRABAND_BY_ID.get>>,
+  id: string
+): Record<string, unknown> => {
+  // Spread the canonical definition last so save data cannot override
+  // definition fields (value, effectType, duration, type, maxStacks);
+  // per-instance runtime fields (instanceId, applied, stacks) survive.
+  const safeItemObj: Record<string, unknown> = {}
+  for (const k in itemObj) {
+    if (Object.hasOwn(itemObj, k) && !isForbiddenKey(k)) {
+      safeItemObj[k] = itemObj[k]
+    }
+  }
+  const copy = { ...safeItemObj, ...baseItem } as Record<string, unknown>
+  copy.id = id
+  if (Object.hasOwn(itemObj, 'stacks')) {
+    copy.stacks =
+      Number.isInteger(itemObj.stacks) && (itemObj.stacks as number) > 0
+        ? itemObj.stacks
+        : 1
+  }
+  // Non-stackable definitions can hold at most one (legacy saves from before
+  // a stackable→false change). Cap so confiscation/revert and UI never act on
+  // a phantom stack count.
+  if (baseItem.stackable === false && (copy.stacks as number) > 1) {
+    copy.stacks = 1
+  }
+  if (
+    Object.hasOwn(itemObj, 'remainingDuration') &&
+    Number.isFinite(itemObj.remainingDuration as number)
+  ) {
+    copy.remainingDuration = itemObj.remainingDuration as number | null
+  } else {
+    copy.remainingDuration =
+      typeof copy.duration === 'number' ? copy.duration : null
+  }
+  return copy
 }
 
 export const sanitizeBandInventory = (
@@ -798,41 +843,11 @@ export const sanitizeBand = (loadedBand: unknown): BandState => {
           const baseItem = CONTRABAND_BY_ID.get(itemObj.id as string)
           if (!baseItem) continue
           if (Object.hasOwn(item, '__proto__')) continue
-          // Spread the canonical definition last so save data cannot override
-          // definition fields (value, effectType, duration, type, maxStacks);
-          // per-instance runtime fields (instanceId, applied, stacks) survive.
-          const safeItemObj: Record<string, unknown> = {}
-          for (const k in itemObj) {
-            if (Object.hasOwn(itemObj, k) && !isForbiddenKey(k)) {
-              safeItemObj[k] = itemObj[k]
-            }
-          }
-          const copy = { ...safeItemObj, ...baseItem } as Record<
-            string,
-            unknown
-          >
-          copy.id = (itemObj?.id ?? '') as string
-          if (Object.hasOwn(itemObj, 'stacks')) {
-            copy.stacks =
-              Number.isInteger(itemObj.stacks) && (itemObj.stacks as number) > 0
-                ? itemObj.stacks
-                : 1
-          }
-          // Non-stackable definitions can hold at most one (legacy saves from
-          // before a stackable→false change). Cap so confiscation/revert and
-          // UI never act on a phantom stack count.
-          if (baseItem.stackable === false && (copy.stacks as number) > 1) {
-            copy.stacks = 1
-          }
-          if (
-            Object.hasOwn(item, 'remainingDuration') &&
-            Number.isFinite(itemObj.remainingDuration as number)
-          ) {
-            copy.remainingDuration = itemObj.remainingDuration as number | null
-          } else {
-            copy.remainingDuration =
-              typeof copy.duration === 'number' ? copy.duration : null
-          }
+          const copy = sanitizeStashItem(
+            itemObj,
+            baseItem,
+            (itemObj?.id ?? '') as string
+          )
           defaultStash[itemObj.id as string] = copy
         }
         return defaultStash
@@ -850,39 +865,7 @@ export const sanitizeBand = (loadedBand: unknown): BandState => {
           if (!item || typeof item !== 'object' || Array.isArray(item)) continue
           const itemObj = item as Record<string, unknown>
           if (Object.hasOwn(item, '__proto__')) continue
-          // Canonical definition fields win over save data (see array branch).
-          const safeItemObj: Record<string, unknown> = {}
-          for (const k in itemObj) {
-            if (Object.hasOwn(itemObj, k) && !isForbiddenKey(k)) {
-              safeItemObj[k] = itemObj[k]
-            }
-          }
-          const copy = { ...safeItemObj, ...baseItem } as Record<
-            string,
-            unknown
-          >
-          copy.id = id
-          if (Object.hasOwn(itemObj, 'stacks')) {
-            copy.stacks =
-              Number.isInteger(itemObj.stacks) && (itemObj.stacks as number) > 0
-                ? itemObj.stacks
-                : 1
-          }
-          // Non-stackable definitions can hold at most one (legacy saves from
-          // before a stackable→false change). Cap so confiscation/revert and
-          // UI never act on a phantom stack count.
-          if (baseItem.stackable === false && (copy.stacks as number) > 1) {
-            copy.stacks = 1
-          }
-          if (
-            Object.hasOwn(item, 'remainingDuration') &&
-            Number.isFinite(itemObj.remainingDuration as number)
-          ) {
-            copy.remainingDuration = itemObj.remainingDuration as number | null
-          } else {
-            copy.remainingDuration =
-              typeof copy.duration === 'number' ? copy.duration : null
-          }
+          const copy = sanitizeStashItem(itemObj, baseItem, id)
           migrated[id] = copy
         }
         return migrated

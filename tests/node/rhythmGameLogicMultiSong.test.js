@@ -423,7 +423,8 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
       player: { currentNodeId: 'node1', money: 0 },
       changeScene: mockChangeScene,
       gigModifiers: {},
-      endGig: mockEndGig
+      endGig: mockEndGig,
+      triggerEvent: () => false
     }
     mockUseGameState.mock.mockImplementation(() => mockState)
 
@@ -492,7 +493,8 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
       player: { currentNodeId: 'node1', money: 0 },
       changeScene: mockChangeScene,
       gigModifiers: {},
-      endGig: mockEndGig
+      endGig: mockEndGig,
+      triggerEvent: () => false
     }
     mockUseGameState.mock.mockImplementation(() => mockState)
 
@@ -564,7 +566,8 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
       player: { currentNodeId: 'node1', money: 0 },
       changeScene: mockChangeScene,
       gigModifiers: {},
-      endGig: mockEndGig
+      endGig: mockEndGig,
+      triggerEvent: () => false
     }
     mockUseGameState.mock.mockImplementation(() => mockState)
     mockAudioEngine.hasAudioAsset.mock.mockImplementation(() => true)
@@ -637,7 +640,8 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
       hasUpgrade: () => false,
       setLastGigStats: mockSetLastGigStats,
       changeScene: mockChangeScene,
-      endGig: mockEndGig
+      endGig: mockEndGig,
+      triggerEvent: () => false
     }
     mockUseGameState.mock.mockImplementation(() => mockState)
     mockAudioEngine.hasAudioAsset.mock.mockImplementation(() => true)
@@ -692,7 +696,8 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
       hasUpgrade: () => false,
       setLastGigStats: mockSetLastGigStats,
       changeScene: mockChangeScene,
-      endGig: mockEndGig
+      endGig: mockEndGig,
+      triggerEvent: () => false
     }
     mockUseGameState.mock.mockImplementation(() => mockState)
     mockAudioEngine.hasAudioAsset.mock.mockImplementation(() => true)
@@ -730,7 +735,8 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
       hasUpgrade: () => false,
       setLastGigStats: mockSetLastGigStats,
       changeScene: mockChangeScene,
-      endGig: mockEndGig
+      endGig: mockEndGig,
+      triggerEvent: () => false
     }
     mockUseGameState.mock.mockImplementation(() => mockState)
     mockAudioEngine.hasAudioAsset.mock.mockImplementation(() => true)
@@ -797,7 +803,8 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
       hasUpgrade: () => false,
       setLastGigStats: mockSetLastGigStats,
       changeScene: mockChangeScene,
-      endGig: mockEndGig
+      endGig: mockEndGig,
+      triggerEvent: () => false
     }
     mockUseGameState.mock.mockImplementation(() => mockState)
     mockAudioEngine.hasAudioAsset.mock.mockImplementation(() => true)

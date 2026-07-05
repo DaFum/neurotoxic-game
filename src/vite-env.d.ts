@@ -3,6 +3,7 @@
 
 interface ImportMetaEnv {
   readonly VITE_ENABLE_LEADERBOARD_SYNC?: string
+  readonly VITE_ENABLE_VERCEL_TELEMETRY?: string
 }
 
 interface ImportMeta {

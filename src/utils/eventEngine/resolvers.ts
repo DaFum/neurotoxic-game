@@ -4,8 +4,7 @@ import { secureRandom } from '../crypto'
 import { calculateAppliedDelta } from '../gameState'
 import { buildTemplateContext } from './templateResolver'
 import { eventEngine } from './eventEngineCore'
-import { asNumber, clampMoneyChange } from './helpers'
-import { isFiniteNumber } from '../finiteNumber'
+import { asNumber, clampMoneyChange, clampPercentageAmount } from './helpers'
 import type { EffectShape, EngineGameState, EventChoice } from './types'
 
 /**
@@ -94,17 +93,8 @@ export const getOptionPreviewMoney = (
       total += change
       found = true
     } else if (e.type === 'percentage_resource' && e.resource === 'money') {
-      const current = gameState?.player?.money ?? 0
-      const percentage = asNumber(e.percentage)
-      let amount = Math.round(current * (percentage / 100))
-      let min = isFiniteNumber(e.min) ? e.min : undefined
-      let max = isFiniteNumber(e.max) ? e.max : undefined
-      if (min !== undefined && max !== undefined && min > max) {
-        ;[min, max] = [max, min]
-      }
-      if (min !== undefined) amount = Math.max(min, amount)
-      if (max !== undefined) amount = Math.min(max, amount)
-      total += amount
+      const current = finiteNumberOr(gameState?.player?.money, 0)
+      total += clampPercentageAmount(current, e.percentage, e.min, e.max)
       found = true
     }
   }

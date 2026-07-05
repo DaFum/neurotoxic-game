@@ -21,10 +21,7 @@ import {
   isLoanProfileEligible
 } from '../../utils/loanProfiles'
 import { MODULE_REGISTRY } from '../../utils/assetModuleRegistry'
-import {
-  calculateChassisGrossSaleValue,
-  hasActiveAssetAcquisition
-} from '../../utils/assetSelectors'
+import { hasActiveAssetAcquisition } from '../../utils/assetSelectors'
 import { clampPlayerMoney, finiteNumberOr } from '../../utils/gameState'
 import { QuestEvents } from '../../utils/questProgress'
 import {
@@ -33,6 +30,51 @@ import {
   createAssetModuleInstalledQuestEvent,
   createAssetRepairedQuestEvent
 } from '../../quests/producers/assetQuestEvents'
+import { getAssetSaleQuote } from '../../utils/assetSelectors/assetSaleQuote'
+
+/**
+ * Finds an asset by id via a single procedural scan.
+ *
+ * @param assets - Asset array to search.
+ * @param id - Asset id to match.
+ * @returns The matching asset and its index, or `{ asset: null, index: -1 }`.
+ */
+const findAssetById = (
+  assets: readonly LongTermAsset[],
+  id: string
+): { asset: LongTermAsset | null; index: number } => {
+  for (let i = 0; i < assets.length; i++) {
+    const a = assets[i]
+    if (a && a.id === id) {
+      return { asset: a, index: i }
+    }
+  }
+  return { asset: null, index: -1 }
+}
+
+/**
+ * Rebuilds a liabilities map excluding those attached to a given asset.
+ *
+ * @param liabilities - Current liabilities map, or undefined.
+ * @param assetId - Asset whose liabilities should be omitted.
+ * @returns A new liabilities map without the asset's liabilities.
+ */
+const omitLiabilitiesForAsset = (
+  liabilities: Record<string, Liability> | undefined,
+  assetId: string
+): Record<string, Liability> => {
+  const next: Record<string, Liability> = {}
+  const current = liabilities ?? {}
+  for (const id in current) {
+    if (Object.hasOwn(current, id)) {
+      const l = current[id]
+      if (l && l.assetId !== assetId) {
+        next[id] = l
+      }
+    }
+  }
+  return next
+}
 
 /**
  * Adds a long-term chassis asset purchased with cash or a validated loan.
@@ -182,17 +224,10 @@ export const handleInstallModule = (
   // ⚡ BOLT OPTIMIZATION: Replaced Array.map with targeted array indexing
   // Why: Avoids unnecessary iterations and object allocations for unmodified items.
   // Impact: Reduces GC pressure in high-frequency update paths.
-  let targetAssetIndex = -1
-  let targetAsset = null
-  for (let i = 0; i < state.assets.length; i++) {
-    const asset = state.assets[i]
-    if (asset && asset.id === assetId) {
-      targetAssetIndex = i
-      targetAsset = asset
-      break
-    }
-  }
-
+  const { asset: targetAsset, index: targetAssetIndex } = findAssetById(
+    state.assets,
+    assetId
+  )
   if (targetAssetIndex === -1 || !targetAsset) return state
 
   let installed = false
@@ -257,14 +292,7 @@ export const handleInstallModule = (
 
   // ⚡ BOLT OPTIMIZATION: Replaced O(N) Array.find with a procedural loop
   // to avoid closure overhead and reduce GC pressure on hot paths.
-  let assetForEvent: LongTermAsset | null = null
-  for (let i = 0; i < state.assets.length; i++) {
-    const asset = state.assets[i]
-    if (asset && asset.id === assetId) {
-      assetForEvent = asset
-      break
-    }
-  }
+  const { asset: assetForEvent } = findAssetById(state.assets, assetId)
 
   if (assetForEvent) {
     nextState = QuestEvents.emit(
@@ -297,16 +325,10 @@ export const handleRemoveModule = (
 
   // ⚡ BOLT OPTIMIZATION: Replaced O(N) array methods (.find, .some, .map, .filter)
   // with procedural loops to avoid intermediate array allocations and reduce GC pressure.
-  let targetAsset: LongTermAsset | null = null
-  let targetAssetIndex = -1
-  for (let i = 0; i < state.assets.length; i++) {
-    const asset = state.assets[i]
-    if (asset && asset.id === assetId) {
-      targetAsset = asset
-      targetAssetIndex = i
-      break
-    }
-  }
+  const { asset: targetAsset, index: targetAssetIndex } = findAssetById(
+    state.assets,
+    assetId
+  )
 
   // Reject the removal if any child slot the module added is still occupied.
   // Silently destroying the installed children (and their refund eligibility)
@@ -398,16 +420,10 @@ export const handleUpgradeChassisTier = (
   // reducer purity, we do not log errors here; validation belongs in the action creator.
   // ⚡ BOLT OPTIMIZATION: Replaced O(N) array methods (.find, .map)
   // with procedural loops to avoid intermediate array allocations and reduce GC pressure.
-  let targetAsset: LongTermAsset | null = null
-  let targetAssetIndex = -1
-  for (let i = 0; i < state.assets.length; i++) {
-    const asset = state.assets[i]
-    if (asset && asset.id === assetId) {
-      targetAsset = asset
-      targetAssetIndex = i
-      break
-    }
-  }
+  const { asset: targetAsset, index: targetAssetIndex } = findAssetById(
+    state.assets,
+    assetId
+  )
   if (!targetAsset) return state
 
   if (targetTier <= targetAsset.chassisTier) return state
@@ -474,59 +490,23 @@ export const handleSellChassis = (
   const { assetId } = payload
   if (!state.assets) return state
 
-  // ⚡ BOLT OPTIMIZATION: Replaced O(N) Array.find with a procedural loop
-  // to avoid closure overhead and reduce GC pressure on hot paths.
-  let asset: LongTermAsset | null = null
-  for (let i = 0; i < state.assets.length; i++) {
-    const a = state.assets[i]
-    if (a && a.id === assetId) {
-      asset = a
-      break
-    }
-  }
+  const { asset } = findAssetById(state.assets, assetId)
   if (!asset) return state
 
-  // ⚡ BOLT OPTIMIZATION: Replaced chained .filter().reduce() with a single-pass loop to eliminate intermediate array allocations on hot paths.
-  let rawTotalPrincipalRemaining = 0
-  if (state.liabilities) {
-    for (const l of Object.values(state.liabilities)) {
-      if (l && l.assetId === assetId) {
-        rawTotalPrincipalRemaining += Math.max(
-          0,
-          finiteNumberOr(l.principalRemaining, 0)
-        )
-      }
-    }
-  }
-  const totalPrincipalRemaining = Math.max(
-    0,
-    finiteNumberOr(rawTotalPrincipalRemaining, 0)
+  // The shared quote is the single source of truth for the sale arithmetic; the
+  // reducer stays the authority and rejects blocked (uncomputable/underwater)
+  // sales. `net` already nets debt out of gross.
+  const { net, blocked } = getAssetSaleQuote(
+    asset,
+    state.liabilities,
+    state.player.day
   )
-
-  const gross = calculateChassisGrossSaleValue(asset, state.player.day)
-  if (gross === null) return state
-
-  if (gross < totalPrincipalRemaining) {
-    return state
-  }
-
-  const net = gross - totalPrincipalRemaining
-
-  const nextLiabilities: Record<string, Liability> = {}
-  const currentLiabilities = state.liabilities || {}
-  for (const id in currentLiabilities) {
-    if (Object.hasOwn(currentLiabilities, id)) {
-      const l = currentLiabilities[id]
-      if (l && l.assetId !== assetId) {
-        nextLiabilities[id] = l
-      }
-    }
-  }
+  if (blocked) return state
 
   const nextState: GameState = {
     ...state,
     assets: state.assets.filter(a => a && a.id !== assetId),
-    liabilities: nextLiabilities,
+    liabilities: omitLiabilitiesForAsset(state.liabilities, assetId),
     player: {
       ...state.player,
       money: clampPlayerMoney(finiteNumberOr(state.player.money, 0) + net)
@@ -554,16 +534,10 @@ export const handleRepairChassis = (
   // state with a zero-cost repair.
   // ⚡ BOLT OPTIMIZATION: Replaced O(N) Array.find with a procedural loop
   // to avoid closure overhead and reduce GC pressure on hot paths.
-  let targetAsset: LongTermAsset | null = null
-  let targetAssetIndex = -1
-  for (let i = 0; i < state.assets.length; i++) {
-    const a = state.assets[i]
-    if (a && a.id === assetId) {
-      targetAsset = a
-      targetAssetIndex = i
-      break
-    }
-  }
+  const { asset: targetAsset, index: targetAssetIndex } = findAssetById(
+    state.assets,
+    assetId
+  )
   if (!targetAsset) return state
 
   const repairCost = calculateChassisRepairCost(targetAsset.condition)
@@ -698,21 +672,10 @@ export const handleAssetForeclosed = (
   state: GameState,
   payload: { assetId: string }
 ): GameState => {
-  const nextLiabilities: Record<string, Liability> = {}
-  const currentLiabilities = state.liabilities || {}
-  for (const id in currentLiabilities) {
-    if (Object.hasOwn(currentLiabilities, id)) {
-      const l = currentLiabilities[id]
-      if (l && l.assetId !== payload.assetId) {
-        nextLiabilities[id] = l
-      }
-    }
-  }
-
   return {
     ...state,
     assets: state.assets.filter(a => a.id !== payload.assetId),
-    liabilities: nextLiabilities
+    liabilities: omitLiabilitiesForAsset(state.liabilities, payload.assetId)
   }
 }
 

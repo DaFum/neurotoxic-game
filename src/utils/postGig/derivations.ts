@@ -80,7 +80,7 @@ export const deriveFinancials = ({
         controversyLevel: social.controversyLevel ?? 0,
         regionRep:
           reputationByRegion[
-            getRegionKeyForLocation(player.location) ?? player.location
+            getRegionKeyForLocation(player.location) ?? 'Unknown'
           ] ?? 0,
         loyalty: social.loyalty ?? 0,
         zealotry: social.zealotry ?? 0,

@@ -6,7 +6,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { PostGig } from '../../src/scenes/PostGig'
-import { useGameState } from '../../src/context/GameState'
+import { useGameActions } from '../../src/context/GameState'
 import * as economyEngine from '../../src/utils/economyEngine'
 import * as socialEngine from '../../src/utils/socialEngine'
 import * as brandDealLogic from '../../src/utils/brandDealLogic'
@@ -68,11 +68,10 @@ vi.mock('../../src/components/postGig/CompletePhase', () => ({
 // ----- Infrastructure mocks -----
 
 vi.mock('../../src/context/GameState', () => {
-  const useGameState = vi.fn()
+  const useGameActions = vi.fn()
   return {
-    useGameState,
-    useGameActions: useGameState,
-    useGameSelector: selector => selector(useGameState())
+    useGameActions,
+    useGameSelector: selector => selector(useGameActions())
   }
 })
 
@@ -205,7 +204,7 @@ const setupCommonMocks = () => {
   vi.spyOn(socialEngine, 'checkViralEvent').mockReturnValue(false)
   vi.spyOn(socialEngine, 'calculateSocialGrowth').mockReturnValue(25)
   vi.spyOn(brandDealLogic, 'generateBrandOffers').mockReturnValue([])
-  useGameState.mockReturnValue(createBaseState())
+  useGameActions.mockReturnValue(createBaseState())
 }
 
 /** Navigate from REPORT → SOCIAL → COMPLETE (skipping DEALS). */

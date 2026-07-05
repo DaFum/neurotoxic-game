@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { PostGig } from '../../src/scenes/PostGig'
-import { useGameState } from '../../src/context/GameState'
+import { useGameActions } from '../../src/context/GameState'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 import * as economyEngine from '../../src/utils/economyEngine'
 import * as socialEngine from '../../src/utils/socialEngine'
@@ -95,11 +95,10 @@ vi.mock('../../src/utils/logger', () => ({
 }))
 
 vi.mock('../../src/context/GameState', () => {
-  const useGameState = vi.fn()
+  const useGameActions = vi.fn()
   return {
-    useGameState,
-    useGameActions: useGameState,
-    useGameSelector: selector => selector(useGameState())
+    useGameActions,
+    useGameSelector: selector => selector(useGameActions())
   }
 })
 
@@ -235,7 +234,7 @@ describe('PostGig Leaderboard Submission', () => {
     vi.spyOn(socialEngine, 'calculateSocialGrowth').mockReturnValue(5)
     vi.spyOn(brandDealLogic, 'generateBrandOffers').mockReturnValue([]) // Skip deals phase
 
-    useGameState.mockReturnValue(getBaseState())
+    useGameActions.mockReturnValue(getBaseState())
   })
 
   afterEach(() => {
@@ -303,7 +302,7 @@ describe('PostGig Leaderboard Submission', () => {
 
   it('resolves song via setlist if currentGig.songId is missing and songStats is undefined', async () => {
     const base = getBaseState()
-    useGameState.mockReturnValue({
+    useGameActions.mockReturnValue({
       ...base,
       currentGig: { ...base.currentGig, songId: undefined },
       lastGigStats: { score: 12345, accuracy: 95, songStats: undefined },
@@ -352,7 +351,7 @@ describe('PostGig Leaderboard Submission', () => {
 
   it('skips leaderboard submission if playerName is missing', async () => {
     const base = getBaseState()
-    useGameState.mockReturnValue({
+    useGameActions.mockReturnValue({
       ...base,
       player: { ...base.player, playerName: null }, // No playerName
       setlist: []
@@ -391,7 +390,7 @@ describe('PostGig Leaderboard Submission', () => {
 
   it('skips unknown songs gracefully without making a fetch call', async () => {
     const base = getBaseState()
-    useGameState.mockReturnValue({
+    useGameActions.mockReturnValue({
       ...base,
       currentGig: { ...base.currentGig, songId: 'unknown_song_not_in_db' },
       lastGigStats: { score: 100, accuracy: 100, songStats: undefined }
@@ -431,7 +430,7 @@ describe('PostGig Leaderboard Submission', () => {
   it('submits mixed songStats list, processing knowns and skipping unknowns', async () => {
     global.fetch.mockClear()
     const base = getBaseState()
-    useGameState.mockReturnValue({
+    useGameActions.mockReturnValue({
       ...base,
       lastGigStats: {
         score: 200,
@@ -539,7 +538,7 @@ describe('PostGig Leaderboard Submission', () => {
 
   it('submits multiple leaderboard entries for multiple songs in songStats', async () => {
     const base = getBaseState()
-    useGameState.mockReturnValue({
+    useGameActions.mockReturnValue({
       ...base,
       lastGigStats: {
         score: 20000,
@@ -594,7 +593,7 @@ describe('PostGig Leaderboard Submission', () => {
 
   it('skips leaderboard submission if playerId is missing', async () => {
     const base = getBaseState()
-    useGameState.mockReturnValue({
+    useGameActions.mockReturnValue({
       ...base,
       player: { ...base.player, playerId: null }, // No playerId
       setlist: []

@@ -17,7 +17,8 @@ import {
   clampLoyalty,
   clampZealotry,
   clampControversyLevel,
-  clampNonNegative
+  clampNonNegative,
+  isFiniteNumber
 } from '../../utils/gameState'
 import {
   sanitizeSuccessToast,
@@ -160,6 +161,33 @@ const readPlayerFundsAndHarmony = (
   }
   return { money, harmony }
 }
+
+/**
+ * Assembles the post-action state shared by merch-press and zealotry-style
+ * social actions: identical player (money/fame/fameLevel) and band (harmony)
+ * updates, with a caller-provided social slice.
+ *
+ * @param state - Game state before the action.
+ * @param updates - Clamped money/fame/harmony values and the fully built social slice.
+ * @returns State with player, band, and social updates merged.
+ */
+const buildSocialActionNextState = (
+  state: GameState,
+  updates: { money: number; fame: number; harmony: number; social: SocialState }
+): GameState => ({
+  ...state,
+  player: {
+    ...state.player,
+    money: updates.money,
+    fame: updates.fame,
+    fameLevel: calculateFameLevel(updates.fame)
+  },
+  band: {
+    ...state.band,
+    harmony: updates.harmony
+  },
+  social: updates.social
+})
 
 /**
  * Merges sanitized social-state updates while preserving reducer-owned clamps and validation.
@@ -428,11 +456,7 @@ const UNBLACKLIST_COST_PER_CAPACITY = 2
 export const getUnblacklistCost = (venueId: string): number => {
   const venue = VENUES_BY_ID.get(venueId)
   const capacity =
-    venue &&
-    typeof venue.capacity === 'number' &&
-    Number.isFinite(venue.capacity)
-      ? Math.max(0, venue.capacity)
-      : 0
+    venue && isFiniteNumber(venue.capacity) ? Math.max(0, venue.capacity) : 0
   return UNBLACKLIST_BASE_COST + capacity * UNBLACKLIST_COST_PER_CAPACITY
 }
 
@@ -561,24 +585,16 @@ export const handleMerchPress = (
   )
   const nextFame = clampPlayerFame(currentFame + fameGain)
 
-  const nextState = {
-    ...state,
-    player: {
-      ...state.player,
-      money: nextMoney,
-      fame: nextFame,
-      fameLevel: calculateFameLevel(nextFame)
-    },
-    band: {
-      ...state.band,
-      harmony: nextHarmony
-    },
+  const nextState = buildSocialActionNextState(state, {
+    money: nextMoney,
+    fame: nextFame,
+    harmony: nextHarmony,
     social: {
       ...state.social,
       loyalty: nextLoyalty,
       controversyLevel: nextControversy
     }
-  }
+  })
 
   appendDeltaSuccessToast(nextState, successToast, state.toasts, {
     deltaLoyalty: nextLoyalty - currentLoyalty,
@@ -663,25 +679,17 @@ const applyZealotryAction = (
     currentControversy + controversyGain
   )
 
-  const nextState = {
-    ...state,
-    player: {
-      ...state.player,
-      money: nextMoney,
-      fame: nextFame,
-      fameLevel: calculateFameLevel(nextFame)
-    },
-    band: {
-      ...state.band,
-      harmony: nextHarmony
-    },
+  const nextState = buildSocialActionNextState(state, {
+    money: nextMoney,
+    fame: nextFame,
+    harmony: nextHarmony,
     social: {
       ...state.social,
       zealotry: nextZealotry,
       controversyLevel: nextControversy,
       [dayField]: playerDay
     }
-  }
+  })
 
   appendDeltaSuccessToast(nextState, successToast, state.toasts, {
     deltaFame: nextFame - currentFame,

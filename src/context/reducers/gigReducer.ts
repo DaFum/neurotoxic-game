@@ -32,7 +32,10 @@ import {
   createVenueGoodGigQuestEvent
 } from '../../quests/producers/venueQuestEvents'
 import { normalizeSetlistForSave } from '../../utils/gameState'
-import { getRegionKeyForLocation } from '../../utils/mapUtils'
+import {
+  getRegionKeyForLocation,
+  REGION_BLACKLIST_THRESHOLD
+} from '../../utils/mapUtils'
 
 /**
  * Stores the currently selected venue or clears it.
@@ -296,7 +299,10 @@ export const handleSetLastGigStats = (
         'GameState',
         `Regional reputation loss in ${location} due to poor gig performance (-10)`
       )
-      if ((nextState.reputationByRegion[location] || 0) <= -30) {
+      if (
+        finiteNumberOr(nextState.reputationByRegion[location], 0) <=
+        REGION_BLACKLIST_THRESHOLD
+      ) {
         const gigVenueId = state.currentGig?.id || 'unknown_venue'
         nextState = handleAddVenueBlacklist(nextState, {
           venueId: gigVenueId,

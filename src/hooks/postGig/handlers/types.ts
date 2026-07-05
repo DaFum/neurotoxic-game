@@ -7,6 +7,7 @@ import type {
 import type { BrandDeal } from '../../../types/social'
 import type { QuestProgressEvent } from '../../../utils/questProgress'
 import type { createAddQuestAction } from '../../../context/actionCreators'
+import type { PostGigPhase } from '../usePostGigState'
 
 /**
  * State-mutation and UI callbacks injected into the post-gig handler hooks,
@@ -25,7 +26,7 @@ export interface HandlerDispatchers {
       | Partial<GameState['social']>
       | ((prev: GameState['social']) => Partial<GameState['social']>)
   ) => void
-  setPhase: (phase: 'REPORT' | 'SOCIAL' | 'DEALS' | 'COMPLETE') => void
+  setPhase: (phase: PostGigPhase) => void
   addQuest: (quest: Parameters<typeof createAddQuestAction>[0]) => void
   applyQuestEvent: (event: QuestProgressEvent) => void
   changeScene: (scene: GamePhase) => void

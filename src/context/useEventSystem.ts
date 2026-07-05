@@ -174,8 +174,17 @@ export function useEventSystem({
   const triggerEvent = useCallback(
     (category: string, triggerPoint: string | null = null) => {
       const currentState = stateRef.current
-      if (currentState.currentScene === GAME_PHASES.GIG) return false
-      if ((currentState.player?.eventsTriggeredToday ?? 0) >= 2) return false
+      // gig_intro / gig_mid events are the one class that fires DURING the gig:
+      // the rhythm loop pauses the audio while `activeEvent` is set (see
+      // processRhythmGameTick). They are tied to the gig moment rather than the
+      // daily random-event budget, so they bypass both the GIG-scene block and
+      // the per-day cap that gate every other event.
+      const isGigTrigger =
+        triggerPoint === 'gig_intro' || triggerPoint === 'gig_mid'
+      if (!isGigTrigger) {
+        if (currentState.currentScene === GAME_PHASES.GIG) return false
+        if ((currentState.player?.eventsTriggeredToday ?? 0) >= 2) return false
+      }
 
       // Drain orphaned queue heads: an id that exists in no event pool is
       // never returned by selection and would block every later pending
@@ -210,12 +219,15 @@ export function useEventSystem({
         typeof processedEvent.id === 'string' ? processedEvent.id : undefined
 
       setActiveEvent(processedEvent)
-      dispatch(
-        createUpdatePlayerAction({
-          eventsTriggeredToday:
-            (currentState.player?.eventsTriggeredToday ?? 0) + 1
-        })
-      )
+      // Gig events are exempt from the daily budget, so they don't consume it.
+      if (!isGigTrigger) {
+        dispatch(
+          createUpdatePlayerAction({
+            eventsTriggeredToday:
+              (currentState.player?.eventsTriggeredToday ?? 0) + 1
+          })
+        )
+      }
 
       if (
         typeof processedEventId === 'string' &&

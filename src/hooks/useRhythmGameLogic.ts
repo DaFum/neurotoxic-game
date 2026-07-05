@@ -1,4 +1,4 @@
-import { useMemo, useEffect } from 'react'
+import { useMemo, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { MapNode } from '../types/map'
 import { useGameActions, useGameSelector } from '../context/GameState.tsx'
@@ -47,7 +47,7 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
   const gigModifiers = useGameSelector(state => state.gigModifiers)
   const currentGig = useGameSelector(state => state.currentGig)
   const rivalBand = useGameSelector(state => state.rivalBand)
-  const { setLastGigStats, addToast, endGig } = useGameActions()
+  const { setLastGigStats, addToast, endGig, triggerEvent } = useGameActions()
 
   // 1. Core State (React + Ref)
   const { gameStateRef, state, setters } = useRhythmGameState()
@@ -124,7 +124,7 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
   })
 
   // 4. Game Loop (Update)
-  const { update } = useRhythmGameLoop({
+  const { update: rawUpdate } = useRhythmGameLoop({
     gameStateRef,
     scoringActions,
     setters,
@@ -134,6 +134,27 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
       endGig
     }
   })
+
+  // Fire the in-gig narrative events off gig progress, which is kept on the ref
+  // (not React state) for perf. `gig_intro` fires once the gig is underway and
+  // `gig_mid` at the halfway mark; the rhythm loop pauses audio while the
+  // resulting event modal is open (see processRhythmGameTick), and the ref
+  // guards keep each event to at most one firing per gig.
+  const update = useCallback(
+    (deltaMS: number) => {
+      rawUpdate(deltaMS)
+      const ref = gameStateRef.current
+      if (!ref || activeEvent) return
+      if (!ref.gigIntroFired && ref.progress > 0) {
+        ref.gigIntroFired = true
+        triggerEvent('gig', 'gig_intro')
+      } else if (!ref.gigMidFired && ref.progress >= 50) {
+        ref.gigMidFired = true
+        triggerEvent('gig', 'gig_mid')
+      }
+    },
+    [rawUpdate, gameStateRef, activeEvent, triggerEvent]
+  )
 
   // 5. Input Handling
   const { registerInput } = useRhythmGameInput({

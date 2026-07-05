@@ -208,7 +208,7 @@ export const applyQuestRewards = (
   for (const reward of getQuestRewards(quest)) {
     switch (reward.type) {
       case 'money': {
-        const previousMoney = nextState.player?.money ?? 0
+        const previousMoney = finiteNumberOr(nextState.player?.money, 0)
         const newMoney = clampPlayerMoney(previousMoney + reward.amount)
         const appliedDelta = newMoney - previousMoney
         nextState = {
@@ -248,7 +248,7 @@ export const applyQuestRewards = (
         break
       }
       case 'fame': {
-        const previousFame = nextState.player?.fame ?? 0
+        const previousFame = finiteNumberOr(nextState.player?.fame, 0)
         const newFame = clampPlayerFame(previousFame + reward.amount)
         const appliedDelta = newFame - previousFame
         nextState = {

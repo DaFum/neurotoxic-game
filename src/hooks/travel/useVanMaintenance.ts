@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import i18n from '../../i18n'
 import { formatCurrency } from '../../utils/numberUtils'
-import { clampPlayerMoney } from '../../utils/gameState'
+import { clampPlayerMoney, finiteNumberOr } from '../../utils/gameState'
 import {
   calculateRefuelCost,
   calculateRepairCost,
@@ -34,7 +34,7 @@ export const useVanMaintenance = ({
   const handleRefuel = useCallback(() => {
     if (isTravelingRef.current) return
 
-    const currentFuel = player.van?.fuel ?? 0
+    const currentFuel = finiteNumberOr(player.van?.fuel, 0)
     const cost = calculateRefuelCost(currentFuel)
 
     if (cost <= 0) {
@@ -47,7 +47,7 @@ export const useVanMaintenance = ({
       return
     }
 
-    if ((player.money ?? 0) < cost) {
+    if (finiteNumberOr(player.money, 0) < cost) {
       addToast(
         i18n.t('ui:travel.refuel.notEnoughMoney', {
           defaultValue: 'Not enough money! Need {{cost}} to fill up.',
@@ -59,7 +59,7 @@ export const useVanMaintenance = ({
     }
 
     updatePlayer({
-      money: clampPlayerMoney((player.money ?? 0) - cost),
+      money: clampPlayerMoney(finiteNumberOr(player.money, 0) - cost),
       van: { ...player.van, fuel: EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL }
     })
     addToast(
@@ -80,7 +80,7 @@ export const useVanMaintenance = ({
   const handleRepair = useCallback(() => {
     if (isTravelingRef.current) return
 
-    const currentCondition = player.van?.condition ?? 100
+    const currentCondition = finiteNumberOr(player.van?.condition, 100)
     const cost = calculateRepairCost(currentCondition)
 
     if (cost <= 0) {
@@ -93,7 +93,7 @@ export const useVanMaintenance = ({
       return
     }
 
-    if ((player.money ?? 0) < cost) {
+    if (finiteNumberOr(player.money, 0) < cost) {
       addToast(
         i18n.t('ui:travel.repair.notEnoughMoney', {
           defaultValue: 'Not enough money! Need {{cost}} to repair.',
@@ -109,7 +109,7 @@ export const useVanMaintenance = ({
     )
 
     updatePlayer({
-      money: clampPlayerMoney((player.money ?? 0) - cost),
+      money: clampPlayerMoney(finiteNumberOr(player.money, 0) - cost),
       van: {
         ...player.van,
         condition: 100,

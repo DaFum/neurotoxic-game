@@ -21,6 +21,40 @@ const findActiveQuestIndex = (
   return -1
 }
 
+/**
+ * Locates an active quest and resolves the pieces both progress mutators share:
+ * a next state with a freshly-cloned `activeQuests` array holding a cloned copy
+ * of the target quest, the quest index, and the raw `required` threshold
+ * (instance value falling back to the definition). Cloning the array and the
+ * quest here means callers can update the returned `q`/array without mutating
+ * the original state. Returns null when the quest is absent, so callers bail
+ * with unchanged state.
+ */
+const resolveActiveQuest = (
+  state: GameState,
+  questId: string
+): {
+  nextState: GameState
+  q: ActiveQuestState
+  questIndex: number
+  rawRequired: number | undefined
+} | null => {
+  if (!state.activeQuests) return null
+  const questIndex = findActiveQuestIndex(state.activeQuests, questId)
+  if (questIndex === -1) return null
+
+  const nextActiveQuests = [...state.activeQuests]
+  const original = nextActiveQuests[questIndex]
+  if (!original) return null
+  const q = { ...original }
+  nextActiveQuests[questIndex] = q
+  const nextState = { ...state, activeQuests: nextActiveQuests }
+
+  const questConfig = getQuestWithDefinition(q)
+  const rawRequired = q.required ?? questConfig.required
+  return { nextState, q, questIndex, rawRequired }
+}
+
 export const advanceQuest = (
   state: GameState,
   {
@@ -29,18 +63,9 @@ export const advanceQuest = (
     randomIdx
   }: { questId: string; amount?: number; randomIdx?: number }
 ): GameState => {
-  if (!state.activeQuests) return state
-  const questIndex = findActiveQuestIndex(state.activeQuests, questId)
-  if (questIndex === -1) return state
-
-  const nextState = { ...state }
-  const q = nextState.activeQuests[questIndex]
-
-  // TypeScript strict mode validation
-  if (!q) return state
-
-  const questConfig = getQuestWithDefinition(q)
-  const rawRequired = q.required ?? questConfig.required
+  const resolved = resolveActiveQuest(state, questId)
+  if (!resolved) return state
+  const { nextState, q, questIndex, rawRequired } = resolved
   const safeRequired = finiteNumberOr(rawRequired, Number.NaN)
 
   if (!Number.isFinite(safeRequired) || safeRequired <= 0) {
@@ -60,8 +85,8 @@ export const advanceQuest = (
 
   const newProgress = Math.min(safeRequired, safeProgress + safeAmount)
 
-  // ⚡ BOLT OPTIMIZATION: Replaced activeQuests.map() with targeted array indexing to avoid array allocations in hot path
-  nextState.activeQuests = [...state.activeQuests]
+  // nextState.activeQuests is already a fresh clone from resolveActiveQuest;
+  // replace the target entry with the updated quest.
   nextState.activeQuests[questIndex] = {
     ...q,
     required: safeRequired,
@@ -84,25 +109,17 @@ export const setQuestProgress = (
   state: GameState,
   { questId, progress }: { questId: string; progress: number }
 ): GameState => {
-  if (!state.activeQuests) return state
-  const questIndex = findActiveQuestIndex(state.activeQuests, questId)
-  if (questIndex === -1) return state
-
-  const nextState = { ...state }
-  const q = nextState.activeQuests[questIndex]
-
-  if (!q) return state
-
-  const questConfig = getQuestWithDefinition(q)
-  const rawRequired = q.required ?? questConfig.required
+  const resolved = resolveActiveQuest(state, questId)
+  if (!resolved) return state
+  const { nextState, q, questIndex, rawRequired } = resolved
   const required = finiteNumberOr(rawRequired, Number.NaN)
   const prev = finiteNumberOr(q.progress, 0)
   const next = Math.max(prev, finiteNumberOr(progress, prev))
   const hasRequired = Number.isFinite(required) && required > 0
   const capped = hasRequired ? Math.min(required, next) : next
 
-  // ⚡ BOLT OPTIMIZATION: Replaced activeQuests.map() with targeted array indexing to avoid array allocations in hot path
-  nextState.activeQuests = [...state.activeQuests]
+  // nextState.activeQuests is already a fresh clone from resolveActiveQuest;
+  // replace the target entry with the updated quest.
   nextState.activeQuests[questIndex] = {
     ...q,
     required: hasRequired ? required : rawRequired,

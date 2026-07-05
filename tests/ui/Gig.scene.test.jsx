@@ -2,7 +2,7 @@ import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, act, waitFor } from '@testing-library/react'
 import { Gig } from '../../src/scenes/Gig.tsx'
 import { useRhythmGameLogic } from '../../src/hooks/useRhythmGameLogic'
-import { useGameState } from '../../src/context/GameState.tsx'
+import { useGameActions } from '../../src/context/GameState.tsx'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 import { audioManager, audioService } from '../../src/utils/audio/audioEngine'
 import {
@@ -13,11 +13,10 @@ import {
 
 // Mock dependencies
 vi.mock('../../src/context/GameState', () => {
-  const useGameState = vi.fn()
+  const useGameActions = vi.fn()
   return {
-    useGameState,
-    useGameActions: useGameState,
-    useGameSelector: selector => selector(useGameState())
+    useGameActions,
+    useGameSelector: selector => selector(useGameActions())
   }
 })
 vi.mock('../../src/utils/audio/audioEngine', () => ({
@@ -133,7 +132,7 @@ describe('Gig Scene Component', () => {
   beforeEach(() => {
     vi.clearAllMocks()
 
-    useGameState.mockReturnValue({
+    useGameActions.mockReturnValue({
       currentGig: { id: 'test-gig', name: 'Test Venue', diff: 3 },
       changeScene: mockChangeScene,
       addToast: mockAddToast,
@@ -160,7 +159,7 @@ describe('Gig Scene Component', () => {
     })
 
     test('redirects to overworld when no current gig', () => {
-      useGameState.mockReturnValue({
+      useGameActions.mockReturnValue({
         currentGig: null,
         changeScene: mockChangeScene,
         addToast: mockAddToast,
@@ -180,7 +179,7 @@ describe('Gig Scene Component', () => {
     })
 
     test('renders appropriate backgrounds based on venue or difficulty', () => {
-      useGameState.mockReturnValue({
+      useGameActions.mockReturnValue({
         currentGig: { id: 'gig', name: 'Kaminstube', diff: 2 },
         changeScene: mockChangeScene,
         addToast: mockAddToast,
@@ -196,7 +195,7 @@ describe('Gig Scene Component', () => {
       ).toContain('mock-kaminstube.jpg')
 
       // Low diff
-      useGameState.mockReturnValue({
+      useGameActions.mockReturnValue({
         currentGig: { id: 'gig', name: 'Small Venue', difficulty: 1 },
         changeScene: mockChangeScene,
         addToast: mockAddToast,
@@ -212,7 +211,7 @@ describe('Gig Scene Component', () => {
       ).toContain('mock-dive.jpg')
 
       // High diff
-      useGameState.mockReturnValue({
+      useGameActions.mockReturnValue({
         currentGig: { id: 'gig', name: 'Big Stadium', difficulty: 6 },
         changeScene: mockChangeScene,
         addToast: mockAddToast,
@@ -232,7 +231,7 @@ describe('Gig Scene Component', () => {
   describe('Band Member Display', () => {
     test('shows correct band member moods based on harmony', () => {
       // High harmony (assuming PLAYING for everyone)
-      useGameState.mockReturnValue({
+      useGameActions.mockReturnValue({
         currentGig: { id: 'gig', name: 'Test', diff: 3 },
         changeScene: mockChangeScene,
         addToast: mockAddToast,
@@ -256,7 +255,7 @@ describe('Gig Scene Component', () => {
       )
 
       // Very low harmony (harmony: 15 -> Matze Angry, Marius Drinking, Lars Idle)
-      useGameState.mockReturnValue({
+      useGameActions.mockReturnValue({
         currentGig: { id: 'gig', name: 'Test', diff: 3 },
         changeScene: mockChangeScene,
         addToast: mockAddToast,
@@ -277,7 +276,7 @@ describe('Gig Scene Component', () => {
       )
 
       // Moderate harmony (harmony: 45 -> Matze Angry, Marius Playing, Lars Screaming)
-      useGameState.mockReturnValue({
+      useGameActions.mockReturnValue({
         currentGig: { id: 'gig', name: 'Test', diff: 3 },
         changeScene: mockChangeScene,
         addToast: mockAddToast,
@@ -588,7 +587,7 @@ describe('Gig Scene Component', () => {
         currentGig: { id: 'gig', name: 'Open Air Stage', diff: 4 }
       }
     ])('handles $desc gracefully', ({ currentGig }) => {
-      useGameState.mockReturnValue({
+      useGameActions.mockReturnValue({
         currentGig,
         changeScene: vi.fn(),
         addToast: vi.fn(),

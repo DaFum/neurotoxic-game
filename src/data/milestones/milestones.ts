@@ -216,15 +216,6 @@ export const MILESTONES = [
     labelKey: 'ui:milestones.perfect_harmony'
   },
   {
-    id: 'full_band',
-    condition: (state: GameState) => state.band.members.length >= 4,
-    createRewardAction: () =>
-      createUpdateBandAction((prev: GameState['band']) => ({
-        harmony: prev.harmony + 10
-      })),
-    labelKey: 'ui:milestones.full_band'
-  },
-  {
     id: 'peacekeeper',
     condition: (state: GameState) => state.player.stats.conflictsResolved >= 5,
     createRewardAction: () =>
@@ -299,7 +290,7 @@ export const MILESTONES = [
   // === Meta ===
   {
     id: 'collector',
-    condition: (state: GameState) => state.unlocks.length >= 5,
+    condition: (state: GameState) => state.unlocks.length >= 1,
     createRewardAction: () =>
       createUpdatePlayerAction((prev: GameState['player']) => ({
         fame: prev.fame + 50,

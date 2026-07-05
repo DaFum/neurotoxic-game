@@ -141,6 +141,9 @@ export const getRegionKeyForLocation = (location: unknown): string | null => {
   return idx > 0 ? venueId.slice(0, idx) : venueId
 }
 
+/** Regional reputation at or below this value blacklists the band from booking in that region. */
+export const REGION_BLACKLIST_THRESHOLD = -30
+
 /**
  * Checks if the player is softlocked (stranded): no connected node is
  * affordable in both fuel and cash, and no in-place escape exists.

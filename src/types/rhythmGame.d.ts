@@ -129,6 +129,9 @@ export type RhythmGameRefState = {
   overload: number
   totalDuration: number
   hasSubmittedResults: boolean
+  /** Guards so the in-gig `gig_intro`/`gig_mid` events fire at most once each per gig. */
+  gigIntroFired?: boolean
+  gigMidFired?: boolean
   songTransitioning: boolean
   songStats: RhythmSongStatsEntry[]
   /** Index of the most recent setlist song that completed playback. */

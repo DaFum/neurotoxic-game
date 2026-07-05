@@ -38,7 +38,9 @@ const updatePlayerFinances = (
     dailyCost -= Math.floor((nextSocial.newsletter || 0) / 100) * 5
   }
 
-  const nextMoney = clampPlayerMoney(nextPlayer.money - dailyCost)
+  const nextMoney = clampPlayerMoney(
+    finiteNumberOr(nextPlayer.money, 0) - dailyCost
+  )
   nextPlayer.money = nextMoney
 
   // Wealth-Scaled Daily Expense Drain — only surplus above threshold is taxed
@@ -55,7 +57,9 @@ const updatePlayerFinances = (
     const taxableWealth =
       nextPlayer.money - BALANCE_CONSTANTS.WEALTH_DRAIN_THRESHOLD
     const expense = Math.round(taxableWealth * drainRate)
-    nextPlayer.money = clampPlayerMoney(nextPlayer.money - expense)
+    nextPlayer.money = clampPlayerMoney(
+      finiteNumberOr(nextPlayer.money, 0) - expense
+    )
   }
 }
 

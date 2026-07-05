@@ -8,10 +8,12 @@ import {
   clampMemberStamina,
   clampUnitRandom,
   clamp0to100,
+  clampNonNegative,
   finiteNumberOr,
   isForbiddenKey,
   isFiniteNumber
 } from '../../utils/gameState'
+import { clampUnit } from '../../utils/numberUtils'
 import {
   calculateTravelExpenses,
   calculateTravelMinigameResult,
@@ -97,7 +99,7 @@ export const handleCompleteTravelMinigame = (
     return state
   }
   const { damageTaken: rawDamage, itemsCollected: rawItems, rngValue } = payload
-  const damageTaken = Number.isFinite(rawDamage) ? Math.max(0, rawDamage) : 0
+  const damageTaken = clampNonNegative(rawDamage)
   const itemsCollected = Array.isArray(rawItems) ? rawItems : []
   const safeRngValue = clampUnitRandom(rngValue)
   logger.info('GameState', 'Travel Minigame Complete', payload)
@@ -329,7 +331,7 @@ export const handleCompleteTravelMinigame = (
   newState = QuestEvents.emit(
     newState,
     createTravelCompletedQuestEvent({
-      region: getRegionKeyForLocation(nextLocation) || nextLocation
+      region: getRegionKeyForLocation(nextLocation) ?? 'Unknown'
     })
   )
 
@@ -631,7 +633,7 @@ export const handleCompleteRoadieMinigame = (
   // Effective contraband count: only credit a positive, real delivery, clamped
   // non-negative so a malformed payload cannot grant a reverse bonus.
   const effectiveContrabandDelivered = stashItemPresent
-    ? Math.max(0, Math.min(finiteNumberOr(contrabandDelivered, 0), 1))
+    ? clampUnit(finiteNumberOr(contrabandDelivered, 0))
     : 0
 
   // Apply Results

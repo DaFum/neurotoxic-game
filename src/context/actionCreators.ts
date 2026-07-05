@@ -229,7 +229,7 @@ const sanitizeSocialUpdates = (
         if (SOCIAL_NULLABLE_FIELDS.has(key)) out[key] = null
         continue
       }
-      if (typeof value !== 'number' || !Number.isFinite(value)) continue
+      if (!isFiniteNumber(value)) continue
     }
     out[key] = value
   }
@@ -741,7 +741,7 @@ export const createUpdateRivalBandAction = (
   if (payload.alignment !== undefined) safeUpdates.alignment = payload.alignment
   if (payload.powerLevel !== undefined) {
     const raw = Number(payload.powerLevel)
-    safeUpdates.powerLevel = Number.isFinite(raw) ? Math.max(0, raw) : 0
+    safeUpdates.powerLevel = clampNonNegative(raw)
   }
   if (payload.currentLocationId !== undefined)
     safeUpdates.currentLocationId = payload.currentLocationId
@@ -859,7 +859,7 @@ export const createAdvanceQuestAction = (
   randomIdx: number | undefined = undefined
 ): Extract<GameAction, { type: typeof ActionTypes.ADVANCE_QUEST }> => {
   const raw = Number(amount)
-  const safeAmount = Number.isFinite(raw) ? Math.max(0, raw) : 0
+  const safeAmount = clampNonNegative(raw)
   return {
     type: ActionTypes.ADVANCE_QUEST,
     payload: { questId, amount: safeAmount, randomIdx }

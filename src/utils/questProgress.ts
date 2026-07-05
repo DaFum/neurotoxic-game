@@ -13,7 +13,7 @@ import type {
 import { QuestLifecycle } from '../domain/questLifecycle'
 import { getQuestDefinition } from '../data/questRegistry'
 import { isForbiddenKey, isLooseRecord } from './objectUtils'
-import { isFiniteNumber } from './finiteNumber'
+import { finiteNumberOr, isFiniteNumber } from './finiteNumber'
 
 /**
  * Legacy quest progress event shapes accepted for save and caller compatibility.
@@ -444,7 +444,7 @@ const calculateProgressAmount = (
       return getEventAmount(event) ?? 0
     case 'event.score': {
       const score = getEventContext(event).score
-      return typeof score === 'number' ? score : 0
+      return finiteNumberOr(score, 0)
     }
     case 'threshold':
       return getThresholdValue(rule, event)

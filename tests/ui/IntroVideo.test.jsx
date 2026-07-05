@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, act } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { IntroVideo } from '../../src/scenes/IntroVideo'
-import { useGameState } from '../../src/context/GameState'
+import { useGameActions } from '../../src/context/GameState'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 import { logger } from '../../src/utils/logger'
 
@@ -15,11 +15,10 @@ vi.mock('react-i18next', () => ({
 
 // Mock GameState context
 vi.mock('../../src/context/GameState', () => {
-  const useGameState = vi.fn()
+  const useGameActions = vi.fn()
   return {
-    useGameState,
-    useGameActions: useGameState,
-    useGameSelector: selector => selector(useGameState())
+    useGameActions,
+    useGameSelector: selector => selector(useGameActions())
   }
 })
 
@@ -54,7 +53,7 @@ describe('IntroVideo Component', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    useGameState.mockReturnValue({
+    useGameActions.mockReturnValue({
       changeScene: mockChangeScene
     })
 

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, act, fireEvent } from '@testing-library/react'
 import { KabelsalatScene } from '../../src/scenes/KabelsalatScene'
-import { useGameState } from '../../src/context/GameState'
+import { useGameActions } from '../../src/context/GameState'
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => {
@@ -43,14 +43,13 @@ vi.mock('react-i18next', () => ({
 }))
 
 vi.mock('../../src/context/GameState', () => {
-  const useGameState = vi.fn(() => ({
+  const useGameActions = vi.fn(() => ({
     completeKabelsalatMinigame: vi.fn(),
     changeScene: vi.fn()
   }))
   return {
-    useGameState,
-    useGameActions: useGameState,
-    useGameSelector: selector => selector(useGameState())
+    useGameActions,
+    useGameSelector: selector => selector(useGameActions())
   }
 })
 
@@ -84,7 +83,7 @@ describe('KabelsalatScene', () => {
     mockCompleteMinigame = vi.fn()
     mockChangeScene = vi.fn()
 
-    vi.mocked(useGameState).mockReturnValue({
+    vi.mocked(useGameActions).mockReturnValue({
       completeKabelsalatMinigame: mockCompleteMinigame,
       changeScene: mockChangeScene
     })
@@ -193,7 +192,7 @@ describe('KabelsalatScene - timer and game over', () => {
     mockCompleteMinigame = vi.fn()
     mockChangeScene = vi.fn()
 
-    vi.mocked(useGameState).mockReturnValue({
+    vi.mocked(useGameActions).mockReturnValue({
       completeKabelsalatMinigame: mockCompleteMinigame,
       changeScene: mockChangeScene
     })

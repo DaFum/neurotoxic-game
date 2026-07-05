@@ -1,4 +1,4 @@
-import { normalizeVenueId } from './mapUtils'
+import { normalizeVenueId, REGION_BLACKLIST_THRESHOLD } from './mapUtils'
 import { getCityKeyFromVenueId } from './mapGenerator'
 import {
   clampPlayerMoney,
@@ -184,7 +184,10 @@ export const checkVenueAccess = ({
   }
 
   const regionId = (venueId && getCityKeyFromVenueId(venueId)) || 'Unknown'
-  if ((reputationByRegion[regionId] ?? 0) <= -30) {
+  if (
+    finiteNumberOr(reputationByRegion[regionId], 0) <=
+    REGION_BLACKLIST_THRESHOLD
+  ) {
     return {
       allowed: false,
       errorKey: 'ui:travel.errors.bookingRefusedRegionalReputation',
@@ -281,7 +284,7 @@ export const getTravelArrivalUpdates = ({
   assetModifiers
 }: TravelArrivalUpdateInput): TravelArrivalUpdates => {
   const nextPlayer = {
-    money: clampPlayerMoney((player.money ?? 0) - totalCost),
+    money: clampPlayerMoney(finiteNumberOr(player.money, 0) - totalCost),
     van: {
       ...player.van,
       fuel: Math.max(0, (player.van?.fuel ?? 0) - fuelLiters)
