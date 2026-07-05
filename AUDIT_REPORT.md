@@ -8,6 +8,29 @@
 
 **47 findings — 8 HIGH · 24 MED · 15 LOW.**
 
+> ## Resolution status (autonomous fix pass, branch `claude/neurotoxic-audit-1ky38w`)
+>
+> **Fixed & verified (7 commits, all typecheck + affected test suites green):**
+> - **Safety cluster** I1–I9 (`finiteNumberOr`/`isFiniteNumber` on persisted money/fame/skill/controversy/score addends) and D10/I12 (shared `REGION_BLACKLIST_THRESHOLD` + finite read); I11 (unify null-region-key fallback to the `'Unknown'` bucket).
+> - **Duplicates** D1 (shared `sanitizeStashItem` for both stash branches — HIGH), D2 (`buildSocialActionNextState`/`readPlayerFundsAndHarmony` reuse), D3/D4 (`findAssetById`/`omitLiabilitiesForAsset`), D6 (`buildBarsFromCounts`) + M5/O1 (delete test-only `buildSongChartDensity`), D7 (shared `catalogTabProps`), D8 (shared `SlotZoneButtons` across all three hero views), D9 (shared `clampPercentageAmount`, fixes the drifted `typeof` guard), D11 (`getAssetSaleQuote` selector across modal + reducer), D13 (`resolveActiveQuest`), D17/D18/D19 (canonical `clampNonNegative`/`isFiniteNumber`/`clampUnit`), D20 (`SAVE_KEY` import), D21/D24 (`QuestCommon`/`QuestEffectCommon` type bases), D22/D23 (`UsePostGigHandlersProps extends HandlerDispatchers` + `PostGigPhase`).
+> - **Dead code** X5 (delete unreferenced `schemas/crisis.json`), X6 (declare `VITE_ENABLE_VERCEL_TELEMETRY`).
+>
+> **Deferred with rationale (left as-is, not silently changed):**
+> - **D12** (moduleUnlock dedup) — provably equivalent but would add per-call array allocation in a file with deliberate perf ("BOLT") optimizations; not worth the regression.
+> - **D14** (primitive-record sanitizers) — the two have divergent empty-return contracts (`{}` vs `undefined`) and different call sites; merging risks a security-sanitizer behavior change for marginal gain.
+> - **I10** (`Number(x) || 0` → `finiteNumberOr`) — `Number()` coerces numeric strings that `finiteNumberOr` would reject, a real behavior change on hostile payloads; left as the AGENTS.md-permitted post-`Number()` form.
+> - **X1** (dead `remapStoryFlag`) — a confirmed no-op, but deletion touches story-flag handling; low payoff, kept as-is.
+> - **I13** (decorative `€` glyph), **X4** (dead `category: 'travel'` on 55 chatter entries), **D15/D16/D25** (optional micro-dedups) — LOW / Simplicity-First: not worth the churn.
+>
+> **Awaiting a product decision (NOT actioned — both directions are significant and irreversible-ish; the clarifying question could not be delivered):**
+> - **M1** in-gig event system + its cascade **M2** (`showman` trait), **M3** (`stage_diver` milestone), **X2/X3** (dead stage-dive tracking, `pre_gig` fallback): *integrate* (wire `gig_intro`/`gig_mid`, risky gameplay change needing playtesting) **vs** *delete* (remove 19 authored events + trait + milestone + locale strings).
+> - **M3** (`collector`/`full_band` milestones), **M4** (event-driven game-over path), **M6** (`mystery_pick` reward): *delete/retune* **vs** *leave as future-content scaffolding*.
+> - **O2** (8 UI test files mock a stale `useGameState` API): a test-only migration, left pending.
+>
+> _To proceed on the awaiting-decision items, tell me "integrate" or "delete" for the gig-event system and "delete/retune" or "leave" for the smaller unwired features._
+>
+> ---
+
 The codebase is structurally very clean at the wiring level: zero true orphan exports, all 66 action types fully round-tripped (registry → reducer → creator → dispatch site), all 13 scenes reachable, perfect EN/DE locale key parity, no hardcoded colors, no `@ts-ignore`. The substantive problems cluster in three areas:
 
 1. **A complete in-gig event system is silently unreachable** (M1): 19 authored events in `src/data/events/gig.ts` use trigger points (`gig_intro`/`gig_mid`) that no code ever requests, and the event system additionally hard-blocks the GIG scene. This cascades into an unobtainable trait (`showman`), three dead milestones, dead tracking logic, and dead locale strings. This is the single highest-impact decision for the fix pass.
