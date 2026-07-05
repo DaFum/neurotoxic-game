@@ -70,6 +70,7 @@ baseline instead of duplicating formulas.
 ## triggerEvent
 
 - The `triggerEvent` callback across utilities uses the signature `(category: string, triggerPoint?: string) => boolean`. It returns `true` only after an event is selected, processed, and set active; `false` means no event was triggered.
+- `gig_intro` / `gig_mid` are the only trigger points that fire *during* the GIG scene. `useEventSystem`'s `triggerEvent` deliberately exempts them from both the GIG-scene block and the daily `eventsTriggeredToday` cap (and does not increment that counter) — they are gig-moment beats, not part of the daily random-event budget. They are fired once each per gig from `useRhythmGameLogic`'s `update` wrapper (at gig start, then progress ≥ 50, guarded by the `gigIntroFired`/`gigMidFired` ref flags), and `processRhythmGameTick` pauses audio while the resulting `activeEvent` modal is open. Do NOT re-block GIG-scene events or remove the exemption: the `src/data/events/gig.ts` events, the `showman` trait, and the `stage_diver` milestone all depend on it.
 
 ## Long-Term Assets
 
