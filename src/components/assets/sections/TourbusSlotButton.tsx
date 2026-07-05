@@ -1,6 +1,9 @@
 import { AssetSlotButton } from '../shared/AssetSlotButton'
 import type { SlotType } from '../../../types/assets'
 
+/**
+ * Configuration properties for the TourbusSlotButton component.
+ */
 interface Props {
   id: string
   slotType: SlotType
@@ -12,6 +15,15 @@ interface Props {
   ariaLabel?: string
 }
 
+/**
+ * Renders an interactive slot button for the Tourbus asset section.
+ *
+ * @remarks
+ * Displays either a vehicle or trailer styled slot button, visually indicating if a module is installed
+ * and providing an interface for module management.
+ *
+ * @returns The rendered slot button element
+ */
 export const TourbusSlotButton = ({
   id,
   slotType,

@@ -154,7 +154,7 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
         if (Number.isFinite(eff.value)) {
           if (!delta.band.inventory) delta.band.inventory = {}
           delta.band.inventory[eff.item] =
-            asNumber(delta.band.inventory[eff.item]) + eff.value
+            asNumber(delta.band.inventory[eff.item]) + asNumber(eff.value)
         }
       } else {
         if (!delta.band.inventory) delta.band.inventory = {}

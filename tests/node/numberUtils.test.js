@@ -46,10 +46,10 @@ formatNumberCases.forEach(({ label, value, locale, expected }) => {
 })
 
 test('formatNumber - handles edge cases gracefully', () => {
-  assert.equal(formatNumber(NaN), 'NaN')
-  assert.equal(formatNumber('not a number'), 'NaN')
-  assert.equal(formatNumber(null), '0')
-  assert.equal(formatNumber(undefined), 'NaN')
+  assert.equal(formatNumber(NaN, 'en'), 'NaN')
+  assert.equal(formatNumber('not a number', 'en'), 'NaN')
+  assert.equal(formatNumber(null, 'en'), '0')
+  assert.equal(formatNumber(undefined, 'en'), 'NaN')
 })
 
 test('finiteNumberOr - returns finite numbers and falls back for non-finite values', () => {
@@ -105,10 +105,10 @@ formatCurrencyCases.forEach(({ label, value, locale, expected }) => {
 })
 
 test('formatCurrency - handles edge cases gracefully', () => {
-  assert.equal(formatCurrency(NaN).replace(/\s+/g, ' '), '€NaN')
-  assert.equal(formatCurrency('not a number').replace(/\s+/g, ' '), '€NaN')
-  assert.equal(formatCurrency(null).replace(/\s+/g, ' '), '€0')
-  assert.equal(formatCurrency(undefined).replace(/\s+/g, ' '), '€NaN')
+  assert.equal(formatCurrency(NaN, 'en').replace(/\s+/g, ' '), '€NaN')
+  assert.equal(formatCurrency('not a number', 'en').replace(/\s+/g, ' '), '€NaN')
+  assert.equal(formatCurrency(null, 'en').replace(/\s+/g, ' '), '€0')
+  assert.equal(formatCurrency(undefined, 'en').replace(/\s+/g, ' '), '€NaN')
 })
 
 const signDisplayCases = [
