@@ -5,18 +5,29 @@ import { OverloadMeter } from './OverloadMeter'
 import { CorruptionMeter } from './CorruptionMeter'
 import { UIFrameCorner } from '../../ui/shared/Icons'
 
+/**
+ * Configuration properties for the StatsOverlay component.
+ */
 interface StatsOverlayProps {
+  /** The current gig score. */
   score: number
+  /** The current consecutive hit streak. */
   combo: number
+  /** The current hit accuracy percentage for the active gig. */
   accuracy: number
+  /** The current stage overload value. */
   overload: number
+  /** The current corruption level of the system. */
   corruptionLevel: number
+  /** Whether a corruption burst effect is actively happening. */
   isCorruptionBurstActive: boolean
 }
 
 /**
- * Displays score, combo, accuracy, overload, and corruption meters during a gig.
- * @param props - Props containing `score`, `combo`, `accuracy`, `overload`, `corruptionLevel`, and `isCorruptionBurstActive`.
+ * Renders the primary status tracking overlay for active gigs.
+ * It displays the score, combo, accuracy, overload, and corruption meters.
+ *
+ * @returns A React element rendering the floating status HUD.
  */
 export const StatsOverlay = memo(function StatsOverlay({
   score,

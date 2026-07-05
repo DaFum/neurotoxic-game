@@ -51,10 +51,6 @@ export const buildDeterministicToastId = (
   return id
 }
 
-const sanitizePrimitiveOptions = (
-  options: Record<string, unknown>
-): Record<string, unknown> => copySafePrimitiveEntries(options)
-
 /**
  * Sanitizes an optional success-toast payload while applying safe fallbacks.
  *
@@ -96,8 +92,8 @@ export const sanitizeSuccessToast = (
       : {}
 
   // Whitelist primitive-only values to match sanitizeLoadedToast pattern
-  const safePrimitives = sanitizePrimitiveOptions(baseOptions)
-  const safeOptionsPatch = sanitizePrimitiveOptions(optionsPatch)
+  const safePrimitives = copySafePrimitiveEntries(baseOptions)
+  const safeOptionsPatch = copySafePrimitiveEntries(optionsPatch)
 
   const safeToast: ToastPayload = {
     id,
@@ -159,7 +155,7 @@ export const sanitizeLoadedToast = (
     !Array.isArray(toastObj.options)
   ) {
     const opts = toastObj.options as Record<string, unknown>
-    const safePrimitives = sanitizePrimitiveOptions(opts)
+    const safePrimitives = copySafePrimitiveEntries(opts)
     if (!isEmptyObject(safePrimitives)) {
       safeToast.options = safePrimitives
     }
