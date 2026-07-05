@@ -125,6 +125,29 @@ const remapPerRegionScopeKeys = <T extends { scopeKey?: unknown }>(
  * Loading a save forces the scene back to `OVERWORLD` and upgrades the persisted
  * version marker to the current schema version after migrations run.
  */
+const migrateVenueBlacklist = (blacklist: string[]): string[] => {
+  if (!Array.isArray(blacklist)) return []
+  const acc: string[] = []
+  for (let i = 0; i < blacklist.length; i++) {
+    const id = blacklist[i]
+    if (!id) continue
+    const migrated = migrateLegacyVenueId(id)
+    if (migrated.length > 0) acc.push(migrated)
+  }
+  return acc
+}
+
+/**
+ * Loads persisted state through migration and sanitizer gates.
+ *
+ * @param state - Current in-memory state used as a fallback baseline.
+ * @param payload - Raw save payload from storage.
+ * @returns Migrated and sanitized game state.
+ *
+ * @remarks
+ * Loading a save forces the scene back to `OVERWORLD` and upgrades the persisted
+ * version marker to the current schema version after migrations run.
+ */
 export const handleLoadGame = (
   state: GameState,
   payload: unknown
@@ -228,14 +251,7 @@ export const handleLoadGame = (
           ? migratePlayerLocation(safeState.player.location)
           : DEFAULT_PLAYER_STATE.location
     },
-    venueBlacklist: (() => {
-      const acc: string[] = []
-      for (const id of safeState.venueBlacklist) {
-        const migrated = migrateLegacyVenueId(id)
-        if (migrated.length > 0) acc.push(migrated)
-      }
-      return acc
-    })(),
+    venueBlacklist: migrateVenueBlacklist(safeState.venueBlacklist),
     // Region reputation is keyed per canonical city key. Older saves keyed
     // entries by `venues:<id>.name` (the player.location display key), which
     // the regional booking ban in checkVenueAccess never read. Remap; on

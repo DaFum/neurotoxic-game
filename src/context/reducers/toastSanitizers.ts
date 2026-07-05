@@ -92,8 +92,8 @@ export const sanitizeSuccessToast = (
       : {}
 
   // Whitelist primitive-only values to match sanitizeLoadedToast pattern
-  const safePrimitives = copySafePrimitiveObject(baseOptions) ?? {}
-  const safeOptionsPatch = copySafePrimitiveObject(optionsPatch) ?? {}
+  const safePrimitives = copySafePrimitiveEntries(baseOptions)
+  const safeOptionsPatch = copySafePrimitiveEntries(optionsPatch)
 
   const safeToast: ToastPayload = {
     id,
@@ -155,7 +155,7 @@ export const sanitizeLoadedToast = (
     !Array.isArray(toastObj.options)
   ) {
     const opts = toastObj.options as Record<string, unknown>
-    const safePrimitives = copySafePrimitiveObject(opts) ?? {}
+    const safePrimitives = copySafePrimitiveEntries(opts)
     if (!isEmptyObject(safePrimitives)) {
       safeToast.options = safePrimitives
     }

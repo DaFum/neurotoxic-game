@@ -1,8 +1,17 @@
 import type { ComponentPropsWithoutRef } from 'react'
 import { ActionButton } from '../../../ui/shared/ActionButton'
 
+/**
+ * Defines the property structure for the confirmation button by extending the base action button attributes.
+ */
 export type ConfirmButtonProps = ComponentPropsWithoutRef<typeof ActionButton>
 
+/**
+ * Renders a primary confirmation button with distinctive styling for affirmative actions.
+ *
+ * @param props - The component attributes inherited from the base action button.
+ * @returns The rendered confirmation button element.
+ */
 export const ConfirmButton = ({
   children,
   className = '',

@@ -120,6 +120,14 @@ const inferLoadedMapNodeType = (
 const finiteOptionalNumber = (value: unknown): number | undefined =>
   isFiniteNumber(value) ? value : undefined
 
+export const copySafePrimitiveObject = (
+  value: unknown
+): Record<string, string | number | boolean | null> | undefined => {
+  if (!isLooseRecord(value)) return undefined
+  const copied = copySafePrimitiveEntries(value as Record<string, unknown>)
+  return !isEmptyObject(copied) ? copied : undefined
+}
+
 const MAX_SAFE_JSON_COPY_DEPTH = 12
 
 const copySafeJsonValue = (value: unknown, depth = 0): unknown => {
