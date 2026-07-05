@@ -66,7 +66,7 @@ export const SPECIAL_EVENTS = [
         skillCheck: {
           stat: 'luck',
           threshold: 7,
-          success: { type: 'item', item: 'mystery_pick' },
+          success: { type: 'item', item: 'golden_pick' },
           failure: { type: 'stat', stat: 'mood', value: -10 }
         },
         outcomeText: 'events:strange_roadside_shrine.opt2.outcome'
