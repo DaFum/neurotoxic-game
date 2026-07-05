@@ -1809,7 +1809,7 @@
   "clinic.abort": "ABBRECHEN",
   "clinic.execute_mutation": "MUTATION AUSFÜHREN",
   "clinic.unknown_member": "Unbekannt",
-  "clinic": {},
   "clinic.graft_button": "[ IMPLANTAT: NEURO-OVERCLOCK {{cost}} ]",
-  "clinic.graft_button_applied": "[ IMPLANTIERT ]"
+  "clinic.graft_button_applied": "[ IMPLANTIERT ]",
+  "clinic.alreadyGrafted": "Mitglied hat dieses Implantat bereits"
 }

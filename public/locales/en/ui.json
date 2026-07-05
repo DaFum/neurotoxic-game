@@ -1809,7 +1809,7 @@
   "clinic.abort": "ABORT",
   "clinic.execute_mutation": "EXECUTE MUTATION",
   "clinic.unknown_member": "Unknown",
-  "clinic": {},
   "clinic.graft_button": "[ GRAFT: NEURO-OVERCLOCK {{cost}} ]",
-  "clinic.graft_button_applied": "[ GRAFTED ]"
+  "clinic.graft_button_applied": "[ GRAFTED ]",
+  "clinic.alreadyGrafted": "Member already has this graft"
 }

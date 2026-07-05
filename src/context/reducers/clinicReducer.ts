@@ -418,11 +418,20 @@ export const handleGraftNeuroOverclock = (
           if (i !== memberIndex) return m
           return {
             ...m,
-            health: Math.max(1, finiteNumberOr(m.health, 100) - 20),
-            stress: Math.min(100, finiteNumberOr(m.stress, 0) + 30),
+            health: Math.max(1, finiteNumberOr(m.health || 0, 100) - 20),
+            stress: Math.min(100, finiteNumberOr(m.stress || 0, 0) + 30),
             traits: {
               ...(m.traits || {}),
-              neuro_overclock: true
+              neuro_overclock: getTraitById('neuro_overclock') || {
+                id: 'neuro_overclock',
+                name: 'traits:neuro_overclock.name',
+                description: 'traits:neuro_overclock.description',
+                effects: {
+                  rhythmMultiplier: 1.5,
+                  stressPerGig: 5,
+                  healthPerGig: -10
+                }
+              }
             }
           }
         }

@@ -113,8 +113,8 @@ export const ClinicMemberCard = ({
                   defaultValue: 'Not enough fame'
                 })
               : member.traits?.[CLINIC_CONFIG.CYBER_LUNGS_TRAIT_ID]
-                ? t('ui:clinic.alreadyEnhanced', {
-                    defaultValue: 'Member already has this enhancement'
+                ? t('ui:clinic.alreadyGrafted', {
+                    defaultValue: 'Member already has this graft'
                   })
                 : null)
           }
