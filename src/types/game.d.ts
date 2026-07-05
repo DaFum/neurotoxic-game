@@ -272,6 +272,7 @@ export type GameAction =
     >
   | Action<ActionTypes['CLINIC_HEAL'], ClinicActionPayload>
   | Action<ActionTypes['CLINIC_ENHANCE'], ClinicActionPayload>
+  | Action<ActionTypes['GRAFT_NEURO_OVERCLOCK'], { memberId: string }>
   | Action<ActionTypes['PIRATE_BROADCAST'], PirateBroadcastPayload>
   | Action<ActionTypes['MERCH_PRESS'], MerchPressPayload>
   | Action<ActionTypes['TRADE_VOID_ITEM'], TradeVoidItemPayload>

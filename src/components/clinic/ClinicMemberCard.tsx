@@ -3,7 +3,9 @@ import { useTranslation } from 'react-i18next'
 import { formatCurrency } from '../../utils/numberUtils'
 import { GlitchButton } from '../../ui/GlitchButton'
 import { Tooltip } from '../../ui/shared'
-import { CLINIC_CONFIG } from '../../context/gameConstants'
+import { useState } from 'react'
+import { CLINIC_CONFIG, CLINIC_GRAFT_COST } from '../../context/gameConstants'
+import { GraftModal } from './GraftModal'
 import type {
   ClinicMemberCardProps,
   ActionButtonWrapperProps
@@ -31,10 +33,16 @@ export const ClinicMemberCard = ({
   healCostMoney,
   enhanceCostFame,
   healMember,
-  enhanceMember
+  enhanceMember,
+  graftNeuroOverclock
 }: ClinicMemberCardProps) => {
   const { t, i18n } = useTranslation(['ui'])
   const memberId = member.id
+  const canAffordGraft = player.money >= CLINIC_GRAFT_COST
+  const hasGraft = Array.isArray(member.traits)
+    ? member.traits.includes('neuro_overclock')
+    : !!member.traits?.['neuro_overclock']
+  const [isGraftModalOpen, setIsGraftModalOpen] = useState(false)
   const isFullyHealed =
     member.stamina >= 100 &&
     (CLINIC_CONFIG.HEAL_MOOD_GAIN <= 0 || member.mood >= 100)
@@ -105,8 +113,8 @@ export const ClinicMemberCard = ({
                   defaultValue: 'Not enough fame'
                 })
               : member.traits?.[CLINIC_CONFIG.CYBER_LUNGS_TRAIT_ID]
-                ? t('ui:clinic.alreadyEnhanced', {
-                    defaultValue: 'Member already has this enhancement'
+                ? t('ui:clinic.alreadyGrafted', {
+                    defaultValue: 'Member already has this graft'
                   })
                 : null)
           }
@@ -130,7 +138,58 @@ export const ClinicMemberCard = ({
             </GlitchButton>
           )}
         </ActionButtonWrapper>
+
+        <div className='mt-3 border-t border-toxic-green/30 pt-3'>
+          <ActionButtonWrapper
+            disabledReason={
+              missingMemberReason ??
+              (!canAffordGraft
+                ? t('ui:clinic.notEnoughMoney', {
+                    defaultValue: 'Not enough money'
+                  })
+                : hasGraft
+                  ? t('ui:clinic.alreadyEnhanced', {
+                      defaultValue: 'Member already has this enhancement'
+                    })
+                  : null)
+            }
+          >
+            {disabled => (
+              <GlitchButton
+                onClick={() => setIsGraftModalOpen(true)}
+                disabled={disabled}
+                variant='danger'
+                className='w-full text-xs py-2'
+              >
+                {hasGraft
+                  ? t('ui:clinic.graft_button_applied', {
+                      defaultValue: '[ GRAFTED ]'
+                    })
+                  : t('ui:clinic.graft_button', {
+                      defaultValue: '[ GRAFT: NEURO-OVERCLOCK {{cost}} ]',
+                      cost: formatCurrency(CLINIC_GRAFT_COST, i18n.language)
+                    })}
+              </GlitchButton>
+            )}
+          </ActionButtonWrapper>
+        </div>
       </div>
+
+      <GraftModal
+        isOpen={isGraftModalOpen}
+        onClose={() => setIsGraftModalOpen(false)}
+        onConfirm={() => {
+          if (memberId) {
+            graftNeuroOverclock(memberId)
+          }
+          setIsGraftModalOpen(false)
+        }}
+        memberName={
+          member.name ||
+          t('ui:clinic.unknown_member', { defaultValue: 'Unknown' })
+        }
+        cost={CLINIC_GRAFT_COST}
+      />
     </motion.div>
   )
 }

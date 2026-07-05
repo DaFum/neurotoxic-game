@@ -58,6 +58,7 @@ import {
 import {
   handleClinicHeal,
   handleClinicEnhance,
+  handleGraftNeuroOverclock,
   handleBloodBankDonate
 } from './reducers/clinicReducer'
 import { handleAddQuest, handleAdvanceQuest } from './reducers/questReducer'
@@ -172,6 +173,7 @@ const reducerMap: ReducerMap = {
   [ActionTypes.ADD_UNLOCK]: handleAddUnlock,
   [ActionTypes.CLINIC_HEAL]: handleClinicHeal,
   [ActionTypes.CLINIC_ENHANCE]: handleClinicEnhance,
+  [ActionTypes.GRAFT_NEURO_OVERCLOCK]: handleGraftNeuroOverclock,
   [ActionTypes.TRADE_VOID_ITEM]: handleTradeVoidItem,
   [ActionTypes.BLOOD_BANK_DONATE]: handleBloodBankDonate,
   [ActionTypes.SET_PENDING_BANDHQ_OPEN]: handleSetPendingBandHQOpen,

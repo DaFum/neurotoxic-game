@@ -1,9 +1,14 @@
+import { getSafeUUID } from '../../utils/crypto'
 import i18n from '../../i18n'
 import { formatCurrency } from '../../utils/numberUtils'
 import type { GameState } from '../../types'
 import type { ClinicActionPayload, BloodBankDonatePayload } from '../../types'
 import type { BandMember } from '../../types'
-import { CLINIC_CONFIG, calculateClinicCost } from '../gameConstants'
+import {
+  CLINIC_CONFIG,
+  calculateClinicCost,
+  CLINIC_GRAFT_COST
+} from '../gameConstants'
 import { logger } from '../../utils/logger'
 import {
   clampPlayerMoney,
@@ -352,6 +357,98 @@ export const handleBloodBankDonate = (
  * @returns State with the trait grafted and clinic cost applied, or the
  * original state when validation fails.
  */
+/**
+ * Handles grafting the Neuro-Overclock trait onto a band member.
+ * Costs money and permanently mutates the member's traits.
+ * Enforces state safety boundaries.
+ */
+export const handleGraftNeuroOverclock = (
+  state: GameState,
+  payload: { memberId: string }
+): GameState => {
+  if (!state.player || !state.band) {
+    logger.warn(
+      'ClinicReducer',
+      'handleGraftNeuroOverclock: Missing player or band state'
+    )
+    return state
+  }
+
+  if (
+    !Number.isFinite(state.player.money) ||
+    state.player.money < CLINIC_GRAFT_COST
+  ) {
+    return state // Can't afford
+  }
+
+  const { memberId } = payload
+  const memberIndex = state.band.members.findIndex(
+    (m: import('../../types/band').BandMember) => m.id === memberId
+  )
+
+  if (memberIndex === -1) {
+    logger.warn(
+      'ClinicReducer',
+      `handleGraftNeuroOverclock: Member ${memberId} not found`
+    )
+    return state
+  }
+
+  const member = state.band.members[memberIndex]
+  if (member.traits && member.traits['neuro_overclock']) {
+    return state // Already grafted
+  }
+
+  return {
+    ...state,
+    player: {
+      ...state.player,
+      money: Math.max(0, state.player.money - CLINIC_GRAFT_COST)
+    },
+    band: {
+      ...state.band,
+      members: state.band.members.map(
+        (
+          m: import('../../types/band').BandMember & {
+            health?: number
+            stress?: number
+            traits?: string[]
+          },
+          i: number
+        ) => {
+          if (i !== memberIndex) return m
+          return {
+            ...m,
+            health: Math.max(1, finiteNumberOr(m.health, 100) - 20),
+            stress: Math.min(100, finiteNumberOr(m.stress, 0) + 30),
+            traits: {
+              ...(m.traits || {}),
+              neuro_overclock: getTraitById('neuro_overclock') || {
+                id: 'neuro_overclock',
+                name: 'traits:neuro_overclock.name',
+                description: 'traits:neuro_overclock.description',
+                effects: {
+                  rhythmMultiplier: 1.5,
+                  stressPerGig: 5,
+                  healthPerGig: -10
+                }
+              }
+            }
+          }
+        }
+      )
+    },
+    toasts: [
+      ...(state.toasts || []),
+      {
+        id: getSafeUUID(),
+        message: 'Grafted Neuro-Overclock module.',
+        type: 'success'
+      }
+    ]
+  }
+}
+
 export const handleClinicEnhance = (
   state: GameState,
   payload: ClinicActionPayload

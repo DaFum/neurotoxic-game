@@ -94,6 +94,11 @@ export const GAME_CONSTANTS = Object.freeze({
 /**
  * Clinic treatment tuning and the trait granted by enhancement treatment.
  */
+/**
+ * Cost for the Neuro-Overclock experimental graft.
+ */
+export const CLINIC_GRAFT_COST = 8500
+
 export const CLINIC_CONFIG = Object.freeze({
   VISIT_MULTIPLIER: 1.2,
   HEAL_BASE_COST_MONEY: 280,
