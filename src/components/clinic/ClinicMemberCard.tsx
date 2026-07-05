@@ -6,6 +6,7 @@ import { Tooltip } from '../../ui/shared'
 import { useState } from 'react'
 import { CLINIC_CONFIG, CLINIC_GRAFT_COST } from '../../context/gameConstants'
 import { GraftModal } from './GraftModal'
+import { hasTrait } from '../../utils/traitUtils'
 import type {
   ClinicMemberCardProps,
   ActionButtonWrapperProps
@@ -39,9 +40,7 @@ export const ClinicMemberCard = ({
   const { t, i18n } = useTranslation(['ui'])
   const memberId = member.id
   const canAffordGraft = player.money >= CLINIC_GRAFT_COST
-  const hasGraft = Array.isArray(member.traits)
-    ? member.traits.includes('neuro_overclock')
-    : !!member.traits?.['neuro_overclock']
+  const hasGraft = hasTrait(member, 'neuro_overclock')
   const [isGraftModalOpen, setIsGraftModalOpen] = useState(false)
   const isFullyHealed =
     member.stamina >= 100 &&
@@ -112,9 +111,7 @@ export const ClinicMemberCard = ({
               ? t('ui:clinic.notEnoughFame', {
                   defaultValue: 'Not enough fame'
                 })
-              : (Array.isArray(member.traits)
-                  ? member.traits.includes(CLINIC_CONFIG.CYBER_LUNGS_TRAIT_ID)
-                  : !!member.traits?.[CLINIC_CONFIG.CYBER_LUNGS_TRAIT_ID])
+              : hasTrait(member, CLINIC_CONFIG.CYBER_LUNGS_TRAIT_ID)
                 ? t('ui:clinic.alreadyEnhanced', {
                     defaultValue: 'Member already has this enhancement'
                   })
