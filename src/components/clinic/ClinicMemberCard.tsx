@@ -112,7 +112,9 @@ export const ClinicMemberCard = ({
               ? t('ui:clinic.notEnoughFame', {
                   defaultValue: 'Not enough fame'
                 })
-              : member.traits?.[CLINIC_CONFIG.CYBER_LUNGS_TRAIT_ID]
+              : (Array.isArray(member.traits)
+                  ? member.traits.includes(CLINIC_CONFIG.CYBER_LUNGS_TRAIT_ID)
+                  : !!member.traits?.[CLINIC_CONFIG.CYBER_LUNGS_TRAIT_ID])
                 ? t('ui:clinic.alreadyEnhanced', {
                     defaultValue: 'Member already has this enhancement'
                   })
