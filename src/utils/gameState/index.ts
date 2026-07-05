@@ -11,5 +11,6 @@ export {
   isLooseRecord,
   isPlainRecord,
   copySafePrimitiveEntries,
+  copySafePrimitiveObject,
   sanitizeStringArray
 } from '../objectUtils'
