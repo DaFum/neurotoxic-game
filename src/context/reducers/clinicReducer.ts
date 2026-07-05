@@ -1,3 +1,4 @@
+import { getSafeUUID } from '../../utils/crypto'
 import i18n from '../../i18n'
 import { formatCurrency } from '../../utils/numberUtils'
 import type { GameState } from '../../types'
@@ -418,8 +419,8 @@ export const handleGraftNeuroOverclock = (
           if (i !== memberIndex) return m
           return {
             ...m,
-            health: Math.max(1, finiteNumberOr(m.health || 0, 100) - 20),
-            stress: Math.min(100, finiteNumberOr(m.stress || 0, 0) + 30),
+            health: Math.max(1, finiteNumberOr(m.health, 100) - 20),
+            stress: Math.min(100, finiteNumberOr(m.stress, 0) + 30),
             traits: {
               ...(m.traits || {}),
               neuro_overclock: getTraitById('neuro_overclock') || {
@@ -436,7 +437,15 @@ export const handleGraftNeuroOverclock = (
           }
         }
       )
-    }
+    },
+    toasts: [
+      ...(state.toasts || []),
+      {
+        id: getSafeUUID(),
+        message: 'Grafted Neuro-Overclock module.',
+        type: 'success'
+      }
+    ]
   }
 }
 
