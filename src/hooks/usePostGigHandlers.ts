@@ -1,15 +1,6 @@
 import type { RhythmSetlistEntry } from '../types/rhythmGame'
-import type {
-  GamePhase,
-  GameState,
-  PostGigSummary,
-  Venue,
-  UpdatePlayerPayload,
-  PostResult
-} from '../types'
+import type { GameState, PostGigSummary, Venue } from '../types'
 import type { BrandDeal, SocialPostOption } from '../types/social'
-import type { QuestProgressEvent } from '../utils/questProgress'
-import type { createAddQuestAction } from '../context/actionCreators'
 import type { PostGigFinancials } from '../types/economy'
 import { useMemo, useRef, useState } from 'react'
 import i18n from '../i18n'
@@ -22,7 +13,6 @@ import {
 } from './postGig/handlers'
 import type { HandlerDispatchers } from './postGig/handlers/types'
 import type { PostGigPhase } from './postGig/usePostGigState'
-
 /** The post-gig handler surface returned by {@link usePostGigHandlers}. */
 export interface UsePostGigHandlersReturn {
   isProcessingAction: boolean
@@ -34,7 +24,6 @@ export interface UsePostGigHandlersReturn {
   handleContinue: () => void
   handleNextPhase: () => void
 }
-
 /** Props for {@link usePostGigHandlers}: post-gig state slices and the flat dispatcher/UI callbacks it threads into the sub-handlers. */
 export interface UsePostGigHandlersProps extends HandlerDispatchers {
   player: GameState['player']
@@ -53,7 +42,6 @@ export interface UsePostGigHandlersProps extends HandlerDispatchers {
   phase: PostGigPhase
   t?: import('i18next').TFunction
 }
-
 /**
  * Composition root for the post-gig phase: wires the processing guard and the
  * dispatcher bundle into the continue, social-post, brand-deal, and minor
@@ -88,12 +76,10 @@ export function usePostGigHandlers({
 }: UsePostGigHandlersProps): UsePostGigHandlersReturn {
   const { isProcessingAction, isProcessingActionRef, setIsProcessingAction } =
     useProcessingGuard()
-
   // Spin-story one-shot guard: decoupled from the shared continue guard so a
   // completed spin cannot permanently block the "Back to Tour" button.
   const hasSpunRef = useRef(false)
   const [hasSpun, setHasSpun] = useState(false)
-
   // Release the shared guard and spin guard on every phase change so each new
   // phase starts unblocked (e.g. fresh post-gig after returning to overworld).
   // Uses the render-phase "store previous prop" pattern to avoid setState-in-effect.
@@ -105,7 +91,6 @@ export function usePostGigHandlers({
     hasSpunRef.current = false
     setHasSpun(false)
   }
-
   const dispatchers = useMemo(
     () => ({
       updatePlayer,
@@ -134,7 +119,6 @@ export function usePostGigHandlers({
       addToast
     ]
   )
-
   const handleContinue = useContinueHandler({
     financials,
     perfScore,
@@ -179,7 +163,6 @@ export function usePostGigHandlers({
     t,
     dispatchers
   })
-
   return {
     isProcessingAction,
     hasSpun,
