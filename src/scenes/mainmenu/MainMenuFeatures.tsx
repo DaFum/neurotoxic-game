@@ -11,9 +11,18 @@ type FeatureSection = {
   rows?: string[][]
 }
 
+const isStringArray = (arr: unknown): arr is string[] => {
+  if (!Array.isArray(arr)) return false
+  for (let i = 0; i < arr.length; i++) {
+    if (typeof arr[i] !== 'string') return false
+  }
+  return true
+}
+
 const isFeatureSectionArray = (value: unknown): value is FeatureSection[] => {
   if (!Array.isArray(value)) return false
-  return value.every(section => {
+  for (let i = 0; i < value.length; i++) {
+    const section = value[i]
     if (!section || typeof section !== 'object') return false
     const item = section as Record<string, unknown>
     if (
@@ -22,32 +31,20 @@ const isFeatureSectionArray = (value: unknown): value is FeatureSection[] => {
     ) {
       return false
     }
-    if (
-      item.items !== undefined &&
-      (!Array.isArray(item.items) ||
-        item.items.some(elem => typeof elem !== 'string'))
-    ) {
+    if (item.items !== undefined && !isStringArray(item.items)) {
       return false
     }
-    if (
-      item.headers !== undefined &&
-      (!Array.isArray(item.headers) ||
-        item.headers.some(elem => typeof elem !== 'string'))
-    ) {
+    if (item.headers !== undefined && !isStringArray(item.headers)) {
       return false
     }
-    if (
-      item.rows !== undefined &&
-      (!Array.isArray(item.rows) ||
-        item.rows.some(
-          row =>
-            !Array.isArray(row) || row.some(cell => typeof cell !== 'string')
-        ))
-    ) {
-      return false
+    if (item.rows !== undefined) {
+      if (!Array.isArray(item.rows)) return false
+      for (let j = 0; j < item.rows.length; j++) {
+        if (!isStringArray(item.rows[j])) return false
+      }
     }
-    return true
-  })
+  }
+  return true
 }
 
 type FeatureBulletListProps = {
