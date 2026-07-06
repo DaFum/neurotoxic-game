@@ -145,3 +145,7 @@
 ## 2026-07-02 - React runtime import omission for types
 **Learning:** Pulled in a runtime `React` import only to use `ReactNode` in a type context, causing CI pipeline failure due to the `isolatedModules` strict rule requiring type-only imports for types.
 **Action:** Always use type-only imports (`import type { Foo }` or `import { type Foo }`) when importing items solely used as types, specifically `ReactNode` from `react`, to comply with strict module parsing bounds in the project.
+
+## 2026-07-28 - countKeys procedural utility
+**Learning:** Checking the number of keys on an object using `Object.keys(obj).length` causes unnecessary array allocation in memory, particularly in hot-path reducers.
+**Action:** Use the `countKeys(obj)` or `isEmptyObject(obj)` utility from `src/utils/gameState/checks.ts` instead of `Object.keys(obj).length` to count keys using a procedural loop with zero allocation.
