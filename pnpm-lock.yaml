@@ -36,8 +36,8 @@ importers:
         specifier: 1.17.0
         version: 1.17.0(react@19.2.7)
       motion-dom:
-        specifier: 12.39.0
-        version: 12.39.0
+        specifier: 12.42.2
+        version: 12.42.2
       motion-utils:
         specifier: 12.39.0
         version: 12.39.0
@@ -3666,9 +3666,6 @@ packages:
   mktemp@2.0.3:
     resolution: {integrity: sha512-Bq72L2oi/isYSy0guN9ihNhAMQOyZEwts+Bezm/1U+wh8bQ+fVQ2ZiUoJJjceOMiiKv/BUrA0NF98jFc81CB6w==}
     engines: {node: 20 || 22 || 24}
-
-  motion-dom@12.39.0:
-    resolution: {integrity: sha512-Xn7aAcGDhco/JZTXOub64UmaYn73C6J1Po7Fk+8EvkJsNGTqfhon6UJY53vJKXW5v5Zl8HrYsVxv6oPXeGoGLQ==}
 
   motion-dom@12.42.2:
     resolution: {integrity: sha512-5gIMWLp/PycBtJRJWRgjxke5n8dlvkSn2DrYW+tr3XcqAZY1xZh6BJyooJXCM8wdfM7wfMjkBJNLge1CKPUIRA==}
@@ -8393,10 +8390,6 @@ snapshots:
   minipass@7.1.3: {}
 
   mktemp@2.0.3: {}
-
-  motion-dom@12.39.0:
-    dependencies:
-      motion-utils: 12.39.0
 
   motion-dom@12.42.2:
     dependencies:
