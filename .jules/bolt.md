@@ -14,10 +14,11 @@
 
 **Learning:** Across reducers, sanitizers, selectors, domain engines, audio/MIDI processing, and PixiJS update loops, `.map()/.filter()/.reduce()/.some()/.find()/.forEach()` — plus `Object.entries()/values().<method>` and `map.entries()` — allocate intermediate arrays/tuples and a fresh closure per element. On this project's hot paths that is measurable GC pressure; a single-pass `for`/`for...of`/`for...in` loop that builds the result directly is consistently faster (a `.some()` → `for` swap benchmarked up to ~82x on large collections). Verified across `systemReducer`, `clinicReducer`, `minigameReducer`, `assetReducer`, `bandReducer` (`applyContrabandEffect`), `questLifecycle`, `questAcceptance`, `questOfferEngine`, `eventEngine/filterEvents.ts`, `postGigUtils`, `assetTicks` (`processLiabilityTick`), `assetSelectors`/`assetFinancials` (`getTotalDebt`, `getTotalDailyObligations`), `getModulePoolForAsset`, `buildSetlistChartDensity`, the recursive sanitizers, and `AudioManager.emitChange`.
 **Action:**
+
 - Replace array-method chains with one `for`/`for...of`/`for...in` loop; guard `for...in` with `Object.hasOwn()`. When the length is known, pre-allocate `new Array(source.length)`.
 - To update ONE known element of an array, `for`-scan for the index, shallow-clone (`[...arr]`), then assign that index — don't `.map()` the whole array.
 - For repeated lookups, precompute a `Map`/object once (inside `useMemo` on render paths) instead of repeated `Array.find()` (which is O(N·M) inside a loop). Prefer the project's existing precomputed Maps (`SONGS_BY_ID`, `HQ_ITEMS_BY_MERCH_KEY`).
-- `Set.has()` beats `Array.includes()` ONLY when the Set is cached/reused across many lookups. Instantiating `new Set()` for a single or small-N (N < ~5) membership check is *slower* than `.includes()` and adds allocation — don't convert one-off or combinatorial-loop checks; hoist or cache the Set instead.
+- `Set.has()` beats `Array.includes()` ONLY when the Set is cached/reused across many lookups. Instantiating `new Set()` for a single or small-N (N < ~5) membership check is _slower_ than `.includes()` and adds allocation — don't convert one-off or combinatorial-loop checks; hoist or cache the Set instead.
 - Iterating a `Map` in an `update()`/`requestAnimationFrame` loop: use `for (const key of map.keys())` and call `map.get(key)` only in the branch that needs the value; avoid `map.entries()`/`map.forEach()` tuple/closure allocations.
 - Building a `Map` from an array: `for...of` + `.set()` rather than `new Map(array.map(...))` (skips the intermediate tuple array).
 - When a `for...in` over a typed registry must index it, assert the key: `REGISTRY[key as keyof typeof REGISTRY]` — avoids TS7053 without allocating `Object.entries`.
@@ -142,6 +143,8 @@
 
 **Learning:** Using `.sort()` to extract the top N elements (e.g., top 3) is O(N log N) and adds sorting overhead in hot paths like `generatePostOptions`.
 **Action:** Replace `.sort()` with an O(N) single-pass loop that tracks the top N directly when N is small.
+
 ## 2026-07-02 - React runtime import omission for types
+
 **Learning:** Pulled in a runtime `React` import only to use `ReactNode` in a type context, causing CI pipeline failure due to the `isolatedModules` strict rule requiring type-only imports for types.
 **Action:** Always use type-only imports (`import type { Foo }` or `import { type Foo }`) when importing items solely used as types, specifically `ReactNode` from `react`, to comply with strict module parsing bounds in the project.
