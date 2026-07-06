@@ -62,7 +62,7 @@
     "motion-dom": "12.39.0",
     "motion-utils": "12.39.0",
     "pixi.js": "8.19.0",
-    "playwright": "1.61.0",
+    "playwright": "1.61.1",
     "react": "19.2.7",
     "react-dom": "19.2.7",
     "react-i18next": "17.0.8",
