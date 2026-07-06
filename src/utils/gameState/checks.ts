@@ -150,7 +150,10 @@ export const isOnCooldown = (
  * @param obj - The object to count keys for
  * @returns The number of keys
  */
-export const countKeys = (obj: Record<string, unknown>): number => {
+export const countKeys = (
+  obj: Record<string, unknown> | null | undefined
+): number => {
+  if (!obj) return 0
   let count = 0
   for (const key in obj) {
     if (Object.hasOwn(obj, key)) {
