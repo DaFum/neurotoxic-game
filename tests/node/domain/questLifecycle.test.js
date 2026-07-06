@@ -11,6 +11,56 @@ import { BRAND_DEALS } from '../../../src/data/brandDeals.ts'
 import { createBrandDealCompletedQuestEvent } from '../../../src/quests/producers/brandQuestEvents.ts'
 
 test('QuestLifecycle', async t => {
+  await t.test('addQuest', async t => {
+    await t.test('adds a quest if it is not already active', () => {
+      const state = { activeQuests: [] }
+      const quest = { id: 'test1' }
+      const nextState = QuestLifecycle.addQuest(state, quest)
+      assert.deepEqual(nextState.activeQuests, [quest])
+      assert.notEqual(nextState, state)
+    })
+
+    await t.test('does not add a quest if it is already active', () => {
+      const quest = { id: 'test1' }
+      const state = { activeQuests: [quest] }
+      const nextState = QuestLifecycle.addQuest(state, quest)
+      assert.equal(nextState, state)
+    })
+
+    await t.test('handles missing activeQuests array', () => {
+      const state = {}
+      const quest = { id: 'test1' }
+      const nextState = QuestLifecycle.addQuest(state, quest)
+      assert.deepEqual(nextState.activeQuests, [quest])
+    })
+
+    await t.test('rejects forbidden quest ids', () => {
+      const state = { activeQuests: [] }
+      const nextState = QuestLifecycle.addQuest(state, { id: '__proto__' })
+      assert.equal(nextState, state)
+    })
+
+    await t.test('completes threshold quests seeded at their target', () => {
+      const state = {
+        player: { day: 1 },
+        activeQuests: [],
+        activeStoryFlags: ['breakup_quest_active'],
+        completedQuestIds: [],
+        questCooldowns: []
+      }
+      const nextState = QuestLifecycle.addQuest(state, {
+        id: 'quest_ego_management',
+        progress: 80
+      })
+
+      assert.equal(
+        nextState.activeQuests.find(q => q.id === 'quest_ego_management'),
+        undefined
+      )
+      assert.ok(nextState.completedQuestIds.includes('quest_ego_management'))
+    })
+  })
+
   await t.test('completeQuest', async t => {
     await t.test('handles missing activeQuests', () => {
       const state = {}
