@@ -18,8 +18,14 @@ const MOTION_ANIMATE = { scale: 1 }
 const MOTION_HOVER = { scale: 1.2, zIndex: 60 }
 const MOTION_NO_HOVER = {}
 
+/**
+ * Represents the data structure of a node on the overworld map.
+ */
 type MapNodeData = GameMapNode
 
+/**
+ * Defines the properties required to render a map node tooltip.
+ */
 interface MapNodeTooltipProps {
   node: MapNodeData
   isCurrent: boolean
@@ -31,6 +37,9 @@ interface MapNodeTooltipProps {
   isPendingConfirm?: boolean
 }
 
+/**
+ * Defines the properties required to render an interactive map node.
+ */
 interface MapNodeProps {
   node: MapNodeData
   isCurrent: boolean
@@ -47,6 +56,12 @@ interface MapNodeProps {
   cityTraits?: CityTraitState
 }
 
+/**
+ * Generates descriptive alternative text for a map node pin icon.
+ * @param t - Localization translation callback
+ * @param type - The functional classification of the node
+ * @returns The localized alternative text string
+ */
 const getPinAltText = (t: TranslationCallback, type: string): string => {
   return t('ui:map.pinTypeAlt', {
     type: t('ui:map.nodeType.fallback', {
@@ -55,6 +70,12 @@ const getPinAltText = (t: TranslationCallback, type: string): string => {
   })
 }
 
+/**
+ * Determines the appropriate localized label for a map node type.
+ * @param t - Localization translation callback
+ * @param type - The functional classification of the node
+ * @returns The localized node type label
+ */
 const getNodeTypeLabel = (t: TranslationCallback, type: string): string => {
   if (type === 'GIG') return t('ui:map.nodeType.gig')
   if (type === 'SUPPLY_STOP')
@@ -65,6 +86,10 @@ const getNodeTypeLabel = (t: TranslationCallback, type: string): string => {
   })
 }
 
+/**
+ * Displays a badge indicating the risk of gig cancellation based on band harmony.
+ * @param props - Object containing the current harmony level and translation callback
+ */
 const CancellationBadge = memo(
   ({ harmony, t }: { harmony: number; t: TranslationCallback }) => {
     const risk = calcCancellationRisk(harmony)
@@ -91,6 +116,13 @@ const CancellationBadge = memo(
   }
 )
 
+/**
+ * Renders an informational tooltip for a map node on hover or focus.
+ * @remarks
+ * Displays node details such as genre bias, capacity, payout, and cancellation risk.
+ * Tooltip visibility is controlled by group hover/focus or pending confirmation state.
+ * @param props - Tooltip configuration, node data, and display state
+ */
 const MapNodeTooltip = memo(
   ({
     node,
@@ -197,7 +229,7 @@ MapNodeTooltip.displayName = 'MapNodeTooltip'
 
 /**
  * Displays one overworld map node with state-dependent styling and travel handlers.
- * @param props - Map node data, travel/current/pending states, hover handler, travel handler, translation callback, and route metadata.
+ * @param props - Map node configuration, travel state, and interaction handlers
  */
 export const MapNodeView = memo(
   ({
