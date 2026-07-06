@@ -145,3 +145,4 @@
 ## 2026-07-02 - React runtime import omission for types
 **Learning:** Pulled in a runtime `React` import only to use `ReactNode` in a type context, causing CI pipeline failure due to the `isolatedModules` strict rule requiring type-only imports for types.
 **Action:** Always use type-only imports (`import type { Foo }` or `import { type Foo }`) when importing items solely used as types, specifically `ReactNode` from `react`, to comply with strict module parsing bounds in the project.
+| 2026-07-06 | Removed unnecessary Map.keys() and .get() array iterations inside RoadieTrafficManager's hot path by extracting direct iterators, resulting in a cleaner loop that reduces potential runtime overhead in environments susceptible to slow property extraction. |
