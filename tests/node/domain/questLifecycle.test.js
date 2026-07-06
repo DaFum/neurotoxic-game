@@ -770,6 +770,103 @@ test('QuestLifecycle', async t => {
     )
   })
 
+  await t.test('advanceQuest', async t => {
+    await t.test('returns original state if activeQuests is missing', () => {
+      const state = {}
+      const nextState = QuestLifecycle.advanceQuest(state, { questId: 'q1' })
+      assert.equal(nextState, state)
+    })
+
+    await t.test(
+      'does not advance progress if required is not a number',
+      () => {
+        const state = { activeQuests: [{ id: 'q1', progress: 0 }] }
+        const nextState = QuestLifecycle.advanceQuest(state, {
+          questId: 'q1',
+          amount: 2
+        })
+        assert.equal(nextState.activeQuests[0].progress, 0)
+      }
+    )
+
+    await t.test('handles invalid amounts without corrupting state', () => {
+      const state = { activeQuests: [{ id: 'q1', progress: 2, required: 5 }] }
+
+      let nextState = QuestLifecycle.advanceQuest(state, {
+        questId: 'q1',
+        amount: -999
+      })
+      assert.equal(nextState.activeQuests[0].progress, 2)
+
+      nextState = QuestLifecycle.advanceQuest(state, {
+        questId: 'q1',
+        amount: Number.NaN
+      })
+      assert.equal(nextState.activeQuests[0].progress, 2)
+
+      nextState = QuestLifecycle.advanceQuest(state, {
+        questId: 'q1',
+        amount: Infinity
+      })
+      assert.equal(nextState.activeQuests[0].progress, 2)
+    })
+
+    await t.test('advances progress', () => {
+      const state = { activeQuests: [{ id: 'q1', progress: 0, required: 5 }] }
+      const nextState = QuestLifecycle.advanceQuest(state, {
+        questId: 'q1',
+        amount: 2
+      })
+      assert.equal(nextState.activeQuests[0].progress, 2)
+    })
+
+    await t.test('advances progress when progress is missing', () => {
+      const state = { activeQuests: [{ id: 'q1', required: 5 }] }
+      const nextState = QuestLifecycle.advanceQuest(state, {
+        questId: 'q1',
+        amount: 2
+      })
+      assert.equal(nextState.activeQuests[0].progress, 2)
+    })
+
+    await t.test('advances progress with default amount 1', () => {
+      const state = { activeQuests: [{ id: 'q1', progress: 0, required: 5 }] }
+      const nextState = QuestLifecycle.advanceQuest(state, { questId: 'q1' })
+      assert.equal(nextState.activeQuests[0].progress, 1)
+    })
+
+    await t.test(
+      'advances progress with amount null rejecting and leaving progress unchanged',
+      () => {
+        const state = { activeQuests: [{ id: 'q1', progress: 0, required: 5 }] }
+        const nextState = QuestLifecycle.advanceQuest(state, {
+          questId: 'q1',
+          amount: null
+        })
+        assert.equal(nextState.activeQuests[0].progress, 0)
+      }
+    )
+
+    await t.test('does not advance if id does not match', () => {
+      const state = { activeQuests: [{ id: 'q2', progress: 0, required: 5 }] }
+      const nextState = QuestLifecycle.advanceQuest(state, {
+        questId: 'q1',
+        amount: 1
+      })
+      assert.equal(nextState.activeQuests[0].progress, 0)
+    })
+
+    await t.test('completes quest when progress reaches required', () => {
+      const state = {
+        activeQuests: [{ id: 'q1', progress: 3, required: 4, label: 'Q' }],
+        toasts: []
+      }
+      const nextState = QuestLifecycle.advanceQuest(state, {
+        questId: 'q1',
+        amount: 1
+      })
+      assert.equal(nextState.activeQuests.length, 0) // Completed and removed
+      assert.equal(nextState.toasts.length, 1)
   await t.test('checkDeadlines', async t => {
     await t.test('handles missing activeQuests', () => {
       const state = {}
