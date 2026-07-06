@@ -11,7 +11,6 @@
 > ## Resolution status (autonomous fix pass, branch `claude/neurotoxic-audit-1ky38w`)
 >
 > **Fixed & verified (11 commits, all typecheck + affected test suites green):**
->
 > - **Missing integration (user chose "integrate and retune"):** **M1** — wired the in-gig event system: `gig_intro`/`gig_mid` fire from `useRhythmGameLogic` (at gig start / halfway) and are exempt from the GIG-scene block + daily-event cap; the pre-existing pause-on-`activeEvent` infrastructure handles the modal. This makes the 19 events reachable and cascades to **M2** (`showman` trait now obtainable via `stageDives`) and **M3** `stage_diver` milestone. **M4** — wired the built game-over path via an opt-in `deal_devil` "sign in blood" gamble (luck check; failure → `game_over`). **M6** — the roadside-shrine reward now grants the wired `golden_pick` instead of the no-op `mystery_pick`.
 > - **Retuned content:** **M3** `collector` → `>= 1` unlock (only one exists in data) with updated EN/DE copy; **M3** `full_band` milestone removed (roster hard-fixed at 3, unretunable) with its EN/DE keys.
 > - **Safety cluster** I1–I9 (`finiteNumberOr`/`isFiniteNumber` on persisted money/fame/skill/controversy/score addends) and D10/I12 (shared `REGION_BLACKLIST_THRESHOLD` + finite read); I11 (unify null-region-key fallback to the `'Unknown'` bucket).
@@ -19,7 +18,6 @@
 > - **Dead code** X5 (delete unreferenced `schemas/crisis.json`), X6 (declare `VITE_ENABLE_VERCEL_TELEMETRY`).
 >
 > **Deferred with rationale (left as-is, not silently changed):**
->
 > - **D12** (moduleUnlock dedup) — provably equivalent but would add per-call array allocation in a file with deliberate perf ("BOLT") optimizations; not worth the regression.
 > - **D14** (primitive-record sanitizers) — the two have divergent empty-return contracts (`{}` vs `undefined`) and different call sites; merging risks a security-sanitizer behavior change for marginal gain.
 > - **I10** (`Number(x) || 0` → `finiteNumberOr`) — `Number()` coerces numeric strings that `finiteNumberOr` would reject, a real behavior change on hostile payloads; left as the AGENTS.md-permitted post-`Number()` form.
@@ -27,7 +25,6 @@
 > - **I13** (decorative `€` glyph), **X4** (dead `category: 'travel'` on 55 chatter entries), **D15/D16/D25** (optional micro-dedups) — LOW / Simplicity-First: not worth the churn.
 >
 > **Recommended next (not a product decision, but out of scope for this pass):**
->
 > - **O2** (8 UI test files mock a stale `useGameState` API): a test-only migration to `useGameSelector`/`useGameActions`. The tests currently pass (the mock fabricates the old API), so this is hygiene, not a bug; left as a follow-up to avoid destabilizing the suite at the end of this pass.
 > - **X2/X3** are resolved by M1: the stage-dive tracking block is now live, and the `pre_gig` `'gig'` fallback is harmless alongside the in-gig triggers.
 > - A **manual playtest of the in-gig events** (drive a gig past 0% and 50%, resolve the modal, confirm audio resumes) is advisable — the wiring is covered by the existing rhythm-loop/gig-scene test suites, but nothing here exercised it on a live canvas.
@@ -103,7 +100,7 @@ If one drifts, the booking ban and the blacklist event desynchronize. The two si
 `src/domain/questAdvance.ts:32-49` (`advanceQuestProgress`) vs `:86-100` (`setQuestProgress`) — same `findActiveQuestIndex` → guard → `getQuestWithDefinition` → `finiteNumberOr(required, NaN)` sequence.
 **Action: MERGE** — small `resolveActiveQuest(state, questId)` helper.
 
-**D14. [MED] Two primitive-record sanitizers with divergent semantics** _(carried over from 2026-07-01 audit; still present)_
+**D14. [MED] Two primitive-record sanitizers with divergent semantics** *(carried over from 2026-07-01 audit; still present)*
 `sanitizePrimitiveOptions` — `src/context/reducers/toastSanitizers.ts:54` vs `copySafePrimitiveObject` — `src/context/reducers/sanitizers/stateSanitizers.ts:123`.
 Both strip forbidden/prototype keys and keep only `string|number|boolean|null`, but differ in loop style and empty-return semantics (`{}` vs `undefined`). Two independent implementations of the same security-sensitive operation will drift.
 **Action: MERGE** into one shared `sanitizePrimitiveRecord`; make the empty-return contract explicit per caller.
@@ -210,7 +207,6 @@ Each site violates the rule while sibling code in the same file follows it.
 ### 3c. Region-key handling
 
 **I11. [MED] Four different fallbacks when `getRegionKeyForLocation` returns null, for the same concept:**
-
 - `src/context/reducers/gigReducer.ts:256` → `|| 'Unknown'`
 - `src/hooks/postGig/handlers/useContinueHandler.ts:130` → `?? player?.location ?? ''`
 - `src/utils/postGig/derivations.ts:83` → `?? player.location`
@@ -224,7 +220,7 @@ The last three fall back to the raw `venues:<id>.name` display key — exactly w
 
 **I13. [LOW]** `src/ui/bandhq/StatsTab.tsx:31` — `icon='€'` hardcodes the currency glyph; monetary values elsewhere flow through `formatCurrency(value, i18n.language)`. **FIX:** derive from the formatter/shared constant, or document as decorative.
 
-**I14. [LOW] Latent footgun** _(carried over from 2026-07-01 audit; still present)_ — `formatCurrency` (`src/utils/numberUtils.ts:67`) and siblings default `language = 'en'`. No current caller omits it (all ~60 sites verified passing a locale), but a future omission silently bakes English currency with no type error. **FIX (hardening):** make the language parameter required.
+**I14. [LOW] Latent footgun** *(carried over from 2026-07-01 audit; still present)* — `formatCurrency` (`src/utils/numberUtils.ts:67`) and siblings default `language = 'en'`. No current caller omits it (all ~60 sites verified passing a locale), but a future omission silently bakes English currency with no type error. **FIX (hardening):** make the language parameter required.
 
 ---
 
@@ -269,7 +265,6 @@ Every event uses `trigger: 'gig_intro'` or `'gig_mid'`. Event selection (`src/ut
 **Action: FIX** via M1, or **INTEGRATE** an alternative `stageDives` source.
 
 **M3. [HIGH] Three milestones can never fire**
-
 - `src/data/milestones/milestones.ts:260-267` — `stage_diver` requires `stageDives >= 10` (frozen at 0, see M2).
 - `src/data/milestones/milestones.ts:301-309` — `collector` requires `unlocks.length >= 5`, but exactly ONE unlock exists in all game data (`unlock: 'rare_vinyl'`, `src/data/events/transport.ts:301`; `public/locales/en/unlocks.json` confirms). Max reachable is 1.
 - `src/data/milestones/milestones.ts:218-226` — `full_band` requires `band.members.length >= 4`; the roster is fixed at 3, and no reward type, event delta, or code path can add a member (verified: `questRewards.ts` only patches existing members; `delta.ts:397-413` only pushes per-member skill deltas).

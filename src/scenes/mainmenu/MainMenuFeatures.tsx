@@ -11,6 +11,14 @@ type FeatureSection = {
   rows?: string[][]
 }
 
+const isStringArray = (arr: unknown): arr is string[] => {
+  if (!Array.isArray(arr)) return false
+  for (let i = 0; i < arr.length; i++) {
+    if (typeof arr[i] !== 'string') return false
+  }
+  return true
+}
+
 const isFeatureSectionArray = (value: unknown): value is FeatureSection[] => {
   if (!Array.isArray(value)) return false
   for (let i = 0; i < value.length; i++) {
@@ -23,26 +31,16 @@ const isFeatureSectionArray = (value: unknown): value is FeatureSection[] => {
     ) {
       return false
     }
-    if (item.items !== undefined) {
-      if (!Array.isArray(item.items)) return false
-      for (let j = 0; j < item.items.length; j++) {
-        if (typeof item.items[j] !== 'string') return false
-      }
+    if (item.items !== undefined && !isStringArray(item.items)) {
+      return false
     }
-    if (item.headers !== undefined) {
-      if (!Array.isArray(item.headers)) return false
-      for (let j = 0; j < item.headers.length; j++) {
-        if (typeof item.headers[j] !== 'string') return false
-      }
+    if (item.headers !== undefined && !isStringArray(item.headers)) {
+      return false
     }
     if (item.rows !== undefined) {
       if (!Array.isArray(item.rows)) return false
       for (let j = 0; j < item.rows.length; j++) {
-        const row = item.rows[j]
-        if (!Array.isArray(row)) return false
-        for (let k = 0; k < row.length; k++) {
-          if (typeof row[k] !== 'string') return false
-        }
+        if (!isStringArray(item.rows[j])) return false
       }
     }
   }

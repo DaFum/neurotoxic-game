@@ -1,23 +1,11 @@
 import { describe, it, expect, vi } from 'vitest'
-import {
-  generateBrandOffers,
-  negotiateDeal
-} from '../../src/utils/brandDealLogic'
-import {
-  SocialEngineGameState,
-  BrandDeal,
-  BrandOffer
-} from '../../src/types/social'
-import {
-  DEAL_NEGOTIATION_SAFE_CHANCE,
-  DEAL_NEGOTIATION_PERSUASIVE_CHANCE,
-  DEAL_NEGOTIATION_AGGRESSIVE_CHANCE
-} from '../../src/context/gameConstants'
+import { generateBrandOffers, negotiateDeal } from '../../src/utils/brandDealLogic'
+import { SocialEngineGameState, BrandDeal, BrandOffer } from '../../src/types/social'
+import { DEAL_NEGOTIATION_SAFE_CHANCE, DEAL_NEGOTIATION_PERSUASIVE_CHANCE, DEAL_NEGOTIATION_AGGRESSIVE_CHANCE } from '../../src/context/gameConstants'
 
 // We will mock buildBrandOffer to easily test what gets passed to it
-vi.mock('../../src/utils/brandOfferFlavor', async importOriginal => {
-  const actual =
-    await importOriginal<typeof import('../../src/utils/brandOfferFlavor')>()
+vi.mock('../../src/utils/brandOfferFlavor', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../src/utils/brandOfferFlavor')>()
   return {
     ...actual,
     buildBrandOffer: vi.fn((deal, ctx) => ({ ...deal, _testCtx: ctx }))
@@ -51,9 +39,7 @@ describe('brandDealLogic', () => {
       } as unknown as SocialEngineGameState
 
       const rng = () => 0.5 // Stable rng
-      const offers = generateBrandOffers(gameState, rng) as (BrandOffer & {
-        _testCtx: { totalFollowers: number }
-      })[]
+      const offers = generateBrandOffers(gameState, rng) as (BrandOffer & { _testCtx: { totalFollowers: number } })[]
 
       // We expect it to process 1000 followers and output up to 3 offers
       expect(offers.length).toBeGreaterThan(0)
@@ -64,7 +50,7 @@ describe('brandDealLogic', () => {
     })
 
     it('returns up to 3 distinct deals', () => {
-      const gameState = {
+       const gameState = {
         social: { instagram: 500000 },
         band: {}
       } as unknown as SocialEngineGameState
@@ -132,12 +118,7 @@ describe('brandDealLogic', () => {
       // Test at exact threshold minus epsilon, clamped to valid [0, 1) range
       const rng = () => Math.max(0, DEAL_NEGOTIATION_PERSUASIVE_CHANCE - 0.01)
 
-      const result = negotiateDeal(
-        mockDealNoPerGig,
-        'PERSUASIVE',
-        gameState,
-        rng
-      )
+      const result = negotiateDeal(mockDealNoPerGig, 'PERSUASIVE', gameState, rng)
 
       expect(result.success).toBe(true)
       expect(result.status).toBe('ACCEPTED')
@@ -148,8 +129,7 @@ describe('brandDealLogic', () => {
     it('handles PERSUASIVE strategy with failure', () => {
       const gameState = { band: {}, social: {} } as SocialEngineGameState
       // Test at exact threshold plus epsilon, clamped to valid [0, 1) range
-      const rng = () =>
-        Math.min(0.99, DEAL_NEGOTIATION_PERSUASIVE_CHANCE + 0.01)
+      const rng = () => Math.min(0.99, DEAL_NEGOTIATION_PERSUASIVE_CHANCE + 0.01)
 
       const result = negotiateDeal(mockDeal, 'PERSUASIVE', gameState, rng)
 
@@ -173,8 +153,7 @@ describe('brandDealLogic', () => {
     it('handles AGGRESSIVE strategy with failure (REVOKED)', () => {
       const gameState = { band: {}, social: {} } as SocialEngineGameState
       // Test at exact threshold plus epsilon, clamped to valid [0, 1) range
-      const rng = () =>
-        Math.min(0.99, DEAL_NEGOTIATION_AGGRESSIVE_CHANCE + 0.01)
+      const rng = () => Math.min(0.99, DEAL_NEGOTIATION_AGGRESSIVE_CHANCE + 0.01)
 
       const result = negotiateDeal(mockDeal, 'AGGRESSIVE', gameState, rng)
 
@@ -197,9 +176,7 @@ describe('brandDealLogic', () => {
 
     it('applies modifier: social_manager trait', () => {
       const gameState = {
-        band: {
-          members: [{ traits: { social_manager: { id: 'social_manager' } } }]
-        }
+        band: { members: [{ traits: { 'social_manager': { id: 'social_manager' } } }] },
       } as unknown as SocialEngineGameState
 
       // Manager gives +0.1 to SAFE, so chance is 0.9. (Base 0.8)
@@ -214,12 +191,7 @@ describe('brandDealLogic', () => {
       } as unknown as SocialEngineGameState
 
       // Fame gives +0.2 to AGGRESSIVE. Base is 0.3. Total 0.5.
-      const result = negotiateDeal(
-        mockDeal,
-        'AGGRESSIVE',
-        gameState,
-        () => 0.45
-      )
+      const result = negotiateDeal(mockDeal, 'AGGRESSIVE', gameState, () => 0.45)
       expect(result.success).toBe(true)
     })
 

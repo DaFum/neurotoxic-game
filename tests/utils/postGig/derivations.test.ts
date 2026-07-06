@@ -3,21 +3,18 @@ import { derivePostOptions } from '../../../src/utils/postGig/derivations'
 import * as socialEngine from '../../../src/utils/socialEngine'
 import type { GameState } from '../../../src/types/game'
 
-vi.mock('../../../src/utils/socialEngine', async importOriginal => {
-  const actual =
-    await importOriginal<typeof import('../../../src/utils/socialEngine')>()
+vi.mock('../../../src/utils/socialEngine', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../src/utils/socialEngine')>()
   return {
     ...actual,
-    generatePostOptions: vi.fn()
+    generatePostOptions: vi.fn(),
   }
 })
 
 describe('derivePostOptions', () => {
   it('returns successful options from generatePostOptions', () => {
     const mockOptions = [{ id: 'opt1' }]
-    vi.mocked(socialEngine.generatePostOptions).mockReturnValue(
-      mockOptions as unknown as socialEngine.SocialPostOption[]
-    )
+    vi.mocked(socialEngine.generatePostOptions).mockReturnValue(mockOptions as unknown as socialEngine.SocialPostOption[])
 
     const result = derivePostOptions({
       currentGig: { id: 'test-gig' } as unknown as GameState['currentGig'],

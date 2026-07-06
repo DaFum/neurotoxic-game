@@ -1,3 +1,4 @@
+
 import { describe, it, expect } from 'vitest'
 import {
   clampUnit,
@@ -78,12 +79,8 @@ describe('numberUtils', () => {
     })
 
     it('uses the specified locale', () => {
-      expect(
-        formatSignedFinancialAmount(50, 'income', 'de').replace(/\s/g, ' ')
-      ).toBe('+50 €')
-      expect(
-        formatSignedFinancialAmount(50, 'expense', 'de').replace(/\s/g, ' ')
-      ).toBe('-50 €')
+      expect(formatSignedFinancialAmount(50, 'income', 'de').replace(/\s/g, ' ')).toBe('+50 €')
+      expect(formatSignedFinancialAmount(50, 'expense', 'de').replace(/\s/g, ' ')).toBe('-50 €')
     })
   })
 })

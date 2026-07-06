@@ -197,11 +197,7 @@ const EventOptionsList = ({
         // from the option's effect (null money → 0) so the formatted
         // amount matches the mechanical effect and localizes per locale.
         const previewMoney = getOptionPreviewMoney(option, gameState)
-        const amount = formatCurrency(
-          previewMoney ?? 0,
-          i18n.language,
-          'always'
-        )
+        const amount = formatCurrency(previewMoney ?? 0, i18n.language, 'always')
         return (
           <EventOptionButton
             key={key}

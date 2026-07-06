@@ -19,7 +19,7 @@ vi.mock('framer-motion', () => ({
       // Create a wrapper that fires onAnimationComplete when clicked
       return (
         <div
-          data-testid='motion-wrapper'
+          data-testid="motion-wrapper"
           className={className}
           style={style}
           onClick={onAnimationComplete}
@@ -36,7 +36,7 @@ describe('TravelingVan', () => {
   const mockNode1: MapNode = { id: 'node1', x: 10, y: 20, type: 'gigs' }
   const mockNode2: MapNode = { id: 'node2', x: 80, y: 90, type: 'gigs' }
   const mockVanUrl = 'http://example.com/van.png'
-  const mockT = vi.fn(key => key)
+  const mockT = vi.fn((key) => key)
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -116,8 +116,7 @@ describe('TravelingVan', () => {
 
   test('omits crossorigin for data URLs', () => {
     const travelCompletedRef = { current: false }
-    const dataUrl =
-      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='
+    const dataUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='
 
     render(
       <TravelingVan

@@ -208,6 +208,7 @@ describe('useMapGeneration', () => {
     const generateMapSpy = vi
       .spyOn(MapGenerator.prototype, 'generateMap')
       .mockImplementation(() => {
+
         throw 'Non-error string thrown'
       })
 
