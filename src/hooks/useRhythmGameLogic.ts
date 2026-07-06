@@ -4,6 +4,7 @@ import type { MapNode } from '../types/map'
 import { useGameActions, useGameSelector } from '../context/GameState.tsx'
 import { stopAudio } from '../utils/audio/audioEngine'
 import { finiteNumberOr } from '../utils/finiteNumber'
+import { hasTrait } from '../utils/traitUtils'
 import { useRhythmGameState } from './rhythmGame/useRhythmGameState'
 import { useRhythmGameScoring } from './rhythmGame/useRhythmGameScoring'
 import { useRhythmGameAudio } from './rhythmGame/useRhythmGameAudio'
@@ -93,11 +94,7 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
     () => {
       const members = band?.members
       const hasNeuroOverclock = Array.isArray(members)
-        ? members.some((m: import('../types').BandMember) =>
-            m.traits && (Array.isArray(m.traits)
-              ? m.traits.includes('neuro_overclock')
-              : m.traits['neuro_overclock'])
-          )
+        ? members.some((m: import('../types').BandMember) => hasTrait(m, 'neuro_overclock'))
         : false
       const baseTempo = finiteNumberOr(band?.tempo, 0)
       const finalTempo = hasNeuroOverclock ? baseTempo + 0.5 : baseTempo
