@@ -423,7 +423,7 @@ export const handleGraftNeuroOverclock = (
     ...state,
     player: {
       ...state.player,
-      money: clampPlayerMoney(state.player.money - CLINIC_GRAFT_COST)
+      money: clampPlayerMoney(finiteNumberOr(state.player?.money, 0) - CLINIC_GRAFT_COST)
     },
     band: {
       ...state.band,
