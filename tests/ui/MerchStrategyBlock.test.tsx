@@ -25,7 +25,7 @@ vi.mock('react-i18next', () => ({
 
 describe('MerchStrategyBlock', () => {
   it('surfaces prorated restock amount and cost near capacity', () => {
-    const { container } = render(
+    render(
       <MerchStrategyBlock
         bandInventory={{ shirts: 95 }}
         customPrices={{}}
@@ -67,5 +67,14 @@ describe('MerchStrategyBlock', () => {
     fireEvent.click(restockButtons[0])
 
     expect(onRestock).not.toHaveBeenCalled()
+
+    // The disabled button triggers tooltip via its parent span wrapper. Since it's a DOM event,
+    // we must dispatch the event on the wrapper.
+    const wrapper = restockButtons[0].parentElement
+    if (wrapper) fireEvent.mouseEnter(wrapper)
+
+    expect(
+      screen.getByText('Cost: 0 EUR (+0)')
+    ).toBeInTheDocument()
   })
 })
