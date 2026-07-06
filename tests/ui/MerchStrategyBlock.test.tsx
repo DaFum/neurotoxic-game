@@ -36,8 +36,11 @@ describe('MerchStrategyBlock', () => {
       />
     )
 
+    const restockButtons = screen.getAllByRole('button', { name: 'Restock' })
+    fireEvent.mouseEnter(restockButtons[1])
+
     expect(
-      container.querySelector('[title="Cost: 30 EUR (+5)"]')
+      screen.getByText('Cost: 30 EUR (+5)')
     ).toBeInTheDocument()
   })
 

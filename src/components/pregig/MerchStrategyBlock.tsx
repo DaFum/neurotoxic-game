@@ -10,6 +10,7 @@ import {
 } from '../../utils/merchUtils'
 import { HQ_ITEMS_BY_MERCH_KEY } from '../../data/hqItems'
 import { IMG_PROMPTS, resolveGenImageUrl } from '../../utils/imageGen'
+import { Tooltip } from '../../ui/shared/Tooltip'
 
 interface MerchStrategyBlockProps {
   bandInventory: Record<string, unknown>
@@ -101,22 +102,23 @@ const MerchItemRow: React.FC<MerchItemRowProps> = ({
           </button>
         </div>
 
-        <button
-          type='button'
-          onClick={() => {
-            if (restockDisabled) return
-            onRestock(item.key)
-          }}
-          disabled={restockDisabled}
-          aria-disabled={restockDisabled}
-          className='bg-toxic-green text-void-black font-mono px-3 py-1 uppercase text-sm hover:opacity-80 transition-colors disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
-          title={t('ui:pregig.merchStrategy.restockCost', {
-            amount: item.restockAmount,
-            cost: formatCurrency(item.restockCost, language)
-          })}
-        >
-          {t('ui:pregig.merchStrategy.restock')}
-        </button>
+        <Tooltip content={t('ui:pregig.merchStrategy.restockCost', {
+          amount: item.restockAmount,
+          cost: formatCurrency(item.restockCost, language)
+        })}>
+          <button
+            type='button'
+            onClick={() => {
+              if (restockDisabled) return
+              onRestock(item.key)
+            }}
+            disabled={restockDisabled}
+            aria-disabled={restockDisabled}
+            className='bg-toxic-green text-void-black font-mono px-3 py-1 uppercase text-sm hover:opacity-80 transition-colors disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
+          >
+            {t('ui:pregig.merchStrategy.restock')}
+          </button>
+        </Tooltip>
       </div>
     </div>
   )
