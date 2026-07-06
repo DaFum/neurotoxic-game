@@ -82,6 +82,14 @@ test('eventEngine.filterEvents filters by trigger', () => {
   assert.equal(result[0].id, '1')
 })
 
+test('eventEngine.filterEvents resolves false conditions without pushing to result', () => {
+  const events = [
+    { id: 'false_condition', trigger: 'travel', condition: () => false }
+  ]
+  const result = eventEngine.filterEvents(events, 'travel', {})
+  assert.equal(result.length, 0)
+})
+
 test('eventEngine.filterEvents respects conditions', () => {
   const events = [
     { id: '1', trigger: 'travel', condition: state => state.player.money > 100 }
@@ -89,6 +97,15 @@ test('eventEngine.filterEvents respects conditions', () => {
   const state = { player: { money: 50 } }
   const result = eventEngine.filterEvents(events, 'travel', state)
   assert.equal(result.length, 0)
+})
+
+test('eventEngine.filterEvents respects condition truthy evaluation', () => {
+  const events = [
+    { id: 'truthy', trigger: 'travel', condition: () => true }
+  ]
+  const result = eventEngine.filterEvents(events, 'travel', {})
+  assert.equal(result.length, 1)
+  assert.equal(result[0].id, 'truthy')
 })
 
 test('eventEngine.filterEvents allows trigger:random events at any trigger point', () => {
@@ -105,6 +122,16 @@ test('eventEngine.filterEvents allows trigger:random events at any trigger point
     !result.some(e => e.id === 'other'),
     'post_gig event should be excluded'
   )
+})
+
+test('eventEngine.filterEvents handles sparse array entries without throwing', () => {
+  const events = [
+    undefined,
+    { id: '1', trigger: 'travel' }
+  ]
+  const result = eventEngine.filterEvents(events, 'travel', {})
+  assert.equal(result.length, 1)
+  assert.equal(result[0].id, '1')
 })
 
 test('eventEngine.filterEvents handles condition errors and logs them via handleError', () => {
@@ -129,6 +156,29 @@ test('eventEngine.filterEvents handles condition errors and logs them via handle
   assert.equal(channel, 'EventEngine')
   assert.ok(message.includes('Condition check failed for event crash_event'))
   assert.match(error.message, /Filter failed/)
+})
+
+test('eventEngine.filterEvents handles condition errors with missing event id', () => {
+  mockLogger.error.mock.resetCalls()
+  const throwingEventWithoutId = {
+    trigger: 'random',
+    condition: () => {
+      throw new Error('Filter failed without id')
+    }
+  }
+
+  const result = eventEngine.filterEvents([throwingEventWithoutId], 'random', {})
+
+  assert.deepEqual(
+    result,
+    [],
+    'Should filter out the event that throws an error'
+  )
+  assert.strictEqual(mockLogger.error.mock.calls.length, 1)
+  const [channel, message, error] = mockLogger.error.mock.calls[0].arguments
+  assert.equal(channel, 'EventEngine')
+  assert.ok(message.includes('Condition check failed for event unknown'))
+  assert.match(error.message, /Filter failed without id/)
 })
 
 test('eventEngine.selectEvent dampens random band events when harmony < 30', () => {
