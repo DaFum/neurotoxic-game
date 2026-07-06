@@ -131,8 +131,9 @@ export class RoadieTrafficManager {
 
   cleanupTraffic() {
     if (this.carSprites && this.carSprites.size > 0) {
-      for (const [id, sprite] of this.carSprites) {
+      for (const id of this.carSprites.keys()) {
         if (!this.currentIds.has(id)) {
+          const sprite = this.carSprites.get(id)
           if (!sprite) continue
 
           try {
