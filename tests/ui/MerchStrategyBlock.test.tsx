@@ -33,6 +33,7 @@ describe('MerchStrategyBlock', () => {
         onRestock={vi.fn()}
         restockCostMultiplier={1}
         merchCapacityBonus={0}
+        playerMoney={1000}
       />
     )
 
@@ -55,6 +56,7 @@ describe('MerchStrategyBlock', () => {
         onRestock={onRestock}
         restockCostMultiplier={1}
         merchCapacityBonus={0}
+        playerMoney={1000}
       />
     )
 
