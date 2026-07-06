@@ -141,3 +141,21 @@ export const isOnCooldown = (
   }
   return false
 }
+
+/**
+ * High-performance object key counting.
+ * Returns the number of enumerable own properties.
+ * Avoids the array allocation of Object.keys().length.
+ *
+ * @param obj - The object to count keys for
+ * @returns The number of keys
+ */
+export const countKeys = (obj: Record<string, unknown>): number => {
+  let count = 0
+  for (const key in obj) {
+    if (Object.hasOwn(obj, key)) {
+      count++
+    }
+  }
+  return count
+}

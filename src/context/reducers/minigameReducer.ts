@@ -9,6 +9,7 @@ import {
   clampUnitRandom,
   clamp0to100,
   clampNonNegative,
+  countKeys,
   finiteNumberOr,
   isForbiddenKey,
   isFiniteNumber
@@ -258,7 +259,7 @@ export const handleCompleteTravelMinigame = (
     if (contrabandId) {
       // Call addContrabandHelper directly to leverage its logic
       const preStashLength = newState.band.stash
-        ? Object.keys(newState.band.stash).length
+        ? countKeys(newState.band.stash)
         : 0
       const preStashItem =
         newState.band.stash && Object.hasOwn(newState.band.stash, contrabandId)
@@ -278,7 +279,7 @@ export const handleCompleteTravelMinigame = (
           ? (newState.band.stash[contrabandId] as Record<string, unknown>)
           : undefined
       const postStacks = postItem ? finiteNumberOr(postItem.stacks, 0) : 0
-      const postStashLength = Object.keys(newState.band?.stash || {}).length
+      const postStashLength = countKeys(newState.band?.stash || {})
 
       const wasAdded =
         postStashLength > preStashLength || postStacks > preStacks
