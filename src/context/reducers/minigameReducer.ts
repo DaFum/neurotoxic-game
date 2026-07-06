@@ -260,7 +260,7 @@ export const handleCompleteTravelMinigame = (
       // Call addContrabandHelper directly to leverage its logic
       const preStashLength = countKeys(newState.band?.stash)
       const preStashItem =
-        newState.band.stash && Object.hasOwn(newState.band.stash, contrabandId)
+        newState.band?.stash && Object.hasOwn(newState.band.stash, contrabandId)
           ? (newState.band.stash[contrabandId] as
               | Record<string, unknown>
               | undefined)
@@ -273,7 +273,7 @@ export const handleCompleteTravelMinigame = (
 
       // Determine if item was actually added (length increased, or stacks increased)
       const postItem =
-        newState.band.stash && Object.hasOwn(newState.band.stash, contrabandId)
+        newState.band?.stash && Object.hasOwn(newState.band.stash, contrabandId)
           ? (newState.band.stash[contrabandId] as Record<string, unknown>)
           : undefined
       const postStacks = postItem ? finiteNumberOr(postItem.stacks, 0) : 0

@@ -867,6 +867,9 @@ test('QuestLifecycle', async t => {
       })
       assert.equal(nextState.activeQuests.length, 0) // Completed and removed
       assert.equal(nextState.toasts.length, 1)
+    })
+  })
+
   await t.test('checkDeadlines', async t => {
     await t.test('handles missing activeQuests', () => {
       const state = {}
