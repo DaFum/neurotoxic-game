@@ -8,7 +8,7 @@ describe('calculateGigTimeMs', () => {
       startCtxTimeSec: 2.0,
       offsetMs: 500
     })
-    // (5.5 - 2.0) * 1000 + 500 = 3500 * 1000 + 500 = 3500 + 500 = 4000
+    // (5.5 - 2.0) * 1000 + 500 = 3.5 * 1000 + 500 = 3500 + 500 = 4000
     expect(result).toBe(4000)
   })
 
@@ -18,7 +18,7 @@ describe('calculateGigTimeMs', () => {
       startCtxTimeSec: 2.0,
       offsetMs: -500
     })
-    // (5.5 - 2.0) * 1000 - 500 = 3500 - 500 = 3000
+    // (5.5 - 2.0) * 1000 - 500 = 3.5 * 1000 - 500 = 3500 - 500 = 3000
     expect(result).toBe(3000)
   })
 
@@ -27,7 +27,7 @@ describe('calculateGigTimeMs', () => {
       contextTimeSec: 5.5,
       startCtxTimeSec: 2.0
     })
-    // (5.5 - 2.0) * 1000 + 0 = 3500
+    // (5.5 - 2.0) * 1000 + 0 = 3.5 * 1000 + 0 = 3500
     expect(result).toBe(3500)
   })
 
