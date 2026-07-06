@@ -4,6 +4,7 @@ import type { MapNode } from '../types/map'
 import { useGameActions, useGameSelector } from '../context/GameState.tsx'
 import { stopAudio } from '../utils/audio/audioEngine'
 import { finiteNumberOr } from '../utils/finiteNumber'
+import { hasTrait } from '../utils/traitUtils'
 import { useRhythmGameState } from './rhythmGame/useRhythmGameState'
 import { useRhythmGameScoring } from './rhythmGame/useRhythmGameScoring'
 import { useRhythmGameAudio } from './rhythmGame/useRhythmGameAudio'
@@ -11,6 +12,7 @@ import { useRhythmGameLoop } from './rhythmGame/useRhythmGameLoop'
 import { useRhythmGameInput } from './rhythmGame/useRhythmGameInput'
 import type { RhythmGameRefState } from '../types/rhythmGame'
 import type { RhythmUiState } from './rhythmGame/useRhythmGameState'
+import type { BandMember } from '../types'
 export type { RhythmUiState } from './rhythmGame/useRhythmGameState'
 /**
  * Public rhythm game stats shape exposed to the gig scene.
@@ -90,13 +92,22 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
   // Fold temporary band effects (contraband/equipment) into the static
   // performance values the scoring hook consumes.
   const scoringPerformance = useMemo(
-    () => ({
-      ...band.performance,
-      tempo: finiteNumberOr(band.tempo, 0),
-      critChance: finiteNumberOr(band.crit, 0),
-      crowdControl: finiteNumberOr(band.crowdControl, 0)
-    }),
-    [band.performance, band.tempo, band.crit, band.crowdControl]
+    () => {
+      const members = band?.members
+      const hasNeuroOverclock = Array.isArray(members)
+        ? members.some((m: BandMember) => hasTrait(m, 'neuro_overclock'))
+        : false
+      const baseTempo = finiteNumberOr(band?.tempo, 0)
+      const finalTempo = hasNeuroOverclock ? baseTempo + 0.5 : baseTempo
+
+      return {
+        ...band?.performance,
+        tempo: finalTempo,
+        critChance: finiteNumberOr(band?.crit, 0),
+        crowdControl: finiteNumberOr(band?.crowdControl, 0)
+      }
+    },
+    [band?.performance, band?.tempo, band?.crit, band?.crowdControl, band?.members]
   )
 
   // 2. Scoring Logic (Hits, Misses, Toxic Mode)

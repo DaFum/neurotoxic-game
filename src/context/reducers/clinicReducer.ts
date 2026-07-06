@@ -1,4 +1,3 @@
-import { getSafeUUID } from '../../utils/crypto'
 import i18n from '../../i18n'
 import { formatCurrency } from '../../utils/numberUtils'
 import type { GameState } from '../../types'
@@ -32,6 +31,32 @@ import {
 } from './toastSanitizers'
 import { validateBloodBankDonation } from '../../utils/bloodBankUtils'
 
+export type MemberUpdaterResult =
+  | { updatedMember: BandMember; toastArgs?: unknown[] }
+  | BandMember
+
+/**
+ * Finds a band member by ID within a member array.
+ * @param members - The array of members to search.
+ * @param memberId - The ID to look for.
+ * @returns Object with index and member reference, or \{ targetIndex: -1, targetMember: null \}
+ */
+export const findBandMember = (
+  members: unknown[],
+  memberId: string
+): { targetIndex: number; targetMember: BandMember | null } => {
+  if (!Array.isArray(members)) {
+    return { targetIndex: -1, targetMember: null }
+  }
+  for (let i = 0; i < members.length; i++) {
+    const member = members[i] as BandMember
+    if (member && member.id === memberId) {
+      return { targetIndex: i, targetMember: member }
+    }
+  }
+  return { targetIndex: -1, targetMember: null }
+}
+
 /**
  * Common logic for clinic actions.
  *
@@ -46,7 +71,7 @@ import { validateBloodBankDonation } from '../../utils/bloodBankUtils'
 const executeClinicAction = (
   state: GameState,
   payload: ClinicActionPayload,
-  memberUpdater: (member: BandMember) => Record<string, unknown>
+  memberUpdater: (member: BandMember) => MemberUpdaterResult
 ): GameState => {
   const { memberId, type, successToast, getSuccessToast } = payload
   const currentVisits = finiteNumberOr(state.player?.clinicVisits, 0)
@@ -78,32 +103,21 @@ const executeClinicAction = (
     return state
   }
 
-  // Validate members array
-  if (!Array.isArray(state.band.members)) {
-    logger.warn('ClinicReducer', 'band.members is missing or not an array')
-    return state
-  }
+  const { targetIndex, targetMember } = findBandMember(
+    state.band.members,
+    memberId
+  )
 
-  let targetIndex = -1
-  const len = state.band.members.length
-  for (let i = 0; i < len; i++) {
-    const member = state.band.members[i]
-    if (member && member.id === memberId) {
-      targetIndex = i
-      break
-    }
-  }
-
-  if (targetIndex === -1) {
+  if (targetIndex === -1 || !targetMember) {
     logger.warn('ClinicReducer', 'Target member not found in band')
     return state
   }
 
-  const targetMember = state.band.members[targetIndex]
   const memberUpdateResult = memberUpdater(targetMember)
   const updatedMember =
-    (memberUpdateResult.updatedMember as BandMember) ||
-    (memberUpdateResult as unknown as BandMember)
+    'updatedMember' in memberUpdateResult
+      ? memberUpdateResult.updatedMember
+      : memberUpdateResult
 
   const updatedMembers: BandMember[] = [...state.band.members]
   updatedMembers[targetIndex] = updatedMember
@@ -126,9 +140,8 @@ const executeClinicAction = (
 
   // Append success toast atomically so it only appears when the action succeeds
   const toastArgsArray =
-    memberUpdateResult &&
-    (memberUpdateResult as Record<string, unknown>).toastArgs
-      ? ((memberUpdateResult as Record<string, unknown>).toastArgs as unknown[])
+    memberUpdateResult && 'toastArgs' in memberUpdateResult
+      ? memberUpdateResult.toastArgs
       : undefined
   const finalSuccessToast =
     successToast ||
@@ -225,10 +238,13 @@ export const handleBloodBankDonate = (
     staminaCost: 0,
     controversyGain: 0
   }
-  const moneyGain = Math.max(0, Number(safePayload.moneyGain) || 0)
-  const harmonyCost = Math.max(0, Number(safePayload.harmonyCost) || 0)
-  const staminaCost = Math.max(0, Number(safePayload.staminaCost) || 0)
-  const controversyGain = Math.max(0, Number(safePayload.controversyGain) || 0)
+  const moneyGain = Math.max(0, finiteNumberOr(safePayload.moneyGain, 0))
+  const harmonyCost = Math.max(0, finiteNumberOr(safePayload.harmonyCost, 0))
+  const staminaCost = Math.max(0, finiteNumberOr(safePayload.staminaCost, 0))
+  const controversyGain = Math.max(
+    0,
+    finiteNumberOr(safePayload.controversyGain, 0)
+  )
   const successToast = safePayload.successToast
 
   // Validate members array
@@ -243,7 +259,9 @@ export const handleBloodBankDonate = (
   // Why: Avoids closure allocation and intermediate arrays in hot paths.
   const normalizedMembers: BandMember[] = new Array(sourceMembers.length)
   for (let i = 0; i < sourceMembers.length; i++) {
-    const member = sourceMembers[i] as BandMember
+    const sourceMember = sourceMembers[i]
+    if (!sourceMember) continue
+    const member = sourceMember as BandMember
     const stamina = finiteNumberOr(member?.stamina, 0)
     const staminaMax = finiteNumberOr(member?.staminaMax, 100)
 
@@ -291,7 +309,9 @@ export const handleBloodBankDonate = (
     normalizedState.band.members.length
   )
   for (let i = 0; i < normalizedState.band.members.length; i++) {
-    const member = normalizedState.band.members[i] as BandMember
+    const sourceMember = normalizedState.band.members[i]
+    if (!sourceMember) continue
+    const member = sourceMember as BandMember
     const prevStamina = finiteNumberOr(member?.stamina, 0)
     const nextStamina = clampMemberStamina(
       prevStamina - staminaCost,
@@ -441,8 +461,8 @@ export const handleGraftNeuroOverclock = (
     toasts: [
       ...(state.toasts || []),
       {
-        id: getSafeUUID(),
-        message: 'Grafted Neuro-Overclock module.',
+        id: buildDeterministicToastId('clinic-graft-toast', state.toasts),
+        messageKey: 'ui:clinic.graft_success',
         type: 'success'
       }
     ]
@@ -470,15 +490,8 @@ export const handleClinicEnhance = (
   }
 
   // Early return if member already has trait to prevent charging cost
-  if (state.band && Array.isArray(state.band.members)) {
-    let targetMember = null
-    for (let i = 0; i < state.band.members.length; i++) {
-      const m = state.band.members[i]
-      if (m && m.id === memberId) {
-        targetMember = m
-        break
-      }
-    }
+  if (state.band) {
+    const { targetMember } = findBandMember(state.band.members, memberId)
     if (targetMember && hasTrait(targetMember, resolvedTrait.id)) {
       logger.debug(
         'ClinicReducer',
@@ -496,8 +509,10 @@ export const handleClinicEnhance = (
     removeExclusiveTraits(updatedTraits, resolvedTrait)
 
     return {
-      ...member,
-      traits: updatedTraits
+      updatedMember: {
+        ...member,
+        traits: updatedTraits
+      }
     }
   })
 }

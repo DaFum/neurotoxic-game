@@ -1810,5 +1810,6 @@
   "clinic.unknown_member": "Unbekannt",
   "clinic.graft_button": "[ IMPLANTAT: NEURO-OVERCLOCK {{cost}} ]",
   "clinic.graft_button_applied": "[ IMPLANTIERT ]",
-  "clinic.alreadyGrafted": "Mitglied hat dieses Implantat bereits"
+  "clinic.alreadyGrafted": "Mitglied hat dieses Implantat bereits",
+  "clinic.graft_success": "Neuro-Overclock-Modul implantiert."
 }
