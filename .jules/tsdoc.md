@@ -33,3 +33,4 @@
 | 2026-07-04 | src/components/assets/sections/TourbusSlotButton.tsx | Props, TourbusSlotButton |
 | 2026-07-03 | src/components/assets/shared/ConfirmButton.tsx | ConfirmButtonProps, ConfirmButton |
 | 2026-07-02 | src/components/hud/StatsOverlay.tsx | StatsOverlayProps, StatsOverlay |
+| 2026-07-06 | src/components/MapNodeView.tsx | MapNodeData, MapNodeTooltipProps, MapNodeProps, getPinAltText, getNodeTypeLabel, CancellationBadge, MapNodeTooltip, MapNodeView |
