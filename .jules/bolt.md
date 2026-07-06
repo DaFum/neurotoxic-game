@@ -145,4 +145,3 @@
 ## 2026-07-02 - React runtime import omission for types
 **Learning:** Pulled in a runtime `React` import only to use `ReactNode` in a type context, causing CI pipeline failure due to the `isolatedModules` strict rule requiring type-only imports for types.
 **Action:** Always use type-only imports (`import type { Foo }` or `import { type Foo }`) when importing items solely used as types, specifically `ReactNode` from `react`, to comply with strict module parsing bounds in the project.
-| 2024-05-24 | ⚡ Bolt: Replace `.filter()` with procedural push loop for state update |

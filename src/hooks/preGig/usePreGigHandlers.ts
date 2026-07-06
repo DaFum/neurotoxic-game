@@ -222,14 +222,7 @@ export const usePreGigHandlers = ({
   const toggleSong = useCallback(
     (song: Song) => {
       if (selectedSongIds.has(song.id)) {
-        const nextSetlist: RhythmSetlistEntry[] = []
-        for (let i = 0; i < setlist.length; i++) {
-          const s = setlist[i]
-          if (s && getSongId(s) !== song.id) {
-            nextSetlist.push(s)
-          }
-        }
-        setSetlist(nextSetlist)
+        setSetlist(setlist.filter(s => getSongId(s) !== song.id))
       } else if (setlist.length < 3) {
         setSetlist([...setlist, { id: song.id }])
       }
