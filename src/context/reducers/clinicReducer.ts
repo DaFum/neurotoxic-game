@@ -39,7 +39,7 @@ export type MemberUpdaterResult =
  * Finds a band member by ID within a member array.
  * @param members - The array of members to search.
  * @param memberId - The ID to look for.
- * @returns Object with index and member reference, or { targetIndex: -1, targetMember: null }
+ * @returns Object with index and member reference, or \{ targetIndex: -1, targetMember: null \}
  */
 export const findBandMember = (
   members: unknown[],
