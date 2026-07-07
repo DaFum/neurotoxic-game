@@ -866,7 +866,7 @@ export const createAdvanceQuestAction = (
   const safeAmount = clampNonNegative(raw)
   // Drop non-finite indices locally; the reducer/domain layer re-validates
   // with isFiniteNumber and remains the final authority.
-  const safeRandomIdx = isFiniteNumber(randomIdx) ? randomIdx : undefined
+  const safeRandomIdx = Number.isFinite(randomIdx) ? randomIdx : undefined
   return {
     type: ActionTypes.ADVANCE_QUEST,
     payload: { questId, amount: safeAmount, randomIdx: safeRandomIdx }

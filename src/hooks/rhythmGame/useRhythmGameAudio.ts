@@ -8,7 +8,7 @@ import {
   playSongSequence,
   resetGigStateTracking
 } from '../../utils/audio/audioEngine'
-import { ErrorSeverity, handleError } from '../../utils/errorHandler'
+import { ErrorSeverity, handleError, toastTypeFromSeverity } from '../../utils/errorHandler'
 import { logger } from '../../utils/logger'
 import { clampBandHarmony } from '../../utils/gameState'
 import { buildGigStatsSnapshot } from '../../utils/gigStats'
@@ -404,11 +404,7 @@ export const useRhythmGameAudio = ({
       // handleError prefers error.message over fallbackMessage, which would
       // surface untranslated Error text to the user.
       const errorInfo = handleError(error, { fallbackMessage: toastMessage })
-      const toastType =
-        errorInfo.severity === ErrorSeverity.CRITICAL ||
-        errorInfo.severity === ErrorSeverity.HIGH
-          ? 'error'
-          : 'warning'
+      const toastType = toastTypeFromSeverity(errorInfo.severity)
       currentAddToast(toastMessage, toastType)
       setAudioReady(false)
       hasInitializedRef.current = false

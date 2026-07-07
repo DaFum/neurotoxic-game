@@ -62,6 +62,9 @@ vi.mock('../../src/utils/errorHandler', () => ({
     HIGH: 'high',
     CRITICAL: 'critical'
   },
+  toastTypeFromSeverity: vi.fn((severity) =>
+    severity === 'critical' || severity === 'high' ? 'error' : 'warning'
+  ),
   AudioError: class AudioError extends Error {}
 }))
 
@@ -227,6 +230,46 @@ describe('useRhythmGameAudio', () => {
     // raw Error message ('boom') that handleError would prefer internally.
     expect(addToast).toHaveBeenCalledWith('ui:gig.errors.initFailed', 'warning')
     expect(addToast).not.toHaveBeenCalledWith('boom', expect.anything())
+  })
+
+  it('reports initialization failures with error toast for high severity', async () => {
+    mocks.handleError.mockReturnValueOnce({ severity: 'high' })
+    mocks.playSongSequence.mockRejectedValueOnce(new Error('boom'))
+    const setIsAudioReady = vi.fn()
+    const setIsGameOver = vi.fn()
+    const addToast = vi.fn()
+
+    renderHook(() =>
+      useRhythmGameAudio({
+        gameStateRef: {
+          current: {
+            lanes: [{}, {}, {}],
+            hasSubmittedResults: false,
+            isGameOver: false,
+            notesVersion: 0
+          }
+        },
+        setters: { setIsAudioReady, setIsGameOver },
+        contextState: baseState,
+        contextActions: {
+          addToast,
+          t: vi.fn(key => key),
+          setLastGigStats: vi.fn(),
+          endGig: vi.fn()
+        }
+      })
+    )
+
+    await waitFor(() => {
+      expect(mocks.handleError).toHaveBeenCalledWith(
+        expect.any(Error),
+        expect.objectContaining({
+          fallbackMessage: 'ui:gig.errors.initFailed'
+        })
+      )
+    })
+
+    expect(addToast).toHaveBeenCalledWith('ui:gig.errors.initFailed', 'error')
   })
 
   it('starts gig audio after requesting a fresh gig state reset', async () => {

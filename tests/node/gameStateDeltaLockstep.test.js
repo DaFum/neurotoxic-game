@@ -317,7 +317,7 @@ const FIELD_CASES = [
 const hasMeaningfulEffect = value => {
   if (value === null || value === undefined) return false
   if (typeof value === 'number') return value !== 0
-  if (typeof value === 'boolean') return true
+  if (typeof value === 'boolean') return value === true
   if (typeof value === 'string') return value.length > 0
   if (Array.isArray(value)) return value.some(hasMeaningfulEffect)
   if (typeof value === 'object') {

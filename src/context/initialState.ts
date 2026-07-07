@@ -186,7 +186,7 @@ const ALLOWED_GIG_MODIFIER_KEYS = new Set([
  * (final authority) per the two-layer payload-safety rule.
  */
 export const sanitizeGigModifierUpdates = (
-  updates: Partial<GigModifiers> | null | undefined
+  updates: unknown
 ): Partial<GigModifiers> => {
   if (!isLooseRecord(updates)) return {}
   const out: Partial<GigModifiers> = {}
