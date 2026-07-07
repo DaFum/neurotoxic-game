@@ -1,0 +1,47 @@
+TAP version 13
+# Subtest: all literal translation keys used in src exist in both en and de locale namespaces
+not ok 1 - all literal translation keys used in src exist in both en and de locale namespaces
+  ---
+  duration_ms: 298.267451
+  type: 'test'
+  location: '/app/tests/node/translationKeyCoverage.test.js:44:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Missing translation keys in English locale:
+    /app/src/ui/hud/BandMemberRow.tsx:ui:overworld.memberWarning
+    /app/src/ui/overworld/OverworldHUD.tsx:ui:overworld.career_dist
+    /app/src/ui/shared/KeyboardShortcuts.tsx:ui:aria.shortcutsPanel
+    /app/src/ui/shared/KeyboardShortcuts.tsx:ui:shortcuts.title
+    + actual - expected
+
+    + [
+    +   '/app/src/ui/hud/BandMemberRow.tsx:ui:overworld.memberWarning',
+    +   '/app/src/ui/overworld/OverworldHUD.tsx:ui:overworld.career_dist',
+    +   '/app/src/ui/shared/KeyboardShortcuts.tsx:ui:aria.shortcutsPanel',
+    +   '/app/src/ui/shared/KeyboardShortcuts.tsx:ui:shortcuts.title'
+    + ]
+    - []
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+    0: '/app/src/ui/hud/BandMemberRow.tsx:ui:overworld.memberWarning'
+    1: '/app/src/ui/overworld/OverworldHUD.tsx:ui:overworld.career_dist'
+    2: '/app/src/ui/shared/KeyboardShortcuts.tsx:ui:aria.shortcutsPanel'
+    3: '/app/src/ui/shared/KeyboardShortcuts.tsx:ui:shortcuts.title'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///app/tests/node/translationKeyCoverage.test.js:84:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 608.147837

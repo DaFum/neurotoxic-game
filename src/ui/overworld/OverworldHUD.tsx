@@ -22,8 +22,8 @@ import { translateLocation } from '../../utils/locationI18n'
 import { useAudioControl } from '../../hooks/useAudioControl'
 
 export interface OverworldHUDProps {
-  player: PlayerState
-  band: BandState
+  player?: PlayerState
+  band?: BandState
 }
 
 /**
@@ -34,11 +34,11 @@ export const OverworldHUD = memo(({ player, band }: OverworldHUDProps) => {
   const [showHelp, setShowHelp] = useState(false)
   const { handleAudioChange } = useAudioControl()
 
-  const money = player.money
-  const location = player.location
-  const day = player.day
-  const fuel = player.van?.fuel ?? 0
-  const condition = player.van?.condition ?? 100
+  const money = player?.money ?? 0
+  const location = player?.location ?? ''
+  const day = player?.day ?? 0
+  const fuel = player?.van?.fuel ?? 0
+  const condition = player?.van?.condition ?? 100
 
   const locationName = translateLocation(t, location, location)
 
@@ -68,19 +68,19 @@ export const OverworldHUD = memo(({ player, band }: OverworldHUDProps) => {
                 {t('ui:overworld.career_fame', { defaultValue: 'FAME' })}
               </span>
               <span className='text-xs font-bold text-star-white tabular-nums'>
-                {player.fame ?? 0}
+                {player?.fame ?? 0}
               </span>
               <span className='text-xxs tracking-widest text-ash-gray/70 ml-1.5'>
                 {t('ui:overworld.career_level', { defaultValue: 'LVL' })}
               </span>
               <span className='text-xs font-bold text-star-white tabular-nums'>
-                {player.fameLevel ?? 1}
+                {player?.fameLevel ?? 1}
               </span>
               <span className='text-xxs tracking-widest text-ash-gray/70 ml-1.5'>
                 {t('ui:overworld.career_dist', { defaultValue: 'KM' })}
               </span>
               <span className='text-xs font-bold text-star-white tabular-nums'>
-                {player.stats?.totalDistance ?? 0}
+                {player?.stats?.totalDistance ?? 0}
               </span>
             </div>
           </div>
