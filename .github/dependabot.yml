@@ -1,7 +1,7 @@
 version: 2
 updates:
   # Keep npm (package.json / package-lock.json / pnpm-lock.yaml) up to date
-  - package-ecosystem: 'pnpm'
+  - package-ecosystem: 'npm'
     directory: '/' # location of package.json
     schedule:
       interval: 'weekly' # options: "daily", "weekly", "monthly"
