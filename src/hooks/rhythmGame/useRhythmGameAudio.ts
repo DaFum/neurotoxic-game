@@ -8,7 +8,7 @@ import {
   playSongSequence,
   resetGigStateTracking
 } from '../../utils/audio/audioEngine'
-import { ErrorSeverity, handleError, toastTypeFromSeverity } from '../../utils/errorHandler'
+import { handleError, toastTypeFromSeverity } from '../../utils/errorHandler'
 import { logger } from '../../utils/logger'
 import { clampBandHarmony } from '../../utils/gameState'
 import { buildGigStatsSnapshot } from '../../utils/gigStats'
