@@ -31,7 +31,7 @@ export const ComboDisplay = memo(function ComboDisplay({
   const comboPulseClass = combo >= 50 ? 'animate-pulse' : ''
 
   return (
-    <div className='mt-2 backdrop-blur-sm border px-3 py-1.5 inline-flex items-baseline gap-2 bg-void-black/60 border-[color-mix(in_srgb,var(--color-toxic-green)_20%,transparent)]'>
+    <div className='mt-2 backdrop-blur-sm border px-3 py-1.5 inline-flex items-baseline gap-2 bg-void-black/60 border-toxic-green/20'>
       <div
         className={`text-2xl font-bold transition-all duration-100 tabular-nums ${comboColorClass} ${comboPulseClass} ${
           combo > 0 ? 'scale-110' : 'scale-100'

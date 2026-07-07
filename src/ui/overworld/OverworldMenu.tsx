@@ -67,7 +67,7 @@ const MenuHeader = React.memo(
     t: import('../../types/callbacks').TranslationCallback
   }) => (
     <div className='menu-panel-hdr flex items-center justify-between px-3.5 py-2.5 border-b border-toxic-green/20 bg-toxic-green/5'>
-      <div className='menu-panel-title font-display text-[15px] text-toxic-green tracking-[2px] drop-shadow-[0_0_8px_var(--color-toxic-green)] flex items-center gap-2'>
+      <div className='menu-panel-title font-display text-[15px] text-toxic-green tracking-[2px] drop-shadow-[0_0_8px_#00ff41] flex items-center gap-2'>
         {cat ? (
           <>
             <span style={{ color: cat.color }}>{cat.icon}</span>
