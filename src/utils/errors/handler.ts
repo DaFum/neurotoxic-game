@@ -163,7 +163,9 @@ const reportErrorRemote = (errorInfo: ErrorInfoObject) => {
   }
 }
 
-export const toastTypeFromSeverity = (severity: ErrorSeverityType): string => {
+export const toastTypeFromSeverity = (
+  severity: ErrorSeverityType
+): 'error' | 'warning' => {
   return severity === ErrorSeverity.CRITICAL || severity === ErrorSeverity.HIGH
     ? 'error'
     : 'warning'
