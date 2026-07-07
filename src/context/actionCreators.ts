@@ -11,7 +11,7 @@ import { getSafeUUID, secureRandom } from '../utils/crypto'
 import { isForbiddenKey, isLooseRecord } from '../utils/objectUtils'
 import { generateRivalBand, moveRivalBand } from '../utils/rivalEngine'
 import { sanitizeRiskEventDescriptor } from './reducers/assetSanitizers'
-import { DEFAULT_GIG_MODIFIERS } from './initialState'
+import { sanitizeGigModifierUpdates } from './initialState'
 import type { RivalBandState } from '../types'
 import {
   clampPlayerMoney,
@@ -424,29 +424,6 @@ export const createRemoveToastAction = (
   type: ActionTypes.REMOVE_TOAST,
   payload: id
 })
-
-// Canonical gig modifier keys: the pre-gig toggles from DEFAULT_GIG_MODIFIERS
-// plus the runtime `damaged_gear` flag set by botched setup minigames.
-const ALLOWED_GIG_MODIFIER_KEYS = new Set([
-  ...Object.keys(DEFAULT_GIG_MODIFIERS),
-  'damaged_gear'
-])
-
-const sanitizeGigModifierUpdates = (
-  updates: Partial<GigModifiers> | null | undefined
-): Partial<GigModifiers> => {
-  if (!isLooseRecord(updates)) return {}
-  const out: Partial<GigModifiers> = {}
-  for (const key of ALLOWED_GIG_MODIFIER_KEYS) {
-    if (
-      Object.hasOwn(updates, key) &&
-      typeof (updates as Record<string, unknown>)[key] === 'boolean'
-    ) {
-      out[key] = (updates as Record<string, unknown>)[key] as boolean
-    }
-  }
-  return out
-}
 
 /**
  * Creates a gig modifiers action

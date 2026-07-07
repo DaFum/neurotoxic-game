@@ -7,7 +7,7 @@ const mocks = vi.hoisted(() => ({
   stopAudio: vi.fn(),
   loggerWarn: vi.fn(),
   loggerError: vi.fn(),
-  handleError: vi.fn(),
+  handleError: vi.fn(() => ({ severity: 'medium' })),
   setupGigPhysics: vi.fn(() => ({
     mergedModifiers: {},
     speed: 500,
@@ -56,6 +56,12 @@ vi.mock('../../src/utils/audio/audioEngine', () => ({
 
 vi.mock('../../src/utils/errorHandler', () => ({
   handleError: mocks.handleError,
+  ErrorSeverity: {
+    LOW: 'low',
+    MEDIUM: 'medium',
+    HIGH: 'high',
+    CRITICAL: 'critical'
+  },
   AudioError: class AudioError extends Error {}
 }))
 
@@ -213,11 +219,14 @@ describe('useRhythmGameAudio', () => {
       expect(mocks.handleError).toHaveBeenCalledWith(
         expect.any(Error),
         expect.objectContaining({
-          addToast,
           fallbackMessage: 'ui:gig.errors.initFailed'
         })
       )
     })
+    // User-visible behavior: the toast shows the translated text, not the
+    // raw Error message ('boom') that handleError would prefer internally.
+    expect(addToast).toHaveBeenCalledWith('ui:gig.errors.initFailed', 'warning')
+    expect(addToast).not.toHaveBeenCalledWith('boom', expect.anything())
   })
 
   it('starts gig audio after requesting a fresh gig state reset', async () => {

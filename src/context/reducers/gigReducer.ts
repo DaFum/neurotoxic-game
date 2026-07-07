@@ -5,12 +5,16 @@ import { logger } from '../../utils/logger'
 import { buildDeterministicToastId } from './toastSanitizers'
 import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks } from '../../utils/traitUtils'
-import { DEFAULT_GIG_MODIFIERS } from '../initialState'
+import {
+  DEFAULT_GIG_MODIFIERS,
+  sanitizeGigModifierUpdates
+} from '../initialState'
 import { DEFAULT_MINIGAME_STATE, GAME_PHASES } from '../gameConstants'
 import {
   isForbiddenKey,
   isLooseRecord,
   hasForbiddenKeys,
+  isEmptyObject,
   finiteNumberOr,
   clampBandHarmony,
   clampBandStress,
@@ -113,7 +117,13 @@ export const handleSetGigModifiers = (
   if (!isLooseRecord(updates) || hasForbiddenKeys(updates)) {
     return state
   }
-  return { ...state, gigModifiers: { ...state.gigModifiers, ...updates } }
+  // Final authority: re-whitelist even creator-normalized payloads so a raw
+  // dispatch cannot inject non-modifier keys or non-boolean values.
+  const safeUpdates = sanitizeGigModifierUpdates(updates)
+  if (isEmptyObject(safeUpdates)) {
+    return state
+  }
+  return { ...state, gigModifiers: { ...state.gigModifiers, ...safeUpdates } }
 }
 
 const handleRecordBadShow = (state: GameState): GameState => {

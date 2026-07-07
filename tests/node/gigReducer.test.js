@@ -114,6 +114,28 @@ describe('gigReducer', () => {
         baseState
       )
     })
+
+    it('drops non-whitelisted keys and non-boolean values on raw dispatch', () => {
+      baseState.gigModifiers = { ...DEFAULT_GIG_MODIFIERS }
+      const nextState = handleSetGigModifiers(baseState, {
+        promo: true,
+        hacked: true,
+        catering: 'yes'
+      })
+
+      assert.deepStrictEqual(nextState.gigModifiers, {
+        ...DEFAULT_GIG_MODIFIERS,
+        promo: true
+      })
+      assert.strictEqual('hacked' in nextState.gigModifiers, false)
+    })
+
+    it('returns the identical state reference when nothing valid remains', () => {
+      assert.strictEqual(
+        handleSetGigModifiers(baseState, { hacked: true, promo: 'yes' }),
+        baseState
+      )
+    })
   })
 
   describe('handleSetLastGigStats', () => {
