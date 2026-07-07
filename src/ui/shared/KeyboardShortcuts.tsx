@@ -1,100 +1,99 @@
-import { memo, useEffect } from 'react'
+import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useAudioControl } from '../../hooks/useAudioControl'
+import { X } from 'lucide-react'
 
-export interface KeyboardShortcutsProps {
-  showHelp: boolean
-  panelId?: string
-  className?: string
+// Array of explicit shortcut entries
+export const SHORTCUTS = [
+  { key: '?', label: 'ui:shortcuts.toggleHelp' },
+  { key: 'h', label: 'ui:shortcuts.toggleHelpAlt' },
+  { key: 'm', label: 'ui:shortcuts.toggleMute' },
+  { key: 'Esc', label: 'ui:shortcuts.closePanel' }
+] as const
+
+interface UseKeyboardShortcutsProps {
+  setShowHelp: React.Dispatch<React.SetStateAction<boolean>>
+  onToggleMute?: () => void
 }
 
-export const useKeyboardShortcuts = (
-  setShowHelp: (show: boolean | ((prev: boolean) => boolean)) => void
-) => {
-  const { handleAudioChange } = useAudioControl()
-
+export function useKeyboardShortcuts({
+  setShowHelp,
+  onToggleMute
+}: UseKeyboardShortcutsProps) {
   useEffect(() => {
-    const isInputTarget = (target: EventTarget | null) => {
-      const element = target as HTMLElement | null
-      if (!element) return false
-      return (
-        element.tagName === 'INPUT' ||
-        element.tagName === 'TEXTAREA' ||
-        element.tagName === 'SELECT' ||
-        element.isContentEditable
-      )
-    }
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (isInputTarget(event.target)) return
-
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't trigger shortcuts when typing in inputs
       if (
-        event.key === '?' ||
-        (event.key === 'h' && !event.ctrlKey && !event.metaKey)
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        (e.target instanceof HTMLElement && e.target.isContentEditable)
       ) {
-        setShowHelp(prev => !prev)
         return
       }
 
-      if (event.key === 'm' && !event.ctrlKey && !event.metaKey) {
-        handleAudioChange.toggleMute()
-        return
-      }
-
-      if (event.key === 'Escape') {
-        setShowHelp(false)
+      switch (e.key) {
+        case '?':
+        case 'h':
+          setShowHelp(prev => !prev)
+          break
+        case 'Escape':
+          setShowHelp(false)
+          break
+        case 'm':
+        case 'M':
+          if (onToggleMute) {
+            onToggleMute()
+          }
+          break
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [handleAudioChange, setShowHelp])
+  }, [setShowHelp, onToggleMute])
 }
 
-export const KeyboardShortcutsPanel = memo(
-  ({
-    showHelp,
-    panelId = 'shortcuts-panel',
-    className = ''
-  }: KeyboardShortcutsProps) => {
-    const { t } = useTranslation(['ui'])
+interface KeyboardShortcutsPanelProps {
+  showHelp: boolean
+  className?: string
+}
 
-    if (!showHelp) return null
+export function KeyboardShortcutsPanel({
+  showHelp,
+  className = ''
+}: KeyboardShortcutsPanelProps) {
+  const { t } = useTranslation(['ui'])
 
-    const shortcuts = [
-      { key: '?, h', descKey: 'ui:shortcuts.toggleHelp', desc: 'Toggle this help' },
-      { key: 'M', descKey: 'ui:shortcuts.mute', desc: 'Mute / Unmute' },
-      { key: '1-4', descKey: 'ui:shortcuts.selectEvent', desc: 'Select event option' },
-      { key: '\u2190\u2191\u2192', descKey: 'ui:shortcuts.hitNotes', desc: 'Hit notes (Gig)' },
-      { key: 'ESC', descKey: 'ui:shortcuts.closeOverlays', desc: 'Close overlays' }
-    ]
+  if (!showHelp) return null
 
-    return (
-      <div
-        id={panelId}
-        className={`pointer-events-auto bg-void-black/95 border border-toxic-green p-3 shadow-[0_0_12px_var(--color-toxic-green-20)] ${className}`}
-      >
-        <div className='text-xs text-toxic-green tracking-widest uppercase mb-2 border-b border-toxic-green/30 pb-1'>
-          {t('ui:keyboardShortcuts', {
-            defaultValue: 'Keyboard Shortcuts'
-          })}
-        </div>
-        {shortcuts.map(s => (
-          <div
-            key={s.key}
-            className='flex items-center justify-between mb-1 last:mb-0'
-          >
-            <kbd className='text-xs bg-ash-gray/20 border border-ash-gray/40 px-1.5 py-0.5 text-star-white font-mono'>
-              {s.key}
-            </kbd>
-            <span className='text-xs text-ash-gray'>
-              {t(s.descKey, { defaultValue: s.desc })}
+  return (
+    <div
+      id='shortcuts-panel'
+      role='region'
+      aria-label={t('ui:aria.shortcutsPanel', {
+        defaultValue: 'Keyboard Shortcuts Panel'
+      })}
+      className={`bg-void-black/95 border border-warning-yellow p-3 text-warning-yellow shadow-[4px_4px_0px_var(--color-warning-yellow)] pointer-events-auto backdrop-blur-sm ${className}`}
+    >
+      <div className='flex items-center justify-between mb-2 border-b border-warning-yellow/30 pb-1'>
+        <span className='font-bold uppercase tracking-wider text-xs'>
+          {t('ui:shortcuts.title', { defaultValue: 'KEYBOARD SHORTCUTS' })}
+        </span>
+        <X size={14} className='opacity-50' aria-hidden='true' />
+      </div>
+      <div className='flex flex-col gap-1.5'>
+        {SHORTCUTS.map(({ key, label }) => (
+          <div key={key} className='flex justify-between items-center text-xs'>
+            <span className='text-star-white/80'>
+              {t(label as Parameters<typeof t>[0], {
+                defaultValue: label.split('.').pop()
+              })}
             </span>
+            <kbd className='bg-ash-gray text-void-black px-1.5 rounded font-bold min-w-[20px] text-center uppercase shadow-[1px_1px_0px_var(--color-star-white)]'>
+              {key}
+            </kbd>
           </div>
         ))}
       </div>
-    )
-  }
-)
-
-KeyboardShortcutsPanel.displayName = 'KeyboardShortcutsPanel'
+    </div>
+  )
+}

@@ -14,8 +14,10 @@ export { Modal } from './Modal'
 export { ActionButton } from './ActionButton'
 export { ToggleSwitch } from './ToggleSwitch'
 export { AnimatedDivider, AnimatedSubtitle } from './AnimatedTypography'
-export { KeyboardShortcutsPanel, useKeyboardShortcuts } from './KeyboardShortcuts'
-export { BandMemberRow } from './BandMemberRow'
+export {
+  KeyboardShortcutsPanel,
+  useKeyboardShortcuts
+} from './KeyboardShortcuts'
 import { UIFrameCorner } from './Icons'
 
 export { UIFrameCorner }

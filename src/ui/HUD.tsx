@@ -1,4 +1,4 @@
-import { useState, useEffect, memo } from 'react'
+import { useState, memo } from 'react'
 import { useGameSelector, useGameDispatch } from '../context/GameState'
 import { audioService } from '../utils/audio/audioEngine'
 import { useTranslation } from 'react-i18next'
@@ -15,7 +15,13 @@ import {
 import { useAudioControl } from '../hooks/useAudioControl'
 import { formatCurrency } from '../utils/numberUtils'
 import type { BandMember } from '../types/band'
-import { ProgressBar, Tooltip, KeyboardShortcutsPanel, useKeyboardShortcuts, BandMemberRow } from './shared'
+import {
+  ProgressBar,
+  Tooltip,
+  KeyboardShortcutsPanel,
+  useKeyboardShortcuts
+} from './shared'
+import { BandMemberRow } from './hud/BandMemberRow'
 import { translateLocation } from '../utils/locationI18n'
 
 /**
@@ -39,8 +45,7 @@ export const HUD = memo(() => {
   const hasNeurotoxicPedal = useGameSelector(
     state => !!state.band?.inventory?.neurotoxicPedal
   )
-  const bandHarmony = useGameSelector(state => state.band.harmony)
-  const bandMembers = useGameSelector(state => state.band.members)
+  const band = useGameSelector(state => state.band)
 
   const { toggleNeuroDecimator } = useGameDispatch()
   const { t, i18n } = useTranslation(['ui', 'venues'])
@@ -49,7 +54,10 @@ export const HUD = memo(() => {
   const { audioState, handleAudioChange } = useAudioControl()
 
   // Global keyboard shortcuts
-  useKeyboardShortcuts(setShowHelp)
+  useKeyboardShortcuts({
+    setShowHelp,
+    onToggleMute: handleAudioChange.toggleMute
+  })
 
   return (
     <div className='absolute top-0 left-0 w-full p-3 flex justify-between items-start pointer-events-none z-(--z-hud) text-xs font-mono'>
@@ -226,10 +234,10 @@ export const HUD = memo(() => {
           <div className='text-right border-b border-toxic-green/30 mb-2 pb-1 text-xs tracking-widest text-ash-gray'>
             {t('ui:bandStatus', { defaultValue: 'BAND STATUS' })}
           </div>
-          <div className="w-52">
-            {bandMembers.map((m: BandMember, idx: number) => (
+          <div className='w-52'>
+            {(band?.members ?? []).map((m: BandMember, idx: number) => (
               <BandMemberRow
-                key={m.id ?? m.name ?? `member-${idx}`}
+                key={m?.id ?? m?.name ?? `member-${idx}`}
                 m={m}
                 idx={idx}
                 t={t}
@@ -243,9 +251,13 @@ export const HUD = memo(() => {
             <div className='flex items-center gap-2'>
               <div className='w-20'>
                 <ProgressBar
-                  value={bandHarmony}
+                  value={band?.harmony ?? 0}
                   max={100}
-                  color={bandHarmony < 40 ? 'bg-blood-red' : 'bg-toxic-green'}
+                  color={
+                    (band?.harmony ?? 0) < 40
+                      ? 'bg-blood-red'
+                      : 'bg-toxic-green'
+                  }
                   size='mini'
                   aria-label={t('ui:hud.bandHarmony', {
                     defaultValue: 'Band Harmony'
@@ -253,9 +265,9 @@ export const HUD = memo(() => {
                 />
               </div>
               <span
-                className={`text-xs tabular-nums ${bandHarmony < 40 ? 'text-blood-red' : 'text-toxic-green'}`}
+                className={`text-xs tabular-nums ${(band?.harmony ?? 0) < 40 ? 'text-blood-red' : 'text-toxic-green'}`}
               >
-                {Math.floor(bandHarmony ?? 0)}%
+                {Math.floor(band?.harmony ?? 0)}%
               </span>
             </div>
           </div>
