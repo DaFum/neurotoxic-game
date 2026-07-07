@@ -1,452 +1,213 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react'
-import { GlitchButton } from '../GlitchButton'
-import { Tooltip } from '../shared'
+import { useState, memo } from 'react'
+import {
+  Map as MapIcon,
+  DollarSign,
+  Fuel,
+  Wrench,
+  HelpCircle
+} from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { type BandState, type PlayerState } from '../../types'
+import { formatCurrency } from '../../utils/numberUtils'
+import type { BandMember } from '../../types/band'
+import type { PlayerState } from '../../types/player'
+import type { BandState } from '../../types/band'
+import {
+  ProgressBar,
+  Tooltip,
+  KeyboardShortcutsPanel,
+  useKeyboardShortcuts
+} from '../shared'
+import { BandMemberRow } from '../hud/BandMemberRow'
 import { translateLocation } from '../../utils/locationI18n'
 import { useAudioControl } from '../../hooks/useAudioControl'
-import { formatCurrency } from '../../utils/numberUtils'
-import { finiteNumberOr } from '../../utils/gameState'
 
-/**
- * Player and band state shown in the overworld resource HUD.
- */
 export interface OverworldHUDProps {
-  player: PlayerState
-  band: BandState
-}
-
-function useAnimatedNum(value: number, ms = 450) {
-  const [cur, setCur] = useState(value)
-  const prevRef = useRef(value)
-  useEffect(() => {
-    const from = prevRef.current,
-      to = value
-    if (from === to) {
-      prevRef.current = to
-      return
-    }
-    const t0 = performance.now()
-    let raf: number
-    let cancelled = false
-    const tick = (t: number) => {
-      if (cancelled) return
-      const p = Math.min(1, (t - t0) / ms)
-      const e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2
-      const next = Math.round(from + (to - from) * e)
-      setCur(next)
-      prevRef.current = next
-      if (p < 1) raf = requestAnimationFrame(tick)
-      else {
-        prevRef.current = to
-        setCur(to)
-      }
-    }
-    raf = requestAnimationFrame(tick)
-    return () => {
-      cancelled = true
-      cancelAnimationFrame(raf)
-    }
-  }, [value, ms])
-  return cur
-}
-
-interface VanStatRowProps {
-  value: number | undefined
-  isLow: boolean
-  icon: string
-  lowColor: string
-  normalColor: string
-  notAvailableLabel: string
-}
-
-const VanStatRow = ({
-  value,
-  isLow,
-  icon,
-  lowColor,
-  normalColor,
-  notAvailableLabel
-}: VanStatRowProps) => {
-  const activeColor = isLow ? lowColor : normalColor
-  return (
-    <div className='van-row'>
-      <span className='van-icon' style={{ color: activeColor }}>
-        {icon}
-      </span>
-      <div className='mini-track'>
-        <div
-          className='mini-fill'
-          style={{
-            width: value !== undefined ? `${value}%` : '0%',
-            background: activeColor
-          }}
-        />
-      </div>
-      <span
-        className='mini-num'
-        style={{ color: isLow ? lowColor : undefined }}
-      >
-        {value !== undefined ? Math.floor(value) : notAvailableLabel}
-      </span>
-    </div>
-  )
-}
-
-type Member = NonNullable<BandState['members']>[number]
-type MemberStatus = 'crit' | 'low' | 'ok'
-
-const getMemberStatus = (m: Member): MemberStatus => {
-  if (m.mood < 30 || m.stamina < 20) return 'crit'
-  if (m.mood < 50 || m.stamina < 35) return 'low'
-  return 'ok'
-}
-
-const STATUS_DOT_COLOR = {
-  crit: 'var(--color-error-red)',
-  low: 'var(--color-warning-yellow)',
-  ok: 'var(--color-toxic-green)'
-} as const satisfies Record<MemberStatus, string>
-
-const getMoodColor = (mood: number) => {
-  if (mood < 30) return 'var(--color-error-red)'
-  if (mood < 50) return 'var(--color-warning-yellow)'
-  return 'var(--color-mood-pink)'
-}
-
-const getStaminaColor = (stamina: number) => {
-  if (stamina < 20) return 'var(--color-error-red)'
-  if (stamina < 35) return 'var(--color-warning-yellow)'
-  return 'var(--color-toxic-green)'
-}
-
-const StatBar = ({ value, color }: { value: number; color: string }) => (
-  <div className='bar-grp'>
-    <div className='bar-track'>
-      <div
-        className='bar-fill'
-        style={{ width: `${value}%`, background: color }}
-      />
-    </div>
-    <span className='bar-pct' style={{ color }}>
-      {Math.round(value)}%
-    </span>
-  </div>
-)
-
-const BandMemberRow = ({
-  m,
-  t
-}: {
-  m: Member
-  t: ReturnType<typeof useTranslation>['t']
-}) => {
-  const status = getMemberStatus(m)
-  const nameClass =
-    status === 'crit' ? 'mbr-crit' : status === 'low' ? 'mbr-low' : ''
-  const displayName =
-    m.name?.trim() || t('ui:hud.unnamedMember', { defaultValue: 'Member' })
-  return (
-    <div className='mbr-row'>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-        <span
-          className='mbr-status-dot'
-          style={{ background: STATUS_DOT_COLOR[status] }}
-        />
-        <span className={`mbr-name ${nameClass}`}>{displayName}</span>
-      </div>
-      <div className='mbr-bars'>
-        <StatBar value={m.mood} color={getMoodColor(m.mood)} />
-        <StatBar value={m.stamina} color={getStaminaColor(m.stamina)} />
-      </div>
-    </div>
-  )
+  player?: PlayerState
+  band?: BandState
 }
 
 /**
- * Displays animated overworld resources, location, audio, and van status.
- * @param props - Player and band state displayed in the overworld HUD.
+ * Top HUD overlay for the Overworld Map showing high-level stats and shortcuts.
  */
-export const OverworldHUD = React.memo(
-  ({ player, band }: OverworldHUDProps) => {
-    const { t, i18n } = useTranslation(['ui'])
-    const [showSC, setShowSC] = useState(false)
-    const { audioState, handleAudioChange } = useAudioControl()
-    const isPlaying =
-      typeof audioState === 'object' &&
-      audioState !== null &&
-      (audioState as unknown as Record<string, unknown>).isPlaying === true
-    const moneyValue = player.money ?? 0
-    const displayMoney = useAnimatedNum(moneyValue)
-    const prevMoneyRef = useRef(moneyValue)
-    const [moneyAnim, setMoneyAnim] = useState('')
-    const vanFuel = player.van?.fuel
-    const vanCondition = player.van?.condition
-    const fuelLow = vanFuel !== undefined && vanFuel < 20
-    const condLow = vanCondition !== undefined && vanCondition < 25
-    const totalDistance =
-      typeof player.stats?.totalDistance === 'number'
-        ? Math.round(player.stats.totalDistance)
-        : 0
-    const locationName = translateLocation(t, player.location, player.location)
-    const shortcutsPanelId = 'overworld-shortcuts-panel'
-    const shortcuts = useMemo<[string, string][]>(
-      () => [
-        [
-          '?, h',
-          t('ui:overworld.shortcuts.help', {
-            defaultValue: 'Toggle Help'
-          })
-        ],
-        [
-          'M',
-          t('ui:overworld.shortcuts.mute', {
-            defaultValue: 'Mute / Unmute'
-          })
-        ],
-        [
-          '1–4',
-          t('ui:overworld.shortcuts.event', {
-            defaultValue: 'Select Event Option'
-          })
-        ],
-        [
-          '← ↓ →',
-          t('ui:overworld.shortcuts.hit_notes', {
-            defaultValue: 'Hit Notes (Gig)'
-          })
-        ],
-        [
-          'ESC',
-          t('ui:overworld.shortcuts.close', {
-            defaultValue: 'Close Overlays'
-          })
-        ]
-      ],
-      [t]
-    )
+export const OverworldHUD = memo(({ player, band }: OverworldHUDProps) => {
+  const { t, i18n } = useTranslation(['ui', 'venues'])
+  const [showHelp, setShowHelp] = useState(false)
+  const { handleAudioChange } = useAudioControl()
 
-    // Defer applying the money animation class so it runs as a separate state
-    // transition after render, then clear it once the animation window ends.
-    useEffect(() => {
-      const previousMoney = prevMoneyRef.current
-      if (moneyValue === previousMoney) return undefined
+  const money = player?.money ?? 0
+  const location = player?.location ?? ''
+  const day = player?.day ?? 0
+  const fuel = player?.van?.fuel ?? 0
+  const condition = player?.van?.condition ?? 100
 
-      const setupTimer = window.setTimeout(() => {
-        setMoneyAnim(
-          moneyValue > previousMoney ? 'money-anim-up' : 'money-anim-down'
-        )
-      }, 0)
+  const locationName = translateLocation(t, location, location)
 
-      prevMoneyRef.current = moneyValue
+  // Global keyboard shortcuts
+  useKeyboardShortcuts({
+    setShowHelp,
+    onToggleMute: handleAudioChange.toggleMute
+  })
 
-      const timer = window.setTimeout(() => {
-        setMoneyAnim('')
-      }, 450)
-
-      return () => {
-        window.clearTimeout(setupTimer)
-        window.clearTimeout(timer)
-      }
-    }, [moneyValue])
-
-    useEffect(() => {
-      const isInputTarget = (target: EventTarget | null) => {
-        const element = target as HTMLElement | null
-        if (!element) return false
-        return (
-          element.tagName === 'INPUT' ||
-          element.tagName === 'TEXTAREA' ||
-          element.tagName === 'SELECT' ||
-          element.isContentEditable
-        )
-      }
-
-      const handleKeyDown = (event: KeyboardEvent) => {
-        if (isInputTarget(event.target)) return
-
-        if (
-          event.key === '?' ||
-          (event.key === 'h' && !event.ctrlKey && !event.metaKey)
-        ) {
-          setShowSC(prev => !prev)
-          return
-        }
-
-        if (event.key === 'm' && !event.ctrlKey && !event.metaKey) {
-          if (isPlaying) {
-            handleAudioChange.stopMusic()
-          } else {
-            void handleAudioChange.resumeMusic()
-          }
-          return
-        }
-
-        if (event.key === 'Escape') {
-          setShowSC(false)
-        }
-      }
-
-      window.addEventListener('keydown', handleKeyDown)
-      return () => window.removeEventListener('keydown', handleKeyDown)
-    }, [handleAudioChange, isPlaying])
-
-    return (
-      <div className='hud'>
-        <div className='hud-left'>
-          <div className={`ow-panel ${fuelLow ? 'fuel-warn' : ''}`}>
-            <div className='money-row'>
-              <span
-                className={`money-val ${moneyAnim} ${(player.money ?? 0) < 40 ? 'low' : ''}`}
-                style={{ color: 'var(--color-warning-yellow)' }}
-              >
-                {formatCurrency(displayMoney, i18n.language)}
-              </span>
-            </div>
-            <div className='loc-row'>
-              <span style={{ color: 'var(--color-toxic-green)' }}>⬡</span>
-              <span>
-                {t('ui:ui.day', { defaultValue: 'Day' })} {player.day ?? 1} —{' '}
-                {locationName}
-              </span>
-            </div>
-            <div className='van-stats'>
-              <VanStatRow
-                value={vanFuel}
-                isLow={fuelLow}
-                icon='⛽'
-                lowColor='var(--color-error-red)'
-                normalColor='var(--color-warning-yellow)'
-                notAvailableLabel={t('ui:overworld.notAvailable', {
-                  defaultValue: 'N/A'
-                })}
-              />
-              <VanStatRow
-                value={vanCondition}
-                isLow={condLow}
-                icon='🔧'
-                lowColor='var(--color-error-red)'
-                normalColor='var(--color-condition-blue)'
-                notAvailableLabel={t('ui:overworld.notAvailable', {
-                  defaultValue: 'N/A'
-                })}
-              />
-              {fuelLow && (
-                <div className='text-[8px] text-error-red uppercase mt-[2px] tracking-[2px] motion-safe:animate-[blink-conf_0.6s_step-end_infinite]'>
-                  <span aria-hidden='true'>⚠ </span>
-                  {t('ui:overworld.low_fuel', { defaultValue: 'LOW FUEL' })}
-                </div>
-              )}
-            </div>
-            <div
-              className='career-stats'
-              role='group'
-              aria-label={t('ui:overworld.career_status', {
-                defaultValue: 'Career status'
-              })}
+  return (
+    <div className='absolute top-0 left-0 w-full p-4 pointer-events-none z-(--z-hud) flex justify-between items-start font-mono text-xs'>
+      {/* Left Panel - Player Status */}
+      <div className='flex flex-col gap-2'>
+        <div className='bg-void-black/95 border-2 border-toxic-green p-3 text-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)] backdrop-blur-sm min-w-[200px] pointer-events-auto transition-transform hover:translate-y-1 hover:translate-x-1 hover:shadow-none'>
+          <div className='flex items-center gap-2 mb-2'>
+            <DollarSign
+              size={16}
+              className={money < 40 ? 'text-blood-red' : 'text-warning-yellow'}
+            />
+            <span
+              className={`text-base font-bold tabular-nums ${money < 40 ? 'text-blood-red' : ''}`}
             >
-              <div className='career-cell'>
-                <span className='career-label'>
-                  {t('ui:overworld.career_fame', { defaultValue: 'FAME' })}
-                </span>
-                <span className='career-value'>
-                  {Math.floor(finiteNumberOr(player?.fame, 0))}
-                </span>
-              </div>
-              <div className='career-cell'>
-                <span className='career-label'>
-                  {t('ui:overworld.career_level', { defaultValue: 'LVL' })}
-                </span>
-                <span className='career-value'>{player.fameLevel ?? 0}</span>
-              </div>
-              <div className='career-cell'>
-                <span className='career-label'>
-                  {t('ui:overworld.career_distance', { defaultValue: 'KM' })}
-                </span>
-                <span className='career-value'>{totalDistance}</span>
-              </div>
+              {formatCurrency(money, i18n.language)}
+            </span>
+            <div className='flex items-center gap-1 ml-auto border border-ash-gray/30 bg-void-black px-1.5 py-0.5 pointer-events-auto'>
+              <span className='text-xxs tracking-widest text-ash-gray/70'>
+                {t('ui:overworld.career_fame', { defaultValue: 'FAME' })}
+              </span>
+              <span className='text-xs font-bold text-star-white tabular-nums'>
+                {player?.fame ?? 0}
+              </span>
+              <span className='text-xxs tracking-widest text-ash-gray/70 ml-1.5'>
+                {t('ui:overworld.career_level', { defaultValue: 'LVL' })}
+              </span>
+              <span className='text-xs font-bold text-star-white tabular-nums'>
+                {player?.fameLevel ?? 1}
+              </span>
+              <span className='text-xxs tracking-widest text-ash-gray/70 ml-1.5'>
+                {t('ui:overworld.career_dist', { defaultValue: 'KM' })}
+              </span>
+              <span className='text-xs font-bold text-star-white tabular-nums'>
+                {player?.stats?.totalDistance ?? 0}
+              </span>
             </div>
           </div>
-          <div className='hud-btns pointer-events-auto'>
+          <div className='flex items-center gap-2 mb-3 text-star-white/90'>
+            <MapIcon size={14} className='text-toxic-green/70' />
+            <span>
+              {t('ui:hud.day', { defaultValue: 'Day' })} {day} — {locationName}
+            </span>
+          </div>
+
+          <div className='border-t border-toxic-green/30 pt-3 space-y-2.5'>
             <Tooltip
-              content={t('ui:overworld.shortcuts.help', {
-                defaultValue: 'Toggle Help'
-              })}
+              content={t('ui:hud.fuelLevel', { defaultValue: 'Fuel Level' })}
+              position='bottom'
             >
-              <GlitchButton
-                className='!w-11 !h-11 sm:!w-[30px] sm:!h-[30px] !p-0'
-                variant={showSC ? 'warning' : 'primary'}
-                size='sm'
-                onClick={() => setShowSC(s => !s)}
-                aria-label={t('ui:overworld.shortcuts.help', {
-                  defaultValue: 'Toggle Help'
-                })}
-                aria-pressed={showSC}
-                aria-controls={shortcutsPanelId}
-              >
-                ?
-              </GlitchButton>
+              <div className='flex items-center gap-2 pointer-events-auto'>
+                <Fuel size={14} className='text-warning-yellow shrink-0' />
+                <ProgressBar
+                  value={fuel}
+                  max={100}
+                  color='bg-warning-yellow'
+                  warn={fuel < 20}
+                  size='sm'
+                  aria-label={t('ui:hud.fuelLevel', {
+                    defaultValue: 'Fuel Level'
+                  })}
+                />
+                <span className='text-xs text-ash-gray w-8 text-right tabular-nums'>
+                  {Math.floor(fuel)}
+                </span>
+              </div>
+            </Tooltip>
+            <Tooltip
+              content={t('ui:hud.vanCondition', {
+                defaultValue: 'Van Condition'
+              })}
+              position='bottom'
+            >
+              <div className='flex items-center gap-2 pointer-events-auto'>
+                <Wrench size={14} className='text-condition-blue shrink-0' />
+                <ProgressBar
+                  value={condition}
+                  max={100}
+                  color='bg-condition-blue'
+                  warn={condition < 25}
+                  size='sm'
+                  aria-label={t('ui:hud.vanCondition', {
+                    defaultValue: 'Van Condition'
+                  })}
+                />
+                <span className='text-xs text-ash-gray w-8 text-right tabular-nums'>
+                  {Math.floor(condition)}
+                </span>
+              </div>
             </Tooltip>
           </div>
-          {showSC && (
-            <section
-              id={shortcutsPanelId}
-              aria-label={t('ui:overworld.keyboard_shortcuts', {
-                defaultValue: 'Keyboard Shortcuts'
-              })}
-              className='shortcuts-panel pointer-events-auto'
-            >
-              <div className='sc-title'>
-                {t('ui:overworld.keyboard_shortcuts', {
-                  defaultValue: 'Keyboard Shortcuts'
-                })}
-              </div>
-              {shortcuts.map(([k, d]) => (
-                <div className='sc-row' key={k}>
-                  <span className='sc-key'>{k}</span>
-                  <span className='sc-desc'>{d}</span>
-                </div>
-              ))}
-            </section>
-          )}
         </div>
-        <div className='hud-right'>
-          <div className='ow-panel band-panel'>
-            <div className='band-hdr'>
-              {t('ui:overworld.band_status', { defaultValue: 'Band Status' })}
+
+        <div className='flex gap-2'>
+          <Tooltip
+            content={t('ui:button.shortcuts', {
+              defaultValue: 'Shortcuts (?, h)'
+            })}
+          >
+            <button
+              type='button'
+              onClick={() => setShowHelp(prev => !prev)}
+              aria-expanded={showHelp}
+              aria-controls='shortcuts-panel'
+              aria-label={t('ui:aria.shortcutsHelp', {
+                defaultValue: 'Toggle keyboard shortcuts help'
+              })}
+              className={`pointer-events-auto bg-void-black/95 border min-w-[48px] min-h-[48px] flex items-center justify-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void-black hover:translate-y-1 hover:translate-x-1 ${
+                showHelp
+                  ? 'border-warning-yellow text-warning-yellow focus-visible:ring-warning-yellow shadow-none translate-y-1 translate-x-1'
+                  : 'border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black focus-visible:ring-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)] hover:shadow-none'
+              }`}
+            >
+              <HelpCircle size={22} />
+            </button>
+          </Tooltip>
+        </div>
+
+        <KeyboardShortcutsPanel showHelp={showHelp} className='w-64 mt-2' />
+      </div>
+
+      {/* Right Panel - Band Status */}
+      <div className='bg-void-black/95 border-2 border-toxic-green p-3 text-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)] backdrop-blur-sm pointer-events-auto transition-transform hover:translate-y-1 hover:translate-x-1 hover:shadow-none'>
+        <div className='text-right border-b border-toxic-green/40 mb-3 pb-1.5 text-xs font-bold tracking-widest text-ash-gray/90'>
+          {t('ui:bandStatus', { defaultValue: 'BAND STATUS' })}
+        </div>
+        <div className='w-56 space-y-0.5'>
+          {(band?.members ?? []).map((m: BandMember, idx: number) => (
+            <BandMemberRow
+              key={m?.id ?? m?.name ?? `member-${idx}`}
+              m={m}
+              idx={idx}
+              t={t}
+            />
+          ))}
+        </div>
+        <div className='mt-3 pt-2.5 border-t border-toxic-green/30 flex items-center justify-between'>
+          <span className='text-xs font-bold text-ash-gray/90'>
+            {t('ui:harmony', { defaultValue: 'HARMONY' })}
+          </span>
+          <div className='flex items-center gap-2.5'>
+            <div className='w-24'>
+              <ProgressBar
+                value={band?.harmony ?? 0}
+                max={100}
+                color={
+                  (band?.harmony ?? 0) < 40 ? 'bg-blood-red' : 'bg-toxic-green'
+                }
+                size='sm'
+                aria-label={t('ui:hud.bandHarmony', {
+                  defaultValue: 'Band Harmony'
+                })}
+              />
             </div>
-            {(band?.members ?? []).map(m => (
-              <BandMemberRow key={m.id} m={m} t={t} />
-            ))}
-            <div className='harmony-row'>
-              <span className='harmony-label'>
-                {t('ui:overworld.harmony', { defaultValue: 'Harmony' })}
-              </span>
-              <div className='harmony-bar-wrap'>
-                <div className='h-track'>
-                  <div
-                    className='bar-fill'
-                    style={{
-                      width: `${band.harmony ?? 0}%`,
-                      background:
-                        (band.harmony ?? 0) < 40
-                          ? 'var(--color-error-red)'
-                          : 'var(--color-toxic-green)'
-                    }}
-                  />
-                </div>
-                <span
-                  className={`text-xs w-7 text-right ${(band.harmony ?? 0) < 40 ? 'text-error-red' : 'text-toxic-green'}`}
-                >
-                  {Math.floor(band.harmony ?? 0)}%
-                </span>
-              </div>
-            </div>
+            <span
+              className={`text-xs font-bold tabular-nums ${(band?.harmony ?? 0) < 40 ? 'text-blood-red' : 'text-toxic-green'}`}
+            >
+              {Math.floor(band?.harmony ?? 0)}%
+            </span>
           </div>
         </div>
       </div>
-    )
-  }
-)
-
-OverworldHUD.displayName = 'OverworldHUD'
+    </div>
+  )
+})

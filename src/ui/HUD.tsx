@@ -1,4 +1,4 @@
-import { useState, useEffect, memo } from 'react'
+import { useState, memo } from 'react'
 import { useGameSelector, useGameDispatch } from '../context/GameState'
 import { audioService } from '../utils/audio/audioEngine'
 import { useTranslation } from 'react-i18next'
@@ -15,89 +15,14 @@ import {
 import { useAudioControl } from '../hooks/useAudioControl'
 import { formatCurrency } from '../utils/numberUtils'
 import type { BandMember } from '../types/band'
-import { ProgressBar, Tooltip } from './shared'
+import {
+  ProgressBar,
+  Tooltip,
+  KeyboardShortcutsPanel,
+  useKeyboardShortcuts
+} from './shared'
+import { BandMemberRow } from './hud/BandMemberRow'
 import { translateLocation } from '../utils/locationI18n'
-
-const SHORTCUTS = [
-  { key: '?, h', desc: 'Toggle this help', descKey: 'ui:shortcuts.toggleHelp' },
-  { key: 'M', desc: 'Mute / Unmute', descKey: 'ui:shortcuts.mute' },
-  {
-    key: '1-4',
-    desc: 'Select event option',
-    descKey: 'ui:shortcuts.selectEvent'
-  },
-  {
-    key: '\u2190\u2191\u2192',
-    desc: 'Hit notes (Gig)',
-    descKey: 'ui:shortcuts.hitNotes'
-  },
-  { key: 'ESC', desc: 'Close overlays', descKey: 'ui:shortcuts.closeOverlays' }
-]
-
-interface BandMemberRowProps {
-  m: BandMember
-  idx: number
-  t: ReturnType<typeof useTranslation>['t']
-}
-
-const BandMemberRow = ({ m, idx, t }: BandMemberRowProps) => {
-  const safeName =
-    m.name?.trim() || t('ui:hud.unnamedMember', { defaultValue: 'Member' })
-  return (
-    <div
-      key={m.id ?? m.name ?? `member-${idx}`}
-      className='flex items-center justify-between w-52 mb-1.5 last:mb-0'
-    >
-      <span className='text-star-white/80 text-xs'>{safeName}</span>
-      <div className='flex items-center gap-1.5'>
-        <Tooltip
-          content={t('ui:hud.mood', { defaultValue: 'Mood' })}
-          position='bottom'
-        >
-          <div className='flex items-center gap-1 pointer-events-auto'>
-            <div className='w-12'>
-              <ProgressBar
-                value={m.mood}
-                max={100}
-                color='bg-mood-pink'
-                size='mini'
-                aria-label={t('ui:hud.memberMood', {
-                  name: safeName,
-                  defaultValue: `${safeName} Mood`
-                })}
-              />
-            </div>
-            <span className='text-xxs text-mood-pink w-7 text-right tabular-nums'>
-              {m.mood}%
-            </span>
-          </div>
-        </Tooltip>
-        <Tooltip
-          content={t('ui:hud.stamina', { defaultValue: 'Stamina' })}
-          position='bottom'
-        >
-          <div className='flex items-center gap-1 pointer-events-auto'>
-            <div className='w-12'>
-              <ProgressBar
-                value={m.stamina}
-                max={100}
-                color='bg-stamina-green'
-                size='mini'
-                aria-label={t('ui:hud.memberStamina', {
-                  name: safeName,
-                  defaultValue: `${safeName} Stamina`
-                })}
-              />
-            </div>
-            <span className='text-xxs text-stamina-green w-7 text-right tabular-nums'>
-              {m.stamina}%
-            </span>
-          </div>
-        </Tooltip>
-      </div>
-    </div>
-  )
-}
 
 /**
  * Heads-Up Display overlay showing player stats, band status, and volume controls.
@@ -120,8 +45,7 @@ export const HUD = memo(() => {
   const hasNeurotoxicPedal = useGameSelector(
     state => !!state.band?.inventory?.neurotoxicPedal
   )
-  const bandHarmony = useGameSelector(state => state.band.harmony)
-  const bandMembers = useGameSelector(state => state.band.members)
+  const band = useGameSelector(state => state.band)
 
   const { toggleNeuroDecimator } = useGameDispatch()
   const { t, i18n } = useTranslation(['ui', 'venues'])
@@ -130,38 +54,10 @@ export const HUD = memo(() => {
   const { audioState, handleAudioChange } = useAudioControl()
 
   // Global keyboard shortcuts
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      const target = e.target
-      if (e.key === '?' || (e.key === 'h' && !e.ctrlKey && !e.metaKey)) {
-        // Don't trigger if user is typing in an input
-        if (
-          target instanceof HTMLElement &&
-          (target.tagName === 'INPUT' ||
-            target.tagName === 'TEXTAREA' ||
-            target.tagName === 'SELECT')
-        )
-          return
-        setShowHelp(prev => !prev)
-      }
-      if (e.key === 'm' && !e.ctrlKey && !e.metaKey) {
-        if (
-          target instanceof HTMLElement &&
-          (target.tagName === 'INPUT' ||
-            target.tagName === 'TEXTAREA' ||
-            target.tagName === 'SELECT')
-        )
-          return
-        handleAudioChange.toggleMute()
-      }
-      if (e.key === 'Escape') {
-        setShowHelp(false)
-      }
-    }
-
-    window.addEventListener('keydown', handleKey)
-    return () => window.removeEventListener('keydown', handleKey)
-  }, [handleAudioChange])
+  useKeyboardShortcuts({
+    setShowHelp,
+    onToggleMute: handleAudioChange.toggleMute
+  })
 
   return (
     <div className='absolute top-0 left-0 w-full p-3 flex justify-between items-start pointer-events-none z-(--z-hud) text-xs font-mono'>
@@ -196,11 +92,11 @@ export const HUD = memo(() => {
               position='bottom'
             >
               <div className='flex items-center gap-2 pointer-events-auto'>
-                <Fuel size={12} className='text-fuel-yellow shrink-0' />
+                <Fuel size={12} className='text-warning-yellow shrink-0' />
                 <ProgressBar
                   value={playerVanFuel}
                   max={100}
-                  color='bg-fuel-yellow'
+                  color='bg-warning-yellow'
                   warn={playerVanFuel < 20}
                   size='mini'
                   aria-label={t('ui:hud.fuelLevel', {
@@ -291,31 +187,7 @@ export const HUD = memo(() => {
         </div>
 
         {/* Keyboard Shortcuts Overlay */}
-        {showHelp && (
-          <div
-            id='shortcuts-panel'
-            className='pointer-events-auto bg-void-black/95 border border-toxic-green p-3 shadow-[0_0_12px_var(--color-toxic-green-20)] w-52'
-          >
-            <div className='text-xs text-toxic-green tracking-widest uppercase mb-2 border-b border-toxic-green/30 pb-1'>
-              {t('ui:keyboardShortcuts', {
-                defaultValue: 'Keyboard Shortcuts'
-              })}
-            </div>
-            {SHORTCUTS.map(s => (
-              <div
-                key={s.key}
-                className='flex items-center justify-between mb-1 last:mb-0'
-              >
-                <kbd className='text-xs bg-ash-gray/20 border border-ash-gray/40 px-1.5 py-0.5 text-star-white font-mono'>
-                  {s.key}
-                </kbd>
-                <span className='text-xs text-ash-gray'>
-                  {t(s.descKey, { defaultValue: s.desc })}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
+        <KeyboardShortcutsPanel showHelp={showHelp} className='w-52' />
       </div>
 
       {/* Right Panel - Band Status */}
@@ -362,14 +234,16 @@ export const HUD = memo(() => {
           <div className='text-right border-b border-toxic-green/30 mb-2 pb-1 text-xs tracking-widest text-ash-gray'>
             {t('ui:bandStatus', { defaultValue: 'BAND STATUS' })}
           </div>
-          {bandMembers.map((m: BandMember, idx: number) => (
-            <BandMemberRow
-              key={m.id ?? m.name ?? `member-${idx}`}
-              m={m}
-              idx={idx}
-              t={t}
-            />
-          ))}
+          <div className='w-52'>
+            {(band?.members ?? []).map((m: BandMember, idx: number) => (
+              <BandMemberRow
+                key={m?.id ?? m?.name ?? `member-${idx}`}
+                m={m}
+                idx={idx}
+                t={t}
+              />
+            ))}
+          </div>
           <div className='mt-2 pt-1.5 border-t border-toxic-green/20 flex items-center justify-between'>
             <span className='text-xs text-ash-gray'>
               {t('ui:harmony', { defaultValue: 'HARMONY' })}
@@ -377,9 +251,13 @@ export const HUD = memo(() => {
             <div className='flex items-center gap-2'>
               <div className='w-20'>
                 <ProgressBar
-                  value={bandHarmony}
+                  value={band?.harmony ?? 0}
                   max={100}
-                  color={bandHarmony < 40 ? 'bg-blood-red' : 'bg-toxic-green'}
+                  color={
+                    (band?.harmony ?? 0) < 40
+                      ? 'bg-blood-red'
+                      : 'bg-toxic-green'
+                  }
                   size='mini'
                   aria-label={t('ui:hud.bandHarmony', {
                     defaultValue: 'Band Harmony'
@@ -387,9 +265,9 @@ export const HUD = memo(() => {
                 />
               </div>
               <span
-                className={`text-xs tabular-nums ${bandHarmony < 40 ? 'text-blood-red' : 'text-toxic-green'}`}
+                className={`text-xs tabular-nums ${(band?.harmony ?? 0) < 40 ? 'text-blood-red' : 'text-toxic-green'}`}
               >
-                {Math.floor(bandHarmony ?? 0)}%
+                {Math.floor(band?.harmony ?? 0)}%
               </span>
             </div>
           </div>
