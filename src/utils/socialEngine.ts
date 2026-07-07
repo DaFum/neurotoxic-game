@@ -402,7 +402,7 @@ export const checkViralEvent = (
   options: ViralOptions = {}
 ): boolean => {
   const modifiers = options.modifiers ?? 0
-  const roll = options.roll !== undefined ? options.roll : secureRandom()
+  const roll = options.roll ?? secureRandom()
   const context = options.context
 
   if (stats.accuracy > 95) return true
