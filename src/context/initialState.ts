@@ -195,7 +195,9 @@ export const sanitizeGigModifierUpdates = (
       Object.hasOwn(updates, key) &&
       typeof (updates as Record<string, unknown>)[key] === 'boolean'
     ) {
-      out[key] = (updates as Record<string, unknown>)[key] as boolean
+      out[key as keyof GigModifiers] = (updates as Record<string, unknown>)[
+        key
+      ] as boolean
     }
   }
   return out

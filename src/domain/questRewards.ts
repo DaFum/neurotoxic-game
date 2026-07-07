@@ -51,10 +51,9 @@ const normalizeLegacyRewards = (quest: QuestState): QuestReward[] => {
       amount: finiteNumberOr(Number(quest.rewardData.fame), 0)
     })
   } else if (quest.rewardType === 'skill_point') {
-    const memberIndex =
-      isFiniteNumber(quest.rewardData?.memberIndex)
-        ? quest.rewardData.memberIndex
-        : undefined
+    const memberIndex = isFiniteNumber(quest.rewardData?.memberIndex)
+      ? quest.rewardData.memberIndex
+      : undefined
     rewards.push({ type: 'skill_point', memberIndex })
   } else if (quest.rewardType === 'harmony' && quest.rewardData?.harmony) {
     rewards.push({

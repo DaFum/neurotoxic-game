@@ -295,10 +295,7 @@ export const getTravelArrivalUpdates = ({
       ...player.van,
       fuel: clampVanFuel(finiteNumberOr(player.van?.fuel, 0) - fuelLiters)
     },
-    location:
-      canonicalVenueId !== null && canonicalVenueId.length > 0
-        ? `venues:${canonicalVenueId}.name`
-        : 'Unknown',
+    location: canonicalVenueId ? `venues:${canonicalVenueId}.name` : 'Unknown',
     currentNodeId: node.id,
     totalTravels: (player.totalTravels ?? 0) + 1
   }
