@@ -182,6 +182,44 @@ describe('useRhythmGameAudio', () => {
     expect(mocks.stopAudio).toHaveBeenCalled()
   })
 
+  it('reports initialization failures with a translated fallback message', async () => {
+    mocks.playSongSequence.mockRejectedValueOnce(new Error('boom'))
+    const setIsAudioReady = vi.fn()
+    const setIsGameOver = vi.fn()
+    const addToast = vi.fn()
+
+    renderHook(() =>
+      useRhythmGameAudio({
+        gameStateRef: {
+          current: {
+            lanes: [{}, {}, {}],
+            hasSubmittedResults: false,
+            isGameOver: false,
+            notesVersion: 0
+          }
+        },
+        setters: { setIsAudioReady, setIsGameOver },
+        contextState: baseState,
+        contextActions: {
+          addToast,
+          t: vi.fn(key => key),
+          setLastGigStats: vi.fn(),
+          endGig: vi.fn()
+        }
+      })
+    )
+
+    await waitFor(() => {
+      expect(mocks.handleError).toHaveBeenCalledWith(
+        expect.any(Error),
+        expect.objectContaining({
+          addToast,
+          fallbackMessage: 'ui:gig.errors.initFailed'
+        })
+      )
+    })
+  })
+
   it('starts gig audio after requesting a fresh gig state reset', async () => {
     const setIsAudioReady = vi.fn()
     const setIsGameOver = vi.fn()

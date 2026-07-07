@@ -393,9 +393,15 @@ export const useRhythmGameAudio = ({
         return
       }
 
+      const fallbackMessage = currentT('ui:gig.errors.initFailed', {
+        defaultValue: 'Gig initialization failed!'
+      })
       handleError(error, {
         addToast: currentAddToast,
-        fallbackMessage: 'Gig initialization failed!'
+        fallbackMessage:
+          typeof fallbackMessage === 'string'
+            ? fallbackMessage
+            : 'Gig initialization failed!'
       })
       setAudioReady(false)
       hasInitializedRef.current = false
