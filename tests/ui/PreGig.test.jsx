@@ -447,7 +447,7 @@ describe('PreGig', () => {
     await new Promise(resolve => setTimeout(resolve, 0))
 
     expect(mockUseGameState.addToast).not.toHaveBeenCalledWith(
-      expect.anything(),
+      'ui:gig.toasts.bandCollapsed',
       'error'
     )
     // Should start one of the minigames

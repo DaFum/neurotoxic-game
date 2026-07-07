@@ -52,7 +52,7 @@ const normalizeLegacyRewards = (quest: QuestState): QuestReward[] => {
     })
   } else if (quest.rewardType === 'skill_point') {
     const memberIndex =
-      typeof quest.rewardData?.memberIndex === 'number'
+      isFiniteNumber(quest.rewardData?.memberIndex)
         ? quest.rewardData.memberIndex
         : undefined
     rewards.push({ type: 'skill_point', memberIndex })

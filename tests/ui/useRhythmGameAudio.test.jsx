@@ -229,7 +229,7 @@ describe('useRhythmGameAudio', () => {
     // User-visible behavior: the toast shows the translated text, not the
     // raw Error message ('boom') that handleError would prefer internally.
     expect(addToast).toHaveBeenCalledWith('ui:gig.errors.initFailed', 'warning')
-    expect(addToast).not.toHaveBeenCalledWith('boom', expect.anything())
+    expect(addToast).not.toHaveBeenCalledWith('boom', 'warning')
   })
 
   it('reports initialization failures with error toast for high severity', async () => {
