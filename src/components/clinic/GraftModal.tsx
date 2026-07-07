@@ -26,7 +26,6 @@ interface GraftModalProps {
  * This component displays critical warnings regarding irreversible stat changes, including
  * health decay and stress accumulation, alongside the required financial cost.
  *
- * @param props - The properties required to render the modal, including visibility state and callbacks.
  * @returns The rendered confirmation modal component.
  */
 export const GraftModal = ({
