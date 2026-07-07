@@ -402,13 +402,14 @@ export const checkViralEvent = (
   options: ViralOptions = {}
 ): boolean => {
   const modifiers = options.modifiers ?? 0
-  const roll = options.roll ?? secureRandom()
   const context = options.context
 
   if (stats.accuracy > 95) return true
   // Combo threshold logic: Assuming 2.5x multiplier roughly correlates to 30-50 combo depending on scaling.
   // Using maxCombo directly.
   if (stats.maxCombo > 50) return true
+
+  const roll = options.roll ?? secureRandom()
 
   let chance: number
 
