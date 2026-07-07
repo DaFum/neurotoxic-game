@@ -394,32 +394,16 @@ export const calculateSocialGrowth = (
 /**
  * Checks if a viral event triggers based on gig stats.
  * @param stats - `accuracy, maxCombo, score`
- * @param options - Options object OR legacy modifiers number. Defaults to `{}`.
- *   Passing a bare number is the legacy signature; prefer the `ViralOptions`
- *   object form. The numeric form treats `0` as "no modifiers".
- * @param legacyRoll - Legacy roll argument (only used if options is number). Defaults to `secureRandom()`.
+ * @param options - Optional configuration for viral check.
  * @returns True if viral event occurs
- * @deprecated The numeric `options`/`legacyRoll` overload is retained only for
- *   backward compatibility; new callers should pass a `ViralOptions` object.
  */
 export const checkViralEvent = (
   stats: ViralStats,
-  options: ViralOptions | number = {},
-  legacyRoll = secureRandom()
+  options: ViralOptions = {}
 ): boolean => {
-  // Backwards compatibility handling
-  let modifiers: number
-  let roll = legacyRoll
-  let context: ViralContext | undefined
-
-  if (typeof options === 'number') {
-    modifiers = options
-  } else {
-    // New signature usage
-    modifiers = options.modifiers ?? 0
-    roll = options.roll !== undefined ? options.roll : secureRandom()
-    context = options.context
-  }
+  const modifiers = options.modifiers ?? 0
+  const roll = options.roll !== undefined ? options.roll : secureRandom()
+  const context = options.context
 
   if (stats.accuracy > 95) return true
   // Combo threshold logic: Assuming 2.5x multiplier roughly correlates to 30-50 combo depending on scaling.

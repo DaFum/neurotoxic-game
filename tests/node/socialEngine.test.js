@@ -473,24 +473,24 @@ test('calculateSocialGrowth applies viral bonus', () => {
 
 test('checkViralEvent returns true for high accuracy', () => {
   assert.equal(checkViralEvent({ accuracy: 96, maxCombo: 10 }), true)
-  assert.equal(checkViralEvent({ accuracy: 95, maxCombo: 10 }, 0, 0.9), false)
+  assert.equal(checkViralEvent({ accuracy: 95, maxCombo: 10 }, { modifiers: 0, roll: 0.9 }), false)
 })
 
 test('checkViralEvent returns true for high combo', () => {
   assert.equal(checkViralEvent({ accuracy: 80, maxCombo: 51 }), true)
-  assert.equal(checkViralEvent({ accuracy: 80, maxCombo: 50 }, 0, 0.9), false)
+  assert.equal(checkViralEvent({ accuracy: 80, maxCombo: 50 }, { modifiers: 0, roll: 0.9 }), false)
 })
 
 test('checkViralEvent handles random roll with modifiers', () => {
   const stats = { accuracy: 80, maxCombo: 10 }
 
   // base chance 0.01
-  assert.equal(checkViralEvent(stats, 0, 0.005), true) // roll < 0.01
-  assert.equal(checkViralEvent(stats, 0, 0.015), false) // roll > 0.01
+  assert.equal(checkViralEvent(stats, { modifiers: 0, roll: 0.005 }), true) // roll < 0.01
+  assert.equal(checkViralEvent(stats, { modifiers: 0, roll: 0.015 }), false) // roll > 0.01
 
   // with modifier
-  assert.equal(checkViralEvent(stats, 0.1, 0.05), true) // roll < 0.11
-  assert.equal(checkViralEvent(stats, 0.1, 0.15), false) // roll > 0.11
+  assert.equal(checkViralEvent(stats, { modifiers: 0.1, roll: 0.05 }), true) // roll < 0.11
+  assert.equal(checkViralEvent(stats, { modifiers: 0.1, roll: 0.15 }), false) // roll > 0.11
 })
 
 test('checkViralEvent uses calculateViralityScore when context is provided', () => {
