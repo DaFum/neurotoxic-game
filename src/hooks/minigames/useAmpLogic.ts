@@ -240,10 +240,7 @@ function applyAmpHijack(
   refs: AmpGameRefs,
   setters: AmpGameSetters
 ): void {
-  const clampedHijackProbability = Math.max(
-    0,
-    Math.min(1, 0.02 * (deltaMS / 100))
-  )
+  const clampedHijackProbability = clampUnit(0.02 * (deltaMS / 100))
   if (
     !refs.isHijackActiveRef.current &&
     getSafeRandom() < clampedHijackProbability

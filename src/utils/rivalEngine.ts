@@ -5,6 +5,7 @@ import { generateBrandName } from './socialEngine'
 import { secureRandom } from './crypto'
 import { RIVAL_STAY_CHANCE } from '../context/gameConstants'
 import { isEmptyObject } from './gameState'
+import { selectRandomItem } from './selectionUtils'
 
 import type { BrandAlignment } from '../types'
 
@@ -21,7 +22,7 @@ export const generateRivalBand = (
 ): RivalBandState => {
   const alignments = Object.values(BRAND_ALIGNMENTS) as BrandAlignment[]
   const alignment =
-    alignments[Math.floor(rng() * alignments.length)] ||
+    selectRandomItem(alignments, rng) ??
     (BRAND_ALIGNMENTS.NEUTRAL as BrandAlignment)
 
   const powerLevel = Math.max(1, Math.floor(day / 5) + 1)
@@ -95,7 +96,7 @@ export const moveRivalBand = (
   }
 
   if (possibleNodes.length > 0) {
-    const nextNode = possibleNodes[Math.floor(rng() * possibleNodes.length)]
+    const nextNode = selectRandomItem(possibleNodes, rng)
     return {
       ...rivalBand,
       currentLocationId: nextNode ? nextNode.id : null

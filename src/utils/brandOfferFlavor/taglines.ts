@@ -1,4 +1,5 @@
 import type { RandomFn } from '../../types/callbacks'
+import { pickIndex } from '../selectionUtils'
 
 // ─── Taglines ────────────────────────────────────────────────────────────
 
@@ -49,10 +50,7 @@ export const pickTagline = (
   if (pool.length === 0) {
     return { key: 'economy:brandFlavor.taglines.NEUTRAL.0', default: '' }
   }
-  const idx = Math.max(
-    0,
-    Math.min(pool.length - 1, Math.floor(rng() * pool.length))
-  )
+  const idx = pickIndex(pool, rng)
   return {
     key: `economy:brandFlavor.taglines.${Object.hasOwn(TAGLINES_BY_ALIGNMENT, alignment) ? alignment : 'NEUTRAL'}.${idx}`,
     default: pool[idx] ?? ''

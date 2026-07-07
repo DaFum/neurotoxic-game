@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { getSafeRandom } from '../../utils/crypto'
+import { selectRandomItem } from '../../utils/selectionUtils'
 
 /**
  * Produces intermittent CRT glitch class names for the overworld shell.
@@ -14,7 +15,7 @@ export const useGlitchEffect = () => {
     let timeoutId: ReturnType<typeof setTimeout> | null = null
     const id = setInterval(() => {
       if (getSafeRandom() < 0.22) {
-        const glitchType = TYPES[Math.floor(getSafeRandom() * TYPES.length)]
+        const glitchType = selectRandomItem(TYPES, getSafeRandom)
         if (!glitchType) {
           return
         }

@@ -6,6 +6,7 @@ import { bandHasTrait } from './traitUtils'
 import { clampZealotry } from './gameState'
 import { StateError } from './errorHandler'
 import { selectTop3ByScore } from './topSelection'
+import { selectRandomItem } from './selectionUtils'
 import { ALLOWED_TRENDS } from '../data/socialTrends'
 import {
   hasActiveSponsorship,
@@ -463,11 +464,7 @@ export const generateDailyTrend = (
   rng: RandomFn = secureRandom
 ): (typeof ALLOWED_TRENDS)[number] => {
   // Weighted choice could go here, for now uniform random
-  const idx = Math.floor(rng() * ALLOWED_TRENDS.length)
-  // Ensure valid index even if rng() === 1
-  const safeIdx = Math.min(idx, ALLOWED_TRENDS.length - 1)
-  const trend = ALLOWED_TRENDS[safeIdx]
-  return trend ?? 'NEUTRAL'
+  return selectRandomItem(ALLOWED_TRENDS, rng) ?? 'NEUTRAL'
 }
 
 /**

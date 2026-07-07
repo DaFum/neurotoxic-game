@@ -1,4 +1,5 @@
 import type { RandomFn } from '../../types/callbacks'
+import { pickIndex } from '../selectionUtils'
 import type { BrandOfferRep } from '../../types/social'
 
 type RepEntry = { name: string; title: string }
@@ -54,10 +55,7 @@ export const buildRep = (alignment: string, rng: RandomFn): BrandOfferRep => {
       titleDefault: fallback.title
     }
   }
-  const idx = Math.max(
-    0,
-    Math.min(pool.length - 1, Math.floor(rng() * pool.length))
-  )
+  const idx = pickIndex(pool, rng)
   const entry = pool[idx] ?? fallback
   return {
     nameKey: `economy:brandFlavor.reps.${Object.hasOwn(REPS_BY_ALIGNMENT, alignment) ? alignment : 'NEUTRAL'}.${idx}.name`,
