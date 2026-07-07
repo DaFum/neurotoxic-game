@@ -3,14 +3,32 @@ import { formatCurrency } from '../../utils/numberUtils'
 import { Modal } from '../../ui/shared/Modal'
 import { GlitchButton } from '../../ui/GlitchButton'
 
+/**
+ * Configuration properties for the experimental graft confirmation modal.
+ */
 interface GraftModalProps {
+  /** Controls whether the modal is visible on screen. */
   isOpen: boolean
+  /** Callback triggered when the user chooses to abort the operation or dismiss the modal. */
   onClose: () => void
+  /** Callback triggered when the user confirms the mutation operation. */
   onConfirm: () => void
+  /** The name of the band member undergoing the operation. */
   memberName: string
+  /** The financial cost required to perform the graft. */
   cost: number
 }
 
+/**
+ * Renders a modal prompting the user to confirm an experimental neuro-overclocking mutation.
+ *
+ * @remarks
+ * This component displays critical warnings regarding irreversible stat changes, including
+ * health decay and stress accumulation, alongside the required financial cost.
+ *
+ * @param props - The properties required to render the modal, including visibility state and callbacks.
+ * @returns The rendered confirmation modal component.
+ */
 export const GraftModal = ({
   isOpen,
   onClose,
