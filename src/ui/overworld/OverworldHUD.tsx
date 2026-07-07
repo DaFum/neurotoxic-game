@@ -1,5 +1,4 @@
 import { useState, memo } from 'react'
-import { useGameSelector } from '../../context/GameState'
 import {
   Map as MapIcon,
   DollarSign,
@@ -10,6 +9,8 @@ import {
 import { useTranslation } from 'react-i18next'
 import { formatCurrency } from '../../utils/numberUtils'
 import type { BandMember } from '../../types/band'
+import type { PlayerState } from '../../types/player'
+import type { BandState } from '../../types/band'
 import {
   ProgressBar,
   Tooltip,
@@ -18,28 +19,34 @@ import {
 } from '../shared'
 import { BandMemberRow } from '../hud/BandMemberRow'
 import { translateLocation } from '../../utils/locationI18n'
+import { useAudioControl } from '../../hooks/useAudioControl'
+
+export interface OverworldHUDProps {
+  player: PlayerState
+  band: BandState
+}
 
 /**
  * Top HUD overlay for the Overworld Map showing high-level stats and shortcuts.
  */
-export const OverworldHUD = memo(() => {
-  const isGenerating = false
+export const OverworldHUD = memo(({ player, band }: OverworldHUDProps) => {
   const { t, i18n } = useTranslation(['ui', 'venues'])
   const [showHelp, setShowHelp] = useState(false)
+  const { handleAudioChange } = useAudioControl()
 
-  const money = useGameSelector(state => state.player.money)
-  const location = useGameSelector(state => state.player.location)
-  const day = useGameSelector(state => state.player.day)
-  const fuel = useGameSelector(state => state.player.van?.fuel ?? 0)
-  const condition = useGameSelector(state => state.player.van?.condition ?? 100)
-  const band = useGameSelector(state => state.band)
+  const money = player.money
+  const location = player.location
+  const day = player.day
+  const fuel = player.van?.fuel ?? 0
+  const condition = player.van?.condition ?? 100
 
   const locationName = translateLocation(t, location, location)
 
   // Global keyboard shortcuts
-  useKeyboardShortcuts({ setShowHelp })
-
-  if (isGenerating) return null
+  useKeyboardShortcuts({
+    setShowHelp,
+    onToggleMute: handleAudioChange.toggleMute
+  })
 
   return (
     <div className='absolute top-0 left-0 w-full p-4 pointer-events-none z-(--z-hud) flex justify-between items-start font-mono text-xs'>
@@ -56,6 +63,26 @@ export const OverworldHUD = memo(() => {
             >
               {formatCurrency(money, i18n.language)}
             </span>
+            <div className='flex items-center gap-1 ml-auto border border-ash-gray/30 bg-void-black px-1.5 py-0.5 pointer-events-auto'>
+              <span className='text-xxs tracking-widest text-ash-gray/70'>
+                {t('ui:overworld.career_fame', { defaultValue: 'FAME' })}
+              </span>
+              <span className='text-xs font-bold text-star-white tabular-nums'>
+                {player.fame ?? 0}
+              </span>
+              <span className='text-xxs tracking-widest text-ash-gray/70 ml-1.5'>
+                {t('ui:overworld.career_level', { defaultValue: 'LVL' })}
+              </span>
+              <span className='text-xs font-bold text-star-white tabular-nums'>
+                {player.fameLevel ?? 1}
+              </span>
+              <span className='text-xxs tracking-widest text-ash-gray/70 ml-1.5'>
+                {t('ui:overworld.career_dist', { defaultValue: 'KM' })}
+              </span>
+              <span className='text-xs font-bold text-star-white tabular-nums'>
+                {player.stats?.totalDistance ?? 0}
+              </span>
+            </div>
           </div>
           <div className='flex items-center gap-2 mb-3 text-star-white/90'>
             <MapIcon size={14} className='text-toxic-green/70' />
@@ -119,6 +146,7 @@ export const OverworldHUD = memo(() => {
             })}
           >
             <button
+              type='button'
               onClick={() => setShowHelp(prev => !prev)}
               aria-expanded={showHelp}
               aria-controls='shortcuts-panel'
