@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { GlitchButton } from '../GlitchButton'
-import { Tooltip } from '../shared'
+import { Tooltip, KeyboardShortcutsPanel, useKeyboardShortcuts, BandMemberRow, ProgressBar } from '../shared'
 import { useTranslation } from 'react-i18next'
 import { type BandState, type PlayerState } from '../../types'
 import { translateLocation } from '../../utils/locationI18n'
@@ -51,118 +51,6 @@ function useAnimatedNum(value: number, ms = 450) {
   return cur
 }
 
-interface VanStatRowProps {
-  value: number | undefined
-  isLow: boolean
-  icon: string
-  lowColor: string
-  normalColor: string
-  notAvailableLabel: string
-}
-
-const VanStatRow = ({
-  value,
-  isLow,
-  icon,
-  lowColor,
-  normalColor,
-  notAvailableLabel
-}: VanStatRowProps) => {
-  const activeColor = isLow ? lowColor : normalColor
-  return (
-    <div className='van-row'>
-      <span className='van-icon' style={{ color: activeColor }}>
-        {icon}
-      </span>
-      <div className='mini-track'>
-        <div
-          className='mini-fill'
-          style={{
-            width: value !== undefined ? `${value}%` : '0%',
-            background: activeColor
-          }}
-        />
-      </div>
-      <span
-        className='mini-num'
-        style={{ color: isLow ? lowColor : undefined }}
-      >
-        {value !== undefined ? Math.floor(value) : notAvailableLabel}
-      </span>
-    </div>
-  )
-}
-
-type Member = NonNullable<BandState['members']>[number]
-type MemberStatus = 'crit' | 'low' | 'ok'
-
-const getMemberStatus = (m: Member): MemberStatus => {
-  if (m.mood < 30 || m.stamina < 20) return 'crit'
-  if (m.mood < 50 || m.stamina < 35) return 'low'
-  return 'ok'
-}
-
-const STATUS_DOT_COLOR = {
-  crit: 'var(--color-error-red)',
-  low: 'var(--color-warning-yellow)',
-  ok: 'var(--color-toxic-green)'
-} as const satisfies Record<MemberStatus, string>
-
-const getMoodColor = (mood: number) => {
-  if (mood < 30) return 'var(--color-error-red)'
-  if (mood < 50) return 'var(--color-warning-yellow)'
-  return 'var(--color-mood-pink)'
-}
-
-const getStaminaColor = (stamina: number) => {
-  if (stamina < 20) return 'var(--color-error-red)'
-  if (stamina < 35) return 'var(--color-warning-yellow)'
-  return 'var(--color-toxic-green)'
-}
-
-const StatBar = ({ value, color }: { value: number; color: string }) => (
-  <div className='bar-grp'>
-    <div className='bar-track'>
-      <div
-        className='bar-fill'
-        style={{ width: `${value}%`, background: color }}
-      />
-    </div>
-    <span className='bar-pct' style={{ color }}>
-      {Math.round(value)}%
-    </span>
-  </div>
-)
-
-const BandMemberRow = ({
-  m,
-  t
-}: {
-  m: Member
-  t: ReturnType<typeof useTranslation>['t']
-}) => {
-  const status = getMemberStatus(m)
-  const nameClass =
-    status === 'crit' ? 'mbr-crit' : status === 'low' ? 'mbr-low' : ''
-  const displayName =
-    m.name?.trim() || t('ui:hud.unnamedMember', { defaultValue: 'Member' })
-  return (
-    <div className='mbr-row'>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-        <span
-          className='mbr-status-dot'
-          style={{ background: STATUS_DOT_COLOR[status] }}
-        />
-        <span className={`mbr-name ${nameClass}`}>{displayName}</span>
-      </div>
-      <div className='mbr-bars'>
-        <StatBar value={m.mood} color={getMoodColor(m.mood)} />
-        <StatBar value={m.stamina} color={getStaminaColor(m.stamina)} />
-      </div>
-    </div>
-  )
-}
-
 /**
  * Displays animated overworld resources, location, audio, and van status.
  * @param props - Player and band state displayed in the overworld HUD.
@@ -190,41 +78,6 @@ export const OverworldHUD = React.memo(
         : 0
     const locationName = translateLocation(t, player.location, player.location)
     const shortcutsPanelId = 'overworld-shortcuts-panel'
-    const shortcuts = useMemo<[string, string][]>(
-      () => [
-        [
-          '?, h',
-          t('ui:overworld.shortcuts.help', {
-            defaultValue: 'Toggle Help'
-          })
-        ],
-        [
-          'M',
-          t('ui:overworld.shortcuts.mute', {
-            defaultValue: 'Mute / Unmute'
-          })
-        ],
-        [
-          '1–4',
-          t('ui:overworld.shortcuts.event', {
-            defaultValue: 'Select Event Option'
-          })
-        ],
-        [
-          '← ↓ →',
-          t('ui:overworld.shortcuts.hit_notes', {
-            defaultValue: 'Hit Notes (Gig)'
-          })
-        ],
-        [
-          'ESC',
-          t('ui:overworld.shortcuts.close', {
-            defaultValue: 'Close Overlays'
-          })
-        ]
-      ],
-      [t]
-    )
 
     // Defer applying the money animation class so it runs as a separate state
     // transition after render, then clear it once the animation window ends.
@@ -250,46 +103,7 @@ export const OverworldHUD = React.memo(
       }
     }, [moneyValue])
 
-    useEffect(() => {
-      const isInputTarget = (target: EventTarget | null) => {
-        const element = target as HTMLElement | null
-        if (!element) return false
-        return (
-          element.tagName === 'INPUT' ||
-          element.tagName === 'TEXTAREA' ||
-          element.tagName === 'SELECT' ||
-          element.isContentEditable
-        )
-      }
-
-      const handleKeyDown = (event: KeyboardEvent) => {
-        if (isInputTarget(event.target)) return
-
-        if (
-          event.key === '?' ||
-          (event.key === 'h' && !event.ctrlKey && !event.metaKey)
-        ) {
-          setShowSC(prev => !prev)
-          return
-        }
-
-        if (event.key === 'm' && !event.ctrlKey && !event.metaKey) {
-          if (isPlaying) {
-            handleAudioChange.stopMusic()
-          } else {
-            void handleAudioChange.resumeMusic()
-          }
-          return
-        }
-
-        if (event.key === 'Escape') {
-          setShowSC(false)
-        }
-      }
-
-      window.addEventListener('keydown', handleKeyDown)
-      return () => window.removeEventListener('keydown', handleKeyDown)
-    }, [handleAudioChange, isPlaying])
+    useKeyboardShortcuts(setShowSC)
 
     return (
       <div className='hud'>
@@ -310,29 +124,53 @@ export const OverworldHUD = React.memo(
                 {locationName}
               </span>
             </div>
-            <div className='van-stats'>
-              <VanStatRow
-                value={vanFuel}
-                isLow={fuelLow}
-                icon='⛽'
-                lowColor='var(--color-error-red)'
-                normalColor='var(--color-warning-yellow)'
-                notAvailableLabel={t('ui:overworld.notAvailable', {
-                  defaultValue: 'N/A'
+            <div className='van-stats space-y-1.5 pt-2 border-t border-toxic-green/20 mt-2'>
+              <Tooltip
+                content={t('ui:hud.fuelLevel', { defaultValue: 'Fuel Level' })}
+                position='bottom'
+              >
+                <div className='flex items-center gap-2 pointer-events-auto'>
+                  <span className={`text-xs ${fuelLow ? 'text-error-red' : 'text-warning-yellow'}`}>⛽</span>
+                  <ProgressBar
+                    value={vanFuel ?? 0}
+                    max={100}
+                    color={fuelLow ? 'bg-error-red' : 'bg-warning-yellow'}
+                    warn={fuelLow}
+                    size='mini'
+                    aria-label={t('ui:hud.fuelLevel', {
+                      defaultValue: 'Fuel Level'
+                    })}
+                  />
+                  <span className={`text-xs w-8 text-right tabular-nums ${fuelLow ? 'text-error-red' : 'text-ash-gray'}`}>
+                    {vanFuel !== undefined ? Math.floor(vanFuel) : t('ui:overworld.notAvailable', { defaultValue: 'N/A' })}
+                  </span>
+                </div>
+              </Tooltip>
+              <Tooltip
+                content={t('ui:hud.vanCondition', {
+                  defaultValue: 'Van Condition'
                 })}
-              />
-              <VanStatRow
-                value={vanCondition}
-                isLow={condLow}
-                icon='🔧'
-                lowColor='var(--color-error-red)'
-                normalColor='var(--color-condition-blue)'
-                notAvailableLabel={t('ui:overworld.notAvailable', {
-                  defaultValue: 'N/A'
-                })}
-              />
+                position='bottom'
+              >
+                <div className='flex items-center gap-2 pointer-events-auto'>
+                  <span className={`text-xs ${condLow ? 'text-error-red' : 'text-condition-blue'}`}>🔧</span>
+                  <ProgressBar
+                    value={vanCondition ?? 0}
+                    max={100}
+                    color={condLow ? 'bg-error-red' : 'bg-condition-blue'}
+                    warn={condLow}
+                    size='mini'
+                    aria-label={t('ui:hud.vanCondition', {
+                      defaultValue: 'Van Condition'
+                    })}
+                  />
+                  <span className={`text-xs w-8 text-right tabular-nums ${condLow ? 'text-error-red' : 'text-ash-gray'}`}>
+                    {vanCondition !== undefined ? Math.floor(vanCondition) : t('ui:overworld.notAvailable', { defaultValue: 'N/A' })}
+                  </span>
+                </div>
+              </Tooltip>
               {fuelLow && (
-                <div className='text-[8px] text-error-red uppercase mt-[2px] tracking-[2px] motion-safe:animate-[blink-conf_0.6s_step-end_infinite]'>
+                <div className='text-[8px] text-error-red uppercase mt-1 tracking-[2px] motion-safe:animate-[blink-conf_0.6s_step-end_infinite]'>
                   <span aria-hidden='true'>⚠ </span>
                   {t('ui:overworld.low_fuel', { defaultValue: 'LOW FUEL' })}
                 </div>
@@ -388,55 +226,38 @@ export const OverworldHUD = React.memo(
               </GlitchButton>
             </Tooltip>
           </div>
-          {showSC && (
-            <section
-              id={shortcutsPanelId}
-              aria-label={t('ui:overworld.keyboard_shortcuts', {
-                defaultValue: 'Keyboard Shortcuts'
-              })}
-              className='shortcuts-panel pointer-events-auto'
-            >
-              <div className='sc-title'>
-                {t('ui:overworld.keyboard_shortcuts', {
-                  defaultValue: 'Keyboard Shortcuts'
-                })}
-              </div>
-              {shortcuts.map(([k, d]) => (
-                <div className='sc-row' key={k}>
-                  <span className='sc-key'>{k}</span>
-                  <span className='sc-desc'>{d}</span>
-                </div>
-              ))}
-            </section>
-          )}
+          <KeyboardShortcutsPanel
+            showHelp={showSC}
+            panelId={shortcutsPanelId}
+            className='shortcuts-panel'
+          />
         </div>
         <div className='hud-right'>
-          <div className='ow-panel band-panel'>
-            <div className='band-hdr'>
+          <div className='ow-panel band-panel min-w-56'>
+            <div className='text-right border-b border-toxic-green/30 mb-2 pb-1 text-xs tracking-widest text-ash-gray uppercase'>
               {t('ui:overworld.band_status', { defaultValue: 'Band Status' })}
             </div>
-            {(band?.members ?? []).map(m => (
-              <BandMemberRow key={m.id} m={m} t={t} />
+            {(band?.members ?? []).map((m, idx) => (
+              <BandMemberRow key={m.id} m={m} idx={idx} t={t} />
             ))}
-            <div className='harmony-row'>
-              <span className='harmony-label'>
+            <div className='mt-2 pt-1.5 border-t border-toxic-green/20 flex items-center justify-between'>
+              <span className='text-xs text-ash-gray'>
                 {t('ui:overworld.harmony', { defaultValue: 'Harmony' })}
               </span>
-              <div className='harmony-bar-wrap'>
-                <div className='h-track'>
-                  <div
-                    className='bar-fill'
-                    style={{
-                      width: `${band.harmony ?? 0}%`,
-                      background:
-                        (band.harmony ?? 0) < 40
-                          ? 'var(--color-error-red)'
-                          : 'var(--color-toxic-green)'
-                    }}
+              <div className='flex items-center gap-2'>
+                <div className='w-20'>
+                  <ProgressBar
+                    value={band.harmony ?? 0}
+                    max={100}
+                    color={(band.harmony ?? 0) < 40 ? 'bg-error-red' : 'bg-toxic-green'}
+                    size='mini'
+                    aria-label={t('ui:hud.bandHarmony', {
+                      defaultValue: 'Band Harmony'
+                    })}
                   />
                 </div>
                 <span
-                  className={`text-xs w-7 text-right ${(band.harmony ?? 0) < 40 ? 'text-error-red' : 'text-toxic-green'}`}
+                  className={`text-xs tabular-nums ${(band.harmony ?? 0) < 40 ? 'text-error-red' : 'text-toxic-green'}`}
                 >
                   {Math.floor(band.harmony ?? 0)}%
                 </span>
