@@ -42,7 +42,7 @@ export const TourbusScene = () => {
       })}
       renderCompletionStats={(state: unknown) => {
         const damage =
-          state && typeof state === 'object' && 'damage' in state
+          state && typeof state === 'object' && Object.hasOwn(state, 'damage')
             ? Number((state as { damage?: unknown }).damage)
             : 0
         const { conditionLoss } = calculateTravelMinigameResult(

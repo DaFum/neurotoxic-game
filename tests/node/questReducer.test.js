@@ -5,6 +5,10 @@ import {
   handleAdvanceQuest
 } from '../../src/context/reducers/questReducer'
 import { QuestLifecycle } from '../../src/domain/questLifecycle'
+import {
+  applyQuestRewards,
+  getQuestRewards
+} from '../../src/domain/questRewards'
 import { ActionTypes } from '../../src/context/actionTypes'
 import { gameReducer } from '../../src/context/gameReducer'
 
@@ -244,4 +248,48 @@ test('questReducer - handleFailQuests', async t => {
       assert.equal(nextState.toasts[0].messageKey, 'ui:toast.quest_failed')
     }
   )
+})
+
+test('questRewards - payload safety', async t => {
+  await t.test(
+    'skill_point reward with non-finite randomIdx falls back to member 0',
+    () => {
+      const state = {
+        band: {
+          members: [
+            { name: 'A', baseStats: { skill: 3 } },
+            { name: 'B', baseStats: { skill: 3 } }
+          ]
+        }
+      }
+      const quest = {
+        id: 'q_skill',
+        label: 'Skill Quest',
+        rewards: [{ type: 'skill_point' }]
+      }
+
+      const { state: nextState, toasts } = applyQuestRewards(
+        state,
+        quest,
+        Number.NaN
+      )
+
+      assert.equal(nextState.band.members[0].baseStats.skill, 4)
+      assert.equal(nextState.band.members[1].baseStats.skill, 3)
+      assert.equal(toasts[0].options.member, 'A')
+    }
+  )
+
+  await t.test('legacy moneyReward with NaN yields no money reward', () => {
+    const rewards = getQuestRewards({ id: 'q_money', moneyReward: Number.NaN })
+    assert.equal(
+      rewards.some(reward => reward.type === 'money'),
+      false
+    )
+  })
+
+  await t.test('legacy finite moneyReward still yields a money reward', () => {
+    const rewards = getQuestRewards({ id: 'q_money', moneyReward: 50 })
+    assert.deepEqual(rewards, [{ type: 'money', amount: 50 }])
+  })
 })

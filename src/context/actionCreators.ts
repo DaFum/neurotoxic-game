@@ -11,6 +11,7 @@ import { getSafeUUID, secureRandom } from '../utils/crypto'
 import { isForbiddenKey, isLooseRecord } from '../utils/objectUtils'
 import { generateRivalBand, moveRivalBand } from '../utils/rivalEngine'
 import { sanitizeRiskEventDescriptor } from './reducers/assetSanitizers'
+import { DEFAULT_GIG_MODIFIERS } from './initialState'
 import type { RivalBandState } from '../types'
 import {
   clampPlayerMoney,
@@ -424,6 +425,29 @@ export const createRemoveToastAction = (
   payload: id
 })
 
+// Canonical gig modifier keys: the pre-gig toggles from DEFAULT_GIG_MODIFIERS
+// plus the runtime `damaged_gear` flag set by botched setup minigames.
+const ALLOWED_GIG_MODIFIER_KEYS = new Set([
+  ...Object.keys(DEFAULT_GIG_MODIFIERS),
+  'damaged_gear'
+])
+
+const sanitizeGigModifierUpdates = (
+  updates: Partial<GigModifiers> | null | undefined
+): Partial<GigModifiers> => {
+  if (!isLooseRecord(updates)) return {}
+  const out: Partial<GigModifiers> = {}
+  for (const key of ALLOWED_GIG_MODIFIER_KEYS) {
+    if (
+      Object.hasOwn(updates, key) &&
+      typeof (updates as Record<string, unknown>)[key] === 'boolean'
+    ) {
+      out[key] = (updates as Record<string, unknown>)[key] as boolean
+    }
+  }
+  return out
+}
+
 /**
  * Creates a gig modifiers action
  * @param payload - Modifiers or updater function
@@ -434,7 +458,10 @@ export const createSetGigModifiersAction = (
     | ((prev: GigModifiers) => Partial<GigModifiers>)
 ): Extract<GameAction, { type: typeof ActionTypes.SET_GIG_MODIFIERS }> => ({
   type: ActionTypes.SET_GIG_MODIFIERS,
-  payload
+  payload:
+    typeof payload === 'function'
+      ? (prev: GigModifiers) => sanitizeGigModifierUpdates(payload(prev))
+      : sanitizeGigModifierUpdates(payload)
 })
 
 /**
@@ -860,9 +887,12 @@ export const createAdvanceQuestAction = (
 ): Extract<GameAction, { type: typeof ActionTypes.ADVANCE_QUEST }> => {
   const raw = Number(amount)
   const safeAmount = clampNonNegative(raw)
+  // Drop non-finite indices locally; the reducer/domain layer re-validates
+  // with isFiniteNumber and remains the final authority.
+  const safeRandomIdx = isFiniteNumber(randomIdx) ? randomIdx : undefined
   return {
     type: ActionTypes.ADVANCE_QUEST,
-    payload: { questId, amount: safeAmount, randomIdx }
+    payload: { questId, amount: safeAmount, randomIdx: safeRandomIdx }
   }
 }
 

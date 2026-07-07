@@ -1235,6 +1235,43 @@ test('systemReducer - LOAD_GAME', async t => {
       assert.equal(Object.getPrototypeOf(nextState.gameMap.nodes), null)
     }
   )
+
+  await t.test(
+    'drops non-finite numeric extras from loaded gameMap nodes',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = {
+        gameMap: {
+          nodes: {
+            start: {
+              id: 'start',
+              x: 1,
+              y: 2,
+              danger: Number.NaN,
+              bonus: Number.POSITIVE_INFINITY,
+              safeCount: 3,
+              flags: ['legacy', Number.NaN, 4],
+              metadata: {
+                difficulty: Number.NEGATIVE_INFINITY,
+                visited: false,
+                weight: 2
+              }
+            }
+          },
+          connections: []
+        }
+      }
+
+      const nextState = handleLoadGame(initialState, loadedState)
+      const node = nextState.gameMap.nodes.start
+
+      assert.equal(Object.hasOwn(node, 'danger'), false)
+      assert.equal(Object.hasOwn(node, 'bonus'), false)
+      assert.equal(node.safeCount, 3)
+      assert.deepEqual(node.flags, ['legacy', 4])
+      assert.deepEqual(node.metadata, { visited: false, weight: 2 })
+    }
+  )
 })
 
 test('systemReducer - RESET_STATE', async t => {

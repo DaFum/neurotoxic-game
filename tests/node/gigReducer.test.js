@@ -4,6 +4,7 @@ import assert from 'node:assert/strict'
 import {
   handleSetGig,
   handleStartGig,
+  handleSetGigModifiers,
   handleSetLastGigStats
 } from '../../src/context/reducers/gigReducer'
 import { DEFAULT_GIG_MODIFIERS } from '../../src/context/initialState'
@@ -74,6 +75,44 @@ describe('gigReducer', () => {
       const nextState = handleStartGig(baseState, { id: 'gig2', name: 'Gig' })
 
       assert.deepStrictEqual(nextState.lastGigStats, { score: 80 })
+    })
+  })
+
+  describe('handleSetGigModifiers', () => {
+    it('merges gig modifier updates', () => {
+      baseState.gigModifiers = { ...DEFAULT_GIG_MODIFIERS }
+      const nextState = handleSetGigModifiers(baseState, { promo: true })
+
+      assert.deepStrictEqual(nextState.gigModifiers, {
+        ...DEFAULT_GIG_MODIFIERS,
+        promo: true
+      })
+    })
+
+    it('evaluates functional updaters against current modifiers', () => {
+      baseState.gigModifiers = { ...DEFAULT_GIG_MODIFIERS, promo: true }
+      const nextState = handleSetGigModifiers(baseState, prev => ({
+        soundcheck: !prev.soundcheck
+      }))
+
+      assert.strictEqual(nextState.gigModifiers.soundcheck, true)
+      assert.strictEqual(nextState.gigModifiers.promo, true)
+    })
+
+    it('returns the identical state reference for prototype-polluting payloads', () => {
+      const hostile = JSON.parse('{"__proto__": {"polluted": true}}')
+      const nextState = handleSetGigModifiers(baseState, hostile)
+
+      assert.strictEqual(nextState, baseState)
+      assert.strictEqual({}.polluted, undefined)
+    })
+
+    it('returns the identical state reference for non-record payloads', () => {
+      assert.strictEqual(handleSetGigModifiers(baseState, ['promo']), baseState)
+      assert.strictEqual(
+        handleSetGigModifiers(baseState, () => ['promo']),
+        baseState
+      )
     })
   })
 

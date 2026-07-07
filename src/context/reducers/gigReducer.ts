@@ -9,6 +9,8 @@ import { DEFAULT_GIG_MODIFIERS } from '../initialState'
 import { DEFAULT_MINIGAME_STATE, GAME_PHASES } from '../gameConstants'
 import {
   isForbiddenKey,
+  isLooseRecord,
+  hasForbiddenKeys,
   finiteNumberOr,
   clampBandHarmony,
   clampBandStress,
@@ -108,6 +110,9 @@ export const handleSetGigModifiers = (
   const updates =
     (typeof payload === 'function' ? payload(state.gigModifiers) : payload) ??
     {}
+  if (!isLooseRecord(updates) || hasForbiddenKeys(updates)) {
+    return state
+  }
   return { ...state, gigModifiers: { ...state.gigModifiers, ...updates } }
 }
 

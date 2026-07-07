@@ -15,7 +15,8 @@ import {
   clampLoyalty,
   clampPlayerFame,
   clampPlayerMoney,
-  finiteNumberOr
+  finiteNumberOr,
+  isFiniteNumber
 } from '../utils/gameState'
 import { applyTraitUnlocks } from '../utils/traitUtils'
 import { getQuestToastName } from './questHelpers'
@@ -38,7 +39,7 @@ export interface QuestRewardResult {
 
 const normalizeLegacyRewards = (quest: QuestState): QuestReward[] => {
   const rewards: QuestReward[] = []
-  if (typeof quest.moneyReward === 'number' && quest.moneyReward !== 0) {
+  if (isFiniteNumber(quest.moneyReward) && quest.moneyReward !== 0) {
     rewards.push({ type: 'money', amount: quest.moneyReward })
   }
 
@@ -138,12 +139,11 @@ const applySkillPointReward = (
   const originalMembers = state.band?.members ?? []
   if (originalMembers.length === 0) return state
 
-  const memberIdx =
-    typeof reward.memberIndex === 'number'
-      ? Math.max(0, Math.min(originalMembers.length - 1, reward.memberIndex))
-      : typeof randomIdx === 'number'
-        ? Math.max(0, Math.min(originalMembers.length - 1, randomIdx))
-        : 0
+  const memberIdx = isFiniteNumber(reward.memberIndex)
+    ? Math.max(0, Math.min(originalMembers.length - 1, reward.memberIndex))
+    : isFiniteNumber(randomIdx)
+      ? Math.max(0, Math.min(originalMembers.length - 1, randomIdx))
+      : 0
 
   // ⚡ BOLT OPTIMIZATION: Replaced .map with a procedural for-loop
   // Why: Avoids allocating a new closure per element during map

@@ -4,6 +4,7 @@ import {
   clampPlayerMoney,
   clampBandHarmony,
   clampMemberStamina,
+  clampVanFuel,
   finiteNumberOr,
   isEmptyObject
 } from './gameState'
@@ -283,14 +284,21 @@ export const getTravelArrivalUpdates = ({
   totalCost,
   assetModifiers
 }: TravelArrivalUpdateInput): TravelArrivalUpdates => {
+  // Canonical location format is the `venues:<id>.name` display key, matching
+  // the production arrival path in minigameReducer's handleCompleteTravelMinigame.
+  const canonicalVenueId =
+    normalizeVenueId(node.venue) ??
+    (typeof node.venueId === 'string' ? normalizeVenueId(node.venueId) : null)
   const nextPlayer = {
     money: clampPlayerMoney(finiteNumberOr(player.money, 0) - totalCost),
     van: {
       ...player.van,
-      fuel: Math.max(0, (player.van?.fuel ?? 0) - fuelLiters)
+      fuel: clampVanFuel(finiteNumberOr(player.van?.fuel, 0) - fuelLiters)
     },
     location:
-      getCityKeyFromVenueId(normalizeVenueId(node.venue) ?? '') || 'Unknown',
+      canonicalVenueId !== null && canonicalVenueId.length > 0
+        ? `venues:${canonicalVenueId}.name`
+        : 'Unknown',
     currentNodeId: node.id,
     totalTravels: (player.totalTravels ?? 0) + 1
   }
