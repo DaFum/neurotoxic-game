@@ -97,4 +97,34 @@ describe('calculateExcessMissMoneyPenalty', () => {
       })
     ).toThrow('missMoneyPenalty must be a finite number >= 0')
   })
+
+  it('throws an error if misses is NaN or Infinity', () => {
+    expect(() =>
+      calculateExcessMissMoneyPenalty({ misses: NaN, missTolerance: 5 })
+    ).toThrow('misses must be a finite integer >= 0')
+
+    expect(() =>
+      calculateExcessMissMoneyPenalty({ misses: Infinity, missTolerance: 5 })
+    ).toThrow('misses must be a finite integer >= 0')
+  })
+
+  it('throws an error if missTolerance is NaN or Infinity', () => {
+    expect(() =>
+      calculateExcessMissMoneyPenalty({ misses: 5, missTolerance: NaN })
+    ).toThrow('missTolerance must be a finite integer >= 0')
+
+    expect(() =>
+      calculateExcessMissMoneyPenalty({ misses: 5, missTolerance: Infinity })
+    ).toThrow('missTolerance must be a finite integer >= 0')
+  })
+
+  it('throws an error if missMoneyPenalty is NaN', () => {
+    expect(() =>
+      calculateExcessMissMoneyPenalty({
+        misses: 5,
+        missTolerance: 2,
+        missMoneyPenalty: NaN
+      })
+    ).toThrow('missMoneyPenalty must be a finite number >= 0')
+  })
 })
