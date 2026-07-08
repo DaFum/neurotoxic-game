@@ -231,7 +231,7 @@ export const maybeFireGigProgressEvent = (
   stateRef: RhythmGameRefState,
   triggerEvent: (category: string, triggerPoint?: string | null) => boolean
 ): void => {
-  const currentSongIndex = stateRef.lastEndedSongIndex + 1
+  const currentSongIndex = finiteNumberOr(stateRef.lastEndedSongIndex, -1) + 1
   if (stateRef.lastGigEventSongIndex === currentSongIndex) return
   if (!stateRef.gigIntroFired && stateRef.progress > 0) {
     stateRef.gigIntroFired = true
