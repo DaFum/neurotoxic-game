@@ -112,6 +112,9 @@ test('applyPostGigPerformancePenalty adds penalty to expenses and adjusts net wh
     missMoneyPenalty: 10
   })
 
+  assert.notEqual(result, baseFinancials)
+  assert.equal(baseFinancials.expenses.total, 300)
+  assert.equal(baseFinancials.net, 200)
   assert.equal(result.expenses.total, 320)
   assert.equal(result.net, 180)
   assert.equal(result.expenses.breakdown.length, 1)
