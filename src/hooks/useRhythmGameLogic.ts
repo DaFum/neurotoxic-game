@@ -5,7 +5,7 @@ import { useGameActions, useGameSelector } from '../context/GameState.tsx'
 import { stopAudio } from '../utils/audio/audioEngine'
 import { maybeFireGigProgressEvent } from '../utils/rhythmGameLoopUtils'
 import { finiteNumberOr } from '../utils/finiteNumber'
-import { hasTrait } from '../utils/traitUtils'
+import { bandHasTrait } from '../utils/traitUtils'
 import { useRhythmGameState } from './rhythmGame/useRhythmGameState'
 import { useRhythmGameScoring } from './rhythmGame/useRhythmGameScoring'
 import { useRhythmGameAudio } from './rhythmGame/useRhythmGameAudio'
@@ -13,7 +13,6 @@ import { useRhythmGameLoop } from './rhythmGame/useRhythmGameLoop'
 import { useRhythmGameInput } from './rhythmGame/useRhythmGameInput'
 import type { RhythmGameRefState } from '../types/rhythmGame'
 import type { RhythmUiState } from './rhythmGame/useRhythmGameState'
-import type { BandMember } from '../types'
 export type { RhythmUiState } from './rhythmGame/useRhythmGameState'
 /**
  * Public rhythm game stats shape exposed to the gig scene.
@@ -93,10 +92,7 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
   // Fold temporary band effects (contraband/equipment) into the static
   // performance values the scoring hook consumes.
   const scoringPerformance = useMemo(() => {
-    const members = band?.members
-    const hasNeuroOverclock = Array.isArray(members)
-      ? members.some((m: BandMember) => hasTrait(m, 'neuro_overclock'))
-      : false
+    const hasNeuroOverclock = bandHasTrait(band, 'neuro_overclock')
     const baseTempo = finiteNumberOr(band?.tempo, 0)
     const finalTempo = hasNeuroOverclock ? baseTempo + 0.5 : baseTempo
 
@@ -107,11 +103,7 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
       crowdControl: finiteNumberOr(band?.crowdControl, 0)
     }
   }, [
-    band?.performance,
-    band?.tempo,
-    band?.crit,
-    band?.crowdControl,
-    band?.members
+    band
   ])
 
   // 2. Scoring Logic (Hits, Misses, Toxic Mode)
