@@ -428,36 +428,31 @@ export const handleGraftNeuroOverclock = (
     },
     band: {
       ...state.band,
-      members: state.band.members.map(
-        (
-          m: import('../../types/band').BandMember & {
-            health?: number
-            stress?: number
-            traits?: string[]
-          },
-          i: number
-        ) => {
-          if (i !== memberIndex) return m
-          return {
-            ...m,
-            health: Math.max(1, finiteNumberOr(m.health, 100) - 20),
-            stress: Math.min(100, finiteNumberOr(m.stress, 0) + 30),
-            traits: {
-              ...(m.traits || {}),
-              neuro_overclock: getTraitById('neuro_overclock') || {
-                id: 'neuro_overclock',
-                name: 'traits:neuro_overclock.name',
-                description: 'traits:neuro_overclock.description',
-                effects: {
-                  rhythmMultiplier: 1.5,
-                  stressPerGig: 5,
-                  healthPerGig: -10
-                }
+      // ⚡ BOLT OPTIMIZATION: Replaced .map() with targeted array indexing.
+      // Why: Avoids recreating objects for unmodified items in the array.
+      members: (() => {
+        const newMembers = [...state.band.members];
+        const m = newMembers[memberIndex];
+        newMembers[memberIndex] = {
+          ...m,
+          health: Math.max(1, finiteNumberOr(m.health, 100) - 20),
+          stress: Math.min(100, finiteNumberOr(m.stress, 0) + 30),
+          traits: {
+            ...(m.traits || {}),
+            neuro_overclock: getTraitById('neuro_overclock') || {
+              id: 'neuro_overclock',
+              name: 'traits:neuro_overclock.name',
+              description: 'traits:neuro_overclock.description',
+              effects: {
+                rhythmMultiplier: 1.5,
+                stressPerGig: 5,
+                healthPerGig: -10
               }
             }
           }
-        }
-      )
+        };
+        return newMembers;
+      })()
     },
     toasts: [
       ...(state.toasts || []),
