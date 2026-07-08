@@ -139,8 +139,8 @@ export const canAcceptQuest = (
       const cd = cooldowns[i]
       if (
         cd &&
-        cd?.questId === questId &&
-        finiteNumberOr(cd?.expiresOnDay, 0) > currentDay
+        cd.questId === questId &&
+        finiteNumberOr(cd.expiresOnDay, 0) > currentDay
       ) {
         onCooldown = true
         break
@@ -164,7 +164,7 @@ export const canAcceptQuest = (
     // ⚡ BOLT OPTIMIZATION: Replaced Array.some with a procedural loop
     for (let i = 0; i < scopes.length; i++) {
       const c = scopes[i]
-      if (c && c?.questId === questId && c?.scopeKey === scopeKey) {
+      if (c && c.questId === questId && c.scopeKey === scopeKey) {
         alreadyDone = true
         break
       }
