@@ -615,6 +615,62 @@ test('calculateTravelExpenses computes distance consistently across node coordin
   assert.equal(dist2, 45, 'Distance should be 45 for 3-4-5 triangle')
 })
 
+test('calculateTravelExpenses handles fame, money, band size, and edge cases', async t => {
+  const baseNode = { venue: { x: 50, y: 50, name: 'Center' } }
+  // Relative to center: dist = 20 (base minimum)
+
+  await t.test('scales logistics based on fame level and cash reserve', () => {
+    const playerState = { fameLevel: 10, money: 5000 }
+    const result = calculateTravelExpenses(baseNode, null, playerState)
+
+    // logisticsCost = TRAVEL_LOGISTICS_BASE (18) + (20/100)*TRAVEL_LOGISTICS_PER_100KM (0) + 10 * TRAVEL_LOGISTICS_PER_FAME_LEVEL (15) + min(45, (5000/1000)*5) (25) = 58
+    // foodCost = 3 * 8 = 24
+    // totalCost = 24 + 58 = 82
+    assert.equal(result.totalCost, 82)
+  })
+
+  await t.test('caps the cash reserve fee', () => {
+    const playerState = { money: 100000 } // Should cap at TRAVEL_LOGISTICS_CASH_CAP (45)
+    const result = calculateTravelExpenses(baseNode, null, playerState)
+
+    // logisticsCost = 18 + 0 + 0 + 45 = 63
+    // foodCost = 24
+    // totalCost = 24 + 63 = 87
+    assert.equal(result.totalCost, 87)
+  })
+
+  await t.test('scales food cost based on band size', () => {
+    const bandState = { members: [{}, {}, {}, {}, {}] } // 5 members
+    const result = calculateTravelExpenses(baseNode, null, null, bandState)
+
+    // foodCost = 5 * 8 = 40
+    // logisticsCost = 18
+    // totalCost = 58
+    assert.equal(result.totalCost, 58)
+  })
+
+  await t.test('applies asset modifiers to fuel cost', () => {
+    const assetModifiers = { fuelMultiplier: 0.5 }
+    const result = calculateTravelExpenses(
+      baseNode,
+      null,
+      null,
+      null,
+      assetModifiers
+    )
+
+    // base fuel for 20 dist is 2.0. With 0.5 multiplier -> 1.0
+    assert.ok(Math.abs(result.fuelLiters - 1.0) < 0.001)
+  })
+
+  await t.test('gracefully handles missing or undefined state parameters', () => {
+    const result = calculateTravelExpenses(baseNode, null, {}, {})
+
+    // Fallback to 3 band members (24 food) and 0 fame/money (18 logistics)
+    assert.equal(result.totalCost, 42)
+  })
+})
+
 test('calculateFuelCost applies van tuning upgrade', () => {
   const dist = 100
   // Without upgrade
