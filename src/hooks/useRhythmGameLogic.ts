@@ -13,7 +13,6 @@ import { useRhythmGameLoop } from './rhythmGame/useRhythmGameLoop'
 import { useRhythmGameInput } from './rhythmGame/useRhythmGameInput'
 import type { RhythmGameRefState } from '../types/rhythmGame'
 import type { RhythmUiState } from './rhythmGame/useRhythmGameState'
-import type { BandMember } from '../types'
 export type { RhythmUiState } from './rhythmGame/useRhythmGameState'
 /**
  * Public rhythm game stats shape exposed to the gig scene.
@@ -94,9 +93,17 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
   // performance values the scoring hook consumes.
   const scoringPerformance = useMemo(() => {
     const members = band?.members
-    const hasNeuroOverclock = Array.isArray(members)
-      ? members.some((m: BandMember) => hasTrait(m, 'neuro_overclock'))
-      : false
+    let hasNeuroOverclock = false
+    if (Array.isArray(members)) {
+      for (let i = 0; i < members.length; i++) {
+        const m = members[i]
+        if (!m) continue
+        if (hasTrait(m, 'neuro_overclock')) {
+          hasNeuroOverclock = true
+          break
+        }
+      }
+    }
     const baseTempo = finiteNumberOr(band?.tempo, 0)
     const finalTempo = hasNeuroOverclock ? baseTempo + 0.5 : baseTempo
 
