@@ -1,6 +1,5 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest'
 import { render } from '@testing-library/react'
-import { resetSvgTokenStyleCacheForTesting } from '../../src/components/overworld/hooks/useOverworldUrls'
 
 // Capture props passed to MapNodeView so we can assert on cityTraits
 const capturedProps = []
@@ -129,7 +128,6 @@ describe('OverworldMap cityStates lookup', () => {
     for (const tokenName of Object.keys(svgTokenTestValues)) {
       document.documentElement.style.removeProperty(tokenName)
     }
-    resetSvgTokenStyleCacheForTesting()
   })
 
   test('passes cityTraits derived from venue.id prefix when cityStates is present', () => {

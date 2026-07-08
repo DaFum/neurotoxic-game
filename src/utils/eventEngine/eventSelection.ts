@@ -26,17 +26,6 @@ type EventPoolById = Record<string, EngineEvent>
  * @remarks WeakMap keys are the pool arrays themselves, not event ids.
  */
 const eventPoolMapCache = new WeakMap<EngineEvent[], EventPoolById>()
-const eventTagsCache = new WeakMap<EngineEvent, Set<string>>()
-
-const hasTag = (event: EngineEvent, tag: string): boolean => {
-  if (!event.tags || !Array.isArray(event.tags)) return false
-  let tagsSet = eventTagsCache.get(event)
-  if (!tagsSet) {
-    tagsSet = new Set(event.tags)
-    eventTagsCache.set(event, tagsSet)
-  }
-  return tagsSet.has(tag)
-}
 
 const hasInstalledAssetFlag = (
   gameState: EngineGameState,
@@ -206,7 +195,7 @@ const selectEvent = (
       chance *= HARMONY_DEATH_SPIRAL_DAMPEN_FACTOR
     }
 
-    if (infightingDamperActive && hasTag(event, 'conflict')) {
+    if (infightingDamperActive && event.tags?.includes('conflict')) {
       chance *= INFIGHTING_DAMPER_CHANCE_FACTOR
     }
 
@@ -214,7 +203,7 @@ const selectEvent = (
     // daily-computed van.breakdownChance relative to the unmodified baseline.
     // A fresh van (factor 1) keeps authored chances; low condition raises
     // them (up to the daily-tick cap), suspension upgrades lower them.
-    if (hasTag(event, 'breakdown')) {
+    if (event.tags?.includes('breakdown')) {
       const breakdownChance = finiteNumberOr(
         gameState.player?.van?.breakdownChance,
         BASE_BREAKDOWN_CHANCE

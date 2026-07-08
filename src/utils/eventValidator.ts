@@ -120,8 +120,7 @@ export const validateCrisisEvent = (event: unknown): boolean => {
     )
   }
 
-  const tagsSet = new Set(e.tags as unknown[])
-  if (!Array.isArray(e.tags) || !tagsSet.has('crisis')) {
+  if (!Array.isArray(e.tags) || !(e.tags as unknown[]).includes('crisis')) {
     throw new Error('Event ' + String(e.id) + ' must have "crisis" tag')
   }
 
@@ -326,7 +325,7 @@ export const validateGameEvent = (event: unknown): boolean => {
   }
 
   // Events with 'crisis' tag must start with 'crisis_' and have chance in [0,1]
-  if (Array.isArray(e.tags) && new Set(e.tags as string[]).has('crisis')) {
+  if (Array.isArray(e.tags) && (e.tags as string[]).includes('crisis')) {
     if (typeof e.id !== 'string' || !e.id.startsWith('crisis_')) {
       throw new Error(
         `Crisis-tagged event id must start with 'crisis_' (got: ${JSON.stringify(e.id)})`

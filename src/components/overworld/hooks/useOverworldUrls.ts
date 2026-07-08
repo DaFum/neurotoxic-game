@@ -75,24 +75,16 @@ const resolveSvgTokenValue = (tokenName: SvgTokenName): string => {
   return fallback
 }
 
-let cachedSvgTokenStyle: string | null = null
-
 export const resetSvgTokenStyleCacheForTesting = () => {
-  cachedSvgTokenStyle = null
   svgTokenCache.clear()
 }
 
 const createSvgTokenStyle = (): string => {
-  if (cachedSvgTokenStyle !== null) {
-    return cachedSvgTokenStyle
-  }
-
   const tokenDefinitions = SVG_TOKEN_NAMES.map(
     tokenName => `${tokenName}:${resolveSvgTokenValue(tokenName)}`
   ).join(';')
 
-  cachedSvgTokenStyle = `<defs><style>:root{${tokenDefinitions}}</style></defs>`
-  return cachedSvgTokenStyle
+  return `<defs><style>:root{${tokenDefinitions}}</style></defs>`
 }
 
 const escapeSvgText = (value: string): string =>

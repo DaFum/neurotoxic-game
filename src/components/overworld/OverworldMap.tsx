@@ -9,8 +9,6 @@ import { useNetworkStatus } from '../../hooks/useNetworkStatus'
 import { useOverworldUrls } from './hooks'
 import { getNodeIconUrl } from './utils'
 
-const HARMONY_NODE_TYPES = new Set(['GIG', 'FESTIVAL', 'FINALE'])
-
 import type {
   MapNode as GameMapNode,
   GameMap,
@@ -20,6 +18,8 @@ import type {
 } from '../../types'
 import type { TranslationCallback } from '../../types/callbacks'
 import type { NodeVisibility } from '../../types/map'
+
+const HARMONY_NODE_TYPES = new Set(['GIG', 'FESTIVAL', 'FINALE'])
 
 interface OverworldMapProps {
   t: TranslationCallback
@@ -127,7 +127,7 @@ export const OverworldMap = React.memo(
     const renderedNodes = useMemo(() => {
       if (!gameMap) return null
       const nodes: React.ReactNode[] = []
-      const activeStoryFlagsSet = new Set(activeStoryFlags || [])
+      const activeStoryFlagsSet = new Set(activeStoryFlags ?? [])
       for (const key in gameMap.nodes) {
         if (!Object.hasOwn(gameMap.nodes, key)) continue
         const node = gameMap.nodes[key as keyof typeof gameMap.nodes]
