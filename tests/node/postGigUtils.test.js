@@ -92,6 +92,42 @@ test('calculateExcessMissMoneyPenalty rejects invalid numeric invariants', () =>
   )
 })
 
+test('applyPostGigPerformancePenalty returns original financials if misses are within tolerance', () => {
+  const baseFinancials = buildFinancials()
+  const result = applyPostGigPerformancePenalty({
+    financials: baseFinancials,
+    misses: 2,
+    missTolerance: 5,
+    missMoneyPenalty: 10
+  })
+  assert.equal(result, baseFinancials)
+})
+
+test('applyPostGigPerformancePenalty adds penalty to expenses and adjusts net when misses exceed tolerance', () => {
+  const baseFinancials = buildFinancials()
+  const result = applyPostGigPerformancePenalty({
+    financials: baseFinancials,
+    misses: 7,
+    missTolerance: 5,
+    missMoneyPenalty: 10
+  })
+
+  assert.equal(result.expenses.total, 320)
+  assert.equal(result.net, 180)
+  assert.equal(result.expenses.breakdown.length, 1)
+  assert.equal(result.expenses.breakdown[0].value, 20)
+  assert.equal(result.expenses.breakdown[0].detailParams.misses, 2)
+})
+
+test('applyPostGigPerformancePenalty handles missing optional params safely', () => {
+  const baseFinancials = buildFinancials()
+  const result = applyPostGigPerformancePenalty({
+    financials: baseFinancials,
+    missTolerance: 5
+  })
+  assert.equal(result, baseFinancials)
+})
+
 test('applyPostGigPerformancePenalty validates penalty inputs before financial math', () => {
   assert.throws(
     () =>
