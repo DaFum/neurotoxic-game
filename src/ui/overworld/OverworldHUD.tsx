@@ -52,7 +52,7 @@ export const OverworldHUD = memo(({ player, band }: OverworldHUDProps) => {
     <div className='absolute top-0 left-0 w-full p-4 pointer-events-none z-(--z-hud) flex justify-between items-start font-mono text-xs'>
       {/* Left Panel - Player Status */}
       <div className='flex flex-col gap-2'>
-        <div className='bg-void-black/95 border-2 border-toxic-green p-3 text-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)] backdrop-blur-sm min-w-[200px] pointer-events-auto transition-transform hover:translate-y-1 hover:translate-x-1 hover:shadow-none'>
+        <div className='bg-void-black/95 border-2 border-toxic-green p-3 text-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)] backdrop-blur-sm min-w-50 pointer-events-auto transition-transform hover:translate-y-1 hover:translate-x-1 hover:shadow-none'>
           <div className='flex items-center gap-2 mb-2'>
             <DollarSign
               size={16}
@@ -169,7 +169,7 @@ export const OverworldHUD = memo(({ player, band }: OverworldHUDProps) => {
               aria-label={t('ui:aria.shortcutsHelp', {
                 defaultValue: 'Toggle keyboard shortcuts help'
               })}
-              className={`pointer-events-auto bg-void-black/95 border min-w-[48px] min-h-[48px] flex items-center justify-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void-black hover:translate-y-1 hover:translate-x-1 ${
+              className={`pointer-events-auto bg-void-black/95 border min-w-12 min-h-12 flex items-center justify-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void-black hover:translate-y-1 hover:translate-x-1 ${
                 showHelp
                   ? 'border-warning-yellow text-warning-yellow focus-visible:ring-warning-yellow shadow-none translate-y-1 translate-x-1'
                   : 'border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black focus-visible:ring-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)] hover:shadow-none'

@@ -164,7 +164,7 @@ export const HUD = memo(() => {
                 defaultValue: 'Toggle mute system'
               })}
               aria-pressed={audioState.isMuted}
-              className={`pointer-events-auto bg-void-black/90 border min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
+              className={`pointer-events-auto bg-void-black/90 border min-w-11 min-h-11 flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
                 audioState.isMuted
                   ? 'border-ash-gray text-ash-gray hover:bg-ash-gray hover:text-void-black focus-visible:ring-ash-gray'
                   : 'border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black focus-visible:ring-toxic-green'
@@ -190,7 +190,7 @@ export const HUD = memo(() => {
               aria-label={t('ui:aria.shortcutsHelp', {
                 defaultValue: 'Toggle keyboard shortcuts help'
               })}
-              className={`pointer-events-auto bg-void-black/90 border min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
+              className={`pointer-events-auto bg-void-black/90 border min-w-11 min-h-11 flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
                 showHelp
                   ? 'border-warning-yellow text-warning-yellow focus-visible:ring-warning-yellow'
                   : 'border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black focus-visible:ring-toxic-green'
