@@ -433,26 +433,24 @@ export const handleGraftNeuroOverclock = (
       members: (() => {
         const newMembers = [...state.band.members];
         const m = newMembers[memberIndex];
-        if (m) {
-          newMembers[memberIndex] = {
-            ...m,
-            health: Math.max(1, finiteNumberOr(m.health, 100) - 20),
-            stress: Math.min(100, finiteNumberOr(m.stress, 0) + 30),
-            traits: {
-              ...(m.traits || {}),
-              neuro_overclock: getTraitById('neuro_overclock') || {
-                id: 'neuro_overclock',
-                name: 'traits:neuro_overclock.name',
-                description: 'traits:neuro_overclock.description',
-                effects: {
-                  rhythmMultiplier: 1.5,
-                  stressPerGig: 5,
-                  healthPerGig: -10
-                }
+        newMembers[memberIndex] = {
+          ...m,
+          health: Math.max(1, finiteNumberOr(m.health, 100) - 20),
+          stress: Math.min(100, finiteNumberOr(m.stress, 0) + 30),
+          traits: {
+            ...(m.traits || {}),
+            neuro_overclock: getTraitById('neuro_overclock') || {
+              id: 'neuro_overclock',
+              name: 'traits:neuro_overclock.name',
+              description: 'traits:neuro_overclock.description',
+              effects: {
+                rhythmMultiplier: 1.5,
+                stressPerGig: 5,
+                healthPerGig: -10
               }
             }
-          };
-        }
+          }
+        };
         return newMembers;
       })()
     },
