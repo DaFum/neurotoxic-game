@@ -86,49 +86,64 @@ export const HUD = memo(() => {
           </div>
 
           {/* Van Status Mini Bars */}
-          <div className='border-t border-toxic-green/20 pt-2 space-y-1.5'>
+          <div className='border-t border-toxic-green/20 pt-2 grid grid-cols-2 gap-x-4'>
             <Tooltip
               content={t('ui:hud.fuelLevel', { defaultValue: 'Fuel Level' })}
               position='bottom'
             >
-              <div className='flex items-center gap-2 pointer-events-auto'>
-                <Fuel size={12} className='text-warning-yellow shrink-0' />
-                <ProgressBar
-                  value={playerVanFuel}
-                  max={100}
-                  color='bg-warning-yellow'
-                  warn={playerVanFuel < 20}
-                  size='mini'
-                  aria-label={t('ui:hud.fuelLevel', {
-                    defaultValue: 'Fuel Level'
-                  })}
+              <div className='flex items-end gap-1.5 pointer-events-auto'>
+                <Fuel
+                  size={12}
+                  className='text-warning-yellow shrink-0 mb-0.5'
                 />
-                <span className='text-xs text-ash-gray w-8 text-right tabular-nums'>
-                  {Math.floor(playerVanFuel)}
-                </span>
+
+                <div className='min-w-0 flex-1'>
+                  <div className='text-xs text-ash-gray font-mono tabular-nums mb-0.5 leading-none'>
+                    {Math.floor(playerVanFuel)}%
+                  </div>
+
+                  <ProgressBar
+                    value={playerVanFuel}
+                    max={100}
+                    color='bg-warning-yellow'
+                    warn={playerVanFuel < 20}
+                    size='mini'
+                    aria-label={t('ui:hud.fuelLevel', {
+                      defaultValue: 'Fuel Level'
+                    })}
+                  />
+                </div>
               </div>
             </Tooltip>
+
             <Tooltip
               content={t('ui:hud.vanCondition', {
                 defaultValue: 'Van Condition'
               })}
               position='bottom'
             >
-              <div className='flex items-center gap-2 pointer-events-auto'>
-                <Wrench size={12} className='text-condition-blue shrink-0' />
-                <ProgressBar
-                  value={playerVanCondition}
-                  max={100}
-                  color='bg-condition-blue'
-                  warn={playerVanCondition < 25}
-                  size='mini'
-                  aria-label={t('ui:hud.vanCondition', {
-                    defaultValue: 'Van Condition'
-                  })}
+              <div className='flex items-end gap-1.5 pointer-events-auto'>
+                <Wrench
+                  size={12}
+                  className='text-condition-blue shrink-0 mb-0.5'
                 />
-                <span className='text-xs text-ash-gray w-8 text-right tabular-nums'>
-                  {Math.floor(playerVanCondition)}
-                </span>
+
+                <div className='min-w-0 flex-1'>
+                  <div className='text-xs text-ash-gray font-mono tabular-nums mb-0.5 leading-none'>
+                    {Math.floor(playerVanCondition)}%
+                  </div>
+
+                  <ProgressBar
+                    value={playerVanCondition}
+                    max={100}
+                    color='bg-condition-blue'
+                    warn={playerVanCondition < 25}
+                    size='mini'
+                    aria-label={t('ui:hud.vanCondition', {
+                      defaultValue: 'Van Condition'
+                    })}
+                  />
+                </div>
               </div>
             </Tooltip>
           </div>
@@ -244,31 +259,34 @@ export const HUD = memo(() => {
               />
             ))}
           </div>
-          <div className='mt-2 pt-1.5 border-t border-toxic-green/20 flex items-center justify-between'>
-            <span className='text-xs text-ash-gray'>
+          <div className='mt-2 pt-1.5 border-t border-toxic-green/20 flex items-end justify-between'>
+            <span className='text-xs text-ash-gray mb-0.5'>
               {t('ui:harmony', { defaultValue: 'HARMONY' })}
             </span>
-            <div className='flex items-center gap-2'>
-              <div className='w-20'>
-                <ProgressBar
-                  value={band?.harmony ?? 0}
-                  max={100}
-                  color={
-                    (band?.harmony ?? 0) < 40
-                      ? 'bg-blood-red'
-                      : 'bg-toxic-green'
-                  }
-                  size='mini'
-                  aria-label={t('ui:hud.bandHarmony', {
-                    defaultValue: 'Band Harmony'
-                  })}
-                />
-              </div>
-              <span
-                className={`text-xs tabular-nums ${(band?.harmony ?? 0) < 40 ? 'text-blood-red' : 'text-toxic-green'}`}
+
+            <div className='w-20'>
+              <div
+                className={`text-xs tabular-nums mb-0.5 leading-none ${
+                  (band?.harmony ?? 0) < 40
+                    ? 'text-blood-red'
+                    : 'text-toxic-green'
+                }`}
               >
                 {Math.floor(band?.harmony ?? 0)}%
-              </span>
+              </div>
+
+              <ProgressBar
+                value={band?.harmony ?? 0}
+                max={100}
+                color={
+                  (band?.harmony ?? 0) < 40 ? 'bg-blood-red' : 'bg-toxic-green'
+                }
+                size='mini'
+                showValue={false}
+                aria-label={t('ui:hud.bandHarmony', {
+                  defaultValue: 'Band Harmony'
+                })}
+              />
             </div>
           </div>
         </div>

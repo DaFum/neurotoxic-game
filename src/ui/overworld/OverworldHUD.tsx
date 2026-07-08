@@ -91,49 +91,65 @@ export const OverworldHUD = memo(({ player, band }: OverworldHUDProps) => {
             </span>
           </div>
 
-          <div className='border-t border-toxic-green/30 pt-3 space-y-2.5'>
+          {/* Van Status Mini Bars */}
+          <div className='border-t border-toxic-green/20 pt-2 grid grid-cols-2 gap-x-4'>
             <Tooltip
               content={t('ui:hud.fuelLevel', { defaultValue: 'Fuel Level' })}
               position='bottom'
             >
-              <div className='flex items-center gap-2 pointer-events-auto'>
-                <Fuel size={14} className='text-warning-yellow shrink-0' />
-                <ProgressBar
-                  value={fuel}
-                  max={100}
-                  color='bg-warning-yellow'
-                  warn={fuel < 20}
-                  size='sm'
-                  aria-label={t('ui:hud.fuelLevel', {
-                    defaultValue: 'Fuel Level'
-                  })}
+              <div className='flex items-end gap-1.5 pointer-events-auto'>
+                <Fuel
+                  size={12}
+                  className='text-warning-yellow shrink-0 mb-0.5'
                 />
-                <span className='text-xs text-ash-gray w-8 text-right tabular-nums'>
-                  {Math.floor(fuel)}
-                </span>
+
+                <div className='min-w-0 flex-1'>
+                  <div className='text-xs text-ash-gray font-mono tabular-nums mb-0.5 leading-none'>
+                    {Math.floor(fuel)}%
+                  </div>
+
+                  <ProgressBar
+                    value={fuel}
+                    max={100}
+                    color='bg-warning-yellow'
+                    warn={fuel < 20}
+                    size='mini'
+                    aria-label={t('ui:hud.fuelLevel', {
+                      defaultValue: 'Fuel Level'
+                    })}
+                  />
+                </div>
               </div>
             </Tooltip>
+
             <Tooltip
               content={t('ui:hud.vanCondition', {
                 defaultValue: 'Van Condition'
               })}
               position='bottom'
             >
-              <div className='flex items-center gap-2 pointer-events-auto'>
-                <Wrench size={14} className='text-condition-blue shrink-0' />
-                <ProgressBar
-                  value={condition}
-                  max={100}
-                  color='bg-condition-blue'
-                  warn={condition < 25}
-                  size='sm'
-                  aria-label={t('ui:hud.vanCondition', {
-                    defaultValue: 'Van Condition'
-                  })}
+              <div className='flex items-end gap-1.5 pointer-events-auto'>
+                <Wrench
+                  size={12}
+                  className='text-condition-blue shrink-0 mb-0.5'
                 />
-                <span className='text-xs text-ash-gray w-8 text-right tabular-nums'>
-                  {Math.floor(condition)}
-                </span>
+
+                <div className='min-w-0 flex-1'>
+                  <div className='text-xs text-ash-gray font-mono tabular-nums mb-0.5 leading-none'>
+                    {Math.floor(condition)}%
+                  </div>
+
+                  <ProgressBar
+                    value={condition}
+                    max={100}
+                    color='bg-condition-blue'
+                    warn={condition < 25}
+                    size='mini'
+                    aria-label={t('ui:hud.vanCondition', {
+                      defaultValue: 'Van Condition'
+                    })}
+                  />
+                </div>
               </div>
             </Tooltip>
           </div>
@@ -182,29 +198,34 @@ export const OverworldHUD = memo(({ player, band }: OverworldHUDProps) => {
             />
           ))}
         </div>
-        <div className='mt-3 pt-2.5 border-t border-toxic-green/30 flex items-center justify-between'>
-          <span className='text-xs font-bold text-ash-gray/90'>
+        <div className='mt-3 pt-2.5 border-t border-toxic-green/30 flex items-end justify-between'>
+          <span className='text-xs font-bold text-ash-gray/90 mb-0.5'>
             {t('ui:harmony', { defaultValue: 'HARMONY' })}
           </span>
-          <div className='flex items-center gap-2.5'>
-            <div className='w-24'>
-              <ProgressBar
-                value={band?.harmony ?? 0}
-                max={100}
-                color={
-                  (band?.harmony ?? 0) < 40 ? 'bg-blood-red' : 'bg-toxic-green'
-                }
-                size='sm'
-                aria-label={t('ui:hud.bandHarmony', {
-                  defaultValue: 'Band Harmony'
-                })}
-              />
-            </div>
-            <span
-              className={`text-xs font-bold tabular-nums ${(band?.harmony ?? 0) < 40 ? 'text-blood-red' : 'text-toxic-green'}`}
+
+          <div className='w-24'>
+            <div
+              className={`text-xs font-bold tabular-nums mb-0.5 leading-none ${
+                (band?.harmony ?? 0) < 40
+                  ? 'text-blood-red'
+                  : 'text-toxic-green'
+              }`}
             >
               {Math.floor(band?.harmony ?? 0)}%
-            </span>
+            </div>
+
+            <ProgressBar
+              value={band?.harmony ?? 0}
+              max={100}
+              color={
+                (band?.harmony ?? 0) < 40 ? 'bg-blood-red' : 'bg-toxic-green'
+              }
+              size='sm'
+              showValue={false}
+              aria-label={t('ui:hud.bandHarmony', {
+                defaultValue: 'Band Harmony'
+              })}
+            />
           </div>
         </div>
       </div>
