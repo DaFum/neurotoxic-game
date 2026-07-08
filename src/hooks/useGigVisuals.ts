@@ -16,6 +16,8 @@ type UseGigVisualsReturn = {
 
 import { useNetworkStatus } from './useNetworkStatus'
 
+const FESTIVAL_REGEX = /Festival|Open Air/
+
 /**
  * Resolves generated image URLs for the current gig venue and band harmony state.
  *
@@ -33,10 +35,7 @@ export const useGigVisuals = ({
     let bgPrompt = IMG_PROMPTS.VENUE_CLUB
     if (currentGig?.name?.includes('Kaminstube'))
       bgPrompt = IMG_PROMPTS.VENUE_KAMINSTUBE
-    else if (
-      currentGig?.name?.includes('Festival') ||
-      currentGig?.name?.includes('Open Air')
-    )
+    else if (currentGig?.name && FESTIVAL_REGEX.test(currentGig.name))
       bgPrompt = IMG_PROMPTS.VENUE_FESTIVAL
     else if (
       typeof currentGig?.difficulty === 'number' &&
