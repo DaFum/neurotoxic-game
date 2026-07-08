@@ -1,11 +1,12 @@
 import type { BandMember } from '../types'
 import type { BasicTProps } from '../types'
+import { isEmptyObject } from '../../../../utils/gameState'
 
 export const MemberEquipment = ({
   member,
   t
 }: { member: BandMember } & BasicTProps) => {
-  if (!member.equipment || Object.keys(member.equipment).length === 0) {
+  if (!member.equipment || isEmptyObject(member.equipment)) {
     return (
       <div className='text-xs text-ash-gray/50'>
         {t('ui:detailedStats.standardGear', {

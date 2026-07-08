@@ -4,6 +4,10 @@
 
 - Do not use `Object.keys(obj).length > 0` for emptiness checks; use `isEmptyObject` from `src/utils/gameStateUtils.ts`.
 
+## Random selection
+
+- Random element/index picks must use `selectRandomItem`/`pickIndex` from `src/utils/selectionUtils.ts`; do not inline `Math.floor(rng() * arr.length)`. The old `src/utils/audio/selectionUtils.ts` path is a back-compat re-export.
+
 ## Brand colors
 
 - `brandColors.ts` (`BRAND_COLOR_HEX`) is the single source of truth for brand hex fallbacks. Both `stageRenderUtils.PIXI_TOKEN_FALLBACKS` and `OverworldMap.SVG_TOKEN_FALLBACKS` derive from it. When adding a new brand color, extend `BRAND_COLOR_HEX` and let consumers re-derive — do not reinline the hex literal.

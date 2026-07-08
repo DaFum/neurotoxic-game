@@ -269,6 +269,40 @@ describe('purchaseLogicUtils', () => {
         Math.abs(result.bandPatch.performance.guitarDifficulty - 0.9) < 0.0001
       )
     })
+
+    test('treats non-finite effect values as zero', () => {
+      const player = { van: { speed: 10 } }
+      const nanResult = applyStatModifier(
+        { target: 'van', stat: 'speed', value: Number.NaN },
+        {},
+        player,
+        {}
+      )
+      assert.equal(nanResult.playerPatch.van.speed, 10)
+
+      const infResult = applyStatModifier(
+        { target: 'van', stat: 'speed', value: 'Infinity' },
+        {},
+        player,
+        {}
+      )
+      assert.equal(infResult.playerPatch.van.speed, 10)
+
+      const bandResult = applyStatModifier(
+        { target: 'band', stat: 'luck', value: Number.POSITIVE_INFINITY },
+        {},
+        {},
+        { luck: 10 }
+      )
+      assert.equal(bandResult.bandPatch.luck, 10)
+    })
+
+    test('falls back when the base stat is a non-finite numeric string', () => {
+      const effect = { target: 'van', stat: 'speed', value: 5 }
+      const player = { van: { speed: 'Infinity' } }
+      const result = applyStatModifier(effect, {}, player, {})
+      assert.equal(result.playerPatch.van.speed, 5)
+    })
   })
 
   describe('applyUnlockUpgrade', () => {

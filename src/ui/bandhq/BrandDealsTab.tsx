@@ -29,7 +29,7 @@ export const BrandDealsTab = ({ social }: BrandDealsTabProps) => {
         if (
           deal &&
           typeof deal === 'object' &&
-          'id' in deal &&
+          Object.hasOwn(deal, 'id') &&
           typeof deal.id === 'string'
         ) {
           if (!map.has(deal.id)) {
@@ -125,9 +125,11 @@ export const BrandDealsTab = ({ social }: BrandDealsTabProps) => {
                       isActive &&
                       activeDeal !== null &&
                       typeof activeDeal === 'object' &&
-                      'remainingGigs' in activeDeal &&
-                      typeof activeDeal.remainingGigs === 'number'
-                        ? activeDeal.remainingGigs
+                      Object.hasOwn(activeDeal, 'remainingGigs') &&
+                      typeof (activeDeal as { remainingGigs?: unknown })
+                        .remainingGigs === 'number'
+                        ? (activeDeal as { remainingGigs: number })
+                            .remainingGigs
                         : deal.offer.duration,
                     defaultValue: '{{count}} Gigs'
                   })}

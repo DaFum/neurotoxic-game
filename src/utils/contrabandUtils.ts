@@ -3,6 +3,7 @@ import {
   CONTRABAND_BY_RARITY
 } from '../data/contraband'
 import { secureRandom } from './crypto'
+import { selectRandomItem } from './selectionUtils'
 import { finiteNumberOr } from './gameState'
 import type { Rarity } from '../types'
 
@@ -108,7 +109,7 @@ export function pickRandomContrabandByRarity(
   const pool =
     CONTRABAND_BY_RARITY[rarity as keyof typeof CONTRABAND_BY_RARITY] || []
   if (pool.length === 0) return null
-  return pool[Math.floor(rng() * pool.length)]?.id ?? null
+  return selectRandomItem(pool, rng)?.id ?? null
 }
 
 /**

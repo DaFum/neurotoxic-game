@@ -163,18 +163,21 @@ const reportErrorRemote = (errorInfo: ErrorInfoObject) => {
   }
 }
 
+export const toastTypeFromSeverity = (
+  severity: ErrorSeverityType
+): 'error' | 'warning' => {
+  return severity === ErrorSeverity.CRITICAL || severity === ErrorSeverity.HIGH
+    ? 'error'
+    : 'warning'
+}
+
 const showErrorToast = (
   errorInfo: ErrorInfoObject,
   silent: boolean,
   addToast?: (message: string, type: string) => void
 ) => {
   if (!silent && addToast) {
-    const toastType =
-      errorInfo.severity === ErrorSeverity.CRITICAL ||
-      errorInfo.severity === ErrorSeverity.HIGH
-        ? 'error'
-        : 'warning'
-
+    const toastType = toastTypeFromSeverity(errorInfo.severity)
     addToast(errorInfo.message, toastType)
   }
 }

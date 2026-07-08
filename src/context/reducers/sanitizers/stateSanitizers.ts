@@ -275,7 +275,7 @@ const copySafeArray = (
     const entry = value[i]
     if (
       typeof entry === 'string' ||
-      typeof entry === 'number' ||
+      isFiniteNumber(entry) ||
       typeof entry === 'boolean' ||
       entry === null
     ) {
@@ -289,7 +289,7 @@ const copySafeArray = (
         const entryValue = entryRecord[entryKey]
         if (
           typeof entryValue === 'string' ||
-          typeof entryValue === 'number' ||
+          isFiniteNumber(entryValue) ||
           typeof entryValue === 'boolean' ||
           entryValue === null
         ) {
@@ -318,7 +318,7 @@ const copySafeFlatObject = (
     const entry = source[key]
     if (
       typeof entry === 'string' ||
-      typeof entry === 'number' ||
+      isFiniteNumber(entry) ||
       typeof entry === 'boolean' ||
       entry === null
     ) {
@@ -518,7 +518,7 @@ export const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
       const value = nodeRecord[key]
       if (
         typeof value === 'string' ||
-        typeof value === 'number' ||
+        isFiniteNumber(value) ||
         typeof value === 'boolean' ||
         value === null
       ) {

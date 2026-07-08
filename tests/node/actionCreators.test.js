@@ -436,6 +436,42 @@ describe('Action Creators', () => {
       assert.strictEqual(action.type, ActionTypes.SET_GIG_MODIFIERS)
       assert.strictEqual(typeof action.payload, 'function')
     })
+
+    it('whitelists gig modifier keys and drops non-boolean values', () => {
+      const action = createSetGigModifiersAction({
+        promo: true,
+        soundcheck: 'yes',
+        hacked: true,
+        damaged_gear: true
+      })
+      assert.deepStrictEqual(action.payload, {
+        promo: true,
+        damaged_gear: true
+      })
+    })
+
+    it('drops forbidden prototype keys from object payloads', () => {
+      const hostile = JSON.parse('{"__proto__": {"polluted": true}}')
+      const action = createSetGigModifiersAction(hostile)
+      assert.deepStrictEqual(action.payload, {})
+      assert.strictEqual(Object.hasOwn(action.payload, '__proto__'), false)
+    })
+
+    it('sanitizes the result of functional updaters', () => {
+      const action = createSetGigModifiersAction(() => ({
+        merch: true,
+        hacked: true,
+        guestlist: 'nope'
+      }))
+      const resolved = action.payload({
+        promo: false,
+        soundcheck: false,
+        merch: false,
+        catering: false,
+        guestlist: false
+      })
+      assert.deepStrictEqual(resolved, { merch: true })
+    })
   })
 
   describe('createCompleteTravelMinigameAction', () => {
@@ -503,6 +539,25 @@ describe('Action Creators', () => {
       assert.strictEqual(
         createAdvanceQuestAction('quest_1', Number.NEGATIVE_INFINITY).payload
           .amount,
+        0
+      )
+    })
+
+    it('drops non-finite randomIdx from the payload', () => {
+      assert.strictEqual(
+        createAdvanceQuestAction('quest_1', 1, Number.NaN).payload.randomIdx,
+        undefined
+      )
+      assert.strictEqual(
+        createAdvanceQuestAction('quest_1', 1, Number.POSITIVE_INFINITY).payload
+          .randomIdx,
+        undefined
+      )
+    })
+
+    it('preserves a finite randomIdx', () => {
+      assert.strictEqual(
+        createAdvanceQuestAction('quest_1', 1, 0).payload.randomIdx,
         0
       )
     })

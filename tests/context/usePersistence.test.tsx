@@ -18,7 +18,8 @@ vi.mock('../../src/utils/storage', () => ({
 }))
 
 vi.mock('../../src/utils/gameState', async importOriginal => {
-  const actual = await importOriginal<typeof import('../../src/utils/gameState')>()
+  const actual =
+    await importOriginal<typeof import('../../src/utils/gameState')>()
   return {
     ...actual,
     normalizeSetlistForSave: vi.fn(),
@@ -47,7 +48,8 @@ vi.mock('../../src/utils/logger', async importOriginal => {
   }
 })
 
-const { usePersistence, SAVE_KEY } = await import('../../src/context/usePersistence')
+const { usePersistence, SAVE_KEY, createRawLoadPayload } =
+  await import('../../src/context/usePersistence')
 const { handleError, StateError } = await import('../../src/utils/errorHandler')
 const { safeStorageOperation } = await import('../../src/utils/storage')
 
@@ -112,7 +114,25 @@ describe('usePersistence', () => {
       const firstCall = mockCalls[0]
       expect(firstCall).toBeDefined()
       const errorArg = firstCall![0] as Error
-      expect(errorArg.message).toBe('Save file parsing failed. Falling back to initial state.')
+      expect(errorArg.message).toBe(
+        'Save file parsing failed. Falling back to initial state.'
+      )
+    })
+  })
+
+  describe('createRawLoadPayload', () => {
+    it('accepts finite number and string versions', () => {
+      expect(createRawLoadPayload({ version: 3 }, []).version).toBe(3)
+      expect(createRawLoadPayload({ version: '3' }, []).version).toBe('3')
+    })
+
+    it('rejects non-finite number versions', () => {
+      expect(
+        createRawLoadPayload({ version: Number.NaN }, [])
+      ).not.toHaveProperty('version')
+      expect(
+        createRawLoadPayload({ version: Number.POSITIVE_INFINITY }, [])
+      ).not.toHaveProperty('version')
     })
   })
 })

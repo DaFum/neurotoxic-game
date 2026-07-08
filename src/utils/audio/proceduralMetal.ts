@@ -4,6 +4,7 @@ import { prepareTransportPlayback } from './playbackUtils'
 import { playDrumNote } from './drumMappings'
 import { logger } from '../logger'
 import { secureRandom } from '../crypto'
+import { selectRandomItem } from './selectionUtils'
 import type { Song } from '../../types/audio'
 
 /**
@@ -27,7 +28,7 @@ function generateRiffPattern(
         pattern.push(random() > 0.7 ? (random() > 0.5 ? 'F2' : 'G2') : 'E2')
       else {
         const notes = ['E2', 'A#2', 'F2', 'C3', 'D#3']
-        pattern.push(notes[Math.floor(random() * notes.length)] ?? null)
+        pattern.push(selectRandomItem(notes, random))
       }
     } else {
       pattern.push(null)

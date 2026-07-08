@@ -11,6 +11,7 @@ import { getSafeUUID, secureRandom } from '../utils/crypto'
 import { isForbiddenKey, isLooseRecord } from '../utils/objectUtils'
 import { generateRivalBand, moveRivalBand } from '../utils/rivalEngine'
 import { sanitizeRiskEventDescriptor } from './reducers/assetSanitizers'
+import { sanitizeGigModifierUpdates } from './initialState'
 import type { RivalBandState } from '../types'
 import {
   clampPlayerMoney,
@@ -434,7 +435,10 @@ export const createSetGigModifiersAction = (
     | ((prev: GigModifiers) => Partial<GigModifiers>)
 ): Extract<GameAction, { type: typeof ActionTypes.SET_GIG_MODIFIERS }> => ({
   type: ActionTypes.SET_GIG_MODIFIERS,
-  payload
+  payload:
+    typeof payload === 'function'
+      ? (prev: GigModifiers) => sanitizeGigModifierUpdates(payload(prev))
+      : sanitizeGigModifierUpdates(payload)
 })
 
 /**
@@ -860,9 +864,12 @@ export const createAdvanceQuestAction = (
 ): Extract<GameAction, { type: typeof ActionTypes.ADVANCE_QUEST }> => {
   const raw = Number(amount)
   const safeAmount = clampNonNegative(raw)
+  // Drop non-finite indices locally; the reducer/domain layer re-validates
+  // with isFiniteNumber and remains the final authority.
+  const safeRandomIdx = isFiniteNumber(randomIdx) ? randomIdx : undefined
   return {
     type: ActionTypes.ADVANCE_QUEST,
-    payload: { questId, amount: safeAmount, randomIdx }
+    payload: { questId, amount: safeAmount, randomIdx: safeRandomIdx }
   }
 }
 

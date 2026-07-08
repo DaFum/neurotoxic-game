@@ -19,7 +19,7 @@ createRoot(rootElement).render(
           role='status'
         >
           <div className='w-12 h-12 border-4 border-toxic-green border-t-transparent rounded-full animate-spin'>
-            <span className='sr-only'>Loading...</span>
+            <span className='sr-only'>Loading… / Lädt…</span>
           </div>
         </div>
       }

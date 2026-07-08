@@ -44,10 +44,36 @@ describe('travelUtils', () => {
       assert.strictEqual(result.nextPlayer.money, 900)
       assert.strictEqual(result.nextPlayer.van.fuel, 40)
       assert.strictEqual(result.nextPlayer.van.condition, 80)
-      assert.strictEqual(result.nextPlayer.location, 'city')
+      // Canonical location format matches minigameReducer's arrival path:
+      // the `venues:<id>.name` display key, not the bare city key.
+      assert.strictEqual(result.nextPlayer.location, 'venues:city_club.name')
       assert.strictEqual(result.nextPlayer.currentNodeId, 'node_1')
       assert.strictEqual(result.nextPlayer.totalTravels, 6)
       assert.strictEqual(result.nextBand, null)
+    })
+
+    test('derives the location key from node.venueId when venue is absent', () => {
+      const result = getTravelArrivalUpdates({
+        player: { money: 100, van: { fuel: 20 } },
+        band: {},
+        node: { id: 'node_1', venueId: 'berlin_so36' },
+        fuelLiters: 5,
+        totalCost: 10
+      })
+
+      assert.strictEqual(result.nextPlayer.location, 'venues:berlin_so36.name')
+    })
+
+    test('clamps non-finite persisted fuel instead of propagating NaN', () => {
+      const result = getTravelArrivalUpdates({
+        player: { money: 100, van: { fuel: Number.NaN } },
+        band: {},
+        node: { id: 'node_1', venue: 'venue_1' },
+        fuelLiters: 5,
+        totalCost: 10
+      })
+
+      assert.strictEqual(result.nextPlayer.van.fuel, 0)
     })
 
     test('handles harmony regeneration when enabled', () => {

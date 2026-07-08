@@ -2,6 +2,7 @@ import { isFiniteNumber } from '../finiteNumber'
 import type { RandomFn } from '../../types/callbacks'
 import type { BrandDealOffer, BrandOfferVariantId } from '../../types/social'
 import { roundTo } from './helpers'
+import { pickIndex } from '../selectionUtils'
 
 // ─── Variants & Numeric Variance ─────────────────────────────────────────
 
@@ -55,10 +56,7 @@ export const pickVariantId = (
     : fallback
   // Bias towards 'standard' (~50%) so flavored variants stay special.
   if (rng() < 0.5) return 'standard'
-  const idx = Math.max(
-    0,
-    Math.min(pool.length - 1, Math.floor(rng() * pool.length))
-  )
+  const idx = pickIndex(pool, rng)
   return pool[idx] ?? 'standard'
 }
 

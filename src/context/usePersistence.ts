@@ -6,7 +6,11 @@ import {
   useRef
 } from 'react'
 import type { TFunction } from 'i18next'
-import { normalizeSetlistForSave, isLooseRecord } from '../utils/gameState'
+import {
+  normalizeSetlistForSave,
+  isLooseRecord,
+  isFiniteNumber
+} from '../utils/gameState'
 import { safeJsonParse } from '../utils/objectUtils'
 import { handleError, StateError, StorageError } from '../utils/errorHandler'
 import { safeStorageOperation } from '../utils/storage'
@@ -137,7 +141,7 @@ export const createRawLoadPayload = (
       } else if (expectedType === 'object-or-array') {
         isValid = typeof value === 'object' && value !== null
       } else if (expectedType === 'number-or-string') {
-        isValid = typeof value === 'number' || typeof value === 'string'
+        isValid = isFiniteNumber(value) || typeof value === 'string'
       } else {
         isValid = typeof value === expectedType
       }

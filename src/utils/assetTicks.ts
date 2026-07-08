@@ -17,7 +17,8 @@ import {
   calculateFameLevel,
   clampMemberMood,
   clampMemberStamina,
-  finiteNumberOr
+  finiteNumberOr,
+  isEmptyObject
 } from './gameState'
 import { MODULE_REGISTRY } from './assetModuleRegistry'
 import { clampUnit } from './numberUtils'
@@ -160,7 +161,7 @@ export const processAssetTick = (state: GameState): GameState => {
 export const processLiabilityTick = (
   state: GameState
 ): { state: GameState; foreclosedKinds: AssetKind[] } => {
-  if (!state.liabilities || Object.keys(state.liabilities).length === 0) {
+  if (!state.liabilities || isEmptyObject(state.liabilities)) {
     return { state, foreclosedKinds: [] }
   }
   let currentMoney = finiteNumberOr(state.player.money, 0)

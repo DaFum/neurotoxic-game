@@ -289,6 +289,11 @@ export function useGameDispatchActions({
     [dispatch]
   )
 
+  // setGameMap is an intentional test seam on the public dispatch surface.
+  // Production map creation lives in useMapGeneration, which dispatches
+  // createSetMapAction directly: that hook is instantiated before this one
+  // (its resetMapGenerationRetries is a prop of this hook), so routing it
+  // through this method would create a circular hook dependency.
   const setGameMap = useCallback(
     (mapData: Parameters<typeof createSetMapAction>[0]) =>
       dispatch(createSetMapAction(mapData)),

@@ -8,7 +8,7 @@ import {
   playSongSequence,
   resetGigStateTracking
 } from '../../utils/audio/audioEngine'
-import { handleError } from '../../utils/errorHandler'
+import { handleError, toastTypeFromSeverity } from '../../utils/errorHandler'
 import { logger } from '../../utils/logger'
 import { clampBandHarmony } from '../../utils/gameState'
 import { buildGigStatsSnapshot } from '../../utils/gigStats'
@@ -393,10 +393,19 @@ export const useRhythmGameAudio = ({
         return
       }
 
-      handleError(error, {
-        addToast: currentAddToast,
-        fallbackMessage: 'Gig initialization failed!'
+      const translated = currentT('ui:gig.errors.initFailed', {
+        defaultValue: 'Gig initialization failed!'
       })
+      const toastMessage =
+        typeof translated === 'string'
+          ? translated
+          : 'Gig initialization failed!'
+      // Log/report via handleError but toast the translated text ourselves:
+      // handleError prefers error.message over fallbackMessage, which would
+      // surface untranslated Error text to the user.
+      const errorInfo = handleError(error, { fallbackMessage: toastMessage })
+      const toastType = toastTypeFromSeverity(errorInfo.severity)
+      currentAddToast(toastMessage, toastType)
       setAudioReady(false)
       hasInitializedRef.current = false
     } finally {

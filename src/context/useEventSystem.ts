@@ -264,11 +264,11 @@ export function useEventSystem({
       } catch (error) {
         logger.error('Event', 'Failed to resolve event choice:', error)
         addToast(tRef.current('ui:event_error'), 'error')
-        dispatch(createSetActiveEventAction(null))
+        setActiveEvent(null)
         return { ...choiceTextFallback(choice), result: null }
       }
     },
-    [addToast, changeScene, dispatch, saveGame, stateRef, tRef]
+    [addToast, changeScene, dispatch, saveGame, setActiveEvent, stateRef, tRef]
   )
 
   return { setActiveEvent, triggerEvent, resolveEvent: resolveEventCallback }

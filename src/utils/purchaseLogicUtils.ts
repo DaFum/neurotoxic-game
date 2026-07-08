@@ -54,7 +54,7 @@ const getNumericProp = (
   if (
     typeof raw === 'string' &&
     raw.trim() !== '' &&
-    !Number.isNaN(Number(raw))
+    Number.isFinite(Number(raw))
   )
     return Number(raw)
   return fallback
@@ -301,7 +301,7 @@ export const applyStatModifier = (
   player: PlayerState,
   band: BandState
 ): { playerPatch: PlayerPatch; bandPatch: BandPatch } => {
-  const val = Number(effect.value ?? 0)
+  const val = finiteNumberOr(Number(effect.value), 0)
   const nextPlayerPatch: PlayerPatch = { ...playerPatch }
   let nextBandPatch: BandPatch = null
 

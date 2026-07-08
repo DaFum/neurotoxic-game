@@ -6,8 +6,6 @@
   "gigExpenses.guestList.label": "Gästeliste",
   "gigExpenses.managementFee.detail": "{{rate}}% der Bruttoeinnahmen",
   "gigExpenses.managementFee.label": "Management-Gebühr",
-  "gigExpenses.merchRestock.detail": "Warenkosten",
-  "gigExpenses.merchRestock.label": "Merch-Nachbestellung",
   "gigExpenses.merchStand.detail": "Bessere Präsentation",
   "gigExpenses.merchStand.label": "Merch-Stand",
   "gigExpenses.overageFee.detail": "Venue-Vertragsgrenze",
@@ -192,8 +190,6 @@
 
   "brandFlavor.campaignLabel": "Kampagne",
   "brandFlavor.repLabel": "Pitch von",
-  "brandFlavor.taglineLabel": "Claim",
-  "brandFlavor.hookLabel": "Warum jetzt",
   "brandFlavor.urgency.low": "Kein Druck",
   "brandFlavor.urgency.medium": "Zeitkritisch",
   "brandFlavor.urgency.high": "Begrenztes Zeitfenster!",
